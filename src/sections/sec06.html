@@ -17,6 +17,28 @@
 #s06 .reveal{margin:10px 0 0}
 #s06 .reveal-body{padding-left:18px}
 #s06 .calc-rl.calc-outlab{color:var(--ink-2)}
+#s06 .s06-stage{display:contents}
+#s06 .s06-raw{display:none}
+body.present #s06 .s06-intro,body.present #s06 #s06-arith{display:none}
+body.present #s06 .s06-stage{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);gap:.7em;align-items:start}
+body.present #s06 .s06-stage>.card{min-width:0;margin:0}
+body.present #s06 .dt-cap,body.present #s06 .dt-note{display:none}
+body.present #s06 .dt td.dt-num{font-size:.68em;min-width:3.35em;padding:.18em .45em}
+body.present #s06 .dt thead th{font-size:.62em;padding:.2em .45em}
+body.present #s06 .dt tbody th,body.present #s06 .dt tfoot th{font-size:.68em;padding:.18em .45em}
+body.present #s06 .srows{grid-template-columns:repeat(2,minmax(0,1fr));gap:.08em .7em;margin:.4em 0 .1em}
+body.present #s06 .srows .slider{grid-template-columns:minmax(0,1fr) minmax(3em,.9fr) 2.8em;gap:.35em;padding:.08em 0}
+body.present #s06 .srows .slider-label{font-size:.63em}
+body.present #s06 .look,body.present #s06 .hint,body.present #s06 .taunote{font-size:.62em}
+body.present #s06 .look,body.present #s06 .hint{margin:.35em 0 0}
+body.present #s06 .modebox{gap:.35em .7em;padding:.35em .55em;margin:0 0 .35em}
+body.present #s06 .modebox .slider input[type=range]{max-width:16em}
+body.present #s06 .verdict{font-size:.76em;margin:.35em 0 0}
+body.present #s06 .s06-mix-value .s06-raw{display:inline}
+body.present #s06 .s06-mix-value:has(.s06-weight:not(.is-pending)) .s06-raw{display:none}
+body.present #s06 tr.s06-present-winner>th,body.present #s06 tr.s06-present-winner>td{box-shadow:inset 0 0 0 2px var(--ink)}
+body.present #s06 .s06-close{font-size:.82em;margin:.55em 0 0}
+@media(max-width:1100px){body.present #s06 .s06-stage{grid-template-columns:1fr}}
 </style>
 <header class="sec-head">
   <span class="sec-num">06</span>
@@ -30,41 +52,53 @@
   <p>A search engine picks one winner and shows you that page. Attention keeps the whole ranked list and blends the values in proportion to how well each key matched. This section makes that blend a spreadsheet: the scores from the previous section feed a softmax, the weights fill the $\va{\alpha_j}$ column, every value row is scaled by its weight, and the footer adds the rows up. Start in hard mode, where one row carries all the weight, then switch to soft and lower the temperature to watch the two modes meet. Drag a score up and watch every weight move. The sentence to remember: attention returns a weighted mixture of values, not one value.</p>
 </div>
 
-<div class="prose">
+<div class="frame" data-title="Hard to soft" data-autobuild="off">
+  <script type="text/x-notes">
+If Gradient Descent's score rises to 4.8 too, what should come back?
+Start in hard mode and point to the single winner in both tables. Reveal the soft switch and click it. Then reveal the weighted rows, the sum, and the score sliders. Set Gradient Descent to 4.8 so the class can see both top items contribute. End with the weighted mixture callout and the temperature control.
+
+Timing: five minutes.
+  </script>
+
+<div class="prose s06-intro">
   <p>A normal search engine keeps only the winner. It picks the key with the largest score and returns that item's value:</p>
   $$j^* = \arg\max_j\, \vq{q}^\top \vk{k_j}, \qquad \text{return } \vv{v_{j^*}}$$
   <p>Attention instead turns the scores into weights that sum to 1, and returns a blend of <em>all</em> the values, in proportion to those weights:</p>
   $$\va{\alpha_j} = \operatorname{softmax}_j\!\left(\vq{q}^\top \vk{k_j}\right), \qquad \boxed{\sum_j \va{\alpha_j}\, \vv{v_j}}$$
 </div>
 
+<div class="s06-stage">
 <div class="card">
   <h3 class="card-title">Scores: the query row against the six key rows, as before. Drag a slider to change a score</h3>
   <div id="s06-dot"></div>
-  <div class="srows" id="s06-sliders"></div>
-  <div class="btn-row" style="margin-top:8px"><button type="button" class="btn btn-quiet" id="s06-reset">Reset scores to the dot products</button></div>
-  <p class="look">Look at the score column: it is the only thing the next table reads. A score you drag no longer equals the dot product of its row, so think of it as a different key.</p>
+  <div class="srows" id="s06-sliders" data-build="4"></div>
+  <div class="btn-row" style="margin-top:8px" data-build="4"><button type="button" class="btn btn-quiet" id="s06-reset">Reset scores to the dot products</button></div>
+  <p class="look" data-build="4">Look at the score column: it is the only thing the next table reads. A score you drag no longer equals the dot product of its row, so think of it as a different key.</p>
 </div>
 
 <div class="card">
   <h3 class="card-title">Retrieve: weights from the scores, then each value row scaled by its weight, then the sum</h3>
-  <div class="modebox">
+  <div class="modebox" data-build="1">
     <div id="s06-mode"></div>
-    <div id="s06-temp"></div>
-    <p class="taunote">In soft mode the weights are $\va{\alpha_j} = \operatorname{softmax}_j(s_j/\tau)$. A small $\tau$ makes the mixture sharper. As $\tau \to 0$, soft retrieval becomes hard retrieval when one score is strictly the largest; tied top scores keep sharing the weight. $\tau = 1$ is the formula above.</p>
+    <div id="s06-temp" data-build="6"></div>
+    <p class="taunote" data-build="6">In soft mode the weights are $\va{\alpha_j} = \operatorname{softmax}_j(s_j/\tau)$. A small $\tau$ makes the mixture sharper. As $\tau \to 0$, soft retrieval becomes hard retrieval when one score is strictly the largest; tied top scores keep sharing the weight. $\tau = 1$ is the formula above.</p>
   </div>
   <div id="s06-mix"></div>
-  <p class="verdict" id="s06-verdict"></p>
-  <p class="look" id="s06-mread"></p>
+  <p class="verdict" id="s06-verdict" data-build="3"></p>
+  <p class="look" id="s06-mread" data-build="3"></p>
   <div id="s06-arith"></div>
-  <p class="hint" id="s06-hint"></p>
+  <p class="hint" id="s06-hint" data-build="4"></p>
+</div>
 </div>
 
-<div class="callout callout-key">
+<div class="callout callout-key" data-build="5">
   <p>Attention does not necessarily retrieve one thing. It retrieves a <strong>weighted mixture of information</strong>.</p>
 </div>
 
-<div class="prose">
+<div class="prose s06-close" data-build="5">
   <p>Each piece now has a job. A <span class="sym sym-q">Query</span> says what the searcher needs, <span class="sym sym-k">Keys</span> decide who matches, <span class="sym sym-v">Values</span> carry what comes back, and softmax turns scores into a mixture. Back to language.</p>
+</div>
+
 </div>
 
 <div class="companion after">
@@ -91,6 +125,11 @@
   const round1 = (x) => +AT.fmt(x, 1).replace('−', '-');
   const s = DEF.map(round1);
   let soft = false, tau = 1;
+  function syncBuilds(){
+    if (AT.present && AT.present.isActive && AT.present.isActive() && AT.present.state().frame.id === 's06') {
+      AT.present.setBuild(AT.present.state().build);
+    }
+  }
 
   /* score table: query row, key rows, and a score column fed by the sliders */
   const dot = AT.ui.table([Q].concat(VIDEOS.map(V => V.k)), { cols: KEY_AXES, rowLabels: ['the question'].concat(titles), rowCls: ['q'].concat(titles.map(() => 'k')), highlightRow: 0,
@@ -118,7 +157,7 @@
     onInput: v => { s[j] = v; draw(); }, into: S.querySelector('#s06-sliders') }));
   S.querySelector('#s06-reset').addEventListener('click', () => { DEF.forEach((v, j) => { s[j] = round1(v); sliders[j].setValue(s[j], false); }); draw(); });
 
-  AT.ui.toggle({ label: 'Retrieval mode', on: false, offText: 'hard (argmax)', onText: 'soft (softmax)', onChange: on => { soft = on; draw(); }, into: S.querySelector('#s06-mode') });
+  const mode = AT.ui.toggle({ label: 'Retrieval mode', on: false, offText: 'hard (argmax)', onText: 'soft (softmax)', onChange: on => { soft = on; draw(); }, into: S.querySelector('#s06-mode') });
   const temp = AT.ui.slider({ label: 'Temperature τ (soft mode)', min: 0.1, max: 4, step: 0.1, value: 1, format: v => AT.fmt(v, 1), onInput: v => { tau = v; draw(); }, into: S.querySelector('#s06-temp') });
 
   /* mixture table: α column, weighted value rows, footer sum */
@@ -127,6 +166,11 @@
   const mix = AT.ui.mixTable(alphaArr, VIDEOS.map(V => V.v), { cols: VAL_AXES, rowLabels: titles, cornerLabel: 'video', weighted: true, decimals: 2, footerCls: 'v', into: S.querySelector('#s06-mix'),
     caption: 'Each row is $\\va{\\alpha_j}\\,\\vv{v_j}$, the value row scaled by its weight; the footer adds the rows. Rows with weight 0 are greyed out, so in hard mode only the winner is left.',
     note: 'Hover or focus a footer cell to see the weighted terms. Weights are shown rounded to two decimals; the sum uses the unrounded ones.' });
+  const alphaHead = mix.table.querySelector('thead th.dt-lead');
+  if (alphaHead) alphaHead.setAttribute('data-build', '1');
+  mix.leadCells.forEach(r => r.forEach(td => td.setAttribute('data-build', '1')));
+  const footRow = mix.footer.label && mix.footer.label.closest('tr');
+  if (footRow) footRow.setAttribute('data-build', '3');
   const verdict = S.querySelector('#s06-verdict');
   const mread = S.querySelector('#s06-mread');
   /* worksheet: the footer, one line per value axis (α times each value row, added up) */
@@ -147,6 +191,14 @@
     alpha.forEach((a, j) => { alphaArr[j] = a; });
     mix.setAlpha(alphaArr);
     mix.setHighlightRow(soft ? -1 : jstar);
+    dot.rowEls.forEach((tr, j) => tr.classList.toggle('s06-present-winner', !soft && j === jstar + 1));
+    mix.cells.forEach((row, j) => row.forEach((td, c) => {
+      const weighted = td.textContent;
+      AT.clear(td);
+      td.classList.add('s06-mix-value');
+      td.appendChild(AT.h('span', { class: 's06-raw' }, AT.fmt(VIDEOS[j].v[c], 2)));
+      td.appendChild(AT.h('span', { class: 's06-weight', 'data-build': '2' }, weighted));
+    }));
     mixCalc.update(alphaArr);
     mread.textContent = 'Reading the footer: what comes back is ' + readMix(mix.sum) + '.';
     const kept = alpha.filter(a => a >= 0.02).length;
@@ -156,15 +208,16 @@
     } else {
       verdict.innerHTML = '<span class="modeword">Hard (argmax):</span> only ' + AT.escape(VIDEOS[jstar].title) + ' is returned (' + AT.texStr('j^* = ' + (jstar + 1)) + '). The footer equals ' + AT.texStr('\\vv{v_{' + (jstar + 1) + '}}') + '; every other row is discarded.';
     }
+    syncBuilds();
   }
   draw();
 
   /* "Try it" hint: the numbers are computed from the same scores, so the text always matches what the widget shows */
   (function(){
-    const GD = 1, BP = 0, TIE = 4.6;
+    const GD = 1, BP = 0, TIE = round1(DEF[BP]);
     const sTry = DEF.slice(); sTry[GD] = TIE;
     const aTry = AT.softmax(sTry);
-    S.querySelector('#s06-hint').innerHTML = 'Try it: drag ' + VIDEOS[GD].title + ' up to ' + AT.fmt(TIE, 1) + '. In soft mode the two now share the weight (about ' + AT.fmt(aTry[BP], 2) + ' / ' + AT.fmt(aTry[GD], 2) + ' at ' + AT.texStr('\\tau = 1') + '); hard retrieval still returns only ' + VIDEOS[BP].title + ' (' + AT.fmt(DEF[BP], 1) + ' is larger). Push ' + VIDEOS[GD].title + ' past ' + AT.fmt(DEF[BP], 1) + ' and hard retrieval snaps to ' + VIDEOS[GD].title + ' alone.';
+    S.querySelector('#s06-hint').innerHTML = 'Try it: drag ' + VIDEOS[GD].title + ' up to ' + AT.fmt(TIE, 1) + '. In soft mode the two now share the weight (about ' + AT.fmt(aTry[BP], 2) + ' / ' + AT.fmt(aTry[GD], 2) + ' at ' + AT.texStr('\\tau = 1') + '); hard retrieval still returns only the first top row, ' + VIDEOS[BP].title + '. Push ' + VIDEOS[GD].title + ' past ' + AT.fmt(DEF[BP], 1) + ' and hard retrieval snaps to ' + VIDEOS[GD].title + ' alone.';
   })();
 })();
 </script>

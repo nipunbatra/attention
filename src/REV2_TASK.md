@@ -35,3 +35,5 @@ Report: what changed in the toy (attention rows and top probabilities before/aft
    Keep the existing dotTable and value table below the mock UI as the "same thing as a spreadsheet" view. In s06, the same six cards appear with hard mode
    (one card highlighted, others greyed) and soft mode (each card's opacity and a small weight badge follow alpha; the mixed value row shown at the bottom).
    No external images, no fonts, everything inline; test at 1280 and 390 (cards stack on phones).
+
+7. Apply every item of CODEX_FEEDBACK_2.md (E1 to E7) in the same pass; E2 is a page-wide notation sweep, do it carefully and re-run mathdiff/qa.

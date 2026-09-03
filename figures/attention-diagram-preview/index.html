@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Attention, one operation at a time</title>
+  <link rel="stylesheet" href="preview.css">
+</head>
+<body>
+  <header class="toolbar">
+    <div class="identity"><span class="eyebrow">L2 / diagram study</span><h1>Attention, one operation at a time</h1></div>
+    <div class="actions"><button id="overview" type="button">All stages</button><button id="download" type="button">Download SVG</button></div>
+  </header>
+  <main>
+    <nav class="transport" aria-label="Diagram stages">
+      <button id="previous" type="button" aria-label="Previous stage">← Previous</button>
+      <div class="stage-info"><span id="counter"></span><span id="stage-name"></span></div>
+      <button id="play" type="button" aria-label="Play stages">Play</button>
+      <button id="next" class="primary" type="button" aria-label="Next stage">Next →</button>
+    </nav>
+    <div id="stage-tabs" class="tabs" role="tablist" aria-label="Choose a stage"></div>
+    <div id="live-status" class="sr-only" aria-live="polite"></div>
+    <div id="canvas" class="canvas" role="tabpanel" aria-label="Current diagram stage"></div>
+    <div id="storyboard" class="storyboard" hidden></div>
+    <footer><span>Arrow keys: previous / next · Space: play / pause</span><span>Standalone preview · original article unchanged</span></footer>
+    <p class="credit">Structure adapted from <a href="https://arxiv.org/html/1706.03762#S3.SS2.SSS1">Vaswani et al., Figure 2</a>. One unbatched attention head, output projection and residual addition; no normalization or feed-forward sublayer. Numbers are a frozen snapshot of the article’s hand-designed toy.</p>
+  </main>
+  <script src="toy-data.js"></script>
+  <script src="diagram.js"></script>
+  <script>
+  (() => {
+    const P = globalThis.ATTENTION_PREVIEW;
+    const canvas = document.querySelector('#canvas');
+    const tabHost = document.querySelector('#stage-tabs');
+    let stage = Math.max(0, Math.min(P.stages.length - 1, Number(location.hash.slice(1)) - 1 || 0));
+    let timer = null;
+    let grid = false;
+    const tabs = P.stages.map((s, index) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.setAttribute('role', 'tab'); b.id = `tab-${index}`;
+      b.textContent = `${String(index + 1).padStart(2, '0')} ${s.short}`;
+      b.addEventListener('click', () => { pause(); stage = index; grid = false; render(); });
+      tabHost.appendChild(b); return b;
+    });
+    function pause() { clearInterval(timer); timer = null; document.querySelector('#play').textContent = 'Play'; }
+    function render() {
+      const s = P.stages[stage];
+      canvas.innerHTML = P.render(stage);
+      canvas.setAttribute('aria-labelledby', `tab-${stage}`);
+      canvas.hidden = grid;
+      document.querySelector('#storyboard').hidden = !grid;
+      document.querySelector('#counter').textContent = `${String(stage + 1).padStart(2, '0')} / ${P.stages.length}`;
+      document.querySelector('#stage-name').textContent = s.title;
+      document.querySelector('#previous').disabled = stage === 0;
+      document.querySelector('#next').disabled = stage === P.stages.length - 1;
+      document.querySelector('#overview').textContent = grid ? 'Single stage' : 'All stages';
+      document.querySelector('#live-status').textContent = `Stage ${stage + 1}: ${s.title}. ${s.lines.join(' ')}`;
+      tabs.forEach((b, i) => { b.setAttribute('aria-selected', i === stage ? 'true' : 'false'); b.tabIndex = i === stage ? 0 : -1; });
+      history.replaceState(null, '', `#${stage + 1}`);
+    }
+    function move(delta) { stage = Math.max(0, Math.min(P.stages.length - 1, stage + delta)); grid = false; render(); }
+    document.querySelector('#previous').onclick = () => { pause(); move(-1); };
+    document.querySelector('#next').onclick = () => { pause(); move(1); };
+    document.querySelector('#play').onclick = () => {
+      if (timer) { pause(); return; }
+      if (stage === P.stages.length - 1) stage = 0;
+      grid = false; render(); document.querySelector('#play').textContent = 'Pause';
+      timer = setInterval(() => { if (stage === P.stages.length - 1) pause(); else move(1); }, 4200);
+    };
+    document.querySelector('#overview').onclick = () => {
+      pause(); grid = !grid;
+      const board = document.querySelector('#storyboard');
+      if (grid && !board.children.length) P.stages.forEach((s, i) => {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'thumbnail';
+        b.innerHTML = P.render(i, `thumb-${i}`); b.setAttribute('aria-label', `Open stage ${i + 1}: ${s.title}`);
+        b.onclick = () => { stage = i; grid = false; render(); canvas.scrollIntoView({ block: 'nearest' }); };
+        board.appendChild(b);
+      });
+      render();
+    };
+    document.querySelector('#download').onclick = () => {
+      const blob = new Blob([P.render(stage)], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob); const a = document.createElement('a');
+      a.href = url; a.download = `attention-stage-${String(stage + 1).padStart(2, '0')}-${P.stages[stage].id}.svg`;
+      a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    };
+    document.addEventListener('keydown', e => {
+      if (e.altKey || e.ctrlKey || e.metaKey) return;
+      if (e.key === 'ArrowRight') { e.preventDefault(); pause(); move(1); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); pause(); move(-1); }
+      if (e.code === 'Space' && e.target.tagName !== 'BUTTON') { e.preventDefault(); document.querySelector('#play').click(); }
+      if (e.key === 'Home') { pause(); stage = 0; render(); }
+      if (e.key === 'End') { pause(); stage = P.stages.length - 1; render(); }
+    });
+    render();
+  })();
+  </script>
+</body>
+</html>

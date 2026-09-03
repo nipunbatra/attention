@@ -1,0 +1,15 @@
+import fs from 'node:fs';
+import vm from 'node:vm';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+const here=path.dirname(fileURLToPath(import.meta.url));
+const sandbox={};vm.createContext(sandbox);
+for(const file of ['toy-data.js','diagram.js'])vm.runInContext(fs.readFileSync(path.join(here,file),'utf8'),sandbox,{filename:file});
+const P=sandbox.ATTENTION_PREVIEW;
+const dir=path.join(here,'stages');fs.mkdirSync(dir,{recursive:true});
+P.stages.forEach((s,i)=>fs.writeFileSync(path.join(dir,`${String(i+1).padStart(2,'0')}-${s.id}.svg`),P.render(i,`stage-${i}`)));
+const cols=3,rows=Math.ceil(P.stages.length/cols),w=640,h=384,gap=16,pad=24;
+let sheet=`<svg xmlns="http://www.w3.org/2000/svg" width="${cols*w+(cols-1)*gap+pad*2}" height="${rows*h+(rows-1)*gap+pad*2}" viewBox="0 0 ${cols*w+(cols-1)*gap+pad*2} ${rows*h+(rows-1)*gap+pad*2}"><rect width="100%" height="100%" fill="#e8eee8"/>`;
+P.stages.forEach((s,i)=>{const x=pad+(i%cols)*(w+gap),y=pad+Math.floor(i/cols)*(h+gap);let svg=P.render(i,`sheet-${i}`).replace('width="1600" height="960"',`x="${x}" y="${y}" width="${w}" height="${h}"`);sheet+=svg;});
+fs.writeFileSync(path.join(here,'all-stages.svg'),sheet+'</svg>');
+console.log(`Exported ${P.stages.length} SVG stages and all-stages.svg`);
