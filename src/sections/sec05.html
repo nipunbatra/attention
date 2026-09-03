@@ -42,6 +42,8 @@
 #s05 .vpart{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;margin:6px 0 0}
 #s05 .vpart .plab{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--oc);margin-right:2px}
 #s05 .vpart .tag{border:1px solid var(--oc);background:var(--ot);border-radius:999px;padding:1px 9px;font-size:13px;font-family:var(--font-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+#s05 .s05-build-strip,#s05 .s05-present-only{display:none}
+#s05 .s05-build-strip{grid-column:1/-1}
 @media(max-width:720px){#s05 .vgrid{grid-template-columns:minmax(0,1fr)}#s05 .searchbar .s05-qtext{white-space:normal}#s05 .search-meta{align-items:flex-start;flex-direction:column}}
 @media(prefers-reduced-motion:reduce){#s05 .vcard{transition:none}}
 /* present mode: the query and its reading on the left, the held table on the right, so a frame fits 1280x720 */
@@ -67,6 +69,8 @@ body.present #s05 .vcard{grid-template-columns:4em minmax(0,1fr) auto;gap:.25em 
 body.present #s05 .vpart{margin:.25em 0 0}
 body.present #s05 .vpart .plab{font-size:.55em}
 body.present #s05 .vpart .tag{font-size:.7em}
+body.present #s05 .s05-build-strip{display:flex}
+body.present #s05 .s05-present-only{display:flex}
 body.present #s05 .slogan{padding:.5em .8em;gap:.6em}
 body.present #s05 .slogan .big{font-size:1.6em}
 body.present #s05 .slogan .txt{font-size:.9em}
@@ -92,13 +96,11 @@ body.present #s05 .s05-two>*,
 body.present #s05 .s05-two>.s05-tab,
 body.present #s05 .s05-two>#s05-topline{grid-column:1;grid-row:auto}
 body.present #s05 .s05-two .qbox{margin:0 0 .3em;padding:.3em .65em}
-body.present #s05 .s05-two>#s05-qread,
-body.present #s05 .s05-two>.prose{display:none}
+body.present #s05 .s05-two>#s05-qread{display:none}
 body.present #s05 .s05-two #s05-dot .dt{width:100%}
 body.present #s05 .s05-two #s05-dot .dt td.dt-num,
-body.present #s05 .s05-two #s05-dot .dt th{font-size:18px;padding:.2em .5em}
-body.present #s05 .s05-two #s05-topline{font-size:18px;margin:.25em 0}
-body.present #s05 .s05-two+.grid-3{display:none}
+body.present #s05 .s05-two #s05-dot .dt th{font-size:.68em;padding:.2em .5em}
+body.present #s05 .s05-two #s05-topline{font-size:.68em;margin:.25em 0}
 </style>
 <header class="sec-head">
   <span class="sec-num">05</span>
@@ -112,10 +114,10 @@ body.present #s05 .s05-two+.grid-3{display:none}
   <p>Before attention touches a sentence, it helps to see the same three roles somewhere familiar. A video site has to answer two questions for every item: does it match the search, and what should it hand back? Those are different jobs, so each video keeps a key for matching and a value for returning. The first spreadsheet puts the query in the top row and the six keys beneath it, so you can compare them column by column; the score on the right is the dot product. Switch to the overfitting question and watch which row wins. The sentence to remember: keys decide whether to retrieve, values are what gets retrieved.</p>
 </div>
 
-<div class="frame" data-title="A search box">
+<div class="frame" data-title="A search box" data-autobuild="off">
   <script type="text/x-notes">
 What does the site compare, and what does it hand back?
-Read the query, then ask the room what the site must know about each video to answer. Each result already shows the returned value as a summary. Open the top result to inspect its matching key and score. Do not use the spreadsheet yet.
+Read the query, then ask the room what the site must know about each video to answer. Reveal the amber key strips on the first press. Reveal the teal value strips and summaries on the second press. Do not use the spreadsheet yet.
 
 Timing: two minutes.
   </script>
@@ -135,7 +137,7 @@ Timing: two minutes.
   </div>
 </div>
 
-<div class="frame" data-title="Score the keys">
+<div class="frame" data-title="Score the keys" data-autobuild="off">
   <script type="text/x-notes">
 Which column decides the winner here?
 Point at the query row and read it aloud: mostly gradient flow. Reveal the scores one row at a time and let the room predict each before it appears. Then the equation: a score is the dot product of the query row with a key row, nothing else. Switch to the overfitting question and repeat quickly.
@@ -145,6 +147,7 @@ Timing: four minutes.
   <div class="card s05-two">
     <h3 class="card-title">The search: the question becomes a <span class="sym sym-q">Query</span> row, and every video has a <span class="sym sym-k">Key</span> row</h3>
     <div class="qbox obj-q"><span class="qk">Query</span><span class="qt s05-qtext" id="s05-qtext"></span></div>
+    <div class="btn-row s05-present-only" id="s05-score-qbtns"></div>
     <p class="look" id="s05-qread"></p>
     <div class="prose" data-build="7">
       <p>Matching is a dot product between the query and each key. At this stage the site looks at nothing else about the item.</p>
@@ -163,7 +166,7 @@ Timing: four minutes.
   </div>
 </div>
 
-<div class="frame" data-title="The value is a different table">
+<div class="frame" data-title="The value is a different table" data-autobuild="off">
   <script type="text/x-notes">
 The winner was Backpropagation. What does the searcher actually receive?
 Compare the headers with the key table: three value columns, not four, plus the summary. The key never leaves the matching step. Then the callout, read twice.
@@ -250,6 +253,13 @@ Timing: two minutes.
     return AT.svg('svg', { class: 'vthumb', viewBox: '0 0 96 54', role: 'img', 'aria-label': title + ' thumbnail' }, ...parts);
   }
 
+  function buildStrip(kind, axes, values, build){
+    const strip = AT.h('div', { class: 'vpart s05-build-strip obj-' + kind, 'data-build': String(build) },
+      AT.h('span', { class: 'plab' }, kind === 'k' ? 'Key' : 'Value'));
+    values.forEach((x, c) => strip.appendChild(AT.h('span', { class: 'tag' }, axes[c] + ' ' + AT.fmt(x, 1))));
+    return strip;
+  }
+
   /* frame 1: the six results reorder by score; each open strip shows its key arithmetic and value */
   const vgrid = S.querySelector('#s05-vgrid');
   const cardEls = [], detailEls = [], bodyEls = [], rankEls = [];
@@ -259,8 +269,9 @@ Timing: two minutes.
     const detail = AT.h('details', { class: 'rank-details' }, AT.h('summary', {}, 'Why it ranks here'), body);
     const card = AT.h('article', { class: 'vcard', tabindex: '0' },
       thumb(V.kind, V.title),
-      AT.h('div', { class: 'vmain' }, AT.h('p', { class: 'vt' }, V.title), AT.h('p', { class: 'vsum' }, AT.h('span', { class: 'plab' }, 'Value: '), V.summary)),
-      rank, AT.h('span', { class: 'vdur' }, V.duration), detail);
+      AT.h('div', { class: 'vmain' }, AT.h('p', { class: 'vt' }, V.title), AT.h('p', { class: 'vsum', 'data-build': '2' }, AT.h('span', { class: 'plab' }, 'Value: '), V.summary)),
+      rank, AT.h('span', { class: 'vdur' }, V.duration),
+      buildStrip('k', KEY_AXES, V.k, 1), buildStrip('v', VAL_AXES, V.v, 2), detail);
     card.addEventListener('mouseenter', () => hl(j, true));
     card.addEventListener('mouseleave', () => hl(j, false));
     card.addEventListener('focusin', () => hl(j, true));
@@ -295,13 +306,17 @@ Timing: two minutes.
   }
 
   /* frame 2: query presets, the query box (one per frame, kept in step), the score table */
-  const qbtns = S.querySelector('#s05-qbtns');
-  const qBtnEls = QUERIES.map((Q, i) => {
+  const qBtnGroups = [S.querySelector('#s05-qbtns'), S.querySelector('#s05-score-qbtns')].map(host => QUERIES.map((Q, i) => {
     const b = AT.h('button', { type: 'button', class: 'btn', 'aria-pressed': i === qi ? 'true' : 'false' }, Q.short);
-    b.addEventListener('click', () => { qi = i; qBtnEls.forEach((x, j) => x.setAttribute('aria-pressed', j === i ? 'true' : 'false')); draw(); syncBuilds(); });
-    qbtns.appendChild(b);
+    b.addEventListener('click', () => {
+      qi = i;
+      qBtnGroups.forEach(group => group.forEach((x, j) => x.setAttribute('aria-pressed', j === i ? 'true' : 'false')));
+      draw();
+      syncBuilds();
+    });
+    host.appendChild(b);
     return b;
-  });
+  }));
   const qtexts = Array.from(S.querySelectorAll('.s05-qtext'));
   const dotHost = S.querySelector('#s05-dot');
   const topline = S.querySelector('#s05-topline');
@@ -353,6 +368,14 @@ Timing: two minutes.
     topline.innerHTML = 'Best match: ' + AT.escape(VIDEOS[top].title) + ' (' + AT.texStr('s_{' + (top + 1) + '} = ' + AT.fmt(dot.scores[top], 1)) + '). What comes back is its value ' + AT.texStr('\\vv{v_{' + (top + 1) + '}}') + ' and summary, in the next table, not its key ' + AT.texStr('\\vk{k_{' + (top + 1) + '}}') + '. Hover a row to find it in the other table.';
   }
   draw();
+  /* each classroom frame starts from the gradient query, even if a different query was selected earlier */
+  if (AT.present && AT.present.on) AT.present.on('frame', (st) => {
+    if (!st.frame || st.frame.id !== 's05' || qi === 0) return;
+    qi = 0;
+    qBtnGroups.forEach(group => group.forEach((x, j) => x.setAttribute('aria-pressed', j === 0 ? 'true' : 'false')));
+    draw();
+    syncBuilds();
+  });
 })();
 </script>
 </section>

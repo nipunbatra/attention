@@ -12,7 +12,7 @@
 #s04 .reveal-body{padding-left:18px}
 #s04 .calc-rl.calc-outlab{color:var(--ink-2)}
 /* present mode: controls on the left, the held table on the right, so a frame fits 1280x720 */
-body.present #s04 .s04-two{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:0 1.2em;align-items:start}
+body.present #s04 .s04-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:0 1.2em;align-items:start}
 body.present #s04 .s04-two>*{grid-column:1;min-width:0}
 body.present #s04 .s04-two>.card-title{grid-column:1/-1}
 body.present #s04 .s04-two>.s04-tab{grid-column:2;grid-row:2/span 6}
@@ -39,7 +39,7 @@ body.present #s04 .wrow input[type=range]{height:1.2em}
   <p>Attention is a way to choose weights, so this section first shows what weights do. A pooled vector $c_i$ is a weighted sum of earlier representations, and the spreadsheets below make that sum visible: one row per token, one column per coordinate, a weight column on the left and the sum in the footer. Drag the position slider and watch the mean give every included row the same weight. Then move the raw-weight sliders for <em>bank</em> and watch the footer drift towards whichever row you favour. The sentence to remember: the weights decide what a token collects, and someone has to choose them.</p>
 </div>
 
-<div class="frame" data-title="Average every earlier token">
+<div class="frame" data-title="Average every earlier token" data-autobuild="off">
   <script type="text/x-notes">
 Why not just average?
 Point at the weight column first: every included row gets the same 1/i, so river and the count the same for bank. Then reveal the pooled row. Drag the position slider back to 3 and forward to 7: the footer moves, but nothing in the table chooses.
@@ -63,7 +63,7 @@ Timing: three minutes.
   </div>
 </div>
 
-<div class="frame" data-title="Choose the weights yourself">
+<div class="frame" data-title="Choose the weights yourself" data-autobuild="off">
   <script type="text/x-notes">
 If you could set the weights by hand for bank, what would you choose and why?
 The table starts with equal weights, so it is the mean again. Reveal the sliders and press "Focus on river": the footer drifts towards row 6. Try "Only bank itself" too: the footer is just row 7.
@@ -92,7 +92,7 @@ Timing: three minutes.
 
 </div>
 
-<div class="frame" data-title="Where should the weights come from?">
+<div class="frame" data-title="Where should the weights come from?" data-autobuild="off">
   <script type="text/x-notes">
 Who chose those weights, and what did they know that the model does not?
 Let the room answer before the question callout: you chose them by hand because you know bank wants river. Then reveal the answer and read it slowly: the weights must come from the representations themselves. Do not say attention until the next section.

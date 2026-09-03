@@ -788,7 +788,7 @@ body.presenter>*:not(#at-presenter){display:none!important}
 
 <script>
 window.__TOY__ = {"d_model":5,"d_k":3,"d_v":2,"vocab":["the","fisherman","sat","beside","river","bank","and","watched","she","deposited","cheque","at","water","boats","fish","ducks","teller","clerk","queue","money"],"tok_emb":{"the":[0.0,0.0,0.0,2.4,0.0],"fisherman":[2.0,0.0,2.2,0.0,0.0],"sat":[0.4,0.0,0.6,1.8,0.0],"beside":[0.6,0.0,0.0,2.0,0.0],"river":[3.0,0.0,0.0,0.0,0.0],"bank":[0.7,0.7,0.0,0.7,0.0],"and":[0.0,0.0,0.0,2.2,0.0],"watched":[0.6,0.0,0.8,1.6,0.0],"she":[0.0,0.0,2.6,0.4,0.0],"deposited":[0.0,2.2,0.6,0.4,0.0],"cheque":[0.0,3.0,0.0,0.0,0.0],"at":[0.0,0.0,0.0,2.0,0.0],"water":[3.0,0.0,0.0,0.0,0.0],"boats":[2.4,0.0,0.4,0.0,0.0],"fish":[2.6,0.0,0.6,0.0,0.0],"ducks":[2.2,0.0,0.8,0.0,0.0],"teller":[0.0,2.6,1.8,0.0,0.0],"clerk":[0.0,2.4,1.8,0.0,0.0],"queue":[0.0,2.0,0.6,0.0,0.0],"money":[0.0,3.0,0.0,0.0,0.0]},"pos_emb":[[0.0,0.0,0.0,0.0,0.1],[0.0,0.0,0.0,0.0,0.2],[0.0,0.0,0.0,0.0,0.3],[0.0,0.0,0.0,0.0,0.4],[0.0,0.0,0.0,0.0,0.5],[0.0,0.0,0.0,0.0,0.6],[0.0,0.0,0.0,0.0,0.7],[0.0,0.0,0.0,0.0,0.8],[0.0,0.0,0.0,0.0,0.9],[0.0,0.0,0.0,0.0,1.0]],"W_Q":[[1.0,0.0,0.0],[0.0,1.0,0.0],[0.0,0.0,0.4],[0.7,0.7,0.0],[0.0,0.0,0.0]],"W_K":[[1.0,0.0,0.0],[0.0,1.0,0.0],[0.0,0.0,1.0],[0.0,0.0,0.0],[0.0,0.0,0.0]],"W_V":[[1.0,0.0],[0.0,1.0],[0.0,0.0],[0.0,0.0],[0.0,0.0]],"W_O":[[1.0,0.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0,0.0]],"W_vocab":[[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.5,1.2,1.0,0.7,0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.5,1.2,0.9,0.7],[0.0,0.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.2,0.0,0.0],[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]],"b_vocab":[-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"sentences":{"river":["The","fisherman","sat","beside","the","river","bank","and","watched","the"],"cheque":["She","deposited","the","cheque","at","the","bank","and","watched","the"]},"candidates":{"river":["water","boats","fish","ducks"],"cheque":["teller","clerk","queue","money"]},"axes":{"e":["water","finance","person","glue","position"],"qk":["setting: water?","setting: finance?","who?"],"v":["says: water scene","says: finance scene"],"short":{"e":["water","finance","person","glue","pos"],"qk":["water?","finance?","who?"],"v":["\u2192water","\u2192finance"]}},"notes":"Toy v2: single-head causal self-attention (d_model=5, d_k=3, d_v=2, vocab=20, T=10), designed BY HAND so that every coordinate has a name that the numbers agree with (see 'axes'). e axes: water, finance, person, glue. q and k axes: setting: water?, setting: finance?, who? (a query row reads 'what I ask for', a key row 'what I offer'). The fifth e axis carries position, but its zero rows in W_Q, W_K, W_V and W_vocab mean this toy does not use it. v has its own narrower axes: says: water scene and says: finance scene; W_O maps them back onto the e axes. Names are illustrative; the matrices are sparse and one-decimal so a student can read each row of W_Q as 'axis -> asks', W_K as 'axis -> offers', W_V as 'axis -> says', W_vocab as 'axis -> votes for these words'. Values are narrower on purpose because they are mixed and sent rather than compared. Glue words have zero key and value rows but ask for both settings, which is why the final 'the' reads river or cheque. bank is equal parts water and finance (0.7, 0.7) plus a little glue (0.7); its entries are kept below 1.0 so that bank does not mostly attend to itself (the self score q_bank.k_bank grows with the square of those entries). Position rises from 0.1 to 1.0 in its own coordinate, so the three 'the' tokens differ without changing meaning. Patterns produced (all checked on these rounded numbers by make_toy2.py and toy_ref.mjs): (1) in 'The fisherman sat beside the river bank', bank(7) attends river first, fisherman second, itself and the glue words little; (2) in 'She deposited the cheque at the bank', bank(7) attends cheque first, deposited second; (3) the final 'the'(10) reads mostly river/bank/fisherman or cheque/bank/deposited and the output head predicts water > boats > fish > ducks or teller > clerk > queue > money with every other word at most 0.04; (4) the baseline from e_the(10) alone is spread over the eight candidates and is identical for both sentences; (5) with the causal mask off, the early glue words leak attention onto river and bank. Nothing was optimised; a few magnitudes (bank, fisherman, the W_vocab weights) were adjusted by hand from AXES.md."};
-window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the Transformer","title":"Self-attention, from first principles","subtitle":"How a token reads from the tokens before it, and why that makes the next word easier to predict.","audience":"For students who know embeddings, dot products, softmax and next-token prediction, and who have not yet met attention.","minutes":60,"central":"\\ve{e} \\;\\rightarrow\\; \\vq{Q},\\vk{K},\\vv{V} \\;\\rightarrow\\; \\text{attention } (\\va{\\alpha}) \\;\\rightarrow\\; \\vd{\\Delta e} \\;\\rightarrow\\; \\vp{e + \\Delta e}","centralLabel":"The one chain to remember","legendTitle":"How to read this page: seven colours, seven objects","provenance":"Where the numbers come from: a tiny demonstration model with {{d_model}}-number representations and a {{vocab}}-word vocabulary. Each coordinate was given an illustrative name{{axes}}, and the weights were written by hand so that the names are true. The arithmetic is real, but the model is not a trained language model.","chain":[{"label":"Next-token prediction","section":"s01"},{"label":"A fixed context is unsatisfactory","section":"s03"},{"label":"We need dynamic retrieval","section":"s04"},{"label":"Information retrieval: <span class=\"sym sym-q\">Q<\/span> / <span class=\"sym sym-k\">K<\/span> / <span class=\"sym sym-v\">V<\/span>","section":"s05"},{"label":"Soft retrieval","section":"s06"},{"label":"Tokens retrieve information from tokens","section":"s07"},{"label":"<span class=\"sym sym-q\">Q<\/span>,<span class=\"sym sym-k\">K<\/span> decide where to read","section":"s08"},{"label":"<span class=\"sym sym-v\">V<\/span> determines what gets transmitted","section":"s08"},{"label":"<span class=\"sym sym-d\">\u0394e<\/span> = the retrieved contextual update","section":"s09"},{"label":"<span class=\"sym sym-ep\">e\u2032<\/span> = <span class=\"sym sym-e\">e<\/span> + <span class=\"sym sym-d\">\u0394e<\/span>","section":"s09"},{"label":"A better contextual representation","section":"s10"},{"label":"Next-token prediction, now with context","section":"s14"}],"sections":[{"id":"s01","title":"Predict the next token","lit":""},{"id":"s02","title":"Baseline: only the last token","lit":"e"},{"id":"s03","title":"Baseline: a fixed window of w tokens","lit":""},{"id":"s04","title":"Weighted pooling: where should weights come from?","lit":"a"},{"id":"s05","title":"A detour through search: Query, Key, Value","lit":"q k v"},{"id":"s06","title":"Hard retrieval \u2192 soft retrieval","lit":""},{"id":"s07","title":"Every token becomes a searchable record","lit":""},{"id":"s08","title":"Two jobs: choose weights, then mix values","lit":""},{"id":"s09","title":"The contextual update \u0394e","lit":"d ep"},{"id":"s10","title":"\u201cbank\u201d: same start, different context","lit":""},{"id":"s11","title":"What exactly are Q, K, and V?","lit":""},{"id":"s12","title":"Why divide by \u221ad_k?","lit":""},{"id":"s13","title":"Causal masking","lit":""},{"id":"s14","title":"From \u0394e to the next-token probabilities","lit":""},{"id":"s15","title":"Full walkthrough, one step at a time","lit":""},{"id":"s16","title":"The same thing in matrix form","lit":""},{"id":"s17","title":"Attention versus the alternatives","lit":""},{"id":"s18","title":"Pause and think","lit":""},{"id":"s19","title":"Three summaries","lit":""}],"objects":["e","q","k","v","a","d","ep"],"prev":{"label":"Part 1: From characters to next-token prediction","href":"part1.html","available":false},"next":{"label":"Part 3: Learning, heads, and the Transformer","href":"part3.html","available":false},"index":{"label":"All three parts","href":"index.html"},"notation":"part2","footer":"Notation: <span class=\"sym sym-e\">e<\/span> is always the current token representation, and <span class=\"sym sym-d\">\u0394e<\/span> is this page's pedagogical name for the attention output. The addition <span class=\"sym sym-e\">e<\/span>&thinsp;+&thinsp;<span class=\"sym sym-d\">\u0394e<\/span> is the standard residual connection."};
+window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the Transformer","title":"Self-attention, from first principles","subtitle":"How a token reads from the tokens before it, and why that makes the next word easier to predict.","audience":"For students who know embeddings, dot products, softmax and next-token prediction, and who have not yet met attention.","minutes":60,"central":"\\ve{e} \\;\\rightarrow\\; \\vq{Q},\\vk{K},\\vv{V} \\;\\rightarrow\\; \\text{attention } (\\va{\\alpha}) \\;\\rightarrow\\; \\vd{\\Delta e} \\;\\rightarrow\\; \\vp{e + \\Delta e}","centralLabel":"The one chain to remember","legendTitle":"How to read this page: seven colours, seven objects","provenance":"Where the numbers come from: a tiny demonstration model with {{d_model}}-number representations and a {{vocab}}-word vocabulary. Each coordinate was given an illustrative name{{axes}}, and the weights were written by hand so that the names are true. The arithmetic is real, but the model is not a trained language model.","chain":[{"label":"Next-token prediction","section":"s01"},{"label":"A fixed context is unsatisfactory","section":"s03"},{"label":"We need dynamic retrieval","section":"s04"},{"label":"Information retrieval: <span class=\"sym sym-q\">Q<\/span> / <span class=\"sym sym-k\">K<\/span> / <span class=\"sym sym-v\">V<\/span>","section":"s05"},{"label":"Soft retrieval","section":"s06"},{"label":"Tokens retrieve information from tokens","section":"s07"},{"label":"<span class=\"sym sym-q\">Q<\/span>,<span class=\"sym sym-k\">K<\/span> decide where to read","section":"s08"},{"label":"<span class=\"sym sym-v\">V<\/span> determines what gets transmitted","section":"s08"},{"label":"<span class=\"sym sym-d\">\u0394e<\/span> = the retrieved contextual update","section":"s09"},{"label":"<span class=\"sym sym-ep\">e\u2032<\/span> = <span class=\"sym sym-e\">e<\/span> + <span class=\"sym sym-d\">\u0394e<\/span>","section":"s09"},{"label":"A better contextual representation","section":"s10"},{"label":"Next-token prediction, now with context","section":"s14"}],"sections":[{"id":"s01","title":"Predict the next token","lit":""},{"id":"s02","title":"Baseline: only the last token","lit":"e"},{"id":"s03","title":"Baseline: a fixed window of w tokens","lit":""},{"id":"s04","title":"Weighted pooling: where should weights come from?","lit":"a"},{"id":"s05","title":"A detour through search: Query, Key, Value","lit":"q k v"},{"id":"s06","title":"Hard retrieval \u2192 soft retrieval","lit":""},{"id":"s07","title":"Every token becomes a searchable record","lit":""},{"id":"s08","title":"Two jobs: choose weights, then mix values","lit":""},{"id":"s09","title":"The contextual update \u0394e","lit":"d ep"},{"id":"s10","title":"\u201cbank\u201d: same start, different context","lit":""},{"id":"s11","title":"What exactly are Q, K, and V?","lit":""},{"id":"s12","title":"Why divide by \u221ad_k?","lit":""},{"id":"s13","title":"Causal masking","lit":""},{"id":"s14","title":"From \u0394e to the next-token probabilities","lit":""},{"id":"s15","title":"Full walkthrough, one step at a time","lit":""},{"id":"s16","title":"The same thing in matrix form","lit":""},{"id":"s17","title":"Attention versus the alternatives","lit":""},{"id":"s18","title":"Pause and think","lit":""},{"id":"s19","title":"Three summaries","lit":""}],"objects":["e","q","k","v","a","d","ep"],"prev":{"label":"Part 1: From characters to next-token prediction","href":"part1.html","available":false},"next":{"label":"Part 3: Learning, heads, and the Transformer","href":"part3.html","available":true},"index":{"label":"All three parts","href":"index.html"},"notation":"part2","footer":"Notation: <span class=\"sym sym-e\">e<\/span> is always the current token representation, and <span class=\"sym sym-d\">\u0394e<\/span> is this page's pedagogical name for the attention output. The addition <span class=\"sym sym-e\">e<\/span>&thinsp;+&thinsp;<span class=\"sym sym-d\">\u0394e<\/span> is the standard residual connection."};
 </script>
 <script>
 /* shared.js: the AT namespace, with toy-model math, KaTeX helpers, UI components, motif and flow.
@@ -3809,7 +3809,7 @@ body.present #s03 .netsk .lab-in-box{font-size:.75em}
 #s04 .reveal-body{padding-left:18px}
 #s04 .calc-rl.calc-outlab{color:var(--ink-2)}
 /* present mode: controls on the left, the held table on the right, so a frame fits 1280x720 */
-body.present #s04 .s04-two{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:0 1.2em;align-items:start}
+body.present #s04 .s04-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:0 1.2em;align-items:start}
 body.present #s04 .s04-two>*{grid-column:1;min-width:0}
 body.present #s04 .s04-two>.card-title{grid-column:1/-1}
 body.present #s04 .s04-two>.s04-tab{grid-column:2;grid-row:2/span 6}
@@ -3836,7 +3836,7 @@ body.present #s04 .wrow input[type=range]{height:1.2em}
   <p>Attention is a way to choose weights, so this section first shows what weights do. A pooled vector $c_i$ is a weighted sum of earlier representations, and the spreadsheets below make that sum visible: one row per token, one column per coordinate, a weight column on the left and the sum in the footer. Drag the position slider and watch the mean give every included row the same weight. Then move the raw-weight sliders for <em>bank</em> and watch the footer drift towards whichever row you favour. The sentence to remember: the weights decide what a token collects, and someone has to choose them.</p>
 </div>
 
-<div class="frame" data-title="Average every earlier token">
+<div class="frame" data-title="Average every earlier token" data-autobuild="off">
   <script type="text/x-notes">
 Why not just average?
 Point at the weight column first: every included row gets the same 1/i, so river and the count the same for bank. Then reveal the pooled row. Drag the position slider back to 3 and forward to 7: the footer moves, but nothing in the table chooses.
@@ -3860,7 +3860,7 @@ Timing: three minutes.
   </div>
 </div>
 
-<div class="frame" data-title="Choose the weights yourself">
+<div class="frame" data-title="Choose the weights yourself" data-autobuild="off">
   <script type="text/x-notes">
 If you could set the weights by hand for bank, what would you choose and why?
 The table starts with equal weights, so it is the mean again. Reveal the sliders and press "Focus on river": the footer drifts towards row 6. Try "Only bank itself" too: the footer is just row 7.
@@ -3889,7 +3889,7 @@ Timing: three minutes.
 
 </div>
 
-<div class="frame" data-title="Where should the weights come from?">
+<div class="frame" data-title="Where should the weights come from?" data-autobuild="off">
   <script type="text/x-notes">
 Who chose those weights, and what did they know that the model does not?
 Let the room answer before the question callout: you chose them by hand because you know bank wants river. Then reveal the answer and read it slowly: the weights must come from the representations themselves. Do not say attention until the next section.
@@ -4087,6 +4087,8 @@ Timing: two minutes.
 #s05 .vpart{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;margin:6px 0 0}
 #s05 .vpart .plab{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--oc);margin-right:2px}
 #s05 .vpart .tag{border:1px solid var(--oc);background:var(--ot);border-radius:999px;padding:1px 9px;font-size:13px;font-family:var(--font-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+#s05 .s05-build-strip,#s05 .s05-present-only{display:none}
+#s05 .s05-build-strip{grid-column:1/-1}
 @media(max-width:720px){#s05 .vgrid{grid-template-columns:minmax(0,1fr)}#s05 .searchbar .s05-qtext{white-space:normal}#s05 .search-meta{align-items:flex-start;flex-direction:column}}
 @media(prefers-reduced-motion:reduce){#s05 .vcard{transition:none}}
 /* present mode: the query and its reading on the left, the held table on the right, so a frame fits 1280x720 */
@@ -4112,6 +4114,8 @@ body.present #s05 .vcard{grid-template-columns:4em minmax(0,1fr) auto;gap:.25em 
 body.present #s05 .vpart{margin:.25em 0 0}
 body.present #s05 .vpart .plab{font-size:.55em}
 body.present #s05 .vpart .tag{font-size:.7em}
+body.present #s05 .s05-build-strip{display:flex}
+body.present #s05 .s05-present-only{display:flex}
 body.present #s05 .slogan{padding:.5em .8em;gap:.6em}
 body.present #s05 .slogan .big{font-size:1.6em}
 body.present #s05 .slogan .txt{font-size:.9em}
@@ -4137,13 +4141,11 @@ body.present #s05 .s05-two>*,
 body.present #s05 .s05-two>.s05-tab,
 body.present #s05 .s05-two>#s05-topline{grid-column:1;grid-row:auto}
 body.present #s05 .s05-two .qbox{margin:0 0 .3em;padding:.3em .65em}
-body.present #s05 .s05-two>#s05-qread,
-body.present #s05 .s05-two>.prose{display:none}
+body.present #s05 .s05-two>#s05-qread{display:none}
 body.present #s05 .s05-two #s05-dot .dt{width:100%}
 body.present #s05 .s05-two #s05-dot .dt td.dt-num,
-body.present #s05 .s05-two #s05-dot .dt th{font-size:18px;padding:.2em .5em}
-body.present #s05 .s05-two #s05-topline{font-size:18px;margin:.25em 0}
-body.present #s05 .s05-two+.grid-3{display:none}
+body.present #s05 .s05-two #s05-dot .dt th{font-size:.68em;padding:.2em .5em}
+body.present #s05 .s05-two #s05-topline{font-size:.68em;margin:.25em 0}
 </style>
 <header class="sec-head">
   <span class="sec-num">05</span>
@@ -4157,10 +4159,10 @@ body.present #s05 .s05-two+.grid-3{display:none}
   <p>Before attention touches a sentence, it helps to see the same three roles somewhere familiar. A video site has to answer two questions for every item: does it match the search, and what should it hand back? Those are different jobs, so each video keeps a key for matching and a value for returning. The first spreadsheet puts the query in the top row and the six keys beneath it, so you can compare them column by column; the score on the right is the dot product. Switch to the overfitting question and watch which row wins. The sentence to remember: keys decide whether to retrieve, values are what gets retrieved.</p>
 </div>
 
-<div class="frame" data-title="A search box">
+<div class="frame" data-title="A search box" data-autobuild="off">
   <script type="text/x-notes">
 What does the site compare, and what does it hand back?
-Read the query, then ask the room what the site must know about each video to answer. Each result already shows the returned value as a summary. Open the top result to inspect its matching key and score. Do not use the spreadsheet yet.
+Read the query, then ask the room what the site must know about each video to answer. Reveal the amber key strips on the first press. Reveal the teal value strips and summaries on the second press. Do not use the spreadsheet yet.
 
 Timing: two minutes.
   </script>
@@ -4180,7 +4182,7 @@ Timing: two minutes.
   </div>
 </div>
 
-<div class="frame" data-title="Score the keys">
+<div class="frame" data-title="Score the keys" data-autobuild="off">
   <script type="text/x-notes">
 Which column decides the winner here?
 Point at the query row and read it aloud: mostly gradient flow. Reveal the scores one row at a time and let the room predict each before it appears. Then the equation: a score is the dot product of the query row with a key row, nothing else. Switch to the overfitting question and repeat quickly.
@@ -4190,6 +4192,7 @@ Timing: four minutes.
   <div class="card s05-two">
     <h3 class="card-title">The search: the question becomes a <span class="sym sym-q">Query</span> row, and every video has a <span class="sym sym-k">Key</span> row</h3>
     <div class="qbox obj-q"><span class="qk">Query</span><span class="qt s05-qtext" id="s05-qtext"></span></div>
+    <div class="btn-row s05-present-only" id="s05-score-qbtns"></div>
     <p class="look" id="s05-qread"></p>
     <div class="prose" data-build="7">
       <p>Matching is a dot product between the query and each key. At this stage the site looks at nothing else about the item.</p>
@@ -4208,7 +4211,7 @@ Timing: four minutes.
   </div>
 </div>
 
-<div class="frame" data-title="The value is a different table">
+<div class="frame" data-title="The value is a different table" data-autobuild="off">
   <script type="text/x-notes">
 The winner was Backpropagation. What does the searcher actually receive?
 Compare the headers with the key table: three value columns, not four, plus the summary. The key never leaves the matching step. Then the callout, read twice.
@@ -4295,6 +4298,13 @@ Timing: two minutes.
     return AT.svg('svg', { class: 'vthumb', viewBox: '0 0 96 54', role: 'img', 'aria-label': title + ' thumbnail' }, ...parts);
   }
 
+  function buildStrip(kind, axes, values, build){
+    const strip = AT.h('div', { class: 'vpart s05-build-strip obj-' + kind, 'data-build': String(build) },
+      AT.h('span', { class: 'plab' }, kind === 'k' ? 'Key' : 'Value'));
+    values.forEach((x, c) => strip.appendChild(AT.h('span', { class: 'tag' }, axes[c] + ' ' + AT.fmt(x, 1))));
+    return strip;
+  }
+
   /* frame 1: the six results reorder by score; each open strip shows its key arithmetic and value */
   const vgrid = S.querySelector('#s05-vgrid');
   const cardEls = [], detailEls = [], bodyEls = [], rankEls = [];
@@ -4304,8 +4314,9 @@ Timing: two minutes.
     const detail = AT.h('details', { class: 'rank-details' }, AT.h('summary', {}, 'Why it ranks here'), body);
     const card = AT.h('article', { class: 'vcard', tabindex: '0' },
       thumb(V.kind, V.title),
-      AT.h('div', { class: 'vmain' }, AT.h('p', { class: 'vt' }, V.title), AT.h('p', { class: 'vsum' }, AT.h('span', { class: 'plab' }, 'Value: '), V.summary)),
-      rank, AT.h('span', { class: 'vdur' }, V.duration), detail);
+      AT.h('div', { class: 'vmain' }, AT.h('p', { class: 'vt' }, V.title), AT.h('p', { class: 'vsum', 'data-build': '2' }, AT.h('span', { class: 'plab' }, 'Value: '), V.summary)),
+      rank, AT.h('span', { class: 'vdur' }, V.duration),
+      buildStrip('k', KEY_AXES, V.k, 1), buildStrip('v', VAL_AXES, V.v, 2), detail);
     card.addEventListener('mouseenter', () => hl(j, true));
     card.addEventListener('mouseleave', () => hl(j, false));
     card.addEventListener('focusin', () => hl(j, true));
@@ -4340,13 +4351,17 @@ Timing: two minutes.
   }
 
   /* frame 2: query presets, the query box (one per frame, kept in step), the score table */
-  const qbtns = S.querySelector('#s05-qbtns');
-  const qBtnEls = QUERIES.map((Q, i) => {
+  const qBtnGroups = [S.querySelector('#s05-qbtns'), S.querySelector('#s05-score-qbtns')].map(host => QUERIES.map((Q, i) => {
     const b = AT.h('button', { type: 'button', class: 'btn', 'aria-pressed': i === qi ? 'true' : 'false' }, Q.short);
-    b.addEventListener('click', () => { qi = i; qBtnEls.forEach((x, j) => x.setAttribute('aria-pressed', j === i ? 'true' : 'false')); draw(); syncBuilds(); });
-    qbtns.appendChild(b);
+    b.addEventListener('click', () => {
+      qi = i;
+      qBtnGroups.forEach(group => group.forEach((x, j) => x.setAttribute('aria-pressed', j === i ? 'true' : 'false')));
+      draw();
+      syncBuilds();
+    });
+    host.appendChild(b);
     return b;
-  });
+  }));
   const qtexts = Array.from(S.querySelectorAll('.s05-qtext'));
   const dotHost = S.querySelector('#s05-dot');
   const topline = S.querySelector('#s05-topline');
@@ -4398,6 +4413,14 @@ Timing: two minutes.
     topline.innerHTML = 'Best match: ' + AT.escape(VIDEOS[top].title) + ' (' + AT.texStr('s_{' + (top + 1) + '} = ' + AT.fmt(dot.scores[top], 1)) + '). What comes back is its value ' + AT.texStr('\\vv{v_{' + (top + 1) + '}}') + ' and summary, in the next table, not its key ' + AT.texStr('\\vk{k_{' + (top + 1) + '}}') + '. Hover a row to find it in the other table.';
   }
   draw();
+  /* each classroom frame starts from the gradient query, even if a different query was selected earlier */
+  if (AT.present && AT.present.on) AT.present.on('frame', (st) => {
+    if (!st.frame || st.frame.id !== 's05' || qi === 0) return;
+    qi = 0;
+    qBtnGroups.forEach(group => group.forEach((x, j) => x.setAttribute('aria-pressed', j === 0 ? 'true' : 'false')));
+    draw();
+    syncBuilds();
+  });
 })();
 </script>
 </section>
