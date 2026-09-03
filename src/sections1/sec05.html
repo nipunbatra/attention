@@ -1,0 +1,38 @@
+<section id="s05" class="sec" data-title="Concatenate the embeddings" data-lit="">
+<style>
+#s05 .join-eq{font-size:1.1em;margin:14px 0}
+#s05 .p1{background:var(--t-e)!important}#s05 .p2{background:var(--t-neutral)!important}#s05 .p3{background:var(--paper)!important}
+#s05 .compare-label{font-family:var(--font-mono);font-weight:700;margin:0 0 8px}
+</style>
+<header class="sec-head"><span class="sec-num">05</span><div><p class="eyebrow">Why we are here: three embedding rows must become one fixed-width input without losing their positions.</p><h2>Concatenate the embeddings</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>The lookup returns one embedding row for each character in the window. The MLP expects one row, so we place the three embeddings side by side. This makes a six-number vector because the window has three positions and each embedding has two coordinates. Each segment keeps its position: the first two numbers always describe the oldest character, and the last two describe the newest. Reversing the characters therefore changes the concatenation. Adding the same rows would erase their order because addition is commutative. The trained values below come directly from the embedding table you just inspected.</p></div>
+<div class="frame" data-title="Three rows become one row" data-autobuild="off">
+  <script type="text/x-notes">Where does the second a live in the concatenated row?
+  Read the position labels across the headers. Each position owns a separate two-coordinate segment.</script>
+  <div class="card"><h3 class="card-title">Concatenate a a b</h3><div id="s05-rows"></div><div class="join-eq" id="s05-eq" data-build="1"></div><div id="s05-joined" data-build="2"></div></div>
+  <div class="callout callout-key" data-build="3">Concatenation keeps each position in its own part of the input row.</div>
+</div>
+<div class="frame" data-title="Order survives concatenation" data-autobuild="off">
+  <script type="text/x-notes">Which operation can distinguish a b i from i b a?
+  Compare the two concatenated rows, then reveal the equal sums.</script>
+  <div class="side-by-side"><div class="card"><p class="compare-label">a b i</p><div id="s05-abi"></div></div><div class="card" data-build="1"><p class="compare-label">i b a</p><div id="s05-iba"></div></div></div>
+  <div class="card" data-build="2"><h3 class="card-title">Adding loses the order</h3><div id="s05-sums"></div></div>
+  <div class="callout callout-note" data-build="3">The concatenations differ. The two sums are equal.</div>
+</div>
+<div class="companion after"><p>Keep in mind: concatenation preserves a fixed slot for every character position, while addition removes the order.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s05'),M=window.__TOY__,axes=M.axes.e;
+  const ids=cs=>cs.map(c=>AT.mlp.stoi[c]),rows=cs=>AT.mlp.embed(ids(cs)),joined=cs=>AT.mlp.concat(rows(cs));
+  AT.ui.table(rows(['a','a','b']),{axes:'e',rowLabels:['position 1 · a','position 2 · a','position 3 · b'],rowCls:'e',cornerLabel:'window',caption:'Read each row left to right, then place the rows side by side.',into:S.querySelector('#s05-rows')});
+  AT.tex(S.querySelector('#s05-eq'),'a_0=[\\ve{e_1},\\ve{e_2},\\ve{e_3}]\\in\\mathbb{R}^{1\\times '+(M.w*M.d_model)+'}',{display:true});
+  const cols=[];for(let pos=0;pos<M.w;pos++)axes.forEach(a=>cols.push({label:'p'+(pos+1)+' · '+a,cls:'e'}));
+  const jfig=AT.ui.table([joined(['a','a','b'])],{cols:cols,rowLabels:['$a_0$'],cornerLabel:'input',decimals:2,caption:'The headers name both the position and the embedding coordinate.',into:S.querySelector('#s05-joined')});
+  jfig.cells[0].forEach((cell,i)=>cell.classList.add('p'+(Math.floor(i/M.d_model)+1)));
+  function concatFig(chars,host){return AT.ui.table([joined(chars)],{cols:cols,rowLabels:['$a_0$'],cornerLabel:chars.join(' '),decimals:2,into:host});}
+  concatFig(['a','b','i'],S.querySelector('#s05-abi'));concatFig(['i','b','a'],S.querySelector('#s05-iba'));
+  const ra=rows(['a','b','i']),rb=rows(['i','b','a']),sum=x=>x.reduce((a,r)=>AT.add(a,r),AT.zeros(M.d_model));
+  AT.ui.table([sum(ra),sum(rb)],{axes:'e',rowLabels:['sum for a b i','sum for i b a'],rowCls:'e',cornerLabel:'order',decimals:2,caption:'The same three embedding rows give the same coordinate-wise sum.',into:S.querySelector('#s05-sums')});
+})();
+</script>
+</section>

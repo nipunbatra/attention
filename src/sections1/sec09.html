@@ -1,0 +1,43 @@
+<section id="s09" class="sec" data-title="Learn the embeddings and the weights" data-lit="">
+<style>
+#s09 .curve{width:100%;height:auto;display:block;min-height:220px}
+#s09 .curve text{font-family:var(--font-mono);font-size:13px;fill:var(--ink-2)}
+#s09 .curve .axis{stroke:var(--line);stroke-width:1.5}#s09 .curve .line{fill:none;stroke:var(--ink);stroke-width:3}
+#s09 .metric{font-family:var(--font-mono);font-size:.9em;color:var(--ink-2);margin:10px 0 0}
+</style>
+<header class="sec-head"><span class="sec-num">09</span><div><p class="eyebrow">Why we are here: the loss can improve future predictions only by changing the model's learned numbers.</p><h2>Learn the embeddings and the weights</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>The optimizer changes every parameter that helps produce the loss: the embedding table, both weight matrices, and both bias rows. For one context, only the embedding rows that were looked up receive a direct embedding gradient, while the shared MLP parameters receive gradients through the whole calculation. Repeating this over many shuffled training rows lowers the average loss. The curve records the training loss at regular checkpoints. The before and after bars use the same <em>aab</em> context with two saved parameter sets, so the change comes from training rather than from a different input.</p></div>
+<div class="frame" data-title="What the optimizer changes" data-autobuild="off">
+  <script type="text/x-notes">Which learned objects receive gradients from the loss?
+  Read each shape and parameter count. The embedding table and both MLP layers are trained together.</script>
+  <div class="card"><h3 class="card-title">All learned parameters</h3><div id="s09-params"></div></div>
+  <div class="callout callout-note" data-build="1">For aab → i, the context looks up a and b. The target i selects the loss; it does not add an i embedding to this input.</div>
+</div>
+<div class="frame" data-title="Loss during training" data-autobuild="off">
+  <script type="text/x-notes">What tells us that training improved the model?
+  Follow the curve from its initial loss to the final checkpoint, then compare train and held-out loss.</script>
+  <div class="card"><h3 class="card-title">Cross-entropy every 50 steps</h3><div id="s09-curve"></div><p class="metric" id="s09-metrics"></p></div>
+</div>
+<div class="frame" data-title="Before and after for aab" data-autobuild="off">
+  <script type="text/x-notes">Did training raise the probability of i after aab?
+  The two bars use the saved initial and final parameters with the same context.</script>
+  <div class="side-by-side"><div class="card"><h3 class="card-title">Before training</h3><div id="s09-before"></div></div><div class="card" data-build="1"><h3 class="card-title">After training</h3><div id="s09-after"></div></div></div>
+  <div class="callout callout-key" data-build="2">The same loss trains the embedding table and the MLP.</div>
+</div>
+<div class="companion after"><p>Keep in mind: saved checkpoints let us compare parameter changes with the prediction changes they produced.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s09'),M=window.__TOY__,V=M.vocab.length,D=M.d_model,H=M.d_h;
+  const specs=[['$\\ve{E}$',V+' × '+D,V*D],['$W_1$',(M.w*D)+' × '+H,M.w*D*H],['$b_1$','1 × '+H,H],['$W_2$',H+' × '+V,H*V],['$b_2$','1 × '+V,V]];
+  AT.ui.table(specs.map(r=>[r[1],r[2]]),{cols:['shape','parameter count'],rowLabels:specs.map(r=>r[0]),cornerLabel:'parameter',decimals:0,footer:{label:'total',values:['',specs.reduce((a,r)=>a+r[2],0)]},into:S.querySelector('#s09-params')});
+  const curve=M.training_curve,host=S.querySelector('#s09-curve'),W=800,Ht=260,pad={l:58,r:20,t:18,b:42},xs=curve.map(d=>d.step),ys=curve.map(d=>d.loss),xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys),x=v=>pad.l+(v-xmin)/(xmax-xmin)*(W-pad.l-pad.r),y=v=>pad.t+(ymax-v)/(ymax-ymin)*(Ht-pad.t-pad.b),svg=AT.svg('svg',{viewBox:'0 0 '+W+' '+Ht,class:'curve',role:'img','aria-label':'Training loss curve'});
+  svg.appendChild(AT.svg('line',{x1:pad.l,y1:pad.t,x2:pad.l,y2:Ht-pad.b,class:'axis'}));svg.appendChild(AT.svg('line',{x1:pad.l,y1:Ht-pad.b,x2:W-pad.r,y2:Ht-pad.b,class:'axis'}));
+  svg.appendChild(AT.svg('path',{d:curve.map((d,i)=>(i?'L':'M')+x(d.step).toFixed(1)+' '+y(d.loss).toFixed(1)).join(' '),class:'line'}));
+  svg.appendChild(AT.svg('text',{x:pad.l,y:Ht-12},String(xmin)));svg.appendChild(AT.svg('text',{x:W-pad.r,y:Ht-12,'text-anchor':'end'},String(xmax)+' steps'));svg.appendChild(AT.svg('text',{x:6,y:pad.t+5},AT.fmt(ymax,2)));svg.appendChild(AT.svg('text',{x:6,y:Ht-pad.b+5},AT.fmt(ymin,2)));host.appendChild(svg);
+  S.querySelector('#s09-metrics').textContent='train loss '+AT.fmt(M.metrics.train_loss,2)+' · held-out loss '+AT.fmt(M.metrics.held_out_loss,2)+' · fixed seed '+M.metrics.seed;
+  const ids=['a','a','b'],tid=AT.mlp.stoi.i,before=AT.mlp.forwardWith(M.before,ids).p[tid],after=AT.mlp.forward(ids).p[tid];
+  AT.ui.bars([{label:'i',p:before}],{highlight:'i',sorted:false,size:'lg',decimals:2,into:S.querySelector('#s09-before')});
+  AT.ui.bars([{label:'i',p:after}],{highlight:'i',sorted:false,size:'lg',decimals:2,into:S.querySelector('#s09-after')});
+})();
+</script>
+</section>

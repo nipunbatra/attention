@@ -1,0 +1,32 @@
+<section id="s02" class="sec" data-title="Generate a name" data-lit="">
+<style>
+#s02 .name-row{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+#s02 .name{font-family:var(--font-mono);padding:8px 12px;background:var(--t-neutral);border-radius:var(--radius-s)}
+#s02 .question{font-family:var(--font-mono);font-size:1.35em;margin:8px 0 18px}
+</style>
+<header class="sec-head"><span class="sec-num">02</span><div><p class="eyebrow">Why we are here: a small character vocabulary lets us inspect every input, score, and probability.</p><h2>Generate a name</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>We will train a network on Indian given names. Each letter is one token, and the boundary symbol marks both the empty space before a name and the stopping point after it. That gives the model a vocabulary of the boundary plus the alphabet. At each step it receives three character IDs and returns a probability for every possible next character. The displayed distribution for <em>aab</em> comes from the trained model bundled with this page. Its answer need not be certain. It only has to place useful probability on characters that often continue similar contexts.</p></div>
+<div class="frame" data-title="A small vocabulary" data-autobuild="off">
+  <script type="text/x-notes">What extra symbol does a name generator need besides the alphabet?
+  Read the boundary token first. It fills missing context on the left and tells generation when to stop.</script>
+  <div class="card"><h3 class="card-title">One boundary and the alphabet</h3><div id="s02-vocab"></div><div class="prose" data-build="1"><p>The vocabulary is $\mathcal V=\{\text{-},a,\ldots,z\}$, with one output class per token.</p></div></div>
+  <div class="card" data-build="2"><h3 class="card-title">Names in the source list</h3><div class="name-row"><span class="name">aabid</span><span class="name">aarav</span><span class="name">avni</span><span class="name">naveen</span><span class="name">vani</span><span class="name">zeel</span></div></div>
+</div>
+<div class="frame" data-title="One 27-class prediction" data-autobuild="off">
+  <script type="text/x-notes">Which character receives the most probability after aab?
+  Point out that the full distribution has one entry for every vocabulary token, including the boundary.</script>
+  <div class="card"><h3 class="card-title">The trained model answers</h3><p class="question">a a b → ?</p><div id="s02-bars" data-build="1"></div><p id="s02-read" class="muted small" data-build="2"></p></div>
+  <div class="callout callout-key" data-build="3">One forward pass is a classification problem with one class for every possible next character.</div>
+</div>
+<div class="companion after"><p>Keep in mind: the same boundary token pads the opening window and ends a generated name.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s02'),M=window.__TOY__,ids=['a','a','b'].map(c=>AT.mlp.stoi[c]);
+  AT.ui.chips(M.vocab,{active:[0],into:S.querySelector('#s02-vocab')});
+  const p=AT.mlp.forward(ids).p,top=AT.topk(p,6),rest=1-top.reduce((a,x)=>a+x.p,0);
+  AT.ui.bars(top.map(x=>({label:x.tok,p:x.p})).concat([{label:'other ×'+(p.length-top.length),p:rest}]),{highlight:'i',sorted:false,size:'lg',decimals:2,into:S.querySelector('#s02-bars')});
+  const pi=p[AT.mlp.stoi.i];
+  S.querySelector('#s02-read').textContent='The model assigns probability '+AT.fmt(pi,2)+' to i after aab. The bars use the same full-precision forward pass.';
+})();
+</script>
+</section>

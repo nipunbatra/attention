@@ -1,0 +1,26 @@
+<section id="s11" class="sec" data-title="Training and generation" data-lit="">
+<style>
+#s11 .flow-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+#s11 .flow-list li{padding:12px 14px;background:var(--paper);border-left:3px solid var(--line);border-radius:0 var(--radius-s) var(--radius-s) 0}
+</style>
+<header class="sec-head"><span class="sec-num">11</span><div><p class="eyebrow">Why we are here: training and generation run the same forward pass but obtain the next token in different ways.</p><h2>Training and generation</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>During training, the data provides both the context and the observed next character. The model produces probabilities, cross-entropy scores the observed target, and the optimizer changes the parameters. Many windows can be processed in a batch because every window has the same shape. During generation, the next character is unknown. The model produces the same kind of distribution, then a rule chooses one character. That choice is appended to the context and becomes part of the next input. There is no target and no parameter update. The difference lies around the shared forward pass, not inside it.</p></div>
+<div class="frame" data-title="Same model, different source of the next token" data-autobuild="off">
+  <script type="text/x-notes">Where does the next token come from during training and during generation?
+  Compare the first rows, then trace the shared model in both columns.</script>
+  <div class="side-by-side"><div class="card"><h3 class="card-title">Training</h3><ol class="flow-list"><li>Known context and target</li><li data-build="1">Forward pass</li><li data-build="2">Cross-entropy loss</li><li data-build="3">Update the parameters</li><li data-build="4">Many fixed windows in a batch</li></ol></div><div class="card"><h3 class="card-title">Generation</h3><ol class="flow-list"><li>Current context, target unknown</li><li data-build="1">Same forward pass</li><li data-build="2">Choose from the probabilities</li><li data-build="3">Append the choice</li><li data-build="4">Loop with the new window</li></ol></div></div>
+  <div class="callout callout-key" data-build="5">Training uses the observed next token. Generation chooses one.</div>
+</div>
+<div class="frame" data-title="Many windows or one growing output" data-autobuild="off">
+  <script type="text/x-notes">Why can training prepare many rows before the model runs?
+  Targets are already known in the data. Generation must wait for each sampled character before making the next input.</script>
+  <div class="card"><div id="s11-table"></div></div>
+</div>
+<div class="companion after"><p>Keep in mind: training changes the model from observed targets, while generation holds the model fixed and extends the sequence.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s11');
+  AT.ui.table([['given by data','known','yes','many windows'],['chosen by model','unknown','no','one step at a time']],{cols:['next token','target at forward pass','parameter update','typical execution'],rowLabels:['training','generation'],cornerLabel:'mode',caption:'Both rows use the same embedding lookup, concatenation, MLP, and softmax.',into:S.querySelector('#s11-table')});
+})();
+</script>
+</section>

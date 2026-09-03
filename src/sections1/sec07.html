@@ -1,0 +1,36 @@
+<section id="s07" class="sec" data-title="27 scores to probabilities" data-lit="">
+<style>
+#s07 .soft-note{font-size:.9em;color:var(--ink-2);margin:10px 0 0}
+</style>
+<header class="sec-head"><span class="sec-num">07</span><div><p class="eyebrow">Why we are here: logits are unrestricted scores, so we need a normalized distribution over the vocabulary.</p><h2>27 scores to probabilities</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>The output layer produces one logit for each vocabulary token. A logit can be positive or negative and does not yet act like a probability. Softmax exponentiates the scores and divides each result by their shared sum. Subtracting the largest logit before exponentiating keeps the calculation stable without changing the probabilities. The worksheet shows that stable form for <em>aab</em>. It keeps the five largest outcomes visible and groups the rest, while the denominator still uses every vocabulary entry. The final probabilities are positive and sum to one, so the model can sample from them.</p></div>
+<div class="frame" data-title="Read the logits" data-autobuild="off">
+  <script type="text/x-notes">Can we read a logit as a probability?
+  No. First inspect the five largest scores. The grouped row has no single logit because it contains several outputs.</script>
+  <div class="card"><h3 class="card-title">Top logits for a a b</h3><div id="s07-logits"></div></div>
+  <div class="prose" data-build="1"><p>For every token $j$, $$p_j=\frac{\exp(z_j)}{\sum_{r\in\mathcal V}\exp(z_r)}.$$</p></div>
+</div>
+<div class="frame" data-title="Softmax worksheet" data-autobuild="off">
+  <script type="text/x-notes">Where do the other vocabulary entries affect the probability of i?
+  They enter through the shared denominator. Point from the footer back to every row.</script>
+  <div class="card"><h3 class="card-title">Exponentiate, sum, divide</h3><div id="s07-softmax"></div><p class="soft-note">Displayed values are rounded. The probabilities use all full-precision logits.</p></div>
+</div>
+<div class="frame" data-title="A distribution over characters" data-autobuild="off">
+  <script type="text/x-notes">Which next characters remain possible after aab?
+  Read the target i, then compare it with the other high-probability outcomes.</script>
+  <div class="card"><h3 class="card-title">The same probabilities as bars</h3><div id="s07-bars"></div></div>
+  <div class="callout callout-key" data-build="1">Softmax turns all vocabulary scores into positive probabilities that sum to one.</div>
+</div>
+<div class="companion after"><p>Keep in mind: every vocabulary logit affects every probability through one shared softmax denominator.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s07'),M=window.__TOY__,F=AT.mlp.forward(['a','a','b']),top=AT.topk(F.p,5),idx=top.map(x=>x.i),mx=Math.max.apply(null,F.z),ex=F.z.map(z=>Math.exp(z-mx)),den=AT.sum(ex),rest=AT.range(F.p.length).filter(i=>idx.indexOf(i)<0);
+  AT.ui.table(idx.map(i=>[F.z[i],F.p[i]]).concat([['',rest.reduce((a,i)=>a+F.p[i],0)]]),{cols:['logit','probability'],rowLabels:idx.map(i=>M.vocab[i]).concat(['other ×'+rest.length]),cornerLabel:'token',highlightRow:idx.indexOf(AT.mlp.stoi.i),decimals:2,caption:'The other row groups the vocabulary entries outside the top five.',into:S.querySelector('#s07-logits')});
+  const shown=idx.concat(rest.length?[rest[0]]:[]),rows=idx.map(i=>[F.z[i],ex[i],ex[i]/den]);
+  rows.push(['',rest.reduce((a,i)=>a+ex[i],0),rest.reduce((a,i)=>a+F.p[i],0)]);
+  AT.ui.table(rows,{cols:['logit','$\\exp(z-z_{\\max})$','divide by denominator'],rowLabels:idx.map(i=>M.vocab[i]).concat(['other ×'+rest.length]),cornerLabel:'token',highlightRow:idx.indexOf(AT.mlp.stoi.i),decimals:2,footer:{label:'denominator',values:['',den,'1.00']},caption:'The grouped row contains the remaining exponentials and probabilities.',into:S.querySelector('#s07-softmax')});
+  const items=top.map(x=>({label:x.tok,p:x.p})).concat([{label:'other ×'+rest.length,p:rest.reduce((a,i)=>a+F.p[i],0)}]);
+  AT.ui.bars(items,{highlight:'i',sorted:false,size:'lg',decimals:2,into:S.querySelector('#s07-bars')});
+})();
+</script>
+</section>

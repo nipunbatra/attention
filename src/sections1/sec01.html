@@ -1,0 +1,43 @@
+<section id="s01" class="sec" data-title="What can a network do with text?" data-lit="">
+<style>
+#s01 .task-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#s01 .task{padding:14px 16px;border-left:3px solid var(--line);background:var(--paper);border-radius:0 var(--radius-s) var(--radius-s) 0}
+#s01 .task b{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);display:block}
+#s01 .prompt{font-size:1.18em;margin:0 0 14px}
+#s01 .answers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:16px}
+#s01 .answer{padding:12px;background:var(--t-neutral);border-radius:var(--radius-s)}
+@media(max-width:640px){#s01 .task-grid,#s01 .answers{grid-template-columns:1fr}}
+</style>
+<header class="sec-head"><span class="sec-num">01</span><div><p class="eyebrow">Why we are here: language tasks look different, yet each asks a network to turn text into useful predictions.</p><h2>What can a network do with text?</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>A network can label a whole passage, label each token, translate between languages, shorten a notice, answer from a context, or continue a prompt. The output shape changes across these tasks. Generation looks especially open because several continuations can fit the same prefix. We can still give the network a precise job: assign one probability to every possible next token. Choosing or sampling one token turns that distribution into a continuation. This next-token view gives us a small problem that we can build from embeddings, an MLP, softmax, and cross-entropy.</p></div>
+<div class="frame" data-title="Text can ask for different outputs" data-autobuild="off">
+  <script type="text/x-notes">What changes across these six language tasks?
+  Reveal one row at a time. Ask whether the output is one label, one label per token, or another sequence.</script>
+  <div class="card"><h3 class="card-title">Six familiar tasks</h3><div class="task-grid">
+    <div class="task"><b>Classify</b>Email → spam?</div>
+    <div class="task" data-build="1"><b>Understand</b>Review → sentiment</div>
+    <div class="task" data-build="2"><b>Find entities</b>Sentence → a label for each token</div>
+    <div class="task" data-build="3"><b>Translate</b>English → Hindi</div>
+    <div class="task" data-build="4"><b>Summarize</b>Article → short summary</div>
+    <div class="task" data-build="5"><b>Answer</b>Context + question → answer</div>
+  </div></div>
+  <div class="callout callout-note" data-build="6">Text can produce one label, a row of labels, or a new sequence.</div>
+</div>
+<div class="frame" data-title="Generation is classification at one step" data-autobuild="off">
+  <script type="text/x-notes">If four continuations make sense, what should the network output?
+  Collect suggestions before revealing the examples. Then show that one distribution can leave room for several answers.</script>
+  <div class="card"><p class="prompt">The student opened the laptop and …</p><div class="answers">
+    <div class="answer" data-build="1">started coding.</div><div class="answer" data-build="2">checked email.</div>
+    <div class="answer" data-build="3">joined class.</div><div class="answer" data-build="4">saw a warning.</div>
+  </div><div id="s01-bars" data-build="5"></div><p class="muted small" data-build="5">Illustrative probabilities for the first token of a continuation.</p></div>
+  <div class="callout callout-key" data-build="6">Generation is classification over the next token, repeated one step at a time.</div>
+</div>
+<div class="companion after"><p>Keep in mind: a probability distribution can represent several reasonable continuations without choosing one in advance.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s01');
+  const illustrative=[['started',.36],['checked',.27],['joined',.21],['closed',.10],['other',.06]].map(x=>({label:x[0],p:x[1]}));
+  AT.ui.bars(illustrative,{sorted:false,size:'lg',max:1,decimals:2,into:S.querySelector('#s01-bars')});
+})();
+</script>
+</section>

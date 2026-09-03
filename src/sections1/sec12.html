@@ -1,0 +1,39 @@
+<section id="s12" class="sec" data-title="What should a token be?" data-lit="">
+<style>
+#s12 .unit{padding:18px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--paper)}
+#s12 textarea{width:100%;min-height:82px;padding:12px;border:1px solid var(--line);border-radius:var(--radius-s);font:inherit;resize:vertical;background:var(--card);color:var(--ink)}
+#s12 .tok-row{padding:12px 0;border-bottom:1px solid var(--line)}#s12 .tok-row:last-child{border-bottom:0}
+#s12 .tok-meta{font-family:var(--font-mono);font-size:.82em;color:var(--ink-2);margin:6px 0 0}
+</style>
+<header class="sec-head"><span class="sec-num">12</span><div><p class="eyebrow">Why we are here: the next-token objective stays the same even when one token stops meaning one character.</p><h2>What should a token be?</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>Characters give a small vocabulary and can represent unfamiliar strings, but ordinary sentences become long. Whole words shorten the sequence and are easy to read, yet the vocabulary grows quickly and unseen words collapse to an unknown token. Subwords sit between these choices by reusing common pieces inside frequent and rare words. The widget applies three simple tokenizers to the same text and reports the resulting sequence length and the number of distinct displayed tokens. The subword merges are illustrative rather than a trained tokenizer. Later, attention will compare token pairs, so its cost depends strongly on the sequence length $T$.</p></div>
+<div class="frame" data-title="Three token sizes" data-autobuild="off">
+  <script type="text/x-notes">What becomes larger when tokens become smaller?
+  Compare vocabulary coverage with sequence length. Keep the next-token objective fixed.</script>
+  <div class="card"><div class="grid-3"><div class="unit"><h3 class="card-title">Character</h3><p>One letter or mark per token</p></div><div class="unit" data-build="1"><h3 class="card-title">Word</h3><p>One space-separated word per token</p></div><div class="unit" data-build="2"><h3 class="card-title">Subword</h3><p>Reusable pieces inside words</p></div></div></div>
+</div>
+<div class="frame" data-title="Tokenize one string three ways" data-autobuild="off">
+  <script type="text/x-notes">Which tokenizer produces the longest sequence for this text?
+  Edit the text and compare T. The vocabulary count here means distinct tokens in the displayed sample.</script>
+  <div class="card"><h3 class="card-title">Type a short sentence</h3><label for="s12-input" class="muted small">Text to tokenize</label><textarea id="s12-input">deep learning is amazing</textarea><div id="s12-output"></div></div>
+</div>
+<div class="frame" data-title="Coverage and sequence length" data-autobuild="off">
+  <script type="text/x-notes">Why can a word tokenizer lose the difference between unfamiliar words?
+  Reveal the trade-off table, then show three distinct strings mapping to the same unknown token.</script>
+  <div class="card"><h3 class="card-title">The trade-off</h3><div id="s12-trade"></div></div>
+  <div class="card" data-build="1"><h3 class="card-title">An unknown-word demonstration</h3><div id="s12-unk"></div></div>
+  <div class="callout callout-note" data-build="2">Attention cost will depend on $T$, the number of tokens in the sequence.</div>
+</div>
+<div class="companion after"><p>Keep in mind: tokenization changes both the vocabulary and the sequence length before the model sees any IDs.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s12'),input=S.querySelector('#s12-input'),out=S.querySelector('#s12-output');
+  function row(label,tokens){const box=AT.h('div',{class:'tok-row'},AT.h('h3',{class:'card-title'},label));AT.ui.chips(tokens,{into:box});box.appendChild(AT.h('p',{class:'tok-meta'},'T = '+tokens.length+' · observed |V| = '+new Set(tokens).size));return box;}
+  function draw(){AT.clear(out);const text=input.value;out.appendChild(row('Characters',AT.mlp.tokenizeChars(text)));out.appendChild(row('Words',AT.mlp.tokenizeWords(text)));out.appendChild(row('Illustrative subwords',AT.mlp.tokenizeSubwords(text)));}
+  input.addEventListener('input',draw);draw();
+  AT.ui.table([['small','long','strong coverage'],['moderate','moderate','reuses pieces'],['large','short','unseen words need handling']],{cols:['vocabulary','sequence T','unseen text'],rowLabels:['character','subword','word'],cornerLabel:'unit',into:S.querySelector('#s12-trade')});
+  const unknown=['hyperhappiness','electrojoy','nanobotany'],mapped=AT.mlp.tokenizeWords(unknown.join(' '),{unknown:true});
+  AT.ui.table(unknown.map((word,i)=>[mapped[i]]),{cols:['word-token output'],rowLabels:unknown,cornerLabel:'test string',caption:'This small illustrative word vocabulary maps each unseen word to the same token.',into:S.querySelector('#s12-unk')});
+})();
+</script>
+</section>

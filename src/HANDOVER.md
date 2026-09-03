@@ -60,8 +60,10 @@ s13 background staircase, present-mode runtime, multi-part shell, series index, 
 Present-mode frames exist for s01 to s05 (s05 needs re-checking after the mock UI); s06 to s19 fall back to automatic one-card-per-build frames.
 ALSO DONE (Codex CLI jobs, 2026-09-03): presentation frames for s01 to s06 (14 frames, 58 builds; s07 to s19 still auto-framed) and the whole of Part 3
 (part3.html: 19 sections, 47 frames, toy3.json training block checked by finite differences, part3.js). The series index links Parts 2 and 3.
-NOT done, in priority order:
-1. Part 1 per GUIDE1.md (train the aabid MLP with train_names.py on names.csv, part1.js, sections1/), then update index.html cards and part2.json prev/next.
+ALSO DONE: Part 1 (part1.html: 16 sections, aabid name model trained by train_names.py on names.csv, part1.js generator). All three parts are live.
+Remaining ideas, none blocking:
+0. (nothing required) Optional next steps: curate presentation frames for Part 2 s07 to s19 and review Parts 1 and 3 frames in class; a second review round with Codex on Parts 1 and 3.
+1. (was) Part 1 per GUIDE1.md (train the aabid MLP with train_names.py on names.csv, part1.js, sections1/), then update index.html cards and part2.json prev/next.
 Known small issues: the roadmap in the hero lists s01 to s14 only; sections3_seed/sec17.html clips at 390px.
 Codex note: the Codex sandbox cannot launch the bundled headless Chromium (Mach port error); it verifies in the system browser instead. Run qa.mjs and
 sweep.mjs from a normal shell before pushing.

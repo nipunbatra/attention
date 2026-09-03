@@ -1,0 +1,38 @@
+<section id="s13" class="sec" data-title="Same model, word tokens" data-lit="">
+<style>
+#s13 .pipeline{font-family:var(--font-mono);font-size:.9em;color:var(--ink-2);margin:10px 0 0}
+#s13 .pair{font-family:var(--font-mono);font-size:1.15em;padding:12px;background:var(--paper);border-radius:var(--radius-s)}
+</style>
+<header class="sec-head"><span class="sec-num">13</span><div><p class="eyebrow">Why we are here: replacing characters with words changes the vocabulary and data, but it does not change the prediction pipeline.</p><h2>Same model, word tokens</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>A word-level model still turns token IDs into embeddings, combines a context, produces logits, and applies softmax. Only the tokenizer, vocabulary, and training text have changed. A prefix can support several reasonable continuations, so the output remains a distribution rather than a single rule. Training supplies one observed target at every position. The chain rule then expresses the probability of a complete sequence as a product of conditional next-token probabilities. This identity does not prescribe the network that represents the prefix. It tells us which probabilities the model must provide as the visible context grows.</p></div>
+<div class="frame" data-title="Change the tokens, keep the pipeline" data-autobuild="off">
+  <script type="text/x-notes">What changes when the tokens are whole words?
+  The vocabulary and data change. Lookup, context combination, MLP, and softmax remain the same kinds of steps.</script>
+  <div class="side-by-side"><div class="card"><h3 class="card-title">Character model</h3><p class="pair">a a b → i</p><p class="pipeline">embedding → concatenate → MLP → softmax</p></div><div class="card" data-build="1"><h3 class="card-title">Word model</h3><p class="pair">The cat sat on → the</p><p class="pipeline">embedding → concatenate → MLP → softmax</p></div></div>
+  <div class="callout callout-key" data-build="2">We changed the vocabulary, tokenizer, and training data.</div>
+</div>
+<div class="frame" data-title="Several words can fit" data-autobuild="off">
+  <script type="text/x-notes">Which words could reasonably follow this prefix?
+  The bars are illustrative. Their purpose is to show that one observed target does not make all alternatives impossible.</script>
+  <div class="card"><h3 class="card-title">The cat sat on the ___</h3><div id="s13-bars"></div><p class="muted small">Illustrative word probabilities.</p></div>
+</div>
+<div class="frame" data-title="The chain rule" data-autobuild="off">
+  <script type="text/x-notes">How does a sequence probability break into next-token probabilities?
+  Advance through the prefix one word at a time. Each factor conditions on everything shown before it.</script>
+  <div class="card"><h3 class="card-title">deep learning is fun</h3><div id="s13-chain"></div></div>
+</div>
+<div class="companion after"><p>Keep in mind: changing token size leaves the next-token objective and the conditional-probability chain intact.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s13');
+  AT.ui.bars([['mat',.43],['floor',.25],['chair',.15],['sofa',.10],['other',.07]].map(x=>({label:x[0],p:x[1]})),{sorted:false,size:'lg',decimals:2,into:S.querySelector('#s13-bars')});
+  const steps=[
+    {title:'First word',tex:'p(\\text{deep})',note:'The opening boundary supplies the starting context.'},
+    {title:'Second word',tex:'p(\\text{deep})\\,p(\\text{learning}\\mid\\text{deep})'},
+    {title:'Third word',tex:'p(\\text{deep})\\,p(\\text{learning}\\mid\\text{deep})\\,p(\\text{is}\\mid\\text{deep learning})'},
+    {title:'Fourth word',tex:'p(\\text{deep})\\,p(\\text{learning}\\mid\\text{deep})\\,p(\\text{is}\\mid\\text{deep learning})\\,p(\\text{fun}\\mid\\text{deep learning is})'}
+  ];
+  AT.ui.stepper({big:true,steps:steps,into:S.querySelector('#s13-chain')});
+})();
+</script>
+</section>

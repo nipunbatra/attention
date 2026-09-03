@@ -1,0 +1,28 @@
+<section id="s16" class="sec" data-title="Three summaries" data-lit="">
+<style>
+#s16 .summary{padding:20px;border-left:4px solid var(--line);background:var(--card);border-radius:0 var(--radius-s) var(--radius-s) 0}
+#s16 .summary p{margin:6px 0 0}#s16 .summary .card-title{margin:0}
+#s16 .next{font-size:1.1em;margin-top:18px}
+</style>
+<header class="sec-head"><span class="sec-num">16</span><div><p class="eyebrow">Why we are here: one story should now connect token IDs, training loss, generated names, and the fixed-context limit.</p><h2>Three summaries</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>Part 1 built a complete character language model. Three token IDs select embedding rows, concatenation preserves their positions, an MLP produces one logit per vocabulary token, and softmax turns those logits into probabilities. Cross-entropy compares the distribution with the observed next character and trains every learned table and matrix. During generation, the same model samples a character, appends it, shifts the window, and repeats. The method works, but the window width is fixed inside $W_1$. Part 2 keeps the next-token objective and changes how a token gathers information from its preceding context.</p></div>
+<div class="frame" data-title="Intuitive, operational, mathematical" data-autobuild="off">
+  <script type="text/x-notes">Which summary would you use to explain the model to someone else?
+  Reveal the operational and mathematical versions after students give the intuitive account.</script>
+  <div class="stack"><div class="summary"><h3 class="card-title">Intuitive</h3><p>Use the last few characters to guess what character tends to come next.</p></div><div class="summary" data-build="1"><h3 class="card-title">Operational</h3><p>Look up embeddings, concatenate the window, run the MLP, apply softmax, then sample or score the observed target.</p></div><div class="summary" data-build="2"><h3 class="card-title">Mathematical</h3><p>$a_0=[\ve{E}[t_1],\ldots,\ve{E}[t_w]]$, $a_1=\tanh(a_0W_1+b_1)$, $p=\operatorname{softmax}(a_1W_2+b_2)$.</p></div></div>
+  <div class="callout callout-key" data-build="3">The next-token objective stays. The representation of context must change.</div>
+  <p class="next" data-build="4"><a class="btn btn-primary" href="attention.html">Next: Part 2, Self-attention</a></p>
+</div>
+<div class="frame" data-title="The Part 1 notation" data-autobuild="off">
+  <script type="text/x-notes">Which symbol names the learned row for one character?
+  Use the notation card as a final reference, then point forward to the context question.</script>
+  <div id="s16-notation"></div>
+</div>
+<div class="companion after"><p>Keep in mind: attention will replace the fixed concatenation, while embeddings, logits, softmax, loss, and generation remain.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s16');
+  AT.ui.notationCard({part:'part1',groups:['mlp','sizes','axes'],into:S.querySelector('#s16-notation')});
+})();
+</script>
+</section>

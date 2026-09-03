@@ -1,0 +1,38 @@
+<section id="s08" class="sec" data-title="The loss" data-lit="">
+<style>
+#s08 .loss-live{font-family:var(--font-mono);font-size:1.1em;padding:14px;background:var(--paper);border-radius:var(--radius-s);margin-top:12px}
+#s08 .compare{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+#s08 .case{padding:18px;border:1px solid var(--line);border-radius:var(--radius-s)}
+@media(max-width:700px){#s08 .compare{grid-template-columns:1fr}}
+</style>
+<header class="sec-head"><span class="sec-num">08</span><div><p class="eyebrow">Why we are here: training needs one number that says how well the distribution scored the observed target.</p><h2>The loss</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>Each training row supplies a known next character. Cross-entropy keeps the probability assigned to that target and applies the negative logarithm. A confident correct prediction has a small loss. A confident wrong prediction gives the observed target very little probability and receives a large loss. The comparison below uses two simple probabilities from the lecture, while the interactive worksheet reads all six <em>aabid</em> rows from the trained model. Choosing another row changes its context, target probability, and loss together. Training later averages this signal across many rows and changes every parameter that contributed to the prediction.</p></div>
+<div class="frame" data-title="One target probability" data-autobuild="off">
+  <script type="text/x-notes">Which probability does cross-entropy keep for aab to i?
+  The distribution uses all logits, but the target selects one final probability for this row's loss.</script>
+  <div class="card"><h3 class="card-title">Loss for a a b → i</h3><div id="s08-live"></div></div>
+  <div class="prose" data-build="1"><p>$$\operatorname{loss}=-\log p(\text{target}).$$</p></div>
+  <div class="compare" data-build="2"><div class="case"><p>Confident and correct</p><div id="s08-good"></div></div><div class="case"><p>Confident and wrong</p><div id="s08-bad"></div></div></div>
+</div>
+<div class="frame" data-title="Inspect all six rows" data-autobuild="off">
+  <script type="text/x-notes">Which aabid row is hardest for this trained model?
+  Pick different rows and compare the target probability with the loss. Lower probability means higher loss.</script>
+  <div class="card"><h3 class="card-title">Choose a context-target pair</h3><div id="s08-rows"></div><div class="loss-live" id="s08-row-loss"></div></div>
+  <div class="callout callout-key" data-build="1">Giving more probability to the observed target makes its loss smaller.</div>
+</div>
+<div class="companion after"><p>Keep in mind: cross-entropy turns the target probability into a penalty that grows sharply near zero.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s08'),rows=window.__TOY__.aabid_rows,main=rows[3];
+  function worksheet(host,row){AT.clear(host);const box=AT.h('div',{class:'loss-live'});box.textContent='probability '+AT.fmt(row.probability,2)+' → -log('+AT.fmt(row.probability,2)+') ≈ '+AT.fmt(AT.mlp.loss(row.ids,row.target_id),2);host.appendChild(box);}
+  worksheet(S.querySelector('#s08-live'),main);
+  const examples=[[.80,S.querySelector('#s08-good')],[.01,S.querySelector('#s08-bad')]];
+  examples.forEach(x=>{x[1].textContent='p(target) = '+AT.fmt(x[0],2)+' → loss = '+AT.fmt(-Math.log(x[0]),3);});
+  let active=0,out=S.querySelector('#s08-row-loss');
+  const labels=rows.map(r=>r.context.join('')+' → '+r.target);
+  const chips=AT.ui.chips(labels,{active:0,onClick:i=>{active=i;chips.setActive(i);draw();},into:S.querySelector('#s08-rows')});
+  function draw(){const r=rows[active];out.textContent='p('+r.target+' | '+r.context.join('')+') = '+AT.fmt(r.probability,2)+'; loss = '+AT.fmt(AT.mlp.loss(r.ids,r.target_id),2);}
+  draw();
+})();
+</script>
+</section>

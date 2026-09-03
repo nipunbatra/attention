@@ -1,0 +1,39 @@
+<section id="s03" class="sec" data-title="Choose a context length" data-lit="">
+<style>
+#s03 .choice{padding:18px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--paper)}
+#s03 .choice.chosen{border:2px solid var(--ink);background:var(--card)}
+#s03 .choice .mono{font-size:1.2em;font-weight:700}
+#s03 .stage-pair{display:flex;flex-wrap:wrap;align-items:center;gap:14px;justify-content:center}
+#s03 .target{font-family:var(--font-mono);font-size:1.3em;color:var(--warn)}
+</style>
+<header class="sec-head"><span class="sec-num">03</span><div><p class="eyebrow">Why we are here: an MLP needs a fixed input width, so we must choose how many earlier characters it receives.</p><h2>Choose a context length</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>A one-character window is small but forgets almost everything. A window containing the whole prefix would change length from one training row to the next, which a plain MLP cannot accept without another design choice. We begin with three previous characters. Padding with the boundary makes even the first prediction fit that width. Sliding the window across <em>aabid</em> yields six context-target pairs: five letters and then the ending boundary. The split between training and held-out names happens before these windows are made, so examples from one name never cross the split.</p></div>
+<div class="frame" data-title="Commit to three characters" data-autobuild="off">
+  <script type="text/x-notes">What would each context choice let the model remember?
+  Compare one, three, and all. Then commit to three because the first model needs a fixed input.</script>
+  <div class="card"><div class="grid-3"><div class="choice"><span class="mono">w = 1</span><p>One previous character</p></div><div class="choice chosen" data-build="1"><span class="mono">w = 3</span><p>Three previous characters</p></div><div class="choice" data-build="2"><span class="mono">w = all</span><p>A growing prefix</p></div></div></div>
+  <div class="prose" data-build="3"><p>Use $$p_\theta(t_i\mid t_{i-3:i-1}).$$</p></div>
+</div>
+<div class="frame" data-title="Slide across aabid" data-autobuild="off">
+  <script type="text/x-notes">How many training rows does a five-letter name produce?
+  Walk the stepper through each context. The sixth target is the boundary, which teaches the model to stop.</script>
+  <div class="card"><h3 class="card-title">One window at a time</h3><div id="s03-stepper"></div></div>
+  <div class="card" data-build="1"><h3 class="card-title">All six rows</h3><div id="s03-table"></div></div>
+</div>
+<div class="frame" data-title="Repeat for every name" data-autobuild="off">
+  <script type="text/x-notes">Why does a name of length L produce L plus one examples?
+  The extra example predicts the ending boundary. Read the live data counts after the equation.</script>
+  <div class="prose"><p>Each name of length $L$ contributes $L+1$ context-target pairs.</p></div>
+  <div class="card" data-build="1"><h3 class="card-title">Rows made from the cleaned data</h3><div id="s03-counts"></div></div>
+</div>
+<div class="companion after"><p>Keep in mind: the fixed window makes every MLP input the same size, including the first prediction.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s03'),M=window.__TOY__,rows=M.aabid_rows;
+  AT.ui.stepper({big:true,into:S.querySelector('#s03-stepper'),steps:rows.map((row,i)=>({title:'Pair '+(i+1),note:'Predict the target from the three visible context tokens.',render:el=>{const box=AT.h('div',{class:'stage-pair'});AT.ui.chips(row.context,{active:[0,1,2],into:box});box.appendChild(AT.h('span',{'aria-hidden':'true'},'→'));box.appendChild(AT.h('span',{class:'target'},row.target));el.appendChild(box);}}))});
+  AT.ui.table(rows.map(r=>[r.context.join(''),r.target,r.probability]),{cols:['context','target','trained target probability'],rowLabels:rows.map((r,i)=>String(i+1)),cornerLabel:'pair',decimals:2,caption:'The probability column comes from the bundled trained model.',into:S.querySelector('#s03-table')});
+  const q=M.metrics;
+  AT.ui.table([[q.train_names,q.train_examples],[q.held_out_names,q.held_out_examples],[q.train_names+q.held_out_names,q.total_examples]],{cols:['names','context-target pairs'],rowLabels:['training','held out','total'],cornerLabel:'split',decimals:0,caption:'Names were split before their windows were constructed.',into:S.querySelector('#s03-counts')});
+})();
+</script>
+</section>

@@ -1,0 +1,43 @@
+<section id="s06" class="sec" data-title="Pass the vector through an MLP" data-lit="">
+<style>
+#s06 .net{max-width:760px;margin:0 auto}
+#s06 .calc-note{font-family:var(--font-mono);font-size:.9em;padding:10px 12px;background:var(--paper);border-radius:var(--radius-s);margin:8px 0 0}
+#s06 .eqs{font-size:1.05em}
+</style>
+<header class="sec-head"><span class="sec-num">06</span><div><p class="eyebrow">Why we are here: the six-number input must interact before the model can score the next character.</p><h2>Pass the vector through an MLP</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>The concatenated row enters a one-hidden-layer MLP. The first matrix combines all six input coordinates into each hidden unit, adds a bias, and applies tanh. The second matrix combines the hidden activations into one logit for every vocabulary token. The diagram draws only a few hidden nodes, but the trained hidden row has the width reported beside it. The worksheets isolate one hidden unit and the logit for <em>i</em>. They show the same operations used for every other unit and output. Row vectors multiply matrices on the right throughout this series.</p></div>
+<div class="frame" data-title="The full network" data-autobuild="off">
+  <script type="text/x-notes">Why does the output column contain one node for every vocabulary token?
+  Trace six scalar inputs through the hidden layer. The marked output is the target i for aab.</script>
+  <div class="card"><h3 class="card-title">The MLP for a a b</h3><div class="net" id="s06-net"></div></div>
+  <div class="prose eqs" data-build="1"><p>$$a_1=\tanh(a_0W_1+b_1),\qquad z=a_1W_2+b_2.$$</p></div>
+  <div class="card" data-build="2"><h3 class="card-title">Shapes in the trained model</h3><div id="s06-shapes"></div></div>
+</div>
+<div class="frame" data-title="One hidden unit" data-autobuild="off">
+  <script type="text/x-notes">What does one hidden unit read?
+  It receives all six input coordinates through one column of W1, then adds one bias and applies tanh.</script>
+  <div class="card"><h3 class="card-title">Column 1 of $W_1$</h3><div id="s06-hidden"></div><p class="calc-note" id="s06-hidden-note"></p></div>
+</div>
+<div class="frame" data-title="One output logit" data-autobuild="off">
+  <script type="text/x-notes">Which column of W2 produces the score for i?
+  Every hidden activation contributes through the i column. The bias is added after the dot product.</script>
+  <div class="card"><h3 class="card-title">The logit for target i</h3><div id="s06-logit"></div><p class="calc-note" id="s06-logit-note"></p></div>
+  <div class="callout callout-key" data-build="1">The network returns one score for every possible next character.</div>
+</div>
+<div class="companion after"><p>Keep in mind: every hidden unit reads the full concatenated window, and every output receives the full hidden row.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s06'),M=window.__TOY__,ids=['a','a','b'].map(c=>AT.mlp.stoi[c]),F=AT.mlp.forward(ids);
+  AT.netSketch(S.querySelector('#s06-net'),{inputs:F.a0.length,hidden:5,outputs:M.vocab,highlightOutput:'i',labels:{input:i=>'(a_0)_{'+i+'}',output:x=>x},inputCaption:()=>F.a0.length+' inputs',hiddenCaption:M.d_h+' hidden',outputCaption:M.vocab.length+' logits'});
+  const shapeRows=[['1 × '+F.a0.length],[''+F.a0.length+' × '+M.d_h],['1 × '+M.d_h],['1 × '+M.d_h],[M.d_h+' × '+M.vocab.length],['1 × '+M.vocab.length],['1 × '+M.vocab.length]];
+  AT.ui.table(shapeRows,{cols:['shape'],rowLabels:['$a_0$','$W_1$','$b_1$','$a_1$','$W_2$','$b_2$','$z$'],cornerLabel:'object',into:S.querySelector('#s06-shapes')});
+  const inAxes=[];for(let p=0;p<M.w;p++)M.axes.e.forEach(a=>inAxes.push('p'+(p+1)+' · '+a));
+  const j=0,W1col=M.W1.map(r=>[r[j]]),dot1=AT.matmul(F.a0,W1col)[0],pre=dot1+M.b1[j];
+  AT.ui.matVecCalc(F.a0,W1col,{from:inAxes,to:['hidden 1'],cls:'neutral',xLabel:'a0',outLabel:'dot product',decimals:2,wDecimals:2,into:S.querySelector('#s06-hidden')});
+  S.querySelector('#s06-hidden-note').textContent='dot '+AT.fmt(dot1,2)+' + bias '+AT.fmt(M.b1[j],2)+' = '+AT.fmt(pre,2)+'; tanh gives '+AT.fmt(F.a1[j],2);
+  const tid=AT.mlp.stoi.i,W2col=M.W2.map(r=>[r[tid]]),dot2=AT.matmul(F.a1,W2col)[0],logit=dot2+M.b2[tid];
+  AT.ui.matVecCalc(F.a1,W2col,{from:AT.range(M.d_h).map(i=>'hidden '+(i+1)),to:['logit i'],cls:'neutral',xLabel:'a1',outLabel:'dot product',decimals:2,wDecimals:2,into:S.querySelector('#s06-logit')});
+  S.querySelector('#s06-logit-note').textContent='dot '+AT.fmt(dot2,2)+' + bias '+AT.fmt(M.b2[tid],2)+' = logit '+AT.fmt(logit,2);
+})();
+</script>
+</section>
