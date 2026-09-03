@@ -137,6 +137,7 @@ svg{display:block;max-width:100%}
 .roadmap .arrow svg{width:14px;height:16px}
 .legend-wrap{padding:12px 0 8px}
 .legend-title{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin:0 0 8px}
+.legend-note{font-size:14px;color:var(--ink-2);margin:10px 0 0;max-width:40em}
 .legend{display:flex;flex-wrap:wrap;gap:8px 14px;margin:0;padding:0;list-style:none}
 .legend li{display:inline-flex;align-items:center;gap:7px;font-size:14px;color:var(--ink-2)}
 .legend .sw{width:14px;height:14px;border-radius:4px;background:var(--oc);flex:none}
@@ -405,14 +406,14 @@ footer{border-top:1px solid var(--line);padding:24px 0 40px;color:var(--ink-3);f
   <div class="wrap">
     <ul class="nchips" aria-label="The seven objects">
       <li><button type="button" class="nchip obj-e"  data-obj="e"  data-target="s02" data-tip="e_i — the current representation of token i. At layer 0 it is token embedding + position; after attention it is contextual.">e</button></li>
-      <li><button type="button" class="nchip obj-q"  data-obj="q"  data-target="s05" data-tip="q_i = W_Q e_i — the query: what token i is looking for.">Q</button></li>
-      <li><button type="button" class="nchip obj-k"  data-obj="k"  data-target="s05" data-tip="k_j = W_K e_j — the key: when token j should be retrieved.">K</button></li>
-      <li><button type="button" class="nchip obj-v"  data-obj="v"  data-target="s05" data-tip="v_j = W_V e_j — the value: what token j sends if it is retrieved.">V</button></li>
+      <li><button type="button" class="nchip obj-q"  data-obj="q"  data-target="s05" data-tip="q_i = e_i\,W_Q — the query: what token i is looking for.">Q</button></li>
+      <li><button type="button" class="nchip obj-k"  data-obj="k"  data-target="s05" data-tip="k_j = e_j\,W_K — the key: when token j should be retrieved.">K</button></li>
+      <li><button type="button" class="nchip obj-v"  data-obj="v"  data-target="s05" data-tip="v_j = e_j\,W_V — the value: what token j sends if it is retrieved.">V</button></li>
       <li><button type="button" class="nchip obj-a"  data-obj="a"  data-target="s04" data-tip="α_ij — the attention weight: how much token i reads from token j. softmax of the scaled scores; each row sums to 1.">α</button></li>
       <li><button type="button" class="nchip obj-d"  data-obj="d"  data-target="s09" data-tip="Δe_i = W_O Σ_j α_ij v_j — the contextual update. Pedagogical name for the attention output.">Δe</button></li>
       <li><button type="button" class="nchip obj-ep" data-obj="ep" data-target="s09" data-tip="e_i′ = e_i + Δe_i — the updated representation. The addition is the standard residual connection.">e+Δe</button></li>
     </ul>
-    <div class="strip-sec" aria-live="polite"><span class="snum" id="strip-num">—</span><span class="stitle" id="strip-title">Self-attention, from first principles</span></div>
+    <div class="strip-sec" aria-live="polite"><span class="snum" id="strip-num">·</span><span class="stitle" id="strip-title">Self-attention, from first principles</span></div>
     <div id="progress" aria-hidden="true"></div>
   </div>
 </nav>
@@ -423,13 +424,13 @@ footer{border-top:1px solid var(--line);padding:24px 0 40px;color:var(--ink-3);f
     <div>
       <h1>Self-attention, from first principles</h1>
       <p class="hero-sub">How a token reads from the tokens before it, and why that makes the next word easier to predict.</p>
-      <p class="hero-meta">For students who know embeddings, dot products, softmax and next-token prediction — and have not yet met attention. About 60 minutes.</p>
+      <p class="hero-meta">For students who know embeddings, dot products, softmax and next-token prediction, and who have not yet met attention. About 60 minutes.</p>
       <div class="hero-central">
         <div class="lab">The one chain to remember</div>
         <div class="no-wrap">$$\ve{e} \;\rightarrow\; \vq{Q},\vk{K},\vv{V} \;\rightarrow\; \text{attention } (\va{\alpha}) \;\rightarrow\; \vd{\Delta e} \;\rightarrow\; \vp{e + \Delta e}$$</div>
       </div>
       <div class="legend-wrap">
-        <p class="legend-title">How to read this page — seven colours, seven objects</p>
+        <p class="legend-title">How to read this page: seven colours, seven objects</p>
         <ul class="legend">
           <li class="obj-e"><span class="sw"></span><span class="sy">e</span>current representation</li>
           <li class="obj-q"><span class="sw"></span><span class="sy">Q</span>query</li>
@@ -439,6 +440,7 @@ footer{border-top:1px solid var(--line);padding:24px 0 40px;color:var(--ink-3);f
           <li class="obj-d"><span class="sw"></span><span class="sy">Δe</span>contextual update</li>
           <li class="obj-ep"><span class="sw"></span><span class="sy">e+Δe</span>updated representation</li>
         </ul>
+        <p class="legend-note">Where the numbers come from: a tiny demonstration model with 4-number representations and a 20-word vocabulary. Its weights are tuned to hand-chosen targets so the patterns are easy to see. The arithmetic is real, but the model is not a trained general-purpose language model.</p>
       </div>
     </div>
     <nav aria-label="Roadmap">
@@ -810,7 +812,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
       if (masked(i, j)) { cell.classList.add('is-masked'); if (opts.leak) cell.classList.add('is-leak'); cell.textContent = opts.maskText != null ? opts.maskText : '×'; cell.title = 'masked (future token)'; return; }
       cell.textContent = AT.fmt(v, dec);
       cell.removeAttribute('title');
-      if (opts.leak && j > i) { cell.classList.add('is-leak'); cell.title = 'future token — visible only because the mask is off'; }
+      if (opts.leak && j > i) { cell.classList.add('is-leak'); cell.title = 'future token: visible only because the mask is off'; }
       if (opts.heat) {
         var a = isNum(v) ? v : 0;
         var mx = isNum(opts.heatMax) ? opts.heatMax : 1;
@@ -1038,13 +1040,13 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 
   /* ---- legend ---- */
   var OBJECTS = [
-    { cls: 'e', sym: 'e', name: 'current representation', def: 'e_i — the current representation of token i.' },
-    { cls: 'q', sym: 'Q', name: 'query', def: 'q_i = W_Q e_i — what token i is looking for.' },
-    { cls: 'k', sym: 'K', name: 'key', def: 'k_j = W_K e_j — when token j should be retrieved.' },
-    { cls: 'v', sym: 'V', name: 'value', def: 'v_j = W_V e_j — what token j sends if retrieved.' },
-    { cls: 'a', sym: 'α', name: 'attention weight', def: 'α_ij — how much token i reads from token j.' },
-    { cls: 'd', sym: 'Δe', name: 'contextual update', def: 'Δe_i — the update produced by attention (pedagogical name).' },
-    { cls: 'ep', sym: 'e+Δe', name: 'updated representation', def: 'e_i′ = e_i + Δe_i — the residual addition is standard.' }
+    { cls: 'e', sym: 'e', name: 'current representation', def: 'e_i: the current representation of token i.' },
+    { cls: 'q', sym: 'Q', name: 'query', def: 'q_i = e_i\,W_Q: what token i is looking for.' },
+    { cls: 'k', sym: 'K', name: 'key', def: 'k_j = e_j\,W_K: when token j should be retrieved.' },
+    { cls: 'v', sym: 'V', name: 'value', def: 'v_j = e_j\,W_V: what token j sends if retrieved.' },
+    { cls: 'a', sym: 'α', name: 'attention weight', def: 'α_ij: how much token i reads from token j.' },
+    { cls: 'd', sym: 'Δe', name: 'contextual update', def: 'Δe_i: the update produced by attention (a pedagogical name).' },
+    { cls: 'ep', sym: 'e+Δe', name: 'updated representation', def: 'e_i′ = e_i + Δe_i: the residual addition is standard.' }
   ];
   AT.objects = OBJECTS;
   ui.legend = function (opts) {
@@ -1204,7 +1206,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 <header class="sec-head">
   <span class="sec-num">01</span>
   <div>
-    <p class="eyebrow">Why we are here: everything on this page exists to make one guess better — the next word.</p>
+    <p class="eyebrow">Why we are here: everything on this page exists to make one guess better, the next word.</p>
     <h2>Predict the next token</h2>
   </div>
 </header>
@@ -1216,7 +1218,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 </div>
 
 <div class="card">
-  <h3 class="card-title">Fill the blank — and watch the answer change with the context</h3>
+  <h3 class="card-title">Fill the blank, then watch the answer change with the context</h3>
   <div class="btn-row ctx-row" id="s01-ctx" role="group" aria-label="Choose the context sentence">
     <span class="ctx-lab">Context:</span>
     <button type="button" class="btn" id="s01-ctx-a" aria-pressed="true">A: The fisherman … river bank</button>
@@ -1234,17 +1236,18 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
       <p class="muted bars-note" id="s01-bars-note"></p>
     </div>
   </div>
+  <p class="muted small" style="margin:10px 0 0">These probabilities, and every number on this page, come from a tiny demonstration model (4-number representations, a 20-word vocabulary) whose weights were tuned to hand-chosen targets so the patterns are visible. The arithmetic is real; it is not a trained general-purpose language model.</p>
 </div>
 
 <div class="callout callout-key">To predict the next token well, the model needs a useful representation of everything relevant in the preceding context.</div>
 
 <div class="prose">
-  <p>Same last three words — <em>and watched the</em> — yet the two contexts give different answers. Whatever the model does inside, it must somehow carry <em>river</em> or <em>cheque</em> forward to the blank.</p>
+  <p>The last three words, <em>and watched the</em>, are the same in both contexts, yet the answers differ. Whatever the model does inside, it must carry <em>river</em> or <em>cheque</em> forward to the blank.</p>
 </div>
 
 <div class="card">
   <h3 class="card-title">Where every token starts: $\ve{e_i^{(0)}}$ = token embedding + positional information</h3>
-  <p class="muted small" style="margin:0 0 6px">Click a token to see its starting representation (context A). The superscript $(0)$ means: nothing has been updated yet.</p>
+  <p class="muted small" style="margin:0 0 6px">Click a token to see its starting representation (context A). The superscript $(0)$ means nothing has been updated yet.</p>
   <div id="s01-emb-chips"></div>
   <div class="row emb-row" id="s01-emb-row"></div>
   <div id="s01-emb-eq"></div>
@@ -1340,26 +1343,26 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 <header class="sec-head">
   <span class="sec-num">02</span>
   <div>
-    <p class="eyebrow">Why we are here: the crudest possible model — predict from the last token alone — shows what "context" has to buy us.</p>
+    <p class="eyebrow">Why we are here: the crudest possible model, predicting from the last token alone, shows what "context" has to buy us.</p>
     <h2>Baseline: only the last token</h2>
   </div>
 </header>
 
 <div class="prose">
-  <p>Suppose the prediction uses only the representation of the current token, $\ve{e_t}$ — right now still the starting representation $\ve{e_t^{(0)}}$ from section 01, because nothing has updated it yet. Feed it straight into the output head:
-  $$\ell = W_{\text{vocab}}\,\ve{e_t} + b, \qquad p(x_{t+1}\mid x_{\le t}) = \operatorname{softmax}(\ell)$$
+  <p>Suppose the prediction uses only the representation of the current token, $\ve{e_t}$. Right now that is still the starting representation $\ve{e_t^{(0)}}$ from section 01, because nothing has updated it yet. Feed it straight into the output head:
+  $$\ell = \ve{e_t}\,W_{\text{vocab}} + b, \qquad p(x_{t+1}\mid x_{\le t}) = \operatorname{softmax}(\ell)$$
   Nothing else enters the computation.</p>
 </div>
 
 <div class="card">
-  <h3 class="card-title">Only token $t$ is used — switch the context and watch nothing happen</h3>
+  <h3 class="card-title">Only token $t$ is used: switch the context and watch nothing happen</h3>
   <div class="btn-row" id="s02-ctx" role="group" aria-label="Choose the context sentence">
     <span class="ctx-lab">Context:</span>
     <button type="button" class="btn" id="s02-ctx-a" aria-pressed="true">A: The fisherman … river bank</button>
     <button type="button" class="btn" id="s02-ctx-b" aria-pressed="false">B: She deposited … the bank</button>
   </div>
   <div id="s02-chips"></div>
-  <div class="used-note"><span><span class="swatch on"></span>used — its $\ve{e_t}$ enters the output head</span><span><span class="swatch dim"></span>not used — invisible to the prediction</span></div>
+  <div class="used-note"><span><span class="swatch on"></span>used: its $\ve{e_t}$ enters the output head</span><span><span class="swatch dim"></span>not used: invisible to the prediction</span></div>
   <div class="pipe">
     <div>
       <div id="s02-evec"></div>
@@ -1374,10 +1377,10 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
   <div class="same" id="s02-same"></div>
 </div>
 
-<div class="callout callout-key">Using only $\ve{e_t}$ throws away most of the context. Same last token, same position, same numbers — so the earlier tokens cannot change the answer, however much they matter.</div>
+<div class="callout callout-key">Using only $\ve{e_t}$ throws away most of the context. Same last token, same position, same numbers, so the earlier tokens cannot change the answer, however much they matter.</div>
 
 <div class="prose">
-  <p>Look at the shape of the distribution: eight candidates, all near the same height. The model hedges between <em>water</em> and <em>teller</em> because, from its point of view, the two sentences are the same sentence.</p>
+  <p>The distribution is almost flat: eight candidates, all near the same height. The model hedges between <em>water</em> and <em>teller</em> because, from its point of view, the two sentences are the same sentence.</p>
 </div>
 
 <script>
@@ -1400,7 +1403,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
     return top.map(x => ({ label: x.tok, p: x.p })).concat([{ label: 'other ×' + (probRow.length - top.length), p: Math.max(0, rest) }]);
   }
 
-  /* the two contexts really do give identical numbers — compute it, do not assert it */
+  /* the two contexts really do give identical numbers: compute it, do not assert it */
   const pA = BA.probs[t], pB = BB.probs[t];
   const maxDiff = Math.max.apply(null, pA.map((v, i) => Math.abs(v - pB[i])));
   const eSame = BA.E[t].every((v, i) => v === BB.E[t][i]);
@@ -1417,11 +1420,11 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
     const its = items(p);
     if (bars) bars.update(its); else bars = AT.ui.bars(its, { cls: 'neutral', size: 'lg', max: 1, decimals: 3, sorted: false, into: barsHost });
     const best = AT.topk(p, 1)[0];
-    note.innerHTML = 'Context ' + ctx + ': highest probability is only $' + AT.fmt(best.p, 3) + '$ (' + AT.escape(best.tok) + '). Full bar = probability 1 — compare with section 01.';
+    note.innerHTML = 'Context ' + ctx + ': highest probability is only $' + AT.fmt(best.p, 3) + '$ (' + AT.escape(best.tok) + '). Full bar = probability 1. Compare with section 01.';
     AT.renderMath(note);
-    same.innerHTML = 'Last token: <strong>' + AT.escape(toks[t]) + '</strong>, position <strong>' + T + '</strong> — in both contexts. '
+    same.innerHTML = 'Last token: <strong>' + AT.escape(toks[t]) + '</strong>, position <strong>' + T + '</strong>, in both contexts. '
       + 'Starting representation $\\ve{e_{' + T + '}^{(0)}}$ identical in A and B: <span class="mono">' + (eSame ? 'yes' : 'no') + '</span>. '
-      + 'Largest difference between the two probability distributions: <span class="mono">' + AT.fmt(maxDiff, 3) + '</span>' + (maxDiff === 0 ? ' — exactly identical.' : '.');
+      + 'Largest difference between the two probability distributions: <span class="mono">' + AT.fmt(maxDiff, 3) + '</span>' + (maxDiff === 0 ? ': exactly identical.' : '.');
     AT.renderMath(same);
     S.querySelector('#s02-ctx-a').setAttribute('aria-pressed', ctx === 'A' ? 'true' : 'false');
     S.querySelector('#s02-ctx-b').setAttribute('aria-pressed', ctx === 'B' ? 'true' : 'false');
@@ -1463,7 +1466,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 <header class="sec-head">
   <span class="sec-num">03</span>
   <div>
-    <p class="eyebrow">Why we are here: the obvious fix — hand the model the last K tokens — and why it is not enough.</p>
+    <p class="eyebrow">Why we are here: the obvious fix, handing the model the last K tokens, and why it is not enough.</p>
     <h2>Baseline: a fixed window of K tokens</h2>
   </div>
 </header>
@@ -1471,7 +1474,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 <div class="prose">
   <p>Why not simply concatenate the previous $K$ token representations? Stack them into one long vector and predict from that:
   $$c_t = [\ve{e_{t-K+1}};\,\ve{e_{t-K+2}};\,\ldots;\,\ve{e_t}], \qquad p(x_{t+1}\mid x_{\le t}) = \operatorname{softmax}(W c_t + b)$$
-  $K$ here is just the window size (not the key chip in the strip above), and $W$ is a new, larger matrix — not section 02's $W_{\text{vocab}}$ — with $|\mathcal V| \times K d_{\text{model}}$ entries. Move the slider.</p>
+  $K$ here is just the window size (not the key chip in the strip above). $W$ is a new, larger matrix, not section 02's $W_{\text{vocab}}$, with $|\mathcal V| \times K d_{\text{model}}$ entries. Move the slider.</p>
 </div>
 
 <div class="card">
@@ -1497,12 +1500,12 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 <div class="grid-2">
   <div class="card disc">
     <h4>Hard context boundary</h4>
-    <p>Anything before the previous $K$ tokens is unavailable — not down-weighted, simply absent.</p>
+    <p>Anything before the previous $K$ tokens is unavailable. It is not down-weighted; it is absent.</p>
     <span class="live" id="s03-live1"></span>
   </div>
   <div class="card disc">
-    <h4>Everything is included equally, structurally</h4>
-    <p>The model receives all $K$ representations, regardless of relevance. A function word occupies exactly as much of $c_t$ as the word that matters.</p>
+    <h4>Slots are fixed by position, not by content</h4>
+    <p>The model receives all $K$ representations, each in a slot set by its position. $W$ can learn to weight a slot, but that weight is fixed before the words are read: the same slot weights apply whether the slot holds <em>river</em> or <em>the</em>.</p>
     <span class="live" id="s03-live2"></span>
   </div>
   <div class="card disc">
@@ -1514,10 +1517,10 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
     <p class="small muted" id="s03-dyn2-note" style="margin-bottom:0"></p>
   </div>
   <div class="card disc">
-    <h4>Increasing K does not fundamentally solve it</h4>
-    <p>Larger $K$: more input dimensions, more parameters in $W$, more irrelevant tokens included — and still a fixed cut-off.</p>
+    <h4>Increasing K does not remove the problem</h4>
+    <p>A larger $K$ adds input dimensions and parameters in $W$, and it includes more irrelevant tokens. The cut-off is still fixed.</p>
     <table class="ktab" id="s03-ktab" aria-label="Input size, parameter count and tokens cut off for several K"></table>
-    <p class="small muted" style="margin:6px 0 0">Tokens cut off: from this 10-token sentence. A longer sentence is cut at $K$ no matter how large $K$ is.</p>
+    <p class="small muted" style="margin:6px 0 0">Tokens cut off: counted for this 10-token sentence. A longer sentence is cut at $K$ no matter how large $K$ is.</p>
   </div>
 </div>
 
@@ -1552,8 +1555,8 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
     chips.setActive(inside); chips.setMuted(outside);
     if (bound.parentNode) bound.parentNode.removeChild(bound);
     if (outside.length) chips.insertBefore(bound, chips.chips[first]);
-    winNote.innerHTML = 'Window $K = ' + K + '$: tokens ' + (first + 1) + '–' + T + ' are in, '
-      + (outside.length ? 'tokens 1–' + first + ' (' + AT.escape(list(outside)) + ') are behind the boundary.' : 'nothing is left behind — but only because this sentence is short.');
+    winNote.innerHTML = 'Window $K = ' + K + '$: tokens ' + (first + 1) + ' to ' + T + ' are in, '
+      + (outside.length ? 'tokens 1 to ' + first + ' (' + AT.escape(list(outside)) + ') are behind the boundary.' : 'nothing is left behind, but only because this sentence is short.');
     AT.renderMath(winNote);
 
     /* c_t as K stacked e-vectors */
@@ -1569,10 +1572,10 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
     AT.tex(dim2, '|\\mathcal V| \\times K\\, d_{\\text{model}} = ' + V + ' \\times ' + (K * D) + ' = ' + (V * K * D));
 
     /* discussion cards */
-    live1.innerHTML = 'Now: ' + (outside.length ? '<strong>' + outside.length + '</strong> token' + (outside.length > 1 ? 's' : '') + ' unavailable — ' + AT.escape(list(outside)) + '.' : 'every token is inside — a longer sentence would still be cut at ' + K + '.')
+    live1.innerHTML = 'Now: ' + (outside.length ? '<strong>' + outside.length + '</strong> token' + (outside.length > 1 ? 's' : '') + ' unavailable: ' + AT.escape(list(outside)) + '.' : 'every token is inside, but a longer sentence would still be cut at ' + K + '.')
       + (outside.indexOf(5) >= 0 && inside.indexOf(6) >= 0 ? ' <em>river</em> is gone, so "bank" cannot be disambiguated.'
         : outside.indexOf(6) >= 0 ? ' <em>river</em> and <em>bank</em> are both gone: nothing tells the model this is a river scene.' : '');
-    live2.innerHTML = 'Now: <strong>' + K + '</strong> block' + (K > 1 ? 's' : '') + ' of ' + D + ' numbers each — ' + AT.escape(list(inside)) + ' — all with the same fixed slot, whether useful or not.';
+    live2.innerHTML = 'Now: <strong>' + K + '</strong> block' + (K > 1 ? 's' : '') + ' of ' + D + ' numbers each (' + AT.escape(list(inside)) + '), each in a slot fixed by position, weighted the same way whatever word it holds.';
     AT.clear(ktab);
     ktab.appendChild(AT.h('tr', {}, AT.h('th', {}, 'K'), AT.h('th', {}, 'input size'), AT.h('th', {}, 'parameters in W'), AT.h('th', {}, 'tokens cut off')));
     [1, 3, 5, 10].concat([1, 3, 5, 10].indexOf(K) < 0 ? [K] : []).sort((a, b) => a - b).forEach(k => {
@@ -1583,13 +1586,13 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
   AT.ui.slider({ label: 'Window size K', min: 1, max: T, step: 1, value: K, onInput: (v) => { K = v; draw(); }, into: S.querySelector('#s03-slider') });
   draw();
 
-  /* "relevant context changes dynamically" — two prediction slots, illustrative outlines */
+  /* "relevant context changes dynamically": two prediction slots, illustrative outlines */
   const dyn1 = AT.ui.chips(toks.slice(0, 6), { slot: '___', into: S.querySelector('#s03-dyn1') });
   [5, 1].forEach(i => dyn1.chips[i].classList.add('rel'));
   S.querySelector('#s03-dyn1-note').innerHTML = 'Predicting position 7 (the answer is <em>' + AT.escape(toks[6]) + '</em>): what matters is <em>' + AT.escape(toks[5]) + '</em> and <em>' + AT.escape(toks[1]) + '</em>.';
   const dyn2 = AT.ui.chips(toks, { slot: '___', into: S.querySelector('#s03-dyn2') });
   [5, 6, 1].forEach(i => dyn2.chips[i].classList.add('rel'));
-  S.querySelector('#s03-dyn2-note').innerHTML = 'Predicting position 11 (after <em>watched the</em>): now <em>' + AT.escape(toks[5]) + '</em>, <em>' + AT.escape(toks[6]) + '</em> and <em>' + AT.escape(toks[1]) + '</em> matter — a different set, at different distances.';
+  S.querySelector('#s03-dyn2-note').innerHTML = 'Predicting position 11 (after <em>watched the</em>): now <em>' + AT.escape(toks[5]) + '</em>, <em>' + AT.escape(toks[6]) + '</em> and <em>' + AT.escape(toks[1]) + '</em> matter: a different set, at different distances.';
 })();
 </script>
 </section>
@@ -1622,7 +1625,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 <header class="sec-head">
   <span class="sec-num">04</span>
   <div>
-    <p class="eyebrow">Why we are here: a fixed window cannot pick what matters. Let us try to <em>pool</em> all earlier tokens instead.</p>
+    <p class="eyebrow">Why we are here: a fixed window mixes its slots the same way whatever words fill them, and it cuts off early tokens. So <em>pool</em> all earlier tokens instead.</p>
     <h2>Weighted pooling: where should weights come from?</h2>
   </div>
 </header>
@@ -1677,13 +1680,13 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 </div>
 
 <div class="prose">
-  <p>Notice what just happened: <em>you</em> chose the weights by hand, knowing that <em>bank</em> wants <em>river</em>. A model cannot ask you. And a different token would want a completely different set of weights.</p>
+  <p><em>You</em> chose those weights by hand, because you know that <em>bank</em> wants <em>river</em>. A model cannot ask you. A different token would also want a different set of weights.</p>
 </div>
 
 <div class="callout callout-key">
   <p class="qbig">Where should the weights $\va{\alpha_{ij}}$ come from?</p>
   <p>They should depend on <strong>what token $i$ currently needs</strong> and <strong>what information token $j$ contains</strong>.
-  Both are functions of the representations themselves, $\ve{e_i}$ and $\ve{e_j}$. Building that function is the bridge to attention.</p>
+  Both are functions of the representations themselves, $\ve{e_i}$ and $\ve{e_j}$. Attention is a way to build that function.</p>
 </div>
 
 <script>
@@ -1699,7 +1702,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
   const cols = S.querySelector('#s04-cols');
   const colEls = toks.map((t, j) => {
     const bar = AT.h('div', { class: 'wbar obj-neutral' }, AT.h('i'));
-    const val = AT.h('span', { class: 'wval' }, '—');
+    const val = AT.h('span', { class: 'wval' }, '·');
     const c = AT.h('div', { class: 'wcol' }, bar, val, chipMk(j));
     cols.appendChild(c);
     return { c: c, bar: bar.firstChild, val: val };
@@ -1711,7 +1714,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
       const inn = j < i;
       o.c.classList.toggle('is-out', !inn);
       o.bar.style.setProperty('--w', inn ? (100 / i) + '%' : '0%');
-      o.val.textContent = inn ? AT.fmt(1 / i, 2) : '—';
+      o.val.textContent = inn ? AT.fmt(1 / i, 2) : '·';
     });
     const c = AT.mean(E.slice(0, i));
     meanVec.update(c);
@@ -1754,7 +1757,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
     const spread = Math.max(...alpha) - Math.min(...alpha);
     noteEl.textContent = spread < 1e-9
       ? 'All weights equal: this is exactly mean pooling again.'
-      : 'Largest weight on token ' + (top + 1) + ' (' + toks[top] + '): the pooled vector moves towards ' + AT.escape(toks[top]) + '’s representation.';
+      : 'Largest weight on token ' + (top + 1) + ' (' + toks[top] + '): the pooled vector moves towards the representation of ' + AT.escape(toks[top]) + '.';
   }
   const presets = {
     equal: toks.map(() => 1),
@@ -1817,7 +1820,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 </header>
 
 <div class="prose">
-  <p>Set language aside for a moment. A website hosts six educational videos. A user types a question. The site must decide <em>which</em> videos match, and <em>what</em> to return. Those are two different jobs, so every item carries two representations.</p>
+  <p>Leave language for a moment. A website hosts six educational videos and a user types a question. The site has to decide <em>which</em> videos match and <em>what</em> to return. Those are two different jobs, so every item carries two representations.</p>
 </div>
 
 <div class="card">
@@ -1833,12 +1836,12 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 <div class="card">
   <h3 class="card-title">Six videos. Each has a <span class="sym sym-k">Key</span> (used for matching) and a <span class="sym sym-v">Value</span> (what you get back)</h3>
   <div class="vgrid" id="s05-videos"></div>
-  <p class="axes" style="margin-top:10px">value axes: gradients · optimisation · architecture (illustrative) — a different space from the keys</p>
+  <p class="axes" style="margin-top:10px">value axes: gradients · optimisation · architecture (illustrative), a different space from the keys</p>
   <p class="muted small" style="margin:6px 0 0">The key answers "does this match?"; the value is the payload. They live in different spaces: keys are 4 numbers here, values are 3 numbers plus a summary.</p>
 </div>
 
 <div class="prose">
-  <p>Matching is a dot product between the query and each key. Nothing else about the item is consulted at this stage.</p>
+  <p>Matching is a dot product between the query and each key. At this stage the site looks at nothing else about the item.</p>
   $$s_j = \vq{q}^\top \vk{k_j}$$
   <p>$\vq{q}$ = query representation, $\vk{k_j}$ = key of item $j$, $\vv{v_j}$ = value of item $j$.</p>
 </div>
@@ -1864,7 +1867,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 </div>
 
 <div class="prose">
-  <p>Keep this split in mind: a high similarity says <em>retrieve Backpropagation</em>, but what arrives is its value, not its key. Next: a real search engine returns one winner. Attention will do something softer.</p>
+  <p>A high similarity says <em>retrieve Backpropagation</em>, but what arrives is its value, not its key. A real search engine then returns one winner. Attention does something softer.</p>
 </div>
 
 <script>
@@ -1977,7 +1980,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 <header class="sec-head">
   <span class="sec-num">06</span>
   <div>
-    <p class="eyebrow">Why we are here: a search engine returns the single best item. Attention returns a mixture. Same query, keys and values as before.</p>
+    <p class="eyebrow">Why we are here: a search engine returns the single best item. Attention returns a mixture. We go back to the gradient question (query 1) with the same keys and values as before.</p>
     <h2>Hard retrieval → soft retrieval</h2>
   </div>
 </header>
@@ -1995,11 +1998,11 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
     <div id="s06-mode"></div>
     <div id="s06-temp"></div>
     <button type="button" class="btn btn-quiet" id="s06-reset">Reset scores</button>
-    <p class="taunote">In soft mode the weights are $\va{\alpha_j} = \operatorname{softmax}_j(s_j/\tau)$. A small $\tau$ makes the mixture sharper; as $\tau \to 0$ soft retrieval becomes hard retrieval. $\tau = 1$ is the formula above.</p>
+    <p class="taunote">In soft mode the weights are $\va{\alpha_j} = \operatorname{softmax}_j(s_j/\tau)$. A small $\tau$ makes the mixture sharper. As $\tau \to 0$, soft retrieval becomes hard retrieval when one score is strictly the largest, while tied top scores keep sharing the weight. $\tau = 1$ is the formula above.</p>
   </div>
   <div class="grid-2" style="margin-top:14px">
     <div>
-      <p class="muted small" style="margin:0 0 4px">Similarity scores $s_j = \vq{q}^\top \vk{k_j}$ (defaults from the search table)</p>
+      <p class="muted small" style="margin:0 0 4px">Similarity scores $s_j = \vq{q}^\top \vk{k_j}$ (defaults: query 1 in the search table)</p>
       <div id="s06-sliders"></div>
     </div>
     <div>
@@ -2019,6 +2022,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
     <p class="muted small" style="margin:0">axes: gradients · optimisation · architecture (illustrative)</p>
   </div>
   <div id="s06-result-eq" class="no-math" style="margin-top:10px"></div>
+  <p class="muted small" style="margin:6px 0 0">The weights shown are rounded to two decimals. The sum uses the unrounded weights, so the rounded ones need not add to exactly 1.</p>
 </div>
 
 <div class="callout callout-key">
@@ -2026,7 +2030,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 </div>
 
 <div class="prose">
-  <p>The pieces now feel natural: a <span class="sym sym-q">Query</span> says what is needed, <span class="sym sym-k">Keys</span> decide who matches, <span class="sym sym-v">Values</span> carry what is sent, and softmax turns scores into a mixture. Back to language.</p>
+  <p>Each piece now has a job. A <span class="sym sym-q">Query</span> says what the searcher needs, <span class="sym sym-k">Keys</span> decide who matches, <span class="sym sym-v">Values</span> carry what comes back, and softmax turns scores into a mixture. Back to language.</p>
 </div>
 
 <script>
@@ -2091,9 +2095,9 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
       const tauNote = Math.abs(tau - 1) > 1e-9 ? ' at ' + AT.texStr('\\tau = ' + AT.fmt(tau, 1)) : '';
       verdict.innerHTML = '<span class="modeword">Soft (softmax):</span> ' + kept + ' of 6 values contribute at least 2 %' + tauNote + '. Largest weight: ' + AT.escape(VIDEOS[jstar].title) + ' (' + AT.fmt(alpha[jstar], 2) + ').';
       result.setLabel('\\sum_j \\va{\\alpha_j}\\,\\vv{v_j}');
-      AT.tex(resEq, '\\text{returned} = ' + VIDEOS.map((V, j) => '\\va{' + AT.fmt(alpha[j], 2) + '}\\,\\vv{v_{' + (j + 1) + '}}').join(' + ') + (Math.abs(tau - 1) > 1e-9 ? '\\qquad (\\tau = ' + AT.fmt(tau, 1) + ')' : ''), { display: true });
+      AT.tex(resEq, '\\text{returned} \\approx ' + VIDEOS.map((V, j) => '\\va{' + AT.fmt(alpha[j], 2) + '}\\,\\vv{v_{' + (j + 1) + '}}').join(' + ') + (Math.abs(tau - 1) > 1e-9 ? '\\qquad (\\tau = ' + AT.fmt(tau, 1) + ')' : ''), { display: true });
     } else {
-      verdict.innerHTML = '<span class="modeword">Hard (argmax):</span> only ' + AT.escape(VIDEOS[jstar].title) + ' is returned (' + AT.texStr('j^* = ' + (jstar + 1)) + '). Every other value is discarded.';
+      verdict.innerHTML = '<span class="modeword">Hard (argmax):</span> only ' + AT.escape(VIDEOS[jstar].title) + ' is returned (' + AT.texStr('j^* = ' + (jstar + 1)) + '). It discards every other value.';
       result.setLabel('\\vv{v_{j^*}} = \\vv{v_{' + (jstar + 1) + '}}');
       AT.tex(resEq, '\\begin{gathered} j^* = \\arg\\max_j s_j = ' + (jstar + 1) + ' \\\\ \\text{returned} = \\vv{v_{j^*}} = \\vv{v_{' + (jstar + 1) + '}} \\end{gathered}', { display: true });
     }
@@ -2146,11 +2150,12 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 
 <div class="prose">
   <p>Token $j$, with current representation $\ve{e_j}$, publishes a record: a key $\vk{k_j}$ that says when to retrieve it, and a value $\vv{v_j}$ that says what it sends. Token $i$, gathering context, issues a query $\vq{q_i}$. All three are linear maps of the same $\ve{e}$.</p>
-  $$\boxed{\vq{q_i} = W_Q\, \ve{e_i}} \qquad \boxed{\vk{k_j} = W_K\, \ve{e_j}} \qquad \boxed{\vv{v_j} = W_V\, \ve{e_j}}$$
+  $$\boxed{\vq{q_i} = \ve{e_i}\,W_Q} \qquad \boxed{\vk{k_j} = \ve{e_j}\,W_K} \qquad \boxed{\vv{v_j} = \ve{e_j}\,W_V}$$
+  <p class="muted small">Vectors are written as rows here: $\ve{e_i}$ has 4 numbers, $W_Q$ is $4 \times 3$, so $\ve{e_i}\,W_Q$ has 3 numbers. Many texts write the column form $W_Q\,\ve{e_i}$ instead. The numbers are the same.</p>
 </div>
 
 <div class="card">
-  <h3 class="card-title">Pick the query token $i$ — it asks; the records of tokens $j \le i$ open</h3>
+  <h3 class="card-title">Pick the query token $i$: it asks, and the records of tokens $j \le i$ open</h3>
   <div id="s07-chips"></div>
   <div class="qrow" id="s07-qrow"></div>
   <p class="muted small" id="s07-qnote"></p>
@@ -2180,9 +2185,9 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
   /* projection matrices (static) */
   const mats = S.querySelector('#s07-mats');
   const rl = AT.range(AT.d_model).map(i => String(i + 1)), cl = AT.range(AT.d_k).map(i => String(i + 1));
-  AT.ui.mat(AT.model.W_Q, { cls: 'q', rowLabels: rl, colLabels: cl, caption: '$W_Q$ — makes queries', dims: true, into: mats });
-  AT.ui.mat(AT.model.W_K, { cls: 'k', rowLabels: rl, colLabels: cl, caption: '$W_K$ — makes keys', dims: true, into: mats });
-  AT.ui.mat(AT.model.W_V, { cls: 'v', rowLabels: rl, colLabels: cl, caption: '$W_V$ — makes values', dims: true, into: mats });
+  AT.ui.mat(AT.model.W_Q, { cls: 'q', rowLabels: rl, colLabels: cl, caption: '$W_Q$ (makes queries)', dims: true, into: mats });
+  AT.ui.mat(AT.model.W_K, { cls: 'k', rowLabels: rl, colLabels: cl, caption: '$W_K$ (makes keys)', dims: true, into: mats });
+  AT.ui.mat(AT.model.W_V, { cls: 'v', rowLabels: rl, colLabels: cl, caption: '$W_V$ (makes values)', dims: true, into: mats });
 
   /* chips */
   const chips = AT.ui.chips(toks, { active: qi, size: 'lg', into: S.querySelector('#s07-chips'),
@@ -2201,7 +2206,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
     const withWhom = n === 1 ? 'its own key only (there is nothing before it)'
                    : n === 2 ? 'the keys of tokens $1$ and $2$'
                    : 'the keys of tokens $1 \\ldots ' + n + '$';
-    qnote.innerHTML = 'Token ' + n + ' (“' + AT.escape(toks[qi]) + '”) is the query token $i$. Its question $\\vq{q_{' + n + '}} = W_Q \\ve{e_{' + n + '}}$ will be compared with ' + withWhom + '.';
+    qnote.innerHTML = 'Token ' + n + ' (“' + AT.escape(toks[qi]) + '”) is the query token $i$. Its question $\\vq{q_{' + n + '}} = \\ve{e_{' + n + '}}\\,W_Q$ will be compared with ' + withWhom + '.';
     AT.renderMath(qnote);
   }
 
@@ -2219,7 +2224,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
     const rec = AT.h('div', { class: 'rec' },
       AT.h('div', { class: 'rec-h' }, AT.h('span', { class: 'ri' }, String(n)), AT.h('span', {}, t), tag),
       body,
-      AT.h('p', { class: 'closed-msg' }, 'Not read yet — comes after the query token.'));
+      AT.h('p', { class: 'closed-msg' }, 'Not read yet: it comes after the query token.'));
     rec.tagEl = tag;
     recs.appendChild(rec);
     recEls.push(rec);
@@ -2276,13 +2281,13 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 <header class="sec-head">
   <span class="sec-num">08</span>
   <div>
-    <p class="eyebrow">Why we are here: one query, seven records. Attention happens in two separate phases — deciding where to read, then reading.</p>
+    <p class="eyebrow">Why we are here: one query, seven records. Attention happens in two separate phases: deciding where to read, then reading.</p>
     <h2>Two phases: read routing (<span class="sym sym-q">Q</span>,<span class="sym sym-k">K</span>) vs message passing (<span class="sym sym-v">V</span>)</h2>
   </div>
 </header>
 
 <div class="prose">
-  <p>Take “bank” (token 7) as the query in <em>The fisherman sat beside the river bank</em>. Phase A only asks <strong>where</strong> to read. Phase B only decides <strong>what</strong> arrives. Nothing is updated in either phase yet.</p>
+  <p>Take “bank” (token 7) as the query in <em>The fisherman sat beside the river bank</em>. Phase A only asks <strong>where</strong> to read. Phase B only decides <strong>what</strong> arrives. Neither phase updates anything yet.</p>
 </div>
 
 <div class="btn-row" style="margin-bottom:16px">
@@ -2318,7 +2323,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
     <div class="scroll-x"><div class="msg-grid" id="s08-msgs"></div></div>
   </div>
   <div style="margin-top:10px">$$m_i = \sum_{j \le i} \va{\alpha_{ij}}\, \vv{v_j}$$</div>
-  <p class="muted small" id="s08-bnote">The keys are not sent anywhere — they were used up in phase A. Only values travel.</p>
+  <p class="muted small" id="s08-bnote">The keys are not sent anywhere; phase A used them up. Only values travel.</p>
 </div>
 
 <div class="callout callout-key"><span class="sym sym-v">V</span> carries the information: $\va{\alpha_{ij}}\vv{v_j}$ is the message from $j$ to $i$.</div>
@@ -2496,8 +2501,8 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 </header>
 
 <div class="prose">
-  <p>The message $m_i$ lives in value space ($d_v$ numbers). An output projection $W_O$ maps it into representation space ($d_{\text{model}}$ numbers). We call that vector the contextual update $\vd{\Delta e_i}$ — and then simply add it to $\ve{e_i}$.</p>
-  $$m_i = \sum_{j \le i} \va{\alpha_{ij}}\, \vv{v_j} \qquad \boxed{\vd{\Delta e_i} = W_O\, m_i} \qquad \boxed{\vp{e_i^{\text{new}}} = \ve{e_i} + \vd{\Delta e_i}}$$
+  <p>The message $m_i$ lives in value space ($d_v$ numbers). An output projection $W_O$ maps it into representation space ($d_{\text{model}}$ numbers). We call that vector the contextual update $\vd{\Delta e_i}$ and add it to $\ve{e_i}$.</p>
+  $$m_i = \sum_{j \le i} \va{\alpha_{ij}}\, \vv{v_j} \qquad \boxed{\vd{\Delta e_i} = m_i\,W_O} \qquad \boxed{\vp{e_i^{\text{new}}} = \ve{e_i} + \vd{\Delta e_i}}$$
 </div>
 
 <div class="card">
@@ -2506,7 +2511,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 </div>
 
 <div class="card">
-  <h3 class="card-title">Watch $\ve{e_{\text{bank}}}$ become $\vp{e_{\text{bank}}'}$ — token 7 of <em>The fisherman sat beside the river bank</em></h3>
+  <h3 class="card-title">Watch $\ve{e_{\text{bank}}}$ become $\vp{e_{\text{bank}}'}$, token 7 of <em>The fisherman sat beside the river bank</em></h3>
   <div id="s09-stepper"></div>
   <div class="anim">
     <div class="dg dotgrid" id="s09-dg"></div>
@@ -2517,7 +2522,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 <div class="card">
   <h3 class="card-title">The output projection: $m_7$ (value space, $1 \times d_v$) $\to$ $\vd{\Delta e_7}$ (representation space, $1 \times d_{\text{model}}$)</h3>
   <div class="row" id="s09-wo"></div>
-  <p class="muted small" style="margin:8px 0 0">Row-vector form of $\vd{\Delta e_7} = W_O\, m_7$: the same numbers, written as $m_7$ times a $d_v \times d_{\text{model}}$ matrix.</p>
+  <p class="muted small" style="margin:8px 0 0">Row-vector form of $\vd{\Delta e_7} = m_7\,W_O$: the same numbers, written as $m_7$ times a $d_v \times d_{\text{model}}$ matrix.</p>
 </div>
 
 <div class="callout callout-key big-caption">Attention does not replace the existing representation. It computes context-dependent information that can be added to it.</div>
@@ -2598,11 +2603,11 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
   // one builder per stage; reused for the desktop rows and (on phones) inside the stepper stage
   const builders = [
     ['current', r => AT.ui.vec(F.E[qi], { cls: 'e', label: '\\ve{e_{' + n + '}}', dims: true, into: r })],
-    ['query', r => { AT.ui.vec(F.Q[qi], { cls: 'q', label: '\\vq{q_{' + n + '}}', dims: true, into: r }); r.appendChild(AT.h('span', { class: 'muted small', html: '$= W_Q \\ve{e_{' + n + '}}$' })); }],
+    ['query', r => { AT.ui.vec(F.Q[qi], { cls: 'q', label: '\\vq{q_{' + n + '}}', dims: true, into: r }); r.appendChild(AT.h('span', { class: 'muted small', html: '$= \\ve{e_{' + n + '}}\\,W_Q$' })); }],
     ['scores', r => { AT.ui.vec(F.S[qi].slice(0, T), { cls: 'neutral', label: 's_{' + n + ',\\cdot}', into: r }); r.appendChild(AT.h('span', { class: 'muted small', html: '$= \\vq{q_{' + n + '}}^\\top \\vk{k_j}/\\sqrt{d_k}$' })); }],
     ['weights', r => { AT.ui.vec(F.A[qi].slice(0, T), { cls: 'a', label: '\\va{\\alpha_{' + n + ',\\cdot}}', into: r }); r.appendChild(AT.h('span', { class: 'muted small', html: 'softmax; ' + AT.escape(topTok) + ' gets the most' })); }],
     ['message', r => { AT.ui.vec(F.Mmsg[qi], { cls: 'm', label: 'm_{' + n + '}', dims: true, into: r }); r.appendChild(AT.h('span', { class: 'muted small', html: '$= \\sum_j \\va{\\alpha_{' + n + 'j}}\\vv{v_j}$' })); }],
-    ['update', r => { AT.ui.vec(F.Delta[qi], { cls: 'd', label: '\\vd{\\Delta e_{' + n + '}}', dims: true, into: r }); r.appendChild(AT.h('span', { class: 'muted small', html: '$= W_O\\, m_{' + n + '}$' })); }],
+    ['update', r => { AT.ui.vec(F.Delta[qi], { cls: 'd', label: '\\vd{\\Delta e_{' + n + '}}', dims: true, into: r }); r.appendChild(AT.h('span', { class: 'muted small', html: '$= m_{' + n + '}\\,W_O$' })); }],
     ['add', r => { AT.ui.vec(F.E[qi], { cls: 'e', label: '\\ve{e_{' + n + '}}', into: r }); AT.ui.op('+', { into: r }); AT.ui.vec(F.Delta[qi], { cls: 'd', label: '\\vd{\\Delta e_{' + n + '}}', into: r }); }],
     ['updated', r => AT.ui.vec(F.Enew[qi], { cls: 'ep', label: '\\vp{e_{' + n + "}'}", size: 'lg', dims: true, into: r })]
   ];
@@ -2619,13 +2624,13 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
   }
   const steps = [
     { title: 'Start from the current representation', tex: '\\ve{e_{' + n + '}}', note: 'This is the representation of “bank” before attention: token embedding plus position. It will not be overwritten.' },
-    { title: 'Compute the query', tex: '\\vq{q_{' + n + '}} = W_Q \\ve{e_{' + n + '}}', note: 'The right branch begins. $\\ve{e_{' + n + '}}$ itself waits on the left, untouched.' },
+    { title: 'Compute the query', tex: '\\vq{q_{' + n + '}} = \\ve{e_{' + n + '}}\\,W_Q', note: 'The right branch begins. $\\ve{e_{' + n + '}}$ itself waits on the left, untouched.' },
     { title: 'Compare against the keys', tex: 's_{' + n + 'j} = \\vq{q_{' + n + '}}^\\top \\vk{k_j} / \\sqrt{d_k}', note: 'One score for every token $j \\le ' + n + '$ (phase A of the previous section).' },
     { title: 'Softmax gives the attention weights', tex: '\\va{\\alpha_{' + n + 'j}} = \\operatorname{softmax}_j(s_{' + n + 'j})', note: 'Where to read from. The weights sum to 1.' },
-    { title: 'Weight the values and add them up', tex: 'm_{' + n + '} = \\sum_{j \\le ' + n + '} \\va{\\alpha_{' + n + 'j}}\\, \\vv{v_j}', note: 'What is read (phase B). $m_{' + n + '}$ has $d_v$ numbers — it lives in value space.' },
-    { title: 'Project back: the contextual update', tex: '\\vd{\\Delta e_{' + n + '}} = W_O\\, m_{' + n + '}', note: '$W_O$ maps the message into representation space, so it can be added to $\\ve{e_{' + n + '}}$.' },
+    { title: 'Weight the values and add them up', tex: 'm_{' + n + '} = \\sum_{j \\le ' + n + '} \\va{\\alpha_{' + n + 'j}}\\, \\vv{v_j}', note: 'What is read (phase B). $m_{' + n + '}$ has $d_v$ numbers; it lives in value space.' },
+    { title: 'Project back: the contextual update', tex: '\\vd{\\Delta e_{' + n + '}} = m_{' + n + '}\\,W_O', note: '$W_O$ maps the message into representation space, so it can be added to $\\ve{e_{' + n + '}}$.' },
     { title: 'Add the update to the original', tex: '\\ve{e_{' + n + '}} + \\vd{\\Delta e_{' + n + '}}', note: 'The two branches meet. Nothing was replaced: the original $\\ve{e_{' + n + '}}$ is still in there.' },
-    { title: 'The updated representation', tex: '\\vp{e_{' + n + "}'} = \\ve{e_{" + n + '}} + \\vd{\\Delta e_{' + n + '}}', note: '“bank” now carries river-context. This $\\vp{e_{' + n + "}'}$ is what later layers and the output head will see." }
+    { title: 'The updated representation', tex: '\\vp{e_{' + n + "}'} = \\ve{e_{" + n + '}} + \\vd{\\Delta e_{' + n + '}}', note: '“bank” now carries river context. This $\\vp{e_{' + n + "}'}$ is what later layers and the output head will see." }
   ];
   let playTimer = null, playing = false;
   function stopPlay(){ playing = false; if (playTimer) { clearTimeout(playTimer); playTimer = null; } playBtn.textContent = 'Play'; }
@@ -2699,7 +2704,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 <header class="sec-head">
   <span class="sec-num">10</span>
   <div>
-    <p class="eyebrow">Why we are here: the same word, two contexts &mdash; watch one update push the same starting vector in two directions.</p>
+    <p class="eyebrow">Why we are here: the same word in two contexts. One update pushes the same starting vector in two directions.</p>
     <h2>&ldquo;bank&rdquo;: same start, different context</h2>
   </div>
 </header>
@@ -2707,16 +2712,16 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 <div class="prose">
   <p>Both sentences put <strong>bank</strong> at position 7. Its starting representation $\ve{e_{\text{bank}}^{(0)}}$ is the same vector in both:
   same token embedding, same position. Attention is causal, so <strong>bank</strong> looks only to its <em>left</em>
-  (tokens 1&ndash;7); the words after it play no part.</p>
+  (tokens 1 to 7). The words after it play no part.</p>
 </div>
 
 <div class="grid-2">
   <div class="card">
-    <h3 class="card-title">Sentence A &mdash; the river</h3>
+    <h3 class="card-title">Sentence A: the river</h3>
     <div id="s10-a"></div>
   </div>
   <div class="card">
-    <h3 class="card-title">Sentence B &mdash; the cheque</h3>
+    <h3 class="card-title">Sentence B: the cheque</h3>
     <div id="s10-b"></div>
   </div>
 </div>
@@ -2727,7 +2732,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
   <div class="s10-chain" id="s10-chain-b"></div>
   <div class="row" style="margin:10px 0 4px">
     <div id="s10-slider"></div>
-    <span class="muted small">Scrub how much of $\vd{\Delta e_{\text{bank}}}$ has been added; the vectors above and the plot follow.</span>
+    <span class="muted small">The slider sets how much of $\vd{\Delta e_{\text{bank}}}$ has been added; the vectors above and the plot follow. Below 100% the right-hand vector is the partial sum $\ve{e}(t) = \ve{e} + t\,\vd{\Delta e}$; the name $\vp{e'}$ is reserved for $t = 1$.</span>
   </div>
   <div class="dotgrid s10-plot" id="s10-plot"></div>
   <p class="muted small" id="s10-plot-cap"></p>
@@ -2769,7 +2774,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
     if (same) r0.appendChild(AT.h('span', { class: 's10-same' }, 'identical in A and B'));
     st.appendChild(r0);
     const eq = AT.h('div', { class: 's10-eq' });
-    AT.tex(eq, '\\begin{aligned} m_{\\text{bank}} &= \\va{\\alpha_{7,1}}\\vv{v_1} + \\cdots + \\va{\\alpha_{7,7}}\\vv{v_7} \\\\ \\vd{\\Delta e_{\\text{bank}}} &= W_O\\, m_{\\text{bank}} \\end{aligned}', { display: true });
+    AT.tex(eq, '\\begin{aligned} m_{\\text{bank}} &= \\va{\\alpha_{7,1}}\\vv{v_1} + \\cdots + \\va{\\alpha_{7,7}}\\vv{v_7} \\\\ \\vd{\\Delta e_{\\text{bank}}} &= m_{\\text{bank}}\\,W_O \\end{aligned}', { display: true });
     st.appendChild(eq);
     const r1 = AT.h('div', { class: 'row' });
     const vd = AT.ui.vec(F.Delta[bi], { cls: 'd', label: '\\vd{\\Delta e_{\\text{bank}}}', into: r1 });
@@ -2785,7 +2790,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
     const vp = AT.ui.vec(F.Enew[bi], { cls: 'ep', label: "\\vp{e_{\\text{bank}}'}", into: r2 });
     st.appendChild(r2);
     host.appendChild(st);
-    return { vdt, vp };
+    return { vdt, vp, eq2 };
   }
   const pa = panel(sets.a, S.querySelector('#s10-a'));
   const pb = panel(sets.b, S.querySelector('#s10-b'));
@@ -2840,8 +2845,11 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
   svg.appendChild(labA); svg.appendChild(labB); svg.appendChild(labDA); svg.appendChild(labDB);
   plotHost.appendChild(svg);
 
+  const eqFull = "\\vp{e_{\\text{bank}}'} = \\ve{e_{\\text{bank}}} + \\vd{\\Delta e_{\\text{bank}}}";
+  let wasFull = true;
   function place(t){
-    [[FA, arrA, dotA, labA, labDA, pa], [FB, arrB, dotB, labB, labDB, pb]].forEach(([F, arr, dot, lab, labD, p]) => {
+    const full = t >= 0.999;
+    [[FA, arrA, dotA, labA, labDA, pa, sets.a], [FB, arrB, dotB, labB, labDB, pb, sets.b]].forEach(([F, arr, dot, lab, labD, p, set]) => {
       const d = AT.scale(F.Delta[bi], t);
       const e1 = AT.add(F.E[bi], d);
       const x1 = X(e1[cx]), y1 = Y(e1[cy]), x0 = X(p0[0]), y0 = Y(p0[1]);
@@ -2857,15 +2865,20 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
       labD.style.opacity = t < 0.3 ? '0' : '1';
       p.vdt.update(d);
       p.vp.update(e1);
+      lab.textContent = set.res + (full ? '  e′' : '  e(t)');
+      if (!full) AT.tex(p.eq2, "\\ve{e_{\\text{bank}}}(t) = \\ve{e_{\\text{bank}}} + t\\,\\vd{\\Delta e_{\\text{bank}}},\\quad t = " + t.toFixed(2), { display: true });
+      else if (!wasFull) AT.tex(p.eq2, eqFull, { display: true });
+      if (full !== wasFull) p.vp.setLabel(full ? "\\vp{e_{\\text{bank}}'}" : "\\ve{e_{\\text{bank}}}(t)");
     });
-    S.querySelector('#s10-plot-cap').textContent = 'A fixed 2-D projection (coordinates ' + (cx + 1) + ' and ' + (cy + 1) + ' of the 4-D vector). Blue dot: shared start. Green arrows: ' + Math.round(t * 100) + '% of each sentence’s update. Blue-with-green-ring dots: the contextual representations.';
+    wasFull = full;
+    S.querySelector('#s10-plot-cap').textContent = 'A fixed 2-D projection (coordinates ' + (cx + 1) + ' and ' + (cy + 1) + ' of the 4-D vector). Blue dot: shared start. Green arrows: ' + Math.round(t * 100) + '% of each sentence’s update. Blue-with-green-ring dots: ' + (full ? 'the contextual representations e′.' : 'the partial sums e(t) = e + tΔe.');
   }
   AT.ui.slider({ label: 'Fraction of Δe added', min: 0, max: 1, step: 0.05, value: 1, format: v => Math.round(v * 100) + '%', onInput: place, into: S.querySelector('#s10-slider') });
   place(1);
 
   function topToks(set, n){ const A = set.F.A[bi]; return AT.range(T).filter(j => j !== bi).sort((x, y) => A[y] - A[x]).slice(0, n).map(j => set.toks[j]); }
   const ta = topToks(sets.a, 3), tb = topToks(sets.b, 2);
-  AT.ui.callout('$\\ve{e_{\\text{bank}}^{(0)}}$ starts out identical in both sentences. After one attention step the two $\\vp{e_{\\text{bank}}\'}$ differ, because the update $\\vd{\\Delta e_{\\text{bank}}}$ was assembled from different earlier tokens: ' + AT.escape(ta.slice(0, 2).join(', ') + ' and ' + ta[2]) + ' in A; ' + AT.escape(tb[0] + ' and ' + tb[1]) + ' in B.', { kind: 'key', into: S.querySelector('#s10-callout') });
+  AT.ui.callout('$\\ve{e_{\\text{bank}}^{(0)}}$ starts out identical in both sentences. After one attention step the two $\\vp{e_{\\text{bank}}\'}$ differ, because different earlier tokens supplied the update $\\vd{\\Delta e_{\\text{bank}}}$: ' + AT.escape(ta.slice(0, 2).join(', ') + ' and ' + ta[2]) + ' in A; ' + AT.escape(tb[0] + ' and ' + tb[1]) + ' in B.', { kind: 'key', into: S.querySelector('#s10-callout') });
 })();
 </script>
 </section>
@@ -2899,15 +2912,15 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 <header class="sec-head">
   <span class="sec-num">11</span>
   <div>
-    <p class="eyebrow">Why we are here: a common confusion &mdash; are queries, keys and values three new embeddings? No. Let us pin down what they are.</p>
+    <p class="eyebrow">Why we are here: a common confusion. Are queries, keys and values three new embeddings? No. This section says what they are instead.</p>
     <h2>What exactly are Q, K, and V?</h2>
   </div>
 </header>
 
 <div class="prose">
   <p>Take the current representation of one token, $\ve{e_i}$. Three fixed matrices read it and produce three short vectors.
-  Nothing is stored; nothing replaces $\ve{e_i}$.</p>
-  $$\ve{e_i} \;\rightarrow\; \begin{cases} \vq{q_i} = W_Q\,\ve{e_i} \\[2pt] \vk{k_i} = W_K\,\ve{e_i} \\[2pt] \vv{v_i} = W_V\,\ve{e_i} \end{cases}$$
+  They are working vectors computed from $\ve{e_i}$; none of them replaces it.</p>
+  $$\ve{e_i} \;\rightarrow\; \begin{cases} \vq{q_i} = \ve{e_i}\,W_Q \\[2pt] \vk{k_i} = \ve{e_i}\,W_K \\[2pt] \vv{v_i} = \ve{e_i}\,W_V \end{cases}$$
 </div>
 
 <div class="card">
@@ -2921,7 +2934,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 
 <div class="card">
   <h3 class="card-title">Lifetime inside one attention layer</h3>
-  <p class="muted small">Step through: what exists at each moment. $\ve{e_i}$ persists; $\vq{q_i}, \vk{k_i}, \vv{v_i}$ are computed, used, and discarded; $\vd{\Delta e_i}$ is added to $\ve{e_i}$.</p>
+  <p class="muted small">The stepper shows what exists at each moment. $\ve{e_i}$ persists; $\vq{q_i}, \vk{k_i}, \vv{v_i}$ are computed and used in attention; $\vd{\Delta e_i}$ is added to $\ve{e_i}$.</p>
   <p class="muted small s11-scrollhint">The strip scrolls sideways on narrow screens; the lit column follows the stepper.</p>
   <div class="scroll-x dotgrid s11-lifebox" id="s11-lifebox"><div id="s11-life"></div></div>
   <div id="s11-stepper"></div>
@@ -2961,9 +2974,9 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
     const fork = AT.svg('svg', { class: 's11-fork', viewBox: '0 0 64 150', preserveAspectRatio: 'none', 'aria-hidden': 'true' });
     [25, 75, 125].forEach(y => fork.appendChild(AT.svg('path', { d: 'M2 75 C 30 75, 34 ' + y + ', 62 ' + y })));
     branch.appendChild(fork);
-    branch.appendChild(leafRow('\\vq{q_{' + n + '}} = W_Q\\,\\ve{e_{' + n + '}}', F.Q[qi], 'q'));
-    branch.appendChild(leafRow('\\vk{k_{' + n + '}} = W_K\\,\\ve{e_{' + n + '}}', F.K[qi], 'k'));
-    branch.appendChild(leafRow('\\vv{v_{' + n + '}} = W_V\\,\\ve{e_{' + n + '}}', F.V[qi], 'v'));
+    branch.appendChild(leafRow('\\vq{q_{' + n + '}} = \\ve{e_{' + n + '}}\\,W_Q', F.Q[qi], 'q'));
+    branch.appendChild(leafRow('\\vk{k_{' + n + '}} = \\ve{e_{' + n + '}}\\,W_K', F.K[qi], 'k'));
+    branch.appendChild(leafRow('\\vv{v_{' + n + '}} = \\ve{e_{' + n + '}}\\,W_V', F.V[qi], 'v'));
   }
   drawBranch();
   const wm = AT.h('div', { class: 'row top' });
@@ -2975,8 +2988,8 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 
   /* ---- callouts ---- */
   const co = S.querySelector('#s11-callouts');
-  AT.ui.callout('$\\vq{q_i}$, $\\vk{k_i}$, $\\vv{v_i}$ are temporary linear projections of the <em>current</em> token representation $\\ve{e_i}$.', { kind: 'key', into: co });
-  AT.ui.callout('They are <strong>not</strong> three new contextual embeddings. They play temporary functional roles during attention: $\\vq{q_i}$ asks, $\\vk{k_i}$ answers &ldquo;match me?&rdquo;, $\\vv{v_i}$ is what gets sent.', { kind: 'key', into: co });
+  AT.ui.callout('$\\vq{q_i}$, $\\vk{k_i}$, $\\vv{v_i}$ are linear projections of the <em>current</em> token representation $\\ve{e_i}$: computed working vectors, not separately learned embedding tables.', { kind: 'key', into: co });
+  AT.ui.callout('They are <strong>not</strong> three new contextual embeddings, and they are not the updated token representation that is passed onward. They have jobs during attention: $\\vq{q_i}$ asks, $\\vk{k_i}$ answers &ldquo;match me?&rdquo;, and $\\vv{v_i}$ is what gets sent. (Generation code keeps keys and values in a cache; that does not make them representations.)', { kind: 'key', into: co });
 
   /* ---- lifetime strip (SVG) ---- */
   const life = S.querySelector('#s11-life');
@@ -2989,9 +3002,9 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
   phases.forEach((p, i) => { svg.appendChild(AT.svg('text', { x: px(i) + pw / 2, y: 22, class: 'ph', 'text-anchor': 'middle' }, p)); if (i) svg.appendChild(AT.svg('line', { x1: px(i), y1: 30, x2: px(i), y2: H - 8, class: 'div' })); });
   const lanes = [
     { y: 48, label: 'eᵢ', from: 0, to: 5, cls: 'e', tag: 'persists through the whole layer', ph: [0,1,2,3,4] },
-    { y: 84, label: 'qᵢ', from: 1, to: 3, cls: 'q', tag: 'computed → used → discarded', ph: [1,2] },
-    { y: 116, label: 'kᵢ', from: 1, to: 3, cls: 'k', tag: 'computed → used → discarded', ph: [1,2] },
-    { y: 148, label: 'vᵢ', from: 1, to: 3, cls: 'v', tag: 'computed → used → discarded', ph: [1,2] },
+    { y: 84, label: 'qᵢ', from: 1, to: 3, cls: 'q', tag: 'computed → used in attention', ph: [1,2] },
+    { y: 116, label: 'kᵢ', from: 1, to: 3, cls: 'k', tag: 'computed → used in attention', ph: [1,2] },
+    { y: 148, label: 'vᵢ', from: 1, to: 3, cls: 'v', tag: 'computed → used in attention', ph: [1,2] },
     { y: 184, label: 'Δeᵢ', from: 3, to: 5, cls: 'd', tag: 'retrieved, then added', ph: [3,4] },
     { y: 218, label: 'eᵢ′', from: 4, to: 5, cls: 'ep', tag: 'eᵢ + Δeᵢ', ph: [4] }
   ];
@@ -3027,8 +3040,8 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
       { title: 'Start of the layer: only the representation exists',
         note: 'Token $i$ enters the attention layer carrying $\\ve{e_i}$ and nothing else.',
         render: (el) => { AT.ui.vec(F.E[qi], { cls: 'e', label: '\\ve{e_{' + n() + '}}', into: el }); } },
-      { title: 'Project: three temporary vectors are computed from it',
-        tex: '\\vq{q_i} = W_Q\\ve{e_i},\\quad \\vk{k_i} = W_K\\ve{e_i},\\quad \\vv{v_i} = W_V\\ve{e_i}',
+      { title: 'Project: three working vectors are computed from it',
+        tex: '\\vq{q_i} = \\ve{e_i}\\,W_Q,\\quad \\vk{k_i} = \\ve{e_i}\\,W_K,\\quad \\vv{v_i} = \\ve{e_i}\\,W_V',
         render: (el) => { const r = AT.h('div', { class: 'row' }); AT.ui.vec(F.Q[qi], { cls: 'q', label: '\\vq{q_{' + n() + '}}', into: r }); AT.ui.vec(F.K[qi], { cls: 'k', label: '\\vk{k_{' + n() + '}}', into: r }); AT.ui.vec(F.V[qi], { cls: 'v', label: '\\vv{v_{' + n() + '}}', into: r }); el.appendChild(r); } },
       { title: 'Attention uses them, in two directions',
         note: '$\\vq{q_i}$ is compared with the keys of tokens $j \\le i$ to give $\\va{\\alpha_{ij}}$. Meanwhile $\\vk{k_i}$ and $\\vv{v_i}$ are read by token $i$ itself and by every later token.',
@@ -3040,9 +3053,9 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
           const p = AT.h('p', { class: 'muted small' }, 'Tokens whose queries can read k and v of token ' + n() + ' in this 7-token sequence: ' + readers.join(', ') + '.');
           el.appendChild(p);
         } },
-      { title: 'Discard the projections, keep the retrieved update',
-        tex: '\\vd{\\Delta e_i} = W_O \\sum_{j \\le i} \\va{\\alpha_{ij}}\\,\\vv{v_j}',
-        note: 'After this point $\\vq{q_i}$, $\\vk{k_i}$, $\\vv{v_i}$ are not needed. They were never a representation of the token.',
+      { title: 'Keep the retrieved update; the projections were only inputs to it',
+        tex: '\\vd{\\Delta e_i} = \\Big(\\sum_{j \\le i} \\va{\\alpha_{ij}}\\,\\vv{v_j}\\Big) W_O',
+        note: 'Only $\\vd{\\Delta e_i}$ moves on from here. $\\vq{q_i}$, $\\vk{k_i}$, $\\vv{v_i}$ were working vectors for this computation and were never a representation of the token.',
         render: (el) => { AT.ui.vec(F.Delta[qi], { cls: 'd', label: '\\vd{\\Delta e_{' + n() + '}}', into: el }); } },
       { title: 'Add: the representation is updated, not replaced',
         tex: "\\vp{e_i'} = \\ve{e_i} + \\vd{\\Delta e_i}",
@@ -3071,7 +3084,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 <header class="sec-head">
   <span class="sec-num">12</span>
   <div>
-    <p class="eyebrow">Why we are here: a small technical fix &mdash; raw dot products grow with the dimension, and a sharp softmax stops listening.</p>
+    <p class="eyebrow">Why we are here: a small technical fix. The spread of raw dot products grows with the dimension, and dividing by $\sqrt{d_k}$ takes that growth out.</p>
     <h2>Why divide by $\sqrt{d_k}$?</h2>
   </div>
 </header>
@@ -3081,7 +3094,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
   $$s_{ij} = \frac{\vq{q_i}^\top \vk{k_j}}{\sqrt{d_k}}$$
   <p>If the coordinates of $\vq{q}$ and $\vk{k}$ are roughly zero-mean and unit-variance, each product $q_l k_l$ has variance about 1,
   and the sum of $d_k$ of them has variance about $d_k$: $\operatorname{Var}(\vq{q}^\top \vk{k}) \propto d_k$.
-  Bigger $d_k$ means bigger logits &mdash; unless we rescale.</p>
+  Bigger $d_k$ means bigger logits unless we rescale.</p>
 </div>
 
 <div class="card">
@@ -3158,7 +3171,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
   AT.ui.slider({ label: 'd_k', labelTex: 'd_k', min: 1, max: 64, step: 1, value: dk, format: v => v + '  (√ = ' + Math.sqrt(v).toFixed(2) + ')', onInput: v => { dk = v; drawScaled(); drawSim(); }, into: S.querySelector('#s12-ctl') });
   drawScaled();
 
-  AT.ui.callout('Large logits make softmax extremely sharp: almost all weight lands on one token and the &ldquo;weighted mixture&rdquo; collapses to hard retrieval. Dividing by $\\sqrt{d_k}$ keeps the scores at a scale where softmax still mixes &mdash; whatever $d_k$ is.', { kind: 'key', into: S.querySelector('#s12-callout') });
+  AT.ui.callout('The differences between scores set the softmax sharpness, and with raw dot products those differences grow with $d_k$ for no reason tied to content. Dividing by $\\sqrt{d_k}$ removes the variance that comes from the dimension alone (under the independence assumptions above). It does not guarantee diffuse attention: a large real score gap still gives a sharp row.', { kind: 'key', into: S.querySelector('#s12-callout') });
 
   /* ---- seeded simulation of Var(q·k) ---- */
   function rng(seed){ let a = seed >>> 0; return function(){ a += 0x6D2B79F5; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -3203,7 +3216,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
   g.appendChild(colU); g.appendChild(colS); host.appendChild(g);
   const mU = AT.argmax(Fu.A[bi]), mS = AT.argmax(Fs.A[bi]);
   const p = AT.h('p', { class: 'muted small' });
-  p.innerHTML = 'Columns are tokens 1&ndash;7 (' + AT.escape(toks.join(', ')) + '). With $d_k = 3$ the factor is only $\\sqrt{3} \\approx ' + AT.fmt(AT.sqrt_dk, 2) + '$, so the effect is mild: the top weight (on <strong>' + AT.escape(toks[mS]) + '</strong>) goes from <span class="mono">' + AT.fmt(Fu.A[bi][mU], 2) + '</span> unscaled to <span class="mono">' + AT.fmt(Fs.A[bi][mS], 2) + '</span> scaled. At $d_k = 64$ the same fix divides by 8.';
+  p.innerHTML = 'Columns are tokens 1 to 7 (' + AT.escape(toks.join(', ')) + '). With $d_k = 3$ the factor is only $\\sqrt{3} \\approx ' + AT.fmt(AT.sqrt_dk, 2) + '$, so the effect is mild: the top weight (on <strong>' + AT.escape(toks[mS]) + '</strong>) goes from <span class="mono">' + AT.fmt(Fu.A[bi][mU], 2) + '</span> unscaled to <span class="mono">' + AT.fmt(Fs.A[bi][mS], 2) + '</span> scaled. At $d_k = 64$ the same fix divides by 8.';
   host.appendChild(p); AT.renderMath(p);
 })();
 </script>
@@ -3222,14 +3235,14 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 <header class="sec-head">
   <span class="sec-num">13</span>
   <div>
-    <p class="eyebrow">Why we are here: this is next-token prediction &mdash; a token may read the past, never the future.</p>
+    <p class="eyebrow">Why we are here: this is next-token prediction, so a token may read the past and never the future.</p>
     <h2>Causal masking</h2>
   </div>
 </header>
 
 <div class="prose">
   <p>Every query token $i$ compares against every key $j$, giving the score matrix
-  $S = QK^\top/\sqrt{d_k}$ with entries $s_{ij}$. In a language model, token $i$ may retrieve only from $j \le i$ &mdash; never from $j > i$.
+  $S = QK^\top/\sqrt{d_k}$ with entries $s_{ij}$. In a language model, token $i$ may retrieve only from $j \le i$, never from $j > i$.
   A <em>causal mask</em> sets the forbidden scores to $-\infty$ before the softmax, so their weights become exactly 0.</p>
 </div>
 
@@ -3248,7 +3261,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 </div>
 
 <div class="card">
-  <h3 class="card-title">The real attention matrix $\va{A}$ for sentence A (10 tokens) &mdash; toggle the mask</h3>
+  <h3 class="card-title">The real attention matrix $\va{A}$ for sentence A (10 tokens), with the mask on or off</h3>
   <div class="row" id="s13-ctl"></div>
   <div id="s13-heat"></div>
   <p class="muted small s13-msg" id="s13-msg">Hover a cell to read one weight.</p>
@@ -3282,12 +3295,15 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 
   /* ---- 10×10 heatmap with a mask toggle ---- */
   const msg = S.querySelector('#s13-msg');
+  let lastCell = null;                           // last inspected (i, j); re-explained when the mask toggles
+  function explain(i, j){
+    lastCell = [i, j];
+    const A = (maskOn ? Fon : Foff).A;
+    const fut = j > i;
+    msg.innerHTML = AT.texStr('\\va{\\alpha_{' + (i + 1) + ',' + (j + 1) + '}}') + ' = ' + AT.fmt(A[i][j], 3) + ' &nbsp;(' + AT.escape(toks[i]) + ' ← ' + AT.escape(toks[j]) + ')' + (fut ? (maskOn ? ' Masked: token ' + (j + 1) + ' is in the future of token ' + (i + 1) + '.' : ' <span class="warn-text">Leak: token ' + (i + 1) + ' is reading a token it must predict later.</span>') : '');
+  }
   const heat = AT.ui.heat(Fon.A, { rows: toks, cols: toks, mask: true, leak: true, decimals: 2, highlightRow: li,
-    onHover: (i, j) => {
-      const A = (maskOn ? Fon : Foff).A;
-      const fut = j > i;
-      msg.innerHTML = AT.texStr('\\va{\\alpha_{' + (i + 1) + ',' + (j + 1) + '}}') + ' = ' + AT.fmt(A[i][j], 3) + ' &nbsp;(' + AT.escape(toks[i]) + ' ← ' + AT.escape(toks[j]) + ')' + (fut ? (maskOn ? ' — masked: token ' + (j + 1) + ' is in the future of token ' + (i + 1) + '.' : ' <span class="warn-text">— leak: token ' + (i + 1) + ' is reading a token it must predict later.</span>') : '');
-    },
+    onHover: explain,
     caption: 'Mask ON: hatched cells are future tokens; every row sums to 1 over $j \\le i$. Row 5 (the) is highlighted.', into: S.querySelector('#s13-heat') });
   const warnHost = S.querySelector('#s13-warn');
   function paintNext(on){
@@ -3300,10 +3316,11 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
     paintNext(on);
     heat.querySelector('.mat-cap').innerHTML = on
       ? 'Mask ON: hatched cells are future tokens; every row sums to 1 over $j \\le i$. Row 5 (the) is highlighted.'
-      : 'Mask OFF: every row can read every token. Cells $(i, i+1)$ are outlined: when predicting $x_{i+1}$, token $i$ could read $\\ve{e_{i+1}}$ — the answer is in the input. Warn-ringed cells are all future reads.';
+      : 'Mask OFF: every row can read every token. Cells $(i, i+1)$ are outlined: when predicting $x_{i+1}$, token $i$ could read $\\ve{e_{i+1}}$, so the answer is in the input. Warn-ringed cells are all future reads.';
     AT.renderMath(heat.querySelector('.mat-cap'));
+    if (lastCell) explain(lastCell[0], lastCell[1]);
     AT.clear(warnHost);
-    if (!on) AT.ui.callout('With the mask off, the weights in each row still sum to 1 — but part of that weight now comes from tokens the model is supposed to be predicting. This is information leakage.', { kind: 'warn', into: warnHost });
+    if (!on) AT.ui.callout('With the mask off, the weights in each row still sum to 1, but part of that weight now comes from tokens the model is supposed to be predicting. This is information leakage.', { kind: 'warn', into: warnHost });
     drawRows();
   }
   AT.ui.toggle({ label: 'Causal mask', on: true, onText: 'ON', offText: 'OFF', onChange: setMask, into: S.querySelector('#s13-ctl') });
@@ -3322,11 +3339,11 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
     const A = (maskOn ? Fon : Foff).A[li];
     const fut = Foff.A[li].slice(li + 1).reduce((a, b) => a + b, 0);
     S.querySelector('#s13-leak-text').innerHTML = 'Training target for position 5 is the token at position 6, <strong>' + AT.escape(toks[li + 1]) + '</strong>. With the mask <strong>off</strong>, token 5 puts <span class="s13-leak">' + AT.fmt(Foff.A[li][li + 1], 2) + '</span> of its weight on ' + AT.escape(toks[li + 1]) + ' and <span class="s13-leak">' + AT.fmt(Foff.A[li][li + 2], 2) + '</span> on ' + AT.escape(toks[li + 2]) + '; in total <span class="s13-leak">' + AT.fmt(fut, 2) + '</span> of its message comes from the future. It could <em>copy</em> the answer instead of predicting it. Mask <strong>on</strong>: those weights are exactly <span class="s13-leak">' + AT.fmt(Fon.A[li][li + 1], 2) + '</span>.';
-    S.querySelector('#s13-send-note').innerHTML = (maskOn ? 'Only tokens 1–5 can send.' : 'Tokens 6–10 also send — they should not exist yet.') + ' Press the button to compute ' + AT.texStr('m_5') + '.';
+    S.querySelector('#s13-send-note').innerHTML = (maskOn ? 'Only tokens 1 to 5 can send.' : 'Tokens 6 to 10 also send, though they should not exist yet.') + ' Press the button to compute ' + AT.texStr('m_5') + '.';
     target.setLabel('m_5' + (maskOn ? '' : '\\ \\text{(leaky)}'));
     target.update(blank());
   }
-  function blank(){ return AT.range(AT.d_v).map(() => NaN); }   // renders as “—” until the messages arrive
+  function blank(){ return AT.range(AT.d_v).map(() => NaN); }   // renders as a blank cell until the messages arrive
   const target = AT.ui.vec(blank(), { cls: 'm', label: 'm_5', into: S.querySelector('#s13-target') });
   drawRows();
   S.querySelector('#s13-send').addEventListener('click', () => {
@@ -3338,8 +3355,8 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 
   /* ---- callouts ---- */
   const co = S.querySelector('#s13-callouts');
-  AT.ui.callout('Token $i$ may only retrieve from $j \\le i$. Never $j > i$. Rows of $\\va{A}$ are softmaxed over the past only.', { kind: 'key', into: co });
-  AT.ui.callout('Why training would be invalid without the mask: the loss at position $i$ asks for $p(x_{i+1} \\mid x_{\\le i})$. If $\\ve{e_i}$ could read $\\ve{e_{i+1}}$, the model would drive that loss down by copying, learning nothing about language. At generation time token $i+1$ does not exist yet, so the trick would fail exactly when it matters.', { kind: 'warn', into: co });
+  AT.ui.callout('Token $i$ may only retrieve from $j \\le i$, never from $j > i$. Rows of $\\va{A}$ are softmaxed over the past only.', { kind: 'key', into: co });
+  AT.ui.callout('Why training would be invalid without the mask: the loss at position $i$ asks for $p(x_{i+1} \\mid x_{\\le i})$. If $\\ve{e_i}$ could read $\\ve{e_{i+1}}$, the model would drive that loss down by copying and learn nothing about language. At generation time token $i+1$ does not exist yet, so the trick would fail exactly when it matters.', { kind: 'warn', into: co });
 })();
 </script>
 </section>
@@ -3380,8 +3397,8 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 </header>
 
 <div class="prose">
-  <p>Do not stop at $\vp{e_t'}$. The last token's updated representation goes straight into the output head — the same head as in section 02, now fed with context:</p>
-  $$\ell = W_{\text{vocab}}\,\vp{e_t'} + b$$
+  <p>Do not stop at $\vp{e_t'}$. The last token's updated representation goes straight into the output head, the same head as in section 02, now fed with context:</p>
+  $$\ell = \vp{e_t'}\,W_{\text{vocab}} + b$$
   $$p(x_{t+1}\mid x_{\le t}) = \operatorname{softmax}(\ell)$$
 </div>
 
@@ -3415,6 +3432,8 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
   <div class="chain" id="s14-chain"></div>
   <p class="muted small">Earlier tokens never reach the output head directly. They reach it only through the update they send to the last token.</p>
 </div>
+
+<div id="s14-layer-note"></div>
 
 <script>
 (function(){
@@ -3487,7 +3506,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
       AT.ui.vec(F[ctx].Enew[t], { cls: 'ep', label: "\\vp{e_{10}'}", into: r });
       eHost.appendChild(r);
     } else {
-      dHost.appendChild(AT.h('div', { class: 'ghost' }, 'no update — attention is off'));
+      dHost.appendChild(AT.h('div', { class: 'ghost' }, 'no update (attention is off)'));
       AT.ui.vec(B[ctx].E[t], { cls: 'e', label: '\\ve{e_{10}^{(0)}}', dims: true, into: eHost });
     }
   }
@@ -3515,7 +3534,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
     // show the true (possibly negative) logit value next to each bar
     lgBars.rows().forEach((r, i) => { r.bv.textContent = AT.fmt(it.lItems[i].raw, 2); });
     prBars = AT.ui.bars(it.pItems, { cls: 'neutral', sorted: false, highlight: it.top[0].tok, decimals: 3, max: 1, into: prHost });
-    lgl.innerHTML = (useAtt ? 'Logits $\\ell = W_{\\text{vocab}}\\,\\vp{e_{10}\'} + b$' : 'Logits $\\ell = W_{\\text{vocab}}\\,\\ve{e_{10}^{(0)}} + b$')
+    lgl.innerHTML = (useAtt ? 'Logits $\\ell = \\vp{e_{10}\'}\\,W_{\\text{vocab}} + b$' : 'Logits $\\ell = \\ve{e_{10}^{(0)}}\\,W_{\\text{vocab}} + b$')
       + ' (top 6 tokens; bar length $= \\ell - \\min \\ell$, since the softmax ignores a constant shift)';
     prl.innerHTML = 'Probabilities $p = \\operatorname{softmax}(\\ell)$ (top 6, rest as “other”)';
     AT.renderMath(lgl); AT.renderMath(prl);
@@ -3525,7 +3544,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
       msg.textContent = 'With attention: most likely next token "' + it.top[0].tok + '" (p = ' + AT.fmt(it.top[0].p, 3) + '). The other context gives "' + o.tok + '" (p = ' + AT.fmt(o.p, 3) + ').';
     } else {
       const same = B.river.probs[t].every((p, i) => Math.abs(p - B.cheque.probs[t][i]) < 1e-12);
-      msg.textContent = 'Attention off: same last token, same position, so both contexts give ' + (same ? 'identical' : 'nearly identical') + ' probabilities — the context cannot matter.';
+      msg.textContent = 'Attention off: same last token, same position, so both contexts give ' + (same ? 'identical' : 'nearly identical') + ' probabilities. The context cannot matter.';
     }
   }
 
@@ -3553,6 +3572,9 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
     if (AT.reducedMotion()) { chainBoxes.forEach(b => b.classList.add('is-on')); return; }
     chainBoxes.forEach((b, i) => { chainTimer.push(setTimeout(() => b.classList.add('is-on'), 160 * i)); });
   }
+
+  /* layer boundary note */
+  AT.ui.callout('One layer at a time. Within a layer, every position reads keys and values computed from the same layer-input representations. The final “the” does not read the updated bank vector $\\vp{e_7\'}$ here; it reads values built from $\\ve{e_7}$. The updated bank becomes input to the next layer, which is one reason to stack layers.', { kind: 'note', into: S.querySelector('#s14-layer-note') });
 
   function draw(){
     buildChips(); paintChips(); paintVecs(); paintBars(); lightChain();
@@ -3582,7 +3604,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 <header class="sec-head">
   <span class="sec-num">15</span>
   <div>
-    <p class="eyebrow">Why we are here: every piece is in place — now run the whole computation once, slowly, with real numbers.</p>
+    <p class="eyebrow">Why we are here: every piece is in place. Now run the whole computation once, slowly, with real numbers.</p>
     <h2>Full walkthrough, one step at a time</h2>
   </div>
 </header>
@@ -3621,7 +3643,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
   function row(cls){ return AT.h('div', { class: 'row' + (cls ? ' ' + cls : '') }); }
   function rowTop(cls){ return AT.h('div', { class: 'row top' + (cls ? ' ' + cls : '') }); }
   function why(el, html){ const p = AT.h('p', { class: 'why', html: html }); el.appendChild(p); }
-  /* a note that names the chosen query token — built inside render, so it follows the chip picked at step 3 */
+  /* a note that names the chosen query token, built inside render, so it follows the chip picked at step 3 */
   function note(el, html){ const p = AT.h('p', { class: 'stage-note', html: html }); el.appendChild(p); }
   const who = () => 'token ' + n() + ' (“' + tokQ() + '”)';
   function score(el){ const d = AT.h('div', { class: 'score' }); el.appendChild(d); return d; }
@@ -3646,7 +3668,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
         why(el, 'Token ' + n() + ' (“' + tokQ() + '”) will read from tokens 1 to ' + n() + '.');
       } },
 
-    { title: 'Compute the query', tex: '\\vq{q_i} = W_Q \\ve{e_i}',
+    { title: 'Compute the query', tex: '\\vq{q_i} = \\ve{e_i}\\,W_Q',
       render: (el) => {
         note(el, 'What is ' + who() + ' looking for? A $d_k = ' + AT.d_k + '$ dimensional question.');
         const r1 = rowTop('eq');
@@ -3660,7 +3682,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
         el.appendChild(r2);
       } },
 
-    { title: 'Compute every key', tex: '\\vk{k_j} = W_K \\ve{e_j}', note: 'Every token advertises when it should be retrieved. Same $W_K$ for all of them.',
+    { title: 'Compute every key', tex: '\\vk{k_j} = \\ve{e_j}\\,W_K', note: 'Every token advertises when it should be retrieved. Same $W_K$ for all of them.',
       render: (el) => {
         const r = rowTop();
         AT.ui.mat(AT.model.W_K, { cls: 'k', size: 'sm', caption: '$W_K$', dims: true, into: r });
@@ -3700,7 +3722,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
         AT.ui.bars(items, { cls: 'a', sorted: true, highlight: items.slice().sort((a, b) => b.p - a.p)[0].label, decimals: 2, max: 1, into: el });
       } },
 
-    { title: 'Produce the values', tex: '\\vv{v_j} = W_V \\ve{e_j}',
+    { title: 'Produce the values', tex: '\\vv{v_j} = \\ve{e_j}\\,W_V',
       render: (el) => {
         note(el, 'What each token would send if retrieved. Only tokens $j \\le ' + n() + '$ can be retrieved by token ' + n() + ', so only their values matter here.');
         const r = rowTop();
@@ -3717,7 +3739,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
         const r = rowTop();
         AT.ui.vec(F.A[qi].slice(0, qi + 1), { cls: 'a', label: '\\va{\\alpha_{' + n() + ',\\cdot}}', into: r });
         el.appendChild(r);
-        AT.ui.mat(rows, { cls: 'v', rowLabels: jle().map(j => AT.fmt(F.A[qi][j], 2) + ' × ' + toks[j]), colLabels: ['1','2','3'], highlight: { row: best }, caption: 'row $j$ is $\\va{\\alpha_{' + n() + 'j}}\\,\\vv{v_j}$ — the largest message is highlighted', into: el });
+        AT.ui.mat(rows, { cls: 'v', rowLabels: jle().map(j => AT.fmt(F.A[qi][j], 2) + ' × ' + toks[j]), colLabels: ['1','2','3'], highlight: { row: best }, caption: 'row $j$ is $\\va{\\alpha_{' + n() + 'j}}\\,\\vv{v_j}$. The row with the largest attention weight is highlighted (the size of a message also depends on $\\vv{v_j}$)', into: el });
       } },
 
     { title: 'Sum the values', tex: '\\sum_{j \\le i} \\va{\\alpha_{ij}}\\,\\vv{v_j}',
@@ -3747,7 +3769,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
       note: '$m_i$ is the retrieved mixture. It lives in the value space ($d_v = ' + AT.d_v + '$), not yet in the space of $\\ve{e_i}$ ($d_{\\text{model}} = ' + AT.d_model + '$).',
       render: (el) => { const r = row(); AT.ui.vec(F.Mmsg[qi], { cls: 'm', label: 'm_{' + n() + '}', dims: true, size: 'lg', into: r }); el.appendChild(r); } },
 
-    { title: 'Output projection', tex: 'W_O\\, m_i', note: 'A linear map from the value space back into the representation space, so the result can be added to $\\ve{e_i}$.',
+    { title: 'Output projection', tex: 'm_i\\,W_O', note: 'A linear map from the value space back into the representation space, so the result can be added to $\\ve{e_i}$.',
       render: (el) => {
         const r1 = rowTop('eq');
         AT.ui.vec(F.Mmsg[qi], { cls: 'm', label: 'm_{' + n() + '}', dims: true, into: r1 });
@@ -3756,11 +3778,11 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
         el.appendChild(r1);
         const r2 = row('eq');
         AT.ui.op('=', { into: r2 });
-        AT.ui.vec(F.Delta[qi], { cls: 'neutral', label: 'W_O m_{' + n() + '}', dims: true, into: r2 });
+        AT.ui.vec(F.Delta[qi], { cls: 'neutral', label: 'm_{' + n() + '}\,W_O', dims: true, into: r2 });
         el.appendChild(r2);
       } },
 
-    { title: 'Call it Δe (pedagogical)', tex: '\\vd{\\Delta e_i} = W_O\\, m_i',
+    { title: 'Call it Δe (pedagogical)', tex: '\\vd{\\Delta e_i} = m_i\\,W_O',
       render: (el) => {
         note(el, 'This is the context-dependent update for ' + who() + '. It depends on which earlier tokens it read from.');
         const r = row(); AT.ui.vec(F.Delta[qi], { cls: 'd', label: '\\vd{\\Delta e_{' + n() + '}}', dims: true, size: 'lg', into: r }); el.appendChild(r);
@@ -3782,12 +3804,13 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
         AT.ui.callout('Attention does not replace the existing representation. It computes context-dependent information that can be added to it.', { kind: 'key', into: el });
       } },
 
-    { title: 'Predict the next token', tex: '\\ell = W_{\\text{vocab}}\\,\\vp{e_{' + T + '}\'} + b, \\qquad p(x_{' + (T + 1) + '}\\mid x_{\\le ' + T + '}) = \\operatorname{softmax}(\\ell)',
-      note: 'Steps 4–17 run for every position at once. The last token’s contextual $\\vp{e_{' + T + '}\'}$ feeds the output head.',
+    { title: 'Predict the next token', tex: '\\ell = \\vp{e_{' + T + '}\'}\\,W_{\\text{vocab}} + b, \\qquad p(x_{' + (T + 1) + '}\\mid x_{\\le ' + T + '}) = \\operatorname{softmax}(\\ell)',
+      note: 'The query changes here. Steps 4 to 17 ran for every position at once, so the same computation also ran for position ' + T + ' (“' + toks[T - 1] + '”). The prediction comes from $\\vp{e_{' + T + '}\'}$, the updated last token, not from the update of “' + toks[qi] + '”.',
       render: (el) => {
+        AT.ui.heat([F.A[T - 1]], { rows: [toks[T - 1]], cols: toks, mask: [AT.range(T).map(j => j > T - 1)], size: 'sm', caption: 'attention row of token ' + T + ' (“' + toks[T - 1] + '”), $\\va{\\alpha_{' + T + ',j}}$: where the last token reads from', into: score(el) });
         const g = AT.h('div', { class: 'row top' });
         const left = AT.h('div');
-        AT.ui.mat(F.Enew, { cls: 'ep', rowLabels: toks, colLabels: AT.range(AT.d_model).map(k => String(k + 1)), highlight: { row: T - 1 }, caption: '$\\vp{E\'}$: every row updated; row ' + T + ' goes to the head', dims: true, into: left });
+        AT.ui.mat(F.Enew, { cls: 'ep', rowLabels: toks, colLabels: AT.range(AT.d_model).map(k => String(k + 1)), highlight: { row: T - 1 }, caption: '$\\vp{E\'}$: every row updated; row ' + T + ' (“' + toks[T - 1] + '”) goes to the head', dims: true, into: left });
         const right = AT.h('div', { style: 'flex:1 1 280px;min-width:0' });
         const top = AT.topk(F.probs[T - 1], 6);
         const rest = Math.max(0, 1 - top.reduce((s, x) => s + x.p, 0));
@@ -3805,7 +3828,8 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
   const stepOpts = { big: true, compact: true, texInList: false, steps: steps, into: S.querySelector('#s15-stepper'), scrollList: !narrow.matches,
     onChange: (i) => {
       motif.setActive(stageOf[i] || null);
-      status.textContent = 'Step ' + (i + 1) + ' of ' + steps.length + ' · query token: ' + n() + ' “' + tokQ() + '”';
+      const last = i === steps.length - 1;
+      status.textContent = 'Step ' + (i + 1) + ' of ' + steps.length + ' · query token: ' + (last ? T + ' “' + toks[T - 1] + '” (the last token feeds the head)' : n() + ' “' + tokQ() + '”');
     } };
   const onNarrow = () => { stepOpts.scrollList = !narrow.matches; };
   if (narrow.addEventListener) narrow.addEventListener('change', onNarrow); else if (narrow.addListener) narrow.addListener(onNarrow);
@@ -3831,7 +3855,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 <header class="sec-head">
   <span class="sec-num">16</span>
   <div>
-    <p class="eyebrow">Why we are here: one token at a time is clear — now every token does the same thing at once, and that is what the matrices say.</p>
+    <p class="eyebrow">Why we are here: one token at a time is clear. Now every token does the same thing at once, and that is what the matrices say.</p>
     <h2>The same thing in matrix form</h2>
   </div>
 </header>
@@ -3842,7 +3866,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 </div>
 
 <div class="card">
-  <h3 class="card-title">Dimensions — always in view</h3>
+  <h3 class="card-title">Dimensions, always in view</h3>
   <div class="dims" id="s16-dims"></div>
   <p class="why">The row for <strong>bank</strong> (row 7) is outlined in every matrix: it is exactly the single-token computation of section 15. <span class="rowhint">row 7 = bank</span></p>
 </div>
@@ -3919,8 +3943,8 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 
   const steps = [
     { title: 'Stack the representations', tex: '\\ve{E} \\in \\mathbb{R}^{T \\times d_{\\text{model}}}',
-      note: 'Row $i$ is $\\ve{e_i}$ for the token at position $i$ — the seven tokens of the short sequence, one row each.',
-      render: (el) => line(el, rowMat(F.E, 'e', '$\\ve{E}$ — one row per token')) },
+      note: 'Row $i$ is $\\ve{e_i}$ for the token at position $i$: the seven tokens of the short sequence, one row each.',
+      render: (el) => line(el, rowMat(F.E, 'e', '$\\ve{E}$: one row per token')) },
     { title: 'Queries, all at once', tex: '\\vq{Q} = \\ve{E}\\,W_Q',
       note: 'One product gives every query at once. Row $i$ of $\\vq{Q}$ is $\\vq{q_i}$.',
       render: (el) => line(el, rowMat(F.E, 'e', '$\\ve{E}$'), '·', wMat(M.W_Q, '$W_Q$'), '=', rowMat(F.Q, 'q', '$\\vq{Q}$')) },
@@ -3928,30 +3952,33 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
       note: 'Same input $\\ve{E}$, different weight matrix. Row $j$ of $\\vk{K}$ is $\\vk{k_j}$.',
       render: (el) => line(el, rowMat(F.E, 'e', '$\\ve{E}$'), '·', wMat(M.W_K, '$W_K$'), '=', rowMat(F.K, 'k', '$\\vk{K}$')) },
     { title: 'Values, all at once', tex: '\\vv{V} = \\ve{E}\\,W_V',
-      note: 'And the third projection. Row $j$ of $\\vv{V}$ is $\\vv{v_j}$ — what token $j$ sends if retrieved.',
+      note: 'The third projection. Row $j$ of $\\vv{V}$ is $\\vv{v_j}$, what token $j$ sends if retrieved.',
       render: (el) => line(el, rowMat(F.E, 'e', '$\\ve{E}$'), '·', wMat(M.W_V, '$W_V$'), '=', rowMat(F.V, 'v', '$\\vv{V}$')) },
     { title: 'Every query against every key', tex: 'S = \\frac{\\vq{Q}\\,\\vk{K}^\\top}{\\sqrt{d_k}}',
-      note: 'Entry $(i,j)$ is $s_{ij} = \\vq{q_i}^\\top \\vk{k_j}/\\sqrt{d_k}$: every query against every key. Row 7 is the score row of bank from section 15.',
-      render: (el) => line(el, rowMat(F.Q, 'q', '$\\vq{Q}$'), '·', AT.ui.mat(KT, { cls: 'k', rowLabels: idx(AT.d_k), colLabels: toks, caption: '$\\vk{K}^\\top$', dims: true }), '=', sqMat(F.Sfull, 'neutral', '$S$ — scaled scores, before the mask')) },
+      note: 'Entry $(i,j)$ is $s_{ij} = \\vq{q_i}^\\top \\vk{k_j}/\\sqrt{d_k}$. The product $\\vq{Q}\\vk{K}^\\top$ holds the raw dot products; dividing every entry by $\\sqrt{d_k} = \\sqrt{' + AT.d_k + '}$ gives $S$. Row 7 is the score row of bank from section 15.',
+      render: (el) => {
+        line(el, rowMat(F.Q, 'q', '$\\vq{Q}$'), '·', AT.ui.mat(KT, { cls: 'k', rowLabels: idx(AT.d_k), colLabels: toks, caption: '$\\vk{K}^\\top$', dims: true }), '=', sqMat(F.Sraw, 'neutral', '$\\vq{Q}\\vk{K}^\\top$: raw dot products'));
+        line(el, sqMat(F.Sraw, 'neutral', '$\\vq{Q}\\vk{K}^\\top$'), '÷ √' + AT.d_k, '=', sqMat(F.Sfull, 'neutral', '$S = \\vq{Q}\\vk{K}^\\top / \\sqrt{d_k}$: scaled scores, before the mask'));
+      } },
     { title: 'Add the causal mask', tex: 'S + M, \\qquad M_{ij} = \\begin{cases} 0 & j \\le i \\\\ -\\infty & j > i \\end{cases}',
       note: 'Adding $-\\infty$ above the diagonal removes every future token before the softmax sees it.',
-      render: (el) => line(el, sqMat(F.Sfull, 'neutral', '$S$'), '+', sqMat(Mmask, 'neutral', '$M$ — the causal mask', { highlight: null, decimals: 0 }), '=', sqMat(SplusM, 'neutral', '$S + M$ — future entries are $-\\infty$', { mask: 'causal', maskText: '−∞' })) },
+      render: (el) => line(el, sqMat(F.Sfull, 'neutral', '$S$'), '+', sqMat(Mmask, 'neutral', '$M$: the causal mask', { highlight: null, decimals: 0 }), '=', sqMat(SplusM, 'neutral', '$S + M$: future entries are $-\\infty$', { mask: 'causal', maskText: '−∞' })) },
     { title: 'Softmax, row by row', tex: '\\va{A} = \\operatorname{softmax}(S + M)',
       note: 'Row $i$ of $\\va{A}$ is the weight row $\\va{\\alpha_{i\\cdot}}$: masked entries become exactly $0$ and each row sums to $1$.',
       render: (el) => {
-        line(el, AT.ui.heat(F.A, { rows: toks, cols: toks, mask: true, highlightRow: BANK, caption: '$\\va{A}$ — attention weights; hatched cells are masked', dims: true }));
+        line(el, AT.ui.heat(F.A, { rows: toks, cols: toks, mask: true, highlightRow: BANK, caption: '$\\va{A}$: attention weights; hatched cells are masked', dims: true }));
         const p = AT.h('p', { class: 'why' }, 'Row sums: ' + F.A.map(r => AT.fmt(AT.sum(r), 2)).join(', ') + '.');
         el.appendChild(p);
       } },
     { title: 'Retrieve the messages', tex: 'H = \\va{A}\\,\\vv{V}',
       note: 'Row $i$ of $H$ is the message $m_i = \\sum_j \\va{\\alpha_{ij}}\\,\\vv{v_j}$: each row of $\\va{A}$ mixes the rows of $\\vv{V}$.',
-      render: (el) => line(el, sqMat(F.A, 'a', '$\\va{A}$', { heat: true, mask: true }), '·', rowMat(F.V, 'v', '$\\vv{V}$', { highlight: null }), '=', rowMat(F.Mmsg, 'm', '$H$ — one message per token')) },
+      render: (el) => line(el, sqMat(F.A, 'a', '$\\va{A}$', { heat: true, mask: true }), '·', rowMat(F.V, 'v', '$\\vv{V}$', { highlight: null }), '=', rowMat(F.Mmsg, 'm', '$H$: one message per token')) },
     { title: 'Output projection', tex: '\\vd{\\Delta E} = H\\,W_O',
       note: 'Back into the model\'s representation space. Row $i$ of $\\vd{\\Delta E}$ is $\\vd{\\Delta e_i}$.',
       render: (el) => line(el, rowMat(F.Mmsg, 'm', '$H$'), '·', wMat(M.W_O, '$W_O$'), '=', rowMat(F.Delta, 'd', '$\\vd{\\Delta E}$')) },
     { title: 'Residual addition', tex: '\\boxed{\\vp{E\'} = \\ve{E} + \\vd{\\Delta E}}',
-      note: 'Nothing is replaced. Every token keeps its own $\\ve{e_i}$ and gains a context-dependent $\\vd{\\Delta e_i}$ — all rows at once.',
-      render: (el) => line(el, rowMat(F.E, 'e', '$\\ve{E}$'), '+', rowMat(F.Delta, 'd', '$\\vd{\\Delta E}$'), '=', rowMat(F.Enew, 'ep', '$\\vp{E\'}$ — updated representations')) }
+      note: 'Nothing is replaced. Every token keeps its own $\\ve{e_i}$ and gains a context-dependent $\\vd{\\Delta e_i}$, all rows at once.',
+      render: (el) => line(el, rowMat(F.E, 'e', '$\\ve{E}$'), '+', rowMat(F.Delta, 'd', '$\\vd{\\Delta E}$'), '=', rowMat(F.Enew, 'ep', '$\\vp{E\'}$: updated representations')) }
   ];
 
   AT.ui.stepper({ into: S.querySelector('#s16-stepper'), steps: steps, compact: true, texInList: false });
@@ -3959,7 +3986,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
   /* callouts */
   const co = S.querySelector('#s16-callouts');
   AT.ui.callout('The matrices add nothing new. $\\va{A}\\,\\vv{V}$ computes every token\'s message in one product, and $\\vp{E\'} = \\ve{E} + \\vd{\\Delta E}$ is the residual addition applied to all rows at once.', { kind: 'key', into: co });
-  AT.ui.callout('$\\vd{\\Delta E}$ is our pedagogical notation for the attention sublayer\'s residual update. Standard descriptions call $H W_O$ the attention output; the addition $\\ve{E} + \\vd{\\Delta E}$ itself is standard — it is the residual connection around the attention sublayer.', { kind: 'note', into: co });
+  AT.ui.callout('$\\vd{\\Delta E}$ is our pedagogical notation for the attention sublayer\'s residual update. Standard descriptions call $H W_O$ the attention output; the addition $\\ve{E} + \\vd{\\Delta E}$ itself is standard: it is the residual connection around the attention sublayer.', { kind: 'note', into: co });
 })();
 </script>
 </section>
@@ -4012,7 +4039,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 <header class="sec-head">
   <span class="sec-num">17</span>
   <div>
-    <p class="eyebrow">Why we are here: one head is one notion of relevance — a token usually needs several at once.</p>
+    <p class="eyebrow">Why we are here: one head is one notion of relevance, and a token usually needs several at once.</p>
     <h2>Multiple heads</h2>
   </div>
 </header>
@@ -4023,7 +4050,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 
 <div class="card">
   <h3 class="card-title">Three heads, one query token (bank) <span class="illus">illustrative patterns</span></h3>
-  <p class="why" style="margin:0 0 12px">These weight rows are hand-drawn to show the idea — they are not computed by the toy model, whose single head you have seen in sections 8–16. Pick a head to follow it through the diagram below.</p>
+  <p class="why" style="margin:0 0 12px">These weight rows are drawn by hand to show the idea; the toy model did not compute them. Its single head is the one you have seen in sections 8 to 16. Pick a head to follow it through the diagram below.</p>
   <div class="btn-row" id="s17-btns"></div>
   <div class="heads" id="s17-heads" style="margin-top:14px"></div>
 </div>
@@ -4039,7 +4066,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
   <div class="eqgrid">
     <div>$$\vq{Q^{(h)}} = \ve{E}\,W_Q^{(h)}, \qquad \vk{K^{(h)}} = \ve{E}\,W_K^{(h)}, \qquad \vv{V^{(h)}} = \ve{E}\,W_V^{(h)}$$</div>
     <div>$$H^{(h)} = \operatorname{Attention}\!\left(\vq{Q^{(h)}}, \vk{K^{(h)}}, \vv{V^{(h)}}\right)$$</div>
-    <div>$$H = \left[H^{(1)};\,\ldots;\,H^{(H)}\right]$$</div>
+    <div>$$H = \left[H^{(1)};\,\ldots;\,H^{(n_h)}\right]$$</div>
     <div>$$\boxed{\vd{\Delta E} = H\,W_O}, \qquad \vp{E'} = \ve{E} + \vd{\Delta E}$$</div>
   </div>
   <p class="why">Inside each head, Attention is exactly the single-head computation of section 16: scale, mask, softmax, then $\va{A^{(h)}}\,\vv{V^{(h)}}$. The heads only differ in their weight matrices.</p>
@@ -4047,7 +4074,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 
 <div class="card">
   <h3 class="card-title">Sizes <span class="illus">illustrative sizes</span></h3>
-  <p class="why" style="margin:0 0 10px">Heads do not make the model wider: the model dimension is split among them. Drag the number of heads.</p>
+  <p class="why" style="margin:0 0 10px">Heads do not make the model wider. Every head reads the full input $\ve{e_i}$ (all $d_{\text{model}}$ numbers) through its own $W_Q^{(h)}, W_K^{(h)}, W_V^{(h)}$; no head receives a slice of the embedding. What is smaller is each head's output, $d_v = d_{\text{model}} / n_h$ numbers per token, and those outputs are placed side by side. Drag the number of heads.</p>
   <div id="s17-hslider"></div>
   <div class="dimline" id="s17-hdims"></div>
 </div>
@@ -4072,7 +4099,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
   const headsHost = S.querySelector('#s17-heads');
   const cards = HEADS.map((hd, h) => {
     const card = AT.h('div', { class: 'head', id: 's17-head-' + (h + 1) });
-    card.appendChild(AT.h('div', { class: 'hd' }, AT.h('h4', {}, hd.name + ' — ' + hd.role), AT.h('p', { class: 'role' }, hd.why)));
+    card.appendChild(AT.h('div', { class: 'hd' }, AT.h('h4', {}, hd.name + ': ' + hd.role), AT.h('p', { class: 'role' }, hd.why)));
     AT.ui.heat([hd.w], { rows: ['bank'], cols: toks, mask: false, decimals: 2, caption: AT.texStr('\\va{\\alpha^{(' + (h + 1) + ')}_{\\text{bank},\\cdot}}') + ' (illustrative)', into: card });
     card.appendChild(AT.h('p', { class: 'scrollhint', hidden: 'hidden' }, 'scroll the row → to see river and bank'));
     headsHost.appendChild(card);
@@ -4133,11 +4160,11 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
   const gCat = sv('g');
   edges.appendChild(sv('circle', { cx: jX, cy: cy, r: 4, class: 'jn' }));
   edge('M' + (jX + 4) + ' ' + cy + ' L ' + (catX - 3) + ' ' + cy);
-  /* the three head outputs sit SIDE BY SIDE as column blocks of one wide matrix (T rows, H·d_v columns) — not stacked as rows */
+  /* the three head outputs sit SIDE BY SIDE as column blocks of one wide matrix (T rows, n_h·d_v columns), not stacked as rows */
   HEADS.forEach((hd, h) => { box(gCat, catX + h * colW, catY, colW, catH, 'bx-v bx-col'); textSup(gCat, catX + h * colW + colW / 2 - 2, cy, 'H', '(' + (h + 1) + ')', 'math tx-v'); });
   text(gCat, catX + catW / 2, catY - 14, 'concatenate columns', 'sub');
   text(gCat, catX + catW / 2, catY + catH + 16, 'H', 'math tx-v');
-  text(gCat, catX + catW / 2, catY + catH + 31, 'side by side: T × H·d_v', 'sub');
+  text(gCat, catX + catW / 2, catY + catH + 31, 'side by side: T × n_h·d_v', 'sub');
   svg.appendChild(gCat);
   edge('M' + (catX + catW) + ' ' + cy + ' L ' + (oX - 3) + ' ' + cy);
   const gO = sv('g'); box(gO, oX, cy - 24, oW, 48, 'bx-n'); textSub(gO, oX + oW / 2 - 2, cy, 'W', 'O', 'math'); text(gO, oX + oW / 2, cy + 40, 'back to the', 'sub'); text(gO, oX + oW / 2, cy + 53, 'model space', 'sub'); svg.appendChild(gO);
@@ -4153,7 +4180,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 
   /* ---- dims under the diagram (symbolic; the toy has a single head) ---- */
   const dims = S.querySelector('#s17-dims');
-  [['\\ve{E} \\in \\mathbb{R}^{T \\times d_{\\text{model}}}'], ['H^{(h)} \\in \\mathbb{R}^{T \\times d_v}'], ['H \\in \\mathbb{R}^{T \\times H d_v}'], ['W_O \\in \\mathbb{R}^{H d_v \\times d_{\\text{model}}}'], ['\\vd{\\Delta E}, \\vp{E\'} \\in \\mathbb{R}^{T \\times d_{\\text{model}}}']].forEach(([tex]) => {
+  [['\\ve{E} \\in \\mathbb{R}^{T \\times d_{\\text{model}}}'], ['H^{(h)} \\in \\mathbb{R}^{T \\times d_v}'], ['H \\in \\mathbb{R}^{T \\times n_h d_v}'], ['W_O \\in \\mathbb{R}^{n_h d_v \\times d_{\\text{model}}}'], ['\\vd{\\Delta E}, \\vp{E\'} \\in \\mathbb{R}^{T \\times d_{\\text{model}}}']].forEach(([tex]) => {
     const s = AT.h('span'); AT.tex(s, tex); dims.appendChild(s);
   });
 
@@ -4184,8 +4211,8 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
     AT.clear(hd);
     const parts = [
       ['d_{\\text{model}} = ' + DM + '\\ \\text{(illustrative)}'],
-      ['H\\ \\text{(number of heads)} = ' + Hn],
-      ['d_k = d_v = d_{\\text{model}} / H = ' + dk],
+      ['n_h\\ \\text{(number of heads)} = ' + Hn],
+      ['d_k = d_v = d_{\\text{model}} / n_h = ' + dk],
       ['H^{(h)} \\in \\mathbb{R}^{T \\times ' + dk + '}'],
       [Hn === 1 ? 'H = H^{(1)} \\in \\mathbb{R}^{T \\times ' + dk + '}' : 'H = [H^{(1)};\\ldots;H^{(' + Hn + ')}] \\in \\mathbb{R}^{T \\times ' + (Hn * dk) + '}'],
       ['W_O \\in \\mathbb{R}^{' + (Hn * dk) + ' \\times ' + DM + '}']
@@ -4199,7 +4226,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 
   /* ---- callouts ---- */
   const co = S.querySelector('#s17-callouts');
-  AT.ui.callout('Each head retrieves information in its own smaller space. $W_O$ combines those retrieved messages into one update $\\vd{\\Delta E}$ in the model\'s representation space — and the residual addition $\\vp{E\'} = \\ve{E} + \\vd{\\Delta E}$ is unchanged.', { kind: 'key', into: co });
+  AT.ui.callout('Each head retrieves information in its own smaller space. $W_O$ combines those retrieved messages into one update $\\vd{\\Delta E}$ in the model\'s representation space. The residual addition $\\vp{E\'} = \\ve{E} + \\vd{\\Delta E}$ is unchanged.', { kind: 'key', into: co });
   AT.ui.callout('The toy model on this page has a single head ($d_k = ' + AT.d_k + '$, $d_{\\text{model}} = ' + AT.d_model + '$). The three weight rows above are drawn by hand to show what different heads could specialise in; real heads learn their own patterns.', { kind: 'note', into: co });
 })();
 </script>
@@ -4241,13 +4268,13 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 <header class="sec-head">
   <span class="sec-num">18</span>
   <div>
-    <p class="eyebrow">Why we are here: one attention sublayer gives one update. Real models stack many — and each one starts from the previous result, not from scratch.</p>
+    <p class="eyebrow">Why we are here: one attention sublayer gives one update. Real models stack many, and each one starts from the previous result, not from scratch.</p>
     <h2>Layer after layer</h2>
   </div>
 </header>
 
 <div class="prose">
-  <p>$\ve{e_i}$ is the raw token embedding only at layer 0. After every attention layer it is a richer, more contextual representation — and the next layer computes its $\vq{Q}$, $\vk{K}$, $\vv{V}$ from <em>that</em>, not from the original embedding.</p>
+  <p>$\ve{e_i}$ is the raw token embedding only at layer 0. After every attention layer it is a representation changed by context, and the next layer computes its $\vq{Q}$, $\vk{K}$, $\vv{V}$ from <em>that</em>, not from the original embedding.</p>
   $$\ve{e_i^{(0)}} = \text{token embedding}_i + \text{position}_i, \qquad \vp{e_i^{(1)}} = \ve{e_i^{(0)}} + \vd{\Delta e_i^{(0)}}, \qquad \vp{e_i^{(2)}} = \ve{e_i^{(1)}} + \vd{\Delta e_i^{(1)}}, \;\ldots$$
 </div>
 
@@ -4259,8 +4286,8 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 </div>
 
 <div class="card">
-  <h3 class="card-title">Watch bank's representation move — apply attention layers one at a time</h3>
-  <p class="why" style="margin:0 0 12px">The short sequence, bank as the token we follow. Same toy weights are reused for every layer here, for illustration only — real models have separate $W_Q, W_K, W_V, W_O$ in each layer. Superscripts name the representation a quantity was computed from: layer 1 reads $\ve{e^{(0)}}$, so its weights and update are $\va{\alpha^{(0)}}$ and $\vd{\Delta e^{(0)}}$, and the result is $\vp{e^{(1)}}$.</p>
+  <h3 class="card-title">Bank's representation moves: apply attention layers one at a time</h3>
+  <p class="why" style="margin:0 0 12px">The short sequence, with bank as the token we follow. The same toy weights are reused for every layer here, for illustration only; real models have separate $W_Q, W_K, W_V, W_O$ in each layer. Superscripts name the representation a quantity was computed from: layer 1 reads $\ve{e^{(0)}}$, so its weights and update are $\va{\alpha^{(0)}}$ and $\vd{\Delta e^{(0)}}$, and the result is $\vp{e^{(1)}}$.</p>
   <div id="s18-stepper"></div>
 </div>
 
@@ -4378,7 +4405,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
     if (l > 0) {
       const d = AT.h('p', { class: 'dist' });
       const dist = (k) => AT.fmt(AT.norm(AT.sub(reps[k][BANK], E0[BANK])), 2);
-      d.innerHTML = 'distance from the raw embedding: ' + AT.texStr('\\|\\vp{e_{\\text{bank}}^{(' + l + ')}} - \\ve{e_{\\text{bank}}^{(0)}}\\| = ' + dist(l)) + (l > 1 ? ' <span class="mono muted">(after layer 1 it was ' + dist(1) + ')</span>' : '');
+      d.innerHTML = 'distance from the raw embedding: ' + AT.texStr('\\|\\vp{e_{\\text{bank}}^{(' + l + ')}} - \\ve{e_{\\text{bank}}^{(0)}}\\| = ' + dist(l)) + (l > 1 ? ' <span class="mono muted">(after layer 1 it was ' + dist(1) + ')</span>' : '') + ' <span class="muted">A larger distance shows more change, not a better representation.</span>';
       el.appendChild(d);
     }
   }
@@ -4394,11 +4421,11 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
     const R = layers[l - 1];
     steps.push({ title: 'After attention layer ' + l,
       tex: '\\vp{e_i^{(' + l + ')}} = \\ve{e_i^{(' + (l - 1) + ')}} + \\vd{\\Delta e_i^{(' + (l - 1) + ')}}',
-      note: 'Layer ' + l + ' computed $\\vq{q}, \\vk{k}, \\vv{v}$ from $\\ve{e^{(' + (l - 1) + ')}}$' + (l > 1 ? ' — already contextual, so its attention weights $\\va{\\alpha}$ differ from the layer before (the $W$ matrices are the same here).' : ' and produced the first update.') + (l < L ? ' The next layer will start from $\\ve{e^{(' + l + ')}}$, not from $\\ve{e^{(0)}}$.' : ''),
+      note: 'Layer ' + l + ' computed $\\vq{q}, \\vk{k}, \\vv{v}$ from $\\ve{e^{(' + (l - 1) + ')}}$' + (l > 1 ? ', which is already contextual, so its attention weights $\\va{\\alpha}$ differ from the layer before (the $W$ matrices are the same here).' : ' and produced the first update.') + (l < L ? ' The next layer will start from $\\ve{e^{(' + l + ')}}$, not from $\\ve{e^{(0)}}$.' : ''),
       render: (el) => {
         el.appendChild(AT.h('p', { class: 'lab' }, 'what bank read in layer ' + l));
         const chips = AT.ui.chips(toks, { active: BANK, into: el });
-        AT.ui.heat([R.A[BANK]], { rows: ['bank'], cols: toks, mask: false, decimals: 2, caption: AT.texStr('\\va{\\alpha^{(' + (l - 1) + ')}_{\\text{bank},\\cdot}}') + ' — computed from $\\vq{q}, \\vk{k}$ of $\\ve{e^{(' + (l - 1) + ')}}$', into: el });
+        AT.ui.heat([R.A[BANK]], { rows: ['bank'], cols: toks, mask: false, decimals: 2, caption: AT.texStr('\\va{\\alpha^{(' + (l - 1) + ')}_{\\text{bank},\\cdot}}') + ', computed from $\\vq{q}, \\vk{k}$ of $\\ve{e^{(' + (l - 1) + ')}}$', into: el });
         el.appendChild(AT.h('p', { class: 'lab' }, 'the update and the residual addition'));
         vecRow(el, AT.ui.vec(reps[l - 1][BANK], { cls: 'e', label: '\\ve{e_{\\text{bank}}^{(' + (l - 1) + ')}}' }), '+', AT.ui.vec(R.Delta[BANK], { cls: 'd', label: '\\vd{\\Delta e_{\\text{bank}}^{(' + (l - 1) + ')}}' }), '=', AT.ui.vec(reps[l][BANK], { cls: 'ep', label: '\\vp{e_{\\text{bank}}^{(' + l + ')}}', size: 'lg' }));
         history(el, l);
@@ -4411,7 +4438,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
   /* ---- callouts ---- */
   const co = S.querySelector('#s18-callouts');
   AT.ui.callout('We are repeatedly updating token representations, not repeatedly returning to the original token embedding: $\\ve{e^{(0)}} \\to \\vp{e^{(1)}} \\to \\vp{e^{(2)}} \\to \\cdots$, each step adding context on top of the last.', { kind: 'key', into: co });
-  AT.ui.callout('Layer $\\ell + 1$ builds its $\\vq{Q}, \\vk{K}, \\vv{V}$ from $\\ve{e^{(\\ell)}}$ — representations that already contain context. So later layers can retrieve based on meaning that earlier layers assembled (for example "river bank", not just "bank").', { kind: 'note', into: co });
+  AT.ui.callout('Layer $\\ell + 1$ builds its $\\vq{Q}, \\vk{K}, \\vv{V}$ from $\\ve{e^{(\\ell)}}$, representations that already contain context. So later layers can retrieve based on meaning that earlier layers assembled (for example "river bank" rather than "bank" alone). Inside one layer, every position reads keys and values computed from the same input $\\ve{e^{(\\ell)}}$, so the updated bank $\\vp{e^{(\\ell+1)}}$ can only be read by other tokens in layer $\\ell + 2$; that is one concrete reason to stack layers.', { kind: 'note', into: co });
 })();
 </script>
 </section>
@@ -4457,13 +4484,13 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 <header class="sec-head">
   <span class="sec-num">19</span>
   <div>
-    <p class="eyebrow">Why we are here: the fixed window (03) and mean pooling (04) return — plus one more fixed scheme — to be lined up against attention.</p>
+    <p class="eyebrow">Why we are here: the fixed window (03) and mean pooling (04) return, with one more fixed scheme, to be lined up against attention.</p>
     <h2>Attention versus the alternatives</h2>
   </div>
 </header>
 
 <div class="prose">
-  <p>All four methods build a context for the last token $t = 10$ from the tokens $\ve{e_1},\ldots,\ve{e_t}$. The only question that matters: <strong>who decides the weights, and do they look at the content?</strong> Switch the sentence and watch which panels react.</p>
+  <p>All four methods build a context for the last token $t = 10$ from the tokens $\ve{e_1},\ldots,\ve{e_t}$. They differ in one question: <strong>who decides the weights, and do they look at the content?</strong> Switch the sentence and watch which panels react.</p>
 </div>
 
 <div class="card">
@@ -4481,10 +4508,10 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
     <table class="cmp" id="s19-cmp">
       <thead><tr><th>Method</th><th>Context boundary</th><th>Weights depend on content?</th><th>What is retrieved</th></tr></thead>
       <tbody>
-        <tr><td>Fixed window</td><td>Hard cutoff at $K$ tokens</td><td>No — every token inside is included whole</td><td>$\ve{e_j}$, concatenated</td></tr>
-        <tr><td>Mean pooling</td><td>None</td><td>No — always $1/t$</td><td>$\ve{e_j}$, averaged</td></tr>
-        <tr><td>Fixed positional weights</td><td>None (soft, by distance)</td><td>No — $w_j$ fixed by position</td><td>$\ve{e_j}$, weighted</td></tr>
-        <tr class="is-att"><td>Attention</td><td>None (causal: $j \le i$)</td><td class="yes">Yes — $\va{\alpha_{ij}}$ from $\vq{q_i}^\top \vk{k_j}$</td><td>$\vv{v_j}$, weighted → $\vd{\Delta e_i}$</td></tr>
+        <tr><td>Fixed window</td><td>Hard cutoff at $K$ tokens</td><td>No. Every token inside is included whole</td><td>$\ve{e_j}$, concatenated</td></tr>
+        <tr><td>Mean pooling</td><td>None</td><td>No, always $1/t$</td><td>$\ve{e_j}$, averaged</td></tr>
+        <tr><td>Fixed positional weights</td><td>None (soft, by distance)</td><td>No, $w_j$ is fixed by position</td><td>$\ve{e_j}$, weighted</td></tr>
+        <tr class="is-att"><td>Attention</td><td>None (causal: $j \le i$)</td><td class="yes">Yes, $\va{\alpha_{ij}}$ from $\vq{q_i}^\top \vk{k_j}$</td><td>$\vv{v_j}$, weighted → $\vd{\Delta e_i}$</td></tr>
       </tbody>
     </table>
   </div>
@@ -4522,7 +4549,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
   const PANELS = [
     { id: 'window', title: 'Fixed window (K = ' + K + ')', cls: 'neutral', changes: false,
       tex: 'c_t = [\\ve{e_{t-' + (K-1) + '}};\\,\\ldots;\\,\\ve{e_t}]',
-      why: 'Position decides. Inside the window every token is included whole — structurally equal; outside the window a token does not exist.',
+      why: 'Position decides. Inside the window every token is included whole and counts equally; outside the window a token does not exist.',
       sum: 'Not weights: 1 = included, 0 = unavailable. Dimension grows to $K \\cdot d_{\\text{model}}$.' },
     { id: 'mean', title: 'Mean pooling', cls: 'neutral', changes: false,
       tex: 'c_t = \\frac{1}{t}\\sum_{j \\le t} \\ve{e_j}',
@@ -4534,8 +4561,8 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
       sum: 'Weights fixed by position, normalised to sum to 1. Content-independent.' },
     { id: 'att', title: 'Attention', cls: 'a', changes: true,
       tex: 'm_t = \\textstyle\\sum_{j \\le t}\\displaystyle\\, \\underbrace{\\va{\\alpha_{tj}}}_{\\mathclap{\\text{depends on current content}}}\\, \\vv{v_j}',
-      why: 'The content decides. $\\va{\\alpha_{tj}} = \\operatorname{softmax}_j(\\vq{q_t}^\\top \\vk{k_j}/\\sqrt{d_k})$ compares what token $t$ needs with what each token $j$ offers — so the weights move when the sentence changes.',
-      sum: 'Row $t$ of $A$ from the toy model; sums to 1. What is retrieved is $\\vv{v_j}$, then $\\vd{\\Delta e_t} = W_O m_t$.' }
+      why: 'The content decides. $\\va{\\alpha_{tj}} = \\operatorname{softmax}_j(\\vq{q_t}^\\top \\vk{k_j}/\\sqrt{d_k})$ compares what token $t$ needs with what each token $j$ offers, so the weights move when the sentence changes.',
+      sum: 'Row $t$ of $A$ from the toy model; sums to 1. What is retrieved is $\\vv{v_j}$, then $\\vd{\\Delta e_t} = m_t\\,W_O$.' }
   ];
 
   /* ---- build the panels ---- */
@@ -4543,7 +4570,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
   const panels = {};
   PANELS.forEach(P => {
     const card = AT.h('div', { class: 'card obj-' + P.cls, id: 's19-p-' + P.id });
-    const tag = AT.h('span', { class: 'alt-tag' + (P.changes ? ' is-yes' : '') }, P.changes ? 'changes with content' : 'blind to content');
+    const tag = AT.h('span', { class: 'alt-tag' + (P.changes ? ' is-yes' : '') }, P.changes ? 'changes with content' : 'content-independent weights');
     card.appendChild(AT.h('div', { class: 'alt-head' }, AT.h('h3', { class: 'card-title' }, P.title), tag));
     const eq = AT.h('div', { class: 'alt-eq' }); AT.tex(eq, P.tex, { display: true }); card.appendChild(eq);
     const why = AT.h('p', { class: 'muted small', html: P.why }); AT.renderMath(why); card.appendChild(why);
@@ -4580,14 +4607,14 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
         c.col.classList.toggle('is-out', out);
         c.val.textContent = P.id === 'window' ? (out ? 'out' : 'in') : AT.fmt(w[j], 2);
         c.fill.style.height = (100 * w[j] / max) + '%';
-        c.col.title = (P.id === 'window' ? (out ? 'outside the window' : 'inside the window') : 'weight ' + AT.fmt(w[j], 3)) + ' — ' + toks[j] + ' (position ' + (j + 1) + ')';
+        c.col.title = (P.id === 'window' ? (out ? 'outside the window' : 'inside the window') : 'weight ' + AT.fmt(w[j], 3)) + ': ' + toks[j] + ' (position ' + (j + 1) + ')';
       });
     });
     const att = weightsFor('att', toks);
     const top = AT.range(t).map(j => ({ j, a: att[j] })).sort((x, y) => y.a - x.a).slice(0, 3);
     const label = ctx === 'river' ? 'Sentence A' : 'Sentence B';
     let msg = label + ': “' + toks.join(' ') + ' ___”. Token 10 reads most from ' + top.map(x => '“' + toks[x.j] + '” (' + AT.fmt(x.a, 2) + ')').join(', ') + '.';
-    if (prevAtt) msg += ' Panels 1–3 did not move: their weights never look at the words. Only the attention weights changed.';
+    if (prevAtt) msg += ' Panels 1 to 3 did not move: their weights never look at the words. Only the attention weights changed.';
     ctxNote.textContent = msg;
     prevAtt = att;
   }
@@ -4610,7 +4637,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
   }
   drawBox();
   if (mq.addEventListener) mq.addEventListener('change', drawBox); else if (mq.addListener) mq.addListener(drawBox);
-  AT.ui.callout('<p>The weights $\\va{\\alpha_{ij}}$ are computed from the tokens themselves, no window cuts the context off, and what flows is $\\vv{v_j}$ — not a fixed copy of $\\ve{e_j}$.</p>', { kind: 'key', into: co });
+  AT.ui.callout('<p>The weights $\\va{\\alpha_{ij}}$ come from the tokens themselves, and no window cuts the context off. What flows is $\\vv{v_j}$, not a fixed copy of $\\ve{e_j}$.</p>', { kind: 'key', into: co });
   co.querySelector('.callout').insertBefore(box, co.querySelector('.callout').firstChild);
 })();
 </script>
@@ -4635,7 +4662,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 </header>
 
 <div class="prose">
-  <p>Every answer below is checked against the toy model's numbers, so you can verify it rather than take it on trust. Try to answer first; then open the reveal.</p>
+  <p>Each answer below is checked against the toy model's numbers, so you can verify it instead of taking it on trust. Answer first, then open the reveal.</p>
 </div>
 
 <div class="card">
@@ -4669,23 +4696,26 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 
   /* 1 */
   add('Why do we need separate keys and values?',
-    '<p class="ans">Matching information and returned information serve different functions.</p><p>$\\vk{k_j}$ decides <em>whether</em> token $j$ is retrieved; $\\vv{v_j}$ is <em>what</em> token $j$ sends once retrieved. Both come from the same $\\ve{e_j}$, but through different matrices — so they can hold different numbers, as “river” shows:</p>',
+    '<p class="ans">The information used for matching and the information returned do different jobs.</p><p>$\\vk{k_j}$ decides <em>whether</em> token $j$ is retrieved; $\\vv{v_j}$ is <em>what</em> token $j$ sends once retrieved. Both come from the same $\\ve{e_j}$, but through different matrices, so they can hold different numbers, as “river” shows:</p>',
     (el) => {
       const r = vecRow();
       AT.ui.vec(F.E[R], { cls: 'e', label: '\\ve{e_{' + (R+1) + '}}', into: r });
       AT.ui.op('→', { into: r });
-      AT.ui.vec(F.K[R], { cls: 'k', label: '\\vk{k_{' + (R+1) + '}} = W_K \\ve{e_{' + (R+1) + '}}', into: r });
-      AT.ui.vec(F.V[R], { cls: 'v', label: '\\vv{v_{' + (R+1) + '}} = W_V \\ve{e_{' + (R+1) + '}}', into: r });
+      AT.ui.vec(F.K[R], { cls: 'k', label: '\\vk{k_{' + (R+1) + '}} = \\ve{e_{' + (R+1) + '}}\\,W_K', into: r });
+      AT.ui.vec(F.V[R], { cls: 'v', label: '\\vv{v_{' + (R+1) + '}} = \\ve{e_{' + (R+1) + '}}\\,W_V', into: r });
       el.appendChild(r);
     });
 
   /* 2 */
   add('If every attention score were identical, what would attention resemble?',
-    '<p class="ans">Approximately uniform weights — mean pooling.</p><p>Softmax of equal scores gives $1/i$ to each of the $i$ visible tokens. Compare with the real row for “bank”, which is anything but uniform:</p>',
+    '<p class="ans">Exactly uniform weights over the allowed positions: a mean, but of the value vectors.</p><p>Softmax of equal scores gives $1/i$ to each of the $i$ visible tokens, so the message is $m_i = \\frac{1}{i}\\sum_{j \\le i} \\vv{v_j}$: the mean of the $\\vv{v_j}$, not in general the mean of the $\\ve{e_j}$. $W_O$ and the residual addition still follow. Compare with the real row for “bank”, which is far from uniform:</p>',
     (el) => {
       const uniform = AT.softmax(AT.zeros(B + 1));
       const r = vecRow();
       AT.ui.vec(uniform, { cls: 'a', label: '\\text{equal scores} \\Rightarrow \\va{\\alpha_{' + (B+1) + ',\\cdot}}', into: r });
+      AT.ui.op('→', { into: r });
+      const meanV = AT.zeros(AT.d_v); for (let j = 0; j <= B; j++) for (let d = 0; d < AT.d_v; d++) meanV[d] += F.V[j][d] / (B + 1);
+      AT.ui.vec(meanV, { cls: 'm', label: 'm_{' + (B+1) + '} = \\tfrac{1}{' + (B+1) + '}\\sum_j \\vv{v_j}', into: r });
       el.appendChild(r);
       const r2 = vecRow();
       AT.ui.vec(F.A[B].slice(0, B + 1), { cls: 'a', label: '\\text{real scores} \\Rightarrow \\va{\\alpha_{' + (B+1) + ',\\cdot}}', into: r2 });
@@ -4705,16 +4735,16 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 
   /* 4 */
   add('Are $\\vq{Q}$, $\\vk{K}$, $\\vv{V}$ stored permanently as token representations?',
-    '<p class="ans">No. They are projections used by the attention computation.</p><p>They are computed from the current $\\ve{e}$, used to produce $\\vd{\\Delta e}$, and discarded. The next attention layer recomputes fresh ones from the updated $\\vp{e\'}$. What persists across the layer is $\\ve{e}$.</p>');
+    '<p class="ans">No. They are projections used by the attention computation.</p><p>They are computed from the current $\\ve{e}$ and used to produce $\\vd{\\Delta e}$; they are not passed onward as the token representation (a generation cache may keep $\\vk{k}$ and $\\vv{v}$ for reuse). The next attention layer recomputes fresh ones from the updated $\\vp{e\'}$. What persists across the layer is $\\ve{e}$.</p>');
 
   /* 5 */
   add('What is $\\vd{\\Delta e_i}$?',
-    '<p class="ans">The context-dependent update generated by the attention sublayer.</p><p>$\\vd{\\Delta e_i} = W_O m_i$ with $m_i = \\sum_{j \\le i} \\va{\\alpha_{ij}} \\vv{v_j}$. For “bank” in the short sentence:</p>',
+    '<p class="ans">The context-dependent update generated by the attention sublayer.</p><p>$\\vd{\\Delta e_i} = m_i\\,W_O$ with $m_i = \\sum_{j \\le i} \\va{\\alpha_{ij}} \\vv{v_j}$. For “bank” in the short sentence:</p>',
     (el) => {
       const r = vecRow();
       AT.ui.vec(F.Mmsg[B], { cls: 'm', label: 'm_{' + (B+1) + '}', into: r });
       AT.ui.op('→', { into: r });
-      AT.ui.vec(F.Delta[B], { cls: 'd', label: '\\vd{\\Delta e_{' + (B+1) + '}} = W_O m_{' + (B+1) + '}', into: r });
+      AT.ui.vec(F.Delta[B], { cls: 'd', label: '\\vd{\\Delta e_{' + (B+1) + '}} = m_{' + (B+1) + '}\\,W_O', into: r });
       el.appendChild(r);
     });
 
@@ -4737,7 +4767,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 
   /* 8 */
   add('Why can\'t “bank” attend to a later “river” in a causal language model?',
-    '<p class="ans">Because that would expose future information.</p><p>Token $i$ may read only from $j \\le i$. Training predicts the next token from what precedes it; if “bank” could read a later “river”, the answer would already be in the input, and nothing useful would be learned. Here “bank” (7) reads 1–7 only; 8–10 are masked:</p>',
+    '<p class="ans">Because that would expose future information.</p><p>Token $i$ may read only from $j \\le i$. Training predicts the next token from what precedes it; if “bank” could read a later “river”, the answer would already be in the input and the model would learn nothing useful. Here “bank” (7) reads 1 to 7 only; 8 to 10 are masked:</p>',
     (el) => {
       const all = AT.sentences.river;
       AT.ui.chips(all, { active: B, muted: AT.range(all.length).filter(j => j > B), into: el });
@@ -4789,7 +4819,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 <header class="sec-head">
   <span class="sec-num">21</span>
   <div>
-    <p class="eyebrow">Why we are here: the whole argument, three times — in words, as a chain, and as matrices — then back to the first sentence.</p>
+    <p class="eyebrow">Why we are here: the whole argument three times (in words, as a chain, and as matrices), then back to the first sentence.</p>
     <h2>Three summaries</h2>
   </div>
 </header>
@@ -4819,7 +4849,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 </div>
 
 <div class="card">
-  <h3 class="card-title">And finally: from $\vp{E'}$ to the next token</h3>
+  <h3 class="card-title">From $\vp{E'}$ to the next token</h3>
   <div class="final-chain" id="s21-final-chain"></div>
   <div class="btn-row" id="s21-ctx"></div>
   <div id="s21-chips"></div>
@@ -4837,6 +4867,8 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
   <p class="close-line" id="s21-close"></p>
 </div>
 
+<div id="s21-notes"></div>
+
 <script>
 (function(){
   const S = document.getElementById('s21');
@@ -4853,9 +4885,9 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
   const STAGES = [
     { key: 'e',     cls: 'e',  tex: '\\ve{e}',                                   pre: 'start from',  say: 'Start from the current representation e of every token.' },
     { key: 'qkv',   cls: 'q',  tex: '\\vq{q}^\\top \\vk{k}',                    pre: 'match',       say: 'Each token forms a query; every token offers a key. The dot product scores relevance.' },
-    { key: 'att',   cls: 'a',  tex: '\\operatorname{softmax} \\Rightarrow \\va{\\alpha}', pre: '', say: 'Softmax over the causally masked, scaled scores gives the weights α — who reads from whom.' },
+    { key: 'att',   cls: 'a',  tex: '\\operatorname{softmax} \\Rightarrow \\va{\\alpha}', pre: '', say: 'Softmax over the causally masked, scaled scores gives the weights α: who reads from whom.' },
     { key: 'att',   cls: 'v',  tex: 'm_i = \\textstyle\\sum_j \\va{\\alpha_{ij}} \\vv{v_j}', pre: 'retrieve', say: 'Each token pulls a weighted mixture of values: the message m_i.' },
-    { key: 'delta', cls: 'd',  tex: '\\vd{\\Delta e_i} = W_O m_i',               pre: '',            say: 'W_O maps the message into the model space: the contextual update Δe (pedagogical name).' },
+    { key: 'delta', cls: 'd',  tex: '\\vd{\\Delta e_i} = m_i\\,W_O',               pre: '',            say: 'W_O maps the message into the model space: the contextual update Δe (pedagogical name).' },
     { key: 'ep',    cls: 'ep', tex: '\\vp{e + \\Delta e}',                        pre: 'add',         say: 'Residual addition: the updated representation e′ = e + Δe. This addition is the standard operation.' }
   ];
   const chainHost = S.querySelector('#s21-chain');
@@ -4904,8 +4936,8 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
   /* ---- final connection ---- */
   function drawFinalChain(){
     AT.tex(S.querySelector('#s21-final-chain'), mq.matches
-      ? '\\begin{aligned}&\\vp{E\'} \\rightarrow \\text{vocabulary logits}\\\\ &\\ell = W_{\\text{vocab}} \\vp{e_t\'} + b\\\\ &\\rightarrow \\operatorname{softmax}(\\ell) \\rightarrow p(\\text{next token})\\end{aligned}'
-      : '\\vp{E\'} \\rightarrow \\text{vocabulary logits } \\ell = W_{\\text{vocab}} \\vp{e_t\'} + b \\rightarrow \\operatorname{softmax}(\\ell) \\rightarrow p(\\text{next token})',
+      ? '\\begin{aligned}&\\vp{E\'} \\rightarrow \\text{vocabulary logits}\\\\ &\\ell = \\vp{e_t\'}\\,W_{\\text{vocab}} + b\\\\ &\\rightarrow \\operatorname{softmax}(\\ell) \\rightarrow p(\\text{next token})\\end{aligned}'
+      : '\\vp{E\'} \\rightarrow \\text{vocabulary logits } \\ell = \\vp{e_t\'}\\,W_{\\text{vocab}} + b \\rightarrow \\operatorname{softmax}(\\ell) \\rightarrow p(\\text{next token})',
       { display: true });
   }
   drawFinalChain();
@@ -4936,13 +4968,13 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
     const cand = AT.probsFor(F.probs[t], AT.candidates[ctx]);
     AT.ui.vec(cand.map(x => F.logits[t][x.i]), { cls: 'neutral', label: '\\ell', into: vecHost });
     const vn = S.querySelector('#s21-vecnote');
-    vn.innerHTML = 'Shown: the ' + cand.length + ' logits of ' + AT.candidates[ctx].join(', ') + ' (out of ' + AT.vocab.length + '); $\\ell = W_{\\text{vocab}} \\vp{e_{' + (t+1) + '}\'} + b$.';
+    vn.innerHTML = 'Shown: the ' + cand.length + ' logits of ' + AT.candidates[ctx].join(', ') + ' (out of ' + AT.vocab.length + '); $\\ell = \\vp{e_{' + (t+1) + '}\'}\\,W_{\\text{vocab}} + b$.';
     AT.renderMath(vn);
     const it = items(F);
     if (bars) { AT.clear(barHost); }
     bars = AT.ui.bars(it, { cls: 'neutral', sorted: false, highlight: AT.topk(F.probs[t], 1)[0].tok, decimals: 3, size: 'lg', into: barHost });
     const top = AT.topk(F.probs[t], 1)[0];
-    closeEl.innerHTML = 'We started with “' + AT.escape(toks.join(' ')) + ' ___”. Now the numbers are yours: the last token read the context through attention, updated itself by $\\vd{\\Delta e_{' + (t+1) + '}}$, and the output head turned $\\vp{e_{' + (t+1) + '}\'}$ into <strong>' + AT.escape(top.tok) + '</strong> at ' + AT.fmt(top.p, 3) + '.';
+    closeEl.innerHTML = 'We started with “' + AT.escape(toks.join(' ')) + ' ___”. The last token read the context through attention and updated itself by $\\vd{\\Delta e_{' + (t+1) + '}}$; the output head then turned $\\vp{e_{' + (t+1) + '}\'}$ into <strong>' + AT.escape(top.tok) + '</strong> at ' + AT.fmt(top.p, 3) + '.';
     AT.renderMath(closeEl);
   }
   function setCtx(c){
@@ -4954,6 +4986,9 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
   btnA.addEventListener('click', () => setCtx('river'));
   btnB.addEventListener('click', () => setCtx('cheque'));
   paint();
+
+  /* ---- closing note: prediction is one step; generation repeats it ---- */
+  AT.ui.callout('Prediction is not generation. The output head gives probabilities for one step. To generate, pick a token from $p(x_{t+1}\\mid x_{\\le t})$, append it to the sequence, form the query for the new last position, and repeat.', { kind: 'note', into: S.querySelector('#s21-notes') });
 })();
 </script>
 </section>
@@ -4961,7 +4996,7 @@ window.__TOY__ = {"d_model":4,"d_k":3,"d_v":3,"vocab":["the","fisherman","sat","
 </main>
 
 <footer>
-  <div class="wrap">Single self-contained file · no external dependencies · KaTeX inlined for math · notation: <span class="sym sym-e">e</span> is always the current token representation, <span class="sym sym-d">Δe</span> is this page's pedagogical name for the attention output; the addition <span class="sym sym-e">e</span>&thinsp;+&thinsp;<span class="sym sym-d">Δe</span> is the standard residual connection.</div>
+  <div class="wrap">This page is one self-contained file with no external dependencies; KaTeX is inlined for the math. Notation: <span class="sym sym-e">e</span> is always the current token representation, and <span class="sym sym-d">Δe</span> is this page's pedagogical name for the attention output. The addition <span class="sym sym-e">e</span>&thinsp;+&thinsp;<span class="sym sym-d">Δe</span> is the standard residual connection.</div>
 </footer>
 
 <script>
