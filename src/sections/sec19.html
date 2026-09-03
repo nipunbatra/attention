@@ -26,22 +26,30 @@
 @media (prefers-reduced-motion:reduce){#s19 .chain .cbox{transition:none}}
 body.present #s19 .s19-pred-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:24px;align-items:center}
 body.present #s19 .s19-pred-grid .dt-cap{display:none}
-body.present #s19 .s19-pred-grid .dt th,body.present #s19 .s19-pred-grid .dt td.dt-num{font-size:18px;padding:.3em .5em}
+body.present #s19 .s19-pred-grid .dt th,body.present #s19 .s19-pred-grid .dt td.dt-num{font-size:22px;padding:.3em .5em}
 body.present #s19 .look,body.present #s19 .rd,body.present #s19 .chain-state{font-size:18px;line-height:1.35}
 body.present #s19 .final-chain .katex{font-size:.9em}
-body.present #s19 #s19-frame1 #s19-opchain{display:none}
+body.present #s19 #s19-operational #s19-opchain{display:none}
 body.present #s19 #s19-frame1 .quote{font-size:1em}
-body.present #s19 #s19-frame1 .chain{gap:5px;margin:8px 0}
-body.present #s19 #s19-frame1 .chain .cbox{font-size:18px;padding:6px 9px}
-@media(max-width:820px){body.present #s19 .s19-pred-grid{grid-template-columns:1fr}}
-body.present #s19 #s19-frame1 .look{display:none}
-body.present #s19 #s19-frame1 #s19-motif svg{max-height:165px}
+body.present #s19 #s19-operational .chain{gap:10px;margin:14px 0}
+body.present #s19 #s19-operational .chain .cbox{font-size:23px;padding:9px 12px}
+body.present #s19 #s19-operational .look{display:none}
+body.present #s19 #s19-operational #s19-motif svg{max-height:220px}
 body.present #s19 #s19-frame2 .look{display:none}
 body.present #s19 #s19-frame3 #s19-read,body.present #s19 #s19-frame3 .look{display:none}
 body.present #s19 #s19-frame3 pre.torch-snippet{margin:.25em 0;padding:.6em 1em}
+body.present #s19 #s19-frame3>.card{padding:18px 22px;margin-bottom:10px}
+body.present #s19 #s19-frame3>.muted{display:none}
 body.present #s19 .s19-recap{line-height:1.5}
 body.present #s19 .s19-recap li{margin:.45em 0}
 body.present #s19 #s19-frame1>.card{padding:.7em .9em;margin-bottom:.5em}
+body.present #s19 .generation-loop{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;align-items:stretch}
+body.present #s19 .generation-loop>div{padding:18px;border:1px solid var(--line);border-top:5px solid var(--c-q);border-radius:12px;background:var(--card);font-size:25px}
+body.present #s19 .generation-loop strong{display:block;margin-bottom:10px}
+body.present #s19 .training-loop{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+body.present #s19 .training-loop>div{padding:22px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+body.present #s19 .lvl,body.present #s19 .eqs .dim{font-size:22px}
+body.present #s19-math-message>.card{padding:18px 22px;margin-bottom:0}
 </style>
 <header class="sec-head">
   <span class="sec-num">19</span>
@@ -65,7 +73,10 @@ Read the intuitive sentence, then advance the operational chain. Include self in
   <p class="lvl">1 · Intuitive</p>
   <blockquote class="quote">Each token matches its query against its own and earlier keys, mixes the corresponding values, and receives a context-dependent update through a residual addition.</blockquote>
 </div>
+</div>
 
+<div class="frame" id="s19-operational" data-title="Follow the operational chain one stage at a time">
+  <script type="text/x-notes">Ask students to name the next box before advancing. The query-key branch routes; the values carry; the residual preserves the input.</script>
 <div class="card">
   <p class="lvl">2 · Operational</p>
   <div id="s19-opchain"></div>
@@ -82,18 +93,27 @@ Read the intuitive sentence, then advance the operational chain. Include self in
 
 </div>
 
-<div class="frame" id="s19-frame2" data-title="Do four equations capture the same story?">
+<div class="frame" id="s19-frame2" data-title="Matrix summary, first phase: route by content">
   <script type="text/x-notes">
 Which equation gives the weights, and which gives the updated rows?
 Read dimensions beside each line. Row-wise softmax is over source positions; vocabulary softmax has not happened yet.
   </script>
 <div class="card">
   <p class="lvl">3 · Mathematical</p>
-  <div class="eqs" id="s19-eqs"></div>
+  <div class="eqs" id="s19-eqs-route"></div>
   <p class="muted small" style="margin:8px 0 0">$M$ is the causal mask ($-\infty$ above the diagonal, $0$ elsewhere); <span id="s19-dims"></span></p>
   <p class="look">Read the shapes on the right: only the boxed line returns to $T \times d_{\text{model}}$, the space every token started in.</p>
 </div>
 
+</div>
+
+<div class="frame" id="s19-math-message" data-title="Matrix summary, second phase: carry and add information">
+  <script type="text/x-notes">A times V forms one message per receiver. W_O maps each message to model width. The residual adds it to the input row.</script>
+  <div class="card">
+    <p class="lvl">3 · Mathematical, continued</p>
+    <div class="eqs" id="s19-eqs"></div>
+    <div class="callout callout-key" data-build="1">Routing chooses <em>where</em> to read; this phase determines <em>what information changes each row</em>.</div>
+  </div>
 </div>
 
 <div class="frame" id="s19-frame3" data-title="How does context change the next-token probabilities?">
@@ -137,7 +157,26 @@ The head reads the final updated row. The table gives logits and probabilities; 
 After choosing a token, what changes and what stays fixed?
 Append the chosen token and use the new final position’s query. Parameters stay fixed during generation. This is different from both stacking a new layer and updating weights during training.
   </script>
-<div id="s19-notes"></div>
+<div class="generation-loop">
+  <div><strong>1 · Predict</strong>The final known position supplies its query. The head returns $p(x_{t+1}\mid x_{\le t})$.</div>
+  <div data-build="1"><strong>2 · Choose</strong>For a greedy step, select <span id="s19-gen-choice">the highest-probability candidate</span>.</div>
+  <div data-build="2"><strong>3 · Append</strong>The chosen token becomes position $t+1$ in the known prefix.</div>
+  <div data-build="3"><strong>4 · Repeat</strong>Form the new final query $q_{t+1}=e_{t+1}W_Q$ and predict $x_{t+2}$.</div>
+</div>
+<pre class="torch-snippet" data-build="4"><code>next_id = probs.argmax().reshape(1)  # greedy decoding
+tokens = torch.cat([tokens, next_id])  # same parameters; a longer prefix</code></pre>
+<div class="companion" id="s19-notes"></div>
+</div>
+
+<div class="frame" id="s19-frame-training" data-title="Generation uses parameters; training changes them">
+  <script type="text/x-notes">Generation repeats forward passes with fixed parameters. Training compares the distribution with an observed next token, backpropagates, and lets the optimizer update the stored parameters.</script>
+  <div class="training-loop">
+    <div><strong>Forward</strong><p>Prefix $\rightarrow$ prediction $p$</p><p>Use the same attention and vocabulary head we just traced.</p></div>
+    <div data-build="1"><strong>Measure error</strong><p>$L=-\log p(y)$</p><p>$y$ is the observed next token in the training text.</p></div>
+    <div data-build="2"><strong>Learn</strong><p>Autograd computes gradients; the optimizer updates the embedding table and weight matrices.</p></div>
+  </div>
+  <pre class="torch-snippet" data-build="3"><code>optimizer.zero_grad(); loss = F.cross_entropy(logits, target)
+loss.backward(); optimizer.step()</code></pre>
 </div>
 
 <div class="frame" id="s19-frame4" data-title="What have we built, and what remains?">
@@ -219,17 +258,17 @@ No. We traced a hand-designed single-head forward computation. Learning changes 
   show(-1);
 
   /* ---- 3. mathematical ---- */
-  const eqs = S.querySelector('#s19-eqs');
-  function eq(latex, dim, narrow){
-    const d = AT.h('div'); AT.tex(d, latex, { display: true }); eqs.appendChild(d);
+  const eqsRoute = S.querySelector('#s19-eqs-route'), eqs = S.querySelector('#s19-eqs');
+  function eq(into, latex, dim, narrow){
+    const d = AT.h('div'); AT.tex(d, latex, { display: true }); into.appendChild(d);
     if (narrow) { const redraw = () => AT.tex(d, mq.matches ? narrow : latex, { display: true }); redraw(); if (mq.addEventListener) mq.addEventListener('change', redraw); else if (mq.addListener) mq.addListener(redraw); }
-    const m = AT.h('div', { class: 'dim' }); AT.tex(m, dim); eqs.appendChild(m);
+    const m = AT.h('div', { class: 'dim' }); AT.tex(m, dim); into.appendChild(m);
   }
-  eq('\\vq{Q} = \\ve{E} W_Q, \\qquad \\vk{K} = \\ve{E} W_K, \\qquad \\vv{V} = \\ve{E} W_V', '\\ve{E} \\in \\mathbb{R}^{T \\times d_{\\text{model}}},\\ \\vq{Q},\\vk{K} \\in \\mathbb{R}^{T \\times d_k},\\ \\vv{V} \\in \\mathbb{R}^{T \\times d_v}',
+  eq(eqsRoute, '\\vq{Q} = \\ve{E} W_Q, \\qquad \\vk{K} = \\ve{E} W_K, \\qquad \\vv{V} = \\ve{E} W_V', '\\ve{E} \\in \\mathbb{R}^{T \\times d_{\\text{model}}},\\ \\vq{Q},\\vk{K} \\in \\mathbb{R}^{T \\times d_k},\\ \\vv{V} \\in \\mathbb{R}^{T \\times d_v}',
      '\\begin{gathered}\\vq{Q} = \\ve{E} W_Q, \\quad \\vk{K} = \\ve{E} W_K,\\\\ \\vv{V} = \\ve{E} W_V\\end{gathered}');
-  eq('\\va{A} = \\operatorname{softmax}\\!\\left(\\frac{\\vq{Q}\\vk{K}^\\top}{\\sqrt{d_k}} + M\\right)', '\\va{A} \\in \\mathbb{R}^{T \\times T},\\ \\text{rows sum to } 1');
-  eq('\\vd{\\Delta E} = \\va{A}\\vv{V}W_O', '\\vd{\\Delta E} \\in \\mathbb{R}^{T \\times d_{\\text{model}}}');
-  eq('\\boxed{\\vp{E\'} = \\ve{E} + \\vd{\\Delta E}}', '\\vp{E\'} \\in \\mathbb{R}^{T \\times d_{\\text{model}}}');
+  eq(eqsRoute, '\\va{A} = \\operatorname{softmax}\\!\\left(\\frac{\\vq{Q}\\vk{K}^\\top}{\\sqrt{d_k}} + M\\right)', '\\va{A} \\in \\mathbb{R}^{T \\times T},\\ \\text{rows sum to } 1');
+  eq(eqs, '\\vd{\\Delta E} = \\va{A}\\vv{V}W_O', '\\vd{\\Delta E} \\in \\mathbb{R}^{T \\times d_{\\text{model}}}');
+  eq(eqs, '\\boxed{\\vp{E\'} = \\ve{E} + \\vd{\\Delta E}}', '\\vp{E\'} \\in \\mathbb{R}^{T \\times d_{\\text{model}}}');
   S.querySelector('#s19-dims').innerHTML = '$T = ' + AT.T + '$, $d_{\\text{model}} = ' + AT.d_model + '$, $d_k = ' + AT.d_k + '$, $d_v = ' + AT.d_v + '$ in the toy.';
 
   /* ---- one-line readings, computed from the numbers and the axis names in AT.axes ---- */
@@ -301,6 +340,7 @@ No. We traced a hand-designed single-head forward computation. Learning changes 
     readHost.appendChild(readingEp('\\vp{e_{' + (t+1) + '}\'}', F.Enew[t], F.E[t], F.Delta[t], toks[t]));
     const cand = AT.probsFor(F.probs[t], AT.candidates[ctx]);
     const top = AT.topk(F.probs[t], 1)[0];
+    S.querySelector('#s19-gen-choice').textContent = '“' + top.tok + '”';
     const best = cand.findIndex(x => x.tok === top.tok);
     const otherP = 1 - AT.sum(cand.map(x => x.p));
     AT.clear(tableHost);

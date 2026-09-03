@@ -19,31 +19,20 @@
 #s03 .problems .card p{margin:0 0 6px}
 #s03 .problems .card-title .n{font-family:var(--font-mono);color:var(--ink-3);margin-right:6px}
 @media (max-width:820px){#s03 .net-wrap{grid-template-columns:1fr}}
-body.present #s03 .frame.is-live{padding-bottom:.7em}
-body.present #s03 .frame{font-size:.9em}
-body.present #s03 .chip{font-size:.76em}
-body.present #s03 .prose p{margin-bottom:.35em}
-body.present #s03 .katex-display{margin:.3em 0}
-body.present #s03 .callout{margin:.45em 0;padding:.55em .9em}
-body.present #s03 .callout-key{font-size:.98em}
-body.present #s03 .card{margin-bottom:.5em}
-body.present #s03 .muted.small{font-size:.68em}
-body.present #s03 .win-note,body.present #s03 .live,body.present #s03 .net-steps p{font-size:.78em}
-body.present #s03 .win-note{margin:.2em 0 .4em}
-body.present #s03 .look,body.present #s03 .dyn-note{font-size:.7em;margin-top:.4em}
-body.present #s03 .read-line{font-size:.75em;margin-top:.4em}
-body.present #s03 .live{margin-top:.4em;padding:.35em .6em}
-body.present #s03 .illus{font-size:.6em}
-body.present #s03 .bound .bar{height:1.8em}
-body.present #s03 .bound .lab{font-size:.5em}
-body.present #s03 .dyn-row{margin-top:.3em}
-body.present #s03 .problems{gap:.7em}
-body.present #s03 .problems .card p{font-size:.85em}
-body.present #s03 .net-wrap{gap:.4em 1.4em}
-body.present #s03 .netsk{max-width:none}
-body.present #s03 .netsk .out-l{font-size:.62em}
-body.present #s03 .netsk .cap{font-size:.55em}
-body.present #s03 .netsk .lab-in-box{font-size:.75em}
+#s03 .s03-window-ellipsis{display:none}
+body.present #s03 .win-note,body.present #s03 .live,body.present #s03 .look,body.present #s03 .dyn-note,body.present #s03 .read-line,body.present #s03 .net-steps p{font-size:22px;line-height:1.35}
+body.present #s03 .net-wrap{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:74px}
+body.present #s03 .netsk{max-width:670px}
+body.present #s03 .netsk .out-l{font-size:18px}
+body.present #s03 .netsk .cap{font-size:14px}
+body.present #s03 .netsk .lab-in-box{font-size:20px}
+body.present #s03 .dt td,body.present #s03 .dt th{font-size:22px;padding:8px 12px}
+body.present #s03 .dt-cap,body.present #s03 .dt-note{display:none}
+body.present #s03 .bound .lab{font-size:16px}
+body.present #s03 .s03-window-hidden{display:none}
+body.present #s03 .s03-window-ellipsis{display:table-row;color:var(--ink-3);text-align:center}
+body.present #s03 .s03-window-ellipsis td{padding:3px 12px}
+body.present #s03 #s03-ceq .katex-display{margin:4px 0 16px}
 </style>
 <header class="sec-head">
   <span class="sec-num">03</span>
@@ -64,13 +53,13 @@ body.present #s03 .netsk .lab-in-box{font-size:.75em}
 
     Timing: about three minutes.
   </script>
-  <div class="prose">
+  <div class="companion">
     <p>Why not simply hand the model the last $w$ tokens? Their rows feed a fixed network: a first layer that reads all $w$ rows at once, a hidden layer, and one output per vocabulary word.</p>
   </div>
 
   <div class="card">
-    <h3 class="card-title">A fixed window feeds a fixed network</h3>
-    <p class="muted small" style="margin:0 0 6px">Sketch, not the toy's arithmetic: the hidden width $h$ is a stated choice, the outputs are the toy vocabulary with the answer for context A marked. Drag the slider or press the arrow key.</p>
+    <h3 class="card-title">More input tokens → a wider first layer</h3>
+    <p class="companion muted small" style="margin:0 0 6px">Sketch, not the toy's arithmetic: the hidden width $h$ is a stated choice, the outputs are the toy vocabulary with the answer for context A marked. Drag the slider or press the arrow key.</p>
     <div class="net-wrap">
       <div>
         <div id="s03-net-slider"></div>
@@ -84,7 +73,7 @@ body.present #s03 .netsk .lab-in-box{font-size:.75em}
     </div>
   </div>
 
-  <div class="callout callout-key" data-build="3">Change the window, change the network. The window size is baked into the shape of the first layer before any word is read.</div>
+  <div class="companion">The window size is baked into the shape of the first layer before any word is read. The hidden width and output matrix can stay unchanged; it is the input-to-hidden matrix that grows.</div>
 </div>
 
 <div class="frame" data-title="Inside the window" id="s03-frame2" data-autobuild="off">
@@ -92,65 +81,86 @@ body.present #s03 .netsk .lab-in-box{font-size:.75em}
     Which tokens does w = 3 keep, and which does it throw away?
     Move the slider to 3 and ask where river went. Then reveal the concatenation table: one row of five numbers per kept token, stacked by position. Then the readouts: input size and parameter count grow with w.
   </script>
-  <div class="prose">
+  <div class="companion">
     <p>Concatenate the previous $w$ token representations into one long vector and predict from that. $w$ denotes the window width; we reserve $K$ for the matrix of attention keys later.</p>
   </div>
 
   <div class="card">
     <h3 class="card-title">Choose the window: which tokens reach the prediction?</h3>
-    <div id="s03-slider"></div>
+    <div id="s03-slider" data-keep-state></div>
     <div id="s03-chips"></div>
     <p class="win-note" id="s03-win-note"></p>
-    <div data-build="1">
+  </div>
+  <div class="callout callout-key" data-build="1">A word behind the boundary is <strong>unavailable</strong>, not merely down-weighted.</div>
+</div>
+
+<div class="frame" id="s03-frame-concatenate" data-title="Concatenate the rows that are inside" data-autobuild="off">
+  <script type="text/x-notes">How many numbers reach the head for the selected window?
+Read each row left to right, then move to the next row. The full article shows every row; long classroom tables show the first two and last two with an explicit ellipsis.</script>
+  <div class="card">
       <div id="s03-ceq"></div>
       <div id="s03-ctab"></div>
-      <p class="read-line" id="s03-ctab-reading"></p>
-    </div>
-    <p class="look" id="s03-ctab-note" data-build="2"></p>
-  </div>
-
-  <div class="prose" data-build="1">
-    <p>$$c_t = [\ve{e_{t-w+1}};\,\ve{e_{t-w+2}};\,\ldots;\,\ve{e_t}], \qquad p(x_{t+1}\mid x_{\le t}) = \operatorname{softmax}(c_t W + b)$$</p>
-  </div>
-  <div class="prose" data-build="2">
-    <p>$W$ is a new, larger matrix, not section 02's $W_{\text{vocab}}$: it has $w d_{\text{model}} \times |\mathcal V|$ entries.</p>
+      <p class="companion read-line" id="s03-ctab-reading"></p>
   </div>
 </div>
 
-<div class="frame" data-title="Four problems" id="s03-frame3" data-autobuild="off">
+<div class="frame" id="s03-frame-window-head" data-title="A larger input needs a larger prediction matrix" data-autobuild="off">
+  <script type="text/x-notes">Is this the same vocabulary matrix as the one-row baseline?
+No. Concatenating w rows creates w times as many input coordinates, so the prediction matrix has w times as many input rows.</script>
+  <div class="prose">
+    $$c_t = [\ve{e_{t-w+1}};\,\ldots;\,\ve{e_t}] \in \mathbb R^{w d_{\text{model}}}$$
+    <div data-build="1">$$p(x_{t+1}\mid x_{\le t}) = \operatorname{softmax}(c_t W + b)$$</div>
+  </div>
+  <div class="callout callout-key" data-build="2">$W$ has shape $w d_{\text{model}}\times |\mathcal V|$.</div>
+  <p class="look" id="s03-ctab-note" data-build="2"></p>
+</div>
+
+<div class="frame" id="s03-frame-boundary" data-title="A larger window moves the hard boundary" data-autobuild="off">
+  <script type="text/x-notes">If we double w, is the boundary gone?
+No. We have only moved it. The observation is about availability of information, not about the ability of an MLP to use content that is inside the window.</script>
+  <div class="card">
+    <h3 class="card-title">Anything before the previous $w$ tokens is absent.</h3>
+    <span class="live" id="s03-live1"></span>
+  </div>
+  <div class="callout callout-key" data-build="1">A longer sentence can always put a useful clue beyond that boundary.</div>
+</div>
+
+<div class="frame" data-title="The input slots stay fixed" id="s03-frame3" data-autobuild="off">
   <script type="text/x-notes">
     Which of these does a bigger w fix?
     A bigger w can include both sets of clues in this finite example, but it moves rather than removes the boundary, increases the first-layer input width, and still gives a fixed number of slots. Do not claim that an MLP cannot use content within those slots. Reveal one card per press, then the question.
   </script>
-  <div class="grid-2 problems">
     <div class="card">
-      <h3 class="card-title"><span class="n">1</span>The boundary is hard</h3>
-      <p>Anything before the previous $w$ tokens is unavailable. It is not down-weighted; it is absent.</p>
-      <span class="live" id="s03-live1"></span>
-    </div>
-    <div class="card" data-build="1">
-      <h3 class="card-title"><span class="n">2</span>Slots are fixed by position</h3>
-      <p>The model receives all $w$ representations, each in a slot set by its distance from the end. The network can respond differently to different embeddings in a slot. What remains fixed is the number of slots and which positions are supplied; there is no explicit query-dependent retrieval step here.</p>
+      <h3 class="card-title">Each input slot is set by its distance from the end.</h3>
       <span class="live" id="s03-live2"></span>
     </div>
-    <div class="card" data-build="2">
-      <h3 class="card-title"><span class="n">3</span>Relevant context changes dynamically</h3>
-      <p class="muted small" style="margin:0">For different predictions, different previous tokens matter. Two prediction slots in the same sentence. <span class="illus">Outlines are illustrative</span> (they mark the tokens the later toy mechanism gives the largest weights for these queries)</p>
+    <div class="callout callout-note" data-build="1">The network <strong>can</strong> respond to the words in those slots. What stays fixed is how many slots there are and which positions are supplied.</div>
+    <p class="companion">There is no explicit query-dependent retrieval step in this baseline. This does not mean that an MLP is incapable of using content within a sufficiently large window.</p>
+</div>
+
+<div class="frame" id="s03-frame-changing-clues" data-title="Different predictions need different clues" data-autobuild="off">
+  <script type="text/x-notes">Do the same earlier words help both blanks?
+The outlines preview the largest weights in the later toy mechanism, not ground-truth explanations of language. The relevant sets occur at different distances from their prediction slots.</script>
+    <div class="card">
+      <h3 class="card-title">Two prediction positions in the same sentence</h3>
       <div class="dyn-row" id="s03-dyn1"></div>
       <p class="dyn-note" id="s03-dyn1-note"></p>
+    </div>
+    <div class="card" data-build="1">
       <div class="dyn-row" id="s03-dyn2"></div>
       <p class="dyn-note" id="s03-dyn2-note"></p>
-      <p class="look">Look at the outlined tokens: a different set, at different distances from the slot. A sufficiently large window includes both sets; it still has one fixed boundary.</p>
     </div>
-    <div class="card" data-build="3">
-      <h3 class="card-title"><span class="n">4</span>Increasing w does not remove the problem</h3>
-      <p class="muted small" style="margin:0 0 6px">A larger $w$ adds input dimensions and parameters in $W$, and may include tokens that are less useful for this prediction. The cut-off is still fixed.</p>
-      <div id="s03-ktab"></div>
-      <p class="look" id="s03-ktab-note"></p>
-    </div>
-  </div>
+    <p class="companion">The outlined words are illustrative: they are computed from the largest weights of the later toy mechanism. A sufficiently large window includes both sets, but still retains one hard boundary.</p>
+</div>
 
-  <div class="callout callout-key" data-build="4">Could we dynamically retrieve only the information that is useful right now?</div>
+<div class="frame" id="s03-frame-window-cost" data-title="More slots also mean more parameters" data-autobuild="off">
+  <script type="text/x-notes">What grows as we increase w?
+The input width and the parameter count. More tokens fit in this finite sentence, but no finite w removes the boundary for arbitrarily long sentences.</script>
+    <div class="card">
+      <div id="s03-ktab"></div>
+      <p class="companion look" id="s03-ktab-note"></p>
+    </div>
+  <div class="callout callout-key" data-build="1">Could we collect useful information without growing the input width every time the prefix grows?</div>
 </div>
 
 <div class="companion after">
@@ -179,12 +189,12 @@ body.present #s03 .netsk .lab-in-box{font-size:.75em}
   }
   function drawNet(w){
     net.setInputs(w);
-    netRead.innerHTML = 'Now $w = ' + w + '$: ' + shapeText(w);
+    netRead.innerHTML = 'Now $w=' + w + '$: <strong>' + (w * D) + ' input numbers</strong>.<br>$W_1\\in\\mathbb R^{' + (w * D) + '\\times ' + H + '}$; $W_2\\in\\mathbb R^{' + H + '\\times ' + V + '}$.';
     AT.renderMath(netRead);
   }
   const b1 = S.querySelector('#s03-net-b1'), b2 = S.querySelector('#s03-net-b2');
-  b1.innerHTML = '<span class="k">w = ' + PRESET[1] + '</span> Two more input nodes, and ' + shapeText(PRESET[1]) + ' The input-to-hidden matrix changes shape; the hidden width and output matrix can stay unchanged.';
-  b2.innerHTML = '<span class="k">w = ' + PRESET[2] + '</span> The input column no longer fits the drawing, and ' + shapeText(PRESET[2]) + ' All of it is fixed before the first word is read.';
+  b1.innerHTML = '<span class="k">w = ' + PRESET[1] + '</span> → ' + (PRESET[1] * D) + ' inputs, ' + (PRESET[1] * D * H) + ' first-layer weights.';
+  b2.innerHTML = '<span class="k">w = ' + PRESET[2] + '</span> → ' + (PRESET[2] * D) + ' inputs, ' + (PRESET[2] * D * H) + ' first-layer weights.';
   AT.renderMath(b1); AT.renderMath(b2);
   const netSlider = AT.ui.slider({ label: 'Window w', min: 1, max: PRESET[2], step: 1, value: PRESET[0], onInput: (w) => drawNet(w), into: S.querySelector('#s03-net-slider') });
   drawNet(PRESET[0]);
@@ -239,7 +249,7 @@ body.present #s03 .netsk .lab-in-box{font-size:.75em}
     const parts = w <= 4 ? inside.map(i => '\\ve{e_{' + (i + 1) + '}}').join(';\\,') : '\\ve{e_{' + (first + 1) + '}};\\,\\ldots;\\,\\ve{e_{' + T + '}}';
     AT.tex(ceq, 'c_{' + T + '} = [' + parts + '] \\in \\mathbb{R}^{' + (w * D) + '}', { display: true });
     AT.clear(ctabHost);
-    AT.ui.table(inside.map(i => E0[i]), {
+    const winTable = AT.ui.table(inside.map(i => E0[i]), {
       axes: 'e', cornerLabel: 'token',
       rowLabels: inside.map(i => (i + 1) + ' ' + AT.escape(toks[i]) + ' $\\ve{e_{' + (i + 1) + '}}$'),
       rowCls: 'e',
@@ -247,6 +257,13 @@ body.present #s03 .netsk .lab-in-box{font-size:.75em}
       caption: 'Every included token contributes one row of $d_{\\text{model}} = ' + D + '$ numbers, read left to right into $c_{' + T + '}$. The columns are the named coordinates of $\\ve{e}$; the rows are stacked by position, so the last row is always the current token.',
       into: ctabHost
     });
+    // The article keeps every row. A long classroom window shows its ends and
+    // explicitly marks the omitted middle, rather than shrinking or scrolling.
+    if (inside.length > 4) {
+      winTable.rowEls.forEach((tr, r) => { if (r >= 2 && r < inside.length - 2) tr.classList.add('s03-window-hidden'); });
+      const omitted = AT.h('tr', { class: 's03-window-ellipsis' }, AT.h('td', { colspan: String(D + 1) }, '⋮  ' + (inside.length - 4) + ' more input row' + (inside.length > 5 ? 's' : '') + '  ⋮'));
+      winTable.rowEls[inside.length - 2].before(omitted);
+    }
     ctabReading.innerHTML = readWindow(inside, outside);
     AT.renderMath(ctabReading);
     ctabNote.innerHTML = 'Look at the row count. Input size $w \\cdot d_{\\text{model}} = ' + w + ' \\times ' + D + ' = ' + (w * D) + '$; parameters in $W$: $|\\mathcal V| \\times w d_{\\text{model}} = ' + V + ' \\times ' + (w * D) + ' = ' + (V * w * D) + '$.';

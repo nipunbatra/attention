@@ -35,21 +35,29 @@
 #s11 .s11-scrollhint{display:none}
 @media (max-width:820px){#s11 .s11-scrollhint{display:block}}
 @media (prefers-reduced-motion:reduce){#s11 .s11-life .col,#s11 .s11-life g[data-ph]{transition:none}}
-body.present #s11 .s11-cap,body.present #s11 .s11-read,body.present #s11 .s11-sub{font-size:18px;line-height:1.35}
+body.present #s11 .s11-cap,body.present #s11 .s11-read,body.present #s11 .s11-sub{font-size:22px;line-height:1.35}
 body.present #s11 .s11-gap{height:8px}
 body.present #s11 .s11-pr{gap:6px 24px}
 body.present #s11 .s11-pr .vec{margin:2px 0}
 body.present #s11 .s11-wgrid .s11-read{display:none}
-body.present #s11 .s11-wgrid .dt td.dt-num{font-size:18px;padding:.25em .4em;min-width:2.7em}
-body.present #s11 .s11-wgrid .dt th{font-size:18px;padding:.25em .35em}
-body.present #s11 .s11-wgrid .dt-cap{font-size:18px}
-body.present #s11 .s11-pr .vec-axes{font-size:18px}
-body.present #s11 .s11-pr .cell{font-size:18px}
+body.present #s11 .s11-wgrid .dt td.dt-num{font-size:22px;padding:.18em .3em;min-width:2.4em}
+body.present #s11 .s11-wgrid .dt th{font-size:22px;padding:.18em .3em}
+body.present #s11 .s11-wgrid .dt-cap{display:none}
+body.present #s11 .s11-pr .vec-axes{font-size:22px}
+body.present #s11 .s11-pr .cell{font-size:22px}
 body.present #s11 #s11-frame-projections .s11-cap{display:none}
 body.present #s11 #s11-stepper .stepper-list{display:none}
 body.present #s11 #s11-stepper .stepper-body{grid-template-columns:1fr}
 body.present #s11 #s11-stepper .stepper-stage{min-height:0}
-body.present #s11 #s11-stepper .stage-note{font-size:18px}
+body.present #s11 #s11-stepper .stage-note{font-size:22px}
+body.present #s11 .s11-life .lane{font-size:22px}
+body.present #s11 .s11-life .tag{font-size:18px}
+body.present #s11 .s11-life .ph{font-size:18px}
+body.present #s11 .s11-life{min-width:0;max-width:1080px}
+body.present #s11 .s11-lifebox{overflow:visible}
+body.present #s11-frame2 .s11-life.has-active g[data-ph]{opacity:1}
+body.present #s11 .s11-ws,body.present #s11 .dt-note{display:none}
+body.present #s11-frame-lifetime-steps>.card{padding:0;background:none;border:0}
 </style>
 <header class="sec-head">
   <span class="sec-num">11</span>
@@ -81,7 +89,6 @@ What changes when we select a different token?
 Read the input row, then its query, key and value. Each uses a shared matrix; none has received contextual information yet.
   </script>
 <div class="card">
-  <h3 class="card-title">One token, three projections</h3>
   <p class="s11-cap">Pick a token. The top row is the only input. Each lower row is that row times its shared projection: $W_Q,W_K$ produce $d_k$ matching coordinates; $W_V$ produces $d_v$ value coordinates. Read the axis names above the cells.</p>
   <p class="companion muted small">q and k share the same three columns because the dot product compares them column by column. v has its own two columns, and its own width, because it is only mixed and sent.</p>
   <div id="s11-chips" data-keep-state></div>

@@ -4,11 +4,16 @@
 </style>
 <header class="sec-head"><span class="sec-num">15</span><div><p class="eyebrow">Why we are here: the model is small enough to test whether each design choice now has a clear reason.</p><h2>Pause and think</h2></div></header>
 <div class="companion" data-kicker="For self-study"><p>Use these questions to reconstruct the model without following the page from top to bottom. Each answer connects one design choice to a concrete need. One-hot rows provide identity but no compact learned geometry. Concatenation preserves position. The output width matches the vocabulary because every token needs one logit. The negative logarithm rewards probability on the observed target and strongly penalizes near-zero probability. Changing the window changes the first matrix because its input width is $wd$. Generation can proceed only because training has taught the same forward pass to produce useful next-token distributions.</p></div>
-<div class="frame" data-title="Six checks" data-autobuild="off">
+<div class="frame" data-title="Check 1: learned representations" data-autobuild="off">
   <script type="text/x-notes">Can the class explain each answer before opening it?
   Take one question at a time. Ask for a reason tied to a shape, operation, or training signal.</script>
   <div class="card"><div class="reveals" id="s15-reveals"></div></div>
 </div>
+<div class="frame" data-title="Check 2: preserve order" data-autobuild="off"><div class="card"><div class="reveals" id="s15-check2"></div></div></div>
+<div class="frame" data-title="Check 3: vocabulary outputs" data-autobuild="off"><div class="card"><div class="reveals" id="s15-check3"></div></div></div>
+<div class="frame" data-title="Check 4: the context window" data-autobuild="off"><div class="card"><div class="reveals" id="s15-check4"></div></div></div>
+<div class="frame" data-title="Check 5: the training signal" data-autobuild="off"><div class="card"><div class="reveals" id="s15-check5"></div></div></div>
+<div class="frame" data-title="Check 6: generation" data-autobuild="off"><div class="card"><div class="reveals" id="s15-check6"></div></div></div>
 <div class="companion after"><p>Keep in mind: every component earns its place by preserving information, producing a distribution, or supplying a training signal.</p></div>
 <script>
 (function(){
@@ -21,7 +26,7 @@
     ['Why use $-\\log p(\\text{target})$?','It is small when the model gives the observed target high probability and grows sharply when that probability approaches zero.'],
     ['What does generation need from training?','It needs useful next-token distributions for the windows it will encounter after appending its own choices.']
   ];
-  qa.forEach((x,i)=>AT.ui.reveal(x[0],x[1],{into:host,open:false}));
+  qa.forEach((x,i)=>AT.ui.reveal(x[0],x[1],{into:i===0?host:S.querySelector('#s15-check'+(i+1)),open:false}));
 })();
 </script>
 </section>

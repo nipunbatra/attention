@@ -32,3 +32,14 @@ if (worst > 1e-6) {
   process.exit(1);
 }
 console.log(`Part 1 JS forward matches all six aabid rows; max absolute difference ${worst}.`);
+
+for (const temperature of [0.3, 0.7, 1, 1.5]) {
+  const ids = ['-', '-', '-'];
+  const shown = context.window.AT.mlp.distribution(ids, temperature).p;
+  const expected = AT.softmax(context.window.AT.mlp.forward(ids).z.map(value => value / temperature));
+  const sampled = context.window.AT.mlp.generate({ temperature, seed: 7, maxLength: 1 }).trace[0].probabilities;
+  if (shown.some((p, i) => Math.abs(p - expected[i]) > 1e-12 || Math.abs(p - sampled[i]) > 1e-12)) {
+    throw new Error(`Displayed and sampled distributions disagree at temperature ${temperature}`);
+  }
+}
+console.log('Part 1 generation display and sampler agree at four temperatures.');

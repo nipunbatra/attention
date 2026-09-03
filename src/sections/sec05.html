@@ -101,6 +101,35 @@ body.present #s05 .s05-two #s05-dot .dt{width:100%}
 body.present #s05 .s05-two #s05-dot .dt td.dt-num,
 body.present #s05 .s05-two #s05-dot .dt th{font-size:.68em;padding:.2em .5em}
 body.present #s05 .s05-two #s05-topline{font-size:.68em;margin:.25em 0}
+/* Classroom frames separate the gallery, matching worksheet and return value.
+   Detailed per-result worksheets stay in the reading article. */
+body.present #s05 .frame>.prose{font-size:28px}
+body.present #s05 .look{font-size:22px;line-height:1.35}
+body.present #s05 .dt td,body.present #s05 .dt th{font-size:22px;padding:7px 10px}
+body.present #s05 .dt td.dt-num{min-width:72px}
+body.present #s05 .dt-cap,body.present #s05 .dt-note{display:none}
+body.present #s05 .qbox{padding:18px 24px;margin:12px 0 18px}
+body.present #s05 .qbox .qk{font-size:22px}
+body.present #s05 .qbox .qt{font-size:28px}
+body.present #s05 .searchbar{padding:18px 26px;margin:20px 0}
+body.present #s05 .searchbar .s05-qtext{white-space:normal;overflow:visible}
+body.present #s05 .vgrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin:20px 0 0}
+body.present #s05 .vcard{grid-template-columns:96px minmax(0,1fr);gap:8px 14px;padding:18px;min-height:115px;transform:none!important;transition:none!important}
+body.present #s05 .vthumb{width:96px;height:54px;grid-column:1;grid-row:1}
+body.present #s05 .vmain{grid-column:2;grid-row:1/span 2}
+body.present #s05 .vcard .vt{font-size:22px;line-height:1.25;margin:0}
+body.present #s05 .vrank{font-size:18px;padding:2px 5px;grid-column:1;grid-row:2;justify-self:center}
+body.present #s05 .vsum,body.present #s05 .s05-build-strip{display:none}
+body.present #s05 .search-meta{font-size:22px}
+body.present #s05 .slogan{padding:26px 24px;display:block}
+body.present #s05 .slogan .big{font-size:42px;display:block;margin-bottom:20px}
+body.present #s05 .slogan .txt{font-size:28px;line-height:1.3;display:block}
+body.present #s05 .slogan .txt small{font-size:22px;margin-top:16px;line-height:1.35}
+body.present #s05 #s05-vals .dt tr>:last-child{display:none}
+body.present #s05 .s05-pair{display:block}
+body.present #s05 .s05-pair>.prose{font-size:28px;margin:0}
+body.present #s05 #s05-return-title{font-size:32px;margin:0 0 18px}
+body.present #s05 #s05-return-summary{font-size:28px;line-height:1.4;margin:0 0 24px}
 </style>
 <header class="sec-head">
   <span class="sec-num">05</span>
@@ -121,48 +150,67 @@ Read the query, then ask the room what the site must know about each video to an
 
 Timing: two minutes.
   </script>
-  <div class="prose">
-    <p>Leave language for a moment. A website hosts six educational videos and a user types a question. The site has to decide <em>which</em> videos match and <em>what</em> to return. Those are two different jobs, so every item carries two representations.</p>
-  </div>
+  <div class="prose"><p>A user asks a video site a question. That request is the <span class="sym sym-q">query</span>.</p></div>
 
   <div class="card">
-    <h3 class="card-title">Search six videos by comparing one <span class="sym sym-q">query</span> with six <span class="sym sym-k">keys</span></h3>
+    <h3 class="card-title">What are we looking for?</h3>
     <div class="searchbar" role="search" aria-label="Video search query">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m15.4 15.4 5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
       <span class="s05-qtext"></span>
     </div>
-    <div class="btn-row" id="s05-qbtns"></div>
-    <div class="search-meta"><span id="s05-result-count">Six results, ranked by key score</span><span>Open a result to see its key calculation and value.</span></div>
+    <div class="btn-row" id="s05-qbtns" data-keep-state></div>
+  </div>
+  <div class="callout callout-key" data-build="1">Two separate jobs: decide <strong>which items match</strong>, then decide <strong>what information to return</strong>.</div>
+</div>
+
+<div class="frame" id="s05-frame-results" data-title="The same collection can answer different queries" data-autobuild="off">
+  <script type="text/x-notes">Which result would you expect for this question?
+These are the same six items for both queries. Their rank changes with the request, but the item descriptions and content do not.</script>
+  <div class="card">
+    <h3 class="card-title s05-qtext"></h3>
+    <div class="search-meta"><span id="s05-result-count">Six results, ranked by key score</span><span class="companion">Open a result to see its key calculation and value.</span></div>
     <div class="vgrid" id="s05-vgrid"></div>
   </div>
 </div>
 
-<div class="frame" data-title="Score the keys" data-autobuild="off">
+<div class="frame" id="s05-frame-request" data-title="Represent the request on matching axes" data-autobuild="off">
+  <script type="text/x-notes">What does the query ask for most strongly?
+Read the request before the named features. These are hand-chosen matching features for intuition; the query and keys will use the same axes.</script>
+  <div class="card">
+    <div class="qbox obj-q"><span class="qk">Query</span><span class="qt s05-qtext" id="s05-qtext"></span></div>
+    <div class="btn-row s05-present-only" id="s05-score-qbtns" data-keep-state></div>
+    <p class="look" id="s05-qread"></p>
+  </div>
+  <div class="callout callout-key" data-build="1">The <span class="sym sym-q">query</span> describes the request. Each item's <span class="sym sym-k">key</span> describes when it is a useful match.</div>
+</div>
+
+<div class="frame" data-title="Compare the query with each key" data-autobuild="off">
   <script type="text/x-notes">
 Which column decides the winner here?
 Point at the query row and read it aloud: mostly gradient flow. Reveal the scores one row at a time and let the room predict each before it appears. Then the equation: a score is the dot product of the query row with a key row, nothing else. Switch to the overfitting question and repeat quickly.
 
 Timing: four minutes.
   </script>
-  <div class="card s05-two">
-    <h3 class="card-title">The search: the question becomes a <span class="sym sym-q">Query</span> row, and every video has a <span class="sym sym-k">Key</span> row</h3>
-    <div class="qbox obj-q"><span class="qk">Query</span><span class="qt s05-qtext" id="s05-qtext"></span></div>
-    <div class="btn-row s05-present-only" id="s05-score-qbtns"></div>
-    <p class="look" id="s05-qread"></p>
-    <div class="prose" data-build="7">
+  <div class="card">
+    <h3 class="card-title">Multiply matching coordinates, then add: $s_j=\vq{q}\cdot\vk{k_j}$.</h3>
+    <div class="companion prose">
       <p>Matching is a dot product between the query and each key. At this stage the site looks at nothing else about the item.</p>
       $$s_j = \vq{q}\cdot \vk{k_j}$$
       <p>$\vq{q}$ = query representation, $\vk{k_j}$ = key of item $j$, $\vv{v_j}$ = value of item $j$.</p>
     </div>
     <div id="s05-dot" class="s05-tab"></div>
-    <p class="look" id="s05-topline" data-build="7"></p>
-    <p class="look" id="s05-kread" data-build="7"></p>
+    <p class="companion look" id="s05-topline"></p>
+    <p class="companion look" id="s05-kread"></p>
   </div>
+</div>
 
-  <div class="grid-3" style="margin:20px 0" data-build="8">
+<div class="frame" id="s05-frame-three-jobs" data-title="Three representations, three different jobs" data-autobuild="off">
+  <script type="text/x-notes">Which pair decides relevance, and which object travels?
+Read query and key as matching roles. Reveal value last: it is the payload associated with the matched item, not another matching score.</script>
+  <div class="grid-3" style="margin:20px 0">
     <div class="slogan obj-q"><span class="big">Q</span><span class="txt">What am I looking for?<small>the query, formed by the searcher</small></span></div>
-    <div class="slogan obj-k"><span class="big">K</span><span class="txt">When should you retrieve me?<small>the key, one per item, used only for matching</small></span></div>
-    <div class="slogan obj-v"><span class="big">V</span><span class="txt">What information do I send if retrieved?<small>the value, one per item, the actual payload</small></span></div>
+    <div class="slogan obj-k" data-build="1"><span class="big">K</span><span class="txt">When should you retrieve me?<small>the key, one per item, used for matching</small></span></div>
+    <div class="slogan obj-v" data-build="2"><span class="big">V</span><span class="txt">What information do I send?<small>the value, one per item, the payload</small></span></div>
   </div>
 </div>
 
@@ -176,17 +224,22 @@ Timing: two minutes.
   <div class="card">
     <h3 class="card-title">The <span class="sym sym-v">Value</span> of each video: what comes back if it is retrieved</h3>
     <div id="s05-vals"></div>
-    <p class="look" id="s05-vread"></p>
+    <p class="companion look" id="s05-vread"></p>
   </div>
+</div>
 
-  <div class="s05-pair">
-    <div class="callout callout-key" data-build="1">
-      <p>The <strong>key is used to decide whether something matches.</strong><br>The <strong>value is the information we actually retrieve.</strong></p>
-    </div>
-    <div class="prose" data-build="1">
+<div class="frame" id="s05-frame-return" data-title="Return the matched item's information, not its key" data-autobuild="off">
+  <script type="text/x-notes">The highest-scoring key belonged to which item? What arrives?
+The numeric value and content of that same item arrive. Keep the source pairing explicit: choosing item j means retrieving v_j.</script>
+  <div class="card obj-v">
+    <h3 id="s05-return-title"></h3>
+    <p id="s05-return-summary"></p>
+    <div id="s05-return-value"></div>
+  </div>
+  <div class="callout callout-key" data-build="1">The key chose the item. The value supplies the information returned.</div>
+    <div class="companion prose">
       <p>A high score says <em>retrieve Backpropagation</em>, but what arrives is its value, not its key. For this toy lookup, take the highest-scoring item. Real search engines usually rank several results; attention instead mixes values using soft weights.</p>
     </div>
-  </div>
 </div>
 
 <div class="companion after">
@@ -254,7 +307,7 @@ Timing: two minutes.
   }
 
   function buildStrip(kind, axes, values, build){
-    const strip = AT.h('div', { class: 'vpart s05-build-strip obj-' + kind, 'data-build': String(build) },
+    const strip = AT.h('div', { class: 'vpart s05-build-strip obj-' + kind },
       AT.h('span', { class: 'plab' }, kind === 'k' ? 'Key' : 'Value'));
     values.forEach((x, c) => strip.appendChild(AT.h('span', { class: 'tag' }, axes[c] + ' ' + AT.fmt(x, 1))));
     return strip;
@@ -269,7 +322,7 @@ Timing: two minutes.
     const detail = AT.h('details', { class: 'rank-details' }, AT.h('summary', {}, 'Why it ranks here'), body);
     const card = AT.h('article', { class: 'vcard', tabindex: '0' },
       thumb(V.kind, V.title),
-      AT.h('div', { class: 'vmain' }, AT.h('p', { class: 'vt' }, V.title), AT.h('p', { class: 'vsum', 'data-build': '2' }, AT.h('span', { class: 'plab' }, 'Value: '), V.summary)),
+      AT.h('div', { class: 'vmain' }, AT.h('p', { class: 'vt' }, V.title), AT.h('p', { class: 'vsum' }, AT.h('span', { class: 'plab' }, 'Value: '), V.summary)),
       rank, AT.h('span', { class: 'vdur' }, V.duration),
       buildStrip('k', KEY_AXES, V.k, 1), buildStrip('v', VAL_AXES, V.v, 2), detail);
     card.addEventListener('mouseenter', () => hl(j, true));
@@ -341,6 +394,11 @@ Timing: two minutes.
     const Q = QUERIES[qi];
     const scores = VIDEOS.map(V => AT.dot(Q.q, V.k));
     const top = AT.argmax(scores);
+    S.querySelector('#s05-return-title').textContent = VIDEOS[top].title;
+    S.querySelector('#s05-return-summary').textContent = VIDEOS[top].summary;
+    const returnHost = S.querySelector('#s05-return-value');
+    AT.clear(returnHost);
+    AT.ui.vec(VIDEOS[top].v, { axes: VAL_AXES, cls: 'v', label: '\\vv{v_{' + (top + 1) + '}}', into: returnHost });
     qtexts.forEach(el => { el.textContent = Q.text; });
     cardEls.forEach((card, j) => { card.classList.toggle('is-top', j === top); fillWhy(j, Q, scores[j]); });
     reorder(scores, top);
@@ -368,9 +426,9 @@ Timing: two minutes.
     topline.innerHTML = 'Best match: ' + AT.escape(VIDEOS[top].title) + ' (' + AT.texStr('s_{' + (top + 1) + '} = ' + AT.fmt(dot.scores[top], 1)) + '). What comes back is its value ' + AT.texStr('\\vv{v_{' + (top + 1) + '}}') + ' and summary, in the next table, not its key ' + AT.texStr('\\vk{k_{' + (top + 1) + '}}') + '. Hover a row to find it in the other table.';
   }
   draw();
-  /* each classroom frame starts from the gradient query, even if a different query was selected earlier */
+  /* A new visit starts from query 1; continuation frames retain the chosen query. */
   if (AT.present && AT.present.on) AT.present.on('frame', (st) => {
-    if (!st.frame || st.frame.id !== 's05' || qi === 0) return;
+    if (!st.frame || st.frame.id !== 's05' || st.frame.index !== 0 || qi === 0) return;
     qi = 0;
     qBtnGroups.forEach(group => group.forEach((x, j) => x.setAttribute('aria-pressed', j === 0 ? 'true' : 'false')));
     draw();

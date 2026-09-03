@@ -13,6 +13,16 @@
 #s07 .arith{margin:10px 0 0}
 #s07 .arith .calc{margin:8px 0 14px}
 #s07 .arith-lab{font-size:13px;color:var(--ink-3);font-weight:600;margin:6px 0 2px}
+body.present #s07 .rd,body.present #s07 .arith-lab{font-size:22px;line-height:1.35}
+body.present #s07 .dt-cap,body.present #s07 .dt-note{display:none}
+body.present #s07 .dt td,body.present #s07 .dt th{font-size:22px;padding:.18em .38em}
+body.present #s07 .rec-grid{grid-template-columns:1fr 1fr;gap:18px 24px}
+body.present #s07 .rec-grid>.dt-fig:first-child{grid-column:1/-1}
+body.present #s07 .rec-grid .dt td,body.present #s07 .rec-grid .dt th{padding:.2em .25em}
+body.present #s07 .wrow{grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+body.present #s07 .wrow .dt td,body.present #s07 .wrow .dt th{padding:.2em .22em}
+body.present #s07 .calc-rounding{display:none}
+@media (max-width:820px){body.present #s07 .wrow{grid-template-columns:repeat(3,minmax(0,1fr))}body.present #s07 .rec-grid{grid-template-columns:1fr 1fr}}
 </style>
 <header class="sec-head">
   <span class="sec-num">07</span>
@@ -32,54 +42,80 @@
 Which row supplies bank’s query, and which rows may answer it?
 Point at receiver i and source j separately. The query comes from the receiver; a key and value come from each source. These are projections of the original input rows, not updates yet.
   </script>
-<div class="callout callout-key">What if every token in the sequence behaved like one item in this searchable memory?</div>
-
 <div class="prose">
-  <p>Token $j$, with current representation $\ve{e_j}$, publishes a record: a key $\vk{k_j}$ that says when to retrieve it, and a value $\vv{v_j}$ that says what it sends. Token $i$, gathering context, issues a query $\vq{q_i}$. All three are linear maps of the same $\ve{e}$.</p>
-  $$\boxed{\vq{q_i} = \ve{e_i}\,W_Q} \qquad \boxed{\vk{k_j} = \ve{e_j}\,W_K} \qquad \boxed{\vv{v_j} = \ve{e_j}\,W_V}$$
-  <p class="muted small">Vectors are rows here: $\ve{e_i}$ has $d_{\text{model}}$ numbers, $W_Q$ is $d_{\text{model}} \times d_k$, so $\ve{e_i}\,W_Q$ has $d_k$ numbers. This page uses row vectors throughout. Each coordinate carries the name of what it measures; the names are illustrative, the arithmetic is real.</p>
-  <p class="muted small">q and k share the same three columns because the dot product compares them column by column. v has its own two columns, and its own width, because it is only mixed and sent.</p>
+  <p><strong>Bank is the receiver.</strong> It needs information from the words it has read.</p>
+  <p data-build="1">Its <span class="sym sym-q">query</span> describes what to look for: $\vq{q_i}=\ve{e_i}W_Q$.</p>
+  <p data-build="2">Each source publishes a <span class="sym sym-k">key</span> to match against: $\vk{k_j}=\ve{e_j}W_K$.</p>
+  <p data-build="3">The same source publishes a <span class="sym sym-v">value</span> to send: $\vv{v_j}=\ve{e_j}W_V$.</p>
+</div>
+<div class="callout callout-key" data-build="4">The query and key choose <strong>where to read</strong>. The value supplies <strong>what is read</strong>.</div>
 </div>
 
+<div class="companion">
+  <p>Vectors are rows throughout this page. A representation has $d_{\text{model}}$ numbers; multiplying by a $d_{\text{model}}\times d_k$ projection produces $d_k$ numbers. Queries and keys share matching axes because a dot product compares corresponding coordinates. Values have their own axes, and may have a different width, because they are mixed rather than compared. The named coordinates are illustrative; the arithmetic is real.</p>
+</div>
+
+<div class="frame" id="s07-frame-input" data-title="Which input row supplies the query?">
+<script type="text/x-notes">Which row describes the receiving token?
+Choose bank first. The bold row is e_i, not q_i: the next frame multiplies it by W_Q. Changing the receiver changes its query and the prefix it may read.</script>
 <div class="card">
-  <h3 class="card-title">Pick the query token $i$. Rows up to $i$ are open; later rows are not read yet</h3>
-  <div id="s07-chips"></div>
+  <h3 class="card-title">Choose a receiver. Its input row is highlighted.</h3>
+  <div id="s07-chips" data-keep-state></div>
   <div id="s07-etab"></div>
-  <p class="rd" id="s07-eread"></p>
-  <p class="muted small qnote" id="s07-qnote"></p>
+  <p class="companion rd" id="s07-eread"></p>
+  <p class="companion muted small qnote" id="s07-qnote"></p>
+</div>
 </div>
 
+<div class="frame" id="s07-frame-query-calc" data-title="Turn the receiving row into a query">
+<script type="text/x-notes">How is a query made, coordinate by coordinate?
+Follow the selected receiver from the preceding frame. Each output is one input row dotted with one W_Q column. The model computes numbers, not an English question.</script>
+  <div class="card"><div class="arith" id="s07-qcalc"></div></div>
+  <p class="rd" id="s07-qread"></p>
 </div>
 
 <div class="frame" id="s07-frame2" data-title="Matching information or information to send?">
   <script type="text/x-notes">
 Does a source send its key or its value?
-Open river’s record and compare e, k and v. Change the record and reveal its arithmetic. The column names are hand-designed for this toy; real learned coordinates need not have these meanings.
+Open river’s record and compare e, k and v. The following frames show the key and value calculations separately. The column names are hand-designed for this toy; real learned coordinates need not have these meanings.
   </script>
 <div class="card">
   <h3 class="card-title">One record: what token $j$ publishes. Three rows, three sets of axis names</h3>
-  <div id="s07-rchips"></div>
+  <div id="s07-rchips" data-keep-state></div>
   <div class="rec-grid" id="s07-rec"></div>
   <p class="rd" id="s07-rread"></p>
-  <div class="arith-btn"><button type="button" class="btn btn-quiet" id="s07-rarith" aria-expanded="false">Show the arithmetic</button></div>
-  <div class="arith" id="s07-rcalc" hidden></div>
 </div>
 
+</div>
+
+<div class="frame" id="s07-frame-key-calc" data-title="The source’s key: when should it be read?">
+<script type="text/x-notes">Which representation feeds this key?
+It is the selected source’s original row, not the receiver’s row. Read one output axis and its W_K column.</script>
+  <div class="card"><div class="arith" id="s07-rcalc"></div></div>
+  <div class="callout callout-key">The key is a <strong>matching description</strong>. It is not the information added to bank.</div>
+</div>
+
+<div class="frame" id="s07-frame-value-calc" data-title="The source’s value: what should it send?">
+<script type="text/x-notes">What changed from the key calculation?
+The source row is unchanged. A different matrix, W_V, extracts the information this source will send if it receives weight.</script>
+  <div class="card"><div class="arith" id="s07-vcalc"></div></div>
+  <div class="callout callout-key">A value is <strong>made from the embedding</strong>; it is not necessarily the embedding itself.</div>
 </div>
 
 <div class="frame" id="s07-frame3" data-title="What can this query compare and retrieve?">
   <script type="text/x-notes">
 Why do the query and keys share axes, while values have their own axes?
-Read one query-key pair, then the corresponding value row. Scores are only a preview; the next section will turn them into mixing weights.
+Read one query-key pair. Their axes must match. Scores are only a preview; the next section will turn them into mixing weights.
   </script>
 <div class="card">
   <h3 class="card-title">Keys: the query row sits above the key rows, under the same axis names</h3>
   <div id="s07-ktab"></div>
-  <p class="rd" id="s07-qread"></p>
-  <div class="arith-btn"><button type="button" class="btn btn-quiet" id="s07-qarith" aria-expanded="false">Show the arithmetic</button></div>
-  <div class="arith" id="s07-qcalc" hidden></div>
+</div>
 </div>
 
+<div class="frame" id="s07-frame-values" data-title="Keep each key paired with its value">
+<script type="text/x-notes">If river’s key receives a large weight, which row is sent?
+The value from the same source position. A key and value are paired by their source index j, not by sharing identical coordinates.</script>
 <div class="card">
   <h3 class="card-title">Values: what each open record sends if it is read</h3>
   <div id="s07-vtab"></div>
@@ -95,11 +131,10 @@ There is one W_Q, one W_K and one W_V for this head, reused at every position. Q
 <div class="card">
   <h3 class="card-title">Three shared projections: $W_Q,W_K$ are $d_{\text{model}}\times d_k$; $W_V$ is $d_{\text{model}}\times d_v$</h3>
   <div class="wrow" id="s07-mats"></div>
-  <p class="muted small qnote">Look at: the same $W_Q$, $W_K$, $W_V$ act on every position. A row is an input axis of $\ve{e}$; a column is an output axis. Read each non-zero cell as “this axis feeds that axis”.</p>
+  <p class="companion muted small qnote">Look at: the same $W_Q$, $W_K$, $W_V$ act on every position. A row is an input axis of $\ve{e}$; a column is an output axis. Read each non-zero cell as “this axis feeds that axis”.</p>
 </div>
 
-<div class="callout callout-note">One query at a time. Token $i$ asks with $\vq{q_i}$; every token $j \le i$ answers with $\vk{k_j}$ and $\vv{v_j}$. Comparing them is the next section; stacking everything into matrices comes much later.</div>
-<p class="muted small">PyTorch · single receiver row and single source row; each input has shape $1 \times d_{\text{model}}$.</p>
+<p class="muted small">The same matrices are reused at every position.</p>
 <pre class="torch-snippet"><code>q_i = e_i @ W_Q
 k_j, v_j = e_j @ W_K, e_j @ W_V</code></pre>
 </div>
@@ -194,7 +229,7 @@ k_j, v_j = e_j @ W_K, e_j @ W_V</code></pre>
   const eread = S.querySelector('#s07-eread');
 
   /* ---------- one record: e_j, k_j, v_j as three small tables ---------- */
-  const rec = S.querySelector('#s07-rec'), rread = S.querySelector('#s07-rread'), rcalc = S.querySelector('#s07-rcalc'), rbtn = S.querySelector('#s07-rarith');
+  const rec = S.querySelector('#s07-rec'), rread = S.querySelector('#s07-rread'), rcalc = S.querySelector('#s07-rcalc'), vcalc = S.querySelector('#s07-vcalc');
   const rchips = AT.ui.chips(toks, { active: rj, into: S.querySelector('#s07-rchips'), onClick: (j) => { rj = j; rchips.setActive(j); drawRecord(); } });
   let kCalc = null, vCalc = null, kHeading = null, vHeading = null;
   function drawRecord(){
@@ -213,25 +248,20 @@ k_j, v_j = e_j @ W_K, e_j @ W_V</code></pre>
   function buildRecordCalc(){
     const n = rj + 1, t = toks[rj];
     AT.clear(rcalc);
+    AT.clear(vcalc);
     const l1 = AT.h('p', { class: 'arith-lab' }, 'the key: $\\vk{k_{' + n + '}} = \\ve{e_{' + n + '}}\\,W_K$');
     rcalc.appendChild(l1); kHeading = l1;
     kCalc = AT.ui.matVecCalc(F.E[rj], AT.model.W_K, { from: 'e', to: 'qk', cls: 'k', xLabel: 'e · ' + n + ' ' + t, outLabel: 'k · ' + n + ' ' + t, into: rcalc });
     const l2 = AT.h('p', { class: 'arith-lab' }, 'the value: $\\vv{v_{' + n + '}} = \\ve{e_{' + n + '}}\\,W_V$');
-    rcalc.appendChild(l2); vHeading = l2;
-    vCalc = AT.ui.matVecCalc(F.E[rj], AT.model.W_V, { from: 'e', to: 'v', cls: 'v', xLabel: 'e · ' + n + ' ' + t, outLabel: 'v · ' + n + ' ' + t, into: rcalc });
-    AT.renderMath(rcalc);
+    vcalc.appendChild(l2); vHeading = l2;
+    vCalc = AT.ui.matVecCalc(F.E[rj], AT.model.W_V, { from: 'e', to: 'v', cls: 'v', xLabel: 'e · ' + n + ' ' + t, outLabel: 'v · ' + n + ' ' + t, into: vcalc });
+    AT.renderMath(rcalc); AT.renderMath(vcalc);
   }
-  rbtn.addEventListener('click', () => {
-    const open = rcalc.hidden;
-    if (open && !kCalc) buildRecordCalc();
-    rcalc.hidden = !open;
-    rbtn.setAttribute('aria-expanded', String(open));
-    rbtn.textContent = open ? 'Hide the arithmetic' : 'Show the arithmetic';
-  });
+  buildRecordCalc();
   drawRecord();
 
   /* ---------- keys (dotTable): query row above the keys ---------- */
-  const khost = S.querySelector('#s07-ktab'), qread = S.querySelector('#s07-qread'), qcalc = S.querySelector('#s07-qcalc'), qbtn = S.querySelector('#s07-qarith');
+  const khost = S.querySelector('#s07-ktab'), qread = S.querySelector('#s07-qread'), qcalc = S.querySelector('#s07-qcalc');
   let qCalc = null, qHeading = null;
   function drawKeys(){
     AT.clear(khost);
@@ -255,13 +285,7 @@ k_j, v_j = e_j @ W_K, e_j @ W_V</code></pre>
     qCalc = AT.ui.matVecCalc(F.E[qi], AT.model.W_Q, { from: 'e', to: 'qk', cls: 'q', xLabel: 'e · ' + n + ' ' + toks[qi], outLabel: 'q · ' + n + ' ' + toks[qi], into: qcalc });
     AT.renderMath(qcalc);
   }
-  qbtn.addEventListener('click', () => {
-    const open = qcalc.hidden;
-    if (open && !qCalc) buildQCalc();
-    qcalc.hidden = !open;
-    qbtn.setAttribute('aria-expanded', String(open));
-    qbtn.textContent = open ? 'Hide the arithmetic' : 'Show the arithmetic';
-  });
+  buildQCalc();
 
   /* ---------- value table ---------- */
   const vtab = AT.ui.table(F.V, { rowLabels: rowLabels.map((s, j) => '$\\vv{v_{' + (j + 1) + '}}$ ' + toks[j]), rowCls: 'v', cornerLabel: 'row', dimRows: later(qi),

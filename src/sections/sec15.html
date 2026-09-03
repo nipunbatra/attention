@@ -20,7 +20,9 @@ body.present #s15 .s15-reading,body.present #s15 .stepper-list,
 body.present #s15 .stepper-stage>.stage-note,body.present #s15 .stepper-stage>.stage-tex{display:none}
 body.present #s15 .stepper{padding:.45em .7em;margin:.2em 0 0}
 body.present #s15 .stepper-body{display:block}
-body.present #s15 .stepper-bar{margin-bottom:.35em}
+/* The presentation controls advance the active stepper; its duplicate local
+   toolbar is useful in reading mode but wastes one full teaching line here. */
+body.present #s15 .stepper-bar{display:none}
 body.present #s15 .stepper-stage .stage-title{margin:0 0 .3em}
 body.present #s15 .s15-classroom{display:grid;gap:.45em}
 body.present #s15 .s15-classroom p{margin:0;line-height:1.35}
@@ -30,14 +32,14 @@ body.present #s15 .s15-result{display:grid;gap:.35em;padding:.45em .65em;backgro
 body.present #s15 .s15-result .row{gap:.55em;margin:0;align-items:center}
 body.present #s15 .s15-result.is-prediction{grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:1em}
 body.present #s15 .s15-result .vec{margin:0}
-body.present #s15 .s15-result .vec-axes{font-size:.65em}
-body.present #s15 .s15-result .vec-dims{font-size:.7em}
+body.present #s15 .s15-result .vec-axes{font-size:22px}
+body.present #s15 .s15-result .vec-dims{font-size:21px}
 body.present #s15 .s15-operation{font-size:.93em}
 body.present #s15 .s15-explain{font-size:.9em}
 body.present #s15 .s15-classroom pre{margin:0;padding:.45em .65em;font-size:.8em;line-height:1.35}
 body.present #s15 .s15-strip{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:.25em}
 body.present #s15 .s15-tile{padding:.3em .2em;text-align:center;border:1px solid var(--line);border-radius:var(--radius-s);font-variant-numeric:tabular-nums}
-body.present #s15 .s15-tile small{display:block;font-size:.67em;white-space:nowrap}
+body.present #s15 .s15-tile small{display:block;font-size:21px;white-space:nowrap}
 body.present #s15 .s15-tile b{display:block;font-size:.9em;font-weight:600}
 body.present #s15 .s15-tile.is-query{border:2px solid var(--c-q)}
 body.present #s15 .s15-tile.is-masked{background:repeating-linear-gradient(135deg,transparent,transparent 6px,var(--line) 7px,transparent 8px);color:var(--ink-3)}
@@ -45,7 +47,6 @@ body.present #s15 .s15-tile.is-top{background:var(--ink);color:var(--paper)}
 body.present #s15 .s15-classroom .dt{font-size:.9em}
 body.present #s15 .s15-classroom .dt td.dt-num,body.present #s15 .s15-classroom .dt th{padding:.2em .45em}
 body.present #s15 .s15-classroom .dt-cap{margin-top:.25em}
-@media(max-width:820px){body.present #s15 .s15-strip{grid-template-columns:repeat(5,minmax(0,1fr))}body.present #s15 .s15-result.is-prediction{grid-template-columns:1fr}}
 /* narrow screens: show the stage right under the Next-step button, the 18-item list below it */
 @media (max-width:820px){#s15 .stepper-body{display:flex;flex-direction:column-reverse}}
 /* phones: the operand / result rows of an equation stack vertically instead of wrapping mid-expression */

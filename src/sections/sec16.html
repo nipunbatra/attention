@@ -20,11 +20,12 @@ body.present #s16 #s16-flow-stepper>.stepper{padding:0;border:0;background:trans
 body.present #s16 #s16-flow-stepper .stepper-bar{display:none}
 body.present #s16 .flow-full{display:none}
 body.present #s16 .flow-classroom{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:24px;align-items:center}
-body.present #s16 .flow-classroom svg{width:100%;height:auto;max-height:calc(100dvh - 205px)}
+body.present #s16 .flow-classroom svg{width:100%;height:auto;max-height:540px}
 body.present #s16 .flow-classroom h3{font-size:1.3em;margin:0 0 .6em}
 body.present #s16 .flow-classroom p{font-size:.9em;line-height:1.45;margin:.65em 0}
-body.present #s16 .flow-classroom pre{font-size:.59em}
-body.present #s16 .flow-receiver{font-size:.7em;line-height:1.4;color:var(--ink-2)}
+body.present #s16 .flow-classroom pre{font-size:22px}
+body.present #s16 .flow-receiver{font-size:22px;line-height:1.4;color:var(--ink-2)}
+body.present #s16 .flow-detail{display:none}
 body.present #s16 #s16-flow-stepper .stepper-stage{padding:0;border:0;overflow:visible}
 /* The article keeps every operand. In class the equation names the inputs and
    the numerical result takes centre stage, instead of stacking three matrices. */
@@ -38,12 +39,15 @@ body.present #s16-frame2 .stage-row{justify-content:center}
 body.present #s16-frame2 .stage-row>:not(:last-child){display:none}
 body.present #s16-frame2 .stage-row .grp>.mat-op{display:none}
 body.present #s16-frame2 .stage-row:has(+.stage-row){display:none}
-body.present #s16-frame2 .stage-note{font-size:.8em;max-width:none;margin-bottom:6px}
+body.present #s16-frame2 .stage-note,body.present #s16-frame2 .read,body.present #s16-frame2 .dt-cap{display:none}
 body.present #s16-frame2 .stage-tex{margin:0}
 body.present #s16-frame2 .read{font-size:.8em;max-width:none}
 body.present #s16-frame2 .dt-w{margin-inline:auto}
 body.present #s16-frame2 .dt td.dt-num{padding:5px 7px}
-@media(max-width:700px){body.present #s16 .flow-classroom{grid-template-columns:1fr}body.present #s16 .flow-classroom svg{max-height:none}}
+body.present #s16 .cap,body.present #s16 .why{font-size:22px;max-width:none}
+body.present #s16-frame1 .dt-cap{display:none}
+body.present #s16 .eqs{display:grid;grid-template-columns:1fr 1fr;gap:30px;text-align:center}
+body.present #s16 .eqs>span{padding:28px 18px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
 </style>
 <header class="sec-head">
   <span class="sec-num">16</span>
@@ -97,30 +101,39 @@ Keep row 7 highlighted and step through the products. Q and K are both T × 3, s
 
 </div>
 
-<div class="frame" id="s16-frame3" data-title="Can we write the whole sublayer compactly?">
+<div class="frame" id="s16-frame3-routing" data-title="Matrix form, first phase: choose where every row reads">
+  <script type="text/x-notes">QK transpose compares every receiver with every source. The mask blocks the future; softmax makes each surviving row sum to one.</script>
+  <div class="eqs">
+    <span>$S = \dfrac{\vq{Q}\,\vk{K}^\top}{\sqrt{d_k}}$</span>
+    <span>$\va{A} = \operatorname{softmax}_{\text{row}}(S + M)$</span>
+  </div>
+  <div class="callout callout-key" data-build="1"><strong>Routing result:</strong> row $i$ of $\va{A}$ contains the source weights chosen by receiver $i$.</div>
+</div>
+
+<div class="frame" id="s16-frame3" data-title="Matrix form, second phase: mix, project, and add">
   <script type="text/x-notes">
 Which operation chooses sources, which mixes information, and which adds the update?
 A contains the source weights; A V forms messages; W_O maps them back; the residual connection adds E. This is one attention sublayer, not the full Transformer block.
   </script>
 <div class="card">
-  <h3 class="card-title">The whole sublayer in five lines</h3>
+  <h3 class="card-title">Use the weights, then preserve the input</h3>
   <div class="eqs" id="s16-eqs">
-    <span>$S = \dfrac{\vq{Q}\,\vk{K}^\top}{\sqrt{d_k}}$</span>
-    <span>$\va{A} = \operatorname{softmax}(S + M)$</span>
     <span>$H = \va{A}\,\vv{V}$</span>
     <span>$\vd{\Delta E} = H\,W_O$</span>
     <span>$\boxed{\vp{E'} = \ve{E} + \vd{\Delta E}}$</span>
   </div>
-  <p class="why">$M$ is the causal mask: $0$ where $j \le i$, $-\infty$ where $j > i$. The softmax acts on each row separately, so every row of $\va{A}$ sums to $1$.</p>
+  <p class="why">Each row of $H$ is one receiver’s weighted mixture. $W_O$ returns it to model width before the residual addition.</p>
 </div>
 
 </div>
-<div class="frame" id="s16-frame4" data-title="Which parts are attention, and which parts surround it?">
-  <script type="text/x-notes">
-Is this already a complete Transformer?
-No. We have one attention head, its output projection, and its residual addition. The full block also needs the architecture components introduced later. Read the two-line implementation and locate the softmax source axis.
-  </script>
-<div id="s16-callouts"></div>
+<div class="frame" id="s16-frame4" data-title="The matrix equations are the same token-by-token story">
+  <script type="text/x-notes">Ask students to point from each matrix line to the corresponding single-token operation from the walkthrough. The matrix notation is batching, not a new mechanism.</script>
+<div id="s16-callouts"><div id="s16-callout-key"></div></div>
+</div>
+
+<div class="frame" id="s16-frame5" data-title="What have we built—and what has not appeared yet?">
+  <script type="text/x-notes">This is one causal attention head, its output projection and residual addition. A full Transformer block adds the remaining architecture in Part 3.</script>
+<div id="s16-callout-note"></div>
 <p class="muted small">PyTorch · matrices are row-major; mask contains 0 or −∞.</p>
 <pre class="torch-snippet"><code>A = (Q @ K.T / d_k**0.5 + mask).softmax(dim=-1)
 E_new = E + (A @ V) @ W_O</code></pre>
@@ -255,18 +268,21 @@ E_new = E + (A @ V) @ W_O</code></pre>
         copy.appendChild(AT.h('div',{class:'flow-receiver',text:'The fisherman sat beside the river bank and watched the ___'}));
         copy.appendChild(AT.h('h3',{text:st.title}));
         copy.appendChild(AT.h('p',{text:st.lines.join(' ')}));
-        copy.appendChild(AT.h('p',{text:st.note.join(' ')}));
+        copy.appendChild(AT.h('p',{class:'flow-detail',text:st.note.join(' ')}));
         copy.appendChild(AT.h('pre',{class:'torch-snippet',text:st.code.join('\n')}));
         const graph=AT.h('div');graph.innerHTML=P.render(i,'class-flow-'+i);
-        const svg=graph.querySelector('svg');svg.setAttribute('viewBox','780 210 790 700');svg.setAttribute('width','790');svg.setAttribute('height','700');
+        const svg=graph.querySelector('svg');
+        // Keep the shared graph, not fragments of the article's left-hand worksheet.
+        const inputNode=svg.querySelector('[data-node="input"]');
+        for(const child of [...svg.children]){if(child===inputNode)break;if(!['title','desc','defs','style'].includes(child.tagName.toLowerCase()))child.remove();}
+        svg.setAttribute('viewBox','790 214 770 710');svg.setAttribute('width','770');svg.setAttribute('height','710');
         room.append(copy,graph);el.appendChild(room);
       }}))});
   }
 
   /* callouts */
-  const co = S.querySelector('#s16-callouts');
-  AT.ui.callout('The matrices add nothing new. $\\va{A}\\,\\vv{V}$ computes every token\'s message in one product, and $\\vp{E\'} = \\ve{E} + \\vd{\\Delta E}$ is the residual addition applied to all rows at once.', { kind: 'key', into: co });
-  AT.ui.callout('$\\vd{\\Delta E}$ is our pedagogical notation for the attention sublayer\'s residual update. Standard descriptions call $H W_O$ the attention output; the addition $\\ve{E} + \\vd{\\Delta E}$ itself is standard: it is the residual connection around the attention sublayer.', { kind: 'note', into: co });
+  AT.ui.callout('The matrices add nothing new. $\\va{A}\\,\\vv{V}$ computes every token\'s message in one product, and $\\vp{E\'} = \\ve{E} + \\vd{\\Delta E}$ is the residual addition applied to all rows at once.', { kind: 'key', into: S.querySelector('#s16-callout-key') });
+  AT.ui.callout('$\\vd{\\Delta E}$ is our pedagogical notation for the attention sublayer\'s residual update. Standard descriptions call $H W_O$ the attention output; the addition $\\ve{E} + \\vd{\\Delta E}$ itself is standard: it is the residual connection around the attention sublayer.', { kind: 'note', into: S.querySelector('#s16-callout-note') });
 })();
 </script>
 </section>

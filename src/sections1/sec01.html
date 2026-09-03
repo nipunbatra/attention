@@ -6,7 +6,7 @@
 #s01 .prompt{font-size:1.18em;margin:0 0 14px}
 #s01 .answers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:16px}
 #s01 .answer{padding:12px;background:var(--t-neutral);border-radius:var(--radius-s)}
-@media(max-width:640px){#s01 .task-grid,#s01 .answers{grid-template-columns:1fr}}
+@media(max-width:640px){body:not(.present) #s01 .task-grid,body:not(.present) #s01 .answers{grid-template-columns:1fr}}
 </style>
 <header class="sec-head"><span class="sec-num">01</span><div><p class="eyebrow">Why we are here: language tasks look different, yet each asks a network to turn text into useful predictions.</p><h2>What can a network do with text?</h2></div></header>
 <div class="companion" data-kicker="For self-study"><p>A network can label a whole passage, label each token, translate between languages, shorten a notice, answer from a context, or continue a prompt. The output shape changes across these tasks. Generation looks especially open because several continuations can fit the same prefix. We can still give the network a precise job: assign one probability to every possible next token. Choosing or sampling one token turns that distribution into a continuation. This next-token view gives us a small problem that we can build from embeddings, an MLP, softmax, and cross-entropy.</p></div>
@@ -29,8 +29,11 @@
   <div class="card"><p class="prompt">The student opened the laptop and …</p><div class="answers">
     <div class="answer" data-build="1">started coding.</div><div class="answer" data-build="2">checked email.</div>
     <div class="answer" data-build="3">joined class.</div><div class="answer" data-build="4">saw a warning.</div>
-  </div><div id="s01-bars" data-build="5"></div><p class="muted small" data-build="5">Illustrative probabilities for the first token of a continuation.</p></div>
-  <div class="callout callout-key" data-build="6">Generation is classification over the next token, repeated one step at a time.</div>
+  </div></div>
+</div>
+<div class="frame" data-title="Give every next token a probability" data-autobuild="off">
+  <div class="card"><h3 class="card-title">After “The student opened the laptop and”</h3><div id="s01-bars"></div><p class="muted small">Illustrative next-token probabilities.</p></div>
+  <div class="callout callout-key" data-build="1">Generation is classification over the next token, repeated one step at a time.</div>
 </div>
 <div class="companion after"><p>Keep in mind: a probability distribution can represent several reasonable continuations without choosing one in advance.</p></div>
 <script>

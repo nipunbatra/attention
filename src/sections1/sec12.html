@@ -4,6 +4,10 @@
 #s12 textarea{width:100%;min-height:82px;padding:12px;border:1px solid var(--line);border-radius:var(--radius-s);font:inherit;resize:vertical;background:var(--card);color:var(--ink)}
 #s12 .tok-row{padding:12px 0;border-bottom:1px solid var(--line)}#s12 .tok-row:last-child{border-bottom:0}
 #s12 .tok-meta{font-family:var(--font-mono);font-size:.82em;color:var(--ink-2);margin:6px 0 0}
+#s12 .token-modes{display:none}
+body.present #s12 .token-modes{display:flex;margin:12px 0}
+body.present #s12 .token-modes [aria-pressed=true]{background:var(--ink);color:var(--card)}
+body.present #s12 .tok-row:not(.is-active){display:none}
 </style>
 <header class="sec-head"><span class="sec-num">12</span><div><p class="eyebrow">Why we are here: the next-token objective stays the same even when one token stops meaning one character.</p><h2>What should a token be?</h2></div></header>
 <div class="companion" data-kicker="For self-study"><p>Characters give a small vocabulary and can represent unfamiliar strings, but ordinary sentences become long. Whole words shorten the sequence and are easy to read, yet the vocabulary grows quickly and unseen words collapse to an unknown token. Subwords sit between these choices by reusing common pieces inside frequent and rare words. The widget applies three simple tokenizers to the same text and reports the resulting sequence length and the number of distinct displayed tokens. The subword merges are illustrative rather than a trained tokenizer. Later, attention will compare token pairs, so its cost depends strongly on the sequence length $T$.</p></div>
@@ -15,21 +19,27 @@
 <div class="frame" data-title="Tokenize one string three ways" data-autobuild="off">
   <script type="text/x-notes">Which tokenizer produces the longest sequence for this text?
   Edit the text and compare T. The vocabulary count here means distinct tokens in the displayed sample.</script>
-  <div class="card"><h3 class="card-title">Type a short sentence</h3><label for="s12-input" class="muted small">Text to tokenize</label><textarea id="s12-input">deep learning is amazing</textarea><div id="s12-output"></div></div>
+  <div class="card"><h3 class="card-title">One sentence, three token choices</h3><label for="s12-input" class="muted small">Text to tokenize</label><textarea id="s12-input">deep learning is amazing</textarea><div class="btn-row token-modes" role="group" aria-label="Show one tokenizer"><button class="btn" type="button" data-unit="0" aria-pressed="true">Characters</button><button class="btn" type="button" data-unit="1" aria-pressed="false">Words</button><button class="btn" type="button" data-unit="2" aria-pressed="false">Subwords</button></div><div id="s12-output"></div></div>
 </div>
 <div class="frame" data-title="Coverage and sequence length" data-autobuild="off">
   <script type="text/x-notes">Why can a word tokenizer lose the difference between unfamiliar words?
   Reveal the trade-off table, then show three distinct strings mapping to the same unknown token.</script>
   <div class="card"><h3 class="card-title">The trade-off</h3><div id="s12-trade"></div></div>
-  <div class="card" data-build="1"><h3 class="card-title">An unknown-word demonstration</h3><div id="s12-unk"></div></div>
-  <div class="callout callout-note" data-build="2">Attention cost will depend on $T$, the number of tokens in the sequence.</div>
+  <div class="callout callout-note" data-build="1">Attention cost will depend on $T$, the number of tokens in the sequence.</div>
+</div>
+<div class="frame" data-title="An unknown word can lose its identity" data-autobuild="off">
+  <div class="card"><div id="s12-unk"></div></div>
+  <div class="callout callout-note" data-build="1">Three different strings become the same unknown token.</div>
 </div>
 <div class="companion after"><p>Keep in mind: tokenization changes both the vocabulary and the sequence length before the model sees any IDs.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s12'),input=S.querySelector('#s12-input'),out=S.querySelector('#s12-output');
   function row(label,tokens){const box=AT.h('div',{class:'tok-row'},AT.h('h3',{class:'card-title'},label));AT.ui.chips(tokens,{into:box});box.appendChild(AT.h('p',{class:'tok-meta'},'T = '+tokens.length+' · observed |V| = '+new Set(tokens).size));return box;}
-  function draw(){AT.clear(out);const text=input.value;out.appendChild(row('Characters',AT.mlp.tokenizeChars(text)));out.appendChild(row('Words',AT.mlp.tokenizeWords(text)));out.appendChild(row('Illustrative subwords',AT.mlp.tokenizeSubwords(text)));}
+  let activeUnit=0;
+  function selectUnit(index){activeUnit=index;Array.from(out.children).forEach((el,i)=>el.classList.toggle('is-active',i===index));S.querySelectorAll('[data-unit]').forEach(btn=>btn.setAttribute('aria-pressed',String(+btn.dataset.unit===index)));}
+  function draw(){AT.clear(out);const text=input.value;out.appendChild(row('Characters',AT.mlp.tokenizeChars(text)));out.appendChild(row('Words',AT.mlp.tokenizeWords(text)));out.appendChild(row('Illustrative subwords',AT.mlp.tokenizeSubwords(text)));selectUnit(activeUnit);}
+  S.querySelectorAll('[data-unit]').forEach(btn=>btn.addEventListener('click',()=>selectUnit(+btn.dataset.unit)));
   input.addEventListener('input',draw);draw();
   AT.ui.table([['small','long','strong coverage'],['moderate','moderate','reuses pieces'],['large','short','unseen words need handling']],{cols:['vocabulary','sequence T','unseen text'],rowLabels:['character','subword','word'],cornerLabel:'unit',into:S.querySelector('#s12-trade')});
   const unknown=['hyperhappiness','electrojoy','nanobotany'],mapped=AT.mlp.tokenizeWords(unknown.join(' '),{unknown:true});

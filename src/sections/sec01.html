@@ -14,27 +14,18 @@
 #s01 .read-line{font-size:15px;color:var(--ink);margin:12px 0 0;padding:8px 12px;border-left:3px solid var(--c-e);background:var(--t-e);border-radius:0 var(--radius-s) var(--radius-s) 0}
 #s01 .emb-tab{margin-top:12px}
 @media (max-width:640px){#s01 .pipe{grid-template-columns:1fr}}
-body.present #s01 .ctx-lab,body.present #s01 .arrow-lab,body.present #s01 .look{font-size:.7em}
-body.present #s01 .read-line{font-size:.78em}
-body.present #s01 .blackbox{padding:.6em .9em;min-width:7em}
-body.present #s01 .blackbox b{font-size:.85em}
-body.present #s01 .blackbox span{font-size:.62em}
-body.present #s01 .pipe{gap:.6em 1.4em;margin-top:.5em}
-body.present #s01 .emb-tab{margin-top:.4em}
-body.present #s01 .chip{font-size:.76em}
-body.present #s01 .frame.is-live{padding-bottom:.7em}
-body.present #s01 .frame{font-size:.92em}
-body.present #s01 .title-row{margin-bottom:.3em}
-body.present #s01 .bars{gap:.14em .5em;margin:.2em 0}
-body.present #s01 .bars .bt{height:.85em}
-body.present #s01 .prose p{margin-bottom:.35em}
-body.present #s01 .katex-display{margin:.3em 0}
-body.present #s01 .callout{margin:.45em 0;padding:.55em .9em}
-body.present #s01 .card{margin-bottom:.5em}
-body.present #s01 .muted.small{font-size:.68em}
-body.present #s01 .emb-tab .dt-note,body.present #s01 #s01-emb-cap{display:none}
-body.present #s01 .callout-key{font-size:.98em}
-body.present #s01 .callout-note{font-size:.92em}
+body.present #s01 .ctx-lab,body.present #s01 .arrow-lab,body.present #s01 .look,body.present #s01 .read-line{font-size:22px;line-height:1.35}
+body.present #s01 .blackbox{padding:22px 26px;min-width:230px}
+body.present #s01 .blackbox b{font-size:28px}
+body.present #s01 .blackbox span{font-size:22px}
+body.present #s01 .pipe{grid-template-columns:280px minmax(0,1fr);gap:24px 40px;margin-top:0}
+body.present #s01 .bars{gap:8px 16px;margin:0}
+body.present #s01 .bars .bt{height:26px}
+body.present #s01 .dt td,body.present #s01 .dt th{font-size:22px;padding:10px 12px}
+body.present #s01 .emb-tab .dt-cap,body.present #s01 .emb-tab .dt-note{display:none}
+body.present #s01 .title-row{display:block;margin-bottom:18px}
+body.present #s01 .title-row .btn-row{margin-top:16px}
+body.present #s01 .emb-tab{margin-top:20px}
 </style>
 <header class="sec-head">
   <span class="sec-num">01</span>
@@ -55,21 +46,27 @@ body.present #s01 .callout-note{font-size:.92em}
 
     Timing: about three minutes.
   </script>
-  <div class="prose">
-    <p>The sentence below ends in a blank. Some model proposes fillers for it. For now the model is a black box.</p>
-  </div>
+  <div class="prose"><p><strong>What could come next?</strong> Use all the words before the blank.</p></div>
 
   <div class="card">
     <div class="title-row">
-      <h3 class="card-title">Fill the blank, then switch the context</h3>
-      <div class="btn-row ctx-row" id="s01-ctx" role="group" aria-label="Choose the context sentence" data-build="2">
+      <h3 class="card-title">The last three words are the same in both contexts.</h3>
+      <div class="btn-row ctx-row" id="s01-ctx" role="group" aria-label="Choose the context sentence" data-build="1" data-keep-state>
         <span class="ctx-lab">Context:</span>
         <button type="button" class="btn" id="s01-ctx-a" aria-pressed="true">A: The fisherman … river bank</button>
         <button type="button" class="btn" id="s01-ctx-b" aria-pressed="false">B: She deposited … the bank</button>
       </div>
     </div>
     <div id="s01-chips"></div>
-    <div class="pipe" data-build="1">
+  </div>
+  <div class="callout callout-key" data-build="2">The earlier words change what makes sense after <em>and watched the</em>.</div>
+</div>
+
+<div class="frame" id="s01-frame-probabilities" data-title="The output is a probability for every next token" data-autobuild="off">
+  <script type="text/x-notes">Which candidate gets the most probability in the context you selected?
+The previous frame's context selection is retained. These bars come from the toy model that this article will unpack; the black box is deliberate for now.</script>
+  <div class="card">
+    <div class="pipe">
       <div>
         <p class="arrow-lab">all tokens so far ↓</p>
         <div class="blackbox" aria-label="some model, a black box for now"><b>some model</b><span>a black box, for now</span></div>
@@ -81,13 +78,17 @@ body.present #s01 .callout-note{font-size:.92em}
     </div>
     <p class="look" id="s01-bars-note" data-build="1"></p>
   </div>
+</div>
 
-  <div class="prose" data-build="3">
+<div class="frame" id="s01-frame-task" data-title="A useful next-token guess needs relevant context" data-autobuild="off">
+  <script type="text/x-notes">What must reach the prediction if the two endings are identical?
+It must receive information about river or cheque from earlier in the sentence. The rest of Part II will open the black box one operation at a time.</script>
+  <div class="prose">
     <p>A language model reads the tokens so far and assigns a probability to every possible next token:
     $$p(x_{t+1}\mid x_1,\ldots,x_t)$$</p>
   </div>
 
-  <div class="callout callout-key" data-build="4">To predict the next token well, the model needs a useful representation of everything relevant in the preceding context.</div>
+  <div class="callout callout-key" data-build="1">To predict the next token well, the model needs a useful representation of everything relevant in the preceding context.</div>
 
 </div>
 
@@ -96,24 +97,28 @@ body.present #s01 .callout-note{font-size:.92em}
     What does position add, and which coordinate changes in this toy?
     Click two or three tokens and read the sum row aloud. Point at the first row: it is the same wherever the word appears. Then reveal the equation and the note.
   </script>
-  <div class="prose">
+  <div class="companion">
     <p>The last three words, <em>and watched the</em>, are the same in both contexts, yet the answers differ. Whatever the model does inside, it must carry <em>river</em> or <em>cheque</em> forward to the blank. Where does it start?</p>
   </div>
   <div class="card">
-    <h3 class="card-title">Where every token starts: $\ve{e_i^{(0)}}$, coordinate by coordinate</h3>
-    <p class="muted small" style="margin:0 0 6px">Click a token in context A. Each column is one named coordinate (the names are illustrative; the numbers were chosen to agree with them); the last row is the sum of the two above it.</p>
-    <div id="s01-emb-chips"></div>
+    <h3 class="card-title">Choose a token. Its starting row is the sum below.</h3>
+    <p class="companion muted small" style="margin:0 0 6px">Click a token in context A. Each column is one named coordinate (the names are illustrative; the numbers were chosen to agree with them); the last row is the sum of the two above it.</p>
+    <div id="s01-emb-chips" data-keep-state></div>
     <div class="emb-tab" id="s01-emb-tab"></div>
-    <p class="read-line" id="s01-emb-reading"></p>
-    <p class="look" id="s01-emb-cap"></p>
+    <p class="companion read-line" id="s01-emb-reading"></p>
+    <p class="companion look" id="s01-emb-cap"></p>
   </div>
+</div>
 
-  <div class="prose" data-build="1">
-    <p>Token $i$ enters as a row of $d_{\text{model}}$ numbers, the token embedding plus a position vector of the same width; the superscript $(0)$ means nothing has been updated yet:
-    $$\ve{e_i^{(0)}} = \text{tok}_i + \text{pos}_i$$</p>
+<div class="frame" id="s01-frame-starting-row" data-title="One input row per token position" data-autobuild="off">
+  <script type="text/x-notes">Does adding position append another coordinate?
+No. The two vectors have the same width and are added coordinate by coordinate. The toy's named position axis is a hand-chosen simplification, not the general definition of a positional embedding.</script>
+  <div class="prose">
+    <p>A token embedding and a position vector have the <strong>same width</strong>:</p>
+    $$\ve{e_i^{(0)}} = \text{tok}_i + \text{pos}_i$$
+    <p data-build="1">The result still has $d_{\text{model}}$ numbers. The superscript $(0)$ means <strong>before any contextual update</strong>.</p>
   </div>
-
-  <div class="callout callout-note" data-build="2">Every token gets such a row: the same token embedding wherever the word appears, plus a vector set only by the position. In this toy every coordinate has a name, so a row can be read aloud.</div>
+  <div class="callout callout-note" data-build="2">Every occurrence starts from its token's lookup row. Context will change the representation of <em>this occurrence</em>, not overwrite the lookup table.</div>
 </div>
 
 <div class="companion after">

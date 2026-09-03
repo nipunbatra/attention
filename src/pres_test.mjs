@@ -234,15 +234,110 @@ check(await p.evaluate(() => {
   return AT.productLine([1 / 3], [0.7], 2).includes('≈') && calc.lines[0].res.textContent.startsWith('≈') && Math.abs(calc.out[0] - 0.7 / 3) < 1e-12 && AT.objects.find(o => o.cls === 'd').tip.includes(') W_O');
 }), 'rounded worksheets mark approximations while retaining exact row-vector calculations');
 
-// A narrow dynamic viewport must keep controls and frame scrolling available, not shrink the content to fit.
+// A narrow dynamic viewport uniformly fits the same fixed 16:9 stage; no frame becomes scrollable.
 await p.setViewportSize({ width: 390, height: 760 });
 await p.waitForTimeout(150);
 check(await p.evaluate(() => {
-  const frame = document.querySelector('.frame.is-live').getBoundingClientRect(), controls = document.querySelector('#at-controls').getBoundingClientRect();
-  return frame.height > 150 && frame.bottom <= controls.top + 1 && controls.bottom <= innerHeight + 1 && document.documentElement.scrollWidth <= innerWidth;
-}), 'mobile frame reserves the dynamic-height classroom toolbar without page-wide overflow');
-check(await p.evaluate(() => { const pre = document.querySelector('#nested-frame pre.pytorch'); return getComputedStyle(pre).overflowX === 'auto' && pre.getBoundingClientRect().width <= document.querySelector('#nested-frame').clientWidth; }), 'PyTorch snippets retain horizontal scrolling within their frame');
+  const sec = document.querySelector('.sec.is-live').getBoundingClientRect();
+  const frame = document.querySelector('.frame.is-live');
+  const controls = document.querySelector('#at-controls').getBoundingClientRect();
+  const style = getComputedStyle(document.body);
+  return Math.abs(sec.width / sec.height - 16 / 9) < 0.01 && sec.width <= innerWidth && sec.bottom <= controls.top + 1 && controls.bottom <= innerHeight + 1 &&
+    style.fontSize === '28px' && getComputedStyle(frame).overflow === 'hidden' && document.documentElement.scrollWidth <= innerWidth;
+}), 'mobile view uniformly fits the fixed 16:9 stage above the classroom toolbar');
+check(await p.evaluate(() => { const pre = document.querySelector('#nested-frame pre.pytorch'); return getComputedStyle(pre).overflowX === 'visible' && getComputedStyle(pre).whiteSpace === 'pre-wrap'; }), 'PyTorch snippets wrap on a slide instead of creating an internal scrollbar');
 await p.screenshot({ path: path.join(outdir, 'mobile-controls.png') });
+check(await p.evaluate(() => { const r = AT.present.fitReport(); return r.overflow && r.vertical > 0 && document.querySelector('#at-fit-warning').textContent.includes('continuation frame'); }), 'an oversized fixture gives a visible continuation-frame diagnostic instead of scrolling');
+check(await p.evaluate(async () => {
+  const before = AT.present.state();
+  const steps = fixtureSteppers.map(s => s.index());
+  const report = await AT.present.preflight();
+  const after = AT.present.state();
+  return report.total === 4 && report.overflow.length >= 1 && after.active && before.fi === after.fi && before.build === after.build &&
+    before.hash === after.hash && fixtureSteppers.every((s, i) => s.index() === steps[i]) && !document.body.classList.contains('is-preflighting');
+}), 'all-frame fit preflight reports overflow and restores the active frame, build, and steppers');
+await p.evaluate(() => AT.present.exit());
+check(await p.evaluate(async () => {
+  const hash = location.hash;
+  const report = await AT.present.preflight();
+  return report.total === 4 && !AT.present.isActive() && location.hash === hash && !document.body.classList.contains('present') &&
+    !document.body.classList.contains('is-preflighting') && document.querySelectorAll('[data-build].is-pending').length === 0;
+}), 'fit preflight can run from reading and returns to the unfolded article');
+
+// Fit regression fixtures live on a fresh page, so their overflow and manual inputs
+// cannot be masked by the deliberately oversized nested-build fixture above.
+const fitPage = await ctx.newPage(); hook(fitPage, 'fit regressions');
+await fitPage.goto(baseUrl + '#s00', { waitUntil: 'load' });
+await fitPage.evaluate(() => {
+  const sec = document.createElement('section');
+  sec.id = 's99'; sec.className = 'sec'; sec.dataset.title = 'Fit regression fixtures';
+  sec.innerHTML = '<style>#s99 .stepper-body{display:block}#s99 .stepper-stage{min-height:0}#s99 input[type="text"]{width:240px}</style><header class="sec-head"><span class="sec-num">99</span><div><h2>Fit regression fixtures</h2></div></header><div class="frame" id="fit-regression-frame" data-title="A compact slide with optional detail" data-autobuild="off"><div id="fit-managed"></div><div id="fit-manual" data-present="manual"></div></div>';
+  document.querySelector('main').appendChild(sec);
+  window.fitManaged = AT.ui.stepper({
+    el: 'fit-managed', hideList: true, stageTitle: false, scrollList: false,
+    steps: [
+      { title: 'Optional detail', render(stage) {
+        stage.innerHTML = '<details id="fit-early-details"><summary>Show the full explanation</summary><div style="height:1000px">A deliberately over-height answer.</div></details>';
+      } },
+      { title: 'Compact final step', render(stage) { stage.innerHTML = '<p>The final step fits.</p>'; } }
+    ]
+  });
+  window.fitManualRenders = 0;
+  const renderManual = stage => {
+    window.fitManualRenders++;
+    stage.innerHTML = '<label>Draft <input id="fit-manual-text" type="text" value="Original draft"></label><label><input id="fit-manual-check" type="checkbox" checked> Show notes</label><input id="fit-manual-range" aria-label="Manual fit range" type="range" min="0" max="10" value="5"><details id="fit-manual-details"><summary>Manual note</summary><p>A short note.</p></details>';
+  };
+  window.fitManual = AT.ui.stepper({
+    el: 'fit-manual', hideList: true, stageTitle: false, scrollList: false,
+    steps: [{ title: 'Start', render: renderManual }, { title: 'Edited draft', render: renderManual }]
+  });
+  AT.present.enter({ id: 's99', f: 1, b: 0 });
+});
+await fitPage.waitForTimeout(200);
+check(await fitPage.evaluate(() => !AT.present.fitReport().overflow), 'the native-details fixture fits while its long answer is closed');
+// Setting `open` sends a native toggle, with no click/input event to accidentally
+// trigger the separate generic fit listeners.
+await fitPage.evaluate(() => { document.querySelector('#fit-early-details').open = true; });
+check(await fitPage.waitForFunction(() => document.querySelector('#at-fit-warning').textContent.includes('continuation frame'), null, { timeout: 2000 }).then(() => true).catch(() => false), 'a live native details toggle automatically raises the continuation-frame warning');
+await fitPage.evaluate(() => { document.querySelector('#fit-early-details').open = false; });
+check(await fitPage.waitForFunction(() => document.querySelector('#at-fit-warning').textContent === '', null, { timeout: 2000 }).then(() => true).catch(() => false), 'closing native details automatically clears the fit warning');
+
+check(await fitPage.evaluate(() => {
+  const title = document.querySelector('#s99 .frame-sub');
+  title.style.minWidth = '1900px';
+  const fit = AT.present.fitReport();
+  title.style.removeProperty('min-width');
+  return fit.overflow && fit.stageHorizontal > 0 && fit.frameHorizontal === 0 &&
+    document.querySelector('#at-fit-warning').textContent.includes('too wide');
+}), 'fit checks include a wide title outside the frame body, not only the body itself');
+await fitPage.evaluate(() => AT.present.fitReport());
+
+const fitPreflight = await fitPage.evaluate(async () => {
+  fitManaged.go(1); // No details remain in this final managed step.
+  fitManual.go(1);
+  const text = document.querySelector('#fit-manual-text');
+  text.value = 'Keep my classroom edit'; text.focus(); text.setSelectionRange(5, 7);
+  document.querySelector('#fit-manual-check').checked = false;
+  document.querySelector('#fit-manual-range').value = '7';
+  const renders = fitManualRenders;
+  const before = AT.present.state(), hash = location.hash;
+  const report = await AT.present.preflight();
+  const after = AT.present.state();
+  return {
+    earlierAnswerDetected: report.overflow.some(r => r.section === 's99' && r.vertical > 500),
+    managedStepRestored: fitManaged.index() === 1 && !document.querySelector('#fit-early-details'),
+    manualStatePreserved: fitManual.index() === 1 && fitManualRenders === renders &&
+      document.querySelector('#fit-manual-text') === text && text.value === 'Keep my classroom edit' &&
+      !document.querySelector('#fit-manual-check').checked && document.querySelector('#fit-manual-range').value === '7' &&
+      !document.querySelector('#fit-manual-details').open,
+    focusPreserved: document.activeElement === text && text.selectionStart === 5 && text.selectionEnd === 7,
+    navigationPreserved: after.active && before.fi === after.fi && before.build === after.build && location.hash === hash
+  };
+});
+check(fitPreflight.earlierAnswerDetected && fitPreflight.managedStepRestored, 'preflight opens details from earlier managed steps even when the final step has none, then restores the final step');
+check(fitPreflight.manualStatePreserved, 'preflight leaves manual stepper DOM, edited form values, and closed reveals untouched');
+check(fitPreflight.focusPreserved && fitPreflight.navigationPreserved, 'preflight preserves manual-input focus and selection without changing classroom navigation');
+await fitPage.close();
 await b.close();
 console.log('\nerrors: ' + errs.length); errs.forEach(e => console.log('  ' + e));
 console.log('failures: ' + fails.length + (fails.length ? '\n  ' + fails.join('\n  ') : ''));

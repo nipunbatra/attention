@@ -16,6 +16,21 @@
 #s14 .chain .cb.obj-ep.is-on{box-shadow:0 0 0 2px var(--oc2)}
 #s14 .chain .ca{font-size:20px;color:var(--ink-3)}
 #s14 .context-line{max-width:72ch;margin:8px 0 16px;font-family:var(--font-mono);font-size:15px;line-height:1.6}
+#s14 .worked-head{display:grid;gap:18px;margin:18px 0}
+#s14 .worked-head>div{padding:14px 20px;background:var(--card);border-left:4px solid var(--c-ep)}
+#s14 .layer-route{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin:24px 0}
+#s14 .layer-route>div{padding:22px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+body.present #s14 .context-line{font-size:22px;line-height:1.4;max-width:none;margin:0 0 18px}
+body.present #s14 .read-line,body.present #s14 .dt-cap{display:none}
+body.present #s14 .seg .btn{font-size:22px;padding:8px 14px}
+body.present #s14 .dt{width:100%;table-layout:fixed}
+body.present #s14 .dt th,body.present #s14 .dt td.dt-num{min-width:0;padding:10px 7px}
+body.present #s14 .dt thead th{white-space:normal;overflow-wrap:anywhere;font-size:22px}
+body.present #s14 .dt tbody th,body.present #s14 .dt tfoot th{white-space:normal;width:150px}
+body.present #s14 .chain{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:12px}
+body.present #s14 .chain .cb{font-size:24px;white-space:normal;text-align:center;padding:16px 20px}
+body.present #s14 .chain .ca:nth-of-type(6){display:none}
+body.present #s14-head-normalize .worked-head{gap:12px;margin:10px 0}
 </style>
 <header class="sec-head">
   <span class="sec-num">14</span>
@@ -29,7 +44,7 @@
   <p>Sections 09 to 13 built an updated vector for bank. Now extend the prefix through “and watched the” and predict the token <em>after that final the</em>. Its query, not bank’s query, determines this attention row. In this single-layer toy, earlier words reach the prediction through the update to that last position. Switch the context between the river and cheque sentences: the attention row, update and probabilities change. Then bypass attention and switch again: the probability row stays fixed, just as in section 02.</p>
 </div>
 
-<div class="frame" data-title="We now predict after the final the, not after bank">
+<div class="frame" id="s14-receiver" data-title="The next prediction needs a new receiving position">
 <script type="text/x-notes">Which token must supply the query if the next token comes after “and watched the”?
 
 Point to position 10. Earlier we examined bank at position 7, but now q_10 searches the same-layer keys. Both sentences end in the same token at the same position. Switch contexts, then bypass attention: the latter is no contextual update, not self-only attention.</script>
@@ -39,6 +54,17 @@ Point to position 10. Earlier we examined bank at position 7, but now q_10 searc
 </div>
 
 <div class="card" data-build="1">
+  <p>Earlier: <strong>bank at position 7</strong> received context through $\vq{q_7}$.</p>
+  <p>Now: <strong>the at position 10</strong> receives context through $\vq{q_{10}}$.</p>
+  <p>The next token is still unknown. It cannot supply the query.</p>
+</div>
+<pre class="pytorch" data-build="2"><code>q_last = E[-1] @ W_Q  # the current last known position</code></pre>
+</div>
+
+<div class="frame" id="s14-routing" data-title="Use the final the’s query to choose source weights">
+<script type="text/x-notes">Which source receives the largest weight? Switch river to cheque while holding the final word fixed. These are weights over input positions, not vocabulary probabilities.</script>
+<p class="context-line" data-context-line></p>
+<div class="card">
   <h3 class="card-title">Where the last token reads from</h3>
   <div class="row between controls">
     <div class="row">
@@ -52,12 +78,20 @@ Point to position 10. Earlier we examined bank at position 7, but now q_10 searc
   </div>
   <div id="s14-alpha"></div>
 </div>
-<pre class="pytorch" data-build="2"><code>q_last = E[-1] @ W_Q
-alpha = ((q_last @ K.T) / math.sqrt(K.shape[-1])).softmax(dim=-1)</code></pre>
-<p class="muted small">All ten source positions are known here, so none is future relative to this final query.</p>
 </div>
 
-<div class="frame" data-title="Add the context update to the same last-token input">
+<div class="frame" id="s14-routing-code" data-title="These weights come from the familiar three routing operations">
+  <script type="text/x-notes">Compare the same final query with all ten keys; scale; then softmax across source positions. Because the receiver is last, every displayed source is allowed.</script>
+  <div class="grid-3">
+    <div class="card"><strong>1 · Match</strong><p>$r_j=q_{10}\cdot k_j$</p></div>
+    <div class="card" data-build="1"><strong>2 · Scale</strong><p>$s_{10,j}=r_j/\sqrt{d_k}$</p></div>
+    <div class="card" data-build="2"><strong>3 · Normalize</strong><p>$\alpha_{10,j}=\operatorname{softmax}(s_{10,:})_j$</p></div>
+  </div>
+  <pre class="pytorch" data-build="3"><code>scores = (q_last @ K.T) / math.sqrt(K.shape[-1])
+alpha = scores.softmax(dim=-1)  # ten source weights; sum = 1</code></pre>
+</div>
+
+<div class="frame" id="s14-residual" data-title="Add the context update to the same last-token input">
 <script type="text/x-notes">What changes between the two contexts if the final token and its position are identical?
 
 The starting row e_10 is identical. Only the context-dependent update changes. Add each column vertically. If attention is bypassed, delta is zero and the input row reaches the prediction head unchanged.</script>
@@ -66,28 +100,56 @@ The starting row e_10 is identical. Only the context-dependent update changes. A
   <h3 class="card-title">The update, added axis by axis</h3>
   <div id="s14-update"></div>
 </div>
-<pre class="pytorch" data-build="1"><code>delta_last = (alpha @ V) @ W_O
-e_last_new = E[-1] + delta_last</code></pre>
-<p class="muted small" data-build="2" id="s14-shape-note">$W_O$ maps the $d_v$-coordinate message to a $d_{\text{model}}$-coordinate update before the residual addition.</p>
 </div>
 
-<div class="frame" data-title="Turn the updated last row into next-token probabilities">
+<div class="frame" id="s14-residual-code" data-title="The message must return to model width before we add it">
+  <script type="text/x-notes">Alpha times V has value width. W_O changes the coordinate system and width; only then can the result be added to the original row.</script>
+  <div class="grid-3">
+    <div class="card"><strong>Mix</strong><p>$m_{10}=\alpha_{10,:}V$</p><p>$1\times d_v$</p></div>
+    <div class="card" data-build="1"><strong>Project</strong><p>$\Delta e_{10}=m_{10}W_O$</p><p>$1\times d_{\rm model}$</p></div>
+    <div class="card" data-build="2"><strong>Add</strong><p>$e'_{10}=e_{10}+\Delta e_{10}$</p><p>$1\times d_{\rm model}$</p></div>
+  </div>
+  <pre class="pytorch" data-build="3"><code>delta_last = (alpha @ V) @ W_O
+e_last_new = E[-1] + delta_last</code></pre>
+  <p class="companion" id="s14-shape-note"></p>
+</div>
+
+<div class="frame" id="s14-probabilities" data-title="Turn the updated last row into next-token probabilities">
 <script type="text/x-notes">Are these probabilities over input positions, or over possible next tokens?
 
 They are vocabulary probabilities. This is a second softmax: attention's softmax mixed source values; the vocabulary softmax turns logits into possible continuations. Reveal the numerical head calculation for the top candidate if needed.</script>
-<p class="context-line" data-context-line></p>
-<div class="prose">$$\ell = \vp{e_{10}'}\,W_{\text{vocab}} + b, \qquad p(x_{11}\mid x_{\le10}) = \operatorname{softmax}(\ell)$$</div>
 <div class="card">
   <h3 class="card-title">The output head: logits, then probabilities</h3>
   <div id="s14-head"></div>
   <p class="muted small" id="s14-msg" aria-live="polite"></p>
-  <div id="s14-head-calc"></div>
 </div>
-<pre class="pytorch" data-build="1"><code>logits = e_last_new @ W_vocab + b_vocab  # [d_model] → [n_vocab]
-p_next = logits.softmax(dim=-1)  # possible next tokens, not sources</code></pre>
 </div>
 
-<div class="frame" data-title="Trace how earlier words change the next prediction">
+<div class="frame" id="s14-output-rule" data-title="One updated row becomes one distribution over the vocabulary">
+  <script type="text/x-notes">This is not the attention softmax. The columns now name possible next tokens, not source positions.</script>
+  <div class="prose">$$\ell = \vp{e_{10}'}\,W_{\text{vocab}} + b, \qquad p(x_{11}\mid x_{\le10}) = \operatorname{softmax}(\ell)$$</div>
+  <div class="grid-2" data-build="1">
+    <div class="card"><strong>Attention softmax</strong><p>One weight per <em>known source position</em>.</p></div>
+    <div class="card"><strong>Vocabulary softmax</strong><p>One probability per <em>possible next token</em>.</p></div>
+  </div>
+  <pre class="pytorch" data-build="2"><code>logits = e_last_new @ W_vocab + b_vocab
+p_next = logits.softmax(dim=-1)</code></pre>
+</div>
+
+<div class="frame" id="s14-head-arithmetic" data-title="One candidate: multiply, add the bias, then normalize">
+<script type="text/x-notes">The selected vocabulary column supplies the prediction-head weights. Show the logit calculation first; then compare its exponential with the total over the vocabulary.</script>
+<p class="context-line" data-context-line></p>
+<div id="s14-head-worked" class="worked-head"></div>
+<div class="companion" id="s14-head-calc"></div>
+</div>
+
+<div class="frame" id="s14-head-normalize" data-title="Finish the candidate probability with one shared denominator">
+  <script type="text/x-notes">Every candidate gets a positive exponential. Divide each by the same vocabulary total; that makes the probabilities sum to one.</script>
+  <div id="s14-head-normalize-worked" class="worked-head"></div>
+  <div class="callout callout-key" data-build="2">The denominator includes every token in the vocabulary, not only the few candidates shown in the table.</div>
+</div>
+
+<div class="frame" id="s14-chain-frame" data-title="Trace how earlier words change the next prediction">
 <script type="text/x-notes">Can the vocabulary head tell which earlier word mattered without the attention update?
 
 In this one-layer toy it reads only the final row. Trace earlier tokens to the update, to e'_10, to vocabulary logits. Distinguish one layer's simultaneous reads from a later layer receiving all the updated representations.</script>
@@ -97,8 +159,17 @@ In this one-layer toy it reads only the final row. Trace earlier tokens to the u
   <p class="muted small">Watch the boxes light up in order when you change the context. Earlier tokens reach the head only through the update they send to the last token.</p>
 </div>
 
-<div id="s14-layer-note"></div>
 <p class="muted small" data-build="2">Forward computation changes the token states for this input. It does not change the stored projection matrices or embedding table.</p>
+</div>
+
+<div class="frame" id="s14-layer-boundary" data-title="All positions read the same layer inputs">
+<script type="text/x-notes">Does the final the read the bank vector we just updated? Not in the same layer. It reads bank's value formed from this layer's input. The updated bank is available in the next layer.</script>
+<div class="layer-route">
+  <div><strong>This layer</strong><p>$\ve{e_7}\rightarrow\vv{v_7}$</p><p>The final <em>the</em> can read bank’s input-derived value.</p></div>
+  <div data-build="1"><strong>The next layer</strong><p>$\vp{e_7'}\rightarrow$ new key and value</p><p>The updated bank representation becomes a new layer input.</p></div>
+</div>
+<p data-build="2">Parallel updates do not read one another’s newly updated rows.</p>
+<div class="companion" id="s14-layer-note"></div>
 </div>
 
 <div class="companion after">
@@ -229,6 +300,13 @@ In this one-layer toy it reads only the final row. Trace earlier tokens to the u
     }
     /* the logit of the top candidate as one worksheet line: x times the column of W_vocab for that word, plus its bias */
     const best = top[0];
+    const worked = S.querySelector('#s14-head-worked'), normWorked = S.querySelector('#s14-head-normalize-worked'); AT.clear(worked); AT.clear(normWorked);
+    const cBest = AT.vocab.indexOf(best.tok), biasBest = AT.model.b_vocab[cBest];
+    const products = x.map((v,k) => AT.fmt(v,2) + ' × ' + AT.fmt(AT.model.W_vocab[k][cBest],2));
+    const denom = AT.sum(logits.map(Math.exp));
+    worked.appendChild(AT.h('div', {}, AT.h('strong', {}, '1 · Logit for “' + best.tok + '”'), AT.h('p', {}, products.join(' + ') + ' + (' + AT.fmt(biasBest,2) + ') ≈ ' + AT.fmt(logits[cBest],3))));
+    normWorked.appendChild(AT.h('div', {}, AT.h('strong', {}, '2 · Exponentiate the logit for “' + best.tok + '”'), AT.h('p', {}, 'exp(' + AT.fmt(logits[cBest],3) + ') ≈ ' + AT.fmt(Math.exp(logits[cBest]),3))));
+    normWorked.appendChild(AT.h('div', {'data-build':'1'}, AT.h('strong', {}, '3 · Divide by the vocabulary total'), AT.h('p', {}, AT.fmt(Math.exp(logits[cBest]),3) + ' ÷ ' + AT.fmt(denom,3) + ' ≈ ' + AT.fmt(best.p,3))));
     arith(calcHost, (box) => {
       const c = AT.vocab.indexOf(best.tok);
       const col = AT.model.W_vocab.map(r => [r[c]]);

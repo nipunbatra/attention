@@ -3,15 +3,18 @@
 #s14 .net-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(260px,.8fr);gap:24px;align-items:center}
 #s14 .readout{font-family:var(--font-mono);padding:14px;background:var(--paper);border-radius:var(--radius-s);line-height:1.7}
 #s14 .big-q{font-size:clamp(24px,3vw,38px);line-height:1.25;text-wrap:balance;margin:10px 0 20px}
-@media(max-width:820px){#s14 .net-grid{grid-template-columns:1fr}}
+@media(max-width:820px){body:not(.present) #s14 .net-grid{grid-template-columns:1fr}}
 </style>
 <header class="sec-head"><span class="sec-num">14</span><div><p class="eyebrow">Why we are here: concatenation fixes the number of context slots inside the first weight matrix.</p><h2>The context keeps growing</h2></div></header>
 <div class="companion" data-kicker="For self-study"><p>The name model works because every input contains exactly three embeddings. Increasing the window changes the length of the concatenated row, so the first weight matrix must change shape. The sketch lets the window grow while keeping the embedding and hidden widths visible. This becomes costly for realistic widths: a hundred token slots, an embedding width of 256, and 1,024 hidden units require about 26 million first-layer weights. More importantly, the network still has a fixed number of slots. Natural-language prefixes keep growing, which leads to the design question for Part 2: how can a token read from a variable amount of earlier context?</p></div>
 <div class="frame" data-title="The first layer grows with the window" data-autobuild="off">
   <script type="text/x-notes">What changes in W1 when the window grows from three to five?
   Move through the four marked window sizes. Read the shape and weight count after each change.</script>
-  <div class="card"><h3 class="card-title">Window size is baked into the network</h3><div class="net-grid"><div><div id="s14-slider"></div><div id="s14-net"></div></div><div><p class="readout" id="s14-read"></p><p class="readout" id="s14-large" data-build="3"></p></div></div></div>
-  <div class="callout callout-key" data-build="4">Change the window, and we must change the network.</div>
+  <div class="card"><div class="net-grid"><div><div id="s14-slider"></div><div id="s14-net"></div></div><div><p class="readout" id="s14-read"></p></div></div></div>
+</div>
+<div class="frame" data-title="A larger window makes a larger weight matrix" data-autobuild="off">
+  <div class="card"><p class="readout" id="s14-large"></p></div>
+  <div class="callout callout-key" data-build="1">Change the window, and we must change the network.</div>
 </div>
 <div class="frame" data-title="The hand-over to attention" data-autobuild="off">
   <script type="text/x-notes">How should we represent an arbitrarily long context?

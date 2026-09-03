@@ -3,7 +3,7 @@
 #s08 .loss-live{font-family:var(--font-mono);font-size:1.1em;padding:14px;background:var(--paper);border-radius:var(--radius-s);margin-top:12px}
 #s08 .compare{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 #s08 .case{padding:18px;border:1px solid var(--line);border-radius:var(--radius-s)}
-@media(max-width:700px){#s08 .compare{grid-template-columns:1fr}}
+@media(max-width:700px){body:not(.present) #s08 .compare{grid-template-columns:1fr}}
 </style>
 <header class="sec-head"><span class="sec-num">08</span><div><p class="eyebrow">Why we are here: training needs one number that says how well the distribution scored the observed target.</p><h2>The loss</h2></div></header>
 <div class="companion" data-kicker="For self-study"><p>Each training row supplies a known next character. Cross-entropy keeps the probability assigned to that target and applies the negative logarithm. A confident correct prediction has a small loss. A confident wrong prediction gives the observed target very little probability and receives a large loss. The comparison below uses two simple probabilities from the lecture, while the interactive worksheet reads all six <em>aabid</em> rows from the trained model. Choosing another row changes its context, target probability, and loss together. Training later averages this signal across many rows and changes every parameter that contributed to the prediction.</p></div>

@@ -21,6 +21,22 @@
 @media (max-width:820px){#s13 .s13-rule{grid-template-columns:minmax(0,1fr);grid-template-rows:none}#s13 .s13-rule>.s13-c1,#s13 .s13-rule>.s13-c2{grid-column:1}#s13 .s13-rule>.s13-sub,#s13 .s13-rule>.s13-body{grid-row:auto}#s13 .s13-rule>.s13-sub.s13-c2{margin-top:14px}}
 #s13 .s13-sub{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin:0 0 4px}
 #s13 .s13-read{font-size:14px;color:var(--ink-2);margin:6px 0 0;min-height:1.5em}
+body.present #s13 .s13-cap,body.present #s13 .s13-msg,body.present #s13 .s13-read,body.present #s13 .s13-leak{font-size:22px;line-height:1.35}
+body.present #s13 .s13-sub,body.present #s13 .s13-illus{font-size:21px}
+body.present #s13 .dt td,body.present #s13 .dt th{font-size:21px;padding:.18em .32em}
+body.present #s13 .dt-cap,body.present #s13 .dt-note{display:none}
+body.present #s13 .s13-stair td,body.present #s13 .s13-stair th{font-size:21px;padding:.13em .32em}
+body.present #s13 .s13-stair .chip{font-size:21px;padding:.12em .28em}
+body.present #s13-stairwhy,body.present #s13-frame-targets .s13-cap,body.present #s13-frame-targets .muted.small{display:none}
+body.present #s13-frame3 .card-title,body.present #s13-frame3 .s13-cap,body.present #s13-frame3 .mat-cap,body.present #s13-frame3 #s13-warn{display:none}
+body.present #s13-frame3 .card{padding:14px 18px}
+body.present #s13-frame3 .mat .cell{font-size:21px;min-width:0;padding:.06em .14em}
+body.present #s13-frame4 .card-title,body.present #s13-frame4 .s13-cap,body.present #s13-frame4 #s13-chips,body.present #s13-frame4 .mat-cap,body.present #s13-frame4 #s13-send-note{display:none}
+body.present #s13-frame4 .card{padding:14px 18px}
+body.present #s13-frame4 .mat .cell{font-size:21px;min-width:0;padding:.08em .14em}
+body.present #s13-frame3 .mat-grid,body.present #s13-frame4 .mat-grid{grid-template-columns:auto 6px repeat(10,minmax(2.9em,auto)) 6px!important}
+body.present #s13 .mat-cl[data-present-label],body.present #s13-frame3 .mat-rl[data-present-label]{font-size:0}
+body.present #s13 .mat-cl[data-present-label]::after,body.present #s13-frame3 .mat-rl[data-present-label]::after{content:attr(data-present-label);font-size:21px}
 </style>
 <header class="sec-head">
   <span class="sec-num">13</span>
@@ -40,9 +56,16 @@ What is the one-token target for the row at position 5?
 It is river at position 6, not river and bank together. Training can evaluate many such shifted targets in parallel, but each row must only use its own available prefix.
   </script>
 <div class="prose">
-  <p>So far one query token opened the records to its left and we simply left the later ones closed. That was a habit. This section turns it into a rule and shows where the rule comes from: the training objective itself.</p>
+  <p>At position $i$, the model must predict token $i+1$.</p>
+  <p data-build="1">At generation time, token $i+1$ does not exist yet.</p>
+  <p data-build="2">Therefore the query at $i$ may read only keys at $j\le i$.</p>
+</div>
+<div class="callout callout-warn" data-build="3">If position $i$ could read position $i+1$ during training, it could read the answer it is being graded on.</div>
 </div>
 
+<div class="frame" id="s13-frame-targets" data-title="Shift the same sentence by one token">
+<script type="text/x-notes">What is the one-token target for the row at position 5?
+It is river at position 6. Read one row horizontally: prefix in, the immediately following token is its target.</script>
 <div class="card">
   <h3 class="card-title">Every position predicts its next token at the same time</h3>
   <p class="s13-cap">Training does not run one query at a time. One pass through the sentence scores every position at once: each token is a query, reads the tokens up to itself, and is graded on the token that follows it.</p>
@@ -58,12 +81,6 @@ It is river at position 6, not river and bank together. Training can evaluate ma
 Why must the mask be applied before the softmax?
 Forbidden scores become negative infinity, so their exponentials are zero. Allowed positions include the diagonal: a token can read itself. Point to row i and column j before reading the triangle.
   </script>
-<div class="prose">
-  <p>Every query token $i$ compares against every key $j$, giving the score matrix
-  $S = QK^\top/\sqrt{d_k}$ with entries $s_{ij}$. Token $i$ may retrieve only from $j \le i$, never from $j > i$.
-  A <em>causal mask</em> sets the forbidden scores to $-\infty$ before the softmax, so their weights become exactly 0.</p>
-</div>
-
 <div class="card">
   <h3 class="card-title">The rule, written twice <span class="s13-illus">illustrative 4×4</span></h3>
   <p class="s13-cap">Same rule on both sides: the picture on the left, the mask matrix $M$ that section 16 will use on the right.</p>
@@ -81,8 +98,18 @@ Forbidden scores become negative infinity, so their exponentials are zero. Allow
     </div>
   </div>
 </div>
-<p class="muted small">PyTorch · future is the Boolean upper triangle, j &gt; i; softmax runs across sources.</p>
-<pre class="torch-snippet"><code>scores = scores.masked_fill(future, float('-inf'))
+</div>
+
+<div class="frame" id="s13-frame-mask-code" data-title="Make forbidden attention exactly zero">
+<script type="text/x-notes">Why add negative infinity before softmax?
+Because exp(-infinity) is zero. The allowed scores retain their relative values and the softmax renormalizes only across the prefix.</script>
+  <div class="prose">
+    <p>Start with every query-key score:</p>
+    $$S=QK^\top/\sqrt{d_k}$$
+    <p data-build="1">Add $M_{ij}=-\infty$ wherever $j&gt;i$.</p>
+    <p data-build="2">Then $e^{-\infty}=0$, so those attention weights are exactly zero.</p>
+  </div>
+  <pre class="torch-snippet" data-build="3"><code>scores = scores.masked_fill(future, float('-inf'))
 weights = scores.softmax(dim=-1)</code></pre>
 </div>
 
@@ -117,14 +144,23 @@ Compare mask on and off, then send the values. Future attention weight is not th
     <div class="row" id="s13-target"></div>
     <p class="s13-read" id="s13-read"></p>
   </div>
-  <p class="small" id="s13-leak-text"></p>
+  <p class="companion small" id="s13-leak-text"></p>
+</div>
 </div>
 
-<div id="s13-callouts"></div>
-
+<div class="frame" id="s13-frame-why" data-title="Why the causal mask is non-negotiable">
+<script type="text/x-notes">What mismatch would we create by training without the mask?
+Training would allow evidence that generation can never have. The model could minimize loss with a shortcut rather than learning prefix-only prediction.</script>
+  <div class="prose">
+    <p>The loss asks for $p(x_{i+1}\mid x_{\le i})$.</p>
+    <p data-build="1">Without the mask, the representation at $i$ can contain $x_{i+1}$ itself.</p>
+    <p data-build="2">That shortcut disappears at generation time, exactly when the model must work.</p>
+  </div>
+  <div class="callout callout-key" data-build="3">Token $i$ may retrieve from $j\le i$, never from $j&gt;i$.</div>
 </div>
 
 <div class="companion after">
+  <div id="s13-callouts"></div>
   <p>Keep in mind: with the mask off the rows still sum to 1, so the leak is invisible in the totals and visible only in where the weight went. The mask is not a detail of one example; it is what makes next-token training honest.</p>
 </div>
 
@@ -133,6 +169,7 @@ Compare mask on and off, then send the values. Future attention weight is not th
   const S = document.getElementById('s13');
   const toks = AT.sentences.river;
   const T = toks.length;
+  const presentToks = ['1 The', '2 fish.', '3 sat', '4 beside', '5 the', '6 river', '7 bank', '8 and', '9 watch.', '10 the'];
   const Fon = AT.forward(toks), Foff = AT.forward(toks, { mask: false });
   let maskOn = true;
   const li = 4;                                  // "the" at position 5; its next token is river (6)
@@ -152,6 +189,11 @@ Compare mask on and off, then send the values. Future attention weight is not th
   const heat = AT.ui.heat(Fon.A, { rows: toks, cols: toks, mask: true, leak: true, decimals: 2, highlightRow: li,
     onHover: explain, calc: { Q: Fon.Q, K: Fon.K, scaled: true, d_k: AT.d_k },
     caption: 'Mask ON: hatched cells are future tokens; every row sums to 1 over $j \\le i$. Row 5 (the) is highlighted. Click a cell for its worksheet.', into: S.querySelector('#s13-heat') });
+  function addPresentLabels(fig, labelRows){
+    fig.colLabelEls.forEach((el, j) => { el.dataset.presentLabel = presentToks[j]; });
+    if (labelRows) fig.rowLabelEls.forEach((el, i) => { el.dataset.presentLabel = presentToks[i]; });
+  }
+  addPresentLabels(heat, true);
   const warnHost = S.querySelector('#s13-warn');
   function paintNext(on){
     for (let i = 0; i + 1 < T; i++) heat.cells[i][i + 1].classList.toggle('is-hl', !on);
@@ -178,8 +220,9 @@ Compare mask on and off, then send the values. Future attention weight is not th
   function drawRows(){
     AT.clear(rowsHost);
     const maskRows = [toks.map((_, j) => j > li), toks.map(() => false)];
-    AT.ui.heat([Fon.A[li], Foff.A[li]], { rows: ['mask ON', 'mask OFF'], cols: toks, mask: maskRows, decimals: 2,
+    const rowsFig = AT.ui.heat([Fon.A[li], Foff.A[li]], { rows: ['mask ON', 'mask OFF'], cols: toks, mask: maskRows, decimals: 2,
       highlight: maskOn ? { row: 0 } : { row: 1 }, caption: 'Row of token 5 with the mask on versus off. The highlighted row is the one currently shown in the big matrix above.', into: rowsHost });
+    addPresentLabels(rowsFig, false);
     chips.setMuted(maskOn ? AT.range(T).filter(j => j > li) : []);
     chips.setMark(maskOn ? [] : [li + 1, li + 2], 'v');
     const fut = Foff.A[li].slice(li + 1).reduce((a, b) => a + b, 0);

@@ -15,6 +15,16 @@
 #s18 .arith-row{margin:12px 0 0}
 #s18 .arith{margin:10px 0 0;display:flex;flex-direction:column;gap:14px}
 #s18 .arith-cap{font-size:13.5px;color:var(--ink-3);margin:0 0 4px}
+#s18 .classroom-answer{display:none}
+body.present #s18 .classroom-answer{display:grid;gap:20px}
+body.present #s18 .reading-answer,body.present #s18 .q-ctrls,body.present #s18 .look{display:none}
+body.present #s18 .card-title{display:none}
+body.present #s18 .reveal-body{padding:20px 24px}
+body.present #s18 .classroom-answer p{font-size:28px;line-height:1.35;margin:0}
+body.present #s18 .classroom-answer .row{gap:28px;margin:0}
+body.present #s18 .classroom-answer .small{font-size:22px}
+body.present #s18 .role-recap{display:grid;gap:20px}
+body.present #s18 .role-recap>div{padding:16px 22px;border-left:4px solid var(--line);background:var(--card)}
 </style>
 <header class="sec-head">
   <span class="sec-num">18</span>
@@ -34,12 +44,8 @@
 What is matched, what is sent, and what is passed onward?
 Ask one question before opening its reveal. For equal scores, the result is the mean of values, followed by W_O and the residual addition. Avoid opening all answers during a live explanation.
   </script>
-<div class="prose">
-  <p>Each answer below is checked against the toy model's numbers, so you can verify it instead of taking it on trust. Answer first, then open the reveal.</p>
-</div>
-
 <div class="card">
-  <h3 class="card-title">Eight questions</h3>
+  <h3 class="card-title">1 · Matching versus the information sent</h3>
   <div class="q-ctrls">
     <button type="button" class="btn" id="s18-open-all">Reveal all</button>
     <button type="button" class="btn btn-quiet" id="s18-close-all">Hide all</button>
@@ -49,9 +55,38 @@ Ask one question before opening its reveal. For equal scores, the result is the 
   <p class="look">Open one question at a time and read its table before the sentence under it.</p>
 </div>
 
-<div id="s18-standard"></div>
-
 </div>
+
+<div class="frame" id="s18-question2" data-title="If every score is equal, what is the message?">
+  <script type="text/x-notes">Ask for the weights before revealing the answer. Equal scores mean equal weights, not a zero update.</script>
+  <div class="card"><h3 class="card-title">2 · The equal-score case</h3><div id="s18-q2"></div></div>
+</div>
+<div class="frame" id="s18-question3" data-title="Is the query the updated bank representation?">
+  <script type="text/x-notes">Which vector is used for matching, and which one is passed onward? Ask students to name the addition.</script>
+  <div class="card"><h3 class="card-title">3 · A working vector is not the output</h3><div id="s18-q3"></div></div>
+</div>
+<div class="frame" id="s18-question4" data-title="What does the optimizer actually keep and update?">
+  <script type="text/x-notes">Distinguish stored parameters from vectors recomputed by a forward pass. Gradients may flow through both.</script>
+  <div class="card"><h3 class="card-title">4 · Parameters versus intermediate results</h3><div id="s18-q4"></div></div>
+</div>
+<div class="frame" id="s18-question5" data-title="What exactly is the update Δe?">
+  <script type="text/x-notes">The weighted values first make a message. W_O puts that message into the model's coordinate space.</script>
+  <div class="card"><h3 class="card-title">5 · From the message to an addable update</h3><div id="s18-q5"></div></div>
+</div>
+<div class="frame" id="s18-question6" data-title="Is Δe a new parameter or a standard name?">
+  <script type="text/x-notes">Delta e is our explanatory label for the attention contribution, not an independently stored parameter.</script>
+  <div class="card"><h3 class="card-title">6 · Our label for the attention contribution</h3><div id="s18-q6"></div></div>
+</div>
+<div class="frame" id="s18-question7" data-title="Why keep the original embedding as well?">
+  <script type="text/x-notes">Ask what happens when the update is zero. The residual path carries the input through unchanged.</script>
+  <div class="card"><h3 class="card-title">7 · The residual addition</h3><div id="s18-q7"></div></div>
+</div>
+<div class="frame" id="s18-question8" data-title="Can bank read words that come after it?">
+  <script type="text/x-notes">At position 7, source positions 8–10 are future. The mask makes their weights exactly zero.</script>
+  <div class="card"><h3 class="card-title">8 · The causal restriction</h3><div id="s18-q8"></div></div>
+</div>
+
+<div class="companion" id="s18-standard"></div>
 
 <div class="frame" id="s18-frame2" data-title="Do the roles and shapes agree?">
   <script type="text/x-notes">
@@ -60,7 +95,12 @@ Queries and keys must have compatible matching coordinates. Values form the mess
   </script>
 <div class="card">
   <h3 class="card-title">Notation recap, one token at a time</h3>
-  <div id="s18-notation"></div>
+  <div class="role-recap">
+    <div><strong>Match:</strong> $\vq{q_i},\vk{k_j}\in\mathbb{R}^{d_k}$.<br>Compatible coordinates for comparing a request and a source.</div>
+    <div><strong>Send:</strong> $\vv{v_j},\vm{m_i}\in\mathbb{R}^{d_v}$.<br>Values and their weighted mixture share the message space.</div>
+    <div><strong>Update:</strong> $\ve{e_i},\vd{\Delta e_i},\vp{e_i'}\in\mathbb{R}^{d_{\text{model}}}$.<br>The input and its update must have the same width to add.</div>
+  </div>
+  <div class="companion" id="s18-notation"></div>
   <p class="look">Check the shape column: only $\ve{e_i}$, $\vd{\Delta e_i}$ and $\vp{e_i'}$ live in the model space of width $d_{\text{model}}$.</p>
 </div>
 
@@ -84,10 +124,58 @@ Queries and keys must have compatible matching coordinates. Values form the mess
 
   function vecRow(){ return AT.h('div', { class: 'row scroll-x' }); }
   function add(q, body, render){
-    const d = AT.ui.reveal(q, body, { into: host, onToggle: updateCount });
-    if (render) { render(d.body); AT.renderMath(d.body); }
+    const index = reveals.length;
+    const target = index === 0 ? host : S.querySelector('#s18-q' + (index + 1));
+    const d = AT.ui.reveal(q, '', { into: target, onToggle: updateCount });
+    // The same question owns a compact classroom answer and its full reading worksheet.
+    // IDs and reveal state are shared; no copied controls or parallel calculations.
+    const readingBody = AT.h('div', { class: 'reading-answer', html: body });
+    d.body.appendChild(readingBody);
+    if (render) render(readingBody);
+    const slideBody = AT.h('div', { class: 'classroom-answer' });
+    compactAnswer(index, slideBody); d.body.appendChild(slideBody);
+    AT.renderMath(d.body);
     reveals.push(d);
     return d;
+  }
+
+  function compactAnswer(i, el){
+    const p = html => el.appendChild(AT.h('p', { html }));
+    const row = () => { const r = vecRow(); el.appendChild(r); return r; };
+    if (i === 0) {
+      p('The <strong>key</strong> says when “river” is relevant. The <strong>value</strong> carries what “river” will send.');
+      const r = row();
+      AT.ui.vec(F.K[R], { cls:'k', label:'\\vk{k_6}', dims:true, into:r });
+      AT.ui.vec(F.V[R], { cls:'v', label:'\\vv{v_6}', dims:true, into:r });
+      p('$\\vk{k_6}=\\ve{e_6}W_K$ chooses a weight; $\\vv{v_6}=\\ve{e_6}W_V$ is multiplied by that weight.');
+    } else if (i === 1) {
+      p('Seven equal scores give seven equal weights: $\\va{\\alpha_{7j}}=1/7$. The result is the <strong>mean of the values</strong>, not the mean of the input embeddings.');
+      p('$$\\vm{m_7}=\\frac{1}{7}\\sum_{j=1}^{7}\\vv{v_j}$$');
+    } else if (i === 2) {
+      p('No. The query helps bank find useful sources; it does not replace bank’s input.');
+      AT.ui.vec(F.Q[B], { cls:'q', label:'\\vq{q_7}', dims:true, into:row() });
+      p("The row passed onward is $\\vp{e_7'}=\\ve{e_7}+\\vd{\\Delta e_7}$, in the model space.");
+    } else if (i === 3) {
+      p('<strong>Stored and learned:</strong> the embedding table and matrices $W_Q,W_K,W_V,W_O,W_{\\mathrm{vocab}}$, plus biases.');
+      p('<strong>Recomputed for this input:</strong> $Q,K,V$, scores, weights, messages and updated token rows.');
+      p('Backpropagation passes through the working vectors. The optimizer updates the underlying parameters.');
+    } else if (i === 4) {
+      p('First mix the values; then map the message into the model space. The result is the context-dependent information we can add to bank.');
+      p('$$\\vm{m_7}=\\sum_{j\\le7}\\va{\\alpha_{7j}}\\vv{v_j},\\qquad\\vd{\\Delta e_7}=\\vm{m_7}W_O$$');
+      AT.ui.vec(F.Delta[B], { cls:'d', label:'\\vd{\\Delta e_7}', dims:true, into:row() });
+    } else if (i === 5) {
+      p('$\\vd{\\Delta e_i}$ is our teaching name for the attention contribution. It is <strong>not a separately learned vector</strong>.');
+      p('The model computes it anew from this input and the current parameters.');
+      p("$$\\vp{e_i'}=\\ve{e_i}+\\underbrace{\\big(\\sum_{j\\le i}\\va{\\alpha_{ij}}\\vv{v_j}\\big)W_O}_{\\vd{\\Delta e_i}}$$");
+    } else if (i === 6) {
+      p('The residual path keeps what the input already contained and adds the retrieved context. If $\\vd{\\Delta e_7}=0$, the input passes through unchanged.');
+      AT.ui.table([F.E[B],F.Delta[B]], { axes:'e', rowLabels:['$\\ve{e_7}$','$\\vd{\\Delta e_7}$'],rowCls:['e','d'],decimals:2,footer:{label:'$\\vp{e_7\'}$',values:F.Enew[B],cls:'ep'},into:el });
+    } else {
+      p('In next-token prediction, bank at position 7 can read only positions $j\\le7$.');
+      AT.ui.chips(AT.sentences.river, { active:[B],dim:[7,8,9],into:el });
+      p('Future scores are set to $-\\infty$, so their softmax weights are exactly zero.');
+      p('$\\alpha_{7,8}=\\alpha_{7,9}=\\alpha_{7,10}=0$: no answer leakage.');
+    }
   }
 
   /* ---- one-line readings, computed from the numbers and the axis names in AT.axes ---- */

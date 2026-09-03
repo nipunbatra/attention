@@ -22,26 +22,17 @@
 #s02 .calc-wrap .reveal-body>*+*{margin-top:12px}
 #s02 .calc-wrap .dt-fig{margin-top:12px}
 @media (max-width:640px){#s02 .pipe{grid-template-columns:1fr;grid-template-rows:none}#s02 .pipe .pipe-bars,#s02 .pipe .read-line{grid-column:auto;grid-row:auto}#s02 .pipe .read-line{margin-top:6px}}
-body.present #s02 .frame.is-live{padding-bottom:.7em}
-body.present #s02 .frame{font-size:.86em}
-body.present #s02 .title-row{margin-bottom:.3em}
-body.present #s02 .ctx-lab,body.present #s02 .arrow-lab,body.present #s02 .look,body.present #s02 .used-note{font-size:.7em}
-body.present #s02 .used-note{margin:0 0 .3em}
-body.present #s02 .read-line{font-size:.75em}
-body.present #s02 .head-box{padding:.5em .8em}
-body.present #s02 .head-box b{font-size:.85em}
-body.present #s02 .head-box span{font-size:.65em}
-body.present #s02 .pipe{gap:.5em 1.4em;margin-top:.3em}
-body.present #s02 .chip{font-size:.76em}
-body.present #s02 .bars{gap:.1em .5em;margin:.2em 0}
-body.present #s02 .bars .bt{height:.74em}
-body.present #s02 .prose p{margin-bottom:.35em}
-body.present #s02 .katex-display{margin:.3em 0}
-body.present #s02 .callout{margin:.45em 0;padding:.55em .9em}
-body.present #s02 .callout-key{font-size:.98em}
-body.present #s02 .card{margin-bottom:.5em}
-body.present #s02 .calc-wrap{margin-top:.5em}
-body.present #s02 .look{margin-top:.5em}
+body.present #s02 .ctx-lab,body.present #s02 .arrow-lab,body.present #s02 .look,body.present #s02 .used-note,body.present #s02 .read-line{font-size:22px;line-height:1.35}
+body.present #s02 .head-box{padding:16px 26px}
+body.present #s02 .head-box b{font-size:28px}
+body.present #s02 .head-box span{font-size:22px}
+body.present #s02 .pipe{display:flex;align-items:center;gap:30px;margin-top:28px}
+body.present #s02 .pipe .arrow-lab{margin:0}
+body.present #s02 .bars{gap:6px 16px;margin:0}
+body.present #s02 .bars .bt{height:24px}
+body.present #s02 .dt td,body.present #s02 .dt th{font-size:22px;padding:10px 12px}
+body.present #s02 .dt-cap,body.present #s02 .dt-note{display:none}
+body.present #s02 .title-row{margin-bottom:16px}
 </style>
 <header class="sec-head">
   <span class="sec-num">02</span>
@@ -63,40 +54,50 @@ body.present #s02 .look{margin-top:.5em}
     Timing: about three minutes.
   </script>
   <div class="prose">
-    <p>Suppose the prediction uses only $\ve{e_t}$, the current token's representation. Right now that is still the starting row $\ve{e_t^{(0)}}$ from section 01.</p>
+    <p>First try: let only the <strong>last known token</strong> reach the output head.</p>
   </div>
 
   <div class="card">
-    <div class="title-row">
-      <h3 class="card-title">Only token $t$ is used: switch the context and watch nothing happen</h3>
-      <div class="btn-row" id="s02-ctx" role="group" aria-label="Choose the context sentence" data-build="4">
-        <span class="ctx-lab">Context:</span>
-        <button type="button" class="btn" id="s02-ctx-a" aria-pressed="true">A: The fisherman … river bank</button>
-        <button type="button" class="btn" id="s02-ctx-b" aria-pressed="false">B: She deposited … the bank</button>
-      </div>
-    </div>
+    <h3 class="card-title">Only the highlighted position is used.</h3>
     <div id="s02-chips"></div>
     <div class="used-note"><span><span class="swatch on"></span>used: its $\ve{e_t}$ enters the output head</span><span><span class="swatch dim"></span>not used: invisible to the prediction</span></div>
-    <div class="pipe">
-      <div data-build="1">
+    <div class="pipe" data-build="1">
         <div id="s02-evec"></div>
-        <p class="arrow-lab">↓ the only input</p>
+        <p class="arrow-lab">→</p>
         <div class="head-box"><b>output head</b><span>then softmax</span></div>
-      </div>
-      <div class="pipe-bars" data-build="3">
-        <div id="s02-bars"></div>
-      </div>
-      <p class="read-line" id="s02-evec-reading" data-build="1"></p>
     </div>
-    <p class="look" id="s02-bars-note" data-build="3"></p>
+    <p class="companion read-line" id="s02-evec-reading"></p>
   </div>
+</div>
 
-  <div class="prose" data-build="2">
-    <p>Feed it straight into the output head; nothing else enters the computation:
+<div class="frame" id="s02-frame-probabilities" data-title="Switch the context. Do the probabilities move?" data-autobuild="off">
+  <script type="text/x-notes">Before switching the context: will any probability move?
+No. Both sentences end with the at position 10, so the head receives the same row. The sentence chips in the previous frame update too.</script>
+  <div class="card">
+    <div class="btn-row" id="s02-ctx" role="group" aria-label="Choose the context sentence" data-keep-state>
+      <span class="ctx-lab">Context:</span>
+      <button type="button" class="btn" id="s02-ctx-a" aria-pressed="true">A: The fisherman … river bank</button>
+      <button type="button" class="btn" id="s02-ctx-b" aria-pressed="false">B: She deposited … the bank</button>
+    </div>
+    <div id="s02-bars"></div>
+    <p class="companion look" id="s02-bars-note"></p>
+  </div>
+  <div class="companion callout callout-key">Same last token + same position → same input row → same prediction.</div>
+</div>
+
+<div class="frame" id="s02-frame-head" data-title="The head can only use the row it receives" data-autobuild="off">
+  <script type="text/x-notes">Where could river or cheque enter this calculation?
+Nowhere: neither word reaches the head. A better representation has to bring their information into the last row first.</script>
+  <div class="prose">
+    <p>The starting row $\ve{e_t^{(0)}}$ goes straight to the output head:</p>
+    $$\ell = \ve{e_t^{(0)}}\,W_{\text{vocab}} + b$$
+    <div data-build="1">$$p(x_{t+1}\mid x_{\le t}) = \operatorname{softmax}(\ell)$$</div>
+  </div>
+  <div class="companion">
+    <p>We sometimes write the current row simply as $\ve{e_t}$. At this stage it is still $\ve{e_t^{(0)}}$; no contextual update has happened.
     $$\ell = \ve{e_t}\,W_{\text{vocab}} + b, \qquad p(x_{t+1}\mid x_{\le t}) = \operatorname{softmax}(\ell)$$</p>
   </div>
-
-  <div class="callout callout-key" data-build="5">Using only $\ve{e_t}$ throws away most of the context. Same last token, same position, same numbers, so the earlier tokens cannot change the answer, however much they matter.</div>
+  <div class="callout callout-key" data-build="2">If context is to matter, its information must reach the row before the head reads it.</div>
 </div>
 
 <div class="frame" data-title="The only input, in both contexts" id="s02-frame2" data-autobuild="off">
@@ -104,17 +105,20 @@ body.present #s02 .look{margin-top:.5em}
     Which coordinate could tell the two sentences apart?
     None: the difference row is all zeros. If someone asks why position does not help, point at the position row of section 01: the blank sits at the same position in both sentences. Open the arithmetic only if the room wants to see the output head multiply.
   </script>
-  <div class="prose">
+  <div class="companion">
     <p>The distribution is almost flat: eight candidates, all near the same height. The model cannot prefer <em>water</em> to <em>teller</em> because, from its point of view, the two sentences are the same sentence. The table shows that sentence, coordinate by coordinate.</p>
   </div>
 
-  <div class="card" data-build="1">
+  <div class="card">
     <h3 class="card-title">The only input, in both contexts</h3>
     <div id="s02-same-tab"></div>
     <p class="look" id="s02-same-note"></p>
   </div>
 
-  <div class="calc-wrap" id="s02-calc" data-build="2"></div>
+</div>
+
+<div class="companion" data-kicker="Output-head worksheet">
+  <div class="calc-wrap" id="s02-calc"></div>
 </div>
 
 <div class="companion after">

@@ -4,6 +4,10 @@
 #s12 .s12-eq{margin:10px 0 4px}
 #s12 .s12-illus{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);border:1px dashed var(--ink-3);border-radius:999px;padding:2px 10px;margin-left:8px;vertical-align:middle}
 #s12 .s12-cur{margin:12px 0 0}
+body.present #s12 .s12-cap,body.present #s12 .s12-cur{font-size:22px;line-height:1.35}
+body.present #s12 .s12-illus{font-size:21px}
+body.present #s12 .dt-cap,body.present #s12 .dt-note{display:none}
+body.present #s12 .dt td,body.present #s12 .dt th{font-size:22px;padding:.2em .45em}
 </style>
 <header class="sec-head">
   <span class="sec-num">12</span>
@@ -17,7 +21,7 @@
   <p>Softmax is sensitive to score differences. Under the independence assumptions below, the <em>typical spread</em> of a dot product grows like $\sqrt{d_k}$; not every individual dot product must grow. The first illustration holds four raw scores fixed and changes only the divisor. It shows what scaling does, not how score variance grows. A separate seeded simulation checks the variance argument, and the final table returns to our actual bank query.</p>
 </div>
 
-<div class="frame" data-title="Does a wider query automatically deserve sharper attention?">
+<div class="frame" data-title="Control the spread of dot-product scores">
 <script type="text/x-notes">If we double the number of matching coordinates, should attention become more confident just because the vector is wider?
 
 The claim is about the spread of scores, not every particular dot product. State the assumptions: mutually independent, zero-mean, unit-variance query and key coordinates. The variance of each product is one and the variances of the d_k products add.</script>
@@ -27,7 +31,7 @@ The claim is about the spread of scores, not every particular dot product. State
   <p data-build="2">For intuition, assume all query and key coordinates are <strong>mutually independent, mean 0, variance 1</strong>. Then $\operatorname{Var}(q_l k_l)=1$ and $\operatorname{Var}(\vq{q}\cdot\vk{k})=d_k$. The standard deviation is $\sqrt{d_k}$.</p>
   <p data-build="3">Dividing by $\sqrt{d_k}$ makes the variance 1 under those assumptions. Learned coordinates need not obey them exactly: this is a scale-control argument, not a promise that attention is always diffuse.</p>
 </div>
-<pre class="pytorch" data-build="4"><code>scores = (Q @ K.T) / math.sqrt(Q.shape[-1])</code></pre>
+<pre class="companion pytorch"><code>scores = (Q @ K.T) / math.sqrt(Q.shape[-1])</code></pre>
 </div>
 
 <div class="frame" data-title="Fixed raw scores, changing only the divisor">
@@ -36,13 +40,13 @@ The claim is about the spread of scores, not every particular dot product. State
 Before moving the slider, explain that these are illustrative scores, not new embeddings or a retrained model. The four raw scores never change. Only the division by sqrt(d_k) changes. This panel shows the effect of scaling. The simulation on the next frame supplies the variance-growth argument.</script>
 <div class="card">
   <h3 class="card-title">Four fixed raw scores, with and without scaling <span class="s12-illus">illustrative numbers</span></h3>
-  <p class="s12-cap">Hold the raw scores $r=[0,0.5,1.5,-0.5]$ fixed. The scaled scores are $s=r/\sqrt{d_k}$. Increasing the divisor flattens softmax(scaled), while softmax(raw) stays fixed.</p>
+  <p class="companion s12-cap">Hold the raw scores $r=[0,0.5,1.5,-0.5]$ fixed. The scaled scores are $s=r/\sqrt{d_k}$. Increasing the divisor flattens softmax(scaled), while softmax(raw) stays fixed.</p>
   <div class="row" id="s12-ctl"></div>
   <div class="s12-eq" id="s12-eq"></div>
   <div id="s12-table"></div>
 </div>
 
-<div id="s12-callout"></div>
+<div class="companion" id="s12-callout"></div>
 </div>
 
 <div class="frame" data-title="Does the variance calculation hold in a simulation?">
@@ -52,9 +56,9 @@ These are actual sampled dot products from independent standard-normal coordinat
 <div class="card">
   <h3 class="card-title">Why the dot product grows with $d_k$: a seeded simulation</h3>
   <p class="s12-cap">Read down the first column: the variance of the raw dot product tracks $d_k$. The second column stays near 1.</p>
-  <p class="muted small" id="s12-sim-note"></p>
+  <p class="companion muted small" id="s12-sim-note"></p>
   <div id="s12-sim"></div>
-  <p class="muted small s12-cur" id="s12-sim-cur"></p>
+  <p class="companion muted small s12-cur" id="s12-sim-cur"></p>
 </div>
 </div>
 
@@ -64,13 +68,18 @@ These are actual sampled dot products from independent standard-normal coordinat
 No: dividing all scores by the same positive number preserves their ordering. It changes the relative weights after softmax. Compare river's weight before and after division by sqrt(3); our earlier calculations used the scaled column.</script>
 <div class="card">
   <h3 class="card-title">In the toy model (d<sub>k</sub> = <span id="s12-dk"></span>): bank reading the first 7 tokens</h3>
-  <p class="s12-cap">Same four columns, real numbers. The note under the table says how much the factor $\sqrt{d_k}$ changes the top weight.</p>
+  <p class="companion s12-cap">Same four columns, real numbers. The note in the following block says how much the factor $\sqrt{d_k}$ changes the top weight.</p>
   <div id="s12-toy"></div>
-  <p class="muted small" id="s12-toy-note"></p>
-  <pre class="pytorch" data-build="1"><code>scores = (q_bank @ K.T) / math.sqrt(K.shape[-1])
-alpha = scores.softmax(dim=-1)</code></pre>
 </div>
-<div class="callout callout-key" data-build="2">Scaling preserves the score ranking. It controls how strongly softmax concentrates on the highest scores.</div>
+</div>
+
+<div class="frame" data-title="What did scaling change for bank?">
+<script type="text/x-notes">Did scaling change the winning key?
+No. Dividing by one positive constant preserves score order. It changes the gap seen by softmax, and therefore the degree of concentration.</script>
+  <div class="prose"><p id="s12-toy-note"></p></div>
+  <div class="callout callout-key" data-build="1">Scaling preserves the score ranking. It controls how strongly softmax concentrates on the highest scores.</div>
+  <pre class="pytorch" data-build="2"><code>scores = (q_bank @ K.T) / math.sqrt(K.shape[-1])
+alpha = scores.softmax(dim=-1)</code></pre>
 </div>
 
 <div class="companion after">

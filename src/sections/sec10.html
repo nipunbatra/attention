@@ -6,6 +6,7 @@
 #s10 .s10-read .mono{font-size:13px}
 #s10 .s10-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 24px;align-items:start}
 #s10 .s10-grid>*{min-width:0}
+#s10 .s10-single{grid-template-columns:minmax(0,1fr)}
 #s10 .s10-grid .dt-fig{margin-top:6px}
 #s10 .s10-sub{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin:0 0 6px}
 #s10 .s10-ws{margin:2px 0 10px}
@@ -22,21 +23,22 @@
 #s10 .s10-chain{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;font-size:15px;margin:6px 0}
 #s10 .s10-chain .bx{border-radius:8px;padding:6px 10px;border:1.5px solid var(--oc);color:var(--ink);background:var(--ot);font-weight:600}
 #s10 .s10-chain .ar{color:var(--ink-3);font-size:18px}
-body.present #s10 .s10-cap,body.present #s10 .s10-read,body.present #s10 .s10-sub{font-size:18px}
+body.present #s10 .s10-cap,body.present #s10 .s10-read,body.present #s10 .s10-sub{font-size:22px}
 body.present #s10 .s10-grid .dt-cap{display:none}
 body.present #s10 .s10-grid .dt-fig{margin:0}
-body.present #s10 .s10-grid .dt td.dt-num{padding:.2em .45em;font-size:18px}
-body.present #s10 .s10-grid .dt th{padding:.2em .45em;font-size:18px}
-body.present #s10 .s10-grid .chip{font-size:18px;padding:.2em .4em}
+body.present #s10 .s10-grid .dt td.dt-num{padding:.18em .35em;font-size:22px}
+body.present #s10 .s10-grid .dt th{padding:.18em .35em;font-size:22px}
+body.present #s10 .s10-grid .chip{font-size:22px;padding:.18em .35em}
 body.present #s10 .s10-read{line-height:1.35;margin:4px 0}
 body.present #s10 .s10-plot-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:24px;align-items:center}
-body.present #s10 .s10-plot-layout .muted.small{font-size:18px}
-body.present #s10 .s10-chain{font-size:18px}
+body.present #s10 .s10-plot-layout .muted.small{font-size:22px}
+body.present #s10 .s10-chain{font-size:22px}
 body.present #s10 .s10-plot svg{max-height:340px}
 @media(max-width:820px){body.present #s10 .s10-plot-layout{grid-template-columns:1fr}}
 body.present #s10 #s10-grid .chips,body.present #s10 #s10-grid .s10-read{display:none}
 body.present #s10 .s10-plot-layout .s10-chain{display:none}
 body.present #s10 #s10-frame2>.card>.s10-cap{display:none}
+body.present #s10 .s10-ws,body.present #s10 .dt-cap,body.present #s10 .dt-note{display:none}
 </style>
 <header class="sec-head">
   <span class="sec-num">10</span>
@@ -83,8 +85,19 @@ Read the same initial row, each contextual update, and their sum. The arithmetic
   </script>
 <div class="card">
   <h3 class="card-title">Same initial row + different incoming update</h3>
-  <div class="s10-grid" id="s10-bank-grid"></div>
+  <div class="s10-grid s10-single" id="s10-bank-grid"></div>
 </div>
+</div>
+
+<div class="frame" id="s10-frame-updates-b" data-title="The same bank row, now in the cheque context">
+  <script type="text/x-notes">
+Did the initial bank row change from the preceding frame?
+No. Only the context-dependent update differs. Read its finance coordinate, then the resulting sum.
+  </script>
+  <div class="card">
+    <h3 class="card-title">Same initial row + the cheque-context update</h3>
+    <div class="s10-grid s10-single" id="s10-bank-grid-b"></div>
+  </div>
 </div>
 
 <div class="frame" id="s10-frame2" data-title="What does the update add to the same starting point?">
@@ -93,7 +106,6 @@ Which arrow is the contextual update, and which point is the updated representat
 Move the slider manually: it shows a partial residual addition, not training or generation. At 100 percent we have e prime. These named axes are a teaching construction, not probability-of-meaning coordinates.
   </script>
 <div class="card">
-  <h3 class="card-title">Same starting point, two different updates</h3>
   <p class="s10-cap">Look at the two arrows: they leave the same blue dot and end far apart. The slider adds the update gradually; the comparison tables follow it.</p>
   <div class="s10-plot-layout"><div>
   <div class="s10-chain" id="s10-chain-a"></div>
@@ -157,7 +169,7 @@ Move the slider manually: it shows a partial residual addition, not training or 
   AT.renderMath(S.querySelector('#s10-read-e'));
 
   /* ---- one column of the grid: sentence, what bank reads (mix table), bank's own rows; every element is placed on an explicit grid row ---- */
-  const grid = S.querySelector('#s10-grid'), bankGrid = S.querySelector('#s10-bank-grid');
+  const grid = S.querySelector('#s10-grid'), bankGrids = [S.querySelector('#s10-bank-grid'), S.querySelector('#s10-bank-grid-b')];
   function panel(set, col){
     const F = set.F, toks = set.toks;
     let r = 0, targetGrid = grid;
@@ -168,7 +180,7 @@ Move the slider manually: it shows a partial residual addition, not training or 
     put(AT.ui.mixTable(F.A[bi], F.V, { rowLabels: toks.map((t, j) => (j + 1) + ' ' + t), cornerLabel: 'token', alphaLabel: '$\\va{\\alpha_{7j}}$', footerLabel: '$m_{\\text{bank}}$',
       caption: 'What bank reads: the $\\va{\\alpha_{7j}}$ column is its attention row (most weight on ' + AT.escape(top.join(' and ')) + '), the rows are the values $\\vv{v_j}$, the footer is $m_{\\text{bank}} = \\sum_j \\va{\\alpha_{7j}}\\,\\vv{v_j}$.' }));
     put(readLine(AT.h('div'), 'm_{\\text{bank}}', 'the message that arrived says ' + readMix(F.Mmsg[bi], vName) + '.'));
-    r = 0; targetGrid = bankGrid;
+    r = 0; targetGrid = bankGrids[col - 1]; col = 1;
     put(AT.h('p', { class: 's10-sub' }, 'Sentence ' + set.name + ': ' + set.ctx));
     const bank = put(AT.ui.table([F.E[bi], F.Delta[bi], F.Enew[bi]], { axes: 'e', rowLabels: [texE0, texD, texEp], rowCls: ['e', 'd', 'ep'], cornerLabel: 'bank, position 7', highlightRow: 2,
       caption: 'Bank’s own rows. Row 1 is ' + (same ? '<span class="s10-same">identical in A and B</span>' : 'the starting representation') + '; row 2 is the message sent through $W_O$; row 3 is the sum, the contextual representation.' }));

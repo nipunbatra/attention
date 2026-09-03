@@ -1155,7 +1155,9 @@
     { g: 'sizes', sym: 'W_Q,\\; W_K', mean: 'query and key projections (learned)', shape: 'd_{\\text{model}}\\times d_k', dims: function () { return AT.d_model + '×' + AT.d_k; } },
     { g: 'sizes', sym: 'W_V', mean: 'value projection (learned)', shape: 'd_{\\text{model}}\\times d_v', dims: function () { return AT.d_model + '×' + AT.d_v; } },
     { g: 'sizes', sym: 'W_O', mean: 'output projection: message space back to representation space', shape: 'd_v\\times d_{\\text{model}}', dims: function () { return AT.d_v + '×' + AT.d_model; } },
-    { g: 'sizes', sym: 'W_{\\text{vocab}},\\; b', mean: 'output head: $\\ell = \\vp{e_t\'}\\,W_{\\text{vocab}} + b$, then softmax', shape: 'd_{\\text{model}}\\times |\\mathcal V|', dims: function () { return AT.d_model + '×' + (AT.vocab.length || 20); } }
+    { g: 'sizes', sym: '\\ve{E_{\\text{tok}}}', mean: 'learned token lookup table; distinct from the current sequence stack $\\ve{E}$', shape: '|\\mathcal V|\\times d_{\\text{model}}', dims: function () { return (AT.vocab.length || 20) + '×' + AT.d_model; } },
+    { g: 'sizes', sym: 'W_{\\text{vocab}}', mean: 'output-head weights: $\\ell = \\vp{e_t\'}\\,W_{\\text{vocab}} + b$, then softmax', shape: 'd_{\\text{model}}\\times |\\mathcal V|', dims: function () { return AT.d_model + '×' + (AT.vocab.length || 20); } },
+    { g: 'sizes', sym: 'b', mean: 'one learned bias per vocabulary logit', shape: '1\\times |\\mathcal V|', dims: function () { return '1×' + (AT.vocab.length || 20); } }
   ];
   NOTATION.forEach(function (n) { n.parts = ['part2', 'part3']; });
   /* Part 1 (the character model) and Part 3 (learning, heads, the block) rows; groups 'mlp', 'train', 'block' */
@@ -1163,8 +1165,8 @@
     { g: 'mlp', sym: 't_i', mean: 'token id of character $i$ (an index into the vocabulary)', shape: '\\text{integer}', dims: function () { return ''; } },
     { g: 'mlp', sym: '\\mathcal V', mean: 'the vocabulary: the boundary token and the letters', shape: '|\\mathcal V|', dims: function () { return String(AT.vocab.length || ''); } },
     { g: 'mlp', sym: 'w', mean: 'the window: how many previous characters the model sees', shape: '', dims: function () { return isNum(model.w) ? String(model.w) : ''; } },
-    { g: 'mlp', sym: '\\ve{E}', mean: 'the lookup table: one row per token', shape: '|\\mathcal V| \\times d', dims: function () { return (AT.vocab.length || '?') + '×' + AT.d_model; } },
-    { g: 'mlp', sym: '\\ve{e_i} = \\ve{E}[t_i]', mean: 'the embedding of character $i$: its row of the table', shape: '1 \\times d', dims: function () { return '1×' + AT.d_model; } },
+    { g: 'mlp', sym: '\\ve{E_{\\text{tok}}}', mean: 'the learned lookup table: one row per vocabulary token', shape: '|\\mathcal V| \\times d', dims: function () { return (AT.vocab.length || '?') + '×' + AT.d_model; } },
+    { g: 'mlp', sym: '\\ve{e_i} = \\ve{E_{\\text{tok}}}[t_i]', mean: 'the embedding at position $i$: the token\'s row of the table', shape: '1 \\times d', dims: function () { return '1×' + AT.d_model; } },
     { g: 'mlp', sym: 'a_0 = [\\ve{e_1}, \\ldots, \\ve{e_w}]', mean: 'the concatenated window (the input of the network)', shape: '1 \\times wd', dims: function () { return isNum(model.w) ? '1×' + (model.w * AT.d_model) : ''; } },
     { g: 'mlp', sym: 'a_1 = \\sigma(a_0 W_1 + b_1)', mean: 'the hidden layer', shape: '1 \\times d_h', dims: function () { return isNum(model.d_h) ? '1×' + model.d_h : ''; } },
     { g: 'mlp', sym: 'z = a_1 W_2 + b_2', mean: 'the logits: one score per vocabulary entry', shape: '1 \\times |\\mathcal V|', dims: function () { return '1×' + (AT.vocab.length || '?'); } },
@@ -1172,8 +1174,10 @@
     { g: 'mlp', sym: '\\text{loss} = -\\log p(\\text{target})', mean: 'cross-entropy on the observed next character', shape: '\\text{scalar}', dims: function () { return ''; } },
     { g: 'sizes', sym: 'd', mean: 'width of an embedding row', shape: '', dims: function () { return String(AT.d_model); } },
     { g: 'sizes', sym: 'd_h', mean: 'width of the hidden layer', shape: '', dims: function () { return isNum(model.d_h) ? String(model.d_h) : ''; } },
-    { g: 'sizes', sym: 'W_1,\\; b_1', mean: 'first layer (learned)', shape: 'wd \\times d_h', dims: function () { return (isNum(model.w) && isNum(model.d_h)) ? (model.w * AT.d_model) + '×' + model.d_h : ''; } },
-    { g: 'sizes', sym: 'W_2,\\; b_2', mean: 'output layer (learned)', shape: 'd_h \\times |\\mathcal V|', dims: function () { return isNum(model.d_h) ? model.d_h + '×' + (AT.vocab.length || '?') : ''; } }
+    { g: 'sizes', sym: 'W_1', mean: 'first-layer weights (learned)', shape: 'wd \\times d_h', dims: function () { return (isNum(model.w) && isNum(model.d_h)) ? (model.w * AT.d_model) + '×' + model.d_h : ''; } },
+    { g: 'sizes', sym: 'b_1', mean: 'one learned bias per hidden unit', shape: '1 \\times d_h', dims: function () { return isNum(model.d_h) ? '1×' + model.d_h : ''; } },
+    { g: 'sizes', sym: 'W_2', mean: 'output-layer weights (learned)', shape: 'd_h \\times |\\mathcal V|', dims: function () { return isNum(model.d_h) ? model.d_h + '×' + (AT.vocab.length || '?') : ''; } },
+    { g: 'sizes', sym: 'b_2', mean: 'one learned bias per vocabulary logit', shape: '1 \\times |\\mathcal V|', dims: function () { return '1×' + (AT.vocab.length || '?'); } }
   ];
   NOTATION_1.forEach(function (n) { n.parts = ['part1']; });
   var NOTATION_3 = [
@@ -1511,8 +1515,8 @@
      9. present mode: frames, builds, keys, hash, overview, blank, notes, presenter window, print
      ====================================================================== */
   AT.present = (function () {
-    var P = { active: false, discovered: false, frames: [], fi: -1, build: 0, listeners: {}, blank: false, overview: false, notes: false, help: false, presWin: null, isPresenter: false, printState: null, startedAt: null };
-    var U = {}, pendingState = new WeakMap(), overviewFocus = null, overviewBackground = [], entryFocus = null;
+    var P = { active: false, discovered: false, frames: [], fi: -1, build: 0, listeners: {}, blank: false, overview: false, notes: false, help: false, presWin: null, isPresenter: false, printState: null, startedAt: null, fit: null, preflightPromise: null };
+    var U = {}, pendingState = new WeakMap(), overviewFocus = null, overviewBackground = [], entryFocus = null, fitRaf = 0, svgPaintRaf = 0, svgPaintFrame = null;
     var UNIT_SEL = '.card, .callout, .tex-display, .prose, p:not(.companion), .chips, table, .stepper, .reveal, .dt-fig, figure, .motif, .netsk, .row, .stack, .btn-row, .scroll-x, ul, ol, h3, blockquote';
     var SPLIT_SEL = '.side-by-side, .grid-2, .grid-3';
     function emit(ev, data) { arr(P.listeners[ev]).forEach(function (f) { try { f(data); } catch (e) { console.error('present listener failed', e); } }); }
@@ -1613,7 +1617,7 @@
           frames = [f];
         }
         sec.classList.add('has-frames');
-        if (head && !head.querySelector('.frame-sub')) head.appendChild(h('span', { class: 'frame-sub' }));
+        if (head && !head.querySelector('.frame-sub')) head.appendChild(h('h3', { class: 'frame-sub' }));
         var title = sec.getAttribute('data-title') || (sec.querySelector('h2') ? sec.querySelector('h2').textContent : sec.id);
         frames.forEach(function (f, k) {
           prepBuilds(f);
@@ -1634,21 +1638,201 @@
       U.controls = h('nav', { id: 'at-controls', tabindex: '-1', 'aria-label': 'Classroom navigation' }, U.counter, U.prev, U.next, U.overviewButton, U.fullscreen,
         h('button', { id: 'at-exit', type: 'button', class: 'pbtn', on: { click: exit } }, 'Exit'));
       U.announcement = h('p', { id: 'at-announcement', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' });
+      U.fitWarning = h('p', { id: 'at-fit-warning', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' });
       U.notes = h('div', { id: 'at-notes', role: 'complementary', 'aria-label': 'Presenter notes' });
       U.overview = h('div', { id: 'at-overview', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'All frames' }, h('div', { class: 'ov-head' }, h('p', { class: 'ov-title' }, 'All frames: select one to jump'), h('button', { id: 'at-overview-close', type: 'button', class: 'pbtn', on: { click: function () { setOverview(false); } } }, 'Close overview')), h('div', { class: 'ov-grid' }));
       U.blank = h('div', { id: 'at-blank', 'aria-hidden': 'true' });
       U.help = h('div', { id: 'at-help', role: 'note' }, h('div', { html: '<kbd>→</kbd> <kbd>Space</kbd> <kbd>PgDn</kbd> next build · <kbd>←</kbd> <kbd>PgUp</kbd> <kbd>Backspace</kbd> back · <kbd>Home</kbd> <kbd>End</kbd> first / last frame<br><kbd>O</kbd> overview · <kbd>B</kbd> blank · <kbd>S</kbd> notes · <kbd>?</kbd> this help · <kbd>Esc</kbd> exit' }));
       U.blank.addEventListener('click', function () { setBlank(false); });
-      document.body.appendChild(U.controls); document.body.appendChild(U.announcement); document.body.appendChild(U.notes); document.body.appendChild(U.overview); document.body.appendChild(U.blank); document.body.appendChild(U.help);
+      document.body.appendChild(U.controls); document.body.appendChild(U.announcement); document.body.appendChild(U.fitWarning); document.body.appendChild(U.notes); document.body.appendChild(U.overview); document.body.appendChild(U.blank); document.body.appendChild(U.help);
       window.addEventListener('resize', measureChrome);
       document.addEventListener('fullscreenchange', function () { updateChrome(); measureChrome(); });
       if (window.ResizeObserver) { U.resize = new ResizeObserver(measureChrome); U.resize.observe(U.controls); var strip = document.getElementById('strip'); if (strip) U.resize.observe(strip); }
+      document.addEventListener('input', scheduleFitCheck, true);
+      document.addEventListener('change', scheduleFitCheck, true);
+      document.addEventListener('click', scheduleFitCheck, true);
+      document.addEventListener('toggle', scheduleFitCheck, true);
+      document.addEventListener('load', scheduleFitCheck, true);
     }
     function measureChrome() {
       if (!P.active) return;
       var strip = document.getElementById('strip');
       document.body.style.setProperty('--present-strip-h', (strip ? strip.getBoundingClientRect().height : 0) + 'px');
       document.body.style.setProperty('--present-controls-h', (U.controls ? U.controls.getBoundingClientRect().height : 0) + 'px');
+      var main = document.querySelector('main');
+      if (main) {
+        var r = main.getBoundingClientRect(), cs = getComputedStyle(document.body);
+        var sw = parseFloat(cs.getPropertyValue('--present-stage-w')) || 1280;
+        var sh = parseFloat(cs.getPropertyValue('--present-stage-h')) || 720;
+        var gutter = parseFloat(cs.getPropertyValue('--present-gutter')) || 0;
+        var scale = Math.min(Math.max(1, r.width - gutter * 2) / sw, Math.max(1, r.height - gutter * 2) / sh);
+        document.body.style.setProperty('--present-scale', String(Math.max(0.05, scale)));
+      }
+      repaintSvgs(cur());
+      scheduleFitCheck();
+    }
+    /* Chromium can retain SVG text at coordinates from the previously hidden
+       layout after a fixed stage is scaled. Reinsert each live SVG into paint
+       without replacing the node, listeners, or component state. */
+    function repaintSvgs(fr) {
+      if (!fr || !fr.el) return;
+      svgPaintFrame = fr;
+      if (svgPaintRaf) cancelAnimationFrame(svgPaintRaf);
+      svgPaintRaf = requestAnimationFrame(function () {
+        svgPaintRaf = 0;
+        var active = svgPaintFrame; svgPaintFrame = null;
+        if (!active || !active.el.classList.contains('is-live')) return;
+        var svgs = all(active.el, 'svg');
+        var displays = svgs.map(function (svg) { return svg.style.display; });
+        svgs.forEach(function (svg) { svg.style.display = 'none'; });
+        if (svgs[0]) svgs[0].getBoundingClientRect();
+        svgs.forEach(function (svg, i) { svg.style.display = displays[i]; });
+        if (svgs[0]) svgs[0].getBoundingClientRect();
+      });
+    }
+    function frameHeading(fr) {
+      if (!fr || !fr.sec) return;
+      var head = fr.sec.querySelector(':scope > .sec-head');
+      var sub = head && head.querySelector('.frame-sub');
+      var title = (fr.title || '').trim();
+      var distinct = title && title !== fr.secTitle;
+      if (head) head.classList.toggle('has-frame-title', !!distinct);
+      if (sub) sub.textContent = distinct ? title : '';
+    }
+    function measureFit(fr) {
+      if (!fr || !fr.el || !fr.el.classList.contains('is-live')) return null;
+      var el = fr.el, stage = fr.sec;
+      var frameX = Math.max(0, el.scrollWidth - el.clientWidth);
+      var frameY = Math.max(0, el.scrollHeight - el.clientHeight);
+      var stageX = Math.max(0, stage.scrollWidth - stage.clientWidth);
+      var stageY = Math.max(0, stage.scrollHeight - stage.clientHeight);
+      var overX = Math.max(frameX, stageX);
+      var overY = Math.max(frameY, stageY);
+      var overflow = overX > 2 || overY > 2;
+      var report = {
+        overflow: overflow,
+        horizontal: Math.round(overX),
+        vertical: Math.round(overY),
+        section: fr.id,
+        frame: fr.index + 1,
+        title: fr.title || fr.secTitle,
+        width: el.clientWidth,
+        height: el.clientHeight,
+        contentWidth: el.scrollWidth,
+        contentHeight: el.scrollHeight,
+        frameHorizontal: Math.round(frameX),
+        frameVertical: Math.round(frameY),
+        stageHorizontal: Math.round(stageX),
+        stageVertical: Math.round(stageY)
+      };
+      el.setAttribute('data-overflow', overflow ? 'true' : 'false');
+      return report;
+    }
+    function reportFit(fr) {
+      if (!P.active || document.body.classList.contains('is-preflighting')) return null;
+      var report = measureFit(fr || cur());
+      P.fit = report;
+      if (U.fitWarning) {
+        if (report && report.overflow) {
+          var extra = [];
+          if (report.vertical) extra.push(report.vertical + 'px too tall');
+          if (report.horizontal) extra.push(report.horizontal + 'px too wide');
+          U.fitWarning.textContent = 'Authoring check — frame ' + report.section.replace(/^s/, '') + '.' + report.frame + ' is ' + extra.join(' and ') + '. Move content to a continuation frame; presentation frames never scroll.';
+        } else U.fitWarning.textContent = '';
+      }
+      if (report) emit('fit', report);
+      return report;
+    }
+    function scheduleFitCheck() {
+      if (!P.active || document.body.classList.contains('is-preflighting')) return;
+      if (fitRaf) cancelAnimationFrame(fitRaf);
+      fitRaf = requestAnimationFrame(function () {
+        fitRaf = requestAnimationFrame(function () { fitRaf = 0; reportFit(); });
+      });
+    }
+    function nextPaint() {
+      return new Promise(function (resolve) { requestAnimationFrame(function () { requestAnimationFrame(resolve); }); });
+    }
+    function worseFit(a, b) {
+      if (!a) return b;
+      if (!b) return a;
+      return b.horizontal + b.vertical > a.horizontal + a.vertical ? b : a;
+    }
+    async function samplePreflightState(fr, worst) {
+      repaintSvgs(fr); await nextPaint();
+      worst = worseFit(worst, measureFit(fr));
+      var details = all(fr.el, 'details');
+      if (!details.length) return worst;
+      var states = details.map(function (e) { return [e, e.open]; });
+      details.forEach(function (e) { e.open = true; });
+      await nextPaint();
+      worst = worseFit(worst, measureFit(fr));
+      states.forEach(function (s) { s[0].open = s[1]; });
+      await nextPaint();
+      return worst;
+    }
+    /* Authoring preflight: reveal each frame at its fullest state and measure it on the
+       canonical stage. It never scrolls or shrinks a frame, and restores the live view. */
+    function preflight() {
+      if (P.preflightPromise) return P.preflightPromise;
+      P.preflightPromise = (async function () {
+        discover(); ensureUi();
+        var wasActive = P.active, wasFi = P.fi, wasBuild = P.build, wasFit = P.fit;
+        var wasScroll = [window.scrollX, window.scrollY];
+        var wasFocus = document.activeElement;
+        var liveSecs = all(document, '.sec.is-live'), liveFrames = all(document, '.frame.is-live');
+        var buildStates = all(document, '[data-build]').map(function (e) { return [e, e.classList.contains('is-pending'), e.inert, e.getAttribute('aria-hidden')]; });
+        var stepStates = all(document, '.stepper').filter(function (e) { return e.stepperApi && !e.closest('[data-present="manual"]'); }).map(function (e) { return [e.stepperApi, e.stepperApi.index()]; });
+        var detailStates = all(document, 'details').map(function (e) { return [e, e.open]; });
+        var reports = [];
+        try {
+          if (!wasActive) { P.active = true; document.body.classList.add('present'); }
+          document.body.classList.add('is-preflighting');
+          liveFrames.forEach(function (e) { e.classList.remove('is-live'); });
+          liveSecs.forEach(function (e) { e.classList.remove('is-live'); });
+          measureChrome(); await nextPaint();
+          for (var i = 0; i < P.frames.length; i++) {
+            var fr = P.frames[i];
+            all(document, '.frame.is-live').forEach(function (e) { e.classList.remove('is-live'); });
+            all(document, '.sec.is-live').forEach(function (e) { e.classList.remove('is-live'); });
+            fr.sec.classList.add('is-live'); fr.el.classList.add('is-live'); frameHeading(fr); repaintSvgs(fr);
+            all(fr.el, '[data-build]').forEach(function (e) { pending(e, false); });
+            var steps = steppersOf(fr);
+            steps.forEach(function (s) { s.api.go(s.api.steps.length - 1); });
+            var worst = await samplePreflightState(fr, null);
+            for (var j = 0; j < steps.length; j++) {
+              for (var k = 0; k < steps[j].api.steps.length; k++) {
+                steps[j].api.go(k);
+                worst = await samplePreflightState(fr, worst);
+              }
+            }
+            if (worst) reports.push(worst);
+          }
+        } finally {
+          all(document, '.frame.is-live').forEach(function (e) { e.classList.remove('is-live'); });
+          all(document, '.sec.is-live').forEach(function (e) { e.classList.remove('is-live'); });
+          buildStates.forEach(function (s) {
+            pending(s[0], s[1]); s[0].inert = s[2];
+            if (s[3] == null) s[0].removeAttribute('aria-hidden'); else s[0].setAttribute('aria-hidden', s[3]);
+          });
+          document.body.classList.remove('is-preflighting');
+          P.active = wasActive; P.fi = wasFi; P.build = wasBuild; P.fit = wasFit;
+          detailStates.forEach(function (s) { s[0].open = s[1]; });
+          if (wasActive && wasFi >= 0 && P.frames[wasFi]) {
+            var active = P.frames[wasFi]; active.sec.classList.add('is-live'); active.el.classList.add('is-live'); frameHeading(active); applyBuild(active, wasBuild); repaintSvgs(active);
+            stepStates.forEach(function (s) { s[0].go(s[1]); }); scheduleFitCheck();
+          } else {
+            document.body.classList.remove('present');
+            document.body.style.removeProperty('--present-scale');
+            if (U.fitWarning) U.fitWarning.textContent = '';
+            stepStates.forEach(function (s) { s[0].go(s[1]); });
+            window.scrollTo(wasScroll[0], wasScroll[1]);
+          }
+          if (wasFocus && wasFocus.isConnected && typeof wasFocus.focus === 'function') wasFocus.focus({ preventScroll: true });
+        }
+        return { total: reports.length, overflow: reports.filter(function (r) { return r.overflow; }), frames: reports };
+      })().finally(function () { P.preflightPromise = null; });
+      return P.preflightPromise;
     }
     function fullscreen() {
       var fallback = function () { U.announcement.textContent = 'Full screen is unavailable here. Use your browser’s full-screen command; classroom navigation still works.'; };
@@ -1677,7 +1861,7 @@
       U.next.setAttribute('aria-label', st && st.index() < st.steps.length - 1 ? 'Next step in this build' : P.build < fr.maxBuild ? 'Next build' : 'Next frame');
       U.fullscreen.textContent = document.fullscreenElement ? 'Leave full screen' : 'Full screen';
       U.fullscreen.setAttribute('aria-pressed', document.fullscreenElement ? 'true' : 'false');
-      var sub = fr.sec.querySelector(':scope > .sec-head .frame-sub'); if (sub) sub.textContent = fr.title;
+      frameHeading(fr);
       if (P.notes) U.notes.innerHTML = notesHtml(fr.notes);
       var bar = document.getElementById('progress');
       if (bar) bar.style.width = (100 * (P.fi + (P.build + 1) / (fr.maxBuild + 1)) / P.frames.length).toFixed(2) + '%';
@@ -1725,24 +1909,24 @@
       if (prev && prev !== fr) { leaveFrame(prev); if (prev.sec !== fr.sec) prev.sec.classList.remove('is-live'); }
       var moveFocus = prev && prev !== fr && prev.el.contains(document.activeElement);
       fr.sec.classList.add('is-live'); fr.el.classList.add('is-live');
+      repaintSvgs(fr);
       if (prev !== fr) {
         if (!fr.snapshot) fr.snapshot = snapshot(fr.el);
-        fr.el.scrollTop = 0;
         if (AT.strip) AT.strip.setCurrent(fr.secIndex);
       }
       P.fi = i;
       P.build = Math.max(0, Math.min(fr.maxBuild, b | 0));
       applyBuild(fr, P.build, edge || 'start');
       if (moveFocus) fr.el.focus({ preventScroll: true });
-      updateChrome(); syncHash(); postState(); emit('frame', state());
+      updateChrome(); syncHash(); postState(); emit('frame', state()); scheduleFitCheck();
     }
-    function reveal(el, block) { if (!el || !el.scrollIntoView) return; try { el.scrollIntoView({ block: block || 'nearest', inline: 'nearest' }); } catch (e) { /* ignore */ } }
+    function reveal(el, block) { if (P.active) { scheduleFitCheck(); return; } if (!el || !el.scrollIntoView) return; try { el.scrollIntoView({ block: block || 'nearest', inline: 'nearest' }); } catch (e) { /* ignore */ } }
     function setBuild(b) {
       var fr = cur(); if (!fr) return;
       var was = P.build;
       P.build = Math.max(0, Math.min(fr.maxBuild, b | 0)); applyBuild(fr, P.build, P.build < was ? 'end' : P.build > was ? 'start' : null);
       if (P.build > was) { var first = fr.el.querySelector('[data-build="' + P.build + '"]'); if (first) { var st = activeStepper(fr, P.build); reveal(st ? st.el : first, st ? 'start' : 'nearest'); } }
-      updateChrome(); syncHash(); postState(); emit('build', state());
+      updateChrome(); syncHash(); postState(); emit('build', state()); scheduleFitCheck();
     }
     function next() {
       var fr = cur(); if (!P.active || !fr) return;
@@ -1794,6 +1978,8 @@
       P.active = false;
       document.body.classList.remove('present');
       U.announcement.textContent = '';
+      if (U.fitWarning) U.fitWarning.textContent = '';
+      document.body.style.removeProperty('--present-scale');
       try { var url = new URL(location.href); url.searchParams.delete('present'); url.hash = fr ? fr.id : ''; history.replaceState(null, '', url.href); } catch (e) { /* ignore */ }
       if (P.ownsFullscreen && document.fullscreenElement && document.exitFullscreen) { var result = document.exitFullscreen(); if (result && result.catch) result.catch(function () {}); } P.ownsFullscreen = false;
       if (entryFocus && entryFocus.isConnected && entryFocus !== document.body) entryFocus.focus({ preventScroll: true });
@@ -1868,7 +2054,7 @@
     function state() {
       var fr = cur(), nx = P.frames[P.fi + 1] || null, st = fr ? activeStepper(fr, P.build) : null;
       function fs(f) { return f ? { id: f.id, num: f.num, secTitle: f.secTitle, title: f.title, index: f.index, count: f.count, maxBuild: f.maxBuild, notes: f.notes } : null; }
-      return { active: P.active, fi: P.fi, total: P.frames.length, build: P.build, frame: fs(fr), next: fs(nx), stepper: st ? { index: st.index(), count: st.steps.length } : null, hash: hashOf(), startedAt: P.startedAt, part: (window.__PART__ && window.__PART__.title) || document.title };
+      return { active: P.active, fi: P.fi, total: P.frames.length, build: P.build, frame: fs(fr), next: fs(nx), stepper: st ? { index: st.index(), count: st.steps.length } : null, fit: P.fit, hash: hashOf(), startedAt: P.startedAt, part: (window.__PART__ && window.__PART__.title) || document.title };
     }
     function postState() {
       var w = P.presWin;
@@ -1951,7 +2137,7 @@
       window.addEventListener('message', onMessage);
       window.addEventListener('beforeprint', prepareForPrint);
       window.addEventListener('afterprint', restoreAfterPrint);
-      document.addEventListener('at-stepchange', function (ev) { if (P.active && cur() && cur().el.contains(ev.target)) { updateChrome(); postState(); } });
+      document.addEventListener('at-stepchange', function (ev) { if (P.active && cur() && cur().el.contains(ev.target)) { updateChrome(); postState(); repaintSvgs(cur()); scheduleFitCheck(); } });
       window.addEventListener('hashchange', function () { if (syncing) return; var t = parseHash(location.hash); if (t) { if (P.active) goTarget(t); else enter(t); } });
       var wantsPresent = /(^|[?&])present(=|&|$)/.test(location.search) || !!parseHash(location.hash);
       if (wantsPresent) { var t = parseHash(location.hash); if (!t && /^#s\d+$/.test(location.hash)) t = { id: location.hash.slice(1), f: 1, b: 0 }; enter(t); }
@@ -1961,7 +2147,7 @@
     return {
       enter: enter, exit: exit, toggle: toggle, next: next, prev: prev, go: go, first: function () { showFrame(0, 0); }, last: function () { showFrame(P.frames.length - 1, 0); },
       setBuild: setBuild, overview: setOverview, blank: setBlank, notes: setNotes, help: setHelp, fullscreen: fullscreen, openPresenter: openPresenter,
-      prepareForPrint: prepareForPrint, restoreAfterPrint: restoreAfterPrint, discover: discover,
+      prepareForPrint: prepareForPrint, restoreAfterPrint: restoreAfterPrint, discover: discover, fitReport: function () { return reportFit(); }, preflight: preflight,
       isActive: function () { return P.active; }, state: state, frames: function () { discover(); return P.frames.slice(); }, on: on, parseHash: parseHash
     };
   })();

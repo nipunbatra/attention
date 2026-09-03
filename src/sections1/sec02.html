@@ -15,9 +15,10 @@
 <div class="frame" data-title="One 27-class prediction" data-autobuild="off">
   <script type="text/x-notes">Which character receives the most probability after aab?
   Point out that the full distribution has one entry for every vocabulary token, including the boundary.</script>
-  <div class="card"><h3 class="card-title">The trained model answers</h3><p class="question">a a b → ?</p><div id="s02-bars" data-build="1"></div><p id="s02-read" class="muted small" data-build="2"></p></div>
-  <div class="callout callout-key" data-build="3">One forward pass is a classification problem with one class for every possible next character.</div>
+  <div class="card"><h3 class="card-title">a a b → ?</h3><div id="s02-bars" data-build="1"></div></div>
+  <div class="callout callout-key" data-build="2">One probability per possible next character.</div>
 </div>
+<div class="companion"><p id="s02-read"></p><p>One forward pass is a classification problem with one class for every possible next character.</p></div>
 <div class="companion after"><p>Keep in mind: the same boundary token pads the opening window and ends a generated name.</p></div>
 <script>
 (function(){

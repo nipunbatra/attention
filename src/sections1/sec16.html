@@ -9,19 +9,25 @@
 <div class="frame" data-title="Intuitive, operational, mathematical" data-autobuild="off">
   <script type="text/x-notes">Which summary would you use to explain the model to someone else?
   Reveal the operational and mathematical versions after students give the intuitive account.</script>
-  <div class="stack"><div class="summary"><h3 class="card-title">Intuitive</h3><p>Use the last few characters to guess what character tends to come next.</p></div><div class="summary" data-build="1"><h3 class="card-title">Operational</h3><p>Look up embeddings, concatenate the window, run the MLP, apply softmax, then sample or score the observed target.</p></div><div class="summary" data-build="2"><h3 class="card-title">Mathematical</h3><p>$a_0=[\ve{E}[t_1],\ldots,\ve{E}[t_w]]$, $a_1=\tanh(a_0W_1+b_1)$, $p=\operatorname{softmax}(a_1W_2+b_2)$.</p></div></div>
-  <div class="callout callout-key" data-build="3">The next-token objective stays. The representation of context must change.</div>
-  <p class="next" data-build="4"><a class="btn btn-primary" href="attention.html">Next: Part 2, Self-attention</a></p>
+  <div class="stack"><div class="summary"><h3 class="card-title">Intuitive</h3><p>Use the last few characters to guess what character tends to come next.</p></div><div class="summary" data-build="1"><h3 class="card-title">Operational</h3><p>Look up embeddings, concatenate the window, run the MLP, apply softmax, then sample or score the observed target.</p></div><div class="summary" data-build="2"><h3 class="card-title">Mathematical</h3><p>$a_0=[\ve{e_1},\ldots,\ve{e_w}]$, $a_1=\tanh(a_0W_1+b_1)$, $p=\operatorname{softmax}(a_1W_2+b_2)$.</p></div></div>
 </div>
-<div class="frame" data-title="The Part 1 notation" data-autobuild="off">
+<div class="frame" data-title="Keep the objective; change the context mechanism" data-autobuild="off">
+  <div class="callout callout-key">The next-token objective stays. The representation of context must change.</div>
+  <p class="next" data-build="1"><a class="btn btn-primary" href="attention.html">Next: Part 2, Self-attention</a></p>
+</div>
+<div class="frame" data-title="Notation: from tokens to the MLP input" data-autobuild="off">
   <script type="text/x-notes">Which symbol names the learned row for one character?
   Use the notation card as a final reference, then point forward to the context question.</script>
-  <div id="s16-notation"></div>
+  <div class="card"><div id="s16-input-notation"></div></div>
 </div>
+<div class="frame" data-title="Notation: from the input to a probability" data-autobuild="off"><div class="card"><div id="s16-output-notation"></div></div></div>
+<div class="companion" data-kicker="Complete notation reference"><div id="s16-notation"></div></div>
 <div class="companion after"><p>Keep in mind: attention will replace the fixed concatenation, while embeddings, logits, softmax, loss, and generation remain.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s16');
+  AT.ui.table([['token ID','integer'],['learned lookup table','$|\\mathcal V|\\times d$'],['one embedding row','$1\\times d$'],['concatenated window','$1\\times wd$']],{cols:['meaning','shape'],rowLabels:['$t_i$','$\\ve{E_{\\text{tok}}}$','$\\ve{e_i}=\\ve{E_{\\text{tok}}}[t_i]$','$a_0$'],cornerLabel:'symbol',into:S.querySelector('#s16-input-notation')});
+  AT.ui.table([['hidden activations','$1\\times d_h$'],['vocabulary logits','$1\\times |\\mathcal V|$'],['next-token probabilities','$1\\times |\\mathcal V|$'],['cross-entropy','scalar']],{cols:['meaning','shape'],rowLabels:['$a_1$','$z$','$p$','$-\\log p(\\mathrm{target})$'],cornerLabel:'symbol',into:S.querySelector('#s16-output-notation')});
   AT.ui.notationCard({part:'part1',groups:['mlp','sizes','axes'],into:S.querySelector('#s16-notation')});
 })();
 </script>

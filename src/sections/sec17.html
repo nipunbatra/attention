@@ -14,6 +14,14 @@
 #s17 #s17-box{margin:0 0 10px}
 #s17 .rd{font-size:14px;color:var(--ink-2);margin:10px 0 0;max-width:68ch;line-height:1.5}
 #s17 .rd .katex{font-size:1.02em}
+body.present #s17 .prose,body.present #s17 .look,body.present #s17 .rd,body.present #s17 .dt-cap,body.present #s17 .dt-note{display:none}
+body.present #s17 .cmp{min-width:0;font-size:25px;table-layout:fixed}
+body.present #s17 .cmp th{font-size:21px}
+body.present #s17 .cmp th,body.present #s17 .cmp td{padding:12px 14px;line-height:1.3}
+body.present #s17 .cmp td:nth-child(2){white-space:normal}
+body.present #s17 .dt{width:100%;table-layout:fixed}
+body.present #s17 .dt th,body.present #s17 .dt td.dt-num{min-width:0;padding:8px 6px}
+body.present #s17 .dt thead th{font-size:21px;white-space:normal;overflow-wrap:anywhere}
 @media (max-width:640px){#s17 #s17-box .katex{font-size:1.05em}}
 </style>
 <header class="sec-head">
@@ -37,14 +45,16 @@ Only attention recomputes the displayed mixing weights from content. A fixed win
 <div class="prose">
   <p>All four schemes use input information for the last token $t = 10$ from $\ve{e_1},\ldots,\ve{e_t}$. One question separates them: who sets the weights, and do they read the words? Switch the sentence and watch which row reacts.</p>
 </div>
-
 <div class="card">
   <h3 class="card-title">Choose the context</h3>
   <div class="btn-row" id="s17-ctx"></div>
   <div id="s17-chips"></div>
   <p class="muted small ctx-note" id="s17-ctx-note"></p>
 </div>
+</div>
 
+<div class="frame" id="s17-weights" data-title="Hold the rule fixed, then switch the words">
+  <script type="text/x-notes">Before switching contexts, predict which rows will move. The first three rules are fixed before reading content. Only attention recomputes its displayed weights.</script>
 <div class="card">
   <h3 class="card-title">Four weighting schemes, one table</h3>
   <div id="s17-table"></div>
@@ -54,7 +64,7 @@ Only attention recomputes the displayed mixing weights from content. A fixed win
 
 </div>
 
-<div class="frame" id="s17-frame2" data-title="What exactly does attention improve?">
+<div class="frame" id="s17-frame2" data-title="Fixed rules can use content—but cannot route by content">
   <script type="text/x-notes">
 Is the advantage that other models cannot understand words?
 No. Attention supplies explicit content-dependent routing and shared projections over the available prefix. The input context remains finite; a fixed-window network can still learn from content within its window.
@@ -62,20 +72,38 @@ No. Attention supplies explicit content-dependent routing and shared projections
 <div class="card">
   <h3 class="card-title">What each scheme does with the context</h3>
   <div class="scroll-x">
-    <table class="cmp" id="s17-cmp">
+    <table class="cmp" id="s17-cmp-fixed">
       <thead><tr><th>Scheme</th><th>Context for the last token</th><th>Who sets the weights</th><th>What is retrieved</th></tr></thead>
       <tbody>
         <tr><td>Fixed window</td><td>$c_t = [\ve{e_{t-w+1}};\,\ldots;\,\ve{e_t}]$</td><td>Position determines inclusion; the network can still use the content of each included embedding</td><td>$\ve{e_j}$, concatenated</td></tr>
         <tr><td>Mean pooling</td><td>$c_t = \frac{1}{t}\sum_{j \le t} \ve{e_j}$</td><td>Nobody. Every token gets $1/t$</td><td>$\ve{e_j}$, averaged</td></tr>
-        <tr><td>Fixed positional weights</td><td>$c_t = \sum_{j \le t} w_j\, \ve{e_j}$</td><td>Distance. $w_j$ is fixed by position, so two words at the same distance weigh the same</td><td>$\ve{e_j}$, weighted</td></tr>
-        <tr class="is-att"><td>Attention</td><td>$m_t = \sum_{j \le t} \underbrace{\va{\alpha_{tj}}}_{\mathclap{\text{depends on current content}}} \vv{v_j}$</td><td class="yes">The content. $\va{\alpha_{tj}}$ comes from $\vq{q_t}\cdot \vk{k_j}$, so it changes with the words</td><td>$\vv{v_j}$, weighted, then $\vd{\Delta e_t} = m_t W_O$</td></tr>
       </tbody>
     </table>
   </div>
   <p class="look">Read the third column: three schemes fix inclusion or pooling weights; attention recomputes its mixing weights from the content.</p>
 </div>
 
-<div id="s17-callout"></div>
+</div>
+
+<div class="frame" id="s17-attention-comparison" data-title="Attention recomputes the route from the words">
+  <script type="text/x-notes">A fixed positional decay and attention both form weighted sums. The decisive difference is where the weights come from.</script>
+<div class="card">
+  <h3 class="card-title">Two weighted sums, two very different rules</h3>
+  <div class="scroll-x">
+  <table class="cmp" id="s17-cmp">
+    <thead><tr><th>Scheme</th><th>Context for the last token</th><th>Who sets the weights</th><th>What is retrieved</th></tr></thead>
+    <tbody>
+      <tr><td>Fixed positional weights</td><td>$c_t = \sum_{j \le t} w_j\, \ve{e_j}$</td><td>Distance. Same distance means the same weight</td><td>$\ve{e_j}$, weighted</td></tr>
+      <tr class="is-att"><td>Attention</td><td>$m_t = \sum_{j \le t} \va{\alpha_{tj}}\vv{v_j}$</td><td class="yes">Content. $\va{\alpha_{tj}}$ comes from $\vq{q_t}\cdot \vk{k_j}$</td><td>$\vv{v_j}$, then $\vd{\Delta e_t}=m_tW_O$</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+</div>
+
+<div class="frame" id="s17-conclusion" data-title="What exactly does attention improve?">
+  <script type="text/x-notes">Attention is content-dependent soft retrieval. It does not imply infinite context or that fixed-window networks cannot use word content.</script>
+  <div id="s17-callout"></div>
 
 </div>
 

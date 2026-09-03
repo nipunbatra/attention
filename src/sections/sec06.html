@@ -72,6 +72,26 @@ body.present #s06 #s06-dot .dt tr>:nth-child(n+2):nth-child(-n+5){display:none}
 body.present #s06 #s06-dot .dt tbody tr:first-child{display:none}
 body.present #s06 #s06-dot .dt{width:100%}
 @media(max-width:380px){#s06 .srows{grid-template-columns:minmax(0,1fr)}#s06 .srows .slider{grid-template-columns:minmax(0,1fr) minmax(60px,1fr) 3em}}
+#s06 .s06-classroom{display:none}
+body.present #s06 .s06-classroom{display:block}
+body.present #s06 .dt td.dt-num,body.present #s06 .dt thead th,body.present #s06 .dt tbody th,body.present #s06 .dt tfoot th{font-size:22px;padding:7px 10px}
+body.present #s06 .dt td.dt-num{min-width:76px}
+body.present #s06 .dt-fig{margin:0}
+body.present #s06 .modebox{padding:8px 14px;margin:0 0 14px;gap:14px}
+body.present #s06 #s06-score-scale{margin-left:auto;font-size:22px;color:var(--ink-2)}
+body.present #s06 .modebox .slider{font-size:28px}
+body.present #s06 .srows{grid-template-columns:minmax(0,1fr);gap:10px;margin:12px 0}
+body.present #s06 .srows .slider{grid-template-columns:230px minmax(70px,1fr) 58px;gap:12px;padding:0}
+body.present #s06 .srows .slider-label,body.present #s06 .srows .slider-val{font-size:22px}
+body.present #s06 .look,body.present #s06 .hint,body.present #s06 .verdict{display:block;font-size:22px;line-height:1.35;margin-top:14px}
+body.present #s06 .card-mix{display:block;border:0;padding:0;margin:0 0 24px}
+body.present #s06 .callout-key{font-size:28px;padding:16px 22px;margin:18px 0}
+body.present #s06 .s06-experiment{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:38px;align-items:start}
+body.present #s06 .s06-experiment .bars{gap:8px 16px;margin:18px 0}
+body.present #s06 .s06-experiment .bars .bt{height:26px}
+body.present #s06 #s06-mode-equation .katex-display{margin:10px 0 18px}
+body.present #s06 #s06-temp-bars .bars{gap:10px 16px;margin:22px 0}
+body.present #s06 #s06-temp-bars .bars .bt{height:28px}
 </style>
 <header class="sec-head">
   <span class="sec-num">06</span>
@@ -85,7 +105,7 @@ body.present #s06 #s06-dot .dt{width:100%}
   <p>Our hard-retrieval baseline picks the best-scoring item and returns its value. Attention instead blends values according to how well each key matched the query. This section makes that blend a spreadsheet: the scores from the previous section feed a softmax, the weights fill the $\va{\alpha_j}$ column, every value row is scaled by its weight, and the footer adds the rows up. Start in hard mode, where one row carries all the weight, then switch to soft and lower the temperature to watch the two modes meet. Drag a score up and watch every weight move. The sentence to remember: attention returns a weighted mixture of values, not one value.</p>
 </div>
 
-<div class="frame" data-title="Hard to soft" data-autobuild="off">
+<div class="frame" data-title="Hard retrieval returns one item's value" data-autobuild="off">
   <script type="text/x-notes">
 If Gradient Descent's score rises to 4.8 too, what should come back?
 Start in hard mode and point to the single winner in both tables. Reveal the soft switch and click it. Then reveal the weighted rows, the sum, and the score sliders. Set Gradient Descent to 4.8 so the class can see both top items contribute. End with the weighted mixture callout and the temperature control.
@@ -93,48 +113,93 @@ Start in hard mode and point to the single winner in both tables. Reveal the sof
 Timing: five minutes.
   </script>
 
-<div class="prose s06-intro">
+<div class="prose">
   <p>In our hard-retrieval baseline, choose the key with the largest score and return that item's value:</p>
   $$j^* = \arg\max_j\, \vq{q}\cdot \vk{k_j}, \qquad \text{return } \vv{v_{j^*}}$$
-  <p>Attention instead turns the scores into weights that sum to 1, and returns a blend of <em>all</em> the values, in proportion to those weights:</p>
-  $$\va{\alpha_j} = \operatorname{softmax}_j\!\left(\vq{q}\cdot \vk{k_j}\right), \qquad \boxed{\sum_j \va{\alpha_j}\, \vv{v_j}}$$
+  <div class="callout callout-key" data-build="1">If two items are useful, why return information from only one?</div>
+</div>
 </div>
 
-<div class="s06-stage">
+<div class="frame" id="s06-frame-scores" data-title="Keep the match scores; set the keys aside" data-autobuild="off">
+<script type="text/x-notes">What does the next operation need from the matching step?
+Just one score per item. The query and key coordinates were already used to calculate these scores; we can put that worksheet aside now.</script>
 <div class="card">
-  <h3 class="card-title">Reuse the match scores. In soft mode, changing one score changes every weight.</h3>
+  <h3 class="card-title">The scores from the gradient-information query</h3>
   <div id="s06-dot"></div>
-  <div class="srows" id="s06-sliders" data-build="4"></div>
-  <div class="btn-row" style="margin-top:8px" data-build="4"><button type="button" class="btn btn-quiet" id="s06-reset">Reset scores to the dot products</button></div>
-  <p class="look" data-build="4">Look at the score column: it is the only thing the next table reads. A score you drag no longer equals the dot product of its row, so think of it as a different key.</p>
+</div>
 </div>
 
+<div class="frame" id="s06-frame-normalize" data-title="Exponentiate, then divide by one shared total" data-autobuild="off">
+<script type="text/x-notes">Why does every weight respond when one score changes?
+Every numerator is divided by the same sum. Exponentiation makes the contributions positive; normalization makes their shares sum to one.</script>
+<div class="prose">
+  <p>First exponentiate each score: $s_j\mapsto e^{s_j}$.</p>
+  <p data-build="1">Then divide each result by the <strong>same total</strong>:</p>
+  <div id="s06-mode-equation" data-build="1">$$\va{\alpha_j}=\frac{e^{s_j}}{\sum_r e^{s_r}}$$</div>
+</div>
+<div class="callout callout-key" data-build="2">These weights are shares over <strong>input items</strong>, not probabilities of the next word.</div>
+</div>
+
+<div class="frame" id="s06-frame-weights" data-title="Turn scores into weights that sum to one" data-autobuild="off">
+<script type="text/x-notes">How do scores become mixing amounts?
+In soft mode, exponentiate each score and divide by the total. Switch to hard mode briefly: one item gets all the weight. The same values will be used next.</script>
 <div class="card">
-  <h3 class="card-title">Retrieve: weights from the scores, then each value row scaled by its weight, then the sum</h3>
-  <div class="modebox" data-build="1">
-    <div id="s06-mode"></div>
-    <div id="s06-temp" data-build="6"></div>
-    <p class="taunote" data-build="6">In soft mode the weights are $\va{\alpha_j} = \operatorname{softmax}_j(s_j/\tau)$. A small $\tau$ makes the mixture sharper. As $\tau \to 0$, soft retrieval becomes hard retrieval when one score is strictly the largest; tied top scores keep sharing the weight. $\tau = 1$ is the formula above.</p>
-    <p class="classroom-temperature" data-build="6">$\va{\alpha}=\operatorname{softmax}(s/\tau)$: lower $\tau$ makes weights sharper.</p>
-  </div>
-  <div class="result-cards" id="s06-cards" aria-label="The six video results from section 05"></div>
-  <div class="card-mix" id="s06-card-mix"></div>
+  <div class="modebox"><div id="s06-mode" data-keep-state></div><span id="s06-score-scale"></span></div>
+  <div id="s06-weight-table"></div>
+</div>
+</div>
+
+<div class="frame" id="s06-frame-weighted-values" data-title="Multiply each value by its own weight, then add" data-autobuild="off">
+<script type="text/x-notes">Which value does alpha_j multiply?
+The value from the same item j. First reveal the alpha column, then the weighted coordinates, then the sum. This changes the returned information, not the stored video records.</script>
+<div class="card">
   <div id="s06-mix"></div>
-  <p class="verdict" id="s06-verdict" data-build="3"></p>
-  <p class="look" id="s06-mread" data-build="3"></p>
+</div>
+</div>
+
+<div class="frame" id="s06-frame-message" data-title="The result is information for this query" data-autobuild="off">
+<script type="text/x-notes">What do the coordinates of the returned row mean?
+They use the value axes: gradients, optimisation and architecture. This is not a distribution over items. It is the weighted information collected for the current query.</script>
+<div class="card">
+  <div class="card-mix" id="s06-card-mix"></div>
+  <p class="look" id="s06-mread"></p>
+  <p class="verdict" id="s06-verdict"></p>
+</div>
+<div class="callout callout-key" data-build="1">Attention returns a <strong>weighted mixture of information</strong> for the current query—not another set of match scores.</div>
+</div>
+
+<div class="companion" data-kicker="Inspect every contribution">
+  <div class="result-cards" id="s06-cards" aria-label="The six video results from section 05"></div>
   <div id="s06-arith"></div>
-  <p class="hint" id="s06-hint" data-build="4"></p>
-</div>
 </div>
 
-<div class="callout callout-key" data-build="5">
-  <p>Attention does not necessarily retrieve one thing. It retrieves a <strong>weighted mixture of information</strong>.</p>
+<div class="frame" id="s06-frame-change-score" data-title="Change one score. Every soft weight responds." data-autobuild="off">
+<script type="text/x-notes">Raise Gradient descent to match Backpropagation. What should the two weights do?
+Softmax shares weight between tied top scores. Raising one score changes the common denominator, so every other weight moves too.</script>
+<div class="card s06-experiment">
+  <div>
+    <div class="srows" id="s06-sliders" data-keep-state></div>
+    <div class="btn-row"><button type="button" class="btn btn-quiet" id="s06-reset">Reset scores</button></div>
+  </div>
+  <div class="s06-classroom" id="s06-adjust-bars"></div>
+</div>
+<p class="companion hint" id="s06-hint"></p>
+<p class="companion">A score changed by a slider no longer equals the original dot product. Treat it as a controlled intervention on the matching result, as if the key had changed.</p>
 </div>
 
-<div class="prose s06-close" data-build="5">
+<div class="frame" id="s06-frame-temperature" data-title="Temperature controls concentration" data-autobuild="off">
+<script type="text/x-notes">As temperature falls, what happens to a unique best match?
+Its weight approaches one. If top scores tie, those top items keep sharing the weight: the limit need not select one item.</script>
+<div class="card">
+  <div id="s06-temp" data-keep-state></div>
+  <div class="s06-classroom" id="s06-temp-bars"></div>
+  <p class="taunote companion">In soft mode the weights are $\va{\alpha_j} = \operatorname{softmax}_j(s_j/\tau)$. A small $\tau$ makes the mixture sharper. As $\tau \to 0$, soft retrieval becomes hard retrieval when one score is strictly the largest; tied top scores keep sharing the weight. $\tau = 1$ is the formula above.</p>
+</div>
+<div class="callout callout-key" data-build="1">$\va{\alpha}=\operatorname{softmax}(s/\tau)$: smaller $\tau$ → sharper weights.</div>
+</div>
+
+<div class="companion">
   <p>Each piece now has a job. A <span class="sym sym-q">Query</span> says what the searcher needs, <span class="sym sym-k">Keys</span> decide who matches, <span class="sym sym-v">Values</span> carry what comes back, and softmax turns scores into a mixture. Back to language.</p>
-</div>
-
 </div>
 
 <div class="companion after">
@@ -207,7 +272,7 @@ Timing: five minutes.
       AT.h('p', { class: 'result-summary' }, V.summary));
     resultCards.push(card); resultBadges.push(badge); S.querySelector('#s06-cards').appendChild(card);
   });
-  const resultMix = AT.ui.vec(AT.zeros(VAL_AXES.length), { cls: 'm', axes: VAL_AXES, label: '\\sum_j \\va{\\alpha_j}\\,\\vv{v_j}', into: S.querySelector('#s06-card-mix') });
+  const resultMix = AT.ui.vec(AT.zeros(VAL_AXES.length), { cls: 'm', axes: VAL_AXES, label: '\\sum_j \\va{\\alpha_j}\\,\\vv{v_j}', decimals: 3, into: S.querySelector('#s06-card-mix') });
 
   /* score table: query row, key rows, and a score column fed by the sliders */
   const dot = AT.ui.table([Q].concat(VIDEOS.map(V => V.k)), { cols: KEY_AXES, rowLabels: ['the question'].concat(titles), rowCls: ['q'].concat(titles.map(() => 'k')), highlightRow: 0,
@@ -241,9 +306,21 @@ Timing: five minutes.
   /* mixture table: α column, weighted value rows, footer sum */
   /* one α array, mutated in place: the table's α column reads this same array when it refreshes */
   const alphaArr = VIDEOS.map(() => 0);
-  const mix = AT.ui.mixTable(alphaArr, VIDEOS.map(V => V.v), { cols: VAL_AXES, rowLabels: titles, cornerLabel: 'video', weighted: true, decimals: 2, footerCls: 'v', into: S.querySelector('#s06-mix'),
+  const expDisplay = x => Math.abs(x) >= 100000 || (x > 0 && x < 0.0005) ? x.toExponential(2) : AT.fmt(x, 3);
+  const weightTable = AT.ui.table(VIDEOS.map(() => [0, 0, 0]), {
+    cols: [{ label: '$s_j$', decimals: 3 }, { label: '$e^{s_j}$' }, { label: '$\\va{\\alpha_j}$', cls: 'a', decimals: 3 }],
+    rowLabels: titles, cornerLabel: 'item', decimals: 3,
+    footer: { label: 'total', values: ['', '', '1.000'], cls: 'a' },
+    caption: 'Softmax divides each exponential by their common total. Numbers are displayed rounded; the mixture uses unrounded weights.',
+    into: S.querySelector('#s06-weight-table')
+  });
+  const expHeader = weightTable.table.querySelector('thead tr').children[2];
+  const barItems = () => titles.map((label, j) => ({ label, p: alphaArr[j] }));
+  const adjustBars = AT.ui.bars(barItems(), { cls: 'a', max: 1, sorted: false, decimals: 3, into: S.querySelector('#s06-adjust-bars') });
+  const tempBars = AT.ui.bars(barItems(), { cls: 'a', max: 1, sorted: false, decimals: 3, into: S.querySelector('#s06-temp-bars') });
+  const mix = AT.ui.mixTable(alphaArr, VIDEOS.map(V => V.v), { cols: VAL_AXES, rowLabels: titles, cornerLabel: 'video', weighted: true, decimals: 3, footerCls: 'v', into: S.querySelector('#s06-mix'),
     caption: 'Each row is $\\va{\\alpha_j}\\,\\vv{v_j}$, the value row scaled by its weight; the footer adds the rows. Rows with weight 0 are greyed out, so in hard mode only the winner is left.',
-    note: 'Hover or focus a footer cell to see the weighted terms. Weights are shown rounded to two decimals; the sum uses the unrounded ones.' });
+    note: 'Hover or focus a footer cell to see the weighted terms. Weights are shown rounded to three decimals; the sum uses the unrounded ones.' });
   const alphaHead = mix.table.querySelector('thead th.dt-lead');
   if (alphaHead) alphaHead.setAttribute('data-build', '1');
   mix.leadCells.forEach(r => r.forEach(td => td.setAttribute('data-build', '1')));
@@ -267,12 +344,19 @@ Timing: five minutes.
     temp.input.disabled = !soft;
     dot.update([Q].concat(VIDEOS.map(V => V.k)));
     alpha.forEach((a, j) => { alphaArr[j] = a; });
+    const exps = s.map(x => Math.exp(x / tau));
+    AT.tex(expHeader, Math.abs(tau - 1) < 1e-9 ? 'e^{s_j}' : 'e^{s_j/\\tau}');
+    S.querySelector('#s06-score-scale').textContent = Math.abs(tau - 1) < 1e-9 ? 'Original scores' : 'τ = ' + AT.fmt(tau, 1);
+    weightTable.update(s.map((score, j) => [score, expDisplay(exps[j]), alpha[j]]));
+    weightTable.setFooter(['', expDisplay(AT.sum(exps)), AT.fmt(AT.sum(alpha), 3)]);
+    weightTable.setHighlightRow(soft ? -1 : jstar);
+    adjustBars.update(barItems()); tempBars.update(barItems());
     mix.setAlpha(alphaArr);
     resultCards.forEach((card, j) => {
       card.classList.toggle('is-winner', j === jstar);
       card.style.opacity = soft ? String(0.22 + 0.78 * alpha[j]) : (j === jstar ? '1' : '0.22');
-      resultBadges[j].textContent = 'α ' + AT.fmt(alpha[j], 2);
-      resultBadges[j].setAttribute('aria-label', 'attention weight ' + AT.fmt(alpha[j], 2));
+      resultBadges[j].textContent = 'α ' + AT.fmt(alpha[j], 3);
+      resultBadges[j].setAttribute('aria-label', 'attention weight ' + AT.fmt(alpha[j], 3));
     });
     resultMix.update(mix.sum);
     mix.setHighlightRow(soft ? -1 : jstar);
@@ -281,7 +365,7 @@ Timing: five minutes.
       const weighted = td.textContent;
       AT.clear(td);
       td.classList.add('s06-mix-value');
-      td.appendChild(AT.h('span', { class: 's06-raw' }, AT.fmt(VIDEOS[j].v[c], 2)));
+      td.appendChild(AT.h('span', { class: 's06-raw' }, AT.fmt(VIDEOS[j].v[c], 3)));
       td.appendChild(AT.h('span', { class: 's06-weight', 'data-build': '2' }, weighted));
     }));
     mixCalc.update(alphaArr);
@@ -296,6 +380,14 @@ Timing: five minutes.
     syncBuilds();
   }
   draw();
+
+  // Continuation frames share the same records, scores and value mixture.
+  // Set the intended baseline when a new experiment starts, not on every build.
+  if (AT.present && AT.present.on) AT.present.on('frame', st => {
+    if (!st.frame || st.frame.id !== 's06') return;
+    if (st.frame.index === 0 && soft) mode.set(false, true);
+    if ((st.frame.index === 2 || st.frame.index >= 6) && !soft) mode.set(true, true);
+  });
 
   /* "Try it" hint: the numbers are computed from the same scores, so the text always matches what the widget shows */
   (function(){

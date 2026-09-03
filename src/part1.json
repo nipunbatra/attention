@@ -6,7 +6,7 @@
   "audience": "For deep-learning students who know MLPs, softmax and cross-entropy.",
   "minutes": 60,
   "centralLabel": "The character model",
-  "central": "t_{i-2:i} \\rightarrow \\ve{E}[t] \\rightarrow a_0 \\rightarrow a_1 \\rightarrow z \\rightarrow p(t_{i+1})",
+  "central": "t_{i-2:i} \\rightarrow \\ve{E_{\\text{tok}}}[t] \\rightarrow a_0 \\rightarrow a_1 \\rightarrow z \\rightarrow p(t_{i+1})",
   "chain": [
     {"label": "Language tasks", "section": "s01"},
     {"label": "Generate a name", "section": "s02"},

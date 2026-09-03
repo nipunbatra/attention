@@ -11,7 +11,10 @@
   <script type="text/x-notes">Which learned objects receive gradients from the loss?
   Read each shape and parameter count. The embedding table and both MLP layers are trained together.</script>
   <div class="card"><h3 class="card-title">All learned parameters</h3><div id="s09-params"></div></div>
-  <div class="callout callout-note" data-build="1">For aab → i, the context looks up a and b. The target i selects the loss; it does not add an i embedding to this input.</div>
+</div>
+<div class="frame" data-title="The target is not part of the input" data-autobuild="off">
+  <div class="prose"><p>For <strong>aab → i</strong>:</p><p data-build="1">The input looks up embedding rows <strong>a</strong> and <strong>b</strong>.</p><p data-build="2">The observed target <strong>i</strong> selects the cross-entropy loss.</p></div>
+  <div class="callout callout-note" data-build="3">The i embedding is not looked up for this input.</div>
 </div>
 <div class="frame" data-title="Loss during training" data-autobuild="off">
   <script type="text/x-notes">What tells us that training improved the model?
@@ -28,7 +31,7 @@
 <script>
 (function(){
   const S=document.getElementById('s09'),M=window.__TOY__,V=M.vocab.length,D=M.d_model,H=M.d_h;
-  const specs=[['$\\ve{E}$',V+' × '+D,V*D],['$W_1$',(M.w*D)+' × '+H,M.w*D*H],['$b_1$','1 × '+H,H],['$W_2$',H+' × '+V,H*V],['$b_2$','1 × '+V,V]];
+  const specs=[['$\\ve{E_{\\text{tok}}}$',V+' × '+D,V*D],['$W_1$',(M.w*D)+' × '+H,M.w*D*H],['$b_1$','1 × '+H,H],['$W_2$',H+' × '+V,H*V],['$b_2$','1 × '+V,V]];
   AT.ui.table(specs.map(r=>[r[1],r[2]]),{cols:['shape','parameter count'],rowLabels:specs.map(r=>r[0]),cornerLabel:'parameter',decimals:0,footer:{label:'total',values:['',specs.reduce((a,r)=>a+r[2],0)]},into:S.querySelector('#s09-params')});
   const curve=M.training_curve,host=S.querySelector('#s09-curve'),W=800,Ht=260,pad={l:58,r:20,t:18,b:42},xs=curve.map(d=>d.step),ys=curve.map(d=>d.loss),xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys),x=v=>pad.l+(v-xmin)/(xmax-xmin)*(W-pad.l-pad.r),y=v=>pad.t+(ymax-v)/(ymax-ymin)*(Ht-pad.t-pad.b),svg=AT.svg('svg',{viewBox:'0 0 '+W+' '+Ht,class:'curve',role:'img','aria-label':'Training loss curve'});
   svg.appendChild(AT.svg('line',{x1:pad.l,y1:pad.t,x2:pad.l,y2:Ht-pad.b,class:'axis'}));svg.appendChild(AT.svg('line',{x1:pad.l,y1:Ht-pad.b,x2:W-pad.r,y2:Ht-pad.b,class:'axis'}));

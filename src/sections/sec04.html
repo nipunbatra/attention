@@ -11,26 +11,22 @@
 #s04 .reveal{margin:10px 0 0}
 #s04 .reveal-body{padding-left:18px}
 #s04 .calc-rl.calc-outlab{color:var(--ink-2)}
-/* present mode: controls on the left, the held table on the right, so a frame fits 1280x720 */
-body.present #s04 .s04-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:0 1.2em;align-items:start}
-body.present #s04 .s04-two>*{grid-column:1;min-width:0}
-body.present #s04 .s04-two>.card-title{grid-column:1/-1}
-body.present #s04 .s04-two>.s04-tab{grid-column:2;grid-row:2/span 6}
-body.present #s04 .s04-two .dt-fig{margin:0}
-body.present #s04 .dt td,body.present #s04 .dt th{padding:.22em .6em}
-body.present #s04 .dt-note{display:none}
-body.present #s04 .prose .katex-display{margin:.25em 0}
-body.present #s04 .prose .katex-display>.katex{font-size:1.1em}
-body.present #s04 .chips .chip,body.present #s04 .wrow .chip{font-size:.78em}
-body.present #s04 .reveal{font-size:.85em;margin:.4em 0 0}
-body.present #s04 .wrows{grid-template-columns:repeat(auto-fit,minmax(12em,1fr));gap:0 1em;margin:.3em 0 0}
-body.present #s04 .wrow{padding:0;grid-template-columns:auto minmax(3em,1fr) 2.2em;gap:.4em}
-body.present #s04 .wrow input[type=range]{height:1.2em}
+#s04 .s04-classroom{display:none}
+body.present #s04 .s04-classroom{display:block}
+body.present #s04 .dt td,body.present #s04 .dt th{font-size:22px;padding:7px 10px}
+body.present #s04 .dt-cap,body.present #s04 .dt-note{display:none}
+body.present #s04 .dt-fig{margin:0}
+body.present #s04 .look{font-size:22px;line-height:1.35}
+body.present #s04 .wrows{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 30px;margin:14px 0}
+body.present #s04 .wrow{padding:0;grid-template-columns:170px minmax(100px,1fr) 60px;gap:12px}
+body.present #s04 .wrow input[type=range]{height:30px}
+body.present #s04 .wrow output{font-size:22px}
+body.present #s04 #s04-live-pool{margin-top:14px}
 </style>
 <header class="sec-head">
   <span class="sec-num">04</span>
   <div>
-    <p class="eyebrow">Why we are here: a fixed window mixes its slots the same way whatever words fill them, and it cuts off early tokens. So <em>pool</em> all earlier tokens instead.</p>
+    <p class="eyebrow">Why we are here: a fixed window imposes a hard boundary on which earlier tokens are available. Could we instead <em>pool</em> information from the whole prefix?</p>
     <h2>Weighted pooling: where should weights come from?</h2>
   </div>
 </header>
@@ -47,23 +43,30 @@ Point at the weight column first: every included row gets the same 1/i, so river
 Timing: three minutes.
   </script>
   <div class="prose">
-    <p>Drop the window. Token $i$ can read <em>every</em> earlier representation $\ve{e_j}$, $j \le i$. The simplest way to combine them is an average:</p>
+    <p>Drop the window: combine every available input row into one fixed-width row.</p>
     $$c_i = \frac{1}{i}\sum_{j \le i} \ve{e_j}$$
-    <p>Why not simply average all previous token representations? Try it on the short sequence.</p>
   </div>
 
-  <div class="card s04-two">
-    <h3 class="card-title">Mean pooling: every earlier token gets the same weight $1/i$</h3>
+  <div class="card">
+    <h3 class="card-title">Choose how much of the prefix is available.</h3>
     <div id="s04-chips"></div>
-    <div id="s04-islider"></div>
-    <div class="eqline no-math" id="s04-mean-eq" data-build="1"></div>
-    <div id="s04-mean-tab" class="s04-tab"></div>
-    <p class="look" id="s04-e-read" data-build="1"></p>
-    <div id="s04-mean-arith" data-build="1"></div>
+    <div id="s04-islider" data-keep-state></div>
+    <div class="companion eqline no-math" id="s04-mean-eq"></div>
   </div>
 </div>
 
-<div class="frame" data-title="Choose the weights yourself" data-autobuild="off">
+<div class="frame" id="s04-frame-mean-table" data-title="The mean gives every available row equal weight" data-autobuild="off">
+  <script type="text/x-notes">Which column says how much of each input row we take?
+All available rows have the same 1/i weight. Reveal the footer and read it as the same number of coordinates as a single embedding.</script>
+  <div class="card">
+    <div id="s04-mean-tab" class="s04-tab"></div>
+    <p class="companion look" id="s04-e-read"></p>
+  </div>
+</div>
+
+<div class="companion" data-kicker="Mean-pooling worksheet"><div id="s04-mean-arith"></div></div>
+
+<div class="frame" data-title="Let useful rows contribute more" data-autobuild="off">
   <script type="text/x-notes">
 If you could set the weights by hand for bank, what would you choose and why?
 The table starts with equal weights, so it is the mean again. Reveal the sliders and press "Focus on river": the footer drifts towards row 6. Try "Only bank itself" too: the footer is just row 7.
@@ -71,26 +74,39 @@ The table starts with equal weights, so it is the mean again. Reveal the sliders
 Timing: three minutes.
   </script>
   <div class="prose">
-    <p>Averaging treats every token equally. For <em>bank</em>, the word <em>river</em> matters far more than <em>the</em>. So let each token choose its weights:</p>
+    <p>For <em>bank</em>, <em>river</em> may carry more useful information than <em>the</em>.</p>
     $$c_i = \sum_{j \le i} \va{\alpha_{ij}}\, \ve{e_j}, \qquad \sum_{j} \va{\alpha_{ij}} = 1$$
-    <p>This is <strong>weighted pooling</strong>. The weight $\va{\alpha_{ij}}$ says how much token $i$ takes from token $j$. Set the weights yourself.</p>
+    <p data-build="1">The weight $\va{\alpha_{ij}}$ says how much position $i$ takes from source $j$.</p>
   </div>
+</div>
 
-  <div class="card s04-two">
-    <h3 class="card-title">Weighted pooling for token 7 (<em>bank</em>): choose a raw weight per token; they are normalised to sum to 1</h3>
-    <div class="btn-row" id="s04-presets" data-build="1">
+<div class="frame" id="s04-frame-choose" data-title="Choose the weights for bank by hand" data-autobuild="off">
+  <script type="text/x-notes">If you favour river, how will the pooled row change?
+The presets and sliders use one shared alpha array. The resulting row is visible here, and the next frame unfolds the same calculation into a table.</script>
+  <div class="card">
+    <h3 class="card-title">The raw weights are normalized to sum to 1.</h3>
+    <div class="btn-row" id="s04-presets" data-keep-state>
       <button type="button" class="btn" data-preset="equal">Equal weights</button>
       <button type="button" class="btn" data-preset="river">Focus on river</button>
       <button type="button" class="btn" data-preset="fisherman">Focus on fisherman</button>
       <button type="button" class="btn btn-quiet" data-preset="self">Only bank itself</button>
     </div>
-    <div class="wrows" id="s04-wrows" data-build="1"></div>
-    <p class="look" id="s04-w-note" data-build="2"></p>
-    <div id="s04-w-tab" class="s04-tab"></div>
-    <div id="s04-w-arith" data-build="2"></div>
+    <div class="wrows" id="s04-wrows" data-keep-state></div>
+    <div class="s04-classroom" id="s04-live-pool"></div>
+    <p class="s04-classroom look" id="s04-weight-summary"></p>
+    <p class="companion look" id="s04-w-note"></p>
   </div>
-
 </div>
+
+<div class="frame" id="s04-frame-weighted-table" data-title="The chosen weights multiply the corresponding rows" data-autobuild="off">
+  <script type="text/x-notes">Which embedding row should a large alpha multiply?
+The row from the same source index j. The footer is the sum of those weighted rows; it still has d_model coordinates.</script>
+  <div class="card">
+    <div id="s04-w-tab" class="s04-tab"></div>
+  </div>
+</div>
+
+<div class="companion" data-kicker="Weighted-pooling worksheet"><div id="s04-w-arith"></div></div>
 
 <div class="frame" data-title="Where should the weights come from?" data-autobuild="off">
   <script type="text/x-notes">
@@ -206,11 +222,13 @@ Timing: two minutes.
     footer: { label: '$c_7$', values: AT.zeros(D), cls: 'neutral', lead: [1] },
     caption: 'Look at the $\\va{\\alpha_{7j}}$ column: the darker the cell, the more of that row ends up in the footer $c_7 = \\sum_j \\va{\\alpha_{7j}}\\,\\ve{e_j}$. The row with the largest weight is outlined.',
     note: 'Hover or focus a footer cell to see the terms of its sum.', into: S.querySelector('#s04-w-tab') });
-  markFooter(wTab, 2);
+  markFooter(wTab, 1);
   wTab.footer.cells.forEach((td, c) => wTab.tipOn(td, () => termLine(alpha, c)));
   const wCalc = AT.ui.matVecCalc(alpha, E, { from: labels, to: 'e', cls: 'e', fromCls: 'a', xLabel: 'α', outLabel: 'c' + sub(T), wDecimals: 2 });
   AT.ui.reveal('Show the arithmetic: one line per coordinate of $c_7$', wCalc, { hint: 'Worksheet', into: S.querySelector('#s04-w-arith') });
   const noteEl = S.querySelector('#s04-w-note');
+  const livePool = AT.ui.vec(pooled(alpha), { cls: 'e', axes: 'e', label: 'c_7', into: S.querySelector('#s04-live-pool') });
+  const shortNote = S.querySelector('#s04-weight-summary');
   function drawW(){
     const tot = AT.sum(W);
     W.forEach((w, j) => { alpha[j] = tot > 0 ? w / tot : 1 / T; });
@@ -222,6 +240,8 @@ Timing: two minutes.
     wTab.setHighlightRow(spread < 1e-9 ? -1 : top);
     wCalc.update(alpha);
     const c = pooled(alpha), rc = readE(c);
+    livePool.update(c);
+    shortNote.textContent = spread < 1e-9 ? 'Equal weights give the mean again.' : 'Most weight: ' + toks[top] + '. The pooled row moves toward that source.';
     noteEl.textContent = (spread < 1e-9
       ? 'All weights equal: this is exactly mean pooling again.'
       : 'Largest weight on token ' + (top + 1) + ' (' + toks[top] + '): the footer moves towards that row.')

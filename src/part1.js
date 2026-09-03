@@ -51,6 +51,13 @@
 
   function forward(ids) { return forwardWith(model, ids); }
 
+  // The displayed generation bars and the sampler share this exact distribution.
+  function distribution(ids, temperature) {
+    var result = forward(ids);
+    var value = Math.max(0.05, Number(temperature) || 1);
+    return { z: result.z, p: AT.softmax(result.z.map(function (logit) { return logit / value; })) };
+  }
+
   function targetId(target) {
     if (typeof target === 'string') return stoi[target] == null ? 0 : stoi[target];
     target = Number(target);
@@ -93,9 +100,8 @@
     var chars = [];
     var trace = [];
     for (var step = 0; step < maxLength; step++) {
-      var result = forward(context);
-      var scaled = result.z.map(function (value) { return value / temperature; });
-      var probabilities = AT.softmax(scaled);
+      var result = distribution(context, temperature);
+      var probabilities = result.p;
       var next = greedy ? AT.argmax(probabilities) : choose(probabilities, random);
       var before = context.slice();
       var after = context.slice(1).concat([next]);
@@ -195,6 +201,7 @@
     concat: concat,
     forward: forward,
     forwardWith: forwardWith,
+    distribution: distribution,
     loss: loss,
     generate: generate,
     tokenizeChars: tokenizeChars,

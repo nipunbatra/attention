@@ -19,7 +19,7 @@
 <div class="frame" data-title="The chain rule" data-autobuild="off">
   <script type="text/x-notes">How does a sequence probability break into next-token probabilities?
   Advance through the prefix one word at a time. Each factor conditions on everything shown before it.</script>
-  <div class="card"><h3 class="card-title">deep learning is fun</h3><div id="s13-chain"></div></div>
+  <div id="s13-chain"></div>
 </div>
 <div class="companion after"><p>Keep in mind: changing token size leaves the next-token objective and the conditional-probability chain intact.</p></div>
 <script>
@@ -29,8 +29,8 @@
   const steps=[
     {title:'First word',tex:'p(\\text{deep})',note:'The opening boundary supplies the starting context.'},
     {title:'Second word',tex:'p(\\text{deep})\\,p(\\text{learning}\\mid\\text{deep})'},
-    {title:'Third word',tex:'p(\\text{deep})\\,p(\\text{learning}\\mid\\text{deep})\\,p(\\text{is}\\mid\\text{deep learning})'},
-    {title:'Fourth word',tex:'p(\\text{deep})\\,p(\\text{learning}\\mid\\text{deep})\\,p(\\text{is}\\mid\\text{deep learning})\\,p(\\text{fun}\\mid\\text{deep learning is})'}
+    {title:'Third word',tex:'\\begin{aligned}&p(\\text{deep})\\,p(\\text{learning}\\mid\\text{deep})\\\\&\\quad\\times p(\\text{is}\\mid\\text{deep learning})\\end{aligned}'},
+    {title:'Fourth word',tex:'\\begin{aligned}&p(\\text{deep})\\,p(\\text{learning}\\mid\\text{deep})\\\\&\\quad\\times p(\\text{is}\\mid\\text{deep learning})\\\\&\\quad\\times p(\\text{fun}\\mid\\text{deep learning is})\\end{aligned}'}
   ];
   AT.ui.stepper({big:true,steps:steps,into:S.querySelector('#s13-chain')});
 })();

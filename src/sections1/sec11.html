@@ -9,7 +9,6 @@
   <script type="text/x-notes">Where does the next token come from during training and during generation?
   Compare the first rows, then trace the shared model in both columns.</script>
   <div class="side-by-side"><div class="card"><h3 class="card-title">Training</h3><ol class="flow-list"><li>Known context and target</li><li data-build="1">Forward pass</li><li data-build="2">Cross-entropy loss</li><li data-build="3">Update the parameters</li><li data-build="4">Many fixed windows in a batch</li></ol></div><div class="card"><h3 class="card-title">Generation</h3><ol class="flow-list"><li>Current context, target unknown</li><li data-build="1">Same forward pass</li><li data-build="2">Choose from the probabilities</li><li data-build="3">Append the choice</li><li data-build="4">Loop with the new window</li></ol></div></div>
-  <div class="callout callout-key" data-build="5">Training uses the observed next token. Generation chooses one.</div>
 </div>
 <div class="frame" data-title="Many windows or one growing output" data-autobuild="off">
   <script type="text/x-notes">Why can training prepare many rows before the model runs?
@@ -20,7 +19,7 @@
 <script>
 (function(){
   const S=document.getElementById('s11');
-  AT.ui.table([['given by data','known','yes','many windows'],['chosen by model','unknown','no','one step at a time']],{cols:['next token','target at forward pass','parameter update','typical execution'],rowLabels:['training','generation'],cornerLabel:'mode',caption:'Both rows use the same embedding lookup, concatenation, MLP, and softmax.',into:S.querySelector('#s11-table')});
+  AT.ui.table([['given by data','chosen by model'],['known','unknown'],['yes','no'],['many windows','one step at a time']],{cols:['training','generation'],rowLabels:['next token','target','parameter update','execution'],cornerLabel:'difference',caption:'Both use embedding lookup, concatenation, MLP, and softmax.',into:S.querySelector('#s11-table')});
 })();
 </script>
 </section>

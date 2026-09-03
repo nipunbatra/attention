@@ -35,6 +35,22 @@ body.present #s09-frame3 .card{padding:.6em .8em}
 body.present #s09-frame3 .dt-note{font-size:.72em;line-height:1.35}
 body.present #s09-frame3 .ws-lab{margin:8px 0 2px}
 body.present #s09-frame3 .calc-rounding{display:none}
+body.present #s09 .rd,body.present #s09 .ws-lab,body.present #s09 .tab-lab{font-size:22px;line-height:1.35}
+body.present #s09 .dt-cap,body.present #s09 .dt-note{display:none}
+body.present #s09 .dt td,body.present #s09 .dt th{font-size:22px;padding:.2em .4em}
+body.present #s09-frame2 .anim{display:none}
+body.present #s09-frame2 .stepper-stage{display:none}
+#s09 .s09-present-path{display:none}
+body.present #s09 .s09-present-path{display:grid;gap:14px;margin:18px auto 8px}
+#s09 .s09-path-phase{display:grid;gap:6px}
+#s09 .s09-phase-label{font-size:21px;line-height:1.2;font-weight:700;color:var(--ink-2);letter-spacing:.02em}
+#s09 .s09-path-row{display:grid;grid-template-columns:minmax(0,1fr) 38px minmax(0,1fr) 38px minmax(0,1fr) 38px minmax(0,1fr);align-items:stretch}
+#s09 .s09-pnode{display:flex;flex-direction:column;gap:3px;min-width:0;min-height:78px;align-items:center;justify-content:center;text-align:center;border:2px solid var(--oc,var(--line));background:var(--ot,var(--card));border-radius:12px;padding:8px;font-size:23px;font-weight:650;line-height:1.18;transition:opacity var(--dur),transform var(--dur),box-shadow var(--dur)}
+#s09 .s09-parrow{display:flex;align-items:center;justify-content:center;color:var(--ink-3);font-size:30px}
+#s09 .s09-pnode.is-future{opacity:.2}
+#s09 .s09-pnode.is-current{transform:translateY(-5px);box-shadow:0 8px 20px color-mix(in srgb,var(--oc,var(--ink)) 20%,transparent);border-width:4px}
+body.present #s09 .calc-rounding{display:none}
+body.present #s09-frame-chain .is-dim{opacity:1!important}
 </style>
 <header class="sec-head">
   <span class="sec-num">09</span>
@@ -46,10 +62,10 @@ body.present #s09-frame3 .calc-rounding{display:none}
 
 <div class="companion" data-kicker="For self-study">
   <p>This is the step the whole page builds towards. The message $m_7$ is a mixture of values, so it lives in value space with $d_v$ coordinates. $W_O$ maps it into the $d_{\text{model}}$ coordinates of a representation, and that vector, $\vd{\Delta e_7}$, is added to $\ve{e_7}$. The residual branch keeps the original row as an input to the addition; the resulting row combines it with context.</p>
-  <p>Press Play, or step through, and watch the highlight move down the diagram while the matching row of the table lights up. Hover a cell of the last row to see the addition. Read the axis names: the message speaks in value coordinates, $W_O$ turns them into representation coordinates. The sentence to remember: attention computes the update; the residual connection adds it to the representation we started from.</p>
+  <p>Press Play, or step through, and watch the highlight move down the diagram. The following block writes out its numerical result; hover a cell of the final row to see the addition. Read the axis names: the message speaks in value coordinates, $W_O$ turns them into representation coordinates. The sentence to remember: attention computes the update; the residual connection adds it to the representation we started from.</p>
 </div>
 
-<div class="frame" id="s09-frame1" data-title="Can we add a value-space message directly to an embedding?">
+<div class="frame" id="s09-frame1" data-title="The message needs one final projection">
   <script type="text/x-notes">
 What shape must the update have before we can add it to e?
 The message has d_v value coordinates. W_O maps it to d_model representation coordinates; the residual connection performs the addition. Attention and residual addition have different jobs.
@@ -59,12 +75,18 @@ The message has d_v value coordinates. W_O maps it to d_model representation coo
   $$m_i = \sum_{j \le i} \va{\alpha_{ij}}\, \vv{v_j} \qquad \boxed{\vd{\Delta e_i} = m_i\,W_O} \qquad \boxed{\vp{e_i^{\text{new}}} = \ve{e_i} + \vd{\Delta e_i}}$$
 </div>
 
-<div class="card">
-  <h3 class="card-title">Where we are in the pipeline</h3>
-  <div id="s09-motif"></div>
-  <p class="muted small">Look at: the dashed edge carries $\ve{e}$ around attention unchanged; the update joins it at the plus.</p>
 </div>
 
+<div class="frame" id="s09-frame-motif" data-title="Where does the contextual update rejoin bank?">
+  <script type="text/x-notes">
+Which path preserves the original bank representation?
+The dashed residual path. Attention computes Delta e on the other branch; the plus combines the two same-width vectors.
+  </script>
+  <div class="card">
+    <h3 class="card-title">The attention branch computes an update; the residual branch preserves $\ve{e_7}$</h3>
+    <div id="s09-motif"></div>
+  </div>
+  <div class="callout callout-key">Two inputs meet at $+$: the old row $\ve{e_7}$ and the context-dependent update $\vd{\Delta e_7}$.</div>
 </div>
 
 <div class="frame" id="s09-frame2" data-title="How does bank receive its context?">
@@ -73,18 +95,46 @@ Which branch carries the original bank row, and which computes the message?
 Use Next step to follow the existing sequence. Point out the unchanged residual branch at the plus. All keys and values came from the layer inputs; no updated token is fed back into this same layer.
   </script>
 <div class="card">
-  <h3 class="card-title">Watch $\ve{e_{\text{bank}}}$ become $\vp{e_{\text{bank}}'}$, token 7 of <em>The fisherman sat beside the river bank</em></h3>
+  <h3 class="card-title">Follow token 7, bank, through one attention update</h3>
   <div id="s09-stepper"></div>
+  <div class="s09-present-path" aria-label="The eight stages of bank's contextual update">
+    <div class="s09-path-phase">
+      <span class="s09-phase-label">1 · Choose where to read</span>
+      <div class="s09-path-row">
+        <div class="s09-pnode obj-e" data-pst="0"><span>start with</span><span>$\ve{e_7}$</span></div><span class="s09-parrow">→</span>
+        <div class="s09-pnode obj-q" data-pst="1"><span>make query</span><span>$\vq{q_7}$</span></div><span class="s09-parrow">→</span>
+        <div class="s09-pnode obj-k" data-pst="2"><span>compare with</span><span>$\vk{k_j}$</span></div><span class="s09-parrow">→</span>
+        <div class="s09-pnode obj-a" data-pst="3"><span>softmax</span><span>$\va{\alpha_{7j}}$</span></div>
+      </div>
+    </div>
+    <div class="s09-path-phase">
+      <span class="s09-phase-label">2 · Carry information back to bank</span>
+      <div class="s09-path-row">
+        <div class="s09-pnode obj-v" data-pst="4"><span>mix values</span><span>$\sum_j\alpha_{7j}v_j$</span></div><span class="s09-parrow">→</span>
+        <div class="s09-pnode obj-d" data-pst="5"><span>map to update</span><span>$\vd{\Delta e_7}$</span></div><span class="s09-parrow">→</span>
+        <div class="s09-pnode obj-e" data-pst="6"><span>add original</span><span>$\ve{e_7}$</span></div><span class="s09-parrow">→</span>
+        <div class="s09-pnode obj-ep" data-pst="7"><span>contextual</span><span>$\vp{e_7'}$</span></div>
+      </div>
+    </div>
+  </div>
   <div class="anim">
     <div class="dg dotgrid" id="s09-dg"></div>
-    <div>
-      <p class="tab-lab">The update chain, one coordinate per column</p>
-      <div id="s09-chain"></div>
-      <p class="rd" id="s09-dread"></p>
-    </div>
   </div>
 </div>
 
+</div>
+
+<div class="frame" id="s09-frame-chain" data-title="What did the search return for bank?">
+  <script type="text/x-notes">
+What is m_7, and why is it not yet the updated bank representation?
+It is the weighted mixture of the selected values, in value space. W_O maps it into a same-width update; the residual addition produces e prime.
+  </script>
+  <div class="card">
+    <h3 class="card-title">The numerical result of the eight-step path</h3>
+    <p class="tab-lab">Message → representation-space update → residual addition</p>
+    <div id="s09-chain"></div>
+    <p class="rd" id="s09-dread"></p>
+  </div>
 </div>
 
 <div class="frame" id="s09-frame3" data-title="Where should each message coordinate land?">
@@ -95,10 +145,18 @@ Read one column of the d_v × d_model output projection, then one coordinate of 
 <div class="card">
   <h3 class="card-title">The output projection: $m_7$ (value space, $1 \times d_v$) $\to$ $\vd{\Delta e_7}$ (representation space, $1 \times d_{\text{model}}$)</h3>
   <div id="s09-wo"></div>
-  <p class="ws-lab" id="s09-wolab"></p>
-  <div id="s09-wocalc"></div>
 </div>
 
+</div>
+<div class="frame" id="s09-frame-wo-calc" data-title="Work through the output projection">
+  <script type="text/x-notes">
+What does one column of W_O decide?
+It decides how every value-space message coordinate contributes to one representation-space update coordinate. This is an activation update, not an optimizer update.
+  </script>
+  <div class="card">
+    <p class="ws-lab" id="s09-wolab"></p>
+    <div id="s09-wocalc"></div>
+  </div>
 </div>
 <div class="frame" id="s09-frame4" data-title="Is Δe a new representation, or an update to add?">
   <script type="text/x-notes">
@@ -107,8 +165,8 @@ The residual path carries the current input representation. The contextual updat
   </script>
 <div class="callout callout-key big-caption">Attention computes context-dependent information. The residual connection adds that update to the existing representation.</div>
 
-<div class="callout callout-note">Calling this update $\vd{\Delta e_i}$ is pedagogical notation used on this page; it is not standard Transformer notation. Standard implementations usually call it the <em>attention output</em> and add it through a residual connection. The addition itself is standard: it is the residual connection around the attention sublayer.</div>
-<p class="muted small">PyTorch · $m_i$ is $1 \times d_v$; $\Delta e_i$ and $e_i$ are $1 \times d_{\text{model}}$.</p>
+<div class="companion callout callout-note">Calling this update $\vd{\Delta e_i}$ is pedagogical notation used on this page; it is not standard Transformer notation. Standard implementations usually call it the <em>attention output</em> and add it through a residual connection. The addition itself is standard: it is the residual connection around the attention sublayer.</div>
+<p class="companion muted small">PyTorch · $m_i$ is $1 \times d_v$; $\Delta e_i$ and $e_i$ are $1 \times d_{\text{model}}$.</p>
 <pre class="torch-snippet"><code>delta_e_i = m_i @ W_O
 e_new_i = e_i + delta_e_i</code></pre>
 </div>
@@ -196,6 +254,7 @@ e_new_i = e_i + delta_e_i</code></pre>
   const footTr = chain.table.querySelector('tfoot tr');
   chain.footer.cells.forEach((td, c) => chain.tipOn(td, () => AT.fmt(F.E[qi][c], 2) + ' + ' + (F.Delta[qi][c] < 0 ? '(' + AT.fmt(F.Delta[qi][c], 2) + ')' : AT.fmt(F.Delta[qi][c], 2)) + ' = ' + AT.fmt(F.Enew[qi][c], 2)));
   const rowM = mtab.rowEls[0], rowD = chain.rowEls[0], rowE = chain.rowEls[1];
+  S.querySelectorAll('[data-pst]').forEach(el => { const k = +el.dataset.pst; st[k] = st[k] || []; st[k].push(el); });
   /* readings of the update and the result, computed from the numbers */
   (function(){
     const names = AX.short.e, D = F.Delta[qi], Ep = F.Enew[qi], E0 = F.E[qi];

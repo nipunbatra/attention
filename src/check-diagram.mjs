@@ -19,9 +19,10 @@ try{
     const stats=await p.evaluate(()=>{const f=document.querySelector('#s16-flow-frame'),g=f.querySelector('.flow-classroom svg');return{
       wide:document.documentElement.scrollWidth>innerWidth+1,tall:f.scrollHeight>f.clientHeight+2,
       graphWidth:g.getBoundingClientRect().width,graphHeight:g.getBoundingClientRect().height,
+      scale:parseFloat(getComputedStyle(document.body).getPropertyValue('--present-scale'))||1,
       text:g.textContent,dim:ATTENTION_PREVIEW_DATA.dims,model:[AT.d_model,AT.d_k,AT.d_v]};});
     assert(!stats.wide&&!stats.tall,`stage${i+1} should fit a classroom screen`);
-    assert(stats.graphWidth>400&&stats.graphHeight>400,'diagram is not collapsed into a narrow grid column');
+    assert(stats.graphWidth/stats.scale>500&&stats.graphHeight/stats.scale>=500,'diagram retains a readable half-stage overview after uniform viewport scaling');
     assert.deepEqual([stats.dim.dModel,stats.dim.dKey,stats.dim.dValue],stats.model);
     assert(stats.text.includes(i===11?'receiver 10':'receiver 7'));
     if(i<11)await p.keyboard.press('ArrowRight');

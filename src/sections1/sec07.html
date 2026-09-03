@@ -8,13 +8,17 @@
   <script type="text/x-notes">Can we read a logit as a probability?
   No. First inspect the five largest scores. The grouped row has no single logit because it contains several outputs.</script>
   <div class="card"><h3 class="card-title">Top logits for a a b</h3><div id="s07-logits"></div></div>
-  <div class="prose" data-build="1"><p>For every token $j$, $$p_j=\frac{\exp(z_j)}{\sum_{r\in\mathcal V}\exp(z_r)}.$$</p></div>
+</div>
+<div class="frame" data-title="Exponentiate, then share the total" data-autobuild="off">
+  <div class="prose"><p>For every token $j$, $$p_j=\frac{\exp(z_j)}{\sum_{r\in\mathcal V}\exp(z_r)}.$$</p></div>
+  <div class="callout callout-key" data-build="1">Each token gets a positive share of the same total.</div>
 </div>
 <div class="frame" data-title="Softmax worksheet" data-autobuild="off">
   <script type="text/x-notes">Where do the other vocabulary entries affect the probability of i?
   They enter through the shared denominator. Point from the footer back to every row.</script>
-  <div class="card"><h3 class="card-title">Exponentiate, sum, divide</h3><div id="s07-softmax"></div><p class="soft-note">Displayed values are rounded. The probabilities use all full-precision logits.</p></div>
+  <div class="card"><div id="s07-softmax"></div></div>
 </div>
+<div class="companion"><p>Displayed values are rounded. The probabilities use all full-precision logits.</p></div>
 <div class="frame" data-title="A distribution over characters" data-autobuild="off">
   <script type="text/x-notes">Which next characters remain possible after aab?
   Read the target i, then compare it with the other high-probability outcomes.</script>
