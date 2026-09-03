@@ -2,7 +2,7 @@
 """gen_report.py - writes toy_report.md from toy.json using make_toy2.py's numpy forward pass (toy v2, named axes)."""
 import json, os
 import numpy as np
-from make_toy2 import load_json_params, run, check, VOCAB, VI, SA, SB, CAND_A, CAND_B, CANDS, HERE, OUT_JSON
+from make_toy2 import load_json_params, run, check, VOCAB, VI, SA, SB, CAND_A, CAND_B, CANDS, HERE, OUT_JSON, T
 
 toy = json.load(open(OUT_JSON))
 AX = toy["axes"]
@@ -26,26 +26,28 @@ w("## How the numbers were obtained\n")
 w("Nothing was optimised. AXES.md names every coordinate, and the embeddings and projection matrices were written by hand "
   "so that the names are true: each row of a projection reads as 'input axis -> asks / offers / says'. The forward pass "
   "(the same arithmetic as `toy_ref.mjs`) was then evaluated and a few magnitudes were adjusted from the AXES.md starting "
-  "point until the targets held on the rounded numbers: `bank` went from [1.5, 1.5, 0, 0.4] to [0.7, 0.7, 0, 0.6] and "
-  "`fisherman` from [1.4, 0, 2.4, 0] to [2.0, 0, 2.2, 0], because the self score q_bank . k_bank grows with the square of "
+  "point until the targets held on the rounded numbers: `bank` became [0.7, 0.7, 0, 0.7, 0] and "
+  "`fisherman` became [2.0, 0, 2.2, 0, 0], because the self score q_bank . k_bank grows with the square of "
   "bank's water/finance entries and at 1.5 bank attended to itself as much as to river; the W_vocab weights were raised to "
   "1.5/1.2/1.0/0.7 (water words) and 1.5/1.2/0.9/0.7 (finance words) so that every non-candidate word stays at or below 0.04. "
-  "Position offsets are a circle of radius 0.3 in the (person, glue) plane, one decimal, nothing on the water/finance axes.\n")
+  "Position has its own coordinate. It rises from 0.1 to 1.0, while its rows in W_Q, W_K, W_V and W_vocab are zero.\n")
 
 w("## Axes (from `toy.json` -> `axes`)\n")
-w("| object | coordinate 1 | coordinate 2 | coordinate 3 | coordinate 4 |")
-w("|---|---|---|---|---|")
-w("| e, Delta e, e' (d_model = 4) | " + " | ".join(AX["e"]) + " |")
-w("| q, k (d_k = 3) | " + " | ".join(AX["qk"]) + " | |")
-w("| v, m (d_v = 3) | " + " | ".join(AX["v"]) + " | |")
-w("| short forms | e: " + ", ".join(AX["short"]["e"]) + " | q,k: " + ", ".join(AX["short"]["qk"]) + " | v: " + ", ".join(AX["short"]["v"]) + " | |")
+axis_width = max(len(AX["e"]), len(AX["qk"]), len(AX["v"]))
+w("| object | " + " | ".join(f"coordinate {i+1}" for i in range(axis_width)) + " |")
+w("|---|" + "---|" * axis_width)
+def axis_row(label, values):
+    return "| " + label + " | " + " | ".join(values + [""] * (axis_width - len(values))) + " |"
+w(axis_row(f"e, Delta e, e' (d_model = {toy['d_model']})", AX["e"]))
+w(axis_row(f"q, k (d_k = {toy['d_k']})", AX["qk"]))
+w(axis_row(f"v, m (d_v = {toy['d_v']})", AX["v"]))
 w("")
 w("Reading rule: a query row is 'what I ask for', a key row is 'what I offer', a value row is 'what I send if retrieved'. "
-  "W_O maps the v axes back onto the e axes (water -> water, finance -> finance, person -> person, nothing -> glue).\n")
+  "W_O maps the two v axes back onto the water and finance axes of e.\n")
 
 w("## Token embeddings (e axes)\n")
 w("| token | " + " | ".join(AX["short"]["e"]) + " | reading |")
-w("|---|" + "---:|" * 4 + "---|")
+w("|---|" + "---:|" * len(AX["e"]) + "---|")
 def reading(v):
     names = AX["short"]["e"]
     parts = [f"{n} {v[i]:.1f}" for i, n in enumerate(names) if abs(v[i]) > 1e-9]
@@ -56,11 +58,11 @@ for word in VOCAB:
 w("")
 w("## Position offsets (added to the token row; e^(0)_i = tok_emb[token_i] + pos_emb[i])\n")
 w("| position | " + " | ".join(AX["short"]["e"]) + " |")
-w("|---:|" + "---:|" * 4)
+w("|---:|" + "---:|" * len(AX["e"]))
 for i, row in enumerate(toy["pos_emb"]):
     w(f"| {i+1} | " + " | ".join(num(x) for x in row) + " |")
 w("")
-w("Radius 0.3 in the (person, glue) plane, so no position looks like a setting; all ten rows differ.\n")
+w("Only the position coordinate changes. The attention projections and output head ignore that coordinate in this toy.\n")
 
 def wtable(title, W, rows, cols, rowname, colname):
     w(f"### {title}\n")
@@ -77,19 +79,19 @@ w("Reading: water asks water?, finance asks finance?, person asks who? (0.4), gl
 wtable("W_K (e -> k): 'axis -> offers'", toy["W_K"], AX["short"]["e"], AX["short"]["qk"], "e axis", "k axis")
 w("Reading: water offers water, finance offers finance, person offers a person, glue offers nothing.\n")
 wtable("W_V (e -> v): 'axis -> says'", toy["W_V"], AX["short"]["e"], AX["short"]["v"], "e axis", "v axis")
-w("Reading: water says water scene, finance says finance scene, person says a person is here, glue says nothing.\n")
+w("Reading: water says water scene and finance says finance scene. The other input axes send zeros in this toy.\n")
 wtable("W_O (v -> e): back onto the e axes", toy["W_O"], AX["short"]["v"], AX["short"]["e"], "v axis", "e axis")
-w("Reading: says water -> water 1.0, says finance -> finance 1.0, says person -> person 0.5, nothing lands on glue.\n")
+w("Reading: says water -> water 1.0 and says finance -> finance 1.0. The other e axes receive zero.\n")
 w("### W_vocab (e -> logits): 'axis -> votes for these words' (only the non-zero columns; every other entry is 0)\n")
 Wv = toy["W_vocab"]
-nz_cols = [j for j in range(20) if any(abs(Wv[r][j]) > 1e-9 for r in range(4))]
+nz_cols = [j for j in range(len(VOCAB)) if any(abs(Wv[r][j]) > 1e-9 for r in range(toy["d_model"]))]
 w("| e axis \\ word | " + " | ".join(VOCAB[j] for j in nz_cols) + " |")
 w("|---|" + "---:|" * len(nz_cols))
-for r in range(4):
+for r in range(toy["d_model"]):
     w(f"| {AX['short']['e'][r]} | " + " | ".join(num(Wv[r][j]) for j in nz_cols) + " |")
 w("")
 bset = sorted(set(toy["b_vocab"]))
-w("b_vocab: " + "; ".join(f"{num(b)} for " + ", ".join(VOCAB[j] for j in range(20) if toy['b_vocab'][j] == b) for b in bset) + ".\n")
+w("b_vocab: " + "; ".join(f"{num(b)} for " + ", ".join(VOCAB[j] for j in range(len(VOCAB)) if toy['b_vocab'][j] == b) for b in bset) + ".\n")
 
 def att_table(title, toks, row, n):
     w(f"### {title}\n")
@@ -127,8 +129,7 @@ att_table("attention row of the(10)", SB, fb["A"][9], 10)
 prob_table("p(next token | S_B) from e'_the(10)", fb["probs"][9], CAND_B)
 w(f"Target: teller > clerk > queue > money, every other token <= .04; attention mostly on cheque, bank, deposited: {status('T4')}\n")
 w("## T5 - baseline (no attention): softmax(e^(0)_the(10) W_vocab + b)\n")
-w("Identical for both sentences (same token, same position 10). e^(0)_the(10) has nothing on the water or finance axes, so the "
-  "only differences come from the position offset on the person axis (which votes a little for teller and clerk).\n")
+w("Identical for both sentences (same token, same position 10). e^(0)_the(10) has nothing on the water or finance axes, and the output head ignores its position coordinate.\n")
 w("| token | probability |"); w("|---|---:|")
 for c in CANDS: w(f"| {c} | {base[VI[c]]:.3f} |")
 oth = [base[i] for i in range(20) if VOCAB[i] not in CANDS]
@@ -176,8 +177,8 @@ w(f"- e^(0) of the three 'the' in S_A: pos 1 {fmt(fa['E'][0])}, pos 5 {fmt(fa['E
 w("")
 w("## Score ranges (for heat-map colour scales)\n")
 for name, f in (("S_A", fa), ("S_B", fb)):
-    S = f["Sraw"] / np.sqrt(3); tri = S[np.tril_indices(10)]
-    w(f"- {name}: scaled causal scores s_ij in [{tri.min():.2f}, {tri.max():.2f}]; raw q.k in [{(f['Sraw'][np.tril_indices(10)]).min():.2f}, {(f['Sraw'][np.tril_indices(10)]).max():.2f}]; "
+    S = f["Sraw"] / np.sqrt(toy["d_k"]); tri = S[np.tril_indices(T)]
+    w(f"- {name}: scaled causal scores s_ij in [{tri.min():.2f}, {tri.max():.2f}]; raw q.k in [{(f['Sraw'][np.tril_indices(T)]).min():.2f}, {(f['Sraw'][np.tril_indices(T)]).max():.2f}]; "
       f"|Delta e| rows up to {np.linalg.norm(f['Delta'], axis=1).max():.2f}; logits of the(10) in [{f['logits'][9].min():.2f}, {f['logits'][9].max():.2f}].")
 w("")
 w("## Check summary (make_toy2.py --check-only)\n")

@@ -19,6 +19,17 @@
 #s06 .calc-rl.calc-outlab{color:var(--ink-2)}
 #s06 .s06-stage{display:contents}
 #s06 .s06-raw{display:none}
+#s06 .result-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 12px}
+#s06 .result-card{display:grid;grid-template-columns:72px minmax(0,1fr) auto;gap:5px 9px;align-items:start;border:1px solid var(--line);border-radius:var(--radius-s);padding:8px;background:var(--card);transition:opacity var(--dur),border-color var(--dur),box-shadow var(--dur)}
+#s06 .result-card.is-winner{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+#s06 .result-thumb{width:72px;height:41px;grid-row:1/span 3;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink-2)}
+#s06 .result-title{font-weight:700;font-size:14px;line-height:1.25;margin:0}
+#s06 .result-summary{font-size:12px;line-height:1.3;color:var(--ink-2);margin:0;grid-column:2/-1}
+#s06 .result-badge{font-family:var(--font-mono);font-size:11px;border:1px solid var(--line);border-radius:999px;padding:2px 6px;white-space:nowrap}
+#s06 .result-duration{font-family:var(--font-mono);font-size:11px;color:var(--ink-3);grid-column:2}
+#s06 .card-mix{border-top:1px solid var(--line);padding-top:10px;margin:4px 0 14px}
+@media(max-width:720px){#s06 .result-cards{grid-template-columns:minmax(0,1fr)}}
+@media(prefers-reduced-motion:reduce){#s06 .result-card{transition:none}}
 body.present #s06 .s06-intro,body.present #s06 #s06-arith{display:none}
 body.present #s06 .s06-stage{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);gap:.7em;align-items:start}
 body.present #s06 .s06-stage>.card{min-width:0;margin:0}
@@ -38,18 +49,40 @@ body.present #s06 .s06-mix-value .s06-raw{display:inline}
 body.present #s06 .s06-mix-value:has(.s06-weight:not(.is-pending)) .s06-raw{display:none}
 body.present #s06 tr.s06-present-winner>th,body.present #s06 tr.s06-present-winner>td{box-shadow:inset 0 0 0 2px var(--ink)}
 body.present #s06 .s06-close{font-size:.82em;margin:.55em 0 0}
+body.present #s06 .result-cards{gap:.25em;margin:0 0 .35em}
+body.present #s06 .result-card{grid-template-columns:3em minmax(0,1fr) auto;padding:.25em;gap:.12em .35em}
+body.present #s06 .result-thumb{width:3em;height:1.7em}
+body.present #s06 .result-title{font-size:.58em}
+body.present #s06 .result-summary{display:none}
+body.present #s06 .result-duration,body.present #s06 .result-badge{font-size:.48em}
+body.present #s06 .card-mix{margin:.2em 0 .4em;padding-top:.3em}
 @media(max-width:1100px){body.present #s06 .s06-stage{grid-template-columns:1fr}}
+/* The video cards have already been shown in §5. During calculation, keep
+   the score/weighted-value tables in view; the article retains every detail. */
+body.present #s06 .result-cards,body.present #s06 .card-mix,body.present #s06 .s06-close{display:none}
+body.present #s06 .s06-stage>.card{padding:.6em .7em}
+body.present #s06 .callout-key{font-size:.8em;margin:.5em 0 0;padding:.5em .8em}
+body.present #s06 .taunote,body.present #s06 .look,body.present #s06 .hint,body.present #s06 .verdict{display:none}
+#s06 .classroom-temperature{display:none}
+body.present #s06 .classroom-temperature{display:block;font-size:.72em;flex-basis:100%;margin:0}
+body.present #s06 .modebox .slider{font-size:.75em}
+/* Matching features were worked out in §5. The next operation needs scores,
+   so expose that column instead of clipping it behind four repeated features. */
+body.present #s06 #s06-dot .dt tr>:nth-child(n+2):nth-child(-n+5){display:none}
+body.present #s06 #s06-dot .dt tbody tr:first-child{display:none}
+body.present #s06 #s06-dot .dt{width:100%}
+@media(max-width:380px){#s06 .srows{grid-template-columns:minmax(0,1fr)}#s06 .srows .slider{grid-template-columns:minmax(0,1fr) minmax(60px,1fr) 3em}}
 </style>
 <header class="sec-head">
   <span class="sec-num">06</span>
   <div>
-    <p class="eyebrow">Why we are here: a search engine returns the single best item. Attention returns a mixture. We go back to the gradient question (query 1) with the same keys and values as before.</p>
+    <p class="eyebrow">Why we are here: hard retrieval chooses the single best match. Attention returns a mixture. We go back to the gradient question (query 1) with the same keys and values as before.</p>
     <h2>Hard retrieval → soft retrieval</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>A search engine picks one winner and shows you that page. Attention keeps the whole ranked list and blends the values in proportion to how well each key matched. This section makes that blend a spreadsheet: the scores from the previous section feed a softmax, the weights fill the $\va{\alpha_j}$ column, every value row is scaled by its weight, and the footer adds the rows up. Start in hard mode, where one row carries all the weight, then switch to soft and lower the temperature to watch the two modes meet. Drag a score up and watch every weight move. The sentence to remember: attention returns a weighted mixture of values, not one value.</p>
+  <p>Our hard-retrieval baseline picks the best-scoring item and returns its value. Attention instead blends values according to how well each key matched the query. This section makes that blend a spreadsheet: the scores from the previous section feed a softmax, the weights fill the $\va{\alpha_j}$ column, every value row is scaled by its weight, and the footer adds the rows up. Start in hard mode, where one row carries all the weight, then switch to soft and lower the temperature to watch the two modes meet. Drag a score up and watch every weight move. The sentence to remember: attention returns a weighted mixture of values, not one value.</p>
 </div>
 
 <div class="frame" data-title="Hard to soft" data-autobuild="off">
@@ -61,15 +94,15 @@ Timing: five minutes.
   </script>
 
 <div class="prose s06-intro">
-  <p>A normal search engine keeps only the winner. It picks the key with the largest score and returns that item's value:</p>
-  $$j^* = \arg\max_j\, \vq{q}^\top \vk{k_j}, \qquad \text{return } \vv{v_{j^*}}$$
+  <p>In our hard-retrieval baseline, choose the key with the largest score and return that item's value:</p>
+  $$j^* = \arg\max_j\, \vq{q}\cdot \vk{k_j}, \qquad \text{return } \vv{v_{j^*}}$$
   <p>Attention instead turns the scores into weights that sum to 1, and returns a blend of <em>all</em> the values, in proportion to those weights:</p>
-  $$\va{\alpha_j} = \operatorname{softmax}_j\!\left(\vq{q}^\top \vk{k_j}\right), \qquad \boxed{\sum_j \va{\alpha_j}\, \vv{v_j}}$$
+  $$\va{\alpha_j} = \operatorname{softmax}_j\!\left(\vq{q}\cdot \vk{k_j}\right), \qquad \boxed{\sum_j \va{\alpha_j}\, \vv{v_j}}$$
 </div>
 
 <div class="s06-stage">
 <div class="card">
-  <h3 class="card-title">Scores: the query row against the six key rows, as before. Drag a slider to change a score</h3>
+  <h3 class="card-title">Reuse the match scores. In soft mode, changing one score changes every weight.</h3>
   <div id="s06-dot"></div>
   <div class="srows" id="s06-sliders" data-build="4"></div>
   <div class="btn-row" style="margin-top:8px" data-build="4"><button type="button" class="btn btn-quiet" id="s06-reset">Reset scores to the dot products</button></div>
@@ -82,7 +115,10 @@ Timing: five minutes.
     <div id="s06-mode"></div>
     <div id="s06-temp" data-build="6"></div>
     <p class="taunote" data-build="6">In soft mode the weights are $\va{\alpha_j} = \operatorname{softmax}_j(s_j/\tau)$. A small $\tau$ makes the mixture sharper. As $\tau \to 0$, soft retrieval becomes hard retrieval when one score is strictly the largest; tied top scores keep sharing the weight. $\tau = 1$ is the formula above.</p>
+    <p class="classroom-temperature" data-build="6">$\va{\alpha}=\operatorname{softmax}(s/\tau)$: lower $\tau$ makes weights sharper.</p>
   </div>
+  <div class="result-cards" id="s06-cards" aria-label="The six video results from section 05"></div>
+  <div class="card-mix" id="s06-card-mix"></div>
   <div id="s06-mix"></div>
   <p class="verdict" id="s06-verdict" data-build="3"></p>
   <p class="look" id="s06-mread" data-build="3"></p>
@@ -112,12 +148,12 @@ Timing: five minutes.
   const KEY_AXES = ['gradient flow', 'optimisation', 'architecture', 'generalisation'];
   const VAL_AXES = ['gradients', 'optimisation', 'architecture'];
   const VIDEOS = [
-    { title: 'Backpropagation',     k: [2.2, 0.6, 0.2, 0.0], v: [0.9, 0.3, 0.1] },
-    { title: 'Gradient Descent',    k: [0.4, 1.0, 0.0, 0.2], v: [0.4, 0.9, 0.0] },
-    { title: 'CNNs',                k: [0.1, 0.0, 2.0, 0.1], v: [0.1, 0.1, 0.9] },
-    { title: 'Transformers',        k: [0.0, 0.0, 1.0, 0.0], v: [0.1, 0.2, 0.9] },
-    { title: 'Batch Normalization', k: [0.2, 0.5, 1.0, 0.6], v: [0.3, 0.6, 0.5] },
-    { title: 'Regularization',      k: [0.1, 0.5, 0.0, 2.0], v: [0.2, 0.7, 0.1] }
+    { title: 'Backpropagation',     kind: 'backprop', duration: '12:48', k: [2.2, 0.6, 0.2, 0.0], v: [0.9, 0.3, 0.1], summary: 'The chain rule applied layer by layer, from the loss back to every weight.' },
+    { title: 'Gradient descent',    kind: 'descent', duration: '09:31', k: [0.4, 1.0, 0.0, 0.2], v: [0.4, 0.9, 0.0], summary: 'Move the weights against the gradient, one small step at a time.' },
+    { title: 'CNNs',                kind: 'cnn', duration: '14:06', k: [0.1, 0.0, 2.0, 0.1], v: [0.1, 0.1, 0.9], summary: 'Convolution layers share one filter across every image position.' },
+    { title: 'Transformers',        kind: 'transformer', duration: '18:22', k: [0.0, 0.0, 1.0, 0.0], v: [0.1, 0.2, 0.9], summary: 'Layers in which every token reads from the other tokens.' },
+    { title: 'Batch normalisation', kind: 'batchnorm', duration: '08:57', k: [0.2, 0.5, 1.0, 0.6], v: [0.3, 0.6, 0.5], summary: 'Normalise activations inside the network so training stays stable.' },
+    { title: 'Regularisation',      kind: 'regularise', duration: '11:43', k: [0.1, 0.5, 0.0, 2.0], v: [0.2, 0.7, 0.1], summary: 'Penalise complexity so the model generalises beyond its training data.' }
   ];
   const Q = [2.0, 0.6, 0.2, 0.0];
   const titles = VIDEOS.map(V => V.title);
@@ -131,11 +167,53 @@ Timing: five minutes.
     }
   }
 
+  function thumb(kind, title){
+    const common = { fill: 'none', stroke: 'currentColor', 'stroke-width': '1.7', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' };
+    const parts = [AT.svg('title', {}, title + ' thumbnail')];
+    if (kind === 'backprop') parts.push(
+      AT.svg('rect', { x: '9', y: '17', width: '18', height: '20', rx: '3', ...common }),
+      AT.svg('rect', { x: '39', y: '17', width: '18', height: '20', rx: '3', ...common }),
+      AT.svg('rect', { x: '69', y: '17', width: '18', height: '20', rx: '3', ...common }),
+      AT.svg('path', { d: 'M69 23H58m5-5-5 5 5 5M39 31H28m5-5-5 5 5 5', ...common }));
+    if (kind === 'descent') parts.push(
+      AT.svg('path', { d: 'M13 13 Q48 50 83 13', ...common }),
+      AT.svg('circle', { cx: '59', cy: '34', r: '4', fill: 'currentColor' }),
+      AT.svg('path', { d: 'M72 12 61 28m1-8-1 8 8-2', ...common }));
+    if (kind === 'cnn') parts.push(
+      AT.svg('path', { d: 'M12 10v34M23 10v34M34 10v34M45 10v34M12 10h33M12 21h33M12 32h33M12 43h33', ...common }),
+      AT.svg('rect', { x: '22', y: '20', width: '22', height: '22', rx: '2', fill: 'none', stroke: 'currentColor', 'stroke-width': '3' }),
+      AT.svg('path', { d: 'M52 27h30m-7-6 7 6-7 6', ...common }));
+    if (kind === 'transformer') parts.push(
+      AT.svg('rect', { x: '20', y: '8', width: '48', height: '10', rx: '2', ...common }),
+      AT.svg('rect', { x: '20', y: '23', width: '48', height: '10', rx: '2', ...common }),
+      AT.svg('rect', { x: '20', y: '38', width: '48', height: '8', rx: '2', ...common }),
+      AT.svg('path', { d: 'M8 39 80 14m-8-1 8 1-5 6', ...common }));
+    if (kind === 'batchnorm') parts.push(
+      AT.svg('path', { d: 'M10 43H86M48 8v37M18 42C29 42 31 12 48 12s19 30 30 30', ...common }),
+      AT.svg('circle', { cx: '48', cy: '42', r: '2.5', fill: 'currentColor' }));
+    if (kind === 'regularise') parts.push(
+      AT.svg('path', { d: 'M8 35c8-25 12 18 20-7s12 18 20-7 12 18 20-7 10 13 18 4', ...common }),
+      AT.svg('path', { d: 'M12 42 84 12', stroke: 'currentColor', 'stroke-width': '2.5', 'stroke-linecap': 'round' }),
+      AT.svg('path', { d: 'M46 47v-9m-5 5 5-5 5 5', ...common }));
+    return AT.svg('svg', { class: 'result-thumb', viewBox: '0 0 96 54', role: 'img', 'aria-label': title + ' thumbnail' }, ...parts);
+  }
+
+  const resultCards = [], resultBadges = [];
+  VIDEOS.forEach((V) => {
+    const badge = AT.h('span', { class: 'result-badge' }, '');
+    const card = AT.h('article', { class: 'result-card' }, thumb(V.kind, V.title),
+      AT.h('p', { class: 'result-title' }, V.title), badge,
+      AT.h('span', { class: 'result-duration' }, V.duration),
+      AT.h('p', { class: 'result-summary' }, V.summary));
+    resultCards.push(card); resultBadges.push(badge); S.querySelector('#s06-cards').appendChild(card);
+  });
+  const resultMix = AT.ui.vec(AT.zeros(VAL_AXES.length), { cls: 'm', axes: VAL_AXES, label: '\\sum_j \\va{\\alpha_j}\\,\\vv{v_j}', into: S.querySelector('#s06-card-mix') });
+
   /* score table: query row, key rows, and a score column fed by the sliders */
   const dot = AT.ui.table([Q].concat(VIDEOS.map(V => V.k)), { cols: KEY_AXES, rowLabels: ['the question'].concat(titles), rowCls: ['q'].concat(titles.map(() => 'k')), highlightRow: 0,
     cornerLabel: 'video', decimals: 1,
     computed: [{ label: 'score', cls: 'a', decimals: 1, fn: (row, i) => i === 0 ? '' : s[i - 1] }],
-    caption: 'The score column starts as the dot products from the previous section: $s_j = \\vq{q}^\\top \\vk{k_j}$. The sliders below overwrite it.',
+    caption: 'The score column starts as the dot products from the previous section: $s_j = \\vq{q}\\cdot \\vk{k_j}$. The sliders below overwrite it.',
     note: 'Hover or focus a score to see where it comes from; click it for the worksheet.', into: S.querySelector('#s06-dot') });
   const pop = AT.ui.popover(dot, { label: 'Score arithmetic' });
   function openCalc(j, td){
@@ -190,6 +268,13 @@ Timing: five minutes.
     dot.update([Q].concat(VIDEOS.map(V => V.k)));
     alpha.forEach((a, j) => { alphaArr[j] = a; });
     mix.setAlpha(alphaArr);
+    resultCards.forEach((card, j) => {
+      card.classList.toggle('is-winner', j === jstar);
+      card.style.opacity = soft ? String(0.22 + 0.78 * alpha[j]) : (j === jstar ? '1' : '0.22');
+      resultBadges[j].textContent = 'α ' + AT.fmt(alpha[j], 2);
+      resultBadges[j].setAttribute('aria-label', 'attention weight ' + AT.fmt(alpha[j], 2));
+    });
+    resultMix.update(mix.sum);
     mix.setHighlightRow(soft ? -1 : jstar);
     dot.rowEls.forEach((tr, j) => tr.classList.toggle('s06-present-winner', !soft && j === jstar + 1));
     mix.cells.forEach((row, j) => row.forEach((td, c) => {

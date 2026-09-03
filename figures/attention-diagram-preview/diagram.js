@@ -2,12 +2,13 @@
 (function (root) {
   'use strict';
   const D = root.ATTENTION_PREVIEW_DATA;
-  const C = { ink:'#243b39', muted:'#6b7c77', line:'#d8e1dc', paper:'#fbfcf9', q:'#2a65a4', k:'#247c78', v:'#ae6825', a:'#526b8c', m:'#a36b2b', d:'#357957', e:'#485f59' };
+  const C = { ink:'#243b39', muted:'#6b7c77', line:'#d8e1dc', paper:'#fbfcf9', q:'#9333ea', k:'#d97706', v:'#0d9488', a:'#e11d48', m:'#0d9488', d:'#16a34a', e:'#2563eb' };
+  const {dModel:dm,dKey:dk,dValue:dv,T,vocabSize:nv}=D.dims;
   const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
   const f = (n, digits=3) => Number(n).toFixed(digits).replace(/^-/,'−');
   const sub = n => String(n).split('').map(x => '₀₁₂₃₄₅₆₇₈₉'[Number(x)]).join('');
   const vec = (a, digits=3) => '(' + a.map(v => f(v,digits)).join('   ') + ')';
-  const txt = (x,y,s,cls='body',more='') => `<text x="${x}" y="${y}" class="${cls}" ${more}>${esc(s)}</text>`;
+  const txt = (x,y,s,cls='body',more='') => `<text x="${x}" y="${y}" class="${cls}" ${more.replace(/fill="([^"]+)"/g,'style="fill:$1"')}>${esc(s)}</text>`;
   const line = (x1,y1,x2,y2,more='') => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" ${more}/>`;
   const rect = (x,y,w,h,fill='white',stroke=C.line,r=8,more='') => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="${fill}" stroke="${stroke}" ${more}/>`;
   const stages = [
@@ -24,6 +25,26 @@
     {id:'residual',short:'Add',title:'Keep bank, and add its context update',lines:['The long bypass carries the original e₇ unchanged.','Add Δe₇ to obtain the context-enriched representation e′₇.'],focus:'residual',code:['e_prime = e + delta_e  # [1, 4] + [1, 4] → [1, 4]'],note:['This changes the representation of this occurrence of bank.','It does not overwrite the shared embedding table.']},
     {id:'prediction',short:'Predict',title:'Now switch to the last token: the',lines:['Run the same path again with receiver 10, the final the.','Its updated representation predicts the token at position 11.'],focus:'prediction',code:['logits = e_prime @ W_vocab + b_vocab  # [1, 20]','p_next = logits.softmax(dim=-1)  # over vocabulary tokens'],note:['All projections still read the original E in this layer.','The new query does not read the just-computed e′₇.']}
   ];
+  // Keep every shape tied to the same model used by the arithmetic.
+  stages[0].code[1]=`e = E[i:i+1]  # keep a row: [1, ${dm}]`;
+  if(D.provenance.positionIgnored) stages[0].note=['E includes token embedding + position. In this toy,','the projections ignore position; the causal mask still applies.'];
+  stages[1].lines[1]=`Its ${dk} numbers match the ${dk} coordinates of each key.`;
+  stages[1].code=[`q = e @ W_Q  # [1, ${dm}] @ [${dm}, ${dk}] → [1, ${dk}]`];
+  stages[2].code=[`K = E @ W_K  # [${T}, ${dm}] @ [${dm}, ${dk}] → [${T}, ${dk}]`];
+  stages[3].code=[`scores = q @ K.T  # [1, ${dk}] @ [${dk}, ${T}] → [1, ${T}]`];
+  stages[4].lines[0]=`There are dₖ = ${dk} matching coordinates. Divide by √${dk}.`;
+  stages[4].note=['For independent, zero-mean, unit-variance coordinates,','dot-product variance is dₖ; after scaling it is 1.'];
+  stages[6].code=[`alpha = scores.softmax(dim=-1)  # [1, ${T}]`];
+  stages[7].code=[`V = E @ W_V  # [${T}, ${dm}] @ [${dm}, ${dv}] → [${T}, ${dv}]`];
+  stages[7].note=['Keys describe matching; values carry the message to retrieve.',`Here a key has ${dk} coordinates and a value has ${dv}.`];
+  stages[8].lines[1]=`The result m₇ is a ${dv}-number message specifically for bank.`;
+  stages[8].code=[`m = alpha @ V  # [1, ${T}] @ [${T}, ${dv}] → [1, ${dv}]`];
+  stages[8].note=['The mixture lives in value space. It is not yet the updated',`${dm}-number representation, and it is not a predicted word.`];
+  stages[9].title=`Map the message back to ${dm} coordinates`;
+  stages[9].code=[`delta_e = m @ W_O  # [1, ${dv}] @ [${dv}, ${dm}] → [1, ${dm}]`];
+  stages[9].note=['This output projection bridges the two coordinate spaces.',`The ${dv}-number mixture and ${dm}-number update are different objects.`];
+  stages[10].code=[`e_prime = e + delta_e  # [1, ${dm}] + [1, ${dm}] → [1, ${dm}]`];
+  stages[11].code[0]=`logits = e_prime @ W_vocab + b_vocab  # [1, ${nv}]`;
   function node(x,y,w,h,title,caption,role,show,active,prefix) {
     if (!show) return '';
     const color=C[role]||C.ink;
@@ -59,22 +80,23 @@
     return s;
   }
   function evidence(stage, d) {
-    const er=['water','finance','person','glue'];
-    const kr=['water?','finance?','who?'];
-    const vr=['water scene','finance scene','person'];
+    const er=D.axes.short.e;
+    const kr=D.axes.short.qk;
+    const vr=D.axes.short.v.map(s=>s.replace(/^→/,'')+' scene');
     let s='';
     if(stage===0) {
       s+=vectorRow(60,343,d.e,er,'e','e₇ · BANK’S INPUT REPRESENTATION');
-      s+=txt(60,508,'10 input positions × 4 coordinates = E ∈ ℝ¹⁰ˣ⁴','body');
+      s+=txt(60,508,`${T} input positions × ${dm} coordinates = shape [${T}, ${dm}]`,'body');
       s+=txt(60,548,'Only the receiver row is highlighted; the input stays fixed.','detail');
     } else if(stage===1) {
       s+=txt(60,345,`e₇ = ${vec(d.e,2)}`,'formula');
-      s+=txt(60,402,'e₇ [1 × 4]   ·   W_Q [4 × 3]   →   q₇ [1 × 3]','body');
+      s+=txt(60,402,`e₇ [1 × ${dm}]   ·   W_Q [${dm} × ${dk}]   →   q₇ [1 × ${dk}]`,'body');
       s+=vectorRow(60,460,d.q,kr,'q','q₇ · THE REQUEST');
     } else if(stage===2||stage===7) {
       const vals=stage===2?d.keys:d.values, role=stage===2?'k':'v';
-      s+=table(vals.map((a,j)=>({cells:[`${j+1} · ${D.tokens[j]}`,...a.map(x=>f(x,2))],highlight:j===5,future:j>d.index})),['source token',...(stage===2?kr:vr)],[245,132,132,132],358,['',C[role],C[role],C[role]]);
-      s+=txt(60,696,stage===2?'Each key has 3 matching coordinates.':'Each value has 3 payload coordinates.','detail');
+      const axes=stage===2?kr:vr, widths=[245,...axes.map(()=>396/axes.length)];
+      s+=table(vals.map((a,j)=>({cells:[`${j+1} · ${D.tokens[j]}`,...a.map(x=>f(x,2))],highlight:j===5,future:j>d.index})),['source token',...axes],widths,358,['',...axes.map(()=>C[role])]);
+      s+=txt(60,696,stage===2?`Each key has ${dk} matching coordinates.`:`Each value has ${dv} payload coordinates.`,'detail');
     } else if(stage===3) {
       const j=5;
       s+=txt(60,345,'One match, worked out: bank’s query · river’s key','smallcap',`fill="${C.q}"`);
@@ -82,8 +104,8 @@
       s+=txt(60,445,`= ${f(d.rawScores[j])}   (before scaling)`,'formula');
       s+=table([1,5,6,8].map(j=>({cells:[`${j+1} · ${D.tokens[j]}`,f(d.rawScores[j])],highlight:j===5,future:j>d.index})),['some source positions','raw score'],[380,260],504,['',C.q]);
     } else if(stage===4) {
-      s+=txt(60,345,'dₖ = 3      √dₖ ≈ 1.732','formula');
-      s+=table([0,1,5,6,8].map(j=>({cells:[`${j+1} · ${D.tokens[j]}`,f(d.rawScores[j]),'÷ √3',f(d.scaledScores[j])],highlight:j===5,future:j>d.index})),['source token','raw score','scale','scaled'],[245,132,132,132],402,['',C.q,C.muted,C.q]);
+      s+=txt(60,345,`dₖ = ${dk}      √dₖ ≈ ${f(Math.sqrt(dk))}`,'formula');
+      s+=table([0,1,5,6,8].map(j=>({cells:[`${j+1} · ${D.tokens[j]}`,f(d.rawScores[j]),`÷ √${dk}`,f(d.scaledScores[j])],highlight:j===5,future:j>d.index})),['source token','raw score','scale','scaled'],[245,132,132,132],402,['',C.q,C.muted,C.q]);
       s+=txt(60,641,'The same positive divisor is used for every score.','detail');
     } else if(stage===5) {
       s+=table(d.maskedScores.map((n,j)=>({cells:[`${j+1} · ${D.tokens[j]}`,f(d.scaledScores[j]),n===null?'−∞':f(n),j>d.index?'future':'allowed'],highlight:j===6,future:j>d.index})),['source token','scaled','after mask','status'],[245,132,132,132],358);
@@ -101,9 +123,9 @@
       s+=table([1,5,6].map(j=>({cells:[`${j+1} · ${D.tokens[j]}`,f(d.alpha[j]),vec(d.values[j].map(v=>v*d.alpha[j]),3)],highlight:j===5})),['three contributions','weight','weighted value'],[220,100,321],358,['',C.a,C.v]);
       s+=vectorRow(60,509,d.mixture,vr,'m','m₇ · SUM OF ALL SEVEN ALLOWED CONTRIBUTIONS');
     } else if(stage===9) {
-      s+=vectorRow(60,337,d.mixture,vr,'m','m₇ · 3 COORDINATES IN VALUE SPACE');
-      s+=txt(370,512,'↓  W_O [3 × 4]','body','text-anchor="middle"');
-      s+=vectorRow(60,550,d.delta,er,'d','Δe₇ · 4 COORDINATES IN REPRESENTATION SPACE');
+      s+=vectorRow(60,337,d.mixture,vr,'m',`m₇ · ${dv} COORDINATES IN VALUE SPACE`);
+      s+=txt(370,512,`↓  W_O [${dv} × ${dm}]`,'body','text-anchor="middle"');
+      s+=vectorRow(60,550,d.delta,er,'d',`Δe₇ · ${dm} COORDINATES IN REPRESENTATION SPACE`);
     } else if(stage===10) {
       s+=table(er.map((name,j)=>({cells:[name,f(d.e[j]),f(d.delta[j]),f(d.updated[j])]})),['coordinate','e₇','+ Δe₇','= e′₇'],[245,132,132,132],347,['',C.e,C.d,C.d]);
       s+=txt(60,558,'bank keeps its original representation and receives context.','detail');
@@ -113,7 +135,7 @@
       s+=txt(60,399,`q₁₀ = ${vec(d.q)}`,'formula',`fill="${C.q}"`);
       s+=txt(60,451,`e′₁₀ ≈ ${vec(d.updated)}`,'formula',`fill="${C.d}"`);
       s+=table(d.topVocabulary.slice(0,4).map((x,i)=>({cells:[x.token,f(x.logit),f(x.probability)],highlight:i===0})),['next-token candidate','logit','probability'],[320,160,160],480,['','',C.d]);
-      s+=txt(60,679,'This softmax is over 20 vocabulary tokens, not 10 inputs.','detail');
+      s+=txt(60,679,`This softmax is over ${nv} vocabulary tokens, not ${T} inputs.`,'detail');
     }
     return s;
   }
@@ -150,38 +172,38 @@
     st.note.forEach((t,j)=>out+=txt(60,873+j*25,t,'detail'));
     out+=line(768,224,768,910,`stroke="${C.line}"`);
     /* Shared source at the top; one fixed graph for every reveal. */
-    out+=node(1030,224,210,60,'Input E','10 × 4 · unchanged snapshot','e',true,is('e'),'input');
+    out+=node(1030,224,210,60,'Input E',`${T} × ${dm} · unchanged snapshot`,'e',true,is('e'),'input');
     out+=txt(1474,241,`receiver ${n} · ${d.token}`,'smallcap',`fill="${C.q}" text-anchor="end"`);
     const qx=915,kx=1135,vx=1390;
     out+=arrow(`M1080 284 V299 H${qx} V319`,'q',si>=1,is('q'),prefix);
     out+=arrow(`M${kx} 284 V319`,'k',si>=2,is('k'),prefix);
     out+=arrow(`M1190 284 V299 H${vx} V319`,'v',si>=7,is('v'),prefix);
-    if(si>=1)out+=rect(859,292,112,21,C.paper,'none',0)+txt(915,308,'W_Q · 4 × 3','tiny','text-anchor="middle"');
-    if(si>=2)out+=txt(1203,314,'W_K · 4 × 3','tiny');
-    if(si>=7)out+=rect(1334,292,112,21,C.paper,'none',0)+txt(1390,308,'W_V · 4 × 3','tiny','text-anchor="middle"');
-    out+=node(qx-80,319,160,58,`Query q${sn}`,'1 × 3 · request','q',si>=1,is('q'),'q');
-    out+=node(kx-80,319,160,58,'Keys K','10 × 3 · matching','k',si>=2,is('k'),'k');
-    out+=node(vx-80,319,160,58,'Values V','10 × 3 · payload','v',si>=7,is('v'),'v');
+    if(si>=1)out+=rect(859,292,112,21,C.paper,'none',0)+txt(915,308,`W_Q · ${dm} × ${dk}`,'tiny','text-anchor="middle"');
+    if(si>=2)out+=txt(1203,314,`W_K · ${dm} × ${dk}`,'tiny');
+    if(si>=7)out+=rect(1334,292,112,21,C.paper,'none',0)+txt(1390,308,`W_V · ${dm} × ${dv}`,'tiny','text-anchor="middle"');
+    out+=node(qx-80,319,160,58,`Query q${sn}`,`1 × ${dk} · request`,'q',si>=1,is('q'),'q');
+    out+=node(kx-80,319,160,58,'Keys K',`${T} × ${dk} · matching`,'k',si>=2,is('k'),'k');
+    out+=node(vx-80,319,160,58,'Values V',`${T} × ${dv} · payload`,'v',si>=7,is('v'),'v');
     if(si>=3) {
       out+=rect(901,403,344,330,'none','#c6d3cb',10,'stroke-dasharray="4 5"');
       out+=txt(922,395,'SCALED DOT-PRODUCT ATTENTION','tiny');
     }
     out+=arrow(`M${qx} 377 V411 H1015 V426`,'q',si>=3,is('score'),prefix);
     out+=arrow(`M${kx} 377 V411 H1130 V426`,'k',si>=3,is('score'),prefix);
-    out+=node(941,426,263,46,`q${sn} Kᵀ`,'raw scores · 1 × 10','q',si>=3,is('score'),'score');
+    out+=node(941,426,263,46,`q${sn} Kᵀ`,`raw scores · 1 × ${T}`,'q',si>=3,is('score'),'score');
     const cx=1072;
     out+=arrow(`M${cx} 472 V484`,'a',si>=4,is('scale'),prefix);
-    out+=node(971,484,203,42,'Divide by √3','scaled scores · 1 × 10','a',si>=4,is('scale'),'scale');
+    out+=node(971,484,203,42,`Divide by √${dk}`,`scaled scores · 1 × ${T}`,'a',si>=4,is('scale'),'scale');
     out+=arrow(`M${cx} 526 V538`,'a',si>=5,is('mask'),prefix);
     out+=node(971,538,203,42,'Causal mask',`allow source j ≤ ${n}`,'a',si>=5,is('mask'),'mask');
     out+=arrow(`M${cx} 580 V592`,'a',si>=6,is('weights'),prefix);
-    out+=node(971,592,203,46,'Softmax',`weights α${sn} · 1 × 10`,'a',si>=6,is('weights'),'weights');
+    out+=node(971,592,203,46,'Softmax',`weights α${sn} · 1 × ${T}`,'a',si>=6,is('weights'),'weights');
     out+=arrow(`M${cx} 638 V669`,'a',si>=8,is('mix'),prefix);
     out+=arrow(`M${vx} 377 V692 H1204`,'v',si>=8,is('mix'),prefix);
     if(si>=8){out+=txt(1475,475,'Values bypass','tiny','text-anchor="middle"');out+=txt(1475,494,'score + softmax','tiny','text-anchor="middle"');}
-    out+=node(941,669,263,46,`α${sn} V = m${sn}`,'query-specific mixture · 1 × 3','m',si>=8,is('mix'),'mix');
+    out+=node(941,669,263,46,`α${sn} V = m${sn}`,`query-specific mixture · 1 × ${dv}`,'m',si>=8,is('mix'),'mix');
     out+=arrow(`M${cx} 715 V750`,'m',si>=9,is('output'),prefix);
-    out+=node(971,750,203,46,'× W_O [3 × 4]',`update Δe${sn} · 1 × 4`,'d',si>=9,is('output'),'output');
+    out+=node(971,750,203,46,`× W_O [${dv} × ${dm}]`,`update Δe${sn} · 1 × ${dm}`,'d',si>=9,is('output'),'output');
     if(si>=10) {
       out+=arrow(`M1030 254 H807 V852 H1048`,'e',true,is('residual'),prefix);
       out+=txt(827,825,`keep original e${sn}`,'tiny');
@@ -189,16 +211,19 @@
       out+=`<circle cx="${cx}" cy="852" r="24" fill="#edf5ef" stroke="${C.d}" stroke-width="2"/>`;
       out+=txt(cx,860,'+','formula','text-anchor="middle"');
       out+=arrow(`M1096 852 H1147`,'d',true,is('residual'),prefix);
-      out+=node(1147,824,171,58,`e′${sn}`,'updated row · 1 × 4','d',true,is('residual'),'updated');
+      out+=node(1147,824,171,58,`e′${sn}`,`updated row · 1 × ${dm}`,'d',true,is('residual'),'updated');
     }
     if(si>=11) {
       out+=arrow('M1318 852 H1373','d',true,true,prefix);
-      out+=node(1373,824,175,58,'Vocabulary head','20 logits → probabilities','d',true,true,'prediction');
+      out+=node(1373,824,175,58,'Vocabulary head',`${nv} logits → probabilities`,'d',true,true,'prediction');
       out+=txt(1460,909,`${d.topVocabulary[0].token} · p ≈ ${f(d.topVocabulary[0].probability)}`,'detail',`text-anchor="middle" fill="${C.d}"`);
     }
     out+=line(48,924,1552,924,`stroke="${C.line}"`);
     out+=txt(48,949,'SELF: Q, K and V come from the same E.   CAUSAL: receiver i reads only positions j ≤ i.','tiny');
     out+=txt(1552,949,'Hand-designed toy · decimals rounded · no FFN or normalization shown','tiny','text-anchor="end"');
+    // Inline SVG styles must not recolor other diagrams in the article.
+    out=out.replace('<svg xmlns=',`<svg id="${prefix}-svg" xmlns=`);
+    out=out.replace(/<style>([\s\S]*?)<\/style>/,(_,css)=>'<style>'+css.replace(/(^|})([^{}]+)\{/g,(_,end,selector)=>end+'#'+prefix+'-svg '+selector+'{')+'</style>');
     return out+'</svg>';
   }
   root.ATTENTION_PREVIEW={stages,render};

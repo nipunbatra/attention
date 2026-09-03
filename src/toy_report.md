@@ -1,63 +1,62 @@
 # toy_report.md - numbers produced by the hand-designed toy.json (v2, named axes)
 
-All values below are computed from the ONE-DECIMAL parameters in `toy.json` (268 numbers, max |x| = 3.0) by `make_toy2.py`; `node toy_ref.mjs --compare py_check.json` reproduces every intermediate to < 1e-12. Attention weights are shown to 2 decimals, probabilities to 3. The previous, optimised toy is kept as `toy_v1.json` (its report: `toy_report_v1.md`).
+All values below are computed from the ONE-DECIMAL parameters in `toy.json` (320 numbers, max |x| = 3.0) by `make_toy2.py`; `node toy_ref.mjs --compare py_check.json` reproduces every intermediate to < 1e-12. Attention weights are shown to 2 decimals, probabilities to 3. The previous, optimised toy is kept as `toy_v1.json` (its report: `toy_report_v1.md`).
 
 ## How the numbers were obtained
 
-Nothing was optimised. AXES.md names every coordinate, and the embeddings and projection matrices were written by hand so that the names are true: each row of a projection reads as 'input axis -> asks / offers / says'. The forward pass (the same arithmetic as `toy_ref.mjs`) was then evaluated and a few magnitudes were adjusted from the AXES.md starting point until the targets held on the rounded numbers: `bank` went from [1.5, 1.5, 0, 0.4] to [0.7, 0.7, 0, 0.6] and `fisherman` from [1.4, 0, 2.4, 0] to [2.0, 0, 2.2, 0], because the self score q_bank . k_bank grows with the square of bank's water/finance entries and at 1.5 bank attended to itself as much as to river; the W_vocab weights were raised to 1.5/1.2/1.0/0.7 (water words) and 1.5/1.2/0.9/0.7 (finance words) so that every non-candidate word stays at or below 0.04. Position offsets are a circle of radius 0.3 in the (person, glue) plane, one decimal, nothing on the water/finance axes.
+Nothing was optimised. AXES.md names every coordinate, and the embeddings and projection matrices were written by hand so that the names are true: each row of a projection reads as 'input axis -> asks / offers / says'. The forward pass (the same arithmetic as `toy_ref.mjs`) was then evaluated and a few magnitudes were adjusted from the AXES.md starting point until the targets held on the rounded numbers: `bank` became [0.7, 0.7, 0, 0.7, 0] and `fisherman` became [2.0, 0, 2.2, 0, 0], because the self score q_bank . k_bank grows with the square of bank's water/finance entries and at 1.5 bank attended to itself as much as to river; the W_vocab weights were raised to 1.5/1.2/1.0/0.7 (water words) and 1.5/1.2/0.9/0.7 (finance words) so that every non-candidate word stays at or below 0.04. Position has its own coordinate. It rises from 0.1 to 1.0, while its rows in W_Q, W_K, W_V and W_vocab are zero.
 
 ## Axes (from `toy.json` -> `axes`)
 
-| object | coordinate 1 | coordinate 2 | coordinate 3 | coordinate 4 |
-|---|---|---|---|---|
-| e, Delta e, e' (d_model = 4) | water | finance | person | glue |
-| q, k (d_k = 3) | setting: water? | setting: finance? | who? | |
-| v, m (d_v = 3) | says: water scene | says: finance scene | says: a person is here | |
-| short forms | e: water, finance, person, glue | q,k: water?, finance?, who? | v: →water, →finance, →person | |
+| object | coordinate 1 | coordinate 2 | coordinate 3 | coordinate 4 | coordinate 5 |
+|---|---|---|---|---|---|
+| e, Delta e, e' (d_model = 5) | water | finance | person | glue | position |
+| q, k (d_k = 3) | setting: water? | setting: finance? | who? |  |  |
+| v, m (d_v = 2) | says: water scene | says: finance scene |  |  |  |
 
-Reading rule: a query row is 'what I ask for', a key row is 'what I offer', a value row is 'what I send if retrieved'. W_O maps the v axes back onto the e axes (water -> water, finance -> finance, person -> person, nothing -> glue).
+Reading rule: a query row is 'what I ask for', a key row is 'what I offer', a value row is 'what I send if retrieved'. W_O maps the two v axes back onto the water and finance axes of e.
 
 ## Token embeddings (e axes)
 
-| token | water | finance | person | glue | reading |
-|---|---:|---:|---:|---:|---|
-| the | 0 | 0 | 0 | 2.4 | glue 2.4 |
-| fisherman | 2.0 | 0 | 2.2 | 0 | water 2.0, person 2.2 |
-| sat | 0.4 | 0 | 0.6 | 1.8 | water 0.4, person 0.6, glue 1.8 |
-| beside | 0.6 | 0 | 0 | 2.0 | water 0.6, glue 2.0 |
-| river | 3.0 | 0 | 0 | 0 | water 3.0 |
-| bank | 0.7 | 0.7 | 0 | 0.6 | water 0.7, finance 0.7, glue 0.6 |
-| and | 0 | 0 | 0 | 2.2 | glue 2.2 |
-| watched | 0.6 | 0 | 0.8 | 1.6 | water 0.6, person 0.8, glue 1.6 |
-| she | 0 | 0 | 2.6 | 0.4 | person 2.6, glue 0.4 |
-| deposited | 0 | 2.2 | 0.6 | 0.4 | finance 2.2, person 0.6, glue 0.4 |
-| cheque | 0 | 3.0 | 0 | 0 | finance 3.0 |
-| at | 0 | 0 | 0 | 2.0 | glue 2.0 |
-| water | 3.0 | 0 | 0 | 0 | water 3.0 |
-| boats | 2.4 | 0 | 0.4 | 0 | water 2.4, person 0.4 |
-| fish | 2.6 | 0 | 0.6 | 0 | water 2.6, person 0.6 |
-| ducks | 2.2 | 0 | 0.8 | 0 | water 2.2, person 0.8 |
-| teller | 0 | 2.6 | 1.8 | 0 | finance 2.6, person 1.8 |
-| clerk | 0 | 2.4 | 1.8 | 0 | finance 2.4, person 1.8 |
-| queue | 0 | 2.0 | 0.6 | 0 | finance 2.0, person 0.6 |
-| money | 0 | 3.0 | 0 | 0 | finance 3.0 |
+| token | water | finance | person | glue | pos | reading |
+|---|---:|---:|---:|---:|---:|---|
+| the | 0 | 0 | 0 | 2.4 | 0 | glue 2.4 |
+| fisherman | 2.0 | 0 | 2.2 | 0 | 0 | water 2.0, person 2.2 |
+| sat | 0.4 | 0 | 0.6 | 1.8 | 0 | water 0.4, person 0.6, glue 1.8 |
+| beside | 0.6 | 0 | 0 | 2.0 | 0 | water 0.6, glue 2.0 |
+| river | 3.0 | 0 | 0 | 0 | 0 | water 3.0 |
+| bank | 0.7 | 0.7 | 0 | 0.7 | 0 | water 0.7, finance 0.7, glue 0.7 |
+| and | 0 | 0 | 0 | 2.2 | 0 | glue 2.2 |
+| watched | 0.6 | 0 | 0.8 | 1.6 | 0 | water 0.6, person 0.8, glue 1.6 |
+| she | 0 | 0 | 2.6 | 0.4 | 0 | person 2.6, glue 0.4 |
+| deposited | 0 | 2.2 | 0.6 | 0.4 | 0 | finance 2.2, person 0.6, glue 0.4 |
+| cheque | 0 | 3.0 | 0 | 0 | 0 | finance 3.0 |
+| at | 0 | 0 | 0 | 2.0 | 0 | glue 2.0 |
+| water | 3.0 | 0 | 0 | 0 | 0 | water 3.0 |
+| boats | 2.4 | 0 | 0.4 | 0 | 0 | water 2.4, person 0.4 |
+| fish | 2.6 | 0 | 0.6 | 0 | 0 | water 2.6, person 0.6 |
+| ducks | 2.2 | 0 | 0.8 | 0 | 0 | water 2.2, person 0.8 |
+| teller | 0 | 2.6 | 1.8 | 0 | 0 | finance 2.6, person 1.8 |
+| clerk | 0 | 2.4 | 1.8 | 0 | 0 | finance 2.4, person 1.8 |
+| queue | 0 | 2.0 | 0.6 | 0 | 0 | finance 2.0, person 0.6 |
+| money | 0 | 3.0 | 0 | 0 | 0 | finance 3.0 |
 
 ## Position offsets (added to the token row; e^(0)_i = tok_emb[token_i] + pos_emb[i])
 
-| position | water | finance | person | glue |
-|---:|---:|---:|---:|---:|
-| 1 | 0 | 0 | 0.2 | -0.2 |
-| 2 | 0 | 0 | 0.1 | -0.3 |
-| 3 | 0 | 0 | -0.1 | -0.3 |
-| 4 | 0 | 0 | -0.2 | -0.2 |
-| 5 | 0 | 0 | -0.3 | 0 |
-| 6 | 0 | 0 | -0.2 | 0.2 |
-| 7 | 0 | 0 | -0.1 | 0.3 |
-| 8 | 0 | 0 | 0.1 | 0.3 |
-| 9 | 0 | 0 | 0.2 | 0.2 |
-| 10 | 0 | 0 | 0.3 | 0 |
+| position | water | finance | person | glue | pos |
+|---:|---:|---:|---:|---:|---:|
+| 1 | 0 | 0 | 0 | 0 | 0.1 |
+| 2 | 0 | 0 | 0 | 0 | 0.2 |
+| 3 | 0 | 0 | 0 | 0 | 0.3 |
+| 4 | 0 | 0 | 0 | 0 | 0.4 |
+| 5 | 0 | 0 | 0 | 0 | 0.5 |
+| 6 | 0 | 0 | 0 | 0 | 0.6 |
+| 7 | 0 | 0 | 0 | 0 | 0.7 |
+| 8 | 0 | 0 | 0 | 0 | 0.8 |
+| 9 | 0 | 0 | 0 | 0 | 0.9 |
+| 10 | 0 | 0 | 0 | 0 | 1.0 |
 
-Radius 0.3 in the (person, glue) plane, so no position looks like a setting; all ten rows differ.
+Only the position coordinate changes. The attention projections and output head ignore that coordinate in this toy.
 
 ## Projection matrices (rows = input axis, columns = output axis; zeros left as 0)
 
@@ -69,6 +68,7 @@ Radius 0.3 in the (person, glue) plane, so no position looks like a setting; all
 | finance | 0 | 1.0 | 0 |
 | person | 0 | 0 | 0.4 |
 | glue | 0.7 | 0.7 | 0 |
+| pos | 0 | 0 | 0 |
 
 Reading: water asks water?, finance asks finance?, person asks who? (0.4), glue asks both settings (0.7, 0.7). Glue words ask 'what setting am I in?', which is why the final 'the' reads river or cheque.
 
@@ -80,29 +80,30 @@ Reading: water asks water?, finance asks finance?, person asks who? (0.4), glue 
 | finance | 0 | 1.0 | 0 |
 | person | 0 | 0 | 1.0 |
 | glue | 0 | 0 | 0 |
+| pos | 0 | 0 | 0 |
 
 Reading: water offers water, finance offers finance, person offers a person, glue offers nothing.
 
 ### W_V (e -> v): 'axis -> says'
 
-| e axis \ v axis | →water | →finance | →person |
-|---|---:|---:|---:|
-| water | 1.0 | 0 | 0 |
-| finance | 0 | 1.0 | 0 |
-| person | 0 | 0 | 1.0 |
-| glue | 0 | 0 | 0 |
+| e axis \ v axis | →water | →finance |
+|---|---:|---:|
+| water | 1.0 | 0 |
+| finance | 0 | 1.0 |
+| person | 0 | 0 |
+| glue | 0 | 0 |
+| pos | 0 | 0 |
 
-Reading: water says water scene, finance says finance scene, person says a person is here, glue says nothing.
+Reading: water says water scene and finance says finance scene. The other input axes send zeros in this toy.
 
 ### W_O (v -> e): back onto the e axes
 
-| v axis \ e axis | water | finance | person | glue |
-|---|---:|---:|---:|---:|
-| →water | 1.0 | 0 | 0 | 0 |
-| →finance | 0 | 1.0 | 0 | 0 |
-| →person | 0 | 0 | 0.5 | 0 |
+| v axis \ e axis | water | finance | person | glue | pos |
+|---|---:|---:|---:|---:|---:|
+| →water | 1.0 | 0 | 0 | 0 | 0 |
+| →finance | 0 | 1.0 | 0 | 0 | 0 |
 
-Reading: says water -> water 1.0, says finance -> finance 1.0, says person -> person 0.5, nothing lands on glue.
+Reading: says water -> water 1.0 and says finance -> finance 1.0. The other e axes receive zero.
 
 ### W_vocab (e -> logits): 'axis -> votes for these words' (only the non-zero columns; every other entry is 0)
 
@@ -112,6 +113,7 @@ Reading: says water -> water 1.0, says finance -> finance 1.0, says person -> pe
 | finance | 0 | 0 | 0 | 0 | 0 | 1.5 | 1.2 | 0.9 | 0.7 |
 | person | 0.2 | 0 | 0 | 0 | 0 | 0.2 | 0.2 | 0 | 0 |
 | glue | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| pos | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 
 b_vocab: -1.5 for the, fisherman, sat, beside, river, bank, and, watched, she, deposited, cheque, at; 0 for water, boats, fish, ducks, teller, clerk, queue, money.
 
@@ -121,13 +123,13 @@ b_vocab: -1.5 for the, fisherman, sat, beside, river, bank, and, watched, she, d
 
 | position | token | weight |
 |---:|---|---:|
-| 1 | The | 0.04 |
-| 2 | fisherman | 0.20 |
-| 3 | sat | 0.06 |
-| 4 | beside | 0.07 |
+| 1 | The | 0.05 |
+| 2 | fisherman | 0.21 |
+| 3 | sat | 0.07 |
+| 4 | beside | 0.08 |
 | 5 | the | 0.05 |
-| 6 | river | 0.45 |
-| 7 | bank | 0.13 |
+| 6 | river | 0.41 |
+| 7 | bank | 0.14 |
 
 Target: river >= .40, fisherman second, bank(self) and the glue words below fisherman: **PASS**
 
@@ -137,13 +139,13 @@ Target: river >= .40, fisherman second, bank(self) and the glue words below fish
 
 | position | token | weight |
 |---:|---|---:|
-| 1 | She | 0.04 |
+| 1 | She | 0.05 |
 | 2 | deposited | 0.24 |
-| 3 | the | 0.04 |
-| 4 | cheque | 0.45 |
+| 3 | the | 0.05 |
+| 4 | cheque | 0.41 |
 | 5 | at | 0.05 |
 | 6 | the | 0.05 |
-| 7 | bank | 0.13 |
+| 7 | bank | 0.14 |
 
 Target: cheque highest, deposited second, others low: **PASS**
 
@@ -154,11 +156,11 @@ Target: cheque highest, deposited second, others low: **PASS**
 | position | token | weight |
 |---:|---|---:|
 | 1 | The | 0.03 |
-| 2 | fisherman | 0.21 |
+| 2 | fisherman | 0.18 |
 | 3 | sat | 0.04 |
-| 4 | beside | 0.04 |
-| 5 | the | 0.02 |
-| 6 | river | 0.46 |
+| 4 | beside | 0.05 |
+| 5 | the | 0.03 |
+| 6 | river | 0.48 |
 | 7 | bank | 0.10 |
 | 8 | and | 0.03 |
 | 9 | watched | 0.05 |
@@ -168,12 +170,12 @@ Target: cheque highest, deposited second, others low: **PASS**
 
 | token | probability |
 |---|---:|
-| water | 0.392 |
-| boats | 0.219 |
-| fish | 0.149 |
-| ducks | 0.083 |
-| every other token (max: teller) | 0.026 |
-| (sum of the other 16) | 0.156 |
+| water | 0.396 |
+| boats | 0.221 |
+| fish | 0.150 |
+| ducks | 0.084 |
+| every other token (max: teller) | 0.024 |
+| (sum of the other 16) | 0.150 |
 
 Target: water > boats > fish > ducks, every other token <= .04; attention mostly on river, bank, fisherman: **PASS**
 
@@ -184,9 +186,9 @@ Target: water > boats > fish > ducks, every other token <= .04; attention mostly
 | position | token | weight |
 |---:|---|---:|
 | 1 | She | 0.03 |
-| 2 | deposited | 0.23 |
+| 2 | deposited | 0.22 |
 | 3 | the | 0.03 |
-| 4 | cheque | 0.46 |
+| 4 | cheque | 0.48 |
 | 5 | at | 0.03 |
 | 6 | the | 0.03 |
 | 7 | bank | 0.10 |
@@ -198,30 +200,30 @@ Target: water > boats > fish > ducks, every other token <= .04; attention mostly
 
 | token | probability |
 |---|---:|
-| teller | 0.420 |
-| clerk | 0.233 |
-| queue | 0.120 |
-| money | 0.081 |
+| teller | 0.413 |
+| clerk | 0.228 |
+| queue | 0.125 |
+| money | 0.084 |
 | every other token (max: water) | 0.024 |
-| (sum of the other 16) | 0.146 |
+| (sum of the other 16) | 0.150 |
 
 Target: teller > clerk > queue > money, every other token <= .04; attention mostly on cheque, bank, deposited: **PASS**
 
 ## T5 - baseline (no attention): softmax(e^(0)_the(10) W_vocab + b)
 
-Identical for both sentences (same token, same position 10). e^(0)_the(10) has nothing on the water or finance axes, so the only differences come from the position offset on the person axis (which votes a little for teller and clerk).
+Identical for both sentences (same token, same position 10). e^(0)_the(10) has nothing on the water or finance axes, and the output head ignores its position coordinate.
 
 | token | probability |
 |---|---:|
-| water | 0.092 |
-| boats | 0.092 |
-| fish | 0.092 |
-| ducks | 0.092 |
-| teller | 0.098 |
-| clerk | 0.098 |
-| queue | 0.092 |
-| money | 0.092 |
-| every other token (max) | 0.022 |
+| water | 0.094 |
+| boats | 0.094 |
+| fish | 0.094 |
+| ducks | 0.094 |
+| teller | 0.094 |
+| clerk | 0.094 |
+| queue | 0.094 |
+| money | 0.094 |
+| every other token (max) | 0.021 |
 
 Target: each candidate in [.06, .18], every other token <= .04: **PASS**
 
@@ -229,28 +231,28 @@ Target: each candidate in [.06, .18], every other token <= .04: **PASS**
 
 | query | The(1) | fisherman(2) | sat(3) | beside(4) | the(5) | river(6) | bank(7) | and(8) | watched(9) | the(10) | river+bank |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| The(1) | 0.03 | 0.20 | 0.04 | 0.05 | 0.03 | 0.43 | 0.10 | 0.03 | 0.05 | 0.03 | **0.53** |
-| fisherman(2) | 0.02 | 0.45 | 0.03 | 0.03 | 0.01 | 0.34 | 0.03 | 0.02 | 0.05 | 0.02 | **0.37** |
-| sat(3) | 0.03 | 0.23 | 0.05 | 0.05 | 0.03 | 0.39 | 0.09 | 0.03 | 0.06 | 0.03 | **0.48** |
-| beside(4) | 0.02 | 0.17 | 0.03 | 0.04 | 0.02 | 0.55 | 0.08 | 0.02 | 0.04 | 0.02 | **0.63** |
-| the(5) | 0.03 | 0.16 | 0.04 | 0.05 | 0.03 | 0.50 | 0.10 | 0.03 | 0.04 | 0.03 | **0.60** |
+| The(1) | 0.03 | 0.18 | 0.04 | 0.05 | 0.03 | 0.48 | 0.10 | 0.03 | 0.05 | 0.03 | **0.58** |
+| fisherman(2) | 0.01 | 0.40 | 0.03 | 0.03 | 0.01 | 0.42 | 0.03 | 0.01 | 0.04 | 0.01 | **0.45** |
+| sat(3) | 0.03 | 0.23 | 0.04 | 0.04 | 0.03 | 0.45 | 0.08 | 0.03 | 0.05 | 0.03 | **0.53** |
+| beside(4) | 0.02 | 0.18 | 0.03 | 0.04 | 0.02 | 0.58 | 0.07 | 0.02 | 0.04 | 0.02 | **0.65** |
+| the(5) | 0.03 | 0.18 | 0.04 | 0.05 | 0.03 | 0.48 | 0.10 | 0.03 | 0.05 | 0.03 | **0.58** |
 
-Soft target (>= .25 on river+bank from some early token): **PASS**, strongest leak from beside(4) (0.63). Every glue word asks for its setting, so with the mask off each of them reads river before river has been written; the page can highlight any of The(1), beside(4) or the(5).
+Soft target (>= .25 on river+bank from some early token): **PASS**, strongest leak from beside(4) (0.65). Every glue word asks for its setting, so with the mask off each of them reads river before river has been written; the page can highlight any of The(1), beside(4) or the(5).
 
-## The 'bank' story for section 10 (2 decimals, e axes: water, finance, person, glue)
+## The 'bank' story for section 10 (2 decimals, e axes: water, finance, person, glue, pos)
 
 | quantity | S_A (river) | S_B (cheque) |
 |---|---|---|
-| e_bank^(0) (identical) | [0.70, 0.70, -0.10, 0.90] | [0.70, 0.70, -0.10, 0.90] |
-| q_bank (q axes) | [1.33, 1.33, -0.04] | [1.33, 1.33, -0.04] |
-| m_bank (v axes) | [1.90, 0.09, 0.36] | [0.09, 1.97, 0.15] |
-| Delta e_bank | [1.90, 0.09, 0.18, 0.00] | [0.09, 1.97, 0.08, 0.00] |
-| e'_bank = e + Delta e | [2.60, 0.79, 0.08, 0.90] | [0.79, 2.67, -0.02, 0.90] |
-| e_the(10)^(0) (identical) | [0.00, 0.00, 0.30, 2.40] | [0.00, 0.00, 0.30, 2.40] |
-| q_the(10) (q axes) | [1.68, 1.68, 0.12] | [1.68, 1.68, 0.12] |
-| m_the(10) (v axes) | [1.93, 0.07, 0.44] | [0.10, 1.96, 0.19] |
-| Delta e_the(10) | [1.93, 0.07, 0.22, 0.00] | [0.10, 1.96, 0.09, 0.00] |
-| e'_the(10) | [1.93, 0.07, 0.52, 2.40] | [0.10, 1.96, 0.39, 2.40] |
+| e_bank^(0) (identical) | [0.70, 0.70, 0.00, 0.70, 0.70] | [0.70, 0.70, 0.00, 0.70, 0.70] |
+| q_bank (q axes) | [1.19, 1.19, 0.00] | [1.19, 1.19, 0.00] |
+| m_bank (v axes) | [1.80, 0.10] | [0.10, 1.86] |
+| Delta e_bank | [1.80, 0.10, 0.00, 0.00, 0.00] | [0.10, 1.86, 0.00, 0.00, 0.00] |
+| e'_bank = e + Delta e | [2.50, 0.80, 0.00, 0.70, 0.70] | [0.80, 2.56, 0.00, 0.70, 0.70] |
+| e_the(10)^(0) (identical) | [0.00, 0.00, 0.00, 2.40, 1.00] | [0.00, 0.00, 0.00, 2.40, 1.00] |
+| q_the(10) (q axes) | [1.68, 1.68, 0.00] | [1.68, 1.68, 0.00] |
+| m_the(10) (v axes) | [1.95, 0.07] | [0.10, 1.98] |
+| Delta e_the(10) | [1.95, 0.07, 0.00, 0.00, 0.00] | [0.10, 1.98, 0.00, 0.00, 0.00] |
+| e'_the(10) | [1.95, 0.07, 0.00, 2.40, 1.00] | [0.10, 1.98, 0.00, 2.40, 1.00] |
 
 Reading: in S_A the update to bank lands on the water axis, in S_B on the finance axis; the same e_bank^(0) ends up as two different e'_bank. The final 'the' receives the same kind of update, and the output head turns it into water words or finance words.
 
@@ -258,57 +260,57 @@ Reading: in S_A the update to bank lands on the water axis, in S_B on the financ
 
 ### S_A
 
-| pos | token | e (water, finance, person, glue) | q (water?, finance?, who?) | k (same axes) | v (→water, →finance, →person) |
+| pos | token | e (water, finance, person, glue, pos) | q (water?, finance?, who?) | k (same axes) | v (→water, →finance) |
 |---:|---|---|---|---|---|
-| 1 | The | [0.00, 0.00, 0.20, 2.20] | [1.54, 1.54, 0.08] | [0.00, 0.00, 0.20] | [0.00, 0.00, 0.20] |
-| 2 | fisherman | [2.00, 0.00, 2.30, -0.30] | [1.79, -0.21, 0.92] | [2.00, 0.00, 2.30] | [2.00, 0.00, 2.30] |
-| 3 | sat | [0.40, 0.00, 0.50, 1.50] | [1.45, 1.05, 0.20] | [0.40, 0.00, 0.50] | [0.40, 0.00, 0.50] |
-| 4 | beside | [0.60, 0.00, -0.20, 1.80] | [1.86, 1.26, -0.08] | [0.60, 0.00, -0.20] | [0.60, 0.00, -0.20] |
-| 5 | the | [0.00, 0.00, -0.30, 2.40] | [1.68, 1.68, -0.12] | [0.00, 0.00, -0.30] | [0.00, 0.00, -0.30] |
-| 6 | river | [3.00, 0.00, -0.20, 0.20] | [3.14, 0.14, -0.08] | [3.00, 0.00, -0.20] | [3.00, 0.00, -0.20] |
-| 7 | bank | [0.70, 0.70, -0.10, 0.90] | [1.33, 1.33, -0.04] | [0.70, 0.70, -0.10] | [0.70, 0.70, -0.10] |
-| 8 | and | [0.00, 0.00, 0.10, 2.50] | [1.75, 1.75, 0.04] | [0.00, 0.00, 0.10] | [0.00, 0.00, 0.10] |
-| 9 | watched | [0.60, 0.00, 1.00, 1.80] | [1.86, 1.26, 0.40] | [0.60, 0.00, 1.00] | [0.60, 0.00, 1.00] |
-| 10 | the | [0.00, 0.00, 0.30, 2.40] | [1.68, 1.68, 0.12] | [0.00, 0.00, 0.30] | [0.00, 0.00, 0.30] |
+| 1 | The | [0.00, 0.00, 0.00, 2.40, 0.10] | [1.68, 1.68, 0.00] | [0.00, 0.00, 0.00] | [0.00, 0.00] |
+| 2 | fisherman | [2.00, 0.00, 2.20, 0.00, 0.20] | [2.00, 0.00, 0.88] | [2.00, 0.00, 2.20] | [2.00, 0.00] |
+| 3 | sat | [0.40, 0.00, 0.60, 1.80, 0.30] | [1.66, 1.26, 0.24] | [0.40, 0.00, 0.60] | [0.40, 0.00] |
+| 4 | beside | [0.60, 0.00, 0.00, 2.00, 0.40] | [2.00, 1.40, 0.00] | [0.60, 0.00, 0.00] | [0.60, 0.00] |
+| 5 | the | [0.00, 0.00, 0.00, 2.40, 0.50] | [1.68, 1.68, 0.00] | [0.00, 0.00, 0.00] | [0.00, 0.00] |
+| 6 | river | [3.00, 0.00, 0.00, 0.00, 0.60] | [3.00, 0.00, 0.00] | [3.00, 0.00, 0.00] | [3.00, 0.00] |
+| 7 | bank | [0.70, 0.70, 0.00, 0.70, 0.70] | [1.19, 1.19, 0.00] | [0.70, 0.70, 0.00] | [0.70, 0.70] |
+| 8 | and | [0.00, 0.00, 0.00, 2.20, 0.80] | [1.54, 1.54, 0.00] | [0.00, 0.00, 0.00] | [0.00, 0.00] |
+| 9 | watched | [0.60, 0.00, 0.80, 1.60, 0.90] | [1.72, 1.12, 0.32] | [0.60, 0.00, 0.80] | [0.60, 0.00] |
+| 10 | the | [0.00, 0.00, 0.00, 2.40, 1.00] | [1.68, 1.68, 0.00] | [0.00, 0.00, 0.00] | [0.00, 0.00] |
 
 ### S_B
 
-| pos | token | e (water, finance, person, glue) | q (water?, finance?, who?) | k (same axes) | v (→water, →finance, →person) |
+| pos | token | e (water, finance, person, glue, pos) | q (water?, finance?, who?) | k (same axes) | v (→water, →finance) |
 |---:|---|---|---|---|---|
-| 1 | She | [0.00, 0.00, 2.80, 0.20] | [0.14, 0.14, 1.12] | [0.00, 0.00, 2.80] | [0.00, 0.00, 2.80] |
-| 2 | deposited | [0.00, 2.20, 0.70, 0.10] | [0.07, 2.27, 0.28] | [0.00, 2.20, 0.70] | [0.00, 2.20, 0.70] |
-| 3 | the | [0.00, 0.00, -0.10, 2.10] | [1.47, 1.47, -0.04] | [0.00, 0.00, -0.10] | [0.00, 0.00, -0.10] |
-| 4 | cheque | [0.00, 3.00, -0.20, -0.20] | [-0.14, 2.86, -0.08] | [0.00, 3.00, -0.20] | [0.00, 3.00, -0.20] |
-| 5 | at | [0.00, 0.00, -0.30, 2.00] | [1.40, 1.40, -0.12] | [0.00, 0.00, -0.30] | [0.00, 0.00, -0.30] |
-| 6 | the | [0.00, 0.00, -0.20, 2.60] | [1.82, 1.82, -0.08] | [0.00, 0.00, -0.20] | [0.00, 0.00, -0.20] |
-| 7 | bank | [0.70, 0.70, -0.10, 0.90] | [1.33, 1.33, -0.04] | [0.70, 0.70, -0.10] | [0.70, 0.70, -0.10] |
-| 8 | and | [0.00, 0.00, 0.10, 2.50] | [1.75, 1.75, 0.04] | [0.00, 0.00, 0.10] | [0.00, 0.00, 0.10] |
-| 9 | watched | [0.60, 0.00, 1.00, 1.80] | [1.86, 1.26, 0.40] | [0.60, 0.00, 1.00] | [0.60, 0.00, 1.00] |
-| 10 | the | [0.00, 0.00, 0.30, 2.40] | [1.68, 1.68, 0.12] | [0.00, 0.00, 0.30] | [0.00, 0.00, 0.30] |
+| 1 | She | [0.00, 0.00, 2.60, 0.40, 0.10] | [0.28, 0.28, 1.04] | [0.00, 0.00, 2.60] | [0.00, 0.00] |
+| 2 | deposited | [0.00, 2.20, 0.60, 0.40, 0.20] | [0.28, 2.48, 0.24] | [0.00, 2.20, 0.60] | [0.00, 2.20] |
+| 3 | the | [0.00, 0.00, 0.00, 2.40, 0.30] | [1.68, 1.68, 0.00] | [0.00, 0.00, 0.00] | [0.00, 0.00] |
+| 4 | cheque | [0.00, 3.00, 0.00, 0.00, 0.40] | [0.00, 3.00, 0.00] | [0.00, 3.00, 0.00] | [0.00, 3.00] |
+| 5 | at | [0.00, 0.00, 0.00, 2.00, 0.50] | [1.40, 1.40, 0.00] | [0.00, 0.00, 0.00] | [0.00, 0.00] |
+| 6 | the | [0.00, 0.00, 0.00, 2.40, 0.60] | [1.68, 1.68, 0.00] | [0.00, 0.00, 0.00] | [0.00, 0.00] |
+| 7 | bank | [0.70, 0.70, 0.00, 0.70, 0.70] | [1.19, 1.19, 0.00] | [0.70, 0.70, 0.00] | [0.70, 0.70] |
+| 8 | and | [0.00, 0.00, 0.00, 2.20, 0.80] | [1.54, 1.54, 0.00] | [0.00, 0.00, 0.00] | [0.00, 0.00] |
+| 9 | watched | [0.60, 0.00, 0.80, 1.60, 0.90] | [1.72, 1.12, 0.32] | [0.60, 0.00, 0.80] | [0.60, 0.00] |
+| 10 | the | [0.00, 0.00, 0.00, 2.40, 1.00] | [1.68, 1.68, 0.00] | [0.00, 0.00, 0.00] | [0.00, 0.00] |
 
 ## T7 / T9 - magnitudes
 
-- 268 parameters, all one-decimal, max |x| = 3.0 (limit 3.0).
-- token-embedding norms: min 1.16, mean 2.46, max 3.16; positional norms: min 0.28, max 0.32 (13% of the mean token norm).
-- e^(0) of the three 'the' in S_A: pos 1 [0.00, 0.00, 0.20, 2.20], pos 5 [0.00, 0.00, -0.30, 2.40], pos 10 [0.00, 0.00, 0.30, 2.40] (all different).
+- 320 parameters, all one-decimal, max |x| = 3.0 (limit 3.0).
+- token-embedding norms: min 1.21, mean 2.47, max 3.16; positional norms: min 0.10, max 1.00 (41% of the mean token norm).
+- e^(0) of the three 'the' in S_A: pos 1 [0.00, 0.00, 0.00, 2.40, 0.10], pos 5 [0.00, 0.00, 0.00, 2.40, 0.50], pos 10 [0.00, 0.00, 0.00, 2.40, 1.00] (all different).
 
 ## Score ranges (for heat-map colour scales)
 
-- S_A: scaled causal scores s_ij in [-0.07, 5.45]; raw q.k in [-0.12, 9.44]; |Delta e| rows up to 2.81; logits of the(10) in [-1.50, 2.90].
-- S_B: scaled causal scores s_ij in [-0.19, 4.96]; raw q.k in [-0.34, 8.60]; |Delta e| rows up to 2.81; logits of the(10) in [-1.50, 3.03].
+- S_A: scaled causal scores s_ij in [0.00, 5.20]; raw q.k in [0.00, 9.00]; |Delta e| rows up to 2.77; logits of the(10) in [-1.50, 2.92].
+- S_B: scaled causal scores s_ij in [0.00, 5.20]; raw q.k in [0.00, 9.00]; |Delta e| rows up to 2.81; logits of the(10) in [-1.50, 2.98].
 
 ## Check summary (make_toy2.py --check-only)
 
-- [PASS] T1 hard: bank(7) in S_A: river >= .40, fisherman second, bank(self) and glue words below fisherman: bank(7) row S_A: The=0.04 fisherman=0.20 sat=0.06 beside=0.07 the=0.05 river=0.45 bank=0.13
-- [PASS] T2 hard: bank(7) in S_B: cheque highest, deposited second, others low: bank(7) row S_B: She=0.04 deposited=0.24 the=0.04 cheque=0.45 at=0.05 the=0.05 bank=0.13
-- [PASS] T3 hard: the(10) in S_A: water > boats > fish > ducks, every other token <= .04: water=0.392 boats=0.219 fish=0.149 ducks=0.083 | max other=0.026
-- [PASS] T3 hard: attention of the(10) mostly on river, bank, fisherman (sum >= .60, each of them top-3): the(10) row S_A: The=0.03 fisherman=0.21 sat=0.04 beside=0.04 the=0.02 river=0.46 bank=0.10 and=0.03 watched=0.05 the=0.03
-- [PASS] T4 hard: the(10) in S_B: teller > clerk > queue > money, every other token <= .04: teller=0.420 clerk=0.233 queue=0.120 money=0.081 | max other=0.024
-- [PASS] T4 hard: attention of the(10) mostly on cheque, bank, deposited (sum >= .60, each of them top-3): the(10) row S_B: She=0.03 deposited=0.23 the=0.03 cheque=0.46 at=0.03 the=0.03 bank=0.10 and=0.03 watched=0.05 the=0.03
-- [PASS] T5 hard: baseline (no attention) candidates each in [.06,.18], others <= .04, identical for S_A/S_B: water=0.092 boats=0.092 fish=0.092 ducks=0.092 teller=0.098 clerk=0.098 queue=0.092 money=0.092 | max other=0.022
-- [PASS] (soft) T6 soft: mask off, some early token of S_A puts >= .25 on future river/bank: The(1):0.53 fisherman(2):0.37 sat(3):0.48 beside(4):0.63 the(5):0.60
+- [PASS] T1 hard: bank(7) in S_A: river >= .40, fisherman second, bank(self) and glue words below fisherman: bank(7) row S_A: The=0.05 fisherman=0.21 sat=0.07 beside=0.08 the=0.05 river=0.41 bank=0.14
+- [PASS] T2 hard: bank(7) in S_B: cheque highest, deposited second, others low: bank(7) row S_B: She=0.05 deposited=0.24 the=0.05 cheque=0.41 at=0.05 the=0.05 bank=0.14
+- [PASS] T3 hard: the(10) in S_A: water > boats > fish > ducks, every other token <= .04: water=0.396 boats=0.221 fish=0.150 ducks=0.084 | max other=0.024
+- [PASS] T3 hard: attention of the(10) mostly on river, bank, fisherman (sum >= .60, each of them top-3): the(10) row S_A: The=0.03 fisherman=0.18 sat=0.04 beside=0.05 the=0.03 river=0.48 bank=0.10 and=0.03 watched=0.05 the=0.03
+- [PASS] T4 hard: the(10) in S_B: teller > clerk > queue > money, every other token <= .04: teller=0.413 clerk=0.228 queue=0.125 money=0.084 | max other=0.024
+- [PASS] T4 hard: attention of the(10) mostly on cheque, bank, deposited (sum >= .60, each of them top-3): the(10) row S_B: She=0.03 deposited=0.22 the=0.03 cheque=0.48 at=0.03 the=0.03 bank=0.10 and=0.03 watched=0.05 the=0.03
+- [PASS] T5 hard: baseline (no attention) candidates each in [.06,.18], others <= .04, identical for S_A/S_B: water=0.094 boats=0.094 fish=0.094 ducks=0.094 teller=0.094 clerk=0.094 queue=0.094 money=0.094 | max other=0.021
+- [PASS] (soft) T6 soft: mask off, some early token of S_A puts >= .25 on future river/bank: The(1):0.58 fisherman(2):0.45 sat(3):0.53 beside(4):0.65 the(5):0.58
 - [PASS] T7 hard: all |x| <= 3.0 and one decimal: max|x|=3.0
 - [PASS] T8 hard: vocabulary is the 20 tokens: 20 tokens
-- [PASS] T9 hard: pos norms <= 40% of mean token norm; the three 'the' differ: max pos norm=0.32, mean tok norm=2.46 (13%)
-- [PASS] T10 hard: d_model=4, d_k=d_v=3: ok
+- [PASS] T9 hard: position has its own coordinate and the three 'the' rows differ: position rows 0.1 to 1.0; token and projection position rows are zero
+- [PASS] T10 hard: parameter shapes match d_model, d_k and d_v: ok
 

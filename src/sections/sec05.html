@@ -12,14 +12,38 @@
 #s05 .slogan .big{font-family:var(--font-math);font-style:italic;font-size:36px;line-height:1;color:var(--oc);flex:none}
 #s05 .slogan .txt{font-size:1.05em;font-weight:600}
 #s05 .slogan .txt small{display:block;font-weight:400;color:var(--ink-2);font-size:.82em}
-/* the search box: six video cards, each with a key (for matching) and a value (what comes back) */
-#s05 .vgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin:12px 0 4px}
-#s05 .vcard{border:1px solid var(--line);border-radius:var(--radius-s);background:var(--card);padding:10px 14px;min-width:0}
-#s05 .vcard .vt{font-weight:700;margin:0 0 4px}
+/* the mock search site: six ranked video cards, each with a key worksheet and a value row */
+#s05 .searchbar{display:flex;gap:10px;align-items:center;border:2px solid var(--ink);border-radius:999px;background:var(--card);padding:10px 16px;margin:12px 0 10px;min-width:0}
+#s05 .searchbar svg{width:20px;height:20px;flex:none;color:var(--ink-2)}
+#s05 .searchbar .s05-qtext{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#s05 .search-meta{display:flex;justify-content:space-between;gap:12px;align-items:center;margin:10px 0 4px;color:var(--ink-2);font-size:14px}
+#s05 .vgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0 4px}
+#s05 .vcard{border:1px solid var(--line);border-radius:var(--radius-s);background:var(--card);padding:10px;min-width:0;display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:8px 12px;align-items:start;transition:transform 220ms ease,border-color var(--dur),opacity var(--dur),box-shadow var(--dur)}
+#s05 .vcard.is-top{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+#s05 .vcard.is-linked{border-color:var(--ink);background:var(--paper)}
+#s05 .vthumb{width:96px;height:54px;border:1px solid var(--line);border-radius:7px;background:var(--paper);color:var(--ink-2);grid-row:1/span 2}
+#s05 .vthumb *{vector-effect:non-scaling-stroke}
+#s05 .vmain{min-width:0}
+#s05 .vcard .vt{font-weight:700;margin:0 0 3px}
+#s05 .vsum{font-size:13px;color:var(--ink-2);line-height:1.35;margin:0}
+#s05 .vsum .plab{color:var(--c-v);font-weight:700}
+#s05 .vrank{font-family:var(--font-mono);font-size:12px;border:1px solid var(--line);border-radius:999px;padding:2px 7px;white-space:nowrap}
+#s05 .vdur{font-family:var(--font-mono);font-size:12px;color:var(--ink-3);grid-column:3;text-align:right}
+#s05 .rank-details{grid-column:1/-1;border-top:1px solid var(--line);padding-top:7px;margin-top:2px}
+#s05 .rank-details>summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--ink-2);list-style:none;display:flex;justify-content:space-between;gap:8px}
+#s05 .rank-details>summary::after{content:'+';font-family:var(--font-mono)}
+#s05 .rank-details[open]>summary::after{content:'−'}
+#s05 .rank-body{padding-top:9px;min-width:0}
+#s05 .rank-score{font-size:13px;color:var(--ink-2);margin:7px 0}
+#s05 .rank-body .calc{font-size:12px}
+#s05 .rank-body .calc-t th,#s05 .rank-body .calc-t td{padding:4px 6px}
+#s05 .rank-body .dt-fig{margin-top:8px}
+#s05 .rank-body .dt-cap{display:none}
 #s05 .vpart{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;margin:6px 0 0}
 #s05 .vpart .plab{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--oc);margin-right:2px}
 #s05 .vpart .tag{border:1px solid var(--oc);background:var(--ot);border-radius:999px;padding:1px 9px;font-size:13px;font-family:var(--font-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
-#s05 .vpart .vsum{flex:1 1 100%;font-size:.82em;color:var(--ink-2);margin:2px 0 0}
+@media(max-width:720px){#s05 .vgrid{grid-template-columns:minmax(0,1fr)}#s05 .searchbar .s05-qtext{white-space:normal}#s05 .search-meta{align-items:flex-start;flex-direction:column}}
+@media(prefers-reduced-motion:reduce){#s05 .vcard{transition:none}}
 /* present mode: the query and its reading on the left, the held table on the right, so a frame fits 1280x720 */
 body.present #s05 .s05-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:0 1.2em;align-items:start}
 body.present #s05 #s05-dot .dt-cap,body.present #s05 #s05-kread{display:none}
@@ -36,6 +60,10 @@ body.present #s05 .qbox{padding:.4em .9em;margin:.4em 0 .2em}
 body.present #s05 .qbox .qk{font-size:.55em}
 body.present #s05 .vgrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:.5em}
 body.present #s05 .vcard{padding:.4em .7em}
+body.present #s05 .vthumb{width:4em;height:2.25em}
+body.present #s05 .rank-details{display:none}
+body.present #s05 .vdur{display:none}
+body.present #s05 .vcard{grid-template-columns:4em minmax(0,1fr) auto;gap:.25em .5em}
 body.present #s05 .vpart{margin:.25em 0 0}
 body.present #s05 .vpart .plab{font-size:.55em}
 body.present #s05 .vpart .tag{font-size:.7em}
@@ -53,16 +81,29 @@ body.present #s05 .slogan .txt small{font-size:.72em}
 body.present #s05 .vcard .vt{font-size:.9em;margin:0 0 .1em}
 body.present #s05 .vcard{padding:.35em .6em}
 body.present #s05 .vpart .tag{font-size:.64em;padding:0 .7em}
-body.present #s05 .vpart .vsum{font-size:.74em;line-height:1.35}
+body.present #s05 .vsum{font-size:.62em;line-height:1.25}
 body.present #s05 .vgrid{gap:.4em;margin:.5em 0 0}
 body.present #s05 .callout-key{font-size:1em;margin:.5em 0 0}
 body.present #s05 .s05-pair{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:0 1em;align-items:start}
 body.present #s05 .s05-pair>.prose{font-size:.92em;margin:.6em 0 0}
+/* The complete key row must remain visible when all scores are revealed. */
+body.present #s05 .s05-two{grid-template-columns:minmax(0,1fr);gap:0}
+body.present #s05 .s05-two>*,
+body.present #s05 .s05-two>.s05-tab,
+body.present #s05 .s05-two>#s05-topline{grid-column:1;grid-row:auto}
+body.present #s05 .s05-two .qbox{margin:0 0 .3em;padding:.3em .65em}
+body.present #s05 .s05-two>#s05-qread,
+body.present #s05 .s05-two>.prose{display:none}
+body.present #s05 .s05-two #s05-dot .dt{width:100%}
+body.present #s05 .s05-two #s05-dot .dt td.dt-num,
+body.present #s05 .s05-two #s05-dot .dt th{font-size:18px;padding:.2em .5em}
+body.present #s05 .s05-two #s05-topline{font-size:18px;margin:.25em 0}
+body.present #s05 .s05-two+.grid-3{display:none}
 </style>
 <header class="sec-head">
   <span class="sec-num">05</span>
   <div>
-    <p class="eyebrow">Why we are here: weights should come from what a token needs and what a token has. Search engines solve exactly that problem.</p>
+    <p class="eyebrow">Why we are here: weights should come from what a token needs and what a token has. Search gives us a familiar analogy for those two roles.</p>
     <h2>A detour through search: Query, Key, Value</h2>
   </div>
 </header>
@@ -74,7 +115,7 @@ body.present #s05 .s05-pair>.prose{font-size:.92em;margin:.6em 0 0}
 <div class="frame" data-title="A search box">
   <script type="text/x-notes">
 What does the site compare, and what does it hand back?
-Build 0 is the question and the six videos with nothing attached. Ask the room what the site must know about each video to answer. Reveal the key tags (used for matching), then the value payloads (what the searcher receives). Do not score anything yet.
+Read the query, then ask the room what the site must know about each video to answer. Each result already shows the returned value as a summary. Open the top result to inspect its matching key and score. Do not use the spreadsheet yet.
 
 Timing: two minutes.
   </script>
@@ -83,8 +124,13 @@ Timing: two minutes.
   </div>
 
   <div class="card">
-    <h3 class="card-title">One question, six videos: each video carries a <span class="sym sym-k">key</span> for matching and a <span class="sym sym-v">value</span> to hand back</h3>
-    <div class="qbox obj-q"><span class="qk">Query</span><span class="qt s05-qtext"></span></div>
+    <h3 class="card-title">Search six videos by comparing one <span class="sym sym-q">query</span> with six <span class="sym sym-k">keys</span></h3>
+    <div class="searchbar" role="search" aria-label="Video search query">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m15.4 15.4 5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span class="s05-qtext"></span>
+    </div>
+    <div class="btn-row" id="s05-qbtns"></div>
+    <div class="search-meta"><span id="s05-result-count">Six results, ranked by key score</span><span>Open a result to see its key calculation and value.</span></div>
     <div class="vgrid" id="s05-vgrid"></div>
   </div>
 </div>
@@ -98,12 +144,11 @@ Timing: four minutes.
   </script>
   <div class="card s05-two">
     <h3 class="card-title">The search: the question becomes a <span class="sym sym-q">Query</span> row, and every video has a <span class="sym sym-k">Key</span> row</h3>
-    <div class="btn-row" id="s05-qbtns"></div>
     <div class="qbox obj-q"><span class="qk">Query</span><span class="qt s05-qtext" id="s05-qtext"></span></div>
     <p class="look" id="s05-qread"></p>
     <div class="prose" data-build="7">
       <p>Matching is a dot product between the query and each key. At this stage the site looks at nothing else about the item.</p>
-      $$s_j = \vq{q}^\top \vk{k_j}$$
+      $$s_j = \vq{q}\cdot \vk{k_j}$$
       <p>$\vq{q}$ = query representation, $\vk{k_j}$ = key of item $j$, $\vv{v_j}$ = value of item $j$.</p>
     </div>
     <div id="s05-dot" class="s05-tab"></div>
@@ -136,7 +181,7 @@ Timing: two minutes.
       <p>The <strong>key is used to decide whether something matches.</strong><br>The <strong>value is the information we actually retrieve.</strong></p>
     </div>
     <div class="prose" data-build="1">
-      <p>A high score says <em>retrieve Backpropagation</em>, but what arrives is its value, not its key. A real search engine then returns one winner. Attention does something softer.</p>
+      <p>A high score says <em>retrieve Backpropagation</em>, but what arrives is its value, not its key. For this toy lookup, take the highest-scoring item. Real search engines usually rank several results; attention instead mixes values using soft weights.</p>
     </div>
   </div>
 </div>
@@ -152,12 +197,12 @@ Timing: two minutes.
   const KEY_AXES = ['gradient flow', 'optimisation', 'architecture', 'generalisation'];
   const VAL_AXES = ['gradients', 'optimisation', 'architecture'];
   const VIDEOS = [
-    { title: 'Backpropagation',     k: [2.2, 0.6, 0.2, 0.0], v: [0.9, 0.3, 0.1], summary: 'The chain rule applied layer by layer, from the loss back to every weight.' },
-    { title: 'Gradient Descent',    k: [0.4, 1.0, 0.0, 0.2], v: [0.4, 0.9, 0.0], summary: 'Move the weights against the gradient, one small step at a time.' },
-    { title: 'CNNs',                k: [0.1, 0.0, 2.0, 0.1], v: [0.1, 0.1, 0.9], summary: 'Convolution layers share one filter across every image position.' },
-    { title: 'Transformers',        k: [0.0, 0.0, 1.0, 0.0], v: [0.1, 0.2, 0.9], summary: 'Layers in which every token reads from the other tokens.' },
-    { title: 'Batch Normalization', k: [0.2, 0.5, 1.0, 0.6], v: [0.3, 0.6, 0.5], summary: 'Normalise activations inside the network so training stays stable.' },
-    { title: 'Regularization',      k: [0.1, 0.5, 0.0, 2.0], v: [0.2, 0.7, 0.1], summary: 'Penalise complexity so the model generalises beyond its training data.' }
+    { title: 'Backpropagation',     kind: 'backprop', duration: '12:48', k: [2.2, 0.6, 0.2, 0.0], v: [0.9, 0.3, 0.1], summary: 'The chain rule applied layer by layer, from the loss back to every weight.' },
+    { title: 'Gradient descent',    kind: 'descent', duration: '09:31', k: [0.4, 1.0, 0.0, 0.2], v: [0.4, 0.9, 0.0], summary: 'Move the weights against the gradient, one small step at a time.' },
+    { title: 'CNNs',                kind: 'cnn', duration: '14:06', k: [0.1, 0.0, 2.0, 0.1], v: [0.1, 0.1, 0.9], summary: 'Convolution layers share one filter across every image position.' },
+    { title: 'Transformers',        kind: 'transformer', duration: '18:22', k: [0.0, 0.0, 1.0, 0.0], v: [0.1, 0.2, 0.9], summary: 'Layers in which every token reads from the other tokens.' },
+    { title: 'Batch normalisation', kind: 'batchnorm', duration: '08:57', k: [0.2, 0.5, 1.0, 0.6], v: [0.3, 0.6, 0.5], summary: 'Normalise activations inside the network so training stays stable.' },
+    { title: 'Regularisation',      kind: 'regularise', duration: '11:43', k: [0.1, 0.5, 0.0, 2.0], v: [0.2, 0.7, 0.1], summary: 'Penalise complexity so the model generalises beyond its training data.' }
   ];
   const QUERIES = [
     { short: 'Query 1: gradients',   text: 'How does a neural network send gradient information backwards?', q: [2.0, 0.6, 0.2, 0.0] },
@@ -174,15 +219,80 @@ Timing: two minutes.
   /* present mode: after a redraw, re-apply the current build so freshly made cells hide until their turn */
   function syncBuilds(){ if (AT.present && AT.present.isActive && AT.present.isActive()) AT.present.setBuild(AT.present.state().build); }
 
-  /* frame 1: the six video cards; the key tags are build 1, the value payloads build 2 */
+  function thumb(kind, title){
+    const common = { fill: 'none', stroke: 'currentColor', 'stroke-width': '1.7', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' };
+    const parts = [AT.svg('title', {}, title + ' thumbnail')];
+    if (kind === 'backprop') parts.push(
+      AT.svg('rect', { x: '9', y: '17', width: '18', height: '20', rx: '3', ...common }),
+      AT.svg('rect', { x: '39', y: '17', width: '18', height: '20', rx: '3', ...common }),
+      AT.svg('rect', { x: '69', y: '17', width: '18', height: '20', rx: '3', ...common }),
+      AT.svg('path', { d: 'M69 23H58m5-5-5 5 5 5M39 31H28m5-5-5 5 5 5', ...common }));
+    if (kind === 'descent') parts.push(
+      AT.svg('path', { d: 'M13 13 Q48 50 83 13', ...common }),
+      AT.svg('circle', { cx: '59', cy: '34', r: '4', fill: 'currentColor' }),
+      AT.svg('path', { d: 'M72 12 61 28m1-8-1 8 8-2', ...common }));
+    if (kind === 'cnn') parts.push(
+      AT.svg('path', { d: 'M12 10v34M23 10v34M34 10v34M45 10v34M12 10h33M12 21h33M12 32h33M12 43h33', ...common }),
+      AT.svg('rect', { x: '22', y: '20', width: '22', height: '22', rx: '2', fill: 'none', stroke: 'currentColor', 'stroke-width': '3' }),
+      AT.svg('path', { d: 'M52 27h30m-7-6 7 6-7 6', ...common }));
+    if (kind === 'transformer') parts.push(
+      AT.svg('rect', { x: '20', y: '8', width: '48', height: '10', rx: '2', ...common }),
+      AT.svg('rect', { x: '20', y: '23', width: '48', height: '10', rx: '2', ...common }),
+      AT.svg('rect', { x: '20', y: '38', width: '48', height: '8', rx: '2', ...common }),
+      AT.svg('path', { d: 'M8 39 80 14m-8-1 8 1-5 6', ...common }));
+    if (kind === 'batchnorm') parts.push(
+      AT.svg('path', { d: 'M10 43H86M48 8v37M18 42C29 42 31 12 48 12s19 30 30 30', ...common }),
+      AT.svg('circle', { cx: '48', cy: '42', r: '2.5', fill: 'currentColor' }));
+    if (kind === 'regularise') parts.push(
+      AT.svg('path', { d: 'M8 35c8-25 12 18 20-7s12 18 20-7 12 18 20-7 10 13 18 4', ...common }),
+      AT.svg('path', { d: 'M12 42 84 12', stroke: 'currentColor', 'stroke-width': '2.5', 'stroke-linecap': 'round' }),
+      AT.svg('path', { d: 'M46 47v-9m-5 5 5-5 5 5', ...common }));
+    return AT.svg('svg', { class: 'vthumb', viewBox: '0 0 96 54', role: 'img', 'aria-label': title + ' thumbnail' }, ...parts);
+  }
+
+  /* frame 1: the six results reorder by score; each open strip shows its key arithmetic and value */
   const vgrid = S.querySelector('#s05-vgrid');
-  const tags = (v, axes) => v.map((x, c) => ({ x: x, c: c })).filter(o => o.x >= 0.3).sort((a, b) => b.x - a.x).map(o => AT.h('span', { class: 'tag' }, axes[o.c] + ' ' + AT.fmt(o.x, 1)));
+  const cardEls = [], detailEls = [], bodyEls = [], rankEls = [];
   VIDEOS.forEach((V, j) => {
-    vgrid.appendChild(AT.h('div', { class: 'vcard' },
-      AT.h('p', { class: 'vt' }, 'Video ' + (j + 1) + ': ' + V.title),
-      AT.h('div', { class: 'vpart obj-k', 'data-build': '1' }, AT.h('span', { class: 'plab' }, 'key'), tags(V.k, KEY_AXES)),
-      AT.h('div', { class: 'vpart obj-v', 'data-build': '2' }, AT.h('span', { class: 'plab' }, 'value'), tags(V.v, VAL_AXES), AT.h('p', { class: 'vsum' }, V.summary))));
+    const rank = AT.h('span', { class: 'vrank', 'aria-label': 'Result rank' }, '');
+    const body = AT.h('div', { class: 'rank-body' });
+    const detail = AT.h('details', { class: 'rank-details' }, AT.h('summary', {}, 'Why it ranks here'), body);
+    const card = AT.h('article', { class: 'vcard', tabindex: '0' },
+      thumb(V.kind, V.title),
+      AT.h('div', { class: 'vmain' }, AT.h('p', { class: 'vt' }, V.title), AT.h('p', { class: 'vsum' }, AT.h('span', { class: 'plab' }, 'Value: '), V.summary)),
+      rank, AT.h('span', { class: 'vdur' }, V.duration), detail);
+    card.addEventListener('mouseenter', () => hl(j, true));
+    card.addEventListener('mouseleave', () => hl(j, false));
+    card.addEventListener('focusin', () => hl(j, true));
+    card.addEventListener('focusout', (ev) => { if (!card.contains(ev.relatedTarget)) hl(j, false); });
+    cardEls.push(card); detailEls.push(detail); bodyEls.push(body); rankEls.push(rank); vgrid.appendChild(card);
   });
+
+  function fillWhy(j, Q, score){
+    const V = VIDEOS[j], body = bodyEls[j];
+    AT.clear(body);
+    AT.ui.dotCalc(Q.q, V.k, { axes: KEY_AXES, qLabel: 'query', kLabel: 'key · ' + V.title, scale: false, decimals: 1, into: body });
+    const scoreLine = AT.h('p', { class: 'rank-score', html: 'Key score: ' + AT.texStr('s_{' + (j + 1) + '} = \\vq{q}\\cdot\\vk{k_{' + (j + 1) + '}} = ' + AT.fmt(score, 1)) });
+    body.appendChild(scoreLine);
+    AT.ui.table([V.v], { cols: VAL_AXES.map(a => ({ label: a, cls: 'v' })), rowLabels: ['$\\vv{v_{' + (j + 1) + '}}$'], rowCls: 'v', cornerLabel: 'value', decimals: 1, into: body });
+  }
+
+  function reorder(scores, top){
+    const before = cardEls.map(card => card.getBoundingClientRect());
+    const ranked = AT.range(VIDEOS.length).sort((a, b) => scores[b] - scores[a] || a - b);
+    ranked.forEach((j, r) => { cardEls[j].style.order = String(r); rankEls[j].textContent = '#' + (r + 1); });
+    detailEls.forEach((detail, j) => { detail.open = j === top; });
+    if (AT.reducedMotion()) return;
+    requestAnimationFrame(() => {
+      const after = cardEls.map(card => card.getBoundingClientRect());
+      cardEls.forEach((card, j) => {
+        const dx = before[j].left - after[j].left, dy = before[j].top - after[j].top;
+        if (!dx && !dy) return;
+        card.style.transition = 'none'; card.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+        requestAnimationFrame(() => { card.style.transition = ''; card.style.transform = ''; });
+      });
+    });
+  }
 
   /* frame 2: query presets, the query box (one per frame, kept in step), the score table */
   const qbtns = S.querySelector('#s05-qbtns');
@@ -210,20 +320,24 @@ Timing: two minutes.
   function hl(j, on){
     if (dot) dot.keyRows[j].classList.toggle('is-hl', on);
     vals.rowEls[j].classList.toggle('is-hl', on);
+    cardEls[j].classList.toggle('is-linked', on);
   }
   function draw(){
     const Q = QUERIES[qi];
-    qtexts.forEach(el => { el.textContent = '“' + Q.text + '”'; });
+    const scores = VIDEOS.map(V => AT.dot(Q.q, V.k));
+    const top = AT.argmax(scores);
+    qtexts.forEach(el => { el.textContent = Q.text; });
+    cardEls.forEach((card, j) => { card.classList.toggle('is-top', j === top); fillWhy(j, Q, scores[j]); });
+    reorder(scores, top);
     AT.clear(dotHost);
     dot = AT.ui.dotTable(Q.q, VIDEOS.map(V => V.k), { cols: KEY_AXES, rowLabels: titles, queryLabel: 'the question', cornerLabel: 'video', decimals: 1, into: dotHost,
-      caption: 'Read the query row against each key row, column by column: the score on the right is the dot product $s_j = \\vq{q}^\\top \\vk{k_j}$. The four axes are illustrative and the numbers were chosen by hand.',
+      caption: 'Read the query row against each key row, column by column: the score on the right is the dot product $s_j = \\vq{q}\\cdot \\vk{k_j}$. The four axes are illustrative and the numbers were chosen by hand.',
       note: 'Hover or focus a score to see the products; click it for the worksheet.' });
     /* present mode: the score column appears one row at a time (builds 1..6), its header with the first score */
     const scoreHead = dot.table.querySelector('thead th.dt-comp');
     if (scoreHead) scoreHead.setAttribute('data-build', '1');
     if (dot.computedCells[0] && dot.computedCells[0][0]) dot.computedCells[0][0].setAttribute('data-build', '1');
     dot.scoreCells.forEach((td, j) => td.setAttribute('data-build', String(j + 1)));
-    const top = AT.argmax(dot.scores);
     const rq = readRow(Q.q, KEY_AXES), rk = readRow(VIDEOS[top].k, KEY_AXES), rv = readRow(VIDEOS[top].v, VAL_AXES);
     qread.innerHTML = 'Reading the query row: it asks mainly for ' + AT.escape(rq.main) + (rq.rest ? ', a little ' + AT.escape(rq.rest) : '') + (rq.off.length ? ', and not for ' + AT.escape(rq.off.join(' or ')) : '') + '.';
     kread.innerHTML = 'Reading the key of ' + AT.escape(VIDEOS[top].title) + ': it offers mainly ' + AT.escape(rk.main) + (rk.rest ? ', some ' + AT.escape(rk.rest) : '') + (rk.top === rq.top ? '. Its largest entry sits in the column the query asks for most, so the products add up.' : '.');

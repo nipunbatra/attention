@@ -35,53 +35,112 @@
 #s11 .s11-scrollhint{display:none}
 @media (max-width:820px){#s11 .s11-scrollhint{display:block}}
 @media (prefers-reduced-motion:reduce){#s11 .s11-life .col,#s11 .s11-life g[data-ph]{transition:none}}
+body.present #s11 .s11-cap,body.present #s11 .s11-read,body.present #s11 .s11-sub{font-size:18px;line-height:1.35}
+body.present #s11 .s11-gap{height:8px}
+body.present #s11 .s11-pr{gap:6px 24px}
+body.present #s11 .s11-pr .vec{margin:2px 0}
+body.present #s11 .s11-wgrid .s11-read{display:none}
+body.present #s11 .s11-wgrid .dt td.dt-num{font-size:18px;padding:.25em .4em;min-width:2.7em}
+body.present #s11 .s11-wgrid .dt th{font-size:18px;padding:.25em .35em}
+body.present #s11 .s11-wgrid .dt-cap{font-size:18px}
+body.present #s11 .s11-pr .vec-axes{font-size:18px}
+body.present #s11 .s11-pr .cell{font-size:18px}
+body.present #s11 #s11-frame-projections .s11-cap{display:none}
+body.present #s11 #s11-stepper .stepper-list{display:none}
+body.present #s11 #s11-stepper .stepper-body{grid-template-columns:1fr}
+body.present #s11 #s11-stepper .stepper-stage{min-height:0}
+body.present #s11 #s11-stepper .stage-note{font-size:18px}
 </style>
 <header class="sec-head">
   <span class="sec-num">11</span>
   <div>
-    <p class="eyebrow">Why we are here: a common confusion. Are queries, keys and values three new embeddings? No. This section says what they are instead.</p>
+    <p class="eyebrow">Why we are here: a common confusion. Are queries, keys and values new lookup tables or the updated token row? Neither: they are projections used during attention.</p>
     <h2>What exactly are Q, K, and V?</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Students often hear query, key and value and picture three new embeddings. This section exists to stop that. Pick any token in the chips and read the four rows: the three lower rows are computed from the single $\ve{e}$ row above them by three fixed matrices, and nothing else about the token changes. The axis names say what each row means: a query row is what the token asks for, a key row is what it offers, a value row is what it sends. Below them sit the three matrices themselves, shared by every token. Step through the lifetime strip to see when each row exists inside one attention layer. The sentence to remember: $\vq{q}$, $\vk{k}$ and $\vv{v}$ are working vectors made from $\ve{e}$, and $\ve{e} + \vd{\Delta e}$ is the only thing that moves on.</p>
+  <p>Queries, keys and values are three projected views of the current representation, not three independently learned lookup tables. Pick any token in the chips and read the four rows: the three lower rows are computed from the single $\ve{e}$ row above them by three fixed matrices, and nothing else about the token changes. The axis names say what each row means: a query row is what the token asks for, a key row is what it offers, a value row is what it sends. Below them sit the three matrices themselves, shared by every token. Step through the lifetime strip to see when each row exists inside one attention layer. The sentence to remember: $\vq{q}$, $\vk{k}$ and $\vv{v}$ are working vectors made from $\ve{e}$, and $\ve{e} + \vd{\Delta e}$ is the updated token row passed to the next sublayer.</p>
 </div>
 
+<div class="frame" id="s11-frame1" data-title="Are Q, K and V three separate lookup tables?">
+  <script type="text/x-notes">
+Are q, k and v separately learned lookup rows?
+No: the trainable projection matrices transform the current token row. These projected representations have different jobs; none is the updated residual-stream row passed to the next sublayer.
+  </script>
 <div class="prose">
   <p>Take the current representation of one token, $\ve{e_i}$. Three fixed matrices read it and produce three short rows.
   They are working vectors computed from $\ve{e_i}$; none of them replaces it.</p>
   $$\ve{e_i} \;\rightarrow\; \begin{cases} \vq{q_i} = \ve{e_i}\,W_Q \\[2pt] \vk{k_i} = \ve{e_i}\,W_K \\[2pt] \vv{v_i} = \ve{e_i}\,W_V \end{cases}$$
 </div>
 
+</div>
+<div class="frame" id="s11-frame-projections" data-title="One input row, three different jobs">
+  <script type="text/x-notes">
+What changes when we select a different token?
+Read the input row, then its query, key and value. Each uses a shared matrix; none has received contextual information yet.
+  </script>
 <div class="card">
   <h3 class="card-title">One token, three projections</h3>
-  <p class="s11-cap">Pick a token. The four numbers in the top row are the only input; each lower row is that row times one 4×3 matrix. Read the axis names above the cells.</p>
-  <div id="s11-chips"></div>
+  <p class="s11-cap">Pick a token. The top row is the only input. Each lower row is that row times its shared projection: $W_Q,W_K$ produce $d_k$ matching coordinates; $W_V$ produces $d_v$ value coordinates. Read the axis names above the cells.</p>
+  <p class="companion muted small">q and k share the same three columns because the dot product compares them column by column. v has its own two columns, and its own width, because it is only mixed and sent.</p>
+  <div id="s11-chips" data-keep-state></div>
   <div class="s11-gap"></div>
   <div id="s11-proj"></div>
-  <p class="s11-sub">The three matrices, shared by every token (learned, not per token)</p>
+</div>
+</div>
+<div class="frame" id="s11-frame-matrices" data-title="Which parameters produce those rows?">
+  <script type="text/x-notes">
+Which matrix is shared, and which row depends on the selected token?
+Each column of a projection forms one output coordinate. The worksheet retains the selected token from the preceding frame. In training, the matrices are parameters; q, k and v are recomputed.
+  </script>
+<div class="card">
+  <h3 class="card-title">The three matrices, shared by every token</h3>
   <div class="s11-wgrid" id="s11-wgrid"></div>
   <div class="s11-ws" id="s11-ws"></div>
 </div>
 
-<div id="s11-callouts"></div>
+<div class="companion" id="s11-callouts"></div>
 
+</div>
+
+<div class="frame" id="s11-frame2" data-title="Which objects are used inside one layer?">
+  <script type="text/x-notes">
+What gets computed for this layer, and what is passed onward?
+Advance the lifetime strip. Distinguish data flow between sublayers from storage: training may retain intermediates for backward, and generation may cache keys and values.
+  </script>
 <div class="card">
   <h3 class="card-title">Lifetime inside one attention layer</h3>
   <p class="s11-cap">Step through the layer and watch which rows exist at each moment: $\ve{e_i}$ persists, $\vq{q_i}, \vk{k_i}, \vv{v_i}$ are computed and used, $\vd{\Delta e_i}$ is added to $\ve{e_i}$.</p>
   <p class="muted small s11-scrollhint">The strip scrolls sideways on narrow screens; the lit column follows the stepper.</p>
   <div class="scroll-x dotgrid s11-lifebox" id="s11-lifebox"><div id="s11-life"></div></div>
+</div>
+</div>
+<div class="frame" id="s11-frame-lifetime-steps" data-title="Follow one row through the layer">
+  <script type="text/x-notes">
+Which working vectors are inputs, and what is finally added?
+Advance the existing five-step calculation. The original row supplies the projections and remains the residual input; newly updated rows do not feed this same layer.
+  </script>
+<div class="card">
   <div id="s11-stepper"></div>
 </div>
 
-<div id="s11-note"></div>
+<div class="companion" id="s11-note"></div>
 
+</div>
+
+<div class="frame" id="s11-frame3" data-title="What returns from the attention branch?">
+  <script type="text/x-notes">
+Does the branch return q, a key, a value, or a contextual update?
+It returns the projected message, Delta e. The residual addition then combines that result with e. Ask students to name the role of each object without calling everything an embedding.
+  </script>
 <div class="card">
   <h3 class="card-title">The one chain, again</h3>
   <p class="s11-cap">The three projections sit in the second box; they are inputs to attention, and only $\vd{\Delta e}$ comes out of it.</p>
   <div id="s11-motif"></div>
   <div id="s11-chain-eq"></div>
+</div>
+
 </div>
 
 <div class="companion after">
@@ -114,8 +173,8 @@
   }
   function readE(vec, who){ return vec.map((x, i) => ({ x: x, n: eName[i] })).filter(t => Math.abs(t.x) >= 0.15).map(t => t.n + ' ' + AT.fmt(t.x, 2)).join(', ') + ', so ' + who + ' is ' + verdictE(vec) + '.'; }
   function readQ(q){ const a = big(q, qkName, 0.3), n = small(q, qkName, 0.3); return a.length ? 'it asks for ' + joinAnd(withVal(a)) + (n.length ? ', not for ' + joinOr(n) : '') + '.' : 'it asks for almost nothing.'; }
-  function readK(k){ const a = big(k, qkName, 0.3), n = small(k, qkName, 0.3); return a.length ? 'it offers ' + joinAnd(withVal(a)) + (n.length ? ', nothing on ' + joinOr(n) : '') + '.' : 'it offers almost nothing, so no query will pick it.'; }
-  function readV(v){ const a = big(v, vName, 0.3), n = small(v, vName, 0.3); return a.length ? 'if read, it says ' + joinAnd(withVal(a)) + (n.length ? ', nothing about ' + joinOr(n) : '') + '.' : 'if read, it says almost nothing.'; }
+  function readK(k){ const a = big(k, qkName, 0.3), n = small(k, qkName, 0.3); return a.length ? 'it offers ' + joinAnd(withVal(a)) + (n.length ? ', smaller entries on ' + joinOr(n) : '') + '.' : 'its matching features are small; softmax can still give it positive weight.'; }
+  function readV(v){ const a = big(v, vName, 0.3), n = small(v, vName, 0.3); return a.length ? 'if read, it says ' + joinAnd(withVal(a)) + (n.length ? ', smaller entries about ' + joinOr(n) : '') + '.' : 'if read, it says almost nothing.'; }
   function wReading(W, inNames, outNames, verb){
     return W.map((row, i) => {
       const outs = row.map((x, j) => ({ x: x, n: outNames[j] })).filter(t => t.x !== 0);
@@ -191,7 +250,7 @@
   /* ---- callouts ---- */
   const co = S.querySelector('#s11-callouts');
   AT.ui.callout('$\\vq{q_i}$, $\\vk{k_i}$, $\\vv{v_i}$ are linear projections of the <em>current</em> token representation $\\ve{e_i}$: computed working vectors, not separately learned embedding tables.', { kind: 'key', into: co });
-  AT.ui.callout('They are <strong>not</strong> three new contextual embeddings, and they are not the updated token representation that is passed onward. They have jobs during attention: $\\vq{q_i}$ asks, $\\vk{k_i}$ answers &ldquo;match me?&rdquo;, and $\\vv{v_i}$ is what gets sent. (Generation code keeps keys and values in a cache; that does not make them representations.)', { kind: 'key', into: co });
+  AT.ui.callout('They are <strong>projected representations with different jobs</strong>, not the updated residual-stream row passed onward: $\\vq{q_i}$ asks, $\\vk{k_i}$ helps match a source, and $\\vv{v_i}$ carries what it sends. Generation may cache keys and values for reuse.', { kind: 'key', into: co });
 
   /* ---- lifetime strip (SVG) ---- */
   const life = S.querySelector('#s11-life');
@@ -246,7 +305,7 @@
         tex: '\\vq{q_i} = \\ve{e_i}\\,W_Q,\\quad \\vk{k_i} = \\ve{e_i}\\,W_K,\\quad \\vv{v_i} = \\ve{e_i}\\,W_V',
         render: (el) => { projRows(qi, el, false); } },
       { title: 'Attention uses them, in two directions',
-        note: '$\\vq{q_i}$ is compared with the keys of tokens $j \\le i$ to give $\\va{\\alpha_{ij}}$. Meanwhile $\\vk{k_i}$ and $\\vv{v_i}$ are read by token $i$ itself and by every later token.',
+        note: '$\\vq{q_i}$ is compared with the keys of tokens $j \\le i$ to give $\\va{\\alpha_{ij}}$. Meanwhile $\\vk{k_i}$ and $\\vv{v_i}$ are read by token $i$ itself and can be read by later tokens.',
         render: (el) => {
           AT.ui.table([F.A[qi].slice(0, qi + 1)], { cols: toks.slice(0, qi + 1).map((t, j) => (j + 1) + ' ' + t), rowLabels: ['$\\va{\\alpha_{' + n() + ',j}}$'], rowCls: 'a', heatCols: AT.range(qi + 1), cornerLabel: 'reads from →', into: el });
           const readers = AT.range(T).filter(j => j >= qi).map(j => toks[j] + ' (' + (j + 1) + ')');
@@ -254,7 +313,7 @@
         } },
       { title: 'Keep the retrieved update; the projections were only inputs to it',
         tex: '\\vd{\\Delta e_i} = \\Big(\\sum_{j \\le i} \\va{\\alpha_{ij}}\\,\\vv{v_j}\\Big) W_O',
-        note: 'Only $\\vd{\\Delta e_i}$ moves on from here. $\\vq{q_i}$, $\\vk{k_i}$, $\\vv{v_i}$ were working vectors for this computation and were never a representation of the token.',
+        note: 'The attention branch returns $\\vd{\\Delta e_i}$. The projected rows $\\vq{q_i}$, $\\vk{k_i}$ and $\\vv{v_i}$ served the computation; the residual connection then forms the updated token row.',
         render: (el) => { AT.ui.table([F.Delta[qi]], { axes: 'e', rowLabels: ['$\\vd{\\Delta e_{' + n() + '}}$'], rowCls: 'd', cornerLabel: 'update', into: el }); } },
       { title: 'Add: the representation is updated, not replaced',
         tex: "\\vp{e_i'} = \\ve{e_i} + \\vd{\\Delta e_i}",

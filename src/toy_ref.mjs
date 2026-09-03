@@ -145,16 +145,23 @@ export function checkTargets(toy) {
     `${all.length} numbers, max|x|=${Math.max(...all.map(Math.abs)).toFixed(1)}`);
   const want = 'the fisherman sat beside river bank and watched she deposited cheque at water boats fish ducks teller clerk queue money'.split(' ');
   rec('T8 hard: vocabulary is the 20 tokens', toy.vocab.length === 20 && want.every((w, i) => toy.vocab[i] === w), '20 tokens');
-  const norm = (v) => Math.sqrt(dot(v, v));
-  const tn = toy.vocab.map((w) => norm(toy.tok_emb[w]));
-  const meanTok = tn.reduce((a, b) => a + b, 0) / tn.length;
-  const maxPos = Math.max(...toy.pos_emb.map(norm));
+  const posAxis = toy.axes && toy.axes.e ? toy.axes.e.indexOf('position') : -1;
   const thes = [0, 4, 9].map((i) => fa.E[i].join(','));
-  rec("T9 hard: pos norms <= 40% of mean tok norm; three 'the' e^(0) differ",
-    maxPos <= 0.4 * meanTok && new Set(thes).size === 3,
-    `max pos norm=${f2(maxPos)}, mean tok norm=${f2(meanTok)} (${Math.round((maxPos / meanTok) * 100)}%)`);
-  rec('T10 hard: d_model=4, d_k=d_v=3',
-    toy.d_model === 4 && toy.d_k === 3 && toy.d_v === 3 && toy.W_Q.length === 4 && toy.W_Q[0].length === 3 && toy.W_O.length === 3 && toy.W_O[0].length === 4, 'ok');
+  const positionRowsOk = posAxis >= 0 && toy.pos_emb.every((row, i) => row.every((x, d) =>
+    Math.abs(x - (d === posAxis ? 0.1 * (i + 1) : 0)) < 1e-9));
+  const zeroAt = (M) => posAxis >= 0 && M[posAxis] && M[posAxis].every((x) => x === 0);
+  rec("T9 hard: position has its own coordinate and the three 'the' rows differ",
+    positionRowsOk && toy.vocab.every((w) => toy.tok_emb[w][posAxis] === 0) &&
+      zeroAt(toy.W_Q) && zeroAt(toy.W_K) && zeroAt(toy.W_V) && zeroAt(toy.W_vocab) && new Set(thes).size === 3,
+    'position rows 0.1 to 1.0; token and projection position rows are zero');
+  const hasShape = (M, rows, cols) => Array.isArray(M) && M.length === rows && M.every((row) => Array.isArray(row) && row.length === cols);
+  rec('T10 hard: parameter shapes match d_model, d_k and d_v',
+    toy.axes.e.length === toy.d_model && toy.axes.qk.length === toy.d_k && toy.axes.v.length === toy.d_v &&
+      toy.vocab.every((w) => Array.isArray(toy.tok_emb[w]) && toy.tok_emb[w].length === toy.d_model) &&
+      hasShape(toy.pos_emb, toy.sentences.river.length, toy.d_model) &&
+      hasShape(toy.W_Q, toy.d_model, toy.d_k) && hasShape(toy.W_K, toy.d_model, toy.d_k) &&
+      hasShape(toy.W_V, toy.d_model, toy.d_v) && hasShape(toy.W_O, toy.d_v, toy.d_model) &&
+      hasShape(toy.W_vocab, toy.d_model, toy.vocab.length) && toy.b_vocab.length === toy.vocab.length, 'ok');
   return { results: res, fa, fb, fu, ba };
 }
 

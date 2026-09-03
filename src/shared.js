@@ -1,4 +1,4 @@
-/* shared.js — the AT namespace: toy-model math, KaTeX helpers, UI components, motif, flow.
+/* shared.js: the AT namespace, with toy-model math, KaTeX helpers, UI components, motif and flow.
    The ONLY global this file creates is window.AT. See CONTRACT.md for the API. */
 (function () {
   'use strict';
@@ -59,9 +59,9 @@
      ====================================================================== */
   var model = (typeof window !== 'undefined' && window.__TOY__) ? window.__TOY__ : {};
   AT.model = model;
-  AT.d_model = isNum(model.d_model) ? model.d_model : 4;
-  AT.d_k = isNum(model.d_k) ? model.d_k : 3;
-  AT.d_v = isNum(model.d_v) ? model.d_v : 3;
+  AT.d_model = isNum(model.d_model) ? model.d_model : arr(model.axes && model.axes.e).length;
+  AT.d_k = isNum(model.d_k) ? model.d_k : arr(model.axes && model.axes.qk).length;
+  AT.d_v = isNum(model.d_v) ? model.d_v : arr(model.axes && model.axes.v).length;
   AT.sqrt_dk = Math.sqrt(AT.d_k);
   AT.vocab = arr(model.vocab);
   AT.sentences = model.sentences || {};
@@ -88,7 +88,11 @@
     if (n === AT.d_model && (cls === 'e' || cls === 'ep' || cls === 'd')) return 'e';
     if (n === AT.d_k && (cls === 'q' || cls === 'k')) return 'qk';
     if (n === AT.d_v && (cls === 'v' || cls === 'm')) return 'v';
-    return null;
+    var matches = [];
+    if (n === AT.d_model) matches.push('e');
+    if (n === AT.d_k) matches.push('qk');
+    if (n === AT.d_v) matches.push('v');
+    return matches.length === 1 ? matches[0] : null;
   };
   /** axesFor(kind | cls, n?, short=true) → [{label, title}] or null. kind: 'e' | 'qk' | 'v' | 'vocab' | array of labels | false */
   AT.axesFor = function (kind, n, short) {
@@ -203,12 +207,12 @@
     var d = decimals == null ? 2 : decimals;
     if (x === -Infinity) return '−∞';
     if (x === Infinity) return '∞';
-    if (!isNum(x)) return '—';
+    if (!isNum(x)) return '·';
     var s = Math.abs(x).toFixed(d);
     var neg = x < 0 && +s !== 0;
     return (neg ? '−' : '') + s;
   };
-  AT.fmtSigned = function (x, decimals) { var s = AT.fmt(x, decimals); return (isNum(x) && x >= 0 && s !== '—') ? '+' + s : s; };
+  AT.fmtSigned = function (x, decimals) { var s = AT.fmt(x, decimals); return (isNum(x) && x >= 0 && s !== '·') ? '+' + s : s; };
   AT.heatColor = function (a) {
     a = isNum(a) ? Math.max(0, Math.min(1, a)) : 0;
     var r = Math.round(255 + (225 - 255) * a), g = Math.round(255 + (29 - 255) * a), b = Math.round(255 + (72 - 255) * a);
@@ -622,7 +626,7 @@
       if (!steps.length) return;
       i = Math.max(0, Math.min(steps.length - 1, i | 0));
       idx = i;
-      lis.forEach(function (li, j) { li.classList.toggle('is-current', j === i); li.classList.toggle('is-done', j < i); });
+      lis.forEach(function (li, j) { li.classList.toggle('is-current', j === i); li.classList.toggle('is-done', j < i); if (j === i) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current'); });
       prev.disabled = i === 0; next.disabled = i === steps.length - 1;
       count.textContent = 'Step ' + (i + 1) + ' of ' + steps.length;
       var s = steps[i] || {};
@@ -634,6 +638,7 @@
       AT.renderMath(stage);
       if (lis[i] && lis[i].scrollIntoView && opts.scrollList !== false) { try { lis[i].scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) { /* ignore */ } }
       if (typeof opts.onChange === 'function') opts.onChange(i, s);
+      root.dispatchEvent(new CustomEvent('at-stepchange', { bubbles: true, detail: { index: i } }));
     }
     prev.addEventListener('click', function () { go(idx - 1); });
     next.addEventListener('click', function () { go(idx + 1); });
@@ -701,12 +706,15 @@
     return el;
   }
   function factor(x, dec) { var s = AT.fmt(x, dec); return s.charAt(0) === '−' ? '(' + s + ')' : s; }
+  function isRounded(x, dec) { var k = Math.pow(10, dec == null ? 2 : dec); return isFinite(x) && Math.abs(x - Math.round(x * k) / k) > 1e-10 * Math.max(1, Math.abs(x)); }
+  function numericRelation(values, dec) { return values.some(function (v) { return isRounded(v, dec); }) ? ' ≈ ' : ' = '; }
   /** productLine(a, b, dec): "a1×b1 + a2×b2 + … = Σ" for two equal-length vectors */
   function productLine(a, b, dec) {
     a = arr(a); b = arr(b);
     var n = Math.min(a.length, b.length), terms = [];
     for (var i = 0; i < n; i++) terms.push(factor(+a[i] || 0, dec) + '×' + factor(+b[i] || 0, dec));
-    return terms.join(' + ') + ' = ' + AT.fmt(AT.dot(a, b), dec);
+    var sum = AT.dot(a, b);
+    return terms.join(' + ') + numericRelation(a.concat(b, [sum]), dec) + AT.fmt(sum, dec);
   }
   AT.productLine = productLine;
   ui.table = function (rows, opts) {
@@ -827,13 +835,18 @@
     };
     fig.hideTip = function () { tip.classList.remove('is-on'); return fig; };
     /** fig.tipOn(td, textFn): hover/focus shows textFn() in the tooltip; the cell becomes keyboard focusable */
+    var tipCells = [];
+    fig.refreshTips = function () {
+      tipCells.forEach(function (p) { p[0].setAttribute('aria-label', (p[0].textContent || '') + ': ' + (typeof p[1] === 'function' ? p[1]() : p[1])); });
+      return fig;
+    };
     fig.tipOn = function (td, textFn) {
       if (!td) return fig;
       td.tabIndex = 0; td.classList.add('has-tip');
       var show = function () { fig.showTip(td, typeof textFn === 'function' ? textFn() : textFn); };
       td.addEventListener('mouseenter', show); td.addEventListener('focus', show);
       td.addEventListener('mouseleave', fig.hideTip); td.addEventListener('blur', fig.hideTip);
-      td.setAttribute('aria-label', (td.textContent || '') + ': ' + (typeof textFn === 'function' ? textFn() : textFn));
+      tipCells.push([td, textFn]); fig.refreshTips();
       return fig;
     };
     /* api */
@@ -848,14 +861,14 @@
         lead.forEach(function (def, k) { fillCell(leadEls[i][k], leadValue(def, row, i), def.decimals == null ? dec : def.decimals, !!def.heat, isNum(def.heatMax) ? def.heatMax : heatMax); });
         comp.forEach(function (def, k) { var v = typeof def.fn === 'function' ? def.fn(row, i) : (Array.isArray(def.values) ? def.values[i] : undefined); fillCell(compEls[i][k], v, def.decimals == null ? dec : def.decimals, !!def.heat, isNum(def.heatMax) ? def.heatMax : heatMax); });
       });
-      return fig;
+      return fig.refreshTips();
     };
     fig.setFooter = function (values, leadVals, compVals) {
       var fdec = opts.footer && opts.footer.decimals != null ? opts.footer.decimals : dec;
       arr(values).forEach(function (v, j) { if (footEls.cells[j]) fillCell(footEls.cells[j], v, fdec, false, 1); });
       arr(leadVals).forEach(function (v, k) { if (footEls.lead[k]) fillCell(footEls.lead[k], v, fdec, false, 1); });
       arr(compVals).forEach(function (v, k) { if (footEls.computed[k]) fillCell(footEls.computed[k], v, fdec, false, 1); });
-      return fig;
+      return fig.refreshTips();
     };
     fig.setHighlightRow = function (i) { trEls.forEach(function (tr, j) { tr.classList.toggle('is-hl', j === i); }); return fig; };
     fig.setDim = function (list) { list = arr(list); trEls.forEach(function (tr, j) { tr.classList.toggle('is-dim', list.indexOf(j) >= 0); }); return fig; };
@@ -906,7 +919,7 @@
       if (mask.indexOf(j) >= 0) fig.tipOn(td, 'masked: this key belongs to a later token, so its score is set to −∞ and its weight becomes 0');
       else fig.tipOn(td, function () {
         var s = productLine(q, k, dec);
-        if (scaled) s += ', then ' + AT.fmt(raw[j], dec) + ' ÷ √' + dk + ' = ' + AT.fmt(scores[j], sdec);
+        if (scaled) s += ', then ' + AT.fmt(raw[j], dec) + ' ÷ √' + dk + (isRounded(raw[j], dec) || isRounded(scores[j], sdec) ? ' ≈ ' : ' = ') + AT.fmt(scores[j], sdec);
         return s + ' (click for the worksheet)';
       });
       td.classList.add('has-calc');
@@ -946,8 +959,9 @@
       var td = fig.footer.cells[c];
       fig.tipOn(td, function () {
         var terms = [];
-        V.forEach(function (v, j) { if (dimRows.indexOf(j) >= 0) return; terms.push(factor(+alpha[j] || 0, dec) + '×' + factor(+v[c] || 0, dec)); });
-        return (terms.length ? terms.join(' + ') : '0') + ' = ' + AT.fmt(sum[c], dec);
+        var values = [sum[c]], adec = opts.alphaDecimals == null ? dec : opts.alphaDecimals, roundedAlpha = false;
+        V.forEach(function (v, j) { if (!alpha[j]) return; terms.push(factor(+alpha[j] || 0, adec) + '×' + factor(+v[c] || 0, dec)); values.push(+v[c] || 0); roundedAlpha = roundedAlpha || isRounded(+alpha[j] || 0, adec); });
+        return (terms.length ? terms.join(' + ') : '0') + (roundedAlpha ? ' ≈ ' : numericRelation(values, dec)) + AT.fmt(sum[c], dec);
       });
     });
     fig.sum = sum; fig.alpha = alpha;
@@ -1035,10 +1049,11 @@
         pr.tds[i].classList.toggle('calc-zero', pv === 0);
       }
       clear(sumLine);
-      append(sumLine, ['sum = ' + prods.map(function (x) { return factor(x, dec); }).join(' + ') + ' = ', h('span', { class: 'calc-r' }, AT.fmt(dot, scale ? dec : rdec))]);
-      if (scale) { clear(scaleLine); append(scaleLine, [AT.fmt(dot, dec) + ' / √' + dk + ' = ', h('span', { class: 'calc-r' }, AT.fmt(dot / Math.sqrt(dk), rdec))]); }
+      append(sumLine, ['sum = ' + prods.map(function (x) { return factor(x, dec); }).join(' + ') + (prods.some(function (x) { return isRounded(x, dec); }) || isRounded(dot, scale ? dec : rdec) ? ' ≈ ' : ' = '), h('span', { class: 'calc-r' }, AT.fmt(dot, scale ? dec : rdec))]);
+      if (scale) { clear(scaleLine); append(scaleLine, [AT.fmt(dot, dec) + ' / √' + dk + (isRounded(dot, dec) || isRounded(dot / Math.sqrt(dk), rdec) ? ' ≈ ' : ' = '), h('span', { class: 'calc-r' }, AT.fmt(dot / Math.sqrt(dk), rdec))]); }
       root.dot = dot; root.score = scale ? dot / Math.sqrt(dk) : dot;
     }
+    root.appendChild(h('p', { class: 'calc-rounding small muted' }, 'Displayed operands and products are rounded; results use the unrounded values.'));
     fill();
     root.update = function (nq, nk, o) {
       o = o || {};
@@ -1064,7 +1079,7 @@
     var scroll = h('div', { class: 'calc-scroll' }), table = h('table', { class: 'calc-t' });
     var hr = h('tr', {}, h('th', { class: 'calc-corner' }));
     inAx.forEach(function (a) { hr.appendChild(h('th', { class: 'calc-ax', scope: 'col', title: a.title || null }, a.label)); });
-    hr.appendChild(h('th', { class: 'calc-ax calc-res-h', scope: 'col' }, '='));
+    hr.appendChild(h('th', { class: 'calc-ax calc-res-h', scope: 'col' }, 'result'));
     table.appendChild(h('thead', {}, hr));
     var tbody = h('tbody');
     var xtr = h('tr', { class: objClass(fromCls) + ' calc-x' }), xth = h('th', { scope: 'row', class: 'calc-rl' }, opts.xLabel != null ? String(opts.xLabel) : 'x');
@@ -1092,19 +1107,21 @@
       var out = [];
       for (var c = 0; c < nIn; c++) xtds[c].textContent = AT.fmt(+x[c] || 0, dec);
       lines.forEach(function (ln, o) {
-        var sum = 0;
+        var sum = 0, rounded = false;
         ln.terms.forEach(function (td, c) {
           var xv = +x[c] || 0, wv = +arr(W[c])[o] || 0; sum += xv * wv;
+          rounded = rounded || isRounded(xv, dec) || isRounded(wv, wdec);
           clear(td);
           if (c > 0) td.appendChild(h('span', { class: 'calc-plus' }, '+ '));
           td.appendChild(document.createTextNode(factor(xv, dec) + '×' + factor(wv, wdec)));
           td.classList.toggle('calc-zero', wv === 0);
           td.title = (inAx[c].title || inAx[c].label) + ' → ' + (outAx[o].title || outAx[o].label) + ': ' + AT.fmt(xv, dec) + ' × ' + AT.fmt(wv, wdec);
         });
-        ln.res.textContent = AT.fmt(sum, dec); out.push(sum);
+        ln.res.textContent = (rounded || isRounded(sum, dec) ? '≈ ' : '= ') + AT.fmt(sum, dec); out.push(sum);
       });
       outVec.update(out); root.out = out;
     }
+    root.appendChild(h('p', { class: 'calc-rounding small muted' }, 'Displayed operands are rounded; results use the unrounded values.'));
     fill();
     root.update = function (nx, o) { o = o || {}; if (nx != null) x = arr(nx); if (o.xLabel != null) xth.textContent = String(o.xLabel); if (o.outLabel != null) outLab.textContent = String(o.outLabel); fill(); return root; };
     root.lines = lines; root.xCells = xtds; root.outVec = outVec;
@@ -1121,7 +1138,7 @@
     { g: 'token', sym: 's_{ij} = \\vq{q_i}\\cdot\\vk{k_j}/\\sqrt{d_k}', mean: 'scaled score of key $j$ for query $i$', shape: '\\text{scalar}', dims: function () { return ''; } },
     { g: 'token', sym: '\\va{\\alpha_{ij}} = \\operatorname{softmax}_j(s_{ij})', mean: 'attention weight: how much $i$ reads from $j$; each row sums to 1', shape: '\\text{scalar}', dims: function () { return ''; } },
     { g: 'token', sym: 'm_i = \\sum_j \\va{\\alpha_{ij}}\\,\\vv{v_j}', mean: 'retrieved message: the weighted mixture of values', shape: '1\\times d_v', dims: function () { return '1×' + AT.d_v; } },
-    { g: 'token', sym: '\\vd{\\Delta e_i} = m_i W_O', mean: 'contextual update (this page\u2019s name for the attention output)', shape: '1\\times d_{\\text{model}}', dims: function () { return '1×' + AT.d_model; } },
+    { g: 'token', sym: '\\vd{\\Delta e_i} = \\big(\\sum_j \\va{\\alpha_{ij}}\\,\\vv{v_j}\\big) W_O = m_i W_O', mean: 'contextual update (this page\u2019s name for the attention output)', shape: '1\\times d_{\\text{model}}', dims: function () { return '1×' + AT.d_model; } },
     { g: 'token', sym: "\\vp{e_i'} = \\ve{e_i} + \\vd{\\Delta e_i}", mean: 'updated representation (the residual addition)', shape: '1\\times d_{\\text{model}}', dims: function () { return '1×' + AT.d_model; } },
     { g: 'matrix', sym: '\\ve{E}', mean: 'all current representations, one row per token', shape: 'T\\times d_{\\text{model}}', dims: function () { return AT.T + '×' + AT.d_model; } },
     { g: 'matrix', sym: '\\vq{Q} = \\ve{E} W_Q,\\; \\vk{K} = \\ve{E} W_K', mean: 'all queries and all keys', shape: 'T\\times d_k', dims: function () { return AT.T + '×' + AT.d_k; } },
@@ -1179,10 +1196,11 @@
   function axesNotation() {
     if (!AT.axes.named) return [];
     var q = function (list) { return list.map(function (s) { return '\u201c' + AT.escape(s) + '\u201d'; }).join(', '); };
+    var hasPosition = AT.axes.e.some(function (s) { return String(s).toLowerCase() === 'position'; });
     return [
-      { g: 'axes', sym: '\\ve{e}', mean: 'coordinates ' + q(AT.axes.e) + ': what the token is about, and how much it is a grammatical glue word (plus a small position offset)', shape: '1\\times d_{\\text{model}}', dims: function () { return '1×' + AT.d_model; } },
+      { g: 'axes', sym: '\\ve{e}', mean: 'coordinates ' + q(AT.axes.e) + (hasPosition ? ': meaning coordinates plus a separate position coordinate; this toy carries position but does not use it in attention' : ': coordinates of the current token representation'), shape: '1\\times d_{\\text{model}}', dims: function () { return '1×' + AT.d_model; } },
       { g: 'axes', sym: '\\vq{q},\\; \\vk{k}', mean: 'coordinates ' + q(AT.axes.qk) + ': a query row reads \u201cwhat I ask for\u201d, a key row \u201cwhat I offer\u201d', shape: '1\\times d_k', dims: function () { return '1×' + AT.d_k; } },
-      { g: 'axes', sym: '\\vv{v}', mean: 'coordinates ' + q(AT.axes.v) + ': what the token sends if it is read; $W_O$ maps them back onto the $\\ve{e}$ coordinates', shape: '1\\times d_v', dims: function () { return '1×' + AT.d_v; } }
+      { g: 'axes', sym: '\\vv{v}', mean: 'coordinates ' + q(AT.axes.v) + ': what the token sends if it is read; values have their own width and $W_O$ maps them back onto the $\\ve{e}$ coordinates', shape: '1\\times d_v', dims: function () { return '1×' + AT.d_v; } }
     ];
   }
   ui.notationCard = function (opts) {
@@ -1217,13 +1235,13 @@
 
   /* ---- legend ---- */
   var OBJECTS = [
-    { cls: 'e', sym: 'e', name: 'current representation', def: 'e_i: the current representation of token i.', tip: 'e_i — the current representation of token i. At layer 0 it is token embedding + position; after attention it is contextual.' },
-    { cls: 'q', sym: 'Q', name: 'query', def: 'q_i = e_i W_Q: what token i is looking for.', tip: 'q_i = e_i W_Q — the query: what token i is looking for.' },
-    { cls: 'k', sym: 'K', name: 'key', def: 'k_j = e_j W_K: when token j should be retrieved.', tip: 'k_j = e_j W_K — the key: when token j should be retrieved.' },
-    { cls: 'v', sym: 'V', name: 'value', def: 'v_j = e_j W_V: what token j sends if retrieved.', tip: 'v_j = e_j W_V — the value: what token j sends if it is retrieved.' },
-    { cls: 'a', sym: 'α', name: 'attention weight', def: 'α_ij: how much token i reads from token j.', tip: 'α_ij — the attention weight: how much token i reads from token j. softmax of the scaled scores; each row sums to 1.' },
-    { cls: 'd', sym: 'Δe', name: 'contextual update', def: 'Δe_i: the update produced by attention (a pedagogical name).', tip: 'Δe_i = W_O Σ_j α_ij v_j — the contextual update. Pedagogical name for the attention output.' },
-    { cls: 'ep', sym: 'e+Δe', name: 'updated representation', def: 'e_i′ = e_i + Δe_i: the residual addition is standard.', tip: 'e_i′ = e_i + Δe_i — the updated representation. The addition is the standard residual connection.' }
+    { cls: 'e', sym: 'e', name: 'current representation', def: 'e_i: the current representation of token i.', tip: 'e_i is the current representation of token i. At layer 0 it is token embedding + position; after attention it is contextual.' },
+    { cls: 'q', sym: 'Q', name: 'query', def: 'q_i = e_i W_Q: what token i is looking for.', tip: 'q_i = e_i W_Q is the query: what token i is looking for.' },
+    { cls: 'k', sym: 'K', name: 'key', def: 'k_j = e_j W_K: when token j should be retrieved.', tip: 'k_j = e_j W_K is the key: when token j should be retrieved.' },
+    { cls: 'v', sym: 'V', name: 'value', def: 'v_j = e_j W_V: what token j sends if retrieved.', tip: 'v_j = e_j W_V is the value: what token j sends if it is retrieved.' },
+    { cls: 'a', sym: 'α', name: 'attention weight', def: 'α_ij: how much token i reads from token j.', tip: 'α_ij is the attention weight: how much token i reads from token j. It is the softmax of the scaled scores, and each row sums to 1.' },
+    { cls: 'd', sym: 'Δe', name: 'contextual update', def: 'Δe_i: the update produced by attention (a pedagogical name).', tip: 'Δe_i = (Σ_j α_ij v_j) W_O = m_i W_O is the contextual update, using row vectors. Pedagogical name for the attention output.' },
+    { cls: 'ep', sym: 'e+Δe', name: 'updated representation', def: 'e_i′ = e_i + Δe_i: the residual addition is standard.', tip: 'e_i′ = e_i + Δe_i is the updated representation. The addition is the standard residual connection.' }
   ];
   AT.objects = OBJECTS;
   ui.legend = function (opts) {
@@ -1494,7 +1512,7 @@
      ====================================================================== */
   AT.present = (function () {
     var P = { active: false, discovered: false, frames: [], fi: -1, build: 0, listeners: {}, blank: false, overview: false, notes: false, help: false, presWin: null, isPresenter: false, printState: null, startedAt: null };
-    var U = {};
+    var U = {}, pendingState = new WeakMap(), overviewFocus = null, overviewBackground = [], entryFocus = null;
     var UNIT_SEL = '.card, .callout, .tex-display, .prose, p:not(.companion), .chips, table, .stepper, .reveal, .dt-fig, figure, .motif, .netsk, .row, .stack, .btn-row, .scroll-x, ul, ol, h3, blockquote';
     var SPLIT_SEL = '.side-by-side, .grid-2, .grid-3';
     function emit(ev, data) { arr(P.listeners[ev]).forEach(function (f) { try { f(data); } catch (e) { console.error('present listener failed', e); } }); }
@@ -1518,7 +1536,11 @@
     }
 
     /* ---- builds ---- */
-    function buildOf(el) { var b = el.closest('[data-build]'); return b ? (parseInt(b.getAttribute('data-build'), 10) || 0) : 0; }
+    function buildOf(el) {
+      var n = 0;
+      for (var p = el; p && !p.classList.contains('frame'); p = p.parentElement) n = Math.max(n, parseInt(p.getAttribute('data-build'), 10) || 0);
+      return n;
+    }
     function prepBuilds(f) {
       if (f.querySelector('[data-build]') || f.getAttribute('data-autobuild') === 'off') return;
       var n = 0;
@@ -1529,27 +1551,42 @@
       });
     }
     function maxBuild(f) { var m = 0; all(f, '[data-build]').forEach(function (e) { m = Math.max(m, parseInt(e.getAttribute('data-build'), 10) || 0); }); return m; }
-    function applyBuild(fr, b) {
+    function pending(el, on) {
+      if (on && !pendingState.has(el)) pendingState.set(el, { inert: el.inert, hidden: el.getAttribute('aria-hidden') });
+      el.classList.toggle('is-pending', on);
+      if (on) { el.inert = true; el.setAttribute('aria-hidden', 'true'); }
+      else if (pendingState.has(el)) {
+        var saved = pendingState.get(el); el.inert = saved.inert;
+        if (saved.hidden == null) el.removeAttribute('aria-hidden'); else el.setAttribute('aria-hidden', saved.hidden);
+        pendingState.delete(el);
+      }
+    }
+    function applyBuild(fr, b, edge) {
       all(fr.el, '[data-build]').forEach(function (e) {
-        var n = parseInt(e.getAttribute('data-build'), 10) || 0, pend = n > b;
-        e.classList.toggle('is-pending', pend);
-        if (pend) e.setAttribute('aria-hidden', 'true'); else e.removeAttribute('aria-hidden');
+        var pend = buildOf(e) > b;
+        if (pend && e.contains(document.activeElement) && U.controls) U.controls.focus({ preventScroll: true });
+        pending(e, pend);
       });
       steppersOf(fr).forEach(function (s) {
         var nb = buildOf(s.el);
-        if (nb > b) { if (s.api.index() !== 0) s.api.go(0); }
-        else if (nb < b) { var last = s.api.steps.length - 1; if (s.api.index() !== last) s.api.go(last); }
+        if (nb > b || (nb === b && edge === 'start')) { if (s.api.index() !== 0) s.api.go(0); }
+        else if (nb < b || (nb === b && edge === 'end')) { var last = s.api.steps.length - 1; if (s.api.index() !== last) s.api.go(last); }
       });
     }
-    function steppersOf(fr) { return all(fr.el, '.stepper').filter(function (e) { return e.stepperApi && e.stepperApi.steps.length && e.getAttribute('data-present') !== 'manual'; }).map(function (e) { return { el: e, api: e.stepperApi }; }); }
-    function activeStepper(fr, b) { var found = null; steppersOf(fr).forEach(function (s) { if (!found && buildOf(s.el) === b) found = s.api; }); return found; }
+    function steppersOf(fr) { return all(fr.el, '.stepper').filter(function (e) { return e.stepperApi && e.stepperApi.steps.length && !e.closest('[data-present="manual"]'); }).map(function (e) { return { el: e, api: e.stepperApi }; }); }
+    function activeStepper(fr, b, direction) {
+      var list = steppersOf(fr).filter(function (s) { return buildOf(s.el) === b && !s.el.closest('[hidden]'); });
+      if (direction < 0) list.reverse();
+      var found = list.filter(function (s) { return direction < 0 ? s.api.index() > 0 : s.api.index() < s.api.steps.length - 1; })[0];
+      return (found || list[0] || {}).api || null;
+    }
 
     /* ---- per-frame control state: snapshot on first entry, restore on leave (unless data-keep-state) ---- */
     function snapshot(el) {
       var s = { ranges: [], toggles: [], details: [] };
-      all(el, 'input[type=range]').forEach(function (r) { if (!r.closest('[data-keep-state]')) s.ranges.push([r, r.value]); });
-      all(el, '.toggle[aria-pressed]').forEach(function (t) { if (!t.closest('[data-keep-state]')) s.toggles.push([t, t.getAttribute('aria-pressed')]); });
-      all(el, 'details').forEach(function (d) { if (!d.closest('[data-keep-state]')) s.details.push([d, d.open]); });
+      all(el, 'input[type=range]').forEach(function (r) { if (!r.closest('[data-keep-state], [data-present="manual"]')) s.ranges.push([r, r.value]); });
+      all(el, '.toggle[aria-pressed]').forEach(function (t) { if (!t.closest('[data-keep-state], [data-present="manual"]')) s.toggles.push([t, t.getAttribute('aria-pressed')]); });
+      all(el, 'details').forEach(function (d) { if (!d.closest('[data-keep-state], [data-present="manual"]')) s.details.push([d, d.open]); });
       return s;
     }
     function restore(s) {
@@ -1580,6 +1617,7 @@
         var title = sec.getAttribute('data-title') || (sec.querySelector('h2') ? sec.querySelector('h2').textContent : sec.id);
         frames.forEach(function (f, k) {
           prepBuilds(f);
+          if (!f.hasAttribute('tabindex')) f.setAttribute('tabindex', '-1');
           P.frames.push({ sec: sec, secIndex: si, id: sec.id, num: (sec.id || '').replace(/^s/, ''), secTitle: title, el: f, index: k, count: frames.length, title: f.getAttribute('data-title') || '', notes: notesOf(f), maxBuild: maxBuild(f), snapshot: null });
         });
       });
@@ -1588,13 +1626,40 @@
     /* ---- chrome (counter, notes strip, overview, blank, help) ---- */
     function ensureUi() {
       if (U.counter) return;
-      U.counter = h('div', { id: 'at-counter', 'aria-hidden': 'true' });
+      U.counter = h('div', { id: 'at-counter', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' });
+      U.prev = h('button', { id: 'at-prev', type: 'button', class: 'pbtn', on: { click: prev } }, 'Previous');
+      U.next = h('button', { id: 'at-next', type: 'button', class: 'pbtn', on: { click: next } }, 'Next');
+      U.overviewButton = h('button', { id: 'at-overview-btn', type: 'button', class: 'pbtn', 'aria-haspopup': 'dialog', on: { click: function () { setOverview(true); } } }, 'Frames');
+      U.fullscreen = h('button', { id: 'at-fullscreen', type: 'button', class: 'pbtn', 'aria-pressed': 'false', on: { click: fullscreen } }, 'Full screen');
+      U.controls = h('nav', { id: 'at-controls', tabindex: '-1', 'aria-label': 'Classroom navigation' }, U.counter, U.prev, U.next, U.overviewButton, U.fullscreen,
+        h('button', { id: 'at-exit', type: 'button', class: 'pbtn', on: { click: exit } }, 'Exit'));
+      U.announcement = h('p', { id: 'at-announcement', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' });
       U.notes = h('div', { id: 'at-notes', role: 'complementary', 'aria-label': 'Presenter notes' });
-      U.overview = h('div', { id: 'at-overview', role: 'dialog', 'aria-label': 'All frames' }, h('p', { class: 'ov-title' }, 'All frames: click one to jump, O or Esc to close'), h('div', { class: 'ov-grid' }));
+      U.overview = h('div', { id: 'at-overview', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'All frames' }, h('div', { class: 'ov-head' }, h('p', { class: 'ov-title' }, 'All frames: select one to jump'), h('button', { id: 'at-overview-close', type: 'button', class: 'pbtn', on: { click: function () { setOverview(false); } } }, 'Close overview')), h('div', { class: 'ov-grid' }));
       U.blank = h('div', { id: 'at-blank', 'aria-hidden': 'true' });
       U.help = h('div', { id: 'at-help', role: 'note' }, h('div', { html: '<kbd>→</kbd> <kbd>Space</kbd> <kbd>PgDn</kbd> next build · <kbd>←</kbd> <kbd>PgUp</kbd> <kbd>Backspace</kbd> back · <kbd>Home</kbd> <kbd>End</kbd> first / last frame<br><kbd>O</kbd> overview · <kbd>B</kbd> blank · <kbd>S</kbd> notes · <kbd>?</kbd> this help · <kbd>Esc</kbd> exit' }));
       U.blank.addEventListener('click', function () { setBlank(false); });
-      document.body.appendChild(U.counter); document.body.appendChild(U.notes); document.body.appendChild(U.overview); document.body.appendChild(U.blank); document.body.appendChild(U.help);
+      document.body.appendChild(U.controls); document.body.appendChild(U.announcement); document.body.appendChild(U.notes); document.body.appendChild(U.overview); document.body.appendChild(U.blank); document.body.appendChild(U.help);
+      window.addEventListener('resize', measureChrome);
+      document.addEventListener('fullscreenchange', function () { updateChrome(); measureChrome(); });
+      if (window.ResizeObserver) { U.resize = new ResizeObserver(measureChrome); U.resize.observe(U.controls); var strip = document.getElementById('strip'); if (strip) U.resize.observe(strip); }
+    }
+    function measureChrome() {
+      if (!P.active) return;
+      var strip = document.getElementById('strip');
+      document.body.style.setProperty('--present-strip-h', (strip ? strip.getBoundingClientRect().height : 0) + 'px');
+      document.body.style.setProperty('--present-controls-h', (U.controls ? U.controls.getBoundingClientRect().height : 0) + 'px');
+    }
+    function fullscreen() {
+      var fallback = function () { U.announcement.textContent = 'Full screen is unavailable here. Use your browser’s full-screen command; classroom navigation still works.'; };
+      U.announcement.textContent = '';
+      try {
+        var result;
+        if (document.fullscreenElement && document.exitFullscreen) result = document.exitFullscreen();
+        else if (document.documentElement.requestFullscreen) { P.ownsFullscreen = true; result = document.documentElement.requestFullscreen(); }
+        else { fallback(); return; }
+        if (result && result.catch) result.catch(fallback);
+      } catch (e) { fallback(); }
     }
     function notesHtml(list, empty) {
       if (!list || !list.length) return '<p class="at-notes-empty">' + (empty || 'No notes for this frame.') + '</p>';
@@ -1603,22 +1668,43 @@
     function updateChrome() {
       var fr = P.frames[P.fi]; if (!fr || !U.counter) return;
       U.counter.textContent = fr.num + '.' + (fr.index + 1) + '/' + fr.count + (fr.maxBuild ? '  b' + P.build + '/' + fr.maxBuild : '');
+      var st = activeStepper(fr, P.build), back = activeStepper(fr, P.build, -1);
+      if (st) U.counter.textContent += ' · step ' + (st.index() + 1) + '/' + st.steps.length;
+      U.counter.setAttribute('aria-label', fr.secTitle + (fr.title ? ': ' + fr.title : '') + '. Frame ' + (fr.index + 1) + ' of ' + fr.count + ', build ' + P.build + ' of ' + fr.maxBuild + (st ? ', step ' + (st.index() + 1) + ' of ' + st.steps.length : ''));
+      U.prev.disabled = P.fi === 0 && P.build === 0 && !(back && back.index() > 0);
+      U.next.disabled = P.fi === P.frames.length - 1 && P.build === fr.maxBuild && !(st && st.index() < st.steps.length - 1);
+      U.prev.setAttribute('aria-label', back && back.index() > 0 ? 'Previous step in this build' : P.build > 0 ? 'Previous build' : 'Previous frame');
+      U.next.setAttribute('aria-label', st && st.index() < st.steps.length - 1 ? 'Next step in this build' : P.build < fr.maxBuild ? 'Next build' : 'Next frame');
+      U.fullscreen.textContent = document.fullscreenElement ? 'Leave full screen' : 'Full screen';
+      U.fullscreen.setAttribute('aria-pressed', document.fullscreenElement ? 'true' : 'false');
       var sub = fr.sec.querySelector(':scope > .sec-head .frame-sub'); if (sub) sub.textContent = fr.title;
       if (P.notes) U.notes.innerHTML = notesHtml(fr.notes);
       var bar = document.getElementById('progress');
       if (bar) bar.style.width = (100 * (P.fi + (P.build + 1) / (fr.maxBuild + 1)) / P.frames.length).toFixed(2) + '%';
-      if (P.overview) renderOverview();
     }
     function renderOverview() {
       var grid = U.overview.querySelector('.ov-grid'); clear(grid);
       P.frames.forEach(function (fr, i) {
-        var b = h('button', { type: 'button', class: 'ov-item' + (i === P.fi ? ' is-current' : ''), on: { click: function () { setOverview(false); showFrame(i, 0); } } },
+        var b = h('button', { type: 'button', class: 'ov-item' + (i === P.fi ? ' is-current' : ''), 'aria-current': i === P.fi ? 'true' : null, on: { click: function () { setOverview(false); showFrame(i, 0); cur().el.focus({ preventScroll: true }); } } },
           h('span', { class: 'ov-n' }, fr.num + '.' + (fr.index + 1) + (fr.maxBuild ? ' · ' + (fr.maxBuild + 1) + ' builds' : '')),
           h('span', { class: 'ov-t' }, fr.secTitle), fr.title ? h('span', { class: 'ov-s' }, fr.title) : null);
         grid.appendChild(b);
       });
     }
-    function setOverview(on) { P.overview = !!on; if (U.overview) { U.overview.classList.toggle('is-on', P.overview); if (P.overview) { renderOverview(); var c = U.overview.querySelector('.is-current'); if (c) c.focus(); } } emit('overview', P.overview); }
+    function setOverview(on) {
+      on = !!on; if (on === P.overview || !U.overview) return;
+      P.overview = on; U.overview.classList.toggle('is-on', on);
+      if (on) {
+        overviewFocus = document.activeElement;
+        overviewBackground = children(document.body).filter(function (e) { return e !== U.overview && e.tagName !== 'SCRIPT' && e.tagName !== 'STYLE'; }).map(function (e) { var saved = [e, e.inert]; e.inert = true; return saved; });
+        renderOverview(); var c = U.overview.querySelector('.is-current'); if (c) c.focus();
+      } else {
+        overviewBackground.forEach(function (p) { p[0].inert = p[1]; }); overviewBackground = [];
+        var focus = overviewFocus && overviewFocus.isConnected && overviewFocus.getClientRects().length ? overviewFocus : U.overviewButton;
+        if (focus) focus.focus({ preventScroll: true }); overviewFocus = null;
+      }
+      emit('overview', P.overview);
+    }
     function setBlank(on) { P.blank = !!on; if (U.blank) U.blank.classList.toggle('is-on', P.blank); }
     function setNotes(on) { P.notes = !!on; if (U.notes) { U.notes.classList.toggle('is-on', P.notes); if (P.notes) updateChrome(); } }
     function setHelp(on) { P.help = !!on; if (U.help) U.help.classList.toggle('is-on', P.help); }
@@ -1629,50 +1715,52 @@
       if (!fr) return;
       restore(fr.snapshot);
       steppersOf(fr).forEach(function (s) { if (s.api.index() !== 0) s.api.go(0); });
-      all(fr.el, '[data-build]').forEach(function (e) { e.classList.remove('is-pending'); e.removeAttribute('aria-hidden'); });
+      all(fr.el, '[data-build]').forEach(function (e) { pending(e, false); });
       fr.el.classList.remove('is-live');
     }
-    function showFrame(i, b) {
+    function showFrame(i, b, edge) {
       i = Math.max(0, Math.min(P.frames.length - 1, i | 0));
       var prev = cur(), fr = P.frames[i];
       if (!fr) return;
       if (prev && prev !== fr) { leaveFrame(prev); if (prev.sec !== fr.sec) prev.sec.classList.remove('is-live'); }
+      var moveFocus = prev && prev !== fr && prev.el.contains(document.activeElement);
+      fr.sec.classList.add('is-live'); fr.el.classList.add('is-live');
       if (prev !== fr) {
-        fr.sec.classList.add('is-live'); fr.el.classList.add('is-live');
         if (!fr.snapshot) fr.snapshot = snapshot(fr.el);
         fr.el.scrollTop = 0;
         if (AT.strip) AT.strip.setCurrent(fr.secIndex);
       }
       P.fi = i;
       P.build = Math.max(0, Math.min(fr.maxBuild, b | 0));
-      applyBuild(fr, P.build);
+      applyBuild(fr, P.build, edge || 'start');
+      if (moveFocus) fr.el.focus({ preventScroll: true });
       updateChrome(); syncHash(); postState(); emit('frame', state());
     }
     function reveal(el, block) { if (!el || !el.scrollIntoView) return; try { el.scrollIntoView({ block: block || 'nearest', inline: 'nearest' }); } catch (e) { /* ignore */ } }
     function setBuild(b) {
       var fr = cur(); if (!fr) return;
       var was = P.build;
-      P.build = Math.max(0, Math.min(fr.maxBuild, b | 0)); applyBuild(fr, P.build);
+      P.build = Math.max(0, Math.min(fr.maxBuild, b | 0)); applyBuild(fr, P.build, P.build < was ? 'end' : P.build > was ? 'start' : null);
       if (P.build > was) { var first = fr.el.querySelector('[data-build="' + P.build + '"]'); if (first) { var st = activeStepper(fr, P.build); reveal(st ? st.el : first, st ? 'start' : 'nearest'); } }
       updateChrome(); syncHash(); postState(); emit('build', state());
     }
     function next() {
-      var fr = cur(); if (!fr) return;
+      var fr = cur(); if (!P.active || !fr) return;
       var st = activeStepper(fr, P.build);
       if (st && st.index() < st.steps.length - 1) { st.next(); reveal(st.el, 'start'); updateChrome(); postState(); emit('step', state()); return; }
       if (P.build < fr.maxBuild) setBuild(P.build + 1);
       else if (P.fi < P.frames.length - 1) showFrame(P.fi + 1, 0);
     }
     function prev() {
-      var fr = cur(); if (!fr) return;
-      var st = activeStepper(fr, P.build);
+      var fr = cur(); if (!P.active || !fr) return;
+      var st = activeStepper(fr, P.build, -1);
       if (st && st.index() > 0) { st.prev(); reveal(st.el, 'start'); updateChrome(); postState(); emit('step', state()); return; }
       if (P.build > 0) setBuild(P.build - 1);
-      else if (P.fi > 0) showFrame(P.fi - 1, P.frames[P.fi - 1].maxBuild);
+      else if (P.fi > 0) showFrame(P.fi - 1, P.frames[P.fi - 1].maxBuild, 'end');
     }
     function frameIndexFor(id, f) { var k = -1; P.frames.forEach(function (fr, i) { if (k < 0 && fr.id === id && fr.index === Math.max(0, (f | 0) - 1)) k = i; }); if (k < 0) P.frames.forEach(function (fr, i) { if (k < 0 && fr.id === id) k = i; }); return k; }
     function go(id, f, b) { if (typeof id === 'number') { showFrame(id, b || 0); return; } var i = frameIndexFor(String(id), f == null ? 1 : f); if (i >= 0) showFrame(i, b || 0); }
-    function parseHash(hsh) { var m = /^#?(s\d+)(?:\/(\d+))?(?:\/(\d+))?$/.exec(hsh || ''); return m ? { id: m[1], f: m[2] ? +m[2] : 1, b: m[3] ? +m[3] : 0 } : null; }
+    function parseHash(hsh) { var m = /^#?(s\d+)\/(\d+)\/(\d+)$/.exec(hsh || ''); return m ? { id: m[1], f: +m[2], b: +m[3] } : null; }
     function hashOf() { var fr = cur(); return fr ? '#' + fr.id + '/' + (fr.index + 1) + '/' + P.build : ''; }
     var syncing = false;
     function syncHash() { if (!P.active) return; var hh = hashOf(); if (hh && location.hash !== hh) { syncing = true; try { history.replaceState(null, '', hh); } catch (e) { location.hash = hh; } setTimeout(function () { syncing = false; }, 0); } }
@@ -1689,9 +1777,12 @@
       if (!P.frames.length) return;
       var t = target || parseHash(location.hash);
       if (!t) { var id = sectionAtViewport(); t = id ? { id: id, f: 1, b: 0 } : { index: 0 }; }
+      if (t.id && frameIndexFor(t.id, t.f) < 0) t = { index: 0 };
+      entryFocus = document.activeElement;
+      P.frames.forEach(function (fr) { fr.snapshot = null; }); P.fi = -1;
       P.active = true; P.startedAt = P.startedAt || Date.now();
       document.body.classList.add('present');
-      goTarget(t);
+      goTarget(t); measureChrome();
       emit('change', state());
     }
     function goTarget(t) { if (t.index != null) showFrame(t.index, t.b || 0); else go(t.id, t.f, t.b); }
@@ -1702,7 +1793,11 @@
       if (fr) { leaveFrame(fr); fr.sec.classList.remove('is-live'); }
       P.active = false;
       document.body.classList.remove('present');
-      if (fr) { try { history.replaceState(null, '', '#' + fr.id); } catch (e) { /* ignore */ } fr.sec.scrollIntoView({ block: 'start' }); }
+      U.announcement.textContent = '';
+      try { var url = new URL(location.href); url.searchParams.delete('present'); url.hash = fr ? fr.id : ''; history.replaceState(null, '', url.href); } catch (e) { /* ignore */ }
+      if (P.ownsFullscreen && document.fullscreenElement && document.exitFullscreen) { var result = document.exitFullscreen(); if (result && result.catch) result.catch(function () {}); } P.ownsFullscreen = false;
+      if (entryFocus && entryFocus.isConnected && entryFocus !== document.body) entryFocus.focus({ preventScroll: true });
+      if (fr) fr.sec.scrollIntoView({ block: 'start' });
       emit('change', state()); postState();
     }
     function toggle() { if (P.active) exit(); else enter(); }
@@ -1714,7 +1809,7 @@
       all(document, '.stepper').forEach(function (e) { if (e.stepperApi && e.stepperApi.steps.length) { st.steppers.push([e.stepperApi, e.stepperApi.index()]); e.stepperApi.go(e.stepperApi.steps.length - 1); } });
       if (P.active) {
         var fr = cur();
-        all(document, '[data-build].is-pending').forEach(function (e) { e.classList.remove('is-pending'); e.removeAttribute('aria-hidden'); });
+        all(document, '[data-build].is-pending').forEach(function (e) { pending(e, false); });
         if (fr) { fr.el.classList.remove('is-live'); fr.sec.classList.remove('is-live'); }
         document.body.classList.remove('present');
       }
@@ -1730,17 +1825,29 @@
     }
 
     /* ---- keys ---- */
-    function inField(t) { if (!t || !t.tagName) return false; var tag = t.tagName; return tag === 'TEXTAREA' || tag === 'SELECT' || (tag === 'INPUT' && t.type !== 'range') || t.isContentEditable; }
+    function inField(t) { if (!t || !t.tagName) return false; var tag = t.tagName; return tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'INPUT' || t.isContentEditable; }
+    function overviewKey(key, ev) {
+      if (key === 'Escape' || key === 'o' || key === 'O') { setOverview(false); return true; }
+      var buttons = all(U.overview, 'button:not([disabled])'), i = buttons.indexOf(document.activeElement), to;
+      if (key === 'Tab') to = (i + (ev && ev.shiftKey ? -1 : 1) + buttons.length) % buttons.length;
+      else if (key === 'ArrowRight' || key === 'ArrowDown') to = (i + 1) % buttons.length;
+      else if (key === 'ArrowLeft' || key === 'ArrowUp') to = (i - 1 + buttons.length) % buttons.length;
+      else if (key === 'Home') to = 0;
+      else if (key === 'End') to = buttons.length - 1;
+      if (to != null && buttons[to]) { buttons[to].focus(); return true; }
+      return false;
+    }
     function handleKey(key, target, ev) {
       if (!P.active) { if ((key === 'p' || key === 'P') && !inField(target)) { enter(); return true; } return false; }
-      if (inField(target)) return false;
-      var onRange = target && target.tagName === 'INPUT' && target.type === 'range';
+      if (P.overview) return overviewKey(key, ev);
       if (P.blank) { if (key === 'Shift' || key === 'Control' || key === 'Alt' || key === 'Meta') return false; setBlank(false); return true; }
+      if (key === 'Escape') { if (P.help) setHelp(false); else exit(); return true; }
+      if (inField(target) || (target && target.closest && target.closest('[data-present="manual"]'))) return false;
       switch (key) {
-        case 'ArrowRight': if (onRange) return false; next(); return true;
-        case ' ': if (target && (target.tagName === 'BUTTON' || target.tagName === 'SUMMARY' || target.tagName === 'A')) return false; next(); return true;
+        case 'ArrowRight': next(); return true;
+        case ' ': if (target && (target.tagName === 'BUTTON' || target.tagName === 'SUMMARY' || target.tagName === 'A' || target.getAttribute('role') === 'button')) return false; next(); return true;
         case 'PageDown': case 'n': case 'N': next(); return true;
-        case 'ArrowLeft': if (onRange) return false; prev(); return true;
+        case 'ArrowLeft': prev(); return true;
         case 'PageUp': case 'Backspace': prev(); return true;
         case 'Home': showFrame(0, 0); return true;
         case 'End': showFrame(P.frames.length - 1, 0); return true;
@@ -1748,7 +1855,7 @@
         case 'b': case 'B': case '.': setBlank(!P.blank); return true;
         case 's': case 'S': setNotes(!P.notes); return true;
         case '?': setHelp(!P.help); return true;
-        case 'Escape': if (P.overview) setOverview(false); else if (P.help) setHelp(false); else exit(); return true;
+        case 'f': case 'F': fullscreen(); return true;
       }
       return false;
     }
@@ -1769,7 +1876,7 @@
       try { if (w.closed) { P.presWin = null; return; } w.postMessage({ type: 'at-state', state: state() }, '*'); } catch (e) { /* ignore */ }
     }
     function openPresenter() {
-      var base = location.href.replace(/#.*$/, '').replace(/\?present\b&?/, '?').replace(/\?$/, '');
+      var url = new URL(location.href); url.hash = ''; url.searchParams.delete('present'); var base = url.href;
       var w = null;
       try { w = window.open(base + '#presenter', 'at-presenter', 'width=1100,height=720'); } catch (e) { w = null; }
       if (w) P.presWin = w;
@@ -1844,15 +1951,16 @@
       window.addEventListener('message', onMessage);
       window.addEventListener('beforeprint', prepareForPrint);
       window.addEventListener('afterprint', restoreAfterPrint);
+      document.addEventListener('at-stepchange', function (ev) { if (P.active && cur() && cur().el.contains(ev.target)) { updateChrome(); postState(); } });
       window.addEventListener('hashchange', function () { if (syncing) return; var t = parseHash(location.hash); if (t) { if (P.active) goTarget(t); else enter(t); } });
       var wantsPresent = /(^|[?&])present(=|&|$)/.test(location.search) || !!parseHash(location.hash);
-      if (wantsPresent) enter();
+      if (wantsPresent) { var t = parseHash(location.hash); if (!t && /^#s\d+$/.test(location.hash)) t = { id: location.hash.slice(1), f: 1, b: 0 }; enter(t); }
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 
     return {
       enter: enter, exit: exit, toggle: toggle, next: next, prev: prev, go: go, first: function () { showFrame(0, 0); }, last: function () { showFrame(P.frames.length - 1, 0); },
-      setBuild: setBuild, overview: setOverview, blank: setBlank, notes: setNotes, help: setHelp, openPresenter: openPresenter,
+      setBuild: setBuild, overview: setOverview, blank: setBlank, notes: setNotes, help: setHelp, fullscreen: fullscreen, openPresenter: openPresenter,
       prepareForPrint: prepareForPrint, restoreAfterPrint: restoreAfterPrint, discover: discover,
       isActive: function () { return P.active; }, state: state, frames: function () { discover(); return P.frames.slice(); }, on: on, parseHash: parseHash
     };

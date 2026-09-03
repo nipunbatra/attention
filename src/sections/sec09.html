@@ -31,6 +31,10 @@
 #s09 .rd{margin:10px 0 0;font-size:15px;color:var(--ink-2);max-width:72ch;line-height:1.5}
 #s09 .ws-lab{font-size:13px;color:var(--ink-3);font-weight:600;margin:16px 0 2px}
 #s09 #s09-chain .dt-fig{margin-top:8px}
+body.present #s09-frame3 .card{padding:.6em .8em}
+body.present #s09-frame3 .dt-note{font-size:.72em;line-height:1.35}
+body.present #s09-frame3 .ws-lab{margin:8px 0 2px}
+body.present #s09-frame3 .calc-rounding{display:none}
 </style>
 <header class="sec-head">
   <span class="sec-num">09</span>
@@ -41,10 +45,15 @@
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>This is the step the whole page builds towards. The message $m_7$ is a mixture of values, so it lives in value space with three coordinates. $W_O$ maps it into the four coordinates of a representation, and that vector, $\vd{\Delta e_7}$, is added to $\ve{e_7}$. The original representation is not overwritten; it receives a correction that depends on context.</p>
-  <p>Press Play, or step through, and watch the highlight move down the diagram while the matching row of the table lights up. Hover a cell of the last row to see the addition. Read the axis names: the message speaks in value coordinates, $W_O$ turns them into representation coordinates. The sentence to remember: attention adds a context-dependent update to the representation it started from.</p>
+  <p>This is the step the whole page builds towards. The message $m_7$ is a mixture of values, so it lives in value space with $d_v$ coordinates. $W_O$ maps it into the $d_{\text{model}}$ coordinates of a representation, and that vector, $\vd{\Delta e_7}$, is added to $\ve{e_7}$. The residual branch keeps the original row as an input to the addition; the resulting row combines it with context.</p>
+  <p>Press Play, or step through, and watch the highlight move down the diagram while the matching row of the table lights up. Hover a cell of the last row to see the addition. Read the axis names: the message speaks in value coordinates, $W_O$ turns them into representation coordinates. The sentence to remember: attention computes the update; the residual connection adds it to the representation we started from.</p>
 </div>
 
+<div class="frame" id="s09-frame1" data-title="Can we add a value-space message directly to an embedding?">
+  <script type="text/x-notes">
+What shape must the update have before we can add it to e?
+The message has d_v value coordinates. W_O maps it to d_model representation coordinates; the residual connection performs the addition. Attention and residual addition have different jobs.
+  </script>
 <div class="prose">
   <p>The message $m_i$ lives in value space ($d_v$ numbers). An output projection $W_O$ maps it into representation space ($d_{\text{model}}$ numbers). We call that vector the contextual update $\vd{\Delta e_i}$ and add it to $\ve{e_i}$.</p>
   $$m_i = \sum_{j \le i} \va{\alpha_{ij}}\, \vv{v_j} \qquad \boxed{\vd{\Delta e_i} = m_i\,W_O} \qquad \boxed{\vp{e_i^{\text{new}}} = \ve{e_i} + \vd{\Delta e_i}}$$
@@ -56,6 +65,13 @@
   <p class="muted small">Look at: the dashed edge carries $\ve{e}$ around attention unchanged; the update joins it at the plus.</p>
 </div>
 
+</div>
+
+<div class="frame" id="s09-frame2" data-title="How does bank receive its context?">
+  <script type="text/x-notes">
+Which branch carries the original bank row, and which computes the message?
+Use Next step to follow the existing sequence. Point out the unchanged residual branch at the plus. All keys and values came from the layer inputs; no updated token is fed back into this same layer.
+  </script>
 <div class="card">
   <h3 class="card-title">Watch $\ve{e_{\text{bank}}}$ become $\vp{e_{\text{bank}}'}$, token 7 of <em>The fisherman sat beside the river bank</em></h3>
   <div id="s09-stepper"></div>
@@ -69,6 +85,13 @@
   </div>
 </div>
 
+</div>
+
+<div class="frame" id="s09-frame3" data-title="Where should each message coordinate land?">
+  <script type="text/x-notes">
+How does W_O turn a value-space message into a representation-space update?
+Read one column of the d_v × d_model output projection, then one coordinate of the addition. Delta e is an activation update for this input, not a learning update to the embedding table.
+  </script>
 <div class="card">
   <h3 class="card-title">The output projection: $m_7$ (value space, $1 \times d_v$) $\to$ $\vd{\Delta e_7}$ (representation space, $1 \times d_{\text{model}}$)</h3>
   <div id="s09-wo"></div>
@@ -76,9 +99,19 @@
   <div id="s09-wocalc"></div>
 </div>
 
-<div class="callout callout-key big-caption">Attention does not replace the existing representation. It computes context-dependent information that can be added to it.</div>
+</div>
+<div class="frame" id="s09-frame4" data-title="Is Δe a new representation, or an update to add?">
+  <script type="text/x-notes">
+What does the plus sign keep that the attention output alone would not keep?
+The residual path carries the current input representation. The contextual update is an activation for this input, not an optimizer update to a stored parameter. Point to the two lines of code and distinguish mapping the message from adding it.
+  </script>
+<div class="callout callout-key big-caption">Attention computes context-dependent information. The residual connection adds that update to the existing representation.</div>
 
 <div class="callout callout-note">Calling this update $\vd{\Delta e_i}$ is pedagogical notation used on this page; it is not standard Transformer notation. Standard implementations usually call it the <em>attention output</em> and add it through a residual connection. The addition itself is standard: it is the residual connection around the attention sublayer.</div>
+<p class="muted small">PyTorch · $m_i$ is $1 \times d_v$; $\Delta e_i$ and $e_i$ are $1 \times d_{\text{model}}$.</p>
+<pre class="torch-snippet"><code>delta_e_i = m_i @ W_O
+e_new_i = e_i + delta_e_i</code></pre>
+</div>
 
 <div class="companion after">
   <p>Keep in mind: $\vp{e_7'} = \ve{e_7} + \vd{\Delta e_7}$. The right branch computed the update, the left branch carried $\ve{e_7}$ unchanged, and the plus joins them. That plus is the residual connection.</p>
@@ -180,7 +213,7 @@
   /* ---------- per-stage tables inside the stepper stage (q, scores, weights) ---------- */
   const stageTab = {
     1: (el) => AT.ui.table([F.Q[qi]], { rowLabels: ['$\\vq{q_{' + n + '}}$ ' + toks[qi]], rowCls: 'q', cornerLabel: 'row', cls: null,
-         caption: 'Look at: three named coordinates, from $\\ve{e_{' + n + '}}$ (four coordinates) times $W_Q$: what ' + AT.escape(toks[qi]) + ' asks for.', into: el }),
+         caption: 'Look at: ' + AT.d_k + ' matching coordinates, from $\\ve{e_{' + n + '}}$ (' + AT.d_model + ' coordinates) times $W_Q$: what ' + AT.escape(toks[qi]) + ' asks for.', into: el }),
     2: (el) => AT.ui.table([F.S[qi].slice(0, T)], { cols: tokCols, rowLabels: ['$s_{' + n + 'j}$'], rowCls: 'neutral', cornerLabel: 'token j',
          caption: 'Look at: one score per earlier token (section 8, phase A).', into: el }),
     3: (el) => AT.ui.table([F.S[qi].slice(0, T), F.A[qi].slice(0, T)], { cols: tokCols, rowLabels: ['$s_{' + n + 'j}$', '$\\va{\\alpha_{' + n + 'j}}$'], rowCls: ['neutral', 'a'], cornerLabel: 'token j',
@@ -201,11 +234,11 @@
   const steps = [
     { title: 'Start from the current representation', tex: '\\ve{e_{' + n + '}}', note: 'This is the representation of “bank” before attention: token embedding plus position. It will not be overwritten. It is the $\\ve{e_{' + n + '}}$ row of the table.' },
     { title: 'Compute the query', tex: '\\vq{q_{' + n + '}} = \\ve{e_{' + n + '}}\\,W_Q', note: 'The right branch begins. $\\ve{e_{' + n + '}}$ itself waits on the left, untouched.' },
-    { title: 'Compare against the keys', tex: 's_{' + n + 'j} = \\vq{q_{' + n + '}}^\\top \\vk{k_j} / \\sqrt{d_k}', note: 'One score for every token $j \\le ' + n + '$ (phase A of the previous section).' },
+    { title: 'Compare against the keys', tex: 's_{' + n + 'j} = \\vq{q_{' + n + '}}\\cdot \\vk{k_j} / \\sqrt{d_k}', note: 'One score for every token $j \\le ' + n + '$ (phase A of the previous section).' },
     { title: 'Softmax gives the attention weights', tex: '\\va{\\alpha_{' + n + 'j}} = \\operatorname{softmax}_j(s_{' + n + 'j})', note: 'Where to read from. The weights sum to 1.' },
     { title: 'Weight the values and add them up', tex: 'm_{' + n + '} = \\sum_{j \\le ' + n + '} \\va{\\alpha_{' + n + 'j}}\\, \\vv{v_j}', note: 'What is read (phase B). $m_{' + n + '}$ has $d_v$ numbers; it lives in value space. It is the first row of the table.' },
     { title: 'Project back: the contextual update', tex: '\\vd{\\Delta e_{' + n + '}} = m_{' + n + '}\\,W_O', note: '$W_O$ maps the message into representation space, so it can be added to $\\ve{e_{' + n + '}}$. The second row of the table.' },
-    { title: 'Add the update to the original', tex: '\\ve{e_{' + n + '}} + \\vd{\\Delta e_{' + n + '}}', note: 'The two branches meet. Nothing was replaced: the original $\\ve{e_{' + n + '}}$ is still in there. Add the two highlighted rows, column by column.' },
+    { title: 'Add the update to the original', tex: '\\ve{e_{' + n + '}} + \\vd{\\Delta e_{' + n + '}}', note: 'The two branches meet. The unchanged input is one term in the sum; the output is a new row. Add the two highlighted rows, column by column.' },
     { title: 'The updated representation', tex: '\\vp{e_{' + n + "}'} = \\ve{e_{" + n + '}} + \\vd{\\Delta e_{' + n + '}}', note: '“' + AT.escape(toks[qi]) + '” now carries ' + AT.escape(AX.short.e[AT.argmax(F.Delta[qi].map(Math.abs))]) + ' context. This $\\vp{e_{' + n + "}'}$, the footer of the table, is what the output head will see." }
   ];
   let playTimer = null, playing = false;

@@ -41,6 +41,12 @@ else:
     print('warning: %s not found, using a minimal part config' % os.path.basename(cfg_path))
     part = {'part': N, 'title': 'Part %d' % N, 'subtitle': '', 'chain': [], 'sections': [], 'objects': ['e', 'q', 'k', 'v', 'a', 'd', 'ep'], 'prev': None, 'next': None, 'notation': 'part%d' % N}
 part.setdefault('part', N)
+# Planned parts must not look like working links in a distributable single file.
+for direction in ('prev', 'next'):
+    link = part.get(direction)
+    if link and link.get('href') and not re.match(r'^(?:https?:)?//', link['href']):
+        target = link['href'].split('#', 1)[0].split('?', 1)[0]
+        link['available'] = os.path.isfile(os.path.join(os.path.dirname(os.path.abspath(a.out)), target))
 shared = open(a.shared, encoding='utf-8').read()
 runtime = ''
 if os.path.exists(rt_path):
@@ -49,6 +55,13 @@ def js(obj):
     return json.dumps(obj, separators=(',', ':')).replace('</', '<\\/')
 shared_block = ('<script>\nwindow.__TOY__ = ' + js(toy) + ';\nwindow.__PART__ = ' + js(part) + ';\n</script>\n'
                 '<script>\n' + shared + '\n</script>\n' + runtime)
+if N == 2:
+    # One SVG source powers both the standalone preview and the article stepper.
+    diagram = os.path.join(here, '..', 'figures', 'attention-diagram-preview', 'diagram.js')
+    data_adapter = os.path.join(here, 'attention-flow-data.js')
+    if os.path.isfile(diagram) and os.path.isfile(data_adapter):
+        shared_block += ('<script>\n' + open(data_adapter, encoding='utf-8').read() + '\n</script>\n'
+                         '<script>\n' + open(diagram, encoding='utf-8').read() + '\n</script>\n')
 if a.only:
     files = a.only
 else:

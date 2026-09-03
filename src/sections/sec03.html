@@ -1,4 +1,4 @@
-<section id="s03" class="sec" data-title="Baseline: a fixed window of K tokens" data-lit="">
+<section id="s03" class="sec" data-title="Baseline: a fixed window of w tokens" data-lit="">
 <style>
 #s03 .bound{display:inline-flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px;margin:0 2px;align-self:stretch}
 #s03 .bound .bar{width:0;height:38px;border-left:3px dashed var(--ink)}
@@ -48,13 +48,13 @@ body.present #s03 .netsk .lab-in-box{font-size:.75em}
 <header class="sec-head">
   <span class="sec-num">03</span>
   <div>
-    <p class="eyebrow">Why we are here: the obvious fix, handing the model the last K tokens, and why it is not enough.</p>
-    <h2>Baseline: a fixed window of K tokens</h2>
+    <p class="eyebrow">Why we are here: the obvious fix, handing the model the last w tokens, and why it is not enough.</p>
+    <h2>Baseline: a fixed window of w tokens</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>The natural fix is to hand the model more tokens: concatenate the last $K$ representations into one long row and let a bigger matrix read it. The first widget sketches that as a network: the input column is the window, and the first layer has to be as wide as the window. Drag the second slider and watch two things, which tokens sit inside the window, and how the input grows by four numbers per token. Set $K$ to 3 and <em>river</em> falls outside. Set it to 10 and every token is in, but only because this sentence is short. Each row also lands in a slot decided by its position, so $W$ cannot treat <em>river</em> differently from <em>the</em>. The sentence to remember: a window decides by position what to include, and we want to decide by content.</p>
+  <p>The natural fix is to hand the model more tokens: concatenate the last $w$ representations into one long row and let a bigger matrix read it. The first widget sketches that as a network: the input column is the window, and the first layer's input width grows with the window. Drag the second slider and watch which tokens sit inside the window and how the input grows by five numbers per token. Set $w$ to 3 and <em>river</em> falls outside. Set it to 10 and every token is in, but only because this sentence is short. The included embeddings still carry content: a network can learn to treat <em>river</em> differently from <em>the</em>. The limitation is the fixed input width and hard boundary, not an inability to use the words. The sentence to remember: a window decides by position what to include, and we want to decide by content.</p>
 </div>
 
 <div class="frame" data-title="Grow the window" id="s03-frame1" data-autobuild="off">
@@ -89,11 +89,11 @@ body.present #s03 .netsk .lab-in-box{font-size:.75em}
 
 <div class="frame" data-title="Inside the window" id="s03-frame2" data-autobuild="off">
   <script type="text/x-notes">
-    Which tokens does K = 3 keep, and which does it throw away?
-    Move the slider to 3 and ask where river went. Then reveal the concatenation table: one row of four numbers per kept token, stacked by position. Then the readouts: input size and parameter count grow with K.
+    Which tokens does w = 3 keep, and which does it throw away?
+    Move the slider to 3 and ask where river went. Then reveal the concatenation table: one row of five numbers per kept token, stacked by position. Then the readouts: input size and parameter count grow with w.
   </script>
   <div class="prose">
-    <p>Concatenate the previous $K$ token representations into one long vector and predict from that. $K$ here is the window size, not the key chip in the strip above.</p>
+    <p>Concatenate the previous $w$ token representations into one long vector and predict from that. $w$ denotes the window width; we reserve $K$ for the matrix of attention keys later.</p>
   </div>
 
   <div class="card">
@@ -110,41 +110,41 @@ body.present #s03 .netsk .lab-in-box{font-size:.75em}
   </div>
 
   <div class="prose" data-build="1">
-    <p>$$c_t = [\ve{e_{t-K+1}};\,\ve{e_{t-K+2}};\,\ldots;\,\ve{e_t}], \qquad p(x_{t+1}\mid x_{\le t}) = \operatorname{softmax}(W c_t + b)$$</p>
+    <p>$$c_t = [\ve{e_{t-w+1}};\,\ve{e_{t-w+2}};\,\ldots;\,\ve{e_t}], \qquad p(x_{t+1}\mid x_{\le t}) = \operatorname{softmax}(c_t W + b)$$</p>
   </div>
   <div class="prose" data-build="2">
-    <p>$W$ is a new, larger matrix, not section 02's $W_{\text{vocab}}$: it has $|\mathcal V| \times K d_{\text{model}}$ entries.</p>
+    <p>$W$ is a new, larger matrix, not section 02's $W_{\text{vocab}}$: it has $w d_{\text{model}} \times |\mathcal V|$ entries.</p>
   </div>
 </div>
 
 <div class="frame" data-title="Four problems" id="s03-frame3" data-autobuild="off">
   <script type="text/x-notes">
-    Which of these does a bigger K fix?
-    None of the last three: a bigger K moves the boundary, it does not remove it; slots stay positional; the relevant tokens still change from slot to slot; and the parameter count grows. Reveal one card per press, then the question.
+    Which of these does a bigger w fix?
+    A bigger w can include both sets of clues in this finite example, but it moves rather than removes the boundary, increases the first-layer input width, and still gives a fixed number of slots. Do not claim that an MLP cannot use content within those slots. Reveal one card per press, then the question.
   </script>
   <div class="grid-2 problems">
     <div class="card">
       <h3 class="card-title"><span class="n">1</span>The boundary is hard</h3>
-      <p>Anything before the previous $K$ tokens is unavailable. It is not down-weighted; it is absent.</p>
+      <p>Anything before the previous $w$ tokens is unavailable. It is not down-weighted; it is absent.</p>
       <span class="live" id="s03-live1"></span>
     </div>
     <div class="card" data-build="1">
       <h3 class="card-title"><span class="n">2</span>Slots are fixed by position</h3>
-      <p>The model receives all $K$ representations, each in a slot set by its distance from the end. $W$ can learn to weight a slot, but that weight is fixed before the words are read: the same slot weights apply whether the slot holds <em>river</em> or <em>the</em>.</p>
+      <p>The model receives all $w$ representations, each in a slot set by its distance from the end. The network can respond differently to different embeddings in a slot. What remains fixed is the number of slots and which positions are supplied; there is no explicit query-dependent retrieval step here.</p>
       <span class="live" id="s03-live2"></span>
     </div>
     <div class="card" data-build="2">
       <h3 class="card-title"><span class="n">3</span>Relevant context changes dynamically</h3>
-      <p class="muted small" style="margin:0">For different predictions, different previous tokens matter. Two prediction slots in the same sentence. <span class="illus">Outlines are illustrative</span> (they mark the tokens that the mechanism built later on this page reads most)</p>
+      <p class="muted small" style="margin:0">For different predictions, different previous tokens matter. Two prediction slots in the same sentence. <span class="illus">Outlines are illustrative</span> (they mark the tokens the later toy mechanism gives the largest weights for these queries)</p>
       <div class="dyn-row" id="s03-dyn1"></div>
       <p class="dyn-note" id="s03-dyn1-note"></p>
       <div class="dyn-row" id="s03-dyn2"></div>
       <p class="dyn-note" id="s03-dyn2-note"></p>
-      <p class="look">Look at the outlined tokens: a different set, at different distances from the slot. No fixed window fits both.</p>
+      <p class="look">Look at the outlined tokens: a different set, at different distances from the slot. A sufficiently large window includes both sets; it still has one fixed boundary.</p>
     </div>
     <div class="card" data-build="3">
-      <h3 class="card-title"><span class="n">4</span>Increasing K does not remove the problem</h3>
-      <p class="muted small" style="margin:0 0 6px">A larger $K$ adds input dimensions and parameters in $W$, and it includes more irrelevant tokens. The cut-off is still fixed.</p>
+      <h3 class="card-title"><span class="n">4</span>Increasing w does not remove the problem</h3>
+      <p class="muted small" style="margin:0 0 6px">A larger $w$ adds input dimensions and parameters in $W$, and may include tokens that are less useful for this prediction. The cut-off is still fixed.</p>
       <div id="s03-ktab"></div>
       <p class="look" id="s03-ktab-note"></p>
     </div>
@@ -165,7 +165,7 @@ body.present #s03 .netsk .lab-in-box{font-size:.75em}
   const E0 = AT.embed(toks);
   const D = AT.d_model, V = AT.vocab.length;
   const F = AT.forward(toks);
-  let K = 3;
+  let w = 3;
 
   /* ---------- frame 1: a fixed window feeds a fixed network (a sketch; d = d_model, h is a stated choice) ---------- */
   const H = 8;                                   // hidden width of the sketch, stated on the page
@@ -183,7 +183,7 @@ body.present #s03 .netsk .lab-in-box{font-size:.75em}
     AT.renderMath(netRead);
   }
   const b1 = S.querySelector('#s03-net-b1'), b2 = S.querySelector('#s03-net-b2');
-  b1.innerHTML = '<span class="k">w = ' + PRESET[1] + '</span> Two more input nodes, and ' + shapeText(PRESET[1]) + ' Nothing else in the network can stay the same shape.';
+  b1.innerHTML = '<span class="k">w = ' + PRESET[1] + '</span> Two more input nodes, and ' + shapeText(PRESET[1]) + ' The input-to-hidden matrix changes shape; the hidden width and output matrix can stay unchanged.';
   b2.innerHTML = '<span class="k">w = ' + PRESET[2] + '</span> The input column no longer fits the drawing, and ' + shapeText(PRESET[2]) + ' All of it is fixed before the first word is read.';
   AT.renderMath(b1); AT.renderMath(b2);
   const netSlider = AT.ui.slider({ label: 'Window w', min: 1, max: PRESET[2], step: 1, value: PRESET[0], onInput: (w) => drawNet(w), into: S.querySelector('#s03-net-slider') });
@@ -222,69 +222,69 @@ body.present #s03 .netsk .lab-in-box{font-size:.75em}
       : 'This time most of the ' + AT.escape(toks[RIVER]) + ' evidence is inside.';
     return txt;
   }
-  /* which earlier tokens matter for a slot: the largest attention weights of the token that fills it (computed, not typed) */
-  function topReaders(i, n){ return AT.range(i).map(j => ({ j, a: F.A[i][j] })).sort((a, b) => b.a - a.a).slice(0, n).map(p => p.j); }
+  /* which earlier tokens matter for a slot: the largest attention weights of the last known token (computed, not typed) */
+  function topReaders(i, n){ return AT.range(i + 1).map(j => ({ j, a: F.A[i][j] })).sort((a, b) => b.a - a.a).slice(0, n).map(p => p.j); }
 
   function draw(){
-    const first = t - K + 1;                       // first index inside the window (0-based)
+    const first = t - w + 1;                       // first index inside the window (0-based)
     const inside = AT.range(T).filter(i => i >= first), outside = AT.range(T).filter(i => i < first);
     chips.setActive(inside); chips.setMuted(outside);
     if (bound.parentNode) bound.parentNode.removeChild(bound);
     if (outside.length) chips.insertBefore(bound, chips.chips[first]);
-    winNote.innerHTML = 'Window $K = ' + K + '$: tokens ' + (first + 1) + ' to ' + T + ' are in, '
+    winNote.innerHTML = 'Window $w = ' + w + '$: tokens ' + (first + 1) + ' to ' + T + ' are in, '
       + (outside.length ? 'tokens 1 to ' + first + ' (' + AT.escape(list(outside)) + ') are behind the boundary.' : 'nothing is left behind, but only because this sentence is short.');
     AT.renderMath(winNote);
 
     /* c_t as a table: one row per included token, one column per coordinate, a dimension total in the footer */
-    const parts = K <= 4 ? inside.map(i => '\\ve{e_{' + (i + 1) + '}}').join(';\\,') : '\\ve{e_{' + (first + 1) + '}};\\,\\ldots;\\,\\ve{e_{' + T + '}}';
-    AT.tex(ceq, 'c_{' + T + '} = [' + parts + '] \\in \\mathbb{R}^{' + (K * D) + '}', { display: true });
+    const parts = w <= 4 ? inside.map(i => '\\ve{e_{' + (i + 1) + '}}').join(';\\,') : '\\ve{e_{' + (first + 1) + '}};\\,\\ldots;\\,\\ve{e_{' + T + '}}';
+    AT.tex(ceq, 'c_{' + T + '} = [' + parts + '] \\in \\mathbb{R}^{' + (w * D) + '}', { display: true });
     AT.clear(ctabHost);
     AT.ui.table(inside.map(i => E0[i]), {
       axes: 'e', cornerLabel: 'token',
       rowLabels: inside.map(i => (i + 1) + ' ' + AT.escape(toks[i]) + ' $\\ve{e_{' + (i + 1) + '}}$'),
       rowCls: 'e',
-      footer: { label: 'size of $c_{' + T + '}$', values: K + ' × ' + D + ' = ' + (K * D) + ' numbers', cls: 'neutral' },
+      footer: { label: 'size of $c_{' + T + '}$', values: w + ' × ' + D + ' = ' + (w * D) + ' numbers', cls: 'neutral' },
       caption: 'Every included token contributes one row of $d_{\\text{model}} = ' + D + '$ numbers, read left to right into $c_{' + T + '}$. The columns are the named coordinates of $\\ve{e}$; the rows are stacked by position, so the last row is always the current token.',
       into: ctabHost
     });
     ctabReading.innerHTML = readWindow(inside, outside);
     AT.renderMath(ctabReading);
-    ctabNote.innerHTML = 'Look at the row count. Input size $K \\cdot d_{\\text{model}} = ' + K + ' \\times ' + D + ' = ' + (K * D) + '$; parameters in $W$: $|\\mathcal V| \\times K d_{\\text{model}} = ' + V + ' \\times ' + (K * D) + ' = ' + (V * K * D) + '$.';
+    ctabNote.innerHTML = 'Look at the row count. Input size $w \\cdot d_{\\text{model}} = ' + w + ' \\times ' + D + ' = ' + (w * D) + '$; parameters in $W$: $|\\mathcal V| \\times w d_{\\text{model}} = ' + V + ' \\times ' + (w * D) + ' = ' + (V * w * D) + '$.';
     AT.renderMath(ctabNote);
 
-    /* live discussion lines (frame 3 reads the current K) */
-    live1.innerHTML = 'With $K = ' + K + '$: ' + (outside.length ? '<strong>' + outside.length + '</strong> token' + (outside.length > 1 ? 's' : '') + ' unavailable: ' + AT.escape(list(outside)) + '.' : 'every token is inside, but a longer sentence would still be cut at ' + K + '.')
-      + (outside.indexOf(5) >= 0 && inside.indexOf(6) >= 0 ? ' <em>river</em> is gone, so "bank" cannot be disambiguated.'
-        : outside.indexOf(6) >= 0 ? ' <em>river</em> and <em>bank</em> are both gone: nothing tells the model this is a river scene.' : '');
+    /* live discussion lines (frame 3 reads the current w) */
+    live1.innerHTML = 'With $w = ' + w + '$: ' + (outside.length ? '<strong>' + outside.length + '</strong> token' + (outside.length > 1 ? 's' : '') + ' unavailable: ' + AT.escape(list(outside)) + '.' : 'every token is inside, but a longer sentence would still be cut at ' + w + '.')
+      + (outside.indexOf(5) >= 0 && inside.indexOf(6) >= 0 ? ' The explicit <em>river</em> clue is outside the window.'
+        : outside.indexOf(6) >= 0 ? ' The explicit <em>river bank</em> clues are outside the window.' : '');
     AT.renderMath(live1);
-    live2.innerHTML = 'With $K = ' + K + '$: <strong>' + K + '</strong> slot' + (K > 1 ? 's' : '') + ' of ' + D + ' numbers each (' + AT.escape(list(inside)) + '), each weighted the same way whatever word it holds.';
+    live2.innerHTML = 'With $w = ' + w + '$: <strong>' + w + '</strong> slot' + (w > 1 ? 's' : '') + ' of ' + D + ' numbers each (' + AT.escape(list(inside)) + '), each mapped through fixed parameters, with an output that still depends on the word.';
     AT.renderMath(live2);
 
-    /* K table */
-    const ks = [1, 3, 5, 10].concat([1, 3, 5, 10].indexOf(K) < 0 ? [K] : []).sort((a, b) => a - b);
+    /* w table */
+    const ks = [1, 3, 5, 10].concat([1, 3, 5, 10].indexOf(w) < 0 ? [w] : []).sort((a, b) => a - b);
     AT.clear(ktabHost);
     AT.ui.table(ks.map(k => [k * D, V * k * D, T - k]), {
-      cols: ['input size $K d_{\\text{model}}$', 'parameters in $W$', 'tokens cut off'], cornerLabel: 'window',
-      rowLabels: ks.map(k => '$K = ' + k + '$'), decimals: 0, highlightRow: ks.indexOf(K),
-      caption: 'Tokens cut off: counted for this ' + T + '-token sentence. A longer sentence is cut at $K$ no matter how large $K$ is.',
+      cols: ['input size $w d_{\\text{model}}$', 'parameters in $W$', 'tokens cut off'], cornerLabel: 'window',
+      rowLabels: ks.map(k => '$w = ' + k + '$'), decimals: 0, highlightRow: ks.indexOf(w),
+      caption: 'Tokens cut off: counted for this ' + T + '-token sentence. A longer sentence is cut at $w$ no matter how large $w$ is.',
       into: ktabHost
     });
-    ktabNote.innerHTML = 'Look at the highlighted row, the current $K = ' + K + '$. Going down the table, every column but the last grows and the last never reaches a longer sentence.';
+    ktabNote.innerHTML = 'Look at the highlighted row, the current $w = ' + w + '$. Going down the table, every column but the last grows and the last never reaches a longer sentence.';
     AT.renderMath(ktabNote);
   }
 
-  AT.ui.slider({ label: 'Window size K', min: 1, max: T, step: 1, value: K, onInput: (v) => { K = v; draw(); }, into: S.querySelector('#s03-slider') });
+  AT.ui.slider({ label: 'Window size w', min: 1, max: T, step: 1, value: w, onInput: (v) => { w = v; draw(); }, into: S.querySelector('#s03-slider') });
   draw();
 
   /* ---------- frame 3: "relevant context changes dynamically": two prediction slots, illustrative outlines ---------- */
-  const rel1 = topReaders(6, 2), rel2 = topReaders(t, 3);
+  const rel1 = topReaders(5, 2), rel2 = topReaders(t, 3);
   const em = (idx) => idx.slice().sort((a, b) => a - b).map(i => '<em>' + AT.escape(toks[i]) + '</em>').join(', ').replace(/, ([^,]*)$/, ' and $1');
   const dyn1 = AT.ui.chips(toks.slice(0, 6), { slot: '___', into: S.querySelector('#s03-dyn1') });
   rel1.forEach(i => dyn1.chips[i].classList.add('rel'));
-  S.querySelector('#s03-dyn1-note').innerHTML = 'Predicting position 7 (the answer is <em>' + AT.escape(toks[6]) + '</em>): what matters is ' + em(rel1) + '.';
+  S.querySelector('#s03-dyn1-note').innerHTML = 'Predicting position 7 (the answer is <em>' + AT.escape(toks[6]) + '</em>): the later toy query at position 6 reads most from ' + em(rel1) + '.';
   const dyn2 = AT.ui.chips(toks, { slot: '___', into: S.querySelector('#s03-dyn2') });
   rel2.forEach(i => dyn2.chips[i].classList.add('rel'));
-  S.querySelector('#s03-dyn2-note').innerHTML = 'Predicting position 11 (after <em>watched the</em>): now ' + em(rel2) + ' matter.';
+  S.querySelector('#s03-dyn2-note').innerHTML = 'Predicting position 11 (after <em>watched the</em>): the later toy query at position 10 reads most from ' + em(rel2) + '.';
 })();
 </script>
 </section>

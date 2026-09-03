@@ -57,8 +57,8 @@ footer{border-top:1px solid var(--line);padding:24px 0 40px;color:var(--ink-3);f
   <div class="wrap">
     <p class="lab">A three-part series for deep-learning students</p>
     <h1>Next-token prediction, attention and the Transformer</h1>
-    <p class="hero-sub">Three single-file pages that build one idea at a time: a character model that predicts the next letter, the attention step that lets a token read from the tokens before it, and the Transformer block that learns.</p>
-    <p class="hero-meta">Each page is a lecture you can present frame by frame and a text a student can read alone. All numbers come from a tiny model whose arithmetic you can check by hand; every page works offline as one file.</p>
+    <p class="hero-sub">A planned sequence from character prediction to a trainable Transformer. Part 2 is available now: how attention lets a token read information from its context.</p>
+    <p class="hero-meta">Part 2 is both a classroom presentation and a self-study article. Its numbers come from a tiny, hand-designed model with checkable arithmetic, and the complete lesson works offline as one file.</p>
     <div class="chain" aria-label="The chain that runs through the series"><span class="sy e">e</span><span class="ar">→</span><span class="sy q">Q</span><span class="sy k">K</span><span class="sy v">V</span><span class="ar">→</span><span class="sy a">α</span><span class="ar">→</span><span class="sy d">Δe</span><span class="ar">→</span><span class="sy e">e + Δe</span><span class="ar">→</span><span>next-token probabilities</span></div>
   </div>
 </header>
@@ -67,10 +67,10 @@ footer{border-top:1px solid var(--line);padding:24px 0 40px;color:var(--ink-3);f
     <ol class="cards">
       <li class="card">
         <span class="n">PART 1</span>
-        <h2><a href="part1.html">From characters to next-token prediction</a></h2>
+        <h2>From characters to next-token prediction</h2>
         <p class="build"><b>What you will build</b>A character model for names: a lookup table, a fixed window of embeddings, one hidden layer and a softmax, trained on real names and sampled with a temperature.</p>
         <p class="meta">For students who know MLPs, softmax and cross-entropy.</p>
-        <a class="go" href="part1.html">Open Part 1</a>
+        <span class="meta">Coming soon · not yet published</span>
       </li>
       <li class="card">
         <span class="n">PART 2</span>
@@ -78,21 +78,22 @@ footer{border-top:1px solid var(--line);padding:24px 0 40px;color:var(--ink-3);f
         <p class="build"><b>What you will build</b>One attention step by hand: queries, keys and values for a ten-token sentence, the scores, the causal mask, the weights, and the update that makes "bank" mean the river or the money.</p>
         <p class="meta">For students who finished Part 1, or who know embeddings, dot products and softmax.</p>
         <a class="go" href="attention.html">Open Part 2</a>
+        <a class="go" href="attention.html?present">Present Part 2</a>
       </li>
       <li class="card">
         <span class="n">PART 3</span>
-        <h2><a href="part3.html">Learning, heads, and the Transformer</a></h2>
+        <h2>Learning, heads, and the Transformer</h2>
         <p class="build"><b>What you will build</b>One training step on the attention model from Part 2, then the full decoder block: several heads, layer normalisation, the feed-forward layer, and a stack of blocks.</p>
         <p class="meta">For students who finished Part 2.</p>
-        <a class="go" href="part3.html">Open Part 3</a>
+        <span class="meta">Coming soon · not yet published</span>
       </li>
     </ol>
     <div class="how">
       <p><strong>Reading and presenting.</strong> Every page opens as an article. The strip at the top switches between the full text and a lean view for projection, and the Present button (or <kbd>P</kbd>) turns the page into frames: one frame fills the screen and each <kbd>→</kbd> reveals the next step. <kbd>O</kbd> shows all frames, <kbd>S</kbd> shows the notes, and Presenter view opens the notes and the clock in a second window.</p>
-      <p>The three pages share one notation and one set of colours: the same seven objects are drawn in the same colours everywhere, and a symbol introduced in one part means the same thing in the next.</p>
+      <p>Part 2 keeps seven mathematical objects in consistent colours. Parts 1 and 3 will follow the same notation.</p>
     </div>
   </div>
 </main>
-<footer><div class="wrap">Three self-contained files with no external dependencies. Open any part offline; the pages link to each other.</div></footer>
+<footer><div class="wrap">Part 2 is available as a self-contained offline file. Parts 1 and 3 are planned.</div></footer>
 </body>
 </html>

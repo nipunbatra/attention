@@ -22,7 +22,7 @@
     <div id="live-status" class="sr-only" aria-live="polite"></div>
     <div id="canvas" class="canvas" role="tabpanel" aria-label="Current diagram stage"></div>
     <div id="storyboard" class="storyboard" hidden></div>
-    <footer><span>Arrow keys: previous / next · Space: play / pause</span><span>Standalone preview · original article unchanged</span></footer>
+    <footer><span>Arrow keys: previous / next · Space: play / pause</span><span>One SVG source · also used by the article’s classroom view</span></footer>
     <p class="credit">Structure adapted from <a href="https://arxiv.org/html/1706.03762#S3.SS2.SSS1">Vaswani et al., Figure 2</a>. One unbatched attention head, output projection and residual addition; no normalization or feed-forward sublayer. Numbers are a frozen snapshot of the article’s hand-designed toy.</p>
   </main>
   <script src="toy-data.js"></script>
@@ -42,7 +42,7 @@
       b.addEventListener('click', () => { pause(); stage = index; grid = false; render(); });
       tabHost.appendChild(b); return b;
     });
-    function pause() { clearInterval(timer); timer = null; document.querySelector('#play').textContent = 'Play'; }
+    function pause() { clearInterval(timer); timer = null; const b=document.querySelector('#play'); b.textContent = 'Play'; b.setAttribute('aria-label','Play stages'); }
     function render() {
       const s = P.stages[stage];
       canvas.innerHTML = P.render(stage);
@@ -64,7 +64,7 @@
     document.querySelector('#play').onclick = () => {
       if (timer) { pause(); return; }
       if (stage === P.stages.length - 1) stage = 0;
-      grid = false; render(); document.querySelector('#play').textContent = 'Pause';
+      grid = false; render(); document.querySelector('#play').textContent = 'Pause'; document.querySelector('#play').setAttribute('aria-label','Pause stages');
       timer = setInterval(() => { if (stage === P.stages.length - 1) pause(); else move(1); }, 4200);
     };
     document.querySelector('#overview').onclick = () => {
@@ -89,8 +89,9 @@
       if (e.key === 'ArrowRight') { e.preventDefault(); pause(); move(1); }
       if (e.key === 'ArrowLeft') { e.preventDefault(); pause(); move(-1); }
       if (e.code === 'Space' && e.target.tagName !== 'BUTTON') { e.preventDefault(); document.querySelector('#play').click(); }
-      if (e.key === 'Home') { pause(); stage = 0; render(); }
-      if (e.key === 'End') { pause(); stage = P.stages.length - 1; render(); }
+      if (e.key === 'Home') { e.preventDefault(); pause(); stage = 0; render(); }
+      if (e.key === 'End') { e.preventDefault(); pause(); stage = P.stages.length - 1; render(); }
+      if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)&&e.target.getAttribute('role')==='tab')tabs[stage].focus();
     });
     render();
   })();

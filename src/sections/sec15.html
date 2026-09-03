@@ -11,6 +11,41 @@
 #s15 .arith{margin-top:10px}
 #s15 .arith .chips{margin-bottom:10px}
 #s15 .arith .calc-line{margin-top:8px}
+#s15 .s15-classroom{display:none}
+/* Reading keeps every worksheet; projection shows one operation and its result. */
+body.present #s15 #s15-frame1>.prose,body.present #s15 #s15-motif{display:none}
+body.present #s15 #s15-frame1>.card{padding:0;border:0;background:none;margin:0 0 .2em}
+body.present #s15 .status{font-size:.78em;margin:0;text-align:left}
+body.present #s15 .s15-reading,body.present #s15 .stepper-list,
+body.present #s15 .stepper-stage>.stage-note,body.present #s15 .stepper-stage>.stage-tex{display:none}
+body.present #s15 .stepper{padding:.45em .7em;margin:.2em 0 0}
+body.present #s15 .stepper-body{display:block}
+body.present #s15 .stepper-bar{margin-bottom:.35em}
+body.present #s15 .stepper-stage .stage-title{margin:0 0 .3em}
+body.present #s15 .s15-classroom{display:grid;gap:.45em}
+body.present #s15 .s15-classroom p{margin:0;line-height:1.35}
+body.present #s15 .s15-context{font-size:.8em;color:var(--ink-2)}
+body.present #s15 .s15-context strong{color:var(--ink)}
+body.present #s15 .s15-result{display:grid;gap:.35em;padding:.45em .65em;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-s)}
+body.present #s15 .s15-result .row{gap:.55em;margin:0;align-items:center}
+body.present #s15 .s15-result.is-prediction{grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:1em}
+body.present #s15 .s15-result .vec{margin:0}
+body.present #s15 .s15-result .vec-axes{font-size:.65em}
+body.present #s15 .s15-result .vec-dims{font-size:.7em}
+body.present #s15 .s15-operation{font-size:.93em}
+body.present #s15 .s15-explain{font-size:.9em}
+body.present #s15 .s15-classroom pre{margin:0;padding:.45em .65em;font-size:.8em;line-height:1.35}
+body.present #s15 .s15-strip{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:.25em}
+body.present #s15 .s15-tile{padding:.3em .2em;text-align:center;border:1px solid var(--line);border-radius:var(--radius-s);font-variant-numeric:tabular-nums}
+body.present #s15 .s15-tile small{display:block;font-size:.67em;white-space:nowrap}
+body.present #s15 .s15-tile b{display:block;font-size:.9em;font-weight:600}
+body.present #s15 .s15-tile.is-query{border:2px solid var(--c-q)}
+body.present #s15 .s15-tile.is-masked{background:repeating-linear-gradient(135deg,transparent,transparent 6px,var(--line) 7px,transparent 8px);color:var(--ink-3)}
+body.present #s15 .s15-tile.is-top{background:var(--ink);color:var(--paper)}
+body.present #s15 .s15-classroom .dt{font-size:.9em}
+body.present #s15 .s15-classroom .dt td.dt-num,body.present #s15 .s15-classroom .dt th{padding:.2em .45em}
+body.present #s15 .s15-classroom .dt-cap{margin-top:.25em}
+@media(max-width:820px){body.present #s15 .s15-strip{grid-template-columns:repeat(5,minmax(0,1fr))}body.present #s15 .s15-result.is-prediction{grid-template-columns:1fr}}
 /* narrow screens: show the stage right under the Next-step button, the 18-item list below it */
 @media (max-width:820px){#s15 .stepper-body{display:flex;flex-direction:column-reverse}}
 /* phones: the operand / result rows of an equation stack vertically instead of wrapping mid-expression */
@@ -28,6 +63,11 @@
   <p>Everything before this section showed one stage at a time. Here the whole computation runs end to end on ten tokens, with the same numbers you would get by hand. Each stage is a small spreadsheet: one row per token, one column per coordinate, the result in the last column or the footer row. Click a score, or press Show the arithmetic, to see the numbers that produced it. At step 3, pick a different query token and press Next step again; the scores, the mask and the weights all change, but the recipe does not. The sentence to remember: one query, one score per earlier token, one weighted sum, one update added to the token.</p>
 </div>
 
+<div class="frame" id="s15-frame1" data-title="Can we trace every number through one forward pass?">
+  <script type="text/x-notes">
+Which token are we updating at this step?
+The stage label names the query. Follow bank by default, or choose another receiver at step 3. The final prediction explicitly switches to the updated last token, the at position 10. Every layer input is frozen during this computation; e prime of bank does not feed the same-layer update of the.
+  </script>
 <div class="prose">
   <p>Ten tokens, one query, eighteen steps. Press <strong>Next step</strong> and watch each stage produce its numbers. The pipeline shows where you are in the chain
   $\ve{e} \to \vq{Q},\vk{K},\vv{V} \to \text{attention} \to \vd{\Delta e} \to \vp{e + \Delta e}$.</p>
@@ -39,6 +79,8 @@
 </div>
 
 <div id="s15-stepper"></div>
+
+</div>
 
 <div class="companion after">
   <p>Keep in mind: steps 4 to 17 run for every token at once; the walkthrough follows one of them so that each number has a home in a table.</p>
@@ -70,7 +112,7 @@
     const labs = AT.axisLabels('e', vec.length) || [];
     const all = parts(vec, labs, 0.3);
     const glue = all.find(p => p.label === 'glue');
-    const ps = all.filter(p => p.label !== 'glue' && p.v >= 0.5);
+    const ps = all.filter(p => p.label !== 'glue' && p.label !== 'pos' && p.label !== 'position' && p.v >= 0.5);
     let so;
     if (!ps.length) so = qt(tok) + ' is a glue word with no setting of its own';
     else if (ps.length === 1) so = qt(tok) + ' is about ' + eWord(ps[0].label);
@@ -89,13 +131,13 @@
   function readK(vec, sym, tok){
     const labs = AT.axisLabels('qk', vec.length) || [];
     const ps = parts(vec, labs, 0.3);
-    if (!ps.length) return 'Reading $' + sym + '$: every entry is small, so ' + qt(tok) + ' offers nothing to any query.';
-    return 'Reading $' + sym + '$: ' + nums(ps) + ', so ' + qt(tok) + ' answers ' + join(ps.map(p => p.label)) + (ps.length < labs.length ? ' and offers nothing on ' + labs.filter(l => !ps.some(p => p.label === l)).join(' or ') : '');
+    if (!ps.length) return 'Reading $' + sym + '$: every entry is small, so ' + qt(tok) + ' has no large matching feature in this toy; its attention weight need not be zero.';
+    return 'Reading $' + sym + '$: ' + nums(ps) + ', so ' + qt(tok) + ' answers ' + join(ps.map(p => p.label)) + (ps.length < labs.length ? ' and has smaller entries on ' + labs.filter(l => !ps.some(p => p.label === l)).join(' or ') : '');
   }
   function readV(vec, sym, tok){
     const labs = AT.axisLabels('v', vec.length) || [];
     const ps = parts(vec, labs, 0.3);
-    if (!ps.length) return 'Reading $' + sym + '$: every entry is small, so if read, ' + qt(tok) + ' says nothing.';
+    if (!ps.length) return 'Reading $' + sym + '$: every entry is small, so if read, ' + qt(tok) + ' sends only a small value vector.';
     return 'Reading $' + sym + '$: ' + nums(ps) + ', so if read, ' + qt(tok) + ' says: ' + join(ps.map(p => vWord(p.i))) + '.';
   }
   function readM(vec, sym, tok){
@@ -113,7 +155,7 @@
   function readEp(vec, sym, tok){
     const labs = AT.axisLabels('e', vec.length) || [];
     const all = parts(vec, labs, 0.3);
-    const ps = all.filter(p => p.label !== 'glue' && p.v >= 0.5);
+    const ps = all.filter(p => p.label !== 'glue' && p.label !== 'pos' && p.label !== 'position' && p.v >= 0.5);
     const glue = all.find(p => p.label === 'glue');
     if (!ps.length) return 'Reading $' + sym + '$: ' + nums(all) + ', so ' + qt(tok) + ' is still a glue word with no setting of its own.';
     const lead = ps.length > 1 ? nums([ps[0]]) + ' now leads ' + nums(ps.slice(1)) : nums(ps);
@@ -160,9 +202,9 @@
       render: (el) => { AT.ui.chips(toks, { size: 'lg', slot: '___', into: el }); } },
 
     { title: 'Initial representations', tex: '\\ve{e_i^{(0)}} = \\text{token embedding}_i + \\text{positional information}_i',
-      note: 'One row per token, $d_{\\text{model}} = ' + AT.d_model + '$ numbers each. Nothing has looked at anything else yet.',
+      note: 'One row per token, $d_{\\text{model}} = ' + AT.d_model + '$ numbers each. No token has received context yet; all projections below use these same input rows.',
       render: (el) => {
-        AT.ui.table(F.E, { axes: 'e', rowLabels: tokLabs, cornerLabel: 'token', rowCls: 'e', highlightRow: qi, caption: 'Row $i$ is $\\ve{e_i^{(0)}}$: the same word at another position would get a different row. The columns are the four named axes of the toy, plus a small position offset.', into: el });
+        AT.ui.table(F.E, { axes: 'e', rowLabels: tokLabs, cornerLabel: 'token', rowCls: 'e', highlightRow: qi, caption: 'Row $i$ is $\\ve{e_i^{(0)}}$: the same word at another position would get a different row. The ' + AT.d_model + ' columns are the named input axes of the toy; each row already includes position information.', into: el });
         reading(el, readE(F.E[qi], '\\ve{e_{' + n() + '}}', tokQ()));
       } },
 
@@ -203,15 +245,15 @@
         AT.ui.mat(AT.model.W_K, { cls: 'k', size: 'sm', caption: '$W_K$', dims: true, into: r });
         el.appendChild(r);
         const lj = loudest();
-        AT.ui.table(F.K, { axes: 'qk', rowLabels: tokLabs, cornerLabel: 'token', rowCls: 'k', highlightRow: lj, caption: 'Row $j$ is $\\vk{k_j}$, three numbers per token. Its columns are the same three axes as the query\u2019s, which is what makes step 6 possible.', into: el });
+        AT.ui.table(F.K, { axes: 'qk', rowLabels: tokLabs, cornerLabel: 'token', rowCls: 'k', highlightRow: lj, caption: 'Row $j$ is $\\vk{k_j}$, ' + AT.d_k + ' numbers per token. Its columns are the same matching axes as the query\u2019s, which is what makes step 6 possible.', into: el });
         reading(el, readK(F.K[lj], '\\vk{k_{' + (lj + 1) + '}}', toks[lj]));
         arith(el, (box) => {
           AT.ui.matVecCalc(F.E[lj], AT.model.W_K, { from: 'e', to: 'qk', cls: 'k', xLabel: 'e · ' + (lj + 1) + ' ' + toks[lj], outLabel: 'k · ' + (lj + 1) + ' ' + toks[lj], into: box });
-          why(box, 'The key of the highlighted token: $W_K$ copies the setting axes and the person axis, and drops glue.');
+          why(box, 'The key of the highlighted token: $W_K$ maps the input axes into matching axes. Read its columns to see which input coordinates contribute to each key coordinate.');
         });
       } },
 
-    { title: 'Compare query with keys', tex: '\\vq{q_i}^\\top \\vk{k_j}',
+    { title: 'Compare query with keys', tex: '\\vq{q_i}\\cdot \\vk{k_j}',
       render: (el) => {
         note(el, 'One dot product per token $j$: how well does key $j$ answer the query of ' + who() + '?');
         AT.ui.dotTable(F.Q[qi], F.K, { rowLabels: tokLabs, queryLabel: qLabel(), cornerLabel: 'token',
@@ -221,11 +263,11 @@
           const dc = AT.ui.dotCalc(F.Q[qi], F.K[j], { axes: 'qk', qLabel: 'q · ' + qLabel(), kLabel: 'k · ' + tokLabs[j], scale: false });
           const pick = AT.ui.chips(toks, { active: j, into: box, onClick: (jj) => { j = jj; pick.setActive(jj); dc.update(F.Q[qi], F.K[jj], { kLabel: 'k · ' + tokLabs[jj] }); } });
           box.appendChild(dc);
-          why(box, 'Pick a key. The products line up under the three axes; the score is their sum. A big score needs both rows to be large on the same axis.');
+          why(box, 'Pick a key. The products line up under the matching axes; the score is their sum. A big score needs both rows to be large on the same axis.');
         });
       } },
 
-    { title: 'Scale', tex: 's_{ij} = \\dfrac{\\vq{q_i}^\\top \\vk{k_j}}{\\sqrt{d_k}}', note: 'Divide by $\\sqrt{d_k} = \\sqrt{' + AT.d_k + '} \\approx ' + AT.fmt(AT.sqrt_dk, 2) + '$ so the softmax does not become needlessly sharp.',
+    { title: 'Scale', tex: 's_{ij} = \\dfrac{\\vq{q_i}\\cdot \\vk{k_j}}{\\sqrt{d_k}}', note: 'Divide by $\\sqrt{d_k} = \\sqrt{' + AT.d_k + '} \\approx ' + AT.fmt(AT.sqrt_dk, 2) + '$ so the softmax does not become needlessly sharp.',
       render: (el) => {
         AT.ui.dotTable(F.Q[qi], F.K, { rowLabels: tokLabs, queryLabel: qLabel(), cornerLabel: 'token', scaled: true, d_k: AT.d_k,
           caption: 'Same table as step 6 with every score divided by $\\sqrt{' + AT.d_k + '} \\approx ' + AT.fmt(AT.sqrt_dk, 2) + '$. Click a score to see the raw product and the division.', into: el });
@@ -277,7 +319,7 @@
         reading(el, readV(F.V[best], '\\vv{v_{' + (best + 1) + '}}', toks[best]));
         arith(el, (box) => {
           AT.ui.matVecCalc(F.E[best], AT.model.W_V, { from: 'e', to: 'v', cls: 'v', xLabel: 'e · ' + tokLabs[best], outLabel: 'v · ' + tokLabs[best], into: box });
-          why(box, 'The value of the token with the largest attention weight: $W_V$ turns each setting axis into a “says” axis and drops glue.');
+          why(box, 'The value of the token with the largest attention weight: $W_V$ maps input coordinates into value coordinates. These are the numbers that this token can send, not the features used to score it.');
         });
       } },
 
@@ -291,9 +333,9 @@
         arith(el, (box) => {
           let j = best;
           const mv = AT.ui.matVecCalc([F.A[qi][j]], [F.V[j]], { from: ['α · ' + tokLabs[j]], fromCls: 'a', to: 'v', cls: 'v', wDecimals: 2, xLabel: 'weight', outLabel: 'α · v for ' + tokLabs[j] });
-          const pick = AT.ui.chips(toks.slice(0, qi + 1), { active: j, into: box, onClick: (jj) => { j = jj; pick.setActive(jj); mv.replaceWith(rebuild(jj)); } });
+          const pick = AT.ui.chips(toks.slice(0, qi + 1), { active: j, into: box, onClick: (jj) => { j = jj; pick.setActive(jj); const next = rebuild(jj); cur.replaceWith(next); cur = next; } });
           let cur = mv; box.appendChild(cur);
-          function rebuild(jj){ const m2 = AT.ui.matVecCalc([F.A[qi][jj]], [F.V[jj]], { from: ['α · ' + tokLabs[jj]], fromCls: 'a', to: 'v', cls: 'v', wDecimals: 2, xLabel: 'weight', outLabel: 'α · v for ' + tokLabs[jj] }); cur = m2; return m2; }
+          function rebuild(jj){ const m2 = AT.ui.matVecCalc([F.A[qi][jj]], [F.V[jj]], { from: ['α · ' + tokLabs[jj]], fromCls: 'a', to: 'v', cls: 'v', wDecimals: 2, xLabel: 'weight', outLabel: 'α · v for ' + tokLabs[jj] }); return m2; }
           why(box, 'Pick a token. One line per value axis: the attention weight times that entry of $\\vv{v_j}$. A weight near 0 silences the whole row.');
         });
       } },
@@ -343,10 +385,10 @@
         AT.ui.op('=', { into: r2 });
         AT.ui.vec(F.Delta[qi], { cls: 'neutral', axes: 'e', label: 'm_{' + n() + '}\\,W_O', dims: true, into: r2 });
         el.appendChild(r2);
-        why(el, 'Three numbers in, four numbers out: the result has the shape of $\\ve{e_{' + n() + '}}$, with the same four axes.');
+        why(el, '' + AT.d_v + ' numbers in, ' + AT.d_model + ' numbers out: the result has the shape of $\\ve{e_{' + n() + '}}$, with the same input axes.');
         arith(el, (box) => {
           AT.ui.matVecCalc(F.Mmsg[qi], AT.model.W_O, { from: 'v', to: 'e', cls: 'neutral', fromCls: 'm', xLabel: 'm · ' + n() + ' ' + tokQ(), outLabel: 'result, 1×' + AT.d_model, into: box });
-          why(box, 'One line per axis of $\\ve{e}$: $W_O$ sends each “says” axis back to its setting axis, and nothing lands on glue.');
+          why(box, 'One line per axis of $\\ve{e}$: the corresponding column of $W_O$ says how the message coordinates combine to update that axis.');
         });
       } },
 
@@ -365,7 +407,7 @@
           footer: { label: '$\\vp{e_{' + n() + '}\'} = \\ve{e_{' + n() + '}} + \\vd{\\Delta e_{' + n() + '}}$', values: F.Enew[qi], cls: 'ep' },
           caption: 'Add the two rows axis by axis. The footer is the new representation of “' + tokQ() + '”.', into: el });
         reading(el, readEp(F.Enew[qi], '\\vp{e_{' + n() + '}\'}', tokQ()));
-        AT.ui.callout('Attention does not replace the existing representation. It computes context-dependent information that can be added to it.', { kind: 'key', into: el });
+        AT.ui.callout('Attention supplies the update. The residual connection adds it to the original token row.', { kind: 'key', into: el });
       } },
 
     { title: 'Predict the next token', tex: '\\ell = \\vp{e_{' + T + '}\'}\\,W_{\\text{vocab}} + b, \\qquad p(x_{' + (T + 1) + '}\\mid x_{\\le ' + T + '}) = \\operatorname{softmax}(\\ell)',
@@ -380,7 +422,7 @@
         const rows = top.map(x => [F.logits[T - 1][x.i], AT.fmt(x.p, 3)]).concat([['·', AT.fmt(rest, 3)]]);
         const fig = AT.ui.table(rows, { cols: [{ label: 'logit $\\ell$' }, { label: '$p = \\operatorname{softmax}(\\ell)$' }], rowLabels: top.map(x => x.tok).concat(['other (' + (AT.vocab.length - top.length) + ' tokens)']), cornerLabel: 'next token', rowCls: 'neutral', highlightRow: 0,
           footer: { label: 'sum', values: ['', AT.fmt(top.reduce((s, x) => s + x.p, 0) + rest, 3)], cls: 'neutral' },
-          caption: 'After “' + toks.slice(T - 2).join(' ') + ' ___”. Read down: a larger logit becomes a larger probability, and the top row is the model\u2019s answer.', into: el });
+          caption: 'After “' + toks.slice(T - 2).join(' ') + ' ___”. Read down: a larger logit becomes a larger probability, and the top row is the most probable candidate, not a sampled token.', into: el });
         fig.cells[0][1].classList.add('is-top');
         const bl = AT.probsFor(B.probs[T - 1], [top[0].tok])[0];
         why(el, 'Without attention (section 02) “' + top[0].tok + '” had $p = ' + AT.fmt(bl.p, 3) + '$; with context it has $p = ' + AT.fmt(top[0].p, 3) + '$.');
@@ -395,6 +437,156 @@
         });
       } }
   ];
+
+  /* The classroom view uses the same F arrays, not a second toy calculation.
+     The original renderers below remain intact for the scrollable reading view. */
+  function classroom(index, el, ctx){
+    const last = index === 17, i = last ? T - 1 : qi, nn = i + 1;
+    const best = AT.argmax(F.A[i]), jj = best + 1;
+    const vecTex = a => '(' + a.map(v => AT.fmt(v, 3)).join(',\\;') + ')';
+    const paragraph = (cls, html, host = el) => host.appendChild(AT.h('p', { class: cls, html }));
+    paragraph('s15-context', 'Input: ' + toks.map((w, j) => j === i ? '<strong>' + w + ' [' + (j + 1) + ']</strong>' : w).join(' ') + ' ___ · may read positions 1 through ' + nn + '.');
+    const result = AT.h('div', { class: 's15-result' }); el.appendChild(result);
+    const operation = tex => paragraph('s15-operation', '$' + tex + '$', result);
+    const vector = (a, label, cls, axes) => AT.ui.vec(a, { label, cls, axes, decimals: 3, dims: true, into: result });
+    const strip = (values, options = {}) => {
+      const r = AT.h('div', { class: 's15-strip' });
+      values.forEach((value, j) => {
+        const cls = 's15-tile' + (j === i ? ' is-query' : '') + (options.mask && j > i ? ' is-masked' : '') + (options.top && j === best ? ' is-top' : '');
+        const text = typeof value === 'number' ? AT.fmt(value, 3) : value;
+        r.appendChild(AT.h('div', { class: cls }, AT.h('small', {}, (j + 1) + ' · ' + toks[j]), AT.h('b', {}, text)));
+      });
+      result.appendChild(r);
+    };
+    const explain = text => paragraph('s15-explain', text);
+    const code = text => el.appendChild(AT.h('pre', { class: 'torch-snippet' }, AT.h('code', {}, text)));
+    const dk = AT.d_k, dm = AT.d_model, dv = AT.d_v;
+    switch(index){
+      case 0:
+        AT.ui.chips(toks, { active: i, slot: '___', into: result });
+        explain('The ten words are known inputs. First follow “' + toks[i] + '” as it gathers context; the updated last “the” will predict word 11.');
+        code('token_ids = tokenizer(prefix)  # 10 known tokens');
+        break;
+      case 1:
+        operation('E\\in\\mathbb{R}^{' + T + '\\times' + dm + '},\\qquad e_' + nn + '=\\text{token row}+\\text{position row}');
+        vector(F.E[i], 'e_' + nn, 'e', 'e');
+        explain('All ten input rows are computed before attention. This toy stores position in its last coordinate; its current attention projections ignore that coordinate.');
+        code('E = token_embedding[token_ids] + position_embedding[:T]');
+        break;
+      case 2:
+        AT.ui.chips(toks, { active: i, onClick: j => { qi = j; ctx.stepper.go(2); }, into: result });
+        vector(F.E[i], 'e_' + nn + '\\quad\\text{receiver}', 'e', 'e');
+        explain('Choose a receiver. We follow one query row; the same layer computes every receiver from the same frozen input rows.');
+        code('i = ' + i + '  # zero-based index: position ' + nn + ', "' + toks[i] + '"');
+        break;
+      case 3:
+        operation('\\underbrace{e_' + nn + '}_{1\\times' + dm + '}\\;\\underbrace{W_Q}_{' + dm + '\\times' + dk + '}=\\underbrace{q_' + nn + '}_{1\\times' + dk + '}');
+        vector(F.Q[i], 'q_' + nn, 'q', 'qk');
+        explain(readQ(F.Q[i], 'q_' + nn, toks[i]) + '. The query is a projection, not a new lookup embedding.');
+        code('q = E[i] @ W_Q  # [' + dm + '] @ [' + dm + ', ' + dk + '] → [' + dk + ']');
+        break;
+      case 4:
+        operation('\\underbrace{E}_{' + T + '\\times' + dm + '}\\;\\underbrace{W_K}_{' + dm + '\\times' + dk + '}=\\underbrace{K}_{' + T + '\\times' + dk + '}');
+        vector(F.K[best], 'k_' + jj + '\\quad\\text{' + toks[best] + '}', 'k', 'qk');
+        explain('One key per input token, in the same ' + dk + '-coordinate matching space as the query. Here is the key of “' + toks[best] + '”; all ten rows use the same matrix.');
+        code('K = E @ W_K  # [10, ' + dm + '] @ [' + dm + ', ' + dk + '] → [10, ' + dk + ']');
+        break;
+      case 5:
+        operation('q_' + nn + '\\cdot k_' + jj + '\\approx ' + F.Q[i].map((v, k) => AT.fmt(v, 3) + '\\times' + AT.fmt(F.K[best][k], 3)).join('+') + '\\approx' + AT.fmt(F.Sraw[i][best], 3));
+        strip(F.Sraw[i]);
+        explain('One dot product per key gives ten raw scores. Above: the match with “' + toks[best] + '”. Future positions still have scores at this stage.');
+        code('raw = q @ K.T  # [' + dk + '] @ [' + dk + ', 10] → [10]');
+        break;
+      case 6:
+        operation('s_{' + nn + ',' + jj + '}=\\frac{q_' + nn + '\\cdot k_' + jj + '}{\\sqrt{' + dk + '}}\\approx\\frac{' + AT.fmt(F.Sraw[i][best], 3) + '}{' + AT.fmt(Math.sqrt(dk), 3) + '}\\approx' + AT.fmt(F.Sraw[i][best] / Math.sqrt(dk), 3));
+        strip(F.Sraw[i].map(v => v / Math.sqrt(dk)));
+        explain('Divide every raw score by the same √' + dk + '. This controls score spread; it does not normalize the query or force a self-match to win.');
+        code('scores = raw / math.sqrt(d_k)  # still [10]');
+        break;
+      case 7:
+        operation('s_{ij}\\leftarrow-\\infty\\quad\\text{when }j>i');
+        strip(F.S[i].map(v => v === -Infinity ? '−∞' : v), { mask: true });
+        explain(i < T - 1 ? 'Positions ' + (nn + 1) + ' through 10 cannot send information to “' + toks[i] + '”. Their masked scores will become exactly zero weight.' : 'This is the final input position. All ten inputs are allowed; there are no future inputs to mask.');
+        code('scores[torch.arange(T) > i] = -torch.inf');
+        break;
+      case 8: {
+        const Z = AT.sum(F.S[i].map(v => Math.exp(v)));
+        operation('\\alpha_{' + nn + ',' + jj + '}=\\frac{e^{s_{' + nn + ',' + jj + '}}}{\\sum_{j\\le' + nn + '}e^{s_{' + nn + ',j}}}\\approx\\frac{' + AT.fmt(Math.exp(F.S[i][best]), 3) + '}{' + AT.fmt(Z, 3) + '}\\approx' + AT.fmt(F.A[i][best], 3));
+        strip(F.A[i], { mask: true, top: true });
+        explain('Exponentiate each allowed score, then divide by the same total. The unrounded weights sum to 1; displayed decimals are rounded.');
+        code('alpha = scores.softmax(dim=-1)  # [10], over source tokens');
+        break;
+      }
+      case 9:
+        operation('\\sum_{j\\le' + nn + '}\\alpha_{' + nn + ',j}=1');
+        strip(F.A[i], { mask: true, top: true });
+        explain('“' + toks[best] + '” gets the largest weight, ' + AT.fmt(F.A[i][best], 3) + '. These are mixing amounts over input positions, not probabilities for the next word.');
+        code('alpha.sum()  # 1.0; masked positions have alpha = 0');
+        break;
+      case 10:
+        operation('\\underbrace{E}_{' + T + '\\times' + dm + '}\\;\\underbrace{W_V}_{' + dm + '\\times' + dv + '}=\\underbrace{V}_{' + T + '\\times' + dv + '}');
+        vector(F.V[best], 'v_' + jj + '\\quad\\text{' + toks[best] + '}', 'v', 'v');
+        explain('The key helped select “' + toks[best] + '”; this value says what it sends. Values have ' + dv + ' coordinates here, while keys have ' + dk + '.');
+        code('V = E @ W_V  # [10, ' + dm + '] @ [' + dm + ', ' + dv + '] → [10, ' + dv + ']');
+        break;
+      case 11:
+        operation('\\alpha_{' + nn + ',' + jj + '}v_' + jj + '\\approx' + AT.fmt(F.A[i][best], 3) + '\\,' + vecTex(F.V[best]));
+        vector(F.V[best].map(v => F.A[i][best] * v), '\\text{message from '+toks[best]+' to '+toks[i]+'}', 'v', 'v');
+        explain('Multiply every value coordinate by the same source weight. Do this for all allowed sources; a masked source sends the zero vector.');
+        code('messages = alpha[:, None] * V  # [10, ' + dv + ']');
+        break;
+      case 12: {
+        const contributions = F.V.slice(0, i + 1).map((v, j) => F.A[i][j] * v[0]);
+        operation('m_{' + nn + ',1}\\approx' + contributions.map(v => AT.fmt(v, 3)).join('+') + '\\approx' + AT.fmt(F.Mmsg[i][0], 3));
+        vector(F.Mmsg[i], 'm_' + nn, 'm', 'v');
+        explain('Above: add the first coordinate from every allowed source. Repeat for each of the ' + dv + ' value coordinates to get this query’s mixture.');
+        code('m = messages.sum(dim=0)  # [10, ' + dv + '] → [' + dv + ']');
+        break;
+      }
+      case 13:
+        operation('\\underbrace{\\alpha_' + nn + '}_{1\\times' + T + '}\\;\\underbrace{V}_{' + T + '\\times' + dv + '}=\\underbrace{m_' + nn + '}_{1\\times' + dv + '}');
+        vector(F.Mmsg[i], 'm_' + nn, 'm', 'v');
+        explain('This is information retrieved for “' + toks[i] + '”, not a new token and not vocabulary probabilities. It is still in the ' + dv + '-coordinate value space.');
+        code('m = alpha @ V  # the same weighted sum, [' + dv + ']');
+        break;
+      case 14:
+        operation('\\underbrace{m_' + nn + '}_{1\\times' + dv + '}\\;\\underbrace{W_O}_{' + dv + '\\times' + dm + '}=\\underbrace{\\Delta e_' + nn + '}_{1\\times' + dm + '}');
+        vector(F.Delta[i], '\\Delta e_' + nn, 'd', 'e');
+        explain('Map the ' + dv + ' message coordinates back into the ' + dm + ' representation coordinates. Only now is the result shaped for residual addition.');
+        code('delta = m @ W_O  # [' + dv + '] @ [' + dv + ', ' + dm + '] → [' + dm + ']');
+        break;
+      case 15:
+        vector(F.Delta[i], '\\Delta e_' + nn + '=m_' + nn + 'W_O', 'd', 'e');
+        explain('Δe is the attention output for this token in this forward pass. It changes the token’s state, not the stored embedding table or any learned parameter.');
+        code('delta = m @ W_O  # a computed activation, not an optimizer step');
+        break;
+      case 16:
+        AT.ui.table([F.E[i], F.Delta[i]], { axes: 'e', decimals: 3, rowLabels: ['$e_' + nn + '$', '$\\Delta e_' + nn + '$'], rowCls: ['e', 'd'], cornerLabel: 'row', footer: { label: '$e_' + nn + "'$", values: F.Enew[i], cls: 'ep' }, into: result });
+        explain('Add coordinate by coordinate. The token retains its original state and gains context; the input rows used by this layer are not overwritten.');
+        code('e_new = E[i] + delta  # [' + dm + '] + [' + dm + '] → [' + dm + ']');
+        break;
+      case 17: {
+        result.classList.add('is-prediction');
+        const top = AT.topk(F.probs[T - 1], 3);
+        const rest = 1 - AT.sum(top.map(t => t.p));
+        operation('\\underbrace{e_{10}\'}_{1\\times' + dm + '}\\;\\underbrace{W_{\\mathrm{vocab}}}_{' + dm + '\\times' + AT.vocab.length + '}+b=\\ell,\\qquad p=\\mathrm{softmax}(\\ell)');
+        AT.ui.table(top.map(t => [F.logits[T - 1][t.i], t.p]).concat([['·', rest]]), { decimals: 3, rowLabels: top.map(t => t.tok).concat(['all other tokens']), cols: [{ label: 'logit' }, { label: 'probability' }], cornerLabel: 'candidate', into: result });
+        explain('Use the updated last “the”, not bank. Both used the same frozen inputs. No sampling yet.');
+        code('logits = E_new[-1] @ W_vocab + b  # [' + AT.vocab.length + ']\np = logits.softmax(dim=-1)  # over vocabulary, not input positions');
+        break;
+      }
+    }
+    AT.renderMath(el);
+  }
+  steps.forEach((step, index) => {
+    const readRender = step.render;
+    step.render = (el, ctx) => {
+      const focus = AT.h('div', { class: 's15-classroom' });
+      classroom(index, focus, ctx); el.appendChild(focus);
+      const readingView = AT.h('div', { class: 's15-reading' });
+      readRender(readingView, ctx); el.appendChild(readingView);
+    };
+  });
 
   /* On narrow screens the list sits below the stage, so do not let the stepper scroll the current list item into view
      (that would push the stage off the top). The option object is read live by the stepper on every step. */

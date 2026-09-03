@@ -22,6 +22,21 @@
 #s10 .s10-chain{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;font-size:15px;margin:6px 0}
 #s10 .s10-chain .bx{border-radius:8px;padding:6px 10px;border:1.5px solid var(--oc);color:var(--ink);background:var(--ot);font-weight:600}
 #s10 .s10-chain .ar{color:var(--ink-3);font-size:18px}
+body.present #s10 .s10-cap,body.present #s10 .s10-read,body.present #s10 .s10-sub{font-size:18px}
+body.present #s10 .s10-grid .dt-cap{display:none}
+body.present #s10 .s10-grid .dt-fig{margin:0}
+body.present #s10 .s10-grid .dt td.dt-num{padding:.2em .45em;font-size:18px}
+body.present #s10 .s10-grid .dt th{padding:.2em .45em;font-size:18px}
+body.present #s10 .s10-grid .chip{font-size:18px;padding:.2em .4em}
+body.present #s10 .s10-read{line-height:1.35;margin:4px 0}
+body.present #s10 .s10-plot-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:24px;align-items:center}
+body.present #s10 .s10-plot-layout .muted.small{font-size:18px}
+body.present #s10 .s10-chain{font-size:18px}
+body.present #s10 .s10-plot svg{max-height:340px}
+@media(max-width:820px){body.present #s10 .s10-plot-layout{grid-template-columns:1fr}}
+body.present #s10 #s10-grid .chips,body.present #s10 #s10-grid .s10-read{display:none}
+body.present #s10 .s10-plot-layout .s10-chain{display:none}
+body.present #s10 #s10-frame2>.card>.s10-cap{display:none}
 </style>
 <header class="sec-head">
   <span class="sec-num">10</span>
@@ -32,39 +47,73 @@
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>So far the page has followed one sentence. This section runs the same computation twice, once for the river sentence and once for the cheque sentence, and watches the word <strong>bank</strong>. Its starting row is identical in both, because the token and the position are the same. Compare the $\va{\alpha_{7j}}$ columns first: river carries most of the weight in sentence A, cheque and deposited in sentence B. Then read down to the footer and to the $\vd{\Delta e}$ row, where the difference lands: on the water axis in A, on the finance axis in B. Drag the slider to add the update a little at a time. The sentence to remember: attention did not change what bank is, it changed what bank has read.</p>
+  <p>So far the page has followed one sentence. This section runs the same computation twice, once for the river sentence and once for the cheque sentence, and watches the word <strong>bank</strong>. Its starting row is identical in both, because the token and the position are the same. Compare the $\va{\alpha_{7j}}$ columns first: river carries most of the weight in sentence A, cheque and deposited in sentence B. Then read down to the footer and to the $\vd{\Delta e}$ row, where the difference lands: on the water axis in A, on the finance axis in B. Drag the slider to add the update a little at a time. The sentence to remember: the same starting representation receives different information and becomes context-dependent.</p>
 </div>
 
+<div class="frame" id="s10-frame1" data-title="Same bank: what changed between the sentences?">
+  <script type="text/x-notes">
+If bank starts with the same row, why does it end differently?
+Hold the token and position fixed. The source rows change between the river and cheque prefixes, so the matching weights and incoming values can change. No future word is used.
+  </script>
 <div class="prose">
   <p>Both sentences put <strong>bank</strong> at position 7. Its starting representation $\ve{e_{\text{bank}}^{(0)}}$ is the same row in both:
-  same token embedding, same position. Attention is causal, so <strong>bank</strong> reads only to its <em>left</em>
+  same token embedding, same position. Attention is causal, so <strong>bank</strong> reads itself and the tokens to its <em>left</em>
   (tokens 1 to 7). The words after it play no part.</p>
   <p class="s10-read" id="s10-read-e"></p>
 </div>
 
+</div>
+<div class="frame" id="s10-frame-sources" data-title="What information reaches bank?">
+  <script type="text/x-notes">
+Which source rows contribute to bank’s incoming message?
+Compare the attention-weight columns and the message footers. These tables use the same bank query but different source keys and values.
+  </script>
 <div class="card">
   <h3 class="card-title">Sentence A and sentence B, side by side</h3>
-  <p class="s10-cap">Each column follows bank through one attention step. The upper table is what bank reads; the lower table is bank's own representation before and after.</p>
+  <p class="s10-cap">Compare the weight columns, then the incoming messages in the footers.</p>
   <div class="s10-grid" id="s10-grid"></div>
 </div>
 
+</div>
+
+<div class="frame" id="s10-frame-updates" data-title="What changes in bank’s representation?">
+  <script type="text/x-notes">
+Which row is unchanged between the two contexts?
+Read the same initial row, each contextual update, and their sum. The arithmetic controls expose the output projection without changing the model.
+  </script>
+<div class="card">
+  <h3 class="card-title">Same initial row + different incoming update</h3>
+  <div class="s10-grid" id="s10-bank-grid"></div>
+</div>
+</div>
+
+<div class="frame" id="s10-frame2" data-title="What does the update add to the same starting point?">
+  <script type="text/x-notes">
+Which arrow is the contextual update, and which point is the updated representation?
+Move the slider manually: it shows a partial residual addition, not training or generation. At 100 percent we have e prime. These named axes are a teaching construction, not probability-of-meaning coordinates.
+  </script>
 <div class="card">
   <h3 class="card-title">Same starting point, two different updates</h3>
-  <p class="s10-cap">Look at the two arrows: they leave the same blue dot and end far apart. The slider adds the update gradually; the tables above follow it.</p>
+  <p class="s10-cap">Look at the two arrows: they leave the same blue dot and end far apart. The slider adds the update gradually; the comparison tables follow it.</p>
+  <div class="s10-plot-layout"><div>
   <div class="s10-chain" id="s10-chain-a"></div>
   <div class="s10-chain" id="s10-chain-b"></div>
   <div class="row" style="margin:14px 0 4px">
     <div id="s10-slider"></div>
     <span class="muted small">Below 100% the last row of each bank table is the partial sum $\ve{e}(t) = \ve{e} + t\,\vd{\Delta e}$; the name $\vp{e'}$ is reserved for $t = 1$.</span>
   </div>
+  </div><div>
   <div class="dotgrid s10-plot" id="s10-plot"></div>
   <p class="muted small" id="s10-plot-cap"></p>
+  </div></div>
 </div>
 
-<div id="s10-callout"></div>
+<div class="companion" id="s10-callout"></div>
+
+</div>
 
 <div class="companion after">
-  <p>Keep in mind: bank reads only to its left, so the words after it played no part in either update. The two rows $\vp{e_{\text{bank}}'}$ differ only because the seven values it mixed, and the weights it mixed them with, differ.</p>
+  <p>Keep in mind: bank reads only itself and earlier tokens, so the words after it played no part in either update. The two rows $\vp{e_{\text{bank}}'}$ differ only because the seven values it mixed, and the weights it mixed them with, differ.</p>
 </div>
 
 <script>
@@ -108,17 +157,19 @@
   AT.renderMath(S.querySelector('#s10-read-e'));
 
   /* ---- one column of the grid: sentence, what bank reads (mix table), bank's own rows; every element is placed on an explicit grid row ---- */
-  const grid = S.querySelector('#s10-grid');
+  const grid = S.querySelector('#s10-grid'), bankGrid = S.querySelector('#s10-bank-grid');
   function panel(set, col){
     const F = set.F, toks = set.toks;
-    let r = 0;
-    function put(el){ r += 1; el.style.gridColumn = String(col); el.style.gridRow = String(r); grid.appendChild(el); return el; }
+    let r = 0, targetGrid = grid;
+    function put(el){ r += 1; el.style.gridColumn = String(col); el.style.gridRow = String(r); targetGrid.appendChild(el); return el; }
     const top = AT.range(T).filter(j => j !== bi).sort((x, y) => F.A[bi][y] - F.A[bi][x]).slice(0, 2).map(j => toks[j]);
     put(AT.h('p', { class: 's10-sub' }, 'Sentence ' + set.name + ': ' + (set.name === 'A' ? 'the river' : 'the cheque')));
     put(AT.ui.chips(toks, { active: bi }));
     put(AT.ui.mixTable(F.A[bi], F.V, { rowLabels: toks.map((t, j) => (j + 1) + ' ' + t), cornerLabel: 'token', alphaLabel: '$\\va{\\alpha_{7j}}$', footerLabel: '$m_{\\text{bank}}$',
       caption: 'What bank reads: the $\\va{\\alpha_{7j}}$ column is its attention row (most weight on ' + AT.escape(top.join(' and ')) + '), the rows are the values $\\vv{v_j}$, the footer is $m_{\\text{bank}} = \\sum_j \\va{\\alpha_{7j}}\\,\\vv{v_j}$.' }));
     put(readLine(AT.h('div'), 'm_{\\text{bank}}', 'the message that arrived says ' + readMix(F.Mmsg[bi], vName) + '.'));
+    r = 0; targetGrid = bankGrid;
+    put(AT.h('p', { class: 's10-sub' }, 'Sentence ' + set.name + ': ' + set.ctx));
     const bank = put(AT.ui.table([F.E[bi], F.Delta[bi], F.Enew[bi]], { axes: 'e', rowLabels: [texE0, texD, texEp], rowCls: ['e', 'd', 'ep'], cornerLabel: 'bank, position 7', highlightRow: 2,
       caption: 'Bank’s own rows. Row 1 is ' + (same ? '<span class="s10-same">identical in A and B</span>' : 'the starting representation') + '; row 2 is the message sent through $W_O$; row 3 is the sum, the contextual representation.' }));
     const readD = put(readLine(AT.h('div'), '\\vd{\\Delta e_{\\text{bank}}}', ''));
@@ -213,7 +264,7 @@
       AT.renderMath(p.readD); AT.renderMath(p.readEp);
     });
     wasFull = full;
-    S.querySelector('#s10-plot-cap').textContent = 'The ' + eName[cx] + ' and ' + eName[cy] + ' axes of the 4-D row (the other two axes are not drawn). Blue dot: shared start. Green arrows: ' + Math.round(t * 100) + '% of each sentence’s update. Ringed dots: ' + (full ? 'the contextual representations e′.' : 'the partial sums e(t) = e + tΔe.');
+    S.querySelector('#s10-plot-cap').textContent = 'The ' + eName[cx] + ' and ' + eName[cy] + ' axes of the ' + AT.d_model + '-D row (the other ' + (AT.d_model - 2) + ' axes are not drawn). Blue dot: shared start. Green arrows: ' + Math.round(t * 100) + '% of each sentence’s update. Ringed dots: ' + (full ? 'the contextual representations e′.' : 'the partial sums e(t) = e + tΔe.');
   }
   AT.ui.slider({ label: 'Fraction of Δe added', min: 0, max: 1, step: 0.05, value: 1, format: v => Math.round(v * 100) + '%', onInput: place, into: S.querySelector('#s10-slider') });
   place(1);

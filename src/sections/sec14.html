@@ -15,6 +15,7 @@
 #s14 .chain .cb.is-on{border-color:var(--oc,var(--ink));background:var(--ot,var(--paper));color:var(--ink);transform:translateY(-2px)}
 #s14 .chain .cb.obj-ep.is-on{box-shadow:0 0 0 2px var(--oc2)}
 #s14 .chain .ca{font-size:20px;color:var(--ink-3)}
+#s14 .context-line{max-width:72ch;margin:8px 0 16px;font-family:var(--font-mono);font-size:15px;line-height:1.6}
 </style>
 <header class="sec-head">
   <span class="sec-num">14</span>
@@ -25,15 +26,19 @@
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Sections 09 to 13 built an updated vector for one token. This section closes the loop: the updated last token is what the output head reads, so the earlier words can only reach the prediction through that one update. Switch the context between the river sentence and the cheque sentence and follow the three tables from top to bottom: the attention row moves, the update row changes, the probability row changes. Then switch attention off and switch the context again; nothing moves, exactly as in section 02. The sentence to remember: earlier tokens change the prediction only through the update they send to the last token.</p>
+  <p>Sections 09 to 13 built an updated vector for bank. Now extend the prefix through “and watched the” and predict the token <em>after that final the</em>. Its query, not bank’s query, determines this attention row. In this single-layer toy, earlier words reach the prediction through the update to that last position. Switch the context between the river and cheque sentences: the attention row, update and probabilities change. Then bypass attention and switch again: the probability row stays fixed, just as in section 02.</p>
 </div>
 
+<div class="frame" data-title="We now predict after the final the, not after bank">
+<script type="text/x-notes">Which token must supply the query if the next token comes after “and watched the”?
+
+Point to position 10. Earlier we examined bank at position 7, but now q_10 searches the same-layer keys. Both sentences end in the same token at the same position. Switch contexts, then bypass attention: the latter is no contextual update, not self-only attention.</script>
 <div class="prose">
-  <p>Do not stop at $\vp{e_t'}$. The updated last token goes straight into the output head from section 02, now fed with context:</p>
-  $$\ell = \vp{e_t'}\,W_{\text{vocab}} + b, \qquad p(x_{t+1}\mid x_{\le t}) = \operatorname{softmax}(\ell)$$
+  <p>The known prefix now has <strong>ten tokens</strong>. The final <strong>the</strong> supplies $\vq{q_{10}}$; we predict what follows it. Bank’s earlier query $\vq{q_7}$ is not reused.</p>
+  <p class="context-line" data-context-line></p>
 </div>
 
-<div class="card">
+<div class="card" data-build="1">
   <h3 class="card-title">Where the last token reads from</h3>
   <div class="row between controls">
     <div class="row">
@@ -47,19 +52,45 @@
   </div>
   <div id="s14-alpha"></div>
 </div>
+<pre class="pytorch" data-build="2"><code>q_last = E[-1] @ W_Q
+alpha = ((q_last @ K.T) / math.sqrt(K.shape[-1])).softmax(dim=-1)</code></pre>
+<p class="muted small">All ten source positions are known here, so none is future relative to this final query.</p>
+</div>
 
+<div class="frame" data-title="Add the context update to the same last-token input">
+<script type="text/x-notes">What changes between the two contexts if the final token and its position are identical?
+
+The starting row e_10 is identical. Only the context-dependent update changes. Add each column vertically. If attention is bypassed, delta is zero and the input row reaches the prediction head unchanged.</script>
+<p class="context-line" data-context-line></p>
 <div class="card">
   <h3 class="card-title">The update, added axis by axis</h3>
   <div id="s14-update"></div>
 </div>
+<pre class="pytorch" data-build="1"><code>delta_last = (alpha @ V) @ W_O
+e_last_new = E[-1] + delta_last</code></pre>
+<p class="muted small" data-build="2" id="s14-shape-note">$W_O$ maps the $d_v$-coordinate message to a $d_{\text{model}}$-coordinate update before the residual addition.</p>
+</div>
 
+<div class="frame" data-title="Turn the updated last row into next-token probabilities">
+<script type="text/x-notes">Are these probabilities over input positions, or over possible next tokens?
+
+They are vocabulary probabilities. This is a second softmax: attention's softmax mixed source values; the vocabulary softmax turns logits into possible continuations. Reveal the numerical head calculation for the top candidate if needed.</script>
+<p class="context-line" data-context-line></p>
+<div class="prose">$$\ell = \vp{e_{10}'}\,W_{\text{vocab}} + b, \qquad p(x_{11}\mid x_{\le10}) = \operatorname{softmax}(\ell)$$</div>
 <div class="card">
   <h3 class="card-title">The output head: logits, then probabilities</h3>
   <div id="s14-head"></div>
   <p class="muted small" id="s14-msg" aria-live="polite"></p>
   <div id="s14-head-calc"></div>
 </div>
+<pre class="pytorch" data-build="1"><code>logits = e_last_new @ W_vocab + b_vocab  # [d_model] → [n_vocab]
+p_next = logits.softmax(dim=-1)  # possible next tokens, not sources</code></pre>
+</div>
 
+<div class="frame" data-title="Trace how earlier words change the next prediction">
+<script type="text/x-notes">Can the vocabulary head tell which earlier word mattered without the attention update?
+
+In this one-layer toy it reads only the final row. Trace earlier tokens to the update, to e'_10, to vocabulary logits. Distinguish one layer's simultaneous reads from a later layer receiving all the updated representations.</script>
 <div class="card">
   <h3 class="card-title">The causal chain</h3>
   <div class="chain" id="s14-chain"></div>
@@ -67,6 +98,8 @@
 </div>
 
 <div id="s14-layer-note"></div>
+<p class="muted small" data-build="2">Forward computation changes the token states for this input. It does not change the stored projection matrices or embedding table.</p>
+</div>
 
 <div class="companion after">
   <p>Keep in mind: the head never sees the earlier tokens. It sees one row, $\vp{e_t'} = \ve{e_t} + \vd{\Delta e_t}$, and everything the context contributes is inside $\vd{\Delta e_t}$.</p>
@@ -75,12 +108,13 @@
 <script>
 (function(){
   const S = document.getElementById('s14');
-  const T = 10, t = T - 1;
   const ctxs = { river: AT.sentences.river, cheque: AT.sentences.cheque };
+  const T = ctxs.river.length, t = T - 1;
   const F = { river: AT.forward(ctxs.river), cheque: AT.forward(ctxs.cheque) };
   const B = { river: AT.baseline(ctxs.river), cheque: AT.baseline(ctxs.cheque) };
   let ctx = 'river', useAtt = true;
   const tokCols = (toks) => toks.map((w, j) => (j + 1) + ' ' + w);
+  S.querySelector('#s14-shape-note').textContent = 'W_O maps the ' + AT.d_v + '-coordinate message to a ' + AT.d_model + '-coordinate update before the residual addition.';
 
   /* --- reading lines: the words come from the numbers and the axis names in AT.axes --- */
   const eWord = (lab) => ({ water: 'a water scene', finance: 'money', person: 'a person' })[lab] || lab;
@@ -96,7 +130,7 @@
   function readEp(vec, sym, tok){
     const labs = AT.axisLabels('e', vec.length) || [];
     const all = parts(vec, labs, 0.3);
-    const ps = all.filter(p => p.label !== 'glue' && p.v >= 0.5);
+    const ps = all.filter(p => p.label !== 'glue' && p.label !== 'pos' && p.v >= 0.5);
     const glue = all.find(p => p.label === 'glue');
     if (!ps.length) return 'Reading $' + sym + '$: ' + nums(all) + ', so “' + tok + '” is still a glue word with no setting of its own.';
     const lead = ps.length > 1 ? nums([ps[0]]) + ' now leads ' + nums(ps.slice(1)) : nums(ps);
@@ -128,7 +162,7 @@
     btnC.setAttribute('aria-pressed', String(c === 'cheque'));
     draw();
   }
-  AT.ui.toggle({ label: 'Use attention', on: true, onText: 'yes', offText: 'no', onChange: (on) => { useAtt = on; draw(); }, into: S.querySelector('#s14-toggle') });
+  AT.ui.toggle({ label: 'Attention path', on: true, onText: 'attention used', offText: 'attention bypassed', onChange: (on) => { useAtt = on; draw(); }, into: S.querySelector('#s14-toggle') });
 
   /* --- table 1: the attention row of the last token over token columns --- */
   const alphaHost = S.querySelector('#s14-alpha');
@@ -136,13 +170,14 @@
     AT.clear(alphaHost);
     const toks = ctxs[ctx];
     const A = F[ctx].A[t];
-    const row = useAtt ? A : AT.range(T).map(j => j === t ? 1 : 0);
+    // Bypass is not self-only attention. No alpha row is evaluated or used.
+    const row = useAtt ? A : AT.range(T).map(() => '');
     const best = AT.argmax(A);
-    const fig = AT.ui.table([row], { cols: tokCols(toks), rowLabels: ['$\\va{\\alpha_{' + T + ',j}}$'], cornerLabel: 'reads from →', rowCls: 'a', heatCols: AT.range(T), decimals: 2,
-      computed: [{ label: 'row sum', fn: (r) => AT.sum(r), cls: 'neutral' }],
+    const fig = AT.ui.table([row], { cols: tokCols(toks), rowLabels: [useAtt ? '$\\va{\\alpha_{' + T + ',j}}$' : 'attention bypassed'], cornerLabel: 'reads from →', rowCls: 'a', heatCols: AT.range(T), decimals: 2,
+      computed: [{ label: 'row sum', fn: (r) => useAtt ? AT.sum(r) : 'not computed', cls: 'neutral' }],
       caption: useAtt
         ? 'Look at the darkest cells: the last token reads mostly from “' + toks[best] + '” (' + AT.fmt(A[best], 2) + '). The row sums to 1.'
-        : 'Attention off: the last token reads only itself, so the row is a single 1 and the earlier words are unused (section 02).',
+        : 'Attention bypassed: no weights are used and Δe₁₀ = 0. The head reads e₁₀ directly. Self-only attention would still send v₁₀ through W_O and is a different operation.',
       into: alphaHost });
     if (useAtt) fig.cells[0][best].classList.add('is-top');
   }
@@ -160,7 +195,7 @@
       footer: { label: '$\\vp{e_{' + T + '}\'} = \\ve{e_{' + T + '}} + \\vd{\\Delta e_{' + T + '}}$', values: ep, cls: 'ep' },
       caption: useAtt
         ? 'Add the two rows axis by axis: the footer is the row the head receives. Switch the context and only the green row changes.'
-        : 'Attention off: the update row is all zeros, so the head receives the starting representation $\\ve{e_{' + T + '}^{(0)}}$ unchanged.',
+        : 'Attention bypassed: the update row is all zeros, so the head receives the starting representation $\\ve{e_{' + T + '}^{(0)}}$ unchanged.',
       into: updHost });
     reading(updHost, useAtt
       ? [readD(d, '\\vd{\\Delta e_{' + T + '}}', tok), readEp(ep, '\\vp{e_{' + T + '}\'}', tok)]
@@ -190,7 +225,7 @@
       msg.textContent = 'With attention: most likely next token “' + top[0].tok + '” (p = ' + AT.fmt(top[0].p, 3) + '). The other context gives “' + o.tok + '” (p = ' + AT.fmt(o.p, 3) + ').';
     } else {
       const same = B.river.probs[t].every((p, i) => Math.abs(p - B.cheque.probs[t][i]) < 1e-12);
-      msg.textContent = 'Attention off: same last token, same position, so both contexts give ' + (same ? 'identical' : 'nearly identical') + ' probabilities. The context cannot matter.';
+      msg.textContent = 'Attention bypassed: same last token, same position, so both contexts give ' + (same ? 'identical' : 'nearly identical') + ' probabilities. The context cannot matter.';
     }
     /* the logit of the top candidate as one worksheet line: x times the column of W_vocab for that word, plus its bias */
     const best = top[0];
@@ -203,8 +238,8 @@
       const outrow = mv.querySelector('.calc-outrow'); if (outrow) outrow.hidden = true;
       const dot = mv.out[0], l = dot + b;
       const Z = logits.reduce((s, v) => s + Math.exp(v), 0);
-      const line1 = AT.h('p', { class: 'calc-line' }, 'logit for “' + best.tok + '” = ' + AT.fmt(dot, 2) + ' + b ' + (b < 0 ? '(' + AT.fmt(b, 2) + ')' : AT.fmt(b, 2)) + ' = ', AT.h('span', { class: 'calc-r' }, AT.fmt(l, 2)));
-      const line2 = AT.h('p', { class: 'calc-line' }, 'p(“' + best.tok + '”) = exp(' + AT.fmt(l, 2) + ') / Σ exp(ℓ) = ' + AT.fmt(Math.exp(l), 2) + ' / ' + AT.fmt(Z, 2) + ' = ', AT.h('span', { class: 'calc-r' }, AT.fmt(best.p, 3)));
+      const line1 = AT.h('p', { class: 'calc-line' }, 'logit for “' + best.tok + '” ≈ ' + AT.fmt(dot, 2) + ' + b ' + (b < 0 ? '(' + AT.fmt(b, 2) + ')' : AT.fmt(b, 2)) + ' ≈ ', AT.h('span', { class: 'calc-r' }, AT.fmt(l, 2)));
+      const line2 = AT.h('p', { class: 'calc-line' }, 'p(“' + best.tok + '”) ≈ exp(' + AT.fmt(l, 2) + ') / Σ exp(ℓ) ≈ ' + AT.fmt(Math.exp(l), 2) + ' / ' + AT.fmt(Z, 2) + ' ≈ ', AT.h('span', { class: 'calc-r' }, AT.fmt(best.p, 3)));
       mv.appendChild(line1); mv.appendChild(line2);
       const foot = AT.h('p', { class: 'muted small', style: 'margin-top:8px', html: 'One line per word: the column of $W_{\\text{vocab}}$ for “' + best.tok + '” multiplies the ' + (useAtt ? 'contextual' : 'raw') + ' last token axis by axis. Only the non-zero weights count; the sum over all ' + AT.vocab.length + ' words is the softmax denominator.' });
       AT.renderMath(foot); box.appendChild(foot);
@@ -239,7 +274,12 @@
   /* layer boundary note */
   AT.ui.callout('One layer at a time. Within a layer, every position reads keys and values computed from the same layer-input representations. The final “the” does not read the updated bank vector $\\vp{e_7\'}$ here; it reads values built from $\\ve{e_7}$. The updated bank becomes input to the next layer. Part 3 adds several heads, stacked layers and the rest of the Transformer.', { kind: 'note', into: S.querySelector('#s14-layer-note') });
 
-  function draw(){ paintAlpha(); paintUpdate(); paintHead(); lightChain(); }
+  function draw(){
+    S.querySelectorAll('[data-context-line]').forEach(el => {
+      el.textContent = ctxs[ctx].join(' ') + ' ___  · query: the (10)' + (useAtt ? ' · attention on' : ' · attention bypassed');
+    });
+    paintAlpha(); paintUpdate(); paintHead(); lightChain();
+  }
   draw();
 })();
 </script>

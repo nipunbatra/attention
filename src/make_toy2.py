@@ -26,67 +26,55 @@ SB = ["She", "deposited", "the", "cheque", "at", "the", "bank", "and", "watched"
 CAND_A = ["water", "boats", "fish", "ducks"]
 CAND_B = ["teller", "clerk", "queue", "money"]
 CANDS = CAND_A + CAND_B
-D_MODEL, D_K, D_V, T = 4, 3, 3, 10
+D_MODEL, D_K, D_V, T = 5, 3, 2, 10
 BANK, LAST = 6, 9  # 0-indexed positions of bank(7) and the(10)
 
 # ----------------------------------------------------------------------------------------------
 # 0. Named axes (AXES.md)
 # ----------------------------------------------------------------------------------------------
 AXES = {
-    "e": ["water", "finance", "person", "glue"],
+    "e": ["water", "finance", "person", "glue", "position"],
     "qk": ["setting: water?", "setting: finance?", "who?"],
-    "v": ["says: water scene", "says: finance scene", "says: a person is here"],
-    "short": {"e": ["water", "finance", "person", "glue"],
+    "v": ["says: water scene", "says: finance scene"],
+    "short": {"e": ["water", "finance", "person", "glue", "pos"],
               "qk": ["water?", "finance?", "who?"],
-              "v": ["→water", "→finance", "→person"]},
+              "v": ["→water", "→finance"]},
 }
 
 # ----------------------------------------------------------------------------------------------
-# 1. Token embeddings on the e axes  [water, finance, person, glue]
+# 1. Token embeddings on the e axes  [water, finance, person, glue, position]
 # ----------------------------------------------------------------------------------------------
 TOK = {
     # water scene
-    "river":     [3.0, 0.0, 0.0, 0.0],
-    "water":     [3.0, 0.0, 0.0, 0.0],
-    "boats":     [2.4, 0.0, 0.4, 0.0],
-    "fish":      [2.6, 0.0, 0.6, 0.0],
-    "ducks":     [2.2, 0.0, 0.8, 0.0],
+    "river":     [3.0, 0.0, 0.0, 0.0, 0.0],
+    "water":     [3.0, 0.0, 0.0, 0.0, 0.0],
+    "boats":     [2.4, 0.0, 0.4, 0.0, 0.0],
+    "fish":      [2.6, 0.0, 0.6, 0.0, 0.0],
+    "ducks":     [2.2, 0.0, 0.8, 0.0, 0.0],
     # finance scene
-    "cheque":    [0.0, 3.0, 0.0, 0.0],
-    "money":     [0.0, 3.0, 0.0, 0.0],
-    "teller":    [0.0, 2.6, 1.8, 0.0],
-    "clerk":     [0.0, 2.4, 1.8, 0.0],
-    "queue":     [0.0, 2.0, 0.6, 0.0],
-    "deposited": [0.0, 2.2, 0.6, 0.4],
+    "cheque":    [0.0, 3.0, 0.0, 0.0, 0.0],
+    "money":     [0.0, 3.0, 0.0, 0.0, 0.0],
+    "teller":    [0.0, 2.6, 1.8, 0.0, 0.0],
+    "clerk":     [0.0, 2.4, 1.8, 0.0, 0.0],
+    "queue":     [0.0, 2.0, 0.6, 0.0, 0.0],
+    "deposited": [0.0, 2.2, 0.6, 0.4, 0.0],
     # people
-    "fisherman": [2.0, 0.0, 2.2, 0.0],   # AXES.md starts at water 1.4; raised so bank(7) ranks him second (see notes)
-    "she":       [0.0, 0.0, 2.6, 0.4],
+    "fisherman": [2.0, 0.0, 2.2, 0.0, 0.0],   # AXES.md starts at water 1.4; raised so bank(7) ranks him second (see notes)
+    "she":       [0.0, 0.0, 2.6, 0.4, 0.0],
     # the ambiguous word: equal parts water and finance, plus a little glue (it has to ask for its setting)
-    "bank":      [0.7, 0.7, 0.0, 0.6],   # AXES.md starts at 1.5/1.5/0/0.4; lowered so bank does not attend to itself
+    "bank":      [0.7, 0.7, 0.0, 0.7, 0.0],   # the glue entry keeps river above the T1 threshold after position moves to its own unused axis
     # glue words
-    "the":       [0.0, 0.0, 0.0, 2.4],
-    "and":       [0.0, 0.0, 0.0, 2.2],
-    "at":        [0.0, 0.0, 0.0, 2.0],
-    "beside":    [0.6, 0.0, 0.0, 2.0],
-    "sat":       [0.4, 0.0, 0.6, 1.8],
-    "watched":   [0.6, 0.0, 0.8, 1.6],
+    "the":       [0.0, 0.0, 0.0, 2.4, 0.0],
+    "and":       [0.0, 0.0, 0.0, 2.2, 0.0],
+    "at":        [0.0, 0.0, 0.0, 2.0, 0.0],
+    "beside":    [0.6, 0.0, 0.0, 2.0, 0.0],
+    "sat":       [0.4, 0.0, 0.6, 1.8, 0.0],
+    "watched":   [0.6, 0.0, 0.8, 1.6, 0.0],
 }
 
-# Position offsets: a small circle of radius 0.3 in the (person, glue) plane, one decimal, distinct per
-# position; nothing on the water/finance axes so a position never looks like a setting.
-# pos_emb[p-1] = round(0.3 * [0, 0, cos(2 pi p / 10), -sin(2 pi p / 10)], 1)
-POS = [
-    [0.0, 0.0,  0.2, -0.2],   # 1
-    [0.0, 0.0,  0.1, -0.3],   # 2
-    [0.0, 0.0, -0.1, -0.3],   # 3
-    [0.0, 0.0, -0.2, -0.2],   # 4
-    [0.0, 0.0, -0.3,  0.0],   # 5
-    [0.0, 0.0, -0.2,  0.2],   # 6
-    [0.0, 0.0, -0.1,  0.3],   # 7
-    [0.0, 0.0,  0.1,  0.3],   # 8
-    [0.0, 0.0,  0.2,  0.2],   # 9
-    [0.0, 0.0,  0.3,  0.0],   # 10
-]
+# Position has one dedicated coordinate. The projections below carry a zero row for it, so this toy
+# preserves position in e^(0) without using it for attention or the vocabulary head.
+POS = [[0.0, 0.0, 0.0, 0.0, 0.1 * (i + 1)] for i in range(T)]
 
 # ----------------------------------------------------------------------------------------------
 # 2. Projections (rows = input axis, columns = output axis)
@@ -97,6 +85,7 @@ W_Q = [
     [0.0, 1.0, 0.0],   # finance -> asks finance?
     [0.0, 0.0, 0.4],   # person  -> asks who? (weakly)
     [0.7, 0.7, 0.0],   # glue    -> asks "what setting am I in?" (both)
+    [0.0, 0.0, 0.0],   # position -> unused by this toy
 ]
 #            k axes:  water?  finance?  who?
 W_K = [
@@ -104,19 +93,20 @@ W_K = [
     [0.0, 1.0, 0.0],   # finance -> offers finance
     [0.0, 0.0, 1.0],   # person  -> offers a person
     [0.0, 0.0, 0.0],   # glue    -> offers nothing
+    [0.0, 0.0, 0.0],   # position -> unused by this toy
 ]
-#            v axes:  ->water  ->finance  ->person
+#            v axes:  ->water  ->finance
 W_V = [
-    [1.0, 0.0, 0.0],   # water   -> says water scene
-    [0.0, 1.0, 0.0],   # finance -> says finance scene
-    [0.0, 0.0, 1.0],   # person  -> says a person is here
-    [0.0, 0.0, 0.0],   # glue    -> says nothing
+    [1.0, 0.0],   # water    -> says water scene
+    [0.0, 1.0],   # finance  -> says finance scene
+    [0.0, 0.0],   # person   -> says nothing in this toy
+    [0.0, 0.0],   # glue     -> says nothing
+    [0.0, 0.0],   # position -> unused by this toy
 ]
-#            e axes:  water  finance  person  glue
+#            e axes:  water  finance  person  glue  position
 W_O = [
-    [1.0, 0.0, 0.0, 0.0],   # says water   -> water
-    [0.0, 1.0, 0.0, 0.0],   # says finance -> finance
-    [0.0, 0.0, 0.5, 0.0],   # says person  -> person (half strength)
+    [1.0, 0.0, 0.0, 0.0, 0.0],   # says water   -> water
+    [0.0, 1.0, 0.0, 0.0, 0.0],   # says finance -> finance
 ]
 # Output head: which e axis votes for which word (columns = vocabulary). Everything not listed is 0.
 W_VOCAB_ROWS = {
@@ -124,6 +114,7 @@ W_VOCAB_ROWS = {
     "finance": {"teller": 1.5, "clerk": 1.2, "queue": 0.9, "money": 0.7},   # AXES.md starts at 1.2/0.9/0.6/0.5
     "person":  {"teller": 0.2, "clerk": 0.2, "fisherman": 0.2},
     "glue":    {},
+    "position": {},
 }
 B_OTHER = -1.5   # bias for every non-candidate word; candidates get 0
 
@@ -221,13 +212,20 @@ def check(P, verbose=True):
     allv = np.concatenate([P[k].ravel() for k in P])
     rec("T7 hard: all |x| <= 3.0 and one decimal",
         np.all(np.abs(allv) <= 3.0) and np.allclose(allv, np.round(allv, 1), atol=1e-12), f"max|x|={np.abs(allv).max():.1f}")
-    rec("T8 hard: vocabulary is the 20 tokens", P["tok"].shape == (20, 4), "20 tokens")
-    tn = np.linalg.norm(P["tok"], axis=1); pn = np.linalg.norm(P["pos"], axis=1)
+    rec("T8 hard: vocabulary is the 20 tokens", P["tok"].shape == (len(VOCAB), D_MODEL), "20 tokens")
+    pos_axis = AXES["e"].index("position")
     e_the = [fa["E"][i] for i in (0, 4, 9)]
-    rec("T9 hard: pos norms <= 40% of mean token norm; the three 'the' differ",
-        pn.max() <= 0.4 * tn.mean() and len({tuple(np.round(e, 6)) for e in e_the}) == 3,
-        f"max pos norm={pn.max():.2f}, mean tok norm={tn.mean():.2f} ({pn.max()/tn.mean()*100:.0f}%)")
-    rec("T10 hard: d_model=4, d_k=d_v=3", P["W_Q"].shape == (4, 3) and P["W_V"].shape == (4, 3) and P["W_O"].shape == (3, 4), "ok")
+    want_pos = np.array([[0.1 * (i + 1) if d == pos_axis else 0.0 for d in range(D_MODEL)] for i in range(T)])
+    rec("T9 hard: position has its own coordinate and the three 'the' rows differ",
+        np.allclose(P["pos"], want_pos, atol=1e-12) and np.allclose(P["tok"][:, pos_axis], 0) and
+        np.allclose(P["W_Q"][pos_axis], 0) and np.allclose(P["W_K"][pos_axis], 0) and
+        np.allclose(P["W_V"][pos_axis], 0) and np.allclose(P["W_vocab"][pos_axis], 0) and
+        len({tuple(np.round(e, 6)) for e in e_the}) == 3,
+        "position rows 0.1 to 1.0; token and projection position rows are zero")
+    rec("T10 hard: parameter shapes match d_model, d_k and d_v",
+        P["W_Q"].shape == (D_MODEL, D_K) and P["W_K"].shape == (D_MODEL, D_K) and
+        P["W_V"].shape == (D_MODEL, D_V) and P["W_O"].shape == (D_V, D_MODEL) and
+        P["W_vocab"].shape == (D_MODEL, len(VOCAB)), "ok")
     if verbose:
         print("=" * 100)
         for name, ok, detail, hard in res:
@@ -248,16 +246,18 @@ def fl(a):
 
 
 NOTES = (
-    "Toy v2: single-head causal self-attention (d_model=4, d_k=d_v=3, vocab=20, T=10), designed BY HAND so that every "
+    "Toy v2: single-head causal self-attention (d_model=5, d_k=3, d_v=2, vocab=20, T=10), designed BY HAND so that every "
     "coordinate has a name that the numbers agree with (see 'axes'). e axes: water, finance, person, glue. q and k axes: "
-    "setting: water?, setting: finance?, who? (a query row reads 'what I ask for', a key row 'what I offer'). v axes: "
-    "says: water scene, says: finance scene, says: a person is here; W_O maps them back onto the e axes. Names are "
+    "setting: water?, setting: finance?, who? (a query row reads 'what I ask for', a key row 'what I offer'). The fifth e "
+    "axis carries position, but its zero rows in W_Q, W_K, W_V and W_vocab mean this toy does not use it. v has its own "
+    "narrower axes: says: water scene and says: finance scene; W_O maps them back onto the e axes. Names are "
     "illustrative; the matrices are sparse and one-decimal so a student can read each row of W_Q as 'axis -> asks', "
-    "W_K as 'axis -> offers', W_V as 'axis -> says', W_vocab as 'axis -> votes for these words'. Glue words offer no key "
-    "and no value but ask for both settings, which is why the final 'the' reads river or cheque. bank is equal parts water "
-    "and finance (0.7, 0.7) plus a little glue; its entries are kept below 1.0 so that bank does not mostly attend to itself "
-    "(the self score q_bank.k_bank grows with the square of those entries). Position offsets are a small circle of radius "
-    "0.3 in the (person, glue) plane, so the three 'the' tokens differ without changing meaning. Patterns produced (all "
+    "W_K as 'axis -> offers', W_V as 'axis -> says', W_vocab as 'axis -> votes for these words'. Values are narrower on "
+    "purpose because they are mixed and sent rather than compared. Glue words have zero key and value rows but ask for "
+    "both settings, which is why the final 'the' reads river or cheque. bank is equal parts water "
+    "and finance (0.7, 0.7) plus a little glue (0.7); its entries are kept below 1.0 so that bank does not mostly attend to itself "
+    "(the self score q_bank.k_bank grows with the square of those entries). Position rises from 0.1 to 1.0 in its own "
+    "coordinate, so the three 'the' tokens differ without changing meaning. Patterns produced (all "
     "checked on these rounded numbers by make_toy2.py and toy_ref.mjs): (1) in 'The fisherman sat beside the river bank', "
     "bank(7) attends river first, fisherman second, itself and the glue words little; (2) in 'She deposited the cheque at "
     "the bank', bank(7) attends cheque first, deposited second; (3) the final 'the'(10) reads mostly river/bank/fisherman "

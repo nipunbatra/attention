@@ -31,9 +31,14 @@
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>The model is trained to predict the next token, so during training the answer for position $i$ sits right there at position $i+1$. This section shows what stops a token from reading it. Switch the causal mask off and watch row 5: with the mask on, token 5 (the) reads only tokens 1 to 5; with it off, most of its weight lands on river and bank, the words it is supposed to predict. Press the send button in both states and compare the message that arrives. The sentence to remember: token $i$ may read from $j \le i$ and never from $j > i$, and the mask enforces that with a $-\infty$ before the softmax.</p>
+  <p>The model is trained to predict the next token, so during training the answer for position $i$ sits right there at position $i+1$. This section shows what stops a token from reading it. Switch the causal mask off and watch row 5: with the mask on, token 5 (the) reads only tokens 1 to 5; with it off, much of its weight lands on future tokens: river is its immediate target, and bank is additional future information. Press the send button in both states and compare the message that arrives. The sentence to remember: token $i$ may read from $j \le i$ and never from $j > i$, and the mask enforces that with a $-\infty$ before the softmax.</p>
 </div>
 
+<div class="frame" id="s13-frame1" data-title="What is the target at each position?">
+  <script type="text/x-notes">
+What is the one-token target for the row at position 5?
+It is river at position 6, not river and bank together. Training can evaluate many such shifted targets in parallel, but each row must only use its own available prefix.
+  </script>
 <div class="prose">
   <p>So far one query token opened the records to its left and we simply left the later ones closed. That was a habit. This section turns it into a rule and shows where the rule comes from: the training objective itself.</p>
 </div>
@@ -46,6 +51,13 @@
   <div id="s13-stairwhy"></div>
 </div>
 
+</div>
+
+<div class="frame" id="s13-frame2" data-title="Where must future information be blocked?">
+  <script type="text/x-notes">
+Why must the mask be applied before the softmax?
+Forbidden scores become negative infinity, so their exponentials are zero. Allowed positions include the diagonal: a token can read itself. Point to row i and column j before reading the triangle.
+  </script>
 <div class="prose">
   <p>Every query token $i$ compares against every key $j$, giving the score matrix
   $S = QK^\top/\sqrt{d_k}$ with entries $s_{ij}$. Token $i$ may retrieve only from $j \le i$, never from $j > i$.
@@ -69,7 +81,16 @@
     </div>
   </div>
 </div>
+<p class="muted small">PyTorch · future is the Boolean upper triangle, j &gt; i; softmax runs across sources.</p>
+<pre class="torch-snippet"><code>scores = scores.masked_fill(future, float('-inf'))
+weights = scores.softmax(dim=-1)</code></pre>
+</div>
 
+<div class="frame" id="s13-frame3" data-title="Do row sums reveal a future-information leak?">
+  <script type="text/x-notes">
+If the row still sums to one, can it nevertheless leak the answer?
+Toggle the mask manually. Row sums remain one; the locations receiving weight reveal the leak. Focus on the outlined next-token target cells.
+  </script>
 <div class="card">
   <h3 class="card-title">The real attention matrix $\va{A}$ for sentence A (10 tokens), with the mask on or off</h3>
   <p class="s13-cap">Toggle the mask and watch the hatched triangle: with the mask off, weight moves into it, and the outlined cells $(i, i+1)$ are where each token could read its own answer. Click any cell for the score arithmetic behind its weight.</p>
@@ -79,9 +100,16 @@
   <div id="s13-warn"></div>
 </div>
 
+</div>
+
+<div class="frame" id="s13-frame4" data-title="What information reaches the predicting token?">
+  <script type="text/x-notes">
+What changes in the received message when future positions are opened?
+Compare mask on and off, then send the values. Future attention weight is not the fraction of every message coordinate: actual contributions also depend on the value vectors. Masking prevents a training shortcut unavailable at generation.
+  </script>
 <div class="card">
   <h3 class="card-title">One leak, up close: token 5 (&ldquo;the&rdquo;) whose next token is &ldquo;river&rdquo;</h3>
-  <p class="s13-cap">Compare the two rows: the mask-off row puts most of its weight on the two tokens that token 5 is supposed to predict. Press the button to see which tokens send.</p>
+  <p class="s13-cap">Compare the two rows: the mask-off row can read its immediate target, river, and other future tokens such as bank. Press the button to see which tokens send.</p>
   <div class="s13-arena" id="s13-arena">
     <div id="s13-chips"></div>
     <div id="s13-rows"></div>
@@ -93,6 +121,8 @@
 </div>
 
 <div id="s13-callouts"></div>
+
+</div>
 
 <div class="companion after">
   <p>Keep in mind: with the mask off the rows still sum to 1, so the leak is invisible in the totals and visible only in where the weight went. The mask is not a detail of one example; it is what makes next-token training honest.</p>
@@ -117,7 +147,7 @@
     lastCell = [i, j];
     const A = (maskOn ? Fon : Foff).A;
     const fut = j > i;
-    msg.innerHTML = AT.texStr('\\va{\\alpha_{' + (i + 1) + ',' + (j + 1) + '}}') + ' = ' + AT.fmt(A[i][j], 3) + ' &nbsp;(' + AT.escape(toks[i]) + ' ← ' + AT.escape(toks[j]) + ')' + (fut ? (maskOn ? ' Masked: token ' + (j + 1) + ' is in the future of token ' + (i + 1) + '.' : ' <span class="warn-text">Leak: token ' + (i + 1) + ' is reading a token it must predict later.</span>') : '');
+    msg.innerHTML = AT.texStr('\\va{\\alpha_{' + (i + 1) + ',' + (j + 1) + '}}') + ' = ' + AT.fmt(A[i][j], 3) + ' &nbsp;(' + AT.escape(toks[i]) + ' ← ' + AT.escape(toks[j]) + ')' + (fut ? (maskOn ? ' Masked: token ' + (j + 1) + ' is in the future of token ' + (i + 1) + '.' : ' <span class="warn-text">Leak: token ' + (i + 1) + ' is reading future information unavailable to this prediction.</span>') : '');
   }
   const heat = AT.ui.heat(Fon.A, { rows: toks, cols: toks, mask: true, leak: true, decimals: 2, highlightRow: li,
     onHover: explain, calc: { Q: Fon.Q, K: Fon.K, scaled: true, d_k: AT.d_k },
@@ -153,7 +183,7 @@
     chips.setMuted(maskOn ? AT.range(T).filter(j => j > li) : []);
     chips.setMark(maskOn ? [] : [li + 1, li + 2], 'v');
     const fut = Foff.A[li].slice(li + 1).reduce((a, b) => a + b, 0);
-    S.querySelector('#s13-leak-text').innerHTML = 'The training target at position 5 is the token at position 6, <strong>' + AT.escape(toks[li + 1]) + '</strong>. Mask <strong>off</strong>: token 5 puts <span class="s13-leak">' + AT.fmt(Foff.A[li][li + 1], 2) + '</span> of its weight on ' + AT.escape(toks[li + 1]) + ' and <span class="s13-leak">' + AT.fmt(Foff.A[li][li + 2], 2) + '</span> on ' + AT.escape(toks[li + 2]) + '; <span class="s13-leak">' + AT.fmt(fut, 2) + '</span> of its message comes from the future, so it could <em>copy</em> the answer. Mask <strong>on</strong>: those weights are exactly <span class="s13-leak">' + AT.fmt(Fon.A[li][li + 1], 2) + '</span>.';
+    S.querySelector('#s13-leak-text').innerHTML = 'The training target at position 5 is the token at position 6, <strong>' + AT.escape(toks[li + 1]) + '</strong>. Mask <strong>off</strong>: token 5 puts <span class="s13-leak">' + AT.fmt(Foff.A[li][li + 1], 2) + '</span> of its weight on ' + AT.escape(toks[li + 1]) + ' and <span class="s13-leak">' + AT.fmt(Foff.A[li][li + 2], 2) + '</span> on ' + AT.escape(toks[li + 2]) + '; <span class="s13-leak">' + AT.fmt(fut, 2) + '</span> of its attention weight is assigned to future positions, so the target is available to be exploited. Mask <strong>on</strong>: those weights are exactly <span class="s13-leak">' + AT.fmt(Fon.A[li][li + 1], 2) + '</span>.';
     S.querySelector('#s13-send-note').innerHTML = (maskOn ? 'Only tokens 1 to 5 can send.' : 'Tokens 6 to 10 also send, though they should not exist yet.') + ' Press the button to compute ' + AT.texStr('m_5') + '.';
     target.setLabel('m_5' + (maskOn ? '' : '\\ \\text{(leaky)}'));
     target.update(blank());
@@ -212,12 +242,12 @@
     tbl.appendChild(tb);
     host.appendChild(AT.h('div', { class: 'dt-scroll' }, tbl));
     const why = S.querySelector('#s13-stairwhy');
-    AT.ui.callout('Look at position ' + (li + 1) + ' ("' + AT.escape(toks[li]) + '"): its job is to predict "' + AT.escape(toks[li + 1]) + '". If it could read position ' + (li + 2) + ', it would be reading its own answer. So the rule is not a style choice: with every position trained in one pass, anything to the right of $i$ is an answer, not evidence.', { kind: 'key', into: why });
+    AT.ui.callout('Look at position ' + (li + 1) + ' ("' + AT.escape(toks[li]) + '"): its job is to predict "' + AT.escape(toks[li + 1]) + '". If it could read position ' + (li + 2) + ', it would be reading its own answer. So the rule is not a style choice: with every position trained in one pass, position $i+1$ is this row’s target, and all positions to its right are unavailable evidence at generation time.', { kind: 'key', into: why });
   })();
 
   const co = S.querySelector('#s13-callouts');
-  AT.ui.callout('Token $i$ may only retrieve from $j \\le i$, never from $j > i$. Rows of $\\va{A}$ are softmaxed over the past only.', { kind: 'key', into: co });
-  AT.ui.callout('Why training would be invalid without the mask: the loss at position $i$ asks for $p(x_{i+1} \\mid x_{\\le i})$. If $\\ve{e_i}$ could read $\\ve{e_{i+1}}$, the model would drive that loss down by copying and learn nothing about language. At generation time token $i+1$ does not exist yet, so the trick would fail exactly when it matters.', { kind: 'warn', into: co });
+  AT.ui.callout('Token $i$ may only retrieve from $j \\le i$, never from $j > i$. Rows of $\\va{A}$ are softmaxed over the current position and its past.', { kind: 'key', into: co });
+  AT.ui.callout('Why training would be invalid without the mask: the loss at position $i$ asks for $p(x_{i+1} \\mid x_{\\le i})$. If $\\ve{e_i}$ could read $\\ve{e_{i+1}}$, the model could reduce the loss by exploiting future information instead of learning the required prefix-only prediction. At generation time token $i+1$ does not exist yet, so the trick would fail exactly when it matters.', { kind: 'warn', into: co });
 })();
 </script>
 </section>

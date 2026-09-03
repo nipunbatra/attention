@@ -13,6 +13,37 @@
 #s16 .stepper-stage .dt-w{margin:4px 0;flex:0 0 auto}
 #s16 .read{font-size:15px;color:var(--ink-2);margin:10px 0 0;max-width:60em;border-left:3px solid var(--line);padding-left:10px}
 #s16 .read .katex{font-size:1.02em}
+#s16 .flow-full svg{display:block;width:100%;height:auto}
+#s16 #s16-flow-stepper .stepper-body{grid-template-columns:minmax(0,1fr)}
+#s16 .flow-classroom{display:none}
+body.present #s16 #s16-flow-stepper>.stepper{padding:0;border:0;background:transparent;margin:0}
+body.present #s16 #s16-flow-stepper .stepper-bar{display:none}
+body.present #s16 .flow-full{display:none}
+body.present #s16 .flow-classroom{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:24px;align-items:center}
+body.present #s16 .flow-classroom svg{width:100%;height:auto;max-height:calc(100dvh - 205px)}
+body.present #s16 .flow-classroom h3{font-size:1.3em;margin:0 0 .6em}
+body.present #s16 .flow-classroom p{font-size:.9em;line-height:1.45;margin:.65em 0}
+body.present #s16 .flow-classroom pre{font-size:.59em}
+body.present #s16 .flow-receiver{font-size:.7em;line-height:1.4;color:var(--ink-2)}
+body.present #s16 #s16-flow-stepper .stepper-stage{padding:0;border:0;overflow:visible}
+/* The article keeps every operand. In class the equation names the inputs and
+   the numerical result takes centre stage, instead of stacking three matrices. */
+body.present #s16-frame1 .prose{display:none}
+body.present #s16-frame2>.card{padding:0;border:0;background:transparent}
+body.present #s16-frame2>.card>.card-title,body.present #s16-frame2>.card>.cap{display:none}
+body.present #s16-frame2 .stepper{padding:0;border:0;background:transparent;margin:0}
+body.present #s16-frame2 .stepper-bar,body.present #s16-frame2 .stepper-list{display:none}
+body.present #s16-frame2 .stepper-body{grid-template-columns:minmax(0,1fr)}
+body.present #s16-frame2 .stage-row{justify-content:center}
+body.present #s16-frame2 .stage-row>:not(:last-child){display:none}
+body.present #s16-frame2 .stage-row .grp>.mat-op{display:none}
+body.present #s16-frame2 .stage-row:has(+.stage-row){display:none}
+body.present #s16-frame2 .stage-note{font-size:.8em;max-width:none;margin-bottom:6px}
+body.present #s16-frame2 .stage-tex{margin:0}
+body.present #s16-frame2 .read{font-size:.8em;max-width:none}
+body.present #s16-frame2 .dt-w{margin-inline:auto}
+body.present #s16-frame2 .dt td.dt-num{padding:5px 7px}
+@media(max-width:700px){body.present #s16 .flow-classroom{grid-template-columns:1fr}body.present #s16 .flow-classroom svg{max-height:none}}
 </style>
 <header class="sec-head">
   <span class="sec-num">16</span>
@@ -27,9 +58,22 @@
   <p>Step through the operations below and keep your eye on row 7. At every stage it holds the numbers you already saw for bank. The sentence to remember: a row of the matrix is a token, and $\vp{E'} = \ve{E} + \vd{\Delta E}$ updates every row in one addition.</p>
 </div>
 
+<div class="frame" id="s16-flow-frame" data-title="Can you trace one request through the whole diagram?">
+  <script type="text/x-notes">
+Which branch chooses where to read, and which branch carries the information?
+Build the diagram one operation at a time. Q and K create the weights. V bypasses scoring. The weighted message is mapped back by W_O and added to the original representation. At the final stage, switch from bank at position7 to the last the at position10: this is a new receiver/query, with all projections still reading the same layer input. Only its updated row predicts the next token after the full prefix. This is a single causal attention head plus its residual connection and a toy vocabulary head, not the complete Transformer.
+  </script>
+  <div id="s16-flow-stepper"></div>
+</div>
+
+<div class="frame" id="s16-frame1" data-title="What does one row of each matrix mean?" data-autobuild="off">
+  <script type="text/x-notes">
+Where is the bank calculation inside these matrices?
+Each token is one row. We use the short seven-token prefix here, so bank is the final row. Query and key widths must match. Value width may differ; W_O maps the message back to model width before residual addition. Read the current dimensions from the table.
+  </script>
 <div class="prose">
-  <p>Stack the current representations of the short sequence as rows of one matrix. Every row of $\ve{E}$ is one $\ve{e_i}$; every operation from section 15 now happens for all $T$ rows in a single product.</p>
-  $$\ve{E} = \begin{bmatrix} \ve{e_1}^\top \\ \vdots \\ \ve{e_T}^\top \end{bmatrix}, \qquad \vq{Q} = \ve{E}\,W_Q, \quad \vk{K} = \ve{E}\,W_K, \quad \vv{V} = \ve{E}\,W_V$$
+  <p>Stack the current row representations of the short seven-token prefix as one matrix. Every row of $\ve{E}$ is one $\ve{e_i}$; every operation from section 15 now happens for all $T$ rows in a single product.</p>
+  $$\ve{E} = \begin{bmatrix} \ve{e_1} \\ \vdots \\ \ve{e_T} \end{bmatrix}, \qquad \vq{Q} = \ve{E}\,W_Q, \quad \vk{K} = \ve{E}\,W_K, \quad \vv{V} = \ve{E}\,W_V$$
 </div>
 
 <div class="card">
@@ -38,12 +82,26 @@
   <div id="s16-dims"></div>
 </div>
 
+</div>
+
+<div class="frame" id="s16-frame2" data-title="Can one matrix product do every row at once?">
+  <script type="text/x-notes">
+How does the scalar calculation become a matrix product without changing its meaning?
+Keep row 7 highlighted and step through the products. Q and K are both T × 3, so Q K transpose is T × T. Each row of A independently mixes the rows of V.
+  </script>
 <div class="card">
   <h3 class="card-title">One matrix operation at a time</h3>
   <p class="cap">Row labels are tokens, column labels are the named coordinates. The outlined row is bank, the section 15 computation. Click any score cell for its arithmetic.</p>
   <div id="s16-stepper"></div>
 </div>
 
+</div>
+
+<div class="frame" id="s16-frame3" data-title="Can we write the whole sublayer compactly?">
+  <script type="text/x-notes">
+Which operation chooses sources, which mixes information, and which adds the update?
+A contains the source weights; A V forms messages; W_O maps them back; the residual connection adds E. This is one attention sublayer, not the full Transformer block.
+  </script>
 <div class="card">
   <h3 class="card-title">The whole sublayer in five lines</h3>
   <div class="eqs" id="s16-eqs">
@@ -56,7 +114,17 @@
   <p class="why">$M$ is the causal mask: $0$ where $j \le i$, $-\infty$ where $j > i$. The softmax acts on each row separately, so every row of $\va{A}$ sums to $1$.</p>
 </div>
 
+</div>
+<div class="frame" id="s16-frame4" data-title="Which parts are attention, and which parts surround it?">
+  <script type="text/x-notes">
+Is this already a complete Transformer?
+No. We have one attention head, its output projection, and its residual addition. The full block also needs the architecture components introduced later. Read the two-line implementation and locate the softmax source axis.
+  </script>
 <div id="s16-callouts"></div>
+<p class="muted small">PyTorch · matrices are row-major; mask contains 0 or −∞.</p>
+<pre class="torch-snippet"><code>A = (Q @ K.T / d_k**0.5 + mask).softmax(dim=-1)
+E_new = E + (A @ V) @ W_O</code></pre>
+</div>
 
 <div class="companion after">
   <p>Keep in mind: the matrices are bookkeeping, not a new idea. Row $i$ of $\vp{E'}$ is $\ve{e_i} + \vd{\Delta e_i}$, the softmax runs one row at a time, and the mask is what keeps row $i$ from reading columns $j > i$.</p>
@@ -86,7 +154,7 @@
   ], {
     cols: ['shape', 'rows', 'columns'], decimals: 0, cornerLabel: 'matrix',
     rowLabels: ['$\\ve{E}$', '$\\vq{Q}$, $\\vk{K}$', '$\\vv{V}$', '$S$, $M$, $\\va{A}$', '$H = \\va{A}\\vv{V}$', '$\\vd{\\Delta E}$, $\\vp{E\'}$'],
-    caption: 'Here $T = ' + T + '$ (the short sequence), $d_{\\text{model}} = ' + AT.d_model + '$ and $d_k = d_v = ' + AT.d_k + '$. The weight matrices are $W_Q, W_K, W_V \\in \\mathbb{R}^{' + AT.d_model + ' \\times ' + AT.d_k + '}$ and $W_O \\in \\mathbb{R}^{' + AT.d_v + ' \\times ' + AT.d_model + '}$.',
+    caption: 'Here $T = ' + T + '$, $d_{\\text{model}} = ' + AT.d_model + '$, $d_k = ' + AT.d_k + '$, and $d_v = ' + AT.d_v + '$. $W_Q, W_K \\in \\mathbb{R}^{' + AT.d_model + ' \\times ' + AT.d_k + '}$; $W_V \\in \\mathbb{R}^{' + AT.d_model + ' \\times ' + AT.d_v + '}$; $W_O \\in \\mathbb{R}^{' + AT.d_v + ' \\times ' + AT.d_model + '}$.',
     into: S.querySelector('#s16-dims')
   });
 
@@ -145,7 +213,7 @@
       note: 'The third projection: a row of $W_V$ reads "this axis says that". Row $j$ of $\\vv{V}$ is $\\vv{v_j}$, what token $j$ sends if retrieved.',
       render: (el) => { line(el, rowMat(F.E, 'e', '$\\ve{E}$'), '·', wTab(M.W_V, 'e', 'v', 'v', '$W_V$: axis → says'), '=', rowMat(F.V, 'v', '$\\vv{V}$', { highlight: { row: TOP } })); read(el, R.V()); } },
     { title: 'Every query against every key', tex: 'S = \\frac{\\vq{Q}\\,\\vk{K}^\\top}{\\sqrt{d_k}}',
-      note: 'Entry $(i,j)$ is $s_{ij} = \\vq{q_i}^\\top \\vk{k_j}/\\sqrt{d_k}$. The product $\\vq{Q}\\vk{K}^\\top$ holds the raw dot products; dividing every entry by $\\sqrt{d_k} = \\sqrt{' + AT.d_k + '}$ gives $S$. Row 7 is the score row of bank from section 15. Click any cell of a score matrix to see its arithmetic.',
+      note: 'Entry $(i,j)$ is $s_{ij} = \\vq{q_i}\\cdot \\vk{k_j}/\\sqrt{d_k}$. The product $\\vq{Q}\\vk{K}^\\top$ holds the raw dot products; dividing every entry by $\\sqrt{d_k} = \\sqrt{' + AT.d_k + '}$ gives $S$. Row 7 is the score row of bank from section 15. Click any cell of a score matrix to see its arithmetic.',
       render: (el) => {
         line(el, rowMat(F.Q, 'q', '$\\vq{Q}$'), '·', AT.ui.mat(KT, { cls: 'k', rowLabels: AT.axisLabels('qk', AT.d_k), colLabels: toks, caption: '$\\vk{K}^\\top$: one column per token', dims: true }), '=', sqMat(F.Sraw, 'neutral', '$\\vq{Q}\\vk{K}^\\top$: raw dot products (click a cell)', { calc: calcRaw }));
         line(el, sqMat(F.Sraw, 'neutral', '$\\vq{Q}\\vk{K}^\\top$', { calc: calcRaw }), '÷ √' + AT.d_k, '=', sqMat(F.Sfull, 'neutral', '$S = \\vq{Q}\\vk{K}^\\top / \\sqrt{d_k}$: scaled scores, before the mask (click a cell)', { calc: calcS }));
@@ -170,11 +238,30 @@
       note: 'Back into the model\'s representation space: $W_O$ has ' + AT.d_v + ' rows (the $\\vv{v}$ axes of $m$) and ' + AT.d_model + ' columns (the $\\ve{e}$ axes of $\\vd{\\Delta e}$). Row $i$ of $\\vd{\\Delta E}$ is $\\vd{\\Delta e_i}$.',
       render: (el) => { line(el, rowMat(F.Mmsg, 'm', '$H$'), '·', wTab(M.W_O, 'v', 'e', 'd', '$W_O$: says → axis'), '=', rowMat(F.Delta, 'd', '$\\vd{\\Delta E}$')); read(el, R.D()); } },
     { title: 'Residual addition', tex: '\\boxed{\\vp{E\'} = \\ve{E} + \\vd{\\Delta E}}',
-      note: 'Nothing is replaced. Every token keeps its own $\\ve{e_i}$ and gains a context-dependent $\\vd{\\Delta e_i}$, all rows at once.',
+      note: 'Every output row is the sum of its original input $\\ve{e_i}$ and its context-dependent update $\\vd{\\Delta e_i}$, all rows at once.',
       render: (el) => { line(el, rowMat(F.E, 'e', '$\\ve{E}$'), '+', rowMat(F.Delta, 'd', '$\\vd{\\Delta E}$'), '=', rowMat(F.Enew, 'ep', '$\\vp{E\'}$: updated representations')); read(el, R.EP()); } }
   ];
 
   AT.ui.stepper({ into: S.querySelector('#s16-stepper'), steps: steps, compact: true, texInList: false });
+
+  // One SVG source is shared with the standalone preview. Classroom mode crops
+  // to the fixed graph and pairs it with large prose; reading mode keeps the arithmetic.
+  if(window.ATTENTION_PREVIEW){
+    const P=window.ATTENTION_PREVIEW;
+    AT.ui.stepper({into:S.querySelector('#s16-flow-stepper'),hideList:true,stageTitle:false,texInStage:false,scrollList:false,
+      steps:P.stages.map((st,i)=>({title:st.title,render:function(el){
+        const full=AT.h('div',{class:'flow-full'});full.innerHTML=P.render(i,'article-flow-'+i);el.appendChild(full);
+        const room=AT.h('div',{class:'flow-classroom'}),copy=AT.h('div');
+        copy.appendChild(AT.h('div',{class:'flow-receiver',text:'The fisherman sat beside the river bank and watched the ___'}));
+        copy.appendChild(AT.h('h3',{text:st.title}));
+        copy.appendChild(AT.h('p',{text:st.lines.join(' ')}));
+        copy.appendChild(AT.h('p',{text:st.note.join(' ')}));
+        copy.appendChild(AT.h('pre',{class:'torch-snippet',text:st.code.join('\n')}));
+        const graph=AT.h('div');graph.innerHTML=P.render(i,'class-flow-'+i);
+        const svg=graph.querySelector('svg');svg.setAttribute('viewBox','780 210 790 700');svg.setAttribute('width','790');svg.setAttribute('height','700');
+        room.append(copy,graph);el.appendChild(room);
+      }}))});
+  }
 
   /* callouts */
   const co = S.querySelector('#s16-callouts');

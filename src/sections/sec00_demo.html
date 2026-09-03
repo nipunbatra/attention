@@ -49,8 +49,8 @@
 
 <div class="prose">
   <p>Static math renders at boot: $\vp{e_i'} = \ve{e_i} + \vd{\Delta e_i}$ and
-  $\va{\alpha_{ij}} = \operatorname{softmax}_j\!\left(\vq{q_i}^\top \vk{k_j}/\sqrt{d_k}\right)$, with $\vv{v_j} = W_V \ve{e_j}$.
-  Display math: $$\vd{\Delta e_i} = W_O \sum_{j \le i} \va{\alpha_{ij}}\, \vv{v_j}$$</p>
+  $\va{\alpha_{ij}} = \operatorname{softmax}_j\!\left(\vq{q_i}\cdot \vk{k_j}/\sqrt{d_k}\right)$, with $\vv{v_j} = \ve{e_j} W_V$.
+  Display math: $$\vd{\Delta e_i} = \left(\sum_{j \le i} \va{\alpha_{ij}}\, \vv{v_j}\right) W_O = m_i W_O$$</p>
 </div>
 
 <div class="card">
@@ -217,7 +217,7 @@
   AT.ui.matVecCalc(F.E[6], AT.model.W_Q, { from: 'e', to: 'qk', cls: 'q', xLabel: 'e · 7 bank', outLabel: 'q · 7 bank', into: S.querySelector('#s00-mvcalc') });
 
   /* plain tables */
-  AT.ui.table(AT.model.W_Q, { cols: [{ label: '$\\vq{q}$ coord 1', cls: 'q' }, { label: '$\\vq{q}$ coord 2', cls: 'q' }, { label: '$\\vq{q}$ coord 3', cls: 'q' }], rowLabels: ['$\\ve{e}$ coord 1', '$\\ve{e}$ coord 2', '$\\ve{e}$ coord 3', '$\\ve{e}$ coord 4'], cornerLabel: '$W_Q$',
+  AT.ui.table(AT.model.W_Q, { cols: AT.axes.short.qk.map((name) => ({ label: name, cls: 'q' })), rowLabels: AT.axes.short.e, cornerLabel: '$W_Q$',
     computed: [{ label: 'row sum', fn: (row) => AT.sum(row) }, { label: '|row|', fn: (row) => AT.norm(row), cls: 'neutral' }], caption: 'A weight matrix as a table: rows are input coordinates of $\\ve{e}$, columns are output coordinates of $\\vq{q}$.', into: S.querySelector('#s00-table') });
   AT.ui.table(F.A.slice(0, 7).map(r => r.slice(0, 7)), { cols: toks.slice(0, 7), rowLabels: toks.slice(0, 7).map((t, i) => (i + 1) + ' ' + t), cornerLabel: 'reads from →', rowCls: 'a', heatCols: [0, 1, 2, 3, 4, 5, 6], highlightRow: 6, size: 'lg', decimals: 2,
     footer: { label: 'column sum', values: AT.range(7).map(j => AT.sum(F.A.slice(0, 7).map(r => r[j]))), cls: 'neutral' }, caption: 'Large size, heat on every column, bank\u2019s row highlighted, a neutral footer.', into: S.querySelector('#s00-table-lg') });
@@ -286,9 +286,9 @@
   /* stepper */
   AT.ui.stepper({ big: true, into: S.querySelector('#s00-stepper'), steps: [
     { title: 'Pick the query token', tex: '\\ve{e_7} = e_{\\text{bank}}', note: 'Token 7 (“bank”) is going to read from tokens 1 to 7.', render: (el) => { AT.ui.chips(toks, { active: 6, muted: [7,8,9], into: el }); } },
-    { title: 'Project', tex: '\\vq{q_7} = W_Q \\ve{e_7}', render: (el) => { const r = AT.h('div',{class:'row'}); AT.ui.vec(F.E[6], {cls:'e', label:'\\ve{e_7}', into:r}); AT.ui.op('→',{into:r}); AT.ui.vec(F.Q[6], {cls:'q', label:'\\vq{q_7}', into:r}); el.appendChild(r); } },
-    { title: 'Compare and normalise', tex: '\\va{\\alpha_{7j}} = \\operatorname{softmax}_j(\\vq{q_7}^\\top \\vk{k_j} / \\sqrt{d_k})', render: (el) => { AT.ui.vec(F.A[6].slice(0,7), { cls:'a', label:'\\va{\\alpha_{7,\\cdot}}', into: el }); } },
-    { title: 'Update', tex: "\\vp{e_7'} = \\ve{e_7} + \\vd{\\Delta e_7}", note: 'Inline note math also works: $\\vd{\\Delta e_7} = W_O m_7$.', render: (el) => { const r = AT.h('div',{class:'row'}); AT.ui.vec(F.Enew[6], {cls:'ep', label:"\\vp{e_7'}", into:r}); el.appendChild(r); } }
+    { title: 'Project', tex: '\\vq{q_7} = \\ve{e_7} W_Q', render: (el) => { const r = AT.h('div',{class:'row'}); AT.ui.vec(F.E[6], {cls:'e', label:'\\ve{e_7}', into:r}); AT.ui.op('→',{into:r}); AT.ui.vec(F.Q[6], {cls:'q', label:'\\vq{q_7}', into:r}); el.appendChild(r); } },
+    { title: 'Compare and normalise', tex: '\\va{\\alpha_{7j}} = \\operatorname{softmax}_j(\\vq{q_7}\\cdot \\vk{k_j} / \\sqrt{d_k})', render: (el) => { AT.ui.vec(F.A[6].slice(0,7), { cls:'a', label:'\\va{\\alpha_{7,\\cdot}}', into: el }); } },
+    { title: 'Update', tex: "\\vp{e_7'} = \\ve{e_7} + \\vd{\\Delta e_7}", note: 'Inline note math also works: $\\vd{\\Delta e_7} = m_7 W_O$.', render: (el) => { const r = AT.h('div',{class:'row'}); AT.ui.vec(F.Enew[6], {cls:'ep', label:"\\vp{e_7'}", into:r}); el.appendChild(r); } }
   ]});
 
   /* motif */

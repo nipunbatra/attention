@@ -25,12 +25,17 @@
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Sections 03 and 04 set aside the fixed window and the plain mean because neither reacts to the words. This section puts those two schemes, a distance-decay scheme and attention into one table, so the difference shows up in the numbers instead of in an argument.</p>
+  <p>Sections 03 and 04 set aside the fixed window and the plain mean because their inclusion or pooling rule is fixed, although their outputs still depend on the input words. This section puts those two schemes, a distance-decay scheme and attention into one table, so the difference shows up in the numbers instead of in an argument.</p>
   <p>Switch between the river sentence and the cheque sentence and watch the rows. The first three rows do not change at all: their weights were fixed before any word was read. Only the attention row moves, and it moves toward the words that matter for the blank. The sentence to remember: attention is the only scheme whose weights are computed from the content.</p>
 </div>
 
+<div class="frame" id="s17-frame1" data-title="Which inclusion or mixing rule changes with the words?">
+  <script type="text/x-notes">
+When the sentence changes, which weights change, and which outputs might still change?
+Only attention recomputes the displayed mixing weights from content. A fixed window and a mean still receive different embeddings and can therefore produce different outputs. The window row is inclusion, not normalized attention.
+  </script>
 <div class="prose">
-  <p>All four schemes build a context for the last token $t = 10$ from $\ve{e_1},\ldots,\ve{e_t}$. One question separates them: who sets the weights, and do they read the words? Switch the sentence and watch which row reacts.</p>
+  <p>All four schemes use input information for the last token $t = 10$ from $\ve{e_1},\ldots,\ve{e_t}$. One question separates them: who sets the weights, and do they read the words? Switch the sentence and watch which row reacts.</p>
 </div>
 
 <div class="card">
@@ -44,35 +49,44 @@
   <h3 class="card-title">Four weighting schemes, one table</h3>
   <div id="s17-table"></div>
   <div id="s17-read"></div>
-  <p class="look">Look at the last row: only there does the darkest cell sit under a content word, and only that row changes when you switch the sentence.</p>
+  <p class="look">Look at the last row: its weights favour different evidence, and only that weight row changes when you switch the sentence.</p>
 </div>
 
+</div>
+
+<div class="frame" id="s17-frame2" data-title="What exactly does attention improve?">
+  <script type="text/x-notes">
+Is the advantage that other models cannot understand words?
+No. Attention supplies explicit content-dependent routing and shared projections over the available prefix. The input context remains finite; a fixed-window network can still learn from content within its window.
+  </script>
 <div class="card">
   <h3 class="card-title">What each scheme does with the context</h3>
   <div class="scroll-x">
     <table class="cmp" id="s17-cmp">
       <thead><tr><th>Scheme</th><th>Context for the last token</th><th>Who sets the weights</th><th>What is retrieved</th></tr></thead>
       <tbody>
-        <tr><td>Fixed window</td><td>$c_t = [\ve{e_{t-K+1}};\,\ldots;\,\ve{e_t}]$</td><td>Position. Inside the window a token counts whole; outside it does not exist</td><td>$\ve{e_j}$, concatenated</td></tr>
+        <tr><td>Fixed window</td><td>$c_t = [\ve{e_{t-w+1}};\,\ldots;\,\ve{e_t}]$</td><td>Position determines inclusion; the network can still use the content of each included embedding</td><td>$\ve{e_j}$, concatenated</td></tr>
         <tr><td>Mean pooling</td><td>$c_t = \frac{1}{t}\sum_{j \le t} \ve{e_j}$</td><td>Nobody. Every token gets $1/t$</td><td>$\ve{e_j}$, averaged</td></tr>
         <tr><td>Fixed positional weights</td><td>$c_t = \sum_{j \le t} w_j\, \ve{e_j}$</td><td>Distance. $w_j$ is fixed by position, so two words at the same distance weigh the same</td><td>$\ve{e_j}$, weighted</td></tr>
-        <tr class="is-att"><td>Attention</td><td>$m_t = \sum_{j \le t} \underbrace{\va{\alpha_{tj}}}_{\mathclap{\text{depends on current content}}} \vv{v_j}$</td><td class="yes">The content. $\va{\alpha_{tj}}$ comes from $\vq{q_t}^\top \vk{k_j}$, so it changes with the words</td><td>$\vv{v_j}$, weighted, then $\vd{\Delta e_t} = m_t W_O$</td></tr>
+        <tr class="is-att"><td>Attention</td><td>$m_t = \sum_{j \le t} \underbrace{\va{\alpha_{tj}}}_{\mathclap{\text{depends on current content}}} \vv{v_j}$</td><td class="yes">The content. $\va{\alpha_{tj}}$ comes from $\vq{q_t}\cdot \vk{k_j}$, so it changes with the words</td><td>$\vv{v_j}$, weighted, then $\vd{\Delta e_t} = m_t W_O$</td></tr>
       </tbody>
     </table>
   </div>
-  <p class="look">Read the third column: three schemes decide before reading the sentence; one decides by reading it.</p>
+  <p class="look">Read the third column: three schemes fix inclusion or pooling weights; attention recomputes its mixing weights from the content.</p>
 </div>
 
 <div id="s17-callout"></div>
 
+</div>
+
 <div class="companion after">
-  <p>Keep in mind: a window, a mean and a distance decay all fix their weights before reading the sentence. Attention computes $\va{\alpha_{ij}}$ from $\vq{q_i}$ and $\vk{k_j}$, so the same position can matter a lot in one sentence and not at all in another.</p>
+  <p>Keep in mind: a window, a mean and a distance decay all fix their weights before reading the sentence. Attention computes $\va{\alpha_{ij}}$ from $\vq{q_i}$ and $\vk{k_j}$, so the same position can receive very different mixing weights in different sentences.</p>
 </div>
 
 <script>
 (function(){
   const S = document.getElementById('s17');
-  const K = 3;                       // fixed-window size for the comparison
+  const w = 3;                       // fixed-window size for the comparison
   const DECAY = 0.7;                 // illustrative distance decay for the fixed positional weights
   let ctx = 'river';
   const t = AT.sentences.river.length; // 10
@@ -92,7 +106,7 @@
 
   /* ---- the four weighting schemes (all for the last token) ---- */
   function weightsFor(name, F){
-    if (name === 'window') return AT.range(t).map(j => (j >= t - K ? 1 : 0));
+    if (name === 'window') return AT.range(t).map(j => (j >= t - w ? 1 : 0));
     if (name === 'mean')   return AT.range(t).map(() => 1 / t);
     if (name === 'pos')    { const raw = AT.range(t).map(j => Math.pow(DECAY, ti - j)); const s = AT.sum(raw); return raw.map(x => x / s); }
     return F.A[ti].slice();
@@ -122,7 +136,7 @@
       cornerLabel: 'scheme / token',
       heatCols: AT.range(t), heatMax: 1, decimals: 2, highlightRow: 3,
       computed: [{ label: 'sum', fn: (row) => AT.sum(row.map(x => (typeof x === 'number' ? x : 0))), cls: 'neutral' }],
-      caption: 'Each cell is the weight token ' + t + ' gives to token $j$ in the ' + ctx + ' sentence: window with $K = ' + K + '$ (1 = included whole, × = unavailable; the window concatenates, it does not weight), mean $1/t$, positional $w_j \\propto ' + DECAY + '^{\\,t-j}$ (illustrative), and the attention row $\\va{\\alpha_{' + t + ',j}}$ from the toy model.',
+      caption: 'Each cell shows inclusion or a pooling weight for token ' + t + ' at source position $j$ in the ' + ctx + ' sentence: window with $w = ' + w + '$ (1 = included whole, × = unavailable; the window concatenates, it does not weight), mean $1/t$, positional $w_j \\propto ' + DECAY + '^{\\,t-j}$ (illustrative), and the attention row $\\va{\\alpha_{' + t + ',j}}$ from the toy model.',
       note: 'Hover or focus a cell in the attention row to see where its weight comes from; click it for the worksheet $\\vq{q_{' + t + '}} \\cdot \\vk{k_j} / \\sqrt{d_k}$.',
       into: tableHost
     });
@@ -150,7 +164,7 @@
     const joinAnd = (a) => a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
     AT.clear(readHost);
     readHost.appendChild(AT.h('p', { class: 'rd', html: 'Reading the attention row: ' + AT.texStr('\\vq{q_{' + t + '}}') + ' of “' + AT.escape(toks[ti]) + '” asks for ' + AT.escape(joinAnd(asks)) + ' evidence; ' + AT.texStr('\\vk{k_{' + (best + 1) + '}}') + ' of “' + AT.escape(toks[best]) + '” offers ' + AT.escape(joinAnd(offers)) + ', so it gets the largest weight, ' + AT.fmt(att[best]) + '.' }));
-    fig.cells[0].forEach((td, j) => { if (typeof rows[0][j] === 'number') td.title = 'inside the window of the last ' + K + ' tokens'; });
+    fig.cells[0].forEach((td, j) => { if (typeof rows[0][j] === 'number') td.title = 'inside the window of the last ' + w + ' tokens'; });
 
     const top = AT.range(t).map(j => ({ j, a: att[j] })).sort((x, y) => y.a - x.a).slice(0, 3);
     const label = ctx === 'river' ? 'Sentence A' : 'Sentence B';
@@ -178,7 +192,7 @@
   }
   drawBox();
   if (mq.addEventListener) mq.addEventListener('change', drawBox); else if (mq.addListener) mq.addListener(drawBox);
-  AT.ui.callout('<p>The weights $\\va{\\alpha_{ij}}$ come from the tokens themselves, and no window cuts the context off. What flows is $\\vv{v_j}$, not a fixed copy of $\\ve{e_j}$.</p>', { kind: 'key', into: co });
+  AT.ui.callout('<p>The weights $\\va{\\alpha_{ij}}$ come from the tokens themselves, and may cover the whole supplied prefix. A model still has a finite supported context length. What is mixed is $\\vv{v_j}$, a projection of $\\ve{e_j}$.</p>', { kind: 'key', into: co });
   co.querySelector('.callout').insertBefore(box, co.querySelector('.callout').firstChild);
 })();
 </script>

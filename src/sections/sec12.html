@@ -14,27 +14,41 @@
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>This section is a short technical detour, and it exists because softmax is sensitive to the size of its inputs. A dot product over $d_k$ coordinates grows with $d_k$ even when nothing about the content changes, and a large gap between scores pushes almost all the weight onto one row. Move the $d_k$ slider and watch the two softmax columns: the raw one collapses onto a single row, the scaled one keeps the other rows alive. The second table shows the variance itself, from a simulation. The sentence to remember: dividing by $\sqrt{d_k}$ keeps the scores on the same scale whatever the dimension.</p>
+  <p>Softmax is sensitive to score differences. Under the independence assumptions below, the <em>typical spread</em> of a dot product grows like $\sqrt{d_k}$; not every individual dot product must grow. The first illustration holds four raw scores fixed and changes only the divisor. It shows what scaling does, not how score variance grows. A separate seeded simulation checks the variance argument, and the final table returns to our actual bank query.</p>
 </div>
 
+<div class="frame" data-title="Does a wider query automatically deserve sharper attention?">
+<script type="text/x-notes">If we double the number of matching coordinates, should attention become more confident just because the vector is wider?
+
+The claim is about the spread of scores, not every particular dot product. State the assumptions: mutually independent, zero-mean, unit-variance query and key coordinates. The variance of each product is one and the variances of the d_k products add.</script>
 <div class="prose">
   <p>The score between a query and a key is a dot product over $d_k$ coordinates. Standard attention divides it by $\sqrt{d_k}$:</p>
-  $$s_{ij} = \frac{\vq{q_i}^\top \vk{k_j}}{\sqrt{d_k}}$$
-  <p>If the coordinates of $\vq{q}$ and $\vk{k}$ are roughly zero-mean and unit-variance, each product $q_l k_l$ has variance about 1,
-  and the sum of $d_k$ of them has variance about $d_k$: $\operatorname{Var}(\vq{q}^\top \vk{k}) \propto d_k$.
-  Bigger $d_k$ means bigger logits unless we rescale.</p>
+  <div data-build="1">$$s_{ij} = \frac{\vq{q_i}\cdot\vk{k_j}}{\sqrt{d_k}}$$</div>
+  <p data-build="2">For intuition, assume all query and key coordinates are <strong>mutually independent, mean 0, variance 1</strong>. Then $\operatorname{Var}(q_l k_l)=1$ and $\operatorname{Var}(\vq{q}\cdot\vk{k})=d_k$. The standard deviation is $\sqrt{d_k}$.</p>
+  <p data-build="3">Dividing by $\sqrt{d_k}$ makes the variance 1 under those assumptions. Learned coordinates need not obey them exactly: this is a scale-control argument, not a promise that attention is always diffuse.</p>
+</div>
+<pre class="pytorch" data-build="4"><code>scores = (Q @ K.T) / math.sqrt(Q.shape[-1])</code></pre>
 </div>
 
+<div class="frame" data-title="Fixed raw scores, changing only the divisor">
+<script type="text/x-notes">Which probability column changes when the raw scores stay fixed and the divisor grows?
+
+Before moving the slider, explain that these are illustrative scores, not new embeddings or a retrained model. The four raw scores never change. Only the division by sqrt(d_k) changes. This panel shows the effect of scaling. The simulation on the next frame supplies the variance-growth argument.</script>
 <div class="card">
-  <h3 class="card-title">Four scores, with and without scaling <span class="s12-illus">illustrative numbers</span></h3>
-  <p class="s12-cap">Compare the two softmax columns as you move $d_k$: the raw column keeps its shape, the scaled column spreads out.</p>
+  <h3 class="card-title">Four fixed raw scores, with and without scaling <span class="s12-illus">illustrative numbers</span></h3>
+  <p class="s12-cap">Hold the raw scores $r=[0,0.5,1.5,-0.5]$ fixed. The scaled scores are $s=r/\sqrt{d_k}$. Increasing the divisor flattens softmax(scaled), while softmax(raw) stays fixed.</p>
   <div class="row" id="s12-ctl"></div>
   <div class="s12-eq" id="s12-eq"></div>
   <div id="s12-table"></div>
 </div>
 
 <div id="s12-callout"></div>
+</div>
 
+<div class="frame" data-title="Does the variance calculation hold in a simulation?">
+<script type="text/x-notes">What should happen to the two variance columns as d_k grows?
+
+These are actual sampled dot products from independent standard-normal coordinates, not the four illustrative scores. Read d_k = 1, 16, 64: raw variance roughly follows the dimension; scaled variance remains near one. Finite sampling explains the small deviations.</script>
 <div class="card">
   <h3 class="card-title">Why the dot product grows with $d_k$: a seeded simulation</h3>
   <p class="s12-cap">Read down the first column: the variance of the raw dot product tracks $d_k$. The second column stays near 1.</p>
@@ -42,46 +56,56 @@
   <div id="s12-sim"></div>
   <p class="muted small s12-cur" id="s12-sim-cur"></p>
 </div>
+</div>
 
+<div class="frame" data-title="Return to bank: the same query and keys, with and without scaling">
+<script type="text/x-notes">Does scaling change which key has the highest score?
+
+No: dividing all scores by the same positive number preserves their ordering. It changes the relative weights after softmax. Compare river's weight before and after division by sqrt(3); our earlier calculations used the scaled column.</script>
 <div class="card">
-  <h3 class="card-title">In the toy model ($d_k = 3$): bank reading the first 7 tokens</h3>
-  <p class="s12-cap">Same four columns, real numbers. The note under the table says how much the factor $\sqrt{3}$ changes the top weight.</p>
+  <h3 class="card-title">In the toy model (d<sub>k</sub> = <span id="s12-dk"></span>): bank reading the first 7 tokens</h3>
+  <p class="s12-cap">Same four columns, real numbers. The note under the table says how much the factor $\sqrt{d_k}$ changes the top weight.</p>
   <div id="s12-toy"></div>
   <p class="muted small" id="s12-toy-note"></p>
+  <pre class="pytorch" data-build="1"><code>scores = (q_bank @ K.T) / math.sqrt(K.shape[-1])
+alpha = scores.softmax(dim=-1)</code></pre>
+</div>
+<div class="callout callout-key" data-build="2">Scaling preserves the score ranking. It controls how strongly softmax concentrates on the highest scores.</div>
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: scaling removes the growth that comes from the dimension alone. The differences that remain between scores are the ones that carry content, and they can still make a row sharp.</p>
+  <p>Keep in mind: scaling counteracts the expected growth due to dimension. Learned vector lengths and alignment still affect score differences, so attention can remain sharp.</p>
 </div>
 
 <script>
 (function(){
   const S = document.getElementById('s12');
-  const raw = [2, 5, 9, 1];                       // SPEC §12 illustrative scores
+  const reference = [0, 0.5, 1.5, -0.5]; // fixed illustrative raw scores, not the bank model
   let dk = 16;
-  const jl = raw.map((_, j) => '$j = ' + (j + 1) + '$');
+  const jl = reference.map((_, j) => '$j = ' + (j + 1) + '$');
 
   /* ---- illustrative table: raw, scaled, softmax(raw), softmax(scaled) ---- */
   function rowsFor(d){
+    const raw = reference.slice();
     const sc = raw.map(v => v / Math.sqrt(d));
     const pR = AT.softmax(raw), pS = AT.softmax(sc);
     return raw.map((v, j) => [v, sc[j], pR[j], pS[j]]);
   }
   function maxes(rows){ return ['', '', Math.max(...rows.map(r => r[2])), Math.max(...rows.map(r => r[3]))]; }
-  const cols = [{ label: 'raw score $s_j$', decimals: 0 }, { label: '$s_j / \\sqrt{d_k}$', decimals: 2 }, { label: 'softmax(raw)', cls: 'a', decimals: 3 }, { label: 'softmax(scaled)', cls: 'a', decimals: 3 }];
+  const cols = [{ label: 'fixed raw $r_j$', decimals: 2 }, { label: 'scaled $s_j=r_j/\\sqrt{d_k}$', decimals: 2 }, { label: 'softmax(raw)', cls: 'a', decimals: 3 }, { label: 'softmax(scaled)', cls: 'a', decimals: 3 }];
   const fig = AT.ui.table(rowsFor(dk), { cols: cols, rowLabels: jl, cornerLabel: 'item', heatCols: [2, 3], footer: { label: 'largest weight', values: maxes(rowsFor(dk)), decimals: 3 },
-    caption: 'The two left columns are the scores; the two right columns are their softmax, coloured by weight. Every softmax column sums to 1.', into: S.querySelector('#s12-table') });
+    caption: 'Scores on the left; their softmax weights on the right. Each unrounded probability column sums to 1. At three decimals, 0.000 means less than 0.0005, not exactly zero.', into: S.querySelector('#s12-table') });
   const eq = S.querySelector('#s12-eq');
   function drawScaled(){
     const rows = rowsFor(dk);
     fig.update(rows);
     fig.setFooter(maxes(rows));
-    AT.tex(eq, '\\begin{aligned} \\va{\\alpha}^{\\text{raw}} &= \\operatorname{softmax}([2,5,9,1]) \\\\ \\va{\\alpha}^{\\text{scaled}} &= \\operatorname{softmax}\\big([2,5,9,1]/\\sqrt{' + dk + '}\\big), \\quad \\sqrt{' + dk + '} \\approx ' + Math.sqrt(dk).toFixed(2) + ' \\end{aligned}', { display: true });
+    AT.tex(eq, 'r=[0,0.5,1.5,-0.5],\\qquad s=r/\\sqrt{' + dk + '},\\qquad \\sqrt{' + dk + '}\\approx ' + Math.sqrt(dk).toFixed(2), { display: true });
   }
   AT.ui.slider({ label: 'd_k', labelTex: 'd_k', min: 1, max: 64, step: 1, value: dk, format: v => v + '  (√ = ' + Math.sqrt(v).toFixed(2) + ')', onInput: v => { dk = v; drawScaled(); drawSim(); }, into: S.querySelector('#s12-ctl') });
   drawScaled();
 
-  AT.ui.callout('The differences between scores set the softmax sharpness, and with raw dot products those differences grow with $d_k$ for no reason tied to content. Dividing by $\\sqrt{d_k}$ removes the variance that comes from the dimension alone (under the independence assumptions above). It does not guarantee diffuse attention: a large real score gap still gives a sharp row.', { kind: 'key', into: S.querySelector('#s12-callout') });
+  AT.ui.callout('Here the raw scores stay fixed. The slider changes only the division by $\\sqrt{d_k}$, so this panel shows how scaling changes softmax. It does not simulate variance growth. The simulation next checks that growth using sampled dot products.', { kind: 'key', into: S.querySelector('#s12-callout') });
 
   /* ---- seeded simulation of Var(q·k) as a table ---- */
   function rng(seed){ let a = seed >>> 0; return function(){ a += 0x6D2B79F5; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -95,15 +119,15 @@
   }
   const grid = [1, 2, 4, 8, 16, 32, 64];
   const vars = {}; grid.forEach(d => { vars[d] = sampleVar(d); });
-  S.querySelector('#s12-sim-note').innerHTML = N + ' pairs of $\\vq{q}, \\vk{k} \\in \\mathbb{R}^{d_k}$ per row, entries drawn from a seeded standard normal (mean 0, variance 1).';
+  S.querySelector('#s12-sim-note').innerHTML = N + ' independent pairs of row vectors $\\vq{q}, \\vk{k} \\in \\mathbb{R}^{1\\times d_k}$ per row. All coordinates are independent seeded standard-normal draws (mean 0, variance 1).';
   AT.renderMath(S.querySelector('#s12-sim-note'));
-  const sim = AT.ui.table(grid.map(d => [vars[d], vars[d] / d]), { cols: [{ label: 'sample variance of $\\vq{q}^\\top \\vk{k}$', decimals: 1 }, { label: 'sample variance of $\\vq{q}^\\top \\vk{k} / \\sqrt{d_k}$', decimals: 2 }],
+  const sim = AT.ui.table(grid.map(d => [vars[d], vars[d] / d]), { cols: [{ label: 'sample variance of $\\vq{q}\\cdot\\vk{k}$', decimals: 1 }, { label: 'sample variance of $(\\vq{q}\\cdot\\vk{k}) / \\sqrt{d_k}$', decimals: 2 }],
     rowLabels: grid.map(d => '$d_k = ' + d + '$'), cornerLabel: 'dimension', highlightRow: grid.indexOf(dk), caption: 'The highlighted row follows the slider above when $d_k$ is one of these values.', into: S.querySelector('#s12-sim') });
   const simCur = S.querySelector('#s12-sim-cur');
   function drawSim(){
     sim.setHighlightRow(grid.indexOf(dk));
     const v = grid.indexOf(dk) >= 0 ? vars[dk] : sampleVar(dk);
-    simCur.innerHTML = 'At the slider value $d_k = ' + dk + '$: sample variance of $\\vq{q}^\\top\\vk{k}$ is <span class="mono">' + AT.fmt(v, 2) + '</span>; after scaling, <span class="mono">' + AT.fmt(v / dk, 2) + '</span>.';
+    simCur.innerHTML = 'At $d_k = ' + dk + '$: sample variance of $\\vq{q}\\cdot\\vk{k}$ is <span class="mono">' + AT.fmt(v, 2) + '</span>; after scaling, <span class="mono">' + AT.fmt(v / dk, 2) + '</span>.';
     AT.renderMath(simCur);
   }
   drawSim();
@@ -117,7 +141,8 @@
   AT.ui.table(toyRows, { cols: [{ label: 'raw $\\vq{q_7}\\cdot\\vk{k_j}$' }, { label: '$\\vq{q_7}\\cdot\\vk{k_j}/\\sqrt{' + AT.d_k + '}$' }, { label: 'softmax(raw)', cls: 'a' }, { label: '$\\va{\\alpha_{7j}}$ = softmax(scaled)', cls: 'a' }],
     rowLabels: toks.map((t, j) => (j + 1) + ' ' + t), cornerLabel: 'key token', heatCols: [2, 3], highlightRow: mS,
     footer: { label: 'largest weight', values: ['', '', Fu.A[bi][mU], Fs.A[bi][mS]] },
-    caption: 'Bank’s scores against the seven keys (each one is $\\vq{q_7}\\cdot\\vk{k_j}$ over the three $\\vq{q}$/$\\vk{k}$ axes), then the softmax of each column. The page uses the last column everywhere else.', into: S.querySelector('#s12-toy') });
+    caption: 'Bank’s scores against the seven keys (each one is $\\vq{q_7}\\cdot\\vk{k_j}$ over the ' + AT.d_k + ' $\\vq{q}$/$\\vk{k}$ axes), then the softmax of each column. The page uses the last column everywhere else.', into: S.querySelector('#s12-toy') });
+  S.querySelector('#s12-dk').textContent = AT.d_k;
   const p = S.querySelector('#s12-toy-note');
   p.innerHTML = 'With $d_k = ' + AT.d_k + '$ the factor is only $\\sqrt{' + AT.d_k + '} \\approx ' + AT.fmt(AT.sqrt_dk, 2) + '$, so the top weight (on <strong>' + AT.escape(toks[mS]) + '</strong>) goes from <span class="mono">' + AT.fmt(Fu.A[bi][mU], 2) + '</span> unscaled to <span class="mono">' + AT.fmt(Fs.A[bi][mS], 2) + '</span> scaled. At $d_k = 64$ the same fix divides by 8.';
   AT.renderMath(p);

@@ -1,11 +1,11 @@
-<section id="s08" class="sec" data-title="Two phases: read routing (Q,K) vs message passing (V)" data-lit="">
+<section id="s08" class="sec" data-title="Two jobs: choose weights, then mix values" data-lit="">
 <style>
 #s08 .phase-tag{display:inline-block;font-family:var(--font-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--ink-2);border:1px solid var(--line);border-radius:999px;padding:3px 10px;margin-bottom:8px}
 #s08 .btn-row{margin:0 0 14px}
 #s08 .eq{margin:14px 0 0}
 #s08 .pic-lab{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin:28px 0 4px}
 #s08 .tree-wrap{padding:8px 4px}
-#s08 .tree{display:block;width:100%;min-width:700px;height:auto;font-family:var(--font-ui)}
+#s08 .tree{display:block;width:100%;max-width:900px;min-width:700px;height:auto;font-family:var(--font-ui)}
 #s08 .tree .nd{stroke-width:2;rx:8;ry:8;fill:var(--card);stroke:var(--line)}
 #s08 .tree .nd-q{fill:var(--t-q);stroke:var(--c-q)}
 #s08 .tree .nd-k{fill:var(--t-k);stroke:var(--c-k)}
@@ -33,13 +33,18 @@
 #s08 .bcalc .calc-line{margin:4px 0 0}
 #s08 .bcalc .calc-rl{display:inline-block;min-width:5.5em;text-align:right;margin-right:8px;font-family:var(--font-ui);font-weight:600;color:var(--oc)}
 #s08 .scroll-hint{display:none;margin:0 0 6px}
+#s08 .intervention-result{margin:14px 0;font-variant-numeric:tabular-nums}
+#s08 .value-source-row{margin:6px 0;font-size:.85em;line-height:1.5;font-variant-numeric:tabular-nums}
+#s08 .value-source-row .mono{white-space:nowrap}
+#s08 #s08-value-message{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:16px;align-items:start}
+@media (max-width:820px){#s08 #s08-value-message{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:820px){#s08 .scroll-hint{display:block}}
 </style>
 <header class="sec-head">
   <span class="sec-num">08</span>
   <div>
     <p class="eyebrow">Why we are here: one query, seven records. Attention happens in two separate phases: deciding where to read, then reading.</p>
-    <h2>Two phases: read routing (<span class="sym sym-q">Q</span>,<span class="sym sym-k">K</span>) vs message passing (<span class="sym sym-v">V</span>)</h2>
+    <h2>Two jobs: choose weights, then mix values</h2>
   </div>
 </header>
 
@@ -48,18 +53,34 @@
   <p>Run phase A, then click a key in the picture to see its dot product written out, axis by axis. Then run phase B and read the sum, one coordinate per line. Switch between the value rows and the $\va{\alpha}\vv{v}$ products. The sentence to remember: keys decide where to read, values decide what is read.</p>
 </div>
 
+<div class="frame" data-title="Which earlier tokens should bank read?">
+<script type="text/x-notes">Which numbers decide where bank reads: keys or values?
+
+Keep the bank query fixed. Reveal scores, then weights. The softmax runs across source positions, not vocabulary words. No embedding-table parameter is changed in this forward calculation.</script>
 <div class="prose">
-  <p>Take “bank” (token 7) as the query in <em>The fisherman sat beside the river bank</em>. Phase A only asks <strong>where</strong> to read. Phase B only decides <strong>what</strong> arrives. Neither phase updates anything yet.</p>
+  <p>Take “bank” (token 7) as the query in <em>The fisherman sat beside the river bank</em>. First choose <strong>where to read</strong>. Then mix <strong>what those sources send</strong>.</p>
 </div>
 
-<div class="card">
+<div class="card" data-build="1">
   <span class="phase-tag">Phase A · read routing</span>
   <h3 class="card-title">$\vq{q_{7}}$ against every key $\vk{k_j}$: one score per row, then softmax turns the scores into weights $\va{\alpha_{7j}}$</h3>
   <div class="btn-row"><button type="button" class="btn btn-primary" id="s08-runA">Run phase A</button></div>
   <div id="s08-atab"></div>
   <p class="rd" id="s08-aread"></p>
-  <div class="eq">$$\va{\alpha_{ij}} = \operatorname{softmax}_j\!\left(s_{ij}\right), \qquad s_{ij} = \frac{\vq{q_i}^\top \vk{k_j}}{\sqrt{d_k}}$$</div>
+  <div class="eq" data-build="2">$$\va{\alpha_{ij}} = \operatorname{softmax}_j\!\left(s_{ij}\right), \qquad s_{ij} = \frac{\vq{q_i}\cdot\vk{k_j}}{\sqrt{d_k}}$$</div>
   <p class="muted small">Dividing by the constant $\sqrt{d_k}$ only rescales the scores (why, in section 12). Only the query and the keys took part. No representation has been updated.</p>
+  <pre class="pytorch" data-build="3"><code>scores = (q_bank @ K.T) / math.sqrt(K.shape[-1])
+alpha = scores.softmax(dim=-1)  # seven source positions</code></pre>
+</div>
+<div class="callout callout-key" data-build="4"><span class="sym sym-q">Q</span> and <span class="sym sym-k">K</span> determine where bank reads. The values have not entered this calculation.</div>
+</div>
+
+<div class="frame" data-title="One query, one comparison with each key">
+<script type="text/x-notes">Why does one query produce seven different weights?
+
+Point to bank at the top, then river's key. Click a second key and compare the coordinate-by-coordinate arithmetic. The same query is reused on every edge.</script>
+<div class="card">
+  <h3 class="card-title">Bank’s query is held fixed; choose a key to inspect its score</h3>
   <p class="pic-lab">The same numbers as a picture</p>
   <p class="muted small scroll-hint">Scroll sideways to see all seven keys.</p>
   <div class="scroll-x tree-wrap dotgrid"><div id="s08-tree"></div></div>
@@ -68,8 +89,13 @@
   <div id="s08-ws"></div>
 </div>
 
-<div class="callout callout-key"><span class="sym sym-q">Q</span>, <span class="sym sym-k">K</span> determine routing / relevance: where should token $i$ retrieve information from?</div>
+<div class="callout callout-key" data-build="1">A key supplies a possible match. Its corresponding value supplies the information to mix.</div>
+</div>
 
+<div class="frame" data-title="What does each selected source send?">
+<script type="text/x-notes">The weights are now fixed. Which vector gets multiplied by each weight?
+
+Run phase B. Switch to the products and follow one column into the sum. These are value coordinates, not vocabulary probabilities. The sum has d_v coordinates regardless of the seven source rows.</script>
 <div class="card">
   <span class="phase-tag">Phase B · message passing</span>
   <h3 class="card-title">Each token $j$ sends its value $\vv{v_j}$ scaled by its weight; the messages $\va{\alpha_{7j}}\,\vv{v_j}$ add up to $m_7$</h3>
@@ -83,12 +109,36 @@
   <div class="calc bcalc obj-m" id="s08-bcalc"></div>
   <p class="rd" id="s08-bread"></p>
   <div class="eq">$$m_i = \sum_{j \le i} \va{\alpha_{ij}}\, \vv{v_j}$$</div>
-  <p class="muted small" id="s08-bnote">The keys are not sent anywhere; phase A used them up. Only values travel.</p>
+  <p class="muted small" id="s08-bnote">The keys were used to compute the weights; they are not added into this message. All displayed numbers are rounded, while the calculation uses full precision.</p>
+  <pre class="pytorch" data-build="1"><code>m_bank = alpha @ V  # [7] @ [7, d_v] → [d_v]</code></pre>
 </div>
 
 <div class="callout callout-key"><span class="sym sym-v">V</span> carries the information: $\va{\alpha_{ij}}\vv{v_j}$ is the message from $j$ to $i$.</div>
+</div>
 
-<div class="callout callout-key">Queries and keys determine <strong>who communicates with whom</strong>. Values determine <strong>what gets communicated</strong>.</div>
+<div class="frame" data-title="Change only the values: do the weights change?">
+<script type="text/x-notes">If we remove finance information from the values, will bank still attend to river?
+
+Ask for a prediction before pressing the value-only intervention. The weights stay exactly the same because E, W_Q and W_K are fixed. The message and its mapped update change because W_V changes. Point out whether the current toy happens to have identical key and value projections; equal numbers would not make their roles identical.</script>
+<div class="prose">
+  <p id="s08-projection-note">Keys choose matches; values carry information. Their roles remain distinct even if some numbers happen to be equal.</p>
+  <p>Change only $W_V$’s “says finance” column. Keep the sentence, $W_Q$, $W_K$, and $W_O$ fixed.</p>
+</div>
+<div class="card" data-build="1">
+  <div class="eq" id="s08-value-experiment-eq"></div>
+  <div class="btn-row" role="group" aria-label="Value-only intervention">
+    <button type="button" class="btn btn-primary" id="s08-values-baseline" aria-pressed="true">Original values</button>
+    <button type="button" class="btn" id="s08-values-alt" aria-pressed="false">Mute the finance column</button>
+  </div>
+  <div id="s08-value-source"></div>
+  <div id="s08-value-alpha"></div>
+  <div id="s08-value-message"></div>
+  <p class="intervention-result" id="s08-value-result" aria-live="polite"></p>
+  <pre class="pytorch" data-build="2"><code>W_V_alt = W_V.clone(); W_V_alt[:, 1] = 0
+m_alt = alpha @ (E @ W_V_alt)  # same alpha, different information</code></pre>
+</div>
+<div class="callout callout-key" data-build="3">Keys choose the weights. Values determine the weighted message. Next, $\vd{\Delta e_7}=m_7W_O$ maps that message back to the representation’s $d_{\text{model}}$ coordinates.</div>
+</div>
 
 <div class="companion after">
   <p>Keep in mind: the weights $\va{\alpha_{7j}}$ came from queries and keys alone, and the message $m_7$ came from values alone. Nothing about “bank” has changed yet. Turning $m_7$ into a change is the next section.</p>
@@ -115,7 +165,7 @@
     rowLabels: ['$\\vq{q_{' + n + '}}$ ' + toks[qi]].concat(toks.map((t, j) => '$\\vk{k_{' + (j + 1) + '}}$ ' + t)),
     rowCls: ['q'].concat(toks.map(() => 'k')), highlightRow: 0,
     computed: [
-      { label: '$\\text{score}\\,/\\sqrt{d_k}$', cls: 'a', fn: (row, i) => i === 0 ? '' : scores[i - 1] },
+      { label: '$s_{7j}=\\vq{q_7}\\cdot\\vk{k_j}/\\sqrt{d_k}$', cls: 'a', fn: (row, i) => i === 0 ? '' : scores[i - 1] },
       { label: '$\\text{softmax} \\to \\va{\\alpha_{' + n + 'j}}$', cls: 'a', heat: true, heatMax: 1, fn: (row, i) => i === 0 ? '' : alpha[i - 1] }
     ],
     footer: { label: 'weights sum to', values: '', computed: ['', AT.sum(alpha)] },
@@ -238,8 +288,8 @@
     AT.range(AT.d_v).forEach(c => {
       const col = F.V.map(v => v[c]);
       const line = AT.productLine(alpha, col, 2);
-      const eq = line.lastIndexOf(' = ');
-      const p = AT.h('p', { class: 'calc-line' }, AT.h('span', { class: 'calc-rl', title: vAxes[c] ? vAxes[c].title : null }, (vAxes[c] ? vAxes[c].label : String(c + 1)) + ' ='), line.slice(0, eq) + ' = ', AT.h('span', { class: 'calc-r' }, AT.fmt(F.Mmsg[qi][c], 2)));
+      const eq = Math.max(line.lastIndexOf(' = '), line.lastIndexOf(' ≈ '));
+      const p = AT.h('p', { class: 'calc-line' }, AT.h('span', { class: 'calc-rl', title: vAxes[c] ? vAxes[c].title : null }, (vAxes[c] ? vAxes[c].label : String(c + 1)) + ' ≈'), line.slice(0, eq) + ' ≈ ', AT.h('span', { class: 'calc-r' }, AT.fmt(F.Mmsg[qi][c], 2)));
       bcalc.appendChild(p);
     });
     const m = F.Mmsg[qi];
@@ -253,6 +303,51 @@
   }
   drawBCalc();
   S.querySelector('#s08-weighted').addEventListener('click', (ev) => { weighted = !weighted; ev.currentTarget.textContent = weighted ? 'Show the value rows v' : 'Show the products α·v'; drawB(); });
+
+  /* Controlled intervention: only W_V changes. Never mutate the shared model. */
+  const financeIndex = Math.max(0, (AT.axesFor('v', AT.d_v) || []).findIndex(a => /finance/i.test(a.title || a.label || '')));
+  // Show a source with nonzero finance payload, so the value change is visible.
+  const exampleSource = F.V.reduce((best,row,j)=>row[financeIndex]>F.V[best][financeIndex]?j:best,0);
+  const D = AT.range(AT.d_v).map(i => AT.range(AT.d_v).map(j => i === j && i !== financeIndex ? 1 : 0));
+  const WVAlt = AT.matmul(AT.model.W_V, D);
+  const VAlt = AT.matmul(F.E, WVAlt);
+  const mAlt = AT.matmul(alpha, VAlt);
+  const deltaAlt = AT.matmul(mAlt, AT.model.W_O);
+  const sourceHost = S.querySelector('#s08-value-source');
+  const alphaHost = S.querySelector('#s08-value-alpha');
+  const messageHost = S.querySelector('#s08-value-message');
+  const baseBtn = S.querySelector('#s08-values-baseline'), altBtn = S.querySelector('#s08-values-alt');
+  const sameKV = JSON.stringify(AT.model.W_K) === JSON.stringify(AT.model.W_V);
+  const projectionNote = S.querySelector('#s08-projection-note');
+  projectionNote.innerHTML = sameKV
+    ? 'The baseline toy happens to use <strong>identical numbers in $W_K$ and $W_V$</strong>. That is a simplifying choice, not a requirement of attention: the roles remain different.'
+    : 'Here $W_K$ has shape $' + AT.d_model + '\\times' + AT.d_k + '$ and $W_V$ has shape $' + AT.d_model + '\\times' + AT.d_v + '$. <strong>Keys choose matches; values carry the information to send.</strong> Their roles differ even when some coordinates happen to be equal.';
+  AT.renderMath(projectionNote);
+  AT.tex(S.querySelector('#s08-value-experiment-eq'), 'D=\\operatorname{diag}(' + AT.range(AT.d_v).map(i => i === financeIndex ? 0 : 1).join(',') + '),\\qquad W_V^{\\text{alt}}=W_VD,\\qquad V^{\\text{alt}}=EW_V^{\\text{alt}}', { display: true });
+  function drawValueIntervention(alternate){
+    baseBtn.setAttribute('aria-pressed', String(!alternate));
+    altBtn.setAttribute('aria-pressed', String(alternate));
+    AT.clear(sourceHost); AT.clear(alphaHost); AT.clear(messageHost);
+    const values = alternate ? VAlt : F.V;
+    const message = alternate ? mAlt : F.Mmsg[qi];
+    const delta = alternate ? deltaAlt : F.Delta[qi];
+    const vectorText = row => '(' + row.map(v => AT.fmt(v, 3)).join(', ') + ')';
+    sourceHost.appendChild(AT.h('p', { class: 'value-source-row' }, 'Source '+(exampleSource+1)+', '+toks[exampleSource]+': ',
+      AT.h('strong', { class: 'sym-k' }, 'key stays '), AT.h('span', { class: 'mono' }, vectorText(F.K[exampleSource])), '. These are matching features.'));
+    sourceHost.appendChild(AT.h('p', { class: 'value-source-row' },
+      AT.h('strong', { class: 'sym-v' }, 'Value: '), AT.h('span', { class: 'mono' }, vectorText(F.V[exampleSource])), ' → ',
+      AT.h('span', { class: 'mono' }, vectorText(values[exampleSource])), '. This is the information sent.'));
+    AT.ui.table([alpha], { cols: toks.map((tok, j) => (j + 1) + ' ' + tok), rowLabels: ['bank’s weights: unchanged'], rowCls: 'a', decimals: 3, heatCols: AT.range(T), into: alphaHost });
+    AT.ui.table([F.Mmsg[qi], message], { axes: 'v', rowLabels: ['original message m₇', 'selected message m₇'], rowCls: 'm', decimals: 3, into: messageHost });
+    AT.ui.table([F.Delta[qi], delta], { axes: 'e', rowLabels: ['original Δe₇', 'selected Δe₇'], rowCls: 'd', decimals: 3, into: messageHost,
+      caption: 'Fixed W_O: ' + AT.d_v + ' message coordinates → ' + AT.d_model + ' update coordinates.' });
+    S.querySelector('#s08-value-result').textContent = alternate
+      ? 'River still receives weight ' + AT.fmt(alpha[5], 3) + '. No source sends finance information: the finance message coordinate is now ' + AT.fmt(message[financeIndex], 3) + '. The other message coordinate is unchanged, and the mapped update changes accordingly.'
+      : 'Original values are selected. Mute their finance column and predict which rows above will change.';
+  }
+  baseBtn.addEventListener('click', () => drawValueIntervention(false));
+  altBtn.addEventListener('click', () => drawValueIntervention(true));
+  drawValueIntervention(false);
 
   /* ---------- animation ---------- */
   let runId = 0;

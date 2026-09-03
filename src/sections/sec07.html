@@ -27,12 +27,18 @@
   <p>Every coordinate has a name in this toy, so read the column headers before the numbers. Click a different query token and watch which rows stay open. Open a record and read its three rows. The sentence to remember: a query, a key and a value are three linear views of the same $\ve{e}$.</p>
 </div>
 
+<div class="frame" id="s07-frame1" data-title="What does the receiving token ask for?">
+  <script type="text/x-notes">
+Which row supplies bank’s query, and which rows may answer it?
+Point at receiver i and source j separately. The query comes from the receiver; a key and value come from each source. These are projections of the original input rows, not updates yet.
+  </script>
 <div class="callout callout-key">What if every token in the sequence behaved like one item in this searchable memory?</div>
 
 <div class="prose">
   <p>Token $j$, with current representation $\ve{e_j}$, publishes a record: a key $\vk{k_j}$ that says when to retrieve it, and a value $\vv{v_j}$ that says what it sends. Token $i$, gathering context, issues a query $\vq{q_i}$. All three are linear maps of the same $\ve{e}$.</p>
   $$\boxed{\vq{q_i} = \ve{e_i}\,W_Q} \qquad \boxed{\vk{k_j} = \ve{e_j}\,W_K} \qquad \boxed{\vv{v_j} = \ve{e_j}\,W_V}$$
-  <p class="muted small">Vectors are rows here: $\ve{e_i}$ has 4 numbers, $W_Q$ is $4 \times 3$, so $\ve{e_i}\,W_Q$ has 3 numbers. Many texts write the column form $W_Q\,\ve{e_i}$. The numbers are the same. Each coordinate carries the name of what it measures; the names are illustrative, the arithmetic is real.</p>
+  <p class="muted small">Vectors are rows here: $\ve{e_i}$ has $d_{\text{model}}$ numbers, $W_Q$ is $d_{\text{model}} \times d_k$, so $\ve{e_i}\,W_Q$ has $d_k$ numbers. This page uses row vectors throughout. Each coordinate carries the name of what it measures; the names are illustrative, the arithmetic is real.</p>
+  <p class="muted small">q and k share the same three columns because the dot product compares them column by column. v has its own two columns, and its own width, because it is only mixed and sent.</p>
 </div>
 
 <div class="card">
@@ -43,6 +49,13 @@
   <p class="muted small qnote" id="s07-qnote"></p>
 </div>
 
+</div>
+
+<div class="frame" id="s07-frame2" data-title="Matching information or information to send?">
+  <script type="text/x-notes">
+Does a source send its key or its value?
+Open river’s record and compare e, k and v. Change the record and reveal its arithmetic. The column names are hand-designed for this toy; real learned coordinates need not have these meanings.
+  </script>
 <div class="card">
   <h3 class="card-title">One record: what token $j$ publishes. Three rows, three sets of axis names</h3>
   <div id="s07-rchips"></div>
@@ -52,6 +65,13 @@
   <div class="arith" id="s07-rcalc" hidden></div>
 </div>
 
+</div>
+
+<div class="frame" id="s07-frame3" data-title="What can this query compare and retrieve?">
+  <script type="text/x-notes">
+Why do the query and keys share axes, while values have their own axes?
+Read one query-key pair, then the corresponding value row. Scores are only a preview; the next section will turn them into mixing weights.
+  </script>
 <div class="card">
   <h3 class="card-title">Keys: the query row sits above the key rows, under the same axis names</h3>
   <div id="s07-ktab"></div>
@@ -65,13 +85,24 @@
   <div id="s07-vtab"></div>
 </div>
 
+</div>
+
+<div class="frame" id="s07-frame4" data-title="Do we learn a new matrix for every token?">
+  <script type="text/x-notes">
+How many projection matrices are shared across this sequence?
+There is one W_Q, one W_K and one W_V for this head, reused at every position. Queries and keys have d_k matching coordinates; values have d_v information coordinates. Each projection reads the same d_model-wide input. Self-attention means all three roles come from this same sequence; causal masking restricts which sources can answer.
+  </script>
 <div class="card">
-  <h3 class="card-title">The three projection matrices, shared by every token ($d_{\text{model}} \times d_k$)</h3>
+  <h3 class="card-title">Three shared projections: $W_Q,W_K$ are $d_{\text{model}}\times d_k$; $W_V$ is $d_{\text{model}}\times d_v$</h3>
   <div class="wrow" id="s07-mats"></div>
   <p class="muted small qnote">Look at: the same $W_Q$, $W_K$, $W_V$ act on every position. A row is an input axis of $\ve{e}$; a column is an output axis. Read each non-zero cell as “this axis feeds that axis”.</p>
 </div>
 
 <div class="callout callout-note">One query at a time. Token $i$ asks with $\vq{q_i}$; every token $j \le i$ answers with $\vk{k_j}$ and $\vv{v_j}$. Comparing them is the next section; stacking everything into matrices comes much later.</div>
+<p class="muted small">PyTorch · single receiver row and single source row; each input has shape $1 \times d_{\text{model}}$.</p>
+<pre class="torch-snippet"><code>q_i = e_i @ W_Q
+k_j, v_j = e_j @ W_K, e_j @ W_V</code></pre>
+</div>
 
 <div class="companion after">
   <p>Keep in mind: nothing has been compared or retrieved yet. Each token has only been given a query, a key and a value, all computed from its own $\ve{e}$ with matrices that every position shares.</p>
@@ -117,21 +148,21 @@
     const names = AX.short.qk, asks = named(F.Q[i], names).filter(o => o.v > 0).map(o => o.nm), not = names.filter(nm => asks.indexOf(nm) < 0);
     let s;
     if (!asks.length) s = 'it asks for almost nothing';
-    else if (!not.length) s = 'it asks for all three kinds of evidence';
+    else if (!not.length) s = 'it asks across all the matching axes';
     else s = 'it asks for ' + joinAnd(asks) + ' evidence, not for ' + joinAnd(not);
     return 'Reading $\\vq{q_{' + (i + 1) + '}}$ (' + AT.escape(toks[i]) + '): ' + AT.escape(s) + (/\?$/.test(s) ? '' : '.');
   }
   function kClause(j){
     const offers = named(F.K[j], AX.short.qk).filter(o => o.v > 0);
-    return offers.length ? 'its key offers ' + joinAnd(offers.map(o => o.nm + ' ' + AT.fmt(o.v, 2))) : 'its key offers no evidence';
+    return offers.length ? 'its key offers ' + joinAnd(offers.map(o => o.nm + ' ' + AT.fmt(o.v, 2))) : 'its key has no large matching feature in this toy';
   }
   function vClause(j){
     const says = named(F.V[j], AX.short.v).filter(o => o.v > 0);
-    return says.length ? 'its value says ' + joinAnd(says.map(o => o.nm + ' ' + AT.fmt(o.v, 2))) : 'its value says nothing';
+    return says.length ? 'its value says ' + joinAnd(says.map(o => o.nm + ' ' + AT.fmt(o.v, 2))) : 'its value has no large feature in this toy';
   }
   function readRecord(j){
     const glueOnly = !named(F.K[j], AX.short.qk).filter(o => o.v > 0).length;
-    return 'Reading record ' + (j + 1) + ' (' + AT.escape(toks[j]) + '): ' + AT.escape(eClause(F.E[j], toks[j])) + '; ' + AT.escape(kClause(j)) + '; ' + AT.escape(vClause(j)) + (glueOnly ? '. A glue word cannot be found and sends nothing.' : '.');
+    return 'Reading record ' + (j + 1) + ' (' + AT.escape(toks[j]) + '): ' + AT.escape(eClause(F.E[j], toks[j])) + '; ' + AT.escape(kClause(j)) + '; ' + AT.escape(vClause(j)) + (glueOnly ? '. Small key entries do not force zero attention; the amount sent also depends on its value.' : '.');
   }
   function readW(fig, W, verb){
     const strip = (t) => String(t).replace(/^says:\s*/, '').replace(/^setting:\s*/, '');
@@ -165,7 +196,7 @@
   /* ---------- one record: e_j, k_j, v_j as three small tables ---------- */
   const rec = S.querySelector('#s07-rec'), rread = S.querySelector('#s07-rread'), rcalc = S.querySelector('#s07-rcalc'), rbtn = S.querySelector('#s07-rarith');
   const rchips = AT.ui.chips(toks, { active: rj, into: S.querySelector('#s07-rchips'), onClick: (j) => { rj = j; rchips.setActive(j); drawRecord(); } });
-  let kCalc = null, vCalc = null;
+  let kCalc = null, vCalc = null, kHeading = null, vHeading = null;
   function drawRecord(){
     AT.clear(rec);
     const n = rj + 1, t = toks[rj];
@@ -174,16 +205,19 @@
     AT.ui.table([F.V[rj]], { rowLabels: ['$\\vv{v_{' + n + '}}$ ' + t], rowCls: 'v', cornerLabel: 'row', into: rec });
     rread.innerHTML = readRecord(rj);
     AT.renderMath(rread);
-    if (kCalc) { kCalc.update(F.E[rj], { xLabel: 'e · ' + n + ' ' + t, outLabel: 'k · ' + n + ' ' + t }); vCalc.update(F.E[rj], { xLabel: 'e · ' + n + ' ' + t, outLabel: 'v · ' + n + ' ' + t }); }
+    if (kCalc) {
+      AT.tex(kHeading, '\\vk{k_{' + n + '}} = \\ve{e_{' + n + '}}\\,W_K');
+      AT.tex(vHeading, '\\vv{v_{' + n + '}} = \\ve{e_{' + n + '}}\\,W_V');
+      kCalc.update(F.E[rj], { xLabel: 'e · ' + n + ' ' + t, outLabel: 'k · ' + n + ' ' + t }); vCalc.update(F.E[rj], { xLabel: 'e · ' + n + ' ' + t, outLabel: 'v · ' + n + ' ' + t }); }
   }
   function buildRecordCalc(){
     const n = rj + 1, t = toks[rj];
     AT.clear(rcalc);
     const l1 = AT.h('p', { class: 'arith-lab' }, 'the key: $\\vk{k_{' + n + '}} = \\ve{e_{' + n + '}}\\,W_K$');
-    rcalc.appendChild(l1);
+    rcalc.appendChild(l1); kHeading = l1;
     kCalc = AT.ui.matVecCalc(F.E[rj], AT.model.W_K, { from: 'e', to: 'qk', cls: 'k', xLabel: 'e · ' + n + ' ' + t, outLabel: 'k · ' + n + ' ' + t, into: rcalc });
     const l2 = AT.h('p', { class: 'arith-lab' }, 'the value: $\\vv{v_{' + n + '}} = \\ve{e_{' + n + '}}\\,W_V$');
-    rcalc.appendChild(l2);
+    rcalc.appendChild(l2); vHeading = l2;
     vCalc = AT.ui.matVecCalc(F.E[rj], AT.model.W_V, { from: 'e', to: 'v', cls: 'v', xLabel: 'e · ' + n + ' ' + t, outLabel: 'v · ' + n + ' ' + t, into: rcalc });
     AT.renderMath(rcalc);
   }
@@ -198,7 +232,7 @@
 
   /* ---------- keys (dotTable): query row above the keys ---------- */
   const khost = S.querySelector('#s07-ktab'), qread = S.querySelector('#s07-qread'), qcalc = S.querySelector('#s07-qcalc'), qbtn = S.querySelector('#s07-qarith');
-  let qCalc = null;
+  let qCalc = null, qHeading = null;
   function drawKeys(){
     AT.clear(khost);
     const n = qi + 1;
@@ -208,13 +242,16 @@
       note: 'Click a score to see the dot product written out, axis by axis.' });
     qread.innerHTML = readQ(qi);
     AT.renderMath(qread);
-    if (qCalc) qCalc.update(F.E[qi], { xLabel: 'e · ' + n + ' ' + toks[qi], outLabel: 'q · ' + n + ' ' + toks[qi] });
+    if (qCalc) {
+      AT.tex(qHeading, '\\vq{q_{' + n + '}} = \\ve{e_{' + n + '}}\\,W_Q');
+      qCalc.update(F.E[qi], { xLabel: 'e · ' + n + ' ' + toks[qi], outLabel: 'q · ' + n + ' ' + toks[qi] });
+    }
   }
   function buildQCalc(){
     const n = qi + 1;
     AT.clear(qcalc);
     const l = AT.h('p', { class: 'arith-lab' }, 'the query: $\\vq{q_{' + n + '}} = \\ve{e_{' + n + '}}\\,W_Q$, one line per output axis');
-    qcalc.appendChild(l);
+    qcalc.appendChild(l); qHeading = l;
     qCalc = AT.ui.matVecCalc(F.E[qi], AT.model.W_Q, { from: 'e', to: 'qk', cls: 'q', xLabel: 'e · ' + n + ' ' + toks[qi], outLabel: 'q · ' + n + ' ' + toks[qi], into: qcalc });
     AT.renderMath(qcalc);
   }

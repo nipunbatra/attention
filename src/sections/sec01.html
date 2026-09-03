@@ -45,7 +45,7 @@ body.present #s01 .callout-note{font-size:.92em}
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Everything on this page serves one task: guess the next word. A language model does nothing else, so every mechanism added later has to pay for itself here. Switch between the two contexts in the first widget and watch the bars move. The last three words are identical in both sentences, so whatever the model does inside, it has to carry <em>river</em> or <em>cheque</em> all the way to the blank. The second widget shows the raw material it starts from: a token is a row of four numbers, one per named coordinate (<span id="s01-axes-names"></span>), plus a small position offset. The names are illustrative, and the toy was written by hand so that the numbers agree with them. The sentence to remember: a good prediction needs a good representation of the relevant context.</p>
+  <p>Everything on this page serves one task: guess the next word. A language model does nothing else, so every mechanism added later has to pay for itself here. Switch between the two contexts in the first widget and watch the bars move. The last three words are identical in both sentences, so whatever the model does inside, it has to carry <em>river</em> or <em>cheque</em> all the way to the blank. The second widget shows the raw material it starts from: a token starts as a row of $d_{\text{model}}$ numbers, one per named coordinate (<span id="s01-axes-names"></span>). One coordinate carries position. The names are illustrative, and the toy was written by hand so that the numbers agree with them. The sentence to remember: a good prediction needs a good representation of the relevant context.</p>
 </div>
 
 <div class="frame" data-title="One blank" id="s01-frame1" data-autobuild="off">
@@ -93,7 +93,7 @@ body.present #s01 .callout-note{font-size:.92em}
 
 <div class="frame" data-title="Where a token starts" id="s01-frame2" data-autobuild="off">
   <script type="text/x-notes">
-    What does position add, and why is it small?
+    What does position add, and which coordinate changes in this toy?
     Click two or three tokens and read the sum row aloud. Point at the first row: it is the same wherever the word appears. Then reveal the equation and the note.
   </script>
   <div class="prose">
@@ -109,11 +109,11 @@ body.present #s01 .callout-note{font-size:.92em}
   </div>
 
   <div class="prose" data-build="1">
-    <p>Token $i$ enters as a row of $d_{\text{model}} = 4$ numbers, the token embedding plus a small position offset; the superscript $(0)$ means nothing has been updated yet:
+    <p>Token $i$ enters as a row of $d_{\text{model}}$ numbers, the token embedding plus a position vector of the same width; the superscript $(0)$ means nothing has been updated yet:
     $$\ve{e_i^{(0)}} = \text{tok}_i + \text{pos}_i$$</p>
   </div>
 
-  <div class="callout callout-note" data-build="2">Every token gets such a row: the same token embedding wherever the word appears, plus a small offset set only by the position. In this toy every coordinate has a name, so a row can be read aloud.</div>
+  <div class="callout callout-note" data-build="2">Every token gets such a row: the same token embedding wherever the word appears, plus a vector set only by the position. In this toy every coordinate has a name, so a row can be read aloud.</div>
 </div>
 
 <div class="companion after">
@@ -207,6 +207,7 @@ body.present #s01 .callout-note{font-size:.92em}
     axes: 'e', cornerLabel: 'coordinate',
     rowLabels: [L0.tok, L0.pos], rowCls: ['neutral', 'neutral'],
     footer: { label: L0.sum, values: E0[ei], cls: 'e' },
+    caption: 'Position has its own column; the toy carries it but its attention does not use it.',
     note: 'Hover or focus a cell of the sum row to see the addition.',
     into: S.querySelector('#s01-emb-tab')
   });
@@ -225,7 +226,7 @@ body.present #s01 .callout-note{font-size:.92em}
     const tok = AT.escape(SA[ei]);
     embReading.innerHTML = 'Reading $\\ve{e_{' + (ei + 1) + '}^{(0)}}$: ' + readE(E0[ei], SA[ei], AT.model.pos_emb[ei]);
     AT.renderMath(embReading);
-    embCap.innerHTML = 'Look at the first row, the token embedding: it is the same wherever “' + tok + '” appears. The second row is the small position offset for position ' + (ei + 1) + '. Their sum is the starting representation $\\ve{e_{' + (ei + 1) + '}^{(0)}}$.';
+    embCap.innerHTML = 'Look at the first row, the token embedding: it is the same wherever “' + tok + '” appears. The second row is the position vector for position ' + (ei + 1) + '. Their sum is the starting representation $\\ve{e_{' + (ei + 1) + '}^{(0)}}$.';
     AT.renderMath(embCap);
   }
   const embChips = AT.ui.chips(SA, { active: ei, into: S.querySelector('#s01-emb-chips'), onClick: (i) => { ei = i; embChips.setActive(i); drawEmb(); } });

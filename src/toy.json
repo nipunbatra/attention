@@ -1,7 +1,7 @@
 {
- "d_model": 4,
+ "d_model": 5,
  "d_k": 3,
- "d_v": 3,
+ "d_v": 2,
  "vocab": [
   "the",
   "fisherman",
@@ -29,28 +29,33 @@
    0.0,
    0.0,
    0.0,
-   2.4
+   2.4,
+   0.0
   ],
   "fisherman": [
    2.0,
    0.0,
    2.2,
+   0.0,
    0.0
   ],
   "sat": [
    0.4,
    0.0,
    0.6,
-   1.8
+   1.8,
+   0.0
   ],
   "beside": [
    0.6,
    0.0,
    0.0,
-   2.0
+   2.0,
+   0.0
   ],
   "river": [
    3.0,
+   0.0,
    0.0,
    0.0,
    0.0
@@ -59,35 +64,41 @@
    0.7,
    0.7,
    0.0,
-   0.6
+   0.7,
+   0.0
   ],
   "and": [
    0.0,
    0.0,
    0.0,
-   2.2
+   2.2,
+   0.0
   ],
   "watched": [
    0.6,
    0.0,
    0.8,
-   1.6
+   1.6,
+   0.0
   ],
   "she": [
    0.0,
    0.0,
    2.6,
-   0.4
+   0.4,
+   0.0
   ],
   "deposited": [
    0.0,
    2.2,
    0.6,
-   0.4
+   0.4,
+   0.0
   ],
   "cheque": [
    0.0,
    3.0,
+   0.0,
    0.0,
    0.0
   ],
@@ -95,10 +106,12 @@
    0.0,
    0.0,
    0.0,
-   2.0
+   2.0,
+   0.0
   ],
   "water": [
    3.0,
+   0.0,
    0.0,
    0.0,
    0.0
@@ -107,41 +120,48 @@
    2.4,
    0.0,
    0.4,
+   0.0,
    0.0
   ],
   "fish": [
    2.6,
    0.0,
    0.6,
+   0.0,
    0.0
   ],
   "ducks": [
    2.2,
    0.0,
    0.8,
+   0.0,
    0.0
   ],
   "teller": [
    0.0,
    2.6,
    1.8,
+   0.0,
    0.0
   ],
   "clerk": [
    0.0,
    2.4,
    1.8,
+   0.0,
    0.0
   ],
   "queue": [
    0.0,
    2.0,
    0.6,
+   0.0,
    0.0
   ],
   "money": [
    0.0,
    3.0,
+   0.0,
    0.0,
    0.0
   ]
@@ -150,62 +170,72 @@
   [
    0.0,
    0.0,
-   0.2,
-   -0.2
+   0.0,
+   0.0,
+   0.1
   ],
   [
    0.0,
    0.0,
-   0.1,
-   -0.3
-  ],
-  [
    0.0,
    0.0,
-   -0.1,
-   -0.3
-  ],
-  [
-   0.0,
-   0.0,
-   -0.2,
-   -0.2
-  ],
-  [
-   0.0,
-   0.0,
-   -0.3,
-   0.0
-  ],
-  [
-   0.0,
-   0.0,
-   -0.2,
    0.2
   ],
   [
    0.0,
    0.0,
-   -0.1,
+   0.0,
+   0.0,
    0.3
   ],
   [
    0.0,
    0.0,
-   0.1,
-   0.3
+   0.0,
+   0.0,
+   0.4
   ],
   [
    0.0,
    0.0,
-   0.2,
-   0.2
+   0.0,
+   0.0,
+   0.5
   ],
   [
    0.0,
    0.0,
-   0.3,
-   0.0
+   0.0,
+   0.0,
+   0.6
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.7
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.8
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.9
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.0
   ]
  ],
  "W_Q": [
@@ -227,6 +257,11 @@
   [
    0.7,
    0.7,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
    0.0
   ]
  ],
@@ -250,26 +285,31 @@
    0.0,
    0.0,
    0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0
   ]
  ],
  "W_V": [
   [
    1.0,
-   0.0,
    0.0
   ],
   [
-   0.0,
-   1.0,
-   0.0
-  ],
-  [
-   0.0,
    0.0,
    1.0
   ],
   [
    0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0
+  ],
+  [
    0.0,
    0.0
   ]
@@ -279,18 +319,14 @@
    1.0,
    0.0,
    0.0,
+   0.0,
    0.0
   ],
   [
    0.0,
    1.0,
    0.0,
-   0.0
-  ],
-  [
    0.0,
-   0.0,
-   0.5,
    0.0
   ]
  ],
@@ -358,6 +394,28 @@
    0.0,
    0.2,
    0.2,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
    0.0,
    0.0
   ],
@@ -451,7 +509,8 @@
    "water",
    "finance",
    "person",
-   "glue"
+   "glue",
+   "position"
   ],
   "qk": [
    "setting: water?",
@@ -460,15 +519,15 @@
   ],
   "v": [
    "says: water scene",
-   "says: finance scene",
-   "says: a person is here"
+   "says: finance scene"
   ],
   "short": {
    "e": [
     "water",
     "finance",
     "person",
-    "glue"
+    "glue",
+    "pos"
    ],
    "qk": [
     "water?",
@@ -477,10 +536,9 @@
    ],
    "v": [
     "\u2192water",
-    "\u2192finance",
-    "\u2192person"
+    "\u2192finance"
    ]
   }
  },
- "notes": "Toy v2: single-head causal self-attention (d_model=4, d_k=d_v=3, vocab=20, T=10), designed BY HAND so that every coordinate has a name that the numbers agree with (see 'axes'). e axes: water, finance, person, glue. q and k axes: setting: water?, setting: finance?, who? (a query row reads 'what I ask for', a key row 'what I offer'). v axes: says: water scene, says: finance scene, says: a person is here; W_O maps them back onto the e axes. Names are illustrative; the matrices are sparse and one-decimal so a student can read each row of W_Q as 'axis -> asks', W_K as 'axis -> offers', W_V as 'axis -> says', W_vocab as 'axis -> votes for these words'. Glue words offer no key and no value but ask for both settings, which is why the final 'the' reads river or cheque. bank is equal parts water and finance (0.7, 0.7) plus a little glue; its entries are kept below 1.0 so that bank does not mostly attend to itself (the self score q_bank.k_bank grows with the square of those entries). Position offsets are a small circle of radius 0.3 in the (person, glue) plane, so the three 'the' tokens differ without changing meaning. Patterns produced (all checked on these rounded numbers by make_toy2.py and toy_ref.mjs): (1) in 'The fisherman sat beside the river bank', bank(7) attends river first, fisherman second, itself and the glue words little; (2) in 'She deposited the cheque at the bank', bank(7) attends cheque first, deposited second; (3) the final 'the'(10) reads mostly river/bank/fisherman or cheque/bank/deposited and the output head predicts water > boats > fish > ducks or teller > clerk > queue > money with every other word at most 0.04; (4) the baseline from e_the(10) alone is spread over the eight candidates and is identical for both sentences; (5) with the causal mask off, the early glue words leak attention onto river and bank. Nothing was optimised; a few magnitudes (bank, fisherman, the W_vocab weights) were adjusted by hand from AXES.md."
+ "notes": "Toy v2: single-head causal self-attention (d_model=5, d_k=3, d_v=2, vocab=20, T=10), designed BY HAND so that every coordinate has a name that the numbers agree with (see 'axes'). e axes: water, finance, person, glue. q and k axes: setting: water?, setting: finance?, who? (a query row reads 'what I ask for', a key row 'what I offer'). The fifth e axis carries position, but its zero rows in W_Q, W_K, W_V and W_vocab mean this toy does not use it. v has its own narrower axes: says: water scene and says: finance scene; W_O maps them back onto the e axes. Names are illustrative; the matrices are sparse and one-decimal so a student can read each row of W_Q as 'axis -> asks', W_K as 'axis -> offers', W_V as 'axis -> says', W_vocab as 'axis -> votes for these words'. Values are narrower on purpose because they are mixed and sent rather than compared. Glue words have zero key and value rows but ask for both settings, which is why the final 'the' reads river or cheque. bank is equal parts water and finance (0.7, 0.7) plus a little glue (0.7); its entries are kept below 1.0 so that bank does not mostly attend to itself (the self score q_bank.k_bank grows with the square of those entries). Position rises from 0.1 to 1.0 in its own coordinate, so the three 'the' tokens differ without changing meaning. Patterns produced (all checked on these rounded numbers by make_toy2.py and toy_ref.mjs): (1) in 'The fisherman sat beside the river bank', bank(7) attends river first, fisherman second, itself and the glue words little; (2) in 'She deposited the cheque at the bank', bank(7) attends cheque first, deposited second; (3) the final 'the'(10) reads mostly river/bank/fisherman or cheque/bank/deposited and the output head predicts water > boats > fish > ducks or teller > clerk > queue > money with every other word at most 0.04; (4) the baseline from e_the(10) alone is spread over the eight candidates and is identical for both sentences; (5) with the causal mask off, the early glue words leak attention onto river and bank. Nothing was optimised; a few magnitudes (bank, fisherman, the W_vocab weights) were adjusted by hand from AXES.md."
 }

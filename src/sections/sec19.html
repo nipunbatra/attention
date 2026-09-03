@@ -24,6 +24,24 @@
 #s19 .arith .calc-line{margin-top:8px}
 #s19 .close-line{font-size:1.1em;margin:16px 0 0}
 @media (prefers-reduced-motion:reduce){#s19 .chain .cbox{transition:none}}
+body.present #s19 .s19-pred-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:24px;align-items:center}
+body.present #s19 .s19-pred-grid .dt-cap{display:none}
+body.present #s19 .s19-pred-grid .dt th,body.present #s19 .s19-pred-grid .dt td.dt-num{font-size:18px;padding:.3em .5em}
+body.present #s19 .look,body.present #s19 .rd,body.present #s19 .chain-state{font-size:18px;line-height:1.35}
+body.present #s19 .final-chain .katex{font-size:.9em}
+body.present #s19 #s19-frame1 #s19-opchain{display:none}
+body.present #s19 #s19-frame1 .quote{font-size:1em}
+body.present #s19 #s19-frame1 .chain{gap:5px;margin:8px 0}
+body.present #s19 #s19-frame1 .chain .cbox{font-size:18px;padding:6px 9px}
+@media(max-width:820px){body.present #s19 .s19-pred-grid{grid-template-columns:1fr}}
+body.present #s19 #s19-frame1 .look{display:none}
+body.present #s19 #s19-frame1 #s19-motif svg{max-height:165px}
+body.present #s19 #s19-frame2 .look{display:none}
+body.present #s19 #s19-frame3 #s19-read,body.present #s19 #s19-frame3 .look{display:none}
+body.present #s19 #s19-frame3 pre.torch-snippet{margin:.25em 0;padding:.6em 1em}
+body.present #s19 .s19-recap{line-height:1.5}
+body.present #s19 .s19-recap li{margin:.45em 0}
+body.present #s19 #s19-frame1>.card{padding:.7em .9em;margin-bottom:.5em}
 </style>
 <header class="sec-head">
   <span class="sec-num">19</span>
@@ -35,12 +53,17 @@
 
 <div class="companion" data-kicker="For self-study">
   <p>A summary is only useful if you can reproduce it without the page. So this section says the same thing three times, each in a form you might be asked for: a sentence for a conversation, a chain for a whiteboard, and four equations for an exam.</p>
-  <p>Play the chain and watch the pipeline diagram light up stage by stage. Then switch the sentence in the last card and check that the winning word changes while the equations do not. The sentence to remember: each token searches the tokens before it, retrieves a weighted mixture of their values, and adds the result to its own representation.</p>
+  <p>Play the chain and watch the pipeline diagram light up stage by stage. Then switch the sentence in the last card and check that the winning word changes while the equations do not. The sentence to remember: each token reads itself and earlier tokens, mixes their values, and receives the projected message through a residual addition.</p>
 </div>
 
+<div class="frame" id="s19-frame1" data-title="Can we tell the whole attention story?">
+  <script type="text/x-notes">
+Can you name each step before it lights up?
+Read the intuitive sentence, then advance the operational chain. Include self in the causal prefix. Distinguish attention’s projected message from the residual addition.
+  </script>
 <div class="card">
   <p class="lvl">1 · Intuitive</p>
-  <blockquote class="quote">Each token searches previous tokens for useful information, retrieves a weighted mixture of what they have to say, and uses that information to update its own representation.</blockquote>
+  <blockquote class="quote">Each token matches its query against its own and earlier keys, mixes the corresponding values, and receives a context-dependent update through a residual addition.</blockquote>
 </div>
 
 <div class="card">
@@ -57,6 +80,13 @@
   <p class="look">Watch the box and the pipeline stage light up together: the chain and the diagram are the same six steps.</p>
 </div>
 
+</div>
+
+<div class="frame" id="s19-frame2" data-title="Do four equations capture the same story?">
+  <script type="text/x-notes">
+Which equation gives the weights, and which gives the updated rows?
+Read dimensions beside each line. Row-wise softmax is over source positions; vocabulary softmax has not happened yet.
+  </script>
 <div class="card">
   <p class="lvl">3 · Mathematical</p>
   <div class="eqs" id="s19-eqs"></div>
@@ -64,34 +94,77 @@
   <p class="look">Read the shapes on the right: only the boxed line returns to $T \times d_{\text{model}}$, the space every token started in.</p>
 </div>
 
+</div>
+
+<div class="frame" id="s19-frame3" data-title="How does context change the next-token probabilities?">
+  <script type="text/x-notes">
+Which updated row does the head use to predict after this prefix?
+It uses position 10, the final the, not bank’s position-7 update. Change the context and compare vocabulary probabilities. A sampling or decoding rule chooses a token; generation appends it and repeats with a new last position.
+  </script>
 <div class="card">
   <h3 class="card-title">From $\vp{E'}$ to the next token</h3>
   <div class="final-chain" id="s19-final-chain"></div>
-  <div class="btn-row" id="s19-ctx"></div>
+  <div class="btn-row" id="s19-ctx" data-keep-state></div>
   <div id="s19-chips"></div>
   <div class="row pred-row" id="s19-vecs"></div>
   <div id="s19-read"></div>
-  <div id="s19-table"></div>
-  <div id="s19-arith"></div>
-  <div id="s19-bars" style="margin-top:16px"></div>
-  <p class="close-line" id="s19-close"></p>
-  <p class="look">Switch the sentence: the last token is “the” in both, so only the context can move the winner.</p>
+  <p class="look">Switch the sentence: the last token is “the” in both. Its updated row carries the context to the vocabulary head.</p>
 </div>
 
-<div id="s19-notes"></div>
+<p class="muted small">PyTorch · one vocabulary distribution from the final updated row.</p>
+<pre class="torch-snippet"><code>logits = E_new[-1] @ W_vocab + b
+probs = logits.softmax(dim=-1)</code></pre>
+</div>
 
+<div class="frame" id="s19-frame-probabilities" data-title="From the updated row to vocabulary probabilities">
+  <script type="text/x-notes">
+Which word has the highest probability, and has a token been selected yet?
+The head reads the final updated row. The table gives logits and probabilities; the bars show the same distribution. These are vocabulary probabilities, not attention weights. Return one frame to change the context.
+  </script>
 <div class="card">
-  <h3 class="card-title">Notation recap, all tokens at once</h3>
-  <div id="s19-notation"></div>
-  <p class="look">Every symbol on this page in one place; the shape column uses the toy sizes.</p>
+  <h3 class="card-title" id="s19-pred-context"></h3>
+  <div class="s19-pred-grid">
+    <div id="s19-table"></div>
+    <div id="s19-bars"></div>
+  </div>
+  <div id="s19-arith"></div>
+  <p class="companion close-line" id="s19-close"></p>
+</div>
+</div>
+
+<div class="frame" id="s19-frame-generation" data-title="What turns one prediction into generation?">
+  <script type="text/x-notes">
+After choosing a token, what changes and what stays fixed?
+Append the chosen token and use the new final position’s query. Parameters stay fixed during generation. This is different from both stacking a new layer and updating weights during training.
+  </script>
+<div id="s19-notes"></div>
+</div>
+
+<div class="frame" id="s19-frame4" data-title="What have we built, and what remains?">
+  <script type="text/x-notes">
+Is this one attention sublayer already a trained full Transformer?
+No. We traced a hand-designed single-head forward computation. Learning changes parameters across examples; stacking applies later blocks to updated rows; generation repeats prediction with fixed parameters and a growing prefix.
+  </script>
+<div class="card">
+  <h3 class="card-title">What this example has, and what it does not yet have</h3>
+  <ul class="s19-recap">
+    <li>One attention head computes a contextual update; residual addition forms $e_i' = e_i + \Delta e_i$.</li>
+    <li>The vocabulary head reads the final updated row to give next-token probabilities.</li>
+    <li>Generation repeats that prediction with a growing prefix and fixed parameters.</li>
+    <li>Training updates parameters; stacked layers apply further transformations. Those are different operations.</li>
+  </ul>
+  <div class="companion" id="s19-notation"></div>
+  <p class="companion look">Every symbol on this page in one place; the shape column uses the toy sizes.</p>
 </div>
 
 <div class="prose">
   <p>Part 3 adds several heads, stacked layers and the rest of the Transformer.</p>
 </div>
 
+</div>
+
 <div class="companion after">
-  <p>Keep in mind: attention adds to a representation, it never replaces it. $\vp{E'} = \ve{E} + \vd{\Delta E}$ is the whole mechanism, and the output head reads the last row of $\vp{E'}$ to predict the next token.</p>
+  <p>Keep in mind: attention computes $\vd{\Delta E}$ and the residual connection forms $\vp{E'} = \ve{E} + \vd{\Delta E}$; and the output head reads the last row of $\vp{E'}$ to predict the next token.</p>
 </div>
 
 <script>
@@ -109,7 +182,7 @@
   drawOpChain();
   const STAGES = [
     { key: 'e',     cls: 'e',  tex: '\\ve{e}',                                   pre: 'start from',  say: 'Start from the current representation e of every token.' },
-    { key: 'qkv',   cls: 'q',  tex: '\\vq{q}^\\top \\vk{k}',                    pre: 'match',       say: 'Each token forms a query; every token offers a key. The dot product scores relevance.' },
+    { key: 'qkv',   cls: 'q',  tex: '\\vq{q}\\cdot \\vk{k}',                    pre: 'match',       say: 'Each token forms a query; every token offers a key. The dot product scores relevance.' },
     { key: 'att',   cls: 'a',  tex: '\\operatorname{softmax} \\Rightarrow \\va{\\alpha}', pre: '', say: 'Softmax over the causally masked, scaled scores gives the weights α: who reads from whom.' },
     { key: 'att',   cls: 'v',  tex: 'm_i = \\textstyle\\sum_j \\va{\\alpha_{ij}} \\vv{v_j}', pre: 'retrieve', say: 'Each token pulls a weighted mixture of values: the message m_i.' },
     { key: 'delta', cls: 'd',  tex: '\\vd{\\Delta e_i} = m_i\\,W_O',               pre: '',            say: 'W_O maps the message into the model space: the contextual update Δe (pedagogical name).' },
@@ -219,6 +292,7 @@
     const toks = AT.sentences[ctx];
     const F = AT.forward(toks);
     const t = F.T - 1;
+    S.querySelector('#s19-pred-context').textContent = 'Context ' + (ctx === 'river' ? 'A: river' : 'B: cheque') + ': predict after “' + toks[t] + '” (position ' + (t + 1) + ')';
     AT.clear(chipHost);
     AT.ui.chips(toks, { active: t, slot: '___', into: chipHost });
     AT.clear(vecHost);
@@ -248,7 +322,7 @@
     const it = items(F);
     AT.clear(barHost);
     AT.ui.bars(it, { cls: 'neutral', sorted: false, highlight: top.tok, decimals: 3, size: 'lg', into: barHost });
-    closeEl.innerHTML = 'We started with “' + AT.escape(toks.join(' ')) + ' ___”. The last token read the context through attention and updated itself by $\\vd{\\Delta e_{' + (t+1) + '}}$; the output head then turned $\\vp{e_{' + (t+1) + '}\'}$ into <strong>' + AT.escape(top.tok) + '</strong> at ' + AT.fmt(top.p, 3) + '.';
+    closeEl.innerHTML = 'We started with “' + AT.escape(toks.join(' ')) + ' ___”. The last token read the context through attention and updated itself by $\\vd{\\Delta e_{' + (t+1) + '}}$; the output head then read $\\vp{e_{' + (t+1) + '}\'}$ and assigned its highest probability to <strong>' + AT.escape(top.tok) + '</strong> at ' + AT.fmt(top.p, 3) + '.';
     AT.renderMath(closeEl);
   }
   function setCtx(c){

@@ -26,9 +26,14 @@
 
 <div class="companion" data-kicker="For self-study">
   <p>By now you have seen every object on the page at least twice. This section exists because the confusions that survive a lecture are always the same ones: mixing up keys and values, taking the query for the new representation, or treating $\vd{\Delta e}$ as standard notation.</p>
-  <p>Say your answer out loud before you open each reveal. Every answer is backed by a small table from the toy model, with the coordinate names on the columns, so if you disagree you can check the arithmetic rather than the wording. The sentence to remember: queries, keys and values are working vectors; the only thing that persists is $\vp{e_i'} = \ve{e_i} + \vd{\Delta e_i}$.</p>
+  <p>Say your answer out loud before you open each reveal. Every answer is backed by a small table from the toy model, with the coordinate names on the columns, so if you disagree you can check the arithmetic rather than the wording. The sentence to remember: queries, keys and values are working vectors; the token row passed onward is $\vp{e_i'} = \ve{e_i} + \vd{\Delta e_i}$.</p>
 </div>
 
+<div class="frame" id="s18-frame1" data-title="Can you explain the roles without the equations?">
+  <script type="text/x-notes">
+What is matched, what is sent, and what is passed onward?
+Ask one question before opening its reveal. For equal scores, the result is the mean of values, followed by W_O and the residual addition. Avoid opening all answers during a live explanation.
+  </script>
 <div class="prose">
   <p>Each answer below is checked against the toy model's numbers, so you can verify it instead of taking it on trust. Answer first, then open the reveal.</p>
 </div>
@@ -46,14 +51,23 @@
 
 <div id="s18-standard"></div>
 
+</div>
+
+<div class="frame" id="s18-frame2" data-title="Do the roles and shapes agree?">
+  <script type="text/x-notes">
+Which objects share a space, and which only happen to share a width in this toy?
+Queries and keys must have compatible matching coordinates. Values form the message space. The input, contextual update and updated token row have the model width.
+  </script>
 <div class="card">
   <h3 class="card-title">Notation recap, one token at a time</h3>
   <div id="s18-notation"></div>
   <p class="look">Check the shape column: only $\ve{e_i}$, $\vd{\Delta e_i}$ and $\vp{e_i'}$ live in the model space of width $d_{\text{model}}$.</p>
 </div>
 
+</div>
+
 <div class="companion after">
-  <p>Keep in mind: $\vk{k_j}$ decides whether token $j$ is read and $\vv{v_j}$ decides what it sends; $\vq{q_i}$ is not a representation; the one standard operation is the residual addition $\vp{e_i'} = \ve{e_i} + \vd{\Delta e_i}$.</p>
+  <p>Keep in mind: $\vk{k_j}$ decides whether token $j$ is read and $\vv{v_j}$ decides what it sends; $\vq{q_i}$ is a matching projection, not the updated token row; the update is added through the residual connection $\vp{e_i'} = \ve{e_i} + \vd{\Delta e_i}$.</p>
 </div>
 
 <script>
@@ -193,7 +207,7 @@
 
   /* 4 */
   add('Are $\\vq{Q}$, $\\vk{K}$, $\\vv{V}$ stored permanently as token representations?',
-    '<p class="ans">No. They are projections used by the attention computation.</p><p>They are computed from the current $\\ve{e}$ and used to produce $\\vd{\\Delta e}$; they are not passed onward as the token representation (a generation cache may keep $\\vk{k}$ and $\\vv{v}$ for reuse). The next attention layer recomputes fresh ones from the updated $\\vp{e\'}$. What persists across the layer is $\\ve{e}$.</p>');
+    '<p class="ans">No. They are projections used by the attention computation.</p><p>They are computed from the current $\\ve{e}$ and used to produce $\\vd{\\Delta e}$; they are not passed onward as the token representation (a generation cache may keep $\\vk{k}$ and $\\vv{v}$ for reuse). A later attention layer recomputes projections from its own input representations. The updated token row, not the separate projections, is passed between sublayers.</p>');
 
   /* 5 */
   add('What is $\\vd{\\Delta e_i}$?',
@@ -227,14 +241,14 @@
       const fig = AT.ui.table([F.E[B], F.Delta[B]], { cornerLabel: 'axis',
         rowLabels: ['$\\ve{e_{' + (B+1) + '}^{\\text{old}}}$', '$\\text{AttentionOutput}_{' + (B+1) + '} = \\vd{\\Delta e_{' + (B+1) + '}}$'], rowCls: ['e', 'd'],
         footer: { label: '$\\vp{e_{' + (B+1) + '}^{\\text{new}}}$', values: F.Enew[B], cls: 'ep' },
-        caption: 'The footer is the sum of the two rows above it, one axis at a time: the update is added, nothing is replaced.',
+        caption: 'The footer is the sum of the two rows above it, one axis at a time: the updated token row is the sum of the original row and the attention output.',
         note: 'Hover or focus a footer cell to see the addition.', into: el });
       fig.footer.cells.forEach((td, c) => fig.tipOn(td, AT.fmt(F.E[B][c]) + ' + ' + (F.Delta[B][c] < 0 ? '(' + AT.fmt(F.Delta[B][c]) + ')' : AT.fmt(F.Delta[B][c])) + ' = ' + AT.fmt(F.Enew[B][c])));
     });
 
   /* 8 */
   add('Why can\'t “bank” attend to a later “river” in a causal language model?',
-    '<p class="ans">Because that would expose future information.</p><p>Token $i$ may read only from $j \\le i$. Training predicts the next token from what precedes it; if “bank” could read a later “river”, the answer would already be in the input and the model would learn nothing useful. Here “bank” (7) reads 1 to 7 only; 8 to 10 are masked:</p>',
+    '<p class="ans">Because that would expose future information.</p><p>Token $i$ may read only from $j \\le i$. Training predicts the next token from what precedes it; if “bank” could read a later “river”, it could exploit future evidence that would not exist during generation. Here “bank” (7) reads 1 to 7 only; 8 to 10 are masked:</p>',
     (el) => {
       const all = AT.sentences.river;
       AT.ui.chips(all, { active: B, muted: AT.range(all.length).filter(j => j > B), into: el });
@@ -274,7 +288,7 @@
 
   /* the standard operation + the Δ-notation disclaimer */
   const std = S.querySelector('#s18-standard');
-  AT.ui.callout('The standard operation, in standard words: $\\vp{e_i^{\\text{new}}} = \\ve{e_i^{\\text{old}}} + \\text{AttentionOutput}_i$. Everything attention computes ends in this one addition.', { kind: 'key', into: std });
+  AT.ui.callout('The standard operation, in standard words: $\\vp{e_i^{\\text{new}}} = \\ve{e_i^{\\text{old}}} + \\text{AttentionOutput}_i$. In this residual attention sublayer, the attention output is added to its input.', { kind: 'key', into: std });
   AT.ui.callout('The notation $\\vd{\\Delta e}$ is a pedagogical convention used on this page. It is not standard Transformer notation. The addition itself is standard: it is the residual connection around the attention sublayer.', { kind: 'note', into: std });
 
   /* notation recap */
