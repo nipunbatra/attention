@@ -14,14 +14,19 @@
 <div class="frame" data-title="Prediction meets observation">
   <script type="text/x-notes">Which bar determines the loss after the target is revealed?
   Read the prefix first, then reveal water. The model did not know the target while producing its distribution.</script>
-  <div class="card"><h3 class="card-title">Prefix and next-token distribution</h3><div id="s02-prefix"></div><div id="s02-bars" data-build="1"></div><p class="s02-target" data-build="2">Observed target: <span id="s02-target"></span></p></div>
+  <div id="s02-prefix"></div>
+  <p class="s02-target" data-build="1">Observed target: <span id="s02-target"></span></p>
 </div>
+<div class="frame" data-title="How much probability went to water?">
+  <script type="text/x-notes">The model produced this distribution before seeing water. Find the target's bar; that probability determines the loss.</script>
+  <div class="card"><h3 class="card-title">The same final-position prediction</h3><div id="s02-bars"></div></div>
+</div>
+<div class="companion"><h3>Full softmax worksheet for the final position</h3><div id="s02-softmax"></div></div>
 <div class="frame" data-title="Cross-entropy keeps one probability">
   <script type="text/x-notes">Why does the loss use the target row while the softmax uses every row?
   Point to the shared denominator, then retain the probability assigned to water.</script>
-  <div class="card"><h3 class="card-title">Softmax worksheet for the final position</h3><div id="s02-softmax"></div></div>
-  <div class="card" data-build="1"><h3 class="card-title">Loss worksheet</h3><div class="s02-loss" id="s02-loss"></div></div>
-  <div id="s02-callout" data-build="2"></div>
+  <div class="card"><h3 class="card-title">Loss worksheet</h3><div class="s02-loss" id="s02-loss"></div></div>
+  <div id="s02-callout" data-build="1"></div>
 </div>
 <div class="companion after"><p>The observed token does not supply a replacement prediction; it supplies the target used to score the distribution.</p></div>
 <script>
@@ -39,8 +44,8 @@
   const mx=Math.max.apply(null,logits);
   const exps=logits.map(x=>Math.exp(x-mx));
   const denom=AT.sum(exps);
-  const order=AT.topk(F.probs[row],8).map(x=>x.i);
-  AT.ui.table(order.map(i=>[logits[i],exps[i],exps[i]/denom]),{cols:['logit','$\\exp(\\ell-\\ell_{\\max})$','probability'],rowLabels:order.map(i=>AT.vocab[i]),cornerLabel:'token',highlightRow:order.indexOf(tid),decimals:4,footer:{label:'denominator',values:['',denom,'']},caption:'Softmax divides every exponential by the same denominator. Displayed values are rounded; the probabilities use full precision.',into:S.querySelector('#s02-softmax')});
+  const order=AT.topk(F.probs[row],AT.vocab.length).map(x=>x.i);
+  AT.ui.table(order.map(i=>[logits[i],exps[i],exps[i]/denom]),{cols:['logit','$\\exp(\\ell-\\ell_{\\max})$','probability'],rowLabels:order.map(i=>AT.vocab[i]),cornerLabel:'token',highlightRow:order.indexOf(tid),decimals:4,footer:{label:'sum over all '+AT.vocab.length+' tokens',values:['',denom,1]},caption:'All '+AT.vocab.length+' vocabulary tokens are shown. Their exponentials sum to the denominator; their probabilities sum to 1. Displayed values are rounded; calculations use full precision.',into:S.querySelector('#s02-softmax')});
   const single=AT.train.single();
   const loss=S.querySelector('#s02-loss');
   loss.appendChild(document.createTextNode('loss = -log(' + AT.fmt(single.p_target_before,4) + ') = '));

@@ -4,8 +4,8 @@ globalThis.ATTENTION_PREVIEW_DATA = {
   "provenance": {
     "source": "src/toy.json",
     "reference": "src/toy_ref.mjs",
-    "repositoryCommit": "2039daa699afb5bb3af1cc83dd6f8d52de765890",
-    "modelSha256": "cd8af596316f73b55449ec25fcf10134649d16bdf756051e047d5233ba4ab3d5",
+    "repositoryCommit": "a49f81196f1fa1002a6b906b3afb394d4f7ad33c",
+    "modelSha256": "a336821a086009d8eb660681a74aedb6c14aab041034285075ca00d93062d40d",
     "snapshotDate": "2026-09-03",
     "handDesigned": true,
     "trained": false,

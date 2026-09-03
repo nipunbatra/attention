@@ -2,6 +2,9 @@
 <style>
 #s06 .s06-code{margin-top:12px}
 #s06 .s06-summary{font-size:1.15em;margin:10px 0}
+#s06 .s06-pairs{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:820px){body:not(.present) #s06 .s06-pairs{grid-template-columns:1fr}}
+body.present #s06 #s06-mask .cell{min-width:3em}
 </style>
 <header class="sec-head">
   <span class="sec-num">06</span>
@@ -13,12 +16,15 @@
 <div class="frame" data-title="Shift inputs into targets">
   <script type="text/x-notes">What target belongs to each input position?
   Read the rows vertically. The final target comes from the observed continuation.</script>
-  <div class="card" data-build="1"><h3 class="card-title">One row of inputs, one shifted row of targets</h3><div id="s06-shift"></div></div>
+  <div class="s06-pairs" data-build="1"><div id="s06-shift"></div><div id="s06-shift-rest"></div></div>
 </div>
 <div class="frame" data-title="The mask keeps parallel training causal">
   <script type="text/x-notes">Can row three read the target at row six?
   Point above the diagonal. Those cells are removed before softmax, even though every row is computed together.</script>
-  <div class="card"><h3 class="card-title">Causal attention for all positions</h3><div id="s06-mask"></div></div>
+  <div id="s06-mask"></div>
+</div>
+<div class="frame" data-title="One pass, one mean loss, one update">
+  <script type="text/x-notes">All rows are computed together, but each row sees only its prefix. The mean loss gives one scalar for autograd.</script>
   <pre class="torch-snippet s06-code" data-build="1"><code>logits = model(tokens, causal_mask=True)
 targets = tokens_shifted_left
 loss = cross_entropy(logits, targets).mean()
@@ -27,19 +33,24 @@ loss.backward(); optimizer.step()</code></pre>
 <div class="frame" data-title="Average the position losses">
   <script type="text/x-notes">Why can one position worsen while the mean improves?
   The shared update follows the average gradient. Inspect every row, then read the mean.</script>
-  <div class="card"><h3 class="card-title">Per-position cross-entropy</h3><div id="s06-losses"></div></div>
-  <div id="s06-mean" data-build="1"></div>
+  <div class="s06-pairs"><div id="s06-losses"></div><div id="s06-losses-rest"></div></div>
 </div>
+<div class="frame" data-title="The update follows the mean loss">
+  <script type="text/x-notes">A shared update may help some positions more than others. The training objective is their mean.</script>
+  <div id="s06-mean"></div>
+</div>
+<div class="companion"><h3>All position probabilities and losses</h3><div id="s06-full-losses"></div></div>
 <div class="companion after"><p>Parallel training changes the efficiency of the calculation, while the causal mask preserves the next-token task.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s06');
   const P=AT.train.parallel();
   const toks=AT.train.sentence();
-  AT.ui.table([toks,P.targets],{cols:toks.map((t,i)=>String(i+1)),rowLabels:['input','target'],cornerLabel:'position',caption:'Target $i$ is the next token after input position $i$.',into:S.querySelector('#s06-shift')});
+  [0,5].forEach((from,j)=>AT.ui.table(toks.slice(from,from+5).map((t,i)=>[t,P.targets[from+i]]),{cols:['input','next-token target'],rowLabels:toks.slice(from,from+5).map((_,i)=>String(from+i+1)),cornerLabel:'position',into:S.querySelector(j?'#s06-shift-rest':'#s06-shift')}));
   const F=AT.forward(toks);
-  AT.ui.heat(F.A,{rows:toks,cols:toks,mask:true,caption:'Each row is one query position. Hatched cells are future positions and have zero weight.',into:S.querySelector('#s06-mask')});
-  AT.ui.table(P.per_position.map(r=>[r.input,r.target,r.p_target_before,r.loss_before,r.p_target_after,r.loss_after]),{cols:['input','target','$p$ before','loss before','$p$ after','loss after'],rowLabels:P.per_position.map(r=>String(r.position)),cornerLabel:'position',decimals:4,caption:'Every loss is $-\\log p(\\text{target})$. The values use the parallel mean-loss update.',into:S.querySelector('#s06-losses')});
+  AT.ui.heat(F.A,{rows:toks.map((_,i)=>String(i+1)),cols:toks.map((_,i)=>String(i+1)),mask:true,caption:'Rows = query positions; columns = source positions. Hatched cells are future positions.',into:S.querySelector('#s06-mask')});
+  [0,5].forEach((from,j)=>AT.ui.table(P.per_position.slice(from,from+5).map(r=>[r.loss_before,r.loss_after]),{cols:['loss before','loss after'],rowLabels:P.per_position.slice(from,from+5).map(r=>String(r.position)+' · '+r.input),cornerLabel:'position',decimals:4,into:S.querySelector(j?'#s06-losses-rest':'#s06-losses')}));
+  AT.ui.table(P.per_position.map(r=>[r.input,r.target,r.p_target_before,r.loss_before,r.p_target_after,r.loss_after]),{cols:['input','target','$p$ before','loss before','$p$ after','loss after'],rowLabels:P.per_position.map(r=>String(r.position)),cornerLabel:'position',decimals:4,caption:'Every loss is $-\\log p(\\text{target})$. The values use the parallel mean-loss update.',into:S.querySelector('#s06-full-losses')});
   AT.ui.callout('Mean loss after one step with $\\eta='+P.eta+'$: '+AT.fmt(P.mean_loss_before,4)+' becomes '+AT.fmt(P.mean_loss_after,4)+'.',{kind:'key',into:S.querySelector('#s06-mean')});
 })();
 </script>

@@ -3,7 +3,7 @@
 #s19 .s19-summaries{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 #s19 .s19-summary{border:1px solid var(--line);border-radius:10px;padding:18px;background:var(--card)}
 #s19 .s19-links{display:flex;flex-wrap:wrap;gap:12px;margin-top:18px}
-@media(max-width:820px){#s19 .s19-summaries{grid-template-columns:1fr}}
+@media(max-width:820px){body:not(.present) #s19 .s19-summaries{grid-template-columns:1fr}}
 </style>
 <header class="sec-head">
   <span class="sec-num">19</span>
@@ -21,9 +21,9 @@
   <script type="text/x-notes">Where does the Part 2 calculation sit inside Part 3?
   It is the attention branch inside every block. The new material surrounds it with learning, FFNs, normalisation, and depth.</script>
   <div class="card"><h3 class="card-title">The familiar attention branch</h3><div id="s19-motif"></div></div>
-  <div id="s19-note" data-build="1"></div>
-  <nav class="s19-links" data-build="2" aria-label="Series links"><a class="btn" href="part1.html">Back to Part 1</a><a class="btn btn-primary" href="attention.html">Back to Part 2</a></nav>
+  <nav class="s19-links" data-build="1" aria-label="Series links"><a class="btn" href="part1.html">Back to Part 1</a><a class="btn btn-primary" href="attention.html">Back to Part 2</a></nav>
 </div>
+<div class="companion"><div id="s19-note"></div></div>
 <div class="companion after"><p>The attention calculation is one branch inside a trainable residual stack that predicts and generates tokens.</p></div>
 <script>
 (function(){

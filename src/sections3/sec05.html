@@ -8,7 +8,7 @@
   <div><p class="eyebrow">Why we are here: the gradient points uphill in loss, so SGD takes a chosen step in the opposite direction.</p><h2>One update</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>The gradient gives a local slope for every parameter. Stochastic gradient descent multiplies each slope by a learning rate $eta$ and subtracts the result from the current parameter. The three presets below reuse the same gradient from the river example, then run a fresh forward pass with the updated parameters. Larger steps improve this one example more sharply in the toy, but that is not a promise about other sentences or later updates. The useful comparison is the target probability and loss before and after each step. You can also inspect the final updated representation, which changes because all contributing parameters changed together.</p>
+  <p>The gradient gives a local slope for every parameter. Stochastic gradient descent multiplies each slope by a learning rate $\eta$ and subtracts the result from the current parameter. The three presets below reuse the same gradient from the river example, then run a fresh forward pass with the updated parameters. Larger steps improve this one example more sharply in the toy, but that is not a promise about other sentences or later updates. The useful comparison is the target probability and loss before and after each step. You can also inspect the final updated representation, which changes because all contributing parameters changed together.</p>
 </div>
 <div class="frame" data-title="Move against the gradient">
   <script type="text/x-notes">Why is the gradient subtracted?
@@ -22,6 +22,7 @@
   <div class="card"><h3 class="card-title">Choose the learning rate</h3><div class="s05-eta" id="s05-slider"></div><div id="s05-table"></div></div>
   <div id="s05-note" data-build="1"></div>
 </div>
+<div class="companion"><h3>The contextual row after the same update</h3><div id="s05-context"></div></div>
 <div class="companion after"><p>One lower training loss shows that the update fit this example better; it does not establish generalisation.</p></div>
 <script>
 (function(){
@@ -34,7 +35,8 @@
     AT.clear(host);
     const step=AT.train.step(etas[k]);
     AT.ui.table([[single.p_target_before,single.loss_before],[step.p_target,step.loss]],{cols:['$p(\\text{water})$','loss'],rowLabels:['before','after $\\eta='+etas[k]+'$'],cornerLabel:'river example',highlightRow:1,decimals:4,caption:'The target probability rises as the loss falls.',into:host});
-    AT.ui.table([single.e_prime_10_before,step.e_prime_10],{axes:'e',rowLabels:['before','$\\eta='+etas[k]+'$'],rowCls:['ep','ep'],highlightRow:1,cornerLabel:'$\\vp{e_{10}\'}$',caption:'The final contextual row after the parameter update.',into:host});
+    const context=S.querySelector('#s05-context');AT.clear(context);
+    AT.ui.table([single.e_prime_10_before,step.e_prime_10],{axes:'e',rowLabels:['before','$\\eta='+etas[k]+'$'],rowCls:['ep','ep'],highlightRow:1,cornerLabel:'$\\vp{e_{10}\'}$',caption:'The final contextual row after the parameter update.',into:context});
   }
   AT.ui.slider({label:'Learning rate eta',min:0,max:etas.length-1,step:1,value:1,format:i=>String(etas[i]),onInput:draw,into:S.querySelector('#s05-slider')});
   draw(1);

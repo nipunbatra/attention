@@ -1,10 +1,10 @@
 # toy_report.md - numbers produced by the hand-designed toy.json (v2, named axes)
 
-All values below are computed from the ONE-DECIMAL parameters in `toy.json` (320 numbers, max |x| = 3.0) by `make_toy2.py`; `node toy_ref.mjs --compare py_check.json` reproduces every intermediate to < 1e-12. Attention weights are shown to 2 decimals, probabilities to 3. The previous, optimised toy is kept as `toy_v1.json` (its report: `toy_report_v1.md`).
+All values below are computed from the ONE-DECIMAL parameters in `toy.json` (370 numbers, max |x| = 3.0) by `make_toy2.py`; `node toy_ref.mjs --compare py_check.json` reproduces every intermediate to < 1e-12. Attention weights are shown to 2 decimals, probabilities to 3. The previous, optimised toy is kept as `toy_v1.json` (its report: `toy_report_v1.md`).
 
 ## How the numbers were obtained
 
-Nothing was optimised. AXES.md names every coordinate, and the embeddings and projection matrices were written by hand so that the names are true: each row of a projection reads as 'input axis -> asks / offers / says'. The forward pass (the same arithmetic as `toy_ref.mjs`) was then evaluated and a few magnitudes were adjusted from the AXES.md starting point until the targets held on the rounded numbers: `bank` became [0.7, 0.7, 0, 0.7, 0] and `fisherman` became [2.0, 0, 2.2, 0, 0], because the self score q_bank . k_bank grows with the square of bank's water/finance entries and at 1.5 bank attended to itself as much as to river; the W_vocab weights were raised to 1.5/1.2/1.0/0.7 (water words) and 1.5/1.2/0.9/0.7 (finance words) so that every non-candidate word stays at or below 0.04. Position has its own coordinate. It rises from 0.1 to 1.0, while its rows in W_Q, W_K, W_V and W_vocab are zero.
+Nothing was optimised. AXES.md names every coordinate, and the embeddings and projection matrices were written by hand so that the names are true: each row of a projection reads as 'input axis -> asks / offers / says'. The forward pass (the same arithmetic as `toy_ref.mjs`) was then evaluated and a few magnitudes were adjusted from the AXES.md starting point until the targets held on the rounded numbers: `bank` became [0.7, 0.7, 0, 0.7, 0] and `fisherman` became [2.0, 0, 2.2, 0, 0], because the self score q_bank . k_bank grows with the square of bank's water/finance entries and at 1.5 bank attended to itself as much as to river; the W_vocab weights were raised to 1.5/1.2/1.0/0.7 (water words) and 1.5/1.2/0.9/0.7 (finance words) so that every non-candidate word stays at or below 0.04. Position has a dedicated coordinate only as a toy simplification. It rises from 0.1 to 2.0 across 20 supported positions, while its rows in W_Q, W_K, W_V and W_vocab are zero. The toy demonstrates content routing, not sensitivity to word order.
 
 ## Axes (from `toy.json` -> `axes`)
 
@@ -55,6 +55,16 @@ Reading rule: a query row is 'what I ask for', a key row is 'what I offer', a va
 | 8 | 0 | 0 | 0 | 0 | 0.8 |
 | 9 | 0 | 0 | 0 | 0 | 0.9 |
 | 10 | 0 | 0 | 0 | 0 | 1.0 |
+| 11 | 0 | 0 | 0 | 0 | 1.1 |
+| 12 | 0 | 0 | 0 | 0 | 1.2 |
+| 13 | 0 | 0 | 0 | 0 | 1.3 |
+| 14 | 0 | 0 | 0 | 0 | 1.4 |
+| 15 | 0 | 0 | 0 | 0 | 1.5 |
+| 16 | 0 | 0 | 0 | 0 | 1.6 |
+| 17 | 0 | 0 | 0 | 0 | 1.7 |
+| 18 | 0 | 0 | 0 | 0 | 1.8 |
+| 19 | 0 | 0 | 0 | 0 | 1.9 |
+| 20 | 0 | 0 | 0 | 0 | 2.0 |
 
 Only the position coordinate changes. The attention projections and output head ignore that coordinate in this toy.
 
@@ -290,8 +300,8 @@ Reading: in S_A the update to bank lands on the water axis, in S_B on the financ
 
 ## T7 / T9 - magnitudes
 
-- 320 parameters, all one-decimal, max |x| = 3.0 (limit 3.0).
-- token-embedding norms: min 1.21, mean 2.47, max 3.16; positional norms: min 0.10, max 1.00 (41% of the mean token norm).
+- 370 parameters, all one-decimal, max |x| = 3.0 (limit 3.0).
+- token-embedding norms: min 1.21, mean 2.47, max 3.16; positional norms: min 0.10, max 2.00 (81% of the mean token norm).
 - e^(0) of the three 'the' in S_A: pos 1 [0.00, 0.00, 0.00, 2.40, 0.10], pos 5 [0.00, 0.00, 0.00, 2.40, 0.50], pos 10 [0.00, 0.00, 0.00, 2.40, 1.00] (all different).
 
 ## Score ranges (for heat-map colour scales)
@@ -311,6 +321,6 @@ Reading: in S_A the update to bank lands on the water axis, in S_B on the financ
 - [PASS] (soft) T6 soft: mask off, some early token of S_A puts >= .25 on future river/bank: The(1):0.58 fisherman(2):0.45 sat(3):0.53 beside(4):0.65 the(5):0.58
 - [PASS] T7 hard: all |x| <= 3.0 and one decimal: max|x|=3.0
 - [PASS] T8 hard: vocabulary is the 20 tokens: 20 tokens
-- [PASS] T9 hard: position has its own coordinate and the three 'the' rows differ: position rows 0.1 to 1.0; token and projection position rows are zero
+- [PASS] T9 hard: position has its own coordinate and the three 'the' rows differ: position rows 0.1 to 2.0; token and projection position rows are zero
 - [PASS] T10 hard: parameter shapes match d_model, d_k and d_v: ok
 

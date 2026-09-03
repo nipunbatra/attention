@@ -13,7 +13,7 @@
   <div><p class="eyebrow">Why we are here: residual paths preserve a shared stream, while LayerNorm keeps each row on a controlled scale before a branch reads it.</p><h2>The residual stream and LayerNorm</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>The residual stream is the model-width row carried through the stack. Attention and the FFN read from that stream, compute updates, and add those updates back. LayerNorm acts within one row: it subtracts the row mean and divides by the row standard deviation. This makes the row's scale predictable for the next branch. Modern decoder-only models commonly use pre-norm blocks, where LayerNorm sits before attention and before the FFN. The sliders below let you change a short row and watch its mean, centered values, variance, and normalized values update. This calculator omits learned scale and shift parameters.</p>
+  <p>The residual stream is the model-width row carried through the stack. Attention and the FFN read from that stream, compute updates, and add those updates back. LayerNorm acts within one row: it subtracts the row mean and divides by $\sqrt{\operatorname{var}+\epsilon}$. The small $\epsilon$ keeps the denominator nonzero, even for a constant row. In the pre-norm decoder used here, LayerNorm sits before attention and before the FFN. The sliders let you inspect the mean, centered values, variance, and normalized values. This calculator uses $\epsilon=10^{-5}$ and fixes the learned scale and shift to $\gamma=1$, $\beta=0$; a trainable LayerNorm normally learns them. See the <a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.LayerNorm.html">PyTorch LayerNorm definition</a>.</p>
 </div>
 <div class="frame" data-title="An unbroken residual line">
   <script type="text/x-notes">Which path carries the representation through the block?
@@ -24,6 +24,7 @@
   <script type="text/x-notes">What stays unchanged when every input value shifts by the same amount?
   Move the sliders together and inspect the centered row. LayerNorm uses the row mean and variance.</script>
   <div class="card" data-build="1"><h3 class="card-title">Live LayerNorm calculator</h3><div class="s09-inputs" id="s09-inputs"></div><div id="s09-ln"></div></div>
+  <p>$\epsilon=10^{-5}$ prevents division by zero. Here $\gamma=1$ and $\beta=0$.</p>
 </div>
 <div class="frame" data-title="Pre-norm or post-norm">
   <script type="text/x-notes">Where does LayerNorm sit in the version we will use?
@@ -38,7 +39,7 @@
   const stream=S.querySelector('#s09-stream');
   ['$\\ve{e}$','→','LN and causal MHA','+','LN and FFN','+',"$\\vp{e'}$"].forEach((x,i)=>{if(x==='→'||x==='+')stream.appendChild(AT.h('span',{class:'s09-arrow'},x));else stream.appendChild(AT.h('div',{class:'s09-node '+((i===2||i===4)?'s09-branch':'')},x));});AT.renderMath(stream);
   const vals=[1,3,5],inputs=S.querySelector('#s09-inputs'),out=S.querySelector('#s09-ln');
-  function draw(){AT.clear(out);const R=AT.ln(vals,0);AT.ui.table([R.input,R.centered,R.output],{cols:['feature 1','feature 2','feature 3'],rowLabels:['input','subtract mean','divide by standard deviation'],cornerLabel:'LayerNorm',decimals:2,caption:'Mean '+AT.fmt(R.mean,2)+', variance '+AT.fmt(R.variance,2)+', standard deviation '+AT.fmt(R.denominator,2)+'.',into:out});}
+  function draw(){AT.clear(out);const R=AT.ln(vals,1e-5);AT.ui.table([R.input,R.centered,R.output],{cols:['feature 1','feature 2','feature 3'],rowLabels:['input','subtract mean','$\\div\\sqrt{\\operatorname{var}+\\epsilon}$'],cornerLabel:'LayerNorm',decimals:2,caption:'Mean '+AT.fmt(R.mean,2)+', variance '+AT.fmt(R.variance,2)+'. Denominator √(variance + 0.00001) ≈ '+AT.fmt(R.denominator,5)+'.',into:out});}
   vals.forEach((v,i)=>{const label=AT.h('label',{},'feature '+(i+1));const input=AT.h('input',{type:'range',min:-5,max:8,step:.5,value:v});const value=AT.h('output',{},String(v));input.addEventListener('input',()=>{vals[i]=Number(input.value);value.textContent=input.value;draw();});label.appendChild(input);label.appendChild(value);inputs.appendChild(label);});draw();
   const eq=S.querySelector('#s09-eq');
   function mode(pre){AT.clear(eq);AT.tex(eq,pre?'\\ve{u}=\\ve{e}+\\operatorname{MHA}(\\operatorname{LN}(\\ve{e}))':'\\ve{u}=\\operatorname{LN}(\\ve{e}+\\operatorname{MHA}(\\ve{e}))',{display:true});}

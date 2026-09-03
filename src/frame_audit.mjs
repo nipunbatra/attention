@@ -5,7 +5,8 @@
 //   - is authored on a logical 1280x720 stage,
 //   - never overflows that stage or its frame body,
 //   - never introduces a nested vertical scrollbar,
-//   - remains valid at every build and stepper state.
+//   - remains valid at every build and stepper state,
+//   - has valid KaTeX in the article and every presentation state.
 //
 // Reading mode is intentionally not constrained by this audit; the same frames
 // unfold into the long-form article there.
@@ -52,10 +53,77 @@ page.on('console', message => {
   if (message.type() === 'error') errors.push('CONSOLE: ' + message.text().slice(0, 240));
 });
 
+// KaTeX's throwOnError:false can render an unknown command in red without
+// adding .katex-error. Reparse each unique rendered source with the same macro
+// options, but strict error reporting. Keep this test separate from AT itself.
+const seenMath = new Set();
+const seenFallbacks = new Set();
+const mathFailures = [];
+async function validateMath(state, article = false) {
+  const sample = await page.evaluate(({ state, article }) => {
+    const root = article ? document : document.querySelector('.sec.is-live');
+    if (!root) return { formulas: [], fallbacks: [] };
+    function location(el) {
+      const section = el.closest('.sec');
+      const frame = el.closest('.frame');
+      const owner = el.closest('[id]');
+      return {
+        state,
+        section: section?.id || '(outside sections)',
+        frame: frame?.getAttribute('data-title') || frame?.id || null,
+        element: owner?.id || null
+      };
+    }
+    const formulas = [...root.querySelectorAll('.katex annotation[encoding="application/x-tex"]')].map(el => ({
+      ...location(el),
+      expression: el.textContent,
+      displayMode: !!el.closest('.katex-display')
+    }));
+    const fallbacks = [...root.querySelectorAll('.katex-error, .no-math')].filter(el => {
+      // .no-math also serves as an auto-render guard around manually rendered
+      // math. A container holding valid KaTeX is not a rendering fallback.
+      return el.classList.contains('katex-error') || (!el.querySelector('.katex') && el.textContent.trim());
+    }).map(el => ({
+      ...location(el),
+      expression: el.textContent.trim(),
+      kind: el.classList.contains('katex-error') ? 'katex-error' : 'no-math',
+      error: el.getAttribute('title') || 'Unrendered math fallback'
+    }));
+    return { formulas, fallbacks };
+  }, { state, article });
+
+  const fresh = sample.formulas.filter(formula => {
+    const key = JSON.stringify([formula.displayMode, formula.expression]);
+    if (seenMath.has(key)) return false;
+    seenMath.add(key);
+    return true;
+  });
+  const invalid = fresh.length ? await page.evaluate(formulas => formulas.flatMap(formula => {
+    try {
+      katex.renderToString(formula.expression, AT.katexOpts({ throwOnError: true, displayMode: formula.displayMode }));
+      return [];
+    } catch (error) {
+      return [{ ...formula, kind: 'parse-error', error: String(error.message || error) }];
+    }
+  }), fresh) : [];
+  for (const fallback of sample.fallbacks) {
+    const key = JSON.stringify([fallback.section, fallback.element, fallback.kind, fallback.expression]);
+    if (seenFallbacks.has(key)) continue;
+    seenFallbacks.add(key);
+    invalid.push(fallback);
+  }
+  for (const failure of invalid) {
+    mathFailures.push(failure);
+    errors.push(`MATH: ${failure.section}${failure.element ? ' #' + failure.element : ''} at ${failure.state}: ${JSON.stringify(failure.expression)}: ${failure.error}`);
+  }
+}
+
 const url = new URL(pathToFileURL(path.resolve(file)).href);
-url.searchParams.set('present', '');
 await page.goto(url.href, { waitUntil: 'load' });
 await page.waitForTimeout(500);
+await validateMath('article', true);
+await page.evaluate(() => AT.present.enter());
+await page.waitForTimeout(100);
 
 // The runtime preflight samples full builds, every managed stepper state, and
 // native reveal panels opened. The state walk below independently checks live
@@ -107,6 +175,7 @@ for (let guard = 0; guard < 5000; guard++) {
     break;
   }
   visited.add(report.key);
+  await validateMath(report.key);
 
   const stageContract = !report.sectionBox || Math.abs(report.sectionBox.width - 1280) > 1 || Math.abs(report.sectionBox.height - 720) > 1;
   const bad = report.frameOverflowX || report.frameOverflowY || report.stageOverflowX || report.stageOverflowY || report.fitWarning || stageContract || report.nested.length;
@@ -139,6 +208,7 @@ const result = {
   viewport: [width, height],
   states: visited.size,
   errors,
+  math: { uniqueFormulas: seenMath.size, failures: mathFailures },
   preflightOverflow: preflight.overflow,
   overflowFailures: failures
 };

@@ -1,73 +1,103 @@
-# HANDOVER — interactive self-attention teaching series (attention.html and parts)
+# Handover: three-part interactive teaching series
 
-Owner: Nipun Batra (nipun.batra@iitgn.ac.in). Repo: https://github.com/nipunbatra/attention  Live: https://nipunbatra.github.io/attention/
-Written 2026-09-03 by Claude Code at the end of a long build session. Everything needed to continue lives in the repo under `src/`.
-This file is the entry point for any successor: a later Claude session, Codex, Gemini, or a human.
+Updated 2026-09-03. Owner: Nipun Batra.
 
-## 1. What this is
-A single-file, offline interactive lesson series for a deep-learning course:
-- Part 2 (done, live): `attention.html` — self-attention from first principles for next-token prediction. 19 sections after the restructure.
-- Part 1 (planned): `part1.html` — from characters to next-token prediction (the aabid name model). Plan: `src/GUIDE1.md`. Data: `src/names.csv`.
-- Part 3 (planned): `part3.html` — learning (loss, autograd, one update, parallel causal training), multi-head, FFN, residual stream, LayerNorm,
-  blocks, decoder-only model, generation, KV cache, model families. Plan: `src/GUIDE3.md`. Seed material: `src/sections3_seed/` (the old s17 heads and s18 layers).
-- `index.html` is the series landing; `part2.html` redirects to attention.html.
-The instructor's original brief is `src/SPEC.md`; his slide deck that the series mirrors is `/Users/nipun/git/dl-teaching/lecture11/` (Typst; outline in
-`L11M-from-characters-to-transformers-outline.md`; PDF `slides-pdf/L11M.pdf`). Notation, colours and the sequence follow that deck (row vectors, e' = e + Delta e).
+- Repository: https://github.com/nipunbatra/attention
+- Published series: https://nipunbatra.github.io/attention/
+- Canonical local checkout on this Mac: `/Users/nipun/git/attention`.
 
-## 2. Layout of src/
-- `SPEC.md` brief · `BRIEF.md` design tokens + engineering rules (row-vector convention) · `GUIDE.md` per-section design for Part 2 · `CONTRACT.md` the runtime API
-  (AT.* components: chips, vec, mat, heat, bars, table, dotTable, mixTable, wTable, dotCalc, matVecCalc, notationCard, netSketch, motif, flow, stepper, reveal,
-  callout, present mode authoring) · `PARTS.md` multi-part build contract · `PRESENT.md` presentation-mode design · `FRAMES.md` frame/build plan for Part 2 ·
-  `AXES.md` the named-axes toy design (revision 2 at the end is NOT yet applied) · `GUIDE1.md`, `GUIDE3.md` plans for Parts 1 and 3 ·
-  `CODEX_FEEDBACK.md` (applied), `CODEX_FEEDBACK_2.md` (assessed, NOT yet applied) · `REV2_TASK.md` the next task, ready to hand to an agent ·
-  `humanizer/SKILL.md` the prose rules (blader/humanizer; installed as a Claude Code plugin `humanizer@humanizer`).
-- `shell.html` (page skeleton + all CSS + hero/strip/footer + boot; reads window.__PART__), `shared.js` (the AT runtime), `assemble.py` (builder),
-  `katex-bundle.html` (KaTeX 0.17 with fonts inlined; never edit), `part2.json` (Part 2 config), `toy.json` (Part 2 toy v2, named axes; `toy_v1.json` old),
-  `make_toy2.py` (hand-designed toy generator; `python3 make_toy2.py` rewrites toy.json and checks targets), `gen_report.py` -> `toy_report.md` (every number
-  on the page), `toy_ref.mjs` (reference forward pass; `node toy_ref.mjs` must exit 0), `py_check.json`.
-- `sections/secNN.html` Part 2 fragments (one <section> + one <script> IIFE each; `sec00_demo.html` is the component gallery, not shipped).
-- Test tools: `qa.mjs` (errors/overflow/screenshot), `sweep.mjs` (clicks every control, scans for NaN), `secshot.mjs`, `crop.mjs`, `hovershot.mjs`,
-  `mathdiff.mjs` (structure diff + humanizer flags), `pres_test.mjs`, `walk.mjs` (present-mode walk). Playwright lives at
-  `/Users/nipun/.npm/_npx/360550e4913b8759/node_modules/playwright` (see qa.mjs for the require pattern); Chromium is cached; no install needed.
+All three parts are implemented. They share a slide-first reading/presentation system, not separate article and slide sources. The first slide-first checkpoint was `a49f811`. This handover accompanies the follow-up Part 3 and correctness checkpoint; `CLASSROOM_QA.md` records its completed local verification. Check the checkout's Git log and the GitHub Pages workflow for the current published commit. A temporary checkout is not evidence of what is live.
 
-## 3. Build and test (from src/)
-    python3 assemble.py --part 2 --out ../attention.html            # full Part 2
-    python3 assemble.py --part 2 --only sections/sec07.html --out t07.html   # one fragment for testing
-    node qa.mjs ../attention.html --width 1280 --height 720 --shot x.png     # must print zero pageErrors/consoleErrors/katexErrors, overflowX false
-    node qa.mjs ../attention.html --width 390                               # phones: no overflow
-    node sweep.mjs ../attention.html                                        # clicks every control; problems must be {}
-    node toy_ref.mjs                                                        # toy targets; exit 0
-    node mathdiff.mjs sections/secNN.html sections/secNN.html               # lists humanizer flags (dashes, AI words) in a fragment
-    node walk.mjs ../attention.html                                         # present mode: walks frames, screenshots
-Publish: copy the assembled file(s) to the repo root, `git add -A && git commit && git push` (Pages serves main, root). Pages builds in about a minute.
+## Start here
 
-## 4. Rules that must survive (decided with the instructor)
-- One symbol family: e_i (current representation), e_i^{(0)} = token + position, q_i = e_i W_Q, k_j = e_j W_K, v_j = e_j W_V, s_ij, alpha_ij, m_i = sum_j alpha_ij v_j,
-  Delta e_i = m_i W_O (pedagogical name for the attention output; the addition is the standard residual), e_i' = e_i + Delta e_i. Matrix form E, Q, K, V, S, A, H, DeltaE, E'.
-  ROW-VECTOR convention everywhere (q_i = e_i W_Q; scores as a dot product q_i . k_j; S = QK^T). Never x, h, z for representations. Output head is W_vocab.
-- Seven object colours (e blue, Q purple, K amber, V teal, alpha rose, Delta e green, e' blue with green ring) used only for those objects.
-- Every number on the page is computed from the toy through AT.model/AT.forward; nothing is retyped. The toy is hand designed so that its named axes are true.
-- Tables with named columns wherever coordinates mean something; worksheets (dotCalc, matVecCalc) wherever a product or a weighted sum is shown.
-- Prose follows humanizer/SKILL.md: plain verbs, sentence case, no em or en dashes, no "not just X but Y", no forced triples, no AI vocabulary. Companion prose
-  (80 to 120 words) per section for self-study; "Reading: full / lean" toggle in the strip.
-- Causal examples only (bank never reads a later word). Do not introduce LayerNorm/MLP/blocks in Part 2. Heads and layers belong to Part 3.
-- Multi-part: PARTS.md; each part is one file; frames authored per PRESENT.md so slide mode is a toggle.
+Read this file, then `PRESENT.md` for the current layout/runtime contract and `CLASSROOM_QA.md` for recorded verification. Inspect the actual section and shared runtime before editing.
 
-## 5. State at handover (updated 2026-09-03, commit 06060c0 and later)
-Done and live: Part 2 with named axes on FIVE coordinates (water, finance, person, glue, position), keys 3 wide and values 2 wide, tables and
-worksheets everywhere, the s05/s06 mock video search with per-card key and value strips, dot-product notation q_i . k_j, companion prose, notation card,
-s13 background staircase, present-mode runtime, multi-part shell, series index, every round-2 review item (CODEX_FEEDBACK_2.md) applied.
-Present-mode frames exist for s01 to s05 (s05 needs re-checking after the mock UI); s06 to s19 fall back to automatic one-card-per-build frames.
-ALSO DONE (Codex CLI jobs, 2026-09-03): presentation frames for s01 to s06 (14 frames, 58 builds; s07 to s19 still auto-framed) and the whole of Part 3
-(part3.html: 19 sections, 47 frames, toy3.json training block checked by finite differences, part3.js). The series index links Parts 2 and 3.
-ALSO DONE: Part 1 (part1.html: 16 sections, aabid name model trained by train_names.py on names.csv, part1.js generator). All three parts are live.
-Remaining ideas, none blocking:
-0. (nothing required) Optional next steps: curate presentation frames for Part 2 s07 to s19 and review Parts 1 and 3 frames in class; a second review round with Codex on Parts 1 and 3.
-1. (was) Part 1 per GUIDE1.md (train the aabid MLP with train_names.py on names.csv, part1.js, sections1/), then update index.html cards and part2.json prev/next.
-Known small issues: the roadmap in the hero lists s01 to s14 only; sections3_seed/sec17.html clips at 390px.
-Codex note: the Codex sandbox cannot launch the bundled headless Chromium (Mach port error); it verifies in the system browser instead. Run qa.mjs and
-sweep.mjs from a normal shell before pushing.
+`SPEC.md`, `BRIEF.md`, `GUIDE.md`, `GUIDE1.md`, `GUIDE3.md`, `AXES.md`, `PARTS.md`, the older feedback files, and `REV2_TASK.md` preserve useful design history. Some contain superseded notation, planned work that is now done, or old layout assumptions. They are historical guidance, not instructions to undo the current implementation. `CONTRACT.md` documents components; confirm its examples against `shared.js` when they differ.
 
-## 6. How to hand a task to an agent
-Give it: this file, the task file (e.g. REV2_TASK.md), CONTRACT.md, and the acceptance commands in section 3. Ask for: files changed, tests run with results,
-screenshots inspected, open issues. Keep edits inside src/ and the assembled outputs at the repo root. Push after every green build so Pages stays current.
+## Source and outputs
+
+| Part | Editable sections | Data/runtime | Assembled output |
+|---|---|---|---|
+| 1: characters to prediction | `sections1/secNN.html` | `toy1.json`, `part1.js`, `part1.json` | `../part1.html` |
+| 2: self-attention | `sections/secNN.html` | `toy.json`, `part2.json` | `../attention.html` |
+| 3: learning and Transformer blocks | `sections3/secNN.html` | `toy3.json`, `part3.js`, `part3.json` | `../part3.html` |
+
+Paths in this table are relative to `src/`. Shared files are `shell.html` (layout/CSS), `shared.js` (math, widgets, notation, presentation runtime), and `assemble.py`. Do not edit the generated root HTML or the inlined `katex-bundle.html` by hand. `index.html` is the series landing page; `part2.html` redirects to `attention.html`.
+
+The standalone staged diagram lives in `figures/attention-diagram-preview/`. Part 2 embeds its same `diagram.js` source through `src/attention-flow-data.js`; keep the preview and article synchronized by changing that shared source.
+
+## Notation and conceptual agreements
+
+- Use row vectors. `E_tok` is the learned vocabulary lookup table, shape `|Vocab| × d_model`. `E` is the current sequence stack, shape `T × d_model`. They are not interchangeable.
+- Before attention, `e_i` denotes an embedding/current representation. Introduce position addition explicitly: `e_i^(0) = E_tok[token_i] + P[i]`. Position is added as a same-width vector, not appended as a compulsory new dimension in real models.
+- `q_i = e_i W_Q` asks what to retrieve; `k_j = e_j W_K` supplies matching features; `v_j = e_j W_V` supplies information to send. A value is a learned projection, not a renamed embedding. Its width may differ from the embedding width.
+- Raw scores are `r_ij = q_i · k_j`; scaled scores are `s_ij = r_ij / sqrt(d_k)`. Apply the causal mask before row-wise softmax. `alpha_ij` weights input positions, not vocabulary outcomes.
+- `m_i = sum_j alpha_ij v_j` is one retrieved message. The matrix of messages is `H = A V` (`Mmsg` in runtime results). Reserve `M` for the causal mask. `Delta e_i = m_i W_O`, then `e_i' = e_i + Delta e_i`. Delta denotes an activation update, not an optimizer step.
+- The vocabulary head maps the final known token's contextual row to next-token logits. During generation, append the chosen token and recompute for the new last position. The unknown next token does not provide a query.
+- Keep the bank/river/finance examples and work arithmetic progressively. Intuitive English questions and named axes explain a contrived model; real projections learn vectors, not literal questions or guaranteed semantic axes.
+- Preserve object colours: embedding blue, query purple, key amber, value teal, attention weight rose, update green, updated representation blue/green. Do not use these colours for unrelated decorations.
+- Part 2 teaches one attention head plus output projection and residual. Part 3 adds heads, FFN, normalization, and blocks. Label simplified numerical worksheets as such; they do not calculate the full pre-norm stack. That stack includes final LayerNorm before the vocabulary head.
+- Show the forward pass and generation before learning. For backpropagation, show the true branching graph and short autograd code, not hand-derived Jacobians. Parameters are updated; intermediate Q/K/V, weights, and messages are recomputed.
+
+## The numerical model and its limits
+
+Part 1 uses the trained name-model data in `toy1.json`. Parts 2 and 3 share the hand-designed single-head attention model: `d_model=5`, `d_k=3`, `d_v=2`, and a 20-token vocabulary. The worked river/cheque prefixes contain ten tokens. Twenty same-width position vectors support generation beyond those prefixes; inputs beyond the supported capacity must fail clearly, not silently receive zero positions.
+
+The five illustrative representation axes are water, finance, person, glue, and position. **The hand-designed attention projections and vocabulary head ignore the position axis.** Position remains in the residual row, but this toy does not demonstrate learned positional use or general order sensitivity. The causal mask still restricts each row to its prefix. Do not turn this limitation into a claim that positions are unnecessary or that real embeddings reserve one coordinate for position.
+
+Read numbers from `AT.model`, `AT.forward`, `AT.mlp`, or the stored `AT.train` results. Distinguish unrounded computation from displayed precision. `make_toy2.py` regenerates the base model; `train_part3.py` derives `toy3.json`; `gen_report.py` generates the numerical report. These are writing generators, not read-only tests. If parameters change, regenerate dependent data and assembled parts, then rerun numerical checks. Do not casually retrain `toy1.json` during a layout edit.
+
+## Slide-first, article-unfolded
+
+Every section uses explicit `.frame` wrappers with a `data-title`, optional `data-build` reveals, and `text/x-notes` presenter cues. Presentation uses a fixed logical **1280 × 720** stage, uniformly scaled to the available screen. Classroom typography is larger than article typography; the current tokens are 28px body, 42px heading, 22px captions, and 32px math.
+
+Frames must not contain nested scrollbars or shrink their own text to fit. Split an overfull idea into a continuation frame. The live warning and `AT.present.preflight()` identify overflow, including open reveals and managed stepper states. Do not suppress those warnings or hide overflowing content.
+
+Reading mode unfolds the same frames and widgets into responsive longform. `.companion` holds article-only explanation and detailed worksheets; it is hidden in presentation and lean reading. Preserve widget IDs/listeners when moving content. Test both modes and intermediate states, not only the fully revealed default slide.
+
+Use **P** to present, arrows to advance, **Esc** to return to the same article section. Bare `#sNN` links are reading anchors; `?present#sNN/frame/build` is a classroom deep link. See `PRESENT.md` for controls, state restoration, and presenter view.
+
+## Build, verify, and export
+
+Run these from the repository root. Reuse existing Python/NumPy and Playwright environments; browser tools should not install dependencies. In a restricted agent sandbox, Chromium's macOS Mach-port error requires an approved browser test run outside that sandbox, not a claimed pass.
+
+```sh
+python3 src/assemble.py --part 1 --out part1.html
+python3 src/assemble.py --part 2 --out attention.html
+python3 src/assemble.py --part 3 --out part3.html
+
+node src/check_part1.mjs
+node src/toy_ref.mjs src/toy.json --compare src/py_check.json
+python3 src/check_training.py
+node src/check-live-model.mjs attention.html
+node src/check_position_capacity.mjs attention.html part3.html
+node src/check-routing-scaling.mjs
+node src/check-diagram.mjs attention.html
+
+node src/pres_test.mjs
+node src/frame_audit.mjs part1.html
+node src/frame_audit.mjs attention.html
+node src/frame_audit.mjs part3.html
+node src/qa.mjs attention.html --width 1280 --height 720
+node src/qa.mjs attention.html --width 390 --height 844
+node src/sweep.mjs attention.html
+git diff --check
+```
+
+Repeat article QA and interaction sweeps for each changed part. `check_training.py` independently checks saved training results and all used parameter gradients without writing data. `check_position_capacity.mjs` checks 10/11/20-token evaluation, invalid-input rejection, and generation with the new last-position query. `frame_audit.mjs` walks presentation states and can save failure screenshots with `--shots /tmp/attention-overflow`. Inspect representative screenshots and PDF pages as well as test output. Record actual commands/results in `CLASSROOM_QA.md`; this handover does not certify an unrun release.
+
+```sh
+# Exact slide views: one fully revealed page per authored frame
+node src/export_slides.mjs attention.html output/pdf/attention-part2-slides.pdf
+
+# Every build and managed stepper state as a separate page
+node src/export_slides.mjs attention.html output/pdf/attention-part2-builds.pdf --builds all
+```
+
+The exporter captures the actual 16:9 stage without navigation, preflights fit, and refuses overfull frames. Default scale is 2×; `--scale 1|2|3` changes raster resolution and `--frames DIR` retains PNGs. PDFs preserve browser/SVG appearance as images, so text is not selectable and widgets are no longer interactive. Final export advances authored builds and managed steppers; sliders, quizzes, and manual disclosures retain their authored defaults. Browser Print is a separate reading-oriented handout, not this exact slide export.
+
+## Publishing and parallel work
+
+The user requested regular GitHub checkpoints. Verify the checkout, branch, remote, existing edits, and available GitHub authentication first. Preserve unrelated work. Stage only reviewed task files with explicit paths, inspect the staged diff, then commit and push after the relevant checks pass. Never use broad `git add -A` as a handover shortcut. Verify the pushed commit and Pages status before calling a checkpoint published.
+
+Give each parallel agent an explicit file boundary and a bounded task. Shared runtime changes affect all three parts and require all-part fit checks. Ask for changed files, tests actually run, screenshots inspected, and remaining limitations. Keep temporary previews outside the source tree and do not overwrite another agent's changes.

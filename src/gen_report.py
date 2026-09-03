@@ -30,7 +30,9 @@ w("Nothing was optimised. AXES.md names every coordinate, and the embeddings and
   "`fisherman` became [2.0, 0, 2.2, 0, 0], because the self score q_bank . k_bank grows with the square of "
   "bank's water/finance entries and at 1.5 bank attended to itself as much as to river; the W_vocab weights were raised to "
   "1.5/1.2/1.0/0.7 (water words) and 1.5/1.2/0.9/0.7 (finance words) so that every non-candidate word stays at or below 0.04. "
-  "Position has its own coordinate. It rises from 0.1 to 1.0, while its rows in W_Q, W_K, W_V and W_vocab are zero.\n")
+  f"Position has a dedicated coordinate only as a toy simplification. It rises from 0.1 to {toy['pos_emb'][-1][-1]:.1f} "
+  f"across {len(toy['pos_emb'])} supported positions, while its rows in W_Q, W_K, W_V and W_vocab are zero. "
+  "The toy demonstrates content routing, not sensitivity to word order.\n")
 
 w("## Axes (from `toy.json` -> `axes`)\n")
 axis_width = max(len(AX["e"]), len(AX["qk"]), len(AX["v"]))

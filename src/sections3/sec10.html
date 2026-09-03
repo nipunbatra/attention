@@ -14,8 +14,15 @@
 <div class="frame" data-title="Walk through one pre-norm block">
   <script type="text/x-notes">Where are the two residual additions?
   Step through the block and ask which operations cross positions and which remain within one row.</script>
-  <div class="card"><h3 class="card-title">One decoder block</h3><div id="s10-stepper"></div></div>
-  <div class="prose" data-build="1">
+  <div id="s10-stepper"></div>
+</div>
+<div class="frame" data-title="Then add the feature-mixing update">
+  <script type="text/x-notes">The second branch reads the attention-updated residual row. It mixes features independently at each token position.</script>
+  <div class="card"><div id="s10-ffn-stepper"></div></div>
+</div>
+<div class="frame" data-title="Two residual additions make one block">
+  <script type="text/x-notes">The first line adds the attention update. The second adds the FFN update. Both preserve model width.</script>
+  <div class="prose">
     $$\ve{u}=\ve{e}+\operatorname{MHA}(\operatorname{LN}(\ve{e}))$$
     $$\vp{e'}=\ve{u}+\operatorname{FFN}(\operatorname{LN}(\ve{u}))$$
   </div>
@@ -27,8 +34,9 @@
 </div>
 <div class="frame" data-title="Depth supports multi-hop updates">
   <script type="text/x-notes">Which relation may need to be assembled before another token can use it?
-  Read the trophy sentence. One block can update a clue; a later block can route using that changed row.</script>
-  <div class="card" data-build="1"><h3 class="card-title">A multi-hop trace</h3><div id="s10-hop"></div></div>
+  Read river → bank → the from left to right. Block one can update bank using river; only a later block can read that newly contextualized bank row. These are possible learned routes, not guaranteed head behaviour.</script>
+  <p>They walked by the <strong>river</strong> <strong>bank</strong> and watched the ___</p>
+  <div id="s10-hop" data-build="1"></div>
 </div>
 <div class="companion after"><p>Each block reads the previous block's contextual rows, which lets later routing depend on relations assembled earlier.</p></div>
 <script>
@@ -36,13 +44,18 @@
   const S=document.getElementById('s10');
   const stages=['$\\ve{e}$','LayerNorm','causal multi-head attention','residual add','LayerNorm','FFN','residual add'];
   const titles=['Current representation','Normalize for attention','Gather across positions','First residual addition','Normalize for the FFN','Mix features','Second residual addition'];
-  AT.ui.stepper({steps:stages.map((x,i)=>({title:titles[i],tex:i===0?'\\ve{e}':null,note:i===2?'Every head reads the full normalized input through its own projections.':i===5?'The same FFN acts independently on each token row.':i===3||i===6?'The branch output is added to the residual stream.':'The row stays at model width.',render:el=>{const line=AT.h('div',{class:'s10-stack'});stages.slice(0,i+1).forEach((s,j)=>{line.appendChild(AT.h('div',{class:'s10-box'},s));if(j<i)line.appendChild(AT.h('span',{class:'s10-arrow'},'→'));});el.appendChild(line);}})),into:S.querySelector('#s10-stepper')});
+  function step(i){return {title:titles[i],note:i===2?'Every head reads the full normalized input through its own projections.':i===5?'The same FFN acts independently on each token row.':i===3||i===6?'The branch output is added to the residual stream.':'The row stays at model width.',render:el=>{
+    const shown=i<4?['$\\ve{e}$','LN','MHA','+ $\\ve{e}$'].slice(0,i+1):['$\\ve{u}$','LN','FFN','+ $\\ve{u}$'].slice(0,i-2);
+    const line=AT.h('div',{class:'s10-stack'});shown.forEach((x,j)=>{if(j)line.appendChild(AT.h('span',{class:'s10-arrow'},'→'));line.appendChild(AT.h('div',{class:'s10-box'},x));});el.appendChild(line);
+  }};}
+  AT.ui.stepper({steps:[0,1,2,3].map(step),into:S.querySelector('#s10-stepper')});
+  AT.ui.stepper({steps:[4,5,6].map(step),into:S.querySelector('#s10-ffn-stepper')});
   const stack=S.querySelector('#s10-stack');
   ['$\\ve{E^{(0)}}$','block 1','$\\ve{E^{(1)}}$','block 2','$\\ve{E^{(2)}}$','more blocks'].forEach((x,i)=>{stack.appendChild(AT.h('div',{class:'s10-box'},x));if(i<5)stack.appendChild(AT.h('span',{class:'s10-arrow'},'→'));});AT.renderMath(stack);
   AT.ui.stepper({steps:[
-    {title:'Read the surface clue',note:'"The trophy did not fit in the suitcase because it was too ___." One row can gather the relation between fit, trophy, and suitcase.'},
-    {title:'Update the candidate referents',note:'Earlier context changes the rows for trophy and suitcase. This change is available after the block.'},
-    {title:'Route with the changed rows',note:'A later block can use those contextual rows when deciding which property is relevant to the blank.'}
+    {title:'Block 1: bank can read river',note:'River is to the left of bank, so the causal mask permits this connection. An attention update can make the bank row reflect the riverbank sense.'},
+    {title:'Block 2: the can read the updated bank',note:'The final the now forms a query from its block-1 row. Its attention can read keys and values made from the contextualized bank row produced by block 1.'},
+    {title:'The final row helps predict the next token',note:'The last position can gather this river-related information before the vocabulary head predicts what follows. It can also read river directly; depth adds a route through already-contextualized bank, not permission to see the future.'}
   ],into:S.querySelector('#s10-hop')});
 })();
 </script>

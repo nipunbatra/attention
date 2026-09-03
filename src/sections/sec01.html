@@ -36,7 +36,7 @@ body.present #s01 .emb-tab{margin-top:20px}
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Everything on this page serves one task: guess the next word. A language model does nothing else, so every mechanism added later has to pay for itself here. Switch between the two contexts in the first widget and watch the bars move. The last three words are identical in both sentences, so whatever the model does inside, it has to carry <em>river</em> or <em>cheque</em> all the way to the blank. The second widget shows the raw material it starts from: a token starts as a row of $d_{\text{model}}$ numbers, one per named coordinate (<span id="s01-axes-names"></span>). One coordinate carries position. The names are illustrative, and the toy was written by hand so that the numbers agree with them. The sentence to remember: a good prediction needs a good representation of the relevant context.</p>
+  <p>Everything on this page serves one task: guess the next word. Every mechanism added later has to pay for itself here. Switch between the two contexts in the first widget and watch the bars move. The last three words are identical in both sentences, so whatever the model does inside, it has to carry <em>river</em> or <em>cheque</em> all the way to the blank. The second widget shows the raw material it starts from: a token starts as a row of $d_{\text{model}}$ numbers, one per named coordinate (<span id="s01-axes-names"></span>). These coordinate names and numbers are hand-chosen for this toy. Its fifth coordinate carries a position offset, but the later projections ignore it: this example demonstrates content routing, not word-order sensitivity. The sentence to remember: a good prediction needs a good representation of the relevant context.</p>
 </div>
 
 <div class="frame" data-title="One blank" id="s01-frame1" data-autobuild="off">
@@ -92,6 +92,17 @@ It must receive information about river or cheque from earlier in the sentence. 
 
 </div>
 
+<div class="frame" id="s01-frame-lookup" data-title="A token starts with a vocabulary lookup" data-autobuild="off">
+  <script type="text/x-notes">Is the vocabulary table the same object as the rows for this sentence?
+No. E_tok stores one learned row per vocabulary token. The token ID selects a row; the position vector is added to create this occurrence's starting representation. These toy parameters are hand-chosen, not trained.</script>
+  <div class="prose">
+    <p>$E_{\text{tok}}$ is the <strong>learned vocabulary lookup table</strong>: one stored row per token.</p>
+    <p data-build="1">At position $i$, the token ID $t_i$ selects a row. Add the same-width position vector $p_i$:</p>
+    <div data-build="1">$$\ve{e_i^{(0)}} = E_{\text{tok}}[t_i] + p_i$$</div>
+  </div>
+  <div class="callout callout-note" data-build="2">The superscript $(0)$ means before any contextual update. We use <strong>hand-chosen rows</strong> here so we can follow the arithmetic.</div>
+</div>
+
 <div class="frame" data-title="Where a token starts" id="s01-frame2" data-autobuild="off">
   <script type="text/x-notes">
     What does position add, and which coordinate changes in this toy?
@@ -110,15 +121,26 @@ It must receive information about river or cheque from earlier in the sentence. 
   </div>
 </div>
 
-<div class="frame" id="s01-frame-starting-row" data-title="One input row per token position" data-autobuild="off">
-  <script type="text/x-notes">Does adding position append another coordinate?
-No. The two vectors have the same width and are added coordinate by coordinate. The toy's named position axis is a hand-chosen simplification, not the general definition of a positional embedding.</script>
+<div class="frame" id="s01-frame-starting-row" data-title="E stacks the current rows of this sentence" data-autobuild="off">
+  <script type="text/x-notes">Does E have one row per vocabulary token or per input position?
+One row per input position. Initially each e_i is e_i^(0); later e_i denotes the current representation after earlier contextual updates. E_tok is the stored lookup table, not this sentence matrix.</script>
   <div class="prose">
-    <p>A token embedding and a position vector have the <strong>same width</strong>:</p>
-    $$\ve{e_i^{(0)}} = \text{tok}_i + \text{pos}_i$$
-    <p data-build="1">The result still has $d_{\text{model}}$ numbers. The superscript $(0)$ means <strong>before any contextual update</strong>.</p>
+    <p>Write $e_i$ for the <strong>current representation at position $i$</strong>. Initially, $e_i=e_i^{(0)}$.</p>
+    $$\ve{E}=\begin{bmatrix}e_1\\e_2\\\vdots\\e_T\end{bmatrix}\in\mathbb{R}^{T\times d_{\text{model}}}$$
+    <p data-build="1">$T$ input positions give $T$ rows. Every row still has $d_{\text{model}}$ numbers.</p>
   </div>
-  <div class="callout callout-note" data-build="2">Every occurrence starts from its token's lookup row. Context will change the representation of <em>this occurrence</em>, not overwrite the lookup table.</div>
+  <div class="callout callout-note" data-build="2">$E_{\text{tok}}$ is stored across sentences. $E$ is built for <em>this sentence</em>; contextual updates change its position rows, not the lookup table.</div>
+</div>
+
+<div class="frame" id="s01-frame-position-limit" data-title="Position is added, not appended" data-autobuild="off">
+  <script type="text/x-notes">Does the fifth coordinate mean a position was appended to a four-dimensional embedding?
+No: both the token and position vectors already have five coordinates. Only this hand-designed toy reserves coordinate five for position. Its later projections ignore that coordinate, so do not claim that its changing predictions demonstrate sensitivity to word order.</script>
+  <div class="prose">
+    <p>Both vectors already have five coordinates:</p>
+    $$\underbrace{E_{\text{tok}}[t_i]}_{1\times5}+\underbrace{p_i}_{1\times5}=\underbrace{e_i^{(0)}}_{1\times5}$$
+    <p data-build="1">Only this toy reserves coordinate 5 for position. A positional vector need not have its own dedicated coordinate.</p>
+  </div>
+  <div class="callout callout-note" data-build="2">The later matching, message and prediction calculations <strong>ignore coordinate 5</strong>. This toy shows which words supply information, <strong>not how word order changes the prediction</strong>.</div>
 </div>
 
 <div class="companion after">
@@ -202,8 +224,8 @@ No. The two vectors have the same width and are added coordinate by coordinate. 
   function labelsFor(i){
     const n = i + 1, tok = AT.escape(SA[i]);
     return {
-      tok: '$\\text{tok}_{' + n + '}$ “' + tok + '”',
-      pos: '$\\text{pos}_{' + n + '}$',
+      tok: '$E_{\\text{tok}}[t_{' + n + '}]$ “' + tok + '”',
+      pos: '$p_{' + n + '}$',
       sum: '$\\ve{e_{' + n + '}^{(0)}}$'
     };
   }
@@ -212,7 +234,7 @@ No. The two vectors have the same width and are added coordinate by coordinate. 
     axes: 'e', cornerLabel: 'coordinate',
     rowLabels: [L0.tok, L0.pos], rowCls: ['neutral', 'neutral'],
     footer: { label: L0.sum, values: E0[ei], cls: 'e' },
-    caption: 'Position has its own column; the toy carries it but its attention does not use it.',
+    caption: 'Both rows have five coordinates. Only this toy uses coordinate 5 solely for position; its projections ignore that coordinate.',
     note: 'Hover or focus a cell of the sum row to see the addition.',
     into: S.querySelector('#s01-emb-tab')
   });

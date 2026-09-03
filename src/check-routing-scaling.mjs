@@ -136,7 +136,7 @@ try {
   assert(widthAudit.page <= widthAudit.viewport + 1, 'no page-wide horizontal overflow on mobile: ' + JSON.stringify(widthAudit));
   assert.deepEqual(await page.locator('.katex-error').allTextContents(), []);
   assert.deepEqual(errors, []);
-  console.log('PASS: exact value-only isolation; fixed-score divisor and softmax calculations; variance simulation; bypass vs self-attention UI; restore toggles; classroom frames; ≤2-line snippets; mobile width; no JS/KaTeX errors.');
+  console.log('PASS: exact value-only isolation; fixed-score divisor and softmax calculations; variance simulation; bypass vs self-attention UI; restore toggles; classroom frames; ≤4-line snippets; mobile width; no JS/KaTeX errors.');
   console.log(JSON.stringify({ bankAlpha: F.A[6], originalMessage: F.Mmsg[6], alternateMessage: Fa.Mmsg[6], originalDelta: F.Delta[6], alternateDelta: Fa.Delta[6], frames: frameAudit }, null, 2));
 } finally {
   await browser.close();

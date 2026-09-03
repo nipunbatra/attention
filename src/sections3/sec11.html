@@ -1,16 +1,20 @@
 <section id="s11" class="sec" data-title="The complete decoder-only model" data-lit="">
 <style>
-#s11 .s11-model{display:flex;flex-wrap:wrap;align-items:center;gap:9px;padding:18px}
+#s11 .s11-model{display:grid;grid-template-columns:1fr 30px 1.45fr 30px 1fr;align-items:center;gap:9px;padding:18px}
 #s11 .s11-box{border:2px solid var(--line);border-radius:9px;padding:12px;background:var(--card);text-align:center}
 #s11 .s11-arrow{font-size:1.35em;color:var(--ink-3)}
+#s11 .s11-model .s11-arrow{text-align:center}
+#s11 .s11-model .s11-turn{grid-column:5}
+@media(max-width:600px){body:not(.present) #s11 .s11-model{grid-template-columns:1fr;justify-items:stretch}body:not(.present) #s11 .s11-model .s11-turn{grid-column:auto}body:not(.present) #s11 .s11-model .s11-arrow{display:none}body:not(.present) #s11 .s11-model .s11-box[data-order="3"]{grid-row:4}body:not(.present) #s11 .s11-model .s11-box[data-order="4"]{grid-row:5}body:not(.present) #s11 .s11-model .s11-box[data-order="5"]{grid-row:6}}
 #s11 .s11-lm svg{display:block;width:100%;min-width:680px;height:auto}
+body.present #s11 .s11-lm svg{width:auto;min-width:0;height:420px;margin:auto}
 </style>
 <header class="sec-head">
   <span class="sec-num">11</span>
   <div><p class="eyebrow">Why we are here: embeddings, blocks, and the vocabulary head now form one decoder-only language model.</p><h2>The complete decoder-only model</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>A decoder-only Transformer begins with token embeddings plus positions, sends the resulting rows through a stack of causal blocks, and applies a vocabulary head to each final row. Every block preserves model width, so residual additions remain possible throughout the stack. The vocabulary head maps one final five-feature row to one logit per token in this toy vocabulary. Softmax turns those logits into probabilities. During training, every position can contribute a loss. During generation, only the distribution at the last position is needed to choose the next token. The diagram and shape table connect each stage without introducing a new representation symbol.</p>
+  <p>The pre-norm decoder-only Transformer shown here begins with token embeddings plus positions, sends those rows through a stack of causal blocks, then applies a final LayerNorm before the vocabulary head. Every block preserves model width, so residual additions remain possible throughout the stack. The vocabulary head maps each normalized final row to one logit per vocabulary token; softmax gives probabilities. During training, every position can contribute a loss. During generation, only the last position's distribution chooses the next token. This final normalization also appears in the <a href="https://github.com/openai/gpt-2/blob/master/src/model.py">GPT-2 implementation</a>. The numerical worksheet below is a separate, simplified Part 2 one-head example: it does not compute this full normalized stack.</p>
 </div>
 <div class="frame" data-title="End-to-end decoder path">
   <script type="text/x-notes">Where does causal mixing happen, and where are vocabulary scores made?
@@ -22,21 +26,24 @@
   Residual addition and the shared LM head require a stable width across the stack.</script>
   <div class="card" data-build="1"><h3 class="card-title">Shape ledger</h3><div id="s11-shapes"></div></div>
 </div>
-<div class="frame" data-title="The language-model head">
+<div class="frame" data-title="The head, illustrated with our simpler toy">
   <script type="text/x-notes">Does the LM head read other token rows?
   No. It maps each final row independently to vocabulary logits. Attention already carried context into that row.</script>
-  <div class="card"><h3 class="card-title">Named features vote for vocabulary tokens</h3><div class="scroll-x s11-lm dotgrid" id="s11-lm"></div></div>
-  <div class="card" data-build="1"><h3 class="card-title">Projection worksheet for the final row</h3><div id="s11-calc"></div></div>
-  <div id="s11-note" data-build="2"></div>
+  <p>Part 2 one-head toy: no LayerNorm, FFN, or stacked blocks.</p>
+  <div class="scroll-x s11-lm dotgrid" id="s11-lm"></div>
 </div>
-<div class="companion after"><p>A decoder-only model keeps one model-width row per token through causal blocks, then maps each final row to vocabulary logits.</p></div>
+<div class="companion"><h3>Part 2 one-head toy: projection worksheet</h3><p>This calculation reuses the simplified toy, not the full pre-norm decoder above. It shows the head multiplication alone, before adding the bias.</p><div id="s11-calc"></div><div id="s11-note"></div></div>
+<div class="companion after"><p>Our pre-norm decoder keeps one model-width row per token through causal blocks, applies final LayerNorm, then maps each row to vocabulary logits.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s11');
   const model=S.querySelector('#s11-model');
-  ['token ids','embedding + position','$L$ causal blocks','LM head $W_{\\text{vocab}},b$','softmax','probabilities'].forEach((x,i)=>{model.appendChild(AT.h('div',{class:'s11-box'},x));if(i<5)model.appendChild(AT.h('span',{class:'s11-arrow'},'→'));});AT.renderMath(model);
+  const labels=['token ids','embedding + position','$L$ causal blocks','final LayerNorm','LM head $W_{\\text{vocab}},b$','softmax → probabilities'];
+  [0,1,2].forEach((i,j)=>{model.appendChild(AT.h('div',{class:'s11-box','data-order':i},labels[i]));if(j<2)model.appendChild(AT.h('span',{class:'s11-arrow'},'→'));});
+  model.appendChild(AT.h('span',{class:'s11-arrow s11-turn'},'↓'));
+  [5,4,3].forEach((i,j)=>{model.appendChild(AT.h('div',{class:'s11-box','data-order':i},labels[i]));if(j<2)model.appendChild(AT.h('span',{class:'s11-arrow'},'←'));});AT.renderMath(model);
   const T=AT.train.sentence().length,V=AT.vocab.length;
-  AT.ui.table([['$T$','$T\\times d_{\\text{model}}$',T,AT.d_model],['$T\\times d_{\\text{model}}$','$T\\times d_{\\text{model}}$',T,AT.d_model],['$T\\times d_{\\text{model}}$','$T\\times |\\mathcal V|$',T,V]],{cols:['input shape','output shape','output rows','output columns'],rowLabels:['embedding + position','$L$ blocks','LM head'],cornerLabel:'stage',decimals:0,caption:'The current toy supplies the displayed row and column counts.',into:S.querySelector('#s11-shapes')});
+  AT.ui.table([['$T$','$T\\times d_{\\text{model}}$',T,AT.d_model],['$T\\times d_{\\text{model}}$','$T\\times d_{\\text{model}}$',T,AT.d_model],['$T\\times d_{\\text{model}}$','$T\\times d_{\\text{model}}$',T,AT.d_model],['$T\\times d_{\\text{model}}$','$T\\times |\\mathcal V|$',T,V]],{cols:['input shape','output shape','output rows','output columns'],rowLabels:['embedding + position','$L$ blocks','final LayerNorm','LM head'],cornerLabel:'stage',decimals:0,caption:'Illustrative sizes use the toy T, model width, and vocabulary size. This table describes the full architecture; the worksheet does not run it.',into:S.querySelector('#s11-shapes')});
   const host=S.querySelector('#s11-lm'),W=760,H=380,svg=AT.svg('svg',{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':'Named representation features connect directly to vocabulary logits'});
   const ins=AT.axes.short.e,outs=AT.vocab,x1=150,x2=610;
   ins.forEach((a,i)=>{const y=45+i*70;svg.appendChild(AT.svg('circle',{cx:x1,cy:y,r:18,fill:AT.objTint('e'),stroke:AT.objColor('e'),'stroke-width':2}));svg.appendChild(AT.svg('text',{x:x1-28,y:y+5,'text-anchor':'end',fill:AT.objColor('e')},a));});
@@ -44,7 +51,7 @@
   svg.appendChild(AT.svg('text',{x:x1,y:H-8,'text-anchor':'middle',fill:'var(--ink-3)'},'final representation features'));svg.appendChild(AT.svg('text',{x:x2,y:H-8,'text-anchor':'middle',fill:'var(--ink-3)'},'one logit per token'));host.appendChild(svg);
   const F=AT.forward(AT.train.sentence()),row=F.Enew[F.T-1];
   AT.ui.matVecCalc(row,AT.model.W_vocab,{from:'e',to:'vocab',cls:'neutral',xLabel:'final token row',outLabel:'vocabulary logits before bias',into:S.querySelector('#s11-calc')});
-  AT.ui.callout('Calling the attention branch output $\\vd{\\Delta e}$ is this page\'s teaching notation. Standard Transformer descriptions use attention output. The residual additions shown in every block are standard.',{kind:'note',into:S.querySelector('#s11-note')});
+  AT.ui.callout('These numbers come from the simplified Part 2 attention-plus-residual toy. They are not the output of the full pre-norm stack, whose final row is normalized before the vocabulary head.',{kind:'note',into:S.querySelector('#s11-note')});
 })();
 </script>
 </section>

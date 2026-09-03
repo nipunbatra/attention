@@ -2,6 +2,7 @@
  "d_model": 5,
  "d_k": 3,
  "d_v": 2,
+ "max_context": 20,
  "vocab": [
   "the",
   "fisherman",
@@ -236,6 +237,76 @@
    0.0,
    0.0,
    1.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.1
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.2
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.3
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.4
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.5
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.6
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.7
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.8
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.9
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   2.0
   ]
  ],
  "W_Q": [
@@ -540,5 +611,5 @@
    ]
   }
  },
- "notes": "Toy v2: single-head causal self-attention (d_model=5, d_k=3, d_v=2, vocab=20, T=10), designed BY HAND so that every coordinate has a name that the numbers agree with (see 'axes'). e axes: water, finance, person, glue. q and k axes: setting: water?, setting: finance?, who? (a query row reads 'what I ask for', a key row 'what I offer'). The fifth e axis carries position, but its zero rows in W_Q, W_K, W_V and W_vocab mean this toy does not use it. v has its own narrower axes: says: water scene and says: finance scene; W_O maps them back onto the e axes. Names are illustrative; the matrices are sparse and one-decimal so a student can read each row of W_Q as 'axis -> asks', W_K as 'axis -> offers', W_V as 'axis -> says', W_vocab as 'axis -> votes for these words'. Values are narrower on purpose because they are mixed and sent rather than compared. Glue words have zero key and value rows but ask for both settings, which is why the final 'the' reads river or cheque. bank is equal parts water and finance (0.7, 0.7) plus a little glue (0.7); its entries are kept below 1.0 so that bank does not mostly attend to itself (the self score q_bank.k_bank grows with the square of those entries). Position rises from 0.1 to 1.0 in its own coordinate, so the three 'the' tokens differ without changing meaning. Patterns produced (all checked on these rounded numbers by make_toy2.py and toy_ref.mjs): (1) in 'The fisherman sat beside the river bank', bank(7) attends river first, fisherman second, itself and the glue words little; (2) in 'She deposited the cheque at the bank', bank(7) attends cheque first, deposited second; (3) the final 'the'(10) reads mostly river/bank/fisherman or cheque/bank/deposited and the output head predicts water > boats > fish > ducks or teller > clerk > queue > money with every other word at most 0.04; (4) the baseline from e_the(10) alone is spread over the eight candidates and is identical for both sentences; (5) with the causal mask off, the early glue words leak attention onto river and bank. Nothing was optimised; a few magnitudes (bank, fisherman, the W_vocab weights) were adjusted by hand from AXES.md."
+ "notes": "Toy v2: single-head causal self-attention (d_model=5, d_k=3, d_v=2, vocab=20, ten-token examples, max_context=20), designed BY HAND so that every coordinate has a name that the numbers agree with (see 'axes'). e axes: water, finance, person, glue. q and k axes: setting: water?, setting: finance?, who? (a query row reads 'what I ask for', a key row 'what I offer'). The fifth e axis carries position, but its zero rows in W_Q, W_K, W_V and W_vocab mean this toy does not use it. v has its own narrower axes: says: water scene and says: finance scene; W_O maps them back onto the e axes. Names are illustrative; the matrices are sparse and one-decimal so a student can read each row of W_Q as 'axis -> asks', W_K as 'axis -> offers', W_V as 'axis -> says', W_vocab as 'axis -> votes for these words'. Values are narrower on purpose because they are mixed and sent rather than compared. Glue words have zero key and value rows but ask for both settings, which is why the final 'the' reads river or cheque. bank is equal parts water and finance (0.7, 0.7) plus a little glue (0.7); its entries are kept below 1.0 so that bank does not mostly attend to itself (the self score q_bank.k_bank grows with the square of those entries). Position rises from 0.1 to 2.0 in its own coordinate, with twenty same-width position vectors available for generation. The first ten positions are used in the worked examples. This toy's output ignores position; it illustrates content routing, not word-order sensitivity. Patterns produced (all checked on these rounded numbers by make_toy2.py and toy_ref.mjs): (1) in 'The fisherman sat beside the river bank', bank(7) attends river first, fisherman second, itself and the glue words little; (2) in 'She deposited the cheque at the bank', bank(7) attends cheque first, deposited second; (3) the final 'the'(10) reads mostly river/bank/fisherman or cheque/bank/deposited and the output head predicts water > boats > fish > ducks or teller > clerk > queue > money with every other word at most 0.04; (4) the baseline from e_the(10) alone is spread over the eight candidates and is identical for both sentences; (5) with the causal mask off, the early glue words leak attention onto river and bank. Nothing was optimised; a few magnitudes (bank, fisherman, the W_vocab weights) were adjusted by hand from AXES.md."
 }

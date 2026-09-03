@@ -2,6 +2,9 @@
 <style>
 #s13 .s13-cost{font-family:var(--font-mono);font-size:1.15em;margin-top:14px}
 #s13 .s13-cache .dt-fig{margin-top:10px}
+#s13 #s13-cache{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+#s13 #s13-cache>p{grid-column:1/-1;margin:4px 0}
+@media(max-width:820px){body:not(.present) #s13 #s13-cache{grid-template-columns:1fr}}
 </style>
 <header class="sec-head">
   <span class="sec-num">13</span>
@@ -13,31 +16,41 @@
 <div class="frame" data-title="Choose, append, repeat">
   <script type="text/x-notes">Which position supplies the distribution used for generation?
   Advance the stepper twice. The chosen token is computed from the top probability and appended to the prefix.</script>
-  <div class="card" data-build="1"><h3 class="card-title">Two decoding steps</h3><div id="s13-stepper"></div></div>
+  <div id="s13-stepper" data-build="1"></div>
 </div>
 <div class="frame" data-title="Reuse old keys and values">
   <script type="text/x-notes">Which projections remain unchanged after a token is appended?
   Move the cache slider. Earlier key and value rows stay fixed; one pair is added.</script>
-  <div class="card s13-cache" data-build="1"><h3 class="card-title">KV cache for the river prefix</h3><div id="s13-cache-slider"></div><div id="s13-cache"></div></div>
+  <div class="s13-cache" data-build="1"><div id="s13-cache-slider"></div><div id="s13-cache"></div></div>
 </div>
+<div class="companion"><h3>All cached rows at the selected length</h3><div id="s13-full-cache"></div></div>
 <div class="frame" data-title="Longer context costs more">
   <script type="text/x-notes">Which quantity grows quadratically with sequence length?
   The full score matrix has one query-key cell per ordered pair. The cache itself grows linearly in stored rows.</script>
   <div class="card" data-build="1"><h3 class="card-title">Score cells and cached coordinates</h3><div id="s13-cost-slider"></div><p class="s13-cost" id="s13-cost"></p></div>
 </div>
 <div class="companion after"><p>Generation reuses cached keys and values, but each new query still compares with every cached key.</p></div>
+<div class="companion"><p>This toy provides twenty position vectors. The demonstration uses positions 1–11; it never substitutes a zero vector for a missing position. Real models also have a supported context range and need an explicit policy when that range is reached.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s13');
   const start=AT.train.sentence();
-  function stage(tokens,el){const F=AT.forward(tokens),i=F.T-1,top=AT.topk(F.probs[i],5),chosen=top[0].tok;AT.ui.chips(tokens,{active:i,slot:'___',into:el});AT.ui.bars(top,{highlight:chosen,decimals:4,size:'lg',into:el});el.appendChild(AT.h('p',{class:'muted'},'Choose "'+chosen+'" and append it.'));return chosen;}
+  function stage(tokens,el){const F=AT.forward(tokens),i=F.T-1,top=AT.topk(F.probs[i],3),chosen=top[0].tok;AT.ui.chips(tokens,{active:i,slot:'___',into:el});AT.ui.bars(top,{highlight:chosen,decimals:4,size:'lg',into:el});el.appendChild(AT.h('p',{class:'muted'},'Top three shown. Choose "'+chosen+'" and append it.'));return chosen;}
   const F0=AT.forward(start),first=AT.topk(F0.probs[F0.T-1],1)[0].tok;
   AT.ui.stepper({steps:[
     {title:'Step one: read the final distribution',render:el=>stage(start,el)},
     {title:'Append the chosen token',render:el=>stage(start.concat([first]),el)}
   ],into:S.querySelector('#s13-stepper')});
   const F=AT.forward(start),cache=S.querySelector('#s13-cache');
-  function drawCache(t){AT.clear(cache);AT.ui.table(F.K.slice(0,t),{axes:'qk',rowLabels:start.slice(0,t),rowCls:'k',cornerLabel:'cached key',caption:'Earlier key rows remain unchanged.',into:cache});AT.ui.table(F.V.slice(0,t),{axes:'v',rowLabels:start.slice(0,t),rowCls:'v',cornerLabel:'cached value',caption:'One value row is stored beside each key row.',into:cache});}
+  function drawCache(t){
+    AT.clear(cache);const first=Math.max(0,t-3);
+    cache.appendChild(AT.h('p',{},t+' rows cached. Showing '+(first+1)+'–'+t+'; earlier rows are retained.'));
+    AT.ui.table(F.K.slice(first,t),{axes:'qk',rowLabels:start.slice(first,t),rowCls:'k',cornerLabel:'cached key',into:cache});
+    AT.ui.table(F.V.slice(first,t),{axes:'v',rowLabels:start.slice(first,t),rowCls:'v',cornerLabel:'cached value',into:cache});
+    const full=S.querySelector('#s13-full-cache');AT.clear(full);
+    AT.ui.table(F.K.slice(0,t),{axes:'qk',rowLabels:start.slice(0,t),rowCls:'k',cornerLabel:'cached key',caption:'Earlier key rows remain unchanged.',into:full});
+    AT.ui.table(F.V.slice(0,t),{axes:'v',rowLabels:start.slice(0,t),rowCls:'v',cornerLabel:'cached value',caption:'One value row is stored beside each key row.',into:full});
+  }
   AT.ui.slider({label:'Tokens cached',min:1,max:start.length,step:1,value:4,onInput:drawCache,into:S.querySelector('#s13-cache-slider')});drawCache(4);
   const cost=S.querySelector('#s13-cost');
   function drawCost(t){cost.textContent='full score cells: '+(t*t)+'   |   cached key and value coordinates per layer: '+(t*(AT.d_k+AT.d_v));}

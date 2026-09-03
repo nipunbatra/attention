@@ -1,43 +1,110 @@
 <section id="s04" class="sec" data-title="The forward pass is a graph" data-lit="">
 <style>
-#s04 .s04-graph{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:18px}
-#s04 .s04-node{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:10px 12px;min-width:88px;text-align:center}
-#s04 .s04-arrow{color:var(--ink-3);font-size:1.25em}
+#s04 .s04-graph svg{display:block;width:100%;height:auto;overflow:visible}
+#s04 .s04-graph text{font-family:var(--font-ui);font-size:22px;fill:var(--ink);text-anchor:middle}
+#s04 .s04-graph .s04-small{font-size:18px;fill:var(--ink-2)}
+#s04 .s04-graph .s04-param{fill:var(--t-neutral);stroke:var(--ink-3);stroke-dasharray:5 3}
+#s04 .s04-graph .s04-operation{fill:var(--card);stroke:var(--ink-3)}
+#s04 .s04-graph .s04-gradient{fill:var(--warn);font-size:19px}
+body.present #s04 .s04-graph svg{max-height:530px}
 </style>
 <header class="sec-head">
   <span class="sec-num">04</span>
-  <div><p class="eyebrow">Why we are here: the loss depends on every earlier operation, so the backward pass follows the same connections in reverse.</p><h2>The forward pass is a graph</h2></div>
+  <div><p class="eyebrow">Why we are here: the loss depends on a branching graph, not a single chain of operations.</p><h2>The forward pass is a graph</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>A computational graph records which result came from which inputs. The river example begins with token and position lookups, then forms projections, attention scores, softmax weights, a value mixture, the output projection, a residual sum, vocabulary logits, and the loss. Reverse-mode autodiff starts from the loss and sends a derivative through each retained edge. When one value feeds two branches, its gradient receives contributions from both. That detail matters for the residual path: the final representation reaches the loss directly through the addition and indirectly through attention. The stored training block contains the resulting gradient for every parameter used by this example.</p>
+  <p>The learned token table $E_{\text{tok}}$ and position table $P$ supply the current row stack $\ve{E}$. Three projections read that same stack: $Q=EW_Q$, $K=EW_K$, and $V=EW_V$. Query–key scores determine the attention weights $A$; the separate value branch supplies the vectors that $A$ mixes. The message matrix $H=AV$ becomes $\Delta E=HW_O$, and the residual sum gives $E'=E+\Delta E$. The vocabulary head maps the final row to logits, and the observed target supplies the loss. This is the simplified Part 2 one-head model, not the full pre-norm Transformer introduced later.</p>
+  <p>Autograd reverses these dependencies using the chain rule. At a branch, contributions add: the input $E$ has a direct residual gradient path and indirect paths through attention. It is the <em>input</em> $E$, not the final $E'$, that feeds both routes. Gradients also reach every projection and the lookup rows used by this example. The target token and fixed causal mask are data, not parameters to optimize.</p>
 </div>
-<div class="frame" data-title="Forward follows dependencies">
-  <script type="text/x-notes">Which operation first lets one token depend on another?
-  Reveal the graph by stages. Softmax changes scores into weights; the value mixture carries information.</script>
-  <div class="card" data-build="1"><h3 class="card-title">Forward pass</h3><div class="s04-graph dotgrid" id="s04-forward"></div></div>
+<div class="frame" data-title="One input, three learned projections">
+  <script type="text/x-notes">E is the current stack, not the vocabulary lookup table. Point to the separate W matrices; each projection needs both E and its learned matrix.</script>
+  <div class="s04-graph" id="s04-projections"></div>
+  <p>The same $E$ feeds all three projections <strong>and</strong> the residual path.</p>
 </div>
-<div class="frame" data-title="Autograd reverses the arrows">
-  <script type="text/x-notes">Where do two gradient contributions meet?
-  Point to the residual addition and to the shared input representation before revealing the gradient table.</script>
-  <div class="card"><h3 class="card-title">Backward pass</h3><div class="s04-graph s04-back dotgrid" id="s04-backward"></div></div>
-  <div class="card" data-build="1"><h3 class="card-title">Gradient sizes from the river example</h3><div id="s04-grads"></div></div>
-  <div id="s04-check" data-build="2"></div>
+<div class="frame" data-title="Follow the branches all the way to loss">
+  <script type="text/x-notes">Follow Q and K to A, then join A with V. Follow E along the bottom residual line to the addition. Dashed boxes are learned parameters; the target is observed data. This graph is the simplified Part 2 toy.</script>
+  <div class="s04-graph" id="s04-forward"></div>
 </div>
-<div class="companion after"><p>Autograd does not invent a new route; it differentiates the forward graph that produced the loss.</p></div>
+<div class="frame" data-title="Autograd follows the same graph backward">
+  <script type="text/x-notes">Start at loss. The two message inputs both get gradients: A controls the amount, V supplies the content. At E, the attention paths and residual path contribute to the same gradient. Do not calculate derivatives by hand.</script>
+  <div class="s04-graph" id="s04-backward"></div>
+</div>
+<div class="frame" data-title="We ask autograd for the gradients">
+  <script type="text/x-notes">Backward computes gradients; step uses them to change parameters. E, Q, K, V, A and E prime are recomputed next time.</script>
+  <p>Each stored parameter $\theta$ receives a same-shaped gradient $\partial L/\partial\theta$.</p>
+  <pre class="torch-snippet">optimizer.zero_grad()
+loss.backward()
+optimizer.step()</pre>
+  <p><strong>Backward computes slopes. The optimizer updates parameters.</strong></p>
+</div>
+<div class="companion"><h3>Gradient sizes from the river example</h3><div id="s04-grads"></div><div id="s04-check"></div></div>
+<div class="companion after"><p>Autograd differentiates the graph that produced the loss. It does not update cached queries or attention weights directly.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s04');
-  const labels=['lookup','projections','scores','softmax','mix values','$W_O$','residual add','LM head','loss'];
-  function graph(host,items){items.forEach((x,i)=>{const n=AT.h('div',{class:'s04-node'},x);host.appendChild(n);if(i<items.length-1)host.appendChild(AT.h('span',{class:'s04-arrow'},'→'));});AT.renderMath(host);}
-  graph(S.querySelector('#s04-forward'),labels);
-  graph(S.querySelector('#s04-backward'),labels.slice().reverse());
+  function makeSvg(host,w,h,label){const svg=AT.svg('svg',{viewBox:'0 0 '+w+' '+h,role:'img','aria-label':label});host.appendChild(svg);return svg;}
+  function marker(svg,id,color){const defs=AT.svg('defs');const m=AT.svg('marker',{id,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:7,markerHeight:7,orient:'auto-start-reverse'});m.appendChild(AT.svg('path',{d:'M 0 0 L 10 5 L 0 10 z',fill:color}));defs.appendChild(m);svg.appendChild(defs);}
+  function text(svg,x,y,label,cls){svg.appendChild(AT.svg('text',{x,y,class:cls||''},label));}
+  function box(svg,x,y,w,h,label,sub,kind){svg.appendChild(AT.svg('rect',{x:x-w/2,y:y-h/2,width:w,height:h,rx:8,class:kind==='param'?'s04-param':'s04-operation','stroke-width':1.7}));text(svg,x,y+(sub?-4:7),label);if(sub)text(svg,x,y+20,sub,'s04-small');}
+  function edge(svg,d,id,reverse){svg.appendChild(AT.svg('path',{d,fill:'none',stroke:reverse?'var(--warn)':'var(--ink-3)','stroke-width':reverse?2.5:1.8,[reverse?'marker-start':'marker-end']:'url(#'+id+')'}));}
+
+  const p=makeSvg(S.querySelector('#s04-projections'),1080,360,'The token and position tables form E; E and three separate learned matrices form Q, K, and V.');
+  marker(p,'s04-proj-arrow','var(--ink-3)');
+  ['M 145 85 L 145 155','M 230 190 L 420 190 L 420 85 L 590 85','M 230 190 L 590 190','M 230 190 L 420 190 L 420 295 L 590 295','M 870 85 L 760 85','M 870 190 L 760 190','M 870 295 L 760 295'].forEach(d=>edge(p,d,'s04-proj-arrow'));
+  box(p,145,55,220,60,'E_tok, P','learned lookup tables','param');box(p,145,190,170,70,'E','T × d_model');
+  box(p,145,295,220,60,'token ids','positions 1 through T');edge(p,'M 145 265 L 145 225','s04-proj-arrow');
+  [['Q = E W_Q','T × d_k','W_Q',85],['K = E W_K','T × d_k','W_K',190],['V = E W_V','T × d_v','W_V',295]].forEach(([a,b,c,y])=>{box(p,675,y,170,65,a,b);box(p,950,y,160,50,c,'learned matrix','param');});
+
+  function full(host,reverse){
+    const svg=makeSvg(host,1160,520,reverse?'Autograd reverses the one-head attention graph, including value and routing branches and the residual path.':'Complete one-head attention graph from learned parameters and input rows to loss.');
+    const id=reverse?'s04-back-arrow':'s04-forward-arrow';marker(svg,id,reverse?'var(--warn)':'var(--ink-3)');
+    const edges=[
+      'M 75 77 L 75 132',
+      'M 140 165 L 165 165 L 165 100 L 220 100',
+      'M 140 165 L 165 165 L 165 280 L 220 280',
+      'M 140 165 L 165 165 L 165 410 L 420 410',
+      'M 275 55 L 275 68','M 275 235 L 275 248','M 475 358 L 475 378',
+      'M 330 100 L 367 100 L 367 145 L 405 145',
+      'M 330 280 L 367 280 L 367 182 L 405 182',
+      'M 535 165 L 575 165','M 725 165 L 775 165',
+      'M 840 197 L 840 253','M 530 410 L 555 410 L 555 295 L 775 295',
+      'M 905 295 L 970 295','M 1045 230 L 1045 258',
+      'M 1045 332 L 1045 398',
+      'M 30 198 L 30 215 L 3 215 L 3 493 L 1045 493 L 1045 464',
+      'M 970 430 L 915 430','M 840 379 L 840 398',
+      'M 765 430 L 715 430'
+    ];
+    edges.forEach(d=>edge(svg,d,id,reverse));
+    if(!reverse){edge(svg,'M 645 379 L 645 398',id,false);edge(svg,'M 110 268 L 110 198',id,false);}
+    box(svg,75,45,135,64,'E_tok, P','learned tables','param');
+    box(svg,75,165,130,66,'E','lookup + add');
+    box(svg,75,300,130,64,'token ids','positions 1:T');
+    box(svg,275,32,110,46,'W_Q',null,'param');box(svg,275,100,110,64,'Q','E W_Q');
+    box(svg,275,212,110,46,'W_K',null,'param');box(svg,275,280,110,64,'K','E W_K');
+    box(svg,475,335,110,46,'W_V',null,'param');box(svg,475,410,110,64,'V','E W_V');
+    box(svg,470,165,130,66,'Q Kᵀ','raw scores');
+    box(svg,650,165,150,66,'÷ √d_k','causal mask');
+    box(svg,840,165,130,66,'softmax','weights A');
+    box(svg,840,285,130,64,'H = A V','messages');
+    box(svg,1045,207,135,46,'W_O',null,'param');
+    box(svg,1045,295,150,74,'ΔE = H W_O','context update');
+    box(svg,1045,430,150,64,"E′ = E + ΔE",'residual sum');
+    box(svg,840,356,150,46,'W_vocab, b',null,'param');
+    box(svg,840,430,150,64,'logits','last row × head');
+    box(svg,645,356,140,46,'target y','observed data');
+    box(svg,645,430,140,64,'loss L','cross-entropy');
+    text(svg,405,484,reverse?'∂L/∂E: residual + attention paths':'E also reaches the sum directly',reverse?'s04-gradient':'s04-small');
+    text(svg,865,56,reverse?'Red arrows carry gradients backward':'Part 2 toy · one head · no LayerNorm',reverse?'s04-gradient':'s04-small');
+    if(reverse){text(svg,740,246,'∂L/∂A','s04-gradient');text(svg,610,285,'∂L/∂V','s04-gradient');text(svg,1045,174,'∂L/∂W_O','s04-gradient');}
+  }
+  full(S.querySelector('#s04-forward'),false);full(S.querySelector('#s04-backward'),true);
   const G=AT.train.single().gradients;
   function flat(x){if(Array.isArray(x))return x.reduce((a,v)=>a.concat(flat(v)),[]);if(x&&typeof x==='object')return Object.keys(x).reduce((a,k)=>a.concat(flat(x[k])),[]);return [Number(x)||0];}
   function norm(x){return AT.norm(flat(x));}
   const names=['tok_emb_used','pos_emb_used','W_Q','W_K','W_V','W_O','W_vocab','b_vocab'];
-  AT.ui.table(names.map(n=>[flat(G[n]).length,norm(G[n])]),{cols:['stored numbers','$L_2$ norm'],rowLabels:names.map(n=>n.replace(/_/g,' ')),cornerLabel:'gradient',decimals:4,caption:'Every value is read from the offline reverse pass. A zero norm would mean no learning signal reached that object.',into:S.querySelector('#s04-grads')});
+  AT.ui.table(names.map(n=>[flat(G[n]).length,norm(G[n])]),{cols:['stored numbers','$L_2$ norm'],rowLabels:names.map(n=>n.replace(/_/g,' ')),cornerLabel:'gradient',decimals:4,caption:'Read from the offline reverse pass. A zero norm means a zero first-order gradient for this object in this example, not that the object is absent from the graph.',into:S.querySelector('#s04-grads')});
   const fd=AT.train.finiteDifference();
-  AT.ui.callout(fd.checks.length+' entries were checked by finite differences. The largest stored absolute difference is '+AT.fmt(fd.max_abs_error,4)+'.',{kind:'note',into:S.querySelector('#s04-check')});
+  AT.ui.callout(fd.checks.length+' entries were checked by finite differences. Maximum absolute error: '+fd.max_abs_error.toExponential(2)+'.',{kind:'note',into:S.querySelector('#s04-check')});
 })();
 </script>
 </section>

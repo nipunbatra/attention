@@ -179,6 +179,17 @@ tokens = torch.cat([tokens, next_id])  # same parameters; a longer prefix</code>
 loss.backward(); optimizer.step()</code></pre>
 </div>
 
+<div class="frame" id="s19-frame-position-limit" data-title="This toy does not demonstrate word order" data-autobuild="off">
+  <script type="text/x-notes">If we shuffle the earlier tokens but keep the final token fixed, does this one-layer toy's final prediction change?
+No. Verify that the fifth rows of W_Q, W_K, W_V and W_vocab are zero. The causal mask still restricts each position to its prefix, but the final position sees the same set of tokens after the shuffle. This is a limitation of these hand-chosen parameters, not a general property of Transformers.</script>
+  <div class="prose">
+    <p>We added $p_i$ to the lookup row: $e_i^{(0)}=E_{\text{tok}}[t_i]+p_i$. But adding position only helps if later computations <strong>use it</strong>.</p>
+    <p data-build="1">In this toy, $W_Q$, $W_K$, $W_V$ and $W_{\text{vocab}}$ have zero fifth rows. They <strong>ignore the position coordinate</strong>.</p>
+  </div>
+  <div class="callout callout-note" data-build="2">Keep the final token fixed and shuffle the earlier tokens: this one-layer toy gives the <strong>same final prediction</strong>. It demonstrates content routing, not word-order sensitivity.</div>
+  <p data-build="3">The causal mask prevents reading future tokens; it does not fix this toy's unused position signal.</p>
+</div>
+
 <div class="frame" id="s19-frame4" data-title="What have we built, and what remains?">
   <script type="text/x-notes">
 Is this one attention sublayer already a trained full Transformer?

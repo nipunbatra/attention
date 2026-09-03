@@ -3,3 +3,4 @@ src/__pycache__/
 src/t[0-9]*.html
 src/test*.html
 src/*.png
+/output/pdf/

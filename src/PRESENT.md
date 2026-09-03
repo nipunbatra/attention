@@ -108,6 +108,8 @@ Preflight reveals every build, samples every managed stepper state and opens nat
 records the worst size, and then restores reading/presentation state. A release should have
 `report.overflow.length === 0`. Do not silence the warning with CSS; split the frame.
 
+The command-line `frame_audit.mjs` also reparses rendered KaTeX with strict error handling. This catches unknown commands that tolerant on-page rendering may display in red without a `.katex-error` element. It checks the article and every live managed state, with duplicate formulas cached for speed.
+
 ## Navigation and presenter tools
 
 - Right / Space / PageDown / N: next step, build, then frame.

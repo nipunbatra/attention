@@ -3,7 +3,7 @@
 #s08 .s08-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 #s08 .s08-axis{border:1px solid var(--line);border-radius:10px;padding:18px;background:var(--card)}
 #s08 .s08-axis p{margin:6px 0;color:var(--ink-2)}
-@media(max-width:820px){#s08 .s08-grid{grid-template-columns:1fr}}
+@media(max-width:820px){body:not(.present) #s08 .s08-grid{grid-template-columns:1fr}}
 #s08 .s08-net{margin-top:12px}
 </style>
 <header class="sec-head">
@@ -22,9 +22,14 @@
   <script type="text/x-notes">Why must the FFN return to model width?
   Its output is added to the same residual row, so the input and output widths must match.</script>
   <div class="card"><h3 class="card-title">A fixed illustrative network</h3><div class="s08-net" id="s08-net"></div></div>
-  <div class="card" data-build="1"><h3 class="card-title">First projection and ReLU worksheet</h3><div id="s08-first"></div></div>
-  <div class="card" data-build="2"><h3 class="card-title">Second projection worksheet</h3><div id="s08-second"></div></div>
 </div>
+<div class="frame" data-title="ReLU keeps positive hidden features">
+  <script type="text/x-notes">Read four of the eight hidden coordinates. The first matrix makes combinations; ReLU clips negative values before the second matrix combines them again.</script>
+  <div class="card"><div id="s08-relu"></div></div>
+  <pre class="torch-snippet" data-build="1"><code>hidden = torch.relu(row @ W1 + b1)
+ffn_output = hidden @ W2 + b2</code></pre>
+</div>
+<div class="companion"><h3>First projection and all eight ReLU coordinates</h3><div id="s08-first"></div><h3>Second projection</h3><div id="s08-second"></div></div>
 <div class="frame" data-title="Why widen the middle?">
   <script type="text/x-notes">What does the wider hidden row buy?
   It supplies more learned combinations before the network projects back to model width.</script>
@@ -39,6 +44,7 @@
   const R=AT.ffn(input);
   AT.netSketch(S.querySelector('#s08-net'),{inputs:AT.d_model,hidden:AT.ffn.d_ff,outputs:AT.axes.short.e,highlightOutput:AT.axes.short.e[0],labels:{input:i=>'\\ve{e}_{'+AT.axes.short.e[i-1]+'}',output:x=>x},inputCaption:'features of one token',hiddenCaption:'ReLU hidden features',outputCaption:'FFN output'});
   const hAxes=AT.range(AT.ffn.d_ff).map(i=>'hidden '+(i+1));
+  AT.ui.table([R.pre.slice(0,4),R.hidden.slice(0,4)],{cols:hAxes.slice(0,4),rowLabels:['before ReLU','after ReLU'],cornerLabel:'four hidden coordinates',highlightRow:1,caption:'The same rule applies to all eight hidden coordinates.',into:S.querySelector('#s08-relu')});
   AT.ui.matVecCalc(input,AT.ffn.W1,{from:'e',to:hAxes,cls:'neutral',xLabel:'final token row',outLabel:'pre-activation',into:S.querySelector('#s08-first')});
   AT.ui.table([R.pre,R.hidden],{cols:hAxes,rowLabels:['before ReLU','after ReLU'],cornerLabel:'hidden feature',highlightRow:1,caption:'ReLU keeps positive entries and replaces negative entries with zero.',into:S.querySelector('#s08-first')});
   AT.ui.matVecCalc(R.hidden,AT.ffn.W2,{from:hAxes,to:'e',cls:'d',xLabel:'hidden row',outLabel:'FFN output',into:S.querySelector('#s08-second')});

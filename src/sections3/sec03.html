@@ -12,13 +12,21 @@
 <div class="frame" data-title="Stored or temporary?">
   <script type="text/x-notes">Which entries will still exist before the next training example?
   Ask students to classify the rows before revealing the final column.</script>
-  <div class="card"><h3 class="card-title">Objects in the calculation</h3><div id="s03-table"></div></div>
+  <div class="card"><h3 class="card-title">Stored parameters survive the example</h3><div id="s03-table"></div></div>
+</div>
+<div class="frame" data-title="Intermediates are recomputed">
+  <script type="text/x-notes">A contextual update is an activation, not an optimizer step. These quantities belong to this input and are recalculated after a parameter update.</script>
+  <div class="card"><div id="s03-intermediates"></div></div>
   <div id="s03-key" data-build="1"></div>
 </div>
 <div class="frame" data-title="Every parameter receives a matching gradient">
   <script type="text/x-notes">Why must a gradient have the same shape as its parameter?
   Read the current toy widths from the table. Each stored number needs its own proposed change.</script>
   <div class="card" data-build="1"><h3 class="card-title">Parameter and gradient shapes</h3><div id="s03-shapes"></div></div>
+</div>
+<div class="frame" data-title="Output parameters have matching gradients too">
+  <script type="text/x-notes">Continue the same shape rule through the output projection and vocabulary head.</script>
+  <div class="card"><h3 class="card-title">Output projection and vocabulary head</h3><div id="s03-output-shapes"></div></div>
 </div>
 <div class="companion after"><p>A contextual update belongs to one input; an optimizer update changes the model used by future inputs.</p></div>
 <script>
@@ -27,11 +35,13 @@
   const d=AT.d_model,dk=AT.d_k,dv=AT.d_v,V=AT.vocab.length,T=AT.train.sentence().length;
   const labels=['token embedding rows','position rows','$W_Q,W_K$','$W_V,W_O$','$W_{\\text{vocab}},b$','$\\ve{e},\\vq{q},\\vk{k},\\vv{v}$','$s,\\va{\\alpha},m$','$\\vd{\\Delta e},\\vp{e\'},\\ell,p$'];
   const rows=[['parameter','saved'],['parameter','saved'],['parameter','saved'],['parameter','saved'],['parameter','saved'],['intermediate','recomputed'],['intermediate','recomputed'],['intermediate','recomputed']];
-  AT.ui.table(rows,{cols:['kind','after this example'],rowLabels:labels,cornerLabel:'object',caption:'Parameters persist. Intermediates describe this forward pass.',into:S.querySelector('#s03-table')});
+  AT.ui.table(rows.slice(0,5),{cols:['kind','after this example'],rowLabels:labels.slice(0,5),cornerLabel:'object',caption:'The optimizer updates these stored numbers.',into:S.querySelector('#s03-table')});
+  AT.ui.table(rows.slice(5),{cols:['kind','after this example'],rowLabels:labels.slice(5),cornerLabel:'object',caption:'Intermediates describe this forward pass.',into:S.querySelector('#s03-intermediates')});
   AT.ui.callout('$\\vd{\\Delta e_i}$ is a contextual activation update. The optimizer instead changes $\\theta$, the collection of stored parameters.',{kind:'key',into:S.querySelector('#s03-key')});
   AT.ui.table([
-    [V,d,V,d],[T,d,T,d],[d,dk,d,dk],[d,dv,d,dv],[dv,d,dv,d],[d,V,d,V],[V,1,V,1]
-  ],{cols:['parameter rows','parameter cols','gradient rows','gradient cols'],rowLabels:['token table','position table','$W_Q,W_K$','$W_V$','$W_O$','$W_{\\text{vocab}}$','$b$'],cornerLabel:'stored object',decimals:0,caption:'The sentence uses only its token rows, but each matrix gradient covers the whole matrix.',into:S.querySelector('#s03-shapes')});
+    [V,d,V,d],[T,d,T,d],[d,dk,d,dk],[d,dv,d,dv]
+  ],{cols:['parameter rows','parameter cols','gradient rows','gradient cols'],rowLabels:['token table','position table','$W_Q,W_K$','$W_V$'],cornerLabel:'stored object',decimals:0,caption:'Each parameter has a gradient of exactly the same shape.',into:S.querySelector('#s03-shapes')});
+  AT.ui.table([[dv,d,dv,d],[d,V,d,V],[1,V,1,V]],{cols:['parameter rows','parameter cols','gradient rows','gradient cols'],rowLabels:['$W_O$','$W_{\\text{vocab}}$','$b$'],cornerLabel:'stored object',decimals:0,caption:'Row-vector convention: b is 1 × |V|, broadcast across token rows. Code may store the same bias as a one-dimensional [|V|] tensor.',into:S.querySelector('#s03-output-shapes')});
 })();
 </script>
 </section>

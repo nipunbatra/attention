@@ -51,6 +51,9 @@ def parameter_arrays(model, tokens):
 
 def forward(model, tokens):
     vocab = model["vocab"]
+    capacity = model.get("max_context", len(model["pos_emb"]))
+    if len(tokens) > capacity:
+        raise ValueError(f"Context length {len(tokens)} exceeds positional capacity {capacity}.")
     token_rows = np.stack([model["tok_emb"][t.lower()] for t in tokens]).astype(np.float64)
     positions = array(model, "pos_emb")[: len(tokens)]
     E = token_rows + positions

@@ -43,11 +43,14 @@ export function softmax(arr) {
 }
 
 export function embed(toy, tokens) {
+  const capacity = toy.max_context ?? toy.pos_emb.length;
+  if (tokens.length > capacity) throw new Error(`context length ${tokens.length} exceeds positional capacity ${capacity}`);
   return tokens.map((t, i) => {
     const te = toy.tok_emb[t.toLowerCase()];
     if (!te) throw new Error(`token not in vocabulary: ${t}`);
     const pe = toy.pos_emb[i];
-    if (!pe) throw new Error(`no positional vector for position ${i + 1}`);
+    if (!Array.isArray(te) || te.length !== toy.d_model || !te.every(Number.isFinite)) throw new Error(`invalid token embedding for ${t}`);
+    if (!Array.isArray(pe) || pe.length !== toy.d_model || !pe.every(Number.isFinite)) throw new Error(`invalid positional vector for position ${i + 1}`);
     return te.map((x, d) => x + pe[d]);
   });
 }
@@ -153,12 +156,12 @@ export function checkTargets(toy) {
   rec("T9 hard: position has its own coordinate and the three 'the' rows differ",
     positionRowsOk && toy.vocab.every((w) => toy.tok_emb[w][posAxis] === 0) &&
       zeroAt(toy.W_Q) && zeroAt(toy.W_K) && zeroAt(toy.W_V) && zeroAt(toy.W_vocab) && new Set(thes).size === 3,
-    'position rows 0.1 to 1.0; token and projection position rows are zero');
+    `position rows 0.1 to ${(0.1 * toy.pos_emb.length).toFixed(1)}; token and projection position rows are zero`);
   const hasShape = (M, rows, cols) => Array.isArray(M) && M.length === rows && M.every((row) => Array.isArray(row) && row.length === cols);
   rec('T10 hard: parameter shapes match d_model, d_k and d_v',
     toy.axes.e.length === toy.d_model && toy.axes.qk.length === toy.d_k && toy.axes.v.length === toy.d_v &&
       toy.vocab.every((w) => Array.isArray(toy.tok_emb[w]) && toy.tok_emb[w].length === toy.d_model) &&
-      hasShape(toy.pos_emb, toy.sentences.river.length, toy.d_model) &&
+      toy.pos_emb.length >= toy.sentences.river.length && hasShape(toy.pos_emb, toy.max_context ?? toy.pos_emb.length, toy.d_model) &&
       hasShape(toy.W_Q, toy.d_model, toy.d_k) && hasShape(toy.W_K, toy.d_model, toy.d_k) &&
       hasShape(toy.W_V, toy.d_model, toy.d_v) && hasShape(toy.W_O, toy.d_v, toy.d_model) &&
       hasShape(toy.W_vocab, toy.d_model, toy.vocab.length) && toy.b_vocab.length === toy.vocab.length, 'ok');

@@ -27,6 +27,7 @@ CAND_A = ["water", "boats", "fish", "ducks"]
 CAND_B = ["teller", "clerk", "queue", "money"]
 CANDS = CAND_A + CAND_B
 D_MODEL, D_K, D_V, T = 5, 3, 2, 10
+MAX_CONTEXT = 20  # ten-token examples plus room for the generation walkthrough
 BANK, LAST = 6, 9  # 0-indexed positions of bank(7) and the(10)
 
 # ----------------------------------------------------------------------------------------------
@@ -74,7 +75,7 @@ TOK = {
 
 # Position has one dedicated coordinate. The projections below carry a zero row for it, so this toy
 # preserves position in e^(0) without using it for attention or the vocabulary head.
-POS = [[0.0, 0.0, 0.0, 0.0, 0.1 * (i + 1)] for i in range(T)]
+POS = [[0.0, 0.0, 0.0, 0.0, 0.1 * (i + 1)] for i in range(MAX_CONTEXT)]
 
 # ----------------------------------------------------------------------------------------------
 # 2. Projections (rows = input axis, columns = output axis)
@@ -142,6 +143,8 @@ def softmax_rows(x):
 
 def run(P, tokens, mask=True, scale=True):
     n = len(tokens)
+    if n > len(P["pos"]):
+        raise ValueError(f"Context length {n} exceeds positional capacity {len(P['pos'])}.")
     idx = [VI[t.lower()] for t in tokens]
     E = P["tok"][idx] + P["pos"][:n]
     Q, K, V = E @ P["W_Q"], E @ P["W_K"], E @ P["W_V"]
@@ -215,14 +218,15 @@ def check(P, verbose=True):
     rec("T8 hard: vocabulary is the 20 tokens", P["tok"].shape == (len(VOCAB), D_MODEL), "20 tokens")
     pos_axis = AXES["e"].index("position")
     e_the = [fa["E"][i] for i in (0, 4, 9)]
-    want_pos = np.array([[0.1 * (i + 1) if d == pos_axis else 0.0 for d in range(D_MODEL)] for i in range(T)])
+    want_pos = np.array([[0.1 * (i + 1) if d == pos_axis else 0.0 for d in range(D_MODEL)] for i in range(len(P["pos"]))])
     rec("T9 hard: position has its own coordinate and the three 'the' rows differ",
         np.allclose(P["pos"], want_pos, atol=1e-12) and np.allclose(P["tok"][:, pos_axis], 0) and
         np.allclose(P["W_Q"][pos_axis], 0) and np.allclose(P["W_K"][pos_axis], 0) and
         np.allclose(P["W_V"][pos_axis], 0) and np.allclose(P["W_vocab"][pos_axis], 0) and
         len({tuple(np.round(e, 6)) for e in e_the}) == 3,
-        "position rows 0.1 to 1.0; token and projection position rows are zero")
+        f"position rows 0.1 to {0.1 * len(P['pos']):.1f}; token and projection position rows are zero")
     rec("T10 hard: parameter shapes match d_model, d_k and d_v",
+        P["pos"].shape == (MAX_CONTEXT, D_MODEL) and
         P["W_Q"].shape == (D_MODEL, D_K) and P["W_K"].shape == (D_MODEL, D_K) and
         P["W_V"].shape == (D_MODEL, D_V) and P["W_O"].shape == (D_V, D_MODEL) and
         P["W_vocab"].shape == (D_MODEL, len(VOCAB)), "ok")
@@ -246,7 +250,7 @@ def fl(a):
 
 
 NOTES = (
-    "Toy v2: single-head causal self-attention (d_model=5, d_k=3, d_v=2, vocab=20, T=10), designed BY HAND so that every "
+    "Toy v2: single-head causal self-attention (d_model=5, d_k=3, d_v=2, vocab=20, ten-token examples, max_context=20), designed BY HAND so that every "
     "coordinate has a name that the numbers agree with (see 'axes'). e axes: water, finance, person, glue. q and k axes: "
     "setting: water?, setting: finance?, who? (a query row reads 'what I ask for', a key row 'what I offer'). The fifth e "
     "axis carries position, but its zero rows in W_Q, W_K, W_V and W_vocab mean this toy does not use it. v has its own "
@@ -256,8 +260,9 @@ NOTES = (
     "purpose because they are mixed and sent rather than compared. Glue words have zero key and value rows but ask for "
     "both settings, which is why the final 'the' reads river or cheque. bank is equal parts water "
     "and finance (0.7, 0.7) plus a little glue (0.7); its entries are kept below 1.0 so that bank does not mostly attend to itself "
-    "(the self score q_bank.k_bank grows with the square of those entries). Position rises from 0.1 to 1.0 in its own "
-    "coordinate, so the three 'the' tokens differ without changing meaning. Patterns produced (all "
+    "(the self score q_bank.k_bank grows with the square of those entries). Position rises from 0.1 to 2.0 in its own "
+    "coordinate, with twenty same-width position vectors available for generation. The first ten positions are used in the worked examples. "
+    "This toy's output ignores position; it illustrates content routing, not word-order sensitivity. Patterns produced (all "
     "checked on these rounded numbers by make_toy2.py and toy_ref.mjs): (1) in 'The fisherman sat beside the river bank', "
     "bank(7) attends river first, fisherman second, itself and the glue words little; (2) in 'She deposited the cheque at "
     "the bank', bank(7) attends cheque first, deposited second; (3) the final 'the'(10) reads mostly river/bank/fisherman "
@@ -270,7 +275,7 @@ NOTES = (
 
 def write_json(P):
     toy = {
-        "d_model": D_MODEL, "d_k": D_K, "d_v": D_V,
+        "d_model": D_MODEL, "d_k": D_K, "d_v": D_V, "max_context": MAX_CONTEXT,
         "vocab": VOCAB,
         "tok_emb": {w: fl(P["tok"][i]) for i, w in enumerate(VOCAB)},
         "pos_emb": fl(P["pos"]),

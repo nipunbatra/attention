@@ -3,7 +3,7 @@
 Notation: F = frame, b = build. "held" = the drawing that stays while builds add one mark. Notes = presenter notes (first line = question before reveal).
 
 ## s01 Predict the next token
-F1 "One blank": sentence chips, context switch, then the claim that the context matters. F2 show the resulting probability bars for the selected context. F3 state the conditional next-token task. F4 "Where a token starts": select a token and inspect its three aligned rows, token + position = e^{(0)}. F5 distinguish the starting representation from its later context-dependent update.
+F1 "One blank": sentence chips, context switch, then the claim that the context matters. F2 show the resulting probability bars for the selected context. F3 state the conditional next-token task. F4 distinguish the learned vocabulary table E_tok from one looked-up row. F5 "Where a token starts": select a token and inspect its three aligned rows, token + position = e^{(0)}. F6 assemble E by stacking the current rows of this sentence. F7 explain same-width position addition, and explicitly disclose that this hand-designed toy ignores its dedicated position coordinate.
   Notes: "What could come next, and why do you think so?" Collect answers before switching context. The selected context and token survive continuation frames. Do not introduce attention yet.
 
 ## s02 Only the last token
@@ -71,6 +71,6 @@ F1 framing question + context switch. F2 four numerical weighting rows. F3 fixed
 F1–F8: one misconception question per frame and one reveal each. Presentation answers are compact; reading mode keeps every original numerical worksheet and arithmetic control. F9 three-space notation recap: match (q/k), send (v/m), model/update (e/Delta e/e').
 
 ## s19 Summaries
-F1 intuitive sentence. F2 operational chain + synchronized motif. F3 routing matrix equations. F4 message/update matrix equations. F5 updated last row → head. F6 vocabulary table and bars. F7 explicit generation loop: predict → choose → append → new query, plus two-line PyTorch. F8 generation/training boundary: forward → loss → autograd/optimizer. F9 recap + Part 3 pointer.
+F1 intuitive sentence. F2 operational chain + synchronized motif. F3 routing matrix equations. F4 message/update matrix equations. F5 updated last row → head. F6 vocabulary table and bars. F7 explicit generation loop: predict → choose → append → new query, plus two-line PyTorch. F8 generation/training boundary: forward → loss → autograd/optimizer. F9 distinguish content routing from word-order sensitivity: this toy demonstrates only the former. F10 recap + Part 3 pointer.
 
-Timing guide (70 min): s01-s04 12 min, s05-s06 10, s07-s09 15, s10-s13 12, s14-s15 15, s16 4, s17-s19 6. Short-on-time: skip s03 F2, s10 F2, s17. Multi-head attention and stacked layers are Part 3 (raw material in sections3_seed/).
+Suggested pacing before discussion (about 75 min): s01-s04 12 min, s05-s06 10, s07-s09 15, s10-s13 12, s14-s15 15, s16 4, s17-s19 6. Allow longer for every worksheet or split the lesson across two meetings. Short-on-time: use either the full walkthrough in s15 or the matrix recap in s16, and leave s17 and detailed worksheets for self-study. Multi-head attention and stacked layers are Part 3.

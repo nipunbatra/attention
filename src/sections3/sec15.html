@@ -1,8 +1,10 @@
 <section id="s15" class="sec" data-title="Sequence models side by side" data-lit="">
 <style>
 #s15 .s15-price{font-size:1.1em}
-#s15 #s15-table .dt{font-size:13px}
-#s15 #s15-table .dt th,#s15 #s15-table .dt td{padding:6px 8px}
+body.present #s15 .dt{width:100%;table-layout:fixed}
+body.present #s15 .dt th,body.present #s15 .dt td{white-space:normal;overflow-wrap:break-word}
+#s15 .dt td{font-family:var(--font-ui);text-align:left}
+#s15 .dt thead th{text-align:left}
 </style>
 <header class="sec-head">
   <span class="sec-num">15</span>
@@ -14,7 +16,11 @@
 <div class="frame" data-title="Compare the context routes">
   <script type="text/x-notes">Which model gives two distant tokens a direct path in one layer?
   Read across one property at a time instead of ranking the rows as a single score.</script>
-  <div class="card" data-build="1"><h3 class="card-title">Four sequence models</h3><div id="s15-table"></div></div>
+  <div class="card" data-build="1"><h3 class="card-title">Fixed windows and recurrence</h3><div id="s15-table"></div></div>
+</div>
+<div class="frame" data-title="Convolution and attention use different routes">
+  <script type="text/x-notes">Convolution enlarges its receptive field through depth. Attention directly connects allowed pairs, at a quadratic score cost.</script>
+  <div class="card"><div id="s15-table-rest"></div></div>
 </div>
 <div class="frame" data-title="Longer memory has a price">
   <script type="text/x-notes">What grows when self-attention reads a longer sequence?
@@ -32,7 +38,8 @@
     ['grows with depth','set by its receptive field','parallel','linear in kernel'],
     ['any allowed earlier token','one layer','parallel','quadratic']
   ];
-  AT.ui.table(rows,{cols:['context','distant-token path','training','context cost'],rowLabels:['fixed-window MLP','RNN','temporal convolution','self-attention'],cornerLabel:'model',highlightRow:3,caption:'Each row describes the usual dense form of the model family.',into:S.querySelector('#s15-table')});
+  const labels=['fixed-window MLP','RNN','temporal convolution','self-attention'];
+  [0,2].forEach((from,j)=>AT.ui.table(rows.slice(from,from+2),{cols:['context','distant-token path','training','context cost'],rowLabels:labels.slice(from,from+2),cornerLabel:'model',highlightRow:j?1:undefined,caption:'Each row describes the usual dense form of the model family.',into:S.querySelector(j?'#s15-table-rest':'#s15-table')}));
   AT.ui.callout('At the toy length $T='+AT.T+'$, a dense score matrix has '+(AT.T*AT.T)+' cells before the causal half is removed. Longer context increases both memory use and score work.',{kind:'note',into:S.querySelector('#s15-price')});
   AT.motif(S.querySelector('#s15-motif'),{active:'att',labels:true});
 })();

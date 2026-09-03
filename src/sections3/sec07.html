@@ -24,21 +24,35 @@
   <script type="text/x-notes">Does a head receive a slice of each embedding?
   No. The split is in the projected outputs. Each projection starts from the full model-width row.</script>
   <div class="card"><h3 class="card-title">Split into projections, run heads, concatenate, combine</h3><div class="s07-pipeline dotgrid" id="s07-pipeline"></div></div>
-  <div id="s07-full" data-build="1"></div>
 </div>
+<div class="frame" data-title="The input is full-width; projected heads are smaller"><div id="s07-full"></div></div>
 <div class="frame" data-title="Inspect a head and the causal mask">
   <script type="text/x-notes">Which positions are forbidden for the selected query?
   Use the sentence button, head selector, and mask toggle. All displayed head rows are illustrative.</script>
   <div class="card" data-build="1"><h3 class="card-title">Illustrative head rows <span class="s07-badge">Illustrative</span></h3><div class="btn-row" id="s07-example"></div><div class="btn-row" id="s07-head-buttons"></div><div id="s07-toggle"></div><div id="s07-table"></div><p class="muted" id="s07-note"></p></div>
 </div>
-<div class="frame" data-title="Widths and equations">
+<div class="frame" data-title="Project each head from the same input">
   <script type="text/x-notes">What becomes smaller when the number of heads grows?
   Each projected head width shrinks. The input row stays at full model width.</script>
   <div class="card"><h3 class="card-title">Head dimensions</h3><div id="s07-sizes"></div></div>
   <div class="prose" data-build="1">
     $$\vq{Q^{(h)}}=\ve{E}W_Q^{(h)},\qquad \vk{K^{(h)}}=\ve{E}W_K^{(h)}$$
     $$\vv{V^{(h)}}=\ve{E}W_V^{(h)}$$
-    $$H=[H^{(1)};\ldots;H^{(n_h)}],\qquad \vd{\Delta E}=HW_O$$
+  </div>
+</div>
+<div class="frame" data-title="Mix within each head, then combine heads">
+  <script type="text/x-notes">What does each head return before concatenation?
+  Each H superscript h is that head's matrix of retrieved messages. Concatenate across columns, never across token rows.</script>
+  <div class="prose" data-build="1">
+    $$\va{A^{(h)}}=\operatorname{softmax}_{\text{row}}\!\left(\frac{\vq{Q^{(h)}}\vk{K^{(h)}}^\top}{\sqrt{d_k}}+M\right)$$
+    <p>The same causal mask $M$ blocks future sources in every head.</p>
+  </div>
+  <div class="prose" data-build="2">
+    $$H^{(h)}=\va{A^{(h)}}\vv{V^{(h)}}$$
+    <p>Each head returns one message row per input token.</p>
+  </div>
+  <div class="prose" data-build="3">
+    $$H=\operatorname{Concat}_{\text{columns}}(H^{(1)},\ldots,H^{(n_h)}),\qquad \vd{\Delta E}=HW_O$$
   </div>
 </div>
 <div class="companion after"><p>Heads divide the projected width, while every head reads the full input representation through its own matrices.</p></div>

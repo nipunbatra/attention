@@ -2,7 +2,7 @@
 <style>
 #s16 .s16-list{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 #s16 .s16-col{border:1px solid var(--line);border-radius:10px;padding:18px;background:var(--card)}
-@media(max-width:820px){#s16 .s16-list{grid-template-columns:1fr}}
+@media(max-width:820px){body:not(.present) #s16 .s16-list{grid-template-columns:1fr}}
 </style>
 <header class="sec-head">
   <span class="sec-num">16</span>
@@ -16,12 +16,15 @@
   Attention weights route value vectors. Other behavioral claims need separate tests.</script>
   <div class="card s16-list"><div class="s16-col"><h3 class="card-title">What it gives</h3><p>Learned routing that depends on the current representations and respects the mask.</p><p>A direct within-layer path between allowed token positions.</p></div><div class="s16-col" data-build="1"><h3 class="card-title">What it does not ensure</h3><p>Correct facts, reliable reasoning, complete explanations, or memory beyond the available context.</p></div></div>
 </div>
-<div class="frame" data-title="Four quick checks">
+<div class="frame" data-title="Is the attention map a full explanation?">
   <script type="text/x-notes">Which statement fails first?
   Open each reveal and tie the answer back to the attention calculation rather than to a slogan.</script>
   <div class="card"><h3 class="card-title">Test the claims</h3><div id="s16-checks"></div></div>
-  <div id="s16-note" data-build="1"></div>
 </div>
+<div class="frame" data-title="Does one head always mean one rule?"><div class="card" id="s16-check-2"></div></div>
+<div class="frame" data-title="When is the causal mask needed?"><div class="card" id="s16-check-3"></div></div>
+<div class="frame" data-title="Does a Transformer remember everything?"><div class="card" id="s16-check-4"></div></div>
+<div class="companion"><div id="s16-note"></div></div>
 <div class="companion after"><p>Attention weights show where value information was mixed, while broader claims about behavior need evidence beyond the map.</p></div>
 <script>
 (function(){
@@ -31,7 +34,7 @@
     ['Does one head always learn one readable rule?','No. A head can combine several relations, and several heads can share a relation.'],
     ['Is causal masking needed only during generation?','No. Parallel next-token training uses the same mask to prevent future-token leakage.'],
     ['Does a Transformer remember everything?','No. It has a finite context and finite parameters. A longer context also increases attention cost.']
-  ].forEach((x,i)=>{const r=AT.ui.reveal(x[0],x[1],{into:host});if(i)r.setAttribute('data-build',String(i));});
+  ].forEach((x,i)=>{AT.ui.reveal(x[0],x[1],{into:i?S.querySelector('#s16-check-'+(i+1)):host});});
   AT.ui.callout('This page calls the attention output $\\vd{\\Delta e}$ to stress that it is added to the residual stream. Standard descriptions usually call it the attention output; the residual addition itself is standard.',{kind:'note',into:S.querySelector('#s16-note')});
 })();
 </script>

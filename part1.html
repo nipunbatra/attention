@@ -953,10 +953,13 @@ window.__PART__ = {"part":1,"series":"Next-token prediction, attention and the T
   AT.embed = function (tokens) {
     tokens = arr(tokens);
     var te = model.tok_emb || {}, pe = arr(model.pos_emb), d = AT.d_model;
+    var capacity = model.max_context == null ? pe.length : model.max_context;
+    if (tokens.length > capacity) throw new Error('Context length ' + tokens.length + ' exceeds positional capacity ' + capacity + '.');
     return tokens.map(function (t, i) {
-      var a = arr(te[AT.lower(t)]), p = arr(pe[i]);
-      if (!a.length) a = AT.zeros(d);
-      if (!p.length) p = AT.zeros(d);
+      var token = AT.lower(t), a = arr(te[token]), p = arr(pe[i]);
+      if (!Object.prototype.hasOwnProperty.call(te, token)) throw new Error('Token not in vocabulary: ' + t);
+      if (a.length !== d || !a.every(Number.isFinite)) throw new Error('Invalid token embedding for ' + t + ': expected ' + d + ' finite coordinates.');
+      if (p.length !== d || !p.every(Number.isFinite)) throw new Error('Invalid positional vector at position ' + (i + 1) + ': expected ' + d + ' finite coordinates.');
       return AT.add(a, p);
     });
   };
@@ -1030,7 +1033,7 @@ window.__PART__ = {"part":1,"series":"Next-token prediction, attention and the T
      ====================================================================== */
   var MACROS = {
     "\\ve": "\\htmlClass{m-e}{#1}", "\\vq": "\\htmlClass{m-q}{#1}", "\\vk": "\\htmlClass{m-k}{#1}", "\\vv": "\\htmlClass{m-v}{#1}",
-    "\\va": "\\htmlClass{m-a}{#1}", "\\vd": "\\htmlClass{m-d}{#1}", "\\vp": "\\htmlClass{m-ep}{#1}"
+    "\\va": "\\htmlClass{m-a}{#1}", "\\vd": "\\htmlClass{m-d}{#1}", "\\vp": "\\htmlClass{m-ep}{#1}", "\\vm": "\\htmlClass{m-v}{#1}"
   };
   AT.macros = MACROS;
   AT.katexOpts = function (extra) {
@@ -1940,7 +1943,7 @@ window.__PART__ = {"part":1,"series":"Next-token prediction, attention and the T
     { g: 'token', sym: '\\vk{k_j} = \\ve{e_j} W_K', mean: 'key: when token $j$ should be read', shape: '1\\times d_k', dims: function () { return '1×' + AT.d_k; } },
     { g: 'token', sym: '\\vv{v_j} = \\ve{e_j} W_V', mean: 'value: what token $j$ sends if it is read', shape: '1\\times d_v', dims: function () { return '1×' + AT.d_v; } },
     { g: 'token', sym: 's_{ij} = \\vq{q_i}\\cdot\\vk{k_j}/\\sqrt{d_k}', mean: 'scaled score of key $j$ for query $i$', shape: '\\text{scalar}', dims: function () { return ''; } },
-    { g: 'token', sym: '\\va{\\alpha_{ij}} = \\operatorname{softmax}_j(s_{ij})', mean: 'attention weight: how much $i$ reads from $j$; each row sums to 1', shape: '\\text{scalar}', dims: function () { return ''; } },
+    { g: 'token', sym: '\\va{\\alpha_{ij}} = \\operatorname{softmax}_j(s_{ij}+M_{ij})', mean: 'attention weight after the causal mask: how much $i$ reads from $j$; allowed weights sum to 1', shape: '\\text{scalar}', dims: function () { return ''; } },
     { g: 'token', sym: 'm_i = \\sum_j \\va{\\alpha_{ij}}\\,\\vv{v_j}', mean: 'retrieved message: the weighted mixture of values', shape: '1\\times d_v', dims: function () { return '1×' + AT.d_v; } },
     { g: 'token', sym: '\\vd{\\Delta e_i} = \\big(\\sum_j \\va{\\alpha_{ij}}\\,\\vv{v_j}\\big) W_O = m_i W_O', mean: 'contextual update (this page\u2019s name for the attention output)', shape: '1\\times d_{\\text{model}}', dims: function () { return '1×' + AT.d_model; } },
     { g: 'token', sym: "\\vp{e_i'} = \\ve{e_i} + \\vd{\\Delta e_i}", mean: 'updated representation (the residual addition)', shape: '1\\times d_{\\text{model}}', dims: function () { return '1×' + AT.d_model; } },
@@ -1972,7 +1975,7 @@ window.__PART__ = {"part":1,"series":"Next-token prediction, attention and the T
     { g: 'mlp', sym: '\\ve{E_{\\text{tok}}}', mean: 'the learned lookup table: one row per vocabulary token', shape: '|\\mathcal V| \\times d', dims: function () { return (AT.vocab.length || '?') + '×' + AT.d_model; } },
     { g: 'mlp', sym: '\\ve{e_i} = \\ve{E_{\\text{tok}}}[t_i]', mean: 'the embedding at position $i$: the token\'s row of the table', shape: '1 \\times d', dims: function () { return '1×' + AT.d_model; } },
     { g: 'mlp', sym: 'a_0 = [\\ve{e_1}, \\ldots, \\ve{e_w}]', mean: 'the concatenated window (the input of the network)', shape: '1 \\times wd', dims: function () { return isNum(model.w) ? '1×' + (model.w * AT.d_model) : ''; } },
-    { g: 'mlp', sym: 'a_1 = \\sigma(a_0 W_1 + b_1)', mean: 'the hidden layer', shape: '1 \\times d_h', dims: function () { return isNum(model.d_h) ? '1×' + model.d_h : ''; } },
+    { g: 'mlp', sym: 'a_1 = \\tanh(a_0 W_1 + b_1)', mean: 'the hidden layer, using the same tanh activation as the worked model', shape: '1 \\times d_h', dims: function () { return isNum(model.d_h) ? '1×' + model.d_h : ''; } },
     { g: 'mlp', sym: 'z = a_1 W_2 + b_2', mean: 'the logits: one score per vocabulary entry', shape: '1 \\times |\\mathcal V|', dims: function () { return '1×' + (AT.vocab.length || '?'); } },
     { g: 'mlp', sym: 'p = \\operatorname{softmax}(z)', mean: 'the next-character probabilities', shape: '1 \\times |\\mathcal V|', dims: function () { return '1×' + (AT.vocab.length || '?'); } },
     { g: 'mlp', sym: '\\text{loss} = -\\log p(\\text{target})', mean: 'cross-entropy on the observed next character', shape: '\\text{scalar}', dims: function () { return ''; } },
