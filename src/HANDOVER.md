@@ -53,18 +53,20 @@ Publish: copy the assembled file(s) to the repo root, `git add -A && git commit 
 - Causal examples only (bank never reads a later word). Do not introduce LayerNorm/MLP/blocks in Part 2. Heads and layers belong to Part 3.
 - Multi-part: PARTS.md; each part is one file; frames authored per PRESENT.md so slide mode is a toggle.
 
-## 5. State at handover (2026-09-03, commit 0fb9f05 + this file)
-Done and live: Part 2 with named axes, tables, worksheets, companion prose, notation card, s13 background staircase, present-mode runtime, multi-part shell,
-series index. Present-mode frames exist for s01 to s05; s06 to s19 fall back to automatic one-card-per-build frames (works, but not curated).
+## 5. State at handover (updated 2026-09-03, commit 12c5ab0)
+Done and live: Part 2 with named axes on FIVE coordinates (water, finance, person, glue, position), keys 3 wide and values 2 wide, tables and
+worksheets everywhere, the s05/s06 mock video search with per-card key and value strips, dot-product notation q_i . k_j, companion prose, notation card,
+s13 background staircase, present-mode runtime, multi-part shell, series index, every round-2 review item (CODEX_FEEDBACK_2.md) applied.
+Present-mode frames exist for s01 to s05 (s05 needs re-checking after the mock UI); s06 to s19 fall back to automatic one-card-per-build frames.
 NOT done, in priority order:
-1. `REV2_TASK.md` (+ `CODEX_FEEDBACK_2.md`): position gets its own 5th coordinate; values become 2-wide (d_v = 2) so keys and values differ; the q/k/v
-   columns note; the s05 mock search UI with per-card key/value strips; the round-2 fixes (dot-product notation sweep, fixed-window wording, "attention
-   bypassed" label, scaling prose, qualifications, the s15/s07 bugs, "coming" links). This is one agent task; hand the file to Codex or a Claude agent.
-2. Presentation prototype: author frames for s06 per FRAMES.md, walk all frames, fix layout; then decide with the instructor whether to frame s07 to s19.
-3. Part 3 per GUIDE3.md: `part3_workflow.js` in the old scratchpad is lost with the session, but the prompts are reproducible from GUIDE3.md + PARTS.md +
-   CONTRACT.md: numbers agent (toy3.json = toy.json + training block via numpy autodiff, part3.js), section builders in groups, gate. Start from sections3_seed/.
-4. Part 1 per GUIDE1.md (train the aabid MLP with train_names.py on names.csv, part1.js, sections1/), then update index.html cards.
-Known small issues: s17 (heads, now in sections3_seed) clips at 390px; the roadmap in the hero lists s01 to s14 only.
+1. Presentation prototype: frames for s05 (re-check) and s06 per FRAMES.md, walk all frames, fix layout (a Codex job was started for this on 2026-09-03;
+   check `git status` in src/sections for its edits). Then decide with the instructor whether to frame s07 to s19.
+2. Part 3 per GUIDE3.md (numbers agent: toy3.json = toy.json + training block via numpy autodiff, part3.js; builders by section group; gate). Start from
+   sections3_seed/ (old heads and layers sections; they still use the OLD toy widths and ids s17/s18 and need renumbering and a re-check against the 5/3/2 toy).
+3. Part 1 per GUIDE1.md (train the aabid MLP with train_names.py on names.csv, part1.js, sections1/), then update index.html cards and part2.json prev/next.
+Known small issues: the roadmap in the hero lists s01 to s14 only; sections3_seed/sec17.html clips at 390px.
+Codex note: the Codex sandbox cannot launch the bundled headless Chromium (Mach port error); it verifies in the system browser instead. Run qa.mjs and
+sweep.mjs from a normal shell before pushing.
 
 ## 6. How to hand a task to an agent
 Give it: this file, the task file (e.g. REV2_TASK.md), CONTRACT.md, and the acceptance commands in section 3. Ask for: files changed, tests run with results,
