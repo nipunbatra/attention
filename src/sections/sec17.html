@@ -1,0 +1,185 @@
+<section id="s17" class="sec" data-title="Attention versus the alternatives" data-lit="">
+<style>
+#s17 .look{font-size:14px;color:var(--ink-2);margin:12px 0 0;max-width:68ch}
+#s17 .ctx-note{margin:10px 0 0}
+#s17 .cmp{width:100%;border-collapse:collapse;font-size:15px;min-width:640px}
+#s17 .cmp th,#s17 .cmp td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+#s17 .cmp th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+#s17 .cmp td.yes{color:var(--ink);font-weight:700}
+#s17 .cmp tr.is-att td{font-weight:600}
+#s17 .cmp td .katex{font-size:1.02em}
+#s17 .cmp td:nth-child(2){white-space:nowrap}
+#s17 .dt td.dt-num{min-width:3.4em;padding:8px 9px}
+#s17 .dt thead th{padding:8px 9px}
+#s17 #s17-box{margin:0 0 10px}
+#s17 .rd{font-size:14px;color:var(--ink-2);margin:10px 0 0;max-width:68ch;line-height:1.5}
+#s17 .rd .katex{font-size:1.02em}
+@media (max-width:640px){#s17 #s17-box .katex{font-size:1.05em}}
+</style>
+<header class="sec-head">
+  <span class="sec-num">17</span>
+  <div>
+    <p class="eyebrow">Why we are here: the fixed window (03) and mean pooling (04) return, with one more fixed scheme, to be lined up against attention.</p>
+    <h2>Attention versus the alternatives</h2>
+  </div>
+</header>
+
+<div class="companion" data-kicker="For self-study">
+  <p>Sections 03 and 04 set aside the fixed window and the plain mean because neither reacts to the words. This section puts those two schemes, a distance-decay scheme and attention into one table, so the difference shows up in the numbers instead of in an argument.</p>
+  <p>Switch between the river sentence and the cheque sentence and watch the rows. The first three rows do not change at all: their weights were fixed before any word was read. Only the attention row moves, and it moves toward the words that matter for the blank. The sentence to remember: attention is the only scheme whose weights are computed from the content.</p>
+</div>
+
+<div class="prose">
+  <p>All four schemes build a context for the last token $t = 10$ from $\ve{e_1},\ldots,\ve{e_t}$. One question separates them: who sets the weights, and do they read the words? Switch the sentence and watch which row reacts.</p>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Choose the context</h3>
+  <div class="btn-row" id="s17-ctx"></div>
+  <div id="s17-chips"></div>
+  <p class="muted small ctx-note" id="s17-ctx-note"></p>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Four weighting schemes, one table</h3>
+  <div id="s17-table"></div>
+  <div id="s17-read"></div>
+  <p class="look">Look at the last row: only there does the darkest cell sit under a content word, and only that row changes when you switch the sentence.</p>
+</div>
+
+<div class="card">
+  <h3 class="card-title">What each scheme does with the context</h3>
+  <div class="scroll-x">
+    <table class="cmp" id="s17-cmp">
+      <thead><tr><th>Scheme</th><th>Context for the last token</th><th>Who sets the weights</th><th>What is retrieved</th></tr></thead>
+      <tbody>
+        <tr><td>Fixed window</td><td>$c_t = [\ve{e_{t-K+1}};\,\ldots;\,\ve{e_t}]$</td><td>Position. Inside the window a token counts whole; outside it does not exist</td><td>$\ve{e_j}$, concatenated</td></tr>
+        <tr><td>Mean pooling</td><td>$c_t = \frac{1}{t}\sum_{j \le t} \ve{e_j}$</td><td>Nobody. Every token gets $1/t$</td><td>$\ve{e_j}$, averaged</td></tr>
+        <tr><td>Fixed positional weights</td><td>$c_t = \sum_{j \le t} w_j\, \ve{e_j}$</td><td>Distance. $w_j$ is fixed by position, so two words at the same distance weigh the same</td><td>$\ve{e_j}$, weighted</td></tr>
+        <tr class="is-att"><td>Attention</td><td>$m_t = \sum_{j \le t} \underbrace{\va{\alpha_{tj}}}_{\mathclap{\text{depends on current content}}} \vv{v_j}$</td><td class="yes">The content. $\va{\alpha_{tj}}$ comes from $\vq{q_t}^\top \vk{k_j}$, so it changes with the words</td><td>$\vv{v_j}$, weighted, then $\vd{\Delta e_t} = m_t W_O$</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="look">Read the third column: three schemes decide before reading the sentence; one decides by reading it.</p>
+</div>
+
+<div id="s17-callout"></div>
+
+<div class="companion after">
+  <p>Keep in mind: a window, a mean and a distance decay all fix their weights before reading the sentence. Attention computes $\va{\alpha_{ij}}$ from $\vq{q_i}$ and $\vk{k_j}$, so the same position can matter a lot in one sentence and not at all in another.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s17');
+  const K = 3;                       // fixed-window size for the comparison
+  const DECAY = 0.7;                 // illustrative distance decay for the fixed positional weights
+  let ctx = 'river';
+  const t = AT.sentences.river.length; // 10
+  const ti = t - 1;                    // index of the last token
+
+  /* ---- context buttons + chips ---- */
+  const ctxHost = S.querySelector('#s17-ctx');
+  const btnA = AT.h('button', { type: 'button', class: 'btn', id: 's17-ctx-a', 'aria-pressed': 'true' }, 'Sentence A: river');
+  const btnB = AT.h('button', { type: 'button', class: 'btn', id: 's17-ctx-b', 'aria-pressed': 'false' }, 'Sentence B: cheque');
+  ctxHost.appendChild(btnA); ctxHost.appendChild(btnB);
+  btnA.addEventListener('click', () => setCtx('river'));
+  btnB.addEventListener('click', () => setCtx('cheque'));
+  const chipHost = S.querySelector('#s17-chips');
+  const ctxNote = S.querySelector('#s17-ctx-note');
+  const tableHost = S.querySelector('#s17-table');
+  const readHost = S.querySelector('#s17-read');
+
+  /* ---- the four weighting schemes (all for the last token) ---- */
+  function weightsFor(name, F){
+    if (name === 'window') return AT.range(t).map(j => (j >= t - K ? 1 : 0));
+    if (name === 'mean')   return AT.range(t).map(() => 1 / t);
+    if (name === 'pos')    { const raw = AT.range(t).map(j => Math.pow(DECAY, ti - j)); const s = AT.sum(raw); return raw.map(x => x / s); }
+    return F.A[ti].slice();
+  }
+  const SCHEMES = [
+    { id: 'window', label: 'Fixed window', cls: 'neutral', content: 'no' },
+    { id: 'mean',   label: 'Mean pooling', cls: 'neutral', content: 'no' },
+    { id: 'pos',    label: 'Fixed positional', cls: 'neutral', content: 'no' },
+    { id: 'att',    label: 'Attention', cls: 'a', content: 'yes' }
+  ];
+
+  /* ---- paint ---- */
+  let prevAtt = null;
+  function paint(){
+    const toks = AT.sentences[ctx];
+    const F = AT.forward(toks);
+    AT.clear(chipHost);
+    AT.ui.chips(toks, { active: ti, slot: '___', into: chipHost });
+
+    const W = SCHEMES.map(s => weightsFor(s.id, F));
+    const rows = W.map((w, r) => SCHEMES[r].id === 'window' ? w.map(x => (x === 0 ? '×' : x)) : w);
+    AT.clear(tableHost);
+    const fig = AT.ui.table(rows, {
+      cols: toks.map((tok, j) => (j + 1) + ' ' + tok),
+      rowLabels: SCHEMES.map(s => s.label),
+      rowCls: SCHEMES.map(s => s.cls),
+      cornerLabel: 'scheme / token',
+      heatCols: AT.range(t), heatMax: 1, decimals: 2, highlightRow: 3,
+      computed: [{ label: 'sum', fn: (row) => AT.sum(row.map(x => (typeof x === 'number' ? x : 0))), cls: 'neutral' }],
+      caption: 'Each cell is the weight token ' + t + ' gives to token $j$ in the ' + ctx + ' sentence: window with $K = ' + K + '$ (1 = included whole, × = unavailable; the window concatenates, it does not weight), mean $1/t$, positional $w_j \\propto ' + DECAY + '^{\\,t-j}$ (illustrative), and the attention row $\\va{\\alpha_{' + t + ',j}}$ from the toy model.',
+      note: 'Hover or focus a cell in the attention row to see where its weight comes from; click it for the worksheet $\\vq{q_{' + t + '}} \\cdot \\vk{k_j} / \\sqrt{d_k}$.',
+      into: tableHost
+    });
+    const att = W[3];
+    const pop = AT.ui.popover(fig, { label: 'Score arithmetic' });
+    const qName = t + ' ' + toks[ti];
+    function openCalc(j, td){
+      const kName = (j + 1) + ' ' + toks[j];
+      const calc = AT.ui.dotCalc(F.Q[ti], F.K[j], { axes: 'qk', qLabel: 'q · ' + qName, kLabel: 'k · ' + kName, scale: true, d_k: AT.d_k });
+      const after = AT.h('p', { class: 'calc-line obj-a' }, 'after the softmax over the row: weight ', AT.h('span', { class: 'calc-r' }, AT.fmt(att[j])));
+      pop.show(td, 'score of key ' + kName + ' for query ' + qName, [calc, after]);
+    }
+    toks.forEach((tok, j) => {
+      const td = fig.cells[3][j];
+      fig.tipOn(td, '“' + toks[ti] + '” (' + t + ') reads “' + tok + '” (' + (j + 1) + ') with weight ' + AT.fmt(att[j], 3) + ' = softmax of the scaled score ' + AT.fmt(F.S[ti][j], 2) + ' (click for the worksheet)');
+      td.classList.add('has-calc');
+      td.addEventListener('click', () => openCalc(j, td));
+      td.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); openCalc(j, td); } });
+    });
+    /* one line of intuition, computed from the axis names and the numbers */
+    const best = AT.argmax(att);
+    const qk = AT.axisLabels('qk', AT.d_k) || [];
+    const asks = F.Q[ti].map((v, c) => ({ v, c })).filter(x => x.v >= 0.6 * Math.max(...F.Q[ti])).map(x => qk[x.c]);
+    const offers = F.K[best].map((v, c) => ({ v, c })).filter(x => x.v >= 0.2).sort((x, y) => y.v - x.v).map(x => qk[x.c] + ' ' + AT.fmt(x.v));
+    const joinAnd = (a) => a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
+    AT.clear(readHost);
+    readHost.appendChild(AT.h('p', { class: 'rd', html: 'Reading the attention row: ' + AT.texStr('\\vq{q_{' + t + '}}') + ' of “' + AT.escape(toks[ti]) + '” asks for ' + AT.escape(joinAnd(asks)) + ' evidence; ' + AT.texStr('\\vk{k_{' + (best + 1) + '}}') + ' of “' + AT.escape(toks[best]) + '” offers ' + AT.escape(joinAnd(offers)) + ', so it gets the largest weight, ' + AT.fmt(att[best]) + '.' }));
+    fig.cells[0].forEach((td, j) => { if (typeof rows[0][j] === 'number') td.title = 'inside the window of the last ' + K + ' tokens'; });
+
+    const top = AT.range(t).map(j => ({ j, a: att[j] })).sort((x, y) => y.a - x.a).slice(0, 3);
+    const label = ctx === 'river' ? 'Sentence A' : 'Sentence B';
+    let msg = label + ': “' + toks.join(' ') + ' ___”. Token ' + t + ' reads most from ' + top.map(x => '“' + toks[x.j] + '” (' + AT.fmt(x.a, 2) + ')').join(', ') + '.';
+    if (prevAtt) msg += ' Rows 1 to 3 did not move: their weights never look at the words. Only the attention row changed.';
+    ctxNote.textContent = msg;
+    prevAtt = att;
+  }
+  function setCtx(c){
+    ctx = c;
+    btnA.setAttribute('aria-pressed', c === 'river' ? 'true' : 'false');
+    btnB.setAttribute('aria-pressed', c === 'cheque' ? 'true' : 'false');
+    paint();
+  }
+  paint();
+
+  /* ---- closing statement ---- */
+  const co = S.querySelector('#s17-callout');
+  const box = AT.h('div', { id: 's17-box' });
+  const mq = window.matchMedia('(max-width:640px)');
+  function drawBox(){
+    AT.tex(box, mq.matches
+      ? '\\boxed{\\begin{aligned}&\\text{Attention =}\\\\ &\\text{content-dependent soft retrieval}\\end{aligned}}'
+      : '\\boxed{\\text{Attention = content-dependent soft retrieval}}', { display: true });
+  }
+  drawBox();
+  if (mq.addEventListener) mq.addEventListener('change', drawBox); else if (mq.addListener) mq.addListener(drawBox);
+  AT.ui.callout('<p>The weights $\\va{\\alpha_{ij}}$ come from the tokens themselves, and no window cuts the context off. What flows is $\\vv{v_j}$, not a fixed copy of $\\ve{e_j}$.</p>', { kind: 'key', into: co });
+  co.querySelector('.callout').insertBefore(box, co.querySelector('.callout').firstChild);
+})();
+</script>
+</section>

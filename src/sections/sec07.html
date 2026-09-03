@@ -1,0 +1,250 @@
+<section id="s07" class="sec" data-title="Every token becomes a searchable record" data-lit="">
+<style>
+#s07 .wrow{display:grid;grid-template-columns:repeat(3,auto);justify-content:start;gap:8px 28px;align-items:start}
+#s07 .wrow .dt-fig{margin:8px 0 4px}
+#s07 .wrow .dt-cap{max-width:30ch}
+#s07 .wrow .dt-note{max-width:30ch}
+#s07 .rec-grid{display:grid;grid-template-columns:repeat(3,auto);justify-content:start;gap:4px 24px;align-items:start}
+#s07 .rec-grid .dt-fig{margin:8px 0 0}
+@media (max-width:820px){#s07 .wrow,#s07 .rec-grid{grid-template-columns:minmax(0,1fr)}}
+#s07 .qnote{margin:12px 0 0}
+#s07 .rd{margin:10px 0 0;font-size:15px;color:var(--ink-2);max-width:72ch;line-height:1.5}
+#s07 .arith-btn{margin:14px 0 0}
+#s07 .arith{margin:10px 0 0}
+#s07 .arith .calc{margin:8px 0 14px}
+#s07 .arith-lab{font-size:13px;color:var(--ink-3);font-weight:600;margin:6px 0 2px}
+</style>
+<header class="sec-head">
+  <span class="sec-num">07</span>
+  <div>
+    <p class="eyebrow">Why we are here: search results carried a key and a value. Now every token in the sentence gets its own.</p>
+    <h2>Every token becomes a searchable record</h2>
+  </div>
+</header>
+
+<div class="companion" data-kicker="For self-study">
+  <p>The search detour gave us three roles: a query that asks, a key that says when to answer, and a value that is the answer. Now every token gets a key and a value, computed from its own representation with two shared matrices, and the token gathering context gets a query from a third matrix.</p>
+  <p>Every coordinate has a name in this toy, so read the column headers before the numbers. Click a different query token and watch which rows stay open. Open a record and read its three rows. The sentence to remember: a query, a key and a value are three linear views of the same $\ve{e}$.</p>
+</div>
+
+<div class="callout callout-key">What if every token in the sequence behaved like one item in this searchable memory?</div>
+
+<div class="prose">
+  <p>Token $j$, with current representation $\ve{e_j}$, publishes a record: a key $\vk{k_j}$ that says when to retrieve it, and a value $\vv{v_j}$ that says what it sends. Token $i$, gathering context, issues a query $\vq{q_i}$. All three are linear maps of the same $\ve{e}$.</p>
+  $$\boxed{\vq{q_i} = \ve{e_i}\,W_Q} \qquad \boxed{\vk{k_j} = \ve{e_j}\,W_K} \qquad \boxed{\vv{v_j} = \ve{e_j}\,W_V}$$
+  <p class="muted small">Vectors are rows here: $\ve{e_i}$ has 4 numbers, $W_Q$ is $4 \times 3$, so $\ve{e_i}\,W_Q$ has 3 numbers. Many texts write the column form $W_Q\,\ve{e_i}$. The numbers are the same. Each coordinate carries the name of what it measures; the names are illustrative, the arithmetic is real.</p>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Pick the query token $i$. Rows up to $i$ are open; later rows are not read yet</h3>
+  <div id="s07-chips"></div>
+  <div id="s07-etab"></div>
+  <p class="rd" id="s07-eread"></p>
+  <p class="muted small qnote" id="s07-qnote"></p>
+</div>
+
+<div class="card">
+  <h3 class="card-title">One record: what token $j$ publishes. Three rows, three sets of axis names</h3>
+  <div id="s07-rchips"></div>
+  <div class="rec-grid" id="s07-rec"></div>
+  <p class="rd" id="s07-rread"></p>
+  <div class="arith-btn"><button type="button" class="btn btn-quiet" id="s07-rarith" aria-expanded="false">Show the arithmetic</button></div>
+  <div class="arith" id="s07-rcalc" hidden></div>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Keys: the query row sits above the key rows, under the same axis names</h3>
+  <div id="s07-ktab"></div>
+  <p class="rd" id="s07-qread"></p>
+  <div class="arith-btn"><button type="button" class="btn btn-quiet" id="s07-qarith" aria-expanded="false">Show the arithmetic</button></div>
+  <div class="arith" id="s07-qcalc" hidden></div>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Values: what each open record sends if it is read</h3>
+  <div id="s07-vtab"></div>
+</div>
+
+<div class="card">
+  <h3 class="card-title">The three projection matrices, shared by every token ($d_{\text{model}} \times d_k$)</h3>
+  <div class="wrow" id="s07-mats"></div>
+  <p class="muted small qnote">Look at: the same $W_Q$, $W_K$, $W_V$ act on every position. A row is an input axis of $\ve{e}$; a column is an output axis. Read each non-zero cell as “this axis feeds that axis”.</p>
+</div>
+
+<div class="callout callout-note">One query at a time. Token $i$ asks with $\vq{q_i}$; every token $j \le i$ answers with $\vk{k_j}$ and $\vv{v_j}$. Comparing them is the next section; stacking everything into matrices comes much later.</div>
+
+<div class="companion after">
+  <p>Keep in mind: nothing has been compared or retrieved yet. Each token has only been given a query, a key and a value, all computed from its own $\ve{e}$ with matrices that every position shares.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s07');
+  const toks = AT.sentences.river.slice(0, 7);
+  const F = AT.forward(toks);
+  const T = toks.length;
+  let qi = 6, rj = 5;
+  const lab = (t, j) => (j + 1) + ' ' + t;
+  const rowLabels = toks.map(lab);
+  const later = (i) => AT.range(T).filter(j => j > i);
+  const AX = AT.axes;
+  const SIG = 0.5;
+
+  /* ---------- readings: sentences computed from the numbers ---------- */
+  const desc = { water: 'a water scene', finance: 'a finance scene', person: 'a person', glue: 'a glue word' };
+  const named = (vals, names) => names.map((nm, i) => ({ nm: nm, v: +vals[i] || 0 })).filter(o => Math.abs(o.v) >= SIG);
+  const joinAnd = (xs) => xs.length <= 1 ? xs.join('') : xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1];
+  function eClause(vals, tok){
+    const names = AX.short.e, d = (i) => desc[names[i]] || names[i];
+    const content = [0, 1, 2].map(i => ({ i: i, v: +vals[i] || 0 })).filter(o => o.v >= SIG).sort((a, b) => b.v - a.v);
+    const glue = +vals[3] || 0;
+    const csum = content.reduce((s, o) => s + o.v, 0);
+    if (!content.length) return glue >= SIG ? tok + ' is a glue word with no setting' : tok + ' says almost nothing';
+    if (glue >= SIG && csum <= glue) return tok + ' is a glue word with a hint of ' + joinAnd(content.map(o => names[o.i]));
+    const top = content[0], near = content.filter(o => o.v >= 0.75 * top.v);
+    let s;
+    if (near.length >= 2) s = tok + ' is ' + near.map((o, k) => (k === 0 ? 'half ' : 'half ') + d(o.i).replace(/^a /, '')).join(', ');
+    else if (content.length === 1 && glue < SIG) s = tok + ' is ' + d(top.i) + ' and nothing else';
+    else s = tok + ' is mostly ' + d(top.i) + (content.length > 1 ? ', with some ' + joinAnd(content.slice(1).map(o => names[o.i])) : '');
+    if (glue >= SIG) s += ', plus a glue part';
+    return s;
+  }
+  function readE(i){
+    const vals = F.E[i], parts = named(vals, AX.short.e).map(o => o.nm + ' ' + AT.fmt(o.v, 2));
+    return 'Reading $\\ve{e_{' + (i + 1) + '}}$ (' + AT.escape(toks[i]) + '): ' + (parts.length ? parts.join(', ') : 'every entry small') + ', so ' + AT.escape(eClause(vals, toks[i])) + '.';
+  }
+  function readQ(i){
+    const names = AX.short.qk, asks = named(F.Q[i], names).filter(o => o.v > 0).map(o => o.nm), not = names.filter(nm => asks.indexOf(nm) < 0);
+    let s;
+    if (!asks.length) s = 'it asks for almost nothing';
+    else if (!not.length) s = 'it asks for all three kinds of evidence';
+    else s = 'it asks for ' + joinAnd(asks) + ' evidence, not for ' + joinAnd(not);
+    return 'Reading $\\vq{q_{' + (i + 1) + '}}$ (' + AT.escape(toks[i]) + '): ' + AT.escape(s) + (/\?$/.test(s) ? '' : '.');
+  }
+  function kClause(j){
+    const offers = named(F.K[j], AX.short.qk).filter(o => o.v > 0);
+    return offers.length ? 'its key offers ' + joinAnd(offers.map(o => o.nm + ' ' + AT.fmt(o.v, 2))) : 'its key offers no evidence';
+  }
+  function vClause(j){
+    const says = named(F.V[j], AX.short.v).filter(o => o.v > 0);
+    return says.length ? 'its value says ' + joinAnd(says.map(o => o.nm + ' ' + AT.fmt(o.v, 2))) : 'its value says nothing';
+  }
+  function readRecord(j){
+    const glueOnly = !named(F.K[j], AX.short.qk).filter(o => o.v > 0).length;
+    return 'Reading record ' + (j + 1) + ' (' + AT.escape(toks[j]) + '): ' + AT.escape(eClause(F.E[j], toks[j])) + '; ' + AT.escape(kClause(j)) + '; ' + AT.escape(vClause(j)) + (glueOnly ? '. A glue word cannot be found and sends nothing.' : '.');
+  }
+  function readW(fig, W, verb){
+    const strip = (t) => String(t).replace(/^says:\s*/, '').replace(/^setting:\s*/, '');
+    const rows = fig.inAxes.map((a, i) => {
+      const outs = fig.outAxes.map((b, j) => ({ nm: strip(b.title || b.label), v: +W[i][j] || 0 })).filter(o => o.v !== 0)
+        .map(o => o.nm + (o.v === 1 ? '' : ' (' + AT.fmt(o.v, 1) + ')'));
+      return a.label + ' ' + verb + ' ' + (outs.length ? joinAnd(outs) : 'nothing');
+    });
+    return rows.join('; ') + '.';
+  }
+
+  /* ---------- projection matrices as readable weight tables ---------- */
+  const mats = S.querySelector('#s07-mats');
+  const wt = (M, cls, to, sym, what, verb) => {
+    const fig = AT.ui.wTable(M, { from: 'e', to: to, cls: cls, caption: '$' + sym + '$ makes ' + what + ': an $\\ve{e}$ axis (row) feeds an output axis (column).', into: mats });
+    if (fig.note) { fig.note.textContent = '$' + sym + '$: ' + readW(fig, M, verb); AT.renderMath(fig.note); }
+    else { const n = AT.h('p', { class: 'dt-note' }, '$' + sym + '$: ' + readW(fig, M, verb)); fig.appendChild(n); AT.renderMath(n); }
+  };
+  wt(AT.model.W_Q, 'q', 'qk', 'W_Q', 'queries', 'asks');
+  wt(AT.model.W_K, 'k', 'qk', 'W_K', 'keys', 'offers');
+  wt(AT.model.W_V, 'v', 'v', 'W_V', 'values', 'says');
+
+  /* ---------- query chips + e table ---------- */
+  const chips = AT.ui.chips(toks, { active: qi, size: 'lg', into: S.querySelector('#s07-chips'),
+    onClick: (i) => { qi = i; chips.setActive(i); chips.setMuted(later(i)); redraw(); } });
+  chips.setMuted(later(qi));
+  const etab = AT.ui.table(F.E, { rowLabels: rowLabels, rowCls: 'e', cornerLabel: 'token', highlightRow: qi, dimRows: later(qi),
+    caption: 'Look at: every row is one token’s current representation $\\ve{e_j}$, token embedding plus a small position offset, one named axis per column. The bold row is the query token.', into: S.querySelector('#s07-etab') });
+  const eread = S.querySelector('#s07-eread');
+
+  /* ---------- one record: e_j, k_j, v_j as three small tables ---------- */
+  const rec = S.querySelector('#s07-rec'), rread = S.querySelector('#s07-rread'), rcalc = S.querySelector('#s07-rcalc'), rbtn = S.querySelector('#s07-rarith');
+  const rchips = AT.ui.chips(toks, { active: rj, into: S.querySelector('#s07-rchips'), onClick: (j) => { rj = j; rchips.setActive(j); drawRecord(); } });
+  let kCalc = null, vCalc = null;
+  function drawRecord(){
+    AT.clear(rec);
+    const n = rj + 1, t = toks[rj];
+    AT.ui.table([F.E[rj]], { rowLabels: ['$\\ve{e_{' + n + '}}$ ' + t], rowCls: 'e', cornerLabel: 'row', into: rec });
+    AT.ui.table([F.K[rj]], { rowLabels: ['$\\vk{k_{' + n + '}}$ ' + t], rowCls: 'k', cornerLabel: 'row', into: rec });
+    AT.ui.table([F.V[rj]], { rowLabels: ['$\\vv{v_{' + n + '}}$ ' + t], rowCls: 'v', cornerLabel: 'row', into: rec });
+    rread.innerHTML = readRecord(rj);
+    AT.renderMath(rread);
+    if (kCalc) { kCalc.update(F.E[rj], { xLabel: 'e · ' + n + ' ' + t, outLabel: 'k · ' + n + ' ' + t }); vCalc.update(F.E[rj], { xLabel: 'e · ' + n + ' ' + t, outLabel: 'v · ' + n + ' ' + t }); }
+  }
+  function buildRecordCalc(){
+    const n = rj + 1, t = toks[rj];
+    AT.clear(rcalc);
+    const l1 = AT.h('p', { class: 'arith-lab' }, 'the key: $\\vk{k_{' + n + '}} = \\ve{e_{' + n + '}}\\,W_K$');
+    rcalc.appendChild(l1);
+    kCalc = AT.ui.matVecCalc(F.E[rj], AT.model.W_K, { from: 'e', to: 'qk', cls: 'k', xLabel: 'e · ' + n + ' ' + t, outLabel: 'k · ' + n + ' ' + t, into: rcalc });
+    const l2 = AT.h('p', { class: 'arith-lab' }, 'the value: $\\vv{v_{' + n + '}} = \\ve{e_{' + n + '}}\\,W_V$');
+    rcalc.appendChild(l2);
+    vCalc = AT.ui.matVecCalc(F.E[rj], AT.model.W_V, { from: 'e', to: 'v', cls: 'v', xLabel: 'e · ' + n + ' ' + t, outLabel: 'v · ' + n + ' ' + t, into: rcalc });
+    AT.renderMath(rcalc);
+  }
+  rbtn.addEventListener('click', () => {
+    const open = rcalc.hidden;
+    if (open && !kCalc) buildRecordCalc();
+    rcalc.hidden = !open;
+    rbtn.setAttribute('aria-expanded', String(open));
+    rbtn.textContent = open ? 'Hide the arithmetic' : 'Show the arithmetic';
+  });
+  drawRecord();
+
+  /* ---------- keys (dotTable): query row above the keys ---------- */
+  const khost = S.querySelector('#s07-ktab'), qread = S.querySelector('#s07-qread'), qcalc = S.querySelector('#s07-qcalc'), qbtn = S.querySelector('#s07-qarith');
+  let qCalc = null;
+  function drawKeys(){
+    AT.clear(khost);
+    const n = qi + 1;
+    AT.ui.dotTable(F.Q[qi], F.K, { rowLabels: rowLabels.map((s, j) => '$\\vk{k_{' + (j + 1) + '}}$ ' + toks[j]), queryLabel: '$\\vq{q_{' + n + '}}$ ' + toks[qi], cornerLabel: 'row',
+      scaled: true, d_k: AT.d_k, mask: later(qi), into: khost,
+      caption: 'Look at: $\\vq{q_{' + n + '}} = \\ve{e_{' + n + '}}\\,W_Q$ on top, one key $\\vk{k_j} = \\ve{e_j}\\,W_K$ per open row, both under the same axis names. The score column is a preview of the next section.',
+      note: 'Click a score to see the dot product written out, axis by axis.' });
+    qread.innerHTML = readQ(qi);
+    AT.renderMath(qread);
+    if (qCalc) qCalc.update(F.E[qi], { xLabel: 'e · ' + n + ' ' + toks[qi], outLabel: 'q · ' + n + ' ' + toks[qi] });
+  }
+  function buildQCalc(){
+    const n = qi + 1;
+    AT.clear(qcalc);
+    const l = AT.h('p', { class: 'arith-lab' }, 'the query: $\\vq{q_{' + n + '}} = \\ve{e_{' + n + '}}\\,W_Q$, one line per output axis');
+    qcalc.appendChild(l);
+    qCalc = AT.ui.matVecCalc(F.E[qi], AT.model.W_Q, { from: 'e', to: 'qk', cls: 'q', xLabel: 'e · ' + n + ' ' + toks[qi], outLabel: 'q · ' + n + ' ' + toks[qi], into: qcalc });
+    AT.renderMath(qcalc);
+  }
+  qbtn.addEventListener('click', () => {
+    const open = qcalc.hidden;
+    if (open && !qCalc) buildQCalc();
+    qcalc.hidden = !open;
+    qbtn.setAttribute('aria-expanded', String(open));
+    qbtn.textContent = open ? 'Hide the arithmetic' : 'Show the arithmetic';
+  });
+
+  /* ---------- value table ---------- */
+  const vtab = AT.ui.table(F.V, { rowLabels: rowLabels.map((s, j) => '$\\vv{v_{' + (j + 1) + '}}$ ' + toks[j]), rowCls: 'v', cornerLabel: 'row', dimRows: later(qi),
+    caption: 'Look at: $\\vv{v_j} = \\ve{e_j}\\,W_V$ is what token $j$ sends if it is read; the headers say what each coordinate would say. Nothing is sent yet.', into: S.querySelector('#s07-vtab') });
+
+  const qnote = S.querySelector('#s07-qnote');
+  function redraw(){
+    const n = qi + 1;
+    etab.setHighlightRow(qi); etab.setDim(later(qi));
+    vtab.setDim(later(qi));
+    eread.innerHTML = readE(qi);
+    AT.renderMath(eread);
+    drawKeys();
+    const withWhom = n === 1 ? 'its own key only (there is nothing before it)'
+                   : n === 2 ? 'the keys of tokens $1$ and $2$'
+                   : 'the keys of tokens $1 \\ldots ' + n + '$';
+    qnote.innerHTML = 'Token ' + n + ' (“' + AT.escape(toks[qi]) + '”) is the query token $i$. Its question $\\vq{q_{' + n + '}}$ will be compared with ' + withWhom + '. Token $i$ keeps its own record too: it can read from itself.';
+    AT.renderMath(qnote);
+  }
+  redraw();
+})();
+</script>
+</section>

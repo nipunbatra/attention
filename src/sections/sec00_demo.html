@@ -1,0 +1,320 @@
+<section id="s00" class="sec" data-title="Component gallery (not shipped)" data-lit="e q k v a d ep">
+<style>
+#s00 .demo-lab{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin:0 0 8px}
+#s00 .flow-arena{position:relative;padding:12px 0}
+</style>
+<header class="sec-head">
+  <span class="sec-num">00</span>
+  <div>
+    <p class="eyebrow">Gallery: every shared component, driven by the real toy model (this section is not part of the final page).</p>
+    <h2>Component gallery</h2>
+  </div>
+</header>
+
+<!-- Present-mode test frames (PRESENT.md). In read mode they are ordinary blocks; in present mode each fills the screen and the builds appear one per key press. -->
+<div class="frame" data-title="Builds, hand numbered" id="s00-frame1">
+  <script type="text/x-notes">
+    Ask: which token should "bank" read from, and why?
+    Point at the chips first, then reveal the query row. The stepper is build 2: the arrow keys walk its four steps before the callout appears.
+
+    Timing: about two minutes.
+  </script>
+  <div class="prose"><p>Build 0 is visible at once: the sentence, with the query token lit.</p></div>
+  <div id="s00-f1-chips"></div>
+  <div class="card" data-build="1">
+    <h3 class="card-title">Build 1: the query row of the lit token</h3>
+    <div id="s00-f1-vec" class="row"></div>
+  </div>
+  <div id="s00-f1-stepper" data-build="2"></div>
+  <div class="callout callout-key" data-build="3">Build 3, after the stepper has finished: the score decides where to read, the value decides what comes back.</div>
+</div>
+<div class="frame" data-title="Auto builds and a network sketch" id="s00-frame2">
+  <script type="text/x-notes">
+    Ask: what changes in the network when the window grows from three tokens to five?
+    Drag the slider; the input column grows and the first layer needs more weights. At 100 the column collapses to an ellipsis.
+  </script>
+  <div class="prose"><p>No <code>data-build</code> attributes here: the blocks below get sequential build numbers at runtime, this paragraph first.</p></div>
+  <div class="card">
+    <h3 class="card-title">A fixed window feeds a fixed network (AT.netSketch)</h3>
+    <div id="s00-net-slider"></div>
+    <div id="s00-net"></div>
+  </div>
+  <div class="callout callout-note">The slider is reset when the frame is left; add <code>data-keep-state</code> to keep it.</div>
+  <p class="muted">Last auto build: a plain paragraph.</p>
+</div>
+
+<div class="companion" data-kicker="For self-study">
+  <p>This block is a companion note. It sits between the section header and the first widget, uses a quieter colour and a narrower measure, and disappears when the reader switches the strip to the lean view. Use it for the sentences a student needs at home that a lecturer would say out loud.</p>
+</div>
+
+<div class="prose">
+  <p>Static math renders at boot: $\vp{e_i'} = \ve{e_i} + \vd{\Delta e_i}$ and
+  $\va{\alpha_{ij}} = \operatorname{softmax}_j\!\left(\vq{q_i}^\top \vk{k_j}/\sqrt{d_k}\right)$, with $\vv{v_j} = W_V \ve{e_j}$.
+  Display math: $$\vd{\Delta e_i} = W_O \sum_{j \le i} \va{\alpha_{ij}}\, \vv{v_j}$$</p>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Tables: the query above the keys, one column per coordinate, the score on the right</h3>
+  <p class="muted small">Illustrative search example (decimals 1). Hover or focus a score cell to see the products.</p>
+  <div id="s00-dot-search"></div>
+  <p class="muted small" style="margin-top:20px">The same table from the toy model: query $\vq{q_7}$ (bank) against the first seven keys, scaled by $\sqrt{d_k}$, with the last two keys masked to show the masked style.</p>
+  <div id="s00-dot-toy"></div>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Mix table: attention weights on the left, value rows, and the weighted sum in the footer</h3>
+  <div class="btn-row"><button type="button" class="btn" id="s00-mix-btn">Show α·v instead of v</button><button type="button" class="btn btn-quiet" id="s00-mix-swap">Use the cheque sentence</button></div>
+  <div id="s00-mix"></div>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Weight matrices as tables (AT.ui.wTable): rows are input axes, columns are output axes, zeros greyed</h3>
+  <p class="muted small">Read a cell as "input axis feeds output axis": hover a cell for the full names. $W_Q$, $W_K$ and $W_O$ below; $W_{\text{vocab}}$ scrolls sideways.</p>
+  <div class="row top" id="s00-wtables"></div>
+  <div id="s00-wvocab"></div>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Worksheets (AT.ui.dotCalc, AT.ui.matVecCalc): the arithmetic written out, column by column</h3>
+  <p class="muted small">The two vectors being dot-producted, one column per axis, the products underneath, then the sum and the scaling. Pick a key with the buttons.</p>
+  <div class="btn-row" id="s00-calc-btns"></div>
+  <div id="s00-dotcalc"></div>
+  <p class="muted small" style="margin-top:20px">The projection $\vq{q_7} = \ve{e_7} W_Q$ as a worksheet: one line per output coordinate, zero weights of the sparse $W_Q$ greyed.</p>
+  <div id="s00-mvcalc"></div>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Plain table: $W_Q$ with named columns, a computed column and a heat column, and a large-size variant</h3>
+  <div id="s00-table"></div>
+  <div id="s00-table-lg" style="margin-top:20px"></div>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Notation card (the hero shows the same component inside a collapsible panel)</h3>
+  <div id="s00-notation"></div>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Token chips (click to pick the query token) + legend</h3>
+  <div id="s00-chips"></div>
+  <div id="s00-chips-lg"></div>
+  <div id="s00-legend" style="margin-top:12px"></div>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Vectors for the selected token (e, q, k, v, m, Δe, e′)</h3>
+  <div id="s00-vecs" class="stack"></div>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Matrices: $W_Q$ ($d_{\text{model}} \times d_k$), $E$ with a highlighted row, and the scaled scores $S$ before the mask (click a score cell for its worksheet)</h3>
+  <div class="row top" id="s00-mats"></div>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Attention heatmap $A$ (causal mask on): hover a cell; toggle the mask; set the temperature</h3>
+  <div class="row" id="s00-heat-controls"></div>
+  <div id="s00-heat"></div>
+  <p class="muted small" id="s00-heat-msg">Hover a cell.</p>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Next-token probabilities after "watched the" (position 10): bars, top-5 and the four candidates</h3>
+  <div class="grid-2">
+    <div><p class="demo-lab">Top 5 (neutral, sorted)</p><div id="s00-bars"></div></div>
+    <div><p class="demo-lab">Candidates, weights style (obj-a, unsorted, highlight "water")</p><div id="s00-bars2"></div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Stepper (4 steps, big Next-step button)</h3>
+  <div id="s00-stepper"></div>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Motif: the recurring pipeline (button cycles the active stage)</h3>
+  <div class="btn-row"><button type="button" class="btn" id="s00-motif-btn">Next stage</button><span class="mono muted" id="s00-motif-state">active: e</span></div>
+  <div id="s00-motif"></div>
+  <p class="demo-lab" style="margin-top:14px">Small variant, no labels</p>
+  <div id="s00-motif-sm"></div>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Message passing animation: values flow from earlier tokens into "bank" (weights = α row)</h3>
+  <div class="btn-row"><button type="button" class="btn btn-primary" id="s00-flow-btn">Send messages</button></div>
+  <div class="flow-arena" id="s00-flow-arena">
+    <div id="s00-flow-chips"></div>
+    <div class="spacer"></div><div class="spacer"></div>
+    <div id="s00-flow-target"></div>
+  </div>
+</div>
+
+<div class="companion after">
+  <p>A closing companion block carries the "what to remember" kicker by default. Put one at the end of a section when a student reading alone needs the takeaway in words.</p>
+</div>
+
+<div id="s00-callouts"></div>
+<div id="s00-reveals"></div>
+<div class="card">
+  <h3 class="card-title">Card built with AT.ui.card (string children get math rendered)</h3>
+  <div id="s00-card"></div>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s00');
+  const toks = AT.sentences.river;
+  const F = AT.forward(toks);
+  let qi = 6; // "bank"
+
+  /* present-mode test frames */
+  const f1chips = AT.ui.chips(toks.slice(0, 7), { active: 6, into: S.querySelector('#s00-f1-chips') });
+  const f1row = S.querySelector('#s00-f1-vec');
+  AT.ui.vec(F.E[6], { cls: 'e', label: '\\ve{e_7}', into: f1row }); AT.ui.op('→', { into: f1row }); AT.ui.vec(F.Q[6], { cls: 'q', label: '\\vq{q_7}', into: f1row });
+  AT.ui.stepper({ into: S.querySelector('#s00-f1-stepper'), steps: [
+    { title: 'Score the keys', tex: 's_{7j} = \\vq{q_7}\\cdot\\vk{k_j}/\\sqrt{d_k}', render: (el) => { AT.ui.dotTable(F.Q[6], F.K.slice(0, 7), { rowLabels: toks.slice(0, 7).map((t, j) => (j + 1) + ' ' + t), queryLabel: '7 bank', cornerLabel: 'token', scaled: true, d_k: AT.d_k, note: '', into: el }); } },
+    { title: 'Normalise', tex: '\\va{\\alpha_{7j}} = \\operatorname{softmax}_j(s_{7j})', render: (el) => { AT.ui.vec(F.A[6].slice(0, 7), { cls: 'a', label: '\\va{\\alpha_{7,\\cdot}}', into: el }); } },
+    { title: 'Mix the values', tex: 'm_7 = \\sum_j \\va{\\alpha_{7j}}\\,\\vv{v_j}', render: (el) => { AT.ui.mixTable(F.A[6].slice(0, 7), F.V.slice(0, 7), { rowLabels: toks.slice(0, 7).map((t, j) => (j + 1) + ' ' + t), cornerLabel: 'token', note: '', into: el }); } },
+    { title: 'Update', tex: "\\vp{e_7'} = \\ve{e_7} + \\vd{\\Delta e_7}", render: (el) => { const r = AT.h('div', { class: 'row' }); AT.ui.vec(F.E[6], { cls: 'e', label: '\\ve{e_7}', into: r }); AT.ui.op('+', { into: r }); AT.ui.vec(F.Delta[6], { cls: 'd', label: '\\vd{\\Delta e_7}', into: r }); AT.ui.op('=', { into: r }); AT.ui.vec(F.Enew[6], { cls: 'ep', label: "\\vp{e_7'}", into: r }); el.appendChild(r); } }
+  ]});
+  const net = AT.netSketch(S.querySelector('#s00-net'), { inputs: 3, hidden: 5, outputs: AT.vocab, collapseAbove: 8, highlightOutput: 'water' });
+  AT.ui.slider({ label: 'Window w', min: 1, max: 100, step: 1, value: 3, onInput: (w) => net.setInputs(w), into: S.querySelector('#s00-net-slider') });
+
+  /* tables */
+  const sq = [2.0, 0.6, 0.2, 0.0];
+  const items = ['Backpropagation', 'Gradient descent', 'CNNs', 'Transformers', 'Batch normalisation', 'Regularisation'];
+  const sK = [[2.2, 0.6, 0.2, 0.0], [0.6, 0.2, 0.4, 0.0], [0.2, 0.2, 0.2, 0.6], [0.1, 0.0, 0.0, 0.8], [0.3, 0.1, 0.4, 0.5], [0.2, 0.1, 0.3, 0.2]];
+  AT.ui.dotTable(sq, sK, { cols: ['gradients', 'backward', 'optimisation', 'architecture'], rowLabels: items, queryLabel: 'query', cornerLabel: 'item', decimals: 1, into: S.querySelector('#s00-dot-search'),
+    caption: 'Illustrative numbers: the query is a row, every item has a key row under the same four named coordinates, and the score is the dot product $s_j = \\vq{q}\\cdot\\vk{k_j}$.' });
+  AT.ui.dotTable(F.Q[6], F.K.slice(0, 7), { rowLabels: toks.slice(0, 7).map((t, j) => (j + 1) + ' ' + t), queryLabel: '7 bank', cornerLabel: 'token', scaled: true, d_k: AT.d_k, mask: [5, 6], into: S.querySelector('#s00-dot-toy'),
+    caption: 'Toy numbers. Rows 6 and 7 are masked here only to show the style; in the real causal mask, bank (7) can read up to itself.' });
+
+  /* mix table */
+  let mixWeighted = false, mixSent = 'river';
+  const mixHost = S.querySelector('#s00-mix');
+  function drawMix(){
+    AT.clear(mixHost);
+    const R = AT.forward(AT.sentences[mixSent]);
+    const T7 = AT.sentences[mixSent].slice(0, 7);
+    AT.ui.mixTable(R.A[6].slice(0, 7), R.V.slice(0, 7), { rowLabels: T7.map((t, j) => (j + 1) + ' ' + t), cornerLabel: 'token', weighted: mixWeighted, into: mixHost,
+      caption: (mixWeighted ? 'Each cell is $\\va{\\alpha_{7j}}\\,\\vv{v_j}$; ' : 'Each row is $\\vv{v_j}$; ') + 'the footer is $m_7 = \\sum_j \\va{\\alpha_{7j}}\\,\\vv{v_j}$ for the query bank in the ' + mixSent + ' sentence.' });
+  }
+  drawMix();
+  S.querySelector('#s00-mix-btn').addEventListener('click', (ev) => { mixWeighted = !mixWeighted; ev.currentTarget.textContent = mixWeighted ? 'Show v instead of α·v' : 'Show α·v instead of v'; drawMix(); });
+  S.querySelector('#s00-mix-swap').addEventListener('click', (ev) => { mixSent = mixSent === 'river' ? 'cheque' : 'river'; ev.currentTarget.textContent = mixSent === 'river' ? 'Use the cheque sentence' : 'Use the river sentence'; drawMix(); });
+
+  /* weight tables */
+  const wt = S.querySelector('#s00-wtables');
+  AT.ui.wTable(AT.model.W_Q, { from: 'e', to: 'qk', cls: 'q', caption: '$W_Q$: an $\\ve{e}$ axis (row) feeds a $\\vq{q}$ axis (column). Glue words ask about both settings.', into: wt });
+  AT.ui.wTable(AT.model.W_K, { from: 'e', to: 'qk', cls: 'k', caption: '$W_K$: glue offers nothing.', into: wt });
+  AT.ui.wTable(AT.model.W_O, { from: 'v', to: 'e', caption: '$W_O$: value axes back onto the $\\ve{e}$ axes.', into: wt });
+  AT.ui.wTable(AT.model.W_vocab, { from: 'e', to: 'vocab', caption: '$W_{\\text{vocab}}$: which words each $\\ve{e}$ axis votes for (only the non-zero cells matter).', into: S.querySelector('#s00-wvocab') });
+
+  /* worksheets */
+  let calcJ = 5;
+  const dc = AT.ui.dotCalc(F.Q[6], F.K[calcJ], { axes: 'qk', qLabel: 'q · 7 bank', kLabel: 'k · ' + (calcJ + 1) + ' ' + toks[calcJ], scale: true, d_k: AT.d_k, into: S.querySelector('#s00-dotcalc') });
+  const calcChips = AT.ui.chips(toks.slice(0, 7), { active: calcJ, into: S.querySelector('#s00-calc-btns'), onClick: (j) => { calcJ = j; calcChips.setActive(j); dc.update(F.Q[6], F.K[j], { kLabel: 'k · ' + (j + 1) + ' ' + toks[j] }); } });
+  AT.ui.matVecCalc(F.E[6], AT.model.W_Q, { from: 'e', to: 'qk', cls: 'q', xLabel: 'e · 7 bank', outLabel: 'q · 7 bank', into: S.querySelector('#s00-mvcalc') });
+
+  /* plain tables */
+  AT.ui.table(AT.model.W_Q, { cols: [{ label: '$\\vq{q}$ coord 1', cls: 'q' }, { label: '$\\vq{q}$ coord 2', cls: 'q' }, { label: '$\\vq{q}$ coord 3', cls: 'q' }], rowLabels: ['$\\ve{e}$ coord 1', '$\\ve{e}$ coord 2', '$\\ve{e}$ coord 3', '$\\ve{e}$ coord 4'], cornerLabel: '$W_Q$',
+    computed: [{ label: 'row sum', fn: (row) => AT.sum(row) }, { label: '|row|', fn: (row) => AT.norm(row), cls: 'neutral' }], caption: 'A weight matrix as a table: rows are input coordinates of $\\ve{e}$, columns are output coordinates of $\\vq{q}$.', into: S.querySelector('#s00-table') });
+  AT.ui.table(F.A.slice(0, 7).map(r => r.slice(0, 7)), { cols: toks.slice(0, 7), rowLabels: toks.slice(0, 7).map((t, i) => (i + 1) + ' ' + t), cornerLabel: 'reads from →', rowCls: 'a', heatCols: [0, 1, 2, 3, 4, 5, 6], highlightRow: 6, size: 'lg', decimals: 2,
+    footer: { label: 'column sum', values: AT.range(7).map(j => AT.sum(F.A.slice(0, 7).map(r => r[j]))), cls: 'neutral' }, caption: 'Large size, heat on every column, bank\u2019s row highlighted, a neutral footer.', into: S.querySelector('#s00-table-lg') });
+
+  /* notation card */
+  AT.ui.notationCard({ into: S.querySelector('#s00-notation') });
+
+  /* chips */
+  const chips = AT.ui.chips(toks, { active: qi, size: 'md', onClick: (i) => { qi = i; chips.setActive(i); chipsLg.setActive(i); chipsLg.setMuted(AT.range(toks.length).filter(j => j > i)); drawVecs(); }, into: S.querySelector('#s00-chips') });
+  const chipsLg = AT.ui.chips(toks, { active: qi, size: 'lg', muted: [7,8,9], slot: '___', into: S.querySelector('#s00-chips-lg') });
+  chipsLg.setMark([5], 'k');
+  AT.ui.legend({ into: S.querySelector('#s00-legend') });
+
+  /* vectors */
+  const vecs = S.querySelector('#s00-vecs');
+  function drawVecs(){
+    AT.clear(vecs);
+    const row = AT.h('div', { class: 'row' });
+    AT.ui.vec(F.E[qi],     { cls: 'e',  label: '\\ve{e_{' + (qi+1) + '}}', dims: true, into: row });
+    AT.ui.vec(F.Q[qi],     { cls: 'q',  label: '\\vq{q_{' + (qi+1) + '}}', into: row });
+    AT.ui.vec(F.K[qi],     { cls: 'k',  label: '\\vk{k_{' + (qi+1) + '}}', into: row });
+    AT.ui.vec(F.V[qi],     { cls: 'v',  label: '\\vv{v_{' + (qi+1) + '}}', highlight: 1, into: row });
+    vecs.appendChild(row);
+    const row2 = AT.h('div', { class: 'row' });
+    AT.ui.vec(F.A[qi],     { cls: 'a',  label: '\\va{\\alpha_{' + (qi+1) + ',\\cdot}}', decimals: 2, into: row2 });
+    AT.ui.vec(F.Mmsg[qi],  { cls: 'm',  label: 'm_{' + (qi+1) + '}', into: row2 });
+    vecs.appendChild(row2);
+    const row3 = AT.h('div', { class: 'row' });
+    AT.ui.vec(F.E[qi],     { cls: 'e',  label: '\\ve{e_{' + (qi+1) + '}}', into: row3 });
+    AT.ui.op('+', { into: row3 });
+    AT.ui.vec(F.Delta[qi], { cls: 'd',  label: '\\vd{\\Delta e_{' + (qi+1) + '}}', into: row3 });
+    AT.ui.op('=', { into: row3 });
+    AT.ui.vec(F.Enew[qi],  { cls: 'ep', label: '\\vp{e_{' + (qi+1) + "}'}", size: 'lg', into: row3 });
+    vecs.appendChild(row3);
+  }
+  drawVecs();
+
+  /* matrices */
+  const mats = S.querySelector('#s00-mats');
+  AT.ui.mat(AT.model.W_Q, { cls: 'q', caption: '$W_Q$ (axis labels by default)', dims: true, into: mats });
+  AT.ui.mat(F.E, { cls: 'e', rowLabels: toks, caption: '$E$ (row 7 = $\\ve{e_{\\text{bank}}}$)', highlight: { row: 6 }, dims: true, into: mats });
+  AT.ui.mat(F.Sfull, { cls: 'neutral', size: 'sm', rowLabels: toks, colLabels: toks, caption: 'Scaled scores $S = QK^\\top/\\sqrt{d_k}$, no mask; cell (7,6) highlighted. Click a cell for its worksheet.', highlight: { r: 6, c: 5 }, calc: { Q: F.Q, K: F.K, scaled: true, d_k: AT.d_k }, into: mats });
+
+  /* heatmap */
+  let maskOn = true, temp = 1;
+  const heatHost = S.querySelector('#s00-heat'), msg = S.querySelector('#s00-heat-msg');
+  let heat = null;
+  function drawHeat(){
+    AT.clear(heatHost);
+    const R = AT.forward(toks, { mask: maskOn });
+    const A = R.S.map(r => AT.softmax(r.map(x => x === -Infinity ? x : x / temp)));
+    heat = AT.ui.heat(A, { rows: toks, cols: toks, mask: maskOn, leak: false, highlightRow: qi, decimals: 2, calc: { Q: F.Q, K: F.K, scaled: true, d_k: AT.d_k },
+      onHover: (i,j) => { msg.textContent = 'α(' + toks[i] + ' ← ' + toks[j] + ') = ' + AT.fmt(A[i][j], 3); },
+      caption: maskOn ? 'Rows sum to 1; hatched cells are future tokens (masked).' : 'Mask OFF: every row can read from the future.', into: heatHost });
+  }
+  drawHeat();
+  const ctr = S.querySelector('#s00-heat-controls');
+  AT.ui.toggle({ label: 'Causal mask', on: true, onChange: (on) => { maskOn = on; drawHeat(); }, into: ctr });
+  AT.ui.slider({ label: 'Temperature', min: 0.25, max: 4, step: 0.25, value: 1, format: v => v.toFixed(2), onInput: v => { temp = v; drawHeat(); }, into: ctr });
+
+  /* bars */
+  const p10 = F.probs[9];
+  AT.ui.bars(AT.topk(p10, 5), { cls: 'neutral', decimals: 3, into: S.querySelector('#s00-bars') });
+  AT.ui.bars(AT.probsFor(p10, AT.candidates.river), { cls: 'a', sorted: false, highlight: 'water', max: Math.max(...AT.probsFor(p10, AT.candidates.river).map(x=>x.p), 1e-9), decimals: 3, size: 'lg', into: S.querySelector('#s00-bars2') });
+
+  /* stepper */
+  AT.ui.stepper({ big: true, into: S.querySelector('#s00-stepper'), steps: [
+    { title: 'Pick the query token', tex: '\\ve{e_7} = e_{\\text{bank}}', note: 'Token 7 (“bank”) is going to read from tokens 1 to 7.', render: (el) => { AT.ui.chips(toks, { active: 6, muted: [7,8,9], into: el }); } },
+    { title: 'Project', tex: '\\vq{q_7} = W_Q \\ve{e_7}', render: (el) => { const r = AT.h('div',{class:'row'}); AT.ui.vec(F.E[6], {cls:'e', label:'\\ve{e_7}', into:r}); AT.ui.op('→',{into:r}); AT.ui.vec(F.Q[6], {cls:'q', label:'\\vq{q_7}', into:r}); el.appendChild(r); } },
+    { title: 'Compare and normalise', tex: '\\va{\\alpha_{7j}} = \\operatorname{softmax}_j(\\vq{q_7}^\\top \\vk{k_j} / \\sqrt{d_k})', render: (el) => { AT.ui.vec(F.A[6].slice(0,7), { cls:'a', label:'\\va{\\alpha_{7,\\cdot}}', into: el }); } },
+    { title: 'Update', tex: "\\vp{e_7'} = \\ve{e_7} + \\vd{\\Delta e_7}", note: 'Inline note math also works: $\\vd{\\Delta e_7} = W_O m_7$.', render: (el) => { const r = AT.h('div',{class:'row'}); AT.ui.vec(F.Enew[6], {cls:'ep', label:"\\vp{e_7'}", into:r}); el.appendChild(r); } }
+  ]});
+
+  /* motif */
+  const stages = ['e','qkv','att','delta','add','ep'];
+  let si = 0;
+  const motif = AT.motif(S.querySelector('#s00-motif'), { active: 'e', labels: true });
+  const motifSm = AT.motif(S.querySelector('#s00-motif-sm'), { active: null, labels: false, size: 'sm' });
+  S.querySelector('#s00-motif-btn').addEventListener('click', () => { si = (si + 1) % stages.length; motif.setActive(stages[si]); motifSm.setActive(stages[si]); S.querySelector('#s00-motif-state').textContent = 'active: ' + stages[si]; });
+
+  /* flow */
+  const arena = S.querySelector('#s00-flow-arena');
+  const fchips = AT.ui.chips(toks.slice(0,7), { active: 6, into: S.querySelector('#s00-flow-chips') });
+  const target = AT.ui.vec(F.Delta[6], { cls: 'd', label: '\\vd{\\Delta e_7}', into: S.querySelector('#s00-flow-target') });
+  S.querySelector('#s00-flow-btn').addEventListener('click', () => {
+    AT.ui.flow(arena, { from: fchips.chips.slice(0,7), to: target.querySelector('.vec-cells'), weights: F.A[6].slice(0,7), color: 'var(--c-v)', duration: 900 });
+  });
+
+  /* callouts + reveals + card */
+  const co = S.querySelector('#s00-callouts');
+  AT.ui.callout('Attention does not replace the existing representation. It computes context-dependent information that can be added to it: $\\vp{e_i\'} = \\ve{e_i} + \\vd{\\Delta e_i}$.', { kind: 'key', into: co });
+  AT.ui.callout('The notation $\\vd{\\Delta e}$ is a pedagogical convention used on this page. It is not standard Transformer notation. The addition itself is standard: it is the residual connection around the attention sublayer.', { kind: 'note', into: co });
+  AT.ui.callout('With the mask off, token 7 could read $\\vv{v_9}$, information from the future. Training on next-token prediction would then be invalid.', { kind: 'warn', into: co });
+  const rv = S.querySelector('#s00-reveals');
+  AT.ui.reveal('Why do we need separate keys and values?', 'Matching information ($\\vk{k_j}$) and returned information ($\\vv{v_j}$) serve different functions.', { into: rv });
+  AT.ui.reveal('Is $\\vq{q_i}$ the new representation of token $i$?', 'No. $\\vq{q_i}$, $\\vk{k_i}$, $\\vv{v_i}$ are temporary projections of $\\ve{e_i}$ used only during attention.', { into: rv, open: true });
+  S.querySelector('#s00-card').appendChild(AT.ui.card('A nested card', '<p>Row 7 of $A$ sums to <span class="mono">' + AT.fmt(AT.sum(F.A[6]), 4) + '</span>. Argmax token after position 10: <strong>' + AT.topk(F.probs[9], 1)[0].tok + '</strong>.</p>', AT.ui.vec(F.A[6], { cls: 'a', label: '\\va{\\alpha_{7,\\cdot}}' })));
+})();
+</script>
+</section>

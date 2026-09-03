@@ -1,0 +1,246 @@
+<section id="s14" class="sec" data-title="From Δe to the next-token probabilities" data-lit="">
+<style>
+#s14 .seg{display:inline-flex;flex-wrap:wrap;max-width:100%;border:1.5px solid var(--line);border-radius:22px;padding:3px;gap:3px;background:var(--card)}
+#s14 .seg .btn{border:0;border-radius:999px;padding:6px 14px;font-size:15px;background:transparent;color:var(--ink-2);white-space:normal;text-align:left}
+#s14 .seg .btn:hover:not([aria-pressed=true]){background:var(--line);color:var(--ink)}
+#s14 .seg .btn[aria-pressed=true]{background:var(--ink);color:var(--card)}
+#s14 .controls{margin-bottom:6px}
+#s14 .dt td.is-top{font-weight:700;box-shadow:inset 0 0 0 1.5px var(--ink)}
+#s14 .read-line{font-size:15px;color:var(--ink-2);margin:8px 0 0;max-width:60em;line-height:1.5}
+#s14 .arith-row{margin-top:12px}
+#s14 .arith{margin-top:10px}
+#s14 .arith .calc-line{margin-top:8px}
+#s14 .chain{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 0}
+#s14 .chain .cb{padding:10px 14px;border-radius:10px;border:2px solid var(--line);background:var(--card);font-weight:600;font-size:15px;color:var(--ink-2);transition:border-color var(--dur),background var(--dur),color var(--dur),transform var(--dur);white-space:nowrap}
+#s14 .chain .cb.is-on{border-color:var(--oc,var(--ink));background:var(--ot,var(--paper));color:var(--ink);transform:translateY(-2px)}
+#s14 .chain .cb.obj-ep.is-on{box-shadow:0 0 0 2px var(--oc2)}
+#s14 .chain .ca{font-size:20px;color:var(--ink-3)}
+</style>
+<header class="sec-head">
+  <span class="sec-num">14</span>
+  <div>
+    <p class="eyebrow">Why we are here: a contextual representation is only useful if it changes the prediction.</p>
+    <h2>From <span class="sym sym-d">Δe</span> to the next-token probabilities</h2>
+  </div>
+</header>
+
+<div class="companion" data-kicker="For self-study">
+  <p>Sections 09 to 13 built an updated vector for one token. This section closes the loop: the updated last token is what the output head reads, so the earlier words can only reach the prediction through that one update. Switch the context between the river sentence and the cheque sentence and follow the three tables from top to bottom: the attention row moves, the update row changes, the probability row changes. Then switch attention off and switch the context again; nothing moves, exactly as in section 02. The sentence to remember: earlier tokens change the prediction only through the update they send to the last token.</p>
+</div>
+
+<div class="prose">
+  <p>Do not stop at $\vp{e_t'}$. The updated last token goes straight into the output head from section 02, now fed with context:</p>
+  $$\ell = \vp{e_t'}\,W_{\text{vocab}} + b, \qquad p(x_{t+1}\mid x_{\le t}) = \operatorname{softmax}(\ell)$$
+</div>
+
+<div class="card">
+  <h3 class="card-title">Where the last token reads from</h3>
+  <div class="row between controls">
+    <div class="row">
+      <span class="small muted">Context</span>
+      <div class="seg" role="group" aria-label="Choose the context sentence">
+        <button type="button" class="btn" id="s14-ctx-river" aria-pressed="true">The fisherman … river bank</button>
+        <button type="button" class="btn" id="s14-ctx-cheque" aria-pressed="false">She deposited … cheque … bank</button>
+      </div>
+    </div>
+    <div id="s14-toggle"></div>
+  </div>
+  <div id="s14-alpha"></div>
+</div>
+
+<div class="card">
+  <h3 class="card-title">The update, added axis by axis</h3>
+  <div id="s14-update"></div>
+</div>
+
+<div class="card">
+  <h3 class="card-title">The output head: logits, then probabilities</h3>
+  <div id="s14-head"></div>
+  <p class="muted small" id="s14-msg" aria-live="polite"></p>
+  <div id="s14-head-calc"></div>
+</div>
+
+<div class="card">
+  <h3 class="card-title">The causal chain</h3>
+  <div class="chain" id="s14-chain"></div>
+  <p class="muted small">Watch the boxes light up in order when you change the context. Earlier tokens reach the head only through the update they send to the last token.</p>
+</div>
+
+<div id="s14-layer-note"></div>
+
+<div class="companion after">
+  <p>Keep in mind: the head never sees the earlier tokens. It sees one row, $\vp{e_t'} = \ve{e_t} + \vd{\Delta e_t}$, and everything the context contributes is inside $\vd{\Delta e_t}$.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s14');
+  const T = 10, t = T - 1;
+  const ctxs = { river: AT.sentences.river, cheque: AT.sentences.cheque };
+  const F = { river: AT.forward(ctxs.river), cheque: AT.forward(ctxs.cheque) };
+  const B = { river: AT.baseline(ctxs.river), cheque: AT.baseline(ctxs.cheque) };
+  let ctx = 'river', useAtt = true;
+  const tokCols = (toks) => toks.map((w, j) => (j + 1) + ' ' + w);
+
+  /* --- reading lines: the words come from the numbers and the axis names in AT.axes --- */
+  const eWord = (lab) => ({ water: 'a water scene', finance: 'money', person: 'a person' })[lab] || lab;
+  const join = (a) => a.length <= 1 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
+  const parts = (vec, labs, thr) => vec.map((v, i) => ({ i, v, label: labs[i] })).filter(x => x.v >= thr).sort((a, b) => b.v - a.v);
+  const nums = (ps) => ps.map(p => p.label + ' ' + AT.fmt(p.v, 2)).join(', ');
+  function readD(vec, sym, tok){
+    const labs = AT.axisLabels('e', vec.length) || [];
+    const ps = parts(vec, labs, 0.3).filter(p => p.label !== 'glue');
+    if (!ps.length) return 'Reading $' + sym + '$: every entry is small, so the context barely moves “' + tok + '”.';
+    return 'Reading $' + sym + '$: ' + nums(ps) + ', so the update pushes “' + tok + '” toward ' + join(ps.map(p => eWord(p.label))) + '.';
+  }
+  function readEp(vec, sym, tok){
+    const labs = AT.axisLabels('e', vec.length) || [];
+    const all = parts(vec, labs, 0.3);
+    const ps = all.filter(p => p.label !== 'glue' && p.v >= 0.5);
+    const glue = all.find(p => p.label === 'glue');
+    if (!ps.length) return 'Reading $' + sym + '$: ' + nums(all) + ', so “' + tok + '” is still a glue word with no setting of its own.';
+    const lead = ps.length > 1 ? nums([ps[0]]) + ' now leads ' + nums(ps.slice(1)) : nums(ps);
+    return 'Reading $' + sym + '$: ' + lead + ', so “' + tok + '” now reads mostly as ' + eWord(ps[0].label) + (glue ? ', still with its glue' : '') + '.';
+  }
+  function reading(host, lines){ lines.forEach(html => { const p = AT.h('p', { class: 'read-line', html: html }); AT.renderMath(p); host.appendChild(p); }); }
+
+  /* --- "Show the arithmetic" helper: builds the worksheet on first click, then toggles it --- */
+  function arith(host, build){
+    const box = AT.h('div', { class: 'arith' }); box.hidden = true;
+    const btn = AT.h('button', { type: 'button', class: 'btn btn-quiet', 'aria-expanded': 'false' }, 'Show the arithmetic');
+    let built = false;
+    btn.addEventListener('click', () => {
+      if (!built) { build(box); built = true; }
+      const open = box.hidden; box.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open)); btn.textContent = open ? 'Hide the arithmetic' : 'Show the arithmetic';
+    });
+    host.appendChild(AT.h('div', { class: 'btn-row arith-row' }, btn)); host.appendChild(box);
+  }
+
+  /* --- context buttons + toggle --- */
+  const btnR = S.querySelector('#s14-ctx-river'), btnC = S.querySelector('#s14-ctx-cheque');
+  btnR.addEventListener('click', () => setCtx('river'));
+  btnC.addEventListener('click', () => setCtx('cheque'));
+  function setCtx(c){
+    if (c === ctx) return;
+    ctx = c;
+    btnR.setAttribute('aria-pressed', String(c === 'river'));
+    btnC.setAttribute('aria-pressed', String(c === 'cheque'));
+    draw();
+  }
+  AT.ui.toggle({ label: 'Use attention', on: true, onText: 'yes', offText: 'no', onChange: (on) => { useAtt = on; draw(); }, into: S.querySelector('#s14-toggle') });
+
+  /* --- table 1: the attention row of the last token over token columns --- */
+  const alphaHost = S.querySelector('#s14-alpha');
+  function paintAlpha(){
+    AT.clear(alphaHost);
+    const toks = ctxs[ctx];
+    const A = F[ctx].A[t];
+    const row = useAtt ? A : AT.range(T).map(j => j === t ? 1 : 0);
+    const best = AT.argmax(A);
+    const fig = AT.ui.table([row], { cols: tokCols(toks), rowLabels: ['$\\va{\\alpha_{' + T + ',j}}$'], cornerLabel: 'reads from →', rowCls: 'a', heatCols: AT.range(T), decimals: 2,
+      computed: [{ label: 'row sum', fn: (r) => AT.sum(r), cls: 'neutral' }],
+      caption: useAtt
+        ? 'Look at the darkest cells: the last token reads mostly from “' + toks[best] + '” (' + AT.fmt(A[best], 2) + '). The row sums to 1.'
+        : 'Attention off: the last token reads only itself, so the row is a single 1 and the earlier words are unused (section 02).',
+      into: alphaHost });
+    if (useAtt) fig.cells[0][best].classList.add('is-top');
+  }
+
+  /* --- table 2: e_t, Δe_t and the footer e'_t, one column per named axis --- */
+  const updHost = S.querySelector('#s14-update');
+  function paintUpdate(){
+    AT.clear(updHost);
+    const R = F[ctx];
+    const tok = ctxs[ctx][t];
+    const e = useAtt ? R.E[t] : B[ctx].E[t];
+    const d = useAtt ? R.Delta[t] : AT.zeros(AT.d_model);
+    const ep = AT.add(e, d);
+    AT.ui.table([e, d], { axes: 'e', rowLabels: [useAtt ? '$\\ve{e_{' + T + '}}$' : '$\\ve{e_{' + T + '}^{(0)}}$', '$\\vd{\\Delta e_{' + T + '}}$'], rowCls: ['e', 'd'], cornerLabel: 'row', dimRows: useAtt ? [] : [1], decimals: 2,
+      footer: { label: '$\\vp{e_{' + T + '}\'} = \\ve{e_{' + T + '}} + \\vd{\\Delta e_{' + T + '}}$', values: ep, cls: 'ep' },
+      caption: useAtt
+        ? 'Add the two rows axis by axis: the footer is the row the head receives. Switch the context and only the green row changes.'
+        : 'Attention off: the update row is all zeros, so the head receives the starting representation $\\ve{e_{' + T + '}^{(0)}}$ unchanged.',
+      into: updHost });
+    reading(updHost, useAtt
+      ? [readD(d, '\\vd{\\Delta e_{' + T + '}}', tok), readEp(ep, '\\vp{e_{' + T + '}\'}', tok)]
+      : ['Reading $\\vd{\\Delta e_{' + T + '}}$: all zeros, so nothing is added.', readEp(ep, '\\ve{e_{' + T + '}^{(0)}}', tok)]);
+  }
+
+  /* --- table 3: logits and probabilities over vocabulary columns (top 6 + other), then the worksheet for the top candidate --- */
+  const headHost = S.querySelector('#s14-head'), msg = S.querySelector('#s14-msg'), calcHost = S.querySelector('#s14-head-calc');
+  function paintHead(){
+    AT.clear(headHost); AT.clear(calcHost);
+    const R = useAtt ? F[ctx] : B[ctx];
+    const tok = ctxs[ctx][t];
+    const probs = R.probs[t], logits = R.logits[t];
+    const x = useAtt ? R.Enew[t] : R.E[t];
+    const top = AT.topk(probs, 6);
+    const rest = Math.max(0, 1 - top.reduce((s, x) => s + x.p, 0));
+    const lRow = top.map(x => logits[x.i]).concat(['·']);
+    const pRow = top.map(x => x.p).concat([rest]);
+    const fig = AT.ui.table([lRow, pRow.map(p => AT.fmt(p, 3))], { cols: top.map(x => x.tok).concat(['other (' + (AT.vocab.length - top.length) + ' tokens)']), rowLabels: ['logit $\\ell$', '$p = \\operatorname{softmax}(\\ell)$'], cornerLabel: 'next token', rowCls: 'neutral', highlightRow: 1,
+      computed: [{ label: 'row sum', fn: (r, i) => i === 1 ? AT.sum(pRow) : '', cls: 'neutral', decimals: 3 }],
+      caption: 'Read down a column: a larger logit becomes a larger probability, and the probability row sums to 1. The ' + (useAtt ? 'contextual' : 'raw') + ' last token is ' + (useAtt ? '$\\vp{e_{' + T + '}\'}$' : '$\\ve{e_{' + T + '}^{(0)}}$') + '.',
+      into: headHost });
+    fig.cells[1][0].classList.add('is-top');
+    const other = ctx === 'river' ? 'cheque' : 'river';
+    if (useAtt) {
+      const o = AT.topk(F[other].probs[t], 1)[0];
+      msg.textContent = 'With attention: most likely next token “' + top[0].tok + '” (p = ' + AT.fmt(top[0].p, 3) + '). The other context gives “' + o.tok + '” (p = ' + AT.fmt(o.p, 3) + ').';
+    } else {
+      const same = B.river.probs[t].every((p, i) => Math.abs(p - B.cheque.probs[t][i]) < 1e-12);
+      msg.textContent = 'Attention off: same last token, same position, so both contexts give ' + (same ? 'identical' : 'nearly identical') + ' probabilities. The context cannot matter.';
+    }
+    /* the logit of the top candidate as one worksheet line: x times the column of W_vocab for that word, plus its bias */
+    const best = top[0];
+    arith(calcHost, (box) => {
+      const c = AT.vocab.indexOf(best.tok);
+      const col = AT.model.W_vocab.map(r => [r[c]]);
+      const b = AT.model.b_vocab[c];
+      const mv = AT.ui.matVecCalc(x, col, { from: 'e', to: [best.tok], cls: 'neutral', fromCls: useAtt ? 'ep' : 'e',
+        xLabel: (useAtt ? 'e′ · ' : 'e · ') + T + ' ' + tok, outLabel: 'before the bias', into: box });
+      const outrow = mv.querySelector('.calc-outrow'); if (outrow) outrow.hidden = true;
+      const dot = mv.out[0], l = dot + b;
+      const Z = logits.reduce((s, v) => s + Math.exp(v), 0);
+      const line1 = AT.h('p', { class: 'calc-line' }, 'logit for “' + best.tok + '” = ' + AT.fmt(dot, 2) + ' + b ' + (b < 0 ? '(' + AT.fmt(b, 2) + ')' : AT.fmt(b, 2)) + ' = ', AT.h('span', { class: 'calc-r' }, AT.fmt(l, 2)));
+      const line2 = AT.h('p', { class: 'calc-line' }, 'p(“' + best.tok + '”) = exp(' + AT.fmt(l, 2) + ') / Σ exp(ℓ) = ' + AT.fmt(Math.exp(l), 2) + ' / ' + AT.fmt(Z, 2) + ' = ', AT.h('span', { class: 'calc-r' }, AT.fmt(best.p, 3)));
+      mv.appendChild(line1); mv.appendChild(line2);
+      const foot = AT.h('p', { class: 'muted small', style: 'margin-top:8px', html: 'One line per word: the column of $W_{\\text{vocab}}$ for “' + best.tok + '” multiplies the ' + (useAtt ? 'contextual' : 'raw') + ' last token axis by axis. Only the non-zero weights count; the sum over all ' + AT.vocab.length + ' words is the softmax denominator.' });
+      AT.renderMath(foot); box.appendChild(foot);
+    });
+  }
+
+  /* --- causal chain --- */
+  const chainHost = S.querySelector('#s14-chain');
+  const chainDefs = [
+    { html: 'previous tokens', cls: 'obj-e' },
+    { html: 'attention', cls: 'obj-a' },
+    { html: AT.texStr('\\vd{\\Delta e_t}'), cls: 'obj-d' },
+    { html: AT.texStr("\\vp{e_t'}"), cls: 'obj-ep' },
+    { html: 'next-token logits', cls: 'obj-neutral' },
+    { html: 'next-token probabilities', cls: 'obj-neutral' }
+  ];
+  const chainBoxes = chainDefs.map((d, i) => {
+    const b = AT.h('span', { class: 'cb ' + d.cls, html: d.html });
+    chainHost.appendChild(b);
+    if (i < chainDefs.length - 1) chainHost.appendChild(AT.h('span', { class: 'ca', 'aria-hidden': 'true' }, '→'));
+    return b;
+  });
+  let chainTimer = [];
+  function lightChain(){
+    chainTimer.forEach(clearTimeout); chainTimer = [];
+    chainBoxes.forEach(b => b.classList.remove('is-on'));
+    if (!useAtt) { chainBoxes[4].classList.add('is-on'); chainBoxes[5].classList.add('is-on'); return; }
+    if (AT.reducedMotion()) { chainBoxes.forEach(b => b.classList.add('is-on')); return; }
+    chainBoxes.forEach((b, i) => { chainTimer.push(setTimeout(() => b.classList.add('is-on'), 160 * i)); });
+  }
+
+  /* layer boundary note */
+  AT.ui.callout('One layer at a time. Within a layer, every position reads keys and values computed from the same layer-input representations. The final “the” does not read the updated bank vector $\\vp{e_7\'}$ here; it reads values built from $\\ve{e_7}$. The updated bank becomes input to the next layer. Part 3 adds several heads, stacked layers and the rest of the Transformer.', { kind: 'note', into: S.querySelector('#s14-layer-note') });
+
+  function draw(){ paintAlpha(); paintUpdate(); paintHead(); lightChain(); }
+  draw();
+})();
+</script>
+</section>

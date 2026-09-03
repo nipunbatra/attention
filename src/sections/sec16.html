@@ -1,0 +1,185 @@
+<section id="s16" class="sec" data-title="The same thing in matrix form" data-lit="">
+<style>
+#s16 .cap{font-size:14px;color:var(--ink-2);margin:0 0 14px;max-width:68ch}
+#s16 .stage-row{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-top:6px}
+#s16 .stage-row .mat{margin:4px 0}
+#s16 .grp{display:inline-flex;align-items:center;gap:0;max-width:100%;min-width:0}
+#s16 .grp .mat{min-width:0;flex:0 1 auto}
+#s16 .why{font-size:15px;color:var(--ink-2);margin:12px 0 0;max-width:46em}
+#s16 .eqs{display:flex;flex-wrap:wrap;gap:6px 28px;align-items:center;justify-content:center}
+#s16 .dt td.dt-num .katex{font-size:1.05em}
+/* the 7×7 weight table sits beside the step list, so its cells are a little tighter than the shell default */
+#s16 .stepper-stage .dt td.dt-num{min-width:3.4em;padding:8px 8px}
+#s16 .stepper-stage .dt-w{margin:4px 0;flex:0 0 auto}
+#s16 .read{font-size:15px;color:var(--ink-2);margin:10px 0 0;max-width:60em;border-left:3px solid var(--line);padding-left:10px}
+#s16 .read .katex{font-size:1.02em}
+</style>
+<header class="sec-head">
+  <span class="sec-num">16</span>
+  <div>
+    <p class="eyebrow">Why we are here: one token at a time is clear. Now every token does the same thing at once, and that is what the matrices say.</p>
+    <h2>The same thing in matrix form</h2>
+  </div>
+</header>
+
+<div class="companion" data-kicker="For self-study">
+  <p>Section 15 followed one token, bank, through attention. Every other token runs the same arithmetic on its own row, and nothing in that arithmetic depends on which row you look at. That is why the whole sublayer fits in a handful of matrix products: each product does the section 15 step for all seven tokens at once.</p>
+  <p>Step through the operations below and keep your eye on row 7. At every stage it holds the numbers you already saw for bank. The sentence to remember: a row of the matrix is a token, and $\vp{E'} = \ve{E} + \vd{\Delta E}$ updates every row in one addition.</p>
+</div>
+
+<div class="prose">
+  <p>Stack the current representations of the short sequence as rows of one matrix. Every row of $\ve{E}$ is one $\ve{e_i}$; every operation from section 15 now happens for all $T$ rows in a single product.</p>
+  $$\ve{E} = \begin{bmatrix} \ve{e_1}^\top \\ \vdots \\ \ve{e_T}^\top \end{bmatrix}, \qquad \vq{Q} = \ve{E}\,W_Q, \quad \vk{K} = \ve{E}\,W_K, \quad \vv{V} = \ve{E}\,W_V$$
+</div>
+
+<div class="card">
+  <h3 class="card-title">Dimensions, always in view</h3>
+  <p class="cap">Every matrix with $T$ rows has one row per token; row 7 is bank in all of them.</p>
+  <div id="s16-dims"></div>
+</div>
+
+<div class="card">
+  <h3 class="card-title">One matrix operation at a time</h3>
+  <p class="cap">Row labels are tokens, column labels are the named coordinates. The outlined row is bank, the section 15 computation. Click any score cell for its arithmetic.</p>
+  <div id="s16-stepper"></div>
+</div>
+
+<div class="card">
+  <h3 class="card-title">The whole sublayer in five lines</h3>
+  <div class="eqs" id="s16-eqs">
+    <span>$S = \dfrac{\vq{Q}\,\vk{K}^\top}{\sqrt{d_k}}$</span>
+    <span>$\va{A} = \operatorname{softmax}(S + M)$</span>
+    <span>$H = \va{A}\,\vv{V}$</span>
+    <span>$\vd{\Delta E} = H\,W_O$</span>
+    <span>$\boxed{\vp{E'} = \ve{E} + \vd{\Delta E}}$</span>
+  </div>
+  <p class="why">$M$ is the causal mask: $0$ where $j \le i$, $-\infty$ where $j > i$. The softmax acts on each row separately, so every row of $\va{A}$ sums to $1$.</p>
+</div>
+
+<div id="s16-callouts"></div>
+
+<div class="companion after">
+  <p>Keep in mind: the matrices are bookkeeping, not a new idea. Row $i$ of $\vp{E'}$ is $\ve{e_i} + \vd{\Delta e_i}$, the softmax runs one row at a time, and the mask is what keeps row $i$ from reading columns $j > i$.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s16');
+  const toks = AT.sentences.river.slice(0, 7);
+  const T = toks.length;
+  const F = AT.forward(toks);
+  const M = AT.model;
+  const BANK = 6;
+  const KT = AT.transpose(F.K);
+  const Mmask = AT.range(T).map(i => AT.range(T).map(j => (j > i ? -Infinity : 0)));
+  const SplusM = AT.range(T).map(i => AT.range(T).map(j => (j > i ? -Infinity : F.Sfull[i][j])));
+  const shape = (tex) => { const s = AT.h('span'); AT.tex(s, tex); return s; };
+
+  /* dimensions as one table: a row per matrix, the symbolic shape and the toy numbers side by side */
+  AT.ui.table([
+    [shape('T \\times d_{\\text{model}}'), T, AT.d_model],
+    [shape('T \\times d_k'), T, AT.d_k],
+    [shape('T \\times d_v'), T, AT.d_v],
+    [shape('T \\times T'), T, T],
+    [shape('T \\times d_v'), T, AT.d_v],
+    [shape('T \\times d_{\\text{model}}'), T, AT.d_model]
+  ], {
+    cols: ['shape', 'rows', 'columns'], decimals: 0, cornerLabel: 'matrix',
+    rowLabels: ['$\\ve{E}$', '$\\vq{Q}$, $\\vk{K}$', '$\\vv{V}$', '$S$, $M$, $\\va{A}$', '$H = \\va{A}\\vv{V}$', '$\\vd{\\Delta E}$, $\\vp{E\'}$'],
+    caption: 'Here $T = ' + T + '$ (the short sequence), $d_{\\text{model}} = ' + AT.d_model + '$ and $d_k = d_v = ' + AT.d_k + '$. The weight matrices are $W_Q, W_K, W_V \\in \\mathbb{R}^{' + AT.d_model + ' \\times ' + AT.d_k + '}$ and $W_O \\in \\mathbb{R}^{' + AT.d_v + ' \\times ' + AT.d_model + '}$.',
+    into: S.querySelector('#s16-dims')
+  });
+
+  /* helpers: every matrix carries token row labels; the coordinate columns take the named axes by default */
+  const rowMat = (rows, cls, cap, opts) => AT.ui.mat(rows, Object.assign({ cls: cls, rowLabels: toks, caption: cap, dims: true, highlight: { row: BANK } }, opts || {}));
+  const wTab = (W, from, to, cls, cap) => AT.ui.wTable(W, { from: from, to: to, cls: cls, caption: cap });
+  const sqMat = (rows, cls, cap, opts) => AT.ui.mat(rows, Object.assign({ cls: cls, rowLabels: toks, colLabels: toks, caption: cap, dims: true, highlight: { row: BANK } }, opts || {}));
+  const calcRaw = { Q: F.Q, K: F.K, scaled: false, d_k: AT.d_k }, calcS = { Q: F.Q, K: F.K, scaled: true, d_k: AT.d_k };
+  function line(el, ...parts) {
+    const r = AT.h('div', { class: 'stage-row' });
+    /* each operator travels with the matrix that follows it, so a line break falls before '= Q', never after '=' */
+    for (let i = 0; i < parts.length; i++) {
+      const p = parts[i];
+      if (typeof p === 'string') { const g = AT.h('span', { class: 'grp' }); AT.ui.op(p, { into: g }); if (parts[i + 1] && typeof parts[i + 1] !== 'string') { g.appendChild(parts[i + 1]); i++; } r.appendChild(g); }
+      else r.appendChild(p);
+    }
+    el.appendChild(r);
+    return r;
+  }
+
+  /* readings: one plain sentence per object, built from the numbers and the axis names (never retyped) */
+  const TOP = AT.argmax(F.A[BANK]);                                  /* the key bank reads most: its k and v are the ones worth reading aloud */
+  const names = (kind, n) => AT.axesFor(kind, n, false).map(a => a.label.replace(/^[a-z ]+:\s*/, ''));
+  const NE = names('e', AT.d_model), NQ = names('qk', AT.d_k), NV = names('v', AT.d_v);
+  const ranked = (vec, nm, thr) => vec.map((x, i) => ({ x: x, i: i, name: nm[i] })).filter(t => Math.abs(t.x) >= thr).sort((a, b) => Math.abs(b.x) - Math.abs(a.x));
+  const list = (items, signed) => items.map(t => t.name + ' ' + (signed ? AT.fmtSigned(t.x) : AT.fmt(t.x))).join(', ');
+  const STORY = { water: 'river', finance: 'money' };
+  const story = (ax) => STORY[ax] || ax;
+  /* the two setting axes of e are the first two named axes; bank sits between them */
+  const settingVerdict = (v, tie, lead) => { const a = v[0], b = v[1]; if (Math.abs(a - b) <= 0.1 * Math.max(Math.abs(a), Math.abs(b), 1e-9)) return tie(NE[0], NE[1]); return lead(a >= b ? NE[0] : NE[1]); };
+  const tx = (s) => AT.texStr(s);
+  const read = (el, html) => { const p = AT.h('p', { class: 'read', html: html }); el.appendChild(p); return p; };
+  const R = {
+    E: () => { const v = F.E[BANK]; return 'Reading row 7, ' + tx('\\ve{e_{\\text{bank}}}') + ': ' + list(ranked(v.slice(0, 2), NE, 0).concat(ranked(v, NE, 0.25).filter(t => t.i > 1).slice(0, 1))) + ', so bank is ' + settingVerdict(v, (a, b) => 'half ' + story(a) + ', half ' + story(b), (a) => 'mostly ' + story(a)) + '.'; },
+    Q: () => { const v = F.Q[BANK]; const big = ranked(v, NQ, 0.25), small = ranked(v, NQ, 0).filter(t => Math.abs(t.x) < 0.25); return 'Reading ' + tx('\\vq{q_{\\text{bank}}}') + ': it asks for ' + list(big) + (small.length ? ', hardly for ' + small.map(t => t.name + ' (' + AT.fmt(t.x) + ')').join(', ') : '') + '.'; },
+    K: () => { const v = F.K[TOP]; const big = ranked(v, NQ, 0.25); return 'Reading ' + tx('\\vk{k_{\\text{' + toks[TOP] + '}}}') + ': it offers ' + list(big) + (big.length < v.length ? ' and little else' : '') + ', which is what bank asks for.'; },
+    V: () => { const v = F.V[TOP]; const big = ranked(v, NV, 0.25); return 'Reading ' + tx('\\vv{v_{\\text{' + toks[TOP] + '}}}') + ': if retrieved it says ' + list(big) + (big.length < v.length ? ' and little else' : '') + '.'; },
+    S: () => { const r = ranked(F.S[BANK], toks, 0); return 'Reading row 7 of ' + tx('S') + ': bank scores ' + r[0].name + ' highest (' + AT.fmt(r[0].x) + '), then ' + r[1].name + ' (' + AT.fmt(r[1].x) + ').'; },
+    A: () => { const r = ranked(F.A[BANK], toks, 0); const rest = r.slice(3); return 'Reading row 7 of ' + tx('\\va{A}') + ': ' + list(r.slice(0, 3)) + (rest.length ? '; every other token at most ' + AT.fmt(Math.max(...rest.map(t => t.x))) : '') + '.'; },
+    H: () => { const v = F.Mmsg[BANK]; return 'Reading row 7 of ' + tx('H') + ', the message ' + tx('m_{\\text{bank}}') + ': ' + list(ranked(v, NV, 0.05)) + ': mostly what ' + toks[TOP] + ' sent.'; },
+    D: () => { const v = F.Delta[BANK]; const r = ranked(v, NE, 0.05); return 'Reading ' + tx('\\vd{\\Delta e_{\\text{bank}}}') + ': ' + list(r, true) + '; the update lands on the ' + r[0].name + ' axis.'; },
+    EP: () => { const v = F.Enew[BANK]; return 'Reading ' + tx('\\vp{e_{\\text{bank}}\'}') + ': ' + list(ranked(v.slice(0, 2), NE, 0)) + ': bank now reads as ' + settingVerdict(v, (a, b) => 'both a ' + story(a) + ' bank and a ' + story(b) + ' bank', (a) => 'a ' + story(a) + ' bank') + '.'; }
+  };
+
+  const steps = [
+    { title: 'Stack the representations', tex: '\\ve{E} \\in \\mathbb{R}^{T \\times d_{\\text{model}}}',
+      note: 'Row $i$ is $\\ve{e_i}$ for the token at position $i$; the columns are the ' + AT.d_model + ' named coordinates of the representation (' + AT.axes.short.e.join(', ') + ').',
+      render: (el) => { line(el, rowMat(F.E, 'e', '$\\ve{E}$: one row per token')); read(el, R.E()); } },
+    { title: 'Queries, all at once', tex: '\\vq{Q} = \\ve{E}\\,W_Q',
+      note: 'One product gives every query. Each row of $W_Q$ is an $\\ve{e}$ axis, each column a $\\vq{q}$ axis: read a row as "this axis asks for that". Row $i$ of $\\vq{Q}$ is $\\vq{q_i}$.',
+      render: (el) => { line(el, rowMat(F.E, 'e', '$\\ve{E}$'), '·', wTab(M.W_Q, 'e', 'qk', 'q', '$W_Q$: axis → asks'), '=', rowMat(F.Q, 'q', '$\\vq{Q}$')); read(el, R.Q()); } },
+    { title: 'Keys, all at once', tex: '\\vk{K} = \\ve{E}\\,W_K',
+      note: 'Same input $\\ve{E}$, different weight matrix: a row of $W_K$ reads "this axis offers that". Row $j$ of $\\vk{K}$ is $\\vk{k_j}$.',
+      render: (el) => { line(el, rowMat(F.E, 'e', '$\\ve{E}$'), '·', wTab(M.W_K, 'e', 'qk', 'k', '$W_K$: axis → offers'), '=', rowMat(F.K, 'k', '$\\vk{K}$', { highlight: { row: TOP } })); read(el, R.K()); } },
+    { title: 'Values, all at once', tex: '\\vv{V} = \\ve{E}\\,W_V',
+      note: 'The third projection: a row of $W_V$ reads "this axis says that". Row $j$ of $\\vv{V}$ is $\\vv{v_j}$, what token $j$ sends if retrieved.',
+      render: (el) => { line(el, rowMat(F.E, 'e', '$\\ve{E}$'), '·', wTab(M.W_V, 'e', 'v', 'v', '$W_V$: axis → says'), '=', rowMat(F.V, 'v', '$\\vv{V}$', { highlight: { row: TOP } })); read(el, R.V()); } },
+    { title: 'Every query against every key', tex: 'S = \\frac{\\vq{Q}\\,\\vk{K}^\\top}{\\sqrt{d_k}}',
+      note: 'Entry $(i,j)$ is $s_{ij} = \\vq{q_i}^\\top \\vk{k_j}/\\sqrt{d_k}$. The product $\\vq{Q}\\vk{K}^\\top$ holds the raw dot products; dividing every entry by $\\sqrt{d_k} = \\sqrt{' + AT.d_k + '}$ gives $S$. Row 7 is the score row of bank from section 15. Click any cell of a score matrix to see its arithmetic.',
+      render: (el) => {
+        line(el, rowMat(F.Q, 'q', '$\\vq{Q}$'), '·', AT.ui.mat(KT, { cls: 'k', rowLabels: AT.axisLabels('qk', AT.d_k), colLabels: toks, caption: '$\\vk{K}^\\top$: one column per token', dims: true }), '=', sqMat(F.Sraw, 'neutral', '$\\vq{Q}\\vk{K}^\\top$: raw dot products (click a cell)', { calc: calcRaw }));
+        line(el, sqMat(F.Sraw, 'neutral', '$\\vq{Q}\\vk{K}^\\top$', { calc: calcRaw }), '÷ √' + AT.d_k, '=', sqMat(F.Sfull, 'neutral', '$S = \\vq{Q}\\vk{K}^\\top / \\sqrt{d_k}$: scaled scores, before the mask (click a cell)', { calc: calcS }));
+        read(el, R.S());
+      } },
+    { title: 'Add the causal mask', tex: 'S + M, \\qquad M_{ij} = \\begin{cases} 0 & j \\le i \\\\ -\\infty & j > i \\end{cases}',
+      note: 'Adding $-\\infty$ above the diagonal removes every future token before the softmax sees it.',
+      render: (el) => line(el, sqMat(F.Sfull, 'neutral', '$S$', { calc: calcS }), '+', sqMat(Mmask, 'neutral', '$M$: the causal mask', { highlight: null, decimals: 0 }), '=', sqMat(SplusM, 'neutral', '$S + M$: future entries are $-\\infty$', { mask: 'causal', maskText: '−∞', calc: calcS })) },
+    { title: 'Softmax, row by row', tex: '\\va{A} = \\operatorname{softmax}(S + M)',
+      note: 'Row $i$ of $\\va{A}$ is the weight row $\\va{\\alpha_{i\\cdot}}$: masked entries become exactly $0$ and the row sum on the right is $1$ for every token.',
+      render: (el) => {
+        AT.ui.table(F.A.map((r, i) => r.map((x, j) => (j > i ? '×' : x))), {
+          cols: toks, rowLabels: toks.map((t, i) => (i + 1) + ' ' + t), cornerLabel: 'reads from →', rowCls: 'a', heatCols: AT.range(T), highlightRow: BANK,
+          computed: [{ label: 'row sum', fn: (row, i) => AT.sum(F.A[i]), cls: 'neutral' }],
+          caption: '$\\va{A}$ as a spreadsheet: darker cells carry more weight, hatched cells are masked, and each row sums to 1.', into: el });
+        read(el, R.A());
+      } },
+    { title: 'Retrieve the messages', tex: 'H = \\va{A}\\,\\vv{V}',
+      note: 'Row $i$ of $H$ is the message $m_i = \\sum_j \\va{\\alpha_{ij}}\\,\\vv{v_j}$: each row of $\\va{A}$ mixes the rows of $\\vv{V}$, so $H$ has the $\\vv{v}$ axes.',
+      render: (el) => { line(el, sqMat(F.A, 'a', '$\\va{A}$', { heat: true, mask: true }), '·', rowMat(F.V, 'v', '$\\vv{V}$', { highlight: null }), '=', rowMat(F.Mmsg, 'm', '$H$: one message per token')); read(el, R.H()); } },
+    { title: 'Output projection', tex: '\\vd{\\Delta E} = H\\,W_O',
+      note: 'Back into the model\'s representation space: $W_O$ has ' + AT.d_v + ' rows (the $\\vv{v}$ axes of $m$) and ' + AT.d_model + ' columns (the $\\ve{e}$ axes of $\\vd{\\Delta e}$). Row $i$ of $\\vd{\\Delta E}$ is $\\vd{\\Delta e_i}$.',
+      render: (el) => { line(el, rowMat(F.Mmsg, 'm', '$H$'), '·', wTab(M.W_O, 'v', 'e', 'd', '$W_O$: says → axis'), '=', rowMat(F.Delta, 'd', '$\\vd{\\Delta E}$')); read(el, R.D()); } },
+    { title: 'Residual addition', tex: '\\boxed{\\vp{E\'} = \\ve{E} + \\vd{\\Delta E}}',
+      note: 'Nothing is replaced. Every token keeps its own $\\ve{e_i}$ and gains a context-dependent $\\vd{\\Delta e_i}$, all rows at once.',
+      render: (el) => { line(el, rowMat(F.E, 'e', '$\\ve{E}$'), '+', rowMat(F.Delta, 'd', '$\\vd{\\Delta E}$'), '=', rowMat(F.Enew, 'ep', '$\\vp{E\'}$: updated representations')); read(el, R.EP()); } }
+  ];
+
+  AT.ui.stepper({ into: S.querySelector('#s16-stepper'), steps: steps, compact: true, texInList: false });
+
+  /* callouts */
+  const co = S.querySelector('#s16-callouts');
+  AT.ui.callout('The matrices add nothing new. $\\va{A}\\,\\vv{V}$ computes every token\'s message in one product, and $\\vp{E\'} = \\ve{E} + \\vd{\\Delta E}$ is the residual addition applied to all rows at once.', { kind: 'key', into: co });
+  AT.ui.callout('$\\vd{\\Delta E}$ is our pedagogical notation for the attention sublayer\'s residual update. Standard descriptions call $H W_O$ the attention output; the addition $\\ve{E} + \\vd{\\Delta E}$ itself is standard: it is the residual connection around the attention sublayer.', { kind: 'note', into: co });
+})();
+</script>
+</section>

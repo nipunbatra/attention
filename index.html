@@ -1,1 +1,98 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=attention.html"><title>Self-attention, from first principles</title></head><body><a href="attention.html">Self-attention, from first principles</a></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Next-token prediction, attention and the Transformer</title>
+<style>
+:root{
+  --paper:#F7F8FA; --ink:#14171F; --ink-2:#4A5160; --ink-3:#8A91A0; --line:#D9DDE5; --card:#FFFFFF; --grid:#E3E6EC;
+  --c-e:#2563EB; --c-q:#9333EA; --c-k:#D97706; --c-v:#0D9488; --c-a:#E11D48; --c-d:#16A34A;
+  --t-e:#E4ECFF; --t-q:#F1E5FC; --t-k:#FCEFD9; --t-v:#D9F2EF; --t-a:#FDE2E7; --t-d:#DDF3E4; --t-neutral:#EEF0F4;
+  --font-ui:"Avenir Next","Segoe UI Variable Display","Segoe UI","Helvetica Neue",system-ui,sans-serif;
+  --font-mono:"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --radius:12px; --radius-s:8px; --maxw:1120px; --pad:24px; --dur:200ms;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font-ui);font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased}
+@media (min-width:1400px){body{font-size:18px}}
+h1{font-size:clamp(34px,4.6vw,52px);letter-spacing:-0.02em;line-height:1.1;margin:0 0 .4em;font-weight:700}
+h2{font-size:clamp(22px,2.4vw,28px);letter-spacing:-0.015em;line-height:1.2;margin:.2em 0 .5em;font-weight:700}
+p{margin:0 0 1em}
+a{color:var(--ink);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--ink-3)}
+a:hover{text-decoration-color:var(--ink)}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 var(--pad)}
+@media (max-width:640px){:root{--pad:16px}}
+.hero{padding:64px 0 24px}
+.lab{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin:0 0 12px}
+.hero-sub{font-size:clamp(18px,2vw,22px);color:var(--ink-2);max-width:40em;margin-bottom:20px}
+.hero-meta{font-size:15px;color:var(--ink-2);max-width:60ch}
+.chain{margin:24px 0 0;padding:14px 18px;border:1px solid var(--line);border-radius:var(--radius);background:var(--card);display:inline-flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:15px;color:var(--ink-2)}
+.chain .sy{font-family:var(--font-mono);font-weight:600;padding:2px 8px;border-radius:6px;color:var(--ink)}
+.chain .e{background:var(--t-e);color:var(--c-e)} .chain .q{background:var(--t-q);color:var(--c-q)} .chain .k{background:var(--t-k);color:var(--c-k)} .chain .v{background:var(--t-v);color:var(--c-v)} .chain .a{background:var(--t-a);color:var(--c-a)} .chain .d{background:var(--t-d);color:var(--c-d)}
+.chain .ar{color:var(--ink-3)}
+.parts{padding:24px 0 64px}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;list-style:none;margin:0;padding:0}
+@media (max-width:900px){.cards{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:28px;display:flex;flex-direction:column;gap:10px;min-width:0;transition:border-color var(--dur),transform var(--dur)}
+.card:hover{border-color:var(--ink);transform:translateY(-2px)}
+.card .n{font-family:var(--font-mono);font-size:13px;color:var(--ink-3);font-weight:600;letter-spacing:.04em}
+.card h2 a{text-decoration:none}
+.card h2 a::after{content:" \2192";color:var(--ink-3)}
+.card .build{font-size:15px;color:var(--ink-2);margin:0}
+.card .build b{display:block;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:700;margin-bottom:4px}
+.card .meta{font-size:14px;color:var(--ink-3);margin:auto 0 0;padding-top:8px}
+.card .go{margin-top:8px;display:inline-flex;align-items:center;justify-content:center;padding:8px 16px;border-radius:var(--radius-s);border:1.5px solid var(--ink);background:var(--card);color:var(--ink);font-weight:600;font-size:15px;text-decoration:none;align-self:flex-start;transition:background var(--dur),color var(--dur)}
+.card .go:hover{background:var(--ink);color:#fff}
+.how{max-width:70ch;color:var(--ink-2);font-size:16px;border-left:3px solid var(--line);padding:4px 0 4px 22px;margin:40px 0 0}
+.how p{margin:0 0 .6em}
+.how kbd{font-family:var(--font-mono);background:var(--card);border:1px solid var(--line);border-radius:4px;padding:0 5px;font-size:13px;color:var(--ink)}
+footer{border-top:1px solid var(--line);padding:24px 0 40px;color:var(--ink-3);font-size:14px}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <p class="lab">A three-part series for deep-learning students</p>
+    <h1>Next-token prediction, attention and the Transformer</h1>
+    <p class="hero-sub">Three single-file pages that build one idea at a time: a character model that predicts the next letter, the attention step that lets a token read from the tokens before it, and the Transformer block that learns.</p>
+    <p class="hero-meta">Each page is a lecture you can present frame by frame and a text a student can read alone. All numbers come from a tiny model whose arithmetic you can check by hand; every page works offline as one file.</p>
+    <div class="chain" aria-label="The chain that runs through the series"><span class="sy e">e</span><span class="ar">→</span><span class="sy q">Q</span><span class="sy k">K</span><span class="sy v">V</span><span class="ar">→</span><span class="sy a">α</span><span class="ar">→</span><span class="sy d">Δe</span><span class="ar">→</span><span class="sy e">e + Δe</span><span class="ar">→</span><span>next-token probabilities</span></div>
+  </div>
+</header>
+<main class="parts">
+  <div class="wrap">
+    <ol class="cards">
+      <li class="card">
+        <span class="n">PART 1</span>
+        <h2><a href="part1.html">From characters to next-token prediction</a></h2>
+        <p class="build"><b>What you will build</b>A character model for names: a lookup table, a fixed window of embeddings, one hidden layer and a softmax, trained on real names and sampled with a temperature.</p>
+        <p class="meta">For students who know MLPs, softmax and cross-entropy.</p>
+        <a class="go" href="part1.html">Open Part 1</a>
+      </li>
+      <li class="card">
+        <span class="n">PART 2</span>
+        <h2><a href="attention.html">Self-attention, from first principles</a></h2>
+        <p class="build"><b>What you will build</b>One attention step by hand: queries, keys and values for a ten-token sentence, the scores, the causal mask, the weights, and the update that makes "bank" mean the river or the money.</p>
+        <p class="meta">For students who finished Part 1, or who know embeddings, dot products and softmax.</p>
+        <a class="go" href="attention.html">Open Part 2</a>
+      </li>
+      <li class="card">
+        <span class="n">PART 3</span>
+        <h2><a href="part3.html">Learning, heads, and the Transformer</a></h2>
+        <p class="build"><b>What you will build</b>One training step on the attention model from Part 2, then the full decoder block: several heads, layer normalisation, the feed-forward layer, and a stack of blocks.</p>
+        <p class="meta">For students who finished Part 2.</p>
+        <a class="go" href="part3.html">Open Part 3</a>
+      </li>
+    </ol>
+    <div class="how">
+      <p><strong>Reading and presenting.</strong> Every page opens as an article. The strip at the top switches between the full text and a lean view for projection, and the Present button (or <kbd>P</kbd>) turns the page into frames: one frame fills the screen and each <kbd>→</kbd> reveals the next step. <kbd>O</kbd> shows all frames, <kbd>S</kbd> shows the notes, and Presenter view opens the notes and the clock in a second window.</p>
+      <p>The three pages share one notation and one set of colours: the same seven objects are drawn in the same colours everywhere, and a symbol introduced in one part means the same thing in the next.</p>
+    </div>
+  </div>
+</main>
+<footer><div class="wrap">Three self-contained files with no external dependencies. Open any part offline; the pages link to each other.</div></footer>
+</body>
+</html>

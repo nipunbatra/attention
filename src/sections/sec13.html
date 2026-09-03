@@ -1,0 +1,223 @@
+<section id="s13" class="sec" data-title="Causal masking" data-lit="">
+<style>
+#s13 .s13-stair td, #s13 .s13-stair th { vertical-align: middle; padding: 6px 10px; }
+#s13 .s13-stair td.num { font-family: var(--mono, monospace); color: var(--ink-3); }
+#s13 .s13-stair td.tgt { font-weight: 600; color: var(--warn); }
+#s13 .s13-stair tr.is-hl td { background: var(--t-a); }
+#s13 .s13-stair .chips { flex-wrap: nowrap; gap: 4px; }
+
+#s13 .s13-cap{font-size:14px;color:var(--ink-2);margin:0 0 12px;max-width:68ch}
+#s13 .s13-msg{min-height:1.5em;margin:6px 0 0}
+#s13 .mat .cell.is-hl{box-shadow:inset 0 0 0 3px var(--ink);font-weight:700}
+#s13 .s13-arena{position:relative;padding:8px 0}
+#s13 .s13-illus{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);border:1px dashed var(--ink-3);border-radius:999px;padding:2px 10px;margin-left:8px;vertical-align:middle}
+#s13 .s13-leak{font-family:var(--font-mono);font-size:15px}
+#s13 .s13-rule{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto auto;gap:4px 24px;align-items:start}
+#s13 .s13-rule>*{min-width:0}
+#s13 .s13-rule .s13-c1{grid-column:1}
+#s13 .s13-rule .s13-c2{grid-column:2}
+#s13 .s13-rule .s13-sub{grid-row:1}
+#s13 .s13-rule .s13-body{grid-row:2}
+@media (max-width:820px){#s13 .s13-rule{grid-template-columns:minmax(0,1fr);grid-template-rows:none}#s13 .s13-rule>.s13-c1,#s13 .s13-rule>.s13-c2{grid-column:1}#s13 .s13-rule>.s13-sub,#s13 .s13-rule>.s13-body{grid-row:auto}#s13 .s13-rule>.s13-sub.s13-c2{margin-top:14px}}
+#s13 .s13-sub{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin:0 0 4px}
+#s13 .s13-read{font-size:14px;color:var(--ink-2);margin:6px 0 0;min-height:1.5em}
+</style>
+<header class="sec-head">
+  <span class="sec-num">13</span>
+  <div>
+    <p class="eyebrow">Why we are here: this is next-token prediction, so a token may read the past and never the future.</p>
+    <h2>Causal masking</h2>
+  </div>
+</header>
+
+<div class="companion" data-kicker="For self-study">
+  <p>The model is trained to predict the next token, so during training the answer for position $i$ sits right there at position $i+1$. This section shows what stops a token from reading it. Switch the causal mask off and watch row 5: with the mask on, token 5 (the) reads only tokens 1 to 5; with it off, most of its weight lands on river and bank, the words it is supposed to predict. Press the send button in both states and compare the message that arrives. The sentence to remember: token $i$ may read from $j \le i$ and never from $j > i$, and the mask enforces that with a $-\infty$ before the softmax.</p>
+</div>
+
+<div class="prose">
+  <p>So far one query token opened the records to its left and we simply left the later ones closed. That was a habit. This section turns it into a rule and shows where the rule comes from: the training objective itself.</p>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Every position predicts its next token at the same time</h3>
+  <p class="s13-cap">Training does not run one query at a time. One pass through the sentence scores every position at once: each token is a query, reads the tokens up to itself, and is graded on the token that follows it.</p>
+  <div id="s13-stairs"></div>
+  <p class="muted small">Short sequence shown; the ten-token sentence continues the same staircase. Position $i$ may read tokens $1 \ldots i$ and must predict token $i+1$.</p>
+  <div id="s13-stairwhy"></div>
+</div>
+
+<div class="prose">
+  <p>Every query token $i$ compares against every key $j$, giving the score matrix
+  $S = QK^\top/\sqrt{d_k}$ with entries $s_{ij}$. Token $i$ may retrieve only from $j \le i$, never from $j > i$.
+  A <em>causal mask</em> sets the forbidden scores to $-\infty$ before the softmax, so their weights become exactly 0.</p>
+</div>
+
+<div class="card">
+  <h3 class="card-title">The rule, written twice <span class="s13-illus">illustrative 4×4</span></h3>
+  <p class="s13-cap">Same rule on both sides: the picture on the left, the mask matrix $M$ that section 16 will use on the right.</p>
+  <div class="s13-rule">
+    <p class="s13-sub s13-c1">Allowed and masked</p>
+    <div class="s13-body s13-c1">
+      $$\begin{bmatrix} \checkmark & \times & \times & \times\\ \checkmark & \checkmark & \times & \times\\ \checkmark & \checkmark & \checkmark & \times\\ \checkmark & \checkmark & \checkmark & \checkmark \end{bmatrix}$$
+      <p class="muted small">Row $i$ = query token, column $j$ = key token. $\checkmark$: allowed ($j \le i$). $\times$: masked ($j > i$).</p>
+    </div>
+    <p class="s13-sub s13-c2">As a mask matrix</p>
+    <div class="s13-body s13-c2">
+      <div id="s13-meq1"></div>
+      <div id="s13-meq2"></div>
+      <p class="muted small">Adding $-\infty$ before the softmax is the same as deleting that column for that row: $e^{-\infty} = 0$.</p>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h3 class="card-title">The real attention matrix $\va{A}$ for sentence A (10 tokens), with the mask on or off</h3>
+  <p class="s13-cap">Toggle the mask and watch the hatched triangle: with the mask off, weight moves into it, and the outlined cells $(i, i+1)$ are where each token could read its own answer. Click any cell for the score arithmetic behind its weight.</p>
+  <div class="row" id="s13-ctl"></div>
+  <div id="s13-heat"></div>
+  <p class="muted small s13-msg" id="s13-msg">Hover a cell to read one weight.</p>
+  <div id="s13-warn"></div>
+</div>
+
+<div class="card">
+  <h3 class="card-title">One leak, up close: token 5 (&ldquo;the&rdquo;) whose next token is &ldquo;river&rdquo;</h3>
+  <p class="s13-cap">Compare the two rows: the mask-off row puts most of its weight on the two tokens that token 5 is supposed to predict. Press the button to see which tokens send.</p>
+  <div class="s13-arena" id="s13-arena">
+    <div id="s13-chips"></div>
+    <div id="s13-rows"></div>
+    <div class="btn-row" style="margin:10px 0"><button type="button" class="btn btn-primary" id="s13-send">Send messages to token 5</button><span class="muted small" id="s13-send-note"></span></div>
+    <div class="row" id="s13-target"></div>
+    <p class="s13-read" id="s13-read"></p>
+  </div>
+  <p class="small" id="s13-leak-text"></p>
+</div>
+
+<div id="s13-callouts"></div>
+
+<div class="companion after">
+  <p>Keep in mind: with the mask off the rows still sum to 1, so the leak is invisible in the totals and visible only in where the weight went. The mask is not a detail of one example; it is what makes next-token training honest.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s13');
+  const toks = AT.sentences.river;
+  const T = toks.length;
+  const Fon = AT.forward(toks), Foff = AT.forward(toks, { mask: false });
+  let maskOn = true;
+  const li = 4;                                  // "the" at position 5; its next token is river (6)
+
+  AT.tex(S.querySelector('#s13-meq1'), '\\va{A} = \\operatorname{softmax}(S + M)', { display: true });
+  AT.tex(S.querySelector('#s13-meq2'), 'M_{ij} = \\begin{cases} 0 & j \\le i \\\\ -\\infty & j > i \\end{cases}', { display: true });
+
+  /* ---- 10×10 heatmap with a mask toggle ---- */
+  const msg = S.querySelector('#s13-msg');
+  let lastCell = null;                           // last inspected (i, j); re-explained when the mask toggles
+  function explain(i, j){
+    lastCell = [i, j];
+    const A = (maskOn ? Fon : Foff).A;
+    const fut = j > i;
+    msg.innerHTML = AT.texStr('\\va{\\alpha_{' + (i + 1) + ',' + (j + 1) + '}}') + ' = ' + AT.fmt(A[i][j], 3) + ' &nbsp;(' + AT.escape(toks[i]) + ' ← ' + AT.escape(toks[j]) + ')' + (fut ? (maskOn ? ' Masked: token ' + (j + 1) + ' is in the future of token ' + (i + 1) + '.' : ' <span class="warn-text">Leak: token ' + (i + 1) + ' is reading a token it must predict later.</span>') : '');
+  }
+  const heat = AT.ui.heat(Fon.A, { rows: toks, cols: toks, mask: true, leak: true, decimals: 2, highlightRow: li,
+    onHover: explain, calc: { Q: Fon.Q, K: Fon.K, scaled: true, d_k: AT.d_k },
+    caption: 'Mask ON: hatched cells are future tokens; every row sums to 1 over $j \\le i$. Row 5 (the) is highlighted. Click a cell for its worksheet.', into: S.querySelector('#s13-heat') });
+  const warnHost = S.querySelector('#s13-warn');
+  function paintNext(on){
+    for (let i = 0; i + 1 < T; i++) heat.cells[i][i + 1].classList.toggle('is-hl', !on);
+  }
+  function setMask(on){
+    maskOn = on;
+    const F = on ? Fon : Foff;
+    heat.update(F.A, { mask: on });
+    paintNext(on);
+    heat.querySelector('.mat-cap').innerHTML = on
+      ? 'Mask ON: hatched cells are future tokens; every row sums to 1 over $j \\le i$. Row 5 (the) is highlighted. Click a cell for its worksheet.'
+      : 'Mask OFF: every row can read every token. Cells $(i, i+1)$ are outlined: when predicting $x_{i+1}$, token $i$ could read $\\ve{e_{i+1}}$, so the answer is in the input. Warn-ringed cells are all future reads. Click a cell for its worksheet.';
+    AT.renderMath(heat.querySelector('.mat-cap'));
+    if (lastCell) explain(lastCell[0], lastCell[1]);
+    AT.clear(warnHost);
+    if (!on) AT.ui.callout('With the mask off, the weights in each row still sum to 1, but part of that weight now comes from tokens the model is supposed to be predicting. This is information leakage.', { kind: 'warn', into: warnHost });
+    drawRows();
+  }
+  AT.ui.toggle({ label: 'Causal mask', on: true, onText: 'ON', offText: 'OFF', onChange: setMask, into: S.querySelector('#s13-ctl') });
+
+  /* ---- the leak up close ---- */
+  const chips = AT.ui.chips(toks, { active: li, into: S.querySelector('#s13-chips') });
+  const rowsHost = S.querySelector('#s13-rows');
+  function drawRows(){
+    AT.clear(rowsHost);
+    const maskRows = [toks.map((_, j) => j > li), toks.map(() => false)];
+    AT.ui.heat([Fon.A[li], Foff.A[li]], { rows: ['mask ON', 'mask OFF'], cols: toks, mask: maskRows, decimals: 2,
+      highlight: maskOn ? { row: 0 } : { row: 1 }, caption: 'Row of token 5 with the mask on versus off. The highlighted row is the one currently shown in the big matrix above.', into: rowsHost });
+    chips.setMuted(maskOn ? AT.range(T).filter(j => j > li) : []);
+    chips.setMark(maskOn ? [] : [li + 1, li + 2], 'v');
+    const fut = Foff.A[li].slice(li + 1).reduce((a, b) => a + b, 0);
+    S.querySelector('#s13-leak-text').innerHTML = 'The training target at position 5 is the token at position 6, <strong>' + AT.escape(toks[li + 1]) + '</strong>. Mask <strong>off</strong>: token 5 puts <span class="s13-leak">' + AT.fmt(Foff.A[li][li + 1], 2) + '</span> of its weight on ' + AT.escape(toks[li + 1]) + ' and <span class="s13-leak">' + AT.fmt(Foff.A[li][li + 2], 2) + '</span> on ' + AT.escape(toks[li + 2]) + '; <span class="s13-leak">' + AT.fmt(fut, 2) + '</span> of its message comes from the future, so it could <em>copy</em> the answer. Mask <strong>on</strong>: those weights are exactly <span class="s13-leak">' + AT.fmt(Fon.A[li][li + 1], 2) + '</span>.';
+    S.querySelector('#s13-send-note').innerHTML = (maskOn ? 'Only tokens 1 to 5 can send.' : 'Tokens 6 to 10 also send, though they should not exist yet.') + ' Press the button to compute ' + AT.texStr('m_5') + '.';
+    target.setLabel('m_5' + (maskOn ? '' : '\\ \\text{(leaky)}'));
+    target.update(blank());
+    readEl.textContent = '';
+  }
+  const vName = AT.axes.short.v.map(x => x.replace(/^→/, ''));
+  function readMix(vec){
+    const ts = vec.map((x, i) => ({ x: x, n: vName[i] })).sort((a, b) => Math.abs(b.x) - Math.abs(a.x));
+    const rest = ts.slice(1).filter(t => Math.abs(t.x) < 0.2).map(t => t.n);
+    let str = 'mostly ' + ts[0].n + ' (' + AT.fmt(ts[0].x, 2) + ')';
+    ts.slice(1).filter(t => Math.abs(t.x) >= 0.2).forEach(t => { str += ', some ' + t.n + ' (' + AT.fmt(t.x, 2) + ')'; });
+    if (rest.length) str += ', almost nothing on ' + (rest.length > 1 ? rest.slice(0, -1).join(', ') + ' or ' + rest[rest.length - 1] : rest[0]);
+    return str;
+  }
+  const readEl = S.querySelector('#s13-read');
+  function showReading(F){
+    let leak = '';
+    if (!maskOn) {
+      const ax = AT.argmax(F.Mmsg[li].map(Math.abs));
+      const fut = AT.range(T).filter(j => j > li);
+      const jm = fut.reduce((a, j) => F.A[li][j] * F.V[j][ax] > F.A[li][a] * F.V[a][ax] ? j : a, fut[0]);
+      leak = ' <span class="warn-text">Most of the ' + AT.escape(vName[ax]) + ' came from ' + AT.escape(toks[jm]) + ' (' + (jm + 1) + '), a token that does not exist yet when token 5 is predicting.</span>';
+    }
+    readEl.innerHTML = 'Reading ' + AT.texStr('m_5') + ' with the mask ' + (maskOn ? 'on' : 'off') + ': the message says ' + readMix(F.Mmsg[li]) + '.' + leak;
+  }
+  function blank(){ return AT.range(AT.d_v).map(() => NaN); }   // renders as a blank cell until the messages arrive
+  const target = AT.ui.vec(blank(), { cls: 'm', label: 'm_5', into: S.querySelector('#s13-target') });
+  drawRows();
+  S.querySelector('#s13-send').addEventListener('click', () => {
+    const F = maskOn ? Fon : Foff;
+    target.update(blank());
+    AT.ui.flow(S.querySelector('#s13-arena'), { from: chips.chips, to: target.querySelector('.vec-cells'), weights: F.A[li], color: 'var(--c-v)', duration: 900 })
+      .then(() => { target.update(F.Mmsg[li]); showReading(F); });
+  });
+
+  /* ---- callouts ---- */
+  /* ---- background: every position predicts at once ---- */
+  (function(){
+    const host = S.querySelector('#s13-stairs'); if (!host) return;
+    const n = 7, short = toks.slice(0, n);
+    const tbl = AT.h('table', { class: 'dt s13-stair' });
+    const thead = AT.h('thead', {}, AT.h('tr', {}, AT.h('th', {}, 'position'), AT.h('th', {}, 'query token'), AT.h('th', {}, 'may read (its prefix)'), AT.h('th', {}, 'must predict')));
+    tbl.appendChild(thead);
+    const tb = AT.h('tbody');
+    for (let i = 0; i < n; i++) {
+      const muted = []; for (let j = i + 1; j < n; j++) muted.push(j);
+      const chips = AT.ui.chips(short, { active: i, muted: muted, numbered: true });
+      const target = i + 1 < toks.length ? toks[i + 1] : '___';
+      const tr = AT.h('tr', { class: i === li ? 'is-hl' : '' },
+        AT.h('td', { class: 'num' }, String(i + 1)),
+        AT.h('td', {}, AT.escape(toks[i])),
+        AT.h('td', {}, chips),
+        AT.h('td', { class: 'tgt' }, AT.escape(target)));
+      tb.appendChild(tr);
+    }
+    tbl.appendChild(tb);
+    host.appendChild(AT.h('div', { class: 'dt-scroll' }, tbl));
+    const why = S.querySelector('#s13-stairwhy');
+    AT.ui.callout('Look at position ' + (li + 1) + ' ("' + AT.escape(toks[li]) + '"): its job is to predict "' + AT.escape(toks[li + 1]) + '". If it could read position ' + (li + 2) + ', it would be reading its own answer. So the rule is not a style choice: with every position trained in one pass, anything to the right of $i$ is an answer, not evidence.', { kind: 'key', into: why });
+  })();
+
+  const co = S.querySelector('#s13-callouts');
+  AT.ui.callout('Token $i$ may only retrieve from $j \\le i$, never from $j > i$. Rows of $\\va{A}$ are softmaxed over the past only.', { kind: 'key', into: co });
+  AT.ui.callout('Why training would be invalid without the mask: the loss at position $i$ asks for $p(x_{i+1} \\mid x_{\\le i})$. If $\\ve{e_i}$ could read $\\ve{e_{i+1}}$, the model would drive that loss down by copying and learn nothing about language. At generation time token $i+1$ does not exist yet, so the trick would fail exactly when it matters.', { kind: 'warn', into: co });
+})();
+</script>
+</section>

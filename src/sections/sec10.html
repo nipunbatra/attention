@@ -1,0 +1,227 @@
+<section id="s10" class="sec" data-title="&ldquo;bank&rdquo;: same start, different context" data-lit="">
+<style>
+#s10 .s10-same{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);border:1px dashed var(--ink-3);border-radius:999px;padding:1px 9px;vertical-align:middle}
+#s10 .s10-cap{font-size:14px;color:var(--ink-2);margin:0 0 12px;max-width:68ch}
+#s10 .s10-read{font-size:14px;color:var(--ink-2);margin:4px 0 6px;line-height:1.45}
+#s10 .s10-read .mono{font-size:13px}
+#s10 .s10-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 24px;align-items:start}
+#s10 .s10-grid>*{min-width:0}
+#s10 .s10-grid .dt-fig{margin-top:6px}
+#s10 .s10-sub{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin:0 0 6px}
+#s10 .s10-ws{margin:2px 0 10px}
+@media (max-width:820px){#s10 .s10-grid{grid-template-columns:minmax(0,1fr)}#s10 .s10-grid>*{grid-column:1 !important;grid-row:auto !important}#s10 .s10-sub{margin-top:14px}}
+#s10 .s10-plot svg{width:100%;height:auto;max-width:620px;display:block;margin:0 auto}
+#s10 .s10-plot .ax{stroke:var(--ink-3);stroke-width:1.2}
+#s10 .s10-plot .axl{fill:var(--ink-2);font-size:12.5px;font-weight:500}
+#s10 .s10-plot .arr{stroke:var(--c-d);stroke-width:3;fill:none}
+#s10 .s10-plot .pt0{fill:var(--c-e);stroke:var(--card);stroke-width:2}
+#s10 .s10-plot .pt1{fill:var(--c-e);stroke:var(--c-d);stroke-width:3}
+#s10 .s10-plot .lb{fill:var(--ink);font-size:13.5px;font-weight:700;letter-spacing:.02em}
+#s10 .s10-plot .lbd{fill:var(--c-d);font-size:12.5px;font-weight:600}
+#s10 .s10-plot .lb0{fill:var(--c-e)}
+#s10 .s10-chain{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;font-size:15px;margin:6px 0}
+#s10 .s10-chain .bx{border-radius:8px;padding:6px 10px;border:1.5px solid var(--oc);color:var(--ink);background:var(--ot);font-weight:600}
+#s10 .s10-chain .ar{color:var(--ink-3);font-size:18px}
+</style>
+<header class="sec-head">
+  <span class="sec-num">10</span>
+  <div>
+    <p class="eyebrow">Why we are here: the same word in two contexts. One update pushes the same starting vector in two directions.</p>
+    <h2>&ldquo;bank&rdquo;: same start, different context</h2>
+  </div>
+</header>
+
+<div class="companion" data-kicker="For self-study">
+  <p>So far the page has followed one sentence. This section runs the same computation twice, once for the river sentence and once for the cheque sentence, and watches the word <strong>bank</strong>. Its starting row is identical in both, because the token and the position are the same. Compare the $\va{\alpha_{7j}}$ columns first: river carries most of the weight in sentence A, cheque and deposited in sentence B. Then read down to the footer and to the $\vd{\Delta e}$ row, where the difference lands: on the water axis in A, on the finance axis in B. Drag the slider to add the update a little at a time. The sentence to remember: attention did not change what bank is, it changed what bank has read.</p>
+</div>
+
+<div class="prose">
+  <p>Both sentences put <strong>bank</strong> at position 7. Its starting representation $\ve{e_{\text{bank}}^{(0)}}$ is the same row in both:
+  same token embedding, same position. Attention is causal, so <strong>bank</strong> reads only to its <em>left</em>
+  (tokens 1 to 7). The words after it play no part.</p>
+  <p class="s10-read" id="s10-read-e"></p>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Sentence A and sentence B, side by side</h3>
+  <p class="s10-cap">Each column follows bank through one attention step. The upper table is what bank reads; the lower table is bank's own representation before and after.</p>
+  <div class="s10-grid" id="s10-grid"></div>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Same starting point, two different updates</h3>
+  <p class="s10-cap">Look at the two arrows: they leave the same blue dot and end far apart. The slider adds the update gradually; the tables above follow it.</p>
+  <div class="s10-chain" id="s10-chain-a"></div>
+  <div class="s10-chain" id="s10-chain-b"></div>
+  <div class="row" style="margin:14px 0 4px">
+    <div id="s10-slider"></div>
+    <span class="muted small">Below 100% the last row of each bank table is the partial sum $\ve{e}(t) = \ve{e} + t\,\vd{\Delta e}$; the name $\vp{e'}$ is reserved for $t = 1$.</span>
+  </div>
+  <div class="dotgrid s10-plot" id="s10-plot"></div>
+  <p class="muted small" id="s10-plot-cap"></p>
+</div>
+
+<div id="s10-callout"></div>
+
+<div class="companion after">
+  <p>Keep in mind: bank reads only to its left, so the words after it played no part in either update. The two rows $\vp{e_{\text{bank}}'}$ differ only because the seven values it mixed, and the weights it mixed them with, differ.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s10');
+  const T = 7, bi = 6;
+  const sets = {
+    a: { toks: AT.sentences.river.slice(0, T), name: 'A', ctx: 'river-context update', res: 'RIVER-BANK' },
+    b: { toks: AT.sentences.cheque.slice(0, T), name: 'B', ctx: 'cheque-context update', res: 'FINANCE-BANK' }
+  };
+  Object.keys(sets).forEach(k => { sets[k].F = AT.forward(sets[k].toks); });
+  const FA = sets.a.F, FB = sets.b.F;
+  const AX = AT.axes;
+  const eName = AX.short.e, vName = AX.short.v.map(s => s.replace(/^→/, ''));
+  const cx = 0, cy = 1;                       // fixed 2-D projection: the first two e axes
+  const same = FA.E[bi].every((v, i) => v === FB.E[bi][i]);
+  const texE0 = '$\\ve{e_{\\text{bank}}^{(0)}}$';
+  const texD = '$\\vd{\\Delta e_{\\text{bank}}} = m_{\\text{bank}} W_O$';
+  const texEp = "$\\vp{e_{\\text{bank}}'} = \\ve{e_{\\text{bank}}} + \\vd{\\Delta e_{\\text{bank}}}$";
+
+  /* ---- reading lines: words computed from the numbers and the axis names ---- */
+  function ranked(vec, names, thr){ return vec.map((x, i) => ({ x: x, n: names[i] })).filter(t => Math.abs(t.x) >= thr).sort((a, b) => Math.abs(b.x) - Math.abs(a.x)); }
+  function listOf(ts){ return ts.map(t => t.n + ' ' + AT.fmt(t.x, 2)).join(', '); }
+  function verdictE(v){
+    const w = v[0], f = v[1], p = v[2], big = Math.max(w, f, p);
+    if (w >= 0.3 && f >= 0.3 && Math.max(w, f) / Math.min(w, f) <= 1.5) return 'half ' + eName[0] + ', half ' + eName[1];
+    if (big < 0.3) return 'a ' + eName[3] + ' word with no setting of its own';
+    return 'mostly ' + eName[[w, f, p].indexOf(big)];
+  }
+  function readE(vec, who){ return listOf(vec.map((x, i) => ({ x: x, n: eName[i] })).filter(t => Math.abs(t.x) >= 0.15)) + ', so ' + who + ' is ' + verdictE(vec) + '.'; }
+  function readMix(vec, names){
+    const ts = ranked(vec, names, 0);
+    const rest = ts.slice(1).filter(t => Math.abs(t.x) < 0.2).map(t => t.n);
+    let s = 'mostly ' + ts[0].n + ' (' + AT.fmt(ts[0].x, 2) + ')';
+    ts.slice(1).filter(t => Math.abs(t.x) >= 0.2).forEach(t => { s += ', some ' + t.n + ' (' + AT.fmt(t.x, 2) + ')'; });
+    if (rest.length) s += ', almost nothing on ' + (rest.length > 1 ? rest.slice(0, -1).join(', ') + ' or ' + rest[rest.length - 1] : rest[0]);
+    return s;
+  }
+  function readLine(host, tex, text){ const p = AT.h('p', { class: 's10-read small' }); p.innerHTML = 'Reading ' + AT.texStr(tex) + ': ' + text; host.appendChild(p); return p; }
+  S.querySelector('#s10-read-e').innerHTML = 'Reading ' + AT.texStr('\\ve{e_{\\text{bank}}^{(0)}}') + ': ' + readE(FA.E[bi], 'bank') + ' It is the same row in A and in B; the axes are ' + eName.join(', ') + '.';
+  AT.renderMath(S.querySelector('#s10-read-e'));
+
+  /* ---- one column of the grid: sentence, what bank reads (mix table), bank's own rows; every element is placed on an explicit grid row ---- */
+  const grid = S.querySelector('#s10-grid');
+  function panel(set, col){
+    const F = set.F, toks = set.toks;
+    let r = 0;
+    function put(el){ r += 1; el.style.gridColumn = String(col); el.style.gridRow = String(r); grid.appendChild(el); return el; }
+    const top = AT.range(T).filter(j => j !== bi).sort((x, y) => F.A[bi][y] - F.A[bi][x]).slice(0, 2).map(j => toks[j]);
+    put(AT.h('p', { class: 's10-sub' }, 'Sentence ' + set.name + ': ' + (set.name === 'A' ? 'the river' : 'the cheque')));
+    put(AT.ui.chips(toks, { active: bi }));
+    put(AT.ui.mixTable(F.A[bi], F.V, { rowLabels: toks.map((t, j) => (j + 1) + ' ' + t), cornerLabel: 'token', alphaLabel: '$\\va{\\alpha_{7j}}$', footerLabel: '$m_{\\text{bank}}$',
+      caption: 'What bank reads: the $\\va{\\alpha_{7j}}$ column is its attention row (most weight on ' + AT.escape(top.join(' and ')) + '), the rows are the values $\\vv{v_j}$, the footer is $m_{\\text{bank}} = \\sum_j \\va{\\alpha_{7j}}\\,\\vv{v_j}$.' }));
+    put(readLine(AT.h('div'), 'm_{\\text{bank}}', 'the message that arrived says ' + readMix(F.Mmsg[bi], vName) + '.'));
+    const bank = put(AT.ui.table([F.E[bi], F.Delta[bi], F.Enew[bi]], { axes: 'e', rowLabels: [texE0, texD, texEp], rowCls: ['e', 'd', 'ep'], cornerLabel: 'bank, position 7', highlightRow: 2,
+      caption: 'Bank’s own rows. Row 1 is ' + (same ? '<span class="s10-same">identical in A and B</span>' : 'the starting representation') + '; row 2 is the message sent through $W_O$; row 3 is the sum, the contextual representation.' }));
+    const readD = put(readLine(AT.h('div'), '\\vd{\\Delta e_{\\text{bank}}}', ''));
+    const readEp = put(readLine(AT.h('div'), "\\vp{e_{\\text{bank}}'}", ''));
+    const ws = AT.h('div', { class: 's10-ws' });
+    AT.ui.reveal('Show the arithmetic: ' + AT.texStr('\\vd{\\Delta e_{\\text{bank}}} = m_{\\text{bank}} W_O'),
+      AT.ui.matVecCalc(F.Mmsg[bi], AT.model.W_O, { from: 'v', to: 'e', cls: 'd', xLabel: 'm · 7 bank', outLabel: 'Δe · 7 bank' }), { hint: 'Show', into: ws });
+    put(ws);
+    return { bank: bank, readD: readD, readEp: readEp };
+  }
+  const pa = panel(sets.a, 1);
+  const pb = panel(sets.b, 2);
+
+  /* ---- conceptual chains ---- */
+  function chain(host, set){
+    const A = set.F.A[bi];
+    const order = AT.range(T).filter(j => j !== bi).sort((x, y) => A[y] - A[x]).slice(0, 2).map(j => set.toks[j]);
+    host.appendChild(AT.h('span', { class: 'bx obj-e' }, 'generic BANK'));
+    host.appendChild(AT.h('span', { class: 'ar', 'aria-hidden': 'true' }, '+'));
+    host.appendChild(AT.h('span', { class: 'bx obj-d' }, set.ctx + ' (mostly from ' + order.join(', ') + ')'));
+    host.appendChild(AT.h('span', { class: 'ar', 'aria-hidden': 'true' }, '→'));
+    host.appendChild(AT.h('span', { class: 'bx obj-ep', style: { borderColor: 'var(--c-d)' } }, set.res + ' representation'));
+  }
+  chain(S.querySelector('#s10-chain-a'), sets.a);
+  chain(S.querySelector('#s10-chain-b'), sets.b);
+
+  /* ---- 2-D plot of the (cx, cy) axes ---- */
+  const plotHost = S.querySelector('#s10-plot');
+  const W = 620, H = 340, pad = { l: 74, r: 30, t: 30, b: 44 };
+  const pts = [FA.E[bi], FA.Enew[bi], FB.Enew[bi]].map(v => [v[cx], v[cy]]);
+  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+  const xmin = Math.min(...xs) - 0.6, xmax = Math.max(...xs) + 0.6, ymin = Math.min(...ys) - 0.5, ymax = Math.max(...ys) + 0.5;
+  const X = x => pad.l + (x - xmin) / (xmax - xmin) * (W - pad.l - pad.r);
+  const Y = y => H - pad.b - (y - ymin) / (ymax - ymin) * (H - pad.t - pad.b);
+  const svg = AT.svg('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'The ' + eName[cx] + ' and ' + eName[cy] + ' axes of the bank representation: one shared starting point and two different update arrows' });
+  const defs = AT.svg('defs');
+  const mk = AT.svg('marker', { id: 's10-arrow', viewBox: '0 0 10 10', refX: '8', refY: '5', markerWidth: '6', markerHeight: '6', orient: 'auto' });
+  mk.appendChild(AT.svg('path', { d: 'M0 0L10 5L0 10z', fill: AT.objColor('d') }));
+  defs.appendChild(mk); svg.appendChild(defs);
+  svg.appendChild(AT.svg('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, class: 'ax' }));
+  svg.appendChild(AT.svg('line', { x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, class: 'ax' }));
+  svg.appendChild(AT.svg('text', { x: (pad.l + W - pad.r) / 2, y: H - 10, class: 'axl', 'text-anchor': 'middle' }, eName[cx] + ' axis of e'));
+  svg.appendChild(AT.svg('text', { x: 14, y: (pad.t + H - pad.b) / 2, class: 'axl', 'text-anchor': 'middle', transform: 'rotate(-90 14 ' + ((pad.t + H - pad.b) / 2) + ')' }, eName[cy] + ' axis of e'));
+  [xmin + 0.6, xmax - 0.6].forEach(v => { svg.appendChild(AT.svg('text', { x: X(v), y: H - pad.b + 16, class: 'axl', 'text-anchor': 'middle', 'font-family': 'var(--font-mono)' }, AT.fmt(v, 2))); });
+  [ymin + 0.5, ymax - 0.5].forEach(v => { svg.appendChild(AT.svg('text', { x: pad.l - 8, y: Y(v) + 4, class: 'axl', 'text-anchor': 'end', 'font-family': 'var(--font-mono)' }, AT.fmt(v, 2))); });
+  const p0 = pts[0];
+  const arrA = AT.svg('path', { class: 'arr', 'marker-end': 'url(#s10-arrow)' });
+  const arrB = AT.svg('path', { class: 'arr', 'marker-end': 'url(#s10-arrow)' });
+  svg.appendChild(arrA); svg.appendChild(arrB);
+  const dotA = AT.svg('circle', { r: 9, class: 'pt1' }), dotB = AT.svg('circle', { r: 9, class: 'pt1' });
+  const dot0 = AT.svg('circle', { cx: X(p0[0]), cy: Y(p0[1]), r: 8, class: 'pt0' });
+  svg.appendChild(dotA); svg.appendChild(dotB); svg.appendChild(dot0);
+  svg.appendChild(AT.svg('text', { x: X(p0[0]), y: Y(p0[1]) + 26, class: 'lb lb0', 'text-anchor': 'middle' }, 'generic BANK  e⁽⁰⁾'));
+  const labA = AT.svg('text', { class: 'lb' }, sets.a.res + "  e′"), labB = AT.svg('text', { class: 'lb' }, sets.b.res + "  e′");
+  const labDA = AT.svg('text', { class: 'lbd', 'text-anchor': 'middle' }, 'Δe (sentence A)'), labDB = AT.svg('text', { class: 'lbd', 'text-anchor': 'middle' }, 'Δe (sentence B)');
+  svg.appendChild(labA); svg.appendChild(labB); svg.appendChild(labDA); svg.appendChild(labDB);
+  plotHost.appendChild(svg);
+
+  let wasFull = true;
+  function place(t){
+    const full = t >= 0.999;
+    [[FA, arrA, dotA, labA, labDA, pa, sets.a], [FB, arrB, dotB, labB, labDB, pb, sets.b]].forEach(([F, arr, dot, lab, labD, p, set]) => {
+      const d = AT.scale(F.Delta[bi], t);
+      const e1 = AT.add(F.E[bi], d);
+      const x1 = X(e1[cx]), y1 = Y(e1[cy]), x0 = X(p0[0]), y0 = Y(p0[1]);
+      arr.setAttribute('d', 'M' + x0 + ' ' + y0 + ' L ' + x1 + ' ' + y1);
+      arr.style.opacity = t < 0.02 ? '0' : '1';
+      dot.setAttribute('cx', x1); dot.setAttribute('cy', y1);
+      const below = y1 >= y0;
+      const lx = Math.max(pad.l + 70, Math.min(W - pad.r - 70, x1));
+      lab.setAttribute('x', lx); lab.setAttribute('y', y1 + (below ? 28 : -18)); lab.setAttribute('text-anchor', 'middle');
+      const dx = x1 - x0, dy = y1 - y0, len = Math.hypot(dx, dy) || 1;
+      const nx0 = -dy / len, ny0 = dx / len, mx = (x0 + x1) / 2, my = (y0 + y1) / 2;
+      /* label the arrow on the side away from the start label (which sits under the blue dot) */
+      const sideDist = sg => Math.hypot(mx + sg * nx0 * 22 - x0, my + sg * ny0 * 22 - (y0 + 24));
+      const sg = sideDist(-1) > sideDist(1) ? -1 : 1, nx = sg * nx0, ny = sg * ny0;
+      const horiz = Math.abs(nx) > Math.abs(ny);
+      labD.setAttribute('text-anchor', horiz ? (nx > 0 ? 'start' : 'end') : 'middle');
+      labD.setAttribute('x', mx + nx * (horiz ? 12 : 22)); labD.setAttribute('y', my + ny * 22 + 4);
+      labD.style.opacity = t < 0.3 ? '0' : '1';
+      lab.textContent = set.res + (full ? '  e′' : '  e(t)');
+      p.bank.update([F.E[bi], d, e1]);
+      if (full !== wasFull) {
+        AT.tex(p.bank.rowLabelEls[1], full ? texD.slice(1, -1) : 't\\,\\vd{\\Delta e_{\\text{bank}}},\\ t = ' + t.toFixed(2));
+        AT.tex(p.bank.rowLabelEls[2], full ? texEp.slice(1, -1) : '\\ve{e_{\\text{bank}}}(t) = \\ve{e_{\\text{bank}}} + t\\,\\vd{\\Delta e_{\\text{bank}}}');
+      } else if (!full) {
+        AT.tex(p.bank.rowLabelEls[1], 't\\,\\vd{\\Delta e_{\\text{bank}}},\\ t = ' + t.toFixed(2));
+      }
+      const dr = ranked(F.Delta[bi], eName, 0);
+      p.readD.innerHTML = 'Reading ' + AT.texStr('\\vd{\\Delta e_{\\text{bank}}}') + ' in ' + set.name + ': the update lands on the ' + dr[0].n + ' axis (' + AT.fmt(dr[0].x, 2) + '), ' + readMix(F.Delta[bi], eName).replace(/^mostly [^,]+, /, '') + '.';
+      p.readEp.innerHTML = 'Reading ' + AT.texStr(full ? "\\vp{e_{\\text{bank}}'}" : '\\ve{e_{\\text{bank}}}(t)') + ' in ' + set.name + ': ' + readE(e1, 'bank');
+      AT.renderMath(p.readD); AT.renderMath(p.readEp);
+    });
+    wasFull = full;
+    S.querySelector('#s10-plot-cap').textContent = 'The ' + eName[cx] + ' and ' + eName[cy] + ' axes of the 4-D row (the other two axes are not drawn). Blue dot: shared start. Green arrows: ' + Math.round(t * 100) + '% of each sentence’s update. Ringed dots: ' + (full ? 'the contextual representations e′.' : 'the partial sums e(t) = e + tΔe.');
+  }
+  AT.ui.slider({ label: 'Fraction of Δe added', min: 0, max: 1, step: 0.05, value: 1, format: v => Math.round(v * 100) + '%', onInput: place, into: S.querySelector('#s10-slider') });
+  place(1);
+
+  function topToks(set, n){ const A = set.F.A[bi]; return AT.range(T).filter(j => j !== bi).sort((x, y) => A[y] - A[x]).slice(0, n).map(j => set.toks[j]); }
+  const ta = topToks(sets.a, 2), tb = topToks(sets.b, 2);
+  const da = ranked(FA.Delta[bi], eName, 0)[0], db = ranked(FB.Delta[bi], eName, 0)[0];
+  AT.ui.callout('$\\ve{e_{\\text{bank}}^{(0)}}$ starts out identical in both sentences. After one attention step the two $\\vp{e_{\\text{bank}}\'}$ differ, because different earlier tokens supplied the update $\\vd{\\Delta e_{\\text{bank}}}$: ' + AT.escape(ta[0] + ' and ' + ta[1]) + ' in A, which lands on the ' + AT.escape(da.n) + ' axis; ' + AT.escape(tb[0] + ' and ' + tb[1]) + ' in B, which lands on the ' + AT.escape(db.n) + ' axis.', { kind: 'key', into: S.querySelector('#s10-callout') });
+})();
+</script>
+</section>

@@ -1,0 +1,284 @@
+<section id="s18" class="sec" data-title="Pause and think" data-lit="">
+<style>
+#s18 .q-ctrls{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin:0 0 12px}
+#s18 .q-count{font-family:var(--font-mono);font-size:14px;color:var(--ink-2)}
+#s18 .reveal-body .row{margin-top:12px}
+#s18 .reveal-body p{margin:0 0 8px}
+#s18 .reveal-body p:last-child{margin-bottom:0}
+#s18 .reveal-body .dt-fig{margin:12px 0 4px}
+#s18 .ans{font-weight:600}
+#s18 .reveal-body .dt td.dt-num{min-width:3.4em;padding:8px 9px}
+#s18 .reveal-body .dt thead th{padding:8px 9px}
+#s18 .look{font-size:14px;color:var(--ink-2);margin:12px 0 0;max-width:68ch}
+#s18 .rd{font-size:14px;color:var(--ink-2);margin:8px 0 0;max-width:68ch;line-height:1.5}
+#s18 .rd .katex{font-size:1.02em}
+#s18 .arith-row{margin:12px 0 0}
+#s18 .arith{margin:10px 0 0;display:flex;flex-direction:column;gap:14px}
+#s18 .arith-cap{font-size:13.5px;color:var(--ink-3);margin:0 0 4px}
+</style>
+<header class="sec-head">
+  <span class="sec-num">18</span>
+  <div>
+    <p class="eyebrow">Why we are here: eight questions that catch the usual confusions. Answer each before you reveal it.</p>
+    <h2>Pause and think</h2>
+  </div>
+</header>
+
+<div class="companion" data-kicker="For self-study">
+  <p>By now you have seen every object on the page at least twice. This section exists because the confusions that survive a lecture are always the same ones: mixing up keys and values, taking the query for the new representation, or treating $\vd{\Delta e}$ as standard notation.</p>
+  <p>Say your answer out loud before you open each reveal. Every answer is backed by a small table from the toy model, with the coordinate names on the columns, so if you disagree you can check the arithmetic rather than the wording. The sentence to remember: queries, keys and values are working vectors; the only thing that persists is $\vp{e_i'} = \ve{e_i} + \vd{\Delta e_i}$.</p>
+</div>
+
+<div class="prose">
+  <p>Each answer below is checked against the toy model's numbers, so you can verify it instead of taking it on trust. Answer first, then open the reveal.</p>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Eight questions</h3>
+  <div class="q-ctrls">
+    <button type="button" class="btn" id="s18-open-all">Reveal all</button>
+    <button type="button" class="btn btn-quiet" id="s18-close-all">Hide all</button>
+    <span class="q-count" id="s18-count" aria-live="polite"></span>
+  </div>
+  <div id="s18-qs"></div>
+  <p class="look">Open one question at a time and read its table before the sentence under it.</p>
+</div>
+
+<div id="s18-standard"></div>
+
+<div class="card">
+  <h3 class="card-title">Notation recap, one token at a time</h3>
+  <div id="s18-notation"></div>
+  <p class="look">Check the shape column: only $\ve{e_i}$, $\vd{\Delta e_i}$ and $\vp{e_i'}$ live in the model space of width $d_{\text{model}}$.</p>
+</div>
+
+<div class="companion after">
+  <p>Keep in mind: $\vk{k_j}$ decides whether token $j$ is read and $\vv{v_j}$ decides what it sends; $\vq{q_i}$ is not a representation; the one standard operation is the residual addition $\vp{e_i'} = \ve{e_i} + \vd{\Delta e_i}$.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s18');
+  const toks = AT.sentences.river.slice(0, 7);   // The fisherman sat beside the river bank
+  const F = AT.forward(toks);
+  const B = 6;                                   // bank
+  const R = 5;                                   // river
+  const host = S.querySelector('#s18-qs');
+  const reveals = [];
+  const tokLabels = toks.map((t, j) => (j + 1) + ' ' + t);
+  const M = AT.model;
+
+  function vecRow(){ return AT.h('div', { class: 'row scroll-x' }); }
+  function add(q, body, render){
+    const d = AT.ui.reveal(q, body, { into: host, onToggle: updateCount });
+    if (render) { render(d.body); AT.renderMath(d.body); }
+    reveals.push(d);
+    return d;
+  }
+
+  /* ---- one-line readings, computed from the numbers and the axis names in AT.axes ---- */
+  function join(a, w){ return a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' ' + (w || 'and') + ' ' + a[a.length - 1]; }
+  function readVec(cls, vals){
+    const kind = AT.axisKind(cls, vals.length) || 'e';
+    const ax = AT.axisLabels(kind, vals.length) || vals.map((_, i) => String(i + 1));
+    const it = vals.map((v, i) => ({ v: +v || 0, i })).filter(x => x.v >= 0.2).sort((a, b) => b.v - a.v);
+    const top = it.length ? it[0].v : 0;
+    const strong = it.filter(x => x.v >= 0.6 * top), weak = it.filter(x => x.v >= 0.25 * top && x.v < 0.6 * top);
+    const used = strong.concat(weak).map(x => x.i);
+    return {
+      list: strong.concat(weak).map(x => ax[x.i] + ' ' + AT.fmt(x.v)).join(', '),
+      strong: strong.map(x => ax[x.i]), weak: weak.map(x => ax[x.i]),
+      rest: ax.filter((_, i) => used.indexOf(i) < 0),
+      tail: vals.some((v, i) => used.indexOf(i) < 0 && Math.abs(+v) >= 0.1)
+    };
+  }
+  function reading(sym, cls, vals, tok, extra){
+    const r = readVec(cls, vals);
+    const q = '“' + tok + '”';
+    let phrase;
+    if (!r.strong.length) phrase = 'nothing stands out';
+    else {
+      const mostly = r.strong.length >= 2 ? 'equal parts ' + join(r.strong) : (r.weak.length || r.tail ? 'mostly ' : 'all ') + r.strong[0];
+      const some = r.weak.length ? ' with some ' + join(r.weak) : '';
+      const asked = join(r.strong.concat(r.weak));
+      if (cls === 'e') phrase = q + ' is ' + mostly + some;
+      else if (cls === 'q') phrase = 'it asks for ' + asked + ' evidence' + (r.rest.length ? ', not for ' + join(r.rest, 'or') : '');
+      else if (cls === 'k') phrase = 'it offers ' + asked + ' evidence' + (r.rest.length ? ', nothing on ' + join(r.rest, 'or') : '');
+      else if (cls === 'v') phrase = 'if read, it sends ' + join(r.strong) + some;
+      else if (cls === 'm') phrase = 'the message is ' + mostly + some;
+      else if (cls === 'd') phrase = 'the update lands on the ' + join(r.strong) + (r.strong.length > 1 ? ' axes' : ' axis');
+      else if (cls === 'ep') { const g = readVec('d', extra.d); phrase = q + ' gained ' + (g.list || 'nothing') + ' on top of its ' + join(readVec('e', extra.e).strong); }
+      else phrase = mostly + some;
+    }
+    const p = AT.h('p', { class: 'rd', html: 'Reading ' + AT.texStr(sym) + ': ' + AT.escape(r.list || 'all entries below 0.2') + ', so ' + AT.escape(phrase) + (/\?$/.test(phrase) ? '' : '.') });
+    return p;
+  }
+
+  /* ---- a worksheet behind a small button, built on first click ---- */
+  function arith(into, build, label){
+    const txt = label || 'Show the arithmetic';
+    const btn = AT.h('button', { type: 'button', class: 'btn btn-quiet', 'aria-expanded': 'false' }, txt);
+    const box = AT.h('div', { class: 'arith', hidden: true });
+    let built = false;
+    btn.addEventListener('click', () => {
+      if (!built) { build(box); built = true; }
+      const open = box.hidden;
+      box.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open));
+      btn.textContent = open ? 'Hide the arithmetic' : txt;
+    });
+    into.appendChild(AT.h('div', { class: 'arith-row' }, btn));
+    into.appendChild(box);
+  }
+  function cap(box, html){ box.appendChild(AT.h('p', { class: 'arith-cap', html })); }
+
+  /* 1 */
+  add('Why do we need separate keys and values?',
+    '<p class="ans">The information used for matching and the information returned do different jobs.</p><p>$\\vk{k_j}$ decides <em>whether</em> token $j$ is retrieved; $\\vv{v_j}$ is <em>what</em> token $j$ sends once retrieved. Both come from the same $\\ve{e_j}$ through different matrices, so they hold different numbers and their coordinates mean different things. For “river”:</p>',
+    (el) => {
+      const r1 = vecRow();
+      AT.ui.vec(F.E[R], { cls: 'e', label: '\\ve{e_{' + (R+1) + '}}', dims: true, into: r1 });
+      el.appendChild(r1);
+      el.appendChild(reading('\\ve{e_{' + (R+1) + '}}', 'e', F.E[R], toks[R]));
+      const r2 = vecRow();
+      AT.ui.vec(F.K[R], { cls: 'k', label: '\\vk{k_{' + (R+1) + '}}', dims: true, into: r2 });
+      AT.ui.vec(F.V[R], { cls: 'v', label: '\\vv{v_{' + (R+1) + '}}', dims: true, into: r2 });
+      el.appendChild(r2);
+      el.appendChild(reading('\\vk{k_{' + (R+1) + '}}', 'k', F.K[R], toks[R]));
+      el.appendChild(reading('\\vv{v_{' + (R+1) + '}}', 'v', F.V[R], toks[R]));
+      const p = AT.h('p', { class: 'muted small', html: 'Same input row, two matrices ($\\vk{k_{' + (R+1) + '}} = \\ve{e_{' + (R+1) + '}}\\,W_K$, $\\vv{v_{' + (R+1) + '}} = \\ve{e_{' + (R+1) + '}}\\,W_V$), two rows on two different sets of axes: a key row reads as what the token offers, a value row as what it says.' });
+      p.style.marginTop = '10px'; el.appendChild(p);
+      arith(el, (box) => {
+        cap(box, 'Each output coordinate is one line: the $\\ve{e}$ row times one column of the matrix.');
+        AT.ui.matVecCalc(F.E[R], M.W_K, { from: 'e', to: 'qk', cls: 'k', xLabel: 'e · ' + (R+1) + ' ' + toks[R], outLabel: 'k · ' + (R+1) + ' ' + toks[R], into: box });
+        AT.ui.matVecCalc(F.E[R], M.W_V, { from: 'e', to: 'v', cls: 'v', xLabel: 'e · ' + (R+1) + ' ' + toks[R], outLabel: 'v · ' + (R+1) + ' ' + toks[R], into: box });
+        AT.renderMath(box);
+      });
+    });
+
+  /* 2 */
+  add('If every attention score were identical, what would attention resemble?',
+    '<p class="ans">Exactly uniform weights over the allowed positions: a mean, but of the value vectors.</p><p>Softmax of equal scores gives $1/i$ to each of the $i$ visible tokens, so the message is $m_i = \\frac{1}{i}\\sum_{j \\le i} \\vv{v_j}$: the mean of the $\\vv{v_j}$, not in general the mean of the $\\ve{e_j}$. $W_O$ and the residual addition still follow. For “bank”:</p>',
+    (el) => {
+      const uniform = AT.softmax(AT.zeros(B + 1));
+      AT.ui.table([uniform, F.A[B].slice(0, B + 1)], { cols: tokLabels, cornerLabel: 'scores / token', rowCls: 'a', heatCols: AT.range(B + 1),
+        rowLabels: ['equal scores', 'real scores'],
+        computed: [{ label: 'sum', fn: (row) => AT.sum(row), cls: 'neutral' }],
+        caption: 'Top row: equal scores give $\\va{\\alpha_{' + (B+1) + ',j}} = 1/' + (B+1) + '$ everywhere. Bottom row: the real weights of “bank”, far from uniform.', into: el });
+      const mix = AT.ui.mixTable(uniform, F.V.slice(0, B + 1), { rowLabels: tokLabels, cornerLabel: 'token',
+        footerLabel: '$m_{' + (B+1) + '} = \\tfrac{1}{' + (B+1) + '}\\sum_j \\vv{v_j}$',
+        caption: 'With equal weights the footer is the plain mean of the value rows $\\vv{v_j}$, not of the $\\ve{e_j}$ rows.', into: el });
+      el.appendChild(reading('m_{' + (B+1) + '}', 'm', mix.sum, toks[B]));
+    });
+
+  /* 3 */
+  add('Is $\\vq{q_i}$ the new representation of token $i$?',
+    '<p class="ans">No.</p><p>$\\vq{q_i}$ is a working projection used only to compute scores. It does not even live in the same space: $\\vq{q_i}$ has $d_k = ' + AT.d_k + '$ entries on the question axes, $\\ve{e_i}$ has $d_{\\text{model}} = ' + AT.d_model + '$ entries on the meaning axes. The new representation is $\\vp{e_i\'} = \\ve{e_i} + \\vd{\\Delta e_i}$.</p>',
+    (el) => {
+      const r = vecRow();
+      AT.ui.vec(F.Q[B], { cls: 'q', label: '\\vq{q_{' + (B+1) + '}}', dims: true, into: r });
+      AT.ui.vec(F.E[B], { cls: 'e', label: '\\ve{e_{' + (B+1) + '}}', dims: true, into: r });
+      AT.ui.vec(F.Enew[B], { cls: 'ep', label: '\\vp{e_{' + (B+1) + '}\'}', dims: true, into: r });
+      el.appendChild(r);
+      el.appendChild(reading('\\vq{q_{' + (B+1) + '}}', 'q', F.Q[B], toks[B]));
+      el.appendChild(reading('\\vp{e_{' + (B+1) + '}\'}', 'ep', F.Enew[B], toks[B], { e: F.E[B], d: F.Delta[B] }));
+      const p = AT.h('p', { class: 'muted small', html: 'Count the cells: ' + AT.d_k + ' against ' + AT.d_model + '. A ' + AT.d_k + '-vector cannot replace a ' + AT.d_model + '-vector, and its axes are questions, not meanings.' });
+      p.style.marginTop = '10px'; el.appendChild(p);
+      arith(el, (box) => {
+        cap(box, 'The query is a projection of $\\ve{e_{' + (B+1) + '}}$: one line per question axis.');
+        AT.ui.matVecCalc(F.E[B], M.W_Q, { from: 'e', to: 'qk', cls: 'q', xLabel: 'e · ' + (B+1) + ' ' + toks[B], outLabel: 'q · ' + (B+1) + ' ' + toks[B], into: box });
+        AT.renderMath(box);
+      });
+    });
+
+  /* 4 */
+  add('Are $\\vq{Q}$, $\\vk{K}$, $\\vv{V}$ stored permanently as token representations?',
+    '<p class="ans">No. They are projections used by the attention computation.</p><p>They are computed from the current $\\ve{e}$ and used to produce $\\vd{\\Delta e}$; they are not passed onward as the token representation (a generation cache may keep $\\vk{k}$ and $\\vv{v}$ for reuse). The next attention layer recomputes fresh ones from the updated $\\vp{e\'}$. What persists across the layer is $\\ve{e}$.</p>');
+
+  /* 5 */
+  add('What is $\\vd{\\Delta e_i}$?',
+    '<p class="ans">The context-dependent update generated by the attention sublayer.</p><p>$\\vd{\\Delta e_i} = m_i\\,W_O$ with $m_i = \\sum_{j \\le i} \\va{\\alpha_{ij}} \\vv{v_j}$. For “bank” in the short sentence, the weighted sum first, then the projection:</p>',
+    (el) => {
+      AT.ui.mixTable(F.A[B].slice(0, B + 1), F.V.slice(0, B + 1), { rowLabels: tokLabels, cornerLabel: 'token', weighted: true,
+        footerLabel: '$m_{' + (B+1) + '}$',
+        caption: 'Each cell is $\\va{\\alpha_{' + (B+1) + 'j}}\\,\\vv{v_j}$; the footer adds the rows into the message $m_{' + (B+1) + '}$.',
+        note: 'Hover or focus a footer cell to see the weighted sum of that column.', into: el });
+      const r = vecRow();
+      AT.ui.vec(F.Mmsg[B], { cls: 'm', label: 'm_{' + (B+1) + '}', dims: true, into: r });
+      AT.ui.op('→', { into: r });
+      AT.ui.vec(F.Delta[B], { cls: 'd', label: '\\vd{\\Delta e_{' + (B+1) + '}}', dims: true, into: r });
+      el.appendChild(r);
+      el.appendChild(reading('\\vd{\\Delta e_{' + (B+1) + '}} = m_{' + (B+1) + '}\\,W_O', 'd', F.Delta[B], toks[B]));
+      arith(el, (box) => {
+        cap(box, '$W_O$ carries each value axis back onto a meaning axis: one line per coordinate of $\\vd{\\Delta e_{' + (B+1) + '}}$.');
+        AT.ui.matVecCalc(F.Mmsg[B], M.W_O, { from: 'v', to: 'e', cls: 'd', xLabel: 'm · ' + (B+1) + ' ' + toks[B], outLabel: 'Δe · ' + (B+1) + ' ' + toks[B], into: box });
+        AT.renderMath(box);
+      });
+    });
+
+  /* 6 */
+  add('Is “delta embedding” standard terminology?',
+    '<p class="ans">No. It is a pedagogical interpretation of the standard residual update.</p><p>Papers and code call the same vector the <em>attention output</em> and add it through a <em>residual connection</em>. The name $\\vd{\\Delta e}$ is this page\'s way of saying what that vector does.</p>');
+
+  /* 7 */
+  add('What operation is standard?',
+    '<p class="ans">The residual addition:</p>$$\\vp{e_i^{\\text{new}}} = \\ve{e_i^{\\text{old}}} + \\text{AttentionOutput}_i$$<p>Same numbers, standard name. With this page\'s notation, $\\text{AttentionOutput}_i$ is $\\vd{\\Delta e_i}$. For “bank”, axis by axis:</p>',
+    (el) => {
+      const fig = AT.ui.table([F.E[B], F.Delta[B]], { cornerLabel: 'axis',
+        rowLabels: ['$\\ve{e_{' + (B+1) + '}^{\\text{old}}}$', '$\\text{AttentionOutput}_{' + (B+1) + '} = \\vd{\\Delta e_{' + (B+1) + '}}$'], rowCls: ['e', 'd'],
+        footer: { label: '$\\vp{e_{' + (B+1) + '}^{\\text{new}}}$', values: F.Enew[B], cls: 'ep' },
+        caption: 'The footer is the sum of the two rows above it, one axis at a time: the update is added, nothing is replaced.',
+        note: 'Hover or focus a footer cell to see the addition.', into: el });
+      fig.footer.cells.forEach((td, c) => fig.tipOn(td, AT.fmt(F.E[B][c]) + ' + ' + (F.Delta[B][c] < 0 ? '(' + AT.fmt(F.Delta[B][c]) + ')' : AT.fmt(F.Delta[B][c])) + ' = ' + AT.fmt(F.Enew[B][c])));
+    });
+
+  /* 8 */
+  add('Why can\'t “bank” attend to a later “river” in a causal language model?',
+    '<p class="ans">Because that would expose future information.</p><p>Token $i$ may read only from $j \\le i$. Training predicts the next token from what precedes it; if “bank” could read a later “river”, the answer would already be in the input and the model would learn nothing useful. Here “bank” (7) reads 1 to 7 only; 8 to 10 are masked:</p>',
+    (el) => {
+      const all = AT.sentences.river;
+      AT.ui.chips(all, { active: B, muted: AT.range(all.length).filter(j => j > B), into: el });
+      const FA = AT.forward(all);
+      const scoreRow = FA.S[B].map(x => (x === -Infinity ? '×' : AT.fmt(x, 2)));
+      const allLabels = all.map((t, j) => (j + 1) + ' ' + t);
+      const fig = AT.ui.table([scoreRow, FA.A[B]], { cols: allLabels, cornerLabel: 'bank (7) reads',
+        rowLabels: ['score $s_{' + (B+1) + 'j}$', 'weight $\\va{\\alpha_{' + (B+1) + 'j}}$'], rowCls: ['neutral', 'a'], heatCols: AT.range(all.length),
+        computed: [{ label: 'sum', fn: (row, i) => (i === 1 ? AT.sum(row) : ''), cls: 'neutral' }],
+        caption: 'Masked scores (×) are $-\\infty$ before the softmax, so the weights of positions 8 to 10 are exactly 0.00 and the first seven still sum to 1.',
+        note: 'Click or press Enter on a score cell to see the worksheet $\\vq{q_{' + (B+1) + '}} \\cdot \\vk{k_j} / \\sqrt{d_k}$ behind it.', into: el });
+      const pop = AT.ui.popover(fig, { label: 'Score arithmetic' });
+      const qName = (B + 1) + ' ' + all[B];
+      function openCalc(j, td){
+        const calc = AT.ui.dotCalc(FA.Q[B], FA.K[j], { axes: 'qk', qLabel: 'q · ' + qName, kLabel: 'k · ' + allLabels[j], scale: true, d_k: AT.d_k });
+        const extra = j > B
+          ? [AT.h('p', { class: 'calc-line calc-masked' }, 'masked: token ' + (j + 1) + ' comes after token ' + (B + 1) + ', so this score is replaced by −∞ and its weight is 0')]
+          : [AT.h('p', { class: 'calc-line obj-a' }, 'after the softmax over the row: weight ', AT.h('span', { class: 'calc-r' }, AT.fmt(FA.A[B][j])))];
+        pop.show(td, 'score of key ' + allLabels[j] + ' for query ' + qName, [calc].concat(extra));
+      }
+      fig.cells[0].forEach((td, j) => {
+        td.tabIndex = 0; td.classList.add('has-calc');
+        td.addEventListener('click', () => openCalc(j, td));
+        td.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); openCalc(j, td); } });
+      });
+    });
+
+  /* controls */
+  const count = S.querySelector('#s18-count');
+  function updateCount(){
+    const n = reveals.filter(d => d.open).length;
+    count.textContent = n + ' of ' + reveals.length + ' revealed';
+  }
+  S.querySelector('#s18-open-all').addEventListener('click', () => { reveals.forEach(d => { d.open = true; }); updateCount(); });
+  S.querySelector('#s18-close-all').addEventListener('click', () => { reveals.forEach(d => { d.open = false; }); updateCount(); });
+  updateCount();
+
+  /* the standard operation + the Δ-notation disclaimer */
+  const std = S.querySelector('#s18-standard');
+  AT.ui.callout('The standard operation, in standard words: $\\vp{e_i^{\\text{new}}} = \\ve{e_i^{\\text{old}}} + \\text{AttentionOutput}_i$. Everything attention computes ends in this one addition.', { kind: 'key', into: std });
+  AT.ui.callout('The notation $\\vd{\\Delta e}$ is a pedagogical convention used on this page. It is not standard Transformer notation. The addition itself is standard: it is the residual connection around the attention sublayer.', { kind: 'note', into: std });
+
+  /* notation recap */
+  AT.ui.notationCard({ groups: ['token'], into: S.querySelector('#s18-notation') });
+})();
+</script>
+</section>

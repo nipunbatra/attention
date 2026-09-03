@@ -1,0 +1,235 @@
+<section id="s01" class="sec" data-title="Predict the next token" data-lit="">
+<style>
+#s01 .title-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 18px;margin-bottom:8px}
+#s01 .title-row .card-title{margin:0}
+#s01 .ctx-row{margin:0}
+#s01 .ctx-lab{font-size:14px;font-weight:600;color:var(--ink-2);margin-right:4px}
+#s01 .btn[aria-pressed=true]{background:var(--ink);color:var(--card)}
+#s01 .pipe{display:grid;grid-template-columns:auto minmax(0,1fr);gap:20px 28px;align-items:center;margin-top:14px}
+#s01 .blackbox{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:150px;padding:16px 18px;border:2px solid var(--ink);border-radius:var(--radius);background:var(--ink);color:var(--card);text-align:center}
+#s01 .blackbox b{font-size:17px;letter-spacing:.01em}
+#s01 .blackbox span{font-size:12.5px;opacity:.75}
+#s01 .arrow-lab{font-size:13px;color:var(--ink-3);margin:2px 0 6px}
+#s01 .look{font-size:14px;color:var(--ink-2);margin:14px 0 0}
+#s01 .read-line{font-size:15px;color:var(--ink);margin:12px 0 0;padding:8px 12px;border-left:3px solid var(--c-e);background:var(--t-e);border-radius:0 var(--radius-s) var(--radius-s) 0}
+#s01 .emb-tab{margin-top:12px}
+@media (max-width:640px){#s01 .pipe{grid-template-columns:1fr}}
+body.present #s01 .ctx-lab,body.present #s01 .arrow-lab,body.present #s01 .look{font-size:.7em}
+body.present #s01 .read-line{font-size:.78em}
+body.present #s01 .blackbox{padding:.6em .9em;min-width:7em}
+body.present #s01 .blackbox b{font-size:.85em}
+body.present #s01 .blackbox span{font-size:.62em}
+body.present #s01 .pipe{gap:.6em 1.4em;margin-top:.5em}
+body.present #s01 .emb-tab{margin-top:.4em}
+body.present #s01 .chip{font-size:.76em}
+body.present #s01 .frame.is-live{padding-bottom:.7em}
+body.present #s01 .frame{font-size:.92em}
+body.present #s01 .title-row{margin-bottom:.3em}
+body.present #s01 .bars{gap:.14em .5em;margin:.2em 0}
+body.present #s01 .bars .bt{height:.85em}
+body.present #s01 .prose p{margin-bottom:.35em}
+body.present #s01 .katex-display{margin:.3em 0}
+body.present #s01 .callout{margin:.45em 0;padding:.55em .9em}
+body.present #s01 .card{margin-bottom:.5em}
+body.present #s01 .muted.small{font-size:.68em}
+body.present #s01 .emb-tab .dt-note,body.present #s01 #s01-emb-cap{display:none}
+body.present #s01 .callout-key{font-size:.98em}
+body.present #s01 .callout-note{font-size:.92em}
+</style>
+<header class="sec-head">
+  <span class="sec-num">01</span>
+  <div>
+    <p class="eyebrow">Why we are here: everything on this page exists to make one guess better, the next word.</p>
+    <h2>Predict the next token</h2>
+  </div>
+</header>
+
+<div class="companion" data-kicker="For self-study">
+  <p>Everything on this page serves one task: guess the next word. A language model does nothing else, so every mechanism added later has to pay for itself here. Switch between the two contexts in the first widget and watch the bars move. The last three words are identical in both sentences, so whatever the model does inside, it has to carry <em>river</em> or <em>cheque</em> all the way to the blank. The second widget shows the raw material it starts from: a token is a row of four numbers, one per named coordinate (<span id="s01-axes-names"></span>), plus a small position offset. The names are illustrative, and the toy was written by hand so that the numbers agree with them. The sentence to remember: a good prediction needs a good representation of the relevant context.</p>
+</div>
+
+<div class="frame" data-title="One blank" id="s01-frame1" data-autobuild="off">
+  <script type="text/x-notes">
+    What could come next, and why do you think so?
+    Collect answers from the room before revealing the bars. Then switch the context and ask again. Do not say attention yet: the point of the frame is that the same three final words get different answers.
+
+    Timing: about three minutes.
+  </script>
+  <div class="prose">
+    <p>The sentence below ends in a blank. Some model proposes fillers for it. For now the model is a black box.</p>
+  </div>
+
+  <div class="card">
+    <div class="title-row">
+      <h3 class="card-title">Fill the blank, then switch the context</h3>
+      <div class="btn-row ctx-row" id="s01-ctx" role="group" aria-label="Choose the context sentence" data-build="2">
+        <span class="ctx-lab">Context:</span>
+        <button type="button" class="btn" id="s01-ctx-a" aria-pressed="true">A: The fisherman … river bank</button>
+        <button type="button" class="btn" id="s01-ctx-b" aria-pressed="false">B: She deposited … the bank</button>
+      </div>
+    </div>
+    <div id="s01-chips"></div>
+    <div class="pipe" data-build="1">
+      <div>
+        <p class="arrow-lab">all tokens so far ↓</p>
+        <div class="blackbox" aria-label="some model, a black box for now"><b>some model</b><span>a black box, for now</span></div>
+        <p class="arrow-lab">↓ next-token probabilities</p>
+      </div>
+      <div>
+        <div id="s01-bars"></div>
+      </div>
+    </div>
+    <p class="look" id="s01-bars-note" data-build="1"></p>
+  </div>
+
+  <div class="prose" data-build="3">
+    <p>A language model reads the tokens so far and assigns a probability to every possible next token:
+    $$p(x_{t+1}\mid x_1,\ldots,x_t)$$</p>
+  </div>
+
+  <div class="callout callout-key" data-build="4">To predict the next token well, the model needs a useful representation of everything relevant in the preceding context.</div>
+
+</div>
+
+<div class="frame" data-title="Where a token starts" id="s01-frame2" data-autobuild="off">
+  <script type="text/x-notes">
+    What does position add, and why is it small?
+    Click two or three tokens and read the sum row aloud. Point at the first row: it is the same wherever the word appears. Then reveal the equation and the note.
+  </script>
+  <div class="prose">
+    <p>The last three words, <em>and watched the</em>, are the same in both contexts, yet the answers differ. Whatever the model does inside, it must carry <em>river</em> or <em>cheque</em> forward to the blank. Where does it start?</p>
+  </div>
+  <div class="card">
+    <h3 class="card-title">Where every token starts: $\ve{e_i^{(0)}}$, coordinate by coordinate</h3>
+    <p class="muted small" style="margin:0 0 6px">Click a token in context A. Each column is one named coordinate (the names are illustrative; the numbers were chosen to agree with them); the last row is the sum of the two above it.</p>
+    <div id="s01-emb-chips"></div>
+    <div class="emb-tab" id="s01-emb-tab"></div>
+    <p class="read-line" id="s01-emb-reading"></p>
+    <p class="look" id="s01-emb-cap"></p>
+  </div>
+
+  <div class="prose" data-build="1">
+    <p>Token $i$ enters as a row of $d_{\text{model}} = 4$ numbers, the token embedding plus a small position offset; the superscript $(0)$ means nothing has been updated yet:
+    $$\ve{e_i^{(0)}} = \text{tok}_i + \text{pos}_i$$</p>
+  </div>
+
+  <div class="callout callout-note" data-build="2">Every token gets such a row: the same token embedding wherever the word appears, plus a small offset set only by the position. In this toy every coordinate has a name, so a row can be read aloud.</div>
+</div>
+
+<div class="companion after">
+  <p>Keep in mind: the model is judged only by the probability it puts on the right next word, and the only thing it can work with is a row of numbers per token.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s01');
+  const SA = AT.sentences.river, SB = AT.sentences.cheque;
+  const FA = AT.forward(SA), FB = AT.forward(SB);
+  const T = SA.length, D = AT.d_model;
+  let ctx = 'A';
+
+  /* the axis names, read from the toy, never retyped */
+  S.querySelector('#s01-axes-names').textContent = AT.axes.e.join(', ');
+
+  /* --- sentence chips with the blank slot --- */
+  const chipHost = S.querySelector('#s01-chips');
+  function drawChips(toks){
+    AT.clear(chipHost);
+    AT.ui.chips(toks, { size: 'lg', slot: '___', into: chipHost });
+  }
+
+  /* --- probability bars: top 6 + "other" --- */
+  function items(probRow){
+    const top = AT.topk(probRow, 6);
+    const rest = 1 - top.reduce((s, x) => s + x.p, 0);
+    return top.map(x => ({ label: x.tok, p: x.p })).concat([{ label: 'other ×' + (probRow.length - top.length), p: Math.max(0, rest) }]);
+  }
+  const barsHost = S.querySelector('#s01-bars');
+  const note = S.querySelector('#s01-bars-note');
+
+  function paint(){
+    const toks = ctx === 'A' ? SA : SB;
+    const F = ctx === 'A' ? FA : FB;
+    const p = F.probs[T-1];
+    drawChips(toks);
+    const best = AT.topk(p, 1)[0];
+    AT.clear(barsHost);
+    AT.ui.bars(items(p), { cls: 'neutral', size: 'lg', max: 1, decimals: 3, sorted: false, highlight: best.tok, into: barsHost });
+    note.innerHTML = 'Look at the tallest bar. Context ' + ctx + ' puts $p = ' + AT.fmt(best.p, 3) + '$ on <strong>' + AT.escape(best.tok) + '</strong>; the other context moves it. Full bar = probability 1.';
+    AT.renderMath(note);
+    S.querySelector('#s01-ctx-a').setAttribute('aria-pressed', ctx === 'A' ? 'true' : 'false');
+    S.querySelector('#s01-ctx-b').setAttribute('aria-pressed', ctx === 'B' ? 'true' : 'false');
+  }
+  S.querySelector('#s01-ctx-a').addEventListener('click', () => { ctx = 'A'; paint(); });
+  S.querySelector('#s01-ctx-b').addEventListener('click', () => { ctx = 'B'; paint(); });
+  paint();
+  /* present mode: the frame starts in context A every time it is entered */
+  if (AT.present && AT.present.on) AT.present.on('frame', (st) => { if (st.frame && st.frame.id === 's01' && st.frame.index === 0 && ctx !== 'A') { ctx = 'A'; paint(); } });
+
+  /* --- reading a row of e: the numbers, then what they say (axis names from AT.axes, verdict from the numbers) --- */
+  function fmtN(x){ const r = Math.round(x * 10) / 10; return Math.abs(r - x) < 1e-9 ? AT.fmt(x, 1) : AT.fmt(x, 2); }
+  function readE(v, tok, pos){
+    const ax = AT.axes.e;
+    const list = ax.map((n, j) => ({ n, x: v[j] })).filter(p => Math.abs(p.x) >= 0.05).map(p => p.n + ' ' + fmtN(p.x)).join(', ');
+    const at = (name) => { const j = ax.indexOf(name); return j < 0 ? 0 : v[j]; };
+    const w = at('water'), f = at('finance'), pe = at('person'), g = at('glue');
+    const scene = Math.max(w, f), who = pe >= 0.4 * scene && pe >= 0.3;
+    let so;
+    if (w >= 0.3 && f >= 0.3 && Math.abs(w - f) <= 0.2) so = 'half river, half money' + (g >= 0.3 ? ', with some glue' : '');
+    else if (g >= scene && g >= pe) so = 'a glue word';
+    else if (scene < 0.3) so = 'a person';
+    else so = (who ? 'a person in a ' : 'a ') + (w >= f ? 'water' : 'finance') + ' scene';
+    let posNote = '';
+    if (pos) {
+      const tokRow = AT.model.tok_emb[AT.lower(tok)] || [];
+      const only = ax.map((n, j) => ({ n, j })).filter(p => Math.abs(+pos[p.j] || 0) >= 0.05 && Math.abs(+tokRow[p.j] || 0) < 1e-9);
+      if (only.length) posNote = '; ' + only.map(p => p.n + ' ' + fmtN(v[p.j])).join(' and ') + ' is only the position offset';
+    }
+    return list + ', so “' + AT.escape(tok) + '” is ' + so + posNote + '.';
+  }
+
+  /* --- starting representation as a three-row table: tok + pos = e^(0) --- */
+  const E0 = AT.embed(SA);
+  const embCap = S.querySelector('#s01-emb-cap');
+  const embReading = S.querySelector('#s01-emb-reading');
+  let ei = T - 1;
+  function rowsFor(i){ return [AT.model.tok_emb[AT.lower(SA[i])], AT.model.pos_emb[i]]; }
+  function labelsFor(i){
+    const n = i + 1, tok = AT.escape(SA[i]);
+    return {
+      tok: '$\\text{tok}_{' + n + '}$ “' + tok + '”',
+      pos: '$\\text{pos}_{' + n + '}$',
+      sum: '$\\ve{e_{' + n + '}^{(0)}}$'
+    };
+  }
+  const L0 = labelsFor(ei);
+  const fig = AT.ui.table(rowsFor(ei), {
+    axes: 'e', cornerLabel: 'coordinate',
+    rowLabels: [L0.tok, L0.pos], rowCls: ['neutral', 'neutral'],
+    footer: { label: L0.sum, values: E0[ei], cls: 'e' },
+    note: 'Hover or focus a cell of the sum row to see the addition.',
+    into: S.querySelector('#s01-emb-tab')
+  });
+  fig.footer.cells.forEach((td, j) => fig.tipOn(td, () => {
+    const r = rowsFor(ei);
+    return AT.fmt(r[0][j]) + ' + ' + AT.fmt(r[1][j]) + ' = ' + AT.fmt(E0[ei][j]);
+  }));
+  function setLabel(el, html){ el.innerHTML = html; AT.renderMath(el); }
+  function drawEmb(){
+    const L = labelsFor(ei);
+    fig.update(rowsFor(ei));
+    fig.setFooter(E0[ei]);
+    setLabel(fig.rowLabelEls[0], L.tok);
+    setLabel(fig.rowLabelEls[1], L.pos);
+    setLabel(fig.footer.label, L.sum);
+    const tok = AT.escape(SA[ei]);
+    embReading.innerHTML = 'Reading $\\ve{e_{' + (ei + 1) + '}^{(0)}}$: ' + readE(E0[ei], SA[ei], AT.model.pos_emb[ei]);
+    AT.renderMath(embReading);
+    embCap.innerHTML = 'Look at the first row, the token embedding: it is the same wherever “' + tok + '” appears. The second row is the small position offset for position ' + (ei + 1) + '. Their sum is the starting representation $\\ve{e_{' + (ei + 1) + '}^{(0)}}$.';
+    AT.renderMath(embCap);
+  }
+  const embChips = AT.ui.chips(SA, { active: ei, into: S.querySelector('#s01-emb-chips'), onClick: (i) => { ei = i; embChips.setActive(i); drawEmb(); } });
+  drawEmb();
+})();
+</script>
+</section>

@@ -1,0 +1,246 @@
+<section id="s04" class="sec" data-title="Weighted pooling: where should weights come from?" data-lit="a">
+<style>
+#s04 .wrows{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:2px 32px;margin:12px 0 2px}
+#s04 .wrow{display:grid;grid-template-columns:minmax(120px,auto) minmax(80px,1fr) 3em;gap:10px;align-items:center;padding:3px 0}
+#s04 .wrow label{display:inline-flex}
+#s04 .wrow input[type=range]{width:100%;min-width:0;accent-color:var(--ink);height:28px;margin:0;cursor:pointer}
+#s04 .wrow output{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:.82em;text-align:right;color:var(--ink-2)}
+#s04 .look{font-size:.82em;color:var(--ink-2);margin:8px 0 0;max-width:84ch}
+#s04 .eqline{margin:12px 0 4px;min-height:1.6em}
+#s04 .qbig{font-size:1.25em;font-weight:700;margin:0 0 6px}
+#s04 .reveal{margin:10px 0 0}
+#s04 .reveal-body{padding-left:18px}
+#s04 .calc-rl.calc-outlab{color:var(--ink-2)}
+/* present mode: controls on the left, the held table on the right, so a frame fits 1280x720 */
+body.present #s04 .s04-two{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:0 1.2em;align-items:start}
+body.present #s04 .s04-two>*{grid-column:1;min-width:0}
+body.present #s04 .s04-two>.card-title{grid-column:1/-1}
+body.present #s04 .s04-two>.s04-tab{grid-column:2;grid-row:2/span 6}
+body.present #s04 .s04-two .dt-fig{margin:0}
+body.present #s04 .dt td,body.present #s04 .dt th{padding:.22em .6em}
+body.present #s04 .dt-note{display:none}
+body.present #s04 .prose .katex-display{margin:.25em 0}
+body.present #s04 .prose .katex-display>.katex{font-size:1.1em}
+body.present #s04 .chips .chip,body.present #s04 .wrow .chip{font-size:.78em}
+body.present #s04 .reveal{font-size:.85em;margin:.4em 0 0}
+body.present #s04 .wrows{grid-template-columns:repeat(auto-fit,minmax(12em,1fr));gap:0 1em;margin:.3em 0 0}
+body.present #s04 .wrow{padding:0;grid-template-columns:auto minmax(3em,1fr) 2.2em;gap:.4em}
+body.present #s04 .wrow input[type=range]{height:1.2em}
+</style>
+<header class="sec-head">
+  <span class="sec-num">04</span>
+  <div>
+    <p class="eyebrow">Why we are here: a fixed window mixes its slots the same way whatever words fill them, and it cuts off early tokens. So <em>pool</em> all earlier tokens instead.</p>
+    <h2>Weighted pooling: where should weights come from?</h2>
+  </div>
+</header>
+
+<div class="companion" data-kicker="For self-study">
+  <p>Attention is a way to choose weights, so this section first shows what weights do. A pooled vector $c_i$ is a weighted sum of earlier representations, and the spreadsheets below make that sum visible: one row per token, one column per coordinate, a weight column on the left and the sum in the footer. Drag the position slider and watch the mean give every included row the same weight. Then move the raw-weight sliders for <em>bank</em> and watch the footer drift towards whichever row you favour. The sentence to remember: the weights decide what a token collects, and someone has to choose them.</p>
+</div>
+
+<div class="frame" data-title="Average every earlier token">
+  <script type="text/x-notes">
+Why not just average?
+Point at the weight column first: every included row gets the same 1/i, so river and the count the same for bank. Then reveal the pooled row. Drag the position slider back to 3 and forward to 7: the footer moves, but nothing in the table chooses.
+
+Timing: three minutes.
+  </script>
+  <div class="prose">
+    <p>Drop the window. Token $i$ can read <em>every</em> earlier representation $\ve{e_j}$, $j \le i$. The simplest way to combine them is an average:</p>
+    $$c_i = \frac{1}{i}\sum_{j \le i} \ve{e_j}$$
+    <p>Why not simply average all previous token representations? Try it on the short sequence.</p>
+  </div>
+
+  <div class="card s04-two">
+    <h3 class="card-title">Mean pooling: every earlier token gets the same weight $1/i$</h3>
+    <div id="s04-chips"></div>
+    <div id="s04-islider"></div>
+    <div class="eqline no-math" id="s04-mean-eq" data-build="1"></div>
+    <div id="s04-mean-tab" class="s04-tab"></div>
+    <p class="look" id="s04-e-read" data-build="1"></p>
+    <div id="s04-mean-arith" data-build="1"></div>
+  </div>
+</div>
+
+<div class="frame" data-title="Choose the weights yourself">
+  <script type="text/x-notes">
+If you could set the weights by hand for bank, what would you choose and why?
+The table starts with equal weights, so it is the mean again. Reveal the sliders and press "Focus on river": the footer drifts towards row 6. Try "Only bank itself" too: the footer is just row 7.
+
+Timing: three minutes.
+  </script>
+  <div class="prose">
+    <p>Averaging treats every token equally. For <em>bank</em>, the word <em>river</em> matters far more than <em>the</em>. So let each token choose its weights:</p>
+    $$c_i = \sum_{j \le i} \va{\alpha_{ij}}\, \ve{e_j}, \qquad \sum_{j} \va{\alpha_{ij}} = 1$$
+    <p>This is <strong>weighted pooling</strong>. The weight $\va{\alpha_{ij}}$ says how much token $i$ takes from token $j$. Set the weights yourself.</p>
+  </div>
+
+  <div class="card s04-two">
+    <h3 class="card-title">Weighted pooling for token 7 (<em>bank</em>): choose a raw weight per token; they are normalised to sum to 1</h3>
+    <div class="btn-row" id="s04-presets" data-build="1">
+      <button type="button" class="btn" data-preset="equal">Equal weights</button>
+      <button type="button" class="btn" data-preset="river">Focus on river</button>
+      <button type="button" class="btn" data-preset="fisherman">Focus on fisherman</button>
+      <button type="button" class="btn btn-quiet" data-preset="self">Only bank itself</button>
+    </div>
+    <div class="wrows" id="s04-wrows" data-build="1"></div>
+    <p class="look" id="s04-w-note" data-build="2"></p>
+    <div id="s04-w-tab" class="s04-tab"></div>
+    <div id="s04-w-arith" data-build="2"></div>
+  </div>
+
+</div>
+
+<div class="frame" data-title="Where should the weights come from?">
+  <script type="text/x-notes">
+Who chose those weights, and what did they know that the model does not?
+Let the room answer before the question callout: you chose them by hand because you know bank wants river. Then reveal the answer and read it slowly: the weights must come from the representations themselves. Do not say attention until the next section.
+
+Timing: two minutes.
+  </script>
+  <div class="prose">
+    <p><em>You</em> chose those weights by hand, because you know that <em>bank</em> wants <em>river</em>. A model cannot ask you, and a different token would want a different set of weights.</p>
+  </div>
+
+  <div class="callout callout-key" data-build="1">
+    <p class="qbig">Where should the weights $\va{\alpha_{ij}}$ come from?</p>
+    <p data-build="2">They should depend on <strong>what token $i$ currently needs</strong> and <strong>what information token $j$ contains</strong>.
+    Both are functions of the representations themselves, $\ve{e_i}$ and $\ve{e_j}$. Attention is a way to build that function.</p>
+  </div>
+</div>
+
+<div class="companion after">
+  <p>Keep in mind: the pooled vector is only as good as its weights, and the weights we want depend on the token that is asking and on the tokens that could answer. The next section hands that job to a search engine.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s04');
+  const toks = AT.sentences.river.slice(0, 7);
+  const E = AT.embed(toks);
+  const T = toks.length;
+  const D = AT.d_model;
+  const labels = toks.map((t, j) => (j + 1) + ' ' + t);
+  const AX = AT.axisLabels('e', D) || AT.range(D).map(j => String(j + 1));
+  /* one-line reading of an e row: the entries that matter, in axis order, then what they add up to */
+  function readE(v){
+    const parts = [];
+    v.forEach((x, c) => { if (Math.abs(x) >= 0.25) parts.push(AX[c] + ' ' + AT.fmt(x, 2)); });
+    const w = v[0], f = v[1], pn = v[2], g = v[3];
+    let gist;
+    if (w >= 0.5 && f >= 0.5 && Math.abs(w - f) < 0.15) gist = 'half river, half money';
+    else if (w >= f && w >= pn && w >= g) gist = 'mostly a water scene';
+    else if (f >= w && f >= pn && f >= g) gist = 'mostly finance';
+    else if (pn >= w && pn >= f && pn >= g) gist = 'mostly a person';
+    else gist = 'mostly a glue word';
+    return { list: parts.join(', '), gist: gist };
+  }
+  const chipMk = (j) => AT.h('span', { class: 'chip' }, AT.h('span', { class: 'chip-i' }, String(j + 1)), AT.h('span', { class: 'chip-t' }, toks[j]));
+  const sub = (i) => String(i).replace(/\d/g, d => '₀₁₂₃₄₅₆₇₈₉'[+d]);
+  const fac = (x) => { const s = AT.fmt(x, 2); return s.charAt(0) === '−' ? '(' + s + ')' : s; };
+  /* the terms of one footer cell: w_1×e_1c + w_2×e_2c + … = sum (rows with no weight are skipped) */
+  function termLine(w, c){
+    const terms = [], used = [];
+    w.forEach((a, j) => { if (!(a > 0)) return; terms.push(fac(a) + '×' + fac(E[j][c])); used.push(a * E[j][c]); });
+    return (terms.length ? terms.join(' + ') : '0') + ' = ' + AT.fmt(AT.sum(used), 2);
+  }
+  function pooled(w){
+    let c = AT.zeros(D);
+    w.forEach((a, j) => { if (a > 0) c = AT.add(c, AT.scale(E[j], a)); });
+    return c;
+  }
+  /* the footer row of a table is its own build (present mode): mark the tr that holds the footer cells */
+  function markFooter(fig, n){
+    const tr = fig.footer && fig.footer.cells[0] && fig.footer.cells[0].closest('tr');
+    if (tr) tr.setAttribute('data-build', String(n));
+  }
+
+  /* ---- frame 1, mean pooling: weight column 1/i, rows after i greyed out ---- */
+  const chips = AT.ui.chips(toks, { active: T - 1, into: S.querySelector('#s04-chips') });
+  const meanW = toks.map(() => NaN);
+  const meanTab = AT.ui.table(E, { rowLabels: labels, rowCls: 'e', cornerLabel: 'token', decimals: 2,
+    lead: [{ label: 'weight $1/i$', cls: 'a', heat: true, values: meanW }],
+    footer: { label: '$c_7$', values: AT.zeros(D), cls: 'neutral', lead: [1] },
+    caption: 'Look at the weight column: every included row gets the same $1/i$, so <em>river</em> and <em>the</em> count the same. The footer $c_i$ adds the weighted rows.',
+    note: 'Hover or focus a footer cell to see the terms of its sum.', into: S.querySelector('#s04-mean-tab') });
+  markFooter(meanTab, 1);
+  meanTab.footer.cells.forEach((td, c) => meanTab.tipOn(td, () => termLine(meanW, c)));
+  (function(){
+    const b = readE(E[6]), r = readE(E[5]), t = readE(E[4]);
+    S.querySelector('#s04-e-read').innerHTML = 'Reading ' + AT.texStr('\\ve{e_7}') + ' (bank): ' + AT.escape(b.list) + ', so bank is ' + b.gist + '. Row 6 (river) is ' + r.gist + ' (' + AT.escape(r.list) + '); row 5 (the) is ' + t.gist + ' (' + AT.escape(t.list) + ').';
+  })();
+  /* worksheet: the footer, one line per coordinate (α times each row, added up) */
+  const meanCalc = AT.ui.matVecCalc(meanW.map(a => a > 0 ? a : 0), E, { from: labels, to: 'e', cls: 'e', fromCls: 'a', xLabel: 'weight', outLabel: 'c' + sub(T), wDecimals: 2 });
+  AT.ui.reveal('Show the arithmetic: one line per coordinate of $c_i$', meanCalc, { hint: 'Worksheet', into: S.querySelector('#s04-mean-arith') });
+  const meanEq = S.querySelector('#s04-mean-eq');
+  function drawMean(i){
+    toks.forEach((t, j) => { meanW[j] = j < i ? 1 / i : NaN; });
+    chips.setActive(i - 1);
+    chips.setMuted(AT.range(T).filter(j => j >= i));
+    meanTab.update(E);
+    meanTab.setDim(AT.range(T).filter(j => j >= i));
+    meanTab.setFooter(pooled(meanW.map(a => a > 0 ? a : 0)), [AT.sum(meanW.filter(a => a > 0))]);
+    AT.tex(meanTab.footer.label, 'c_{' + i + '}');
+    meanCalc.update(meanW.map(a => a > 0 ? a : 0), { outLabel: 'c' + sub(i) });
+    AT.tex(meanEq, 'c_{' + i + '} = \\tfrac{1}{' + i + '}\\left(' + AT.range(i).map(j => '\\ve{e_{' + (j + 1) + '}}').join(' + ') + '\\right)');
+  }
+  AT.ui.slider({ label: 'Pool up to position i', min: 1, max: T, step: 1, value: T, format: v => v + ' (' + toks[v - 1] + ')', onInput: drawMean, into: S.querySelector('#s04-islider') });
+  drawMean(T);
+
+  /* ---- frame 2, weighted pooling (i = 7, bank): sliders set raw weights, the table shows the normalised α ---- */
+  const W = toks.map(() => 1);
+  const alpha = toks.map(() => 1 / T);
+  const rowsHost = S.querySelector('#s04-wrows');
+  const inputs = toks.map((t, j) => {
+    const id = 's04-w' + j;
+    const inp = AT.h('input', { type: 'range', id: id, min: 0, max: 10, step: 0.1, value: 1, 'aria-label': 'raw weight for token ' + (j + 1) + ' (' + t + ')' });
+    const out = AT.h('output', { for: id }, '1.0');
+    const lab = AT.h('label', { for: id }, chipMk(j));
+    rowsHost.appendChild(AT.h('div', { class: 'wrow' }, lab, inp, out));
+    inp.addEventListener('input', () => { W[j] = +inp.value; drawW(); });
+    return { inp: inp, out: out };
+  });
+  const wTab = AT.ui.table(E, { rowLabels: labels, rowCls: 'e', cornerLabel: 'token', decimals: 2,
+    lead: [{ label: '$\\va{\\alpha_{7j}}$', cls: 'a', heat: true, values: alpha }],
+    footer: { label: '$c_7$', values: AT.zeros(D), cls: 'neutral', lead: [1] },
+    caption: 'Look at the $\\va{\\alpha_{7j}}$ column: the darker the cell, the more of that row ends up in the footer $c_7 = \\sum_j \\va{\\alpha_{7j}}\\,\\ve{e_j}$. The row with the largest weight is outlined.',
+    note: 'Hover or focus a footer cell to see the terms of its sum.', into: S.querySelector('#s04-w-tab') });
+  markFooter(wTab, 2);
+  wTab.footer.cells.forEach((td, c) => wTab.tipOn(td, () => termLine(alpha, c)));
+  const wCalc = AT.ui.matVecCalc(alpha, E, { from: labels, to: 'e', cls: 'e', fromCls: 'a', xLabel: 'α', outLabel: 'c' + sub(T), wDecimals: 2 });
+  AT.ui.reveal('Show the arithmetic: one line per coordinate of $c_7$', wCalc, { hint: 'Worksheet', into: S.querySelector('#s04-w-arith') });
+  const noteEl = S.querySelector('#s04-w-note');
+  function drawW(){
+    const tot = AT.sum(W);
+    W.forEach((w, j) => { alpha[j] = tot > 0 ? w / tot : 1 / T; });
+    inputs.forEach((o, j) => { o.out.textContent = AT.fmt(W[j], 1); });
+    wTab.update(E);
+    wTab.setFooter(pooled(alpha), [AT.sum(alpha)]);
+    const top = AT.argmax(alpha);
+    const spread = Math.max(...alpha) - Math.min(...alpha);
+    wTab.setHighlightRow(spread < 1e-9 ? -1 : top);
+    wCalc.update(alpha);
+    const c = pooled(alpha), rc = readE(c);
+    noteEl.textContent = (spread < 1e-9
+      ? 'All weights equal: this is exactly mean pooling again.'
+      : 'Largest weight on token ' + (top + 1) + ' (' + toks[top] + '): the footer moves towards that row.')
+      + ' Reading the footer: ' + (rc.list || 'everything near 0') + ', so the pooled bank is ' + rc.gist + '.';
+  }
+  const presets = {
+    equal: toks.map(() => 1),
+    river: [0.3, 1.2, 0.3, 0.8, 0.3, 4.0, 0.6],
+    fisherman: [0.3, 4.0, 0.3, 0.6, 0.3, 1.0, 0.6],
+    self: [0, 0, 0, 0, 0, 0, 1]
+  };
+  S.querySelector('#s04-presets').addEventListener('click', (ev) => {
+    const b = ev.target.closest('button[data-preset]');
+    if (!b) return;
+    const p = presets[b.dataset.preset] || presets.equal;
+    p.forEach((w, j) => { W[j] = w; inputs[j].inp.value = w; });
+    drawW();
+  });
+  drawW();
+})();
+</script>
+</section>

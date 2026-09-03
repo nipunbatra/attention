@@ -1,0 +1,486 @@
+{
+ "d_model": 4,
+ "d_k": 3,
+ "d_v": 3,
+ "vocab": [
+  "the",
+  "fisherman",
+  "sat",
+  "beside",
+  "river",
+  "bank",
+  "and",
+  "watched",
+  "she",
+  "deposited",
+  "cheque",
+  "at",
+  "water",
+  "boats",
+  "fish",
+  "ducks",
+  "teller",
+  "clerk",
+  "queue",
+  "money"
+ ],
+ "tok_emb": {
+  "the": [
+   0.0,
+   0.0,
+   0.0,
+   2.4
+  ],
+  "fisherman": [
+   2.0,
+   0.0,
+   2.2,
+   0.0
+  ],
+  "sat": [
+   0.4,
+   0.0,
+   0.6,
+   1.8
+  ],
+  "beside": [
+   0.6,
+   0.0,
+   0.0,
+   2.0
+  ],
+  "river": [
+   3.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  "bank": [
+   0.7,
+   0.7,
+   0.0,
+   0.6
+  ],
+  "and": [
+   0.0,
+   0.0,
+   0.0,
+   2.2
+  ],
+  "watched": [
+   0.6,
+   0.0,
+   0.8,
+   1.6
+  ],
+  "she": [
+   0.0,
+   0.0,
+   2.6,
+   0.4
+  ],
+  "deposited": [
+   0.0,
+   2.2,
+   0.6,
+   0.4
+  ],
+  "cheque": [
+   0.0,
+   3.0,
+   0.0,
+   0.0
+  ],
+  "at": [
+   0.0,
+   0.0,
+   0.0,
+   2.0
+  ],
+  "water": [
+   3.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  "boats": [
+   2.4,
+   0.0,
+   0.4,
+   0.0
+  ],
+  "fish": [
+   2.6,
+   0.0,
+   0.6,
+   0.0
+  ],
+  "ducks": [
+   2.2,
+   0.0,
+   0.8,
+   0.0
+  ],
+  "teller": [
+   0.0,
+   2.6,
+   1.8,
+   0.0
+  ],
+  "clerk": [
+   0.0,
+   2.4,
+   1.8,
+   0.0
+  ],
+  "queue": [
+   0.0,
+   2.0,
+   0.6,
+   0.0
+  ],
+  "money": [
+   0.0,
+   3.0,
+   0.0,
+   0.0
+  ]
+ },
+ "pos_emb": [
+  [
+   0.0,
+   0.0,
+   0.2,
+   -0.2
+  ],
+  [
+   0.0,
+   0.0,
+   0.1,
+   -0.3
+  ],
+  [
+   0.0,
+   0.0,
+   -0.1,
+   -0.3
+  ],
+  [
+   0.0,
+   0.0,
+   -0.2,
+   -0.2
+  ],
+  [
+   0.0,
+   0.0,
+   -0.3,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   -0.2,
+   0.2
+  ],
+  [
+   0.0,
+   0.0,
+   -0.1,
+   0.3
+  ],
+  [
+   0.0,
+   0.0,
+   0.1,
+   0.3
+  ],
+  [
+   0.0,
+   0.0,
+   0.2,
+   0.2
+  ],
+  [
+   0.0,
+   0.0,
+   0.3,
+   0.0
+  ]
+ ],
+ "W_Q": [
+  [
+   1.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   1.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.4
+  ],
+  [
+   0.7,
+   0.7,
+   0.0
+  ]
+ ],
+ "W_K": [
+  [
+   1.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   1.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   1.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0
+  ]
+ ],
+ "W_V": [
+  [
+   1.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   1.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   1.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0
+  ]
+ ],
+ "W_O": [
+  [
+   1.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   1.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.5,
+   0.0
+  ]
+ ],
+ "W_vocab": [
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.5,
+   1.2,
+   1.0,
+   0.7,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.5,
+   1.2,
+   0.9,
+   0.7
+  ],
+  [
+   0.0,
+   0.2,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.2,
+   0.2,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ]
+ ],
+ "b_vocab": [
+  -1.5,
+  -1.5,
+  -1.5,
+  -1.5,
+  -1.5,
+  -1.5,
+  -1.5,
+  -1.5,
+  -1.5,
+  -1.5,
+  -1.5,
+  -1.5,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0
+ ],
+ "sentences": {
+  "river": [
+   "The",
+   "fisherman",
+   "sat",
+   "beside",
+   "the",
+   "river",
+   "bank",
+   "and",
+   "watched",
+   "the"
+  ],
+  "cheque": [
+   "She",
+   "deposited",
+   "the",
+   "cheque",
+   "at",
+   "the",
+   "bank",
+   "and",
+   "watched",
+   "the"
+  ]
+ },
+ "candidates": {
+  "river": [
+   "water",
+   "boats",
+   "fish",
+   "ducks"
+  ],
+  "cheque": [
+   "teller",
+   "clerk",
+   "queue",
+   "money"
+  ]
+ },
+ "axes": {
+  "e": [
+   "water",
+   "finance",
+   "person",
+   "glue"
+  ],
+  "qk": [
+   "setting: water?",
+   "setting: finance?",
+   "who?"
+  ],
+  "v": [
+   "says: water scene",
+   "says: finance scene",
+   "says: a person is here"
+  ],
+  "short": {
+   "e": [
+    "water",
+    "finance",
+    "person",
+    "glue"
+   ],
+   "qk": [
+    "water?",
+    "finance?",
+    "who?"
+   ],
+   "v": [
+    "\u2192water",
+    "\u2192finance",
+    "\u2192person"
+   ]
+  }
+ },
+ "notes": "Toy v2: single-head causal self-attention (d_model=4, d_k=d_v=3, vocab=20, T=10), designed BY HAND so that every coordinate has a name that the numbers agree with (see 'axes'). e axes: water, finance, person, glue. q and k axes: setting: water?, setting: finance?, who? (a query row reads 'what I ask for', a key row 'what I offer'). v axes: says: water scene, says: finance scene, says: a person is here; W_O maps them back onto the e axes. Names are illustrative; the matrices are sparse and one-decimal so a student can read each row of W_Q as 'axis -> asks', W_K as 'axis -> offers', W_V as 'axis -> says', W_vocab as 'axis -> votes for these words'. Glue words offer no key and no value but ask for both settings, which is why the final 'the' reads river or cheque. bank is equal parts water and finance (0.7, 0.7) plus a little glue; its entries are kept below 1.0 so that bank does not mostly attend to itself (the self score q_bank.k_bank grows with the square of those entries). Position offsets are a small circle of radius 0.3 in the (person, glue) plane, so the three 'the' tokens differ without changing meaning. Patterns produced (all checked on these rounded numbers by make_toy2.py and toy_ref.mjs): (1) in 'The fisherman sat beside the river bank', bank(7) attends river first, fisherman second, itself and the glue words little; (2) in 'She deposited the cheque at the bank', bank(7) attends cheque first, deposited second; (3) the final 'the'(10) reads mostly river/bank/fisherman or cheque/bank/deposited and the output head predicts water > boats > fish > ducks or teller > clerk > queue > money with every other word at most 0.04; (4) the baseline from e_the(10) alone is spread over the eight candidates and is identical for both sentences; (5) with the causal mask off, the early glue words leak attention onto river and bank. Nothing was optimised; a few magnitudes (bank, fisherman, the W_vocab weights) were adjusted by hand from AXES.md."
+}

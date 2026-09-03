@@ -1,0 +1,412 @@
+<section id="s15" class="sec" data-title="Full walkthrough, one step at a time" data-lit="">
+<style>
+#s15 .status{font-family:var(--font-mono);font-size:14px;color:var(--ink-2);margin:6px 0 0;text-align:center}
+#s15 .arena{position:relative}
+#s15 .why{font-size:15px;color:var(--ink-2);margin:10px 0 0;max-width:46em}
+#s15 .stepper-list li .st{font-size:14.5px}
+#s15 .qpick{margin:8px 0 12px}
+#s15 .dt td.is-top{font-weight:700;box-shadow:inset 0 0 0 1.5px var(--ink)}
+#s15 .read-line{font-size:15px;color:var(--ink-2);margin:8px 0 0;max-width:60em;line-height:1.5}
+#s15 .arith-row{margin-top:12px}
+#s15 .arith{margin-top:10px}
+#s15 .arith .chips{margin-bottom:10px}
+#s15 .arith .calc-line{margin-top:8px}
+/* narrow screens: show the stage right under the Next-step button, the 18-item list below it */
+@media (max-width:820px){#s15 .stepper-body{display:flex;flex-direction:column-reverse}}
+/* phones: the operand / result rows of an equation stack vertically instead of wrapping mid-expression */
+@media (max-width:480px){#s15 .eq{flex-direction:column;align-items:flex-start;gap:8px}}
+</style>
+<header class="sec-head">
+  <span class="sec-num">15</span>
+  <div>
+    <p class="eyebrow">Why we are here: every piece is in place. Now run the whole computation once, slowly, with real numbers.</p>
+    <h2>Full walkthrough, one step at a time</h2>
+  </div>
+</header>
+
+<div class="companion" data-kicker="For self-study">
+  <p>Everything before this section showed one stage at a time. Here the whole computation runs end to end on ten tokens, with the same numbers you would get by hand. Each stage is a small spreadsheet: one row per token, one column per coordinate, the result in the last column or the footer row. Click a score, or press Show the arithmetic, to see the numbers that produced it. At step 3, pick a different query token and press Next step again; the scores, the mask and the weights all change, but the recipe does not. The sentence to remember: one query, one score per earlier token, one weighted sum, one update added to the token.</p>
+</div>
+
+<div class="prose">
+  <p>Ten tokens, one query, eighteen steps. Press <strong>Next step</strong> and watch each stage produce its numbers. The pipeline shows where you are in the chain
+  $\ve{e} \to \vq{Q},\vk{K},\vv{V} \to \text{attention} \to \vd{\Delta e} \to \vp{e + \Delta e}$.</p>
+</div>
+
+<div class="card">
+  <div id="s15-motif"></div>
+  <p class="status" id="s15-status"></p>
+</div>
+
+<div id="s15-stepper"></div>
+
+<div class="companion after">
+  <p>Keep in mind: steps 4 to 17 run for every token at once; the walkthrough follows one of them so that each number has a home in a table.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s15');
+  const toks = AT.sentences.river;
+  const T = toks.length;
+  const F = AT.forward(toks);
+  const B = AT.baseline(toks);
+  let qi = 6; // "bank"
+  const n = () => String(qi + 1);
+  const tokQ = () => toks[qi];
+  const jle = () => AT.range(qi + 1);           // 0..qi
+  const jgt = () => AT.range(T).filter(j => j > qi);
+  const tokLabs = toks.map((w, j) => (j + 1) + ' ' + w);
+  const ord = (r) => r + (r === 1 ? 'st' : r === 2 ? 'nd' : r === 3 ? 'rd' : 'th');
+
+  /* --- reading lines: the words come from the numbers and the axis names in AT.axes --- */
+  const eWord = (lab) => ({ water: 'a water scene', finance: 'money', person: 'a person' })[lab] || lab;
+  const vWord = (i) => String((AT.axes.v || [])[i] || AT.axisLabels('v', AT.d_v)[i]).replace(/^says:\s*/, '');
+  const join = (a) => a.length <= 1 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
+  const parts = (vec, labs, thr) => vec.map((v, i) => ({ i, v, label: labs[i] })).filter(x => x.v >= thr).sort((a, b) => b.v - a.v);
+  const nums = (ps) => ps.map(p => p.label + ' ' + AT.fmt(p.v, 2)).join(', ');
+  const qt = (tok) => '“' + tok + '”';
+  function readE(vec, sym, tok){
+    const labs = AT.axisLabels('e', vec.length) || [];
+    const all = parts(vec, labs, 0.3);
+    const glue = all.find(p => p.label === 'glue');
+    const ps = all.filter(p => p.label !== 'glue' && p.v >= 0.5);
+    let so;
+    if (!ps.length) so = qt(tok) + ' is a glue word with no setting of its own';
+    else if (ps.length === 1) so = qt(tok) + ' is about ' + eWord(ps[0].label);
+    else if (Math.abs(ps[0].v - ps[1].v) < 0.05) so = qt(tok) + ' is half ' + eWord(ps[0].label) + ', half ' + eWord(ps[1].label);
+    else so = qt(tok) + ' is mostly ' + eWord(ps[0].label) + ', partly ' + join(ps.slice(1).map(p => eWord(p.label)));
+    if (glue && ps.length) so += ', plus some glue';
+    return 'Reading $' + sym + '$: ' + nums(ps.concat(glue ? [glue] : [])) + ', so ' + so + '.';
+  }
+  function readQ(vec, sym, tok){
+    const labs = AT.axisLabels('qk', vec.length) || [];
+    const ps = parts(vec, labs, 0.3);
+    const low = labs.filter(l => !ps.some(p => p.label === l));
+    if (!ps.length) return 'Reading $' + sym + '$: every entry is small, so ' + qt(tok) + ' asks for almost nothing.';
+    return 'Reading $' + sym + '$: ' + nums(ps) + ', so ' + qt(tok) + ' asks ' + join(ps.map(p => p.label)) + (low.length ? ' and hardly ' + low.join(' or ') : '');
+  }
+  function readK(vec, sym, tok){
+    const labs = AT.axisLabels('qk', vec.length) || [];
+    const ps = parts(vec, labs, 0.3);
+    if (!ps.length) return 'Reading $' + sym + '$: every entry is small, so ' + qt(tok) + ' offers nothing to any query.';
+    return 'Reading $' + sym + '$: ' + nums(ps) + ', so ' + qt(tok) + ' answers ' + join(ps.map(p => p.label)) + (ps.length < labs.length ? ' and offers nothing on ' + labs.filter(l => !ps.some(p => p.label === l)).join(' or ') : '');
+  }
+  function readV(vec, sym, tok){
+    const labs = AT.axisLabels('v', vec.length) || [];
+    const ps = parts(vec, labs, 0.3);
+    if (!ps.length) return 'Reading $' + sym + '$: every entry is small, so if read, ' + qt(tok) + ' says nothing.';
+    return 'Reading $' + sym + '$: ' + nums(ps) + ', so if read, ' + qt(tok) + ' says: ' + join(ps.map(p => vWord(p.i))) + '.';
+  }
+  function readM(vec, sym, tok){
+    const labs = AT.axisLabels('v', vec.length) || [];
+    const ps = parts(vec, labs, 0.3);
+    if (!ps.length) return 'Reading $' + sym + '$: every entry is small, so the mixture ' + qt(tok) + ' received says little.';
+    return 'Reading $' + sym + '$: ' + nums(ps) + ', so the mixture ' + qt(tok) + ' received says mostly: ' + join(ps.map(p => vWord(p.i))) + '.';
+  }
+  function readD(vec, sym, tok){
+    const labs = AT.axisLabels('e', vec.length) || [];
+    const ps = parts(vec, labs, 0.3).filter(p => p.label !== 'glue');
+    if (!ps.length) return 'Reading $' + sym + '$: every entry is small, so the context barely moves ' + qt(tok) + '.';
+    return 'Reading $' + sym + '$: ' + nums(ps) + ', so the update pushes ' + qt(tok) + ' toward ' + join(ps.map(p => eWord(p.label))) + '.';
+  }
+  function readEp(vec, sym, tok){
+    const labs = AT.axisLabels('e', vec.length) || [];
+    const all = parts(vec, labs, 0.3);
+    const ps = all.filter(p => p.label !== 'glue' && p.v >= 0.5);
+    const glue = all.find(p => p.label === 'glue');
+    if (!ps.length) return 'Reading $' + sym + '$: ' + nums(all) + ', so ' + qt(tok) + ' is still a glue word with no setting of its own.';
+    const lead = ps.length > 1 ? nums([ps[0]]) + ' now leads ' + nums(ps.slice(1)) : nums(ps);
+    return 'Reading $' + sym + '$: ' + lead + ', so ' + qt(tok) + ' now reads mostly as ' + eWord(ps[0].label) + (glue ? ', still with its glue' : '') + '.';
+  }
+  function reading(el, html){ const p = AT.h('p', { class: 'read-line', html: html }); AT.renderMath(p); el.appendChild(p); }
+
+  /* --- "Show the arithmetic": the worksheet is built on first click, then toggled --- */
+  function arith(el, build){
+    const box = AT.h('div', { class: 'arith' }); box.hidden = true;
+    const btn = AT.h('button', { type: 'button', class: 'btn btn-quiet', 'aria-expanded': 'false' }, 'Show the arithmetic');
+    let built = false;
+    btn.addEventListener('click', () => {
+      if (!built) { build(box); built = true; }
+      const open = box.hidden; box.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open)); btn.textContent = open ? 'Hide the arithmetic' : 'Show the arithmetic';
+    });
+    el.appendChild(AT.h('div', { class: 'btn-row arith-row' }, btn)); el.appendChild(box);
+  }
+  /* the loudest key among the tokens the query may read: the row a student should read first */
+  const loudest = () => jle().reduce((b, j) => Math.max(...F.K[j]) > Math.max(...F.K[b]) ? j : b, 0);
+
+  const motif = AT.motif(S.querySelector('#s15-motif'), { active: 'e', labels: true });
+  const status = S.querySelector('#s15-status');
+  const stageOf = ['e','e','e','qkv','qkv','att','att','att','att','att','qkv','att','att','att','delta','delta','add','ep'];
+
+  function row(cls){ return AT.h('div', { class: 'row' + (cls ? ' ' + cls : '') }); }
+  function rowTop(cls){ return AT.h('div', { class: 'row top' + (cls ? ' ' + cls : '') }); }
+  function why(el, html){ const p = AT.h('p', { class: 'why', html: html }); AT.renderMath(p); el.appendChild(p); }
+  /* a note that names the chosen query token, built inside render, so it follows the chip picked at step 3 */
+  function note(el, html){ const p = AT.h('p', { class: 'stage-note', html: html }); el.appendChild(p); }
+  const who = () => 'token ' + n() + ' (“' + tokQ() + '”)';
+  const qLabel = () => n() + ' ' + tokQ() + ' (query)';
+  const narrow = window.matchMedia('(max-width: 820px)');
+
+  /* rank of every allowed token by attention weight (1 = largest) */
+  function ranks(){
+    const order = jle().slice().sort((a, b) => F.A[qi][b] - F.A[qi][a]);
+    const r = {}; order.forEach((j, k) => { r[j] = k + 1; }); return r;
+  }
+
+  const steps = [
+    { title: 'Tokens', note: 'The sequence we feed in. We will predict what comes after position ' + T + '.',
+      render: (el) => { AT.ui.chips(toks, { size: 'lg', slot: '___', into: el }); } },
+
+    { title: 'Initial representations', tex: '\\ve{e_i^{(0)}} = \\text{token embedding}_i + \\text{positional information}_i',
+      note: 'One row per token, $d_{\\text{model}} = ' + AT.d_model + '$ numbers each. Nothing has looked at anything else yet.',
+      render: (el) => {
+        AT.ui.table(F.E, { axes: 'e', rowLabels: tokLabs, cornerLabel: 'token', rowCls: 'e', highlightRow: qi, caption: 'Row $i$ is $\\ve{e_i^{(0)}}$: the same word at another position would get a different row. The columns are the four named axes of the toy, plus a small position offset.', into: el });
+        reading(el, readE(F.E[qi], '\\ve{e_{' + n() + '}}', tokQ()));
+      } },
+
+    { title: 'Choose the query token', note: 'Click a token to make it the one that gathers context. Every token does this in parallel; we follow one.',
+      render: (el, ctx) => {
+        const host = AT.h('div', { class: 'qpick' });
+        AT.ui.chips(toks, { active: qi, onClick: (i) => { qi = i; ctx.stepper.go(2); }, into: host });
+        el.appendChild(host);
+        const r = row();
+        AT.ui.vec(F.E[qi], { cls: 'e', label: '\\ve{e_{' + n() + '}} = \\ve{e_{\\text{' + tokQ() + '}}}', dims: true, into: r });
+        el.appendChild(r);
+        reading(el, readE(F.E[qi], '\\ve{e_{' + n() + '}}', tokQ()));
+        why(el, 'Token ' + n() + ' (“' + tokQ() + '”) will read from tokens 1 to ' + n() + '.');
+      } },
+
+    { title: 'Compute the query', tex: '\\vq{q_i} = \\ve{e_i}\\,W_Q',
+      render: (el) => {
+        note(el, 'What is ' + who() + ' looking for? A $d_k = ' + AT.d_k + '$ dimensional question.');
+        const r1 = rowTop('eq');
+        AT.ui.vec(F.E[qi], { cls: 'e', label: '\\ve{e_{' + n() + '}}', dims: true, into: r1 });
+        AT.ui.op('·', { into: r1 });
+        AT.ui.mat(AT.model.W_Q, { cls: 'q', size: 'sm', caption: '$W_Q$', dims: true, into: r1 });
+        el.appendChild(r1);
+        const r2 = row('eq');
+        AT.ui.op('=', { into: r2 });
+        AT.ui.vec(F.Q[qi], { cls: 'q', label: '\\vq{q_{' + n() + '}}', dims: true, into: r2 });
+        el.appendChild(r2);
+        reading(el, readQ(F.Q[qi], '\\vq{q_{' + n() + '}}', tokQ()));
+        arith(el, (box) => {
+          AT.ui.matVecCalc(F.E[qi], AT.model.W_Q, { from: 'e', to: 'qk', cls: 'q', xLabel: 'e · ' + n() + ' ' + tokQ(), outLabel: 'q · ' + n() + ' ' + tokQ(), into: box });
+          why(box, 'One line per query axis: each entry of $\\ve{e_{' + n() + '}}$ times the matching column of $W_Q$, then added up. Greyed terms have a zero weight.');
+        });
+      } },
+
+    { title: 'Compute every key', tex: '\\vk{k_j} = \\ve{e_j}\\,W_K', note: 'Every token advertises when it should be retrieved. Same $W_K$ for all of them.',
+      render: (el) => {
+        const r = rowTop();
+        AT.ui.mat(AT.model.W_K, { cls: 'k', size: 'sm', caption: '$W_K$', dims: true, into: r });
+        el.appendChild(r);
+        const lj = loudest();
+        AT.ui.table(F.K, { axes: 'qk', rowLabels: tokLabs, cornerLabel: 'token', rowCls: 'k', highlightRow: lj, caption: 'Row $j$ is $\\vk{k_j}$, three numbers per token. Its columns are the same three axes as the query\u2019s, which is what makes step 6 possible.', into: el });
+        reading(el, readK(F.K[lj], '\\vk{k_{' + (lj + 1) + '}}', toks[lj]));
+        arith(el, (box) => {
+          AT.ui.matVecCalc(F.E[lj], AT.model.W_K, { from: 'e', to: 'qk', cls: 'k', xLabel: 'e · ' + (lj + 1) + ' ' + toks[lj], outLabel: 'k · ' + (lj + 1) + ' ' + toks[lj], into: box });
+          why(box, 'The key of the highlighted token: $W_K$ copies the setting axes and the person axis, and drops glue.');
+        });
+      } },
+
+    { title: 'Compare query with keys', tex: '\\vq{q_i}^\\top \\vk{k_j}',
+      render: (el) => {
+        note(el, 'One dot product per token $j$: how well does key $j$ answer the query of ' + who() + '?');
+        AT.ui.dotTable(F.Q[qi], F.K, { rowLabels: tokLabs, queryLabel: qLabel(), cornerLabel: 'token',
+          caption: 'Read across: the query row times each key row, axis by axis, gives the score on the right. No mask yet, so every token has a score. Click a score for its worksheet.', into: el });
+        arith(el, (box) => {
+          let j = AT.argmax(F.Sraw[qi].slice(0, qi + 1));
+          const dc = AT.ui.dotCalc(F.Q[qi], F.K[j], { axes: 'qk', qLabel: 'q · ' + qLabel(), kLabel: 'k · ' + tokLabs[j], scale: false });
+          const pick = AT.ui.chips(toks, { active: j, into: box, onClick: (jj) => { j = jj; pick.setActive(jj); dc.update(F.Q[qi], F.K[jj], { kLabel: 'k · ' + tokLabs[jj] }); } });
+          box.appendChild(dc);
+          why(box, 'Pick a key. The products line up under the three axes; the score is their sum. A big score needs both rows to be large on the same axis.');
+        });
+      } },
+
+    { title: 'Scale', tex: 's_{ij} = \\dfrac{\\vq{q_i}^\\top \\vk{k_j}}{\\sqrt{d_k}}', note: 'Divide by $\\sqrt{d_k} = \\sqrt{' + AT.d_k + '} \\approx ' + AT.fmt(AT.sqrt_dk, 2) + '$ so the softmax does not become needlessly sharp.',
+      render: (el) => {
+        AT.ui.dotTable(F.Q[qi], F.K, { rowLabels: tokLabs, queryLabel: qLabel(), cornerLabel: 'token', scaled: true, d_k: AT.d_k,
+          caption: 'Same table as step 6 with every score divided by $\\sqrt{' + AT.d_k + '} \\approx ' + AT.fmt(AT.sqrt_dk, 2) + '$. Click a score to see the raw product and the division.', into: el });
+      } },
+
+    { title: 'Mask the future', tex: 's_{ij} = -\\infty \\quad \\text{for } j > i',
+      render: (el) => {
+        note(el, 'Next-token prediction: token ' + n() + ' may only read from $j \\le ' + n() + '$. Future scores are removed before the softmax.');
+        AT.ui.dotTable(F.Q[qi], F.K, { rowLabels: tokLabs, queryLabel: qLabel(), cornerLabel: 'token', scaled: true, d_k: AT.d_k, mask: jgt(),
+          caption: jgt().length
+            ? 'Hatched score cells are future tokens: their score is set to $-\\infty$ and the row is greyed out.'
+            : 'Token ' + n() + ' is the last one, so nothing is masked for it.', into: el });
+      } },
+
+    { title: 'Softmax', tex: '\\va{\\alpha_{ij}} = \\operatorname{softmax}_j(s_{ij}) = \\dfrac{\\exp(s_{ij})}{\\sum_{j\' \\le i}\\exp(s_{ij\'})}',
+      note: 'Scores become a distribution over the allowed tokens. Masked entries get exactly 0.',
+      render: (el) => {
+        const s = F.S[qi];
+        const ex = s.map(x => x === -Infinity ? 0 : Math.exp(x));
+        const Z = AT.sum(ex);
+        const a = F.A[qi];
+        const fig = AT.ui.table(s.map((x, j) => [x, ex[j], a[j]]), {
+          cols: [{ label: '$s_{' + n() + 'j}$' }, { label: '$\\exp(s_{' + n() + 'j})$' }, { label: '$\\va{\\alpha_{' + n() + 'j}}$', cls: 'a' }],
+          rowLabels: tokLabs, cornerLabel: 'token', heatCols: [2], dimRows: jgt(),
+          footer: { label: 'sum', values: ['', Z, AT.sum(a)], cls: 'neutral' },
+          caption: 'Read left to right: score, its exponential, then the exponential divided by the column sum ' + AT.fmt(Z, 2) + '. The last column sums to 1. Hover a weight to see the division.', into: el });
+        jle().forEach(j => fig.tipOn(fig.cells[j][2], AT.fmt(ex[j], 2) + ' ÷ ' + AT.fmt(Z, 2) + ' = ' + AT.fmt(a[j], 2)));
+      } },
+
+    { title: 'Attention weights', tex: '\\va{\\alpha_{ij}}, \\qquad \\sum_{j \\le i} \\va{\\alpha_{ij}} = 1',
+      render: (el) => {
+        note(el, 'These weights say <em>where</em> ' + who() + ' reads from. No information has moved yet.');
+        const a = F.A[qi], rk = ranks(), best = AT.argmax(a);
+        const order = jle().slice().sort((x, y) => a[y] - a[x]);
+        AT.ui.table(a.map(x => [x]), { cols: [{ label: '$\\va{\\alpha_{' + n() + 'j}}$', cls: 'a' }], rowLabels: tokLabs, cornerLabel: 'token', heatCols: [0], dimRows: jgt(), highlightRow: best,
+          computed: [{ label: 'rank', fn: (r, j) => rk[j] ? ord(rk[j]) : '×', cls: 'neutral' }],
+          footer: { label: 'sum', values: [AT.sum(a)], cls: 'neutral' },
+          caption: 'Largest weight: “' + toks[order[0]] + '” (' + AT.fmt(a[order[0]], 2) + ')' + (order.length > 1 ? ', then “' + toks[order[1]] + '” (' + AT.fmt(a[order[1]], 2) + ')' : '') + '. Greyed rows are masked and weigh exactly 0.', into: el });
+      } },
+
+    { title: 'Produce the values', tex: '\\vv{v_j} = \\ve{e_j}\\,W_V',
+      render: (el) => {
+        note(el, 'What each token would send if retrieved. Only tokens $j \\le ' + n() + '$ can be retrieved by token ' + n() + ', so only their values matter here.');
+        const r = rowTop();
+        AT.ui.mat(AT.model.W_V, { cls: 'v', size: 'sm', caption: '$W_V$', dims: true, into: r });
+        el.appendChild(r);
+        const best = AT.argmax(F.A[qi]);
+        AT.ui.table(F.V.slice(0, qi + 1), { axes: 'v', rowLabels: tokLabs.slice(0, qi + 1), cornerLabel: 'token', rowCls: 'v', highlightRow: best, caption: 'Row $j$ is $\\vv{v_j}$: the message token $j$ sends, before any weighting. The value axes say what a token reports, not what it asks.', into: el });
+        reading(el, readV(F.V[best], '\\vv{v_{' + (best + 1) + '}}', toks[best]));
+        arith(el, (box) => {
+          AT.ui.matVecCalc(F.E[best], AT.model.W_V, { from: 'e', to: 'v', cls: 'v', xLabel: 'e · ' + tokLabs[best], outLabel: 'v · ' + tokLabs[best], into: box });
+          why(box, 'The value of the token with the largest attention weight: $W_V$ turns each setting axis into a “says” axis and drops glue.');
+        });
+      } },
+
+    { title: 'Weight each value', tex: '\\va{\\alpha_{ij}}\\,\\vv{v_j}',
+      render: (el) => {
+        note(el, 'The message from $j$ to token ' + n() + ': its value, scaled by how much attention it received.');
+        const best = AT.argmax(F.A[qi]);
+        const fig = AT.ui.mixTable(F.A[qi].slice(0, qi + 1), F.V.slice(0, qi + 1), { rowLabels: tokLabs.slice(0, qi + 1), cornerLabel: 'token', weighted: true, highlightRow: best, note: '',
+          caption: 'Each row is $\\va{\\alpha_{' + n() + 'j}}\\,\\vv{v_j}$: the weight on the left multiplies every axis of that value row. The row with the largest attention weight is outlined; the size of a message also depends on $\\vv{v_j}$.', into: el });
+        fig.table.tFoot.hidden = true;
+        arith(el, (box) => {
+          let j = best;
+          const mv = AT.ui.matVecCalc([F.A[qi][j]], [F.V[j]], { from: ['α · ' + tokLabs[j]], fromCls: 'a', to: 'v', cls: 'v', wDecimals: 2, xLabel: 'weight', outLabel: 'α · v for ' + tokLabs[j] });
+          const pick = AT.ui.chips(toks.slice(0, qi + 1), { active: j, into: box, onClick: (jj) => { j = jj; pick.setActive(jj); mv.replaceWith(rebuild(jj)); } });
+          let cur = mv; box.appendChild(cur);
+          function rebuild(jj){ const m2 = AT.ui.matVecCalc([F.A[qi][jj]], [F.V[jj]], { from: ['α · ' + tokLabs[jj]], fromCls: 'a', to: 'v', cls: 'v', wDecimals: 2, xLabel: 'weight', outLabel: 'α · v for ' + tokLabs[jj] }); cur = m2; return m2; }
+          why(box, 'Pick a token. One line per value axis: the attention weight times that entry of $\\vv{v_j}$. A weight near 0 silences the whole row.');
+        });
+      } },
+
+    { title: 'Sum the values', tex: '\\sum_{j \\le i} \\va{\\alpha_{ij}}\\,\\vv{v_j}',
+      render: (el) => {
+        note(el, 'All messages arrive at ' + who() + ' and are added up, column by column. Bigger dot = larger weight.');
+        const arena = AT.h('div', { class: 'arena' });
+        const alpha = F.A[qi].slice(0, qi + 1);
+        const fig = AT.ui.mixTable(alpha, F.V.slice(0, qi + 1), { rowLabels: tokLabs.slice(0, qi + 1), cornerLabel: 'token', weighted: true,
+          caption: 'The footer adds each column of weighted messages. Hover a footer cell to see the terms that were added, or open the worksheet below.', into: arena });
+        el.appendChild(arena);
+        arith(el, (box) => {
+          AT.ui.matVecCalc(alpha, F.V.slice(0, qi + 1), { from: tokLabs.slice(0, qi + 1), fromCls: 'a', to: 'v', cls: 'm', wDecimals: 2, xLabel: 'α · ' + qLabel(), outLabel: 'm · ' + n() + ' ' + tokQ(), into: box });
+          why(box, 'One line per value axis: every attention weight times that token\u2019s entry on the axis, added up across the ' + (qi + 1) + ' tokens (the sheet scrolls sideways). Zero terms are greyed.');
+        });
+        const btn = AT.h('button', { type: 'button', class: 'btn btn-quiet', id: 's15-replay' }, 'Replay the messages');
+        el.appendChild(AT.h('div', { class: 'btn-row', style: 'margin-top:8px' }, btn));
+        function run(){
+          fig.setFooter(AT.zeros(AT.d_v).map(() => ''), ['']);
+          requestAnimationFrame(() => {
+            AT.ui.flow(arena, { from: fig.rowLabelEls, to: fig.footer.label, weights: alpha, color: 'var(--c-v)', duration: 900 })
+              .then(() => { fig.setFooter(fig.sum, [AT.sum(alpha)]); });
+          });
+        }
+        btn.addEventListener('click', run);
+        run();
+      } },
+
+    { title: 'The message', tex: 'm_i = \\sum_{j \\le i} \\va{\\alpha_{ij}}\\,\\vv{v_j}',
+      note: '$m_i$ is the retrieved mixture. It lives in the value space ($d_v = ' + AT.d_v + '$), not yet in the space of $\\ve{e_i}$ ($d_{\\text{model}} = ' + AT.d_model + '$).',
+      render: (el) => {
+        AT.ui.mixTable(F.A[qi].slice(0, qi + 1), F.V.slice(0, qi + 1), { rowLabels: tokLabs.slice(0, qi + 1), cornerLabel: 'token', weighted: false,
+          footerLabel: '$m_{' + n() + '} = \\sum_j \\va{\\alpha_{' + n() + 'j}}\\,\\vv{v_j}$',
+          caption: 'The same sum written the usual way: weights on the left, plain value rows, and $m_{' + n() + '}$ in the footer. Nothing has been added to $\\ve{e_{' + n() + '}}$ yet.', into: el });
+        reading(el, readM(F.Mmsg[qi], 'm_{' + n() + '}', tokQ()));
+      } },
+
+    { title: 'Output projection', tex: 'm_i\\,W_O', note: 'A linear map from the value space back into the representation space, so the result can be added to $\\ve{e_i}$.',
+      render: (el) => {
+        const r1 = rowTop('eq');
+        AT.ui.vec(F.Mmsg[qi], { cls: 'm', label: 'm_{' + n() + '}', dims: true, into: r1 });
+        AT.ui.op('·', { into: r1 });
+        AT.ui.mat(AT.model.W_O, { cls: 'neutral', size: 'sm', caption: '$W_O$', dims: true, into: r1 });
+        el.appendChild(r1);
+        const r2 = row('eq');
+        AT.ui.op('=', { into: r2 });
+        AT.ui.vec(F.Delta[qi], { cls: 'neutral', axes: 'e', label: 'm_{' + n() + '}\\,W_O', dims: true, into: r2 });
+        el.appendChild(r2);
+        why(el, 'Three numbers in, four numbers out: the result has the shape of $\\ve{e_{' + n() + '}}$, with the same four axes.');
+        arith(el, (box) => {
+          AT.ui.matVecCalc(F.Mmsg[qi], AT.model.W_O, { from: 'v', to: 'e', cls: 'neutral', fromCls: 'm', xLabel: 'm · ' + n() + ' ' + tokQ(), outLabel: 'result, 1×' + AT.d_model, into: box });
+          why(box, 'One line per axis of $\\ve{e}$: $W_O$ sends each “says” axis back to its setting axis, and nothing lands on glue.');
+        });
+      } },
+
+    { title: 'Call it Δe (pedagogical)', tex: '\\vd{\\Delta e_i} = m_i\\,W_O',
+      render: (el) => {
+        note(el, 'This is the context-dependent update for ' + who() + '. It depends on which earlier tokens it read from.');
+        const r = row(); AT.ui.vec(F.Delta[qi], { cls: 'd', label: '\\vd{\\Delta e_{' + n() + '}}', dims: true, size: 'lg', into: r }); el.appendChild(r);
+        reading(el, readD(F.Delta[qi], '\\vd{\\Delta e_{' + n() + '}}', tokQ()));
+        AT.ui.callout('Calling this update $\\vd{\\Delta e_i}$ is pedagogical notation for this page. Standard implementations call it the attention output and add it through a residual connection. The addition itself is standard.', { kind: 'note', into: el });
+      } },
+
+    { title: 'Residual addition', tex: '\\vp{e_i\'} = \\ve{e_i} + \\vd{\\Delta e_i}',
+      render: (el) => {
+        note(el, 'Token ' + n() + ' (“' + tokQ() + '”) keeps what it was and gains what its context told it.');
+        AT.ui.table([F.E[qi], F.Delta[qi]], { axes: 'e', rowLabels: ['$\\ve{e_{' + n() + '}}$', '$\\vd{\\Delta e_{' + n() + '}}$'], rowCls: ['e', 'd'], cornerLabel: 'row',
+          footer: { label: '$\\vp{e_{' + n() + '}\'} = \\ve{e_{' + n() + '}} + \\vd{\\Delta e_{' + n() + '}}$', values: F.Enew[qi], cls: 'ep' },
+          caption: 'Add the two rows axis by axis. The footer is the new representation of “' + tokQ() + '”.', into: el });
+        reading(el, readEp(F.Enew[qi], '\\vp{e_{' + n() + '}\'}', tokQ()));
+        AT.ui.callout('Attention does not replace the existing representation. It computes context-dependent information that can be added to it.', { kind: 'key', into: el });
+      } },
+
+    { title: 'Predict the next token', tex: '\\ell = \\vp{e_{' + T + '}\'}\\,W_{\\text{vocab}} + b, \\qquad p(x_{' + (T + 1) + '}\\mid x_{\\le ' + T + '}) = \\operatorname{softmax}(\\ell)',
+      note: 'The query changes here. Steps 4 to 17 ran for every position at once, so the same computation also ran for position ' + T + ' (“' + toks[T - 1] + '”). The prediction comes from $\\vp{e_{' + T + '}\'}$, the updated last token, not from the update of “' + toks[qi] + '”.',
+      render: (el) => {
+        const aT = F.A[T - 1], bestT = AT.argmax(aT);
+        AT.ui.table(aT.map(x => [x]), { cols: [{ label: '$\\va{\\alpha_{' + T + ',j}}$', cls: 'a' }], rowLabels: tokLabs, cornerLabel: 'token', heatCols: [0], highlightRow: bestT,
+          footer: { label: 'sum', values: [AT.sum(aT)], cls: 'neutral' },
+          caption: 'Where the last token (“' + toks[T - 1] + '”) reads from: mostly “' + toks[bestT] + '” (' + AT.fmt(aT[bestT], 2) + '). Its own update $\\vd{\\Delta e_{' + T + '}}$ goes into the head.', into: el });
+        const top = AT.topk(F.probs[T - 1], 6);
+        const rest = Math.max(0, 1 - top.reduce((s, x) => s + x.p, 0));
+        const rows = top.map(x => [F.logits[T - 1][x.i], AT.fmt(x.p, 3)]).concat([['·', AT.fmt(rest, 3)]]);
+        const fig = AT.ui.table(rows, { cols: [{ label: 'logit $\\ell$' }, { label: '$p = \\operatorname{softmax}(\\ell)$' }], rowLabels: top.map(x => x.tok).concat(['other (' + (AT.vocab.length - top.length) + ' tokens)']), cornerLabel: 'next token', rowCls: 'neutral', highlightRow: 0,
+          footer: { label: 'sum', values: ['', AT.fmt(top.reduce((s, x) => s + x.p, 0) + rest, 3)], cls: 'neutral' },
+          caption: 'After “' + toks.slice(T - 2).join(' ') + ' ___”. Read down: a larger logit becomes a larger probability, and the top row is the model\u2019s answer.', into: el });
+        fig.cells[0][1].classList.add('is-top');
+        const bl = AT.probsFor(B.probs[T - 1], [top[0].tok])[0];
+        why(el, 'Without attention (section 02) “' + top[0].tok + '” had $p = ' + AT.fmt(bl.p, 3) + '$; with context it has $p = ' + AT.fmt(top[0].p, 3) + '$.');
+        arith(el, (box) => {
+          const best = top[0], c = AT.vocab.indexOf(best.tok), b = AT.model.b_vocab[c];
+          const mv = AT.ui.matVecCalc(F.Enew[T - 1], AT.model.W_vocab.map(r => [r[c]]), { from: 'e', to: [best.tok], cls: 'neutral', fromCls: 'ep', xLabel: 'e′ · ' + T + ' ' + toks[T - 1], outLabel: 'before the bias', into: box });
+          const outrow = mv.querySelector('.calc-outrow'); if (outrow) outrow.hidden = true;
+          const dot = mv.out[0], l = dot + b, Z = F.logits[T - 1].reduce((s, v) => s + Math.exp(v), 0);
+          mv.appendChild(AT.h('p', { class: 'calc-line' }, 'logit for “' + best.tok + '” = ' + AT.fmt(dot, 2) + ' + b ' + (b < 0 ? '(' + AT.fmt(b, 2) + ')' : AT.fmt(b, 2)) + ' = ', AT.h('span', { class: 'calc-r' }, AT.fmt(l, 2))));
+          mv.appendChild(AT.h('p', { class: 'calc-line' }, 'p(“' + best.tok + '”) = exp(' + AT.fmt(l, 2) + ') / Σ exp(ℓ) = ' + AT.fmt(Math.exp(l), 2) + ' / ' + AT.fmt(Z, 2) + ' = ', AT.h('span', { class: 'calc-r' }, AT.fmt(best.p, 3))));
+          why(box, 'The logit of the top candidate: the column of $W_{\\text{vocab}}$ for “' + best.tok + '” multiplies $\\vp{e_{' + T + '}\'}$ axis by axis; the softmax divides by the sum over all ' + AT.vocab.length + ' words.');
+        });
+      } }
+  ];
+
+  /* On narrow screens the list sits below the stage, so do not let the stepper scroll the current list item into view
+     (that would push the stage off the top). The option object is read live by the stepper on every step. */
+  const stepOpts = { big: true, compact: true, texInList: false, steps: steps, into: S.querySelector('#s15-stepper'), scrollList: !narrow.matches,
+    onChange: (i) => {
+      motif.setActive(stageOf[i] || null);
+      const last = i === steps.length - 1;
+      status.textContent = 'Step ' + (i + 1) + ' of ' + steps.length + ' · query token: ' + (last ? T + ' “' + toks[T - 1] + '” (the last token feeds the head)' : n() + ' “' + tokQ() + '”');
+    } };
+  const onNarrow = () => { stepOpts.scrollList = !narrow.matches; };
+  if (narrow.addEventListener) narrow.addEventListener('change', onNarrow); else if (narrow.addListener) narrow.addListener(onNarrow);
+  AT.ui.stepper(stepOpts);
+})();
+</script>
+</section>

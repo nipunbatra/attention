@@ -1,0 +1,296 @@
+<section id="s08" class="sec" data-title="Two phases: read routing (Q,K) vs message passing (V)" data-lit="">
+<style>
+#s08 .phase-tag{display:inline-block;font-family:var(--font-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--ink-2);border:1px solid var(--line);border-radius:999px;padding:3px 10px;margin-bottom:8px}
+#s08 .btn-row{margin:0 0 14px}
+#s08 .eq{margin:14px 0 0}
+#s08 .pic-lab{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin:28px 0 4px}
+#s08 .tree-wrap{padding:8px 4px}
+#s08 .tree{display:block;width:100%;min-width:700px;height:auto;font-family:var(--font-ui)}
+#s08 .tree .nd{stroke-width:2;rx:8;ry:8;fill:var(--card);stroke:var(--line)}
+#s08 .tree .nd-q{fill:var(--t-q);stroke:var(--c-q)}
+#s08 .tree .nd-k{fill:var(--t-k);stroke:var(--c-k)}
+#s08 .tree .nd-s{fill:var(--card);stroke:var(--ink-3)}
+#s08 .tree .nd-a{stroke:var(--c-a)}
+#s08 .tree text{font-size:15px;fill:var(--ink);dominant-baseline:middle;text-anchor:middle}
+#s08 .tree .sym-t{font-family:var(--font-math);font-style:italic;font-size:18px}
+#s08 .tree .t-q{fill:var(--c-q)} #s08 .tree .t-k{fill:var(--c-k)} #s08 .tree .t-a{fill:var(--c-a)}
+#s08 .tree .num{font-family:var(--font-mono);font-size:15px;font-variant-numeric:tabular-nums}
+#s08 .tree .rl{font-size:13px;fill:var(--ink-3);text-anchor:start;font-weight:600}
+#s08 .tree .edge{fill:none;stroke:var(--ink-3);stroke-width:1.6}
+#s08 .tree .ph{transition:opacity var(--dur)}
+#s08 .tree .ph.is-off{opacity:.1}
+#s08 .dt td.is-pending{opacity:.1;transition:opacity var(--dur)}
+#s08 .arena{position:relative}
+#s08 .tree .key-btn{cursor:pointer}
+#s08 .tree .key-btn:focus{outline:none}
+#s08 .tree .key-btn:focus-visible .nd{stroke:var(--ink);stroke-width:3}
+#s08 .tree .key-btn.is-sel .nd{stroke-width:3.5}
+#s08 .tree .nd-s.is-sel{stroke:var(--c-a);stroke-width:3.5}
+#s08 .tree .edge.is-sel{stroke:var(--c-a);stroke-width:2.6}
+#s08 .rd{margin:10px 0 0;font-size:15px;color:var(--ink-2);max-width:72ch;line-height:1.5}
+#s08 .ws-lab{font-size:13px;color:var(--ink-3);font-weight:600;margin:14px 0 2px}
+#s08 .ws-lab .num{font-family:var(--font-mono)}
+#s08 .bcalc .calc-line{margin:4px 0 0}
+#s08 .bcalc .calc-rl{display:inline-block;min-width:5.5em;text-align:right;margin-right:8px;font-family:var(--font-ui);font-weight:600;color:var(--oc)}
+#s08 .scroll-hint{display:none;margin:0 0 6px}
+@media (max-width:820px){#s08 .scroll-hint{display:block}}
+</style>
+<header class="sec-head">
+  <span class="sec-num">08</span>
+  <div>
+    <p class="eyebrow">Why we are here: one query, seven records. Attention happens in two separate phases: deciding where to read, then reading.</p>
+    <h2>Two phases: read routing (<span class="sym sym-q">Q</span>,<span class="sym sym-k">K</span>) vs message passing (<span class="sym sym-v">V</span>)</h2>
+  </div>
+</header>
+
+<div class="companion" data-kicker="For self-study">
+  <p>Attention is easier to trust once you see that it is two separate jobs. Phase A uses only queries and keys: it scores every earlier token and turns the scores into weights that sum to one. Phase B uses only values: each token sends its value, scaled by its weight, and the scaled values are added.</p>
+  <p>Run phase A, then click a key in the picture to see its dot product written out, axis by axis. Then run phase B and read the sum, one coordinate per line. Switch between the value rows and the $\va{\alpha}\vv{v}$ products. The sentence to remember: keys decide where to read, values decide what is read.</p>
+</div>
+
+<div class="prose">
+  <p>Take “bank” (token 7) as the query in <em>The fisherman sat beside the river bank</em>. Phase A only asks <strong>where</strong> to read. Phase B only decides <strong>what</strong> arrives. Neither phase updates anything yet.</p>
+</div>
+
+<div class="card">
+  <span class="phase-tag">Phase A · read routing</span>
+  <h3 class="card-title">$\vq{q_{7}}$ against every key $\vk{k_j}$: one score per row, then softmax turns the scores into weights $\va{\alpha_{7j}}$</h3>
+  <div class="btn-row"><button type="button" class="btn btn-primary" id="s08-runA">Run phase A</button></div>
+  <div id="s08-atab"></div>
+  <p class="rd" id="s08-aread"></p>
+  <div class="eq">$$\va{\alpha_{ij}} = \operatorname{softmax}_j\!\left(s_{ij}\right), \qquad s_{ij} = \frac{\vq{q_i}^\top \vk{k_j}}{\sqrt{d_k}}$$</div>
+  <p class="muted small">Dividing by the constant $\sqrt{d_k}$ only rescales the scores (why, in section 12). Only the query and the keys took part. No representation has been updated.</p>
+  <p class="pic-lab">The same numbers as a picture</p>
+  <p class="muted small scroll-hint">Scroll sideways to see all seven keys.</p>
+  <div class="scroll-x tree-wrap dotgrid"><div id="s08-tree"></div></div>
+  <p class="muted small">Look at: one edge from the query to every key, a score on each edge, and the softmax row underneath. Click a key to see its score written out.</p>
+  <p class="ws-lab" id="s08-wslab"></p>
+  <div id="s08-ws"></div>
+</div>
+
+<div class="callout callout-key"><span class="sym sym-q">Q</span>, <span class="sym sym-k">K</span> determine routing / relevance: where should token $i$ retrieve information from?</div>
+
+<div class="card">
+  <span class="phase-tag">Phase B · message passing</span>
+  <h3 class="card-title">Each token $j$ sends its value $\vv{v_j}$ scaled by its weight; the messages $\va{\alpha_{7j}}\,\vv{v_j}$ add up to $m_7$</h3>
+  <div class="btn-row">
+    <button type="button" class="btn btn-primary" id="s08-runB">Run phase B</button>
+    <button type="button" class="btn btn-quiet" id="s08-replay">Replay both</button>
+    <button type="button" class="btn btn-quiet" id="s08-weighted">Show the products α·v</button>
+  </div>
+  <div class="arena" id="s08-arena"><div id="s08-btab"></div></div>
+  <p class="ws-lab" id="s08-blab"></p>
+  <div class="calc bcalc obj-m" id="s08-bcalc"></div>
+  <p class="rd" id="s08-bread"></p>
+  <div class="eq">$$m_i = \sum_{j \le i} \va{\alpha_{ij}}\, \vv{v_j}$$</div>
+  <p class="muted small" id="s08-bnote">The keys are not sent anywhere; phase A used them up. Only values travel.</p>
+</div>
+
+<div class="callout callout-key"><span class="sym sym-v">V</span> carries the information: $\va{\alpha_{ij}}\vv{v_j}$ is the message from $j$ to $i$.</div>
+
+<div class="callout callout-key">Queries and keys determine <strong>who communicates with whom</strong>. Values determine <strong>what gets communicated</strong>.</div>
+
+<div class="companion after">
+  <p>Keep in mind: the weights $\va{\alpha_{7j}}$ came from queries and keys alone, and the message $m_7$ came from values alone. Nothing about “bank” has changed yet. Turning $m_7$ into a change is the next section.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s08');
+  const toks = AT.sentences.river.slice(0, 7);
+  const F = AT.forward(toks);
+  const qi = 6, n = qi + 1;
+  const T = toks.length;
+  const alpha = F.A[qi].slice(0, T), scores = F.S[qi].slice(0, T);
+  const amax = Math.max.apply(null, alpha);
+  const Z = scores.reduce((acc, s) => acc + Math.exp(s), 0);
+  const sv = AT.svg;
+  const AX = AT.axes;
+  const joinAnd = (xs) => xs.length <= 1 ? xs.join('') : xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1];
+  const tokLab = (j) => (j + 1) + ' ' + toks[j];
+
+  /* ---------- Phase A: the routing table (primary) ---------- */
+  const atab = AT.ui.table([F.Q[qi]].concat(F.K), {
+    cornerLabel: 'row',
+    rowLabels: ['$\\vq{q_{' + n + '}}$ ' + toks[qi]].concat(toks.map((t, j) => '$\\vk{k_{' + (j + 1) + '}}$ ' + t)),
+    rowCls: ['q'].concat(toks.map(() => 'k')), highlightRow: 0,
+    computed: [
+      { label: '$\\text{score}\\,/\\sqrt{d_k}$', cls: 'a', fn: (row, i) => i === 0 ? '' : scores[i - 1] },
+      { label: '$\\text{softmax} \\to \\va{\\alpha_{' + n + 'j}}$', cls: 'a', heat: true, heatMax: 1, fn: (row, i) => i === 0 ? '' : alpha[i - 1] }
+    ],
+    footer: { label: 'weights sum to', values: '', computed: ['', AT.sum(alpha)] },
+    caption: 'Look at: the score is the query row against one key row, axis by axis; the softmax column is the same seven scores turned into weights.',
+    note: 'Click a score to see the dot product written out; hover a weight for the softmax.',
+    into: S.querySelector('#s08-atab') });
+  const scoreCells = toks.map((t, j) => atab.computedCells[j + 1][0]);
+  const alphaCells = toks.map((t, j) => atab.computedCells[j + 1][1]);
+  toks.forEach((t, j) => {
+    atab.tipOn(scoreCells[j], () => AT.productLine(F.Q[qi], F.K[j], 2) + ', then ' + AT.fmt(F.Sraw[qi][j], 2) + ' ÷ √' + AT.d_k + ' = ' + AT.fmt(scores[j], 2));
+    atab.tipOn(alphaCells[j], () => 'exp(' + AT.fmt(scores[j], 2) + ') ÷ Σ exp(scores) = ' + AT.fmt(Math.exp(scores[j]), 2) + ' ÷ ' + AT.fmt(Z, 2) + ' = ' + AT.fmt(alpha[j], 2));
+  });
+  const pending = (cells, on) => cells.forEach(td => td.classList.toggle('is-pending', on));
+  /* click a score cell: the q · k worksheet as a popover */
+  const pop = AT.ui.popover(atab, { label: 'Score arithmetic' });
+  toks.forEach((t, j) => {
+    const td = scoreCells[j];
+    td.classList.add('has-calc');
+    const open = () => pop.show(td, 'score of key ' + t + ' for query ' + toks[qi], AT.ui.dotCalc(F.Q[qi], F.K[j], { axes: 'qk', qLabel: 'q · ' + tokLab(qi), kLabel: 'k · ' + tokLab(j), scale: true, d_k: AT.d_k }));
+    td.addEventListener('click', open);
+    td.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); open(); } });
+  });
+  /* reading of the weight row */
+  (function(){
+    const order = AT.range(T).sort((a, b) => alpha[b] - alpha[a]);
+    const top = order.slice(0, 3), rest = order.slice(3);
+    const restSum = rest.reduce((s, j) => s + alpha[j], 0);
+    let clause = alpha[top[1]] >= 0.75 * alpha[top[0]] ? toks[qi] + ' reads from ' + toks[top[0]] + ' and ' + toks[top[1]] + ' about equally' : toks[qi] + ' reads mostly from ' + toks[top[0]];
+    const el = S.querySelector('#s08-aread');
+    el.innerHTML = 'Reading $\\va{\\alpha_{' + n + 'j}}$: ' + top.map(j => AT.escape(toks[j]) + ' ' + AT.fmt(alpha[j], 2)).join(', ') + (rest.length ? '; the other ' + rest.length + ' share ' + AT.fmt(restSum, 2) : '') + ', so ' + AT.escape(clause) + '.';
+    AT.renderMath(el);
+  })();
+
+  /* ---------- Phase A: the routing tree (picture) ---------- */
+  const W = 760, H = 318;
+  const svg = sv('svg', { viewBox: '0 0 ' + W + ' ' + H, class: 'tree', role: 'img', 'aria-label': 'Routing tree: the query of bank compared with each key, giving scores and softmax weights' });
+  const qx = 424, qy = 14, qw = 110, qh = 40;
+  const leafX = (j) => 118 + j * 92, leafW = 84, leafY = 150, leafH = 40, scY = 212, alY = 272, rowH = 32;
+  const ph = {}, scoreBoxes = [];
+  let selJ = 5;
+  function grp(name){ const g = sv('g', { class: 'ph', 'data-ph': name }); svg.appendChild(g); ph[name] = g; return g; }
+  function label(g, x, y, s){ g.appendChild(sv('text', { x: x, y: y, class: 'rl' }, s)); }
+  const gl = grp('labels');
+  label(gl, 8, leafY + leafH / 2, 'keys');
+  label(gl, 8, scY + rowH / 2, 'scores s');
+  gl.appendChild(sv('text', { x: 8, y: scY + rowH / 2 + 16, class: 'rl' }, 'q·k/√d_k'));
+  label(gl, 8, alY + rowH / 2, 'softmax');
+  gl.appendChild(sv('text', { x: 8, y: alY + rowH / 2 + 16, class: 'rl' }, '→ weights'));
+  toks.forEach((t, j) => {
+    const cx = leafX(j) + leafW / 2;
+    const ge = grp('edge' + j);
+    ge.appendChild(sv('path', { class: 'edge', d: 'M' + qx + ' ' + (qy + qh) + ' C ' + qx + ' ' + (qy + qh + 60) + ', ' + cx + ' ' + (leafY - 60) + ', ' + cx + ' ' + leafY }));
+    const gk = grp('key' + j);
+    gk.setAttribute('class', 'ph key-btn'); gk.setAttribute('role', 'button'); gk.setAttribute('tabindex', '0');
+    gk.setAttribute('aria-label', 'show the score of key ' + t + ' written out');
+    gk.addEventListener('click', () => selectKey(j));
+    gk.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); selectKey(j); } });
+    gk.appendChild(sv('rect', { class: 'nd nd-k', x: leafX(j), y: leafY, width: leafW, height: leafH }));
+    const tk = sv('text', { x: cx, y: leafY + leafH / 2 + 1, class: 'sym-t t-k' }, 'k');
+    tk.appendChild(sv('tspan', { dy: '6', 'font-size': '12', 'font-style': 'normal', 'font-family': 'var(--font-ui)' }, t));
+    gk.appendChild(tk);
+    const gs = grp('score' + j);
+    scoreBoxes[j] = sv('rect', { class: 'nd nd-s', x: leafX(j) + 5, y: scY, width: leafW - 10, height: rowH });
+    gs.appendChild(scoreBoxes[j]);
+    gs.appendChild(sv('text', { x: cx, y: scY + rowH / 2 + 1, class: 'num' }, AT.fmt(scores[j], 2)));
+    gs.appendChild(sv('path', { class: 'edge', d: 'M' + cx + ' ' + (leafY + leafH) + ' L ' + cx + ' ' + (scY - 2) }));
+    const ga = grp('alpha' + j);
+    const dark = alpha[j] / amax > 0.6;
+    ga.appendChild(sv('rect', { class: 'nd nd-a', x: leafX(j) + 5, y: alY, width: leafW - 10, height: rowH, fill: AT.heatColor(alpha[j] / amax) }));
+    ga.appendChild(sv('text', { x: cx, y: alY + rowH / 2 + 1, class: 'num', fill: dark ? 'var(--card)' : null }, AT.fmt(alpha[j], 2)));
+    ga.appendChild(sv('path', { class: 'edge', d: 'M' + cx + ' ' + (scY + rowH) + ' L ' + cx + ' ' + (alY - 2) }));
+  });
+  const gq = grp('query');
+  gq.appendChild(sv('rect', { class: 'nd nd-q', x: qx - qw / 2, y: qy, width: qw, height: qh }));
+  const tq = sv('text', { x: qx, y: qy + qh / 2 + 1, class: 'sym-t t-q' }, 'q');
+  tq.appendChild(sv('tspan', { dy: '6', 'font-size': '12', 'font-style': 'normal', 'font-family': 'var(--font-ui)' }, toks[qi]));
+  gq.appendChild(tq);
+  S.querySelector('#s08-tree').appendChild(svg);
+  /* the worksheet for the selected key, always visible under the tree */
+  const wsLab = S.querySelector('#s08-wslab');
+  const ws = AT.ui.dotCalc(F.Q[qi], F.K[selJ], { axes: 'qk', qLabel: 'q · ' + tokLab(qi), kLabel: 'k · ' + tokLab(selJ), scale: true, d_k: AT.d_k, into: S.querySelector('#s08-ws') });
+  function selectKey(j){
+    selJ = j;
+    toks.forEach((t, k) => {
+      ph['key' + k].classList.toggle('is-sel', k === j);
+      scoreBoxes[k].classList.toggle('is-sel', k === j);
+      ph['edge' + k].querySelector('.edge').classList.toggle('is-sel', k === j);
+    });
+    ws.update(F.Q[qi], F.K[j], { kLabel: 'k · ' + tokLab(j) });
+    wsLab.innerHTML = 'The score on the ' + AT.escape(toks[j]) + ' edge, written out: $\\vq{q_{' + n + '}} \\cdot \\vk{k_{' + (j + 1) + '}} / \\sqrt{d_k} = ' + AT.fmt(scores[j], 2) + '$. Click another key to change it.';
+    AT.renderMath(wsLab);
+  }
+  selectKey(selJ);
+
+  /* ---------- Phase B: the mix table ---------- */
+  const bhost = S.querySelector('#s08-btab');
+  let weighted = false, sent = false, btab = null;
+  const dash = AT.range(AT.d_v).map(() => '·');
+  function drawB(){
+    AT.clear(bhost);
+    btab = AT.ui.mixTable(alpha, F.V, { rowLabels: toks.map((t, j) => (weighted ? '$\\va{\\alpha_{' + n + ',' + (j + 1) + '}}\\vv{v_{' + (j + 1) + '}}$ ' : '$\\vv{v_{' + (j + 1) + '}}$ ') + t),
+      cornerLabel: 'row', weighted: weighted, alphaLabel: '$\\va{\\alpha_{' + n + 'j}}$', footerLabel: '$m_{' + n + '} = \\sum_j \\va{\\alpha_{' + n + 'j}}\\,\\vv{v_j}$', into: bhost,
+      caption: (weighted ? 'Look at: each cell is one message term $\\va{\\alpha_{' + n + 'j}}\\,\\vv{v_j}$; ' : 'Look at: the weight column comes from phase A, the rows are the values $\\vv{v_j}$; ') + 'the footer adds the rows, one column at a time.',
+      note: sent ? 'Hover or focus a cell of the sum to see the weighted terms, row by row.' : 'Press “Run phase B” to send the messages and fill the sum.' });
+    if (!sent) btab.setFooter(dash);
+  }
+  drawB();
+  /* the weighted sum written out, one line per coordinate of m_7 */
+  const bcalc = S.querySelector('#s08-bcalc'), blab = S.querySelector('#s08-blab'), bread = S.querySelector('#s08-bread');
+  const vAxes = AT.axesFor('v', AT.d_v) || [];
+  function drawBCalc(){
+    AT.clear(bcalc);
+    if (!sent) {
+      blab.textContent = 'Press “Run phase B” to see each coordinate of the sum written out.';
+      bread.textContent = '';
+      return;
+    }
+    blab.innerHTML = '$m_{' + n + '}$, one line per coordinate: weight times value, added over the ' + T + ' rows.';
+    AT.renderMath(blab);
+    AT.range(AT.d_v).forEach(c => {
+      const col = F.V.map(v => v[c]);
+      const line = AT.productLine(alpha, col, 2);
+      const eq = line.lastIndexOf(' = ');
+      const p = AT.h('p', { class: 'calc-line' }, AT.h('span', { class: 'calc-rl', title: vAxes[c] ? vAxes[c].title : null }, (vAxes[c] ? vAxes[c].label : String(c + 1)) + ' ='), line.slice(0, eq) + ' = ', AT.h('span', { class: 'calc-r' }, AT.fmt(F.Mmsg[qi][c], 2)));
+      bcalc.appendChild(p);
+    });
+    const m = F.Mmsg[qi];
+    const order = AT.range(AT.d_v).sort((a, b) => m[b] - m[a]);
+    const strip = (t) => String(t).replace(/^says:\s*/, '');
+    const parts = order.map(c => (vAxes[c] ? vAxes[c].label : c + 1) + ' ' + AT.fmt(m[c], 2));
+    const top = order[0], second = order[1];
+    const clause = m[second] >= 0.75 * m[top] ? 'the message says ' + strip(vAxes[top].title) + ' and ' + strip(vAxes[second].title) + ' about equally' : 'the message mostly says ' + strip(vAxes[top].title);
+    bread.innerHTML = 'Reading $m_{' + n + '}$: ' + parts.join(', ') + ', so ' + AT.escape(clause) + '.';
+    AT.renderMath(bread);
+  }
+  drawBCalc();
+  S.querySelector('#s08-weighted').addEventListener('click', (ev) => { weighted = !weighted; ev.currentTarget.textContent = weighted ? 'Show the value rows v' : 'Show the products α·v'; drawB(); });
+
+  /* ---------- animation ---------- */
+  let runId = 0;
+  const groups = Object.keys(ph);
+  function setAll(off){ groups.forEach(k => ph[k].classList.toggle('is-off', off)); }
+  function later(id, ms, fn){ setTimeout(() => { if (id === runId) fn(); }, ms); }
+  function runA(){
+    const id = ++runId;
+    if (AT.reducedMotion()) { setAll(false); pending(scoreCells, false); pending(alphaCells, false); return Promise.resolve(); }
+    setAll(true); pending(scoreCells, true); pending(alphaCells, true);
+    let t = 150;
+    later(id, t, () => ph.query.classList.remove('is-off'));
+    t += 400;
+    toks.forEach((tok, j) => { later(id, t + j * 160, () => { ph['edge' + j].classList.remove('is-off'); ph['key' + j].classList.remove('is-off'); }); });
+    t += T * 160 + 300;
+    later(id, t, () => { ph.labels.classList.remove('is-off'); });
+    toks.forEach((tok, j) => { later(id, t + j * 120, () => { ph['score' + j].classList.remove('is-off'); scoreCells[j].classList.remove('is-pending'); }); });
+    t += T * 120 + 500;
+    toks.forEach((tok, j) => { later(id, t + j * 90, () => { ph['alpha' + j].classList.remove('is-off'); alphaCells[j].classList.remove('is-pending'); }); });
+    t += T * 90 + 200;
+    return new Promise(res => later(id, t + 450, res));
+  }
+  // Settle phase A instantly (cancel its pending timers, show its final state) so phase B never starts on a half-drawn table.
+  function finishA(){ ++runId; setAll(false); pending(scoreCells, false); pending(alphaCells, false); }
+  function runB(){
+    finishA();
+    sent = false;
+    btab.setFooter(dash);
+    drawBCalc();
+    if (btab.note) btab.note.textContent = 'Messages in flight.';
+    const arena = S.querySelector('#s08-arena');
+    const foot = btab.table.querySelector('tfoot tr');
+    return AT.ui.flow(arena, { from: btab.rowEls, to: foot, weights: alpha, color: 'var(--c-v)', duration: 1000, stagger: 110 })
+      .then(() => { sent = true; btab.setFooter(btab.sum); drawBCalc(); if (btab.note) btab.note.textContent = 'Hover or focus a cell of the sum to see the weighted terms, row by row.'; });
+  }
+  S.querySelector('#s08-runA').addEventListener('click', () => { runA(); });
+  S.querySelector('#s08-runB').addEventListener('click', () => { runB(); });
+  S.querySelector('#s08-replay').addEventListener('click', () => { runA().then(() => runB()); });
+})();
+</script>
+</section>

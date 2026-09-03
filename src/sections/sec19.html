@@ -1,0 +1,271 @@
+<section id="s19" class="sec" data-title="Three summaries" data-lit="">
+<style>
+#s19 .lvl{font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--ink-3);margin:0 0 6px}
+#s19 .quote{font-size:1.25em;line-height:1.45;font-weight:500;margin:0}
+#s19 .look{font-size:14px;color:var(--ink-2);margin:12px 0 0;max-width:68ch}
+#s19 .chain{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 6px}
+#s19 .chain .cbox{border:2px solid var(--line);border-radius:var(--radius-s);padding:8px 14px;font-weight:600;color:var(--ink-2);background:var(--card);transition:border-color var(--dur),background var(--dur),color var(--dur),opacity var(--dur)}
+#s19 .chain .cbox.is-on{border-color:var(--oc,var(--ink));background:var(--ot,var(--paper));color:var(--ink)}
+#s19 .chain .cbox.is-on.obj-ep{border-color:var(--oc2)}
+#s19 .chain .cbox.is-past{opacity:.55}
+#s19 .chain .carr{color:var(--ink-3);font-size:20px;line-height:1}
+#s19 .chain-state{font-family:var(--font-mono);font-size:14px;color:var(--ink-2);min-height:1.4em;margin:4px 0 0}
+#s19 .eqs{display:grid;grid-template-columns:1fr auto;gap:6px 24px;align-items:center}
+#s19 .eqs .dim{font-size:16px;color:var(--ink-2)}
+#s19 .eqs .katex-display{margin:.35em 0;text-align:left}
+@media (max-width:640px){#s19 .eqs{grid-template-columns:1fr}#s19 .eqs .dim{margin-top:-4px}#s19 #s19-opchain .katex{font-size:1.05em}}
+#s19 .final-chain{margin:8px 0 12px}
+#s19 .pred-row{margin-top:16px;overflow-x:auto;max-width:100%}
+#s19 .rd{font-size:14px;color:var(--ink-2);margin:8px 0 0;max-width:68ch;line-height:1.5}
+#s19 .rd .katex{font-size:1.02em}
+#s19 .arith-row{margin:12px 0 0}
+#s19 .arith{margin:10px 0 0}
+#s19 .arith-cap{font-size:13.5px;color:var(--ink-3);margin:0 0 4px}
+#s19 .arith .calc-line{margin-top:8px}
+#s19 .close-line{font-size:1.1em;margin:16px 0 0}
+@media (prefers-reduced-motion:reduce){#s19 .chain .cbox{transition:none}}
+</style>
+<header class="sec-head">
+  <span class="sec-num">19</span>
+  <div>
+    <p class="eyebrow">Why we are here: the whole argument three times (in words, as a chain, and as matrices), then back to the first sentence.</p>
+    <h2>Three summaries</h2>
+  </div>
+</header>
+
+<div class="companion" data-kicker="For self-study">
+  <p>A summary is only useful if you can reproduce it without the page. So this section says the same thing three times, each in a form you might be asked for: a sentence for a conversation, a chain for a whiteboard, and four equations for an exam.</p>
+  <p>Play the chain and watch the pipeline diagram light up stage by stage. Then switch the sentence in the last card and check that the winning word changes while the equations do not. The sentence to remember: each token searches the tokens before it, retrieves a weighted mixture of their values, and adds the result to its own representation.</p>
+</div>
+
+<div class="card">
+  <p class="lvl">1 · Intuitive</p>
+  <blockquote class="quote">Each token searches previous tokens for useful information, retrieves a weighted mixture of what they have to say, and uses that information to update its own representation.</blockquote>
+</div>
+
+<div class="card">
+  <p class="lvl">2 · Operational</p>
+  <div id="s19-opchain"></div>
+  <div class="btn-row">
+    <button type="button" class="btn btn-primary" id="s19-play">Play the chain</button>
+    <button type="button" class="btn" id="s19-step">Next stage</button>
+    <button type="button" class="btn btn-quiet" id="s19-reset">Reset</button>
+  </div>
+  <div class="chain" id="s19-chain" aria-label="Operational chain"></div>
+  <p class="chain-state" id="s19-state" aria-live="polite"></p>
+  <div id="s19-motif"></div>
+  <p class="look">Watch the box and the pipeline stage light up together: the chain and the diagram are the same six steps.</p>
+</div>
+
+<div class="card">
+  <p class="lvl">3 · Mathematical</p>
+  <div class="eqs" id="s19-eqs"></div>
+  <p class="muted small" style="margin:8px 0 0">$M$ is the causal mask ($-\infty$ above the diagonal, $0$ elsewhere); <span id="s19-dims"></span></p>
+  <p class="look">Read the shapes on the right: only the boxed line returns to $T \times d_{\text{model}}$, the space every token started in.</p>
+</div>
+
+<div class="card">
+  <h3 class="card-title">From $\vp{E'}$ to the next token</h3>
+  <div class="final-chain" id="s19-final-chain"></div>
+  <div class="btn-row" id="s19-ctx"></div>
+  <div id="s19-chips"></div>
+  <div class="row pred-row" id="s19-vecs"></div>
+  <div id="s19-read"></div>
+  <div id="s19-table"></div>
+  <div id="s19-arith"></div>
+  <div id="s19-bars" style="margin-top:16px"></div>
+  <p class="close-line" id="s19-close"></p>
+  <p class="look">Switch the sentence: the last token is “the” in both, so only the context can move the winner.</p>
+</div>
+
+<div id="s19-notes"></div>
+
+<div class="card">
+  <h3 class="card-title">Notation recap, all tokens at once</h3>
+  <div id="s19-notation"></div>
+  <p class="look">Every symbol on this page in one place; the shape column uses the toy sizes.</p>
+</div>
+
+<div class="prose">
+  <p>Part 3 adds several heads, stacked layers and the rest of the Transformer.</p>
+</div>
+
+<div class="companion after">
+  <p>Keep in mind: attention adds to a representation, it never replaces it. $\vp{E'} = \ve{E} + \vd{\Delta E}$ is the whole mechanism, and the output head reads the last row of $\vp{E'}$ to predict the next token.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s19');
+
+  /* ---- 2. operational chain ---- */
+  const mq = window.matchMedia('(max-width:640px)');
+  function drawOpChain(){
+    AT.tex(S.querySelector('#s19-opchain'), mq.matches
+      ? '\\boxed{\\begin{aligned}&\\vq{\\text{Query}} \\rightarrow \\text{match }\\vk{\\text{Keys}} \\rightarrow \\operatorname{softmax}\\ (\\va{\\alpha})\\\\ &\\rightarrow \\text{retrieve }\\vv{\\text{Values}} \\rightarrow \\vd{\\Delta e} \\rightarrow \\vp{e + \\Delta e}\\end{aligned}}'
+      : '\\boxed{\\vq{\\text{Query}} \\rightarrow \\text{match }\\vk{\\text{Keys}} \\rightarrow \\operatorname{softmax}\\ (\\va{\\alpha}) \\rightarrow \\text{retrieve }\\vv{\\text{Values}} \\rightarrow \\vd{\\Delta e} \\rightarrow \\vp{e + \\Delta e}}',
+      { display: true });
+  }
+  drawOpChain();
+  const STAGES = [
+    { key: 'e',     cls: 'e',  tex: '\\ve{e}',                                   pre: 'start from',  say: 'Start from the current representation e of every token.' },
+    { key: 'qkv',   cls: 'q',  tex: '\\vq{q}^\\top \\vk{k}',                    pre: 'match',       say: 'Each token forms a query; every token offers a key. The dot product scores relevance.' },
+    { key: 'att',   cls: 'a',  tex: '\\operatorname{softmax} \\Rightarrow \\va{\\alpha}', pre: '', say: 'Softmax over the causally masked, scaled scores gives the weights α: who reads from whom.' },
+    { key: 'att',   cls: 'v',  tex: 'm_i = \\textstyle\\sum_j \\va{\\alpha_{ij}} \\vv{v_j}', pre: 'retrieve', say: 'Each token pulls a weighted mixture of values: the message m_i.' },
+    { key: 'delta', cls: 'd',  tex: '\\vd{\\Delta e_i} = m_i\\,W_O',               pre: '',            say: 'W_O maps the message into the model space: the contextual update Δe (pedagogical name).' },
+    { key: 'ep',    cls: 'ep', tex: '\\vp{e + \\Delta e}',                        pre: 'add',         say: 'Residual addition: the updated representation e′ = e + Δe. This addition is the standard operation.' }
+  ];
+  const chainHost = S.querySelector('#s19-chain');
+  const boxes = STAGES.map((st, i) => {
+    if (i) chainHost.appendChild(AT.h('span', { class: 'carr', 'aria-hidden': 'true' }, '→'));
+    const b = AT.h('span', { class: 'cbox obj-' + st.cls, html: (st.pre ? st.pre + ' ' : '') + AT.texStr(st.tex) });
+    chainHost.appendChild(b);
+    return b;
+  });
+  const motif = AT.motif(S.querySelector('#s19-motif'), { active: null, labels: true });
+  const state = S.querySelector('#s19-state');
+  const stepBtn = S.querySelector('#s19-step');
+  let cur = -1, timer = null;
+  function show(i){
+    cur = i;
+    stepBtn.disabled = i >= STAGES.length - 1;
+    boxes.forEach((b, j) => { b.classList.toggle('is-on', j === i); b.classList.toggle('is-past', i >= 0 && j < i); });
+    motif.setActive(i >= 0 ? STAGES[i].key : null);
+    state.textContent = i >= 0 ? ('Stage ' + (i + 1) + ' of ' + STAGES.length + ': ' + STAGES[i].say) : 'Press “Play the chain” or “Next stage”.';
+  }
+  function stop(){ if (timer) { clearTimeout(timer); timer = null; } }
+  function play(){
+    stop();
+    let i = 0;
+    const tick = () => { show(i); i++; if (i < STAGES.length) timer = setTimeout(tick, 900); else timer = null; };
+    tick();
+  }
+  S.querySelector('#s19-play').addEventListener('click', play);
+  stepBtn.addEventListener('click', () => { stop(); show(Math.min(cur + 1, STAGES.length - 1)); });
+  S.querySelector('#s19-reset').addEventListener('click', () => { stop(); show(-1); });
+  show(-1);
+
+  /* ---- 3. mathematical ---- */
+  const eqs = S.querySelector('#s19-eqs');
+  function eq(latex, dim, narrow){
+    const d = AT.h('div'); AT.tex(d, latex, { display: true }); eqs.appendChild(d);
+    if (narrow) { const redraw = () => AT.tex(d, mq.matches ? narrow : latex, { display: true }); redraw(); if (mq.addEventListener) mq.addEventListener('change', redraw); else if (mq.addListener) mq.addListener(redraw); }
+    const m = AT.h('div', { class: 'dim' }); AT.tex(m, dim); eqs.appendChild(m);
+  }
+  eq('\\vq{Q} = \\ve{E} W_Q, \\qquad \\vk{K} = \\ve{E} W_K, \\qquad \\vv{V} = \\ve{E} W_V', '\\ve{E} \\in \\mathbb{R}^{T \\times d_{\\text{model}}},\\ \\vq{Q},\\vk{K} \\in \\mathbb{R}^{T \\times d_k},\\ \\vv{V} \\in \\mathbb{R}^{T \\times d_v}',
+     '\\begin{gathered}\\vq{Q} = \\ve{E} W_Q, \\quad \\vk{K} = \\ve{E} W_K,\\\\ \\vv{V} = \\ve{E} W_V\\end{gathered}');
+  eq('\\va{A} = \\operatorname{softmax}\\!\\left(\\frac{\\vq{Q}\\vk{K}^\\top}{\\sqrt{d_k}} + M\\right)', '\\va{A} \\in \\mathbb{R}^{T \\times T},\\ \\text{rows sum to } 1');
+  eq('\\vd{\\Delta E} = \\va{A}\\vv{V}W_O', '\\vd{\\Delta E} \\in \\mathbb{R}^{T \\times d_{\\text{model}}}');
+  eq('\\boxed{\\vp{E\'} = \\ve{E} + \\vd{\\Delta E}}', '\\vp{E\'} \\in \\mathbb{R}^{T \\times d_{\\text{model}}}');
+  S.querySelector('#s19-dims').innerHTML = '$T = ' + AT.T + '$, $d_{\\text{model}} = ' + AT.d_model + '$, $d_k = ' + AT.d_k + '$, $d_v = ' + AT.d_v + '$ in the toy.';
+
+  /* ---- one-line readings, computed from the numbers and the axis names in AT.axes ---- */
+  function join(a, w){ return a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' ' + (w || 'and') + ' ' + a[a.length - 1]; }
+  function readVec(cls, vals){
+    const kind = AT.axisKind(cls, vals.length) || 'e';
+    const ax = AT.axisLabels(kind, vals.length) || vals.map((_, i) => String(i + 1));
+    const it = vals.map((v, i) => ({ v: +v || 0, i })).filter(x => x.v >= 0.2).sort((a, b) => b.v - a.v);
+    const top = it.length ? it[0].v : 0;
+    const strong = it.filter(x => x.v >= 0.6 * top), weak = it.filter(x => x.v >= 0.25 * top && x.v < 0.6 * top);
+    return { list: strong.concat(weak).map(x => ax[x.i] + ' ' + AT.fmt(x.v)).join(', '), strong: strong.map(x => ax[x.i]), weak: weak.map(x => ax[x.i]) };
+  }
+  function readingEp(sym, ep, e, d, tok){
+    const r = readVec('ep', ep), g = readVec('d', d), was = readVec('e', e);
+    const phrase = r.strong.length ? '“' + tok + '” gained ' + (g.list || 'nothing') + ' on top of its ' + join(was.strong) : 'nothing stands out';
+    return AT.h('p', { class: 'rd', html: 'Reading ' + AT.texStr(sym) + ': ' + AT.escape(r.list || 'all entries below 0.2') + ', so ' + AT.escape(phrase) + '.' });
+  }
+  /* ---- a worksheet behind a small button; its open state survives a sentence switch ---- */
+  let arithOpen = false;
+  function arith(into, build){
+    const txt = 'Show the arithmetic';
+    const btn = AT.h('button', { type: 'button', class: 'btn btn-quiet', 'aria-expanded': String(arithOpen) }, arithOpen ? 'Hide the arithmetic' : txt);
+    const box = AT.h('div', { class: 'arith', hidden: !arithOpen });
+    let built = false;
+    if (arithOpen) { build(box); built = true; }
+    btn.addEventListener('click', () => {
+      if (!built) { build(box); built = true; }
+      arithOpen = box.hidden;
+      box.hidden = !arithOpen;
+      btn.setAttribute('aria-expanded', String(arithOpen));
+      btn.textContent = arithOpen ? 'Hide the arithmetic' : txt;
+    });
+    into.appendChild(AT.h('div', { class: 'arith-row' }, btn));
+    into.appendChild(box);
+  }
+
+  /* ---- final connection ---- */
+  function drawFinalChain(){
+    AT.tex(S.querySelector('#s19-final-chain'), mq.matches
+      ? '\\begin{aligned}&\\vp{E\'} \\rightarrow \\text{vocabulary logits}\\\\ &\\ell = \\vp{e_t\'}\\,W_{\\text{vocab}} + b\\\\ &\\rightarrow \\operatorname{softmax}(\\ell) \\rightarrow p(\\text{next token})\\end{aligned}'
+      : '\\vp{E\'} \\rightarrow \\text{vocabulary logits } \\ell = \\vp{e_t\'}\\,W_{\\text{vocab}} + b \\rightarrow \\operatorname{softmax}(\\ell) \\rightarrow p(\\text{next token})',
+      { display: true });
+  }
+  drawFinalChain();
+  const onMq = () => { drawOpChain(); drawFinalChain(); };
+  if (mq.addEventListener) mq.addEventListener('change', onMq); else if (mq.addListener) mq.addListener(onMq);
+  let ctx = 'river';
+  const ctxHost = S.querySelector('#s19-ctx');
+  const btnA = AT.h('button', { type: 'button', class: 'btn', id: 's19-ctx-a', 'aria-pressed': 'true' }, 'Sentence A: river');
+  const btnB = AT.h('button', { type: 'button', class: 'btn', id: 's19-ctx-b', 'aria-pressed': 'false' }, 'Sentence B: cheque');
+  ctxHost.appendChild(btnA); ctxHost.appendChild(btnB);
+  const chipHost = S.querySelector('#s19-chips'), vecHost = S.querySelector('#s19-vecs'), readHost = S.querySelector('#s19-read'), tableHost = S.querySelector('#s19-table'), arithHost = S.querySelector('#s19-arith'), barHost = S.querySelector('#s19-bars'), closeEl = S.querySelector('#s19-close');
+  function items(F){
+    const t = F.T - 1;
+    const cand = AT.probsFor(F.probs[t], AT.candidates[ctx]);
+    const other = 1 - AT.sum(cand.map(x => x.p));
+    return cand.concat([{ label: 'other', p: other }]);
+  }
+  function paint(){
+    const toks = AT.sentences[ctx];
+    const F = AT.forward(toks);
+    const t = F.T - 1;
+    AT.clear(chipHost);
+    AT.ui.chips(toks, { active: t, slot: '___', into: chipHost });
+    AT.clear(vecHost);
+    AT.ui.vec(F.Enew[t], { cls: 'ep', label: '\\vp{e_{' + (t+1) + '}\'}', dims: true, into: vecHost });
+    AT.clear(readHost);
+    readHost.appendChild(readingEp('\\vp{e_{' + (t+1) + '}\'}', F.Enew[t], F.E[t], F.Delta[t], toks[t]));
+    const cand = AT.probsFor(F.probs[t], AT.candidates[ctx]);
+    const top = AT.topk(F.probs[t], 1)[0];
+    const best = cand.findIndex(x => x.tok === top.tok);
+    const otherP = 1 - AT.sum(cand.map(x => x.p));
+    AT.clear(tableHost);
+    AT.ui.table(cand.map(x => [F.logits[t][x.i], x.p]), {
+      cols: [{ label: 'logit $\\ell$', cls: 'neutral' }, { label: 'probability $p$', decimals: 3 }],
+      rowLabels: cand.map(x => x.tok), cornerLabel: 'candidate', highlightRow: best >= 0 ? best : undefined,
+      footer: { label: 'other ' + (AT.vocab.length - cand.length) + ' tokens together', values: ['', otherP], decimals: 3, cls: 'neutral' },
+      caption: 'Row $' + (t+1) + '$ of $\\vp{E\'}$ times $W_{\\text{vocab}}$, plus $b$, gives one logit per word; softmax turns the ' + AT.vocab.length + ' logits into probabilities. Only the ' + cand.length + ' candidate words are listed.',
+      into: tableHost });
+    AT.clear(arithHost);
+    arith(arithHost, (box) => {
+      box.appendChild(AT.h('p', { class: 'arith-cap', html: 'The logit of the winner, <strong>' + AT.escape(top.tok) + '</strong>: row $' + (t+1) + '$ of $\\vp{E\'}$ times the <em>' + AT.escape(top.tok) + '</em> column of $W_{\\text{vocab}}$, plus its bias.' }));
+      const col = AT.model.W_vocab.map(r => [r[top.i]]);
+      const mv = AT.ui.matVecCalc(F.Enew[t], col, { from: 'e', to: [top.tok], cls: 'neutral', xLabel: 'e′ · ' + (t+1) + ' ' + toks[t], outLabel: 'e′ W_vocab, column ' + top.tok, into: box });
+      const bias = +AT.model.b_vocab[top.i] || 0;
+      box.appendChild(AT.h('p', { class: 'calc-line' }, 'logit = ' + AT.fmt(mv.out[0]) + ' + b(' + top.tok + ') = ' + AT.fmt(mv.out[0]) + ' + ' + (bias < 0 ? '(' + AT.fmt(bias) + ')' : AT.fmt(bias)) + ' = ', AT.h('span', { class: 'calc-r' }, AT.fmt(F.logits[t][top.i])), ', then the softmax over all ' + AT.vocab.length + ' logits gives p = ' + AT.fmt(top.p, 3) + '.'));
+      AT.renderMath(box);
+    });
+    const it = items(F);
+    AT.clear(barHost);
+    AT.ui.bars(it, { cls: 'neutral', sorted: false, highlight: top.tok, decimals: 3, size: 'lg', into: barHost });
+    closeEl.innerHTML = 'We started with “' + AT.escape(toks.join(' ')) + ' ___”. The last token read the context through attention and updated itself by $\\vd{\\Delta e_{' + (t+1) + '}}$; the output head then turned $\\vp{e_{' + (t+1) + '}\'}$ into <strong>' + AT.escape(top.tok) + '</strong> at ' + AT.fmt(top.p, 3) + '.';
+    AT.renderMath(closeEl);
+  }
+  function setCtx(c){
+    ctx = c;
+    btnA.setAttribute('aria-pressed', c === 'river' ? 'true' : 'false');
+    btnB.setAttribute('aria-pressed', c === 'cheque' ? 'true' : 'false');
+    paint();
+  }
+  btnA.addEventListener('click', () => setCtx('river'));
+  btnB.addEventListener('click', () => setCtx('cheque'));
+  paint();
+
+  /* ---- closing note: prediction is one step; generation repeats it ---- */
+  AT.ui.callout('Prediction is not generation. The output head gives probabilities for one step. To generate, pick a token from $p(x_{t+1}\\mid x_{\\le t})$, append it to the sequence, form the query for the new last position, and repeat.', { kind: 'note', into: S.querySelector('#s19-notes') });
+
+  /* ---- notation recap ---- */
+  AT.ui.notationCard({ groups: ['matrix', 'sizes'], into: S.querySelector('#s19-notation') });
+})();
+</script>
+</section>

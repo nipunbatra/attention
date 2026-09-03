@@ -1,0 +1,232 @@
+<section id="s17" class="sec" data-title="Multiple heads" data-lit="">
+<style>
+#s17 .cap{font-size:14px;color:var(--ink-2);margin:0 0 14px;max-width:68ch}
+#s17 .illus{display:inline-block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--ink-3);border:1px solid var(--line);border-radius:999px;padding:2px 9px;margin-left:6px;vertical-align:middle}
+#s17 .diagram svg{min-width:760px;width:100%;height:auto;font-family:var(--font-ui)}
+#s17 .diagram text{font-size:14px;fill:var(--ink);text-anchor:middle;dominant-baseline:middle}
+#s17 .diagram text.sub{font-size:11.5px;fill:var(--ink-3)}
+#s17 .diagram text.math{font-family:var(--font-math);font-style:italic;font-size:17px}
+#s17 .diagram .edge{fill:none;stroke:var(--ink-3);stroke-width:1.8}
+#s17 .diagram .edge-res{stroke:var(--c-e);stroke-dasharray:4 4}
+#s17 .diagram .ar-ink{fill:var(--ink-3)} #s17 .diagram .ar-e{fill:var(--c-e)}
+#s17 .diagram .bx{stroke-width:2;rx:8;ry:8}
+#s17 .diagram .bx-col{rx:3;ry:3}
+#s17 .diagram .jn{fill:var(--ink-3)}
+#s17 .diagram .bx-e{fill:var(--t-e);stroke:var(--c-e)}   #s17 .diagram .tx-e{fill:var(--c-e)}
+#s17 .diagram .bx-q{fill:var(--t-q);stroke:var(--c-q)}   #s17 .diagram .tx-q{fill:var(--c-q)}
+#s17 .diagram .bx-k{fill:var(--t-k);stroke:var(--c-k)}   #s17 .diagram .tx-k{fill:var(--c-k)}
+#s17 .diagram .bx-v{fill:var(--t-v);stroke:var(--c-v)}   #s17 .diagram .tx-v{fill:var(--c-v)}
+#s17 .diagram .bx-a{fill:var(--t-a);stroke:var(--c-a)}   #s17 .diagram .tx-a{fill:var(--c-a)}
+#s17 .diagram .bx-d{fill:var(--t-d);stroke:var(--c-d)}   #s17 .diagram .tx-d{fill:var(--c-d)}
+#s17 .diagram .bx-ep{fill:var(--t-e);stroke:var(--c-d)}
+#s17 .diagram .bx-n{fill:var(--card);stroke:var(--ink)}
+#s17 .diagram g.head{transition:opacity var(--dur)}
+#s17 .diagram.has-active g.head:not(.is-active){opacity:.28}
+#s17 .diagram g.head.is-active .bx{stroke-width:3}
+#s17 .dimline{display:flex;flex-wrap:wrap;gap:8px 24px;align-items:center;font-size:15px;color:var(--ink-2);margin-top:10px}
+#s17 .eqgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 24px;align-items:center}
+@media (max-width:820px){#s17 .eqgrid{grid-template-columns:minmax(0,1fr)}}
+#s17 .eqgrid>div{min-width:0}
+#s17 .why{font-size:15px;color:var(--ink-2);margin:10px 0 0;max-width:46em}
+#s17 .btn-row{margin-bottom:14px}
+#s17 .dt td.dt-num .katex{font-size:1.05em}
+/* phones: hide the role text in the row labels and tighten the cells so more tokens fit before scrolling */
+@media (max-width:600px){#s17 .dt th.dt-rl .role{display:none} #s17 .dt td.dt-num{min-width:3.4em;padding:8px 8px}}
+</style>
+<header class="sec-head">
+  <span class="sec-num">17</span>
+  <div>
+    <p class="eyebrow">Why we are here: one head is one notion of relevance, and a token usually needs several at once.</p>
+    <h2>Multiple heads</h2>
+  </div>
+</header>
+
+<div class="companion" data-kicker="For self-study">
+  <p>One head produces one weight row per token, so it can only express one kind of "who matters to me right now". The word bank needs more than that: the meaning from river, the phrase it sits in, and the subject of the sentence. Multi-head attention runs several small heads side by side, each with its own $W_Q, W_K, W_V$, and lets $W_O$ fold their messages into one update.</p>
+  <p>Pick a head in the table below and follow it through the diagram: its own projections, its own weight row, its own block of $H$. The sentence to remember: heads differ only in their weight matrices; inside each one, attention is exactly section 16.</p>
+</div>
+
+<div class="prose">
+  <p>One attention head computes one weight row per token: one answer to "who is relevant to me?". But there may be multiple useful notions of relevance. For <strong>bank</strong>, one head might want the semantic context (river), another the words right before it, another the start of the sentence.</p>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Three heads, one query token (bank) <span class="illus">heads 2 and 3 illustrative</span></h3>
+  <p class="cap">Each row is one head's weight row for bank; darker cells carry more weight. Head 1 is the toy model's own head, computed; heads 2 and 3 are drawn by hand. Pick a head to follow it below.</p>
+  <div class="btn-row" id="s17-btns"></div>
+  <div id="s17-heads"></div>
+  <p class="why" id="s17-headwhy"></p>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Each head retrieves in its own smaller space; $W_O$ merges the results</h3>
+  <p class="cap">Follow the highlighted head from left to right: its own $\vq{Q}, \vk{K}, \vv{V}$, its weights, its block of $H$, then $W_O$ and the residual addition.</p>
+  <div class="scroll-x diagram dotgrid" id="s17-diagram"></div>
+  <div class="dimline" id="s17-dims"></div>
+</div>
+
+<div class="card">
+  <h3 class="card-title">The equations, head by head</h3>
+  <div class="eqgrid">
+    <div>$$\vq{Q^{(h)}} = \ve{E}\,W_Q^{(h)}, \qquad \vk{K^{(h)}} = \ve{E}\,W_K^{(h)}, \qquad \vv{V^{(h)}} = \ve{E}\,W_V^{(h)}$$</div>
+    <div>$$H^{(h)} = \operatorname{Attention}\!\left(\vq{Q^{(h)}}, \vk{K^{(h)}}, \vv{V^{(h)}}\right)$$</div>
+    <div>$$H = \left[H^{(1)};\,\ldots;\,H^{(n_h)}\right]$$</div>
+    <div>$$\boxed{\vd{\Delta E} = H\,W_O}, \qquad \vp{E'} = \ve{E} + \vd{\Delta E}$$</div>
+  </div>
+  <p class="why">Inside each head, Attention is exactly the single-head computation of section 16: scale, mask, softmax, then $\va{A^{(h)}}\,\vv{V^{(h)}}$. The heads only differ in their weight matrices.</p>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Sizes <span class="illus">illustrative sizes</span></h3>
+  <p class="cap">Drag the slider: the highlighted row shows that more heads means smaller heads, with the same total width every time.</p>
+  <div id="s17-hslider"></div>
+  <div id="s17-sizes"></div>
+  <p class="why">Heads do not make the model wider. Every head reads the full input $\ve{e_i}$, all $d_{\text{model}}$ numbers, through its own $W_Q^{(h)}, W_K^{(h)}, W_V^{(h)}$; no head receives a slice of the embedding. What is smaller is each head's output, $d_v = d_{\text{model}} / n_h$ numbers per token, and those outputs sit side by side in $H$.</p>
+</div>
+
+<div id="s17-callouts"></div>
+
+<div class="companion after">
+  <p>Keep in mind: a head is not a slice of the input. Every head sees all of $\ve{e_i}$, computes its own weights, and returns a short message; $W_O$ is where those messages meet and become one $\vd{\Delta e_i}$.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s17');
+  const toks = AT.sentences.river.slice(0, 7);
+  const T = toks.length;
+  const F = AT.forward(toks);
+  const BANK = 6;
+
+  /* ---- head 1 is the toy model's single head (computed); heads 2 and 3 are illustrative patterns (NOT toy numbers; labelled on the page) ---- */
+  const toyRow = F.A[BANK].slice(0, T);
+  const top = AT.argmax(toyRow);
+  const qAxes = AT.axesFor('qk', AT.d_k, false).map(a => a.label.replace(/^[a-z ]+:\s*/, ''));
+  const HEADS = [
+    { name: 'Head 1', role: 'setting (the toy head)', why: 'Head 1 is the toy model\'s own head: bank reads mostly from ' + toks[top] + ' (' + AT.fmt(toyRow[top]) + '), because its query asks for ' + qAxes.join(', ') + ' evidence.', w: toyRow },
+    { name: 'Head 2', role: 'nearby syntax', why: 'Head 2 reads the words right before it: "the river ___".', w: [0.02, 0.03, 0.04, 0.10, 0.30, 0.38, 0.13] },
+    { name: 'Head 3', role: 'long range', why: 'Head 3 reads the start of the sentence: who is the subject?', w: [0.42, 0.36, 0.08, 0.05, 0.03, 0.03, 0.03] }
+  ];
+
+  /* ---- one table: a row per head, a column per token, the row sum on the right ---- */
+  const headTable = AT.ui.table(HEADS.map(hd => hd.w), {
+    cols: toks.map((t, j) => (j + 1) + ' ' + t), rowLabels: HEADS.map(hd => hd.name + ': ' + hd.role), cornerLabel: 'bank reads from →',
+    rowCls: 'a', heatCols: AT.range(T), decimals: 2,
+    computed: [{ label: 'row sum', fn: (row) => AT.sum(row), cls: 'neutral' }],
+    caption: 'Weight rows $\\va{\\alpha^{(h)}_{\\text{bank},\\cdot}}$ for three heads. Head 1 is the toy model\'s single head from sections 8 to 16, computed; heads 2 and 3 are drawn by hand to show what other heads could specialise in.',
+    into: S.querySelector('#s17-heads') });
+  /* the role text hides on phones (see the style block), so it lives in its own span */
+  HEADS.forEach((hd, i) => { const th = headTable.rowLabelEls[i]; AT.clear(th); th.appendChild(document.createTextNode(hd.name)); th.appendChild(AT.h('span', { class: 'role' }, ': ' + hd.role)); });
+  const headWhy = S.querySelector('#s17-headwhy');
+
+  /* ---- diagram ---- */
+  const dia = S.querySelector('#s17-diagram');
+  const sv = AT.svg;
+  const W = 920, Hh = 330;
+  const svg = sv('svg', { viewBox: '0 0 ' + W + ' ' + Hh, role: 'img', 'aria-label': 'Three attention heads run side by side on E; their outputs are placed side by side as columns of one wide matrix H, multiplied by W_O to give delta E, and added to E.' });
+  const defs = sv('defs');
+  const mk = (id, cls) => { const m = sv('marker', { id: id, viewBox: '0 0 10 10', refX: '9', refY: '5', markerWidth: '7', markerHeight: '7', orient: 'auto-start-reverse' }); m.appendChild(sv('path', { d: 'M0 0L10 5L0 10z', class: cls })); return m; };
+  defs.appendChild(mk('s17-ar', 'ar-ink')); defs.appendChild(mk('s17-ar-e', 'ar-e'));
+  svg.appendChild(defs);
+  const edges = sv('g');
+  svg.appendChild(edges);
+  function edge(d, res) { edges.appendChild(sv('path', { d: d, class: 'edge' + (res ? ' edge-res' : ''), 'marker-end': 'url(#' + (res ? 's17-ar-e' : 's17-ar') + ')' })); }
+  function edgePlain(d) { edges.appendChild(sv('path', { d: d, class: 'edge' })); }
+  function box(g, x, y, w, h, cls) { g.appendChild(sv('rect', { x: x, y: y, width: w, height: h, class: 'bx ' + cls })); }
+  function text(g, x, y, s, cls) { g.appendChild(sv('text', { x: x, y: y, class: cls || '' }, s)); }
+  function textSup(g, x, y, base, sup, cls) { const t = sv('text', { x: x, y: y, class: cls || '' }, base); t.appendChild(sv('tspan', { dy: '-7', style: 'font-size:11px' }, sup)); g.appendChild(t); }
+  function textSub(g, x, y, base, sub, cls) { const t = sv('text', { x: x, y: y, class: cls || '' }, base); t.appendChild(sv('tspan', { dy: '5', style: 'font-size:12px' }, sub)); g.appendChild(t); }
+
+  const cy = 175;
+  const eX = 16, eW = 64, eH = 48;
+  const gE = sv('g'); box(gE, eX, cy - eH / 2, eW, eH, 'bx-e'); text(gE, eX + eW / 2, cy, 'E', 'math tx-e'); text(gE, eX + eW / 2, cy + eH / 2 + 16, 'current', 'sub'); text(gE, eX + eW / 2, cy + eH / 2 + 29, 'representations', 'sub');
+  const headYs = [78, 175, 272], hX = 150, hW = 300, hH = 74;
+  const jX = 468;                                    /* junction where the three head outputs meet */
+  const catX = 490, colW = 36, catW = 3 * colW, catH = 96, catY = cy - catH / 2;   /* one wide block: T rows, H·d_v columns */
+  const oX = 616, oW = 66, dX = 716, dW = 66, plusX = 822, pR = 16, xX = 856, xW = 58;
+  const headGroups = HEADS.map((hd, h) => {
+    const g = sv('g', { class: 'head', 'data-head': h + 1 });
+    const y = headYs[h] - hH / 2;
+    g.appendChild(sv('rect', { x: hX, y: y, width: hW, height: hH, rx: 10, ry: 10, class: 'bx bx-n', 'stroke-dasharray': '5 4' }));
+    text(g, hX + 70, y + 15, hd.name + ' · ' + hd.role, 'sub');
+    const px = hX + 14, pw = 30, ph = 18, py0 = y + 22;
+    box(g, px, py0, pw, ph, 'bx-q'); text(g, px + pw / 2, py0 + ph / 2 + 1, 'Q', 'math tx-q');
+    box(g, px + pw + 6, py0, pw, ph, 'bx-k'); text(g, px + pw + 6 + pw / 2, py0 + ph / 2 + 1, 'K', 'math tx-k');
+    box(g, px + 2 * (pw + 6), py0, pw, ph, 'bx-v'); text(g, px + 2 * (pw + 6) + pw / 2, py0 + ph / 2 + 1, 'V', 'math tx-v');
+    text(g, px + 1.5 * pw + 6, py0 + ph + 14, 'own projections', 'sub');
+    const ax = hX + 140, aw = 78, ah = 30;
+    box(g, ax, headYs[h] - ah / 2 + 4, aw, ah, 'bx-a'); text(g, ax + aw / 2 - 8, headYs[h] + 5, 'attention', ''); text(g, ax + aw / 2 + 30, headYs[h] + 5, 'α', 'math tx-a');
+    const hx = hX + hW - 60, hw = 44, hh = 30;
+    box(g, hx, headYs[h] - hh / 2 + 4, hw, hh, 'bx-v'); textSup(g, hx + hw / 2 - 2, headYs[h] + 5, 'H', '(' + (h + 1) + ')', 'math tx-v');
+    edges.appendChild(sv('path', { d: 'M' + (px + 3 * pw + 12) + ' ' + (py0 + ph / 2) + ' L ' + (ax - 3) + ' ' + (headYs[h] + 4), class: 'edge', 'marker-end': 'url(#s17-ar)' }));
+    edges.appendChild(sv('path', { d: 'M' + (ax + aw) + ' ' + (headYs[h] + 4) + ' L ' + (hx - 3) + ' ' + (headYs[h] + 4), class: 'edge', 'marker-end': 'url(#s17-ar)' }));
+    edge('M' + (eX + eW) + ' ' + cy + ' C ' + (eX + eW + 40) + ' ' + cy + ', ' + (hX - 40) + ' ' + headYs[h] + ', ' + (hX - 3) + ' ' + headYs[h]);
+    edgePlain('M' + (hx + hw) + ' ' + (headYs[h] + 4) + ' C ' + (hx + hw + 34) + ' ' + (headYs[h] + 4) + ', ' + (jX - 34) + ' ' + cy + ', ' + (jX - 2) + ' ' + cy);
+    svg.appendChild(g);
+    return g;
+  });
+  svg.appendChild(gE);
+  const gCat = sv('g');
+  edges.appendChild(sv('circle', { cx: jX, cy: cy, r: 4, class: 'jn' }));
+  edge('M' + (jX + 4) + ' ' + cy + ' L ' + (catX - 3) + ' ' + cy);
+  /* the three head outputs sit SIDE BY SIDE as column blocks of one wide matrix (T rows, n_h·d_v columns), not stacked as rows */
+  HEADS.forEach((hd, h) => { box(gCat, catX + h * colW, catY, colW, catH, 'bx-v bx-col'); textSup(gCat, catX + h * colW + colW / 2 - 2, cy, 'H', '(' + (h + 1) + ')', 'math tx-v'); });
+  text(gCat, catX + catW / 2, catY - 14, 'concatenate columns', 'sub');
+  text(gCat, catX + catW / 2, catY + catH + 16, 'H', 'math tx-v');
+  text(gCat, catX + catW / 2, catY + catH + 31, 'side by side: T × n_h·d_v', 'sub');
+  svg.appendChild(gCat);
+  edge('M' + (catX + catW) + ' ' + cy + ' L ' + (oX - 3) + ' ' + cy);
+  const gO = sv('g'); box(gO, oX, cy - 24, oW, 48, 'bx-n'); textSub(gO, oX + oW / 2 - 2, cy, 'W', 'O', 'math'); text(gO, oX + oW / 2, cy + 40, 'back to the', 'sub'); text(gO, oX + oW / 2, cy + 53, 'model space', 'sub'); svg.appendChild(gO);
+  edge('M' + (oX + oW) + ' ' + cy + ' L ' + (dX - 3) + ' ' + cy);
+  const gD = sv('g'); box(gD, dX, cy - 24, dW, 48, 'bx-d'); text(gD, dX + dW / 2, cy, 'ΔE', 'math tx-d'); text(gD, dX + dW / 2, cy + 40, 'one update', 'sub'); svg.appendChild(gD);
+  edge('M' + (dX + dW) + ' ' + cy + ' L ' + (plusX - pR - 3) + ' ' + cy);
+  const gP = sv('g'); gP.appendChild(sv('circle', { cx: plusX, cy: cy, r: pR, class: 'bx bx-n' })); text(gP, plusX, cy + 1, '+', ''); svg.appendChild(gP);
+  edge('M' + (plusX + pR) + ' ' + cy + ' L ' + (xX - 3) + ' ' + cy);
+  const gX = sv('g'); box(gX, xX, cy - 24, xW, 48, 'bx-ep'); text(gX, xX + xW / 2, cy, "E′", 'math tx-e'); svg.appendChild(gX);
+  edge('M' + (eX + eW / 2) + ' ' + (cy - eH / 2) + ' L ' + (eX + eW / 2) + ' 18 L ' + plusX + ' 18 L ' + plusX + ' ' + (cy - pR - 3), true);
+  edges.appendChild(sv('text', { x: (eX + eW / 2 + plusX) / 2, y: 12, class: 'sub', style: 'fill:var(--c-e)' }, 'residual: keep E, add ΔE'));
+  dia.appendChild(svg);
+
+  /* ---- dims under the diagram (symbolic; the toy has a single head) ---- */
+  const dims = S.querySelector('#s17-dims');
+  [['\\ve{E} \\in \\mathbb{R}^{T \\times d_{\\text{model}}}'], ['H^{(h)} \\in \\mathbb{R}^{T \\times d_v}'], ['H \\in \\mathbb{R}^{T \\times n_h d_v}'], ['W_O \\in \\mathbb{R}^{n_h d_v \\times d_{\\text{model}}}'], ['\\vd{\\Delta E}, \\vp{E\'} \\in \\mathbb{R}^{T \\times d_{\\text{model}}}']].forEach(([tex]) => {
+    const s = AT.h('span'); AT.tex(s, tex); dims.appendChild(s);
+  });
+
+  /* ---- head selection: highlights the table row and the diagram lane ---- */
+  const btnHost = S.querySelector('#s17-btns');
+  let active = 0; // 0 = all
+  const btns = [];
+  function select(h) {
+    active = h;
+    btns.forEach((b, i) => { b.classList.toggle('btn-primary', i === h); b.setAttribute('aria-pressed', i === h ? 'true' : 'false'); });
+    headTable.setHighlightRow(h === 0 ? -1 : h - 1);
+    headTable.setDim(h === 0 ? [] : AT.range(HEADS.length).filter(i => i !== h - 1));
+    headWhy.textContent = h === 0 ? 'Three different answers to the same question, "who is relevant to bank?", computed at the same time.' : HEADS[h - 1].why;
+    dia.classList.toggle('has-active', h !== 0);
+    headGroups.forEach((g, i) => g.classList.toggle('is-active', h === i + 1));
+  }
+  ['All heads', 'Head 1: setting', 'Head 2: nearby syntax', 'Head 3: long range'].forEach((lab, i) => {
+    const b = AT.h('button', { type: 'button', class: 'btn', id: 's17-btn-' + i, 'aria-pressed': 'false' }, lab);
+    b.addEventListener('click', () => select(i));
+    btnHost.appendChild(b); btns.push(b);
+  });
+  select(0);
+
+  /* ---- illustrative sizes: one row per head count, the slider highlights a row ---- */
+  const DM = 512; // illustrative model width (labelled on the page); the toy itself is d_model = AT.d_model with one head
+  const hvals = [1, 2, 4, 8, 16];
+  const sizeTable = AT.ui.table(hvals.map(n => [DM / n, DM, DM]), {
+    cols: ['$d_k = d_v$ per head', 'width of $H$ ($n_h d_v$)', 'rows of $W_O$'], decimals: 0, cornerLabel: '$n_h$',
+    rowLabels: hvals.map(n => (n === 1 ? 'one head' : n + ' heads')), highlightRow: 2,
+    caption: 'Illustrative $d_{\\text{model}} = ' + DM + '$; the toy model uses one head with $d_{\\text{model}} = ' + AT.d_model + '$ and $d_k = ' + AT.d_k + '$. Every row has the same width of $H$, so $W_O$ is always $' + DM + ' \\times ' + DM + '$.',
+    into: S.querySelector('#s17-sizes') });
+  AT.ui.slider({ label: 'Number of heads', min: 0, max: hvals.length - 1, step: 1, value: 2, format: v => String(hvals[v]), onInput: v => sizeTable.setHighlightRow(v), into: S.querySelector('#s17-hslider') });
+
+  /* ---- callouts ---- */
+  const co = S.querySelector('#s17-callouts');
+  AT.ui.callout('Each head retrieves information in its own smaller space. $W_O$ combines those retrieved messages into one update $\\vd{\\Delta E}$ in the model\'s representation space. The residual addition $\\vp{E\'} = \\ve{E} + \\vd{\\Delta E}$ is unchanged.', { kind: 'key', into: co });
+  AT.ui.callout('The toy model on this page has a single head ($d_k = ' + AT.d_k + '$, $d_{\\text{model}} = ' + AT.d_model + '$), shown above as head 1. The rows of heads 2 and 3 are drawn by hand to show what different heads could specialise in; real heads learn their own patterns.', { kind: 'note', into: co });
+})();
+</script>
+</section>

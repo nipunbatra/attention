@@ -1,0 +1,254 @@
+<section id="s09" class="sec" data-title="The contextual update Δe" data-lit="d ep">
+<style>
+#s09 .anim{display:grid;grid-template-columns:330px minmax(0,1fr);gap:24px;align-items:start;margin-top:16px}
+@media (max-width:820px){#s09 .anim{grid-template-columns:minmax(0,1fr)}}
+#s09 .dg{padding:4px 0}
+#s09 .dg svg{display:block;width:320px;max-width:100%;height:auto;overflow:visible;font-family:var(--font-ui)}
+#s09 .dg .box{stroke-width:2;rx:9;ry:9;fill:var(--card);stroke:var(--line)}
+#s09 .dg .b-e{fill:var(--t-e);stroke:var(--c-e)}
+#s09 .dg .b-q{fill:var(--t-q);stroke:var(--c-q)}
+#s09 .dg .b-k{fill:var(--t-k);stroke:var(--c-k)}
+#s09 .dg .b-a{fill:var(--t-a);stroke:var(--c-a)}
+#s09 .dg .b-v{fill:var(--t-v);stroke:var(--c-v)}
+#s09 .dg .b-d{fill:var(--t-d);stroke:var(--c-d)}
+#s09 .dg .b-add{fill:var(--card);stroke:var(--ink)}
+#s09 .dg .b-ep{fill:var(--t-e);stroke:var(--c-d);stroke-width:3}
+#s09 .dg text{font-size:15px;fill:var(--ink);dominant-baseline:middle;text-anchor:middle}
+#s09 .dg .sy{font-family:var(--font-math);font-style:italic;font-size:19px}
+#s09 .dg .ui{font-weight:600;font-size:14px}
+#s09 .dg .sub{font-size:12px;fill:var(--ink-3);font-weight:500}
+#s09 .dg .t-e{fill:var(--c-e)} #s09 .dg .t-q{fill:var(--c-q)} #s09 .dg .t-k{fill:var(--c-k)} #s09 .dg .t-a{fill:var(--c-a)} #s09 .dg .t-v{fill:var(--c-v)} #s09 .dg .t-d{fill:var(--c-d)}
+#s09 .dg .edge{fill:none;stroke:var(--ink-3);stroke-width:1.8}
+#s09 .dg .edge-res{stroke:var(--c-e);stroke-dasharray:5 4}
+#s09 .dg g[data-st]{transition:opacity var(--dur)}
+#s09 .dg g.is-future{opacity:.22}
+#s09 .dg g.is-current .box{stroke-width:3.5;filter:drop-shadow(0 2px 6px var(--line))}
+#s09 .tab-lab{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin:0 0 4px}
+#s09 .stepper-body{grid-template-columns:minmax(0,1fr)}
+#s09 .stage-tab{margin-top:8px}
+#s09 .play-btn{margin-right:4px}
+#s09 .big-caption{font-size:1.25em}
+#s09 .rd{margin:10px 0 0;font-size:15px;color:var(--ink-2);max-width:72ch;line-height:1.5}
+#s09 .ws-lab{font-size:13px;color:var(--ink-3);font-weight:600;margin:16px 0 2px}
+#s09 #s09-chain .dt-fig{margin-top:8px}
+</style>
+<header class="sec-head">
+  <span class="sec-num">09</span>
+  <div>
+    <p class="eyebrow">Why we are here: the retrieved message $m_i$ must get back into the token’s representation. This is the centre of the whole story.</p>
+    <h2>The contextual update <span class="sym sym-d">Δe</span></h2>
+  </div>
+</header>
+
+<div class="companion" data-kicker="For self-study">
+  <p>This is the step the whole page builds towards. The message $m_7$ is a mixture of values, so it lives in value space with three coordinates. $W_O$ maps it into the four coordinates of a representation, and that vector, $\vd{\Delta e_7}$, is added to $\ve{e_7}$. The original representation is not overwritten; it receives a correction that depends on context.</p>
+  <p>Press Play, or step through, and watch the highlight move down the diagram while the matching row of the table lights up. Hover a cell of the last row to see the addition. Read the axis names: the message speaks in value coordinates, $W_O$ turns them into representation coordinates. The sentence to remember: attention adds a context-dependent update to the representation it started from.</p>
+</div>
+
+<div class="prose">
+  <p>The message $m_i$ lives in value space ($d_v$ numbers). An output projection $W_O$ maps it into representation space ($d_{\text{model}}$ numbers). We call that vector the contextual update $\vd{\Delta e_i}$ and add it to $\ve{e_i}$.</p>
+  $$m_i = \sum_{j \le i} \va{\alpha_{ij}}\, \vv{v_j} \qquad \boxed{\vd{\Delta e_i} = m_i\,W_O} \qquad \boxed{\vp{e_i^{\text{new}}} = \ve{e_i} + \vd{\Delta e_i}}$$
+</div>
+
+<div class="card">
+  <h3 class="card-title">Where we are in the pipeline</h3>
+  <div id="s09-motif"></div>
+  <p class="muted small">Look at: the dashed edge carries $\ve{e}$ around attention unchanged; the update joins it at the plus.</p>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Watch $\ve{e_{\text{bank}}}$ become $\vp{e_{\text{bank}}'}$, token 7 of <em>The fisherman sat beside the river bank</em></h3>
+  <div id="s09-stepper"></div>
+  <div class="anim">
+    <div class="dg dotgrid" id="s09-dg"></div>
+    <div>
+      <p class="tab-lab">The update chain, one coordinate per column</p>
+      <div id="s09-chain"></div>
+      <p class="rd" id="s09-dread"></p>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h3 class="card-title">The output projection: $m_7$ (value space, $1 \times d_v$) $\to$ $\vd{\Delta e_7}$ (representation space, $1 \times d_{\text{model}}$)</h3>
+  <div id="s09-wo"></div>
+  <p class="ws-lab" id="s09-wolab"></p>
+  <div id="s09-wocalc"></div>
+</div>
+
+<div class="callout callout-key big-caption">Attention does not replace the existing representation. It computes context-dependent information that can be added to it.</div>
+
+<div class="callout callout-note">Calling this update $\vd{\Delta e_i}$ is pedagogical notation used on this page; it is not standard Transformer notation. Standard implementations usually call it the <em>attention output</em> and add it through a residual connection. The addition itself is standard: it is the residual connection around the attention sublayer.</div>
+
+<div class="companion after">
+  <p>Keep in mind: $\vp{e_7'} = \ve{e_7} + \vd{\Delta e_7}$. The right branch computed the update, the left branch carried $\ve{e_7}$ unchanged, and the plus joins them. That plus is the residual connection.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s09');
+  const toks = AT.sentences.river.slice(0, 7);
+  const F = AT.forward(toks);
+  const qi = 6, n = qi + 1, T = toks.length;
+  const sv = AT.svg;
+  const AX = AT.axes;
+  const joinAnd = (xs) => xs.length <= 1 ? xs.join('') : xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1];
+  const tokCols = toks.map((t, j) => (j + 1) + ' ' + t);
+
+  /* ---------- motif ---------- */
+  const motif = AT.motif(S.querySelector('#s09-motif'), { active: 'e' });
+  const motifStage = ['e', 'qkv', 'qkv', 'att', 'att', 'delta', 'add', 'ep'];
+
+  /* ---------- the vertical diagram ---------- */
+  const svg = sv('svg', { viewBox: '0 0 320 590', role: 'img', 'aria-label': 'e_i splits: one branch is kept unchanged, the other goes through query, keys, attention weights, weighted values and W_O to give delta e_i; the two branches are added to give e_i prime' });
+  const Y = (k) => 44 + 70 * k;
+  const cxR = 215, wR = 190, bh = 44;
+  const cxE = 160, xL = 46;
+  const st = {};
+  function g(k, cls){ const el = sv('g', { 'data-st': String(k), class: cls || '' }); st[k] = st[k] || []; st[k].push(el); svg.appendChild(el); return el; }
+  function box(gel, cx, cy, w, cls){ gel.appendChild(sv('rect', { class: 'box ' + cls, x: cx - w / 2, y: cy - bh / 2, width: w, height: bh })); }
+  function txt(gel, x, y, s, cls){ const t = sv('text', { x: x, y: y, class: cls || '' }, s); gel.appendChild(t); return t; }
+  function edge(gel, d, res){ gel.appendChild(sv('path', { class: 'edge' + (res ? ' edge-res' : ''), d: d })); }
+  const yE = Y(0), ySplit = yE + bh / 2 + 12;
+  const g0 = g(0); box(g0, cxE, yE, 120, 'b-e'); const te = txt(g0, cxE, yE + 1, 'e', 'sy t-e'); te.appendChild(sv('tspan', { dy: '6', 'font-size': '13' }, 'i'));
+  txt(g0, cxE, yE - bh / 2 - 9, 'current representation', 'sub');
+  edge(g0, 'M' + cxE + ' ' + (yE + bh / 2) + ' L ' + cxE + ' ' + ySplit + ' L ' + xL + ' ' + ySplit + ' L ' + xL + ' ' + (Y(6) - 4), true);
+  edge(g0, 'M' + cxE + ' ' + ySplit + ' L ' + cxR + ' ' + ySplit + ' L ' + cxR + ' ' + (Y(1) - bh / 2 - 2));
+  const tk = txt(g0, xL - 12, Y(3) + 20, 'kept unchanged', 'sub'); tk.setAttribute('transform', 'rotate(-90 ' + (xL - 12) + ' ' + (Y(3) + 20) + ')');
+  const spec = [
+    { cls: 'b-q', main: 'q', sub: 'i', t: 't-q' },
+    { cls: 'b-k', ui: 'compare with k', sub: 'j', t: 't-k' },
+    { cls: 'b-a', ui: 'attention weights', main: 'α', t: 't-a' },
+    { cls: 'b-v', ui: 'weighted values', main: 'Σ α v', t: 't-v' },
+    { cls: 'b-d', main: 'Δe', sub: 'i', t: 't-d' }
+  ];
+  spec.forEach((sp, k1) => {
+    const k = k1 + 1, gg = g(k);
+    if (k > 1) edge(gg, 'M' + cxR + ' ' + (Y(k - 1) + bh / 2) + ' L ' + cxR + ' ' + (Y(k) - bh / 2 - 2));
+    box(gg, cxR, Y(k), wR, sp.cls);
+    if (sp.ui && sp.main) {
+      txt(gg, cxR - 30, Y(k) + 1, sp.ui, 'ui');
+      txt(gg, cxR + 68, Y(k) + 1, sp.main, 'sy ' + sp.t);
+    } else if (sp.ui) {
+      txt(gg, cxR - 8, Y(k) + 1, sp.ui, 'ui');
+      const s = txt(gg, cxR + 58, Y(k) + 1, 'k', 'sy ' + sp.t); s.appendChild(sv('tspan', { dy: '6', 'font-size': '13' }, sp.sub));
+    } else {
+      const t = txt(gg, cxR, Y(k) + 1, sp.main, 'sy ' + sp.t); if (sp.sub) t.appendChild(sv('tspan', { dy: '6', 'font-size': '13' }, sp.sub));
+    }
+  });
+  const g6 = g(6); const yP = Y(6), rP = 19;
+  edge(g6, 'M' + cxR + ' ' + (Y(5) + bh / 2) + ' L ' + cxR + ' ' + yP + ' L ' + (cxE + rP + 2) + ' ' + yP);
+  edge(g6, 'M' + xL + ' ' + (yP - 4) + ' L ' + xL + ' ' + yP + ' L ' + (cxE - rP - 2) + ' ' + yP, true);
+  g6.appendChild(sv('circle', { class: 'box b-add', cx: cxE, cy: yP, r: rP }));
+  txt(g6, cxE, yP + 1, '+', 'ui').setAttribute('style', 'font-size:24px');
+  txt(g6, cxE - rP - 16, yP - 14, 'add', 'sub');
+  const g7 = g(7); const yX = Y(7);
+  edge(g7, 'M' + cxE + ' ' + (yP + rP) + ' L ' + cxE + ' ' + (yX - bh / 2 - 2));
+  box(g7, cxE, yX, 120, 'b-ep'); const tx = txt(g7, cxE, yX + 1, 'e', 'sy t-e'); tx.appendChild(sv('tspan', { dy: '6', 'font-size': '13' }, 'i')); tx.appendChild(sv('tspan', { dy: '-12', 'font-size': '16' }, '′'));
+  txt(g7, cxE, yX + bh / 2 + 13, 'updated representation', 'sub');
+  S.querySelector('#s09-dg').appendChild(svg);
+
+  /* ---------- the update chain as one table ---------- */
+  const chainHost = S.querySelector('#s09-chain');
+  const mtab = AT.ui.table([F.Mmsg[qi]], { rowLabels: ['$m_{' + n + '}$ (value space)'], rowCls: 'm', cornerLabel: 'row', into: chainHost,
+    caption: 'Look at: $m_{' + n + '}$ has $d_v = ' + AT.d_v + '$ coordinates in value space; the headers say what each one says.' });
+  const chain = AT.ui.table([F.Delta[qi], F.E[qi]], {
+    axes: 'e', cornerLabel: 'row',
+    rowLabels: ['$\\vd{\\Delta e_{' + n + '}} = m_{' + n + '}\\,W_O$', '$\\ve{e_{' + n + '}}$'],
+    rowCls: ['d', 'e'],
+    footer: { label: '$\\vp{e_{' + n + "}'} = \\ve{e_{" + n + '}} + \\vd{\\Delta e_{' + n + '}}$', values: F.Enew[qi], cls: 'ep' },
+    caption: 'Look at: $W_O$ turns the message into a ' + AT.d_model + '-coordinate row on the $\\ve{e}$ axes; the two rows add column by column into the footer.',
+    note: 'Hover or focus a cell of the footer to see the addition.',
+    into: chainHost });
+  const footTr = chain.table.querySelector('tfoot tr');
+  chain.footer.cells.forEach((td, c) => chain.tipOn(td, () => AT.fmt(F.E[qi][c], 2) + ' + ' + (F.Delta[qi][c] < 0 ? '(' + AT.fmt(F.Delta[qi][c], 2) + ')' : AT.fmt(F.Delta[qi][c], 2)) + ' = ' + AT.fmt(F.Enew[qi][c], 2)));
+  const rowM = mtab.rowEls[0], rowD = chain.rowEls[0], rowE = chain.rowEls[1];
+  /* readings of the update and the result, computed from the numbers */
+  (function(){
+    const names = AX.short.e, D = F.Delta[qi], Ep = F.Enew[qi], E0 = F.E[qi];
+    const big = AT.range(AT.d_model).filter(c => Math.abs(D[c]) >= 0.5).sort((a, b) => Math.abs(D[b]) - Math.abs(D[a]));
+    const dTop = AT.argmax(D.map(Math.abs));
+    const dParts = big.length ? joinAnd(big.map(c => names[c] + ' ' + AT.fmtSigned(D[c], 2))) : 'every entry small';
+    const rest = AT.range(AT.d_model).filter(c => big.indexOf(c) < 0);
+    const before = AT.argmax(E0.slice(0, 3)), after = AT.argmax(Ep.slice(0, 3));
+    const el = S.querySelector('#s09-dread');
+    el.innerHTML = 'Reading $\\vd{\\Delta e_{' + n + '}}$: ' + AT.escape(dParts) + (rest.length ? ', the rest under 0.5' : '') + ', so the update pushes ' + AT.escape(toks[qi]) + ' towards ' + AT.escape(names[dTop]) + '. Reading $\\vp{e_{' + n + "}'}$: " + AT.escape(names[after]) + ' ' + AT.fmt(Ep[after], 2) + ' now leads' + (E0[0] === E0[1] && after <= 1 ? ', where $\\ve{e_{' + n + '}}$ had water and finance tied' : '') + '.';
+    AT.renderMath(el);
+  })();
+  function mark(tr, dim, cur){ tr.classList.toggle('is-dim', dim); tr.classList.toggle('is-hl', cur); }
+
+  /* ---------- per-stage tables inside the stepper stage (q, scores, weights) ---------- */
+  const stageTab = {
+    1: (el) => AT.ui.table([F.Q[qi]], { rowLabels: ['$\\vq{q_{' + n + '}}$ ' + toks[qi]], rowCls: 'q', cornerLabel: 'row', cls: null,
+         caption: 'Look at: three named coordinates, from $\\ve{e_{' + n + '}}$ (four coordinates) times $W_Q$: what ' + AT.escape(toks[qi]) + ' asks for.', into: el }),
+    2: (el) => AT.ui.table([F.S[qi].slice(0, T)], { cols: tokCols, rowLabels: ['$s_{' + n + 'j}$'], rowCls: 'neutral', cornerLabel: 'token j',
+         caption: 'Look at: one score per earlier token (section 8, phase A).', into: el }),
+    3: (el) => AT.ui.table([F.S[qi].slice(0, T), F.A[qi].slice(0, T)], { cols: tokCols, rowLabels: ['$s_{' + n + 'j}$', '$\\va{\\alpha_{' + n + 'j}}$'], rowCls: ['neutral', 'a'], cornerLabel: 'token j',
+         footer: { label: 'weights sum to', values: AT.range(T).map(j => j === 0 ? AT.sum(F.A[qi]) : '') },
+         caption: 'Look at: softmax turns the score row into the weight row; ' + AT.escape(toks[AT.argmax(F.A[qi].slice(0, T))]) + ' gets the most.', into: el })
+  };
+  const render = (i) => (el) => { if (stageTab[i]) { const d = AT.h('div', { class: 'stage-tab' }); stageTab[i](d); el.appendChild(d); } };
+
+  /* ---------- stage control ---------- */
+  function setStage(i){
+    Object.keys(st).forEach(k => { const kk = +k; st[k].forEach(gel => { gel.classList.toggle('is-future', kk > i); gel.classList.toggle('is-current', kk === i); }); });
+    mark(rowE, false, i === 0 || i === 6);
+    mark(rowM, i < 4, i === 4);
+    mark(rowD, i < 5, i === 5 || i === 6);
+    mark(footTr, i < 7, i === 7);
+    motif.setActive(motifStage[i]);
+  }
+  const steps = [
+    { title: 'Start from the current representation', tex: '\\ve{e_{' + n + '}}', note: 'This is the representation of “bank” before attention: token embedding plus position. It will not be overwritten. It is the $\\ve{e_{' + n + '}}$ row of the table.' },
+    { title: 'Compute the query', tex: '\\vq{q_{' + n + '}} = \\ve{e_{' + n + '}}\\,W_Q', note: 'The right branch begins. $\\ve{e_{' + n + '}}$ itself waits on the left, untouched.' },
+    { title: 'Compare against the keys', tex: 's_{' + n + 'j} = \\vq{q_{' + n + '}}^\\top \\vk{k_j} / \\sqrt{d_k}', note: 'One score for every token $j \\le ' + n + '$ (phase A of the previous section).' },
+    { title: 'Softmax gives the attention weights', tex: '\\va{\\alpha_{' + n + 'j}} = \\operatorname{softmax}_j(s_{' + n + 'j})', note: 'Where to read from. The weights sum to 1.' },
+    { title: 'Weight the values and add them up', tex: 'm_{' + n + '} = \\sum_{j \\le ' + n + '} \\va{\\alpha_{' + n + 'j}}\\, \\vv{v_j}', note: 'What is read (phase B). $m_{' + n + '}$ has $d_v$ numbers; it lives in value space. It is the first row of the table.' },
+    { title: 'Project back: the contextual update', tex: '\\vd{\\Delta e_{' + n + '}} = m_{' + n + '}\\,W_O', note: '$W_O$ maps the message into representation space, so it can be added to $\\ve{e_{' + n + '}}$. The second row of the table.' },
+    { title: 'Add the update to the original', tex: '\\ve{e_{' + n + '}} + \\vd{\\Delta e_{' + n + '}}', note: 'The two branches meet. Nothing was replaced: the original $\\ve{e_{' + n + '}}$ is still in there. Add the two highlighted rows, column by column.' },
+    { title: 'The updated representation', tex: '\\vp{e_{' + n + "}'} = \\ve{e_{" + n + '}} + \\vd{\\Delta e_{' + n + '}}', note: '“' + AT.escape(toks[qi]) + '” now carries ' + AT.escape(AX.short.e[AT.argmax(F.Delta[qi].map(Math.abs))]) + ' context. This $\\vp{e_{' + n + "}'}$, the footer of the table, is what the output head will see." }
+  ];
+  let playTimer = null, playing = false;
+  function stopPlay(){ playing = false; if (playTimer) { clearTimeout(playTimer); playTimer = null; } playBtn.textContent = 'Play'; }
+  steps.forEach((s, i) => { s.render = render(i); });
+  const stepper = AT.ui.stepper({ hideList: true, into: S.querySelector('#s09-stepper'), steps: steps, start: 0,
+    onChange: (i) => { setStage(i); if (playing && i === steps.length - 1) stopPlay(); } });
+  const playBtn = AT.h('button', { type: 'button', class: 'btn play-btn' }, 'Play');
+  stepper.el.querySelector('.stepper-bar').insertBefore(playBtn, stepper.buttons.prev);
+  function tick(){
+    if (!playing) return;
+    if (stepper.index() >= steps.length - 1) { stopPlay(); return; }
+    stepper.next();
+    playTimer = setTimeout(tick, 1100);
+  }
+  playBtn.addEventListener('click', () => {
+    if (playing) { stopPlay(); return; }
+    if (AT.reducedMotion()) { stepper.go(steps.length - 1); return; }
+    stepper.go(0);
+    playing = true; playBtn.textContent = 'Pause';
+    playTimer = setTimeout(tick, 1100);
+  });
+  [stepper.buttons.prev, stepper.buttons.next, stepper.buttons.reset].forEach(b => b.addEventListener('click', () => { if (playing) stopPlay(); }));
+  setStage(0);
+
+  /* ---------- W_O as a table: the rows of W_O weighted by m_7, summed in the footer ---------- */
+  const wo = AT.ui.wTable(AT.model.W_O, { from: 'v', to: 'e', cls: 'd', cornerLabel: '$W_O$',
+    caption: 'Look at: a row is a value axis (what the message says), a column is an $\\ve{e}$ axis (where it lands). Zeros are greyed.',
+    into: S.querySelector('#s09-wo') });
+  (function(){
+    const strip = (t) => String(t).replace(/^says:\s*/, '');
+    const rows = wo.inAxes.map((a, i) => {
+      const outs = wo.outAxes.map((b, j) => ({ nm: b.label, v: +AT.model.W_O[i][j] || 0 })).filter(o => o.v !== 0).map(o => o.nm + (o.v === 1 ? '' : ' (' + AT.fmt(o.v, 1) + ')'));
+      return strip(a.title || a.label) + ' lands on ' + (outs.length ? joinAnd(outs) : 'nothing');
+    });
+    const empty = wo.outAxes.filter((b, j) => AT.model.W_O.every(r => !(+r[j]))).map(b => b.label);
+    const note = AT.h('p', { class: 'dt-note' }, '$W_O$: ' + rows.join('; ') + (empty.length ? '; nothing lands on ' + joinAnd(empty) : '') + '.');
+    wo.appendChild(note); AT.renderMath(note);
+  })();
+  const wolab = S.querySelector('#s09-wolab');
+  wolab.innerHTML = 'The update written out: $\\vd{\\Delta e_{' + n + '}} = m_{' + n + '}\\,W_O$, one line per $\\ve{e}$ axis. Terms with a zero weight are greyed.';
+  AT.renderMath(wolab);
+  AT.ui.matVecCalc(F.Mmsg[qi], AT.model.W_O, { from: 'v', to: 'e', cls: 'd', xLabel: 'm · ' + n + ' ' + toks[qi], outLabel: 'Δe · ' + n + ' ' + toks[qi], into: S.querySelector('#s09-wocalc') });
+})();
+</script>
+</section>

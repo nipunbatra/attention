@@ -1,0 +1,232 @@
+<section id="s18" class="sec" data-title="Layer after layer" data-lit="">
+<style>
+#s18 .cap{font-size:14px;color:var(--ink-2);margin:0 0 14px;max-width:68ch}
+#s18 .chain svg{min-width:720px;width:100%;height:auto;font-family:var(--font-ui)}
+#s18 .chain text{font-size:14px;fill:var(--ink);text-anchor:middle;dominant-baseline:middle}
+#s18 .chain text.sub{font-size:11.5px;fill:var(--ink-3)}
+#s18 .chain text.math{font-family:var(--font-math);font-style:italic;font-size:18px}
+#s18 .chain .edge{fill:none;stroke:var(--ink-3);stroke-width:1.8}
+#s18 .chain .edge-res{stroke:var(--c-e);stroke-dasharray:4 4}
+#s18 .chain .ar-ink{fill:var(--ink-3)} #s18 .chain .ar-e{fill:var(--c-e)}
+#s18 .chain .bx{stroke-width:2;rx:9;ry:9}
+#s18 .chain .bx-e{fill:var(--t-e);stroke:var(--c-e)} #s18 .chain .tx-e{fill:var(--c-e)}
+#s18 .chain .bx-ep{fill:var(--t-e);stroke:var(--c-d)}
+#s18 .chain .bx-att{fill:var(--t-a);stroke:var(--c-a)} #s18 .chain .tx-a{fill:var(--c-a)}
+#s18 .chain .bx-d{fill:var(--t-d);stroke:var(--c-d)} #s18 .chain .tx-d{fill:var(--c-d)}
+#s18 .chain .bx-n{fill:var(--card);stroke:var(--ink)}
+#s18 .chain g.node{transition:opacity var(--dur)}
+#s18 .chain g.node.is-future{opacity:.28}
+#s18 .chain g.node.is-cur .bx{stroke-width:3.5}
+#s18 .why{font-size:15px;color:var(--ink-2);margin:10px 0 0;max-width:46em}
+#s18 .lab{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin:16px 0 6px}
+#s18 .stepper-stage .chips{margin-bottom:4px}
+#s18 .dt th.dt-rl .katex{font-size:1.05em}
+/* the weight row sits beside the step list, so its cells are a little tighter than the shell default */
+#s18 .stepper-stage .dt td.dt-num{min-width:3.4em;padding:8px 8px}
+#s18 .read{font-size:15px;color:var(--ink-2);margin:10px 0 0;max-width:60em;border-left:3px solid var(--line);padding-left:10px}
+#s18 .read .katex{font-size:1.02em}
+</style>
+<header class="sec-head">
+  <span class="sec-num">18</span>
+  <div>
+    <p class="eyebrow">Why we are here: one attention sublayer gives one update. Real models stack many, and each one starts from the previous result, not from scratch.</p>
+    <h2>Layer after layer</h2>
+  </div>
+</header>
+
+<div class="companion" data-kicker="For self-study">
+  <p>Everything so far used the token embeddings as the starting point, and after one attention sublayer each token has moved once. Real models repeat that move many times. The part that matters is where the next layer starts: from the representations the previous layer produced, not from the embeddings again. So layer 2 builds its queries, keys and values out of vectors that already contain context.</p>
+  <p>Apply the layers one at a time below and watch bank's row in the last table move away from its embedding. The sentence to remember: the representation is updated in place, layer after layer, and the raw embedding is only the first row.</p>
+</div>
+
+<div class="prose">
+  <p>$\ve{e_i}$ is the raw token embedding only at layer 0. After every attention layer it is a representation changed by context, and the next layer computes its $\vq{Q}$, $\vk{K}$, $\vv{V}$ from <em>that</em>, not from the original embedding.</p>
+  $$\ve{e_i^{(0)}} = \text{token embedding}_i + \text{position}_i, \qquad \vp{e_i^{(1)}} = \ve{e_i^{(0)}} + \vd{\Delta e_i^{(0)}}, \qquad \vp{e_i^{(2)}} = \ve{e_i^{(1)}} + \vd{\Delta e_i^{(1)}}, \;\ldots$$
+</div>
+
+<div class="card">
+  <h3 class="card-title">The stack: each layer reads the previous layer's output</h3>
+  <p class="cap">The bold box is where the stepper below currently stands; faded boxes are layers not applied yet.</p>
+  <div class="scroll-x chain dotgrid" id="s18-chain"></div>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Inside every layer: the same pipeline</h3>
+  <p class="cap">The six stages of sections 9 to 16 run unchanged in every layer; they light up in order each time you apply one.</p>
+  <div id="s18-motif"></div>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Apply attention layers one at a time</h3>
+  <p class="cap">Each step shows what bank read in that layer and the addition that moved its row.</p>
+  <div id="s18-stepper"></div>
+  <p class="why">The same toy weights are reused for every layer here, for illustration only; real models have separate $W_Q, W_K, W_V, W_O$ in each layer. Superscripts name the input a quantity was computed from: layer 1 reads $\ve{e^{(0)}}$, so its weights and update are $\va{\alpha^{(0)}}$ and $\vd{\Delta e^{(0)}}$, and the result is $\vp{e^{(1)}}$.</p>
+</div>
+
+<div class="card">
+  <h3 class="card-title">Bank's representation across layers</h3>
+  <p class="cap">One row per layer, one column per named axis; the outlined row is the layer the stepper is on.</p>
+  <div id="s18-across"></div>
+</div>
+
+<div id="s18-callouts"></div>
+
+<div class="companion after">
+  <p>Keep in mind: the superscript counts how many layers a representation has passed through. $\ve{e^{(0)}}$ is the embedding plus position; every later $\vp{e^{(\ell)}}$ is the previous row plus an update that was computed from the previous row.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s18');
+  const toks = AT.sentences.river.slice(0, 7);
+  const T = toks.length;
+  const BANK = 6;
+  const M = AT.model;
+  const L = 2; // layers shown: e^(0) -> e^(1) -> e^(2)
+
+  /* ---- one attention sublayer applied to an arbitrary representation matrix (same math as AT.forward) ---- */
+  function layer(E) {
+    const Q = AT.matmul(E, M.W_Q), K = AT.matmul(E, M.W_K), V = AT.matmul(E, M.W_V);
+    const Sm = Q.map((q, i) => K.map((k, j) => (j > i ? -Infinity : AT.dot(q, k) / AT.sqrt_dk)));
+    const A = Sm.map(r => AT.softmax(r));
+    const Mm = AT.matmul(A, V);
+    const D = AT.matmul(Mm, M.W_O);
+    const En = E.map((e, i) => AT.add(e, D[i]));
+    return { E: E, Q: Q, K: K, V: V, S: Sm, A: A, Mmsg: Mm, Delta: D, Enew: En };
+  }
+  const E0 = AT.embed(toks);
+  const layers = [];           // layers[l] = result of layer l+1 applied to reps[l]
+  const reps = [E0];           // reps[l] = e^{(l)}
+  for (let l = 0; l < L; l++) { const R = layer(reps[l]); layers.push(R); reps.push(R.Enew); }
+  S.dataset.check = JSON.stringify(layers[0].Enew[BANK]) === JSON.stringify(AT.forward(toks).Enew[BANK]) ? 'layer1-matches-forward' : 'MISMATCH';
+  const eLab = (l) => (l === 0 ? '\\ve{e_{\\text{bank}}^{(0)}}' : '\\vp{e_{\\text{bank}}^{(' + l + ')}}');
+
+  /* readings: plain sentences built from the numbers and the axis names (never retyped) */
+  const NE = AT.axesFor('e', AT.d_model, false).map(a => a.label.replace(/^[a-z ]+:\s*/, ''));
+  const ranked = (vec, nm, thr) => vec.map((x, i) => ({ x: x, i: i, name: nm[i] })).filter(t => Math.abs(t.x) >= thr).sort((a, b) => Math.abs(b.x) - Math.abs(a.x));
+  const list = (items) => items.map(t => t.name + ' ' + AT.fmt(t.x)).join(', ');
+  const STORY = { water: 'river', finance: 'money' };
+  const story = (ax) => STORY[ax] || ax;
+  /* the two setting axes of e are the first two named axes; bank sits between them */
+  const settingVerdict = (v, tie, lead) => { const a = v[0], b = v[1]; if (Math.abs(a - b) <= 0.1 * Math.max(Math.abs(a), Math.abs(b), 1e-9)) return tie(NE[0], NE[1]); return lead(a >= b ? NE[0] : NE[1]); };
+  const read = (el, html) => el.appendChild(AT.h('p', { class: 'read', html: html }));
+  const readE = (l) => { const v = reps[l][BANK]; return 'Reading ' + AT.texStr(eLab(l)) + ': ' + list(ranked(v.slice(0, 2), NE, 0).concat(ranked(v, NE, 0.25).filter(t => t.i > 1).slice(0, 1))) + (l === 0 ? ': bank starts as ' + settingVerdict(v, (a, b) => 'half ' + story(a) + ', half ' + story(b), (a) => 'mostly ' + story(a)) : ': after ' + l + (l === 1 ? ' layer' : ' layers') + ' bank reads as ' + settingVerdict(v, (a, b) => 'both a ' + story(a) + ' bank and a ' + story(b) + ' bank', (a) => 'a ' + story(a) + ' bank')) + '.'; };
+  const readA = (l) => { const r = ranked(layers[l - 1].A[BANK], toks.map((t, j) => (j === BANK ? 'itself' : t)), 0); const rest = r.slice(3); return 'In layer ' + l + ' bank read ' + list(r.slice(0, 3)) + (rest.length ? '; every other token at most ' + AT.fmt(Math.max(...rest.map(t => t.x))) : '') + '.'; };
+
+  /* ---- chain diagram ---- */
+  const sv = AT.svg;
+  const chain = S.querySelector('#s18-chain');
+  const Hh = 190, cy = 112;
+  const svg = sv('svg', { viewBox: '0 0 1000 ' + Hh, role: 'img', 'aria-label': 'e at layer 0 goes through attention layer 1 to give e at layer 1, then attention layer 2 gives e at layer 2, and so on.' });
+  const defs = sv('defs');
+  const mk = (id, cls) => { const m = sv('marker', { id: id, viewBox: '0 0 10 10', refX: '9', refY: '5', markerWidth: '7', markerHeight: '7', orient: 'auto-start-reverse' }); m.appendChild(sv('path', { d: 'M0 0L10 5L0 10z', class: cls })); return m; };
+  defs.appendChild(mk('s18-ar', 'ar-ink')); defs.appendChild(mk('s18-ar-e', 'ar-e'));
+  svg.appendChild(defs);
+  const edges = sv('g'); svg.appendChild(edges);
+  const edge = (d, res) => edges.appendChild(sv('path', { d: d, class: 'edge' + (res ? ' edge-res' : ''), 'marker-end': 'url(#' + (res ? 's18-ar-e' : 's18-ar') + ')' }));
+  const box = (g, x, y, w, h, cls) => g.appendChild(sv('rect', { x: x, y: y, width: w, height: h, class: 'bx ' + cls }));
+  const text = (g, x, y, s, cls) => g.appendChild(sv('text', { x: x, y: y, class: cls || '' }, s));
+  const textSup = (g, x, y, base, sup, cls) => { const t = sv('text', { x: x, y: y, class: cls || '' }, base); t.appendChild(sv('tspan', { dy: '-8', style: 'font-size:11px' }, sup)); g.appendChild(t); };
+  const eW = 70, eH = 50, aW = 112, aH = 50, pR = 14, gap = 26;
+  const nodes = [];    // e nodes: nodes[l]
+  const layerGs = [];  // attention nodes: layerGs[l] = layer l+1
+  let x = 14;
+  for (let l = 0; l <= L; l++) {
+    const g = sv('g', { class: 'node', 'data-e': l });
+    box(g, x, cy - eH / 2, eW, eH, l === 0 ? 'bx-e' : 'bx-ep');
+    textSup(g, x + eW / 2 - 4, cy + 2, 'e', '(' + l + ')', 'math tx-e');
+    text(g, x + eW / 2, cy + eH / 2 + 16, l === 0 ? 'embedding' : 'after ' + l + (l === 1 ? ' layer' : ' layers'), 'sub');
+    text(g, x + eW / 2, cy + eH / 2 + 29, l === 0 ? '+ position' : 'more context', 'sub');
+    svg.appendChild(g); nodes.push(g);
+    const ex = x + eW / 2;
+    x += eW + gap;
+    if (l < L) {
+      const ga = sv('g', { class: 'node', 'data-layer': l + 1 });
+      box(ga, x, cy - aH / 2, aW, aH, 'bx-att');
+      text(ga, x + aW / 2, cy - 8, 'attention', 'tx-a'); text(ga, x + aW / 2, cy + 10, 'layer ' + (l + 1), 'tx-a');
+      textSup(ga, x + aW / 2 - 14, cy + aH / 2 + 17, 'Q,K,V from e', '(' + l + ')', 'sub');
+      const px = x + aW + gap + pR;
+      ga.appendChild(sv('circle', { cx: px, cy: cy, r: pR, class: 'bx bx-n' })); text(ga, px, cy + 1, '+', '');
+      textSup(ga, x + aW + gap / 2 + 2, cy - 22, 'Δe', '(' + l + ')', 'sub tx-d');
+      svg.appendChild(ga); layerGs.push(ga);
+      edge('M' + (x - gap + 2) + ' ' + cy + ' L ' + (x - 3) + ' ' + cy);
+      edge('M' + (x + aW) + ' ' + cy + ' L ' + (px - pR - 3) + ' ' + cy);
+      edge('M' + (px + pR) + ' ' + cy + ' L ' + (px + pR + gap - 3) + ' ' + cy);
+      edge('M' + ex + ' ' + (cy - eH / 2) + ' L ' + ex + ' 30 L ' + px + ' 30 L ' + px + ' ' + (cy - pR - 3), true);
+      x = px + pR + gap;
+    }
+  }
+  text(svg, x + 14, cy, '⋯', 'math');
+  text(svg, x + 14, cy + eH / 2 + 16, 'more', 'sub'); text(svg, x + 14, cy + eH / 2 + 29, 'layers', 'sub');
+  svg.setAttribute('viewBox', '0 0 ' + (x + 44) + ' ' + Hh);
+  chain.appendChild(svg);
+  function paintChain(l) {
+    nodes.forEach((g, i) => { g.classList.toggle('is-future', i > l); g.classList.toggle('is-cur', i === l); });
+    layerGs.forEach((g, i) => { g.classList.toggle('is-future', i + 1 > l); g.classList.toggle('is-cur', i + 1 === l); });
+  }
+
+  /* ---- motif: the same pipeline inside every layer ---- */
+  const motif = AT.motif(S.querySelector('#s18-motif'), { active: 'e', size: 'md' });
+  let timer = null;
+  function animateMotif(l) {
+    if (timer) { clearTimeout(timer); timer = null; }
+    if (l === 0) { motif.setActive('e'); return; }
+    const stages = ['e', 'qkv', 'att', 'delta', 'add', 'ep'];
+    if (AT.reducedMotion()) { motif.setActive('ep'); return; }
+    let k = 0;
+    const tick = () => { motif.setActive(stages[k]); k++; if (k < stages.length) timer = setTimeout(tick, 260); else timer = null; };
+    tick();
+  }
+
+  /* ---- bank across layers: one row per layer, one column per coordinate, the distance from layer 0 on the right ---- */
+  const across = AT.ui.table(reps.map(E => E[BANK]), {
+    axes: 'e', cornerLabel: 'axis →',
+    rowLabels: reps.map((E, l) => 'layer ' + l + ': $' + eLab(l) + '$'), rowCls: reps.map((E, l) => (l === 0 ? 'e' : 'ep')),
+    computed: [{ label: 'distance from layer 0', fn: (row) => AT.norm(AT.sub(row, E0[BANK])), cls: 'neutral' }],
+    highlightRow: 0, dimRows: AT.range(L + 1).filter(l => l > 0),
+    caption: 'Each row is bank after that many layers; the last column is $\\|\\vp{e_{\\text{bank}}^{(\\ell)}} - \\ve{e_{\\text{bank}}^{(0)}}\\|$. A larger distance means more change, not a better representation.',
+    into: S.querySelector('#s18-across') });
+  function paintAcross(l) { across.setHighlightRow(l); across.setDim(AT.range(L + 1).filter(k => k > l)); }
+
+  /* ---- stepper: apply layers one at a time ---- */
+  const bankTok = M.tok_emb[AT.lower(toks[BANK])], bankPos = M.pos_emb[BANK];
+  const steps = [];
+  steps.push({ title: 'Layer 0: the raw embedding', tex: '\\ve{e_i^{(0)}} = \\text{token embedding}_i + \\text{position}_i',
+    note: 'Nothing has been read from the context yet. This is the only point where $\\ve{e_i}$ equals the token embedding (plus position).',
+    render: (el) => {
+      AT.ui.chips(toks, { active: BANK, into: el });
+      AT.ui.table([bankTok, bankPos], { axes: 'e', cornerLabel: 'axis →', rowLabels: ['$\\text{tok}_{\\text{bank}}$', '$\\text{pos}_{' + (BANK + 1) + '}$'], rowCls: 'neutral',
+        footer: { label: '$' + eLab(0) + '$ = sum', values: E0[BANK], cls: 'e' },
+        caption: 'The token row plus the position row gives the starting representation of bank.', into: el });
+      read(el, readE(0));
+    } });
+  for (let l = 1; l <= L; l++) {
+    const R = layers[l - 1];
+    steps.push({ title: 'After attention layer ' + l,
+      tex: '\\vp{e_i^{(' + l + ')}} = \\ve{e_i^{(' + (l - 1) + ')}} + \\vd{\\Delta e_i^{(' + (l - 1) + ')}}',
+      note: 'Layer ' + l + ' computed $\\vq{q}, \\vk{k}, \\vv{v}$ from $\\ve{e^{(' + (l - 1) + ')}}$' + (l > 1 ? ', which is already contextual, so its attention weights differ from the layer before (the $W$ matrices are the same here).' : ' and produced the first update.') + (l < L ? ' The next layer will start from $\\vp{e^{(' + l + ')}}$, not from $\\ve{e^{(0)}}$.' : ''),
+      render: (el) => {
+        el.appendChild(AT.h('p', { class: 'lab' }, 'what bank read in layer ' + l));
+        AT.ui.chips(toks, { active: BANK, into: el });
+        AT.ui.table([R.A[BANK]], { cols: toks, rowLabels: ['7 bank'], cornerLabel: 'reads from →', rowCls: 'a', heatCols: AT.range(T),
+          computed: [{ label: 'row sum', fn: (row) => AT.sum(row), cls: 'neutral' }],
+          caption: '$\\va{\\alpha^{(' + (l - 1) + ')}_{\\text{bank},\\cdot}}$, computed from $\\vq{q}, \\vk{k}$ of $\\ve{e^{(' + (l - 1) + ')}}$.', into: el });
+        read(el, readA(l));
+        el.appendChild(AT.h('p', { class: 'lab' }, 'the update and the residual addition'));
+        AT.ui.table([reps[l - 1][BANK], R.Delta[BANK]], { axes: 'e', cornerLabel: 'axis →',
+          rowLabels: ['$' + eLab(l - 1) + '$', '$\\vd{\\Delta e_{\\text{bank}}^{(' + (l - 1) + ')}}$'], rowCls: ['e', 'd'],
+          footer: { label: '$' + eLab(l) + '$ = sum', values: reps[l][BANK], cls: 'ep' },
+          caption: 'Column by column: the previous row plus the update gives the new row. Nothing is replaced.', into: el });
+        read(el, readE(l));
+      } });
+  }
+  AT.ui.stepper({ into: S.querySelector('#s18-stepper'), steps: steps, nextLabel: 'Apply another attention layer', texInList: false,
+    onChange: (i) => { paintChain(i); animateMotif(i); paintAcross(i); } });
+
+  /* ---- callouts ---- */
+  const co = S.querySelector('#s18-callouts');
+  AT.ui.callout('We are repeatedly updating token representations, not repeatedly returning to the original token embedding: $\\ve{e^{(0)}} \\to \\vp{e^{(1)}} \\to \\vp{e^{(2)}} \\to \\cdots$, each step adding context on top of the last.', { kind: 'key', into: co });
+  AT.ui.callout('Layer $\\ell + 1$ builds its $\\vq{Q}, \\vk{K}, \\vv{V}$ from $\\ve{e^{(\\ell)}}$, representations that already contain context, so later layers can retrieve by meaning that earlier layers assembled ("river bank" rather than "bank" alone). Inside one layer every position reads keys and values computed from the same input, so the updated bank $\\vp{e^{(\\ell+1)}}$ can only be read by other tokens in layer $\\ell + 2$: one concrete reason to stack layers.', { kind: 'note', into: co });
+})();
+</script>
+</section>
