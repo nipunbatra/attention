@@ -67,6 +67,7 @@ await p.screenshot({ path: path.join(outdir, 'f1-b1.png') });
 await p.keyboard.press('ArrowRight'); await p.waitForTimeout(250);
 s = await st();
 check(s.hash === '#s00/1/2' && s.stepper && s.stepper.index === 0, 'build 2 shows the stepper at step 1 (got ' + s.hash + ', stepper ' + JSON.stringify(s.stepper) + ')');
+check(await p.evaluate(() => getComputedStyle(document.querySelector('#s00-f1-stepper .stepper-bar')).display === 'none'), 'managed stepper hides its duplicate toolbar in presentation');
 check((await vis('#s00-frame1 .callout[data-build="3"]')) === false, 'build 3 still hidden while the stepper runs');
 await p.screenshot({ path: path.join(outdir, 'f1-b2-step1.png') });
 for (let k = 1; k < 4; k++) { await p.keyboard.press('ArrowRight'); await p.waitForTimeout(250); s = await st(); check(s.build === 2 && s.stepper && s.stepper.index === k, 'ArrowRight drives the stepper to step ' + (k + 1) + ' (build stays 2)'); await p.screenshot({ path: path.join(outdir, 'f1-b2-step' + (k + 1) + '.png') }); }
@@ -208,6 +209,7 @@ await p.click('#at-next'); await p.click('#at-next');
 check(await p.evaluate(() => fixtureSteppers[0].index() === 1 && fixtureSteppers[1].index() === 0), 'same-build steppers advance in document order');
 await p.click('#at-next');
 check(await p.evaluate(() => fixtureSteppers[1].index() === 1), 'the second stepper completes before leaving the build');
+check(await p.locator('#manual-stepper .stepper-bar').isVisible(), 'manual stepper retains its local toolbar in presentation');
 await p.locator('#manual-stepper .btn-next').focus(); await p.keyboard.press('ArrowRight');
 check(await p.evaluate(() => fixtureSteppers[2].index() === 1 && AT.present.state().frame.index === 2), 'manual stepper keys remain local');
 await p.locator('#manual-widget input').focus(); await p.keyboard.press('Home');

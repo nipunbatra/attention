@@ -6,16 +6,24 @@ Verified locally on 2026-09-03. All three parts use the same slide-first runtime
 
 | Part | Authored frames / PDF pages | Presentation states walked | Unique rendered formulas reparsed |
 |---|---:|---:|---:|
-| 1: characters to prediction | 58 | 125 | 79 |
+| 1: characters to prediction | 61 | 132 | 79 |
 | 2: self-attention | 133 | 297 | 487 |
 | 3: learning and Transformer blocks | 68 | 134 | 140 |
 
-- All 556 states passed: no stage/frame overflow, nested scrolling, JavaScript errors, or invalid rendered formulas. Preflight also checks open reveals and intermediate managed steps.
+- All 563 states passed: no stage/frame overflow, nested scrolling, JavaScript errors, or invalid rendered formulas. Preflight also checks open reveals and intermediate managed steps. The walkthrough explicitly starts at frame 1, independent of the article's current scroll position.
 - Strict math validation reparses each unique rendered formula with KaTeX `throwOnError: true`. A regression fixture confirmed that unknown commands, malformed math, and fallback text fail the audit, including commands introduced only in a later step.
-- Reading layouts fit 390px phone width without horizontal document overflow. Interaction sweeps exercised 26 controls in Part 1, 128 in Part 2, and 34 in Part 3 without errors.
-- Runtime regression checks passed for forward/back navigation, multiple managed steppers, manual-widget state/focus/selection, pending-control accessibility, overview focus, presenter view, fullscreen fallback, print restoration, deep links, and exit/reload.
+- Reading layouts fit 390px phone width without horizontal document overflow. Interaction sweeps exercised 32 controls in Part 1, 128 in Part 2, and 34 in Part 3 without errors.
+- Runtime regression checks passed for forward/back navigation, multiple managed steppers, manual-widget state/focus/selection, pending-control accessibility, overview focus, presenter view, fullscreen fallback, print restoration, deep links, and exit/reload. Managed steppers use the global presentation controls; manual widgets retain their local toolbar.
 - Title-only overflow, native disclosure changes, and intermediate-step disclosure overflow are detected. Preflight preserves edited manual widgets rather than rebuilding their DOM.
 - Representative diagram, dense-table, intro, and continuation frames were inspected visually. The browser header and footer are compact; body/title/caption/math sizes are 28/42/22/32 logical pixels.
+
+## Table and Part 1 diagram refinement
+
+The dedicated table audit sampled 507 tables across desktop reading, 390px phone reading, and presentation. It checks cell-text overlap, table overlap, semantic numeric/text/code styling, header sizes, contained mobile scrolling, and runtime errors. Classification, update, footer, and colour-tint regression fixtures pass for all three assembled parts. Numeric precision was preserved; prose no longer inherits right-aligned number styling. Dense token headers and projection columns were visually checked, and 42 targeted screenshots were saved during review. Intentional row-label wrapping remains readable.
+
+Four Part 1 diagrams adapt the original handwritten notes' visual sequence: the learned embedding scatter, repeated lookup to ordered concatenation, the prediction/learning graph, and the two training/generation loops. The regression creates 30 SVG instances and checks all 662 labels against their viewBoxes, all 184 arrow-marker references against their owning SVG, unique IDs, and accessible titles/descriptions. It verifies all 27 plotted embedding coordinates, six concatenated values, model shapes, target probability/loss, and a reproducible sample of `i` followed by the context `a b i`. A sampled boundary stops generation. Drawing diagrams does not mutate model parameters; the observed target has its own loss branch and is not an input.
+
+Part 1 one-hot worksheets use the neutral label `products`, not query/key notation. Diagram stages use the full classroom width. Wide diagrams and tables may pan within a bounded container in phone reading mode; presentation frames never scroll.
 
 ## Numerical and conceptual checks
 
@@ -40,7 +48,7 @@ The learner-facing backpropagation explanation uses the branched computation gra
 
 ## PDF verification
 
-The exact-slide exporter produced 58-, 133-, and 68-page PDFs at 2× resolution. Every page has a 16:9 media box and an embedded slide image. First, middle, and last pages of each exported PDF were rendered and visually inspected.
+The exact-slide exporter produced 61-, 133-, and 68-page PDFs at 2× resolution. Every page has a 16:9 media box and an embedded slide image. First, middle, and last pages of each exported PDF were rendered and visually inspected, along with the new Part 1 diagrams and representative changed tables.
 
 The exporter also passed progressive-build and multiple-stepper fixtures, and rejected an intentionally overfull frame instead of writing a clipped PDF. `--builds all` records each managed step; default export records the final state of each authored frame. Sliders, quizzes, and manual disclosures remain at their authored defaults.
 
@@ -61,6 +69,7 @@ python3 src/assemble.py --part 1 --out part1.html
 python3 src/assemble.py --part 2 --out attention.html
 python3 src/assemble.py --part 3 --out part3.html
 node src/check_part1.mjs
+node src/check_part1_diagrams.mjs part1.html
 node src/toy_ref.mjs src/toy.json --compare src/py_check.json
 node src/check-live-model.mjs attention.html
 python3 src/check_training.py
@@ -71,6 +80,7 @@ node src/pres_test.mjs
 node src/frame_audit.mjs part1.html
 node src/frame_audit.mjs attention.html
 node src/frame_audit.mjs part3.html
+node src/check_tables.mjs part1.html attention.html part3.html
 node src/qa.mjs attention.html --width 390 --height 844
 node src/sweep.mjs attention.html
 node figures/attention-diagram-preview/check-data.mjs

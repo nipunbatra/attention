@@ -720,6 +720,12 @@
     return terms.join(' + ') + numericRelation(a.concat(b, [sum]), dec) + AT.fmt(sum, dec);
   }
   AT.productLine = productLine;
+  /**
+   * table(rows, opts): spreadsheet-like data with semantic value-cell kinds.
+   * Column, lead and computed definitions accept kind: auto | number | text | code.
+   * auto (the default) keeps numbers and numeric strings tabular, while prose is
+   * rendered as text. opts.kind supplies a table-wide default when useful.
+   */
   ui.table = function (rows, opts) {
     opts = opts || {};
     rows = arr(rows);
@@ -746,7 +752,32 @@
       if (row && typeof row === 'object') { var k = cols[j] && cols[j].key != null ? cols[j].key : j; return row[k]; }
       return undefined;
     }
-    function fillCell(td, v, d, heat, hmax) {
+    function requestedKind(def) {
+      var kind = def && def.kind != null ? def.kind : opts.kind;
+      return kind === 'number' || kind === 'text' || kind === 'code' ? kind : 'auto';
+    }
+    function numericText(v) {
+      var s = String(v == null ? '' : v).trim();
+      // A bare hyphen is a boundary token in Part 1, not a missing number.
+      if (!s || /^(?:×|masked|—|–|·|[+\-−]?(?:∞|Infinity)|NaN)$/.test(s)) return true;
+      return /^[+\-−]?(?:(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?|\.\d+)(?:[eE][+\-−]?\d+)?%?$/.test(s)
+        || /^[+\-−]?\d+(?:\.\d+)?\s*[×x]\s*[+\-−]?\d+(?:\.\d+)?$/.test(s);
+    }
+    function resolvedKind(v, def) {
+      var kind = requestedKind(def);
+      if (kind !== 'auto') return kind;
+      if (v == null || typeof v === 'number') return 'number';
+      if (typeof v === 'string' && numericText(v)) return 'number';
+      return 'text';
+    }
+    function classifyCell(td, v, def) {
+      var kind = resolvedKind(v, def);
+      td.classList.remove('dt-num', 'dt-text', 'dt-code');
+      td.classList.add(kind === 'number' ? 'dt-num' : (kind === 'code' ? 'dt-code' : 'dt-text'));
+      td.dataset.kind = kind;
+    }
+    function fillCell(td, v, d, heat, hmax, def) {
+      classifyCell(td, v, def);
       td.classList.remove('is-heat', 'is-dark', 'is-masked');
       td.style.removeProperty('--heat');
       td.removeAttribute('title');
@@ -760,9 +791,11 @@
         if (t > 0.55) td.classList.add('is-dark');
       }
     }
+    var valueHeaders = [];
     function colTh(def, extra) {
       var t = h('th', { scope: 'col', class: 'dt-ch' + (def.cls ? ' ' + objClass(def.cls) + ' dt-tint' : '') + (extra || ''), title: def.title || null });
       labelInto(t, def.label);
+      valueHeaders.push(t);
       return t;
     }
     /* header */
@@ -774,6 +807,17 @@
     thead.appendChild(hr);
     /* body */
     var trEls = [], cellEls = [], leadEls = [], compEls = [], rlEls = [];
+    function syncHeaderKinds() {
+      var headerIndex = 0;
+      [lead, cols, comp].forEach(function (defs, group) {
+        var bodyCells = [leadEls, cellEls, compEls][group];
+        defs.forEach(function (def, col) {
+          var kind = requestedKind(def);
+          if (kind === 'auto') kind = bodyCells.some(function (row) { return row[col] && row[col].dataset.kind !== 'number'; }) ? 'text' : 'number';
+          classifyCell(valueHeaders[headerIndex++], '', { kind: kind });
+        });
+      });
+    }
     function leadValue(def, row, i) { if (typeof def.fn === 'function') return def.fn(row, i); if (Array.isArray(def.values)) return def.values[i]; return undefined; }
     rows.forEach(function (row, i) {
       var rc = rowCls(i);
@@ -781,24 +825,24 @@
       var th = h('th', { scope: 'row', class: 'dt-rl' }); labelInto(th, rl[i]); tr.appendChild(th); rlEls.push(th);
       var lds = lead.map(function (def, k) {
         var td = h('td', { class: 'dt-num dt-lead' + (k === lead.length - 1 ? ' dt-lead-last' : '') + (def.cls ? ' ' + objClass(def.cls) + ' dt-tint' : ''), dataset: { r: i, l: k } });
-        fillCell(td, leadValue(def, row, i), def.decimals == null ? dec : def.decimals, !!def.heat, isNum(def.heatMax) ? def.heatMax : heatMax);
+        fillCell(td, leadValue(def, row, i), def.decimals == null ? dec : def.decimals, !!def.heat, isNum(def.heatMax) ? def.heatMax : heatMax, def);
         tr.appendChild(td); return td;
       });
       var cs = cols.map(function (def, j) {
         var td = h('td', { class: 'dt-num' + (def.cls ? ' ' + objClass(def.cls) + ' dt-tint' : ''), dataset: { r: i, c: j } });
-        fillCell(td, val(row, j), def.decimals == null ? dec : def.decimals, heatCols.indexOf(j) >= 0, heatMax);
+        fillCell(td, val(row, j), def.decimals == null ? dec : def.decimals, heatCols.indexOf(j) >= 0, heatMax, def);
         tr.appendChild(td); return td;
       });
       var cps = comp.map(function (def, k) {
         var td = h('td', { class: 'dt-num dt-comp' + (k === 0 ? ' dt-comp-first' : '') + (def.cls ? ' ' + objClass(def.cls) + ' dt-tint' : ''), dataset: { r: i, k: k } });
         var v = typeof def.fn === 'function' ? def.fn(row, i) : (Array.isArray(def.values) ? def.values[i] : undefined);
-        fillCell(td, v, def.decimals == null ? dec : def.decimals, !!def.heat, isNum(def.heatMax) ? def.heatMax : heatMax);
+        fillCell(td, v, def.decimals == null ? dec : def.decimals, !!def.heat, isNum(def.heatMax) ? def.heatMax : heatMax, def);
         tr.appendChild(td); return td;
       });
       tbody.appendChild(tr);
       trEls.push(tr); cellEls.push(cs); leadEls.push(lds); compEls.push(cps);
     });
-    table.appendChild(thead); table.appendChild(tbody);
+    table.appendChild(thead); table.appendChild(tbody); syncHeaderKinds();
     /* footer */
     var footEls = { label: null, cells: [], lead: [], computed: [] };
     if (opts.footer) {
@@ -809,16 +853,16 @@
       var fdec = f.decimals == null ? dec : f.decimals;
       lead.forEach(function (def, k) {
         var td = h('td', { class: 'dt-num dt-lead' + (k === lead.length - 1 ? ' dt-lead-last' : '') });
-        fillCell(td, Array.isArray(f.lead) ? f.lead[k] : '', fdec, false, 1); ftr.appendChild(td); footEls.lead.push(td);
+        fillCell(td, Array.isArray(f.lead) ? f.lead[k] : '', fdec, false, 1, f.kind != null ? { kind: f.kind } : def); ftr.appendChild(td); footEls.lead.push(td);
       });
       if (typeof f.values === 'string' || f.values == null) {
-        var span = h('td', { class: 'dt-text', colspan: String(Math.max(1, cols.length)) }); labelInto(span, f.values); ftr.appendChild(span); footEls.cells.push(span);
+        var span = h('td', { colspan: String(Math.max(1, cols.length)) }); classifyCell(span, f.values, { kind: f.kind == null ? 'text' : f.kind }); labelInto(span, f.values); ftr.appendChild(span); footEls.cells.push(span);
       } else {
-        cols.forEach(function (def, j) { var td = h('td', { class: 'dt-num' }); fillCell(td, arr(f.values)[j], fdec, false, 1); ftr.appendChild(td); footEls.cells.push(td); });
+        cols.forEach(function (def, j) { var td = h('td', { class: 'dt-num' }); fillCell(td, arr(f.values)[j], fdec, false, 1, f.kind != null ? { kind: f.kind } : def); ftr.appendChild(td); footEls.cells.push(td); });
       }
       comp.forEach(function (def, k) {
         var td = h('td', { class: 'dt-num dt-comp' + (k === 0 ? ' dt-comp-first' : '') });
-        fillCell(td, Array.isArray(f.computed) ? f.computed[k] : '', fdec, false, 1); ftr.appendChild(td); footEls.computed.push(td);
+        fillCell(td, Array.isArray(f.computed) ? f.computed[k] : '', fdec, false, 1, f.kind != null ? { kind: f.kind } : def); ftr.appendChild(td); footEls.computed.push(td);
       });
       tfoot.appendChild(ftr); table.appendChild(tfoot);
     }
@@ -860,17 +904,19 @@
       rows = newRows;
       newRows.forEach(function (row, i) {
         if (!cellEls[i]) return;
-        cols.forEach(function (def, j) { fillCell(cellEls[i][j], val(row, j), def.decimals == null ? dec : def.decimals, heatCols.indexOf(j) >= 0, heatMax); });
-        lead.forEach(function (def, k) { fillCell(leadEls[i][k], leadValue(def, row, i), def.decimals == null ? dec : def.decimals, !!def.heat, isNum(def.heatMax) ? def.heatMax : heatMax); });
-        comp.forEach(function (def, k) { var v = typeof def.fn === 'function' ? def.fn(row, i) : (Array.isArray(def.values) ? def.values[i] : undefined); fillCell(compEls[i][k], v, def.decimals == null ? dec : def.decimals, !!def.heat, isNum(def.heatMax) ? def.heatMax : heatMax); });
+        cols.forEach(function (def, j) { fillCell(cellEls[i][j], val(row, j), def.decimals == null ? dec : def.decimals, heatCols.indexOf(j) >= 0, heatMax, def); });
+        lead.forEach(function (def, k) { fillCell(leadEls[i][k], leadValue(def, row, i), def.decimals == null ? dec : def.decimals, !!def.heat, isNum(def.heatMax) ? def.heatMax : heatMax, def); });
+        comp.forEach(function (def, k) { var v = typeof def.fn === 'function' ? def.fn(row, i) : (Array.isArray(def.values) ? def.values[i] : undefined); fillCell(compEls[i][k], v, def.decimals == null ? dec : def.decimals, !!def.heat, isNum(def.heatMax) ? def.heatMax : heatMax, def); });
       });
+      syncHeaderKinds();
       return fig.refreshTips();
     };
     fig.setFooter = function (values, leadVals, compVals) {
       var fdec = opts.footer && opts.footer.decimals != null ? opts.footer.decimals : dec;
-      arr(values).forEach(function (v, j) { if (footEls.cells[j]) fillCell(footEls.cells[j], v, fdec, false, 1); });
-      arr(leadVals).forEach(function (v, k) { if (footEls.lead[k]) fillCell(footEls.lead[k], v, fdec, false, 1); });
-      arr(compVals).forEach(function (v, k) { if (footEls.computed[k]) fillCell(footEls.computed[k], v, fdec, false, 1); });
+      var f = opts.footer || {};
+      arr(values).forEach(function (v, j) { if (footEls.cells[j]) fillCell(footEls.cells[j], v, fdec, false, 1, f.kind != null ? { kind: f.kind } : cols[j]); });
+      arr(leadVals).forEach(function (v, k) { if (footEls.lead[k]) fillCell(footEls.lead[k], v, fdec, false, 1, f.kind != null ? { kind: f.kind } : lead[k]); });
+      arr(compVals).forEach(function (v, k) { if (footEls.computed[k]) fillCell(footEls.computed[k], v, fdec, false, 1, f.kind != null ? { kind: f.kind } : comp[k]); });
       return fig.refreshTips();
     };
     fig.setHighlightRow = function (i) { trEls.forEach(function (tr, j) { tr.classList.toggle('is-hl', j === i); }); return fig; };

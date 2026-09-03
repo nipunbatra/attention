@@ -338,9 +338,11 @@ button.chip:hover{border-color:var(--ink)}
 .dt-fig.lg .dt td.dt-num{font-size:16px;min-width:5.2em;padding:10px 14px}
 .dt-fig.lg .dt tbody th,.dt-fig.lg .dt tfoot th{font-size:17px}
 .dt td.dt-text{text-align:left;font-family:var(--font-ui);color:var(--ink-2);white-space:normal}
+.dt td.dt-code{text-align:left;font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:14px;color:var(--ink);white-space:nowrap}
+.dt th.dt-text,.dt th.dt-code{text-align:left}
 /* object tints: per column (td.dt-tint) or per row (tr.dt-tint) */
 .dt td.dt-tint{background:var(--ot)}
-.dt tbody tr.dt-tint td.dt-num,.dt tfoot tr.dt-tint td.dt-num{background:var(--ot)}
+.dt tbody tr.dt-tint td,.dt tfoot tr.dt-tint td{background:var(--ot)}
 .dt thead th.dt-tint{color:var(--oc)}
 .dt tbody tr.dt-tint th,.dt tfoot tr.dt-tint th{color:var(--oc)}
 .dt tbody tr.dt-tint th .katex,.dt tfoot tr.dt-tint th .katex{color:inherit}
@@ -357,6 +359,10 @@ button.chip:hover{border-color:var(--ink)}
 .dt tfoot th,.dt tfoot td{border-top:2px solid var(--ink-2);font-weight:600}
 .dt-sticky tbody th,.dt-sticky tfoot th,.dt-sticky thead th.dt-corner{position:sticky;left:0;z-index:2}
 .dt-sticky tbody th,.dt-sticky tfoot th{box-shadow:1px 0 0 var(--line)}
+@media (max-width:640px){
+  body:not(.present) .dt-sticky tbody th,body:not(.present) .dt-sticky tfoot th,body:not(.present) .dt-sticky thead th.dt-corner{position:static}
+  body:not(.present) .dt-sticky tbody th,body:not(.present) .dt-sticky tfoot th{box-shadow:none}
+}
 .dt td.has-tip{cursor:help;text-decoration:underline dotted var(--ink-3);text-underline-offset:3px}
 .dt td.has-tip:hover,.dt td.has-tip:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 .dt-tip{position:absolute;left:0;top:0;z-index:30;max-width:min(560px,calc(100vw - 48px));padding:9px 12px;border-radius:8px;background:var(--ink);color:#fff;
@@ -473,6 +479,15 @@ button.chip:hover{border-color:var(--ink)}
 .stepper-stage .stage-note{color:var(--ink-2);margin:0 0 12px;max-width:46em}
 .stepper-stage .stage-tex{margin:6px 0 12px;overflow-x:auto}
 .stepper.is-big .btn-next{font-size:19px;padding:12px 26px}
+.teaching-diagram{width:100%;min-width:0}
+.teaching-diagram>svg,.stepper-stage>svg[data-part1-diagram]{display:block;width:100%;height:auto;margin:0 auto}
+.diagram-step .stepper-body{display:block}
+.diagram-step .stepper-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-bottom:18px}
+body:not(.present) .diagram-step .stage-title{display:none}
+@media(max-width:680px){
+  body:not(.present) .teaching-diagram,body:not(.present) .diagram-step .stepper-stage{overflow-x:auto;max-width:100%}
+  body:not(.present) .teaching-diagram>svg,body:not(.present) .diagram-step .stepper-stage>svg[data-part1-diagram]{min-width:880px}
+}
 
 /* =====================================================================
    7. MOTIF (pipeline SVG) + FLOW dots
@@ -598,6 +613,7 @@ body.present .mat-cap,body.present .dt-cap{font-size:var(--present-caption)}
 body.present .dt-note{font-size:21px}
 body.present .dt{font-size:1em}
 body.present .dt td.dt-num{font-size:.9em;min-width:3.7em;padding:.35em .55em}
+body.present .dt td.dt-text,body.present .dt td.dt-code{font-size:.9em}
 body.present .dt-fig.lg .dt td.dt-num{font-size:.95em}
 body.present .dt thead th{font-size:var(--present-caption);padding:.35em .55em}
 body.present .dt tbody th,body.present .dt tfoot th{font-size:.85em;padding:.35em .55em}
@@ -611,12 +627,20 @@ body.present .slider-label,body.present .slider-val{font-size:.82em}
 body.present .toggle{font-size:.82em}
 body.present .toggle-state{font-size:.62em}
 body.present .stepper{padding:18px 24px;margin:14px 0}
+body.present .stepper-bar{display:none}
+body.present [data-present="manual"] .stepper-bar{display:flex}
+body.present .diagram-step .stepper-body{display:block}
+body.present .diagram-step .stepper-list{display:none}
+body.present .diagram-step .stage-title{margin-bottom:14px}
 body.present .stepper-list li{font-size:var(--present-caption);padding:.25em .5em}
 body.present .stepper-list li .sn{font-size:.72em}
 body.present .stepper-count{font-size:21px}
 body.present .stepper-stage .stage-title{font-size:1.05em}
 body.present .stepper-stage .stage-note{font-size:.9em}
 body.present .calc{font-size:.95em}
+body.present .calc-t th{font-size:18px}
+body.present .calc-t th.calc-rl{font-size:20px}
+body.present .calc-t th.calc-res-h{font-size:18px}
 body.present .calc-line{font-size:.9em}
 body.present .reveal summary{font-size:.95em;padding:.6em .9em}
 body.present .reveal summary .hint{font-size:.7em}
@@ -1524,6 +1548,12 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
     return terms.join(' + ') + numericRelation(a.concat(b, [sum]), dec) + AT.fmt(sum, dec);
   }
   AT.productLine = productLine;
+  /**
+   * table(rows, opts): spreadsheet-like data with semantic value-cell kinds.
+   * Column, lead and computed definitions accept kind: auto | number | text | code.
+   * auto (the default) keeps numbers and numeric strings tabular, while prose is
+   * rendered as text. opts.kind supplies a table-wide default when useful.
+   */
   ui.table = function (rows, opts) {
     opts = opts || {};
     rows = arr(rows);
@@ -1550,7 +1580,32 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
       if (row && typeof row === 'object') { var k = cols[j] && cols[j].key != null ? cols[j].key : j; return row[k]; }
       return undefined;
     }
-    function fillCell(td, v, d, heat, hmax) {
+    function requestedKind(def) {
+      var kind = def && def.kind != null ? def.kind : opts.kind;
+      return kind === 'number' || kind === 'text' || kind === 'code' ? kind : 'auto';
+    }
+    function numericText(v) {
+      var s = String(v == null ? '' : v).trim();
+      // A bare hyphen is a boundary token in Part 1, not a missing number.
+      if (!s || /^(?:×|masked|—|–|·|[+\-−]?(?:∞|Infinity)|NaN)$/.test(s)) return true;
+      return /^[+\-−]?(?:(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?|\.\d+)(?:[eE][+\-−]?\d+)?%?$/.test(s)
+        || /^[+\-−]?\d+(?:\.\d+)?\s*[×x]\s*[+\-−]?\d+(?:\.\d+)?$/.test(s);
+    }
+    function resolvedKind(v, def) {
+      var kind = requestedKind(def);
+      if (kind !== 'auto') return kind;
+      if (v == null || typeof v === 'number') return 'number';
+      if (typeof v === 'string' && numericText(v)) return 'number';
+      return 'text';
+    }
+    function classifyCell(td, v, def) {
+      var kind = resolvedKind(v, def);
+      td.classList.remove('dt-num', 'dt-text', 'dt-code');
+      td.classList.add(kind === 'number' ? 'dt-num' : (kind === 'code' ? 'dt-code' : 'dt-text'));
+      td.dataset.kind = kind;
+    }
+    function fillCell(td, v, d, heat, hmax, def) {
+      classifyCell(td, v, def);
       td.classList.remove('is-heat', 'is-dark', 'is-masked');
       td.style.removeProperty('--heat');
       td.removeAttribute('title');
@@ -1564,9 +1619,11 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
         if (t > 0.55) td.classList.add('is-dark');
       }
     }
+    var valueHeaders = [];
     function colTh(def, extra) {
       var t = h('th', { scope: 'col', class: 'dt-ch' + (def.cls ? ' ' + objClass(def.cls) + ' dt-tint' : '') + (extra || ''), title: def.title || null });
       labelInto(t, def.label);
+      valueHeaders.push(t);
       return t;
     }
     /* header */
@@ -1578,6 +1635,17 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
     thead.appendChild(hr);
     /* body */
     var trEls = [], cellEls = [], leadEls = [], compEls = [], rlEls = [];
+    function syncHeaderKinds() {
+      var headerIndex = 0;
+      [lead, cols, comp].forEach(function (defs, group) {
+        var bodyCells = [leadEls, cellEls, compEls][group];
+        defs.forEach(function (def, col) {
+          var kind = requestedKind(def);
+          if (kind === 'auto') kind = bodyCells.some(function (row) { return row[col] && row[col].dataset.kind !== 'number'; }) ? 'text' : 'number';
+          classifyCell(valueHeaders[headerIndex++], '', { kind: kind });
+        });
+      });
+    }
     function leadValue(def, row, i) { if (typeof def.fn === 'function') return def.fn(row, i); if (Array.isArray(def.values)) return def.values[i]; return undefined; }
     rows.forEach(function (row, i) {
       var rc = rowCls(i);
@@ -1585,24 +1653,24 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
       var th = h('th', { scope: 'row', class: 'dt-rl' }); labelInto(th, rl[i]); tr.appendChild(th); rlEls.push(th);
       var lds = lead.map(function (def, k) {
         var td = h('td', { class: 'dt-num dt-lead' + (k === lead.length - 1 ? ' dt-lead-last' : '') + (def.cls ? ' ' + objClass(def.cls) + ' dt-tint' : ''), dataset: { r: i, l: k } });
-        fillCell(td, leadValue(def, row, i), def.decimals == null ? dec : def.decimals, !!def.heat, isNum(def.heatMax) ? def.heatMax : heatMax);
+        fillCell(td, leadValue(def, row, i), def.decimals == null ? dec : def.decimals, !!def.heat, isNum(def.heatMax) ? def.heatMax : heatMax, def);
         tr.appendChild(td); return td;
       });
       var cs = cols.map(function (def, j) {
         var td = h('td', { class: 'dt-num' + (def.cls ? ' ' + objClass(def.cls) + ' dt-tint' : ''), dataset: { r: i, c: j } });
-        fillCell(td, val(row, j), def.decimals == null ? dec : def.decimals, heatCols.indexOf(j) >= 0, heatMax);
+        fillCell(td, val(row, j), def.decimals == null ? dec : def.decimals, heatCols.indexOf(j) >= 0, heatMax, def);
         tr.appendChild(td); return td;
       });
       var cps = comp.map(function (def, k) {
         var td = h('td', { class: 'dt-num dt-comp' + (k === 0 ? ' dt-comp-first' : '') + (def.cls ? ' ' + objClass(def.cls) + ' dt-tint' : ''), dataset: { r: i, k: k } });
         var v = typeof def.fn === 'function' ? def.fn(row, i) : (Array.isArray(def.values) ? def.values[i] : undefined);
-        fillCell(td, v, def.decimals == null ? dec : def.decimals, !!def.heat, isNum(def.heatMax) ? def.heatMax : heatMax);
+        fillCell(td, v, def.decimals == null ? dec : def.decimals, !!def.heat, isNum(def.heatMax) ? def.heatMax : heatMax, def);
         tr.appendChild(td); return td;
       });
       tbody.appendChild(tr);
       trEls.push(tr); cellEls.push(cs); leadEls.push(lds); compEls.push(cps);
     });
-    table.appendChild(thead); table.appendChild(tbody);
+    table.appendChild(thead); table.appendChild(tbody); syncHeaderKinds();
     /* footer */
     var footEls = { label: null, cells: [], lead: [], computed: [] };
     if (opts.footer) {
@@ -1613,16 +1681,16 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
       var fdec = f.decimals == null ? dec : f.decimals;
       lead.forEach(function (def, k) {
         var td = h('td', { class: 'dt-num dt-lead' + (k === lead.length - 1 ? ' dt-lead-last' : '') });
-        fillCell(td, Array.isArray(f.lead) ? f.lead[k] : '', fdec, false, 1); ftr.appendChild(td); footEls.lead.push(td);
+        fillCell(td, Array.isArray(f.lead) ? f.lead[k] : '', fdec, false, 1, f.kind != null ? { kind: f.kind } : def); ftr.appendChild(td); footEls.lead.push(td);
       });
       if (typeof f.values === 'string' || f.values == null) {
-        var span = h('td', { class: 'dt-text', colspan: String(Math.max(1, cols.length)) }); labelInto(span, f.values); ftr.appendChild(span); footEls.cells.push(span);
+        var span = h('td', { colspan: String(Math.max(1, cols.length)) }); classifyCell(span, f.values, { kind: f.kind == null ? 'text' : f.kind }); labelInto(span, f.values); ftr.appendChild(span); footEls.cells.push(span);
       } else {
-        cols.forEach(function (def, j) { var td = h('td', { class: 'dt-num' }); fillCell(td, arr(f.values)[j], fdec, false, 1); ftr.appendChild(td); footEls.cells.push(td); });
+        cols.forEach(function (def, j) { var td = h('td', { class: 'dt-num' }); fillCell(td, arr(f.values)[j], fdec, false, 1, f.kind != null ? { kind: f.kind } : def); ftr.appendChild(td); footEls.cells.push(td); });
       }
       comp.forEach(function (def, k) {
         var td = h('td', { class: 'dt-num dt-comp' + (k === 0 ? ' dt-comp-first' : '') });
-        fillCell(td, Array.isArray(f.computed) ? f.computed[k] : '', fdec, false, 1); ftr.appendChild(td); footEls.computed.push(td);
+        fillCell(td, Array.isArray(f.computed) ? f.computed[k] : '', fdec, false, 1, f.kind != null ? { kind: f.kind } : def); ftr.appendChild(td); footEls.computed.push(td);
       });
       tfoot.appendChild(ftr); table.appendChild(tfoot);
     }
@@ -1664,17 +1732,19 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
       rows = newRows;
       newRows.forEach(function (row, i) {
         if (!cellEls[i]) return;
-        cols.forEach(function (def, j) { fillCell(cellEls[i][j], val(row, j), def.decimals == null ? dec : def.decimals, heatCols.indexOf(j) >= 0, heatMax); });
-        lead.forEach(function (def, k) { fillCell(leadEls[i][k], leadValue(def, row, i), def.decimals == null ? dec : def.decimals, !!def.heat, isNum(def.heatMax) ? def.heatMax : heatMax); });
-        comp.forEach(function (def, k) { var v = typeof def.fn === 'function' ? def.fn(row, i) : (Array.isArray(def.values) ? def.values[i] : undefined); fillCell(compEls[i][k], v, def.decimals == null ? dec : def.decimals, !!def.heat, isNum(def.heatMax) ? def.heatMax : heatMax); });
+        cols.forEach(function (def, j) { fillCell(cellEls[i][j], val(row, j), def.decimals == null ? dec : def.decimals, heatCols.indexOf(j) >= 0, heatMax, def); });
+        lead.forEach(function (def, k) { fillCell(leadEls[i][k], leadValue(def, row, i), def.decimals == null ? dec : def.decimals, !!def.heat, isNum(def.heatMax) ? def.heatMax : heatMax, def); });
+        comp.forEach(function (def, k) { var v = typeof def.fn === 'function' ? def.fn(row, i) : (Array.isArray(def.values) ? def.values[i] : undefined); fillCell(compEls[i][k], v, def.decimals == null ? dec : def.decimals, !!def.heat, isNum(def.heatMax) ? def.heatMax : heatMax, def); });
       });
+      syncHeaderKinds();
       return fig.refreshTips();
     };
     fig.setFooter = function (values, leadVals, compVals) {
       var fdec = opts.footer && opts.footer.decimals != null ? opts.footer.decimals : dec;
-      arr(values).forEach(function (v, j) { if (footEls.cells[j]) fillCell(footEls.cells[j], v, fdec, false, 1); });
-      arr(leadVals).forEach(function (v, k) { if (footEls.lead[k]) fillCell(footEls.lead[k], v, fdec, false, 1); });
-      arr(compVals).forEach(function (v, k) { if (footEls.computed[k]) fillCell(footEls.computed[k], v, fdec, false, 1); });
+      var f = opts.footer || {};
+      arr(values).forEach(function (v, j) { if (footEls.cells[j]) fillCell(footEls.cells[j], v, fdec, false, 1, f.kind != null ? { kind: f.kind } : cols[j]); });
+      arr(leadVals).forEach(function (v, k) { if (footEls.lead[k]) fillCell(footEls.lead[k], v, fdec, false, 1, f.kind != null ? { kind: f.kind } : lead[k]); });
+      arr(compVals).forEach(function (v, k) { if (footEls.computed[k]) fillCell(footEls.computed[k], v, fdec, false, 1, f.kind != null ? { kind: f.kind } : comp[k]); });
       return fig.refreshTips();
     };
     fig.setHighlightRow = function (i) { trEls.forEach(function (tr, j) { tr.classList.toggle('is-hl', j === i); }); return fig; };
@@ -5178,6 +5248,7 @@ body.present #s07 .rec-grid>.dt-fig:first-child{grid-column:1/-1}
 body.present #s07 .rec-grid .dt td,body.present #s07 .rec-grid .dt th{padding:.2em .25em}
 body.present #s07 .wrow{grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
 body.present #s07 .wrow .dt td,body.present #s07 .wrow .dt th{padding:.2em .22em}
+body.present #s07 #s07-mats{grid-template-columns:max-content max-content minmax(0,1fr)}
 body.present #s07 .calc-rounding{display:none}
 @media (max-width:820px){body.present #s07 .wrow{grid-template-columns:repeat(3,minmax(0,1fr))}body.present #s07 .rec-grid{grid-template-columns:1fr 1fr}}
 </style>
@@ -5514,6 +5585,8 @@ body.present #s08 .phase-tag,body.present #s08 .pic-lab,body.present #s08 .ws-la
 body.present #s08 .rd,body.present #s08 .value-source-row{font-size:22px;line-height:1.35}
 body.present #s08 .dt-cap,body.present #s08 .dt-note,body.present #s08 .scroll-hint{display:none}
 body.present #s08 .dt td,body.present #s08 .dt th{font-size:22px;padding:.18em .4em}
+body.present #s08 #s08-value-message{grid-template-columns:max-content minmax(0,1fr);gap:24px}
+body.present #s08 #s08-value-message .dt td,body.present #s08 #s08-value-message .dt th{padding-left:.3em;padding-right:.3em}
 body.present #s08 .tree-wrap{overflow:visible;padding:0}
 body.present #s08 .tree{min-width:0;max-width:none;width:100%;max-height:390px}
 body.present #s08 .tree text,body.present #s08 .tree .num{font-size:18px}
@@ -6599,7 +6672,7 @@ Move the slider manually: it shows a partial residual addition, not training or 
 #s11 .s11-pr{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px 20px;align-items:center}
 #s11 .s11-pr>*{min-width:0}
 #s11 .s11-read{font-size:14px;color:var(--ink-2);margin:0;line-height:1.45}
-#s11 .s11-wgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.18fr);gap:4px 16px;align-items:start}
+#s11 .s11-wgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,.86fr);gap:4px 16px;align-items:start}
 #s11 .s11-wgrid>*{min-width:0}
 #s11 .s11-wgrid .dt-fig{margin:0}
 #s11 .s11-wgrid .s11-read{margin-top:2px}
@@ -7416,7 +7489,8 @@ body.present #s14 .read-line,body.present #s14 .dt-cap{display:none}
 body.present #s14 .seg .btn{font-size:22px;padding:8px 14px}
 body.present #s14 .dt{width:100%;table-layout:fixed}
 body.present #s14 .dt th,body.present #s14 .dt td.dt-num{min-width:0;padding:10px 7px}
-body.present #s14 .dt thead th{white-space:normal;overflow-wrap:anywhere;font-size:22px}
+body.present #s14 .dt thead th{white-space:normal;overflow-wrap:normal;word-break:normal;font-size:18px}
+body.present #s14-alpha .dt thead th{letter-spacing:0;padding-left:3px;padding-right:3px}
 body.present #s14 .dt tbody th,body.present #s14 .dt tfoot th{white-space:normal;width:150px}
 body.present #s14 .chain{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:12px}
 body.present #s14 .chain .cb{font-size:24px;white-space:normal;text-align:center;padding:16px 20px}
@@ -8675,7 +8749,9 @@ body.present #s17 .cmp th,body.present #s17 .cmp td{padding:12px 14px;line-heigh
 body.present #s17 .cmp td:nth-child(2){white-space:normal}
 body.present #s17 .dt{width:100%;table-layout:fixed}
 body.present #s17 .dt th,body.present #s17 .dt td.dt-num{min-width:0;padding:8px 6px}
-body.present #s17 .dt thead th{font-size:21px;white-space:normal;overflow-wrap:anywhere}
+body.present #s17 .dt thead th{font-size:18px;white-space:normal;overflow-wrap:normal;word-break:normal}
+body.present #s17-table .dt thead th{letter-spacing:0;padding-left:3px;padding-right:3px}
+body.present #s17 .dt tbody th,body.present #s17 .dt tfoot th{font-size:18px;white-space:normal;overflow-wrap:normal;word-break:normal}
 @media (max-width:640px){#s17 #s17-box .katex{font-size:1.05em}}
 </style>
 <header class="sec-head">

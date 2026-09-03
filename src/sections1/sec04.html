@@ -3,6 +3,8 @@
 #s04 .work-row{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 #s04 .work-row>*{min-width:0}
 #s04 .shape{font-family:var(--font-mono);font-size:1.1em}
+#s04 .embedding-space{max-width:1100px;margin:0 auto}
+body.present #s04 .embedding-space>svg{max-height:380px}
 @media(max-width:820px){body:not(.present) #s04 .work-row{grid-template-columns:1fr}}
 </style>
 <header class="sec-head"><span class="sec-num">04</span><div><p class="eyebrow">Why we are here: characters are categorical symbols, while an MLP reads rows of numbers.</p><h2>Characters to numbers</h2></div></header>
@@ -27,6 +29,12 @@
   <div class="card"><h3 class="card-title">Selected rows of the trained table $\ve{E_{\text{tok}}}$</h3><div id="s04-embed"></div></div>
   <div class="prose" data-build="1"><p>Lookup uses $$\ve{e_c}=\ve{E_{\text{tok}}}[\operatorname{id}(c)].$$</p></div>
 </div>
+<div class="frame" data-title="The learned rows form a geometry" data-autobuild="off">
+  <script type="text/x-notes">What does it mean for two learned rows to be close?
+  Every table row is a point. The first coordinate was deliberately constrained only by vowel versus consonant sign; the second was free to organize itself for prediction.</script>
+  <div class="embedding-space teaching-diagram" id="s04-space"></div>
+  <div class="callout callout-note" data-build="1"><strong>a</strong>, <strong>b</strong>, and <strong>i</strong> are highlighted. The geometry comes from the trained table—not from invented semantic coordinates.</div>
+</div>
 <div class="companion" data-kicker="The complete lookup table"><div id="s04-embed-full"></div></div>
 <div class="frame" data-title="Check the shapes" data-autobuild="off">
   <script type="text/x-notes">What shape comes back when we look up three IDs?
@@ -43,9 +51,13 @@
   const oa=hot('a'),ob=hot('b'),oi=hot('i');
   const d1=AT.ui.dotCalc(oa,ob,{axes:cols,qLabel:'one-hot a',kLabel:'one-hot b',scale:false,decimals:0,into:S.querySelector('#s04-dot1')});
   const d2=AT.ui.dotCalc(ob,oi,{axes:cols,qLabel:'one-hot b',kLabel:'one-hot i',scale:false,decimals:0,into:S.querySelector('#s04-dot2')});
-  [d1,d2].forEach(d=>{d.rows.q.tr.className='obj-neutral';d.rows.k.tr.className='obj-neutral';});
+  [d1,d2].forEach(d=>{
+    d.rows.q.tr.className='obj-neutral';d.rows.k.tr.className='obj-neutral';d.rows.prod.th.textContent='products';
+    d.querySelector('.calc-rounding').textContent='The 0s and 1s are exact. Every omitted coordinate also contributes 0.';
+  });
   const selected=['a','b','i'];
   AT.ui.table(selected.map(c=>M.E[M.vocab.indexOf(c)]),{axes:'e',rowLabels:selected,rowCls:'e',cornerLabel:'token',decimals:2,caption:'Axis 1 has a vowel sign constraint. Axis 2 is unconstrained.',into:S.querySelector('#s04-embed')});
+  S.querySelector('#s04-space').appendChild(AT.part1Diagrams.embeddingSpace({highlight:selected}));
   const fig=AT.ui.table(M.E,{axes:'e',rowLabels:M.vocab,rowCls:'e',cornerLabel:'token',decimals:2,caption:'All 27 trained embedding rows; displayed values are rounded.',into:S.querySelector('#s04-embed-full')});
   selected.forEach(c=>fig.rowEls[M.vocab.indexOf(c)].classList.add('is-hl'));
   const ids=['a','a','b'].map(c=>AT.mlp.stoi[c]),rows=AT.mlp.embed(ids);

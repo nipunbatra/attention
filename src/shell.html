@@ -338,9 +338,11 @@ button.chip:hover{border-color:var(--ink)}
 .dt-fig.lg .dt td.dt-num{font-size:16px;min-width:5.2em;padding:10px 14px}
 .dt-fig.lg .dt tbody th,.dt-fig.lg .dt tfoot th{font-size:17px}
 .dt td.dt-text{text-align:left;font-family:var(--font-ui);color:var(--ink-2);white-space:normal}
+.dt td.dt-code{text-align:left;font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:14px;color:var(--ink);white-space:nowrap}
+.dt th.dt-text,.dt th.dt-code{text-align:left}
 /* object tints: per column (td.dt-tint) or per row (tr.dt-tint) */
 .dt td.dt-tint{background:var(--ot)}
-.dt tbody tr.dt-tint td.dt-num,.dt tfoot tr.dt-tint td.dt-num{background:var(--ot)}
+.dt tbody tr.dt-tint td,.dt tfoot tr.dt-tint td{background:var(--ot)}
 .dt thead th.dt-tint{color:var(--oc)}
 .dt tbody tr.dt-tint th,.dt tfoot tr.dt-tint th{color:var(--oc)}
 .dt tbody tr.dt-tint th .katex,.dt tfoot tr.dt-tint th .katex{color:inherit}
@@ -357,6 +359,10 @@ button.chip:hover{border-color:var(--ink)}
 .dt tfoot th,.dt tfoot td{border-top:2px solid var(--ink-2);font-weight:600}
 .dt-sticky tbody th,.dt-sticky tfoot th,.dt-sticky thead th.dt-corner{position:sticky;left:0;z-index:2}
 .dt-sticky tbody th,.dt-sticky tfoot th{box-shadow:1px 0 0 var(--line)}
+@media (max-width:640px){
+  body:not(.present) .dt-sticky tbody th,body:not(.present) .dt-sticky tfoot th,body:not(.present) .dt-sticky thead th.dt-corner{position:static}
+  body:not(.present) .dt-sticky tbody th,body:not(.present) .dt-sticky tfoot th{box-shadow:none}
+}
 .dt td.has-tip{cursor:help;text-decoration:underline dotted var(--ink-3);text-underline-offset:3px}
 .dt td.has-tip:hover,.dt td.has-tip:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 .dt-tip{position:absolute;left:0;top:0;z-index:30;max-width:min(560px,calc(100vw - 48px));padding:9px 12px;border-radius:8px;background:var(--ink);color:#fff;
@@ -473,6 +479,15 @@ button.chip:hover{border-color:var(--ink)}
 .stepper-stage .stage-note{color:var(--ink-2);margin:0 0 12px;max-width:46em}
 .stepper-stage .stage-tex{margin:6px 0 12px;overflow-x:auto}
 .stepper.is-big .btn-next{font-size:19px;padding:12px 26px}
+.teaching-diagram{width:100%;min-width:0}
+.teaching-diagram>svg,.stepper-stage>svg[data-part1-diagram]{display:block;width:100%;height:auto;margin:0 auto}
+.diagram-step .stepper-body{display:block}
+.diagram-step .stepper-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-bottom:18px}
+body:not(.present) .diagram-step .stage-title{display:none}
+@media(max-width:680px){
+  body:not(.present) .teaching-diagram,body:not(.present) .diagram-step .stepper-stage{overflow-x:auto;max-width:100%}
+  body:not(.present) .teaching-diagram>svg,body:not(.present) .diagram-step .stepper-stage>svg[data-part1-diagram]{min-width:880px}
+}
 
 /* =====================================================================
    7. MOTIF (pipeline SVG) + FLOW dots
@@ -598,6 +613,7 @@ body.present .mat-cap,body.present .dt-cap{font-size:var(--present-caption)}
 body.present .dt-note{font-size:21px}
 body.present .dt{font-size:1em}
 body.present .dt td.dt-num{font-size:.9em;min-width:3.7em;padding:.35em .55em}
+body.present .dt td.dt-text,body.present .dt td.dt-code{font-size:.9em}
 body.present .dt-fig.lg .dt td.dt-num{font-size:.95em}
 body.present .dt thead th{font-size:var(--present-caption);padding:.35em .55em}
 body.present .dt tbody th,body.present .dt tfoot th{font-size:.85em;padding:.35em .55em}
@@ -611,12 +627,20 @@ body.present .slider-label,body.present .slider-val{font-size:.82em}
 body.present .toggle{font-size:.82em}
 body.present .toggle-state{font-size:.62em}
 body.present .stepper{padding:18px 24px;margin:14px 0}
+body.present .stepper-bar{display:none}
+body.present [data-present="manual"] .stepper-bar{display:flex}
+body.present .diagram-step .stepper-body{display:block}
+body.present .diagram-step .stepper-list{display:none}
+body.present .diagram-step .stage-title{margin-bottom:14px}
 body.present .stepper-list li{font-size:var(--present-caption);padding:.25em .5em}
 body.present .stepper-list li .sn{font-size:.72em}
 body.present .stepper-count{font-size:21px}
 body.present .stepper-stage .stage-title{font-size:1.05em}
 body.present .stepper-stage .stage-note{font-size:.9em}
 body.present .calc{font-size:.95em}
+body.present .calc-t th{font-size:18px}
+body.present .calc-t th.calc-rl{font-size:20px}
+body.present .calc-t th.calc-res-h{font-size:18px}
 body.present .calc-line{font-size:.9em}
 body.present .reveal summary{font-size:.95em;padding:.6em .9em}
 body.present .reveal summary .hint{font-size:.7em}

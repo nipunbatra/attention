@@ -6,7 +6,7 @@ Updated 2026-09-03. Owner: Nipun Batra.
 - Published series: https://nipunbatra.github.io/attention/
 - Canonical local checkout on this Mac: `/Users/nipun/git/attention`.
 
-All three parts are implemented. They share a slide-first reading/presentation system, not separate article and slide sources. The first slide-first checkpoint was `a49f811`. This handover accompanies the follow-up Part 3 and correctness checkpoint; `CLASSROOM_QA.md` records its completed local verification. Check the checkout's Git log and the GitHub Pages workflow for the current published commit. A temporary checkout is not evidence of what is live.
+All three parts are implemented. They share a slide-first reading/presentation system, not separate article and slide sources. The first slide-first checkpoint was `a49f811`; `a1d609c` completed Part 3 and the numerical-correctness pass. This handover accompanies the table-flow and Part 1 diagram refinement; `CLASSROOM_QA.md` records local verification. Check the checkout's Git log and the GitHub Pages workflow for the current published commit. A temporary checkout is not evidence of what is live.
 
 ## Start here
 
@@ -18,13 +18,19 @@ Read this file, then `PRESENT.md` for the current layout/runtime contract and `C
 
 | Part | Editable sections | Data/runtime | Assembled output |
 |---|---|---|---|
-| 1: characters to prediction | `sections1/secNN.html` | `toy1.json`, `part1.js`, `part1.json` | `../part1.html` |
+| 1: characters to prediction | `sections1/secNN.html` | `toy1.json`, `part1.js`, `part1-diagrams.js`, `part1.json` | `../part1.html` |
 | 2: self-attention | `sections/secNN.html` | `toy.json`, `part2.json` | `../attention.html` |
 | 3: learning and Transformer blocks | `sections3/secNN.html` | `toy3.json`, `part3.js`, `part3.json` | `../part3.html` |
 
 Paths in this table are relative to `src/`. Shared files are `shell.html` (layout/CSS), `shared.js` (math, widgets, notation, presentation runtime), and `assemble.py`. Do not edit the generated root HTML or the inlined `katex-bundle.html` by hand. `index.html` is the series landing page; `part2.html` redirects to `attention.html`.
 
 The standalone staged diagram lives in `figures/attention-diagram-preview/`. Part 2 embeds its same `diagram.js` source through `src/attention-flow-data.js`; keep the preview and article synchronized by changing that shared source.
+
+Part 1's four diagrams live in `part1-diagrams.js` and are inserted by `assemble.py`. They adapt the original handwritten
+notes' visual sequence while reading current `AT.mlp` numbers: actual embedding geometry, repeated lookup and ordered
+concatenation, forward/backward learning, and training versus generation. Human position/slot labels are 1-based.
+The generation diagram uses a reproducible temperature-1 sample, not a claim that the observed target is the argmax.
+Boundary `-` stops generation. The observed target enters loss on a separate branch and must never be drawn as an MLP input.
 
 ## Notation and conceptual agreements
 
@@ -55,6 +61,11 @@ Frames must not contain nested scrollbars or shrink their own text to fit. Split
 
 Reading mode unfolds the same frames and widgets into responsive longform. `.companion` holds article-only explanation and detailed worksheets; it is hidden in presentation and lean reading. Preserve widget IDs/listeners when moving content. Test both modes and intermediate states, not only the fully revealed default slide.
 
+Table cells have semantic `auto`, `number`, `text`, and `code` kinds. Do not put prose back into right-aligned numeric
+styling. Use the central table API and `check_tables.mjs` for regressions; worksheet headers are intentionally larger in
+presentation. Managed stepper toolbars are hidden in presentation because the global toolbar already advances them;
+manual widgets retain their local controls.
+
 Use **P** to present, arrows to advance, **Esc** to return to the same article section. Bare `#sNN` links are reading anchors; `?present#sNN/frame/build` is a classroom deep link. See `PRESENT.md` for controls, state restoration, and presenter view.
 
 ## Build, verify, and export
@@ -67,6 +78,7 @@ python3 src/assemble.py --part 2 --out attention.html
 python3 src/assemble.py --part 3 --out part3.html
 
 node src/check_part1.mjs
+node src/check_part1_diagrams.mjs
 node src/toy_ref.mjs src/toy.json --compare src/py_check.json
 python3 src/check_training.py
 node src/check-live-model.mjs attention.html
@@ -78,6 +90,7 @@ node src/pres_test.mjs
 node src/frame_audit.mjs part1.html
 node src/frame_audit.mjs attention.html
 node src/frame_audit.mjs part3.html
+node src/check_tables.mjs part1.html attention.html part3.html
 node src/qa.mjs attention.html --width 1280 --height 720
 node src/qa.mjs attention.html --width 390 --height 844
 node src/sweep.mjs attention.html

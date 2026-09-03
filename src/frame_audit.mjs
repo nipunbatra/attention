@@ -122,7 +122,9 @@ const url = new URL(pathToFileURL(path.resolve(file)).href);
 await page.goto(url.href, { waitUntil: 'load' });
 await page.waitForTimeout(500);
 await validateMath('article', true);
-await page.evaluate(() => AT.present.enter());
+// An interactive article may restore or scroll to a later section while it
+// initializes. Always start the audit at frame 1, not the current viewport.
+await page.evaluate(() => { AT.present.enter(); AT.present.first(); });
 await page.waitForTimeout(100);
 
 // The runtime preflight samples full builds, every managed stepper state, and

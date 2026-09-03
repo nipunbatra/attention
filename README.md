@@ -18,6 +18,8 @@ Part 1 uses a trained small name model. Part 2 uses hand-designed weights so eve
 
 The standalone SVG preview is at `figures/attention-diagram-preview/index.html`. Its twelve stages build one causal attention head, then the output projection, residual addition, and the final-token vocabulary prediction. Section16 embeds the same diagram source and reads the article's live numerical model.
 
+Part 1 also has four model-backed diagrams: the trained embedding space, lookup-to-concatenation wiring, the forward/backward learning graph, and the shared model inside training versus generation. They build incrementally in class and stay interactive in the article. Every displayed coordinate, probability, and sampled character comes from the same bundled name model.
+
 ```sh
 python3 src/assemble.py --part 1 --out part1.html
 python3 src/assemble.py --part 2 --out attention.html
@@ -45,6 +47,7 @@ Exported PDFs in `output/pdf/` are local build artifacts, not committed files. M
 
 ```sh
 node src/check_part1.mjs
+node src/check_part1_diagrams.mjs
 node src/toy_ref.mjs src/toy.json --compare src/py_check.json
 node src/check-live-model.mjs attention.html
 python3 src/check_training.py
@@ -53,6 +56,7 @@ node src/pres_test.mjs
 node src/frame_audit.mjs part1.html
 node src/frame_audit.mjs attention.html
 node src/frame_audit.mjs part3.html
+node src/check_tables.mjs part1.html attention.html part3.html
 node src/check-routing-scaling.mjs
 node src/check-diagram.mjs attention.html
 node src/qa.mjs attention.html --width 1280 --height 720

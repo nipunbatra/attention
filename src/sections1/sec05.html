@@ -3,9 +3,15 @@
 #s05 .join-eq{font-size:1.1em;margin:14px 0}
 #s05 .p1{background:var(--t-e)!important}#s05 .p2{background:var(--t-neutral)!important}#s05 .p3{background:var(--paper)!important}
 #s05 .compare-label{font-family:var(--font-mono);font-weight:700;margin:0 0 8px}
+#s05 .lookup-step .stepper-stage svg{max-height:390px}
 </style>
 <header class="sec-head"><span class="sec-num">05</span><div><p class="eyebrow">Why we are here: three embedding rows must become one fixed-width input without losing their positions.</p><h2>Concatenate the embeddings</h2></div></header>
 <div class="companion" data-kicker="For self-study"><p>The lookup returns one embedding row for each character in the window. The MLP expects one row, so we place the three embeddings side by side. This makes a six-number vector because the window has three positions and each embedding has two coordinates. Each segment keeps its position: the first two numbers always describe the oldest character, and the last two describe the newest. Reversing the characters therefore changes the concatenation. Adding the same rows would erase their order because addition is commutative. The trained values below come directly from the embedding table you just inspected.</p></div>
+<div class="frame" data-title="Trace a a b from IDs to six numbers" data-autobuild="off">
+  <script type="text/x-notes">Why does the embedding row for a appear twice?
+  Advance from token IDs to the shared lookup table, then follow each occurrence into its own two-coordinate slot.</script>
+  <div id="s05-lookup" class="lookup-step diagram-step"></div>
+</div>
 <div class="frame" data-title="Three rows become one row" data-autobuild="off">
   <script type="text/x-notes">Where does the second a live in the concatenated row?
   Read the position labels across the headers. Each position owns a separate two-coordinate segment.</script>
@@ -30,6 +36,11 @@
 (function(){
   const S=document.getElementById('s05'),M=window.__TOY__,axes=M.axes.e;
   const ids=cs=>cs.map(c=>AT.mlp.stoi[c]),rows=cs=>AT.mlp.embed(ids(cs)),joined=cs=>AT.mlp.concat(rows(cs));
+  AT.ui.stepper({el:S.querySelector('#s05-lookup'),big:true,compact:true,scrollList:false,steps:[
+    {title:'Start with token IDs',render:host=>host.appendChild(AT.part1Diagrams.lookupConcat({stage:0}))},
+    {title:'Select shared table rows',render:host=>host.appendChild(AT.part1Diagrams.lookupConcat({stage:1}))},
+    {title:'Place each occurrence in its slot',render:host=>host.appendChild(AT.part1Diagrams.lookupConcat({stage:2}))}
+  ]});
   AT.ui.table(rows(['a','a','b']),{axes:'e',rowLabels:['position 1 · a','position 2 · a','position 3 · b'],rowCls:'e',cornerLabel:'window',caption:'Read each row left to right, then place the rows side by side.',into:S.querySelector('#s05-rows')});
   AT.tex(S.querySelector('#s05-eq'),'a_0=[\\ve{e_1},\\ve{e_2},\\ve{e_3}]\\in\\mathbb{R}^{1\\times '+(M.w*M.d_model)+'}',{display:true});
   const cols=[];for(let pos=0;pos<M.w;pos++)axes.forEach((a,i)=>cols.push({label:'p'+(pos+1)+' · c'+(i+1),cls:'e'}));

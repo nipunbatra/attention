@@ -83,10 +83,36 @@ but it is not a classroom authoring target.
   `data-autobuild="off"` for deliberate choreography.
 - Managed steppers consume next/back while they have steps, then frame navigation continues. A control inside
   `data-present="manual"` keeps native keyboard behaviour and its own state.
+- Presentation hides the duplicate local toolbar of a managed stepper; the persistent classroom Previous/Next controls
+  drive it. Manual steppers retain their controls. `.diagram-step` uses full-width SVG stages and a current-step heading
+  in presentation; reading mode shows its compact stage selector above the same drawing.
 - Sliders and toggles are presenter-driven. Their state resets when leaving the frame unless the widget uses
   `data-keep-state` or `data-present="manual"`.
 - Builds, steppers, values, IDs, and event listeners are the same nodes in both modes. The runtime does not clone or
   re-render article content.
+
+## Tables and numerical worksheets
+
+`AT.ui.table` distinguishes semantic cell kinds. Numbers stay right-aligned with tabular figures; prose is left-aligned
+in the reading font. Column, `lead`, and `computed` definitions accept `kind: 'auto' | 'number' | 'text' | 'code'`.
+The default `auto` recognizes numeric values/strings; use `code` for left-aligned literal tokens or code-like labels when
+needed. Updates and footer changes reclassify cells, so an interactive column does not retain stale formatting.
+
+```js
+AT.ui.table(rows, {
+  cols: [{label: 'source', kind: 'text'}, {label: 'weight', kind: 'number', decimals: 3}]
+});
+```
+
+Keep one precision per numeric column unless separately labelled rows explicitly compare different quantities.
+Repeat column headers and the receiving token/query when a table continues on another frame. Worksheet headers must
+remain readable (at least 18 logical pixels in presentation). Long row labels may scroll away on a narrow article view;
+they must not pin most of the phone viewport. Wide article diagrams can be panned on small screens, but presentation
+frames must still fit without internal scrolling.
+
+`node src/check_tables.mjs part1.html attention.html part3.html` inspects desktop reading, 390px reading, and every
+presentation state for text/numeric styling, worksheet type size, cell text overlap, and table containment. It saves
+JSON evidence and representative screenshots. Pair it with `frame_audit.mjs`; neither test replaces visual inspection.
 
 ## Fit preflight
 
@@ -158,6 +184,7 @@ Run from the project root:
 
 ```sh
 node src/pres_test.mjs
+node src/check_tables.mjs part1.html attention.html part3.html
 node src/frame_audit.mjs attention.html --shots /tmp/attention-overflow
 node src/export_slides.mjs attention.html /tmp/attention-slides.pdf
 ```

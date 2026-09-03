@@ -2,7 +2,7 @@
 """Assemble one part of the series from shell.html + katex-bundle.html + shared.js + the part's sections + toy + config.
 Usage:
   python3 assemble.py --part 2 --out attention.html            # Part 2: sections/, toy.json, part2.json
-  python3 assemble.py --part 1 --out part1.html                # Part 1: sections1/, toy1.json, part1.json, runtime part1.js (if present)
+  python3 assemble.py --part 1 --out part1.html                # Part 1: sections1/, toy1.json, part1.json, runtime + diagrams (if present)
   python3 assemble.py --part 3 --out part3.html                # Part 3: sections3/, toy3.json, part3.json, runtime part3.js (if present)
   python3 assemble.py --only sections/sec07.html --out t.html  # any part: test one or more fragments (pass --part so the right toy/config is used)
 Replaces <!--KATEX-->, <!--SHARED-->, <!--SECTIONS--> in shell.html and the <title>. Injects window.__TOY__ and window.__PART__
@@ -55,6 +55,11 @@ def js(obj):
     return json.dumps(obj, separators=(',', ':')).replace('</', '<\\/')
 shared_block = ('<script>\nwindow.__TOY__ = ' + js(toy) + ';\nwindow.__PART__ = ' + js(part) + ';\n</script>\n'
                 '<script>\n' + shared + '\n</script>\n' + runtime)
+if N == 1:
+    # Part I's diagrams read the same trained toy exposed by part1.js.
+    diagrams = os.path.join(here, 'part1-diagrams.js')
+    if os.path.isfile(diagrams):
+        shared_block += '<script>\n' + open(diagrams, encoding='utf-8').read() + '\n</script>\n'
 if N == 2:
     # One SVG source powers both the standalone preview and the article stepper.
     diagram = os.path.join(here, '..', 'figures', 'attention-diagram-preview', 'diagram.js')

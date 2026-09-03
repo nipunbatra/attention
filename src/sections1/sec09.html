@@ -4,9 +4,15 @@
 #s09 .curve text{font-family:var(--font-mono);font-size:13px;fill:var(--ink-2)}
 #s09 .curve .axis{stroke:var(--line);stroke-width:1.5}#s09 .curve .line{fill:none;stroke:var(--ink);stroke-width:3}
 #s09 .metric{font-family:var(--font-mono);font-size:.9em;color:var(--ink-2);margin:10px 0 0}
+#s09 .learning-step .stepper-stage svg{max-height:390px}
 </style>
 <header class="sec-head"><span class="sec-num">09</span><div><p class="eyebrow">Why we are here: the loss can improve future predictions only by changing the model's learned numbers.</p><h2>Learn the embeddings and the weights</h2></div></header>
 <div class="companion" data-kicker="For self-study"><p>The optimizer changes every parameter that helps produce the loss: the embedding table, both weight matrices, and both bias rows. For one context, only the embedding rows that were looked up receive a direct embedding gradient, while the shared MLP parameters receive gradients through the whole calculation. Repeating this over many shuffled training rows lowers the average loss. The curve records the training loss at regular checkpoints. The before and after bars use the same <em>aab</em> context with two saved parameter sets, so the change comes from training rather than from a different input.</p></div>
+<div class="frame" data-title="One graph does prediction and learning" data-autobuild="off">
+  <script type="text/x-notes">Where does the observed i enter this computation?
+  First trace the forward prediction. Then add the observed target only at the loss, and finally follow the gradient arrows back to the stored parameters.</script>
+  <div id="s09-learning" class="learning-step diagram-step"></div>
+</div>
 <div class="frame" data-title="What the optimizer changes" data-autobuild="off">
   <script type="text/x-notes">Which learned objects receive gradients from the loss?
   Read each shape and parameter count. The embedding table and both MLP layers are trained together.</script>
@@ -31,6 +37,12 @@
 <script>
 (function(){
   const S=document.getElementById('s09'),M=window.__TOY__,V=M.vocab.length,D=M.d_model,H=M.d_h;
+  AT.ui.stepper({el:S.querySelector('#s09-learning'),big:true,compact:true,scrollList:false,steps:[
+    {title:'Context supplies the inputs',render:host=>host.appendChild(AT.part1Diagrams.learningGraph({stage:0}))},
+    {title:'Stored parameters make probabilities',render:host=>host.appendChild(AT.part1Diagrams.learningGraph({stage:1}))},
+    {title:'Observed i defines the loss',render:host=>host.appendChild(AT.part1Diagrams.learningGraph({stage:2}))},
+    {title:'Autograd returns parameter gradients',render:host=>host.appendChild(AT.part1Diagrams.learningGraph({stage:3}))}
+  ]});
   const specs=[['$\\ve{E_{\\text{tok}}}$',V+' × '+D,V*D],['$W_1$',(M.w*D)+' × '+H,M.w*D*H],['$b_1$','1 × '+H,H],['$W_2$',H+' × '+V,H*V],['$b_2$','1 × '+V,V]];
   AT.ui.table(specs.map(r=>[r[1],r[2]]),{cols:['shape','parameter count'],rowLabels:specs.map(r=>r[0]),cornerLabel:'parameter',decimals:0,footer:{label:'total',values:['',specs.reduce((a,r)=>a+r[2],0)]},into:S.querySelector('#s09-params')});
   const curve=M.training_curve,host=S.querySelector('#s09-curve'),W=800,Ht=260,pad={l:58,r:20,t:18,b:42},xs=curve.map(d=>d.step),ys=curve.map(d=>d.loss),xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys),x=v=>pad.l+(v-xmin)/(xmax-xmin)*(W-pad.l-pad.r),y=v=>pad.t+(ymax-v)/(ymax-ymin)*(Ht-pad.t-pad.b),svg=AT.svg('svg',{viewBox:'0 0 '+W+' '+Ht,class:'curve',role:'img','aria-label':'Training loss curve'});
