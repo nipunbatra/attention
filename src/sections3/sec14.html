@@ -1,0 +1,42 @@
+<section id="s14" class="sec" data-title="Three ways to arrange blocks" data-lit="">
+<style>
+#s14 .s14-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+#s14 .s14-type{border:1px solid var(--line);border-radius:10px;padding:18px;background:var(--card)}
+#s14 .s14-type p{color:var(--ink-2)}
+@media(max-width:820px){#s14 .s14-cards{grid-template-columns:1fr}}
+</style>
+<header class="sec-head">
+  <span class="sec-num">14</span>
+  <div><p class="eyebrow">Why we are here: the same attention calculation supports encoders, decoders, and models that connect the two.</p><h2>Three ways to arrange blocks</h2></div>
+</header>
+<div class="companion" data-kicker="For self-study">
+  <p>Transformer families differ mainly in which blocks they keep and which attention masks they use. Encoder-only models let every token read the full input, which suits tasks that consume a complete sequence. Decoder-only models use causal self-attention and generate one token after another. Encoder-decoder models first build source representations, then let decoder queries read encoder keys and values through cross-attention. The cross-attention arithmetic is unchanged: compare a query with keys, apply softmax, and mix values. What changes is where the three projected rows come from. The 2017 Transformer paired an encoder stack with a decoder stack.</p>
+</div>
+<div class="frame" data-title="Three block arrangements">
+  <script type="text/x-notes">Which family uses a causal mask inside every generative block?
+  Compare the source of context in the three cards.</script>
+  <div class="card s14-cards"><div class="s14-type"><h3 class="card-title">Encoder-only</h3><p>Bidirectional self-attention over a complete input.</p></div><div class="s14-type" data-build="1"><h3 class="card-title">Decoder-only</h3><p>Causal self-attention over the generated prefix.</p></div><div class="s14-type" data-build="2"><h3 class="card-title">Encoder-decoder</h3><p>An encoder builds source rows; a causal decoder also reads them.</p></div></div>
+</div>
+<div class="frame" data-title="Cross-attention reuses the calculation">
+  <script type="text/x-notes">Which sequence supplies queries, and which supplies keys and values?
+  The decoder supplies queries. The encoded source supplies keys and values.</script>
+  <div class="prose">
+    $$\vq{Q_{\text{dec}}}=\ve{E_{\text{dec}}}W_Q,\qquad \vk{K_{\text{src}}}=\ve{E_{\text{src}}}W_K,\qquad \vv{V_{\text{src}}}=\ve{E_{\text{src}}}W_V$$
+  </div>
+  <div class="card" data-build="1"><h3 class="card-title">The same dot-product worksheet</h3><div id="s14-dot"></div></div>
+</div>
+<div class="frame" data-title="The original arrangement">
+  <script type="text/x-notes">What did the 2017 design combine?
+  One line is enough: encoder blocks, decoder blocks, and cross-attention between them.</script>
+  <div id="s14-line" data-build="1"></div>
+</div>
+<div class="companion after"><p>Cross-attention changes the source of keys and values, while keeping the query-key score and value mixture unchanged.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s14');
+  const F=AT.forward(AT.train.sentence().slice(0,7));
+  AT.ui.dotCalc(F.Q[6],F.K[5],{axes:'qk',qLabel:'decoder query',kLabel:'source key',scale:true,d_k:AT.d_k,into:S.querySelector('#s14-dot')});
+  AT.ui.callout('The 2017 Transformer used an encoder stack, a decoder stack, and cross-attention from decoder queries to encoded source keys and values.',{kind:'key',into:S.querySelector('#s14-line')});
+})();
+</script>
+</section>

@@ -1,0 +1,43 @@
+<section id="s04" class="sec" data-title="The forward pass is a graph" data-lit="">
+<style>
+#s04 .s04-graph{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:18px}
+#s04 .s04-node{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:10px 12px;min-width:88px;text-align:center}
+#s04 .s04-arrow{color:var(--ink-3);font-size:1.25em}
+</style>
+<header class="sec-head">
+  <span class="sec-num">04</span>
+  <div><p class="eyebrow">Why we are here: the loss depends on every earlier operation, so the backward pass follows the same connections in reverse.</p><h2>The forward pass is a graph</h2></div>
+</header>
+<div class="companion" data-kicker="For self-study">
+  <p>A computational graph records which result came from which inputs. The river example begins with token and position lookups, then forms projections, attention scores, softmax weights, a value mixture, the output projection, a residual sum, vocabulary logits, and the loss. Reverse-mode autodiff starts from the loss and sends a derivative through each retained edge. When one value feeds two branches, its gradient receives contributions from both. That detail matters for the residual path: the final representation reaches the loss directly through the addition and indirectly through attention. The stored training block contains the resulting gradient for every parameter used by this example.</p>
+</div>
+<div class="frame" data-title="Forward follows dependencies">
+  <script type="text/x-notes">Which operation first lets one token depend on another?
+  Reveal the graph by stages. Softmax changes scores into weights; the value mixture carries information.</script>
+  <div class="card" data-build="1"><h3 class="card-title">Forward pass</h3><div class="s04-graph dotgrid" id="s04-forward"></div></div>
+</div>
+<div class="frame" data-title="Autograd reverses the arrows">
+  <script type="text/x-notes">Where do two gradient contributions meet?
+  Point to the residual addition and to the shared input representation before revealing the gradient table.</script>
+  <div class="card"><h3 class="card-title">Backward pass</h3><div class="s04-graph s04-back dotgrid" id="s04-backward"></div></div>
+  <div class="card" data-build="1"><h3 class="card-title">Gradient sizes from the river example</h3><div id="s04-grads"></div></div>
+  <div id="s04-check" data-build="2"></div>
+</div>
+<div class="companion after"><p>Autograd does not invent a new route; it differentiates the forward graph that produced the loss.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s04');
+  const labels=['lookup','projections','scores','softmax','mix values','$W_O$','residual add','LM head','loss'];
+  function graph(host,items){items.forEach((x,i)=>{const n=AT.h('div',{class:'s04-node'},x);host.appendChild(n);if(i<items.length-1)host.appendChild(AT.h('span',{class:'s04-arrow'},'→'));});AT.renderMath(host);}
+  graph(S.querySelector('#s04-forward'),labels);
+  graph(S.querySelector('#s04-backward'),labels.slice().reverse());
+  const G=AT.train.single().gradients;
+  function flat(x){if(Array.isArray(x))return x.reduce((a,v)=>a.concat(flat(v)),[]);if(x&&typeof x==='object')return Object.keys(x).reduce((a,k)=>a.concat(flat(x[k])),[]);return [Number(x)||0];}
+  function norm(x){return AT.norm(flat(x));}
+  const names=['tok_emb_used','pos_emb_used','W_Q','W_K','W_V','W_O','W_vocab','b_vocab'];
+  AT.ui.table(names.map(n=>[flat(G[n]).length,norm(G[n])]),{cols:['stored numbers','$L_2$ norm'],rowLabels:names.map(n=>n.replace(/_/g,' ')),cornerLabel:'gradient',decimals:4,caption:'Every value is read from the offline reverse pass. A zero norm would mean no learning signal reached that object.',into:S.querySelector('#s04-grads')});
+  const fd=AT.train.finiteDifference();
+  AT.ui.callout(fd.checks.length+' entries were checked by finite differences. The largest stored absolute difference is '+AT.fmt(fd.max_abs_error,4)+'.',{kind:'note',into:S.querySelector('#s04-check')});
+})();
+</script>
+</section>

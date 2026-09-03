@@ -1,0 +1,48 @@
+<section id="s08" class="sec" data-title="Attention mixes rows; the FFN mixes features" data-lit="">
+<style>
+#s08 .s08-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+#s08 .s08-axis{border:1px solid var(--line);border-radius:10px;padding:18px;background:var(--card)}
+#s08 .s08-axis p{margin:6px 0;color:var(--ink-2)}
+@media(max-width:820px){#s08 .s08-grid{grid-template-columns:1fr}}
+#s08 .s08-net{margin-top:12px}
+</style>
+<header class="sec-head">
+  <span class="sec-num">08</span>
+  <div><p class="eyebrow">Why we are here: attention moves information between token rows, then a feed-forward network transforms features within each row.</p><h2>Attention mixes rows; the FFN mixes features</h2></div>
+</header>
+<div class="companion" data-kicker="For self-study">
+  <p>A Transformer block alternates two kinds of mixing. Attention holds one receiving token fixed and combines value rows from several source positions. The feed-forward network holds one position fixed and combines the features inside that row. The same feed-forward weights are applied independently to every token. In this illustration, a five-number representation is projected to eight hidden numbers, ReLU sets negative hidden values to zero, and a second projection returns to five numbers so the result can join the residual stream. The weights are hand-picked one-decimal values used only to make the arithmetic visible.</p>
+</div>
+<div class="frame" data-title="Two axes of mixing">
+  <script type="text/x-notes">Which operation crosses token positions?
+  Attention mixes rows. The FFN stays at one position and mixes its feature coordinates.</script>
+  <div class="card s08-grid"><div class="s08-axis"><h3 class="card-title">Across token rows</h3><p>Attention combines $\vv{v_j}$ from positions $j\le i$ using $\va{\alpha_{ij}}$.</p></div><div class="s08-axis" data-build="1"><h3 class="card-title">Within one row</h3><p>The FFN transforms the coordinates of one token with shared weights.</p></div></div>
+</div>
+<div class="frame" data-title="One token through the FFN">
+  <script type="text/x-notes">Why must the FFN return to model width?
+  Its output is added to the same residual row, so the input and output widths must match.</script>
+  <div class="card"><h3 class="card-title">A fixed illustrative network</h3><div class="s08-net" id="s08-net"></div></div>
+  <div class="card" data-build="1"><h3 class="card-title">First projection and ReLU worksheet</h3><div id="s08-first"></div></div>
+  <div class="card" data-build="2"><h3 class="card-title">Second projection worksheet</h3><div id="s08-second"></div></div>
+</div>
+<div class="frame" data-title="Why widen the middle?">
+  <script type="text/x-notes">What does the wider hidden row buy?
+  It supplies more learned combinations before the network projects back to model width.</script>
+  <div id="s08-wide" data-build="1"></div>
+</div>
+<div class="companion after"><p>Attention combines information across positions; the FFN transforms each position with the same feature-mixing network.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s08');
+  const F=AT.forward(AT.train.sentence());
+  const input=F.Enew[F.T-1];
+  const R=AT.ffn(input);
+  AT.netSketch(S.querySelector('#s08-net'),{inputs:AT.d_model,hidden:AT.ffn.d_ff,outputs:AT.axes.short.e,highlightOutput:AT.axes.short.e[0],labels:{input:i=>'\\ve{e}_{'+AT.axes.short.e[i-1]+'}',output:x=>x},inputCaption:'features of one token',hiddenCaption:'ReLU hidden features',outputCaption:'FFN output'});
+  const hAxes=AT.range(AT.ffn.d_ff).map(i=>'hidden '+(i+1));
+  AT.ui.matVecCalc(input,AT.ffn.W1,{from:'e',to:hAxes,cls:'neutral',xLabel:'final token row',outLabel:'pre-activation',into:S.querySelector('#s08-first')});
+  AT.ui.table([R.pre,R.hidden],{cols:hAxes,rowLabels:['before ReLU','after ReLU'],cornerLabel:'hidden feature',highlightRow:1,caption:'ReLU keeps positive entries and replaces negative entries with zero.',into:S.querySelector('#s08-first')});
+  AT.ui.matVecCalc(R.hidden,AT.ffn.W2,{from:hAxes,to:'e',cls:'d',xLabel:'hidden row',outLabel:'FFN output',into:S.querySelector('#s08-second')});
+  AT.ui.callout('The wider middle row gives the network more learned feature combinations. The return to model width makes residual addition possible.',{kind:'key',into:S.querySelector('#s08-wide')});
+})();
+</script>
+</section>

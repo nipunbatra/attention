@@ -1,0 +1,46 @@
+<section id="s06" class="sec" data-title="Train every position at once" data-lit="">
+<style>
+#s06 .s06-code{margin-top:12px}
+#s06 .s06-summary{font-size:1.15em;margin:10px 0}
+</style>
+<header class="sec-head">
+  <span class="sec-num">06</span>
+  <div><p class="eyebrow">Why we are here: one causal forward pass can make a next-token guess at every position without reading any target early.</p><h2>Train every position at once</h2></div>
+</header>
+<div class="companion" data-kicker="For self-study">
+  <p>Each input token supplies a training target when water is appended as the observed continuation. The first position predicts fisherman, the next predicts sat, and the final position predicts water. The causal mask keeps each row honest: row $i$ can read only positions at or before $i$. The model still computes all rows in parallel because the mask removes forbidden score cells before softmax. We average the position losses, run one backward pass, and update the shared parameters once. Some positions improve more than others after this single step, so the mean is the quantity the optimizer follows.</p>
+</div>
+<div class="frame" data-title="Shift inputs into targets">
+  <script type="text/x-notes">What target belongs to each input position?
+  Read the rows vertically. The final target comes from the observed continuation.</script>
+  <div class="card" data-build="1"><h3 class="card-title">One row of inputs, one shifted row of targets</h3><div id="s06-shift"></div></div>
+</div>
+<div class="frame" data-title="The mask keeps parallel training causal">
+  <script type="text/x-notes">Can row three read the target at row six?
+  Point above the diagonal. Those cells are removed before softmax, even though every row is computed together.</script>
+  <div class="card"><h3 class="card-title">Causal attention for all positions</h3><div id="s06-mask"></div></div>
+  <pre class="torch-snippet s06-code" data-build="1"><code>logits = model(tokens, causal_mask=True)
+targets = tokens_shifted_left
+loss = cross_entropy(logits, targets).mean()
+loss.backward(); optimizer.step()</code></pre>
+</div>
+<div class="frame" data-title="Average the position losses">
+  <script type="text/x-notes">Why can one position worsen while the mean improves?
+  The shared update follows the average gradient. Inspect every row, then read the mean.</script>
+  <div class="card"><h3 class="card-title">Per-position cross-entropy</h3><div id="s06-losses"></div></div>
+  <div id="s06-mean" data-build="1"></div>
+</div>
+<div class="companion after"><p>Parallel training changes the efficiency of the calculation, while the causal mask preserves the next-token task.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s06');
+  const P=AT.train.parallel();
+  const toks=AT.train.sentence();
+  AT.ui.table([toks,P.targets],{cols:toks.map((t,i)=>String(i+1)),rowLabels:['input','target'],cornerLabel:'position',caption:'Target $i$ is the next token after input position $i$.',into:S.querySelector('#s06-shift')});
+  const F=AT.forward(toks);
+  AT.ui.heat(F.A,{rows:toks,cols:toks,mask:true,caption:'Each row is one query position. Hatched cells are future positions and have zero weight.',into:S.querySelector('#s06-mask')});
+  AT.ui.table(P.per_position.map(r=>[r.input,r.target,r.p_target_before,r.loss_before,r.p_target_after,r.loss_after]),{cols:['input','target','$p$ before','loss before','$p$ after','loss after'],rowLabels:P.per_position.map(r=>String(r.position)),cornerLabel:'position',decimals:4,caption:'Every loss is $-\\log p(\\text{target})$. The values use the parallel mean-loss update.',into:S.querySelector('#s06-losses')});
+  AT.ui.callout('Mean loss after one step with $\\eta='+P.eta+'$: '+AT.fmt(P.mean_loss_before,4)+' becomes '+AT.fmt(P.mean_loss_after,4)+'.',{kind:'key',into:S.querySelector('#s06-mean')});
+})();
+</script>
+</section>

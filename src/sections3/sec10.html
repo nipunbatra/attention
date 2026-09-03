@@ -1,0 +1,49 @@
+<section id="s10" class="sec" data-title="One block, then many" data-lit="">
+<style>
+#s10 .s10-stack{display:flex;flex-wrap:wrap;align-items:center;gap:9px;padding:18px}
+#s10 .s10-box{border:2px solid var(--line);border-radius:9px;padding:12px;background:var(--card)}
+#s10 .s10-arrow{font-size:1.35em;color:var(--ink-3)}
+</style>
+<header class="sec-head">
+  <span class="sec-num">10</span>
+  <div><p class="eyebrow">Why we are here: a Transformer block combines pre-norm attention and a pre-norm FFN, then the model repeats that block.</p><h2>One block, then many</h2></div>
+</header>
+<div class="companion" data-kicker="For self-study">
+  <p>One pre-norm decoder block has two residual updates. First, LayerNorm prepares the current rows, causal multi-head attention gathers information across positions, and the result is added back. Second, another LayerNorm prepares those intermediate rows, the FFN mixes features at each position, and its result is added. Stacking blocks lets later attention use representations already changed by earlier context. Inside any one block, every query, key, and value comes from that block's input rows, so a newly updated bank row becomes available to other tokens only in the next block. The multi-hop example shows why depth can matter.</p>
+</div>
+<div class="frame" data-title="Walk through one pre-norm block">
+  <script type="text/x-notes">Where are the two residual additions?
+  Step through the block and ask which operations cross positions and which remain within one row.</script>
+  <div class="card"><h3 class="card-title">One decoder block</h3><div id="s10-stepper"></div></div>
+  <div class="prose" data-build="1">
+    $$\ve{u}=\ve{e}+\operatorname{MHA}(\operatorname{LN}(\ve{e}))$$
+    $$\vp{e'}=\ve{u}+\operatorname{FFN}(\operatorname{LN}(\ve{u}))$$
+  </div>
+</div>
+<div class="frame" data-title="Stack the same block shape">
+  <script type="text/x-notes">What does block two receive?
+  It receives the output of block one, not the original embedding plus position.</script>
+  <div class="card" data-build="1"><h3 class="card-title">Representations across depth</h3><div class="s10-stack dotgrid" id="s10-stack"></div></div>
+</div>
+<div class="frame" data-title="Depth supports multi-hop updates">
+  <script type="text/x-notes">Which relation may need to be assembled before another token can use it?
+  Read the trophy sentence. One block can update a clue; a later block can route using that changed row.</script>
+  <div class="card" data-build="1"><h3 class="card-title">A multi-hop trace</h3><div id="s10-hop"></div></div>
+</div>
+<div class="companion after"><p>Each block reads the previous block's contextual rows, which lets later routing depend on relations assembled earlier.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s10');
+  const stages=['$\\ve{e}$','LayerNorm','causal multi-head attention','residual add','LayerNorm','FFN','residual add'];
+  const titles=['Current representation','Normalize for attention','Gather across positions','First residual addition','Normalize for the FFN','Mix features','Second residual addition'];
+  AT.ui.stepper({steps:stages.map((x,i)=>({title:titles[i],tex:i===0?'\\ve{e}':null,note:i===2?'Every head reads the full normalized input through its own projections.':i===5?'The same FFN acts independently on each token row.':i===3||i===6?'The branch output is added to the residual stream.':'The row stays at model width.',render:el=>{const line=AT.h('div',{class:'s10-stack'});stages.slice(0,i+1).forEach((s,j)=>{line.appendChild(AT.h('div',{class:'s10-box'},s));if(j<i)line.appendChild(AT.h('span',{class:'s10-arrow'},'→'));});el.appendChild(line);}})),into:S.querySelector('#s10-stepper')});
+  const stack=S.querySelector('#s10-stack');
+  ['$\\ve{E^{(0)}}$','block 1','$\\ve{E^{(1)}}$','block 2','$\\ve{E^{(2)}}$','more blocks'].forEach((x,i)=>{stack.appendChild(AT.h('div',{class:'s10-box'},x));if(i<5)stack.appendChild(AT.h('span',{class:'s10-arrow'},'→'));});AT.renderMath(stack);
+  AT.ui.stepper({steps:[
+    {title:'Read the surface clue',note:'"The trophy did not fit in the suitcase because it was too ___." One row can gather the relation between fit, trophy, and suitcase.'},
+    {title:'Update the candidate referents',note:'Earlier context changes the rows for trophy and suitcase. This change is available after the block.'},
+    {title:'Route with the changed rows',note:'A later block can use those contextual rows when deciding which property is relevant to the blank.'}
+  ],into:S.querySelector('#s10-hop')});
+})();
+</script>
+</section>

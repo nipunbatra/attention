@@ -1,0 +1,35 @@
+<section id="s19" class="sec" data-title="Three summaries" data-lit="">
+<style>
+#s19 .s19-summaries{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+#s19 .s19-summary{border:1px solid var(--line);border-radius:10px;padding:18px;background:var(--card)}
+#s19 .s19-links{display:flex;flex-wrap:wrap;gap:12px;margin-top:18px}
+@media(max-width:820px){#s19 .s19-summaries{grid-template-columns:1fr}}
+</style>
+<header class="sec-head">
+  <span class="sec-num">19</span>
+  <div><p class="eyebrow">Why we are here: the series closes by reducing learning, the block, and generation to one compact statement each.</p><h2>Three summaries</h2></div>
+</header>
+<div class="companion" data-kicker="For self-study">
+  <p>The lesson has moved through three scales. At the training-example scale, the observed next token gives a loss, reverse-mode autodiff supplies gradients, and SGD changes every contributing parameter. At the block scale, LayerNorm prepares residual rows, multi-head attention mixes information across allowed positions, and an FFN mixes features within each position. At the language-model scale, token and position rows pass through many causal blocks, the vocabulary head supplies next-token probabilities, and generation appends one token at a time while reusing cached keys and values. The three cards keep those scales separate while showing how they connect.</p>
+</div>
+<div class="frame" data-title="Learning, block, model">
+  <script type="text/x-notes">Can each scale be stated in one sentence?
+  Reveal the cards separately and ask students to supply the missing operations first.</script>
+  <div class="card s19-summaries"><div class="s19-summary"><h3 class="card-title">Learning</h3><p>Observed target $\to$ cross-entropy $\to$ gradients $\to$ one parameter update.</p></div><div class="s19-summary" data-build="1"><h3 class="card-title">One block</h3><p>Pre-norm causal multi-head attention and a pre-norm FFN each add an update to the residual stream.</p></div><div class="s19-summary" data-build="2"><h3 class="card-title">The model</h3><p>Embeddings plus positions $\to$ stacked causal blocks $\to$ vocabulary logits $\to$ repeated generation.</p></div></div>
+</div>
+<div class="frame" data-title="The attention path within the larger model">
+  <script type="text/x-notes">Where does the Part 2 calculation sit inside Part 3?
+  It is the attention branch inside every block. The new material surrounds it with learning, FFNs, normalisation, and depth.</script>
+  <div class="card"><h3 class="card-title">The familiar attention branch</h3><div id="s19-motif"></div></div>
+  <div id="s19-note" data-build="1"></div>
+  <nav class="s19-links" data-build="2" aria-label="Series links"><a class="btn" href="part1.html">Back to Part 1</a><a class="btn btn-primary" href="attention.html">Back to Part 2</a></nav>
+</div>
+<div class="companion after"><p>The attention calculation is one branch inside a trainable residual stack that predicts and generates tokens.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s19');
+  AT.motif(S.querySelector('#s19-motif'),{active:null,labels:true});
+  AT.ui.callout('The symbol $\\vd{\\Delta e}$ is this page\'s name for the attention output before residual addition. Standard implementations often use another variable name, while the addition $\\ve{e}+\\vd{\\Delta e}$ remains the same operation.',{kind:'note',into:S.querySelector('#s19-note')});
+})();
+</script>
+</section>

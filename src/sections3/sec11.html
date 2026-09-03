@@ -1,0 +1,50 @@
+<section id="s11" class="sec" data-title="The complete decoder-only model" data-lit="">
+<style>
+#s11 .s11-model{display:flex;flex-wrap:wrap;align-items:center;gap:9px;padding:18px}
+#s11 .s11-box{border:2px solid var(--line);border-radius:9px;padding:12px;background:var(--card);text-align:center}
+#s11 .s11-arrow{font-size:1.35em;color:var(--ink-3)}
+#s11 .s11-lm svg{display:block;width:100%;min-width:680px;height:auto}
+</style>
+<header class="sec-head">
+  <span class="sec-num">11</span>
+  <div><p class="eyebrow">Why we are here: embeddings, blocks, and the vocabulary head now form one decoder-only language model.</p><h2>The complete decoder-only model</h2></div>
+</header>
+<div class="companion" data-kicker="For self-study">
+  <p>A decoder-only Transformer begins with token embeddings plus positions, sends the resulting rows through a stack of causal blocks, and applies a vocabulary head to each final row. Every block preserves model width, so residual additions remain possible throughout the stack. The vocabulary head maps one final five-feature row to one logit per token in this toy vocabulary. Softmax turns those logits into probabilities. During training, every position can contribute a loss. During generation, only the distribution at the last position is needed to choose the next token. The diagram and shape table connect each stage without introducing a new representation symbol.</p>
+</div>
+<div class="frame" data-title="End-to-end decoder path">
+  <script type="text/x-notes">Where does causal mixing happen, and where are vocabulary scores made?
+  Build the path from token ids to probabilities. The LM head does not mix token positions.</script>
+  <div class="card" data-build="1"><h3 class="card-title">Tokens to next-token probabilities</h3><div class="s11-model dotgrid" id="s11-model"></div></div>
+</div>
+<div class="frame" data-title="Shapes stay compatible">
+  <script type="text/x-notes">Why does every block return model-width rows?
+  Residual addition and the shared LM head require a stable width across the stack.</script>
+  <div class="card" data-build="1"><h3 class="card-title">Shape ledger</h3><div id="s11-shapes"></div></div>
+</div>
+<div class="frame" data-title="The language-model head">
+  <script type="text/x-notes">Does the LM head read other token rows?
+  No. It maps each final row independently to vocabulary logits. Attention already carried context into that row.</script>
+  <div class="card"><h3 class="card-title">Named features vote for vocabulary tokens</h3><div class="scroll-x s11-lm dotgrid" id="s11-lm"></div></div>
+  <div class="card" data-build="1"><h3 class="card-title">Projection worksheet for the final row</h3><div id="s11-calc"></div></div>
+  <div id="s11-note" data-build="2"></div>
+</div>
+<div class="companion after"><p>A decoder-only model keeps one model-width row per token through causal blocks, then maps each final row to vocabulary logits.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s11');
+  const model=S.querySelector('#s11-model');
+  ['token ids','embedding + position','$L$ causal blocks','LM head $W_{\\text{vocab}},b$','softmax','probabilities'].forEach((x,i)=>{model.appendChild(AT.h('div',{class:'s11-box'},x));if(i<5)model.appendChild(AT.h('span',{class:'s11-arrow'},'→'));});AT.renderMath(model);
+  const T=AT.train.sentence().length,V=AT.vocab.length;
+  AT.ui.table([['$T$','$T\\times d_{\\text{model}}$',T,AT.d_model],['$T\\times d_{\\text{model}}$','$T\\times d_{\\text{model}}$',T,AT.d_model],['$T\\times d_{\\text{model}}$','$T\\times |\\mathcal V|$',T,V]],{cols:['input shape','output shape','output rows','output columns'],rowLabels:['embedding + position','$L$ blocks','LM head'],cornerLabel:'stage',decimals:0,caption:'The current toy supplies the displayed row and column counts.',into:S.querySelector('#s11-shapes')});
+  const host=S.querySelector('#s11-lm'),W=760,H=380,svg=AT.svg('svg',{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':'Named representation features connect directly to vocabulary logits'});
+  const ins=AT.axes.short.e,outs=AT.vocab,x1=150,x2=610;
+  ins.forEach((a,i)=>{const y=45+i*70;svg.appendChild(AT.svg('circle',{cx:x1,cy:y,r:18,fill:AT.objTint('e'),stroke:AT.objColor('e'),'stroke-width':2}));svg.appendChild(AT.svg('text',{x:x1-28,y:y+5,'text-anchor':'end',fill:AT.objColor('e')},a));});
+  outs.forEach((a,i)=>{const y=18+i*(H-36)/(outs.length-1);svg.appendChild(AT.svg('circle',{cx:x2,cy:y,r:6,fill:'var(--card)',stroke:'var(--ink-3)'}));svg.appendChild(AT.svg('text',{x:x2+14,y:y+4,fill:'var(--ink-2)'},a));ins.forEach((_,j)=>{if(AT.model.W_vocab[j][i]!==0)svg.insertBefore(AT.svg('line',{x1:x1+18,y1:45+j*70,x2:x2-7,y2:y,stroke:'var(--ink-3)','stroke-width':1}),svg.firstChild);});});
+  svg.appendChild(AT.svg('text',{x:x1,y:H-8,'text-anchor':'middle',fill:'var(--ink-3)'},'final representation features'));svg.appendChild(AT.svg('text',{x:x2,y:H-8,'text-anchor':'middle',fill:'var(--ink-3)'},'one logit per token'));host.appendChild(svg);
+  const F=AT.forward(AT.train.sentence()),row=F.Enew[F.T-1];
+  AT.ui.matVecCalc(row,AT.model.W_vocab,{from:'e',to:'vocab',cls:'neutral',xLabel:'final token row',outLabel:'vocabulary logits before bias',into:S.querySelector('#s11-calc')});
+  AT.ui.callout('Calling the attention branch output $\\vd{\\Delta e}$ is this page\'s teaching notation. Standard Transformer descriptions use attention output. The residual additions shown in every block are standard.',{kind:'note',into:S.querySelector('#s11-note')});
+})();
+</script>
+</section>

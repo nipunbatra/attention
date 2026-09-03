@@ -1,0 +1,51 @@
+<section id="s02" class="sec" data-title="The observed next token tells us the error" data-lit="">
+<style>
+#s02 .s02-target{font-size:1.4em;margin:12px 0;color:var(--warn)}
+#s02 .s02-loss{padding:14px 0 0;font-family:var(--font-mono);font-size:1.05em}
+#s02 .s02-loss .calc-r{font-size:1.2em}
+</style>
+<header class="sec-head">
+  <span class="sec-num">02</span>
+  <div><p class="eyebrow">Why we are here: a prediction becomes a training signal only when the next observed token is known.</p><h2>The observed next token tells us the error</h2></div>
+</header>
+<div class="companion" data-kicker="For self-study">
+  <p>The river prefix ends with the word the, and the model assigns one probability to every vocabulary token. Training then reveals the observed continuation, water. Cross-entropy keeps the probability placed on that target and turns it into a loss with a negative logarithm. A high target probability gives a small loss. A low target probability gives a large loss. The other probabilities still matter because softmax couples every logit through one denominator. Open the worksheet to see that denominator, then follow the target row into the loss calculation. Both values come from the same forward pass used in Part 2.</p>
+</div>
+<div class="frame" data-title="Prediction meets observation">
+  <script type="text/x-notes">Which bar determines the loss after the target is revealed?
+  Read the prefix first, then reveal water. The model did not know the target while producing its distribution.</script>
+  <div class="card"><h3 class="card-title">Prefix and next-token distribution</h3><div id="s02-prefix"></div><div id="s02-bars" data-build="1"></div><p class="s02-target" data-build="2">Observed target: <span id="s02-target"></span></p></div>
+</div>
+<div class="frame" data-title="Cross-entropy keeps one probability">
+  <script type="text/x-notes">Why does the loss use the target row while the softmax uses every row?
+  Point to the shared denominator, then retain the probability assigned to water.</script>
+  <div class="card"><h3 class="card-title">Softmax worksheet for the final position</h3><div id="s02-softmax"></div></div>
+  <div class="card" data-build="1"><h3 class="card-title">Loss worksheet</h3><div class="s02-loss" id="s02-loss"></div></div>
+  <div id="s02-callout" data-build="2"></div>
+</div>
+<div class="companion after"><p>The observed token does not supply a replacement prediction; it supplies the target used to score the distribution.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s02');
+  const toks=AT.train.sentence();
+  const F=AT.forward(toks);
+  const row=toks.length-1;
+  const target=AT.train.target();
+  const tid=AT.vocab.indexOf(target);
+  AT.ui.chips(toks,{active:row,slot:'___',into:S.querySelector('#s02-prefix')});
+  AT.ui.bars(AT.topk(F.probs[row],8),{highlight:target,decimals:4,size:'lg',into:S.querySelector('#s02-bars')});
+  S.querySelector('#s02-target').textContent=target;
+  const logits=F.logits[row];
+  const mx=Math.max.apply(null,logits);
+  const exps=logits.map(x=>Math.exp(x-mx));
+  const denom=AT.sum(exps);
+  const order=AT.topk(F.probs[row],8).map(x=>x.i);
+  AT.ui.table(order.map(i=>[logits[i],exps[i],exps[i]/denom]),{cols:['logit','$\\exp(\\ell-\\ell_{\\max})$','probability'],rowLabels:order.map(i=>AT.vocab[i]),cornerLabel:'token',highlightRow:order.indexOf(tid),decimals:4,footer:{label:'denominator',values:['',denom,'']},caption:'Softmax divides every exponential by the same denominator. Displayed values are rounded; the probabilities use full precision.',into:S.querySelector('#s02-softmax')});
+  const single=AT.train.single();
+  const loss=S.querySelector('#s02-loss');
+  loss.appendChild(document.createTextNode('loss = -log(' + AT.fmt(single.p_target_before,4) + ') = '));
+  loss.appendChild(AT.h('span',{class:'calc-r'},AT.fmt(single.loss_before,4)));
+  AT.ui.callout('Cross-entropy asks one direct question: how much probability did the model place on the token that appeared?',{kind:'key',into:S.querySelector('#s02-callout')});
+})();
+</script>
+</section>

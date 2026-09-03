@@ -1,0 +1,46 @@
+<section id="s01" class="sec" data-title="Where Part 2 left us" data-lit="e q k v a d ep">
+<style>
+#s01 .s01-motif{margin:8px 0 18px}
+#s01 .s01-context{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+#s01 .s01-context>*{min-width:0}
+@media(max-width:820px){#s01 .s01-context{grid-template-columns:1fr}}
+</style>
+<header class="sec-head">
+  <span class="sec-num">01</span>
+  <div><p class="eyebrow">Why we are here: Part 2 computed a contextual update with fixed numbers. Part 3 asks how those numbers learn.</p><h2>Where Part 2 left us</h2></div>
+</header>
+<div class="companion" data-kicker="For self-study">
+  <p>Part 2 followed one causal attention head from a token representation to a next-token distribution. The same bank row changed toward water in the river sentence and toward finance in the cheque sentence. Every coordinate below comes from the hand-written toy with named representation, query, key, and value axes. Its arithmetic is real, though its weights were chosen to make the route easy to read. This part keeps that model fixed for one more moment, then uses the observed word water to measure an error and change every parameter that contributed to it. The first example connects the familiar forward pass to learning.</p>
+</div>
+<div class="frame" data-title="The calculation we already know">
+  <script type="text/x-notes">Which object carries context back to the current representation?
+  Trace the motif once. The dashed path retains the input while attention computes the update.</script>
+  <div class="prose"><p>Attention reads earlier rows, builds $\vd{\Delta e_i}$, and adds it to $\ve{e_i}$. The output head turns the final updated row into next-token probabilities.</p></div>
+  <div class="card" data-build="1"><h3 class="card-title">The Part 2 motif</h3><div class="s01-motif" id="s01-motif"></div></div>
+  <div class="card" data-build="2"><h3 class="card-title">Notation carried into Part 3</h3><div id="s01-notation"></div></div>
+</div>
+<div class="frame" data-title="One spelling, two contextual rows">
+  <script type="text/x-notes">Which named axis changes most in each context?
+  Compare the same starting bank row with the two updated rows. The numbers are activations for these sentences.</script>
+  <div class="prose"><p>The token bank starts from the same row in both sentences. Its contextual update depends on the rows it can read.</p></div>
+  <div class="card s01-context" data-build="1"><div id="s01-river"></div><div id="s01-cheque"></div></div>
+  <div id="s01-fixed" data-build="2"></div>
+</div>
+<div class="companion after"><p>The attention calculation used fixed parameters; learning will explain where useful parameters can come from.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s01');
+  const river=AT.forward(AT.sentences.river.slice(0,7));
+  const cheque=AT.forward(AT.sentences.cheque.slice(0,7));
+  const i=6;
+  AT.motif(S.querySelector('#s01-motif'),{active:'ep',labels:true});
+  AT.ui.notationCard({part:'part3',groups:['train','block'],into:S.querySelector('#s01-notation')});
+  function context(host,F,label){
+    AT.ui.table([F.E[i],F.Delta[i]],{axes:'e',cornerLabel:label,rowLabels:['$\\ve{e_{\\text{bank}}^{(0)}}$','$\\vd{\\Delta e_{\\text{bank}}}$'],rowCls:['e','d'],footer:{label:'$\\vp{e_{\\text{bank}}\'}$',values:F.Enew[i],cls:'ep'},caption:'Every coordinate comes from the current toy.',into:host});
+  }
+  context(S.querySelector('#s01-river'),river,'river context');
+  context(S.querySelector('#s01-cheque'),cheque,'cheque context');
+  AT.ui.callout('A contextual update changes an activation for this input. A learning update changes stored parameters that will be used on later inputs.',{kind:'key',into:S.querySelector('#s01-fixed')});
+})();
+</script>
+</section>

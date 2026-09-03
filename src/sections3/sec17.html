@@ -1,0 +1,36 @@
+<section id="s17" class="sec" data-title="Back to aabid" data-lit="">
+<style>
+#s17 .s17-pipes{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+#s17 .s17-pipe{border:1px solid var(--line);border-radius:10px;padding:18px;background:var(--card)}
+#s17 .s17-flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#s17 .s17-box{border:1px solid var(--line);border-radius:7px;padding:9px;background:var(--paper)}
+@media(max-width:820px){#s17 .s17-pipes{grid-template-columns:1fr}}
+</style>
+<header class="sec-head">
+  <span class="sec-num">17</span>
+  <div><p class="eyebrow">Why we are here: comparing the Transformer with the Part 1 character MLP isolates the change in how context is represented.</p><h2>Back to aabid</h2></div>
+</header>
+<div class="companion" data-kicker="For self-study">
+  <p>The aabid character model and the Transformer both embed discrete symbols, produce logits, apply softmax, and learn from next-token cross-entropy. Their main difference lies between the embeddings and the output head. The character MLP concatenates a fixed number of previous embedding rows, so its context size is chosen in advance and each window slot has separate input weights. The Transformer keeps one row per token, uses causal self-attention to gather from any allowed prefix position, and repeats attention and FFN updates through a stack. This comparison turns the larger architecture into a change of context builder rather than a new learning objective.</p>
+</div>
+<div class="frame" data-title="Two context builders">
+  <script type="text/x-notes">Where does each model combine its context?
+  The MLP combines fixed slots by concatenation. The Transformer keeps rows and routes between them with causal attention.</script>
+  <div class="card s17-pipes"><div class="s17-pipe"><h3 class="card-title">aabid fixed-window MLP</h3><div class="s17-flow" id="s17-mlp"></div></div><div class="s17-pipe" data-build="1"><h3 class="card-title">Decoder-only Transformer</h3><div class="s17-flow" id="s17-tr"></div></div></div>
+</div>
+<div class="frame" data-title="Complete the comparison">
+  <script type="text/x-notes">What changes most between the models?
+  Reveal the sentence after students name the context mechanism.</script>
+  <div class="card" data-build="1"><div id="s17-reveal"></div></div>
+</div>
+<div class="companion after"><p>Both models optimize next-token loss; the Transformer replaces a fixed concatenated window with causal contextual rows and depth.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s17');
+  function pipe(host,items){items.forEach((x,i)=>{host.appendChild(AT.h('div',{class:'s17-box'},x));if(i<items.length-1)host.appendChild(AT.h('span',{},'→'));});AT.renderMath(host);}
+  pipe(S.querySelector('#s17-mlp'),['three embedding rows','concatenate','hidden layer','vocabulary logits']);
+  pipe(S.querySelector('#s17-tr'),['any prefix length','causal blocks','final contextual row','vocabulary logits']);
+  AT.ui.reveal('A Transformer language model differs from our aabid MLP mainly because ...','it builds each context row with causal self-attention and stacked FFNs instead of concatenating a fixed number of embedding rows. The next-token loss is the same kind of objective.',{into:S.querySelector('#s17-reveal')});
+})();
+</script>
+</section>

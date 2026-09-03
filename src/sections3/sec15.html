@@ -1,0 +1,40 @@
+<section id="s15" class="sec" data-title="Sequence models side by side" data-lit="">
+<style>
+#s15 .s15-price{font-size:1.1em}
+#s15 #s15-table .dt{font-size:13px}
+#s15 #s15-table .dt th,#s15 #s15-table .dt td{padding:6px 8px}
+</style>
+<header class="sec-head">
+  <span class="sec-num">15</span>
+  <div><p class="eyebrow">Why we are here: flexible context and short information paths make self-attention useful, though its score matrix has a cost.</p><h2>Sequence models side by side</h2></div>
+</header>
+<div class="companion" data-kicker="For self-study">
+  <p>A fixed-window MLP sees only the tokens placed in its window. An RNN can carry information over longer sequences, but the route between distant tokens passes through many recurrent updates. Temporal convolutions enlarge their receptive field as layers accumulate. Self-attention gives any allowed pair a direct path inside one layer and computes positions in parallel during training. That flexibility requires a score for every allowed query-key pair, so a full sequence uses a quadratic number of score cells. The table compares these properties without declaring one model best for every setting. Memory, latency, data, and task structure all affect the choice.</p>
+</div>
+<div class="frame" data-title="Compare the context routes">
+  <script type="text/x-notes">Which model gives two distant tokens a direct path in one layer?
+  Read across one property at a time instead of ranking the rows as a single score.</script>
+  <div class="card" data-build="1"><h3 class="card-title">Four sequence models</h3><div id="s15-table"></div></div>
+</div>
+<div class="frame" data-title="Longer memory has a price">
+  <script type="text/x-notes">What grows when self-attention reads a longer sequence?
+  The score matrix contains one cell for each query-key pair.</script>
+  <div id="s15-price"></div>
+  <div class="card" data-build="1"><h3 class="card-title">The recurring attention path</h3><div id="s15-motif"></div></div>
+</div>
+<div class="companion after"><p>Self-attention offers direct content-dependent paths, while the number of score cells grows with the square of sequence length.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s15');
+  const rows=[
+    ['fixed window','one layer inside the window','parallel','linear in window'],
+    ['state passed step by step','linear in distance','sequential','linear per step'],
+    ['grows with depth','set by its receptive field','parallel','linear in kernel'],
+    ['any allowed earlier token','one layer','parallel','quadratic']
+  ];
+  AT.ui.table(rows,{cols:['context','distant-token path','training','context cost'],rowLabels:['fixed-window MLP','RNN','temporal convolution','self-attention'],cornerLabel:'model',highlightRow:3,caption:'Each row describes the usual dense form of the model family.',into:S.querySelector('#s15-table')});
+  AT.ui.callout('At the toy length $T='+AT.T+'$, a dense score matrix has '+(AT.T*AT.T)+' cells before the causal half is removed. Longer context increases both memory use and score work.',{kind:'note',into:S.querySelector('#s15-price')});
+  AT.motif(S.querySelector('#s15-motif'),{active:'att',labels:true});
+})();
+</script>
+</section>

@@ -1,0 +1,35 @@
+<section id="s12" class="sec" data-title="Training: one pass, many guesses" data-lit="">
+<style>
+#s12 .s12-objectives{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:820px){#s12 .s12-objectives{grid-template-columns:1fr}}
+#s12 .s12-objective{border:1px solid var(--line);border-radius:9px;padding:18px;background:var(--card)}
+</style>
+<header class="sec-head">
+  <span class="sec-num">12</span>
+  <div><p class="eyebrow">Why we are here: the complete model still learns from the same next-token cross-entropy used by the small character model.</p><h2>Training: one pass, many guesses</h2></div>
+</header>
+<div class="companion" data-kicker="For self-study">
+  <p>The complete decoder processes a token sequence once and produces a vocabulary distribution at every position. Shifting the observed sequence by one position supplies the targets. The causal mask ensures that each prediction uses only its prefix, so all position losses are valid next-token losses. Averaging them gives one scalar objective for the backward pass. This is the same statistical task used by the Part 1 aabid character model. The architectures differ in how they build a context representation: the character MLP concatenates a fixed window, while the Transformer uses causal attention and stacked blocks over the available prefix.</p>
+</div>
+<div class="frame" data-title="One sequence produces many losses">
+  <script type="text/x-notes">How many supervised guesses come from this sequence?
+  Reveal the target row, then the position losses. The mask makes each row a valid prefix prediction.</script>
+  <div class="card"><h3 class="card-title">Parallel next-token objective</h3><div id="s12-table"></div></div>
+  <div class="prose" data-build="1">$$L=\frac{1}{T}\sum_{i=1}^{T}-\log p(x_{i+1}\mid x_{\le i})$$</div>
+</div>
+<div class="frame" data-title="The objective matches Part 1">
+  <script type="text/x-notes">What stays the same between the aabid MLP and the Transformer?
+  Both maximize the observed next token. Their context builders are different.</script>
+  <div class="card s12-objectives"><div class="s12-objective"><h3 class="card-title">aabid character MLP</h3><p>Fixed window $\to$ concatenated embeddings $\to$ hidden layer $\to$ logits.</p><p>$$L=-\log p(\text{next character})$$</p></div><div class="s12-objective" data-build="1"><h3 class="card-title">Decoder-only Transformer</h3><p>Available prefix $\to$ causal blocks $\to$ final row $\to$ logits.</p><p>$$L=-\log p(\text{next token})$$</p></div></div>
+  <div id="s12-key" data-build="2"></div>
+</div>
+<div class="companion after"><p>The next-token objective is unchanged; the Transformer builds its context representation with causal attention and depth.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s12');
+  const P=AT.train.parallel();
+  AT.ui.table(P.per_position.map(r=>[r.input,r.target,r.loss_before]),{cols:['input token','observed next token','cross-entropy'],rowLabels:P.per_position.map(r=>String(r.position)),cornerLabel:'position',decimals:4,footer:{label:'mean loss',values:['','',P.mean_loss_before]},caption:'One causal forward pass supplies one loss per position.',into:S.querySelector('#s12-table')});
+  AT.ui.callout('Learning still asks the model to place more probability on the observed next symbol. Attention changes how the model uses context.',{kind:'key',into:S.querySelector('#s12-key')});
+})();
+</script>
+</section>

@@ -1,0 +1,49 @@
+<section id="s09" class="sec" data-title="The residual stream and LayerNorm" data-lit="">
+<style>
+#s09 .s09-stream{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:18px}
+#s09 .s09-node{border:2px solid var(--line);border-radius:9px;padding:12px;background:var(--card)}
+#s09 .s09-branch{border-style:dashed}
+#s09 .s09-arrow{font-size:1.4em;color:var(--ink-3)}
+#s09 .s09-inputs{display:flex;flex-wrap:wrap;gap:12px;margin:14px 0}
+#s09 label{display:flex;gap:7px;align-items:center}
+#s09 input[type=range]{width:130px}
+</style>
+<header class="sec-head">
+  <span class="sec-num">09</span>
+  <div><p class="eyebrow">Why we are here: residual paths preserve a shared stream, while LayerNorm keeps each row on a controlled scale before a branch reads it.</p><h2>The residual stream and LayerNorm</h2></div>
+</header>
+<div class="companion" data-kicker="For self-study">
+  <p>The residual stream is the model-width row carried through the stack. Attention and the FFN read from that stream, compute updates, and add those updates back. LayerNorm acts within one row: it subtracts the row mean and divides by the row standard deviation. This makes the row's scale predictable for the next branch. Modern decoder-only models commonly use pre-norm blocks, where LayerNorm sits before attention and before the FFN. The sliders below let you change a short row and watch its mean, centered values, variance, and normalized values update. This calculator omits learned scale and shift parameters.</p>
+</div>
+<div class="frame" data-title="An unbroken residual line">
+  <script type="text/x-notes">Which path carries the representation through the block?
+  The straight line remains model width. Each branch returns an update that is added to it.</script>
+  <div class="card" data-build="1"><h3 class="card-title">Residual stream with two branches</h3><div class="s09-stream dotgrid" id="s09-stream"></div></div>
+</div>
+<div class="frame" data-title="LayerNorm within one row">
+  <script type="text/x-notes">What stays unchanged when every input value shifts by the same amount?
+  Move the sliders together and inspect the centered row. LayerNorm uses the row mean and variance.</script>
+  <div class="card" data-build="1"><h3 class="card-title">Live LayerNorm calculator</h3><div class="s09-inputs" id="s09-inputs"></div><div id="s09-ln"></div></div>
+</div>
+<div class="frame" data-title="Pre-norm or post-norm">
+  <script type="text/x-notes">Where does LayerNorm sit in the version we will use?
+  Toggle the comparison, then return to pre-norm for the block in the next section.</script>
+  <div class="card"><h3 class="card-title">Choose the arrangement</h3><div id="s09-toggle"></div><div id="s09-eq"></div></div>
+  <div id="s09-note" data-build="1"></div>
+</div>
+<div class="companion after"><p>The residual stream carries model-width rows forward; LayerNorm prepares each row before a branch reads it.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s09');
+  const stream=S.querySelector('#s09-stream');
+  ['$\\ve{e}$','→','LN and causal MHA','+','LN and FFN','+',"$\\vp{e'}$"].forEach((x,i)=>{if(x==='→'||x==='+')stream.appendChild(AT.h('span',{class:'s09-arrow'},x));else stream.appendChild(AT.h('div',{class:'s09-node '+((i===2||i===4)?'s09-branch':'')},x));});AT.renderMath(stream);
+  const vals=[1,3,5],inputs=S.querySelector('#s09-inputs'),out=S.querySelector('#s09-ln');
+  function draw(){AT.clear(out);const R=AT.ln(vals,0);AT.ui.table([R.input,R.centered,R.output],{cols:['feature 1','feature 2','feature 3'],rowLabels:['input','subtract mean','divide by standard deviation'],cornerLabel:'LayerNorm',decimals:2,caption:'Mean '+AT.fmt(R.mean,2)+', variance '+AT.fmt(R.variance,2)+', standard deviation '+AT.fmt(R.denominator,2)+'.',into:out});}
+  vals.forEach((v,i)=>{const label=AT.h('label',{},'feature '+(i+1));const input=AT.h('input',{type:'range',min:-5,max:8,step:.5,value:v});const value=AT.h('output',{},String(v));input.addEventListener('input',()=>{vals[i]=Number(input.value);value.textContent=input.value;draw();});label.appendChild(input);label.appendChild(value);inputs.appendChild(label);});draw();
+  const eq=S.querySelector('#s09-eq');
+  function mode(pre){AT.clear(eq);AT.tex(eq,pre?'\\ve{u}=\\ve{e}+\\operatorname{MHA}(\\operatorname{LN}(\\ve{e}))':'\\ve{u}=\\operatorname{LN}(\\ve{e}+\\operatorname{MHA}(\\ve{e}))',{display:true});}
+  AT.ui.toggle({label:'Pre-norm block',on:true,onText:'pre-norm',offText:'post-norm',onChange:mode,into:S.querySelector('#s09-toggle')});mode(true);
+  AT.ui.callout('We use pre-norm in the next section. Calling an attention result $\\vd{\\Delta e}$ is this page\'s teaching notation; standard descriptions call it the attention output. The residual addition is standard.',{kind:'note',into:S.querySelector('#s09-note')});
+})();
+</script>
+</section>

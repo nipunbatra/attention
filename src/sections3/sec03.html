@@ -1,0 +1,37 @@
+<section id="s03" class="sec" data-title="Which numbers will the optimizer change?" data-lit="">
+<style>
+#s03 .s03-kind{font-size:.78em;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3)}
+</style>
+<header class="sec-head">
+  <span class="sec-num">03</span>
+  <div><p class="eyebrow">Why we are here: the graph contains stored parameters and temporary results, and only the stored parameters survive the example.</p><h2>Which numbers will the optimizer change?</h2></div>
+</header>
+<div class="companion" data-kicker="For self-study">
+  <p>The forward pass creates many rows and matrices, but they do not all have the same status. Token and position tables, projection matrices, and the vocabulary head are parameters. Training changes them and saves the new values. The rows $\ve{e}$, $\vq{q}$, $\vk{k}$, $\vv{v}$, the scores, weights, messages, updates, logits, and probabilities are intermediates. They are recomputed when a new sequence arrives. Autograd retains enough of these temporary values to calculate gradients, then the optimizer updates the parameters. This distinction prevents a common mix-up: $\vd{\Delta e}$ changes a representation inside a forward pass, while an optimizer step changes stored weights.</p>
+</div>
+<div class="frame" data-title="Stored or temporary?">
+  <script type="text/x-notes">Which entries will still exist before the next training example?
+  Ask students to classify the rows before revealing the final column.</script>
+  <div class="card"><h3 class="card-title">Objects in the calculation</h3><div id="s03-table"></div></div>
+  <div id="s03-key" data-build="1"></div>
+</div>
+<div class="frame" data-title="Every parameter receives a matching gradient">
+  <script type="text/x-notes">Why must a gradient have the same shape as its parameter?
+  Read the current toy widths from the table. Each stored number needs its own proposed change.</script>
+  <div class="card" data-build="1"><h3 class="card-title">Parameter and gradient shapes</h3><div id="s03-shapes"></div></div>
+</div>
+<div class="companion after"><p>A contextual update belongs to one input; an optimizer update changes the model used by future inputs.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s03');
+  const d=AT.d_model,dk=AT.d_k,dv=AT.d_v,V=AT.vocab.length,T=AT.train.sentence().length;
+  const labels=['token embedding rows','position rows','$W_Q,W_K$','$W_V,W_O$','$W_{\\text{vocab}},b$','$\\ve{e},\\vq{q},\\vk{k},\\vv{v}$','$s,\\va{\\alpha},m$','$\\vd{\\Delta e},\\vp{e\'},\\ell,p$'];
+  const rows=[['parameter','saved'],['parameter','saved'],['parameter','saved'],['parameter','saved'],['parameter','saved'],['intermediate','recomputed'],['intermediate','recomputed'],['intermediate','recomputed']];
+  AT.ui.table(rows,{cols:['kind','after this example'],rowLabels:labels,cornerLabel:'object',caption:'Parameters persist. Intermediates describe this forward pass.',into:S.querySelector('#s03-table')});
+  AT.ui.callout('$\\vd{\\Delta e_i}$ is a contextual activation update. The optimizer instead changes $\\theta$, the collection of stored parameters.',{kind:'key',into:S.querySelector('#s03-key')});
+  AT.ui.table([
+    [V,d,V,d],[T,d,T,d],[d,dk,d,dk],[d,dv,d,dv],[dv,d,dv,d],[d,V,d,V],[V,1,V,1]
+  ],{cols:['parameter rows','parameter cols','gradient rows','gradient cols'],rowLabels:['token table','position table','$W_Q,W_K$','$W_V$','$W_O$','$W_{\\text{vocab}}$','$b$'],cornerLabel:'stored object',decimals:0,caption:'The sentence uses only its token rows, but each matrix gradient covers the whole matrix.',into:S.querySelector('#s03-shapes')});
+})();
+</script>
+</section>

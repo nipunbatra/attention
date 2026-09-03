@@ -1,0 +1,38 @@
+<section id="s16" class="sec" data-title="What attention gives, and what it does not" data-lit="">
+<style>
+#s16 .s16-list{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+#s16 .s16-col{border:1px solid var(--line);border-radius:10px;padding:18px;background:var(--card)}
+@media(max-width:820px){#s16 .s16-list{grid-template-columns:1fr}}
+</style>
+<header class="sec-head">
+  <span class="sec-num">16</span>
+  <div><p class="eyebrow">Why we are here: attention supplies learned routing, but several stronger claims do not follow from a weight matrix.</p><h2>What attention gives, and what it does not</h2></div>
+</header>
+<div class="companion" data-kicker="For self-study">
+  <p>Attention gives each receiving token a learned, content-dependent way to combine value rows from allowed positions. That routing can shorten paths between distant tokens and adapt to the current input. An attention map alone does not guarantee factual output, sound reasoning, a complete explanation, or unlimited memory. A head can distribute work across several relations, and several heads can share one relation. Masking is part of causal training as well as generation. Context length remains finite, and the score calculation has a cost. The checks below separate the mechanism we computed from claims that require more evidence.</p>
+</div>
+<div class="frame" data-title="Mechanism and limits">
+  <script type="text/x-notes">Which claims follow directly from the equations?
+  Attention weights route value vectors. Other behavioral claims need separate tests.</script>
+  <div class="card s16-list"><div class="s16-col"><h3 class="card-title">What it gives</h3><p>Learned routing that depends on the current representations and respects the mask.</p><p>A direct within-layer path between allowed token positions.</p></div><div class="s16-col" data-build="1"><h3 class="card-title">What it does not ensure</h3><p>Correct facts, reliable reasoning, complete explanations, or memory beyond the available context.</p></div></div>
+</div>
+<div class="frame" data-title="Four quick checks">
+  <script type="text/x-notes">Which statement fails first?
+  Open each reveal and tie the answer back to the attention calculation rather than to a slogan.</script>
+  <div class="card"><h3 class="card-title">Test the claims</h3><div id="s16-checks"></div></div>
+  <div id="s16-note" data-build="1"></div>
+</div>
+<div class="companion after"><p>Attention weights show where value information was mixed, while broader claims about behavior need evidence beyond the map.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s16'),host=S.querySelector('#s16-checks');
+  [
+    ['Are attention weights a complete explanation?','No. They show one value-mixing route inside the model, while projections, residual paths, FFNs, and later blocks also affect the output.'],
+    ['Does one head always learn one readable rule?','No. A head can combine several relations, and several heads can share a relation.'],
+    ['Is causal masking needed only during generation?','No. Parallel next-token training uses the same mask to prevent future-token leakage.'],
+    ['Does a Transformer remember everything?','No. It has a finite context and finite parameters. A longer context also increases attention cost.']
+  ].forEach((x,i)=>{const r=AT.ui.reveal(x[0],x[1],{into:host});if(i)r.setAttribute('data-build',String(i));});
+  AT.ui.callout('This page calls the attention output $\\vd{\\Delta e}$ to stress that it is added to the residual stream. Standard descriptions usually call it the attention output; the residual addition itself is standard.',{kind:'note',into:S.querySelector('#s16-note')});
+})();
+</script>
+</section>

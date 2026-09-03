@@ -1,0 +1,43 @@
+<section id="s18" class="sec" data-title="Pause and think" data-lit="">
+<style>
+#s18 .s18-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:820px){#s18 .s18-grid{grid-template-columns:1fr}}
+</style>
+<header class="sec-head">
+  <span class="sec-num">18</span>
+  <div><p class="eyebrow">Why we are here: eight short questions test the distinctions that are easiest to blur when the full model appears at once.</p><h2>Pause and think</h2></div>
+</header>
+<div class="companion" data-kicker="For self-study">
+  <p>Use these questions as a retrieval check rather than a reading checklist. Say an answer before opening its panel, then connect it to a specific equation or diagram from the lesson. Several questions protect distinctions that matter in implementation: parameters versus activations, full input rows versus projected head widths, attention across positions versus FFN mixing within a row, and causal masking during both training and generation. The last question returns to the layer example. A representation moving farther from its initial embedding proves that context changed it. Distance alone does not show that the new representation is more useful or more accurate.</p>
+</div>
+<div class="frame" data-title="Learning and masking checks">
+  <script type="text/x-notes">Can students answer before opening each panel?
+  Ask for an equation or table cell that supports each answer.</script>
+  <div class="card s18-grid" id="s18-a" data-build="1"></div>
+</div>
+<div class="frame" data-title="Heads, blocks, and generation checks">
+  <script type="text/x-notes">Which distinction is still uncertain?
+  Open the panels slowly and return to the relevant diagram when an answer is vague.</script>
+  <div class="card s18-grid" id="s18-b" data-build="1"></div>
+  <div id="s18-note" data-build="6"></div>
+</div>
+<div class="companion after"><p>Correct answers should name the mechanism, the direction of data flow, and the scope of the claim.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s18');
+  const qa=[
+    ['What turns a prediction into a training signal?','The observed next token selects one probability, and cross-entropy forms $L=-\\log p(\\text{target})$.'],
+    ['Which objects does SGD change?','It changes stored token and position rows, projection matrices, and the vocabulary head. Intermediates are recomputed.'],
+    ['Why is the causal mask present during training?','It prevents each parallel prediction row from reading the future target positions.'],
+    ['What does a smaller loss after one example prove?','It proves that the updated parameters fit that example better. It does not establish generalisation.'],
+    ['Does each head receive a slice of the embedding?','No. Every head reads the full model-width input through its own projections. The projected outputs are smaller.'],
+    ['Which axes do attention and the FFN mix?','Attention mixes information across token rows. The FFN mixes features within each row.'],
+    ['What does a KV cache save?','It saves earlier key and value projections for each layer. The new query still scores the cached keys.'],
+    ['Does greater distance from the initial embedding mean better understanding?','No. It shows change caused by context. Usefulness needs evidence from the task or another measurement.']
+  ];
+  function add(host,items){items.forEach((x,i)=>{const r=AT.ui.reveal(x[0],x[1],{into:host});r.setAttribute('data-build',String(i+2));});}
+  add(S.querySelector('#s18-a'),qa.slice(0,4));add(S.querySelector('#s18-b'),qa.slice(4));
+  AT.ui.callout('This lesson uses $\\vd{\\Delta e}$ as teaching notation for the attention output that is added to the residual stream. Standard descriptions often omit the delta symbol; the residual addition is standard.',{kind:'note',into:S.querySelector('#s18-note')});
+})();
+</script>
+</section>
