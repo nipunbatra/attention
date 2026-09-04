@@ -1,0 +1,44 @@
+<section id="s07" class="sec" data-title="Generate one token at a time" data-lit="q k v ep">
+<header class="sec-head"><span class="sec-num">07</span><div><p class="eyebrow">At generation time, the model must build its own French prefix.</p><h2>Generate one token at a time</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>Training supplied the correct French prefix. Generation starts with only the source and <code>&lt;bos&gt;</code>. We use greedy decoding: choose the highest-probability next token, append it, and repeat. The examples below use the checkpoint after the displayed update. Each distribution is computed from the prefix the model has generated so far. The English source, encoded rows, and cross-attention keys and values stay fixed. The last decoder row, its query, and its weights can change as the French prefix grows.</p></div>
+<div class="frame" data-title="Start with the source and the start marker" data-autobuild="off">
+  <div id="s07-first"></div>
+  <div id="s07-first-probs" data-build="1"></div>
+  <p id="s07-first-choice" data-build="2"></p>
+  <script type="text/x-notes">The model does not receive la yet. The only target input is BOS. Its decoder row reads the encoded English source and supplies the distribution for the first French token.</script>
+</div>
+<div class="frame" data-title="Append la; use its row for the next prediction" data-autobuild="off">
+  <div id="s07-second"></div>
+  <div id="s07-second-probs" data-build="1"></div>
+  <p id="s07-second-choice" data-build="2"></p>
+  <script type="text/x-notes">La is now an input because the model chose it on the previous step. The last-row query now comes from la after masked self-attention. There is no parameter update between generation steps.</script>
+</div>
+<div class="frame" data-title="Append rive; predict when to stop" data-autobuild="off">
+  <div id="s07-third"></div>
+  <div id="s07-third-probs" data-build="1"></div>
+  <p id="s07-third-choice" data-build="2"></p>
+  <script type="text/x-notes">Rive is now the last known target token. The model predicts EOS from its row. Stop at EOS and remove the special markers from the displayed text: la rive.</script>
+</div>
+<div class="frame" data-title="New decoder queries, the same encoded source" data-autobuild="off">
+  <div id="s07-queries"></div>
+  <pre class="torch-snippet" data-build="1"><code>next_id = logits[-1].argmax()
+prefix = torch.cat([prefix, next_id[None]])</code></pre>
+  <p class="callout callout-key" data-build="2">Repeat until the chosen token is <code>&lt;eos&gt;</code>. With parameters fixed, cache the encoded source and its cross-attention $K,V$.</p>
+  <script type="text/x-notes">Compare the three query rows. The same cross W_Q produces a different query from each current decoder representation. Caching reuses source projections; it does not freeze the decoder query or the source-reading weights.</script>
+</div>
+<div class="companion"><h3>How the source-reading weights change</h3><div id="s07-weights"></div><p>Each row belongs to a different decoder query over the same four source positions. Greedy decoding is only one rule for choosing a token; a sampling rule would still use the same model probabilities. Real applications also impose a length limit. This toy stops when it predicts its end marker.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s07'), T=AT.translation, G=T.generate({snapshot:'after',maxTokens:5});
+  const names=['first','second','third'];
+  G.trace.slice(0,3).forEach((step,i)=>{
+    const stem='#s07-'+names[i];
+    T.diagram(S.querySelector(stem),'generation',{prefixTokens:step.prefix,snapshot:'after'});
+    AT.ui.table([step.probabilities],{cols:T.targetVocab,rowLabels:['next-token p'],cornerLabel:'French vocabulary',decimals:3,into:S.querySelector(stem+'-probs')});
+    S.querySelector(stem+'-choice').textContent=step.chosen==='<eos>'?'Choose <eos> and stop. Translation: '+G.text+'.':'Choose '+step.chosen+' and append it to the French prefix.';
+  });
+  AT.ui.table(G.trace.map(s=>s.query),{cols:['query 1','query 2','query 3'],rowLabels:G.trace.map(s=>s.prefix.join(' ')),cornerLabel:'target prefix',rowCls:'q',decimals:3,caption:'Last-position cross-attention queries. Source and model parameters are unchanged.',into:S.querySelector('#s07-queries')});
+  AT.ui.table(G.trace.map(s=>s.weights),{cols:T.source,rowLabels:G.trace.map(s=>s.prefix.join(' ')),cornerLabel:'target prefix',decimals:3,into:S.querySelector('#s07-weights')});
+})();
+</script>
+</section>

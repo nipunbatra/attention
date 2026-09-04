@@ -1,4 +1,17 @@
-# Three-part classroom release checks
+# Classroom release checks
+
+## 2026-09-04: Part IV, cross-attention and translation
+
+- 8 sections, 32 classroom frames, 85 progressive states. All states pass strict fit and math checks (62 formulas).
+- 82 table views across desktop, phone, and presentation pass without warnings or failures.
+- Phone reading at 390px has no horizontal overflow; interaction sweep reports no runtime errors.
+- 2,274 JS/reference scalar checks agree within 3.56e-15. All 188 parameter gradients pass central differences
+  within 6.13e-11. Independent review also checked causal prefixes, source sensitivity, and two genuine greedy translations.
+- Python `train_part4.py --check` reproduces every saved tensor, the 507 warm-up steps, and the displayed update.
+- SVG label bounds pass all nine diagram stages. Generation frames show only the current step and do not announce EOS early.
+- PDF: 32 pages at 2x raster resolution; both reveal answers are open. Every page is 16:9 and contains its slide image.
+- The three-dimensional two-pair fitted toy omits FFN, LayerNorm, and dropout. Its further river-only update improves
+  that example's mean loss (0.043213 to 0.030730), not every position or the financial example.
 
 ## 2026-09-04: tone, whitespace, and PDF answers
 

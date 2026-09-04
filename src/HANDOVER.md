@@ -1,4 +1,4 @@
-# Handover: three-part interactive teaching series
+# Handover: interactive teaching series
 
 Updated 2026-09-04. Owner: Nipun Batra.
 
@@ -6,7 +6,7 @@ Updated 2026-09-04. Owner: Nipun Batra.
 - Published series: https://nipunbatra.github.io/attention/
 - Canonical local checkout on this Mac: `/Users/nipun/git/attention`.
 
-All three parts are implemented. They share a slide-first reading/presentation system, not separate article and slide sources. The first slide-first checkpoint was `a49f811`; `a1d609c` completed Part 3 and the numerical-correctness pass. This handover accompanies the table-flow and Part 1 diagram refinement; `CLASSROOM_QA.md` records local verification. Check the checkout's Git log and the GitHub Pages workflow for the current published commit. A temporary checkout is not evidence of what is live.
+All four attention parts are implemented. They share a slide-first reading/presentation system, not separate article and slide sources. The first slide-first checkpoint was `a49f811`; `a1d609c` completed Part 3 and the numerical-correctness pass. `CLASSROOM_QA.md` records local verification. Check the checkout's Git log and the GitHub Pages workflow for the current published commit. A temporary checkout is not evidence of what is live.
 
 ## Start here
 
@@ -30,6 +30,7 @@ Read this file, then `PRESENT.md` for the current layout/runtime contract and `C
 | 1: characters to prediction | `sections1/secNN.html` | `toy1.json`, `part1.js`, `part1-diagrams.js`, `part1.json` | `../part1.html` |
 | 2: self-attention | `sections/secNN.html` | `toy.json`, `part2.json` | `../attention.html` |
 | 3: learning and Transformer blocks | `sections3/secNN.html` | `toy3.json`, `part3.js`, `part3.json` | `../part3.html` |
+| 4: cross-attention and translation | `sections4/secNN.html` | `toy4.json`, `part4.js`, `part4.json` | `../part4.html` |
 
 Paths in this table are relative to `src/`. Shared files are `shell.html` (layout/CSS), `shared.js` (math, widgets, notation, presentation runtime), and `assemble.py`. Do not edit the generated root HTML or the inlined `katex-bundle.html` by hand. `index.html` is the series landing page; `part2.html` redirects to `attention.html`.
 
@@ -64,6 +65,16 @@ Read numbers from `AT.model`, `AT.forward`, `AT.mlp`, or the stored `AT.train` r
 
 ## Slide-first, article-unfolded
 
+Part IV follows `the river bank <eos>` to `la rive <eos>`. It has separate learned source/target tables and full-width
+added positions, bidirectional encoder attention, causal decoder self-attention, cross-attention, output projections,
+residuals, and a vocabulary head. Its three-dimensional one-head toy omits FFN, LayerNorm, and dropout. Cross queries
+come from decoder rows after self-attention; cross keys/values come from encoded source rows. The source length is four
+and the teacher-forced target length is three, giving a 3 by 4 cross-attention matrix.
+
+`train_part4.py --check` reproduces the saved two-pair fitted checkpoint and one further river-only SGD step. `check_part4.mjs`
+independently checks JS tensors, gradients, causal prefixes, source sensitivity, and actual greedy generation. The one step
+reduces the river example's mean loss, not every position's loss or the financial example's loss. Keep that caveat.
+
 Every section uses explicit `.frame` wrappers with a `data-title`, optional `data-build` reveals, and `text/x-notes` presenter cues. Presentation uses a fixed logical **1280 × 720** stage, uniformly scaled to the available screen. Classroom typography is larger than article typography; the current tokens are 28px body, 42px heading, 22px captions, and 32px math.
 
 Frames must not contain nested scrollbars or shrink their own text to fit. Split an overfull idea into a continuation frame. The live warning and `AT.present.preflight()` identify overflow, including open reveals and managed stepper states. Do not suppress those warnings or hide overflowing content.
@@ -85,9 +96,12 @@ Run these from the repository root. Reuse existing Python/NumPy and Playwright e
 python3 src/assemble.py --part 1 --out part1.html
 python3 src/assemble.py --part 2 --out attention.html
 python3 src/assemble.py --part 3 --out part3.html
+python3 src/assemble.py --part 4 --out part4.html
 
 node src/check_part1.mjs
 node src/check_part1_diagrams.mjs
+python3 src/train_part4.py --check
+node src/check_part4.mjs
 node src/toy_ref.mjs src/toy.json --compare src/py_check.json
 python3 src/check_training.py
 node src/check-live-model.mjs attention.html
@@ -116,7 +130,7 @@ node src/export_slides.mjs attention.html output/pdf/attention-part2-slides.pdf
 node src/export_slides.mjs attention.html output/pdf/attention-part2-builds.pdf --builds all
 ```
 
-The exporter captures the actual 16:9 stage without navigation, preflights fit, and refuses overfull frames. Default scale is 2×; `--scale 1|2|3` changes raster resolution and `--frames DIR` retains PNGs. PDFs preserve browser/SVG appearance as images, so text is not selectable and widgets are no longer interactive. Final export advances authored builds and managed steppers; sliders, quizzes, and manual disclosures retain their authored defaults. Browser Print is a separate reading-oriented handout, not this exact slide export.
+The exporter captures the actual 16:9 stage without navigation, preflights fit, and refuses overfull frames. Default scale is 2×; `--scale 1|2|3` changes raster resolution and `--frames DIR` retains PNGs. PDFs preserve browser/SVG appearance as images, so text is not selectable and widgets are no longer interactive. Final export advances authored builds and managed steppers and opens reveal answers. Other manual widgets keep their current states. Browser Print is a separate reading-oriented handout, not this exact slide export.
 
 ## Publishing and parallel work
 

@@ -1,0 +1,33 @@
+<section id="s03" class="sec" data-title="The decoder reads the answer so far" data-lit="e q k v a d ep">
+<header class="sec-head"><span class="sec-num">03</span><div><p class="eyebrow">Before reading English, a decoder row first reads the available French prefix.</p><h2>The decoder reads the answer so far</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>Suppose the French prefix is <code>&lt;bos&gt; la</code>. To predict its next token, the decoder uses the row at <em>la</em>, the last known target position. We start from the target embedding table and target position vectors. Masked self-attention then lets <em>la</em> read itself and the start marker. The English source enters in the next block, cross-attention. We label the target input row $e_i^{\mathrm{tgt}}$ and the row after this first decoder block $e_i^{\mathrm{self}}$.</p></div>
+<div class="frame" data-title="The target has its own embedding table" data-autobuild="off">
+  <p>Source stays <code>the river bank &lt;eos&gt;</code>. Target prefix: <code>&lt;bos&gt; la</code>.</p>
+  <div id="s03-input"></div>
+  <pre class="torch-snippet" data-build="1"><code>target_rows = tgt_embed(prefix_ids) + tgt_pos[:len(prefix_ids)]</code></pre>
+  <p class="callout callout-key" data-build="2">The row at <em>la</em> will predict the next French token. The unknown token cannot supply its own query.</p>
+  <script type="text/x-notes">Connect this with using the last known position in Part 2. Here la is the last known position. The two target rows have three coordinates each, using a different learned table from the English source.</script>
+</div>
+<div class="frame" data-title="The French prefix needs a causal mask" data-autobuild="off">
+  <div id="s03-masks"></div>
+  <p data-build="1">Target row $i$ reads only target positions $j\le i$.</p>
+  <pre class="torch-snippet" data-build="2"><code>scores = Q @ K.T / math.sqrt(3)
+A = scores.masked_fill(future, -torch.inf).softmax(dim=-1)</code></pre>
+  <script type="text/x-notes">Ask why we cannot let the la row read rive during training. It is the answer that row must predict. Distinguish the triangular target mask from the fully visible English source; source positions are not future French tokens.</script>
+</div>
+<div class="frame" data-title="Self-attention prepares the decoder query" data-autobuild="off">
+  <div id="s03-self"></div>
+  <p data-build="1">At <em>la</em>: $\ve{e_2^{\mathrm{tgt}}}+\vd{\Delta e_2^{\mathrm{self}}}=\vp{e_2^{\mathrm{self}}}$.</p>
+  <p data-build="2">This updated French-prefix row supplies the cross-attention query.</p>
+  <script type="text/x-notes">The query does not come directly from an isolated la lookup row. This decoder has already performed masked self-attention. The residual update preserves the target row while adding information from the prefix.</script>
+</div>
+<div class="companion after"><p>The source encoder and masked target block have different jobs. The encoder contextualises the English phrase; target self-attention contextualises the French prefix. Cross-attention gives the decoder a way to use the first while writing the second.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s03'), T=AT.translation, F=T.forward(['<bos>','la']);
+  AT.ui.table(F.targetRows,{cols:['coordinate 1','coordinate 2','coordinate 3'],rowLabels:['<bos>','la'],cornerLabel:'target input e_tgt',rowCls:'e',decimals:3,into:S.querySelector('#s03-input')});
+  T.diagram(S.querySelector('#s03-masks'),'masks',{prefixTokens:T.targetInput});
+  T.diagram(S.querySelector('#s03-self'),'decoder-self',{prefixTokens:['<bos>','la']});
+})();
+</script>
+</section>

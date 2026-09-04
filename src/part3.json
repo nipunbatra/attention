@@ -53,7 +53,7 @@
   "legendTitle": "Objects carried forward from Part 2",
   "provenance": "The arithmetic comes from a hand-written demonstration model with {{d_model}}-number representations, a {{vocab}}-word vocabulary, and named axes {{axes}}. The training values were computed offline from the same parameters.",
   "prev": {"label": "Part 2: Self-attention", "href": "attention.html"},
-  "next": null,
+  "next": {"label": "Part 4: Cross-attention and translation", "href": "part4.html"},
   "index": {"label": "Series home", "href": "index.html"},
   "notation": "part3",
   "footer": "Part 3 completes the path from a fixed attention calculation to a trainable decoder-only Transformer."

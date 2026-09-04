@@ -1,0 +1,37 @@
+<section id="s08" class="sec" data-title="Same operation, different sources" data-lit="q k v a d ep">
+<header class="sec-head"><span class="sec-num">08</span><div><p class="eyebrow">To identify an attention block, ask where its query, keys, and values come from.</p><h2>Same operation, different sources</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>The encoder, decoder self-attention, and cross-attention all use the same match, softmax, and weighted-value calculation. What changes is where the rows come from and which ones are available. Encoder self-attention reads the complete source. Decoder self-attention reads the allowed target prefix. Cross-attention lets those target representations read the encoded source. Its output updates the decoder representation at each receiving position.</p></div>
+<div class="frame" data-title="Three blocks; three choices of where to read" data-autobuild="off">
+  <div id="s08-compare"></div>
+  <p class="callout callout-key" data-build="1">Self-attention uses one stream for $Q,K,V$. Cross-attention takes $Q$ from the decoder and $K,V$ from the encoded source.</p>
+  <script type="text/x-notes">Ask students to identify the streams before showing the last column. In the numerical toy, each block has its own four projection matrices. The word self describes the shared input stream, not a rule requiring a token to attend most strongly to itself.</script>
+</div>
+<div class="frame" data-title="Check the two easy places to get lost" data-autobuild="off">
+  <div id="s08-query-check"></div>
+  <div id="s08-softmax-check" data-build="1"></div>
+  <script type="text/x-notes">Pause for answers before opening each reveal. Ask for the input row that makes the query, not the word being predicted. Then ask whether a high river attention weight can be copied directly into p(rive). It cannot: values, the output projection, residual, and vocabulary head still intervene.</script>
+</div>
+<div class="frame" data-title="Follow one prediction through both streams" data-autobuild="off">
+  <div id="s08-whole"></div>
+  <p class="callout callout-key" data-build="1">To predict <em>rive</em>, the decoder row at <em>la</em> combines the French prefix with information read from the encoded English phrase.</p>
+  <script type="text/x-notes">Trace the complete forward path once: source rows, encoder, target prefix, masked self-attention, cross-attention, updated decoder row, vocabulary prediction. Keep the source and target labels in view. The loss uses the observed next token; generation chooses its own next token and repeats.</script>
+</div>
+<div class="companion after"><p>In a vision-language model that uses cross-attention, the same arrangement can let text queries read keys and values computed from encoded image patches.</p><p>The encoder-decoder arrangement and scaled dot-product attention follow <a href="https://arxiv.org/abs/1706.03762">Vaswani et al., <em>Attention Is All You Need</em></a>, especially Sections 3.1 and 3.2.3. The paper's full model uses multi-head attention, feed-forward sublayers, normalisation, and repeated blocks. Our three-coordinate toy isolates one pass through the attention blocks so that their inputs and outputs remain visible.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s08'), T=AT.translation;
+  AT.ui.table([
+    ['source input rows','source input rows','all source positions'],
+    ['target input rows','target input rows','target prefix only'],
+    ['decoder after self','encoded source rows','all source positions']
+  ],{cols:[{label:'queries from',kind:'text'},{label:'keys and values from',kind:'text'},{label:'allowed reading',kind:'text'}],rowLabels:['encoder self','decoder self','cross-attention'],cornerLabel:'attention block',into:S.querySelector('#s08-compare')});
+  AT.ui.reveal('To predict rive after BOS la, does the query come from rive?',
+    'No. It comes from the decoder row at la after masked self-attention. Rive is still the unknown next token.',
+    {into:S.querySelector('#s08-query-check')});
+  AT.ui.reveal('Are the four cross-attention weights probabilities of four French words?',
+    'No. They weight four English source values. A separate vocabulary head and softmax produce probabilities over five French output tokens.',
+    {into:S.querySelector('#s08-softmax-check')});
+  T.diagram(S.querySelector('#s08-whole'),'head',{prefixTokens:['<bos>','la']});
+})();
+</script>
+</section>

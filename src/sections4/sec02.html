@@ -1,0 +1,36 @@
+<section id="s02" class="sec" data-title="The encoder reads the whole source" data-lit="e q k v a d ep">
+<header class="sec-head"><span class="sec-num">02</span><div><p class="eyebrow">Each English token can read all four source positions.</p><h2>The encoder reads the whole source</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>The source is available before we write the translation, so the encoder needs no left-to-right mask. Its <em>bank</em> row can read <em>river</em>, and its <em>the</em> row can read <em>bank</em>. The calculation is the self-attention we already know: form queries, keys, and values from the same input rows; mix the values; project the message; and add the update to the input. Here the superscript <em>src</em> means a source input row, and <em>enc</em> means its representation after the encoder.</p></div>
+<div class="frame" data-title="Look up the source tokens, then add positions" data-autobuild="off">
+  <p>Source: <code>the river bank &lt;eos&gt;</code>. Work the row for <em>bank</em>, source position 3.</p>
+  <div id="s02-input"></div>
+  <pre class="torch-snippet" data-build="1"><code>source_rows = src_embed(source_ids) + src_pos[:4]</code></pre>
+  <p data-build="2">Both operands have three coordinates, so their sum still has three. Stack the four source rows into a $4\times3$ matrix.</p>
+  <script type="text/x-notes">Point to a row and count three coordinates. The source embedding table supplies a token row; the position table supplies another row of the same width. Their sum is e_src, the input to this encoder block.</script>
+</div>
+<div class="companion"><h3>All four source input rows</h3><div id="s02-all-inputs"></div><p>Each row is a token lookup plus the vector for its own position. The source embedding and position tables are learned parameters; the summed rows are recomputed for this input.</p></div>
+<div class="frame" data-title="Source self-attention can read in both directions" data-autobuild="off">
+  <div id="s02-encoder"></div>
+  <p data-build="1">Every source query can read every source value.</p>
+  <pre class="torch-snippet" data-build="2"><code>Q, K, V = source_rows @ W_Q, source_rows @ W_K, source_rows @ W_V
+A = (Q @ K.T / math.sqrt(3)).softmax(dim=-1)</code></pre>
+  <script type="text/x-notes">This block has its own projection matrices. Ask whether bank being to the right of river causes a problem. Both are known English input tokens, so either may read the other. A padded batch would still mask padding, which is absent from this toy.</script>
+</div>
+<div class="frame" data-title="Keep four contextual source rows" data-autobuild="off">
+  <p>For source position $j$: $\ve{e_j^{\mathrm{src}}}+\vd{\Delta e_j^{\mathrm{enc}}}=\vp{e_j^{\mathrm{enc}}}$.</p>
+  <div id="s02-encoded"></div>
+  <p class="callout callout-key" data-build="1">The encoder keeps one row per source position. It does not compress the whole phrase into a single vector.</p>
+  <script type="text/x-notes">Each row now has access to source context. We will retain all four encoded rows while the decoder writes the French answer. The cross-attention block will compute its own keys and values from these rows.</script>
+</div>
+<div class="companion after"><p>These four encoded rows will be the decoder's source of information. With the source and model parameters fixed, they remain the same as the French prefix grows. Cross-attention can nevertheless read a different mixture of them for each new decoder query.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s02'), T=AT.translation, F=T.forward(T.targetInput);
+  const cols=['coordinate 1','coordinate 2','coordinate 3'];
+  AT.ui.table([F.sourceLookup[2],F.sourcePositions[2]],{cols,rowLabels:['bank token lookup','position 3 vector'],cornerLabel:'source bank',rowCls:'e',decimals:3,footer:{label:'sum: source input e_src',values:F.sourceRows[2],cls:'e'},caption:'Add corresponding coordinates. Calculations use full precision.',into:S.querySelector('#s02-input')});
+  AT.ui.table(F.sourceRows,{cols,rowLabels:T.source,cornerLabel:'source input e_src',rowCls:'e',decimals:3,into:S.querySelector('#s02-all-inputs')});
+  T.diagram(S.querySelector('#s02-encoder'),'encoder');
+  AT.ui.table(F.encoder.Enew,{cols,rowLabels:T.source,cornerLabel:'encoded source e_enc',rowCls:'ep',decimals:3,caption:'Four contextual rows, each still three numbers wide.',into:S.querySelector('#s02-encoded')});
+})();
+</script>
+</section>

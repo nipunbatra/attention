@@ -1,0 +1,55 @@
+<section id="s06" class="sec" data-title="Train on the observed translation" data-lit="">
+<header class="sec-head"><span class="sec-num">06</span><div><p class="eyebrow">One teacher-forced pass predicts la, rive, and the end marker.</p><h2>Train on the observed translation</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>During training, the observed French translation supplies the correct prefix for every prediction. This is teacher forcing. We shift the sequence by one position: the decoder inputs are <code>&lt;bos&gt; la rive</code>, and the targets are <code>la rive &lt;eos&gt;</code>. The causal target mask lets us compute all three rows in parallel without letting a row read its answer. Every row can read the complete English source through cross-attention. We average the three next-token losses, then differentiate that loss through the same forward graph.</p></div>
+<div class="frame" data-title="Shift the French answer by one position" data-autobuild="off">
+  <p>English source for every row: <code>the river bank &lt;eos&gt;</code>.</p>
+  <div id="s06-shift"></div>
+  <pre class="torch-snippet" data-build="1"><code>decoder_ids = target_ids[:-1]  # BOS, la, rive
+labels = target_ids[1:]        # la, rive, EOS</code></pre>
+  <p data-build="2">The <em>la</em> row predicts <em>rive</em>; the <em>rive</em> row predicts the end marker.</p>
+  <script type="text/x-notes">Check the off-by-one convention aloud. The observed answer enters as the next position's input, but the causal mask prevents the current row from reading it. This is the same shifted-target setup as next-token language-model training.</script>
+</div>
+<div class="frame" data-title="Three decoder queries read four source positions" data-autobuild="off">
+  <p>$\vq{Q}:3\times3$, $\vk{K}:4\times3$; therefore $QK^\top/\sqrt{3}:3\times4$.</p>
+  <div id="s06-cross-matrix"></div>
+  <p class="callout callout-key" data-build="1">Each row sums to one across the four English source columns. Cross-attention need not have a square matrix.</p>
+  <script type="text/x-notes">Point to the la row and recognise the four weights already calculated. Its row is the same whether computed from BOS,la alone or as part of this masked three-row pass. The decoder target length controls rows; source length controls columns.</script>
+</div>
+<div class="companion"><h3>The rectangular score matrix before softmax</h3><div id="s06-score-matrix"></div><p>Softmax is applied separately to each row. The target self-attention matrix was $3\times3$ and triangularly masked. This $3\times4$ cross-attention matrix reads the four known source tokens, so it has no future-target triangle.</p></div>
+<div class="frame" data-title="Score the three observed next tokens" data-autobuild="off">
+  <div id="s06-loss"></div>
+  <p id="s06-loss-value" data-build="1"></p>
+  <pre class="torch-snippet" data-build="2"><code>logits = model(source_ids, decoder_ids)  # shape: 3 × 5
+loss = F.cross_entropy(logits, labels)</code></pre>
+  <script type="text/x-notes">The model predicts over five target vocabulary items at each row. Keep only the observed token's probability for each negative log, then take the mean. The code passes logits directly; cross_entropy already includes the log-softmax calculation.</script>
+</div>
+<div class="frame" data-title="Autograd follows the forward graph backward" data-autobuild="off">
+  <div id="s06-graph"></div>
+  <p data-build="1">Gradients reach both the source-value path and the query/key path, then the underlying embeddings and projections.</p>
+  <script type="text/x-notes">Start at loss and follow arrows backward. The cross-attention weights depend on Q and K; its message also depends on V. Autograd handles these branches and the residual paths. We do not need hand-derived scalar gradients to train this model.</script>
+</div>
+<div class="companion"><p>The PyTorch lines show the training interface. This browser demonstration reads checkpoints and a verified update from the toy's numerical engine; it does not run PyTorch in the browser. The saved gradients were checked numerically. In a PyTorch implementation, autograd performs the backward pass and the optimizer uses those gradients.</p></div>
+<div class="frame" data-title="Update parameters, then run a fresh forward pass" data-autobuild="off">
+  <pre class="torch-snippet"><code>optimizer.zero_grad()
+loss.backward()
+optimizer.step()</code></pre>
+  <div id="s06-update" data-build="1"></div>
+  <p data-build="2">The optimizer changes learned tables, projections, and the vocabulary head. A fresh forward pass recomputes $Q,K,V$, weights, and decoder rows.</p>
+  <script type="text/x-notes">Read the learning rate and two losses from the table. This step optimises the mean loss on the river training example. Improvement on this one example is not a guarantee about another phrase or a new learning rate.</script>
+</div>
+<div class="companion after"><p>The learned parameters are the two embedding tables, their position tables, each attention block's $W_Q,W_K,W_V,W_O$, and the vocabulary head. The optimizer updates these stored parameters, not the cached query, key, value, or attention-weight arrays.</p><p>The smaller mean loss shows that this particular step improved the fit to the observed river translation. It did not improve every prediction: the river example's end-marker loss rises slightly, and the fitted financial example's probability of <em>banque</em> falls. Generalisation needs separate data. The checkpoint's second fitted pair, <em>the financial bank</em> to <em>la banque</em>, is a check that the model can use its source input, not an evaluation of translation quality.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s06'), T=AT.translation, F=T.teacherForced({snapshot:'before'}), A=T.teacherForced({snapshot:'after'});
+  const rowLabels=T.targetInput.map((t,i)=>t+' → '+T.targets[i]);
+  AT.ui.table(T.targetInput.map((t,i)=>[T.targetInput.slice(0,i+1).join(' '),T.targets[i]]),{cols:[{label:'allowed target prefix',kind:'code'},{label:'observed next token',kind:'code'}],rowLabels:['row 1','row 2','row 3'],cornerLabel:'decoder position',into:S.querySelector('#s06-shift')});
+  AT.ui.table(F.cross.A,{cols:T.source,rowLabels,cornerLabel:'decoder input → target',decimals:3,heatCols:[0,1,2,3],caption:'Weights over encoded English source values. The la row matches the worked prefix calculation.',into:S.querySelector('#s06-cross-matrix')});
+  AT.ui.table(F.cross.S,{cols:T.source,rowLabels,cornerLabel:'scaled cross scores',decimals:3,into:S.querySelector('#s06-score-matrix')});
+  AT.ui.table(F.perPosition.map(p=>[p.probability,p.loss]),{cols:['probability of target','−log p(target)'],rowLabels,cornerLabel:'decoder input → target',decimals:4,into:S.querySelector('#s06-loss')});
+  const mean=S.querySelector('#s06-loss-value');
+  mean.textContent='Mean loss = ('+F.perPosition.map(p=>AT.fmt(p.loss,4)).join(' + ')+') / 3 ≈ '+AT.fmt(F.meanLoss,4)+'.';
+  T.diagram(S.querySelector('#s06-graph'),'training',{prefixTokens:T.targetInput});
+  AT.ui.table([[F.meanLoss,F.perPosition[1].probability],[A.meanLoss,A.perPosition[1].probability]],{cols:['mean target loss','p(rive | source, BOS la)'],rowLabels:['before step','after step'],cornerLabel:'same river example',decimals:4,caption:'One SGD step with learning rate '+T.update.learningRate+'. Every number comes from a complete forward pass.',into:S.querySelector('#s06-update')});
+})();
+</script>
+</section>
