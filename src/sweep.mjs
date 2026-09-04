@@ -8,7 +8,7 @@ const ctx = await b.newContext({ viewport: { width: +width, height: 800 } });
 const p = await ctx.newPage();
 const errs = [];
 p.on('pageerror', e => errs.push('PAGEERROR: ' + String(e.message || e).split('\n')[0]));
-p.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE: ' + m.text().slice(0, 200)); });
+p.on('console', m => { if (m.type() === 'error' || m.type() === 'warning') errs.push('CONSOLE: ' + m.text().slice(0, 200)); });
 await p.goto('file://' + path.resolve(file), { waitUntil: 'load' }); await p.waitForTimeout(800);
 const secs = await p.$$eval('section.sec', els => els.map(e => e.id));
 const report = {};
@@ -16,10 +16,24 @@ for (const id of secs) {
   const before = errs.length;
   await p.evaluate(id => document.getElementById(id).scrollIntoView(), id); await p.waitForTimeout(150);
   const counts = await p.evaluate(async id => {
-    const S = document.getElementById(id); const c = { buttons: 0, sliders: 0, toggles: 0, details: 0 };
+    const S = document.getElementById(id); const c = { buttons: 0, sliders: 0, selects: 0, toggles: 0, details: 0 };
     const sleep = ms => new Promise(r => setTimeout(r, ms));
     for (const d of S.querySelectorAll('details')) { d.open = true; c.details++; }
     for (const r of S.querySelectorAll('input[type=range]')) { for (const v of [r.min, (+r.min + +r.max) / 2, r.max]) { r.value = v; r.dispatchEvent(new Event('input', { bubbles: true })); r.dispatchEvent(new Event('change', { bubbles: true })); await sleep(20); } c.sliders++; }
+    for (const select of S.querySelectorAll('select')) {
+      const original = select.value;
+      for (const option of [...select.options].filter(o => !o.disabled)) {
+        select.value = option.value; select.dispatchEvent(new Event('input', { bubbles: true })); select.dispatchEvent(new Event('change', { bubbles: true })); await sleep(25);
+        // Exercise ranges again with each selected mode, not only the default.
+        const scope = select.closest('.frame') || S;
+        for (const range of scope.querySelectorAll('input[type=range]')) {
+          const saved = range.value;
+          for (const value of [range.min, range.max]) { range.value = value; range.dispatchEvent(new Event('input', { bubbles: true })); range.dispatchEvent(new Event('change', { bubbles: true })); await sleep(15); }
+          range.value = saved; range.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      }
+      select.value = original; select.dispatchEvent(new Event('change', { bubbles: true })); c.selects++;
+    }
     for (const t of S.querySelectorAll('[aria-pressed]')) { t.click(); await sleep(30); t.click(); await sleep(30); c.toggles++; }
     const btns = [...S.querySelectorAll('button:not([aria-pressed])')];
     for (const bt of btns) { if (bt.disabled) continue; const txt = (bt.textContent || '').trim().toLowerCase(); const n = /next/.test(txt) ? 22 : 1; for (let i = 0; i < n; i++) { if (bt.disabled) break; bt.click(); await sleep(25); } c.buttons++; }
@@ -32,5 +46,6 @@ for (const id of secs) {
   report[id] = { ...counts, errors: errs.slice(before), badText: bad };
 }
 const summary = Object.entries(report).filter(([k, v]) => v.errors.length || v.badText.length);
-console.log(JSON.stringify({ sections: secs.length, controlsClicked: Object.values(report).reduce((a, v) => a + v.buttons + v.sliders + v.toggles + v.details, 0), problems: Object.fromEntries(summary), totalErrors: errs.length }, null, 2));
+console.log(JSON.stringify({ sections: secs.length, controlsClicked: Object.values(report).reduce((a, v) => a + v.buttons + v.sliders + v.selects + v.toggles + v.details, 0), problems: Object.fromEntries(summary), totalErrors: errs.length }, null, 2));
 await b.close();
+if (summary.length || errs.length) process.exitCode = 1;

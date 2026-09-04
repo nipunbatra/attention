@@ -20,6 +20,8 @@ Build sources, plans and the handover guide are in `src/` (start with `src/HANDO
 
 Open any part for the article. Press **P** or choose **Present** for the classroom view; use **←/→** to move through frames and interactive steps, **O** for the overview, and **S** for notes. There is no permanent slide header or footer. Click **Controls** or press **C** for navigation and Presenter view. **Esc** closes an open panel, then returns to reading.
 
+A focused slider keeps its native arrow and Page Up/Down controls. Press **N** to advance the presentation without changing the slider, or **Esc** to return focus to the slide before using arrows.
+
 The sources are slide-first: one bounded teaching idea per 16:9 frame, with large classroom type and no internal scrollbars. Reading mode unfolds those same frames and their companion explanations into a responsive article. There is one source, one set of widgets, and one numerical model per part, not a second deck to keep synchronized.
 
 Part 1 uses a trained small name model. Part 2 uses hand-designed weights so every step can be inspected; Part 3 trains that toy before introducing the larger Transformer architecture. The toy's position coordinate is added at the same width, but its initial projections ignore it: the example demonstrates content routing, not sensitivity to word order. The text marks this boundary explicitly.
@@ -37,20 +39,15 @@ python3 src/assemble.py --part 1 --out part1.html
 python3 src/assemble.py --part 2 --out attention.html
 python3 src/assemble.py --part 3 --out part3.html
 python3 src/assemble.py --part 4 --out part4.html
-# Rebuild Part 3 once Part 4 exists so the next-part link is marked available.
-python3 src/assemble.py --part 3 --out part3.html
 # Internal source IDs 5–8 display as Vision Parts I–IV.
 python3 src/assemble.py --part 5 --out vision1.html
 python3 src/assemble.py --part 6 --out vision2.html
 python3 src/assemble.py --part 7 --out vision3.html
 python3 src/assemble.py --part 8 --out vision4.html
-# Rebuild after successor pages exist to enable their navigation links.
-python3 src/assemble.py --part 4 --out part4.html
-python3 src/assemble.py --part 5 --out vision1.html
-python3 src/assemble.py --part 6 --out vision2.html
-python3 src/assemble.py --part 7 --out vision3.html
 python3 -m http.server 8776 --bind 127.0.0.1
 ```
+
+One build per part is enough, even in a clean output directory. Navigation availability comes from complete lesson sources and configs, not from which HTML file happens to exist first. Build and distribute all eight pages together for working offline series links. A planned config can set `"published": false`; a specific navigation entry can set `"available": false`. Undeclared targets stay unavailable even if an old placeholder HTML exists.
 
 Then open `http://127.0.0.1:8776/attention.html?present#s16/1/0` for the staged diagram in classroom mode. Reading-mode anchors such as `#s16` do not force presentation mode.
 
@@ -74,6 +71,7 @@ Exported PDFs in `output/pdf/` are local build artifacts, not committed files. M
 ## Checks
 
 ```sh
+python3 src/check_metadata.py
 node src/check_part1.mjs
 node src/check_part1_diagrams.mjs
 python3 src/train_part4.py --check
@@ -85,11 +83,13 @@ python3 src/train_vision3.py --check
 node src/check_vision3.mjs
 python3 src/train_vision4.py --check
 node src/check_vision4.mjs
+node src/check_vision_pixels.mjs vision1.html vision2.html vision3.html vision4.html
 node src/toy_ref.mjs src/toy.json --compare src/py_check.json
 node src/check-live-model.mjs attention.html
 python3 src/check_training.py
 node src/check_position_capacity.mjs
 node src/pres_test.mjs
+node src/interaction_test.mjs
 node src/export_test.mjs
 node src/frame_audit.mjs part1.html
 node src/frame_audit.mjs attention.html
@@ -108,3 +108,5 @@ node src/qa.mjs attention.html --width 390 --height 844
 ```
 
 Browser checks reuse an installed Playwright runtime; they do not add a production dependency. See `src/PRESENT.md` for authoring, frame-fit validation, presenter controls, and PDF options. `src/CLASSROOM_QA.md` records the release checks.
+
+`check_metadata.py` checks all eight configs against section IDs, headings, roadmap order, landing-card titles, and navigation labels. It also builds each lesson in an isolated temporary directory and tests unavailable planned links, without changing the published HTML. `interaction_test.mjs` exercises open arithmetic dialogs, changing masks, focused sliders, and presenter notes; a default frame walk alone does not cover those states.

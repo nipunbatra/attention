@@ -7,26 +7,34 @@
   <pre class="torch-snippet" data-build="2"><code>g_txt_unit = F.normalize(text_encoder(prompts), dim=-1)
 scores = g_img_unit @ g_txt_unit.T
 choice = scores.argmax(dim=-1)</code></pre>
-  <script type="text/x-notes">The image vector is already normalized. Real text_encoder here includes the text encoder and its output projection. This is a matching readout, not a next-token prediction head.</script>
+  <script type="text/x-notes">The image vector is already normalized.
+
+Real text_encoder here includes the text encoder and its output projection. This is a matching readout, not a next-token prediction head.</script>
 </div>
 <div class="frame" data-title="Classify the anchor with the frozen toy" data-autobuild="off">
   <div id="s06-frozen"></div>
   <p data-build="1">Same two-square image. Same three descriptions. Encoder checkpoint: 60 training steps.</p>
   <p class="callout callout-note" data-build="2">Softmax normalizes over these supplied descriptions. It does not enumerate every possible object or sentence.</p>
-  <script type="text/x-notes">The similarity scores now reflect the actual training updates. Show where the largest cosine appears. Lowering a positive inference temperature would sharpen its probability without changing the rank.</script>
+  <script type="text/x-notes">The similarity scores now reflect the actual training updates.
+
+Show where the largest cosine appears. Lowering a positive inference temperature would sharpen its probability without changing the rank.</script>
 </div>
 <div class="frame" data-title="Change prompts, candidates, or temperature" data-autobuild="off">
   <div id="s06-candidates"></div>
   <p>The toy uses only its eleven listed words, not a pretrained language model.</p>
-  <script type="text/x-notes">First change temperature with the same candidates: scores and rank stay fixed. Next omit the correct description: a wrong candidate must still win. Then duplicate the correct description: the two identical vectors receive equal probability and split their combined mass. Finally change the template and inspect the cosine scores.</script>
+  <script type="text/x-notes">First change temperature with the same candidates: scores and rank stay fixed.
+
+Next omit the correct description: a wrong candidate must still win. Then duplicate the correct description: the two identical vectors receive equal probability and split their combined mass. Finally change the template and inspect the cosine scores.</script>
 </div>
 <div class="frame" data-title="Use one caption to retrieve an image" data-autobuild="off">
   <div id="s06-retrieval"></div>
   <pre class="torch-snippet" data-build="1"><code>scores = g_txt_unit @ cached_image_vectors.T
 ranked_images = scores.argsort(descending=True)</code></pre>
   <p class="callout callout-key" data-build="2">Image-to-text retrieval uses the same operation with the roles reversed.</p>
-  <script type="text/x-notes">Caching avoids rerunning the encoder for every candidate image. The text query is a global retrieval vector here, not a token-level attention query q. CLIP retrieves existing captions; it does not generate new words.</script>
+  <script type="text/x-notes">Caching avoids rerunning the encoder for every candidate image.
+
+The text query is a global retrieval vector here, not a token-level attention query q. CLIP retrieves existing captions; it does not generate new words.</script>
 </div>
-<div class="companion"><h3>Prompts are part of the evaluation</h3><p>A class name can be ambiguous: <em>crane</em> may mean a bird or a machine. A description can specify the intended sense. The CLIP paper evaluates prompt templates such as <code>a photo of a {label}</code> and averages normalized text embeddings across templates, then normalizes the result. Prompt choice can help, but no wording guarantees an improvement on every dataset. See <a href="https://arxiv.org/pdf/2103.00020#page=7">the paper's prompt experiments</a>.</p><p>The current toy template adds word rows according to its bag-of-words rule. Template-only words such as <em>grid</em> retain their hand-chosen starting rows because the training captions do not contain them. The toy cannot show the full contextual behavior of a text Transformer. In a real deployment, report the candidate set and prompt policy alongside accuracy, and evaluate on held-out task data.</p></div>
+<div class="companion after"><h3>Prompts are part of the evaluation</h3><p>A class name can be ambiguous: <em>crane</em> may mean a bird or a machine. A description can specify the intended sense. The CLIP paper evaluates prompt templates such as <code>a photo of a {label}</code> and averages normalized text embeddings across templates, then normalizes the result. Prompt choice can help, but no wording guarantees an improvement on every dataset. See <a href="https://arxiv.org/pdf/2103.00020#page=7">the paper's prompt experiments</a>.</p><p>The current toy template adds word rows according to its bag-of-words rule. Template-only words such as <em>grid</em> retain their hand-chosen starting rows because the training captions do not contain them. The toy cannot show the full contextual behavior of a text Transformer. In a real deployment, report the candidate set and prompt policy alongside accuracy, and evaluate on held-out task data.</p></div>
 <script>(function(){const S=document.getElementById('s06'),C=AT.clip,r=C.classify();C.diagram(S.querySelector('#s06-prompts'),'prompts');C.table(S.querySelector('#s06-frozen'),r.cosine.map((c,i)=>[c,r.logits[i],r.probabilities[i]]),{cols:['cosine','logit','candidate p'],rowLabels:r.captions,cornerLabel:'Frozen image vs text'});C.candidateWidget(S.querySelector('#s06-candidates'));C.diagram(S.querySelector('#s06-retrieval'),'retrieval',{caption:'two bright squares'});})();</script>
 </section>

@@ -63,7 +63,8 @@ Point to position 10. Earlier we examined bank at position 7, but now q_10 searc
 </div>
 
 <div class="frame" id="s14-routing" data-title="Use the final the’s query to choose source weights">
-<script type="text/x-notes">Which source receives the largest weight? Switch river to cheque while holding the final word fixed. These are weights over input positions, not vocabulary probabilities.</script>
+<script type="text/x-notes">Which source receives the largest weight?
+Switch river to cheque while holding the final word fixed. These are weights over input positions, not vocabulary probabilities.</script>
 <p class="context-line" data-context-line></p>
 <div class="card">
   <h3 class="card-title">Where the last token reads from</h3>
@@ -82,7 +83,8 @@ Point to position 10. Earlier we examined bank at position 7, but now q_10 searc
 </div>
 
 <div class="frame" id="s14-routing-code" data-title="Match, scale, then normalize the scores">
-  <script type="text/x-notes">Compare the same final query with all ten keys; scale; then softmax across source positions. Because the receiver is last, every displayed source is allowed.</script>
+<script type="text/x-notes">Compare the same final query with all ten keys; scale; then softmax across source positions.
+Because the receiver is last, every displayed source is allowed.</script>
   <div class="grid-3">
     <div class="card"><strong>1 · Match</strong><p>$r_j=q_{10}\cdot k_j$</p></div>
     <div class="card" data-build="1"><strong>2 · Scale</strong><p>$s_{10,j}=r_j/\sqrt{d_k}$</p></div>
@@ -104,7 +106,8 @@ The starting row e_10 is identical. Only the context-dependent update changes. A
 </div>
 
 <div class="frame" id="s14-residual-code" data-title="The message must return to model width before we add it">
-  <script type="text/x-notes">Alpha times V has value width. W_O changes the coordinate system and width; only then can the result be added to the original row.</script>
+<script type="text/x-notes">Alpha times V has value width.
+W_O changes the coordinate system and width; only then can the result be added to the original row.</script>
   <div class="grid-3">
     <div class="card"><strong>Mix</strong><p>$m_{10}=\alpha_{10,:}V$</p><p>$1\times d_v$</p></div>
     <div class="card" data-build="1"><strong>Project</strong><p>$\Delta e_{10}=m_{10}W_O$</p><p>$1\times d_{\rm model}$</p></div>
@@ -138,7 +141,8 @@ p_next = logits.softmax(dim=-1)</code></pre>
 </div>
 
 <div class="frame" id="s14-head-arithmetic" data-title="One candidate: multiply, add the bias, then normalize">
-<script type="text/x-notes">The selected vocabulary column supplies the prediction-head weights. Show the logit calculation first; then compare its exponential with the total over the vocabulary.</script>
+<script type="text/x-notes">The selected vocabulary column supplies the prediction-head weights.
+Show the logit calculation first; then compare its exponential with the total over the vocabulary.</script>
 <p class="context-line" data-context-line></p>
 <div id="s14-head-worked" class="worked-head"></div>
 <div class="companion" id="s14-head-calc"></div>
@@ -164,7 +168,8 @@ In this one-layer toy it reads only the final row. Trace earlier tokens to the u
 </div>
 
 <div class="frame" id="s14-layer-boundary" data-title="All positions read the same layer inputs">
-<script type="text/x-notes">Does the final the read the bank vector we just updated? Not in the same layer. It reads bank's value formed from this layer's input. The updated bank is available in the next layer.</script>
+<script type="text/x-notes">Does the final the read the bank vector we just updated?
+Not in the same layer. It reads bank's value formed from this layer's input. The updated bank is available in the next layer.</script>
 <div class="layer-route">
   <div><strong>This layer</strong><p>$\ve{e_7}\rightarrow\vv{v_7}$</p><p>The final <em>the</em> can read bank’s input-derived value.</p></div>
   <div data-build="1"><strong>The next layer</strong><p>$\vp{e_7'}\rightarrow$ new key and value</p><p>The updated bank representation becomes a new layer input.</p></div>

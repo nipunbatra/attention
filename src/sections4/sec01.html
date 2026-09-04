@@ -12,19 +12,22 @@
 <div class="frame" data-title="English in, French out" data-autobuild="off">
   <div class="s01-pair"><div><h3>Source, already known</h3><p>the river bank</p></div><div data-build="1"><h3>Observed translation</h3><p>la rive</p></div></div>
   <p class="callout callout-key" data-build="2">After the French prefix <strong>la</strong>, predict <strong>rive</strong> using the English source.</p>
-  <script type="text/x-notes">Ask what information the word bank needs for this translation. River identifies the intended sense. The decoder must also know that la has already been written. We are predicting the next French token, not classifying the English word by itself.</script>
+<script type="text/x-notes">Ask what information the word bank needs for this translation.
+River identifies the intended sense. The decoder must also know that la has already been written. We are predicting the next French token, not classifying the English word by itself.</script>
 </div>
 <div class="frame" data-title="The source is complete; the answer is growing" data-autobuild="off">
   <div id="s01-tokens"></div>
   <p data-build="1"><code>&lt;bos&gt;</code> starts the answer. <code>&lt;eos&gt;</code> marks the end of each sequence.</p>
   <p class="callout callout-key" data-build="2">The source has four tokens including its end marker. To predict <em>rive</em>, the decoder can read only <code>&lt;bos&gt; la</code>.</p>
-  <script type="text/x-notes">The end marker on the English source is already known. The French end marker is an output we must eventually predict. Keep those two roles distinct. During training we know the complete answer, but we still hide each position's future.</script>
+<script type="text/x-notes">The end marker on the English source is already known.
+The French end marker is an output we must eventually predict. Keep those two roles distinct. During training we know the complete answer, but we still hide each position's future.</script>
 </div>
 <div class="frame" data-title="A small model with three-number rows" data-autobuild="off">
   <p class="s01-shape">Every representation has shape $1\times3$.</p>
   <ul><li>Separate learned embedding tables for source and target tokens.</li><li data-build="1">A position vector is added to each token embedding. The width stays three.</li><li data-build="2">One encoder self-attention block, one masked decoder self-attention block, and one cross-attention block.</li></ul>
   <p class="callout callout-note" data-build="3">The coordinates are unnamed learned numbers. This toy omits feed-forward sublayers and LayerNorm, covered in Part 3.</p>
-  <script type="text/x-notes">This is a new toy, not the five-coordinate bank example with named axes. Keep the attention roles and residual addition from Part 2. Do not give the three learned coordinates invented semantic names.</script>
+<script type="text/x-notes">This is a new toy, not the five-coordinate bank example with named axes.
+Keep the attention roles and residual addition from Part 2. Do not give the three learned coordinates invented semantic names.</script>
 </div>
 <div class="companion after"><p>The checkpoint was fitted to two short training pairs, including this river example. It lets us inspect a working forward pass and one further learning step; it does not demonstrate general translation ability. We keep the model small so that every row, weight, and output probability can be displayed.</p></div>
 <script>

@@ -127,12 +127,14 @@ A contains the source weights; A V forms messages; W_O maps them back; the resid
 
 </div>
 <div class="frame" id="s16-frame4" data-title="The matrix equations are the same token-by-token story">
-  <script type="text/x-notes">Ask students to point from each matrix line to the corresponding single-token operation from the walkthrough. The matrix notation is batching, not a new mechanism.</script>
+<script type="text/x-notes">Ask students to point from each matrix line to the corresponding single-token operation from the walkthrough.
+The matrix notation is batching, not a new mechanism.</script>
 <div id="s16-callouts"><div id="s16-callout-key"></div></div>
 </div>
 
 <div class="frame" id="s16-frame5" data-title="What have we built, and what is still missing?">
-  <script type="text/x-notes">This is one causal attention head, its output projection and residual addition. A full Transformer block adds the remaining architecture in Part 3.</script>
+<script type="text/x-notes">This is one causal attention head, its output projection and residual addition.
+A full Transformer block adds the remaining architecture in Part 3.</script>
 <div id="s16-callout-note"></div>
 <p class="muted small">PyTorch · matrices are row-major; mask contains 0 or −∞.</p>
 <pre class="torch-snippet"><code>A = (Q @ K.T / d_k**0.5 + mask).softmax(dim=-1)

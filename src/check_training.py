@@ -37,7 +37,7 @@ def load_training_module():
 
 
 def compare_saved(actual, expected, path="training"):
-    """Compare the rounded JSON tree exactly, including keys and array lengths."""
+    """Compare lesson arrays and full-precision diagnostics, including shapes."""
     numbers = 0
     max_error = 0.0
     mismatches = []
@@ -68,7 +68,11 @@ def compare_saved(actual, expected, path="training"):
             else:
                 error = abs(left - right)
                 max_error = max(max_error, error)
-                if left != right:
+                # Exact comparison remains appropriate for the rounded lesson
+                # arrays. BLAS implementations can differ slightly in the
+                # small, unrounded finite-difference errors.
+                tolerance = 2e-11 if ".finite_difference." in location else 0
+                if error > tolerance:
                     mismatches.append(f"{location}: computed {left!r}, saved {right!r}")
         elif type(left) is not type(right) or left != right:
             mismatches.append(f"{location}: computed {left!r}, saved {right!r}")
@@ -148,15 +152,44 @@ def main():
     module = load_training_module()
     model = json.loads((HERE / "toy.json").read_text(encoding="utf-8"))
     saved = json.loads((HERE / "toy3.json").read_text(encoding="utf-8"))
-    computed = module.rounded(module.build_training(model))
+    raw = module.build_training(model)
+    computed = module.serialize_training(raw)
     numbers, saved_error, failures = compare_saved(computed, saved.get("training"))
-    print(f"Saved training: {numbers} numeric entries; max rounded error {saved_error:.3g}")
+    print(f"Saved training: {numbers} numeric entries; max absolute error {saved_error:.3g}")
+    diagnostic = saved["training"]["finite_difference"]
+    if len(diagnostic["checks"]) != 2 or not 0 < diagnostic["max_abs_error"] < 1e-7:
+        failures.append("Saved finite-difference diagnostics were rounded away or have the wrong check count")
+    for check in diagnostic["checks"]:
+        if check["epsilon"] != module.FD_EPS or check["analytic"] == check["numeric"]:
+            failures.append("Saved finite-difference estimates must retain full precision and epsilon")
+        if abs(abs(check["analytic"] - check["numeric"]) - check["abs_error"]) > 1e-15:
+            failures.append("Saved absolute error does not match the two saved estimates")
+
+    # Only the prefix's first T position rows participate. The full stored
+    # table is larger, so all unused rows have zero gradient on this example.
+    unused_checks = 0
+    work = copy.deepcopy(model)
+    for row in range(len(raw["sentence"]), len(model["pos_emb"])):
+        for col, original in enumerate(model["pos_emb"][row]):
+            work["pos_emb"][row][col] = original + EPSILON
+            plus = final_token_loss(module, work, raw["sentence"], raw["target"])
+            work["pos_emb"][row][col] = original - EPSILON
+            minus = final_token_loss(module, work, raw["sentence"], raw["target"])
+            work["pos_emb"][row][col] = original
+            unused_checks += 1
+            if plus != minus:
+                failures.append(f"Unused position [{row},{col}] affects this prefix's loss")
+    for step in raw["single"]["steps"].values():
+        updated = module.apply_step(model, raw["sentence"], raw["single"]["gradients"], step["eta"])
+        if updated["pos_emb"][len(raw["sentence"]):] != model["pos_emb"][len(raw["sentence"]):]:
+            failures.append("An optimizer step changed an unused position row")
 
     tokens, target = computed["sentence"], computed["target"]
     count, token_rows, gradient_error, worst, gradient_failures = check_gradients(module, model, tokens, target)
     failures.extend(gradient_failures)
     print(f"Gradients: {count} scalars ({token_rows} token rows, {len(tokens)} position rows, all projections/head)")
     print(f"Central differences: epsilon {EPSILON:g}; max absolute error {gradient_error:.3g} at {worst}")
+    print(f"Unused positions: {unused_checks} scalar perturbations leave loss unchanged; optimizer leaves those rows unchanged")
     if failures:
         for failure in failures[:12]:
             print(f"FAIL: {failure}", file=sys.stderr)

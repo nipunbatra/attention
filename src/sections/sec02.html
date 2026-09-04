@@ -43,7 +43,7 @@ body.present #s02 .title-row{margin-bottom:16px}
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Start with a model that sends only the last token to the output head. Its entire input is one row of $d_{\text{model}}$ numbers. Switch the context and the bars stay put. The table below explains why: both sentences end with <em>the</em> at position 10, so they supply exactly the same starting row. The same row gives the same probabilities. With no information to distinguish a river scene from a bank branch, the head spreads probability across eight candidates.</p>
+  <p>Start with a model that sends only the last token to the output head. Its entire input is one row of $d_{\text{model}}$ numbers. Switch the context and the bars stay put. The table below explains why: both sentences end with <em>the</em> at position 10, so they supply exactly the same starting row. The same row gives the same probabilities. In this toy, eight candidates also happen to tie. A last-token-only model need not produce a uniform distribution; it must produce the same distribution whenever it receives the same row.</p>
 </div>
 
 <div class="frame" data-title="The last token alone" id="s02-frame1" data-autobuild="off">
@@ -80,7 +80,7 @@ No. Both sentences end with the at position 10, so the head receives the same ro
       <button type="button" class="btn" id="s02-ctx-b" aria-pressed="false">B: She deposited … the bank</button>
     </div>
     <div id="s02-bars"></div>
-    <p class="companion look" id="s02-bars-note"></p>
+    <p class="look" id="s02-bars-note"></p>
   </div>
   <div class="companion callout callout-key">Same last token + same position → same input row → same prediction.</div>
 </div>
@@ -106,7 +106,7 @@ Nowhere: neither word reaches the head. A better representation has to bring the
     None: the difference row is all zeros. If someone asks why position does not help, point at the position row of section 01: the blank sits at the same position in both sentences. Open the arithmetic only if the room wants to see the output head multiply.
   </script>
   <div class="companion">
-    <p>The eight candidate bars are nearly the same height. The head has no context that would favour <em>water</em> over <em>teller</em>: both sentences give it the same input. Compare their coordinates in the table.</p>
+    <p>The eight candidate bars are exactly tied, at about 0.094 each. The ordering of tied bars does not identify a winner. More importantly, both sentences give this head the same input. Compare their coordinates in the table.</p>
   </div>
 
   <div class="card">
@@ -222,8 +222,10 @@ Nowhere: neither word reaches the head. A better representation has to bring the
     AT.renderMath(evecReading);
     const its = items(p);
     if (bars) bars.update(its); else bars = AT.ui.bars(its, { cls: 'neutral', size: 'lg', max: 1, decimals: 3, sorted: false, into: barsHost });
-    const best = AT.topk(p, 1)[0];
-    note.innerHTML = 'Look at the bar heights. Context ' + ctx + ': the highest probability is only $' + AT.fmt(best.p, 3) + '$ (' + AT.escape(best.tok) + '), and switching the context leaves every bar where it is. Full bar = probability 1.';
+    const top = AT.topk(p, 8), tied = top.every(x => x.p === top[0].p);
+    note.innerHTML = tied
+      ? 'All eight candidates are exactly tied at about $' + AT.fmt(top[0].p, 3) + '$ each. Switching context leaves every bar unchanged. Full bar = probability 1.'
+      : 'Switching context leaves every probability unchanged: the head receives the same row. Full bar = probability 1.';
     AT.renderMath(note);
     mv.update(B.E[t], { xLabel: 'e · ' + T + ' ' + toks[t] });
     calcTab.update(calcRows(B));

@@ -47,14 +47,14 @@
     svg.appendChild(svgElement('title',{id:id+'-title'},title));
     const defs=svgElement('defs'),marker=svgElement('marker',{id:id+'-arrow',viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:6,markerHeight:6,orient:'auto-start-reverse'});
     marker.appendChild(svgElement('path',{d:'M0 0L10 5L0 10Z',fill:'var(--ink-3)'}));defs.appendChild(marker);svg.appendChild(defs);
-    function text(x,y,t,size=23,anchor='middle',color='var(--ink)'){svg.appendChild(svgElement('text',{x,y,'text-anchor':anchor,'dominant-baseline':'middle','font-size':size,'font-family':'var(--font-ui)',fill:color},t));}
+    function text(x,y,t,size=23,anchor='middle',color='var(--ink)'){const n=svgElement('text',{x,y,'text-anchor':anchor,'dominant-baseline':'middle','font-size':size,'font-family':'var(--font-ui)',fill:color},t);svg.appendChild(n);return n;}
     function box(x,y,w,h,title,sub='',rep=false){svg.appendChild(svgElement('rect',{x,y,width:w,height:h,rx:10,fill:rep?'var(--t-e)':'var(--card)',stroke:rep?'var(--c-e)':'var(--line)','stroke-width':2}));text(x+w/2,y+h/2-(sub?13:0),title,24,'middle',rep?'var(--c-e)':'var(--ink)');if(sub)text(x+w/2,y+h/2+17,sub,20);}
     function arrow(x1,y1,x2,y2,label='',dashed=false){svg.appendChild(svgElement('path',{d:`M${x1} ${y1} L${x2} ${y2}`,stroke:'var(--ink-3)','stroke-width':2,fill:'none','marker-end':`url(#${id}-arrow)`,'stroke-dasharray':dashed?'7 5':'none'}));if(label)text((x1+x2)/2,(y1+y2)/2-16,label,20);}
     function image(x,y,size=156,mask=[],pixels=D.image,label=''){
       const cell=size/4;
-      pixels.forEach((row,ry)=>row.forEach((p,cx)=>{const k=Math.floor(ry/2)*2+Math.floor(cx/2),hidden=mask.includes(k),shade=245-Math.max(0,Math.min(2,p))*90;
-        svg.appendChild(svgElement('rect',{x:x+cx*cell,y:y+ry*cell,width:cell,height:cell,fill:hidden?'var(--paper)':`rgb(${shade},${shade},${shade})`,stroke:'var(--line)'}));
-        if(hidden||cell>=35)text(x+(cx+.5)*cell,y+(ry+.5)*cell,hidden?'×':Number(p.toFixed(2)),20,'middle',!hidden&&p>1.3?'white':'var(--ink)');
+      pixels.forEach((row,ry)=>row.forEach((p,cx)=>{const k=Math.floor(ry/2)*2+Math.floor(cx/2),hidden=mask.includes(k),shade=AT.imageShade(p);
+        svg.appendChild(svgElement('rect',{x:x+cx*cell,y:y+ry*cell,width:cell,height:cell,'data-pixel-value':hidden?'':p,fill:hidden?'var(--paper)':`rgb(${shade},${shade},${shade})`,stroke:'var(--line)'}));
+        if(hidden||cell>=35){const n=text(x+(cx+.5)*cell,y+(ry+.5)*cell,hidden?'×':Number(p.toFixed(2)),20,'middle',hidden?'var(--ink)':shade<118?'#FFFFFF':'#000000');if(!hidden)n.setAttribute('data-pixel-label',p);}
       }));
       for(let i=0;i<4;i++){const px=x+(i%2)*size/2,py=y+Math.floor(i/2)*size/2;svg.appendChild(svgElement('rect',{x:px,y:py,width:size/2,height:size/2,fill:'none',stroke:'var(--ink-3)','stroke-width':2}));}
       if(label)text(x+size/2,y+size+21,label,21);
@@ -62,7 +62,7 @@
     return {svg,text,box,arrow,image};
   }
   function diagram(host,kind,options={}){
-    const h={image:240,'mae-encoder':230,'mae-decoder':260,'mae-transfer':200,views:240,contrastive:240,dino:300,'dino-update':220,jepa:330,probe:250}[kind];
+    const h={image:240,'mae-encoder':230,'mae-decoder':260,'mae-transfer':200,views:270,contrastive:240,dino:300,'dino-update':220,jepa:330,probe:250}[kind];
     if(!h)throw new Error('Unknown SSL diagram '+kind);
     const s=scene(h,kind+' teaching illustration'),{box,text,arrow,image}=s;
     if(kind==='image'){
@@ -80,8 +80,8 @@
     }else if(kind==='mae-transfer'){
       box(35,48,225,92,'unmasked image','all patch rows');arrow(265,94,345,94);box(360,48,270,92,'pretrained encoder','keep learned weights',true);arrow(635,94,715,94);box(730,48,310,92,'downstream task head','train with task labels');
     }else if(kind==='views'){
-      image(70,28,152,[],D.image,'original');arrow(252,100,410,100,'two transforms');
-      image(475,28,152,[],transform('flip'),'horizontal flip');image(810,28,152,[],transform('dim'),'brightness × 0.75');
+      image(70,20,190,[],D.image,'original');arrow(290,115,445,115,'two transforms');
+      image(475,20,190,[],transform('flip'),'horizontal flip');image(810,20,190,[],transform('dim'),'brightness × 0.75');
     }else if(kind==='contrastive'){
       box(20,20,190,70,'view A','same image');box(20,130,190,70,'view B','same image');
       arrow(215,55,275,55);arrow(215,165,275,165);box(290,20,245,70,'encoder + head','shared weights',true);box(290,130,245,70,'encoder + head','shared weights',true);
@@ -91,8 +91,8 @@
       image(12,12,100,[],transform('flip'),'view A');image(12,158,100,[],transform('dim'),'view B');
       arrow(127,63,202,63);arrow(127,208,202,208);box(215,22,220,84,'student θ','encoder + head');box(215,166,220,84,'teacher φ','encoder + head');
       arrow(440,63,525,63);arrow(440,208,525,208);box(540,22,220,84,'student pₛ','temperature softmax');box(540,166,220,84,'target pₜ','center + sharpen');
-      arrow(765,63,940,116);arrow(765,208,940,160,'stop gradient');box(945,105,145,70,'CE loss');
-      arrow(325,109,325,160,'EMA',true);
+      arrow(765,63,940,116);arrow(765,208,940,160);text(858,235,'stop gradient',20);box(945,105,145,70,'CE loss');
+      arrow(325,109,325,160,'',true);text(369,135,'EMA',20);
     }else if(kind==='dino-update'){
       box(30,50,245,90,'student θ','gradient update');arrow(280,95,470,95,'EMA, not gradient',true);box(485,50,245,90,'teacher φ','moving parameters');
       arrow(735,95,805,95);box(820,50,250,90,'teacher targets','stop gradient in loss');
@@ -123,6 +123,7 @@
       ['\\operatorname{sg}[\\cdot]','stop gradient through this target branch',''],
       ['\\hat e_j,\\;e_j^{\\mathrm{target}}','predicted and target representation at patch j','1\\times d']
     ];
-    rows.forEach(([sym,mean,shape])=>AT.notation.push({g:'token',sym,mean,shape,dims:()=>'',parts:['vision2']}));
+    const groups=['image','image','image','masked','masked','distill','distill','distill','distill'];
+    rows.forEach(([sym,mean,shape],i)=>AT.notation.push({g:groups[i],sym,mean,shape,dims:()=>'',parts:['vision2']}));
   }
 })();

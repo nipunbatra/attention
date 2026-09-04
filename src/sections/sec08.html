@@ -10,7 +10,8 @@
 #s08 .tree .nd-q{fill:var(--t-q);stroke:var(--c-q)}
 #s08 .tree .nd-k{fill:var(--t-k);stroke:var(--c-k)}
 #s08 .tree .nd-s{fill:var(--card);stroke:var(--ink-3)}
-#s08 .tree .nd-a{stroke:var(--c-a)}
+#s08 .tree .nd-a{stroke:var(--c-a);fill:var(--weight-fill)}
+#s08 .tree .weight-number{fill:var(--weight-ink)}
 #s08 .tree text{font-size:15px;fill:var(--ink);dominant-baseline:middle;text-anchor:middle}
 #s08 .tree .sym-t{font-family:var(--font-math);font-style:italic;font-size:18px}
 #s08 .tree .t-q{fill:var(--c-q)} #s08 .tree .t-k{fill:var(--c-k)} #s08 .tree .t-a{fill:var(--c-a)}
@@ -139,7 +140,7 @@ Every source competes for weight in the same query's routing row. The resulting 
 Point to bank at the top, then river's key. Click a second key and compare the coordinate-by-coordinate arithmetic. The same query is reused on every edge.</script>
 <div class="card">
   <h3 class="card-title">Bank’s query is held fixed; choose a key to inspect its score</h3>
-  <p class="pic-lab">The same numbers as a picture</p>
+  <p class="pic-lab">Weight shading: absolute 0–1 scale</p>
   <p class="muted small scroll-hint">Scroll sideways to see all seven keys.</p>
   <div class="scroll-x tree-wrap dotgrid"><div id="s08-tree"></div></div>
 </div>
@@ -226,7 +227,6 @@ m_alt = alpha @ (E @ W_V_alt)</code></pre>
   const qi = 6, n = qi + 1;
   const T = toks.length;
   const alpha = F.A[qi].slice(0, T), scores = F.S[qi].slice(0, T);
-  const amax = Math.max.apply(null, alpha);
   const Z = scores.reduce((acc, s) => acc + Math.exp(s), 0);
   const sv = AT.svg;
   const AX = AT.axes;
@@ -324,9 +324,9 @@ m_alt = alpha @ (E @ W_V_alt)</code></pre>
     gs.appendChild(sv('text', { x: cx, y: scY + rowH / 2 + 1, class: 'num' }, AT.fmt(scores[j], 2)));
     gs.appendChild(sv('path', { class: 'edge', d: 'M' + cx + ' ' + (leafY + leafH) + ' L ' + cx + ' ' + (scY - 2) }));
     const ga = grp('alpha' + j);
-    const dark = alpha[j] / amax > 0.6;
-    ga.appendChild(sv('rect', { class: 'nd nd-a', x: leafX(j) + 5, y: alY, width: leafW - 10, height: rowH, fill: AT.heatColor(alpha[j] / amax) }));
-    ga.appendChild(sv('text', { x: cx, y: alY + rowH / 2 + 1, class: 'num', fill: dark ? 'var(--card)' : null }, AT.fmt(alpha[j], 2)));
+    const dark = alpha[j] > 0.6;
+    ga.appendChild(sv('rect', { class: 'nd nd-a', x: leafX(j) + 5, y: alY, width: leafW - 10, height: rowH, style: '--weight-fill:'+AT.heatColor(alpha[j]) }));
+    ga.appendChild(sv('text', { x: cx, y: alY + rowH / 2 + 1, class: 'num weight-number', style: '--weight-ink:'+(dark ? 'var(--card)' : 'var(--ink)') }, AT.fmt(alpha[j], 2)));
     ga.appendChild(sv('path', { class: 'edge', d: 'M' + cx + ' ' + (scY + rowH) + ' L ' + cx + ' ' + (alY - 2) }));
   });
   const gq = grp('query');

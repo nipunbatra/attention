@@ -7,8 +7,8 @@
 <title>Attention, vision and language — worked lessons</title>
 <style>
 :root{
-  --paper:#F7F8FA; --ink:#14171F; --ink-2:#4A5160; --ink-3:#8A91A0; --line:#D9DDE5; --card:#FFFFFF; --grid:#E3E6EC;
-  --c-e:#2563EB; --c-q:#9333EA; --c-k:#D97706; --c-v:#0D9488; --c-a:#E11D48; --c-d:#16A34A;
+  --paper:#F7F8FA; --ink:#14171F; --ink-2:#4A5160; --ink-3:#6B7280; --line:#D9DDE5; --card:#FFFFFF; --grid:#E3E6EC;
+  --c-e:#245EDB; --c-q:#8B2CDE; --c-k:#AA4E08; --c-v:#0F766E; --c-a:#BE123C; --c-d:#147737;
   --t-e:#E4ECFF; --t-q:#F1E5FC; --t-k:#FCEFD9; --t-v:#D9F2EF; --t-a:#FDE2E7; --t-d:#DDF3E4; --t-neutral:#EEF0F4;
   --font-ui:"Avenir Next","Segoe UI Variable Display","Segoe UI","Helvetica Neue",system-ui,sans-serif;
   --font-mono:"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
@@ -77,7 +77,7 @@ a:hover{text-decoration-color:var(--ink)}
         <span class="n">PART 2</span>
         <h2><a href="attention.html">Self-attention, from first principles</a></h2>
         <p class="build">Use the bank examples to work out queries, keys, and values. Calculate the scores, apply the causal mask, and mix the values. See how context changes the representation used to predict the next token.</p>
-        <p class="meta">For students who finished Part 1, or who know embeddings, dot products and softmax.</p>
+        <p class="meta">For students who know embeddings, dot products and softmax. The full walkthrough spans multiple sessions; Section 1 suggests a classroom route.</p>
         <nav class="actions" aria-label="Part 2 views"><a class="go" href="attention.html">Read Part 2</a><a href="attention.html?present">Present Part 2</a></nav>
       </li>
       <li class="card">
@@ -89,7 +89,7 @@ a:hover{text-decoration-color:var(--ink)}
       </li>
       <li class="card">
         <span class="n">PART 4</span>
-        <h2><a href="part4.html">Cross-attention for translation</a></h2>
+        <h2><a href="part4.html">Cross-attention: translate one phrase</a></h2>
         <p class="build">Translate "the river bank" into "la rive". Follow a decoder query as it reads the encoder's keys and values, then use the retrieved information to predict the next French token.</p>
         <p class="meta">Builds on self-attention in Part 2 and Transformer blocks in Part 3.</p>
         <nav class="actions" aria-label="Part 4 views"><a class="go" href="part4.html">Read Part 4</a><a href="part4.html?present">Present Part 4</a></nav>
@@ -108,21 +108,21 @@ a:hover{text-decoration-color:var(--ink)}
         </li>
         <li class="card">
           <span class="n">VISION II</span>
-          <h2><a href="vision2.html">Learn without class labels</a></h2>
+          <h2><a href="vision2.html">Learn visual representations without class labels</a></h2>
           <p class="build">Hide patches and work out reconstruction error. Then compare MAE, DINO, and I-JEPA: where does each target come from, what gets predicted, and what gets updated?</p>
           <p class="meta">Exact loss calculators; clearly labelled illustrative teacher scores.</p>
           <nav class="actions" aria-label="Vision II views"><a class="go" href="vision2.html">Read Vision II</a><a href="vision2.html?present">Present Vision II</a></nav>
         </li>
         <li class="card">
           <span class="n">VISION III</span>
-          <h2><a href="vision3.html">Learn to match images and text</a></h2>
+          <h2><a href="vision3.html">CLIP: learn to match images and text</a></h2>
           <p class="build">Follow three pairs through encoders, normalization, all nine matching scores, and contrastive learning. Change the candidate descriptions and see why probability is not confidence.</p>
           <p class="meta">A trained CLIP-style toy with a reproducible parameter update.</p>
           <nav class="actions" aria-label="Vision III views"><a class="go" href="vision3.html">Read Vision III</a><a href="vision3.html?present">Present Vision III</a></nav>
         </li>
         <li class="card">
           <span class="n">VISION IV</span>
-          <h2><a href="vision4.html">Use an image to generate an answer</a></h2>
+          <h2><a href="vision4.html">An image becomes context for an answer</a></h2>
           <p class="build">Connect the visual rows to a language decoder. Work through its mask, query, prediction, generation, and response loss. Compare a visual prefix with cross-attention.</p>
           <p class="meta">Two fitted image–answer pairs; explicit checks of visual evidence and training regressions.</p>
           <nav class="actions" aria-label="Vision IV views"><a class="go" href="vision4.html">Read Vision IV</a><a href="vision4.html?present">Present Vision IV</a></nav>

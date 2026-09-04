@@ -12,14 +12,18 @@
   <div id="s08-patch-grid" class="v1-scale-figure"></div>
   <p class="v1-scale-eq" data-build="1">$224/16=14\quad\Longrightarrow\quad14\times14=196\text{ patches}$</p>
   <p class="callout callout-key" data-build="2">With one CLS row, this image gives the encoder <strong>197 input rows</strong>.</p>
-  <script type="text/x-notes">The grid shows patch boundaries, not individual pixels. Each small square contains 16 by 16 pixels. Count fourteen squares across and fourteen down before adding the one class-token row.</script>
+  <script type="text/x-notes">The grid shows patch boundaries, not individual pixels.
+
+Each small square contains 16 by 16 pixels. Count fourteen squares across and fourteen down before adding the one class-token row.</script>
 </div>
 
 <div class="frame" data-title="RGB gives each pixel three numbers" data-autobuild="off">
   <div id="s08-rgb"></div>
   <p class="v1-scale-eq" data-build="1">$\underbrace{r_j}_{1\times768}\;\underbrace{W_{\mathrm{patch}}}_{768\times384}+\underbrace{b_{\mathrm{patch}}}_{1\times384}=\underbrace{e_j^{\mathrm{patch}}}_{1\times384}$</p>
   <p data-build="2">Here we choose a model width of <strong>384</strong>. Every learned position vector and the CLS row also has 384 numbers.</p>
-  <script type="text/x-notes">RGB gives three values per pixel, so each raw patch has 16 times 16 times three values. Representation width is a separate model choice. We choose 384 to make that distinction visible; it is not forced by the 768 pixel values.</script>
+  <script type="text/x-notes">RGB gives three values per pixel, so each raw patch has 16 times 16 times three values.
+
+Representation width is a separate model choice. We choose 384 to make that distinction visible; it is not forced by the 768 pixel values.</script>
 </div>
 
 <div class="frame" data-title="A full encoder block makes two residual updates" data-autobuild="off">
@@ -27,21 +31,27 @@
   <pre class="torch-snippet" data-build="1"><code>E = E + attention(norm1(E))  # exchange information across rows
 E = E + mlp(norm2(E))        # transform each row's features</code></pre>
   <p data-build="2">Repeat the blocks. A final normalization and class head read the final CLS row.</p>
-  <script type="text/x-notes">Our numerical model isolated the attention path. This is the full pre-norm encoder pattern: normalization before each sublayer, a residual addition after each, and final normalization after the stack. The MLP shares weights across positions but does not mix different rows.</script>
+  <script type="text/x-notes">Our numerical model isolated the attention path.
+
+This is the full pre-norm encoder pattern: normalization before each sublayer, a residual addition after each, and final normalization after the stack. The MLP shares weights across positions but does not mix different rows.</script>
 </div>
 
 <div class="frame" data-title="Several heads can collect different information" data-autobuild="off">
   <div id="s08-heads" class="v1-scale-figure"></div>
   <p data-build="1">Each head reads all <strong>384 input features</strong>. Its own projections make 64-number queries, keys, and values.</p>
   <p data-build="2">Concatenate the six messages. $W_O$ returns an update with the same width as $E$.</p>
-  <script type="text/x-notes">We choose six heads of width sixty-four for the 384-wide illustration. Do not describe this as giving each head a different slice of the input. Every head projects the full input row. Their separate learned projections can collect different information.</script>
+  <script type="text/x-notes">We choose six heads of width sixty-four for the 384-wide illustration.
+
+Do not describe this as giving each head a different slice of the input. Every head projects the full input row. Their separate learned projections can collect different information.</script>
 </div>
 
 <div class="frame" data-title="What if we do not have an image label?" data-autobuild="off">
   <div id="s08-hide-patch" class="v1-scale-figure"></div>
   <p data-build="1">Hide part of an image. Ask the model to predict what was there.</p>
   <p class="callout callout-key" data-build="2">The image itself can supply a training target. Vision Part 2 compares this idea with learning from other views and teacher features.</p>
-  <script type="text/x-notes">This is one way to obtain supervision, not the definition of every self-supervised vision method. The next part distinguishes pixel reconstruction, matching views, and teacher feature targets. Keep the image-encoder machinery separate from the objective used to train it.</script>
+  <script type="text/x-notes">This is one way to obtain supervision, not the definition of every self-supervised vision method.
+
+The next part distinguishes pixel reconstruction, matching views, and teacher feature targets. Keep the image-encoder machinery separate from the objective used to train it.</script>
 </div>
 
 <div class="companion after">
@@ -68,7 +78,7 @@ E = E + mlp(norm2(E))        # transform each row's features</code></pre>
   for(let i=0;i<6;i++){const y=10+i*43;rect(heads,290,y,275,35,headColors[i]);text(heads,427,y+18,'head '+(i+1)+' message: 197 × 64',21);arrow(heads,205,137,278,y+18,headColors[i]);arrow(heads,565,y+18,658,137,headColors[i]);}
   rect(heads,670,89,175,94,'var(--c-v)','var(--t-v)');text(heads,757,117,'concatenate',24,'var(--c-v)');text(heads,757,151,'197 × 384',24);arrow(heads,845,137,898,137);rect(heads,909,89,165,94,'var(--c-d)','var(--t-d)');text(heads,991,116,'apply W_O',25,'var(--c-d)');text(heads,991,150,'197 × 384',24);text(heads,835,244,'384 numbers: one update per input row',24);
   const hidden=svg(S.querySelector('#s08-hide-patch'),1100,270,'Hide the top-left patch of the same image and use its original pixel values as a reconstruction target.'),im=T.data.image;
-  im.forEach((row,y)=>row.forEach((v,x)=>{let shade=Math.round(35+v*69);hidden.appendChild(AT.svg('rect',{x:70+x*47,y:25+y*47,width:47,height:47,fill:'rgb('+shade+','+shade+','+shade+')',stroke:'var(--paper)'}));}));rect(hidden,70,25,94,94,'var(--c-q)','var(--t-q)');text(hidden,117,71,'?',48,'var(--c-q)');text(hidden,164,243,'visible input',25);arrow(hidden,285,119,388,119);rect(hidden,402,74,230,89,'var(--c-e)','var(--t-e)');text(hidden,517,104,'image model',28);text(hidden,517,138,'predict the patch',24);arrow(hidden,650,119,751,119);rect(hidden,774,53,134,134,'var(--c-v)','var(--t-v)');[['1','1'],['1','1']].forEach((r,y)=>r.forEach((v,x)=>text(hidden,807+x*67,87+y*67,v,29)));text(hidden,842,227,'original pixels: target',25,'var(--c-v)');
+  im.forEach((row,y)=>row.forEach((v,x)=>{let shade=AT.imageShade(v);hidden.appendChild(AT.svg('rect',{x:70+x*47,y:25+y*47,width:47,height:47,'data-pixel-value':v,fill:'rgb('+shade+','+shade+','+shade+')',stroke:'var(--paper)'}));}));rect(hidden,70,25,94,94,'var(--c-q)','var(--t-q)');text(hidden,117,71,'?',48,'var(--c-q)');text(hidden,164,243,'visible input',25);arrow(hidden,285,119,388,119);rect(hidden,402,74,230,89,'var(--c-e)','var(--t-e)');text(hidden,517,104,'image model',28);text(hidden,517,138,'predict the patch',24);arrow(hidden,650,119,751,119);rect(hidden,774,53,134,134,'var(--c-v)','var(--t-v)');[['1','1'],['1','1']].forEach((r,y)=>r.forEach((v,x)=>text(hidden,807+x*67,87+y*67,v,29)));text(hidden,842,227,'original pixels: target',25,'var(--c-v)');
 })();
 </script>
 </section>

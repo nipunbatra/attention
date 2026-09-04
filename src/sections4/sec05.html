@@ -5,7 +5,8 @@
   <p>English source: <code>the river bank &lt;eos&gt;</code>. Receiving decoder row: <em>la</em>.</p>
   <div id="s05-mixture"></div>
   <p data-build="1">$m_2=\sum_{j=1}^{4}\alpha_{2j}\vv{v_j^{\mathrm{cross}}}$ is a three-number message for this query.</p>
-  <script type="text/x-notes">The same source position supplies both its matching key and its transmitted value. Point to the weight first, then its three weighted value coordinates. The bottom row adds each coordinate down the column.</script>
+  <script type="text/x-notes">Follow one source weight to the value it multiplies.
+The same source position supplies its key and value. Point to the weight, then its three weighted value coordinates. Add each coordinate down the column; small printed discrepancies come from rounding.</script>
 </div>
 <div class="companion"><h3>The source values before weighting</h3><div id="s05-raw-values"></div><p>The message coordinates have learned numerical roles. We do not label them as three facts or three words. Their use is determined by the output projection and the rest of the model.</p></div>
 <div class="frame" data-title="Project the message, then add it to the decoder row" data-autobuild="off">
@@ -14,36 +15,40 @@
   <pre class="torch-snippet" data-build="1"><code>message = A @ V
 delta_e = message @ W_O_cross
 decoder_out = decoder_self + delta_e</code></pre>
-  <script type="text/x-notes">The message and representation both have width three in this toy, but their roles differ. W_O maps between those roles and is learned. The residual addition retains the French-prefix row instead of replacing it with source information.</script>
+<script type="text/x-notes">The message and representation both have width three in this toy, but their roles differ.
+W_O maps between those roles and is learned. The residual addition retains the French-prefix row instead of replacing it with source information.</script>
 </div>
 <div class="companion"><h3>The learned output projection</h3><div id="s05-WO"></div><p>In a larger model, the value width and representation width can differ. The output projection must return the representation width before the residual addition.</p></div>
 <div class="frame" data-title="Turn the updated la row into vocabulary scores" data-autobuild="off">
   <div id="s05-head"></div>
   <p data-build="1">$\ell_2=\vp{e_2^{\mathrm{cross}}}W_{\mathrm{vocab}}+b_{\mathrm{vocab}}$ gives one logit per French vocabulary token.</p>
   <pre class="torch-snippet" data-build="2"><code>logits = decoder_out @ W_vocab + b_vocab</code></pre>
-  <script type="text/x-notes">These are five vocabulary scores, not the four source scores. The updated la row predicts the token after la. The source encoder itself does not output a French word.</script>
+  <script type="text/x-notes">Why are there five scores now, rather than four?
+These scores correspond to French vocabulary items, not English source positions. The updated la row predicts the token after la; the source encoder does not output a French word.</script>
 </div>
 <div class="frame" data-title="Work one vocabulary logit: rive" data-autobuild="off">
   <p>Use the updated decoder row at <em>la</em> and the <em>rive</em> column of $W_{\mathrm{vocab}}$.</p>
   <div id="s05-logit-calc"></div>
   <p id="s05-logit-bias" data-build="1"></p>
   <p class="callout callout-key" data-build="2">Repeat with each vocabulary column and its bias to get all five logits.</p>
-  <script type="text/x-notes">We have three input coordinates and one weight per coordinate in this vocabulary column. Multiply and add, then add the rive bias. This score is still a logit; softmax needs the other vocabulary logits too.</script>
+<script type="text/x-notes">We have three input coordinates and one weight per coordinate in this vocabulary column.
+Multiply and add, then add the rive bias. This score is still a logit; softmax needs the other vocabulary logits too.</script>
 </div>
 <div class="frame" data-title="A second softmax predicts a French token" data-autobuild="off">
   <p>Source: <em>the river bank</em>. French prefix: <code>&lt;bos&gt; la</code>. Observed next token: <em>rive</em>.</p>
   <div id="s05-probs"></div>
   <p data-build="1">Attention weights four source positions; vocabulary softmax gives five next-token probabilities.</p>
-  <script type="text/x-notes">Ask students which probability will enter the loss: the probability of rive. Read it from the table rather than from the attention weights. The vocabulary includes both rive and banque; the source phrase helps distinguish them.</script>
+<script type="text/x-notes">Ask students which probability will enter the loss: the probability of rive.
+Read it from the table rather than from the attention weights. The vocabulary includes both rive and banque; the source phrase helps distinguish them.</script>
 </div>
 <div class="companion after"><p>We have completed a next-token prediction. Training will compare it with the observed token; generation will use a decoding rule to choose a token. Both start with this same forward calculation.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s05'), T=AT.translation, F=T.forward(['<bos>','la']), C=F.cross, i=1, P=T.parameters('before');
   const cols=['coordinate 1','coordinate 2','coordinate 3'];
-  AT.ui.table(C.V.map((v,j)=>v.map(x=>x*C.A[i][j])),{cols:['weighted value 1','weighted value 2','weighted value 3'],lead:[{label:'weight α',values:C.A[i],decimals:3}],rowLabels:T.source,cornerLabel:'English source',rowCls:'v',decimals:3,footer:{label:'message m₂',values:C.Mmsg[i],cls:'v'},into:S.querySelector('#s05-mixture')});
+  AT.ui.table(C.V.map((v,j)=>v.map(x=>x*C.A[i][j])),{cols:['weighted value 1','weighted value 2','weighted value 3'],lead:[{label:'weight α',values:C.A[i],decimals:3}],rowLabels:T.source,cornerLabel:'English source',rowCls:'v',decimals:3,footer:{label:'message m₂',values:C.Mmsg[i],cls:'v'},caption:'Displayed products are rounded; each message coordinate sums the unrounded products.',into:S.querySelector('#s05-mixture')});
   AT.ui.table(C.V,{cols:['value 1','value 2','value 3'],rowLabels:T.source,cornerLabel:'English source',rowCls:'v',decimals:3,into:S.querySelector('#s05-raw-values')});
-  AT.ui.table([C.Mmsg[i],C.Delta[i],F.decoderSelf.Enew[i]],{cols,rowLabels:['message m₂','cross update Δe₂','decoder row before cross'],rowCls:['v','d','e'],cornerLabel:'for French la',decimals:3,footer:{label:'decoder row after cross',values:C.Enew[i],cls:'ep'},caption:'Add the update to the row before cross-attention, not to the message.',into:S.querySelector('#s05-update')});
+  AT.ui.table([C.Mmsg[i],C.Delta[i],F.decoderSelf.Enew[i]],{cols,rowLabels:['message m₂','cross update Δe₂','decoder row before cross'],rowCls:['v','d','ep'],cornerLabel:'for French la',decimals:3,footer:{label:'decoder row after cross',values:C.Enew[i],cls:'ep'},caption:'Add the update to the row before cross-attention, not to the message. Sums use unrounded coordinates.',into:S.querySelector('#s05-update')});
   AT.ui.table(P.cross_W_O,{cols:['output 1','output 2','output 3'],rowLabels:['message 1','message 2','message 3'],cornerLabel:'W_O cross',decimals:3,into:S.querySelector('#s05-WO')});
   T.diagram(S.querySelector('#s05-head'),'head',{prefixTokens:['<bos>','la']});
   const rive=T.targetVocab.indexOf('rive'), column=P.W_vocab.map(row=>row[rive]);

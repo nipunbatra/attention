@@ -3,7 +3,8 @@
 
 The forward and backward passes use row vectors, matching shared.js.  The code
 keeps the attention graph explicit so each gradient can be checked or taught.
-Only the values written to JSON are rounded; every update uses full precision.
+Worked-example arrays are rounded for JSON; finite-difference diagnostics retain
+full precision. Every parameter update uses full precision.
 """
 
 from __future__ import annotations
@@ -291,10 +292,19 @@ def build_training(model):
     }
 
 
+def serialize_training(training):
+    """Keep the lesson's existing rounded arrays, but never round error checks."""
+    output = rounded(training)
+    # A four-decimal display convention would turn ~1e-10 errors into exact
+    # zeros and make distinct analytic/numeric estimates appear identical.
+    output["finite_difference"] = copy.deepcopy(training["finite_difference"])
+    return output
+
+
 def main():
     model = json.loads(SOURCE.read_text(encoding="utf-8"))
     output = copy.deepcopy(model)
-    output["training"] = rounded(build_training(model))
+    output["training"] = serialize_training(build_training(model))
     OUTPUT.write_text(json.dumps(output, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     training = output["training"]
     print(f"wrote {OUTPUT.name}")

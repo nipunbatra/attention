@@ -20,7 +20,7 @@ await p.goto('file://' + path.resolve(file), { waitUntil: 'load' });
 await p.waitForTimeout(+opt('--wait', 600));
 for (const sel of clicks) { try { await p.click(sel, { timeout: 3000 }); await p.waitForTimeout(250); } catch (e) { pageErrors.push('click failed: ' + sel + ' :: ' + e.message.split('\n')[0]); } }
 let evalResult = null; const ev = opt('--eval', null);
-if (ev) { try { evalResult = await p.evaluate(ev); } catch (e) { evalResult = 'EVAL ERROR: ' + e.message; } }
+if (ev) { try { evalResult = await p.evaluate(ev); } catch (e) { evalResult = 'EVAL ERROR: ' + e.message; pageErrors.push(evalResult); } }
 const katexErrors = await p.evaluate(() => Array.from(document.querySelectorAll('.katex-error')).map(e => e.textContent.slice(0, 120)));
 const docHeight = await p.evaluate(() => document.documentElement.scrollHeight);
 const overflowX = await p.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
@@ -28,3 +28,4 @@ const shot = opt('--shot', null);
 if (shot) await p.screenshot({ path: shot, fullPage: flag('--full') });
 console.log(JSON.stringify({ pageErrors, consoleErrors, katexErrors, overflowX, docHeight, evalResult }, null, 2));
 await b.close();
+if (pageErrors.length || consoleErrors.length || katexErrors.length || overflowX) process.exitCode = 1;

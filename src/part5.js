@@ -51,23 +51,23 @@
   function blockImage(value) {var image=copy(data.image);for(var y=2;y<4;y++)for(var x=2;x<4;x++)image[y][x]=value;return image;}
   var labels=['CLS','patch 1 · top left','patch 2 · top right','patch 3 · bottom left','patch 4 · bottom right'];
   var NS='http://www.w3.org/2000/svg', serial=0;
-  var color={e:'var(--c-e)',q:'var(--c-q)',k:'var(--c-k)',v:'var(--c-v)',a:'var(--c-a)',d:'var(--c-d)',ep:'var(--c-d)',ink:'var(--ink)',muted:'var(--ink-3)'};
+  var color={e:'var(--c-e)',q:'var(--c-q)',k:'var(--c-k)',v:'var(--c-v)',a:'var(--c-a)',d:'var(--c-d)',ep:'var(--c-e)',ink:'var(--ink)',muted:'var(--ink-3)'};
   function sv(tag,attrs,text){var e=document.createElementNS(NS,tag);Object.keys(attrs||{}).forEach(function(k){e.setAttribute(k,String(attrs[k]));});if(text!=null)e.textContent=text;return e;}
   function canvas(height,title,description){
     var id='vision1-diagram-'+(++serial), root=sv('svg',{viewBox:'0 0 1100 '+height,role:'img','aria-labelledby':id+'-title '+id+'-desc','data-vision1-diagram':title});
     root.appendChild(sv('title',{id:id+'-title'},title));root.appendChild(sv('desc',{id:id+'-desc'},description));
     var defs=sv('defs');Object.keys(color).forEach(function(k){var m=sv('marker',{id:id+'-'+k,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:6,markerHeight:6,orient:'auto-start-reverse'});m.appendChild(sv('path',{d:'M0 0 L10 5 L0 10 Z',fill:color[k]}));defs.appendChild(m);});root.appendChild(defs);
     function text(x,y,value,role,size,anchor){root.appendChild(sv('text',{x:x,y:y,fill:color[role||'ink'],'font-size':size||24,'font-family':'var(--font-ui)','text-anchor':anchor||'middle','dominant-baseline':'middle'},value));}
-    function box(x,y,w,h,label,sub,role){root.appendChild(sv('rect',{x:x-w/2,y:y-h/2,width:w,height:h,rx:7,fill:role?'var(--t-'+(role==='ep'?'d':role)+')':'var(--card)',stroke:color[role||'muted'],'stroke-width':2}));text(x,sub?y-12:y,label,role,23);if(sub)text(x,y+20,sub,'muted',20);}
+    function box(x,y,w,h,label,sub,role){root.appendChild(sv('rect',{x:x-w/2,y:y-h/2,width:w,height:h,rx:7,fill:role?'var(--t-'+(role==='ep'?'e':role)+')':'var(--card)',stroke:role==='ep'?color.d:color[role||'muted'],'stroke-width':2}));text(x,sub?y-12:y,label,role,23);if(sub)text(x,y+20,sub,'muted',20);}
     function arrow(x1,y1,x2,y2,role){root.appendChild(sv('path',{d:'M'+x1+' '+y1+' L'+x2+' '+y2,fill:'none',stroke:color[role||'muted'],'stroke-width':2.5,'marker-end':'url(#'+id+'-'+(role||'muted')+')'}));}
     return{svg:root,text:text,box:box,arrow:arrow};
   }
   function grid(c,image,x,y,size,patchSize,selected){
     var cell=size/4;
     image.forEach(function(row,iy){row.forEach(function(value,ix){
-      var shade=Math.round(62+Math.max(0,Math.min(3,value))*62);
-      c.svg.appendChild(sv('rect',{x:x+ix*cell,y:y+iy*cell,width:cell,height:cell,fill:'rgb('+shade+','+shade+','+shade+')',stroke:'var(--ink-3)','stroke-width':.8}));
-      c.svg.appendChild(sv('text',{x:x+(ix+.5)*cell,y:y+(iy+.5)*cell,fill:value<1?'#FFFFFF':'var(--ink)','font-size':Math.min(25,cell*.43),'font-family':'var(--font-mono)','text-anchor':'middle','dominant-baseline':'middle'},value));
+      var shade=AT.imageShade(value);
+      c.svg.appendChild(sv('rect',{x:x+ix*cell,y:y+iy*cell,width:cell,height:cell,'data-pixel-value':value,fill:'rgb('+shade+','+shade+','+shade+')',stroke:'var(--ink-3)','stroke-width':.8}));
+      c.svg.appendChild(sv('text',{x:x+(ix+.5)*cell,y:y+(iy+.5)*cell,fill:shade<118?'#FFFFFF':'#000000','font-size':Math.min(25,cell*.43),'font-family':'var(--font-mono)','text-anchor':'middle','dominant-baseline':'middle'},value));
     });});
     if(patchSize){for(var gy=0;gy<4;gy+=patchSize)for(var gx=0;gx<4;gx+=patchSize){var i=(gy/patchSize)*(4/patchSize)+gx/patchSize;c.svg.appendChild(sv('rect',{x:x+gx*cell+2,y:y+gy*cell+2,width:cell*patchSize-4,height:cell*patchSize-4,fill:'none',stroke:i===selected?color.q:color.k,'stroke-width':i===selected?5:2.5}));}}
   }
@@ -76,7 +76,7 @@
     options=options||{};var f=forward(options), c, i;
     if(kind==='image'){
       c=canvas(270,'One 4 by 4 grayscale image','Pixel values are 1 in the top-left block, 2 in the bottom-right block, and 0 elsewhere.');
-      grid(c,f.image,70,12,224,0);c.arrow(345,120,475,120,'e');c.box(650,120,320,96,'image classifier','two blocks or one block','ep');
+      grid(c,f.image,70,12,224,0);c.arrow(345,120,475,120,'e');c.box(650,120,320,96,'image classifier','two blocks or one block',null);
       c.text(195,247,'4 rows × 4 columns',null,22);c.text(650,205,'We will compute its two scores.',null,24);
     }else if(kind==='patches'){
       var p=patchify(f.image,options.size||2), selected=options.selected||0;c=canvas(270,'Divide the image into patches','Nonoverlapping square patches in raster order. The selected patch is read left to right, then top to bottom.');
@@ -109,7 +109,7 @@
       c.box(550,217,460,64,'CLS message '+vector(f.message[0],3),null,'d');
     }else if(kind==='pipeline'){
       c=canvas(245,'One complete image-classification computation','Pixels become patch embeddings and positioned rows; self-attention updates the class row; a class projection produces logits and probabilities.');
-      var nodes=[['pixels','4 × 4','e'],['patch rows','4 × 2','e'],['+ CLS, + positions','5 × 2','e'],['attention + residual','5 × 2','d'],['take CLS','1 × 2','ep'],['class probabilities','1 × 2','ep']];
+      var nodes=[['pixels','4 × 4','e'],['patch rows','4 × 2','e'],['+ CLS, + positions','5 × 2','e'],['attention + residual','5 × 2','d'],['take CLS','1 × 2','ep'],['class probabilities','1 × 2',null]];
       nodes.forEach(function(n,j){var row=Math.floor(j/3),col=j%3,xx=180+col*370,yy=55+row*130;c.box(xx,yy,320,78,n[0],n[1],n[2]);if(col<2)c.arrow(xx+161,yy,xx+208,yy);});
       c.svg.appendChild(sv('path',{d:'M920 96 V119 H180 V145',fill:'none',stroke:color.muted,'stroke-width':2.5,'marker-end':'url(#vision1-diagram-'+serial+'-muted)'}));
     }else if(kind==='block'){
@@ -118,7 +118,7 @@
       var xs=[65,220,430,640,830,1000];
       c.box(xs[0],85,115,58,'E',null,'e');c.box(xs[1],85,160,58,'LayerNorm',null);c.box(xs[2],85,230,58,'multi-head attention',null,'d');c.box(xs[3],85,125,58,'add E',null,'ep');
       c.arrow(124,85,137,85);c.arrow(302,85,312,85);c.arrow(547,85,575,85);c.arrow(705,85,778,85);c.box(890,85,215,58,'LayerNorm',null);
-      c.arrow(890,115,890,174);c.box(810,215,400,72,'MLP: linear → GELU → linear','same operation on each row','ep');c.arrow(607,215,510,215);c.box(390,215,232,72,'add previous row',null,'ep');c.arrow(271,215,190,215);c.box(100,215,170,72,'next block',null,'ep');
+      c.arrow(890,115,890,174);c.box(810,215,400,72,'MLP: linear → GELU → linear','same operation on each row',null);c.arrow(607,215,510,215);c.box(390,215,232,72,'add previous row',null,'ep');c.arrow(271,215,190,215);c.box(100,215,170,72,'next block',null,null);
       c.svg.appendChild(sv('path',{d:'M65 54 V25 H640 V54 M640 116 V155 H390 V178',fill:'none',stroke:color.e,'stroke-width':2,'stroke-dasharray':'6 4','marker-end':'url(#vision1-diagram-'+serial+'-e)'}));
       c.text(550,294,'After the last block: final LayerNorm → CLS row → class head.',null,23);
     }else throw new Error('Unknown Vision Part I diagram: '+kind);
@@ -150,11 +150,11 @@
   notation('token','\\ve{e_j^{\\mathrm{patch}}}=r_jW_{\\mathrm{patch}}+b_{\\mathrm{patch}}','Patch embedding before position is added','1\\times d_{\\mathrm{model}}','1×2');
   notation('token','\\ve{e_j}','Input row after adding its position vector; row 0 is CLS','1\\times d_{\\mathrm{model}}','1×2');
   notation('token','\\vq{q_i},\\vk{k_j},\\vv{v_j}','Query from receiver i; key and value from source j','1\\times2','');
-  notation('token','\\vd{\\Delta e_i}=(\\sum_j\\alpha_{ij}v_j)W_O','Attention update for receiving row i','1\\times d_{\\mathrm{model}}','1×2');
-  notation('token','\\vp{e_i^\\prime}=e_i+\\Delta e_i','Row after residual addition','1\\times d_{\\mathrm{model}}','1×2');
+  notation('token','\\vd{\\Delta e_i}=(\\sum_j\\va{\\alpha_{ij}}\\vv{v_j})W_O','Attention update for receiving row i','1\\times d_{\\mathrm{model}}','1×2');
+  notation('token','\\vp{e_i^\\prime}=\\ve{e_i}+\\vd{\\Delta e_i}','Row after residual addition','1\\times d_{\\mathrm{model}}','1×2');
   notation('matrix','\\ve{E}','Stacked input rows: CLS first, then four patches','(N+1)\\times d_{\\mathrm{model}}','5×2');
   notation('matrix','\\vq{Q},\\vk{K},\\vv{V}','Separate projections of those same input rows','(N+1)\\times2','5×2 each');
-  notation('matrix','\\va{A}=\\operatorname{softmax}_{\\mathrm{row}}(QK^\\top/\\sqrt{d_k})','One row of mixing weights per receiving token','(N+1)\\times(N+1)','5×5');
+  notation('matrix','\\va{A}=\\operatorname{softmax}_{\\mathrm{row}}(\\vq{Q}\\vk{K}^\\top/\\sqrt{d_k})','One row of mixing weights per receiving token','(N+1)\\times(N+1)','5×5');
   notation('sizes','N,P,C','Number of patches, patch side length, channel count','','4, 2, 1');
   notation('sizes','d_{\\mathrm{model}},d_k,d_v','Representation width, matching width, and value width','','2, 2, 2');
   notation('sizes','W_{\\mathrm{patch}}','Shared pixel-to-embedding projection','P^2C\\times d_{\\mathrm{model}}','4×2');

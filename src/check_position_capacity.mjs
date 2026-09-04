@@ -7,7 +7,7 @@ import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { forward } from './toy_ref.mjs';
+import { baseline, forward } from './toy_ref.mjs';
 
 const src = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
@@ -36,6 +36,13 @@ const model = JSON.parse(readFileSync(path.join(src, 'toy.json'), 'utf8'));
 assert.equal(model.max_context, 20, 'The toy must declare its 20-token capacity.');
 assert.equal(model.pos_emb.length, model.max_context, 'One positional row is required for every supported position.');
 assert(model.pos_emb.every(row => Array.isArray(row) && row.length === model.d_model && row.every(Number.isFinite)), 'Every position row must be finite and d_model-wide.');
+const baselineRiver = baseline(model, model.sentences.river).probs.at(-1);
+const baselineFinance = baseline(model, model.sentences.cheque).probs.at(-1);
+assert.deepEqual(baselineRiver, baselineFinance, 'Same final token and position give exactly the same baseline distribution.');
+const peakBaseline = Math.max(...baselineRiver);
+assert.equal(baselineRiver.filter(p => p === peakBaseline).length, 8, 'The eight displayed baseline candidates are exactly tied, not a ranked winner.');
+assert(Math.abs(peakBaseline - 0.0936543386) < 1e-10, 'Baseline tie probability');
+assert(baselineRiver.some(p => p !== peakBaseline), 'The whole vocabulary distribution is not uniform.');
 
 const keys = ['E', 'Q', 'K', 'V', 'Sraw', 'S', 'A', 'Mmsg', 'Delta', 'Enew', 'logits', 'probs'];
 let finite = 0, infinities = 0, maxError = 0, cases = 0, errorChecks = 0;

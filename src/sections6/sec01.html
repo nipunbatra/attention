@@ -5,20 +5,26 @@
   <p>This is the $4\times4$ grayscale image from Part I, split into four $2\times2$ patches.</p>
   <div id="s01-image"></div>
   <p data-build="1">We have its pixel values, but no class label. What could the model learn to predict?</p>
-  <script type="text/x-notes">Point to the four rows. Patch 1 contains four ones; patches 2 and 3 contain zeros; patch 4 contains twos. These tiny numbers make the loss inspectable. They do not represent a realistic training dataset.</script>
+  <script type="text/x-notes">Point to the four rows.
+
+Patch 1 contains four ones; patches 2 and 3 contain zeros; patch 4 contains twos. These tiny numbers make the loss inspectable. They do not represent a realistic training dataset.</script>
 </div>
 <div class="frame" data-title="A missing part gives us a target" data-autobuild="off">
   <div id="s01-masked"></div>
   <p data-build="1">Hide three patches from the encoder. Keep their original pixels as the target.</p>
   <p data-build="2">The model must predict what it cannot read. Across many images, that task can train useful visual representations.</p>
-  <script type="text/x-notes">Distinguish hidden from lost. The training program still holds the complete original image and can calculate the error. The encoder is the component denied access to hidden patches.</script>
+  <script type="text/x-notes">Distinguish hidden from lost.
+
+The training program still holds the complete original image and can calculate the error. The encoder is the component denied access to hidden patches.</script>
 </div>
 <div class="frame" data-title="Pixels and embeddings have different jobs" data-autobuild="off">
   <p>$r_j$: the four raw pixels in patch $j$.</p>
   <p data-build="1">$\ve{e_j}=r_jW_{\mathrm{patch}}+b_{\mathrm{patch}}+p_j$: the input representation for that patch, as in Part I.</p>
   <div id="s01-shapes" data-build="1"></div>
   <p data-build="2">$E$ stacks the representation rows. We reserve $v,V$ for attention values, as before.</p>
-  <script type="text/x-notes">The patch projection changes width from four pixel coordinates to d representation coordinates. Position contributes another d-wide row, not an extra coordinate. Later encoder outputs remain representations, not raw pixels.</script>
+  <script type="text/x-notes">The patch projection changes width from four pixel coordinates to d representation coordinates.
+
+Position contributes another d-wide row, not an extra coordinate. Later encoder outputs remain representations, not raw pixels.</script>
 </div>
 <div class="companion after"><p>The drawing uses four patches so we can see every input. Real pretraining uses many images and usually many more patches. Its objective does not by itself prove that the representation will work for recognition, segmentation, or another downstream task; that requires evaluation.</p><p>We will compare three target choices: MAE reconstructs pixels, DINO matches a teacher's probability distribution across views, and I-JEPA predicts target-region features. Our browser exercises calculate losses from disclosed inputs. They do not run a pretrained model.</p></div>
 <script>

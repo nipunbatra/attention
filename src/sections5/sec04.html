@@ -4,57 +4,77 @@
 <div class="frame" data-title="CLS makes the query for this read" data-autobuild="off">
   <div class="vision1-story" id="s04-query"></div>
   <p class="callout callout-key" data-build="1">This query comes from <strong>CLS, not the label</strong>. It will compare both coordinates of each source key.</p>
-  <script type="text/x-notes">The query is not asking for another copy of CLS. It specifies a learned matching direction. This first-layer query is the same for the two images because their initial CLS rows are the same.</script>
+  <script type="text/x-notes">The query is not asking for another copy of CLS.
+
+It specifies a learned matching direction. This first-layer query is the same for the two images because their initial CLS rows are the same.</script>
 </div>
 <div class="frame" data-title="Patch 4 makes a key from its own row" data-autobuild="off">
   <div class="vision1-story" id="s04-key"></div>
   <p>Patch 4’s key comes from <strong>its own positioned row</strong>, $e_4=(5,5)$. It describes when this source should be read by CLS’s query.</p>
-  <script type="text/x-notes">Query from the receiver, key from the source. W_Q and W_K happen to start with the same entries, but they are separate parameters and perform separate jobs. Neither is tied to the other during training.</script>
+  <script type="text/x-notes">Query from the receiver, key from the source.
+
+W_Q and W_K happen to start with the same entries, but they are separate parameters and perform separate jobs. Neither is tied to the other during training.</script>
 </div>
 <div class="frame" data-title="Keep each key attached to its source" data-autobuild="off">
   <div class="vision1-story" id="s04-keys"></div>
   <p>CLS can read the four patches <strong>and its own row</strong>.</p>
-  <script type="text/x-notes">All the image's patches are already known. Unlike a next-token decoder, this image encoder does not need to hide later patches with a causal mask. The five arrows mean five sources, not five possible class labels.</script>
+  <script type="text/x-notes">All the image's patches are already known.
+
+Unlike a next-token decoder, this image encoder does not need to hide later patches with a causal mask. The five arrows mean five sources, not five possible class labels.</script>
 </div>
 <div class="frame" data-title="Work one match: CLS with patch 4" data-autobuild="off">
   <div class="vision1-story" id="s04-dot"></div>
   <p>The dot product favors patch 4’s large key coordinates. This starting query <strong>has not learned to count blocks</strong> yet.</p>
-  <script type="text/x-notes">The score reflects these chosen parameters, not a semantic explanation such as 'this is the important object'. The two blocks have different brightness, and the current query responds strongly to that magnitude.</script>
+  <script type="text/x-notes">The score reflects these chosen parameters, not a semantic explanation such as 'this is the important object'.
+
+The two blocks have different brightness, and the current query responds strongly to that magnitude.</script>
 </div>
 <div class="frame" data-title="Why divide by the square root of the key width?" data-autobuild="off">
   <div class="vision1-story" id="s04-scale"></div>
   <p>More coordinates tend to widen the spread of dot products. Dividing by $\sqrt{d_k}$ controls that spread before softmax. Here $d_k=2$.</p>
-  <script type="text/x-notes">This does not normalize vectors to unit length. Under roughly independent zero-mean unit-variance coordinates, the dot product has variance d_k, hence standard deviation sqrt(d_k). Scaling controls score magnitude; it does not change ranking within the row.</script>
+  <script type="text/x-notes">This does not normalize vectors to unit length.
+
+Under roughly independent zero-mean unit-variance coordinates, the dot product has variance d_k, hence standard deviation sqrt(d_k). Scaling controls score magnitude; it does not change ranking within the row.</script>
 </div>
 <div class="frame" data-title="Scaling softens this read without changing the ranking" data-autobuild="off">
   <div id="s04-scale-compare"></div>
   <p>The largest score still belongs to patch 4. Dividing by $\sqrt2$ makes its advantage less extreme.</p>
   <p class="callout callout-note" data-build="1">The next three frames unpack how softmax produced these weights.</p>
-  <script type="text/x-notes">Use the concrete comparison before the optional variance derivation. Both distributions are computed from the same raw dot products. A larger or smaller scaling factor changes the distribution, not just its displayed units.</script>
+  <script type="text/x-notes">Use the concrete comparison before the optional variance derivation.
+
+Both distributions are computed from the same raw dot products. A larger or smaller scaling factor changes the distribution, not just its displayed units.</script>
 </div>
 <div class="frame" data-title="First collect the five scaled scores" data-autobuild="off">
   <div class="vision1-story" id="s04-scores"></div>
   <p>$s_{0j}=q_0\cdot k_j/\sqrt2$. The first index, 0, stays fixed: <strong>CLS is the receiver</strong>.</p>
   <p data-build="1">The source index $j$ runs over CLS and patches 1–4. We need one weight for each of these five sources.</p>
-  <script type="text/x-notes">Keep the image crops beside the numerical rows. The next step changes the scores into positive quantities; it does not add any sources.</script>
+  <script type="text/x-notes">Keep the image crops beside the numerical rows.
+
+The next step changes the scores into positive quantities; it does not add any sources.</script>
 </div>
 <div class="frame" data-title="Exponentiate each score to get a positive number" data-autobuild="off">
   <div class="vision1-story" id="s04-exponents"></div>
   <p>Apply $\exp(s_{0j})$ to each score. Larger scores produce larger positive numbers.</p>
   <p data-build="1">Add these five numbers to get one common total, $Z$. They are not normalized yet.</p>
-  <script type="text/x-notes">The exponential function exp is unrelated to our representation symbol e_j. Saying exp(score) here avoids introducing an unexplained second meaning of e.</script>
+  <script type="text/x-notes">The exponential function exp is unrelated to our representation symbol e_j.
+
+Saying exp(score) here avoids introducing an unexplained second meaning of e.</script>
 </div>
 <div class="frame" data-title="Divide every row by the same total" data-autobuild="off">
   <div class="vision1-story" id="s04-weights"></div>
   <p>These five amounts add to 1. They mix <strong>input information</strong>; they are not output-class probabilities.</p>
-  <script type="text/x-notes">Calculations use full precision; displays round to three decimals. Do not recompute from the rounded labels when explaining small last-digit differences. Class probabilities come later from a different softmax.</script>
+  <script type="text/x-notes">Calculations use full precision; displays round to three decimals.
+
+Do not recompute from the rounded labels when explaining small last-digit differences. Class probabilities come later from a different softmax.</script>
 </div>
 <div class="frame" data-title="We have chosen amounts. What information will arrive?" data-autobuild="off">
   <p>For this CLS query, patch 4 receives weight <strong id="s04-top-weight"></strong>.</p>
   <div id="s04-check"></div>
   <pre class="torch-snippet" data-build="1"><code>scores = (q0 @ K.T) / math.sqrt(K.shape[-1])
 alpha0 = scores.softmax(dim=-1)   # [5], sum = 1</code></pre>
-  <script type="text/x-notes">The scores and weights are scalars. We still need source vectors to construct a two-number update for CLS. Values provide those vectors; the key is not the vector automatically added.</script>
+  <script type="text/x-notes">The scores and weights are scalars.
+
+We still need source vectors to construct a two-number update for CLS. Values provide those vectors; the key is not the vector automatically added.</script>
 </div>
 <div class="companion after"><h3>Why the square root, more precisely?</h3><p>If corresponding query and key coordinates are independent, roughly zero-mean, and unit-variance, the variance of their summed products grows like $d_k$. Dividing by $\sqrt{d_k}$ keeps the score variance around 1 under those assumptions. This is a scale-control argument, not a guarantee for every learned vector. See the scaled dot-product discussion in <a href="https://arxiv.org/abs/1706.03762">Attention Is All You Need</a>.</p><p>Our starting $W_Q$ and $W_K$ are equal for easy arithmetic; training stores and updates them separately. The CLS query is not yet image-dependent in this first layer. Its matches are image-dependent because the source keys come from each image. In later layers, an already-contextual CLS row can also produce an image-dependent query.</p></div>
 <script>(function(){const S=document.getElementById('s04'),T=AT.vision,F=T.forward();for(const [id,stage,step]of[['query','query',99],['key','key',99],['keys','keys',99],['dot','score',1],['scale','score',2],['scores','weights',0],['exponents','weights',1],['weights','weights',2]])T.story(S.querySelector('#s04-'+id),{stage:stage,step:step,source:4,receiver:0,forward:F});const unscaled=T.math.softmax(F.raw[0]);AT.ui.table(F.raw[0].map((x,j)=>[unscaled[j],F.A[0][j]]),{into:S.querySelector('#s04-scale-compare'),cols:['without ÷√2','with ÷√2'],rowLabels:T.labels,cornerLabel:'CLS mixing amounts',decimals:3});S.querySelector('#s04-top-weight').textContent=F.A[0][4].toFixed(3);AT.ui.reveal('Does that weight tell us what vector to add to CLS?','Not by itself. The weight says how much. We must multiply it by the value from the same source to know what information arrives.',{into:S.querySelector('#s04-check')});})();</script>

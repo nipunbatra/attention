@@ -2,7 +2,7 @@
 (function (root) {
   'use strict';
   const D = root.ATTENTION_PREVIEW_DATA;
-  const C = { ink:'#243b39', muted:'#6b7c77', line:'#d8e1dc', paper:'#fbfcf9', q:'#9333ea', k:'#d97706', v:'#0d9488', a:'#e11d48', m:'#0d9488', d:'#16a34a', e:'#2563eb' };
+  const C = { ink:'#243b39', muted:'#65756f', line:'#d8e1dc', paper:'#fbfcf9', q:'#8b2cde', k:'#aa4e08', v:'#0f766e', a:'#be123c', m:'#0f766e', d:'#147737', e:'#245edb' };
   const {dModel:dm,dKey:dk,dValue:dv,T,vocabSize:nv}=D.dims;
   const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
   const f = (n, digits=3) => Number(n).toFixed(digits).replace(/^-/,'−');
@@ -147,7 +147,7 @@
     for(const role of ['q','k','v','a','m','d','e'])out+=`<marker id="${prefix}-${role}" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0 L8 4 L0 8 Z" fill="${C[role]}"/></marker>`;
     out+=`</defs><style>text{font-family:'Avenir Next','Segoe UI',Arial,sans-serif;fill:${C.ink}}.eyebrow{font-size:14px;font-weight:700;letter-spacing:1.8px}.heading{font-size:33px;font-weight:600;letter-spacing:-.6px}.stage-title{font-size:27px;font-weight:600;letter-spacing:-.4px}.body{font-size:21px}.detail{font-size:17px;fill:${C.muted}}.axis{font-size:16px;fill:${C.muted}}.smallcap{font-size:15px;font-weight:700;letter-spacing:.6px}.formula{font-family:'STIX Two Text',Georgia,serif;font-size:26px}.number{font-family:'SFMono-Regular',Consolas,monospace;font-size:24px}.table-number{font-family:'SFMono-Regular',Consolas,monospace;font-size:18px}.table-label{font-size:18px}.table-head{font-size:15px;font-weight:600;fill:${C.muted}}.node-title{font-size:20px;font-weight:600}.node-caption{font-size:13px;fill:${C.muted}}.code{font-family:'SFMono-Regular',Consolas,monospace;font-size:17px}.token{font-size:19px}.position{font-size:12px;fill:${C.muted}}.tiny{font-size:13px;fill:${C.muted}}</style>`;
     out+=rect(0,0,1600,960,C.paper,'none',0);
-    out+=txt(48,44,'PART 2 / A SINGLE ATTENTION HEAD','eyebrow',`fill="${C.k}"`);
+    out+=txt(48,44,'PART 2 / A SINGLE ATTENTION HEAD','eyebrow',`fill="${C.muted}"`);
     out+=txt(48,87,'How context reaches a token','heading');
     out+=txt(1538,43,`${String(si+1).padStart(2,'0')} / ${stages.length}`,'eyebrow','text-anchor="end"');
     out+=txt(1538,82,'One input sequence · causal reads · one residual update','detail','text-anchor="end"');
@@ -167,7 +167,7 @@
     st.lines.forEach((t,j)=>out+=txt(60,287+j*28,t,'body'));
     out+=evidence(si,d);
     out+=rect(48,735,685,101,'#eef3ee','none',6);
-    out+=txt(66,760,'PYTORCH · THE ACTIVE OPERATION','smallcap',`fill="${C.k}"`);
+    out+=txt(66,760,'PYTORCH · THE ACTIVE OPERATION','smallcap',`fill="${C.muted}"`);
     st.code.forEach((t,j)=>out+=txt(66,790+j*25,t,'code'));
     st.note.forEach((t,j)=>out+=txt(60,873+j*25,t,'detail'));
     out+=line(768,224,768,910,`stroke="${C.line}"`);

@@ -14,8 +14,8 @@ The shared-layout pass removes permanent presentation header/footer bars. A smal
 navigation without changing the stage scale. Slides show one title without repeated section labels. The article's notation
 strip is no longer sticky, and the end note is collapsed under “About this page”.
 
-The humanizer pass covers all 54 section files across Parts I–III: direct teacher explanations replace repetitive framing,
-while computations, notation, and technical caveats remain intact. PDFs now open `details.reveal` answers by default
+Use direct teacher explanations and a short presenter cue followed by supporting guidance. Preserve the computations,
+notation, and technical caveats. PDFs open `details.reveal` answers by default
 (`--answers show`); `--answers authored` preserves the closed questions. `export_test.mjs` checks actual answer pixels and
 PDF page counts, including dynamically created reveals. Browser Print opens answers and restores them afterwards.
 
@@ -38,7 +38,9 @@ Read this file, then `PRESENT.md` for the current layout/runtime contract and `C
 
 Paths in this table are relative to `src/`. Shared files are `shell.html` (layout/CSS), `shared.js` (math, widgets, notation, presentation runtime), and `assemble.py`. Do not edit the generated root HTML or the inlined `katex-bundle.html` by hand. `index.html` is the series landing page; `part2.html` redirects to `attention.html`.
 
-The internal source IDs 5–8 are not displayed part numbers. Their configs set `series: "Vision to language"`, `part: 1..4`, and separate `vision1..4` notation filters. `assemble.py --part 5 --out vision1.html` selects source5 and displays Vision I. Rebuild predecessor pages after successor outputs exist so navigation becomes available.
+The internal source IDs 5–8 are not displayed part numbers. Their configs set `series: "Vision to language"`, `part: 1..4`, `partLabel: "Vision I".."Vision IV"`, and separate `vision1..4` notation filters. `assemble.py --part 5 --out vision1.html` selects source 5 and displays Vision I. The text configs use `series: "Attention and language"` and display Part 1–4.
+
+Build each part once in any order. `assemble.py` derives available lesson targets from complete section/config/data sources, not existing output files. The conventional outputs are the filenames in the table above; a future source config can declare a different `output`. Set `published: false` for an unpublished draft, or `available: false` on an individual navigation entry to leave it disabled. Unknown destinations stay unavailable even if a stale HTML placeholder exists. Distribute the complete set of outputs for offline series navigation. `check_metadata.py` tests clean-directory builds and those planned-link cases.
 
 The standalone staged diagram lives in `figures/attention-diagram-preview/`. Part 2 embeds its same `diagram.js` source through `src/attention-flow-data.js`; keep the preview and article synchronized by changing that shared source.
 
@@ -69,6 +71,8 @@ The five illustrative representation axes are water, finance, person, glue, and 
 
 Read numbers from `AT.model`, `AT.forward`, `AT.mlp`, or the stored `AT.train` results. Distinguish unrounded computation from displayed precision. `make_toy2.py` regenerates the base model; `train_part3.py` derives `toy3.json`; `gen_report.py` generates the numerical report. These are writing generators, not read-only tests. If parameters change, regenerate dependent data and assembled parts, then rerun numerical checks. Do not casually retrain `toy1.json` during a layout edit.
 
+`toy3.json` retains the established four-decimal training arrays, but its two finite-difference spot checks retain full precision (ε = 1e−4). The separate `check_training.py` checks all 260 used scalar parameters at ε = 1e−5 and verifies that unused position rows do not affect this prefix or change in its SGD update. Do not round numerical-error diagnostics to the worksheet display precision.
+
 ## Slide-first, article-unfolded
 
 Part IV follows `the river bank <eos>` to `la rive <eos>`. It has separate learned source/target tables and full-width
@@ -93,6 +97,8 @@ presentation. Managed stepper toolbars are hidden in presentation because the gl
 manual widgets retain their local controls.
 
 Use **P** to present, arrows to advance, **Esc** to return to the same article section. Bare `#sNN` links are reading anchors; `?present#sNN/frame/build` is a classroom deep link. See `PRESENT.md` for controls, state restoration, and presenter view.
+
+Focused sliders keep native arrow, Page Up/Down, and Home/End behaviour. **N** advances without changing a slider; **Esc** first returns focus to the slide. Test these interaction states as well as passive frame fit.
 
 ## Build, verify, and export
 
@@ -120,11 +126,23 @@ python3 src/assemble.py --part 1 --out part1.html
 python3 src/assemble.py --part 2 --out attention.html
 python3 src/assemble.py --part 3 --out part3.html
 python3 src/assemble.py --part 4 --out part4.html
+python3 src/assemble.py --part 5 --out vision1.html
+python3 src/assemble.py --part 6 --out vision2.html
+python3 src/assemble.py --part 7 --out vision3.html
+python3 src/assemble.py --part 8 --out vision4.html
 
+python3 src/check_metadata.py
 node src/check_part1.mjs
 node src/check_part1_diagrams.mjs
 python3 src/train_part4.py --check
 node src/check_part4.mjs
+node src/check_vision1.mjs
+python3 src/verify_vision1_learning.py
+node src/check_vision2.mjs
+python3 src/train_vision3.py --check
+node src/check_vision3.mjs
+python3 src/train_vision4.py --check
+node src/check_vision4.mjs
 node src/toy_ref.mjs src/toy.json --compare src/py_check.json
 python3 src/check_training.py
 node src/check-live-model.mjs attention.html
@@ -133,17 +151,25 @@ node src/check-routing-scaling.mjs
 node src/check-diagram.mjs attention.html
 
 node src/pres_test.mjs
+node src/interaction_test.mjs
+node src/export_test.mjs
 node src/frame_audit.mjs part1.html
 node src/frame_audit.mjs attention.html
 node src/frame_audit.mjs part3.html
-node src/check_tables.mjs part1.html attention.html part3.html
+node src/frame_audit.mjs part4.html
+node src/frame_audit.mjs vision1.html
+node src/frame_audit.mjs vision2.html
+node src/frame_audit.mjs vision3.html
+node src/frame_audit.mjs vision4.html
+node src/check_tables.mjs part1.html attention.html part3.html part4.html
+node src/check_tables.mjs vision1.html vision2.html vision3.html vision4.html
 node src/qa.mjs attention.html --width 1280 --height 720
 node src/qa.mjs attention.html --width 390 --height 844
 node src/sweep.mjs attention.html
 git diff --check
 ```
 
-Repeat article QA and interaction sweeps for each changed part. `check_training.py` independently checks saved training results and all used parameter gradients without writing data. `check_position_capacity.mjs` checks 10/11/20-token evaluation, invalid-input rejection, and generation with the new last-position query. `frame_audit.mjs` walks presentation states and can save failure screenshots with `--shots /tmp/attention-overflow`. Inspect representative screenshots and PDF pages as well as test output. Record actual commands/results in `CLASSROOM_QA.md`; this handover does not certify an unrun release.
+Repeat article QA and interaction sweeps for each changed part. `check_training.py` independently checks saved training results and all used parameter gradients without writing data. `check_position_capacity.mjs` checks the exactly tied baseline candidates, 10/11/20-token evaluation, invalid-input rejection, and generation with the new last-position query. `frame_audit.mjs` walks presentation states and can save failure screenshots with `--shots /tmp/attention-overflow`. `interaction_test.mjs` opens arithmetic dialogs, changes masks, exercises focused controls, and displays presenter notes. Inspect representative screenshots and PDF pages as well as test output. Record actual commands/results in `CLASSROOM_QA.md`; this handover does not certify an unrun release.
 
 ```sh
 # Exact slide views: one fully revealed page per authored frame

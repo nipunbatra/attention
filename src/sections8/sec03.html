@@ -1,26 +1,46 @@
 <section id="s03" class="sec" data-title="Two routes for visual information" data-lit="q k v a">
 <header class="sec-head"><span class="sec-num">03</span><div><p class="eyebrow">Where do the decoder's keys and values come from?</p><h2>Two routes for visual information</h2></div></header>
-<div class="companion"><p>The connector supplies vectors, but an attention mask controls how they are used. Our toy puts image rows before the text and uses one prefix-attention block. Image rows can read all image rows but cannot read text. A text row can read every image row and only its current or earlier text rows. Preventing image rows from reading the answer also prevents a future-answer shortcut through image states in deeper blocks.</p></div>
+<div class="companion" data-kicker="For self-study"><p>The connector supplies vectors, but an attention mask controls how they are used. Our toy puts image rows before the text and uses one prefix-attention block. Image rows can read all image rows but cannot read text. A text row can read every image row and only its current or earlier text rows. Preventing image rows from reading the answer also prevents a future-answer shortcut through image states in deeper blocks.</p></div>
 <div class="frame" data-title="Image context is visible; future answer text is not" data-autobuild="off">
  <div id="s03-mask"></div>
  <p data-build="1">The same mask is applied before softmax during teacher-forced training.</p>
+ <script type="text/x-notes">
+  Could an image row become a route for a future answer to leak backward?
+
+  Trace the 9×9 mask: image reads image only; text reads all image rows and current or earlier text. The question-mark row cannot read two or blocks during training.
+ </script>
 </div>
 <div class="frame" data-title="A visual prefix and cross-attention are alternatives" data-autobuild="off">
  <div id="s03-routes"></div>
  <p data-build="1">Our numerical example uses the left route. Attention Part IV worked through the right route with an English source.</p>
+ <script type="text/x-notes">
+  Which route does our worked calculation use?
+
+  Point to the shared visual-prefix sequence on the left. Cross-attention on the right is an alternative architecture, not an extra operation hidden inside this toy.
+ </script>
 </div>
 <div class="frame" data-title="Cross-attention can read image rows instead of English rows" data-autobuild="off">
- $$Q=E_{\rm text}W_Q,\quad K=GW_K,\quad V=GW_V$$
- $$\Delta E_{\rm text}=\operatorname{softmax}\!\left(\frac{QK^\top}{\sqrt{d_k}}\right)VW_O$$
+ $$\vq{Q}=\ve{E_{\rm text}}W_Q,\quad \vk{K}=\ve{G}W_K,\quad \vv{V}=\ve{G}W_V$$
+ $$\vd{\Delta E_{\rm text}}=\operatorname{softmax}\!\left(\frac{\vq{Q}\vk{K}^\top}{\sqrt{d_k}}\right)\vv{V}W_O$$
  <p data-build="1">A text query chooses a mixture of image values. $G$ and $E_{\rm text}$ need not have the same width; their projections produce compatible query/key widths.</p>
  <p data-build="2">This is an architectural comparison, not a second hidden operation inside our prefix toy.</p>
+ <script type="text/x-notes">
+  Where do Q, K, and V come from in the separate-memory route?
+
+  The decoder supplies queries. Encoded image rows supply keys and values. Their source widths may differ, but projected query and key widths must agree.
+ </script>
 </div>
 <div class="frame" data-title="Changing width does not reduce the number of visual tokens" data-autobuild="off">
  <p>Linear connector: $196\times768\;\to\;196\times4096$.</p>
  <p data-build="1">Learned resampler: $n_r$ query rows read $196$ visual rows and produce $n_r$ output rows.</p>
- $$A_{\rm resample}\in\mathbb R^{n_r\times196},\qquad A_{\rm resample}V\in\mathbb R^{n_r\times d_v}$$
+ $$\va{A_{\rm resample}}\in\mathbb R^{n_r\times196},\qquad \va{A_{\rm resample}}\vv{V}\in\mathbb R^{n_r\times d_v}$$
  <p data-build="2">Reducing token count saves later computation but can discard detail.</p>
+ <script type="text/x-notes">
+  Does a wide connector also reduce the number of patches?
+
+  A linear connector preserves row count. A resampler uses a chosen number of learned query rows; each retrieves a mixture from the visual memory.
+ </script>
 </div>
-<div class="companion"><p><a href="https://arxiv.org/abs/2204.14198">Flamingo</a> uses a visual resampler and cross-attention layers in a language model. <a href="https://arxiv.org/abs/2301.12597">BLIP-2</a> uses a learned query bridge. Those queries are learned query tokens, not the same thing as the last answer token's decoder query. Image tiling is another separate choice: it changes which image crops are encoded and may increase the visual token count. No single connector or training recipe describes all VLMs.</p></div>
+<div class="companion after"><p><a href="https://arxiv.org/abs/2204.14198">Flamingo</a> uses a visual resampler and cross-attention layers in a language model. <a href="https://arxiv.org/abs/2301.12597">BLIP-2</a> uses a learned query bridge. Those queries are learned query tokens, not the same thing as the last answer token's decoder query. Image tiling is another separate choice: it changes which image crops are encoded and may increase the visual token count. No single connector or training recipe describes all VLMs.</p></div>
 <script>(function(){const S=document.getElementById('s03'),V=AT.vlm;S.querySelector('#s03-mask').append(V.diagram('mask'));S.querySelector('#s03-routes').append(V.diagram('routes'));})();</script>
 </section>

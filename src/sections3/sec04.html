@@ -17,16 +17,19 @@ body.present #s04 .s04-graph svg{max-height:530px}
   <p>Autograd follows these dependencies backward using the chain rule. Where paths meet, their gradient contributions add. The input $E$ receives a contribution through the direct residual path and others through attention. Both routes start from the <em>input</em> $E$, not the final $E'$. Gradients also reach every projection and the lookup rows used by this example. We do not optimize the target token or the fixed causal mask; they are data.</p>
 </div>
 <div class="frame" data-title="One input, three learned projections">
-  <script type="text/x-notes">E is the current stack, not the vocabulary lookup table. Point to the separate W matrices; each projection needs both E and its learned matrix.</script>
+<script type="text/x-notes">E is the current stack, not the vocabulary lookup table.
+Point to the separate W matrices; each projection needs both E and its learned matrix.</script>
   <div class="s04-graph" id="s04-projections"></div>
   <p>The same $E$ feeds all three projections <strong>and</strong> the residual path.</p>
 </div>
 <div class="frame" data-title="Follow the branches all the way to loss">
-  <script type="text/x-notes">Follow Q and K to A, then join A with V. Follow E along the bottom residual line to the addition. Dashed boxes are learned parameters; the target is observed data. This graph is the simplified Part 2 toy.</script>
+<script type="text/x-notes">Follow Q and K to A, then join A with V.
+Follow E along the bottom residual line to the addition. Dashed boxes are learned parameters; the target is observed data. This graph is the simplified Part 2 toy.</script>
   <div class="s04-graph" id="s04-forward"></div>
 </div>
 <div class="frame" data-title="Autograd follows the same graph backward">
-  <script type="text/x-notes">Start at loss. The two message inputs both get gradients: A controls the amount, V supplies the content. At E, the attention paths and residual path contribute to the same gradient. Do not calculate derivatives by hand.</script>
+<script type="text/x-notes">Start at loss.
+The two message inputs both get gradients: A controls the amount, V supplies the content. At E, the attention paths and residual path contribute to the same gradient. Do not calculate derivatives by hand.</script>
   <div class="s04-graph" id="s04-backward"></div>
 </div>
 <div class="frame" data-title="We ask autograd for the gradients">
@@ -102,9 +105,9 @@ optimizer.step()</pre>
   function flat(x){if(Array.isArray(x))return x.reduce((a,v)=>a.concat(flat(v)),[]);if(x&&typeof x==='object')return Object.keys(x).reduce((a,k)=>a.concat(flat(x[k])),[]);return [Number(x)||0];}
   function norm(x){return AT.norm(flat(x));}
   const names=['tok_emb_used','pos_emb_used','W_Q','W_K','W_V','W_O','W_vocab','b_vocab'];
-  AT.ui.table(names.map(n=>[flat(G[n]).length,norm(G[n])]),{cols:['stored numbers','$L_2$ norm'],rowLabels:names.map(n=>n.replace(/_/g,' ')),cornerLabel:'gradient',decimals:4,caption:'Read from the offline reverse pass. A zero norm means a zero first-order gradient for this object in this example, not that the object is absent from the graph.',into:S.querySelector('#s04-grads')});
+  AT.ui.table(names.map(n=>[String(flat(G[n]).length),norm(G[n])]),{cols:['numbers in shown gradient','$L_2$ norm'],rowLabels:names.map(n=>n.replace(/_/g,' ')),cornerLabel:'gradient',decimals:4,caption:'Lookup gradients show only the rows used by this prefix. The full stored tables have additional rows with zero gradient. Norms are rounded to four decimals.',into:S.querySelector('#s04-grads')});
   const fd=AT.train.finiteDifference();
-  AT.ui.callout(fd.checks.length+' entries were checked by finite differences. Maximum absolute error: '+fd.max_abs_error.toExponential(2)+'.',{kind:'note',into:S.querySelector('#s04-check')});
+  AT.ui.callout('Two saved spot checks use central differences with ε = '+fd.checks[0].epsilon.toExponential(0)+'. Maximum absolute error: '+fd.max_abs_error.toExponential(2)+'. The estimates and errors retain full precision. Separately, check_training.py checks all 260 used scalar parameters with ε = 1e−5.',{kind:'note',into:S.querySelector('#s04-check')});
 })();
 </script>
 </section>

@@ -9,8 +9,8 @@
    0. TOKENS (BRIEF section 1, fixed)
    ===================================================================== */
 :root{
-  --paper:#F7F8FA; --ink:#14171F; --ink-2:#4A5160; --ink-3:#8A91A0; --line:#D9DDE5; --card:#FFFFFF; --grid:#E3E6EC;
-  --c-e:#2563EB; --c-q:#9333EA; --c-k:#D97706; --c-v:#0D9488; --c-a:#E11D48; --c-d:#16A34A;
+  --paper:#F7F8FA; --ink:#14171F; --ink-2:#4A5160; --ink-3:#6B7280; --line:#D9DDE5; --card:#FFFFFF; --grid:#E3E6EC;
+  --c-e:#245EDB; --c-q:#8B2CDE; --c-k:#AA4E08; --c-v:#0F766E; --c-a:#BE123C; --c-d:#147737;
   --c-ep-grad:linear-gradient(90deg,var(--c-e),var(--c-d));
   --c-mask:#9CA3AF; --warn:#B45309;
   --t-e:#E4ECFF; --t-q:#F1E5FC; --t-k:#FCEFD9; --t-v:#D9F2EF; --t-a:#FDE2E7; --t-d:#DDF3E4;
@@ -396,14 +396,14 @@ button.chip:hover{border-color:var(--ink)}
 .calc-outrow{display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap}
 .calc-outlab{font-family:var(--font-ui);font-size:13px;font-weight:600;color:var(--oc,var(--ink-2))}
 .calc-outrow .vec{margin:0}
-.calc-pop{position:absolute;left:0;top:0;z-index:31;background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 32px rgba(20,23,31,.16);padding:12px 14px 12px;max-width:min(640px,calc(100vw - 24px));min-width:min(260px,calc(100vw - 24px))}
+.calc-pop{position:absolute;left:0;top:0;z-index:31;background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 32px rgba(20,23,31,.16);padding:12px 14px 12px;max-width:min(640px,calc(100vw - 24px));min-width:min(260px,calc(100vw - 24px));overflow:auto;overscroll-behavior:contain}
 .calc-pop-title{font-family:var(--font-ui);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin:0 30px 8px 0}
 .calc-close{position:absolute;top:6px;right:6px;width:28px;height:28px;border:0;border-radius:6px;background:transparent;color:var(--ink-2);font-size:20px;line-height:1;cursor:pointer;font-family:var(--font-ui)}
 .calc-close:hover{background:var(--paper);color:var(--ink)}
 .calc-close:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 .notation-note{font-size:13.5px;color:var(--ink-2);margin:8px 0 0;max-width:60ch;line-height:1.45}
 /* notation card (AT.ui.notationCard) */
-.notation-card{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,480px),1fr));gap:20px 28px;align-items:start}
+.notation-card{display:grid;grid-template-columns:minmax(0,1fr);gap:20px 28px;align-items:start}
 .notation-group{min-width:0}
 .notation-title{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin:0 0 8px}
 .dt-notation{width:100%;table-layout:auto;font-size:14px}
@@ -412,7 +412,7 @@ button.chip:hover{border-color:var(--ink)}
 .dt-notation td.nt-mean{color:var(--ink-2);font-size:14px;line-height:1.35;min-width:13em;width:100%}
 .dt-notation td.nt-shape{white-space:nowrap;color:var(--ink-2)}
 .dt-notation .nt-dims{font-family:var(--font-mono);font-size:12px;color:var(--ink-3);margin-left:6px}
-.notation-details{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--radius);background:var(--card)}
+.notation-details{grid-column:1/-1;min-width:0;margin:0;border:1px solid var(--line);border-radius:var(--radius);background:var(--card)}
 .notation-details summary{cursor:pointer;padding:12px 18px;font-weight:600;font-size:15px;list-style:none;display:flex;gap:12px;align-items:center}
 .notation-details summary::-webkit-details-marker{display:none}
 .notation-details summary::before{content:"";width:8px;height:8px;border-right:2px solid var(--ink-2);border-bottom:2px solid var(--ink-2);transform:rotate(-45deg);flex:none;transition:transform var(--dur)}
@@ -564,14 +564,14 @@ body.present .frame-sub{display:block}
    All measurements below are logical stage pixels, not viewport-responsive type.
    Overflow is an authoring error: add a continuation frame, never a scrollbar.
    ===================================================================== */
-body.present{--present-stage-w:1280px;--present-stage-h:720px;--present-scale:1;--present-body:28px;--present-title:42px;--present-caption:22px;--present-math:32px;--present-gutter:24px;--present-controls-h:0px;overflow:hidden;height:100vh;height:100dvh;font-size:var(--present-body);line-height:1.38}
+body.present{--present-stage-w:1280px;--present-stage-h:720px;--present-scale:1;--present-body:28px;--present-title:42px;--present-caption:22px;--present-math:32px;--present-gutter:24px;--present-notes-h:0px;overflow:hidden;height:100vh;height:100dvh;font-size:var(--present-body);line-height:1.38}
 body.present #strip,body.present .hero,body.present footer,body.present .reading,body.present .companion{display:none!important}
 body.present #strip .wrap{flex-wrap:nowrap;padding-top:2px;padding-bottom:2px;min-height:var(--strip-h);max-width:none;padding-left:clamp(14px,1.6vw,30px);padding-right:clamp(14px,1.6vw,30px);gap:10px}
 body.present .nchips{gap:4px}
 body.present .nchip{height:25px;min-width:30px;font-size:14px;padding:0 8px}
 body.present .strip-sec{font-size:13px;margin-left:auto}
 body.present #present-btn{display:none}
-body.present main{position:relative;width:100%;padding:0;max-width:none;min-height:0;height:100vh;height:100dvh;overflow:hidden}
+body.present main{position:relative;width:100%;padding:0;max-width:none;min-height:0;height:calc(100vh - var(--present-notes-h));height:calc(100dvh - var(--present-notes-h));overflow:hidden}
 body.present .sec{display:none}
 body.present .sec.is-live{position:absolute;left:50%;top:50%;display:flex;flex-direction:column;width:var(--present-stage-w);height:var(--present-stage-h);margin:0;padding:36px 64px;scroll-margin-top:0;overflow:hidden;transform:translate(-50%,-50%) scale(var(--present-scale));transform-origin:center center;background:var(--paper)}
 body.present .sec.is-live>.sec-head{display:block;flex:none;margin:0 0 24px;padding:0;border:0}
@@ -665,10 +665,10 @@ body.present .dt-scroll,body.present .mat-scroll,body.present .calc-scroll,body.
 body.present #at-fit-warning:not(:empty){display:block}
 body.present .frame[data-overflow="true"]{outline:2px dashed var(--warn);outline-offset:-2px}
 /* Navigation is available on demand, without reserving a header or footer. */
-#at-controls-toggle{display:none;position:fixed;right:12px;bottom:10px;z-index:60;font-size:13px;min-height:36px;padding:6px 12px;border-color:transparent;color:var(--ink-2);background:var(--paper)}
+#at-controls-toggle{display:none;position:fixed;right:12px;bottom:calc(10px + var(--present-notes-h,0px));z-index:60;font-size:13px;min-height:36px;padding:6px 12px;border-color:transparent;color:var(--ink-2);background:var(--paper)}
 body.present #at-controls-toggle{display:block}
 #at-controls-toggle:hover,#at-controls-toggle[aria-expanded="true"]{border-color:var(--line);background:var(--card)}
-#at-controls{position:fixed;right:12px;bottom:54px;max-width:calc(100vw - 24px);z-index:60;display:none;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:6px 8px;padding:12px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--card);box-shadow:0 4px 20px rgba(20,23,31,.10)}
+#at-controls{position:fixed;right:12px;bottom:calc(54px + var(--present-notes-h,0px));max-width:calc(100vw - 24px);z-index:60;display:none;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:6px 8px;padding:12px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--card);box-shadow:0 4px 20px rgba(20,23,31,.10)}
 body.present #at-controls.is-on{display:flex}
 #at-controls .pbtn{font-size:14px;min-height:40px;padding:6px 12px}
 #at-next{background:var(--ink);border-color:var(--ink);color:var(--paper)}
@@ -677,10 +677,10 @@ body.present #at-controls.is-on{display:flex}
 body.present #at-announcement:not(:empty){display:block}
 @media(max-width:640px){#at-counter{flex-basis:100%}#at-controls{justify-content:flex-start;gap:4px 6px;padding-left:10px;padding-right:10px}#at-controls .pbtn{font-size:13px;min-height:40px;padding:6px 9px}}
 /* notes strip (S) */
-#at-notes{position:fixed;left:0;right:0;bottom:var(--present-controls-h,0px);z-index:58;background:var(--ink);color:#fff;padding:12px 28px 14px;font-size:17px;line-height:1.45;max-height:32vh;max-height:32dvh;overflow:auto;display:none;box-shadow:0 -8px 24px rgba(20,23,31,.18)}
+#at-notes{position:fixed;left:0;right:0;bottom:0;z-index:58;background:var(--ink);color:#fff;padding:12px 28px 14px;font-size:17px;line-height:1.45;max-height:32vh;max-height:32dvh;overflow:auto;display:none;box-shadow:0 -8px 24px rgba(20,23,31,.18)}
 #at-notes.is-on{display:block}
 #at-notes p{margin:0 0 .45em;max-width:80ch}
-#at-notes p:first-child{font-weight:600}
+#at-notes .at-notes-cue{font-weight:600}
 #at-notes .at-notes-empty{color:rgba(255,255,255,.6);font-style:italic}
 /* overview (O) */
 #at-overview{position:fixed;inset:0;z-index:70;background:rgba(247,248,250,.97);overflow:auto;padding:24px clamp(16px,3vw,48px);display:none;font-size:15px}
@@ -729,7 +729,7 @@ body.presenter>*:not(#at-presenter){display:none!important}
 .pr-dots span.cur{background:var(--c-a)}
 .pr-notes{font-size:clamp(17px,1.6vw,25px);line-height:1.45}
 .pr-notes p{margin:0 0 .55em}
-.pr-notes p:first-child{font-weight:600}
+.pr-notes .at-notes-cue{font-weight:600}
 .pr-notes .at-notes-empty{color:var(--ink-3);font-style:italic}
 .pr-next h3{font-size:18px;margin:0 0 6px}
 .pr-next .pr-sub{font-size:15px}
@@ -811,10 +811,6 @@ body.presenter>*:not(#at-presenter){display:none!important}
         <p class="legend-title" id="legend-title"></p>
         <ul class="legend" id="hero-legend"></ul>
         <p class="legend-note" id="hero-provenance"></p>
-        <details class="notation-details" id="notation">
-          <summary>Notation used on this page<span class="hint">symbols, meanings, shapes</span></summary>
-          <div id="notation-card"></div>
-        </details>
       </div>
     </div>
     <nav aria-label="Roadmap">
@@ -822,12 +818,16 @@ body.presenter>*:not(#at-presenter){display:none!important}
         <li><div class="lab">The argument, in order</div></li>
       </ol>
     </nav>
+    <details class="notation-details" id="notation">
+      <summary>Notation used on this page<span class="hint">symbols, meanings, shapes</span></summary>
+      <div id="notation-card"></div>
+    </details>
   </div>
 </header>
 
 <script>
 window.__TOY__ = {"d_model":2,"d_k":2,"d_v":2,"vocab":["patch 1","patch 2","patch 3","patch 4"],"sentences":{"river":["patch 1","patch 2","patch 3","patch 4"]},"axes":{"e":["coordinate 1","coordinate 2"],"qk":["matching 1","matching 2"],"v":["value 1","value 2"]},"visionSSL":{"image":[[1,1,0,0],[1,1,0,0],[0,0,2,2],[0,0,2,2]],"patchSize":2,"representationWidth":2,"maskPresets":[{"label":"Hide p2, p3, p4","indices":[1,2,3]},{"label":"Hide p4","indices":[3]},{"label":"Hide p1, p4","indices":[0,3]}],"defaultGuess":1,"dino":{"teacherLogits":[2,1,0],"center":[0.5,0.5,0],"teacherTemperature":0.5,"studentLogits":[0,1,0],"studentTemperature":1},"ema":{"oldTeacher":1,"newStudent":3,"momentum":0.9},"sources":{"mae":"https://arxiv.org/abs/2111.06377","dino":"https://arxiv.org/abs/2104.14294","ijepa":"https://arxiv.org/abs/2301.08243"},"disclosure":"The image is the lecture's numerical illustration. Reconstruction guesses and DINO logits are hand-chosen inputs to exact loss calculations, not pretrained-model inference. Architecture drawings are simplified."}};
-window.__PART__ = {"part":2,"series":"Vision to language","title":"Learn visual representations without class labels","subtitle":"Use the same four-patch image to compare pixel reconstruction, teacher predictions, and feature prediction.","audience":"Students who know image patches, ViT encoders, softmax, and gradient-based learning","minutes":45,"centralLabel":"Where the training target comes from","central":"\\text{image}\\;\\longrightarrow\\;\\text{hide or transform}\\;\\longrightarrow\\;\\text{predict a target from the image}","chain":[{"label":"Targets without class labels","section":"s01"},{"label":"MAE: hide patches","section":"s02"},{"label":"Compute reconstruction loss","section":"s03"},{"label":"Two views and useful invariance","section":"s04"},{"label":"DINO: match a teacher","section":"s05"},{"label":"I-JEPA: predict features","section":"s06"},{"label":"Evaluate the representation","section":"s07"}],"sections":[{"id":"s01","title":"The image supplies a training target","lit":"e"},{"id":"s02","title":"MAE: hide patches, reconstruct pixels","lit":""},{"id":"s03","title":"Which pixels enter the loss?","lit":""},{"id":"s04","title":"Learn from two views of one image","lit":""},{"id":"s05","title":"DINO: a teacher supplies the target","lit":""},{"id":"s06","title":"I-JEPA predicts a target representation","lit":""},{"id":"s07","title":"What did the encoder learn?","lit":""}],"objects":["e"],"legendTitle":"Representations keep the e notation","provenance":"All drawings are teaching illustrations. The reconstruction lab computes exact errors for guesses you choose. The DINO lab computes exact probabilities and cross-entropy from disclosed illustrative logits. Neither lab runs a pretrained vision model.","prev":{"label":"Part 1: Vision Transformers","href":"vision1.html","available":true},"next":{"label":"Part 3: Image-text alignment","href":"vision3.html","available":true},"index":{"label":"Series home","href":"index.html"},"notation":"vision2","footer":"Self-supervision supplies training targets from the data; downstream usefulness still needs evaluation."};
+window.__PART__ = {"part":2,"series":"Vision to language","title":"Learn visual representations without class labels","subtitle":"Use the same four-patch image to compare pixel reconstruction, teacher predictions, and feature prediction.","audience":"Students who know image patches, ViT encoders, softmax, and gradient-based learning","minutes":45,"centralLabel":"Where the training target comes from","central":"\\begin{gathered}\\text{image}\\;\\longrightarrow\\;\\text{hide or transform}\\\\\\downarrow\\\\\\text{predict a target from the image}\\end{gathered}","chain":[{"label":"Targets without class labels","section":"s01"},{"label":"MAE: hide patches","section":"s02"},{"label":"Compute reconstruction loss","section":"s03"},{"label":"Two views and useful invariance","section":"s04"},{"label":"DINO: match a teacher","section":"s05"},{"label":"I-JEPA: predict features","section":"s06"},{"label":"Evaluate the representation","section":"s07"}],"sections":[{"id":"s01","title":"The image supplies a training target","lit":"e"},{"id":"s02","title":"MAE: hide patches, reconstruct pixels","lit":""},{"id":"s03","title":"Which pixels enter the loss?","lit":""},{"id":"s04","title":"Learn from two views of one image","lit":""},{"id":"s05","title":"DINO: a teacher supplies the target","lit":""},{"id":"s06","title":"I-JEPA predicts a target representation","lit":""},{"id":"s07","title":"What did the encoder learn?","lit":""}],"objects":["e"],"legendTitle":"Representations keep the e notation","provenance":"All drawings are teaching illustrations. The reconstruction lab computes exact errors for guesses you choose. The DINO lab computes exact probabilities and cross-entropy from disclosed illustrative logits. Neither lab runs a pretrained vision model.","prev":{"label":"Vision I: An image becomes a sequence","href":"vision1.html","available":true},"next":{"label":"Vision III: CLIP: learn to match images and text","href":"vision3.html","available":true},"index":{"label":"Series home","href":"index.html","available":true},"notation":"vision2","footer":"Self-supervision supplies training targets from the data; downstream usefulness still needs evaluation.","partLabel":"Vision II"};
 </script>
 <script>
 /* shared.js: the AT namespace, with toy-model math, KaTeX helpers, UI components, motif and flow.
@@ -885,6 +885,8 @@ window.__PART__ = {"part":2,"series":"Vision to language","title":"Learn visual 
     io.observe(el);
   }
   AT.h = h; AT.append = append; AT.clear = clear; AT.debounce = debounce; AT.onVisible = onVisible; AT.reducedMotion = reducedMotion;
+  /* One grayscale convention across the vision lessons: larger pixels are lighter. */
+  AT.imageShade = function (v) { return Math.round(35 + 69 * Math.max(0, Math.min(3, Number(v) || 0))); };
 
   /* ======================================================================
      1. toy model + math
@@ -1303,11 +1305,30 @@ window.__PART__ = {"part":2,"series":"Vision to language","title":"Learn visual 
   /* ---- popover: a small dialog anchored below a cell, appended to the figure (outside the scroll container) ---- */
   function placeBelow(fig, anchor, el) {
     var fr = fig.getBoundingClientRect(), ar = anchor.getBoundingClientRect();
-    var vw = document.documentElement.clientWidth || window.innerWidth || 1280;
-    el.style.top = (ar.bottom - fr.top + 6) + 'px';
-    var w = el.offsetWidth, left = ar.left - fr.left, minLeft = 12 - fr.left, maxLeft = vw - 12 - fr.left - w;
-    if (maxLeft < minLeft) maxLeft = minLeft;
-    el.style.left = Math.max(minLeft, Math.min(left, maxLeft)) + 'px';
+    /* DOMRects are viewport pixels; absolute offsets are pre-transform pixels.
+       Intersect every clipping ancestor, not just the viewport: the live frame
+       itself clips, even when plenty of viewport space remains below it. */
+    var sx = fr.width / (fig.offsetWidth || fr.width || 1), sy = fr.height / (fig.offsetHeight || fr.height || 1);
+    var bounds = { left: 0, top: 0, right: document.documentElement.clientWidth, bottom: window.innerHeight };
+    for (var p = fig; p && p !== document.body; p = p.parentElement) {
+      var cs = getComputedStyle(p), r = p.getBoundingClientRect();
+      if (/hidden|clip|scroll|auto/.test(cs.overflowX)) { bounds.left = Math.max(bounds.left, r.left); bounds.right = Math.min(bounds.right, r.right); }
+      if (/hidden|clip|scroll|auto/.test(cs.overflowY)) { bounds.top = Math.max(bounds.top, r.top); bounds.bottom = Math.min(bounds.bottom, r.bottom); }
+    }
+    var gap = 8, maxW = Math.max(1, (bounds.right - bounds.left - gap * 2) / sx);
+    var maxH = Math.max(1, (bounds.bottom - bounds.top - gap * 2) / sy);
+    el.style.width = '';
+    el.style.maxWidth = maxW + 'px'; el.style.minWidth = Math.min(260, maxW) + 'px';
+    el.style.maxHeight = maxH + 'px';
+    // Absolute auto-width would shrink again when left changes, making the
+    // measured height stale. Freeze this measured width before choosing a side.
+    el.style.width = el.offsetWidth + 'px';
+    var w = el.offsetWidth * sx, height = el.offsetHeight * sy;
+    var left = Math.max(bounds.left + gap, Math.min(ar.left, bounds.right - gap - w));
+    var below = ar.bottom + gap, above = ar.top - gap - height;
+    var top = below + height <= bounds.bottom - gap ? below : above >= bounds.top + gap ? above : Math.max(bounds.top + gap, Math.min(below, bounds.bottom - gap - height));
+    el.style.left = ((left - fr.left) / sx - fig.clientLeft) + 'px';
+    el.style.top = ((top - fr.top) / sy - fig.clientTop) + 'px';
   }
   function popover(fig, opts) {
     opts = opts || {};
@@ -1316,12 +1337,14 @@ window.__PART__ = {"part":2,"series":"Vision to language","title":"Learn visual 
     var pop = h('div', { class: 'calc-pop', role: 'dialog', 'aria-label': opts.label || 'Arithmetic', hidden: true }, close, titleEl, bodyEl);
     fig.appendChild(pop);
     var anchor = null;
+    function reposition() { if (anchor && !pop.hidden) placeBelow(fig, anchor, pop); }
     function onOutside(ev) { if (pop.contains(ev.target) || (anchor && anchor.contains(ev.target))) return; hide(); }
     function onKey(ev) { if (ev.key === 'Escape') { hide(true); ev.stopPropagation(); } }
     function hide(refocus) {
       if (pop.hidden) return;
       pop.hidden = true;
       document.removeEventListener('mousedown', onOutside, true); document.removeEventListener('keydown', onKey, true);
+      window.removeEventListener('resize', reposition); document.removeEventListener('at-presentation-layout', reposition);
       var a = anchor; anchor = null;
       if (refocus && a && a.focus) a.focus();
     }
@@ -1331,6 +1354,7 @@ window.__PART__ = {"part":2,"series":"Vision to language","title":"Learn visual 
       pop.hidden = false; placeBelow(fig, td, pop);
       if (fig.hideTip) fig.hideTip();
       document.addEventListener('mousedown', onOutside, true); document.addEventListener('keydown', onKey, true);
+      window.addEventListener('resize', reposition); document.addEventListener('at-presentation-layout', reposition);
     }
     close.addEventListener('click', function () { hide(true); });
     return { el: pop, body: bodyEl, show: show, hide: hide, isOpen: function () { return !pop.hidden; } };
@@ -2075,8 +2099,8 @@ window.__PART__ = {"part":2,"series":"Vision to language","title":"Learn visual 
   NOTATION_3.forEach(function (n) { n.parts = ['part3']; });
   AT.notation = NOTATION.concat(NOTATION_1, NOTATION_3);
   AT.T = arr(AT.sentences.river).length || 10;
-  var GROUP_TITLES = { token: 'One token at a time', matrix: 'All tokens at once', sizes: 'Sizes and learned weights', axes: 'Named coordinates (illustrative)', mlp: 'The character model, step by step', train: 'Learning', block: 'The Transformer block' };
-  var PART_GROUPS = { part1: ['mlp', 'sizes', 'axes'], part2: ['token', 'matrix', 'sizes', 'axes'], part3: ['token', 'matrix', 'train', 'block', 'sizes', 'axes'] };
+  var GROUP_TITLES = { token: 'One token at a time', matrix: 'All tokens at once', sizes: 'Sizes and learned weights', axes: 'Named coordinates (illustrative)', mlp: 'The character model, step by step', train: 'Learning', block: 'The Transformer block', image: 'Image representations', masked: 'Learning from hidden patches', distill: 'Learning from another view' };
+  var PART_GROUPS = { part1: ['mlp', 'sizes', 'axes'], part2: ['token', 'matrix', 'sizes', 'axes'], part3: ['token', 'matrix', 'train', 'block', 'sizes', 'axes'], vision2: ['image', 'masked', 'distill', 'sizes'] };
   /* the "axes" group is built at call time from AT.axes so the names are never retyped */
   function axesNotation() {
     if (!AT.axes.named) return [];
@@ -2132,9 +2156,11 @@ window.__PART__ = {"part":2,"series":"Vision to language","title":"Learn visual 
   ui.legend = function (opts) {
     opts = opts || {};
     var ul = h('ul', { class: 'legend', 'aria-label': 'Colour legend' });
-    OBJECTS.forEach(function (o) {
+    AT.objects.forEach(function (o) {
       if (opts.only && arr(opts.only).indexOf(o.cls) < 0) return;
-      ul.appendChild(h('li', { class: 'obj-' + o.cls, title: o.def }, h('span', { class: 'sw' }), h('span', { class: 'sy' }, o.sym), o.name));
+      var symbol = h('span', { class: 'sy' }, o.sym);
+      if (o.symTex) AT.tex(symbol, o.symTex);
+      ul.appendChild(h('li', { class: 'obj-' + o.cls, title: o.def }, h('span', { class: 'sw' }), symbol, o.name));
     });
     return put(ul, opts);
   };
@@ -2414,7 +2440,7 @@ window.__PART__ = {"part":2,"series":"Vision to language","title":"Learn visual 
       var lines = txt.split('\n'), ind = null;
       lines.forEach(function (l) { if (l.trim()) { var m = l.match(/^\s*/)[0].length; ind = ind == null ? m : Math.min(ind, m); } });
       lines = lines.map(function (l) { return l.slice(ind || 0); });
-      /* the first line is the question to ask before the reveal: it is always its own paragraph */
+      /* Preserve an authored opening cue, without treating every long note as a question. */
       var first = lines.shift().trim();
       var rest = lines.join('\n').split(/\n\s*\n/).map(function (p) { return p.replace(/\s*\n\s*/g, ' ').trim(); }).filter(Boolean);
       return (first ? [first] : []).concat(rest);
@@ -2526,12 +2552,12 @@ window.__PART__ = {"part":2,"series":"Vision to language","title":"Learn visual 
       U.notes = h('div', { id: 'at-notes', role: 'complementary', 'aria-label': 'Presenter notes' });
       U.overview = h('div', { id: 'at-overview', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'All frames' }, h('div', { class: 'ov-head' }, h('p', { class: 'ov-title' }, 'All frames: select one to jump'), h('button', { id: 'at-overview-close', type: 'button', class: 'pbtn', on: { click: function () { setOverview(false); } } }, 'Close overview')), h('div', { class: 'ov-grid' }));
       U.blank = h('div', { id: 'at-blank', 'aria-hidden': 'true' });
-      U.help = h('div', { id: 'at-help', role: 'note' }, h('div', { html: '<kbd>→</kbd> <kbd>Space</kbd> <kbd>PgDn</kbd> next build · <kbd>←</kbd> <kbd>PgUp</kbd> <kbd>Backspace</kbd> back · <kbd>Home</kbd> <kbd>End</kbd> first / last frame<br><kbd>C</kbd> controls · <kbd>O</kbd> overview · <kbd>B</kbd> blank · <kbd>S</kbd> notes · <kbd>?</kbd> this help · <kbd>Esc</kbd> close panel / exit' }));
+      U.help = h('div', { id: 'at-help', role: 'note' }, h('div', { html: '<kbd>→</kbd> <kbd>Space</kbd> <kbd>PgDn</kbd> <kbd>N</kbd> next build · <kbd>←</kbd> <kbd>PgUp</kbd> <kbd>Backspace</kbd> back · <kbd>Home</kbd> <kbd>End</kbd> first / last frame<br><kbd>C</kbd> controls · <kbd>O</kbd> overview · <kbd>B</kbd> blank · <kbd>S</kbd> notes · <kbd>?</kbd> this help · <kbd>Esc</kbd> close panel / return focus to slide / exit<br>Focused sliders keep their arrow and Page keys. <kbd>N</kbd> advances after a regular slider; <kbd>Esc</kbd> leaves a control without leaving the presentation.' }));
       U.blank.addEventListener('click', function () { setBlank(false); });
       document.body.appendChild(U.controlsToggle); document.body.appendChild(U.controls); document.body.appendChild(U.announcement); document.body.appendChild(U.fitWarning); document.body.appendChild(U.notes); document.body.appendChild(U.overview); document.body.appendChild(U.blank); document.body.appendChild(U.help);
       window.addEventListener('resize', measureChrome);
       document.addEventListener('fullscreenchange', function () { updateChrome(); measureChrome(); });
-      if (window.ResizeObserver) { U.resize = new ResizeObserver(measureChrome); U.resize.observe(U.controls); var strip = document.getElementById('strip'); if (strip) U.resize.observe(strip); }
+      if (window.ResizeObserver) { U.resize = new ResizeObserver(measureChrome); U.resize.observe(U.controls); U.resize.observe(U.notes); var strip = document.getElementById('strip'); if (strip) U.resize.observe(strip); }
       document.addEventListener('input', scheduleFitCheck, true);
       document.addEventListener('change', scheduleFitCheck, true);
       document.addEventListener('click', scheduleFitCheck, true);
@@ -2548,6 +2574,8 @@ window.__PART__ = {"part":2,"series":"Vision to language","title":"Learn visual 
     }
     function measureChrome() {
       if (!P.active) return;
+      var notesHeight = P.notes && U.notes ? Math.ceil(U.notes.getBoundingClientRect().height) : 0;
+      document.body.style.setProperty('--present-notes-h', notesHeight + 'px');
       var main = document.querySelector('main');
       if (main) {
         var r = main.getBoundingClientRect(), cs = getComputedStyle(document.body);
@@ -2558,6 +2586,7 @@ window.__PART__ = {"part":2,"series":"Vision to language","title":"Learn visual 
         document.body.style.setProperty('--present-scale', String(Math.max(0.05, scale)));
       }
       repaintSvgs(cur());
+      document.dispatchEvent(new Event('at-presentation-layout'));
       scheduleFitCheck();
     }
     /* Chromium can retain SVG text at coordinates from the previously hidden
@@ -2736,7 +2765,11 @@ window.__PART__ = {"part":2,"series":"Vision to language","title":"Learn visual 
     }
     function notesHtml(list, empty) {
       if (!list || !list.length) return '<p class="at-notes-empty">' + (empty || 'No notes for this frame.') + '</p>';
-      return list.map(function (p) { return '<p>' + escapeHtml(p) + '</p>'; }).join('');
+      return list.map(function (p, i) {
+        /* Bold only a short opening cue, never a whole one-line lecture note. */
+        var cue = i === 0 && p.length <= 180 && !/[.!?]\s+\S/.test(p);
+        return '<p' + (cue ? ' class="at-notes-cue"' : '') + '>' + escapeHtml(p) + '</p>';
+      }).join('');
     }
     function updateChrome() {
       var fr = P.frames[P.fi]; if (!fr || !U.counter) return;
@@ -2751,7 +2784,7 @@ window.__PART__ = {"part":2,"series":"Vision to language","title":"Learn visual 
       U.fullscreen.textContent = document.fullscreenElement ? 'Leave full screen' : 'Full screen';
       U.fullscreen.setAttribute('aria-pressed', document.fullscreenElement ? 'true' : 'false');
       frameHeading(fr);
-      if (P.notes) U.notes.innerHTML = notesHtml(fr.notes);
+      if (P.notes) { U.notes.innerHTML = notesHtml(fr.notes); measureChrome(); }
       var bar = document.getElementById('progress');
       if (bar) bar.style.width = (100 * (P.fi + (P.build + 1) / (fr.maxBuild + 1)) / P.frames.length).toFixed(2) + '%';
     }
@@ -2760,7 +2793,7 @@ window.__PART__ = {"part":2,"series":"Vision to language","title":"Learn visual 
       P.frames.forEach(function (fr, i) {
         var b = h('button', { type: 'button', class: 'ov-item' + (i === P.fi ? ' is-current' : ''), 'aria-current': i === P.fi ? 'true' : null, on: { click: function () { setOverview(false); showFrame(i, 0); cur().el.focus({ preventScroll: true }); } } },
           h('span', { class: 'ov-n' }, fr.num + '.' + (fr.index + 1) + (fr.maxBuild ? ' · ' + (fr.maxBuild + 1) + ' builds' : '')),
-          h('span', { class: 'ov-t' }, fr.secTitle), fr.title ? h('span', { class: 'ov-s' }, fr.title) : null);
+          h('span', { class: 'ov-t' }, displayTitle(fr)), fr.title && fr.title.trim() !== fr.secTitle.trim() ? h('span', { class: 'ov-s' }, fr.secTitle) : null);
         grid.appendChild(b);
       });
     }
@@ -2779,11 +2812,12 @@ window.__PART__ = {"part":2,"series":"Vision to language","title":"Learn visual 
       emit('overview', P.overview);
     }
     function setBlank(on) { P.blank = !!on; if (U.blank) U.blank.classList.toggle('is-on', P.blank); }
-    function setNotes(on) { P.notes = !!on; if (U.notes) { U.notes.classList.toggle('is-on', P.notes); if (P.notes) updateChrome(); } }
+    function setNotes(on) { P.notes = !!on; if (U.notes) { U.notes.classList.toggle('is-on', P.notes); if (P.notes) updateChrome(); measureChrome(); } }
     function setHelp(on) { P.help = !!on; if (U.help) U.help.classList.toggle('is-on', P.help); }
 
     /* ---- frames ---- */
     function cur() { return P.frames[P.fi] || null; }
+    function displayTitle(fr) { return fr.title && fr.title.trim() !== fr.secTitle.trim() ? fr.title : fr.secTitle; }
     function leaveFrame(fr) {
       if (!fr) return;
       restore(fr.snapshot);
@@ -2917,10 +2951,22 @@ window.__PART__ = {"part":2,"series":"Vision to language","title":"Learn visual 
     }
     function handleKey(key, target, ev) {
       if (!P.active) { if ((key === 'p' || key === 'P') && !inField(target)) { enter(); return true; } return false; }
+      // Arithmetic dialogs install a document-capture Escape handler. Let it run
+      // before the window-level presentation shortcut can exit the lesson.
+      if (key === 'Escape' && document.querySelector('.frame.is-live .calc-pop:not([hidden])')) return false;
       if (P.overview) return overviewKey(key, ev);
       if (P.blank) { if (key === 'Shift' || key === 'Control' || key === 'Alt' || key === 'Meta') return false; setBlank(false); return true; }
-      if (key === 'Escape') { if (P.help) setHelp(false); else if (P.controls) setControls(false); else exit(); return true; }
-      if (inField(target) || (target && target.closest && target.closest('[data-present="manual"]'))) return false;
+      var manual = target && target.closest && target.closest('[data-present="manual"]');
+      var field = inField(target), range = target && target.tagName === 'INPUT' && target.type === 'range';
+      if (key === 'Escape') {
+        if (P.help) setHelp(false); else if (P.controls) setControls(false);
+        else if (field || manual) { if (cur()) cur().el.focus({ preventScroll: true }); }
+        else exit();
+        return true;
+      }
+      /* A slider keeps native arrows, PageUp/Down and Home/End. N is unused by
+         a range and can advance the lesson; selects retain type-ahead letters. */
+      if (field || manual) { if (range && !manual && (key === 'n' || key === 'N')) { next(); return true; } return false; }
       switch (key) {
         case 'ArrowRight': next(); return true;
         case ' ': if (target && (target.tagName === 'BUTTON' || target.tagName === 'SUMMARY' || target.tagName === 'A' || target.getAttribute('role') === 'button')) return false; next(); return true;
@@ -3015,11 +3061,11 @@ window.__PART__ = {"part":2,"series":"Vision to language","title":"Learn visual 
       PR.startedAt = st.startedAt || PR.startedAt || Date.now();
       var f = st.frame;
       PR.num.textContent = f.num + ' · frame ' + (f.index + 1) + ' of ' + f.count + ' · ' + (st.fi + 1) + '/' + st.total;
-      PR.title.textContent = f.secTitle; PR.sub.textContent = f.title;
+      PR.title.textContent = displayTitle(f); PR.sub.textContent = displayTitle(f) !== f.secTitle ? f.secTitle : '';
       PR.build.textContent = 'build ' + st.build + ' of ' + f.maxBuild + (st.stepper ? ' · step ' + (st.stepper.index + 1) + ' of ' + st.stepper.count : '');
       clear(PR.dots); for (var i = 0; i <= f.maxBuild; i++) PR.dots.appendChild(h('span', { class: i < st.build ? 'on' : (i === st.build ? 'cur' : '') }));
       PR.notes.innerHTML = notesHtml(f.notes);
-      if (st.next) { PR.nextT.textContent = st.next.num + '.' + (st.next.index + 1) + '  ' + st.next.secTitle; PR.nextS.textContent = st.next.title; PR.nextN.innerHTML = notesHtml(st.next.notes.slice(0, 1), ''); }
+      if (st.next) { PR.nextT.textContent = st.next.num + '.' + (st.next.index + 1) + '  ' + displayTitle(st.next); PR.nextS.textContent = displayTitle(st.next) !== st.next.secTitle ? st.next.secTitle : ''; PR.nextN.innerHTML = notesHtml(st.next.notes.slice(0, 1), ''); }
       else { PR.nextT.textContent = 'Last frame'; PR.nextS.textContent = ''; PR.nextN.innerHTML = ''; }
     }
 
@@ -3099,14 +3145,14 @@ window.__PART__ = {"part":2,"series":"Vision to language","title":"Learn visual 
     svg.appendChild(svgElement('title',{id:id+'-title'},title));
     const defs=svgElement('defs'),marker=svgElement('marker',{id:id+'-arrow',viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:6,markerHeight:6,orient:'auto-start-reverse'});
     marker.appendChild(svgElement('path',{d:'M0 0L10 5L0 10Z',fill:'var(--ink-3)'}));defs.appendChild(marker);svg.appendChild(defs);
-    function text(x,y,t,size=23,anchor='middle',color='var(--ink)'){svg.appendChild(svgElement('text',{x,y,'text-anchor':anchor,'dominant-baseline':'middle','font-size':size,'font-family':'var(--font-ui)',fill:color},t));}
+    function text(x,y,t,size=23,anchor='middle',color='var(--ink)'){const n=svgElement('text',{x,y,'text-anchor':anchor,'dominant-baseline':'middle','font-size':size,'font-family':'var(--font-ui)',fill:color},t);svg.appendChild(n);return n;}
     function box(x,y,w,h,title,sub='',rep=false){svg.appendChild(svgElement('rect',{x,y,width:w,height:h,rx:10,fill:rep?'var(--t-e)':'var(--card)',stroke:rep?'var(--c-e)':'var(--line)','stroke-width':2}));text(x+w/2,y+h/2-(sub?13:0),title,24,'middle',rep?'var(--c-e)':'var(--ink)');if(sub)text(x+w/2,y+h/2+17,sub,20);}
     function arrow(x1,y1,x2,y2,label='',dashed=false){svg.appendChild(svgElement('path',{d:`M${x1} ${y1} L${x2} ${y2}`,stroke:'var(--ink-3)','stroke-width':2,fill:'none','marker-end':`url(#${id}-arrow)`,'stroke-dasharray':dashed?'7 5':'none'}));if(label)text((x1+x2)/2,(y1+y2)/2-16,label,20);}
     function image(x,y,size=156,mask=[],pixels=D.image,label=''){
       const cell=size/4;
-      pixels.forEach((row,ry)=>row.forEach((p,cx)=>{const k=Math.floor(ry/2)*2+Math.floor(cx/2),hidden=mask.includes(k),shade=245-Math.max(0,Math.min(2,p))*90;
-        svg.appendChild(svgElement('rect',{x:x+cx*cell,y:y+ry*cell,width:cell,height:cell,fill:hidden?'var(--paper)':`rgb(${shade},${shade},${shade})`,stroke:'var(--line)'}));
-        if(hidden||cell>=35)text(x+(cx+.5)*cell,y+(ry+.5)*cell,hidden?'×':Number(p.toFixed(2)),20,'middle',!hidden&&p>1.3?'white':'var(--ink)');
+      pixels.forEach((row,ry)=>row.forEach((p,cx)=>{const k=Math.floor(ry/2)*2+Math.floor(cx/2),hidden=mask.includes(k),shade=AT.imageShade(p);
+        svg.appendChild(svgElement('rect',{x:x+cx*cell,y:y+ry*cell,width:cell,height:cell,'data-pixel-value':hidden?'':p,fill:hidden?'var(--paper)':`rgb(${shade},${shade},${shade})`,stroke:'var(--line)'}));
+        if(hidden||cell>=35){const n=text(x+(cx+.5)*cell,y+(ry+.5)*cell,hidden?'×':Number(p.toFixed(2)),20,'middle',hidden?'var(--ink)':shade<118?'#FFFFFF':'#000000');if(!hidden)n.setAttribute('data-pixel-label',p);}
       }));
       for(let i=0;i<4;i++){const px=x+(i%2)*size/2,py=y+Math.floor(i/2)*size/2;svg.appendChild(svgElement('rect',{x:px,y:py,width:size/2,height:size/2,fill:'none',stroke:'var(--ink-3)','stroke-width':2}));}
       if(label)text(x+size/2,y+size+21,label,21);
@@ -3114,7 +3160,7 @@ window.__PART__ = {"part":2,"series":"Vision to language","title":"Learn visual 
     return {svg,text,box,arrow,image};
   }
   function diagram(host,kind,options={}){
-    const h={image:240,'mae-encoder':230,'mae-decoder':260,'mae-transfer':200,views:240,contrastive:240,dino:300,'dino-update':220,jepa:330,probe:250}[kind];
+    const h={image:240,'mae-encoder':230,'mae-decoder':260,'mae-transfer':200,views:270,contrastive:240,dino:300,'dino-update':220,jepa:330,probe:250}[kind];
     if(!h)throw new Error('Unknown SSL diagram '+kind);
     const s=scene(h,kind+' teaching illustration'),{box,text,arrow,image}=s;
     if(kind==='image'){
@@ -3132,8 +3178,8 @@ window.__PART__ = {"part":2,"series":"Vision to language","title":"Learn visual 
     }else if(kind==='mae-transfer'){
       box(35,48,225,92,'unmasked image','all patch rows');arrow(265,94,345,94);box(360,48,270,92,'pretrained encoder','keep learned weights',true);arrow(635,94,715,94);box(730,48,310,92,'downstream task head','train with task labels');
     }else if(kind==='views'){
-      image(70,28,152,[],D.image,'original');arrow(252,100,410,100,'two transforms');
-      image(475,28,152,[],transform('flip'),'horizontal flip');image(810,28,152,[],transform('dim'),'brightness × 0.75');
+      image(70,20,190,[],D.image,'original');arrow(290,115,445,115,'two transforms');
+      image(475,20,190,[],transform('flip'),'horizontal flip');image(810,20,190,[],transform('dim'),'brightness × 0.75');
     }else if(kind==='contrastive'){
       box(20,20,190,70,'view A','same image');box(20,130,190,70,'view B','same image');
       arrow(215,55,275,55);arrow(215,165,275,165);box(290,20,245,70,'encoder + head','shared weights',true);box(290,130,245,70,'encoder + head','shared weights',true);
@@ -3143,8 +3189,8 @@ window.__PART__ = {"part":2,"series":"Vision to language","title":"Learn visual 
       image(12,12,100,[],transform('flip'),'view A');image(12,158,100,[],transform('dim'),'view B');
       arrow(127,63,202,63);arrow(127,208,202,208);box(215,22,220,84,'student θ','encoder + head');box(215,166,220,84,'teacher φ','encoder + head');
       arrow(440,63,525,63);arrow(440,208,525,208);box(540,22,220,84,'student pₛ','temperature softmax');box(540,166,220,84,'target pₜ','center + sharpen');
-      arrow(765,63,940,116);arrow(765,208,940,160,'stop gradient');box(945,105,145,70,'CE loss');
-      arrow(325,109,325,160,'EMA',true);
+      arrow(765,63,940,116);arrow(765,208,940,160);text(858,235,'stop gradient',20);box(945,105,145,70,'CE loss');
+      arrow(325,109,325,160,'',true);text(369,135,'EMA',20);
     }else if(kind==='dino-update'){
       box(30,50,245,90,'student θ','gradient update');arrow(280,95,470,95,'EMA, not gradient',true);box(485,50,245,90,'teacher φ','moving parameters');
       arrow(735,95,805,95);box(820,50,250,90,'teacher targets','stop gradient in loss');
@@ -3175,7 +3221,8 @@ window.__PART__ = {"part":2,"series":"Vision to language","title":"Learn visual 
       ['\\operatorname{sg}[\\cdot]','stop gradient through this target branch',''],
       ['\\hat e_j,\\;e_j^{\\mathrm{target}}','predicted and target representation at patch j','1\\times d']
     ];
-    rows.forEach(([sym,mean,shape])=>AT.notation.push({g:'token',sym,mean,shape,dims:()=>'',parts:['vision2']}));
+    const groups=['image','image','image','masked','masked','distill','distill','distill','distill'];
+    rows.forEach(([sym,mean,shape],i)=>AT.notation.push({g:groups[i],sym,mean,shape,dims:()=>'',parts:['vision2']}));
   }
 })();
 
@@ -3192,20 +3239,26 @@ window.__PART__ = {"part":2,"series":"Vision to language","title":"Learn visual 
   <p>This is the $4\times4$ grayscale image from Part I, split into four $2\times2$ patches.</p>
   <div id="s01-image"></div>
   <p data-build="1">We have its pixel values, but no class label. What could the model learn to predict?</p>
-  <script type="text/x-notes">Point to the four rows. Patch 1 contains four ones; patches 2 and 3 contain zeros; patch 4 contains twos. These tiny numbers make the loss inspectable. They do not represent a realistic training dataset.</script>
+  <script type="text/x-notes">Point to the four rows.
+
+Patch 1 contains four ones; patches 2 and 3 contain zeros; patch 4 contains twos. These tiny numbers make the loss inspectable. They do not represent a realistic training dataset.</script>
 </div>
 <div class="frame" data-title="A missing part gives us a target" data-autobuild="off">
   <div id="s01-masked"></div>
   <p data-build="1">Hide three patches from the encoder. Keep their original pixels as the target.</p>
   <p data-build="2">The model must predict what it cannot read. Across many images, that task can train useful visual representations.</p>
-  <script type="text/x-notes">Distinguish hidden from lost. The training program still holds the complete original image and can calculate the error. The encoder is the component denied access to hidden patches.</script>
+  <script type="text/x-notes">Distinguish hidden from lost.
+
+The training program still holds the complete original image and can calculate the error. The encoder is the component denied access to hidden patches.</script>
 </div>
 <div class="frame" data-title="Pixels and embeddings have different jobs" data-autobuild="off">
   <p>$r_j$: the four raw pixels in patch $j$.</p>
   <p data-build="1">$\ve{e_j}=r_jW_{\mathrm{patch}}+b_{\mathrm{patch}}+p_j$: the input representation for that patch, as in Part I.</p>
   <div id="s01-shapes" data-build="1"></div>
   <p data-build="2">$E$ stacks the representation rows. We reserve $v,V$ for attention values, as before.</p>
-  <script type="text/x-notes">The patch projection changes width from four pixel coordinates to d representation coordinates. Position contributes another d-wide row, not an extra coordinate. Later encoder outputs remain representations, not raw pixels.</script>
+  <script type="text/x-notes">The patch projection changes width from four pixel coordinates to d representation coordinates.
+
+Position contributes another d-wide row, not an extra coordinate. Later encoder outputs remain representations, not raw pixels.</script>
 </div>
 <div class="companion after"><p>The drawing uses four patches so we can see every input. Real pretraining uses many images and usually many more patches. Its objective does not by itself prove that the representation will work for recognition, segmentation, or another downstream task; that requires evaluation.</p><p>We will compare three target choices: MAE reconstructs pixels, DINO matches a teacher's probability distribution across views, and I-JEPA predicts target-region features. Our browser exercises calculate losses from disclosed inputs. They do not run a pretrained model.</p></div>
 <script>
@@ -3225,19 +3278,25 @@ AT.ui.table([['1 × 4','4 × d','1 × d','1 × d']],{cols:[{label:'pixel row r_j
   <pre class="torch-snippet" data-build="1"><code>patch_rows = patch_pixels @ W_patch + patch_bias + pos
 encoded = encoder(patch_rows[visible])</code></pre>
   <p data-build="2">Four patches, three hidden: one visible patch row. This schematic omits the CLS token.</p>
-  <script type="text/x-notes">This is one image, without a batch dimension in the schematic code. The index list visible selects patch rows after projection and position addition. We omit the CLS token from this drawing and code to keep patch counting explicit; it has not become a masked image patch. Mask tokens appear in the next stage, not inside this encoder.</script>
+  <script type="text/x-notes">This is one image, without a batch dimension in the schematic code.
+
+The index list visible selects patch rows after projection and position addition. We omit the CLS token from this drawing and code to keep patch counting explicit; it has not become a masked image patch. Mask tokens appear in the next stage, not inside this encoder.</script>
 </div>
 <div class="frame" data-title="Put mask tokens into the decoder's missing positions" data-autobuild="off">
   <div id="s02-decoder"></div>
   <pre class="torch-snippet" data-build="1"><code>decoder_rows = restore(encoded @ W_dec, mask_token, visible)
 pred_pixels = decoder(decoder_rows + decoder_pos)</code></pre>
-  <script type="text/x-notes">Restore is a schematic helper: put each encoded visible row back at its original position and fill the missing rows with the shared learned mask token. The decoder has its own width and added position vectors. Different target positions are distinguishable even though they use the same mask token.</script>
+  <script type="text/x-notes">Restore is a schematic helper: put each encoded visible row back at its original position and fill the missing rows with the shared learned mask token.
+
+The decoder has its own width and added position vectors. Different target positions are distinguishable even though they use the same mask token.</script>
 </div>
 <div class="frame" data-title="After pretraining, keep the encoder" data-autobuild="off">
   <div id="s02-transfer"></div>
   <p data-build="1">The pixel decoder helped create a training signal. It is not needed for a recognition task.</p>
   <p data-build="2">Use the full image, then evaluate or fine-tune the pretrained encoder with a suitable task head.</p>
-  <script type="text/x-notes">The downstream classifier does not classify reconstructed pictures. It uses representations from the pretrained encoder. The encoder can process all patches even though it saw subsets during pretraining.</script>
+  <script type="text/x-notes">The downstream classifier does not classify reconstructed pictures.
+
+It uses representations from the pretrained encoder. The encoder can process all patches even though it saw subsets during pretraining.</script>
 </div>
 <div class="companion after"><p>The original MAE experiments often hide 75% of the patches. Our three-of-four example has that ratio, but it is not a required constant. Mask ratio, patch size, decoder design, and data all affect the training problem.</p><p>The decoder predicts the pixel row for each patch. Reconstruction loss is computed only on masked patches. The paper also studies per-patch normalised pixel targets; our numerical exercise uses the original grayscale numbers, without that normalisation. The two-line decoder code names a schematic <code>restore</code> operation rather than a built-in PyTorch function. See <a href="https://arxiv.org/abs/2111.06377" target="_blank" rel="noreferrer">Masked Autoencoders Are Scalable Vision Learners</a>.</p></div>
 <script>
@@ -3255,21 +3314,27 @@ pred_pixels = decoder(decoder_rows + decoder_pos)</code></pre>
   <p data-build="1">$L=\frac{(1-2)^2+(1-2)^2+(1-2)^2+(1-2)^2}{4}=1$.</p>
   <pre class="torch-snippet" data-build="2"><code>squared = (pred_pixels[masked] - patch_pixels[masked]).square()
 loss = squared.mean()</code></pre>
-  <script type="text/x-notes">The prediction is supplied for the exercise, not calculated by a neural network. The target comes from the original image. Count four masked pixels in the denominator.</script>
+  <script type="text/x-notes">The prediction is supplied for the exercise, not calculated by a neural network.
+
+The target comes from the original image. Count four masked pixels in the denominator.</script>
 </div>
 <div class="frame" data-title="Change the hidden patches and the pixel guess" data-autobuild="off">
   <p>This is an exact loss calculator, not a trained image reconstructor.</p>
   <div data-present="manual"><label for="s03-mask">Hidden patches: </label><select id="s03-mask"><option value="0">p2, p3, p4</option><option value="1">p4 only</option><option value="2">p1, p4</option></select><div id="s03-slider"></div></div>
   <div id="s03-lab-table"></div>
   <p id="s03-lab-loss" aria-live="polite"></p>
-  <script type="text/x-notes">Try the default mask and guess 1: twelve squared errors sum to twelve. Then hide only p4 and guess 2. The loss becomes zero because the supplied guess equals this one target, not because a model has learned vision.</script>
+  <script type="text/x-notes">Try the default mask and guess 1: twelve squared errors sum to twelve.
+
+Then hide only p4 and guess 2. The loss becomes zero because the supplied guess equals this one target, not because a model has learned vision.</script>
 </div>
 <div class="frame" data-title="Low reconstruction error is a training signal" data-autobuild="off">
   <p>$L=\dfrac{1}{4|\mathcal M|}\sum_{j\in\mathcal M}\sum_{c=1}^{4}(\hat r_{jc}-r_{jc})^2$.</p>
   <p data-build="1">The loss trains the decoder and, through it, the visible-patch encoder.</p>
   <p data-build="2">Across images, a useful encoder can capture patterns that help predict missing regions.</p>
   <div id="s03-check" data-build="3"></div>
-  <script type="text/x-notes">Distinguish the numerical objective from evidence of learned capability. A constant guess can be right on a simple constant patch. The dataset and evaluation matter.</script>
+  <script type="text/x-notes">Distinguish the numerical objective from evidence of learned capability.
+
+A constant guess can be right on a simple constant patch. The dataset and evaluation matter.</script>
 </div>
 <div class="companion after"><p>Every value in the calculator follows the displayed formula. Each masked patch contributes four pixels. Its patch error is the sum of those four squared errors; the final loss divides the total by the number of masked pixels. A real MAE has a prediction vector for every masked patch, rather than our shared scalar guess.</p><p>The missing pixels may not be uniquely determined by the visible region. Reconstruction can encourage useful structure without reproducing every unpredictable detail. A low pretraining loss and a good downstream representation are related goals, not interchangeable measurements.</p></div>
 <script>
@@ -3277,6 +3342,7 @@ loss = squared.mean()</code></pre>
 AT.ui.table([[2,2,2,2],[1,1,1,1],[1,1,1,1]],{cols:['pixel 1','pixel 2','pixel 3','pixel 4'],rowLabels:['true patch 4','supplied guess','squared error'],cornerLabel:'hidden patch',decimals:2,into:S.querySelector('#s03-worked')});
 const mask=S.querySelector('#s03-mask');let guess=1;
 function draw(){const F=T.reconstruction(T.data.maskPresets[Number(mask.value)].indices,guess);
+S.querySelector('#s03-lab-table').replaceChildren();
 AT.ui.table(F.rows.filter(r=>r.hidden).map(r=>[r.target.join(' '),F.guess,r.sse]),{cols:[{label:'true pixels',kind:'code'},'guess per pixel','sum squared error'],rowLabels:F.rows.filter(r=>r.hidden).map(r=>'patch '+(r.index+1)),cornerLabel:'masked patches only',decimals:2,into:S.querySelector('#s03-lab-table')});
 S.querySelector('#s03-lab-loss').textContent='Loss = '+F.sse.toFixed(2)+' ÷ '+F.count+' masked pixels = '+F.loss.toFixed(4)+'. Visible patches are not scored.';
 }mask.addEventListener('change',draw);AT.ui.slider({label:'Guess for every hidden pixel',min:0,max:2,step:.25,value:1,format:x=>x.toFixed(2),onInput:x=>{guess=x;draw();},into:S.querySelector('#s03-slider')});draw();
@@ -3292,18 +3358,24 @@ AT.ui.reveal('Does a zero loss in our calculator show that the encoder learned?'
   <div id="s04-views"></div>
   <p data-build="1">These are actual transformations of our four-patch image, not outputs from a trained model.</p>
   <p data-build="2">We can ask an encoder to retain information shared across both views.</p>
-  <script type="text/x-notes">The flip moves the lower-right patch to the lower-left. The brightness change multiplies all pixels by 0.75. Neither changes the number of image or patch coordinates. Real recipes use several transformations and crop sizes.</script>
+  <script type="text/x-notes">The flip moves the lower-right patch to the lower-left.
+
+The brightness change multiplies all pixels by 0.75. Neither changes the number of image or patch coordinates. Real recipes use several transformations and crop sizes.</script>
 </div>
 <div class="frame" data-title="Agreement alone allows a useless answer" data-autobuild="off">
   <p>If every image produces the same vector, its two views agree perfectly.</p>
   <div id="s04-contrastive" data-build="1"></div>
   <p data-build="2">Contrastive objectives also compare against other images. DINO uses a teacher and a different anti-collapse recipe.</p>
-  <script type="text/x-notes">The two views of the same image are the positive pair. Other images supply contrastive alternatives in a method such as SimCLR. This drawing introduces one family; DINO itself does not use this explicit negative-pair objective.</script>
+  <script type="text/x-notes">The two views of the same image are the positive pair.
+
+Other images supply contrastive alternatives in a method such as SimCLR. This drawing introduces one family; DINO itself does not use this explicit negative-pair objective.</script>
 </div>
 <div class="frame" data-title="Choose changes the task can afford to ignore" data-autobuild="off">
   <div id="s04-changes"></div>
   <div id="s04-check" data-build="1"></div>
-  <script type="text/x-notes">There is no augmentation that is harmless for every task. If predicting absolute brightness is important, forcing identical outputs after brightness scaling removes a useful distinction. Avoid saying that colour is always a nuisance.</script>
+  <script type="text/x-notes">There is no augmentation that is harmless for every task.
+
+If predicting absolute brightness is important, forcing identical outputs after brightness scaling removes a useful distinction. Avoid saying that colour is always a nuisance.</script>
 </div>
 <div class="companion after"><p>Agreement need not mean that every intermediate patch row becomes identical across views. A method may apply its loss to a particular global output or to a separate projection head. The backbone still produces the representation used downstream.</p><p>The contrastive drawing is a schematic explanation of the positive/negative distinction, not a simulation of training. We will now work through DINO's alternative: a student matches a slowly changing teacher distribution. The teacher's targets and the training recipe are what make this more than matching two arbitrary random vectors.</p></div>
 <script>
@@ -3320,20 +3392,26 @@ AT.ui.reveal('If the task asks which side has the brighter patch, should a flip 
 <div class="frame" data-title="The student sees one view; the teacher sees another" data-autobuild="off">
   <div id="s05-dino"></div>
   <p data-build="1">The student learns through cross-entropy. The teacher changes through an exponential moving average, or EMA.</p>
-  <script type="text/x-notes">Follow the two view paths. In the original recipe, the teacher sees global crops and the student sees both global and local crops. This two-view drawing only shows the roles. The dashed arrow moves parameter values; it is not a gradient through the teacher.</script>
+  <script type="text/x-notes">Follow the two view paths.
+
+In the original recipe, the teacher sees global crops and the student sees both global and local crops. This two-view drawing only shows the roles. The dashed arrow moves parameter values; it is not a gradient through the teacher.</script>
 </div>
 <div class="frame" data-title="The teacher provides probabilities, not class names" data-autobuild="off">
   <p>For this calculation, use three output slots. They are not labels such as cat, dog, or tree.</p>
   <div id="s05-target"></div>
   <p data-build="1">$p_t=\operatorname{softmax}((z_t-c)/\tau_t)$, with $c=(0.5,0.5,0)$ and $\tau_t=0.5$.</p>
-  <script type="text/x-notes">These logits and the centre are chosen for an arithmetic exercise, not computed by the displayed image. Subtract the centre coordinatewise, divide by temperature, then apply softmax. The original DINO head has many more output slots.</script>
+  <script type="text/x-notes">These logits and the centre are chosen for an arithmetic exercise, not computed by the displayed image.
+
+Subtract the centre coordinatewise, divide by temperature, then apply softmax. The original DINO head has many more output slots.</script>
 </div>
 <div class="frame" data-title="Change the student's first logit" data-autobuild="off">
   <p>Teacher target fixed. Student logits are $(a,1,0)$ with $\tau_s=1$.</p>
   <div id="s05-slider" data-present="manual"></div>
   <div id="s05-ce-table"></div>
   <p id="s05-ce-loss" aria-live="polite"></p>
-  <script type="text/x-notes">Move a from zero to three. The student distribution approaches the supplied teacher target, so cross-entropy falls. At three the distributions match, but the soft-target cross-entropy is not zero: it equals the entropy of that target.</script>
+  <script type="text/x-notes">Move a from zero to three.
+
+The student distribution approaches the supplied teacher target, so cross-entropy falls. At three the distributions match, but the soft-target cross-entropy is not zero: it equals the entropy of that target.</script>
 </div>
 <div class="frame" data-title="Stop the target gradient; update the teacher by EMA" data-autobuild="off">
   <pre class="torch-snippet"><code>target = ((teacher_logits - center) / tau_t).softmax(-1).detach()
@@ -3341,12 +3419,16 @@ log_student = (student_logits / tau_s).log_softmax(-1)
 loss = -(target * log_student).sum(-1).mean()</code></pre>
   <div id="s05-ema" data-build="1"></div>
   <p data-build="2">One parameter: $\phi_{\mathrm{new}}=0.9(1)+0.1(3)=1.2$. This averages parameters, not image pixels.</p>
-  <script type="text/x-notes">The centre and temperatures act on the teacher output; EMA acts on every teacher parameter. The student takes an optimizer step from the loss. The teacher then moves a small fraction of the way toward those updated student parameters.</script>
+  <script type="text/x-notes">The centre and temperatures act on the teacher output; EMA acts on every teacher parameter.
+
+The student takes an optimizer step from the loss. The teacher then moves a small fraction of the way toward those updated student parameters.</script>
 </div>
 <div class="frame" data-title="What prevents every image receiving the same target?" data-autobuild="off">
   <ul><li><strong>Centering:</strong> subtract a running mean of teacher outputs so one output slot does not dominate persistently.</li><li data-build="1"><strong>Sharpening:</strong> a lower teacher temperature makes each target more selective.</li><li data-build="2"><strong>EMA teacher:</strong> targets change more slowly than the gradient-updated student.</li></ul>
   <p data-build="3">These work together in DINO's training recipe. Centering alone is not a guarantee against collapse.</p>
-  <script type="text/x-notes">Uniform outputs and the same winning slot for all images are different failure modes. Do not describe centering as a generic proof against all constant representations. View sampling, the head, temperatures, and optimization are part of the method.</script>
+  <script type="text/x-notes">Uniform outputs and the same winning slot for all images are different failure modes.
+
+Do not describe centering as a generic proof against all constant representations. View sampling, the head, temperatures, and optimization are part of the method.</script>
 </div>
 <div class="companion after"><p>The calculator uses teacher logits $(2,1,0)$ and centre $(0.5,0.5,0)$, giving temperature-scaled logits $(3,1,0)$. Every probability and loss term is calculated from those numbers. Its cross-entropy is $-\sum_c p_{t,c}\log p_{s,c}$. When student and teacher distributions match, this soft-target loss equals the teacher distribution's entropy, rather than zero.</p><p>The actual DINO recipe pairs different crops of the same image, with the teacher restricted to global views and the student receiving local views too. The centre is a running average of teacher outputs over training batches. Teacher EMA supplies a slowly changing target network; it does not create external supervision or semantic class labels.</p><p>After training, representations from the backbone can be evaluated without retaining this particular output head. See <a href="https://arxiv.org/abs/2104.14294" target="_blank" rel="noreferrer">Emerging Properties in Self-Supervised Vision Transformers</a>. This section describes the original DINO mechanism, not every later DINO-family training recipe.</p></div>
 <script>
@@ -3354,7 +3436,7 @@ loss = -(target * log_student).sum(-1).mean()</code></pre>
 T.diagram(S.querySelector('#s05-dino'),'dino');
 AT.ui.table([F.teacherLogits,F.centered,F.teacherScaled,F.target],{cols:['slot 1','slot 2','slot 3'],rowLabels:['teacher logits','subtract centre','divide by 0.5','target probabilities'],cornerLabel:'supplied arithmetic inputs',decimals:3,into:S.querySelector('#s05-target')});
 AT.ui.table([[1,3,.9,T.ema()]],{cols:['old teacher φ','updated student θ','momentum β','new teacher φ'],rowLabels:['one illustrative parameter'],cornerLabel:'φ ← βφ + (1−β)θ',decimals:2,into:S.querySelector('#s05-ema')});
-function draw(a){const R=T.dino(a);AT.ui.table(R.target.map((p,i)=>[p,R.prediction[i],R.terms[i]]),{cols:['teacher p_t','student p_s','−p_t log p_s'],rowLabels:['slot 1','slot 2','slot 3'],cornerLabel:'same three output slots',decimals:4,into:S.querySelector('#s05-ce-table')});S.querySelector('#s05-ce-loss').textContent='Cross-entropy = '+R.terms.map(x=>x.toFixed(4)).join(' + ')+' ≈ '+R.loss.toFixed(4)+'.';}
+function draw(a){const R=T.dino(a);S.querySelector('#s05-ce-table').replaceChildren();AT.ui.table(R.target.map((p,i)=>[p,R.prediction[i],R.terms[i]]),{cols:['teacher $p_t$','student $p_s$','$-p_t\\log p_s$'],rowLabels:['slot 1','slot 2','slot 3'],cornerLabel:'same three output slots',decimals:4,into:S.querySelector('#s05-ce-table')});S.querySelector('#s05-ce-loss').textContent='Cross-entropy = '+R.terms.map(x=>x.toFixed(4)).join(' + ')+' ≈ '+R.loss.toFixed(4)+'.';}
 AT.ui.slider({label:'Student first logit a',min:0,max:3,step:.25,value:0,format:x=>x.toFixed(2),onInput:draw,into:S.querySelector('#s05-slider')});draw(0);
 })();
 </script>
@@ -3367,12 +3449,16 @@ AT.ui.slider({label:'Student first logit a',min:0,max:3,step:.25,value:0,format:
 <div class="frame" data-title="For patch 4, should we predict pixels or features?" data-autobuild="off">
   <div id="s06-targets"></div>
   <p data-build="1">The target encoder chooses the feature space through its learned parameters. We do not assign a coordinate called “object meaning”.</p>
-  <script type="text/x-notes">The I-JEPA target is learned, so we cannot write its numerical coordinates from this image without specifying an actual trained target encoder. This section shows the architecture honestly instead of inventing feature values.</script>
+  <script type="text/x-notes">The I-JEPA target is learned, so we cannot write its numerical coordinates from this image without specifying an actual trained target encoder.
+
+This section shows the architecture honestly instead of inventing feature values.</script>
 </div>
 <div class="frame" data-title="Encode the full image, then select the target rows" data-autobuild="off">
   <div id="s06-jepa"></div>
   <p data-build="1">The context branch cannot read patch 4. The target branch can, because it supplies the training target.</p>
-  <script type="text/x-notes">Follow the bottom path first: full image, target encoder, selected patch-4 row. Do not crop patch 4 before the target encoder. Then follow the top path: remove patch 4, encode context, predict the representation at position 4. The full method uses larger context and target blocks; one patch keeps the roles visible here.</script>
+  <script type="text/x-notes">Follow the bottom path first: full image, target encoder, selected patch-4 row.
+
+Do not crop patch 4 before the target encoder. Then follow the top path: remove patch 4, encode context, predict the representation at position 4. The full method uses larger context and target blocks; one patch keeps the roles visible here.</script>
 </div>
 <div class="frame" data-title="Match the target features without backpropagating into them" data-autobuild="off">
   <pre class="torch-snippet"><code>with torch.no_grad():
@@ -3381,12 +3467,16 @@ pred = predictor(context_encoder(visible_rows), target_pos)
 loss = (pred - target).square().mean()</code></pre>
   <p data-build="1">Gradients update the context encoder and predictor. EMA updates the target encoder.</p>
   <p data-build="2">The target-position vectors tell the predictor <em>where</em> to predict. They do not reveal the missing pixels.</p>
-  <script type="text/x-notes">This is schematic single-image code using mean squared feature error. The context and target encoders have separate parameter copies. The target copy follows an EMA of the context parameters, not gradients from this loss. The predictor has its own trainable parameters.</script>
+  <script type="text/x-notes">This is schematic single-image code using mean squared feature error.
+
+The context and target encoders have separate parameter copies. The target copy follows an EMA of the context parameters, not gradients from this loss. The predictor has its own trainable parameters.</script>
 </div>
 <div class="frame" data-title="The target branch is not an input shortcut" data-autobuild="off">
   <div id="s06-check"></div>
   <p data-build="1">At inference, the pretrained encoder represents the supplied image. It need not run a hidden-region prediction exercise for every downstream task.</p>
-  <script type="text/x-notes">A target contains information the predictor is meant to learn to recover. That is allowed. Leakage would be feeding the target representation into the context prediction path before computing its answer.</script>
+  <script type="text/x-notes">A target contains information the predictor is meant to learn to recover.
+
+That is allowed. Leakage would be feeding the target representation into the context prediction path before computing its answer.</script>
 </div>
 <div class="companion after"><p>I-JEPA's target rows are contextual: the target encoder has processed the whole image before the rows are selected. Its parameters are an exponential moving average of the context encoder's parameters. The predictor is trained with the context encoder, while the target is treated as fixed for each backward pass. The two encoders therefore do not share one gradient-updated parameter object.</p><p>The published method samples several target blocks and a larger context block, excludes target regions from the context, and predicts the selected features. Our single hidden patch is an architecture illustration, not a reproduction of its masking recipe or trained predictions. The code shows a mean-squared feature loss to make the target space explicit; it does not reproduce every implementation detail of the paper.</p><p>Predicting features can reduce the requirement to reproduce every pixel detail, but it does not guarantee that learned features are semantic or useful for every task. See <a href="https://arxiv.org/abs/2301.08243" target="_blank" rel="noreferrer">Self-Supervised Learning from Images with a Joint-Embedding Predictive Architecture</a>.</p></div>
 <script>
@@ -3406,23 +3496,31 @@ AT.ui.reveal('Does the context encoder receive the full-image target representat
   <pre class="torch-snippet" data-build="1"><code>with torch.no_grad():
     features = encoder(images)
 loss = F.cross_entropy(linear_head(features), labels)</code></pre>
-  <script type="text/x-notes">The code illustrates a frozen-encoder probe; the optimizer trains only the linear head. Use a fixed image-level readout suited to that backbone. Final quality is measured on held-out task examples, not on the examples used to fit the head.</script>
+  <script type="text/x-notes">The code illustrates a frozen-encoder probe; the optimizer trains only the linear head.
+
+Use a fixed image-level readout suited to that backbone. Final quality is measured on held-out task examples, not on the examples used to fit the head.</script>
 </div>
 <div class="frame" data-title="Three objectives, three kinds of target" data-autobuild="off">
   <div id="s07-compare"></div>
   <p data-build="1">All train visual representations without manual class labels for pretraining. They do not ask the encoder to solve the same problem.</p>
-  <script type="text/x-notes">Ask students to name the target type, then its source. MAE uses the observed pixels. DINO and I-JEPA use EMA targets in different output spaces. The next frame separates the gradient and EMA updates.</script>
+  <script type="text/x-notes">Ask students to name the target type, then its source.
+
+MAE uses the observed pixels. DINO and I-JEPA use EMA targets in different output spaces. The next frame separates the gradient and EMA updates.</script>
 </div>
 <div class="frame" data-title="Which parameters follow gradients, and which follow EMA?" data-autobuild="off">
   <div id="s07-updates"></div>
   <p data-build="1">MAE has no learned target network: the original pixels already supply its target.</p>
-  <script type="text/x-notes">The student in DINO includes its encoder and output head. In I-JEPA, the context encoder and predictor take gradients; only the context encoder is copied into the target encoder through EMA. The teacher or target branch receives no gradient from its prediction loss.</script>
+  <script type="text/x-notes">The student in DINO includes its encoder and output head.
+
+In I-JEPA, the context encoder and predictor take gradients; only the context encoder is copied into the target encoder through EMA. The teacher or target branch receives no gradient from its prediction loss.</script>
 </div>
 <div class="frame" data-title="A visual representation is not yet aligned with language" data-autobuild="off">
   <div id="s07-check"></div>
   <p data-build="1">Next: use paired images and text to learn which visual and language representations should match.</p>
   <p data-build="2">The image encoder can supply visual features. The image-text objective adds a new relationship to learn.</p>
-  <script type="text/x-notes">This is the bridge to CLIP. A good image representation does not automatically place the word river near a river image in a compatible text space. Paired image-caption training supplies that cross-modal signal.</script>
+  <script type="text/x-notes">This is the bridge to CLIP.
+
+A good image representation does not automatically place the word river near a river image in a compatible text space. Paired image-caption training supplies that cross-modal signal.</script>
 </div>
 <div class="companion after"><p>We have not compared leaderboard scores. Architecture, data scale, augmentation, training duration, and evaluation protocol can all change a result. Nor have we treated synthetic scores as a benchmark. The reconstruction and DINO calculators only demonstrate their stated arithmetic.</p><p>For the next part, keep the distinction between a backbone representation and the objective used to train it. Image-text alignment can use visual features from a pretrained backbone, but it must learn a relationship to text. The visual pretraining methods in this part do not provide that relationship on their own.</p><p>Primary references: <a href="https://arxiv.org/abs/2111.06377">MAE</a>, <a href="https://arxiv.org/abs/2104.14294">DINO</a>, and <a href="https://arxiv.org/abs/2301.08243">I-JEPA</a>. This lesson and its calculations work offline once the page assets are available.</p></div>
 <script>
@@ -3455,11 +3553,14 @@ AT.ui.reveal('If an encoder learns useful river features without captions, has i
   /* ---- Hero from the part config ---- */
   setText('hero-title', PART.title || document.title);
   setText('hero-sub', PART.subtitle || '');
-  var meta = (PART.audience || '') + (PART.minutes ? (PART.audience ? ' ' : '') + 'About ' + PART.minutes + ' minutes.' : '');
+  var audience = (PART.audience || '').trim();
+  if (audience && !/[.!?]$/.test(audience)) audience += '.';
+  var duration = PART.durationLabel || (PART.minutes ? 'About ' + PART.minutes + ' minutes.' : '');
+  var meta = [audience, duration].filter(Boolean).join(' ');
   setText('hero-meta', meta);
   var central = el('hero-central');
   if (central && PART.central) { central.hidden = false; setText('hero-central-lab', PART.centralLabel || 'The one chain to remember'); el('hero-central-tex').textContent = '$$' + PART.central + '$$'; }
-  var series = (PART.series ? esc(PART.series) + ' · ' : '') + 'Part ' + esc(PART.part || '');
+  var series = (PART.series ? esc(PART.series) + ' · ' : '') + esc(PART.partLabel || ('Part ' + (PART.part || '')));
   function navItem(item, rel, prefix, suffix){
     if (!item || !item.href) return '';
     var label = (prefix || '') + esc(item.label) + (suffix || '');
@@ -3484,6 +3585,7 @@ AT.ui.reveal('If an encoder learns useful river features without captions, has i
       if (!o) return;
       var li = document.createElement('li'); li.className = 'obj-' + k;
       li.innerHTML = '<span class="sw"></span><span class="sy">' + esc(o.sym) + '</span>' + esc(o.name);
+      if (o.symTex && A && A.tex) A.tex(li.querySelector('.sy'), o.symTex);
       legend.appendChild(li);
     });
     setText('legend-title', PART.legendTitle || ('How to read this page: ' + objs.length + ' colours, ' + objs.length + ' objects'));
@@ -3519,11 +3621,14 @@ AT.ui.reveal('If an encoder learns useful river features without captions, has i
       var o = null; defs.forEach(function(d){ if (d.cls === k) o = d; });
       if (!o) return;
       var target = '';
-      for (var i = 0; i < secList.length; i++) { var lit = (secList[i].lit || '').trim().split(/\s+/); if (lit.indexOf(k) >= 0) { target = secList[i].id; break; } }
+      var preferred = PART.objectSections && PART.objectSections[k];
+      if (preferred && secList.some(function(section){ return section.id === preferred; })) target = preferred;
+      if (!target) for (var i = 0; i < secList.length; i++) { var lit = (secList[i].lit || '').trim().split(/\s+/); if (lit.indexOf(k) >= 0) { target = secList[i].id; break; } }
       var li = document.createElement('li');
       var b = document.createElement('button'); b.type = 'button'; b.className = 'nchip obj-' + k; b.setAttribute('data-obj', k);
       if (target) b.setAttribute('data-target', target);
       b.setAttribute('data-tip', o.tip || o.def || ''); b.textContent = o.sym;
+      if (o.symTex && A && A.tex) A.tex(b, o.symTex);
       li.appendChild(b); chipHost.appendChild(li);
     });
   }

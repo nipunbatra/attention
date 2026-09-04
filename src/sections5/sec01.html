@@ -16,25 +16,33 @@ body.present .sec .calc-rounding{display:none}
 <div class="frame" data-title="One block or two?" data-autobuild="off">
   <div class="vision1-story" id="s01-task"></div>
   <p class="callout callout-key" data-build="1">The <strong>image is the input</strong>. “Two blocks” or “one block” is the observed label used for training.</p>
-  <script type="text/x-notes">Start with the question, not tokenization. Both images will reappear at the learning step. Do not give the label to the encoder. Our two-example exercise demonstrates a computation and an update; it is not a general counting benchmark.</script>
+  <script type="text/x-notes">Start with the question, not tokenization.
+
+Both images will reappear at the learning step. Do not give the label to the encoder. Our two-example exercise demonstrates a computation and an update; it is not a general counting benchmark.</script>
 </div>
 <div class="frame" data-title="A pixel is already a number" data-autobuild="off">
   <div class="vision1-story" id="s01-pixels"></div>
   <p>Our image has <strong>4 rows × 4 columns × 1 channel</strong>. Dark pixels are 0; the two filled blocks use 1 and 2.</p>
   <p data-build="1">These are brightness values, not token IDs. Changing a pixel changes the numerical input directly.</p>
-  <script type="text/x-notes">We use a grayscale image to keep the arithmetic visible. A color photograph has three channels, which we will account for later. The shades 0,1,2 are a toy scale rather than an 8-bit image format.</script>
+  <script type="text/x-notes">We use a grayscale image to keep the arithmetic visible.
+
+A color photograph has three channels, which we will account for later. The shades 0,1,2 are a toy scale rather than an 8-bit image format.</script>
 </div>
 <div class="frame" data-title="What will replace the words?" data-autobuild="off">
   <div class="vision1-pair"><div><h3>In the text lesson</h3><p><code>She deposited money …</code></p><p>One word/token → one embedding row.</p></div><div data-build="1"><h3>For this image</h3><p>One small patch of pixels → one embedding row.</p><p>The rows will exchange information through attention.</p></div></div>
   <p class="callout callout-key" data-build="2">A patch is a piece of the input, not necessarily an object. A photograph’s patch may cut through part of a face or a tree.</p>
-  <script type="text/x-notes">The block/patch alignment is convenient in our worksheet, not a claim that tokenization detects objects. Image rows are created by a learned projection, not by looking up a discrete patch ID.</script>
+  <script type="text/x-notes">The block/patch alignment is convenient in our worksheet, not a claim that tokenization detects objects.
+
+Image rows are created by a learned projection, not by looking up a discrete patch ID.</script>
 </div>
 <div class="frame" data-title="First make rows. Then let them share information." data-autobuild="off">
   <p class="vision1-equation">image → patch embeddings → attention → image answer</p>
   <p>We will use <strong>two numbers per embedding</strong> so that every multiplication fits on the page.</p>
   <p data-build="1">First we inspect one fixed set of starting weights. Later we train those same weights and run the images through again.</p>
   <p class="callout callout-note" data-build="2">This small model contains patch projection, position addition, one attention update, and a class head. We add the rest of a full ViT after this calculation makes sense.</p>
-  <script type="text/x-notes">This is the one scope statement for the numerical model. LayerNorm, the row-wise MLP and multiple heads are not silently part of its arithmetic. Avoid introducing their mechanics here.</script>
+  <script type="text/x-notes">This is the one scope statement for the numerical model.
+
+LayerNorm, the row-wise MLP and multiple heads are not silently part of its arithmetic. Avoid introducing their mechanics here.</script>
 </div>
 <div class="companion after"><p>Notation follows the text lessons: $e$ is a representation, $q$ and $k$ are used for matching, and $v$ is the information sent. We introduce $r_j$ for the raw pixels of patch $j$ because those four numbers are not yet its two-number embedding. All calculations, diagrams, and training updates run in this page without downloading a model.</p></div>
 <script>(function(){const S=document.getElementById('s01'),T=AT.vision;T.story(S.querySelector('#s01-task'),{stage:'task'});T.story(S.querySelector('#s01-pixels'),{stage:'image'});})();</script>

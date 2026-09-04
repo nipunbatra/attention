@@ -40,7 +40,7 @@ body.present #s06 .net{max-width:650px}
   const inAxes=[];for(let p=0;p<M.w;p++)M.axes.e.forEach(a=>inAxes.push('p'+(p+1)+' · '+a));
   const j=0,W1col=M.W1.map(r=>[r[j]]),dot1=AT.matmul(F.a0,W1col)[0],pre=dot1+M.b1[j];
   AT.ui.matVecCalc(F.a0,W1col,{from:inAxes,to:['hidden 1'],cls:'neutral',xLabel:'a0',outLabel:'dot product',decimals:2,wDecimals:2,into:S.querySelector('#s06-hidden')});
-  AT.ui.table(F.a0.map((x,i)=>[x,W1col[i][0],x*W1col[i][0]]),{cols:['input','weight','product'],rowLabels:F.a0.map((x,i)=>'coordinate '+(i+1)),cornerLabel:'$a_0$',decimals:2,into:S.querySelector('#s06-hidden-compact')});
+  AT.ui.table(F.a0.map((x,i)=>[x,W1col[i][0],x*W1col[i][0]]),{cols:['input','weight','product'],rowLabels:F.a0.map((x,i)=>'coordinate '+(i+1)),cornerLabel:'$a_0$',decimals:2,caption:'Displayed operands are rounded; products and sums use the unrounded values.',into:S.querySelector('#s06-hidden-compact')});
   S.querySelector('#s06-hidden-note').textContent='dot '+AT.fmt(dot1,2)+' + bias '+AT.fmt(M.b1[j],2)+' = '+AT.fmt(pre,2)+'; tanh gives '+AT.fmt(F.a1[j],2);
   const tid=AT.mlp.stoi.i,W2col=M.W2.map(r=>[r[tid]]),dot2=AT.matmul(F.a1,W2col)[0],logit=dot2+M.b2[tid];
   AT.ui.matVecCalc(F.a1,W2col,{from:AT.range(M.d_h).map(i=>'hidden '+(i+1)),to:['logit i'],cls:'neutral',xLabel:'a1',outLabel:'dot product',decimals:2,wDecimals:2,into:S.querySelector('#s06-logit')});

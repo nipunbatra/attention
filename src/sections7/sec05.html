@@ -7,18 +7,24 @@
 loss.backward()
 optimizer.step()</code></pre>
   <p data-build="2">Update $W_{\mathrm{img}}$, $W_{\mathrm{txt}}$, and log scale. Recompute the vectors, scores, and probabilities.</p>
-  <script type="text/x-notes">The gradient passes through unit normalization too. It must account for the fact that changing one raw coordinate also changes the vector's norm. All gradients refer to the same pre-update parameters.</script>
+  <script type="text/x-notes">The gradient passes through unit normalization too.
+
+It must account for the fact that changing one raw coordinate also changes the vector's norm. All gradients refer to the same pre-update parameters.</script>
 </div>
 <div class="frame" data-title="One actual update, then another forward pass" data-autobuild="off">
   <div id="s05-update"></div>
   <p id="s05-parameter" class="clip-flow" data-build="1"></p>
   <p class="callout callout-note" data-build="2">The learning rate is $0.1$. The displayed parameter is one of 82 learned numbers; the step updates all of them together.</p>
-  <script type="text/x-notes">Read the table in order: first the image-to-text loss, then the reverse loss, then their mean. The row shown below is the first scalar of the image map. Its gradient was computed, not guessed from the desired result.</script>
+  <script type="text/x-notes">Read the table in order: first the image-to-text loss, then the reverse loss, then their mean.
+
+The row shown below is the first scalar of the image map. Its gradient was computed, not guessed from the desired result.</script>
 </div>
 <div class="frame" data-title="Watch the same three pairs become easier to match" data-autobuild="off">
   <div id="s05-widget"></div>
-  <script type="text/x-notes">Use One SGD step to reproduce the preceding table, or 20 steps to see faster progress. Reset returns to the disclosed starting matrices. This is memorization of three training pairs; a falling training loss is not evidence of generalization to photographs or arbitrary language.</script>
+  <script type="text/x-notes">Use One SGD step to reproduce the preceding table, or 20 steps to see faster progress.
+
+Reset returns to the disclosed starting matrices. This is memorization of three training pairs; a falling training loss is not evidence of generalization to photographs or arbitrary language.</script>
 </div>
-<div class="companion"><h3>What was checked</h3><p>The numerical engine includes the exact derivative of $g/\lVert g\rVert_2$, averages both cross-entropies over the batch, and computes every gradient before changing any parameter. Central finite differences check all 82 parameter gradients. A separate NumPy implementation reproduces the forward pass, one-step update, and 60-step checkpoint.</p><p>The next section freezes the checkpoint after 60 steps. Its mean loss on these three training pairs is <span id="s05-trained-loss"></span>. That small number describes this toy batch only. It is not an accuracy measurement on unseen data.</p><div id="s05-parameter-maps"></div></div>
+<div class="companion after"><h3>What was checked</h3><p>The numerical engine includes the exact derivative of $g/\lVert g\rVert_2$, averages both cross-entropies over the batch, and computes every gradient before changing any parameter. Central finite differences check all 82 parameter gradients. A separate NumPy implementation reproduces the forward pass, one-step update, and 60-step checkpoint.</p><p>The next section freezes the checkpoint after 60 steps. Its mean loss on these three training pairs is <span id="s05-trained-loss"></span>. That small number describes this toy batch only. It is not an accuracy measurement on unseen data.</p><div id="s05-parameter-maps"></div></div>
 <script>(function(){const S=document.getElementById('s05'),C=AT.clip,a=C.forward(),b=C.forward(C.params('afterOne')),d=C.data;C.diagram(S.querySelector('#s05-graph'),'training');C.table(S.querySelector('#s05-update'),[[a.rowLoss,b.rowLoss],[a.columnLoss,b.columnLoss],[a.loss,b.loss]],{cols:['before SGD','after one step'],rowLabels:['image → text loss','text → image loss','mean loss'],cornerLabel:'Recomputed objective',decimals:4});AT.tex(S.querySelector('#s05-parameter'),'W_{\\mathrm{img}}[1,1]:\\quad2-0.1\\times('+d.initialGradients.W_img[0][0].toFixed(6)+')\\approx'+d.snapshots.afterOne.W_img[0][0].toFixed(6));C.trainingWidget(S.querySelector('#s05-widget'));S.querySelector('#s05-trained-loss').textContent=d.reference.trained.loss.toFixed(6);C.table(S.querySelector('#s05-parameter-maps'),[[16,3,48],[11,3,33],[1,1,1]],{cols:['rows','columns','parameters'],rowLabels:['W_img','W_txt','log_scale'],cornerLabel:'Learned arrays',decimals:0});})();</script>
 </section>

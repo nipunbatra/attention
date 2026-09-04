@@ -1,18 +1,33 @@
 <section id="s06" class="sec" data-title="Train on the observed answer" data-lit="">
 <header class="sec-head"><span class="sec-num">06</span><div><p class="eyebrow">The response supplies targets; the mask keeps them out of earlier predictions.</p><h2>Train on the observed answer</h2></div></header>
-<div class="companion"><p>Teacher forcing supplies the correct earlier answer tokens. The first prediction uses the question-mark row, the second uses the supplied <code>two</code> row, and the third uses <code>blocks</code>. Loss is measured only on those three answer predictions. Ignoring an image or question position in the loss does not stop gradients through that position: its representation can influence an answer row.</p></div>
+<div class="companion" data-kicker="For self-study"><p>Teacher forcing supplies the correct earlier answer tokens. The first prediction uses the question-mark row, the second uses the supplied <code>two</code> row, and the third uses <code>blocks</code>. Loss is measured only on those three answer predictions. Ignoring an image or question position in the loss does not stop gradients through that position: its representation can influence an answer row.</p></div>
 <div class="frame" data-title="Shift the answer targets by one position" data-autobuild="off">
  <div id="s06-labels"></div>
  <p data-build="1">The image and question are context. They do not receive vocabulary prediction targets in this response-only objective.</p>
  <pre class="torch-snippet" data-build="2"><code>loss = F.cross_entropy(logits[answer_rows], answer_ids)</code></pre>
+ <script type="text/x-notes">
+  Which rows have an answer target?
+
+  The question mark targets two; two targets blocks; blocks targets the end marker. Other rows provide context even though this objective assigns them no direct prediction target.
+ </script>
 </div>
 <div class="frame" data-title="Compute the response loss" data-autobuild="off">
  <div id="s06-loss"></div><p id="s06-mean"></p>
  <p data-build="1">Compute with full precision. The tables round to three decimals.</p>
+ <script type="text/x-notes">
+  Compute one negative log probability, then average the three.
+
+  Use the observed next answer token at each position. The display rounds, but the loss uses full-precision probabilities.
+ </script>
 </div>
 <div class="frame" data-title="Autograd follows the paths that produced the loss" data-autobuild="off">
  <div id="s06-graph"></div>
- <p data-build="1">Backpropagation reaches both attention weights and values. The optimizer changes learned parameters, not cached $Q,K,V$.</p>
+ <p data-build="1">Backpropagation reaches both attention weights and values. The optimizer changes learned parameters, not cached $\vq{Q},\vk{K},\vv{V}$.</p>
+ <script type="text/x-notes">
+  Can a context row receive a gradient without its own target?
+
+  Yes: it can affect the answer through its keys and values. Follow both attention paths backward; autograd accumulates their contributions.
+ </script>
 </div>
 <div class="frame" data-title="One further update to the fitted toy" data-autobuild="off">
  <div id="s06-update"></div>
@@ -20,17 +35,32 @@
 loss.backward()
 optimizer.step()</code></pre>
  <p data-build="2">This step uses only the two-block grid. Its loss falls, but the one-block loss rises.</p>
+ <script type="text/x-notes">
+  What changed after this further optimizer step?
+
+  These are recomputed outputs of a fitted checkpoint, not a first step from random weights. The step trains on only the two-block example.
+ </script>
 </div>
 <div class="frame" data-title="One improved example can hide a regression" data-autobuild="off">
  <div id="s06-regression"></div>
  <p data-build="1">The one-block image now gets the wrong answer. Lower training loss on one example is not evidence of broader improvement.</p>
  <p data-build="2">Train on representative batches and check held-out images. Here we deliberately keep the failed update visible.</p>
+ <script type="text/x-notes">
+  Did the lower loss improve both images?
+
+  No. Read the one-block answer before and after. A step that helps one example can harm another; retain this failure rather than hiding it.
+ </script>
 </div>
 <div class="frame" data-title="Choose what to train for the task" data-autobuild="off">
  <div id="s06-recipes"></div>
  <p data-build="1">Freezing parameters does not mean cutting the gradient path through a frozen language model to a trainable connector.</p>
+ <script type="text/x-notes">
+  Which parameters would you choose to train?
+
+  Compare connector-only, connector-plus-decoder, and joint tuning. Frozen language parameters can still transmit gradients to a trainable connector; freezing is not detaching the computation.
+ </script>
 </div>
-<div class="companion"><p>The recorded warm-up fits two pairs with Adam. The displayed further step uses SGD at learning rate 0.02 so the parameter update is easy to state. The reference generator checks every trainable scalar by finite differences; students use autograd rather than deriving those gradients by hand.</p><p>LLaVA's original staged recipe first fits a connector with pretrained components frozen, then instruction-tunes with a different trainable set. This is a useful example, not a mandatory sequence of four stages for every VLM. Preference optimization can follow supervised training, but preference labels do not by themselves prove visual correctness. LoRA, full fine-tuning, frozen encoders, and joint training are choices whose value depends on data, domain, memory, and validation results.</p></div>
+<div class="companion after"><p>The recorded warm-up fits two pairs with Adam. The displayed further step uses SGD at learning rate 0.02 so the parameter update is easy to state. The reference generator checks every trainable scalar by finite differences; students use autograd rather than deriving those gradients by hand.</p><p>LLaVA's original staged recipe first fits a connector with pretrained components frozen, then instruction-tunes with a different trainable set. This is a useful example, not a mandatory sequence of four stages for every VLM. Preference optimization can follow supervised training, but preference labels do not by themselves prove visual correctness. LoRA, full fine-tuning, frozen encoders, and joint training are choices whose value depends on data, domain, memory, and validation results.</p></div>
 <script>(function(){const S=document.getElementById('s06'),V=AT.vlm,F=V.teacher(),u=V.data.update;
 AT.ui.table([['image rows','1–4','ignored'],['<bos> count','5–6','ignored'],['?','7','two'],['two','8','blocks'],['blocks','9','<eos>']],{cols:['known input','position','next-token target'],kind:'text',into:S.querySelector('#s06-labels')});
 AT.ui.table(F.targets.map((t,i)=>[F.probs[i+6][V.data.vocab.indexOf(t)],F.losses[i]]),{rowLabels:F.targets,cols:['target probability','−log probability'],decimals:3,into:S.querySelector('#s06-loss')});AT.tex(S.querySelector('#s06-mean'),'L=\\frac{'+F.losses.map(v=>V.fmt(v)).join('+')+'}{3}\\approx'+V.fmt(F.loss));

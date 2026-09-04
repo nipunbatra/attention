@@ -89,8 +89,8 @@
 
   let serial = 0;
   const ns = 'http://www.w3.org/2000/svg';
-  const colors = { image: 'var(--c-e)', text: 'var(--c-q)', match: 'var(--c-k)', probability: 'var(--c-a)', loss: 'var(--c-d)', ink: 'var(--ink)', muted: 'var(--ink-3)' };
-  const roleClass = { image: 'e', text: 'q', match: 'k', probability: 'a', loss: 'd' };
+  const colors = { image: 'var(--c-e)', text: 'var(--c-q)', match: 'var(--ink-2)', probability: 'var(--c-a)', loss: 'var(--c-d)', ink: 'var(--ink)', muted: 'var(--ink-3)' };
+  const roleClass = { image: 'e', text: 'q', probability: 'a', loss: 'd' };
   function node(tag, attrs = {}, value) {
     const e = document.createElementNS(ns, tag);
     for (const [key, val] of Object.entries(attrs)) e.setAttribute(key, String(val));
@@ -114,9 +114,10 @@
   }
   function imageGrid(c, image, left, top, cell = 27) {
     image.forEach((row, i) => row.forEach((value, j) => {
+      const shade=AT.imageShade(value);
       c.svg.append(node('rect', { x: left + j * cell, y: top + i * cell, width: cell - 2, height: cell - 2, rx: 2,
-        fill: value === 0 ? 'var(--card)' : value === 1 ? 'var(--t-q)' : 'var(--t-v)', stroke: 'var(--line)' }));
-      c.text(left + j * cell + (cell - 2) / 2, top + i * cell + (cell - 2) / 2, value, value === 0 ? 'muted' : 'ink', cell * .52);
+        'data-pixel-value':value,fill: `rgb(${shade},${shade},${shade})`, stroke: 'var(--line)' }));
+      c.text(left + j * cell + (cell - 2) / 2, top + i * cell + (cell - 2) / 2, value, 'ink', cell * .52).setAttribute('fill',shade<118?'#FFFFFF':'#000000');
     }));
   }
   const vectorLabel = row => '(' + row.map(x => Math.abs(x) < 1e-12 ? '0' : Number.isInteger(x) ? String(x) : x.toFixed(3)).join(', ') + ')';
@@ -276,16 +277,18 @@
     const set = document.createElement('select'); set.setAttribute('aria-label', 'Candidate caption set');
     for (const [value, label] of [['all', 'All three candidates'], ['missing', 'Omit the correct description'], ['duplicate', 'Duplicate the correct description']]) { const o = document.createElement('option'); o.value = value; o.textContent = label; set.append(o); }
     const tauLabel = document.createElement('label'); tauLabel.textContent = 'Temperature τ ';
-    const tau = document.createElement('input'); tau.type = 'range'; tau.min = '.05'; tau.max = '1'; tau.step = '.01'; tau.value = '.2'; tau.setAttribute('aria-label', 'Inference temperature'); tauLabel.append(tau);
+    const learnedTau=classify().tau;
+    const tau = document.createElement('input'); tau.type = 'range'; tau.min = '.05'; tau.max = '1'; tau.step = 'any'; tau.value = String(learnedTau); tau.setAttribute('aria-label', 'Inference temperature'); tauLabel.append(tau);
     const value = document.createElement('output'); tauLabel.append(value);
     const output = document.createElement('div'), summary = document.createElement('p'); summary.setAttribute('aria-live', 'polite');
     function render() {
       let captions = set.value === 'missing' ? data.captions.slice(1) : data.captions.slice();
       if (set.value === 'duplicate') captions.push(data.captions[0]);
       if (template.value === 'grid') captions = captions.map(c => 'a grid with ' + c);
-      const r = classify({ captions, tau: Number(tau.value) }); value.textContent = Number(tau.value).toFixed(2);
+      const r = classify({ captions, tau: Number(tau.value) }); value.textContent = Number(tau.value).toFixed(3);
       table(output, r.cosine.map((score, i) => [score, r.logits[i], r.probabilities[i]]), { cols: ['cosine', 'logit', 'candidate p'], rowLabels: captions, cornerLabel: 'Two-square image vs prompt' });
-      summary.textContent = `Highest-scoring candidate: ${r.label}. The image and encoder weights are unchanged.`;
+      const sameTemperature=Math.abs(Number(tau.value)-learnedTau)<1e-12;
+      summary.textContent = `Highest-scoring candidate: ${r.label}. ${sameTemperature?'Using the learned temperature, τ = '+learnedTau.toFixed(3)+'.':'Inference temperature changed from the learned τ = '+learnedTau.toFixed(3)+'.'} The image and encoder weights are unchanged.`;
     }
     for (const input of [template, set, tau]) input.addEventListener('input', render);
     controls.append(template, set, tauLabel); host.append(controls, output, summary); render();
@@ -293,15 +296,15 @@
   AT.clip = { data: clone(data), params, forward, gradients, step, classify, retrieve, words, unit, softmax, diagram, table, trainingWidget, candidateWidget };
   AT.axes.named = false;
   const defs = { e: ['g_img', 'image embedding', 'One global image vector after its image encoder. A hat marks unit normalization.'], q: ['g_txt', 'text embedding', 'One global caption or prompt vector after its text encoder. This is not an attention query.'], a: ['p', 'candidate probability', 'A softmax over the supplied captions or images, not confidence over all possible descriptions.'], d: ['L', 'contrastive loss', 'Average image-to-text and text-to-image cross-entropy on the observed pairs.'] };
-  AT.objects.forEach(object => { if (defs[object.cls]) { const d = defs[object.cls]; object.sym = d[0]; object.name = d[1]; object.def = d[2]; object.tip = d[2]; } });
+  AT.objects.forEach(object => { if (defs[object.cls]) { const d = defs[object.cls]; object.sym = d[0]; object.symTex=object.cls==='e'?'\\hat g^{\\mathrm{img}}':object.cls==='q'?'\\hat g^{\\mathrm{txt}}':d[0]; object.name = d[1]; object.def = d[2]; object.tip = d[2]; } });
   function note(sym, meaning, shape, size, group = 'Image-text matching') { AT.notation.push({ g: group, sym, mean: meaning, shape, dims: () => size, parts: ['vision3'] }); }
-  note('g_i^{\\mathrm{img}},g_j^{\\mathrm{txt}}', 'Global image and text vectors before unit normalization; not attention values', '1\\times d', '1×3 in the toy');
+  note('\\ve{g_i^{\\mathrm{img}}},\\vq{g_j^{\\mathrm{txt}}}', 'Global image and text vectors before unit normalization; not attention values', '1\\times d', '1×3 in the toy');
   note('\\hat g = g/\\lVert g\\rVert_2', 'A unit-length vector; its direction is compared with the other modality', '1\\times d', '1×3');
-  note('C_{ij}=\\hat g_i^{\\mathrm{img}}(\\hat g_j^{\\mathrm{txt}})^\\top', 'Cosine similarity of image i and caption j', '\\text{scalar}', '−1 to 1');
+  note('C_{ij}=\\ve{\\hat g_i^{\\mathrm{img}}}(\\vq{\\hat g_j^{\\mathrm{txt}}})^\\top', 'Cosine similarity of image i and caption j', '\\text{scalar}', '−1 to 1');
   note('S_{ij}=C_{ij}/\\tau', 'Temperature-scaled logit; it is not itself a probability', '\\text{scalar}', '');
-  note('p(T_j\\mid I_i,\\mathcal B)', 'Row softmax over the captions in this batch or candidate set', '\\text{scalar}', '0 to 1');
-  note('p(I_i\\mid T_j,\\mathcal B)', 'Column softmax over images in this batch', '\\text{scalar}', '0 to 1');
-  note('L=(L_{I\\to T}+L_{T\\to I})/2', 'Mean of the two batch-average cross-entropies', '\\text{scalar}', '');
+  note('\\va{p(T_j\\mid I_i,\\mathcal B)}', 'Row softmax over the captions in this batch or candidate set', '\\text{scalar}', '0 to 1');
+  note('\\va{p(I_i\\mid T_j,\\mathcal B)}', 'Column softmax over images in this batch', '\\text{scalar}', '0 to 1');
+  note('\\vd{L}=(L_{I\\to T}+L_{T\\to I})/2', 'Mean of the two batch-average cross-entropies', '\\text{scalar}', '');
   note('N,d', 'Number of paired examples; shared embedding width', '', '3 pairs; 3 coordinates', 'sizes');
   note('W_{\\mathrm{img}},W_{\\mathrm{txt}}', 'Toy learned pixel map and word-row table', '16\\times3,\\;11\\times3', '81 parameters', 'sizes');
   note('a=\\log(1/\\tau)', 'Learned log scale; logits equal exp(a) times cosine', '\\text{scalar}', '1 parameter', 'sizes');

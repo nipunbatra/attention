@@ -8,31 +8,105 @@
   "centralLabel": "The new input; the same attention operation",
   "central": "\\text{pixels}\\;\\longrightarrow\\;\\ve{E}\\;\\longrightarrow\\;\\vq{Q},\\vk{K},\\vv{V}\\;\\longrightarrow\\;\\vp{E'}",
   "chain": [
-    {"label":"One block or two?","section":"s01"},
-    {"label":"Make patch embeddings","section":"s02"},
-    {"label":"Layout and a collection row","section":"s03"},
-    {"label":"Choose how much to read","section":"s04"},
-    {"label":"Receive patch information","section":"s05"},
-    {"label":"Predict a class","section":"s06"},
-    {"label":"Learn from both images","section":"s07"},
-    {"label":"Scale to a photograph","section":"s08"}
+    {
+      "label": "One block or two?",
+      "section": "s01"
+    },
+    {
+      "label": "Make patch embeddings",
+      "section": "s02"
+    },
+    {
+      "label": "Layout and a collection row",
+      "section": "s03"
+    },
+    {
+      "label": "Choose how much to read",
+      "section": "s04"
+    },
+    {
+      "label": "Receive patch information",
+      "section": "s05"
+    },
+    {
+      "label": "Predict a class",
+      "section": "s06"
+    },
+    {
+      "label": "Learn from both images",
+      "section": "s07"
+    },
+    {
+      "label": "Scale to a photograph",
+      "section": "s08"
+    }
   ],
   "sections": [
-    {"id":"s01","title":"What should this image classifier answer?","lit":"e"},
-    {"id":"s02","title":"Make one embedding from each patch","lit":"e"},
-    {"id":"s03","title":"Keep the layout; make room for an image answer","lit":"e"},
-    {"id":"s04","title":"Let CLS choose how much to read","lit":"q k a"},
-    {"id":"s05","title":"Bring patch information into CLS","lit":"v a d ep"},
-    {"id":"s06","title":"Turn the image representation into a prediction","lit":"ep"},
-    {"id":"s07","title":"Learn from the two images","lit":"e q k v a d ep"},
-    {"id":"s08","title":"Use the same design for a photograph","lit":"e q k v a d ep"}
+    {
+      "id": "s01",
+      "title": "What should this image classifier answer?",
+      "lit": "e"
+    },
+    {
+      "id": "s02",
+      "title": "Make one embedding from each patch",
+      "lit": "e"
+    },
+    {
+      "id": "s03",
+      "title": "Keep the layout; make room for an image answer",
+      "lit": "e"
+    },
+    {
+      "id": "s04",
+      "title": "Let CLS choose how much to read",
+      "lit": "q k a"
+    },
+    {
+      "id": "s05",
+      "title": "Bring patch information into CLS",
+      "lit": "v a d ep"
+    },
+    {
+      "id": "s06",
+      "title": "Turn the image representation into a prediction",
+      "lit": "ep"
+    },
+    {
+      "id": "s07",
+      "title": "Learn from the two images",
+      "lit": "e q k v a d ep"
+    },
+    {
+      "id": "s08",
+      "title": "Use the same design for a photograph",
+      "lit": "e q k v a d ep"
+    }
   ],
-  "objects": ["e","q","k","v","a","d","ep"],
+  "objects": [
+    "e",
+    "q",
+    "k",
+    "v",
+    "a",
+    "d",
+    "ep"
+  ],
   "legendTitle": "The same symbols now refer to image-token rows",
   "provenance": "A fully inspectable one-head model uses 4×4 grayscale images and two-number rows. We work through its initial weights, then train all 44 parameters on the two pictured examples. LayerNorm and the feed-forward sublayer appear in the full ViT architecture after the numerical worksheet. Everything runs offline.",
-  "prev": {"label":"Attention Part 4: Cross-attention","href":"part4.html"},
-  "next": {"label":"Vision Part 2: Learning visual features","href":"vision2.html"},
-  "index": {"label":"Series home","href":"index.html"},
+  "prev": {
+    "label": "Part 4: Cross-attention: translate one phrase",
+    "href": "part4.html"
+  },
+  "next": {
+    "label": "Vision II: Learn visual representations without class labels",
+    "href": "vision2.html"
+  },
+  "index": {
+    "label": "Series home",
+    "href": "index.html"
+  },
   "notation": "vision1",
-  "footer": "Patch embeddings supply the rows; attention computes their contextual updates."
+  "footer": "Patch embeddings supply the rows; attention computes their contextual updates.",
+  "partLabel": "Vision I"
 }

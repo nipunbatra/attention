@@ -8,6 +8,46 @@ Usage:
 Replaces <!--KATEX-->, <!--SHARED-->, <!--SECTIONS--> in shell.html and the <title>. Injects window.__TOY__ and window.__PART__
 before shared.js, then the optional part runtime (partN.js) after it."""
 import argparse, glob, os, sys, json, re
+from urllib.parse import urlsplit
+
+
+def source_outputs(source_dir):
+    """Find complete lesson targets from source, independently of build order.
+
+    Source IDs 1–4 are the language sequence (2 uses attention.html); IDs 5–8
+    are vision1.html–vision4.html. A future config can declare another output
+    filename. ``published: false`` keeps a planned lesson unavailable even if
+    its draft source is present.
+    """
+    outputs = set()
+    for config_path in glob.glob(os.path.join(source_dir, 'part[0-9]*.json')):
+        match = re.fullmatch(r'part(\d+)\.json', os.path.basename(config_path))
+        if not match:
+            continue
+        number = int(match.group(1))
+        with open(config_path, encoding='utf-8') as file:
+            config = json.load(file)
+        if config.get('published') is False:
+            continue
+        suffix = '' if number == 2 else str(number)
+        sections = config.get('sections', [])
+        section_dir = os.path.join(source_dir, 'sections' + suffix)
+        complete = bool(sections) and os.path.isfile(os.path.join(source_dir, 'toy' + suffix + '.json'))
+        complete = complete and all(
+            re.fullmatch(r's\d\d', section.get('id', ''))
+            and os.path.isfile(os.path.join(section_dir, 'sec' + section['id'][1:] + '.html'))
+            for section in sections
+        )
+        if complete:
+            default = 'attention.html' if number == 2 else (
+                'vision%d.html' % (number - 4) if 5 <= number <= 8 else 'part%d.html' % number
+            )
+            outputs.add(config.get('output', default))
+    if os.path.isfile(os.path.join(source_dir, '..', 'index.html')):
+        outputs.add('index.html')
+    return outputs
+
+
 here = os.path.dirname(os.path.abspath(__file__))
 ap = argparse.ArgumentParser()
 ap.add_argument('--out', required=True)
@@ -41,12 +81,14 @@ else:
     print('warning: %s not found, using a minimal part config' % os.path.basename(cfg_path))
     part = {'part': N, 'title': 'Part %d' % N, 'subtitle': '', 'chain': [], 'sections': [], 'objects': ['e', 'q', 'k', 'v', 'a', 'd', 'ep'], 'prev': None, 'next': None, 'notation': 'part%d' % N}
 part.setdefault('part', N)
-# Planned parts must not look like working links in a distributable single file.
-for direction in ('prev', 'next'):
+# The complete series is built in one pass into any directory. A sibling's
+# absence from that output directory does not make a published lesson planned.
+available_outputs = source_outputs(here)
+for direction in ('prev', 'next', 'index'):
     link = part.get(direction)
     if link and link.get('href') and not re.match(r'^(?:https?:)?//', link['href']):
-        target = link['href'].split('#', 1)[0].split('?', 1)[0]
-        link['available'] = os.path.isfile(os.path.join(os.path.dirname(os.path.abspath(a.out)), target))
+        target = os.path.normpath(urlsplit(link['href']).path)
+        link['available'] = link.get('available') is not False and target in available_outputs
 shared = open(a.shared, encoding='utf-8').read()
 runtime = ''
 if os.path.exists(rt_path):

@@ -61,7 +61,7 @@ body.present #s04 .embedding-space>svg{max-height:380px}
   const fig=AT.ui.table(M.E,{axes:'e',rowLabels:M.vocab,rowCls:'e',cornerLabel:'token',decimals:2,caption:'All 27 trained embedding rows; displayed values are rounded.',into:S.querySelector('#s04-embed-full')});
   selected.forEach(c=>fig.rowEls[M.vocab.indexOf(c)].classList.add('is-hl'));
   const ids=['a','a','b'].map(c=>AT.mlp.stoi[c]),rows=AT.mlp.embed(ids);
-  AT.ui.table([[ids.length],[rows.length+' × '+rows[0].length]],{cols:['shape'],rowLabels:['ids','E_tok[ids]'],cornerLabel:'object',caption:'The lookup keeps one row per input position.',into:S.querySelector('#s04-shapes')});
+  AT.ui.table([[String(ids.length)],[rows.length+' × '+rows[0].length]],{cols:['shape'],rowLabels:['ids','E_tok[ids]'],cornerLabel:'object',caption:'The lookup keeps one row per input position.',into:S.querySelector('#s04-shapes')});
 })();
 </script>
 </section>

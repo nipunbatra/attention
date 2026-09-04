@@ -92,9 +92,9 @@ assert.equal(JSON.stringify(toy), baseline, 'readout and training do not mutate 
 assert.equal(window.AT.axes.named, false);
 assert.equal(window.AT.notation.filter(n => n.parts.includes('vision3')).length, 10);
 const sections = Array.from({ length: 7 }, (_, i) => readFileSync(new URL(`sections7/sec0${i + 1}.html`, import.meta.url), 'utf8'));
-assert.equal(sections.reduce((n, text) => n + (text.match(/class="frame"/g) || []).length, 0), 25);
+assert.equal(sections.reduce((n, text) => n + (text.match(/class="frame"/g) || []).length, 0), 26);
 assert(!sections.some(text => /[—–]/.test(text)), 'natural prose uses no em/en dashes');
-console.log(`PASS: Vision III ${scalars} reference scalars (max error ${maximum}); ${gradientChecks} finite-difference gradients (max error ${gradientError}); training, normalization, row/column loss, prompt/candidate/temperature controls, source immutability, and 25-frame contract.`);
+console.log(`PASS: Vision III ${scalars} reference scalars (max error ${maximum}); ${gradientChecks} finite-difference gradients (max error ${gradientError}); training, normalization, row/column loss, prompt/candidate/temperature controls, source immutability, and 26-frame contract.`);
 
 const browserFlag = process.argv.indexOf('--browser');
 if (browserFlag >= 0) {
@@ -121,8 +121,14 @@ if (browserFlag >= 0) {
     assert.deepEqual(errors, [], 'initial browser runtime errors');
     await page.waitForFunction(() => window.AT?.clip && document.querySelector('#s06-candidates table'));
     assert.deepEqual(errors, [], 'browser runtime errors');
-    assert.equal(await page.locator('.frame').count(), 25);
+    assert.equal(await page.locator('.frame').count(), 26);
     assert.equal(await page.locator('.katex-error').count(), 0, 'all lesson math renders');
+    const initialTemperature=await page.locator('#s06-candidates [aria-label="Inference temperature"]').inputValue();
+    close(Number(initialTemperature),C.classify().tau,'widget starts at exact learned temperature');
+    const initialTable=await page.locator('#s06-candidates').innerText();
+    C.classify().probabilities.forEach(p=>assert(initialTable.includes(p.toFixed(3)),'initial candidate probabilities use the learned temperature'));
+    assert.match(initialTable,/Using the learned temperature/);
+    assert.equal(await page.locator('.nchip .katex').count(),4,'sticky matching notation uses typeset symbols');
     const bounds = await page.evaluate(() => {
       const failures = [];
       document.querySelectorAll('svg[data-clip-diagram]').forEach(svg => {
@@ -164,6 +170,7 @@ if (browserFlag >= 0) {
         }
       }, { template, candidates, tau });
       await fit('candidate controls ' + [template, candidates, tau].join('/'));
+      assert.match(await page.locator('#s06-candidates').innerText(),/Inference temperature changed from the learned/);
     }
     await page.evaluate(() => AT.present.go('s05', 3, 0));
     for (const n of [0, 1, 20, 200]) {

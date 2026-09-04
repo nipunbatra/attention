@@ -4,12 +4,16 @@
 <div class="frame" data-title="For patch 4, should we predict pixels or features?" data-autobuild="off">
   <div id="s06-targets"></div>
   <p data-build="1">The target encoder chooses the feature space through its learned parameters. We do not assign a coordinate called “object meaning”.</p>
-  <script type="text/x-notes">The I-JEPA target is learned, so we cannot write its numerical coordinates from this image without specifying an actual trained target encoder. This section shows the architecture honestly instead of inventing feature values.</script>
+  <script type="text/x-notes">The I-JEPA target is learned, so we cannot write its numerical coordinates from this image without specifying an actual trained target encoder.
+
+This section shows the architecture honestly instead of inventing feature values.</script>
 </div>
 <div class="frame" data-title="Encode the full image, then select the target rows" data-autobuild="off">
   <div id="s06-jepa"></div>
   <p data-build="1">The context branch cannot read patch 4. The target branch can, because it supplies the training target.</p>
-  <script type="text/x-notes">Follow the bottom path first: full image, target encoder, selected patch-4 row. Do not crop patch 4 before the target encoder. Then follow the top path: remove patch 4, encode context, predict the representation at position 4. The full method uses larger context and target blocks; one patch keeps the roles visible here.</script>
+  <script type="text/x-notes">Follow the bottom path first: full image, target encoder, selected patch-4 row.
+
+Do not crop patch 4 before the target encoder. Then follow the top path: remove patch 4, encode context, predict the representation at position 4. The full method uses larger context and target blocks; one patch keeps the roles visible here.</script>
 </div>
 <div class="frame" data-title="Match the target features without backpropagating into them" data-autobuild="off">
   <pre class="torch-snippet"><code>with torch.no_grad():
@@ -18,12 +22,16 @@ pred = predictor(context_encoder(visible_rows), target_pos)
 loss = (pred - target).square().mean()</code></pre>
   <p data-build="1">Gradients update the context encoder and predictor. EMA updates the target encoder.</p>
   <p data-build="2">The target-position vectors tell the predictor <em>where</em> to predict. They do not reveal the missing pixels.</p>
-  <script type="text/x-notes">This is schematic single-image code using mean squared feature error. The context and target encoders have separate parameter copies. The target copy follows an EMA of the context parameters, not gradients from this loss. The predictor has its own trainable parameters.</script>
+  <script type="text/x-notes">This is schematic single-image code using mean squared feature error.
+
+The context and target encoders have separate parameter copies. The target copy follows an EMA of the context parameters, not gradients from this loss. The predictor has its own trainable parameters.</script>
 </div>
 <div class="frame" data-title="The target branch is not an input shortcut" data-autobuild="off">
   <div id="s06-check"></div>
   <p data-build="1">At inference, the pretrained encoder represents the supplied image. It need not run a hidden-region prediction exercise for every downstream task.</p>
-  <script type="text/x-notes">A target contains information the predictor is meant to learn to recover. That is allowed. Leakage would be feeding the target representation into the context prediction path before computing its answer.</script>
+  <script type="text/x-notes">A target contains information the predictor is meant to learn to recover.
+
+That is allowed. Leakage would be feeding the target representation into the context prediction path before computing its answer.</script>
 </div>
 <div class="companion after"><p>I-JEPA's target rows are contextual: the target encoder has processed the whole image before the rows are selected. Its parameters are an exponential moving average of the context encoder's parameters. The predictor is trained with the context encoder, while the target is treated as fixed for each backward pass. The two encoders therefore do not share one gradient-updated parameter object.</p><p>The published method samples several target blocks and a larger context block, excludes target regions from the context, and predicts the selected features. Our single hidden patch is an architecture illustration, not a reproduction of its masking recipe or trained predictions. The code shows a mean-squared feature loss to make the target space explicit; it does not reproduce every implementation detail of the paper.</p><p>Predicting features can reduce the requirement to reproduce every pixel detail, but it does not guarantee that learned features are semantic or useful for every task. See <a href="https://arxiv.org/abs/2301.08243" target="_blank" rel="noreferrer">Self-Supervised Learning from Images with a Joint-Embedding Predictive Architecture</a>.</p></div>
 <script>

@@ -5,18 +5,24 @@
   <div id="s04-views"></div>
   <p data-build="1">These are actual transformations of our four-patch image, not outputs from a trained model.</p>
   <p data-build="2">We can ask an encoder to retain information shared across both views.</p>
-  <script type="text/x-notes">The flip moves the lower-right patch to the lower-left. The brightness change multiplies all pixels by 0.75. Neither changes the number of image or patch coordinates. Real recipes use several transformations and crop sizes.</script>
+  <script type="text/x-notes">The flip moves the lower-right patch to the lower-left.
+
+The brightness change multiplies all pixels by 0.75. Neither changes the number of image or patch coordinates. Real recipes use several transformations and crop sizes.</script>
 </div>
 <div class="frame" data-title="Agreement alone allows a useless answer" data-autobuild="off">
   <p>If every image produces the same vector, its two views agree perfectly.</p>
   <div id="s04-contrastive" data-build="1"></div>
   <p data-build="2">Contrastive objectives also compare against other images. DINO uses a teacher and a different anti-collapse recipe.</p>
-  <script type="text/x-notes">The two views of the same image are the positive pair. Other images supply contrastive alternatives in a method such as SimCLR. This drawing introduces one family; DINO itself does not use this explicit negative-pair objective.</script>
+  <script type="text/x-notes">The two views of the same image are the positive pair.
+
+Other images supply contrastive alternatives in a method such as SimCLR. This drawing introduces one family; DINO itself does not use this explicit negative-pair objective.</script>
 </div>
 <div class="frame" data-title="Choose changes the task can afford to ignore" data-autobuild="off">
   <div id="s04-changes"></div>
   <div id="s04-check" data-build="1"></div>
-  <script type="text/x-notes">There is no augmentation that is harmless for every task. If predicting absolute brightness is important, forcing identical outputs after brightness scaling removes a useful distinction. Avoid saying that colour is always a nuisance.</script>
+  <script type="text/x-notes">There is no augmentation that is harmless for every task.
+
+If predicting absolute brightness is important, forcing identical outputs after brightness scaling removes a useful distinction. Avoid saying that colour is always a nuisance.</script>
 </div>
 <div class="companion after"><p>Agreement need not mean that every intermediate patch row becomes identical across views. A method may apply its loss to a particular global output or to a separate projection head. The backbone still produces the representation used downstream.</p><p>The contrastive drawing is a schematic explanation of the positive/negative distinction, not a simulation of training. We will now work through DINO's alternative: a student matches a slowly changing teacher distribution. The teacher's targets and the training recipe are what make this more than matching two arbitrary random vectors.</p></div>
 <script>

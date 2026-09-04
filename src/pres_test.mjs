@@ -167,7 +167,7 @@ const [pop] = await Promise.all([ctx.waitForEvent('page'), p.click('#at-presente
 hook(pop, 'presenter');
 await pop.waitForLoadState('load'); await pop.waitForTimeout(900);
 check(await pop.evaluate(() => document.body.classList.contains('presenter') && !!document.querySelector('#at-presenter')), 'presenter window renders the presenter layout');
-check(await pop.evaluate(() => document.querySelector('.pr-cur h2').textContent === 'Component gallery (not shipped)' && document.querySelector('.pr-sub').textContent === 'Builds, hand numbered'), 'presenter shows the current section and frame title');
+check(await pop.evaluate(() => document.querySelector('.pr-cur h2').textContent === 'Builds, hand numbered' && document.querySelector('.pr-sub').textContent === 'Component gallery (not shipped)'), 'presenter puts the projected frame title first, then section context');
 check(await pop.evaluate(() => document.querySelector('.pr-notes p').textContent.startsWith('Ask: which token')), 'presenter shows the notes');
 check(await pop.evaluate(() => document.querySelector('.pr-next h3').textContent.includes('00.2')), 'presenter shows the next frame');
 check(await pop.evaluate(() => /^\d\d:\d\d$/.test(document.querySelector('.pr-clock').textContent)), 'presenter clock runs');

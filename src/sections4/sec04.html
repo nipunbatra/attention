@@ -11,13 +11,15 @@
   <div id="s04-provenance"></div>
   <p class="s04-math" data-build="1">$\vq{q_2^{\mathrm{cross}}}=\vp{e_2^{\mathrm{self}}}W_Q^{\mathrm{cross}}$</p>
   <p data-build="2">The French <em>la</em> row retrieves source information to predict its next token.</p>
-  <script type="text/x-notes">Trace only the decoder-to-query path first. The decoder row has already read the French prefix. Ask where the query would come from if we had not written la yet: the BOS row. There is no query from the unknown rive token.</script>
+<script type="text/x-notes">Trace only the decoder-to-query path first.
+The decoder row has already read the French prefix. Ask where the query would come from if we had not written la yet: the BOS row. There is no query from the unknown rive token.</script>
 </div>
 <div class="frame" data-title="Compute the three query coordinates" data-autobuild="off">
   <p>At French <em>la</em>: $\vq{q_2^{\mathrm{cross}}}=\vp{e_2^{\mathrm{self}}}W_Q^{\mathrm{cross}}$.</p>
   <div id="s04-query-calc"></div>
   <pre class="torch-snippet" data-build="1"><code>Q = decoder_self @ W_Q_cross</code></pre>
-  <script type="text/x-notes">The input row appears once at the top. Each next row uses one column of the learned W_Q matrix to compute one query coordinate. These are numerical projections, not manually written questions. The same matrix is shared across decoder positions.</script>
+<script type="text/x-notes">The input row appears once at the top.
+Each next row uses one column of the learned W_Q matrix to compute one query coordinate. These are numerical projections, not manually written questions. The same matrix is shared across decoder positions.</script>
 </div>
 <div class="frame" data-title="Each encoded source row supplies a key and a value" data-autobuild="off">
   <p>Source: <code>the river bank &lt;eos&gt;</code>. Both projections read the same encoded source rows.</p>
@@ -25,27 +27,31 @@
   <p data-build="1">Keys match; values carry information. Same width, different vectors.</p>
   <pre class="torch-snippet" data-build="2"><code>K = encoded_source @ W_K_cross
 V = encoded_source @ W_V_cross</code></pre>
-  <script type="text/x-notes">Compare the key and value for river. They share a source position but differ because their projection matrices differ. The original lookup embedding, encoded row, key, and value are separate objects in the same calculation.</script>
+<script type="text/x-notes">Compare the key and value for river.
+They share a source position but differ because their projection matrices differ. The original lookup embedding, encoded row, key, and value are separate objects in the same calculation.</script>
 </div>
 <div class="frame" data-title="Compare the la query with four source keys" data-autobuild="off">
   <p id="s04-query"></p>
   <div id="s04-dots"></div>
   <p id="s04-worked" data-build="1"></p>
   <p data-build="2">One decoder query gives four scores, one per source position.</p>
-  <script type="text/x-notes">Read the three query coordinates once, then compare with each source key. Negative coordinates and scores are allowed. These learned coordinates have no labels such as water or finance.</script>
+<script type="text/x-notes">Read the three query coordinates once, then compare with each source key.
+Negative coordinates and scores are allowed. These learned coordinates have no labels such as water or finance.</script>
 </div>
 <div class="companion"><p>Every score uses the same query, but a different source key. The table rounds its display to three decimals; the model uses the original values throughout.</p></div>
 <div class="frame" data-title="Scale every score by the same square root" data-autobuild="off">
   <p class="s04-math">$s_{2j}=\dfrac{\vq{q_2^{\mathrm{cross}}}\cdot\vk{k_j^{\mathrm{cross}}}}{\sqrt{d_k}},\qquad d_k=3$</p>
   <div id="s04-scaled"></div>
   <p data-build="1">Wider dot products tend to have a larger spread. Dividing by $\sqrt{d_k}$ helps keep softmax from becoming too sharp just because the vectors are wide.</p>
-  <script type="text/x-notes">This is the same scaling from Part 2. We divide by the square root of query/key width, not the number of English words. Every score in this row gets the same divisor, so the ordering stays the same.</script>
+<script type="text/x-notes">This is the same scaling from Part 2.
+We divide by the square root of query/key width, not the number of English words. Every score in this row gets the same divisor, so the ordering stays the same.</script>
 </div>
 <div class="frame" data-title="Softmax turns four scores into four reading weights" data-autobuild="off">
   <p>Decoder row: <em>la</em>. Softmax runs across the four English source positions.</p>
   <div id="s04-softmax"></div>
   <p class="s04-math" data-build="1">$\alpha_{2j}=\dfrac{\exp(s_{2j})}{\sum_{r=1}^{4}\exp(s_{2r})},\qquad\sum_{j=1}^{4}\alpha_{2j}=1$</p>
-  <script type="text/x-notes">Follow a row from score to exponential to weight, then sum the final column. These are source-reading weights, not probabilities of French vocabulary tokens. For numerical stability the code subtracts the largest score before exponentiation; that leaves softmax unchanged.</script>
+<script type="text/x-notes">Follow a row from score to exponential to weight, then sum the final column.
+These are source-reading weights, not probabilities of French vocabulary tokens. For numerical stability the code subtracts the largest score before exponentiation; that leaves softmax unchanged.</script>
 </div>
 <div class="companion after"><p>The largest weight in this trained toy's <em>la</em> row goes to the source position <em>river</em>. That weight is a contribution coefficient for a contextual value vector. It should not be read as a word-alignment label or a complete explanation of the model's prediction. Every encoded source row has already mixed information from the whole English phrase.</p></div>
 <script>

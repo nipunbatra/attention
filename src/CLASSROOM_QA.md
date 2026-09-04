@@ -1,5 +1,30 @@
 # Classroom release checks
 
+## 2026-09-04: independent review repair pass
+
+`REVIEW_RESOLUTION_2026-09-04.md` records the accepted findings, independent corrections to proposed fixes, teaching additions, and remaining limits. This entry supersedes the counts in earlier historical entries below.
+
+| Lesson | Frames / final PDF pages | Progressive states |
+| --- | ---: | ---: |
+| Part I | 61 | 132 |
+| Part II | 133 | 297 |
+| Part III | 68 | 134 |
+| Part IV | 32 | 85 |
+| Vision I | 57 | 123 |
+| Vision II | 25 | 62 |
+| Vision III | 26 | 81 |
+| Vision IV | 31 | 74 |
+
+All 988 progressive states pass strict math validation and frame preflight/live-fit checks: no clipped stage, nested classroom scrollbar, or runtime error. The table checks cover desktop reading, 390px phone reading, and presentation. Two Part II narrow-label advisories were inspected: the short labels intentionally wrap into two lines; they do not overlap neighboring cells. Phone tables pan within their containers.
+
+The focused interaction regression passes 49 checks, including repeated Vision II slider/mask changes, their visible numbers and losses, arithmetic popup bounds at several stage scales, notes reservation, native slider keys, frame-title overview, full-width notation, and Part III chip destinations. QA and sweep intentional-error fixtures now exit nonzero. The broad release batch checks all eight pages at desktop 1280-by-720 and phone 390-by-844, exercises their controls, and runs the presentation and PDF-export contracts. Final Vision II/Vision IV diagram/header changes are checked again after rebuilding.
+
+Numerical checks reproduce the unchanged model arrays and the corrected full-precision diagnostics: 6,615 shared-model references; 8,220 live-model values; 84,968 position-capacity values; all 1,678 stored training entries; 260 scalar gradients with maximum error 4.51e-11; and 50 perturbations of unused position rows. Part IV passes 2,274 references and 188 gradients/updates. The vision checkers cover their disclosed forward passes, objectives, training updates, image permutations, grayscale invariants, and the new held-out counting failure. Metadata checks verify all eight configs, 91 sections, matching navigation names, eight isolated clean-directory builds, and three planned-link cases.
+
+All eight PDFs use the final 16:9 classroom view at 2x raster resolution, with reveal answers shown. Actual PDF pages were rendered for visual inspection, including the new Vision I comparisons, CLIP question, corrected arithmetic tables, grayscale transforms and VLM scores. That inspection caught two Vision II label collisions missed by bounding-box tests; the diagrams were spaced out before the final export. PDF text remains rasterized rather than selectable. Presenter notes are not printed over slides.
+
+Reproduce with the current all-eight build/check commands in `README.md`, plus `node src/interaction_test.mjs` and `python3 src/check_metadata.py`. For future changes, run checks after changing widget state, not only when the page first opens. Testing in Chromium is not exhaustive browser, accessibility, projector, or classroom validation.
+
 ## 2026-09-04: Vision I teaching rebuild
 
 The first Vision I adaptation met numerical and layout checks but did not give students enough motivation or intermediate workings. This rebuild was reviewed against the text lessons as a teaching sequence, not scored by slide count. It keeps the same block images visible through projection, matching, mixing, prediction, and learning; uses direct teacher questions; and moves optional formal detail into article companions.

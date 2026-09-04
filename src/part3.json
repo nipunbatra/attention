@@ -1,6 +1,6 @@
 {
   "part": 3,
-  "series": "From characters to Transformers",
+  "series": "Attention and language",
   "title": "Learning, heads, and the Transformer",
   "subtitle": "Follow one error backward, update the model, then assemble the decoder-only Transformer.",
   "audience": "Deep-learning students who completed Part 2",
@@ -8,53 +8,212 @@
   "centralLabel": "The learning step",
   "central": "\\theta \\leftarrow \\theta - \\eta\\,\\dfrac{\\partial L}{\\partial \\theta}",
   "chain": [
-    {"label": "Where Part 2 left us", "section": "s01"},
-    {"label": "Observed token and loss", "section": "s02"},
-    {"label": "Parameters", "section": "s03"},
-    {"label": "Forward and backward graph", "section": "s04"},
-    {"label": "One update", "section": "s05"},
-    {"label": "Parallel causal training", "section": "s06"},
-    {"label": "Multiple heads", "section": "s07"},
-    {"label": "Feature mixing", "section": "s08"},
-    {"label": "Residual stream and LayerNorm", "section": "s09"},
-    {"label": "Blocks and depth", "section": "s10"},
-    {"label": "Complete decoder-only model", "section": "s11"},
-    {"label": "Training objective", "section": "s12"},
-    {"label": "Generation and KV cache", "section": "s13"},
-    {"label": "Block arrangements", "section": "s14"},
-    {"label": "Sequence models", "section": "s15"},
-    {"label": "Limits of attention", "section": "s16"},
-    {"label": "Back to aabid", "section": "s17"},
-    {"label": "Pause and think", "section": "s18"},
-    {"label": "Three summaries", "section": "s19"}
+    {
+      "label": "Where Part 2 left us",
+      "section": "s01"
+    },
+    {
+      "label": "Observed token and loss",
+      "section": "s02"
+    },
+    {
+      "label": "Parameters",
+      "section": "s03"
+    },
+    {
+      "label": "Forward and backward graph",
+      "section": "s04"
+    },
+    {
+      "label": "One update",
+      "section": "s05"
+    },
+    {
+      "label": "Parallel causal training",
+      "section": "s06"
+    },
+    {
+      "label": "Multiple heads",
+      "section": "s07"
+    },
+    {
+      "label": "Feature mixing",
+      "section": "s08"
+    },
+    {
+      "label": "Residual stream and LayerNorm",
+      "section": "s09"
+    },
+    {
+      "label": "Blocks and depth",
+      "section": "s10"
+    },
+    {
+      "label": "Complete decoder-only model",
+      "section": "s11"
+    },
+    {
+      "label": "Training objective",
+      "section": "s12"
+    },
+    {
+      "label": "Generation and KV cache",
+      "section": "s13"
+    },
+    {
+      "label": "Block arrangements",
+      "section": "s14"
+    },
+    {
+      "label": "Sequence models",
+      "section": "s15"
+    },
+    {
+      "label": "Limits of attention",
+      "section": "s16"
+    },
+    {
+      "label": "Back to aabid",
+      "section": "s17"
+    },
+    {
+      "label": "Pause and think",
+      "section": "s18"
+    },
+    {
+      "label": "Three summaries",
+      "section": "s19"
+    }
   ],
   "sections": [
-    {"id": "s01", "title": "Where Part 2 left us", "lit": "e q k v a d ep"},
-    {"id": "s02", "title": "The observed next token tells us the error", "lit": ""},
-    {"id": "s03", "title": "Which numbers will the optimizer change?", "lit": ""},
-    {"id": "s04", "title": "The forward pass is a graph", "lit": ""},
-    {"id": "s05", "title": "One update", "lit": ""},
-    {"id": "s06", "title": "Train every position at once", "lit": ""},
-    {"id": "s07", "title": "Multiple heads", "lit": ""},
-    {"id": "s08", "title": "Attention mixes rows; the FFN mixes features", "lit": ""},
-    {"id": "s09", "title": "The residual stream and LayerNorm", "lit": ""},
-    {"id": "s10", "title": "One block, then many", "lit": ""},
-    {"id": "s11", "title": "The complete decoder-only model", "lit": ""},
-    {"id": "s12", "title": "Training: one pass, many guesses", "lit": ""},
-    {"id": "s13", "title": "Generation: one token, then again", "lit": ""},
-    {"id": "s14", "title": "Three ways to arrange blocks", "lit": ""},
-    {"id": "s15", "title": "Sequence models side by side", "lit": ""},
-    {"id": "s16", "title": "What attention gives, and what it does not", "lit": ""},
-    {"id": "s17", "title": "Back to aabid", "lit": ""},
-    {"id": "s18", "title": "Pause and think", "lit": ""},
-    {"id": "s19", "title": "Three summaries", "lit": ""}
+    {
+      "id": "s01",
+      "title": "Where Part 2 left us",
+      "lit": "e q k v a d ep"
+    },
+    {
+      "id": "s02",
+      "title": "The observed next token tells us the error",
+      "lit": ""
+    },
+    {
+      "id": "s03",
+      "title": "Which numbers will the optimizer change?",
+      "lit": ""
+    },
+    {
+      "id": "s04",
+      "title": "The forward pass is a graph",
+      "lit": ""
+    },
+    {
+      "id": "s05",
+      "title": "One update",
+      "lit": ""
+    },
+    {
+      "id": "s06",
+      "title": "Train every position at once",
+      "lit": ""
+    },
+    {
+      "id": "s07",
+      "title": "Multiple heads",
+      "lit": ""
+    },
+    {
+      "id": "s08",
+      "title": "Attention mixes rows; the FFN mixes features",
+      "lit": ""
+    },
+    {
+      "id": "s09",
+      "title": "The residual stream and LayerNorm",
+      "lit": ""
+    },
+    {
+      "id": "s10",
+      "title": "One block, then many",
+      "lit": ""
+    },
+    {
+      "id": "s11",
+      "title": "The complete decoder-only model",
+      "lit": ""
+    },
+    {
+      "id": "s12",
+      "title": "Training: one pass, many guesses",
+      "lit": ""
+    },
+    {
+      "id": "s13",
+      "title": "Generation: one token, then again",
+      "lit": ""
+    },
+    {
+      "id": "s14",
+      "title": "Three ways to arrange blocks",
+      "lit": ""
+    },
+    {
+      "id": "s15",
+      "title": "Sequence models side by side",
+      "lit": ""
+    },
+    {
+      "id": "s16",
+      "title": "What attention gives, and what it does not",
+      "lit": ""
+    },
+    {
+      "id": "s17",
+      "title": "Back to aabid",
+      "lit": ""
+    },
+    {
+      "id": "s18",
+      "title": "Pause and think",
+      "lit": ""
+    },
+    {
+      "id": "s19",
+      "title": "Three summaries",
+      "lit": ""
+    }
   ],
-  "objects": ["e", "q", "k", "v", "a", "d", "ep"],
+  "objects": [
+    "e",
+    "q",
+    "k",
+    "v",
+    "a",
+    "d",
+    "ep"
+  ],
   "legendTitle": "Objects carried forward from Part 2",
   "provenance": "The arithmetic comes from a hand-written demonstration model with {{d_model}}-number representations, a {{vocab}}-word vocabulary, and named axes {{axes}}. The training values were computed offline from the same parameters.",
-  "prev": {"label": "Part 2: Self-attention", "href": "attention.html"},
-  "next": {"label": "Part 4: Cross-attention and translation", "href": "part4.html"},
-  "index": {"label": "Series home", "href": "index.html"},
+  "prev": {
+    "label": "Part 2: Self-attention, from first principles",
+    "href": "attention.html"
+  },
+  "next": {
+    "label": "Part 4: Cross-attention: translate one phrase",
+    "href": "part4.html"
+  },
+  "index": {
+    "label": "Series home",
+    "href": "index.html"
+  },
   "notation": "part3",
-  "footer": "Part 3 completes the path from a fixed attention calculation to a trainable decoder-only Transformer."
+  "footer": "Part 3 completes the path from a fixed attention calculation to a trainable decoder-only Transformer.",
+  "objectSections": {
+    "e": "s03",
+    "q": "s04",
+    "k": "s04",
+    "v": "s04",
+    "a": "s06",
+    "d": "s09",
+    "ep": "s09"
+  }
 }

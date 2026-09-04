@@ -14,25 +14,33 @@
   <pre class="torch-snippet" data-build="2"><code># Two images produce two rows of class logits.
 logits = model(images)                 # [2, 2]
 loss = F.cross_entropy(logits, labels) # mean over both images</code></pre>
-  <script type="text/x-notes">Read each observed label and its probability. A lower probability for the correct label means a higher loss. The optimization objective is their mean, not whichever image was easiest.</script>
+  <script type="text/x-notes">Read each observed label and its probability.
+
+A lower probability for the correct label means a higher loss. The optimization objective is their mean, not whichever image was easiest.</script>
 </div>
 
 <div class="frame" data-title="Follow the same image all the way to loss" data-autobuild="off">
   <div id="s07-forward-graph" class="v1-train-graph"></div>
   <p>$R$ stacks the flattened patch rows $r_1,\ldots,r_4$. Dashed boxes contain learned parameters; solid boxes show computations.</p>
-  <script type="text/x-notes">Trace the top branch for matching, then the lower branch for information. Dashed boxes are learned parameters. Both images use this graph. The labels enter only at loss.</script>
+  <script type="text/x-notes">Trace the top branch for matching, then the lower branch for information.
+
+Dashed boxes are learned parameters. Both images use this graph. The labels enter only at loss.</script>
 </div>
 
 <div class="frame" data-title="Autograd follows every contributing path backward" data-autobuild="off">
   <div id="s07-backward-graph" class="v1-train-graph"></div>
   <p>Both the weights $A$ and the values $V$ receive gradients.</p>
-  <script type="text/x-notes">Start at loss, reverse the head and residual addition, and follow both inputs of the weighted sum. At E, gradient contributions from attention and the residual route add. The page differentiates this graph; students do not need to calculate these derivatives by hand.</script>
+  <script type="text/x-notes">Start at loss, reverse the head and residual addition, and follow both inputs of the weighted sum.
+
+At E, gradient contributions from attention and the residual route add. The page differentiates this graph; students do not need to calculate these derivatives by hand.</script>
 </div>
 
 <div class="frame" data-title="Which numbers does the optimizer keep?" data-autobuild="off">
   <div id="s07-stored"></div>
   <p class="callout callout-key" data-build="1">On the next forward pass, new parameters produce new embeddings, queries, keys, values, and predictions.</p>
-  <script type="text/x-notes">The image pixels and labels are data. The optimizer updates stored model parameters. It does not take a cached Q or attention matrix and save an improved version for this particular image.</script>
+  <script type="text/x-notes">The image pixels and labels are data.
+
+The optimizer updates stored model parameters. It does not take a cached Q or attention matrix and save an improved version for this particular image.</script>
 </div>
 
 <div class="frame" data-title="Compute gradients, then take one step" data-autobuild="off">
@@ -41,14 +49,18 @@ loss.backward()  # compute a gradient for each learned parameter
 optimizer.step() # update the parameters using those gradients</code></pre>
   <p class="v1-train-eq" data-build="1">$\theta_{\mathrm{new}}=\theta-\eta\,\nabla_\theta L$</p>
   <div id="s07-parameter-step" data-build="2"></div>
-  <script type="text/x-notes">The one displayed matrix entry is a window into the actual update, not the only parameter that changes. We use full-batch SGD on the two examples. Backward computes gradients; step changes parameters. A zero gradient leaves its parameter unchanged on that step.</script>
+  <script type="text/x-notes">The one displayed matrix entry is a window into the actual update, not the only parameter that changes.
+
+We use full-batch SGD on the two examples. Backward computes gradients; step changes parameters. A zero gradient leaves its parameter unchanged on that step.</script>
 </div>
 
 <div class="frame" data-title="Run the forward pass again after that step" data-autobuild="off">
   <div id="s07-one-step"></div>
   <p class="callout callout-key" data-build="1">The <strong>mean loss falls</strong>, although the two-block image gets worse on this first step.</p>
   <p data-build="2">The optimizer is fitting both examples together. One step need not improve every example.</p>
-  <script type="text/x-notes">The two-block loss rises while the one-block loss falls enough to lower the mean. These are recomputed losses, not an extrapolation from the gradient. This is why we look at the training objective and keep checking individual examples too.</script>
+  <script type="text/x-notes">The two-block loss rises while the one-block loss falls enough to lower the mean.
+
+These are recomputed losses, not an extrapolation from the gradient. This is why we look at the training objective and keep checking individual examples too.</script>
 </div>
 
 <div class="frame" data-title="Repeat the same forward, backward, and update" data-autobuild="off">
@@ -57,20 +69,33 @@ optimizer.step() # update the parameters using those gradients</code></pre>
   <pre class="torch-snippet" data-build="2"><code>optimizer.zero_grad()
 F.cross_entropy(model(images), labels).backward()
 optimizer.step()</code></pre>
-  <script type="text/x-notes">Every point follows another forward pass with the latest parameters. The graph is unchanged; its numbers change. The training trace includes the first step already shown.</script>
+  <script type="text/x-notes">Every point follows another forward pass with the latest parameters.
+
+The graph is unchanged; its numbers change. The training trace includes the first step already shown.</script>
 </div>
 
 <div class="frame" data-title="Check both images with the learned parameters" data-autobuild="off">
   <div id="s07-final-predictions"></div>
   <p class="callout callout-key" data-build="1">The same model now gives the correct label most of the probability for <strong>both training images</strong>.</p>
-  <p data-build="2">We have shown learning on two examples. Try new one- and two-block images, with different positions and brightnesses.</p>
-  <script type="text/x-notes">Do not call this a general block counter. With only two examples, it may rely on shortcuts such as brightness. A held-out test set is needed to find out what rule it learned.</script>
+  <p data-build="2">Both were used for training. Next, move the one block to a location the model has not seen it occupy alone.</p>
+  <script type="text/x-notes">Do not call this a general block counter.
+
+With only two examples, it may rely on shortcuts such as brightness. A held-out test set is needed to find out what rule it learned.</script>
 </div>
 
-<div class="companion after"><p>The numerical model contains one attention head, two-number representations, one residual addition, and the class head. It has no LayerNorm or feed-forward sublayer. The next section adds those components to the architecture rather than silently inserting them into the arithmetic we just trained.</p></div>
+<div class="frame" data-title="Did it learn to count, or just fit these two images?" data-autobuild="off">
+  <div class="vision1-story" id="s07-held-out"></div>
+  <p>Same count, shape, and pixel values. Moving the block changes the model’s answer.</p>
+  <p data-build="1">Fitting two examples did not teach a reliable counting rule.</p>
+  <script type="text/x-notes">Count the blocks before reading the model's answer.
+
+Both pictures contain the same single block. Reuse the learned parameters without another training step. This one failure disproves reliable counting for this trained model, but does not identify exactly which shortcut it learned.</script>
+</div>
+<div class="companion after"><p>The numerical model contains one attention head, two-number representations, one residual addition, and the class head. It has no LayerNorm or feed-forward sublayer. The next section adds those components to the architecture rather than silently inserting them into the arithmetic we just trained.</p><p>The moved-block example is a diagnostic we chose to expose a failure. It is not an estimate of test accuracy. An evaluation should include a separately held-out set with varied positions, shapes, brightnesses, and counts covered by the task.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s07'),T=AT.vision,L=T.learning,X=L.experiment,names=L.classes,fmt=x=>x.toFixed(3);
+  T.story(S.querySelector('#s07-held-out'),{stage:'generalization'});
   AT.ui.table(X.before.forwards.map((f,i)=>[names[L.targets[i]],f.probs[L.targets[i]],f.loss]),{into:S.querySelector('#s07-batch-loss'),cols:[{label:'observed label',kind:'text'},{label:'p(correct label)',kind:'number'},{label:'loss',kind:'number'}],rowLabels:['image 1','image 2'],cornerLabel:'initial model',decimals:3});
   AT.tex(S.querySelector('#s07-mean-loss'),'L_{\\mathrm{batch}}=\\frac{'+fmt(X.before.losses[0])+'+'+fmt(X.before.losses[1])+'}{2}\\approx'+fmt(X.before.meanLoss),{display:true});
   AT.ui.table([

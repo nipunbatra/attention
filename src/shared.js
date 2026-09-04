@@ -53,6 +53,8 @@
     io.observe(el);
   }
   AT.h = h; AT.append = append; AT.clear = clear; AT.debounce = debounce; AT.onVisible = onVisible; AT.reducedMotion = reducedMotion;
+  /* One grayscale convention across the vision lessons: larger pixels are lighter. */
+  AT.imageShade = function (v) { return Math.round(35 + 69 * Math.max(0, Math.min(3, Number(v) || 0))); };
 
   /* ======================================================================
      1. toy model + math
@@ -471,11 +473,30 @@
   /* ---- popover: a small dialog anchored below a cell, appended to the figure (outside the scroll container) ---- */
   function placeBelow(fig, anchor, el) {
     var fr = fig.getBoundingClientRect(), ar = anchor.getBoundingClientRect();
-    var vw = document.documentElement.clientWidth || window.innerWidth || 1280;
-    el.style.top = (ar.bottom - fr.top + 6) + 'px';
-    var w = el.offsetWidth, left = ar.left - fr.left, minLeft = 12 - fr.left, maxLeft = vw - 12 - fr.left - w;
-    if (maxLeft < minLeft) maxLeft = minLeft;
-    el.style.left = Math.max(minLeft, Math.min(left, maxLeft)) + 'px';
+    /* DOMRects are viewport pixels; absolute offsets are pre-transform pixels.
+       Intersect every clipping ancestor, not just the viewport: the live frame
+       itself clips, even when plenty of viewport space remains below it. */
+    var sx = fr.width / (fig.offsetWidth || fr.width || 1), sy = fr.height / (fig.offsetHeight || fr.height || 1);
+    var bounds = { left: 0, top: 0, right: document.documentElement.clientWidth, bottom: window.innerHeight };
+    for (var p = fig; p && p !== document.body; p = p.parentElement) {
+      var cs = getComputedStyle(p), r = p.getBoundingClientRect();
+      if (/hidden|clip|scroll|auto/.test(cs.overflowX)) { bounds.left = Math.max(bounds.left, r.left); bounds.right = Math.min(bounds.right, r.right); }
+      if (/hidden|clip|scroll|auto/.test(cs.overflowY)) { bounds.top = Math.max(bounds.top, r.top); bounds.bottom = Math.min(bounds.bottom, r.bottom); }
+    }
+    var gap = 8, maxW = Math.max(1, (bounds.right - bounds.left - gap * 2) / sx);
+    var maxH = Math.max(1, (bounds.bottom - bounds.top - gap * 2) / sy);
+    el.style.width = '';
+    el.style.maxWidth = maxW + 'px'; el.style.minWidth = Math.min(260, maxW) + 'px';
+    el.style.maxHeight = maxH + 'px';
+    // Absolute auto-width would shrink again when left changes, making the
+    // measured height stale. Freeze this measured width before choosing a side.
+    el.style.width = el.offsetWidth + 'px';
+    var w = el.offsetWidth * sx, height = el.offsetHeight * sy;
+    var left = Math.max(bounds.left + gap, Math.min(ar.left, bounds.right - gap - w));
+    var below = ar.bottom + gap, above = ar.top - gap - height;
+    var top = below + height <= bounds.bottom - gap ? below : above >= bounds.top + gap ? above : Math.max(bounds.top + gap, Math.min(below, bounds.bottom - gap - height));
+    el.style.left = ((left - fr.left) / sx - fig.clientLeft) + 'px';
+    el.style.top = ((top - fr.top) / sy - fig.clientTop) + 'px';
   }
   function popover(fig, opts) {
     opts = opts || {};
@@ -484,12 +505,14 @@
     var pop = h('div', { class: 'calc-pop', role: 'dialog', 'aria-label': opts.label || 'Arithmetic', hidden: true }, close, titleEl, bodyEl);
     fig.appendChild(pop);
     var anchor = null;
+    function reposition() { if (anchor && !pop.hidden) placeBelow(fig, anchor, pop); }
     function onOutside(ev) { if (pop.contains(ev.target) || (anchor && anchor.contains(ev.target))) return; hide(); }
     function onKey(ev) { if (ev.key === 'Escape') { hide(true); ev.stopPropagation(); } }
     function hide(refocus) {
       if (pop.hidden) return;
       pop.hidden = true;
       document.removeEventListener('mousedown', onOutside, true); document.removeEventListener('keydown', onKey, true);
+      window.removeEventListener('resize', reposition); document.removeEventListener('at-presentation-layout', reposition);
       var a = anchor; anchor = null;
       if (refocus && a && a.focus) a.focus();
     }
@@ -499,6 +522,7 @@
       pop.hidden = false; placeBelow(fig, td, pop);
       if (fig.hideTip) fig.hideTip();
       document.addEventListener('mousedown', onOutside, true); document.addEventListener('keydown', onKey, true);
+      window.addEventListener('resize', reposition); document.addEventListener('at-presentation-layout', reposition);
     }
     close.addEventListener('click', function () { hide(true); });
     return { el: pop, body: bodyEl, show: show, hide: hide, isOpen: function () { return !pop.hidden; } };
@@ -1243,8 +1267,8 @@
   NOTATION_3.forEach(function (n) { n.parts = ['part3']; });
   AT.notation = NOTATION.concat(NOTATION_1, NOTATION_3);
   AT.T = arr(AT.sentences.river).length || 10;
-  var GROUP_TITLES = { token: 'One token at a time', matrix: 'All tokens at once', sizes: 'Sizes and learned weights', axes: 'Named coordinates (illustrative)', mlp: 'The character model, step by step', train: 'Learning', block: 'The Transformer block' };
-  var PART_GROUPS = { part1: ['mlp', 'sizes', 'axes'], part2: ['token', 'matrix', 'sizes', 'axes'], part3: ['token', 'matrix', 'train', 'block', 'sizes', 'axes'] };
+  var GROUP_TITLES = { token: 'One token at a time', matrix: 'All tokens at once', sizes: 'Sizes and learned weights', axes: 'Named coordinates (illustrative)', mlp: 'The character model, step by step', train: 'Learning', block: 'The Transformer block', image: 'Image representations', masked: 'Learning from hidden patches', distill: 'Learning from another view' };
+  var PART_GROUPS = { part1: ['mlp', 'sizes', 'axes'], part2: ['token', 'matrix', 'sizes', 'axes'], part3: ['token', 'matrix', 'train', 'block', 'sizes', 'axes'], vision2: ['image', 'masked', 'distill', 'sizes'] };
   /* the "axes" group is built at call time from AT.axes so the names are never retyped */
   function axesNotation() {
     if (!AT.axes.named) return [];
@@ -1300,9 +1324,11 @@
   ui.legend = function (opts) {
     opts = opts || {};
     var ul = h('ul', { class: 'legend', 'aria-label': 'Colour legend' });
-    OBJECTS.forEach(function (o) {
+    AT.objects.forEach(function (o) {
       if (opts.only && arr(opts.only).indexOf(o.cls) < 0) return;
-      ul.appendChild(h('li', { class: 'obj-' + o.cls, title: o.def }, h('span', { class: 'sw' }), h('span', { class: 'sy' }, o.sym), o.name));
+      var symbol = h('span', { class: 'sy' }, o.sym);
+      if (o.symTex) AT.tex(symbol, o.symTex);
+      ul.appendChild(h('li', { class: 'obj-' + o.cls, title: o.def }, h('span', { class: 'sw' }), symbol, o.name));
     });
     return put(ul, opts);
   };
@@ -1582,7 +1608,7 @@
       var lines = txt.split('\n'), ind = null;
       lines.forEach(function (l) { if (l.trim()) { var m = l.match(/^\s*/)[0].length; ind = ind == null ? m : Math.min(ind, m); } });
       lines = lines.map(function (l) { return l.slice(ind || 0); });
-      /* the first line is the question to ask before the reveal: it is always its own paragraph */
+      /* Preserve an authored opening cue, without treating every long note as a question. */
       var first = lines.shift().trim();
       var rest = lines.join('\n').split(/\n\s*\n/).map(function (p) { return p.replace(/\s*\n\s*/g, ' ').trim(); }).filter(Boolean);
       return (first ? [first] : []).concat(rest);
@@ -1694,12 +1720,12 @@
       U.notes = h('div', { id: 'at-notes', role: 'complementary', 'aria-label': 'Presenter notes' });
       U.overview = h('div', { id: 'at-overview', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'All frames' }, h('div', { class: 'ov-head' }, h('p', { class: 'ov-title' }, 'All frames: select one to jump'), h('button', { id: 'at-overview-close', type: 'button', class: 'pbtn', on: { click: function () { setOverview(false); } } }, 'Close overview')), h('div', { class: 'ov-grid' }));
       U.blank = h('div', { id: 'at-blank', 'aria-hidden': 'true' });
-      U.help = h('div', { id: 'at-help', role: 'note' }, h('div', { html: '<kbd>→</kbd> <kbd>Space</kbd> <kbd>PgDn</kbd> next build · <kbd>←</kbd> <kbd>PgUp</kbd> <kbd>Backspace</kbd> back · <kbd>Home</kbd> <kbd>End</kbd> first / last frame<br><kbd>C</kbd> controls · <kbd>O</kbd> overview · <kbd>B</kbd> blank · <kbd>S</kbd> notes · <kbd>?</kbd> this help · <kbd>Esc</kbd> close panel / exit' }));
+      U.help = h('div', { id: 'at-help', role: 'note' }, h('div', { html: '<kbd>→</kbd> <kbd>Space</kbd> <kbd>PgDn</kbd> <kbd>N</kbd> next build · <kbd>←</kbd> <kbd>PgUp</kbd> <kbd>Backspace</kbd> back · <kbd>Home</kbd> <kbd>End</kbd> first / last frame<br><kbd>C</kbd> controls · <kbd>O</kbd> overview · <kbd>B</kbd> blank · <kbd>S</kbd> notes · <kbd>?</kbd> this help · <kbd>Esc</kbd> close panel / return focus to slide / exit<br>Focused sliders keep their arrow and Page keys. <kbd>N</kbd> advances after a regular slider; <kbd>Esc</kbd> leaves a control without leaving the presentation.' }));
       U.blank.addEventListener('click', function () { setBlank(false); });
       document.body.appendChild(U.controlsToggle); document.body.appendChild(U.controls); document.body.appendChild(U.announcement); document.body.appendChild(U.fitWarning); document.body.appendChild(U.notes); document.body.appendChild(U.overview); document.body.appendChild(U.blank); document.body.appendChild(U.help);
       window.addEventListener('resize', measureChrome);
       document.addEventListener('fullscreenchange', function () { updateChrome(); measureChrome(); });
-      if (window.ResizeObserver) { U.resize = new ResizeObserver(measureChrome); U.resize.observe(U.controls); var strip = document.getElementById('strip'); if (strip) U.resize.observe(strip); }
+      if (window.ResizeObserver) { U.resize = new ResizeObserver(measureChrome); U.resize.observe(U.controls); U.resize.observe(U.notes); var strip = document.getElementById('strip'); if (strip) U.resize.observe(strip); }
       document.addEventListener('input', scheduleFitCheck, true);
       document.addEventListener('change', scheduleFitCheck, true);
       document.addEventListener('click', scheduleFitCheck, true);
@@ -1716,6 +1742,8 @@
     }
     function measureChrome() {
       if (!P.active) return;
+      var notesHeight = P.notes && U.notes ? Math.ceil(U.notes.getBoundingClientRect().height) : 0;
+      document.body.style.setProperty('--present-notes-h', notesHeight + 'px');
       var main = document.querySelector('main');
       if (main) {
         var r = main.getBoundingClientRect(), cs = getComputedStyle(document.body);
@@ -1726,6 +1754,7 @@
         document.body.style.setProperty('--present-scale', String(Math.max(0.05, scale)));
       }
       repaintSvgs(cur());
+      document.dispatchEvent(new Event('at-presentation-layout'));
       scheduleFitCheck();
     }
     /* Chromium can retain SVG text at coordinates from the previously hidden
@@ -1904,7 +1933,11 @@
     }
     function notesHtml(list, empty) {
       if (!list || !list.length) return '<p class="at-notes-empty">' + (empty || 'No notes for this frame.') + '</p>';
-      return list.map(function (p) { return '<p>' + escapeHtml(p) + '</p>'; }).join('');
+      return list.map(function (p, i) {
+        /* Bold only a short opening cue, never a whole one-line lecture note. */
+        var cue = i === 0 && p.length <= 180 && !/[.!?]\s+\S/.test(p);
+        return '<p' + (cue ? ' class="at-notes-cue"' : '') + '>' + escapeHtml(p) + '</p>';
+      }).join('');
     }
     function updateChrome() {
       var fr = P.frames[P.fi]; if (!fr || !U.counter) return;
@@ -1919,7 +1952,7 @@
       U.fullscreen.textContent = document.fullscreenElement ? 'Leave full screen' : 'Full screen';
       U.fullscreen.setAttribute('aria-pressed', document.fullscreenElement ? 'true' : 'false');
       frameHeading(fr);
-      if (P.notes) U.notes.innerHTML = notesHtml(fr.notes);
+      if (P.notes) { U.notes.innerHTML = notesHtml(fr.notes); measureChrome(); }
       var bar = document.getElementById('progress');
       if (bar) bar.style.width = (100 * (P.fi + (P.build + 1) / (fr.maxBuild + 1)) / P.frames.length).toFixed(2) + '%';
     }
@@ -1928,7 +1961,7 @@
       P.frames.forEach(function (fr, i) {
         var b = h('button', { type: 'button', class: 'ov-item' + (i === P.fi ? ' is-current' : ''), 'aria-current': i === P.fi ? 'true' : null, on: { click: function () { setOverview(false); showFrame(i, 0); cur().el.focus({ preventScroll: true }); } } },
           h('span', { class: 'ov-n' }, fr.num + '.' + (fr.index + 1) + (fr.maxBuild ? ' · ' + (fr.maxBuild + 1) + ' builds' : '')),
-          h('span', { class: 'ov-t' }, fr.secTitle), fr.title ? h('span', { class: 'ov-s' }, fr.title) : null);
+          h('span', { class: 'ov-t' }, displayTitle(fr)), fr.title && fr.title.trim() !== fr.secTitle.trim() ? h('span', { class: 'ov-s' }, fr.secTitle) : null);
         grid.appendChild(b);
       });
     }
@@ -1947,11 +1980,12 @@
       emit('overview', P.overview);
     }
     function setBlank(on) { P.blank = !!on; if (U.blank) U.blank.classList.toggle('is-on', P.blank); }
-    function setNotes(on) { P.notes = !!on; if (U.notes) { U.notes.classList.toggle('is-on', P.notes); if (P.notes) updateChrome(); } }
+    function setNotes(on) { P.notes = !!on; if (U.notes) { U.notes.classList.toggle('is-on', P.notes); if (P.notes) updateChrome(); measureChrome(); } }
     function setHelp(on) { P.help = !!on; if (U.help) U.help.classList.toggle('is-on', P.help); }
 
     /* ---- frames ---- */
     function cur() { return P.frames[P.fi] || null; }
+    function displayTitle(fr) { return fr.title && fr.title.trim() !== fr.secTitle.trim() ? fr.title : fr.secTitle; }
     function leaveFrame(fr) {
       if (!fr) return;
       restore(fr.snapshot);
@@ -2085,10 +2119,22 @@
     }
     function handleKey(key, target, ev) {
       if (!P.active) { if ((key === 'p' || key === 'P') && !inField(target)) { enter(); return true; } return false; }
+      // Arithmetic dialogs install a document-capture Escape handler. Let it run
+      // before the window-level presentation shortcut can exit the lesson.
+      if (key === 'Escape' && document.querySelector('.frame.is-live .calc-pop:not([hidden])')) return false;
       if (P.overview) return overviewKey(key, ev);
       if (P.blank) { if (key === 'Shift' || key === 'Control' || key === 'Alt' || key === 'Meta') return false; setBlank(false); return true; }
-      if (key === 'Escape') { if (P.help) setHelp(false); else if (P.controls) setControls(false); else exit(); return true; }
-      if (inField(target) || (target && target.closest && target.closest('[data-present="manual"]'))) return false;
+      var manual = target && target.closest && target.closest('[data-present="manual"]');
+      var field = inField(target), range = target && target.tagName === 'INPUT' && target.type === 'range';
+      if (key === 'Escape') {
+        if (P.help) setHelp(false); else if (P.controls) setControls(false);
+        else if (field || manual) { if (cur()) cur().el.focus({ preventScroll: true }); }
+        else exit();
+        return true;
+      }
+      /* A slider keeps native arrows, PageUp/Down and Home/End. N is unused by
+         a range and can advance the lesson; selects retain type-ahead letters. */
+      if (field || manual) { if (range && !manual && (key === 'n' || key === 'N')) { next(); return true; } return false; }
       switch (key) {
         case 'ArrowRight': next(); return true;
         case ' ': if (target && (target.tagName === 'BUTTON' || target.tagName === 'SUMMARY' || target.tagName === 'A' || target.getAttribute('role') === 'button')) return false; next(); return true;
@@ -2183,11 +2229,11 @@
       PR.startedAt = st.startedAt || PR.startedAt || Date.now();
       var f = st.frame;
       PR.num.textContent = f.num + ' · frame ' + (f.index + 1) + ' of ' + f.count + ' · ' + (st.fi + 1) + '/' + st.total;
-      PR.title.textContent = f.secTitle; PR.sub.textContent = f.title;
+      PR.title.textContent = displayTitle(f); PR.sub.textContent = displayTitle(f) !== f.secTitle ? f.secTitle : '';
       PR.build.textContent = 'build ' + st.build + ' of ' + f.maxBuild + (st.stepper ? ' · step ' + (st.stepper.index + 1) + ' of ' + st.stepper.count : '');
       clear(PR.dots); for (var i = 0; i <= f.maxBuild; i++) PR.dots.appendChild(h('span', { class: i < st.build ? 'on' : (i === st.build ? 'cur' : '') }));
       PR.notes.innerHTML = notesHtml(f.notes);
-      if (st.next) { PR.nextT.textContent = st.next.num + '.' + (st.next.index + 1) + '  ' + st.next.secTitle; PR.nextS.textContent = st.next.title; PR.nextN.innerHTML = notesHtml(st.next.notes.slice(0, 1), ''); }
+      if (st.next) { PR.nextT.textContent = st.next.num + '.' + (st.next.index + 1) + '  ' + displayTitle(st.next); PR.nextS.textContent = displayTitle(st.next) !== st.next.secTitle ? st.next.secTitle : ''; PR.nextN.innerHTML = notesHtml(st.next.notes.slice(0, 1), ''); }
       else { PR.nextT.textContent = 'Last frame'; PR.nextS.textContent = ''; PR.nextN.innerHTML = ''; }
     }
 

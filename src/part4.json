@@ -1,6 +1,6 @@
 {
   "part": 4,
-  "series": "From characters to Transformers",
+  "series": "Attention and language",
   "title": "Cross-attention: translate one phrase",
   "subtitle": "Read the English source, build the French answer, and follow the same calculation through prediction, learning, and generation.",
   "audience": "Deep-learning students who completed Parts 2 and 3",
@@ -8,31 +8,104 @@
   "centralLabel": "Where cross-attention reads",
   "central": "\\underbrace{\\vq{Q}}_{\\text{decoder}}\\quad \\underbrace{\\vk{K},\\vv{V}}_{\\text{encoded source}}\\quad\\longrightarrow\\quad \\vd{\\Delta e_{\\text{decoder}}}",
   "chain": [
-    {"label": "One translation task", "section": "s01"},
-    {"label": "Read the source", "section": "s02"},
-    {"label": "Read the answer prefix", "section": "s03"},
-    {"label": "Ask the encoded source", "section": "s04"},
-    {"label": "Retrieve, update, predict", "section": "s05"},
-    {"label": "One training example", "section": "s06"},
-    {"label": "Generate the answer", "section": "s07"},
-    {"label": "Self-attention and cross-attention", "section": "s08"}
+    {
+      "label": "One translation task",
+      "section": "s01"
+    },
+    {
+      "label": "Read the source",
+      "section": "s02"
+    },
+    {
+      "label": "Read the answer prefix",
+      "section": "s03"
+    },
+    {
+      "label": "Ask the encoded source",
+      "section": "s04"
+    },
+    {
+      "label": "Retrieve, update, predict",
+      "section": "s05"
+    },
+    {
+      "label": "One training example",
+      "section": "s06"
+    },
+    {
+      "label": "Generate the answer",
+      "section": "s07"
+    },
+    {
+      "label": "Self-attention and cross-attention",
+      "section": "s08"
+    }
   ],
   "sections": [
-    {"id": "s01", "title": "Translate one phrase", "lit": "e"},
-    {"id": "s02", "title": "The encoder reads the whole source", "lit": "e q k v a d ep"},
-    {"id": "s03", "title": "The decoder reads the answer so far", "lit": "e q k v a d ep"},
-    {"id": "s04", "title": "The decoder asks the source", "lit": "q k v a"},
-    {"id": "s05", "title": "Source information changes the prediction", "lit": "v a d ep"},
-    {"id": "s06", "title": "Train on the observed translation", "lit": ""},
-    {"id": "s07", "title": "Generate one token at a time", "lit": "q k v ep"},
-    {"id": "s08", "title": "Same operation, different sources", "lit": "q k v a d ep"}
+    {
+      "id": "s01",
+      "title": "Translate one phrase",
+      "lit": "e"
+    },
+    {
+      "id": "s02",
+      "title": "The encoder reads the whole source",
+      "lit": "e q k v a d ep"
+    },
+    {
+      "id": "s03",
+      "title": "The decoder reads the answer so far",
+      "lit": "e q k v a d ep"
+    },
+    {
+      "id": "s04",
+      "title": "The decoder asks the source",
+      "lit": "q k v a"
+    },
+    {
+      "id": "s05",
+      "title": "Source information changes the prediction",
+      "lit": "v a d ep"
+    },
+    {
+      "id": "s06",
+      "title": "Train on the observed translation",
+      "lit": ""
+    },
+    {
+      "id": "s07",
+      "title": "Generate one token at a time",
+      "lit": "q k v ep"
+    },
+    {
+      "id": "s08",
+      "title": "Same operation, different sources",
+      "lit": "q k v a d ep"
+    }
   ],
-  "objects": ["e", "q", "k", "v", "a", "d", "ep"],
+  "objects": [
+    "e",
+    "q",
+    "k",
+    "v",
+    "a",
+    "d",
+    "ep"
+  ],
   "legendTitle": "The same attention roles, with source and target labels",
   "provenance": "A new trained toy uses three-number representations and one head in each attention block. The coordinates have no assigned English meanings. Source and target use separate learned embedding tables and added position vectors. The numerical toy omits feed-forward sublayers and LayerNorm; Part 3 covers those parts of the full architecture.",
-  "prev": {"label": "Part 3: Learning, heads, and the Transformer", "href": "part3.html"},
-  "next": {"label": "Vision Part 1: An image becomes a sequence", "href": "vision1.html"},
-  "index": {"label": "Series home", "href": "index.html"},
+  "prev": {
+    "label": "Part 3: Learning, heads, and the Transformer",
+    "href": "part3.html"
+  },
+  "next": {
+    "label": "Vision I: An image becomes a sequence",
+    "href": "vision1.html"
+  },
+  "index": {
+    "label": "Series home",
+    "href": "index.html"
+  },
   "notation": "part4",
   "footer": "Cross-attention reads encoded source values using queries from the decoder."
 }

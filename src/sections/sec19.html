@@ -76,7 +76,8 @@ Read the intuitive sentence, then advance the operational chain. Include self in
 </div>
 
 <div class="frame" id="s19-operational" data-title="Follow the operational chain one stage at a time">
-  <script type="text/x-notes">Ask students to name the next box before advancing. The query-key branch routes; the values carry; the residual preserves the input.</script>
+<script type="text/x-notes">Ask students to name the next box before advancing.
+The query-key branch routes; the values carry; the residual preserves the input.</script>
 <div class="card">
   <p class="lvl">2 · Operational</p>
   <div id="s19-opchain"></div>
@@ -169,7 +170,8 @@ tokens = torch.cat([tokens, next_id])  # same parameters; a longer prefix</code>
 </div>
 
 <div class="frame" id="s19-frame-training" data-title="Generation uses parameters; training changes them">
-  <script type="text/x-notes">Generation repeats forward passes with fixed parameters. Training compares the distribution with an observed next token, backpropagates, and lets the optimizer update the stored parameters.</script>
+<script type="text/x-notes">Generation repeats forward passes with fixed parameters.
+Training compares the distribution with an observed next token, backpropagates, and lets the optimizer update the stored parameters.</script>
   <div class="training-loop">
     <div><strong>Forward</strong><p>Prefix $\rightarrow$ prediction $p$</p><p>Use the same attention and vocabulary head we just traced.</p></div>
     <div data-build="1"><strong>Measure error</strong><p>$L=-\log p(y)$</p><p>$y$ is the observed next token in the training text.</p></div>
@@ -187,7 +189,7 @@ No. Verify that the fifth rows of W_Q, W_K, W_V and W_vocab are zero. The causal
     <p data-build="1">In this toy, $W_Q$, $W_K$, $W_V$ and $W_{\text{vocab}}$ have zero fifth rows. They <strong>ignore the position coordinate</strong>.</p>
   </div>
   <div class="callout callout-note" data-build="2">Keep the final token fixed and shuffle the earlier tokens: this one-layer toy gives the <strong>same final prediction</strong>. It demonstrates content routing, not word-order sensitivity.</div>
-  <p data-build="3">The causal mask prevents reading future tokens; it does not fix this toy's unused position signal.</p>
+  <p data-build="3">The causal mask prevents reading future tokens; it does not fix this toy's unused position signal. <a href="vision1.html#s03">Vision I compares positions on and off numerically.</a></p>
 </div>
 
 <div class="frame" id="s19-frame4" data-title="What have we built, and what remains?">

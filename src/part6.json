@@ -6,15 +6,92 @@
   "audience": "Students who know image patches, ViT encoders, softmax, and gradient-based learning",
   "minutes": 45,
   "centralLabel": "Where the training target comes from",
-  "central": "\\text{image}\\;\\longrightarrow\\;\\text{hide or transform}\\;\\longrightarrow\\;\\text{predict a target from the image}",
-  "chain": [{"label":"Targets without class labels","section":"s01"},{"label":"MAE: hide patches","section":"s02"},{"label":"Compute reconstruction loss","section":"s03"},{"label":"Two views and useful invariance","section":"s04"},{"label":"DINO: match a teacher","section":"s05"},{"label":"I-JEPA: predict features","section":"s06"},{"label":"Evaluate the representation","section":"s07"}],
-  "sections": [{"id":"s01","title":"The image supplies a training target","lit":"e"},{"id":"s02","title":"MAE: hide patches, reconstruct pixels","lit":""},{"id":"s03","title":"Which pixels enter the loss?","lit":""},{"id":"s04","title":"Learn from two views of one image","lit":""},{"id":"s05","title":"DINO: a teacher supplies the target","lit":""},{"id":"s06","title":"I-JEPA predicts a target representation","lit":""},{"id":"s07","title":"What did the encoder learn?","lit":""}],
-  "objects": ["e"],
+  "central": "\\begin{gathered}\\text{image}\\;\\longrightarrow\\;\\text{hide or transform}\\\\\\downarrow\\\\\\text{predict a target from the image}\\end{gathered}",
+  "chain": [
+    {
+      "label": "Targets without class labels",
+      "section": "s01"
+    },
+    {
+      "label": "MAE: hide patches",
+      "section": "s02"
+    },
+    {
+      "label": "Compute reconstruction loss",
+      "section": "s03"
+    },
+    {
+      "label": "Two views and useful invariance",
+      "section": "s04"
+    },
+    {
+      "label": "DINO: match a teacher",
+      "section": "s05"
+    },
+    {
+      "label": "I-JEPA: predict features",
+      "section": "s06"
+    },
+    {
+      "label": "Evaluate the representation",
+      "section": "s07"
+    }
+  ],
+  "sections": [
+    {
+      "id": "s01",
+      "title": "The image supplies a training target",
+      "lit": "e"
+    },
+    {
+      "id": "s02",
+      "title": "MAE: hide patches, reconstruct pixels",
+      "lit": ""
+    },
+    {
+      "id": "s03",
+      "title": "Which pixels enter the loss?",
+      "lit": ""
+    },
+    {
+      "id": "s04",
+      "title": "Learn from two views of one image",
+      "lit": ""
+    },
+    {
+      "id": "s05",
+      "title": "DINO: a teacher supplies the target",
+      "lit": ""
+    },
+    {
+      "id": "s06",
+      "title": "I-JEPA predicts a target representation",
+      "lit": ""
+    },
+    {
+      "id": "s07",
+      "title": "What did the encoder learn?",
+      "lit": ""
+    }
+  ],
+  "objects": [
+    "e"
+  ],
   "legendTitle": "Representations keep the e notation",
   "provenance": "All drawings are teaching illustrations. The reconstruction lab computes exact errors for guesses you choose. The DINO lab computes exact probabilities and cross-entropy from disclosed illustrative logits. Neither lab runs a pretrained vision model.",
-  "prev": {"label":"Part 1: Vision Transformers","href":"vision1.html"},
-  "next": {"label":"Part 3: Image-text alignment","href":"vision3.html"},
-  "index": {"label":"Series home","href":"index.html"},
+  "prev": {
+    "label": "Vision I: An image becomes a sequence",
+    "href": "vision1.html"
+  },
+  "next": {
+    "label": "Vision III: CLIP: learn to match images and text",
+    "href": "vision3.html"
+  },
+  "index": {
+    "label": "Series home",
+    "href": "index.html"
+  },
   "notation": "vision2",
-  "footer": "Self-supervision supplies training targets from the data; downstream usefulness still needs evaluation."
+  "footer": "Self-supervision supplies training targets from the data; downstream usefulness still needs evaluation.",
+  "partLabel": "Vision II"
 }

@@ -50,7 +50,7 @@
     svg.append(el('title',{id:id+'-t'},title),el('desc',{id:id+'-d'},title+'. Schematic shapes show computation; numerical values come from the disclosed toy.'));
     const defs=el('defs');svg.append(defs);
     for(const c of ['e','q','k','v','a','d','neutral']){const m=el('marker',{id:id+'-'+c,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:7,markerHeight:7,orient:'auto-start-reverse'});m.append(el('path',{d:'M0 0L10 5L0 10Z',fill:c==='neutral'?'var(--ink-2)':'var(--c-'+c+')'}));defs.append(m);}
-    function text(x,y,t,c='neutral',size=20,anchor='middle'){svg.append(el('text',{x,y,'text-anchor':anchor,'dominant-baseline':'middle',fill:c==='neutral'?'var(--ink)':'var(--c-'+c+')','font-family':'var(--font-ui)','font-size':size},t));}
+    function text(x,y,t,c='neutral',size=20,anchor='middle'){const n=el('text',{x,y,'text-anchor':anchor,'dominant-baseline':'middle',fill:c==='neutral'?'var(--ink)':'var(--c-'+c+')','font-family':'var(--font-ui)','font-size':size},t);svg.append(n);return n;}
     function box(x,y,w,h,t,sub='',c='e'){
       svg.append(el('rect',{x:x-w/2,y:y-h/2,width:w,height:h,rx:8,fill:c==='neutral'?'var(--card)':'var(--t-'+c+')',stroke:c==='neutral'?'var(--line)':'var(--c-'+c+')','stroke-width':1.6}));
       text(x,y-(sub?10:0),t,c,22);if(sub)text(x,y+17,sub,'neutral',17);
@@ -60,7 +60,7 @@
   }
   function pixels(c,name,cx,cy,size=36){
     const image=data.images[name];
-    image.forEach((r,y)=>r.forEach((v,x)=>{c.svg.append(el('rect',{x:cx-2*size+x*size,y:cy-2*size+y*size,width:size-2,height:size-2,rx:2,fill:v===0?'var(--card)':v===1?'var(--t-e)':'var(--t-d)',stroke:'var(--line)'}));c.text(cx-1.5*size+x*size,cy-1.5*size+y*size,String(v),v===2?'d':'neutral',18);}));
+    image.forEach((r,y)=>r.forEach((v,x)=>{const shade=A.imageShade(v);c.svg.append(el('rect',{x:cx-2*size+x*size,y:cy-2*size+y*size,width:size-2,height:size-2,rx:2,'data-pixel-value':v,fill:`rgb(${shade},${shade},${shade})`,stroke:'var(--line)'}));c.text(cx-1.5*size+x*size,cy-1.5*size+y*size,String(v),'neutral',18).setAttribute('fill',shade<118?'#FFFFFF':'#000000');}));
   }
   function diagram(stage,options={}){
     const name=options.image||'two',snapshot=options.snapshot||'before';let c;
@@ -103,7 +103,7 @@
       c=canvas('Response loss trains the connector and decoder',315);
       c.box(150,66,260,68,'Image → fixed encoder','no parameter updates','e');
       c.box(495,66,300,68,'Learned connector','W_bridge, b_bridge','d');c.arrow('M283 66L341 66','d');
-      c.box(150,207,260,68,'Known text','E_tok + P','e');c.box(495,207,300,68,'Prefix decoder + head','W_Q, W_K, W_V, W_O, U, b','a');c.arrow('M283 207L341 207','e');c.arrow('M495 103L495 170','d');
+      c.box(150,207,260,68,'Known text','E_tok + P','e');c.box(495,207,300,68,'Prefix decoder + head','W_Q, W_K, W_V, W_O, W_vocab, b','a');c.arrow('M283 207L341 207','e');c.arrow('M495 103L495 170','d');
       c.box(885,207,300,68,'Answer-token loss','mean negative log probability','neutral');c.arrow('M648 207L732 207');
       c.box(885,66,300,68,'Observed response','two · blocks · <eos>','neutral');c.arrow('M885 103L885 170');
       c.arrow('M1038 207L1080 207L1080 289L493 289L493 244','d',true);c.text(790,285,'autograd','d',18);
@@ -119,16 +119,17 @@
     return c.svg;
   }
   const notation=[
-    ['matrix','G','Encoded visual rows before the connector','N\\times d_{\\rm vision}','4×2'],
+    ['matrix','\\ve{G}','Encoded visual rows before the connector','N\\times d_{\\rm vision}','4×2'],
     ['sizes','W_{\\rm bridge},b_{\\rm bridge}','Maps each visual row to the decoder width','d_{\\rm vision}\\times d_{\\rm model}','2×3; bias 1×3'],
-    ['matrix','E','Visual and text rows after adding positions','(N+T)\\times d_{\\rm model}','7×3 for the prompt'],
-    ['matrix','Q=EW_Q,\\ K=EW_K','Matching projections; query/key widths must agree','(N+T)\\times d_k','7×3'],
-    ['matrix','V=EW_V','Information to send; V is not G or E','(N+T)\\times d_v','7×3'],
+    ['matrix','\\ve{E}','Visual and text rows after adding positions','(N+T)\\times d_{\\rm model}','7×3 for the prompt'],
+    ['matrix','\\vq{Q}=\\ve{E}W_Q,\\quad\\vk{K}=\\ve{E}W_K','Matching projections; query/key widths must agree','(N+T)\\times d_k','7×3'],
+    ['matrix','\\vv{V}=\\ve{E}W_V','Information to send; V is not G or E','(N+T)\\times d_v','7×3'],
     ['matrix','M','Allowed visual-prefix information flow','(N+T)\\times(N+T)','7×7 for the prompt'],
-    ['token','m_i=\\sum_j\\alpha_{ij}v_j','Message retrieved by the current query','1\\times d_v','1×3'],
-    ['token','\\Delta e_i=m_iW_O,\\ e_i\'=e_i+\\Delta e_i','Output projection followed by the residual addition','1\\times d_{\\rm model}','1×3'],
-    ['token','z_i=e_i\'U+b','Vocabulary logits, not attention weights','1\\times|\\mathcal V|','1×8'],
-    ['sizes','E_{\\rm tok}','Learned text-token lookup table','|\\mathcal V|\\times d_{\\rm model}','8×3']
+    ['token','m_i=\\sum_j\\va{\\alpha_{ij}}\\vv{v_j}','Message retrieved by the current query','1\\times d_v','1×3'],
+    ['token','\\vd{\\Delta e_i}=m_iW_O,\\quad\\vp{e_i^\\prime}=\\ve{e_i}+\\vd{\\Delta e_i}','Output projection followed by the residual addition','1\\times d_{\\rm model}','1×3'],
+    ['token','z_i=\\vp{e_i^\\prime}W_{\\mathrm{vocab}}+b','Vocabulary logits, not attention weights','1\\times|\\mathcal V|','1×8'],
+    ['sizes','E_{\\rm tok}','Learned text-token lookup table','|\\mathcal V|\\times d_{\\rm model}','8×3'],
+    ['sizes','W_{\\mathrm{vocab}},\\;b','Vocabulary prediction weights and bias','d_{\\rm model}\\times|\\mathcal V|,\\;1\\times|\\mathcal V|','3×8; bias 1×8']
   ];
   notation.forEach(([g,sym,mean,shape,d])=>A.notation.push({g,sym,mean,shape,dims:()=>d,parts:['vision4']}));
   A.axes.named=false;

@@ -39,10 +39,10 @@
     function box(x,y,w,h,label,detail,role,param) {rect(x,y,w,h,role,param);text(x+w/2,y+h/2-(detail?14:0),label,role,26);if(detail)text(x+w/2,y+h/2+21,detail,'muted',24);}
     return {svg:svg,text:text,rect:rect,arrow:arrow,path:path,box:box,id:id};
   }
-  function pixelShade(v) { var s=Math.round(35+Math.max(0,Math.min(3,v))*69);return'rgb('+s+','+s+','+s+')'; }
+  function pixelShade(v) { var s=AT.imageShade(v);return'rgb('+s+','+s+','+s+')'; }
   function pixelGrid(c, image, x,y,size,opts) {
     opts=opts||{};var n=image.length,cell=size/n;
-    image.forEach(function(row,i){row.forEach(function(v,j){node(c.svg,'rect',{x:x+j*cell,y:y+i*cell,width:cell,height:cell,fill:pixelShade(v),stroke:'#aab0b9','stroke-width':.8});if(opts.numbers)c.text(x+(j+.5)*cell,y+(i+.5)*cell,fmt(v,2),'ink',Math.min(28,cell*.55),'middle',{fill:v<1.4?'#fff':'#111827','font-family':'var(--font-mono,monospace)'});});});
+    image.forEach(function(row,i){row.forEach(function(v,j){node(c.svg,'rect',{x:x+j*cell,y:y+i*cell,width:cell,height:cell,'data-pixel-value':v,fill:pixelShade(v),stroke:'#aab0b9','stroke-width':.8});if(opts.numbers)c.text(x+(j+.5)*cell,y+(i+.5)*cell,fmt(v,2),'ink',Math.min(28,cell*.55),'middle',{fill:AT.imageShade(v)<118?'#fff':'#000000','font-family':'var(--font-mono,monospace)'});});});
     if(opts.patches){for(var i=0;i<2;i++)for(var j=0;j<2;j++){var selected=i*2+j===opts.selected;node(c.svg,'rect',{x:x+j*size/2+2,y:y+i*size/2+2,width:size/2-4,height:size/2-4,fill:'none',stroke:selected?C.e:'#f8fafc','stroke-width':selected?5:2});}}
     if(opts.label)c.text(x+size/2,y+size+25,opts.label,null,24);
   }
@@ -119,6 +119,24 @@
       pixelGrid(c,F.image,110,30,225,{patches:true});pixelGrid(c,im,760,30,225,{patches:true});
       c.text(222,293,'original locations',null,26);c.text(872,293,'same tiles, new locations',null,26);
       c.arrow(370,145,725,145,'e');c.text(550,92,'Move patches 1 and 4.',null,25);c.text(550,220,'Contents alone lose this distinction.','muted',24);
+    }else if(stage==='position-check'){
+      c=frame(stage,345,'Does swapping patches change the updated CLS row?','The same two arrangements produce equal CLS outputs without position additions and different outputs with position additions. All model weights stay fixed.');
+      var order=[3,1,2,0],original=T.forward(),swapped=T.forward({order:order}),off=T.forward({positions:false}),offSwap=T.forward({positions:false,order:order}),im=clone(original.image);
+      order.forEach(function(q,a){for(var dy=0;dy<2;dy++)for(var dx=0;dx<2;dx++)im[Math.floor(a/2)*2+dy][(a%2)*2+dx]=original.patches[q][dy*2+dx];});
+      c.text(445,21,'original arrangement',null,25);c.text(890,21,'patches 1 and 4 swapped',null,25);
+      pixelGrid(c,original.image,367,52,156);pixelGrid(c,im,812,52,156);
+      c.text(140,255,'positions OFF',null,24);c.text(445,255,vec(off.updated[0],3),'ep',28);c.text(890,255,vec(offSwap.updated[0],3),'ep',28);
+      c.text(140,315,'positions ON',null,24);c.text(445,315,vec(original.updated[0],3),'ep',28);c.text(890,315,vec(swapped.updated[0],3),'ep',28);
+    }else if(stage==='generalization'){
+      c=frame(stage,350,'Move one block without changing its count','The learned model assigns the original one-block training image to one block with high probability. Moving exactly the same block to the top-left makes it wrongly prefer two blocks.');
+      var L=T.learning,params=L.experiment.afterTraining.params,known=L.images[1],moved=known.map(function(row){return row.map(function(){return 0;});});
+      for(var y=0;y<2;y++)for(var x=0;x<2;x++)moved[y][x]=known[y+2][x+2];
+      var first=L.forward(params,known,1),second=L.forward(params,moved,1);
+      c.text(270,22,'training image',null,26);c.text(830,22,'new arrangement',null,26);
+      pixelGrid(c,known,185,56,170);pixelGrid(c,moved,745,56,170);c.arrow(400,135,700,135);c.text(550,90,'move the same block',null,23);
+      c.text(270,262,'correct label: one block',null,25);c.text(830,262,'correct label: one block',null,25);
+      c.text(270,306,'p(one) = '+first.probs[1].toFixed(4),null,29);c.text(830,306,'p(two) = '+second.probs[0].toFixed(4),null,29);
+      c.text(270,336,'correct prediction',null,22);c.text(830,336,'wrong prediction',null,22);
     }else if(stage==='positions'){
       c=frame(stage,340,'Same pixels, different positions','The top-right and bottom-left patches contain identical zero pixels. Their content embeddings match. Different full-width position vectors are added, not appended.');
       c.text(210,30,'content embedding','e',24);c.text(565,30,'position vector','muted',24);c.text(925,30,'input row','e',24);
@@ -180,8 +198,8 @@
       c=frame(stage,345,'Convert the updated CLS row into class scores','Each classifier column produces one logit. A class softmax produces probabilities over the two candidate labels, not over image patches.');
       var names=D.classes&&D.classes[0]!=='class A'?D.classes:['two blocks','one block'];
       vector(c,F.updated[0],35,120,250,'ep','updated CLS e₀′',3);c.arrow(310,144,388,144,'ep');matrix(c,D.W_class,420,91,210,'param',k);c.text(525,219,'W_class','param',25);c.arrow(655,144,730,144);
-      for(var a=0;a<2;a++){var y=54+a*128;c.text(906,y,names[a],null,26);c.text(906,y+40,'logit '+fixed(F.logits[a]),null,27);if(step>=1)c.text(906,y+78,'p = '+fixed(F.probs[a]),'ep',28);}
-      var hc=D.W_class.map(function(row){return row[k];}),b=(D.b_class||[])[k]||0;c.text(550,306,reduceTerms(F.updated[0],hc)+(b?' + '+fmt(b):'')+' ≈ '+fixed(F.logits[k]),'ep',26);
+      for(var a=0;a<2;a++){var y=54+a*128;c.text(906,y,names[a],null,26);c.text(906,y+40,'logit '+fixed(F.logits[a]),null,27);if(step>=1)c.text(906,y+78,'p = '+fixed(F.probs[a]),null,28);}
+      var hc=D.W_class.map(function(row){return row[k];}),b=(D.b_class||[])[k]||0;c.text(550,306,reduceTerms(F.updated[0],hc)+(b?' + '+fmt(b):'')+' ≈ '+fixed(F.logits[k]),null,26);
     }else if(stage==='pipeline'){
       c=frame(stage,360,'The same image, from pixels to loss','Pixels are turned into patch rows, positions and CLS are added, attention creates an update, and the updated CLS produces a prediction. Backward arrows show gradients reaching learned parameters.');
       var ids=['pixels','patch','input','attention','residual','head','loss'];
@@ -203,7 +221,7 @@
       c.box(bx[3],65,bw,82,'Q, K, V','project E','q');
       c.box(bx[3],268,bw,76,'message m','m = A V','v');
       c.box(bx[2],268,bw,76,'updated rows','E′ = E + m W_O','ep');
-      c.box(bx[1],268,bw,76,'logits → softmax','classification head','ep');
+      c.box(bx[1],268,bw,76,'logits → softmax','classification head',null);
       c.box(bx[0],268,bw,76,'loss L','−log p(label)','ink');
       for(var a=0;a<3;a++){c.arrow(bx[a]+bw+4,108,bx[a+1]-7,108);c.arrow(bx[a+1]-7,306,bx[a]+bw+4,306);}
       c.arrow(970,151,970,165,'q');c.box(855,174,230,70,'scores → softmax','Q Kᵀ / √d_k → A','a');c.arrow(970,249,970,263,'a');

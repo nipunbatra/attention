@@ -24,7 +24,8 @@
   <div class="card"><h3 class="card-title">A fixed illustrative network</h3><div class="s08-net" id="s08-net"></div></div>
 </div>
 <div class="frame" data-title="ReLU keeps positive hidden features">
-  <script type="text/x-notes">Read four of the eight hidden coordinates. The first matrix makes combinations; ReLU clips negative values before the second matrix combines them again.</script>
+<script type="text/x-notes">Read four of the eight hidden coordinates.
+The first matrix makes combinations; ReLU clips negative values before the second matrix combines them again.</script>
   <div class="card"><div id="s08-relu"></div></div>
   <pre class="torch-snippet" data-build="1"><code>hidden = torch.relu(row @ W1 + b1)
 ffn_output = hidden @ W2 + b2</code></pre>

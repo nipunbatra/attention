@@ -4,36 +4,48 @@
 <div class="frame" data-title="Same patch contents. A different arrangement." data-autobuild="off">
   <div class="vision1-story" id="s03-arrange"></div>
   <p>Which side has the brightest block? Counting can ignore layout; this question cannot. <strong>Position additions preserve the distinction.</strong></p>
-  <script type="text/x-notes">This is a short location question, not a new classification target. Without positional information, permuting the patch rows permutes their outputs and leaves the global CLS result unchanged. Keep that formal fact in the article companion.</script>
+  <script type="text/x-notes">This is a short location question, not a new classification target.
+
+Without positional information, permuting the patch rows permutes their outputs and leaves the global CLS result unchanged. Keep that formal fact in the article companion.</script>
 </div>
 <div class="frame" data-title="Add a position vector; do not append a coordinate" data-autobuild="off">
   <div class="vision1-story" id="s03-position"></div>
   <p class="vision1-equation">$e_j=e_j^{\mathrm{patch}}+p_j\qquad(1\times2)+(1\times2)=(1\times2)$</p>
   <p data-build="1">The two blank patches have the same pixels. Their <strong>different position additions</strong> let later computations distinguish their slots.</p>
-  <script type="text/x-notes">Do not call either coordinate the position dimension. A learned position vector has the full representation width, and its coordinates need not be literal row/column coordinates. Numbers are hand-chosen for this starting snapshot.</script>
+  <script type="text/x-notes">Do not call either coordinate the position dimension.
+
+A learned position vector has the full representation width, and its coordinates need not be literal row/column coordinates. Numbers are hand-chosen for this starting snapshot.</script>
 </div>
 <div class="frame" data-title="Four patch rows—but which row should answer?" data-autobuild="off">
   <div class="vision1-story" id="s03-collect-question"></div>
   <p>Text used the last known word’s row. An image has no natural last token to represent the scene.</p>
   <p data-build="1">Averaging the final patch rows is one option. We will use a <strong>separate collection row</strong>.</p>
-  <script type="text/x-notes">CLS is one readout design, not a mathematical requirement of self-attention. Motivate a global receiving slot before asking students to remember its name.</script>
+  <script type="text/x-notes">CLS is one readout design, not a mathematical requirement of self-attention.
+
+Motivate a global receiving slot before asking students to remember its name.</script>
 </div>
 <div class="frame" data-title="CLS is a learned starting row, not the class label" data-autobuild="off">
   <div class="vision1-story" id="s03-collect"></div>
   <p>$e_0=c+p_0=(1,1)+(0,0)$. Both images start with this <strong>same CLS row</strong>; reading their patches can give different updated rows.</p>
-  <script type="text/x-notes">CLS is pronounced class token but is not the correct answer. It is a learned parameter copied into each image's computation. An attention update changes that image's representation; an optimizer update changes the stored parameter.</script>
+  <script type="text/x-notes">CLS is pronounced class token but is not the correct answer.
+
+It is a learned parameter copied into each image's computation. An attention update changes that image's representation; an optimizer update changes the stored parameter.</script>
 </div>
 <div class="frame" data-title="Now name every input row before attention" data-autobuild="off">
   <div id="s03-inputs"></div>
   <p>From here, $e_j$ means the <strong>current row, including its position addition</strong>. Row 0 is CLS; rows 1–4 are the four patches.</p>
   <pre class="torch-snippet" data-build="1"><code>E = torch.cat([cls[None, :], patch_embeddings], dim=0)
 E = E + positions               # [5, 2]</code></pre>
-  <script type="text/x-notes">Read the labels together with the matrix. E is a stack, not a new kind of embedding. Keep the index convention CLS0/patch1–4 visible; the classifier will read updated row0 later.</script>
+  <script type="text/x-notes">Read the labels together with the matrix.
+
+E is a stack, not a new kind of embedding. Keep the index convention CLS0/patch 1–4 visible; the classifier will read updated row 0 later.</script>
 </div>
 <div class="frame" data-title="What should change when the image changes?" data-autobuild="off">
   <div id="s03-check"></div>
   <p class="callout callout-key" data-build="1">The starting CLS parameter is shared. The patch rows supply the image-specific information that CLS will read.</p>
-  <script type="text/x-notes">Ask before opening. Removing the top-left block changes raw patch1 and its embedding; it does not select a new CLS vector or different shared projection weights.</script>
+  <script type="text/x-notes">Ask before opening.
+
+Removing the top-left block changes raw patch 1 and its embedding; it does not select a new CLS vector or different shared projection weights.</script>
 </div>
 <div class="companion after"><h3>A check on why positions matter</h3><p>Without position additions, permuting the four patch rows leaves the CLS output unchanged in this model. The patch outputs permute in the same way as the inputs. This is permutation equivariance, together with an invariant CLS readout. Adding different slot vectors lets the computation depend on which patch occupies which slot. The original ViT learns a full-width position vector for each slot; it does not append a special scalar “position dimension.”</p></div>
 <script>(function(){const S=document.getElementById('s03'),T=AT.vision,F=T.forward();T.story(S.querySelector('#s03-arrange'),{stage:'arrangements'});T.story(S.querySelector('#s03-position'),{stage:'positions'});T.story(S.querySelector('#s03-collect-question'),{stage:'cls',step:0});T.story(S.querySelector('#s03-collect'),{stage:'cls',step:1});AT.ui.table(F.E,{into:S.querySelector('#s03-inputs'),rowLabels:T.labels,cols:['coordinate 1','coordinate 2'],cornerLabel:'E · five input rows',rowCls:'e',decimals:0});AT.ui.reveal('Remove the top-left block. Does the starting CLS row change?','No. Patch 1 changes from $(2,2)$ to $(0,0)$ before its position addition. The shared CLS starting row remains $(1,1)$. Attention will bring the changed patch information to it.',{into:S.querySelector('#s03-check')});})();</script>

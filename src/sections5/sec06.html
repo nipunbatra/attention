@@ -12,14 +12,18 @@
 <div class="frame" data-title="The CLS row still needs a class head" data-autobuild="off">
   <div id="s06-head-picture"></div>
   <p class="callout callout-key" data-build="1">The head makes two scores: one for <strong>two blocks</strong>, one for <strong>one block</strong>.</p>
-  <script type="text/x-notes">Point to the same updated CLS row from the preceding section. It has two features because we chose model width two. The head has two outputs because this task has two labels. Those counts need not agree.</script>
+  <script type="text/x-notes">Point to the same updated CLS row from the preceding section.
+
+It has two features because we chose model width two. The head has two outputs because this task has two labels. Those counts need not agree.</script>
 </div>
 
 <div class="frame" data-title="Work out the score for two blocks" data-autobuild="off">
   <p>Use the <strong>two blocks</strong> column of $W_{\mathrm{class}}$. Its weights are $(0.5,0)$; its bias is $0$.</p>
   <div id="s06-two-calc" data-build="1"></div>
   <p data-build="2">This score is a <strong>logit</strong>. It can be any real number; it is not a probability yet.</p>
-  <script type="text/x-notes">Read the input row first, then multiply each coordinate by the weight directly below it. The two products add to this class's logit. We are following the already-computed CLS row, not taking another average of the image.</script>
+  <script type="text/x-notes">Read the input row first, then multiply each coordinate by the weight directly below it.
+
+The two products add to this class's logit. We are following the already-computed CLS row, not taking another average of the image.</script>
 </div>
 
 <div class="frame" data-title="Use the other column for one block" data-autobuild="off">
@@ -27,14 +31,18 @@
   <div id="s06-one-calc" data-build="1"></div>
   <pre class="torch-snippet" data-build="2"><code># CLS: [2]; W_class: [2, 2]; bias: [2]
 logits = E_next[0] @ W_class + b_class</code></pre>
-  <script type="text/x-notes">A class head reuses the same feature row for every candidate label. Each column is a different learned combination of those features. The matrix product computes both of these worksheets together.</script>
+  <script type="text/x-notes">A class head reuses the same feature row for every candidate label.
+
+Each column is a different learned combination of those features. The matrix product computes both of these worksheets together.</script>
 </div>
 
 <div class="frame" data-title="Compare the two logits to get probabilities" data-autobuild="off">
   <div id="s06-probability-table"></div>
   <p id="s06-probability-eq" class="v1-head-eq" data-build="1"></p>
   <p class="callout callout-key" data-build="2">These two probabilities compete over <strong>output labels</strong>. The five attention weights competed over <strong>input rows</strong>.</p>
-  <script type="text/x-notes">Show the exponential of each logit and their shared total. The softmax operation is familiar, but the set being normalized has changed. Displayed numbers are rounded; calculations use the original values.</script>
+  <script type="text/x-notes">Show the exponential of each logit and their shared total.
+
+The softmax operation is familiar, but the set being normalized has changed. Displayed numbers are rounded; calculations use the original values.</script>
 </div>
 
 <div class="frame" data-title="How much probability did the correct label receive?" data-autobuild="off">
@@ -43,14 +51,18 @@ logits = E_next[0] @ W_class + b_class</code></pre>
   <p id="s06-loss" class="v1-head-eq" data-build="2"></p>
   <pre class="torch-snippet" data-build="3"><code>target = torch.tensor([0])  # two blocks
 loss = F.cross_entropy(logits[None, :], target)</code></pre>
-  <script type="text/x-notes">The encoder did not receive this label. We reveal it after prediction to score the answer. Cross-entropy uses the probability of the observed label. Its PyTorch implementation expects logits, not already-softmaxed probabilities.</script>
+  <script type="text/x-notes">The encoder did not receive this label.
+
+We reveal it after prediction to score the answer. Cross-entropy uses the probability of the observed label. Its PyTorch implementation expects logits, not already-softmaxed probabilities.</script>
 </div>
 
 <div class="frame" data-title="Does the same model recognize one block?" data-autobuild="off">
   <div class="v1-images"><div><h3>Two blocks</h3><div id="s06-two-image"></div></div><div><h3>Remove the top-left block</h3><div id="s06-one-image"></div></div></div>
   <div id="s06-image-comparison" data-build="1"></div>
   <p data-build="2">The untrained model chooses <strong>two blocks for both images</strong>.</p>
-  <script type="text/x-notes">The second image differs only in its top-left patch. The model recomputes the full forward pass with the same parameters. Its wrong answer motivates training on both labelled images rather than celebrating one correct guess.</script>
+  <script type="text/x-notes">The second image differs only in its top-left patch.
+
+The model recomputes the full forward pass with the same parameters. Its wrong answer motivates training on both labelled images rather than celebrating one correct guess.</script>
 </div>
 
 <div class="companion after"><p>The two displayed examples are a small teaching dataset, not a test of general counting. A classifier could fit them using brightness or another shortcut. After learning, we will check the same two examples again and keep that limitation in mind.</p></div>
@@ -64,7 +76,7 @@ loss = F.cross_entropy(logits[None, :], target)</code></pre>
   AT.tex(S.querySelector('#s06-probability-eq'),'p(\\text{two blocks})\\approx\\frac{'+ex[0].toFixed(3)+'}{'+z.toFixed(3)+'}\\approx'+F.probs[0].toFixed(3),{display:true});
   AT.ui.bars(names.map((label,i)=>({label,p:F.probs[i]})),{into:S.querySelector('#s06-target-bars'),highlight:names[0],sorted:false,decimals:3,size:'lg'});
   AT.tex(S.querySelector('#s06-loss'),'L=-\\log p(\\text{two blocks})\\approx-\\log('+F.probs[0].toFixed(3)+')\\approx'+F.loss.toFixed(3),{display:true});
-  function thumbnail(host,image,label){const svg=AT.svg('svg',{viewBox:'0 0 340 180',role:'img','aria-label':label});image.forEach((r,y)=>r.forEach((v,x)=>{const shade=35+v*69;svg.appendChild(AT.svg('rect',{x:85+x*40,y:10+y*40,width:40,height:40,fill:'rgb('+shade+','+shade+','+shade+')',stroke:'var(--paper)'}));}));[[85,10],[165,10],[85,90],[165,90]].forEach(([x,y])=>svg.appendChild(AT.svg('rect',{x,y,width:80,height:80,fill:'none',stroke:'var(--c-e)','stroke-width':2})));host.appendChild(svg);}
+  function thumbnail(host,image,label){const svg=AT.svg('svg',{viewBox:'0 0 340 180',role:'img','aria-label':label});image.forEach((r,y)=>r.forEach((v,x)=>{const shade=AT.imageShade(v);svg.appendChild(AT.svg('rect',{x:85+x*40,y:10+y*40,width:40,height:40,'data-pixel-value':v,fill:'rgb('+shade+','+shade+','+shade+')',stroke:'var(--paper)'}));}));[[85,10],[165,10],[85,90],[165,90]].forEach(([x,y])=>svg.appendChild(AT.svg('rect',{x,y,width:80,height:80,fill:'none',stroke:'var(--c-e)','stroke-width':2})));host.appendChild(svg);}
   thumbnail(S.querySelector('#s06-two-image'),F.image,'The original image has two occupied patches.');thumbnail(S.querySelector('#s06-one-image'),G.image,'The second image has one occupied patch.');
   AT.ui.table([F,G].map(f=>[f.probs[0],f.probs[1],names[f.probs[0]>=f.probs[1]?0:1]]),{into:S.querySelector('#s06-image-comparison'),cols:[{label:'p(two blocks)',kind:'number'},{label:'p(one block)',kind:'number'},{label:'model chooses',kind:'text'}],rowLabels:['two-block image','one-block image'],cornerLabel:'same initial parameters',decimals:3});
 })();

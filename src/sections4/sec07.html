@@ -5,26 +5,30 @@
   <div id="s07-first"></div>
   <div id="s07-first-probs" data-build="1"></div>
   <p id="s07-first-choice" data-build="2"></p>
-  <script type="text/x-notes">The model does not receive la yet. The only target input is BOS. Its decoder row reads the encoded English source and supplies the distribution for the first French token.</script>
+  <script type="text/x-notes">Which French token is available before generation begins?
+Only BOS; the model has not received la. The BOS decoder row reads the encoded English source and supplies the distribution for the first French token.</script>
 </div>
 <div class="frame" data-title="Append la; use its row for the next prediction" data-autobuild="off">
   <div id="s07-second"></div>
   <div id="s07-second-probs" data-build="1"></div>
   <p id="s07-second-choice" data-build="2"></p>
-  <script type="text/x-notes">La is now an input because the model chose it on the previous step. The last-row query now comes from la after masked self-attention. There is no parameter update between generation steps.</script>
+<script type="text/x-notes">La is now an input because the model chose it on the previous step.
+The last-row query now comes from la after masked self-attention. There is no parameter update between generation steps.</script>
 </div>
 <div class="frame" data-title="Append rive; predict when to stop" data-autobuild="off">
   <div id="s07-third"></div>
   <div id="s07-third-probs" data-build="1"></div>
   <p id="s07-third-choice" data-build="2"></p>
-  <script type="text/x-notes">Rive is now the last known target token. The model predicts EOS from its row. Stop at EOS and remove the special markers from the displayed text: la rive.</script>
+<script type="text/x-notes">Rive is now the last known target token.
+The model predicts EOS from its row. Stop at EOS and remove the special markers from the displayed text: la rive.</script>
 </div>
 <div class="frame" data-title="New decoder queries, the same encoded source" data-autobuild="off">
   <div id="s07-queries"></div>
   <pre class="torch-snippet" data-build="1"><code>next_id = logits[-1].argmax()
 prefix = torch.cat([prefix, next_id[None]])</code></pre>
   <p class="callout callout-key" data-build="2">Repeat until the chosen token is <code>&lt;eos&gt;</code>. With parameters fixed, cache the encoded source and its cross-attention $K,V$.</p>
-  <script type="text/x-notes">Compare the three query rows. The same cross W_Q produces a different query from each current decoder representation. Caching reuses source projections; it does not freeze the decoder query or the source-reading weights.</script>
+<script type="text/x-notes">Compare the three query rows.
+The same cross W_Q produces a different query from each current decoder representation. Caching reuses source projections; it does not freeze the decoder query or the source-reading weights.</script>
 </div>
 <div class="companion"><h3>How the source-reading weights change</h3><div id="s07-weights"></div><p>Each row belongs to a different decoder query over the same four source positions. Greedy decoding is only one rule for choosing a token; a sampling rule would still use the same model probabilities. Real applications also impose a length limit. This toy stops when it predicts its end marker.</p></div>
 <script>

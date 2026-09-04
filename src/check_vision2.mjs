@@ -19,6 +19,9 @@ class Element{
 }
 const document={createElementNS:(_,tag)=>new Element(tag)};
 const window={__TOY__:toy,AT:{axes:{named:true},objects:[],notation:[],clear:e=>{e.children=[];}}};
+// Load the actual shared image convention into this small DOM test harness.
+const shadeSource=readFileSync(new URL('shared.js',import.meta.url),'utf8').match(/AT\.imageShade = function \(v\) \{[^\n]+\};/)[0];
+vm.runInNewContext(shadeSource,{AT:window.AT});
 vm.runInNewContext(runtime,{window,document,console});
 const T=window.AT.visionSSL,clone=x=>JSON.parse(JSON.stringify(x));
 const near=(a,b,label)=>assert(Math.abs(a-b)<1e-12,`${label}: ${a} != ${b}`);
@@ -69,15 +72,41 @@ if(process.argv.includes('--browser')){
     const page=await browser.newPage({viewport:{width:1200,height:900}});
     await page.setContent('<style>:root{--font-ui:Arial,sans-serif;--ink:#20272c;--ink-3:#606a70;--c-e:#658169;--card:#fff;--paper:#fff;--line:#ddd;--t-e:#f0f5f0}body{margin:20px}svg{display:block;width:1100px}</style><main></main>');
     await page.evaluate(toy=>{window.__TOY__=toy;window.AT={axes:{},objects:[],notation:[],clear:e=>{e.innerHTML='';}};},clone(toy));
+    await page.addScriptTag({content:shadeSource});
     await page.addScriptTag({content:runtime});
     const fails=await page.evaluate(stages=>{const fails=[];for(const stage of stages){const host=document.createElement('div');document.querySelector('main').appendChild(host);const svg=AT.visionSSL.diagram(host,stage),v=svg.viewBox.baseVal;for(const text of svg.querySelectorAll('text')){const b=text.getBBox();if(b.x<0||b.y<0||b.x+b.width>v.width||b.y+b.height>v.height)fails.push(stage+': '+text.textContent);}}return fails;},stages);
     assert.deepEqual(fails,[],'SVG text stays inside viewBox');console.log('PASS: browser SVG text bounds.');
+    const pixelLabels=await page.evaluate(()=>[...document.querySelectorAll('text[data-pixel-label]')].flatMap(text=>{
+      const b=text.getBBox(),cx=Number(text.getAttribute('x')),cy=Number(text.getAttribute('y'));
+      const cell=[...text.closest('svg').querySelectorAll('rect[data-pixel-value]')].find(rect=>{const r=rect.getBBox();return cx>=r.x&&cx<=r.x+r.width&&cy>=r.y&&cy<=r.y+r.height;})?.getBBox();
+      return !cell||b.x<cell.x+1||b.x+b.width>cell.x+cell.width-1?[text.textContent]:[];
+    }));
+    assert.deepEqual(pixelLabels,[],'pixel labels fit within their own cells, including fractional brightness values');
     const arg=process.argv.indexOf('--page');if(arg>=0){
       const path=process.argv[arg+1];assert(path&&existsSync(path),'assembled page required');const errors=[];page.on('pageerror',e=>errors.push(String(e)));
       await page.goto(pathToFileURL(path).href);await page.waitForFunction(()=>window.AT?.visionSSL&&document.querySelector('#s03-lab-loss')?.textContent.includes('1.0000'));
       const guess=page.locator('#s03-slider input');await page.selectOption('#s03-mask','1');await guess.fill('2');await guess.dispatchEvent('input');assert((await page.locator('#s03-lab-loss').textContent()).includes('0.0000'));
       await page.selectOption('#s03-mask','2');await guess.fill('1');await guess.dispatchEvent('input');assert((await page.locator('#s03-lab-loss').textContent()).includes('0.5000'));
       const before=await page.locator('#s05-ce-loss').textContent();await page.locator('#s05-slider input').fill('3');await page.locator('#s05-slider input').dispatchEvent('input');const after=await page.locator('#s05-ce-loss').textContent();assert.notEqual(after,before);assert(after.includes(T.dino(3).loss.toFixed(4)));assert.deepEqual(errors,[]);
+      for(const preset of ['0','1','2','1','0']){
+        await page.selectOption('#s03-mask',preset);
+        for(const value of ['0','0.75','2','1']){
+          await guess.fill(value);await guess.dispatchEvent('input');
+          assert.equal(await page.locator('#s03-lab-table table').count(),1,'MAE redraw replaces the previous table');
+          assert.equal(await page.locator('#s03-lab-table tbody tr').count(),toy.visionSSL.maskPresets[+preset].indices.length,'mask changes also replace rows');
+          const expected=T.reconstruction(toy.visionSSL.maskPresets[+preset].indices,+value);
+          assert((await page.locator('#s03-lab-loss').textContent()).includes(expected.loss.toFixed(4)));
+          assert((await page.locator('#s03-lab-table').innerText()).includes((+value).toFixed(2)),'current guess reaches the visible table');
+        }
+      }
+      for(const value of ['0','1','3','2','0.5']){
+        const slider=page.locator('#s05-slider input');await slider.fill(value);await slider.dispatchEvent('input');
+        assert.equal(await page.locator('#s05-ce-table table').count(),1,'DINO redraw replaces the previous table');
+        const expected=T.dino(+value),text=await page.locator('#s05-ce-table').innerText();
+        expected.prediction.forEach(p=>assert(text.includes(p.toFixed(4)),'current probability is visible'));
+        assert((await page.locator('#s05-ce-loss').textContent()).includes(expected.loss.toFixed(4)));
+      }
+      assert(await page.evaluate(()=>AT.imageShade(1.5)<AT.imageShade(2)&&AT.imageShade(0)<AT.imageShade(1)),'dimming lowers displayed intensity');
       console.log('PASS: assembled page interactions update MAE and DINO results without JavaScript errors.');
     }
   }finally{await browser.close();}

@@ -32,7 +32,7 @@
   AT.ui.table(idx.map(i=>[F.z[i],F.p[i]]).concat([['',rest.reduce((a,i)=>a+F.p[i],0)]]),{cols:['logit','probability'],rowLabels:idx.map(i=>M.vocab[i]).concat(['other ×'+rest.length]),cornerLabel:'token',highlightRow:idx.indexOf(AT.mlp.stoi.i),decimals:2,caption:'The other row groups the vocabulary entries outside the top five.',into:S.querySelector('#s07-logits')});
   const shown=idx.concat(rest.length?[rest[0]]:[]),rows=idx.map(i=>[F.z[i],ex[i],ex[i]/den]);
   rows.push(['',rest.reduce((a,i)=>a+ex[i],0),rest.reduce((a,i)=>a+F.p[i],0)]);
-  AT.ui.table(rows,{cols:['logit','$\\exp(z-z_{\\max})$','divide by denominator'],rowLabels:idx.map(i=>M.vocab[i]).concat(['other ×'+rest.length]),cornerLabel:'token',highlightRow:idx.indexOf(AT.mlp.stoi.i),decimals:2,footer:{label:'denominator',values:['',den,'1.00']},caption:'The grouped row contains the remaining exponentials and probabilities.',into:S.querySelector('#s07-softmax')});
+  AT.ui.table(rows,{cols:['logit','$\\exp(z-z_{\\max})$','divide by denominator'],rowLabels:idx.map(i=>M.vocab[i]).concat(['other ×'+rest.length]),cornerLabel:'token',highlightRow:idx.indexOf(AT.mlp.stoi.i),decimals:2,footer:{label:'denominator',values:['',den,'1.00']},caption:'The grouped row contains the remaining entries. Displayed values are rounded; the denominator and probabilities use unrounded exponentials.',into:S.querySelector('#s07-softmax')});
   const items=top.map(x=>({label:x.tok,p:x.p})).concat([{label:'other ×'+rest.length,p:rest.reduce((a,i)=>a+F.p[i],0)}]);
   AT.ui.bars(items,{highlight:'i',sorted:false,size:'lg',decimals:2,into:S.querySelector('#s07-bars')});
 })();

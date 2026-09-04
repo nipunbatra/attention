@@ -6,19 +6,25 @@
   <pre class="torch-snippet" data-build="1"><code>patch_rows = patch_pixels @ W_patch + patch_bias + pos
 encoded = encoder(patch_rows[visible])</code></pre>
   <p data-build="2">Four patches, three hidden: one visible patch row. This schematic omits the CLS token.</p>
-  <script type="text/x-notes">This is one image, without a batch dimension in the schematic code. The index list visible selects patch rows after projection and position addition. We omit the CLS token from this drawing and code to keep patch counting explicit; it has not become a masked image patch. Mask tokens appear in the next stage, not inside this encoder.</script>
+  <script type="text/x-notes">This is one image, without a batch dimension in the schematic code.
+
+The index list visible selects patch rows after projection and position addition. We omit the CLS token from this drawing and code to keep patch counting explicit; it has not become a masked image patch. Mask tokens appear in the next stage, not inside this encoder.</script>
 </div>
 <div class="frame" data-title="Put mask tokens into the decoder's missing positions" data-autobuild="off">
   <div id="s02-decoder"></div>
   <pre class="torch-snippet" data-build="1"><code>decoder_rows = restore(encoded @ W_dec, mask_token, visible)
 pred_pixels = decoder(decoder_rows + decoder_pos)</code></pre>
-  <script type="text/x-notes">Restore is a schematic helper: put each encoded visible row back at its original position and fill the missing rows with the shared learned mask token. The decoder has its own width and added position vectors. Different target positions are distinguishable even though they use the same mask token.</script>
+  <script type="text/x-notes">Restore is a schematic helper: put each encoded visible row back at its original position and fill the missing rows with the shared learned mask token.
+
+The decoder has its own width and added position vectors. Different target positions are distinguishable even though they use the same mask token.</script>
 </div>
 <div class="frame" data-title="After pretraining, keep the encoder" data-autobuild="off">
   <div id="s02-transfer"></div>
   <p data-build="1">The pixel decoder helped create a training signal. It is not needed for a recognition task.</p>
   <p data-build="2">Use the full image, then evaluate or fine-tune the pretrained encoder with a suitable task head.</p>
-  <script type="text/x-notes">The downstream classifier does not classify reconstructed pictures. It uses representations from the pretrained encoder. The encoder can process all patches even though it saw subsets during pretraining.</script>
+  <script type="text/x-notes">The downstream classifier does not classify reconstructed pictures.
+
+It uses representations from the pretrained encoder. The encoder can process all patches even though it saw subsets during pretraining.</script>
 </div>
 <div class="companion after"><p>The original MAE experiments often hide 75% of the patches. Our three-of-four example has that ratio, but it is not a required constant. Mask ratio, patch size, decoder design, and data all affect the training problem.</p><p>The decoder predicts the pixel row for each patch. Reconstruction loss is computed only on masked patches. The paper also studies per-patch normalised pixel targets; our numerical exercise uses the original grayscale numbers, without that normalisation. The two-line decoder code names a schematic <code>restore</code> operation rather than a built-in PyTorch function. See <a href="https://arxiv.org/abs/2111.06377" target="_blank" rel="noreferrer">Masked Autoencoders Are Scalable Vision Learners</a>.</p></div>
 <script>

@@ -307,7 +307,8 @@
     if (level >= 2) {
       c.box(752, 219, 210, 66, 'Cross-attention', trainingGraph ? 'Q/K/V/O + residual' : 'source mixture + residual', 'd');
       c.arrow('M617 219 L644 219', 'q'); c.text(632, 194, 'Q', 'q', 17);
-      c.arrow('M752 113 L752 183', 'k'); c.text(783, 149, 'K, V', 'k', 19);
+      c.arrow('M752 113 L752 183', 'muted');
+      c.text(776, 149, 'K', 'k', 19); c.text(790, 149, ',', 'muted', 19); c.text(805, 149, 'V', 'v', 19);
     }
     if (level >= 3) {
       c.box(983, 219, 180, 66, 'Vocabulary head', trainingGraph ? 'W_vocab, b' : 'logits → probabilities', null);
@@ -421,15 +422,15 @@
         dims: function () { return dimensions || ''; }, parts: ['part4'] });
     }
     notation('token', '\\ve{e_j^{\\mathrm{src}}}', 'English token embedding plus its source position vector', '1\\times d_{\\mathrm{model}}', '1×3');
-    notation('token', '\\ve{e_j^{\\mathrm{enc}}}', 'English row after bidirectional encoder self-attention and residual addition', '1\\times d_{\\mathrm{model}}', '1×3');
+    notation('token', '\\vp{e_j^{\\mathrm{enc}}}', 'English row after bidirectional encoder self-attention and residual addition', '1\\times d_{\\mathrm{model}}', '1×3');
     notation('token', '\\ve{e_i^{\\mathrm{tgt}}}', 'French token embedding plus its target position vector', '1\\times d_{\\mathrm{model}}', '1×3');
-    notation('token', '\\ve{e_i^{\\mathrm{self}}}', 'French row after causal decoder self-attention and residual addition', '1\\times d_{\\mathrm{model}}', '1×3');
-    notation('token', '\\vq{q_i^{\\mathrm{cross}}}=\\ve{e_i^{\\mathrm{self}}}W_Q^{\\mathrm{cross}}', 'Query from the receiving French row', '1\\times d_k', '1×3');
-    notation('token', '\\vk{k_j^{\\mathrm{cross}}}=\\ve{e_j^{\\mathrm{enc}}}W_K^{\\mathrm{cross}}', 'Key from encoded English row j, used to compute its match', '1\\times d_k', '1×3');
-    notation('token', '\\vv{v_j^{\\mathrm{cross}}}=\\ve{e_j^{\\mathrm{enc}}}W_V^{\\mathrm{cross}}', 'Value from the same encoded English row j, used in the mixture', '1\\times d_v', '1×3');
+    notation('token', '\\vp{e_i^{\\mathrm{self}}}', 'French row after causal decoder self-attention and residual addition', '1\\times d_{\\mathrm{model}}', '1×3');
+    notation('token', '\\vq{q_i^{\\mathrm{cross}}}=\\vp{e_i^{\\mathrm{self}}}W_Q^{\\mathrm{cross}}', 'Query from the receiving French row', '1\\times d_k', '1×3');
+    notation('token', '\\vk{k_j^{\\mathrm{cross}}}=\\vp{e_j^{\\mathrm{enc}}}W_K^{\\mathrm{cross}}', 'Key from encoded English row j, used to compute its match', '1\\times d_k', '1×3');
+    notation('token', '\\vv{v_j^{\\mathrm{cross}}}=\\vp{e_j^{\\mathrm{enc}}}W_V^{\\mathrm{cross}}', 'Value from the same encoded English row j, used in the mixture', '1\\times d_v', '1×3');
     notation('token', '\\vd{\\Delta e_i^{\\mathrm{cross}}}=m_iW_O^{\\mathrm{cross}}', 'Project the weighted source-value message back to representation width', '1\\times d_{\\mathrm{model}}', '1×3');
-    notation('token', '\\ve{e_i^{\\mathrm{cross}}}=\\ve{e_i^{\\mathrm{self}}}+\\vd{\\Delta e_i^{\\mathrm{cross}}}', 'French row after adding the cross-attention update', '1\\times d_{\\mathrm{model}}', '1×3');
-    notation('matrix', '\\ve{E_{\\mathrm{enc}}}', 'One encoded row per English source position, including EOS', 'T_{\\mathrm{src}}\\times d_{\\mathrm{model}}', '4×3');
+    notation('token', '\\vp{e_i^{\\mathrm{cross}}}=\\vp{e_i^{\\mathrm{self}}}+\\vd{\\Delta e_i^{\\mathrm{cross}}}', 'French row after adding the cross-attention update', '1\\times d_{\\mathrm{model}}', '1×3');
+    notation('matrix', '\\vp{E_{\\mathrm{enc}}}', 'One encoded row per English source position, including EOS', 'T_{\\mathrm{src}}\\times d_{\\mathrm{model}}', '4×3');
     notation('matrix', '\\vq{Q_{\\mathrm{cross}}}', 'Queries projected from all post-self-attention French rows', 'T_{\\mathrm{tgt}}\\times d_k', '3×3 in training');
     notation('matrix', '\\vk{K_{\\mathrm{cross}}},\\;\\vv{V_{\\mathrm{cross}}}', 'Keys and values projected separately from encoded English rows', 'T_{\\mathrm{src}}\\times d_k,\\;T_{\\mathrm{src}}\\times d_v', '4×3 each');
     notation('matrix', 'S=\\vq{Q_{\\mathrm{cross}}}\\vk{K_{\\mathrm{cross}}}^{\\top}/\\sqrt{d_k}', 'Scaled scores: French query rows by English source columns', 'T_{\\mathrm{tgt}}\\times T_{\\mathrm{src}}', '3×4 in training');

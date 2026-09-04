@@ -40,6 +40,8 @@ const perm=[3,1,2,0], a=T.forward({positions:false}), b=T.forward({positions:fal
 matrixNear(b.updated,[a.updated[0],...perm.map(i=>a.updated[i+1])]);
 matrixNear(b.A,[0,...perm.map(i=>i+1)].map(i=>[0,...perm.map(j=>j+1)].map(j=>a.A[i][j])));
 assert.ok(Math.abs(T.forward({order:perm}).updated[0][0]-f.updated[0][0])>.01);
+assert.deepEqual(plain(a.updated[0].map(x=>x.toFixed(3))),['3.293','3.293']);
+assert.deepEqual(plain(T.forward({order:perm}).updated[0].map(x=>x.toFixed(3))),['3.565','3.565']);
 const modified=T.forward({image:T.editImage(3)});
 assert.equal(modified.patches[3][0],3);assert.deepEqual(plain(modified.embeddings[3]),[5,4]);
 near(modified.Q[0][0],f.Q[0][0]);assert.notEqual(modified.K[4][0],f.K[4][0]);assert.notEqual(modified.probs[0],f.probs[0]);
@@ -47,7 +49,8 @@ assert.deepEqual(plain(T.forward().image),plain(data.vision.image),'interaction 
 const sections=fs.readdirSync(path.join(src,'sections5')).filter(n=>/^sec\d\d\.html$/.test(n)).sort();
 const fragments=sections.map(n=>read('sections5/'+n)).join('\n');
 const frames=(fragments.match(/class="frame"/g)||[]).length;
-assert.equal(sections.length,8);assert.equal(frames,55);
+assert.equal(sections.length,8);assert.equal(frames,57);
+assert.match(fragments,/s05-position-check/);assert.match(fragments,/s07-held-out/);
 // Counterfactual values: matching is unchanged, transmitted information differs.
 const valueOnly=T.attention(f.E,{W_V:[[1,0],[0,2]]});
 matrixNear(valueOnly.A,f.A);matrixNear(valueOnly.K,f.K);
@@ -58,6 +61,13 @@ matrixNear(learn.forward(learn.initial,learn.images[0],0).updated,f.updated);
 assert.ok(experiment.afterSingle.meanLoss<experiment.before.meanLoss);
 assert.deepEqual(plain(experiment.afterTraining.predictions),[0,1]);
 assert.ok(experiment.afterTraining.meanLoss<.01);
+// Same single block, same brightness and count, different position.
+const moved=Array.from({length:4},()=>Array(4).fill(0));
+for(let y=0;y<2;y++)for(let x=0;x<2;x++)moved[y][x]=learn.images[1][y+2][x+2];
+const heldOut=learn.forward(experiment.afterTraining.params,moved,1);
+assert.equal(heldOut.probs[0].toFixed(4),'0.7915');
+assert.equal(experiment.afterTraining.forwards[1].probs[1].toFixed(4),'0.9953');
+assert.equal(moved.flat().reduce((a,b)=>a+b,0),learn.images[1].flat().reduce((a,b)=>a+b,0));
 assert.equal(data.axes.named,false);
 console.log(JSON.stringify({arithmetic:'pass',sections:sections.length,frames,CLS:plain(f.updated[0]),probs:plain(f.probs),loss:f.loss}));
 if(!process.argv.includes('--browser'))process.exit(0);

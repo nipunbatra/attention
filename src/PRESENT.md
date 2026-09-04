@@ -88,6 +88,9 @@ but it is not a classroom authoring target.
   in presentation; reading mode shows its compact stage selector above the same drawing.
 - Sliders and toggles are presenter-driven. Their state resets when leaving the frame unless the widget uses
   `data-keep-state` or `data-present="manual"`.
+- Focused ranges keep native arrows, PageUp/PageDown, and Home/End. `N` advances from a regular range without stealing
+  those adjustment keys. Manual widgets opt out of slide shortcuts. Escape returns focus to the slide; it does not blur
+  controls automatically on every change. Selects retain type-ahead, and text inputs retain typing.
 - Builds, steppers, values, IDs, and event listeners are the same nodes in both modes. The runtime does not clone or
   re-render article content.
 
@@ -141,12 +144,19 @@ The command-line `frame_audit.mjs` also reparses rendered KaTeX with strict erro
 - Right / Space / PageDown / N: next step, build, then frame.
 - Left / PageUp / Backspace: reverse that sequence. Home / End: first / last frame.
 - O: overview. B: blank screen. S: notes. ?: help. F: browser full screen.
+- Notes occupy a separate strip at the bottom. Its measured height is reserved above the viewport edge, and the
+  unchanged 1280×720 stage is uniformly scaled and centred in the remaining space. Notes never cover the slide.
+  A short opening cue can be emphasised; multi-sentence paragraphs are not rendered entirely bold. Questions, pointing
+  cues, and transition notes are all valid—there is no requirement that every note begin with a question.
 - Click **Controls** or press **C** for Previous, Next, Frames, Full screen, Presenter view, and Exit. The panel overlays
   the page without resizing the stage. It starts closed, and hidden controls cannot receive keyboard focus. Escape closes
   it first; Escape again returns to reading. Arrow-key navigation works with the panel closed.
 - The URL hash `#sNN/f/b` follows the current frame and build for deep links and break-time resumption.
 - Presenter view opens the same file with `#presenter`, showing current/next frame, notes, build status, and a clock. It is
   synchronized through `postMessage`, including from `file://`.
+- Overview and presenter view put the distinct frame title first, matching the projected heading; section context is
+  secondary. Arithmetic dialogs close on Escape before presentation navigation runs. Their placement accounts for
+  stage scaling and the live frame's clipping bounds, moving above the anchor when necessary.
 
 ## Reading, handout, and print
 
@@ -191,6 +201,7 @@ Run from the project root:
 
 ```sh
 node src/pres_test.mjs
+node src/interaction_test.mjs
 node src/export_test.mjs
 node src/check_tables.mjs part1.html attention.html part3.html
 node src/frame_audit.mjs attention.html --shots /tmp/attention-overflow
@@ -203,6 +214,16 @@ presenter-window sync, print-state restoration, canonical-stage scaling, on-dema
 arithmetic. `frame_audit.mjs` walks the assembled lesson, checks the 1280×720 stage contract at every live state, invokes
 the full preflight (including open reveals), and writes screenshots only for failures. Run it for every assembled part
 before release.
+
+`interaction_test.mjs` builds scratch pages from current sources and tests what a frame walk cannot: arithmetic clicks
+at 720p, 1080p, and 1440p; notes open; focused range/manual keyboard behavior; reconstruction masks with different row
+counts; slider redraws and matching losses; full-width notation; and typeset object labels. It writes screenshots and a
+JSON report to a temporary directory. `qa.mjs` and `sweep.mjs` also exit nonzero on detected errors; sweep changes selects
+and exercises ranges at non-default settings. Use these alongside—not instead of—visual review.
+
+The hero's notation disclosure spans the full reading grid and uses one column of symbol/meaning/shape tables. The
+shared colour tokens and `symTex` object-label API are documented in CONTRACT.md; new lessons should reuse them rather
+than creating separate notation or presentation palettes.
 
 `export_test.mjs` checks final/all-build exports with shown/authored answers. It verifies PDF page counts and actual answer
 pixels in the exported PNGs, including a reveal created only in the final step of a managed widget.

@@ -1,6 +1,7 @@
 # CONTRACT — shared runtime (`shared.js` → `window.AT`), CSS catalogue, fragment rules
 
-Read BRIEF.md first. This file is the API you build against. Everything here is implemented and tested in
+Read BRIEF.md for the original teaching brief, then use this contract and PRESENT.md for the current runtime. Their
+row-vector convention, canonical-stage layout, and colour tokens supersede older examples in the brief. The shared components are implemented and tested in
 `sections/sec00_demo.html` (the component gallery — open `test00.html` after assembling it to see every component live).
 
 ---
@@ -21,8 +22,8 @@ Read BRIEF.md first. This file is the API you build against. Everything here is 
 </header>
 
 <div class="prose">
-  <p>Static math is written inline: $\vk{k_j} = W_K \ve{e_j}$ and $\vv{v_j} = W_V \ve{e_j}$.</p>
-  $$\vq{q_i} = W_Q \ve{e_i}$$
+  <p>Static math is written inline: $\vk{k_j} = \ve{e_j}W_K$ and $\vv{v_j} = \ve{e_j}W_V$.</p>
+  $$\vq{q_i} = \ve{e_i}W_Q$$
 </div>
 
 <div class="card">
@@ -58,20 +59,23 @@ The strip lights chips cumulatively, so only list the objects your section is th
 
 ### Testing commands
 ```bash
-cd /private/tmp/claude-501/-Users-nipun-git-attention/0546d9dc-78a5-49cb-9bbd-2ed5c6cbf59d/scratchpad
+cd src  # from the repository root
 python3 assemble.py --only sections/sec07.html --out test07.html          # Part 2 (default); other parts: --part 1 --only sections1/sec07.html
 node pres_test.mjs test00.html frames00                                    # present-mode contract test (the demo section); exits 1 on any failure
 node walk.mjs test07.html frames07 1280 720 [--only s07]                   # present-mode walk: one screenshot per build of every frame, reports errors + frames that scroll
 node qa.mjs test07.html --full --shot test07.png                           # desktop 1280 — pageErrors/consoleErrors/katexErrors must be [] and overflowX false
 node qa.mjs test07.html --width 390 --full --shot test07m.png              # phone — same conditions
 node qa.mjs test07.html --click '#s07-next' --eval "document.querySelector('#s07-out').textContent"   # interactions + assertions
+node interaction_test.mjs                                             # shared classroom interactions on scratch builds
 ```
 Then **Read the PNGs** and fix what looks wrong (overlaps, clipped math, colours on the wrong object, unreadable numbers).
 `node qa.mjs` counts console *warnings* as errors too — do not log anything. For close-ups use
-`node shot.mjs test07.html crop.png --y 1200 --h 900` (clip of the full page) or `node zoom.mjs test07.html z.png '#s07 .card'` (2× element shot; prints the element's box).
+`node crop.mjs test07.html crop.png 1200 900` (full-page clip) or `node secshot.mjs test07.html s07 section.png` (section viewport).
 For tooltips (`dotTable` / `mixTable` score and sum cells) use `node hovershot.mjs test07.html hov.png '#s07 .dt-comp.has-tip' [390]`: it hovers with a real mouse move
 (the page scrolls smoothly, so Playwright's `hover()` right after a scroll can land on the wrong cell) and prints `{on, box}` for the `.dt-tip`.
 `qa.mjs --eval` awaits a returned Promise, so `--eval "new Promise(r=>{…; setTimeout(()=>r(value),500)})"` lets you assert after animations/scroll.
+`qa.mjs` and `sweep.mjs` exit nonzero on detected errors. The sweep changes selects and ranges, but use
+`interaction_test.mjs` for numerical redraw consistency, popover containment, notes, and keyboard regressions.
 
 ---
 ## 1. Timing: what is rendered when
@@ -101,6 +105,22 @@ Put `obj-X` on any element and its subtree gets `--oc` (object colour) and `--ot
 `obj-e` blue · `obj-q` purple · `obj-k` amber · `obj-v` teal · `obj-a` rose · `obj-d` green · `obj-ep` blue + `--oc2` green ring ·
 `obj-m` teal (message `m_i`, drawn with dashed brackets) · `obj-neutral` grey.
 Use them in fragment-local CSS as `color:var(--oc)` / `background:var(--ot)`. **Never** write a hex colour in a fragment.
+
+The canonical tokens live in `shell.html`. The darker text colours retain the same semantic hues and meet WCAG AA
+for small text on the matching tint (at least 4.5:1). These replace the older, lighter hex values in BRIEF.md:
+
+| role | text token | matching tint |
+|---|---|---|
+| representation | `--c-e:#245EDB` | `--t-e:#E4ECFF` |
+| query | `--c-q:#8B2CDE` | `--t-q:#F1E5FC` |
+| key | `--c-k:#AA4E08` | `--t-k:#FCEFD9` |
+| value | `--c-v:#0F766E` | `--t-v:#D9F2EF` |
+| attention weight | `--c-a:#BE123C` | `--t-a:#FDE2E7` |
+| contextual update | `--c-d:#147737` | `--t-d:#DDF3E4` |
+
+Secondary small labels use `--ink-3:#6B7280` on paper `#F7F8FA` (4.55:1). Do not assume contrast holds on arbitrary
+other backgrounds; image pixel labels need their own dark/light contrast choice. Updated representations keep blue
+text/fill with a green ring, not a new semantic colour.
 
 ### Math colour (KaTeX macros — defined in the shell and in `AT.katexOpts()`)
 | macro | renders | use for |
@@ -352,15 +372,19 @@ AT.ui.matVecCalc(F.E[6], AT.model.W_Q, { from: 'e', to: 'qk', cls: 'q', xLabel: 
 ```
 
 ### `AT.ui.popover(fig, { label })` → `{ el, body, show(anchorEl, title, content), hide(), isOpen() }`
-The click popover used by `dotTable`, `mat` and `heat` (`.calc-pop`, appended to the figure so the scroll container cannot clip it, clamped to the viewport, closed by Escape,
-the × button or a click outside). Use it if a fragment needs its own worksheet on click: `pop.show(td, 'title', AT.ui.dotCalc(q, k, {...}))`.
+The click popover used by `dotTable`, `mat` and `heat` (`.calc-pop`, appended outside the figure's inner scroll container).
+It converts viewport coordinates back to stage coordinates, intersects all clipping ancestors, and moves above the
+anchor or within the available frame when needed. Escape closes the dialog before presentation navigation; × and an
+outside click also close it. Use `pop.show(td, 'title', AT.ui.dotCalc(q, k, {...}))` for a custom worksheet.
 
 ### `AT.ui.notationCard(opts)` → `.notation-card`
 Small tables (symbol · meaning · shape): "One token at a time" (`e_i^{(0)}, e_i, q_i = e_i W_Q, k_j, v_j, s_ij, α_ij, m_i, Δe_i = m_i W_O, e_i' = e_i + Δe_i`),
 "All tokens at once" (`E, Q, K, V, S, M, A, H, ΔE, E'`), "Sizes and learned weights" (`T, d_model, d_k, d_v, W_Q, W_K, W_V, W_O, W_vocab, b`) and, when the toy names its
 coordinates, "Named coordinates (illustrative)" (the `e`, `q/k` and `v` axis names read from `AT.axes`, with a note that the toy was written by hand so the names are true). Shapes are latex plus the toy
-value from `AT` (`1×d_model = 1×4`). `opts: { part: 'part1'|'part2'|'part3' (default: the part's `notation` field), groups: ['token','matrix','sizes','axes'] (Part 1 uses 'mlp','sizes','axes'; Part 3 adds 'train','block'), only: [latex symbols], into }`. The shell already places one in the hero
-(`details#notation`, collapsed); use it again only if a section genuinely needs the reference in place (`groups:['matrix']` in s16, say). `AT.notation` is the row list.
+value from `AT` (`1×d_model = 1×4`). `opts: { part: string (default: the part's `notation` field), groups: ['token','matrix','sizes','axes'], only: [latex symbols], into }`.
+Part 1 uses `mlp,sizes,axes`; Part 3 adds `train,block`; Vision II uses `image,masked,distill,sizes`. The shell's collapsed
+`details#notation` is a direct, full-width child of the hero grid. Its groups stack in one column, so the symbol, meaning,
+and shape share a readable table width. `AT.notation` is the row list; reuse a card inside a lesson only where needed.
 
 ### `AT.ui.mat(rows, opts)` → `figure.mat`
 `opts: { cls, rowLabels: [...], colLabels: [...], axes: undefined|false|{rows, cols}, decimals: 2, heat: false, heatMax: 1, mask: true|'causal'|boolMatrix, leak: false, maskText: '×',
@@ -477,7 +501,10 @@ AT.ui.flow(S.querySelector('#s08-arena'), { from: chips.chips.slice(0, 7), to: t
 ### Misc
 `AT.productLine(a, b, decimals)` → `'a1×b1 + a2×b2 + … = Σ'` (the string the dotTable tooltip shows; negatives are parenthesised). `AT.T` → the toy sequence length (10).
 `AT.onVisible(el, cb)` — run `cb(el)` once when `el` scrolls into view (use it to start an animation lazily).
-`AT.debounce(fn, ms=120)`. `AT.reducedMotion()` → boolean. `AT.escape(str)` → HTML-escaped. `AT.svg(tag, attrs, ...children)` → SVG element builder. `AT.objects` → the 7 object definitions.
+`AT.debounce(fn, ms=120)`. `AT.reducedMotion()` → boolean. `AT.escape(str)` → HTML-escaped. `AT.svg(tag, attrs, ...children)` → SVG element builder.
+`AT.imageShade(v)` → an integer grayscale intensity, `round(35 + 69 × clamp(v,0,3))`; use the same result for all RGB
+channels so larger toy pixel values are lighter. It is a display transform, not a change to the numerical image.
+`AT.objects` contains the lesson's semantic object definitions (see §7.1).
 
 ---
 ## 6. Don'ts
@@ -512,19 +539,27 @@ then the part runtime, sets the `<title>` from the config, and warns when the `s
 `partN.json` (everything the shell shows outside the sections; nothing part-specific is hard-coded in `shell.html`):
 | field | what the shell does with it |
 |---|---|
-| `part`, `series` | "SERIES · PART N" line above the title (hero and footer) |
-| `title`, `subtitle`, `audience`, `minutes` | `<title>`, `h1`, the two hero lines ("… About 60 minutes.") |
+| `part`, `series`, `partLabel?` | "SERIES · PART N" line; `partLabel` overrides "Part N", e.g. "Vision I" |
+| `title`, `subtitle`, `audience`, `minutes`, `durationLabel?` | `<title>`, `h1`, hero text; missing audience punctuation is added; `durationLabel` overrides "About N minutes." |
 | `central`, `centralLabel` | the boxed display formula in the hero (latex with the colour macros; omit `central` to hide the box) |
 | `chain: [{label (html allowed), section: "sNN"}]` | the roadmap; the number comes from the section id |
 | `sections: [{id, title, lit}]` | the strip's chip targets (`lit` = the objects that section introduces, same as the fragment's `data-lit`) |
 | `objects: ["e","q",...]` | which strip chips and legend rows exist (tips come from `AT.objects[].tip`) |
+| `objectSections?: {e:"s03", q:"s04", …}` | optional chip jump destinations; otherwise use the first section whose `lit` contains the object. Lighting still follows `lit`, so a recap can light all objects without making every chip jump there. |
 | `legendTitle`, `provenance` | legend heading and the provenance paragraph; `provenance` may use `{{d_model}}`, `{{vocab}}`, `{{axes}}` (filled from `AT`, never retyped) |
 | `prev`, `next`, `index` | `{label, href}` links (hero and footer); `null` to omit |
-| `notation` | which notation-card rows: `part1`, `part2`, `part3` |
+| `notation` | which notation-card rows: `part1`–`part4` or `vision1`–`vision4` |
 | `footer` | html after the "self-contained file" sentence |
 `AT.strip = { setCurrent(idx), lightThrough(idx), sections, chips }` is exposed by the shell after boot (present mode uses it; fragments do not need it).
-`AT.objects[]` now carries `tip` (the strip tooltip) next to `def`. `AT.notation` holds the rows of all three parts; each row has `parts: ['part1'] | ['part2','part3'] | ['part3']` and the group `token | matrix | sizes | axes | mlp | train | block`.
-The series landing page is `index_series.html` (published as `index.html`): static, no dependencies, same tokens.
+`AT.objects[]` entries use `{cls, sym, symTex?, name, def, tip}`. Keep `sym` as a plain-text fallback; optional `symTex`,
+such as `'\\hat g^{\\mathrm{img}}'`, renders with KaTeX in strip chips and both legend implementations. Per-part runtimes
+may change the object definitions before the shell boots; keep their meanings aligned with the lesson's colour roles.
+`AT.notation` rows use `{g, sym, mean, shape, dims:()=>string, parts:[notationKey]}`. For a new notation key, add its
+default groups to `PART_GROUPS` and readable group names to `GROUP_TITLES` in `shared.js`, or provide a part-specific
+`AT.ui.notationCard` wrapper. Do not silently rely on the Part 2 fallback. Vision II separates image, masking, and
+distillation symbols rather than calling every object a token.
+
+The series landing page is the hand-maintained repository-root `index.html`; `index_series.html` is not a build source.
 
 ### 7.2 Authoring frames and builds (PRESENT.md)
 Read mode is the article: frames are invisible wrappers, builds are all visible. Present mode (`Present` button, key `P`, `?present`, or a hash `#sNN/f/b`) shows one frame at a time and reveals builds one per key press.
@@ -536,7 +571,7 @@ Read mode is the article: frames are invisible wrappers, builds are all visible.
 
 <div class="frame" data-title="Score the keys">                      <!-- one frame; 1 to 6 per section -->
   <script type="text/x-notes">
-    Which column decides the winner here?                            <!-- first line = the question to ask before the reveal -->
+    Which column decides the winner here?                            <!-- an opening question or pointing cue -->
     Point at the query row, then reveal one score at a time.
     Timing: three minutes.                                           <!-- blank line = paragraph -->
   </script>
@@ -556,18 +591,18 @@ Read mode is the article: frames are invisible wrappers, builds are all visible.
 </section>
 ```
 Rules the runtime enforces:
-- A section with no `.frame` wrappers is one frame: at the first entry into present mode everything after `.sec-head` is moved into a generated `.frame.frame-auto` (the DOM order is unchanged, scripts keep their references). Write real frames anyway: the auto frame scrolls.
+- A section with no `.frame` wrappers receives one legacy `.frame.frame-auto` (the DOM order and references remain intact). Author explicit frames instead; legacy frames obey the same no-scroll fit contract.
 - Builds: `data-build="n"`, `n >= 1`, on any element inside the frame (nested is fine). Hidden builds keep their layout (`visibility:hidden`, 180 ms opacity fade) unless `data-build-mode="collapse"`. The frame's build count is the largest `n`.
 - Auto builds: a frame with no `data-build` at all numbers its direct children that match `.card, .callout, .tex-display, .prose, p:not(.companion), .chips, table, .stepper, .reveal, .dt-fig, figure, .motif, .netsk, .row, .stack, .btn-row, .scroll-x, ul, ol, h3, blockquote` in order (the first is build 0; children of `.side-by-side / .grid-2 / .grid-3` count one by one). The runtime adds `data-build` + `data-build-auto` attributes. `data-autobuild="off"` on the frame keeps everything visible. Hand-written numbers always win.
 - Steppers: when the current build contains a `.stepper` (made with `AT.ui.stepper`) the right/left arrows call its Next/Previous until it runs out, then navigation continues. A stepper as build 0 (s15, s16) is walked immediately. `data-present="manual"` on the stepper host excludes it. Steppers are reset to step 1 when the frame is left and set to their last step when a later build is shown by a deep link.
-- Toggles, sliders and `<details>` inside a frame are snapshotted on the frame's first entry and restored when it is left, unless they or an ancestor carry `data-keep-state`. Other button state (a "switch context" button) is yours to reset: give it an idempotent redraw.
+- Toggles, sliders and `<details>` inside a frame are snapshotted on first entry and restored on leave, unless they or an ancestor carry `data-keep-state` or `data-present="manual"`. Other button/select state is yours to reset: use an idempotent redraw.
 - `.companion` is hidden in present mode; nothing a frame needs may live in it. Every frame stands alone: repeat a held drawing with the same component call.
-- Notes: `<script type="text/x-notes">` (plain text; the first line is its own paragraph, blank lines separate the rest) or `data-notes="…"`. Shown by the notes strip (`S`) and the presenter window.
-- The section header is the frame's title bar (number + title); the frame's `data-title` is shown at the right of it. Keep both short.
-- Present base font is `clamp(20px, 1.35vw, 30px)`; tables, vectors, chips, bars, buttons and steppers scale with it (em sizes under `body.present`). Fragment CSS that sets px sizes should use em or add a `body.present #sNN …` rule.
+- Notes: `<script type="text/x-notes">` (plain text; first line is a paragraph, blank lines separate the rest) or `data-notes="…"`. An opening question is optional; a pointing cue is equally valid. Only a short, single-sentence opening cue receives emphasis, not an entire multi-sentence note. The notes strip reserves its own height and recentres/rescales the unchanged 16:9 stage above it.
+- The single large projected heading is the frame's distinct `data-title`, falling back to the section title. Overview and presenter view use the same hierarchy; section context is secondary.
+- The logical stage is 1280×720. Present type uses fixed stage tokens (`--present-body:28px`, `--present-title:42px`, `--present-caption:22px`, `--present-math:32px`). The whole stage scales uniformly; individual frames never shrink type or scroll to fit. Split overfull content into a continuation frame.
 
-Keys in present mode: `→` `Space` `PageDown` `N` next build (then next frame) · `←` `PageUp` `Backspace` back · `Home` / `End` first / last frame · `O` overview · `B` or `.` blank · `S` notes strip · `?` key help · `Esc` exit (closes the overview or help first).
-Arrow keys are left to a focused slider; use Space or PageDown after touching one. `P` enters present mode from read mode. The hash is kept as `#sNN/f/b` (frame 1-based, build 0-based) and honoured on load and on `hashchange`.
+Keys in present mode: `→` `Space` `PageDown` `N` next build (then frame) · `←` `PageUp` `Backspace` back · `Home` / `End` first / last frame · `O` overview · `B` or `.` blank · `S` notes · `C` controls · `?` help. Escape closes a dialog/panel first, returns focus from a control to the slide next, and otherwise exits.
+Focused ranges retain native arrows, PageUp/PageDown and Home/End. `N` advances from a regular range; manual widgets opt out. Escape returns control focus to the slide, after which normal navigation keys work. Selects retain native type-ahead; text fields retain typing. `P` enters from reading. The deep link `#sNN/f/b` uses a 1-based frame and 0-based build.
 
 Presenter window: the strip button opens the same file with `#presenter` in a second window (three panes: now + build dots, notes, next frame; clock and elapsed time; Back / Next / Blank). The windows talk with `postMessage('*')` (works from `file://`): `{type:'at-presenter-ready'}`, `{type:'at-key', key}`, `{type:'at-go', id, f, b}` towards the presentation, `{type:'at-state', state}` towards the presenter.
 

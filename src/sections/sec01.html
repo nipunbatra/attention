@@ -35,6 +35,18 @@ body.present #s01 .emb-tab{margin-top:20px}
   </div>
 </header>
 
+<div class="companion" data-kicker="Teaching this in class">
+  <h3>Reach one complete prediction before revisiting the machinery</h3>
+  <p>The full article is a multi-session lesson. For a first pass, follow the route below and work one example at each stop. The links jump to the relevant section; they do not remove slides from the complete presentation.</p>
+  <ol>
+    <li><a href="#s01">Set the prediction task</a>, then use <a href="#s02">the last-token baseline</a> to show why context matters. Treat the fixed-window recap in Section 3 as optional if Part 1 is fresh.</li>
+    <li><a href="#s04">Motivate unequal weights</a> and use <a href="#s05">one search query</a> to distinguish a request, matching features, and retrieved information.</li>
+    <li><a href="#s07">Return to the sentence</a>. Follow <a href="#s08">matching and value mixing</a>, then <a href="#s09">add the update</a>. Keep the receiving position visible.</li>
+    <li><a href="#s13">Exclude future tokens</a>, then <a href="#s14">finish the vocabulary prediction</a>. End this pass with a probability for the next token, not an unexplained attention vector.</li>
+  </ol>
+  <p>In the next sitting, revisit the two bank contexts, the learned projections and score scaling (Sections 10–12), then consolidate the full walkthrough and parallel matrices (Sections 15–16). Use Sections 17–19 for comparisons and questions. Preview the scaling factor on the first pass; derive it on the second. Choose the stopping point by students' understanding rather than the number of clicks.</p>
+</div>
+
 <div class="companion" data-kicker="For self-study">
   <p>We want to predict the next word. As we add each part of the model, we will ask how it helps that prediction. Switch between the two contexts below and watch the probability bars move. The last three words are identical, so the model needs information about <em>river</em> or <em>cheque</em> from earlier in the sentence. The second widget shows what it starts with: a row of $d_{\text{model}}$ numbers for each token, with named coordinates (<span id="s01-axes-names"></span>). We chose these names and numbers by hand to make the example readable. The fifth coordinate carries a position offset, but the later projections ignore it. This toy shows how the model gathers relevant content; it does not demonstrate sensitivity to word order.</p>
 </div>

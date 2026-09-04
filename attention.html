@@ -9,8 +9,8 @@
    0. TOKENS (BRIEF section 1, fixed)
    ===================================================================== */
 :root{
-  --paper:#F7F8FA; --ink:#14171F; --ink-2:#4A5160; --ink-3:#8A91A0; --line:#D9DDE5; --card:#FFFFFF; --grid:#E3E6EC;
-  --c-e:#2563EB; --c-q:#9333EA; --c-k:#D97706; --c-v:#0D9488; --c-a:#E11D48; --c-d:#16A34A;
+  --paper:#F7F8FA; --ink:#14171F; --ink-2:#4A5160; --ink-3:#6B7280; --line:#D9DDE5; --card:#FFFFFF; --grid:#E3E6EC;
+  --c-e:#245EDB; --c-q:#8B2CDE; --c-k:#AA4E08; --c-v:#0F766E; --c-a:#BE123C; --c-d:#147737;
   --c-ep-grad:linear-gradient(90deg,var(--c-e),var(--c-d));
   --c-mask:#9CA3AF; --warn:#B45309;
   --t-e:#E4ECFF; --t-q:#F1E5FC; --t-k:#FCEFD9; --t-v:#D9F2EF; --t-a:#FDE2E7; --t-d:#DDF3E4;
@@ -396,14 +396,14 @@ button.chip:hover{border-color:var(--ink)}
 .calc-outrow{display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap}
 .calc-outlab{font-family:var(--font-ui);font-size:13px;font-weight:600;color:var(--oc,var(--ink-2))}
 .calc-outrow .vec{margin:0}
-.calc-pop{position:absolute;left:0;top:0;z-index:31;background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 32px rgba(20,23,31,.16);padding:12px 14px 12px;max-width:min(640px,calc(100vw - 24px));min-width:min(260px,calc(100vw - 24px))}
+.calc-pop{position:absolute;left:0;top:0;z-index:31;background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 32px rgba(20,23,31,.16);padding:12px 14px 12px;max-width:min(640px,calc(100vw - 24px));min-width:min(260px,calc(100vw - 24px));overflow:auto;overscroll-behavior:contain}
 .calc-pop-title{font-family:var(--font-ui);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin:0 30px 8px 0}
 .calc-close{position:absolute;top:6px;right:6px;width:28px;height:28px;border:0;border-radius:6px;background:transparent;color:var(--ink-2);font-size:20px;line-height:1;cursor:pointer;font-family:var(--font-ui)}
 .calc-close:hover{background:var(--paper);color:var(--ink)}
 .calc-close:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 .notation-note{font-size:13.5px;color:var(--ink-2);margin:8px 0 0;max-width:60ch;line-height:1.45}
 /* notation card (AT.ui.notationCard) */
-.notation-card{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,480px),1fr));gap:20px 28px;align-items:start}
+.notation-card{display:grid;grid-template-columns:minmax(0,1fr);gap:20px 28px;align-items:start}
 .notation-group{min-width:0}
 .notation-title{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin:0 0 8px}
 .dt-notation{width:100%;table-layout:auto;font-size:14px}
@@ -412,7 +412,7 @@ button.chip:hover{border-color:var(--ink)}
 .dt-notation td.nt-mean{color:var(--ink-2);font-size:14px;line-height:1.35;min-width:13em;width:100%}
 .dt-notation td.nt-shape{white-space:nowrap;color:var(--ink-2)}
 .dt-notation .nt-dims{font-family:var(--font-mono);font-size:12px;color:var(--ink-3);margin-left:6px}
-.notation-details{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--radius);background:var(--card)}
+.notation-details{grid-column:1/-1;min-width:0;margin:0;border:1px solid var(--line);border-radius:var(--radius);background:var(--card)}
 .notation-details summary{cursor:pointer;padding:12px 18px;font-weight:600;font-size:15px;list-style:none;display:flex;gap:12px;align-items:center}
 .notation-details summary::-webkit-details-marker{display:none}
 .notation-details summary::before{content:"";width:8px;height:8px;border-right:2px solid var(--ink-2);border-bottom:2px solid var(--ink-2);transform:rotate(-45deg);flex:none;transition:transform var(--dur)}
@@ -564,14 +564,14 @@ body.present .frame-sub{display:block}
    All measurements below are logical stage pixels, not viewport-responsive type.
    Overflow is an authoring error: add a continuation frame, never a scrollbar.
    ===================================================================== */
-body.present{--present-stage-w:1280px;--present-stage-h:720px;--present-scale:1;--present-body:28px;--present-title:42px;--present-caption:22px;--present-math:32px;--present-gutter:24px;--present-controls-h:0px;overflow:hidden;height:100vh;height:100dvh;font-size:var(--present-body);line-height:1.38}
+body.present{--present-stage-w:1280px;--present-stage-h:720px;--present-scale:1;--present-body:28px;--present-title:42px;--present-caption:22px;--present-math:32px;--present-gutter:24px;--present-notes-h:0px;overflow:hidden;height:100vh;height:100dvh;font-size:var(--present-body);line-height:1.38}
 body.present #strip,body.present .hero,body.present footer,body.present .reading,body.present .companion{display:none!important}
 body.present #strip .wrap{flex-wrap:nowrap;padding-top:2px;padding-bottom:2px;min-height:var(--strip-h);max-width:none;padding-left:clamp(14px,1.6vw,30px);padding-right:clamp(14px,1.6vw,30px);gap:10px}
 body.present .nchips{gap:4px}
 body.present .nchip{height:25px;min-width:30px;font-size:14px;padding:0 8px}
 body.present .strip-sec{font-size:13px;margin-left:auto}
 body.present #present-btn{display:none}
-body.present main{position:relative;width:100%;padding:0;max-width:none;min-height:0;height:100vh;height:100dvh;overflow:hidden}
+body.present main{position:relative;width:100%;padding:0;max-width:none;min-height:0;height:calc(100vh - var(--present-notes-h));height:calc(100dvh - var(--present-notes-h));overflow:hidden}
 body.present .sec{display:none}
 body.present .sec.is-live{position:absolute;left:50%;top:50%;display:flex;flex-direction:column;width:var(--present-stage-w);height:var(--present-stage-h);margin:0;padding:36px 64px;scroll-margin-top:0;overflow:hidden;transform:translate(-50%,-50%) scale(var(--present-scale));transform-origin:center center;background:var(--paper)}
 body.present .sec.is-live>.sec-head{display:block;flex:none;margin:0 0 24px;padding:0;border:0}
@@ -665,10 +665,10 @@ body.present .dt-scroll,body.present .mat-scroll,body.present .calc-scroll,body.
 body.present #at-fit-warning:not(:empty){display:block}
 body.present .frame[data-overflow="true"]{outline:2px dashed var(--warn);outline-offset:-2px}
 /* Navigation is available on demand, without reserving a header or footer. */
-#at-controls-toggle{display:none;position:fixed;right:12px;bottom:10px;z-index:60;font-size:13px;min-height:36px;padding:6px 12px;border-color:transparent;color:var(--ink-2);background:var(--paper)}
+#at-controls-toggle{display:none;position:fixed;right:12px;bottom:calc(10px + var(--present-notes-h,0px));z-index:60;font-size:13px;min-height:36px;padding:6px 12px;border-color:transparent;color:var(--ink-2);background:var(--paper)}
 body.present #at-controls-toggle{display:block}
 #at-controls-toggle:hover,#at-controls-toggle[aria-expanded="true"]{border-color:var(--line);background:var(--card)}
-#at-controls{position:fixed;right:12px;bottom:54px;max-width:calc(100vw - 24px);z-index:60;display:none;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:6px 8px;padding:12px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--card);box-shadow:0 4px 20px rgba(20,23,31,.10)}
+#at-controls{position:fixed;right:12px;bottom:calc(54px + var(--present-notes-h,0px));max-width:calc(100vw - 24px);z-index:60;display:none;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:6px 8px;padding:12px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--card);box-shadow:0 4px 20px rgba(20,23,31,.10)}
 body.present #at-controls.is-on{display:flex}
 #at-controls .pbtn{font-size:14px;min-height:40px;padding:6px 12px}
 #at-next{background:var(--ink);border-color:var(--ink);color:var(--paper)}
@@ -677,10 +677,10 @@ body.present #at-controls.is-on{display:flex}
 body.present #at-announcement:not(:empty){display:block}
 @media(max-width:640px){#at-counter{flex-basis:100%}#at-controls{justify-content:flex-start;gap:4px 6px;padding-left:10px;padding-right:10px}#at-controls .pbtn{font-size:13px;min-height:40px;padding:6px 9px}}
 /* notes strip (S) */
-#at-notes{position:fixed;left:0;right:0;bottom:var(--present-controls-h,0px);z-index:58;background:var(--ink);color:#fff;padding:12px 28px 14px;font-size:17px;line-height:1.45;max-height:32vh;max-height:32dvh;overflow:auto;display:none;box-shadow:0 -8px 24px rgba(20,23,31,.18)}
+#at-notes{position:fixed;left:0;right:0;bottom:0;z-index:58;background:var(--ink);color:#fff;padding:12px 28px 14px;font-size:17px;line-height:1.45;max-height:32vh;max-height:32dvh;overflow:auto;display:none;box-shadow:0 -8px 24px rgba(20,23,31,.18)}
 #at-notes.is-on{display:block}
 #at-notes p{margin:0 0 .45em;max-width:80ch}
-#at-notes p:first-child{font-weight:600}
+#at-notes .at-notes-cue{font-weight:600}
 #at-notes .at-notes-empty{color:rgba(255,255,255,.6);font-style:italic}
 /* overview (O) */
 #at-overview{position:fixed;inset:0;z-index:70;background:rgba(247,248,250,.97);overflow:auto;padding:24px clamp(16px,3vw,48px);display:none;font-size:15px}
@@ -729,7 +729,7 @@ body.presenter>*:not(#at-presenter){display:none!important}
 .pr-dots span.cur{background:var(--c-a)}
 .pr-notes{font-size:clamp(17px,1.6vw,25px);line-height:1.45}
 .pr-notes p{margin:0 0 .55em}
-.pr-notes p:first-child{font-weight:600}
+.pr-notes .at-notes-cue{font-weight:600}
 .pr-notes .at-notes-empty{color:var(--ink-3);font-style:italic}
 .pr-next h3{font-size:18px;margin:0 0 6px}
 .pr-next .pr-sub{font-size:15px}
@@ -811,10 +811,6 @@ body.presenter>*:not(#at-presenter){display:none!important}
         <p class="legend-title" id="legend-title"></p>
         <ul class="legend" id="hero-legend"></ul>
         <p class="legend-note" id="hero-provenance"></p>
-        <details class="notation-details" id="notation">
-          <summary>Notation used on this page<span class="hint">symbols, meanings, shapes</span></summary>
-          <div id="notation-card"></div>
-        </details>
       </div>
     </div>
     <nav aria-label="Roadmap">
@@ -822,12 +818,16 @@ body.presenter>*:not(#at-presenter){display:none!important}
         <li><div class="lab">The argument, in order</div></li>
       </ol>
     </nav>
+    <details class="notation-details" id="notation">
+      <summary>Notation used on this page<span class="hint">symbols, meanings, shapes</span></summary>
+      <div id="notation-card"></div>
+    </details>
   </div>
 </header>
 
 <script>
 window.__TOY__ = {"d_model":5,"d_k":3,"d_v":2,"max_context":20,"vocab":["the","fisherman","sat","beside","river","bank","and","watched","she","deposited","cheque","at","water","boats","fish","ducks","teller","clerk","queue","money"],"tok_emb":{"the":[0.0,0.0,0.0,2.4,0.0],"fisherman":[2.0,0.0,2.2,0.0,0.0],"sat":[0.4,0.0,0.6,1.8,0.0],"beside":[0.6,0.0,0.0,2.0,0.0],"river":[3.0,0.0,0.0,0.0,0.0],"bank":[0.7,0.7,0.0,0.7,0.0],"and":[0.0,0.0,0.0,2.2,0.0],"watched":[0.6,0.0,0.8,1.6,0.0],"she":[0.0,0.0,2.6,0.4,0.0],"deposited":[0.0,2.2,0.6,0.4,0.0],"cheque":[0.0,3.0,0.0,0.0,0.0],"at":[0.0,0.0,0.0,2.0,0.0],"water":[3.0,0.0,0.0,0.0,0.0],"boats":[2.4,0.0,0.4,0.0,0.0],"fish":[2.6,0.0,0.6,0.0,0.0],"ducks":[2.2,0.0,0.8,0.0,0.0],"teller":[0.0,2.6,1.8,0.0,0.0],"clerk":[0.0,2.4,1.8,0.0,0.0],"queue":[0.0,2.0,0.6,0.0,0.0],"money":[0.0,3.0,0.0,0.0,0.0]},"pos_emb":[[0.0,0.0,0.0,0.0,0.1],[0.0,0.0,0.0,0.0,0.2],[0.0,0.0,0.0,0.0,0.3],[0.0,0.0,0.0,0.0,0.4],[0.0,0.0,0.0,0.0,0.5],[0.0,0.0,0.0,0.0,0.6],[0.0,0.0,0.0,0.0,0.7],[0.0,0.0,0.0,0.0,0.8],[0.0,0.0,0.0,0.0,0.9],[0.0,0.0,0.0,0.0,1.0],[0.0,0.0,0.0,0.0,1.1],[0.0,0.0,0.0,0.0,1.2],[0.0,0.0,0.0,0.0,1.3],[0.0,0.0,0.0,0.0,1.4],[0.0,0.0,0.0,0.0,1.5],[0.0,0.0,0.0,0.0,1.6],[0.0,0.0,0.0,0.0,1.7],[0.0,0.0,0.0,0.0,1.8],[0.0,0.0,0.0,0.0,1.9],[0.0,0.0,0.0,0.0,2.0]],"W_Q":[[1.0,0.0,0.0],[0.0,1.0,0.0],[0.0,0.0,0.4],[0.7,0.7,0.0],[0.0,0.0,0.0]],"W_K":[[1.0,0.0,0.0],[0.0,1.0,0.0],[0.0,0.0,1.0],[0.0,0.0,0.0],[0.0,0.0,0.0]],"W_V":[[1.0,0.0],[0.0,1.0],[0.0,0.0],[0.0,0.0],[0.0,0.0]],"W_O":[[1.0,0.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0,0.0]],"W_vocab":[[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.5,1.2,1.0,0.7,0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.5,1.2,0.9,0.7],[0.0,0.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.2,0.0,0.0],[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]],"b_vocab":[-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"sentences":{"river":["The","fisherman","sat","beside","the","river","bank","and","watched","the"],"cheque":["She","deposited","the","cheque","at","the","bank","and","watched","the"]},"candidates":{"river":["water","boats","fish","ducks"],"cheque":["teller","clerk","queue","money"]},"axes":{"e":["water","finance","person","glue","position"],"qk":["setting: water?","setting: finance?","who?"],"v":["says: water scene","says: finance scene"],"short":{"e":["water","finance","person","glue","pos"],"qk":["water?","finance?","who?"],"v":["\u2192water","\u2192finance"]}},"notes":"Toy v2: single-head causal self-attention (d_model=5, d_k=3, d_v=2, vocab=20, ten-token examples, max_context=20), designed BY HAND so that every coordinate has a name that the numbers agree with (see 'axes'). e axes: water, finance, person, glue. q and k axes: setting: water?, setting: finance?, who? (a query row reads 'what I ask for', a key row 'what I offer'). The fifth e axis carries position, but its zero rows in W_Q, W_K, W_V and W_vocab mean this toy does not use it. v has its own narrower axes: says: water scene and says: finance scene; W_O maps them back onto the e axes. Names are illustrative; the matrices are sparse and one-decimal so a student can read each row of W_Q as 'axis -> asks', W_K as 'axis -> offers', W_V as 'axis -> says', W_vocab as 'axis -> votes for these words'. Values are narrower on purpose because they are mixed and sent rather than compared. Glue words have zero key and value rows but ask for both settings, which is why the final 'the' reads river or cheque. bank is equal parts water and finance (0.7, 0.7) plus a little glue (0.7); its entries are kept below 1.0 so that bank does not mostly attend to itself (the self score q_bank.k_bank grows with the square of those entries). Position rises from 0.1 to 2.0 in its own coordinate, with twenty same-width position vectors available for generation. The first ten positions are used in the worked examples. This toy's output ignores position; it illustrates content routing, not word-order sensitivity. Patterns produced (all checked on these rounded numbers by make_toy2.py and toy_ref.mjs): (1) in 'The fisherman sat beside the river bank', bank(7) attends river first, fisherman second, itself and the glue words little; (2) in 'She deposited the cheque at the bank', bank(7) attends cheque first, deposited second; (3) the final 'the'(10) reads mostly river/bank/fisherman or cheque/bank/deposited and the output head predicts water > boats > fish > ducks or teller > clerk > queue > money with every other word at most 0.04; (4) the baseline from e_the(10) alone is spread over the eight candidates and is identical for both sentences; (5) with the causal mask off, the early glue words leak attention onto river and bank. Nothing was optimised; a few magnitudes (bank, fisherman, the W_vocab weights) were adjusted by hand from AXES.md."};
-window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the Transformer","title":"Self-attention, from first principles","subtitle":"How a token reads from the tokens before it, and why that makes the next word easier to predict.","audience":"For students who know embeddings, dot products, softmax and next-token prediction, and who have not yet met attention.","minutes":60,"central":"\\ve{e} \\;\\rightarrow\\; \\vq{Q},\\vk{K},\\vv{V} \\;\\rightarrow\\; \\text{attention } (\\va{\\alpha}) \\;\\rightarrow\\; \\vd{\\Delta e} \\;\\rightarrow\\; \\vp{e + \\Delta e}","centralLabel":"The one chain to remember","legendTitle":"How to read this page: seven colours, seven objects","provenance":"Where the numbers come from: a tiny demonstration model with {{d_model}}-number representations and a {{vocab}}-word vocabulary. Each coordinate was given an illustrative name{{axes}}, and the weights were written by hand so that the names are true. The arithmetic is real, but the model is not a trained language model.","chain":[{"label":"Next-token prediction","section":"s01"},{"label":"A fixed context is unsatisfactory","section":"s03"},{"label":"We need dynamic retrieval","section":"s04"},{"label":"Information retrieval: <span class=\"sym sym-q\">Q<\/span> / <span class=\"sym sym-k\">K<\/span> / <span class=\"sym sym-v\">V<\/span>","section":"s05"},{"label":"Soft retrieval","section":"s06"},{"label":"Tokens retrieve information from tokens","section":"s07"},{"label":"<span class=\"sym sym-q\">Q<\/span>,<span class=\"sym sym-k\">K<\/span> decide where to read","section":"s08"},{"label":"<span class=\"sym sym-v\">V<\/span> determines what gets transmitted","section":"s08"},{"label":"<span class=\"sym sym-d\">\u0394e<\/span> = the retrieved contextual update","section":"s09"},{"label":"<span class=\"sym sym-ep\">e\u2032<\/span> = <span class=\"sym sym-e\">e<\/span> + <span class=\"sym sym-d\">\u0394e<\/span>","section":"s09"},{"label":"A better contextual representation","section":"s10"},{"label":"Next-token prediction, now with context","section":"s14"}],"sections":[{"id":"s01","title":"Predict the next token","lit":""},{"id":"s02","title":"Baseline: only the last token","lit":"e"},{"id":"s03","title":"Baseline: a fixed window of w tokens","lit":""},{"id":"s04","title":"Weighted pooling: where should weights come from?","lit":"a"},{"id":"s05","title":"A detour through search: Query, Key, Value","lit":"q k v"},{"id":"s06","title":"Hard retrieval \u2192 soft retrieval","lit":""},{"id":"s07","title":"Every token becomes a searchable record","lit":""},{"id":"s08","title":"Two jobs: choose weights, then mix values","lit":""},{"id":"s09","title":"The contextual update \u0394e","lit":"d ep"},{"id":"s10","title":"\u201cbank\u201d: same start, different context","lit":""},{"id":"s11","title":"What exactly are Q, K, and V?","lit":""},{"id":"s12","title":"Why divide by \u221ad_k?","lit":""},{"id":"s13","title":"Causal masking","lit":""},{"id":"s14","title":"From \u0394e to the next-token probabilities","lit":""},{"id":"s15","title":"Full walkthrough, one step at a time","lit":""},{"id":"s16","title":"The same thing in matrix form","lit":""},{"id":"s17","title":"Attention versus the alternatives","lit":""},{"id":"s18","title":"Pause and think","lit":""},{"id":"s19","title":"Three summaries","lit":""}],"objects":["e","q","k","v","a","d","ep"],"prev":{"label":"Part 1: From characters to next-token prediction","href":"part1.html","available":true},"next":{"label":"Part 3: Learning, heads, and the Transformer","href":"part3.html","available":true},"index":{"label":"All three parts","href":"index.html"},"notation":"part2","footer":"Notation: <span class=\"sym sym-e\">e<\/span> is always the current token representation, and <span class=\"sym sym-d\">\u0394e<\/span> is this page's pedagogical name for the attention output. The addition <span class=\"sym sym-e\">e<\/span>&thinsp;+&thinsp;<span class=\"sym sym-d\">\u0394e<\/span> is the standard residual connection."};
+window.__PART__ = {"part":2,"series":"Attention and language","title":"Self-attention, from first principles","subtitle":"How a token reads from the tokens before it, and why that makes the next word easier to predict.","audience":"For students who know embeddings, dot products, softmax and next-token prediction, and who have not yet met attention.","minutes":null,"central":"\\ve{e} \\;\\rightarrow\\; \\vq{Q},\\vk{K},\\vv{V} \\;\\rightarrow\\; \\text{attention } (\\va{\\alpha}) \\;\\rightarrow\\; \\vd{\\Delta e} \\;\\rightarrow\\; \\vp{e + \\Delta e}","centralLabel":"The one chain to remember","legendTitle":"How to read this page: seven colours, seven objects","provenance":"Where the numbers come from: a tiny demonstration model with {{d_model}}-number representations and a {{vocab}}-word vocabulary. Each coordinate was given an illustrative name{{axes}}, and the weights were written by hand so that the names are true. The arithmetic is real, but the model is not a trained language model.","chain":[{"label":"Predict the next token","section":"s01"},{"label":"Baseline: only the last token","section":"s02"},{"label":"Baseline: a fixed window of w tokens","section":"s03"},{"label":"Weighted pooling: where should weights come from?","section":"s04"},{"label":"A detour through search: query, key, value","section":"s05"},{"label":"Hard retrieval \u2192 soft retrieval","section":"s06"},{"label":"Every token becomes a searchable record","section":"s07"},{"label":"Two jobs: choose weights, then mix values","section":"s08"},{"label":"The contextual update \u0394e","section":"s09"},{"label":"\u201cbank\u201d: same start, different context","section":"s10"},{"label":"What exactly are Q, K, and V?","section":"s11"},{"label":"Why divide by \u221ad_k?","section":"s12"},{"label":"Causal masking","section":"s13"},{"label":"From \u0394e to the next-token probabilities","section":"s14"},{"label":"Full walkthrough, one step at a time","section":"s15"},{"label":"The same thing in matrix form","section":"s16"},{"label":"Attention versus the alternatives","section":"s17"},{"label":"Pause and think","section":"s18"},{"label":"Three summaries","section":"s19"}],"sections":[{"id":"s01","title":"Predict the next token","lit":""},{"id":"s02","title":"Baseline: only the last token","lit":"e"},{"id":"s03","title":"Baseline: a fixed window of w tokens","lit":""},{"id":"s04","title":"Weighted pooling: where should weights come from?","lit":"a"},{"id":"s05","title":"A detour through search: query, key, value","lit":"q k v"},{"id":"s06","title":"Hard retrieval \u2192 soft retrieval","lit":""},{"id":"s07","title":"Every token becomes a searchable record","lit":""},{"id":"s08","title":"Two jobs: choose weights, then mix values","lit":""},{"id":"s09","title":"The contextual update \u0394e","lit":"d ep"},{"id":"s10","title":"\u201cbank\u201d: same start, different context","lit":""},{"id":"s11","title":"What exactly are Q, K, and V?","lit":""},{"id":"s12","title":"Why divide by \u221ad_k?","lit":""},{"id":"s13","title":"Causal masking","lit":""},{"id":"s14","title":"From \u0394e to the next-token probabilities","lit":""},{"id":"s15","title":"Full walkthrough, one step at a time","lit":""},{"id":"s16","title":"The same thing in matrix form","lit":""},{"id":"s17","title":"Attention versus the alternatives","lit":""},{"id":"s18","title":"Pause and think","lit":""},{"id":"s19","title":"Three summaries","lit":""}],"objects":["e","q","k","v","a","d","ep"],"prev":{"label":"Part 1: From characters to next-token prediction","href":"part1.html","available":true},"next":{"label":"Part 3: Learning, heads, and the Transformer","href":"part3.html","available":true},"index":{"label":"Series home","href":"index.html","available":true},"notation":"part2","footer":"Notation: <span class=\"sym sym-e\">e<\/span> is always the current token representation, and <span class=\"sym sym-d\">\u0394e<\/span> is this page's pedagogical name for the attention output. The addition <span class=\"sym sym-e\">e<\/span>&thinsp;+&thinsp;<span class=\"sym sym-d\">\u0394e<\/span> is the standard residual connection.","durationLabel":"The full walkthrough takes multiple sessions. A classroom route is suggested in Section 1."};
 </script>
 <script>
 /* shared.js: the AT namespace, with toy-model math, KaTeX helpers, UI components, motif and flow.
@@ -885,6 +885,8 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
     io.observe(el);
   }
   AT.h = h; AT.append = append; AT.clear = clear; AT.debounce = debounce; AT.onVisible = onVisible; AT.reducedMotion = reducedMotion;
+  /* One grayscale convention across the vision lessons: larger pixels are lighter. */
+  AT.imageShade = function (v) { return Math.round(35 + 69 * Math.max(0, Math.min(3, Number(v) || 0))); };
 
   /* ======================================================================
      1. toy model + math
@@ -1303,11 +1305,30 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
   /* ---- popover: a small dialog anchored below a cell, appended to the figure (outside the scroll container) ---- */
   function placeBelow(fig, anchor, el) {
     var fr = fig.getBoundingClientRect(), ar = anchor.getBoundingClientRect();
-    var vw = document.documentElement.clientWidth || window.innerWidth || 1280;
-    el.style.top = (ar.bottom - fr.top + 6) + 'px';
-    var w = el.offsetWidth, left = ar.left - fr.left, minLeft = 12 - fr.left, maxLeft = vw - 12 - fr.left - w;
-    if (maxLeft < minLeft) maxLeft = minLeft;
-    el.style.left = Math.max(minLeft, Math.min(left, maxLeft)) + 'px';
+    /* DOMRects are viewport pixels; absolute offsets are pre-transform pixels.
+       Intersect every clipping ancestor, not just the viewport: the live frame
+       itself clips, even when plenty of viewport space remains below it. */
+    var sx = fr.width / (fig.offsetWidth || fr.width || 1), sy = fr.height / (fig.offsetHeight || fr.height || 1);
+    var bounds = { left: 0, top: 0, right: document.documentElement.clientWidth, bottom: window.innerHeight };
+    for (var p = fig; p && p !== document.body; p = p.parentElement) {
+      var cs = getComputedStyle(p), r = p.getBoundingClientRect();
+      if (/hidden|clip|scroll|auto/.test(cs.overflowX)) { bounds.left = Math.max(bounds.left, r.left); bounds.right = Math.min(bounds.right, r.right); }
+      if (/hidden|clip|scroll|auto/.test(cs.overflowY)) { bounds.top = Math.max(bounds.top, r.top); bounds.bottom = Math.min(bounds.bottom, r.bottom); }
+    }
+    var gap = 8, maxW = Math.max(1, (bounds.right - bounds.left - gap * 2) / sx);
+    var maxH = Math.max(1, (bounds.bottom - bounds.top - gap * 2) / sy);
+    el.style.width = '';
+    el.style.maxWidth = maxW + 'px'; el.style.minWidth = Math.min(260, maxW) + 'px';
+    el.style.maxHeight = maxH + 'px';
+    // Absolute auto-width would shrink again when left changes, making the
+    // measured height stale. Freeze this measured width before choosing a side.
+    el.style.width = el.offsetWidth + 'px';
+    var w = el.offsetWidth * sx, height = el.offsetHeight * sy;
+    var left = Math.max(bounds.left + gap, Math.min(ar.left, bounds.right - gap - w));
+    var below = ar.bottom + gap, above = ar.top - gap - height;
+    var top = below + height <= bounds.bottom - gap ? below : above >= bounds.top + gap ? above : Math.max(bounds.top + gap, Math.min(below, bounds.bottom - gap - height));
+    el.style.left = ((left - fr.left) / sx - fig.clientLeft) + 'px';
+    el.style.top = ((top - fr.top) / sy - fig.clientTop) + 'px';
   }
   function popover(fig, opts) {
     opts = opts || {};
@@ -1316,12 +1337,14 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
     var pop = h('div', { class: 'calc-pop', role: 'dialog', 'aria-label': opts.label || 'Arithmetic', hidden: true }, close, titleEl, bodyEl);
     fig.appendChild(pop);
     var anchor = null;
+    function reposition() { if (anchor && !pop.hidden) placeBelow(fig, anchor, pop); }
     function onOutside(ev) { if (pop.contains(ev.target) || (anchor && anchor.contains(ev.target))) return; hide(); }
     function onKey(ev) { if (ev.key === 'Escape') { hide(true); ev.stopPropagation(); } }
     function hide(refocus) {
       if (pop.hidden) return;
       pop.hidden = true;
       document.removeEventListener('mousedown', onOutside, true); document.removeEventListener('keydown', onKey, true);
+      window.removeEventListener('resize', reposition); document.removeEventListener('at-presentation-layout', reposition);
       var a = anchor; anchor = null;
       if (refocus && a && a.focus) a.focus();
     }
@@ -1331,6 +1354,7 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
       pop.hidden = false; placeBelow(fig, td, pop);
       if (fig.hideTip) fig.hideTip();
       document.addEventListener('mousedown', onOutside, true); document.addEventListener('keydown', onKey, true);
+      window.addEventListener('resize', reposition); document.addEventListener('at-presentation-layout', reposition);
     }
     close.addEventListener('click', function () { hide(true); });
     return { el: pop, body: bodyEl, show: show, hide: hide, isOpen: function () { return !pop.hidden; } };
@@ -2075,8 +2099,8 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
   NOTATION_3.forEach(function (n) { n.parts = ['part3']; });
   AT.notation = NOTATION.concat(NOTATION_1, NOTATION_3);
   AT.T = arr(AT.sentences.river).length || 10;
-  var GROUP_TITLES = { token: 'One token at a time', matrix: 'All tokens at once', sizes: 'Sizes and learned weights', axes: 'Named coordinates (illustrative)', mlp: 'The character model, step by step', train: 'Learning', block: 'The Transformer block' };
-  var PART_GROUPS = { part1: ['mlp', 'sizes', 'axes'], part2: ['token', 'matrix', 'sizes', 'axes'], part3: ['token', 'matrix', 'train', 'block', 'sizes', 'axes'] };
+  var GROUP_TITLES = { token: 'One token at a time', matrix: 'All tokens at once', sizes: 'Sizes and learned weights', axes: 'Named coordinates (illustrative)', mlp: 'The character model, step by step', train: 'Learning', block: 'The Transformer block', image: 'Image representations', masked: 'Learning from hidden patches', distill: 'Learning from another view' };
+  var PART_GROUPS = { part1: ['mlp', 'sizes', 'axes'], part2: ['token', 'matrix', 'sizes', 'axes'], part3: ['token', 'matrix', 'train', 'block', 'sizes', 'axes'], vision2: ['image', 'masked', 'distill', 'sizes'] };
   /* the "axes" group is built at call time from AT.axes so the names are never retyped */
   function axesNotation() {
     if (!AT.axes.named) return [];
@@ -2132,9 +2156,11 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
   ui.legend = function (opts) {
     opts = opts || {};
     var ul = h('ul', { class: 'legend', 'aria-label': 'Colour legend' });
-    OBJECTS.forEach(function (o) {
+    AT.objects.forEach(function (o) {
       if (opts.only && arr(opts.only).indexOf(o.cls) < 0) return;
-      ul.appendChild(h('li', { class: 'obj-' + o.cls, title: o.def }, h('span', { class: 'sw' }), h('span', { class: 'sy' }, o.sym), o.name));
+      var symbol = h('span', { class: 'sy' }, o.sym);
+      if (o.symTex) AT.tex(symbol, o.symTex);
+      ul.appendChild(h('li', { class: 'obj-' + o.cls, title: o.def }, h('span', { class: 'sw' }), symbol, o.name));
     });
     return put(ul, opts);
   };
@@ -2414,7 +2440,7 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
       var lines = txt.split('\n'), ind = null;
       lines.forEach(function (l) { if (l.trim()) { var m = l.match(/^\s*/)[0].length; ind = ind == null ? m : Math.min(ind, m); } });
       lines = lines.map(function (l) { return l.slice(ind || 0); });
-      /* the first line is the question to ask before the reveal: it is always its own paragraph */
+      /* Preserve an authored opening cue, without treating every long note as a question. */
       var first = lines.shift().trim();
       var rest = lines.join('\n').split(/\n\s*\n/).map(function (p) { return p.replace(/\s*\n\s*/g, ' ').trim(); }).filter(Boolean);
       return (first ? [first] : []).concat(rest);
@@ -2526,12 +2552,12 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
       U.notes = h('div', { id: 'at-notes', role: 'complementary', 'aria-label': 'Presenter notes' });
       U.overview = h('div', { id: 'at-overview', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'All frames' }, h('div', { class: 'ov-head' }, h('p', { class: 'ov-title' }, 'All frames: select one to jump'), h('button', { id: 'at-overview-close', type: 'button', class: 'pbtn', on: { click: function () { setOverview(false); } } }, 'Close overview')), h('div', { class: 'ov-grid' }));
       U.blank = h('div', { id: 'at-blank', 'aria-hidden': 'true' });
-      U.help = h('div', { id: 'at-help', role: 'note' }, h('div', { html: '<kbd>→</kbd> <kbd>Space</kbd> <kbd>PgDn</kbd> next build · <kbd>←</kbd> <kbd>PgUp</kbd> <kbd>Backspace</kbd> back · <kbd>Home</kbd> <kbd>End</kbd> first / last frame<br><kbd>C</kbd> controls · <kbd>O</kbd> overview · <kbd>B</kbd> blank · <kbd>S</kbd> notes · <kbd>?</kbd> this help · <kbd>Esc</kbd> close panel / exit' }));
+      U.help = h('div', { id: 'at-help', role: 'note' }, h('div', { html: '<kbd>→</kbd> <kbd>Space</kbd> <kbd>PgDn</kbd> <kbd>N</kbd> next build · <kbd>←</kbd> <kbd>PgUp</kbd> <kbd>Backspace</kbd> back · <kbd>Home</kbd> <kbd>End</kbd> first / last frame<br><kbd>C</kbd> controls · <kbd>O</kbd> overview · <kbd>B</kbd> blank · <kbd>S</kbd> notes · <kbd>?</kbd> this help · <kbd>Esc</kbd> close panel / return focus to slide / exit<br>Focused sliders keep their arrow and Page keys. <kbd>N</kbd> advances after a regular slider; <kbd>Esc</kbd> leaves a control without leaving the presentation.' }));
       U.blank.addEventListener('click', function () { setBlank(false); });
       document.body.appendChild(U.controlsToggle); document.body.appendChild(U.controls); document.body.appendChild(U.announcement); document.body.appendChild(U.fitWarning); document.body.appendChild(U.notes); document.body.appendChild(U.overview); document.body.appendChild(U.blank); document.body.appendChild(U.help);
       window.addEventListener('resize', measureChrome);
       document.addEventListener('fullscreenchange', function () { updateChrome(); measureChrome(); });
-      if (window.ResizeObserver) { U.resize = new ResizeObserver(measureChrome); U.resize.observe(U.controls); var strip = document.getElementById('strip'); if (strip) U.resize.observe(strip); }
+      if (window.ResizeObserver) { U.resize = new ResizeObserver(measureChrome); U.resize.observe(U.controls); U.resize.observe(U.notes); var strip = document.getElementById('strip'); if (strip) U.resize.observe(strip); }
       document.addEventListener('input', scheduleFitCheck, true);
       document.addEventListener('change', scheduleFitCheck, true);
       document.addEventListener('click', scheduleFitCheck, true);
@@ -2548,6 +2574,8 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
     }
     function measureChrome() {
       if (!P.active) return;
+      var notesHeight = P.notes && U.notes ? Math.ceil(U.notes.getBoundingClientRect().height) : 0;
+      document.body.style.setProperty('--present-notes-h', notesHeight + 'px');
       var main = document.querySelector('main');
       if (main) {
         var r = main.getBoundingClientRect(), cs = getComputedStyle(document.body);
@@ -2558,6 +2586,7 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
         document.body.style.setProperty('--present-scale', String(Math.max(0.05, scale)));
       }
       repaintSvgs(cur());
+      document.dispatchEvent(new Event('at-presentation-layout'));
       scheduleFitCheck();
     }
     /* Chromium can retain SVG text at coordinates from the previously hidden
@@ -2736,7 +2765,11 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
     }
     function notesHtml(list, empty) {
       if (!list || !list.length) return '<p class="at-notes-empty">' + (empty || 'No notes for this frame.') + '</p>';
-      return list.map(function (p) { return '<p>' + escapeHtml(p) + '</p>'; }).join('');
+      return list.map(function (p, i) {
+        /* Bold only a short opening cue, never a whole one-line lecture note. */
+        var cue = i === 0 && p.length <= 180 && !/[.!?]\s+\S/.test(p);
+        return '<p' + (cue ? ' class="at-notes-cue"' : '') + '>' + escapeHtml(p) + '</p>';
+      }).join('');
     }
     function updateChrome() {
       var fr = P.frames[P.fi]; if (!fr || !U.counter) return;
@@ -2751,7 +2784,7 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
       U.fullscreen.textContent = document.fullscreenElement ? 'Leave full screen' : 'Full screen';
       U.fullscreen.setAttribute('aria-pressed', document.fullscreenElement ? 'true' : 'false');
       frameHeading(fr);
-      if (P.notes) U.notes.innerHTML = notesHtml(fr.notes);
+      if (P.notes) { U.notes.innerHTML = notesHtml(fr.notes); measureChrome(); }
       var bar = document.getElementById('progress');
       if (bar) bar.style.width = (100 * (P.fi + (P.build + 1) / (fr.maxBuild + 1)) / P.frames.length).toFixed(2) + '%';
     }
@@ -2760,7 +2793,7 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
       P.frames.forEach(function (fr, i) {
         var b = h('button', { type: 'button', class: 'ov-item' + (i === P.fi ? ' is-current' : ''), 'aria-current': i === P.fi ? 'true' : null, on: { click: function () { setOverview(false); showFrame(i, 0); cur().el.focus({ preventScroll: true }); } } },
           h('span', { class: 'ov-n' }, fr.num + '.' + (fr.index + 1) + (fr.maxBuild ? ' · ' + (fr.maxBuild + 1) + ' builds' : '')),
-          h('span', { class: 'ov-t' }, fr.secTitle), fr.title ? h('span', { class: 'ov-s' }, fr.title) : null);
+          h('span', { class: 'ov-t' }, displayTitle(fr)), fr.title && fr.title.trim() !== fr.secTitle.trim() ? h('span', { class: 'ov-s' }, fr.secTitle) : null);
         grid.appendChild(b);
       });
     }
@@ -2779,11 +2812,12 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
       emit('overview', P.overview);
     }
     function setBlank(on) { P.blank = !!on; if (U.blank) U.blank.classList.toggle('is-on', P.blank); }
-    function setNotes(on) { P.notes = !!on; if (U.notes) { U.notes.classList.toggle('is-on', P.notes); if (P.notes) updateChrome(); } }
+    function setNotes(on) { P.notes = !!on; if (U.notes) { U.notes.classList.toggle('is-on', P.notes); if (P.notes) updateChrome(); measureChrome(); } }
     function setHelp(on) { P.help = !!on; if (U.help) U.help.classList.toggle('is-on', P.help); }
 
     /* ---- frames ---- */
     function cur() { return P.frames[P.fi] || null; }
+    function displayTitle(fr) { return fr.title && fr.title.trim() !== fr.secTitle.trim() ? fr.title : fr.secTitle; }
     function leaveFrame(fr) {
       if (!fr) return;
       restore(fr.snapshot);
@@ -2917,10 +2951,22 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
     }
     function handleKey(key, target, ev) {
       if (!P.active) { if ((key === 'p' || key === 'P') && !inField(target)) { enter(); return true; } return false; }
+      // Arithmetic dialogs install a document-capture Escape handler. Let it run
+      // before the window-level presentation shortcut can exit the lesson.
+      if (key === 'Escape' && document.querySelector('.frame.is-live .calc-pop:not([hidden])')) return false;
       if (P.overview) return overviewKey(key, ev);
       if (P.blank) { if (key === 'Shift' || key === 'Control' || key === 'Alt' || key === 'Meta') return false; setBlank(false); return true; }
-      if (key === 'Escape') { if (P.help) setHelp(false); else if (P.controls) setControls(false); else exit(); return true; }
-      if (inField(target) || (target && target.closest && target.closest('[data-present="manual"]'))) return false;
+      var manual = target && target.closest && target.closest('[data-present="manual"]');
+      var field = inField(target), range = target && target.tagName === 'INPUT' && target.type === 'range';
+      if (key === 'Escape') {
+        if (P.help) setHelp(false); else if (P.controls) setControls(false);
+        else if (field || manual) { if (cur()) cur().el.focus({ preventScroll: true }); }
+        else exit();
+        return true;
+      }
+      /* A slider keeps native arrows, PageUp/Down and Home/End. N is unused by
+         a range and can advance the lesson; selects retain type-ahead letters. */
+      if (field || manual) { if (range && !manual && (key === 'n' || key === 'N')) { next(); return true; } return false; }
       switch (key) {
         case 'ArrowRight': next(); return true;
         case ' ': if (target && (target.tagName === 'BUTTON' || target.tagName === 'SUMMARY' || target.tagName === 'A' || target.getAttribute('role') === 'button')) return false; next(); return true;
@@ -3015,11 +3061,11 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
       PR.startedAt = st.startedAt || PR.startedAt || Date.now();
       var f = st.frame;
       PR.num.textContent = f.num + ' · frame ' + (f.index + 1) + ' of ' + f.count + ' · ' + (st.fi + 1) + '/' + st.total;
-      PR.title.textContent = f.secTitle; PR.sub.textContent = f.title;
+      PR.title.textContent = displayTitle(f); PR.sub.textContent = displayTitle(f) !== f.secTitle ? f.secTitle : '';
       PR.build.textContent = 'build ' + st.build + ' of ' + f.maxBuild + (st.stepper ? ' · step ' + (st.stepper.index + 1) + ' of ' + st.stepper.count : '');
       clear(PR.dots); for (var i = 0; i <= f.maxBuild; i++) PR.dots.appendChild(h('span', { class: i < st.build ? 'on' : (i === st.build ? 'cur' : '') }));
       PR.notes.innerHTML = notesHtml(f.notes);
-      if (st.next) { PR.nextT.textContent = st.next.num + '.' + (st.next.index + 1) + '  ' + st.next.secTitle; PR.nextS.textContent = st.next.title; PR.nextN.innerHTML = notesHtml(st.next.notes.slice(0, 1), ''); }
+      if (st.next) { PR.nextT.textContent = st.next.num + '.' + (st.next.index + 1) + '  ' + displayTitle(st.next); PR.nextS.textContent = displayTitle(st.next) !== st.next.secTitle ? st.next.secTitle : ''; PR.nextN.innerHTML = notesHtml(st.next.notes.slice(0, 1), ''); }
       else { PR.nextT.textContent = 'Last frame'; PR.nextS.textContent = ''; PR.nextN.innerHTML = ''; }
     }
 
@@ -3078,7 +3124,7 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
 (function (root) {
   'use strict';
   const D = root.ATTENTION_PREVIEW_DATA;
-  const C = { ink:'#243b39', muted:'#6b7c77', line:'#d8e1dc', paper:'#fbfcf9', q:'#9333ea', k:'#d97706', v:'#0d9488', a:'#e11d48', m:'#0d9488', d:'#16a34a', e:'#2563eb' };
+  const C = { ink:'#243b39', muted:'#65756f', line:'#d8e1dc', paper:'#fbfcf9', q:'#8b2cde', k:'#aa4e08', v:'#0f766e', a:'#be123c', m:'#0f766e', d:'#147737', e:'#245edb' };
   const {dModel:dm,dKey:dk,dValue:dv,T,vocabSize:nv}=D.dims;
   const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
   const f = (n, digits=3) => Number(n).toFixed(digits).replace(/^-/,'−');
@@ -3223,7 +3269,7 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
     for(const role of ['q','k','v','a','m','d','e'])out+=`<marker id="${prefix}-${role}" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0 L8 4 L0 8 Z" fill="${C[role]}"/></marker>`;
     out+=`</defs><style>text{font-family:'Avenir Next','Segoe UI',Arial,sans-serif;fill:${C.ink}}.eyebrow{font-size:14px;font-weight:700;letter-spacing:1.8px}.heading{font-size:33px;font-weight:600;letter-spacing:-.6px}.stage-title{font-size:27px;font-weight:600;letter-spacing:-.4px}.body{font-size:21px}.detail{font-size:17px;fill:${C.muted}}.axis{font-size:16px;fill:${C.muted}}.smallcap{font-size:15px;font-weight:700;letter-spacing:.6px}.formula{font-family:'STIX Two Text',Georgia,serif;font-size:26px}.number{font-family:'SFMono-Regular',Consolas,monospace;font-size:24px}.table-number{font-family:'SFMono-Regular',Consolas,monospace;font-size:18px}.table-label{font-size:18px}.table-head{font-size:15px;font-weight:600;fill:${C.muted}}.node-title{font-size:20px;font-weight:600}.node-caption{font-size:13px;fill:${C.muted}}.code{font-family:'SFMono-Regular',Consolas,monospace;font-size:17px}.token{font-size:19px}.position{font-size:12px;fill:${C.muted}}.tiny{font-size:13px;fill:${C.muted}}</style>`;
     out+=rect(0,0,1600,960,C.paper,'none',0);
-    out+=txt(48,44,'PART 2 / A SINGLE ATTENTION HEAD','eyebrow',`fill="${C.k}"`);
+    out+=txt(48,44,'PART 2 / A SINGLE ATTENTION HEAD','eyebrow',`fill="${C.muted}"`);
     out+=txt(48,87,'How context reaches a token','heading');
     out+=txt(1538,43,`${String(si+1).padStart(2,'0')} / ${stages.length}`,'eyebrow','text-anchor="end"');
     out+=txt(1538,82,'One input sequence · causal reads · one residual update','detail','text-anchor="end"');
@@ -3243,7 +3289,7 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
     st.lines.forEach((t,j)=>out+=txt(60,287+j*28,t,'body'));
     out+=evidence(si,d);
     out+=rect(48,735,685,101,'#eef3ee','none',6);
-    out+=txt(66,760,'PYTORCH · THE ACTIVE OPERATION','smallcap',`fill="${C.k}"`);
+    out+=txt(66,760,'PYTORCH · THE ACTIVE OPERATION','smallcap',`fill="${C.muted}"`);
     st.code.forEach((t,j)=>out+=txt(66,790+j*25,t,'code'));
     st.note.forEach((t,j)=>out+=txt(60,873+j*25,t,'detail'));
     out+=line(768,224,768,910,`stroke="${C.line}"`);
@@ -3347,6 +3393,18 @@ body.present #s01 .emb-tab{margin-top:20px}
     <h2>Predict the next token</h2>
   </div>
 </header>
+
+<div class="companion" data-kicker="Teaching this in class">
+  <h3>Reach one complete prediction before revisiting the machinery</h3>
+  <p>The full article is a multi-session lesson. For a first pass, follow the route below and work one example at each stop. The links jump to the relevant section; they do not remove slides from the complete presentation.</p>
+  <ol>
+    <li><a href="#s01">Set the prediction task</a>, then use <a href="#s02">the last-token baseline</a> to show why context matters. Treat the fixed-window recap in Section 3 as optional if Part 1 is fresh.</li>
+    <li><a href="#s04">Motivate unequal weights</a> and use <a href="#s05">one search query</a> to distinguish a request, matching features, and retrieved information.</li>
+    <li><a href="#s07">Return to the sentence</a>. Follow <a href="#s08">matching and value mixing</a>, then <a href="#s09">add the update</a>. Keep the receiving position visible.</li>
+    <li><a href="#s13">Exclude future tokens</a>, then <a href="#s14">finish the vocabulary prediction</a>. End this pass with a probability for the next token, not an unexplained attention vector.</li>
+  </ol>
+  <p>In the next sitting, revisit the two bank contexts, the learned projections and score scaling (Sections 10–12), then consolidate the full walkthrough and parallel matrices (Sections 15–16). Use Sections 17–19 for comparisons and questions. Preview the scaling factor on the first pass; derive it on the second. Choose the stopping point by students' understanding rather than the number of clicks.</p>
+</div>
 
 <div class="companion" data-kicker="For self-study">
   <p>We want to predict the next word. As we add each part of the model, we will ask how it helps that prediction. Switch between the two contexts below and watch the probability bars move. The last three words are identical, so the model needs information about <em>river</em> or <em>cheque</em> from earlier in the sentence. The second widget shows what it starts with: a row of $d_{\text{model}}$ numbers for each token, with named coordinates (<span id="s01-axes-names"></span>). We chose these names and numbers by hand to make the example readable. The fifth coordinate carries a position offset, but the later projections ignore it. This toy shows how the model gathers relevant content; it does not demonstrate sensitivity to word order.</p>
@@ -3621,7 +3679,7 @@ body.present #s02 .title-row{margin-bottom:16px}
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Start with a model that sends only the last token to the output head. Its entire input is one row of $d_{\text{model}}$ numbers. Switch the context and the bars stay put. The table below explains why: both sentences end with <em>the</em> at position 10, so they supply exactly the same starting row. The same row gives the same probabilities. With no information to distinguish a river scene from a bank branch, the head spreads probability across eight candidates.</p>
+  <p>Start with a model that sends only the last token to the output head. Its entire input is one row of $d_{\text{model}}$ numbers. Switch the context and the bars stay put. The table below explains why: both sentences end with <em>the</em> at position 10, so they supply exactly the same starting row. The same row gives the same probabilities. In this toy, eight candidates also happen to tie. A last-token-only model need not produce a uniform distribution; it must produce the same distribution whenever it receives the same row.</p>
 </div>
 
 <div class="frame" data-title="The last token alone" id="s02-frame1" data-autobuild="off">
@@ -3658,7 +3716,7 @@ No. Both sentences end with the at position 10, so the head receives the same ro
       <button type="button" class="btn" id="s02-ctx-b" aria-pressed="false">B: She deposited … the bank</button>
     </div>
     <div id="s02-bars"></div>
-    <p class="companion look" id="s02-bars-note"></p>
+    <p class="look" id="s02-bars-note"></p>
   </div>
   <div class="companion callout callout-key">Same last token + same position → same input row → same prediction.</div>
 </div>
@@ -3684,7 +3742,7 @@ Nowhere: neither word reaches the head. A better representation has to bring the
     None: the difference row is all zeros. If someone asks why position does not help, point at the position row of section 01: the blank sits at the same position in both sentences. Open the arithmetic only if the room wants to see the output head multiply.
   </script>
   <div class="companion">
-    <p>The eight candidate bars are nearly the same height. The head has no context that would favour <em>water</em> over <em>teller</em>: both sentences give it the same input. Compare their coordinates in the table.</p>
+    <p>The eight candidate bars are exactly tied, at about 0.094 each. The ordering of tied bars does not identify a winner. More importantly, both sentences give this head the same input. Compare their coordinates in the table.</p>
   </div>
 
   <div class="card">
@@ -3800,8 +3858,10 @@ Nowhere: neither word reaches the head. A better representation has to bring the
     AT.renderMath(evecReading);
     const its = items(p);
     if (bars) bars.update(its); else bars = AT.ui.bars(its, { cls: 'neutral', size: 'lg', max: 1, decimals: 3, sorted: false, into: barsHost });
-    const best = AT.topk(p, 1)[0];
-    note.innerHTML = 'Look at the bar heights. Context ' + ctx + ': the highest probability is only $' + AT.fmt(best.p, 3) + '$ (' + AT.escape(best.tok) + '), and switching the context leaves every bar where it is. Full bar = probability 1.';
+    const top = AT.topk(p, 8), tied = top.every(x => x.p === top[0].p);
+    note.innerHTML = tied
+      ? 'All eight candidates are exactly tied at about $' + AT.fmt(top[0].p, 3) + '$ each. Switching context leaves every bar unchanged. Full bar = probability 1.'
+      : 'Switching context leaves every probability unchanged: the head receives the same row. Full bar = probability 1.';
     AT.renderMath(note);
     mv.update(B.E[t], { xLabel: 'e · ' + T + ' ' + toks[t] });
     calcTab.update(calcRows(B));
@@ -5567,7 +5627,8 @@ k_j, v_j = e_j @ W_K, e_j @ W_V</code></pre>
 #s08 .tree .nd-q{fill:var(--t-q);stroke:var(--c-q)}
 #s08 .tree .nd-k{fill:var(--t-k);stroke:var(--c-k)}
 #s08 .tree .nd-s{fill:var(--card);stroke:var(--ink-3)}
-#s08 .tree .nd-a{stroke:var(--c-a)}
+#s08 .tree .nd-a{stroke:var(--c-a);fill:var(--weight-fill)}
+#s08 .tree .weight-number{fill:var(--weight-ink)}
 #s08 .tree text{font-size:15px;fill:var(--ink);dominant-baseline:middle;text-anchor:middle}
 #s08 .tree .sym-t{font-family:var(--font-math);font-style:italic;font-size:18px}
 #s08 .tree .t-q{fill:var(--c-q)} #s08 .tree .t-k{fill:var(--c-k)} #s08 .tree .t-a{fill:var(--c-a)}
@@ -5696,7 +5757,7 @@ Every source competes for weight in the same query's routing row. The resulting 
 Point to bank at the top, then river's key. Click a second key and compare the coordinate-by-coordinate arithmetic. The same query is reused on every edge.</script>
 <div class="card">
   <h3 class="card-title">Bank’s query is held fixed; choose a key to inspect its score</h3>
-  <p class="pic-lab">The same numbers as a picture</p>
+  <p class="pic-lab">Weight shading: absolute 0–1 scale</p>
   <p class="muted small scroll-hint">Scroll sideways to see all seven keys.</p>
   <div class="scroll-x tree-wrap dotgrid"><div id="s08-tree"></div></div>
 </div>
@@ -5783,7 +5844,6 @@ m_alt = alpha @ (E @ W_V_alt)</code></pre>
   const qi = 6, n = qi + 1;
   const T = toks.length;
   const alpha = F.A[qi].slice(0, T), scores = F.S[qi].slice(0, T);
-  const amax = Math.max.apply(null, alpha);
   const Z = scores.reduce((acc, s) => acc + Math.exp(s), 0);
   const sv = AT.svg;
   const AX = AT.axes;
@@ -5881,9 +5941,9 @@ m_alt = alpha @ (E @ W_V_alt)</code></pre>
     gs.appendChild(sv('text', { x: cx, y: scY + rowH / 2 + 1, class: 'num' }, AT.fmt(scores[j], 2)));
     gs.appendChild(sv('path', { class: 'edge', d: 'M' + cx + ' ' + (leafY + leafH) + ' L ' + cx + ' ' + (scY - 2) }));
     const ga = grp('alpha' + j);
-    const dark = alpha[j] / amax > 0.6;
-    ga.appendChild(sv('rect', { class: 'nd nd-a', x: leafX(j) + 5, y: alY, width: leafW - 10, height: rowH, fill: AT.heatColor(alpha[j] / amax) }));
-    ga.appendChild(sv('text', { x: cx, y: alY + rowH / 2 + 1, class: 'num', fill: dark ? 'var(--card)' : null }, AT.fmt(alpha[j], 2)));
+    const dark = alpha[j] > 0.6;
+    ga.appendChild(sv('rect', { class: 'nd nd-a', x: leafX(j) + 5, y: alY, width: leafW - 10, height: rowH, style: '--weight-fill:'+AT.heatColor(alpha[j]) }));
+    ga.appendChild(sv('text', { x: cx, y: alY + rowH / 2 + 1, class: 'num weight-number', style: '--weight-ink:'+(dark ? 'var(--card)' : 'var(--ink)') }, AT.fmt(alpha[j], 2)));
     ga.appendChild(sv('path', { class: 'edge', d: 'M' + cx + ' ' + (scY + rowH) + ' L ' + cx + ' ' + (alY - 2) }));
   });
   const gq = grp('query');
@@ -7543,7 +7603,8 @@ Point to position 10. Earlier we examined bank at position 7, but now q_10 searc
 </div>
 
 <div class="frame" id="s14-routing" data-title="Use the final the’s query to choose source weights">
-<script type="text/x-notes">Which source receives the largest weight? Switch river to cheque while holding the final word fixed. These are weights over input positions, not vocabulary probabilities.</script>
+<script type="text/x-notes">Which source receives the largest weight?
+Switch river to cheque while holding the final word fixed. These are weights over input positions, not vocabulary probabilities.</script>
 <p class="context-line" data-context-line></p>
 <div class="card">
   <h3 class="card-title">Where the last token reads from</h3>
@@ -7562,7 +7623,8 @@ Point to position 10. Earlier we examined bank at position 7, but now q_10 searc
 </div>
 
 <div class="frame" id="s14-routing-code" data-title="Match, scale, then normalize the scores">
-  <script type="text/x-notes">Compare the same final query with all ten keys; scale; then softmax across source positions. Because the receiver is last, every displayed source is allowed.</script>
+<script type="text/x-notes">Compare the same final query with all ten keys; scale; then softmax across source positions.
+Because the receiver is last, every displayed source is allowed.</script>
   <div class="grid-3">
     <div class="card"><strong>1 · Match</strong><p>$r_j=q_{10}\cdot k_j$</p></div>
     <div class="card" data-build="1"><strong>2 · Scale</strong><p>$s_{10,j}=r_j/\sqrt{d_k}$</p></div>
@@ -7584,7 +7646,8 @@ The starting row e_10 is identical. Only the context-dependent update changes. A
 </div>
 
 <div class="frame" id="s14-residual-code" data-title="The message must return to model width before we add it">
-  <script type="text/x-notes">Alpha times V has value width. W_O changes the coordinate system and width; only then can the result be added to the original row.</script>
+<script type="text/x-notes">Alpha times V has value width.
+W_O changes the coordinate system and width; only then can the result be added to the original row.</script>
   <div class="grid-3">
     <div class="card"><strong>Mix</strong><p>$m_{10}=\alpha_{10,:}V$</p><p>$1\times d_v$</p></div>
     <div class="card" data-build="1"><strong>Project</strong><p>$\Delta e_{10}=m_{10}W_O$</p><p>$1\times d_{\rm model}$</p></div>
@@ -7618,7 +7681,8 @@ p_next = logits.softmax(dim=-1)</code></pre>
 </div>
 
 <div class="frame" id="s14-head-arithmetic" data-title="One candidate: multiply, add the bias, then normalize">
-<script type="text/x-notes">The selected vocabulary column supplies the prediction-head weights. Show the logit calculation first; then compare its exponential with the total over the vocabulary.</script>
+<script type="text/x-notes">The selected vocabulary column supplies the prediction-head weights.
+Show the logit calculation first; then compare its exponential with the total over the vocabulary.</script>
 <p class="context-line" data-context-line></p>
 <div id="s14-head-worked" class="worked-head"></div>
 <div class="companion" id="s14-head-calc"></div>
@@ -7644,7 +7708,8 @@ In this one-layer toy it reads only the final row. Trace earlier tokens to the u
 </div>
 
 <div class="frame" id="s14-layer-boundary" data-title="All positions read the same layer inputs">
-<script type="text/x-notes">Does the final the read the bank vector we just updated? Not in the same layer. It reads bank's value formed from this layer's input. The updated bank is available in the next layer.</script>
+<script type="text/x-notes">Does the final the read the bank vector we just updated?
+Not in the same layer. It reads bank's value formed from this layer's input. The updated bank is available in the next layer.</script>
 <div class="layer-route">
   <div><strong>This layer</strong><p>$\ve{e_7}\rightarrow\vv{v_7}$</p><p>The final <em>the</em> can read bank’s input-derived value.</p></div>
   <div data-build="1"><strong>The next layer</strong><p>$\vp{e_7'}\rightarrow$ new key and value</p><p>The updated bank representation becomes a new layer input.</p></div>
@@ -8581,12 +8646,14 @@ A contains the source weights; A V forms messages; W_O maps them back; the resid
 
 </div>
 <div class="frame" id="s16-frame4" data-title="The matrix equations are the same token-by-token story">
-  <script type="text/x-notes">Ask students to point from each matrix line to the corresponding single-token operation from the walkthrough. The matrix notation is batching, not a new mechanism.</script>
+<script type="text/x-notes">Ask students to point from each matrix line to the corresponding single-token operation from the walkthrough.
+The matrix notation is batching, not a new mechanism.</script>
 <div id="s16-callouts"><div id="s16-callout-key"></div></div>
 </div>
 
 <div class="frame" id="s16-frame5" data-title="What have we built, and what is still missing?">
-  <script type="text/x-notes">This is one causal attention head, its output projection and residual addition. A full Transformer block adds the remaining architecture in Part 3.</script>
+<script type="text/x-notes">This is one causal attention head, its output projection and residual addition.
+A full Transformer block adds the remaining architecture in Part 3.</script>
 <div id="s16-callout-note"></div>
 <p class="muted small">PyTorch · matrices are row-major; mask contains 0 or −∞.</p>
 <pre class="torch-snippet"><code>A = (Q @ K.T / d_k**0.5 + mask).softmax(dim=-1)
@@ -8800,7 +8867,8 @@ Only attention recomputes the displayed mixing weights from content. A fixed win
 </div>
 
 <div class="frame" id="s17-weights" data-title="Hold the rule fixed, then switch the words">
-  <script type="text/x-notes">Before switching contexts, predict which rows will move. The first three rules are fixed before reading content. Only attention recomputes its displayed weights.</script>
+<script type="text/x-notes">Before switching contexts, predict which rows will move.
+The first three rules are fixed before reading content. Only attention recomputes its displayed weights.</script>
 <div class="card">
   <h3 class="card-title">Four weighting schemes, one table</h3>
   <div id="s17-table"></div>
@@ -8848,7 +8916,8 @@ No. Attention supplies explicit content-dependent routing and shared projections
 </div>
 
 <div class="frame" id="s17-conclusion" data-title="What exactly does attention improve?">
-  <script type="text/x-notes">Attention is content-dependent soft retrieval. It does not imply infinite context or that fixed-window networks cannot use word content.</script>
+<script type="text/x-notes">Attention is content-dependent soft retrieval.
+It does not imply infinite context or that fixed-window networks cannot use word content.</script>
   <div id="s17-callout"></div>
 
 </div>
@@ -9241,7 +9310,7 @@ Queries and keys must have compatible matching coordinates. Values form the mess
       AT.ui.table([uniform, F.A[B].slice(0, B + 1)], { cols: tokLabels, cornerLabel: 'scores / token', rowCls: 'a', heatCols: AT.range(B + 1),
         rowLabels: ['equal scores', 'real scores'],
         computed: [{ label: 'sum', fn: (row) => AT.sum(row), cls: 'neutral' }],
-        caption: 'Top row: equal scores give $\\va{\\alpha_{' + (B+1) + ',j}} = 1/' + (B+1) + '$ everywhere. Bottom row: the real weights of “bank”, far from uniform.', into: el });
+        caption: 'Top row: equal scores give $\\va{\\alpha_{' + (B+1) + ',j}} = 1/' + (B+1) + '$ everywhere. Bottom row: the real weights of “bank”. Both rows sum to 1 before rounding; the printed two-decimal entries need not.', into: el });
       const mix = AT.ui.mixTable(uniform, F.V.slice(0, B + 1), { rowLabels: tokLabels, cornerLabel: 'token',
         footerLabel: '$m_{' + (B+1) + '} = \\tfrac{1}{' + (B+1) + '}\\sum_j \\vv{v_j}$',
         caption: 'With equal weights the footer is the plain mean of the value rows $\\vv{v_j}$, not of the $\\ve{e_j}$ rows.', into: el });
@@ -9439,7 +9508,8 @@ Read the intuitive sentence, then advance the operational chain. Include self in
 </div>
 
 <div class="frame" id="s19-operational" data-title="Follow the operational chain one stage at a time">
-  <script type="text/x-notes">Ask students to name the next box before advancing. The query-key branch routes; the values carry; the residual preserves the input.</script>
+<script type="text/x-notes">Ask students to name the next box before advancing.
+The query-key branch routes; the values carry; the residual preserves the input.</script>
 <div class="card">
   <p class="lvl">2 · Operational</p>
   <div id="s19-opchain"></div>
@@ -9532,7 +9602,8 @@ tokens = torch.cat([tokens, next_id])  # same parameters; a longer prefix</code>
 </div>
 
 <div class="frame" id="s19-frame-training" data-title="Generation uses parameters; training changes them">
-  <script type="text/x-notes">Generation repeats forward passes with fixed parameters. Training compares the distribution with an observed next token, backpropagates, and lets the optimizer update the stored parameters.</script>
+<script type="text/x-notes">Generation repeats forward passes with fixed parameters.
+Training compares the distribution with an observed next token, backpropagates, and lets the optimizer update the stored parameters.</script>
   <div class="training-loop">
     <div><strong>Forward</strong><p>Prefix $\rightarrow$ prediction $p$</p><p>Use the same attention and vocabulary head we just traced.</p></div>
     <div data-build="1"><strong>Measure error</strong><p>$L=-\log p(y)$</p><p>$y$ is the observed next token in the training text.</p></div>
@@ -9550,7 +9621,7 @@ No. Verify that the fifth rows of W_Q, W_K, W_V and W_vocab are zero. The causal
     <p data-build="1">In this toy, $W_Q$, $W_K$, $W_V$ and $W_{\text{vocab}}$ have zero fifth rows. They <strong>ignore the position coordinate</strong>.</p>
   </div>
   <div class="callout callout-note" data-build="2">Keep the final token fixed and shuffle the earlier tokens: this one-layer toy gives the <strong>same final prediction</strong>. It demonstrates content routing, not word-order sensitivity.</div>
-  <p data-build="3">The causal mask prevents reading future tokens; it does not fix this toy's unused position signal.</p>
+  <p data-build="3">The causal mask prevents reading future tokens; it does not fix this toy's unused position signal. <a href="vision1.html#s03">Vision I compares positions on and off numerically.</a></p>
 </div>
 
 <div class="frame" id="s19-frame4" data-title="What have we built, and what remains?">
@@ -9780,11 +9851,14 @@ No. We traced a hand-designed single-head forward computation. Learning changes 
   /* ---- Hero from the part config ---- */
   setText('hero-title', PART.title || document.title);
   setText('hero-sub', PART.subtitle || '');
-  var meta = (PART.audience || '') + (PART.minutes ? (PART.audience ? ' ' : '') + 'About ' + PART.minutes + ' minutes.' : '');
+  var audience = (PART.audience || '').trim();
+  if (audience && !/[.!?]$/.test(audience)) audience += '.';
+  var duration = PART.durationLabel || (PART.minutes ? 'About ' + PART.minutes + ' minutes.' : '');
+  var meta = [audience, duration].filter(Boolean).join(' ');
   setText('hero-meta', meta);
   var central = el('hero-central');
   if (central && PART.central) { central.hidden = false; setText('hero-central-lab', PART.centralLabel || 'The one chain to remember'); el('hero-central-tex').textContent = '$$' + PART.central + '$$'; }
-  var series = (PART.series ? esc(PART.series) + ' · ' : '') + 'Part ' + esc(PART.part || '');
+  var series = (PART.series ? esc(PART.series) + ' · ' : '') + esc(PART.partLabel || ('Part ' + (PART.part || '')));
   function navItem(item, rel, prefix, suffix){
     if (!item || !item.href) return '';
     var label = (prefix || '') + esc(item.label) + (suffix || '');
@@ -9809,6 +9883,7 @@ No. We traced a hand-designed single-head forward computation. Learning changes 
       if (!o) return;
       var li = document.createElement('li'); li.className = 'obj-' + k;
       li.innerHTML = '<span class="sw"></span><span class="sy">' + esc(o.sym) + '</span>' + esc(o.name);
+      if (o.symTex && A && A.tex) A.tex(li.querySelector('.sy'), o.symTex);
       legend.appendChild(li);
     });
     setText('legend-title', PART.legendTitle || ('How to read this page: ' + objs.length + ' colours, ' + objs.length + ' objects'));
@@ -9844,11 +9919,14 @@ No. We traced a hand-designed single-head forward computation. Learning changes 
       var o = null; defs.forEach(function(d){ if (d.cls === k) o = d; });
       if (!o) return;
       var target = '';
-      for (var i = 0; i < secList.length; i++) { var lit = (secList[i].lit || '').trim().split(/\s+/); if (lit.indexOf(k) >= 0) { target = secList[i].id; break; } }
+      var preferred = PART.objectSections && PART.objectSections[k];
+      if (preferred && secList.some(function(section){ return section.id === preferred; })) target = preferred;
+      if (!target) for (var i = 0; i < secList.length; i++) { var lit = (secList[i].lit || '').trim().split(/\s+/); if (lit.indexOf(k) >= 0) { target = secList[i].id; break; } }
       var li = document.createElement('li');
       var b = document.createElement('button'); b.type = 'button'; b.className = 'nchip obj-' + k; b.setAttribute('data-obj', k);
       if (target) b.setAttribute('data-target', target);
       b.setAttribute('data-tip', o.tip || o.def || ''); b.textContent = o.sym;
+      if (o.symTex && A && A.tex) A.tex(b, o.symTex);
       li.appendChild(b); chipHost.appendChild(li);
     });
   }
