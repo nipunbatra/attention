@@ -57,8 +57,8 @@
     var id='vision1-diagram-'+(++serial), root=sv('svg',{viewBox:'0 0 1100 '+height,role:'img','aria-labelledby':id+'-title '+id+'-desc','data-vision1-diagram':title});
     root.appendChild(sv('title',{id:id+'-title'},title));root.appendChild(sv('desc',{id:id+'-desc'},description));
     var defs=sv('defs');Object.keys(color).forEach(function(k){var m=sv('marker',{id:id+'-'+k,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:6,markerHeight:6,orient:'auto-start-reverse'});m.appendChild(sv('path',{d:'M0 0 L10 5 L0 10 Z',fill:color[k]}));defs.appendChild(m);});root.appendChild(defs);
-    function text(x,y,value,role,size,anchor){root.appendChild(sv('text',{x:x,y:y,fill:color[role||'ink'],'font-size':size||24,'font-family':'var(--font-ui)','text-anchor':anchor||'middle','dominant-baseline':'middle'},value));}
-    function box(x,y,w,h,label,sub,role){root.appendChild(sv('rect',{x:x-w/2,y:y-h/2,width:w,height:h,rx:7,fill:role?'var(--t-'+(role==='ep'?'e':role)+')':'var(--card)',stroke:role==='ep'?color.d:color[role||'muted'],'stroke-width':2}));text(x,sub?y-12:y,label,role,23);if(sub)text(x,y+20,sub,'muted',20);}
+    function text(x,y,value,role,size,anchor){var readableSize=size?(size<=24?22:size===25?26:size):26;root.appendChild(sv('text',{x:x,y:y,fill:color[role||'ink'],'font-size':readableSize,'font-family':'var(--font-ui)','text-anchor':anchor||'middle','dominant-baseline':'middle'},value));}
+    function box(x,y,w,h,label,sub,role){root.appendChild(sv('rect',{x:x-w/2,y:y-h/2,width:w,height:h,rx:7,fill:role?'var(--t-'+(role==='ep'?'e':role)+')':'var(--card)',stroke:role==='ep'?color.d:color[role||'muted'],'stroke-width':2}));text(x,sub?y-12:y,label,role,26);if(sub)text(x,y+20,sub,'muted',22);}
     function arrow(x1,y1,x2,y2,role){root.appendChild(sv('path',{d:'M'+x1+' '+y1+' L'+x2+' '+y2,fill:'none',stroke:color[role||'muted'],'stroke-width':2.5,'marker-end':'url(#'+id+'-'+(role||'muted')+')'}));}
     return{svg:root,text:text,box:box,arrow:arrow};
   }
@@ -116,7 +116,7 @@
       c=canvas(315,'A pre-norm ViT encoder block','LayerNorm precedes multi-head attention and the feed-forward sublayer. Each sublayer has a residual addition. A final LayerNorm follows the stack.');
       // A horizontal layout avoids a tall diagram in the classroom frame.
       var xs=[65,220,430,640,830,1000];
-      c.box(xs[0],85,115,58,'E',null,'e');c.box(xs[1],85,160,58,'LayerNorm',null);c.box(xs[2],85,230,58,'multi-head attention',null,'d');c.box(xs[3],85,125,58,'add E',null,'ep');
+      c.box(xs[0],85,115,58,'E',null,'e');c.box(xs[1],85,160,58,'LayerNorm',null);c.box(xs[2],85,230,72,'attention','multi-head',null);c.box(xs[3],85,125,58,'add E',null,'ep');
       c.arrow(124,85,137,85);c.arrow(302,85,312,85);c.arrow(547,85,575,85);c.arrow(705,85,778,85);c.box(890,85,215,58,'LayerNorm',null);
       c.arrow(890,115,890,174);c.box(810,215,400,72,'MLP: linear → GELU → linear','same operation on each row',null);c.arrow(607,215,510,215);c.box(390,215,232,72,'add previous row',null,'ep');c.arrow(271,215,190,215);c.box(100,215,170,72,'next block',null,null);
       c.svg.appendChild(sv('path',{d:'M65 54 V25 H640 V54 M640 116 V155 H390 V178',fill:'none',stroke:color.e,'stroke-width':2,'stroke-dasharray':'6 4','marker-end':'url(#vision1-diagram-'+serial+'-e)'}));

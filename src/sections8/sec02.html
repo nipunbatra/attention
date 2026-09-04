@@ -1,6 +1,21 @@
 <section id="s02" class="sec" data-title="Visual rows enter the decoder" data-lit="e">
 <header class="sec-head"><span class="sec-num">02</span><div><p class="eyebrow">An image representation and a language representation can have different widths.</p><h2>Visual rows enter the decoder</h2></div></header>
 <div class="companion" data-kicker="For self-study"><p>We reuse Vision I's patch projection, added positions, class token, and five-token attention calculation. The classifier used the updated class row. This time we retain the four updated patch rows and set the class row aside after the encoder. Call that matrix $G$. We reserve $V$ for attention values; $G$ is the encoder's visual output, not a value projection.</p></div>
+<div class="frame" data-title="First, divide the scene into patches" data-autobuild="off">
+ <div id="s02-scene-patches"></div>
+ <p data-build="1">Patch boundaries form a regular grid. They do not follow object outlines.</p>
+ <script type="text/x-notes">Point to a patch that crosses an object boundary.
+
+The grid is a teaching overlay, not object detection or a learned attention map. The encoder receives pixel patches before it can build contextual visual rows.</script>
+</div>
+<div class="frame" data-title="The decoder receives visual rows, not the word mug" data-autobuild="off">
+ <div id="s02-scene-bridge"></div>
+ <p data-build="1">Patches can contain part of a mug, the book, or background. The encoder mixes information across their rows.</p>
+ <p data-build="2">A connector maps those visual rows to the decoder's width. They become context alongside <code>How many mugs?</code></p>
+ <script type="text/x-notes">Does the connector receive object names or numerical visual rows?
+
+The image encoder produces numerical representations. One patch is not necessarily one object. This diagram explains the route for the mug scene without assigning it invented vectors; the four-patch grid calculation follows.</script>
+</div>
 <div class="frame" data-title="Keep four contextual patch rows" data-autobuild="off">
  <div id="s02-encoder"></div><div id="s02-g"></div>
  <p data-build="1">$G$ has one row per patch. Each row already contains information mixed by the vision encoder.</p>
@@ -43,6 +58,8 @@ image_prefix = visual_rows @ W_bridge + b_bridge</code></pre>
 </div>
 <div class="companion after"><p>A full-size example could have $196\times768$ visual rows and a $768\times4096$ connector, producing $196\times4096$ rows. These are example dimensions, not a universal VLM configuration. A plain linear map changes width, not token count. Pooling or a learned resampler can change token count as a separate operation.</p></div>
 <script>(function(){const S=document.getElementById('s02'),V=AT.vlm,F=V.forward(),p=V.params(),g=F.vision.G;
+AT.visionScene.mount(S.querySelector('#s02-scene-patches'),{mode:'patches',variant:'two'});
+S.querySelector('#s02-scene-bridge').append(V.diagram('scene-bridge'));
 S.querySelector('#s02-encoder').append(V.diagram('pipeline',{level:1}));
 AT.ui.table(g,{rowLabels:['patch 1','patch 2','patch 3','patch 4'],cols:['coordinate 1','coordinate 2'],cornerLabel:'G',decimals:3,into:S.querySelector('#s02-g')});
 AT.ui.table(p.W_bridge,{rowLabels:['input coord 1','input coord 2'],cols:['output 1','output 2','output 3'],cornerLabel:'W_bridge: 2 × 3',decimals:3,into:S.querySelector('#s02-w')});

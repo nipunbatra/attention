@@ -32,7 +32,7 @@
     node(svg,'title',{id:id+'-title'},title);node(svg,'desc',{id:id+'-desc'},desc);
     var defs=node(svg,'defs');
     Object.keys(C).forEach(function(role){var marker=node(defs,'marker',{id:id+'-'+role,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:6,markerHeight:6,orient:'auto'});node(marker,'path',{d:'M0 0 L10 5 L0 10Z',fill:C[role]});});
-    function text(x,y,s,role,size,anchor,extra) {return node(svg,'text',Object.assign({x:x,y:y,fill:C[role||'ink'],'font-family':'var(--font-ui,"Avenir Next",sans-serif)','font-size':size||26,'text-anchor':anchor||'middle','dominant-baseline':'middle'},extra||{}),s);}
+    function text(x,y,s,role,size,anchor,extra) {var readableSize=size?(size<=24?22:size===25?26:size):26;return node(svg,'text',Object.assign({x:x,y:y,fill:C[role||'ink'],'font-family':'var(--font-ui,"Avenir Next",sans-serif)','font-size':readableSize,'text-anchor':anchor||'middle','dominant-baseline':'middle'},extra||{}),s);}
     function rect(x,y,w,h,role,param) {return node(svg,'rect',{x:x,y:y,width:w,height:h,rx:7,fill:role?C[role]+'0c':C.paper,stroke:role==='ep'?C.d:C[role||'line'],'stroke-width':2,'stroke-dasharray':param?'7 5':'none'});}
     function arrow(x1,y1,x2,y2,role,extra) {return node(svg,'path',Object.assign({d:'M'+x1+' '+y1+' L'+x2+' '+y2,fill:'none',stroke:C[role||'muted'],'stroke-width':2.5,'marker-end':'url(#'+id+'-'+(role||'muted')+')'},extra||{}));}
     function path(d,role,extra) {return node(svg,'path',Object.assign({d:d,fill:'none',stroke:C[role||'muted'],'stroke-width':2.5,'marker-end':'url(#'+id+'-'+(role||'muted')+')'},extra||{}));}

@@ -92,9 +92,9 @@ assert.equal(JSON.stringify(toy), baseline, 'readout and training do not mutate 
 assert.equal(window.AT.axes.named, false);
 assert.equal(window.AT.notation.filter(n => n.parts.includes('vision3')).length, 10);
 const sections = Array.from({ length: 7 }, (_, i) => readFileSync(new URL(`sections7/sec0${i + 1}.html`, import.meta.url), 'utf8'));
-assert.equal(sections.reduce((n, text) => n + (text.match(/class="frame"/g) || []).length, 0), 26);
+assert.equal(sections.reduce((n, text) => n + (text.match(/class="frame"/g) || []).length, 0), 28);
 assert(!sections.some(text => /[—–]/.test(text)), 'natural prose uses no em/en dashes');
-console.log(`PASS: Vision III ${scalars} reference scalars (max error ${maximum}); ${gradientChecks} finite-difference gradients (max error ${gradientError}); training, normalization, row/column loss, prompt/candidate/temperature controls, source immutability, and 26-frame contract.`);
+console.log(`PASS: Vision III ${scalars} reference scalars (max error ${maximum}); ${gradientChecks} finite-difference gradients (max error ${gradientError}); training, normalization, row/column loss, prompt/candidate/temperature controls, source immutability, and 28-frame contract.`);
 
 const browserFlag = process.argv.indexOf('--browser');
 if (browserFlag >= 0) {
@@ -114,14 +114,19 @@ if (browserFlag >= 0) {
       const read = name => readFileSync(new URL(name, import.meta.url), 'utf8');
       const inject = JSON.stringify(toy).replace(/<\//g, '<\\/');
       const part = JSON.stringify(JSON.parse(read('part7.json'))).replace(/<\//g, '<\\/');
-      const scripts = `<script>window.__TOY__=${inject};window.__PART__=${part};</script><script>${read('shared.js')}</script><script>${source}</script>`;
+      const sceneAssets = Object.fromEntries([['two', 'two-mugs.jpg'], ['one', 'one-mug.jpg']].map(([variant, file]) => [variant, 'data:image/jpeg;base64,' + readFileSync(new URL('../figures/vision-scene/' + file, import.meta.url)).toString('base64')]));
+      const scripts = `<script>window.__TOY__=${inject};window.__PART__=${part};window.__VISION_SCENES__=${JSON.stringify(sceneAssets)};</script><script>${read('shared.js')}</script><script>${source}</script><script>${read('vision-scene.js')}</script>`;
       const html = read('shell.html').replace('<!--KATEX-->', () => read('katex-bundle.html')).replace('<!--SHARED-->', () => scripts).replace('<!--SECTIONS-->', () => sections.join('\n'));
       await page.setContent(html);
     }
     assert.deepEqual(errors, [], 'initial browser runtime errors');
     await page.waitForFunction(() => window.AT?.clip && document.querySelector('#s06-candidates table'));
     assert.deepEqual(errors, [], 'browser runtime errors');
-    assert.equal(await page.locator('.frame').count(), 26);
+    const decodedScenes = await page.evaluate(async () => Promise.all(Object.entries(window.__VISION_SCENES__).map(async ([variant, src]) => {
+      const image = new Image(); image.src = src; await image.decode(); return [variant, image.naturalWidth, image.naturalHeight];
+    })));
+    assert.deepEqual(decodedScenes.sort(), [['one', 1536, 1024], ['two', 1536, 1024]], 'both offline scene assets decode');
+    assert.equal(await page.locator('.frame').count(), 28);
     assert.equal(await page.locator('.katex-error').count(), 0, 'all lesson math renders');
     const initialTemperature=await page.locator('#s06-candidates [aria-label="Inference temperature"]').inputValue();
     close(Number(initialTemperature),C.classify().tau,'widget starts at exact learned temperature');
@@ -162,7 +167,7 @@ if (browserFlag >= 0) {
       }).map(el => el.id || el.className));
       assert.deepEqual(scrolls, [], label + ': presentation must not scroll');
     };
-    await page.evaluate(() => AT.present.go('s06', 3, 0));
+    await page.evaluate(() => AT.present.go('s06', 4, 0));
     for (const template of ['bare', 'grid']) for (const candidates of ['all', 'missing', 'duplicate']) for (const tau of ['0.05', '1']) {
       await page.evaluate(({ template, candidates, tau }) => {
         for (const [label, value] of [['Toy prompt template', template], ['Candidate caption set', candidates], ['Inference temperature', tau]]) {

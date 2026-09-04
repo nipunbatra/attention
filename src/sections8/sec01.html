@@ -1,9 +1,23 @@
 <section id="s01" class="sec" data-title="The image must change the answer" data-lit="e">
 <style>.vlm-diagram{width:100%;display:block;margin:8px 0}.vlm-diagram text{font-variant-numeric:tabular-nums}</style>
 <header class="sec-head"><span class="sec-num">01</span><div><p class="eyebrow">CLIP ranked complete captions. We now want to write an answer.</p><h2>The image must change the answer</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>Keep the small grayscale grid from Vision I. The question is <code>count ?</code>. One grid contains two nonzero square blocks; removing its top-left block leaves one. A language model that ignores the image sees the same question in both cases. To answer differently, it must use the visual representations.</p><p>This lesson develops the projected-prefix route used by models such as <a href="https://arxiv.org/abs/2304.08485">LLaVA</a>, then compares it with the cross-attention route from Attention Part IV. These are documented architectures, not a claim about every commercial VLM.</p></div>
+<div class="companion" data-kicker="For self-study"><p>Return to the mugs, book, and plant. CLIP can compare complete descriptions of the scene. A vision-language model can instead condition a language decoder on the image and a question, then generate an answer one token at a time. Holding the question fixed while removing one mug gives us a direct test: does the answer follow the visual evidence?</p><p>We use the scene for intuition, then the small grayscale grids from Vision I for exact calculations. This lesson develops the projected-prefix route used by models such as <a href="https://arxiv.org/abs/2304.08485">LLaVA</a>, then compares it with the cross-attention route from Attention Part IV. These are documented architectures, not a claim about every commercial VLM.</p></div>
+<div class="frame" data-title="Ask the scene: how many mugs?" data-autobuild="off">
+ <div id="s01-scene"></div>
+ <p data-build="1">Expected human answer: "two". A VLM must use the image to produce its own answer tokens.</p>
+ <script type="text/x-notes">Point to each mug before discussing the model.
+
+The answer two is the expected human answer for the illustration. We have not run a VLM on this scene and are not reporting a model prediction.</script>
+</div>
+<div class="frame" data-title="How many mugs? Remove one; keep the question" data-autobuild="off">
+ <div id="s01-scene-compare"></div>
+ <p data-build="1">Expected human answers: "two" and "one". The question alone cannot tell the decoder which answer fits.</p>
+ <script type="text/x-notes">What changed, and what stayed fixed?
+
+One version has the teal mug removed. This is an illustrative pair, not pixel-identical controlled photographs. These are expected human answers, not model outputs. A model that ignores the image would not have the information needed to distinguish the two cases.</script>
+</div>
 <div class="frame" data-title="Same question, different visual evidence" data-autobuild="off">
- <div id="s01-task"></div><p data-build="1">Keep the question fixed. The next-token distribution should depend on which image we supply.</p>
+ <div id="s01-task"></div><p data-build="1">For exact arithmetic, use the fitted grid toy. Its prompt is <code>count ?</code>, and it counts nonzero square blocks.</p>
  <script type="text/x-notes">
   Count the blocks before revealing the answer.
 
@@ -32,5 +46,5 @@
  </script>
 </div>
 <div class="companion after"><p>The purpose of fitting two pairs is to make image dependence testable. Success on those same pairs is not evidence that the toy understands arbitrary counts, natural photographs, or new questions. We inspect a fitted checkpoint, run generation, and then show one further update.</p></div>
-<script>(function(){const S=document.getElementById('s01'),V=AT.vlm;S.querySelector('#s01-task').append(V.diagram('task'));S.querySelector('#s01-pipeline').append(V.diagram('pipeline'));})();</script>
+<script>(function(){const S=document.getElementById('s01'),V=AT.vlm;AT.visionScene.mount(S.querySelector('#s01-scene'),{mode:'scene',variant:'two'});AT.visionScene.mount(S.querySelector('#s01-scene-compare'),{mode:'compare'});S.querySelector('#s01-task').append(V.diagram('task'));S.querySelector('#s01-pipeline').append(V.diagram('pipeline'));})();</script>
 </section>

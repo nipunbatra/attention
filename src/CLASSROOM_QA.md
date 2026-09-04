@@ -1,5 +1,24 @@
 # Classroom release checks
 
+## 2026-09-04: shared-scene vision polish
+
+The four vision lessons now follow one generated photographic illustration: two mugs, a book, and a plant. Scene views motivate the task; the existing 4×4 models remain separate numerical worksheets. Captions identify generated imagery and distinguish human judgments, withheld targets, symbolic encoder features, and actual computed outputs. No new photo-based model scores, attention maps, or reconstructions are invented.
+
+| Lesson | Frames / final PDF pages | Progressive states | Strictly reparsed formulas | Table views |
+| --- | ---: | ---: | ---: | ---: |
+| Vision I | 60 | 127 | 78 | 47 |
+| Vision II | 26 | 62 | 35 | 34 |
+| Vision III | 28 | 84 | 61 | 25 |
+| Vision IV | 36 | 85 | 55 | 53 |
+
+- All 150 frames, 358 progressive states, 229 formulas, and 159 table views pass the frame/math/table checks. Table coverage includes desktop reading, 390px phone reading, and classroom presentation. No stage overflow, nested classroom scrollbar, or runtime error was reported.
+- Desktop/phone QA and control sweeps pass for all four pages. All 17 new scene frames pass asset decoding, crop geometry, SVG-label bounds, and offline checks. Phone scene comparisons unfold vertically; no scene introduces horizontal document overflow. The patch enlargement uses the actual selected image region, and the narrow reading layout retains its source outline.
+- Numerical model data and training snapshots are unchanged. Independent Vision I verification passes 396 finite differences (maximum error 1.02e-9) and NumPy/browser parity (4.62e-14). Vision II passes 40 numerical cases and invariants. Vision III passes 900 reference comparisons and 246 gradient checks (maximum error 2.52e-11); its saved loss trajectory is reproduced. Vision IV passes 4,779 reference comparisons and 1,096 gradient checks (maximum error 6.94e-8); its saved update and the regression on the other image are retained.
+- Metadata checks pass for all eight lesson configs, 91 sections, navigation labels, isolated builds, and planned links. No shared presentation theme or production dependency changed. Diagram labels were enlarged and geometry adjusted within the existing semantic colors.
+- PDFs contain the completed classroom frames, with reveal answers shown, at 16:9 and 2× raster resolution. Actual PDF pages were rendered with Poppler and visually inspected: scene/crop stages, target-encoder paths, calculations, generation, and revealed answers. A small Vision I gradient-label collision found during this inspection was corrected before its final export. PDF text remains rasterized, not selectable.
+
+Reproduce with the vision numerical checkers, `verify_vision1_learning.py`, `train_vision3.py --check`, `train_vision4.py --check`, `check_metadata.py`, `check_vision_scene.mjs`, and the shared frame/table/QA/sweep/export commands in `HANDOVER.md`. Asset prompts and limitations are in `figures/vision-scene/README.md`. These checks are not a claim of exhaustive browser compatibility, accessibility conformance, or learned-model generalization. Earlier release counts below are historical.
+
 ## 2026-09-04: independent review repair pass
 
 `REVIEW_RESOLUTION_2026-09-04.md` records the accepted findings, independent corrections to proposed fixes, teaching additions, and remaining limits. This entry supersedes the counts in earlier historical entries below.

@@ -106,8 +106,8 @@
     const text = (x, y, value, role = 'ink', size = 22, anchor = 'middle') => { const e = node('text', { x, y, fill: colors[role], 'font-size': size, 'font-family': 'var(--font-ui)', 'text-anchor': anchor, 'dominant-baseline': 'middle' }, value); svg.append(e); return e; };
     function box(x, y, width, height, label, subtitle, role = 'ink') {
       svg.append(node('rect', { x: x - width / 2, y: y - height / 2, width, height, rx: 8, fill: roleClass[role] ? 'var(--t-' + roleClass[role] + ')' : 'var(--card)', stroke: colors[role], 'stroke-width': 1.8 }));
-      text(x, subtitle ? y - 11 : y, label, role, Math.min(22, (width - 20) / Math.max(1, label.length) * 1.7));
-      if (subtitle) text(x, y + 17, subtitle, 'muted', Math.min(17, (width - 20) / subtitle.length * 1.8));
+      text(x, subtitle ? y - 13 : y, label, role, 26);
+      if (subtitle) text(x, y + 18, subtitle, 'muted', 22);
     }
     const arrow = (path, role = 'muted', dashed = false) => svg.append(node('path', { d: path, fill: 'none', stroke: colors[role], 'stroke-width': 2.3, 'stroke-dasharray': dashed ? '6 4' : 'none', 'marker-end': `url(#${id}-${role})` }));
     return { svg, text, box, arrow };
@@ -125,8 +125,8 @@
     const c = canvas(235, 'Three observed image-caption pairs', 'A two-square grid, horizontal stripes, and a single dot have one observed caption each. All image pixels are shown.');
     data.images.forEach((im, i) => {
       const x = 185 + 365 * i;
-      c.text(x, 20, 'Pair ' + (i + 1), 'image', 22); imageGrid(c, im, x - 56, 49, 28);
-      c.text(x, 189, data.captions[i], 'text', 23); c.text(x, 220, 'I' + (i + 1) + ' ↔ T' + (i + 1), 'muted', 17);
+      c.text(x, 20, 'Pair ' + (i + 1), 'image', 26); imageGrid(c, im, x - 56, 49, 28);
+      c.text(x, 189, data.captions[i], 'text', 26); c.text(x, 220, 'I' + (i + 1) + ' ↔ T' + (i + 1), 'muted', 22);
     });
     return c.svg;
   }
@@ -145,81 +145,81 @@
     c.box(843, 177, 455, 63, 'a grid with bright squares', 'Observed with image 2', 'text');
     c.arrow('M280 60 L610 60', 'match'); c.arrow('M280 177 L610 177', 'match');
     c.arrow('M293 70 L600 167', 'loss', true); c.arrow('M293 167 L600 70', 'loss', true);
-    c.text(485, 221, 'Dashed: also valid, but not the recorded pair.', 'loss', 19);
+    c.text(485, 221, 'Dashed: valid, but not the recorded pair.', 'loss', 22);
     return c.svg;
   }
   function encodersDiagram(f, normalized) {
     const c = canvas(normalized ? 295 : 245, 'Two encoders produce comparable vectors', 'The image branch reads pixels. The text branch reads word counts. Each learned map returns one three-coordinate vector; normalization puts both on the unit sphere.');
-    imageGrid(c, data.images[0], 18, 10, 25);
-    c.box(82, 186, 158, 68, 'Caption T1', 'two bright squares', 'text');
-    const encoderX = normalized ? 306 : 430, rawX = normalized ? 596 : 886;
-    c.box(encoderX, 62, 240, 74, 'Image encoder', 'toy: W_img is 16 × 3', 'image');
-    c.box(encoderX, 186, 240, 74, 'Text encoder', 'toy: W_txt is 11 × 3', 'text');
-    c.arrow('M123 62 L' + (encoderX - 123) + ' 62', 'image'); c.arrow('M164 186 L' + (encoderX - 123) + ' 186', 'text');
-    c.box(rawX, 62, 252, 74, 'g_img,1', vectorLabel(f.imageRaw[0]), 'image');
-    c.box(rawX, 186, 252, 74, 'g_txt,1', vectorLabel(f.textRaw[0]), 'text');
-    c.arrow('M' + (encoderX + 123) + ' 62 L' + (rawX - 129) + ' 62', 'image'); c.arrow('M' + (encoderX + 123) + ' 186 L' + (rawX - 129) + ' 186', 'text');
+    imageGrid(c, data.images[0], 60, 10, 25);
+    c.box(110, 186, 214, 80, 'Caption T1', 'two bright squares', 'text');
+    const encoderX = normalized ? 385 : 465, rawX = normalized ? 650 : 886;
+    c.box(encoderX, 62, 248, 80, 'Image encoder', 'W_img: 16 × 3', 'image');
+    c.box(encoderX, 186, 248, 80, 'Text encoder', 'W_txt: 11 × 3', 'text');
+    c.arrow('M164 62 L' + (encoderX - 127) + ' 62', 'image'); c.arrow('M220 186 L' + (encoderX - 127) + ' 186', 'text');
+    c.box(rawX, 62, 228, 80, 'g_img,1', vectorLabel(f.imageRaw[0]), 'image');
+    c.box(rawX, 186, 228, 80, 'g_txt,1', vectorLabel(f.textRaw[0]), 'text');
+    c.arrow('M' + (encoderX + 127) + ' 62 L' + (rawX - 117) + ' 62', 'image'); c.arrow('M' + (encoderX + 127) + ' 186 L' + (rawX - 117) + ' 186', 'text');
     if (normalized) {
-      c.box(934, 62, 290, 74, 'Unit image vector', vectorLabel(f.imageUnit[0]), 'image');
-      c.box(934, 186, 290, 74, 'Unit text vector', vectorLabel(f.textUnit[0]), 'text');
-      c.arrow('M725 62 L785 62', 'image'); c.arrow('M725 186 L785 186', 'text');
-      c.text(757, 34, '÷ norm', 'muted', 16); c.text(757, 157, '÷ norm', 'muted', 16);
-      c.text(550, 270, 'Shared width: 3. The learned coordinates are not named image attributes.', 'muted', 20);
+      c.box(950, 62, 280, 80, 'Unit image vector', vectorLabel(f.imageUnit[0]), 'image');
+      c.box(950, 186, 280, 80, 'Unit text vector', vectorLabel(f.textUnit[0]), 'text');
+      c.arrow('M767 62 L807 62', 'image'); c.arrow('M767 186 L807 186', 'text');
+      c.text(787, 24, '÷ norm', 'muted', 22); c.text(787, 145, '÷ norm', 'muted', 22);
+      c.text(550, 270, 'Shared width: 3. Learned coordinates have no assigned names.', 'muted', 22);
     }
     return c.svg;
   }
   function matrixDiagram(f, mode) {
-    const c = canvas(300, 'Image-caption matching matrix: ' + mode, 'Rows are images I1 to I3. Columns are captions T1 to T3. Diagonal entries are the observed pairings. Row probabilities sum across captions; column probabilities sum across images.');
+    const c = canvas(315, 'Image-caption matching matrix: ' + mode, 'Rows are images I1 to I3. Columns are captions T1 to T3. Diagonal entries are the observed pairings. Row probabilities sum across captions; column probabilities sum across images.');
     const values = mode === 'row' ? f.rowProb : mode === 'column' ? f.columnProb : mode === 'cosine' ? f.cosine : f.logits;
-    const labels = { row: 'Image → text probabilities', column: 'Text → image probabilities', cosine: 'Cosine C', logits: 'Logits S = C / τ' };
-    c.text(165, 31, labels[mode], mode === 'row' || mode === 'column' ? 'probability' : 'match', 23);
-    c.text(700, 25, 'Caption candidates', 'text', 22);
+    const labels = { row: 'Image → text', column: 'Text → image', cosine: 'Cosine C', logits: 'Logits S = C / τ' };
+    c.text(165, 31, labels[mode], mode === 'row' || mode === 'column' ? 'probability' : 'match', 26);
+    c.text(700, 25, 'Caption candidates', 'text', 26);
     const x0 = 470, y0 = 87, w = 160, h = 54;
-    ['T1 · squares', 'T2 · stripes', 'T3 · dot'].forEach((s, j) => c.text(x0 + j * w + w / 2, 63, s, 'text', 19));
+    ['T1 · squares', 'T2 · stripes', 'T3 · dot'].forEach((s, j) => c.text(x0 + j * w + w / 2, 63, s, 'text', 22));
     values.forEach((row, i) => {
-      c.text(x0 - 24, y0 + i * h + h / 2, ['I1 · squares', 'I2 · stripes', 'I3 · dot'][i], 'image', 20, 'end');
+      c.text(x0 - 24, y0 + i * h + h / 2, ['I1 · squares', 'I2 · stripes', 'I3 · dot'][i], 'image', 22, 'end');
       row.forEach((x, j) => {
         c.svg.append(node('rect', { x: x0 + j * w + 3, y: y0 + i * h + 3, width: w - 6, height: h - 6, rx: 5,
           fill: i === j ? 'var(--t-d)' : 'var(--card)', stroke: i === j ? 'var(--c-d)' : 'var(--line)', 'data-diagonal': i === j }));
-        c.text(x0 + j * w + w / 2, y0 + i * h + h / 2, x.toFixed(3), i === j ? 'loss' : 'ink', 24);
+        c.text(x0 + j * w + w / 2, y0 + i * h + h / 2, x.toFixed(3), i === j ? 'loss' : 'ink', 28);
       });
     });
     if (mode === 'row') { c.arrow('M478 268 L940 268', 'probability'); c.text(198, 141, 'One image;', 'ink', 23); c.text(198, 176, 'choose among captions.', 'ink', 20); }
     if (mode === 'column') { c.arrow('M983 92 L983 242', 'probability'); c.text(198, 141, 'One caption;', 'ink', 23); c.text(198, 176, 'choose among images.', 'ink', 20); }
     if (mode === 'cosine' || mode === 'logits') { c.text(182, 141, 'Green cells:', 'loss', 22); c.text(182, 176, 'observed matches', 'ink', 20); }
-    c.text(550, 289, mode === 'row' ? 'Each row sums to 1.' : mode === 'column' ? 'Each column sums to 1.' : 'All nine scores come from the displayed vectors.', 'muted', 18);
+    c.text(550, 299, mode === 'row' ? 'Each row sums to 1.' : mode === 'column' ? 'Each column sums to 1.' : 'All nine scores come from the displayed vectors.', 'muted', 22);
     return c.svg;
   }
   function trainingDiagram() {
     const c = canvas(290, 'Loss sends gradients into both encoders', 'Pixels and word counts pass through separate learned encoders and exact unit normalization. Their cosine matrix and learned scale produce two cross-entropies. Autograd differentiates all paths before the optimizer updates the parameters.');
     c.box(122, 58, 220, 62, 'Images', '3 × 16 pixels', 'image'); c.box(122, 186, 220, 62, 'Captions', '3 × 11 word counts', 'text');
-    c.box(389, 58, 220, 62, 'W_img → normalize', 'learned image map', 'image'); c.box(389, 186, 220, 62, 'W_txt → normalize', 'learned text map', 'text');
-    c.box(675, 122, 230, 82, 'Cosine / τ', 'learned log_scale', 'match'); c.box(970, 122, 235, 82, 'Symmetric loss', '½(row CE + column CE)', 'loss');
+    c.box(389, 58, 240, 72, 'Image map', 'W_img → normalize', 'image'); c.box(389, 186, 240, 72, 'Text map', 'W_txt → normalize', 'text');
+    c.box(675, 122, 230, 82, 'Cosine / τ', 'learned log_scale', 'match'); c.box(970, 122, 235, 82, 'Mean of two CEs', 'image ↔ text', 'loss');
     c.arrow('M235 58 L275 58', 'image'); c.arrow('M235 186 L275 186', 'text');
     c.arrow('M502 58 L546 58 L546 104 L557 104', 'image'); c.arrow('M502 186 L546 186 L546 144 L557 144', 'text'); c.arrow('M793 122 L849 122', 'match');
     c.arrow('M966 167 L966 243 L392 243 L392 221', 'loss', true);
     c.arrow('M676 243 L676 273 L261 273 L261 95 L281 95', 'loss', true);
-    c.text(782, 215, 'autograd through both branches', 'loss', 19);
+    c.text(782, 215, 'autograd: both branches', 'loss', 22);
     return c.svg;
   }
   function promptsDiagram(result) {
     const c = canvas(290, 'Text prompts provide the candidate classifier', 'Frozen encoders turn an image and supplied prompt strings into normalized vectors. Their cosine scores rank only those candidate prompts. No encoder update happens here.');
     imageGrid(c, data.images[0], 35, 17, 28);
-    c.box(321, 71, 250, 68, 'Frozen image encoder', 'one image vector', 'image'); c.arrow('M151 71 L192 71', 'image');
-    c.box(321, 207, 250, 68, 'Frozen text encoder', 'one vector per prompt', 'text');
+    c.box(321, 71, 250, 80, 'Image encoder', 'frozen weights', 'image'); c.arrow('M151 71 L192 71', 'image');
+    c.box(321, 207, 250, 80, 'Text encoder', 'frozen weights', 'text');
     c.box(674, 137, 280, 80, 'Cosine → softmax', result.captions.length + ' supplied candidates', 'match');
     c.arrow('M449 71 L500 71 L500 119 L531 119', 'image'); c.arrow('M449 207 L500 207 L500 155 L531 155', 'text');
     c.box(957, 137, 235, 80, 'Highest score', result.label, 'probability'); c.arrow('M817 137 L836 137', 'match');
-    c.text(110, 194, 'Prompt strings', 'text', 21); c.arrow('M150 207 L192 207', 'text');
-    c.text(550, 271, 'A new candidate set changes the readout. The encoder weights stay fixed.', 'muted', 19);
+    c.text(100, 174, 'Prompt strings', 'text', 22); c.arrow('M150 207 L192 207', 'text');
+    c.text(550, 271, 'Change the candidate text; keep the encoder weights fixed.', 'muted', 22);
     return c.svg;
   }
   function retrievalDiagram(caption) {
     const r = retrieve(caption), c = canvas(260, 'Retrieve images with a caption', 'One caption vector is compared with the cached image vectors. Images are ordered by computed cosine similarity.');
     c.box(196, 70, 370, 80, caption, 'one text vector', 'text');
     c.text(196, 154, 'Rank cached image vectors', 'ink', 22); c.arrow('M385 70 L434 70', 'text');
-    r.order.forEach((index, rank) => { const x = 532 + rank * 215; imageGrid(c, data.images[index], x - 50, 23, 25); c.text(x, 155, (rank + 1) + '. ' + data.imageNames[index], 'image', 17); c.text(x, 190, 'cos = ' + r.cosine[index].toFixed(3), 'match', 22); });
-    c.text(550, 238, 'Retrieval selects an existing item. CLIP does not write a new caption.', 'muted', 20);
+    r.order.forEach((index, rank) => { const x = 532 + rank * 215; imageGrid(c, data.images[index], x - 50, 23, 25); c.text(x, 155, (rank + 1) + '. ' + ['squares','stripes','dot'][index], 'image', 26); c.text(x, 190, 'cos = ' + r.cosine[index].toFixed(3), 'match', 22); });
+    c.text(550, 238, 'Retrieval selects an existing item. It does not write a caption.', 'muted', 22);
     return c.svg;
   }
   function diagram(host, stage, options = {}) {

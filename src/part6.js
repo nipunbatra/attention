@@ -47,17 +47,17 @@
     svg.appendChild(svgElement('title',{id:id+'-title'},title));
     const defs=svgElement('defs'),marker=svgElement('marker',{id:id+'-arrow',viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:6,markerHeight:6,orient:'auto-start-reverse'});
     marker.appendChild(svgElement('path',{d:'M0 0L10 5L0 10Z',fill:'var(--ink-3)'}));defs.appendChild(marker);svg.appendChild(defs);
-    function text(x,y,t,size=23,anchor='middle',color='var(--ink)'){const n=svgElement('text',{x,y,'text-anchor':anchor,'dominant-baseline':'middle','font-size':size,'font-family':'var(--font-ui)',fill:color},t);svg.appendChild(n);return n;}
-    function box(x,y,w,h,title,sub='',rep=false){svg.appendChild(svgElement('rect',{x,y,width:w,height:h,rx:10,fill:rep?'var(--t-e)':'var(--card)',stroke:rep?'var(--c-e)':'var(--line)','stroke-width':2}));text(x+w/2,y+h/2-(sub?13:0),title,24,'middle',rep?'var(--c-e)':'var(--ink)');if(sub)text(x+w/2,y+h/2+17,sub,20);}
-    function arrow(x1,y1,x2,y2,label='',dashed=false){svg.appendChild(svgElement('path',{d:`M${x1} ${y1} L${x2} ${y2}`,stroke:'var(--ink-3)','stroke-width':2,fill:'none','marker-end':`url(#${id}-arrow)`,'stroke-dasharray':dashed?'7 5':'none'}));if(label)text((x1+x2)/2,(y1+y2)/2-16,label,20);}
+    function text(x,y,t,size=26,anchor='middle',color='var(--ink)'){const n=svgElement('text',{x,y,'text-anchor':anchor,'dominant-baseline':'middle','font-size':size,'font-family':'var(--font-ui)',fill:color},t);svg.appendChild(n);return n;}
+    function box(x,y,w,h,title,sub='',rep=false){svg.appendChild(svgElement('rect',{x,y,width:w,height:h,rx:10,fill:rep?'var(--t-e)':'var(--card)',stroke:rep?'var(--c-e)':'var(--line)','stroke-width':2}));const main=text(x+w/2,y+h/2-(sub?14:0),title,26,'middle',rep?'var(--c-e)':'var(--ink)');main.setAttribute('data-box-x',x);main.setAttribute('data-box-width',w);if(sub){const detail=text(x+w/2,y+h/2+18,sub,22);detail.setAttribute('data-box-x',x);detail.setAttribute('data-box-width',w);}}
+    function arrow(x1,y1,x2,y2,label='',dashed=false){svg.appendChild(svgElement('path',{d:`M${x1} ${y1} L${x2} ${y2}`,stroke:'var(--ink-3)','stroke-width':2,fill:'none','marker-end':`url(#${id}-arrow)`,'stroke-dasharray':dashed?'7 5':'none'}));if(label)text((x1+x2)/2,(y1+y2)/2-18,label,22);}
     function image(x,y,size=156,mask=[],pixels=D.image,label=''){
       const cell=size/4;
       pixels.forEach((row,ry)=>row.forEach((p,cx)=>{const k=Math.floor(ry/2)*2+Math.floor(cx/2),hidden=mask.includes(k),shade=AT.imageShade(p);
         svg.appendChild(svgElement('rect',{x:x+cx*cell,y:y+ry*cell,width:cell,height:cell,'data-pixel-value':hidden?'':p,fill:hidden?'var(--paper)':`rgb(${shade},${shade},${shade})`,stroke:'var(--line)'}));
-        if(hidden||cell>=35){const n=text(x+(cx+.5)*cell,y+(ry+.5)*cell,hidden?'×':Number(p.toFixed(2)),20,'middle',hidden?'var(--ink)':shade<118?'#FFFFFF':'#000000');if(!hidden)n.setAttribute('data-pixel-label',p);}
+        if(hidden||cell>=35){const n=text(x+(cx+.5)*cell,y+(ry+.5)*cell,hidden?'×':Number(p.toFixed(2)),22,'middle',hidden?'var(--ink)':shade<118?'#FFFFFF':'#000000');if(!hidden)n.setAttribute('data-pixel-label',p);}
       }));
       for(let i=0;i<4;i++){const px=x+(i%2)*size/2,py=y+Math.floor(i/2)*size/2;svg.appendChild(svgElement('rect',{x:px,y:py,width:size/2,height:size/2,fill:'none',stroke:'var(--ink-3)','stroke-width':2}));}
-      if(label)text(x+size/2,y+size+21,label,21);
+      if(label)text(x+size/2,y+size+22,label,22);
     }
     return {svg,text,box,arrow,image};
   }
@@ -70,13 +70,13 @@
       patchify().forEach((p,i)=>box(445+(i%2)*285,25+Math.floor(i/2)*100,250,73,'patch '+(i+1),p.join('  ')));
     }else if(kind==='mae-encoder'){
       image(25,20,150,[1,2,3],D.image,'only p1 remains');arrow(210,97,300,97);
-      box(315,60,190,80,'input row e₁','projection + position',true);arrow(510,97,580,97);
-      box(595,60,205,80,'ViT encoder','visible patches only');arrow(805,97,870,97);box(885,60,190,80,'encoded e₁','one output row',true);
-      text(655,190,'No mask tokens enter this encoder.',23);
+      box(315,60,190,80,'input row e₁','position added',true);arrow(510,97,580,97);
+      box(595,60,205,80,'ViT encoder','visible rows only');arrow(805,97,870,97);box(885,60,190,80,'encoded e₁','one output row',true);
+      text(655,190,'No mask tokens enter this encoder.',26);
     }else if(kind==='mae-decoder'){
       box(20,70,170,82,'encoded e₁','visible source',true);arrow(195,110,255,110);
-      box(270,35,310,140,'restore patch positions','e₁   [M]   [M]   [M]',true);text(425,200,'add decoder position vectors',22);
-      arrow(585,110,645,110);box(660,70,190,82,'small decoder','all four positions');arrow(855,110,915,110);box(930,70,150,82,'pixel guesses','4 × 4 numbers');
+      box(270,35,310,140,'restore positions','e₁   [M]   [M]   [M]',true);text(425,200,'add decoder position vectors',22);
+      arrow(585,110,645,110);box(660,70,190,82,'small decoder','all four positions');arrow(855,110,895,110);box(910,70,180,82,'pixel guesses','4 × 4 numbers');
     }else if(kind==='mae-transfer'){
       box(35,48,225,92,'unmasked image','all patch rows');arrow(265,94,345,94);box(360,48,270,92,'pretrained encoder','keep learned weights',true);arrow(635,94,715,94);box(730,48,310,92,'downstream task head','train with task labels');
     }else if(kind==='views'){
@@ -85,23 +85,23 @@
     }else if(kind==='contrastive'){
       box(20,20,190,70,'view A','same image');box(20,130,190,70,'view B','same image');
       arrow(215,55,275,55);arrow(215,165,275,165);box(290,20,245,70,'encoder + head','shared weights',true);box(290,130,245,70,'encoder + head','shared weights',true);
-      arrow(540,55,650,80);arrow(540,165,650,115);box(665,55,205,80,'positive pair','encourage agreement');
+      arrow(540,55,650,80);arrow(540,165,650,115);box(665,55,205,80,'positive pair','match these views');
       box(650,171,420,58,'other images supply alternatives');arrow(1010,165,875,112,'contrast against');
     }else if(kind==='dino'){
       image(12,12,100,[],transform('flip'),'view A');image(12,158,100,[],transform('dim'),'view B');
       arrow(127,63,202,63);arrow(127,208,202,208);box(215,22,220,84,'student θ','encoder + head');box(215,166,220,84,'teacher φ','encoder + head');
       arrow(440,63,525,63);arrow(440,208,525,208);box(540,22,220,84,'student pₛ','temperature softmax');box(540,166,220,84,'target pₜ','center + sharpen');
-      arrow(765,63,940,116);arrow(765,208,940,160);text(858,235,'stop gradient',20);box(945,105,145,70,'CE loss');
-      arrow(325,109,325,160,'',true);text(369,135,'EMA',20);
+      arrow(765,63,940,116);arrow(765,208,940,160);text(858,235,'stop gradient',22);box(945,105,145,70,'CE loss');
+      arrow(325,109,325,160,'',true);text(369,135,'EMA',22);
     }else if(kind==='dino-update'){
       box(30,50,245,90,'student θ','gradient update');arrow(280,95,470,95,'EMA, not gradient',true);box(485,50,245,90,'teacher φ','moving parameters');
       arrow(735,95,805,95);box(820,50,250,90,'teacher targets','stop gradient in loss');
     }else if(kind==='jepa'){
       image(10,12,106,[3],D.image,'p4 hidden');image(10,184,106,[],D.image,'full image');
-      arrow(125,65,195,65);arrow(125,236,195,236);box(205,26,205,80,'context encoder θ','visible patches',true);box(205,196,205,80,'target encoder φ','all patches',true);
-      arrow(415,65,500,65);arrow(415,236,500,236);box(515,26,245,80,'predictor ψ','target position: p4');box(515,196,245,80,'select target row e₄','after encoding',true);
-      arrow(765,65,930,116);text(845,45,'predicted ê₄',20);arrow(765,236,930,176);text(855,247,'stop gradient',20);box(940,110,145,80,'feature loss');
-      arrow(307,111,307,190,'EMA',true);text(637,145,'Predict a representation, not four pixels.',22);
+      arrow(125,65,195,65);arrow(125,236,195,236);box(205,26,225,80,'context encoder θ','visible patches',true);box(205,196,225,80,'target encoder φ','all patches',true);
+      arrow(435,65,500,65);arrow(435,236,500,236);box(515,26,245,80,'predictor ψ','target position: p4');box(515,196,245,80,'target row e₄','select after encoding',true);
+      arrow(765,65,930,116);text(845,45,'predicted ê₄',22);arrow(765,236,930,176);text(855,247,'stop gradient',22);box(935,110,155,80,'feature loss');
+      arrow(317,111,317,190,'EMA',true);text(637,145,'Predict a representation, not four pixels.',22);
     }else if(kind==='probe'){
       box(20,32,235,82,'pretrained encoder','frozen',true);arrow(260,73,380,73);box(395,32,260,82,'linear classifier','learn head weights');arrow(660,73,790,73);box(805,32,270,82,'held-out task labels','evaluate predictions');
       box(20,150,235,82,'pretrained encoder','trainable',true);arrow(260,192,380,192);box(395,150,260,82,'task head','train together');arrow(660,192,790,192);box(805,150,270,82,'fine-tuning','different evaluation');

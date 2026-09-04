@@ -7,7 +7,7 @@ Usage:
   python3 assemble.py --only sections/sec07.html --out t.html  # any part: test one or more fragments (pass --part so the right toy/config is used)
 Replaces <!--KATEX-->, <!--SHARED-->, <!--SECTIONS--> in shell.html and the <title>. Injects window.__TOY__ and window.__PART__
 before shared.js, then the optional part runtime (partN.js) after it."""
-import argparse, glob, os, sys, json, re
+import argparse, base64, glob, os, sys, json, re
 from urllib.parse import urlsplit
 
 
@@ -97,6 +97,17 @@ def js(obj):
     return json.dumps(obj, separators=(',', ':')).replace('</', '<\\/')
 shared_block = ('<script>\nwindow.__TOY__ = ' + js(toy) + ';\nwindow.__PART__ = ' + js(part) + ';\n</script>\n'
                 '<script>\n' + shared + '\n</script>\n' + runtime)
+if 5 <= N <= 8:
+    # Embed the recurring scene once per standalone lesson. Every SVG crop uses
+    # this same data URI, so file://, presentation and PDF need no image server.
+    scene_dir = os.path.join(here, '..', 'figures', 'vision-scene')
+    scene_assets = {}
+    for variant, filename in (('two', 'two-mugs.jpg'), ('one', 'one-mug.jpg')):
+        with open(os.path.join(scene_dir, filename), 'rb') as asset:
+            scene_assets[variant] = 'data:image/jpeg;base64,' + base64.b64encode(asset.read()).decode('ascii')
+    shared_block += '<script>\nwindow.__VISION_SCENES__ = ' + js(scene_assets) + ';\n</script>\n'
+    with open(os.path.join(here, 'vision-scene.js'), encoding='utf-8') as module:
+        shared_block += '<script>\n' + module.read() + '\n</script>\n'
 if N == 1:
     # Part I's diagrams read the same trained toy exposed by part1.js.
     diagrams = os.path.join(here, 'part1-diagrams.js')

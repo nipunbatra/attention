@@ -106,6 +106,16 @@ Focused sliders keep native arrow, Page Up/Down, and Home/End behaviour. **N** a
 
 `VISION_SOURCE_AUDIT.md` records the original four articles and the important corrections. Keep their original files untouched; the adapted release lives in this repository. All core worksheets work without network/model downloads.
 
+`vision-scene.js` carries one generated tabletop scene through all four vision lessons. `assemble.py` embeds its two
+JPEG assets from `figures/vision-scene/`; no runtime fetch or image server is needed. See that directory's README for
+the prompts, edit limitations and exact crop coordinates. The scene motivates a task and returns after its worked
+example. The scene never borrows scores, attention maps or predictions from the separate 4×4 toy.
+
+The photo-style figures use one shared type/layout component. Narrow reading views stack the same crops and captions;
+the classroom view keeps the comparison on one 16:9 stage. Scope SVG sizing rules to direct children so they do not
+override nested crop viewports. `check_vision_scene.mjs` verifies image decoding, crop transforms, label bounds, offline
+loading and mobile containment at every scene frame. It also records representative classroom and phone screenshots.
+
 - `AT.vision`: exact four-patch + CLS worksheet; full ViT pre-norm architecture is clearly separate from the no-LN/no-FFN numerical model. Position addition is same-width. Token permutation without positions is equivariant; the CLS readout is invariant to patch-only permutation.
 - `AT.vision.story`: image crops stay attached to representations through 21 SVG stages. Important operations use separate authored frames so their workings survive ordinary PDF export. Projection columns, score/exponential/normalization stages, and value-only interventions are shown explicitly.
 - `AT.vision.learning`: separate 44-parameter two-image classifier. Initial numbers match `AT.vision.forward()`; full-batch SGD uses learning rate 0.05 for 600 updates. The first step reduces mean loss but worsens the two-block example. `verify_vision1_learning.py` independently reproduces its tensors and checks every parameter gradient with NumPy and central differences. **Do not copy the fitted encoder over the initial frozen snapshot used by Vision IV.**

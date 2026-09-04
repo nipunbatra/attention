@@ -12,11 +12,33 @@ body.present .sec .calc-rounding{display:none}
 @media(max-width:760px){body:not(.present) .vision1-pair,body:not(.present) .vision1-list{grid-template-columns:1fr}}
 </style>
 <header class="sec-head"><span class="sec-num">01</span><div><p class="eyebrow">Keep the attention we know. Give it an image to read.</p><h2>What should this image classifier answer?</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>Our text model used information from earlier words to predict the next token. Now we want one answer about a whole image. We will follow the image on the left through every calculation, then use the second image to see why learning is necessary. A block here means one filled 2×2 square in this small picture.</p></div>
-<div class="frame" data-title="One block or two?" data-autobuild="off">
+<div class="companion" data-kicker="For self-study"><p>Our text model used information from earlier words to predict the next token. Now we want one answer about a whole image. Start with this tabletop scene: two mugs, a book, and a plant. How could an attention model turn those pixels into an answer? After seeing what a patch contains, we will switch to a separate 4×4 worksheet so that we can calculate every number.</p></div>
+<div class="frame" data-title="How many mugs are in this image?" data-autobuild="off">
+  <div id="s01-scene"></div>
+  <p data-build="1">The input is the picture. Its training label is <strong>two mugs</strong>.</p>
+  <script type="text/x-notes">Point to the two mugs before discussing numbers.
+
+The book and plant are also part of the input. The class label says what answer we want, not which pixels to read. This generated illustration is a teaching example; no trained model has predicted its label here.</script>
+</div>
+<div class="frame" data-title="Cut the image into patches" data-autobuild="off">
+  <div id="s01-scene-patches"></div>
+  <p data-build="1">Each rectangle supplies one input row. The grid is fixed before the model knows where the mugs are.</p>
+  <script type="text/x-notes">Follow the grid across a mug, the book, and the background.
+
+These coarse six-by-four patches make the boundaries easy to see. Patch splitting does not identify objects. The same projection will turn every patch into an embedding, regardless of what its pixels show.</script>
+</div>
+<div class="frame" data-title="One patch can cross an object boundary" data-autobuild="off">
+  <div id="s01-scene-crop"></div>
+  <p data-build="1">One patch contains a mug edge, tabletop, and book.</p>
+  <script type="text/x-notes">Trace the highlighted square into its magnified crop.
+
+The crop is taken from this exact image. A patch is neither a mug ID nor a complete object. We will preserve the patch-to-embedding-to-attention route, but use a separate tiny image for the arithmetic.</script>
+</div>
+<div class="companion"><p>The tabletop scene has more pixels than we can multiply by hand. The following worksheet uses two filled blocks instead of mugs. It is a separate numerical example, not a downsample of the scene and not evidence that a model trained on two block images can count mugs.</p></div>
+<div class="frame" data-title="For the arithmetic, use a separate 4 × 4 image" data-autobuild="off">
   <div class="vision1-story" id="s01-task"></div>
-  <p class="callout callout-key" data-build="1">The <strong>image is the input</strong>. “Two blocks” or “one block” is the observed label used for training.</p>
-  <script type="text/x-notes">Start with the question, not tokenization.
+  <p class="callout callout-key" data-build="1">Our worksheet counts <strong>filled 2×2 blocks</strong>. These are new inputs with labels “two blocks” and “one block”.</p>
+  <script type="text/x-notes">Make the change of input explicit: these blocks are not the mugs.
 
 Both images will reappear at the learning step. Do not give the label to the encoder. Our two-example exercise demonstrates a computation and an update; it is not a general counting benchmark.</script>
 </div>
@@ -30,7 +52,7 @@ A color photograph has three channels, which we will account for later. The shad
 </div>
 <div class="frame" data-title="What will replace the words?" data-autobuild="off">
   <div class="vision1-pair"><div><h3>In the text lesson</h3><p><code>She deposited money …</code></p><p>One word/token → one embedding row.</p></div><div data-build="1"><h3>For this image</h3><p>One small patch of pixels → one embedding row.</p><p>The rows will exchange information through attention.</p></div></div>
-  <p class="callout callout-key" data-build="2">A patch is a piece of the input, not necessarily an object. A photograph’s patch may cut through part of a face or a tree.</p>
+  <p class="callout callout-key" data-build="2">The worksheet’s blocks line up with patches. The mug boundary did not. A patch is a piece of the input, not an object label.</p>
   <script type="text/x-notes">The block/patch alignment is convenient in our worksheet, not a claim that tokenization detects objects.
 
 Image rows are created by a learned projection, not by looking up a discrete patch ID.</script>
@@ -45,5 +67,5 @@ Image rows are created by a learned projection, not by looking up a discrete pat
 LayerNorm, the row-wise MLP and multiple heads are not silently part of its arithmetic. Avoid introducing their mechanics here.</script>
 </div>
 <div class="companion after"><p>Notation follows the text lessons: $e$ is a representation, $q$ and $k$ are used for matching, and $v$ is the information sent. We introduce $r_j$ for the raw pixels of patch $j$ because those four numbers are not yet its two-number embedding. All calculations, diagrams, and training updates run in this page without downloading a model.</p></div>
-<script>(function(){const S=document.getElementById('s01'),T=AT.vision;T.story(S.querySelector('#s01-task'),{stage:'task'});T.story(S.querySelector('#s01-pixels'),{stage:'image'});})();</script>
+<script>(function(){const S=document.getElementById('s01'),T=AT.vision;AT.visionScene.mount(S.querySelector('#s01-scene'),{mode:'scene',variant:'two'});AT.visionScene.mount(S.querySelector('#s01-scene-patches'),{mode:'patches',variant:'two'});AT.visionScene.mount(S.querySelector('#s01-scene-crop'),{mode:'patch-crop',variant:'two'});T.story(S.querySelector('#s01-task'),{stage:'task'});T.story(S.querySelector('#s01-pixels'),{stage:'image'});})();</script>
 </section>

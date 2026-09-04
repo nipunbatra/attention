@@ -113,11 +113,11 @@ Both pictures contain the same single block. Reuse the learned parameters withou
   S.querySelector('#s07-training-caption').textContent=X.nsteps+' SGD updates, learning rate '+X.lr+'. Mean loss: '+fmt(X.before.meanLoss)+' → '+fmt(X.afterTraining.meanLoss)+'.';
   AT.ui.table(X.afterTraining.forwards.map((f,i)=>[names[L.targets[i]],X.before.forwards[i].probs[L.targets[i]],f.probs[L.targets[i]],names[X.afterTraining.predictions[i]]]),{into:S.querySelector('#s07-final-predictions'),cols:[{label:'correct label',kind:'text'},{label:'p(correct) before',kind:'number'},{label:'p(correct) after',kind:'number'},{label:'now chooses',kind:'text'}],rowLabels:['image 1','image 2'],cornerLabel:'training image',decimals:3});
   function graph(host,back){
-    const svg=AT.svg('svg',{viewBox:'0 0 1160 468',role:'img','aria-label':back?'Gradients reverse the complete image classifier graph, including attention weights, values, residual path, patch projection, class token, and positions.':'The complete image classifier graph from pixels through patch embeddings, attention, residual update, head, and labelled loss.'});
+    const svg=AT.svg('svg',{viewBox:'0 0 1160 468',role:'img','data-vision1-diagram':back?'backward graph':'forward graph','aria-label':back?'Gradients reverse the complete image classifier graph, including attention weights, values, residual path, patch projection, class token, and positions.':'The complete image classifier graph from pixels through patch embeddings, attention, residual update, head, and labelled loss.'});
     const id=back?'v1-back':'v1-forward',ink='var(--ink)',line=back?'var(--warn)':'var(--ink-3)',defs=AT.svg('defs');
     [id,id+'-data'].forEach((mid,i)=>{const m=AT.svg('marker',{id:mid,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:6,markerHeight:6,orient:'auto'});m.appendChild(AT.svg('path',{d:'M0 0 L10 5 L0 10Z',fill:i?'var(--ink-3)':line}));defs.appendChild(m);});svg.appendChild(defs);
-    function txt(x,y,text,size,fill){svg.appendChild(AT.svg('text',{x,y,fill:fill||ink,'font-family':'var(--font-ui)','font-size':size||22,'text-anchor':'middle','dominant-baseline':'middle'},text));}
-    function box(x,y,w,h,label,sub,param,role){svg.appendChild(AT.svg('rect',{x:x-w/2,y:y-h/2,width:w,height:h,rx:7,fill:param?'var(--paper)':'var(--card)',stroke:role||'var(--ink-3)','stroke-width':1.8,'stroke-dasharray':param?'6 4':'none'}));txt(x,sub?y-11:y,label,22,role);if(sub)txt(x,y+17,sub,19);}
+    function txt(x,y,text,size,fill){svg.appendChild(AT.svg('text',{x,y,fill:fill||ink,'font-family':'var(--font-ui)','font-size':size?Math.max(24,size):28,'text-anchor':'middle','dominant-baseline':'middle'},text));}
+    function box(x,y,w,h,label,sub,param,role){svg.appendChild(AT.svg('rect',{x:x-w/2,y:y-h/2,width:w,height:h,rx:7,fill:param?'var(--paper)':'var(--card)',stroke:role==='var(--c-ep)'?'var(--c-d)':role||'var(--ink-3)','stroke-width':1.8,'stroke-dasharray':param?'6 4':'none'}));txt(x,sub?y-13:y,label,28,role==='var(--c-ep)'?'var(--c-e)':role);if(sub)txt(x,y+18,sub,24);}
     function edge(points,gradient=true){let p=points;if(back&&gradient)p=points.slice().reverse();svg.appendChild(AT.svg('path',{d:p.map((xy,i)=>(i?'L':'M')+xy.join(' ')).join(' '),fill:'none',stroke:back&&gradient?line:'var(--ink-3)','stroke-width':back&&gradient?2.6:1.7,'marker-end':'url(#'+id+(back&&!gradient?'-data':'')+')'}));}
     edge([[114,166],[170,166]],false);edge([[250,89],[250,132]]);edge([[330,166],[365,166]]);edge([[420,89],[420,132]]);
     edge([[475,166],[500,166],[500,114],[520,114]]);edge([[475,166],[500,166],[500,250],[520,250]]);edge([[590,51],[590,80]]);edge([[652,210],[590,210],[590,216]]);
@@ -125,11 +125,11 @@ Both pictures contain the same single block. Reuse the learned parameters withou
     edge([[980,195],[995,195]]);edge([[1060,89],[1060,160]]);edge([[1060,230],[1060,319]]);
     edge([[420,201],[420,457],[1060,457],[1060,389]]);edge([[980,354],[900,354]]);edge([[790,314],[790,320]]);edge([[680,354],[630,354]]);
     edge([[565,430],[565,388]],false);
-    box(60,166,108,65,'R','raw patches');box(250,166,160,68,'patch map','shared projection');box(250,58,165,62,'W_patch','b_patch',true);box(420,58,150,62,'CLS, positions','learned',true);box(420,166,110,68,'E','input rows',false,'var(--c-e)');
-    box(590,114,140,68,'Q, K','E W_Q; E W_K',false,'var(--c-q)');box(590,250,140,68,'V','E W_V',false,'var(--c-v)');box(775,114,150,68,'A = softmax(S)','S = QKᵀ / √2',false,'var(--c-a)');box(900,195,160,60,'message','A V',false,'var(--c-v)');
-    box(1060,58,135,62,'W_O','learned',true);box(1060,195,130,70,'ΔE','message W_O',false,'var(--c-d)');box(1060,354,160,70,'E′ = E + ΔE','residual sum',false,'var(--c-d)');box(790,354,220,68,'class head','CLS row → logits');box(790,285,180,55,'W_class','b_class',true);box(565,354,130,68,'loss','cross-entropy');box(565,431,145,40,'label y',null,false);
+    box(60,166,108,65,'R','patches');box(250,166,160,68,'patch map','shared W');box(250,58,165,62,'W_patch','b_patch',true);box(420,58,150,62,'CLS, P','learned',true);box(420,166,110,68,'E','input rows',false,'var(--c-e)');
+    box(590,114,140,68,'Q, K','project E',false,'var(--c-q)');box(590,250,140,68,'V','E W_V',false,'var(--c-v)');box(775,114,150,68,'A','softmax(S)',false,'var(--c-a)');txt(790,55,'S = QKᵀ / √2',24);box(900,195,160,60,'message','A V',false,'var(--c-v)');
+    box(1060,58,135,62,'W_O','learned',true);box(1060,195,130,70,'ΔE','m W_O',false,'var(--c-d)');box(1060,354,160,70,'E′','E + ΔE',false,'var(--c-ep)');box(790,354,220,68,'class head','CLS row → logits');box(790,285,180,62,'W_class','b_class',true);box(565,354,130,68,'loss','−log p(y)');box(565,431,145,40,'label y',null,false);
     box(590,31,155,40,'W_Q, W_K',null,true);box(710,210,115,38,'W_V',null,true);txt(210,290,'R and y are data.',20);
-    if(back){txt(990,112,'∂L/∂A',20,line);txt(775,235,'∂L/∂V',20,line);}
+    if(back){txt(990,112,'∂L/∂A',20,line);txt(825,239,'∂L/∂V',20,line);}
     host.appendChild(svg);
   }
   graph(S.querySelector('#s07-forward-graph'),false);graph(S.querySelector('#s07-backward-graph'),true);
@@ -137,7 +137,7 @@ Both pictures contain the same single block. Reuse the learned parameters withou
   svg.appendChild(AT.svg('path',{d:'M'+left+' '+top+'V'+bottom+'H'+right,fill:'none',stroke:'var(--ink-3)','stroke-width':1.5}));
   const pts=X.history.map(p=>[left+(right-left)*p.step/X.nsteps,bottom-(bottom-top)*p.loss/mx]);
   svg.appendChild(AT.svg('path',{d:pts.map((p,i)=>(i?'L':'M')+p.join(' ')).join(' '),fill:'none',stroke:'var(--c-d)','stroke-width':3}));
-  function ct(x,y,text,anchor){svg.appendChild(AT.svg('text',{x,y,'font-family':'var(--font-ui)','font-size':21,fill:'var(--ink)','text-anchor':anchor||'middle'},text));}
+  function ct(x,y,text,anchor){svg.appendChild(AT.svg('text',{x,y,'font-family':'var(--font-ui)','font-size':22,fill:'var(--ink)','text-anchor':anchor||'middle'},text));}
   ct(45,27,fmt(mx));ct(45,bottom+5,'0');ct(left,192,'0');ct(right,192,String(X.nsteps));ct(560,207,'SGD updates');ct(280,30,'mean cross-entropy');S.querySelector('#s07-training-curve').appendChild(svg);
 })();
 </script>

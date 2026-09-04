@@ -2,14 +2,14 @@
   "part": 1,
   "series": "Vision to language",
   "title": "An image becomes a sequence",
-  "subtitle": "Follow one image from pixels to an answer, then teach the same model to distinguish one block from two.",
+  "subtitle": "Start with a tabletop scene, then work through every number in a small image classifier and its training updates.",
   "audience": "Students who know self-attention and residual updates",
   "minutes": 70,
   "centralLabel": "The new input; the same attention operation",
   "central": "\\text{pixels}\\;\\longrightarrow\\;\\ve{E}\\;\\longrightarrow\\;\\vq{Q},\\vk{K},\\vv{V}\\;\\longrightarrow\\;\\vp{E'}",
   "chain": [
     {
-      "label": "One block or two?",
+      "label": "The scene and the worksheet",
       "section": "s01"
     },
     {
@@ -37,7 +37,7 @@
       "section": "s07"
     },
     {
-      "label": "Scale to a photograph",
+      "label": "Return to the scene",
       "section": "s08"
     }
   ],
@@ -79,7 +79,7 @@
     },
     {
       "id": "s08",
-      "title": "Use the same design for a photograph",
+      "title": "Return to the tabletop scene",
       "lit": "e q k v a d ep"
     }
   ],
@@ -93,7 +93,7 @@
     "ep"
   ],
   "legendTitle": "The same symbols now refer to image-token rows",
-  "provenance": "A fully inspectable one-head model uses 4×4 grayscale images and two-number rows. We work through its initial weights, then train all 44 parameters on the two pictured examples. LayerNorm and the feed-forward sublayer appear in the full ViT architecture after the numerical worksheet. Everything runs offline.",
+  "provenance": "The generated tabletop scene illustrates the task. A separate one-head model uses 4×4 grayscale grids and two-number rows: we inspect its starting weights, then train all 44 parameters on two grids. LayerNorm and the feed-forward sublayer appear in the full ViT architecture after the numerical worksheet. Everything runs offline.",
   "prev": {
     "label": "Part 4: Cross-attention: translate one phrase",
     "href": "part4.html"

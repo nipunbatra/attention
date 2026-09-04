@@ -198,7 +198,8 @@ fs.mkdirSync(out,{recursive:true});
 const config=JSON.parse(read('part8.json'));if(config.prev)config.prev.available=false;if(config.next)config.next.available=false;
 const json=value=>JSON.stringify(value).replace(/<\//g,'<\\/');
 const sections=fs.readdirSync(path.join(src,'sections8')).filter(n=>/^sec\d\d\.html$/.test(n)).sort().map(n=>read('sections8/'+n)).join('\n');
-const shared='<script>window.__TOY__='+json(toy)+';window.__PART__='+json(config)+';</script><script>'+read('shared.js')+'</script><script>'+read('part8.js')+'</script>';
+const sceneAssets=Object.fromEntries([['two','two-mugs.jpg'],['one','one-mug.jpg']].map(([variant,file])=>[variant,'data:image/jpeg;base64,'+fs.readFileSync(path.join(src,'..','figures','vision-scene',file)).toString('base64')]));
+const shared='<script>window.__TOY__='+json(toy)+';window.__PART__='+json(config)+';window.__VISION_SCENES__='+json(sceneAssets)+';</script><script>'+read('shared.js')+'</script><script>'+read('part8.js')+'</script><script>'+read('vision-scene.js')+'</script>';
 const html=read('shell.html').replace('<!--KATEX-->',()=>read('katex-bundle.html')).replace('<!--SHARED-->',()=>shared).replace('<!--SECTIONS-->',()=>sections);
 const browser=await pw.chromium.launch(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE?{executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE}:{});
 const errors=[],issues=[];
@@ -210,6 +211,8 @@ try{
   const frames=await page.evaluate(()=>AT.present.state().total);
   assert.equal(frames,(sections.match(/class="frame"/g)||[]).length,'all authored frames registered');
   assert.equal(await page.locator('.katex-error').count(),0,'all math rendered');
+  const decodedScenes=await page.evaluate(async()=>Promise.all(Object.entries(window.__VISION_SCENES__).map(async([variant,src])=>{const image=new Image();image.src=src;await image.decode();return[variant,image.naturalWidth,image.naturalHeight];})));
+  compare(decodedScenes.sort(),[['one',1536,1024],['two',1536,1024]],'both offline scene assets decode');
   for(let i=0;i<frames;i++){
     await page.evaluate(i=>{AT.present.go(i,null,999);document.querySelectorAll('.frame.is-live details.reveal').forEach(el=>el.open=true);},i);await page.waitForTimeout(30);
     const geometry=await page.evaluate(()=>{
@@ -217,6 +220,11 @@ try{
       const svg=[];
       f.querySelectorAll('svg.vlm-diagram').forEach(root=>{
         const v=root.viewBox.baseVal;
+        root.querySelectorAll('[marker-end]').forEach(el=>{
+          const id=el.getAttribute('marker-end').match(/^url\(#(.+)\)$/)?.[1];
+          const target=id&&document.getElementById(id);
+          if(!target||target.localName!=='marker')svg.push({tag:el.tagName,marker:id,error:'Arrow reference must resolve to its marker, not a duplicate description ID.'});
+        });
         root.querySelectorAll('text,rect,path').forEach(el=>{
           if(el.closest('defs'))return;const b=el.getBBox();
           if(b.width&&b.height&&(b.x<v.x-2||b.y<v.y-2||b.x+b.width>v.x+v.width+2||b.y+b.height>v.y+v.height+2))svg.push({text:el.textContent,tag:el.tagName,bounds:{x:b.x,y:b.y,width:b.width,height:b.height}});

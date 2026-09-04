@@ -12,17 +12,23 @@
 </style>
 <header class="sec-head"><span class="sec-num">01</span><div><p class="eyebrow">The image encoder now has language as a training partner.</p><h2>A caption can supply supervision</h2></div></header>
 <div class="companion" data-kicker="For self-study"><p>The earlier parts built image representations from patches and from relationships between images. CLIP connects those representations to text. Its training example is an image together with the caption that accompanied it. The learning problem is to recognize those pairings among other images and captions in the batch.</p><p>Radford and colleagues trained CLIP on 400 million internet image-text pairs and evaluated transfer without training a new classifier on each target dataset. We will use three tiny pairs to inspect the objective. <a href="https://arxiv.org/abs/2103.00020">The original CLIP paper</a> describes the full models and experiments.</p></div>
-<div class="frame" data-title="Describe the grid, not just its class" data-autobuild="off">
-  <div id="s01-anchor"></div>
-  <p data-build="1">The class says which category this image belongs to. The caption says something about what is in it.</p>
-  <p class="callout callout-key" data-build="2">A caption can name objects, counts, attributes, and relations. It gives the image encoder something richer to match than one fixed class ID.</p>
-  <script type="text/x-notes">Ask which properties the class label pattern leaves unspecified.
+<div class="frame" data-title="One scene can support several captions" data-autobuild="off">
+  <div id="s01-scene"></div>
+  <p data-build="1">"Two mugs on a table" and "a blue book in front of the mugs" both fit. Neither caption needs to describe everything.</p>
+  <script type="text/x-notes">Ask for two different descriptions of the same scene.
 
-Captions are still supervision: someone supplied the text. We are changing the source of supervision, not removing it.</script>
+Point to the terracotta mug on the left, teal mug on the right, book in front, and plant behind. Both example captions are human descriptions of this teaching illustration, not outputs from CLIP. Captions are still supervision: someone supplied the text.</script>
+</div>
+<div class="frame" data-title="Matching nouns is not enough" data-autobuild="off">
+  <div id="s01-caption-scene"></div>
+  <p data-build="1">Relations and attributes matter, not just the object names.</p>
+  <script type="text/x-notes">Which caption changes only the relation, and which changes the book's colour?
+
+Read these as human judgments about the illustration. No model scores have been computed for it. CLIP's matching objective encourages useful image-text representations, but success at these relation and attribute distinctions still requires evaluation.</script>
 </div>
 <div class="frame" data-title="Keep these three pairs throughout" data-autobuild="off">
   <div id="s01-batch"></div>
-  <p class="callout callout-key" data-build="1">The three observed pairings are positives. The six crossed pairings are treated as negatives in this batch.</p>
+  <p data-build="1">For exact arithmetic, switch to these three small grids. Their observed pairings are positives; the six crossed pairings are treated as negatives.</p>
   <script type="text/x-notes">The first grid is the same anchor as the ViT example: four pixels of value 1 at top left and four of value 2 at bottom right.
 
 The other two patterns are deliberately simple. We will later discuss cases where an off-diagonal pair is also a valid description.</script>
@@ -36,5 +42,5 @@ The other two patterns are deliberately simple. We will later discuss cases wher
 Our numerical encoder is much smaller so that the entire calculation is visible. The letter g deliberately avoids reusing v from attention.</script>
 </div>
 <div class="companion after"><h3>What this toy replaces</h3><p>The image branch is a learned linear map of 16 pixels. The text branch sums learned rows for words in an eleven-word vocabulary. There is no pretrained visual or language knowledge, no image augmentation, and no attention inside these toy encoders. The matching objective, unit normalization, and gradient update are computed exactly. This lets us examine the part of CLIP that connects the two modalities without repeating the full ViT calculation.</p></div>
-<script>(function(){const S=document.getElementById('s01');AT.clip.diagram(S.querySelector('#s01-anchor'),'anchor');AT.clip.diagram(S.querySelector('#s01-batch'),'batch');AT.clip.diagram(S.querySelector('#s01-encoders'),'encoders');})();</script>
+<script>(function(){const S=document.getElementById('s01');AT.visionScene.mount(S.querySelector('#s01-scene'),{mode:'scene',variant:'two'});AT.visionScene.mount(S.querySelector('#s01-caption-scene'),{mode:'captions',variant:'two',captions:[{text:'The teal mug is right of the terracotta mug.',label:'Fits'},{text:'The teal mug is left of the terracotta mug.',label:'Relation changed'},{text:'A red book is in front of the mugs.',label:'Attribute changed'}]});AT.clip.diagram(S.querySelector('#s01-batch'),'batch');AT.clip.diagram(S.querySelector('#s01-encoders'),'encoders');})();</script>
 </section>

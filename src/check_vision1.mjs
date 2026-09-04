@@ -49,8 +49,11 @@ assert.deepEqual(plain(T.forward().image),plain(data.vision.image),'interaction 
 const sections=fs.readdirSync(path.join(src,'sections5')).filter(n=>/^sec\d\d\.html$/.test(n)).sort();
 const fragments=sections.map(n=>read('sections5/'+n)).join('\n');
 const frames=(fragments.match(/class="frame"/g)||[]).length;
-assert.equal(sections.length,8);assert.equal(frames,57);
+assert.equal(sections.length,8);assert.equal(frames,60);
 assert.match(fragments,/s05-position-check/);assert.match(fragments,/s07-held-out/);
+assert.match(fragments,/s01-scene-crop/);assert.match(fragments,/separate 4 × 4 image/);
+assert.match(fragments,/grid:14,square:true/);
+assert.equal((fragments.match(/type="text\/x-notes"/g)||[]).length,frames,'every frame has presenter notes');
 // Counterfactual values: matching is unchanged, transmitted information differs.
 const valueOnly=T.attention(f.E,{W_V:[[1,0],[0,2]]});
 matrixNear(valueOnly.A,f.A);matrixNear(valueOnly.K,f.K);
@@ -78,7 +81,8 @@ if(!pw)throw new Error('No installed Playwright runtime; no dependencies were in
 const shotArg=process.argv.indexOf('--screenshots'),out=shotArg>=0?process.argv[shotArg+1]:fs.mkdtempSync(path.join(os.tmpdir(),'vision1-check-'));fs.mkdirSync(out,{recursive:true});
 const json=x=>JSON.stringify(x).replace(/<\//g,'<\\/');
 const config=JSON.parse(read('part5.json'));config.prev.available=false;config.next.available=false;
-const shared='<script>window.__TOY__='+json(data)+';window.__PART__='+json(config)+';</script>'+['shared.js','part5.js','part5-learning.js','part5-diagrams.js'].map(name=>'<script>'+read(name)+'</script>').join('');
+const sceneImages=Object.fromEntries([['two','two-mugs'],['one','one-mug']].map(([key,name])=>[key,'data:image/jpeg;base64,'+fs.readFileSync(path.join(src,'../figures/vision-scene',name+'.jpg')).toString('base64')]));
+const shared='<script>window.__TOY__='+json(data)+';window.__PART__='+json(config)+';window.__VISION_SCENES__='+json(sceneImages)+';</script>'+['shared.js','vision-scene.js','part5.js','part5-learning.js','part5-diagrams.js'].map(name=>'<script>'+read(name)+'</script>').join('');
 const html=read('shell.html').replace('<!--KATEX-->',()=>read('katex-bundle.html')).replace('<!--SHARED-->',()=>shared).replace('<!--SECTIONS-->',()=>fragments);
 const browser=await pw.chromium.launch(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE?{executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE}:{});
 const errors=[],issues=[];
@@ -89,6 +93,9 @@ try{
  await page.goto('http://vision1.test/vision1.html?present#s01');await page.waitForTimeout(250);
  const result=await page.evaluate(()=>({frames:AT.present.state().total,mathErrors:document.querySelectorAll('.katex-error').length,svgCount:document.querySelectorAll('[data-vision1-diagram],[data-vision-story]').length,notation:document.querySelector('#notation-card').textContent}));
  assert.equal(result.frames,frames);assert.equal(result.mathErrors,0);assert.ok(result.svgCount>=10);assert.ok(result.notation.includes('patch'));
+ const scenes=await page.evaluate(()=>({count:document.querySelectorAll('[data-vision-scene]').length,modes:Array.from(document.querySelectorAll('#s01 [data-vision-scene]')).map(el=>el.dataset.visionScene),embedded:Array.from(document.querySelectorAll('[data-vision-scene] image')).every(el=>el.getAttribute('href').startsWith('data:image/jpeg;base64,'))}));
+ assert.equal(scenes.count,5);assert.deepEqual(scenes.modes,['scene','patches','patch-crop']);assert.ok(scenes.embedded,'scene images are embedded for offline use');
+ assert.ok(await page.evaluate(()=>Array.from(document.querySelectorAll('[data-vision-scene] svg svg')).every(el=>getComputedStyle(el).overflow==='hidden')),'each scene crop clips to its own SVG viewport');
  let visited=0;
  for(let fi=0;fi<frames;fi++){
    await page.evaluate(fi=>{AT.present.go(fi,null,999);document.querySelectorAll('.frame.is-live details.reveal').forEach(el=>el.open=true);},fi);await page.waitForTimeout(50);

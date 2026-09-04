@@ -1,13 +1,21 @@
 <section id="s06" class="sec" data-title="I-JEPA predicts a target representation" data-lit="">
 <header class="sec-head"><span class="sec-num">06</span><div><p class="eyebrow">Keep the hidden-region idea; change what must be predicted.</p><h2>I-JEPA predicts a target representation</h2></div></header>
 <div class="companion" data-kicker="For self-study"><p>I-JEPA, the Image-based Joint-Embedding Predictive Architecture, predicts representations of hidden target regions from a visible context. Its target is not the raw pixel row. A target encoder first processes the complete image; the training program then selects the encoded rows at the target positions. A separate context encoder sees the visible context, and a predictor uses those context representations plus the requested target positions.</p></div>
-<div class="frame" data-title="For patch 4, should we predict pixels or features?" data-autobuild="off">
-  <div id="s06-targets"></div>
-  <p data-build="1">The target encoder chooses the feature space through its learned parameters. We do not assign a coordinate called “object meaning”.</p>
-  <script type="text/x-notes">The I-JEPA target is learned, so we cannot write its numerical coordinates from this image without specifying an actual trained target encoder.
+<div class="frame" data-title="A pixel target preserves the withheld appearance" data-autobuild="off">
+  <div id="s06-pixel-target"></div>
+  <p data-build="1">MAE compares pixel predictions with the original withheld pixels.</p>
+  <script type="text/x-notes">Point to the actual withheld image region.
 
-This section shows the architecture honestly instead of inventing feature values.</script>
+Pixel reconstruction is scored against its appearance, including colour, edges, and texture. This is the target, not a model's completion. A wrong prediction would be compared with these existing pixels, as in our four-patch MSE calculation.</script>
 </div>
+<div class="frame" data-title="A feature target comes from an encoder" data-autobuild="off">
+  <div id="s06-feature-target"></div>
+  <p data-build="1">I-JEPA matches selected target-encoder rows, not pixel colours.</p>
+  <script type="text/x-notes">Follow the complete-image path into the target encoder.
+
+The encoder processes the full image before we select the hidden region's target rows. The vector is symbolic: no trained encoder was run on this illustration, and we have not assigned coordinates such as mug or object meaning. Its learned parameters determine the feature space. We will next show the context prediction path and EMA update.</script>
+</div>
+<div class="companion"><p>Both objectives can use the same hidden region, but they ask for different outputs. A pixel target gives its original intensities. A feature target gives the selected rows produced by a target encoder that has seen the full image. Predicting those rows need not require reproducing each colour or texture detail, but the features are learned; we cannot assume they discard exactly the details we would choose.</p><p>For the separate four-patch worksheet, the distinction is:</p><div id="s06-targets"></div><p>Its hidden patch 4 has known pixels $(2,2,2,2)$. Numerical feature targets would require a specified target encoder. The illustration therefore shows their role symbolically rather than inventing semantic coordinates.</p></div>
 <div class="frame" data-title="Encode the full image, then select the target rows" data-autobuild="off">
   <div id="s06-jepa"></div>
   <p data-build="1">The context branch cannot read patch 4. The target branch can, because it supplies the training target.</p>
@@ -36,6 +44,7 @@ That is allowed. Leakage would be feeding the target representation into the con
 <div class="companion after"><p>I-JEPA's target rows are contextual: the target encoder has processed the whole image before the rows are selected. Its parameters are an exponential moving average of the context encoder's parameters. The predictor is trained with the context encoder, while the target is treated as fixed for each backward pass. The two encoders therefore do not share one gradient-updated parameter object.</p><p>The published method samples several target blocks and a larger context block, excludes target regions from the context, and predicts the selected features. Our single hidden patch is an architecture illustration, not a reproduction of its masking recipe or trained predictions. The code shows a mean-squared feature loss to make the target space explicit; it does not reproduce every implementation detail of the paper.</p><p>Predicting features can reduce the requirement to reproduce every pixel detail, but it does not guarantee that learned features are semantic or useful for every task. See <a href="https://arxiv.org/abs/2301.08243" target="_blank" rel="noreferrer">Self-Supervised Learning from Images with a Joint-Embedding Predictive Architecture</a>.</p></div>
 <script>
 (function(){const S=document.getElementById('s06'),T=AT.visionSSL;
+AT.visionScene.mount(S.querySelector('#s06-pixel-target'),{mode:'targets',target:'pixels',variant:'two'});AT.visionScene.mount(S.querySelector('#s06-feature-target'),{mode:'targets',target:'features',variant:'two'});
 AT.ui.table([['four pixel intensities','(2, 2, 2, 2)'],['d learned coordinates','target encoder output at patch 4']],{cols:[{label:'what the predictor must match',kind:'text'},{label:'target for our hidden patch',kind:'text'}],rowLabels:['MAE','I-JEPA'],cornerLabel:'pretraining target',into:S.querySelector('#s06-targets')});
 T.diagram(S.querySelector('#s06-jepa'),'jepa');
 AT.ui.reveal('Does the context encoder receive the full-image target representation as an input?','No. That representation is used to score its prediction. The prediction branch only receives visible context and target-position information. The target branch has no gradient from this loss.',{into:S.querySelector('#s06-check')});})();
