@@ -7,8 +7,8 @@
 body.present #s04 .embedding-space>svg{max-height:380px}
 @media(max-width:820px){body:not(.present) #s04 .work-row{grid-template-columns:1fr}}
 </style>
-<header class="sec-head"><span class="sec-num">04</span><div><p class="eyebrow">Why we are here: characters are categorical symbols, while an MLP reads rows of numbers.</p><h2>Characters to numbers</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>A one-hot vector identifies a character with one active coordinate. Different characters have zero dot product, so one-hot geometry offers no graded similarity. An embedding table replaces each long one-hot vector with a learned row of two numbers. Looking up a character means selecting its row; no averaging or calculation is needed. The first axis in this trained table was constrained so vowels are positive and consonants are negative. The second axis was free to move wherever the name-prediction loss found useful. These labels help us read the toy, but learned coordinates in larger models rarely have such simple names.</p></div>
+<header class="sec-head"><span class="sec-num">04</span><div><p class="eyebrow">Characters are categorical symbols. An MLP needs rows of numbers.</p><h2>Characters to numbers</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>A one-hot vector identifies a character with one active coordinate. Any two different characters have zero dot product, so this geometry cannot express degrees of similarity. An embedding table gives each character a learned row of two numbers instead of a long one-hot vector. A lookup just selects that row; there is no averaging or arithmetic to do. During training, we constrained the first axis so vowels are positive and consonants are negative. The second axis was free to move wherever it helped lower the name-prediction loss. These labels make our toy table easier to read. Learned coordinates in larger models rarely have such simple names.</p></div>
 <div class="frame" data-title="One-hot vectors identify characters" data-autobuild="off">
   <script type="text/x-notes">What is the dot product of two different one-hot vectors?
   Read the active columns, then use the two worksheets. Every product is zero for different characters.</script>
@@ -33,7 +33,7 @@ body.present #s04 .embedding-space>svg{max-height:380px}
   <script type="text/x-notes">What does it mean for two learned rows to be close?
   Every table row is a point. The first coordinate was deliberately constrained only by vowel versus consonant sign; the second was free to organize itself for prediction.</script>
   <div class="embedding-space teaching-diagram" id="s04-space"></div>
-  <div class="callout callout-note" data-build="1"><strong>a</strong>, <strong>b</strong>, and <strong>i</strong> are highlighted. The geometry comes from the trained table—not from invented semantic coordinates.</div>
+  <div class="callout callout-note" data-build="1"><strong>a</strong>, <strong>b</strong>, and <strong>i</strong> are highlighted. These points come from the trained table; we have not invented semantic coordinates.</div>
 </div>
 <div class="companion" data-kicker="The complete lookup table"><div id="s04-embed-full"></div></div>
 <div class="frame" data-title="Check the shapes" data-autobuild="off">
@@ -42,7 +42,7 @@ body.present #s04 .embedding-space>svg{max-height:380px}
   <div class="card"><h3 class="card-title">The context a a b</h3><div id="s04-shapes"></div></div>
   <div class="callout callout-key" data-build="1">Each ID selects one trainable row. Three IDs return three embedding rows.</div>
 </div>
-<div class="companion after"><p>Keep in mind: an embedding lookup selects a learned row, and its axis names belong in every numeric table.</p></div>
+<div class="companion after"><p>A lookup selects a learned row. Keep the axis labels beside the numbers so we can read what each column means.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s04'),M=window.__TOY__,V=M.vocab.length;

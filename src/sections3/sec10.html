@@ -6,10 +6,10 @@
 </style>
 <header class="sec-head">
   <span class="sec-num">10</span>
-  <div><p class="eyebrow">Why we are here: a Transformer block combines pre-norm attention and a pre-norm FFN, then the model repeats that block.</p><h2>One block, then many</h2></div>
+  <div><p class="eyebrow">Combine pre-norm attention and a pre-norm FFN to make one block. Then stack blocks.</p><h2>One block, then many</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>One pre-norm decoder block has two residual updates. First, LayerNorm prepares the current rows, causal multi-head attention gathers information across positions, and the result is added back. Second, another LayerNorm prepares those intermediate rows, the FFN mixes features at each position, and its result is added. Stacking blocks lets later attention use representations already changed by earlier context. Inside any one block, every query, key, and value comes from that block's input rows, so a newly updated bank row becomes available to other tokens only in the next block. The multi-hop example shows why depth can matter.</p>
+  <p>One pre-norm decoder block adds two updates to the residual stream. LayerNorm first prepares the current rows for causal multi-head attention. Attention gathers information across positions, and we add its result back. A second LayerNorm prepares the resulting rows for the FFN, which mixes features at each position and returns the second update. Later blocks can use representations that earlier blocks have already changed. Within one block, however, every query, key, and value comes from that block's input rows. Other tokens cannot read a newly updated bank row until the next block. The multi-hop example below shows what this extra depth allows.</p>
 </div>
 <div class="frame" data-title="Walk through one pre-norm block">
   <script type="text/x-notes">Where are the two residual additions?
@@ -38,7 +38,7 @@
   <p>They walked by the <strong>river</strong> <strong>bank</strong> and watched the ___</p>
   <div id="s10-hop" data-build="1"></div>
 </div>
-<div class="companion after"><p>Each block reads the previous block's contextual rows, which lets later routing depend on relations assembled earlier.</p></div>
+<div class="companion after"><p>Block two reads the rows produced by block one. Its attention can therefore use relations that block one has already combined.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s10');

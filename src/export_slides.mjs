@@ -4,6 +4,7 @@
 //   node src/export_slides.mjs attention.html output/pdf/part2-slides.pdf
 //   node src/export_slides.mjs attention.html output/pdf/part2-builds.pdf --builds all
 //   node src/export_slides.mjs attention.html deck.pdf --frames output/slide-pngs
+//   node src/export_slides.mjs attention.html deck.pdf --answers authored
 //
 // The default writes one fully revealed page per authored frame. `--builds all`
 // writes each build and managed stepper state as its own page. The exporter uses
@@ -38,10 +39,11 @@ const option = (flag, fallback) => {
   return i >= 0 && args[i + 1] ? args[i + 1] : fallback;
 };
 const buildMode = option('--builds', 'final');
+const answerMode = option('--answers', 'show');
 const requestedFrames = option('--frames', '');
 const captureScale = Number(option('--scale', '2'));
-if (!source || !output || !['final', 'all'].includes(buildMode) || ![1, 2, 3].includes(captureScale)) {
-  throw new Error('Usage: node src/export_slides.mjs page.html output.pdf [--builds final|all] [--frames DIR] [--scale 1|2|3]');
+if (!source || !output || !['final', 'all'].includes(buildMode) || !['show', 'authored'].includes(answerMode) || ![1, 2, 3].includes(captureScale)) {
+  throw new Error('Usage: node src/export_slides.mjs page.html output.pdf [--builds final|all] [--answers show|authored] [--frames DIR] [--scale 1|2|3]');
 }
 if (path.extname(output).toLowerCase() !== '.pdf') throw new Error('Output must end in .pdf');
 if (!fs.existsSync(source) || !fs.statSync(source).isFile()) throw new Error('Source HTML file not found: ' + source);
@@ -73,7 +75,7 @@ try {
   await page.goto(url.href, { waitUntil: 'load' });
   await page.waitForFunction(() => window.AT && AT.present && AT.present.state().active);
   await page.addStyleTag({ content: `
-  #strip,#at-controls,#at-counter,#at-announcement,#at-fit-warning,#at-notes,#at-overview,#at-blank,#at-help{display:none!important}
+  #strip,#at-controls-toggle,#at-controls,#at-counter,#at-announcement,#at-fit-warning,#at-notes,#at-overview,#at-blank,#at-help{display:none!important}
   html,body{width:1280px!important;height:720px!important;background:var(--paper)!important}
   body.present{--present-strip-h:0px!important;--present-controls-h:0px!important;--present-gutter:0px!important;--present-scale:1!important}
   body.present main{width:1280px!important;height:720px!important}
@@ -99,6 +101,7 @@ try {
 
   const images = [];
   const seen = new Set();
+  let revealedAnswers = 0;
   let reachedEnd = false;
   for (let guard = 0; guard < 5000; guard++) {
     const { state, steps } = await page.evaluate(() => {
@@ -116,6 +119,20 @@ try {
     seen.add(key);
     const terminal = state.build === state.frame.maxBuild && (!state.stepper || state.stepper.index === state.stepper.count - 1);
     if (buildMode === 'all' || terminal) {
+      // A PDF cannot be clicked. On each fully built frame, open its authored
+      // answer panels before capture. Earlier build pages remain questions.
+      if (answerMode === 'show' && terminal) {
+        const opened = await page.evaluate(() => {
+          const live = document.querySelector('.frame.is-live');
+          if (!live) return 0;
+          const panels = Array.from(live.querySelectorAll('details.reveal')).filter(d => !d.closest('.is-pending,[hidden]'));
+          let count = 0;
+          panels.forEach(d => { if (!d.open) { d.open = true; count++; } });
+          return count;
+        });
+        revealedAnswers += opened;
+        if (opened) await settle();
+      }
       const fit = await page.evaluate(() => AT.present.fitReport());
       if (fit && fit.overflow) throw new Error('Frame became overfull while exporting: ' + key);
       const frameName = String(images.length + 1).padStart(3, '0') + '-' + key.replace(/[^a-z0-9_-]+/gi, '_').replace(/^_+/, '') + '.png';
@@ -157,7 +174,7 @@ try {
   });
   await pdfPage.pdf({ path: outPath, preferCSSPageSize: true, printBackground: true, margin: { top: '0', right: '0', bottom: '0', left: '0' } });
   const bytes = fs.statSync(outPath).size;
-  console.log(JSON.stringify({ source: path.resolve(source), output: outPath, mode: buildMode, pages: images.length, rasterScale: captureScale, bytes }, null, 2));
+  console.log(JSON.stringify({ source: path.resolve(source), output: outPath, mode: buildMode, answerMode, revealedAnswers, pages: images.length, rasterScale: captureScale, bytes }, null, 2));
 } finally {
   if (browser) await browser.close();
   // This directory is created by mkdtemp above; never remove a caller's --frames directory.

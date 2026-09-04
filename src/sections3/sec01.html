@@ -7,10 +7,10 @@
 </style>
 <header class="sec-head">
   <span class="sec-num">01</span>
-  <div><p class="eyebrow">Why we are here: Part 2 computed a contextual update with fixed numbers. Part 3 asks how those numbers learn.</p><h2>Where Part 2 left us</h2></div>
+  <div><p class="eyebrow">Part 2 used fixed weights to compute a contextual update. How does the model learn those weights?</p><h2>Where Part 2 left us</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>Part 2 followed one causal attention head from a token representation to a next-token distribution. The same bank row changed toward water in the river sentence and toward finance in the cheque sentence. Every coordinate below comes from the hand-written toy with named representation, query, key, and value axes. Its arithmetic is real, though its weights were chosen to make the route easy to read. This part keeps that model fixed for one more moment, then uses the observed word water to measure an error and change every parameter that contributed to it. The first example connects the familiar forward pass to learning.</p>
+  <p>In Part 2, we followed one causal attention head from a token representation to a next-token distribution. The same bank row changed toward water in the river sentence and toward finance in the cheque sentence. The coordinates below come from that hand-written toy, with its named representation, query, key, and value axes. We chose the weights to make the calculation easy to follow, but the arithmetic is real. We will first reuse those weights, then compare the prediction with the observed word water. That error lets us change the parameters that contributed to the prediction: the forward pass we already know becomes a training example.</p>
 </div>
 <div class="frame" data-title="The calculation we already know">
   <script type="text/x-notes">Which object carries context back to the current representation?
@@ -30,7 +30,7 @@
   <div class="card"><div id="s01-cheque"></div></div>
   <div id="s01-fixed" data-build="1"></div>
 </div>
-<div class="companion after"><p>The attention calculation used fixed parameters; learning will explain where useful parameters can come from.</p></div>
+<div class="companion after"><p>We have seen what the fixed parameters do. Learning gives us a way to find useful values for them.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s01');

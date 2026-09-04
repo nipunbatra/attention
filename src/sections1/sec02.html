@@ -4,8 +4,8 @@
 #s02 .name{font-family:var(--font-mono);padding:8px 12px;background:var(--t-neutral);border-radius:var(--radius-s)}
 #s02 .question{font-family:var(--font-mono);font-size:1.35em;margin:8px 0 18px}
 </style>
-<header class="sec-head"><span class="sec-num">02</span><div><p class="eyebrow">Why we are here: a small character vocabulary lets us inspect every input, score, and probability.</p><h2>Generate a name</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>We will train a network on Indian given names. Each letter is one token, and the boundary symbol marks both the empty space before a name and the stopping point after it. That gives the model a vocabulary of the boundary plus the alphabet. At each step it receives three character IDs and returns a probability for every possible next character. The displayed distribution for <em>aab</em> comes from the trained model bundled with this page. Its answer need not be certain. It only has to place useful probability on characters that often continue similar contexts.</p></div>
+<header class="sec-head"><span class="sec-num">02</span><div><p class="eyebrow">With a small character vocabulary, we can inspect every input, score, and probability.</p><h2>Generate a name</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>We will train a network on Indian given names. One letter is one token. A boundary symbol fills the space before a name and marks where it ends, so our vocabulary is the alphabet plus this boundary. At each step, the network reads three character IDs and returns a probability for every possible next character. The bars for <em>aab</em> come from the trained model bundled with this page. The network does not need to be certain. It should assign useful probability to characters that often follow similar contexts.</p></div>
 <div class="frame" data-title="A small vocabulary" data-autobuild="off">
   <script type="text/x-notes">What extra symbol does a name generator need besides the alphabet?
   Read the boundary token first. It fills missing context on the left and tells generation when to stop.</script>
@@ -19,7 +19,7 @@
   <div class="callout callout-key" data-build="2">One probability per possible next character.</div>
 </div>
 <div class="companion"><p id="s02-read"></p><p>One forward pass is a classification problem with one class for every possible next character.</p></div>
-<div class="companion after"><p>Keep in mind: the same boundary token pads the opening window and ends a generated name.</p></div>
+<div class="companion after"><p>The boundary token does two jobs: it pads the opening window and tells us when a generated name has ended.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s02'),M=window.__TOY__,ids=['a','a','b'].map(c=>AT.mlp.stoi[c]);

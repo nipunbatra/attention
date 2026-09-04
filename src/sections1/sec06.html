@@ -5,8 +5,8 @@
 #s06 .eqs{font-size:1.05em}
 body.present #s06 .net{max-width:650px}
 </style>
-<header class="sec-head"><span class="sec-num">06</span><div><p class="eyebrow">Why we are here: the six-number input must interact before the model can score the next character.</p><h2>Pass the vector through an MLP</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>The concatenated row enters a one-hidden-layer MLP. The first matrix combines all six input coordinates into each hidden unit, adds a bias, and applies tanh. The second matrix combines the hidden activations into one logit for every vocabulary token. The diagram draws only a few hidden nodes, but the trained hidden row has the width reported beside it. The worksheets isolate one hidden unit and the logit for <em>i</em>. They show the same operations used for every other unit and output. Row vectors multiply matrices on the right throughout this series.</p></div>
+<header class="sec-head"><span class="sec-num">06</span><div><p class="eyebrow">The MLP combines the six input numbers to score each possible next character.</p><h2>Pass the vector through an MLP</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>The concatenated row enters an MLP with one hidden layer. Each hidden unit combines all six input coordinates through the first weight matrix, adds a bias, and applies tanh. The second weight matrix combines the hidden activations to give one logit per vocabulary token. We draw only a few hidden nodes; the label beside them gives the trained layer's full width. The worksheets work through one hidden unit and the logit for <em>i</em>. Every other unit and output uses the same operations. Throughout this series, our vectors are rows and multiply matrices on the right.</p></div>
 <div class="frame" data-title="The full network" data-autobuild="off">
   <script type="text/x-notes">Why does the output column contain one node for every vocabulary token?
   Trace six scalar inputs through the hidden layer. The marked output is the target i for aab.</script>
@@ -16,7 +16,7 @@ body.present #s06 .net{max-width:650px}
   <div class="prose eqs"><p>$$a_1=\tanh(a_0W_1+b_1)$$</p><p data-build="1">$$z=a_1W_2+b_2$$</p></div>
   <div class="callout callout-note" data-build="2">The first layer mixes the six inputs. The second makes one score per vocabulary token.</div>
 </div>
-<div class="frame" data-title="Read every shape before multiplying" data-autobuild="off">
+<div class="frame" data-title="Check the shapes before multiplying" data-autobuild="off">
   <div class="card"><div id="s06-shapes"></div></div>
 </div>
 <div class="frame" data-title="One hidden unit" data-autobuild="off">
@@ -29,8 +29,8 @@ body.present #s06 .net{max-width:650px}
   Every hidden activation contributes through the i column. The bias is added after the dot product.</script>
   <div class="card"><h3 class="card-title">The logit for target i</h3><div id="s06-logit-compact"></div><p class="calc-note" id="s06-logit-note"></p></div>
 </div>
-<div class="companion" data-kicker="Full arithmetic worksheets"><p>The network repeats the output calculation to return one score for every possible next character. These expanded worksheets list every scalar multiplication used by the two compact classroom calculations.</p><div id="s06-hidden"></div><div id="s06-logit"></div></div>
-<div class="companion after"><p>Keep in mind: every hidden unit reads the full concatenated window, and every output receives the full hidden row.</p></div>
+<div class="companion" data-kicker="Full arithmetic worksheets"><p>The network repeats the output calculation for every possible next character. To check the two shorter calculations shown in class, you can follow every scalar multiplication in these worksheets.</p><div id="s06-hidden"></div><div id="s06-logit"></div></div>
+<div class="companion after"><p>Every hidden unit reads the full concatenated window. Every output then receives the full hidden row.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s06'),M=window.__TOY__,ids=['a','a','b'].map(c=>AT.mlp.stoi[c]),F=AT.mlp.forward(ids);

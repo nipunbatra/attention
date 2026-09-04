@@ -2,14 +2,14 @@
 <style>
 #s07 .soft-note{font-size:.9em;color:var(--ink-2);margin:10px 0 0}
 </style>
-<header class="sec-head"><span class="sec-num">07</span><div><p class="eyebrow">Why we are here: logits are unrestricted scores, so we need a normalized distribution over the vocabulary.</p><h2>27 scores to probabilities</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>The output layer produces one logit for each vocabulary token. A logit can be positive or negative and does not yet act like a probability. Softmax exponentiates the scores and divides each result by their shared sum. Subtracting the largest logit before exponentiating keeps the calculation stable without changing the probabilities. The worksheet shows that stable form for <em>aab</em>. It keeps the five largest outcomes visible and groups the rest, while the denominator still uses every vocabulary entry. The final probabilities are positive and sum to one, so the model can sample from them.</p></div>
+<header class="sec-head"><span class="sec-num">07</span><div><p class="eyebrow">Logits can be any real numbers. We need probabilities that add up to one.</p><h2>27 scores to probabilities</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>The output layer gives us one logit for each vocabulary token. A logit can be positive or negative; we cannot read it as a probability yet. Softmax exponentiates each score, then divides by the sum of all the exponentials. We subtract the largest logit first to keep this calculation numerically stable. That subtraction leaves the probabilities unchanged. The worksheet uses this stable form for <em>aab</em>, showing the five largest outcomes and grouping the rest. Every vocabulary entry still contributes to the denominator. The resulting probabilities are positive and sum to one, so we can sample from them.</p></div>
 <div class="frame" data-title="Read the logits" data-autobuild="off">
   <script type="text/x-notes">Can we read a logit as a probability?
   No. First inspect the five largest scores. The grouped row has no single logit because it contains several outputs.</script>
   <div class="card"><h3 class="card-title">Top logits for a a b</h3><div id="s07-logits"></div></div>
 </div>
-<div class="frame" data-title="Exponentiate, then share the total" data-autobuild="off">
+<div class="frame" data-title="Exponentiate, then divide by the total" data-autobuild="off">
   <div class="prose"><p>For every token $j$, $$p_j=\frac{\exp(z_j)}{\sum_{r\in\mathcal V}\exp(z_r)}.$$</p></div>
   <div class="callout callout-key" data-build="1">Each token gets a positive share of the same total.</div>
 </div>
@@ -25,7 +25,7 @@
   <div class="card"><h3 class="card-title">The same probabilities as bars</h3><div id="s07-bars"></div></div>
   <div class="callout callout-key" data-build="1">Softmax turns all vocabulary scores into positive probabilities that sum to one.</div>
 </div>
-<div class="companion after"><p>Keep in mind: every vocabulary logit affects every probability through one shared softmax denominator.</p></div>
+<div class="companion after"><p>Changing one vocabulary logit affects every probability, because all of them share the same softmax denominator.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s07'),M=window.__TOY__,F=AT.mlp.forward(['a','a','b']),top=AT.topk(F.p,5),idx=top.map(x=>x.i),mx=Math.max.apply(null,F.z),ex=F.z.map(z=>Math.exp(z-mx)),den=AT.sum(ex),rest=AT.range(F.p.length).filter(i=>idx.indexOf(i)<0);

@@ -7,10 +7,10 @@
 </style>
 <header class="sec-head">
   <span class="sec-num">14</span>
-  <div><p class="eyebrow">Why we are here: the same attention calculation supports encoders, decoders, and models that connect the two.</p><h2>Three ways to arrange blocks</h2></div>
+  <div><p class="eyebrow">Encoders and decoders use the same attention calculation, with different sources and masks.</p><h2>Three ways to arrange blocks</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>Transformer families differ mainly in which blocks they keep and which attention masks they use. Encoder-only models let every token read the full input, which suits tasks that consume a complete sequence. Decoder-only models use causal self-attention and generate one token after another. Encoder-decoder models first build source representations, then let decoder queries read encoder keys and values through cross-attention. The cross-attention arithmetic is unchanged: compare a query with keys, apply softmax, and mix values. What changes is where the three projected rows come from. The 2017 Transformer paired an encoder stack with a decoder stack.</p>
+  <p>Transformer families mainly differ in their blocks and attention masks. In an encoder-only model, every token can read the full input, which suits tasks where the complete sequence is available. A decoder-only model uses causal self-attention to generate one token after another. An encoder-decoder model first builds representations of the source, then lets decoder queries read encoder keys and values through cross-attention. We still compare queries with keys, apply softmax, and mix values. The arithmetic is unchanged; the projected rows now come from different sequences. The 2017 Transformer paired an encoder stack with a decoder stack.</p>
 </div>
 <div class="frame" data-title="Three block arrangements">
   <script type="text/x-notes">Which family uses a causal mask inside every generative block?

@@ -38,7 +38,7 @@
    1. RESET + BASE TYPOGRAPHY
    ===================================================================== */
 *,*::before,*::after{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:calc(var(--strip-h) + 16px)}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:20px}
 body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font-ui);font-size:17px;line-height:1.5;font-weight:400;
   overflow-x:hidden;-webkit-font-smoothing:antialiased}
 @media (min-width:1400px){body{font-size:18px}}
@@ -87,8 +87,7 @@ svg{display:block;max-width:100%}
 /* =====================================================================
    2. NOTATION STRIP (sticky)
    ===================================================================== */
-#strip{position:sticky;top:0;z-index:50;background:rgba(247,248,250,.92);backdrop-filter:saturate(1.2) blur(8px);-webkit-backdrop-filter:saturate(1.2) blur(8px);
-  border-bottom:1px solid var(--line);min-height:var(--strip-h)}
+#strip{position:relative;z-index:50;min-height:var(--strip-h)}
 #strip .wrap{display:flex;align-items:center;gap:16px;min-height:var(--strip-h);padding-top:6px;padding-bottom:6px;flex-wrap:wrap}
 .nchips{display:flex;gap:6px;align-items:center;flex-wrap:nowrap;list-style:none;margin:0;padding:0}
 .nchips li{margin:0}
@@ -518,7 +517,9 @@ body:not(.present) .diagram-step .stage-title{display:none}
 /* =====================================================================
    8. FOOTER, MOTION, PRINT
    ===================================================================== */
-footer{border-top:1px solid var(--line);padding:24px 0 40px;color:var(--ink-3);font-size:14px}
+footer{padding:12px 0 32px;color:var(--ink-2);font-size:14px}
+footer details{margin-top:12px;max-width:76ch}
+footer details summary{cursor:pointer;color:var(--ink-3)}
 /* node-network sketch (AT.netSketch) */
 .netsk{max-width:640px;margin:8px auto}
 .netsk svg{width:100%;height:auto;overflow:visible;font-family:var(--font-ui)}
@@ -563,20 +564,20 @@ body.present .frame-sub{display:block}
    All measurements below are logical stage pixels, not viewport-responsive type.
    Overflow is an authoring error: add a continuation frame, never a scrollbar.
    ===================================================================== */
-body.present{--present-stage-w:1280px;--present-stage-h:720px;--present-scale:1;--present-body:28px;--present-title:42px;--present-caption:22px;--present-math:32px;--present-gutter:10px;--strip-h:38px;--present-strip-h:38px;--present-controls-h:50px;overflow:hidden;height:100vh;height:100dvh;font-size:var(--present-body);line-height:1.38}
-body.present .hero,body.present footer,body.present .reading,body.present .companion{display:none!important}
+body.present{--present-stage-w:1280px;--present-stage-h:720px;--present-scale:1;--present-body:28px;--present-title:42px;--present-caption:22px;--present-math:32px;--present-gutter:24px;--present-controls-h:0px;overflow:hidden;height:100vh;height:100dvh;font-size:var(--present-body);line-height:1.38}
+body.present #strip,body.present .hero,body.present footer,body.present .reading,body.present .companion{display:none!important}
 body.present #strip .wrap{flex-wrap:nowrap;padding-top:2px;padding-bottom:2px;min-height:var(--strip-h);max-width:none;padding-left:clamp(14px,1.6vw,30px);padding-right:clamp(14px,1.6vw,30px);gap:10px}
 body.present .nchips{gap:4px}
 body.present .nchip{height:25px;min-width:30px;font-size:14px;padding:0 8px}
 body.present .strip-sec{font-size:13px;margin-left:auto}
 body.present #present-btn{display:none}
-body.present main{position:relative;width:100%;padding:0;max-width:none;min-height:0;height:calc(100vh - var(--present-strip-h) - var(--present-controls-h));height:calc(100dvh - var(--present-strip-h) - var(--present-controls-h));overflow:hidden}
+body.present main{position:relative;width:100%;padding:0;max-width:none;min-height:0;height:100vh;height:100dvh;overflow:hidden}
 body.present .sec{display:none}
-body.present .sec.is-live{position:absolute;left:50%;top:50%;display:flex;flex-direction:column;width:var(--present-stage-w);height:var(--present-stage-h);margin:0;padding:20px 64px 24px;scroll-margin-top:0;overflow:hidden;transform:translate(-50%,-50%) scale(var(--present-scale));transform-origin:center center;background:var(--paper)}
-body.present .sec.is-live>.sec-head{flex:none;margin:0 0 12px;padding:0 0 10px;border-top:0;border-bottom:1px solid var(--line);grid-template-columns:auto minmax(0,1fr);gap:4px 20px;align-items:baseline}
-body.present .sec-num{font-size:18px;padding-top:0;color:var(--ink-3)}
+body.present .sec.is-live{position:absolute;left:50%;top:50%;display:flex;flex-direction:column;width:var(--present-stage-w);height:var(--present-stage-h);margin:0;padding:36px 64px;scroll-margin-top:0;overflow:hidden;transform:translate(-50%,-50%) scale(var(--present-scale));transform-origin:center center;background:var(--paper)}
+body.present .sec.is-live>.sec-head{display:block;flex:none;margin:0 0 24px;padding:0;border:0}
+body.present .sec-num{display:none}
 body.present .sec-head h2{font-size:var(--present-title);letter-spacing:-.015em;line-height:1.12}
-body.present .sec-head.has-frame-title h2{font-size:18px;font-weight:500;letter-spacing:0;color:var(--ink-2);line-height:1.2}
+body.present .sec-head.has-frame-title h2{display:none}
 body.present .sec-head .eyebrow{display:none}
 body.present .frame-sub{grid-column:2;display:block;margin:0;font-size:var(--present-title);color:var(--ink);font-weight:700;letter-spacing:-.015em;line-height:1.12;max-width:none;white-space:normal;align-self:baseline}
 body.present .frame-sub:empty{display:none}
@@ -660,16 +661,19 @@ body.present pre.torch-snippet,body.present pre.pytorch{font-size:23px;line-heig
 /* Reading scroll helpers unfold on the slide. The frame-level fit check catches excess content. */
 body.present .dt-scroll,body.present .mat-scroll,body.present .calc-scroll,body.present .scroll-x,body.present .vec,body.present .tex-display,body.present .katex-display,body.present .stepper-stage .stage-tex,body.present pre.torch-snippet,body.present pre.pytorch{max-width:100%;overflow:visible}
 /* An overfull authored frame is never silently cropped or made scrollable. */
-#at-fit-warning{display:none;position:fixed;left:16px;right:16px;bottom:calc(var(--present-controls-h,50px) + 8px);z-index:62;margin:0;padding:10px 16px;border:1px solid var(--warn);border-radius:var(--radius-s);background:#FFF8E8;color:var(--ink);font-size:15px;line-height:1.35}
+#at-fit-warning{display:none;position:fixed;left:16px;right:16px;top:12px;z-index:62;margin:0;padding:10px 16px;border:1px solid var(--warn);border-radius:var(--radius-s);background:#FFF8E8;color:var(--ink);font-size:15px;line-height:1.35}
 body.present #at-fit-warning:not(:empty){display:block}
 body.present .frame[data-overflow="true"]{outline:2px dashed var(--warn);outline-offset:-2px}
-/* Always-visible classroom controls; the measured height is reserved above. */
-#at-controls{position:fixed;inset:auto 0 0;z-index:60;display:none;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:4px 8px;padding:4px clamp(14px,1.6vw,30px) max(4px,env(safe-area-inset-bottom));border-top:1px solid var(--line);background:rgba(247,248,250,.96);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-body.present #at-controls{display:flex}
+/* Navigation is available on demand, without reserving a header or footer. */
+#at-controls-toggle{display:none;position:fixed;right:12px;bottom:10px;z-index:60;font-size:13px;min-height:36px;padding:6px 12px;border-color:transparent;color:var(--ink-2);background:var(--paper)}
+body.present #at-controls-toggle{display:block}
+#at-controls-toggle:hover,#at-controls-toggle[aria-expanded="true"]{border-color:var(--line);background:var(--card)}
+#at-controls{position:fixed;right:12px;bottom:54px;max-width:calc(100vw - 24px);z-index:60;display:none;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:6px 8px;padding:12px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--card);box-shadow:0 4px 20px rgba(20,23,31,.10)}
+body.present #at-controls.is-on{display:flex}
 #at-controls .pbtn{font-size:14px;min-height:40px;padding:6px 12px}
 #at-next{background:var(--ink);border-color:var(--ink);color:var(--paper)}
-#at-counter{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:14px;color:var(--ink-2);margin-right:auto}
-#at-announcement{display:none;position:fixed;bottom:calc(var(--present-controls-h) + 8px);left:16px;right:16px;z-index:61;margin:0;padding:10px 16px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-s);font-size:16px}
+#at-counter{flex-basis:100%;font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:14px;color:var(--ink-2);margin-bottom:4px}
+#at-announcement{display:none;position:fixed;top:12px;left:16px;right:16px;z-index:61;margin:0;padding:10px 16px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-s);font-size:16px}
 body.present #at-announcement:not(:empty){display:block}
 @media(max-width:640px){#at-counter{flex-basis:100%}#at-controls{justify-content:flex-start;gap:4px 6px;padding-left:10px;padding-right:10px}#at-controls .pbtn{font-size:13px;min-height:40px;padding:6px 9px}}
 /* notes strip (S) */
@@ -697,7 +701,7 @@ body.present #at-announcement:not(:empty){display:block}
 #at-blank{position:fixed;inset:0;z-index:80;background:#000;display:none}
 #at-blank.is-on{display:block}
 /* keyboard help (?) */
-#at-help{position:fixed;right:14px;bottom:calc(var(--present-controls-h,28px) + 8px);z-index:61;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 14px;font-size:13px;line-height:1.6;color:var(--ink-2);display:none;box-shadow:0 8px 24px rgba(20,23,31,.14)}
+#at-help{position:fixed;right:14px;bottom:54px;z-index:61;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 14px;font-size:13px;line-height:1.6;color:var(--ink-2);display:none;box-shadow:0 8px 24px rgba(20,23,31,.14)}
 #at-help.is-on{display:block}
 #at-help kbd{font-family:var(--font-mono);background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:0 5px;color:var(--ink);font-size:12px}
 
@@ -745,7 +749,7 @@ body.presenter>*:not(#at-presenter){display:none!important}
   @page{size:A4 landscape;margin:12mm}
   html,body{background:#fff;font-size:16px;overflow:visible;height:auto}
   #strip{position:static;background:#fff;backdrop-filter:none}
-  #progress,#at-controls,#at-counter,#at-announcement,#at-fit-warning,#at-notes,#at-overview,#at-blank,#at-help,.present-ctl,.reading,.roadmap .arrow{display:none!important}
+  #progress,#at-controls-toggle,#at-controls,#at-counter,#at-announcement,#at-fit-warning,#at-notes,#at-overview,#at-blank,#at-help,.present-ctl,.reading,.roadmap .arrow{display:none!important}
   .btn,.toggle,.slider,.stepper-bar,.btn-row{display:none!important}
   .companion{display:block!important}
   main{height:auto;overflow:visible;padding-bottom:0}
@@ -2445,7 +2449,7 @@ window.__PART__ = {"part":1,"series":"Next-token prediction, attention and the T
     function applyBuild(fr, b, edge) {
       all(fr.el, '[data-build]').forEach(function (e) {
         var pend = buildOf(e) > b;
-        if (pend && e.contains(document.activeElement) && U.controls) U.controls.focus({ preventScroll: true });
+        if (pend && e.contains(document.activeElement) && U.controlsToggle) U.controlsToggle.focus({ preventScroll: true });
         pending(e, pend);
       });
       steppersOf(fr).forEach(function (s) {
@@ -2513,15 +2517,18 @@ window.__PART__ = {"part":1,"series":"Next-token prediction, attention and the T
       U.overviewButton = h('button', { id: 'at-overview-btn', type: 'button', class: 'pbtn', 'aria-haspopup': 'dialog', on: { click: function () { setOverview(true); } } }, 'Frames');
       U.fullscreen = h('button', { id: 'at-fullscreen', type: 'button', class: 'pbtn', 'aria-pressed': 'false', on: { click: fullscreen } }, 'Full screen');
       U.controls = h('nav', { id: 'at-controls', tabindex: '-1', 'aria-label': 'Classroom navigation' }, U.counter, U.prev, U.next, U.overviewButton, U.fullscreen,
+        h('button', { id: 'at-presenter-btn', type: 'button', class: 'pbtn', on: { click: openPresenter } }, 'Presenter view'),
         h('button', { id: 'at-exit', type: 'button', class: 'pbtn', on: { click: exit } }, 'Exit'));
+      U.controlsToggle = h('button', { id: 'at-controls-toggle', type: 'button', class: 'pbtn', 'aria-controls': 'at-controls', 'aria-expanded': 'false', title: 'Show classroom controls (C)', on: { click: function () { setControls(!P.controls); } } }, 'Controls');
+      U.controls.inert = true;
       U.announcement = h('p', { id: 'at-announcement', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' });
       U.fitWarning = h('p', { id: 'at-fit-warning', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' });
       U.notes = h('div', { id: 'at-notes', role: 'complementary', 'aria-label': 'Presenter notes' });
       U.overview = h('div', { id: 'at-overview', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'All frames' }, h('div', { class: 'ov-head' }, h('p', { class: 'ov-title' }, 'All frames: select one to jump'), h('button', { id: 'at-overview-close', type: 'button', class: 'pbtn', on: { click: function () { setOverview(false); } } }, 'Close overview')), h('div', { class: 'ov-grid' }));
       U.blank = h('div', { id: 'at-blank', 'aria-hidden': 'true' });
-      U.help = h('div', { id: 'at-help', role: 'note' }, h('div', { html: '<kbd>→</kbd> <kbd>Space</kbd> <kbd>PgDn</kbd> next build · <kbd>←</kbd> <kbd>PgUp</kbd> <kbd>Backspace</kbd> back · <kbd>Home</kbd> <kbd>End</kbd> first / last frame<br><kbd>O</kbd> overview · <kbd>B</kbd> blank · <kbd>S</kbd> notes · <kbd>?</kbd> this help · <kbd>Esc</kbd> exit' }));
+      U.help = h('div', { id: 'at-help', role: 'note' }, h('div', { html: '<kbd>→</kbd> <kbd>Space</kbd> <kbd>PgDn</kbd> next build · <kbd>←</kbd> <kbd>PgUp</kbd> <kbd>Backspace</kbd> back · <kbd>Home</kbd> <kbd>End</kbd> first / last frame<br><kbd>C</kbd> controls · <kbd>O</kbd> overview · <kbd>B</kbd> blank · <kbd>S</kbd> notes · <kbd>?</kbd> this help · <kbd>Esc</kbd> close panel / exit' }));
       U.blank.addEventListener('click', function () { setBlank(false); });
-      document.body.appendChild(U.controls); document.body.appendChild(U.announcement); document.body.appendChild(U.fitWarning); document.body.appendChild(U.notes); document.body.appendChild(U.overview); document.body.appendChild(U.blank); document.body.appendChild(U.help);
+      document.body.appendChild(U.controlsToggle); document.body.appendChild(U.controls); document.body.appendChild(U.announcement); document.body.appendChild(U.fitWarning); document.body.appendChild(U.notes); document.body.appendChild(U.overview); document.body.appendChild(U.blank); document.body.appendChild(U.help);
       window.addEventListener('resize', measureChrome);
       document.addEventListener('fullscreenchange', function () { updateChrome(); measureChrome(); });
       if (window.ResizeObserver) { U.resize = new ResizeObserver(measureChrome); U.resize.observe(U.controls); var strip = document.getElementById('strip'); if (strip) U.resize.observe(strip); }
@@ -2531,11 +2538,16 @@ window.__PART__ = {"part":1,"series":"Next-token prediction, attention and the T
       document.addEventListener('toggle', scheduleFitCheck, true);
       document.addEventListener('load', scheduleFitCheck, true);
     }
+    function setControls(on) {
+      P.controls = !!on;
+      if (!U.controls) return;
+      if (!P.controls && U.controls.contains(document.activeElement)) U.controlsToggle.focus({ preventScroll: true });
+      U.controls.classList.toggle('is-on', P.controls);
+      U.controls.inert = !P.controls;
+      U.controlsToggle.setAttribute('aria-expanded', String(P.controls));
+    }
     function measureChrome() {
       if (!P.active) return;
-      var strip = document.getElementById('strip');
-      document.body.style.setProperty('--present-strip-h', (strip ? strip.getBoundingClientRect().height : 0) + 'px');
-      document.body.style.setProperty('--present-controls-h', (U.controls ? U.controls.getBoundingClientRect().height : 0) + 'px');
       var main = document.querySelector('main');
       if (main) {
         var r = main.getBoundingClientRect(), cs = getComputedStyle(document.body);
@@ -2843,6 +2855,7 @@ window.__PART__ = {"part":1,"series":"Next-token prediction, attention and the T
       P.frames.forEach(function (fr) { fr.snapshot = null; }); P.fi = -1;
       P.active = true; P.startedAt = P.startedAt || Date.now();
       document.body.classList.add('present');
+      setControls(false);
       goTarget(t); measureChrome();
       emit('change', state());
     }
@@ -2850,7 +2863,7 @@ window.__PART__ = {"part":1,"series":"Next-token prediction, attention and the T
     function exit() {
       if (!P.active) return;
       var fr = cur();
-      setOverview(false); setBlank(false); setNotes(false); setHelp(false);
+      setOverview(false); setBlank(false); setNotes(false); setHelp(false); setControls(false);
       if (fr) { leaveFrame(fr); fr.sec.classList.remove('is-live'); }
       P.active = false;
       document.body.classList.remove('present');
@@ -2868,8 +2881,9 @@ window.__PART__ = {"part":1,"series":"Next-token prediction, attention and the T
     /* ---- print: every build visible, steppers at their last step, read-mode layout; restored afterwards ---- */
     function prepareForPrint() {
       if (P.printState) return;
-      var st = { active: P.active, fi: P.fi, build: P.build, steppers: [] };
+      var st = { active: P.active, fi: P.fi, build: P.build, steppers: [], details: [] };
       all(document, '.stepper').forEach(function (e) { if (e.stepperApi && e.stepperApi.steps.length) { st.steppers.push([e.stepperApi, e.stepperApi.index()]); e.stepperApi.go(e.stepperApi.steps.length - 1); } });
+      all(document, 'details.reveal').forEach(function (d) { st.details.push([d, d.open]); d.open = true; });
       if (P.active) {
         var fr = cur();
         all(document, '[data-build].is-pending').forEach(function (e) { pending(e, false); });
@@ -2883,6 +2897,7 @@ window.__PART__ = {"part":1,"series":"Next-token prediction, attention and the T
       var st = P.printState; if (!st) return;
       P.printState = null;
       document.documentElement.classList.remove('printing');
+      st.details.forEach(function (p) { if (p[0].isConnected) p[0].open = p[1]; });
       st.steppers.forEach(function (p) { p[0].go(p[1]); });
       if (st.active) { document.body.classList.add('present'); var fr = P.frames[st.fi]; if (fr) { fr.sec.classList.add('is-live'); fr.el.classList.add('is-live'); applyBuild(fr, st.build); } }
     }
@@ -2904,7 +2919,7 @@ window.__PART__ = {"part":1,"series":"Next-token prediction, attention and the T
       if (!P.active) { if ((key === 'p' || key === 'P') && !inField(target)) { enter(); return true; } return false; }
       if (P.overview) return overviewKey(key, ev);
       if (P.blank) { if (key === 'Shift' || key === 'Control' || key === 'Alt' || key === 'Meta') return false; setBlank(false); return true; }
-      if (key === 'Escape') { if (P.help) setHelp(false); else exit(); return true; }
+      if (key === 'Escape') { if (P.help) setHelp(false); else if (P.controls) setControls(false); else exit(); return true; }
       if (inField(target) || (target && target.closest && target.closest('[data-present="manual"]'))) return false;
       switch (key) {
         case 'ArrowRight': next(); return true;
@@ -2915,6 +2930,7 @@ window.__PART__ = {"part":1,"series":"Next-token prediction, attention and the T
         case 'Home': showFrame(0, 0); return true;
         case 'End': showFrame(P.frames.length - 1, 0); return true;
         case 'o': case 'O': setOverview(!P.overview); return true;
+        case 'c': case 'C': setControls(!P.controls); return true;
         case 'b': case 'B': case '.': setBlank(!P.blank); return true;
         case 's': case 'S': setNotes(!P.notes); return true;
         case '?': setHelp(!P.help); return true;
@@ -3673,9 +3689,9 @@ window.__PART__ = {"part":1,"series":"Next-token prediction, attention and the T
 #s01 .answer{padding:12px;background:var(--t-neutral);border-radius:var(--radius-s)}
 @media(max-width:640px){body:not(.present) #s01 .task-grid,body:not(.present) #s01 .answers{grid-template-columns:1fr}}
 </style>
-<header class="sec-head"><span class="sec-num">01</span><div><p class="eyebrow">Why we are here: language tasks look different, yet each asks a network to turn text into useful predictions.</p><h2>What can a network do with text?</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>A network can label a whole passage, label each token, translate between languages, shorten a notice, answer from a context, or continue a prompt. The output shape changes across these tasks. Generation looks especially open because several continuations can fit the same prefix. We can still give the network a precise job: assign one probability to every possible next token. Choosing or sampling one token turns that distribution into a continuation. This next-token view gives us a small problem that we can build from embeddings, an MLP, softmax, and cross-entropy.</p></div>
-<div class="frame" data-title="Text can ask for different outputs" data-autobuild="off">
+<header class="sec-head"><span class="sec-num">01</span><div><p class="eyebrow">Language tasks ask for different outputs, but all use text to make predictions.</p><h2>What can a network do with text?</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>A network can label a passage, label each token, translate between languages, shorten a notice, answer a question from context, or continue a prompt. These tasks need different output shapes. Generation leaves more room for choice: several continuations may fit the same prefix. We give the network a precise job anyway. It must assign a probability to every possible next token. Choosing or sampling one token then gives us a continuation. This gives us a small prediction task to build with embeddings, an MLP, softmax, and cross-entropy.</p></div>
+<div class="frame" data-title="Different tasks need different outputs" data-autobuild="off">
   <script type="text/x-notes">What changes across these six language tasks?
   Reveal one row at a time. Ask whether the output is one label, one label per token, or another sequence.</script>
   <div class="card"><h3 class="card-title">Six familiar tasks</h3><div class="task-grid">
@@ -3700,7 +3716,7 @@ window.__PART__ = {"part":1,"series":"Next-token prediction, attention and the T
   <div class="card"><h3 class="card-title">After “The student opened the laptop and”</h3><div id="s01-bars"></div><p class="muted small">Illustrative next-token probabilities.</p></div>
   <div class="callout callout-key" data-build="1">Generation is classification over the next token, repeated one step at a time.</div>
 </div>
-<div class="companion after"><p>Keep in mind: a probability distribution can represent several reasonable continuations without choosing one in advance.</p></div>
+<div class="companion after"><p>A distribution lets us keep several reasonable continuations possible. We do not have to choose one in advance.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s01');
@@ -3717,8 +3733,8 @@ window.__PART__ = {"part":1,"series":"Next-token prediction, attention and the T
 #s02 .name{font-family:var(--font-mono);padding:8px 12px;background:var(--t-neutral);border-radius:var(--radius-s)}
 #s02 .question{font-family:var(--font-mono);font-size:1.35em;margin:8px 0 18px}
 </style>
-<header class="sec-head"><span class="sec-num">02</span><div><p class="eyebrow">Why we are here: a small character vocabulary lets us inspect every input, score, and probability.</p><h2>Generate a name</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>We will train a network on Indian given names. Each letter is one token, and the boundary symbol marks both the empty space before a name and the stopping point after it. That gives the model a vocabulary of the boundary plus the alphabet. At each step it receives three character IDs and returns a probability for every possible next character. The displayed distribution for <em>aab</em> comes from the trained model bundled with this page. Its answer need not be certain. It only has to place useful probability on characters that often continue similar contexts.</p></div>
+<header class="sec-head"><span class="sec-num">02</span><div><p class="eyebrow">With a small character vocabulary, we can inspect every input, score, and probability.</p><h2>Generate a name</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>We will train a network on Indian given names. One letter is one token. A boundary symbol fills the space before a name and marks where it ends, so our vocabulary is the alphabet plus this boundary. At each step, the network reads three character IDs and returns a probability for every possible next character. The bars for <em>aab</em> come from the trained model bundled with this page. The network does not need to be certain. It should assign useful probability to characters that often follow similar contexts.</p></div>
 <div class="frame" data-title="A small vocabulary" data-autobuild="off">
   <script type="text/x-notes">What extra symbol does a name generator need besides the alphabet?
   Read the boundary token first. It fills missing context on the left and tells generation when to stop.</script>
@@ -3732,7 +3748,7 @@ window.__PART__ = {"part":1,"series":"Next-token prediction, attention and the T
   <div class="callout callout-key" data-build="2">One probability per possible next character.</div>
 </div>
 <div class="companion"><p id="s02-read"></p><p>One forward pass is a classification problem with one class for every possible next character.</p></div>
-<div class="companion after"><p>Keep in mind: the same boundary token pads the opening window and ends a generated name.</p></div>
+<div class="companion after"><p>The boundary token does two jobs: it pads the opening window and tells us when a generated name has ended.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s02'),M=window.__TOY__,ids=['a','a','b'].map(c=>AT.mlp.stoi[c]);
@@ -3754,11 +3770,11 @@ window.__PART__ = {"part":1,"series":"Next-token prediction, attention and the T
 #s03 .stage-pair{display:flex;flex-wrap:wrap;align-items:center;gap:14px;justify-content:center}
 #s03 .target{font-family:var(--font-mono);font-size:1.3em;color:var(--warn)}
 </style>
-<header class="sec-head"><span class="sec-num">03</span><div><p class="eyebrow">Why we are here: an MLP needs a fixed input width, so we must choose how many earlier characters it receives.</p><h2>Choose a context length</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>A one-character window is small but forgets almost everything. A window containing the whole prefix would change length from one training row to the next, which a plain MLP cannot accept without another design choice. We begin with three previous characters. Padding with the boundary makes even the first prediction fit that width. Sliding the window across <em>aabid</em> yields six context-target pairs: five letters and then the ending boundary. The split between training and held-out names happens before these windows are made, so examples from one name never cross the split.</p></div>
-<div class="frame" data-title="Commit to three characters" data-autobuild="off">
+<header class="sec-head"><span class="sec-num">03</span><div><p class="eyebrow">The MLP needs a fixed-width input. How many earlier characters should we include?</p><h2>Choose a context length</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>A one-character window remembers very little. Using the whole prefix brings a different problem: its length changes from one training row to the next. A plain MLP needs another design choice to handle that changing input size. We start with three previous characters. Boundary padding gives even the first prediction a full three-character window. Sliding it across <em>aabid</em> makes six context-target pairs: five letters followed by the ending boundary. We split the names into training and held-out sets before making the windows, so examples from one name never cross the split.</p></div>
+<div class="frame" data-title="Use three previous characters" data-autobuild="off">
   <script type="text/x-notes">What would each context choice let the model remember?
-  Compare one, three, and all. Then commit to three because the first model needs a fixed input.</script>
+  Compare one, three, and all. Use three for this model because it needs a fixed input width.</script>
   <div class="card"><div class="grid-3"><div class="choice"><span class="mono">w = 1</span><p>One previous character</p></div><div class="choice chosen" data-build="1"><span class="mono">w = 3</span><p>Three previous characters</p></div><div class="choice" data-build="2"><span class="mono">w = all</span><p>A growing prefix</p></div></div></div>
   <div class="prose" data-build="3"><p>Use $$p_\theta(t_i\mid t_{i-3:i-1}).$$</p></div>
 </div>
@@ -3776,7 +3792,7 @@ window.__PART__ = {"part":1,"series":"Next-token prediction, attention and the T
   <div class="prose"><p>Each name of length $L$ contributes $L+1$ context-target pairs.</p></div>
   <div class="card" data-build="1"><h3 class="card-title">Rows made from the cleaned data</h3><div id="s03-counts"></div></div>
 </div>
-<div class="companion after"><p>Keep in mind: the fixed window makes every MLP input the same size, including the first prediction.</p></div>
+<div class="companion after"><p>The fixed window gives every MLP input the same size, including the first one.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s03'),M=window.__TOY__,rows=M.aabid_rows;
@@ -3798,8 +3814,8 @@ window.__PART__ = {"part":1,"series":"Next-token prediction, attention and the T
 body.present #s04 .embedding-space>svg{max-height:380px}
 @media(max-width:820px){body:not(.present) #s04 .work-row{grid-template-columns:1fr}}
 </style>
-<header class="sec-head"><span class="sec-num">04</span><div><p class="eyebrow">Why we are here: characters are categorical symbols, while an MLP reads rows of numbers.</p><h2>Characters to numbers</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>A one-hot vector identifies a character with one active coordinate. Different characters have zero dot product, so one-hot geometry offers no graded similarity. An embedding table replaces each long one-hot vector with a learned row of two numbers. Looking up a character means selecting its row; no averaging or calculation is needed. The first axis in this trained table was constrained so vowels are positive and consonants are negative. The second axis was free to move wherever the name-prediction loss found useful. These labels help us read the toy, but learned coordinates in larger models rarely have such simple names.</p></div>
+<header class="sec-head"><span class="sec-num">04</span><div><p class="eyebrow">Characters are categorical symbols. An MLP needs rows of numbers.</p><h2>Characters to numbers</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>A one-hot vector identifies a character with one active coordinate. Any two different characters have zero dot product, so this geometry cannot express degrees of similarity. An embedding table gives each character a learned row of two numbers instead of a long one-hot vector. A lookup just selects that row; there is no averaging or arithmetic to do. During training, we constrained the first axis so vowels are positive and consonants are negative. The second axis was free to move wherever it helped lower the name-prediction loss. These labels make our toy table easier to read. Learned coordinates in larger models rarely have such simple names.</p></div>
 <div class="frame" data-title="One-hot vectors identify characters" data-autobuild="off">
   <script type="text/x-notes">What is the dot product of two different one-hot vectors?
   Read the active columns, then use the two worksheets. Every product is zero for different characters.</script>
@@ -3824,7 +3840,7 @@ body.present #s04 .embedding-space>svg{max-height:380px}
   <script type="text/x-notes">What does it mean for two learned rows to be close?
   Every table row is a point. The first coordinate was deliberately constrained only by vowel versus consonant sign; the second was free to organize itself for prediction.</script>
   <div class="embedding-space teaching-diagram" id="s04-space"></div>
-  <div class="callout callout-note" data-build="1"><strong>a</strong>, <strong>b</strong>, and <strong>i</strong> are highlighted. The geometry comes from the trained table—not from invented semantic coordinates.</div>
+  <div class="callout callout-note" data-build="1"><strong>a</strong>, <strong>b</strong>, and <strong>i</strong> are highlighted. These points come from the trained table; we have not invented semantic coordinates.</div>
 </div>
 <div class="companion" data-kicker="The complete lookup table"><div id="s04-embed-full"></div></div>
 <div class="frame" data-title="Check the shapes" data-autobuild="off">
@@ -3833,7 +3849,7 @@ body.present #s04 .embedding-space>svg{max-height:380px}
   <div class="card"><h3 class="card-title">The context a a b</h3><div id="s04-shapes"></div></div>
   <div class="callout callout-key" data-build="1">Each ID selects one trainable row. Three IDs return three embedding rows.</div>
 </div>
-<div class="companion after"><p>Keep in mind: an embedding lookup selects a learned row, and its axis names belong in every numeric table.</p></div>
+<div class="companion after"><p>A lookup selects a learned row. Keep the axis labels beside the numbers so we can read what each column means.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s04'),M=window.__TOY__,V=M.vocab.length;
@@ -3865,8 +3881,8 @@ body.present #s04 .embedding-space>svg{max-height:380px}
 #s05 .compare-label{font-family:var(--font-mono);font-weight:700;margin:0 0 8px}
 #s05 .lookup-step .stepper-stage svg{max-height:390px}
 </style>
-<header class="sec-head"><span class="sec-num">05</span><div><p class="eyebrow">Why we are here: three embedding rows must become one fixed-width input without losing their positions.</p><h2>Concatenate the embeddings</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>The lookup returns one embedding row for each character in the window. The MLP expects one row, so we place the three embeddings side by side. This makes a six-number vector because the window has three positions and each embedding has two coordinates. Each segment keeps its position: the first two numbers always describe the oldest character, and the last two describe the newest. Reversing the characters therefore changes the concatenation. Adding the same rows would erase their order because addition is commutative. The trained values below come directly from the embedding table you just inspected.</p></div>
+<header class="sec-head"><span class="sec-num">05</span><div><p class="eyebrow">The MLP needs one fixed-width row. Concatenation keeps the three positions separate.</p><h2>Concatenate the embeddings</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>We have looked up one embedding row for each character in the window. The MLP expects one row, so we put the three embeddings side by side. Three positions with two coordinates each give us six numbers. The first two always describe the oldest character, and the last two describe the newest. Reversing the characters changes where their numbers appear in this row. Adding the embeddings would lose that order because addition is commutative. The values below are the trained rows from the table we just inspected.</p></div>
 <div class="frame" data-title="Trace a a b from IDs to six numbers" data-autobuild="off">
   <script type="text/x-notes">Why does the embedding row for a appear twice?
   Advance from token IDs to the shared lookup table, then follow each occurrence into its own two-coordinate slot.</script>
@@ -3874,7 +3890,7 @@ body.present #s04 .embedding-space>svg{max-height:380px}
 </div>
 <div class="frame" data-title="Three rows become one row" data-autobuild="off">
   <script type="text/x-notes">Where does the second a live in the concatenated row?
-  Read the position labels across the headers. Each position owns a separate two-coordinate segment.</script>
+  Read the position labels across the headers. Each position has a separate two-coordinate segment.</script>
   <div class="card"><h3 class="card-title">The three rows for a a b</h3><div id="s05-rows"></div></div>
   <div class="join-eq" id="s05-eq" data-build="1"></div>
 </div>
@@ -3891,7 +3907,7 @@ body.present #s04 .embedding-space>svg{max-height:380px}
   <div class="card"><div id="s05-sums"></div></div>
   <div class="callout callout-note" data-build="1">The concatenations differ. The two sums are equal.</div>
 </div>
-<div class="companion after"><p>Keep in mind: concatenation preserves a fixed slot for every character position, while addition removes the order.</p></div>
+<div class="companion after"><p>With concatenation, each character position has a fixed slot. With addition, we can no longer recover the order.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s05'),M=window.__TOY__,axes=M.axes.e;
@@ -3922,8 +3938,8 @@ body.present #s04 .embedding-space>svg{max-height:380px}
 #s06 .eqs{font-size:1.05em}
 body.present #s06 .net{max-width:650px}
 </style>
-<header class="sec-head"><span class="sec-num">06</span><div><p class="eyebrow">Why we are here: the six-number input must interact before the model can score the next character.</p><h2>Pass the vector through an MLP</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>The concatenated row enters a one-hidden-layer MLP. The first matrix combines all six input coordinates into each hidden unit, adds a bias, and applies tanh. The second matrix combines the hidden activations into one logit for every vocabulary token. The diagram draws only a few hidden nodes, but the trained hidden row has the width reported beside it. The worksheets isolate one hidden unit and the logit for <em>i</em>. They show the same operations used for every other unit and output. Row vectors multiply matrices on the right throughout this series.</p></div>
+<header class="sec-head"><span class="sec-num">06</span><div><p class="eyebrow">The MLP combines the six input numbers to score each possible next character.</p><h2>Pass the vector through an MLP</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>The concatenated row enters an MLP with one hidden layer. Each hidden unit combines all six input coordinates through the first weight matrix, adds a bias, and applies tanh. The second weight matrix combines the hidden activations to give one logit per vocabulary token. We draw only a few hidden nodes; the label beside them gives the trained layer's full width. The worksheets work through one hidden unit and the logit for <em>i</em>. Every other unit and output uses the same operations. Throughout this series, our vectors are rows and multiply matrices on the right.</p></div>
 <div class="frame" data-title="The full network" data-autobuild="off">
   <script type="text/x-notes">Why does the output column contain one node for every vocabulary token?
   Trace six scalar inputs through the hidden layer. The marked output is the target i for aab.</script>
@@ -3933,7 +3949,7 @@ body.present #s06 .net{max-width:650px}
   <div class="prose eqs"><p>$$a_1=\tanh(a_0W_1+b_1)$$</p><p data-build="1">$$z=a_1W_2+b_2$$</p></div>
   <div class="callout callout-note" data-build="2">The first layer mixes the six inputs. The second makes one score per vocabulary token.</div>
 </div>
-<div class="frame" data-title="Read every shape before multiplying" data-autobuild="off">
+<div class="frame" data-title="Check the shapes before multiplying" data-autobuild="off">
   <div class="card"><div id="s06-shapes"></div></div>
 </div>
 <div class="frame" data-title="One hidden unit" data-autobuild="off">
@@ -3946,8 +3962,8 @@ body.present #s06 .net{max-width:650px}
   Every hidden activation contributes through the i column. The bias is added after the dot product.</script>
   <div class="card"><h3 class="card-title">The logit for target i</h3><div id="s06-logit-compact"></div><p class="calc-note" id="s06-logit-note"></p></div>
 </div>
-<div class="companion" data-kicker="Full arithmetic worksheets"><p>The network repeats the output calculation to return one score for every possible next character. These expanded worksheets list every scalar multiplication used by the two compact classroom calculations.</p><div id="s06-hidden"></div><div id="s06-logit"></div></div>
-<div class="companion after"><p>Keep in mind: every hidden unit reads the full concatenated window, and every output receives the full hidden row.</p></div>
+<div class="companion" data-kicker="Full arithmetic worksheets"><p>The network repeats the output calculation for every possible next character. To check the two shorter calculations shown in class, you can follow every scalar multiplication in these worksheets.</p><div id="s06-hidden"></div><div id="s06-logit"></div></div>
+<div class="companion after"><p>Every hidden unit reads the full concatenated window. Every output then receives the full hidden row.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s06'),M=window.__TOY__,ids=['a','a','b'].map(c=>AT.mlp.stoi[c]),F=AT.mlp.forward(ids);
@@ -3973,14 +3989,14 @@ body.present #s06 .net{max-width:650px}
 <style>
 #s07 .soft-note{font-size:.9em;color:var(--ink-2);margin:10px 0 0}
 </style>
-<header class="sec-head"><span class="sec-num">07</span><div><p class="eyebrow">Why we are here: logits are unrestricted scores, so we need a normalized distribution over the vocabulary.</p><h2>27 scores to probabilities</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>The output layer produces one logit for each vocabulary token. A logit can be positive or negative and does not yet act like a probability. Softmax exponentiates the scores and divides each result by their shared sum. Subtracting the largest logit before exponentiating keeps the calculation stable without changing the probabilities. The worksheet shows that stable form for <em>aab</em>. It keeps the five largest outcomes visible and groups the rest, while the denominator still uses every vocabulary entry. The final probabilities are positive and sum to one, so the model can sample from them.</p></div>
+<header class="sec-head"><span class="sec-num">07</span><div><p class="eyebrow">Logits can be any real numbers. We need probabilities that add up to one.</p><h2>27 scores to probabilities</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>The output layer gives us one logit for each vocabulary token. A logit can be positive or negative; we cannot read it as a probability yet. Softmax exponentiates each score, then divides by the sum of all the exponentials. We subtract the largest logit first to keep this calculation numerically stable. That subtraction leaves the probabilities unchanged. The worksheet uses this stable form for <em>aab</em>, showing the five largest outcomes and grouping the rest. Every vocabulary entry still contributes to the denominator. The resulting probabilities are positive and sum to one, so we can sample from them.</p></div>
 <div class="frame" data-title="Read the logits" data-autobuild="off">
   <script type="text/x-notes">Can we read a logit as a probability?
   No. First inspect the five largest scores. The grouped row has no single logit because it contains several outputs.</script>
   <div class="card"><h3 class="card-title">Top logits for a a b</h3><div id="s07-logits"></div></div>
 </div>
-<div class="frame" data-title="Exponentiate, then share the total" data-autobuild="off">
+<div class="frame" data-title="Exponentiate, then divide by the total" data-autobuild="off">
   <div class="prose"><p>For every token $j$, $$p_j=\frac{\exp(z_j)}{\sum_{r\in\mathcal V}\exp(z_r)}.$$</p></div>
   <div class="callout callout-key" data-build="1">Each token gets a positive share of the same total.</div>
 </div>
@@ -3996,7 +4012,7 @@ body.present #s06 .net{max-width:650px}
   <div class="card"><h3 class="card-title">The same probabilities as bars</h3><div id="s07-bars"></div></div>
   <div class="callout callout-key" data-build="1">Softmax turns all vocabulary scores into positive probabilities that sum to one.</div>
 </div>
-<div class="companion after"><p>Keep in mind: every vocabulary logit affects every probability through one shared softmax denominator.</p></div>
+<div class="companion after"><p>Changing one vocabulary logit affects every probability, because all of them share the same softmax denominator.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s07'),M=window.__TOY__,F=AT.mlp.forward(['a','a','b']),top=AT.topk(F.p,5),idx=top.map(x=>x.i),mx=Math.max.apply(null,F.z),ex=F.z.map(z=>Math.exp(z-mx)),den=AT.sum(ex),rest=AT.range(F.p.length).filter(i=>idx.indexOf(i)<0);
@@ -4018,8 +4034,8 @@ body.present #s06 .net{max-width:650px}
 #s08 .case{padding:18px;border:1px solid var(--line);border-radius:var(--radius-s)}
 @media(max-width:700px){body:not(.present) #s08 .compare{grid-template-columns:1fr}}
 </style>
-<header class="sec-head"><span class="sec-num">08</span><div><p class="eyebrow">Why we are here: training needs one number that says how well the distribution scored the observed target.</p><h2>The loss</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>Each training row supplies a known next character. Cross-entropy keeps the probability assigned to that target and applies the negative logarithm. A confident correct prediction has a small loss. A confident wrong prediction gives the observed target very little probability and receives a large loss. The comparison below uses two simple probabilities from the lecture, while the interactive worksheet reads all six <em>aabid</em> rows from the trained model. Choosing another row changes its context, target probability, and loss together. Training later averages this signal across many rows and changes every parameter that contributed to the prediction.</p></div>
+<header class="sec-head"><span class="sec-num">08</span><div><p class="eyebrow">How much probability did the model give the observed target? The loss turns that into one number.</p><h2>The loss</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>Each training row tells us the next character. Cross-entropy takes the probability assigned to that target and applies the negative logarithm. A confident correct prediction has a small loss. If the model is confidently wrong, it gives the observed target very little probability and gets a large loss. The comparison below uses two simple probabilities from the lecture. The interactive worksheet instead reads all six <em>aabid</em> rows from the trained model. Choose a different row and its context, target probability, and loss change together. During training, we average this signal across many rows and update every parameter that contributed to the prediction.</p></div>
 <div class="frame" data-title="One target probability" data-autobuild="off">
   <script type="text/x-notes">Which probability does cross-entropy keep for aab to i?
   The distribution uses all logits, but the target selects one final probability for this row's loss.</script>
@@ -4033,7 +4049,7 @@ body.present #s06 .net{max-width:650px}
   <div class="card"><h3 class="card-title">Choose a context-target pair</h3><div id="s08-rows"></div><div class="loss-live" id="s08-row-loss"></div></div>
   <div class="callout callout-key" data-build="1">Giving more probability to the observed target makes its loss smaller.</div>
 </div>
-<div class="companion after"><p>Keep in mind: cross-entropy turns the target probability into a penalty that grows sharply near zero.</p></div>
+<div class="companion after"><p>As the target probability approaches zero, the cross-entropy penalty grows sharply.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s08'),rows=window.__TOY__.aabid_rows,main=rows[3];
@@ -4059,9 +4075,9 @@ body.present #s06 .net{max-width:650px}
 #s09 .metric{font-family:var(--font-mono);font-size:.9em;color:var(--ink-2);margin:10px 0 0}
 #s09 .learning-step .stepper-stage svg{max-height:390px}
 </style>
-<header class="sec-head"><span class="sec-num">09</span><div><p class="eyebrow">Why we are here: the loss can improve future predictions only by changing the model's learned numbers.</p><h2>Learn the embeddings and the weights</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>The optimizer changes every parameter that helps produce the loss: the embedding table, both weight matrices, and both bias rows. For one context, only the embedding rows that were looked up receive a direct embedding gradient, while the shared MLP parameters receive gradients through the whole calculation. Repeating this over many shuffled training rows lowers the average loss. The curve records the training loss at regular checkpoints. The before and after bars use the same <em>aab</em> context with two saved parameter sets, so the change comes from training rather than from a different input.</p></div>
-<div class="frame" data-title="One graph does prediction and learning" data-autobuild="off">
+<header class="sec-head"><span class="sec-num">09</span><div><p class="eyebrow">To improve future predictions, training must change the model's learned numbers.</p><h2>Learn the embeddings and the weights</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>The optimizer updates the parameters that produced the loss: the embedding table, both weight matrices, and both bias rows. For a single context, only the embedding rows we looked up receive a direct embedding gradient. The shared MLP parameters receive gradients through the whole calculation. Repeating these updates over many shuffled training rows lowers the average loss. The curve records that loss at regular checkpoints. To see what changed for <em>aab</em>, compare the bars before and after training. They use two saved parameter sets with the same context, so a different input cannot explain the change.</p></div>
+<div class="frame" data-title="Follow prediction and learning in one graph" data-autobuild="off">
   <script type="text/x-notes">Where does the observed i enter this computation?
   First trace the forward prediction. Then add the observed target only at the loss, and finally follow the gradient arrows back to the stored parameters.</script>
   <div id="s09-learning" class="learning-step diagram-step"></div>
@@ -4086,13 +4102,13 @@ body.present #s06 .net{max-width:650px}
   <div class="side-by-side"><div class="card"><h3 class="card-title">Before training</h3><div id="s09-before"></div></div><div class="card" data-build="1"><h3 class="card-title">After training</h3><div id="s09-after"></div></div></div>
   <div class="callout callout-key" data-build="2">The same loss trains the embedding table and the MLP.</div>
 </div>
-<div class="companion after"><p>Keep in mind: saved checkpoints let us compare parameter changes with the prediction changes they produced.</p></div>
+<div class="companion after"><p>Run the same input through two saved checkpoints to see how the changed parameters affect its prediction.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s09'),M=window.__TOY__,V=M.vocab.length,D=M.d_model,H=M.d_h;
   AT.ui.stepper({el:S.querySelector('#s09-learning'),big:true,compact:true,scrollList:false,steps:[
     {title:'Context supplies the inputs',render:host=>host.appendChild(AT.part1Diagrams.learningGraph({stage:0}))},
-    {title:'Stored parameters make probabilities',render:host=>host.appendChild(AT.part1Diagrams.learningGraph({stage:1}))},
+    {title:'Use the stored parameters to predict',render:host=>host.appendChild(AT.part1Diagrams.learningGraph({stage:1}))},
     {title:'Observed i defines the loss',render:host=>host.appendChild(AT.part1Diagrams.learningGraph({stage:2}))},
     {title:'Autograd returns parameter gradients',render:host=>host.appendChild(AT.part1Diagrams.learningGraph({stage:3}))}
   ]});
@@ -4124,8 +4140,8 @@ body.present #s10 .generator-layout{display:grid;grid-template-columns:1fr 1fr;g
 body.present #s10 .generator-layout .gen-name{overflow-wrap:anywhere}
 @media(max-width:700px){body:not(.present) #s10 .loop{grid-template-columns:1fr}body:not(.present) #s10 .loop-arrow{transform:rotate(90deg);text-align:center}}
 </style>
-<header class="sec-head"><span class="sec-num">10</span><div><p class="eyebrow">Why we are here: a next-character distribution becomes a name only when we feed each choice back into the model.</p><h2>Sample, append, repeat</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>Generation starts with three boundary tokens. The model predicts a distribution, then either chooses the largest probability or samples from the distribution. The chosen character is appended, the window shifts right, and the same model runs again. Sampling can produce different names because lower-probability characters remain available. Temperature changes how sharply the logits are converted to probabilities: lower values concentrate mass near the largest logits, while higher values spread it out. The visible window always shows the exact three tokens used for the displayed bars. Generation stops when the model chooses the boundary token.</p></div>
+<header class="sec-head"><span class="sec-num">10</span><div><p class="eyebrow">To generate a name, feed each chosen character back into the model.</p><h2>Sample, append, repeat</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>We start generation with three boundary tokens. The model returns a distribution. We can choose the character with the largest probability or sample from the whole distribution. After appending that character, we shift the window right and run the same model again. Sampling allows different names because it can choose lower-probability characters too. Temperature controls how sharply the logits become probabilities: lower values concentrate probability near the largest logits, while higher values spread it out. The bars below always belong to the exact three tokens in the visible window. Choosing the boundary token ends generation.</p></div>
 <div class="frame" data-title="The generation loop" data-autobuild="off">
   <script type="text/x-notes">What must happen after the model chooses one character?
   Reveal predict, append, and shift. The same weights run again on the new window.</script>
@@ -4142,7 +4158,7 @@ body.present #s10 .generator-layout .gen-name{overflow-wrap:anywhere}
   These samples use one fixed seed and the trained three-character model.</script>
   <div class="card"><h3 class="card-title">Saved outputs from the training script</h3><div class="samples" id="s10-samples"></div><p class="muted small" id="s10-sample-note"></p></div>
 </div>
-<div class="companion after"><p>Keep in mind: generation uses the training model repeatedly, but it chooses rather than observes each next token.</p></div>
+<div class="companion after"><p>Generation runs the trained model repeatedly. Each next token comes from a choice, rather than an observation in the data.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s10'),M=window.__TOY__;let greedy=false,temp=M.sample_temperature,steps=0,seed=M.sample_seed,result=null;
@@ -4167,11 +4183,11 @@ body.present #s10 .generator-layout .gen-name{overflow-wrap:anywhere}
 <style>
 #s11 .compare-step .stepper-stage svg{max-height:380px}
 </style>
-<header class="sec-head"><span class="sec-num">11</span><div><p class="eyebrow">Why we are here: training and generation run the same forward pass but obtain the next token in different ways.</p><h2>Training and generation</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>During training, the data provides both the context and the observed next character. The model produces probabilities, cross-entropy scores the observed target, and the optimizer changes the parameters. Many windows can be processed in a batch because every window has the same shape. During generation, the next character is unknown. The model produces the same kind of distribution, then a rule chooses one character. That choice is appended to the context and becomes part of the next input. There is no target and no parameter update. The difference lies around the shared forward pass, not inside it.</p></div>
-<div class="frame" data-title="The same model serves two different loops" data-autobuild="off">
+<header class="sec-head"><span class="sec-num">11</span><div><p class="eyebrow">Training and generation use the same forward pass. What changes is where the next token comes from.</p><h2>Training and generation</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>During training, the data gives us both the context and the observed next character. We run the model to get probabilities, use cross-entropy to score the observed target, and update the parameters. Since all windows have the same shape, we can process many in a batch. During generation, we do not know the next character. We run the same forward pass, then choose a character from its distribution using a rule. Appending that choice makes it part of the next input. We have no observed target and make no parameter update. The calculation inside the forward pass is unchanged; what we do with its output is different.</p></div>
+<div class="frame" data-title="Run the same model in two different loops" data-autobuild="off">
   <script type="text/x-notes">Where does the next token come from during training and during generation?
-  First trace the training update. Then reuse the same model for generation and close the feedback loop with one reproducible sampled character. A boundary token would stop generation instead.</script>
+  First trace the training update. Then use the same model for generation. Follow the reproducible sampled character into the next input. A boundary token would stop generation instead.</script>
   <div id="s11-compare" class="compare-step diagram-step"></div>
 </div>
 <div class="frame" data-title="Many windows or one growing output" data-autobuild="off">
@@ -4179,7 +4195,7 @@ body.present #s10 .generator-layout .gen-name{overflow-wrap:anywhere}
   Targets are already known in the data. Generation must wait for each sampled character before making the next input.</script>
   <div class="card"><div id="s11-table"></div></div>
 </div>
-<div class="companion after"><p>Keep in mind: training changes the model from observed targets, while generation holds the model fixed and extends the sequence.</p></div>
+<div class="companion after"><p>Training uses observed targets to change the model. Generation keeps the model fixed and extends the sequence.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s11');
@@ -4205,8 +4221,8 @@ body.present #s12 .token-modes{display:flex;margin:12px 0}
 body.present #s12 .token-modes [aria-pressed=true]{background:var(--ink);color:var(--card)}
 body.present #s12 .tok-row:not(.is-active){display:none}
 </style>
-<header class="sec-head"><span class="sec-num">12</span><div><p class="eyebrow">Why we are here: the next-token objective stays the same even when one token stops meaning one character.</p><h2>What should a token be?</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>Characters give a small vocabulary and can represent unfamiliar strings, but ordinary sentences become long. Whole words shorten the sequence and are easy to read, yet the vocabulary grows quickly and unseen words collapse to an unknown token. Subwords sit between these choices by reusing common pieces inside frequent and rare words. The widget applies three simple tokenizers to the same text and reports the resulting sequence length and the number of distinct displayed tokens. The subword merges are illustrative rather than a trained tokenizer. Later, attention will compare token pairs, so its cost depends strongly on the sequence length $T$.</p></div>
+<header class="sec-head"><span class="sec-num">12</span><div><p class="eyebrow">A token need not be a character. We still ask the model to predict the next one.</p><h2>What should a token be?</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>A character vocabulary is small and can represent unfamiliar strings, but it turns ordinary sentences into long sequences. Whole words give shorter, readable sequences. Their vocabulary grows quickly, though, and unseen words collapse to an unknown token. Subwords offer a compromise: common pieces can be reused inside both frequent and rare words. Try the three simple tokenizers below on the same text. Each reports the sequence length and the number of distinct tokens in that sample. The subword merges illustrate the idea; they do not come from a trained tokenizer. Later, attention will compare pairs of tokens, so the sequence length $T$ will strongly affect its cost.</p></div>
 <div class="frame" data-title="Three token sizes" data-autobuild="off">
   <script type="text/x-notes">What becomes larger when tokens become smaller?
   Compare vocabulary coverage with sequence length. Keep the next-token objective fixed.</script>
@@ -4227,7 +4243,7 @@ body.present #s12 .tok-row:not(.is-active){display:none}
   <div class="card"><div id="s12-unk"></div></div>
   <div class="callout callout-note" data-build="1">Three different strings become the same unknown token.</div>
 </div>
-<div class="companion after"><p>Keep in mind: tokenization changes both the vocabulary and the sequence length before the model sees any IDs.</p></div>
+<div class="companion after"><p>By the time the model receives token IDs, tokenization has already determined the vocabulary and the sequence length.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s12'),input=S.querySelector('#s12-input'),out=S.querySelector('#s12-output');
@@ -4250,8 +4266,8 @@ body.present #s12 .tok-row:not(.is-active){display:none}
 #s13 .pipeline{font-family:var(--font-mono);font-size:.9em;color:var(--ink-2);margin:10px 0 0}
 #s13 .pair{font-family:var(--font-mono);font-size:1.15em;padding:12px;background:var(--paper);border-radius:var(--radius-s)}
 </style>
-<header class="sec-head"><span class="sec-num">13</span><div><p class="eyebrow">Why we are here: replacing characters with words changes the vocabulary and data, but it does not change the prediction pipeline.</p><h2>Same model, word tokens</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>A word-level model still turns token IDs into embeddings, combines a context, produces logits, and applies softmax. Only the tokenizer, vocabulary, and training text have changed. A prefix can support several reasonable continuations, so the output remains a distribution rather than a single rule. Training supplies one observed target at every position. The chain rule then expresses the probability of a complete sequence as a product of conditional next-token probabilities. This identity does not prescribe the network that represents the prefix. It tells us which probabilities the model must provide as the visible context grows.</p></div>
+<header class="sec-head"><span class="sec-num">13</span><div><p class="eyebrow">Word tokens change the vocabulary and data. The prediction steps stay the same.</p><h2>Same model, word tokens</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>With word tokens, we still look up embeddings, combine the context, produce logits, and apply softmax. We have changed the tokenizer, vocabulary, and training text. Several continuations can fit a prefix, so we still want a distribution, even though training gives us just one observed target at each position. The chain rule writes the probability of a complete sequence as a product of conditional next-token probabilities. It tells us which probabilities the model must supply as the context grows. It does not tell us which network to use to represent that context.</p></div>
 <div class="frame" data-title="Change the tokens, keep the pipeline" data-autobuild="off">
   <script type="text/x-notes">What changes when the tokens are whole words?
   The vocabulary and data change. Lookup, context combination, MLP, and softmax remain the same kinds of steps.</script>
@@ -4260,7 +4276,7 @@ body.present #s12 .tok-row:not(.is-active){display:none}
 </div>
 <div class="frame" data-title="Several words can fit" data-autobuild="off">
   <script type="text/x-notes">Which words could reasonably follow this prefix?
-  The bars are illustrative. Their purpose is to show that one observed target does not make all alternatives impossible.</script>
+  These bars are illustrative. Ask why seeing one target in the data does not rule out every other continuation.</script>
   <div class="card"><h3 class="card-title">The cat sat on the ___</h3><div id="s13-bars"></div><p class="muted small">Illustrative word probabilities.</p></div>
 </div>
 <div class="frame" data-title="The chain rule" data-autobuild="off">
@@ -4268,7 +4284,7 @@ body.present #s12 .tok-row:not(.is-active){display:none}
   Advance through the prefix one word at a time. Each factor conditions on everything shown before it.</script>
   <div id="s13-chain"></div>
 </div>
-<div class="companion after"><p>Keep in mind: changing token size leaves the next-token objective and the conditional-probability chain intact.</p></div>
+<div class="companion after"><p>Whether our tokens are characters or words, the next-token objective and the conditional-probability chain stay the same.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s13');
@@ -4292,8 +4308,8 @@ body.present #s12 .tok-row:not(.is-active){display:none}
 #s14 .big-q{font-size:clamp(24px,3vw,38px);line-height:1.25;text-wrap:balance;margin:10px 0 20px}
 @media(max-width:820px){body:not(.present) #s14 .net-grid{grid-template-columns:1fr}}
 </style>
-<header class="sec-head"><span class="sec-num">14</span><div><p class="eyebrow">Why we are here: concatenation fixes the number of context slots inside the first weight matrix.</p><h2>The context keeps growing</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>The name model works because every input contains exactly three embeddings. Increasing the window changes the length of the concatenated row, so the first weight matrix must change shape. The sketch lets the window grow while keeping the embedding and hidden widths visible. This becomes costly for realistic widths: a hundred token slots, an embedding width of 256, and 1,024 hidden units require about 26 million first-layer weights. More importantly, the network still has a fixed number of slots. Natural-language prefixes keep growing, which leads to the design question for Part 2: how can a token read from a variable amount of earlier context?</p></div>
+<header class="sec-head"><span class="sec-num">14</span><div><p class="eyebrow">The shape of the first weight matrix fixes how many context slots we can concatenate.</p><h2>The context keeps growing</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>Our name model always receives exactly three embeddings. A larger window makes a longer concatenated row, so the first weight matrix must change shape too. Try increasing the window in the sketch while watching the embedding and hidden widths. At realistic widths, this becomes expensive: a hundred token slots, 256 coordinates per embedding, and 1,024 hidden units need about 26 million weights in the first layer alone. Even then, the number of slots is fixed. A natural-language prefix keeps growing. In Part 2, we need a way for a token to read from a variable amount of earlier context.</p></div>
 <div class="frame" data-title="The first layer grows with the window" data-autobuild="off">
   <script type="text/x-notes">What changes in W1 when the window grows from three to five?
   Move through the four marked window sizes. Read the shape and weight count after each change.</script>
@@ -4303,12 +4319,12 @@ body.present #s12 .tok-row:not(.is-active){display:none}
   <div class="card"><p class="readout" id="s14-large"></p></div>
   <div class="callout callout-key" data-build="1">Change the window, and we must change the network.</div>
 </div>
-<div class="frame" data-title="The hand-over to attention" data-autobuild="off">
+<div class="frame" data-title="A question for attention" data-autobuild="off">
   <script type="text/x-notes">How should we represent an arbitrarily long context?
-  Hold the question before revealing the link. Part 2 answers it with content-dependent reads from earlier tokens.</script>
+  Give students time to suggest an approach before revealing the link. Part 2 uses content-dependent reads from earlier tokens.</script>
   <div class="card"><p class="big-q">How should we represent arbitrarily long context?</p><p data-build="1">A fixed concatenation cannot grow without changing the first layer.</p><p data-build="2"><a class="btn btn-primary" href="attention.html">Continue to Part 2: Self-attention</a></p></div>
 </div>
-<div class="companion after"><p>Keep in mind: a larger fixed window moves the boundary and enlarges the matrix, but the boundary remains fixed.</p></div>
+<div class="companion after"><p>A larger window lets us look further back and requires a larger matrix. It still imposes a fixed limit on the context.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s14'),M=window.__TOY__,presets=[3,5,10,100],read=S.querySelector('#s14-read');
@@ -4327,8 +4343,8 @@ body.present #s12 .tok-row:not(.is-active){display:none}
 <style>
 #s15 .reveals{display:grid;gap:12px}
 </style>
-<header class="sec-head"><span class="sec-num">15</span><div><p class="eyebrow">Why we are here: the model is small enough to test whether each design choice now has a clear reason.</p><h2>Pause and think</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>Use these questions to reconstruct the model without following the page from top to bottom. Each answer connects one design choice to a concrete need. One-hot rows provide identity but no compact learned geometry. Concatenation preserves position. The output width matches the vocabulary because every token needs one logit. The negative logarithm rewards probability on the observed target and strongly penalizes near-zero probability. Changing the window changes the first matrix because its input width is $wd$. Generation can proceed only because training has taught the same forward pass to produce useful next-token distributions.</p></div>
+<header class="sec-head"><span class="sec-num">15</span><div><p class="eyebrow">This model is small enough to check the reason for each design choice.</p><h2>Pause and think</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>Try reconstructing the model from these questions without rereading the page in order. For each design choice, explain what it does. One-hot rows identify tokens but give us no compact learned geometry. Concatenation preserves position, and the output needs one logit per vocabulary token. The negative logarithm rewards probability on the observed target and strongly penalizes probabilities near zero. A different window changes the first matrix because its input width is $wd$. For generation, we rely on training to make this same forward pass produce useful next-token distributions.</p></div>
 <div class="frame" data-title="Check 1: learned representations" data-autobuild="off">
   <script type="text/x-notes">Can the class explain each answer before opening it?
   Take one question at a time. Ask for a reason tied to a shape, operation, or training signal.</script>
@@ -4339,7 +4355,7 @@ body.present #s12 .tok-row:not(.is-active){display:none}
 <div class="frame" data-title="Check 4: the context window" data-autobuild="off"><div class="card"><div class="reveals" id="s15-check4"></div></div></div>
 <div class="frame" data-title="Check 5: the training signal" data-autobuild="off"><div class="card"><div class="reveals" id="s15-check5"></div></div></div>
 <div class="frame" data-title="Check 6: generation" data-autobuild="off"><div class="card"><div class="reveals" id="s15-check6"></div></div></div>
-<div class="companion after"><p>Keep in mind: every component earns its place by preserving information, producing a distribution, or supplying a training signal.</p></div>
+<div class="companion after"><p>Each component has a job: preserve information, help produce a distribution, or supply a training signal. Can you explain which job each one does?</p></div>
 <script>
 (function(){
   const S=document.getElementById('s15'),host=S.querySelector('#s15-reveals'),M=window.__TOY__;
@@ -4363,15 +4379,15 @@ body.present #s12 .tok-row:not(.is-active){display:none}
 #s16 .summary p{margin:6px 0 0}#s16 .summary .card-title{margin:0}
 #s16 .next{font-size:1.1em;margin-top:18px}
 </style>
-<header class="sec-head"><span class="sec-num">16</span><div><p class="eyebrow">Why we are here: one story should now connect token IDs, training loss, generated names, and the fixed-context limit.</p><h2>Three summaries</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>Part 1 built a complete character language model. Three token IDs select embedding rows, concatenation preserves their positions, an MLP produces one logit per vocabulary token, and softmax turns those logits into probabilities. Cross-entropy compares the distribution with the observed next character and trains every learned table and matrix. During generation, the same model samples a character, appends it, shifts the window, and repeats. The method works, but the window width is fixed inside $W_1$. Part 2 keeps the next-token objective and changes how a token gathers information from its preceding context.</p></div>
+<header class="sec-head"><span class="sec-num">16</span><div><p class="eyebrow">Connect the token IDs to the loss, then to generation and the fixed-context limit.</p><h2>Three summaries</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>We have built a complete character language model. Three token IDs select embedding rows. Concatenation keeps their positions separate, the MLP produces one logit per vocabulary token, and softmax gives us probabilities. Cross-entropy scores the observed next character; its gradients train every learned table and matrix. To generate, we run the same model, sample a character, append it, shift the window, and repeat. This works, but $W_1$ fixes the window width. Part 2 keeps the next-token objective and changes how a token gathers information from its preceding context.</p></div>
 <div class="frame" data-title="Intuitive, operational, mathematical" data-autobuild="off">
   <script type="text/x-notes">Which summary would you use to explain the model to someone else?
   Reveal the operational and mathematical versions after students give the intuitive account.</script>
   <div class="stack"><div class="summary"><h3 class="card-title">Intuitive</h3><p>Use the last few characters to guess what character tends to come next.</p></div><div class="summary" data-build="1"><h3 class="card-title">Operational</h3><p>Look up embeddings, concatenate the window, run the MLP, apply softmax, then sample or score the observed target.</p></div><div class="summary" data-build="2"><h3 class="card-title">Mathematical</h3><p>$a_0=[\ve{e_1},\ldots,\ve{e_w}]$, $a_1=\tanh(a_0W_1+b_1)$, $p=\operatorname{softmax}(a_1W_2+b_2)$.</p></div></div>
 </div>
-<div class="frame" data-title="Keep the objective; change the context mechanism" data-autobuild="off">
-  <div class="callout callout-key">The next-token objective stays. The representation of context must change.</div>
+<div class="frame" data-title="Keep predicting; change how we use context" data-autobuild="off">
+  <div class="callout callout-key">We still want to predict the next token. We need a different way to represent its context.</div>
   <p class="next" data-build="1"><a class="btn btn-primary" href="attention.html">Next: Part 2, Self-attention</a></p>
 </div>
 <div class="frame" data-title="Notation: from tokens to the MLP input" data-autobuild="off">
@@ -4381,7 +4397,7 @@ body.present #s12 .tok-row:not(.is-active){display:none}
 </div>
 <div class="frame" data-title="Notation: from the input to a probability" data-autobuild="off"><div class="card"><div id="s16-output-notation"></div></div></div>
 <div class="companion" data-kicker="Complete notation reference"><div id="s16-notation"></div></div>
-<div class="companion after"><p>Keep in mind: attention will replace the fixed concatenation, while embeddings, logits, softmax, loss, and generation remain.</p></div>
+<div class="companion after"><p>Attention will replace the fixed concatenation. We will keep using embeddings, logits, softmax, loss, and generation.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s16');
@@ -4397,7 +4413,7 @@ body.present #s12 .tok-row:not(.is-active){display:none}
 <footer>
   <div class="wrap">
     <p class="series-nav series-foot" id="series-nav-foot"></p>
-    <p>This page is one self-contained file with no external dependencies; KaTeX is inlined for the math. <span id="footer-note"></span></p>
+    <details><summary>About this page</summary><p>This page works offline, including its diagrams and maths. <span id="footer-note"></span></p></details>
   </div>
 </footer>
 

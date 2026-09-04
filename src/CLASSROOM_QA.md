@@ -1,5 +1,22 @@
 # Three-part classroom release checks
 
+## 2026-09-04: tone, whitespace, and PDF answers
+
+- Humanizer pass: all 54 section files in Parts I–III; computation and notation retained and embedded scripts parsed.
+- No persistent presentation bars. One heading per slide, quiet margins, and on-demand keyboard-accessible controls.
+- Presentation regression suite passes: hidden-control focus, scale invariance on opening controls, navigation, overview,
+  presenter window, print reveal/restore, mobile stage, live fit diagnostics, and preflight restoration.
+- All 563 existing live states pass strict maths and fit checks: Part I 132, Part II 297, Part III 134.
+- Table flow: 507 desktop/mobile/presentation table views checked. No errors or alignment/overflow failures; two existing
+  narrow-prose-column advisories remain in Part II's comparison tables.
+- `export_test.mjs`: final/all-build × shown/authored answer modes, 12 PDF pages, actual PNG answer pixels checked.
+  Default exports show quiz answers on completed frames; earlier all-build pages retain the question.
+- Rebuilt PDFs: Part I 61 pages (6 newly opened answers), Part II 133 (11), Part III 68 (13).
+- Part I arithmetic and sampler match reference values. Part II routing/scaling checks pass, including value-only changes,
+  independent score normalization, mobile width, ≤4-line code snippets, and no JS/KaTeX errors.
+
+## Previous release record
+
 Verified locally on 2026-09-03. All three parts use the same slide-first runtime. Each frame fits a logical 1280 × 720 stage; the article unfolds the same content and its companion explanations. Exact-slide PDF exports contain no browser header or footer.
 
 ## Classroom and reading checks

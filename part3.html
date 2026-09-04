@@ -38,7 +38,7 @@
    1. RESET + BASE TYPOGRAPHY
    ===================================================================== */
 *,*::before,*::after{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:calc(var(--strip-h) + 16px)}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:20px}
 body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font-ui);font-size:17px;line-height:1.5;font-weight:400;
   overflow-x:hidden;-webkit-font-smoothing:antialiased}
 @media (min-width:1400px){body{font-size:18px}}
@@ -87,8 +87,7 @@ svg{display:block;max-width:100%}
 /* =====================================================================
    2. NOTATION STRIP (sticky)
    ===================================================================== */
-#strip{position:sticky;top:0;z-index:50;background:rgba(247,248,250,.92);backdrop-filter:saturate(1.2) blur(8px);-webkit-backdrop-filter:saturate(1.2) blur(8px);
-  border-bottom:1px solid var(--line);min-height:var(--strip-h)}
+#strip{position:relative;z-index:50;min-height:var(--strip-h)}
 #strip .wrap{display:flex;align-items:center;gap:16px;min-height:var(--strip-h);padding-top:6px;padding-bottom:6px;flex-wrap:wrap}
 .nchips{display:flex;gap:6px;align-items:center;flex-wrap:nowrap;list-style:none;margin:0;padding:0}
 .nchips li{margin:0}
@@ -518,7 +517,9 @@ body:not(.present) .diagram-step .stage-title{display:none}
 /* =====================================================================
    8. FOOTER, MOTION, PRINT
    ===================================================================== */
-footer{border-top:1px solid var(--line);padding:24px 0 40px;color:var(--ink-3);font-size:14px}
+footer{padding:12px 0 32px;color:var(--ink-2);font-size:14px}
+footer details{margin-top:12px;max-width:76ch}
+footer details summary{cursor:pointer;color:var(--ink-3)}
 /* node-network sketch (AT.netSketch) */
 .netsk{max-width:640px;margin:8px auto}
 .netsk svg{width:100%;height:auto;overflow:visible;font-family:var(--font-ui)}
@@ -563,20 +564,20 @@ body.present .frame-sub{display:block}
    All measurements below are logical stage pixels, not viewport-responsive type.
    Overflow is an authoring error: add a continuation frame, never a scrollbar.
    ===================================================================== */
-body.present{--present-stage-w:1280px;--present-stage-h:720px;--present-scale:1;--present-body:28px;--present-title:42px;--present-caption:22px;--present-math:32px;--present-gutter:10px;--strip-h:38px;--present-strip-h:38px;--present-controls-h:50px;overflow:hidden;height:100vh;height:100dvh;font-size:var(--present-body);line-height:1.38}
-body.present .hero,body.present footer,body.present .reading,body.present .companion{display:none!important}
+body.present{--present-stage-w:1280px;--present-stage-h:720px;--present-scale:1;--present-body:28px;--present-title:42px;--present-caption:22px;--present-math:32px;--present-gutter:24px;--present-controls-h:0px;overflow:hidden;height:100vh;height:100dvh;font-size:var(--present-body);line-height:1.38}
+body.present #strip,body.present .hero,body.present footer,body.present .reading,body.present .companion{display:none!important}
 body.present #strip .wrap{flex-wrap:nowrap;padding-top:2px;padding-bottom:2px;min-height:var(--strip-h);max-width:none;padding-left:clamp(14px,1.6vw,30px);padding-right:clamp(14px,1.6vw,30px);gap:10px}
 body.present .nchips{gap:4px}
 body.present .nchip{height:25px;min-width:30px;font-size:14px;padding:0 8px}
 body.present .strip-sec{font-size:13px;margin-left:auto}
 body.present #present-btn{display:none}
-body.present main{position:relative;width:100%;padding:0;max-width:none;min-height:0;height:calc(100vh - var(--present-strip-h) - var(--present-controls-h));height:calc(100dvh - var(--present-strip-h) - var(--present-controls-h));overflow:hidden}
+body.present main{position:relative;width:100%;padding:0;max-width:none;min-height:0;height:100vh;height:100dvh;overflow:hidden}
 body.present .sec{display:none}
-body.present .sec.is-live{position:absolute;left:50%;top:50%;display:flex;flex-direction:column;width:var(--present-stage-w);height:var(--present-stage-h);margin:0;padding:20px 64px 24px;scroll-margin-top:0;overflow:hidden;transform:translate(-50%,-50%) scale(var(--present-scale));transform-origin:center center;background:var(--paper)}
-body.present .sec.is-live>.sec-head{flex:none;margin:0 0 12px;padding:0 0 10px;border-top:0;border-bottom:1px solid var(--line);grid-template-columns:auto minmax(0,1fr);gap:4px 20px;align-items:baseline}
-body.present .sec-num{font-size:18px;padding-top:0;color:var(--ink-3)}
+body.present .sec.is-live{position:absolute;left:50%;top:50%;display:flex;flex-direction:column;width:var(--present-stage-w);height:var(--present-stage-h);margin:0;padding:36px 64px;scroll-margin-top:0;overflow:hidden;transform:translate(-50%,-50%) scale(var(--present-scale));transform-origin:center center;background:var(--paper)}
+body.present .sec.is-live>.sec-head{display:block;flex:none;margin:0 0 24px;padding:0;border:0}
+body.present .sec-num{display:none}
 body.present .sec-head h2{font-size:var(--present-title);letter-spacing:-.015em;line-height:1.12}
-body.present .sec-head.has-frame-title h2{font-size:18px;font-weight:500;letter-spacing:0;color:var(--ink-2);line-height:1.2}
+body.present .sec-head.has-frame-title h2{display:none}
 body.present .sec-head .eyebrow{display:none}
 body.present .frame-sub{grid-column:2;display:block;margin:0;font-size:var(--present-title);color:var(--ink);font-weight:700;letter-spacing:-.015em;line-height:1.12;max-width:none;white-space:normal;align-self:baseline}
 body.present .frame-sub:empty{display:none}
@@ -660,16 +661,19 @@ body.present pre.torch-snippet,body.present pre.pytorch{font-size:23px;line-heig
 /* Reading scroll helpers unfold on the slide. The frame-level fit check catches excess content. */
 body.present .dt-scroll,body.present .mat-scroll,body.present .calc-scroll,body.present .scroll-x,body.present .vec,body.present .tex-display,body.present .katex-display,body.present .stepper-stage .stage-tex,body.present pre.torch-snippet,body.present pre.pytorch{max-width:100%;overflow:visible}
 /* An overfull authored frame is never silently cropped or made scrollable. */
-#at-fit-warning{display:none;position:fixed;left:16px;right:16px;bottom:calc(var(--present-controls-h,50px) + 8px);z-index:62;margin:0;padding:10px 16px;border:1px solid var(--warn);border-radius:var(--radius-s);background:#FFF8E8;color:var(--ink);font-size:15px;line-height:1.35}
+#at-fit-warning{display:none;position:fixed;left:16px;right:16px;top:12px;z-index:62;margin:0;padding:10px 16px;border:1px solid var(--warn);border-radius:var(--radius-s);background:#FFF8E8;color:var(--ink);font-size:15px;line-height:1.35}
 body.present #at-fit-warning:not(:empty){display:block}
 body.present .frame[data-overflow="true"]{outline:2px dashed var(--warn);outline-offset:-2px}
-/* Always-visible classroom controls; the measured height is reserved above. */
-#at-controls{position:fixed;inset:auto 0 0;z-index:60;display:none;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:4px 8px;padding:4px clamp(14px,1.6vw,30px) max(4px,env(safe-area-inset-bottom));border-top:1px solid var(--line);background:rgba(247,248,250,.96);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-body.present #at-controls{display:flex}
+/* Navigation is available on demand, without reserving a header or footer. */
+#at-controls-toggle{display:none;position:fixed;right:12px;bottom:10px;z-index:60;font-size:13px;min-height:36px;padding:6px 12px;border-color:transparent;color:var(--ink-2);background:var(--paper)}
+body.present #at-controls-toggle{display:block}
+#at-controls-toggle:hover,#at-controls-toggle[aria-expanded="true"]{border-color:var(--line);background:var(--card)}
+#at-controls{position:fixed;right:12px;bottom:54px;max-width:calc(100vw - 24px);z-index:60;display:none;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:6px 8px;padding:12px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--card);box-shadow:0 4px 20px rgba(20,23,31,.10)}
+body.present #at-controls.is-on{display:flex}
 #at-controls .pbtn{font-size:14px;min-height:40px;padding:6px 12px}
 #at-next{background:var(--ink);border-color:var(--ink);color:var(--paper)}
-#at-counter{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:14px;color:var(--ink-2);margin-right:auto}
-#at-announcement{display:none;position:fixed;bottom:calc(var(--present-controls-h) + 8px);left:16px;right:16px;z-index:61;margin:0;padding:10px 16px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-s);font-size:16px}
+#at-counter{flex-basis:100%;font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:14px;color:var(--ink-2);margin-bottom:4px}
+#at-announcement{display:none;position:fixed;top:12px;left:16px;right:16px;z-index:61;margin:0;padding:10px 16px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-s);font-size:16px}
 body.present #at-announcement:not(:empty){display:block}
 @media(max-width:640px){#at-counter{flex-basis:100%}#at-controls{justify-content:flex-start;gap:4px 6px;padding-left:10px;padding-right:10px}#at-controls .pbtn{font-size:13px;min-height:40px;padding:6px 9px}}
 /* notes strip (S) */
@@ -697,7 +701,7 @@ body.present #at-announcement:not(:empty){display:block}
 #at-blank{position:fixed;inset:0;z-index:80;background:#000;display:none}
 #at-blank.is-on{display:block}
 /* keyboard help (?) */
-#at-help{position:fixed;right:14px;bottom:calc(var(--present-controls-h,28px) + 8px);z-index:61;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 14px;font-size:13px;line-height:1.6;color:var(--ink-2);display:none;box-shadow:0 8px 24px rgba(20,23,31,.14)}
+#at-help{position:fixed;right:14px;bottom:54px;z-index:61;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 14px;font-size:13px;line-height:1.6;color:var(--ink-2);display:none;box-shadow:0 8px 24px rgba(20,23,31,.14)}
 #at-help.is-on{display:block}
 #at-help kbd{font-family:var(--font-mono);background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:0 5px;color:var(--ink);font-size:12px}
 
@@ -745,7 +749,7 @@ body.presenter>*:not(#at-presenter){display:none!important}
   @page{size:A4 landscape;margin:12mm}
   html,body{background:#fff;font-size:16px;overflow:visible;height:auto}
   #strip{position:static;background:#fff;backdrop-filter:none}
-  #progress,#at-controls,#at-counter,#at-announcement,#at-fit-warning,#at-notes,#at-overview,#at-blank,#at-help,.present-ctl,.reading,.roadmap .arrow{display:none!important}
+  #progress,#at-controls-toggle,#at-controls,#at-counter,#at-announcement,#at-fit-warning,#at-notes,#at-overview,#at-blank,#at-help,.present-ctl,.reading,.roadmap .arrow{display:none!important}
   .btn,.toggle,.slider,.stepper-bar,.btn-row{display:none!important}
   .companion{display:block!important}
   main{height:auto;overflow:visible;padding-bottom:0}
@@ -2445,7 +2449,7 @@ window.__PART__ = {"part":3,"series":"From characters to Transformers","title":"
     function applyBuild(fr, b, edge) {
       all(fr.el, '[data-build]').forEach(function (e) {
         var pend = buildOf(e) > b;
-        if (pend && e.contains(document.activeElement) && U.controls) U.controls.focus({ preventScroll: true });
+        if (pend && e.contains(document.activeElement) && U.controlsToggle) U.controlsToggle.focus({ preventScroll: true });
         pending(e, pend);
       });
       steppersOf(fr).forEach(function (s) {
@@ -2513,15 +2517,18 @@ window.__PART__ = {"part":3,"series":"From characters to Transformers","title":"
       U.overviewButton = h('button', { id: 'at-overview-btn', type: 'button', class: 'pbtn', 'aria-haspopup': 'dialog', on: { click: function () { setOverview(true); } } }, 'Frames');
       U.fullscreen = h('button', { id: 'at-fullscreen', type: 'button', class: 'pbtn', 'aria-pressed': 'false', on: { click: fullscreen } }, 'Full screen');
       U.controls = h('nav', { id: 'at-controls', tabindex: '-1', 'aria-label': 'Classroom navigation' }, U.counter, U.prev, U.next, U.overviewButton, U.fullscreen,
+        h('button', { id: 'at-presenter-btn', type: 'button', class: 'pbtn', on: { click: openPresenter } }, 'Presenter view'),
         h('button', { id: 'at-exit', type: 'button', class: 'pbtn', on: { click: exit } }, 'Exit'));
+      U.controlsToggle = h('button', { id: 'at-controls-toggle', type: 'button', class: 'pbtn', 'aria-controls': 'at-controls', 'aria-expanded': 'false', title: 'Show classroom controls (C)', on: { click: function () { setControls(!P.controls); } } }, 'Controls');
+      U.controls.inert = true;
       U.announcement = h('p', { id: 'at-announcement', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' });
       U.fitWarning = h('p', { id: 'at-fit-warning', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' });
       U.notes = h('div', { id: 'at-notes', role: 'complementary', 'aria-label': 'Presenter notes' });
       U.overview = h('div', { id: 'at-overview', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'All frames' }, h('div', { class: 'ov-head' }, h('p', { class: 'ov-title' }, 'All frames: select one to jump'), h('button', { id: 'at-overview-close', type: 'button', class: 'pbtn', on: { click: function () { setOverview(false); } } }, 'Close overview')), h('div', { class: 'ov-grid' }));
       U.blank = h('div', { id: 'at-blank', 'aria-hidden': 'true' });
-      U.help = h('div', { id: 'at-help', role: 'note' }, h('div', { html: '<kbd>→</kbd> <kbd>Space</kbd> <kbd>PgDn</kbd> next build · <kbd>←</kbd> <kbd>PgUp</kbd> <kbd>Backspace</kbd> back · <kbd>Home</kbd> <kbd>End</kbd> first / last frame<br><kbd>O</kbd> overview · <kbd>B</kbd> blank · <kbd>S</kbd> notes · <kbd>?</kbd> this help · <kbd>Esc</kbd> exit' }));
+      U.help = h('div', { id: 'at-help', role: 'note' }, h('div', { html: '<kbd>→</kbd> <kbd>Space</kbd> <kbd>PgDn</kbd> next build · <kbd>←</kbd> <kbd>PgUp</kbd> <kbd>Backspace</kbd> back · <kbd>Home</kbd> <kbd>End</kbd> first / last frame<br><kbd>C</kbd> controls · <kbd>O</kbd> overview · <kbd>B</kbd> blank · <kbd>S</kbd> notes · <kbd>?</kbd> this help · <kbd>Esc</kbd> close panel / exit' }));
       U.blank.addEventListener('click', function () { setBlank(false); });
-      document.body.appendChild(U.controls); document.body.appendChild(U.announcement); document.body.appendChild(U.fitWarning); document.body.appendChild(U.notes); document.body.appendChild(U.overview); document.body.appendChild(U.blank); document.body.appendChild(U.help);
+      document.body.appendChild(U.controlsToggle); document.body.appendChild(U.controls); document.body.appendChild(U.announcement); document.body.appendChild(U.fitWarning); document.body.appendChild(U.notes); document.body.appendChild(U.overview); document.body.appendChild(U.blank); document.body.appendChild(U.help);
       window.addEventListener('resize', measureChrome);
       document.addEventListener('fullscreenchange', function () { updateChrome(); measureChrome(); });
       if (window.ResizeObserver) { U.resize = new ResizeObserver(measureChrome); U.resize.observe(U.controls); var strip = document.getElementById('strip'); if (strip) U.resize.observe(strip); }
@@ -2531,11 +2538,16 @@ window.__PART__ = {"part":3,"series":"From characters to Transformers","title":"
       document.addEventListener('toggle', scheduleFitCheck, true);
       document.addEventListener('load', scheduleFitCheck, true);
     }
+    function setControls(on) {
+      P.controls = !!on;
+      if (!U.controls) return;
+      if (!P.controls && U.controls.contains(document.activeElement)) U.controlsToggle.focus({ preventScroll: true });
+      U.controls.classList.toggle('is-on', P.controls);
+      U.controls.inert = !P.controls;
+      U.controlsToggle.setAttribute('aria-expanded', String(P.controls));
+    }
     function measureChrome() {
       if (!P.active) return;
-      var strip = document.getElementById('strip');
-      document.body.style.setProperty('--present-strip-h', (strip ? strip.getBoundingClientRect().height : 0) + 'px');
-      document.body.style.setProperty('--present-controls-h', (U.controls ? U.controls.getBoundingClientRect().height : 0) + 'px');
       var main = document.querySelector('main');
       if (main) {
         var r = main.getBoundingClientRect(), cs = getComputedStyle(document.body);
@@ -2843,6 +2855,7 @@ window.__PART__ = {"part":3,"series":"From characters to Transformers","title":"
       P.frames.forEach(function (fr) { fr.snapshot = null; }); P.fi = -1;
       P.active = true; P.startedAt = P.startedAt || Date.now();
       document.body.classList.add('present');
+      setControls(false);
       goTarget(t); measureChrome();
       emit('change', state());
     }
@@ -2850,7 +2863,7 @@ window.__PART__ = {"part":3,"series":"From characters to Transformers","title":"
     function exit() {
       if (!P.active) return;
       var fr = cur();
-      setOverview(false); setBlank(false); setNotes(false); setHelp(false);
+      setOverview(false); setBlank(false); setNotes(false); setHelp(false); setControls(false);
       if (fr) { leaveFrame(fr); fr.sec.classList.remove('is-live'); }
       P.active = false;
       document.body.classList.remove('present');
@@ -2868,8 +2881,9 @@ window.__PART__ = {"part":3,"series":"From characters to Transformers","title":"
     /* ---- print: every build visible, steppers at their last step, read-mode layout; restored afterwards ---- */
     function prepareForPrint() {
       if (P.printState) return;
-      var st = { active: P.active, fi: P.fi, build: P.build, steppers: [] };
+      var st = { active: P.active, fi: P.fi, build: P.build, steppers: [], details: [] };
       all(document, '.stepper').forEach(function (e) { if (e.stepperApi && e.stepperApi.steps.length) { st.steppers.push([e.stepperApi, e.stepperApi.index()]); e.stepperApi.go(e.stepperApi.steps.length - 1); } });
+      all(document, 'details.reveal').forEach(function (d) { st.details.push([d, d.open]); d.open = true; });
       if (P.active) {
         var fr = cur();
         all(document, '[data-build].is-pending').forEach(function (e) { pending(e, false); });
@@ -2883,6 +2897,7 @@ window.__PART__ = {"part":3,"series":"From characters to Transformers","title":"
       var st = P.printState; if (!st) return;
       P.printState = null;
       document.documentElement.classList.remove('printing');
+      st.details.forEach(function (p) { if (p[0].isConnected) p[0].open = p[1]; });
       st.steppers.forEach(function (p) { p[0].go(p[1]); });
       if (st.active) { document.body.classList.add('present'); var fr = P.frames[st.fi]; if (fr) { fr.sec.classList.add('is-live'); fr.el.classList.add('is-live'); applyBuild(fr, st.build); } }
     }
@@ -2904,7 +2919,7 @@ window.__PART__ = {"part":3,"series":"From characters to Transformers","title":"
       if (!P.active) { if ((key === 'p' || key === 'P') && !inField(target)) { enter(); return true; } return false; }
       if (P.overview) return overviewKey(key, ev);
       if (P.blank) { if (key === 'Shift' || key === 'Control' || key === 'Alt' || key === 'Meta') return false; setBlank(false); return true; }
-      if (key === 'Escape') { if (P.help) setHelp(false); else exit(); return true; }
+      if (key === 'Escape') { if (P.help) setHelp(false); else if (P.controls) setControls(false); else exit(); return true; }
       if (inField(target) || (target && target.closest && target.closest('[data-present="manual"]'))) return false;
       switch (key) {
         case 'ArrowRight': next(); return true;
@@ -2915,6 +2930,7 @@ window.__PART__ = {"part":3,"series":"From characters to Transformers","title":"
         case 'Home': showFrame(0, 0); return true;
         case 'End': showFrame(P.frames.length - 1, 0); return true;
         case 'o': case 'O': setOverview(!P.overview); return true;
+        case 'c': case 'C': setControls(!P.controls); return true;
         case 'b': case 'B': case '.': setBlank(!P.blank); return true;
         case 's': case 'S': setNotes(!P.notes); return true;
         case '?': setHelp(!P.help); return true;
@@ -3188,10 +3204,10 @@ window.__PART__ = {"part":3,"series":"From characters to Transformers","title":"
 </style>
 <header class="sec-head">
   <span class="sec-num">01</span>
-  <div><p class="eyebrow">Why we are here: Part 2 computed a contextual update with fixed numbers. Part 3 asks how those numbers learn.</p><h2>Where Part 2 left us</h2></div>
+  <div><p class="eyebrow">Part 2 used fixed weights to compute a contextual update. How does the model learn those weights?</p><h2>Where Part 2 left us</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>Part 2 followed one causal attention head from a token representation to a next-token distribution. The same bank row changed toward water in the river sentence and toward finance in the cheque sentence. Every coordinate below comes from the hand-written toy with named representation, query, key, and value axes. Its arithmetic is real, though its weights were chosen to make the route easy to read. This part keeps that model fixed for one more moment, then uses the observed word water to measure an error and change every parameter that contributed to it. The first example connects the familiar forward pass to learning.</p>
+  <p>In Part 2, we followed one causal attention head from a token representation to a next-token distribution. The same bank row changed toward water in the river sentence and toward finance in the cheque sentence. The coordinates below come from that hand-written toy, with its named representation, query, key, and value axes. We chose the weights to make the calculation easy to follow, but the arithmetic is real. We will first reuse those weights, then compare the prediction with the observed word water. That error lets us change the parameters that contributed to the prediction: the forward pass we already know becomes a training example.</p>
 </div>
 <div class="frame" data-title="The calculation we already know">
   <script type="text/x-notes">Which object carries context back to the current representation?
@@ -3211,7 +3227,7 @@ window.__PART__ = {"part":3,"series":"From characters to Transformers","title":"
   <div class="card"><div id="s01-cheque"></div></div>
   <div id="s01-fixed" data-build="1"></div>
 </div>
-<div class="companion after"><p>The attention calculation used fixed parameters; learning will explain where useful parameters can come from.</p></div>
+<div class="companion after"><p>We have seen what the fixed parameters do. Learning gives us a way to find useful values for them.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s01');
@@ -3239,10 +3255,10 @@ window.__PART__ = {"part":3,"series":"From characters to Transformers","title":"
 </style>
 <header class="sec-head">
   <span class="sec-num">02</span>
-  <div><p class="eyebrow">Why we are here: a prediction becomes a training signal only when the next observed token is known.</p><h2>The observed next token tells us the error</h2></div>
+  <div><p class="eyebrow">To learn from a prediction, we need to know which token actually came next.</p><h2>The observed next token tells us the error</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>The river prefix ends with the word the, and the model assigns one probability to every vocabulary token. Training then reveals the observed continuation, water. Cross-entropy keeps the probability placed on that target and turns it into a loss with a negative logarithm. A high target probability gives a small loss. A low target probability gives a large loss. The other probabilities still matter because softmax couples every logit through one denominator. Open the worksheet to see that denominator, then follow the target row into the loss calculation. Both values come from the same forward pass used in Part 2.</p>
+  <p>The river prefix ends with the word the. The model assigns a probability to every vocabulary token before we reveal the observed continuation: water. Cross-entropy takes the negative logarithm of the probability assigned to water. If that probability is high, the loss is small; if it is low, the loss is large. The other logits still matter because they share the softmax denominator. You can inspect that denominator in the worksheet, then follow the water row into the loss calculation. Both use the same forward pass as Part 2.</p>
 </div>
 <div class="frame" data-title="Prediction meets observation">
   <script type="text/x-notes">Which bar determines the loss after the target is revealed?
@@ -3261,7 +3277,7 @@ window.__PART__ = {"part":3,"series":"From characters to Transformers","title":"
   <div class="card"><h3 class="card-title">Loss worksheet</h3><div class="s02-loss" id="s02-loss"></div></div>
   <div id="s02-callout" data-build="1"></div>
 </div>
-<div class="companion after"><p>The observed token does not supply a replacement prediction; it supplies the target used to score the distribution.</p></div>
+<div class="companion after"><p>The model keeps its original prediction. We use the observed token as the target for scoring that prediction.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s02');
@@ -3283,7 +3299,7 @@ window.__PART__ = {"part":3,"series":"From characters to Transformers","title":"
   const loss=S.querySelector('#s02-loss');
   loss.appendChild(document.createTextNode('loss = -log(' + AT.fmt(single.p_target_before,4) + ') = '));
   loss.appendChild(AT.h('span',{class:'calc-r'},AT.fmt(single.loss_before,4)));
-  AT.ui.callout('Cross-entropy asks one direct question: how much probability did the model place on the token that appeared?',{kind:'key',into:S.querySelector('#s02-callout')});
+  AT.ui.callout('How much probability did the model give the token that actually appeared? Cross-entropy uses that probability to calculate the loss.',{kind:'key',into:S.querySelector('#s02-callout')});
 })();
 </script>
 </section>
@@ -3295,13 +3311,13 @@ window.__PART__ = {"part":3,"series":"From characters to Transformers","title":"
 </style>
 <header class="sec-head">
   <span class="sec-num">03</span>
-  <div><p class="eyebrow">Why we are here: the graph contains stored parameters and temporary results, and only the stored parameters survive the example.</p><h2>Which numbers will the optimizer change?</h2></div>
+  <div><p class="eyebrow">Some numbers are stored for the next example. Others are temporary results of this forward pass.</p><h2>Which numbers will the optimizer change?</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>The forward pass creates many rows and matrices, but they do not all have the same status. Token and position tables, projection matrices, and the vocabulary head are parameters. Training changes them and saves the new values. The rows $\ve{e}$, $\vq{q}$, $\vk{k}$, $\vv{v}$, the scores, weights, messages, updates, logits, and probabilities are intermediates. They are recomputed when a new sequence arrives. Autograd retains enough of these temporary values to calculate gradients, then the optimizer updates the parameters. This distinction prevents a common mix-up: $\vd{\Delta e}$ changes a representation inside a forward pass, while an optimizer step changes stored weights.</p>
+  <p>The token and position tables, projection matrices, and vocabulary head are parameters. Training changes their values and saves them. The rows $\ve{e}$, $\vq{q}$, $\vk{k}$, $\vv{v}$, scores, attention weights, messages, updates, logits, and probabilities are intermediates: we compute them again for each new sequence. Autograd keeps enough of these temporary values to calculate gradients, and the optimizer uses the gradients to update the parameters. These are two different kinds of update. $\vd{\Delta e}$ changes a representation during the forward pass; an optimizer step changes the stored weights used by future forward passes.</p>
 </div>
 <div class="frame" data-title="Stored or temporary?">
-  <script type="text/x-notes">Which entries will still exist before the next training example?
+  <script type="text/x-notes">Which entries do we keep for the next training example?
   Ask students to classify the rows before revealing the final column.</script>
   <div class="card"><h3 class="card-title">Stored parameters survive the example</h3><div id="s03-table"></div></div>
 </div>
@@ -3312,7 +3328,7 @@ window.__PART__ = {"part":3,"series":"From characters to Transformers","title":"
 </div>
 <div class="frame" data-title="Every parameter receives a matching gradient">
   <script type="text/x-notes">Why must a gradient have the same shape as its parameter?
-  Read the current toy widths from the table. Each stored number needs its own proposed change.</script>
+  Read the current toy widths from the table. We need a slope for each stored number.</script>
   <div class="card" data-build="1"><h3 class="card-title">Parameter and gradient shapes</h3><div id="s03-shapes"></div></div>
 </div>
 <div class="frame" data-title="Output parameters have matching gradients too">
@@ -3350,11 +3366,11 @@ body.present #s04 .s04-graph svg{max-height:530px}
 </style>
 <header class="sec-head">
   <span class="sec-num">04</span>
-  <div><p class="eyebrow">Why we are here: the loss depends on a branching graph, not a single chain of operations.</p><h2>The forward pass is a graph</h2></div>
+  <div><p class="eyebrow">The computation branches at E and joins again at the value mixture and residual sum.</p><h2>The forward pass is a graph</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>The learned token table $E_{\text{tok}}$ and position table $P$ supply the current row stack $\ve{E}$. Three projections read that same stack: $Q=EW_Q$, $K=EW_K$, and $V=EW_V$. Query–key scores determine the attention weights $A$; the separate value branch supplies the vectors that $A$ mixes. The message matrix $H=AV$ becomes $\Delta E=HW_O$, and the residual sum gives $E'=E+\Delta E$. The vocabulary head maps the final row to logits, and the observed target supplies the loss. This is the simplified Part 2 one-head model, not the full pre-norm Transformer introduced later.</p>
-  <p>Autograd reverses these dependencies using the chain rule. At a branch, contributions add: the input $E$ has a direct residual gradient path and indirect paths through attention. It is the <em>input</em> $E$, not the final $E'$, that feeds both routes. Gradients also reach every projection and the lookup rows used by this example. The target token and fixed causal mask are data, not parameters to optimize.</p>
+  <p>The learned token table $E_{\text{tok}}$ and position table $P$ give us the current row stack $\ve{E}$. We project that same stack three ways: $Q=EW_Q$, $K=EW_K$, and $V=EW_V$. Query-key scores determine the attention weights $A$. The value branch supplies the vectors that $A$ mixes. The message matrix $H=AV$ becomes $\Delta E=HW_O$, then the residual sum gives $E'=E+\Delta E$. The vocabulary head maps the final row to logits, which we compare with the observed target to calculate the loss. This is still the simplified one-head model from Part 2. We will add the full pre-norm Transformer later.</p>
+  <p>Autograd follows these dependencies backward using the chain rule. Where paths meet, their gradient contributions add. The input $E$ receives a contribution through the direct residual path and others through attention. Both routes start from the <em>input</em> $E$, not the final $E'$. Gradients also reach every projection and the lookup rows used by this example. We do not optimize the target token or the fixed causal mask; they are data.</p>
 </div>
 <div class="frame" data-title="One input, three learned projections">
   <script type="text/x-notes">E is the current stack, not the vocabulary lookup table. Point to the separate W matrices; each projection needs both E and its learned matrix.</script>
@@ -3378,7 +3394,7 @@ optimizer.step()</pre>
   <p><strong>Backward computes slopes. The optimizer updates parameters.</strong></p>
 </div>
 <div class="companion"><h3>Gradient sizes from the river example</h3><div id="s04-grads"></div><div id="s04-check"></div></div>
-<div class="companion after"><p>Autograd differentiates the graph that produced the loss. It does not update cached queries or attention weights directly.</p></div>
+<div class="companion after"><p>Autograd differentiates the calculation that produced the loss. The optimizer then changes stored parameters, not the cached queries or attention weights.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s04');
@@ -3457,10 +3473,10 @@ optimizer.step()</pre>
 </style>
 <header class="sec-head">
   <span class="sec-num">05</span>
-  <div><p class="eyebrow">Why we are here: the gradient points uphill in loss, so SGD takes a chosen step in the opposite direction.</p><h2>One update</h2></div>
+  <div><p class="eyebrow">The gradient points toward increasing loss. SGD steps in the opposite direction.</p><h2>One update</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>The gradient gives a local slope for every parameter. Stochastic gradient descent multiplies each slope by a learning rate $\eta$ and subtracts the result from the current parameter. The three presets below reuse the same gradient from the river example, then run a fresh forward pass with the updated parameters. Larger steps improve this one example more sharply in the toy, but that is not a promise about other sentences or later updates. The useful comparison is the target probability and loss before and after each step. You can also inspect the final updated representation, which changes because all contributing parameters changed together.</p>
+  <p>The gradient gives a local slope for every parameter. Stochastic gradient descent multiplies each slope by the learning rate $\eta$, then subtracts it from the parameter. Try the three presets below. Each uses the same gradient from the river example and runs a fresh forward pass after the update. Compare the target probability and loss before and after the step. Larger steps help this one example more, but may not help other sentences or later updates. The final contextual row also changes because we updated all the contributing parameters together.</p>
 </div>
 <div class="frame" data-title="Move against the gradient">
   <script type="text/x-notes">Why is the gradient subtracted?
@@ -3475,7 +3491,7 @@ optimizer.step()</pre>
   <div id="s05-note" data-build="1"></div>
 </div>
 <div class="companion"><h3>The contextual row after the same update</h3><div id="s05-context"></div></div>
-<div class="companion after"><p>One lower training loss shows that the update fit this example better; it does not establish generalisation.</p></div>
+<div class="companion after"><p>The lower loss tells us that the update fit this example better. We still need other examples to test generalisation.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s05');
@@ -3508,10 +3524,10 @@ body.present #s06 #s06-mask .cell{min-width:3em}
 </style>
 <header class="sec-head">
   <span class="sec-num">06</span>
-  <div><p class="eyebrow">Why we are here: one causal forward pass can make a next-token guess at every position without reading any target early.</p><h2>Train every position at once</h2></div>
+  <div><p class="eyebrow">One causal forward pass predicts at every position. The mask keeps each prediction from reading its answer.</p><h2>Train every position at once</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>Each input token supplies a training target when water is appended as the observed continuation. The first position predicts fisherman, the next predicts sat, and the final position predicts water. The causal mask keeps each row honest: row $i$ can read only positions at or before $i$. The model still computes all rows in parallel because the mask removes forbidden score cells before softmax. We average the position losses, run one backward pass, and update the shared parameters once. Some positions improve more than others after this single step, so the mean is the quantity the optimizer follows.</p>
+  <p>Append the observed continuation water, then pair each input position with the token that follows it. The first position predicts fisherman, the next predicts sat, and the final position predicts water. Row $i$ can read only positions at or before $i$. We can still compute all rows in parallel: the causal mask blocks forbidden score cells before softmax. We then average the position losses, run one backward pass, and update the shared parameters once. That step may help some positions more than others. The optimizer follows their mean loss.</p>
 </div>
 <div class="frame" data-title="Shift inputs into targets">
   <script type="text/x-notes">What target belongs to each input position?
@@ -3540,7 +3556,7 @@ loss.backward(); optimizer.step()</code></pre>
   <div id="s06-mean"></div>
 </div>
 <div class="companion"><h3>All position probabilities and losses</h3><div id="s06-full-losses"></div></div>
-<div class="companion after"><p>Parallel training changes the efficiency of the calculation, while the causal mask preserves the next-token task.</p></div>
+<div class="companion after"><p>Computing the rows in parallel saves work. Each row still predicts from its own prefix because the mask blocks later positions.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s06');
@@ -3569,10 +3585,10 @@ loss.backward(); optimizer.step()</code></pre>
 </style>
 <header class="sec-head">
   <span class="sec-num">07</span>
-  <div><p class="eyebrow">Why we are here: one head produces one routing pattern, while a token may need several relations at the same time.</p><h2>Multiple heads</h2></div>
+  <div><p class="eyebrow">One head gives us one attention pattern. A token may need to read several kinds of relation at once.</p><h2>Multiple heads</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>Consider "Priya opened the notebook; she smiled." When the row for she gathers context, one useful pattern links it to Priya, another retrieves the earlier event, and a third notices nearby structure. Multi-head attention gives each head its own query, key, and value projections. Every head reads the full input representation through those matrices. It does not receive a separate slice of the embedding. Each head returns a smaller projected message, the messages are concatenated by columns, and $W_O$ combines them. The rows below are illustrative routing patterns rather than values learned by the river toy.</p>
+  <p>Take the sentence "Priya opened the notebook; she smiled." The row for she may need several pieces of context. One attention pattern could link she to Priya, another could retrieve the earlier event, and a third could use nearby structure. Each head has its own query, key, and value projections, and every projection reads the full input representation. We do not give each head a separate slice of the embedding. Each head returns a smaller projected message; we concatenate those messages by columns, then combine them with $W_O$. The rows below illustrate possible attention patterns. They were not learned by the river toy.</p>
 </div>
 <div class="frame" data-title="One token can need several relations">
   <script type="text/x-notes">What may she need to read from this sentence?
@@ -3582,7 +3598,7 @@ loss.backward(); optimizer.step()</code></pre>
 <div class="frame" data-title="Every head reads the full input">
   <script type="text/x-notes">Does a head receive a slice of each embedding?
   No. The split is in the projected outputs. Each projection starts from the full model-width row.</script>
-  <div class="card"><h3 class="card-title">Split into projections, run heads, concatenate, combine</h3><div class="s07-pipeline dotgrid" id="s07-pipeline"></div></div>
+  <div class="card"><h3 class="card-title">Project, run each head, then combine the outputs</h3><div class="s07-pipeline dotgrid" id="s07-pipeline"></div></div>
 </div>
 <div class="frame" data-title="The input is full-width; projected heads are smaller"><div id="s07-full"></div></div>
 <div class="frame" data-title="Inspect a head and the causal mask">
@@ -3614,7 +3630,7 @@ loss.backward(); optimizer.step()</code></pre>
     $$H=\operatorname{Concat}_{\text{columns}}(H^{(1)},\ldots,H^{(n_h)}),\qquad \vd{\Delta E}=HW_O$$
   </div>
 </div>
-<div class="companion after"><p>Heads divide the projected width, while every head reads the full input representation through its own matrices.</p></div>
+<div class="companion after"><p>We divide the width of the projected outputs, not the input. Every head reads the full input row through its own matrices.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s07');
@@ -3657,10 +3673,10 @@ loss.backward(); optimizer.step()</code></pre>
 </style>
 <header class="sec-head">
   <span class="sec-num">08</span>
-  <div><p class="eyebrow">Why we are here: attention moves information between token rows, then a feed-forward network transforms features within each row.</p><h2>Attention mixes rows; the FFN mixes features</h2></div>
+  <div><p class="eyebrow">Attention gathers information from other token rows. The feed-forward network then works on the features inside each row.</p><h2>Attention mixes rows; the FFN mixes features</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>A Transformer block alternates two kinds of mixing. Attention holds one receiving token fixed and combines value rows from several source positions. The feed-forward network holds one position fixed and combines the features inside that row. The same feed-forward weights are applied independently to every token. In this illustration, a five-number representation is projected to eight hidden numbers, ReLU sets negative hidden values to zero, and a second projection returns to five numbers so the result can join the residual stream. The weights are hand-picked one-decimal values used only to make the arithmetic visible.</p>
+  <p>For one receiving token, attention combines value rows from several source positions. The feed-forward network (FFN) works within that token's row, combining its features. We apply the same FFN weights independently to every position. In the example below, a five-number representation becomes eight hidden numbers. ReLU replaces negative hidden values with zero, and a second projection returns to five numbers so we can add the result to the residual stream. We chose one-decimal weights to keep the arithmetic readable.</p>
 </div>
 <div class="frame" data-title="Two axes of mixing">
   <script type="text/x-notes">Which operation crosses token positions?
@@ -3680,11 +3696,11 @@ ffn_output = hidden @ W2 + b2</code></pre>
 </div>
 <div class="companion"><h3>First projection and all eight ReLU coordinates</h3><div id="s08-first"></div><h3>Second projection</h3><div id="s08-second"></div></div>
 <div class="frame" data-title="Why widen the middle?">
-  <script type="text/x-notes">What does the wider hidden row buy?
+  <script type="text/x-notes">What can the wider hidden row represent?
   It supplies more learned combinations before the network projects back to model width.</script>
   <div id="s08-wide" data-build="1"></div>
 </div>
-<div class="companion after"><p>Attention combines information across positions; the FFN transforms each position with the same feature-mixing network.</p></div>
+<div class="companion after"><p>The FFN uses the same weights at every position, but processes each row separately. Attention is what carries information between positions.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s08');
@@ -3715,10 +3731,10 @@ ffn_output = hidden @ W2 + b2</code></pre>
 </style>
 <header class="sec-head">
   <span class="sec-num">09</span>
-  <div><p class="eyebrow">Why we are here: residual paths preserve a shared stream, while LayerNorm keeps each row on a controlled scale before a branch reads it.</p><h2>The residual stream and LayerNorm</h2></div>
+  <div><p class="eyebrow">Residual paths carry the rows forward. LayerNorm controls each row's scale before attention or the FFN reads it.</p><h2>The residual stream and LayerNorm</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>The residual stream is the model-width row carried through the stack. Attention and the FFN read from that stream, compute updates, and add those updates back. LayerNorm acts within one row: it subtracts the row mean and divides by $\sqrt{\operatorname{var}+\epsilon}$. The small $\epsilon$ keeps the denominator nonzero, even for a constant row. In the pre-norm decoder used here, LayerNorm sits before attention and before the FFN. The sliders let you inspect the mean, centered values, variance, and normalized values. This calculator uses $\epsilon=10^{-5}$ and fixes the learned scale and shift to $\gamma=1$, $\beta=0$; a trainable LayerNorm normally learns them. See the <a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.LayerNorm.html">PyTorch LayerNorm definition</a>.</p>
+  <p>The residual stream is the model-width row carried through the stack. Attention and the FFN read it, compute updates, and add those updates back. LayerNorm works within one row: subtract the row mean, then divide by $\sqrt{\operatorname{var}+\epsilon}$. The small $\epsilon$ keeps the denominator nonzero even when every value in the row is the same. Our pre-norm decoder applies LayerNorm before attention and before the FFN. Move the sliders to see the mean, centered values, variance, and normalized values change. The calculator uses $\epsilon=10^{-5}$ and fixes the scale and shift at $\gamma=1$, $\beta=0$. A trainable LayerNorm normally learns its scale and shift. See the <a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.LayerNorm.html">PyTorch LayerNorm definition</a>.</p>
 </div>
 <div class="frame" data-title="An unbroken residual line">
   <script type="text/x-notes">Which path carries the representation through the block?
@@ -3737,7 +3753,7 @@ ffn_output = hidden @ W2 + b2</code></pre>
   <div class="card"><h3 class="card-title">Choose the arrangement</h3><div id="s09-toggle"></div><div id="s09-eq"></div></div>
   <div id="s09-note" data-build="1"></div>
 </div>
-<div class="companion after"><p>The residual stream carries model-width rows forward; LayerNorm prepares each row before a branch reads it.</p></div>
+<div class="companion after"><p>LayerNorm prepares the row a branch will read. The residual stream still carries the model-width row forward.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s09');
@@ -3749,7 +3765,7 @@ ffn_output = hidden @ W2 + b2</code></pre>
   const eq=S.querySelector('#s09-eq');
   function mode(pre){AT.clear(eq);AT.tex(eq,pre?'\\ve{u}=\\ve{e}+\\operatorname{MHA}(\\operatorname{LN}(\\ve{e}))':'\\ve{u}=\\operatorname{LN}(\\ve{e}+\\operatorname{MHA}(\\ve{e}))',{display:true});}
   AT.ui.toggle({label:'Pre-norm block',on:true,onText:'pre-norm',offText:'post-norm',onChange:mode,into:S.querySelector('#s09-toggle')});mode(true);
-  AT.ui.callout('We use pre-norm in the next section. Calling an attention result $\\vd{\\Delta e}$ is this page\'s teaching notation; standard descriptions call it the attention output. The residual addition is standard.',{kind:'note',into:S.querySelector('#s09-note')});
+  AT.ui.callout('The next section uses pre-norm. We write the attention output as $\\vd{\\Delta e}$ to show where it is added. The delta notation is a teaching choice; the residual addition is standard.',{kind:'note',into:S.querySelector('#s09-note')});
 })();
 </script>
 </section>
@@ -3763,10 +3779,10 @@ ffn_output = hidden @ W2 + b2</code></pre>
 </style>
 <header class="sec-head">
   <span class="sec-num">10</span>
-  <div><p class="eyebrow">Why we are here: a Transformer block combines pre-norm attention and a pre-norm FFN, then the model repeats that block.</p><h2>One block, then many</h2></div>
+  <div><p class="eyebrow">Combine pre-norm attention and a pre-norm FFN to make one block. Then stack blocks.</p><h2>One block, then many</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>One pre-norm decoder block has two residual updates. First, LayerNorm prepares the current rows, causal multi-head attention gathers information across positions, and the result is added back. Second, another LayerNorm prepares those intermediate rows, the FFN mixes features at each position, and its result is added. Stacking blocks lets later attention use representations already changed by earlier context. Inside any one block, every query, key, and value comes from that block's input rows, so a newly updated bank row becomes available to other tokens only in the next block. The multi-hop example shows why depth can matter.</p>
+  <p>One pre-norm decoder block adds two updates to the residual stream. LayerNorm first prepares the current rows for causal multi-head attention. Attention gathers information across positions, and we add its result back. A second LayerNorm prepares the resulting rows for the FFN, which mixes features at each position and returns the second update. Later blocks can use representations that earlier blocks have already changed. Within one block, however, every query, key, and value comes from that block's input rows. Other tokens cannot read a newly updated bank row until the next block. The multi-hop example below shows what this extra depth allows.</p>
 </div>
 <div class="frame" data-title="Walk through one pre-norm block">
   <script type="text/x-notes">Where are the two residual additions?
@@ -3795,7 +3811,7 @@ ffn_output = hidden @ W2 + b2</code></pre>
   <p>They walked by the <strong>river</strong> <strong>bank</strong> and watched the ___</p>
   <div id="s10-hop" data-build="1"></div>
 </div>
-<div class="companion after"><p>Each block reads the previous block's contextual rows, which lets later routing depend on relations assembled earlier.</p></div>
+<div class="companion after"><p>Block two reads the rows produced by block one. Its attention can therefore use relations that block one has already combined.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s10');
@@ -3832,10 +3848,10 @@ body.present #s11 .s11-lm svg{width:auto;min-width:0;height:420px;margin:auto}
 </style>
 <header class="sec-head">
   <span class="sec-num">11</span>
-  <div><p class="eyebrow">Why we are here: embeddings, blocks, and the vocabulary head now form one decoder-only language model.</p><h2>The complete decoder-only model</h2></div>
+  <div><p class="eyebrow">We can now connect embeddings, causal blocks, and the vocabulary head in one language model.</p><h2>The complete decoder-only model</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>The pre-norm decoder-only Transformer shown here begins with token embeddings plus positions, sends those rows through a stack of causal blocks, then applies a final LayerNorm before the vocabulary head. Every block preserves model width, so residual additions remain possible throughout the stack. The vocabulary head maps each normalized final row to one logit per vocabulary token; softmax gives probabilities. During training, every position can contribute a loss. During generation, only the last position's distribution chooses the next token. This final normalization also appears in the <a href="https://github.com/openai/gpt-2/blob/master/src/model.py">GPT-2 implementation</a>. The numerical worksheet below is a separate, simplified Part 2 one-head example: it does not compute this full normalized stack.</p>
+  <p>Our pre-norm decoder-only Transformer starts with token embeddings plus positions. Those rows pass through a stack of causal blocks, then a final LayerNorm before the vocabulary head. Every block preserves model width, so we can keep adding residual updates. The vocabulary head maps each normalized final row to one logit per vocabulary token, and softmax turns those logits into probabilities. Training can use a loss at every position; generation uses only the last position's distribution to choose the next token. The <a href="https://github.com/openai/gpt-2/blob/master/src/model.py">GPT-2 implementation</a> also uses this final normalization. The numerical worksheet below reuses the simpler one-head model from Part 2. It does not run the full normalized stack shown here.</p>
 </div>
 <div class="frame" data-title="End-to-end decoder path">
   <script type="text/x-notes">Where does causal mixing happen, and where are vocabulary scores made?
@@ -3845,7 +3861,7 @@ body.present #s11 .s11-lm svg{width:auto;min-width:0;height:420px;margin:auto}
 <div class="frame" data-title="Shapes stay compatible">
   <script type="text/x-notes">Why does every block return model-width rows?
   Residual addition and the shared LM head require a stable width across the stack.</script>
-  <div class="card" data-build="1"><h3 class="card-title">Shape ledger</h3><div id="s11-shapes"></div></div>
+  <div class="card" data-build="1"><h3 class="card-title">Input and output shapes</h3><div id="s11-shapes"></div></div>
 </div>
 <div class="frame" data-title="The head, illustrated with our simpler toy">
   <script type="text/x-notes">Does the LM head read other token rows?
@@ -3886,10 +3902,10 @@ body.present #s11 .s11-lm svg{width:auto;min-width:0;height:420px;margin:auto}
 </style>
 <header class="sec-head">
   <span class="sec-num">12</span>
-  <div><p class="eyebrow">Why we are here: the complete model still learns from the same next-token cross-entropy used by the small character model.</p><h2>Training: one pass, many guesses</h2></div>
+  <div><p class="eyebrow">The model is larger, but its next-token cross-entropy is the same one we used for the character MLP.</p><h2>Training: one pass, many guesses</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>The complete decoder processes a token sequence once and produces a vocabulary distribution at every position. Shifting the observed sequence by one position supplies the targets. The causal mask ensures that each prediction uses only its prefix, so all position losses are valid next-token losses. Averaging them gives one scalar objective for the backward pass. This is the same statistical task used by the Part 1 aabid character model. The architectures differ in how they build a context representation: the character MLP concatenates a fixed window, while the Transformer uses causal attention and stacked blocks over the available prefix.</p>
+  <p>One pass through the decoder produces a vocabulary distribution at every position. Shift the observed sequence by one position to get the targets. Because the causal mask limits each row to its prefix, we can use every row for next-token training. We average those losses into one scalar for the backward pass. The Part 1 aabid character model learned the same statistical task. What differs is how the models build their context representation: the MLP concatenates a fixed window, while the Transformer uses causal attention and stacked blocks over the available prefix.</p>
 </div>
 <div class="frame" data-title="One sequence produces many losses">
   <script type="text/x-notes">How many supervised guesses come from this sequence?
@@ -3906,7 +3922,7 @@ body.present #s11 .s11-lm svg{width:auto;min-width:0;height:420px;margin:auto}
 </div>
 <div class="frame" data-title="The objective matches Part 1">
   <script type="text/x-notes">What stays the same between the aabid MLP and the Transformer?
-  Both maximize the observed next token. Their context builders are different.</script>
+  Both learn to increase the probability of the observed next token. They build context differently.</script>
   <div class="card s12-objectives"><div class="s12-objective"><h3 class="card-title">aabid character MLP</h3><p>Fixed window $\to$ concatenated embeddings $\to$ hidden layer $\to$ logits.</p><p>$$L=-\log p(\text{next character})$$</p></div><div class="s12-objective" data-build="1"><h3 class="card-title">Decoder-only Transformer</h3><p>Available prefix $\to$ causal blocks $\to$ final row $\to$ logits.</p><p>$$L=-\log p(\text{next token})$$</p></div></div>
   <div id="s12-key" data-build="2"></div>
 </div>
@@ -3932,10 +3948,10 @@ body.present #s11 .s11-lm svg{width:auto;min-width:0;height:420px;margin:auto}
 </style>
 <header class="sec-head">
   <span class="sec-num">13</span>
-  <div><p class="eyebrow">Why we are here: training scores every position together, while generation appends one chosen token and repeats the forward pass.</p><h2>Generation: one token, then again</h2></div>
+  <div><p class="eyebrow">Training scores every position at once. Generation chooses one token, appends it, and runs the forward pass again.</p><h2>Generation: one token, then again</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>Generation starts with a prefix and reads the probability distribution at its last position. A decoding rule chooses one token, appends it, and runs the model for the new last position. The process repeats until a stopping rule fires. Recomputing every earlier key and value would waste work because causal attention cannot change them when a later token is appended. A KV cache stores those earlier projections and adds one new key and value per layer at each step. The cache saves projection work, though the new query still scores all cached keys. The cost display separates the full score matrix from the growing cache.</p>
+  <p>Read the probability distribution at the last position of the prefix. A decoding rule chooses one token; we append it and run the model for the new last position. Repeat until the stopping rule is met. Earlier keys and values cannot change when we append a later token under causal attention, so we can reuse them. A KV cache stores those projections and adds one new key and value per layer at each step. This saves projection work, but the new query still has to score all the cached keys. The cost display compares the size of the full score matrix with the growing cache.</p>
 </div>
 <div class="frame" data-title="Choose, append, repeat">
   <script type="text/x-notes">Which position supplies the distribution used for generation?
@@ -3954,7 +3970,7 @@ body.present #s11 .s11-lm svg{width:auto;min-width:0;height:420px;margin:auto}
   <div class="card" data-build="1"><h3 class="card-title">Score cells and cached coordinates</h3><div id="s13-cost-slider"></div><p class="s13-cost" id="s13-cost"></p></div>
 </div>
 <div class="companion after"><p>Generation reuses cached keys and values, but each new query still compares with every cached key.</p></div>
-<div class="companion"><p>This toy provides twenty position vectors. The demonstration uses positions 1–11; it never substitutes a zero vector for a missing position. Real models also have a supported context range and need an explicit policy when that range is reached.</p></div>
+<div class="companion"><p>The toy has twenty position vectors, and this demonstration uses positions 1–11. It never fills in a missing position with a zero vector. Real models also have a supported context range; we need to decide what to do when that range is reached.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s13');
@@ -3993,10 +4009,10 @@ body.present #s11 .s11-lm svg{width:auto;min-width:0;height:420px;margin:auto}
 </style>
 <header class="sec-head">
   <span class="sec-num">14</span>
-  <div><p class="eyebrow">Why we are here: the same attention calculation supports encoders, decoders, and models that connect the two.</p><h2>Three ways to arrange blocks</h2></div>
+  <div><p class="eyebrow">Encoders and decoders use the same attention calculation, with different sources and masks.</p><h2>Three ways to arrange blocks</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>Transformer families differ mainly in which blocks they keep and which attention masks they use. Encoder-only models let every token read the full input, which suits tasks that consume a complete sequence. Decoder-only models use causal self-attention and generate one token after another. Encoder-decoder models first build source representations, then let decoder queries read encoder keys and values through cross-attention. The cross-attention arithmetic is unchanged: compare a query with keys, apply softmax, and mix values. What changes is where the three projected rows come from. The 2017 Transformer paired an encoder stack with a decoder stack.</p>
+  <p>Transformer families mainly differ in their blocks and attention masks. In an encoder-only model, every token can read the full input, which suits tasks where the complete sequence is available. A decoder-only model uses causal self-attention to generate one token after another. An encoder-decoder model first builds representations of the source, then lets decoder queries read encoder keys and values through cross-attention. We still compare queries with keys, apply softmax, and mix values. The arithmetic is unchanged; the projected rows now come from different sequences. The 2017 Transformer paired an encoder stack with a decoder stack.</p>
 </div>
 <div class="frame" data-title="Three block arrangements">
   <script type="text/x-notes">Which family uses a causal mask inside every generative block?
@@ -4038,10 +4054,10 @@ body.present #s15 .dt th,body.present #s15 .dt td{white-space:normal;overflow-wr
 </style>
 <header class="sec-head">
   <span class="sec-num">15</span>
-  <div><p class="eyebrow">Why we are here: flexible context and short information paths make self-attention useful, though its score matrix has a cost.</p><h2>Sequence models side by side</h2></div>
+  <div><p class="eyebrow">Self-attention connects allowed tokens directly. What does that gain, and what does it cost?</p><h2>Sequence models side by side</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>A fixed-window MLP sees only the tokens placed in its window. An RNN can carry information over longer sequences, but the route between distant tokens passes through many recurrent updates. Temporal convolutions enlarge their receptive field as layers accumulate. Self-attention gives any allowed pair a direct path inside one layer and computes positions in parallel during training. That flexibility requires a score for every allowed query-key pair, so a full sequence uses a quadratic number of score cells. The table compares these properties without declaring one model best for every setting. Memory, latency, data, and task structure all affect the choice.</p>
+  <p>A fixed-window MLP sees only the tokens in its window. An RNN can carry information over longer sequences, but distant tokens communicate through many recurrent updates. Temporal convolutions reach more positions as we add layers. Self-attention connects any allowed pair directly within one layer and computes positions in parallel during training. It also needs a score for every allowed query-key pair, so the number of score cells grows quadratically with sequence length. These are trade-offs, not a ranking. Memory, latency, data, and the task all affect which model we choose.</p>
 </div>
 <div class="frame" data-title="Compare the context routes">
   <script type="text/x-notes">Which model gives two distant tokens a direct path in one layer?
@@ -4058,7 +4074,7 @@ body.present #s15 .dt th,body.present #s15 .dt td{white-space:normal;overflow-wr
   <div id="s15-price"></div>
   <div class="card" data-build="1"><h3 class="card-title">The recurring attention path</h3><div id="s15-motif"></div></div>
 </div>
-<div class="companion after"><p>Self-attention offers direct content-dependent paths, while the number of score cells grows with the square of sequence length.</p></div>
+<div class="companion after"><p>Self-attention connects tokens according to their content. Its direct paths come with a score count that grows as sequence length squared.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s15');
@@ -4085,10 +4101,10 @@ body.present #s15 .dt th,body.present #s15 .dt td{white-space:normal;overflow-wr
 </style>
 <header class="sec-head">
   <span class="sec-num">16</span>
-  <div><p class="eyebrow">Why we are here: attention supplies learned routing, but several stronger claims do not follow from a weight matrix.</p><h2>What attention gives, and what it does not</h2></div>
+  <div><p class="eyebrow">An attention map shows how values are mixed. It cannot tell us everything about the model's answer.</p><h2>What attention gives, and what it does not</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>Attention gives each receiving token a learned, content-dependent way to combine value rows from allowed positions. That routing can shorten paths between distant tokens and adapt to the current input. An attention map alone does not guarantee factual output, sound reasoning, a complete explanation, or unlimited memory. A head can distribute work across several relations, and several heads can share one relation. Masking is part of causal training as well as generation. Context length remains finite, and the score calculation has a cost. The checks below separate the mechanism we computed from claims that require more evidence.</p>
+  <p>Each receiving token uses attention to combine value rows from allowed positions. Learned projections compute the weights from the current representations, so the pattern can adapt to the input and shorten paths between distant tokens. An attention map alone does not guarantee correct facts, sound reasoning, a complete explanation, or unlimited memory. One head may handle several relations, and several heads may share a relation. The causal mask is needed during training as well as generation. Context length is finite, and computing the scores has a cost. Use the checks below to distinguish what the calculation shows from what would need more evidence.</p>
 </div>
 <div class="frame" data-title="Mechanism and limits">
   <script type="text/x-notes">Which claims follow directly from the equations?
@@ -4096,15 +4112,15 @@ body.present #s15 .dt th,body.present #s15 .dt td{white-space:normal;overflow-wr
   <div class="card s16-list"><div class="s16-col"><h3 class="card-title">What it gives</h3><p>Learned routing that depends on the current representations and respects the mask.</p><p>A direct within-layer path between allowed token positions.</p></div><div class="s16-col" data-build="1"><h3 class="card-title">What it does not ensure</h3><p>Correct facts, reliable reasoning, complete explanations, or memory beyond the available context.</p></div></div>
 </div>
 <div class="frame" data-title="Is the attention map a full explanation?">
-  <script type="text/x-notes">Which statement fails first?
-  Open each reveal and tie the answer back to the attention calculation rather than to a slogan.</script>
+  <script type="text/x-notes">What can we infer from an attention map?
+  Open each answer and ask which part of the calculation supports it.</script>
   <div class="card"><h3 class="card-title">Test the claims</h3><div id="s16-checks"></div></div>
 </div>
 <div class="frame" data-title="Does one head always mean one rule?"><div class="card" id="s16-check-2"></div></div>
 <div class="frame" data-title="When is the causal mask needed?"><div class="card" id="s16-check-3"></div></div>
 <div class="frame" data-title="Does a Transformer remember everything?"><div class="card" id="s16-check-4"></div></div>
 <div class="companion"><div id="s16-note"></div></div>
-<div class="companion after"><p>Attention weights show where value information was mixed, while broader claims about behavior need evidence beyond the map.</p></div>
+<div class="companion after"><p>Attention weights tell us how the model mixed value information. We need other evidence to explain its broader behavior.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s16'),host=S.querySelector('#s16-checks');
@@ -4114,7 +4130,7 @@ body.present #s15 .dt th,body.present #s15 .dt td{white-space:normal;overflow-wr
     ['Is causal masking needed only during generation?','No. Parallel next-token training uses the same mask to prevent future-token leakage.'],
     ['Does a Transformer remember everything?','No. It has a finite context and finite parameters. A longer context also increases attention cost.']
   ].forEach((x,i)=>{AT.ui.reveal(x[0],x[1],{into:i?S.querySelector('#s16-check-'+(i+1)):host});});
-  AT.ui.callout('This page calls the attention output $\\vd{\\Delta e}$ to stress that it is added to the residual stream. Standard descriptions usually call it the attention output; the residual addition itself is standard.',{kind:'note',into:S.querySelector('#s16-note')});
+  AT.ui.callout('We call the attention output $\\vd{\\Delta e}$ because we add it to the residual stream. Standard descriptions usually call it the attention output. The residual addition is standard; the delta label is our teaching notation.',{kind:'note',into:S.querySelector('#s16-note')});
 })();
 </script>
 </section>
@@ -4130,10 +4146,10 @@ body.present #s15 .dt th,body.present #s15 .dt td{white-space:normal;overflow-wr
 </style>
 <header class="sec-head">
   <span class="sec-num">17</span>
-  <div><p class="eyebrow">Why we are here: comparing the Transformer with the Part 1 character MLP isolates the change in how context is represented.</p><h2>Back to aabid</h2></div>
+  <div><p class="eyebrow">Compare the Transformer with our character MLP. How has the way we represent context changed?</p><h2>Back to aabid</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>The aabid character model and the Transformer both embed discrete symbols, produce logits, apply softmax, and learn from next-token cross-entropy. Their main difference lies between the embeddings and the output head. The character MLP concatenates a fixed number of previous embedding rows, so its context size is chosen in advance and each window slot has separate input weights. The Transformer keeps one row per token, uses causal self-attention to gather from any allowed prefix position, and repeats attention and FFN updates through a stack. This comparison turns the larger architecture into a change of context builder rather than a new learning objective.</p>
+  <p>Both models embed discrete symbols, produce logits, apply softmax, and learn from next-token cross-entropy. The main difference is between the embeddings and the output head. Our aabid MLP concatenates a fixed number of previous embedding rows. We choose its context size in advance, and each window slot has separate input weights. The Transformer keeps one row per token and uses causal self-attention to read from any allowed position in the prefix. It then repeats attention and FFN updates through a stack. We have changed how the model builds context, while keeping the next-token learning objective.</p>
 </div>
 <div class="frame" data-title="Two context builders">
   <script type="text/x-notes">Where does each model combine its context?
@@ -4165,10 +4181,10 @@ body.present #s15 .dt th,body.present #s15 .dt td{white-space:normal;overflow-wr
 </style>
 <header class="sec-head">
   <span class="sec-num">18</span>
-  <div><p class="eyebrow">Why we are here: eight short questions test the distinctions that are easiest to blur when the full model appears at once.</p><h2>Pause and think</h2></div>
+  <div><p class="eyebrow">Eight questions to check what each part of the model does.</p><h2>Pause and think</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>Use these questions as a retrieval check rather than a reading checklist. Say an answer before opening its panel, then connect it to a specific equation or diagram from the lesson. Several questions protect distinctions that matter in implementation: parameters versus activations, full input rows versus projected head widths, attention across positions versus FFN mixing within a row, and causal masking during both training and generation. The last question returns to the layer example. A representation moving farther from its initial embedding proves only that the vector changed. Distance alone does not establish that context caused the change, or that the result is more useful. To test the role of context, change the surrounding tokens while holding the model and receiving token fixed.</p>
+  <p>Answer each question before opening its panel. Then find an equation or diagram that supports your answer. Check that you can distinguish parameters from activations, full input rows from projected head outputs, and attention across positions from the FFN within a row. Explain why the causal mask is needed in both training and generation. The last question returns to the layer example: if a representation moves farther from its initial embedding, all we know is that the vector changed. Distance alone cannot tell us whether context caused the change or whether the result is more useful. To isolate the effect of context, change the surrounding tokens while keeping the model and receiving token fixed.</p>
 </div>
 <div class="frame" data-title="Learning and masking checks">
   <script type="text/x-notes">Can students answer before opening each panel?
@@ -4183,7 +4199,7 @@ body.present #s15 .dt th,body.present #s15 .dt td{white-space:normal;overflow-wr
 <div class="frame" data-title="Heads and feature mixing"><div class="card s18-grid" id="s18-c" data-build="1"></div></div>
 <div class="frame" data-title="Caching and contextual change"><div class="card s18-grid" id="s18-d" data-build="1"></div></div>
 <div class="companion"><div id="s18-note"></div></div>
-<div class="companion after"><p>Correct answers should name the mechanism, the direction of data flow, and the scope of the claim.</p></div>
+<div class="companion after"><p>For each answer, explain what the model does, where the information flows, and what the calculation does or does not establish.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s18');
@@ -4199,7 +4215,7 @@ body.present #s15 .dt th,body.present #s15 .dt td{white-space:normal;overflow-wr
   ];
   function add(host,items){items.forEach((x,i)=>{const r=AT.ui.reveal(x[0],x[1],{into:host});r.setAttribute('data-build',String(i+2));});}
   ['a','b','c','d'].forEach((name,i)=>add(S.querySelector('#s18-'+name),qa.slice(i*2,i*2+2)));
-  AT.ui.callout('This lesson uses $\\vd{\\Delta e}$ as teaching notation for the attention output that is added to the residual stream. Standard descriptions often omit the delta symbol; the residual addition is standard.',{kind:'note',into:S.querySelector('#s18-note')});
+  AT.ui.callout('$\\vd{\\Delta e}$ is our teaching notation for the attention output added to the residual stream. Standard descriptions often leave out the delta symbol, but use the same residual addition.',{kind:'note',into:S.querySelector('#s18-note')});
 })();
 </script>
 </section>
@@ -4214,10 +4230,10 @@ body.present #s15 .dt th,body.present #s15 .dt td{white-space:normal;overflow-wr
 </style>
 <header class="sec-head">
   <span class="sec-num">19</span>
-  <div><p class="eyebrow">Why we are here: the series closes by reducing learning, the block, and generation to one compact statement each.</p><h2>Three summaries</h2></div>
+  <div><p class="eyebrow">Summarize one training step, one block, and the generation loop.</p><h2>Three summaries</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>The lesson has moved through three scales. At the training-example scale, the observed next token gives a loss, reverse-mode autodiff supplies gradients, and SGD changes every contributing parameter. At the block scale, LayerNorm prepares residual rows, multi-head attention mixes information across allowed positions, and an FFN mixes features within each position. At the language-model scale, token and position rows pass through many causal blocks, the vocabulary head supplies next-token probabilities, and generation appends one token at a time while reusing cached keys and values. The three cards keep those scales separate while showing how they connect.</p>
+  <p>For one training example, the observed next token gives us a loss. Reverse-mode autodiff computes gradients, and SGD updates the contributing parameters. Inside one block, LayerNorm prepares the residual rows, multi-head attention gathers information across allowed positions, and the FFN mixes features within each position. The language model passes token and position rows through a stack of these causal blocks and uses the vocabulary head to get next-token probabilities. During generation, we append one token at a time and reuse cached keys and values. The cards below separate these three views of the same model.</p>
 </div>
 <div class="frame" data-title="Learning, block, model">
   <script type="text/x-notes">Can each scale be stated in one sentence?
@@ -4231,12 +4247,12 @@ body.present #s15 .dt th,body.present #s15 .dt td{white-space:normal;overflow-wr
   <nav class="s19-links" data-build="1" aria-label="Series links"><a class="btn" href="part1.html">Back to Part 1</a><a class="btn btn-primary" href="attention.html">Back to Part 2</a></nav>
 </div>
 <div class="companion"><div id="s19-note"></div></div>
-<div class="companion after"><p>The attention calculation is one branch inside a trainable residual stack that predicts and generates tokens.</p></div>
+<div class="companion after"><p>The attention calculation we worked through in Part 2 is one branch in this trainable residual stack. The whole model predicts and generates tokens.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s19');
   AT.motif(S.querySelector('#s19-motif'),{active:null,labels:true});
-  AT.ui.callout('The symbol $\\vd{\\Delta e}$ is this page\'s name for the attention output before residual addition. Standard implementations often use another variable name, while the addition $\\ve{e}+\\vd{\\Delta e}$ remains the same operation.',{kind:'note',into:S.querySelector('#s19-note')});
+  AT.ui.callout('We write the attention output as $\\vd{\\Delta e}$ before adding it to the residual stream. Standard implementations may use another variable name; they still perform the addition $\\ve{e}+\\vd{\\Delta e}$.',{kind:'note',into:S.querySelector('#s19-note')});
 })();
 </script>
 </section>
@@ -4246,7 +4262,7 @@ body.present #s15 .dt th,body.present #s15 .dt td{white-space:normal;overflow-wr
 <footer>
   <div class="wrap">
     <p class="series-nav series-foot" id="series-nav-foot"></p>
-    <p>This page is one self-contained file with no external dependencies; KaTeX is inlined for the math. <span id="footer-note"></span></p>
+    <details><summary>About this page</summary><p>This page works offline, including its diagrams and maths. <span id="footer-note"></span></p></details>
   </div>
 </footer>
 

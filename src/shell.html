@@ -38,7 +38,7 @@
    1. RESET + BASE TYPOGRAPHY
    ===================================================================== */
 *,*::before,*::after{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:calc(var(--strip-h) + 16px)}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:20px}
 body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font-ui);font-size:17px;line-height:1.5;font-weight:400;
   overflow-x:hidden;-webkit-font-smoothing:antialiased}
 @media (min-width:1400px){body{font-size:18px}}
@@ -87,8 +87,7 @@ svg{display:block;max-width:100%}
 /* =====================================================================
    2. NOTATION STRIP (sticky)
    ===================================================================== */
-#strip{position:sticky;top:0;z-index:50;background:rgba(247,248,250,.92);backdrop-filter:saturate(1.2) blur(8px);-webkit-backdrop-filter:saturate(1.2) blur(8px);
-  border-bottom:1px solid var(--line);min-height:var(--strip-h)}
+#strip{position:relative;z-index:50;min-height:var(--strip-h)}
 #strip .wrap{display:flex;align-items:center;gap:16px;min-height:var(--strip-h);padding-top:6px;padding-bottom:6px;flex-wrap:wrap}
 .nchips{display:flex;gap:6px;align-items:center;flex-wrap:nowrap;list-style:none;margin:0;padding:0}
 .nchips li{margin:0}
@@ -518,7 +517,9 @@ body:not(.present) .diagram-step .stage-title{display:none}
 /* =====================================================================
    8. FOOTER, MOTION, PRINT
    ===================================================================== */
-footer{border-top:1px solid var(--line);padding:24px 0 40px;color:var(--ink-3);font-size:14px}
+footer{padding:12px 0 32px;color:var(--ink-2);font-size:14px}
+footer details{margin-top:12px;max-width:76ch}
+footer details summary{cursor:pointer;color:var(--ink-3)}
 /* node-network sketch (AT.netSketch) */
 .netsk{max-width:640px;margin:8px auto}
 .netsk svg{width:100%;height:auto;overflow:visible;font-family:var(--font-ui)}
@@ -563,20 +564,20 @@ body.present .frame-sub{display:block}
    All measurements below are logical stage pixels, not viewport-responsive type.
    Overflow is an authoring error: add a continuation frame, never a scrollbar.
    ===================================================================== */
-body.present{--present-stage-w:1280px;--present-stage-h:720px;--present-scale:1;--present-body:28px;--present-title:42px;--present-caption:22px;--present-math:32px;--present-gutter:10px;--strip-h:38px;--present-strip-h:38px;--present-controls-h:50px;overflow:hidden;height:100vh;height:100dvh;font-size:var(--present-body);line-height:1.38}
-body.present .hero,body.present footer,body.present .reading,body.present .companion{display:none!important}
+body.present{--present-stage-w:1280px;--present-stage-h:720px;--present-scale:1;--present-body:28px;--present-title:42px;--present-caption:22px;--present-math:32px;--present-gutter:24px;--present-controls-h:0px;overflow:hidden;height:100vh;height:100dvh;font-size:var(--present-body);line-height:1.38}
+body.present #strip,body.present .hero,body.present footer,body.present .reading,body.present .companion{display:none!important}
 body.present #strip .wrap{flex-wrap:nowrap;padding-top:2px;padding-bottom:2px;min-height:var(--strip-h);max-width:none;padding-left:clamp(14px,1.6vw,30px);padding-right:clamp(14px,1.6vw,30px);gap:10px}
 body.present .nchips{gap:4px}
 body.present .nchip{height:25px;min-width:30px;font-size:14px;padding:0 8px}
 body.present .strip-sec{font-size:13px;margin-left:auto}
 body.present #present-btn{display:none}
-body.present main{position:relative;width:100%;padding:0;max-width:none;min-height:0;height:calc(100vh - var(--present-strip-h) - var(--present-controls-h));height:calc(100dvh - var(--present-strip-h) - var(--present-controls-h));overflow:hidden}
+body.present main{position:relative;width:100%;padding:0;max-width:none;min-height:0;height:100vh;height:100dvh;overflow:hidden}
 body.present .sec{display:none}
-body.present .sec.is-live{position:absolute;left:50%;top:50%;display:flex;flex-direction:column;width:var(--present-stage-w);height:var(--present-stage-h);margin:0;padding:20px 64px 24px;scroll-margin-top:0;overflow:hidden;transform:translate(-50%,-50%) scale(var(--present-scale));transform-origin:center center;background:var(--paper)}
-body.present .sec.is-live>.sec-head{flex:none;margin:0 0 12px;padding:0 0 10px;border-top:0;border-bottom:1px solid var(--line);grid-template-columns:auto minmax(0,1fr);gap:4px 20px;align-items:baseline}
-body.present .sec-num{font-size:18px;padding-top:0;color:var(--ink-3)}
+body.present .sec.is-live{position:absolute;left:50%;top:50%;display:flex;flex-direction:column;width:var(--present-stage-w);height:var(--present-stage-h);margin:0;padding:36px 64px;scroll-margin-top:0;overflow:hidden;transform:translate(-50%,-50%) scale(var(--present-scale));transform-origin:center center;background:var(--paper)}
+body.present .sec.is-live>.sec-head{display:block;flex:none;margin:0 0 24px;padding:0;border:0}
+body.present .sec-num{display:none}
 body.present .sec-head h2{font-size:var(--present-title);letter-spacing:-.015em;line-height:1.12}
-body.present .sec-head.has-frame-title h2{font-size:18px;font-weight:500;letter-spacing:0;color:var(--ink-2);line-height:1.2}
+body.present .sec-head.has-frame-title h2{display:none}
 body.present .sec-head .eyebrow{display:none}
 body.present .frame-sub{grid-column:2;display:block;margin:0;font-size:var(--present-title);color:var(--ink);font-weight:700;letter-spacing:-.015em;line-height:1.12;max-width:none;white-space:normal;align-self:baseline}
 body.present .frame-sub:empty{display:none}
@@ -660,16 +661,19 @@ body.present pre.torch-snippet,body.present pre.pytorch{font-size:23px;line-heig
 /* Reading scroll helpers unfold on the slide. The frame-level fit check catches excess content. */
 body.present .dt-scroll,body.present .mat-scroll,body.present .calc-scroll,body.present .scroll-x,body.present .vec,body.present .tex-display,body.present .katex-display,body.present .stepper-stage .stage-tex,body.present pre.torch-snippet,body.present pre.pytorch{max-width:100%;overflow:visible}
 /* An overfull authored frame is never silently cropped or made scrollable. */
-#at-fit-warning{display:none;position:fixed;left:16px;right:16px;bottom:calc(var(--present-controls-h,50px) + 8px);z-index:62;margin:0;padding:10px 16px;border:1px solid var(--warn);border-radius:var(--radius-s);background:#FFF8E8;color:var(--ink);font-size:15px;line-height:1.35}
+#at-fit-warning{display:none;position:fixed;left:16px;right:16px;top:12px;z-index:62;margin:0;padding:10px 16px;border:1px solid var(--warn);border-radius:var(--radius-s);background:#FFF8E8;color:var(--ink);font-size:15px;line-height:1.35}
 body.present #at-fit-warning:not(:empty){display:block}
 body.present .frame[data-overflow="true"]{outline:2px dashed var(--warn);outline-offset:-2px}
-/* Always-visible classroom controls; the measured height is reserved above. */
-#at-controls{position:fixed;inset:auto 0 0;z-index:60;display:none;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:4px 8px;padding:4px clamp(14px,1.6vw,30px) max(4px,env(safe-area-inset-bottom));border-top:1px solid var(--line);background:rgba(247,248,250,.96);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-body.present #at-controls{display:flex}
+/* Navigation is available on demand, without reserving a header or footer. */
+#at-controls-toggle{display:none;position:fixed;right:12px;bottom:10px;z-index:60;font-size:13px;min-height:36px;padding:6px 12px;border-color:transparent;color:var(--ink-2);background:var(--paper)}
+body.present #at-controls-toggle{display:block}
+#at-controls-toggle:hover,#at-controls-toggle[aria-expanded="true"]{border-color:var(--line);background:var(--card)}
+#at-controls{position:fixed;right:12px;bottom:54px;max-width:calc(100vw - 24px);z-index:60;display:none;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:6px 8px;padding:12px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--card);box-shadow:0 4px 20px rgba(20,23,31,.10)}
+body.present #at-controls.is-on{display:flex}
 #at-controls .pbtn{font-size:14px;min-height:40px;padding:6px 12px}
 #at-next{background:var(--ink);border-color:var(--ink);color:var(--paper)}
-#at-counter{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:14px;color:var(--ink-2);margin-right:auto}
-#at-announcement{display:none;position:fixed;bottom:calc(var(--present-controls-h) + 8px);left:16px;right:16px;z-index:61;margin:0;padding:10px 16px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-s);font-size:16px}
+#at-counter{flex-basis:100%;font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:14px;color:var(--ink-2);margin-bottom:4px}
+#at-announcement{display:none;position:fixed;top:12px;left:16px;right:16px;z-index:61;margin:0;padding:10px 16px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-s);font-size:16px}
 body.present #at-announcement:not(:empty){display:block}
 @media(max-width:640px){#at-counter{flex-basis:100%}#at-controls{justify-content:flex-start;gap:4px 6px;padding-left:10px;padding-right:10px}#at-controls .pbtn{font-size:13px;min-height:40px;padding:6px 9px}}
 /* notes strip (S) */
@@ -697,7 +701,7 @@ body.present #at-announcement:not(:empty){display:block}
 #at-blank{position:fixed;inset:0;z-index:80;background:#000;display:none}
 #at-blank.is-on{display:block}
 /* keyboard help (?) */
-#at-help{position:fixed;right:14px;bottom:calc(var(--present-controls-h,28px) + 8px);z-index:61;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 14px;font-size:13px;line-height:1.6;color:var(--ink-2);display:none;box-shadow:0 8px 24px rgba(20,23,31,.14)}
+#at-help{position:fixed;right:14px;bottom:54px;z-index:61;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 14px;font-size:13px;line-height:1.6;color:var(--ink-2);display:none;box-shadow:0 8px 24px rgba(20,23,31,.14)}
 #at-help.is-on{display:block}
 #at-help kbd{font-family:var(--font-mono);background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:0 5px;color:var(--ink);font-size:12px}
 
@@ -745,7 +749,7 @@ body.presenter>*:not(#at-presenter){display:none!important}
   @page{size:A4 landscape;margin:12mm}
   html,body{background:#fff;font-size:16px;overflow:visible;height:auto}
   #strip{position:static;background:#fff;backdrop-filter:none}
-  #progress,#at-controls,#at-counter,#at-announcement,#at-fit-warning,#at-notes,#at-overview,#at-blank,#at-help,.present-ctl,.reading,.roadmap .arrow{display:none!important}
+  #progress,#at-controls-toggle,#at-controls,#at-counter,#at-announcement,#at-fit-warning,#at-notes,#at-overview,#at-blank,#at-help,.present-ctl,.reading,.roadmap .arrow{display:none!important}
   .btn,.toggle,.slider,.stepper-bar,.btn-row{display:none!important}
   .companion{display:block!important}
   main{height:auto;overflow:visible;padding-bottom:0}
@@ -820,7 +824,7 @@ body.presenter>*:not(#at-presenter){display:none!important}
 <footer>
   <div class="wrap">
     <p class="series-nav series-foot" id="series-nav-foot"></p>
-    <p>This page is one self-contained file with no external dependencies; KaTeX is inlined for the math. <span id="footer-note"></span></p>
+    <details><summary>About this page</summary><p>This page works offline, including its diagrams and maths. <span id="footer-note"></span></p></details>
   </div>
 </footer>
 

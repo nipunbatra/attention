@@ -8,10 +8,10 @@ body.present #s06 #s06-mask .cell{min-width:3em}
 </style>
 <header class="sec-head">
   <span class="sec-num">06</span>
-  <div><p class="eyebrow">Why we are here: one causal forward pass can make a next-token guess at every position without reading any target early.</p><h2>Train every position at once</h2></div>
+  <div><p class="eyebrow">One causal forward pass predicts at every position. The mask keeps each prediction from reading its answer.</p><h2>Train every position at once</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>Each input token supplies a training target when water is appended as the observed continuation. The first position predicts fisherman, the next predicts sat, and the final position predicts water. The causal mask keeps each row honest: row $i$ can read only positions at or before $i$. The model still computes all rows in parallel because the mask removes forbidden score cells before softmax. We average the position losses, run one backward pass, and update the shared parameters once. Some positions improve more than others after this single step, so the mean is the quantity the optimizer follows.</p>
+  <p>Append the observed continuation water, then pair each input position with the token that follows it. The first position predicts fisherman, the next predicts sat, and the final position predicts water. Row $i$ can read only positions at or before $i$. We can still compute all rows in parallel: the causal mask blocks forbidden score cells before softmax. We then average the position losses, run one backward pass, and update the shared parameters once. That step may help some positions more than others. The optimizer follows their mean loss.</p>
 </div>
 <div class="frame" data-title="Shift inputs into targets">
   <script type="text/x-notes">What target belongs to each input position?
@@ -40,7 +40,7 @@ loss.backward(); optimizer.step()</code></pre>
   <div id="s06-mean"></div>
 </div>
 <div class="companion"><h3>All position probabilities and losses</h3><div id="s06-full-losses"></div></div>
-<div class="companion after"><p>Parallel training changes the efficiency of the calculation, while the causal mask preserves the next-token task.</p></div>
+<div class="companion after"><p>Computing the rows in parallel saves work. Each row still predicts from its own prefix because the mask blocks later positions.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s06');

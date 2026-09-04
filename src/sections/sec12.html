@@ -12,7 +12,7 @@ body.present #s12 .dt td,body.present #s12 .dt th{font-size:22px;padding:.2em .4
 <header class="sec-head">
   <span class="sec-num">12</span>
   <div>
-    <p class="eyebrow">Why we are here: a small technical fix. The spread of raw dot products grows with the dimension, and dividing by $\sqrt{d_k}$ takes that growth out.</p>
+    <p class="eyebrow">Wider query and key vectors can produce a wider spread of scores. Dividing by $\sqrt{d_k}$ controls that scale.</p>
     <h2>Why divide by $\sqrt{d_k}$?</h2>
   </div>
 </header>
@@ -83,7 +83,7 @@ alpha = scores.softmax(dim=-1)</code></pre>
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: scaling counteracts the expected growth due to dimension. Learned vector lengths and alignment still affect score differences, so attention can remain sharp.</p>
+  <p>Scaling counteracts the expected growth with dimension. Learned vector lengths and alignment still affect score differences, so attention can remain sharp.</p>
 </div>
 
 <script>

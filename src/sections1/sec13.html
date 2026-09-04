@@ -3,8 +3,8 @@
 #s13 .pipeline{font-family:var(--font-mono);font-size:.9em;color:var(--ink-2);margin:10px 0 0}
 #s13 .pair{font-family:var(--font-mono);font-size:1.15em;padding:12px;background:var(--paper);border-radius:var(--radius-s)}
 </style>
-<header class="sec-head"><span class="sec-num">13</span><div><p class="eyebrow">Why we are here: replacing characters with words changes the vocabulary and data, but it does not change the prediction pipeline.</p><h2>Same model, word tokens</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>A word-level model still turns token IDs into embeddings, combines a context, produces logits, and applies softmax. Only the tokenizer, vocabulary, and training text have changed. A prefix can support several reasonable continuations, so the output remains a distribution rather than a single rule. Training supplies one observed target at every position. The chain rule then expresses the probability of a complete sequence as a product of conditional next-token probabilities. This identity does not prescribe the network that represents the prefix. It tells us which probabilities the model must provide as the visible context grows.</p></div>
+<header class="sec-head"><span class="sec-num">13</span><div><p class="eyebrow">Word tokens change the vocabulary and data. The prediction steps stay the same.</p><h2>Same model, word tokens</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>With word tokens, we still look up embeddings, combine the context, produce logits, and apply softmax. We have changed the tokenizer, vocabulary, and training text. Several continuations can fit a prefix, so we still want a distribution, even though training gives us just one observed target at each position. The chain rule writes the probability of a complete sequence as a product of conditional next-token probabilities. It tells us which probabilities the model must supply as the context grows. It does not tell us which network to use to represent that context.</p></div>
 <div class="frame" data-title="Change the tokens, keep the pipeline" data-autobuild="off">
   <script type="text/x-notes">What changes when the tokens are whole words?
   The vocabulary and data change. Lookup, context combination, MLP, and softmax remain the same kinds of steps.</script>
@@ -13,7 +13,7 @@
 </div>
 <div class="frame" data-title="Several words can fit" data-autobuild="off">
   <script type="text/x-notes">Which words could reasonably follow this prefix?
-  The bars are illustrative. Their purpose is to show that one observed target does not make all alternatives impossible.</script>
+  These bars are illustrative. Ask why seeing one target in the data does not rule out every other continuation.</script>
   <div class="card"><h3 class="card-title">The cat sat on the ___</h3><div id="s13-bars"></div><p class="muted small">Illustrative word probabilities.</p></div>
 </div>
 <div class="frame" data-title="The chain rule" data-autobuild="off">
@@ -21,7 +21,7 @@
   Advance through the prefix one word at a time. Each factor conditions on everything shown before it.</script>
   <div id="s13-chain"></div>
 </div>
-<div class="companion after"><p>Keep in mind: changing token size leaves the next-token objective and the conditional-probability chain intact.</p></div>
+<div class="companion after"><p>Whether our tokens are characters or words, the next-token objective and the conditional-probability chain stay the same.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s13');

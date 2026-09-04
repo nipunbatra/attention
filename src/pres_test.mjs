@@ -51,7 +51,12 @@ check((await vis('#s00-frame1 .card[data-build="1"]')) === false, 'build 1 hidde
 check((await vis('#s00-f1-stepper')) === false, 'build 2 (stepper) hidden before its turn');
 check(await p.evaluate(() => { const el = document.querySelector('#s00-f1-stepper'); return el.inert && el.getAttribute('aria-hidden') === 'true'; }), 'pending builds are inert and hidden from assistive technology');
 check(await p.evaluate(() => { const button = document.querySelector('#s00-f1-stepper button'); button.focus(); return document.activeElement !== button; }), 'a pending stepper cannot receive keyboard focus');
-check(await p.locator('#at-controls').isVisible() && await p.locator('#at-prev').isDisabled() && await p.locator('#at-next').isEnabled(), 'visible classroom controls expose the correct beginning boundary');
+check(!(await p.locator('#at-controls').isVisible()) && await p.locator('#at-controls-toggle').isVisible() && !(await p.locator('#strip').isVisible()), 'presentation starts without a header or footer bar');
+check(await p.evaluate(() => { const button = document.querySelector('#at-next'); button.focus(); return document.activeElement !== button && document.querySelector('#at-controls').inert; }), 'closed controls cannot receive keyboard focus');
+const stageBeforeControls = await p.locator('.sec.is-live').boundingBox();
+await p.click('#at-controls-toggle');
+check(await p.locator('#at-controls').isVisible() && await p.locator('#at-prev').isDisabled() && await p.locator('#at-next').isEnabled(), 'on-demand controls expose the correct beginning boundary');
+check(JSON.stringify(await p.locator('.sec.is-live').boundingBox()) === JSON.stringify(stageBeforeControls), 'opening controls does not move or shrink the slide');
 check(await p.evaluate(() => document.querySelector('#at-counter').getAttribute('aria-label').includes('Frame 1 of 2')), 'classroom status includes a meaningful frame description');
 check((await vis('#s00-frame1 .callout[data-build="3"]')) === false, 'build 3 hidden before its turn');
 check((await vis('#s00-frame2')) === false, 'frame 2 not shown while frame 1 is live');
@@ -146,15 +151,19 @@ check(await p.locator('#at-announcement').isVisible() && (await st()).active, 'f
 await p.evaluate(() => delete document.documentElement.requestFullscreen);
 // print preparation
 await p.evaluate(() => { location.hash = '#s00/1/1'; }); await p.waitForTimeout(300);
+await p.evaluate(() => { const d = AT.ui.reveal('Print check?', 'This answer belongs in the handout.'); d.id = 'print-answer-fixture'; document.querySelector('#s00-frame2').appendChild(d); });
 await p.evaluate(() => window.dispatchEvent(new Event('beforeprint'))); await p.waitForTimeout(150);
+check(await p.evaluate(() => document.querySelector('#print-answer-fixture').open), 'beforeprint opens answer reveals');
 check(await p.evaluate(() => document.querySelectorAll('[data-build].is-pending').length === 0 && !document.body.classList.contains('present')), 'beforeprint reveals every build and leaves the present layout');
 check(await p.evaluate(() => document.querySelector('#s00-f1-stepper .stepper').stepperApi.index() === 3), 'beforeprint sets the stepper to its last step');
 check(await vis('#s00-frame1 .callout[data-build="3"]') && await vis('#s00-frame2 p.muted'), 'all builds of all frames visible for the handout');
 await p.evaluate(() => window.dispatchEvent(new Event('afterprint'))); await p.waitForTimeout(150); s = await st();
+check(await p.evaluate(() => !document.querySelector('#print-answer-fixture').open), 'afterprint restores the authored closed answer');
+await p.evaluate(() => document.querySelector('#print-answer-fixture').remove());
 check(s.active && s.fi === 0 && s.build === 1 && await p.evaluate(() => document.body.classList.contains('present')) && (await vis('#s00-f1-stepper')) === false, 'afterprint restores the presentation at #s00/1/1');
 check(await p.evaluate(() => document.querySelector('#s00-f1-stepper .stepper').stepperApi.index() === 0), 'afterprint restores the stepper step');
 // presenter window
-const [pop] = await Promise.all([ctx.waitForEvent('page'), p.click('#presenter-btn')]);
+const [pop] = await Promise.all([ctx.waitForEvent('page'), p.click('#at-presenter-btn')]);
 hook(pop, 'presenter');
 await pop.waitForLoadState('load'); await pop.waitForTimeout(900);
 check(await pop.evaluate(() => document.body.classList.contains('presenter') && !!document.querySelector('#at-presenter')), 'presenter window renders the presenter layout');
@@ -168,6 +177,8 @@ check(s.hash === '#s00/1/2', 'ArrowRight in the presenter window drives the main
 check(await pop.evaluate(() => document.querySelector('.pr-build').textContent.startsWith('build 2 of 3')), 'presenter build count follows the main window');
 await pop.close();
 // Esc returns to read mode
+await p.keyboard.press('Escape');
+check((await st()).active && !(await p.locator('#at-controls').isVisible()), 'Escape closes controls before leaving presentation');
 await p.keyboard.press('Escape'); await p.waitForTimeout(400); s = await st();
 check(!s.active && !(await p.evaluate(() => document.body.classList.contains('present'))), 'Esc exits present mode');
 check(await p.evaluate(() => location.hash === '#s00' && document.querySelectorAll('[data-build].is-pending').length === 0), 'read mode: hash #s00, no pending builds');
@@ -183,6 +194,7 @@ await p.reload({ waitUntil: 'load' });
 check(!(await st()).active, 'reloading after exit stays in reading mode');
 await p.goto(baseUrl + '#s00/1/2', { waitUntil: 'load' });
 check((await st()).active && (await st()).build === 2, 'an explicit frame/build link enters directly at its requested build');
+await p.click('#at-controls-toggle');
 await p.click('#at-prev');
 check((await st()).build === 1, 'visible Previous follows build navigation');
 await p.click('#at-next');
@@ -205,6 +217,7 @@ await p.evaluate(() => {
   AT.present.enter({ id: 's00', f: 3, b: 1 });
 });
 check((await st()).stepper === null && await p.evaluate(() => document.querySelector('#nested-build').inert), 'nested steppers wait for the highest enclosing build number');
+await p.click('#at-controls-toggle');
 await p.click('#at-next'); await p.click('#at-next');
 check(await p.evaluate(() => fixtureSteppers[0].index() === 1 && fixtureSteppers[1].index() === 0), 'same-build steppers advance in document order');
 await p.click('#at-next');
@@ -244,9 +257,9 @@ check(await p.evaluate(() => {
   const frame = document.querySelector('.frame.is-live');
   const controls = document.querySelector('#at-controls').getBoundingClientRect();
   const style = getComputedStyle(document.body);
-  return Math.abs(sec.width / sec.height - 16 / 9) < 0.01 && sec.width <= innerWidth && sec.bottom <= controls.top + 1 && controls.bottom <= innerHeight + 1 &&
+  return Math.abs(sec.width / sec.height - 16 / 9) < 0.01 && sec.width <= innerWidth && sec.bottom <= innerHeight && controls.bottom <= innerHeight + 1 &&
     style.fontSize === '28px' && getComputedStyle(frame).overflow === 'hidden' && document.documentElement.scrollWidth <= innerWidth;
-}), 'mobile view uniformly fits the fixed 16:9 stage above the classroom toolbar');
+}), 'mobile view uniformly fits the fixed 16:9 stage with on-demand controls inside the viewport');
 check(await p.evaluate(() => { const pre = document.querySelector('#nested-frame pre.pytorch'); return getComputedStyle(pre).overflowX === 'visible' && getComputedStyle(pre).whiteSpace === 'pre-wrap'; }), 'PyTorch snippets wrap on a slide instead of creating an internal scrollbar');
 await p.screenshot({ path: path.join(outdir, 'mobile-controls.png') });
 check(await p.evaluate(() => { const r = AT.present.fitReport(); return r.overflow && r.vertical > 0 && document.querySelector('#at-fit-warning').textContent.includes('continuation frame'); }), 'an oversized fixture gives a visible continuation-frame diagnostic instead of scrolling');

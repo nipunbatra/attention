@@ -8,10 +8,10 @@
 </style>
 <header class="sec-head">
   <span class="sec-num">13</span>
-  <div><p class="eyebrow">Why we are here: training scores every position together, while generation appends one chosen token and repeats the forward pass.</p><h2>Generation: one token, then again</h2></div>
+  <div><p class="eyebrow">Training scores every position at once. Generation chooses one token, appends it, and runs the forward pass again.</p><h2>Generation: one token, then again</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>Generation starts with a prefix and reads the probability distribution at its last position. A decoding rule chooses one token, appends it, and runs the model for the new last position. The process repeats until a stopping rule fires. Recomputing every earlier key and value would waste work because causal attention cannot change them when a later token is appended. A KV cache stores those earlier projections and adds one new key and value per layer at each step. The cache saves projection work, though the new query still scores all cached keys. The cost display separates the full score matrix from the growing cache.</p>
+  <p>Read the probability distribution at the last position of the prefix. A decoding rule chooses one token; we append it and run the model for the new last position. Repeat until the stopping rule is met. Earlier keys and values cannot change when we append a later token under causal attention, so we can reuse them. A KV cache stores those projections and adds one new key and value per layer at each step. This saves projection work, but the new query still has to score all the cached keys. The cost display compares the size of the full score matrix with the growing cache.</p>
 </div>
 <div class="frame" data-title="Choose, append, repeat">
   <script type="text/x-notes">Which position supplies the distribution used for generation?
@@ -30,7 +30,7 @@
   <div class="card" data-build="1"><h3 class="card-title">Score cells and cached coordinates</h3><div id="s13-cost-slider"></div><p class="s13-cost" id="s13-cost"></p></div>
 </div>
 <div class="companion after"><p>Generation reuses cached keys and values, but each new query still compares with every cached key.</p></div>
-<div class="companion"><p>This toy provides twenty position vectors. The demonstration uses positions 1–11; it never substitutes a zero vector for a missing position. Real models also have a supported context range and need an explicit policy when that range is reached.</p></div>
+<div class="companion"><p>The toy has twenty position vectors, and this demonstration uses positions 1–11. It never fills in a missing position with a zero vector. Real models also have a supported context range; we need to decide what to do when that range is reached.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s13');

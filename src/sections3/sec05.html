@@ -5,10 +5,10 @@
 </style>
 <header class="sec-head">
   <span class="sec-num">05</span>
-  <div><p class="eyebrow">Why we are here: the gradient points uphill in loss, so SGD takes a chosen step in the opposite direction.</p><h2>One update</h2></div>
+  <div><p class="eyebrow">The gradient points toward increasing loss. SGD steps in the opposite direction.</p><h2>One update</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>The gradient gives a local slope for every parameter. Stochastic gradient descent multiplies each slope by a learning rate $\eta$ and subtracts the result from the current parameter. The three presets below reuse the same gradient from the river example, then run a fresh forward pass with the updated parameters. Larger steps improve this one example more sharply in the toy, but that is not a promise about other sentences or later updates. The useful comparison is the target probability and loss before and after each step. You can also inspect the final updated representation, which changes because all contributing parameters changed together.</p>
+  <p>The gradient gives a local slope for every parameter. Stochastic gradient descent multiplies each slope by the learning rate $\eta$, then subtracts it from the parameter. Try the three presets below. Each uses the same gradient from the river example and runs a fresh forward pass after the update. Compare the target probability and loss before and after the step. Larger steps help this one example more, but may not help other sentences or later updates. The final contextual row also changes because we updated all the contributing parameters together.</p>
 </div>
 <div class="frame" data-title="Move against the gradient">
   <script type="text/x-notes">Why is the gradient subtracted?
@@ -23,7 +23,7 @@
   <div id="s05-note" data-build="1"></div>
 </div>
 <div class="companion"><h3>The contextual row after the same update</h3><div id="s05-context"></div></div>
-<div class="companion after"><p>One lower training loss shows that the update fit this example better; it does not establish generalisation.</p></div>
+<div class="companion after"><p>The lower loss tells us that the update fit this example better. We still need other examples to test generalisation.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s05');

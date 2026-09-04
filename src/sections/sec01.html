@@ -30,13 +30,13 @@ body.present #s01 .emb-tab{margin-top:20px}
 <header class="sec-head">
   <span class="sec-num">01</span>
   <div>
-    <p class="eyebrow">Why we are here: everything on this page exists to make one guess better, the next word.</p>
+    <p class="eyebrow">How can the words we have read help us predict the next one?</p>
     <h2>Predict the next token</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Everything on this page serves one task: guess the next word. Every mechanism added later has to pay for itself here. Switch between the two contexts in the first widget and watch the bars move. The last three words are identical in both sentences, so whatever the model does inside, it has to carry <em>river</em> or <em>cheque</em> all the way to the blank. The second widget shows the raw material it starts from: a token starts as a row of $d_{\text{model}}$ numbers, one per named coordinate (<span id="s01-axes-names"></span>). These coordinate names and numbers are hand-chosen for this toy. Its fifth coordinate carries a position offset, but the later projections ignore it: this example demonstrates content routing, not word-order sensitivity. The sentence to remember: a good prediction needs a good representation of the relevant context.</p>
+  <p>We want to predict the next word. As we add each part of the model, we will ask how it helps that prediction. Switch between the two contexts below and watch the probability bars move. The last three words are identical, so the model needs information about <em>river</em> or <em>cheque</em> from earlier in the sentence. The second widget shows what it starts with: a row of $d_{\text{model}}$ numbers for each token, with named coordinates (<span id="s01-axes-names"></span>). We chose these names and numbers by hand to make the example readable. The fifth coordinate carries a position offset, but the later projections ignore it. This toy shows how the model gathers relevant content; it does not demonstrate sensitivity to word order.</p>
 </div>
 
 <div class="frame" data-title="One blank" id="s01-frame1" data-autobuild="off">
@@ -144,7 +144,7 @@ No: both the token and position vectors already have five coordinates. Only this
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: the model is judged only by the probability it puts on the right next word, and the only thing it can work with is a row of numbers per token.</p>
+  <p>The model works with a row of numbers per token. We judge its prediction by the probability it assigns to the correct next word, so those rows need to carry the relevant context.</p>
 </div>
 
 <script>

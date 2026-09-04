@@ -37,13 +37,13 @@ body.present #s02 .title-row{margin-bottom:16px}
 <header class="sec-head">
   <span class="sec-num">02</span>
   <div>
-    <p class="eyebrow">Why we are here: the crudest possible model, predicting from the last token alone, shows what "context" has to buy us.</p>
+    <p class="eyebrow">What can we predict if the output head receives only the last token?</p>
     <h2>Baseline: only the last token</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>This section is the crudest model on purpose. Only the last token reaches the output head, so the prediction is a function of one row of $d_{\text{model}}$ numbers. Switch the context in the widget and watch the bars: nothing moves. The table further down shows why, coordinate by coordinate. The word is <em>the</em> and the position is 10 in both sentences, so the starting representation is the same row of numbers, and the same row of numbers gives the same probabilities. The output head cannot tell a river scene from a bank branch, so it hedges across eight candidates. The sentence to remember: a prediction can only use what reaches it, and here almost nothing does.</p>
+  <p>Start with a model that sends only the last token to the output head. Its entire input is one row of $d_{\text{model}}$ numbers. Switch the context and the bars stay put. The table below explains why: both sentences end with <em>the</em> at position 10, so they supply exactly the same starting row. The same row gives the same probabilities. With no information to distinguish a river scene from a bank branch, the head spreads probability across eight candidates.</p>
 </div>
 
 <div class="frame" data-title="The last token alone" id="s02-frame1" data-autobuild="off">
@@ -106,7 +106,7 @@ Nowhere: neither word reaches the head. A better representation has to bring the
     None: the difference row is all zeros. If someone asks why position does not help, point at the position row of section 01: the blank sits at the same position in both sentences. Open the arithmetic only if the room wants to see the output head multiply.
   </script>
   <div class="companion">
-    <p>The distribution is almost flat: eight candidates, all near the same height. The model cannot prefer <em>water</em> to <em>teller</em> because, from its point of view, the two sentences are the same sentence. The table shows that sentence, coordinate by coordinate.</p>
+    <p>The eight candidate bars are nearly the same height. The head has no context that would favour <em>water</em> over <em>teller</em>: both sentences give it the same input. Compare their coordinates in the table.</p>
   </div>
 
   <div class="card">
@@ -122,7 +122,7 @@ Nowhere: neither word reaches the head. A better representation has to bring the
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: the output head sees one row of numbers. If the context is to matter, the context has to be written into that row before it arrives.</p>
+  <p>The output head can only use the row it receives. Earlier words must contribute to that row before the head can use them.</p>
 </div>
 
 <script>

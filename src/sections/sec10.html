@@ -43,13 +43,13 @@ body.present #s10 .s10-ws,body.present #s10 .dt-cap,body.present #s10 .dt-note{d
 <header class="sec-head">
   <span class="sec-num">10</span>
   <div>
-    <p class="eyebrow">Why we are here: the same word in two contexts. One update pushes the same starting vector in two directions.</p>
+    <p class="eyebrow">Bank starts with the same vector in both sentences. Its context gives it different updates.</p>
     <h2>&ldquo;bank&rdquo;: same start, different context</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>So far the page has followed one sentence. This section runs the same computation twice, once for the river sentence and once for the cheque sentence, and watches the word <strong>bank</strong>. Its starting row is identical in both, because the token and the position are the same. Compare the $\va{\alpha_{7j}}$ columns first: river carries most of the weight in sentence A, cheque and deposited in sentence B. Then read down to the footer and to the $\vd{\Delta e}$ row, where the difference lands: on the water axis in A, on the finance axis in B. Drag the slider to add the update a little at a time. The sentence to remember: the same starting representation receives different information and becomes context-dependent.</p>
+  <p>Run the same calculation for the river sentence and the cheque sentence, following <strong>bank</strong> in both. Its starting row is identical because its token and position are the same. Compare the $\va{\alpha_{7j}}$ columns: river gets most of the weight in sentence A, while cheque and deposited get most in sentence B. Follow those contributions into the message at the bottom and the $\vd{\Delta e}$ row. The update adds water information in A and finance information in B. Drag the slider to add it gradually. The same starting representation becomes context-dependent because it receives different information.</p>
 </div>
 
 <div class="frame" id="s10-frame1" data-title="Same bank: what changed between the sentences?">
@@ -125,7 +125,7 @@ Move the slider manually: it shows a partial residual addition, not training or 
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: bank reads only itself and earlier tokens, so the words after it played no part in either update. The two rows $\vp{e_{\text{bank}}'}$ differ only because the seven values it mixed, and the weights it mixed them with, differ.</p>
+  <p>Bank reads only itself and earlier tokens. Words after it contributed to neither update. The two $\vp{e_{\text{bank}}'}$ rows differ because the values and weights across those seven source positions differ.</p>
 </div>
 
 <script>

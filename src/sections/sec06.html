@@ -96,13 +96,13 @@ body.present #s06 #s06-temp-bars .bars .bt{height:28px}
 <header class="sec-head">
   <span class="sec-num">06</span>
   <div>
-    <p class="eyebrow">Why we are here: hard retrieval chooses the single best match. Attention returns a mixture. We go back to the gradient question (query 1) with the same keys and values as before.</p>
+    <p class="eyebrow">Return one best match, or mix information from several? Use the same gradient question (query 1), keys and values to compare.</p>
     <h2>Hard retrieval → soft retrieval</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Our hard-retrieval baseline picks the best-scoring item and returns its value. Attention instead blends values according to how well each key matched the query. This section makes that blend a spreadsheet: the scores from the previous section feed a softmax, the weights fill the $\va{\alpha_j}$ column, every value row is scaled by its weight, and the footer adds the rows up. Start in hard mode, where one row carries all the weight, then switch to soft and lower the temperature to watch the two modes meet. Drag a score up and watch every weight move. The sentence to remember: attention returns a weighted mixture of values, not one value.</p>
+  <p>Hard retrieval returns the value of the highest-scoring item. Attention blends values according to how well their keys match the query. Follow that calculation in the tables: softmax converts the previous section's scores into the $\va{\alpha_j}$ weights, each weight scales its value row, and the bottom row adds the results. Start in hard mode, where one item gets all the weight. Switch to soft mode and lower the temperature to see it approach hard retrieval. Raising a single score changes every weight because they share a denominator. The returned row is a mixture of values.</p>
 </div>
 
 <div class="frame" data-title="Hard retrieval returns one item's value" data-autobuild="off">
@@ -165,7 +165,7 @@ They use the value axes: gradients, optimisation and architecture. This is not a
   <p class="look" id="s06-mread"></p>
   <p class="verdict" id="s06-verdict"></p>
 </div>
-<div class="callout callout-key" data-build="1">Attention returns a <strong>weighted mixture of information</strong> for the current query—not another set of match scores.</div>
+<div class="callout callout-key" data-build="1">Attention returns a <strong>weighted mixture of information</strong> for this query. Its coordinates are value features, not match scores.</div>
 </div>
 
 <div class="companion" data-kicker="Inspect every contribution">
@@ -199,11 +199,11 @@ Its weight approaches one. If top scores tie, those top items keep sharing the w
 </div>
 
 <div class="companion">
-  <p>Each piece now has a job. A <span class="sym sym-q">Query</span> says what the searcher needs, <span class="sym sym-k">Keys</span> decide who matches, <span class="sym sym-v">Values</span> carry what comes back, and softmax turns scores into a mixture. Back to language.</p>
+  <p>The <span class="sym sym-q">query</span> describes what the searcher needs. <span class="sym sym-k">Keys</span> help score the matches; <span class="sym sym-v">values</span> carry the information to return. Softmax gives us the weights for mixing that information. We can use the same roles for tokens in a sentence.</p>
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: the scores decide the weights, the weights decide the mixture, and a change in one score moves every weight at once, because the softmax keeps them summing to 1.</p>
+  <p>The scores determine the weights, which determine the mixture. Changing one score changes the shared softmax denominator, so all the weights respond while still summing to 1.</p>
 </div>
 
 <script>

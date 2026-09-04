@@ -1,6 +1,6 @@
 # Handover: three-part interactive teaching series
 
-Updated 2026-09-03. Owner: Nipun Batra.
+Updated 2026-09-04. Owner: Nipun Batra.
 
 - Repository: https://github.com/nipunbatra/attention
 - Published series: https://nipunbatra.github.io/attention/
@@ -9,6 +9,15 @@ Updated 2026-09-03. Owner: Nipun Batra.
 All three parts are implemented. They share a slide-first reading/presentation system, not separate article and slide sources. The first slide-first checkpoint was `a49f811`; `a1d609c` completed Part 3 and the numerical-correctness pass. This handover accompanies the table-flow and Part 1 diagram refinement; `CLASSROOM_QA.md` records local verification. Check the checkout's Git log and the GitHub Pages workflow for the current published commit. A temporary checkout is not evidence of what is live.
 
 ## Start here
+
+The shared-layout pass removes permanent presentation header/footer bars. A small **Controls** button (or **C**) opens
+navigation without changing the stage scale. Slides show one title without repeated section labels. The article's notation
+strip is no longer sticky, and the end note is collapsed under “About this page”.
+
+The humanizer pass covers all 54 section files across Parts I–III: direct teacher explanations replace repetitive framing,
+while computations, notation, and technical caveats remain intact. PDFs now open `details.reveal` answers by default
+(`--answers show`); `--answers authored` preserves the closed questions. `export_test.mjs` checks actual answer pixels and
+PDF page counts, including dynamically created reveals. Browser Print opens answers and restores them afterwards.
 
 Read this file, then `PRESENT.md` for the current layout/runtime contract and `CLASSROOM_QA.md` for recorded verification. Inspect the actual section and shared runtime before editing.
 

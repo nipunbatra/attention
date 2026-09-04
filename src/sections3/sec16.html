@@ -6,10 +6,10 @@
 </style>
 <header class="sec-head">
   <span class="sec-num">16</span>
-  <div><p class="eyebrow">Why we are here: attention supplies learned routing, but several stronger claims do not follow from a weight matrix.</p><h2>What attention gives, and what it does not</h2></div>
+  <div><p class="eyebrow">An attention map shows how values are mixed. It cannot tell us everything about the model's answer.</p><h2>What attention gives, and what it does not</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>Attention gives each receiving token a learned, content-dependent way to combine value rows from allowed positions. That routing can shorten paths between distant tokens and adapt to the current input. An attention map alone does not guarantee factual output, sound reasoning, a complete explanation, or unlimited memory. A head can distribute work across several relations, and several heads can share one relation. Masking is part of causal training as well as generation. Context length remains finite, and the score calculation has a cost. The checks below separate the mechanism we computed from claims that require more evidence.</p>
+  <p>Each receiving token uses attention to combine value rows from allowed positions. Learned projections compute the weights from the current representations, so the pattern can adapt to the input and shorten paths between distant tokens. An attention map alone does not guarantee correct facts, sound reasoning, a complete explanation, or unlimited memory. One head may handle several relations, and several heads may share a relation. The causal mask is needed during training as well as generation. Context length is finite, and computing the scores has a cost. Use the checks below to distinguish what the calculation shows from what would need more evidence.</p>
 </div>
 <div class="frame" data-title="Mechanism and limits">
   <script type="text/x-notes">Which claims follow directly from the equations?
@@ -17,15 +17,15 @@
   <div class="card s16-list"><div class="s16-col"><h3 class="card-title">What it gives</h3><p>Learned routing that depends on the current representations and respects the mask.</p><p>A direct within-layer path between allowed token positions.</p></div><div class="s16-col" data-build="1"><h3 class="card-title">What it does not ensure</h3><p>Correct facts, reliable reasoning, complete explanations, or memory beyond the available context.</p></div></div>
 </div>
 <div class="frame" data-title="Is the attention map a full explanation?">
-  <script type="text/x-notes">Which statement fails first?
-  Open each reveal and tie the answer back to the attention calculation rather than to a slogan.</script>
+  <script type="text/x-notes">What can we infer from an attention map?
+  Open each answer and ask which part of the calculation supports it.</script>
   <div class="card"><h3 class="card-title">Test the claims</h3><div id="s16-checks"></div></div>
 </div>
 <div class="frame" data-title="Does one head always mean one rule?"><div class="card" id="s16-check-2"></div></div>
 <div class="frame" data-title="When is the causal mask needed?"><div class="card" id="s16-check-3"></div></div>
 <div class="frame" data-title="Does a Transformer remember everything?"><div class="card" id="s16-check-4"></div></div>
 <div class="companion"><div id="s16-note"></div></div>
-<div class="companion after"><p>Attention weights show where value information was mixed, while broader claims about behavior need evidence beyond the map.</p></div>
+<div class="companion after"><p>Attention weights tell us how the model mixed value information. We need other evidence to explain its broader behavior.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s16'),host=S.querySelector('#s16-checks');
@@ -35,7 +35,7 @@
     ['Is causal masking needed only during generation?','No. Parallel next-token training uses the same mask to prevent future-token leakage.'],
     ['Does a Transformer remember everything?','No. It has a finite context and finite parameters. A longer context also increases attention cost.']
   ].forEach((x,i)=>{AT.ui.reveal(x[0],x[1],{into:i?S.querySelector('#s16-check-'+(i+1)):host});});
-  AT.ui.callout('This page calls the attention output $\\vd{\\Delta e}$ to stress that it is added to the residual stream. Standard descriptions usually call it the attention output; the residual addition itself is standard.',{kind:'note',into:S.querySelector('#s16-note')});
+  AT.ui.callout('We call the attention output $\\vd{\\Delta e}$ because we add it to the residual stream. Standard descriptions usually call it the attention output. The residual addition is standard; the delta label is our teaching notation.',{kind:'note',into:S.querySelector('#s16-note')});
 })();
 </script>
 </section>

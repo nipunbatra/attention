@@ -8,10 +8,10 @@ body.present #s15 .dt th,body.present #s15 .dt td{white-space:normal;overflow-wr
 </style>
 <header class="sec-head">
   <span class="sec-num">15</span>
-  <div><p class="eyebrow">Why we are here: flexible context and short information paths make self-attention useful, though its score matrix has a cost.</p><h2>Sequence models side by side</h2></div>
+  <div><p class="eyebrow">Self-attention connects allowed tokens directly. What does that gain, and what does it cost?</p><h2>Sequence models side by side</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>A fixed-window MLP sees only the tokens placed in its window. An RNN can carry information over longer sequences, but the route between distant tokens passes through many recurrent updates. Temporal convolutions enlarge their receptive field as layers accumulate. Self-attention gives any allowed pair a direct path inside one layer and computes positions in parallel during training. That flexibility requires a score for every allowed query-key pair, so a full sequence uses a quadratic number of score cells. The table compares these properties without declaring one model best for every setting. Memory, latency, data, and task structure all affect the choice.</p>
+  <p>A fixed-window MLP sees only the tokens in its window. An RNN can carry information over longer sequences, but distant tokens communicate through many recurrent updates. Temporal convolutions reach more positions as we add layers. Self-attention connects any allowed pair directly within one layer and computes positions in parallel during training. It also needs a score for every allowed query-key pair, so the number of score cells grows quadratically with sequence length. These are trade-offs, not a ranking. Memory, latency, data, and the task all affect which model we choose.</p>
 </div>
 <div class="frame" data-title="Compare the context routes">
   <script type="text/x-notes">Which model gives two distant tokens a direct path in one layer?
@@ -28,7 +28,7 @@ body.present #s15 .dt th,body.present #s15 .dt td{white-space:normal;overflow-wr
   <div id="s15-price"></div>
   <div class="card" data-build="1"><h3 class="card-title">The recurring attention path</h3><div id="s15-motif"></div></div>
 </div>
-<div class="companion after"><p>Self-attention offers direct content-dependent paths, while the number of score cells grows with the square of sequence length.</p></div>
+<div class="companion after"><p>Self-attention connects tokens according to their content. Its direct paths come with a score count that grows as sequence length squared.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s15');

@@ -2,11 +2,11 @@
 <style>
 #s11 .compare-step .stepper-stage svg{max-height:380px}
 </style>
-<header class="sec-head"><span class="sec-num">11</span><div><p class="eyebrow">Why we are here: training and generation run the same forward pass but obtain the next token in different ways.</p><h2>Training and generation</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>During training, the data provides both the context and the observed next character. The model produces probabilities, cross-entropy scores the observed target, and the optimizer changes the parameters. Many windows can be processed in a batch because every window has the same shape. During generation, the next character is unknown. The model produces the same kind of distribution, then a rule chooses one character. That choice is appended to the context and becomes part of the next input. There is no target and no parameter update. The difference lies around the shared forward pass, not inside it.</p></div>
-<div class="frame" data-title="The same model serves two different loops" data-autobuild="off">
+<header class="sec-head"><span class="sec-num">11</span><div><p class="eyebrow">Training and generation use the same forward pass. What changes is where the next token comes from.</p><h2>Training and generation</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>During training, the data gives us both the context and the observed next character. We run the model to get probabilities, use cross-entropy to score the observed target, and update the parameters. Since all windows have the same shape, we can process many in a batch. During generation, we do not know the next character. We run the same forward pass, then choose a character from its distribution using a rule. Appending that choice makes it part of the next input. We have no observed target and make no parameter update. The calculation inside the forward pass is unchanged; what we do with its output is different.</p></div>
+<div class="frame" data-title="Run the same model in two different loops" data-autobuild="off">
   <script type="text/x-notes">Where does the next token come from during training and during generation?
-  First trace the training update. Then reuse the same model for generation and close the feedback loop with one reproducible sampled character. A boundary token would stop generation instead.</script>
+  First trace the training update. Then use the same model for generation. Follow the reproducible sampled character into the next input. A boundary token would stop generation instead.</script>
   <div id="s11-compare" class="compare-step diagram-step"></div>
 </div>
 <div class="frame" data-title="Many windows or one growing output" data-autobuild="off">
@@ -14,7 +14,7 @@
   Targets are already known in the data. Generation must wait for each sampled character before making the next input.</script>
   <div class="card"><div id="s11-table"></div></div>
 </div>
-<div class="companion after"><p>Keep in mind: training changes the model from observed targets, while generation holds the model fixed and extends the sequence.</p></div>
+<div class="companion after"><p>Training uses observed targets to change the model. Generation keeps the model fixed and extends the sequence.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s11');

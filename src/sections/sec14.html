@@ -36,7 +36,7 @@ body.present #s14-head-normalize .worked-head{gap:12px;margin:10px 0}
 <header class="sec-head">
   <span class="sec-num">14</span>
   <div>
-    <p class="eyebrow">Why we are here: a contextual representation is only useful if it changes the prediction.</p>
+    <p class="eyebrow">How does the updated representation change the next-token probabilities?</p>
     <h2>From <span class="sym sym-d">Δe</span> to the next-token probabilities</h2>
   </div>
 </header>
@@ -81,7 +81,7 @@ Point to position 10. Earlier we examined bank at position 7, but now q_10 searc
 </div>
 </div>
 
-<div class="frame" id="s14-routing-code" data-title="These weights come from the familiar three routing operations">
+<div class="frame" id="s14-routing-code" data-title="Match, scale, then normalize the scores">
   <script type="text/x-notes">Compare the same final query with all ten keys; scale; then softmax across source positions. Because the receiver is last, every displayed source is allowed.</script>
   <div class="grid-3">
     <div class="card"><strong>1 · Match</strong><p>$r_j=q_{10}\cdot k_j$</p></div>
@@ -174,7 +174,7 @@ In this one-layer toy it reads only the final row. Trace earlier tokens to the u
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: the head never sees the earlier tokens. It sees one row, $\vp{e_t'} = \ve{e_t} + \vd{\Delta e_t}$, and everything the context contributes is inside $\vd{\Delta e_t}$.</p>
+  <p>The head reads one row, $\vp{e_t'} = \ve{e_t} + \vd{\Delta e_t}$. In this toy, earlier tokens reach that row through $\vd{\Delta e_t}$; the head does not read them directly.</p>
 </div>
 
 <script>

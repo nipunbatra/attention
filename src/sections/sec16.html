@@ -52,20 +52,20 @@ body.present #s16 .eqs>span{padding:28px 18px;border:1px solid var(--line);borde
 <header class="sec-head">
   <span class="sec-num">16</span>
   <div>
-    <p class="eyebrow">Why we are here: one token at a time is clear. Now every token does the same thing at once, and that is what the matrices say.</p>
+    <p class="eyebrow">Matrix products run the same calculation for every token at once.</p>
     <h2>The same thing in matrix form</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Section 15 followed one token, bank, through attention. Every other token runs the same arithmetic on its own row, and nothing in that arithmetic depends on which row you look at. That is why the whole sublayer fits in a handful of matrix products: each product does the section 15 step for all seven tokens at once.</p>
-  <p>Step through the operations below and keep your eye on row 7. At every stage it holds the numbers you already saw for bank. The sentence to remember: a row of the matrix is a token, and $\vp{E'} = \ve{E} + \vd{\Delta E}$ updates every row in one addition.</p>
+  <p>The walkthrough followed bank through attention. Every token applies the same operations to its own row, so we can compute them together with matrix products. Here we use the short seven-token prefix: each product carries out the corresponding walkthrough step for all seven tokens.</p>
+  <p>Follow row 7 as you advance through the operations. It contains bank's numbers at every stage. Each matrix row belongs to a token, and $\vp{E'} = \ve{E} + \vd{\Delta E}$ adds all their updates at once.</p>
 </div>
 
 <div class="frame" id="s16-flow-frame" data-title="Can you trace one request through the whole diagram?">
   <script type="text/x-notes">
 Which branch chooses where to read, and which branch carries the information?
-Build the diagram one operation at a time. Q and K create the weights. V bypasses scoring. The weighted message is mapped back by W_O and added to the original representation. At the final stage, switch from bank at position7 to the last the at position10: this is a new receiver/query, with all projections still reading the same layer input. Only its updated row predicts the next token after the full prefix. This is a single causal attention head plus its residual connection and a toy vocabulary head, not the complete Transformer.
+Build the diagram one operation at a time. Q and K create the weights. V bypasses scoring. W_O maps the weighted message back to representation space, where it is added to the original row. At the final stage, switch from bank at position 7 to the last the at position 10. This changes the receiver and query; all projections still use the same layer input. Only the final updated row predicts the next token after the full prefix. This is a single causal attention head with a residual connection and a toy vocabulary head, not a complete Transformer.
   </script>
   <div id="s16-flow-stepper"></div>
 </div>
@@ -107,7 +107,7 @@ Keep row 7 highlighted and step through the products. Q and K are both T × 3, s
     <span>$S = \dfrac{\vq{Q}\,\vk{K}^\top}{\sqrt{d_k}}$</span>
     <span>$\va{A} = \operatorname{softmax}_{\text{row}}(S + M)$</span>
   </div>
-  <div class="callout callout-key" data-build="1"><strong>Routing result:</strong> row $i$ of $\va{A}$ contains the source weights chosen by receiver $i$.</div>
+  <div class="callout callout-key" data-build="1"><strong>Routing weights:</strong> row $i$ of $\va{A}$ contains the source weights chosen by receiver $i$.</div>
 </div>
 
 <div class="frame" id="s16-frame3" data-title="Matrix form, second phase: mix, project, and add">
@@ -131,7 +131,7 @@ A contains the source weights; A V forms messages; W_O maps them back; the resid
 <div id="s16-callouts"><div id="s16-callout-key"></div></div>
 </div>
 
-<div class="frame" id="s16-frame5" data-title="What have we built—and what has not appeared yet?">
+<div class="frame" id="s16-frame5" data-title="What have we built, and what is still missing?">
   <script type="text/x-notes">This is one causal attention head, its output projection and residual addition. A full Transformer block adds the remaining architecture in Part 3.</script>
 <div id="s16-callout-note"></div>
 <p class="muted small">PyTorch · matrices are row-major; mask contains 0 or −∞.</p>
@@ -140,7 +140,7 @@ E_new = E + (A @ V) @ W_O</code></pre>
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: the matrices are bookkeeping, not a new idea. Row $i$ of $\vp{E'}$ is $\ve{e_i} + \vd{\Delta e_i}$, the softmax runs one row at a time, and the mask is what keeps row $i$ from reading columns $j > i$.</p>
+  <p>The matrix form collects the same calculations into rows. Row $i$ of $\vp{E'}$ is $\ve{e_i} + \vd{\Delta e_i}$. Softmax runs independently on each row, and the mask prevents row $i$ from reading columns $j > i$.</p>
 </div>
 
 <script>
@@ -281,8 +281,8 @@ E_new = E + (A @ V) @ W_O</code></pre>
   }
 
   /* callouts */
-  AT.ui.callout('The matrices add nothing new. $\\va{A}\\,\\vv{V}$ computes every token\'s message in one product, and $\\vp{E\'} = \\ve{E} + \\vd{\\Delta E}$ is the residual addition applied to all rows at once.', { kind: 'key', into: S.querySelector('#s16-callout-key') });
-  AT.ui.callout('$\\vd{\\Delta E}$ is our pedagogical notation for the attention sublayer\'s residual update. Standard descriptions call $H W_O$ the attention output; the addition $\\ve{E} + \\vd{\\Delta E}$ itself is standard: it is the residual connection around the attention sublayer.', { kind: 'note', into: S.querySelector('#s16-callout-note') });
+  AT.ui.callout('These matrix products collect the token-by-token calculations: $\\va{A}\\,\\vv{V}$ computes all the messages, and $\\vp{E\'} = \\ve{E} + \\vd{\\Delta E}$ adds every row’s update at once.', { kind: 'key', into: S.querySelector('#s16-callout-key') });
+  AT.ui.callout('We write $\\vd{\\Delta E}$ to emphasize the update contributed by attention. Standard descriptions call $H W_O$ the attention output. Adding it to the input as $\\ve{E} + \\vd{\\Delta E}$ is the standard residual connection around the attention sublayer.', { kind: 'note', into: S.querySelector('#s16-callout-note') });
 })();
 </script>
 </section>

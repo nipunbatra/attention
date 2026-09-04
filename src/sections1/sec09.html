@@ -6,9 +6,9 @@
 #s09 .metric{font-family:var(--font-mono);font-size:.9em;color:var(--ink-2);margin:10px 0 0}
 #s09 .learning-step .stepper-stage svg{max-height:390px}
 </style>
-<header class="sec-head"><span class="sec-num">09</span><div><p class="eyebrow">Why we are here: the loss can improve future predictions only by changing the model's learned numbers.</p><h2>Learn the embeddings and the weights</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>The optimizer changes every parameter that helps produce the loss: the embedding table, both weight matrices, and both bias rows. For one context, only the embedding rows that were looked up receive a direct embedding gradient, while the shared MLP parameters receive gradients through the whole calculation. Repeating this over many shuffled training rows lowers the average loss. The curve records the training loss at regular checkpoints. The before and after bars use the same <em>aab</em> context with two saved parameter sets, so the change comes from training rather than from a different input.</p></div>
-<div class="frame" data-title="One graph does prediction and learning" data-autobuild="off">
+<header class="sec-head"><span class="sec-num">09</span><div><p class="eyebrow">To improve future predictions, training must change the model's learned numbers.</p><h2>Learn the embeddings and the weights</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>The optimizer updates the parameters that produced the loss: the embedding table, both weight matrices, and both bias rows. For a single context, only the embedding rows we looked up receive a direct embedding gradient. The shared MLP parameters receive gradients through the whole calculation. Repeating these updates over many shuffled training rows lowers the average loss. The curve records that loss at regular checkpoints. To see what changed for <em>aab</em>, compare the bars before and after training. They use two saved parameter sets with the same context, so a different input cannot explain the change.</p></div>
+<div class="frame" data-title="Follow prediction and learning in one graph" data-autobuild="off">
   <script type="text/x-notes">Where does the observed i enter this computation?
   First trace the forward prediction. Then add the observed target only at the loss, and finally follow the gradient arrows back to the stored parameters.</script>
   <div id="s09-learning" class="learning-step diagram-step"></div>
@@ -33,13 +33,13 @@
   <div class="side-by-side"><div class="card"><h3 class="card-title">Before training</h3><div id="s09-before"></div></div><div class="card" data-build="1"><h3 class="card-title">After training</h3><div id="s09-after"></div></div></div>
   <div class="callout callout-key" data-build="2">The same loss trains the embedding table and the MLP.</div>
 </div>
-<div class="companion after"><p>Keep in mind: saved checkpoints let us compare parameter changes with the prediction changes they produced.</p></div>
+<div class="companion after"><p>Run the same input through two saved checkpoints to see how the changed parameters affect its prediction.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s09'),M=window.__TOY__,V=M.vocab.length,D=M.d_model,H=M.d_h;
   AT.ui.stepper({el:S.querySelector('#s09-learning'),big:true,compact:true,scrollList:false,steps:[
     {title:'Context supplies the inputs',render:host=>host.appendChild(AT.part1Diagrams.learningGraph({stage:0}))},
-    {title:'Stored parameters make probabilities',render:host=>host.appendChild(AT.part1Diagrams.learningGraph({stage:1}))},
+    {title:'Use the stored parameters to predict',render:host=>host.appendChild(AT.part1Diagrams.learningGraph({stage:1}))},
     {title:'Observed i defines the loss',render:host=>host.appendChild(AT.part1Diagrams.learningGraph({stage:2}))},
     {title:'Autograd returns parameter gradients',render:host=>host.appendChild(AT.part1Diagrams.learningGraph({stage:3}))}
   ]});

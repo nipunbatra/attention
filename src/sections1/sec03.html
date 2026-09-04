@@ -6,11 +6,11 @@
 #s03 .stage-pair{display:flex;flex-wrap:wrap;align-items:center;gap:14px;justify-content:center}
 #s03 .target{font-family:var(--font-mono);font-size:1.3em;color:var(--warn)}
 </style>
-<header class="sec-head"><span class="sec-num">03</span><div><p class="eyebrow">Why we are here: an MLP needs a fixed input width, so we must choose how many earlier characters it receives.</p><h2>Choose a context length</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>A one-character window is small but forgets almost everything. A window containing the whole prefix would change length from one training row to the next, which a plain MLP cannot accept without another design choice. We begin with three previous characters. Padding with the boundary makes even the first prediction fit that width. Sliding the window across <em>aabid</em> yields six context-target pairs: five letters and then the ending boundary. The split between training and held-out names happens before these windows are made, so examples from one name never cross the split.</p></div>
-<div class="frame" data-title="Commit to three characters" data-autobuild="off">
+<header class="sec-head"><span class="sec-num">03</span><div><p class="eyebrow">The MLP needs a fixed-width input. How many earlier characters should we include?</p><h2>Choose a context length</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>A one-character window remembers very little. Using the whole prefix brings a different problem: its length changes from one training row to the next. A plain MLP needs another design choice to handle that changing input size. We start with three previous characters. Boundary padding gives even the first prediction a full three-character window. Sliding it across <em>aabid</em> makes six context-target pairs: five letters followed by the ending boundary. We split the names into training and held-out sets before making the windows, so examples from one name never cross the split.</p></div>
+<div class="frame" data-title="Use three previous characters" data-autobuild="off">
   <script type="text/x-notes">What would each context choice let the model remember?
-  Compare one, three, and all. Then commit to three because the first model needs a fixed input.</script>
+  Compare one, three, and all. Use three for this model because it needs a fixed input width.</script>
   <div class="card"><div class="grid-3"><div class="choice"><span class="mono">w = 1</span><p>One previous character</p></div><div class="choice chosen" data-build="1"><span class="mono">w = 3</span><p>Three previous characters</p></div><div class="choice" data-build="2"><span class="mono">w = all</span><p>A growing prefix</p></div></div></div>
   <div class="prose" data-build="3"><p>Use $$p_\theta(t_i\mid t_{i-3:i-1}).$$</p></div>
 </div>
@@ -28,7 +28,7 @@
   <div class="prose"><p>Each name of length $L$ contributes $L+1$ context-target pairs.</p></div>
   <div class="card" data-build="1"><h3 class="card-title">Rows made from the cleaned data</h3><div id="s03-counts"></div></div>
 </div>
-<div class="companion after"><p>Keep in mind: the fixed window makes every MLP input the same size, including the first prediction.</p></div>
+<div class="companion after"><p>The fixed window gives every MLP input the same size, including the first one.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s03'),M=window.__TOY__,rows=M.aabid_rows;

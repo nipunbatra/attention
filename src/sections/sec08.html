@@ -62,14 +62,14 @@ body.present #s08 .s08-present-only.frame.is-live{display:flex}
 <header class="sec-head">
   <span class="sec-num">08</span>
   <div>
-    <p class="eyebrow">Why we are here: one query, seven records. Attention happens in two separate phases: deciding where to read, then reading.</p>
+    <p class="eyebrow">Bank has one query and seven available sources. First choose the weights, then collect the information.</p>
     <h2>Two jobs: choose weights, then mix values</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Attention is easier to trust once you see that it is two separate jobs. Phase A uses only queries and keys: it scores every earlier token and turns the scores into weights that sum to one. Phase B uses only values: each token sends its value, scaled by its weight, and the scaled values are added.</p>
-  <p>Run phase A, then click a key in the picture to see its dot product written out, axis by axis. Then run phase B and read the sum, one coordinate per line. Switch between the value rows and the $\va{\alpha}\vv{v}$ products. The sentence to remember: keys decide where to read, values decide what is read.</p>
+  <p>We will work through attention in two phases. Phase A uses queries and keys to score the available tokens, then turns those scores into weights that sum to one. Phase B multiplies each source's value by its weight and adds the results. The keys help choose where to read; the values carry the information.</p>
+  <p>Run phase A and click a key in the diagram to inspect its dot product, coordinate by coordinate. Then run phase B and follow each coordinate into the sum. Switch between the original value rows and the $\va{\alpha}\vv{v}$ products to see what the weights changed.</p>
 </div>
 
 <div class="frame" data-title="Which earlier tokens should bank read?">
@@ -215,7 +215,7 @@ m_alt = alpha @ (E @ W_V_alt)</code></pre>
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: the weights $\va{\alpha_{7j}}$ came from queries and keys alone, and the message $m_7$ came from values alone. Nothing about “bank” has changed yet. Turning $m_7$ into a change is the next section.</p>
+  <p>Queries and keys gave us the weights $\va{\alpha_{7j}}$; the weighted values gave us the message $m_7$. Bank's representation is still unchanged. Next we will turn that message into an update.</p>
 </div>
 
 <script>
@@ -243,7 +243,7 @@ m_alt = alpha @ (E @ W_V_alt)</code></pre>
       { label: '$\\text{softmax} \\to \\va{\\alpha_{' + n + 'j}}$', cls: 'a', heat: true, heatMax: 1, fn: (row, i) => i === 0 ? '' : alpha[i - 1] }
     ],
     footer: { label: 'weights sum to', values: '', computed: ['', AT.sum(alpha)] },
-    caption: 'Look at: the score is the query row against one key row, axis by axis; the softmax column is the same seven scores turned into weights.',
+    caption: 'Each score compares the query with one key, coordinate by coordinate. Softmax turns these seven scores into the weights in the last column.',
     note: 'Click a score to see the dot product written out; hover a weight for the softmax.',
     into: S.querySelector('#s08-atab') });
   const scoreCells = toks.map((t, j) => atab.computedCells[j + 1][0]);
@@ -360,7 +360,7 @@ m_alt = alpha @ (E @ W_V_alt)</code></pre>
     AT.clear(bhost);
     btab = AT.ui.mixTable(alpha, F.V, { rowLabels: toks.map((t, j) => (weighted ? '$\\va{\\alpha_{' + n + ',' + (j + 1) + '}}\\vv{v_{' + (j + 1) + '}}$ ' : '$\\vv{v_{' + (j + 1) + '}}$ ') + t),
       cornerLabel: 'row', weighted: weighted, alphaLabel: '$\\va{\\alpha_{' + n + 'j}}$', footerLabel: '$m_{' + n + '} = \\sum_j \\va{\\alpha_{' + n + 'j}}\\,\\vv{v_j}$', into: bhost,
-      caption: (weighted ? 'Look at: each cell is one message term $\\va{\\alpha_{' + n + 'j}}\\,\\vv{v_j}$; ' : 'Look at: the weight column comes from phase A, the rows are the values $\\vv{v_j}$; ') + 'the footer adds the rows, one column at a time.',
+      caption: (weighted ? 'Each cell is a weighted contribution $\\va{\\alpha_{' + n + 'j}}\\,\\vv{v_j}$. ' : 'The weights come from phase A; the rows contain the values $\\vv{v_j}$. ') + 'The bottom row gives their weighted sum, one coordinate at a time.',
       note: sent ? 'Hover or focus a cell of the sum to see the weighted terms, row by row.' : 'Press “Run phase B” to send the messages and fill the sum.' });
     if (!sent) btab.setFooter(dash);
   }

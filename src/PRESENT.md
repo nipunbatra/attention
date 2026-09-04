@@ -8,13 +8,13 @@ system—never a separately maintained slide deck.
 ## The layout contract
 
 - A teaching frame is `<div class="frame" data-title="…">` inside a `section.sec`.
-- Presentation uses a logical **1280 × 720** stage. JavaScript uniformly scales the complete stage into the space between
-  the notation strip and classroom toolbar. Browser shape and resolution change only the scale; they do not trigger a
+- Presentation uses a logical **1280 × 720** stage. JavaScript uniformly scales the complete stage into the viewport,
+  with a quiet outer margin. There is no persistent header or footer. Browser shape and resolution change only the scale; they do not trigger a
   mobile reflow of the slide.
 - Presentation typography is expressed in logical stage pixels through reusable CSS tokens:
   `--present-body: 28px`, `--present-title: 42px`, `--present-caption: 22px`, and `--present-math: 32px`.
   A lesson may override the tokens, but it must not use viewport-relative type inside a frame.
-- In presentation, `data-title` is the large slide heading. The article section heading is a small context label above it.
+- In presentation, `data-title` is the single large slide heading. Repeated section labels and numbers are hidden.
   If `data-title` is absent (or repeats the section title), the section heading becomes the slide heading.
 - A frame **never scrolls and never shrinks its own type to fit**. If content exceeds the stage, move the next idea to a
   continuation frame. The runtime outlines the overfull frame and displays an authoring warning with the excess width or
@@ -83,7 +83,7 @@ but it is not a classroom authoring target.
   `data-autobuild="off"` for deliberate choreography.
 - Managed steppers consume next/back while they have steps, then frame navigation continues. A control inside
   `data-present="manual"` keeps native keyboard behaviour and its own state.
-- Presentation hides the duplicate local toolbar of a managed stepper; the persistent classroom Previous/Next controls
+- Presentation hides the duplicate local toolbar of a managed stepper; keyboard navigation or the on-demand Previous/Next controls
   drive it. Manual steppers retain their controls. `.diagram-step` uses full-width SVG stages and a current-step heading
   in presentation; reading mode shows its compact stage selector above the same drawing.
 - Sliders and toggles are presenter-driven. Their state resets when leaving the frame unless the widget uses
@@ -141,8 +141,9 @@ The command-line `frame_audit.mjs` also reparses rendered KaTeX with strict erro
 - Right / Space / PageDown / N: next step, build, then frame.
 - Left / PageUp / Backspace: reverse that sequence. Home / End: first / last frame.
 - O: overview. B: blank screen. S: notes. ?: help. F: browser full screen.
-- The persistent toolbar exposes Previous, Next, Frames, Full screen, and Exit. Its measured height and the notation-strip
-  height are excluded before the 16:9 stage is scaled.
+- Click **Controls** or press **C** for Previous, Next, Frames, Full screen, Presenter view, and Exit. The panel overlays
+  the page without resizing the stage. It starts closed, and hidden controls cannot receive keyboard focus. Escape closes
+  it first; Escape again returns to reading. Arrow-key navigation works with the panel closed.
 - The URL hash `#sNN/f/b` follows the current frame and build for deep links and break-time resumption.
 - Presenter view opens the same file with `#presenter`, showing current/next frame, notes, build status, and a clock. It is
   synchronized through `postMessage`, including from `file://`.
@@ -151,7 +152,8 @@ The command-line `frame_audit.mjs` also reparses rendered KaTeX with strict erro
 
 In reading, frames are transparent structural wrappers, so the article remains responsive and accessible. Full reading
 shows `.companion`; lean reading hides it. `@media print` removes the fixed stage, shows all builds and companions, places
-one frame per landscape page, and advances steppers to their final state before printing.
+one frame per landscape page, advances steppers to their final state, and opens answer reveals before printing.
+After printing, the runtime restores the interactive state.
 
 ### Exact slide-view PDF
 
@@ -169,14 +171,19 @@ node src/export_slides.mjs attention.html deck.pdf --frames output/slide-pngs
 
 # Rasterize at 1x, 2x (the default), or 3x resolution
 node src/export_slides.mjs attention.html deck.pdf --scale 3
+
+# Optional question handout: preserve authored open/closed answer states
+node src/export_slides.mjs attention.html deck.pdf --answers authored
 ```
 
 The exporter uses the same live presentation runtime, hides browser chrome, checks every open reveal/build/step for fit,
 and refuses to make a PDF while any frame overflows. It installs no package and resolves an existing Playwright runtime.
 Each PDF page is the exact rendered 16:9 stage, stored as a high-resolution image so browser typography, diagrams, and
 widget states match the classroom view. This means the exported text is not selectable. The default export advances
-authored builds and managed steppers to their final state; presenter-driven sliders, quizzes, and manual disclosures keep
-their authored default state. Use `--builds all` when each progressive reveal should become its own PDF page.
+authored builds and managed steppers to their final state and opens every `details.reveal` answer in that completed frame.
+The default is `--answers show`: PDF readers should not lose an explanation because they cannot click it. With `--builds all`,
+earlier build pages remain unanswered; answers appear on the completed frame. `--answers authored` preserves the authored
+open/closed state instead. Presenter-driven sliders and other manual controls keep their defaults.
 
 ## Focused checks
 
@@ -184,6 +191,7 @@ Run from the project root:
 
 ```sh
 node src/pres_test.mjs
+node src/export_test.mjs
 node src/check_tables.mjs part1.html attention.html part3.html
 node src/frame_audit.mjs attention.html --shots /tmp/attention-overflow
 node src/export_slides.mjs attention.html /tmp/attention-slides.pdf
@@ -191,7 +199,10 @@ node src/export_slides.mjs attention.html /tmp/attention-slides.pdf
 
 The test uses an already installed Playwright runtime and writes screenshots to a printed temporary path. It covers
 reading anchors, deep links, builds, nested/multiple steppers, manual controls, modal focus, presentation-state restore,
-presenter-window sync, print, canonical-stage scaling, mobile toolbar clearance, no-scroll code snippets, and accessible
+presenter-window sync, print-state restoration, canonical-stage scaling, on-demand controls, no-scroll code snippets, and accessible
 arithmetic. `frame_audit.mjs` walks the assembled lesson, checks the 1280×720 stage contract at every live state, invokes
 the full preflight (including open reveals), and writes screenshots only for failures. Run it for every assembled part
 before release.
+
+`export_test.mjs` checks final/all-build exports with shown/authored answers. It verifies PDF page counts and actual answer
+pixels in the exported PNGs, including a reveal created only in the final step of a managed widget.

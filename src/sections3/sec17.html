@@ -8,10 +8,10 @@
 </style>
 <header class="sec-head">
   <span class="sec-num">17</span>
-  <div><p class="eyebrow">Why we are here: comparing the Transformer with the Part 1 character MLP isolates the change in how context is represented.</p><h2>Back to aabid</h2></div>
+  <div><p class="eyebrow">Compare the Transformer with our character MLP. How has the way we represent context changed?</p><h2>Back to aabid</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>The aabid character model and the Transformer both embed discrete symbols, produce logits, apply softmax, and learn from next-token cross-entropy. Their main difference lies between the embeddings and the output head. The character MLP concatenates a fixed number of previous embedding rows, so its context size is chosen in advance and each window slot has separate input weights. The Transformer keeps one row per token, uses causal self-attention to gather from any allowed prefix position, and repeats attention and FFN updates through a stack. This comparison turns the larger architecture into a change of context builder rather than a new learning objective.</p>
+  <p>Both models embed discrete symbols, produce logits, apply softmax, and learn from next-token cross-entropy. The main difference is between the embeddings and the output head. Our aabid MLP concatenates a fixed number of previous embedding rows. We choose its context size in advance, and each window slot has separate input weights. The Transformer keeps one row per token and uses causal self-attention to read from any allowed position in the prefix. It then repeats attention and FFN updates through a stack. We have changed how the model builds context, while keeping the next-token learning objective.</p>
 </div>
 <div class="frame" data-title="Two context builders">
   <script type="text/x-notes">Where does each model combine its context?

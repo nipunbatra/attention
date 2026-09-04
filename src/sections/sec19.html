@@ -54,14 +54,14 @@ body.present #s19-math-message>.card{padding:18px 22px;margin-bottom:0}
 <header class="sec-head">
   <span class="sec-num">19</span>
   <div>
-    <p class="eyebrow">Why we are here: the whole argument three times (in words, as a chain, and as matrices), then back to the first sentence.</p>
+    <p class="eyebrow">Explain attention in words, trace its operations, then write the matrix equations.</p>
     <h2>Three summaries</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>A summary is only useful if you can reproduce it without the page. So this section says the same thing three times, each in a form you might be asked for: a sentence for a conversation, a chain for a whiteboard, and four equations for an exam.</p>
-  <p>Play the chain and watch the pipeline diagram light up stage by stage. Then switch the sentence in the last card and check that the winning word changes while the equations do not. The sentence to remember: each token reads itself and earlier tokens, mixes their values, and receives the projected message through a residual addition.</p>
+  <p>Try explaining attention without looking at the page. You can use a sentence in conversation, draw the sequence of operations on a whiteboard, or write the four matrix equations in an exam. The summaries below describe the same calculation in those three forms.</p>
+  <p>Play the chain to follow each stage in the diagram. Then switch the sentence in the last card: the highest-probability word changes, but the equations stay the same. Each token reads itself and earlier tokens, mixes their values, and receives the projected message through a residual addition.</p>
 </div>
 
 <div class="frame" id="s19-frame1" data-title="Can we tell the whole attention story?">
@@ -214,7 +214,7 @@ No. We traced a hand-designed single-head forward computation. Learning changes 
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: attention computes $\vd{\Delta E}$ and the residual connection forms $\vp{E'} = \ve{E} + \vd{\Delta E}$; and the output head reads the last row of $\vp{E'}$ to predict the next token.</p>
+  <p>Attention computes $\vd{\Delta E}$. The residual connection forms $\vp{E'} = \ve{E} + \vd{\Delta E}$, and the output head reads its last row to predict the next token.</p>
 </div>
 
 <script>
@@ -387,7 +387,7 @@ No. We traced a hand-designed single-head forward computation. Learning changes 
   paint();
 
   /* ---- closing note: prediction is one step; generation repeats it ---- */
-  AT.ui.callout('Prediction is not generation. The output head gives probabilities for one step. To generate, pick a token from $p(x_{t+1}\\mid x_{\\le t})$, append it to the sequence, form the query for the new last position, and repeat.', { kind: 'note', into: S.querySelector('#s19-notes') });
+  AT.ui.callout('One prediction gives a distribution for one next token. Generation repeats the process: choose a token from $p(x_{t+1}\\mid x_{\\le t})$, append it, form the query at the new last position, and predict again.', { kind: 'note', into: S.querySelector('#s19-notes') });
 
   /* ---- notation recap ---- */
   AT.ui.notationCard({ groups: ['matrix', 'sizes'], into: S.querySelector('#s19-notation') });

@@ -9,8 +9,8 @@ body.present #s12 .token-modes{display:flex;margin:12px 0}
 body.present #s12 .token-modes [aria-pressed=true]{background:var(--ink);color:var(--card)}
 body.present #s12 .tok-row:not(.is-active){display:none}
 </style>
-<header class="sec-head"><span class="sec-num">12</span><div><p class="eyebrow">Why we are here: the next-token objective stays the same even when one token stops meaning one character.</p><h2>What should a token be?</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>Characters give a small vocabulary and can represent unfamiliar strings, but ordinary sentences become long. Whole words shorten the sequence and are easy to read, yet the vocabulary grows quickly and unseen words collapse to an unknown token. Subwords sit between these choices by reusing common pieces inside frequent and rare words. The widget applies three simple tokenizers to the same text and reports the resulting sequence length and the number of distinct displayed tokens. The subword merges are illustrative rather than a trained tokenizer. Later, attention will compare token pairs, so its cost depends strongly on the sequence length $T$.</p></div>
+<header class="sec-head"><span class="sec-num">12</span><div><p class="eyebrow">A token need not be a character. We still ask the model to predict the next one.</p><h2>What should a token be?</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>A character vocabulary is small and can represent unfamiliar strings, but it turns ordinary sentences into long sequences. Whole words give shorter, readable sequences. Their vocabulary grows quickly, though, and unseen words collapse to an unknown token. Subwords offer a compromise: common pieces can be reused inside both frequent and rare words. Try the three simple tokenizers below on the same text. Each reports the sequence length and the number of distinct tokens in that sample. The subword merges illustrate the idea; they do not come from a trained tokenizer. Later, attention will compare pairs of tokens, so the sequence length $T$ will strongly affect its cost.</p></div>
 <div class="frame" data-title="Three token sizes" data-autobuild="off">
   <script type="text/x-notes">What becomes larger when tokens become smaller?
   Compare vocabulary coverage with sequence length. Keep the next-token objective fixed.</script>
@@ -31,7 +31,7 @@ body.present #s12 .tok-row:not(.is-active){display:none}
   <div class="card"><div id="s12-unk"></div></div>
   <div class="callout callout-note" data-build="1">Three different strings become the same unknown token.</div>
 </div>
-<div class="companion after"><p>Keep in mind: tokenization changes both the vocabulary and the sequence length before the model sees any IDs.</p></div>
+<div class="companion after"><p>By the time the model receives token IDs, tokenization has already determined the vocabulary and the sequence length.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s12'),input=S.querySelector('#s12-input'),out=S.querySelector('#s12-output');

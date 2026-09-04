@@ -7,10 +7,10 @@
 </style>
 <header class="sec-head">
   <span class="sec-num">19</span>
-  <div><p class="eyebrow">Why we are here: the series closes by reducing learning, the block, and generation to one compact statement each.</p><h2>Three summaries</h2></div>
+  <div><p class="eyebrow">Summarize one training step, one block, and the generation loop.</p><h2>Three summaries</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>The lesson has moved through three scales. At the training-example scale, the observed next token gives a loss, reverse-mode autodiff supplies gradients, and SGD changes every contributing parameter. At the block scale, LayerNorm prepares residual rows, multi-head attention mixes information across allowed positions, and an FFN mixes features within each position. At the language-model scale, token and position rows pass through many causal blocks, the vocabulary head supplies next-token probabilities, and generation appends one token at a time while reusing cached keys and values. The three cards keep those scales separate while showing how they connect.</p>
+  <p>For one training example, the observed next token gives us a loss. Reverse-mode autodiff computes gradients, and SGD updates the contributing parameters. Inside one block, LayerNorm prepares the residual rows, multi-head attention gathers information across allowed positions, and the FFN mixes features within each position. The language model passes token and position rows through a stack of these causal blocks and uses the vocabulary head to get next-token probabilities. During generation, we append one token at a time and reuse cached keys and values. The cards below separate these three views of the same model.</p>
 </div>
 <div class="frame" data-title="Learning, block, model">
   <script type="text/x-notes">Can each scale be stated in one sentence?
@@ -24,12 +24,12 @@
   <nav class="s19-links" data-build="1" aria-label="Series links"><a class="btn" href="part1.html">Back to Part 1</a><a class="btn btn-primary" href="attention.html">Back to Part 2</a></nav>
 </div>
 <div class="companion"><div id="s19-note"></div></div>
-<div class="companion after"><p>The attention calculation is one branch inside a trainable residual stack that predicts and generates tokens.</p></div>
+<div class="companion after"><p>The attention calculation we worked through in Part 2 is one branch in this trainable residual stack. The whole model predicts and generates tokens.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s19');
   AT.motif(S.querySelector('#s19-motif'),{active:null,labels:true});
-  AT.ui.callout('The symbol $\\vd{\\Delta e}$ is this page\'s name for the attention output before residual addition. Standard implementations often use another variable name, while the addition $\\ve{e}+\\vd{\\Delta e}$ remains the same operation.',{kind:'note',into:S.querySelector('#s19-note')});
+  AT.ui.callout('We write the attention output as $\\vd{\\Delta e}$ before adding it to the residual stream. Standard implementations may use another variable name; they still perform the addition $\\ve{e}+\\vd{\\Delta e}$.',{kind:'note',into:S.querySelector('#s19-note')});
 })();
 </script>
 </section>

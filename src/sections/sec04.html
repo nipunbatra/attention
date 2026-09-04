@@ -26,13 +26,13 @@ body.present #s04 #s04-live-pool{margin-top:14px}
 <header class="sec-head">
   <span class="sec-num">04</span>
   <div>
-    <p class="eyebrow">Why we are here: a fixed window imposes a hard boundary on which earlier tokens are available. Could we instead <em>pool</em> information from the whole prefix?</p>
+    <p class="eyebrow">Could we <em>pool</em> information from the whole prefix instead of cutting it off at a fixed window?</p>
     <h2>Weighted pooling: where should weights come from?</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Attention is a way to choose weights, so this section first shows what weights do. A pooled vector $c_i$ is a weighted sum of earlier representations, and the spreadsheets below make that sum visible: one row per token, one column per coordinate, a weight column on the left and the sum in the footer. Drag the position slider and watch the mean give every included row the same weight. Then move the raw-weight sliders for <em>bank</em> and watch the footer drift towards whichever row you favour. The sentence to remember: the weights decide what a token collects, and someone has to choose them.</p>
+  <p>Before choosing weights with attention, try choosing them yourself. A pooled vector $c_i$ is a weighted sum of earlier representations. The tables show one row per token, one column per coordinate, the weights on the left and the sum at the bottom. Drag the position slider: the mean gives every included row equal weight. Then adjust the raw weights for <em>bank</em>. The result moves towards the rows you favour. These weights determine what information reaches bank, so how should a model choose them?</p>
 </div>
 
 <div class="frame" data-title="Average every earlier token" data-autobuild="off">
@@ -116,7 +116,7 @@ Let the room answer before the question callout: you chose them by hand because 
 Timing: two minutes.
   </script>
   <div class="prose">
-    <p><em>You</em> chose those weights by hand, because you know that <em>bank</em> wants <em>river</em>. A model cannot ask you, and a different token would want a different set of weights.</p>
+    <p><em>You</em> gave <em>river</em> more weight because it helps interpret <em>bank</em>. A model needs to choose those weights from its inputs. A different receiving token may need different information.</p>
   </div>
 
   <div class="callout callout-key" data-build="1">
@@ -127,7 +127,7 @@ Timing: two minutes.
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: the pooled vector is only as good as its weights, and the weights we want depend on the token that is asking and on the tokens that could answer. The next section hands that job to a search engine.</p>
+  <p>The weights determine the pooled vector. They should depend on both the receiving token and the sources it could read. A search example will help us separate those two roles.</p>
 </div>
 
 <script>

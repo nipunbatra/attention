@@ -28,14 +28,14 @@ body.present #s07 .calc-rounding{display:none}
 <header class="sec-head">
   <span class="sec-num">07</span>
   <div>
-    <p class="eyebrow">Why we are here: search results carried a key and a value. Now every token in the sentence gets its own.</p>
+    <p class="eyebrow">Each token supplies a key for matching and a value to send, just as the search results did.</p>
     <h2>Every token becomes a searchable record</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>The search detour gave us three roles: a query that asks, a key that says when to answer, and a value that is the answer. Now every token gets a key and a value, computed from its own representation with two shared matrices, and the token gathering context gets a query from a third matrix.</p>
-  <p>Every coordinate has a name in this toy, so read the column headers before the numbers. Click a different query token and watch which rows stay open. Open a record and read its three rows. The sentence to remember: a query, a key and a value are three linear views of the same $\ve{e}$.</p>
+  <p>Bring the search roles back to our sentence. Each token gets a key and a value, computed from its own representation using two shared matrices. The token gathering context gets a query from a third matrix. Its query asks for information, each source's key describes when it can help, and its value carries what it will send.</p>
+  <p>Read the column headers before the numbers: every coordinate has a name in this toy. Choose a different query token and watch which source rows remain available. Open a record to compare its rows. Query, key and value are three linear views of the same $\ve{e}$.</p>
 </div>
 
 <div class="frame" id="s07-frame1" data-title="What does the receiving token ask for?">
@@ -81,7 +81,7 @@ Does a source send its key or its value?
 Open river’s record and compare e, k and v. The following frames show the key and value calculations separately. The column names are hand-designed for this toy; real learned coordinates need not have these meanings.
   </script>
 <div class="card">
-  <h3 class="card-title">One record: what token $j$ publishes. Three rows, three sets of axis names</h3>
+  <h3 class="card-title">One source token $j$: compare its three rows and their axes</h3>
   <div id="s07-rchips" data-keep-state></div>
   <div class="rec-grid" id="s07-rec"></div>
   <p class="rd" id="s07-rread"></p>
@@ -132,7 +132,7 @@ There is one W_Q, one W_K and one W_V for this head, reused at every position. Q
 <div class="card">
   <h3 class="card-title">Three shared projections: $W_Q,W_K$ are $d_{\text{model}}\times d_k$; $W_V$ is $d_{\text{model}}\times d_v$</h3>
   <div class="wrow" id="s07-mats"></div>
-  <p class="companion muted small qnote">Look at: the same $W_Q$, $W_K$, $W_V$ act on every position. A row is an input axis of $\ve{e}$; a column is an output axis. Read each non-zero cell as “this axis feeds that axis”.</p>
+  <p class="companion muted small qnote">The same $W_Q$, $W_K$, $W_V$ act on every position. Each row names an input axis of $\ve{e}$; each column names an output axis. A non-zero cell tells us how much that input contributes to that output.</p>
 </div>
 
 <p class="muted small">The same matrices are reused at every position.</p>
@@ -141,7 +141,7 @@ k_j, v_j = e_j @ W_K, e_j @ W_V</code></pre>
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: nothing has been compared or retrieved yet. Each token has only been given a query, a key and a value, all computed from its own $\ve{e}$ with matrices that every position shares.</p>
+  <p>So far we have computed each token's query, key and value from its own $\ve{e}$, using matrices shared across positions. Comparing and retrieving are the next steps.</p>
 </div>
 
 <script>
@@ -226,7 +226,7 @@ k_j, v_j = e_j @ W_K, e_j @ W_V</code></pre>
     onClick: (i) => { qi = i; chips.setActive(i); chips.setMuted(later(i)); redraw(); } });
   chips.setMuted(later(qi));
   const etab = AT.ui.table(F.E, { rowLabels: rowLabels, rowCls: 'e', cornerLabel: 'token', highlightRow: qi, dimRows: later(qi),
-    caption: 'Look at: every row is one token’s current representation $\\ve{e_j}$, token embedding plus a small position offset, one named axis per column. The bold row is the query token.', into: S.querySelector('#s07-etab') });
+    caption: 'Each row is a token’s current representation $\\ve{e_j}$: its embedding plus a small position offset, with one named axis per column. The bold row supplies the query.', into: S.querySelector('#s07-etab') });
   const eread = S.querySelector('#s07-eread');
 
   /* ---------- one record: e_j, k_j, v_j as three small tables ---------- */
@@ -269,7 +269,7 @@ k_j, v_j = e_j @ W_K, e_j @ W_V</code></pre>
     const n = qi + 1;
     AT.ui.dotTable(F.Q[qi], F.K, { rowLabels: rowLabels.map((s, j) => '$\\vk{k_{' + (j + 1) + '}}$ ' + toks[j]), queryLabel: '$\\vq{q_{' + n + '}}$ ' + toks[qi], cornerLabel: 'row',
       scaled: true, d_k: AT.d_k, mask: later(qi), into: khost,
-      caption: 'Look at: $\\vq{q_{' + n + '}} = \\ve{e_{' + n + '}}\\,W_Q$ on top, one key $\\vk{k_j} = \\ve{e_j}\\,W_K$ per open row, both under the same axis names. The score column is a preview of the next section.',
+      caption: 'The query $\\vq{q_{' + n + '}} = \\ve{e_{' + n + '}}\\,W_Q$ is above the keys, with one $\\vk{k_j} = \\ve{e_j}\\,W_K$ per available row. Both use the same matching axes. We will work through the score column in the next section.',
       note: 'Click a score to see the dot product written out, axis by axis.' });
     qread.innerHTML = readQ(qi);
     AT.renderMath(qread);
@@ -290,7 +290,7 @@ k_j, v_j = e_j @ W_K, e_j @ W_V</code></pre>
 
   /* ---------- value table ---------- */
   const vtab = AT.ui.table(F.V, { rowLabels: rowLabels.map((s, j) => '$\\vv{v_{' + (j + 1) + '}}$ ' + toks[j]), rowCls: 'v', cornerLabel: 'row', dimRows: later(qi),
-    caption: 'Look at: $\\vv{v_j} = \\ve{e_j}\\,W_V$ is what token $j$ sends if it is read; the headers say what each coordinate would say. Nothing is sent yet.', into: S.querySelector('#s07-vtab') });
+    caption: '$\\vv{v_j} = \\ve{e_j}\\,W_V$ is the information token $j$ can send. The headers name its coordinates. We have computed the values but have not sent them yet.', into: S.querySelector('#s07-vtab') });
 
   const qnote = S.querySelector('#s07-qnote');
   function redraw(){

@@ -5,10 +5,10 @@
 </style>
 <header class="sec-head">
   <span class="sec-num">18</span>
-  <div><p class="eyebrow">Why we are here: eight short questions test the distinctions that are easiest to blur when the full model appears at once.</p><h2>Pause and think</h2></div>
+  <div><p class="eyebrow">Eight questions to check what each part of the model does.</p><h2>Pause and think</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>Use these questions as a retrieval check rather than a reading checklist. Say an answer before opening its panel, then connect it to a specific equation or diagram from the lesson. Several questions protect distinctions that matter in implementation: parameters versus activations, full input rows versus projected head widths, attention across positions versus FFN mixing within a row, and causal masking during both training and generation. The last question returns to the layer example. A representation moving farther from its initial embedding proves only that the vector changed. Distance alone does not establish that context caused the change, or that the result is more useful. To test the role of context, change the surrounding tokens while holding the model and receiving token fixed.</p>
+  <p>Answer each question before opening its panel. Then find an equation or diagram that supports your answer. Check that you can distinguish parameters from activations, full input rows from projected head outputs, and attention across positions from the FFN within a row. Explain why the causal mask is needed in both training and generation. The last question returns to the layer example: if a representation moves farther from its initial embedding, all we know is that the vector changed. Distance alone cannot tell us whether context caused the change or whether the result is more useful. To isolate the effect of context, change the surrounding tokens while keeping the model and receiving token fixed.</p>
 </div>
 <div class="frame" data-title="Learning and masking checks">
   <script type="text/x-notes">Can students answer before opening each panel?
@@ -23,7 +23,7 @@
 <div class="frame" data-title="Heads and feature mixing"><div class="card s18-grid" id="s18-c" data-build="1"></div></div>
 <div class="frame" data-title="Caching and contextual change"><div class="card s18-grid" id="s18-d" data-build="1"></div></div>
 <div class="companion"><div id="s18-note"></div></div>
-<div class="companion after"><p>Correct answers should name the mechanism, the direction of data flow, and the scope of the claim.</p></div>
+<div class="companion after"><p>For each answer, explain what the model does, where the information flows, and what the calculation does or does not establish.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s18');
@@ -39,7 +39,7 @@
   ];
   function add(host,items){items.forEach((x,i)=>{const r=AT.ui.reveal(x[0],x[1],{into:host});r.setAttribute('data-build',String(i+2));});}
   ['a','b','c','d'].forEach((name,i)=>add(S.querySelector('#s18-'+name),qa.slice(i*2,i*2+2)));
-  AT.ui.callout('This lesson uses $\\vd{\\Delta e}$ as teaching notation for the attention output that is added to the residual stream. Standard descriptions often omit the delta symbol; the residual addition is standard.',{kind:'note',into:S.querySelector('#s18-note')});
+  AT.ui.callout('$\\vd{\\Delta e}$ is our teaching notation for the attention output added to the residual stream. Standard descriptions often leave out the delta symbol, but use the same residual addition.',{kind:'note',into:S.querySelector('#s18-note')});
 })();
 </script>
 </section>

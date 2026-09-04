@@ -10,10 +10,10 @@
 </style>
 <header class="sec-head">
   <span class="sec-num">09</span>
-  <div><p class="eyebrow">Why we are here: residual paths preserve a shared stream, while LayerNorm keeps each row on a controlled scale before a branch reads it.</p><h2>The residual stream and LayerNorm</h2></div>
+  <div><p class="eyebrow">Residual paths carry the rows forward. LayerNorm controls each row's scale before attention or the FFN reads it.</p><h2>The residual stream and LayerNorm</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>The residual stream is the model-width row carried through the stack. Attention and the FFN read from that stream, compute updates, and add those updates back. LayerNorm acts within one row: it subtracts the row mean and divides by $\sqrt{\operatorname{var}+\epsilon}$. The small $\epsilon$ keeps the denominator nonzero, even for a constant row. In the pre-norm decoder used here, LayerNorm sits before attention and before the FFN. The sliders let you inspect the mean, centered values, variance, and normalized values. This calculator uses $\epsilon=10^{-5}$ and fixes the learned scale and shift to $\gamma=1$, $\beta=0$; a trainable LayerNorm normally learns them. See the <a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.LayerNorm.html">PyTorch LayerNorm definition</a>.</p>
+  <p>The residual stream is the model-width row carried through the stack. Attention and the FFN read it, compute updates, and add those updates back. LayerNorm works within one row: subtract the row mean, then divide by $\sqrt{\operatorname{var}+\epsilon}$. The small $\epsilon$ keeps the denominator nonzero even when every value in the row is the same. Our pre-norm decoder applies LayerNorm before attention and before the FFN. Move the sliders to see the mean, centered values, variance, and normalized values change. The calculator uses $\epsilon=10^{-5}$ and fixes the scale and shift at $\gamma=1$, $\beta=0$. A trainable LayerNorm normally learns its scale and shift. See the <a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.LayerNorm.html">PyTorch LayerNorm definition</a>.</p>
 </div>
 <div class="frame" data-title="An unbroken residual line">
   <script type="text/x-notes">Which path carries the representation through the block?
@@ -32,7 +32,7 @@
   <div class="card"><h3 class="card-title">Choose the arrangement</h3><div id="s09-toggle"></div><div id="s09-eq"></div></div>
   <div id="s09-note" data-build="1"></div>
 </div>
-<div class="companion after"><p>The residual stream carries model-width rows forward; LayerNorm prepares each row before a branch reads it.</p></div>
+<div class="companion after"><p>LayerNorm prepares the row a branch will read. The residual stream still carries the model-width row forward.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s09');
@@ -44,7 +44,7 @@
   const eq=S.querySelector('#s09-eq');
   function mode(pre){AT.clear(eq);AT.tex(eq,pre?'\\ve{u}=\\ve{e}+\\operatorname{MHA}(\\operatorname{LN}(\\ve{e}))':'\\ve{u}=\\operatorname{LN}(\\ve{e}+\\operatorname{MHA}(\\ve{e}))',{display:true});}
   AT.ui.toggle({label:'Pre-norm block',on:true,onText:'pre-norm',offText:'post-norm',onChange:mode,into:S.querySelector('#s09-toggle')});mode(true);
-  AT.ui.callout('We use pre-norm in the next section. Calling an attention result $\\vd{\\Delta e}$ is this page\'s teaching notation; standard descriptions call it the attention output. The residual addition is standard.',{kind:'note',into:S.querySelector('#s09-note')});
+  AT.ui.callout('The next section uses pre-norm. We write the attention output as $\\vd{\\Delta e}$ to show where it is added. The delta notation is a teaching choice; the residual addition is standard.',{kind:'note',into:S.querySelector('#s09-note')});
 })();
 </script>
 </section>

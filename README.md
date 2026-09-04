@@ -39,7 +39,7 @@ node src/export_slides.mjs attention.html output/pdf/attention-part2-slides.pdf
 node src/export_slides.mjs attention.html output/pdf/attention-part2-builds.pdf --builds all
 ```
 
-The exporter checks every frame for clipping before writing the PDF. It captures the exact classroom stage with navigation removed, at 2× resolution by default (`--scale 1|2|3`). These appearance-faithful PDFs use images, so their text is not selectable. Browser Print remains available for a reading-oriented handout.
+The exporter checks every frame for clipping before writing the PDF. Reveal/quiz answers are shown on completed frames by default, since PDF readers cannot click them; use `--answers authored` for a question handout. It captures the exact classroom stage with navigation removed, at 2× resolution by default (`--scale 1|2|3`). These appearance-faithful PDFs use images, so their text is not selectable. Browser Print also opens answer panels for a reading-oriented handout.
 
 Exported PDFs in `output/pdf/` are local build artifacts, not committed files. Managed builds are advanced automatically; free-form quiz, slider, and disclosure state stays at its default.
 
@@ -53,6 +53,7 @@ node src/check-live-model.mjs attention.html
 python3 src/check_training.py
 node src/check_position_capacity.mjs
 node src/pres_test.mjs
+node src/export_test.mjs
 node src/frame_audit.mjs part1.html
 node src/frame_audit.mjs attention.html
 node src/frame_audit.mjs part3.html

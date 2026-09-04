@@ -38,7 +38,7 @@
    1. RESET + BASE TYPOGRAPHY
    ===================================================================== */
 *,*::before,*::after{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:calc(var(--strip-h) + 16px)}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:20px}
 body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font-ui);font-size:17px;line-height:1.5;font-weight:400;
   overflow-x:hidden;-webkit-font-smoothing:antialiased}
 @media (min-width:1400px){body{font-size:18px}}
@@ -87,8 +87,7 @@ svg{display:block;max-width:100%}
 /* =====================================================================
    2. NOTATION STRIP (sticky)
    ===================================================================== */
-#strip{position:sticky;top:0;z-index:50;background:rgba(247,248,250,.92);backdrop-filter:saturate(1.2) blur(8px);-webkit-backdrop-filter:saturate(1.2) blur(8px);
-  border-bottom:1px solid var(--line);min-height:var(--strip-h)}
+#strip{position:relative;z-index:50;min-height:var(--strip-h)}
 #strip .wrap{display:flex;align-items:center;gap:16px;min-height:var(--strip-h);padding-top:6px;padding-bottom:6px;flex-wrap:wrap}
 .nchips{display:flex;gap:6px;align-items:center;flex-wrap:nowrap;list-style:none;margin:0;padding:0}
 .nchips li{margin:0}
@@ -518,7 +517,9 @@ body:not(.present) .diagram-step .stage-title{display:none}
 /* =====================================================================
    8. FOOTER, MOTION, PRINT
    ===================================================================== */
-footer{border-top:1px solid var(--line);padding:24px 0 40px;color:var(--ink-3);font-size:14px}
+footer{padding:12px 0 32px;color:var(--ink-2);font-size:14px}
+footer details{margin-top:12px;max-width:76ch}
+footer details summary{cursor:pointer;color:var(--ink-3)}
 /* node-network sketch (AT.netSketch) */
 .netsk{max-width:640px;margin:8px auto}
 .netsk svg{width:100%;height:auto;overflow:visible;font-family:var(--font-ui)}
@@ -563,20 +564,20 @@ body.present .frame-sub{display:block}
    All measurements below are logical stage pixels, not viewport-responsive type.
    Overflow is an authoring error: add a continuation frame, never a scrollbar.
    ===================================================================== */
-body.present{--present-stage-w:1280px;--present-stage-h:720px;--present-scale:1;--present-body:28px;--present-title:42px;--present-caption:22px;--present-math:32px;--present-gutter:10px;--strip-h:38px;--present-strip-h:38px;--present-controls-h:50px;overflow:hidden;height:100vh;height:100dvh;font-size:var(--present-body);line-height:1.38}
-body.present .hero,body.present footer,body.present .reading,body.present .companion{display:none!important}
+body.present{--present-stage-w:1280px;--present-stage-h:720px;--present-scale:1;--present-body:28px;--present-title:42px;--present-caption:22px;--present-math:32px;--present-gutter:24px;--present-controls-h:0px;overflow:hidden;height:100vh;height:100dvh;font-size:var(--present-body);line-height:1.38}
+body.present #strip,body.present .hero,body.present footer,body.present .reading,body.present .companion{display:none!important}
 body.present #strip .wrap{flex-wrap:nowrap;padding-top:2px;padding-bottom:2px;min-height:var(--strip-h);max-width:none;padding-left:clamp(14px,1.6vw,30px);padding-right:clamp(14px,1.6vw,30px);gap:10px}
 body.present .nchips{gap:4px}
 body.present .nchip{height:25px;min-width:30px;font-size:14px;padding:0 8px}
 body.present .strip-sec{font-size:13px;margin-left:auto}
 body.present #present-btn{display:none}
-body.present main{position:relative;width:100%;padding:0;max-width:none;min-height:0;height:calc(100vh - var(--present-strip-h) - var(--present-controls-h));height:calc(100dvh - var(--present-strip-h) - var(--present-controls-h));overflow:hidden}
+body.present main{position:relative;width:100%;padding:0;max-width:none;min-height:0;height:100vh;height:100dvh;overflow:hidden}
 body.present .sec{display:none}
-body.present .sec.is-live{position:absolute;left:50%;top:50%;display:flex;flex-direction:column;width:var(--present-stage-w);height:var(--present-stage-h);margin:0;padding:20px 64px 24px;scroll-margin-top:0;overflow:hidden;transform:translate(-50%,-50%) scale(var(--present-scale));transform-origin:center center;background:var(--paper)}
-body.present .sec.is-live>.sec-head{flex:none;margin:0 0 12px;padding:0 0 10px;border-top:0;border-bottom:1px solid var(--line);grid-template-columns:auto minmax(0,1fr);gap:4px 20px;align-items:baseline}
-body.present .sec-num{font-size:18px;padding-top:0;color:var(--ink-3)}
+body.present .sec.is-live{position:absolute;left:50%;top:50%;display:flex;flex-direction:column;width:var(--present-stage-w);height:var(--present-stage-h);margin:0;padding:36px 64px;scroll-margin-top:0;overflow:hidden;transform:translate(-50%,-50%) scale(var(--present-scale));transform-origin:center center;background:var(--paper)}
+body.present .sec.is-live>.sec-head{display:block;flex:none;margin:0 0 24px;padding:0;border:0}
+body.present .sec-num{display:none}
 body.present .sec-head h2{font-size:var(--present-title);letter-spacing:-.015em;line-height:1.12}
-body.present .sec-head.has-frame-title h2{font-size:18px;font-weight:500;letter-spacing:0;color:var(--ink-2);line-height:1.2}
+body.present .sec-head.has-frame-title h2{display:none}
 body.present .sec-head .eyebrow{display:none}
 body.present .frame-sub{grid-column:2;display:block;margin:0;font-size:var(--present-title);color:var(--ink);font-weight:700;letter-spacing:-.015em;line-height:1.12;max-width:none;white-space:normal;align-self:baseline}
 body.present .frame-sub:empty{display:none}
@@ -660,16 +661,19 @@ body.present pre.torch-snippet,body.present pre.pytorch{font-size:23px;line-heig
 /* Reading scroll helpers unfold on the slide. The frame-level fit check catches excess content. */
 body.present .dt-scroll,body.present .mat-scroll,body.present .calc-scroll,body.present .scroll-x,body.present .vec,body.present .tex-display,body.present .katex-display,body.present .stepper-stage .stage-tex,body.present pre.torch-snippet,body.present pre.pytorch{max-width:100%;overflow:visible}
 /* An overfull authored frame is never silently cropped or made scrollable. */
-#at-fit-warning{display:none;position:fixed;left:16px;right:16px;bottom:calc(var(--present-controls-h,50px) + 8px);z-index:62;margin:0;padding:10px 16px;border:1px solid var(--warn);border-radius:var(--radius-s);background:#FFF8E8;color:var(--ink);font-size:15px;line-height:1.35}
+#at-fit-warning{display:none;position:fixed;left:16px;right:16px;top:12px;z-index:62;margin:0;padding:10px 16px;border:1px solid var(--warn);border-radius:var(--radius-s);background:#FFF8E8;color:var(--ink);font-size:15px;line-height:1.35}
 body.present #at-fit-warning:not(:empty){display:block}
 body.present .frame[data-overflow="true"]{outline:2px dashed var(--warn);outline-offset:-2px}
-/* Always-visible classroom controls; the measured height is reserved above. */
-#at-controls{position:fixed;inset:auto 0 0;z-index:60;display:none;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:4px 8px;padding:4px clamp(14px,1.6vw,30px) max(4px,env(safe-area-inset-bottom));border-top:1px solid var(--line);background:rgba(247,248,250,.96);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-body.present #at-controls{display:flex}
+/* Navigation is available on demand, without reserving a header or footer. */
+#at-controls-toggle{display:none;position:fixed;right:12px;bottom:10px;z-index:60;font-size:13px;min-height:36px;padding:6px 12px;border-color:transparent;color:var(--ink-2);background:var(--paper)}
+body.present #at-controls-toggle{display:block}
+#at-controls-toggle:hover,#at-controls-toggle[aria-expanded="true"]{border-color:var(--line);background:var(--card)}
+#at-controls{position:fixed;right:12px;bottom:54px;max-width:calc(100vw - 24px);z-index:60;display:none;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:6px 8px;padding:12px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--card);box-shadow:0 4px 20px rgba(20,23,31,.10)}
+body.present #at-controls.is-on{display:flex}
 #at-controls .pbtn{font-size:14px;min-height:40px;padding:6px 12px}
 #at-next{background:var(--ink);border-color:var(--ink);color:var(--paper)}
-#at-counter{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:14px;color:var(--ink-2);margin-right:auto}
-#at-announcement{display:none;position:fixed;bottom:calc(var(--present-controls-h) + 8px);left:16px;right:16px;z-index:61;margin:0;padding:10px 16px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-s);font-size:16px}
+#at-counter{flex-basis:100%;font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:14px;color:var(--ink-2);margin-bottom:4px}
+#at-announcement{display:none;position:fixed;top:12px;left:16px;right:16px;z-index:61;margin:0;padding:10px 16px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-s);font-size:16px}
 body.present #at-announcement:not(:empty){display:block}
 @media(max-width:640px){#at-counter{flex-basis:100%}#at-controls{justify-content:flex-start;gap:4px 6px;padding-left:10px;padding-right:10px}#at-controls .pbtn{font-size:13px;min-height:40px;padding:6px 9px}}
 /* notes strip (S) */
@@ -697,7 +701,7 @@ body.present #at-announcement:not(:empty){display:block}
 #at-blank{position:fixed;inset:0;z-index:80;background:#000;display:none}
 #at-blank.is-on{display:block}
 /* keyboard help (?) */
-#at-help{position:fixed;right:14px;bottom:calc(var(--present-controls-h,28px) + 8px);z-index:61;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 14px;font-size:13px;line-height:1.6;color:var(--ink-2);display:none;box-shadow:0 8px 24px rgba(20,23,31,.14)}
+#at-help{position:fixed;right:14px;bottom:54px;z-index:61;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 14px;font-size:13px;line-height:1.6;color:var(--ink-2);display:none;box-shadow:0 8px 24px rgba(20,23,31,.14)}
 #at-help.is-on{display:block}
 #at-help kbd{font-family:var(--font-mono);background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:0 5px;color:var(--ink);font-size:12px}
 
@@ -745,7 +749,7 @@ body.presenter>*:not(#at-presenter){display:none!important}
   @page{size:A4 landscape;margin:12mm}
   html,body{background:#fff;font-size:16px;overflow:visible;height:auto}
   #strip{position:static;background:#fff;backdrop-filter:none}
-  #progress,#at-controls,#at-counter,#at-announcement,#at-fit-warning,#at-notes,#at-overview,#at-blank,#at-help,.present-ctl,.reading,.roadmap .arrow{display:none!important}
+  #progress,#at-controls-toggle,#at-controls,#at-counter,#at-announcement,#at-fit-warning,#at-notes,#at-overview,#at-blank,#at-help,.present-ctl,.reading,.roadmap .arrow{display:none!important}
   .btn,.toggle,.slider,.stepper-bar,.btn-row{display:none!important}
   .companion{display:block!important}
   main{height:auto;overflow:visible;padding-bottom:0}
@@ -2445,7 +2449,7 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
     function applyBuild(fr, b, edge) {
       all(fr.el, '[data-build]').forEach(function (e) {
         var pend = buildOf(e) > b;
-        if (pend && e.contains(document.activeElement) && U.controls) U.controls.focus({ preventScroll: true });
+        if (pend && e.contains(document.activeElement) && U.controlsToggle) U.controlsToggle.focus({ preventScroll: true });
         pending(e, pend);
       });
       steppersOf(fr).forEach(function (s) {
@@ -2513,15 +2517,18 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
       U.overviewButton = h('button', { id: 'at-overview-btn', type: 'button', class: 'pbtn', 'aria-haspopup': 'dialog', on: { click: function () { setOverview(true); } } }, 'Frames');
       U.fullscreen = h('button', { id: 'at-fullscreen', type: 'button', class: 'pbtn', 'aria-pressed': 'false', on: { click: fullscreen } }, 'Full screen');
       U.controls = h('nav', { id: 'at-controls', tabindex: '-1', 'aria-label': 'Classroom navigation' }, U.counter, U.prev, U.next, U.overviewButton, U.fullscreen,
+        h('button', { id: 'at-presenter-btn', type: 'button', class: 'pbtn', on: { click: openPresenter } }, 'Presenter view'),
         h('button', { id: 'at-exit', type: 'button', class: 'pbtn', on: { click: exit } }, 'Exit'));
+      U.controlsToggle = h('button', { id: 'at-controls-toggle', type: 'button', class: 'pbtn', 'aria-controls': 'at-controls', 'aria-expanded': 'false', title: 'Show classroom controls (C)', on: { click: function () { setControls(!P.controls); } } }, 'Controls');
+      U.controls.inert = true;
       U.announcement = h('p', { id: 'at-announcement', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' });
       U.fitWarning = h('p', { id: 'at-fit-warning', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' });
       U.notes = h('div', { id: 'at-notes', role: 'complementary', 'aria-label': 'Presenter notes' });
       U.overview = h('div', { id: 'at-overview', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'All frames' }, h('div', { class: 'ov-head' }, h('p', { class: 'ov-title' }, 'All frames: select one to jump'), h('button', { id: 'at-overview-close', type: 'button', class: 'pbtn', on: { click: function () { setOverview(false); } } }, 'Close overview')), h('div', { class: 'ov-grid' }));
       U.blank = h('div', { id: 'at-blank', 'aria-hidden': 'true' });
-      U.help = h('div', { id: 'at-help', role: 'note' }, h('div', { html: '<kbd>→</kbd> <kbd>Space</kbd> <kbd>PgDn</kbd> next build · <kbd>←</kbd> <kbd>PgUp</kbd> <kbd>Backspace</kbd> back · <kbd>Home</kbd> <kbd>End</kbd> first / last frame<br><kbd>O</kbd> overview · <kbd>B</kbd> blank · <kbd>S</kbd> notes · <kbd>?</kbd> this help · <kbd>Esc</kbd> exit' }));
+      U.help = h('div', { id: 'at-help', role: 'note' }, h('div', { html: '<kbd>→</kbd> <kbd>Space</kbd> <kbd>PgDn</kbd> next build · <kbd>←</kbd> <kbd>PgUp</kbd> <kbd>Backspace</kbd> back · <kbd>Home</kbd> <kbd>End</kbd> first / last frame<br><kbd>C</kbd> controls · <kbd>O</kbd> overview · <kbd>B</kbd> blank · <kbd>S</kbd> notes · <kbd>?</kbd> this help · <kbd>Esc</kbd> close panel / exit' }));
       U.blank.addEventListener('click', function () { setBlank(false); });
-      document.body.appendChild(U.controls); document.body.appendChild(U.announcement); document.body.appendChild(U.fitWarning); document.body.appendChild(U.notes); document.body.appendChild(U.overview); document.body.appendChild(U.blank); document.body.appendChild(U.help);
+      document.body.appendChild(U.controlsToggle); document.body.appendChild(U.controls); document.body.appendChild(U.announcement); document.body.appendChild(U.fitWarning); document.body.appendChild(U.notes); document.body.appendChild(U.overview); document.body.appendChild(U.blank); document.body.appendChild(U.help);
       window.addEventListener('resize', measureChrome);
       document.addEventListener('fullscreenchange', function () { updateChrome(); measureChrome(); });
       if (window.ResizeObserver) { U.resize = new ResizeObserver(measureChrome); U.resize.observe(U.controls); var strip = document.getElementById('strip'); if (strip) U.resize.observe(strip); }
@@ -2531,11 +2538,16 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
       document.addEventListener('toggle', scheduleFitCheck, true);
       document.addEventListener('load', scheduleFitCheck, true);
     }
+    function setControls(on) {
+      P.controls = !!on;
+      if (!U.controls) return;
+      if (!P.controls && U.controls.contains(document.activeElement)) U.controlsToggle.focus({ preventScroll: true });
+      U.controls.classList.toggle('is-on', P.controls);
+      U.controls.inert = !P.controls;
+      U.controlsToggle.setAttribute('aria-expanded', String(P.controls));
+    }
     function measureChrome() {
       if (!P.active) return;
-      var strip = document.getElementById('strip');
-      document.body.style.setProperty('--present-strip-h', (strip ? strip.getBoundingClientRect().height : 0) + 'px');
-      document.body.style.setProperty('--present-controls-h', (U.controls ? U.controls.getBoundingClientRect().height : 0) + 'px');
       var main = document.querySelector('main');
       if (main) {
         var r = main.getBoundingClientRect(), cs = getComputedStyle(document.body);
@@ -2843,6 +2855,7 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
       P.frames.forEach(function (fr) { fr.snapshot = null; }); P.fi = -1;
       P.active = true; P.startedAt = P.startedAt || Date.now();
       document.body.classList.add('present');
+      setControls(false);
       goTarget(t); measureChrome();
       emit('change', state());
     }
@@ -2850,7 +2863,7 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
     function exit() {
       if (!P.active) return;
       var fr = cur();
-      setOverview(false); setBlank(false); setNotes(false); setHelp(false);
+      setOverview(false); setBlank(false); setNotes(false); setHelp(false); setControls(false);
       if (fr) { leaveFrame(fr); fr.sec.classList.remove('is-live'); }
       P.active = false;
       document.body.classList.remove('present');
@@ -2868,8 +2881,9 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
     /* ---- print: every build visible, steppers at their last step, read-mode layout; restored afterwards ---- */
     function prepareForPrint() {
       if (P.printState) return;
-      var st = { active: P.active, fi: P.fi, build: P.build, steppers: [] };
+      var st = { active: P.active, fi: P.fi, build: P.build, steppers: [], details: [] };
       all(document, '.stepper').forEach(function (e) { if (e.stepperApi && e.stepperApi.steps.length) { st.steppers.push([e.stepperApi, e.stepperApi.index()]); e.stepperApi.go(e.stepperApi.steps.length - 1); } });
+      all(document, 'details.reveal').forEach(function (d) { st.details.push([d, d.open]); d.open = true; });
       if (P.active) {
         var fr = cur();
         all(document, '[data-build].is-pending').forEach(function (e) { pending(e, false); });
@@ -2883,6 +2897,7 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
       var st = P.printState; if (!st) return;
       P.printState = null;
       document.documentElement.classList.remove('printing');
+      st.details.forEach(function (p) { if (p[0].isConnected) p[0].open = p[1]; });
       st.steppers.forEach(function (p) { p[0].go(p[1]); });
       if (st.active) { document.body.classList.add('present'); var fr = P.frames[st.fi]; if (fr) { fr.sec.classList.add('is-live'); fr.el.classList.add('is-live'); applyBuild(fr, st.build); } }
     }
@@ -2904,7 +2919,7 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
       if (!P.active) { if ((key === 'p' || key === 'P') && !inField(target)) { enter(); return true; } return false; }
       if (P.overview) return overviewKey(key, ev);
       if (P.blank) { if (key === 'Shift' || key === 'Control' || key === 'Alt' || key === 'Meta') return false; setBlank(false); return true; }
-      if (key === 'Escape') { if (P.help) setHelp(false); else exit(); return true; }
+      if (key === 'Escape') { if (P.help) setHelp(false); else if (P.controls) setControls(false); else exit(); return true; }
       if (inField(target) || (target && target.closest && target.closest('[data-present="manual"]'))) return false;
       switch (key) {
         case 'ArrowRight': next(); return true;
@@ -2915,6 +2930,7 @@ window.__PART__ = {"part":2,"series":"Next-token prediction, attention and the T
         case 'Home': showFrame(0, 0); return true;
         case 'End': showFrame(P.frames.length - 1, 0); return true;
         case 'o': case 'O': setOverview(!P.overview); return true;
+        case 'c': case 'C': setControls(!P.controls); return true;
         case 'b': case 'B': case '.': setBlank(!P.blank); return true;
         case 's': case 'S': setNotes(!P.notes); return true;
         case '?': setHelp(!P.help); return true;
@@ -3327,13 +3343,13 @@ body.present #s01 .emb-tab{margin-top:20px}
 <header class="sec-head">
   <span class="sec-num">01</span>
   <div>
-    <p class="eyebrow">Why we are here: everything on this page exists to make one guess better, the next word.</p>
+    <p class="eyebrow">How can the words we have read help us predict the next one?</p>
     <h2>Predict the next token</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Everything on this page serves one task: guess the next word. Every mechanism added later has to pay for itself here. Switch between the two contexts in the first widget and watch the bars move. The last three words are identical in both sentences, so whatever the model does inside, it has to carry <em>river</em> or <em>cheque</em> all the way to the blank. The second widget shows the raw material it starts from: a token starts as a row of $d_{\text{model}}$ numbers, one per named coordinate (<span id="s01-axes-names"></span>). These coordinate names and numbers are hand-chosen for this toy. Its fifth coordinate carries a position offset, but the later projections ignore it: this example demonstrates content routing, not word-order sensitivity. The sentence to remember: a good prediction needs a good representation of the relevant context.</p>
+  <p>We want to predict the next word. As we add each part of the model, we will ask how it helps that prediction. Switch between the two contexts below and watch the probability bars move. The last three words are identical, so the model needs information about <em>river</em> or <em>cheque</em> from earlier in the sentence. The second widget shows what it starts with: a row of $d_{\text{model}}$ numbers for each token, with named coordinates (<span id="s01-axes-names"></span>). We chose these names and numbers by hand to make the example readable. The fifth coordinate carries a position offset, but the later projections ignore it. This toy shows how the model gathers relevant content; it does not demonstrate sensitivity to word order.</p>
 </div>
 
 <div class="frame" data-title="One blank" id="s01-frame1" data-autobuild="off">
@@ -3441,7 +3457,7 @@ No: both the token and position vectors already have five coordinates. Only this
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: the model is judged only by the probability it puts on the right next word, and the only thing it can work with is a row of numbers per token.</p>
+  <p>The model works with a row of numbers per token. We judge its prediction by the probability it assigns to the correct next word, so those rows need to carry the relevant context.</p>
 </div>
 
 <script>
@@ -3599,13 +3615,13 @@ body.present #s02 .title-row{margin-bottom:16px}
 <header class="sec-head">
   <span class="sec-num">02</span>
   <div>
-    <p class="eyebrow">Why we are here: the crudest possible model, predicting from the last token alone, shows what "context" has to buy us.</p>
+    <p class="eyebrow">What can we predict if the output head receives only the last token?</p>
     <h2>Baseline: only the last token</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>This section is the crudest model on purpose. Only the last token reaches the output head, so the prediction is a function of one row of $d_{\text{model}}$ numbers. Switch the context in the widget and watch the bars: nothing moves. The table further down shows why, coordinate by coordinate. The word is <em>the</em> and the position is 10 in both sentences, so the starting representation is the same row of numbers, and the same row of numbers gives the same probabilities. The output head cannot tell a river scene from a bank branch, so it hedges across eight candidates. The sentence to remember: a prediction can only use what reaches it, and here almost nothing does.</p>
+  <p>Start with a model that sends only the last token to the output head. Its entire input is one row of $d_{\text{model}}$ numbers. Switch the context and the bars stay put. The table below explains why: both sentences end with <em>the</em> at position 10, so they supply exactly the same starting row. The same row gives the same probabilities. With no information to distinguish a river scene from a bank branch, the head spreads probability across eight candidates.</p>
 </div>
 
 <div class="frame" data-title="The last token alone" id="s02-frame1" data-autobuild="off">
@@ -3668,7 +3684,7 @@ Nowhere: neither word reaches the head. A better representation has to bring the
     None: the difference row is all zeros. If someone asks why position does not help, point at the position row of section 01: the blank sits at the same position in both sentences. Open the arithmetic only if the room wants to see the output head multiply.
   </script>
   <div class="companion">
-    <p>The distribution is almost flat: eight candidates, all near the same height. The model cannot prefer <em>water</em> to <em>teller</em> because, from its point of view, the two sentences are the same sentence. The table shows that sentence, coordinate by coordinate.</p>
+    <p>The eight candidate bars are nearly the same height. The head has no context that would favour <em>water</em> over <em>teller</em>: both sentences give it the same input. Compare their coordinates in the table.</p>
   </div>
 
   <div class="card">
@@ -3684,7 +3700,7 @@ Nowhere: neither word reaches the head. A better representation has to bring the
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: the output head sees one row of numbers. If the context is to matter, the context has to be written into that row before it arrives.</p>
+  <p>The output head can only use the row it receives. Earlier words must contribute to that row before the head can use them.</p>
 </div>
 
 <script>
@@ -3843,13 +3859,13 @@ body.present #s03 #s03-ceq .katex-display{margin:4px 0 16px}
 <header class="sec-head">
   <span class="sec-num">03</span>
   <div>
-    <p class="eyebrow">Why we are here: the obvious fix, handing the model the last w tokens, and why it is not enough.</p>
+    <p class="eyebrow">A wider window includes more words, but it still leaves a boundary.</p>
     <h2>Baseline: a fixed window of w tokens</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>The natural fix is to hand the model more tokens: concatenate the last $w$ representations into one long row and let a bigger matrix read it. The first widget sketches that as a network: the input column is the window, and the first layer's input width grows with the window. Drag the second slider and watch which tokens sit inside the window and how the input grows by five numbers per token. Set $w$ to 3 and <em>river</em> falls outside. Set it to 10 and every token is in, but only because this sentence is short. The included embeddings still carry content: a network can learn to treat <em>river</em> differently from <em>the</em>. The limitation is the fixed input width and hard boundary, not an inability to use the words. The sentence to remember: a window decides by position what to include, and we want to decide by content.</p>
+  <p>Give the model more context by concatenating the last $w$ representations into one long row. A larger matrix can read that row. In the first diagram, the input column contains the window, so widening the window also widens the first layer's input. Use the second slider to see which tokens reach it: each token adds five numbers. At $w=3$, <em>river</em> is outside. At $w=10$, every token fits because this sentence is short. The network can learn to use the content it receives, including the difference between <em>river</em> and <em>the</em>. But its input width is fixed, and it gets no information from beyond the window. We want a way to choose useful information by content, rather than deciding which words are available only by position.</p>
 </div>
 
 <div class="frame" data-title="Grow the window" id="s03-frame1" data-autobuild="off">
@@ -3860,7 +3876,7 @@ body.present #s03 #s03-ceq .katex-display{margin:4px 0 16px}
     Timing: about three minutes.
   </script>
   <div class="companion">
-    <p>Why not simply hand the model the last $w$ tokens? Their rows feed a fixed network: a first layer that reads all $w$ rows at once, a hidden layer, and one output per vocabulary word.</p>
+    <p>The last $w$ token rows can feed a fixed network. Its first layer reads all $w$ rows at once, followed by a hidden layer and one output per vocabulary word.</p>
   </div>
 
   <div class="card">
@@ -3970,7 +3986,7 @@ The input width and the parameter count. More tokens fit in this finite sentence
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: a fixed window chooses tokens by where they are, never by what they say. The rest of the page builds a mechanism that chooses by content.</p>
+  <p>A fixed window decides which tokens are available by position. Next we will build a way to choose their contributions by content.</p>
 </div>
 
 <script>
@@ -4141,13 +4157,13 @@ body.present #s04 #s04-live-pool{margin-top:14px}
 <header class="sec-head">
   <span class="sec-num">04</span>
   <div>
-    <p class="eyebrow">Why we are here: a fixed window imposes a hard boundary on which earlier tokens are available. Could we instead <em>pool</em> information from the whole prefix?</p>
+    <p class="eyebrow">Could we <em>pool</em> information from the whole prefix instead of cutting it off at a fixed window?</p>
     <h2>Weighted pooling: where should weights come from?</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Attention is a way to choose weights, so this section first shows what weights do. A pooled vector $c_i$ is a weighted sum of earlier representations, and the spreadsheets below make that sum visible: one row per token, one column per coordinate, a weight column on the left and the sum in the footer. Drag the position slider and watch the mean give every included row the same weight. Then move the raw-weight sliders for <em>bank</em> and watch the footer drift towards whichever row you favour. The sentence to remember: the weights decide what a token collects, and someone has to choose them.</p>
+  <p>Before choosing weights with attention, try choosing them yourself. A pooled vector $c_i$ is a weighted sum of earlier representations. The tables show one row per token, one column per coordinate, the weights on the left and the sum at the bottom. Drag the position slider: the mean gives every included row equal weight. Then adjust the raw weights for <em>bank</em>. The result moves towards the rows you favour. These weights determine what information reaches bank, so how should a model choose them?</p>
 </div>
 
 <div class="frame" data-title="Average every earlier token" data-autobuild="off">
@@ -4231,7 +4247,7 @@ Let the room answer before the question callout: you chose them by hand because 
 Timing: two minutes.
   </script>
   <div class="prose">
-    <p><em>You</em> chose those weights by hand, because you know that <em>bank</em> wants <em>river</em>. A model cannot ask you, and a different token would want a different set of weights.</p>
+    <p><em>You</em> gave <em>river</em> more weight because it helps interpret <em>bank</em>. A model needs to choose those weights from its inputs. A different receiving token may need different information.</p>
   </div>
 
   <div class="callout callout-key" data-build="1">
@@ -4242,7 +4258,7 @@ Timing: two minutes.
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: the pooled vector is only as good as its weights, and the weights we want depend on the token that is asking and on the tokens that could answer. The next section hands that job to a search engine.</p>
+  <p>The weights determine the pooled vector. They should depend on both the receiving token and the sources it could read. A search example will help us separate those two roles.</p>
 </div>
 
 <script>
@@ -4381,7 +4397,7 @@ Timing: two minutes.
 </section>
 
 <!-- ===== sec05.html ===== -->
-<section id="s05" class="sec" data-title="A detour through search: Query, Key, Value" data-lit="q k v">
+<section id="s05" class="sec" data-title="A detour through search: query, key, value" data-lit="q k v">
 <style>
 #s05 .qbox{border:2px solid var(--oc);background:var(--ot);border-radius:var(--radius);padding:12px 18px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin:12px 0 6px}
 #s05 .qbox .qk{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--oc)}
@@ -4517,13 +4533,13 @@ body.present #s05 #s05-return-summary{font-size:28px;line-height:1.4;margin:0 0 
 <header class="sec-head">
   <span class="sec-num">05</span>
   <div>
-    <p class="eyebrow">Why we are here: weights should come from what a token needs and what a token has. Search gives us a familiar analogy for those two roles.</p>
-    <h2>A detour through search: Query, Key, Value</h2>
+    <p class="eyebrow">Search separates what we need from what each source can offer.</p>
+    <h2>A detour through search: query, key, value</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Before attention touches a sentence, it helps to see the same three roles somewhere familiar. A video site has to answer two questions for every item: does it match the search, and what should it hand back? Those are different jobs, so each video keeps a key for matching and a value for returning. The first spreadsheet puts the query in the top row and the six keys beneath it, so you can compare them column by column; the score on the right is the dot product. Switch to the overfitting question and watch which row wins. The sentence to remember: keys decide whether to retrieve, values are what gets retrieved.</p>
+  <p>Think of searching a video site. For each item, we need to decide whether it matches our request and what information to return. In this example, each video has a key for matching and a value for returning. The first table puts the query above six keys so you can compare their coordinates. Each score on the right is a dot product. Switch to the overfitting question and see which item now scores highest. Its key helps us choose it; its value is what we receive.</p>
 </div>
 
 <div class="frame" data-title="A search box" data-autobuild="off">
@@ -4577,7 +4593,7 @@ Timing: four minutes.
   <div class="card">
     <h3 class="card-title">Multiply matching coordinates, then add: $s_j=\vq{q}\cdot\vk{k_j}$.</h3>
     <div class="companion prose">
-      <p>Matching is a dot product between the query and each key. At this stage the site looks at nothing else about the item.</p>
+      <p>For this matching step, the site uses only the dot product between the query and each key.</p>
       $$s_j = \vq{q}\cdot \vk{k_j}$$
       <p>$\vq{q}$ = query representation, $\vk{k_j}$ = key of item $j$, $\vv{v_j}$ = value of item $j$.</p>
     </div>
@@ -4599,13 +4615,13 @@ Read query and key as matching roles. Reveal value last: it is the payload assoc
 
 <div class="frame" data-title="The value is a different table" data-autobuild="off">
   <script type="text/x-notes">
-The winner was Backpropagation. What does the searcher actually receive?
+The winner was Backpropagation. What does the searcher receive?
 Compare the headers with the key table: three value columns, not four, plus the summary. The key never leaves the matching step. Then the callout, read twice.
 
 Timing: two minutes.
   </script>
   <div class="card">
-    <h3 class="card-title">The <span class="sym sym-v">Value</span> of each video: what comes back if it is retrieved</h3>
+    <h3 class="card-title">Each video's <span class="sym sym-v">value</span>: the information returned</h3>
     <div id="s05-vals"></div>
     <p class="companion look" id="s05-vread"></p>
   </div>
@@ -4626,7 +4642,7 @@ The numeric value and content of that same item arrive. Keep the source pairing 
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: a score comes from the query and the key alone. The value plays no part in matching; it only travels once its item is chosen.</p>
+  <p>Only the query and key determine the match score. Once we choose an item, we retrieve its value.</p>
 </div>
 
 <script>
@@ -4920,13 +4936,13 @@ body.present #s06 #s06-temp-bars .bars .bt{height:28px}
 <header class="sec-head">
   <span class="sec-num">06</span>
   <div>
-    <p class="eyebrow">Why we are here: hard retrieval chooses the single best match. Attention returns a mixture. We go back to the gradient question (query 1) with the same keys and values as before.</p>
+    <p class="eyebrow">Return one best match, or mix information from several? Use the same gradient question (query 1), keys and values to compare.</p>
     <h2>Hard retrieval → soft retrieval</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Our hard-retrieval baseline picks the best-scoring item and returns its value. Attention instead blends values according to how well each key matched the query. This section makes that blend a spreadsheet: the scores from the previous section feed a softmax, the weights fill the $\va{\alpha_j}$ column, every value row is scaled by its weight, and the footer adds the rows up. Start in hard mode, where one row carries all the weight, then switch to soft and lower the temperature to watch the two modes meet. Drag a score up and watch every weight move. The sentence to remember: attention returns a weighted mixture of values, not one value.</p>
+  <p>Hard retrieval returns the value of the highest-scoring item. Attention blends values according to how well their keys match the query. Follow that calculation in the tables: softmax converts the previous section's scores into the $\va{\alpha_j}$ weights, each weight scales its value row, and the bottom row adds the results. Start in hard mode, where one item gets all the weight. Switch to soft mode and lower the temperature to see it approach hard retrieval. Raising a single score changes every weight because they share a denominator. The returned row is a mixture of values.</p>
 </div>
 
 <div class="frame" data-title="Hard retrieval returns one item's value" data-autobuild="off">
@@ -4989,7 +5005,7 @@ They use the value axes: gradients, optimisation and architecture. This is not a
   <p class="look" id="s06-mread"></p>
   <p class="verdict" id="s06-verdict"></p>
 </div>
-<div class="callout callout-key" data-build="1">Attention returns a <strong>weighted mixture of information</strong> for the current query—not another set of match scores.</div>
+<div class="callout callout-key" data-build="1">Attention returns a <strong>weighted mixture of information</strong> for this query. Its coordinates are value features, not match scores.</div>
 </div>
 
 <div class="companion" data-kicker="Inspect every contribution">
@@ -5023,11 +5039,11 @@ Its weight approaches one. If top scores tie, those top items keep sharing the w
 </div>
 
 <div class="companion">
-  <p>Each piece now has a job. A <span class="sym sym-q">Query</span> says what the searcher needs, <span class="sym sym-k">Keys</span> decide who matches, <span class="sym sym-v">Values</span> carry what comes back, and softmax turns scores into a mixture. Back to language.</p>
+  <p>The <span class="sym sym-q">query</span> describes what the searcher needs. <span class="sym sym-k">Keys</span> help score the matches; <span class="sym sym-v">values</span> carry the information to return. Softmax gives us the weights for mixing that information. We can use the same roles for tokens in a sentence.</p>
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: the scores decide the weights, the weights decide the mixture, and a change in one score moves every weight at once, because the softmax keeps them summing to 1.</p>
+  <p>The scores determine the weights, which determine the mixture. Changing one score changes the shared softmax denominator, so all the weights respond while still summing to 1.</p>
 </div>
 
 <script>
@@ -5255,14 +5271,14 @@ body.present #s07 .calc-rounding{display:none}
 <header class="sec-head">
   <span class="sec-num">07</span>
   <div>
-    <p class="eyebrow">Why we are here: search results carried a key and a value. Now every token in the sentence gets its own.</p>
+    <p class="eyebrow">Each token supplies a key for matching and a value to send, just as the search results did.</p>
     <h2>Every token becomes a searchable record</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>The search detour gave us three roles: a query that asks, a key that says when to answer, and a value that is the answer. Now every token gets a key and a value, computed from its own representation with two shared matrices, and the token gathering context gets a query from a third matrix.</p>
-  <p>Every coordinate has a name in this toy, so read the column headers before the numbers. Click a different query token and watch which rows stay open. Open a record and read its three rows. The sentence to remember: a query, a key and a value are three linear views of the same $\ve{e}$.</p>
+  <p>Bring the search roles back to our sentence. Each token gets a key and a value, computed from its own representation using two shared matrices. The token gathering context gets a query from a third matrix. Its query asks for information, each source's key describes when it can help, and its value carries what it will send.</p>
+  <p>Read the column headers before the numbers: every coordinate has a name in this toy. Choose a different query token and watch which source rows remain available. Open a record to compare its rows. Query, key and value are three linear views of the same $\ve{e}$.</p>
 </div>
 
 <div class="frame" id="s07-frame1" data-title="What does the receiving token ask for?">
@@ -5308,7 +5324,7 @@ Does a source send its key or its value?
 Open river’s record and compare e, k and v. The following frames show the key and value calculations separately. The column names are hand-designed for this toy; real learned coordinates need not have these meanings.
   </script>
 <div class="card">
-  <h3 class="card-title">One record: what token $j$ publishes. Three rows, three sets of axis names</h3>
+  <h3 class="card-title">One source token $j$: compare its three rows and their axes</h3>
   <div id="s07-rchips" data-keep-state></div>
   <div class="rec-grid" id="s07-rec"></div>
   <p class="rd" id="s07-rread"></p>
@@ -5359,7 +5375,7 @@ There is one W_Q, one W_K and one W_V for this head, reused at every position. Q
 <div class="card">
   <h3 class="card-title">Three shared projections: $W_Q,W_K$ are $d_{\text{model}}\times d_k$; $W_V$ is $d_{\text{model}}\times d_v$</h3>
   <div class="wrow" id="s07-mats"></div>
-  <p class="companion muted small qnote">Look at: the same $W_Q$, $W_K$, $W_V$ act on every position. A row is an input axis of $\ve{e}$; a column is an output axis. Read each non-zero cell as “this axis feeds that axis”.</p>
+  <p class="companion muted small qnote">The same $W_Q$, $W_K$, $W_V$ act on every position. Each row names an input axis of $\ve{e}$; each column names an output axis. A non-zero cell tells us how much that input contributes to that output.</p>
 </div>
 
 <p class="muted small">The same matrices are reused at every position.</p>
@@ -5368,7 +5384,7 @@ k_j, v_j = e_j @ W_K, e_j @ W_V</code></pre>
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: nothing has been compared or retrieved yet. Each token has only been given a query, a key and a value, all computed from its own $\ve{e}$ with matrices that every position shares.</p>
+  <p>So far we have computed each token's query, key and value from its own $\ve{e}$, using matrices shared across positions. Comparing and retrieving are the next steps.</p>
 </div>
 
 <script>
@@ -5453,7 +5469,7 @@ k_j, v_j = e_j @ W_K, e_j @ W_V</code></pre>
     onClick: (i) => { qi = i; chips.setActive(i); chips.setMuted(later(i)); redraw(); } });
   chips.setMuted(later(qi));
   const etab = AT.ui.table(F.E, { rowLabels: rowLabels, rowCls: 'e', cornerLabel: 'token', highlightRow: qi, dimRows: later(qi),
-    caption: 'Look at: every row is one token’s current representation $\\ve{e_j}$, token embedding plus a small position offset, one named axis per column. The bold row is the query token.', into: S.querySelector('#s07-etab') });
+    caption: 'Each row is a token’s current representation $\\ve{e_j}$: its embedding plus a small position offset, with one named axis per column. The bold row supplies the query.', into: S.querySelector('#s07-etab') });
   const eread = S.querySelector('#s07-eread');
 
   /* ---------- one record: e_j, k_j, v_j as three small tables ---------- */
@@ -5496,7 +5512,7 @@ k_j, v_j = e_j @ W_K, e_j @ W_V</code></pre>
     const n = qi + 1;
     AT.ui.dotTable(F.Q[qi], F.K, { rowLabels: rowLabels.map((s, j) => '$\\vk{k_{' + (j + 1) + '}}$ ' + toks[j]), queryLabel: '$\\vq{q_{' + n + '}}$ ' + toks[qi], cornerLabel: 'row',
       scaled: true, d_k: AT.d_k, mask: later(qi), into: khost,
-      caption: 'Look at: $\\vq{q_{' + n + '}} = \\ve{e_{' + n + '}}\\,W_Q$ on top, one key $\\vk{k_j} = \\ve{e_j}\\,W_K$ per open row, both under the same axis names. The score column is a preview of the next section.',
+      caption: 'The query $\\vq{q_{' + n + '}} = \\ve{e_{' + n + '}}\\,W_Q$ is above the keys, with one $\\vk{k_j} = \\ve{e_j}\\,W_K$ per available row. Both use the same matching axes. We will work through the score column in the next section.',
       note: 'Click a score to see the dot product written out, axis by axis.' });
     qread.innerHTML = readQ(qi);
     AT.renderMath(qread);
@@ -5517,7 +5533,7 @@ k_j, v_j = e_j @ W_K, e_j @ W_V</code></pre>
 
   /* ---------- value table ---------- */
   const vtab = AT.ui.table(F.V, { rowLabels: rowLabels.map((s, j) => '$\\vv{v_{' + (j + 1) + '}}$ ' + toks[j]), rowCls: 'v', cornerLabel: 'row', dimRows: later(qi),
-    caption: 'Look at: $\\vv{v_j} = \\ve{e_j}\\,W_V$ is what token $j$ sends if it is read; the headers say what each coordinate would say. Nothing is sent yet.', into: S.querySelector('#s07-vtab') });
+    caption: '$\\vv{v_j} = \\ve{e_j}\\,W_V$ is the information token $j$ can send. The headers name its coordinates. We have computed the values but have not sent them yet.', into: S.querySelector('#s07-vtab') });
 
   const qnote = S.querySelector('#s07-qnote');
   function redraw(){
@@ -5603,14 +5619,14 @@ body.present #s08 .s08-present-only.frame.is-live{display:flex}
 <header class="sec-head">
   <span class="sec-num">08</span>
   <div>
-    <p class="eyebrow">Why we are here: one query, seven records. Attention happens in two separate phases: deciding where to read, then reading.</p>
+    <p class="eyebrow">Bank has one query and seven available sources. First choose the weights, then collect the information.</p>
     <h2>Two jobs: choose weights, then mix values</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Attention is easier to trust once you see that it is two separate jobs. Phase A uses only queries and keys: it scores every earlier token and turns the scores into weights that sum to one. Phase B uses only values: each token sends its value, scaled by its weight, and the scaled values are added.</p>
-  <p>Run phase A, then click a key in the picture to see its dot product written out, axis by axis. Then run phase B and read the sum, one coordinate per line. Switch between the value rows and the $\va{\alpha}\vv{v}$ products. The sentence to remember: keys decide where to read, values decide what is read.</p>
+  <p>We will work through attention in two phases. Phase A uses queries and keys to score the available tokens, then turns those scores into weights that sum to one. Phase B multiplies each source's value by its weight and adds the results. The keys help choose where to read; the values carry the information.</p>
+  <p>Run phase A and click a key in the diagram to inspect its dot product, coordinate by coordinate. Then run phase B and follow each coordinate into the sum. Switch between the original value rows and the $\va{\alpha}\vv{v}$ products to see what the weights changed.</p>
 </div>
 
 <div class="frame" data-title="Which earlier tokens should bank read?">
@@ -5756,7 +5772,7 @@ m_alt = alpha @ (E @ W_V_alt)</code></pre>
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: the weights $\va{\alpha_{7j}}$ came from queries and keys alone, and the message $m_7$ came from values alone. Nothing about “bank” has changed yet. Turning $m_7$ into a change is the next section.</p>
+  <p>Queries and keys gave us the weights $\va{\alpha_{7j}}$; the weighted values gave us the message $m_7$. Bank's representation is still unchanged. Next we will turn that message into an update.</p>
 </div>
 
 <script>
@@ -5784,7 +5800,7 @@ m_alt = alpha @ (E @ W_V_alt)</code></pre>
       { label: '$\\text{softmax} \\to \\va{\\alpha_{' + n + 'j}}$', cls: 'a', heat: true, heatMax: 1, fn: (row, i) => i === 0 ? '' : alpha[i - 1] }
     ],
     footer: { label: 'weights sum to', values: '', computed: ['', AT.sum(alpha)] },
-    caption: 'Look at: the score is the query row against one key row, axis by axis; the softmax column is the same seven scores turned into weights.',
+    caption: 'Each score compares the query with one key, coordinate by coordinate. Softmax turns these seven scores into the weights in the last column.',
     note: 'Click a score to see the dot product written out; hover a weight for the softmax.',
     into: S.querySelector('#s08-atab') });
   const scoreCells = toks.map((t, j) => atab.computedCells[j + 1][0]);
@@ -5901,7 +5917,7 @@ m_alt = alpha @ (E @ W_V_alt)</code></pre>
     AT.clear(bhost);
     btab = AT.ui.mixTable(alpha, F.V, { rowLabels: toks.map((t, j) => (weighted ? '$\\va{\\alpha_{' + n + ',' + (j + 1) + '}}\\vv{v_{' + (j + 1) + '}}$ ' : '$\\vv{v_{' + (j + 1) + '}}$ ') + t),
       cornerLabel: 'row', weighted: weighted, alphaLabel: '$\\va{\\alpha_{' + n + 'j}}$', footerLabel: '$m_{' + n + '} = \\sum_j \\va{\\alpha_{' + n + 'j}}\\,\\vv{v_j}$', into: bhost,
-      caption: (weighted ? 'Look at: each cell is one message term $\\va{\\alpha_{' + n + 'j}}\\,\\vv{v_j}$; ' : 'Look at: the weight column comes from phase A, the rows are the values $\\vv{v_j}$; ') + 'the footer adds the rows, one column at a time.',
+      caption: (weighted ? 'Each cell is a weighted contribution $\\va{\\alpha_{' + n + 'j}}\\,\\vv{v_j}$. ' : 'The weights come from phase A; the rows contain the values $\\vv{v_j}$. ') + 'The bottom row gives their weighted sum, one coordinate at a time.',
       note: sent ? 'Hover or focus a cell of the sum to see the weighted terms, row by row.' : 'Press “Run phase B” to send the messages and fill the sum.' });
     if (!sent) btab.setFooter(dash);
   }
@@ -6081,14 +6097,14 @@ body.present #s09-frame-chain .is-dim{opacity:1!important}
 <header class="sec-head">
   <span class="sec-num">09</span>
   <div>
-    <p class="eyebrow">Why we are here: the retrieved message $m_i$ must get back into the token’s representation. This is the centre of the whole story.</p>
+    <p class="eyebrow">How does the retrieved message $m_i$ change the token's representation?</p>
     <h2>The contextual update <span class="sym sym-d">Δe</span></h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>This is the step the whole page builds towards. The message $m_7$ is a mixture of values, so it lives in value space with $d_v$ coordinates. $W_O$ maps it into the $d_{\text{model}}$ coordinates of a representation, and that vector, $\vd{\Delta e_7}$, is added to $\ve{e_7}$. The residual branch keeps the original row as an input to the addition; the resulting row combines it with context.</p>
-  <p>Press Play, or step through, and watch the highlight move down the diagram. The following block writes out its numerical result; hover a cell of the final row to see the addition. Read the axis names: the message speaks in value coordinates, $W_O$ turns them into representation coordinates. The sentence to remember: attention computes the update; the residual connection adds it to the representation we started from.</p>
+  <p>The message $m_7$ is a mixture of values, so it has $d_v$ value coordinates. To add it to bank's representation, we need $d_{\text{model}}$ representation coordinates. $W_O$ performs that mapping and gives us $\vd{\Delta e_7}$. The residual connection adds this update to the original $\ve{e_7}$, combining bank's existing representation with context.</p>
+  <p>Press Play or advance one step at a time to follow the diagram. The next table shows the numerical result; hover a cell in the final row to inspect the addition. Watch the axis names change at $W_O$: it maps the message's value coordinates into representation coordinates. Attention computes the update, and the residual connection adds it.</p>
 </div>
 
 <div class="frame" id="s09-frame1" data-title="The message needs one final projection">
@@ -6191,14 +6207,14 @@ The residual path carries the current input representation. The contextual updat
   </script>
 <div class="callout callout-key big-caption">Attention computes context-dependent information. The residual connection adds that update to the existing representation.</div>
 
-<div class="companion callout callout-note">Calling this update $\vd{\Delta e_i}$ is pedagogical notation used on this page; it is not standard Transformer notation. Standard implementations usually call it the <em>attention output</em> and add it through a residual connection. The addition itself is standard: it is the residual connection around the attention sublayer.</div>
+<div class="companion callout callout-note">We use $\vd{\Delta e_i}$ as a teaching label for this update, not as standard Transformer notation. Implementations usually call it the <em>attention output</em>. Adding it to the input is the standard residual connection around the attention sublayer.</div>
 <p class="companion muted small">PyTorch · $m_i$ is $1 \times d_v$; $\Delta e_i$ and $e_i$ are $1 \times d_{\text{model}}$.</p>
 <pre class="torch-snippet"><code>delta_e_i = m_i @ W_O
 e_new_i = e_i + delta_e_i</code></pre>
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: $\vp{e_7'} = \ve{e_7} + \vd{\Delta e_7}$. The right branch computed the update, the left branch carried $\ve{e_7}$ unchanged, and the plus joins them. That plus is the residual connection.</p>
+  <p>In $\vp{e_7'} = \ve{e_7} + \vd{\Delta e_7}$, the right branch computed the update and the left branch carried $\ve{e_7}$ unchanged. They meet at the addition: the residual connection.</p>
 </div>
 
 <script>
@@ -6268,13 +6284,13 @@ e_new_i = e_i + delta_e_i</code></pre>
   /* ---------- the update chain as one table ---------- */
   const chainHost = S.querySelector('#s09-chain');
   const mtab = AT.ui.table([F.Mmsg[qi]], { rowLabels: ['$m_{' + n + '}$ (value space)'], rowCls: 'm', cornerLabel: 'row', into: chainHost,
-    caption: 'Look at: $m_{' + n + '}$ has $d_v = ' + AT.d_v + '$ coordinates in value space; the headers say what each one says.' });
+    caption: '$m_{' + n + '}$ has $d_v = ' + AT.d_v + '$ value coordinates. Read their names in the headers.' });
   const chain = AT.ui.table([F.Delta[qi], F.E[qi]], {
     axes: 'e', cornerLabel: 'row',
     rowLabels: ['$\\vd{\\Delta e_{' + n + '}} = m_{' + n + '}\\,W_O$', '$\\ve{e_{' + n + '}}$'],
     rowCls: ['d', 'e'],
     footer: { label: '$\\vp{e_{' + n + "}'} = \\ve{e_{" + n + '}} + \\vd{\\Delta e_{' + n + '}}$', values: F.Enew[qi], cls: 'ep' },
-    caption: 'Look at: $W_O$ turns the message into a ' + AT.d_model + '-coordinate row on the $\\ve{e}$ axes; the two rows add column by column into the footer.',
+    caption: '$W_O$ maps the message to a ' + AT.d_model + '-coordinate row on the $\\ve{e}$ axes. Add it to the input row, column by column, to get the bottom row.',
     note: 'Hover or focus a cell of the footer to see the addition.',
     into: chainHost });
   const footTr = chain.table.querySelector('tfoot tr');
@@ -6298,12 +6314,12 @@ e_new_i = e_i + delta_e_i</code></pre>
   /* ---------- per-stage tables inside the stepper stage (q, scores, weights) ---------- */
   const stageTab = {
     1: (el) => AT.ui.table([F.Q[qi]], { rowLabels: ['$\\vq{q_{' + n + '}}$ ' + toks[qi]], rowCls: 'q', cornerLabel: 'row', cls: null,
-         caption: 'Look at: ' + AT.d_k + ' matching coordinates, from $\\ve{e_{' + n + '}}$ (' + AT.d_model + ' coordinates) times $W_Q$: what ' + AT.escape(toks[qi]) + ' asks for.', into: el }),
+         caption: 'Multiplying $\\ve{e_{' + n + '}}$ (' + AT.d_model + ' coordinates) by $W_Q$ gives ' + AT.d_k + ' matching coordinates describing what ' + AT.escape(toks[qi]) + ' asks for.', into: el }),
     2: (el) => AT.ui.table([F.S[qi].slice(0, T)], { cols: tokCols, rowLabels: ['$s_{' + n + 'j}$'], rowCls: 'neutral', cornerLabel: 'token j',
-         caption: 'Look at: one score per earlier token (section 8, phase A).', into: el }),
+         caption: 'One score per earlier token, from phase A in section 8.', into: el }),
     3: (el) => AT.ui.table([F.S[qi].slice(0, T), F.A[qi].slice(0, T)], { cols: tokCols, rowLabels: ['$s_{' + n + 'j}$', '$\\va{\\alpha_{' + n + 'j}}$'], rowCls: ['neutral', 'a'], cornerLabel: 'token j',
          footer: { label: 'weights sum to', values: AT.range(T).map(j => j === 0 ? AT.sum(F.A[qi]) : '') },
-         caption: 'Look at: softmax turns the score row into the weight row; ' + AT.escape(toks[AT.argmax(F.A[qi].slice(0, T))]) + ' gets the most.', into: el })
+         caption: 'Softmax turns the scores into weights. ' + AT.escape(toks[AT.argmax(F.A[qi].slice(0, T))]) + ' gets the largest weight.', into: el })
   };
   const render = (i) => (el) => { if (stageTab[i]) { const d = AT.h('div', { class: 'stage-tab' }); stageTab[i](d); el.appendChild(d); } };
 
@@ -6351,7 +6367,7 @@ e_new_i = e_i + delta_e_i</code></pre>
 
   /* ---------- W_O as a table: the rows of W_O weighted by m_7, summed in the footer ---------- */
   const wo = AT.ui.wTable(AT.model.W_O, { from: 'v', to: 'e', cls: 'd', cornerLabel: '$W_O$',
-    caption: 'Look at: a row is a value axis (what the message says), a column is an $\\ve{e}$ axis (where it lands). Zeros are greyed.',
+    caption: 'Rows name value axes from the message; columns name the $\\ve{e}$ axes they contribute to. Zeros are greyed.',
     into: S.querySelector('#s09-wo') });
   (function(){
     const strip = (t) => String(t).replace(/^says:\s*/, '');
@@ -6417,13 +6433,13 @@ body.present #s10 .s10-ws,body.present #s10 .dt-cap,body.present #s10 .dt-note{d
 <header class="sec-head">
   <span class="sec-num">10</span>
   <div>
-    <p class="eyebrow">Why we are here: the same word in two contexts. One update pushes the same starting vector in two directions.</p>
+    <p class="eyebrow">Bank starts with the same vector in both sentences. Its context gives it different updates.</p>
     <h2>&ldquo;bank&rdquo;: same start, different context</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>So far the page has followed one sentence. This section runs the same computation twice, once for the river sentence and once for the cheque sentence, and watches the word <strong>bank</strong>. Its starting row is identical in both, because the token and the position are the same. Compare the $\va{\alpha_{7j}}$ columns first: river carries most of the weight in sentence A, cheque and deposited in sentence B. Then read down to the footer and to the $\vd{\Delta e}$ row, where the difference lands: on the water axis in A, on the finance axis in B. Drag the slider to add the update a little at a time. The sentence to remember: the same starting representation receives different information and becomes context-dependent.</p>
+  <p>Run the same calculation for the river sentence and the cheque sentence, following <strong>bank</strong> in both. Its starting row is identical because its token and position are the same. Compare the $\va{\alpha_{7j}}$ columns: river gets most of the weight in sentence A, while cheque and deposited get most in sentence B. Follow those contributions into the message at the bottom and the $\vd{\Delta e}$ row. The update adds water information in A and finance information in B. Drag the slider to add it gradually. The same starting representation becomes context-dependent because it receives different information.</p>
 </div>
 
 <div class="frame" id="s10-frame1" data-title="Same bank: what changed between the sentences?">
@@ -6499,7 +6515,7 @@ Move the slider manually: it shows a partial residual addition, not training or 
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: bank reads only itself and earlier tokens, so the words after it played no part in either update. The two rows $\vp{e_{\text{bank}}'}$ differ only because the seven values it mixed, and the weights it mixed them with, differ.</p>
+  <p>Bank reads only itself and earlier tokens. Words after it contributed to neither update. The two $\vp{e_{\text{bank}}'}$ rows differ because the values and weights across those seven source positions differ.</p>
 </div>
 
 <script>
@@ -6728,13 +6744,13 @@ body.present #s11-frame-lifetime-steps>.card{padding:0;background:none;border:0}
 <header class="sec-head">
   <span class="sec-num">11</span>
   <div>
-    <p class="eyebrow">Why we are here: a common confusion. Are queries, keys and values new lookup tables or the updated token row? Neither: they are projections used during attention.</p>
+    <p class="eyebrow">Queries, keys and values are projections used during attention. How do they relate to the token row?</p>
     <h2>What exactly are Q, K, and V?</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Queries, keys and values are three projected views of the current representation, not three independently learned lookup tables. Pick any token in the chips and read the four rows: the three lower rows are computed from the single $\ve{e}$ row above them by three fixed matrices, and nothing else about the token changes. The axis names say what each row means: a query row is what the token asks for, a key row is what it offers, a value row is what it sends. Below them sit the three matrices themselves, shared by every token. Step through the lifetime strip to see when each row exists inside one attention layer. The sentence to remember: $\vq{q}$, $\vk{k}$ and $\vv{v}$ are working vectors made from $\ve{e}$, and $\ve{e} + \vd{\Delta e}$ is the updated token row passed to the next sublayer.</p>
+  <p>Queries, keys and values come from projecting the current representation. They are not separate learned lookup tables. Pick a token and compare the four rows: three fixed matrices turn the top $\ve{e}$ row into the query, key and value below it, without changing that input row. Their axis names describe different roles: what the token asks for, when it is a useful match, and what it sends. The matrices below are shared by every token. Step through the lifetime diagram to see when the rows are computed and used. These working vectors help produce $\vd{\Delta e}$; the row passed to the next sublayer is $\ve{e} + \vd{\Delta e}$.</p>
 </div>
 
 <div class="frame" id="s11-frame1" data-title="Are Q, K and V three separate lookup tables?">
@@ -6808,7 +6824,7 @@ Does the branch return q, a key, a value, or a contextual update?
 It returns the projected message, Delta e. The residual addition then combines that result with e. Ask students to name the role of each object without calling everything an embedding.
   </script>
 <div class="card">
-  <h3 class="card-title">The one chain, again</h3>
+  <h3 class="card-title">From the input row to its contextual update</h3>
   <p class="s11-cap">The three projections sit in the second box; they are inputs to attention, and only $\vd{\Delta e}$ comes out of it.</p>
   <div id="s11-motif"></div>
   <div id="s11-chain-eq"></div>
@@ -6817,7 +6833,7 @@ It returns the projected message, Delta e. The residual addition then combines t
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: the token representation is $\ve{e}$, before and after. $\vq{q}$, $\vk{k}$ and $\vv{v}$ were made from it and used, and $\vd{\Delta e}$ is what came back.</p>
+  <p>$\vq{q}$, $\vk{k}$ and $\vv{v}$ are working vectors made from the token representation $\ve{e}$. Attention returns $\vd{\Delta e}$, which the residual connection adds to that representation.</p>
 </div>
 
 <script>
@@ -6971,8 +6987,8 @@ It returns the projected message, Delta e. The residual addition then combines t
   stepper = AT.ui.stepper({ compact: true, into: S.querySelector('#s11-stepper'),
     onChange: (i) => { setPhase(i); motif.setActive(motifStages[i]); },
     steps: [
-      { title: 'Start of the layer: only the representation exists',
-        note: 'Token $i$ enters the attention layer carrying $\\ve{e_i}$ and nothing else.',
+      { title: 'Start with the token representation',
+        note: 'Token $i$ enters with $\\ve{e_i}$. Its query, key and value have not been computed yet.',
         render: (el) => { eRow(qi, el, false); } },
       { title: 'Project: three working rows are computed from it',
         tex: '\\vq{q_i} = \\ve{e_i}\\,W_Q,\\quad \\vk{k_i} = \\ve{e_i}\\,W_K,\\quad \\vv{v_i} = \\ve{e_i}\\,W_V',
@@ -6984,9 +7000,9 @@ It returns the projected message, Delta e. The residual addition then combines t
           const readers = AT.range(T).filter(j => j >= qi).map(j => toks[j] + ' (' + (j + 1) + ')');
           el.appendChild(AT.h('p', { class: 'muted small' }, 'Tokens whose queries can read k and v of token ' + n() + ' in this 7-token sequence: ' + readers.join(', ') + '.'));
         } },
-      { title: 'Keep the retrieved update; the projections were only inputs to it',
+      { title: 'Attention returns the contextual update',
         tex: '\\vd{\\Delta e_i} = \\Big(\\sum_{j \\le i} \\va{\\alpha_{ij}}\\,\\vv{v_j}\\Big) W_O',
-        note: 'The attention branch returns $\\vd{\\Delta e_i}$. The projected rows $\\vq{q_i}$, $\\vk{k_i}$ and $\\vv{v_i}$ served the computation; the residual connection then forms the updated token row.',
+        note: 'The projected rows $\\vq{q_i}$, $\\vk{k_i}$ and $\\vv{v_i}$ helped compute $\\vd{\\Delta e_i}$. The residual connection adds that result to form the updated token row.',
         render: (el) => { AT.ui.table([F.Delta[qi]], { axes: 'e', rowLabels: ['$\\vd{\\Delta e_{' + n() + '}}$'], rowCls: 'd', cornerLabel: 'update', into: el }); } },
       { title: 'Add: the representation is updated, not replaced',
         tex: "\\vp{e_i'} = \\ve{e_i} + \\vd{\\Delta e_i}",
@@ -6995,7 +7011,7 @@ It returns the projected message, Delta e. The residual addition then combines t
   setPhase(0);
 
   /* ---- disclaimer + chain ---- */
-  AT.ui.callout('Calling this update $\\vd{\\Delta e_i}$ is pedagogical notation used on this page; it is not standard Transformer notation. Standard implementations call it the attention output and add it through a residual connection. The <strong>addition itself is standard</strong>: it is the residual connection around the attention sublayer.', { kind: 'note', into: S.querySelector('#s11-note') });
+  AT.ui.callout('$\\vd{\\Delta e_i}$ is our teaching label for the update. Standard Transformer implementations call it the attention output. The <strong>addition is standard</strong>: the residual connection adds this output to the attention sublayer’s input.', { kind: 'note', into: S.querySelector('#s11-note') });
   AT.tex(S.querySelector('#s11-chain-eq'), '\\boxed{\\ve{e} \\;\\rightarrow\\; \\vq{Q},\\vk{K},\\vv{V} \\;\\rightarrow\\; \\vd{\\Delta e} \\;\\rightarrow\\; \\vp{e + \\Delta e}}', { display: true });
 })();
 </script>
@@ -7016,7 +7032,7 @@ body.present #s12 .dt td,body.present #s12 .dt th{font-size:22px;padding:.2em .4
 <header class="sec-head">
   <span class="sec-num">12</span>
   <div>
-    <p class="eyebrow">Why we are here: a small technical fix. The spread of raw dot products grows with the dimension, and dividing by $\sqrt{d_k}$ takes that growth out.</p>
+    <p class="eyebrow">Wider query and key vectors can produce a wider spread of scores. Dividing by $\sqrt{d_k}$ controls that scale.</p>
     <h2>Why divide by $\sqrt{d_k}$?</h2>
   </div>
 </header>
@@ -7087,7 +7103,7 @@ alpha = scores.softmax(dim=-1)</code></pre>
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: scaling counteracts the expected growth due to dimension. Learned vector lengths and alignment still affect score differences, so attention can remain sharp.</p>
+  <p>Scaling counteracts the expected growth with dimension. Learned vector lengths and alignment still affect score differences, so attention can remain sharp.</p>
 </div>
 
 <script>
@@ -7207,13 +7223,13 @@ body.present #s13 .mat-cl[data-present-label]::after,body.present #s13-frame3 .m
 <header class="sec-head">
   <span class="sec-num">13</span>
   <div>
-    <p class="eyebrow">Why we are here: this is next-token prediction, so a token may read the past and never the future.</p>
+    <p class="eyebrow">A next-token prediction may use the prefix, but it must not read the answer.</p>
     <h2>Causal masking</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>The model is trained to predict the next token, so during training the answer for position $i$ sits right there at position $i+1$. This section shows what stops a token from reading it. Switch the causal mask off and watch row 5: with the mask on, token 5 (the) reads only tokens 1 to 5; with it off, much of its weight lands on future tokens: river is its immediate target, and bank is additional future information. Press the send button in both states and compare the message that arrives. The sentence to remember: token $i$ may read from $j \le i$ and never from $j > i$, and the mask enforces that with a $-\infty$ before the softmax.</p>
+  <p>During training, the answer for position $i$ is already in the sentence at position $i+1$. We need to stop the model from reading it. Toggle the causal mask and watch row 5. With the mask on, token 5 (the) reads only positions 1 to 5. With it off, much of its weight moves to future tokens: river is the immediate target, and bank provides further future information. Send the values in both states and compare the messages. The mask enforces $j \le i$ by setting forbidden scores to $-\infty$ before softmax.</p>
 </div>
 
 <div class="frame" id="s13-frame1" data-title="What is the target at each position?">
@@ -7314,7 +7330,7 @@ Compare mask on and off, then send the values. Future attention weight is not th
 </div>
 </div>
 
-<div class="frame" id="s13-frame-why" data-title="Why the causal mask is non-negotiable">
+<div class="frame" id="s13-frame-why" data-title="Training must use only the prefix, just like generation">
 <script type="text/x-notes">What mismatch would we create by training without the mask?
 Training would allow evidence that generation can never have. The model could minimize loss with a shortcut rather than learning prefix-only prediction.</script>
   <div class="prose">
@@ -7327,7 +7343,7 @@ Training would allow evidence that generation can never have. The model could mi
 
 <div class="companion after">
   <div id="s13-callouts"></div>
-  <p>Keep in mind: with the mask off the rows still sum to 1, so the leak is invisible in the totals and visible only in where the weight went. The mask is not a detail of one example; it is what makes next-token training honest.</p>
+  <p>The rows still sum to 1 with the mask off. To find the leak, check which positions received weight, not just the totals. Causal masking keeps next-token training restricted to information that will also be available during generation.</p>
 </div>
 
 <script>
@@ -7451,12 +7467,12 @@ Training would allow evidence that generation can never have. The model could mi
     tbl.appendChild(tb);
     host.appendChild(AT.h('div', { class: 'dt-scroll' }, tbl));
     const why = S.querySelector('#s13-stairwhy');
-    AT.ui.callout('Look at position ' + (li + 1) + ' ("' + AT.escape(toks[li]) + '"): its job is to predict "' + AT.escape(toks[li + 1]) + '". If it could read position ' + (li + 2) + ', it would be reading its own answer. So the rule is not a style choice: with every position trained in one pass, position $i+1$ is this row’s target, and all positions to its right are unavailable evidence at generation time.', { kind: 'key', into: why });
+    AT.ui.callout('Position ' + (li + 1) + ' ("' + AT.escape(toks[li]) + '") predicts "' + AT.escape(toks[li + 1]) + '" at position ' + (li + 2) + '. Reading that position would reveal its answer. When we train every position in one pass, each row has a target at $i+1$. Its mask must exclude that target and every later position because none will be available during generation.', { kind: 'key', into: why });
   })();
 
   const co = S.querySelector('#s13-callouts');
   AT.ui.callout('Token $i$ may only retrieve from $j \\le i$, never from $j > i$. Rows of $\\va{A}$ are softmaxed over the current position and its past.', { kind: 'key', into: co });
-  AT.ui.callout('Why training would be invalid without the mask: the loss at position $i$ asks for $p(x_{i+1} \\mid x_{\\le i})$. If $\\ve{e_i}$ could read $\\ve{e_{i+1}}$, the model could reduce the loss by exploiting future information instead of learning the required prefix-only prediction. At generation time token $i+1$ does not exist yet, so the trick would fail exactly when it matters.', { kind: 'warn', into: co });
+  AT.ui.callout('The loss at position $i$ asks for $p(x_{i+1} \\mid x_{\\le i})$. If $\\ve{e_i}$ could read $\\ve{e_{i+1}}$, the model could lower its training loss using future information. That would not teach the prefix-only prediction we need: token $i+1$ is unavailable during generation.', { kind: 'warn', into: co });
 })();
 </script>
 </section>
@@ -7500,7 +7516,7 @@ body.present #s14-head-normalize .worked-head{gap:12px;margin:10px 0}
 <header class="sec-head">
   <span class="sec-num">14</span>
   <div>
-    <p class="eyebrow">Why we are here: a contextual representation is only useful if it changes the prediction.</p>
+    <p class="eyebrow">How does the updated representation change the next-token probabilities?</p>
     <h2>From <span class="sym sym-d">Δe</span> to the next-token probabilities</h2>
   </div>
 </header>
@@ -7545,7 +7561,7 @@ Point to position 10. Earlier we examined bank at position 7, but now q_10 searc
 </div>
 </div>
 
-<div class="frame" id="s14-routing-code" data-title="These weights come from the familiar three routing operations">
+<div class="frame" id="s14-routing-code" data-title="Match, scale, then normalize the scores">
   <script type="text/x-notes">Compare the same final query with all ten keys; scale; then softmax across source positions. Because the receiver is last, every displayed source is allowed.</script>
   <div class="grid-3">
     <div class="card"><strong>1 · Match</strong><p>$r_j=q_{10}\cdot k_j$</p></div>
@@ -7638,7 +7654,7 @@ In this one-layer toy it reads only the final row. Trace earlier tokens to the u
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: the head never sees the earlier tokens. It sees one row, $\vp{e_t'} = \ve{e_t} + \vd{\Delta e_t}$, and everything the context contributes is inside $\vd{\Delta e_t}$.</p>
+  <p>The head reads one row, $\vp{e_t'} = \ve{e_t} + \vd{\Delta e_t}$. In this toy, earlier tokens reach that row through $\vd{\Delta e_t}$; the head does not read them directly.</p>
 </div>
 
 <script>
@@ -7886,13 +7902,13 @@ body.present #s15 .s15-classroom .dt-cap{margin-top:.25em}
 <header class="sec-head">
   <span class="sec-num">15</span>
   <div>
-    <p class="eyebrow">Why we are here: every piece is in place. Now run the whole computation once, slowly, with real numbers.</p>
+    <p class="eyebrow">Follow one complete forward pass, with the numbers visible at every step.</p>
     <h2>Full walkthrough, one step at a time</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Everything before this section showed one stage at a time. Here the whole computation runs end to end on ten tokens, with the same numbers you would get by hand. Each stage is a small spreadsheet: one row per token, one column per coordinate, the result in the last column or the footer row. Click a score, or press Show the arithmetic, to see the numbers that produced it. At step 3, pick a different query token and press Next step again; the scores, the mask and the weights all change, but the recipe does not. The sentence to remember: one query, one score per earlier token, one weighted sum, one update added to the token.</p>
+  <p>Put the stages together for the ten-token sentence. Each table has one row per token and one column per coordinate, with the result in the last column or bottom row. The numbers come from the same calculation we have worked through by hand. Click a score or press Show the arithmetic to inspect it. At step 3, choose a different query token and advance again. The scores, mask and weights change, while the operations stay the same: score the sources for one query, mix their values, then project and add the update.</p>
 </div>
 
 <div class="frame" id="s15-frame1" data-title="Can we trace every number through one forward pass?">
@@ -7915,7 +7931,7 @@ The stage label names the query. Follow bank by default, or choose another recei
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: steps 4 to 17 run for every token at once; the walkthrough follows one of them so that each number has a home in a table.</p>
+  <p>Steps 4 to 17 run for every token at once. We follow one receiver here so that we can inspect each number.</p>
 </div>
 
 <script>
@@ -8490,20 +8506,20 @@ body.present #s16 .eqs>span{padding:28px 18px;border:1px solid var(--line);borde
 <header class="sec-head">
   <span class="sec-num">16</span>
   <div>
-    <p class="eyebrow">Why we are here: one token at a time is clear. Now every token does the same thing at once, and that is what the matrices say.</p>
+    <p class="eyebrow">Matrix products run the same calculation for every token at once.</p>
     <h2>The same thing in matrix form</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Section 15 followed one token, bank, through attention. Every other token runs the same arithmetic on its own row, and nothing in that arithmetic depends on which row you look at. That is why the whole sublayer fits in a handful of matrix products: each product does the section 15 step for all seven tokens at once.</p>
-  <p>Step through the operations below and keep your eye on row 7. At every stage it holds the numbers you already saw for bank. The sentence to remember: a row of the matrix is a token, and $\vp{E'} = \ve{E} + \vd{\Delta E}$ updates every row in one addition.</p>
+  <p>The walkthrough followed bank through attention. Every token applies the same operations to its own row, so we can compute them together with matrix products. Here we use the short seven-token prefix: each product carries out the corresponding walkthrough step for all seven tokens.</p>
+  <p>Follow row 7 as you advance through the operations. It contains bank's numbers at every stage. Each matrix row belongs to a token, and $\vp{E'} = \ve{E} + \vd{\Delta E}$ adds all their updates at once.</p>
 </div>
 
 <div class="frame" id="s16-flow-frame" data-title="Can you trace one request through the whole diagram?">
   <script type="text/x-notes">
 Which branch chooses where to read, and which branch carries the information?
-Build the diagram one operation at a time. Q and K create the weights. V bypasses scoring. The weighted message is mapped back by W_O and added to the original representation. At the final stage, switch from bank at position7 to the last the at position10: this is a new receiver/query, with all projections still reading the same layer input. Only its updated row predicts the next token after the full prefix. This is a single causal attention head plus its residual connection and a toy vocabulary head, not the complete Transformer.
+Build the diagram one operation at a time. Q and K create the weights. V bypasses scoring. W_O maps the weighted message back to representation space, where it is added to the original row. At the final stage, switch from bank at position 7 to the last the at position 10. This changes the receiver and query; all projections still use the same layer input. Only the final updated row predicts the next token after the full prefix. This is a single causal attention head with a residual connection and a toy vocabulary head, not a complete Transformer.
   </script>
   <div id="s16-flow-stepper"></div>
 </div>
@@ -8545,7 +8561,7 @@ Keep row 7 highlighted and step through the products. Q and K are both T × 3, s
     <span>$S = \dfrac{\vq{Q}\,\vk{K}^\top}{\sqrt{d_k}}$</span>
     <span>$\va{A} = \operatorname{softmax}_{\text{row}}(S + M)$</span>
   </div>
-  <div class="callout callout-key" data-build="1"><strong>Routing result:</strong> row $i$ of $\va{A}$ contains the source weights chosen by receiver $i$.</div>
+  <div class="callout callout-key" data-build="1"><strong>Routing weights:</strong> row $i$ of $\va{A}$ contains the source weights chosen by receiver $i$.</div>
 </div>
 
 <div class="frame" id="s16-frame3" data-title="Matrix form, second phase: mix, project, and add">
@@ -8569,7 +8585,7 @@ A contains the source weights; A V forms messages; W_O maps them back; the resid
 <div id="s16-callouts"><div id="s16-callout-key"></div></div>
 </div>
 
-<div class="frame" id="s16-frame5" data-title="What have we built—and what has not appeared yet?">
+<div class="frame" id="s16-frame5" data-title="What have we built, and what is still missing?">
   <script type="text/x-notes">This is one causal attention head, its output projection and residual addition. A full Transformer block adds the remaining architecture in Part 3.</script>
 <div id="s16-callout-note"></div>
 <p class="muted small">PyTorch · matrices are row-major; mask contains 0 or −∞.</p>
@@ -8578,7 +8594,7 @@ E_new = E + (A @ V) @ W_O</code></pre>
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: the matrices are bookkeeping, not a new idea. Row $i$ of $\vp{E'}$ is $\ve{e_i} + \vd{\Delta e_i}$, the softmax runs one row at a time, and the mask is what keeps row $i$ from reading columns $j > i$.</p>
+  <p>The matrix form collects the same calculations into rows. Row $i$ of $\vp{E'}$ is $\ve{e_i} + \vd{\Delta e_i}$. Softmax runs independently on each row, and the mask prevents row $i$ from reading columns $j > i$.</p>
 </div>
 
 <script>
@@ -8719,8 +8735,8 @@ E_new = E + (A @ V) @ W_O</code></pre>
   }
 
   /* callouts */
-  AT.ui.callout('The matrices add nothing new. $\\va{A}\\,\\vv{V}$ computes every token\'s message in one product, and $\\vp{E\'} = \\ve{E} + \\vd{\\Delta E}$ is the residual addition applied to all rows at once.', { kind: 'key', into: S.querySelector('#s16-callout-key') });
-  AT.ui.callout('$\\vd{\\Delta E}$ is our pedagogical notation for the attention sublayer\'s residual update. Standard descriptions call $H W_O$ the attention output; the addition $\\ve{E} + \\vd{\\Delta E}$ itself is standard: it is the residual connection around the attention sublayer.', { kind: 'note', into: S.querySelector('#s16-callout-note') });
+  AT.ui.callout('These matrix products collect the token-by-token calculations: $\\va{A}\\,\\vv{V}$ computes all the messages, and $\\vp{E\'} = \\ve{E} + \\vd{\\Delta E}$ adds every row’s update at once.', { kind: 'key', into: S.querySelector('#s16-callout-key') });
+  AT.ui.callout('We write $\\vd{\\Delta E}$ to emphasize the update contributed by attention. Standard descriptions call $H W_O$ the attention output. Adding it to the input as $\\ve{E} + \\vd{\\Delta E}$ is the standard residual connection around the attention sublayer.', { kind: 'note', into: S.querySelector('#s16-callout-note') });
 })();
 </script>
 </section>
@@ -8757,14 +8773,14 @@ body.present #s17 .dt tbody th,body.present #s17 .dt tfoot th{font-size:18px;whi
 <header class="sec-head">
   <span class="sec-num">17</span>
   <div>
-    <p class="eyebrow">Why we are here: the fixed window (03) and mean pooling (04) return, with one more fixed scheme, to be lined up against attention.</p>
+    <p class="eyebrow">Compare attention with the fixed window (03), mean pooling (04) and fixed positional weights.</p>
     <h2>Attention versus the alternatives</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Sections 03 and 04 set aside the fixed window and the plain mean because their inclusion or pooling rule is fixed, although their outputs still depend on the input words. This section puts those two schemes, a distance-decay scheme and attention into one table, so the difference shows up in the numbers instead of in an argument.</p>
-  <p>Switch between the river sentence and the cheque sentence and watch the rows. The first three rows do not change at all: their weights were fixed before any word was read. Only the attention row moves, and it moves toward the words that matter for the blank. The sentence to remember: attention is the only scheme whose weights are computed from the content.</p>
+  <p>The fixed window and plain mean use fixed inclusion or pooling rules, although their outputs still depend on the words they receive. Compare them with distance-based weights and attention in one table.</p>
+  <p>Switch between the river and cheque sentences. The first three rows stay fixed because their inclusion or weighting rules do not read the content. The attention row gives more weight to different clues for the blank. Of these four schemes, only attention computes its mixing weights from the words.</p>
 </div>
 
 <div class="frame" id="s17-frame1" data-title="Which inclusion or mixing rule changes with the words?">
@@ -8773,7 +8789,7 @@ When the sentence changes, which weights change, and which outputs might still c
 Only attention recomputes the displayed mixing weights from content. A fixed window and a mean still receive different embeddings and can therefore produce different outputs. The window row is inclusion, not normalized attention.
   </script>
 <div class="prose">
-  <p>All four schemes use input information for the last token $t = 10$ from $\ve{e_1},\ldots,\ve{e_t}$. One question separates them: who sets the weights, and do they read the words? Switch the sentence and watch which row reacts.</p>
+  <p>All four schemes use $\ve{e_1},\ldots,\ve{e_t}$ to supply information to the last token, $t = 10$. How does each scheme choose what to include or how much weight to give it? Switch the sentence and compare the rows.</p>
 </div>
 <div class="card">
   <h3 class="card-title">Choose the context</h3>
@@ -8794,7 +8810,7 @@ Only attention recomputes the displayed mixing weights from content. A fixed win
 
 </div>
 
-<div class="frame" id="s17-frame2" data-title="Fixed rules can use content—but cannot route by content">
+<div class="frame" id="s17-frame2" data-title="Fixed rules use the words but keep the same routes">
   <script type="text/x-notes">
 Is the advantage that other models cannot understand words?
 No. Attention supplies explicit content-dependent routing and shared projections over the available prefix. The input context remains finite; a fixed-window network can still learn from content within its window.
@@ -8838,7 +8854,7 @@ No. Attention supplies explicit content-dependent routing and shared projections
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: a window, a mean and a distance decay all fix their weights before reading the sentence. Attention computes $\va{\alpha_{ij}}$ from $\vq{q_i}$ and $\vk{k_j}$, so the same position can receive very different mixing weights in different sentences.</p>
+  <p>A window, a mean and a distance decay fix their inclusion or weighting rules before reading the sentence. Attention computes $\va{\alpha_{ij}}$ from $\vq{q_i}$ and $\vk{k_j}$, so the same position can receive different mixing weights in different sentences.</p>
 </div>
 
 <script>
@@ -8988,14 +9004,14 @@ body.present #s18 .role-recap>div{padding:16px 22px;border-left:4px solid var(--
 <header class="sec-head">
   <span class="sec-num">18</span>
   <div>
-    <p class="eyebrow">Why we are here: eight questions that catch the usual confusions. Answer each before you reveal it.</p>
+    <p class="eyebrow">Try these eight questions before opening the answers.</p>
     <h2>Pause and think</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>By now you have seen every object on the page at least twice. This section exists because the confusions that survive a lecture are always the same ones: mixing up keys and values, taking the query for the new representation, or treating $\vd{\Delta e}$ as standard notation.</p>
-  <p>Say your answer out loud before you open each reveal. Every answer is backed by a small table from the toy model, with the coordinate names on the columns, so if you disagree you can check the arithmetic rather than the wording. The sentence to remember: queries, keys and values are working vectors; the token row passed onward is $\vp{e_i'} = \ve{e_i} + \vd{\Delta e_i}$.</p>
+  <p>We have used these objects several times. Can you now distinguish a key from a value, explain why a query is not the updated representation, and say what our $\vd{\Delta e}$ notation means?</p>
+  <p>Say your answer out loud before opening the reveal. Each answer includes a small table from the toy model with named columns, so you can check it against the arithmetic. Queries, keys and values are working vectors. The token row passed onward is $\vp{e_i'} = \ve{e_i} + \vd{\Delta e_i}$.</p>
 </div>
 
 <div class="frame" id="s18-frame1" data-title="Can you explain the roles without the equations?">
@@ -9024,7 +9040,7 @@ Ask one question before opening its reveal. For equal scores, the result is the 
   <script type="text/x-notes">Which vector is used for matching, and which one is passed onward? Ask students to name the addition.</script>
   <div class="card"><h3 class="card-title">3 · A working vector is not the output</h3><div id="s18-q3"></div></div>
 </div>
-<div class="frame" id="s18-question4" data-title="What does the optimizer actually keep and update?">
+<div class="frame" id="s18-question4" data-title="What does the optimizer keep and update?">
   <script type="text/x-notes">Distinguish stored parameters from vectors recomputed by a forward pass. Gradients may flow through both.</script>
   <div class="card"><h3 class="card-title">4 · Parameters versus intermediate results</h3><div id="s18-q4"></div></div>
 </div>
@@ -9066,7 +9082,7 @@ Queries and keys must have compatible matching coordinates. Values form the mess
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: $\vk{k_j}$ decides whether token $j$ is read and $\vv{v_j}$ decides what it sends; $\vq{q_i}$ is a matching projection, not the updated token row; the update is added through the residual connection $\vp{e_i'} = \ve{e_i} + \vd{\Delta e_i}$.</p>
+  <p>$\vq{q_i}$ and $\vk{k_j}$ determine the match; $\vv{v_j}$ supplies what source $j$ sends. The query is a working projection. The updated token row comes from the residual addition, $\vp{e_i'} = \ve{e_i} + \vd{\Delta e_i}$.</p>
 </div>
 
 <script>
@@ -9401,14 +9417,14 @@ body.present #s19-math-message>.card{padding:18px 22px;margin-bottom:0}
 <header class="sec-head">
   <span class="sec-num">19</span>
   <div>
-    <p class="eyebrow">Why we are here: the whole argument three times (in words, as a chain, and as matrices), then back to the first sentence.</p>
+    <p class="eyebrow">Explain attention in words, trace its operations, then write the matrix equations.</p>
     <h2>Three summaries</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>A summary is only useful if you can reproduce it without the page. So this section says the same thing three times, each in a form you might be asked for: a sentence for a conversation, a chain for a whiteboard, and four equations for an exam.</p>
-  <p>Play the chain and watch the pipeline diagram light up stage by stage. Then switch the sentence in the last card and check that the winning word changes while the equations do not. The sentence to remember: each token reads itself and earlier tokens, mixes their values, and receives the projected message through a residual addition.</p>
+  <p>Try explaining attention without looking at the page. You can use a sentence in conversation, draw the sequence of operations on a whiteboard, or write the four matrix equations in an exam. The summaries below describe the same calculation in those three forms.</p>
+  <p>Play the chain to follow each stage in the diagram. Then switch the sentence in the last card: the highest-probability word changes, but the equations stay the same. Each token reads itself and earlier tokens, mixes their values, and receives the projected message through a residual addition.</p>
 </div>
 
 <div class="frame" id="s19-frame1" data-title="Can we tell the whole attention story?">
@@ -9561,7 +9577,7 @@ No. We traced a hand-designed single-head forward computation. Learning changes 
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: attention computes $\vd{\Delta E}$ and the residual connection forms $\vp{E'} = \ve{E} + \vd{\Delta E}$; and the output head reads the last row of $\vp{E'}$ to predict the next token.</p>
+  <p>Attention computes $\vd{\Delta E}$. The residual connection forms $\vp{E'} = \ve{E} + \vd{\Delta E}$, and the output head reads its last row to predict the next token.</p>
 </div>
 
 <script>
@@ -9734,7 +9750,7 @@ No. We traced a hand-designed single-head forward computation. Learning changes 
   paint();
 
   /* ---- closing note: prediction is one step; generation repeats it ---- */
-  AT.ui.callout('Prediction is not generation. The output head gives probabilities for one step. To generate, pick a token from $p(x_{t+1}\\mid x_{\\le t})$, append it to the sequence, form the query for the new last position, and repeat.', { kind: 'note', into: S.querySelector('#s19-notes') });
+  AT.ui.callout('One prediction gives a distribution for one next token. Generation repeats the process: choose a token from $p(x_{t+1}\\mid x_{\\le t})$, append it, form the query at the new last position, and predict again.', { kind: 'note', into: S.querySelector('#s19-notes') });
 
   /* ---- notation recap ---- */
   AT.ui.notationCard({ groups: ['matrix', 'sizes'], into: S.querySelector('#s19-notation') });
@@ -9747,7 +9763,7 @@ No. We traced a hand-designed single-head forward computation. Learning changes 
 <footer>
   <div class="wrap">
     <p class="series-nav series-foot" id="series-nav-foot"></p>
-    <p>This page is one self-contained file with no external dependencies; KaTeX is inlined for the math. <span id="footer-note"></span></p>
+    <details><summary>About this page</summary><p>This page works offline, including its diagrams and maths. <span id="footer-note"></span></p></details>
   </div>
 </footer>
 

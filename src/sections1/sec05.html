@@ -5,8 +5,8 @@
 #s05 .compare-label{font-family:var(--font-mono);font-weight:700;margin:0 0 8px}
 #s05 .lookup-step .stepper-stage svg{max-height:390px}
 </style>
-<header class="sec-head"><span class="sec-num">05</span><div><p class="eyebrow">Why we are here: three embedding rows must become one fixed-width input without losing their positions.</p><h2>Concatenate the embeddings</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>The lookup returns one embedding row for each character in the window. The MLP expects one row, so we place the three embeddings side by side. This makes a six-number vector because the window has three positions and each embedding has two coordinates. Each segment keeps its position: the first two numbers always describe the oldest character, and the last two describe the newest. Reversing the characters therefore changes the concatenation. Adding the same rows would erase their order because addition is commutative. The trained values below come directly from the embedding table you just inspected.</p></div>
+<header class="sec-head"><span class="sec-num">05</span><div><p class="eyebrow">The MLP needs one fixed-width row. Concatenation keeps the three positions separate.</p><h2>Concatenate the embeddings</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>We have looked up one embedding row for each character in the window. The MLP expects one row, so we put the three embeddings side by side. Three positions with two coordinates each give us six numbers. The first two always describe the oldest character, and the last two describe the newest. Reversing the characters changes where their numbers appear in this row. Adding the embeddings would lose that order because addition is commutative. The values below are the trained rows from the table we just inspected.</p></div>
 <div class="frame" data-title="Trace a a b from IDs to six numbers" data-autobuild="off">
   <script type="text/x-notes">Why does the embedding row for a appear twice?
   Advance from token IDs to the shared lookup table, then follow each occurrence into its own two-coordinate slot.</script>
@@ -14,7 +14,7 @@
 </div>
 <div class="frame" data-title="Three rows become one row" data-autobuild="off">
   <script type="text/x-notes">Where does the second a live in the concatenated row?
-  Read the position labels across the headers. Each position owns a separate two-coordinate segment.</script>
+  Read the position labels across the headers. Each position has a separate two-coordinate segment.</script>
   <div class="card"><h3 class="card-title">The three rows for a a b</h3><div id="s05-rows"></div></div>
   <div class="join-eq" id="s05-eq" data-build="1"></div>
 </div>
@@ -31,7 +31,7 @@
   <div class="card"><div id="s05-sums"></div></div>
   <div class="callout callout-note" data-build="1">The concatenations differ. The two sums are equal.</div>
 </div>
-<div class="companion after"><p>Keep in mind: concatenation preserves a fixed slot for every character position, while addition removes the order.</p></div>
+<div class="companion after"><p>With concatenation, each character position has a fixed slot. With addition, we can no longer recover the order.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s05'),M=window.__TOY__,axes=M.axes.e;

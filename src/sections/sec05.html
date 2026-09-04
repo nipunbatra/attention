@@ -1,4 +1,4 @@
-<section id="s05" class="sec" data-title="A detour through search: Query, Key, Value" data-lit="q k v">
+<section id="s05" class="sec" data-title="A detour through search: query, key, value" data-lit="q k v">
 <style>
 #s05 .qbox{border:2px solid var(--oc);background:var(--ot);border-radius:var(--radius);padding:12px 18px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin:12px 0 6px}
 #s05 .qbox .qk{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--oc)}
@@ -134,13 +134,13 @@ body.present #s05 #s05-return-summary{font-size:28px;line-height:1.4;margin:0 0 
 <header class="sec-head">
   <span class="sec-num">05</span>
   <div>
-    <p class="eyebrow">Why we are here: weights should come from what a token needs and what a token has. Search gives us a familiar analogy for those two roles.</p>
-    <h2>A detour through search: Query, Key, Value</h2>
+    <p class="eyebrow">Search separates what we need from what each source can offer.</p>
+    <h2>A detour through search: query, key, value</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Before attention touches a sentence, it helps to see the same three roles somewhere familiar. A video site has to answer two questions for every item: does it match the search, and what should it hand back? Those are different jobs, so each video keeps a key for matching and a value for returning. The first spreadsheet puts the query in the top row and the six keys beneath it, so you can compare them column by column; the score on the right is the dot product. Switch to the overfitting question and watch which row wins. The sentence to remember: keys decide whether to retrieve, values are what gets retrieved.</p>
+  <p>Think of searching a video site. For each item, we need to decide whether it matches our request and what information to return. In this example, each video has a key for matching and a value for returning. The first table puts the query above six keys so you can compare their coordinates. Each score on the right is a dot product. Switch to the overfitting question and see which item now scores highest. Its key helps us choose it; its value is what we receive.</p>
 </div>
 
 <div class="frame" data-title="A search box" data-autobuild="off">
@@ -194,7 +194,7 @@ Timing: four minutes.
   <div class="card">
     <h3 class="card-title">Multiply matching coordinates, then add: $s_j=\vq{q}\cdot\vk{k_j}$.</h3>
     <div class="companion prose">
-      <p>Matching is a dot product between the query and each key. At this stage the site looks at nothing else about the item.</p>
+      <p>For this matching step, the site uses only the dot product between the query and each key.</p>
       $$s_j = \vq{q}\cdot \vk{k_j}$$
       <p>$\vq{q}$ = query representation, $\vk{k_j}$ = key of item $j$, $\vv{v_j}$ = value of item $j$.</p>
     </div>
@@ -216,13 +216,13 @@ Read query and key as matching roles. Reveal value last: it is the payload assoc
 
 <div class="frame" data-title="The value is a different table" data-autobuild="off">
   <script type="text/x-notes">
-The winner was Backpropagation. What does the searcher actually receive?
+The winner was Backpropagation. What does the searcher receive?
 Compare the headers with the key table: three value columns, not four, plus the summary. The key never leaves the matching step. Then the callout, read twice.
 
 Timing: two minutes.
   </script>
   <div class="card">
-    <h3 class="card-title">The <span class="sym sym-v">Value</span> of each video: what comes back if it is retrieved</h3>
+    <h3 class="card-title">Each video's <span class="sym sym-v">value</span>: the information returned</h3>
     <div id="s05-vals"></div>
     <p class="companion look" id="s05-vread"></p>
   </div>
@@ -243,7 +243,7 @@ The numeric value and content of that same item arrive. Keep the source pairing 
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: a score comes from the query and the key alone. The value plays no part in matching; it only travels once its item is chosen.</p>
+  <p>Only the query and key determine the match score. Once we choose an item, we retrieve its value.</p>
 </div>
 
 <script>

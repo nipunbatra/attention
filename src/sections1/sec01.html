@@ -8,9 +8,9 @@
 #s01 .answer{padding:12px;background:var(--t-neutral);border-radius:var(--radius-s)}
 @media(max-width:640px){body:not(.present) #s01 .task-grid,body:not(.present) #s01 .answers{grid-template-columns:1fr}}
 </style>
-<header class="sec-head"><span class="sec-num">01</span><div><p class="eyebrow">Why we are here: language tasks look different, yet each asks a network to turn text into useful predictions.</p><h2>What can a network do with text?</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>A network can label a whole passage, label each token, translate between languages, shorten a notice, answer from a context, or continue a prompt. The output shape changes across these tasks. Generation looks especially open because several continuations can fit the same prefix. We can still give the network a precise job: assign one probability to every possible next token. Choosing or sampling one token turns that distribution into a continuation. This next-token view gives us a small problem that we can build from embeddings, an MLP, softmax, and cross-entropy.</p></div>
-<div class="frame" data-title="Text can ask for different outputs" data-autobuild="off">
+<header class="sec-head"><span class="sec-num">01</span><div><p class="eyebrow">Language tasks ask for different outputs, but all use text to make predictions.</p><h2>What can a network do with text?</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>A network can label a passage, label each token, translate between languages, shorten a notice, answer a question from context, or continue a prompt. These tasks need different output shapes. Generation leaves more room for choice: several continuations may fit the same prefix. We give the network a precise job anyway. It must assign a probability to every possible next token. Choosing or sampling one token then gives us a continuation. This gives us a small prediction task to build with embeddings, an MLP, softmax, and cross-entropy.</p></div>
+<div class="frame" data-title="Different tasks need different outputs" data-autobuild="off">
   <script type="text/x-notes">What changes across these six language tasks?
   Reveal one row at a time. Ask whether the output is one label, one label per token, or another sequence.</script>
   <div class="card"><h3 class="card-title">Six familiar tasks</h3><div class="task-grid">
@@ -35,7 +35,7 @@
   <div class="card"><h3 class="card-title">After “The student opened the laptop and”</h3><div id="s01-bars"></div><p class="muted small">Illustrative next-token probabilities.</p></div>
   <div class="callout callout-key" data-build="1">Generation is classification over the next token, repeated one step at a time.</div>
 </div>
-<div class="companion after"><p>Keep in mind: a probability distribution can represent several reasonable continuations without choosing one in advance.</p></div>
+<div class="companion after"><p>A distribution lets us keep several reasonable continuations possible. We do not have to choose one in advance.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s01');

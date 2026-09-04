@@ -10,10 +10,10 @@
 </style>
 <header class="sec-head">
   <span class="sec-num">07</span>
-  <div><p class="eyebrow">Why we are here: one head produces one routing pattern, while a token may need several relations at the same time.</p><h2>Multiple heads</h2></div>
+  <div><p class="eyebrow">One head gives us one attention pattern. A token may need to read several kinds of relation at once.</p><h2>Multiple heads</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>Consider "Priya opened the notebook; she smiled." When the row for she gathers context, one useful pattern links it to Priya, another retrieves the earlier event, and a third notices nearby structure. Multi-head attention gives each head its own query, key, and value projections. Every head reads the full input representation through those matrices. It does not receive a separate slice of the embedding. Each head returns a smaller projected message, the messages are concatenated by columns, and $W_O$ combines them. The rows below are illustrative routing patterns rather than values learned by the river toy.</p>
+  <p>Take the sentence "Priya opened the notebook; she smiled." The row for she may need several pieces of context. One attention pattern could link she to Priya, another could retrieve the earlier event, and a third could use nearby structure. Each head has its own query, key, and value projections, and every projection reads the full input representation. We do not give each head a separate slice of the embedding. Each head returns a smaller projected message; we concatenate those messages by columns, then combine them with $W_O$. The rows below illustrate possible attention patterns. They were not learned by the river toy.</p>
 </div>
 <div class="frame" data-title="One token can need several relations">
   <script type="text/x-notes">What may she need to read from this sentence?
@@ -23,7 +23,7 @@
 <div class="frame" data-title="Every head reads the full input">
   <script type="text/x-notes">Does a head receive a slice of each embedding?
   No. The split is in the projected outputs. Each projection starts from the full model-width row.</script>
-  <div class="card"><h3 class="card-title">Split into projections, run heads, concatenate, combine</h3><div class="s07-pipeline dotgrid" id="s07-pipeline"></div></div>
+  <div class="card"><h3 class="card-title">Project, run each head, then combine the outputs</h3><div class="s07-pipeline dotgrid" id="s07-pipeline"></div></div>
 </div>
 <div class="frame" data-title="The input is full-width; projected heads are smaller"><div id="s07-full"></div></div>
 <div class="frame" data-title="Inspect a head and the causal mask">
@@ -55,7 +55,7 @@
     $$H=\operatorname{Concat}_{\text{columns}}(H^{(1)},\ldots,H^{(n_h)}),\qquad \vd{\Delta E}=HW_O$$
   </div>
 </div>
-<div class="companion after"><p>Heads divide the projected width, while every head reads the full input representation through its own matrices.</p></div>
+<div class="companion after"><p>We divide the width of the projected outputs, not the input. Every head reads the full input row through its own matrices.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s07');

@@ -37,13 +37,13 @@ body.present #s03 #s03-ceq .katex-display{margin:4px 0 16px}
 <header class="sec-head">
   <span class="sec-num">03</span>
   <div>
-    <p class="eyebrow">Why we are here: the obvious fix, handing the model the last w tokens, and why it is not enough.</p>
+    <p class="eyebrow">A wider window includes more words, but it still leaves a boundary.</p>
     <h2>Baseline: a fixed window of w tokens</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>The natural fix is to hand the model more tokens: concatenate the last $w$ representations into one long row and let a bigger matrix read it. The first widget sketches that as a network: the input column is the window, and the first layer's input width grows with the window. Drag the second slider and watch which tokens sit inside the window and how the input grows by five numbers per token. Set $w$ to 3 and <em>river</em> falls outside. Set it to 10 and every token is in, but only because this sentence is short. The included embeddings still carry content: a network can learn to treat <em>river</em> differently from <em>the</em>. The limitation is the fixed input width and hard boundary, not an inability to use the words. The sentence to remember: a window decides by position what to include, and we want to decide by content.</p>
+  <p>Give the model more context by concatenating the last $w$ representations into one long row. A larger matrix can read that row. In the first diagram, the input column contains the window, so widening the window also widens the first layer's input. Use the second slider to see which tokens reach it: each token adds five numbers. At $w=3$, <em>river</em> is outside. At $w=10$, every token fits because this sentence is short. The network can learn to use the content it receives, including the difference between <em>river</em> and <em>the</em>. But its input width is fixed, and it gets no information from beyond the window. We want a way to choose useful information by content, rather than deciding which words are available only by position.</p>
 </div>
 
 <div class="frame" data-title="Grow the window" id="s03-frame1" data-autobuild="off">
@@ -54,7 +54,7 @@ body.present #s03 #s03-ceq .katex-display{margin:4px 0 16px}
     Timing: about three minutes.
   </script>
   <div class="companion">
-    <p>Why not simply hand the model the last $w$ tokens? Their rows feed a fixed network: a first layer that reads all $w$ rows at once, a hidden layer, and one output per vocabulary word.</p>
+    <p>The last $w$ token rows can feed a fixed network. Its first layer reads all $w$ rows at once, followed by a hidden layer and one output per vocabulary word.</p>
   </div>
 
   <div class="card">
@@ -164,7 +164,7 @@ The input width and the parameter count. More tokens fit in this finite sentence
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: a fixed window chooses tokens by where they are, never by what they say. The rest of the page builds a mechanism that chooses by content.</p>
+  <p>A fixed window decides which tokens are available by position. Next we will build a way to choose their contributions by content.</p>
 </div>
 
 <script>

@@ -41,13 +41,13 @@ body.present #s13 .mat-cl[data-present-label]::after,body.present #s13-frame3 .m
 <header class="sec-head">
   <span class="sec-num">13</span>
   <div>
-    <p class="eyebrow">Why we are here: this is next-token prediction, so a token may read the past and never the future.</p>
+    <p class="eyebrow">A next-token prediction may use the prefix, but it must not read the answer.</p>
     <h2>Causal masking</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>The model is trained to predict the next token, so during training the answer for position $i$ sits right there at position $i+1$. This section shows what stops a token from reading it. Switch the causal mask off and watch row 5: with the mask on, token 5 (the) reads only tokens 1 to 5; with it off, much of its weight lands on future tokens: river is its immediate target, and bank is additional future information. Press the send button in both states and compare the message that arrives. The sentence to remember: token $i$ may read from $j \le i$ and never from $j > i$, and the mask enforces that with a $-\infty$ before the softmax.</p>
+  <p>During training, the answer for position $i$ is already in the sentence at position $i+1$. We need to stop the model from reading it. Toggle the causal mask and watch row 5. With the mask on, token 5 (the) reads only positions 1 to 5. With it off, much of its weight moves to future tokens: river is the immediate target, and bank provides further future information. Send the values in both states and compare the messages. The mask enforces $j \le i$ by setting forbidden scores to $-\infty$ before softmax.</p>
 </div>
 
 <div class="frame" id="s13-frame1" data-title="What is the target at each position?">
@@ -148,7 +148,7 @@ Compare mask on and off, then send the values. Future attention weight is not th
 </div>
 </div>
 
-<div class="frame" id="s13-frame-why" data-title="Why the causal mask is non-negotiable">
+<div class="frame" id="s13-frame-why" data-title="Training must use only the prefix, just like generation">
 <script type="text/x-notes">What mismatch would we create by training without the mask?
 Training would allow evidence that generation can never have. The model could minimize loss with a shortcut rather than learning prefix-only prediction.</script>
   <div class="prose">
@@ -161,7 +161,7 @@ Training would allow evidence that generation can never have. The model could mi
 
 <div class="companion after">
   <div id="s13-callouts"></div>
-  <p>Keep in mind: with the mask off the rows still sum to 1, so the leak is invisible in the totals and visible only in where the weight went. The mask is not a detail of one example; it is what makes next-token training honest.</p>
+  <p>The rows still sum to 1 with the mask off. To find the leak, check which positions received weight, not just the totals. Causal masking keeps next-token training restricted to information that will also be available during generation.</p>
 </div>
 
 <script>
@@ -285,12 +285,12 @@ Training would allow evidence that generation can never have. The model could mi
     tbl.appendChild(tb);
     host.appendChild(AT.h('div', { class: 'dt-scroll' }, tbl));
     const why = S.querySelector('#s13-stairwhy');
-    AT.ui.callout('Look at position ' + (li + 1) + ' ("' + AT.escape(toks[li]) + '"): its job is to predict "' + AT.escape(toks[li + 1]) + '". If it could read position ' + (li + 2) + ', it would be reading its own answer. So the rule is not a style choice: with every position trained in one pass, position $i+1$ is this row’s target, and all positions to its right are unavailable evidence at generation time.', { kind: 'key', into: why });
+    AT.ui.callout('Position ' + (li + 1) + ' ("' + AT.escape(toks[li]) + '") predicts "' + AT.escape(toks[li + 1]) + '" at position ' + (li + 2) + '. Reading that position would reveal its answer. When we train every position in one pass, each row has a target at $i+1$. Its mask must exclude that target and every later position because none will be available during generation.', { kind: 'key', into: why });
   })();
 
   const co = S.querySelector('#s13-callouts');
   AT.ui.callout('Token $i$ may only retrieve from $j \\le i$, never from $j > i$. Rows of $\\va{A}$ are softmaxed over the current position and its past.', { kind: 'key', into: co });
-  AT.ui.callout('Why training would be invalid without the mask: the loss at position $i$ asks for $p(x_{i+1} \\mid x_{\\le i})$. If $\\ve{e_i}$ could read $\\ve{e_{i+1}}$, the model could reduce the loss by exploiting future information instead of learning the required prefix-only prediction. At generation time token $i+1$ does not exist yet, so the trick would fail exactly when it matters.', { kind: 'warn', into: co });
+  AT.ui.callout('The loss at position $i$ asks for $p(x_{i+1} \\mid x_{\\le i})$. If $\\ve{e_i}$ could read $\\ve{e_{i+1}}$, the model could lower its training loss using future information. That would not teach the prefix-only prediction we need: token $i+1$ is unavailable during generation.', { kind: 'warn', into: co });
 })();
 </script>
 </section>

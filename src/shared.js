@@ -1617,7 +1617,7 @@
     function applyBuild(fr, b, edge) {
       all(fr.el, '[data-build]').forEach(function (e) {
         var pend = buildOf(e) > b;
-        if (pend && e.contains(document.activeElement) && U.controls) U.controls.focus({ preventScroll: true });
+        if (pend && e.contains(document.activeElement) && U.controlsToggle) U.controlsToggle.focus({ preventScroll: true });
         pending(e, pend);
       });
       steppersOf(fr).forEach(function (s) {
@@ -1685,15 +1685,18 @@
       U.overviewButton = h('button', { id: 'at-overview-btn', type: 'button', class: 'pbtn', 'aria-haspopup': 'dialog', on: { click: function () { setOverview(true); } } }, 'Frames');
       U.fullscreen = h('button', { id: 'at-fullscreen', type: 'button', class: 'pbtn', 'aria-pressed': 'false', on: { click: fullscreen } }, 'Full screen');
       U.controls = h('nav', { id: 'at-controls', tabindex: '-1', 'aria-label': 'Classroom navigation' }, U.counter, U.prev, U.next, U.overviewButton, U.fullscreen,
+        h('button', { id: 'at-presenter-btn', type: 'button', class: 'pbtn', on: { click: openPresenter } }, 'Presenter view'),
         h('button', { id: 'at-exit', type: 'button', class: 'pbtn', on: { click: exit } }, 'Exit'));
+      U.controlsToggle = h('button', { id: 'at-controls-toggle', type: 'button', class: 'pbtn', 'aria-controls': 'at-controls', 'aria-expanded': 'false', title: 'Show classroom controls (C)', on: { click: function () { setControls(!P.controls); } } }, 'Controls');
+      U.controls.inert = true;
       U.announcement = h('p', { id: 'at-announcement', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' });
       U.fitWarning = h('p', { id: 'at-fit-warning', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' });
       U.notes = h('div', { id: 'at-notes', role: 'complementary', 'aria-label': 'Presenter notes' });
       U.overview = h('div', { id: 'at-overview', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'All frames' }, h('div', { class: 'ov-head' }, h('p', { class: 'ov-title' }, 'All frames: select one to jump'), h('button', { id: 'at-overview-close', type: 'button', class: 'pbtn', on: { click: function () { setOverview(false); } } }, 'Close overview')), h('div', { class: 'ov-grid' }));
       U.blank = h('div', { id: 'at-blank', 'aria-hidden': 'true' });
-      U.help = h('div', { id: 'at-help', role: 'note' }, h('div', { html: '<kbd>→</kbd> <kbd>Space</kbd> <kbd>PgDn</kbd> next build · <kbd>←</kbd> <kbd>PgUp</kbd> <kbd>Backspace</kbd> back · <kbd>Home</kbd> <kbd>End</kbd> first / last frame<br><kbd>O</kbd> overview · <kbd>B</kbd> blank · <kbd>S</kbd> notes · <kbd>?</kbd> this help · <kbd>Esc</kbd> exit' }));
+      U.help = h('div', { id: 'at-help', role: 'note' }, h('div', { html: '<kbd>→</kbd> <kbd>Space</kbd> <kbd>PgDn</kbd> next build · <kbd>←</kbd> <kbd>PgUp</kbd> <kbd>Backspace</kbd> back · <kbd>Home</kbd> <kbd>End</kbd> first / last frame<br><kbd>C</kbd> controls · <kbd>O</kbd> overview · <kbd>B</kbd> blank · <kbd>S</kbd> notes · <kbd>?</kbd> this help · <kbd>Esc</kbd> close panel / exit' }));
       U.blank.addEventListener('click', function () { setBlank(false); });
-      document.body.appendChild(U.controls); document.body.appendChild(U.announcement); document.body.appendChild(U.fitWarning); document.body.appendChild(U.notes); document.body.appendChild(U.overview); document.body.appendChild(U.blank); document.body.appendChild(U.help);
+      document.body.appendChild(U.controlsToggle); document.body.appendChild(U.controls); document.body.appendChild(U.announcement); document.body.appendChild(U.fitWarning); document.body.appendChild(U.notes); document.body.appendChild(U.overview); document.body.appendChild(U.blank); document.body.appendChild(U.help);
       window.addEventListener('resize', measureChrome);
       document.addEventListener('fullscreenchange', function () { updateChrome(); measureChrome(); });
       if (window.ResizeObserver) { U.resize = new ResizeObserver(measureChrome); U.resize.observe(U.controls); var strip = document.getElementById('strip'); if (strip) U.resize.observe(strip); }
@@ -1703,11 +1706,16 @@
       document.addEventListener('toggle', scheduleFitCheck, true);
       document.addEventListener('load', scheduleFitCheck, true);
     }
+    function setControls(on) {
+      P.controls = !!on;
+      if (!U.controls) return;
+      if (!P.controls && U.controls.contains(document.activeElement)) U.controlsToggle.focus({ preventScroll: true });
+      U.controls.classList.toggle('is-on', P.controls);
+      U.controls.inert = !P.controls;
+      U.controlsToggle.setAttribute('aria-expanded', String(P.controls));
+    }
     function measureChrome() {
       if (!P.active) return;
-      var strip = document.getElementById('strip');
-      document.body.style.setProperty('--present-strip-h', (strip ? strip.getBoundingClientRect().height : 0) + 'px');
-      document.body.style.setProperty('--present-controls-h', (U.controls ? U.controls.getBoundingClientRect().height : 0) + 'px');
       var main = document.querySelector('main');
       if (main) {
         var r = main.getBoundingClientRect(), cs = getComputedStyle(document.body);
@@ -2015,6 +2023,7 @@
       P.frames.forEach(function (fr) { fr.snapshot = null; }); P.fi = -1;
       P.active = true; P.startedAt = P.startedAt || Date.now();
       document.body.classList.add('present');
+      setControls(false);
       goTarget(t); measureChrome();
       emit('change', state());
     }
@@ -2022,7 +2031,7 @@
     function exit() {
       if (!P.active) return;
       var fr = cur();
-      setOverview(false); setBlank(false); setNotes(false); setHelp(false);
+      setOverview(false); setBlank(false); setNotes(false); setHelp(false); setControls(false);
       if (fr) { leaveFrame(fr); fr.sec.classList.remove('is-live'); }
       P.active = false;
       document.body.classList.remove('present');
@@ -2040,8 +2049,9 @@
     /* ---- print: every build visible, steppers at their last step, read-mode layout; restored afterwards ---- */
     function prepareForPrint() {
       if (P.printState) return;
-      var st = { active: P.active, fi: P.fi, build: P.build, steppers: [] };
+      var st = { active: P.active, fi: P.fi, build: P.build, steppers: [], details: [] };
       all(document, '.stepper').forEach(function (e) { if (e.stepperApi && e.stepperApi.steps.length) { st.steppers.push([e.stepperApi, e.stepperApi.index()]); e.stepperApi.go(e.stepperApi.steps.length - 1); } });
+      all(document, 'details.reveal').forEach(function (d) { st.details.push([d, d.open]); d.open = true; });
       if (P.active) {
         var fr = cur();
         all(document, '[data-build].is-pending').forEach(function (e) { pending(e, false); });
@@ -2055,6 +2065,7 @@
       var st = P.printState; if (!st) return;
       P.printState = null;
       document.documentElement.classList.remove('printing');
+      st.details.forEach(function (p) { if (p[0].isConnected) p[0].open = p[1]; });
       st.steppers.forEach(function (p) { p[0].go(p[1]); });
       if (st.active) { document.body.classList.add('present'); var fr = P.frames[st.fi]; if (fr) { fr.sec.classList.add('is-live'); fr.el.classList.add('is-live'); applyBuild(fr, st.build); } }
     }
@@ -2076,7 +2087,7 @@
       if (!P.active) { if ((key === 'p' || key === 'P') && !inField(target)) { enter(); return true; } return false; }
       if (P.overview) return overviewKey(key, ev);
       if (P.blank) { if (key === 'Shift' || key === 'Control' || key === 'Alt' || key === 'Meta') return false; setBlank(false); return true; }
-      if (key === 'Escape') { if (P.help) setHelp(false); else exit(); return true; }
+      if (key === 'Escape') { if (P.help) setHelp(false); else if (P.controls) setControls(false); else exit(); return true; }
       if (inField(target) || (target && target.closest && target.closest('[data-present="manual"]'))) return false;
       switch (key) {
         case 'ArrowRight': next(); return true;
@@ -2087,6 +2098,7 @@
         case 'Home': showFrame(0, 0); return true;
         case 'End': showFrame(P.frames.length - 1, 0); return true;
         case 'o': case 'O': setOverview(!P.overview); return true;
+        case 'c': case 'C': setControls(!P.controls); return true;
         case 'b': case 'B': case '.': setBlank(!P.blank); return true;
         case 's': case 'S': setNotes(!P.notes); return true;
         case '?': setHelp(!P.help); return true;

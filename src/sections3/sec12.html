@@ -6,10 +6,10 @@
 </style>
 <header class="sec-head">
   <span class="sec-num">12</span>
-  <div><p class="eyebrow">Why we are here: the complete model still learns from the same next-token cross-entropy used by the small character model.</p><h2>Training: one pass, many guesses</h2></div>
+  <div><p class="eyebrow">The model is larger, but its next-token cross-entropy is the same one we used for the character MLP.</p><h2>Training: one pass, many guesses</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>The complete decoder processes a token sequence once and produces a vocabulary distribution at every position. Shifting the observed sequence by one position supplies the targets. The causal mask ensures that each prediction uses only its prefix, so all position losses are valid next-token losses. Averaging them gives one scalar objective for the backward pass. This is the same statistical task used by the Part 1 aabid character model. The architectures differ in how they build a context representation: the character MLP concatenates a fixed window, while the Transformer uses causal attention and stacked blocks over the available prefix.</p>
+  <p>One pass through the decoder produces a vocabulary distribution at every position. Shift the observed sequence by one position to get the targets. Because the causal mask limits each row to its prefix, we can use every row for next-token training. We average those losses into one scalar for the backward pass. The Part 1 aabid character model learned the same statistical task. What differs is how the models build their context representation: the MLP concatenates a fixed window, while the Transformer uses causal attention and stacked blocks over the available prefix.</p>
 </div>
 <div class="frame" data-title="One sequence produces many losses">
   <script type="text/x-notes">How many supervised guesses come from this sequence?
@@ -26,7 +26,7 @@
 </div>
 <div class="frame" data-title="The objective matches Part 1">
   <script type="text/x-notes">What stays the same between the aabid MLP and the Transformer?
-  Both maximize the observed next token. Their context builders are different.</script>
+  Both learn to increase the probability of the observed next token. They build context differently.</script>
   <div class="card s12-objectives"><div class="s12-objective"><h3 class="card-title">aabid character MLP</h3><p>Fixed window $\to$ concatenated embeddings $\to$ hidden layer $\to$ logits.</p><p>$$L=-\log p(\text{next character})$$</p></div><div class="s12-objective" data-build="1"><h3 class="card-title">Decoder-only Transformer</h3><p>Available prefix $\to$ causal blocks $\to$ final row $\to$ logits.</p><p>$$L=-\log p(\text{next token})$$</p></div></div>
   <div id="s12-key" data-build="2"></div>
 </div>

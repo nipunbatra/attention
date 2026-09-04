@@ -6,10 +6,10 @@
 </style>
 <header class="sec-head">
   <span class="sec-num">02</span>
-  <div><p class="eyebrow">Why we are here: a prediction becomes a training signal only when the next observed token is known.</p><h2>The observed next token tells us the error</h2></div>
+  <div><p class="eyebrow">To learn from a prediction, we need to know which token actually came next.</p><h2>The observed next token tells us the error</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>The river prefix ends with the word the, and the model assigns one probability to every vocabulary token. Training then reveals the observed continuation, water. Cross-entropy keeps the probability placed on that target and turns it into a loss with a negative logarithm. A high target probability gives a small loss. A low target probability gives a large loss. The other probabilities still matter because softmax couples every logit through one denominator. Open the worksheet to see that denominator, then follow the target row into the loss calculation. Both values come from the same forward pass used in Part 2.</p>
+  <p>The river prefix ends with the word the. The model assigns a probability to every vocabulary token before we reveal the observed continuation: water. Cross-entropy takes the negative logarithm of the probability assigned to water. If that probability is high, the loss is small; if it is low, the loss is large. The other logits still matter because they share the softmax denominator. You can inspect that denominator in the worksheet, then follow the water row into the loss calculation. Both use the same forward pass as Part 2.</p>
 </div>
 <div class="frame" data-title="Prediction meets observation">
   <script type="text/x-notes">Which bar determines the loss after the target is revealed?
@@ -28,7 +28,7 @@
   <div class="card"><h3 class="card-title">Loss worksheet</h3><div class="s02-loss" id="s02-loss"></div></div>
   <div id="s02-callout" data-build="1"></div>
 </div>
-<div class="companion after"><p>The observed token does not supply a replacement prediction; it supplies the target used to score the distribution.</p></div>
+<div class="companion after"><p>The model keeps its original prediction. We use the observed token as the target for scoring that prediction.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s02');
@@ -50,7 +50,7 @@
   const loss=S.querySelector('#s02-loss');
   loss.appendChild(document.createTextNode('loss = -log(' + AT.fmt(single.p_target_before,4) + ') = '));
   loss.appendChild(AT.h('span',{class:'calc-r'},AT.fmt(single.loss_before,4)));
-  AT.ui.callout('Cross-entropy asks one direct question: how much probability did the model place on the token that appeared?',{kind:'key',into:S.querySelector('#s02-callout')});
+  AT.ui.callout('How much probability did the model give the token that actually appeared? Cross-entropy uses that probability to calculate the loss.',{kind:'key',into:S.querySelector('#s02-callout')});
 })();
 </script>
 </section>

@@ -55,14 +55,14 @@ body.present #s09-frame-chain .is-dim{opacity:1!important}
 <header class="sec-head">
   <span class="sec-num">09</span>
   <div>
-    <p class="eyebrow">Why we are here: the retrieved message $m_i$ must get back into the token’s representation. This is the centre of the whole story.</p>
+    <p class="eyebrow">How does the retrieved message $m_i$ change the token's representation?</p>
     <h2>The contextual update <span class="sym sym-d">Δe</span></h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>This is the step the whole page builds towards. The message $m_7$ is a mixture of values, so it lives in value space with $d_v$ coordinates. $W_O$ maps it into the $d_{\text{model}}$ coordinates of a representation, and that vector, $\vd{\Delta e_7}$, is added to $\ve{e_7}$. The residual branch keeps the original row as an input to the addition; the resulting row combines it with context.</p>
-  <p>Press Play, or step through, and watch the highlight move down the diagram. The following block writes out its numerical result; hover a cell of the final row to see the addition. Read the axis names: the message speaks in value coordinates, $W_O$ turns them into representation coordinates. The sentence to remember: attention computes the update; the residual connection adds it to the representation we started from.</p>
+  <p>The message $m_7$ is a mixture of values, so it has $d_v$ value coordinates. To add it to bank's representation, we need $d_{\text{model}}$ representation coordinates. $W_O$ performs that mapping and gives us $\vd{\Delta e_7}$. The residual connection adds this update to the original $\ve{e_7}$, combining bank's existing representation with context.</p>
+  <p>Press Play or advance one step at a time to follow the diagram. The next table shows the numerical result; hover a cell in the final row to inspect the addition. Watch the axis names change at $W_O$: it maps the message's value coordinates into representation coordinates. Attention computes the update, and the residual connection adds it.</p>
 </div>
 
 <div class="frame" id="s09-frame1" data-title="The message needs one final projection">
@@ -165,14 +165,14 @@ The residual path carries the current input representation. The contextual updat
   </script>
 <div class="callout callout-key big-caption">Attention computes context-dependent information. The residual connection adds that update to the existing representation.</div>
 
-<div class="companion callout callout-note">Calling this update $\vd{\Delta e_i}$ is pedagogical notation used on this page; it is not standard Transformer notation. Standard implementations usually call it the <em>attention output</em> and add it through a residual connection. The addition itself is standard: it is the residual connection around the attention sublayer.</div>
+<div class="companion callout callout-note">We use $\vd{\Delta e_i}$ as a teaching label for this update, not as standard Transformer notation. Implementations usually call it the <em>attention output</em>. Adding it to the input is the standard residual connection around the attention sublayer.</div>
 <p class="companion muted small">PyTorch · $m_i$ is $1 \times d_v$; $\Delta e_i$ and $e_i$ are $1 \times d_{\text{model}}$.</p>
 <pre class="torch-snippet"><code>delta_e_i = m_i @ W_O
 e_new_i = e_i + delta_e_i</code></pre>
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: $\vp{e_7'} = \ve{e_7} + \vd{\Delta e_7}$. The right branch computed the update, the left branch carried $\ve{e_7}$ unchanged, and the plus joins them. That plus is the residual connection.</p>
+  <p>In $\vp{e_7'} = \ve{e_7} + \vd{\Delta e_7}$, the right branch computed the update and the left branch carried $\ve{e_7}$ unchanged. They meet at the addition: the residual connection.</p>
 </div>
 
 <script>
@@ -242,13 +242,13 @@ e_new_i = e_i + delta_e_i</code></pre>
   /* ---------- the update chain as one table ---------- */
   const chainHost = S.querySelector('#s09-chain');
   const mtab = AT.ui.table([F.Mmsg[qi]], { rowLabels: ['$m_{' + n + '}$ (value space)'], rowCls: 'm', cornerLabel: 'row', into: chainHost,
-    caption: 'Look at: $m_{' + n + '}$ has $d_v = ' + AT.d_v + '$ coordinates in value space; the headers say what each one says.' });
+    caption: '$m_{' + n + '}$ has $d_v = ' + AT.d_v + '$ value coordinates. Read their names in the headers.' });
   const chain = AT.ui.table([F.Delta[qi], F.E[qi]], {
     axes: 'e', cornerLabel: 'row',
     rowLabels: ['$\\vd{\\Delta e_{' + n + '}} = m_{' + n + '}\\,W_O$', '$\\ve{e_{' + n + '}}$'],
     rowCls: ['d', 'e'],
     footer: { label: '$\\vp{e_{' + n + "}'} = \\ve{e_{" + n + '}} + \\vd{\\Delta e_{' + n + '}}$', values: F.Enew[qi], cls: 'ep' },
-    caption: 'Look at: $W_O$ turns the message into a ' + AT.d_model + '-coordinate row on the $\\ve{e}$ axes; the two rows add column by column into the footer.',
+    caption: '$W_O$ maps the message to a ' + AT.d_model + '-coordinate row on the $\\ve{e}$ axes. Add it to the input row, column by column, to get the bottom row.',
     note: 'Hover or focus a cell of the footer to see the addition.',
     into: chainHost });
   const footTr = chain.table.querySelector('tfoot tr');
@@ -272,12 +272,12 @@ e_new_i = e_i + delta_e_i</code></pre>
   /* ---------- per-stage tables inside the stepper stage (q, scores, weights) ---------- */
   const stageTab = {
     1: (el) => AT.ui.table([F.Q[qi]], { rowLabels: ['$\\vq{q_{' + n + '}}$ ' + toks[qi]], rowCls: 'q', cornerLabel: 'row', cls: null,
-         caption: 'Look at: ' + AT.d_k + ' matching coordinates, from $\\ve{e_{' + n + '}}$ (' + AT.d_model + ' coordinates) times $W_Q$: what ' + AT.escape(toks[qi]) + ' asks for.', into: el }),
+         caption: 'Multiplying $\\ve{e_{' + n + '}}$ (' + AT.d_model + ' coordinates) by $W_Q$ gives ' + AT.d_k + ' matching coordinates describing what ' + AT.escape(toks[qi]) + ' asks for.', into: el }),
     2: (el) => AT.ui.table([F.S[qi].slice(0, T)], { cols: tokCols, rowLabels: ['$s_{' + n + 'j}$'], rowCls: 'neutral', cornerLabel: 'token j',
-         caption: 'Look at: one score per earlier token (section 8, phase A).', into: el }),
+         caption: 'One score per earlier token, from phase A in section 8.', into: el }),
     3: (el) => AT.ui.table([F.S[qi].slice(0, T), F.A[qi].slice(0, T)], { cols: tokCols, rowLabels: ['$s_{' + n + 'j}$', '$\\va{\\alpha_{' + n + 'j}}$'], rowCls: ['neutral', 'a'], cornerLabel: 'token j',
          footer: { label: 'weights sum to', values: AT.range(T).map(j => j === 0 ? AT.sum(F.A[qi]) : '') },
-         caption: 'Look at: softmax turns the score row into the weight row; ' + AT.escape(toks[AT.argmax(F.A[qi].slice(0, T))]) + ' gets the most.', into: el })
+         caption: 'Softmax turns the scores into weights. ' + AT.escape(toks[AT.argmax(F.A[qi].slice(0, T))]) + ' gets the largest weight.', into: el })
   };
   const render = (i) => (el) => { if (stageTab[i]) { const d = AT.h('div', { class: 'stage-tab' }); stageTab[i](d); el.appendChild(d); } };
 
@@ -325,7 +325,7 @@ e_new_i = e_i + delta_e_i</code></pre>
 
   /* ---------- W_O as a table: the rows of W_O weighted by m_7, summed in the footer ---------- */
   const wo = AT.ui.wTable(AT.model.W_O, { from: 'v', to: 'e', cls: 'd', cornerLabel: '$W_O$',
-    caption: 'Look at: a row is a value axis (what the message says), a column is an $\\ve{e}$ axis (where it lands). Zeros are greyed.',
+    caption: 'Rows name value axes from the message; columns name the $\\ve{e}$ axes they contribute to. Zeros are greyed.',
     into: S.querySelector('#s09-wo') });
   (function(){
     const strip = (t) => String(t).replace(/^says:\s*/, '');

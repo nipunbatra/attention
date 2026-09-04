@@ -29,14 +29,14 @@ body.present #s17 .dt tbody th,body.present #s17 .dt tfoot th{font-size:18px;whi
 <header class="sec-head">
   <span class="sec-num">17</span>
   <div>
-    <p class="eyebrow">Why we are here: the fixed window (03) and mean pooling (04) return, with one more fixed scheme, to be lined up against attention.</p>
+    <p class="eyebrow">Compare attention with the fixed window (03), mean pooling (04) and fixed positional weights.</p>
     <h2>Attention versus the alternatives</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Sections 03 and 04 set aside the fixed window and the plain mean because their inclusion or pooling rule is fixed, although their outputs still depend on the input words. This section puts those two schemes, a distance-decay scheme and attention into one table, so the difference shows up in the numbers instead of in an argument.</p>
-  <p>Switch between the river sentence and the cheque sentence and watch the rows. The first three rows do not change at all: their weights were fixed before any word was read. Only the attention row moves, and it moves toward the words that matter for the blank. The sentence to remember: attention is the only scheme whose weights are computed from the content.</p>
+  <p>The fixed window and plain mean use fixed inclusion or pooling rules, although their outputs still depend on the words they receive. Compare them with distance-based weights and attention in one table.</p>
+  <p>Switch between the river and cheque sentences. The first three rows stay fixed because their inclusion or weighting rules do not read the content. The attention row gives more weight to different clues for the blank. Of these four schemes, only attention computes its mixing weights from the words.</p>
 </div>
 
 <div class="frame" id="s17-frame1" data-title="Which inclusion or mixing rule changes with the words?">
@@ -45,7 +45,7 @@ When the sentence changes, which weights change, and which outputs might still c
 Only attention recomputes the displayed mixing weights from content. A fixed window and a mean still receive different embeddings and can therefore produce different outputs. The window row is inclusion, not normalized attention.
   </script>
 <div class="prose">
-  <p>All four schemes use input information for the last token $t = 10$ from $\ve{e_1},\ldots,\ve{e_t}$. One question separates them: who sets the weights, and do they read the words? Switch the sentence and watch which row reacts.</p>
+  <p>All four schemes use $\ve{e_1},\ldots,\ve{e_t}$ to supply information to the last token, $t = 10$. How does each scheme choose what to include or how much weight to give it? Switch the sentence and compare the rows.</p>
 </div>
 <div class="card">
   <h3 class="card-title">Choose the context</h3>
@@ -66,7 +66,7 @@ Only attention recomputes the displayed mixing weights from content. A fixed win
 
 </div>
 
-<div class="frame" id="s17-frame2" data-title="Fixed rules can use content—but cannot route by content">
+<div class="frame" id="s17-frame2" data-title="Fixed rules use the words but keep the same routes">
   <script type="text/x-notes">
 Is the advantage that other models cannot understand words?
 No. Attention supplies explicit content-dependent routing and shared projections over the available prefix. The input context remains finite; a fixed-window network can still learn from content within its window.
@@ -110,7 +110,7 @@ No. Attention supplies explicit content-dependent routing and shared projections
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: a window, a mean and a distance decay all fix their weights before reading the sentence. Attention computes $\va{\alpha_{ij}}$ from $\vq{q_i}$ and $\vk{k_j}$, so the same position can receive very different mixing weights in different sentences.</p>
+  <p>A window, a mean and a distance decay fix their inclusion or weighting rules before reading the sentence. Attention computes $\va{\alpha_{ij}}$ from $\vq{q_i}$ and $\vk{k_j}$, so the same position can receive different mixing weights in different sentences.</p>
 </div>
 
 <script>

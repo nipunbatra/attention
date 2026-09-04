@@ -29,14 +29,14 @@ body.present #s18 .role-recap>div{padding:16px 22px;border-left:4px solid var(--
 <header class="sec-head">
   <span class="sec-num">18</span>
   <div>
-    <p class="eyebrow">Why we are here: eight questions that catch the usual confusions. Answer each before you reveal it.</p>
+    <p class="eyebrow">Try these eight questions before opening the answers.</p>
     <h2>Pause and think</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>By now you have seen every object on the page at least twice. This section exists because the confusions that survive a lecture are always the same ones: mixing up keys and values, taking the query for the new representation, or treating $\vd{\Delta e}$ as standard notation.</p>
-  <p>Say your answer out loud before you open each reveal. Every answer is backed by a small table from the toy model, with the coordinate names on the columns, so if you disagree you can check the arithmetic rather than the wording. The sentence to remember: queries, keys and values are working vectors; the token row passed onward is $\vp{e_i'} = \ve{e_i} + \vd{\Delta e_i}$.</p>
+  <p>We have used these objects several times. Can you now distinguish a key from a value, explain why a query is not the updated representation, and say what our $\vd{\Delta e}$ notation means?</p>
+  <p>Say your answer out loud before opening the reveal. Each answer includes a small table from the toy model with named columns, so you can check it against the arithmetic. Queries, keys and values are working vectors. The token row passed onward is $\vp{e_i'} = \ve{e_i} + \vd{\Delta e_i}$.</p>
 </div>
 
 <div class="frame" id="s18-frame1" data-title="Can you explain the roles without the equations?">
@@ -65,7 +65,7 @@ Ask one question before opening its reveal. For equal scores, the result is the 
   <script type="text/x-notes">Which vector is used for matching, and which one is passed onward? Ask students to name the addition.</script>
   <div class="card"><h3 class="card-title">3 · A working vector is not the output</h3><div id="s18-q3"></div></div>
 </div>
-<div class="frame" id="s18-question4" data-title="What does the optimizer actually keep and update?">
+<div class="frame" id="s18-question4" data-title="What does the optimizer keep and update?">
   <script type="text/x-notes">Distinguish stored parameters from vectors recomputed by a forward pass. Gradients may flow through both.</script>
   <div class="card"><h3 class="card-title">4 · Parameters versus intermediate results</h3><div id="s18-q4"></div></div>
 </div>
@@ -107,7 +107,7 @@ Queries and keys must have compatible matching coordinates. Values form the mess
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: $\vk{k_j}$ decides whether token $j$ is read and $\vv{v_j}$ decides what it sends; $\vq{q_i}$ is a matching projection, not the updated token row; the update is added through the residual connection $\vp{e_i'} = \ve{e_i} + \vd{\Delta e_i}$.</p>
+  <p>$\vq{q_i}$ and $\vk{k_j}$ determine the match; $\vv{v_j}$ supplies what source $j$ sends. The query is a working projection. The updated token row comes from the residual addition, $\vp{e_i'} = \ve{e_i} + \vd{\Delta e_i}$.</p>
 </div>
 
 <script>

@@ -8,10 +8,10 @@
 </style>
 <header class="sec-head">
   <span class="sec-num">08</span>
-  <div><p class="eyebrow">Why we are here: attention moves information between token rows, then a feed-forward network transforms features within each row.</p><h2>Attention mixes rows; the FFN mixes features</h2></div>
+  <div><p class="eyebrow">Attention gathers information from other token rows. The feed-forward network then works on the features inside each row.</p><h2>Attention mixes rows; the FFN mixes features</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>A Transformer block alternates two kinds of mixing. Attention holds one receiving token fixed and combines value rows from several source positions. The feed-forward network holds one position fixed and combines the features inside that row. The same feed-forward weights are applied independently to every token. In this illustration, a five-number representation is projected to eight hidden numbers, ReLU sets negative hidden values to zero, and a second projection returns to five numbers so the result can join the residual stream. The weights are hand-picked one-decimal values used only to make the arithmetic visible.</p>
+  <p>For one receiving token, attention combines value rows from several source positions. The feed-forward network (FFN) works within that token's row, combining its features. We apply the same FFN weights independently to every position. In the example below, a five-number representation becomes eight hidden numbers. ReLU replaces negative hidden values with zero, and a second projection returns to five numbers so we can add the result to the residual stream. We chose one-decimal weights to keep the arithmetic readable.</p>
 </div>
 <div class="frame" data-title="Two axes of mixing">
   <script type="text/x-notes">Which operation crosses token positions?
@@ -31,11 +31,11 @@ ffn_output = hidden @ W2 + b2</code></pre>
 </div>
 <div class="companion"><h3>First projection and all eight ReLU coordinates</h3><div id="s08-first"></div><h3>Second projection</h3><div id="s08-second"></div></div>
 <div class="frame" data-title="Why widen the middle?">
-  <script type="text/x-notes">What does the wider hidden row buy?
+  <script type="text/x-notes">What can the wider hidden row represent?
   It supplies more learned combinations before the network projects back to model width.</script>
   <div id="s08-wide" data-build="1"></div>
 </div>
-<div class="companion after"><p>Attention combines information across positions; the FFN transforms each position with the same feature-mixing network.</p></div>
+<div class="companion after"><p>The FFN uses the same weights at every position, but processes each row separately. Attention is what carries information between positions.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s08');

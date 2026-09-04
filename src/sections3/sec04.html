@@ -10,11 +10,11 @@ body.present #s04 .s04-graph svg{max-height:530px}
 </style>
 <header class="sec-head">
   <span class="sec-num">04</span>
-  <div><p class="eyebrow">Why we are here: the loss depends on a branching graph, not a single chain of operations.</p><h2>The forward pass is a graph</h2></div>
+  <div><p class="eyebrow">The computation branches at E and joins again at the value mixture and residual sum.</p><h2>The forward pass is a graph</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>The learned token table $E_{\text{tok}}$ and position table $P$ supply the current row stack $\ve{E}$. Three projections read that same stack: $Q=EW_Q$, $K=EW_K$, and $V=EW_V$. Query–key scores determine the attention weights $A$; the separate value branch supplies the vectors that $A$ mixes. The message matrix $H=AV$ becomes $\Delta E=HW_O$, and the residual sum gives $E'=E+\Delta E$. The vocabulary head maps the final row to logits, and the observed target supplies the loss. This is the simplified Part 2 one-head model, not the full pre-norm Transformer introduced later.</p>
-  <p>Autograd reverses these dependencies using the chain rule. At a branch, contributions add: the input $E$ has a direct residual gradient path and indirect paths through attention. It is the <em>input</em> $E$, not the final $E'$, that feeds both routes. Gradients also reach every projection and the lookup rows used by this example. The target token and fixed causal mask are data, not parameters to optimize.</p>
+  <p>The learned token table $E_{\text{tok}}$ and position table $P$ give us the current row stack $\ve{E}$. We project that same stack three ways: $Q=EW_Q$, $K=EW_K$, and $V=EW_V$. Query-key scores determine the attention weights $A$. The value branch supplies the vectors that $A$ mixes. The message matrix $H=AV$ becomes $\Delta E=HW_O$, then the residual sum gives $E'=E+\Delta E$. The vocabulary head maps the final row to logits, which we compare with the observed target to calculate the loss. This is still the simplified one-head model from Part 2. We will add the full pre-norm Transformer later.</p>
+  <p>Autograd follows these dependencies backward using the chain rule. Where paths meet, their gradient contributions add. The input $E$ receives a contribution through the direct residual path and others through attention. Both routes start from the <em>input</em> $E$, not the final $E'$. Gradients also reach every projection and the lookup rows used by this example. We do not optimize the target token or the fixed causal mask; they are data.</p>
 </div>
 <div class="frame" data-title="One input, three learned projections">
   <script type="text/x-notes">E is the current stack, not the vocabulary lookup table. Point to the separate W matrices; each projection needs both E and its learned matrix.</script>
@@ -38,7 +38,7 @@ optimizer.step()</pre>
   <p><strong>Backward computes slopes. The optimizer updates parameters.</strong></p>
 </div>
 <div class="companion"><h3>Gradient sizes from the river example</h3><div id="s04-grads"></div><div id="s04-check"></div></div>
-<div class="companion after"><p>Autograd differentiates the graph that produced the loss. It does not update cached queries or attention weights directly.</p></div>
+<div class="companion after"><p>Autograd differentiates the calculation that produced the loss. The optimizer then changes stored parameters, not the cached queries or attention weights.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s04');

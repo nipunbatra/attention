@@ -62,13 +62,13 @@ body.present #s11-frame-lifetime-steps>.card{padding:0;background:none;border:0}
 <header class="sec-head">
   <span class="sec-num">11</span>
   <div>
-    <p class="eyebrow">Why we are here: a common confusion. Are queries, keys and values new lookup tables or the updated token row? Neither: they are projections used during attention.</p>
+    <p class="eyebrow">Queries, keys and values are projections used during attention. How do they relate to the token row?</p>
     <h2>What exactly are Q, K, and V?</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Queries, keys and values are three projected views of the current representation, not three independently learned lookup tables. Pick any token in the chips and read the four rows: the three lower rows are computed from the single $\ve{e}$ row above them by three fixed matrices, and nothing else about the token changes. The axis names say what each row means: a query row is what the token asks for, a key row is what it offers, a value row is what it sends. Below them sit the three matrices themselves, shared by every token. Step through the lifetime strip to see when each row exists inside one attention layer. The sentence to remember: $\vq{q}$, $\vk{k}$ and $\vv{v}$ are working vectors made from $\ve{e}$, and $\ve{e} + \vd{\Delta e}$ is the updated token row passed to the next sublayer.</p>
+  <p>Queries, keys and values come from projecting the current representation. They are not separate learned lookup tables. Pick a token and compare the four rows: three fixed matrices turn the top $\ve{e}$ row into the query, key and value below it, without changing that input row. Their axis names describe different roles: what the token asks for, when it is a useful match, and what it sends. The matrices below are shared by every token. Step through the lifetime diagram to see when the rows are computed and used. These working vectors help produce $\vd{\Delta e}$; the row passed to the next sublayer is $\ve{e} + \vd{\Delta e}$.</p>
 </div>
 
 <div class="frame" id="s11-frame1" data-title="Are Q, K and V three separate lookup tables?">
@@ -142,7 +142,7 @@ Does the branch return q, a key, a value, or a contextual update?
 It returns the projected message, Delta e. The residual addition then combines that result with e. Ask students to name the role of each object without calling everything an embedding.
   </script>
 <div class="card">
-  <h3 class="card-title">The one chain, again</h3>
+  <h3 class="card-title">From the input row to its contextual update</h3>
   <p class="s11-cap">The three projections sit in the second box; they are inputs to attention, and only $\vd{\Delta e}$ comes out of it.</p>
   <div id="s11-motif"></div>
   <div id="s11-chain-eq"></div>
@@ -151,7 +151,7 @@ It returns the projected message, Delta e. The residual addition then combines t
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: the token representation is $\ve{e}$, before and after. $\vq{q}$, $\vk{k}$ and $\vv{v}$ were made from it and used, and $\vd{\Delta e}$ is what came back.</p>
+  <p>$\vq{q}$, $\vk{k}$ and $\vv{v}$ are working vectors made from the token representation $\ve{e}$. Attention returns $\vd{\Delta e}$, which the residual connection adds to that representation.</p>
 </div>
 
 <script>
@@ -305,8 +305,8 @@ It returns the projected message, Delta e. The residual addition then combines t
   stepper = AT.ui.stepper({ compact: true, into: S.querySelector('#s11-stepper'),
     onChange: (i) => { setPhase(i); motif.setActive(motifStages[i]); },
     steps: [
-      { title: 'Start of the layer: only the representation exists',
-        note: 'Token $i$ enters the attention layer carrying $\\ve{e_i}$ and nothing else.',
+      { title: 'Start with the token representation',
+        note: 'Token $i$ enters with $\\ve{e_i}$. Its query, key and value have not been computed yet.',
         render: (el) => { eRow(qi, el, false); } },
       { title: 'Project: three working rows are computed from it',
         tex: '\\vq{q_i} = \\ve{e_i}\\,W_Q,\\quad \\vk{k_i} = \\ve{e_i}\\,W_K,\\quad \\vv{v_i} = \\ve{e_i}\\,W_V',
@@ -318,9 +318,9 @@ It returns the projected message, Delta e. The residual addition then combines t
           const readers = AT.range(T).filter(j => j >= qi).map(j => toks[j] + ' (' + (j + 1) + ')');
           el.appendChild(AT.h('p', { class: 'muted small' }, 'Tokens whose queries can read k and v of token ' + n() + ' in this 7-token sequence: ' + readers.join(', ') + '.'));
         } },
-      { title: 'Keep the retrieved update; the projections were only inputs to it',
+      { title: 'Attention returns the contextual update',
         tex: '\\vd{\\Delta e_i} = \\Big(\\sum_{j \\le i} \\va{\\alpha_{ij}}\\,\\vv{v_j}\\Big) W_O',
-        note: 'The attention branch returns $\\vd{\\Delta e_i}$. The projected rows $\\vq{q_i}$, $\\vk{k_i}$ and $\\vv{v_i}$ served the computation; the residual connection then forms the updated token row.',
+        note: 'The projected rows $\\vq{q_i}$, $\\vk{k_i}$ and $\\vv{v_i}$ helped compute $\\vd{\\Delta e_i}$. The residual connection adds that result to form the updated token row.',
         render: (el) => { AT.ui.table([F.Delta[qi]], { axes: 'e', rowLabels: ['$\\vd{\\Delta e_{' + n() + '}}$'], rowCls: 'd', cornerLabel: 'update', into: el }); } },
       { title: 'Add: the representation is updated, not replaced',
         tex: "\\vp{e_i'} = \\ve{e_i} + \\vd{\\Delta e_i}",
@@ -329,7 +329,7 @@ It returns the projected message, Delta e. The residual addition then combines t
   setPhase(0);
 
   /* ---- disclaimer + chain ---- */
-  AT.ui.callout('Calling this update $\\vd{\\Delta e_i}$ is pedagogical notation used on this page; it is not standard Transformer notation. Standard implementations call it the attention output and add it through a residual connection. The <strong>addition itself is standard</strong>: it is the residual connection around the attention sublayer.', { kind: 'note', into: S.querySelector('#s11-note') });
+  AT.ui.callout('$\\vd{\\Delta e_i}$ is our teaching label for the update. Standard Transformer implementations call it the attention output. The <strong>addition is standard</strong>: the residual connection adds this output to the attention sublayer’s input.', { kind: 'note', into: S.querySelector('#s11-note') });
   AT.tex(S.querySelector('#s11-chain-eq'), '\\boxed{\\ve{e} \\;\\rightarrow\\; \\vq{Q},\\vk{K},\\vv{V} \\;\\rightarrow\\; \\vd{\\Delta e} \\;\\rightarrow\\; \\vp{e + \\Delta e}}', { display: true });
 })();
 </script>

@@ -11,10 +11,10 @@ body.present #s11 .s11-lm svg{width:auto;min-width:0;height:420px;margin:auto}
 </style>
 <header class="sec-head">
   <span class="sec-num">11</span>
-  <div><p class="eyebrow">Why we are here: embeddings, blocks, and the vocabulary head now form one decoder-only language model.</p><h2>The complete decoder-only model</h2></div>
+  <div><p class="eyebrow">We can now connect embeddings, causal blocks, and the vocabulary head in one language model.</p><h2>The complete decoder-only model</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>The pre-norm decoder-only Transformer shown here begins with token embeddings plus positions, sends those rows through a stack of causal blocks, then applies a final LayerNorm before the vocabulary head. Every block preserves model width, so residual additions remain possible throughout the stack. The vocabulary head maps each normalized final row to one logit per vocabulary token; softmax gives probabilities. During training, every position can contribute a loss. During generation, only the last position's distribution chooses the next token. This final normalization also appears in the <a href="https://github.com/openai/gpt-2/blob/master/src/model.py">GPT-2 implementation</a>. The numerical worksheet below is a separate, simplified Part 2 one-head example: it does not compute this full normalized stack.</p>
+  <p>Our pre-norm decoder-only Transformer starts with token embeddings plus positions. Those rows pass through a stack of causal blocks, then a final LayerNorm before the vocabulary head. Every block preserves model width, so we can keep adding residual updates. The vocabulary head maps each normalized final row to one logit per vocabulary token, and softmax turns those logits into probabilities. Training can use a loss at every position; generation uses only the last position's distribution to choose the next token. The <a href="https://github.com/openai/gpt-2/blob/master/src/model.py">GPT-2 implementation</a> also uses this final normalization. The numerical worksheet below reuses the simpler one-head model from Part 2. It does not run the full normalized stack shown here.</p>
 </div>
 <div class="frame" data-title="End-to-end decoder path">
   <script type="text/x-notes">Where does causal mixing happen, and where are vocabulary scores made?
@@ -24,7 +24,7 @@ body.present #s11 .s11-lm svg{width:auto;min-width:0;height:420px;margin:auto}
 <div class="frame" data-title="Shapes stay compatible">
   <script type="text/x-notes">Why does every block return model-width rows?
   Residual addition and the shared LM head require a stable width across the stack.</script>
-  <div class="card" data-build="1"><h3 class="card-title">Shape ledger</h3><div id="s11-shapes"></div></div>
+  <div class="card" data-build="1"><h3 class="card-title">Input and output shapes</h3><div id="s11-shapes"></div></div>
 </div>
 <div class="frame" data-title="The head, illustrated with our simpler toy">
   <script type="text/x-notes">Does the LM head read other token rows?

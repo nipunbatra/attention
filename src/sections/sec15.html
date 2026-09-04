@@ -55,13 +55,13 @@ body.present #s15 .s15-classroom .dt-cap{margin-top:.25em}
 <header class="sec-head">
   <span class="sec-num">15</span>
   <div>
-    <p class="eyebrow">Why we are here: every piece is in place. Now run the whole computation once, slowly, with real numbers.</p>
+    <p class="eyebrow">Follow one complete forward pass, with the numbers visible at every step.</p>
     <h2>Full walkthrough, one step at a time</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Everything before this section showed one stage at a time. Here the whole computation runs end to end on ten tokens, with the same numbers you would get by hand. Each stage is a small spreadsheet: one row per token, one column per coordinate, the result in the last column or the footer row. Click a score, or press Show the arithmetic, to see the numbers that produced it. At step 3, pick a different query token and press Next step again; the scores, the mask and the weights all change, but the recipe does not. The sentence to remember: one query, one score per earlier token, one weighted sum, one update added to the token.</p>
+  <p>Put the stages together for the ten-token sentence. Each table has one row per token and one column per coordinate, with the result in the last column or bottom row. The numbers come from the same calculation we have worked through by hand. Click a score or press Show the arithmetic to inspect it. At step 3, choose a different query token and advance again. The scores, mask and weights change, while the operations stay the same: score the sources for one query, mix their values, then project and add the update.</p>
 </div>
 
 <div class="frame" id="s15-frame1" data-title="Can we trace every number through one forward pass?">
@@ -84,7 +84,7 @@ The stage label names the query. Follow bank by default, or choose another recei
 </div>
 
 <div class="companion after">
-  <p>Keep in mind: steps 4 to 17 run for every token at once; the walkthrough follows one of them so that each number has a home in a table.</p>
+  <p>Steps 4 to 17 run for every token at once. We follow one receiver here so that we can inspect each number.</p>
 </div>
 
 <script>
