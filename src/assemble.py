@@ -60,6 +60,13 @@ if N == 1:
     diagrams = os.path.join(here, 'part1-diagrams.js')
     if os.path.isfile(diagrams):
         shared_block += '<script>\n' + open(diagrams, encoding='utf-8').read() + '\n</script>\n'
+if N == 5:
+    # Keep the numerical worksheet, its visual story, and learning experiment
+    # separate in source; the classroom/article file remains fully offline.
+    for filename in ('part5-learning.js', 'part5-diagrams.js'):
+        module = os.path.join(here, filename)
+        if os.path.isfile(module):
+            shared_block += '<script>\n' + open(module, encoding='utf-8').read() + '\n</script>\n'
 if N == 2:
     # One SVG source powers both the standalone preview and the article stepper.
     diagram = os.path.join(here, '..', 'figures', 'attention-diagram-preview', 'diagram.js')

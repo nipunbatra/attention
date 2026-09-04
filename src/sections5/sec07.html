@@ -1,27 +1,119 @@
-<section id="s07" class="sec" data-title="Put this calculation inside a ViT" data-lit="e q k v a d ep">
-<header class="sec-head"><span class="sec-num">07</span><div><p class="eyebrow">The worksheet isolated attention. A full encoder also normalizes and transforms each row.</p><h2>Put this calculation inside a ViT</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>The original Vision Transformer uses a pre-norm encoder: normalization precedes each attention and feed-forward sublayer, with a residual addition after each one. A final normalization follows the stack. The diagram below describes that architecture. It is not the numerical model we just evaluated; inserting LayerNorm into that two-coordinate worksheet would change its numbers.</p></div>
-<div class="frame" data-title="A full ViT encoder block has two residual updates" data-autobuild="off">
-  <div id="s07-block"></div>
-  <pre class="torch-snippet" data-build="1"><code>E = E + attention(norm1(E))
-E = E + mlp(norm2(E))
-# Repeat blocks; apply final normalization before the class head.</code></pre>
-  <script type="text/x-notes">Attention mixes information across rows. The MLP transforms each row separately with shared weights. Multiple heads have separate projections; concatenation and W_O return their messages to model width. This is the pre-norm architecture, not a post-norm diagram.</script>
+<section id="s07" class="sec" data-title="Learn from the two images" data-lit="e q k v a d ep">
+<style>
+#s07 .v1-train-graph svg{display:block;width:100%;height:auto}
+#s07 .v1-train-eq{font-size:1.1em;text-align:center;margin:16px 0}
+#s07 .v1-curve svg{display:block;width:100%;height:auto;max-height:225px}
+#s07 .v1-step-button{margin:12px 0}
+</style>
+<header class="sec-head"><span class="sec-num">07</span><div><p class="eyebrow">A wrong answer tells us which calculation needs to change.</p><h2>Learn from the two images</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>Train on both images: one has two occupied blocks, and one has only the lower-right block. Each image goes through the same model and gets its own cross-entropy loss. We average the two losses before taking an optimizer step. That step changes the patch projection, CLS and position parameters, attention projections, and classification head together. The page runs these calculations locally; the displayed training results come from the model we have just worked through.</p></div>
+
+<div class="frame" data-title="Give both labelled images a say" data-autobuild="off">
+  <div id="s07-batch-loss"></div>
+  <p id="s07-mean-loss" class="v1-train-eq" data-build="1"></p>
+  <pre class="torch-snippet" data-build="2"><code># Two images produce two rows of class logits.
+logits = model(images)                 # [2, 2]
+loss = F.cross_entropy(logits, labels) # mean over both images</code></pre>
+  <script type="text/x-notes">Read each observed label and its probability. A lower probability for the correct label means a higher loss. The optimization objective is their mean, not whichever image was easiest.</script>
 </div>
-<div class="frame" data-title="Learn parameters; recompute representations" data-autobuild="off">
-  <div class="vision1-pair"><div><h3>Optimizer updates</h3><ul><li>Patch projection and bias</li><li>CLS and position parameters</li><li>Attention, MLP, and normalization parameters</li><li>Classification head</li></ul></div><div data-build="1"><h3>Forward pass recomputes</h3><ul><li>Patch embeddings and input rows</li><li>Queries, keys, values, and attention weights</li><li>Residual updates and contextual rows</li><li>Class logits and loss</li></ul></div></div>
+
+<div class="frame" data-title="Follow the same image all the way to loss" data-autobuild="off">
+  <div id="s07-forward-graph" class="v1-train-graph"></div>
+  <p>$R$ stacks the flattened patch rows $r_1,\ldots,r_4$. Dashed boxes contain learned parameters; solid boxes show computations.</p>
+  <script type="text/x-notes">Trace the top branch for matching, then the lower branch for information. Dashed boxes are learned parameters. Both images use this graph. The labels enter only at loss.</script>
+</div>
+
+<div class="frame" data-title="Autograd follows every contributing path backward" data-autobuild="off">
+  <div id="s07-backward-graph" class="v1-train-graph"></div>
+  <p>Both the weights $A$ and the values $V$ receive gradients.</p>
+  <script type="text/x-notes">Start at loss, reverse the head and residual addition, and follow both inputs of the weighted sum. At E, gradient contributions from attention and the residual route add. The page differentiates this graph; students do not need to calculate these derivatives by hand.</script>
+</div>
+
+<div class="frame" data-title="Which numbers does the optimizer keep?" data-autobuild="off">
+  <div id="s07-stored"></div>
+  <p class="callout callout-key" data-build="1">On the next forward pass, new parameters produce new embeddings, queries, keys, values, and predictions.</p>
+  <script type="text/x-notes">The image pixels and labels are data. The optimizer updates stored model parameters. It does not take a cached Q or attention matrix and save an improved version for this particular image.</script>
+</div>
+
+<div class="frame" data-title="Compute gradients, then take one step" data-autobuild="off">
+  <pre class="torch-snippet"><code>optimizer.zero_grad()
+loss.backward()  # compute a gradient for each learned parameter
+optimizer.step() # update the parameters using those gradients</code></pre>
+  <p class="v1-train-eq" data-build="1">$\theta_{\mathrm{new}}=\theta-\eta\,\nabla_\theta L$</p>
+  <div id="s07-parameter-step" data-build="2"></div>
+  <script type="text/x-notes">The one displayed matrix entry is a window into the actual update, not the only parameter that changes. We use full-batch SGD on the two examples. Backward computes gradients; step changes parameters. A zero gradient leaves its parameter unchanged on that step.</script>
+</div>
+
+<div class="frame" data-title="Run the forward pass again after that step" data-autobuild="off">
+  <div id="s07-one-step"></div>
+  <p class="callout callout-key" data-build="1">The <strong>mean loss falls</strong>, although the two-block image gets worse on this first step.</p>
+  <p data-build="2">The optimizer is fitting both examples together. One step need not improve every example.</p>
+  <script type="text/x-notes">The two-block loss rises while the one-block loss falls enough to lower the mean. These are recomputed losses, not an extrapolation from the gradient. This is why we look at the training objective and keep checking individual examples too.</script>
+</div>
+
+<div class="frame" data-title="Repeat the same forward, backward, and update" data-autobuild="off">
+  <div id="s07-training-curve" class="v1-curve"></div>
+  <p id="s07-training-caption" data-build="1"></p>
   <pre class="torch-snippet" data-build="2"><code>optimizer.zero_grad()
-loss = F.cross_entropy(model(images), labels)
-loss.backward()
+F.cross_entropy(model(images), labels).backward()
 optimizer.step()</code></pre>
-  <script type="text/x-notes">Backpropagation follows the same graph as before. We do not optimize a cached attention matrix directly. All intermediate computations must remain in the graph for gradients to reach the learned parameters.</script>
+  <script type="text/x-notes">Every point follows another forward pass with the latest parameters. The graph is unchanged; its numbers change. The training trace includes the first step already shown.</script>
 </div>
-<div class="frame" data-title="Smaller patches make the attention matrix larger" data-autobuild="off">
-  <p>For a 224×224 image, include one CLS row in the token count.</p>
-  <div id="s07-cost"></div>
-  <p class="callout callout-key" data-build="1">Halving the patch side gives four times as many patch tokens and about sixteen times as many attention entries.</p>
-  <script type="text/x-notes">The precise ratio differs slightly because of CLS. These are score entries per head, not total runtime or all model memory. Projection and MLP work also matter. Patch width, image resolution, model width, and attention implementation all affect cost.</script>
+
+<div class="frame" data-title="Check both images with the learned parameters" data-autobuild="off">
+  <div id="s07-final-predictions"></div>
+  <p class="callout callout-key" data-build="1">The same model now gives the correct label most of the probability for <strong>both training images</strong>.</p>
+  <p data-build="2">We have shown learning on two examples. Try new one- and two-block images, with different positions and brightnesses.</p>
+  <script type="text/x-notes">Do not call this a general block counter. With only two examples, it may rely on shortcuts such as brightness. A held-out test set is needed to find out what rule it learned.</script>
 </div>
-<div class="companion after"><p>A patch projection can be implemented as a convolution whose kernel and stride both equal the patch size. It applies the same learned linear map at each nonoverlapping patch location. This equivalence does not make a ViT encoder identical to a conventional convolutional network. Global attention can mix distant patches in one layer; local convolutions build spatial context according to their kernels and depth.</p><p>The architecture above follows the <a href="https://arxiv.org/html/2010.11929v2#S3">original ViT description</a> and <a href="https://github.com/google-research/vision_transformer/blob/main/vit_jax/models_vit.py">reference implementation</a>. Their trained systems use more dimensions, layers, and data than this worksheet.</p></div>
-<script>(function(){const S=document.getElementById('s07');AT.vision.diagram(S.querySelector('#s07-block'),'block');AT.ui.table([32,16,8].map(p=>{const n=(224/p)**2;return[p,n,n+1,(n+1)**2];}),{into:S.querySelector('#s07-cost'),cols:['patch side P','patches N','rows N + 1','attention entries'],rowLabels:['larger patches','middle size','smaller patches'],cornerLabel:'same image size',decimals:0});})();</script>
+
+<div class="companion after"><p>The numerical model contains one attention head, two-number representations, one residual addition, and the class head. It has no LayerNorm or feed-forward sublayer. The next section adds those components to the architecture rather than silently inserting them into the arithmetic we just trained.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s07'),T=AT.vision,L=T.learning,X=L.experiment,names=L.classes,fmt=x=>x.toFixed(3);
+  AT.ui.table(X.before.forwards.map((f,i)=>[names[L.targets[i]],f.probs[L.targets[i]],f.loss]),{into:S.querySelector('#s07-batch-loss'),cols:[{label:'observed label',kind:'text'},{label:'p(correct label)',kind:'number'},{label:'loss',kind:'number'}],rowLabels:['image 1','image 2'],cornerLabel:'initial model',decimals:3});
+  AT.tex(S.querySelector('#s07-mean-loss'),'L_{\\mathrm{batch}}=\\frac{'+fmt(X.before.losses[0])+'+'+fmt(X.before.losses[1])+'}{2}\\approx'+fmt(X.before.meanLoss),{display:true});
+  AT.ui.table([
+    ['W_patch, b_patch; CLS; positions','patch embeddings and input E'],
+    ['W_Q, W_K, W_V, W_O','Q, K, V, weights A, and update ΔE'],
+    ['W_class, b_class','class logits, probabilities, and loss']
+  ],{into:S.querySelector('#s07-stored'),cols:[{label:'parameters: update and store',kind:'text'},{label:'computed values: rebuild each pass',kind:'text'}],rowLabels:['input','attention','prediction'],cornerLabel:'model part'});
+  const cell=X.selectedCells.find(x=>x.name==='W_class');
+  AT.ui.table([[cell.before,cell.gradient,cell.afterSingle]],{into:S.querySelector('#s07-parameter-step'),cols:['before','gradient','after one step'],rowLabels:['W_class[0, 0]'],cornerLabel:'learning rate η = '+X.lr,decimals:3,caption:'This entry starts at 0.5. The same SGD rule updates all '+X.parameterCount+' learned numbers.'});
+  AT.ui.table([
+    [X.before.losses[0],X.afterSingle.losses[0]],
+    [X.before.losses[1],X.afterSingle.losses[1]],
+    [X.before.meanLoss,X.afterSingle.meanLoss]
+  ],{into:S.querySelector('#s07-one-step'),cols:['loss before','loss after one step'],rowLabels:['two-block image','one-block image','mean over both'],cornerLabel:'same two images',decimals:3,highlightRow:2});
+  S.querySelector('#s07-training-caption').textContent=X.nsteps+' SGD updates, learning rate '+X.lr+'. Mean loss: '+fmt(X.before.meanLoss)+' → '+fmt(X.afterTraining.meanLoss)+'.';
+  AT.ui.table(X.afterTraining.forwards.map((f,i)=>[names[L.targets[i]],X.before.forwards[i].probs[L.targets[i]],f.probs[L.targets[i]],names[X.afterTraining.predictions[i]]]),{into:S.querySelector('#s07-final-predictions'),cols:[{label:'correct label',kind:'text'},{label:'p(correct) before',kind:'number'},{label:'p(correct) after',kind:'number'},{label:'now chooses',kind:'text'}],rowLabels:['image 1','image 2'],cornerLabel:'training image',decimals:3});
+  function graph(host,back){
+    const svg=AT.svg('svg',{viewBox:'0 0 1160 468',role:'img','aria-label':back?'Gradients reverse the complete image classifier graph, including attention weights, values, residual path, patch projection, class token, and positions.':'The complete image classifier graph from pixels through patch embeddings, attention, residual update, head, and labelled loss.'});
+    const id=back?'v1-back':'v1-forward',ink='var(--ink)',line=back?'var(--warn)':'var(--ink-3)',defs=AT.svg('defs');
+    [id,id+'-data'].forEach((mid,i)=>{const m=AT.svg('marker',{id:mid,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:6,markerHeight:6,orient:'auto'});m.appendChild(AT.svg('path',{d:'M0 0 L10 5 L0 10Z',fill:i?'var(--ink-3)':line}));defs.appendChild(m);});svg.appendChild(defs);
+    function txt(x,y,text,size,fill){svg.appendChild(AT.svg('text',{x,y,fill:fill||ink,'font-family':'var(--font-ui)','font-size':size||22,'text-anchor':'middle','dominant-baseline':'middle'},text));}
+    function box(x,y,w,h,label,sub,param,role){svg.appendChild(AT.svg('rect',{x:x-w/2,y:y-h/2,width:w,height:h,rx:7,fill:param?'var(--paper)':'var(--card)',stroke:role||'var(--ink-3)','stroke-width':1.8,'stroke-dasharray':param?'6 4':'none'}));txt(x,sub?y-11:y,label,22,role);if(sub)txt(x,y+17,sub,19);}
+    function edge(points,gradient=true){let p=points;if(back&&gradient)p=points.slice().reverse();svg.appendChild(AT.svg('path',{d:p.map((xy,i)=>(i?'L':'M')+xy.join(' ')).join(' '),fill:'none',stroke:back&&gradient?line:'var(--ink-3)','stroke-width':back&&gradient?2.6:1.7,'marker-end':'url(#'+id+(back&&!gradient?'-data':'')+')'}));}
+    edge([[114,166],[170,166]],false);edge([[250,89],[250,132]]);edge([[330,166],[365,166]]);edge([[420,89],[420,132]]);
+    edge([[475,166],[500,166],[500,114],[520,114]]);edge([[475,166],[500,166],[500,250],[520,250]]);edge([[590,51],[590,80]]);edge([[652,210],[590,210],[590,216]]);
+    edge([[660,114],[700,114]]);edge([[850,114],[900,114],[900,165]]);edge([[660,250],[900,250],[900,225]]);
+    edge([[980,195],[995,195]]);edge([[1060,89],[1060,160]]);edge([[1060,230],[1060,319]]);
+    edge([[420,201],[420,457],[1060,457],[1060,389]]);edge([[980,354],[900,354]]);edge([[790,314],[790,320]]);edge([[680,354],[630,354]]);
+    edge([[565,430],[565,388]],false);
+    box(60,166,108,65,'R','raw patches');box(250,166,160,68,'patch map','shared projection');box(250,58,165,62,'W_patch','b_patch',true);box(420,58,150,62,'CLS, positions','learned',true);box(420,166,110,68,'E','input rows',false,'var(--c-e)');
+    box(590,114,140,68,'Q, K','E W_Q; E W_K',false,'var(--c-q)');box(590,250,140,68,'V','E W_V',false,'var(--c-v)');box(775,114,150,68,'A = softmax(S)','S = QKᵀ / √2',false,'var(--c-a)');box(900,195,160,60,'message','A V',false,'var(--c-v)');
+    box(1060,58,135,62,'W_O','learned',true);box(1060,195,130,70,'ΔE','message W_O',false,'var(--c-d)');box(1060,354,160,70,'E′ = E + ΔE','residual sum',false,'var(--c-d)');box(790,354,220,68,'class head','CLS row → logits');box(790,285,180,55,'W_class','b_class',true);box(565,354,130,68,'loss','cross-entropy');box(565,431,145,40,'label y',null,false);
+    box(590,31,155,40,'W_Q, W_K',null,true);box(710,210,115,38,'W_V',null,true);txt(210,290,'R and y are data.',20);
+    if(back){txt(990,112,'∂L/∂A',20,line);txt(775,235,'∂L/∂V',20,line);}
+    host.appendChild(svg);
+  }
+  graph(S.querySelector('#s07-forward-graph'),false);graph(S.querySelector('#s07-backward-graph'),true);
+  const svg=AT.svg('svg',{viewBox:'0 0 1100 215',role:'img','aria-label':'Mean cross-entropy over the two training images decreases across '+X.nsteps+' SGD updates.'}),mx=Math.max(...X.history.map(p=>p.loss)),left=80,right=1040,top=20,bottom=162;
+  svg.appendChild(AT.svg('path',{d:'M'+left+' '+top+'V'+bottom+'H'+right,fill:'none',stroke:'var(--ink-3)','stroke-width':1.5}));
+  const pts=X.history.map(p=>[left+(right-left)*p.step/X.nsteps,bottom-(bottom-top)*p.loss/mx]);
+  svg.appendChild(AT.svg('path',{d:pts.map((p,i)=>(i?'L':'M')+p.join(' ')).join(' '),fill:'none',stroke:'var(--c-d)','stroke-width':3}));
+  function ct(x,y,text,anchor){svg.appendChild(AT.svg('text',{x,y,'font-family':'var(--font-ui)','font-size':21,fill:'var(--ink)','text-anchor':anchor||'middle'},text));}
+  ct(45,27,fmt(mx));ct(45,bottom+5,'0');ct(left,192,'0');ct(right,192,String(X.nsteps));ct(560,207,'SGD updates');ct(280,30,'mean cross-entropy');S.querySelector('#s07-training-curve').appendChild(svg);
+})();
+</script>
 </section>

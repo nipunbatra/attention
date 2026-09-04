@@ -13,6 +13,7 @@ const read=name=>fs.readFileSync(path.join(src,name),'utf8');
 const data=JSON.parse(read('toy5.json'));
 const context={window:{__TOY__:data,AT:{axes:{},objects:[],notation:[]}}};
 vm.createContext(context);vm.runInContext(read('part5.js'),context);
+vm.runInContext(read('part5-learning.js'),context);
 const T=context.window.AT.vision;
 const plain=x=>JSON.parse(JSON.stringify(x));
 const near=(a,b,tol=1e-10)=>assert.ok(Math.abs(a-b)<tol,`${a} != ${b}`);
@@ -46,7 +47,17 @@ assert.deepEqual(plain(T.forward().image),plain(data.vision.image),'interaction 
 const sections=fs.readdirSync(path.join(src,'sections5')).filter(n=>/^sec\d\d\.html$/.test(n)).sort();
 const fragments=sections.map(n=>read('sections5/'+n)).join('\n');
 const frames=(fragments.match(/class="frame"/g)||[]).length;
-assert.equal(sections.length,8);assert.equal(frames,30);
+assert.equal(sections.length,8);assert.equal(frames,55);
+// Counterfactual values: matching is unchanged, transmitted information differs.
+const valueOnly=T.attention(f.E,{W_V:[[1,0],[0,2]]});
+matrixNear(valueOnly.A,f.A);matrixNear(valueOnly.K,f.K);
+near(valueOnly.message[0][0],f.message[0][0]);
+near(valueOnly.message[0][1],2*f.message[0][1]);
+const learn=T.learning,experiment=learn.experiment;
+matrixNear(learn.forward(learn.initial,learn.images[0],0).updated,f.updated);
+assert.ok(experiment.afterSingle.meanLoss<experiment.before.meanLoss);
+assert.deepEqual(plain(experiment.afterTraining.predictions),[0,1]);
+assert.ok(experiment.afterTraining.meanLoss<.01);
 assert.equal(data.axes.named,false);
 console.log(JSON.stringify({arithmetic:'pass',sections:sections.length,frames,CLS:plain(f.updated[0]),probs:plain(f.probs),loss:f.loss}));
 if(!process.argv.includes('--browser'))process.exit(0);
@@ -57,7 +68,7 @@ if(!pw)throw new Error('No installed Playwright runtime; no dependencies were in
 const shotArg=process.argv.indexOf('--screenshots'),out=shotArg>=0?process.argv[shotArg+1]:fs.mkdtempSync(path.join(os.tmpdir(),'vision1-check-'));fs.mkdirSync(out,{recursive:true});
 const json=x=>JSON.stringify(x).replace(/<\//g,'<\\/');
 const config=JSON.parse(read('part5.json'));config.prev.available=false;config.next.available=false;
-const shared='<script>window.__TOY__='+json(data)+';window.__PART__='+json(config)+';</script><script>'+read('shared.js')+'</script><script>'+read('part5.js')+'</script>';
+const shared='<script>window.__TOY__='+json(data)+';window.__PART__='+json(config)+';</script>'+['shared.js','part5.js','part5-learning.js','part5-diagrams.js'].map(name=>'<script>'+read(name)+'</script>').join('');
 const html=read('shell.html').replace('<!--KATEX-->',()=>read('katex-bundle.html')).replace('<!--SHARED-->',()=>shared).replace('<!--SECTIONS-->',()=>fragments);
 const browser=await pw.chromium.launch(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE?{executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE}:{});
 const errors=[],issues=[];
@@ -66,14 +77,14 @@ try{
  page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
  await page.route('http://vision1.test/**',route=>route.fulfill({contentType:'text/html',body:html}));
  await page.goto('http://vision1.test/vision1.html?present#s01');await page.waitForTimeout(250);
- const result=await page.evaluate(()=>({frames:AT.present.state().total,mathErrors:document.querySelectorAll('.katex-error').length,svgCount:document.querySelectorAll('[data-vision1-diagram]').length,notation:document.querySelector('#notation-card').textContent}));
+ const result=await page.evaluate(()=>({frames:AT.present.state().total,mathErrors:document.querySelectorAll('.katex-error').length,svgCount:document.querySelectorAll('[data-vision1-diagram],[data-vision-story]').length,notation:document.querySelector('#notation-card').textContent}));
  assert.equal(result.frames,frames);assert.equal(result.mathErrors,0);assert.ok(result.svgCount>=10);assert.ok(result.notation.includes('patch'));
  let visited=0;
  for(let fi=0;fi<frames;fi++){
    await page.evaluate(fi=>{AT.present.go(fi,null,999);document.querySelectorAll('.frame.is-live details.reveal').forEach(el=>el.open=true);},fi);await page.waitForTimeout(50);
    const state=await page.evaluate(()=>{const s=AT.present.state(),f=document.querySelector('.frame.is-live');return{fi:s.fi,id:s.frame.id,title:s.frame.title,scroll:f.scrollHeight,client:f.clientHeight,wide:f.scrollWidth>f.clientWidth+2};});
    if(state.scroll>state.client+3||state.wide)issues.push(state);
-   const svgIssues=await page.evaluate(()=>Array.from(document.querySelectorAll('.frame.is-live svg[data-vision1-diagram]')).flatMap(svg=>{const v=svg.viewBox.baseVal;return Array.from(svg.querySelectorAll('text,rect,path')).filter(el=>!el.closest('defs')).flatMap(el=>{const b=el.getBBox();return b.width&&b.height&&(b.x<v.x-2||b.y<v.y-2||b.x+b.width>v.x+v.width+2||b.y+b.height>v.y+v.height+2)?[{diagram:svg.dataset.vision1Diagram,element:el.tagName,text:el.textContent,bounds:{x:b.x,y:b.y,width:b.width,height:b.height}}]:[];});}));
+   const svgIssues=await page.evaluate(()=>Array.from(document.querySelectorAll('.frame.is-live svg[data-vision1-diagram],.frame.is-live svg[data-vision-story]')).flatMap(svg=>{const v=svg.viewBox.baseVal;return Array.from(svg.querySelectorAll('text,rect,path')).filter(el=>!el.closest('defs')).flatMap(el=>{const b=el.getBBox();return b.width&&b.height&&(b.x<v.x-2||b.y<v.y-2||b.x+b.width>v.x+v.width+2||b.y+b.height>v.y+v.height+2)?[{diagram:svg.dataset.vision1Diagram||svg.dataset.visionStory,element:el.tagName,text:el.textContent,bounds:{x:b.x,y:b.y,width:b.width,height:b.height}}]:[];});}));
    if(svgIssues.length)issues.push({frame:fi+1,svg:svgIssues});
    await page.screenshot({path:path.join(out,`frame-${String(fi+1).padStart(2,'0')}.png`)});
    visited++;
@@ -82,8 +93,8 @@ try{
  await page.evaluate(()=>AT.present.exit());
  await page.locator('#s02-explore select').selectOption('1');
  assert.match(await page.locator('#s02-explore').innerText(),/16 patch tokens \+ 1 CLS = 17 rows; 289/);
- await page.locator('#s06-pixel input').fill('3');await page.locator('#s06-pixel input').dispatchEvent('input');
- assert.match(await page.locator('#s06-pixel').innerText(),/Pixel \(row 3, column 3\) = 3.0/);
+ await page.locator('#s05-explore select').selectOption('4');
+ assert.equal(await page.locator('#s05-explore svg').getAttribute('data-receiver'),'4');
  await page.setViewportSize({width:390,height:844});await page.goto('http://vision1.test/vision1.html#s02');
  const mobile=await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+2);assert.ok(mobile,'no mobile document horizontal overflow');
  assert.equal(errors.length,0,errors.join('\n'));

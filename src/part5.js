@@ -24,10 +24,11 @@
     }
     return {patches:patches,origins:origins,size:size,count:patches.length,width:size*size};
   }
-  function attention(E) {
-    var Q=matmul(E,data.W_Q), K=matmul(E,data.W_K), V=matmul(E,data.W_V);
+  function attention(E, overrides) {
+    var weights=Object.assign({},data,overrides||{});
+    var Q=matmul(E,weights.W_Q), K=matmul(E,weights.W_K), V=matmul(E,weights.W_V);
     var raw=matmul(Q,transpose(K)), S=raw.map(function(r){return r.map(function(x){return x/Math.sqrt(2);});}), A=S.map(softmax);
-    var message=matmul(A,V), delta=matmul(message,data.W_O), updated=add(E,delta);
+    var message=matmul(A,V), delta=matmul(message,weights.W_O), updated=add(E,delta);
     return {E:E,Q:Q,K:K,V:V,raw:raw,S:S,A:A,message:message,delta:delta,updated:updated};
   }
   function forward(options) {
@@ -75,7 +76,7 @@
     options=options||{};var f=forward(options), c, i;
     if(kind==='image'){
       c=canvas(270,'One 4 by 4 grayscale image','Pixel values are 1 in the top-left block, 2 in the bottom-right block, and 0 elsewhere.');
-      grid(c,f.image,70,12,224,0);c.arrow(345,120,475,120,'e');c.box(650,120,320,96,'image classifier','class A or class B','ep');
+      grid(c,f.image,70,12,224,0);c.arrow(345,120,475,120,'e');c.box(650,120,320,96,'image classifier','two blocks or one block','ep');
       c.text(195,247,'4 rows × 4 columns',null,22);c.text(650,205,'We will compute its two scores.',null,24);
     }else if(kind==='patches'){
       var p=patchify(f.image,options.size||2), selected=options.selected||0;c=canvas(270,'Divide the image into patches','Nonoverlapping square patches in raster order. The selected patch is read left to right, then top to bottom.');
@@ -134,7 +135,7 @@
   }
   function pixelExplorer(host){
     var control=AT.h('div'), plot=AT.h('div'), out=AT.h('p',{class:'callout callout-key','aria-live':'polite'});host.appendChild(control);host.appendChild(plot);host.appendChild(out);
-    function draw(v){var f=forward({image:editImage(v)});diagram(plot,'projection',{image:editImage(v),selected:3});out.textContent='Pixel (row 3, column 3) = '+v.toFixed(1)+'. Final CLS = '+vector(f.updated[0],3)+'. p(class A) = '+f.probs[0].toFixed(3)+'.';}
+    function draw(v){var f=forward({image:editImage(v)});diagram(plot,'projection',{image:editImage(v),selected:3});out.textContent='Pixel (row 3, column 3) = '+v.toFixed(1)+'. Final CLS = '+vector(f.updated[0],3)+'. p('+data.classes[0]+') = '+f.probs[0].toFixed(3)+'.';}
     AT.ui.slider({into:control,label:'Change one pixel in patch 4',min:0,max:3,step:.25,value:2,format:function(v){return v.toFixed(2);},onInput:draw});draw(2);
   }
   function attentionExplorer(host){
@@ -157,5 +158,5 @@
   notation('sizes','N,P,C','Number of patches, patch side length, channel count','','4, 2, 1');
   notation('sizes','d_{\\mathrm{model}},d_k,d_v','Representation width, matching width, and value width','','2, 2, 2');
   notation('sizes','W_{\\mathrm{patch}}','Shared pixel-to-embedding projection','P^2C\\times d_{\\mathrm{model}}','4×2');
-  notation('sizes','W_Q,W_K,W_V,W_O','Four separate attention parameters; equality here is a teaching choice','2\\times2','');
+  notation('sizes','W_Q,W_K,W_V,W_O','Four separate parameters; initially W_Q = W_K and W_V = W_O, but these pairs are not tied during learning','2\\times2','');
 })();

@@ -1,31 +1,46 @@
-<section id="s02" class="sec" data-title="Make one vector per patch" data-lit="e">
-<header class="sec-head"><span class="sec-num">02</span><div><p class="eyebrow">A patch is a small rectangle of pixels, not an object detector.</p><h2>Make one vector per patch</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>Split the image into nonoverlapping 2×2 patches. Number them left to right across the top row, then across the bottom row. Within each patch, use the same order to flatten its four pixel values. Flattening changes the arrangement of the numbers, not their values. A patch boundary need not follow an object boundary.</p></div>
-<div class="frame" data-title="Four patches, four raw rows" data-autobuild="off">
-  <div id="s02-patches"></div>
-  <p data-build="1">Each raw row $r_j$ has shape $1\times4$. Stacking the four patches gives $R\in\mathbb R^{4\times4}$.</p>
-  <pre class="torch-snippet" data-build="2"><code># image: [batch=1, channels=1, height=4, width=4]
-R = image.unfold(2, 2, 2).unfold(3, 2, 2)
-R = R.permute(0, 2, 3, 1, 4, 5).reshape(1, 4, 4)</code></pre>
-  <script type="text/x-notes">Point to each of the four values in the top-left patch, then the flattened row. The tensor permutation groups one spatial patch's channels and pixels before flattening. Batch size is omitted from most of our displayed matrices.</script>
+<section id="s02" class="sec" data-title="Make one embedding from each patch" data-lit="e">
+<header class="sec-head"><span class="sec-num">02</span><div><p class="eyebrow">Follow four pixels into two features, one coordinate at a time.</p><h2>Make one embedding from each patch</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>A Transformer expects a sequence of equal-width rows. We could flatten the whole image into one long row, but then attention would have no separate regions to relate. We could use one row per pixel, but photographs would produce very long sequences. Patches choose an intermediate scale. Here a 2×2 patch gives four raw pixel values.</p></div>
+<div class="frame" data-title="Cut the image into four 2×2 patches" data-autobuild="off">
+  <div class="vision1-story" id="s02-patches"></div>
+  <p>Number patches left to right, then top to bottom. Keep this order throughout the calculation.</p>
+  <p class="vision1-equation" data-build="1">$N=(4/2)\times(4/2)=4\text{ patches}$</p>
+  <script type="text/x-notes">Point to each crop and its original location. Cutting does not change any pixel value. The sequence order is a bookkeeping choice; we will separately tell the model where each crop belonged.</script>
 </div>
-<div class="frame" data-title="A projection turns four pixel values into two numbers" data-autobuild="off">
-  <div class="vision1-pair"><div id="s02-w"></div><div><p>$\ve{e_j^{\mathrm{patch}}}=r_jW_{\mathrm{patch}}$</p><p data-build="1">For patch 1:</p><p data-build="1">$(1,1,1,1)W_{\mathrm{patch}}=(2,2)$</p><p data-build="2">Coordinate 1 adds pixels 1 and 3. Coordinate 2 adds pixels 2 and 4.</p></div></div>
-  <p class="callout callout-note" data-build="3">These weights are chosen for arithmetic. In a trained model, the projection and its optional bias are learned.</p>
-  <script type="text/x-notes">These two coordinates have exact pixel-sum meanings only because we chose this matrix. Do not assign those meanings to arbitrary learned embedding dimensions.</script>
+<div class="frame" data-title="Flatten one patch without changing its pixels" data-autobuild="off">
+  <div class="vision1-story" id="s02-flatten"></div>
+  <p class="callout callout-key" data-build="1"><strong>Flattening only rearranges.</strong> It has no learned weights and does not mix the four pixels.</p>
+  <script type="text/x-notes">The four values happen to be equal. Follow the numbered positions and colored connectors, not just the number 2. We will change one pixel shortly to check that the order matters.</script>
 </div>
-<div class="frame" data-title="Use the same projection on every patch" data-autobuild="off">
-  <div id="s02-rows"></div>
-  <pre class="torch-snippet" data-build="1"><code># R: [1, 4, 4]; W_patch: [4, 2]
-patch_rows = R @ W_patch + b_patch  # [1, 4, 2]</code></pre>
-  <p class="callout callout-key" data-build="2">Four different patch inputs, one shared $W_{\mathrm{patch}}$. The two zero patches get the same embedding before position is added.</p>
-  <script type="text/x-notes">The bias is zero in this worksheet. Sharing the projection does not mean the outputs are the same: the pixels differ. Equal patches do give equal content embeddings, which motivates position information.</script>
+<div class="frame" data-title="Why make an embedding instead of keeping the pixels?" data-autobuild="off">
+  <p>Give each patch a row whose width we choose: here, $d_{\mathrm{model}}=2$.</p>
+  <p class="vision1-equation" data-build="1">$\underbrace{r_j}_{1\times4}\;\underbrace{W_{\mathrm{patch}}}_{4\times2}+\underbrace{b_{\mathrm{patch}}}_{1\times2}=\underbrace{e_j^{\mathrm{patch}}}_{1\times2}$</p>
+  <p data-build="2">Each output coordinate can combine several pixels. Training will change those combinations to help with the image task.</p>
+  <p class="callout callout-key" data-build="3">This is the image equivalent of making a token embedding. The patch’s actual pixels determine its row.</p>
+  <script type="text/x-notes">An embedding width is not always smaller than the raw patch width. We use four to two for hand calculation. The general purpose is a learned representation with a consistent model width.</script>
 </div>
-<div class="frame" data-title="What changes when we change patch size?" data-autobuild="off">
-  <div id="s02-explore"></div>
-  <p data-build="1">Our $4\times2$ projection is for 2×2 grayscale patches. Other patch sizes need a different projection shape.</p>
-  <script type="text/x-notes">Try P=1 and P=4. Smaller patches produce more rows; larger patches make wider raw rows. Changing P changes the required input width of W_patch, so we do not pretend these are interchangeable inputs to the fixed worksheet weights.</script>
+<div class="frame" data-title="The first output uses the first matrix column" data-autobuild="off">
+  <div class="vision1-story" id="s02-project1"></div>
+  <p data-build="1">At these starting weights, coordinate 1 adds the <strong>left column</strong> of the patch. The bias is zero.</p>
+  <script type="text/x-notes">Point from each pixel to its coefficient. W_patch rows correspond to the flattened pixel positions; columns correspond to output features. These simple starting weights are specified, not discovered properties of a trained ViT.</script>
 </div>
-<div class="companion after"><p>For height $H$, width $W$, channels $C$, and patch side $P$ that divides both spatial dimensions, there are $N=HW/P^2$ patches. A flattened patch has $P^2C$ numbers, so $W_{\mathrm{patch}}$ has shape $P^2C\times d_{\mathrm{model}}$. RGB changes the raw width through $C=3$; it does not force the learned embedding to have three coordinates.</p></div>
-<script>(function(){const S=document.getElementById('s02'),T=AT.vision,F=T.forward();T.diagram(S.querySelector('#s02-patches'),'patches');AT.ui.table(T.data.W_patch,{into:S.querySelector('#s02-w'),cols:['coordinate 1','coordinate 2'],rowLabels:['pixel 1','pixel 2','pixel 3','pixel 4'],cornerLabel:'W_patch',decimals:0});AT.ui.table(F.patches.map((r,i)=>[T.vector(r),T.vector(F.embeddings[i])]),{into:S.querySelector('#s02-rows'),cols:[{label:'raw row r_j',kind:'text'},{label:'embedding e_patch',kind:'text'}],rowLabels:T.labels.slice(1),cornerLabel:'patch',decimals:0});T.patchExplorer(S.querySelector('#s02-explore'));})();</script>
+<div class="frame" data-title="The second output uses the second column" data-autobuild="off">
+  <div class="vision1-story" id="s02-project2"></div>
+  <p data-build="1">Coordinate 2 adds the <strong>right column</strong>. Patch 4’s embedding is now $e_4^{\mathrm{patch}}=(4,4)$.</p>
+  <script type="text/x-notes">The two outputs happen to match because this patch is uniform. The matrix columns are different, which the next small perturbation will expose.</script>
+</div>
+<div class="frame" data-title="Change the top-left pixel from 2 to 1" data-autobuild="off">
+  <div class="vision1-story" id="s02-perturb"></div>
+  <p data-build="1">Only the left-column sum changes: $(4,4)\to(3,4)$. The right-column sum stays 4.</p>
+  <script type="text/x-notes">Ask students to predict the changed coordinate before the reveal. The raw row is (1,2,2,2); only the first coordinate drops, from 4 to 3. Return to the original image in the next frame.</script>
+</div>
+<div class="frame" data-title="Back to the original image: one shared projection" data-autobuild="off">
+  <div class="vision1-story" id="s02-rows"></div>
+  <pre class="torch-snippet" data-build="1"><code>patch_embeddings = raw_patches @ W_patch + b_patch
+# [4, 4] @ [4, 2] + [2] → [4, 2]</code></pre>
+  <script type="text/x-notes">The zero patches have equal embeddings because their pixels are equal and the projection is shared. This observation is the reason for the position discussion next.</script>
+</div>
+<div class="companion after"><h3>Extract the rows in PyTorch</h3><pre class="torch-snippet"><code>rows = F.unfold(image, kernel_size=2, stride=2).transpose(1, 2)
+patch_embeddings = rows @ W_patch + b_patch</code></pre><p>Here <code>image</code> has shape <code>[batch, 1, 4, 4]</code>. The rows have shape <code>[batch, 4 patches, 4 pixels]</code>. A convolution with kernel size and stride equal to the patch side can perform this same shared patch projection.</p><h3>What if the patch size changes?</h3><div id="s02-explore"></div><p>These controls inspect how pixels are grouped. A new patch width needs a correspondingly sized projection; they do not silently run the fixed 4×2 weight matrix on a different-width row.</p></div>
+<script>(function(){const S=document.getElementById('s02'),T=AT.vision,F=T.forward();for(const [id,stage,opts]of[['patches','patches',{}],['flatten','flatten',{patch:3}],['project1','project',{patch:3,coordinate:0}],['project2','project',{patch:3,coordinate:1}],['perturb','project',{patch:3,coordinate:0,forward:T.forward({image:T.editImage(1)})}],['rows','patchRows',{}]])T.story(S.querySelector('#s02-'+id),Object.assign({stage:stage,forward:F},opts));T.patchExplorer(S.querySelector('#s02-explore'));})();</script>
 </section>

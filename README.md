@@ -9,7 +9,7 @@ Two connected, interactive, offline-capable series for a deep-learning course. [
 
 The four-part **Vision to language** sequence continues with:
 
-- [Vision I](https://nipunbatra.github.io/attention/vision1.html): image patches, learned projections, added positions, class-token attention, residual updates, and classification.
+- [Vision I](https://nipunbatra.github.io/attention/vision1.html): one image followed through patch projection, CLS attention, a class prediction, loss, and actual learning on two images. Includes a pixel-by-pixel projection and a value-only experiment.
 - [Vision II](https://nipunbatra.github.io/attention/vision2.html): visual pretraining through MAE, DINO, and I-JEPA; exact reconstruction and teacher-distribution worksheets.
 - [Vision III](https://nipunbatra.github.io/attention/vision3.html): CLIP-style image–text matching, symmetric contrastive learning, candidate classification, and retrieval.
 - [Vision IV](https://nipunbatra.github.io/attention/vision4.html): a visual connector, an image-conditioned prefix decoder, actual answer generation, training, and grounding checks.
@@ -30,7 +30,7 @@ Part 1 also has four model-backed diagrams: the trained embedding space, lookup-
 
 Part 4 uses a separate three-coordinate model fitted to two phrase pairs: “the river bank” → “la rive”, and “the financial bank” → “la banque”. It includes an encoder, masked target self-attention, cross-attention, residual additions, and a vocabulary head. The numerical toy omits FFNs and LayerNorm; it is not evidence of general translation ability. Source and target positions are learned, added vectors. The diagrams and calculations read the same model. An independent NumPy reference reproduces training and checks every scalar gradient.
 
-The vision sequence adapts the earlier `vision-transformer`, `vision-ssl`, `clip-zero-shot`, and `vlm` articles into this shared article/classroom system. It retains their questions, but replaces misleading synthetic-model claims and unchecked training code with disclosed, checked worksheets. Vision I and IV share the same frozen 4×4-image encoder. Vision II's calculators illustrate objectives, not pretrained-model outputs. Vision III fits only three image–caption pairs; Vision IV fits only two image–answer pairs. Neither is evidence of general zero-shot transfer or counting ability. See `src/VISION_SOURCE_AUDIT.md` for provenance and changes.
+The vision sequence adapts the earlier `vision-transformer`, `vision-ssl`, `clip-zero-shot`, and `vlm` articles into this shared article/classroom system. Vision I keeps one block-counting question through the forward and learning passes. Its initial 4×4-image encoder is also the frozen snapshot used in Vision IV; Vision I's later training experiment does not replace that snapshot. Vision II's calculators illustrate objectives, not pretrained-model outputs. Vision I and IV fit only two training images, and Vision III fits three image–caption pairs. These exercises demonstrate the computations, not general counting or zero-shot transfer. See `src/VISION_SOURCE_AUDIT.md` for provenance and changes.
 
 ```sh
 python3 src/assemble.py --part 1 --out part1.html
@@ -79,6 +79,7 @@ node src/check_part1_diagrams.mjs
 python3 src/train_part4.py --check
 node src/check_part4.mjs
 node src/check_vision1.mjs
+python3 src/verify_vision1_learning.py
 node src/check_vision2.mjs
 python3 src/train_vision3.py --check
 node src/check_vision3.mjs

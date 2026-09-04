@@ -1,5 +1,19 @@
 # Classroom release checks
 
+## 2026-09-04: Vision I teaching rebuild
+
+The first Vision I adaptation met numerical and layout checks but did not give students enough motivation or intermediate workings. This rebuild was reviewed against the text lessons as a teaching sequence, not scored by slide count. It keeps the same block images visible through projection, matching, mixing, prediction, and learning; uses direct teacher questions; and moves optional formal detail into article companions.
+
+- 55 authored classroom frames and PDF pages; 120 progressive states. Preflight and live navigation have no overflow, nested slide scrollbars, JavaScript errors, or invalid mathematics (78 strictly reparsed formulas).
+- 21 reusable SVG stages keep crops attached to their vectors. Individual projection columns, a changed pixel, score/exponential/normalization stages, value contributions, and a value-only intervention expose previously skipped operations. Every rendered frame was visually reviewed across the team; this caught and fixed a source-label overlap that canvas-bound checks alone missed.
+- The original encoder arithmetic is unchanged. Independent NumPy calculations reproduce the 44-parameter learning model and its training checkpoints within 4.62e-14. All 396 central-difference comparisons pass (44 parameters × three objectives × three snapshots), maximum error 1.02e-9.
+- Full-batch SGD on the two pictured training images: learning rate 0.05, 600 updates. Mean loss is 0.809919 initially, 0.693813 after one step, and 0.004388 after training. The first step worsens one image; that regression stays visible. The fitted examples are not evidence of general counting ability.
+- 47 table views across desktop article, 390px phone, and classroom modes pass with no issues. Phone reading has no document-width overflow; interactive controls and reveals report no runtime errors.
+- The exported PDF has 55 valid 16:9 slide images at 2× raster resolution. All three reveal answers are open. Actual PDF pages 1, 28, and 55 were rendered and visually inspected after export.
+- Vision IV's fixed initial encoder still passes its reference checks. The separate Vision I fitted snapshot does not silently replace it.
+
+Reproduce with `check_vision1.mjs --browser`, `verify_vision1_learning.py`, and the frame/table/article/PDF commands in `README.md`. The following four-part release record describes the earlier adaptation, before this teaching rewrite.
+
 ## 2026-09-04: four-part Vision to language extension
 
 The adapted articles use the existing slide-first runtime without new production dependencies or changes to shared CSS/JS. Original vision articles and lecture sources are preserved. `VISION_SOURCE_AUDIT.md` records the source corrections and explicit toy/full-model boundaries.

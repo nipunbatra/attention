@@ -1,31 +1,57 @@
-<section id="s05" class="sec" data-title="Mix values and add the update" data-lit="v a d ep">
-<header class="sec-head"><span class="sec-num">05</span><div><p class="eyebrow">Keys chose the weights. Values supply the vectors we add.</p><h2>Mix values and add the update</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>The attention weights are scalar mixing amounts. To get a vector, multiply each source value by its weight and add the results. This mixture belongs to one receiving query. Here it belongs to CLS. We then project the mixture back to representation width and add it to the original CLS row through the residual connection.</p></div>
-<div class="frame" data-title="Use the value from the same source as each weight" data-autobuild="off">
-  <p>$W_V=I_2$, so $\vv{v_j}=e_j$ in this worksheet.</p>
-  <div id="s05-mix"></div>
-  <p class="callout callout-key" data-build="1">$m_0=\sum_{j=0}^4\alpha_{0j}v_j$. Keys are used for matching; values are used in this sum.</p>
-  <script type="text/x-notes">A value is not always the original embedding. Here it is numerically equal only because W_V is the identity matrix. For trained weights, e_j W_V can emphasize, suppress, or combine different coordinates.</script>
+<section id="s05" class="sec" data-title="Bring patch information into CLS" data-lit="v a d ep">
+<header class="sec-head"><span class="sec-num">05</span><div><p class="eyebrow">A weight says how much. A value supplies what arrives.</p><h2>Bring patch information into CLS</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>The query and keys have produced one mixing amount per source. A scalar amount alone cannot update a two-number row. Each source therefore makes a value vector, $v_j=e_jW_V$. Multiply each source’s value by its own weight, then add the contributions coordinate by coordinate. This returns a message to the receiving CLS row.</p></div>
+<div class="frame" data-title="A patch’s key and value do different jobs" data-autobuild="off">
+  <div class="vision1-story" id="s05-value"></div>
+  <p>Starting with $W_V=I_2$ gives $v_4=e_4=(5,5)$. This equality comes from the identity map—not from the definition of a value.</p>
+  <script type="text/x-notes">The value equals the positioned input row only because we selected an identity W_V. It does not equal the original raw pixels or necessarily the pre-position patch embedding. Test this equality rather than asking students to accept a caveat.</script>
 </div>
-<div class="frame" data-title="The message becomes an update, then a new CLS row" data-autobuild="off">
-  <div id="s05-residual"></div>
-  <p data-build="1">$W_O=I_2$, so $\vd{\Delta e_0}=m_0W_O=m_0$.</p>
-  <p class="callout callout-note" data-build="2">This update changes the representation for this image. It does not overwrite the learned CLS parameter $c$.</p>
-  <script type="text/x-notes">Distinguish inference-time residual addition from an optimizer update. The initial CLS parameter is still (1,1). This image's contextual CLS row is approximately (4.075,4.075).</script>
+<div class="frame" data-title="Change only the value map: do the weights change?" data-autobuild="off">
+  <div class="vision1-story" id="s05-value-change"></div>
+  <div id="s05-value-check" data-build="1"></div>
+  <script type="text/x-notes">The same patch4 is still read with exactly the same weight. The second value coordinate is now10 rather than5, so twice as much enters that coordinate of its message contribution. This directly demonstrates why matching keys and sending values are different projections.</script>
 </div>
-<div class="frame" data-title="Compute all five updates in parallel" data-autobuild="off">
-  <p>$A:\;5\times5\qquad V:\;5\times2\qquad AV:\;5\times2$</p>
-  <pre class="torch-snippet" data-build="1"><code>message = A @ V                  # [5, 2]
-delta = message @ W_O             # [5, 2]
-E_next = E + delta                # residual update</code></pre>
-  <p class="callout callout-key" data-build="2">Each output row reads the same original input matrix. No row reads a partly updated neighbor.</p>
-  <script type="text/x-notes">The attention matrix contains a different distribution in each receiving row. Matrix multiplication performs all five weighted sums together. All updates have representation width, so the residual addition is shape-compatible.</script>
+<div class="frame" data-title="Restore the original values, then pair them with weights" data-autobuild="off">
+  <div class="vision1-story" id="s05-pairs"></div>
+  <p class="callout callout-key" data-build="1">One weight scales <strong>every coordinate</strong> in the value from the same source.</p>
+  <script type="text/x-notes">Re-anchor the main calculation after the intervention. Keep the source picture, source index, alpha, and value aligned. No query/key vector is added here.</script>
 </div>
-<div class="frame" data-title="Every row can read every known image token" data-autobuild="off">
-  <div id="s05-explore"></div>
-  <p class="callout callout-key" data-build="1">A global attention layer already connects every patch to every other patch. Deeper layers transform and combine that information again.</p>
-  <script type="text/x-notes">Select a patch query. Its weights differ because its query differs. No future patch needs hiding: the whole image is known. These attention arrows describe this head's weighted mixture, not proof that a region caused the final prediction.</script>
+<div class="frame" data-title="Work one contribution from patch 4" data-autobuild="off">
+  <div class="vision1-story" id="s05-one-value"></div>
+  <div class="vision1-equation" id="s05-one-product" data-build="1"></div>
+  <p class="vision1-caption">Displayed numbers are rounded; calculations keep the unrounded weights.</p>
+  <script type="text/x-notes">Use the unrounded alpha for calculation. The displayed result is rounded. This is not selecting patch4 and discarding all other patches; it is one term in a weighted sum.</script>
 </div>
-<div class="companion after"><h3>The complete updated matrix</h3><div id="s05-all"></div><p>All five rows are updated in parallel from the same input matrix. We do not update CLS first and then let the other rows read the already-updated CLS. That would be a different calculation. The classifier will select row 0 from this output, but the encoder can retain all patch rows for tasks that need spatial information.</p></div>
-<script>(function(){const S=document.getElementById('s05'),T=AT.vision,F=T.forward();T.diagram(S.querySelector('#s05-mix'),'mix');T.table(S.querySelector('#s05-residual'),[F.E[0],F.message[0],F.delta[0],F.updated[0]],{rowLabels:['input CLS e₀','weighted value message m₀','update Δe₀ = m₀ W_O','new CLS e₀′ = e₀ + Δe₀'],cornerLabel:'CLS calculation',rowCls:['e','v','d','ep'],decimals:3});T.attentionExplorer(S.querySelector('#s05-explore'));T.table(S.querySelector('#s05-all'),F.updated,{rowLabels:T.labels,cornerLabel:'updated E′',rowCls:'ep',decimals:3});})();</script>
+<div class="frame" data-title="Do the same multiplication for all five sources" data-autobuild="off">
+  <div class="vision1-story" id="s05-contributions"></div>
+  <p>Each contribution is a vector $\alpha_{0j}v_j$. Now add down coordinate 1, and separately down coordinate 2.</p>
+  <script type="text/x-notes">Pause on the blank patches: their positioned rows are not both zero, so their value contributions can be nonzero. The raw patch, content embedding, positioned input, and value are successive quantities.</script>
+</div>
+<div class="frame" data-title="The sum is information for this CLS query" data-autobuild="off">
+  <div id="s05-sum"></div>
+  <p class="callout callout-key" data-build="1">The two-number message $m_0$ combines this image’s source values. Its coordinates are <strong>features, not class probabilities</strong>.</p>
+  <script type="text/x-notes">The subscript0 belongs to the receiving CLS row. The message is query-specific; another receiver generally has different weights. Features do not need to sum to1 even though the weights do.</script>
+</div>
+<div class="frame" data-title="Add the incoming update to the original CLS row" data-autobuild="off">
+  <div class="vision1-story" id="s05-residual"></div>
+  <p>$W_O=I_2$ leaves the message unchanged here. The new CLS row includes its original $(1,1)$ <strong>plus information from this image</strong>.</p>
+  <script type="text/x-notes">W_O maps the message back to representation width before the residual addition. The widths are both2 in this worksheet, and identity leaves the message unchanged. In a multi-head model the concatenated messages are projected back to model width.</script>
+</div>
+<div class="frame" data-title="This changes a representation, not the stored CLS parameter" data-autobuild="off">
+  <div id="s05-state"></div>
+  <p>The stored $c$ is still $(1,1)$. It is copied as the starting row for the next image too.</p>
+  <p data-build="1">Only a training step changes stored parameters. A forward pass computes new intermediate rows from them.</p>
+  <script type="text/x-notes">This distinction matters because 'update' has two meanings: adding contextual information to a token row and changing a learned parameter with an optimizer. Make the two rows in the table concrete rather than introducing a new symbol x.</script>
+</div>
+<div class="frame" data-title="Each of the five rows can collect its own message" data-autobuild="off">
+  <p>Stack all five reads. Row $i$ of the message matrix $H$ is the message $m_i$.</p>
+  <p class="vision1-equation" data-build="1">$\underbrace{A}_{5\times5}\;\underbrace{V}_{5\times2}=\underbrace{H}_{5\times2}$</p>
+  <pre class="torch-snippet" data-build="2"><code>Q, K, V = E @ W_Q, E @ W_K, E @ W_V
+A = ((Q @ K.T) / math.sqrt(2)).softmax(dim=-1)
+E_next = E + (A @ V) @ W_O       # [5, 2]</code></pre>
+  <p class="callout callout-key" data-build="3">All reads use the <strong>same original input rows</strong>. The classifier will use updated row 0; patch rows remain available for later layers.</p>
+  <script type="text/x-notes">There is no update order between neighbors. This is image self-attention because all queries, keys and values come from the same image-token sequence. The complete photo model later has multiple such layers.</script>
+</div>
+<div class="companion after"><h3>Try another receiving row</h3><div id="s05-explore"></div><p>The receiving query changes; the source keys and values are still those of the original image-token rows. A large attention weight describes the amount of a source value in this weighted sum. By itself it does not establish that a patch caused the final class decision.</p><h3>What did changing only values do?</h3><div id="s05-value-results"></div><p>Query and key computations were untouched, so each of the five weights stayed unchanged. The second coordinate of every value doubled, which doubled the second coordinate of the message. This comparison returns to the identity value map for the main classifier calculation.</p></div>
+<script>(function(){const S=document.getElementById('s05'),T=AT.vision,F=T.forward(),altParams={W_V:[[1,0],[0,2]]},G=Object.assign({},F,T.attention(F.E,altParams),{params:altParams});for(const [id,stage,step]of[['value','values',99],['pairs','mix',0],['one-value','values',99],['contributions','mix',1],['residual','residual',99]])T.story(S.querySelector('#s05-'+id),{stage:stage,step:step,source:4,forward:F});T.story(S.querySelector('#s05-value-change'),{stage:'values',source:4,forward:G,params:altParams});AT.ui.reveal('Does patch 4 receive a different weight?','No. Query and keys are unchanged, so its weight is unchanged. Its value is now $(5,10)$ instead of $(5,5)$: the same amount of a different message.',{into:S.querySelector('#s05-value-check')});AT.tex(S.querySelector('#s05-one-product'),'\\alpha_{04}v_4\\approx'+F.A[0][4].toFixed(3)+'(5,5)\\approx('+F.V[4].map(v=>(v*F.A[0][4]).toFixed(3)).join(',')+')',{display:true});AT.ui.mixTable(F.A[0],F.V,{into:S.querySelector('#s05-sum'),weighted:true,axes:false,cols:['contribution 1','contribution 2'],rowLabels:T.labels,cornerLabel:'source',alphaLabel:'weight α₀ⱼ',alphaDecimals:3,decimals:3,footerLabel:'message m₀',note:null});AT.ui.table([T.data.cls,F.updated[0]],{into:S.querySelector('#s05-state'),rowLabels:['stored starting parameter c','computed CLS for this image e₀′'],cols:['coordinate 1','coordinate 2'],cornerLabel:'two different quantities',decimals:3});AT.ui.table([F.message[0],G.message[0]],{into:S.querySelector('#s05-value-results'),rowLabels:['original value map I','second value coordinate doubled'],cols:['message coordinate 1','message coordinate 2'],cornerLabel:'identical attention weights',decimals:3});const host=S.querySelector('#s05-explore'),label=AT.h('label',{},'Receiving row: '),select=AT.h('select',{'aria-label':'Receiving image-token row'}),plot=AT.h('div',{class:'vision1-story'});T.labels.forEach((name,i)=>select.appendChild(AT.h('option',{value:String(i)},name)));label.appendChild(select);host.append(label,plot);const draw=()=>T.story(plot,{stage:'weights',receiver:Number(select.value),forward:F});select.addEventListener('change',draw);draw();})();</script>
 </section>

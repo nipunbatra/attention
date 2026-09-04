@@ -1,27 +1,72 @@
-<section id="s06" class="sec" data-title="Use the updated class row" data-lit="ep">
-<header class="sec-head"><span class="sec-num">06</span><div><p class="eyebrow">The contextual CLS row is a representation. A class head converts it into logits.</p><h2>Use the updated class row</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>We have finished the attention calculation, but we do not yet have a prediction. A classifier maps the updated CLS row to one logit per candidate class. A second softmax normalizes those class logits. This softmax answers a different question from attention: which output class gets probability, rather than how to mix the input values.</p></div>
-<div class="frame" data-title="Two class logits from the two-number CLS row" data-autobuild="off">
-  <p>$W_{\mathrm{class}}=\begin{pmatrix}0.5&0\\0&0.25\end{pmatrix},\qquad b_{\mathrm{class}}=(0,0)$</p>
-  <p class="vision1-equation" data-build="1">$z=e_0'W_{\mathrm{class}}+b_{\mathrm{class}}$</p>
-  <div id="s06-head" data-build="1"></div>
-  <pre class="torch-snippet" data-build="2"><code>logits = E_next[0] @ W_class + b_class  # [2]
-probabilities = logits.softmax(dim=-1)</code></pre>
-  <script type="text/x-notes">These output weights are specified, so the probabilities are derived rather than invented. Arbitrary labels prevent a false claim that this hand-written head recognizes a visual concept.</script>
+<section id="s06" class="sec" data-title="Turn the image representation into a prediction" data-lit="ep">
+<style>
+#s06 .v1-head-eq{font-size:1.14em;text-align:center;margin:16px 0}
+#s06 .v1-images{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center}
+#s06 .v1-images svg{display:block;width:100%;max-height:200px}
+#s06 .v1-images h3{margin:0 0 10px}
+@media(max-width:650px){body:not(.present) #s06 .v1-images{grid-template-columns:1fr}}
+</style>
+<header class="sec-head"><span class="sec-num">06</span><div><p class="eyebrow">We have a row that depends on the image. We still need an answer.</p><h2>Turn the image representation into a prediction</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>Our question was whether the image contains one or two occupied 2×2 blocks. Attention has collected information in the CLS row, but those two coordinates are still features. A classification head converts them into one score per answer. We will calculate both scores, normalize them, and check the probability given to the observed label. The initial weights are the same hand-chosen values used throughout this calculation.</p></div>
+
+<div class="frame" data-title="The CLS row still needs a class head" data-autobuild="off">
+  <div id="s06-head-picture"></div>
+  <p class="callout callout-key" data-build="1">The head makes two scores: one for <strong>two blocks</strong>, one for <strong>one block</strong>.</p>
+  <script type="text/x-notes">Point to the same updated CLS row from the preceding section. It has two features because we chose model width two. The head has two outputs because this task has two labels. Those counts need not agree.</script>
 </div>
-<div class="frame" data-title="One supervised target gives one loss" data-autobuild="off">
-  <p>For this worksheet, suppose the observed label is <strong>class A</strong>.</p>
-  <div id="s06-loss" class="vision1-equation" data-build="1"></div>
-  <pre class="torch-snippet" data-build="2"><code>target = torch.tensor([0])  # class A
+
+<div class="frame" data-title="Work out the score for two blocks" data-autobuild="off">
+  <p>Use the <strong>two blocks</strong> column of $W_{\mathrm{class}}$. Its weights are $(0.5,0)$; its bias is $0$.</p>
+  <div id="s06-two-calc" data-build="1"></div>
+  <p data-build="2">This score is a <strong>logit</strong>. It can be any real number; it is not a probability yet.</p>
+  <script type="text/x-notes">Read the input row first, then multiply each coordinate by the weight directly below it. The two products add to this class's logit. We are following the already-computed CLS row, not taking another average of the image.</script>
+</div>
+
+<div class="frame" data-title="Use the other column for one block" data-autobuild="off">
+  <p>Keep the same CLS row. The <strong>one block</strong> column has weights $(0,0.25)$ and bias $0$.</p>
+  <div id="s06-one-calc" data-build="1"></div>
+  <pre class="torch-snippet" data-build="2"><code># CLS: [2]; W_class: [2, 2]; bias: [2]
+logits = E_next[0] @ W_class + b_class</code></pre>
+  <script type="text/x-notes">A class head reuses the same feature row for every candidate label. Each column is a different learned combination of those features. The matrix product computes both of these worksheets together.</script>
+</div>
+
+<div class="frame" data-title="Compare the two logits to get probabilities" data-autobuild="off">
+  <div id="s06-probability-table"></div>
+  <p id="s06-probability-eq" class="v1-head-eq" data-build="1"></p>
+  <p class="callout callout-key" data-build="2">These two probabilities compete over <strong>output labels</strong>. The five attention weights competed over <strong>input rows</strong>.</p>
+  <script type="text/x-notes">Show the exponential of each logit and their shared total. The softmax operation is familiar, but the set being normalized has changed. Displayed numbers are rounded; calculations use the original values.</script>
+</div>
+
+<div class="frame" data-title="How much probability did the correct label receive?" data-autobuild="off">
+  <p>The observed label for our image is <strong>two blocks</strong>.</p>
+  <div id="s06-target-bars" data-build="1"></div>
+  <p id="s06-loss" class="v1-head-eq" data-build="2"></p>
+  <pre class="torch-snippet" data-build="3"><code>target = torch.tensor([0])  # two blocks
 loss = F.cross_entropy(logits[None, :], target)</code></pre>
-  <p class="callout callout-key" data-build="3">The target is used to compute the loss. It was not an input to the image encoder or its CLS query.</p>
-  <script type="text/x-notes">Training adjusts parameters to reduce loss across labelled examples. We have supplied one label for arithmetic, not evidence of performance on a dataset. Cross-entropy expects raw logits, not the already-softmaxed probabilities.</script>
+  <script type="text/x-notes">The encoder did not receive this label. We reveal it after prediction to score the answer. Cross-entropy uses the probability of the observed label. Its PyTorch implementation expects logits, not already-softmaxed probabilities.</script>
 </div>
-<div class="frame" data-title="Change a pixel and recompute the whole forward pass" data-autobuild="off">
-  <div id="s06-pixel"></div>
-  <p class="callout callout-note" data-build="1">The changed patch alters its embedding, key, and value. The code recomputes all attention weights and the final class probabilities.</p>
-  <script type="text/x-notes">The slider changes just row3,column3, not the whole bright block. Ask which intermediate should change first. A probability change here tests the arithmetic path; it does not establish robustness or meaningful recognition.</script>
+
+<div class="frame" data-title="Does the same model recognize one block?" data-autobuild="off">
+  <div class="v1-images"><div><h3>Two blocks</h3><div id="s06-two-image"></div></div><div><h3>Remove the top-left block</h3><div id="s06-one-image"></div></div></div>
+  <div id="s06-image-comparison" data-build="1"></div>
+  <p data-build="2">The untrained model chooses <strong>two blocks for both images</strong>.</p>
+  <script type="text/x-notes">The second image differs only in its top-left patch. The model recomputes the full forward pass with the same parameters. Its wrong answer motivates training on both labelled images rather than celebrating one correct guess.</script>
 </div>
-<div class="companion after"><p>A counterfactual input is more informative than treating a large attention weight as an explanation by itself. Even this test has a limited claim: the specified model's output changes when a pixel changes. To judge a trained classifier, we would need held-out data and tests suited to the visual task. A single hand-chosen example cannot supply that evidence.</p></div>
-<script>(function(){const S=document.getElementById('s06'),T=AT.vision,F=T.forward();AT.ui.table(F.logits.map((z,i)=>[z,F.probs[i]]),{into:S.querySelector('#s06-head'),cols:['logit z','class probability'],rowLabels:T.data.classes,cornerLabel:'class head',decimals:3});AT.tex(S.querySelector('#s06-loss'),'L=-\\log p(\\text{class A})\\approx-\\log('+F.probs[0].toFixed(6)+')\\approx'+F.loss.toFixed(6),{display:true});T.pixelExplorer(S.querySelector('#s06-pixel'));})();</script>
+
+<div class="companion after"><p>The two displayed examples are a small teaching dataset, not a test of general counting. A classifier could fit them using brightness or another shortcut. After learning, we will check the same two examples again and keep that limitation in mind.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s06'),T=AT.vision,L=T.learning,F=L.forward(L.initial,L.images[0],0),G=L.forward(L.initial,L.images[1],1),names=L.classes;
+  T.story(S.querySelector('#s06-head-picture'),{stage:'head',forward:F,step:0});
+  [['#s06-two-calc',0],['#s06-one-calc',1]].forEach(([id,j])=>AT.ui.matVecCalc(F.updated[0],L.initial.W_class.map(r=>[r[j]]),{from:['feature 1','feature 2'],to:[names[j]+' logit'],xLabel:'updated CLS e₀′',outLabel:'logit',fromCls:'ep',cls:'neutral',decimals:3,wDecimals:2,into:S.querySelector(id)}));
+  const ex=F.logits.map(Math.exp),z=ex.reduce((a,b)=>a+b,0);
+  AT.ui.table(F.logits.map((x,i)=>[x,ex[i],ex[i]/z]),{into:S.querySelector('#s06-probability-table'),cols:['logit','exp(logit)','probability'],rowLabels:names,cornerLabel:'possible answer',decimals:3,footer:{label:'total',values:['',z,1]}});
+  AT.tex(S.querySelector('#s06-probability-eq'),'p(\\text{two blocks})\\approx\\frac{'+ex[0].toFixed(3)+'}{'+z.toFixed(3)+'}\\approx'+F.probs[0].toFixed(3),{display:true});
+  AT.ui.bars(names.map((label,i)=>({label,p:F.probs[i]})),{into:S.querySelector('#s06-target-bars'),highlight:names[0],sorted:false,decimals:3,size:'lg'});
+  AT.tex(S.querySelector('#s06-loss'),'L=-\\log p(\\text{two blocks})\\approx-\\log('+F.probs[0].toFixed(3)+')\\approx'+F.loss.toFixed(3),{display:true});
+  function thumbnail(host,image,label){const svg=AT.svg('svg',{viewBox:'0 0 340 180',role:'img','aria-label':label});image.forEach((r,y)=>r.forEach((v,x)=>{const shade=35+v*69;svg.appendChild(AT.svg('rect',{x:85+x*40,y:10+y*40,width:40,height:40,fill:'rgb('+shade+','+shade+','+shade+')',stroke:'var(--paper)'}));}));[[85,10],[165,10],[85,90],[165,90]].forEach(([x,y])=>svg.appendChild(AT.svg('rect',{x,y,width:80,height:80,fill:'none',stroke:'var(--c-e)','stroke-width':2})));host.appendChild(svg);}
+  thumbnail(S.querySelector('#s06-two-image'),F.image,'The original image has two occupied patches.');thumbnail(S.querySelector('#s06-one-image'),G.image,'The second image has one occupied patch.');
+  AT.ui.table([F,G].map(f=>[f.probs[0],f.probs[1],names[f.probs[0]>=f.probs[1]?0:1]]),{into:S.querySelector('#s06-image-comparison'),cols:[{label:'p(two blocks)',kind:'number'},{label:'p(one block)',kind:'number'},{label:'model chooses',kind:'text'}],rowLabels:['two-block image','one-block image'],cornerLabel:'same initial parameters',decimals:3});
+})();
+</script>
 </section>

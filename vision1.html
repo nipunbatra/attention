@@ -826,8 +826,8 @@ body.presenter>*:not(#at-presenter){display:none!important}
 </header>
 
 <script>
-window.__TOY__ = {"d_model":2,"d_k":2,"d_v":2,"axes":{"named":false,"e":["coordinate 1","coordinate 2"],"qk":["coordinate 1","coordinate 2"],"v":["coordinate 1","coordinate 2"]},"vision":{"image":[[1,1,0,0],[1,1,0,0],[0,0,2,2],[0,0,2,2]],"patchSize":2,"W_patch":[[1,0],[0,1],[1,0],[0,1]],"b_patch":[0,0],"cls":[1,1],"positions":[[0,0],[0,0],[0,1],[1,0],[1,1]],"W_Q":[[0.5,0],[0,0.5]],"W_K":[[0.5,0],[0,0.5]],"W_V":[[1,0],[0,1]],"W_O":[[1,0],[0,1]],"W_class":[[0.5,0],[0,0.25]],"b_class":[0,0],"classes":["class A","class B"],"target":0,"provenance":"Hand-chosen one-head teaching model, not fitted to images. Two-dimensional rows, added positions, one attention update with residual, and a linear classifier. No LayerNorm, feed-forward sublayer, or dropout. Classes are arbitrary worksheet outputs, not learned visual categories."}};
-window.__PART__ = {"part":1,"series":"Vision to language","title":"An image becomes a sequence","subtitle":"Turn one small image into patch vectors, let them exchange information, and compute a classification score.","audience":"Students who know self-attention and residual updates","minutes":45,"centralLabel":"The new input; the same attention operation","central":"\\text{pixels}\\;\\longrightarrow\\;\\ve{E}\\;\\longrightarrow\\;\\vq{Q},\\vk{K},\\vv{V}\\;\\longrightarrow\\;\\vp{E'}","chain":[{"label":"An image as input","section":"s01"},{"label":"Make patch embeddings","section":"s02"},{"label":"Add positions and CLS","section":"s03"},{"label":"Compute image attention","section":"s04"},{"label":"Update the rows","section":"s05"},{"label":"Predict a class","section":"s06"},{"label":"The full ViT block","section":"s07"},{"label":"What these features learn","section":"s08"}],"sections":[{"id":"s01","title":"An image as input","lit":"e"},{"id":"s02","title":"Make one vector per patch","lit":"e"},{"id":"s03","title":"Keep positions and add a class token","lit":"e"},{"id":"s04","title":"Let the class token read the image","lit":"q k a"},{"id":"s05","title":"Mix values and add the update","lit":"v a d ep"},{"id":"s06","title":"Use the updated class row","lit":"ep"},{"id":"s07","title":"Put this calculation inside a ViT","lit":"e q k v a d ep"},{"id":"s08","title":"What has the model learned?","lit":""}],"objects":["e","q","k","v","a","d","ep"],"legendTitle":"The same symbols now refer to image-token rows","provenance":"An exact, hand-chosen one-head worksheet uses a 4\u00d74 grayscale image and two-number rows. No model or photo download is needed. LayerNorm and feed-forward sublayers appear in the full architecture, not in the numerical worksheet. Class A and B are arbitrary output labels, not trained image categories.","prev":{"label":"Attention Part 4: Cross-attention","href":"part4.html","available":true},"next":{"label":"Vision Part 2: Learning visual features","href":"vision2.html","available":true},"index":{"label":"Series home","href":"index.html"},"notation":"vision1","footer":"Patch embeddings supply the rows; attention computes their contextual updates."};
+window.__TOY__ = {"d_model":2,"d_k":2,"d_v":2,"axes":{"named":false,"e":["coordinate 1","coordinate 2"],"qk":["coordinate 1","coordinate 2"],"v":["coordinate 1","coordinate 2"]},"vision":{"image":[[1,1,0,0],[1,1,0,0],[0,0,2,2],[0,0,2,2]],"patchSize":2,"W_patch":[[1,0],[0,1],[1,0],[0,1]],"b_patch":[0,0],"cls":[1,1],"positions":[[0,0],[0,0],[0,1],[1,0],[1,1]],"W_Q":[[0.5,0],[0,0.5]],"W_K":[[0.5,0],[0,0.5]],"W_V":[[1,0],[0,1]],"W_O":[[1,0],[0,1]],"W_class":[[0.5,0],[0,0.25]],"b_class":[0,0],"classes":["two blocks","one block"],"target":0,"provenance":"Initial, hand-chosen parameters for distinguishing two occupied blocks from one. Two-dimensional rows, added positions, one attention update with residual, and a linear classifier. The lesson later trains this model on its two pictured examples. No LayerNorm, feed-forward sublayer, or dropout in this numerical worksheet."}};
+window.__PART__ = {"part":1,"series":"Vision to language","title":"An image becomes a sequence","subtitle":"Follow one image from pixels to an answer, then teach the same model to distinguish one block from two.","audience":"Students who know self-attention and residual updates","minutes":70,"centralLabel":"The new input; the same attention operation","central":"\\text{pixels}\\;\\longrightarrow\\;\\ve{E}\\;\\longrightarrow\\;\\vq{Q},\\vk{K},\\vv{V}\\;\\longrightarrow\\;\\vp{E'}","chain":[{"label":"One block or two?","section":"s01"},{"label":"Make patch embeddings","section":"s02"},{"label":"Layout and a collection row","section":"s03"},{"label":"Choose how much to read","section":"s04"},{"label":"Receive patch information","section":"s05"},{"label":"Predict a class","section":"s06"},{"label":"Learn from both images","section":"s07"},{"label":"Scale to a photograph","section":"s08"}],"sections":[{"id":"s01","title":"What should this image classifier answer?","lit":"e"},{"id":"s02","title":"Make one embedding from each patch","lit":"e"},{"id":"s03","title":"Keep the layout; make room for an image answer","lit":"e"},{"id":"s04","title":"Let CLS choose how much to read","lit":"q k a"},{"id":"s05","title":"Bring patch information into CLS","lit":"v a d ep"},{"id":"s06","title":"Turn the image representation into a prediction","lit":"ep"},{"id":"s07","title":"Learn from the two images","lit":"e q k v a d ep"},{"id":"s08","title":"Use the same design for a photograph","lit":"e q k v a d ep"}],"objects":["e","q","k","v","a","d","ep"],"legendTitle":"The same symbols now refer to image-token rows","provenance":"A fully inspectable one-head model uses 4\u00d74 grayscale images and two-number rows. We work through its initial weights, then train all 44 parameters on the two pictured examples. LayerNorm and the feed-forward sublayer appear in the full ViT architecture after the numerical worksheet. Everything runs offline.","prev":{"label":"Attention Part 4: Cross-attention","href":"part4.html","available":true},"next":{"label":"Vision Part 2: Learning visual features","href":"vision2.html","available":true},"index":{"label":"Series home","href":"index.html"},"notation":"vision1","footer":"Patch embeddings supply the rows; attention computes their contextual updates."};
 </script>
 <script>
 /* shared.js: the AT namespace, with toy-model math, KaTeX helpers, UI components, motif and flow.
@@ -3076,10 +3076,11 @@ window.__PART__ = {"part":1,"series":"Vision to language","title":"An image beco
     }
     return {patches:patches,origins:origins,size:size,count:patches.length,width:size*size};
   }
-  function attention(E) {
-    var Q=matmul(E,data.W_Q), K=matmul(E,data.W_K), V=matmul(E,data.W_V);
+  function attention(E, overrides) {
+    var weights=Object.assign({},data,overrides||{});
+    var Q=matmul(E,weights.W_Q), K=matmul(E,weights.W_K), V=matmul(E,weights.W_V);
     var raw=matmul(Q,transpose(K)), S=raw.map(function(r){return r.map(function(x){return x/Math.sqrt(2);});}), A=S.map(softmax);
-    var message=matmul(A,V), delta=matmul(message,data.W_O), updated=add(E,delta);
+    var message=matmul(A,V), delta=matmul(message,weights.W_O), updated=add(E,delta);
     return {E:E,Q:Q,K:K,V:V,raw:raw,S:S,A:A,message:message,delta:delta,updated:updated};
   }
   function forward(options) {
@@ -3127,7 +3128,7 @@ window.__PART__ = {"part":1,"series":"Vision to language","title":"An image beco
     options=options||{};var f=forward(options), c, i;
     if(kind==='image'){
       c=canvas(270,'One 4 by 4 grayscale image','Pixel values are 1 in the top-left block, 2 in the bottom-right block, and 0 elsewhere.');
-      grid(c,f.image,70,12,224,0);c.arrow(345,120,475,120,'e');c.box(650,120,320,96,'image classifier','class A or class B','ep');
+      grid(c,f.image,70,12,224,0);c.arrow(345,120,475,120,'e');c.box(650,120,320,96,'image classifier','two blocks or one block','ep');
       c.text(195,247,'4 rows × 4 columns',null,22);c.text(650,205,'We will compute its two scores.',null,24);
     }else if(kind==='patches'){
       var p=patchify(f.image,options.size||2), selected=options.selected||0;c=canvas(270,'Divide the image into patches','Nonoverlapping square patches in raster order. The selected patch is read left to right, then top to bottom.');
@@ -3186,7 +3187,7 @@ window.__PART__ = {"part":1,"series":"Vision to language","title":"An image beco
   }
   function pixelExplorer(host){
     var control=AT.h('div'), plot=AT.h('div'), out=AT.h('p',{class:'callout callout-key','aria-live':'polite'});host.appendChild(control);host.appendChild(plot);host.appendChild(out);
-    function draw(v){var f=forward({image:editImage(v)});diagram(plot,'projection',{image:editImage(v),selected:3});out.textContent='Pixel (row 3, column 3) = '+v.toFixed(1)+'. Final CLS = '+vector(f.updated[0],3)+'. p(class A) = '+f.probs[0].toFixed(3)+'.';}
+    function draw(v){var f=forward({image:editImage(v)});diagram(plot,'projection',{image:editImage(v),selected:3});out.textContent='Pixel (row 3, column 3) = '+v.toFixed(1)+'. Final CLS = '+vector(f.updated[0],3)+'. p('+data.classes[0]+') = '+f.probs[0].toFixed(3)+'.';}
     AT.ui.slider({into:control,label:'Change one pixel in patch 4',min:0,max:3,step:.25,value:2,format:function(v){return v.toFixed(2);},onInput:draw});draw(2);
   }
   function attentionExplorer(host){
@@ -3209,7 +3210,345 @@ window.__PART__ = {"part":1,"series":"Vision to language","title":"An image beco
   notation('sizes','N,P,C','Number of patches, patch side length, channel count','','4, 2, 1');
   notation('sizes','d_{\\mathrm{model}},d_k,d_v','Representation width, matching width, and value width','','2, 2, 2');
   notation('sizes','W_{\\mathrm{patch}}','Shared pixel-to-embedding projection','P^2C\\times d_{\\mathrm{model}}','4×2');
-  notation('sizes','W_Q,W_K,W_V,W_O','Four separate attention parameters; equality here is a teaching choice','2\\times2','');
+  notation('sizes','W_Q,W_K,W_V,W_O','Four separate parameters; initially W_Q = W_K and W_V = W_O, but these pairs are not tied during learning','2\\times2','');
+})();
+
+</script>
+<script>
+/* Vision I's exact 44-parameter learning experiment. No dependencies or sampling.
+   This is a separate parameter snapshot: AT.vision.data and the encoder shared
+   with Vision IV are never mutated. Verify with verify_vision1_learning.py. */
+(function () {
+  'use strict';
+  var T = window.AT && window.AT.vision;
+  if (!T) throw new Error('Load Vision I before its learning experiment.');
+  var names = ['W_patch', 'b_patch', 'cls', 'positions', 'W_Q', 'W_K', 'W_V', 'W_O', 'W_class', 'b_class'];
+  function copy(x) { return JSON.parse(JSON.stringify(x)); }
+  function map(x, fn) { return Array.isArray(x) ? x.map(function (v) { return map(v, fn); }) : fn(x); }
+  function zip(a, b, fn) { return Array.isArray(a) ? a.map(function (v, i) { return zip(v, b[i], fn); }) : fn(a, b); }
+  function zeros(n, d) { return Array.from({length:n}, function () { return Array(d).fill(0); }); }
+  function transpose(a) { return a[0].map(function (_, j) { return a.map(function (r) { return r[j]; }); }); }
+  function mm(a, b) { return a.map(function (r) { return b[0].map(function (_, j) { return r.reduce(function (s, v, k) { return s + v * b[k][j]; }, 0); }); }); }
+  function add(a, b) { return zip(a, b, function (x, y) { return x + y; }); }
+  function sumRows(a) { return a.reduce(function (s, r) { return add(s, r); }, a[0].map(function () { return 0; })); }
+  function sm(a) { var m = Math.max.apply(null, a), e = a.map(function (x) { return Math.exp(x-m); }), z = e.reduce(function (s, x) { return s+x; }, 0); return e.map(function (x) { return x/z; }); }
+  var initial = {};
+  names.forEach(function (name) { initial[name] = copy(T.data[name]); });
+  var images = [copy(T.data.image), copy(T.data.image)];
+  for (var y=0; y<2; y++) for (var x=0; x<2; x++) images[1][y][x]=0;
+  var targets = [0, 1], classes = ['two blocks', 'one block'];
+
+  function forward(p, image, target) {
+    image = image || images[0]; target = target == null ? 0 : target;
+    if (target !== 0 && target !== 1) throw new Error('The target must be class index 0 or 1.');
+    var patches = T.patchify(image, 2).patches;
+    var embeddings = mm(patches, p.W_patch).map(function (r) { return add(r, p.b_patch); });
+    var content = [p.cls.slice()].concat(embeddings), positions = copy(p.positions), E = add(content, positions);
+    var Q = mm(E, p.W_Q), K = mm(E, p.W_K), V = mm(E, p.W_V), raw = mm(Q, transpose(K));
+    var S = map(raw, function (v) { return v/Math.sqrt(2); }), A = S.map(sm);
+    var message = mm(A, V), delta = mm(message, p.W_O), updated = add(E, delta);
+    var logits = add(mm([updated[0]], p.W_class)[0], p.b_class), probs = sm(logits), peak = Math.max.apply(null, logits);
+    var loss = peak + Math.log(logits.reduce(function (s, v) { return s+Math.exp(v-peak); }, 0)) - logits[target];
+    return {image:copy(image), patches:patches, embeddings:embeddings, content:content, positions:positions, E:E, Q:Q, K:K, V:V, raw:raw, S:S, A:A,
+      message:message, delta:delta, updated:updated, logits:logits, probs:probs, loss:loss, target:target};
+  }
+
+  // Reverse-mode differentiation through the complete graph, including both
+  // the attention-weight branch (Q,K) and the value branch (V).
+  function backward(p, image, target) {
+    var f = forward(p, image, target), g = {}, dz = f.probs.slice(); dz[f.target] -= 1;
+    g.W_class = mm(transpose([f.updated[0]]), [dz]); g.b_class = dz.slice();
+    var du = zeros(5, 2); du[0] = mm([dz], transpose(p.W_class))[0];
+    g.W_O = mm(transpose(f.message), du);
+    var dm = mm(du, transpose(p.W_O)), da = mm(dm, transpose(f.V)), dv = mm(transpose(f.A), dm);
+    var ds = f.A.map(function (r, i) {
+      var weighted = r.reduce(function (s, v, j) { return s+v*da[i][j]; }, 0);
+      return r.map(function (v, j) { return v*(da[i][j]-weighted); });
+    });
+    var draw = map(ds, function (v) { return v/Math.sqrt(2); });
+    var dq = mm(draw, f.K), dk = mm(transpose(draw), f.Q);
+    g.W_Q = mm(transpose(f.E), dq); g.W_K = mm(transpose(f.E), dk); g.W_V = mm(transpose(f.E), dv);
+    var deQ = mm(dq, transpose(p.W_Q)), deK = mm(dk, transpose(p.W_K)), deV = mm(dv, transpose(p.W_V));
+    var de = add(add(du, deQ), add(deK, deV)), dembed = de.slice(1);
+    g.positions = copy(de); g.cls = de[0].slice();
+    g.W_patch = mm(transpose(f.patches), dembed); g.b_patch = sumRows(dembed);
+    var dp = mm(dembed, transpose(p.W_patch)), dimage = zeros(4, 4);
+    for (var j=0; j<4; j++) for (var k=0; k<4; k++) dimage[2*Math.floor(j/2)+Math.floor(k/2)][2*(j%2)+k%2] = dp[j][k];
+    return {loss:f.loss, grads:g, forward:f, graph:{logits:dz, updated:du, delta:copy(du), message:dm, A:da, V:dv, S:ds, raw:draw, Q:dq, K:dk,
+      E:de, EResidual:copy(du), EQuery:deQ, EKey:deK, EValue:deV, content:copy(de), embeddings:copy(dembed), patches:dp, image:dimage}};
+  }
+  function batch(p) {
+    var examples = images.map(function (im, i) { return backward(p, im, targets[i]); }), grads = {};
+    names.forEach(function (name) { grads[name] = map(add(examples[0].grads[name], examples[1].grads[name]), function (v) { return v/2; }); });
+    var losses = examples.map(function (e) { return e.loss; });
+    return {loss:(losses[0]+losses[1])/2, losses:losses, grads:grads, examples:examples};
+  }
+  // Out-of-place SGD: every parameter, including CLS and all five positions.
+  function step(p, grads, lr) {
+    if (!Number.isFinite(lr) || lr <= 0) throw new Error('Learning rate must be positive and finite.');
+    var next = {}; names.forEach(function (name) { next[name] = zip(p[name], grads[name], function (v, g) { return v-lr*g; }); }); return next;
+  }
+  function stage(p) {
+    var fs = images.map(function (im, i) { return forward(p, im, targets[i]); }), losses = fs.map(function (f) { return f.loss; });
+    return {params:copy(p), forwards:fs, losses:losses, meanLoss:(losses[0]+losses[1])/2,
+      predictions:fs.map(function (f) { return f.probs[0] >= f.probs[1] ? 0 : 1; })};
+  }
+  function runExperiment(lr, nsteps) {
+    lr = lr == null ? 0.05 : lr; nsteps = nsteps == null ? 600 : nsteps;
+    if (!Number.isInteger(nsteps) || nsteps < 1) throw new Error('Use at least one whole SGD step.');
+    var p = copy(initial), before = stage(p), first = batch(p), afterSingle, history = [{step:0, loss:before.meanLoss, losses:before.losses.slice()}];
+    for (var it=1; it<=nsteps; it++) {
+      p = step(p, it===1 ? first.grads : batch(p).grads, lr);
+      if (it===1) afterSingle = stage(p);
+      if (it===1 || it%10===0 || it===nsteps) {
+        var f = stage(p); history.push({step:it, loss:f.meanLoss, losses:f.losses.slice()});
+      }
+    }
+    var afterTraining = stage(p);
+    var specs = [{name:'W_class', index:[0,0]}, {name:'W_patch', index:[0,0]}, {name:'W_Q', index:[0,0]}, {name:'W_K', index:[0,0]},
+      {name:'W_V', index:[0,0]}, {name:'W_O', index:[0,0]}, {name:'cls', index:[0]}, {name:'positions', index:[1,0]},
+      {name:'b_patch', index:[0]}, {name:'b_class', index:[0]}];
+    function cell(p, spec) { return spec.index.reduce(function (v, k) { return v[k]; }, p[spec.name]); }
+    var selectedCells = specs.map(function (s) { return {name:s.name, index:s.index, label:s.name+s.index.map(function (i) { return '['+i+']'; }).join(''),
+      before:cell(initial,s), gradient:cell(first.grads,s), afterSingle:cell(afterSingle.params,s), afterTraining:cell(afterTraining.params,s)}; });
+    return {before:before, afterSingle:afterSingle, afterTraining:afterTraining, firstBatch:first, lr:lr, nsteps:nsteps, batchSize:2,
+      history:history, selectedCells:selectedCells, parameterCount:44, objective:'mean cross-entropy on these two training images'};
+  }
+  T.learning = {initial:initial, images:images, targets:targets, classes:classes, parameterNames:names,
+    forward:forward, backward:backward, batch:batch, step:step, runExperiment:runExperiment};
+  T.learning.experiment = runExperiment();
+})();
+
+</script>
+<script>
+/* Vision I: the image stays attached to its numbers.
+   All arithmetic comes from AT.vision.forward(); this file draws, never trains.
+   API: AT.vision.story(host, {stage, forward?, patch?, receiver?, source?,
+                              coordinate?, step?, focus?, backward?}).
+   patch is 0..3. receiver/source are input rows 0..4, with 0 reserved for CLS.
+   Keep important stages in separate frames so ordinary slide PDFs retain them. */
+(function () {
+  'use strict';
+  var AT = window.AT;
+  if (!AT || !AT.vision) throw new Error('Load part5.js before part5-diagrams.js.');
+  var T = AT.vision, NS = 'http://www.w3.org/2000/svg', serial = 0;
+  var C = {e:'#2563EB',q:'#9333EA',k:'#D97706',v:'#0D9488',a:'#E11D48',d:'#16A34A',ep:'#2563EB',ink:'#202530',muted:'#586474',line:'#cbd2dc',paper:'#ffffff',param:'#6b7280'};
+  // Reuse the article's semantic palette, including blue + green for updated e.
+  var theme=getComputedStyle(document.documentElement);
+  function themeColor(name,fallback) {
+    var v=theme.getPropertyValue(name).trim(),short=/^#([0-9a-f])([0-9a-f])([0-9a-f])$/i.exec(v);
+    if(short)return'#'+short.slice(1).map(function(x){return x+x;}).join('');
+    return /^#[0-9a-f]{6}$/i.test(v)?v:fallback;
+  }
+  ['e','q','k','v','a','d'].forEach(function(role){C[role]=themeColor('--c-'+role,C[role]);});
+  C.ep=C.e;C.ink=themeColor('--ink',C.ink);C.muted=themeColor('--ink-2',C.muted);C.line=themeColor('--line',C.line);C.paper=themeColor('--card',C.paper);
+  var subs = '₀₁₂₃₄₅₆₇₈₉';
+  function sub(n) { return String(n).split('').map(function(x){return subs[+x] || x;}).join(''); }
+  function fmt(n, digits) { return Number(n).toFixed(digits == null ? 3 : digits).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1').replace(/^-/, '−'); }
+  function fixed(n) { return Number(n).toFixed(3).replace(/^-/, '−'); }
+  function vec(a, digits) { return '(' + a.map(function(n){return fmt(n,digits);}).join(', ') + ')'; }
+  function clone(a) { return JSON.parse(JSON.stringify(a)); }
+  function sv(tag, attrs, text) { var el=document.createElementNS(NS,tag);Object.keys(attrs||{}).forEach(function(k){el.setAttribute(k,String(attrs[k]));});if(text!=null)el.textContent=String(text);return el; }
+  function node(parent, tag, attrs, text) { var el=sv(tag,attrs,text);parent.appendChild(el);return el; }
+  function frame(stage,height,title,desc) {
+    var id='vision-story-'+(++serial), svg=sv('svg',{viewBox:'0 0 1100 '+height,width:'100%',style:'height:auto',preserveAspectRatio:'xMidYMid meet',role:'img','aria-labelledby':id+'-title '+id+'-desc','data-vision-story':stage,class:'vision-story'});
+    node(svg,'title',{id:id+'-title'},title);node(svg,'desc',{id:id+'-desc'},desc);
+    var defs=node(svg,'defs');
+    Object.keys(C).forEach(function(role){var marker=node(defs,'marker',{id:id+'-'+role,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:6,markerHeight:6,orient:'auto'});node(marker,'path',{d:'M0 0 L10 5 L0 10Z',fill:C[role]});});
+    function text(x,y,s,role,size,anchor,extra) {return node(svg,'text',Object.assign({x:x,y:y,fill:C[role||'ink'],'font-family':'var(--font-ui,"Avenir Next",sans-serif)','font-size':size||26,'text-anchor':anchor||'middle','dominant-baseline':'middle'},extra||{}),s);}
+    function rect(x,y,w,h,role,param) {return node(svg,'rect',{x:x,y:y,width:w,height:h,rx:7,fill:role?C[role]+'0c':C.paper,stroke:role==='ep'?C.d:C[role||'line'],'stroke-width':2,'stroke-dasharray':param?'7 5':'none'});}
+    function arrow(x1,y1,x2,y2,role,extra) {return node(svg,'path',Object.assign({d:'M'+x1+' '+y1+' L'+x2+' '+y2,fill:'none',stroke:C[role||'muted'],'stroke-width':2.5,'marker-end':'url(#'+id+'-'+(role||'muted')+')'},extra||{}));}
+    function path(d,role,extra) {return node(svg,'path',Object.assign({d:d,fill:'none',stroke:C[role||'muted'],'stroke-width':2.5,'marker-end':'url(#'+id+'-'+(role||'muted')+')'},extra||{}));}
+    function box(x,y,w,h,label,detail,role,param) {rect(x,y,w,h,role,param);text(x+w/2,y+h/2-(detail?14:0),label,role,26);if(detail)text(x+w/2,y+h/2+21,detail,'muted',24);}
+    return {svg:svg,text:text,rect:rect,arrow:arrow,path:path,box:box,id:id};
+  }
+  function pixelShade(v) { var s=Math.round(35+Math.max(0,Math.min(3,v))*69);return'rgb('+s+','+s+','+s+')'; }
+  function pixelGrid(c, image, x,y,size,opts) {
+    opts=opts||{};var n=image.length,cell=size/n;
+    image.forEach(function(row,i){row.forEach(function(v,j){node(c.svg,'rect',{x:x+j*cell,y:y+i*cell,width:cell,height:cell,fill:pixelShade(v),stroke:'#aab0b9','stroke-width':.8});if(opts.numbers)c.text(x+(j+.5)*cell,y+(i+.5)*cell,fmt(v,2),'ink',Math.min(28,cell*.55),'middle',{fill:v<1.4?'#fff':'#111827','font-family':'var(--font-mono,monospace)'});});});
+    if(opts.patches){for(var i=0;i<2;i++)for(var j=0;j<2;j++){var selected=i*2+j===opts.selected;node(c.svg,'rect',{x:x+j*size/2+2,y:y+i*size/2+2,width:size/2-4,height:size/2-4,fill:'none',stroke:selected?C.e:'#f8fafc','stroke-width':selected?5:2});}}
+    if(opts.label)c.text(x+size/2,y+size+25,opts.label,null,24);
+  }
+  function patchImage(F,p) {var row=F.patches[p];return[row.slice(0,2),row.slice(2,4)];}
+  function crop(c,F,p,x,y,size,numbers,label) {pixelGrid(c,patchImage(F,p),x,y,size,{numbers:numbers,label:label});}
+  function source(c,F,j,x,y,size) {if(j===0){c.rect(x,y,size,size,'e',true);if(size>=48)c.text(x+size/2,y+size/2,'CLS','e',24);}else crop(c,F,j-1,x,y,size,false);}
+  function rowLabel(j) {return j===0?'CLS':'patch '+j;}
+  function vector(c,a,x,y,width,role,label,digits,highlight) {
+    if(label)c.text(x+width/2,y-22,label,role,24);
+    var gap=8,w=(width-gap*(a.length-1))/a.length;
+    a.forEach(function(v,j){c.rect(x+j*(w+gap),y,w,48,role);if(highlight!=null&&highlight!==j)node(c.svg,'rect',{x:x+j*(w+gap),y:y,width:w,height:48,rx:7,fill:'#ffffffa6'});c.text(x+j*(w+gap)+w/2,y+24,fmt(v,digits),role,26,'middle',{'font-family':'var(--font-mono,monospace)'});});
+  }
+  function matrix(c,M,x,y,width,role,column) {
+    var cols=M[0].length,cw=width/cols,rh=42;
+    M.forEach(function(row,i){row.forEach(function(v,j){node(c.svg,'rect',{x:x+j*cw,y:y+i*rh,width:cw-3,height:rh-3,rx:4,fill:column===j?C[role]+'20':'#fff',stroke:column===j?C[role]:C.line,'stroke-width':column===j?2:1});c.text(x+j*cw+(cw-3)/2,y+i*rh+(rh-3)/2,fmt(v,3),column===j?role:'muted',24);});});
+  }
+  function reduceTerms(a,b) {return a.map(function(v,j){return fmt(v)+' × '+fmt(b[j]);}).join(' + ');}
+  function diagram(host,opts) {
+    opts=opts||{};var stage=opts.stage||'task',F=opts.forward||T.forward();
+    if(!F.image||!F.patches)F=Object.assign({},T.forward(),F);
+    var D=Object.assign({},T.data,F.params||{},opts.params||{});
+    var p=opts.patch==null?3:opts.patch,r=opts.receiver==null?0:opts.receiver,j=opts.source==null?p+1:opts.source,k=opts.coordinate==null?0:opts.coordinate,step=opts.step==null?99:opts.step,c;
+    if(p<0||p>3||r<0||r>4||j<0||j>4)throw new Error('patch must be 0..3; receiver and source must be 0..4.');
+    if(stage==='image'){
+      c=frame(stage,325,'The image is a grid of numbers','The same sixteen grayscale pixels can be viewed as an image or read as numerical inputs.');
+      pixelGrid(c,F.image,100,22,245,{numbers:false,patches:!!opts.patches});c.arrow(394,145,646,145,'e');pixelGrid(c,F.image,705,22,245,{numbers:true,patches:!!opts.patches});
+      c.text(223,303,'what we see',null,27);c.text(827,303,'the pixel values',null,27);
+    }else if(stage==='task'){
+      c=frame(stage,320,'Same kind of image, two possible labels','The left image has two occupied 2 by 2 blocks. Removing the upper-left block leaves one occupied block. The classifier should distinguish them.');
+      var one=clone(F.image);one[0][0]=one[0][1]=one[1][0]=one[1][1]=0;
+      pixelGrid(c,F.image,115,35,205,{numbers:!!opts.numbers});pixelGrid(c,one,715,35,205,{numbers:!!opts.numbers});
+      c.text(217,280,'two occupied blocks','e',28);c.text(817,280,'one occupied block','e',28);
+      c.text(550,110,'Change these pixels.',null,25);c.arrow(350,160,680,160);c.text(550,210,'The label changes.',null,25);
+    }else if(stage==='patches'){
+      c=frame(stage,330,'One image becomes four patch inputs','Each numbered crop is a literal 2 by 2 region of the same image. The four patches retain all sixteen pixels.');
+      pixelGrid(c,F.image,25,45,230,{numbers:!!opts.numbers,patches:true,selected:p});c.arrow(285,160,350,160);
+      for(var a=0;a<4;a++){var x=385+a*175;crop(c,F,a,x,84,135,true,'patch '+(a+1));c.text(x+67.5,55,['top left','top right','bottom left','bottom right'][a],'muted',24);}
+      c.text(710,295,'Four patches. No pixel has been discarded.',null,26);
+    }else if(stage==='flatten'){
+      c=frame(stage,335,'Keep the pixel values; change their arrangement','Read the selected patch from left to right across its first row, then its second row. Draw those four numbers as one raw row r.');
+      pixelGrid(c,F.image,22,80,140,{patches:true,selected:p});c.arrow(180,150,230,150);
+      crop(c,F,p,258,50,180,true);c.text(348,266,'patch '+(p+1),null,25);c.arrow(466,146,535,146);
+      vector(c,F.patches[p],565,110,495,'e','raw row r'+sub(p+1),2);
+      F.patches[p].forEach(function(v,a){
+        var ox=278+(a%2)*90,oy=70+Math.floor(a/2)*90;
+        node(c.svg,'circle',{cx:ox,cy:oy,r:15,fill:'#ffffff',stroke:C.e,'stroke-width':2});c.text(ox,oy,a+1,'e',22);
+        c.text(565+a*(503/4)+58,186,'pixel '+(a+1),'e',24);
+      });
+      c.text(810,256,'2 × 2 pixels → 1 × 4 numbers',null,27);
+      if(step>=1){
+        var pixel=opts.pixel==null?0:Math.max(0,Math.min(3,opts.pixel)),sx=278+(pixel%2)*90,sy=70+Math.floor(pixel/2)*90,tx=565+pixel*(503/4)+58;
+        // One trace at a time: four simultaneous crossing wires obscure the crop.
+        if(pixel<2)c.path('M'+sx+' '+(sy-16)+' V26 H'+tx+' V105','e');
+        else c.path('M'+sx+' '+(sy+16)+' V238 H'+tx+' V163','e');
+        c.text(550,311,'Pixel '+(pixel+1)+' keeps its value and moves to slot '+(pixel+1)+'.','e',25);
+      }
+    }else if(stage==='project'){
+      c=frame(stage,355,'One output coordinate is a dot product','Select one column of the shared patch projection. Multiply each pixel by the corresponding entry and add. Repeat for the other output coordinate.');
+      crop(c,F,p,25,61,95,true,'patch '+(p+1));
+      vector(c,F.patches[p],155,105,385,'e','r'+sub(p+1)+' · four pixel values',2);
+      c.text(585,127,'×',null,30);matrix(c,D.W_patch,635,40,160,'e',k);c.text(715,235,'W_patch · 4 × 2','muted',24);
+      c.arrow(823,127,875,127,'e');vector(c,F.embeddings[p],900,105,180,'e','embedding',3,k);
+      var col=D.W_patch.map(function(row){return row[k];}),sum=F.patches[p].reduce(function(s,v,a){return s+v*col[a];},0),bias=(D.b_patch||[])[k]||0;
+      c.text(550,285,'coordinate '+(k+1)+': '+reduceTerms(F.patches[p],col)+(bias?' + '+fmt(bias):'')+' = '+fmt(sum+bias),'e',26);
+      c.text(550,333,'This column says how the four pixels contribute to one number.','muted',24);
+    }else if(stage==='patchRows'){
+      c=frame(stage,350,'Four crops, four embeddings, one shared projection','Every crop is transformed by the same patch matrix. Equal pixel patches give equal content embeddings.');
+      for(var a=0;a<4;a++){var x=45+a*270;crop(c,F,a,x+55,25,130,true,'patch '+(a+1));c.arrow(x+120,189,x+120,220,'e');vector(c,F.embeddings[a],x+15,242,210,'e',null,3);}
+      c.text(550,327,'same W_patch at all four locations','muted',24);
+    }else if(stage==='arrangements'){
+      c=frame(stage,330,'The same patch contents can occupy different places','Swap the first and fourth patch. The inventory of pixel patches is unchanged, but their spatial arrangement changes.');
+      var order=opts.order||[3,1,2,0],im=clone(F.image);
+      order.forEach(function(q,a){for(var dy=0;dy<2;dy++)for(var dx=0;dx<2;dx++)im[Math.floor(a/2)*2+dy][(a%2)*2+dx]=F.patches[q][dy*2+dx];});
+      pixelGrid(c,F.image,110,30,225,{patches:true});pixelGrid(c,im,760,30,225,{patches:true});
+      c.text(222,293,'original locations',null,26);c.text(872,293,'same tiles, new locations',null,26);
+      c.arrow(370,145,725,145,'e');c.text(550,92,'Move patches 1 and 4.',null,25);c.text(550,220,'Contents alone lose this distinction.','muted',24);
+    }else if(stage==='positions'){
+      c=frame(stage,340,'Same pixels, different positions','The top-right and bottom-left patches contain identical zero pixels. Their content embeddings match. Different full-width position vectors are added, not appended.');
+      c.text(210,30,'content embedding','e',24);c.text(565,30,'position vector','muted',24);c.text(925,30,'input row','e',24);
+      [2,3].forEach(function(s,a){var y=85+a*150;source(c,F,s,20,y-15,65);c.text(52,y+83,'patch '+s,null,24);vector(c,F.content[s],115,y,235,'e',null,2);c.text(408,y+24,'+',null,30);vector(c,F.positions[s],460,y,210,'param',null,2);c.text(736,y+24,'=',null,30);vector(c,F.E[s],820,y,230,'e','e'+sub(s),2);});
+    }else if(stage==='cls'){
+      c=frame(stage,340,step<1?'Four patch rows, one image decision':'An extra row will collect information for the answer',step<1?'Four patch rows represent four regions. The classification task needs one answer about the whole image. Which row should supply that answer?':'CLS is an extra learned input vector with no pixel crop. Attention updates that row and the classifier reads its output.');
+      for(var a=0;a<4;a++){var x=30+a*184;crop(c,F,a,x+26,25,88,false,'patch '+(a+1));vector(c,F.E[a+1],x,175,140,'e',null,2);if(step>=1)c.arrow(x+70,234,820,270,'a');}
+      if(step>=1){c.rect(830,25,230,105,'e',true);c.text(945,52,'CLS: no pixels','e',25);c.text(945,96,'c = '+vec(D.cls),'e',28);c.arrow(945,144,945,224,'e');c.box(820,238,255,74,'updated CLS','for this image','ep');}
+      else{c.box(815,83,260,116,'one image answer','which patch row?',null);c.text(945,249,'?',null,42);}
+      c.text(370,300,'Four regions → one classification decision.',null,25);
+    }else if(stage==='query'){
+      c=frame(stage,335,'CLS makes a query from its current representation','The query comes from the receiving CLS row through W_Q. It is not the target label. Its coordinates will be compared with source-key coordinates.');
+      source(c,F,r,25,92,86);vector(c,F.E[r],150,104,190,'e','e'+sub(r)+' · input',3);c.arrow(355,128,424,128,'q');
+      matrix(c,D.W_Q,442,82,155,'q',k);c.text(519,204,'W_Q','q',25);c.arrow(622,128,704,128,'q');vector(c,F.Q[r],735,104,330,'q','q'+sub(r)+' · matching request',3);
+      var qcol=D.W_Q.map(function(row){return row[k];});c.text(550,272,'query coordinate '+(k+1)+': '+reduceTerms(F.E[r],qcol)+' = '+fmt(F.Q[r][k]),'q',27);
+      c.text(550,314,'The same first-layer CLS query can read different image-dependent keys.','muted',24);
+    }else if(stage==='key'){
+      c=frame(stage,335,'A patch makes its matching key','The source patch supplies an input row. W_K transforms that row into the key that other queries compare against.');
+      source(c,F,j,25,92,86);vector(c,F.E[j],150,104,190,'e','e'+sub(j)+' · '+rowLabel(j),3);c.arrow(355,128,424,128,'k');
+      matrix(c,D.W_K,442,82,155,'k',k);c.text(519,204,'W_K','k',25);c.arrow(622,128,704,128,'k');vector(c,F.K[j],735,104,330,'k','k'+sub(j)+' · matching description',3);
+      var kc=D.W_K.map(function(row){return row[k];});c.text(550,272,'key coordinate '+(k+1)+': '+reduceTerms(F.E[j],kc)+' = '+fmt(F.K[j][k]),'k',27);
+      c.text(550,314,'This key belongs to '+rowLabel(j)+'. It is compared with the receiving query.','muted',24);
+    }else if(stage==='keys'){
+      c=frame(stage,350,'Each source row supplies a matching key','Each image crop retains its identity next to its key. Keys are produced by W_K; they will be compared with the selected query.');
+      for(var a=0;a<5;a++){var x=15+a*220;source(c,F,a,x+68,22,70);c.text(x+103,120,rowLabel(a)+' · e'+sub(a),'e',24);vector(c,F.E[a],x+5,151,195,'e',null,2);c.arrow(x+102,205,x+102,232,'k');vector(c,F.K[a],x+5,280,195,'k','k'+sub(a),3);}
+      for(var a=0;a<5;a++)c.text(178+a*220,226,'W_K','k',24);
+    }else if(stage==='score'){
+      c=frame(stage,350,'Compare one query with one key','Multiply matching coordinates, add the products, then divide the dot product by the square root of the matching width.');
+      source(c,F,r,22,24,72);c.text(160,59,rowLabel(r)+' query','q',24,'start');vector(c,F.Q[r],420,30,300,'q',null,3);
+      source(c,F,j,22,121,72);c.text(160,156,rowLabel(j)+' key','k',24,'start');vector(c,F.K[j],420,128,300,'k',null,3);
+      if(step>=1){var products=F.Q[r].map(function(v,a){return v*F.K[j][a];});c.text(550,229,reduceTerms(F.Q[r],F.K[j])+' = '+fmt(F.raw[r][j]),null,29);}
+      if(step>=2)c.text(550,298,'scaled score = '+fmt(F.raw[r][j])+' ÷ √'+F.Q[r].length+' ≈ '+fixed(F.S[r][j]),'a',29);
+      c.text(902,83,'one pair',null,26);c.text(902,127,'one score','a',26);c.text(902,169,'not a probability','muted',24);
+    }else if(stage==='weights'){
+      c=frame(stage,360,'One mixing weight per source position','A query is compared against all five sources. Softmax exponentiates each scaled score, then divides by one shared total. The resulting weights sum to one.');
+      var ex=F.S[r].map(Math.exp),z=ex.reduce(function(s,v){return s+v;},0);
+      c.text(180,25,'source',null,24);c.text(420,25,'scaled score','a',24);if(step>=1)c.text(620,25,'exp(score)',null,24);if(step>=2){c.text(824,25,'weight α','a',24);c.text(1000,25,'amount','a',24);}
+      for(var a=0;a<5;a++){var y=65+a*49;source(c,F,a,34,y-17,34);c.text(100,y,rowLabel(a),null,24,'start');c.text(420,y,fixed(F.S[r][a]),'a',25);if(step>=1)c.text(620,y,fixed(ex[a]),null,25);if(step>=2){c.text(824,y,fixed(F.A[r][a]),'a',25);c.rect(925,y-12,147,24);node(c.svg,'rect',{x:925,y:y-12,width:147*F.A[r][a],height:24,rx:5,fill:C.a});}}
+      if(step===1)c.text(550,329,'Total Z = '+fixed(z)+'. The next step divides every row by this same total.',null,24);
+      if(step>=2)c.text(550,329,'α'+sub(r)+sub(j)+' = '+fixed(ex[j])+' ÷ '+fixed(z)+' ≈ '+fixed(F.A[r][j])+'     |     sum of weights = 1','a',25);
+    }else if(stage==='values'){
+      c=frame(stage,330,'A source value carries the information to be mixed','The selected source creates a value using W_V, separately from its matching key. The value is not an attention weight.');
+      source(c,F,j,25,77,105);c.text(77,218,rowLabel(j),null,24);vector(c,F.E[j],180,96,235,'e','input e'+sub(j),3);
+      c.arrow(435,122,493,122,'v');matrix(c,D.W_V,515,78,160,'v',k);c.text(595,203,'W_V','v',25);c.arrow(700,122,769,122,'v');vector(c,F.V[j],795,96,270,'v','value v'+sub(j),3);
+      c.text(550,265,'key k'+sub(j)+' = '+vec(F.K[j])+' helps choose the weight.','k',26);
+      c.text(550,312,'value v'+sub(j)+' = '+vec(F.V[j])+' supplies the numbers that weight multiplies.','v',26);
+    }else if(stage==='mix'){
+      c=frame(stage,360,'Weight values from the corresponding sources','Every alpha multiplies the value from the same source. Sum each coordinate of the five contributions to form a message for the receiving row.');
+      for(var a=0;a<5;a++){var x=15+a*220;source(c,F,a,x+75,12,56);c.text(x+103,93,rowLabel(a),null,24);c.text(x+103,133,'v = '+vec(F.V[a]),'v',25);c.text(x+103,175,'× '+fixed(F.A[r][a]),'a',26);
+        if(step>=1){c.text(x+103,218,vec(F.V[a].map(function(v){return v*F.A[r][a];}),3),'v',24);c.arrow(x+103,242,550,290,'v');}}
+      if(step>=2)c.box(355,296,390,56,'message m'+sub(r)+' = '+vec(F.message[r],3),null,'v');
+      else c.text(550,323,step===0?'One weight scales both coordinates of its source value.':'Rounded for display; computations keep the unrounded weights.',null,25);
+    }else if(stage==='residual'){
+      c=frame(stage,350,'Add the message-derived update to the original row','The original representation bypasses attention. The weighted message is projected by W_O to representation width and added to that original row.');
+      vector(c,F.E[r],30,42,205,'e','original e'+sub(r),3);c.path('M235 66 H995 V229','e');c.text(565,43,'Keep this original row.','e',25);
+      vector(c,F.message[r],30,175,205,'v','message m'+sub(r),3);c.arrow(255,198,331,198,'v');c.box(350,158,180,80,'W_O',F.message[r].length+' → '+F.E[r].length+' numbers','param',true);c.arrow(550,198,620,198,'d');vector(c,F.delta[r],641,175,205,'d','update Δe'+sub(r),3);c.arrow(865,198,920,252,'d');c.text(970,260,'+',null,36);c.arrow(939,283,890,308,'ep');
+      c.text(370,312,'e'+sub(r)+'′ = '+vec(F.E[r],3)+' + '+vec(F.delta[r],3),'ep',28);c.text(823,323,'= '+vec(F.updated[r],3),'ep',28);
+    }else if(stage==='head'){
+      c=frame(stage,345,'Convert the updated CLS row into class scores','Each classifier column produces one logit. A class softmax produces probabilities over the two candidate labels, not over image patches.');
+      var names=D.classes&&D.classes[0]!=='class A'?D.classes:['two blocks','one block'];
+      vector(c,F.updated[0],35,120,250,'ep','updated CLS e₀′',3);c.arrow(310,144,388,144,'ep');matrix(c,D.W_class,420,91,210,'param',k);c.text(525,219,'W_class','param',25);c.arrow(655,144,730,144);
+      for(var a=0;a<2;a++){var y=54+a*128;c.text(906,y,names[a],null,26);c.text(906,y+40,'logit '+fixed(F.logits[a]),null,27);if(step>=1)c.text(906,y+78,'p = '+fixed(F.probs[a]),'ep',28);}
+      var hc=D.W_class.map(function(row){return row[k];}),b=(D.b_class||[])[k]||0;c.text(550,306,reduceTerms(F.updated[0],hc)+(b?' + '+fmt(b):'')+' ≈ '+fixed(F.logits[k]),'ep',26);
+    }else if(stage==='pipeline'){
+      c=frame(stage,360,'The same image, from pixels to loss','Pixels are turned into patch rows, positions and CLS are added, attention creates an update, and the updated CLS produces a prediction. Backward arrows show gradients reaching learned parameters.');
+      var ids=['pixels','patch','input','attention','residual','head','loss'];
+      var titles=[['pixels'],['patch','projection'],['add CLS','& position'],['self-','attention'],['residual','addition'],['class','head'],['loss']];
+      var details=['4 × 4','4 × 2','+ CLS: 5 × 2','Q, K, V → m','E′ = E + ΔE','read CLS','−log p(label)'];
+      var xx=[15,172,329,486,643,800,957],ww=128;
+      for(var a=0;a<7;a++){if(step<a)break;var role=ids[a]===opts.focus?'q':a<3?'e':a<5?'v':a===5?'ep':'ink';
+        if(a===0)pixelGrid(c,F.image,xx[a]+21,104,86,{numbers:false});else{c.rect(xx[a],100,ww,98,role);titles[a].forEach(function(s,b){c.text(xx[a]+ww/2,150+(b-(titles[a].length-1)/2)*34,s,role,25);});}
+        c.text(xx[a]+ww/2,226,details[a],a===0?'muted':role,24);if(a>0)c.arrow(xx[a-1]+ww+3,147,xx[a]-4,147,'muted');}
+      if(step>=3){c.rect(396,20,310,51,'param',true);c.text(551,46,'W_Q · W_K · W_V','param',24);c.arrow(550,74,550,94,'param');}
+      if(opts.backward){c.path('M1020 250 V290 H235 V210','k',{'stroke-dasharray':'8 5'});c.path('M551 290 V251 H712 V45 H683','k',{'stroke-dasharray':'8 5'});c.path('M865 289 V207','k',{'stroke-dasharray':'8 5'});c.text(550,332,'loss.backward() follows the graph to the learned parameters.','k',25);}
+      else c.text(550,320,'The image supplies the input. Its label is used only at the loss.',null,25);
+    }else if(stage==='backward'){
+      c=frame(stage,390,'Forward computations and the parameters that learn','The forward graph starts with image pixels and ends with a supervised loss. Dashed orange arrows trace gradients in reverse, including into patch weights, position and CLS parameters, attention projections, the output projection, and the class head.');
+      var bx=[15,295,575,855],bw=230;
+      pixelGrid(c,F.image,bx[0]+74,65,82,{numbers:false});
+      c.box(bx[1],65,bw,82,'patch vectors','pixel projection','e');
+      c.box(bx[2],65,bw,82,'input E','CLS + patches + P','e');
+      c.box(bx[3],65,bw,82,'Q, K, V','project E','q');
+      c.box(bx[3],268,bw,76,'message m','m = A V','v');
+      c.box(bx[2],268,bw,76,'updated rows','E′ = E + m W_O','ep');
+      c.box(bx[1],268,bw,76,'logits → softmax','classification head','ep');
+      c.box(bx[0],268,bw,76,'loss L','−log p(label)','ink');
+      for(var a=0;a<3;a++){c.arrow(bx[a]+bw+4,108,bx[a+1]-7,108);c.arrow(bx[a+1]-7,306,bx[a]+bw+4,306);}
+      c.arrow(970,151,970,165,'q');c.box(855,174,230,70,'scores → softmax','Q Kᵀ / √d_k → A','a');c.arrow(970,249,970,263,'a');
+      // Values bypass score/softmax; the original E bypasses the attention update.
+      c.path('M852 133 H833 V285 H850','v');c.text(816,227,'V','v',24);
+      c.path('M572 133 H554 V285 H570','e');c.text(541,243,'E','e',24);
+      var params=[{x:295,y:7,w:230,label:'W_patch, b_patch',down:true},{x:575,y:7,w:230,label:'CLS c, positions P',down:true},{x:855,y:7,w:230,label:'W_Q, W_K, W_V',down:true},{x:592,y:209,w:196,label:'W_O',down:true},{x:295,y:209,w:230,label:'W_class, b_class',down:true}];
+      params.forEach(function(z){c.rect(z.x,z.y,z.w,39,'param',true);c.text(z.x+z.w/2,z.y+20,z.label,'param',24);var targetY=z.y<100?59:262;c.arrow(z.x+z.w/2-14,z.y+43,z.x+z.w/2-14,targetY,'param');c.arrow(z.x+z.w/2+14,targetY,z.x+z.w/2+14,z.y+43,'k',{'stroke-dasharray':'6 4'});});
+      c.path('M868 158 H237','k',{'stroke-dasharray':'7 5'});c.path('M132 350 H961','k',{'stroke-dasharray':'7 5'});
+      c.text(174,185,'solid: forward',null,24);c.text(482,185,'dashed: gradients','k',24);
+      c.text(550,367,'The optimizer changes the dashed parameter boxes, not the cached Q, K, V or A.',null,23);
+    }else if(stage==='rgb'){
+      c=frame(stage,320,'Color changes the raw patch width, not the learned representation width','An RGB pixel contains three channel numbers. A P by P patch contains P squared times three numbers before projection.');
+      ['R','G','B'].forEach(function(label,a){var x=75+a*165;node(c.svg,'rect',{x:x,y:65,width:132,height:132,rx:5,fill:['#c74545','#479054','#497dc2'][a]});c.text(x+66,228,label,null,28);});
+      c.arrow(598,130,688,130,'e');c.box(716,72,335,113,'P × P × 3 pixel numbers','project to d_model numbers','e');
+      c.text(550,290,'For 16 × 16 RGB patches: 16 × 16 × 3 = 768 raw numbers.',null,27);
+    }else throw new Error('Unknown Vision I story stage: '+stage);
+    c.svg.setAttribute('data-stage',stage);c.svg.setAttribute('data-step',step);c.svg.setAttribute('data-patch',p);c.svg.setAttribute('data-receiver',r);c.svg.setAttribute('data-source',j);
+    if(host){AT.clear(host);host.appendChild(c.svg);}return c.svg;
+  }
+  T.story=diagram;
+  T.storyStages=['image','task','patches','flatten','project','patchRows','arrangements','positions','cls','query','key','keys','score','weights','values','mix','residual','head','pipeline','backward','rgb'];
 })();
 
 </script>
@@ -3218,264 +3557,529 @@ window.__PART__ = {"part":1,"series":"Vision to language","title":"An image beco
 <!-- ===================== SECTIONS ===================== -->
 <main id="sections" class="wrap">
 <!-- ===== sec01.html ===== -->
-<section id="s01" class="sec" data-title="An image as input" data-lit="e">
+<section id="s01" class="sec" data-title="What should this image classifier answer?" data-lit="e">
 <style>
 .vision1-pair{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
 .vision1-controls{display:flex;gap:22px;align-items:center;flex-wrap:wrap;margin:12px 0}
-.vision1-controls select, .sec select{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);padding:7px 10px;border-radius:6px}
+.vision1-controls select,.sec select{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);padding:7px 10px;border-radius:6px}
 .vision1-equation{font-size:1.15em;margin:20px 0;text-align:center}
-.vision1-list{display:grid;grid-template-columns:1fr 1fr;gap:14px 36px}
-.vision1-list p{margin:8px 0}
+.vision1-story{margin:14px 0}.vision1-story svg{display:block;width:100%;height:auto;overflow:visible}
+.vision1-caption{color:var(--ink-2);margin:12px 0;line-height:1.5}
+.vision1-list{display:grid;grid-template-columns:1fr 1fr;gap:14px 36px}.vision1-list p{margin:8px 0}
+body.present .vision1-caption{font-size:24px;line-height:1.4}
+body.present .sec .calc-rounding{display:none}
 @media(max-width:760px){body:not(.present) .vision1-pair,body:not(.present) .vision1-list{grid-template-columns:1fr}}
 </style>
-<header class="sec-head"><span class="sec-num">01</span><div><p class="eyebrow">Attention needs rows of numbers. An image can supply them too.</p><h2>An image as input</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>In the attention series, a token lookup supplied each input row. The rest of the computation operated on numbers: queries chose a mixture of values, and a residual addition updated each row. We can keep that machinery for images. First we need a way to turn pixels into rows. This part follows one 4×4 grayscale image through that process and a classification head.</p></div>
-<div class="frame" data-title="Start with pixels we can inspect" data-autobuild="off">
-  <div id="s01-image"></div>
-  <p data-build="1">Pixel values: $0$ is dark, $1$ is medium, and $2$ is bright. This is a synthetic grayscale image with one channel.</p>
-  <p class="callout callout-note" data-build="2">Class A and class B are worksheet outputs. Our hand-chosen weights have not learned visual categories.</p>
-  <script type="text/x-notes">The arbitrary class names are deliberate. Do not say the model has learned to detect two blocks. We will calculate a probability, but we have not trained a classifier or measured accuracy.</script>
+<header class="sec-head"><span class="sec-num">01</span><div><p class="eyebrow">Keep the attention we know. Give it an image to read.</p><h2>What should this image classifier answer?</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>Our text model used information from earlier words to predict the next token. Now we want one answer about a whole image. We will follow the image on the left through every calculation, then use the second image to see why learning is necessary. A block here means one filled 2×2 square in this small picture.</p></div>
+<div class="frame" data-title="One block or two?" data-autobuild="off">
+  <div class="vision1-story" id="s01-task"></div>
+  <p class="callout callout-key" data-build="1">The <strong>image is the input</strong>. “Two blocks” or “one block” is the observed label used for training.</p>
+  <script type="text/x-notes">Start with the question, not tokenization. Both images will reappear at the learning step. Do not give the label to the encoder. Our two-example exercise demonstrates a computation and an update; it is not a general counting benchmark.</script>
 </div>
-<div class="frame" data-title="Change how the rows are made" data-autobuild="off">
-  <div class="vision1-pair"><div><h3>Text input</h3><p>A token ID selects a row from an embedding table.</p><p>$\text{token ID}\to\ve{e_i}$</p></div><div data-build="1"><h3>Image input</h3><p>A patch of pixels is flattened and multiplied by a learned matrix.</p><p>$\text{patch pixels}\to\ve{e_j^{\mathrm{patch}}}$</p></div></div>
-  <p class="callout callout-key" data-build="2">An image patch has no word ID to look up. The patch projection creates its embedding from its pixel values.</p>
-  <script type="text/x-notes">Ask what changes if one pixel changes. A text lookup is indexed by token identity; the image projection is a function of all pixels in this patch. The following attention calculation accepts either kind of row.</script>
+<div class="frame" data-title="A pixel is already a number" data-autobuild="off">
+  <div class="vision1-story" id="s01-pixels"></div>
+  <p>Our image has <strong>4 rows × 4 columns × 1 channel</strong>. Dark pixels are 0; the two filled blocks use 1 and 2.</p>
+  <p data-build="1">These are brightness values, not token IDs. Changing a pixel changes the numerical input directly.</p>
+  <script type="text/x-notes">We use a grayscale image to keep the arithmetic visible. A color photograph has three channels, which we will account for later. The shades 0,1,2 are a toy scale rather than an 8-bit image format.</script>
 </div>
-<div class="frame" data-title="Keep one image through the whole calculation" data-autobuild="off">
-  <div id="s01-pipeline"></div>
-  <p data-build="1">Our worksheet uses two-number rows and one attention head. Every displayed number comes from the same forward pass.</p>
-  <p class="callout callout-note" data-build="2">We leave LayerNorm and the feed-forward sublayer out of this numerical example. Later we put them back into the architecture diagram.</p>
-  <script type="text/x-notes">The worksheet is an attention classifier, not a complete trained ViT. Maintain that distinction when the real pre-norm architecture appears. Two equal coordinates would be a poor example for showing LayerNorm, so we do not silently insert it.</script>
+<div class="frame" data-title="What will replace the words?" data-autobuild="off">
+  <div class="vision1-pair"><div><h3>In the text lesson</h3><p><code>She deposited money …</code></p><p>One word/token → one embedding row.</p></div><div data-build="1"><h3>For this image</h3><p>One small patch of pixels → one embedding row.</p><p>The rows will exchange information through attention.</p></div></div>
+  <p class="callout callout-key" data-build="2">A patch is a piece of the input, not necessarily an object. A photograph’s patch may cut through part of a face or a tree.</p>
+  <script type="text/x-notes">The block/patch alignment is convenient in our worksheet, not a claim that tokenization detects objects. Image rows are created by a learned projection, not by looking up a discrete patch ID.</script>
 </div>
-<div class="companion after"><p>All calculations run locally in the page. There is no model download and no hidden image classifier behind the diagrams. The larger question is how the same construction scales from a few patches to a photograph; we will separate that shape calculation from the small numerical example.</p></div>
-<script>(function(){const S=document.getElementById('s01');AT.vision.diagram(S.querySelector('#s01-image'),'image');AT.vision.diagram(S.querySelector('#s01-pipeline'),'pipeline');})();</script>
+<div class="frame" data-title="First make rows. Then let them share information." data-autobuild="off">
+  <p class="vision1-equation">image → patch embeddings → attention → image answer</p>
+  <p>We will use <strong>two numbers per embedding</strong> so that every multiplication fits on the page.</p>
+  <p data-build="1">First we inspect one fixed set of starting weights. Later we train those same weights and run the images through again.</p>
+  <p class="callout callout-note" data-build="2">This small model contains patch projection, position addition, one attention update, and a class head. We add the rest of a full ViT after this calculation makes sense.</p>
+  <script type="text/x-notes">This is the one scope statement for the numerical model. LayerNorm, the row-wise MLP and multiple heads are not silently part of its arithmetic. Avoid introducing their mechanics here.</script>
+</div>
+<div class="companion after"><p>Notation follows the text lessons: $e$ is a representation, $q$ and $k$ are used for matching, and $v$ is the information sent. We introduce $r_j$ for the raw pixels of patch $j$ because those four numbers are not yet its two-number embedding. All calculations, diagrams, and training updates run in this page without downloading a model.</p></div>
+<script>(function(){const S=document.getElementById('s01'),T=AT.vision;T.story(S.querySelector('#s01-task'),{stage:'task'});T.story(S.querySelector('#s01-pixels'),{stage:'image'});})();</script>
 </section>
 
 <!-- ===== sec02.html ===== -->
-<section id="s02" class="sec" data-title="Make one vector per patch" data-lit="e">
-<header class="sec-head"><span class="sec-num">02</span><div><p class="eyebrow">A patch is a small rectangle of pixels, not an object detector.</p><h2>Make one vector per patch</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>Split the image into nonoverlapping 2×2 patches. Number them left to right across the top row, then across the bottom row. Within each patch, use the same order to flatten its four pixel values. Flattening changes the arrangement of the numbers, not their values. A patch boundary need not follow an object boundary.</p></div>
-<div class="frame" data-title="Four patches, four raw rows" data-autobuild="off">
-  <div id="s02-patches"></div>
-  <p data-build="1">Each raw row $r_j$ has shape $1\times4$. Stacking the four patches gives $R\in\mathbb R^{4\times4}$.</p>
-  <pre class="torch-snippet" data-build="2"><code># image: [batch=1, channels=1, height=4, width=4]
-R = image.unfold(2, 2, 2).unfold(3, 2, 2)
-R = R.permute(0, 2, 3, 1, 4, 5).reshape(1, 4, 4)</code></pre>
-  <script type="text/x-notes">Point to each of the four values in the top-left patch, then the flattened row. The tensor permutation groups one spatial patch's channels and pixels before flattening. Batch size is omitted from most of our displayed matrices.</script>
+<section id="s02" class="sec" data-title="Make one embedding from each patch" data-lit="e">
+<header class="sec-head"><span class="sec-num">02</span><div><p class="eyebrow">Follow four pixels into two features, one coordinate at a time.</p><h2>Make one embedding from each patch</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>A Transformer expects a sequence of equal-width rows. We could flatten the whole image into one long row, but then attention would have no separate regions to relate. We could use one row per pixel, but photographs would produce very long sequences. Patches choose an intermediate scale. Here a 2×2 patch gives four raw pixel values.</p></div>
+<div class="frame" data-title="Cut the image into four 2×2 patches" data-autobuild="off">
+  <div class="vision1-story" id="s02-patches"></div>
+  <p>Number patches left to right, then top to bottom. Keep this order throughout the calculation.</p>
+  <p class="vision1-equation" data-build="1">$N=(4/2)\times(4/2)=4\text{ patches}$</p>
+  <script type="text/x-notes">Point to each crop and its original location. Cutting does not change any pixel value. The sequence order is a bookkeeping choice; we will separately tell the model where each crop belonged.</script>
 </div>
-<div class="frame" data-title="A projection turns four pixel values into two numbers" data-autobuild="off">
-  <div class="vision1-pair"><div id="s02-w"></div><div><p>$\ve{e_j^{\mathrm{patch}}}=r_jW_{\mathrm{patch}}$</p><p data-build="1">For patch 1:</p><p data-build="1">$(1,1,1,1)W_{\mathrm{patch}}=(2,2)$</p><p data-build="2">Coordinate 1 adds pixels 1 and 3. Coordinate 2 adds pixels 2 and 4.</p></div></div>
-  <p class="callout callout-note" data-build="3">These weights are chosen for arithmetic. In a trained model, the projection and its optional bias are learned.</p>
-  <script type="text/x-notes">These two coordinates have exact pixel-sum meanings only because we chose this matrix. Do not assign those meanings to arbitrary learned embedding dimensions.</script>
+<div class="frame" data-title="Flatten one patch without changing its pixels" data-autobuild="off">
+  <div class="vision1-story" id="s02-flatten"></div>
+  <p class="callout callout-key" data-build="1"><strong>Flattening only rearranges.</strong> It has no learned weights and does not mix the four pixels.</p>
+  <script type="text/x-notes">The four values happen to be equal. Follow the numbered positions and colored connectors, not just the number 2. We will change one pixel shortly to check that the order matters.</script>
 </div>
-<div class="frame" data-title="Use the same projection on every patch" data-autobuild="off">
-  <div id="s02-rows"></div>
-  <pre class="torch-snippet" data-build="1"><code># R: [1, 4, 4]; W_patch: [4, 2]
-patch_rows = R @ W_patch + b_patch  # [1, 4, 2]</code></pre>
-  <p class="callout callout-key" data-build="2">Four different patch inputs, one shared $W_{\mathrm{patch}}$. The two zero patches get the same embedding before position is added.</p>
-  <script type="text/x-notes">The bias is zero in this worksheet. Sharing the projection does not mean the outputs are the same: the pixels differ. Equal patches do give equal content embeddings, which motivates position information.</script>
+<div class="frame" data-title="Why make an embedding instead of keeping the pixels?" data-autobuild="off">
+  <p>Give each patch a row whose width we choose: here, $d_{\mathrm{model}}=2$.</p>
+  <p class="vision1-equation" data-build="1">$\underbrace{r_j}_{1\times4}\;\underbrace{W_{\mathrm{patch}}}_{4\times2}+\underbrace{b_{\mathrm{patch}}}_{1\times2}=\underbrace{e_j^{\mathrm{patch}}}_{1\times2}$</p>
+  <p data-build="2">Each output coordinate can combine several pixels. Training will change those combinations to help with the image task.</p>
+  <p class="callout callout-key" data-build="3">This is the image equivalent of making a token embedding. The patch’s actual pixels determine its row.</p>
+  <script type="text/x-notes">An embedding width is not always smaller than the raw patch width. We use four to two for hand calculation. The general purpose is a learned representation with a consistent model width.</script>
 </div>
-<div class="frame" data-title="What changes when we change patch size?" data-autobuild="off">
-  <div id="s02-explore"></div>
-  <p data-build="1">Our $4\times2$ projection is for 2×2 grayscale patches. Other patch sizes need a different projection shape.</p>
-  <script type="text/x-notes">Try P=1 and P=4. Smaller patches produce more rows; larger patches make wider raw rows. Changing P changes the required input width of W_patch, so we do not pretend these are interchangeable inputs to the fixed worksheet weights.</script>
+<div class="frame" data-title="The first output uses the first matrix column" data-autobuild="off">
+  <div class="vision1-story" id="s02-project1"></div>
+  <p data-build="1">At these starting weights, coordinate 1 adds the <strong>left column</strong> of the patch. The bias is zero.</p>
+  <script type="text/x-notes">Point from each pixel to its coefficient. W_patch rows correspond to the flattened pixel positions; columns correspond to output features. These simple starting weights are specified, not discovered properties of a trained ViT.</script>
 </div>
-<div class="companion after"><p>For height $H$, width $W$, channels $C$, and patch side $P$ that divides both spatial dimensions, there are $N=HW/P^2$ patches. A flattened patch has $P^2C$ numbers, so $W_{\mathrm{patch}}$ has shape $P^2C\times d_{\mathrm{model}}$. RGB changes the raw width through $C=3$; it does not force the learned embedding to have three coordinates.</p></div>
-<script>(function(){const S=document.getElementById('s02'),T=AT.vision,F=T.forward();T.diagram(S.querySelector('#s02-patches'),'patches');AT.ui.table(T.data.W_patch,{into:S.querySelector('#s02-w'),cols:['coordinate 1','coordinate 2'],rowLabels:['pixel 1','pixel 2','pixel 3','pixel 4'],cornerLabel:'W_patch',decimals:0});AT.ui.table(F.patches.map((r,i)=>[T.vector(r),T.vector(F.embeddings[i])]),{into:S.querySelector('#s02-rows'),cols:[{label:'raw row r_j',kind:'text'},{label:'embedding e_patch',kind:'text'}],rowLabels:T.labels.slice(1),cornerLabel:'patch',decimals:0});T.patchExplorer(S.querySelector('#s02-explore'));})();</script>
+<div class="frame" data-title="The second output uses the second column" data-autobuild="off">
+  <div class="vision1-story" id="s02-project2"></div>
+  <p data-build="1">Coordinate 2 adds the <strong>right column</strong>. Patch 4’s embedding is now $e_4^{\mathrm{patch}}=(4,4)$.</p>
+  <script type="text/x-notes">The two outputs happen to match because this patch is uniform. The matrix columns are different, which the next small perturbation will expose.</script>
+</div>
+<div class="frame" data-title="Change the top-left pixel from 2 to 1" data-autobuild="off">
+  <div class="vision1-story" id="s02-perturb"></div>
+  <p data-build="1">Only the left-column sum changes: $(4,4)\to(3,4)$. The right-column sum stays 4.</p>
+  <script type="text/x-notes">Ask students to predict the changed coordinate before the reveal. The raw row is (1,2,2,2); only the first coordinate drops, from 4 to 3. Return to the original image in the next frame.</script>
+</div>
+<div class="frame" data-title="Back to the original image: one shared projection" data-autobuild="off">
+  <div class="vision1-story" id="s02-rows"></div>
+  <pre class="torch-snippet" data-build="1"><code>patch_embeddings = raw_patches @ W_patch + b_patch
+# [4, 4] @ [4, 2] + [2] → [4, 2]</code></pre>
+  <script type="text/x-notes">The zero patches have equal embeddings because their pixels are equal and the projection is shared. This observation is the reason for the position discussion next.</script>
+</div>
+<div class="companion after"><h3>Extract the rows in PyTorch</h3><pre class="torch-snippet"><code>rows = F.unfold(image, kernel_size=2, stride=2).transpose(1, 2)
+patch_embeddings = rows @ W_patch + b_patch</code></pre><p>Here <code>image</code> has shape <code>[batch, 1, 4, 4]</code>. The rows have shape <code>[batch, 4 patches, 4 pixels]</code>. A convolution with kernel size and stride equal to the patch side can perform this same shared patch projection.</p><h3>What if the patch size changes?</h3><div id="s02-explore"></div><p>These controls inspect how pixels are grouped. A new patch width needs a correspondingly sized projection; they do not silently run the fixed 4×2 weight matrix on a different-width row.</p></div>
+<script>(function(){const S=document.getElementById('s02'),T=AT.vision,F=T.forward();for(const [id,stage,opts]of[['patches','patches',{}],['flatten','flatten',{patch:3}],['project1','project',{patch:3,coordinate:0}],['project2','project',{patch:3,coordinate:1}],['perturb','project',{patch:3,coordinate:0,forward:T.forward({image:T.editImage(1)})}],['rows','patchRows',{}]])T.story(S.querySelector('#s02-'+id),Object.assign({stage:stage,forward:F},opts));T.patchExplorer(S.querySelector('#s02-explore'));})();</script>
 </section>
 
 <!-- ===== sec03.html ===== -->
-<section id="s03" class="sec" data-title="Keep positions and add a class token" data-lit="e">
-<header class="sec-head"><span class="sec-num">03</span><div><p class="eyebrow">What is in a patch and where it sits are different pieces of information.</p><h2>Keep positions and add a class token</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>Patch 2 and patch 3 both contain only zeros. Their content embeddings are identical even though one is at the top right and the other is at the bottom left. Add a position vector to each patch embedding before attention. The position vectors have the same width as the embeddings. They do not append a special position coordinate.</p></div>
-<div class="frame" data-title="Position is added, not appended" data-autobuild="off">
-  <div id="s03-position"></div>
-  <p class="vision1-equation" data-build="1">$\ve{e_j}=\ve{e_j^{\mathrm{patch}}}+p_j\qquad (1\times2)+(1\times2)=1\times2$</p>
-  <p class="callout callout-key" data-build="2">The two zero patches now have different input rows because they occupy different slots.</p>
-  <script type="text/x-notes">These convenient position values are assigned by hand. A conventional ViT learns its position table. Its coordinates need not literally equal row and column indices.</script>
+<section id="s03" class="sec" data-title="Keep the layout; make room for an image answer" data-lit="e">
+<header class="sec-head"><span class="sec-num">03</span><div><p class="eyebrow">The patch contents are ready. What else does the model need?</p><h2>Keep the layout; make room for an image answer</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>Two pieces remain before attention. We add a position vector so that a row contains information about its location as well as its pixels. We also introduce an extra receiving row, CLS, because our output is one label for the whole image. Position and CLS are learned parameters; they are not extra pixels or supplied answers.</p></div>
+<div class="frame" data-title="Same patch contents. A different arrangement." data-autobuild="off">
+  <div class="vision1-story" id="s03-arrange"></div>
+  <p>Which side has the brightest block? Counting can ignore layout; this question cannot. <strong>Position additions preserve the distinction.</strong></p>
+  <script type="text/x-notes">This is a short location question, not a new classification target. Without positional information, permuting the patch rows permutes their outputs and leaves the global CLS result unchanged. Keep that formal fact in the article companion.</script>
 </div>
-<div class="frame" data-title="CLS is an extra learned input row" data-autobuild="off">
-  <p>Prepend a class token with initial content $c=(1,1)$. It has no pixel patch.</p>
-  <div id="s03-sequence" data-build="1"></div>
-  <p class="callout callout-key" data-build="2">After attention, use the updated CLS row for image classification. Its initial row is shared across images; the information it receives depends on the image.</p>
-  <script type="text/x-notes">CLS is not a probability and is not a query by definition. Like every other row, it will be projected into a query, a key, and a value. We will focus on its output because our class head uses that row.</script>
+<div class="frame" data-title="Add a position vector; do not append a coordinate" data-autobuild="off">
+  <div class="vision1-story" id="s03-position"></div>
+  <p class="vision1-equation">$e_j=e_j^{\mathrm{patch}}+p_j\qquad(1\times2)+(1\times2)=(1\times2)$</p>
+  <p data-build="1">The two blank patches have the same pixels. Their <strong>different position additions</strong> let later computations distinguish their slots.</p>
+  <script type="text/x-notes">Do not call either coordinate the position dimension. A learned position vector has the full representation width, and its coordinates need not be literal row/column coordinates. Numbers are hand-chosen for this starting snapshot.</script>
 </div>
-<div class="frame" data-title="The complete input matrix has five rows" data-autobuild="off">
-  <div id="s03-input"></div>
-  <pre class="torch-snippet" data-build="1"><code># cls: [1, 1, 2]; patch_rows: [1, 4, 2]
-E = torch.cat([cls, patch_rows], dim=1) + position
-# E: [1, 5, 2]; position: [1, 5, 2]</code></pre>
-  <p data-build="2">Row $0$ is CLS. Rows $1,2,3,4$ follow the patches in raster order.</p>
-  <script type="text/x-notes">The matrix E contains this image's current input rows. It is not a word lookup table. Use e_i for one row and E for the stack, just as in the attention series.</script>
+<div class="frame" data-title="Four patch rows—but which row should answer?" data-autobuild="off">
+  <div class="vision1-story" id="s03-collect-question"></div>
+  <p>Text used the last known word’s row. An image has no natural last token to represent the scene.</p>
+  <p data-build="1">Averaging the final patch rows is one option. We will use a <strong>separate collection row</strong>.</p>
+  <script type="text/x-notes">CLS is one readout design, not a mathematical requirement of self-attention. Motivate a global receiving slot before asking students to remember its name.</script>
 </div>
-<div class="frame" data-title="Without positions, shuffling only shuffles the patch outputs" data-autobuild="off">
-  <p>Swap patch 1 and patch 4 before attention. Keep CLS in row 0.</p>
-  <div id="s03-permutation" data-build="1"></div>
-  <p class="callout callout-key" data-build="2">Without positions, patch outputs follow the permutation: self-attention is <strong>equivariant</strong>. The fixed CLS output is unchanged.</p>
-  <p data-build="3">With positions attached to slots, the swapped content produces a different CLS output in this example.</p>
-  <script type="text/x-notes">Do not call all self-attention outputs invariant. The patch outputs reorder. CLS is invariant here because we leave its slot fixed. If we permuted content and its position vector together, we would simply reorder the input rows again.</script>
+<div class="frame" data-title="CLS is a learned starting row, not the class label" data-autobuild="off">
+  <div class="vision1-story" id="s03-collect"></div>
+  <p>$e_0=c+p_0=(1,1)+(0,0)$. Both images start with this <strong>same CLS row</strong>; reading their patches can give different updated rows.</p>
+  <script type="text/x-notes">CLS is pronounced class token but is not the correct answer. It is a learned parameter copied into each image's computation. An attention update changes that image's representation; an optimizer update changes the stored parameter.</script>
 </div>
-<div class="companion after"><p>There is no causal mask in this image encoder: every patch is already known. This differs from predicting the next word of an unfinished sentence. Positional information lets the encoder distinguish arrangements, but it does not force attention to stay local or guarantee that a particular arrangement will be classified correctly.</p></div>
-<script>(function(){const S=document.getElementById('s03'),T=AT.vision,F=T.forward();AT.ui.table([2,3].map(i=>[T.vector(F.content[i]),T.vector(F.positions[i]),T.vector(F.E[i])]),{into:S.querySelector('#s03-position'),cols:['content embedding','position vector','sum: input e_j'],rowLabels:['patch 2 · top right','patch 3 · bottom left'],cornerLabel:'same pixels, different slots'});T.diagram(S.querySelector('#s03-sequence'),'sequence');T.table(S.querySelector('#s03-input'),F.E,{rowLabels:T.labels,cornerLabel:'input E',decimals:0});const order=[3,1,2,0];AT.ui.table([false,true].map(positions=>[T.vector(T.forward({positions}).updated[0],3),T.vector(T.forward({positions,order}).updated[0],3)]),{into:S.querySelector('#s03-permutation'),cols:['original CLS output','after patch swap'],rowLabels:['positions off','positions on'],cornerLabel:'same projection weights'});})();</script>
+<div class="frame" data-title="Now name every input row before attention" data-autobuild="off">
+  <div id="s03-inputs"></div>
+  <p>From here, $e_j$ means the <strong>current row, including its position addition</strong>. Row 0 is CLS; rows 1–4 are the four patches.</p>
+  <pre class="torch-snippet" data-build="1"><code>E = torch.cat([cls[None, :], patch_embeddings], dim=0)
+E = E + positions               # [5, 2]</code></pre>
+  <script type="text/x-notes">Read the labels together with the matrix. E is a stack, not a new kind of embedding. Keep the index convention CLS0/patch1–4 visible; the classifier will read updated row0 later.</script>
+</div>
+<div class="frame" data-title="What should change when the image changes?" data-autobuild="off">
+  <div id="s03-check"></div>
+  <p class="callout callout-key" data-build="1">The starting CLS parameter is shared. The patch rows supply the image-specific information that CLS will read.</p>
+  <script type="text/x-notes">Ask before opening. Removing the top-left block changes raw patch1 and its embedding; it does not select a new CLS vector or different shared projection weights.</script>
+</div>
+<div class="companion after"><h3>A check on why positions matter</h3><p>Without position additions, permuting the four patch rows leaves the CLS output unchanged in this model. The patch outputs permute in the same way as the inputs. This is permutation equivariance, together with an invariant CLS readout. Adding different slot vectors lets the computation depend on which patch occupies which slot. The original ViT learns a full-width position vector for each slot; it does not append a special scalar “position dimension.”</p></div>
+<script>(function(){const S=document.getElementById('s03'),T=AT.vision,F=T.forward();T.story(S.querySelector('#s03-arrange'),{stage:'arrangements'});T.story(S.querySelector('#s03-position'),{stage:'positions'});T.story(S.querySelector('#s03-collect-question'),{stage:'cls',step:0});T.story(S.querySelector('#s03-collect'),{stage:'cls',step:1});AT.ui.table(F.E,{into:S.querySelector('#s03-inputs'),rowLabels:T.labels,cols:['coordinate 1','coordinate 2'],cornerLabel:'E · five input rows',rowCls:'e',decimals:0});AT.ui.reveal('Remove the top-left block. Does the starting CLS row change?','No. Patch 1 changes from $(2,2)$ to $(0,0)$ before its position addition. The shared CLS starting row remains $(1,1)$. Attention will bring the changed patch information to it.',{into:S.querySelector('#s03-check')});})();</script>
 </section>
 
 <!-- ===== sec04.html ===== -->
-<section id="s04" class="sec" data-title="Let the class token read the image" data-lit="q k a">
-<header class="sec-head"><span class="sec-num">04</span><div><p class="eyebrow">The class token uses a query to choose which values to mix.</p><h2>Let the class token read the image</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>We now have the input that self-attention expects: a matrix of equal-width rows. Each row supplies three projections. Its query controls what it reads; its key helps other queries determine a mixing weight; its value supplies the information those queries receive. We will work the CLS query first because our classifier uses the updated CLS row. The same calculation also updates all four patch rows.</p></div>
-<div class="frame" data-title="Project the same input rows into three roles" data-autobuild="off">
-  <div id="s04-roles"></div>
-  <p data-build="1">$\vq{Q}=EW_Q,\quad\vk{K}=EW_K,\quad\vv{V}=EW_V$</p>
-  <pre class="torch-snippet" data-build="2"><code># E: [5, 2]; each W: [2, 2]
-Q, K, V = E @ W_Q, E @ W_K, E @ W_V</code></pre>
-  <script type="text/x-notes">This is self-attention: all three roles come from the same sequence. They still have separate projection matrices. No text query or hidden class label is supplied to this block.</script>
+<section id="s04" class="sec" data-title="Let CLS choose how much to read" data-lit="q k a">
+<header class="sec-head"><span class="sec-num">04</span><div><p class="eyebrow">One receiver, five available sources, one mixing weight per source.</p><h2>Let CLS choose how much to read</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>We want the collection row to depend on the image. The query is the receiving row’s matching request; each source key is a description it can match. These are vectors, not written questions. In this starting model, CLS’s query gives equal positive weight to both key coordinates, so it favors keys with a larger sum. A trained model can learn different combinations.</p></div>
+<div class="frame" data-title="CLS makes the query for this read" data-autobuild="off">
+  <div class="vision1-story" id="s04-query"></div>
+  <p class="callout callout-key" data-build="1">This query comes from <strong>CLS, not the label</strong>. It will compare both coordinates of each source key.</p>
+  <script type="text/x-notes">The query is not asking for another copy of CLS. It specifies a learned matching direction. This first-layer query is the same for the two images because their initial CLS rows are the same.</script>
 </div>
-<div class="frame" data-title="Compute the CLS query and every source key" data-autobuild="off">
-  <div class="vision1-pair"><div id="s04-keys"></div><div><p>$W_Q=W_K=\begin{pmatrix}0.5&0\\0&0.5\end{pmatrix}$</p><p data-build="1">CLS query:</p><p data-build="1">$\vq{q_0}=(1,1)W_Q$</p><p data-build="1">$\phantom{q_0}=(0.5,0.5)$</p></div></div>
-  <p class="callout callout-note" data-build="2">Here $q_j=k_j$ only because we set $W_Q=W_K$. The two roles are different.</p>
-  <script type="text/x-notes">The first-block CLS query is the same for every image in this toy. Its score pattern can still change because the image-dependent keys change. Later blocks can also have an image-dependent CLS query.</script>
+<div class="frame" data-title="Patch 4 makes a key from its own row" data-autobuild="off">
+  <div class="vision1-story" id="s04-key"></div>
+  <p>Patch 4’s key comes from <strong>its own positioned row</strong>, $e_4=(5,5)$. It describes when this source should be read by CLS’s query.</p>
+  <script type="text/x-notes">Query from the receiver, key from the source. W_Q and W_K happen to start with the same entries, but they are separate parameters and perform separate jobs. Neither is tied to the other during training.</script>
 </div>
-<div class="frame" data-title="Score each key and scale by the matching width" data-autobuild="off">
-  <p>$s_{0j}=\vq{q_0}\vk{k_j}^{\top}/\sqrt{d_k}\qquad d_k=2$</p>
-  <div id="s04-scores"></div>
-  <p class="callout callout-key" data-build="1">For patch 4: $(0.5\times2.5+0.5\times2.5)/\sqrt2\approx1.768$.</p>
-  <script type="text/x-notes">The dot product sums two coordinate products. Under the usual independent, zero-mean, unit-variance intuition, the unscaled sum has variance d_k; dividing by sqrt(d_k) keeps its scale steadier as width grows. It does not normalize vector lengths, and it does not guarantee those assumptions hold.</script>
+<div class="frame" data-title="Keep each key attached to its source" data-autobuild="off">
+  <div class="vision1-story" id="s04-keys"></div>
+  <p>CLS can read the four patches <strong>and its own row</strong>.</p>
+  <script type="text/x-notes">All the image's patches are already known. Unlike a next-token decoder, this image encoder does not need to hide later patches with a causal mask. The five arrows mean five sources, not five possible class labels.</script>
 </div>
-<div class="frame" data-title="Why divide by the square root of the width?" data-autobuild="off">
-  <p>A dot product adds $d_k$ coordinate products. With independent, zero-mean, unit-variance query and key coordinates:</p>
-  <div class="vision1-equation" data-build="1">$\operatorname{Var}(qk^\top)=d_k\qquad\operatorname{Var}\!\left(\frac{qk^\top}{\sqrt{d_k}}\right)=1$</div>
-  <p class="callout callout-key" data-build="2">The division keeps scores from tending to grow just because we use wider matching vectors. Otherwise softmax can become very sharply concentrated.</p>
-  <p data-build="3">This is a scale adjustment. It does not make the query and key unit-length vectors.</p>
-  <script type="text/x-notes">The variance calculation is an initialization intuition under the stated assumptions, not a claim that all trained coordinates remain independent or unit variance. Dividing by d_k would over-shrink the standard deviation; dividing by its square root targets the standard deviation.</script>
+<div class="frame" data-title="Work one match: CLS with patch 4" data-autobuild="off">
+  <div class="vision1-story" id="s04-dot"></div>
+  <p>The dot product favors patch 4’s large key coordinates. This starting query <strong>has not learned to count blocks</strong> yet.</p>
+  <script type="text/x-notes">The score reflects these chosen parameters, not a semantic explanation such as 'this is the important object'. The two blocks have different brightness, and the current query responds strongly to that magnitude.</script>
 </div>
-<div class="frame" data-title="Softmax turns this CLS score row into mixing weights" data-autobuild="off">
-  <div id="s04-softmax"></div>
-  <p data-build="1">$\alpha_{0j}=\exp(s_{0j})/\sum_{t=0}^{4}\exp(s_{0t})\qquad\sum_j\alpha_{0j}=1$</p>
-  <pre class="torch-snippet" data-build="2"><code>scores = Q @ K.T / math.sqrt(2)  # [5, 5]
-A = scores.softmax(dim=-1)       # normalize each receiving row</code></pre>
-  <script type="text/x-notes">The rows are receiving queries, the columns are source positions. We display only row zero here. These are five input-mixing weights, not the two class probabilities we will compute later. Decimals are rounded only for display.</script>
+<div class="frame" data-title="Why divide by the square root of the key width?" data-autobuild="off">
+  <div class="vision1-story" id="s04-scale"></div>
+  <p>More coordinates tend to widen the spread of dot products. Dividing by $\sqrt{d_k}$ controls that spread before softmax. Here $d_k=2$.</p>
+  <script type="text/x-notes">This does not normalize vectors to unit length. Under roughly independent zero-mean unit-variance coordinates, the dot product has variance d_k, hence standard deviation sqrt(d_k). Scaling controls score magnitude; it does not change ranking within the row.</script>
 </div>
-<div class="companion after"><p>The square-root factor prevents dot products from tending to grow with matching width under a common initialization model. Excessively large score differences would make softmax concentrate sharply and leave small gradients for many alternatives. It is a scale adjustment, not cosine normalization. Our row width is two, so the divisor is $\sqrt2$. The displayed exponential column uses the mathematical formula; the code may subtract the largest score before exponentiating for numerical stability, which gives the same weights.</p></div>
-<script>(function(){const S=document.getElementById('s04'),T=AT.vision,F=T.forward();T.diagram(S.querySelector('#s04-roles'),'roles');AT.ui.table(F.E.map((e,i)=>[T.vector(e),T.vector(F.K[i])]),{into:S.querySelector('#s04-keys'),cols:['input e_j','key k_j'],rowLabels:['CLS','patch 1','patch 2','patch 3','patch 4'],cornerLabel:'source'});AT.ui.table(F.raw[0].map((x,i)=>[x,F.S[0][i]]),{into:S.querySelector('#s04-scores'),cols:['dot product q₀kⱼᵀ','scaled score s₀ⱼ'],rowLabels:T.labels,cornerLabel:'source',decimals:3});const ex=F.S[0].map(Math.exp),z=ex.reduce((a,b)=>a+b,0);AT.ui.table(F.S[0].map((x,i)=>[x,ex[i],F.A[0][i]]),{into:S.querySelector('#s04-softmax'),cols:['score','exp(score)','weight α₀ⱼ'],rowLabels:T.labels,cornerLabel:'source',decimals:3,caption:'Divide each exponential by the total '+z.toFixed(3)+'. Values are rounded for display.'});})();</script>
+<div class="frame" data-title="Scaling softens this read without changing the ranking" data-autobuild="off">
+  <div id="s04-scale-compare"></div>
+  <p>The largest score still belongs to patch 4. Dividing by $\sqrt2$ makes its advantage less extreme.</p>
+  <p class="callout callout-note" data-build="1">The next three frames unpack how softmax produced these weights.</p>
+  <script type="text/x-notes">Use the concrete comparison before the optional variance derivation. Both distributions are computed from the same raw dot products. A larger or smaller scaling factor changes the distribution, not just its displayed units.</script>
+</div>
+<div class="frame" data-title="First collect the five scaled scores" data-autobuild="off">
+  <div class="vision1-story" id="s04-scores"></div>
+  <p>$s_{0j}=q_0\cdot k_j/\sqrt2$. The first index, 0, stays fixed: <strong>CLS is the receiver</strong>.</p>
+  <p data-build="1">The source index $j$ runs over CLS and patches 1–4. We need one weight for each of these five sources.</p>
+  <script type="text/x-notes">Keep the image crops beside the numerical rows. The next step changes the scores into positive quantities; it does not add any sources.</script>
+</div>
+<div class="frame" data-title="Exponentiate each score to get a positive number" data-autobuild="off">
+  <div class="vision1-story" id="s04-exponents"></div>
+  <p>Apply $\exp(s_{0j})$ to each score. Larger scores produce larger positive numbers.</p>
+  <p data-build="1">Add these five numbers to get one common total, $Z$. They are not normalized yet.</p>
+  <script type="text/x-notes">The exponential function exp is unrelated to our representation symbol e_j. Saying exp(score) here avoids introducing an unexplained second meaning of e.</script>
+</div>
+<div class="frame" data-title="Divide every row by the same total" data-autobuild="off">
+  <div class="vision1-story" id="s04-weights"></div>
+  <p>These five amounts add to 1. They mix <strong>input information</strong>; they are not output-class probabilities.</p>
+  <script type="text/x-notes">Calculations use full precision; displays round to three decimals. Do not recompute from the rounded labels when explaining small last-digit differences. Class probabilities come later from a different softmax.</script>
+</div>
+<div class="frame" data-title="We have chosen amounts. What information will arrive?" data-autobuild="off">
+  <p>For this CLS query, patch 4 receives weight <strong id="s04-top-weight"></strong>.</p>
+  <div id="s04-check"></div>
+  <pre class="torch-snippet" data-build="1"><code>scores = (q0 @ K.T) / math.sqrt(K.shape[-1])
+alpha0 = scores.softmax(dim=-1)   # [5], sum = 1</code></pre>
+  <script type="text/x-notes">The scores and weights are scalars. We still need source vectors to construct a two-number update for CLS. Values provide those vectors; the key is not the vector automatically added.</script>
+</div>
+<div class="companion after"><h3>Why the square root, more precisely?</h3><p>If corresponding query and key coordinates are independent, roughly zero-mean, and unit-variance, the variance of their summed products grows like $d_k$. Dividing by $\sqrt{d_k}$ keeps the score variance around 1 under those assumptions. This is a scale-control argument, not a guarantee for every learned vector. See the scaled dot-product discussion in <a href="https://arxiv.org/abs/1706.03762">Attention Is All You Need</a>.</p><p>Our starting $W_Q$ and $W_K$ are equal for easy arithmetic; training stores and updates them separately. The CLS query is not yet image-dependent in this first layer. Its matches are image-dependent because the source keys come from each image. In later layers, an already-contextual CLS row can also produce an image-dependent query.</p></div>
+<script>(function(){const S=document.getElementById('s04'),T=AT.vision,F=T.forward();for(const [id,stage,step]of[['query','query',99],['key','key',99],['keys','keys',99],['dot','score',1],['scale','score',2],['scores','weights',0],['exponents','weights',1],['weights','weights',2]])T.story(S.querySelector('#s04-'+id),{stage:stage,step:step,source:4,receiver:0,forward:F});const unscaled=T.math.softmax(F.raw[0]);AT.ui.table(F.raw[0].map((x,j)=>[unscaled[j],F.A[0][j]]),{into:S.querySelector('#s04-scale-compare'),cols:['without ÷√2','with ÷√2'],rowLabels:T.labels,cornerLabel:'CLS mixing amounts',decimals:3});S.querySelector('#s04-top-weight').textContent=F.A[0][4].toFixed(3);AT.ui.reveal('Does that weight tell us what vector to add to CLS?','Not by itself. The weight says how much. We must multiply it by the value from the same source to know what information arrives.',{into:S.querySelector('#s04-check')});})();</script>
 </section>
 
 <!-- ===== sec05.html ===== -->
-<section id="s05" class="sec" data-title="Mix values and add the update" data-lit="v a d ep">
-<header class="sec-head"><span class="sec-num">05</span><div><p class="eyebrow">Keys chose the weights. Values supply the vectors we add.</p><h2>Mix values and add the update</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>The attention weights are scalar mixing amounts. To get a vector, multiply each source value by its weight and add the results. This mixture belongs to one receiving query. Here it belongs to CLS. We then project the mixture back to representation width and add it to the original CLS row through the residual connection.</p></div>
-<div class="frame" data-title="Use the value from the same source as each weight" data-autobuild="off">
-  <p>$W_V=I_2$, so $\vv{v_j}=e_j$ in this worksheet.</p>
-  <div id="s05-mix"></div>
-  <p class="callout callout-key" data-build="1">$m_0=\sum_{j=0}^4\alpha_{0j}v_j$. Keys are used for matching; values are used in this sum.</p>
-  <script type="text/x-notes">A value is not always the original embedding. Here it is numerically equal only because W_V is the identity matrix. For trained weights, e_j W_V can emphasize, suppress, or combine different coordinates.</script>
+<section id="s05" class="sec" data-title="Bring patch information into CLS" data-lit="v a d ep">
+<header class="sec-head"><span class="sec-num">05</span><div><p class="eyebrow">A weight says how much. A value supplies what arrives.</p><h2>Bring patch information into CLS</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>The query and keys have produced one mixing amount per source. A scalar amount alone cannot update a two-number row. Each source therefore makes a value vector, $v_j=e_jW_V$. Multiply each source’s value by its own weight, then add the contributions coordinate by coordinate. This returns a message to the receiving CLS row.</p></div>
+<div class="frame" data-title="A patch’s key and value do different jobs" data-autobuild="off">
+  <div class="vision1-story" id="s05-value"></div>
+  <p>Starting with $W_V=I_2$ gives $v_4=e_4=(5,5)$. This equality comes from the identity map—not from the definition of a value.</p>
+  <script type="text/x-notes">The value equals the positioned input row only because we selected an identity W_V. It does not equal the original raw pixels or necessarily the pre-position patch embedding. Test this equality rather than asking students to accept a caveat.</script>
 </div>
-<div class="frame" data-title="The message becomes an update, then a new CLS row" data-autobuild="off">
-  <div id="s05-residual"></div>
-  <p data-build="1">$W_O=I_2$, so $\vd{\Delta e_0}=m_0W_O=m_0$.</p>
-  <p class="callout callout-note" data-build="2">This update changes the representation for this image. It does not overwrite the learned CLS parameter $c$.</p>
-  <script type="text/x-notes">Distinguish inference-time residual addition from an optimizer update. The initial CLS parameter is still (1,1). This image's contextual CLS row is approximately (4.075,4.075).</script>
+<div class="frame" data-title="Change only the value map: do the weights change?" data-autobuild="off">
+  <div class="vision1-story" id="s05-value-change"></div>
+  <div id="s05-value-check" data-build="1"></div>
+  <script type="text/x-notes">The same patch4 is still read with exactly the same weight. The second value coordinate is now10 rather than5, so twice as much enters that coordinate of its message contribution. This directly demonstrates why matching keys and sending values are different projections.</script>
 </div>
-<div class="frame" data-title="Compute all five updates in parallel" data-autobuild="off">
-  <p>$A:\;5\times5\qquad V:\;5\times2\qquad AV:\;5\times2$</p>
-  <pre class="torch-snippet" data-build="1"><code>message = A @ V                  # [5, 2]
-delta = message @ W_O             # [5, 2]
-E_next = E + delta                # residual update</code></pre>
-  <p class="callout callout-key" data-build="2">Each output row reads the same original input matrix. No row reads a partly updated neighbor.</p>
-  <script type="text/x-notes">The attention matrix contains a different distribution in each receiving row. Matrix multiplication performs all five weighted sums together. All updates have representation width, so the residual addition is shape-compatible.</script>
+<div class="frame" data-title="Restore the original values, then pair them with weights" data-autobuild="off">
+  <div class="vision1-story" id="s05-pairs"></div>
+  <p class="callout callout-key" data-build="1">One weight scales <strong>every coordinate</strong> in the value from the same source.</p>
+  <script type="text/x-notes">Re-anchor the main calculation after the intervention. Keep the source picture, source index, alpha, and value aligned. No query/key vector is added here.</script>
 </div>
-<div class="frame" data-title="Every row can read every known image token" data-autobuild="off">
-  <div id="s05-explore"></div>
-  <p class="callout callout-key" data-build="1">A global attention layer already connects every patch to every other patch. Deeper layers transform and combine that information again.</p>
-  <script type="text/x-notes">Select a patch query. Its weights differ because its query differs. No future patch needs hiding: the whole image is known. These attention arrows describe this head's weighted mixture, not proof that a region caused the final prediction.</script>
+<div class="frame" data-title="Work one contribution from patch 4" data-autobuild="off">
+  <div class="vision1-story" id="s05-one-value"></div>
+  <div class="vision1-equation" id="s05-one-product" data-build="1"></div>
+  <p class="vision1-caption">Displayed numbers are rounded; calculations keep the unrounded weights.</p>
+  <script type="text/x-notes">Use the unrounded alpha for calculation. The displayed result is rounded. This is not selecting patch4 and discarding all other patches; it is one term in a weighted sum.</script>
 </div>
-<div class="companion after"><h3>The complete updated matrix</h3><div id="s05-all"></div><p>All five rows are updated in parallel from the same input matrix. We do not update CLS first and then let the other rows read the already-updated CLS. That would be a different calculation. The classifier will select row 0 from this output, but the encoder can retain all patch rows for tasks that need spatial information.</p></div>
-<script>(function(){const S=document.getElementById('s05'),T=AT.vision,F=T.forward();T.diagram(S.querySelector('#s05-mix'),'mix');T.table(S.querySelector('#s05-residual'),[F.E[0],F.message[0],F.delta[0],F.updated[0]],{rowLabels:['input CLS e₀','weighted value message m₀','update Δe₀ = m₀ W_O','new CLS e₀′ = e₀ + Δe₀'],cornerLabel:'CLS calculation',rowCls:['e','v','d','ep'],decimals:3});T.attentionExplorer(S.querySelector('#s05-explore'));T.table(S.querySelector('#s05-all'),F.updated,{rowLabels:T.labels,cornerLabel:'updated E′',rowCls:'ep',decimals:3});})();</script>
+<div class="frame" data-title="Do the same multiplication for all five sources" data-autobuild="off">
+  <div class="vision1-story" id="s05-contributions"></div>
+  <p>Each contribution is a vector $\alpha_{0j}v_j$. Now add down coordinate 1, and separately down coordinate 2.</p>
+  <script type="text/x-notes">Pause on the blank patches: their positioned rows are not both zero, so their value contributions can be nonzero. The raw patch, content embedding, positioned input, and value are successive quantities.</script>
+</div>
+<div class="frame" data-title="The sum is information for this CLS query" data-autobuild="off">
+  <div id="s05-sum"></div>
+  <p class="callout callout-key" data-build="1">The two-number message $m_0$ combines this image’s source values. Its coordinates are <strong>features, not class probabilities</strong>.</p>
+  <script type="text/x-notes">The subscript0 belongs to the receiving CLS row. The message is query-specific; another receiver generally has different weights. Features do not need to sum to1 even though the weights do.</script>
+</div>
+<div class="frame" data-title="Add the incoming update to the original CLS row" data-autobuild="off">
+  <div class="vision1-story" id="s05-residual"></div>
+  <p>$W_O=I_2$ leaves the message unchanged here. The new CLS row includes its original $(1,1)$ <strong>plus information from this image</strong>.</p>
+  <script type="text/x-notes">W_O maps the message back to representation width before the residual addition. The widths are both2 in this worksheet, and identity leaves the message unchanged. In a multi-head model the concatenated messages are projected back to model width.</script>
+</div>
+<div class="frame" data-title="This changes a representation, not the stored CLS parameter" data-autobuild="off">
+  <div id="s05-state"></div>
+  <p>The stored $c$ is still $(1,1)$. It is copied as the starting row for the next image too.</p>
+  <p data-build="1">Only a training step changes stored parameters. A forward pass computes new intermediate rows from them.</p>
+  <script type="text/x-notes">This distinction matters because 'update' has two meanings: adding contextual information to a token row and changing a learned parameter with an optimizer. Make the two rows in the table concrete rather than introducing a new symbol x.</script>
+</div>
+<div class="frame" data-title="Each of the five rows can collect its own message" data-autobuild="off">
+  <p>Stack all five reads. Row $i$ of the message matrix $H$ is the message $m_i$.</p>
+  <p class="vision1-equation" data-build="1">$\underbrace{A}_{5\times5}\;\underbrace{V}_{5\times2}=\underbrace{H}_{5\times2}$</p>
+  <pre class="torch-snippet" data-build="2"><code>Q, K, V = E @ W_Q, E @ W_K, E @ W_V
+A = ((Q @ K.T) / math.sqrt(2)).softmax(dim=-1)
+E_next = E + (A @ V) @ W_O       # [5, 2]</code></pre>
+  <p class="callout callout-key" data-build="3">All reads use the <strong>same original input rows</strong>. The classifier will use updated row 0; patch rows remain available for later layers.</p>
+  <script type="text/x-notes">There is no update order between neighbors. This is image self-attention because all queries, keys and values come from the same image-token sequence. The complete photo model later has multiple such layers.</script>
+</div>
+<div class="companion after"><h3>Try another receiving row</h3><div id="s05-explore"></div><p>The receiving query changes; the source keys and values are still those of the original image-token rows. A large attention weight describes the amount of a source value in this weighted sum. By itself it does not establish that a patch caused the final class decision.</p><h3>What did changing only values do?</h3><div id="s05-value-results"></div><p>Query and key computations were untouched, so each of the five weights stayed unchanged. The second coordinate of every value doubled, which doubled the second coordinate of the message. This comparison returns to the identity value map for the main classifier calculation.</p></div>
+<script>(function(){const S=document.getElementById('s05'),T=AT.vision,F=T.forward(),altParams={W_V:[[1,0],[0,2]]},G=Object.assign({},F,T.attention(F.E,altParams),{params:altParams});for(const [id,stage,step]of[['value','values',99],['pairs','mix',0],['one-value','values',99],['contributions','mix',1],['residual','residual',99]])T.story(S.querySelector('#s05-'+id),{stage:stage,step:step,source:4,forward:F});T.story(S.querySelector('#s05-value-change'),{stage:'values',source:4,forward:G,params:altParams});AT.ui.reveal('Does patch 4 receive a different weight?','No. Query and keys are unchanged, so its weight is unchanged. Its value is now $(5,10)$ instead of $(5,5)$: the same amount of a different message.',{into:S.querySelector('#s05-value-check')});AT.tex(S.querySelector('#s05-one-product'),'\\alpha_{04}v_4\\approx'+F.A[0][4].toFixed(3)+'(5,5)\\approx('+F.V[4].map(v=>(v*F.A[0][4]).toFixed(3)).join(',')+')',{display:true});AT.ui.mixTable(F.A[0],F.V,{into:S.querySelector('#s05-sum'),weighted:true,axes:false,cols:['contribution 1','contribution 2'],rowLabels:T.labels,cornerLabel:'source',alphaLabel:'weight α₀ⱼ',alphaDecimals:3,decimals:3,footerLabel:'message m₀',note:null});AT.ui.table([T.data.cls,F.updated[0]],{into:S.querySelector('#s05-state'),rowLabels:['stored starting parameter c','computed CLS for this image e₀′'],cols:['coordinate 1','coordinate 2'],cornerLabel:'two different quantities',decimals:3});AT.ui.table([F.message[0],G.message[0]],{into:S.querySelector('#s05-value-results'),rowLabels:['original value map I','second value coordinate doubled'],cols:['message coordinate 1','message coordinate 2'],cornerLabel:'identical attention weights',decimals:3});const host=S.querySelector('#s05-explore'),label=AT.h('label',{},'Receiving row: '),select=AT.h('select',{'aria-label':'Receiving image-token row'}),plot=AT.h('div',{class:'vision1-story'});T.labels.forEach((name,i)=>select.appendChild(AT.h('option',{value:String(i)},name)));label.appendChild(select);host.append(label,plot);const draw=()=>T.story(plot,{stage:'weights',receiver:Number(select.value),forward:F});select.addEventListener('change',draw);draw();})();</script>
 </section>
 
 <!-- ===== sec06.html ===== -->
-<section id="s06" class="sec" data-title="Use the updated class row" data-lit="ep">
-<header class="sec-head"><span class="sec-num">06</span><div><p class="eyebrow">The contextual CLS row is a representation. A class head converts it into logits.</p><h2>Use the updated class row</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>We have finished the attention calculation, but we do not yet have a prediction. A classifier maps the updated CLS row to one logit per candidate class. A second softmax normalizes those class logits. This softmax answers a different question from attention: which output class gets probability, rather than how to mix the input values.</p></div>
-<div class="frame" data-title="Two class logits from the two-number CLS row" data-autobuild="off">
-  <p>$W_{\mathrm{class}}=\begin{pmatrix}0.5&0\\0&0.25\end{pmatrix},\qquad b_{\mathrm{class}}=(0,0)$</p>
-  <p class="vision1-equation" data-build="1">$z=e_0'W_{\mathrm{class}}+b_{\mathrm{class}}$</p>
-  <div id="s06-head" data-build="1"></div>
-  <pre class="torch-snippet" data-build="2"><code>logits = E_next[0] @ W_class + b_class  # [2]
-probabilities = logits.softmax(dim=-1)</code></pre>
-  <script type="text/x-notes">These output weights are specified, so the probabilities are derived rather than invented. Arbitrary labels prevent a false claim that this hand-written head recognizes a visual concept.</script>
+<section id="s06" class="sec" data-title="Turn the image representation into a prediction" data-lit="ep">
+<style>
+#s06 .v1-head-eq{font-size:1.14em;text-align:center;margin:16px 0}
+#s06 .v1-images{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center}
+#s06 .v1-images svg{display:block;width:100%;max-height:200px}
+#s06 .v1-images h3{margin:0 0 10px}
+@media(max-width:650px){body:not(.present) #s06 .v1-images{grid-template-columns:1fr}}
+</style>
+<header class="sec-head"><span class="sec-num">06</span><div><p class="eyebrow">We have a row that depends on the image. We still need an answer.</p><h2>Turn the image representation into a prediction</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>Our question was whether the image contains one or two occupied 2×2 blocks. Attention has collected information in the CLS row, but those two coordinates are still features. A classification head converts them into one score per answer. We will calculate both scores, normalize them, and check the probability given to the observed label. The initial weights are the same hand-chosen values used throughout this calculation.</p></div>
+
+<div class="frame" data-title="The CLS row still needs a class head" data-autobuild="off">
+  <div id="s06-head-picture"></div>
+  <p class="callout callout-key" data-build="1">The head makes two scores: one for <strong>two blocks</strong>, one for <strong>one block</strong>.</p>
+  <script type="text/x-notes">Point to the same updated CLS row from the preceding section. It has two features because we chose model width two. The head has two outputs because this task has two labels. Those counts need not agree.</script>
 </div>
-<div class="frame" data-title="One supervised target gives one loss" data-autobuild="off">
-  <p>For this worksheet, suppose the observed label is <strong>class A</strong>.</p>
-  <div id="s06-loss" class="vision1-equation" data-build="1"></div>
-  <pre class="torch-snippet" data-build="2"><code>target = torch.tensor([0])  # class A
+
+<div class="frame" data-title="Work out the score for two blocks" data-autobuild="off">
+  <p>Use the <strong>two blocks</strong> column of $W_{\mathrm{class}}$. Its weights are $(0.5,0)$; its bias is $0$.</p>
+  <div id="s06-two-calc" data-build="1"></div>
+  <p data-build="2">This score is a <strong>logit</strong>. It can be any real number; it is not a probability yet.</p>
+  <script type="text/x-notes">Read the input row first, then multiply each coordinate by the weight directly below it. The two products add to this class's logit. We are following the already-computed CLS row, not taking another average of the image.</script>
+</div>
+
+<div class="frame" data-title="Use the other column for one block" data-autobuild="off">
+  <p>Keep the same CLS row. The <strong>one block</strong> column has weights $(0,0.25)$ and bias $0$.</p>
+  <div id="s06-one-calc" data-build="1"></div>
+  <pre class="torch-snippet" data-build="2"><code># CLS: [2]; W_class: [2, 2]; bias: [2]
+logits = E_next[0] @ W_class + b_class</code></pre>
+  <script type="text/x-notes">A class head reuses the same feature row for every candidate label. Each column is a different learned combination of those features. The matrix product computes both of these worksheets together.</script>
+</div>
+
+<div class="frame" data-title="Compare the two logits to get probabilities" data-autobuild="off">
+  <div id="s06-probability-table"></div>
+  <p id="s06-probability-eq" class="v1-head-eq" data-build="1"></p>
+  <p class="callout callout-key" data-build="2">These two probabilities compete over <strong>output labels</strong>. The five attention weights competed over <strong>input rows</strong>.</p>
+  <script type="text/x-notes">Show the exponential of each logit and their shared total. The softmax operation is familiar, but the set being normalized has changed. Displayed numbers are rounded; calculations use the original values.</script>
+</div>
+
+<div class="frame" data-title="How much probability did the correct label receive?" data-autobuild="off">
+  <p>The observed label for our image is <strong>two blocks</strong>.</p>
+  <div id="s06-target-bars" data-build="1"></div>
+  <p id="s06-loss" class="v1-head-eq" data-build="2"></p>
+  <pre class="torch-snippet" data-build="3"><code>target = torch.tensor([0])  # two blocks
 loss = F.cross_entropy(logits[None, :], target)</code></pre>
-  <p class="callout callout-key" data-build="3">The target is used to compute the loss. It was not an input to the image encoder or its CLS query.</p>
-  <script type="text/x-notes">Training adjusts parameters to reduce loss across labelled examples. We have supplied one label for arithmetic, not evidence of performance on a dataset. Cross-entropy expects raw logits, not the already-softmaxed probabilities.</script>
+  <script type="text/x-notes">The encoder did not receive this label. We reveal it after prediction to score the answer. Cross-entropy uses the probability of the observed label. Its PyTorch implementation expects logits, not already-softmaxed probabilities.</script>
 </div>
-<div class="frame" data-title="Change a pixel and recompute the whole forward pass" data-autobuild="off">
-  <div id="s06-pixel"></div>
-  <p class="callout callout-note" data-build="1">The changed patch alters its embedding, key, and value. The code recomputes all attention weights and the final class probabilities.</p>
-  <script type="text/x-notes">The slider changes just row3,column3, not the whole bright block. Ask which intermediate should change first. A probability change here tests the arithmetic path; it does not establish robustness or meaningful recognition.</script>
+
+<div class="frame" data-title="Does the same model recognize one block?" data-autobuild="off">
+  <div class="v1-images"><div><h3>Two blocks</h3><div id="s06-two-image"></div></div><div><h3>Remove the top-left block</h3><div id="s06-one-image"></div></div></div>
+  <div id="s06-image-comparison" data-build="1"></div>
+  <p data-build="2">The untrained model chooses <strong>two blocks for both images</strong>.</p>
+  <script type="text/x-notes">The second image differs only in its top-left patch. The model recomputes the full forward pass with the same parameters. Its wrong answer motivates training on both labelled images rather than celebrating one correct guess.</script>
 </div>
-<div class="companion after"><p>A counterfactual input is more informative than treating a large attention weight as an explanation by itself. Even this test has a limited claim: the specified model's output changes when a pixel changes. To judge a trained classifier, we would need held-out data and tests suited to the visual task. A single hand-chosen example cannot supply that evidence.</p></div>
-<script>(function(){const S=document.getElementById('s06'),T=AT.vision,F=T.forward();AT.ui.table(F.logits.map((z,i)=>[z,F.probs[i]]),{into:S.querySelector('#s06-head'),cols:['logit z','class probability'],rowLabels:T.data.classes,cornerLabel:'class head',decimals:3});AT.tex(S.querySelector('#s06-loss'),'L=-\\log p(\\text{class A})\\approx-\\log('+F.probs[0].toFixed(6)+')\\approx'+F.loss.toFixed(6),{display:true});T.pixelExplorer(S.querySelector('#s06-pixel'));})();</script>
+
+<div class="companion after"><p>The two displayed examples are a small teaching dataset, not a test of general counting. A classifier could fit them using brightness or another shortcut. After learning, we will check the same two examples again and keep that limitation in mind.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s06'),T=AT.vision,L=T.learning,F=L.forward(L.initial,L.images[0],0),G=L.forward(L.initial,L.images[1],1),names=L.classes;
+  T.story(S.querySelector('#s06-head-picture'),{stage:'head',forward:F,step:0});
+  [['#s06-two-calc',0],['#s06-one-calc',1]].forEach(([id,j])=>AT.ui.matVecCalc(F.updated[0],L.initial.W_class.map(r=>[r[j]]),{from:['feature 1','feature 2'],to:[names[j]+' logit'],xLabel:'updated CLS e₀′',outLabel:'logit',fromCls:'ep',cls:'neutral',decimals:3,wDecimals:2,into:S.querySelector(id)}));
+  const ex=F.logits.map(Math.exp),z=ex.reduce((a,b)=>a+b,0);
+  AT.ui.table(F.logits.map((x,i)=>[x,ex[i],ex[i]/z]),{into:S.querySelector('#s06-probability-table'),cols:['logit','exp(logit)','probability'],rowLabels:names,cornerLabel:'possible answer',decimals:3,footer:{label:'total',values:['',z,1]}});
+  AT.tex(S.querySelector('#s06-probability-eq'),'p(\\text{two blocks})\\approx\\frac{'+ex[0].toFixed(3)+'}{'+z.toFixed(3)+'}\\approx'+F.probs[0].toFixed(3),{display:true});
+  AT.ui.bars(names.map((label,i)=>({label,p:F.probs[i]})),{into:S.querySelector('#s06-target-bars'),highlight:names[0],sorted:false,decimals:3,size:'lg'});
+  AT.tex(S.querySelector('#s06-loss'),'L=-\\log p(\\text{two blocks})\\approx-\\log('+F.probs[0].toFixed(3)+')\\approx'+F.loss.toFixed(3),{display:true});
+  function thumbnail(host,image,label){const svg=AT.svg('svg',{viewBox:'0 0 340 180',role:'img','aria-label':label});image.forEach((r,y)=>r.forEach((v,x)=>{const shade=35+v*69;svg.appendChild(AT.svg('rect',{x:85+x*40,y:10+y*40,width:40,height:40,fill:'rgb('+shade+','+shade+','+shade+')',stroke:'var(--paper)'}));}));[[85,10],[165,10],[85,90],[165,90]].forEach(([x,y])=>svg.appendChild(AT.svg('rect',{x,y,width:80,height:80,fill:'none',stroke:'var(--c-e)','stroke-width':2})));host.appendChild(svg);}
+  thumbnail(S.querySelector('#s06-two-image'),F.image,'The original image has two occupied patches.');thumbnail(S.querySelector('#s06-one-image'),G.image,'The second image has one occupied patch.');
+  AT.ui.table([F,G].map(f=>[f.probs[0],f.probs[1],names[f.probs[0]>=f.probs[1]?0:1]]),{into:S.querySelector('#s06-image-comparison'),cols:[{label:'p(two blocks)',kind:'number'},{label:'p(one block)',kind:'number'},{label:'model chooses',kind:'text'}],rowLabels:['two-block image','one-block image'],cornerLabel:'same initial parameters',decimals:3});
+})();
+</script>
 </section>
 
 <!-- ===== sec07.html ===== -->
-<section id="s07" class="sec" data-title="Put this calculation inside a ViT" data-lit="e q k v a d ep">
-<header class="sec-head"><span class="sec-num">07</span><div><p class="eyebrow">The worksheet isolated attention. A full encoder also normalizes and transforms each row.</p><h2>Put this calculation inside a ViT</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>The original Vision Transformer uses a pre-norm encoder: normalization precedes each attention and feed-forward sublayer, with a residual addition after each one. A final normalization follows the stack. The diagram below describes that architecture. It is not the numerical model we just evaluated; inserting LayerNorm into that two-coordinate worksheet would change its numbers.</p></div>
-<div class="frame" data-title="A full ViT encoder block has two residual updates" data-autobuild="off">
-  <div id="s07-block"></div>
-  <pre class="torch-snippet" data-build="1"><code>E = E + attention(norm1(E))
-E = E + mlp(norm2(E))
-# Repeat blocks; apply final normalization before the class head.</code></pre>
-  <script type="text/x-notes">Attention mixes information across rows. The MLP transforms each row separately with shared weights. Multiple heads have separate projections; concatenation and W_O return their messages to model width. This is the pre-norm architecture, not a post-norm diagram.</script>
+<section id="s07" class="sec" data-title="Learn from the two images" data-lit="e q k v a d ep">
+<style>
+#s07 .v1-train-graph svg{display:block;width:100%;height:auto}
+#s07 .v1-train-eq{font-size:1.1em;text-align:center;margin:16px 0}
+#s07 .v1-curve svg{display:block;width:100%;height:auto;max-height:225px}
+#s07 .v1-step-button{margin:12px 0}
+</style>
+<header class="sec-head"><span class="sec-num">07</span><div><p class="eyebrow">A wrong answer tells us which calculation needs to change.</p><h2>Learn from the two images</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>Train on both images: one has two occupied blocks, and one has only the lower-right block. Each image goes through the same model and gets its own cross-entropy loss. We average the two losses before taking an optimizer step. That step changes the patch projection, CLS and position parameters, attention projections, and classification head together. The page runs these calculations locally; the displayed training results come from the model we have just worked through.</p></div>
+
+<div class="frame" data-title="Give both labelled images a say" data-autobuild="off">
+  <div id="s07-batch-loss"></div>
+  <p id="s07-mean-loss" class="v1-train-eq" data-build="1"></p>
+  <pre class="torch-snippet" data-build="2"><code># Two images produce two rows of class logits.
+logits = model(images)                 # [2, 2]
+loss = F.cross_entropy(logits, labels) # mean over both images</code></pre>
+  <script type="text/x-notes">Read each observed label and its probability. A lower probability for the correct label means a higher loss. The optimization objective is their mean, not whichever image was easiest.</script>
 </div>
-<div class="frame" data-title="Learn parameters; recompute representations" data-autobuild="off">
-  <div class="vision1-pair"><div><h3>Optimizer updates</h3><ul><li>Patch projection and bias</li><li>CLS and position parameters</li><li>Attention, MLP, and normalization parameters</li><li>Classification head</li></ul></div><div data-build="1"><h3>Forward pass recomputes</h3><ul><li>Patch embeddings and input rows</li><li>Queries, keys, values, and attention weights</li><li>Residual updates and contextual rows</li><li>Class logits and loss</li></ul></div></div>
+
+<div class="frame" data-title="Follow the same image all the way to loss" data-autobuild="off">
+  <div id="s07-forward-graph" class="v1-train-graph"></div>
+  <p>$R$ stacks the flattened patch rows $r_1,\ldots,r_4$. Dashed boxes contain learned parameters; solid boxes show computations.</p>
+  <script type="text/x-notes">Trace the top branch for matching, then the lower branch for information. Dashed boxes are learned parameters. Both images use this graph. The labels enter only at loss.</script>
+</div>
+
+<div class="frame" data-title="Autograd follows every contributing path backward" data-autobuild="off">
+  <div id="s07-backward-graph" class="v1-train-graph"></div>
+  <p>Both the weights $A$ and the values $V$ receive gradients.</p>
+  <script type="text/x-notes">Start at loss, reverse the head and residual addition, and follow both inputs of the weighted sum. At E, gradient contributions from attention and the residual route add. The page differentiates this graph; students do not need to calculate these derivatives by hand.</script>
+</div>
+
+<div class="frame" data-title="Which numbers does the optimizer keep?" data-autobuild="off">
+  <div id="s07-stored"></div>
+  <p class="callout callout-key" data-build="1">On the next forward pass, new parameters produce new embeddings, queries, keys, values, and predictions.</p>
+  <script type="text/x-notes">The image pixels and labels are data. The optimizer updates stored model parameters. It does not take a cached Q or attention matrix and save an improved version for this particular image.</script>
+</div>
+
+<div class="frame" data-title="Compute gradients, then take one step" data-autobuild="off">
+  <pre class="torch-snippet"><code>optimizer.zero_grad()
+loss.backward()  # compute a gradient for each learned parameter
+optimizer.step() # update the parameters using those gradients</code></pre>
+  <p class="v1-train-eq" data-build="1">$\theta_{\mathrm{new}}=\theta-\eta\,\nabla_\theta L$</p>
+  <div id="s07-parameter-step" data-build="2"></div>
+  <script type="text/x-notes">The one displayed matrix entry is a window into the actual update, not the only parameter that changes. We use full-batch SGD on the two examples. Backward computes gradients; step changes parameters. A zero gradient leaves its parameter unchanged on that step.</script>
+</div>
+
+<div class="frame" data-title="Run the forward pass again after that step" data-autobuild="off">
+  <div id="s07-one-step"></div>
+  <p class="callout callout-key" data-build="1">The <strong>mean loss falls</strong>, although the two-block image gets worse on this first step.</p>
+  <p data-build="2">The optimizer is fitting both examples together. One step need not improve every example.</p>
+  <script type="text/x-notes">The two-block loss rises while the one-block loss falls enough to lower the mean. These are recomputed losses, not an extrapolation from the gradient. This is why we look at the training objective and keep checking individual examples too.</script>
+</div>
+
+<div class="frame" data-title="Repeat the same forward, backward, and update" data-autobuild="off">
+  <div id="s07-training-curve" class="v1-curve"></div>
+  <p id="s07-training-caption" data-build="1"></p>
   <pre class="torch-snippet" data-build="2"><code>optimizer.zero_grad()
-loss = F.cross_entropy(model(images), labels)
-loss.backward()
+F.cross_entropy(model(images), labels).backward()
 optimizer.step()</code></pre>
-  <script type="text/x-notes">Backpropagation follows the same graph as before. We do not optimize a cached attention matrix directly. All intermediate computations must remain in the graph for gradients to reach the learned parameters.</script>
+  <script type="text/x-notes">Every point follows another forward pass with the latest parameters. The graph is unchanged; its numbers change. The training trace includes the first step already shown.</script>
 </div>
-<div class="frame" data-title="Smaller patches make the attention matrix larger" data-autobuild="off">
-  <p>For a 224×224 image, include one CLS row in the token count.</p>
-  <div id="s07-cost"></div>
-  <p class="callout callout-key" data-build="1">Halving the patch side gives four times as many patch tokens and about sixteen times as many attention entries.</p>
-  <script type="text/x-notes">The precise ratio differs slightly because of CLS. These are score entries per head, not total runtime or all model memory. Projection and MLP work also matter. Patch width, image resolution, model width, and attention implementation all affect cost.</script>
+
+<div class="frame" data-title="Check both images with the learned parameters" data-autobuild="off">
+  <div id="s07-final-predictions"></div>
+  <p class="callout callout-key" data-build="1">The same model now gives the correct label most of the probability for <strong>both training images</strong>.</p>
+  <p data-build="2">We have shown learning on two examples. Try new one- and two-block images, with different positions and brightnesses.</p>
+  <script type="text/x-notes">Do not call this a general block counter. With only two examples, it may rely on shortcuts such as brightness. A held-out test set is needed to find out what rule it learned.</script>
 </div>
-<div class="companion after"><p>A patch projection can be implemented as a convolution whose kernel and stride both equal the patch size. It applies the same learned linear map at each nonoverlapping patch location. This equivalence does not make a ViT encoder identical to a conventional convolutional network. Global attention can mix distant patches in one layer; local convolutions build spatial context according to their kernels and depth.</p><p>The architecture above follows the <a href="https://arxiv.org/html/2010.11929v2#S3">original ViT description</a> and <a href="https://github.com/google-research/vision_transformer/blob/main/vit_jax/models_vit.py">reference implementation</a>. Their trained systems use more dimensions, layers, and data than this worksheet.</p></div>
-<script>(function(){const S=document.getElementById('s07');AT.vision.diagram(S.querySelector('#s07-block'),'block');AT.ui.table([32,16,8].map(p=>{const n=(224/p)**2;return[p,n,n+1,(n+1)**2];}),{into:S.querySelector('#s07-cost'),cols:['patch side P','patches N','rows N + 1','attention entries'],rowLabels:['larger patches','middle size','smaller patches'],cornerLabel:'same image size',decimals:0});})();</script>
+
+<div class="companion after"><p>The numerical model contains one attention head, two-number representations, one residual addition, and the class head. It has no LayerNorm or feed-forward sublayer. The next section adds those components to the architecture rather than silently inserting them into the arithmetic we just trained.</p></div>
+<script>
+(function(){
+  const S=document.getElementById('s07'),T=AT.vision,L=T.learning,X=L.experiment,names=L.classes,fmt=x=>x.toFixed(3);
+  AT.ui.table(X.before.forwards.map((f,i)=>[names[L.targets[i]],f.probs[L.targets[i]],f.loss]),{into:S.querySelector('#s07-batch-loss'),cols:[{label:'observed label',kind:'text'},{label:'p(correct label)',kind:'number'},{label:'loss',kind:'number'}],rowLabels:['image 1','image 2'],cornerLabel:'initial model',decimals:3});
+  AT.tex(S.querySelector('#s07-mean-loss'),'L_{\\mathrm{batch}}=\\frac{'+fmt(X.before.losses[0])+'+'+fmt(X.before.losses[1])+'}{2}\\approx'+fmt(X.before.meanLoss),{display:true});
+  AT.ui.table([
+    ['W_patch, b_patch; CLS; positions','patch embeddings and input E'],
+    ['W_Q, W_K, W_V, W_O','Q, K, V, weights A, and update ΔE'],
+    ['W_class, b_class','class logits, probabilities, and loss']
+  ],{into:S.querySelector('#s07-stored'),cols:[{label:'parameters: update and store',kind:'text'},{label:'computed values: rebuild each pass',kind:'text'}],rowLabels:['input','attention','prediction'],cornerLabel:'model part'});
+  const cell=X.selectedCells.find(x=>x.name==='W_class');
+  AT.ui.table([[cell.before,cell.gradient,cell.afterSingle]],{into:S.querySelector('#s07-parameter-step'),cols:['before','gradient','after one step'],rowLabels:['W_class[0, 0]'],cornerLabel:'learning rate η = '+X.lr,decimals:3,caption:'This entry starts at 0.5. The same SGD rule updates all '+X.parameterCount+' learned numbers.'});
+  AT.ui.table([
+    [X.before.losses[0],X.afterSingle.losses[0]],
+    [X.before.losses[1],X.afterSingle.losses[1]],
+    [X.before.meanLoss,X.afterSingle.meanLoss]
+  ],{into:S.querySelector('#s07-one-step'),cols:['loss before','loss after one step'],rowLabels:['two-block image','one-block image','mean over both'],cornerLabel:'same two images',decimals:3,highlightRow:2});
+  S.querySelector('#s07-training-caption').textContent=X.nsteps+' SGD updates, learning rate '+X.lr+'. Mean loss: '+fmt(X.before.meanLoss)+' → '+fmt(X.afterTraining.meanLoss)+'.';
+  AT.ui.table(X.afterTraining.forwards.map((f,i)=>[names[L.targets[i]],X.before.forwards[i].probs[L.targets[i]],f.probs[L.targets[i]],names[X.afterTraining.predictions[i]]]),{into:S.querySelector('#s07-final-predictions'),cols:[{label:'correct label',kind:'text'},{label:'p(correct) before',kind:'number'},{label:'p(correct) after',kind:'number'},{label:'now chooses',kind:'text'}],rowLabels:['image 1','image 2'],cornerLabel:'training image',decimals:3});
+  function graph(host,back){
+    const svg=AT.svg('svg',{viewBox:'0 0 1160 468',role:'img','aria-label':back?'Gradients reverse the complete image classifier graph, including attention weights, values, residual path, patch projection, class token, and positions.':'The complete image classifier graph from pixels through patch embeddings, attention, residual update, head, and labelled loss.'});
+    const id=back?'v1-back':'v1-forward',ink='var(--ink)',line=back?'var(--warn)':'var(--ink-3)',defs=AT.svg('defs');
+    [id,id+'-data'].forEach((mid,i)=>{const m=AT.svg('marker',{id:mid,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:6,markerHeight:6,orient:'auto'});m.appendChild(AT.svg('path',{d:'M0 0 L10 5 L0 10Z',fill:i?'var(--ink-3)':line}));defs.appendChild(m);});svg.appendChild(defs);
+    function txt(x,y,text,size,fill){svg.appendChild(AT.svg('text',{x,y,fill:fill||ink,'font-family':'var(--font-ui)','font-size':size||22,'text-anchor':'middle','dominant-baseline':'middle'},text));}
+    function box(x,y,w,h,label,sub,param,role){svg.appendChild(AT.svg('rect',{x:x-w/2,y:y-h/2,width:w,height:h,rx:7,fill:param?'var(--paper)':'var(--card)',stroke:role||'var(--ink-3)','stroke-width':1.8,'stroke-dasharray':param?'6 4':'none'}));txt(x,sub?y-11:y,label,22,role);if(sub)txt(x,y+17,sub,19);}
+    function edge(points,gradient=true){let p=points;if(back&&gradient)p=points.slice().reverse();svg.appendChild(AT.svg('path',{d:p.map((xy,i)=>(i?'L':'M')+xy.join(' ')).join(' '),fill:'none',stroke:back&&gradient?line:'var(--ink-3)','stroke-width':back&&gradient?2.6:1.7,'marker-end':'url(#'+id+(back&&!gradient?'-data':'')+')'}));}
+    edge([[114,166],[170,166]],false);edge([[250,89],[250,132]]);edge([[330,166],[365,166]]);edge([[420,89],[420,132]]);
+    edge([[475,166],[500,166],[500,114],[520,114]]);edge([[475,166],[500,166],[500,250],[520,250]]);edge([[590,51],[590,80]]);edge([[652,210],[590,210],[590,216]]);
+    edge([[660,114],[700,114]]);edge([[850,114],[900,114],[900,165]]);edge([[660,250],[900,250],[900,225]]);
+    edge([[980,195],[995,195]]);edge([[1060,89],[1060,160]]);edge([[1060,230],[1060,319]]);
+    edge([[420,201],[420,457],[1060,457],[1060,389]]);edge([[980,354],[900,354]]);edge([[790,314],[790,320]]);edge([[680,354],[630,354]]);
+    edge([[565,430],[565,388]],false);
+    box(60,166,108,65,'R','raw patches');box(250,166,160,68,'patch map','shared projection');box(250,58,165,62,'W_patch','b_patch',true);box(420,58,150,62,'CLS, positions','learned',true);box(420,166,110,68,'E','input rows',false,'var(--c-e)');
+    box(590,114,140,68,'Q, K','E W_Q; E W_K',false,'var(--c-q)');box(590,250,140,68,'V','E W_V',false,'var(--c-v)');box(775,114,150,68,'A = softmax(S)','S = QKᵀ / √2',false,'var(--c-a)');box(900,195,160,60,'message','A V',false,'var(--c-v)');
+    box(1060,58,135,62,'W_O','learned',true);box(1060,195,130,70,'ΔE','message W_O',false,'var(--c-d)');box(1060,354,160,70,'E′ = E + ΔE','residual sum',false,'var(--c-d)');box(790,354,220,68,'class head','CLS row → logits');box(790,285,180,55,'W_class','b_class',true);box(565,354,130,68,'loss','cross-entropy');box(565,431,145,40,'label y',null,false);
+    box(590,31,155,40,'W_Q, W_K',null,true);box(710,210,115,38,'W_V',null,true);txt(210,290,'R and y are data.',20);
+    if(back){txt(990,112,'∂L/∂A',20,line);txt(775,235,'∂L/∂V',20,line);}
+    host.appendChild(svg);
+  }
+  graph(S.querySelector('#s07-forward-graph'),false);graph(S.querySelector('#s07-backward-graph'),true);
+  const svg=AT.svg('svg',{viewBox:'0 0 1100 215',role:'img','aria-label':'Mean cross-entropy over the two training images decreases across '+X.nsteps+' SGD updates.'}),mx=Math.max(...X.history.map(p=>p.loss)),left=80,right=1040,top=20,bottom=162;
+  svg.appendChild(AT.svg('path',{d:'M'+left+' '+top+'V'+bottom+'H'+right,fill:'none',stroke:'var(--ink-3)','stroke-width':1.5}));
+  const pts=X.history.map(p=>[left+(right-left)*p.step/X.nsteps,bottom-(bottom-top)*p.loss/mx]);
+  svg.appendChild(AT.svg('path',{d:pts.map((p,i)=>(i?'L':'M')+p.join(' ')).join(' '),fill:'none',stroke:'var(--c-d)','stroke-width':3}));
+  function ct(x,y,text,anchor){svg.appendChild(AT.svg('text',{x,y,'font-family':'var(--font-ui)','font-size':21,fill:'var(--ink)','text-anchor':anchor||'middle'},text));}
+  ct(45,27,fmt(mx));ct(45,bottom+5,'0');ct(left,192,'0');ct(right,192,String(X.nsteps));ct(560,207,'SGD updates');ct(280,30,'mean cross-entropy');S.querySelector('#s07-training-curve').appendChild(svg);
+})();
+</script>
 </section>
 
 <!-- ===== sec08.html ===== -->
-<section id="s08" class="sec" data-title="What has the model learned?" data-lit="">
-<header class="sec-head"><span class="sec-num">08</span><div><p class="eyebrow">An architecture specifies a computation. A training objective determines what it is rewarded for.</p><h2>What has the model learned?</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>We now have a complete route from an image to a loss. Our arithmetic used hand-chosen parameters so that we could inspect every operation. A useful vision model instead learns its parameters from data. Supervised classification is one way to train that encoder, but not the only one. The next part keeps image representations and changes the training signal.</p></div>
-<div class="frame" data-title="Trace one patch into the final prediction" data-autobuild="off">
-  <div id="s08-pipeline"></div>
-  <p class="callout callout-key" data-build="1">A patch contributes through its key, which affects the weights, and its value, which supplies information to the mixture.</p>
-  <script type="text/x-notes">Ask students to trace a change to patch4. Its own query also changes its patch-row output, but the one-layer CLS read uses its key and value. In deeper models, those changed patch rows can affect later reads.</script>
+<section id="s08" class="sec" data-title="Use the same design for a photograph" data-lit="e q k v a d ep">
+<style>
+#s08 .v1-scale-figure svg{display:block;width:100%;height:auto}
+#s08 .v1-scale-eq{font-size:1.14em;text-align:center;margin:16px 0}
+#s08 .v1-scale-row{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:center}
+@media(max-width:650px){body:not(.present) #s08 .v1-scale-row{grid-template-columns:1fr}}
+</style>
+<header class="sec-head"><span class="sec-num">08</span><div><p class="eyebrow">More pixels change the sizes. The route to a prediction stays familiar.</p><h2>Use the same design for a photograph</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>The small example let us inspect every value and train a complete attention classifier. A practical Vision Transformer uses wider representations and several encoder blocks. We can scale the shapes without losing track of the input: count the patches, work out the raw width of each patch, choose a representation width, and add the class token. The architecture then adds normalization, multiple attention heads, and a feed-forward network.</p></div>
+
+<div class="frame" data-title="How many patches does a 224 × 224 image make?" data-autobuild="off">
+  <div id="s08-patch-grid" class="v1-scale-figure"></div>
+  <p class="v1-scale-eq" data-build="1">$224/16=14\quad\Longrightarrow\quad14\times14=196\text{ patches}$</p>
+  <p class="callout callout-key" data-build="2">With one CLS row, this image gives the encoder <strong>197 input rows</strong>.</p>
+  <script type="text/x-notes">The grid shows patch boundaries, not individual pixels. Each small square contains 16 by 16 pixels. Count fourteen squares across and fourteen down before adding the one class-token row.</script>
 </div>
-<div class="frame" data-title="Keep the embedding, query, and value distinct" data-autobuild="off">
-  <div id="s08-check1"></div>
-  <div id="s08-check2" data-build="1"></div>
-  <script type="text/x-notes">Pause before each reveal. Ask for the operation separating e from v. Then ask where the CLS query comes from. It is a projection of the CLS input row, not a human question or the correct class label.</script>
+
+<div class="frame" data-title="RGB gives each pixel three numbers" data-autobuild="off">
+  <div id="s08-rgb"></div>
+  <p class="v1-scale-eq" data-build="1">$\underbrace{r_j}_{1\times768}\;\underbrace{W_{\mathrm{patch}}}_{768\times384}+\underbrace{b_{\mathrm{patch}}}_{1\times384}=\underbrace{e_j^{\mathrm{patch}}}_{1\times384}$</p>
+  <p data-build="2">Here we choose a model width of <strong>384</strong>. Every learned position vector and the CLS row also has 384 numbers.</p>
+  <script type="text/x-notes">RGB gives three values per pixel, so each raw patch has 16 times 16 times three values. Representation width is a separate model choice. We choose 384 to make that distinction visible; it is not forced by the 768 pixel values.</script>
 </div>
-<div class="frame" data-title="What does a large attention weight tell us?" data-autobuild="off">
-  <div id="s08-check3"></div>
-  <script type="text/x-notes">Separate the claim about this weighted sum from a claim about causal influence on the final decision. The input counterfactual was an additional test, not a justification for labelling every high weight an explanation.</script>
+
+<div class="frame" data-title="A full encoder block makes two residual updates" data-autobuild="off">
+  <div id="s08-block"></div>
+  <pre class="torch-snippet" data-build="1"><code>E = E + attention(norm1(E))  # exchange information across rows
+E = E + mlp(norm2(E))        # transform each row's features</code></pre>
+  <p data-build="2">Repeat the blocks. A final normalization and class head read the final CLS row.</p>
+  <script type="text/x-notes">Our numerical model isolated the attention path. This is the full pre-norm encoder pattern: normalization before each sublayer, a residual addition after each, and final normalization after the stack. The MLP shares weights across positions but does not mix different rows.</script>
 </div>
-<div class="frame" data-title="Keep the image encoder; change what teaches it" data-autobuild="off">
-  <p>So far: an image label supplies a classification loss.</p>
-  <ul><li data-build="1">Two views of an image can supply a matching task.</li><li data-build="2">Hidden patches can supply a reconstruction task.</li><li data-build="3">A teacher model can supply a feature target.</li></ul>
-  <p class="callout callout-key" data-build="4">Vision Part 2 asks what these objectives encourage the image representation to retain.</p>
-  <script type="text/x-notes">These are different learning objectives, not four extra layers of one mandatory pipeline. Some methods operate on pixels, others on representation targets. We will calculate small examples and keep the target mechanism explicit.</script>
+
+<div class="frame" data-title="Several heads can collect different information" data-autobuild="off">
+  <div id="s08-heads" class="v1-scale-figure"></div>
+  <p data-build="1">Each head reads all <strong>384 input features</strong>. Its own projections make 64-number queries, keys, and values.</p>
+  <p data-build="2">Concatenate the six messages. $W_O$ returns an update with the same width as $E$.</p>
+  <script type="text/x-notes">We choose six heads of width sixty-four for the 384-wide illustration. Do not describe this as giving each head a different slice of the input. Every head projects the full input row. Their separate learned projections can collect different information.</script>
 </div>
-<div class="companion after"><h3>What the worksheet does and does not establish</h3><p>The page demonstrates patch extraction, a shared projection, position addition, a class token, self-attention, residual addition, and a derived class probability. It does not measure recognition quality. Attention diagrams show a mixing operation, not a complete causal explanation of a trained prediction. The earlier photo-based article explored a different CNN-feature proxy; this numerical example does not depend on that external model or equate its features with ViT patch attention.</p><p>For a larger implementation, use the original ViT references in the preceding section. For the next learning objectives, continue to <a href="vision2.html">Vision Part 2</a>.</p></div>
-<script>(function(){const S=document.getElementById('s08');AT.vision.diagram(S.querySelector('#s08-pipeline'),'pipeline');AT.ui.reveal('Is a value always the patch embedding?','No. $v_j=e_jW_V$. Here $W_V=I$, so the value equals the input row, which already includes position.',{into:S.querySelector('#s08-check1')});AT.ui.reveal('Where did the first CLS query come from?','From the CLS input row multiplied by $W_Q$. This initial query is shared across images; the image-dependent keys change its matches.',{into:S.querySelector('#s08-check2')});AT.ui.reveal('Does a large attention weight mean a patch caused the class prediction?','It says that this query mixes in more of that source value. Values, residual paths, later transformations, and the class head also affect the prediction. The weight alone is not a causal explanation.',{into:S.querySelector('#s08-check3')});})();</script>
+
+<div class="frame" data-title="What if we do not have an image label?" data-autobuild="off">
+  <div id="s08-hide-patch" class="v1-scale-figure"></div>
+  <p data-build="1">Hide part of an image. Ask the model to predict what was there.</p>
+  <p class="callout callout-key" data-build="2">The image itself can supply a training target. Vision Part 2 compares this idea with learning from other views and teacher features.</p>
+  <script type="text/x-notes">This is one way to obtain supervision, not the definition of every self-supervised vision method. The next part distinguishes pixel reconstruction, matching views, and teacher feature targets. Keep the image-encoder machinery separate from the objective used to train it.</script>
+</div>
+
+<div class="companion after">
+  <h3>Two details worth returning to</h3>
+  <p>Patch positions describe slots in the image. Without them, permuting the patch inputs permutes their self-attention outputs. If CLS stays in its slot, its output is unchanged by that patch permutation. This is permutation equivariance of the patch rows and invariance of the CLS readout, not invariance of the whole output matrix.</p>
+  <p>Smaller patches create more rows. For this 224×224 image, changing the patch side from 16 to 8 raises the patch count from 196 to 784. Including CLS, the attention matrix grows from 197×197 to 785×785. That counts score entries per head, not the complete runtime or all model memory.</p>
+  <p>The full encoder pattern follows the <a href="https://arxiv.org/html/2010.11929v2#S3">original Vision Transformer</a> and its <a href="https://github.com/google-research/vision_transformer/blob/main/vit_jax/models_vit.py">reference implementation</a>. Our two-image model demonstrates a calculation and a learning loop; it does not reproduce those trained models. Continue to <a href="vision2.html">Vision Part 2: learning visual features</a>.</p>
+</div>
+<script>
+(function(){
+  const S=document.getElementById('s08'),T=AT.vision;
+  function svg(host,w,h,label){const s=AT.svg('svg',{viewBox:'0 0 '+w+' '+h,role:'img','aria-label':label});host.appendChild(s);return s;}
+  function text(s,x,y,value,size,color,anchor){s.appendChild(AT.svg('text',{x,y,'font-size':size||25,fill:color||'var(--ink)','font-family':'var(--font-ui)','text-anchor':anchor||'middle','dominant-baseline':'middle'},value));}
+  function rect(s,x,y,w,h,stroke,fill){s.appendChild(AT.svg('rect',{x,y,width:w,height:h,rx:5,stroke:stroke||'var(--ink-3)',fill:fill||'var(--card)','stroke-width':1.8}));}
+  function arrow(s,x1,y1,x2,y2,color){s.appendChild(AT.svg('path',{d:'M'+x1+' '+y1+'L'+x2+' '+y2,fill:'none',stroke:color||'var(--ink-3)','stroke-width':2}));const dx=x2-x1,dy=y2-y1,n=Math.hypot(dx,dy),ux=dx/n,uy=dy/n;s.appendChild(AT.svg('path',{d:'M'+(x2-10*ux+5*uy)+' '+(y2-10*uy-5*ux)+'L'+x2+' '+y2+'L'+(x2-10*ux-5*uy)+' '+(y2-10*uy+5*ux),fill:'none',stroke:color||'var(--ink-3)','stroke-width':2}));}
+  const grid=svg(S.querySelector('#s08-patch-grid'),1100,310,'A 224 by 224 image is split into fourteen by fourteen patches, each sixteen by sixteen pixels.');
+  for(let y=0;y<14;y++)for(let x=0;x<14;x++)grid.appendChild(AT.svg('rect',{x:118+x*17,y:25+y*17,width:17,height:17,fill:x===8&&y===5?'var(--t-q)':'var(--t-e)',stroke:'var(--ink-3)','stroke-width':.7}));
+  text(grid,238,282,'224 pixels',24);text(grid,475,45,'14 patches across',24);arrow(grid,395,80,360,80);rect(grid,580,70,136,136,'var(--c-q)','var(--t-q)');text(grid,648,118,'one patch',25,'var(--c-q)');text(grid,648,161,'16 × 16',26,'var(--c-q)');arrow(grid,290,119,565,135,'var(--c-q)');text(grid,910,117,'196 patch rows',28);text(grid,910,169,'+ 1 CLS row',28);text(grid,910,224,'= 197 rows',28,'var(--c-e)');
+  T.story(S.querySelector('#s08-rgb'),{stage:'rgb'});
+  T.diagram(S.querySelector('#s08-block'),'block');
+  const heads=svg(S.querySelector('#s08-heads'),1100,285,'Six heads project the same 384-wide input rows into separate 64-wide messages, concatenate them, and apply an output projection.');
+  rect(heads,20,91,185,91,'var(--c-e)','var(--t-e)');text(heads,112,122,'same input E',25,'var(--c-e)');text(heads,112,155,'197 × 384',24);
+  const headColors=['var(--c-q)','var(--c-k)','var(--c-v)','var(--c-q)','var(--c-k)','var(--c-v)'];
+  for(let i=0;i<6;i++){const y=10+i*43;rect(heads,290,y,275,35,headColors[i]);text(heads,427,y+18,'head '+(i+1)+' message: 197 × 64',21);arrow(heads,205,137,278,y+18,headColors[i]);arrow(heads,565,y+18,658,137,headColors[i]);}
+  rect(heads,670,89,175,94,'var(--c-v)','var(--t-v)');text(heads,757,117,'concatenate',24,'var(--c-v)');text(heads,757,151,'197 × 384',24);arrow(heads,845,137,898,137);rect(heads,909,89,165,94,'var(--c-d)','var(--t-d)');text(heads,991,116,'apply W_O',25,'var(--c-d)');text(heads,991,150,'197 × 384',24);text(heads,835,244,'384 numbers: one update per input row',24);
+  const hidden=svg(S.querySelector('#s08-hide-patch'),1100,270,'Hide the top-left patch of the same image and use its original pixel values as a reconstruction target.'),im=T.data.image;
+  im.forEach((row,y)=>row.forEach((v,x)=>{let shade=Math.round(35+v*69);hidden.appendChild(AT.svg('rect',{x:70+x*47,y:25+y*47,width:47,height:47,fill:'rgb('+shade+','+shade+','+shade+')',stroke:'var(--paper)'}));}));rect(hidden,70,25,94,94,'var(--c-q)','var(--t-q)');text(hidden,117,71,'?',48,'var(--c-q)');text(hidden,164,243,'visible input',25);arrow(hidden,285,119,388,119);rect(hidden,402,74,230,89,'var(--c-e)','var(--t-e)');text(hidden,517,104,'image model',28);text(hidden,517,138,'predict the patch',24);arrow(hidden,650,119,751,119);rect(hidden,774,53,134,134,'var(--c-v)','var(--t-v)');[['1','1'],['1','1']].forEach((r,y)=>r.forEach((v,x)=>text(hidden,807+x*67,87+y*67,v,29)));text(hidden,842,227,'original pixels: target',25,'var(--c-v)');
+})();
+</script>
 </section>
 
 </main>

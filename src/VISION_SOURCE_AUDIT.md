@@ -29,6 +29,14 @@ The adaptation retains patch extraction, visual pretraining objectives, image–
 
 The earlier interactive toys are not evidence of trained-model behavior. New fitted toys likewise demonstrate computation, not general translation, image recognition, zero-shot transfer, or counting ability. The VLM's two-image conditioning test reuses its training images.
 
+## Vision I teaching rebuild
+
+The first adaptation passed arithmetic and fit checks but skipped too many reasons and intermediate steps. Its replacement keeps the same image in view and asks a concrete question—one occupied block or two—from the opening frame. It works one patch-projection column at a time, changes a pixel to expose what the map does, motivates a global collection row before introducing CLS, and keeps source crops beside keys and values.
+
+A value-only intervention demonstrates unchanged weights with changed information. Scores, exponentials, normalization, value contributions, residual addition, classifier columns, and loss are separate teaching steps. The initial model gets the one-block image wrong. The same model then trains on both images with real full-batch SGD; students see the graph, autograd call, an actual parameter update, and recomputed predictions. Manual derivative worksheets stay out of the lesson.
+
+All learned numbers in this two-image experiment are updated, but this is not evidence of a general block counter. The first numerical encoder snapshot remains unchanged for the later VLM example. The prose uses direct teacher questions; formal permutation arguments and optional shape/cost detail stay in the article companions.
+
 ## Primary references
 
 - ViT: https://arxiv.org/abs/2010.11929

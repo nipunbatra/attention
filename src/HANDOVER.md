@@ -31,7 +31,7 @@ Read this file, then `PRESENT.md` for the current layout/runtime contract and `C
 | 2: self-attention | `sections/secNN.html` | `toy.json`, `part2.json` | `../attention.html` |
 | 3: learning and Transformer blocks | `sections3/secNN.html` | `toy3.json`, `part3.js`, `part3.json` | `../part3.html` |
 | 4: cross-attention and translation | `sections4/secNN.html` | `toy4.json`, `part4.js`, `part4.json` | `../part4.html` |
-| Vision I: ViT (source ID 5) | `sections5/secNN.html` | `toy5.json`, `part5.js`, `part5.json` | `../vision1.html` |
+| Vision I: ViT (source ID 5) | `sections5/secNN.html` | `toy5.json`, `part5.js`, `part5-diagrams.js`, `part5-learning.js`, `part5.json` | `../vision1.html` |
 | Vision II: visual pretraining (source ID 6) | `sections6/secNN.html` | `toy6.json`, `part6.js`, `part6.json` | `../vision2.html` |
 | Vision III: CLIP (source ID 7) | `sections7/secNN.html` | `toy7.json`, `part7.js`, `part7.json` | `../vision3.html` |
 | Vision IV: VLM (source ID 8) | `sections8/secNN.html` | `toy8.json`, `part8.js`, `part8.json` | `../vision4.html` |
@@ -101,11 +101,13 @@ Use **P** to present, arrows to advance, **Esc** to return to the same article s
 `VISION_SOURCE_AUDIT.md` records the original four articles and the important corrections. Keep their original files untouched; the adapted release lives in this repository. All core worksheets work without network/model downloads.
 
 - `AT.vision`: exact four-patch + CLS worksheet; full ViT pre-norm architecture is clearly separate from the no-LN/no-FFN numerical model. Position addition is same-width. Token permutation without positions is equivariant; the CLS readout is invariant to patch-only permutation.
+- `AT.vision.story`: image crops stay attached to representations through 21 SVG stages. Important operations use separate authored frames so their workings survive ordinary PDF export. Projection columns, score/exponential/normalization stages, and value-only interventions are shown explicitly.
+- `AT.vision.learning`: separate 44-parameter two-image classifier. Initial numbers match `AT.vision.forward()`; full-batch SGD uses learning rate 0.05 for 600 updates. The first step reduces mean loss but worsens the two-block example. `verify_vision1_learning.py` independently reproduces its tensors and checks every parameter gradient with NumPy and central differences. **Do not copy the fitted encoder over the initial frozen snapshot used by Vision IV.**
 - `AT.visionSSL`: exact masked-pixel losses and illustrative teacher logits. These are not trained MAE, DINO, or I-JEPA outputs. EMA and stop-gradient roles must remain explicit.
 - `AT.clip`: three trained image–caption pairs, 16×3 pixel map, bag-of-words text map, unit normalization, symmetric loss, and a learned logit scale. `train_vision3.py --check` reproduces training; `check_vision3.mjs` checks the normalization derivative and simultaneous updates. Candidate softmax is not calibrated truth confidence.
 - `AT.vlm`: reuses Vision I's fixed encoder, discards CLS only after image attention, then uses a 2×3 bridge and a width-three decoder. Image rows read only image rows; text reads every image plus current/earlier text. No future-answer route is allowed. The prompt's final `?` row predicts the first answer token; subsequent generated tokens provide the new last query. `train_vision4.py --check` reproduces two-pair fitting and a further SGD step. That one-example step **harms the other image's answer**; keep the visible before/after regression rather than claiming universal improvement.
 
-Neither tiny fitted model establishes transfer to new images or text. Full-model claims are scoped to cited papers. Values remain attention projections; CLIP's global embeddings use `g_img/g_txt`, and VLM visual memory uses `G`.
+These tiny fitted models do not establish transfer to new images or text. Full-model claims are scoped to cited papers. Values remain attention projections; CLIP's global embeddings use `g_img/g_txt`, and VLM visual memory uses `G`.
 
 The vision checkers have optional `--browser` modes; inspect each header for arguments. Use the shared `frame_audit.mjs`, `check_tables.mjs`, and `export_slides.mjs` on all four `visionN.html` outputs. Save PDFs as `output/pdf/vision-partN-slides.pdf` (ignored by Git).
 
