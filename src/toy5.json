@@ -1,0 +1,23 @@
+{
+  "d_model": 2,
+  "d_k": 2,
+  "d_v": 2,
+  "axes": {"named": false, "e": ["coordinate 1", "coordinate 2"], "qk": ["coordinate 1", "coordinate 2"], "v": ["coordinate 1", "coordinate 2"]},
+  "vision": {
+    "image": [[1,1,0,0],[1,1,0,0],[0,0,2,2],[0,0,2,2]],
+    "patchSize": 2,
+    "W_patch": [[1,0],[0,1],[1,0],[0,1]],
+    "b_patch": [0,0],
+    "cls": [1,1],
+    "positions": [[0,0],[0,0],[0,1],[1,0],[1,1]],
+    "W_Q": [[0.5,0],[0,0.5]],
+    "W_K": [[0.5,0],[0,0.5]],
+    "W_V": [[1,0],[0,1]],
+    "W_O": [[1,0],[0,1]],
+    "W_class": [[0.5,0],[0,0.25]],
+    "b_class": [0,0],
+    "classes": ["class A", "class B"],
+    "target": 0,
+    "provenance": "Hand-chosen one-head teaching model, not fitted to images. Two-dimensional rows, added positions, one attention update with residual, and a linear classifier. No LayerNorm, feed-forward sublayer, or dropout. Classes are arbitrary worksheet outputs, not learned visual categories."
+  }
+}

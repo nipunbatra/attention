@@ -1,0 +1,27 @@
+<section id="s04" class="sec" data-title="Learn from two views of one image" data-lit="">
+<header class="sec-head"><span class="sec-num">04</span><div><p class="eyebrow">A second view can supply a different kind of target.</p><h2>Learn from two views of one image</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>Instead of asking for missing pixels, we can ask two transformed views of an image to produce related representations. For an object-recognition task, a moderate crop or a colour change might preserve the information we want. This gives us a positive pair without a class label. The choice of transformations matters: agreement across an augmentation teaches the model to ignore some changes, including changes that may matter to another task.</p></div>
+<div class="frame" data-title="Two views, one source image" data-autobuild="off">
+  <div id="s04-views"></div>
+  <p data-build="1">These are actual transformations of our four-patch image, not outputs from a trained model.</p>
+  <p data-build="2">We can ask an encoder to retain information shared across both views.</p>
+  <script type="text/x-notes">The flip moves the lower-right patch to the lower-left. The brightness change multiplies all pixels by 0.75. Neither changes the number of image or patch coordinates. Real recipes use several transformations and crop sizes.</script>
+</div>
+<div class="frame" data-title="Agreement alone allows a useless answer" data-autobuild="off">
+  <p>If every image produces the same vector, its two views agree perfectly.</p>
+  <div id="s04-contrastive" data-build="1"></div>
+  <p data-build="2">Contrastive objectives also compare against other images. DINO uses a teacher and a different anti-collapse recipe.</p>
+  <script type="text/x-notes">The two views of the same image are the positive pair. Other images supply contrastive alternatives in a method such as SimCLR. This drawing introduces one family; DINO itself does not use this explicit negative-pair objective.</script>
+</div>
+<div class="frame" data-title="Choose changes the task can afford to ignore" data-autobuild="off">
+  <div id="s04-changes"></div>
+  <div id="s04-check" data-build="1"></div>
+  <script type="text/x-notes">There is no augmentation that is harmless for every task. If predicting absolute brightness is important, forcing identical outputs after brightness scaling removes a useful distinction. Avoid saying that colour is always a nuisance.</script>
+</div>
+<div class="companion after"><p>Agreement need not mean that every intermediate patch row becomes identical across views. A method may apply its loss to a particular global output or to a separate projection head. The backbone still produces the representation used downstream.</p><p>The contrastive drawing is a schematic explanation of the positive/negative distinction, not a simulation of training. We will now work through DINO's alternative: a student matches a slowly changing teacher distribution. The teacher's targets and the training recipe are what make this more than matching two arbitrary random vectors.</p></div>
+<script>
+(function(){const S=document.getElementById('s04'),T=AT.visionSSL;T.diagram(S.querySelector('#s04-views'),'views');T.diagram(S.querySelector('#s04-contrastive'),'contrastive');
+AT.ui.table([['horizontal flip','left versus right'],['brightness scaling','absolute intensity']],{cols:[{label:'transformation',kind:'text'},{label:'a distinction it may remove',kind:'text'}],rowLabels:['our view A','our view B'],cornerLabel:'same source image',into:S.querySelector('#s04-changes')});
+AT.ui.reveal('If the task asks which side has the brighter patch, should a flip leave the answer unchanged?','No. The flip changes that answer. Augmentation choices should reflect what the downstream task needs to preserve.',{into:S.querySelector('#s04-check')});})();
+</script>
+</section>

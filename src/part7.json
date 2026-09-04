@@ -1,0 +1,36 @@
+{
+  "part": 3,
+  "series": "Vision to language",
+  "title": "CLIP: learn to match images and text",
+  "subtitle": "Follow three image-caption pairs through two encoders, a matching matrix, a contrastive loss, and a real update. Then keep the encoders fixed and change the candidate descriptions.",
+  "audience": "Deep-learning students who have studied image encoders and contrastive learning",
+  "minutes": 40,
+  "centralLabel": "One score for an image and a candidate description",
+  "central": "S_{ij}=\\frac{\\hat g_i^{\\mathrm{img}}(\\hat g_j^{\\mathrm{txt}})^\\top}{\\tau}",
+  "chain": [
+    {"label": "Pair images with captions", "section": "s01"},
+    {"label": "Encode and normalize", "section": "s02"},
+    {"label": "Score the matches", "section": "s03"},
+    {"label": "Learn both directions", "section": "s04"},
+    {"label": "Update both encoders", "section": "s05"},
+    {"label": "Supply new candidates", "section": "s06"},
+    {"label": "What the scores mean", "section": "s07"}
+  ],
+  "sections": [
+    {"id": "s01", "title": "A caption can supply supervision", "lit": "e q"},
+    {"id": "s02", "title": "Pixels and words become comparable vectors", "lit": "e q"},
+    {"id": "s03", "title": "Compare every image with every caption", "lit": "e q a"},
+    {"id": "s04", "title": "Train retrieval in both directions", "lit": "a d"},
+    {"id": "s05", "title": "A wrong match changes both encoders", "lit": "e q d"},
+    {"id": "s06", "title": "The candidate text supplies the classifier", "lit": "e q a"},
+    {"id": "s07", "title": "A match score is not a truth judgment", "lit": "a d"}
+  ],
+  "objects": ["e", "q", "a", "d"],
+  "legendTitle": "Whole-image and whole-text vectors, not attention values",
+  "provenance": "The offline example uses three 4×4 images, a trainable 16×3 pixel map, and an 11×3 bag-of-words text map. Every table is computed from the disclosed parameters, including exact normalization gradients. This is a CLIP-style teaching toy, not pretrained CLIP; its trained checkpoint is fitted only to these three pairs.",
+  "prev": {"label": "Part 2: Learn image representations", "href": "vision2.html"},
+  "next": {"label": "Part 4: Vision-language models", "href": "vision4.html"},
+  "index": {"label": "Series home", "href": "index.html"},
+  "notation": "vision3",
+  "footer": "Learn matching representations; keep the encoders fixed when supplying candidate text."
+}

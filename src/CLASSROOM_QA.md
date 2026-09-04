@@ -1,5 +1,30 @@
 # Classroom release checks
 
+## 2026-09-04: four-part Vision to language extension
+
+The adapted articles use the existing slide-first runtime without new production dependencies or changes to shared CSS/JS. Original vision articles and lecture sources are preserved. `VISION_SOURCE_AUDIT.md` records the source corrections and explicit toy/full-model boundaries.
+
+| Vision part | Frames / PDF pages | Progressive states | Strictly reparsed formulas |
+|---|---:|---:|---:|
+| I: Vision Transformer | 30 | 85 | 67 |
+| II: visual pretraining | 25 | 62 | 32 |
+| III: CLIP | 25 | 78 | 55 |
+| IV: vision-language generation | 31 | 74 | 49 |
+
+- All 299 states pass preflight and live navigation with no stage overflow, nested slide scrolling, JavaScript errors, or invalid maths. Open reveals and managed builds are included.
+- All 151 table views pass desktop-reading, 390px-phone and classroom checks with no issues. CLIP's narrow-phone comparison tables unfold into labelled value cards; the same numerical data remain visible.
+- Vision I: exact patch/CLS arithmetic, same-width position addition, permutation behavior, causal/unmasked comparison, and pixel edits pass. The full pre-norm ViT block stays separate from the simplified numerical worksheet.
+- Vision II: 40 numeric cases, masked MSE, normalized teacher/student distributions, EMA, all 10 SVG-stage bounds, and assembled-page MAE/DINO controls pass. Calculator outputs are explicitly illustrative, not pretrained-model evidence.
+- Vision III: 900 JS/reference scalars agree within 4.45e-16; 246 finite-difference gradient checks within 2.53e-11. Exact NumPy regeneration passes. All 12 candidate/template/temperature states and four training checkpoints fit. Normalization gradients, simultaneous parameter updates, duplicate candidates, missing candidates, and frozen-encoder readouts are checked.
+- Vision IV: 4,779 reference/invariant comparisons agree within 5.69e-14; 1,096 finite-difference checks cover all 137 parameters, both images and both snapshots (maximum 6.94e-8). Exact NumPy regeneration, the shared Vision I front end, causal prefixes, SGD update, image sensitivity, and actual greedy generation pass. A final independent content pass checked notation and lesson transitions.
+- The VLM update deliberately shows a regression: two-image-response loss 0.0850 → 0.0077, but one-image-response loss 0.0790 → 0.6372. The latter answer changes from “one block” to “two blocks”. This is a training-set conditioning demonstration, not evidence of general counting ability.
+- PDFs contain 111 fully revealed 16:9 pages at 2× raster resolution; all eight quiz/reveal answers are open. Every page has a valid slide image. Representative actual PDF pages, dense calculations, architecture diagrams, generation states, and phone views were visually inspected.
+- Final notation fixes reserve `M` for a mask, use `n_r` for resampler row count, distinguish `d_k` and `d_v`, and explicitly disclose omitted CLS in the MAE schematic.
+
+Core browser checks work with external requests blocked. These tests do not establish exhaustive browser compatibility or learned-model generalization. Very wide SVGs remain small overview diagrams on narrow phones; classroom and desktop views retain readable labels.
+
+Reproduce with `check_vision1.mjs` through `check_vision4.mjs`, `train_vision3.py --check`, `train_vision4.py --check`, and the shared frame/table/PDF checks documented in `README.md`. Exported PDFs remain ignored local build artifacts.
+
 ## 2026-09-04: Part IV, cross-attention and translation
 
 - 8 sections, 32 classroom frames, 85 progressive states. All states pass strict fit and math checks (62 formulas).

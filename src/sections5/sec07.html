@@ -1,0 +1,27 @@
+<section id="s07" class="sec" data-title="Put this calculation inside a ViT" data-lit="e q k v a d ep">
+<header class="sec-head"><span class="sec-num">07</span><div><p class="eyebrow">The worksheet isolated attention. A full encoder also normalizes and transforms each row.</p><h2>Put this calculation inside a ViT</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>The original Vision Transformer uses a pre-norm encoder: normalization precedes each attention and feed-forward sublayer, with a residual addition after each one. A final normalization follows the stack. The diagram below describes that architecture. It is not the numerical model we just evaluated; inserting LayerNorm into that two-coordinate worksheet would change its numbers.</p></div>
+<div class="frame" data-title="A full ViT encoder block has two residual updates" data-autobuild="off">
+  <div id="s07-block"></div>
+  <pre class="torch-snippet" data-build="1"><code>E = E + attention(norm1(E))
+E = E + mlp(norm2(E))
+# Repeat blocks; apply final normalization before the class head.</code></pre>
+  <script type="text/x-notes">Attention mixes information across rows. The MLP transforms each row separately with shared weights. Multiple heads have separate projections; concatenation and W_O return their messages to model width. This is the pre-norm architecture, not a post-norm diagram.</script>
+</div>
+<div class="frame" data-title="Learn parameters; recompute representations" data-autobuild="off">
+  <div class="vision1-pair"><div><h3>Optimizer updates</h3><ul><li>Patch projection and bias</li><li>CLS and position parameters</li><li>Attention, MLP, and normalization parameters</li><li>Classification head</li></ul></div><div data-build="1"><h3>Forward pass recomputes</h3><ul><li>Patch embeddings and input rows</li><li>Queries, keys, values, and attention weights</li><li>Residual updates and contextual rows</li><li>Class logits and loss</li></ul></div></div>
+  <pre class="torch-snippet" data-build="2"><code>optimizer.zero_grad()
+loss = F.cross_entropy(model(images), labels)
+loss.backward()
+optimizer.step()</code></pre>
+  <script type="text/x-notes">Backpropagation follows the same graph as before. We do not optimize a cached attention matrix directly. All intermediate computations must remain in the graph for gradients to reach the learned parameters.</script>
+</div>
+<div class="frame" data-title="Smaller patches make the attention matrix larger" data-autobuild="off">
+  <p>For a 224×224 image, include one CLS row in the token count.</p>
+  <div id="s07-cost"></div>
+  <p class="callout callout-key" data-build="1">Halving the patch side gives four times as many patch tokens and about sixteen times as many attention entries.</p>
+  <script type="text/x-notes">The precise ratio differs slightly because of CLS. These are score entries per head, not total runtime or all model memory. Projection and MLP work also matter. Patch width, image resolution, model width, and attention implementation all affect cost.</script>
+</div>
+<div class="companion after"><p>A patch projection can be implemented as a convolution whose kernel and stride both equal the patch size. It applies the same learned linear map at each nonoverlapping patch location. This equivalence does not make a ViT encoder identical to a conventional convolutional network. Global attention can mix distant patches in one layer; local convolutions build spatial context according to their kernels and depth.</p><p>The architecture above follows the <a href="https://arxiv.org/html/2010.11929v2#S3">original ViT description</a> and <a href="https://github.com/google-research/vision_transformer/blob/main/vit_jax/models_vit.py">reference implementation</a>. Their trained systems use more dimensions, layers, and data than this worksheet.</p></div>
+<script>(function(){const S=document.getElementById('s07');AT.vision.diagram(S.querySelector('#s07-block'),'block');AT.ui.table([32,16,8].map(p=>{const n=(224/p)**2;return[p,n,n+1,(n+1)**2];}),{into:S.querySelector('#s07-cost'),cols:['patch side P','patches N','rows N + 1','attention entries'],rowLabels:['larger patches','middle size','smaller patches'],cornerLabel:'same image size',decimals:0});})();</script>
+</section>

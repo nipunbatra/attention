@@ -1,11 +1,18 @@
-# From characters to Transformers
+# Attention, vision and language
 
-Four interactive, offline-capable lessons for a deep-learning course. [Open the series](https://nipunbatra.github.io/attention/).
+Two connected, interactive, offline-capable series for a deep-learning course. [Open the lessons](https://nipunbatra.github.io/attention/).
 
 - [Part 1](https://nipunbatra.github.io/attention/part1.html): characters, embeddings, an MLP, next-token probabilities, training, and generation.
 - [Part 2](https://nipunbatra.github.io/attention/attention.html): query, key, and value; causal self-attention; a contextual update; next-token prediction.
 - [Part 3](https://nipunbatra.github.io/attention/part3.html): loss and learning, multiple heads, Transformer blocks, and autoregressive generation.
 - [Part 4](https://nipunbatra.github.io/attention/part4.html): cross-attention through English-to-French translation, from source encoding to prediction, training, and generation.
+
+The four-part **Vision to language** sequence continues with:
+
+- [Vision I](https://nipunbatra.github.io/attention/vision1.html): image patches, learned projections, added positions, class-token attention, residual updates, and classification.
+- [Vision II](https://nipunbatra.github.io/attention/vision2.html): visual pretraining through MAE, DINO, and I-JEPA; exact reconstruction and teacher-distribution worksheets.
+- [Vision III](https://nipunbatra.github.io/attention/vision3.html): CLIP-style image–text matching, symmetric contrastive learning, candidate classification, and retrieval.
+- [Vision IV](https://nipunbatra.github.io/attention/vision4.html): a visual connector, an image-conditioned prefix decoder, actual answer generation, training, and grounding checks.
 
 Build sources, plans and the handover guide are in `src/` (start with `src/HANDOVER.md`).
 
@@ -23,6 +30,8 @@ Part 1 also has four model-backed diagrams: the trained embedding space, lookup-
 
 Part 4 uses a separate three-coordinate model fitted to two phrase pairs: “the river bank” → “la rive”, and “the financial bank” → “la banque”. It includes an encoder, masked target self-attention, cross-attention, residual additions, and a vocabulary head. The numerical toy omits FFNs and LayerNorm; it is not evidence of general translation ability. Source and target positions are learned, added vectors. The diagrams and calculations read the same model. An independent NumPy reference reproduces training and checks every scalar gradient.
 
+The vision sequence adapts the earlier `vision-transformer`, `vision-ssl`, `clip-zero-shot`, and `vlm` articles into this shared article/classroom system. It retains their questions, but replaces misleading synthetic-model claims and unchecked training code with disclosed, checked worksheets. Vision I and IV share the same frozen 4×4-image encoder. Vision II's calculators illustrate objectives, not pretrained-model outputs. Vision III fits only three image–caption pairs; Vision IV fits only two image–answer pairs. Neither is evidence of general zero-shot transfer or counting ability. See `src/VISION_SOURCE_AUDIT.md` for provenance and changes.
+
 ```sh
 python3 src/assemble.py --part 1 --out part1.html
 python3 src/assemble.py --part 2 --out attention.html
@@ -30,6 +39,16 @@ python3 src/assemble.py --part 3 --out part3.html
 python3 src/assemble.py --part 4 --out part4.html
 # Rebuild Part 3 once Part 4 exists so the next-part link is marked available.
 python3 src/assemble.py --part 3 --out part3.html
+# Internal source IDs 5–8 display as Vision Parts I–IV.
+python3 src/assemble.py --part 5 --out vision1.html
+python3 src/assemble.py --part 6 --out vision2.html
+python3 src/assemble.py --part 7 --out vision3.html
+python3 src/assemble.py --part 8 --out vision4.html
+# Rebuild after successor pages exist to enable their navigation links.
+python3 src/assemble.py --part 4 --out part4.html
+python3 src/assemble.py --part 5 --out vision1.html
+python3 src/assemble.py --part 6 --out vision2.html
+python3 src/assemble.py --part 7 --out vision3.html
 python3 -m http.server 8776 --bind 127.0.0.1
 ```
 
@@ -43,6 +62,9 @@ node src/export_slides.mjs attention.html output/pdf/attention-part2-slides.pdf
 
 # Every build and managed interactive step becomes a page
 node src/export_slides.mjs attention.html output/pdf/attention-part2-builds.pdf --builds all
+
+# The same exporter works for the vision series.
+node src/export_slides.mjs vision1.html output/pdf/vision-part1-slides.pdf
 ```
 
 The exporter checks every frame for clipping before writing the PDF. Reveal/quiz answers are shown on completed frames by default, since PDF readers cannot click them; use `--answers authored` for a question handout. It captures the exact classroom stage with navigation removed, at 2× resolution by default (`--scale 1|2|3`). These appearance-faithful PDFs use images, so their text is not selectable. Browser Print also opens answer panels for a reading-oriented handout.
@@ -56,6 +78,12 @@ node src/check_part1.mjs
 node src/check_part1_diagrams.mjs
 python3 src/train_part4.py --check
 node src/check_part4.mjs
+node src/check_vision1.mjs
+node src/check_vision2.mjs
+python3 src/train_vision3.py --check
+node src/check_vision3.mjs
+python3 src/train_vision4.py --check
+node src/check_vision4.mjs
 node src/toy_ref.mjs src/toy.json --compare src/py_check.json
 node src/check-live-model.mjs attention.html
 python3 src/check_training.py
@@ -66,7 +94,12 @@ node src/frame_audit.mjs part1.html
 node src/frame_audit.mjs attention.html
 node src/frame_audit.mjs part3.html
 node src/frame_audit.mjs part4.html
+node src/frame_audit.mjs vision1.html
+node src/frame_audit.mjs vision2.html
+node src/frame_audit.mjs vision3.html
+node src/frame_audit.mjs vision4.html
 node src/check_tables.mjs part1.html attention.html part3.html part4.html
+node src/check_tables.mjs vision1.html vision2.html vision3.html vision4.html
 node src/check-routing-scaling.mjs
 node src/check-diagram.mjs attention.html
 node src/qa.mjs attention.html --width 1280 --height 720

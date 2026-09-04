@@ -1,0 +1,26 @@
+<section id="s08" class="sec" data-title="What has the model learned?" data-lit="">
+<header class="sec-head"><span class="sec-num">08</span><div><p class="eyebrow">An architecture specifies a computation. A training objective determines what it is rewarded for.</p><h2>What has the model learned?</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>We now have a complete route from an image to a loss. Our arithmetic used hand-chosen parameters so that we could inspect every operation. A useful vision model instead learns its parameters from data. Supervised classification is one way to train that encoder, but not the only one. The next part keeps image representations and changes the training signal.</p></div>
+<div class="frame" data-title="Trace one patch into the final prediction" data-autobuild="off">
+  <div id="s08-pipeline"></div>
+  <p class="callout callout-key" data-build="1">A patch contributes through its key, which affects the weights, and its value, which supplies information to the mixture.</p>
+  <script type="text/x-notes">Ask students to trace a change to patch4. Its own query also changes its patch-row output, but the one-layer CLS read uses its key and value. In deeper models, those changed patch rows can affect later reads.</script>
+</div>
+<div class="frame" data-title="Keep the embedding, query, and value distinct" data-autobuild="off">
+  <div id="s08-check1"></div>
+  <div id="s08-check2" data-build="1"></div>
+  <script type="text/x-notes">Pause before each reveal. Ask for the operation separating e from v. Then ask where the CLS query comes from. It is a projection of the CLS input row, not a human question or the correct class label.</script>
+</div>
+<div class="frame" data-title="What does a large attention weight tell us?" data-autobuild="off">
+  <div id="s08-check3"></div>
+  <script type="text/x-notes">Separate the claim about this weighted sum from a claim about causal influence on the final decision. The input counterfactual was an additional test, not a justification for labelling every high weight an explanation.</script>
+</div>
+<div class="frame" data-title="Keep the image encoder; change what teaches it" data-autobuild="off">
+  <p>So far: an image label supplies a classification loss.</p>
+  <ul><li data-build="1">Two views of an image can supply a matching task.</li><li data-build="2">Hidden patches can supply a reconstruction task.</li><li data-build="3">A teacher model can supply a feature target.</li></ul>
+  <p class="callout callout-key" data-build="4">Vision Part 2 asks what these objectives encourage the image representation to retain.</p>
+  <script type="text/x-notes">These are different learning objectives, not four extra layers of one mandatory pipeline. Some methods operate on pixels, others on representation targets. We will calculate small examples and keep the target mechanism explicit.</script>
+</div>
+<div class="companion after"><h3>What the worksheet does and does not establish</h3><p>The page demonstrates patch extraction, a shared projection, position addition, a class token, self-attention, residual addition, and a derived class probability. It does not measure recognition quality. Attention diagrams show a mixing operation, not a complete causal explanation of a trained prediction. The earlier photo-based article explored a different CNN-feature proxy; this numerical example does not depend on that external model or equate its features with ViT patch attention.</p><p>For a larger implementation, use the original ViT references in the preceding section. For the next learning objectives, continue to <a href="vision2.html">Vision Part 2</a>.</p></div>
+<script>(function(){const S=document.getElementById('s08');AT.vision.diagram(S.querySelector('#s08-pipeline'),'pipeline');AT.ui.reveal('Is a value always the patch embedding?','No. $v_j=e_jW_V$. Here $W_V=I$, so the value equals the input row, which already includes position.',{into:S.querySelector('#s08-check1')});AT.ui.reveal('Where did the first CLS query come from?','From the CLS input row multiplied by $W_Q$. This initial query is shared across images; the image-dependent keys change its matches.',{into:S.querySelector('#s08-check2')});AT.ui.reveal('Does a large attention weight mean a patch caused the class prediction?','It says that this query mixes in more of that source value. Values, residual paths, later transformations, and the class head also affect the prediction. The weight alone is not a causal explanation.',{into:S.querySelector('#s08-check3')});})();</script>
+</section>

@@ -6,7 +6,7 @@ Updated 2026-09-04. Owner: Nipun Batra.
 - Published series: https://nipunbatra.github.io/attention/
 - Canonical local checkout on this Mac: `/Users/nipun/git/attention`.
 
-All four attention parts are implemented. They share a slide-first reading/presentation system, not separate article and slide sources. The first slide-first checkpoint was `a49f811`; `a1d609c` completed Part 3 and the numerical-correctness pass. `CLASSROOM_QA.md` records local verification. Check the checkout's Git log and the GitHub Pages workflow for the current published commit. A temporary checkout is not evidence of what is live.
+All four attention parts and the four-part Vision to language extension are implemented. They share a slide-first reading/presentation system, not separate article and slide sources. The first slide-first checkpoint was `a49f811`; `a1d609c` completed Part 3 and the numerical-correctness pass. `CLASSROOM_QA.md` records local verification. Check the checkout's Git log and the GitHub Pages workflow for the current published commit. A temporary checkout is not evidence of what is live.
 
 ## Start here
 
@@ -31,8 +31,14 @@ Read this file, then `PRESENT.md` for the current layout/runtime contract and `C
 | 2: self-attention | `sections/secNN.html` | `toy.json`, `part2.json` | `../attention.html` |
 | 3: learning and Transformer blocks | `sections3/secNN.html` | `toy3.json`, `part3.js`, `part3.json` | `../part3.html` |
 | 4: cross-attention and translation | `sections4/secNN.html` | `toy4.json`, `part4.js`, `part4.json` | `../part4.html` |
+| Vision I: ViT (source ID 5) | `sections5/secNN.html` | `toy5.json`, `part5.js`, `part5.json` | `../vision1.html` |
+| Vision II: visual pretraining (source ID 6) | `sections6/secNN.html` | `toy6.json`, `part6.js`, `part6.json` | `../vision2.html` |
+| Vision III: CLIP (source ID 7) | `sections7/secNN.html` | `toy7.json`, `part7.js`, `part7.json` | `../vision3.html` |
+| Vision IV: VLM (source ID 8) | `sections8/secNN.html` | `toy8.json`, `part8.js`, `part8.json` | `../vision4.html` |
 
 Paths in this table are relative to `src/`. Shared files are `shell.html` (layout/CSS), `shared.js` (math, widgets, notation, presentation runtime), and `assemble.py`. Do not edit the generated root HTML or the inlined `katex-bundle.html` by hand. `index.html` is the series landing page; `part2.html` redirects to `attention.html`.
+
+The internal source IDs 5–8 are not displayed part numbers. Their configs set `series: "Vision to language"`, `part: 1..4`, and separate `vision1..4` notation filters. `assemble.py --part 5 --out vision1.html` selects source5 and displays Vision I. Rebuild predecessor pages after successor outputs exist so navigation becomes available.
 
 The standalone staged diagram lives in `figures/attention-diagram-preview/`. Part 2 embeds its same `diagram.js` source through `src/attention-flow-data.js`; keep the preview and article synchronized by changing that shared source.
 
@@ -90,6 +96,21 @@ Use **P** to present, arrows to advance, **Esc** to return to the same article s
 
 ## Build, verify, and export
 
+### Vision models and provenance
+
+`VISION_SOURCE_AUDIT.md` records the original four articles and the important corrections. Keep their original files untouched; the adapted release lives in this repository. All core worksheets work without network/model downloads.
+
+- `AT.vision`: exact four-patch + CLS worksheet; full ViT pre-norm architecture is clearly separate from the no-LN/no-FFN numerical model. Position addition is same-width. Token permutation without positions is equivariant; the CLS readout is invariant to patch-only permutation.
+- `AT.visionSSL`: exact masked-pixel losses and illustrative teacher logits. These are not trained MAE, DINO, or I-JEPA outputs. EMA and stop-gradient roles must remain explicit.
+- `AT.clip`: three trained image–caption pairs, 16×3 pixel map, bag-of-words text map, unit normalization, symmetric loss, and a learned logit scale. `train_vision3.py --check` reproduces training; `check_vision3.mjs` checks the normalization derivative and simultaneous updates. Candidate softmax is not calibrated truth confidence.
+- `AT.vlm`: reuses Vision I's fixed encoder, discards CLS only after image attention, then uses a 2×3 bridge and a width-three decoder. Image rows read only image rows; text reads every image plus current/earlier text. No future-answer route is allowed. The prompt's final `?` row predicts the first answer token; subsequent generated tokens provide the new last query. `train_vision4.py --check` reproduces two-pair fitting and a further SGD step. That one-example step **harms the other image's answer**; keep the visible before/after regression rather than claiming universal improvement.
+
+Neither tiny fitted model establishes transfer to new images or text. Full-model claims are scoped to cited papers. Values remain attention projections; CLIP's global embeddings use `g_img/g_txt`, and VLM visual memory uses `G`.
+
+The vision checkers have optional `--browser` modes; inspect each header for arguments. Use the shared `frame_audit.mjs`, `check_tables.mjs`, and `export_slides.mjs` on all four `visionN.html` outputs. Save PDFs as `output/pdf/vision-partN-slides.pdf` (ignored by Git).
+
+### Commands
+
 Run these from the repository root. Reuse existing Python/NumPy and Playwright environments; browser tools should not install dependencies. In a restricted agent sandbox, Chromium's macOS Mach-port error requires an approved browser test run outside that sandbox, not a claimed pass.
 
 ```sh
@@ -136,4 +157,4 @@ The exporter captures the actual 16:9 stage without navigation, preflights fit, 
 
 The user requested regular GitHub checkpoints. Verify the checkout, branch, remote, existing edits, and available GitHub authentication first. Preserve unrelated work. Stage only reviewed task files with explicit paths, inspect the staged diff, then commit and push after the relevant checks pass. Never use broad `git add -A` as a handover shortcut. Verify the pushed commit and Pages status before calling a checkpoint published.
 
-Give each parallel agent an explicit file boundary and a bounded task. Shared runtime changes affect all three parts and require all-part fit checks. Ask for changed files, tests actually run, screenshots inspected, and remaining limitations. Keep temporary previews outside the source tree and do not overwrite another agent's changes.
+Give each parallel agent an explicit file boundary and a bounded task. Shared runtime changes affect both series and require all-part fit checks. Ask for changed files, tests actually run, screenshots inspected, and remaining limitations. Keep temporary previews outside the source tree and do not overwrite another agent's changes.

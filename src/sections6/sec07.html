@@ -1,0 +1,34 @@
+<section id="s07" class="sec" data-title="What did the encoder learn?" data-lit="">
+<header class="sec-head"><span class="sec-num">07</span><div><p class="eyebrow">The downstream task tests whether the representation is useful.</p><h2>What did the encoder learn?</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>Pretraining produces encoder parameters, not a guarantee of task performance. A linear probe freezes the encoder and trains a linear classifier on labelled examples. Fine-tuning updates some or all of the pretrained encoder along with the task head. These measure different things, so comparisons should state the data, task, training protocol, and whether the backbone was frozen.</p></div>
+<div class="frame" data-title="Separate pretraining from downstream evaluation" data-autobuild="off">
+  <div id="s07-probe"></div>
+  <pre class="torch-snippet" data-build="1"><code>with torch.no_grad():
+    features = encoder(images)
+loss = F.cross_entropy(linear_head(features), labels)</code></pre>
+  <script type="text/x-notes">The code illustrates a frozen-encoder probe; the optimizer trains only the linear head. Use a fixed image-level readout suited to that backbone. Final quality is measured on held-out task examples, not on the examples used to fit the head.</script>
+</div>
+<div class="frame" data-title="Three objectives, three kinds of target" data-autobuild="off">
+  <div id="s07-compare"></div>
+  <p data-build="1">All train visual representations without manual class labels for pretraining. They do not ask the encoder to solve the same problem.</p>
+  <script type="text/x-notes">Ask students to name the target type, then its source. MAE uses the observed pixels. DINO and I-JEPA use EMA targets in different output spaces. The next frame separates the gradient and EMA updates.</script>
+</div>
+<div class="frame" data-title="Which parameters follow gradients, and which follow EMA?" data-autobuild="off">
+  <div id="s07-updates"></div>
+  <p data-build="1">MAE has no learned target network: the original pixels already supply its target.</p>
+  <script type="text/x-notes">The student in DINO includes its encoder and output head. In I-JEPA, the context encoder and predictor take gradients; only the context encoder is copied into the target encoder through EMA. The teacher or target branch receives no gradient from its prediction loss.</script>
+</div>
+<div class="frame" data-title="A visual representation is not yet aligned with language" data-autobuild="off">
+  <div id="s07-check"></div>
+  <p data-build="1">Next: use paired images and text to learn which visual and language representations should match.</p>
+  <p data-build="2">The image encoder can supply visual features. The image-text objective adds a new relationship to learn.</p>
+  <script type="text/x-notes">This is the bridge to CLIP. A good image representation does not automatically place the word river near a river image in a compatible text space. Paired image-caption training supplies that cross-modal signal.</script>
+</div>
+<div class="companion after"><p>We have not compared leaderboard scores. Architecture, data scale, augmentation, training duration, and evaluation protocol can all change a result. Nor have we treated synthetic scores as a benchmark. The reconstruction and DINO calculators only demonstrate their stated arithmetic.</p><p>For the next part, keep the distinction between a backbone representation and the objective used to train it. Image-text alignment can use visual features from a pretrained backbone, but it must learn a relationship to text. The visual pretraining methods in this part do not provide that relationship on their own.</p><p>Primary references: <a href="https://arxiv.org/abs/2111.06377">MAE</a>, <a href="https://arxiv.org/abs/2104.14294">DINO</a>, and <a href="https://arxiv.org/abs/2301.08243">I-JEPA</a>. This lesson and its calculations work offline once the page assets are available.</p></div>
+<script>
+(function(){const S=document.getElementById('s07'),T=AT.visionSSL;T.diagram(S.querySelector('#s07-probe'),'probe');
+AT.ui.table([['hidden pixels','original image'],['distribution from another view','EMA teacher + head'],['hidden-region features','EMA target encoder']],{cols:[{label:'prediction target',kind:'text'},{label:'target comes from',kind:'text'}],rowLabels:['MAE','DINO','I-JEPA'],cornerLabel:'method',into:S.querySelector('#s07-compare')});
+AT.ui.table([['encoder + decoder','none'],['student encoder + head','teacher encoder + head'],['context encoder + predictor','target encoder']],{cols:[{label:'gradient updates',kind:'text'},{label:'EMA updates',kind:'text'}],rowLabels:['MAE','DINO','I-JEPA'],cornerLabel:'method',into:S.querySelector('#s07-updates')});
+AT.ui.reveal('If an encoder learns useful river features without captions, has it learned what the word “river” means?','Not from these objectives alone. They supervise visual targets, not a mapping between image features and language. Image-text pairs provide that missing signal in the next part.',{into:S.querySelector('#s07-check')});})();
+</script>
+</section>

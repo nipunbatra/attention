@@ -1,0 +1,22 @@
+<section id="s01" class="sec" data-title="The image must change the answer" data-lit="e">
+<style>.vlm-diagram{width:100%;display:block;margin:8px 0}.vlm-diagram text{font-variant-numeric:tabular-nums}</style>
+<header class="sec-head"><span class="sec-num">01</span><div><p class="eyebrow">CLIP ranked complete captions. We now want to write an answer.</p><h2>The image must change the answer</h2></div></header>
+<div class="companion"><p>Keep the small grayscale grid from Vision I. The question is <code>count ?</code>. One grid contains two nonzero square blocks; removing its top-left block leaves one. A language model that ignores the image sees the same question in both cases. To answer differently, it must use the visual representations.</p><p>This lesson develops the projected-prefix route used by models such as <a href="https://arxiv.org/abs/2304.08485">LLaVA</a>, then compares it with the cross-attention route from Attention Part IV. These are documented architectures, not a claim about every commercial VLM.</p></div>
+<div class="frame" data-title="Same question, different visual evidence" data-autobuild="off">
+ <div id="s01-task"></div><p data-build="1">Keep the question fixed. The next-token distribution should depend on which image we supply.</p>
+ <script type="text/x-notes">Count the nonzero 2×2 blocks with the class. We count blocks, not individual pixels or brightness levels.</script>
+</div>
+<div class="frame" data-title="A caption score is not an answer generator" data-autobuild="off">
+ <p>CLIP compares an image vector with complete text candidates.</p>
+ <p data-build="1">Here, a decoder predicts <code>two</code>, then <code>blocks</code>, then <code>&lt;eos&gt;</code>.</p>
+ $$p(y_t\mid I,\text{question},y_{&lt;t})$$
+ <p data-build="2">The image and known text are context. The unknown answer token is the prediction target.</p>
+</div>
+<div class="frame" data-title="What this small model actually computes" data-autobuild="off">
+ <div id="s01-pipeline"></div>
+ <p data-build="1">The image encoder is frozen. The connector and decoder were fitted to these two grids.</p>
+ <p class="muted" data-build="2">One head, three decoder coordinates. No FFN, LayerNorm or dropout in this numerical worksheet.</p>
+</div>
+<div class="companion"><p>The purpose of fitting two pairs is to make image dependence testable. Success on those same pairs is not evidence that the toy understands arbitrary counts, natural photographs, or new questions. We inspect a fitted checkpoint, run generation, and then show one further update.</p></div>
+<script>(function(){const S=document.getElementById('s01'),V=AT.vlm;S.querySelector('#s01-task').append(V.diagram('task'));S.querySelector('#s01-pipeline').append(V.diagram('pipeline'));})();</script>
+</section>

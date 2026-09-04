@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Four worked lessons on next-token prediction, self-attention, learning, and cross-attention for translation. Read each lesson as an article or present the same material in class.">
-<title>Next-token prediction, attention and the Transformer</title>
+<meta name="description" content="Worked lessons from next-token prediction to attention, Vision Transformers, visual pretraining, CLIP and vision-language models. Read or present the same material.">
+<title>Attention, vision and language — worked lessons</title>
 <style>
 :root{
   --paper:#F7F8FA; --ink:#14171F; --ink-2:#4A5160; --ink-3:#8A91A0; --line:#D9DDE5; --card:#FFFFFF; --grid:#E3E6EC;
@@ -31,6 +31,9 @@ a:hover{text-decoration-color:var(--ink)}
 .hero-sub{font-size:clamp(18px,2vw,22px);color:var(--ink-2);max-width:40em;margin-bottom:20px}
 .hero-meta{font-size:15px;color:var(--ink-2);max-width:60ch}
 .parts{padding:24px 0 64px}
+.series-title{margin:0 0 24px}
+.vision-series{margin-top:56px}
+.series-intro{max-width:65ch;color:var(--ink-2);margin-bottom:24px}
 .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;list-style:none;margin:0;padding:0}
 @media (max-width:760px){.cards{grid-template-columns:1fr}}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:28px;display:flex;flex-direction:column;gap:12px;min-width:0}
@@ -53,14 +56,15 @@ a:hover{text-decoration-color:var(--ink)}
 <body>
 <header class="hero">
   <div class="wrap">
-    <p class="lab">Four lessons for deep-learning students</p>
-    <h1>Next-token prediction, attention and the Transformer</h1>
-    <p class="hero-sub">How does a sequence of tokens become a prediction? Start with a character model, then work through self-attention, learning, and translation.</p>
-    <p class="hero-meta">Part 1 uses a name model trained on real data. Parts 2 and 3 use a small demonstration model so we can check the attention and learning calculations. Part 4 follows cross-attention through a translation example.</p>
+    <p class="lab">Worked lessons for deep-learning students</p>
+    <h1>Attention, vision and language</h1>
+    <p class="hero-sub">Start with the next token. Follow the same attention operation into translation, image patches, and answers grounded in an image.</p>
+    <p class="hero-meta">Two connected series, with calculations you can inspect and diagrams you can build one step at a time. Read each lesson as an article or present the same content in class.</p>
   </div>
 </header>
 <main class="parts">
   <div class="wrap">
+    <h2 class="series-title">Attention and language</h2>
     <ol class="cards">
       <li class="card">
         <span class="n">PART 1</span>
@@ -91,6 +95,40 @@ a:hover{text-decoration-color:var(--ink)}
         <nav class="actions" aria-label="Part 4 views"><a class="go" href="part4.html">Read Part 4</a><a href="part4.html?present">Present Part 4</a></nav>
       </li>
     </ol>
+    <section class="vision-series" aria-labelledby="vision-title">
+      <h2 id="vision-title" class="series-title">Vision to language</h2>
+      <p class="series-intro">Keep a small image in view as the task changes. Each part separates the worked toy from the full architecture and states what its numbers can, and cannot, demonstrate.</p>
+      <ol class="cards">
+        <li class="card">
+          <span class="n">VISION I</span>
+          <h2><a href="vision1.html">An image becomes a sequence</a></h2>
+          <p class="build">Cut a 4×4 image into patches, project the pixels, add position vectors, and follow the class token through attention to a prediction. Change a pixel and recompute.</p>
+          <p class="meta">Builds on embeddings, attention, and residual updates.</p>
+          <nav class="actions" aria-label="Vision I views"><a class="go" href="vision1.html">Read Vision I</a><a href="vision1.html?present">Present Vision I</a></nav>
+        </li>
+        <li class="card">
+          <span class="n">VISION II</span>
+          <h2><a href="vision2.html">Learn without class labels</a></h2>
+          <p class="build">Hide patches and work out reconstruction error. Then compare MAE, DINO, and I-JEPA: where does each target come from, what gets predicted, and what gets updated?</p>
+          <p class="meta">Exact loss calculators; clearly labelled illustrative teacher scores.</p>
+          <nav class="actions" aria-label="Vision II views"><a class="go" href="vision2.html">Read Vision II</a><a href="vision2.html?present">Present Vision II</a></nav>
+        </li>
+        <li class="card">
+          <span class="n">VISION III</span>
+          <h2><a href="vision3.html">Learn to match images and text</a></h2>
+          <p class="build">Follow three pairs through encoders, normalization, all nine matching scores, and contrastive learning. Change the candidate descriptions and see why probability is not confidence.</p>
+          <p class="meta">A trained CLIP-style toy with a reproducible parameter update.</p>
+          <nav class="actions" aria-label="Vision III views"><a class="go" href="vision3.html">Read Vision III</a><a href="vision3.html?present">Present Vision III</a></nav>
+        </li>
+        <li class="card">
+          <span class="n">VISION IV</span>
+          <h2><a href="vision4.html">Use an image to generate an answer</a></h2>
+          <p class="build">Connect the visual rows to a language decoder. Work through its mask, query, prediction, generation, and response loss. Compare a visual prefix with cross-attention.</p>
+          <p class="meta">Two fitted image–answer pairs; explicit checks of visual evidence and training regressions.</p>
+          <nav class="actions" aria-label="Vision IV views"><a class="go" href="vision4.html">Read Vision IV</a><a href="vision4.html?present">Present Vision IV</a></nav>
+        </li>
+      </ol>
+    </section>
     <section class="how" aria-labelledby="how-title">
       <h2 id="how-title">Using these lessons</h2>
       <p>Each part is one self-contained page that works offline, including its diagrams and maths. The article and classroom presentation share the same content; there is no separate slide copy to keep in sync. Read the full explanation or switch to the lean article view.</p>

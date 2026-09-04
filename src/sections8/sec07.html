@@ -1,0 +1,27 @@
+<section id="s07" class="sec" data-title="Check grounding, not just fluency" data-lit="">
+<header class="sec-head"><span class="sec-num">07</span><div><p class="eyebrow">A plausible sentence can still contradict the image.</p><h2>Check grounding, not just fluency</h2></div></header>
+<div class="companion"><p>The earlier article's thermal example raises a useful evidence question: which information is actually available in the displayed pixels? A false-colour rendering without its scale can hide the mapping to physical temperature. A model cannot recover a unique absolute temperature from information that was removed. A visible calibrated legend or radiometric metadata changes what can be inferred.</p></div>
+<div class="frame" data-title="Fluent counting is not enough" data-autobuild="off">
+ <p>Keep the question fixed and change only the image. Does the answer track the change?</p>
+ <p data-build="1">Test new layouts, brightnesses and distractors. Include images with zero blocks and questions whose answer is unavailable.</p>
+ <p data-build="2">Our two-pair toy has not passed these tests. Its success demonstrates the computation, not a general ability to count.</p>
+</div>
+<div class="frame" data-title="The same displayed colour need not mean the same temperature" data-autobuild="off">
+ <div id="s07-thermal"></div>
+ <p data-build="1">Without the scale or calibration data, an absolute-temperature answer is underdetermined.</p>
+</div>
+<div class="frame" data-title="Use a tool when the evidence lives outside the rendered image" data-autobuild="off">
+ <ol><li>Locate the region or measurement requested.</li><li data-build="1">Read calibrated sensor data with an appropriate tool.</li><li data-build="2">Report the measurement, units and assumptions with the answer.</li></ol>
+ <p data-build="3">Tools add evidence. Their calibration, coordinate mapping and failure cases still need checking.</p>
+</div>
+<div class="frame" data-title="Check what changed between the four vision parts" data-autobuild="off">
+ <div id="s07-summary"></div>
+</div>
+<div class="frame" data-title="Does every VLM need cross-attention?" data-autobuild="off">
+ <div id="s07-reveal"></div>
+</div>
+<div class="companion"><h3>Reading and implementation sources</h3><p><a href="https://arxiv.org/abs/2010.11929">ViT</a> supplies the patch-sequence architecture; <a href="https://arxiv.org/abs/2304.08485">LLaVA</a> is the projected-prefix example; <a href="https://arxiv.org/abs/2204.14198">Flamingo</a> and <a href="https://arxiv.org/abs/2301.12597">BLIP-2</a> show different visual-language interfaces. The adaptation preserves the questions about connectors, training choices, retrieval versus generation, and sensor calibration from <a href="https://nipunbatra.github.io/interactive-articles/vlm/">the earlier VLM article</a>. Its numerical trainer is replaced here by a separately checked toy.</p><p>For a real evaluation, separate retrieval ranking, answer correctness, visual grounding, and abstention on unavailable information. Report the dataset split, prompt and preprocessing, and inspect failures. A fluent answer or a high softmax probability is not a substitute for that evidence.</p></div>
+<script>(function(){const S=document.getElementById('s07'),V=AT.vlm;S.querySelector('#s07-thermal').append(V.diagram('thermal'));
+AT.ui.table([['ViT','Pixels → patch states','Class label'],['Visual pretraining','Targets from images','Reusable visual features'],['CLIP','Images ↔ text embeddings','Rank complete candidates'],['VLM','Image + known text','Generate answer tokens']],{cols:['part','computation / supervision','result'],kind:'text',into:S.querySelector('#s07-summary')});
+AT.ui.reveal('Does a VLM need a separate cross-attention layer?','No. Our worked model uses projected image rows in a joint self-attention prefix. Another architecture can keep visual memory separate and read it through cross-attention. In both cases, the answer must be conditioned on available visual evidence.',{into:S.querySelector('#s07-reveal')});})();</script>
+</section>

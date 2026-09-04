@@ -1,0 +1,38 @@
+<section id="s04" class="sec" data-title="Let the class token read the image" data-lit="q k a">
+<header class="sec-head"><span class="sec-num">04</span><div><p class="eyebrow">The class token uses a query to choose which values to mix.</p><h2>Let the class token read the image</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>We now have the input that self-attention expects: a matrix of equal-width rows. Each row supplies three projections. Its query controls what it reads; its key helps other queries determine a mixing weight; its value supplies the information those queries receive. We will work the CLS query first because our classifier uses the updated CLS row. The same calculation also updates all four patch rows.</p></div>
+<div class="frame" data-title="Project the same input rows into three roles" data-autobuild="off">
+  <div id="s04-roles"></div>
+  <p data-build="1">$\vq{Q}=EW_Q,\quad\vk{K}=EW_K,\quad\vv{V}=EW_V$</p>
+  <pre class="torch-snippet" data-build="2"><code># E: [5, 2]; each W: [2, 2]
+Q, K, V = E @ W_Q, E @ W_K, E @ W_V</code></pre>
+  <script type="text/x-notes">This is self-attention: all three roles come from the same sequence. They still have separate projection matrices. No text query or hidden class label is supplied to this block.</script>
+</div>
+<div class="frame" data-title="Compute the CLS query and every source key" data-autobuild="off">
+  <div class="vision1-pair"><div id="s04-keys"></div><div><p>$W_Q=W_K=\begin{pmatrix}0.5&0\\0&0.5\end{pmatrix}$</p><p data-build="1">CLS query:</p><p data-build="1">$\vq{q_0}=(1,1)W_Q$</p><p data-build="1">$\phantom{q_0}=(0.5,0.5)$</p></div></div>
+  <p class="callout callout-note" data-build="2">Here $q_j=k_j$ only because we set $W_Q=W_K$. The two roles are different.</p>
+  <script type="text/x-notes">The first-block CLS query is the same for every image in this toy. Its score pattern can still change because the image-dependent keys change. Later blocks can also have an image-dependent CLS query.</script>
+</div>
+<div class="frame" data-title="Score each key and scale by the matching width" data-autobuild="off">
+  <p>$s_{0j}=\vq{q_0}\vk{k_j}^{\top}/\sqrt{d_k}\qquad d_k=2$</p>
+  <div id="s04-scores"></div>
+  <p class="callout callout-key" data-build="1">For patch 4: $(0.5\times2.5+0.5\times2.5)/\sqrt2\approx1.768$.</p>
+  <script type="text/x-notes">The dot product sums two coordinate products. Under the usual independent, zero-mean, unit-variance intuition, the unscaled sum has variance d_k; dividing by sqrt(d_k) keeps its scale steadier as width grows. It does not normalize vector lengths, and it does not guarantee those assumptions hold.</script>
+</div>
+<div class="frame" data-title="Why divide by the square root of the width?" data-autobuild="off">
+  <p>A dot product adds $d_k$ coordinate products. With independent, zero-mean, unit-variance query and key coordinates:</p>
+  <div class="vision1-equation" data-build="1">$\operatorname{Var}(qk^\top)=d_k\qquad\operatorname{Var}\!\left(\frac{qk^\top}{\sqrt{d_k}}\right)=1$</div>
+  <p class="callout callout-key" data-build="2">The division keeps scores from tending to grow just because we use wider matching vectors. Otherwise softmax can become very sharply concentrated.</p>
+  <p data-build="3">This is a scale adjustment. It does not make the query and key unit-length vectors.</p>
+  <script type="text/x-notes">The variance calculation is an initialization intuition under the stated assumptions, not a claim that all trained coordinates remain independent or unit variance. Dividing by d_k would over-shrink the standard deviation; dividing by its square root targets the standard deviation.</script>
+</div>
+<div class="frame" data-title="Softmax turns this CLS score row into mixing weights" data-autobuild="off">
+  <div id="s04-softmax"></div>
+  <p data-build="1">$\alpha_{0j}=\exp(s_{0j})/\sum_{t=0}^{4}\exp(s_{0t})\qquad\sum_j\alpha_{0j}=1$</p>
+  <pre class="torch-snippet" data-build="2"><code>scores = Q @ K.T / math.sqrt(2)  # [5, 5]
+A = scores.softmax(dim=-1)       # normalize each receiving row</code></pre>
+  <script type="text/x-notes">The rows are receiving queries, the columns are source positions. We display only row zero here. These are five input-mixing weights, not the two class probabilities we will compute later. Decimals are rounded only for display.</script>
+</div>
+<div class="companion after"><p>The square-root factor prevents dot products from tending to grow with matching width under a common initialization model. Excessively large score differences would make softmax concentrate sharply and leave small gradients for many alternatives. It is a scale adjustment, not cosine normalization. Our row width is two, so the divisor is $\sqrt2$. The displayed exponential column uses the mathematical formula; the code may subtract the largest score before exponentiating for numerical stability, which gives the same weights.</p></div>
+<script>(function(){const S=document.getElementById('s04'),T=AT.vision,F=T.forward();T.diagram(S.querySelector('#s04-roles'),'roles');AT.ui.table(F.E.map((e,i)=>[T.vector(e),T.vector(F.K[i])]),{into:S.querySelector('#s04-keys'),cols:['input e_j','key k_j'],rowLabels:['CLS','patch 1','patch 2','patch 3','patch 4'],cornerLabel:'source'});AT.ui.table(F.raw[0].map((x,i)=>[x,F.S[0][i]]),{into:S.querySelector('#s04-scores'),cols:['dot product q₀kⱼᵀ','scaled score s₀ⱼ'],rowLabels:T.labels,cornerLabel:'source',decimals:3});const ex=F.S[0].map(Math.exp),z=ex.reduce((a,b)=>a+b,0);AT.ui.table(F.S[0].map((x,i)=>[x,ex[i],F.A[0][i]]),{into:S.querySelector('#s04-softmax'),cols:['score','exp(score)','weight α₀ⱼ'],rowLabels:T.labels,cornerLabel:'source',decimals:3,caption:'Divide each exponential by the total '+z.toFixed(3)+'. Values are rounded for display.'});})();</script>
+</section>

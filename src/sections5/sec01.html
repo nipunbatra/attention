@@ -1,0 +1,32 @@
+<section id="s01" class="sec" data-title="An image as input" data-lit="e">
+<style>
+.vision1-pair{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+.vision1-controls{display:flex;gap:22px;align-items:center;flex-wrap:wrap;margin:12px 0}
+.vision1-controls select, .sec select{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);padding:7px 10px;border-radius:6px}
+.vision1-equation{font-size:1.15em;margin:20px 0;text-align:center}
+.vision1-list{display:grid;grid-template-columns:1fr 1fr;gap:14px 36px}
+.vision1-list p{margin:8px 0}
+@media(max-width:760px){body:not(.present) .vision1-pair,body:not(.present) .vision1-list{grid-template-columns:1fr}}
+</style>
+<header class="sec-head"><span class="sec-num">01</span><div><p class="eyebrow">Attention needs rows of numbers. An image can supply them too.</p><h2>An image as input</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>In the attention series, a token lookup supplied each input row. The rest of the computation operated on numbers: queries chose a mixture of values, and a residual addition updated each row. We can keep that machinery for images. First we need a way to turn pixels into rows. This part follows one 4×4 grayscale image through that process and a classification head.</p></div>
+<div class="frame" data-title="Start with pixels we can inspect" data-autobuild="off">
+  <div id="s01-image"></div>
+  <p data-build="1">Pixel values: $0$ is dark, $1$ is medium, and $2$ is bright. This is a synthetic grayscale image with one channel.</p>
+  <p class="callout callout-note" data-build="2">Class A and class B are worksheet outputs. Our hand-chosen weights have not learned visual categories.</p>
+  <script type="text/x-notes">The arbitrary class names are deliberate. Do not say the model has learned to detect two blocks. We will calculate a probability, but we have not trained a classifier or measured accuracy.</script>
+</div>
+<div class="frame" data-title="Change how the rows are made" data-autobuild="off">
+  <div class="vision1-pair"><div><h3>Text input</h3><p>A token ID selects a row from an embedding table.</p><p>$\text{token ID}\to\ve{e_i}$</p></div><div data-build="1"><h3>Image input</h3><p>A patch of pixels is flattened and multiplied by a learned matrix.</p><p>$\text{patch pixels}\to\ve{e_j^{\mathrm{patch}}}$</p></div></div>
+  <p class="callout callout-key" data-build="2">An image patch has no word ID to look up. The patch projection creates its embedding from its pixel values.</p>
+  <script type="text/x-notes">Ask what changes if one pixel changes. A text lookup is indexed by token identity; the image projection is a function of all pixels in this patch. The following attention calculation accepts either kind of row.</script>
+</div>
+<div class="frame" data-title="Keep one image through the whole calculation" data-autobuild="off">
+  <div id="s01-pipeline"></div>
+  <p data-build="1">Our worksheet uses two-number rows and one attention head. Every displayed number comes from the same forward pass.</p>
+  <p class="callout callout-note" data-build="2">We leave LayerNorm and the feed-forward sublayer out of this numerical example. Later we put them back into the architecture diagram.</p>
+  <script type="text/x-notes">The worksheet is an attention classifier, not a complete trained ViT. Maintain that distinction when the real pre-norm architecture appears. Two equal coordinates would be a poor example for showing LayerNorm, so we do not silently insert it.</script>
+</div>
+<div class="companion after"><p>All calculations run locally in the page. There is no model download and no hidden image classifier behind the diagrams. The larger question is how the same construction scales from a few patches to a photograph; we will separate that shape calculation from the small numerical example.</p></div>
+<script>(function(){const S=document.getElementById('s01');AT.vision.diagram(S.querySelector('#s01-image'),'image');AT.vision.diagram(S.querySelector('#s01-pipeline'),'pipeline');})();</script>
+</section>

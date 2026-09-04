@@ -1,0 +1,25 @@
+<section id="s07" class="sec" data-title="A match score is not a truth judgment" data-lit="a d">
+<header class="sec-head"><span class="sec-num">07</span><div><p class="eyebrow">Keep the scope of the objective and the candidate set visible.</p><h2>A match score is not a truth judgment</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>There are two different claims to separate. Contrastive training can learn representations that transfer to new tasks. A particular softmax score, however, only compares the candidates supplied to it. Removing the correct candidate does not create an automatic "none of the above" output. Evaluation must account for that limitation.</p></div>
+<div class="frame" data-title="What does 99% refer to?" data-autobuild="off">
+  <p class="clip-flow">$p(T_j\mid I,\mathcal C)=\dfrac{\exp(C_j/\tau)}{\sum_{k\in\mathcal C}\exp(C_k/\tau)}$</p>
+  <ul><li>The candidate set $\mathcal C$ is chosen by us.</li><li data-build="1">Adding or removing a candidate changes the denominator.</li><li data-build="2">A smaller temperature can make the winner look more certain without adding image evidence.</li></ul>
+  <p class="callout callout-key" data-build="3">A high candidate probability is not calibrated confidence that a description is true in the world.</p>
+  <script type="text/x-notes">Refer back to the missing-candidate control. Both remaining descriptions are wrong for the anchor, but their probabilities still sum to one. A single candidate would receive probability one regardless of its absolute cosine.</script>
+</div>
+<div class="frame" data-title="An off-diagonal pair can also be valid" data-autobuild="off">
+  <div id="s07-false-negative"></div>
+  <p class="callout callout-note" data-build="1">Two images may share a valid description. A one-positive-per-row batch objective still treats the other pairing as a negative.</p>
+  <p data-build="2">Batch construction, duplicate handling, and richer positive sets matter. Larger batches can add both useful competitors and false negatives.</p>
+  <script type="text/x-notes">The dashed links in this diagram are semantically valid but unpaired in the supplied batch. Calling them negatives describes the training objective, not a claim that the captions are false.</script>
+</div>
+<div class="frame" data-title="Matching representations are not a text generator" data-autobuild="off">
+  <p class="clip-flow">image + candidate descriptions → scores → retrieve or classify</p>
+  <p class="clip-flow" data-build="1">image + a language decoder → next-token probabilities → generated answer</p>
+  <p class="callout callout-key" data-build="2">CLIP provides a visual-language matching representation. The next part adds a language model that can produce words.</p>
+  <p data-build="3">Zero-shot means no task-specific training in that evaluation. The encoders have already learned from image-text data.</p>
+  <script type="text/x-notes">A CLIP image encoder may be one ingredient in a vision-language model. A decoder and a way to condition it on visual information are still needed for captioning or visual question answering.</script>
+</div>
+<div class="companion"><h3>Try a real model separately</h3><p>The <a href="https://nipunbatra.github.io/interactive-articles/clip-zero-shot/">original browser CLIP demo</a> accepts photos and candidate prompts and downloads a pretrained model. It requires network access and browser support; nothing in this lesson depends on it. Its pretrained embeddings must not be confused with the three-coordinate toy used here. The <a href="https://github.com/openai/CLIP">official CLIP examples</a> show normalization, zero-shot classification, and caching text features.</p><h3>Checks before using this in an application</h3><p>Evaluate the specific images, language, candidate classes, and errors that matter for the task. Pretraining on web captions does not remove biases or guarantee robust counting, spatial reasoning, or domain transfer. The <a href="https://github.com/openai/CLIP/blob/main/model-card.md">CLIP model card</a> records intended uses and limitations.</p><h3>Why a collapsed representation is not useful</h3><p>If every image and every caption returns the same unit vector, all scores tie. Each candidate then receives $1/N$, so each directional loss is $\log N$. With three pairs, that is <span id="s07-collapse"></span>. The objective rewards identifying the observed partner among competitors, not simply increasing every match score together.</p><p>The complete toy parameters and a reproducible training script are stored with this article. All displayed calculations retain full precision internally; rounding happens only when a number is rendered.</p></div>
+<script>(function(){const S=document.getElementById('s07');AT.clip.diagram(S.querySelector('#s07-false-negative'),'false-negatives');S.querySelector('#s07-collapse').textContent=Math.log(3).toFixed(3);})();</script>
+</section>

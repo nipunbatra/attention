@@ -1,0 +1,35 @@
+<section id="s04" class="sec" data-title="Train retrieval in both directions" data-lit="a d">
+<header class="sec-head"><span class="sec-num">04</span><div><p class="eyebrow">Each observed pair must be retrievable from either side.</p><h2>Train retrieval in both directions</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>Image-to-text training asks each image to choose its observed caption. Text-to-image training asks each caption to choose its observed image. Both use the same logits, but they normalize over different candidates. Averaging the two losses trains both retrieval directions.</p></div>
+<div class="frame" data-title="Every image chooses among the three captions" data-autobuild="off">
+  <div id="s04-rows"></div>
+  <p data-build="1">The target indices are $[0,1,2]$: row 1 wants caption 1, row 2 wants caption 2, and row 3 wants caption 3.</p>
+  <pre class="torch-snippet" data-build="2"><code>targets = torch.arange(3)
+loss_image = F.cross_entropy(logits, targets)</code></pre>
+  <script type="text/x-notes">The matrix labels use one-based numbering; PyTorch target indices use zero-based numbering. F.cross_entropy takes logits and performs log-softmax internally. Do not feed it the row probabilities.</script>
+</div>
+<div class="frame" data-title="Reward the diagonal probabilities" data-autobuild="off">
+  <div id="s04-row-loss"></div>
+  <p class="clip-flow" data-build="1">$L_{I\to T}=-\frac13\sum_{i=1}^3\log p(T_i\mid I_i,\mathcal B)$</p>
+  <p id="s04-row-total" class="clip-number" data-build="2"></p>
+  <p data-build="3">Competitor captions affect the denominator even though the target is one diagonal entry.</p>
+  <script type="text/x-notes">The stripe image has the largest row loss because its correct-caption probability is only about .501. A correct argmax does not imply zero loss.</script>
+</div>
+<div class="frame" data-title="Now hold each caption fixed and choose an image" data-autobuild="off">
+  <div id="s04-columns"></div>
+  <pre class="torch-snippet" data-build="1"><code>loss_text = F.cross_entropy(logits.T, targets)
+# Each original column is now a candidate-image row.</code></pre>
+  <p data-build="2">For <code>one bright dot</code>, stripes and the dot initially tie at cosine $0.800$.</p>
+  <script type="text/x-notes">Column softmax is not the transpose of the row-softmax result. First transpose the logits, then normalize. In the diagram each original column sums to one.</script>
+</div>
+<div class="frame" data-title="Average the two different losses" data-autobuild="off">
+  <div id="s04-column-loss"></div>
+  <p id="s04-both" class="clip-flow" data-build="1"></p>
+  <pre class="torch-snippet" data-build="2"><code>loss = 0.5 * (loss_image + loss_text)
+# Both cross-entropies already average over the 3 examples.</code></pre>
+  <p data-build="3">Different normalizers give different losses in the two directions.</p>
+  <script type="text/x-notes">This is where the two retrieval tasks meet. Both losses contribute gradients to both encoders and to the log scale. Avoid adding another division by three after the two cross_entropy calls.</script>
+</div>
+<div class="companion"><p>For a batch of $N$ pairs, the loss is $-\frac{1}{2N}\sum_i[\log p(T_i\mid I_i,\mathcal B)+\log p(I_i\mid T_i,\mathcal B)]$. Rows and columns are supervised separately; neither direction solves a global one-to-one assignment problem. During inference, two different images may legitimately retrieve the same description.</p></div>
+<script>(function(){const S=document.getElementById('s04'),C=AT.clip,f=C.forward();C.diagram(S.querySelector('#s04-rows'),'row');C.diagram(S.querySelector('#s04-columns'),'column');C.table(S.querySelector('#s04-row-loss'),f.rowLosses.map((loss,i)=>[f.rowProb[i][i],loss]),{cols:['correct-caption p','−log p'],rowLabels:['image 1','image 2','image 3'],cornerLabel:'Image → text'});C.table(S.querySelector('#s04-column-loss'),f.columnLosses.map((loss,j)=>[f.columnProb[j][j],loss]),{cols:['correct-image p','−log p'],rowLabels:['caption 1','caption 2','caption 3'],cornerLabel:'Text → image'});AT.tex(S.querySelector('#s04-row-total'),'L_{I\\to T}\\approx'+f.rowLoss.toFixed(3));AT.tex(S.querySelector('#s04-both'),'L=\\tfrac12('+f.rowLoss.toFixed(3)+'+'+f.columnLoss.toFixed(3)+')\\approx'+f.loss.toFixed(3));})();</script>
+</section>

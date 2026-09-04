@@ -1,0 +1,35 @@
+<section id="s02" class="sec" data-title="Pixels and words become comparable vectors" data-lit="e q">
+<header class="sec-head"><span class="sec-num">02</span><div><p class="eyebrow">Compute the vectors before comparing them.</p><h2>Pixels and words become comparable vectors</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>Flatten the image in row-major order. Multiplying that sixteen-number row by $W_{\mathrm{img}}\in\mathbb R^{16\times3}$ produces one three-number image vector. For text, count the occurrences of each word and multiply by $W_{\mathrm{txt}}\in\mathbb R^{11\times3}$. The initial weights are chosen for readable arithmetic. Training can change every entry.</p></div>
+<div class="frame" data-title="The image vector comes from its pixels" data-autobuild="off">
+  <p class="clip-flow">$g_1^{\mathrm{img}}=\underbrace{\operatorname{flatten}(I_1)}_{1\times16}\underbrace{W_{\mathrm{img}}}_{16\times3}=(2,1,0)$</p>
+  <div id="s02-pixel-weights" data-build="1"></div>
+  <p data-build="2">These are the only nonzero starting rows. The anchor has $(1,0,0)$ at pixels 1, 3, and 7.</p>
+  <pre class="torch-snippet" data-build="3"><code>pixels = images.flatten(start_dim=1)  # [3, 16]
+g_img = pixels @ W_img                # [3, 3]</code></pre>
+  <script type="text/x-notes">Pixel positions are one-based here and row-major. Position 1 is top left, position 3 is top row third column, and position 7 is second row third column. All other rows start at zero but remain trainable.</script>
+</div>
+<div class="frame" data-title="The caption vector sums its word rows" data-autobuild="off">
+  <div id="s02-word-rows"></div>
+  <p class="clip-flow" data-build="1">$g_1^{\mathrm{txt}}=(1,0,0)+(0,0,0)+(1,0,0)=(2,0,0)$</p>
+  <pre class="torch-snippet" data-build="2"><code>counts = word_counts(captions)  # [3, 11], toy vocabulary
+g_txt = counts @ W_txt          # [3, 3]</code></pre>
+  <p data-build="3">This toy ignores word order. Real CLIP's text Transformer uses sequence information.</p>
+  <script type="text/x-notes">Bright initially contributes a zero vector. It can receive a gradient and change. Do not assign a semantic meaning to any of the three learned coordinates.</script>
+</div>
+<div class="frame" data-title="Normalize length; keep direction" data-autobuild="off">
+  <p class="clip-flow">$\hat g_1^{\mathrm{img}}=\dfrac{(2,1,0)}{\sqrt{2^2+1^2}}\approx(0.894,0.447,0)$</p>
+  <p class="clip-flow" data-build="1">$\hat g_1^{\mathrm{txt}}=\dfrac{(2,0,0)}{2}=(1,0,0)$</p>
+  <pre class="torch-snippet" data-build="2"><code>g_img_unit = F.normalize(g_img, dim=-1)
+g_txt_unit = F.normalize(g_txt, dim=-1)</code></pre>
+  <p class="callout callout-key" data-build="3">Both lengths are now one. Their dot product measures cosine similarity rather than the size of either vector.</p>
+  <script type="text/x-notes">Scaling a nonzero vector by a positive constant leaves its unit direction unchanged. Normalization prevents the encoder from increasing a cosine score just by making its output longer. The learned temperature still controls logit scale separately.</script>
+</div>
+<div class="frame" data-title="Carry these six unit vectors forward" data-autobuild="off">
+  <div id="s02-units"></div>
+  <p class="callout callout-note" data-build="1">Every row is unit length at full precision. Three-decimal displays may not have a norm of exactly one.</p>
+  <script type="text/x-notes">The image and text vectors need not be equal initially. We want their paired directions to become useful for matching. The next slide performs one of the dot products by hand.</script>
+</div>
+<div class="companion"><h3>The complete starting maps</h3><div id="s02-all-image"></div><div id="s02-all-text"></div><p>The encoders output a whole-image or whole-caption vector. A real model has many internal token embeddings and attention values before this global output. Shared output width does not imply that the two encoder architectures, internal widths, or parameters are the same.</p></div>
+<script>(function(){const S=document.getElementById('s02'),C=AT.clip,p=C.params(),f=C.forward();const host=id=>S.querySelector(id);C.table(host('#s02-pixel-weights'),[p.W_img[0],p.W_img[2],p.W_img[6]],{cols:['coordinate 1','coordinate 2','coordinate 3'],rowLabels:['pixel 1','pixel 3','pixel 7'],cornerLabel:'Initial W_img rows'});C.table(host('#s02-word-rows'),p.W_txt.slice(0,3),{cols:['coordinate 1','coordinate 2','coordinate 3'],rowLabels:['two','bright','squares'],cornerLabel:'Initial W_txt rows'});C.table(host('#s02-units'),f.imageUnit.concat(f.textUnit),{cols:['coordinate 1','coordinate 2','coordinate 3'],rowLabels:['image 1 · squares','image 2 · stripes','image 3 · dot','text 1 · squares','text 2 · stripes','text 3 · dot'],cornerLabel:'Unit vector'});C.table(host('#s02-all-image'),p.W_img,{cols:['1','2','3'],rowLabels:Array.from({length:16},(_,i)=>'pixel '+(i+1)),cornerLabel:'W_img · 16×3'});C.table(host('#s02-all-text'),p.W_txt,{cols:['1','2','3'],rowLabels:C.data.vocab,cornerLabel:'W_txt · 11×3'});})();</script>
+</section>

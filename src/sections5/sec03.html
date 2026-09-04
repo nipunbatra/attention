@@ -1,0 +1,33 @@
+<section id="s03" class="sec" data-title="Keep positions and add a class token" data-lit="e">
+<header class="sec-head"><span class="sec-num">03</span><div><p class="eyebrow">What is in a patch and where it sits are different pieces of information.</p><h2>Keep positions and add a class token</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>Patch 2 and patch 3 both contain only zeros. Their content embeddings are identical even though one is at the top right and the other is at the bottom left. Add a position vector to each patch embedding before attention. The position vectors have the same width as the embeddings. They do not append a special position coordinate.</p></div>
+<div class="frame" data-title="Position is added, not appended" data-autobuild="off">
+  <div id="s03-position"></div>
+  <p class="vision1-equation" data-build="1">$\ve{e_j}=\ve{e_j^{\mathrm{patch}}}+p_j\qquad (1\times2)+(1\times2)=1\times2$</p>
+  <p class="callout callout-key" data-build="2">The two zero patches now have different input rows because they occupy different slots.</p>
+  <script type="text/x-notes">These convenient position values are assigned by hand. A conventional ViT learns its position table. Its coordinates need not literally equal row and column indices.</script>
+</div>
+<div class="frame" data-title="CLS is an extra learned input row" data-autobuild="off">
+  <p>Prepend a class token with initial content $c=(1,1)$. It has no pixel patch.</p>
+  <div id="s03-sequence" data-build="1"></div>
+  <p class="callout callout-key" data-build="2">After attention, use the updated CLS row for image classification. Its initial row is shared across images; the information it receives depends on the image.</p>
+  <script type="text/x-notes">CLS is not a probability and is not a query by definition. Like every other row, it will be projected into a query, a key, and a value. We will focus on its output because our class head uses that row.</script>
+</div>
+<div class="frame" data-title="The complete input matrix has five rows" data-autobuild="off">
+  <div id="s03-input"></div>
+  <pre class="torch-snippet" data-build="1"><code># cls: [1, 1, 2]; patch_rows: [1, 4, 2]
+E = torch.cat([cls, patch_rows], dim=1) + position
+# E: [1, 5, 2]; position: [1, 5, 2]</code></pre>
+  <p data-build="2">Row $0$ is CLS. Rows $1,2,3,4$ follow the patches in raster order.</p>
+  <script type="text/x-notes">The matrix E contains this image's current input rows. It is not a word lookup table. Use e_i for one row and E for the stack, just as in the attention series.</script>
+</div>
+<div class="frame" data-title="Without positions, shuffling only shuffles the patch outputs" data-autobuild="off">
+  <p>Swap patch 1 and patch 4 before attention. Keep CLS in row 0.</p>
+  <div id="s03-permutation" data-build="1"></div>
+  <p class="callout callout-key" data-build="2">Without positions, patch outputs follow the permutation: self-attention is <strong>equivariant</strong>. The fixed CLS output is unchanged.</p>
+  <p data-build="3">With positions attached to slots, the swapped content produces a different CLS output in this example.</p>
+  <script type="text/x-notes">Do not call all self-attention outputs invariant. The patch outputs reorder. CLS is invariant here because we leave its slot fixed. If we permuted content and its position vector together, we would simply reorder the input rows again.</script>
+</div>
+<div class="companion after"><p>There is no causal mask in this image encoder: every patch is already known. This differs from predicting the next word of an unfinished sentence. Positional information lets the encoder distinguish arrangements, but it does not force attention to stay local or guarantee that a particular arrangement will be classified correctly.</p></div>
+<script>(function(){const S=document.getElementById('s03'),T=AT.vision,F=T.forward();AT.ui.table([2,3].map(i=>[T.vector(F.content[i]),T.vector(F.positions[i]),T.vector(F.E[i])]),{into:S.querySelector('#s03-position'),cols:['content embedding','position vector','sum: input e_j'],rowLabels:['patch 2 · top right','patch 3 · bottom left'],cornerLabel:'same pixels, different slots'});T.diagram(S.querySelector('#s03-sequence'),'sequence');T.table(S.querySelector('#s03-input'),F.E,{rowLabels:T.labels,cornerLabel:'input E',decimals:0});const order=[3,1,2,0];AT.ui.table([false,true].map(positions=>[T.vector(T.forward({positions}).updated[0],3),T.vector(T.forward({positions,order}).updated[0],3)]),{into:S.querySelector('#s03-permutation'),cols:['original CLS output','after patch swap'],rowLabels:['positions off','positions on'],cornerLabel:'same projection weights'});})();</script>
+</section>

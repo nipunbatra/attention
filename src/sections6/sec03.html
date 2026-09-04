@@ -1,0 +1,37 @@
+<section id="s03" class="sec" data-title="Which pixels enter the loss?" data-lit="">
+<header class="sec-head"><span class="sec-num">03</span><div><p class="eyebrow">Compute an error before talking about learning.</p><h2>Which pixels enter the loss?</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>Suppose patch 4 is hidden. Its four true pixels are all 2. If the decoder guesses 1 for every pixel, each squared error is 1 and their mean is 1. We will use mean squared error per masked pixel throughout this exercise. A patch is either included in that loss or excluded; visible-patch errors do not enter the denominator.</p></div>
+<div class="frame" data-title="One hidden patch, four prediction errors" data-autobuild="off">
+  <p>Patch 4 is the lower-right patch. Its true pixel row is $(2,2,2,2)$.</p>
+  <div id="s03-worked"></div>
+  <p data-build="1">$L=\frac{(1-2)^2+(1-2)^2+(1-2)^2+(1-2)^2}{4}=1$.</p>
+  <pre class="torch-snippet" data-build="2"><code>squared = (pred_pixels[masked] - patch_pixels[masked]).square()
+loss = squared.mean()</code></pre>
+  <script type="text/x-notes">The prediction is supplied for the exercise, not calculated by a neural network. The target comes from the original image. Count four masked pixels in the denominator.</script>
+</div>
+<div class="frame" data-title="Change the hidden patches and the pixel guess" data-autobuild="off">
+  <p>This is an exact loss calculator, not a trained image reconstructor.</p>
+  <div data-present="manual"><label for="s03-mask">Hidden patches: </label><select id="s03-mask"><option value="0">p2, p3, p4</option><option value="1">p4 only</option><option value="2">p1, p4</option></select><div id="s03-slider"></div></div>
+  <div id="s03-lab-table"></div>
+  <p id="s03-lab-loss" aria-live="polite"></p>
+  <script type="text/x-notes">Try the default mask and guess 1: twelve squared errors sum to twelve. Then hide only p4 and guess 2. The loss becomes zero because the supplied guess equals this one target, not because a model has learned vision.</script>
+</div>
+<div class="frame" data-title="Low reconstruction error is a training signal" data-autobuild="off">
+  <p>$L=\dfrac{1}{4|\mathcal M|}\sum_{j\in\mathcal M}\sum_{c=1}^{4}(\hat r_{jc}-r_{jc})^2$.</p>
+  <p data-build="1">The loss trains the decoder and, through it, the visible-patch encoder.</p>
+  <p data-build="2">Across images, a useful encoder can capture patterns that help predict missing regions.</p>
+  <div id="s03-check" data-build="3"></div>
+  <script type="text/x-notes">Distinguish the numerical objective from evidence of learned capability. A constant guess can be right on a simple constant patch. The dataset and evaluation matter.</script>
+</div>
+<div class="companion after"><p>Every value in the calculator follows the displayed formula. Each masked patch contributes four pixels. Its patch error is the sum of those four squared errors; the final loss divides the total by the number of masked pixels. A real MAE has a prediction vector for every masked patch, rather than our shared scalar guess.</p><p>The missing pixels may not be uniquely determined by the visible region. Reconstruction can encourage useful structure without reproducing every unpredictable detail. A low pretraining loss and a good downstream representation are related goals, not interchangeable measurements.</p></div>
+<script>
+(function(){const S=document.getElementById('s03'),T=AT.visionSSL;
+AT.ui.table([[2,2,2,2],[1,1,1,1],[1,1,1,1]],{cols:['pixel 1','pixel 2','pixel 3','pixel 4'],rowLabels:['true patch 4','supplied guess','squared error'],cornerLabel:'hidden patch',decimals:2,into:S.querySelector('#s03-worked')});
+const mask=S.querySelector('#s03-mask');let guess=1;
+function draw(){const F=T.reconstruction(T.data.maskPresets[Number(mask.value)].indices,guess);
+AT.ui.table(F.rows.filter(r=>r.hidden).map(r=>[r.target.join(' '),F.guess,r.sse]),{cols:[{label:'true pixels',kind:'code'},'guess per pixel','sum squared error'],rowLabels:F.rows.filter(r=>r.hidden).map(r=>'patch '+(r.index+1)),cornerLabel:'masked patches only',decimals:2,into:S.querySelector('#s03-lab-table')});
+S.querySelector('#s03-lab-loss').textContent='Loss = '+F.sse.toFixed(2)+' ÷ '+F.count+' masked pixels = '+F.loss.toFixed(4)+'. Visible patches are not scored.';
+}mask.addEventListener('change',draw);AT.ui.slider({label:'Guess for every hidden pixel',min:0,max:2,step:.25,value:1,format:x=>x.toFixed(2),onInput:x=>{guess=x;draw();},into:S.querySelector('#s03-slider')});draw();
+AT.ui.reveal('Does a zero loss in our calculator show that the encoder learned?','No. We chose the guesses directly. A trained model must produce its guesses from the visible image and learned parameters, then work on held-out images.',{into:S.querySelector('#s03-check')});})();
+</script>
+</section>

@@ -1,0 +1,27 @@
+{
+  "d_model": 2,
+  "d_k": 2,
+  "d_v": 2,
+  "vocab": ["patch 1", "patch 2", "patch 3", "patch 4"],
+  "sentences": {"river": ["patch 1", "patch 2", "patch 3", "patch 4"]},
+  "axes": {"e": ["coordinate 1", "coordinate 2"], "qk": ["matching 1", "matching 2"], "v": ["value 1", "value 2"]},
+  "visionSSL": {
+    "image": [[1,1,0,0],[1,1,0,0],[0,0,2,2],[0,0,2,2]],
+    "patchSize": 2,
+    "representationWidth": 2,
+    "maskPresets": [
+      {"label": "Hide p2, p3, p4", "indices": [1,2,3]},
+      {"label": "Hide p4", "indices": [3]},
+      {"label": "Hide p1, p4", "indices": [0,3]}
+    ],
+    "defaultGuess": 1,
+    "dino": {"teacherLogits": [2,1,0], "center": [0.5,0.5,0], "teacherTemperature": 0.5, "studentLogits": [0,1,0], "studentTemperature": 1},
+    "ema": {"oldTeacher": 1, "newStudent": 3, "momentum": 0.9},
+    "sources": {
+      "mae": "https://arxiv.org/abs/2111.06377",
+      "dino": "https://arxiv.org/abs/2104.14294",
+      "ijepa": "https://arxiv.org/abs/2301.08243"
+    },
+    "disclosure": "The image is the lecture's numerical illustration. Reconstruction guesses and DINO logits are hand-chosen inputs to exact loss calculations, not pretrained-model inference. Architecture drawings are simplified."
+  }
+}

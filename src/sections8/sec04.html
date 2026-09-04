@@ -1,0 +1,38 @@
+<section id="s04" class="sec" data-title="One image-conditioned prediction" data-lit="q k v a d ep">
+<header class="sec-head"><span class="sec-num">04</span><div><p class="eyebrow">The last known token is the question mark, at sequence position 7.</p><h2>One image-conditioned prediction</h2></div></header>
+<div class="companion"><p>The prompt is <code>&lt;bos&gt; count ?</code>, preceded by four image rows. The decoder forms a query from the known question-mark row. It does not form a query from the answer <code>two</code>, which has not yet been generated. All seven available rows supply keys and values through the shared projection matrices.</p></div>
+<div class="frame" data-title="Make the query from the last known row" data-autobuild="off">
+ <div id="s04-query"></div>
+ <p data-build="1">$q_7=e_7W_Q$. The learned projection defines which features this row matches.</p>
+ <pre class="torch-snippet" data-build="2"><code>Q, K, V = E @ W_Q, E @ W_K, E @ W_V
+q_last = Q[-1]</code></pre>
+</div>
+<div class="frame" data-title="The seven keys describe seven available input rows" data-autobuild="off">
+ <div id="s04-keys"></div>
+ <p data-build="1">Image keys come from projected image rows. Text keys come from text embeddings. Both use $W_K$ in this prefix decoder.</p>
+</div>
+<div class="frame" data-title="Match, scale, and normalize this query's scores" data-autobuild="off">
+ <div id="s04-scores"></div>
+ <p data-build="1">$s_{7j}=q_7\cdot k_j/\sqrt{3}$, then $\alpha_{7j}=e^{s_{7j}}/\sum_r e^{s_{7r}}$.</p>
+ <p data-build="2">Input weights, not answer-word probabilities.</p>
+</div>
+<div class="frame" data-title="Retrieve values, then update the question-mark row" data-autobuild="off">
+ <div id="s04-values"></div>
+ <p data-build="1">$m_7=\sum_j\alpha_{7j}v_j$, then $e_7'=e_7+m_7W_O$.</p>
+ <p data-build="2">Small image weights can still matter: each weight multiplies a value vector, not just a token label.</p>
+</div>
+<div class="frame" data-title="The vocabulary head predicts the first answer token" data-autobuild="off">
+ <div id="s04-logit"></div><div id="s04-probs"></div>
+ <p data-build="1">The head maps three updated coordinates to eight vocabulary logits. Vocabulary softmax gives the answer-token distribution.</p>
+</div>
+<div class="companion"><h3>All projected values</h3><div id="s04-all-values"></div><p>The numerical toy has the same width for embeddings, queries, keys and values, but their roles and projection matrices differ. Equal shape does not mean equal numbers or interchangeable meaning. The frozen image encoder's width is two; only its connector output has the decoder width of three.</p><p>The displayed weight 0.000 is a small positive number rounded to three decimals, not a masked entry. This query puts most of its weight on text, but that alone does not establish that the image is ignored. The value vectors, output projection and prediction head also matter. The next section tests image dependence by changing the pixels while holding the question and parameters fixed.</p></div>
+<script>(function(){const S=document.getElementById('s04'),V=AT.vlm,F=V.forward(),p=V.params(),i=6,labels=['image 1','image 2','image 3','image 4','<bos>','count','?'];
+AT.ui.table([F.E[i],...p.W_Q,F.Q[i]],{rowLabels:['e₇','W_Q row 1','W_Q row 2','W_Q row 3','q₇ = e₇ W_Q'],cols:['coordinate 1','coordinate 2','coordinate 3'],cornerLabel:'query projection',decimals:3,into:S.querySelector('#s04-query')});
+AT.ui.table(F.K,{rowLabels:labels,cols:['key 1','key 2','key 3'],cornerLabel:'input row',decimals:3,into:S.querySelector('#s04-keys')});
+AT.ui.table(labels.map((_,j)=>[F.raw[i][j],F.scores[i][j],F.A[i][j]]),{rowLabels:labels,cols:['q₇ · kⱼ','score ÷ √3','weight α₇ⱼ'],cornerLabel:'input row',decimals:3,into:S.querySelector('#s04-scores')});
+AT.ui.table([F.message[i],F.delta[i],F.E[i],F.out[i]],{rowLabels:['retrieved message m₇','update m₇ W_O','incoming row e₇','updated row e₇′'],cols:['coordinate 1','coordinate 2','coordinate 3'],decimals:3,into:S.querySelector('#s04-values')});
+const j=V.data.vocab.indexOf('two'),col=p.W_vocab.map(r=>r[j]);
+AT.tex(S.querySelector('#s04-logit'),'z_{\\text{two}}='+F.out[i].map((v,k)=>'('+V.fmt(v)+')('+V.fmt(col[k])+')').join('+')+'+('+V.fmt(p.b_vocab[j])+')\\approx'+V.fmt(F.logits[i][j]));
+AT.ui.table([F.logits[i],F.probs[i]],{rowLabels:['logits','probabilities'],cols:V.data.vocab,decimals:3,into:S.querySelector('#s04-probs')});
+AT.ui.table(F.V,{rowLabels:labels,cols:['value 1','value 2','value 3'],decimals:3,into:S.querySelector('#s04-all-values')});})();</script>
+</section>

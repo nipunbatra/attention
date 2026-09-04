@@ -1,0 +1,27 @@
+<section id="s06" class="sec" data-title="Use the updated class row" data-lit="ep">
+<header class="sec-head"><span class="sec-num">06</span><div><p class="eyebrow">The contextual CLS row is a representation. A class head converts it into logits.</p><h2>Use the updated class row</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>We have finished the attention calculation, but we do not yet have a prediction. A classifier maps the updated CLS row to one logit per candidate class. A second softmax normalizes those class logits. This softmax answers a different question from attention: which output class gets probability, rather than how to mix the input values.</p></div>
+<div class="frame" data-title="Two class logits from the two-number CLS row" data-autobuild="off">
+  <p>$W_{\mathrm{class}}=\begin{pmatrix}0.5&0\\0&0.25\end{pmatrix},\qquad b_{\mathrm{class}}=(0,0)$</p>
+  <p class="vision1-equation" data-build="1">$z=e_0'W_{\mathrm{class}}+b_{\mathrm{class}}$</p>
+  <div id="s06-head" data-build="1"></div>
+  <pre class="torch-snippet" data-build="2"><code>logits = E_next[0] @ W_class + b_class  # [2]
+probabilities = logits.softmax(dim=-1)</code></pre>
+  <script type="text/x-notes">These output weights are specified, so the probabilities are derived rather than invented. Arbitrary labels prevent a false claim that this hand-written head recognizes a visual concept.</script>
+</div>
+<div class="frame" data-title="One supervised target gives one loss" data-autobuild="off">
+  <p>For this worksheet, suppose the observed label is <strong>class A</strong>.</p>
+  <div id="s06-loss" class="vision1-equation" data-build="1"></div>
+  <pre class="torch-snippet" data-build="2"><code>target = torch.tensor([0])  # class A
+loss = F.cross_entropy(logits[None, :], target)</code></pre>
+  <p class="callout callout-key" data-build="3">The target is used to compute the loss. It was not an input to the image encoder or its CLS query.</p>
+  <script type="text/x-notes">Training adjusts parameters to reduce loss across labelled examples. We have supplied one label for arithmetic, not evidence of performance on a dataset. Cross-entropy expects raw logits, not the already-softmaxed probabilities.</script>
+</div>
+<div class="frame" data-title="Change a pixel and recompute the whole forward pass" data-autobuild="off">
+  <div id="s06-pixel"></div>
+  <p class="callout callout-note" data-build="1">The changed patch alters its embedding, key, and value. The code recomputes all attention weights and the final class probabilities.</p>
+  <script type="text/x-notes">The slider changes just row3,column3, not the whole bright block. Ask which intermediate should change first. A probability change here tests the arithmetic path; it does not establish robustness or meaningful recognition.</script>
+</div>
+<div class="companion after"><p>A counterfactual input is more informative than treating a large attention weight as an explanation by itself. Even this test has a limited claim: the specified model's output changes when a pixel changes. To judge a trained classifier, we would need held-out data and tests suited to the visual task. A single hand-chosen example cannot supply that evidence.</p></div>
+<script>(function(){const S=document.getElementById('s06'),T=AT.vision,F=T.forward();AT.ui.table(F.logits.map((z,i)=>[z,F.probs[i]]),{into:S.querySelector('#s06-head'),cols:['logit z','class probability'],rowLabels:T.data.classes,cornerLabel:'class head',decimals:3});AT.tex(S.querySelector('#s06-loss'),'L=-\\log p(\\text{class A})\\approx-\\log('+F.probs[0].toFixed(6)+')\\approx'+F.loss.toFixed(6),{display:true});T.pixelExplorer(S.querySelector('#s06-pixel'));})();</script>
+</section>

@@ -1,0 +1,31 @@
+<section id="s05" class="sec" data-title="Mix values and add the update" data-lit="v a d ep">
+<header class="sec-head"><span class="sec-num">05</span><div><p class="eyebrow">Keys chose the weights. Values supply the vectors we add.</p><h2>Mix values and add the update</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>The attention weights are scalar mixing amounts. To get a vector, multiply each source value by its weight and add the results. This mixture belongs to one receiving query. Here it belongs to CLS. We then project the mixture back to representation width and add it to the original CLS row through the residual connection.</p></div>
+<div class="frame" data-title="Use the value from the same source as each weight" data-autobuild="off">
+  <p>$W_V=I_2$, so $\vv{v_j}=e_j$ in this worksheet.</p>
+  <div id="s05-mix"></div>
+  <p class="callout callout-key" data-build="1">$m_0=\sum_{j=0}^4\alpha_{0j}v_j$. Keys are used for matching; values are used in this sum.</p>
+  <script type="text/x-notes">A value is not always the original embedding. Here it is numerically equal only because W_V is the identity matrix. For trained weights, e_j W_V can emphasize, suppress, or combine different coordinates.</script>
+</div>
+<div class="frame" data-title="The message becomes an update, then a new CLS row" data-autobuild="off">
+  <div id="s05-residual"></div>
+  <p data-build="1">$W_O=I_2$, so $\vd{\Delta e_0}=m_0W_O=m_0$.</p>
+  <p class="callout callout-note" data-build="2">This update changes the representation for this image. It does not overwrite the learned CLS parameter $c$.</p>
+  <script type="text/x-notes">Distinguish inference-time residual addition from an optimizer update. The initial CLS parameter is still (1,1). This image's contextual CLS row is approximately (4.075,4.075).</script>
+</div>
+<div class="frame" data-title="Compute all five updates in parallel" data-autobuild="off">
+  <p>$A:\;5\times5\qquad V:\;5\times2\qquad AV:\;5\times2$</p>
+  <pre class="torch-snippet" data-build="1"><code>message = A @ V                  # [5, 2]
+delta = message @ W_O             # [5, 2]
+E_next = E + delta                # residual update</code></pre>
+  <p class="callout callout-key" data-build="2">Each output row reads the same original input matrix. No row reads a partly updated neighbor.</p>
+  <script type="text/x-notes">The attention matrix contains a different distribution in each receiving row. Matrix multiplication performs all five weighted sums together. All updates have representation width, so the residual addition is shape-compatible.</script>
+</div>
+<div class="frame" data-title="Every row can read every known image token" data-autobuild="off">
+  <div id="s05-explore"></div>
+  <p class="callout callout-key" data-build="1">A global attention layer already connects every patch to every other patch. Deeper layers transform and combine that information again.</p>
+  <script type="text/x-notes">Select a patch query. Its weights differ because its query differs. No future patch needs hiding: the whole image is known. These attention arrows describe this head's weighted mixture, not proof that a region caused the final prediction.</script>
+</div>
+<div class="companion after"><h3>The complete updated matrix</h3><div id="s05-all"></div><p>All five rows are updated in parallel from the same input matrix. We do not update CLS first and then let the other rows read the already-updated CLS. That would be a different calculation. The classifier will select row 0 from this output, but the encoder can retain all patch rows for tasks that need spatial information.</p></div>
+<script>(function(){const S=document.getElementById('s05'),T=AT.vision,F=T.forward();T.diagram(S.querySelector('#s05-mix'),'mix');T.table(S.querySelector('#s05-residual'),[F.E[0],F.message[0],F.delta[0],F.updated[0]],{rowLabels:['input CLS e₀','weighted value message m₀','update Δe₀ = m₀ W_O','new CLS e₀′ = e₀ + Δe₀'],cornerLabel:'CLS calculation',rowCls:['e','v','d','ep'],decimals:3});T.attentionExplorer(S.querySelector('#s05-explore'));T.table(S.querySelector('#s05-all'),F.updated,{rowLabels:T.labels,cornerLabel:'updated E′',rowCls:'ep',decimals:3});})();</script>
+</section>

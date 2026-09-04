@@ -1,0 +1,14 @@
+{
+  "part":4,"series":"Vision to language","title":"An image becomes context for an answer",
+  "subtitle":"Keep the patch representations, connect them to a language decoder, and follow one image through prediction, learning, and generation.",
+  "audience":"Students who completed the attention series and Vision Parts I–III","minutes":45,
+  "centralLabel":"From visual representations to next-token prediction",
+  "central":"\\begin{gathered}\\text{Stack image rows and known text rows}\\\\\\downarrow\\\\p(\\text{next answer token})\\end{gathered}",
+  "chain":[{"label":"Image and question","section":"s01"},{"label":"Connect the widths","section":"s02"},{"label":"Control what reads what","section":"s03"},{"label":"Predict one token","section":"s04"},{"label":"Generate","section":"s05"},{"label":"Learn from answers","section":"s06"},{"label":"Check visual evidence","section":"s07"}],
+  "sections":[{"id":"s01","title":"The image must change the answer","lit":"e"},{"id":"s02","title":"Visual rows enter the decoder","lit":"e"},{"id":"s03","title":"Two routes for visual information","lit":"q k v a"},{"id":"s04","title":"One image-conditioned prediction","lit":"q k v a d ep"},{"id":"s05","title":"Generate from the last known position","lit":"q ep"},{"id":"s06","title":"Train on the observed answer","lit":""},{"id":"s07","title":"Check grounding, not just fluency","lit":""}],
+  "objects":["e","q","k","v","a","d","ep"],"legendTitle":"The attention roles are unchanged",
+  "provenance":"The core runs offline. The frozen hand-chosen image encoder is Vision I's exact five-token worksheet. A three-coordinate connector and prefix decoder are fitted to only two grid/answer pairs; all displayed arithmetic and generated choices are recomputed. This is not a pretrained VLM or a general counting model. The toy omits LayerNorm, FFN and dropout.",
+  "prev":{"label":"Vision III: CLIP and image-text retrieval","href":"vision3.html"},"next":null,
+  "index":{"label":"Series home","href":"index.html"},"notation":"vision4",
+  "footer":"Image-conditioned generation still predicts one answer token at a time."
+}
