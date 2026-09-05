@@ -221,3 +221,18 @@ held drawing that gains one mark per build, exact small numbers on the drawing, 
 ask a question. `FRAME_AUDIT.md` lists the frames of every part that break those rules (measured from the built pages). Parts 1, 3, 4 and Vision I
 to IV are being reworked frame by frame against that list; Part 2 is the reference and is left alone. Re-run the audit after any change: build the
 part, then count per frame words, builds, svg, tables (the script is small; see git history of FRAME_AUDIT.md for the measurement).
+
+## 10. If the session that started the whiteboard pass died: how to resume
+State: seven agents were reworking presentation frames, one per part (sections1, sections3, sections4, sections5, sections6, sections7, sections8 plus
+their partN.js). Their in-progress sources are committed as "WIP" snapshots on main; the built pages at the repo root were NOT rebuilt from partial work,
+so the live site is the last verified state. To finish any part N (1,3,4,5,6,7,8; outputs part1/part3/part4/vision1/vision2/vision3/vision4):
+1. cd src && python3 assemble.py --part N --out ../<output>.html
+2. node qa.mjs ../<output>.html --width 1280 --height 720   and   --width 390      (zero pageErrors/consoleErrors/katexErrors, overflowX false)
+3. node sweep.mjs ../<output>.html                                                  (problems must be {})
+4. node walk.mjs ../<output>.html                                                   (no errors, no scrolling frames)
+5. a Playwright pass over every present-mode frame checking that #at-fit-warning stays empty (see the rv_fit pattern in git history, or walk.mjs output)
+6. node check_visionK.mjs for vision parts (K = N-4); node check_part1.mjs / check_training.py where they exist
+7. READ a dozen frame screenshots against STYLE_WHITEBOARD.md; fix walls of text and empty frames
+8. git add <output>.html src/sectionsN src/partN.js src/partN.json && git commit && git push
+If a part's sources are half-edited and broken, `git log -- src/sectionsN` shows the last verified commit; `git checkout <hash> -- src/sectionsN src/partN.js`
+restores it. FRAME_AUDIT.md is the worklist; STYLE_WHITEBOARD.md the rules; Part 2 (sections/) is the reference and needs nothing.
