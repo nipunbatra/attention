@@ -1,6 +1,6 @@
 /* Vision Part I. Exact offline worksheet, with no trained-model claims.
    All numerical displays call AT.vision.forward; the base data is toy5.json.
-   patchify accepts P=1,2,4. The supplied attention model is for P=2 only. */
+   patchify accepts patch sides 1,2,4. The supplied attention model uses side 2. */
 (function () {
   'use strict';
   var AT = window.AT, data = (window.__TOY__ || {}).vision;
@@ -84,7 +84,7 @@
       c.text(710,36,p.count+' patches; '+p.width+' numbers in each raw patch',null,26);
       var chosen=p.patches[selected];c.box(710,120,630,80,'patch '+(selected+1),vector(chosen),'e');
       c.text(710,205,'Read each patch left to right, then top to bottom.',null,23);
-      c.text(140,250,'P = '+p.size,null,22);
+      c.text(140,250,'patch side = '+p.size,null,22);
     }else if(kind==='projection'){
       c=canvas(210,'The same projection is used on every patch','A raw four-number patch multiplies a four by two weight matrix, producing a two-number embedding.');
       c.box(180,88,290,82,'raw patch '+((options.selected||0)+1),vector(f.patches[options.selected||0]),'e');
@@ -146,7 +146,7 @@
   var defs={e:['image-token representation','A projected image patch or CLS row, with position added at the input.'],q:['query','A receiving image-token row projected for matching.'],k:['key','A source image-token row projected for matching.'],v:['value','A source image-token row projected into the information used in the mixture.'],a:['attention weight','A mixing amount for one receiving row and one source row.'],d:['attention update','The weighted value message after the output projection W_O.'],ep:['updated representation','The input row plus its attention update.']};
   AT.objects.forEach(function(o){if(defs[o.cls]){o.name=defs[o.cls][0];o.def=defs[o.cls][1];o.tip=o.def;}});
   function notation(g,s,m,shape,dims){AT.notation.push({g:g,sym:s,mean:m,shape:shape,dims:function(){return dims||'';},parts:['vision1']});}
-  notation('token','r_j','Raw flattened pixel values of patch j','1\\times(P^2C)','1×4');
+  notation('token','r_j','Raw flattened pixel values of patch j','1\\times(s_{\\mathrm{patch}}^2C)','1×4');
   notation('token','\\ve{e_j^{\\mathrm{patch}}}=r_jW_{\\mathrm{patch}}+b_{\\mathrm{patch}}','Patch embedding before position is added','1\\times d_{\\mathrm{model}}','1×2');
   notation('token','\\ve{e_j}','Input row after adding its position vector; row 0 is CLS','1\\times d_{\\mathrm{model}}','1×2');
   notation('token','\\vq{q_i},\\vk{k_j},\\vv{v_j}','Query from receiver i; key and value from source j','1\\times2','');
@@ -155,8 +155,9 @@
   notation('matrix','\\ve{E}','Stacked input rows: CLS first, then four patches','(N+1)\\times d_{\\mathrm{model}}','5×2');
   notation('matrix','\\vq{Q},\\vk{K},\\vv{V}','Separate projections of those same input rows','(N+1)\\times2','5×2 each');
   notation('matrix','\\va{A}=\\operatorname{softmax}_{\\mathrm{row}}(\\vq{Q}\\vk{K}^\\top/\\sqrt{d_k})','One row of mixing weights per receiving token','(N+1)\\times(N+1)','5×5');
-  notation('sizes','N,P,C','Number of patches, patch side length, channel count','','4, 2, 1');
+  notation('sizes','N,s_{\\mathrm{patch}},C','Number of patches, patch side length, channel count','','4, 2, 1');
+  notation('matrix','P','Learned same-width position rows, added to CLS and patch embeddings','(N+1)\\times d_{\\mathrm{model}}','5×2');
   notation('sizes','d_{\\mathrm{model}},d_k,d_v','Representation width, matching width, and value width','','2, 2, 2');
-  notation('sizes','W_{\\mathrm{patch}}','Shared pixel-to-embedding projection','P^2C\\times d_{\\mathrm{model}}','4×2');
+  notation('sizes','W_{\\mathrm{patch}}','Shared pixel-to-embedding projection','s_{\\mathrm{patch}}^2C\\times d_{\\mathrm{model}}','4×2');
   notation('sizes','W_Q,W_K,W_V,W_O','Four separate parameters; initially W_Q = W_K and W_V = W_O, but these pairs are not tied during learning','2\\times2','');
 })();

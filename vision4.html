@@ -3228,6 +3228,8 @@ window.__PART__ = {"part":4,"series":"Vision to language","title":"An image beco
   }
   const notation=[
     ['matrix','\\ve{G}','Encoded visual rows before the connector','N\\times d_{\\rm vision}','4×2'],
+    ['matrix','\\ve{B}=\\ve{G}W_{\\rm bridge}+b_{\\rm bridge}','Visual rows after the connector, before decoder positions','N\\times d_{\\rm model}','4×3'],
+    ['matrix','P','Same-width position vectors added to image and text rows','(N+T)\\times d_{\\rm model}','7×3 for the prompt'],
     ['sizes','W_{\\rm bridge},b_{\\rm bridge}','Maps each visual row to the decoder width','d_{\\rm vision}\\times d_{\\rm model}','2×3; bias 1×3'],
     ['matrix','\\ve{E}','Visual and text rows after adding positions','(N+T)\\times d_{\\rm model}','7×3 for the prompt'],
     ['matrix','\\vq{Q}=\\ve{E}W_Q,\\quad\\vk{K}=\\ve{E}W_K','Matching projections; query/key widths must agree','(N+T)\\times d_k','7×3'],
@@ -3485,7 +3487,7 @@ One version has the teal mug removed. This is an illustrative pair, not pixel-id
 <!-- ===== sec02.html ===== -->
 <section id="s02" class="sec" data-title="Visual rows enter the decoder" data-lit="e">
 <header class="sec-head"><span class="sec-num">02</span><div><p class="eyebrow">An image representation and a language representation can have different widths.</p><h2>Visual rows enter the decoder</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>We reuse Vision I's patch projection, added positions, class token, and five-token attention calculation. The classifier used the updated class row. This time we retain the four updated patch rows and set the class row aside after the encoder. Call that matrix $G$. We reserve $V$ for attention values; $G$ is the encoder's visual output, not a value projection.</p></div>
+<div class="companion" data-kicker="For self-study"><p>We reuse Vision I's initial patch projection, positions, class token, and five-token attention calculation. These are the disclosed starting weights, not the classifier's 600-step checkpoint or the fitted CLIP encoder. The connector and language decoder have their own fitted parameters.</p><p>The classifier read the updated class row. This time we keep the four updated patch rows, called $G$, so the decoder has several visual sources to read. The connector produces $B$, at the decoder's width. Later, attention computes its own values $V$ from the combined image and text rows.</p></div>
 <div class="frame" data-title="First, divide the scene into patches" data-autobuild="off">
  <div id="s02-scene-patches"></div>
  <p data-build="1">Patch boundaries form a regular grid. They do not follow object outlines.</p>
@@ -3503,7 +3505,7 @@ The image encoder produces numerical representations. One patch is not necessari
 </div>
 <div class="frame" data-title="Keep four contextual patch rows" data-autobuild="off">
  <div id="s02-encoder"></div><div id="s02-g"></div>
- <p data-build="1">$G$ has one row per patch. Each row already contains information mixed by the vision encoder.</p>
+ <p data-build="1">$G$ has one row per patch after the fixed initial encoder. Each row already includes information from other image rows.</p>
  <script type="text/x-notes">
   Which visual rows should the language model receive?
 
@@ -3511,7 +3513,7 @@ The image encoder produces numerical representations. One patch is not necessari
  </script>
 </div>
 <div class="frame" data-title="Project from vision width 2 to decoder width 3" data-autobuild="off">
- $$\ve{B}=\ve{G} W_{\rm bridge}+b_{\rm bridge}$$
+ $$\underbrace{\ve{B}}_{4\times3}=\underbrace{\ve{G}}_{4\times2}\underbrace{W_{\rm bridge}}_{2\times3}+\underbrace{b_{\rm bridge}}_{1\times3}$$
  <div id="s02-w"></div><p id="s02-b"></p><p data-build="1">The same connector acts on every patch. Four rows remain four rows.</p>
  <pre class="torch-snippet" data-build="2"><code>visual_rows = vision_encoder(image)[:, 1:]
 image_prefix = visual_rows @ W_bridge + b_bridge</code></pre>

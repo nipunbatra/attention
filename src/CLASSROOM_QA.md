@@ -1,5 +1,11 @@
 # Classroom release checks
 
+## 2026-09-05: notation and continuity checkpoint
+
+Patch side length now uses `s_patch`; `P` consistently denotes position vectors. Vision IV's notation includes the connector output `B`. The transitions distinguish reusing an encoder architecture from reusing its trained checkpoint. Numerical parameters are unchanged.
+
+All four numerical checkers pass. The four frame audits cover 127, 62, 84, and 85 progressive states, respectively, with no runtime errors, invalid formulas, or overflowing frames. A caption that initially exceeded Vision II's stage by four pixels was shortened and rechecked. This checkpoint does not include new PDF exports or claim a complete visual audit of every frame. The larger teaching revision is tracked in `VISION_AUDIT_2026-09-05.md`.
+
 ## 2026-09-04: shared-scene vision polish
 
 The four vision lessons now follow one generated photographic illustration: two mugs, a book, and a plant. Scene views motivate the task; the existing 4×4 models remain separate numerical worksheets. Captions identify generated imagery and distinguish human judgments, withheld targets, symbolic encoder features, and actual computed outputs. No new photo-based model scores, attention maps, or reconstructions are invented.

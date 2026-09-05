@@ -130,6 +130,8 @@
   }
   const notation=[
     ['matrix','\\ve{G}','Encoded visual rows before the connector','N\\times d_{\\rm vision}','4×2'],
+    ['matrix','\\ve{B}=\\ve{G}W_{\\rm bridge}+b_{\\rm bridge}','Visual rows after the connector, before decoder positions','N\\times d_{\\rm model}','4×3'],
+    ['matrix','P','Same-width position vectors added to image and text rows','(N+T)\\times d_{\\rm model}','7×3 for the prompt'],
     ['sizes','W_{\\rm bridge},b_{\\rm bridge}','Maps each visual row to the decoder width','d_{\\rm vision}\\times d_{\\rm model}','2×3; bias 1×3'],
     ['matrix','\\ve{E}','Visual and text rows after adding positions','(N+T)\\times d_{\\rm model}','7×3 for the prompt'],
     ['matrix','\\vq{Q}=\\ve{E}W_Q,\\quad\\vk{K}=\\ve{E}W_K','Matching projections; query/key widths must agree','(N+T)\\times d_k','7×3'],

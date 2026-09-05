@@ -3414,16 +3414,16 @@ window.__VISION_SCENES__ = {"two":"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASA
 <main id="sections" class="wrap">
 <!-- ===== sec01.html ===== -->
 <section id="s01" class="sec" data-title="The image supplies a training target" data-lit="e">
-<header class="sec-head"><span class="sec-num">01</span><div><p class="eyebrow">Keep the ViT encoder. Change how we train it.</p><h2>The image supplies a training target</h2></div></header>
+<header class="sec-head"><span class="sec-num">01</span><div><p class="eyebrow">An encoder can learn from an image even when its class label is missing.</p><h2>The image supplies a training target</h2></div></header>
 <div class="companion" data-kicker="For self-study"><p>In Part I, we turned an image into patch rows and passed them through a Transformer. A classifier can learn from those rows when we have labelled images. But a large image collection may have no class labels. Self-supervised learning constructs a training target from each image itself: hidden pixels, a teacher's output on another view, or a representation of a hidden region. These are different objectives, even when they use a similar ViT encoder.</p></div>
 <div class="frame" data-title="Hide image patches; keep their pixels as targets" data-autobuild="off">
   <div id="s01-masked"></div>
-  <p data-build="1">The target shows actual withheld pixels, not a reconstruction.</p>
+  <p data-build="1">Visible patches are inputs. Hidden pixels supply the target.</p>
   <script type="text/x-notes">Which part can the encoder read, and which part is only a target?
 
 The mug, book, and plant scene is a generated teaching illustration. We hide existing pixels from that illustration, rather than generating a completion. The training program keeps the original pixels to score a model's prediction. No trained MAE runs on this scene.</script>
 </div>
-<div class="companion"><p>The visible region may suggest a mug handle or a book edge, but it need not determine every hidden pixel. A reconstruction objective asks the model to make a prediction from that context and compares it with the withheld original. Across many images, this task can train useful visual representations.</p><p>For the arithmetic, we now return to the separate four-patch image from Part I. It is a small worksheet, not a downsampled version of the mug scene.</p></div>
+<div class="companion"><p>The visible region may suggest a mug handle or a book edge, but it need not determine every hidden pixel. A reconstruction objective asks the model to make a prediction from that context and compares it with the withheld original. Across many images, this task can train useful visual representations.</p><p>We are reusing the idea of an encoder, rather than continuing the classifier's saved training run. The objective now asks for information from the image instead of a class label. The four-patch worksheet below keeps the arithmetic small. Its pixels are supplied separately from the mug illustration.</p></div>
 <div class="frame" data-title="Use four patches to work the numbers" data-autobuild="off">
   <p>This is the $4\times4$ grayscale image from Part I, split into four $2\times2$ patches.</p>
   <div id="s01-image"></div>

@@ -1,6 +1,6 @@
 <section id="s05" class="sec" data-title="Bring patch information into CLS" data-lit="v a d ep">
 <header class="sec-head"><span class="sec-num">05</span><div><p class="eyebrow">A weight says how much. A value supplies what arrives.</p><h2>Bring patch information into CLS</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>The query and keys have produced one mixing amount per source. A scalar amount alone cannot update a two-number row. Each source therefore makes a value vector, $v_j=e_jW_V$. Multiply each source’s value by its own weight, then add the contributions coordinate by coordinate. This returns a message to the receiving CLS row.</p></div>
+<div class="companion" data-kicker="For self-study"><p>The attention weight tells CLS how much to read from a source. Its value vector tells CLS which numbers that source sends. Each source computes $v_j=e_jW_V$. Multiply that value by its weight, then add the contributions coordinate by coordinate. The resulting message belongs to the receiving CLS row.</p></div>
 <div class="frame" data-title="A patch’s key and value do different jobs" data-autobuild="off">
   <div class="vision1-story" id="s05-value"></div>
   <p>Starting with $W_V=I_2$ gives $v_4=e_4=(5,5)$. This equality comes from the identity map—not from the definition of a value.</p>

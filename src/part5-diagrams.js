@@ -234,9 +234,9 @@
       c.text(174,185,'solid: forward',null,24);c.text(482,185,'dashed: gradients','k',24);
       c.text(550,367,'The optimizer changes the dashed parameter boxes, not the cached Q, K, V or A.',null,23);
     }else if(stage==='rgb'){
-      c=frame(stage,320,'Color changes the raw patch width, not the learned representation width','An RGB pixel contains three channel numbers. A P by P patch contains P squared times three numbers before projection.');
+      c=frame(stage,320,'Color changes the raw patch width, not the learned representation width','An RGB pixel contains three channel numbers. A square patch contains its side length squared times three numbers before projection.');
       ['R','G','B'].forEach(function(label,a){var x=75+a*165;node(c.svg,'rect',{x:x,y:65,width:132,height:132,rx:5,fill:['#c74545','#479054','#497dc2'][a]});c.text(x+66,228,label,null,28);});
-      c.arrow(598,130,688,130,'e');c.box(716,72,335,113,'P × P × 3 pixel numbers','project to d_model numbers','e');
+      c.arrow(598,130,688,130,'e');c.box(716,72,335,113,'s_patch² × 3 pixels','project to d_model numbers','e');
       c.text(550,290,'For 16 × 16 RGB patches: 16 × 16 × 3 = 768 raw numbers.',null,27);
     }else throw new Error('Unknown Vision I story stage: '+stage);
     c.svg.setAttribute('data-stage',stage);c.svg.setAttribute('data-step',step);c.svg.setAttribute('data-patch',p);c.svg.setAttribute('data-receiver',r);c.svg.setAttribute('data-source',j);
