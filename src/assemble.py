@@ -95,8 +95,13 @@ if os.path.exists(rt_path):
     runtime = '<script>\n' + open(rt_path, encoding='utf-8').read() + '\n</script>\n'
 def js(obj):
     return json.dumps(obj, separators=(',', ':')).replace('</', '<\\/')
+vision_shared = ''
+if 5 <= N <= 8:
+    # The vision parts share one scene, one fixed patch encoder and one set of figures; it must load before the part runtime.
+    with open(os.path.join(here, 'vision-shared.js'), encoding='utf-8') as module:
+        vision_shared = '<script>\n' + module.read() + '\n</script>\n'
 shared_block = ('<script>\nwindow.__TOY__ = ' + js(toy) + ';\nwindow.__PART__ = ' + js(part) + ';\n</script>\n'
-                '<script>\n' + shared + '\n</script>\n' + runtime)
+                '<script>\n' + shared + '\n</script>\n' + vision_shared + runtime)
 if 5 <= N <= 8:
     # Embed the recurring scene once per standalone lesson. Every SVG crop uses
     # this same data URI, so file://, presentation and PDF need no image server.
@@ -113,13 +118,6 @@ if N == 1:
     diagrams = os.path.join(here, 'part1-diagrams.js')
     if os.path.isfile(diagrams):
         shared_block += '<script>\n' + open(diagrams, encoding='utf-8').read() + '\n</script>\n'
-if N == 5:
-    # Keep the numerical worksheet, its visual story, and learning experiment
-    # separate in source; the classroom/article file remains fully offline.
-    for filename in ('part5-learning.js', 'part5-diagrams.js'):
-        module = os.path.join(here, filename)
-        if os.path.isfile(module):
-            shared_block += '<script>\n' + open(module, encoding='utf-8').read() + '\n</script>\n'
 if N == 6:
     with open(os.path.join(here, 'mae6.json'), encoding='utf-8') as model:
         shared_block += '<script>\nwindow.__MAE__ = ' + js(json.load(model)) + ';\n</script>\n'

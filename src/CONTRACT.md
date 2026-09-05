@@ -633,3 +633,20 @@ const net = AT.netSketch(S.querySelector('#s03-net'), { inputs: 3, hidden: 5, ou
 AT.ui.slider({ label: 'Window w', min: 1, max: 100, step: 1, value: 3, onInput: (w) => net.setInputs(w), into: host });
 ```
 Classes: `.netsk`, `.node.e / .hid / .out`, `.node.out.is-hl`, `.ell`, `.edges line(.hl)`, `.cap`, `.out-l`, `.lab-in`.
+
+## Vision components (vision-shared.js, parts 5 to 8)
+
+Loaded after shared.js and before partN.js for parts 5 to 8 (assemble.py). Everything hangs off `AT.vision` (alias `V` below). Design: VISION_AXES.md.
+
+**Scene and encoder.** `V.scenes` = {A, B, C, D, E} 8×8 arrays of 0..3; `V.sceneNames`; `V.scene(keyOrArray)`; `V.copyScene(g)`; `V.patchify(g)` → 16 rows of 4 pixels (row-major within the patch); `V.regionOf(g, j)` → 'left mug centre' | 'right mug edge' | 'book corner' | 'plant' | 'table' …; `V.patchLabel(g, j)` → 'patch 6 · left mug centre'; `V.mugPatches(g, 'right')` → indices; `V.axes` = {e, qk, v, short}; `V.W_patch`, `V.pos`, `V.cls` (fixed, names first); `V.embed(g)` → {R, E} (17 rows, CLS first); `V.attend(g, params)` → {R,E,Q,K,V,S,A,H,Delta,Enew,logits,probs} for any parameter set {W_Q, W_K, W_V, W_O, W_cls?, b_cls?}; `V.readRow(row, 'e'|'qk'|'v', decimals)` → "brightness 3.00, contrast 0.00, …"; `V.ramp(v)` and `V.rampText(v)` → the one grayscale ramp and its digit colour.
+Part 5 runtime adds: `V.forward(scene, 'initial'|'trained')`, `V.encode(scene, which)` (the 17 updated rows other parts reuse as the frozen encoder), `V.attention(scene, which, receiver)`, `V.predict(scene, which)` → {label, probs, logits}, `V.regions(scene)`, `V.trainingCurve`, `V.classes`, `V.tokensPerImage(side, patch)` → {patches, rows, scores}.
+
+**Figures** (each returns the element; `into` appends it; `caption` wraps it in a figure):
+- `V.grid(scene, {cell:28, labels:'values'|'none', patchLines:true, highlight:[j], names:false, caption, into})` — the image with the ramp and dashed patch lines.
+- `V.thumb(scene, j, {size:22})` → tiny SVG of one patch; `V.thumbHTML(scene, j, size)` → markup string; `V.rowLabel(scene, j)` and `V.rowLabels(scene)` → thumbnail + name strings for `AT.ui.table` rowLabels (use these everywhere a table row is a patch).
+- `V.overlay(scene, alpha, {receiver:'CLS'|j, onHover(j), onClick(j), decimals, cell, caption, into})` — attention painted on the image (rose tint ∝ α, value printed per patch, CLS's self-weight under the grid when alpha has 17 entries); methods `setAlpha(newAlpha)`, `setScene(scene)`. THE figure for "what does CLS (or the answer token) read".
+- `V.scatter(points, {axes:[name, name], arrows:[{from:[x,y], to:[x,y], label}], width, height, caption, into})` — points `{x, y, label?, thumb:{scene, j}?, cls:'e'|'ep'|'d'}`; use for patch embeddings and the CLS Δe arrow.
+- `V.circle(points, {axes, size, labels, caption, into})` — unit-circle picture of unit vectors `{v:[x,y(,z)], kind:'img'|'txt', label}`; methods `setPoints(points)`, `animate(states, ms)` (states = array of point arrays; reduced motion jumps to the last).
+- `V.triptych(masked, prediction, original, {hidden:[j], names, cell, labels, into})` — three grids side by side with hatched hidden patches.
+- `V.curve(data [[step, value]…], {label, xlabel, mark, width, height, into})` — a loss curve; `setMark(step)`.
+Rules: the photo (vision-scene.js) appears only as the opening hook of Vision I; every other picture is the scene the model can see; tables about patches use thumbnail row labels and axis-name column headers; no "coordinate N" labels.

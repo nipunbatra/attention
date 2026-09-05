@@ -1,23 +1,1280 @@
 {
-  "d_model": 2,
-  "d_k": 2,
-  "d_v": 2,
-  "axes": {"named": false, "e": ["coordinate 1", "coordinate 2"], "qk": ["coordinate 1", "coordinate 2"], "v": ["coordinate 1", "coordinate 2"]},
-  "vision": {
-    "image": [[1,1,0,0],[1,1,0,0],[0,0,2,2],[0,0,2,2]],
-    "patchSize": 2,
-    "W_patch": [[1,0],[0,1],[1,0],[0,1]],
-    "b_patch": [0,0],
-    "cls": [1,1],
-    "positions": [[0,0],[0,0],[0,1],[1,0],[1,1]],
-    "W_Q": [[0.5,0],[0,0.5]],
-    "W_K": [[0.5,0],[0,0.5]],
-    "W_V": [[1,0],[0,1]],
-    "W_O": [[1,0],[0,1]],
-    "W_class": [[0.5,0],[0,0.25]],
-    "b_class": [0,0],
-    "classes": ["two blocks", "one block"],
-    "target": 0,
-    "provenance": "Initial, hand-chosen parameters for distinguishing two occupied blocks from one. Two-dimensional rows, added positions, one attention update with residual, and a linear classifier. The lesson later trains this model on its two pictured examples. No LayerNorm, feed-forward sublayer, or dropout in this numerical worksheet."
+ "d_model": 4,
+ "d_k": 2,
+ "d_v": 2,
+ "axes": {
+  "e": [
+   "brightness",
+   "contrast (left minus right)",
+   "row",
+   "col"
+  ],
+  "qk": [
+   "bright region?",
+   "on the right?"
+  ],
+  "v": [
+   "sends: brightness",
+   "sends: contrast"
+  ],
+  "short": {
+   "e": [
+    "bright",
+    "contrast",
+    "row",
+    "col"
+   ],
+   "qk": [
+    "bright?",
+    "right?"
+   ],
+   "v": [
+    "\u2192bright",
+    "\u2192contrast"
+   ]
   }
+ },
+ "classes": [
+  "mug on the right",
+  "no mug on the right"
+ ],
+ "scenes": {
+  "A": {
+   "name": "two mugs",
+   "pixels": [
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     3,
+     3,
+     3,
+     0,
+     3,
+     3,
+     3
+    ],
+    [
+     0,
+     3,
+     3,
+     3,
+     0,
+     3,
+     3,
+     3
+    ],
+    [
+     0,
+     3,
+     3,
+     3,
+     0,
+     3,
+     3,
+     3
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     1
+    ],
+    [
+     0,
+     2,
+     2,
+     2,
+     2,
+     2,
+     0,
+     0
+    ],
+    [
+     0,
+     2,
+     2,
+     2,
+     2,
+     2,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   ],
+   "regions": [
+    "left mug corner",
+    "left mug edge",
+    "right mug corner",
+    "right mug edge",
+    "left mug edge",
+    "left mug centre",
+    "right mug edge",
+    "right mug centre",
+    "book corner",
+    "book edge",
+    "book edge",
+    "plant",
+    "book corner",
+    "book edge",
+    "book edge",
+    "table"
+   ],
+   "label": "mug on the right",
+   "cls_attention_initial": [
+    0.015,
+    0.025,
+    0.053,
+    0.04,
+    0.085,
+    0.042,
+    0.153,
+    0.067,
+    0.246,
+    0.021,
+    0.037,
+    0.047,
+    0.035,
+    0.021,
+    0.037,
+    0.047,
+    0.029
+   ],
+   "cls_attention_trained": [
+    0.001,
+    0.003,
+    0.03,
+    0.018,
+    0.183,
+    0.001,
+    0.059,
+    0.008,
+    0.361,
+    0.004,
+    0.024,
+    0.059,
+    0.072,
+    0.004,
+    0.024,
+    0.059,
+    0.093
+   ],
+   "probs_initial": [
+    0.935,
+    0.065
+   ],
+   "probs_trained": [
+    0.998,
+    0.002
+   ]
+  },
+  "B": {
+   "name": "one mug",
+   "pixels": [
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     3,
+     3,
+     3,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     3,
+     3,
+     3,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     3,
+     3,
+     3,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     1
+    ],
+    [
+     0,
+     2,
+     2,
+     2,
+     2,
+     2,
+     0,
+     0
+    ],
+    [
+     0,
+     2,
+     2,
+     2,
+     2,
+     2,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   ],
+   "regions": [
+    "left mug corner",
+    "left mug edge",
+    "table",
+    "table",
+    "left mug edge",
+    "left mug centre",
+    "table",
+    "table",
+    "book corner",
+    "book edge",
+    "book edge",
+    "plant",
+    "book corner",
+    "book edge",
+    "book edge",
+    "table"
+   ],
+   "label": "no mug on the right",
+   "cls_attention_initial": [
+    0.022,
+    0.037,
+    0.079,
+    0.035,
+    0.044,
+    0.063,
+    0.23,
+    0.035,
+    0.044,
+    0.031,
+    0.056,
+    0.071,
+    0.053,
+    0.031,
+    0.056,
+    0.071,
+    0.044
+   ],
+   "cls_attention_trained": [
+    0.001,
+    0.004,
+    0.043,
+    0.054,
+    0.134,
+    0.002,
+    0.085,
+    0.054,
+    0.134,
+    0.005,
+    0.034,
+    0.085,
+    0.105,
+    0.005,
+    0.034,
+    0.085,
+    0.134
+   ],
+   "probs_initial": [
+    0.817,
+    0.183
+   ],
+   "probs_trained": [
+    0.003,
+    0.997
+   ]
+  },
+  "C": {
+   "name": "one mug, moved",
+   "pixels": [
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     3,
+     3,
+     3,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     3,
+     3,
+     3,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     3,
+     3,
+     3,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     1
+    ],
+    [
+     0,
+     2,
+     2,
+     2,
+     2,
+     2,
+     0,
+     0
+    ],
+    [
+     0,
+     2,
+     2,
+     2,
+     2,
+     2,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   ],
+   "regions": [
+    "table",
+    "table",
+    "right mug edge",
+    "right mug corner",
+    "table",
+    "table",
+    "right mug centre",
+    "right mug edge",
+    "book corner",
+    "book edge",
+    "book edge",
+    "plant",
+    "book corner",
+    "book edge",
+    "book edge",
+    "table"
+   ],
+   "label": "mug on the right",
+   "cls_attention_initial": [
+    0.019,
+    0.019,
+    0.024,
+    0.089,
+    0.067,
+    0.019,
+    0.024,
+    0.258,
+    0.113,
+    0.028,
+    0.05,
+    0.063,
+    0.047,
+    0.028,
+    0.05,
+    0.063,
+    0.039
+   ],
+   "cls_attention_trained": [
+    0.0,
+    0.002,
+    0.006,
+    0.028,
+    0.149,
+    0.002,
+    0.006,
+    0.056,
+    0.622,
+    0.001,
+    0.009,
+    0.023,
+    0.028,
+    0.001,
+    0.009,
+    0.023,
+    0.036
+   ],
+   "probs_initial": [
+    0.861,
+    0.139
+   ],
+   "probs_trained": [
+    0.899,
+    0.101
+   ]
+  },
+  "D": {
+   "name": "book only",
+   "pixels": [
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     2,
+     2,
+     2,
+     2,
+     2,
+     0,
+     0
+    ],
+    [
+     0,
+     2,
+     2,
+     2,
+     2,
+     2,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   ],
+   "regions": [
+    "table",
+    "table",
+    "table",
+    "table",
+    "table",
+    "table",
+    "table",
+    "table",
+    "book corner",
+    "book edge",
+    "book edge",
+    "table",
+    "book corner",
+    "book edge",
+    "book edge",
+    "table"
+   ],
+   "label": null
+  },
+  "E": {
+   "name": "plant only",
+   "pixels": [
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     1
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   ],
+   "regions": [
+    "table",
+    "table",
+    "table",
+    "table",
+    "table",
+    "table",
+    "table",
+    "table",
+    "table",
+    "table",
+    "table",
+    "plant",
+    "table",
+    "table",
+    "table",
+    "table"
+   ],
+   "label": null
+  }
+ },
+ "W_patch": [
+  [
+   0.25,
+   0.5,
+   0.0,
+   0.0
+  ],
+  [
+   0.25,
+   -0.5,
+   0.0,
+   0.0
+  ],
+  [
+   0.25,
+   0.5,
+   0.0,
+   0.0
+  ],
+  [
+   0.25,
+   -0.5,
+   0.0,
+   0.0
+  ]
+ ],
+ "b_patch": [
+  0,
+  0,
+  0,
+  0
+ ],
+ "pos_emb": [
+  [
+   0.0,
+   0.0,
+   -1.0,
+   -1.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.33
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.67
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   1.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.33,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.33,
+   0.33
+  ],
+  [
+   0.0,
+   0.0,
+   0.33,
+   0.67
+  ],
+  [
+   0.0,
+   0.0,
+   0.33,
+   1.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.67,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.67,
+   0.33
+  ],
+  [
+   0.0,
+   0.0,
+   0.67,
+   0.67
+  ],
+  [
+   0.0,
+   0.0,
+   0.67,
+   1.0
+  ],
+  [
+   0.0,
+   0.0,
+   1.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   1.0,
+   0.33
+  ],
+  [
+   0.0,
+   0.0,
+   1.0,
+   0.67
+  ],
+  [
+   0.0,
+   0.0,
+   1.0,
+   1.0
+  ]
+ ],
+ "cls": [
+  1.0,
+  0.0,
+  0.0,
+  0.0
+ ],
+ "initial": {
+  "W_Q": [
+   [
+    1.0,
+    1.0
+   ],
+   [
+    0.0,
+    0.0
+   ],
+   [
+    0.0,
+    0.0
+   ],
+   [
+    0.0,
+    0.0
+   ]
+  ],
+  "W_K": [
+   [
+    1.0,
+    0.0
+   ],
+   [
+    0.0,
+    0.0
+   ],
+   [
+    0.0,
+    0.0
+   ],
+   [
+    0.0,
+    1.0
+   ]
+  ],
+  "W_V": [
+   [
+    1.0,
+    0.0
+   ],
+   [
+    0.0,
+    1.0
+   ],
+   [
+    0.0,
+    0.0
+   ],
+   [
+    0.0,
+    0.0
+   ]
+  ],
+  "W_O": [
+   [
+    1.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   [
+    0.0,
+    1.0,
+    0.0,
+    0.0
+   ]
+  ],
+  "W_cls": [
+   [
+    1.0,
+    -1.0
+   ],
+   [
+    0.0,
+    0.0
+   ],
+   [
+    0.0,
+    0.0
+   ],
+   [
+    0.0,
+    0.0
+   ]
+  ],
+  "b_cls": [
+   -1.5,
+   1.5
+  ]
+ },
+ "trained": {
+  "W_Q": [
+   [
+    0.93,
+    1.79
+   ],
+   [
+    0.0,
+    0.0
+   ],
+   [
+    0.0,
+    0.0
+   ],
+   [
+    0.0,
+    0.0
+   ]
+  ],
+  "W_K": [
+   [
+    0.17,
+    0.27
+   ],
+   [
+    0.24,
+    0.45
+   ],
+   [
+    0.0,
+    0.0
+   ],
+   [
+    0.88,
+    1.7
+   ]
+  ],
+  "W_V": [
+   [
+    1.79,
+    0.43
+   ],
+   [
+    0.05,
+    0.01
+   ],
+   [
+    0.0,
+    0.0
+   ],
+   [
+    0.0,
+    0.0
+   ]
+  ],
+  "W_O": [
+   [
+    0.46,
+    0.01,
+    1.27,
+    1.27
+   ],
+   [
+    0.05,
+    0.0,
+    0.3,
+    0.3
+   ]
+  ],
+  "W_cls": [
+   [
+    0.16,
+    -0.16
+   ],
+   [
+    0.01,
+    -0.01
+   ],
+   [
+    1.05,
+    -1.05
+   ],
+   [
+    1.05,
+    -1.05
+   ]
+  ],
+  "b_cls": [
+   -4.13,
+   4.13
+  ]
+ },
+ "curve": [
+  [
+   1,
+   0.676
+  ],
+  [
+   25,
+   0.2397
+  ],
+  [
+   50,
+   0.0468
+  ],
+  [
+   75,
+   0.0343
+  ],
+  [
+   100,
+   0.0323
+  ],
+  [
+   125,
+   0.0311
+  ],
+  [
+   150,
+   0.0303
+  ],
+  [
+   175,
+   0.0296
+  ],
+  [
+   200,
+   0.029
+  ],
+  [
+   225,
+   0.0284
+  ],
+  [
+   250,
+   0.028
+  ],
+  [
+   275,
+   0.0275
+  ],
+  [
+   300,
+   0.0272
+  ],
+  [
+   325,
+   0.0268
+  ],
+  [
+   350,
+   0.0265
+  ],
+  [
+   375,
+   0.0262
+  ],
+  [
+   400,
+   0.026
+  ],
+  [
+   425,
+   0.0257
+  ],
+  [
+   450,
+   0.0255
+  ],
+  [
+   475,
+   0.0253
+  ],
+  [
+   500,
+   0.0251
+  ],
+  [
+   525,
+   0.025
+  ],
+  [
+   550,
+   0.0248
+  ],
+  [
+   575,
+   0.0246
+  ],
+  [
+   600,
+   0.0245
+  ],
+  [
+   625,
+   0.0243
+  ],
+  [
+   650,
+   0.0242
+  ],
+  [
+   675,
+   0.0241
+  ],
+  [
+   700,
+   0.0239
+  ],
+  [
+   725,
+   0.0238
+  ],
+  [
+   750,
+   0.0237
+  ],
+  [
+   775,
+   0.0236
+  ],
+  [
+   800,
+   0.0235
+  ],
+  [
+   825,
+   0.0234
+  ],
+  [
+   850,
+   0.0233
+  ],
+  [
+   875,
+   0.0232
+  ],
+  [
+   900,
+   0.0231
+  ],
+  [
+   925,
+   0.023
+  ],
+  [
+   950,
+   0.0229
+  ],
+  [
+   975,
+   0.0228
+  ],
+  [
+   1000,
+   0.0228
+  ],
+  [
+   1025,
+   0.0227
+  ],
+  [
+   1050,
+   0.0226
+  ],
+  [
+   1075,
+   0.0225
+  ],
+  [
+   1100,
+   0.0225
+  ],
+  [
+   1125,
+   0.0224
+  ],
+  [
+   1150,
+   0.0223
+  ],
+  [
+   1175,
+   0.0223
+  ],
+  [
+   1200,
+   0.0222
+  ],
+  [
+   1225,
+   0.0222
+  ],
+  [
+   1250,
+   0.0221
+  ],
+  [
+   1275,
+   0.022
+  ],
+  [
+   1300,
+   0.022
+  ],
+  [
+   1325,
+   0.0219
+  ],
+  [
+   1350,
+   0.0219
+  ],
+  [
+   1375,
+   0.0218
+  ],
+  [
+   1400,
+   0.0218
+  ],
+  [
+   1425,
+   0.0218
+  ],
+  [
+   1450,
+   0.0217
+  ],
+  [
+   1475,
+   0.0217
+  ],
+  [
+   1500,
+   0.0216
+  ]
+ ],
+ "ramp": {
+  "0": "#3A3A3A",
+  "1": "#6E6E6E",
+  "2": "#A3A3A3",
+  "3": "#D8D8D8"
+ },
+ "notes": "Vision I toy v2. One 8x8 scene with 2x2 patches (16 patch rows plus CLS = 17 rows). The patch encoder is fixed by its axis names: brightness = mean of the four pixels, contrast = left column minus right column; row and col carry the patch position. The question is: is there a mug on the right half? Only the content rows of W_Q and W_V, the content and column rows of W_K, W_O and the class head are trained (Adam, central-difference gradients, seed 0) on scenes A and B; the other position rows stay zero, so queries ask about content, keys can offer content and column position; W_patch, positions and the CLS start row are fixed so the names stay true. Scene C moves the mug to the right half and is the generalisation probe. Numbers are rounded to two decimals and all checks pass on the rounded values. Scene C is a generalisation probe and is reported whatever the outcome."
 }

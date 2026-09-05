@@ -1,0 +1,30 @@
+<section id="s00" class="sec" data-title="Vision components gallery" data-lit="">
+<header class="sec-head"><span class="sec-num">00</span><div><p class="eyebrow">Not shipped. Every shared vision figure on scene A with the v2 toy.</p><h2>Vision components gallery</h2></div></header>
+<div class="card"><h3 class="card-title">Scene A with patch lines and numbers</h3><div id="s00-grid"></div></div>
+<div class="card"><h3 class="card-title">Attention painted on the image: CLS before and after training</h3><div class="side-by-side" id="s00-ov"></div><p class="muted small" id="s00-hover">Hover a patch.</p></div>
+<div class="card"><h3 class="card-title">Patch embeddings on named axes, with the CLS update arrow</h3><div id="s00-sc"></div></div>
+<div class="card"><h3 class="card-title">Unit circle with six points and a 3-state animation</h3><div id="s00-ci"></div><button type="button" class="btn" id="s00-anim">Animate</button></div>
+<div class="card"><h3 class="card-title">Triptych and loss curve</h3><div id="s00-tri"></div><div id="s00-cv"></div></div>
+<div class="card"><h3 class="card-title">A table with thumbnail row labels and axis headers</h3><div id="s00-tb"></div></div>
+<script>
+(function(){
+  const S = document.getElementById('s00'); const V = AT.vision;
+  V.grid('A', { cell: 30, labels: 'values', names: true, into: S.querySelector('#s00-grid'), caption: 'Scene A: two mugs, a book, a plant. Dashed lines are the 2×2 patches.' });
+  const f0 = V.forward('A', 'initial'), f1 = V.forward('A', 'trained');
+  const hov = S.querySelector('#s00-hover');
+  const onHover = j => { hov.textContent = V.patchLabel('A', j) + ': k = (' + f1.K[j+1].map(x => AT.fmt(x, 2)).join(', ') + '), v = (' + f1.V[j+1].map(x => AT.fmt(x, 2)).join(', ') + ')'; };
+  V.overlay('A', f0.A[0], { caption: 'Untrained: CLS asks bright region? and on the right?', onHover, into: S.querySelector('#s00-ov') });
+  V.overlay('A', f1.A[0], { caption: 'Trained: p(mug on the right) = ' + AT.fmt(f1.probs[0], 3), onHover, into: S.querySelector('#s00-ov') });
+  const pts = []; for (let j = 0; j < 16; j++) pts.push({ x: f1.E[j+1][0], y: f1.E[j+1][1], thumb: { scene: 'A', j } });
+  pts.push({ x: f1.E[0][0], y: f1.E[0][1], label: 'CLS', cls: 'e' }); pts.push({ x: f1.Enew[0][0], y: f1.Enew[0][1], label: "CLS′", cls: 'ep' });
+  V.scatter(pts, { axes: [V.axes.e[0], V.axes.e[1]], arrows: [{ from: [f1.E[0][0], f1.E[0][1]], to: [f1.Enew[0][0], f1.Enew[0][1]], label: 'Δe₀' }], into: S.querySelector('#s00-sc'), caption: 'Sixteen patch rows and the CLS row before and after its update.' });
+  const st = [0, 1, 2].map(k => [[.9,.4],[.1,.9],[.5,.5],[1,0],[0,1],[.6,.6]].map((v, i) => { const t = k / 2; const w = i < 3 ? [[1,0],[0,1],[.7,.7]][i] : v; const x = v[0] + t * (w[0] - v[0]), y = v[1] + t * (w[1] - v[1]); const n = Math.hypot(x, y) || 1; return { v: [x / n, y / n], kind: i < 3 ? 'img' : 'txt', label: (i < 3 ? 'I' : 'T') + (i % 3 + 1) }; }));
+  const ci = V.circle(st[0], { axes: ['mug', 'book'], into: S.querySelector('#s00-ci'), caption: 'Squares are images, triangles are captions.' });
+  S.querySelector('#s00-anim').addEventListener('click', () => ci.animate(st, 300));
+  const masked = V.copyScene('A'); [2,3,6,7].forEach(j => { const pr = Math.floor(j/4), pc = j%4; for (let r=0;r<2;r++) for (let c=0;c<2;c++) masked[2*pr+r][2*pc+c] = 0; });
+  V.triptych(masked, V.copyScene('B'), 'A', { hidden: [2,3,6,7], into: S.querySelector('#s00-tri') });
+  V.curve(V.trainingCurve, { label: 'Mean cross-entropy over scenes A and B', mark: 500, into: S.querySelector('#s00-cv') });
+  AT.ui.table(f1.E.slice(1), { cols: V.axes.e, rowLabels: V.rowLabels('A'), decimals: 2, caption: 'Patch rows e_j with named columns', into: S.querySelector('#s00-tb') });
+})();
+</script>
+</section>
