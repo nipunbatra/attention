@@ -1,0 +1,91 @@
+<section id="s09" class="sec" data-title="What the pixels cannot tell you" data-lit="">
+<style>
+#s09 .rd{font-size:15px;color:var(--ink-2);margin:10px 0 0;max-width:72ch;line-height:1.5}
+#s09 .two{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px 32px;align-items:center}
+#s09 .two>*:first-child{max-width:460px;min-width:0}
+#s09 .pair{display:grid;grid-template-columns:auto auto;gap:16px 40px;justify-content:start;align-items:start}
+#s09 .pair figcaption{font-size:14px;color:var(--ink-2);margin-top:6px;max-width:18em}
+#s09 .list{margin:0;padding-left:1.2em}
+#s09 .list li{margin:8px 0}
+@media (max-width:760px){body:not(.present) #s09 .two,body:not(.present) #s09 .pair{grid-template-columns:minmax(0,1fr)}}
+body.present #s09 .rd,body.present #s09 .list{font-size:22px;line-height:1.35}
+body.present #s09 .vfig figcaption,body.present #s09 .pair figcaption{font-size:20px}
+body.present #s09 .two{grid-template-columns:auto minmax(0,1fr)}
+body.present #s09 .bars .bt{height:24px}
+</style>
+<header class="sec-head">
+  <span class="sec-num">09</span>
+  <div>
+    <p class="eyebrow">A fluent answer is not evidence. Two questions the scene cannot support, and what the toy does with them.</p>
+    <h2>What the pixels cannot tell you</h2>
+  </div>
+</header>
+
+<div class="companion" data-kicker="For self-study">
+  <p>Grounding has two sides: the answer must follow the image, and the image must contain the evidence. The first probe changes one word of the question, <em>mugs</em> to <em>book</em>. The toy answers <em>two</em> again, with an identical overlay, because in this one-block decoder only the question mark's row asks, and that row does not depend on the word before it. The second probe cannot even be run: <em>how heavy is the mug?</em> has no answer in sixty-four brightness values, and no word for it in the vocabulary. When the input carries no evidence, a confident answer is a guess, however fluent.</p>
+</div>
+
+<div class="frame" data-title="Change one word of the question: how many book?" data-autobuild="off">
+  <script type="text/x-notes">Does the model answer a different question differently?
+No. The answer and the overlay are identical to the mugs question. Only the question mark asks, and its row is the same whatever word precedes it; the words themselves receive weight 0.00. Fluent, and not reading the question.</script>
+  <div class="card">
+    <h3 class="card-title" id="s09-btitle"></h3>
+    <div class="two"><div id="s09-bov"></div><div><div id="s09-bbars"></div><p class="rd" id="s09-bread"></p></div></div>
+  </div>
+  <div class="callout callout-warn" data-build="1" id="s09-bnote"></div>
+</div>
+
+<div class="frame" data-title="How heavy is the mug?" data-autobuild="off">
+  <script type="text/x-notes">Which pixel would change if the mug were full?
+None: the two grids are the same sixty-four numbers. No row, key or value can differ, so no attention pattern and no head can separate them. The vocabulary has no word for heavy either.</script>
+  <div class="card">
+    <div class="pair" id="s09-pair"></div>
+    <p class="rd" id="s09-pairread"></p>
+  </div>
+  <div class="callout callout-key" data-build="1">Identical inputs give identical rows, weights and answers. When the evidence is not in the pixels, the right output is “not visible”.</div>
+</div>
+
+<div class="frame" data-title="A short grounding checklist" data-autobuild="off">
+  <script type="text/x-notes">What did each check on this page catch?
+Change the image, keep the question: caught nothing, the answer followed. Paint the weights: showed the mugs. Move the object: caught the shortcut. Change the question: caught that the words are ignored.</script>
+  <ol class="list">
+    <li>Change the image and keep the question. Did the answer follow? (Section 7: yes.)</li>
+    <li data-build="1">Paint the answer token's weights on the image. Did it read the object? (Section 5: the mugs.)</li>
+    <li data-build="2">Move the object. Did the answer survive? (Section 7: no, scene C says two.)</li>
+    <li data-build="3">Change the question. Did anything change? (Here: nothing.)</li>
+  </ol>
+</div>
+
+<div class="companion after">
+  <p>Reading the right patches, following the image and answering the question are three different checks. This toy passes the first two on its training scenes and fails the third and the moved-mug probe.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s09'), T = AT.vlm, V = AT.vision, N = T.NP;
+  /* probe 1: one word of the question changed */
+  const alt = T.prompt.map(t => t === 'mugs' ? 'book' : t);
+  const gM = T.generate('A'), gB = T.generate('A', { prefix: alt });
+  const sM = gM.trace[0], sB = gB.trace[0];
+  const maxDiff = Math.max(...sB.weights.map((w, j) => Math.abs(w - sM.weights[j])));
+  S.querySelector('#s09-btitle').textContent = 'Scene A, prompt “' + alt.join(' ') + '”: the answer is “' + gB.tokens.join(' ') + '”';
+  V.overlay('A', sB.weights.slice(0, N), { cell: 23, into: S.querySelector('#s09-bov'), caption: 'What ? reads for “how many book ?”.' });
+  AT.ui.bars(AT.topk(sB.probs, 4), { cls: 'neutral', max: 1, decimals: 3, sorted: false, highlight: sB.chosen, into: S.querySelector('#s09-bbars') });
+  const same = gB.tokens.join(' ') === gM.tokens.join(' ');
+  S.querySelector('#s09-bread').textContent = (same ? 'The same answer as for “how many mugs ?”' : 'A different answer from “how many mugs ?” (“' + gM.tokens.join(' ') + '”)') + '; the 21 weights differ by at most ' + AT.fmt(maxDiff, 3) + '.';
+  S.querySelector('#s09-bnote').innerHTML = 'The word <em>book</em> changed nothing: the four question words receive weight ' + AT.fmt(sB.weights.slice(N, N + 4).reduce((a, b) => a + b, 0), 2) + ', and the question mark’s own row does not depend on them. Fluent, and not reading the question.';
+  /* probe 2: identical pixels */
+  const g1 = V.copyScene('A'), g2 = V.copyScene('A');
+  let diff = 0; for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) if (g1[r][c] !== g2[r][c]) diff++;
+  [['An empty mug', g1], ['The same mug, full of coffee', g2]].forEach(([cap, g]) => {
+    const f = AT.h('figure', { class: 'vfig', style: 'margin:0' });
+    V.grid(g, { cell: 20, labels: 'values', into: f });
+    f.appendChild(AT.h('figcaption', {}, cap + ': the same 64 brightness values.'));
+    S.querySelector('#s09-pair').appendChild(f);
+  });
+  const f1 = T.forward(g1), f2 = T.forward(g2);
+  const rowDiff = Math.max(...f1.out.map((r, i) => Math.max(...r.map((x, c) => Math.abs(x - f2.out[i][c])))));
+  S.querySelector('#s09-pairread').textContent = 'Pixels that differ: ' + diff + '. Largest difference between the two sets of updated rows: ' + AT.fmt(rowDiff, 2) + '. And “heavy” is not among the ten tokens: the toy could not say it even if the pixels told it.';
+})();
+</script>
+</section>

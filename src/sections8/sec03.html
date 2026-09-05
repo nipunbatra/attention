@@ -1,46 +1,133 @@
-<section id="s03" class="sec" data-title="Two routes for visual information" data-lit="q k v a">
-<header class="sec-head"><span class="sec-num">03</span><div><p class="eyebrow">Where do the decoder's keys and values come from?</p><h2>Two routes for visual information</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>The connector supplies vectors, but an attention mask controls how they are used. Our toy puts image rows before the text and uses one prefix-attention block. Image rows can read all image rows but cannot read text. A text row can read every image row and only its current or earlier text rows. Preventing image rows from reading the answer also prevents a future-answer shortcut through image states in deeper blocks.</p></div>
-<div class="frame" data-title="Image context is visible; future answer text is not" data-autobuild="off">
- <div id="s03-mask"></div>
- <p data-build="1">The same mask is applied before softmax during teacher-forced training.</p>
- <script type="text/x-notes">
-  Could an image row become a route for a future answer to leak backward?
+<section id="s03" class="sec" data-title="Visual rows enter the decoder" data-lit="">
+<style>
+#s03 .rd{font-size:15px;color:var(--ink-2);margin:10px 0 0;max-width:72ch;line-height:1.5}
+#s03 .two{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px 28px;align-items:start}
+#s03 .arith{margin:10px 0 0}
+#s03 .eq{margin:6px 0 10px}
+@media (max-width:760px){body:not(.present) #s03 .two{grid-template-columns:minmax(0,1fr)}}
+body.present #s03 .rd{font-size:22px;line-height:1.35}
+body.present #s03 .dt td,body.present #s03 .dt th{font-size:22px;padding:.2em .45em}
+body.present #s03 .dt-cap,body.present #s03 .dt-note{display:none}
+body.present #s03 .vfig figcaption{font-size:20px}
+body.present #s03 .reading-only{display:none}
+body.present #s03 .eq .katex-display{font-size:24px;margin:6px 0}
+</style>
+<header class="sec-head">
+  <span class="sec-num">03</span>
+  <div>
+    <p class="eyebrow">A visual row has four named numbers; the decoder works with three. A connector changes the width, not the count.</p>
+    <h2>Visual rows enter the decoder</h2>
+  </div>
+</header>
 
-  Trace the 9×9 mask: image reads image only; text reads all image rows and current or earlier text. The question-mark row cannot read two or blocks during training.
- </script>
+<div class="companion" data-kicker="For self-study">
+  <p>Vision I ended with sixteen updated patch rows on the axes brightness, contrast, row and col; we keep them exactly, drop the CLS row, and freeze them. Notice that row and col are no longer plain positions: the encoder's update landed there, so those two numbers also carry the brightness a patch read from its neighbours. The connector multiplies every row by one 4×3 matrix and adds a bias. Its three output axes were learned, so we name each after the pixel quantity it tracks across the sixteen patches; the first tracks brightness almost exactly. The five words get rows from a lookup table plus a position vector.</p>
 </div>
-<div class="frame" data-title="A visual prefix and cross-attention are alternatives" data-autobuild="off">
- <div id="s03-routes"></div>
- <p data-build="1">Our numerical example uses the left route. Attention Part IV worked through the right route with an English source.</p>
- <script type="text/x-notes">
-  Which route does our worked calculation use?
 
-  Point to the shared visual-prefix sequence on the left. Cross-attention on the right is an alternative architecture, not an extra operation hidden inside this toy.
- </script>
+<div class="frame" data-title="Sixteen frozen rows on four named axes" data-autobuild="off">
+  <script type="text/x-notes">Which column orders the patches by what they contain?
+Brightness: mug centre above book edge above table. Row and col began as positions and received the encoder's update, so they also carry what each patch read. The full sixteen-row table is in the reading version.</script>
+  <div class="card">
+    <h3 class="card-title">Five of the sixteen rows $g_j$, straight from Vision I's encoder</h3>
+    <div class="two"><div id="s03-gpick"></div><div id="s03-gtab"></div></div>
+    <p class="rd" id="s03-gread"></p>
+  </div>
 </div>
-<div class="frame" data-title="Cross-attention can read image rows instead of English rows" data-autobuild="off">
- $$\vq{Q}=\ve{E_{\rm text}}W_Q,\quad \vk{K}=\ve{G}W_K,\quad \vv{V}=\ve{G}W_V$$
- $$\vd{\Delta E_{\rm text}}=\operatorname{softmax}\!\left(\frac{\vq{Q}\vk{K}^\top}{\sqrt{d_k}}\right)\vv{V}W_O$$
- <p data-build="1">A text query chooses a mixture of image values. $G$ and $E_{\rm text}$ need not have the same width; their projections produce compatible query/key widths.</p>
- <p data-build="2">This is an architectural comparison, not a second hidden operation inside our prefix toy.</p>
- <script type="text/x-notes">
-  Where do Q, K, and V come from in the separate-memory route?
 
-  The decoder supplies queries. Encoded image rows supply keys and values. Their source widths may differ, but projected query and key widths must agree.
- </script>
+<div class="companion">
+  <p>All sixteen rows, with the thumbnail of each patch. The CLS row is dropped: the decoder will read the patches themselves.</p>
+  <div id="s03-gall"></div>
 </div>
-<div class="frame" data-title="Changing width does not reduce the number of visual tokens" data-autobuild="off">
- <p>Linear connector: $196\times768\;\to\;196\times4096$.</p>
- <p data-build="1">Learned resampler: $n_r$ query rows read $196$ visual rows and produce $n_r$ output rows.</p>
- $$\va{A_{\rm resample}}\in\mathbb R^{n_r\times196},\qquad \va{A_{\rm resample}}\vv{V}\in\mathbb R^{n_r\times d_v}$$
- <p data-build="2">Reducing token count saves later computation but can discard detail.</p>
- <script type="text/x-notes">
-  Does a wide connector also reduce the number of patches?
 
-  A linear connector preserves row count. A resampler uses a chosen number of learned query rows; each retrieves a mixture from the visual memory.
- </script>
+<div class="frame" data-title="The connector: four axes in, three learned axes out" data-autobuild="off">
+  <script type="text/x-notes">Why can we name a learned column at all?
+We cannot design it, but we can read it. Each output column was named after the pixel quantity it tracks across the patches; hover a header for the correlations. The same 4×3 map and bias act on every patch.</script>
+  <div class="card">
+    <h3 class="card-title">$\ve{e_j} = g_j\,W_{\mathrm{bridge}} + b_{\mathrm{bridge}}$: one map for all sixteen patches</h3>
+    <div id="s03-w"></div>
+    <p class="rd reading-only" id="s03-wread"></p>
+  </div>
+  <div class="callout callout-key" data-build="1">A learned axis is a mixture. Its name is a reading of the fit, not a design choice, and it only means something for image rows.</div>
 </div>
-<div class="companion after"><p><a href="https://arxiv.org/abs/2204.14198">Flamingo</a> uses a visual resampler and cross-attention layers in a language model. <a href="https://arxiv.org/abs/2301.12597">BLIP-2</a> uses a learned query bridge. Those queries are learned query tokens, not the same thing as the last answer token's decoder query. Image tiling is another separate choice: it changes which image crops are encoded and may increase the visual token count. No single connector or training recipe describes all VLMs.</p></div>
-<script>(function(){const S=document.getElementById('s03'),V=AT.vlm;S.querySelector('#s03-mask').append(V.diagram('mask'));S.querySelector('#s03-routes').append(V.diagram('routes'));})();</script>
+
+<div class="companion">
+  <p>One patch worked through the connector, one output axis per line:</p>
+  <div id="s03-calc"></div>
+</div>
+
+<div class="frame" data-title="What the connector carries" data-autobuild="off">
+  <script type="text/x-notes">Where do the mug patches sit, and where does the table sit?
+Read the horizontal axis: it tracks brightness, so mug centres are far right and the table is far left. The connector kept what separates the two scenes.</script>
+  <div class="card">
+    <h3 class="card-title">The sixteen image rows after the connector, on two of the learned axes</h3>
+    <div id="s03-scatter"></div>
+  </div>
+</div>
+
+<div class="frame" data-title="Text rows: a lookup plus a position" data-autobuild="off">
+  <script type="text/x-notes">What do the word rows share with the image rows?
+Only the width. A text row is a stored vocabulary row plus a learned position vector for its slot; hover a cell of the sum to see the addition.</script>
+  <div class="card">
+    <h3 class="card-title">$\ve{e_i} = E_{\mathrm{tok}}[t_i] + p_i$ for the five known words</h3>
+    <div id="s03-text"></div>
+  </div>
+</div>
+
+<div class="frame" data-title="Stack them: twenty-one rows in one E" data-autobuild="off">
+  <script type="text/x-notes">Which rows came through the connector, and which through the lookup?
+Sixteen thumbnails on the left, five chips on the right. From here on there is one matrix E and one set of projections; the block does not know which rows were pixels.</script>
+  <div class="card">
+    <div id="s03-stack"></div>
+    <div class="eq" id="s03-eq"></div>
+  </div>
+  <div class="callout callout-key" data-build="1">One $\ve{E}$ of 21 rows. The same $W_Q$, $W_K$ and $W_V$ act on every row, image or word.</div>
+</div>
+
+<div class="companion after">
+  <p>Image rows arrive through a frozen encoder and a fitted connector; word rows through a lookup. After stacking, attention treats all twenty-one rows the same way.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s03'), T = AT.vlm, V = AT.vision;
+  const F = T.forward('A'), p = T.params(), G = F.G;
+  const eAx = V.encoderAxes.e.map((full, k) => ({ label: V.encoderAxes.short[k], title: full }));
+  const dAx = AT.axes.e.map((name, k) => ({ label: name, title: (T.toy.axes.full && T.toy.axes.full.e[k]) || '', cls: 'e' }));
+  const sample = [5, 4, 9, 11, 15];
+  /* the five representative rows */
+  V.grid('A', { cell: 18, highlight: sample, into: S.querySelector('#s03-gpick'), caption: 'The five highlighted patches.' });
+  AT.ui.table(sample.map(j => G[j]), { cols: eAx, rowLabels: sample.map(j => V.rowLabel('A', j)), cornerLabel: 'patch', decimals: 2, into: S.querySelector('#s03-gtab'),
+    caption: 'Each row is one frozen $g_j$: the patch after Vision I’s attention. Column names are the encoder’s axes.' });
+  const byB = sample.slice().sort((a, b) => G[b][0] - G[a][0]);
+  S.querySelector('#s03-gread').innerHTML = 'Reading the brightness column: ' + byB.map(j => V.regionOf('A', j) + ' ' + AT.fmt(G[j][0], 2)).join(' > ') + '. The row and col columns began as the patch’s place; the encoder’s update $\\vd{\\Delta e_j}$ landed on them, so they now also carry the brightness this patch read (mug centre ' + AT.fmt(G[5][2], 2) + ', table ' + AT.fmt(G[15][2], 2) + ').';
+  AT.renderMath(S.querySelector('#s03-gread'));
+  AT.ui.table(G, { cols: eAx, rowLabels: V.rowLabels('A'), cornerLabel: 'patch', decimals: 2, into: S.querySelector('#s03-gall'), caption: 'All sixteen frozen rows $g_1 \\ldots g_{16}$ of scene A.' });
+
+  /* the connector as a readable table: rows are encoder axes, columns the learned decoder axes */
+  const w = AT.ui.table(p.W_bridge, { cols: dAx, rowLabels: eAx.map(a => a.label), cornerLabel: '$W_{\\mathrm{bridge}}$', decimals: 2,
+    footer: { label: '$b_{\\mathrm{bridge}}$', values: p.b_bridge, cls: 'e' },
+    caption: 'Rows are the encoder’s axes; columns are the decoder’s learned axes. Hover a column header for what that axis tracks.', into: S.querySelector('#s03-w') });
+  const full = (T.toy.axes.full && T.toy.axes.full.e) || [];
+  S.querySelector('#s03-wread').textContent = 'Reading the columns: ' + AT.axes.e.map((n, k) => '“' + n + '” ' + (full[k] || '').replace(/ across the 16 patches$/, '').replace(/,.*$/, '')).join('; ') + '. The names come from these correlations, not from a design; the header tooltips give the full list.';
+  AT.ui.matVecCalc(G[5], p.W_bridge, { from: eAx.map(a => a.label), to: AT.axes.e, cls: 'e', xLabel: 'g · 6 left mug centre', outLabel: 'g W_bridge (before the bias)', decimals: 2, wDecimals: 2, into: S.querySelector('#s03-calc') });
+  const bias = AT.h('p', { class: 'rd' }, 'Add the bias: ' + F.B[5].map((x, c) => AT.axes.e[c] + ' ' + AT.fmt(x, 2)).join(', ') + '. That is row 6 of E.');
+  S.querySelector('#s03-calc').appendChild(bias);
+
+  /* scatter of the sixteen connector outputs */
+  const xa = 0, ya = 2;
+  const pts = AT.range(T.NP).map(j => ({ x: F.B[j][xa], y: F.B[j][ya], thumb: { scene: 'A', j } }));
+  V.scatter(pts, { axes: [AT.axes.e[xa], AT.axes.e[ya]], width: 480, height: 300, into: S.querySelector('#s03-scatter'),
+    caption: 'Each marker is a patch thumbnail placed at its connector output. Mug centres sit at ' + AT.fmt(F.B[5][xa], 2) + ' on the ' + AT.axes.e[xa] + ' axis, the table at ' + AT.fmt(F.B[15][xa], 2) + '.' });
+
+  /* the five text rows: lookup + position */
+  const rows = T.prompt.map((tok, i) => F.E[T.NP + i]);
+  const tt = AT.ui.table(rows, { axes: 'e', rowLabels: T.prompt.map((tok, i) => T.textLabel(tok, i)), rowCls: 'e', cornerLabel: 'text row', decimals: 2, into: S.querySelector('#s03-text'),
+    caption: 'Row 17 to 21 of E: the stored row of each word plus the position vector of its slot.', note: 'Hover or focus a cell to see the lookup row and the position added.' });
+  tt.cells.forEach((cells, i) => cells.forEach((td, c) => tt.tipOn(td, () => AT.fmt(p.E_tok[F.ids[i]][c], 2) + ' + ' + AT.fmt(p.P[i][c], 2) + ' = ' + AT.fmt(rows[i][c], 2))));
+
+  /* the stack */
+  T.tokenRow('A', T.prompt, { size: 26, into: S.querySelector('#s03-stack') });
+  AT.tex(S.querySelector('#s03-eq'), '\\ve{E} = \\begin{bmatrix} g_1 W_{\\mathrm{bridge}} + b_{\\mathrm{bridge}} \\\\ \\vdots \\\\ g_{16} W_{\\mathrm{bridge}} + b_{\\mathrm{bridge}} \\\\ E_{\\mathrm{tok}}[\\texttt{<bos>}] + p_1 \\\\ \\vdots \\\\ E_{\\mathrm{tok}}[\\texttt{?}] + p_5 \\end{bmatrix} \\in \\mathbb{R}^{' + F.n + '\\times ' + T.toy.d_model + '}', { display: true });
+})();
+</script>
 </section>

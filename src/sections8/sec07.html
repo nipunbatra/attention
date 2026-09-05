@@ -1,59 +1,112 @@
-<section id="s07" class="sec" data-title="Check grounding, not just fluency" data-lit="">
-<header class="sec-head"><span class="sec-num">07</span><div><p class="eyebrow">A plausible sentence can still contradict the image.</p><h2>Check grounding, not just fluency</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>The earlier article's thermal example raises a useful evidence question: which information is actually available in the displayed pixels? A false-colour rendering without its scale can hide the mapping to physical temperature. A model cannot recover a unique absolute temperature from information that was removed. A visible calibrated legend or radiometric metadata changes what can be inferred.</p></div>
-<div class="frame" data-title="The mug is visible; its temperature is not" data-autobuild="off">
- <div id="s07-scene-evidence"></div>
-  <p data-build="1">Temperature needs evidence beyond this illustration.</p>
- <script type="text/x-notes">Which pixels would establish an absolute temperature?
+<section id="s07" class="sec" data-title="The grounding test: change the image, keep the question" data-lit="">
+<style>
+#s07 .pair{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+#s07 .pair>div{min-width:0}
+#s07 .rd{font-size:15px;color:var(--ink-2);margin:10px 0 0;max-width:72ch;line-height:1.5}
+#s07 .two{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px 32px;align-items:center}
+#s07 .two>*:first-child{max-width:460px;min-width:0}
+#s07 .three{display:grid;grid-template-columns:repeat(3,auto);gap:16px 28px;justify-content:start;align-items:start}
+#s07 .three figcaption{font-size:14px;color:var(--ink-2);margin-top:6px;max-width:16em}
+#s07 .three .ans{font-weight:700;color:var(--ink)}
+@media (max-width:760px){body:not(.present) #s07 .pair,body:not(.present) #s07 .two,body:not(.present) #s07 .three{grid-template-columns:minmax(0,1fr)}}
+body.present #s07 .rd{font-size:22px;line-height:1.35}
+body.present #s07 .vfig figcaption,body.present #s07 .three figcaption{font-size:20px}
+body.present #s07 .two{grid-template-columns:auto minmax(0,1fr)}
+body.present #s07 .bars .bt{height:24px}
+</style>
+<header class="sec-head">
+  <span class="sec-num">07</span>
+  <div>
+    <p class="eyebrow">If the answer is grounded, removing a mug must change where the answer token reads and what it says.</p>
+    <h2>The grounding test: change the image, keep the question</h2>
+  </div>
+</header>
 
-Colour and position tell us which mug is meant, not its contents' temperature. This is a question about missing evidence, not a reported model failure. A calibrated measurement would change what can be answered.</script>
+<div class="companion" data-kicker="For self-study">
+  <p>This is the payoff of the series. Keep the five words fixed and swap the picture. In scene A the first answer token reads both mugs and says <em>two</em>; in scene B it reads the one mug that is left and says <em>one</em>. Then a scene the model never saw: the single mug moved to the right. The model reads the moved mug and answers <em>two</em>. It did not learn to count; it learned that a bright mug on the right means two, which is exactly the question Vision I's frozen encoder was trained to answer. Two training scenes cannot tell those rules apart.</p>
 </div>
-<div class="frame" data-title="Fluent counting is not enough" data-autobuild="off">
- <p>Keep the question fixed and change only the image. Does the answer track the change?</p>
- <p data-build="1">Test new layouts, brightnesses and distractors. Include images with zero blocks and questions whose answer is unavailable.</p>
- <p data-build="2">Our two-pair toy has not passed these tests. Its success demonstrates the computation, not a general ability to count.</p>
- <script type="text/x-notes">
-  What would convince us that this is a reliable counter?
 
-  Try new layouts and brightnesses, not only the fitted grids. A broader counter must also handle zero or report unsupported questions; our two-pair vocabulary does not establish that ability.
- </script>
-</div>
-<div class="frame" data-title="The same displayed colour need not mean the same temperature" data-autobuild="off">
- <div id="s07-thermal"></div>
- <p data-build="1">Without the scale or calibration data, an absolute-temperature answer is underdetermined.</p>
- <script type="text/x-notes">
-  Can a colour alone specify an absolute temperature?
+<div class="frame" data-title="Same question, two scenes: what the answer token reads" data-autobuild="off">
+  <script type="text/x-notes">Does the answer token read different patches when a mug is removed?
+Yes: both mugs in A, the remaining mug in B. Hover to compare weights. Then reveal the answers under the overlays.
 
-  Compare the two calibrated scales. The same displayed colour can represent different temperatures; without the scale the measurement is underdetermined.
- </script>
+Timing: three minutes.</script>
+  <div class="card">
+    <div class="pair" id="s07-pair"></div>
+    <p class="rd" id="s07-hover">Hover a patch in either scene to see its weight.</p>
+  </div>
+  <div class="callout callout-key" data-build="1">The answer follows the mugs. Remove one and the first answer token reads the other and says <em>one</em>.</div>
 </div>
-<div class="frame" data-title="Use a tool when the evidence lives outside the rendered image" data-autobuild="off">
- <ol><li>Locate the region or measurement requested.</li><li data-build="1">Read calibrated sensor data with an appropriate tool.</li><li data-build="2">Report the measurement, units and assumptions with the answer.</li></ol>
- <p data-build="3">Tools add evidence. Their calibration, coordinate mapping and failure cases still need checking.</p>
- <script type="text/x-notes">
-  What evidence would a tool need to return?
 
-  Identify the region, obtain calibrated sensor values, and report units. Coordinate mapping and calibration still need checking.
- </script>
+<div class="frame" data-title="The two distributions" data-autobuild="off">
+  <script type="text/x-notes">How much probability moved between the two scenes?
+Read the two tallest bars. Same words, same parameters; only the sixteen image rows differ, and they shift most of the probability from two to one.</script>
+  <div class="card">
+    <div class="pair" id="s07-bars"></div>
+    <p class="rd" id="s07-barsread"></p>
+  </div>
 </div>
-<div class="frame" data-title="Check what changed between the four vision parts" data-autobuild="off">
- <div id="s07-summary"></div>
- <script type="text/x-notes">
-  What changed from one vision lesson to the next?
 
-  Keep the image encoder in view while changing the target and readout: class labels, self-supervised targets, matched captions, then generated answer tokens.
- </script>
+<div class="frame" data-title="Scene C: move the mug and ask again" data-autobuild="off">
+  <script type="text/x-notes">One mug, moved to the right. What should the answer be, and what is it?
+Ask the room to predict. The model reads the moved mug and says two. It learned that a bright mug on the right means two, the very question Vision I's encoder was trained on. Report the number; do not soften it.</script>
+  <div class="card">
+    <h3 class="card-title" id="s07-ctitle"></h3>
+    <div class="two"><div id="s07-probe"></div><div><div id="s07-cbars"></div><p class="rd" id="s07-cread"></p></div></div>
+  </div>
+  <div class="callout callout-warn" data-build="1" id="s07-cnote"></div>
 </div>
-<div class="frame" data-title="Does every VLM need cross-attention?" data-autobuild="off">
- <div id="s07-reveal"></div>
- <script type="text/x-notes">
-  Does an image-conditioned decoder require a separate cross-attention layer?
 
-  Ask for both possible routes before revealing the answer. The shared-prefix route already allows text to read image information through masked self-attention.
- </script>
+<div class="frame" data-title="What the three scenes say" data-autobuild="off">
+  <script type="text/x-notes">Which rule fits all three answers?
+"A bright mug on the right means two" fits A, B and C; "count the mugs" fits only A and B. The two training scenes cannot separate the rules. Adding scene C with the answer one to the training set would; we did not.</script>
+  <div class="card">
+    <div class="three" id="s07-three"></div>
+  </div>
+  <div class="callout callout-key" data-build="1">Reading the right patches is necessary for grounding; it is not sufficient. Scene C reads the mug and still counts wrong.</div>
 </div>
-<div class="companion after"><h3>Reading and implementation sources</h3><p><a href="https://arxiv.org/abs/2010.11929">ViT</a> supplies the patch-sequence architecture; <a href="https://arxiv.org/abs/2304.08485">LLaVA</a> is the projected-prefix example; <a href="https://arxiv.org/abs/2204.14198">Flamingo</a> and <a href="https://arxiv.org/abs/2301.12597">BLIP-2</a> show different visual-language interfaces. The adaptation preserves the questions about connectors, training choices, retrieval versus generation, and sensor calibration from <a href="https://nipunbatra.github.io/interactive-articles/vlm/">the earlier VLM article</a>. Its numerical trainer is replaced here by a separately checked toy.</p><p>For a real evaluation, separate retrieval ranking, answer correctness, visual grounding, and abstention on unavailable information. Report the dataset split, prompt and preprocessing, and inspect failures. A fluent answer or a high softmax probability is not a substitute for that evidence.</p></div>
-<script>(function(){const S=document.getElementById('s07'),V=AT.vlm;AT.visionScene.mount(S.querySelector('#s07-scene-evidence'),{mode:'evidence',variant:'two',questions:[{text:'What is the temperature inside the teal mug?',label:'Not visible'}]});S.querySelector('#s07-thermal').append(V.diagram('thermal'));
-AT.ui.table([['ViT','Pixels → patch states','Class label'],['Visual pretraining','Targets from images','Reusable visual features'],['CLIP','Images ↔ text embeddings','Rank complete candidates'],['VLM','Image + known text','Generate answer tokens']],{cols:['part','computation / supervision','result'],kind:'text',into:S.querySelector('#s07-summary')});
-AT.ui.reveal('Does a VLM need a separate cross-attention layer?','No. Our worked model uses projected image rows in a joint self-attention prefix. Another architecture can keep visual memory separate and read it through cross-attention. In both cases, the answer must be conditioned on available visual evidence.',{into:S.querySelector('#s07-reveal')});})();</script>
+
+<div class="companion after">
+  <p>Painting the weights on the scene shows where the answer token looked. Changing the scene shows whether the answer followed. Scene C shows what two training examples leave undetermined.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s07'), T = AT.vlm, V = AT.vision, N = T.NP;
+  const gens = {}; ['A', 'B', 'C'].forEach(k => { gens[k] = T.generate(k); });
+  const first = k => gens[k].trace[0];
+  const pWord = (k, tok) => first(k).probs[T.vocab.indexOf(tok)];
+  const hover = S.querySelector('#s07-hover');
+  ['A', 'B'].forEach(k => {
+    const st = first(k), box = AT.h('div');
+    V.overlay(k, st.weights.slice(0, N), { cell: 24, into: box, caption: 'Scene ' + k + ' (' + V.sceneNames[k] + '): the first answer token reads this, then says <strong>' + st.chosen + '</strong> with p = ' + AT.fmt(st.probs[T.vocab.indexOf(st.chosen)], 2) + '.',
+      onHover: j => { hover.textContent = 'Scene ' + k + ', ' + V.patchLabel(k, j) + ': weight ' + AT.fmt(st.weights[j], 2) + '. ' + T.readWeights(k, st.weights); } });
+    S.querySelector('#s07-pair').appendChild(box);
+    const bb = AT.h('div');
+    bb.appendChild(AT.h('p', { class: 'rd', style: 'margin:0 0 6px;font-weight:600;color:var(--ink)' }, 'Scene ' + k + ': ' + V.sceneNames[k]));
+    AT.ui.bars(AT.topk(st.probs, 4), { cls: 'neutral', max: 1, decimals: 3, sorted: false, highlight: st.chosen, into: bb });
+    S.querySelector('#s07-bars').appendChild(bb);
+  });
+  S.querySelector('#s07-barsread').textContent = 'p(two) is ' + AT.fmt(pWord('A', 'two'), 2) + ' in A and ' + AT.fmt(pWord('B', 'two'), 2) + ' in B; p(one) is ' + AT.fmt(pWord('A', 'one'), 2) + ' in A and ' + AT.fmt(pWord('B', 'one'), 2) + ' in B. The words and the parameters are identical; the sixteen image rows made the difference.';
+
+  /* scene C, the probe */
+  const c = first('C'), mC = T.mass(c.weights, 'C');
+  S.querySelector('#s07-ctitle').textContent = 'Scene C: ' + V.sceneNames.C + '. The model never saw it.';
+  V.overlay('C', c.weights.slice(0, N), { cell: 26, into: S.querySelector('#s07-probe'), caption: 'What the first answer token reads in scene C.' });
+  AT.ui.bars(AT.topk(c.probs, 4), { cls: 'neutral', max: 1, decimals: 3, sorted: false, highlight: c.chosen, into: S.querySelector('#s07-cbars') });
+  S.querySelector('#s07-cread').textContent = 'It reads the moved mug (mug patches ' + AT.fmt(mC.mug, 2) + ' of the weight, the right half ' + AT.fmt(mC.right, 2) + ') and answers ' + c.chosen + ' with p = ' + AT.fmt(c.probs[T.vocab.indexOf(c.chosen)], 2) + '; p(one) = ' + AT.fmt(c.probs[T.vocab.indexOf('one')], 2) + '.';
+  const right = c.chosen === 'two';
+  S.querySelector('#s07-cnote').innerHTML = right
+    ? 'One mug, answer <strong>two</strong>. The rule it learned is “a bright mug on the right means two”: true for A and B, and the same question Vision I’s frozen encoder was trained on. Scenes A and B cannot separate that rule from counting.'
+    : 'One mug, answer <strong>' + AT.escape(c.chosen) + '</strong>. With p = ' + AT.fmt(c.probs[T.vocab.indexOf(c.chosen)], 2) + ' the probe passes, but two training scenes are still no proof of counting.';
+
+  /* the three scenes side by side */
+  ['A', 'B', 'C'].forEach(k => {
+    const st = first(k), f = AT.h('figure', { class: 'vfig', style: 'margin:0' });
+    V.grid(k, { cell: 16, into: f });
+    f.appendChild(AT.h('figcaption', { html: 'Scene ' + k + ': ' + V.sceneNames[k] + '. Answer <span class="ans">' + AT.escape(st.chosen) + '</span> (p = ' + AT.fmt(st.probs[T.vocab.indexOf(st.chosen)], 2) + '), reading mug patches ' + AT.fmt(T.mass(st.weights, k).mug, 2) + '.' + (k === 'C' ? ' Not in the training set.' : ' Training scene.') }));
+    S.querySelector('#s07-three').appendChild(f);
+  });
+})();
+</script>
 </section>

@@ -1,6 +1,7 @@
-// Regression checks for the exact image-conditioned prefix decoder.
+// Regression checks for the Vision IV toy (toy8.json v2): the frozen Vision I encoder, the fitted
+// connector and width-three prefix decoder, the saved NumPy reference, gradients and generation.
 // Run: node src/check_vision4.mjs [--browser] [--screenshots /tmp/vision4-check]
-// Reproduce the saved NumPy model separately: python3 -B src/train_vision4.py --check
+// Reproduce the saved NumPy model separately: python3 src/train_vision4.py --check
 // Browser mode builds the current source fragments in memory, never published HTML.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -13,191 +14,216 @@ import {fileURLToPath} from 'node:url';
 const src=path.dirname(fileURLToPath(import.meta.url));
 const read=name=>fs.readFileSync(path.join(src,name),'utf8');
 const toy=JSON.parse(read('toy8.json')),data=toy.vlm,original=JSON.stringify(toy);
+const toy5=JSON.parse(read('toy5.json'));
 const clone=x=>JSON.parse(JSON.stringify(x));
 const sum=r=>r.reduce((a,b)=>a+b,0);
 const mm=(a,b)=>a.map(row=>b[0].map((_,j)=>row.reduce((s,x,k)=>s+x*b[k][j],0)));
 const tr=a=>a[0].map((_,j)=>a.map(row=>row[j]));
 const add=(a,b)=>a.map((r,i)=>r.map((x,j)=>x+b[i][j]));
 const zeros=(r,c)=>Array.from({length:r},()=>Array(c).fill(0));
-const sm=r=>{const peak=Math.max(...r),ex=r.map(x=>Math.exp(x-peak)),total=sum(ex);return ex.map(x=>x/total);};
-const AT={matmul:mm,transpose:tr,softmax:sm,fmt:(v,n=3)=>Number(v).toFixed(n),
-  argmax:r=>r.indexOf(Math.max(...r)),notation:[],axes:{named:true}};
-const sandbox={window:{AT,__TOY__:toy}};
-vm.runInNewContext(read('part8.js'),sandbox);
-const T=AT.vlm;
+const sm=r=>{const peak=Math.max(...r),ex=r.map(x=>x===-Infinity?0:Math.exp(x-peak)),total=sum(ex);return ex.map(x=>x/total);};
+const NP=data.imageRows,VOC=data.vocab,PROMPT=data.prompt,D=toy.d_model;
+
+// A minimal DOM so vision-shared.js and part8.js load outside a browser (they add one <style> each).
+const fake=()=>({appendChild(){},setAttribute(){},addEventListener(){},childNodes:[],style:{},classList:{add(){},toggle(){}}});
+const AT={h:()=>fake(),svg:()=>fake(),fmt:(v,n=2)=>Number(v).toFixed(n),escape:s=>String(s),range:n=>Array.from({length:n},(_,i)=>i),
+  argmax:r=>r.indexOf(Math.max(...r)),notation:[],axes:{named:true,e:toy.axes.e,qk:toy.axes.qk,v:toy.axes.v,short:toy.axes.short},tex(){},ui:{notationCard(){return fake();},chips:()=>fake()}};
+const sandbox={window:{AT,__TOY__:toy,__PART__:{notation:'vision4'}},document:{head:fake(),getElementById:()=>null}};
+vm.createContext(sandbox);
+vm.runInContext(read('vision-shared.js'),sandbox);
+vm.runInContext(read('part8.js'),sandbox);
+const T=AT.vlm,V=AT.vision;
+assert(T&&V,'runtime loaded');
 let comparisons=0,maximumReferenceError=0;
 function compare(actual,expected,label='value',tolerance=1e-11){
   if(Array.isArray(expected)){
-    assert(Array.isArray(actual),label);assert.equal(actual.length,expected.length,label);
+    assert(Array.isArray(actual),label);assert.equal(actual.length,expected.length,label+' length');
     expected.forEach((v,i)=>compare(actual[i],v,`${label}[${i}]`,tolerance));
   }else if(expected&&typeof expected==='object'){
     for(const[k,v]of Object.entries(expected))compare(actual[k],v,`${label}.${k}`,tolerance);
   }else if(expected===null){
     assert.equal(actual,-Infinity,`${label}: null is reserved for masked negative infinity`);
   }else if(typeof expected==='number'){
-    assert(Number.isFinite(actual),label);const error=Math.abs(actual-expected);
+    assert(Number.isFinite(actual),label+' finite');const error=Math.abs(actual-expected);
     comparisons++;maximumReferenceError=Math.max(maximumReferenceError,error);
     assert(error<=tolerance,`${label}: ${actual} != ${expected}, error ${error}`);
   }else assert.equal(actual,expected,label);
 }
-function shape(m,rows,columns,label){
-  assert.equal(m.length,rows,label);m.forEach(r=>{assert.equal(r.length,columns,label);assert(r.every(Number.isFinite),label);});
-}
+function shape(m,rows,columns,label){assert.equal(m.length,rows,label);m.forEach(r=>{assert.equal(r.length,columns,label);assert(r.every(Number.isFinite),label);});}
 function normalized(m,label){m.forEach((r,i)=>{assert(r.every(v=>Number.isFinite(v)&&v>=0&&v<=1),label);compare(sum(r),1,`${label} row ${i} sum`);});}
 
-// Vision I's encoder is the frozen visual front end, including CLS while it mixes.
-const vision1=JSON.parse(read('toy5.json')).vision;
-const imageOutputs={};
-for(const name of ['two','one']){
-  const image=data.images[name],patches=[];
-  for(const y of [0,2])for(const x of [0,2])patches.push([image[y][x],image[y][x+1],image[y+1][x],image[y+1][x+1]]);
-  const embedded=mm(patches,vision1.W_patch).map(r=>r.map((v,j)=>v+vision1.b_patch[j]));
-  const E=add([vision1.cls].concat(embedded),vision1.positions);
-  const Q=mm(E,vision1.W_Q),K=mm(E,vision1.W_K),V=mm(E,vision1.W_V);
-  const scores=mm(Q,tr(K)).map(r=>r.map(v=>v/Math.sqrt(2))),A=scores.map(sm);
-  const allUpdated=add(E,mm(mm(A,V),vision1.W_O));
-  imageOutputs[name]=allUpdated.slice(1);
-  compare(T.vision(name),{image,patches,embedded,E,Q,K,V,scores,A,G:imageOutputs[name]},name+' frozen Vision I');
-  shape(T.vision(name).G,4,2,'four contextual patch rows');
+// 1. The frozen encoder is exactly Vision I's: toy8.encoder equals toy5.trained, and an independent
+//    implementation of the shared worksheet (fixed patch map, CLS, positions in thirds, /sqrt 2) agrees with V.encode.
+compare(toy.encoder,toy5.trained,'encoder copied from Vision I');
+const W_PATCH=[[.25,.5,0,0],[.25,-.5,0,0],[.25,.5,0,0],[.25,-.5,0,0]],CLS=[1,0,0,0];
+const POS=[[0,0,-1,-1]].concat(Array.from({length:16},(_,j)=>[0,0,Math.floor(j/4)/3,(j%4)/3]));
+function encodeIndependently(grid){
+  const R=[];for(let pr=0;pr<4;pr++)for(let pc=0;pc<4;pc++)R.push([grid[2*pr][2*pc],grid[2*pr][2*pc+1],grid[2*pr+1][2*pc],grid[2*pr+1][2*pc+1]]);
+  const E=add([CLS].concat(mm(R,W_PATCH)),POS),e=toy.encoder;
+  const Q=mm(E,e.W_Q),K=mm(E,e.W_K),Vv=mm(E,e.W_V);
+  const A=Q.map(q=>sm(K.map(k=>(q[0]*k[0]+q[1]*k[1])/Math.SQRT2)));
+  return add(E,mm(mm(A,Vv),e.W_O));
 }
-compare(data.frozenVision.W_patch,vision1.W_patch,'same patch projection');
-compare(data.frozenVision.positions,vision1.positions.slice(1),'same patch positions');
-assert.equal(AT.axes.named,false,'no invented learned coordinate names');
+for(const scene of ['A','B','C']){
+  compare(V.encode(scene),encodeIndependently(data.scenes[scene]),scene+' encoder');
+  compare(V.scenes[scene],data.scenes[scene],scene+' scene pixels');
+  compare(T.rows(scene),data.visualRows[scene],scene+' saved visual rows');
+  shape(T.rows(scene),16,4,'sixteen visual rows of width four');
+  compare(V.mugPatches(scene),data.mugPatches[scene],scene+' mug patches');
+}
+assert.equal(AT.axes.named,true,'the learned axes carry names');
+assert(toy.axes.e.every(n=>!/coordinate/.test(n))&&new Set(toy.axes.qk).size===3&&new Set(toy.axes.v).size===3,'three distinct names per space');
 
-// Independent loss: compute only the three receiving answer rows, with explicit
-// allowed source lists. It does not call the production attention or loss code.
-function scalarLoss(name,p){
-  const answer=data.answers[name],prefix=data.prompt.concat(answer.slice(0,-1));
-  const ids=prefix.map(t=>data.vocab.indexOf(t));
-  const bridge=mm(imageOutputs[name],p.W_bridge).map(r=>r.map((v,j)=>v+p.b_bridge[j]));
-  const rows=add(bridge.concat(ids.map(id=>p.E_tok[id])),p.P.slice(0,4+ids.length));
+// 2. Independent loss: only the receiving answer rows, with explicit allowed source lists. It does not
+//    call the production attention or loss code.
+function scalarLoss(scene,p){
+  const answer=data.answers[scene],prefix=PROMPT.concat(answer.slice(0,-1)),ids=prefix.map(t=>VOC.indexOf(t));
+  const G=data.visualRows[scene];
+  const bridge=mm(G,p.W_bridge).map(r=>r.map((v,j)=>v+p.b_bridge[j]));
+  const rows=bridge.concat(ids.map((id,i)=>p.E_tok[id].map((v,j)=>v+p.P[i][j])));
   const terms=[];
   for(let t=0;t<answer.length;t++){
-    const i=6+t,q=mm([rows[i]],p.W_Q)[0],keys=mm(rows.slice(0,i+1),p.W_K),values=mm(rows.slice(0,i+1),p.W_V);
-    const scores=keys.map(k=>sum(q.map((v,j)=>v*k[j]))/Math.sqrt(3));
+    const i=NP+PROMPT.length-1+t,q=mm([rows[i]],p.W_Q)[0],keys=mm(rows.slice(0,i+1),p.W_K),values=mm(rows.slice(0,i+1),p.W_V);
+    const scores=keys.map(k=>sum(q.map((v,j)=>v*k[j]))/Math.sqrt(D));
     const weights=sm(scores),message=[0,1,2].map(j=>sum(values.map((v,k)=>weights[k]*v[j])));
     const update=mm([message],p.W_O)[0],row=rows[i].map((v,j)=>v+update[j]);
     const logits=mm([row],p.W_vocab)[0].map((v,j)=>v+p.b_vocab[j]);
     const peak=Math.max(...logits),logZ=peak+Math.log(sum(logits.map(v=>Math.exp(v-peak))));
-    terms.push(logZ-logits[data.vocab.indexOf(answer[t])]);
+    terms.push(logZ-logits[VOC.indexOf(answer[t])]);
   }
   return sum(terms)/terms.length;
 }
-
-// A separate backward calculation supplies a gradient for both images and both
-// snapshots; the saved NumPy gradient is also checked below.
+// 3. A separate backward pass for the gradient; the saved NumPy gradient is compared below.
 function analyticGradient(f,p){
-  const dz=zeros(f.logits.length,data.vocab.length),targets=f.targets;
-  targets.forEach((target,t)=>{
-    const i=6+t;dz[i]=f.probs[i].map(v=>v/targets.length);dz[i][data.vocab.indexOf(target)]-=1/targets.length;
-  });
+  const dz=zeros(f.logits.length,VOC.length),targets=f.targets;
+  targets.forEach((target,t)=>{const i=f.targetRows[t];dz[i]=f.probs[i].map(v=>v/targets.length);dz[i][VOC.indexOf(target)]-=1/targets.length;});
   const g={W_vocab:mm(tr(f.out),dz),b_vocab:tr(dz).map(sum)};
   const dout=mm(dz,tr(p.W_vocab));
   g.W_O=mm(tr(f.message),dout);
   const dm=mm(dout,tr(p.W_O)),da=mm(dm,tr(f.V)),dv=mm(tr(f.A),dm);
-  const ds=f.A.map((r,i)=>{const center=sum(r.map((a,j)=>a*da[i][j]));return r.map((a,j)=>a*(da[i][j]-center)/Math.sqrt(3));});
+  const ds=f.A.map((r,i)=>{const center=sum(r.map((a,j)=>a*da[i][j]));return r.map((a,j)=>a*(da[i][j]-center)/Math.sqrt(D));});
   const dq=mm(ds,f.K),dk=mm(tr(ds),f.Q);
   g.W_Q=mm(tr(f.E),dq);g.W_K=mm(tr(f.E),dk);g.W_V=mm(tr(f.E),dv);
   const de=add(add(dout,mm(dq,tr(p.W_Q))),add(mm(dk,tr(p.W_K)),mm(dv,tr(p.W_V))));
-  g.W_bridge=mm(tr(f.vision.G),de.slice(0,4));g.b_bridge=tr(de.slice(0,4)).map(sum);
-  g.E_tok=zeros(p.E_tok.length,3);f.ids.forEach((id,i)=>de[i+4].forEach((v,j)=>g.E_tok[id][j]+=v));
-  g.P=zeros(p.P.length,3);de.forEach((r,i)=>g.P[i]=r.slice());
+  g.W_bridge=mm(tr(f.G),de.slice(0,NP));g.b_bridge=tr(de.slice(0,NP)).map(sum);
+  g.E_tok=zeros(p.E_tok.length,D);f.ids.forEach((id,i)=>de[i+NP].forEach((v,j)=>g.E_tok[id][j]+=v));
+  g.P=zeros(p.P.length,D);f.ids.forEach((_,i)=>g.P[i]=de[i+NP].slice());
   return g;
 }
 let gradientChecks=0,maximumGradientError=0;
 const reports={};
-for(const snapshot of ['before','after']){
+for(const snapshot of ['trained','step']){
   const p=T.params(snapshot);reports[snapshot]={};
-  compare(T.teacher('two',{snapshot}),data.reference[snapshot],snapshot+' Python reference');
-  for(const name of ['two','one']){
-    const f=T.teacher(name,{snapshot}),g=analyticGradient(f,p),n=f.E.length;
-    shape(f.E,9,3,'training input');shape(f.Q,9,3,'Q');shape(f.K,9,3,'K');shape(f.V,9,3,'V');shape(f.out,9,3,'updated rows');
+  for(const scene of ['A','B']){
+    const f=T.teacher(scene,{snapshot}),g=analyticGradient(f,p),n=f.n;
+    compare(f,data.reference[snapshot][scene],`${snapshot}/${scene} NumPy reference`);
+    shape(f.E,NP+PROMPT.length+1,D,'teacher-forced input');shape(f.Q,n,D,'Q');shape(f.K,n,D,'K');shape(f.V,n,D,'V');shape(f.out,n,D,'updated rows');
     normalized(f.A,'attention');normalized(f.probs,'vocabulary');
     f.allowed.forEach((row,i)=>row.forEach((allowed,j)=>{
-      assert.equal(allowed,i<4?j<4:j<=i,'image-only prefix / causal text mask');
+      assert.equal(allowed,i<NP?j<NP:j<=i,'image-only prefix / causal text mask');
       if(!allowed){assert.equal(f.scores[i][j],-Infinity);assert.equal(f.A[i][j],0);}
     }));
-    compare(f.bridged,mm(f.vision.G,p.W_bridge).map(r=>r.map((v,j)=>v+p.b_bridge[j])),'connector');
-    compare(f.E,add(f.bridged.concat(f.ids.map(id=>p.E_tok[id])),p.P.slice(0,n)),'add full-width positions');
+    compare(f.B,mm(f.G,p.W_bridge).map(r=>r.map((v,j)=>v+p.b_bridge[j])),'connector');
+    compare(f.E,f.B.concat(f.ids.map((id,i)=>p.E_tok[id].map((v,j)=>v+p.P[i][j]))),'image rows then text rows with positions');
     compare(f.Q,mm(f.E,p.W_Q),'query origin');compare(f.K,mm(f.E,p.W_K),'key origin');compare(f.V,mm(f.E,p.W_V),'value origin');
     compare(f.delta,mm(mm(f.A,f.V),p.W_O),'value sum and output projection');compare(f.out,add(f.E,f.delta),'residual addition');
-    compare(f.loss,scalarLoss(name,p),'independent answer-only mean loss');
+    compare(f.loss,scalarLoss(scene,p),'independent answer-only mean loss');
     for(let length=1;length<=f.prefix.length;length++){
-      const short=T.forward(name,f.prefix.slice(0,length),{snapshot});
-      compare(short.out,f.out.slice(0,4+length),'extending prefix leaves past representations unchanged');
-      compare(short.probs,f.probs.slice(0,4+length),'extending prefix leaves past logits unchanged');
+      const short=T.forward(scene,f.prefix.slice(0,length),{snapshot});
+      compare(short.out,f.out.slice(0,NP+length),'extending the prefix leaves earlier rows unchanged');
+      compare(short.probs,f.probs.slice(0,NP+length),'extending the prefix leaves earlier logits unchanged');
     }
-    const changedFuture=T.forward(name,['<bos>','count','?','block','one'],{snapshot});
-    compare(changedFuture.out.slice(0,7),f.out.slice(0,7),'future-answer mutation cannot leak to first prediction');
-    const generation=T.generate(name,{snapshot});
-    compare(generation,data.generation[snapshot][name],'actual Python/JS greedy trace');
+    const other=scene==='A'?'one':'two';
+    const changedFuture=T.forward(scene,PROMPT.concat([other]),{snapshot});
+    compare(changedFuture.out.slice(0,NP+PROMPT.length),f.out.slice(0,NP+PROMPT.length),'a different answer token cannot leak into the first prediction');
+    const generation=T.generate(scene,{snapshot}),saved=data.generation[snapshot][scene];
+    compare(generation.tokens,saved.tokens,'greedy tokens');assert.equal(generation.stoppedBy,saved.stoppedBy);
     generation.trace.forEach((step,i)=>{
-      compare(step.prefix,data.prompt.concat(generation.tokens.slice(0,i)),'self-generated prefix');
-      assert.equal(step.row,4+step.prefix.length-1,'last known text position');
-      assert.equal(step.chosen,data.vocab[step.probs.indexOf(Math.max(...step.probs))],'actual argmax choice');
-      const pass=T.forward(name,step.prefix,{snapshot});compare(step.query,pass.Q[step.row],'changing last-row query');
+      compare({prefix:step.prefix,row:step.row,query:step.query,weights:step.weights,logits:step.logits,probs:step.probs,chosen:step.chosen},saved.trace[i],'saved greedy trace');
+      compare(step.prefix,PROMPT.concat(generation.tokens.slice(0,i)),'self-generated prefix');
+      assert.equal(step.row,NP+step.prefix.length-1,'last known text position');
+      assert.equal(step.chosen,VOC[step.probs.indexOf(Math.max(...step.probs))],'actual argmax choice');
     });
-    assert.equal(generation.stoppedBy,'eos');
-    if(snapshot==='before'&&name==='two')compare(g,data.update.gradients,'independent backward versus NumPy gradient');
+    assert.equal(generation.stoppedBy,'eos','generation stops at the end marker');
+    if(snapshot==='trained'&&scene==='A')compare(g,data.update.gradients,'independent backward versus NumPy gradient');
     let localMaximum=0;
     for(const epsilon of [1e-5,1e-6])for(const[key,value]of Object.entries(p)){
       const isMatrix=Array.isArray(value[0]);
       for(let i=0;i<value.length;i++)for(let j=0;j<(isMatrix?value[i].length:1);j++){
         const old=isMatrix?value[i][j]:value[i],set=v=>isMatrix?value[i][j]=v:value[i]=v;
         let high,low;
-        try{set(old+epsilon);high=scalarLoss(name,p);set(old-epsilon);low=scalarLoss(name,p);}finally{set(old);}
+        try{set(old+epsilon);high=scalarLoss(scene,p);set(old-epsilon);low=scalarLoss(scene,p);}finally{set(old);}
         const analytic=isMatrix?g[key][i][j]:g[key][i],error=Math.abs((high-low)/(2*epsilon)-analytic);
         gradientChecks++;localMaximum=Math.max(localMaximum,error);maximumGradientError=Math.max(maximumGradientError,error);
-        assert(error<1e-6,`${snapshot}/${name}/${key}[${i},${j}] gradient error ${error}`);
+        assert(error<1e-6,`${snapshot}/${scene}/${key}[${i},${j}] gradient error ${error}`);
       }
     }
-    reports[snapshot][name]={loss:f.loss,perToken:f.losses,greedy:generation.tokens,maxGradientError:localMaximum};
+    reports[snapshot][scene]={loss:f.loss,perToken:f.losses,targetProbs:f.targetProbs,greedy:generation.tokens,maxGradientError:localMaximum};
   }
+  reports[snapshot].C={greedy:T.generate('C',{snapshot}).tokens,probs:T.forward('C',PROMPT,{snapshot}).probs[NP+PROMPT.length-1]};
+  compare(T.generate('C',{snapshot}).tokens,data.generation[snapshot].C.tokens,'scene C probe');
 }
-const before=T.params('before'),after=T.params('after'),rate=data.update.rate;
+// 4. The saved NumPy finite-difference checks and the exact SGD step.
+assert(data.update.gradientChecks.every(c=>c.error<1e-7),'saved finite-difference checks');
+assert.equal(data.update.gradientChecks.length,2*145,'two scenes times 145 trainable scalars');
+const trained=T.params('trained'),step=T.params('step'),rate=data.update.rate;
 let parameterCount=0;
-for(const[key,values]of Object.entries(before)){
+for(const[key,values]of Object.entries(trained)){
   const isMatrix=Array.isArray(values[0]);
   for(let i=0;i<values.length;i++)for(let j=0;j<(isMatrix?values[i].length:1);j++){
     const get=x=>isMatrix?x[key][i][j]:x[key][i];
-    compare(get(after),get(before)-rate*get(data.update.gradients),'exact SGD parameter update');parameterCount++;
+    compare(get(step),get(trained)-rate*get(data.update.gradients),'exact SGD parameter update');parameterCount++;
+    assert.equal(Math.round(get(trained)*100)/100,get(trained),'the exported checkpoint is rounded to two decimals');
   }
 }
-assert.equal(parameterCount,137,'trainable scalar count');
-assert.equal(gradientChecks,1096,'137 scalars × two images × two snapshots × two finite-difference widths');
-compare(reports.before.two.loss,data.update.lossBefore,'saved loss before');compare(reports.after.two.loss,data.update.lossAfter,'saved loss after');
-compare(reports.before.two.perToken,data.update.perTokenBefore,'saved per-token losses before');compare(reports.after.two.perToken,data.update.perTokenAfter,'saved per-token losses after');
-assert(reports.after.two.loss<reports.before.two.loss,'SGD lowers the training example loss');
-// This regression is an intentional teaching counterexample, not a quality pass.
-assert(reports.after.one.loss>reports.before.one.loss,'the other image gets worse after a one-example update');
-compare(reports.before.one.greedy,['one','block','<eos>'],'one-image answer before');
-compare(reports.after.one.greedy,['two','blocks','<eos>'],'one-image answer regresses after update');
-assert(reports.after.two.perToken[2]>reports.before.two.perToken[2],'even one target loss may rise while the mean improves');
-const two=T.forward('two'),one=T.forward('one');
-compare(two.Q[6],one.Q[6],'same first query for the same known text in this one-layer decoder');
-for(const snapshot of ['before','after'])for(const name of ['two','one'])for(const prefix of [data.prompt,data.prompt.concat(data.answers[name].slice(0,1)),data.prompt.concat(data.answers[name].slice(0,2))]){
-  const c=T.contributions(name,prefix,{snapshot}),f=T.forward(name,prefix,{snapshot}),i=f.E.length-1,p=T.params(snapshot);
-  compare(c.sources.map(r=>r.weight),f.A[i],'source weights retain all image and text mass');
-  for(const [j,r]of c.sources.entries()){
-    compare(r.weighted,f.V[j].map(v=>v*f.A[i][j]),'individual weighted value');
-    compare(r.update,mm([r.weighted],p.W_O)[0],'individual projected message');
-    const logits=mm([r.update],p.W_vocab)[0];compare(r.contrast,logits[4]-logits[3],'source logit difference');
-  }
-  compare(tr(c.sources.map(r=>r.weighted)).map(sum),f.message[i],'weighted source values sum to message');
-  compare(tr(c.sources.map(r=>r.update)).map(sum),f.delta[i],'source updates sum to contextual update');
-  compare(c.residual+c.image+c.text,f.logits[i][4]-f.logits[i][3],'residual and source terms reproduce logit contrast');
+assert.equal(parameterCount,145,'trainable scalar count');
+assert.equal(gradientChecks,2*2*2*145,'145 scalars × two scenes × two snapshots × two finite-difference widths');
+compare(reports.trained.A.loss,data.update.lossBefore.A,'saved loss before (A)');compare(reports.trained.B.loss,data.update.lossBefore.B,'saved loss before (B)');
+compare(reports.step.A.loss,data.update.lossAfter.A,'saved loss after (A)');compare(reports.step.B.loss,data.update.lossAfter.B,'saved loss after (B)');
+compare(reports.trained.A.perToken,data.update.perTokenBefore.A,'per-token losses before');compare(reports.step.A.perToken,data.update.perTokenAfter.A,'per-token losses after');
+assert(reports.step.A.loss<reports.trained.A.loss,'the step lowers the loss of the scene it used');
+// This regression is the teaching point of the section, not a quality pass.
+assert(reports.step.B.loss>reports.trained.B.loss,'the other scene gets worse after a one-scene update');
+assert(reports.step.A.perToken[1]>reports.trained.A.perToken[1],'the second target of scene A also rises while the mean falls');
+// 5. Targets from VISION_AXES: p >= 0.9 on both fitted scenes, the answer token reads the mug patches.
+assert(reports.trained.A.targetProbs[0]>=0.9&&reports.trained.B.targetProbs[0]>=0.9,'answers with p >= 0.9');
+for(const scene of ['A','B']){
+  const w=T.generate(scene).trace[0].weights,m=T.mass(w,scene);
+  assert(m.mug>=0.6*m.image&&m.image>=0.9,`${scene}: the first answer token reads the mug patches (${m.mug.toFixed(3)} of ${m.image.toFixed(3)})`);
+  compare(m.image+m.text,1,'weights account for every source');
 }
-assert(T.contributions('two').image<0&&T.contributions('one').image<T.contributions('two').image,'displayed signed image contributions reflect the actual fitted model');
-assert(Math.abs(two.probs[6][4]-one.probs[6][4])>.5,'image changes the first answer distribution');
-assert.equal(T.generate('two',{limit:1}).stoppedBy,'limit');assert.equal(T.generate('two',{limit:1}).trace.length,1);
-for(const bad of [0,-1,7,1.5])assert.throws(()=>T.generate('two',{limit:bad}));
-assert.throws(()=>T.forward('unknown'));assert.throws(()=>T.forward('two',[]));assert.throws(()=>T.forward('two',['unknown']));assert.throws(()=>T.params('missing'));
-// The generator cannot be an answer-key animation: altering the answer labels
-// must not change the greedy output from the same prompt, pixels and parameters.
+const mA=T.mass(T.generate('A').trace[0].weights,'A');
+assert(mA.left>0.3&&mA.right>0.3,'"two" reads both mugs of scene A');
+const gC=T.generate('C');
+reports.probe={C:gC.tokens,pTwo:gC.trace[0].probs[VOC.indexOf('two')],mugShare:T.mass(gC.trace[0].weights,'C').mug};
+// 6. Bookkeeping of the two-versus-one logit difference, the axis names, and the readings.
+for(const scene of ['A','B','C'])for(const prefix of [PROMPT,PROMPT.concat([data.generation.trained[scene].tokens[0]])]){
+  const c=T.contrast(scene,prefix),f=T.forward(scene,prefix),i=f.last,p=T.params();
+  compare(c.sources.map(s=>s.weight),f.A[i],'source weights retain all image and text mass');
+  compare(tr(c.sources.map(s=>s.update)).map(sum),f.delta[i],'source updates sum to the contextual update');
+  compare(c.residual+c.image+c.text,f.logits[i][VOC.indexOf('two')]-f.logits[i][VOC.indexOf('one')],'residual and source terms reproduce the logit contrast');
+}
+const two=T.forward('A'),one=T.forward('B');
+compare(two.Q[two.last],one.Q[one.last],'same first query for the same known text in this one-layer decoder');
+assert(Math.abs(two.probs[two.last][VOC.indexOf('two')]-one.probs[one.last][VOC.indexOf('two')])>.5,'the image changes the first answer distribution');
+assert.equal(T.generate('A',{limit:1}).stoppedBy,'limit');assert.equal(T.generate('A',{limit:1}).trace.length,1);
+for(const bad of [0,-1,4,1.5])assert.throws(()=>T.generate('A',{limit:bad}));
+assert.throws(()=>T.forward('unknown'));assert.throws(()=>T.forward('A',[]));assert.throws(()=>T.forward('A',['unknown']));assert.throws(()=>T.params('missing'));
+assert.match(T.readQuery(two.Q[two.last]),/asks for/);assert.match(T.readWeights('A',two.A[two.last]),/mug patches together/);
+// The generator is not an answer-key animation: altering the answer labels must not change the greedy output.
 const savedAnswers=clone(data.answers);
-try{data.answers.two=['one','block','<eos>'];compare(T.generate('two').tokens,['two','blocks','<eos>'],'generation ignores answer key');}finally{data.answers=savedAnswers;}
+try{data.answers.A=['one','<eos>'];compare(T.generate('A').tokens,['two','<eos>'],'generation ignores the answer key');}finally{data.answers=savedAnswers;}
 assert.equal(JSON.stringify(toy),original,'checks did not mutate saved data');
-console.log(JSON.stringify({numeric:'pass',referenceComparisons:comparisons,maximumReferenceError,parameterCount,gradientChecks,maximumGradientError,reports},null,2));
+// 7. Fragments: every frame has notes; no "coordinate N"; no dangling references to an earlier article.
+const sections=fs.readdirSync(path.join(src,'sections8')).filter(n=>/^sec\d\d\.html$/.test(n)).sort();
+const fragments=sections.map(n=>read('sections8/'+n)).join('\n');
+const frames=(fragments.match(/class="frame"/g)||[]).length;
+assert.equal(sections.length,10,'ten sections');
+assert.equal((fragments.match(/type="text\/x-notes"/g)||[]).length,frames,'every frame has presenter notes');
+assert(!/coordinate \d/i.test(fragments),'no "coordinate N" labels');
+assert(!/earlier article|earlier VLM article|thermal/i.test(fragments),'no dangling references to another article');
+assert(!/[—–]/.test(fragments),'no em or en dashes in the fragments');
+console.log(JSON.stringify({numeric:'pass',referenceComparisons:comparisons,maximumReferenceError,parameterCount,gradientChecks,maximumGradientError,frames,reports},null,2));
 if(!process.argv.includes('--browser'))process.exit(0);
 
 // Optional offline rendering, control and reveal checks using an installed browser.
@@ -210,61 +236,31 @@ const outIndex=process.argv.indexOf('--screenshots'),out=outIndex>=0?process.arg
 fs.mkdirSync(out,{recursive:true});
 const config=JSON.parse(read('part8.json'));if(config.prev)config.prev.available=false;if(config.next)config.next.available=false;
 const json=value=>JSON.stringify(value).replace(/<\//g,'<\\/');
-const sections=fs.readdirSync(path.join(src,'sections8')).filter(n=>/^sec\d\d\.html$/.test(n)).sort().map(n=>read('sections8/'+n)).join('\n');
 const sceneAssets=Object.fromEntries([['two','two-mugs.jpg'],['one','one-mug.jpg']].map(([variant,file])=>[variant,'data:image/jpeg;base64,'+fs.readFileSync(path.join(src,'..','figures','vision-scene',file)).toString('base64')]));
-const shared='<script>window.__TOY__='+json(toy)+';window.__PART__='+json(config)+';window.__VISION_SCENES__='+json(sceneAssets)+';</script><script>'+read('shared.js')+'</script><script>'+read('part8.js')+'</script><script>'+read('vision-scene.js')+'</script>';
-const html=read('shell.html').replace('<!--KATEX-->',()=>read('katex-bundle.html')).replace('<!--SHARED-->',()=>shared).replace('<!--SECTIONS-->',()=>sections);
+const shared='<script>window.__TOY__='+json(toy)+';window.__PART__='+json(config)+';</script><script>'+read('shared.js')+'</script><script>'+read('vision-shared.js')+'</script><script>'+read('part8.js')+'</script><script>window.__VISION_SCENES__='+json(sceneAssets)+';</script><script>'+read('vision-scene.js')+'</script>';
+const html=read('shell.html').replace('<!--KATEX-->',()=>read('katex-bundle.html')).replace('<!--SHARED-->',()=>shared).replace('<!--SECTIONS-->',()=>fragments);
 const browser=await pw.chromium.launch(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE?{executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE}:{});
 const errors=[],issues=[];
 try{
   const page=await browser.newPage({viewport:{width:1280,height:720}});
-  page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
+  page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'||m.type()==='warning')errors.push(m.text());});
   await page.route('http://vision4.test/**',route=>route.fulfill({contentType:'text/html',body:html}));
-  await page.goto('http://vision4.test/vision4.html?present#s01');await page.waitForTimeout(200);
-  const frames=await page.evaluate(()=>AT.present.state().total);
-  assert.equal(frames,(sections.match(/class="frame"/g)||[]).length,'all authored frames registered');
+  await page.goto('http://vision4.test/vision4.html?present#s01');await page.waitForTimeout(300);
+  const total=await page.evaluate(()=>AT.present.state().total);
+  assert.equal(total,frames,'all authored frames registered');
   assert.equal(await page.locator('.katex-error').count(),0,'all math rendered');
-  const decodedScenes=await page.evaluate(async()=>Promise.all(Object.entries(window.__VISION_SCENES__).map(async([variant,src])=>{const image=new Image();image.src=src;await image.decode();return[variant,image.naturalWidth,image.naturalHeight];})));
-  compare(decodedScenes.sort(),[['one',1536,1024],['two',1536,1024]],'both offline scene assets decode');
-  for(let i=0;i<frames;i++){
-    await page.evaluate(i=>{AT.present.go(i,null,999);document.querySelectorAll('.frame.is-live details.reveal').forEach(el=>el.open=true);},i);await page.waitForTimeout(30);
-    const geometry=await page.evaluate(()=>{
-      const f=document.querySelector('.frame.is-live'),r=f.getBoundingClientRect();
-      const svg=[];
-      f.querySelectorAll('svg.vlm-diagram').forEach(root=>{
-        const v=root.viewBox.baseVal;
-        root.querySelectorAll('[marker-end]').forEach(el=>{
-          const id=el.getAttribute('marker-end').match(/^url\(#(.+)\)$/)?.[1];
-          const target=id&&document.getElementById(id);
-          if(!target||target.localName!=='marker')svg.push({tag:el.tagName,marker:id,error:'Arrow reference must resolve to its marker, not a duplicate description ID.'});
-        });
-        root.querySelectorAll('text,rect,path').forEach(el=>{
-          if(el.closest('defs'))return;const b=el.getBBox();
-          if(b.width&&b.height&&(b.x<v.x-2||b.y<v.y-2||b.x+b.width>v.x+v.width+2||b.y+b.height>v.y+v.height+2))svg.push({text:el.textContent,tag:el.tagName,bounds:{x:b.x,y:b.y,width:b.width,height:b.height}});
-        });
-      });
-      return{title:AT.present.state().frame.title,scroll:f.scrollHeight,client:f.clientHeight,wide:f.scrollWidth>f.clientWidth+2,svg};
-    });
-    if(geometry.scroll>geometry.client+3||geometry.wide||geometry.svg.length)issues.push({frame:i+1,...geometry});
+  for(let i=0;i<total;i++){
+    await page.evaluate(i=>{AT.present.go(i,null,999);document.querySelectorAll('.frame.is-live details.reveal').forEach(el=>el.open=true);},i);await page.waitForTimeout(40);
+    const geometry=await page.evaluate(()=>{const f=document.querySelector('.frame.is-live');return{title:AT.present.state().frame.title,scroll:f.scrollHeight,client:f.clientHeight,wide:f.scrollWidth>f.clientWidth+2};});
+    if(geometry.scroll>geometry.client+3||geometry.wide)issues.push({frame:i+1,...geometry});
     await page.screenshot({path:path.join(out,`frame-${String(i+1).padStart(2,'0')}.png`)});
   }
   await page.evaluate(()=>AT.present.exit());
-  assert.equal(await page.locator('#s07-reveal details.reveal').count(),1,'final quiz is actually appended through the reveal API');
-  const reveal=page.locator('#s07-reveal details.reveal');
-  await reveal.evaluate(el=>el.open=false);await reveal.locator('summary').click();
-  assert.equal(await reveal.evaluate(el=>el.open),true,'final reveal opens');
-  assert.match(await reveal.innerText(),/projected image rows/,'final answer text is present');
-  assert.equal(await page.locator('#s05-pick button').count(),2,'two image-choice controls');
-  assert.equal(await page.locator('#s05-step0 svg rect[data-pixel-value]').count(),16,'the image remains visible at the first generation step');
-  assert.equal(await page.locator('#s05-step1 svg rect[data-pixel-value]').count(),16,'the image remains visible after appending a token');
-  assert.equal(await page.locator('#s05-step2 svg rect[data-pixel-value]').count(),16,'the image remains visible until the end marker');
-  await page.locator('#s05-pick button').filter({hasText:'one block'}).click();
-  assert.match(await page.locator('#s05-compare').innerText(),/Actual greedy output: one block <eos>/,'one-image control recomputes output');
-  await page.locator('#s05-pick button').filter({hasText:'two blocks'}).click();
-  assert.match(await page.locator('#s05-compare').innerText(),/Actual greedy output: two blocks <eos>/,'two-image control restores output');
-  await page.setViewportSize({width:390,height:844});await page.goto('http://vision4.test/vision4.html#s01');
+  assert.equal(await page.locator('#s07-probe .voverlay').count(),1,'the scene C overlay is drawn');
+  assert.equal(await page.locator('#s06-stepper .stepper').count(),1,'the generation stepper exists');
+  await page.setViewportSize({width:390,height:844});await page.goto('http://vision4.test/vision4.html#s01');await page.waitForTimeout(300);
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),'no mobile document horizontal overflow');
   assert.equal(errors.length,0,errors.join('\n'));
-  console.log(JSON.stringify({browser:'checked',frames,issues,errors,screenshots:out},null,2));
+  console.log(JSON.stringify({browser:'checked',frames:total,issues,errors,screenshots:out},null,2));
   if(issues.length)process.exitCode=1;
 }finally{await browser.close();}

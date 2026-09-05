@@ -1,176 +1,232 @@
-/* Vision IV: exact image-conditioned prefix decoder and SVG teaching figures. */
-(function(){
+/* part8.js: Vision IV runtime on toy8.json v2. Requires shared.js and vision-shared.js.
+   The image encoder is exactly the one Vision I shows: V.attend with toy8.encoder (a copy of toy5 "trained").
+   Its sixteen updated patch rows enter a width-three prefix decoder through a fitted connector. */
+(function () {
   'use strict';
-  const A=window.AT, data=window.__TOY__.vlm, cp=x=>JSON.parse(JSON.stringify(x));
-  const mm=A.matmul, tr=A.transpose, add=(a,b)=>a.map((r,i)=>r.map((v,j)=>v+b[i][j]));
-  const sm=A.softmax, fmt=(v,n=3)=>A.fmt(v,n), vec=r=>'['+r.map(v=>fmt(v,2)).join(', ')+']';
-  function params(s='before'){if(!data.snapshots[s])throw Error('Unknown VLM snapshot.');return cp(data.snapshots[s]);}
-  function vision(name='two'){
-    if(!data.images[name])throw Error('Unknown image.');
-    const image=cp(data.images[name]),patches=[];
-    for(const y of [0,2])for(const x of [0,2])patches.push([image[y][x],image[y][x+1],image[y+1][x],image[y+1][x+1]]);
-    const embedded=mm(patches,data.frozenVision.W_patch),E=[[1,1]].concat(add(embedded,data.frozenVision.positions));
-    const Q=E.map(r=>r.map(v=>v*.5)),K=cp(Q),V=cp(E),scores=mm(Q,tr(K)).map(r=>r.map(v=>v/Math.sqrt(2))),weights=scores.map(sm);
-    return {image,patches,W_patch:data.frozenVision.W_patch,positions:data.frozenVision.positions,embedded,E,Q,K,V,scores,A:weights,G:add(E,mm(weights,V)).slice(1)};
+  var AT = window.AT, V = AT.vision, T = window.__TOY__ || {}, M = T.vlm;
+  if (!V || !M || !T.encoder) return;
+  var h = AT.h, svg = AT.svg;
+  var NP = M.imageRows, TP = M.textPositions, VOC = M.vocab, PROMPT = M.prompt, D = T.d_model;
+  var cp = function (x) { return JSON.parse(JSON.stringify(x)); };
+
+  /* ---------- the frozen encoder ---------- */
+  V.model = T;
+  V.encoder = T.encoder;
+  V.encode = function (scene) { return V.attend(V.scene(scene), T.encoder).Enew; };   /* 17 rows, CLS first */
+  V.encoderAxes = T.encoderAxes || { e: V.axes.e, short: V.axes.short.e };
+
+  /* ---------- small exact linear algebra (row vectors) ---------- */
+  function mm(A, B) { return A.map(function (r) { return B[0].map(function (_, c) { var s = 0; for (var k = 0; k < r.length; k++) s += r[k] * B[k][c]; return s; }); }); }
+  function tr(A) { return A[0].map(function (_, j) { return A.map(function (r) { return r[j]; }); }); }
+  function addRows(A, B) { return A.map(function (r, i) { return r.map(function (x, k) { return x + B[i][k]; }); }); }
+  function sm(v) { var m = -Infinity; v.forEach(function (x) { if (x > m) m = x; }); var ex = v.map(function (x) { return x === -Infinity ? 0 : Math.exp(x - m); }); var z = ex.reduce(function (a, b) { return a + b; }, 0); return ex.map(function (x) { return x / z; }); }
+  function sum(v) { return v.reduce(function (a, b) { return a + b; }, 0); }
+  function dot(a, b) { var s = 0; for (var i = 0; i < a.length; i++) s += a[i] * b[i]; return s; }
+
+  /* ---------- the decoder ---------- */
+  function params(s) { s = s || M.defaultSnapshot; if (!M.snapshots[s]) throw new Error('Unknown snapshot: ' + s); return cp(M.snapshots[s]); }
+  function rows(scene) { return V.encode(scene).slice(1); }
+  function checkPrefix(prefix) {
+    if (!Array.isArray(prefix) || !prefix.length || prefix.length > TP || prefix.some(function (t) { return VOC.indexOf(t) < 0; })) throw new Error('Unsupported text prefix.');
   }
-  function forward(name='two',prefix=data.prompt,options={}){
-    const p=params(options.snapshot),vi=vision(name);
-    if(!Array.isArray(prefix)||!prefix.length||prefix.length>8||prefix.some(t=>!data.vocab.includes(t)))throw Error('Unsupported VLM text prefix.');
-    const ids=prefix.map(t=>data.vocab.indexOf(t));
-    const bridged=mm(vi.G,p.W_bridge).map(r=>r.map((v,j)=>v+p.b_bridge[j]));
-    const E=add(bridged.concat(ids.map(i=>p.E_tok[i])),p.P.slice(0,4+ids.length));
-    const Q=mm(E,p.W_Q),K=mm(E,p.W_K),V=mm(E,p.W_V),raw=mm(Q,tr(K));
-    const allowed=E.map((r,i)=>E.map((_,j)=>i<4?j<4:j<=i));
-    const scores=raw.map((r,i)=>r.map((v,j)=>allowed[i][j]?v/Math.sqrt(3):-Infinity)),weights=scores.map(sm);
-    const message=mm(weights,V),delta=mm(message,p.W_O),out=add(E,delta);
-    const logits=mm(out,p.W_vocab).map(r=>r.map((v,j)=>v+p.b_vocab[j])),probs=logits.map(sm);
-    return {image:name,prefix:prefix.slice(),ids,vision:vi,bridged,E,Q,K,V,raw,scores,allowed,A:weights,message,delta,out,logits,probs};
+  function forward(scene, prefix, opts) {
+    opts = opts || {}; prefix = prefix || PROMPT;
+    if (typeof scene === 'string' && !V.scenes[scene]) throw new Error('Unknown scene: ' + scene);
+    checkPrefix(prefix);
+    var p = opts.params ? cp(opts.params) : params(opts.snapshot), G = rows(scene), ids = prefix.map(function (t) { return VOC.indexOf(t); }), Tn = ids.length;
+    var B = mm(G, p.W_bridge).map(function (r) { return r.map(function (x, c) { return x + p.b_bridge[c]; }); });
+    var Et = ids.map(function (id, i) { return p.E_tok[id].map(function (x, c) { return x + p.P[i][c]; }); });
+    var E = B.concat(Et), n = NP + Tn;
+    var Q = mm(E, p.W_Q), K = mm(E, p.W_K), Vv = mm(E, p.W_V);
+    var allowed = E.map(function (_, i) { return E.map(function (_, j) { return i < NP ? j < NP : j <= i; }); });
+    var raw = mm(Q, tr(K));
+    var scores = raw.map(function (r, i) { return r.map(function (x, j) { return allowed[i][j] ? x / Math.sqrt(D) : -Infinity; }); });
+    var A = scores.map(sm), msg = mm(A, Vv), delta = mm(msg, p.W_O), out = addRows(E, delta);
+    var logits = mm(out, p.W_vocab).map(function (r) { return r.map(function (x, c) { return x + p.b_vocab[c]; }); });
+    return { scene: scene, snapshot: opts.snapshot || M.defaultSnapshot, prefix: prefix.slice(), ids: ids, n: n, T: Tn, last: n - 1,
+      G: G, B: B, E: E, Q: Q, K: K, V: Vv, raw: raw, scores: scores, allowed: allowed, A: A, message: msg, delta: delta, out: out, logits: logits, probs: logits.map(sm) };
   }
-  function teacher(name='two',options={}){
-    const targets=data.answers[name],f=forward(name,data.prompt.concat(targets.slice(0,-1)),options);
-    const losses=targets.map((t,i)=>-Math.log(f.probs[i+6][data.vocab.indexOf(t)]));
-    return Object.assign(f,{targets:targets.slice(),losses,loss:losses.reduce((s,v)=>s+v,0)/losses.length});
+  function teacher(scene, opts) {
+    var answer = M.answers[scene]; if (!answer) throw new Error('No answer for scene ' + scene);
+    var f = forward(scene, PROMPT.concat(answer.slice(0, -1)), opts);
+    var rowsOf = answer.map(function (_, t) { return NP + PROMPT.length - 1 + t; });
+    var losses = answer.map(function (tok, t) { return -Math.log(f.probs[rowsOf[t]][VOC.indexOf(tok)]); });
+    f.targets = answer.slice(); f.targetRows = rowsOf; f.losses = losses; f.loss = sum(losses) / losses.length;
+    f.targetProbs = answer.map(function (tok, t) { return f.probs[rowsOf[t]][VOC.indexOf(tok)]; });
+    return f;
   }
-  // Exact bookkeeping for this single attention block followed by a linear head.
-  // These are source-row terms in one forward pass, not raw-pixel causal effects.
-  function contributions(name='two',prefix=data.prompt,options={}){
-    const f=forward(name,prefix,options),p=params(options.snapshot),i=f.E.length-1;
-    const a=data.vocab.indexOf('two'),b=data.vocab.indexOf('one'),direction=p.W_vocab.map(r=>r[a]-r[b]);
-    const dot=(r,s)=>r.reduce((total,v,j)=>total+v*s[j],0),sources=f.V.map((v,j)=>{
-      const weighted=v.map(x=>x*f.A[i][j]),update=mm([weighted],p.W_O)[0];
-      return {label:j<4?'image '+(j+1):prefix[j-4],weight:f.A[i][j],value:v.slice(),weighted,update,contrast:dot(update,direction)};
-    });
-    const residual=dot(f.E[i],direction)+p.b_vocab[a]-p.b_vocab[b];
-    return {f,row:i,sources,residual,image:sources.slice(0,4).reduce((s,r)=>s+r.contrast,0),text:sources.slice(4).reduce((s,r)=>s+r.contrast,0),total:f.logits[i][a]-f.logits[i][b]};
-  }
-  function generate(name='two',options={}){
-    const prefix=data.prompt.slice(),trace=[];let stoppedBy='limit';
-    const limit=options.limit==null?5:options.limit;
-    if(!Number.isInteger(limit)||limit<1||limit>6)throw Error('Generation limit must be 1 through 6.');
-    for(let i=0;i<limit;i++){
-      const f=forward(name,prefix,options),row=f.E.length-1,chosen=data.vocab[A.argmax(f.probs[row])];
-      trace.push({prefix:prefix.slice(),query:f.Q[row],weights:f.A[row],logits:f.logits[row],probs:f.probs[row],chosen,row});
-      prefix.push(chosen);if(chosen==='<eos>'){stoppedBy='eos';break;}
+  function generate(scene, opts) {
+    opts = opts || {};
+    var limit = opts.limit == null ? TP - PROMPT.length : opts.limit;
+    if (!Number.isInteger(limit) || limit < 1 || limit > TP - PROMPT.length) throw new Error('Generation limit must be 1 through ' + (TP - PROMPT.length) + '.');
+    var prefix = (opts.prefix || PROMPT).slice(), trace = [], stoppedBy = 'limit';
+    for (var i = 0; i < limit; i++) {
+      var f = forward(scene, prefix, opts), row = f.last, chosen = VOC[AT.argmax(f.probs[row])];
+      trace.push({ prefix: prefix.slice(), row: row, query: f.Q[row], weights: f.A[row], logits: f.logits[row], probs: f.probs[row], chosen: chosen, forward: f });
+      prefix.push(chosen);
+      if (chosen === '<eos>') { stoppedBy = 'eos'; break; }
     }
-    return {tokens:prefix.slice(data.prompt.length),trace,stoppedBy};
+    return { tokens: prefix.slice((opts.prefix || PROMPT).length), trace: trace, stoppedBy: stoppedBy };
   }
-  let serial=0;
-  const ns='http://www.w3.org/2000/svg';
-  function el(tag,attrs={},text){const n=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,v));if(text!=null)n.textContent=text;return n;}
-  function canvas(title,height=280){
-    const id='vlm-'+(++serial),svg=el('svg',{viewBox:'0 0 1100 '+height,role:'img','aria-labelledby':id+'-t '+id+'-desc',class:'vlm-diagram'});
-    svg.append(el('title',{id:id+'-t'},title),el('desc',{id:id+'-desc'},title+'. Schematic shapes show computation; numerical values come from the disclosed toy.'));
-    const defs=el('defs');svg.append(defs);
-    for(const c of ['e','q','k','v','a','d','neutral']){const m=el('marker',{id:id+'-'+c,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:7,markerHeight:7,orient:'auto-start-reverse'});m.append(el('path',{d:'M0 0L10 5L0 10Z',fill:c==='neutral'?'var(--ink-2)':'var(--c-'+c+')'}));defs.append(m);}
-    function text(x,y,t,c='neutral',size=22,anchor='middle'){const n=el('text',{x,y,'text-anchor':anchor,'dominant-baseline':'middle',fill:c==='neutral'?'var(--ink)':'var(--c-'+c+')','font-family':'var(--font-ui)','font-size':size},t);svg.append(n);return n;}
-    function box(x,y,w,h,t,sub='',c='e'){
-      svg.append(el('rect',{x:x-w/2,y:y-h/2,width:w,height:h,rx:8,fill:c==='neutral'?'var(--card)':'var(--t-'+c+')',stroke:c==='neutral'?'var(--line)':'var(--c-'+c+')','stroke-width':1.6}));
-      text(x,y-(sub?13:0),t,c,26);if(sub)text(x,y+18,sub,'neutral',22);
+  /* where one query's weight went: image versus text, mug patches versus the rest */
+  function mass(weights, scene) {
+    var img = weights.slice(0, NP), txt = weights.slice(NP), mugs = V.mugPatches(scene), left = V.mugPatches(scene, 'left'), right = V.mugPatches(scene, 'right');
+    var pick = function (idx) { return sum(idx.map(function (j) { return img[j]; })); };
+    var order = AT.range(NP).sort(function (a, b) { return img[b] - img[a]; });
+    return { image: sum(img), text: sum(txt), mug: pick(mugs), left: pick(left), right: pick(right), order: order, top: order.slice(0, 4).map(function (j) { return { j: j, w: img[j], name: V.regionOf(scene, j) }; }) };
+  }
+  /* exact bookkeeping of logit(two) - logit(one) for the last row: residual term plus one term per source */
+  function contrast(scene, prefix, opts) {
+    var f = forward(scene, prefix, opts), p = params((opts || {}).snapshot), i = f.last, a = VOC.indexOf('two'), b = VOC.indexOf('one');
+    var u = p.W_vocab.map(function (r) { return r[a] - r[b]; });
+    var sources = f.V.map(function (v, j) { var w = v.map(function (x) { return x * f.A[i][j]; }), up = mm([w], p.W_O)[0]; return { j: j, weight: f.A[i][j], weighted: w, update: up, term: dot(up, u) }; });
+    var residual = dot(f.E[i], u) + p.b_vocab[a] - p.b_vocab[b];
+    return { f: f, row: i, sources: sources, residual: residual, image: sum(sources.slice(0, NP).map(function (s) { return s.term; })), text: sum(sources.slice(NP).map(function (s) { return s.term; })), total: f.logits[i][a] - f.logits[i][b] };
+  }
+  /* row labels for a stacked table: thumbnails for the image rows, then the text tokens with their positions */
+  /* Image-row labels carry thumbnail markup (rendered as html); text-row labels are plain text. Escape a text label yourself when you embed it in html. */
+  function labels(scene, prefix, size) { return V.rowLabels(scene, { size: size || 22 }).concat((prefix || PROMPT).map(function (t, i) { return textLabel(t, i); })); }
+  function textLabel(t, i) { return (NP + i + 1) + ' ' + t; }
+
+  /* ---------- readings: sentences computed from the numbers ---------- */
+  var fmt = function (x, d) { return AT.fmt(x, d == null ? 2 : d); };
+  function joinAnd(xs) { return xs.length <= 1 ? xs.join('') : xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1]; }
+  function readWeights(scene, weights) {
+    var m = mass(weights, scene);
+    var top = m.top.filter(function (t) { return t.w >= 0.05; });
+    var s = 'image rows ' + fmt(m.image) + ', text rows ' + fmt(m.text);
+    if (top.length) s += '; the largest: ' + joinAnd(top.map(function (t) { return t.name + ' ' + fmt(t.w); }));
+    s += '; mug patches together ' + fmt(m.mug) + '.';
+    return s;
+  }
+  function readQuery(q) {
+    var ax = AT.axes.qk;
+    var parts = q.map(function (x, c) { return { x: x, c: c }; }).filter(function (o) { return Math.abs(o.x) >= 0.5; }).sort(function (a, b) { return Math.abs(b.x) - Math.abs(a.x); });
+    if (!parts.length) return 'every entry is small, so the query asks for little.';
+    /* an axis named "−bright" with a negative entry asks for bright patches: fold the sign into the name and merge repeats */
+    var want = {}, order = [];
+    parts.forEach(function (o) { var neg = ax[o.c].charAt(0) === '−', name = neg ? ax[o.c].slice(1) : ax[o.c]; var s = neg ? -o.x : o.x; if (!(name in want)) { want[name] = 0; order.push(name); } want[name] += s; });
+    order.sort(function (a, b) { return Math.abs(want[b]) - Math.abs(want[a]); });
+    var asks = order.map(function (name) { return (want[name] > 0 ? '' : 'against ') + name + ' (' + fmt(Math.abs(want[name]), 1) + ')'; });
+    return parts.map(function (o) { return ax[o.c] + ' ' + fmt(o.x); }).join(', ') + ', so it asks for ' + joinAnd(asks) + '.';
+  }
+
+  /* ---------- figures ---------- */
+  document.head.appendChild(h('style', {}, [
+    '.v4-row{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 14px}',
+    '.v4-thumbs{display:flex;flex-wrap:wrap;gap:3px;align-items:flex-end}',
+    '.v4-th{display:flex;flex-direction:column;align-items:center;gap:1px;font-family:var(--font-mono);font-size:10px;color:var(--ink-3)}',
+    '.v4-th svg{display:block;margin:0}',
+    '.v4-th.is-hl svg{outline:3px solid var(--c-q);outline-offset:-1px}',
+    '.v4-row .chips{margin:0}',
+    '.v4-group{display:flex;flex-direction:column;gap:4px}',
+    '.v4-group-lab{font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--ink-3)}',
+    '.v4-answer{display:inline-flex;align-items:center;gap:6px;border:2px solid var(--c-d);background:var(--t-d);border-radius:999px;padding:4px 12px;font-weight:600}',
+    '.v4-read{font-size:15px;color:var(--ink-2);margin:10px 0 0;max-width:72ch;line-height:1.5}',
+    '.v4-mask{width:max-content;max-width:100%}',
+    '.v4-mask svg{display:block;max-width:100%;height:auto}',
+    '.v4-fig-col{max-width:460px;min-width:0}',
+    '.v4-mask .cell{stroke:var(--card);stroke-width:1}',
+    '.v4-mask .on{fill:var(--t-a)}.v4-mask .off{fill:var(--paper)}',
+    '.v4-mask text{font-family:var(--font-ui);fill:var(--ink-2)}',
+    'body.present .v4-read{font-size:22px;line-height:1.35}',
+    'body.present .v4-th{font-size:14px}',
+    'body.present .v4-group-lab{font-size:16px}',
+    'body.present .v4-answer{font-size:24px}'
+  ].join('\n')));
+  function put(el, opts) { if (opts && opts.into) { var t = typeof opts.into === 'string' ? document.getElementById(opts.into) : opts.into; if (t) t.appendChild(el); } return el; }
+
+  /* tokenRow(scene, tokens, {size, answer, slot, active, highlight:[patches], labels, into}): sixteen patch thumbnails then the text chips */
+  function tokenRow(scene, tokens, opts) {
+    opts = opts || {}; tokens = tokens || PROMPT;
+    var row = h('div', { class: 'v4-row' });
+    var thumbs = h('div', { class: 'v4-thumbs' });
+    for (var j = 0; j < NP; j++) {
+      var t = h('span', { class: 'v4-th' + ((opts.highlight || []).indexOf(j) >= 0 ? ' is-hl' : ''), title: V.patchLabel(scene, j) }, V.thumb(scene, j, { size: opts.size || 26 }));
+      if (opts.labels !== false) t.appendChild(h('span', {}, String(j + 1)));
+      thumbs.appendChild(t);
     }
-    function arrow(path,c='neutral',dashed=false){svg.append(el('path',{d:path,fill:'none',stroke:c==='neutral'?'var(--ink-2)':'var(--c-'+c+')','stroke-width':2,'marker-end':'url(#'+id+'-'+c+')',...(dashed?{'stroke-dasharray':'5 5'}:{})}));}
-    return {svg,text,box,arrow};
+    row.appendChild(h('div', { class: 'v4-group' }, opts.groupLabels === false ? null : h('span', { class: 'v4-group-lab' }, opts.imageLabel || (NP + ' image rows')), thumbs));
+    var chipOpts = { numbered: false };
+    if (opts.active != null) chipOpts.active = opts.active;
+    if (opts.slot) chipOpts.slot = opts.slot;
+    var chips = AT.ui.chips(tokens, chipOpts);
+    row.appendChild(h('div', { class: 'v4-group' }, opts.groupLabels === false ? null : h('span', { class: 'v4-group-lab' }, opts.textLabel || (tokens.length + ' text rows')), chips));
+    if (opts.answer) row.appendChild(h('div', { class: 'v4-group' }, opts.groupLabels === false ? null : h('span', { class: 'v4-group-lab' }, 'next token'), h('span', { class: 'v4-answer' }, opts.answer)));
+    row.chips = chips; row.thumbs = thumbs;
+    return put(row, opts);
   }
-  function pixels(c,name,cx,cy,size=36){
-    const image=data.images[name];
-    image.forEach((r,y)=>r.forEach((v,x)=>{const shade=A.imageShade(v);c.svg.append(el('rect',{x:cx-2*size+x*size,y:cy-2*size+y*size,width:size-2,height:size-2,rx:2,'data-pixel-value':v,fill:`rgb(${shade},${shade},${shade})`,stroke:'var(--line)'}));c.text(cx-1.5*size+x*size,cy-1.5*size+y*size,String(v),'neutral',18).setAttribute('fill',shade<118?'#FFFFFF':'#000000');}));
-  }
-  function diagram(stage,options={}){
-    const name=options.image||'two',snapshot=options.snapshot||'before';let c;
-    if(stage==='task'){
-      c=canvas('Image plus question predicts an answer',220);pixels(c,name,115,95,37);
-      c.box(430,85,310,80,'Question: count?', 'Same prompt','q');
-      c.box(880,85,280,65,'Answer tokens','one block / two blocks','d');c.arrow('M590 85L735 85','q');
-      c.arrow('M190 140L690 140L735 110','e');
-      c.text(115,196,'4 × 4 grid','neutral',22);c.text(715,164,'Pixels must affect the next-token distribution.','neutral',22);
-    }else if(stage==='scene-bridge'){
-      c=canvas('Mug-scene patches become language-model context',305);
-      c.box(145,65,270,82,'Image patches','mugs, book, background','e');
-      c.box(510,65,280,82,'Vision encoder','contextual visual rows G','e');
-      c.box(910,65,340,82,'Connector','G → decoder-width rows','d');
-      c.arrow('M283 65L366 65','e');c.arrow('M653 65L736 65','d');
-      c.box(310,230,510,82,'Known text','How many mugs?','e');
-      c.box(910,230,340,82,'Language decoder','image + known text rows','a');
-      c.arrow('M910 109L910 185','d');c.arrow('M568 230L736 230','e');
-    }else if(stage==='pipeline'){
-      const level=options.level==null?3:options.level;c=canvas('Image rows become language-model input',level<3?130:250);
-      c.box(125,65,200,65,'Four patches','4 rows × 4 pixels','e');
-      if(level>=1){c.box(410,65,240,65,'Vision encoder G','4 × 2 encoded rows','e');c.arrow('M228 65L287 65','e');}
-      if(level>=2){c.box(785,65,350,80,'Visual connector','G W_bridge + b: 4 × 3','d');c.arrow('M533 65L607 65','d');}
-      if(level>=3){c.box(265,185,380,80,'Text lookup + positions','3 prompt rows, width 3','e');c.box(785,185,350,80,'Prefix decoder','7 rows → token logits','a');c.arrow('M785 108L785 142','d');c.arrow('M458 185L607 185','e');}
-    }else if(stage==='routes'){
-      c=canvas('Two ways to connect images and language',310);
-      c.text(275,22,'Projected visual prefix','e',26);c.text(825,22,'Separate cross-attention','q',26);
-      c.box(150,105,220,66,'Image rows','project to LM width','e');c.box(410,105,230,66,'Text rows','known prompt / answer','e');
-      c.box(280,235,420,80,'Joint self-attention','image + text keys and values','a');c.arrow('M150 140L150 176L280 176L280 192','e');c.arrow('M410 140L410 176L280 176','e');
-      c.box(685,105,230,66,'Vision memory','separate K and V','v');c.box(957,105,230,66,'Text decoder','supplies Q','q');
-      c.box(825,235,420,80,'Read image values','text states receive the update','d');c.arrow('M685 140L685 177L825 177L825 192','v');c.arrow('M957 140L957 177L825 177','q');
-    }else if(stage==='mask'){
-      const f=teacher(name,{snapshot}),n=f.E.length;c=canvas('Visual-prefix attention mask',365);
-      const cell=31,left=240,top=52;
-      for(let i=0;i<n;i++){c.text(left-15,top+(i+.5)*cell,String(i+1),'neutral',22);for(let j=0;j<n;j++)c.svg.append(el('rect',{x:left+j*cell+1,y:top+i*cell+1,width:cell-2,height:cell-2,fill:f.allowed[i][j]?'var(--t-a)':'var(--card)',stroke:f.allowed[i][j]?'var(--c-a)':'var(--line)','data-allowed':f.allowed[i][j]}));}
-      for(let j=0;j<n;j++)c.text(left+(j+.5)*cell,top-15,String(j+1),'neutral',22);
-      c.text(785,83,'Rows 1–4: image tokens','e',26);c.text(785,119,'Read all image rows; no text.','neutral',22);
-      c.text(785,188,'Rows 5–9: known text','q',26);c.text(785,224,'Read every image row','neutral',22);c.text(785,253,'and current / earlier text.','neutral',22);
-      c.text(385,350,'Columns supply keys and values.','neutral',22);
-    }else if(stage==='generation'){
-      const g=generate(name,{snapshot}),i=options.step||0,s=g.trace[i];if(!s)throw Error('Invalid generation step');
-      c=canvas('The image stays available at every generation step',340);
-      pixels(c,name,102,87,26);c.text(102,163,'Same image','e',22);
-      c.box(470,75,460,82,'Known text prefix',s.prefix.join(' '),'e');
-      c.text(470,141,'Last known token: '+s.prefix.at(-1)+' (row '+(s.row+1)+')','q',22);
-      c.box(890,75,320,82,'Current query','['+s.query.map(v=>fmt(v)).join(', ')+']','q');c.arrow('M703 75L727 75','q');
-      c.box(455,240,430,82,'Decoder reads image + text','same learned parameters','a');
-      c.box(890,240,320,82,'Next token: '+s.chosen,'p = '+fmt(s.probs[data.vocab.indexOf(s.chosen)]),'d');
-      c.arrow('M102 182L102 240L237 240','e');c.arrow('M455 171L455 195','e');c.arrow('M890 119L890 166L610 166L610 195','q');c.arrow('M673 240L727 240','d');
-      c.text(550,318,s.chosen==='<eos>'?'Stop at the end marker.':'Append the chosen token. It supplies the next query.','neutral',22);
-    }else if(stage==='image-weights'){
-      const f=forward(name),weights=f.A[6],mass=weights.slice(0,4).reduce((s,v)=>s+v,0);c=canvas('Attention on image slots, without renormalizing away the text',315);
-      pixels(c,name,160,143,43);c.text(160,265,'Original grid','neutral',22);
-      for(let j=0;j<4;j++){const x=450+(j%2)*260,y=75+Math.floor(j/2)*115;c.box(x,y,230,85,'image '+(j+1),(100*weights[j]).toFixed(2)+'% of all weight','a');}
-      c.box(960,132,245,112,'Text rows',(100*(1-mass)).toFixed(2)+'% of all weight','e');
-      c.text(700,280,'Four image slots together: '+(100*mass).toFixed(2)+'%.','a',24);
-    }else if(stage==='contrast'){
-      const rows=['two','one'].map(n=>contributions(n)),labels=['residual + bias','image value terms','text value terms','total: two − one'];
-      c=canvas('Exact signed contributions to the two versus one logit difference',340);
-      const groups=[rows.map(r=>r.residual),rows.map(r=>r.image),rows.map(r=>r.text),rows.map(r=>r.total)],max=Math.max(...groups.flat().map(Math.abs)),scale=195/max;
-      for(let j=0;j<2;j++){const x=440+j*395;c.text(x,22,j?'One-block image':'Two-block image','neutral',25);c.svg.append(el('path',{d:`M${x} 52V290`,stroke:'var(--line)','stroke-width':2}));}
-      labels.forEach((label,k)=>{const y=75+k*65;c.text(8,y,label,'neutral',22,'start');for(let j=0;j<2;j++){const value=groups[k][j],x=440+j*395,w=Math.abs(value)*scale;c.svg.append(el('rect',{x:value<0?x-w:x,y:y-13,width:w,height:26,fill:k===3?'var(--c-d)':'var(--c-v)',opacity:k===3?1:.55}));c.text(x+(value<0?-1:1)*(w+8),y,(value>0?'+':'')+fmt(value),'neutral',22,value<0?'end':'start');}});
-      c.text(665,320,'Positive favors two. Negative favors one.','neutral',22);
-    }else if(stage==='training'){
-      c=canvas('Response loss trains the connector and decoder',315);
-      c.box(150,66,260,80,'Fixed vision encoder','no parameter updates','e');
-      c.box(495,66,300,68,'Learned connector','W_bridge, b_bridge','d');c.arrow('M283 66L341 66','d');
-      c.box(150,207,260,80,'Known text','E_tok + P','e');c.box(495,207,300,80,'Decoder + head','Attention + vocabulary','a');c.arrow('M283 207L341 207','e');c.arrow('M495 103L495 164','d');
-      c.box(885,207,300,80,'Answer-token loss','mean −log p(target)','neutral');c.arrow('M648 207L732 207');
-      c.box(885,66,300,68,'Observed response','two · blocks · <eos>','neutral');c.arrow('M885 103L885 170');
-      c.arrow('M1038 207L1080 207L1080 289L493 289L493 250','d',true);c.text(790,272,'autograd','d',22);
-    }else if(stage==='thermal'){
-      c=canvas('The same colour can encode different temperatures',265);
-      for(const [cx,low,high] of [[270,30,50],[825,60,100]]){
-        for(let i=0;i<8;i++)c.svg.append(el('rect',{x:cx-160+i*40,y:70,width:40,height:60,fill:'var(--c-e)',opacity:.2+.1*i}));
-        c.text(cx,29,'Palette range '+low+' to '+high+' °C','neutral',26);c.arrow('M'+cx+' 173L'+cx+' 134','neutral');
-        c.text(cx,205,'Midpoint = '+((low+high)/2)+' °C','neutral',26);
+
+  /* maskFigure(scene, tokens, {cell}): who may read whom, with the patch thumbnails and tokens on both axes */
+  function maskFigure(scene, tokens, opts) {
+    opts = opts || {}; tokens = tokens || PROMPT;
+    var f = forward(scene, tokens, opts), n = f.n, cell = opts.cell || 16, pad = 42, W = pad + n * cell + 4;
+    var s = svg('svg', { viewBox: '0 0 ' + W + ' ' + W, width: W, height: W, role: 'img', 'aria-label': 'Attention mask: image rows read image rows only; text rows read every image row and the text so far' });
+    var g = V.scene(scene);
+    function mini(x, y, j, size) { var pr = Math.floor(j / 4), pc = j % 4, c = size / 2; for (var r = 0; r < 2; r++) for (var cc = 0; cc < 2; cc++) s.appendChild(svg('rect', { x: x + cc * c, y: y + r * c, width: c, height: c, fill: V.ramp(g[2 * pr + r][2 * pc + cc]) })); }
+    for (var i = 0; i < n; i++) {
+      for (var j = 0; j < n; j++) s.appendChild(svg('rect', { x: pad + j * cell, y: pad + i * cell, width: cell, height: cell, class: 'cell ' + (f.allowed[i][j] ? 'on' : 'off') }));
+      if (i < NP) { mini(pad - cell - 4, pad + i * cell + 1, i, cell - 2); mini(pad + i * cell + 1, pad - cell - 4, i, cell - 2); }
+      else {
+        var tok = tokens[i - NP];
+        s.appendChild(svg('text', { x: pad - 6, y: pad + i * cell + cell * 0.72, 'text-anchor': 'end', 'font-size': Math.round(cell * 0.7) }, tok));
+        s.appendChild(svg('text', { x: pad + i * cell + cell / 2, y: pad - 6, 'text-anchor': 'end', 'font-size': Math.round(cell * 0.7), transform: 'rotate(-90 ' + (pad + i * cell + cell / 2) + ' ' + (pad - 6) + ')' }, tok));
       }
-      c.text(550,244,'Same normalized colours; different calibration ranges.','neutral',22);
-    }else throw Error('Unknown VLM diagram stage.');
-    return c.svg;
+    }
+    s.appendChild(svg('line', { x1: pad + NP * cell, y1: pad, x2: pad + NP * cell, y2: pad + n * cell, stroke: 'var(--ink)', 'stroke-width': 1.5 }));
+    s.appendChild(svg('line', { x1: pad, y1: pad + NP * cell, x2: pad + n * cell, y2: pad + NP * cell, stroke: 'var(--ink)', 'stroke-width': 1.5 }));
+    var box = h('div', { class: 'v4-mask' }, s);
+    if (opts.caption) { var fig = h('figure', { class: 'vfig' }, box, h('figcaption', { html: opts.caption })); return put(fig, opts); }
+    return put(box, opts);
   }
-  const notation=[
-    ['matrix','\\ve{G}','Encoded visual rows before the connector','N\\times d_{\\rm vision}','4×2'],
-    ['matrix','\\ve{B}=\\ve{G}W_{\\rm bridge}+b_{\\rm bridge}','Visual rows after the connector, before decoder positions','N\\times d_{\\rm model}','4×3'],
-    ['matrix','P','Same-width position vectors added to image and text rows','(N+T)\\times d_{\\rm model}','7×3 for the prompt'],
-    ['sizes','W_{\\rm bridge},b_{\\rm bridge}','Maps each visual row to the decoder width','d_{\\rm vision}\\times d_{\\rm model}','2×3; bias 1×3'],
-    ['matrix','\\ve{E}','Visual and text rows after adding positions','(N+T)\\times d_{\\rm model}','7×3 for the prompt'],
-    ['matrix','\\vq{Q}=\\ve{E}W_Q,\\quad\\vk{K}=\\ve{E}W_K','Matching projections; query/key widths must agree','(N+T)\\times d_k','7×3'],
-    ['matrix','\\vv{V}=\\ve{E}W_V','Information to send; V is not G or E','(N+T)\\times d_v','7×3'],
-    ['matrix','M','Allowed visual-prefix information flow','(N+T)\\times(N+T)','7×7 for the prompt'],
-    ['token','m_i=\\sum_j\\va{\\alpha_{ij}}\\vv{v_j}','Message retrieved by the current query','1\\times d_v','1×3'],
-    ['token','\\vd{\\Delta e_i}=m_iW_O,\\quad\\vp{e_i^\\prime}=\\ve{e_i}+\\vd{\\Delta e_i}','Output projection followed by the residual addition','1\\times d_{\\rm model}','1×3'],
-    ['token','z_i=\\vp{e_i^\\prime}W_{\\mathrm{vocab}}+b','Vocabulary logits, not attention weights','1\\times|\\mathcal V|','1×8'],
-    ['sizes','E_{\\rm tok}','Learned text-token lookup table','|\\mathcal V|\\times d_{\\rm model}','8×3'],
-    ['sizes','W_{\\mathrm{vocab}},\\;b','Vocabulary prediction weights and bias','d_{\\rm model}\\times|\\mathcal V|,\\;1\\times|\\mathcal V|','3×8; bias 1×8']
-  ];
-  notation.forEach(([g,sym,mean,shape,d])=>A.notation.push({g,sym,mean,shape,dims:()=>d,parts:['vision4']}));
-  A.axes.named=false;
-  A.vlm={data,params,vision,forward,teacher,generate,contributions,diagram,vec,fmt};
+
+  /* ---------- notation ---------- */
+  function note(g, sym, mean, shape, dims) { AT.notation.push({ g: g, sym: sym, mean: mean, shape: shape, dims: function () { return dims || ''; }, parts: ['vision4'] }); }
+  if (AT.notation && AT.notation.push) {
+    note('token', 'g_j', 'Frozen visual row of patch j: the Vision I encoder’s updated patch row, on the encoder axes brightness, contrast, row, col', '1\\times d_{\\mathrm{vision}}', '1×4');
+    note('token', '\\ve{e_j}=g_jW_{\\mathrm{bridge}}+b_{\\mathrm{bridge}}', 'An image row after the connector: the same map for all sixteen patches', '1\\times d_{\\mathrm{model}}', '1×3');
+    note('token', '\\ve{e_i}=E_{\\mathrm{tok}}[t_i]+p_i', 'A text row: vocabulary lookup plus a learned position vector for text position i', '1\\times d_{\\mathrm{model}}', '1×3');
+    note('token', '\\vq{q_i}=\\ve{e_i}W_Q,\\ \\vk{k_j}=\\ve{e_j}W_K,\\ \\vv{v_j}=\\ve{e_j}W_V', 'Ask, offer, send; one set of matrices for image and text rows', '1\\times 3', '');
+    note('token', 's_{ij}=\\vq{q_i}\\cdot\\vk{k_j}/\\sqrt{d_k},\\ \\va{\\alpha_{ij}}=\\operatorname{softmax}_j', 'Scores over the rows the mask allows; masked scores are −∞', '', '');
+    note('token', 'm_i=\\sum_j\\va{\\alpha_{ij}}\\vv{v_j},\\ \\vd{\\Delta e_i}=m_iW_O,\\ \\vp{e_i^\\prime}=\\ve{e_i}+\\vd{\\Delta e_i}', 'The message, the update and the updated row', '1\\times d_{\\mathrm{model}}', '1×3');
+    note('token', 'z_i=\\vp{e_i^\\prime}W_{\\mathrm{vocab}}+b', 'Next-token logits from the last known row; softmax over the vocabulary', '1\\times|\\mathcal V|', '1×10');
+    note('matrix', 'G', 'The sixteen frozen visual rows (CLS dropped after the encoder’s attention)', 'N\\times d_{\\mathrm{vision}}', '16×4');
+    note('matrix', '\\ve{E}', 'Image rows through the connector, then the known text rows', '(N+T)\\times d_{\\mathrm{model}}', '21×3 for the prompt');
+    note('matrix', 'M', 'Who may read whom: image rows read image rows; text rows read all image rows and earlier text', '(N+T)\\times(N+T)', '21×21 for the prompt');
+    note('matrix', '\\vq{Q},\\vk{K},\\vv{V},\\va{A},\\vd{\\Delta E},\\vp{E^\\prime}', 'As in Part 2, for all rows at once', '(N+T)\\times 3', '');
+    note('sizes', 'N,\\ T,\\ d_{\\mathrm{vision}},\\ d_{\\mathrm{model}}=d_k=d_v', 'Image rows, text rows, encoder width, decoder width', '', '16, 5 to 8, 4, 3');
+    note('sizes', 'W_{\\mathrm{bridge}},\\ b_{\\mathrm{bridge}}', 'The connector (fitted)', 'd_{\\mathrm{vision}}\\times d_{\\mathrm{model}}', '4×3, bias 1×3');
+    note('sizes', 'E_{\\mathrm{tok}},\\ P', 'Text lookup table and text positions (fitted)', '|\\mathcal V|\\times d_{\\mathrm{model}},\\ 8\\times d_{\\mathrm{model}}', '10×3, 8×3');
+    note('sizes', 'W_Q,W_K,W_V,W_O,\\ W_{\\mathrm{vocab}},\\ b', 'One attention head and the head (fitted); the encoder’s own matrices stay frozen', '3\\times3,\\ 3\\times|\\mathcal V|', '3×3, 3×10');
+  }
+  /* the shell's notation card: the standard groups, then the learned decoder axes with the rule that named them */
+  var baseCard = AT.ui.notationCard;
+  function learnedAxes() {
+    var box = h('div', { class: 'notation-group' });
+    box.appendChild(h('p', { class: 'notation-title' }, 'Learned coordinates (named after the fit)'));
+    var table = h('table', { class: 'dt dt-notation' });
+    table.appendChild(h('thead', {}, h('tr', {}, h('th', { scope: 'col' }, 'object'), h('th', { scope: 'col' }, 'names'), h('th', { scope: 'col' }, 'what each one tracks'))));
+    var body = h('tbody');
+    var full = (T.axes && T.axes.full) || {};
+    [['\\ve{e}', 'e'], ['\\vq{q},\\ \\vk{k}', 'qk'], ['\\vv{v}', 'v']].forEach(function (pair) {
+      var ts = h('th', { scope: 'row', class: 'nt-sym' }); AT.tex(ts, pair[0]);
+      body.appendChild(h('tr', {}, ts, h('td', { class: 'nt-mean' }, AT.axes[pair[1]].join(' · ')), h('td', { class: 'nt-mean' }, (full[pair[1]] || []).map(function (s) { return s.replace(/ across the 16 patches$/, ''); }).join('; '))));
+    });
+    table.appendChild(body);
+    box.appendChild(h('div', { class: 'dt-scroll' }, table));
+    box.appendChild(h('p', { class: 'notation-note' }, 'The decoder’s three coordinates were not designed. After fitting, each one is named by the pixel quantity it tracks across the sixteen image rows of scene A (brightness, contrast, patch row, patch column); r is the correlation. Text rows use the same coordinates without such a reading.'));
+    return box;
+  }
+  AT.ui.notationCard = function (opts) {
+    opts = opts || {};
+    var part = opts.part || (window.__PART__ && window.__PART__.notation) || 'part2';
+    if (part !== 'vision4' || opts.groups) return baseCard(opts);
+    var root = baseCard({ part: part, groups: ['token', 'matrix', 'sizes'], only: opts.only, compact: opts.compact });
+    root.appendChild(learnedAxes());
+    return put(root, opts);
+  };
+
+  AT.vlm = { data: M, toy: T, NP: NP, TP: TP, vocab: VOC, prompt: PROMPT, answers: M.answers, sceneNames: M.sceneNames, scenes: ['A', 'B', 'C'],
+    params: params, rows: rows, forward: forward, teacher: teacher, generate: generate, mass: mass, contrast: contrast, labels: labels, textLabel: textLabel,
+    readWeights: readWeights, readQuery: readQuery, tokenRow: tokenRow, maskFigure: maskFigure, fmt: fmt, joinAnd: joinAnd, mm: mm, sum: sum, dot: dot, softmax: sm };
 })();

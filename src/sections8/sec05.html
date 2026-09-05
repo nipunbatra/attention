@@ -1,40 +1,184 @@
-<section id="s05" class="sec" data-title="Generate from the last known position" data-lit="q ep">
-<header class="sec-head"><span class="sec-num">05</span><div><p class="eyebrow">Generation supplies its own next input.</p><h2>Generate from the last known position</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>We use greedy decoding for this worked trace. At each step, choose the most probable token and append it. The model parameters do not change during generation. The image remains the same, while the new last text row supplies the query for the next prediction. These choices are actual outputs of the saved toy, not a scripted animation of the desired answer.</p></div>
-<div class="frame" data-title="The question mark predicts two" data-autobuild="off"><div id="s05-step0"></div><p data-build="1">Only the image and question are inputs. Choose the first answer token from the last row's distribution.</p>
- <script type="text/x-notes">
-  Which row predicts the first answer word?
+<section id="s05" class="sec" data-title="One prediction: what does the question mark read?" data-lit="v d ep">
+<style>
+#s05 .rd{font-size:15px;color:var(--ink-2);margin:10px 0 0;max-width:72ch;line-height:1.5}
+#s05 .two{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px 32px;align-items:center}
+#s05 .two>*:first-child{max-width:460px;min-width:0}
+#s05 .qrow{margin:12px 0 0}
+#s05 .dt td.is-pending{opacity:.1}
+#s05 .chain .dt-fig{margin-top:8px}
+@media (max-width:760px){body:not(.present) #s05 .two{grid-template-columns:minmax(0,1fr)}}
+body.present #s05 .rd{font-size:22px;line-height:1.35}
+body.present #s05 .dt td,body.present #s05 .dt th{font-size:22px;padding:.18em .4em}
+body.present #s05 .dt-cap,body.present #s05 .dt-note{display:none}
+body.present #s05 .vfig figcaption{font-size:20px}
+body.present #s05 .two{grid-template-columns:auto minmax(0,1fr)}
+body.present #s05 .bars .bt{height:24px}
+</style>
+<header class="sec-head">
+  <span class="sec-num">05</span>
+  <div>
+    <p class="eyebrow">The last known token asks; twenty-one rows offer keys and values; the weights are painted on the scene.</p>
+    <h2>One prediction: what does the question mark read?</h2>
+  </div>
+</header>
 
-  The question mark uses the image and prompt as context. Greedy decoding selects the largest vocabulary probability; no parameters are updated.
- </script>
+<div class="companion" data-kicker="For self-study">
+  <p>In Part 2 the receiving token was <em>bank</em>. Here it is the question mark, the last known token, because the unknown answer cannot supply a query. Its query is compared with all twenty-one keys and a softmax turns the scores into weights. Instead of a column of numbers, paint them on the scene: each patch is tinted by its weight. The four mug patches take almost everything; the text rows get nothing. The worksheet behind the overlay is the same q·k arithmetic as Part 2, and the mixed values, the update and the vocabulary head follow in the same order. Every number here is scene A at the fitted checkpoint.</p>
 </div>
-<div class="frame" data-title="Append two; its row predicts blocks" data-autobuild="off"><div id="s05-step1"></div><p data-build="1">The sequence has grown. The new last row supplies a new query through the same $W_Q$.</p>
- <script type="text/x-notes">
-  What changes when we append two?
 
-  The sequence gains a row, and that row supplies the next query through the same W_Q. The image and learned matrices are unchanged.
- </script>
+<div class="frame" data-title="The query comes from the last known token" data-autobuild="off">
+  <script type="text/x-notes">Why does the question mark ask, and not the word mugs?
+It is the last known row. The unknown answer cannot form a query. Read the query on its named axes: it asks for bright patches.</script>
+  <div class="card">
+    <div id="s05-row"></div>
+    <div class="row qrow" id="s05-q"></div>
+    <p class="rd" id="s05-qread"></p>
+  </div>
+  <div class="callout callout-key" data-build="1">The four earlier words only offer keys and values. Only <em>?</em> asks, with $\vq{q_{21}} = \ve{e_{21}} W_Q$.</div>
 </div>
-<div class="frame" data-title="Append blocks; predict the end marker" data-autobuild="off"><div id="s05-step2"></div><pre class="torch-snippet" data-build="1"><code>next_id = logits[-1].argmax()
-prefix = torch.cat([prefix, next_id[None]])</code></pre>
- <script type="text/x-notes">
-  What tells generation to stop?
 
-  After blocks, the last row predicts the end marker. Distinguish appending a token from performing an optimizer step.
- </script>
-</div>
-<div class="frame" data-title="Change the image, not the question" data-autobuild="off">
- <div id="s05-pick"></div><div id="s05-counter"></div><div id="s05-compare"></div>
- <p>Both cases use the same learned parameters and <code>&lt;bos&gt; count ?</code> prompt.</p>
- <script type="text/x-notes">
-  Does changing only the image change the answer?
+<div class="frame" data-title="What the question mark reads" data-autobuild="off">
+  <script type="text/x-notes">Which patches light up, and how much is left for the words?
+Almost the whole row lands on the four mug patches; the five text rows get 0.00. Hover a patch for its key and value. This is the figure the series was building towards.
 
-  Switch between the two training grids and inspect the recomputed probabilities. This establishes dependence on these inputs, not generalization to unseen grids.
- </script>
+Timing: three minutes.</script>
+  <div class="card">
+    <h3 class="card-title">Row 21 of $\va{A}$ on scene A</h3>
+    <div class="two"><div id="s05-ov"></div><div><p class="rd" id="s05-ovread"></p><p class="rd" id="s05-hover">Hover a patch for its key and value.</p></div></div>
+  </div>
+  <div class="callout callout-key" data-build="1">The question mark reads the mugs. The weight on the five words, including itself, rounds to 0.00.</div>
 </div>
-<div class="companion after"><p>The switch is a conditioning check, not a generalization test: both grids were in the two-pair training set. A frozen vision encoder can be run once per image. Cache the visual states and, in a multi-layer implementation, eligible key/value projections. Reusing context does not mean reusing the last text query unchanged.</p></div>
-<script>(function(){const S=document.getElementById('s05'),V=AT.vlm;for(let i=0;i<3;i++)S.querySelector('#s05-step'+i).append(V.diagram('generation',{step:i}));
-const host=S.querySelector('#s05-counter'),tab=S.querySelector('#s05-compare');
-function draw(name){AT.clear(host);AT.clear(tab);host.append(V.diagram('task',{image:name}));const g=V.generate(name),f=V.forward(name);AT.ui.table([[f.probs[6][3],f.probs[6][4]]],{cols:['p(one)','p(two)'],rowLabels:[name+'-block grid'],decimals:3,into:tab});tab.append(AT.h('p',{},'Actual greedy output: '+g.tokens.join(' ')));}
-const chips=AT.ui.chips(['two blocks','one block'],{active:0,into:S.querySelector('#s05-pick'),onClick:i=>{chips.setActive(i);draw(i?'one':'two');}});draw('two');})();</script>
+
+<div class="frame" data-title="Behind the overlay: one score per key" data-autobuild="off">
+  <script type="text/x-notes">Where does a weight come from?
+The query row above, one key row per source, a dot product divided by the square root of three, then softmax. Click a score for the worksheet. The six rows shown carry nearly all the weight; the full table is in the reading version.</script>
+  <div class="card">
+    <h3 class="card-title">$\vq{q_{21}}$ against the six keys that matter most: $s_{21j} = \vq{q_{21}}\cdot\vk{k_j}/\sqrt{d_k}$, then softmax</h3>
+    <div id="s05-top"></div>
+    <p class="rd" id="s05-topread"></p>
+  </div>
+</div>
+
+<div class="companion">
+  <p id="s05-allread"></p>
+</div>
+
+<div class="frame" data-title="Mix the values the weights selected" data-autobuild="off">
+  <script type="text/x-notes">Which numbers do the weights multiply?
+The value row of the same source, never its key. Six sources carry nearly all the weight; their weighted values are shown. The footer of the complete table is the message m.</script>
+  <div class="card">
+    <h3 class="card-title">$\va{\alpha_{21j}}\,\vv{v_j}$ for the six largest weights</h3>
+    <div id="s05-mix"></div>
+    <p class="rd" id="s05-mixread"></p>
+  </div>
+</div>
+
+<div class="frame" data-title="Project the message and add it to the question mark" data-autobuild="off">
+  <script type="text/x-notes">What does W_O change about the message?
+Its axes: from value axes to the decoder's e axes, so it can be added to the question mark's own row. Hover the footer for the addition.</script>
+  <div class="card chain">
+    <div id="s05-chain"></div>
+    <p class="rd" id="s05-chainread"></p>
+  </div>
+</div>
+
+<div class="frame" data-title="The head: from the updated row to p(two)" data-autobuild="off">
+  <script type="text/x-notes">Which row goes into the vocabulary head?
+The updated question-mark row, not any patch row. Ten logits, one softmax over the vocabulary; two wins. The worksheet in the reading version writes out its logit.</script>
+  <div class="card">
+    <h3 class="card-title">$z_{21} = \vp{e_{21}'}\,W_{\mathrm{vocab}} + b$, then softmax over the ten tokens</h3>
+    <div class="two"><div id="s05-bars"></div><p class="rd" id="s05-barsread"></p></div>
+  </div>
+</div>
+
+<div class="companion">
+  <p>The logit of the winner, written out: the updated row times the <em>two</em> column of $W_{\mathrm{vocab}}$, plus its bias.</p>
+  <div id="s05-head"></div>
+  <div id="s05-contrast"></div>
+</div>
+
+<div class="companion after">
+  <p>The question mark asked for bright patches, read the mugs, received a message, projected it, added it to its own row, and the head turned that row into $p(\text{two})$. Nothing in the chain is new; the rows are.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s05'), T = AT.vlm, V = AT.vision;
+  const scene = 'A', F = T.forward(scene), p = T.params(), i = F.last, n = F.n, N = T.NP;
+  const q = F.Q[i], alpha = F.A[i], scores = F.scores[i];
+  const labels = T.labels(scene, T.prompt);
+  const plainLabel = j => j < N ? V.patchLabel(scene, j) : (j + 1) + ' ' + T.prompt[j - N];
+
+  /* frame 1: the query */
+  T.tokenRow(scene, T.prompt, { size: 24, active: T.prompt.length - 1, slot: '___', into: S.querySelector('#s05-row') });
+  AT.ui.vec(F.E[i], { cls: 'e', label: '\\ve{e_{' + (i + 1) + '}}', dims: true, into: S.querySelector('#s05-q') });
+  AT.ui.op('→', { into: S.querySelector('#s05-q') });
+  AT.ui.vec(q, { cls: 'q', label: '\\vq{q_{' + (i + 1) + '}}', dims: true, into: S.querySelector('#s05-q') });
+  S.querySelector('#s05-qread').innerHTML = 'Reading $\\vq{q_{' + (i + 1) + '}}$: ' + AT.escape(T.readQuery(q)) + ' A query on the axis “' + AT.escape(AT.axes.qk[2]) + '” with a negative entry asks for brightness too.';
+  AT.renderMath(S.querySelector('#s05-qread'));
+
+  /* frame 2: the overlay */
+  const hover = S.querySelector('#s05-hover');
+  V.overlay(scene, alpha.slice(0, N), { cell: 25, into: S.querySelector('#s05-ov'), caption: 'Tint and number: the weight on each patch.',
+    onHover: k => { hover.innerHTML = V.patchLabel(scene, k) + ': weight ' + AT.fmt(alpha[k], 2) + '; key ' + F.K[k].map((x, c) => AT.axes.qk[c] + ' ' + AT.fmt(x, 2)).join(', ') + '; value ' + F.V[k].map((x, c) => AT.axes.v[c] + ' ' + AT.fmt(x, 2)).join(', ') + '.'; } });
+  S.querySelector('#s05-ovread').textContent = 'Reading row 21: ' + T.readWeights(scene, alpha);
+
+  /* frame 3: scores for the six largest weights, with the worksheet behind a click */
+  const order = AT.range(n).sort((a, b) => alpha[b] - alpha[a]);
+  const top = order.slice(0, 6);
+  function routing(idx, host, caption){
+    const fig = AT.ui.table([q].concat(idx.map(j => F.K[j])), { cornerLabel: 'row',
+      rowLabels: ['$\\vq{q_{' + (i + 1) + '}}$ ' + (i + 1) + ' ?'].concat(idx.map(j => '$\\vk{k_{' + (j + 1) + '}}$ ' + (j < N ? labels[j] : AT.escape(labels[j])))),
+      rowCls: ['q'].concat(idx.map(() => 'k')), highlightRow: 0, decimals: 2,
+      computed: [{ label: '$s_{21j}$', cls: 'a', fn: (row, r) => r === 0 ? '' : scores[idx[r - 1]] }, { label: '$\\va{\\alpha_{21j}}$', cls: 'a', heat: true, heatMax: 1, fn: (row, r) => r === 0 ? '' : alpha[idx[r - 1]] }],
+      caption: caption, note: 'Click a score to see the dot product written out, axis by axis.', into: host });
+    const pop = AT.ui.popover(fig, { label: 'Score arithmetic' });
+    idx.forEach((j, r) => {
+      const td = fig.computedCells[r + 1][0]; td.classList.add('has-calc'); td.tabIndex = 0;
+      const open = () => pop.show(td, 'score of key ' + plainLabel(j) + ' for the query of ?', AT.ui.dotCalc(q, F.K[j], { axes: 'qk', qLabel: 'q · 21 ?', kLabel: 'k · ' + plainLabel(j), scale: true, d_k: T.toy.d_k }));
+      td.addEventListener('click', open);
+      td.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); open(); } });
+    });
+    return fig;
+  }
+  routing(top, S.querySelector('#s05-top'), 'The query row sits above six key rows under the same matching axes. The last column is the softmax weight over all 21 sources.');
+  const restMass = 1 - top.reduce((s, j) => s + alpha[j], 0);
+  S.querySelector('#s05-topread').textContent = 'These six sources hold ' + AT.fmt(1 - restMass, 2) + ' of the weight; the other ' + (n - 6) + ' rows share ' + AT.fmt(restMass, 2) + '. Every score divides by √' + T.toy.d_k + ' before the softmax.';
+  const textW = alpha.slice(N).map(x => AT.fmt(x, 3)).join(', '), lowImg = AT.range(N).filter(j => top.indexOf(j) < 0);
+  S.querySelector('#s05-allread').textContent = 'The other fifteen sources: the five text rows (' + T.prompt.join(' ') + ') receive ' + textW + ', and the ' + lowImg.length + ' remaining patches together ' + AT.fmt(lowImg.reduce((s, j) => s + alpha[j], 0), 3) + '. A text receiver is never masked from a row before it, so all twenty-one scores exist; the small ones are simply outweighed in the softmax.';
+
+  /* frame 4: weighted values */
+  AT.ui.mixTable(top.map(j => alpha[j]), top.map(j => F.V[j]), { rowLabels: top.map(j => labels[j]), cornerLabel: 'source', weighted: true, footer: false, alphaLabel: '$\\va{\\alpha_{21j}}$', decimals: 2, dimZero: false,
+    caption: 'Each cell is the weight on the left times that entry of the value row. Value axes are the learned axes, named by what they track.', note: '', into: S.querySelector('#s05-mix') });
+  const restMsg = F.message[i].map((x, c) => x - top.reduce((s, j) => s + alpha[j] * F.V[j][c], 0));
+  S.querySelector('#s05-mixread').textContent = 'The values of the mug patches are large on “' + AT.axes.v[0] + '”; multiplied by weights near 0.2 to 0.3 each, they dominate the message. The other ' + (n - 6) + ' rows add only ' + restMsg.map(x => AT.fmt(x, 2)).join(', ') + ' to the three coordinates of the sum.';
+
+  /* frame 5: message → update → residual */
+  const chain = S.querySelector('#s05-chain');
+  AT.ui.table([F.message[i]], { axes: 'v', rowLabels: ['$m_{21}$ (value axes)'], rowCls: 'm', cornerLabel: 'row', decimals: 2, into: chain, caption: 'The message has $d_v = ' + T.toy.d_v + '$ entries on the value axes.' });
+  const upd = AT.ui.table([F.delta[i], F.E[i]], { axes: 'e', rowLabels: ['$\\vd{\\Delta e_{21}} = m_{21} W_O$', '$\\ve{e_{21}}$'], rowCls: ['d', 'e'], cornerLabel: 'row', decimals: 2,
+    footer: { label: '$\\vp{e_{21}\'} = \\ve{e_{21}} + \\vd{\\Delta e_{21}}$', values: F.out[i], cls: 'ep' }, into: chain,
+    caption: '$W_O$ maps the message onto the decoder axes; the footer adds it to the question mark’s own row.', note: 'Hover or focus a footer cell to see the addition.' });
+  upd.footer.cells.forEach((td, c) => upd.tipOn(td, () => AT.fmt(F.E[i][c], 2) + ' + ' + (F.delta[i][c] < 0 ? '(' + AT.fmt(F.delta[i][c], 2) + ')' : AT.fmt(F.delta[i][c], 2)) + ' = ' + AT.fmt(F.out[i][c], 2)));
+  const dTop = AT.argmax(F.delta[i].map(Math.abs));
+  S.querySelector('#s05-chainread').innerHTML = 'Reading $\\vd{\\Delta e_{21}}$: the largest change is ' + AT.fmt(F.delta[i][dTop], 2) + ' on “' + AT.escape(AT.axes.e[dTop]) + '”. The question mark keeps its own row and gains what the mugs sent.';
+  AT.renderMath(S.querySelector('#s05-chainread'));
+
+  /* frame 6: the head */
+  const probs = F.probs[i], best = AT.argmax(probs);
+  AT.ui.bars(T.vocab.map((tok, k) => ({ label: tok, p: probs[k] })), { cls: 'neutral', max: 1, decimals: 3, sorted: false, highlight: T.vocab[best], size: 'lg', into: S.querySelector('#s05-bars') });
+  S.querySelector('#s05-barsread').textContent = 'p(' + T.vocab[best] + ') = ' + AT.fmt(probs[best], 3) + '. The other nine tokens share ' + AT.fmt(1 - probs[best], 3) + '. This softmax runs over the vocabulary, not over the sources.';
+  const two = T.vocab.indexOf('two'), col = p.W_vocab.map(r => [r[two]]);
+  const mv = AT.ui.matVecCalc(F.out[i], col, { from: 'e', to: ['two'], cls: 'neutral', fromCls: 'ep', xLabel: 'e′ · 21 ?', outLabel: 'before the bias', into: S.querySelector('#s05-head') });
+  const outrow = mv.querySelector('.calc-outrow'); if (outrow) outrow.hidden = true;
+  const bias = p.b_vocab[two], Z = probs.reduce((s, x, k) => s + Math.exp(F.logits[i][k]), 0);
+  mv.appendChild(AT.h('p', { class: 'calc-line' }, 'logit for two = ' + AT.fmt(mv.out[0], 2) + ' + b ' + (bias < 0 ? '(' + AT.fmt(bias, 2) + ')' : AT.fmt(bias, 2)) + ' = ', AT.h('span', { class: 'calc-r' }, AT.fmt(F.logits[i][two], 2))));
+  mv.appendChild(AT.h('p', { class: 'calc-line' }, 'p(two) = exp(' + AT.fmt(F.logits[i][two], 2) + ') / Σ exp(z) = ' + AT.fmt(Math.exp(F.logits[i][two]), 2) + ' / ' + AT.fmt(Z, 2) + ' = ', AT.h('span', { class: 'calc-r' }, AT.fmt(probs[two], 3))));
+  /* where does two beat one: exact bookkeeping of the logit difference */
+  const C = T.contrast(scene, T.prompt);
+  AT.ui.reveal('Where does the preference for <em>two</em> over <em>one</em> come from?',
+    '<p>Split $z_{\\text{two}} - z_{\\text{one}}$ into the question mark’s own row plus bias, and one term per source through $\\va{\\alpha}\\,\\vv{v}\\,W_O$: own row ' + AT.fmt(C.residual, 2) + ', image rows ' + AT.fmtSigned(C.image, 2) + ', text rows ' + AT.fmtSigned(C.text, 2) + ', total ' + AT.fmt(C.total, 2) + '. The row itself favours <em>one</em>; the mugs overturn it. This is bookkeeping of one forward pass, not a claim about deleting pixels.</p>',
+    { into: S.querySelector('#s05-contrast') });
+})();
+</script>
 </section>

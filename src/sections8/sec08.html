@@ -1,0 +1,130 @@
+<section id="s08" class="sec" data-title="Train on the answer" data-lit="">
+<style>
+#s08 .rd{font-size:15px;color:var(--ink-2);margin:10px 0 0;max-width:72ch;line-height:1.5}
+#s08 .two{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px 32px;align-items:center}
+#s08 .pair{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+#s08 .pair>div{min-width:0}
+#s08 .eq{margin:8px 0 0}
+@media (max-width:760px){body:not(.present) #s08 .two,body:not(.present) #s08 .pair{grid-template-columns:minmax(0,1fr)}}
+body.present #s08 .rd{font-size:22px;line-height:1.35}
+body.present #s08 .dt td,body.present #s08 .dt th{font-size:22px;padding:.2em .45em}
+body.present #s08 .dt-cap,body.present #s08 .dt-note{display:none}
+body.present #s08 .vfig figcaption{font-size:20px}
+body.present #s08 .two{grid-template-columns:minmax(0,1fr) auto}
+</style>
+<header class="sec-head">
+  <span class="sec-num">08</span>
+  <div>
+    <p class="eyebrow">Only the answer tokens carry a target. The image and the question are context, in the loss as in the forward pass.</p>
+    <h2>Train on the answer</h2>
+  </div>
+</header>
+
+<div class="companion" data-kicker="For self-study">
+  <p>Training uses teacher forcing: the correct answer is placed after the question, the mask keeps each row from seeing later tokens, and only the answer rows are scored. Here that is two targets: the question mark should predict <em>two</em>, and the <em>two</em> row should predict the end marker. The run below fits scenes A and B in 73 Adam steps; the overlay of what the question mark reads goes from an even smear to the four mug patches. Then one more step on scene A alone: its loss falls, scene B's loss rises. Keep that failure; it is the reason for batches and held-out checks.</p>
+</div>
+
+<div class="frame" data-title="Which rows have a target" data-autobuild="off">
+  <script type="text/x-notes">Which rows are scored?
+Only the two answer rows: the question mark targets two, and the two row targets the end marker. Image rows and question words have no target, but gradients still flow through them: they supply the keys and values the answer rows read.</script>
+  <div class="card">
+    <div id="s08-row"></div>
+    <div id="s08-targets"></div>
+  </div>
+  <pre class="torch-snippet" data-build="1"><code>loss = F.cross_entropy(logits[answer_rows], answer_ids)   # rows 21 and 22 only</code></pre>
+</div>
+
+<div class="frame" data-title="The response loss" data-autobuild="off">
+  <script type="text/x-notes">Compute one negative log probability, then average the two.
+Read the target probability first, then its negative log. The loss uses full precision; the tables round to two decimals.</script>
+  <div class="card">
+    <div class="two"><div id="s08-loss"></div><div class="eq" id="s08-mean"></div></div>
+  </div>
+  <div class="callout callout-note" data-build="1">The loss is over the vocabulary softmax of two rows. Nothing about attention weights appears in it directly; they change only because they change those two rows.</div>
+</div>
+
+<div class="frame" data-title="The run: from an even smear to the mugs" data-autobuild="off">
+  <script type="text/x-notes">What did training change about where the question mark reads?
+At the random start the weights are spread over the scene and the head prefers mugs, the word. After 73 Adam steps the weight sits on the four mug patches and the head says two.</script>
+  <div class="card">
+    <div class="two"><div id="s08-curve"></div><div id="s08-before-after"></div></div>
+  </div>
+</div>
+
+<div class="frame" data-title="What the question mark reads, before and after" data-autobuild="off">
+  <script type="text/x-notes">Compare the two overlays.
+Before: an even smear, about 0.05 on every patch and a quarter of the weight on the words. After: the four mug patches. Training moved the reading as well as the answer.</script>
+  <div class="card">
+    <div class="pair" id="s08-ovpair"></div>
+  </div>
+</div>
+
+<div class="frame" data-title="One more step, on scene A alone" data-autobuild="off">
+  <script type="text/x-notes">Did the extra step improve the model?
+It lowered the loss it was computed on. Scene B's loss rose, and even the second target of scene A got worse while the mean fell. A single example is not a batch; keep this failure visible.</script>
+  <div class="card">
+    <h3 class="card-title" id="s08-steptitle"></h3>
+    <div id="s08-step"></div>
+    <p class="rd" id="s08-stepread"></p>
+  </div>
+  <div class="callout callout-warn" data-build="1" id="s08-stepnote"></div>
+</div>
+
+<div class="frame" data-title="The gradient is checked, not derived by hand" data-autobuild="off">
+  <script type="text/x-notes">How do we know the gradient behind that step is right?
+Autograd in practice; here every one of the 145 parameters was checked against a central difference, on both scenes. Students should write the three lines, not the Jacobians.</script>
+  <div class="prose">
+    <p id="s08-fd"></p>
+  </div>
+  <pre class="torch-snippet" data-build="1"><code>optimizer.zero_grad()
+loss.backward()      # gradients for the connector, the text table, the head, the block
+optimizer.step()     # the frozen encoder is not in the optimizer</code></pre>
+</div>
+
+<div class="companion after">
+  <p>Two answer rows carry the whole loss. Fitting them moved the question mark's reading onto the mugs; one further step on a single scene showed how easily that balance tips.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s08'), T = AT.vlm, V = AT.vision, N = T.NP;
+  const F = T.teacher('A'), tr = T.toy.vlm.training, up = T.toy.vlm.update;
+  /* targets */
+  T.tokenRow('A', F.prefix, { size: 22, active: [F.prefix.length - 2, F.prefix.length - 1], into: S.querySelector('#s08-row') });
+  AT.ui.table([['1 to ' + N + ': the image rows', 'none (context)'], [(N + 1) + ' to ' + (N + 4) + ': <bos> how many mugs', 'none (context)']].concat(F.targets.map((t, k) => [(F.targetRows[k] + 1) + ': ' + F.prefix[F.targetRows[k] - N], t])),
+    { cols: [{ label: 'known row', kind: 'text' }, { label: 'next-token target', kind: 'text' }], cornerLabel: 'row', highlightRow: 2, into: S.querySelector('#s08-targets'),
+      caption: 'Teacher forcing: the answer is placed after the question; the mask still hides later rows. Only the two answer rows are scored.' });
+  /* loss */
+  AT.ui.table(F.targets.map((t, k) => [F.targetProbs[k], F.losses[k]]), { cols: [{ label: '$p(\\text{target})$', decimals: 3 }, { label: '$-\\log p$', decimals: 3 }], rowLabels: F.targets.map((t, k) => (F.targetRows[k] + 1) + ' → ' + t), cornerLabel: 'row → target',
+    footer: { label: 'mean $L$', values: ['', F.loss], decimals: 3 }, into: S.querySelector('#s08-loss') });
+  AT.tex(S.querySelector('#s08-mean'), 'L = \\frac{' + F.losses.map(v => AT.fmt(v, 3)).join(' + ') + '}{' + F.losses.length + '} = ' + AT.fmt(F.loss, 3), { display: true });
+  /* the run */
+  const curve = tr.curve, last = curve[curve.length - 1][0];
+  V.curve(curve, { label: 'Mean loss over scenes A and B during the ' + tr.steps + ' Adam steps (learning rate ' + tr.rate + ').', mark: last, width: 420, height: 200, into: S.querySelector('#s08-curve') });
+  const initA = T.teacher('A', { snapshot: 'init' }), initB = T.teacher('B', { snapshot: 'init' }), trB = T.teacher('B');
+  const gInit = T.generate('A', { snapshot: 'init' });
+  AT.ui.table([[initA.targetProbs[0], F.targetProbs[0]], [initB.targetProbs[0], trB.targetProbs[0]]], { cols: [{ label: 'at the random start', decimals: 3 }, { label: 'after ' + tr.steps + ' steps', decimals: 3 }], rowLabels: ['p(two | A)', 'p(one | B)'], cornerLabel: 'first answer token', into: S.querySelector('#s08-before-after'),
+    caption: 'At the start the greedy answer for A was “' + gInit.tokens.join(' ') + '”. The fitted parameters were rounded to two decimals before these numbers were computed.' });
+  /* overlays before and after */
+  [['init', 'Before training (random start)'], ['trained', 'After training']].forEach(([snap, title]) => {
+    const st = T.generate('A', { snapshot: snap }).trace[0], box = AT.h('div');
+    V.overlay('A', st.weights.slice(0, N), { cell: 24, into: box, caption: title + ': ' + T.readWeights('A', st.weights) + ' Greedy answer: ' + AT.escape(st.chosen) + '.' });
+    S.querySelector('#s08-ovpair').appendChild(box);
+  });
+  /* one step on scene A */
+  const stepA = T.teacher('A', { snapshot: 'step' }), stepB = T.teacher('B', { snapshot: 'step' });
+  S.querySelector('#s08-steptitle').textContent = 'One SGD step at learning rate ' + up.rate + ', computed from scene A only';
+  AT.ui.table([[F.loss, stepA.loss, F.targetProbs[0], stepA.targetProbs[0]], [trB.loss, stepB.loss, trB.targetProbs[0], stepB.targetProbs[0]]],
+    { cols: [{ label: 'loss before', decimals: 3 }, { label: 'loss after', decimals: 3 }, { label: 'p(first) before', decimals: 3 }, { label: 'p(first) after', decimals: 3 }],
+      rowLabels: ['A (used)', 'B (untouched)'], cornerLabel: 'scene', into: S.querySelector('#s08-step'),
+      caption: 'The first answer token of each scene; the end-marker target of A went from p = ' + AT.fmt(F.targetProbs[1], 3) + ' to ' + AT.fmt(stepA.targetProbs[1], 3) + '.' });
+  const gA2 = T.generate('A', { snapshot: 'step' }), gB2 = T.generate('B', { snapshot: 'step' });
+  S.querySelector('#s08-stepread').textContent = 'Greedy answers after the step: A “' + gA2.tokens.join(' ') + '”, B “' + gB2.tokens.join(' ') + '”. A’s end-marker target went from p = ' + AT.fmt(F.targetProbs[1], 3) + ' to ' + AT.fmt(stepA.targetProbs[1], 3) + ' while its mean loss fell; B’s loss rose from ' + AT.fmt(trB.loss, 3) + ' to ' + AT.fmt(stepB.loss, 3) + '.';
+  const worseB = stepB.loss > trB.loss, worseEos = stepA.targetProbs[1] < F.targetProbs[1];
+  S.querySelector('#s08-stepnote').innerHTML = (worseB ? 'Scene B got worse without being touched' : 'Scene B did not get worse this time') + (worseEos ? ', and even scene A’s end-marker target lost probability while A’s mean improved.' : '.') + ' One example is not a batch. Train on representative batches and check scenes the step never saw; here the regression stays on the page.';
+  /* finite differences */
+  const checks = up.gradientChecks, worst = Math.max(...checks.map(c => c.error));
+  S.querySelector('#s08-fd').textContent = 'The gradient behind that step was compared with a central difference (ε = 10⁻⁵) for every trainable scalar, on both scenes: ' + checks.length + ' checks, largest disagreement ' + worst.toExponential(1) + '. The 4 × 3 connector, the text table, the positions, the block and the head were all checked; the encoder has no gradient because it is not trained.';
+})();
+</script>
+</section>

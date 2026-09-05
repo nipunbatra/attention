@@ -1,50 +1,121 @@
-<section id="s01" class="sec" data-title="The image must change the answer" data-lit="e">
-<style>.vlm-diagram{width:100%;display:block;margin:8px 0}.vlm-diagram text{font-variant-numeric:tabular-nums}</style>
-<header class="sec-head"><span class="sec-num">01</span><div><p class="eyebrow">CLIP ranked complete captions. We now want to write an answer.</p><h2>The image must change the answer</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>Return to the mugs, book, and plant. CLIP can compare complete descriptions of the scene. A vision-language model can instead condition a language decoder on the image and a question, then generate an answer one token at a time. Holding the question fixed while removing one mug gives us a direct test: does the answer follow the visual evidence?</p><p>We use the scene for intuition, then the small grayscale grids from Vision I for exact calculations. This lesson develops the projected-prefix route used by models such as <a href="https://arxiv.org/abs/2304.08485">LLaVA</a>, then compares it with the cross-attention route from Attention Part IV. These are documented architectures, not a claim about every commercial VLM.</p></div>
-<div class="frame" data-title="Ask the scene: how many mugs?" data-autobuild="off">
- <div id="s01-scene"></div>
- <p data-build="1">Expected human answer: "two". A VLM must use the image to produce its own answer tokens.</p>
- <script type="text/x-notes">Point to each mug before discussing the model.
+<section id="s01" class="sec" data-title="CLIP can rank captions; it cannot write an answer" data-lit="">
+<style>
+#s01 .scope{margin:0 0 36px}
+#s01 .scope ul{margin:6px 0 0;padding-left:1.2em}
+#s01 .scope li{margin:2px 0}
+#s01 .ask{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px 32px;align-items:center}
+#s01 .ask .chips{margin:0}
+#s01 .btn[aria-pressed=true]{background:var(--ink);color:var(--card)}
+#s01 .look{font-size:15px;color:var(--ink-2);margin:12px 0 0;max-width:68ch;line-height:1.5}
+#s01 .menu{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+#s01 .menu>div{border:1px solid var(--line);border-radius:var(--radius);padding:14px 18px;background:var(--card)}
+#s01 .menu h4{margin:0 0 8px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+#s01 .menu ul{margin:0;padding-left:1.2em}
+#s01 .menu li{margin:3px 0}
+#s01 .menu .out{margin:10px 0 0;font-weight:600}
+#s01 .big{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px 36px;align-items:center}
+#s01 .big .n{font-family:var(--font-mono);font-size:64px;font-weight:700;line-height:1;color:var(--ink)}
+#s01 .big .n small{display:block;font-family:var(--font-ui);font-size:13px;font-weight:600;color:var(--ink-3);margin-top:8px;letter-spacing:.06em;text-transform:uppercase}
+#s01 .big svg{display:block;max-width:100%;height:auto}
+@media (max-width:640px){body:not(.present) #s01 .ask,body:not(.present) #s01 .menu,body:not(.present) #s01 .big{grid-template-columns:minmax(0,1fr)}}
+body.present #s01 .look{font-size:22px;line-height:1.35}
+body.present #s01 .menu h4{font-size:20px}
+body.present #s01 .big .n{font-size:110px}
+body.present #s01 .big .n small{font-size:22px}
+body.present #s01 .ask{grid-template-columns:auto minmax(0,1fr);gap:24px 48px}
+</style>
+<header class="sec-head">
+  <span class="sec-num">01</span>
+  <div>
+    <p class="eyebrow">Vision III could pick the closest caption from a list. Now we want the model to write the answer itself.</p>
+    <h2>CLIP can rank captions; it cannot write an answer</h2>
+  </div>
+</header>
 
-The answer two is the expected human answer for the illustration. We have not run a VLM on this scene and are not reporting a model prediction.</script>
+<div class="callout callout-note scope" id="s01-scope">
+  <strong>What this toy can and cannot show.</strong> It can show every number: the frozen encoder rows, who may read whom, what the question mark reads, how the answer changes between two scenes, one probe scene, and one training step. It cannot show general counting, natural photographs, or questions outside its ten-word vocabulary. The two fitted scenes prove image dependence, not understanding; the probe in Section 7 shows where that ends.
 </div>
-<div class="frame" data-title="How many mugs? Remove one; keep the question" data-autobuild="off">
- <div id="s01-scene-compare"></div>
- <p data-build="1">Expected human answers: "two" and "one". The question alone cannot tell the decoder which answer fits.</p>
- <script type="text/x-notes">What changed, and what stayed fixed?
 
-One version has the teal mug removed. This is an illustrative pair, not pixel-identical controlled photographs. These are expected human answers, not model outputs. A model that ignores the image would not have the information needed to distinguish the two cases.</script>
+<div class="companion" data-kicker="For self-study">
+  <p>Part 2 opened with a sentence and a blank. This part opens with a picture and a blank. The four words <em>how many mugs ?</em> are the same for every picture, so whatever fills the blank must come from the image. CLIP, from Vision III, can only compare the picture with captions we write for it. Here a language decoder, the same one-head block as Part 2, reads sixteen patch rows and the question, and predicts the next token. Switch the scene under the bars: the answer moves with the mugs, before you see any machinery.</p>
 </div>
-<div class="frame" data-title="Same question, different visual evidence" data-autobuild="off">
- <div id="s01-task"></div><p data-build="1">For exact arithmetic, use the fitted grid toy. Its prompt is <code>count ?</code>, and it counts nonzero square blocks.</p>
- <script type="text/x-notes">
-  Count the blocks before revealing the answer.
 
-  Keep the question identical. We count occupied 2×2 blocks, not pixels or brightness levels. The image must supply the distinction.
- </script>
-</div>
-<div class="frame" data-title="A caption score is not an answer generator" data-autobuild="off">
- <p>CLIP compares an image vector with complete text candidates.</p>
- <p data-build="1">Here, a decoder predicts <code>two</code>, then <code>blocks</code>, then <code>&lt;eos&gt;</code>.</p>
- $$p(y_t\mid I,\text{question},y_{&lt;t})$$
- <p data-build="2">The image and known text are context. The unknown answer token is the prediction target.</p>
- <script type="text/x-notes">
-  What does CLIP return, and what do we want here?
+<div class="frame" data-title="How many mugs?" data-autobuild="off">
+  <script type="text/x-notes">What could fill the blank, and what in the input decides it?
+Collect answers first. Then point out that the four words are identical for every scene: only the pixels can decide. Do not name the model yet.
 
-  CLIP ranks supplied captions. Point to the growing answer: each new word will become input for the next prediction.
- </script>
+Timing: two minutes.</script>
+  <div class="card">
+    <h3 class="card-title">The same four words, a different picture each time</h3>
+    <div class="ask"><div id="s01-scene"></div><div id="s01-ask"></div></div>
+  </div>
+  <div class="callout callout-key" data-build="1">The words cannot tell the two scenes apart. The answer must come through the image.</div>
 </div>
-<div class="frame" data-title="What this small model actually computes" data-autobuild="off">
- <div id="s01-pipeline"></div>
- <p data-build="1">The image encoder is frozen. The connector and decoder were fitted to these two grids.</p>
- <p class="muted" data-build="2">One head, three decoder coordinates. No FFN, LayerNorm or dropout in this numerical worksheet.</p>
- <script type="text/x-notes">
-  Which components were fitted in this toy?
 
-  Trace pixels through the frozen encoder, trainable connector, and decoder. The two fitted examples let us inspect image dependence, not claim general counting.
- </script>
+<div class="frame" data-title="The output is a probability for every next token" data-autobuild="off">
+  <script type="text/x-notes">Which token gets the most probability in the scene you selected?
+Switch between A and B. The bars come from the fitted toy this part will unpack; the model is a black box for now.</script>
+  <div class="card">
+    <h3 class="card-title">Some model reads the image and the four words; out comes one probability per token</h3>
+    <div class="btn-row" id="s01-pick" role="group" aria-label="Choose the scene" data-keep-state></div>
+    <div class="ask"><div id="s01-scene2"></div><div id="s01-bars"></div></div>
+    <p class="look" id="s01-note" data-build="1"></p>
+  </div>
 </div>
-<div class="companion after"><p>The purpose of fitting two pairs is to make image dependence testable. Success on those same pairs is not evidence that the toy understands arbitrary counts, natural photographs, or new questions. We inspect a fitted checkpoint, run generation, and then show one further update.</p></div>
-<script>(function(){const S=document.getElementById('s01'),V=AT.vlm;AT.visionScene.mount(S.querySelector('#s01-scene'),{mode:'scene',variant:'two'});AT.visionScene.mount(S.querySelector('#s01-scene-compare'),{mode:'compare'});S.querySelector('#s01-task').append(V.diagram('task'));S.querySelector('#s01-pipeline').append(V.diagram('pipeline'));})();</script>
+
+<div class="frame" data-title="A caption score is not an answer" data-autobuild="off">
+  <script type="text/x-notes">What does CLIP hand back, and what do we want here?
+CLIP returns one score per caption we supply. A question has no list. The decoder must produce tokens, one at a time, with the image as context.</script>
+  <div class="menu">
+    <div><h4>Vision III: CLIP</h4><ul><li>input: the image and a list of captions</li><li>output: one score per caption</li></ul><p class="out">Best match: <em>two mugs on a table</em>. Asked <em>how many mugs?</em>, it has nothing to rank.</p></div>
+    <div data-build="1"><h4>Vision IV: an image-conditioned decoder</h4><ul><li>input: the image rows and the question</li><li>output: a probability for every next token</li></ul><p class="out">It writes: <em>two</em>, then a stop marker.</p></div>
+  </div>
+  <div class="callout callout-key" data-build="2">A question needs next-token prediction. The image joins the context, exactly like the earlier words in Part 2.</div>
+</div>
+
+<div class="frame" data-title="One image is 576 rows" data-autobuild="off">
+  <script type="text/x-notes">How many rows does one picture put in front of a five-word question?
+LLaVA-1.5 uses 336-pixel images and 14-pixel patches: 24 by 24, 576 rows. Our toy uses sixteen. Every one of those rows will offer a key and a value to the question.</script>
+  <div class="card">
+    <div class="big"><div class="n" id="s01-num"></div><div id="s01-gridpic"></div></div>
+    <p class="look" id="s01-numtext"></p>
+  </div>
+  <div class="callout callout-key" data-build="1">The question is a handful of tokens. The image is hundreds of rows in front of it, and each row will offer a key and a value.</div>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s01'), T = AT.vlm, V = AT.vision;
+  const question = T.prompt.slice(1);
+  V.grid('A', { cell: 26, names: true, into: S.querySelector('#s01-scene'), caption: 'Scene A: ' + V.sceneNames.A + '. Dashed lines are the 2×2 patches.' });
+  AT.ui.chips(question, { size: 'lg', slot: '___', numbered: false, into: S.querySelector('#s01-ask') });
+
+  /* frame 2: the black box, scene A or B */
+  let scene = 'A';
+  const pick = S.querySelector('#s01-pick'), sceneHost = S.querySelector('#s01-scene2'), barsHost = S.querySelector('#s01-bars'), note = S.querySelector('#s01-note');
+  const btns = ['A', 'B'].map(k => { const b = AT.h('button', { type: 'button', class: 'btn', 'aria-pressed': k === scene ? 'true' : 'false' }, 'Scene ' + k + ': ' + V.sceneNames[k]); b.addEventListener('click', () => { scene = k; paint(); }); pick.appendChild(b); return b; });
+  function paint(){
+    btns.forEach((b, i) => b.setAttribute('aria-pressed', ['A', 'B'][i] === scene ? 'true' : 'false'));
+    AT.clear(sceneHost); AT.clear(barsHost);
+    V.grid(scene, { cell: 22, into: sceneHost });
+    const f = T.forward(scene), p = f.probs[f.last];
+    const top = AT.topk(p, 6), rest = Math.max(0, 1 - top.reduce((s, x) => s + x.p, 0));
+    const items = top.map(x => ({ label: x.tok, p: x.p })).concat([{ label: 'other ×' + (p.length - top.length), p: rest }]);
+    const best = T.vocab[AT.argmax(p)];
+    AT.ui.bars(items, { cls: 'neutral', max: 1, decimals: 3, sorted: false, highlight: best, into: barsHost });
+    note.textContent = 'Scene ' + scene + ' puts p = ' + AT.fmt(p[AT.argmax(p)], 2) + ' on ' + best + '. Full bar = probability 1; all ' + p.length + ' tokens together sum to 1. Switch the scene and watch the tallest bar move.';
+  }
+  paint();
+  if (AT.present && AT.present.on) AT.present.on('frame', st => { if (st.frame && st.frame.id === 's01' && st.frame.index === 1 && scene !== 'A') { scene = 'A'; paint(); } });
+
+  /* frame 4: the memorable number, computed from the patch arithmetic */
+  const side = 336, patch = 14, per = side / patch, rowsBig = per * per;
+  S.querySelector('#s01-num').innerHTML = rowsBig + '<small>image rows per picture</small>';
+  const cell = 9, W = per * cell;
+  const s = AT.svg('svg', { viewBox: '0 0 ' + W + ' ' + W, width: 216, height: 216, role: 'img', 'aria-label': per + ' by ' + per + ' patches' });
+  for (let r = 0; r < per; r++) for (let c = 0; c < per; c++) s.appendChild(AT.svg('rect', { x: c * cell + .5, y: r * cell + .5, width: cell - 1, height: cell - 1, fill: (r + c) % 2 ? 'var(--t-e)' : 'var(--line)' }));
+  S.querySelector('#s01-gridpic').appendChild(s);
+  S.querySelector('#s01-numtext').textContent = 'LLaVA-1.5 resizes a photo to ' + side + ' × ' + side + ' pixels and cuts ' + patch + '-pixel patches: ' + per + ' × ' + per + ' = ' + rowsBig + ' rows go in front of the question. Our scene is 8 × 8 with 2 × 2 patches: ' + T.NP + ' rows in front of ' + T.prompt.length + ' text rows.';
+})();
+</script>
 </section>

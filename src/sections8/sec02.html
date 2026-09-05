@@ -1,70 +1,106 @@
-<section id="s02" class="sec" data-title="Visual rows enter the decoder" data-lit="e">
-<header class="sec-head"><span class="sec-num">02</span><div><p class="eyebrow">An image representation and a language representation can have different widths.</p><h2>Visual rows enter the decoder</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>We reuse Vision I's initial patch projection, positions, class token, and five-token attention calculation. These are the disclosed starting weights, not the classifier's 600-step checkpoint or the fitted CLIP encoder. The connector and language decoder have their own fitted parameters.</p><p>The classifier read the updated class row. This time we keep the four updated patch rows, called $G$, so the decoder has several visual sources to read. The connector produces $B$, at the decoder's width. Later, attention computes its own values $V$ from the combined image and text rows.</p></div>
-<div class="frame" data-title="First, divide the scene into patches" data-autobuild="off">
- <div id="s02-scene-patches"></div>
- <p data-build="1">Patch boundaries form a regular grid. They do not follow object outlines.</p>
- <script type="text/x-notes">Point to a patch that crosses an object boundary.
+<section id="s02" class="sec" data-title="The pipeline, end to end" data-lit="e">
+<style>
+#s02 .pipe{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:14px 22px;align-items:center}
+#s02 .pipe-lab{font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--ink-3);margin:0 0 4px}
+#s02 .pipe-arrow{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--ink-2);font-size:13px;text-align:center;max-width:9em}
+#s02 .pipe-arrow .ar{font-size:26px;line-height:1;color:var(--ink-3)}
+#s02 .pipe-rows{grid-column:1/-1}
+#s02 .dec{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:16px;align-items:center}
+#s02 .dec .bar{border:2px solid var(--c-a);background:var(--t-a);border-radius:var(--radius);padding:12px 18px;font-weight:600}
+#s02 .dec .bar small{display:block;font-weight:400;color:var(--ink-2);font-size:.85em}
+#s02 .dec .ar{font-size:26px;color:var(--ink-3)}
+#s02 .parts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+#s02 .parts>div{border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;background:var(--card)}
+#s02 .parts h4{margin:0 0 6px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+#s02 .parts .n{font-family:var(--font-mono);font-size:30px;font-weight:700}
+#s02 .parts .frozen{border-left:6px solid var(--ink-3)}
+#s02 .parts .fit{border-left:6px solid var(--c-d)}
+#s02 .look{font-size:15px;color:var(--ink-2);margin:12px 0 0;max-width:70ch;line-height:1.5}
+@media (max-width:760px){body:not(.present) #s02 .pipe{grid-template-columns:minmax(0,1fr)}body:not(.present) #s02 .parts{grid-template-columns:minmax(0,1fr)}body:not(.present) #s02 .dec{grid-template-columns:minmax(0,1fr)}}
+body.present #s02 .pipe-arrow,body.present #s02 .pipe-lab,body.present #s02 .parts h4{font-size:19px}
+body.present #s02 .look{font-size:22px;line-height:1.35}
+body.present #s02 .parts .n{font-size:44px}
+body.present #s02 .dec .bar{font-size:26px}
+body.present #s02 .dec .bar small{font-size:20px}
+</style>
+<header class="sec-head">
+  <span class="sec-num">02</span>
+  <div>
+    <p class="eyebrow">Sixteen patch rows and five word rows in one sequence; one attention block reads them; the head predicts the next token.</p>
+    <h2>The pipeline, end to end</h2>
+  </div>
+</header>
 
-The grid is a teaching overlay, not object detection or a learned attention map. The encoder receives pixel patches before it can build contextual visual rows.</script>
+<div class="companion" data-kicker="For self-study">
+  <p>The whole part fits in one picture. The scene is cut into sixteen 2×2 patches. Vision I's encoder, with its trained attention frozen, turns them into sixteen rows of four named numbers. A connector maps each row to the decoder's width of three. The five words of the question become five more rows through a lookup table. All twenty-one rows enter the block from Part 2: queries, keys, values, one softmax per row, a message, an update, a residual addition. The question mark's updated row goes into the vocabulary head, and the tallest bar is <em>two</em>. Photograph this figure; every later section is a close-up of one of its parts.</p>
 </div>
-<div class="frame" data-title="The decoder receives visual rows, not the word mug" data-autobuild="off">
- <div id="s02-scene-bridge"></div>
- <p data-build="1">Patches can contain part of a mug, the book, or background. The encoder mixes information across their rows.</p>
- <p data-build="2">A connector maps those visual rows to the decoder's width. They become context alongside <code>How many mugs?</code></p>
- <script type="text/x-notes">Does the connector receive object names or numerical visual rows?
 
-The image encoder produces numerical representations. One patch is not necessarily one object. This diagram explains the route for the mug scene without assigning it invented vectors; the four-patch grid calculation follows.</script>
-</div>
-<div class="frame" data-title="Keep four contextual patch rows" data-autobuild="off">
- <div id="s02-encoder"></div><div id="s02-g"></div>
- <p data-build="1">$G$ has one row per patch after the fixed initial encoder. Each row already includes information from other image rows.</p>
- <script type="text/x-notes">
-  Which visual rows should the language model receive?
+<div class="frame" data-title="The frame to photograph: pixels in, a token out" data-autobuild="off">
+  <script type="text/x-notes">Where does the image stop being pixels and start being rows?
+Build it left to right: patches, frozen encoder, connector, then the question chips, then the block and the answer. Every later section is a close-up of one arrow.
 
-  CLS supplied the earlier classifier's readout. Here we set it aside after attention and keep four contextual patch rows. G is visual memory, not the value matrix V.
- </script>
+Timing: three minutes.</script>
+  <div class="card">
+    <div class="pipe">
+      <div><p class="pipe-lab">8 × 8 scene</p><div id="s02-scene"></div></div>
+      <div class="pipe-arrow" data-build="1"><span class="ar">→</span>frozen Vision I encoder<span class="ar">→</span>connector (4 → 3)</div>
+      <div class="pipe-rows" id="s02-row"></div>
+      <div class="dec" data-build="3"><div class="bar">One attention block, as in Part 2<small>queries, keys and values from all 21 rows; the question mark's updated row goes to the vocabulary head</small></div><span class="ar">→</span><span id="s02-answer"></span></div>
+    </div>
+  </div>
 </div>
-<div class="frame" data-title="Project from vision width 2 to decoder width 3" data-autobuild="off">
- $$\underbrace{\ve{B}}_{4\times3}=\underbrace{\ve{G}}_{4\times2}\underbrace{W_{\rm bridge}}_{2\times3}+\underbrace{b_{\rm bridge}}_{1\times3}$$
- <div id="s02-w"></div><p id="s02-b"></p><p data-build="1">The same connector acts on every patch. Four rows remain four rows.</p>
- <pre class="torch-snippet" data-build="2"><code>visual_rows = vision_encoder(image)[:, 1:]
-image_prefix = visual_rows @ W_bridge + b_bridge</code></pre>
- <script type="text/x-notes">
-  How can a two-number visual row enter a three-number decoder?
 
-  Multiply every row by the same 2×3 connector and add its bias. Width changes; the four input rows remain four rows.
- </script>
+<div class="frame" data-title="The same operation, new rows" data-autobuild="off">
+  <script type="text/x-notes">Which stage of this pipeline is new?
+None. The block is Part 2's: representation, three projections, attention, update, residual addition. What is new is where the rows come from.</script>
+  <div class="card">
+    <h3 class="card-title">Part 2's chain, unchanged: the image only changes what $\ve{e}$ contains</h3>
+    <div id="s02-motif"></div>
+    <p class="look" id="s02-motif-note"></p>
+  </div>
+  <div class="callout callout-key" data-build="1">Sixteen of the rows come from pixels, five from words. After that, attention does not care which is which.</div>
 </div>
-<div class="frame" data-title="One patch row, after the connector" data-autobuild="off">
- <div id="s02-bridge"></div>
- <p data-build="1">A new coordinate is a learned mixture of the incoming coordinates. It is not an extra position coordinate.</p>
- <script type="text/x-notes">
-  Work the first output coordinate before revealing the others.
 
-  Read a column of W_bridge against the incoming patch row. Add the bias after the multiplication; the new coordinate is a learned mixture, not a new position slot.
- </script>
+<div class="frame" data-title="What is frozen, what is fitted" data-autobuild="off">
+  <script type="text/x-notes">Which numbers did we take from Vision I, and which did we learn here?
+The encoder is copied, not retrained: it is exactly the worksheet Vision I shows. The connector and the decoder were fitted on scenes A and B and rounded to two decimals.</script>
+  <div class="parts" id="s02-parts"></div>
+  <p class="look" data-build="1">The counts are scalars. Everything fitted was trained on two scene and answer pairs, then rounded to two decimals, so every table on this page can be recomputed by hand from the notation card.</p>
 </div>
-<div class="frame" data-title="Stack image rows and known text rows" data-autobuild="off">
- $$\ve{E^{(0)}}=[\ve{B};E_{\rm tok}[\text{known text}]]+P$$
- <div id="s02-stack"></div>
- <p data-build="1">Four visual rows plus three prompt rows give a $7\times3$ sequence.</p>
- <p data-build="2">$P$ adds a same-width vector to each slot. Text uses a lookup; image rows come through the connector.</p>
- <script type="text/x-notes">
-  Where does each of these seven rows come from?
 
-  The first four come from pixels through the connector. The last three come from text lookup. Add a three-number position vector to each row before attention.
- </script>
+<div class="companion after">
+  <p>Pixels become sixteen rows through the frozen encoder and the connector; words become rows through a lookup; the block treats all twenty-one alike. The rest of this part follows one row, the question mark, through that block.</p>
 </div>
-<div class="companion after"><p>A full-size example could have $196\times768$ visual rows and a $768\times4096$ connector, producing $196\times4096$ rows. These are example dimensions, not a universal VLM configuration. A plain linear map changes width, not token count. Pooling or a learned resampler can change token count as a separate operation.</p></div>
-<script>(function(){const S=document.getElementById('s02'),V=AT.vlm,F=V.forward(),p=V.params(),g=F.vision.G;
-AT.visionScene.mount(S.querySelector('#s02-scene-patches'),{mode:'patches',variant:'two'});
-S.querySelector('#s02-scene-bridge').append(V.diagram('scene-bridge'));
-S.querySelector('#s02-encoder').append(V.diagram('pipeline',{level:1}));
-AT.ui.table(g,{rowLabels:['patch 1','patch 2','patch 3','patch 4'],cols:['coordinate 1','coordinate 2'],cornerLabel:'G',decimals:3,into:S.querySelector('#s02-g')});
-AT.ui.table(p.W_bridge,{rowLabels:['input coord 1','input coord 2'],cols:['output 1','output 2','output 3'],cornerLabel:'W_bridge: 2 × 3',decimals:3,into:S.querySelector('#s02-w')});
-AT.tex(S.querySelector('#s02-b'),'b_{\\rm bridge}=('+p.b_bridge.map(x=>V.fmt(x)).join(', ')+')');
-AT.ui.matVecCalc(g[0],p.W_bridge,{xLabel:'g₁',outLabel:'g₁ W_bridge',from:['vision 1','vision 2'],to:['LM 1','LM 2','LM 3'],fromCls:'e',cls:'e',decimals:3,wDecimals:3,into:S.querySelector('#s02-bridge')});
-const note=AT.h('p');AT.tex(note,'+b_{\\rm bridge}\\;\\Rightarrow\\;B_1=('+F.bridged[0].map(x=>V.fmt(x)).join(', ')+')');S.querySelector('#s02-bridge').append(note);
-AT.ui.chips(['image 1','image 2','image 3','image 4','<bos>','count','?'],{into:S.querySelector('#s02-stack')});})();</script>
+
+<script>
+(function(){
+  const S = document.getElementById('s02'), T = AT.vlm, V = AT.vision;
+  const f = T.forward('A'), p = f.probs[f.last], best = T.vocab[AT.argmax(p)];
+  V.grid('A', { cell: 13, into: S.querySelector('#s02-scene') });
+  const row = T.tokenRow('A', T.prompt, { size: 26, slot: '___', into: S.querySelector('#s02-row') });
+  row.thumbs.parentNode.setAttribute('data-build', '1');
+  row.chips.parentNode.setAttribute('data-build', '2');
+  const ans = S.querySelector('#s02-answer');
+  ans.appendChild(AT.h('span', { class: 'v4-answer' }, best + '  p = ' + AT.fmt(p[AT.argmax(p)], 2)));
+
+  AT.motif(S.querySelector('#s02-motif'), { active: 'e', labels: true });
+  S.querySelector('#s02-motif-note').innerHTML = 'Here $\\ve{E}$ has ' + f.n + ' rows of width ' + T.toy.d_model + ': ' + T.NP + ' image rows through the connector, then ' + T.prompt.length + ' text rows. The same $W_Q$, $W_K$, $W_V$ and $W_O$ act on every row.';
+  AT.renderMath(S.querySelector('#s02-motif-note'));
+
+  /* parameter counts from the toy itself */
+  const count = obj => Object.values(obj).reduce((s, v) => s + (Array.isArray(v[0]) ? v.length * v[0].length : v.length), 0);
+  const enc = count(T.toy.encoder), params = T.params();
+  const bridge = count({ W_bridge: params.W_bridge, b_bridge: params.b_bridge });
+  const dec = count(params) - bridge;
+  const parts = S.querySelector('#s02-parts');
+  [['frozen', 'Encoder', enc, 'Vision I’s trained attention on the fixed patch map; copied, never updated here'],
+   ['fit', 'Connector', bridge, 'one 4 × 3 map and a bias, the same for all sixteen patches'],
+   ['fit', 'Decoder', dec, 'a ten-row lookup table, eight text positions, one head, and the vocabulary head']
+  ].forEach(([cls, name, n, what], i) => {
+    const box = AT.h('div', { class: cls }, AT.h('h4', {}, name + (cls === 'frozen' ? ' (frozen)' : ' (fitted)')), AT.h('div', { class: 'n' }, String(n)), AT.h('p', { style: 'margin:6px 0 0' }, what));
+    if (i) box.setAttribute('data-build', String(i));
+    parts.appendChild(box);
+  });
+})();
+</script>
 </section>

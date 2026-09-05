@@ -1,71 +1,82 @@
-<section id="s06" class="sec" data-title="Train on the observed answer" data-lit="">
-<header class="sec-head"><span class="sec-num">06</span><div><p class="eyebrow">The response supplies targets; the mask keeps them out of earlier predictions.</p><h2>Train on the observed answer</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>Teacher forcing supplies the correct earlier answer tokens. The first prediction uses the question-mark row, the second uses the supplied <code>two</code> row, and the third uses <code>blocks</code>. Loss is measured only on those three answer predictions. Ignoring an image or question position in the loss does not stop gradients through that position: its representation can influence an answer row.</p></div>
-<div class="frame" data-title="Shift the answer targets by one position" data-autobuild="off">
- <div id="s06-labels"></div>
- <p data-build="1">The image and question are context. They do not receive vocabulary prediction targets in this response-only objective.</p>
- <pre class="torch-snippet" data-build="2"><code>loss = F.cross_entropy(logits[answer_rows], answer_ids)</code></pre>
- <script type="text/x-notes">
-  Which rows have an answer target?
+<section id="s06" class="sec" data-title="Generate: the answer supplies the next query" data-lit="">
+<style>
+#s06 .gen{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px 28px;align-items:center;margin-top:10px}
+#s06 .gen .rd{margin:0}
+#s06 .rd{font-size:15px;color:var(--ink-2);margin:10px 0 0;max-width:72ch;line-height:1.5}
+#s06 .stepper-body{grid-template-columns:minmax(0,1fr)}
+#s06 .loop{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+#s06 .loop>div{border:1px solid var(--line);border-top:5px solid var(--c-q);border-radius:var(--radius);padding:12px 14px;background:var(--card)}
+#s06 .loop strong{display:block;margin-bottom:6px}
+@media (max-width:760px){body:not(.present) #s06 .gen,body:not(.present) #s06 .loop{grid-template-columns:minmax(0,1fr)}}
+body.present #s06 .rd{font-size:22px;line-height:1.35}
+body.present #s06 .stepper-list,body.present #s06 .stepper-stage>.stage-note{display:none}
+body.present #s06 .gen{grid-template-columns:auto minmax(0,1fr)}
+body.present #s06 .vfig figcaption{font-size:20px}
+body.present #s06 .bars .bt{height:24px}
+body.present #s06 .loop>div{font-size:24px}
+</style>
+<header class="sec-head">
+  <span class="sec-num">06</span>
+  <div>
+    <p class="eyebrow">Append the chosen token, form a new query from it, predict again. The image stays where it is.</p>
+    <h2>Generate: the answer supplies the next query</h2>
+  </div>
+</header>
 
-  The question mark targets two; two targets blocks; blocks targets the end marker. Other rows provide context even though this objective assigns them no direct prediction target.
- </script>
+<div class="companion" data-kicker="For self-study">
+  <p>One prediction is not yet an answer. Generation repeats the same forward pass with a longer prefix: choose the most probable token, append it as a new row, and let that row ask the next question. Step through it below. The question mark predicts <em>two</em>; the appended <em>two</em> row forms its own query, reads the scene again, and predicts the end marker, which stops generation. The parameters never change and the sixteen image rows never change; only the last query does. Look at the second overlay: the end marker's decision reads the table and the book, not the mugs.</p>
 </div>
-<div class="frame" data-title="Compute the response loss" data-autobuild="off">
- <div id="s06-loss"></div><p id="s06-mean"></p>
- <p data-build="1">Compute with full precision. The tables round to three decimals.</p>
- <script type="text/x-notes">
-  Compute one negative log probability, then average the three.
 
-  Use the observed next answer token at each position. The display rounds, but the loss uses full-precision probabilities.
- </script>
-</div>
-<div class="frame" data-title="Autograd follows the paths that produced the loss" data-autobuild="off">
- <div id="s06-graph"></div>
- <p data-build="1">Backpropagation reaches both attention weights and values. The optimizer changes learned parameters, not cached $\vq{Q},\vk{K},\vv{V}$.</p>
- <script type="text/x-notes">
-  Can a context row receive a gradient without its own target?
+<div class="frame" data-title="Three forward passes, one growing prefix" data-autobuild="off">
+  <script type="text/x-notes">What changes between two steps, and what stays fixed?
+Step through with the arrow keys. The image rows and every parameter stay fixed; the prefix gains one row, and that row supplies the next query. Ask for the second overlay before showing it.
 
-  Yes: it can affect the answer through its keys and values. Follow both attention paths backward; autograd accumulates their contributions.
- </script>
+Timing: four minutes.</script>
+  <div id="s06-stepper"></div>
 </div>
-<div class="frame" data-title="One further update to the fitted toy" data-autobuild="off">
- <div id="s06-update"></div>
- <pre class="torch-snippet" data-build="1"><code>optimizer.zero_grad()
-loss.backward()
-optimizer.step()</code></pre>
- <p data-build="2">This step uses only the two-block grid. Its loss falls, but the one-block loss rises.</p>
- <script type="text/x-notes">
-  What changed after this further optimizer step?
 
-  These are recomputed outputs of a fitted checkpoint, not a first step from random weights. The step trains on only the two-block example.
- </script>
+<div class="frame" data-title="What changed and what did not" data-autobuild="off">
+  <script type="text/x-notes">After choosing a token, what is recomputed?
+The new last row's query, its scores and its update. Parameters stay fixed; this is not training. The image rows could be cached across steps.</script>
+  <div class="loop">
+    <div><strong>1 · Predict</strong>The last known row asks. The head returns $p(x_{t+1}\mid \text{image}, x_{\le t})$.</div>
+    <div data-build="1"><strong>2 · Choose</strong>Greedy decoding takes the tallest bar: <span id="s06-choice"></span>.</div>
+    <div data-build="2"><strong>3 · Append</strong>The token becomes a new text row with the next position vector.</div>
+    <div data-build="3"><strong>4 · Repeat</strong>Its query reads the same 16 image rows and the text so far; stop at the end marker.</div>
+  </div>
+  <pre class="torch-snippet" data-build="4"><code>next_id = probs[-1].argmax()          # greedy decoding
+prefix = torch.cat([prefix, next_id[None]])  # same image rows, same parameters, one more text row</code></pre>
 </div>
-<div class="frame" data-title="One improved example can hide a regression" data-autobuild="off">
- <div id="s06-regression"></div>
- <p data-build="1">The one-block image now gets the wrong answer. Lower training loss on one example is not evidence of broader improvement.</p>
- <p data-build="2">Train on representative batches and check held-out images. Here we deliberately keep the failed update visible.</p>
- <script type="text/x-notes">
-  Did the lower loss improve both images?
 
-  No. Read the one-block answer before and after. A step that helps one example can harm another; retain this failure rather than hiding it.
- </script>
+<div class="companion after">
+  <p>Generation is prediction repeated with a growing prefix. The image is read afresh by every new query, and the answer stops when the model predicts the end marker.</p>
 </div>
-<div class="frame" data-title="Choose what to train for the task" data-autobuild="off">
- <div id="s06-recipes"></div>
- <p data-build="1">Freezing parameters does not mean cutting the gradient path through a frozen language model to a trainable connector.</p>
- <script type="text/x-notes">
-  Which parameters would you choose to train?
 
-  Compare connector-only, connector-plus-decoder, and joint tuning. Frozen language parameters can still transmit gradients to a trainable connector; freezing is not detaching the computation.
- </script>
-</div>
-<div class="companion after"><p>The recorded warm-up fits two pairs with Adam. The displayed further step uses SGD at learning rate 0.02 so the parameter update is easy to state. The reference generator checks every trainable scalar by finite differences; students use autograd rather than deriving those gradients by hand.</p><p>LLaVA's original staged recipe first fits a connector with pretrained components frozen, then instruction-tunes with a different trainable set. This is a useful example, not a mandatory sequence of four stages for every VLM. Preference optimization can follow supervised training, but preference labels do not by themselves prove visual correctness. LoRA, full fine-tuning, frozen encoders, and joint training are choices whose value depends on data, domain, memory, and validation results.</p></div>
-<script>(function(){const S=document.getElementById('s06'),V=AT.vlm,F=V.teacher(),u=V.data.update;
-AT.ui.table([['image rows','1–4','ignored'],['<bos> count','5–6','ignored'],['?','7','two'],['two','8','blocks'],['blocks','9','<eos>']],{cols:['known input','position','next-token target'],kind:'text',into:S.querySelector('#s06-labels')});
-AT.ui.table(F.targets.map((t,i)=>[F.probs[i+6][V.data.vocab.indexOf(t)],F.losses[i]]),{rowLabels:F.targets,cols:['target probability','−log probability'],decimals:3,into:S.querySelector('#s06-loss')});AT.tex(S.querySelector('#s06-mean'),'L=\\frac{'+F.losses.map(v=>V.fmt(v)).join('+')+'}{3}\\approx'+V.fmt(F.loss));
-S.querySelector('#s06-graph').append(V.diagram('training'));
-AT.ui.table(['two','one'].map(name=>[V.teacher(name).loss,V.teacher(name,{snapshot:'after'}).loss]),{rowLabels:['two-block response','one-block response'],cols:['loss before','loss after'],decimals:4,into:S.querySelector('#s06-update')});
-AT.ui.table(['two','one'].map(name=>['before','after'].map(snapshot=>V.generate(name,{snapshot}).tokens.filter(t=>t!=='<eos>').join(' '))),{rowLabels:['two-block image','one-block image'],cols:['answer before','answer after'],kind:'text',into:S.querySelector('#s06-regression')});
-AT.ui.table([['Connector only','W_bridge and bias','Keep vision and LM fixed'],['Connector + LM','Connector and decoder','Our two-pair toy'],['Joint tuning','Vision, connector, decoder','More flexibility and compute']],{cols:['choice','optimizer updates','scope'],kind:'text',into:S.querySelector('#s06-recipes')});})();</script>
+<script>
+(function(){
+  const S = document.getElementById('s06'), T = AT.vlm, V = AT.vision;
+  const scene = 'A', g = T.generate(scene), N = T.NP;
+  S.querySelector('#s06-choice').textContent = g.trace[0].chosen + ' with p = ' + AT.fmt(g.trace[0].probs[T.vocab.indexOf(g.trace[0].chosen)], 2);
+  function stepView(el, k){
+    const st = g.trace[k], prefix = st.prefix;
+    T.tokenRow(scene, prefix, { size: 22, active: prefix.length - 1, slot: '___', into: el, textLabel: prefix.length + ' text rows' });
+    const grid = AT.h('div', { class: 'gen' });
+    const ovHost = AT.h('div'), right = AT.h('div');
+    V.overlay(scene, st.weights.slice(0, N), { cell: 22, into: ovHost, caption: 'What row ' + (st.row + 1) + ' (' + AT.escape(prefix[prefix.length - 1]) + ') reads.' });
+    const top = AT.topk(st.probs, 4);
+    AT.ui.bars(top, { cls: 'neutral', max: 1, decimals: 3, sorted: false, highlight: st.chosen, into: right });
+    right.appendChild(AT.h('p', { class: 'rd' }, 'Row ' + (st.row + 1) + ' reads: ' + T.readWeights(scene, st.weights) + ' The tallest bar is ' + st.chosen + ' (p = ' + AT.fmt(st.probs[T.vocab.indexOf(st.chosen)], 2) + ').'));
+    grid.appendChild(ovHost); grid.appendChild(right); el.appendChild(grid);
+  }
+  const steps = [
+    { title: 'The question mark predicts the first answer token', note: 'Inputs: the 16 image rows and the 5 known words. The last known row asks; greedy decoding takes the tallest bar.', render: el => stepView(el, 0) },
+    { title: 'Append “' + g.trace[0].chosen + '”; its row asks next', note: 'The prefix gained one row, with the next position vector. Its query reads the same image rows through the same $W_Q$, $W_K$, $W_V$; the answer to “what comes after two?” is the end marker.', render: el => stepView(el, 1) },
+    { title: 'Stop at the end marker', note: 'The answer is complete. No parameter changed during these passes; only the prefix grew.', render: el => {
+      T.tokenRow(scene, g.trace[1].prefix, { size: 22, answer: g.tokens.join(' '), into: el, textLabel: g.trace[1].prefix.length + ' text rows' });
+      el.appendChild(AT.h('p', { class: 'rd' }, 'Generated: ' + g.tokens.join(' ') + ', stopped by the end marker after ' + g.trace.length + ' forward passes. The image rows and the parameters are identical in every pass; what changed is the last query.'));
+    } }
+  ];
+  AT.ui.stepper({ big: true, into: S.querySelector('#s06-stepper'), steps: steps, start: 0 });
+})();
+</script>
 </section>

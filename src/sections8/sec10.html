@@ -1,0 +1,161 @@
+<section id="s10" class="sec" data-title="Summaries, questions, and back to a a b" data-lit="">
+<style>
+#s10 .lvl{font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--ink-3);margin:0 0 6px}
+#s10 .quote{font-size:1.2em;line-height:1.45;font-weight:500;margin:0}
+#s10 .eqs{display:grid;grid-template-columns:1fr auto;gap:4px 24px;align-items:center}
+#s10 .eqs .dim{font-size:15px;color:var(--ink-2)}
+#s10 .eqs .katex-display{margin:.3em 0;text-align:left}
+#s10 .rd{font-size:15px;color:var(--ink-2);margin:10px 0 0;max-width:72ch;line-height:1.5}
+#s10 .recap{margin:0;padding-left:1.2em}
+#s10 .recap li{margin:6px 0}
+#s10 .back{display:grid;gap:18px}
+#s10 .back .line{display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px}
+#s10 .back .lab{font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--ink-3);min-width:7em}
+#s10 .back .ar{font-size:26px;color:var(--ink-3)}
+#s10 .back .chips{margin:0}
+#s10 .close-line{font-size:1.1em;margin:14px 0 0}
+@media (max-width:640px){body:not(.present) #s10 .eqs{grid-template-columns:minmax(0,1fr)}}
+body.present #s10 .lvl,body.present #s10 .eqs .dim,body.present #s10 .back .lab{font-size:20px}
+body.present #s10 .rd,body.present #s10 .recap{font-size:22px;line-height:1.35}
+body.present #s10 .quote{font-size:1em}
+body.present #s10 .reveal-body p{font-size:24px;line-height:1.35}
+body.present #s10 .eqs .katex-display{font-size:26px}
+</style>
+<header class="sec-head">
+  <span class="sec-num">10</span>
+  <div>
+    <p class="eyebrow">Say it in a sentence, trace it as a chain, write it as equations. Then compare the first prediction of Part 1 with the last of this series.</p>
+    <h2>Summaries, questions, and back to a a b</h2>
+  </div>
+</header>
+
+<div class="companion" data-kicker="For self-study">
+  <p>Explain this part without the page. In a sentence: the image rows are context, and the answer is the next token. As a chain: pixels, frozen rows, connector, stacked with the words, one block, the head. As equations: the four lines below, with their shapes. Then try the questions; each answer carries a number computed by the toy, including a counterfactual with the connector switched off. The last frame puts Part 1's first prediction, the letter after <em>a a b</em>, beside this part's last one. The shapes match: a prefix in, a distribution out.</p>
+</div>
+
+<div class="frame" data-title="Three summaries" data-autobuild="off">
+  <script type="text/x-notes">Can you say it without the equations, then with them?
+Read the sentence, then the chain, then the four lines with their shapes. Point out that only the first line is new relative to Part 2.</script>
+  <div class="card">
+    <p class="lvl">1 · Intuitive</p>
+    <blockquote class="quote">The image rows are context. The last known token asks, reads the mugs through the same attention as Part 2, and the head predicts the answer one token at a time.</blockquote>
+  </div>
+  <div class="card" data-build="1">
+    <p class="lvl">2 · Operational</p>
+    <div id="s10-chain"></div>
+  </div>
+</div>
+
+<div class="frame" data-title="Mathematical summary" data-autobuild="off">
+  <script type="text/x-notes">Which line is new, and which lines are Part 2 unchanged?
+Only the first: how E is built. Attention, the update and the head are the same equations with 21 rows.</script>
+  <div class="card">
+    <p class="lvl">3 · Mathematical</p>
+    <div class="eqs" id="s10-eqs"></div>
+  </div>
+</div>
+
+<div class="frame" data-title="Pause and think: if the connector were all zeros" data-autobuild="off">
+  <script type="text/x-notes">Ask before opening the answer.
+A counterfactual run: every image row becomes the bias, so the sixteen rows are identical in every scene and the answer cannot depend on the picture.</script>
+  <div class="card"><div id="s10-q1"></div></div>
+</div>
+
+<div class="frame" data-title="Pause and think: why image rows never read the words" data-autobuild="off">
+  <script type="text/x-notes">Ask before opening the answer.
+Two reasons: the image is context for any question, and with more blocks an image row could carry the answer word back to the question mark.</script>
+  <div class="card"><div id="s10-q2"></div></div>
+</div>
+
+<div class="frame" data-title="Pause and think: does reading the mugs prove counting?" data-autobuild="off">
+  <script type="text/x-notes">Ask before opening the answer.
+Point back to scene C: it reads the moved mug and still says two.</script>
+  <div class="card"><div id="s10-q3"></div></div>
+</div>
+
+<div class="frame" data-title="Pause and think: what the frozen encoder contributed" data-autobuild="off">
+  <script type="text/x-notes">Ask before opening the answer.
+Rows in which brightness is already separated from position; the connector only had to keep that.</script>
+  <div class="card"><div id="s10-q4"></div></div>
+</div>
+
+<div class="frame" data-title="What this toy has, and what it does not" data-autobuild="off">
+  <script type="text/x-notes">Which claims does the page support, and which does it not?
+It supports: exact numbers, image dependence on two scenes, one probe, one step. It does not support counting in general, natural images or open questions.</script>
+  <ul class="recap">
+    <li>A frozen encoder, a fitted 4 × 3 connector, one attention head of width three and a ten-word head: every number recomputed in this page.</li>
+    <li data-build="1">Shown: the answer follows the image on two scenes; the answer token reads the mug patches; one scene it never saw breaks the rule it learned.</li>
+    <li data-build="2">Not shown: counting, photographs, other questions, calibrated probabilities. Real models add many blocks, FFNs, LayerNorm and thousands of image rows; the mask and the loss are the same idea.</li>
+  </ul>
+  <p class="companion">Every symbol, with its shape in this toy, is in the notation card at the top of the page, including the learned decoder axes and the rule that named them.</p>
+</div>
+
+<div class="frame" data-title="Back to a a b → i" data-autobuild="off">
+  <script type="text/x-notes">What is the same between the first prediction of Part 1 and this one?
+The shape: a prefix in, a distribution over the next token out. Part 1's prefix was three letters; this one is sixteen patch rows and five words.</script>
+  <div class="card">
+    <div class="back" id="s10-back"></div>
+    <p class="close-line" id="s10-close"></p>
+  </div>
+</div>
+
+<div class="companion after">
+  <p>Part 1 predicted a letter from three letters. This part predicts a word from sixteen patch rows and five words. Between them, nothing changed about the question being asked: what comes next, given everything so far?</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s10'), T = AT.vlm, V = AT.vision, N = T.NP;
+  const F = T.forward('A'), gA = T.generate('A');
+  /* operational chain */
+  const chain = S.querySelector('#s10-chain');
+  const line = AT.h('div', { class: 'back' });
+  const l1 = AT.h('div', { class: 'line' });
+  l1.appendChild(AT.h('span', { class: 'lab' }, 'rows'));
+  T.tokenRow('A', T.prompt, { size: 16, labels: false, groupLabels: false, into: l1 });
+  l1.appendChild(AT.h('span', { class: 'ar' }, '→'));
+  l1.appendChild(AT.h('span', { class: 'v4-answer' }, gA.tokens[0] + '  p = ' + AT.fmt(gA.trace[0].probs[T.vocab.indexOf(gA.tokens[0])], 2)));
+  line.appendChild(l1);
+  chain.appendChild(line);
+  chain.appendChild(AT.h('p', { class: 'rd' }, 'pixels → frozen encoder → connector → stack with the words → one block (query, keys, weights, message, update, residual) → head → next token → append → repeat.'));
+
+  /* mathematical summary with shapes */
+  const eqs = S.querySelector('#s10-eqs');
+  function eq(latex, dim){ const d = AT.h('div'); AT.tex(d, latex, { display: true }); eqs.appendChild(d); const m = AT.h('div', { class: 'dim' }); AT.tex(m, dim); eqs.appendChild(m); }
+  eq('\\ve{E} = \\begin{bmatrix} G\\,W_{\\mathrm{bridge}} + b_{\\mathrm{bridge}} \\\\ E_{\\mathrm{tok}}[\\text{words}] + P \\end{bmatrix}', 'G \\in \\mathbb{R}^{' + N + '\\times 4},\\ \\ve{E} \\in \\mathbb{R}^{' + F.n + '\\times ' + T.toy.d_model + '}');
+  eq('\\va{A} = \\operatorname{softmax}\\!\\left(\\frac{\\vq{Q}\\vk{K}^\\top}{\\sqrt{d_k}} + M\\right),\\qquad \\vq{Q},\\vk{K},\\vv{V} = \\ve{E}W_Q,\\ \\ve{E}W_K,\\ \\ve{E}W_V', '\\va{A} \\in \\mathbb{R}^{' + F.n + '\\times ' + F.n + '},\\ M \\text{ as in Section 4}');
+  eq('\\vp{E\'} = \\ve{E} + \\va{A}\\vv{V}W_O', '\\vp{E\'} \\in \\mathbb{R}^{' + F.n + '\\times ' + T.toy.d_model + '}');
+  eq('p(\\text{next}) = \\operatorname{softmax}\\!\\left(\\vp{e_{' + F.n + '}\'}\\,W_{\\mathrm{vocab}} + b\\right)', '1\\times ' + T.vocab.length);
+
+  /* pause and think, with computed answers */
+  const qs = [1, 2, 3, 4].map(k => S.querySelector('#s10-q' + k));
+  const zero = T.params(); zero.W_bridge = zero.W_bridge.map(r => r.map(() => 0));
+  const z = ['A', 'B', 'C'].map(k => { const f = T.forward(k, T.prompt, { params: zero }); const p = f.probs[f.last]; const b = AT.argmax(p); return k + ': ' + T.vocab[b] + ' (p = ' + AT.fmt(p[b], 2) + ')'; });
+  AT.ui.reveal('If the connector were all zeros, what would the answer be?',
+    '<p>Every image row would equal the bias, so the sixteen rows would be identical in every scene and the answer could not depend on the picture. Running it: ' + z.join('; ') + '. Same answer everywhere.</p>', { into: qs[0] });
+  AT.ui.reveal('Why must the image rows never read the words?',
+    '<p>The image is context for any question, so its rows should not change with the words. With more blocks there is a second reason: an image row that read the answer word during training would carry it back to the question mark, and the loss would reward that leak. The mask in Section 4 forbids both.</p>', { into: qs[1] });
+  const gC = T.generate('C'), cC = gC.trace[0];
+  AT.ui.reveal('The answer token reads the mug patches. Does that prove the model counts?',
+    '<p>No. Scene C has one mug, moved right; the token reads it (mug patches ' + AT.fmt(T.mass(cC.weights, 'C').mug, 2) + ' of the weight) and still says <em>' + AT.escape(cC.chosen) + '</em> with p = ' + AT.fmt(cC.probs[T.vocab.indexOf(cC.chosen)], 2) + '. Reading the right place is necessary, not sufficient.</p>', { into: qs[2] });
+  AT.ui.reveal('What did the frozen encoder contribute?',
+    '<p>Rows in which brightness is already separated from position, and which already carry what each patch read from its neighbours. The connector only had to keep that: its first learned axis tracks brightness with r = ' + AT.fmt(+(T.toy.axes.full.e[0].match(/r = ([+-]?[0-9.]+)/) || [0, 0])[1], 2) + '. A decoder fed raw pixels would have had to learn that separation as well.</p>', { into: qs[3] });
+
+  /* back to a a b */
+  const back = S.querySelector('#s10-back');
+  const p1 = AT.h('div', { class: 'line' });
+  p1.appendChild(AT.h('span', { class: 'lab' }, 'Part 1'));
+  AT.ui.chips(['a', 'a', 'b'], { numbered: false, size: 'lg', into: p1 });
+  p1.appendChild(AT.h('span', { class: 'ar' }, '→'));
+  p1.appendChild(AT.h('span', { class: 'v4-answer' }, 'i'));
+  back.appendChild(p1);
+  const p2 = AT.h('div', { class: 'line' });
+  p2.appendChild(AT.h('span', { class: 'lab' }, 'Vision IV'));
+  T.tokenRow('A', T.prompt, { size: 16, labels: false, groupLabels: false, into: p2 });
+  p2.appendChild(AT.h('span', { class: 'ar' }, '→'));
+  p2.appendChild(AT.h('span', { class: 'v4-answer' }, gA.tokens[0]));
+  back.appendChild(p2);
+  S.querySelector('#s10-close').textContent = 'Part 1 asked which letter follows a a b and answered i. This part asked which word follows sixteen patch rows and how many mugs ?, and answered ' + gA.tokens[0] + ' with p = ' + AT.fmt(gA.trace[0].probs[T.vocab.indexOf(gA.tokens[0])], 2) + '. The prefix grew from three letters to a picture; the question stayed the same.';
+})();
+</script>
+</section>
