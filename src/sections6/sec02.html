@@ -2,15 +2,10 @@
 <style>
 #s02 .pair-tiles{display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap;margin-top:10px}
 #s02 .pair-tiles figcaption{font-size:14px;color:var(--ink-2);margin-top:6px}
-#s02 .stack6>*+*{margin-top:10px}
-#s02 .v6-eq{gap:10px 14px}
-#s02 .pix-two{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 36px;align-items:center}
-@media (max-width:820px){body:not(.present) #s02 .pix-two{grid-template-columns:minmax(0,1fr)}}
 body.present #s02 .pair-tiles figcaption{font-size:22px}
-body.present #s02 .v6-pair{grid-template-columns:auto minmax(0,1fr);gap:8px 36px}
-body.present #s02 .dt td,body.present #s02 .dt th{padding:.2em .5em}
-body.present #s02 .stack6>*+*{margin-top:12px}
-body.present #s02 .v6-eq .mat-cap{font-size:20px}
+body.present #s02 .v6-pair{grid-template-columns:auto minmax(0,1fr)}
+body.present #s02 .calc-outrow .vec-label{font-size:.8em}
+body.present #s02 .calc{font-size:.85em}
 </style>
 <header class="sec-head">
   <span class="sec-num">02</span>
@@ -26,12 +21,12 @@ body.present #s02 .v6-eq .mat-cap{font-size:20px}
 
 <div class="frame" data-title="Masked, predicted, original" data-autobuild="off">
   <script type="text/x-notes">Which panel did the model see, and which one did it never see?
-Left: the input, four patches hidden. Second press: what the trained decoder draws into the hole. Third: the original, used only to score the middle panel. Ask why the middle mug is grey before you explain it; section 3 answers.</script>
+Left: the input, four patches hidden. Middle: what the trained decoder draws into the hole. Right: the original, used only to score the middle panel. Ask why the middle mug is grey before you explain it; section 3 answers.</script>
   <div class="card">
     <div id="s02-tri"></div>
-    <p class="v6-line" id="s02-tri-read" data-build="3"></p>
+    <p class="v6-read" id="s02-tri-read" data-build="1"></p>
   </div>
-  <div class="callout callout-key" data-build="4">The decoder never sees the right mug and draws a faint one from what the visible patches say.</div>
+  <div class="callout callout-key" data-build="2">The decoder never sees the right mug, and draws a faint one from what the visible patches say.</div>
 </div>
 
 <div class="frame" data-title="Only the visible rows enter the encoder" data-autobuild="off">
@@ -41,8 +36,8 @@ Thirteen: CLS and twelve visible patches. No row stands in for a hidden patch in
     <div class="v6-pair">
       <div id="s02-visible"></div>
       <div>
-        <p class="v6-line" id="s02-rows"></p>
-        <p data-build="1">Dropped, not blanked: attention runs among the 13 rows that remain, with Vision I's $W_Q, W_K, W_V, W_O$.</p>
+        <p id="s02-rows"></p>
+        <p data-build="1">The hidden patches are dropped, not blanked: the encoder's attention runs among the 13 rows that remain, with the same $W_Q, W_K, W_V, W_O$ as Vision I.</p>
         <pre class="torch-snippet" data-build="2"><code>rows = patches @ W_patch + pos          # 16 patch rows, plus CLS
 encoded = encoder(rows[visible])        # 13 rows in, 13 rows out</code></pre>
       </div>
@@ -52,55 +47,33 @@ encoded = encoder(rows[visible])        # 13 rows in, 13 rows out</code></pre>
 
 <div class="frame" data-title="A placeholder at each hidden slot asks a question" data-autobuild="off">
   <script type="text/x-notes">What does the decoder know about a hidden patch before it reads anything?
-Only where it is. Reveal m, the one learned row every slot shares, then the position row of slot 8, then their sum u8. Multiply by the decoder's W_Q: a query on the encoder's two key axes. Read q8: both entries negative, so the slot asks against bright regions and against the right.</script>
+Only where it is. The placeholder is one learned row m, the same for every hidden slot, plus the slot's position row. Multiplying it by the decoder's W_Q gives a query on the same two axes as the encoder's keys.</script>
   <div class="card">
-    <div class="v6-pair">
-      <div id="s02-slot"></div>
-      <div class="stack6">
-        <div id="s02-placeholder"></div>
-        <div class="row v6-eq" id="s02-q" data-build="4"></div>
-        <p class="v6-line" id="s02-qread" data-build="5"></p>
-      </div>
-    </div>
+    <div id="s02-placeholder"></div>
+    <div data-build="1"><div id="s02-qcalc"></div></div>
+    <p class="v6-read" id="s02-qread" data-build="1"></p>
   </div>
-</div>
-<div class="companion">
-  <p>The query, written out: one line per key axis, each entry of $u_8$ times the matching column of $W_Q^{\mathrm{dec}}$.</p>
-  <div id="s02-qcalc"></div>
 </div>
 
 <div class="frame" data-title="The placeholder reads the visible patches" data-autobuild="off">
   <script type="text/x-notes">Which visible patches does the slot of patch 8 read most?
-Reveal the weights: the rose tint is the attention of the placeholder's query against the visible keys. Point to the left mug: the slot reads the bright patches on the other side of the scene. Then the four heaviest rows with their values, and the weighted sum over all twelve.</script>
+The rose tint is the attention weight. Point to the left mug: the placeholder reads the bright patches on the other side of the scene, because its query asks for bright regions. The table lists the four heaviest rows and the weighted sum over all twelve.</script>
   <div class="card">
     <div class="v6-pair">
       <div id="s02-overlay"></div>
-      <div id="s02-readtab" data-build="2"></div>
+      <div id="s02-readtab"></div>
     </div>
-    <p class="v6-line" id="s02-readline" data-build="4"></p>
+    <p class="v6-read" id="s02-readline" data-build="1"></p>
   </div>
-</div>
-<div class="companion">
-  <p>The full read for the slot of patch 8, all twelve visible rows. The weight column is the attention row of the placeholder's query against the visible keys; the values are the encoder's, unchanged. The footer is the weighted sum the decoder actually receives.</p>
-  <div id="s02-mix"></div>
 </div>
 
 <div class="frame" data-title="Four numbers become four pixels" data-autobuild="off">
   <script type="text/x-notes">What is in the decoder row, and what comes out?
-Two numbers it read plus two numbers saying where it is. Work the top-left pixel aloud: each entry of z8 times a column of W_dec, plus the bias. The other three pixels follow the same line. The four results are drawn as a tile.</script>
+Two numbers it read plus two numbers saying where it is. A 4 by 4 matrix and a bias turn them into four pixel values, top left to bottom right. Compare the predicted tile with the true tile: same order, different brightness.</script>
   <div class="card">
-    <div class="pix-two">
-      <div>
-        <div id="s02-z"></div>
-        <div class="v6-calc" id="s02-lines"></div>
-      </div>
-      <div id="s02-predtile" data-build="3"></div>
-    </div>
+    <div id="s02-pixcalc"></div>
+    <p class="v6-read" data-build="1">One line per pixel: the decoder row times a column of $W_{\mathrm{dec}}$, plus the bias.</p>
   </div>
-</div>
-<div class="companion">
-  <p>The same four lines as a worksheet: the decoder row times each column of $W_{\mathrm{dec}}$, then the bias.</p>
-  <div id="s02-pixcalc"></div>
 </div>
 
 <div class="frame" data-title="The predicted tile beside the true one" data-autobuild="off">
@@ -108,13 +81,15 @@ Two numbers it read plus two numbers saying where it is. Work the top-left pixel
 The bottom right, 1.42 against 3. Every pixel is short of 3 by about the same amount; that is the grey mug of frame 1. The code is the whole decoder.</script>
   <div class="card">
     <div class="pair-tiles" id="s02-tiles"></div>
-    <p class="v6-line" id="s02-tiles-read" data-build="2"></p>
+    <p class="v6-read" id="s02-tiles-read" data-build="1"></p>
   </div>
-  <pre class="torch-snippet" data-build="3"><code>z = torch.cat([message, pos[hidden, 2:]], dim=-1)   # what it read, where it is
+  <pre class="torch-snippet" data-build="2"><code>z = torch.cat([message, pos[hidden, 2:]], dim=-1)   # what it read, where it is
 pred_pixels = z @ W_dec + b_dec                       # 4 numbers per hidden slot</code></pre>
 </div>
 
 <div class="companion after">
+  <p>The full read for the slot of patch 8, all twelve visible rows. The weight column is the attention row of the placeholder's query against the visible keys; the values are the encoder's, unchanged. The footer is the weighted sum the decoder actually receives.</p>
+  <div id="s02-mix"></div>
   <p>Real MAE hides about 75% of the patches and trains a Transformer decoder with several layers together with the encoder. What survives from that design here is the sequence of decisions: drop the hidden rows, add a learned placeholder plus position for each hidden slot, read the visible rows, predict pixels, and score only the hole.</p>
 </div>
 
@@ -126,74 +101,55 @@ pred_pixels = z @ W_dec + b_dec                       # 4 numbers per hidden slo
   const rd = f.read[j];
   const n = j + 1, lab = V.patchLabel(scene, j);
   const joinAnd = xs => xs.length <= 1 ? xs.join('') : xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1];
-  const factor = x => { const s = AT.fmt(x, 2); return s.charAt(0) === '\u2212' ? '(' + s + ')' : s; };
 
-  /* frame 1: the triptych, one panel per build */
-  const tri = V.gridRow([
+  /* frame 1: the triptych with the trained prediction */
+  V.gridRow([
     { scene: V.maskedImage(scene), hidden: hidden, name: 'masked input' },
     { scene: V.maeImage(step, scene), name: 'prediction, step ' + step, outline: hidden },
     { scene: scene, name: 'original, never seen' }
-  ], { cell: 22, into: S.querySelector('#s02-tri') });
-  const panels = tri.querySelectorAll('figure'); V.onBuild(panels[1], 1); V.onBuild(panels[2], 2);
+  ], { cell: 20, into: S.querySelector('#s02-tri') });
   const predMug = hidden.flatMap(h => f.pred[h].filter((v, c) => f.R[h][c] === 3));
-  S.querySelector('#s02-tri-read').textContent = 'Nine mug pixels come back at ' + AT.fmt(Math.min(...predMug), 2) + ' to ' + AT.fmt(Math.max(...predMug), 2) + ', not 3: a grey mug.';
+  S.querySelector('#s02-tri-read').textContent = 'Reading the middle panel: the nine mug pixels come back between ' + AT.fmt(Math.min(...predMug), 2) + ' and ' + AT.fmt(Math.max(...predMug), 2) + ' instead of 3: a grey mug. Visible pixels are copied.';
 
   /* frame 2: what enters the encoder */
   V.grid6(scene, { cell: 26, hidden: hidden, names: true, into: S.querySelector('#s02-visible'), caption: 'Numbered: the 12 patches that enter. Hatched: the 4 that do not.' });
-  S.querySelector('#s02-rows').innerHTML = 'Rows in: CLS and patches ' + f.vis.map(v => v + 1).join(', ') + ' (' + f.vis.length + '). Hidden: ' + hidden.map(v => v + 1).join(', ') + ', the right mug.';
+  S.querySelector('#s02-rows').innerHTML = 'Rows in: CLS and patches ' + f.vis.map(v => v + 1).join(', ') + ' (' + f.vis.length + ' patches). Hidden: patches ' + hidden.map(v => v + 1).join(', ') + ', the right mug.';
 
-  /* frame 3: the placeholder (one row per build) and its query */
+  /* frame 3: the placeholder and its query */
   const th = f.params;
-  V.grid6(scene, { cell: 26, hidden: hidden, slot: j, into: S.querySelector('#s02-slot'), caption: 'the slot of ' + lab });
-  const utab = AT.ui.table([th.m, V.pos[j + 1]], { axes: 'e', rowLabels: ['$m$ learned, shared by every slot', '$p_{' + n + '}$ position of slot ' + n], rowCls: ['neutral', 'neutral'], cornerLabel: 'row', decimals: 2,
-    footer: { label: '$u_{' + n + '} = m + p_{' + n + '}$', values: rd.u, cls: 'e' }, into: S.querySelector('#s02-placeholder') });
-  V.rowBuilds(utab, 1);
-  const qrow = S.querySelector('#s02-q');
-  AT.ui.vec(rd.u, { cls: 'e', axes: 'e', label: 'u_{' + n + '}', into: qrow });
-  AT.ui.op('\u00b7', { into: qrow });
-  AT.ui.mat(th.W_Qd, { cls: 'q', size: 'sm', caption: '$W_Q^{\\mathrm{dec}}$', axes: { rows: 'e', cols: 'qk' }, into: qrow });
-  AT.ui.op('=', { into: qrow });
-  AT.ui.vec(rd.q, { cls: 'q', axes: 'qk', label: '\\vq{q_{' + n + '}}', into: qrow });
-  const asks = rd.q.map((x, i) => ({ x, name: AT.axes.qk[i] })).sort((a, b) => Math.abs(b.x) - Math.abs(a.x));
-  S.querySelector('#s02-qread').textContent = 'Reading q' + n + ': ' + asks.map(a => a.name + ' ' + AT.fmt(a.x, 2)).join(', ') + ': the slot asks ' + (asks[0].x > 0 ? 'for ' : 'against ') + asks[0].name.replace('?', '') + (Math.abs(asks[1].x) > 0.3 ? (asks[1].x > 0 ? ' and for ' : ' and against ') + asks[1].name.replace('?', '') : '') + '.';
+  AT.ui.table([th.m, V.pos[j + 1], rd.u], { axes: 'e', rowLabels: ['$m$ (learned, shared)', '$p_{' + n + '}$ (position)', '$u_{' + n + '} = m + p_{' + n + '}$'], rowCls: ['neutral', 'neutral', 'e'], cornerLabel: 'row', decimals: 2,
+    caption: 'The placeholder knows nothing about the pixels of ' + lab + ': its content axes hold the learned $m$, its row and col axes hold the position.', into: S.querySelector('#s02-placeholder') });
   AT.ui.matVecCalc(rd.u, th.W_Qd, { from: 'e', to: 'qk', cls: 'q', xLabel: 'u \u00b7 patch ' + n, outLabel: 'q \u00b7 patch ' + n, decimals: 2, wDecimals: 2, into: S.querySelector('#s02-qcalc') });
+  const qk = AT.axes.short.qk;
+  const asks = rd.q.map((x, i) => ({ x, name: AT.axes.qk[i] })).sort((a, b) => Math.abs(b.x) - Math.abs(a.x));
+  S.querySelector('#s02-qread').textContent = 'Reading q' + n + ': ' + asks.map(a => a.name + ' ' + AT.fmt(a.x, 2)).join(', ') + ', so the slot asks ' + (asks[0].x > 0 ? 'for ' : 'against ') + asks[0].name.replace('?', '') + (Math.abs(asks[1].x) > 0.3 ? (asks[1].x > 0 ? ' and for ' : ' and against ') + asks[1].name.replace('?', '') : '') + '.';
+  AT.renderMath(S.querySelector('#s02-qread'));
 
-  /* frame 4: the read, painted (weights on build 1) and tabulated (build 2, footer 3) */
-  const ov = V.readOverlay(scene, f, j, { cell: 26, into: S.querySelector('#s02-overlay'), caption: 'rose = the weight of slot ' + n + ' on each visible patch' });
-  const osv = ov.querySelector('svg');
-  V.onBuild(osv.querySelectorAll('rect[fill="var(--c-a)"]'), 1); V.onBuild(osv.querySelectorAll('text[paint-order]'), 1); V.onBuild(ov.querySelector('figcaption'), 1);
+  /* frame 4: the read, painted and tabulated */
+  V.readOverlay(scene, f, j, { cell: 26, into: S.querySelector('#s02-overlay'), caption: 'Rose = attention weight of the slot (outlined, ?) on each visible patch.' });
   const order = f.vis.map((v, i) => i).sort((a, b) => rd.alpha[b] - rd.alpha[a]);
   const top = order.slice(0, 4), rest = order.slice(4);
   const restW = rest.reduce((s, i) => s + rd.alpha[i], 0);
-  const rtab = AT.ui.table(top.map(i => f.V[i]), { axes: 'v', rowLabels: top.map(i => V.rowLabel(scene, f.vis[i])), rowCls: 'v', cornerLabel: 'visible patch',
+  AT.ui.table(top.map(i => f.V[i]), { axes: 'v', rowLabels: top.map(i => V.rowLabel(scene, f.vis[i])), rowCls: 'v', cornerLabel: 'visible patch',
     lead: [{ label: '$\\va{\\alpha_{' + n + 'i}}$', values: top.map(i => rd.alpha[i]), cls: 'a', heat: true, decimals: 2 }],
     footer: { label: '$g_{' + n + '} = \\sum_i \\va{\\alpha_{' + n + 'i}}\\,\\vv{v_i}$ over all 12', values: rd.msg, lead: [AT.fmt(1, 2)], cls: 'm' },
     caption: 'The four heaviest rows; the other ' + rest.length + ' share ' + AT.fmt(restW, 2) + '. Values are the encoder\u2019s $\\vv{v_i} = \\vp{e_i\'}\\,W_V$.', into: S.querySelector('#s02-readtab') });
-  V.onBuild(rtab.table.tFoot.querySelector('tr'), 3);
-  S.querySelector('#s02-readline').innerHTML = 'Slot ' + n + ' reads ' + joinAnd(top.slice(0, 2).map(i => 'patch ' + (f.vis[i] + 1) + ' (' + AT.fmt(rd.alpha[i], 2) + ')')) + ': g<sub>' + n + '</sub> = (' + rd.msg.map(x => AT.fmt(x, 2)).join(', ') + '), mostly \u201chow bright were the patches I read\u201d.';
+  S.querySelector('#s02-readline').innerHTML = 'Reading the row: ' + joinAnd(top.slice(0, 2).map(i => V.patchLabel(scene, f.vis[i]) + ' ' + AT.fmt(rd.alpha[i], 2))) + ' carry most of the weight, so the message is ' + V.readRow(rd.msg, 'v', 2) + ': mostly \u201chow bright were the patches I read\u201d.';
+
+  /* frame 5: four numbers to four pixels */
+  const decAxes = T.mae.decoder_axes, pix = T.mae.pixel_names;
+  const mv = AT.ui.matVecCalc(rd.z, th.W_dec, { from: decAxes, to: pix, cls: 'neutral', xLabel: 'z \u00b7 patch ' + n, outLabel: 'z W_dec', decimals: 2, wDecimals: 2, into: S.querySelector('#s02-pixcalc') });
+  const line = AT.h('p', { class: 'calc-line' }, 'add b_dec = (' + th.b_dec.map(x => AT.fmt(x, 2)).join(', ') + '): predicted pixels ', AT.h('span', { class: 'calc-r' }, '(' + f.pred[j].map(x => AT.fmt(x, 2)).join(', ') + ')'));
+  mv.appendChild(line);
+  const tiles = S.querySelector('#s02-tiles');
+  V.patchTile(f.pred[j], { cell: 30, caption: 'predicted ' + lab, into: tiles });
+  V.patchTile(f.R[j], { cell: 30, caption: 'true ' + lab + ' (hidden)', into: tiles });
+  const gaps = f.pred[j].map((v, c) => f.R[j][c] - v), best = gaps.indexOf(Math.min(...gaps));
+  S.querySelector('#s02-tiles-read').textContent = 'Reading the tiles: the decoder is short by ' + gaps.map((g, c) => pix[c] + ' ' + AT.fmt(g, 2)).join(', ') + '; the ' + pix[best] + ' pixel comes closest. One 4 × 4 matrix and one bias serve all four hidden slots; only the position axes tell them apart.';
+
+  /* companion: the full mix table */
   AT.ui.mixTable(rd.alpha, f.V, { rowLabels: f.vis.map(v => V.rowLabel(scene, v)), cornerLabel: 'visible patch', alphaLabel: '$\\va{\\alpha_{' + n + 'i}}$', footerLabel: '$g_{' + n + '}$', decimals: 2,
     caption: 'All twelve visible rows for the slot of ' + lab + '. Hover or focus a footer cell to see the weighted terms.', into: S.querySelector('#s02-mix') });
-
-  /* frame 5: four numbers to four pixels, one worked line per build */
-  const decAxes = T.mae.decoder_axes, pix = T.mae.pixel_names;
-  AT.ui.vec(rd.z, { cls: 'neutral', axes: decAxes, label: 'z_{' + n + '}', size: 'lg', into: S.querySelector('#s02-z') });
-  const lines = S.querySelector('#s02-lines');
-  pix.forEach((name, c) => {
-    const terms = rd.z.map((x, k) => factor(x) + '\u00d7' + factor(th.W_dec[k][c])).join(' + ');
-    const b = th.b_dec[c];
-    const p = AT.h('p', { class: 'calc-line', 'data-build': String(c === 0 ? 1 : 2) }, AT.h('span', { class: 'calc-rl' }, name + ' ='), terms + (b < 0 ? ' \u2212 ' + AT.fmt(-b, 2) : ' + ' + AT.fmt(b, 2)) + ' \u2248 ', AT.h('span', { class: 'calc-r' }, AT.fmt(f.pred[j][c], 2)));
-    lines.appendChild(p);
-  });
-  V.patchTile(f.pred[j], { cell: 46, decimals: 2, caption: 'predicted ' + lab, into: S.querySelector('#s02-predtile') });
-  const mv = AT.ui.matVecCalc(rd.z, th.W_dec, { from: decAxes, to: pix, cls: 'neutral', xLabel: 'z \u00b7 patch ' + n, outLabel: 'z W_dec', decimals: 2, wDecimals: 2, into: S.querySelector('#s02-pixcalc') });
-  mv.appendChild(AT.h('p', { class: 'calc-line' }, 'add b_dec = (' + th.b_dec.map(x => AT.fmt(x, 2)).join(', ') + '): predicted pixels ', AT.h('span', { class: 'calc-r' }, '(' + f.pred[j].map(x => AT.fmt(x, 2)).join(', ') + ')')));
-
-  /* frame 6: the two tiles */
-  const tiles = S.querySelector('#s02-tiles');
-  V.patchTile(f.pred[j], { cell: 40, decimals: 2, caption: 'predicted ' + lab, into: tiles });
-  const trueTile = V.patchTile(f.R[j], { cell: 40, decimals: 0, caption: 'true ' + lab + ' (hidden)', into: tiles }); V.onBuild(trueTile, 1);
-  const gaps = f.pred[j].map((v, c) => f.R[j][c] - v), best = gaps.indexOf(Math.min(...gaps));
-  S.querySelector('#s02-tiles-read').textContent = 'Short by ' + gaps.map((g, c) => pix[c] + ' ' + AT.fmt(g, 2)).join(', ') + '; ' + pix[best] + ' comes closest. One 4 \u00d7 4 matrix and one bias serve all four slots.';
 })();
 </script>
 </section>

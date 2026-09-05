@@ -222,17 +222,15 @@ ask a question. `FRAME_AUDIT.md` lists the frames of every part that break those
 to IV are being reworked frame by frame against that list; Part 2 is the reference and is left alone. Re-run the audit after any change: build the
 part, then count per frame words, builds, svg, tables (the script is small; see git history of FRAME_AUDIT.md for the measurement).
 
-## 10. If the session that started the whiteboard pass died: how to resume
-State: seven agents were reworking presentation frames, one per part (sections1, sections3, sections4, sections5, sections6, sections7, sections8 plus
-their partN.js). Their in-progress sources are committed as "WIP" snapshots on main; the built pages at the repo root were NOT rebuilt from partial work,
-so the live site is the last verified state. To finish any part N (1,3,4,5,6,7,8; outputs part1/part3/part4/vision1/vision2/vision3/vision4):
-1. cd src && python3 assemble.py --part N --out ../<output>.html
-2. node qa.mjs ../<output>.html --width 1280 --height 720   and   --width 390      (zero pageErrors/consoleErrors/katexErrors, overflowX false)
-3. node sweep.mjs ../<output>.html                                                  (problems must be {})
-4. node walk.mjs ../<output>.html                                                   (no errors, no scrolling frames)
-5. a Playwright pass over every present-mode frame checking that #at-fit-warning stays empty (see the rv_fit pattern in git history, or walk.mjs output)
-6. node check_visionK.mjs for vision parts (K = N-4); node check_part1.mjs / check_training.py where they exist
-7. READ a dozen frame screenshots against STYLE_WHITEBOARD.md; fix walls of text and empty frames
-8. git add <output>.html src/sectionsN src/partN.js src/partN.json && git commit && git push
-If a part's sources are half-edited and broken, `git log -- src/sectionsN` shows the last verified commit; `git checkout <hash> -- src/sectionsN src/partN.js`
-restores it. FRAME_AUDIT.md is the worklist; STYLE_WHITEBOARD.md the rules; Part 2 (sections/) is the reference and needs nothing.
+## 10. STATE AT HANDOVER (2026-09-05 evening) — read this first
+Live site: https://nipunbatra.github.io/attention/ serves main. Everything on main is VERIFIED (zero errors at 1280 and 390, sweeps clean, present-mode
+fit checks clean) as of the commit that adds this section. What is done:
+- Parts 1, 2, 3, 4 (language) and Vision I to IV rebuilt on one design system; vision parts rebuilt on the shared 8×8 scene with named axes (sections 7, 8).
+- Every part opens in presentation mode with a cover frame and a hook frame (section 8).
+- STYLE_WHITEBOARD.md and FRAME_AUDIT.md define the next improvement: the whiteboard pass (section 9). It has NOT been done. Seven agents were started in
+  parallel and all died on a session limit before writing frames. Their few partial edits (part4.js, part6.js, sections6/sec01-02) are preserved on the
+  branch `wip/whiteboard-pass` and REVERTED on main, so main is clean. TASK_WHITEBOARD.md holds the exact prompt to rerun the pass, one part at a time.
+How to resume (any agent, Codex, or a person): read HANDOVER.md sections 1 to 4, STYLE_WHITEBOARD.md, FRAME_AUDIT.md, TASK_WHITEBOARD.md; do one part;
+verify with section 3's commands plus the fit-warning walk; push the built page together with its sources. Never push a built page that was not verified.
+Known small issues: vision pages are about 2 MB each (photo hook, KaTeX, toys); Vision III's image encoder picks its axes by a small search because Vision I's
+encoder maps the three CLIP scenes onto one line (the page says so); the hero roadmap of Part 2 lists sections 1 to 14 only.
