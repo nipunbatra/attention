@@ -1,4 +1,5 @@
-// Exact illustrative arithmetic and authoring checks. No trained model is claimed.
+// Legacy illustrative calculators and authoring checks. The trained MAE-style
+// experiment has its own finite-difference and reproduction checks.
 // node src/check_vision2.mjs [--browser] [--page /absolute/path/vision2.html]
 import assert from 'node:assert/strict';
 import {readFileSync,readdirSync,existsSync} from 'node:fs';
@@ -61,7 +62,7 @@ for(const file of sections){const source=readFileSync(new URL(file,dir),'utf8');
   for(const m of source.matchAll(/<pre class="torch-snippet"[^>]*><code>([\s\S]*?)<\/code><\/pre>/g))assert(m[1].trim().split('\n').length<=4,'short code on '+file);
   assert(!source.includes('onChange:')&&!source.includes('overflow:auto'),'use shared widgets/no internal scroll');
 }
-assert(frames>=20&&frames<=26);console.log(`PASS: Vision II ${comparisons} numerical cases, invariants, ${stages.length} SVG stages, ${sections.length} sections / ${frames} frames, IDs, code syntax, and notebook-size snippets.`);
+assert(frames>=38&&frames<=45,'Keep the learning walkthrough in short classroom frames');console.log(`PASS: Vision II ${comparisons} numerical cases, invariants, ${stages.length} SVG stages, ${sections.length} sections / ${frames} frames, IDs, code syntax, and notebook-size snippets.`);
 
 if(process.argv.includes('--browser')){
   const require=createRequire(import.meta.url);let pw;
@@ -107,6 +108,21 @@ if(process.argv.includes('--browser')){
         assert((await page.locator('#s05-ce-loss').textContent()).includes(expected.loss.toFixed(4)));
       }
       assert(await page.evaluate(()=>AT.imageShade(1.5)<AT.imageShade(2)&&AT.imageShade(0)<AT.imageShade(1)),'dimming lowers displayed intensity');
+      for(const step of [0,1,20,100,800,0]){
+        await page.locator('#s03-mae-controls').getByRole('button',{name:'Step '+step,exact:true}).click();
+        for(const brightness of [1,1.2]){
+          await page.locator('#s03-mae-controls').getByRole('button',{name:brightness===1?'Training brightness 1.0':'Held-out brightness 1.2',exact:true}).click();
+          const verified=await page.evaluate(({step,brightness})=>{
+            const host=document.querySelector('#s03-mae-controls'),f=AT.mae.view.get(step,brightness),svg=host.querySelector('svg');
+            return {oneFigure:host.querySelectorAll('svg').length===1,expected:svg.textContent.includes(AT.mae.view.vec(f.prediction[3]))&&svg.textContent.includes(f.loss.toFixed(6)),selected:host.querySelector('[aria-pressed="true"]').textContent};
+          },{step,brightness});
+          assert(verified.oneFigure&&verified.expected);assert.equal(verified.selected,'Step '+step);
+        }
+      }
+      const newBounds=await page.evaluate(()=>[...document.querySelectorAll('svg.mae-figure')].flatMap(svg=>[...svg.querySelectorAll('text')].flatMap(text=>{const b=text.getBBox(),v=svg.viewBox.baseVal;return b.x<0||b.y<0||b.x+b.width>v.width||b.y+b.height>v.height?[text.textContent]:[];})));
+      assert.deepEqual(newBounds,[],'new MAE labels stay within their SVG');
+      assert.deepEqual(errors,[]);
+      console.log('PASS: 12 trained-MAE control states match recomputed predictions; new SVG labels fit.');
       console.log('PASS: assembled page interactions update MAE and DINO results without JavaScript errors.');
     }
   }finally{await browser.close();}

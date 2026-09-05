@@ -1,5 +1,5 @@
-<section id="s03" class="sec" data-title="Which pixels enter the loss?" data-lit="">
-<header class="sec-head"><span class="sec-num">03</span><div><p class="eyebrow">Compute an error before talking about learning.</p><h2>Which pixels enter the loss?</h2></div></header>
+<section id="s03" class="sec" data-title="A masked image teaches an encoder" data-lit="">
+<header class="sec-head"><span class="sec-num">03</span><div><p class="eyebrow">First calculate an error. Then let a model learn from it.</p><h2>A masked image teaches an encoder</h2></div></header>
 <div class="companion" data-kicker="For self-study"><p>Suppose patch 4 is hidden. Its four true pixels are all 2. If the decoder guesses 1 for every pixel, each squared error is 1 and their mean is 1. We will use mean squared error per masked pixel throughout this exercise. A patch is either included in that loss or excluded; visible-patch errors do not enter the denominator.</p></div>
 <div class="frame" data-title="One hidden patch, four prediction errors" data-autobuild="off">
   <p>Patch 4 is the lower-right patch. Its true pixel row is $(2,2,2,2)$.</p>
@@ -12,7 +12,7 @@ loss = squared.mean()</code></pre>
 The target comes from the original image. Count four masked pixels in the denominator.</script>
 </div>
 <div class="frame" data-title="Change the hidden patches and the pixel guess" data-autobuild="off">
-  <p>This is an exact loss calculator, not a trained image reconstructor.</p>
+  <p>Here we choose the guess ourselves. Next, a model will produce it.</p>
   <div data-present="manual"><label for="s03-mask">Hidden patches: </label><select id="s03-mask"><option value="0">p2, p3, p4</option><option value="1">p4 only</option><option value="2">p1, p4</option></select><div id="s03-slider"></div></div>
   <div id="s03-lab-table"></div>
   <p id="s03-lab-loss" aria-live="polite"></p>
@@ -30,6 +30,94 @@ Then hide only p4 and guess 2. The loss becomes zero because the supplied guess 
 A constant guess can be right on a simple constant patch. The dataset and evaluation matter.</script>
 </div>
 <div class="companion after"><p>Every value in the calculator follows the displayed formula. Each masked patch contributes four pixels. Its patch error is the sum of those four squared errors; the final loss divides the total by the number of masked pixels. A real MAE has a prediction vector for every masked patch, rather than our shared scalar guess.</p><p>The missing pixels may not be uniquely determined by the visible region. Reconstruction can encourage useful structure without reproducing every unpredictable detail. A low pretraining loss and a good downstream representation are related goals, not interchangeable measurements.</p></div>
+<div class="companion"><p>Let us replace the supplied guesses with a model we can train. A single image would invite memorization, so we use eight small images made from repeated tiles. This keeps the context predictable enough to check every stage. These textures are a new dataset for this experiment; we are not claiming to reconstruct the earlier photograph.</p></div>
+<div class="frame" data-title="Several images share a pattern" data-autobuild="off">
+  <p>Each image repeats one tile four times. Can the visible tiles help fill a missing one?</p>
+  <div id="s03-mae-dataset"></div>
+  <p>Eight training images × four choices of hidden patch = 32 training cases.</p>
+</div>
+<div class="frame" data-title="One training image and its hidden target" data-autobuild="off">
+  <p>Start with brightness 1. Hide patch 4 and keep patches 1, 2, and 3.</p>
+  <div id="s03-mae-input"></div>
+  <p>The input contains twelve visible pixels. The target contains four hidden pixels.</p>
+</div>
+<div class="frame" data-title="A visible patch becomes a two-number row" data-autobuild="off">
+  <p>The first visible patch is $r_1=(1,0,1,0)$. Multiply by $W_{\text{patch}}\in\mathbb R^{4\times2}$.</p>
+  <div id="s03-mae-projection"></div>
+  <p id="s03-mae-position"></p>
+  <script type="text/x-notes">The patch map is shared across positions. The position vector is added to the two coordinates; it is not an extra coordinate.</script>
+</div>
+<div class="frame" data-title="The encoder mixes only visible rows" data-autobuild="off">
+  <p>Apply the attention-and-residual calculation from Vision I to three input rows.</p>
+  <div id="s03-mae-encoded"></div>
+  <pre class="torch-snippet"><code>E_visible = patch_pixels[visible] @ W_patch + b_patch
+E_visible = E_visible + P_enc[visible]  # [3, 2]
+encoded = encoder(E_visible)           # [3, 2]</code></pre>
+  <p>There is no hidden-patch row in the encoder, so it supplies no key or value.</p>
+</div>
+<div class="companion"><p>Here is the encoder's complete attention matrix at initialization. Rows are receivers and columns are visible sources. Each row sums to one.</p><div id="s03-mae-encoder-weights"></div></div>
+<div class="frame" data-title="A mask token reserves the missing slot" data-autobuild="off">
+  <p>Restore the four positions. The missing position gets a learned placeholder.</p>
+  <div id="s03-mae-restore"></div>
+  <p>The decoder receives four two-number rows, with its own position table.</p>
+</div>
+<div class="frame" data-title="The missing slot reads the available information" data-autobuild="off">
+  <p>In the decoder, patch 4's placeholder forms a query. It can read all four decoder rows.</p>
+  <div id="s03-mae-attention"></div>
+  <p>Keys choose the mixing weights. Values carry the messages. The fourth source is still a placeholder, not the hidden pixels.</p>
+</div>
+<div class="frame" data-title="Add the retrieved message to the placeholder" data-autobuild="off">
+  <p>$m_4=\sum_{j=1}^{4}\alpha_{4j}v_j$. Here $W_O=0.5I$, so the update is $0.5m_4$.</p>
+  <div id="s03-mae-decoder-update"></div>
+  <p>Patch 4's updated row now contains information read from the visible patches.</p>
+</div>
+<div class="frame" data-title="The decoder row predicts four pixel values" data-autobuild="off">
+  <p>Use patch 4's updated decoder row $d_4\in\mathbb R^{1\times2}$.</p>
+  <div id="s03-mae-pixels"></div>
+  <p id="s03-mae-pixel-bias"></p>
+  <script type="text/x-notes">This linear output has no sigmoid or clipping. Pixel predictions can be negative. The loss uses the raw prediction; only the image drawing clips its grayscale range.</script>
+</div>
+<div class="frame" data-title="The first reconstruction has visible errors" data-autobuild="off">
+  <div id="s03-mae-before"></div>
+  <p>Only the outlined patch is predicted. Visible pixels are copied into the drawing.</p>
+</div>
+<div class="frame" data-title="Score only the four missing pixels" data-autobuild="off">
+  <div id="s03-mae-error"></div>
+  <pre class="torch-snippet"><code>pred_pixels = decoded @ W_pixels + b_pixels  # [4, 4]
+loss = (pred_pixels[masked] - patch_pixels[masked]).square().mean()</code></pre>
+  <p id="s03-mae-initial-loss"></p>
+</div>
+<div class="frame" data-title="The pixel loss reaches both networks" data-autobuild="off">
+  <div id="s03-mae-graph"></div>
+  <pre class="torch-snippet"><code>optimizer.zero_grad()
+loss.backward()
+optimizer.step()</code></pre>
+  <script type="text/x-notes">Gradients reach both sets of projections, both position tables, the mask token, and the pixel predictor. The hidden target pixels have no path into the encoder.</script>
+</div>
+<div class="frame" data-title="One SGD step changes the next forward pass" data-autobuild="off">
+  <p>Average the loss across all 32 training cases. Update 72 parameters with learning rate 0.05.</p>
+  <div id="s03-mae-one-step"></div>
+  <p id="s03-mae-parameter"></p>
+  <p>The new prediction uses new parameters. The image and its target stay the same.</p>
+</div>
+<div class="frame" data-title="Repeated updates improve reconstruction" data-autobuild="off">
+  <div id="s03-mae-curve"></div>
+  <p>Test on six held-out images at brightnesses 0.8, 1.2, and 1.6. Their losses never supply training gradients.</p>
+</div>
+<div class="frame" data-title="A held-out image after 800 updates" data-autobuild="off">
+  <div id="s03-mae-heldout"></div>
+  <p>Brightness 1.2 was not in training. The repeated-tile pattern was.</p>
+</div>
+<div class="frame" data-title="A simple baseline keeps this result in perspective" data-autobuild="off">
+  <p>Compare mean squared error on the same six held-out images and four masks.</p>
+  <div id="s03-mae-baselines"></div>
+  <p>Averaging the visible tiles is exact here because all four tiles repeat. This experiment teaches the learning loop, not a new reconstruction method.</p>
+</div>
+<div class="frame" data-title="The hidden region can break the pattern" data-autobuild="off">
+  <div id="s03-mae-failure"></div>
+  <p>No visible evidence distinguishes these targets. The model repeats what training taught it to expect.</p>
+</div>
+<div class="companion after"><p>Inspect the same prediction at saved training checkpoints below. The grayscale range stays fixed at 0 to 2. The browser recomputes predictions using saved parameters; it does not train while you read.</p><div id="s03-mae-controls"></div><p>This is a small MAE-style experiment with separate width-two encoder and decoder attention blocks, residual additions, and masked-pixel MSE. It omits LayerNorm, MLPs, and a CLS row. It trains on raw pixel targets without per-patch normalization. Gradients update both sets of projections, both position tables, the mask token, and the pixel predictor. It illustrates the encoder/decoder training path, rather than reproducing the published model or its reported performance.</p><details><summary>Inspect all 72 starting parameters</summary><div id="s03-mae-parameters"></div></details></div>
 <script>
 (function(){const S=document.getElementById('s03'),T=AT.visionSSL;
 AT.ui.table([[2,2,2,2],[1,1,1,1],[1,1,1,1]],{cols:['pixel 1','pixel 2','pixel 3','pixel 4'],rowLabels:['true patch 4','supplied guess','squared error'],cornerLabel:'hidden patch',decimals:2,into:S.querySelector('#s03-worked')});
@@ -40,5 +128,28 @@ AT.ui.table(F.rows.filter(r=>r.hidden).map(r=>[r.target.join(' '),F.guess,r.sse]
 S.querySelector('#s03-lab-loss').textContent='Loss = '+F.sse.toFixed(2)+' ÷ '+F.count+' masked pixels = '+F.loss.toFixed(4)+'. Visible patches are not scored.';
 }mask.addEventListener('change',draw);AT.ui.slider({label:'Guess for every hidden pixel',min:0,max:2,step:.25,value:1,format:x=>x.toFixed(2),onInput:x=>{guess=x;draw();},into:S.querySelector('#s03-slider')});draw();
 AT.ui.reveal('Does a zero loss in our calculator show that the encoder learned?','No. We chose the guesses directly. A trained model must produce its guesses from the visible image and learned parameters, then work on held-out images.',{into:S.querySelector('#s03-check')});})();
+</script>
+<script>
+(function(){
+  const S=document.getElementById('s03'),T=AT.mae,V=T.view,D=V.data,host=id=>S.querySelector('#s03-mae-'+id),f=V.get(),one=V.get(1),pixels=['pixel 1','pixel 2','pixel 3','pixel 4'];
+  for(const [id,kind,opts]of[['dataset','dataset'],['input','input'],['restore','restore'],['before','reconstruction'],['graph','graph'],['curve','curve'],['heldout','reconstruction',{step:800,brightness:1.2}],['failure','failure']])V.mount(host(id),kind,opts);
+  AT.ui.matVecCalc(f.R[0],T.initial.W_patch,{from:pixels,to:['coordinate 1','coordinate 2'],cls:'e',xLabel:'r1',outLabel:'r1 W_patch',decimals:2,wDecimals:2,into:host('projection')});
+  host('position').textContent='Add b_patch = (0, 0) and position 1 = (−0.15, −0.15): e1 = '+V.vec(f.embed[0])+'.';
+  AT.ui.table(f.encoder.out,{cols:['coordinate 1','coordinate 2'],rowLabels:['encoded p1','encoded p2','encoded p3'],decimals:3,cornerLabel:'after attention + residual',into:host('encoded')});
+  AT.ui.table(f.encoder.weights,{cols:['read p1','read p2','read p3'],rowLabels:['p1 receives','p2 receives','p3 receives'],decimals:3,cornerLabel:'encoder attention',into:host('encoder-weights')});
+  AT.ui.table(f.decoder.weights[3].map((a,j)=>[V.vec(f.decoder.V[j]),a]),{cols:[{label:'value: two numbers',kind:'code'},'weight for p4'],rowLabels:['encoded p1 + position','encoded p2 + position','encoded p3 + position','mask token + position'],decimals:3,cornerLabel:'decoder source',into:host('attention')});
+  AT.ui.table([f.restored[3],f.decoder.message[3],T.mm([f.decoder.message[3]],T.initial.decO)[0],f.decoder.out[3]],{cols:['coordinate 1','coordinate 2'],rowLabels:['placeholder + position','weighted message m4','update = 0.5 m4','updated decoder row d4'],decimals:3,cornerLabel:'patch 4 receives context',into:host('decoder-update')});
+  AT.ui.matVecCalc(f.decoder.out[3],T.initial.W_pixels,{from:['coordinate 1','coordinate 2'],to:pixels,cls:'d',fromCls:'e',xLabel:'d4',outLabel:'d4 W_pixels',decimals:3,wDecimals:2,into:host('pixels')});
+  host('pixel-bias').textContent='Add b_pixels = (0, 0, 0, 0): predicted p4 = '+V.vec(f.prediction[3])+'.';
+  AT.ui.table([f.R[3],f.prediction[3],f.terms[0]],{cols:pixels,rowLabels:['target','prediction','squared error'],decimals:3,cornerLabel:'masked patch 4',into:host('error')});
+  host('initial-loss').textContent='Mean of four squared errors = '+f.loss.toFixed(6)+'. Calculations use unrounded values.';
+  AT.ui.table([[f.loss,D.history[0].train],[one.loss,D.history[1].train]],{cols:['this image, p4 hidden','mean over 32 cases'],rowLabels:['before update','after one update'],decimals:6,cornerLabel:'reconstruction MSE',into:host('one-step')});
+  host('parameter').textContent='For example, W_pixels[0,0]: '+T.initial.W_pixels[0][0].toFixed(6)+' − 0.05 × ('+D.first.grads.W_pixels[0][0].toFixed(6)+') ≈ '+D.snapshots.step1.W_pixels[0][0].toFixed(6)+'.';
+  const mean=T.training.map(ex=>T.patches(ex.image)).reduce(T.add,T.training[0].image.map(r=>r.map(()=>0))).map(r=>r.map(v=>v/T.training.length));
+  const constant=T.sum(T.heldout.flatMap(ex=>T.patches(ex.image).flatMap((r,j)=>r.map((v,k)=>(v-mean[j][k])**2))))/(T.heldout.length*16);
+  AT.ui.table([[constant],[D.history.at(-1).test],[0]],{cols:['held-out MSE'],rowLabels:['training-set mean tile','our learned reconstruction','average the visible tiles'],decimals:6,cornerLabel:'predictor',into:host('baselines')});
+  V.controls(host('controls'));
+  T.names.forEach(name=>{const p=T.initial[name],rows=Array.isArray(p[0])?p:[p];host('parameters').append(AT.h('h4',{},name));AT.ui.table(rows,{cols:rows[0].map((_,j)=>'column '+(j+1)),rowLabels:rows.map((_,j)=>'row '+(j+1)),decimals:2,into:host('parameters')});});
+})();
 </script>
 </section>

@@ -1,5 +1,17 @@
 # Classroom release checks
 
+## 2026-09-05: masked-image learning checkpoint
+
+Vision II now follows an actual 72-parameter image-to-prediction-to-update experiment, alongside the original loss calculator. The example exposes visible-patch projection, encoder rows, decoder slot restoration, values and weights, residual update, predicted pixels, masked loss, one SGD update, reconstruction checkpoints, and held-out results. A repeated-tile baseline and an ambiguous hidden-tile failure bound the interpretation. The frozen-encoder probe reports its actual unchanged 100% accuracy instead of claiming improvement.
+
+- The saved training run reproduces all 881 reference numbers exactly. All 288 scalar finite differences pass (maximum error 1.60e-11). Mutating only hidden target pixels leaves predictions unchanged. Initial parameters are not mutated by the update helper.
+- Legacy Vision II arithmetic still passes all 40 cases. Twelve new browser control states reproduce their corresponding saved-parameter predictions and replace, rather than accumulate, figures. SVG text bounds pass.
+- All 43 classroom frames / 79 progressive states fit, with 41 strictly parsed formulas and no runtime error, internal slide scrollbar, or overflow. Phone reading at 390×844 has no document-width overflow. Table checks cover reading, phone, and presentation modes.
+- The 43-page temporary PDF exports with all three reveal answers shown. Representative calculation, reconstruction, and computation-graph pages were visually inspected. A text/arrow overlap and SVG edge padding were corrected before the final export. This is a targeted visual check, not a claim of reviewing every PDF page.
+- Metadata checks pass all eight isolated lesson builds. No shared stylesheet or presentation runtime changed. New lesson code has no production dependencies.
+
+Reproduce with the commands in `HANDOVER.md`, including `check_vision2.mjs --browser --page vision2.html`, `check_vision2_learning.mjs`, and `train_vision2.mjs --check`. DINO/I-JEPA, CLIP geometry, and VLM source-contribution teaching improvements remain separate checkpoints in the audit plan.
+
 ## 2026-09-05: notation and continuity checkpoint
 
 Patch side length now uses `s_patch`; `P` consistently denotes position vectors. Vision IV's notation includes the connector output `B`. The transitions distinguish reusing an encoder architecture from reusing its trained checkpoint. Numerical parameters are unchanged.

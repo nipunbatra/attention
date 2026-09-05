@@ -827,7 +827,7 @@ body.presenter>*:not(#at-presenter){display:none!important}
 
 <script>
 window.__TOY__ = {"d_model":2,"d_k":2,"d_v":2,"vocab":["patch 1","patch 2","patch 3","patch 4"],"sentences":{"river":["patch 1","patch 2","patch 3","patch 4"]},"axes":{"e":["coordinate 1","coordinate 2"],"qk":["matching 1","matching 2"],"v":["value 1","value 2"]},"visionSSL":{"image":[[1,1,0,0],[1,1,0,0],[0,0,2,2],[0,0,2,2]],"patchSize":2,"representationWidth":2,"maskPresets":[{"label":"Hide p2, p3, p4","indices":[1,2,3]},{"label":"Hide p4","indices":[3]},{"label":"Hide p1, p4","indices":[0,3]}],"defaultGuess":1,"dino":{"teacherLogits":[2,1,0],"center":[0.5,0.5,0],"teacherTemperature":0.5,"studentLogits":[0,1,0],"studentTemperature":1},"ema":{"oldTeacher":1,"newStudent":3,"momentum":0.9},"sources":{"mae":"https://arxiv.org/abs/2111.06377","dino":"https://arxiv.org/abs/2104.14294","ijepa":"https://arxiv.org/abs/2301.08243"},"disclosure":"The image is the lecture's numerical illustration. Reconstruction guesses and DINO logits are hand-chosen inputs to exact loss calculations, not pretrained-model inference. Architecture drawings are simplified."}};
-window.__PART__ = {"part":2,"series":"Vision to language","title":"Learn visual representations without class labels","subtitle":"Use the same four-patch image to compare pixel reconstruction, teacher predictions, and feature prediction.","audience":"Students who know image patches, ViT encoders, softmax, and gradient-based learning","minutes":45,"centralLabel":"Where the training target comes from","central":"\\begin{gathered}\\text{image}\\;\\longrightarrow\\;\\text{hide or transform}\\\\\\downarrow\\\\\\text{predict a target from the image}\\end{gathered}","chain":[{"label":"Targets without class labels","section":"s01"},{"label":"MAE: hide patches","section":"s02"},{"label":"Compute reconstruction loss","section":"s03"},{"label":"Two views and useful invariance","section":"s04"},{"label":"DINO: match a teacher","section":"s05"},{"label":"I-JEPA: predict features","section":"s06"},{"label":"Evaluate the representation","section":"s07"}],"sections":[{"id":"s01","title":"The image supplies a training target","lit":"e"},{"id":"s02","title":"MAE: hide patches, reconstruct pixels","lit":""},{"id":"s03","title":"Which pixels enter the loss?","lit":""},{"id":"s04","title":"Learn from two views of one image","lit":""},{"id":"s05","title":"DINO: a teacher supplies the target","lit":""},{"id":"s06","title":"I-JEPA predicts a target representation","lit":""},{"id":"s07","title":"What did the encoder learn?","lit":""}],"objects":["e"],"legendTitle":"Representations keep the e notation","provenance":"All drawings are teaching illustrations. The reconstruction lab computes exact errors for guesses you choose. The DINO lab computes exact probabilities and cross-entropy from disclosed illustrative logits. Neither lab runs a pretrained vision model.","prev":{"label":"Vision I: An image becomes a sequence","href":"vision1.html","available":true},"next":{"label":"Vision III: CLIP: learn to match images and text","href":"vision3.html","available":true},"index":{"label":"Series home","href":"index.html","available":true},"notation":"vision2","footer":"Self-supervision supplies training targets from the data; downstream usefulness still needs evaluation.","partLabel":"Vision II"};
+window.__PART__ = {"part":2,"series":"Vision to language","title":"Learn visual representations without class labels","subtitle":"Train a small masked-image model, then compare pixel reconstruction, teacher predictions, and feature prediction.","audience":"Students who know image patches, ViT encoders, softmax, and gradient-based learning","minutes":60,"centralLabel":"Where the training target comes from","central":"\\begin{gathered}\\text{image}\\;\\longrightarrow\\;\\text{hide or transform}\\\\\\downarrow\\\\\\text{predict a target from the image}\\end{gathered}","chain":[{"label":"Targets without class labels","section":"s01"},{"label":"MAE: hide patches","section":"s02"},{"label":"Train a masked-image model","section":"s03"},{"label":"Two views and useful invariance","section":"s04"},{"label":"DINO: match a teacher","section":"s05"},{"label":"I-JEPA: predict features","section":"s06"},{"label":"Evaluate the representation","section":"s07"}],"sections":[{"id":"s01","title":"The image supplies a training target","lit":"e"},{"id":"s02","title":"MAE: hide patches, reconstruct pixels","lit":""},{"id":"s03","title":"A masked image teaches an encoder","lit":""},{"id":"s04","title":"Learn from two views of one image","lit":""},{"id":"s05","title":"DINO: a teacher supplies the target","lit":""},{"id":"s06","title":"I-JEPA predicts a target representation","lit":""},{"id":"s07","title":"What did the encoder learn?","lit":""}],"objects":["e"],"legendTitle":"Representations keep the e notation","provenance":"All drawings are teaching illustrations. The MAE-style experiment trains a disclosed 72-parameter model on eight repeated-tile images and evaluates six held-out brightnesses. Browser predictions use saved parameters. The separate DINO calculator uses illustrative logits; it does not run a trained DINO model.","prev":{"label":"Vision I: An image becomes a sequence","href":"vision1.html","available":true},"next":{"label":"Vision III: CLIP: learn to match images and text","href":"vision3.html","available":true},"index":{"label":"Series home","href":"index.html","available":true},"notation":"vision2","footer":"Self-supervision supplies training targets from the data; downstream usefulness still needs evaluation.","partLabel":"Vision II"};
 </script>
 <script>
 /* shared.js: the AT namespace, with toy-model math, KaTeX helpers, UI components, motif and flow.
@@ -3408,6 +3408,96 @@ window.__VISION_SCENES__ = {"two":"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASA
 })();
 
 </script>
+<script>
+window.__MAE__ = {"history":[{"step":0,"train":0.7944494936167706,"test":0.7492914445429671},{"step":1,"train":0.7628331315879024,"test":0.7177420905784814},{"step":20,"train":0.3894401145572043,"test":0.34669074324454446},{"step":40,"train":0.2734771523644259,"test":0.23471377054151124},{"step":60,"train":0.2575915053735257,"test":0.2216530541297318},{"step":80,"train":0.25309890189240336,"test":0.2189799795816693},{"step":100,"train":0.2489494625782266,"test":0.21650193870759185},{"step":120,"train":0.24447185744189961,"test":0.2137631051214699},{"step":140,"train":0.23958330188810975,"test":0.2106996555106653},{"step":160,"train":0.23423423009328698,"test":0.20724127168721806},{"step":180,"train":0.2283483287072769,"test":0.20327966032145958},{"step":200,"train":0.22178678999370943,"test":0.19863875050748026},{"step":220,"train":0.21429229442367434,"test":0.19302215746587484},{"step":240,"train":0.20538548296604353,"test":0.18591451721681418},{"step":260,"train":0.19416263948903267,"test":0.17638829133234415},{"step":280,"train":0.17889231466424108,"test":0.16272008688140452},{"step":300,"train":0.15629115343828562,"test":0.1417103906415815},{"step":320,"train":0.12111481242458634,"test":0.1083476347313994},{"step":340,"train":0.07218661720633658,"test":0.06173605671849105},{"step":360,"train":0.03181628393710552,"test":0.023715308155317378},{"step":380,"train":0.017048065982270377,"test":0.010753522041873324},{"step":400,"train":0.01172049875888848,"test":0.006981050970715189},{"step":420,"train":0.008375485737526351,"test":0.004917152462146422},{"step":440,"train":0.005961124242047075,"test":0.003486776311950273},{"step":460,"train":0.004211142841170785,"test":0.0024645678374807176},{"step":480,"train":0.0029597640922291338,"test":0.001737386955132471},{"step":500,"train":0.0020790640239304915,"test":0.001225992638029679},{"step":520,"train":0.0014680992311201192,"test":0.0008705161863811474},{"step":540,"train":0.001048748143956679,"test":0.000625558698903383},{"step":560,"train":0.0007624680476687238,"test":0.00045741250044499185},{"step":580,"train":0.0005668660992510044,"test":0.0003417552061590729},{"step":600,"train":0.00043219567096777805,"test":0.0002615266214770661},{"step":620,"train":0.00033813234417360156,"test":0.00020505129284066517},{"step":640,"train":0.00027107795434109096,"test":0.00016449270964022803},{"step":660,"train":0.0002220713981104544,"test":0.00013466265734181755},{"step":680,"train":0.00018526198100757147,"test":0.00011215294542243914},{"step":700,"train":0.0001568428140181981,"test":9.47288272247675e-05},{"step":720,"train":0.00013433057745477388,"test":8.091893278109764e-05},{"step":740,"train":0.00011609141264148165,"test":6.974476217499392e-05},{"step":760,"train":0.00010103457861171812,"test":6.0545352370576433e-05},{"step":780,"train":8.841704071502665e-05,"test":5.2864955311473225e-05},{"step":800,"train":7.771980775737125e-05,"test":4.638155234655143e-05}],"snapshots":{"initial":{"W_patch":[[0.2,-0.1],[0.1,0.2],[0.2,0.1],[-0.1,0.2]],"b_patch":[0,0],"P_enc":[[-0.15,-0.15],[-0.15,0.15],[0.15,-0.15],[0.15,0.15]],"encQ":[[0.3,0.1],[0,0.3]],"encK":[[0.2,0],[0.1,0.3]],"encV":[[0.5,0],[0,0.5]],"encO":[[0.5,0],[0,0.5]],"mask":[0,0],"P_dec":[[-0.15,-0.15],[-0.15,0.15],[0.15,-0.15],[0.15,0.15]],"decQ":[[0.3,0],[0.1,0.3]],"decK":[[0.3,0.1],[0,0.3]],"decV":[[0.5,0],[0,0.5]],"decO":[[0.5,0],[0,0.5]],"W_pixels":[[0.2,0.1,0.2,0.1],[0.1,0.2,0.1,0.2]],"b_pixels":[0,0,0,0]},"step0":{"W_patch":[[0.2,-0.1],[0.1,0.2],[0.2,0.1],[-0.1,0.2]],"b_patch":[0,0],"P_enc":[[-0.15,-0.15],[-0.15,0.15],[0.15,-0.15],[0.15,0.15]],"encQ":[[0.3,0.1],[0,0.3]],"encK":[[0.2,0],[0.1,0.3]],"encV":[[0.5,0],[0,0.5]],"encO":[[0.5,0],[0,0.5]],"mask":[0,0],"P_dec":[[-0.15,-0.15],[-0.15,0.15],[0.15,-0.15],[0.15,0.15]],"decQ":[[0.3,0],[0.1,0.3]],"decK":[[0.3,0.1],[0,0.3]],"decV":[[0.5,0],[0,0.5]],"decO":[[0.5,0],[0,0.5]],"W_pixels":[[0.2,0.1,0.2,0.1],[0.1,0.2,0.1,0.2]],"b_pixels":[0,0,0,0]},"step1":{"W_patch":[[0.20326890776419668,-0.09767599864307405],[0.10139570455997778,0.20140072284975324],[0.20187320320421892,0.10092327850717274],[-0.1,0.2]],"b_patch":[0.0023918881395222184,0.0017004913061689515],"P_enc":[[-0.14941516198735158,-0.14958802470209562],[-0.14940232407742915,0.15042676043494035],[0.1506000415833686,-0.14957532133960008],[0.15060933262093437,0.1504370769129243]],"encQ":[[0.30000088577992556,0.10000067196946204],[1.2004453335755017e-07,0.3000001204432305]],"encK":[[0.20000099268515736,4.507402372484784e-07],[0.10000067196946204,0.3000003444330511]],"encV":[[0.5004689297631717,0.0003172460081738725],[5.746648236786004e-05,0.5000578575245396]],"encO":[[0.5004689297631717,0.0003172460081738725],[5.746648236786005e-05,0.5000578575245396]],"mask":[0.01089620862452087,0.0077533036705707565],"P_dec":[[-0.14663496036841606,-0.14756004268935177],[-0.1467774657158651,0.15226089959853875],[0.15318328089562255,-0.14770215905691644],[0.15303830849354183,0.15211465233699384]],"decQ":[[0.2999944493552557,-2.3014876941871955e-06],[0.09999805605592972,0.2999961348505766]],"decK":[[0.29999380137389897,0.09999805605592972],[-1.5236621349809052e-06,0.2999967828319334]],"decV":[[0.502344534666516,0.001585364369441283],[0.00028512600848743766,0.5002878111246283]],"decO":[[0.502344534666516,0.001585364369441283],[0.00028512600848743766,0.5002878111246283]],"W_pixels":[[0.20320197476155855,0.10135601267812472,0.20176303902328255,0.09991707693984872],[0.10042294616478922,0.20037783412838187,0.09994362080209679,0.19989850876568943]],"b_pixels":[0.029473618710005225,0.01468425315192401,0.014473618710005224,-0.00031574684807599246]},"step20":{"W_patch":[[0.2676163199872029,-0.060073369475631216],[0.12866526159667674,0.22495448941535853],[0.2389510583905263,0.11497214110901036],[-0.1,0.2]],"b_patch":[0.04707489535099626,0.027790877971754203],"P_enc":[[-0.13871725277137217,-0.14341094731659046],[-0.13830060487442628,0.15694799499115134],[0.16186549518149146,-0.14303381915789823],[0.16222725781530328,0.15728764945509155]],"encQ":[[0.3000213601495775,0.10001378474045115],[4.5634200336860505e-06,0.30000356459036276]],"encK":[[0.20002514714307162,1.3445151007076236e-05],[0.10001378452345272,0.3000081594338187]],"encV":[[0.5116669343650676,0.0064500642712139325],[0.0023558502934556565,0.5016915736570879]],"encO":[[0.511632948779314,0.006487497897666283],[0.0023948355782801795,0.5017255648987033]],"mask":[0.18800122465149313,0.12060779826581469],"P_dec":[[-0.0895765646746443,-0.1107018885889986],[-0.09296619990669598,0.1854715960257163],[0.20569964732362836,-0.11404437872491398],[0.20229051267465234,0.1820700667640515]],"decQ":[[0.30011912980315325,0.00010317255862146059],[0.10012221331366296,0.3000224634049756]],"decK":[[0.30015986828569713,0.10012221123627556],[5.736208042181315e-05,0.2999817197145627]],"decV":[[0.5584404394139247,0.03406149779556262],[0.01383065200556931,0.5100803188347313]],"decO":[[0.5575562320934887,0.03497703565963937],[0.014634798523152153,0.5109626159973978]],"W_pixels":[[0.31795873842753014,0.15106689959302097,0.2591514455564786,0.0922596067219694],[0.15158527365383118,0.2279031787455666,0.11849519585005627,0.1948131009417917]],"b_pixels":[0.4394778376317681,0.21199920576475972,0.2058026296045054,-0.021676002262503064]},"step100":{"W_patch":[[0.42004151255193883,0.0068039331695163964],[0.17731967348552005,0.28481380758612596],[0.34272183906641923,0.12199012558339073],[-0.1,0.2]],"b_patch":[0.0795880342528817,0.04193961651622601],"P_enc":[[-0.13566021909668394,-0.14234204106494502],[-0.1314259414025417,0.16014887692245755],[0.17113335721823292,-0.1392241402355052],[0.17554083753387462,0.1633569208942186]],"encQ":[[0.3000932119066778,0.10004728217017214],[2.4067897311164606e-05,0.300016876499603]],"encK":[[0.20011616470406093,6.638138108329632e-05],[0.10004727435192567,0.30003263235529454]],"encV":[[0.5508834937780437,0.0211441821522608],[0.012159058896061647,0.5080196865241395]],"encO":[[0.5506044692923633,0.02141546856403857],[0.012596064622383501,0.508300074554589]],"mask":[0.2907827004832792,0.1728116723315251],"P_dec":[[-0.025956490326540443,-0.0735683248188928],[-0.05287997881029817,0.20236867157696822],[0.22949158349416554,-0.09947908864564525],[0.20327886487641522,0.17693039906437882]],"decQ":[[0.30272233017201894,0.0016782980149199142],[0.1018323348507401,0.30082286990683665]],"decK":[[0.30333139963583267,0.10183228516640533],[0.0008414901888961691,0.3002122576384495]],"decV":[[0.7052814023163715,0.09522483568319509],[0.052226025351025336,0.5394828217934358]],"decO":[[0.7002569872752475,0.09931175287684048],[0.05880464207348558,0.5445896414499435]],"W_pixels":[[0.5104848861604709,0.1952842417168602,0.34672210481733784,0.03152146037372693],[0.244012097819595,0.2811203605948676,0.1211273706315379,0.15823563340681068]],"b_pixels":[0.6408207714149071,0.2940811414887347,0.24753476341038286,-0.09920486651578954]},"step800":{"W_patch":[[0.5910219494167973,0.276967651391617],[-0.035978201675454055,0.8659476826390584],[0.727000151092251,-0.18898003124744037],[-0.1,0.2]],"b_patch":[-0.12428062024957381,-0.1401516231621216],"P_enc":[[-0.20193404454049468,-0.19904530719244717],[-0.20156155914885004,0.14059889104987044],[0.13902581605830877,-0.21078038897362375],[0.14018916738146212,0.12907518195407877]],"encQ":[[0.3003615129775254,0.10010550115540656],[0.00010920432663633844,0.3004906944002095]],"encK":[[0.20048931436006368,8.183080261272196e-05],[0.10010537302081454,0.30052580915018995]],"encV":[[0.6813570279908768,0.02828385721228587],[-0.031638443007321625,0.6852664718620556]],"encO":[[0.6818419681104904,0.0185960110745021],[-0.022232975610432415,0.685484411658956]],"mask":[0.003976912867580204,-0.03389170249776233],"P_dec":[[-0.07184154409248557,-0.09750807176076254],[-0.0964893199238161,0.03500742211131598],[0.05546179669767077,-0.10009725524403704],[0.03337474335732703,0.034206535413604106]],"decQ":[[0.3099081247055572,0.0073885571543992],[0.11572437383455011,0.3081782472522977]],"decK":[[0.31529096354781644,0.11544426471004023],[0.005134817221714114,0.30282246098366544]],"decV":[[1.0261135124150766,0.06012132310692321],[-0.08267602376787837,1.0417359590547286]],"decO":[[1.0295538429835804,-0.0017483787467234952],[-0.022131502093140888,1.0431439725158425]],"W_pixels":[[0.5794987913710259,-0.1082816821899857,0.7059602442865334,0.018179770725521648],[0.5061734632219345,0.7485821663476292,-0.22724155405753826,0.015167149068156291]],"b_pixels":[0.29278000510295754,0.22098578924132536,0.039688750146828225,-0.032105465714803834]}},"first":{"loss":0.7944494936167706,"grads":{"W_patch":[[-0.06537815528393351,-0.0464800271385192],[-0.027914091199555322,-0.028014456995064586],[-0.037464064084378176,-0.018465570143454613],[0,0]],"b_patch":[-0.04783776279044436,-0.03400982612337903],"P_enc":[[-0.01169676025296813,-0.008239505958087624],[-0.01195351845141696,-0.008535208698807467],[-0.01200083166737192,-0.008493573207998081],[-0.012186652418687341,-0.008741538258485847]],"encQ":[[-1.7715598511560532e-05,-1.3439389240521508e-05],[-2.4008906671510034e-06,-2.4088646095672315e-06]],"encK":[[-1.9853703147080045e-05,-9.014804744969568e-06],[-1.3439389240521508e-05,-6.8886610230744e-06]],"encV":[[-0.00937859526343323,-0.00634492016347745],[-0.0011493296473572008,-0.0011571504907924852]],"encO":[[-0.00937859526343323,-0.00634492016347745],[-0.001149329647357201,-0.0011571504907924854]],"mask":[-0.21792417249041737,-0.15506607341141512],"P_dec":[[-0.06730079263167871,-0.04879914621296454],[-0.06445068568269753,-0.045217991970775105],[-0.06366561791245118,-0.045956818861671155],[-0.06076616987083665,-0.042293046739876786]],"decQ":[[0.00011101289488521079,4.6029753883743907e-05],[3.887888140579508e-05,7.730298846809846e-05]],"decK":[[0.00012397252202047584,3.88788814057951e-05],[3.0473242699618104e-05,6.434336133283342e-05]],"decV":[[-0.04689069333031826,-0.03170728738882566],[-0.005702520169748753,-0.005756222492566267]],"decO":[[-0.04689069333031827,-0.03170728738882566],[-0.005702520169748753,-0.0057562224925662665]],"W_pixels":[[-0.06403949523117061,-0.027120253562494288,-0.03526078046565054,0.00165846120302579],[-0.008458923295784342,-0.007556682567636962,0.001127583958064372,0.0020298246862117527]],"b_pixels":[-0.5894723742001045,-0.2936850630384802,-0.28947237420010447,0.006314936961519849]}},"steps":800,"lr":0.05,"probeBefore":{"w":[2.2765862372697683,-4.086123809409866],"bias":-0.859919648960323,"rows":[{"kind":"vertical","brightness":0.8,"image":[[0.8,0,0.8,0],[0.8,0,0.8,0],[0.8,0,0.8,0],[0.8,0,0.8,0]],"x":[0.4000763673572084,7.636720063270569e-05],"prob":0.5126414696231045,"pred":"vertical","correct":true},{"kind":"vertical","brightness":1.2,"image":[[1.2,0,1.2,0],[1.2,0,1.2,0],[1.2,0,1.2,0],[1.2,0,1.2,0]],"x":[0.6001145508378697,0.00011455060300782222],"prob":0.6238272036748628,"pred":"vertical","correct":true},{"kind":"vertical","brightness":1.6,"image":[[1.6,0,1.6,0],[1.6,0,1.6,0],[1.6,0,1.6,0],[1.6,0,1.6,0]],"x":[0.8001527340810015,0.0001527337678553023],"prob":0.7233365789704311,"pred":"vertical","correct":true},{"kind":"horizontal","brightness":0.8,"image":[[0.8,0.8,0.8,0.8],[0,0,0,0],[0.8,0.8,0.8,0.8],[0,0,0,0]],"x":[0.3000572755525464,0.10008591306916487],"prob":0.3576044340901932,"pred":"horizontal","correct":true},{"kind":"horizontal","brightness":1.2,"image":[[1.2,1.2,1.2,1.2],[0,0,0,0],[1.2,1.2,1.2,1.2],[0,0,0,0]],"x":[0.4500859132453122,0.15012886932191338],"prob":0.3896686126864355,"pred":"horizontal","correct":true},{"kind":"horizontal","brightness":1.6,"image":[[1.6,1.6,1.6,1.6],[0,0,0,0],[1.6,1.6,1.6,1.6],[0,0,0,0]],"x":[0.6001145508378698,0.20017182523646462],"prob":0.4227159523870542,"pred":"horizontal","correct":true}],"accuracy":1},"probeAfter":{"w":[2.712763744848998,-4.056966277195674],"bias":-0.31429985616795914,"rows":[{"kind":"vertical","brightness":0.8,"image":[[0.8,0,0.8,0],[0.8,0,0.8,0],[0.8,0,0.8,0],[0.8,0,0.8,0]],"x":[1.320517156230778,-0.12469754295863471],"prob":0.9775518896719495,"pred":"vertical","correct":true},{"kind":"vertical","brightness":1.2,"image":[[1.2,0,1.2,0],[1.2,0,1.2,0],[1.2,0,1.2,0],[1.2,0,1.2,0]],"x":[2.0912959210167394,-0.055744216080518244],"prob":0.9962604532295108,"pred":"vertical","correct":true},{"kind":"vertical","brightness":1.6,"image":[[1.6,0,1.6,0],[1.6,0,1.6,0],[1.6,0,1.6,0],[1.6,0,1.6,0]],"x":[2.8620746725130672,0.013209087603383615],"prob":0.9993868231058689,"pred":"vertical","correct":true},{"kind":"horizontal","brightness":0.8,"image":[[0.8,0.8,0.8,0.8],[0,0,0,0],[0.8,0.8,0.8,0.8],[0,0,0,0]],"x":[0.3954907337205841,1.095977826372671],"prob":0.024416609712109627,"pred":"horizontal","correct":true},{"kind":"horizontal","brightness":1.2,"image":[[1.2,1.2,1.2,1.2],[0,0,0,0],[1.2,1.2,1.2,1.2],[0,0,0,0]],"x":[0.7037563071552551,1.7752687692106566],"prob":0.0036572464853460484,"pred":"horizontal","correct":true},{"kind":"horizontal","brightness":1.6,"image":[[1.6,1.6,1.6,1.6],[0,0,0,0],[1.6,1.6,1.6,1.6],[0,0,0,0]],"x":[1.0120218940108487,2.4545595989689586],"prob":0.0005380671005345373,"pred":"horizontal","correct":true}],"accuracy":1}};
+</script>
+<script>
+/* A small masked-image model. All parameters and predictions are inspectable.
+   Two width-two attention blocks, no LayerNorm/MLP, masked-pixel MSE.
+   The encoder receives visible patches only; the target is used only by loss. */
+(function () {
+  'use strict';
+  const A=window.AT, copy=x=>JSON.parse(JSON.stringify(x));
+  const map=(x,f)=>Array.isArray(x)?x.map(v=>map(v,f)):f(x);
+  const zip=(a,b,f)=>Array.isArray(a)?a.map((v,i)=>zip(v,b[i],f)):f(a,b);
+  const add=(a,b)=>zip(a,b,(x,y)=>x+y), mul=(a,s)=>map(a,x=>x*s);
+  const zeros=(n,d)=>Array.from({length:n},()=>Array(d).fill(0));
+  const tr=a=>a[0].map((_,j)=>a.map(r=>r[j]));
+  const mm=(a,b)=>a.map(r=>b[0].map((_,j)=>r.reduce((s,v,k)=>s+v*b[k][j],0)));
+  const sum=r=>r.reduce((s,v)=>s+v,0), sumRows=a=>a.reduce(add,a[0].map(()=>0));
+  const sm=r=>{const m=Math.max(...r),ex=r.map(v=>Math.exp(v-m)),z=sum(ex);return ex.map(v=>v/z);};
+  const initial={W_patch:[[.2,-.1],[.1,.2],[.2,.1],[-.1,.2]],b_patch:[0,0],
+    P_enc:[[-.15,-.15],[-.15,.15],[.15,-.15],[.15,.15]],
+    encQ:[[.3,.1],[0,.3]],encK:[[.2,0],[.1,.3]],encV:[[.5,0],[0,.5]],encO:[[.5,0],[0,.5]],
+    mask:[0,0],P_dec:[[-.15,-.15],[-.15,.15],[.15,-.15],[.15,.15]],
+    decQ:[[.3,0],[.1,.3]],decK:[[.3,.1],[0,.3]],decV:[[.5,0],[0,.5]],decO:[[.5,0],[0,.5]],
+    W_pixels:[[.2,.1,.2,.1],[.1,.2,.1,.2]],b_pixels:[0,0,0,0]};
+  const names=Object.keys(initial);
+  function patches(image){if(!Array.isArray(image)||image.length!==4||!image.every(r=>r.length===4&&r.every(Number.isFinite)))throw Error('Use a finite 4 by 4 image.');return [0,1,2,3].map(j=>[0,1,2,3].map(k=>image[2*Math.floor(j/2)+Math.floor(k/2)][2*(j%2)+k%2]));}
+  function unpatch(rows){const image=zeros(4,4);rows.forEach((r,j)=>r.forEach((v,k)=>{image[2*Math.floor(j/2)+Math.floor(k/2)][2*(j%2)+k%2]=v;}));return image;}
+  function block(E,p,prefix){const Q=mm(E,p[prefix+'Q']),K=mm(E,p[prefix+'K']),V=mm(E,p[prefix+'V']);const scores=mul(mm(Q,tr(K)),1/Math.sqrt(2)),weights=scores.map(sm),message=mm(weights,V),out=add(E,mm(message,p[prefix+'O']));return {E,Q,K,V,scores,weights,message,out};}
+  function blockBackward(f,up,p,prefix,g){g[prefix+'O']=mm(tr(f.message),up);const dm=mm(up,tr(p[prefix+'O'])),dv=mm(tr(f.weights),dm),da=mm(dm,tr(f.V));const ds=f.weights.map((r,i)=>{const center=sum(r.map((v,j)=>v*da[i][j]));return r.map((v,j)=>v*(da[i][j]-center)/Math.sqrt(2));});const dq=mm(ds,f.K),dk=mm(tr(ds),f.Q);g[prefix+'Q']=mm(tr(f.E),dq);g[prefix+'K']=mm(tr(f.E),dk);g[prefix+'V']=mm(tr(f.E),dv);return add(up,add(mm(dq,tr(p[prefix+'Q'])),add(mm(dk,tr(p[prefix+'K'])),mm(dv,tr(p[prefix+'V'])))));}
+  function forward(p,image,hidden=[3]){
+    if(!hidden.length||hidden.length>=4||new Set(hidden).size!==hidden.length||hidden.some(j=>!Number.isInteger(j)||j<0||j>3))throw Error('Hide one to three different patches.');
+    const R=patches(image),visible=[0,1,2,3].filter(j=>!hidden.includes(j));
+    const embed=mm(visible.map(j=>R[j]),p.W_patch).map((r,i)=>add(add(r,p.b_patch),p.P_enc[visible[i]]));
+    const encoder=block(embed,p,'enc');
+    const restored=[0,1,2,3].map(j=>add(hidden.includes(j)?p.mask:encoder.out[visible.indexOf(j)],p.P_dec[j]));
+    const decoder=block(restored,p,'dec'),prediction=mm(decoder.out,p.W_pixels).map(r=>add(r,p.b_pixels));
+    const terms=hidden.map(j=>prediction[j].map((v,k)=>(v-R[j][k])**2)),loss=sum(terms.flat())/(4*hidden.length);
+    return {image:copy(image),R,visible,hidden:hidden.slice(),embed,encoder,restored,decoder,prediction,terms,loss,completion:unpatch(R.map((r,j)=>hidden.includes(j)?prediction[j]:r))};
+  }
+  function backward(p,image,hidden=[3]){const f=forward(p,image,hidden),g={},dr=zeros(4,4);hidden.forEach(j=>{dr[j]=f.prediction[j].map((v,k)=>2*(v-f.R[j][k])/(4*hidden.length));});g.W_pixels=mm(tr(f.decoder.out),dr);g.b_pixels=sumRows(dr);const dd=blockBackward(f.decoder,mm(dr,tr(p.W_pixels)),p,'dec',g);g.P_dec=copy(dd);g.mask=sumRows(hidden.map(j=>dd[j]));const de=blockBackward(f.encoder,f.visible.map(j=>dd[j]),p,'enc',g);g.W_patch=mm(tr(f.visible.map(j=>f.R[j])),de);g.b_patch=sumRows(de);g.P_enc=zeros(4,2);f.visible.forEach((j,i)=>{g.P_enc[j]=de[i];});return {forward:f,loss:f.loss,grads:g};}
+  function texture(kind,brightness){const tile=kind==='vertical'?[brightness,0,brightness,0]:[brightness,brightness,0,0];return unpatch([tile,tile,tile,tile]);}
+  const training=['vertical','horizontal'].flatMap(kind=>[.6,1,1.4,1.8].map(brightness=>({kind,brightness,image:texture(kind,brightness)})));
+  const heldout=['vertical','horizontal'].flatMap(kind=>[.8,1.2,1.6].map(brightness=>({kind,brightness,image:texture(kind,brightness)})));
+  const cases=training.flatMap(ex=>[0,1,2,3].map(j=>({...ex,hidden:[j]})));
+  function batch(p,examples=cases){const grads={};names.forEach(k=>{grads[k]=map(p[k],()=>0);});let loss=0;
+    examples.forEach(ex=>{const b=backward(p,ex.image,ex.hidden);loss+=b.loss;names.forEach(k=>{grads[k]=add(grads[k],b.grads[k]);});});names.forEach(k=>{grads[k]=mul(grads[k],1/examples.length);});return {loss:loss/examples.length,grads};}
+  function sgd(p,g,lr=.03){const next={};names.forEach(k=>{next[k]=zip(p[k],g[k],(v,d)=>v-lr*d);});return next;}
+  function evaluate(p,examples=heldout){return sum(examples.flatMap(ex=>[0,1,2,3].map(j=>forward(p,ex.image,[j]).loss)))/(4*examples.length);}
+  function encode(p,image){const E=mm(patches(image),p.W_patch).map((r,j)=>add(add(r,p.b_patch),p.P_enc[j]));return mul(sumRows(block(E,p,'enc').out),.25);}
+  function probe(p){const train=training.map(ex=>({x:encode(p,ex.image),y:ex.kind==='vertical'?1:0}));let w=[0,0],bias=0;const sigmoid=x=>1/(1+Math.exp(-x));for(let step=0;step<600;step++){let dw=[0,0],db=0;train.forEach(ex=>{const d=sigmoid(sum(ex.x.map((v,k)=>v*w[k]))+bias)-ex.y;dw=add(dw,mul(ex.x,d));db+=d;});w=add(w,mul(dw,-.2/train.length));bias-=.2*db/train.length;}
+    const rows=heldout.map(ex=>{const x=encode(p,ex.image),prob=sigmoid(sum(x.map((v,k)=>v*w[k]))+bias),pred=prob>=.5?'vertical':'horizontal';return {...ex,x,prob,pred,correct:pred===ex.kind};});return {w,bias,rows,accuracy:sum(rows.map(r=>+r.correct))/rows.length};}
+  function run(steps=800,lr=.05){let p=copy(initial);const history=[],snapshots={initial:copy(p)};const first=batch(p);
+    for(let step=0;step<=steps;step++){if(step%20===0||step===1||step===steps){history.push({step,train:evaluate(p,training),test:evaluate(p)});if([0,1,20,100,steps].includes(step))snapshots['step'+step]=copy(p);}if(step===steps)break;p=sgd(p,step===0?first.grads:batch(p).grads,lr);}
+    return {history,snapshots,first,steps,lr,probeBefore:probe(initial),probeAfter:probe(p)};
+  }
+  A.mae={initial:copy(initial),names,copy,map,zip,mm,tr,add,mul,sum,patches,unpatch,block,forward,backward,batch,sgd,evaluate,encode,probe,texture,training,heldout,cases,run};
+})();
+
+</script>
+<script>
+/* Source-linked SVG figures for the saved masked-image experiment. */
+(function(){
+  'use strict';
+  const A=window.AT,T=A.mae,D=window.__MAE__,ns='http://www.w3.org/2000/svg';let serial=0;
+  const el=(tag,attrs={},text)=>{const n=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,v));if(text!=null)n.textContent=text;return n;};
+  function canvas(title,height=310){height+=12;const id='mae-view-'+(++serial),svg=el('svg',{viewBox:`0 0 1100 ${height}`,role:'img','aria-labelledby':id+'-title',class:'mae-figure'});svg.style.cssText='width:100%;height:auto;display:block';svg.append(el('title',{id:id+'-title'},title));
+    const text=(x,y,s,color='var(--ink)',size=24,anchor='middle')=>{y=Math.max(size*.8,y);const n=el('text',{x,y,'text-anchor':anchor,'dominant-baseline':'central','font-size':size,fill:color,'font-family':'var(--font-ui)'},s);svg.append(n);return n;};
+    const box=(x,y,w,h,label,sub,color='e')=>{svg.append(el('rect',{x,y,width:w,height:h,rx:7,fill:`var(--t-${color})`,stroke:`var(--c-${color})`,'stroke-width':1.6}));text(x+w/2,y+h/2-(sub?14:0),label,`var(--c-${color})`,24);if(sub)text(x+w/2,y+h/2+18,sub,'var(--ink-2)',22);};
+    const arrow=(x1,y1,x2,y2,color='var(--ink-3)',dash=false)=>{svg.append(el('path',{d:`M${x1} ${y1}L${x2} ${y2}`,stroke:color,fill:'none','stroke-width':2,'stroke-dasharray':dash?'6 5':'none'}));const a=Math.atan2(y2-y1,x2-x1);svg.append(el('path',{d:`M${x2-10*Math.cos(a-.45)} ${y2-10*Math.sin(a-.45)}L${x2} ${y2}L${x2-10*Math.cos(a+.45)} ${y2-10*Math.sin(a+.45)}`,stroke:color,fill:'none','stroke-width':2}));};
+    function pixels(image,x,y,size,hidden=[],outline=[]){const side=image.length,cell=size/side;image.forEach((r,i)=>r.forEach((v,j)=>{const patch=2*Math.floor(i/2)+Math.floor(j/2),hide=hidden.includes(patch),shade=Math.round(35+100*Math.max(0,Math.min(2,v)));svg.append(el('rect',{x:x+j*cell,y:y+i*cell,width:cell,height:cell,fill:hide?'var(--t-a)':`rgb(${shade},${shade},${shade})`,stroke:'var(--line)','data-hidden':hide,'data-pixel-value':hide?'':v}));if(hide)text(x+(j+.5)*cell,y+(i+.5)*cell,'?', 'var(--c-a)',22);}));if(side===4)[0,1,2,3].forEach(j=>{svg.append(el('rect',{x:x+(j%2)*size/2,y:y+Math.floor(j/2)*size/2,width:size/2,height:size/2,fill:'none',stroke:outline.includes(j)?'var(--c-a)':'var(--ink-3)','stroke-width':outline.includes(j)?4:1.5}));});}
+    return {svg,text,box,arrow,pixels};
+  }
+  const vec=r=>'('+r.map(v=>v.toFixed(3)).join(', ')+')';
+  const sample=T.texture('vertical',1),get=(step=0,brightness=1)=>T.forward(D.snapshots['step'+step],T.texture('vertical',brightness),[3]);
+  function figure(kind,options={}){let c;
+    if(kind==='dataset'){c=canvas('Repeated tiles provide a predictable hidden region',290);['vertical','horizontal'].forEach((kind,i)=>{[.6,1.4].forEach((b,j)=>{const x=45+i*550+j*245;c.pixels(T.texture(kind,b),x,42,158);c.text(x+79,229,'brightness '+b);});c.text(245+i*550,16,kind+' edges','var(--c-e)',26);});c.text(550,274,'Training brightnesses: 0.6, 1.0, 1.4, 1.8. No orientation labels enter pretraining.','var(--ink-2)',22);}
+    else if(kind==='input'){c=canvas('The missing pixels supply the target, not the input',285);c.pixels(sample,75,35,184,[],[3]);c.text(167,247,'Original image');c.pixels(sample,455,35,184,[3]);c.text(547,247,'Model input');c.arrow(285,128,428,128);const row=T.patches(sample)[3];c.pixels([row.slice(0,2),row.slice(2)],880,61,132);c.text(946,225,'Target p4');c.text(946,263,'(1, 0, 1, 0)','var(--c-a)',22);}
+    else if(kind==='restore'){const f=get();c=canvas('Encoded visible rows return to their slots',310);for(let j=0;j<4;j++){const x=20+j*275,hidden=j===3;c.box(x,28,245,83,hidden?'mask token':'encoded patch '+(j+1),hidden?vec(T.initial.mask):vec(f.encoder.out[j]),hidden?'a':'e');c.text(x+122,150,'+ decoder position','var(--ink-2)',22);c.text(x+122,180,vec(T.initial.P_dec[j]),'var(--ink-2)',22);c.arrow(x+122,204,x+122,240);c.text(x+122,275,vec(f.restored[j]),'var(--c-e)',24);} }
+    else if(kind==='reconstruction'){const step=options.step||0,b=options.brightness||1,f=get(step,b);c=canvas('Actual masked-pixel prediction at step '+step,300);c.pixels(f.image,55,39,180,[3]);c.pixels(f.completion,455,39,180,[],[3]);c.pixels(f.image,855,39,180,[],[3]);c.text(145,253,'Visible input');c.text(545,253,'Prediction at step '+step);c.text(945,253,'True image');c.text(550,288,'Predicted p4 = '+vec(f.prediction[3])+'   MSE = '+f.loss.toFixed(6),'var(--c-d)',22);}
+    else if(kind==='graph'){c=canvas('Masked-pixel loss trains both encoder and decoder',325);c.box(15,40,230,75,'Visible pixels','3 rows × 4 numbers');c.box(320,40,240,75,'Patch map + encoder','3 rows × 2 numbers');c.box(670,40,410,75,'Restore slots + decoder','4 rows × 2 numbers');c.arrow(248,78,317,78);c.arrow(563,78,667,78);c.box(670,209,250,75,'Pixel prediction','p4: four numbers');c.box(340,209,240,75,'Masked-pixel MSE','compare with p4','a');c.box(15,209,230,75,'True hidden pixels','target only','a');c.arrow(874,118,874,206);c.arrow(667,247,583,247);c.arrow(248,247,337,247);c.arrow(458,206,458,118,'var(--c-d)',true);c.arrow(565,212,752,118,'var(--c-d)',true);c.text(200,165,'backward: autograd','var(--c-d)',22);}
+    else if(kind==='curve'){c=canvas('Reconstruction error on training and held-out brightnesses',300);const left=85,right=1010,top=40,bottom=245,max=Math.max(...D.history.map(h=>h.train));for(let j=0;j<=4;j++){const y=bottom-(bottom-top)*j/4;c.svg.append(el('path',{d:`M${left} ${y}H${right}`,stroke:'var(--line)'}));c.text(left-14,y,(max*j/4).toFixed(2),'var(--ink-2)',22,'end');}for(const [key,color]of[['train','var(--c-e)'],['test','var(--c-d)']]){const points=D.history.map(h=>`${left+(right-left)*h.step/D.steps},${bottom-(bottom-top)*h[key]/max}`).join(' ');c.svg.append(el('polyline',{points,fill:'none',stroke:color,'stroke-width':3}));}c.text(100,280,'0');c.text(1005,280,String(D.steps));c.text(550,280,'SGD updates');c.text(345,15,'Training MSE','var(--c-e)',22);c.text(720,15,'Held-out brightness MSE','var(--c-d)',22);}
+    else if(kind==='failure'){const im=T.unpatch([[1,0,1,0],[1,0,1,0],[1,0,1,0],[0,1,0,1]]),f=T.forward(D.snapshots.step800,im);c=canvas('A changed hidden tile cannot be inferred from this context',295);c.pixels(im,55,37,180,[3]);c.pixels(f.completion,455,37,180,[],[3]);c.pixels(im,855,37,180,[],[3]);c.text(145,250,'Same visible input');c.text(545,250,'Model repeats the pattern');c.text(945,250,'Hidden tile changed');c.text(550,285,'The prediction is unchanged. Its target is different. MSE = '+f.loss.toFixed(3),'var(--c-a)',22);}
+    else throw Error('Unknown MAE figure '+kind);return c.svg;
+  }
+  function mount(host,kind,options){host.replaceChildren(figure(kind,options));}
+  function controls(host){let step=0,brightness=1;const buttons=A.h('div',{class:'btn-row'}),drawing=A.h('div'),status=A.h('p',{'aria-live':'polite'});host.append(buttons,drawing,status);const btns=[0,1,20,100,800].map(n=>{const b=A.h('button',{type:'button'},'Step '+n);b.addEventListener('click',()=>{step=n;draw();});buttons.append(b);return b;});const row=A.h('div',{class:'btn-row'});[1,1.2].forEach(b=>{const bt=A.h('button',{type:'button'},b===1?'Training brightness 1.0':'Held-out brightness 1.2');bt.addEventListener('click',()=>{brightness=b;draw();});row.append(bt);});host.append(row);function draw(){mount(drawing,'reconstruction',{step,brightness});btns.forEach((b,i)=>b.setAttribute('aria-pressed',String([0,1,20,100,800][i]===step)));status.textContent='Saved parameters, recomputed prediction. Brightness '+brightness.toFixed(1)+'. The pixel scale stays fixed.';}draw();}
+  T.view={data:D,sample,get,figure,mount,controls,vec};
+})();
+
+</script>
 
 
 <!-- ===================== SECTIONS ===================== -->
@@ -3441,7 +3531,7 @@ Patch 1 contains four ones; patches 2 and 3 contain zeros; patch 4 contains twos
 
 Position contributes another d-wide row, not an extra coordinate. Later encoder outputs remain representations, not raw pixels.</script>
 </div>
-<div class="companion after"><p>The drawing uses four patches so we can see every input. Real pretraining uses many images and usually many more patches. Its objective does not by itself prove that the representation will work for recognition, segmentation, or another downstream task; that requires evaluation.</p><p>We will compare three target choices: MAE reconstructs pixels, DINO matches a teacher's probability distribution across views, and I-JEPA predicts target-region features. Our browser exercises calculate losses from disclosed inputs. They do not run a pretrained model.</p></div>
+<div class="companion after"><p>The drawing uses four patches so we can see every input. Real pretraining uses many images and usually many more patches. Its objective does not by itself prove that the representation will work for recognition, segmentation, or another downstream task; that requires evaluation.</p><p>We will compare three target choices: MAE reconstructs pixels, DINO matches a teacher's probability distribution across views, and I-JEPA predicts target-region features. For MAE, we will train a small model on repeated-tile images and inspect its predictions. The DINO calculator isolates the loss arithmetic using supplied logits.</p></div>
 <script>
 (function(){const S=document.getElementById('s01'),T=AT.visionSSL;
 T.diagram(S.querySelector('#s01-image'),'image');AT.visionScene.mount(S.querySelector('#s01-masked'),{mode:'masked',variant:'two'});
@@ -3486,8 +3576,8 @@ It uses representations from the pretrained encoder. The encoder can process all
 </section>
 
 <!-- ===== sec03.html ===== -->
-<section id="s03" class="sec" data-title="Which pixels enter the loss?" data-lit="">
-<header class="sec-head"><span class="sec-num">03</span><div><p class="eyebrow">Compute an error before talking about learning.</p><h2>Which pixels enter the loss?</h2></div></header>
+<section id="s03" class="sec" data-title="A masked image teaches an encoder" data-lit="">
+<header class="sec-head"><span class="sec-num">03</span><div><p class="eyebrow">First calculate an error. Then let a model learn from it.</p><h2>A masked image teaches an encoder</h2></div></header>
 <div class="companion" data-kicker="For self-study"><p>Suppose patch 4 is hidden. Its four true pixels are all 2. If the decoder guesses 1 for every pixel, each squared error is 1 and their mean is 1. We will use mean squared error per masked pixel throughout this exercise. A patch is either included in that loss or excluded; visible-patch errors do not enter the denominator.</p></div>
 <div class="frame" data-title="One hidden patch, four prediction errors" data-autobuild="off">
   <p>Patch 4 is the lower-right patch. Its true pixel row is $(2,2,2,2)$.</p>
@@ -3500,7 +3590,7 @@ loss = squared.mean()</code></pre>
 The target comes from the original image. Count four masked pixels in the denominator.</script>
 </div>
 <div class="frame" data-title="Change the hidden patches and the pixel guess" data-autobuild="off">
-  <p>This is an exact loss calculator, not a trained image reconstructor.</p>
+  <p>Here we choose the guess ourselves. Next, a model will produce it.</p>
   <div data-present="manual"><label for="s03-mask">Hidden patches: </label><select id="s03-mask"><option value="0">p2, p3, p4</option><option value="1">p4 only</option><option value="2">p1, p4</option></select><div id="s03-slider"></div></div>
   <div id="s03-lab-table"></div>
   <p id="s03-lab-loss" aria-live="polite"></p>
@@ -3518,6 +3608,94 @@ Then hide only p4 and guess 2. The loss becomes zero because the supplied guess 
 A constant guess can be right on a simple constant patch. The dataset and evaluation matter.</script>
 </div>
 <div class="companion after"><p>Every value in the calculator follows the displayed formula. Each masked patch contributes four pixels. Its patch error is the sum of those four squared errors; the final loss divides the total by the number of masked pixels. A real MAE has a prediction vector for every masked patch, rather than our shared scalar guess.</p><p>The missing pixels may not be uniquely determined by the visible region. Reconstruction can encourage useful structure without reproducing every unpredictable detail. A low pretraining loss and a good downstream representation are related goals, not interchangeable measurements.</p></div>
+<div class="companion"><p>Let us replace the supplied guesses with a model we can train. A single image would invite memorization, so we use eight small images made from repeated tiles. This keeps the context predictable enough to check every stage. These textures are a new dataset for this experiment; we are not claiming to reconstruct the earlier photograph.</p></div>
+<div class="frame" data-title="Several images share a pattern" data-autobuild="off">
+  <p>Each image repeats one tile four times. Can the visible tiles help fill a missing one?</p>
+  <div id="s03-mae-dataset"></div>
+  <p>Eight training images × four choices of hidden patch = 32 training cases.</p>
+</div>
+<div class="frame" data-title="One training image and its hidden target" data-autobuild="off">
+  <p>Start with brightness 1. Hide patch 4 and keep patches 1, 2, and 3.</p>
+  <div id="s03-mae-input"></div>
+  <p>The input contains twelve visible pixels. The target contains four hidden pixels.</p>
+</div>
+<div class="frame" data-title="A visible patch becomes a two-number row" data-autobuild="off">
+  <p>The first visible patch is $r_1=(1,0,1,0)$. Multiply by $W_{\text{patch}}\in\mathbb R^{4\times2}$.</p>
+  <div id="s03-mae-projection"></div>
+  <p id="s03-mae-position"></p>
+  <script type="text/x-notes">The patch map is shared across positions. The position vector is added to the two coordinates; it is not an extra coordinate.</script>
+</div>
+<div class="frame" data-title="The encoder mixes only visible rows" data-autobuild="off">
+  <p>Apply the attention-and-residual calculation from Vision I to three input rows.</p>
+  <div id="s03-mae-encoded"></div>
+  <pre class="torch-snippet"><code>E_visible = patch_pixels[visible] @ W_patch + b_patch
+E_visible = E_visible + P_enc[visible]  # [3, 2]
+encoded = encoder(E_visible)           # [3, 2]</code></pre>
+  <p>There is no hidden-patch row in the encoder, so it supplies no key or value.</p>
+</div>
+<div class="companion"><p>Here is the encoder's complete attention matrix at initialization. Rows are receivers and columns are visible sources. Each row sums to one.</p><div id="s03-mae-encoder-weights"></div></div>
+<div class="frame" data-title="A mask token reserves the missing slot" data-autobuild="off">
+  <p>Restore the four positions. The missing position gets a learned placeholder.</p>
+  <div id="s03-mae-restore"></div>
+  <p>The decoder receives four two-number rows, with its own position table.</p>
+</div>
+<div class="frame" data-title="The missing slot reads the available information" data-autobuild="off">
+  <p>In the decoder, patch 4's placeholder forms a query. It can read all four decoder rows.</p>
+  <div id="s03-mae-attention"></div>
+  <p>Keys choose the mixing weights. Values carry the messages. The fourth source is still a placeholder, not the hidden pixels.</p>
+</div>
+<div class="frame" data-title="Add the retrieved message to the placeholder" data-autobuild="off">
+  <p>$m_4=\sum_{j=1}^{4}\alpha_{4j}v_j$. Here $W_O=0.5I$, so the update is $0.5m_4$.</p>
+  <div id="s03-mae-decoder-update"></div>
+  <p>Patch 4's updated row now contains information read from the visible patches.</p>
+</div>
+<div class="frame" data-title="The decoder row predicts four pixel values" data-autobuild="off">
+  <p>Use patch 4's updated decoder row $d_4\in\mathbb R^{1\times2}$.</p>
+  <div id="s03-mae-pixels"></div>
+  <p id="s03-mae-pixel-bias"></p>
+  <script type="text/x-notes">This linear output has no sigmoid or clipping. Pixel predictions can be negative. The loss uses the raw prediction; only the image drawing clips its grayscale range.</script>
+</div>
+<div class="frame" data-title="The first reconstruction has visible errors" data-autobuild="off">
+  <div id="s03-mae-before"></div>
+  <p>Only the outlined patch is predicted. Visible pixels are copied into the drawing.</p>
+</div>
+<div class="frame" data-title="Score only the four missing pixels" data-autobuild="off">
+  <div id="s03-mae-error"></div>
+  <pre class="torch-snippet"><code>pred_pixels = decoded @ W_pixels + b_pixels  # [4, 4]
+loss = (pred_pixels[masked] - patch_pixels[masked]).square().mean()</code></pre>
+  <p id="s03-mae-initial-loss"></p>
+</div>
+<div class="frame" data-title="The pixel loss reaches both networks" data-autobuild="off">
+  <div id="s03-mae-graph"></div>
+  <pre class="torch-snippet"><code>optimizer.zero_grad()
+loss.backward()
+optimizer.step()</code></pre>
+  <script type="text/x-notes">Gradients reach both sets of projections, both position tables, the mask token, and the pixel predictor. The hidden target pixels have no path into the encoder.</script>
+</div>
+<div class="frame" data-title="One SGD step changes the next forward pass" data-autobuild="off">
+  <p>Average the loss across all 32 training cases. Update 72 parameters with learning rate 0.05.</p>
+  <div id="s03-mae-one-step"></div>
+  <p id="s03-mae-parameter"></p>
+  <p>The new prediction uses new parameters. The image and its target stay the same.</p>
+</div>
+<div class="frame" data-title="Repeated updates improve reconstruction" data-autobuild="off">
+  <div id="s03-mae-curve"></div>
+  <p>Test on six held-out images at brightnesses 0.8, 1.2, and 1.6. Their losses never supply training gradients.</p>
+</div>
+<div class="frame" data-title="A held-out image after 800 updates" data-autobuild="off">
+  <div id="s03-mae-heldout"></div>
+  <p>Brightness 1.2 was not in training. The repeated-tile pattern was.</p>
+</div>
+<div class="frame" data-title="A simple baseline keeps this result in perspective" data-autobuild="off">
+  <p>Compare mean squared error on the same six held-out images and four masks.</p>
+  <div id="s03-mae-baselines"></div>
+  <p>Averaging the visible tiles is exact here because all four tiles repeat. This experiment teaches the learning loop, not a new reconstruction method.</p>
+</div>
+<div class="frame" data-title="The hidden region can break the pattern" data-autobuild="off">
+  <div id="s03-mae-failure"></div>
+  <p>No visible evidence distinguishes these targets. The model repeats what training taught it to expect.</p>
+</div>
+<div class="companion after"><p>Inspect the same prediction at saved training checkpoints below. The grayscale range stays fixed at 0 to 2. The browser recomputes predictions using saved parameters; it does not train while you read.</p><div id="s03-mae-controls"></div><p>This is a small MAE-style experiment with separate width-two encoder and decoder attention blocks, residual additions, and masked-pixel MSE. It omits LayerNorm, MLPs, and a CLS row. It trains on raw pixel targets without per-patch normalization. Gradients update both sets of projections, both position tables, the mask token, and the pixel predictor. It illustrates the encoder/decoder training path, rather than reproducing the published model or its reported performance.</p><details><summary>Inspect all 72 starting parameters</summary><div id="s03-mae-parameters"></div></details></div>
 <script>
 (function(){const S=document.getElementById('s03'),T=AT.visionSSL;
 AT.ui.table([[2,2,2,2],[1,1,1,1],[1,1,1,1]],{cols:['pixel 1','pixel 2','pixel 3','pixel 4'],rowLabels:['true patch 4','supplied guess','squared error'],cornerLabel:'hidden patch',decimals:2,into:S.querySelector('#s03-worked')});
@@ -3528,6 +3706,29 @@ AT.ui.table(F.rows.filter(r=>r.hidden).map(r=>[r.target.join(' '),F.guess,r.sse]
 S.querySelector('#s03-lab-loss').textContent='Loss = '+F.sse.toFixed(2)+' ÷ '+F.count+' masked pixels = '+F.loss.toFixed(4)+'. Visible patches are not scored.';
 }mask.addEventListener('change',draw);AT.ui.slider({label:'Guess for every hidden pixel',min:0,max:2,step:.25,value:1,format:x=>x.toFixed(2),onInput:x=>{guess=x;draw();},into:S.querySelector('#s03-slider')});draw();
 AT.ui.reveal('Does a zero loss in our calculator show that the encoder learned?','No. We chose the guesses directly. A trained model must produce its guesses from the visible image and learned parameters, then work on held-out images.',{into:S.querySelector('#s03-check')});})();
+</script>
+<script>
+(function(){
+  const S=document.getElementById('s03'),T=AT.mae,V=T.view,D=V.data,host=id=>S.querySelector('#s03-mae-'+id),f=V.get(),one=V.get(1),pixels=['pixel 1','pixel 2','pixel 3','pixel 4'];
+  for(const [id,kind,opts]of[['dataset','dataset'],['input','input'],['restore','restore'],['before','reconstruction'],['graph','graph'],['curve','curve'],['heldout','reconstruction',{step:800,brightness:1.2}],['failure','failure']])V.mount(host(id),kind,opts);
+  AT.ui.matVecCalc(f.R[0],T.initial.W_patch,{from:pixels,to:['coordinate 1','coordinate 2'],cls:'e',xLabel:'r1',outLabel:'r1 W_patch',decimals:2,wDecimals:2,into:host('projection')});
+  host('position').textContent='Add b_patch = (0, 0) and position 1 = (−0.15, −0.15): e1 = '+V.vec(f.embed[0])+'.';
+  AT.ui.table(f.encoder.out,{cols:['coordinate 1','coordinate 2'],rowLabels:['encoded p1','encoded p2','encoded p3'],decimals:3,cornerLabel:'after attention + residual',into:host('encoded')});
+  AT.ui.table(f.encoder.weights,{cols:['read p1','read p2','read p3'],rowLabels:['p1 receives','p2 receives','p3 receives'],decimals:3,cornerLabel:'encoder attention',into:host('encoder-weights')});
+  AT.ui.table(f.decoder.weights[3].map((a,j)=>[V.vec(f.decoder.V[j]),a]),{cols:[{label:'value: two numbers',kind:'code'},'weight for p4'],rowLabels:['encoded p1 + position','encoded p2 + position','encoded p3 + position','mask token + position'],decimals:3,cornerLabel:'decoder source',into:host('attention')});
+  AT.ui.table([f.restored[3],f.decoder.message[3],T.mm([f.decoder.message[3]],T.initial.decO)[0],f.decoder.out[3]],{cols:['coordinate 1','coordinate 2'],rowLabels:['placeholder + position','weighted message m4','update = 0.5 m4','updated decoder row d4'],decimals:3,cornerLabel:'patch 4 receives context',into:host('decoder-update')});
+  AT.ui.matVecCalc(f.decoder.out[3],T.initial.W_pixels,{from:['coordinate 1','coordinate 2'],to:pixels,cls:'d',fromCls:'e',xLabel:'d4',outLabel:'d4 W_pixels',decimals:3,wDecimals:2,into:host('pixels')});
+  host('pixel-bias').textContent='Add b_pixels = (0, 0, 0, 0): predicted p4 = '+V.vec(f.prediction[3])+'.';
+  AT.ui.table([f.R[3],f.prediction[3],f.terms[0]],{cols:pixels,rowLabels:['target','prediction','squared error'],decimals:3,cornerLabel:'masked patch 4',into:host('error')});
+  host('initial-loss').textContent='Mean of four squared errors = '+f.loss.toFixed(6)+'. Calculations use unrounded values.';
+  AT.ui.table([[f.loss,D.history[0].train],[one.loss,D.history[1].train]],{cols:['this image, p4 hidden','mean over 32 cases'],rowLabels:['before update','after one update'],decimals:6,cornerLabel:'reconstruction MSE',into:host('one-step')});
+  host('parameter').textContent='For example, W_pixels[0,0]: '+T.initial.W_pixels[0][0].toFixed(6)+' − 0.05 × ('+D.first.grads.W_pixels[0][0].toFixed(6)+') ≈ '+D.snapshots.step1.W_pixels[0][0].toFixed(6)+'.';
+  const mean=T.training.map(ex=>T.patches(ex.image)).reduce(T.add,T.training[0].image.map(r=>r.map(()=>0))).map(r=>r.map(v=>v/T.training.length));
+  const constant=T.sum(T.heldout.flatMap(ex=>T.patches(ex.image).flatMap((r,j)=>r.map((v,k)=>(v-mean[j][k])**2))))/(T.heldout.length*16);
+  AT.ui.table([[constant],[D.history.at(-1).test],[0]],{cols:['held-out MSE'],rowLabels:['training-set mean tile','our learned reconstruction','average the visible tiles'],decimals:6,cornerLabel:'predictor',into:host('baselines')});
+  V.controls(host('controls'));
+  T.names.forEach(name=>{const p=T.initial[name],rows=Array.isArray(p[0])?p:[p];host('parameters').append(AT.h('h4',{},name));AT.ui.table(rows,{cols:rows[0].map((_,j)=>'column '+(j+1)),rowLabels:rows.map((_,j)=>'row '+(j+1)),decimals:2,into:host('parameters')});});
+})();
 </script>
 </section>
 
@@ -3697,6 +3898,12 @@ Use a fixed image-level readout suited to that backbone. Final quality is measur
 
 MAE uses the observed pixels. DINO and I-JEPA use EMA targets in different output spaces. The next frame separates the gradient and EMA updates.</script>
 </div>
+<div class="frame" data-title="Our probe finds no classification gain" data-autobuild="off">
+  <p>Freeze each encoder. Fit a fresh linear classifier to distinguish vertical from horizontal tiles.</p>
+  <div id="s07-mae-probe"></div>
+  <p>Both probes get all six held-out images right. The starting features already separate this easy task.</p>
+  <p>Lower reconstruction loss alone does not show that classification improved.</p>
+</div>
 <div class="frame" data-title="Which parameters follow gradients, and which follow EMA?" data-autobuild="off">
   <div id="s07-updates"></div>
   <p data-build="1">MAE has no learned target network: the original pixels already supply its target.</p>
@@ -3712,9 +3919,10 @@ In I-JEPA, the context encoder and predictor take gradients; only the context en
 
 A good image representation does not automatically place the word river near a river image in a compatible text space. Paired image-caption training supplies that cross-modal signal.</script>
 </div>
-<div class="companion after"><p>We have not compared leaderboard scores. Architecture, data scale, augmentation, training duration, and evaluation protocol can all change a result. Nor have we treated synthetic scores as a benchmark. The reconstruction and DINO calculators only demonstrate their stated arithmetic.</p><p>For the next part, keep the distinction between a backbone representation and the objective used to train it. Image-text alignment can use visual features from a pretrained backbone, but it must learn a relationship to text. The visual pretraining methods in this part do not provide that relationship on their own.</p><p>Primary references: <a href="https://arxiv.org/abs/2111.06377">MAE</a>, <a href="https://arxiv.org/abs/2104.14294">DINO</a>, and <a href="https://arxiv.org/abs/2301.08243">I-JEPA</a>. This lesson and its calculations work offline once the page assets are available.</p></div>
+<div class="companion after"><p>The probe averages the four unmasked encoder output rows into one width-two image representation. It fits a binary linear classifier on the eight labelled training images with 600 SGD updates and learning rate 0.2. The encoder is frozen. We repeat the same procedure before and after reconstruction training and evaluate on the six held-out brightnesses. The orientation labels enter this probe, never the reconstruction objective. This tiny task is already separable at initialization, so the test does not establish a representation-learning gain.</p><p>For the next part, keep the distinction between a backbone representation and the objective used to train it. Image-text alignment can use visual features from a pretrained backbone, but it must learn a relationship to text. The visual pretraining methods in this part do not provide that relationship on their own.</p><p>Primary references: <a href="https://arxiv.org/abs/2111.06377">MAE</a>, <a href="https://arxiv.org/abs/2104.14294">DINO</a>, and <a href="https://arxiv.org/abs/2301.08243">I-JEPA</a>. This lesson and its calculations work offline once the page assets are available.</p></div>
 <script>
 (function(){const S=document.getElementById('s07'),T=AT.visionSSL;T.diagram(S.querySelector('#s07-probe'),'probe');
+const D=AT.mae.view.data;AT.ui.table([[D.probeBefore.accuracy*100],[D.probeAfter.accuracy*100]],{cols:['held-out accuracy (%)'],rowLabels:['before reconstruction training','after 800 reconstruction updates'],decimals:1,cornerLabel:'frozen encoder + fitted linear head',into:S.querySelector('#s07-mae-probe')});
 AT.ui.table([['hidden pixels','original image'],['distribution from another view','EMA teacher + head'],['hidden-region features','EMA target encoder']],{cols:[{label:'prediction target',kind:'text'},{label:'target comes from',kind:'text'}],rowLabels:['MAE','DINO','I-JEPA'],cornerLabel:'method',into:S.querySelector('#s07-compare')});
 AT.ui.table([['encoder + decoder','none'],['student encoder + head','teacher encoder + head'],['context encoder + predictor','target encoder']],{cols:[{label:'gradient updates',kind:'text'},{label:'EMA updates',kind:'text'}],rowLabels:['MAE','DINO','I-JEPA'],cornerLabel:'method',into:S.querySelector('#s07-updates')});
 AT.ui.reveal('If an encoder learns useful river features without captions, has it learned what the word “river” means?','Not from these objectives alone. They supervise visual targets, not a mapping between image features and language. Image-text pairs provide that missing signal in the next part.',{into:S.querySelector('#s07-check')});})();

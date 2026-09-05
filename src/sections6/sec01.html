@@ -26,7 +26,7 @@ Patch 1 contains four ones; patches 2 and 3 contain zeros; patch 4 contains twos
 
 Position contributes another d-wide row, not an extra coordinate. Later encoder outputs remain representations, not raw pixels.</script>
 </div>
-<div class="companion after"><p>The drawing uses four patches so we can see every input. Real pretraining uses many images and usually many more patches. Its objective does not by itself prove that the representation will work for recognition, segmentation, or another downstream task; that requires evaluation.</p><p>We will compare three target choices: MAE reconstructs pixels, DINO matches a teacher's probability distribution across views, and I-JEPA predicts target-region features. Our browser exercises calculate losses from disclosed inputs. They do not run a pretrained model.</p></div>
+<div class="companion after"><p>The drawing uses four patches so we can see every input. Real pretraining uses many images and usually many more patches. Its objective does not by itself prove that the representation will work for recognition, segmentation, or another downstream task; that requires evaluation.</p><p>We will compare three target choices: MAE reconstructs pixels, DINO matches a teacher's probability distribution across views, and I-JEPA predicts target-region features. For MAE, we will train a small model on repeated-tile images and inspect its predictions. The DINO calculator isolates the loss arithmetic using supplied logits.</p></div>
 <script>
 (function(){const S=document.getElementById('s01'),T=AT.visionSSL;
 T.diagram(S.querySelector('#s01-image'),'image');AT.visionScene.mount(S.querySelector('#s01-masked'),{mode:'masked',variant:'two'});
