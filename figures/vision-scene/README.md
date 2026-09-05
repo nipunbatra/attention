@@ -1,6 +1,6 @@
 # One scene across the vision lessons
 
-These are AI-generated photographic illustrations, created with OpenAI's built-in image generation tool on 2026-09-04. They are teaching inputs, not photographs from a dataset and not predictions from ViT, MAE, DINO, I-JEPA, CLIP or a VLM. Every displayed scene carries a provenance caption.
+These are AI-generated photographic illustrations, created with OpenAI's built-in image generation tool on 2026-09-04. They are teaching inputs, not photographs from a dataset and not predictions from ViT, MAE, DINO, I-JEPA, CLIP or a VLM. Provenance is recorded here and in the article's scope notes; classroom figures omit the repeated production caption.
 
 - `two-mugs.jpg`: terracotta mug, teal mug, blue book, plant.
 - `one-mug.jpg`: edited version with the teal mug removed.

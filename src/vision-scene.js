@@ -167,7 +167,8 @@
       }
       fig.classList.add('has-mobile-scene');fig.appendChild(mobile);
     }
-    fig.appendChild(AT.h('figcaption',{},'AI-generated teaching illustration. No model output is shown.'));
+    // Asset provenance lives in the article notes and figures/vision-scene/README.md.
+    // Keep the classroom figure focused on its task and observable content.
     host.replaceChildren(fig);
     return {el:fig,svg};
   }

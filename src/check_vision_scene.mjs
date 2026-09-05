@@ -60,7 +60,7 @@ try{
       assert.equal(await page.evaluate(()=>AT.present.state().fi),frame.index);
       assert(result.length>0,frame.title+' must actually display its scene');
       result.forEach(r=>{
-        assert(r.title?.length>10);assert.match(r.caption,/AI-generated/);assert.deepEqual(r.bad,[],frame.title+' SVG text bounds');
+        assert(r.title?.length>10);assert.equal(r.caption,undefined,'No repeated production caption on the classroom figure');assert.deepEqual(r.bad,[],frame.title+' SVG text bounds');
         r.crops.forEach(crop=>{assert(Math.abs(crop.width-crop.actualWidth)<1,JSON.stringify(crop));assert(Math.abs(crop.height-crop.actualHeight)<1,JSON.stringify(crop));assert.equal(crop.overflow,'hidden');});
       });
       details.push({title:frame.title,modes:result.map(r=>r.mode)});

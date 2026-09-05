@@ -1,5 +1,9 @@
 # Classroom release checks
 
+## 2026-09-05: classroom caption cleanup
+
+Removed the repeated production caption from the shared scene figure in all four vision lessons. Asset provenance remains in `figures/vision-scene/README.md` and the article scope/speaker notes. Human judgments and generated illustrations are still distinguished from calculated model outputs. All 17 scene frames pass offline asset decoding, crop geometry, SVG text bounds, and phone containment checks. No model parameters, numerical examples, or presentation styles changed.
+
 ## 2026-09-05: VLM source-contribution checkpoint
 
 Vision IV now shows all four image-value messages and all three prompt-value messages before their sum. A spatially arranged image-slot diagram retains the original attention mass on text. The same-query comparison and signed logit-difference chart use the fitted model's actual outputs. The image remains visible throughout all three generation stages. Five additional short frames replace no existing arithmetic, training data, or parameters.
