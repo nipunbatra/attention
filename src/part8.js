@@ -31,6 +31,18 @@
     const losses=targets.map((t,i)=>-Math.log(f.probs[i+6][data.vocab.indexOf(t)]));
     return Object.assign(f,{targets:targets.slice(),losses,loss:losses.reduce((s,v)=>s+v,0)/losses.length});
   }
+  // Exact bookkeeping for this single attention block followed by a linear head.
+  // These are source-row terms in one forward pass, not raw-pixel causal effects.
+  function contributions(name='two',prefix=data.prompt,options={}){
+    const f=forward(name,prefix,options),p=params(options.snapshot),i=f.E.length-1;
+    const a=data.vocab.indexOf('two'),b=data.vocab.indexOf('one'),direction=p.W_vocab.map(r=>r[a]-r[b]);
+    const dot=(r,s)=>r.reduce((total,v,j)=>total+v*s[j],0),sources=f.V.map((v,j)=>{
+      const weighted=v.map(x=>x*f.A[i][j]),update=mm([weighted],p.W_O)[0];
+      return {label:j<4?'image '+(j+1):prefix[j-4],weight:f.A[i][j],value:v.slice(),weighted,update,contrast:dot(update,direction)};
+    });
+    const residual=dot(f.E[i],direction)+p.b_vocab[a]-p.b_vocab[b];
+    return {f,row:i,sources,residual,image:sources.slice(0,4).reduce((s,r)=>s+r.contrast,0),text:sources.slice(4).reduce((s,r)=>s+r.contrast,0),total:f.logits[i][a]-f.logits[i][b]};
+  }
   function generate(name='two',options={}){
     const prefix=data.prompt.slice(),trace=[];let stoppedBy='limit';
     const limit=options.limit==null?5:options.limit;
@@ -102,13 +114,28 @@
       c.text(385,350,'Columns supply keys and values.','neutral',22);
     }else if(stage==='generation'){
       const g=generate(name,{snapshot}),i=options.step||0,s=g.trace[i];if(!s)throw Error('Invalid generation step');
-      c=canvas('Generate using the last known text position',235);
-      c.box(230,74,410,82,'Known text prefix',s.prefix.join(' '),'e');
-      c.box(615,74,290,82,'Current query',vec(s.query),'q');
-      c.box(946,74,230,82,s.chosen,'p = '+fmt(s.probs[data.vocab.indexOf(s.chosen)]),'d');
-      c.arrow('M438 74L466 74','q');c.arrow('M763 74L828 74','d');
-      c.text(230,141,'Last sequence position: '+(s.row+1),'neutral',22);
-      c.text(550,193,s.chosen==='<eos>'?'Stop when the model chooses its end marker.':'Append the choice; run the same decoder with the new prefix.','neutral',22);
+      c=canvas('The image stays available at every generation step',340);
+      pixels(c,name,102,87,26);c.text(102,163,'Same image','e',22);
+      c.box(470,75,460,82,'Known text prefix',s.prefix.join(' '),'e');
+      c.text(470,141,'Last known token: '+s.prefix.at(-1)+' (row '+(s.row+1)+')','q',22);
+      c.box(890,75,320,82,'Current query','['+s.query.map(v=>fmt(v)).join(', ')+']','q');c.arrow('M703 75L727 75','q');
+      c.box(455,240,430,82,'Decoder reads image + text','same learned parameters','a');
+      c.box(890,240,320,82,'Next token: '+s.chosen,'p = '+fmt(s.probs[data.vocab.indexOf(s.chosen)]),'d');
+      c.arrow('M102 182L102 240L237 240','e');c.arrow('M455 171L455 195','e');c.arrow('M890 119L890 166L610 166L610 195','q');c.arrow('M673 240L727 240','d');
+      c.text(550,318,s.chosen==='<eos>'?'Stop at the end marker.':'Append the chosen token. It supplies the next query.','neutral',22);
+    }else if(stage==='image-weights'){
+      const f=forward(name),weights=f.A[6],mass=weights.slice(0,4).reduce((s,v)=>s+v,0);c=canvas('Attention on image slots, without renormalizing away the text',315);
+      pixels(c,name,160,143,43);c.text(160,265,'Original grid','neutral',22);
+      for(let j=0;j<4;j++){const x=450+(j%2)*260,y=75+Math.floor(j/2)*115;c.box(x,y,230,85,'image '+(j+1),(100*weights[j]).toFixed(2)+'% of all weight','a');}
+      c.box(960,132,245,112,'Text rows',(100*(1-mass)).toFixed(2)+'% of all weight','e');
+      c.text(700,280,'Four image slots together: '+(100*mass).toFixed(2)+'%.','a',24);
+    }else if(stage==='contrast'){
+      const rows=['two','one'].map(n=>contributions(n)),labels=['residual + bias','image value terms','text value terms','total: two − one'];
+      c=canvas('Exact signed contributions to the two versus one logit difference',340);
+      const groups=[rows.map(r=>r.residual),rows.map(r=>r.image),rows.map(r=>r.text),rows.map(r=>r.total)],max=Math.max(...groups.flat().map(Math.abs)),scale=195/max;
+      for(let j=0;j<2;j++){const x=440+j*395;c.text(x,22,j?'One-block image':'Two-block image','neutral',25);c.svg.append(el('path',{d:`M${x} 52V290`,stroke:'var(--line)','stroke-width':2}));}
+      labels.forEach((label,k)=>{const y=75+k*65;c.text(8,y,label,'neutral',22,'start');for(let j=0;j<2;j++){const value=groups[k][j],x=440+j*395,w=Math.abs(value)*scale;c.svg.append(el('rect',{x:value<0?x-w:x,y:y-13,width:w,height:26,fill:k===3?'var(--c-d)':'var(--c-v)',opacity:k===3?1:.55}));c.text(x+(value<0?-1:1)*(w+8),y,(value>0?'+':'')+fmt(value),'neutral',22,value<0?'end':'start');}});
+      c.text(665,320,'Positive favors two. Negative favors one.','neutral',22);
     }else if(stage==='training'){
       c=canvas('Response loss trains the connector and decoder',315);
       c.box(150,66,260,80,'Fixed vision encoder','no parameter updates','e');
@@ -145,5 +172,5 @@
   ];
   notation.forEach(([g,sym,mean,shape,d])=>A.notation.push({g,sym,mean,shape,dims:()=>d,parts:['vision4']}));
   A.axes.named=false;
-  A.vlm={data,params,vision,forward,teacher,generate,diagram,vec,fmt};
+  A.vlm={data,params,vision,forward,teacher,generate,contributions,diagram,vec,fmt};
 })();

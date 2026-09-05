@@ -175,6 +175,19 @@ compare(reports.after.one.greedy,['two','blocks','<eos>'],'one-image answer regr
 assert(reports.after.two.perToken[2]>reports.before.two.perToken[2],'even one target loss may rise while the mean improves');
 const two=T.forward('two'),one=T.forward('one');
 compare(two.Q[6],one.Q[6],'same first query for the same known text in this one-layer decoder');
+for(const snapshot of ['before','after'])for(const name of ['two','one'])for(const prefix of [data.prompt,data.prompt.concat(data.answers[name].slice(0,1)),data.prompt.concat(data.answers[name].slice(0,2))]){
+  const c=T.contributions(name,prefix,{snapshot}),f=T.forward(name,prefix,{snapshot}),i=f.E.length-1,p=T.params(snapshot);
+  compare(c.sources.map(r=>r.weight),f.A[i],'source weights retain all image and text mass');
+  for(const [j,r]of c.sources.entries()){
+    compare(r.weighted,f.V[j].map(v=>v*f.A[i][j]),'individual weighted value');
+    compare(r.update,mm([r.weighted],p.W_O)[0],'individual projected message');
+    const logits=mm([r.update],p.W_vocab)[0];compare(r.contrast,logits[4]-logits[3],'source logit difference');
+  }
+  compare(tr(c.sources.map(r=>r.weighted)).map(sum),f.message[i],'weighted source values sum to message');
+  compare(tr(c.sources.map(r=>r.update)).map(sum),f.delta[i],'source updates sum to contextual update');
+  compare(c.residual+c.image+c.text,f.logits[i][4]-f.logits[i][3],'residual and source terms reproduce logit contrast');
+}
+assert(T.contributions('two').image<0&&T.contributions('one').image<T.contributions('two').image,'displayed signed image contributions reflect the actual fitted model');
 assert(Math.abs(two.probs[6][4]-one.probs[6][4])>.5,'image changes the first answer distribution');
 assert.equal(T.generate('two',{limit:1}).stoppedBy,'limit');assert.equal(T.generate('two',{limit:1}).trace.length,1);
 for(const bad of [0,-1,7,1.5])assert.throws(()=>T.generate('two',{limit:bad}));
@@ -242,6 +255,9 @@ try{
   assert.equal(await reveal.evaluate(el=>el.open),true,'final reveal opens');
   assert.match(await reveal.innerText(),/projected image rows/,'final answer text is present');
   assert.equal(await page.locator('#s05-pick button').count(),2,'two image-choice controls');
+  assert.equal(await page.locator('#s05-step0 svg rect[data-pixel-value]').count(),16,'the image remains visible at the first generation step');
+  assert.equal(await page.locator('#s05-step1 svg rect[data-pixel-value]').count(),16,'the image remains visible after appending a token');
+  assert.equal(await page.locator('#s05-step2 svg rect[data-pixel-value]').count(),16,'the image remains visible until the end marker');
   await page.locator('#s05-pick button').filter({hasText:'one block'}).click();
   assert.match(await page.locator('#s05-compare').innerText(),/Actual greedy output: one block <eos>/,'one-image control recomputes output');
   await page.locator('#s05-pick button').filter({hasText:'two blocks'}).click();

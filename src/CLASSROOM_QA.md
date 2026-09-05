@@ -1,5 +1,11 @@
 # Classroom release checks
 
+## 2026-09-05: VLM source-contribution checkpoint
+
+Vision IV now shows all four image-value messages and all three prompt-value messages before their sum. A spatially arranged image-slot diagram retains the original attention mass on text. The same-query comparison and signed logit-difference chart use the fitted model's actual outputs. The image remains visible throughout all three generation stages. Five additional short frames replace no existing arithmetic, training data, or parameters.
+
+The model checks pass 5,631 reference/invariant comparisons and 1,096 finite-difference gradients. New checks cover every source message, projected contribution, and complete logit contrast for both images, both snapshots, and three prefix lengths. The existing one-image training regression is unchanged. The 41 frames / 90 progressive states pass the frame audit with 63 valid formulas, no overflow, and no nested slide scrolling. All 62 table views pass desktop, phone, and presentation checks. Browser tests also verify the image persists through generation and inspect SVG bounds. Representative new classroom frames were visually reviewed. This checkpoint does not include a fresh Vision IV PDF export.
+
 ## 2026-09-05: masked-image learning checkpoint
 
 Vision II now follows an actual 72-parameter image-to-prediction-to-update experiment, alongside the original loss calculator. The example exposes visible-patch projection, encoder rows, decoder slot restoration, values and weights, residual update, predicted pixels, masked loss, one SGD update, reconstruction checkpoints, and held-out results. A repeated-tile baseline and an ambiguous hidden-tile failure bound the interpretation. The frozen-encoder probe reports its actual unchanged 100% accuracy instead of claiming improvement.

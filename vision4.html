@@ -3129,6 +3129,18 @@ window.__PART__ = {"part":4,"series":"Vision to language","title":"An image beco
     const losses=targets.map((t,i)=>-Math.log(f.probs[i+6][data.vocab.indexOf(t)]));
     return Object.assign(f,{targets:targets.slice(),losses,loss:losses.reduce((s,v)=>s+v,0)/losses.length});
   }
+  // Exact bookkeeping for this single attention block followed by a linear head.
+  // These are source-row terms in one forward pass, not raw-pixel causal effects.
+  function contributions(name='two',prefix=data.prompt,options={}){
+    const f=forward(name,prefix,options),p=params(options.snapshot),i=f.E.length-1;
+    const a=data.vocab.indexOf('two'),b=data.vocab.indexOf('one'),direction=p.W_vocab.map(r=>r[a]-r[b]);
+    const dot=(r,s)=>r.reduce((total,v,j)=>total+v*s[j],0),sources=f.V.map((v,j)=>{
+      const weighted=v.map(x=>x*f.A[i][j]),update=mm([weighted],p.W_O)[0];
+      return {label:j<4?'image '+(j+1):prefix[j-4],weight:f.A[i][j],value:v.slice(),weighted,update,contrast:dot(update,direction)};
+    });
+    const residual=dot(f.E[i],direction)+p.b_vocab[a]-p.b_vocab[b];
+    return {f,row:i,sources,residual,image:sources.slice(0,4).reduce((s,r)=>s+r.contrast,0),text:sources.slice(4).reduce((s,r)=>s+r.contrast,0),total:f.logits[i][a]-f.logits[i][b]};
+  }
   function generate(name='two',options={}){
     const prefix=data.prompt.slice(),trace=[];let stoppedBy='limit';
     const limit=options.limit==null?5:options.limit;
@@ -3200,13 +3212,28 @@ window.__PART__ = {"part":4,"series":"Vision to language","title":"An image beco
       c.text(385,350,'Columns supply keys and values.','neutral',22);
     }else if(stage==='generation'){
       const g=generate(name,{snapshot}),i=options.step||0,s=g.trace[i];if(!s)throw Error('Invalid generation step');
-      c=canvas('Generate using the last known text position',235);
-      c.box(230,74,410,82,'Known text prefix',s.prefix.join(' '),'e');
-      c.box(615,74,290,82,'Current query',vec(s.query),'q');
-      c.box(946,74,230,82,s.chosen,'p = '+fmt(s.probs[data.vocab.indexOf(s.chosen)]),'d');
-      c.arrow('M438 74L466 74','q');c.arrow('M763 74L828 74','d');
-      c.text(230,141,'Last sequence position: '+(s.row+1),'neutral',22);
-      c.text(550,193,s.chosen==='<eos>'?'Stop when the model chooses its end marker.':'Append the choice; run the same decoder with the new prefix.','neutral',22);
+      c=canvas('The image stays available at every generation step',340);
+      pixels(c,name,102,87,26);c.text(102,163,'Same image','e',22);
+      c.box(470,75,460,82,'Known text prefix',s.prefix.join(' '),'e');
+      c.text(470,141,'Last known token: '+s.prefix.at(-1)+' (row '+(s.row+1)+')','q',22);
+      c.box(890,75,320,82,'Current query','['+s.query.map(v=>fmt(v)).join(', ')+']','q');c.arrow('M703 75L727 75','q');
+      c.box(455,240,430,82,'Decoder reads image + text','same learned parameters','a');
+      c.box(890,240,320,82,'Next token: '+s.chosen,'p = '+fmt(s.probs[data.vocab.indexOf(s.chosen)]),'d');
+      c.arrow('M102 182L102 240L237 240','e');c.arrow('M455 171L455 195','e');c.arrow('M890 119L890 166L610 166L610 195','q');c.arrow('M673 240L727 240','d');
+      c.text(550,318,s.chosen==='<eos>'?'Stop at the end marker.':'Append the chosen token. It supplies the next query.','neutral',22);
+    }else if(stage==='image-weights'){
+      const f=forward(name),weights=f.A[6],mass=weights.slice(0,4).reduce((s,v)=>s+v,0);c=canvas('Attention on image slots, without renormalizing away the text',315);
+      pixels(c,name,160,143,43);c.text(160,265,'Original grid','neutral',22);
+      for(let j=0;j<4;j++){const x=450+(j%2)*260,y=75+Math.floor(j/2)*115;c.box(x,y,230,85,'image '+(j+1),(100*weights[j]).toFixed(2)+'% of all weight','a');}
+      c.box(960,132,245,112,'Text rows',(100*(1-mass)).toFixed(2)+'% of all weight','e');
+      c.text(700,280,'Four image slots together: '+(100*mass).toFixed(2)+'%.','a',24);
+    }else if(stage==='contrast'){
+      const rows=['two','one'].map(n=>contributions(n)),labels=['residual + bias','image value terms','text value terms','total: two − one'];
+      c=canvas('Exact signed contributions to the two versus one logit difference',340);
+      const groups=[rows.map(r=>r.residual),rows.map(r=>r.image),rows.map(r=>r.text),rows.map(r=>r.total)],max=Math.max(...groups.flat().map(Math.abs)),scale=195/max;
+      for(let j=0;j<2;j++){const x=440+j*395;c.text(x,22,j?'One-block image':'Two-block image','neutral',25);c.svg.append(el('path',{d:`M${x} 52V290`,stroke:'var(--line)','stroke-width':2}));}
+      labels.forEach((label,k)=>{const y=75+k*65;c.text(8,y,label,'neutral',22,'start');for(let j=0;j<2;j++){const value=groups[k][j],x=440+j*395,w=Math.abs(value)*scale;c.svg.append(el('rect',{x:value<0?x-w:x,y:y-13,width:w,height:26,fill:k===3?'var(--c-d)':'var(--c-v)',opacity:k===3?1:.55}));c.text(x+(value<0?-1:1)*(w+8),y,(value>0?'+':'')+fmt(value),'neutral',22,value<0?'end':'start');}});
+      c.text(665,320,'Positive favors two. Negative favors one.','neutral',22);
     }else if(stage==='training'){
       c=canvas('Response loss trains the connector and decoder',315);
       c.box(150,66,260,80,'Fixed vision encoder','no parameter updates','e');
@@ -3243,7 +3270,7 @@ window.__PART__ = {"part":4,"series":"Vision to language","title":"An image beco
   ];
   notation.forEach(([g,sym,mean,shape,d])=>A.notation.push({g,sym,mean,shape,dims:()=>d,parts:['vision4']}));
   A.axes.named=false;
-  A.vlm={data,params,vision,forward,teacher,generate,diagram,vec,fmt};
+  A.vlm={data,params,vision,forward,teacher,generate,contributions,diagram,vec,fmt};
 })();
 
 </script>
@@ -3638,6 +3665,21 @@ q_last = Q[-1]</code></pre>
   It normalizes over input positions, not vocabulary words. A displayed 0.000 can be a small positive weight; masked future positions are a separate case.
  </script>
 </div>
+<div class="frame" data-title="Keep the text weight in the picture" data-autobuild="off">
+ <div id="s04-spatial-weights"></div>
+ <p>These are weights on contextual image rows. Each row has already read other patches in the vision encoder.</p>
+ <p>The percentages use all seven sources as the denominator.</p>
+</div>
+<div class="frame" data-title="Each image row sends a weighted value" data-autobuild="off">
+ <p>Multiply each value coordinate by its source weight. We show weights to five decimals so tiny nonzero weights remain visible.</p>
+ <div id="s04-image-terms"></div>
+ <p>The last three columns are the four image messages entering $m_7$. Values can be positive or negative.</p>
+</div>
+<div class="frame" data-title="The known text rows contribute too" data-autobuild="off">
+ <div id="s04-text-terms"></div>
+ <p>Add these three messages to the four image messages, coordinate by coordinate.</p>
+ <p>We keep all seven sources. A visual-only mixture would be a different computation.</p>
+</div>
 <div class="frame" data-title="Retrieve values, then update the question-mark row" data-autobuild="off">
  <div id="s04-values"></div>
  <p data-build="1">$\vv{m_7}=\sum_j\va{\alpha_{7j}}\vv{v_j}$, then $\vp{e_7'}=\ve{e_7}+\underbrace{\vv{m_7}W_O}_{\vd{\Delta e_7}}$.</p>
@@ -3657,13 +3699,29 @@ q_last = Q[-1]</code></pre>
   Work one column of W_vocab and its bias. Then compare all eight logits through vocabulary softmax. This is the second softmax, over different alternatives.
  </script>
 </div>
-<div class="companion after"><h3>All projected values</h3><div id="s04-all-values"></div><p>The numerical toy has the same width for embeddings, queries, keys and values, but their roles and projection matrices differ. Equal shape does not mean equal numbers or interchangeable meaning. The frozen image encoder's width is two; only its connector output has the decoder width of three.</p><p>The displayed weight 0.000 is a small positive number rounded to three decimals, not a masked entry. This query puts most of its weight on text, but that alone does not establish that the image is ignored. The value vectors, output projection and prediction head also matter. The next section tests image dependence by changing the pixels while holding the question and parameters fixed.</p></div>
+<div class="frame" data-title="Change the image while keeping this query fixed" data-autobuild="off">
+ <p id="s04-shared-query"></p>
+ <div id="s04-image-comparison"></div>
+ <p>The image changes the keys, values, and resulting mixture. In this one-layer decoder, the starting question-mark row has not read the image yet.</p>
+</div>
+<div class="frame" data-title="Where does the preference for two come from?" data-autobuild="off">
+ <div id="s04-contrast"></div>
+ <p>Here the image terms favor <code>one</code> in both cases, more strongly for the one-block image. The total determines the preference.</p>
+</div>
+<div class="companion after"><h3>All projected values</h3><div id="s04-all-values"></div><p>The numerical toy has the same width for embeddings, queries, keys and values, but their roles and projection matrices differ. Equal shape does not mean equal numbers or interchangeable meaning. The frozen image encoder's width is two; only its connector output has the decoder width of three.</p><p>The contribution chart is exact bookkeeping for this single attention block and linear vocabulary head. Let $u_{\text{two}}$ and $u_{\text{one}}$ be the corresponding columns of $W_{\mathrm{vocab}}$. Then $z_{\text{two}}-z_{\text{one}}=e_7(u_{\text{two}}-u_{\text{one}})+b_{\text{two}}-b_{\text{one}}+\sum_j\alpha_{7j}v_jW_O(u_{\text{two}}-u_{\text{one}})$. Grouping the sum into image and text terms gives the chart. These terms describe the current forward pass; they are not causal effects of deleting raw pixels. Deleting or replacing a source would also change the attention weights.</p><p>Values and contributions use full precision internally and three decimals in the tables. The next section keeps the image fixed while the growing answer supplies new last-token queries. In a deeper decoder, incoming text rows can already contain image information from earlier layers, so the same-first-query observation need not hold there.</p></div>
 <script>(function(){const S=document.getElementById('s04'),V=AT.vlm,F=V.forward(),p=V.params(),i=6,labels=['image 1','image 2','image 3','image 4','<bos>','count','?'];
 AT.ui.table([F.E[i],...p.W_Q,F.Q[i]],{rowLabels:['e₇','W_Q row 1','W_Q row 2','W_Q row 3','q₇ = e₇ W_Q'],cols:['coordinate 1','coordinate 2','coordinate 3'],cornerLabel:'query projection',decimals:3,into:S.querySelector('#s04-query')});
 AT.ui.table(F.K,{rowLabels:labels,cols:['key 1','key 2','key 3'],cornerLabel:'input row',decimals:3,into:S.querySelector('#s04-keys')});
 AT.ui.table(labels.map((_,j)=>[F.raw[i][j],F.scores[i][j],F.A[i][j]]),{rowLabels:labels,cols:['$\\vq{q_7}\\cdot\\vk{k_j}$','scaled score $s_{7j}$','weight $\\va{\\alpha_{7j}}$'],cornerLabel:'input row',decimals:3,into:S.querySelector('#s04-scores')});
 AT.ui.table([F.message[i],F.delta[i],F.E[i],F.out[i]],{rowLabels:['retrieved message m₇','update m₇ W_O','incoming row e₇','updated row e₇′'],cols:['coordinate 1','coordinate 2','coordinate 3'],decimals:3,into:S.querySelector('#s04-values')});
 const j=V.data.vocab.indexOf('two'),col=p.W_vocab.map(r=>r[j]);
+const C=V.contributions();
+S.querySelector('#s04-spatial-weights').append(V.diagram('image-weights'));
+const termCols=[{label:'v₁',cls:'v'},{label:'v₂',cls:'v'},{label:'v₃',cls:'v'},{label:'weight α',cls:'a',decimals:5},{label:'αv₁',cls:'v'},{label:'αv₂',cls:'v'},{label:'αv₃',cls:'v'}];
+for(const [id,start,end]of[['image-terms',0,4],['text-terms',4,7]])AT.ui.table(C.sources.slice(start,end).map(r=>[...r.value,r.weight,...r.weighted]),{rowLabels:labels.slice(start,end),cols:termCols,cornerLabel:'source',decimals:3,into:S.querySelector('#s04-'+id)});
+S.querySelector('#s04-shared-query').textContent='Same prompt: <bos> count ?. Same first query q7 = ('+F.Q[6].map(v=>V.fmt(v)).join(', ')+').';
+AT.ui.table(['two','one'].map(name=>{const f=V.forward(name);return[f.A[6].slice(0,4).reduce((s,v)=>s+v,0)*100,f.probs[6][4],f.probs[6][3]];}),{rowLabels:['two-block image','one-block image'],cols:['total image weight (%)','p(two)','p(one)'],cornerLabel:'same prompt and parameters',decimals:3,into:S.querySelector('#s04-image-comparison')});
+S.querySelector('#s04-contrast').append(V.diagram('contrast'));
 AT.tex(S.querySelector('#s04-logit'),'z_{\\text{two}}='+F.out[i].map((v,k)=>'('+V.fmt(v)+')('+V.fmt(col[k])+')').join('+')+'+('+V.fmt(p.b_vocab[j])+')\\approx'+V.fmt(F.logits[i][j]));
 AT.ui.table([F.logits[i],F.probs[i]],{rowLabels:['logits','probabilities'],cols:V.data.vocab,decimals:3,into:S.querySelector('#s04-probs')});
 AT.ui.table(F.V,{rowLabels:labels,cols:['value 1','value 2','value 3'],decimals:3,into:S.querySelector('#s04-all-values')});})();</script>
