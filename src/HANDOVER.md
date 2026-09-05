@@ -120,7 +120,6 @@ loading and mobile containment at every scene frame. It also records representat
 - `AT.vision.story`: image crops stay attached to representations through 21 SVG stages. Important operations use separate authored frames so their workings survive ordinary PDF export. Projection columns, score/exponential/normalization stages, and value-only interventions are shown explicitly.
 - `AT.vision.learning`: separate 44-parameter two-image classifier. Initial numbers match `AT.vision.forward()`; full-batch SGD uses learning rate 0.05 for 600 updates. The first step reduces mean loss but worsens the two-block example. `verify_vision1_learning.py` independently reproduces its tensors and checks every parameter gradient with NumPy and central differences. **Do not copy the fitted encoder over the initial frozen snapshot used by Vision IV.**
 - `AT.visionSSL`: exact masked-pixel losses and illustrative teacher logits. These are not trained MAE, DINO, or I-JEPA outputs. EMA and stop-gradient roles must remain explicit.
-- `AT.mae`: a separate, genuinely trained 72-parameter MAE-style model in `part6-learning.js`. Eight repeated-tile images, four single-patch masks each, 800 full-batch SGD updates at 0.05. `mae6.json` stores checkpoints; `part6-learning-view.js` draws actual predictions. Six held-out brightnesses/image combinations test interpolation only. The visible-tile average baseline is exact on this deliberately repetitive dataset. Frozen-encoder probes are already 100% accurate before reconstruction training, so do not claim classification improves. `train_vision2.mjs --check` reproduces 881 saved numbers; `check_vision2_learning.mjs` checks 288 finite differences and hidden-pixel leakage. The training implementation uses explicit JavaScript gradients; the classroom snippets show the equivalent PyTorch operations.
 - `AT.clip`: three trained image–caption pairs, 16×3 pixel map, bag-of-words text map, unit normalization, symmetric loss, and a learned logit scale. `train_vision3.py --check` reproduces training; `check_vision3.mjs` checks the normalization derivative and simultaneous updates. Candidate softmax is not calibrated truth confidence. `checkpoint(0|1|20|60)` reproduces the plotted directions; `projectDirection` is a fixed orthographic camera, never refitted to a checkpoint. Initial normalization uses an exact zero-third-coordinate slice. Probability bars and the learned-directions/initial-temperature comparison isolate scale from geometry. The classroom has 35 frames; static exports retain initial, one-step, and 60-step vector views. Do not infer true 3D angles from their foreshortened screen view.
 - `AT.vlm`: reuses Vision I's fixed encoder, discards CLS only after image attention, then uses a 2×3 bridge and a width-three decoder. Image rows read only image rows; text reads every image plus current/earlier text. No future-answer route is allowed. The prompt's final `?` row predicts the first answer token; subsequent generated tokens provide the new last query. `train_vision4.py --check` reproduces two-pair fitting and a further SGD step. That one-example step **harms the other image's answer**; keep the visible before/after regression rather than claiming universal improvement.
 - `AT.vlm.contributions`: exact per-source weighted values, output-projected terms, and decomposition of `logit(two) - logit(one)` for the single-block linear-head toy. This is forward-pass bookkeeping, not a raw-pixel causal attribution. The visual-slot diagram preserves the full attention denominator, including text. The signed image terms favor `one` for both fitted examples; do not replace them with a generic object-localization story. Generation figures retain the same image while updating the last known token/query.
@@ -151,8 +150,7 @@ node src/check_part4.mjs
 node src/check_vision1.mjs
 python3 src/verify_vision1_learning.py
 node src/check_vision2.mjs
-node src/check_vision2_learning.mjs
-node src/train_vision2.mjs --check
+node src/train_vision2.py --check
 python3 src/train_vision3.py --check
 node src/check_vision3.mjs
 python3 src/train_vision4.py --check
@@ -201,7 +199,7 @@ The user requested regular GitHub checkpoints. Verify the checkout, branch, remo
 
 Give each parallel agent an explicit file boundary and a bounded task. Shared runtime changes affect both series and require all-part fit checks. Ask for changed files, tests actually run, screenshots inspected, and remaining limitations. Keep temporary previews outside the source tree and do not overwrite another agent's changes.
 
-## 7. Vision rebuild (2026-09-05)
+## 7. Vision rebuild (2026-09-05, in progress: Vision II, III, IV rebuilt and pushed; Vision I in progress)
 The four vision parts are being rebuilt to the standard of Part 2. Design: `VISION_FEEDBACK.md` (diagnosis and per-part plans) and `VISION_AXES.md`
 (one 8×8 scene with named regions, a fixed patch encoder with named axes brightness / contrast / row / col, keys "bright region? / on the right?",
 values "sends: brightness / sends: contrast", the shared figures). Foundation files: `vision-shared.js` (scene, encoder, grid, thumb, overlay, scatter,
