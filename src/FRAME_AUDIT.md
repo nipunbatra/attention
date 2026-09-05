@@ -1,0 +1,277 @@
+# FRAME_AUDIT.md — frames that break the whiteboard rules (measured 2026-09-05)
+
+Columns: section, frame title, words on the frame (read-mode innerText), builds, svg drawings, tables, cards. Rules: STYLE_WHITEBOARD.md.
+A frame is listed when it has no SVG drawing and more than 110 words, or two or more tables and no drawing, or a single build with more than 60 words.
+
+## part1: 62 frames, 10 to rework
+- s04 "The same answer for b and i": words 71, builds 1, svg 0, tables 1, cards 1
+- s04 "Different one-hot rows always have zero dot product": words 66, builds 1, svg 0, tables 1, cards 1
+- s05 "Three rows become one row": words 75, builds 1, svg 0, tables 1, cards 1
+- s05 "Order survives concatenation": words 64, builds 1, svg 0, tables 2, cards 2
+- s06 "The full network": words 85, builds 0, svg 1, tables 0, cards 1
+- s06 "One hidden unit": words 67, builds 0, svg 0, tables 1, cards 1
+- s07 "Softmax worksheet": words 63, builds 0, svg 0, tables 1, cards 1
+- s12 "Tokenize one string three ways": words 118, builds 0, svg 0, tables 0, cards 1
+- s13 "The chain rule": words 108, builds 0, svg 0, tables 0, cards 0
+- s16 "Notation: from tokens to the MLP input": words 63, builds 0, svg 0, tables 1, cards 1
+
+## part3: 69 frames, 23 to rework
+- s01 "The calculation we already know": words 73, builds 1, svg 1, tables 0, cards 1
+- s01 "The same bank row in the cheque context": words 73, builds 1, svg 0, tables 1, cards 1
+- s01 "Bank in the river context": words 72, builds 1, svg 0, tables 1, cards 1
+- s03 "Every parameter receives a matching gradient": words 70, builds 1, svg 0, tables 1, cards 1
+- s03 "Intermediates are recomputed": words 64, builds 1, svg 0, tables 1, cards 1
+- s03 "Stored or temporary?": words 61, builds 0, svg 0, tables 1, cards 1
+- s03 "Output parameters have matching gradients too": words 61, builds 0, svg 0, tables 1, cards 1
+- s04 "Follow the branches all the way to loss": words 83, builds 0, svg 1, tables 0, cards 0
+- s04 "Autograd follows the same graph backward": words 81, builds 0, svg 1, tables 0, cards 0
+- s06 "The mask keeps parallel training causal": words 146, builds 0, svg 0, tables 0, cards 0
+- s06 "Average the position losses": words 60, builds 0, svg 0, tables 2, cards 0
+- s06 "Shift inputs into targets": words 38, builds 1, svg 0, tables 2, cards 0
+- s07 "Project each head from the same input": words 126, builds 1, svg 0, tables 1, cards 1
+- s07 "Every head reads the full input": words 96, builds 0, svg 0, tables 0, cards 1
+- s07 "One token can need several relations": words 64, builds 1, svg 0, tables 1, cards 1
+- s08 "One token through the FFN": words 61, builds 0, svg 1, tables 0, cards 1
+- s09 "LayerNorm within one row": words 70, builds 1, svg 1, tables 1, cards 1
+- s10 "Depth supports multi-hop updates": words 75, builds 1, svg 0, tables 0, cards 0
+- s11 "Shapes stay compatible": words 104, builds 1, svg 0, tables 1, cards 1
+- s13 "Choose, append, repeat": words 62, builds 1, svg 0, tables 0, cards 0
+- s13 "Reuse old keys and values": words 42, builds 1, svg 0, tables 2, cards 0
+- s14 "Cross-attention reuses the calculation": words 98, builds 1, svg 0, tables 1, cards 1
+- s15 "Longer memory has a price": words 70, builds 1, svg 1, tables 0, cards 1
+
+## part4: 32 frames, 11 to rework
+- s02 "Keep four contextual source rows": words 93, builds 1, svg 0, tables 1, cards 0
+- s04 "Softmax turns four scores into four reading weights": words 107, builds 1, svg 0, tables 1, cards 0
+- s04 "Compute the three query coordinates": words 104, builds 1, svg 0, tables 1, cards 0
+- s04 "Scale every score by the same square root": words 103, builds 1, svg 2, tables 1, cards 0
+- s04 "Each encoded source row supplies a key and a value": words 82, builds 2, svg 0, tables 2, cards 0
+- s05 "Project the message, then add it to the decoder row": words 132, builds 1, svg 0, tables 1, cards 0
+- s05 "Mix the source values for this decoder query": words 98, builds 1, svg 0, tables 1, cards 0
+- s06 "Autograd follows the forward graph backward": words 102, builds 1, svg 1, tables 0, cards 0
+- s06 "Three decoder queries read four source positions": words 99, builds 1, svg 1, tables 1, cards 0
+- s08 "Follow one prediction through both streams": words 104, builds 1, svg 1, tables 0, cards 0
+- s08 "Three blocks; three choices of where to read": words 69, builds 1, svg 0, tables 1, cards 0
+
+## vision1: 67 frames, 50 to rework
+- s01 "What changes between text and image": words 122, builds 1, svg 0, tables 1, cards 1
+- s01 "Neither extreme works": words 112, builds 3, svg 0, tables 0, cards 0
+- s01 "How many rows should a photograph become?": words 90, builds 1, svg 1, tables 0, cards 1
+- s01 "The same chain, a new input": words 75, builds 1, svg 1, tables 0, cards 1
+- s02 "The scene we can compute on": words 212, builds 1, svg 17, tables 0, cards 1
+- s02 "Three scenes, one question": words 79, builds 1, svg 3, tables 0, cards 1
+- s03 "The content rows of patches 1 to 8": words 156, builds 1, svg 8, tables 1, cards 1
+- s03 "The projection, read aloud": words 134, builds 1, svg 0, tables 1, cards 1
+- s03 "The content rows of patches 9 to 16": words 132, builds 1, svg 8, tables 1, cards 1
+- s03 "One patch, worked": words 126, builds 1, svg 16, tables 1, cards 1
+- s03 "The patch plane": words 118, builds 1, svg 9, tables 0, cards 1
+- s04 "Add a position row of the same width": words 210, builds 1, svg 1, tables 1, cards 1
+- s04 "E: CLS and patches 1 to 8": words 156, builds 1, svg 8, tables 1, cards 1
+- s04 "A row for the answer: CLS": words 144, builds 1, svg 0, tables 1, cards 1
+- s04 "Swap two patches: what changes?": words 118, builds 1, svg 2, tables 1, cards 1
+- s04 "E, continued: patches 9 to 16": words 115, builds 1, svg 8, tables 1, cards 1
+- s04 "Same pixels, different place": words 78, builds 1, svg 2, tables 1, cards 1
+- s05 "CLS asks; every row offers": words 194, builds 1, svg 0, tables 2, cards 1
+- s05 "One edge, written out": words 157, builds 1, svg 2, tables 1, cards 1
+- s05 "The routing tree: one query, seventeen keys": words 128, builds 1, svg 17, tables 0, cards 1
+- s05 "Softmax paints the weights on the image": words 121, builds 1, svg 1, tables 0, cards 1
+- s05 "Before training, on both training scenes": words 121, builds 1, svg 2, tables 0, cards 1
+- s05 "The key, worked": words 103, builds 1, svg 0, tables 1, cards 1
+- s05 "One row's record: e, k and v": words 91, builds 1, svg 16, tables 3, cards 1
+- s06 "Mix the values": words 251, builds 1, svg 16, tables 1, cards 1
+- s06 "From message to update: Δe and the residual addition": words 211, builds 1, svg 0, tables 2, cards 1
+- s06 "A weight says how much; a value says what": words 190, builds 1, svg 0, tables 2, cards 1
+- s06 "The CLS point moves toward what it read": words 133, builds 1, svg 9, tables 0, cards 1
+- s06 "A representation changed, not a parameter": words 115, builds 2, svg 0, tables 1, cards 1
+- s06 "The output projection, worked": words 109, builds 1, svg 0, tables 1, cards 1
+- s06 "Change only the values: do the weights change?": words 100, builds 1, svg 2, tables 1, cards 1
+- s07 "The class head reads the updated CLS row": words 145, builds 1, svg 0, tables 2, cards 1
+- s07 "Softmax over the answers, not over the patches": words 107, builds 1, svg 0, tables 1, cards 1
+- s07 "The same untrained model on scene B": words 78, builds 1, svg 2, tables 0, cards 1
+- s07 "The two logits, worked": words 74, builds 1, svg 0, tables 1, cards 1
+- s08 "What arrives, and where it lands": words 228, builds 1, svg 0, tables 3, cards 1
+- s08 "What CLS reads, before and after": words 139, builds 1, svg 2, tables 0, cards 1
+- s08 "What CLS asks for now": words 133, builds 1, svg 0, tables 2, cards 1
+- s08 "The probe: the same mug, moved to the right": words 128, builds 1, svg 1, tables 0, cards 1
+- s08 "Which numbers change, and which we keep": words 106, builds 1, svg 0, tables 1, cards 1
+- s08 "Both training scenes, now": words 80, builds 1, svg 0, tables 1, cards 1
+- s08 "The loss curve": words 64, builds 1, svg 1, tables 0, cards 1
+- s09 "Every row asks the same question here": words 193, builds 1, svg 4, tables 1, cards 1
+- s09 "Attention maps of real Vision Transformers": words 143, builds 3, svg 0, tables 0, cards 0
+- s09 "Pick a receiver": words 123, builds 1, svg 17, tables 0, cards 1
+- s10 "Four numbers become 768": words 162, builds 1, svg 12, tables 1, cards 1
+- s10 "What a full encoder block adds": words 151, builds 3, svg 0, tables 0, cards 0
+- s11 "Three summaries: the chain": words 166, builds 1, svg 1, tables 0, cards 1
+- s11 "From a scene to an answer": words 105, builds 1, svg 1, tables 0, cards 1
+- s11 "Matrix summary: update and answer": words 104, builds 1, svg 0, tables 0, cards 1
+
+## vision2: 42 frames, 24 to rework
+- s01 "What this toy can and cannot show": words 184, builds 1, svg 0, tables 0, cards 0
+- s01 "Ten times ImageNet, and nobody labelled any of it": words 67, builds 1, svg 1, tables 0, cards 1
+- s02 "The placeholder reads the visible patches": words 171, builds 1, svg 5, tables 1, cards 1
+- s02 "A placeholder at each hidden slot asks a question": words 141, builds 1, svg 0, tables 2, cards 1
+- s02 "Four numbers become four pixels": words 117, builds 1, svg 0, tables 1, cards 1
+- s03 "The loss counts only the hidden pixels": words 154, builds 1, svg 1, tables 1, cards 1
+- s03 "Watch the loss fall": words 78, builds 1, svg 1, tables 1, cards 1
+- s04 "The four hidden patches, scored one by one": words 156, builds 1, svg 4, tables 1, cards 1
+- s05 "Three pictures of the same scene": words 260, builds 1, svg 3, tables 0, cards 1
+- s05 "The encoder's summary row for each view": words 115, builds 1, svg 1, tables 1, cards 1
+- s06 "The teacher's target is computed, not typed": words 197, builds 1, svg 0, tables 1, cards 1
+- s06 "The student's loss on the other view": words 145, builds 2, svg 0, tables 1, cards 1
+- s06 "Two heads, one recipe": words 131, builds 1, svg 1, tables 0, cards 1
+- s06 "What each switch does": words 129, builds 2, svg 0, tables 1, cards 1
+- s06 "Run it for 200 steps, then flip the switches": words 92, builds 1, svg 2, tables 0, cards 1
+- s07 "The target is an encoder row, not four pixels": words 137, builds 1, svg 1, tables 2, cards 1
+- s07 "Prediction and target as two points": words 122, builds 1, svg 1, tables 1, cards 1
+- s08 "The probe's numbers: the nine training views": words 110, builds 1, svg 0, tables 1, cards 1
+- s08 "Twelve views on two named axes": words 101, builds 1, svg 1, tables 0, cards 1
+- s09 "Three objectives compared": words 92, builds 1, svg 0, tables 1, cards 0
+- s09 "Which numbers followed the gradient, and which followed the average?": words 74, builds 1, svg 0, tables 1, cards 0
+- s10 "Notation, and the bridge to CLIP": words 652, builds 1, svg 0, tables 2, cards 0
+- s10 "The three losses": words 205, builds 1, svg 2, tables 0, cards 1
+- s10 "Can we tell the whole story without labels?": words 74, builds 1, svg 0, tables 0, cards 2
+
+## vision3: 44 frames, 20 to rework
+- s02 "Name the three joint coordinates first": words 150, builds 2, svg 0, tables 1, cards 1
+- s02 "A caption becomes a bag of word counts": words 140, builds 2, svg 0, tables 1, cards 1
+- s02 "Which pairings count as right?": words 89, builds 1, svg 3, tables 1, cards 1
+- s03 "A learned 4×3 map onto mug, book, plant": words 143, builds 2, svg 0, tables 1, cards 1
+- s03 "Work the image vector of scene A": words 120, builds 1, svg 0, tables 1, cards 1
+- s03 "The caption encoder adds word rows": words 114, builds 1, svg 0, tables 1, cards 1
+- s04 "Softmax across a row: one image chooses a caption": words 158, builds 1, svg 0, tables 1, cards 1
+- s05 "Text to image: hold a caption fixed": words 163, builds 1, svg 3, tables 1, cards 1
+- s05 "Image to text: reward the diagonal": words 139, builds 1, svg 3, tables 1, cards 1
+- s06 "One step changes both encoders and the temperature": words 158, builds 2, svg 0, tables 1, cards 1
+- s06 "What the words learned": words 129, builds 1, svg 0, tables 1, cards 1
+- s06 "Watch the six points move": words 79, builds 1, svg 2, tables 0, cards 1
+- s07 "A wrong pair that is not wrong": words 111, builds 2, svg 0, tables 0, cards 1
+- s07 "More pairs, more competitors": words 87, builds 1, svg 3, tables 1, cards 1
+- s08 "Scenes the toy never trained on": words 131, builds 2, svg 0, tables 2, cards 1
+- s08 "The candidate list is the classifier": words 128, builds 1, svg 1, tables 1, cards 1
+- s08 "Temperature sharpens; it does not reorder": words 75, builds 1, svg 0, tables 0, cards 1
+- s09 "Where this goes next": words 479, builds 1, svg 0, tables 3, cards 2
+- s09 "Three summaries, continued: the equations": words 175, builds 1, svg 0, tables 0, cards 1
+- s09 "Three summaries": words 69, builds 1, svg 0, tables 0, cards 2
+
+## vision4: 44 frames, 29 to rework
+- s01 "One image is 576 rows": words 76, builds 1, svg 1, tables 0, cards 1
+- s01 "The output is a probability for every next token": words 67, builds 1, svg 1, tables 0, cards 1
+- s02 "The same operation, new rows": words 115, builds 1, svg 1, tables 0, cards 1
+- s03 "The connector: four axes in, three learned axes out": words 169, builds 1, svg 0, tables 1, cards 1
+- s03 "Stack them: twenty-one rows in one E": words 162, builds 1, svg 18, tables 0, cards 1
+- s03 "Sixteen frozen rows on four named axes": words 153, builds 0, svg 6, tables 1, cards 1
+- s03 "Text rows: a lookup plus a position": words 96, builds 0, svg 0, tables 1, cards 1
+- s04 "An image row reads the image": words 94, builds 0, svg 1, tables 0, cards 1
+- s05 "Behind the overlay: one score per key": words 222, builds 0, svg 7, tables 1, cards 1
+- s05 "Mix the values the weights selected": words 152, builds 0, svg 6, tables 1, cards 1
+- s05 "Project the message and add it to the question mark": words 149, builds 0, svg 0, tables 2, cards 1
+- s05 "The query comes from the last known token": words 122, builds 1, svg 16, tables 0, cards 1
+- s05 "What the question mark reads": words 89, builds 1, svg 1, tables 0, cards 1
+- s05 "The head: from the updated row to p(two)": words 70, builds 0, svg 0, tables 0, cards 1
+- s06 "Three forward passes, one growing prefix": words 156, builds 0, svg 17, tables 0, cards 0
+- s07 "Scene C: move the mug and ask again": words 112, builds 1, svg 1, tables 0, cards 1
+- s07 "Same question, two scenes: what the answer token reads": words 94, builds 1, svg 2, tables 0, cards 1
+- s07 "What the three scenes say": words 71, builds 1, svg 3, tables 0, cards 1
+- s08 "One more step, on scene A alone": words 128, builds 1, svg 0, tables 1, cards 1
+- s08 "Which rows have a target": words 88, builds 1, svg 16, tables 1, cards 1
+- s08 "What the question mark reads, before and after": words 83, builds 0, svg 2, tables 0, cards 1
+- s08 "The gradient is checked, not derived by hand": words 78, builds 1, svg 0, tables 0, cards 0
+- s08 "The response loss": words 67, builds 1, svg 0, tables 1, cards 1
+- s08 "The run: from an even smear to the mugs": words 67, builds 0, svg 1, tables 1, cards 1
+- s09 "How heavy is the mug?": words 203, builds 1, svg 2, tables 0, cards 1
+- s09 "Change one word of the question: how many book?": words 91, builds 1, svg 1, tables 0, cards 1
+- s10 "Mathematical summary": words 190, builds 0, svg 1, tables 0, cards 1
+- s10 "Three summaries": words 77, builds 1, svg 16, tables 0, cards 2
+- s10 "Back to a a b → i": words 63, builds 0, svg 16, tables 0, cards 1
+
+## attention: 133 frames, 90 to rework
+- s01 "Where a token starts": words 251, builds 0, svg 0, tables 1, cards 1
+- s01 "A useful next-token guess needs relevant context": words 61, builds 1, svg 0, tables 0, cards 0
+- s02 "The head can only use the row it receives": words 151, builds 2, svg 0, tables 0, cards 0
+- s02 "The only input, in both contexts": words 130, builds 0, svg 0, tables 1, cards 1
+- s02 "The last token alone": words 115, builds 1, svg 0, tables 0, cards 1
+- s02 "Switch the context. Do the probabilities move?": words 67, builds 0, svg 0, tables 0, cards 1
+- s03 "Concatenate the rows that are inside": words 164, builds 0, svg 0, tables 1, cards 1
+- s03 "A larger input needs a larger prediction matrix": words 122, builds 2, svg 0, tables 0, cards 0
+- s03 "Different predictions need different clues": words 113, builds 1, svg 0, tables 0, cards 2
+- s03 "More slots also mean more parameters": words 111, builds 1, svg 0, tables 1, cards 1
+- s03 "Inside the window": words 103, builds 1, svg 0, tables 0, cards 1
+- s03 "The input slots stay fixed": words 90, builds 1, svg 0, tables 0, cards 1
+- s04 "The mean gives every available row equal weight": words 170, builds 1, svg 0, tables 1, cards 1
+- s04 "The chosen weights multiply the corresponding rows": words 147, builds 1, svg 0, tables 1, cards 1
+- s04 "Average every earlier token": words 121, builds 0, svg 0, tables 0, cards 1
+- s04 "Let useful rows contribute more": words 70, builds 1, svg 0, tables 0, cards 0
+- s04 "Choose the weights for bank by hand": words 70, builds 0, svg 0, tables 0, cards 1
+- s05 "Compare the query with each key": words 266, builds 6, svg 0, tables 1, cards 1
+- s05 "The same collection can answer different queries": words 215, builds 0, svg 6, tables 12, cards 1
+- s05 "The value is a different table": words 174, builds 0, svg 0, tables 1, cards 1
+- s05 "Return the matched item's information, not its key": words 74, builds 1, svg 0, tables 0, cards 1
+- s06 "Multiply each value by its own weight, then add": words 126, builds 3, svg 0, tables 1, cards 1
+- s06 "Keep the match scores; set the keys aside": words 104, builds 0, svg 0, tables 1, cards 1
+- s06 "Change one score. Every soft weight responds.": words 94, builds 0, svg 0, tables 0, cards 1
+- s06 "Temperature controls concentration": words 89, builds 1, svg 0, tables 0, cards 1
+- s06 "The result is information for this query": words 80, builds 1, svg 0, tables 0, cards 1
+- s06 "Turn scores into weights that sum to one": words 70, builds 0, svg 0, tables 1, cards 1
+- s07 "Do we learn a new matrix for every token?": words 313, builds 0, svg 0, tables 3, cards 1
+- s07 "What can this query compare and retrieve?": words 179, builds 0, svg 1, tables 1, cards 1
+- s07 "Which input row supplies the query?": words 178, builds 0, svg 0, tables 1, cards 1
+- s07 "Keep each key paired with its value": words 109, builds 0, svg 0, tables 1, cards 1
+- s07 "Turn the receiving row into a query": words 103, builds 0, svg 0, tables 1, cards 1
+- s07 "The source’s key: when should it be read?": words 100, builds 0, svg 0, tables 1, cards 1
+- s07 "Matching information or information to send?": words 89, builds 0, svg 0, tables 3, cards 1
+- s07 "The source’s value: what should it send?": words 86, builds 0, svg 0, tables 1, cards 1
+- s08 "What does each selected source send?": words 169, builds 0, svg 0, tables 1, cards 1
+- s08 "Change only the values: do the weights change?": words 168, builds 1, svg 0, tables 1, cards 1
+- s08 "Inspect one query-key comparison": words 109, builds 0, svg 1, tables 1, cards 1
+- s08 "Same weights, different information": words 101, builds 0, svg 0, tables 2, cards 1
+- s08 "Add the weighted values, coordinate by coordinate": words 88, builds 0, svg 0, tables 0, cards 0
+- s09 "What did the search return for bank?": words 199, builds 0, svg 0, tables 2, cards 1
+- s09 "The message needs one final projection": words 125, builds 0, svg 0, tables 0, cards 0
+- s09 "Is Δe a new representation, or an update to add?": words 102, builds 0, svg 0, tables 0, cards 0
+- s09 "Where should each message coordinate land?": words 100, builds 0, svg 0, tables 1, cards 1
+- s09 "Work through the output projection": words 97, builds 0, svg 0, tables 1, cards 1
+- s09 "How does bank receive its context?": words 80, builds 0, svg 1, tables 0, cards 1
+- s09 "Where does the contextual update rejoin bank?": words 76, builds 0, svg 1, tables 0, cards 1
+- s10 "What information reaches bank?": words 339, builds 0, svg 0, tables 2, cards 1
+- s10 "What does the update add to the same starting point?": words 215, builds 0, svg 1, tables 0, cards 1
+- s10 "What changes in bank’s representation?": words 181, builds 0, svg 0, tables 2, cards 1
+- s10 "The same bank row, now in the cheque context": words 181, builds 0, svg 0, tables 2, cards 1
+- s10 "Same bank: what changed between the sentences?": words 98, builds 0, svg 0, tables 0, cards 0
+- s11 "One input row, three different jobs": words 273, builds 0, svg 0, tables 0, cards 1
+- s11 "Which parameters produce those rows?": words 269, builds 0, svg 0, tables 6, cards 1
+- s11 "Follow one row through the layer": words 223, builds 0, svg 0, tables 0, cards 1
+- s11 "Are Q, K and V three separate lookup tables?": words 101, builds 0, svg 2, tables 0, cards 0
+- s11 "Which objects are used inside one layer?": words 98, builds 0, svg 1, tables 0, cards 1
+- s11 "What returns from the attention branch?": words 83, builds 0, svg 1, tables 0, cards 1
+- s12 "Fixed raw scores, changing only the divisor": words 229, builds 0, svg 5, tables 1, cards 1
+- s12 "Does the variance calculation hold in a simulation?": words 205, builds 0, svg 1, tables 1, cards 1
+- s12 "Return to bank: the same query and keys, with and without scaling": words 166, builds 0, svg 2, tables 1, cards 1
+- s13 "Shift the same sentence by one token": words 255, builds 0, svg 0, tables 1, cards 1
+- s13 "Do row sums reveal a future-information leak?": words 222, builds 0, svg 0, tables 0, cards 1
+- s13 "What information reaches the predicting token?": words 202, builds 0, svg 0, tables 0, cards 1
+- s13 "Where must future information be blocked?": words 163, builds 0, svg 2, tables 0, cards 1
+- s14 "Add the context update to the same last-token input": words 143, builds 0, svg 0, tables 1, cards 1
+- s14 "All positions read the same layer inputs": words 127, builds 2, svg 0, tables 0, cards 0
+- s14 "Use the final the’s query to choose source weights": words 101, builds 0, svg 0, tables 1, cards 1
+- s14 "Turn the updated last row into next-token probabilities": words 94, builds 0, svg 0, tables 1, cards 1
+- s14 "Trace how earlier words change the next prediction": words 75, builds 1, svg 0, tables 0, cards 1
+- s15 "Can we trace every number through one forward pass?": words 197, builds 0, svg 1, tables 0, cards 1
+- s16 "What does one row of each matrix mean?": words 268, builds 0, svg 2, tables 1, cards 1
+- s16 "Can you trace one request through the whole diagram?": words 207, builds 0, svg 2, tables 0, cards 0
+- s16 "Can one matrix product do every row at once?": words 205, builds 0, svg 0, tables 0, cards 1
+- s16 "What have we built, and what is still missing?": words 72, builds 0, svg 0, tables 0, cards 0
+- s17 "Hold the rule fixed, then switch the words": words 250, builds 0, svg 1, tables 1, cards 1
+- s17 "Fixed rules use the words but keep the same routes": words 129, builds 0, svg 0, tables 1, cards 1
+- s17 "Attention recomputes the route from the words": words 129, builds 0, svg 0, tables 1, cards 1
+- s17 "Which inclusion or mixing rule changes with the words?": words 105, builds 0, svg 0, tables 0, cards 1
+- s18 "Do the roles and shapes agree?": words 523, builds 0, svg 1, tables 1, cards 1
+- s18 "If every score is equal, what is the message?": words 16, builds 0, svg 0, tables 2, cards 1
+- s18 "Why keep the original embedding as well?": words 10, builds 0, svg 0, tables 2, cards 1
+- s19 "What have we built, and what remains?": words 512, builds 0, svg 1, tables 2, cards 1
+- s19 "Matrix summary, first phase: route by content": words 181, builds 0, svg 1, tables 0, cards 1
+- s19 "Follow the operational chain one stage at a time": words 163, builds 0, svg 1, tables 0, cards 1
+- s19 "How does context change the next-token probabilities?": words 159, builds 0, svg 0, tables 0, cards 1
+- s19 "What turns one prediction into generation?": words 154, builds 4, svg 0, tables 0, cards 0
+- s19 "From the updated row to vocabulary probabilities": words 136, builds 0, svg 0, tables 1, cards 1
+- s19 "This toy does not demonstrate word order": words 134, builds 3, svg 0, tables 0, cards 0
+- s19 "Matrix summary, second phase: carry and add information": words 64, builds 1, svg 0, tables 0, cards 1
