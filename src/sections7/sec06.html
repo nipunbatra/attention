@@ -1,47 +1,186 @@
-<section id="s06" class="sec" data-title="The candidate text supplies the classifier" data-lit="e q a">
-<header class="sec-head"><span class="sec-num">06</span><div><p class="eyebrow">After training, choose descriptions without fitting a new class head.</p><h2>The candidate text supplies the classifier</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>Keep both encoders fixed. For each candidate class, write a description and encode it into a unit text vector. Those text vectors are the classifier's weight rows: the image vector scores each candidate with a dot product. Changing the candidate list changes the readout without changing the learned encoders.</p><p>For pretrained CLIP, this is zero-shot classification when no training on labeled examples from the target task is used. Our tiny checkpoint has already seen the three displayed images and descriptions, so its scores illustrate the inference mechanism rather than demonstrating zero-shot transfer.</p></div>
-<div class="frame" data-title="Return to the mugs: which descriptions do we offer?" data-autobuild="off">
-  <div id="s06-scene"></div>
-  <p data-build="1">The candidate list defines the comparison. No model scores are shown here.</p>
-  <script type="text/x-notes">Which candidate list asks about count, and which asks about colour?
+<section id="s06" class="sec" data-title="Sixty steps on the sphere" data-lit="">
+<style>
+#s06 .read{font-size:15px;color:var(--ink-2);margin:10px 0 0;max-width:72ch;line-height:1.5}
+#s06 .anim{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:720px){#s06 .anim{grid-template-columns:minmax(0,1fr)}}
+#s06 .status{font-family:var(--font-mono);font-size:14px;color:var(--ink-2);margin:8px 0 0}
+#s06 .ctrl{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;margin:0 0 10px}
+#s06 .ctrl .slider{flex:1 1 260px;margin:0}
+#s06 .dt td.is-diag{box-shadow:inset 0 0 0 2px var(--c-d)}
+#s06 .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:720px){#s06 .two{grid-template-columns:minmax(0,1fr)}}
+#s06 .sub{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin:0 0 6px}
+body.present #s06 .read{font-size:21px;line-height:1.3}
+body.present #s06 .status{font-size:20px}
+body.present #s06 .sub{font-size:18px}
+body.present #s06 .dt td,body.present #s06 .dt th{font-size:20px;padding:.18em .45em}
+body.present #s06 .two{gap:16px}
+body.present #s06 .two .dt td,body.present #s06 .two .dt th{font-size:16px;padding:.1em .28em}
+body.present #s06 .two .dt td.dt-num{min-width:2.4em}
+@media (max-width:1100px){body:not(.present) #s06 .two{grid-template-columns:minmax(0,1fr)}}
+body.present #s06 .two .clip-thumb svg{width:30px;height:30px}
+body.present #s06 .vcircle{max-width:360px!important}
+body.present #s06 .card{margin-bottom:12px}
+body.present #s06 .vcircle{max-width:380px}
+body.present #s06 .vcurve{max-width:520px}
+body.present #s06 .vfig figcaption{font-size:19px;margin-top:2px}
+body.present #s06 .bars .bt{height:1.05em}
+</style>
+<header class="sec-head">
+  <span class="sec-num">06</span>
+  <div>
+    <p class="eyebrow">Gradients flow into the image map, the word rows and the temperature. Watch the six points move.</p>
+    <h2>Sixty steps on the sphere</h2>
+  </div>
+</header>
 
-Both two mugs and a blue book describe the image. Putting them in competition does not turn them into mutually exclusive truths. The softmax is conditional on our supplied list; the next frames compute that mechanism on the disclosed grid toy.</script>
+<div class="companion" data-kicker="For self-study">
+  <p>The loss connects to every parameter: the twelve entries of the image map, the rows of the words in the captions, and the log scale. Autograd differentiates the whole path, including the division by each vector's length, and the optimiser takes one step. We run 60 steps of plain gradient descent with learning rate 0.05, all three pairs at once, and record the six unit vectors after every step. Drag the slider or press Play. Observed pairs pull together, wrong pairs push apart, and the temperature drops from 0.50 to 0.21, which sharpens every row. The words learn too: <em>a</em> moves away from mug because it never appeared with the mugs.</p>
 </div>
-<div class="frame" data-title="Build a readout from candidate descriptions" data-autobuild="off">
-  <div id="s06-prompts"></div>
-  <p data-build="1">Each description becomes a candidate vector. No optimizer step happens here.</p>
-  <pre class="torch-snippet" data-build="2"><code>g_txt_unit = F.normalize(text_encoder(prompts), dim=-1)
-scores = g_img_unit @ g_txt_unit.T
-choice = scores.argmax(dim=-1)</code></pre>
-  <script type="text/x-notes">The image vector is already normalized.
 
-Real text_encoder here includes the text encoder and its output projection. This is a matching readout, not a next-token prediction head.</script>
+<div class="frame" data-title="One step changes both encoders and the temperature" data-autobuild="off">
+  <script type="text/x-notes">
+Which parameters receive a gradient?
+All of them: the image map, every word row that appears in a caption, and the log scale. Words outside the three captions get exactly zero. The loss drops from 0.545 to 0.527 after one step.
+  </script>
+  <div class="card">
+    <div id="s06-step"></div>
+    <p class="read" id="s06-step-read" data-build="1"></p>
+  </div>
+  <pre class="torch-snippet" data-build="2"><code>optimizer.zero_grad(); loss.backward(); optimizer.step()   # lr 0.05, all three pairs</code></pre>
 </div>
-<div class="frame" data-title="Classify the anchor with the frozen toy" data-autobuild="off">
-  <div id="s06-frozen"></div>
-  <p data-build="1">Same two-square image. Same three descriptions. Encoder checkpoint: 60 training steps.</p>
-  <p class="callout callout-note" data-build="2">Softmax normalizes over these supplied descriptions. It does not enumerate every possible object or sentence.</p>
-  <script type="text/x-notes">The similarity scores now reflect the actual training updates.
 
-Show where the largest cosine appears. Lowering a positive inference temperature would sharpen its probability without changing the rank.</script>
-</div>
-<div class="frame" data-title="Change prompts, candidates, or temperature" data-autobuild="off">
-  <div id="s06-candidates"></div>
-  <p>The toy uses only its eleven listed words, not a pretrained language model.</p>
-  <script type="text/x-notes">First change temperature with the same candidates: scores and rank stay fixed.
+<div class="frame" data-title="Watch the six points move" data-autobuild="off">
+  <script type="text/x-notes">
+What moves first, the images or the captions?
+Play from 0 to 60 and watch the plant caption leave its axis to meet the plant image, while the book image drifts toward the book caption. The loss curve on the right follows the slider. Every position is a recomputed forward pass.
 
-Next omit the correct description: a wrong candidate must still win. Then duplicate the correct description: the two identical vectors receive equal probability and split their combined mass. Finally change the template and inspect the cosine scores.</script>
+Timing: three minutes.
+  </script>
+  <div class="card">
+    <div class="ctrl"><div id="s06-slider"></div><button type="button" class="btn btn-primary" id="s06-play">Play 60 steps</button></div>
+    <div class="anim">
+      <div id="s06-sphere"></div>
+      <div data-build="1">
+        <div id="s06-curve"></div>
+        <p class="status" id="s06-status" aria-live="polite"></p>
+        <p class="read" id="s06-anim-read"></p>
+      </div>
+    </div>
+  </div>
 </div>
-<div class="frame" data-title="Use one caption to retrieve an image" data-autobuild="off">
-  <div id="s06-retrieval"></div>
-  <pre class="torch-snippet" data-build="1"><code>scores = g_txt_unit @ cached_image_vectors.T
-ranked_images = scores.argsort(descending=True)</code></pre>
-  <p class="callout callout-key" data-build="2">Image-to-text retrieval uses the same operation with the roles reversed.</p>
-  <script type="text/x-notes">Caching avoids rerunning the encoder for every candidate image.
 
-The text query is a global retrieval vector here, not a token-level attention query q. CLIP retrieves existing captions; it does not generate new words.</script>
+<div class="frame" data-title="Pairs pull together, competitors push apart" data-autobuild="off">
+  <script type="text/x-notes">
+Compare the two matrices cell by cell.
+The diagonal barely moves for the two-mug pair, which was already close; the wrong pairs fall to negative cosines. Training spends most of its effort pushing wrong pairs apart, because that is where the loss was.
+  </script>
+  <div class="card">
+    <div class="two">
+      <div><p class="sub">Before: step 0</p><div id="s06-cos0"></div></div>
+      <div data-build="1"><p class="sub">After: step 60</p><div id="s06-cos60"></div></div>
+    </div>
+    <p class="read" id="s06-cos-read" data-build="1"></p>
+  </div>
+  <div class="callout callout-key" data-build="2">The loss rewards a gap between the observed pair and its competitors, not a high score on its own.</div>
 </div>
-<div class="companion after"><h3>Prompts are part of the evaluation</h3><p>A class name can be ambiguous: <em>crane</em> may mean a bird or a machine. A description can specify the intended sense. The CLIP paper evaluates prompt templates such as <code>a photo of a {label}</code> and averages normalized text embeddings across templates, then normalizes the result. Prompt choice can help, but no wording guarantees an improvement on every dataset. See <a href="https://arxiv.org/pdf/2103.00020#page=7">the paper's prompt experiments</a>.</p><p>The current toy template adds word rows according to its bag-of-words rule. Template-only words such as <em>grid</em> retain their hand-chosen starting rows because the training captions do not contain them. The toy cannot show the full contextual behavior of a text Transformer. In a real deployment, report the candidate set and prompt policy alongside accuracy, and evaluate on held-out task data.</p></div>
-<script>(function(){const S=document.getElementById('s06'),C=AT.clip,r=C.classify();AT.visionScene.mount(S.querySelector('#s06-scene'),{mode:'captions',variant:'two',captions:[{text:'two mugs / one mug',label:'Compare counts'},{text:'a blue book / a red book',label:'Compare colour'}]});C.diagram(S.querySelector('#s06-prompts'),'prompts');C.table(S.querySelector('#s06-frozen'),r.cosine.map((c,i)=>[c,r.logits[i],r.probabilities[i]]),{cols:['cosine','logit','candidate p'],rowLabels:r.captions,cornerLabel:'Frozen image vs text'});C.candidateWidget(S.querySelector('#s06-candidates'));C.diagram(S.querySelector('#s06-retrieval'),'retrieval',{caption:'two bright squares'});})();</script>
+
+<div class="frame" data-title="What the words learned" data-autobuild="off">
+  <script type="text/x-notes">
+Why did the row for a move away from mug?
+Because a appears in the book and plant captions and never with the mugs. The model has no idea what a means; it learned a correlation in three sentences. Words outside the captions kept their zero rows.
+  </script>
+  <div class="card">
+    <div id="s06-words"></div>
+    <p class="read" id="s06-words-read" data-build="1"></p>
+  </div>
+</div>
+
+<div class="frame" data-title="Before and after, in probabilities" data-autobuild="off">
+  <script type="text/x-notes">
+Which pair gained most?
+The book pair: its own caption went from under a half to over 0.9. Part of every gain is the temperature, which fell from 0.50 to 0.21 and sharpened all rows at once. The next section shows what changes when the batch grows.
+  </script>
+  <div class="card">
+    <div class="two">
+      <div><p class="sub">p(own caption), step 0</p><div id="s06-bars0"></div></div>
+      <div><p class="sub">p(own caption), step 60</p><div id="s06-bars60"></div></div>
+    </div>
+    <p class="read" id="s06-bars-read" data-build="1"></p>
+  </div>
+</div>
+
+<div class="companion after">
+  <p>Sixty steps of gradient descent on three pairs: the six unit vectors rearrange so that each image and its caption point the same way, the wrong pairs point apart, and the temperature sharpens the softmax. The loss falls from 0.545 to 0.062.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s06'), V = AT.vision, C = AT.clip;
+  const N = C.N, pairs = C.pairs.slice(0, N), T = C.steps;
+  const p0 = C.params('initial'), p1 = C.params('afterOne'), pT = C.params('trained');
+  const f0 = C.forward(p0), f1 = C.forward(p1), fT = C.forward(pT);
+  const g = C.gradients(p0);
+  const imgLab = pairs.map(p => C.thumbHTML(p.scene, 5) + ' ' + AT.escape(V.sceneNames[p.scene]));
+  const capLab = pairs.map(p => C.quote(p.caption));
+  const names = pairs.map(p => V.sceneNames[p.scene]);
+  const wi = w => C.vocab.indexOf(w);
+  /* frame 1: one step, a few parameters */
+  const picks = [
+    { label: '$W_{\\mathrm{img}}$ bright → mug', before: p0.W_img[0][0], grad: g.W_img[0][0], after: p1.W_img[0][0] },
+    { label: '$W_{\\mathrm{img}}$ row → plant', before: p0.W_img[2][2], grad: g.W_img[2][2], after: p1.W_img[2][2] },
+    { label: '$W_{\\mathrm{txt}}$ “mugs” → plant', before: p0.W_txt[wi('mugs')][2], grad: g.W_txt[wi('mugs')][2], after: p1.W_txt[wi('mugs')][2] },
+    { label: '$W_{\\mathrm{txt}}$ “a” → mug', before: p0.W_txt[wi('a')][0], grad: g.W_txt[wi('a')][0], after: p1.W_txt[wi('a')][0] },
+    { label: '$W_{\\mathrm{txt}}$ “photo” → mug', before: p0.W_txt[wi('photo')][0], grad: g.W_txt[wi('photo')][0], after: p1.W_txt[wi('photo')][0] },
+    { label: 'log scale $a$', before: p0.log_scale, grad: g.log_scale, after: p1.log_scale }
+  ];
+  AT.ui.table(picks.map(x => [x.before, x.grad, x.after]), { cols: [{ label: 'before' }, { label: 'gradient ∂L/∂θ' }, { label: 'after one step' }], rowLabels: picks.map(x => x.label), cornerLabel: 'six of the 55 parameters', decimals: 4,
+    caption: 'θ ← θ − 0.05 ∂L/∂θ for every parameter at once, all gradients taken at the same old parameters. “photo” is in no training caption, so its gradient is exactly zero.', into: S.querySelector('#s06-step') });
+  S.querySelector('#s06-step-read').innerHTML = 'Recomputing the forward pass with the new parameters: the loss goes from $' + AT.fmt(f0.loss, 4) + '$ to $' + AT.fmt(f1.loss, 4) + '$ and the temperature from $' + AT.fmt(f0.tau, 3) + '$ to $' + AT.fmt(f1.tau, 3) + '$. The row for “a” already moves away from mug.';
+  AT.renderMath(S.querySelector('#s06-step-read'));
+  /* frame 2: the animation */
+  const sphere = C.sphere(C.state(0), { size: 400, into: S.querySelector('#s06-sphere') });
+  const curve = V.curve(C.history.map((l, i) => [i, l]), { label: 'Mean contrastive loss over the three pairs', mark: 0, width: 460, height: 190, into: S.querySelector('#s06-curve') });
+  const status = S.querySelector('#s06-status'), aread = S.querySelector('#s06-anim-read');
+  let timer = null;
+  function show(t){
+    t = Math.max(0, Math.min(T, Math.round(t)));
+    const st = C.state(t);
+    sphere.setState(st); curve.setMark(t);
+    status.textContent = 'step ' + t + ' of ' + T + ' · loss ' + AT.fmt(st.loss, 3) + ' · τ ' + AT.fmt(st.tau, 3) + ' · p(own caption) ' + st.diag.map(x => AT.fmt(x, 2)).join(' / ');
+    const worst = st.diag.indexOf(Math.min(...st.diag));
+    aread.textContent = t === 0 ? 'At step 0 the captions sit on the axes. The ' + names[worst] + ' pair is the weakest, p = ' + AT.fmt(st.diag[worst], 2) + '.' : 'After ' + t + (t === 1 ? ' step' : ' steps') + ' the weakest pair is ' + names[worst] + ' at p = ' + AT.fmt(st.diag[worst], 2) + '; the loss has fallen by ' + AT.fmt(C.history[0] - st.loss, 3) + '.';
+  }
+  const slider = AT.ui.slider({ label: 'training step', min: 0, max: T, step: 1, value: 0, onInput: v => { stop(); show(v); }, into: S.querySelector('#s06-slider') });
+  const play = S.querySelector('#s06-play');
+  function stop(){ if (timer) { clearInterval(timer); timer = null; } play.textContent = 'Play 60 steps'; }
+  play.addEventListener('click', () => {
+    if (timer) { stop(); return; }
+    if (AT.reducedMotion()) { slider.setValue(T, false); show(T); return; }
+    let t = slider.value() >= T ? 0 : slider.value();
+    play.textContent = 'Pause';
+    timer = setInterval(() => { t += 1; slider.setValue(t, false); show(t); if (t >= T) stop(); }, 110);
+  });
+  show(0);
+  if (AT.present && AT.present.on) AT.present.on('frame', () => { stop(); });
+  /* frame 3: cosines before and after */
+  const shortCap = ['“mugs…”', '“book…”', '“plant”'];
+  function cosTable(f, into){ const fig = AT.ui.table(f.cosine, { cols: shortCap.map((l, j) => ({ label: l, title: pairs[j].caption, kind: 'number' })), rowLabels: imgLab, cornerLabel: 'image ↓ caption →', decimals: 2, heatCols: [0, 1, 2], heatMax: 1, into }); fig.cells.forEach((r, i) => r[i].classList.add('is-diag')); return fig; }
+  cosTable(f0, S.querySelector('#s06-cos0')); cosTable(fT, S.querySelector('#s06-cos60'));
+  const offBefore = f0.cosine.flatMap((r, i) => r.filter((_, j) => j !== i)), offAfter = fT.cosine.flatMap((r, i) => r.filter((_, j) => j !== i));
+  const mean = a => a.reduce((x, y) => x + y, 0) / a.length;
+  S.querySelector('#s06-cos-read').innerHTML = 'Reading the change: the diagonal goes from ' + f0.cosine.map((r, i) => AT.fmt(r[i], 2)).join(', ') + ' to ' + fT.cosine.map((r, i) => AT.fmt(r[i], 2)).join(', ') + '; the six wrong pairs fall from a mean of ' + AT.fmt(mean(offBefore), 2) + ' to ' + AT.fmt(mean(offAfter), 2) + '. The gap is what grew.';
+  /* frame 4: the words */
+  const show6 = ['mugs', 'book', 'plant', 'two', 'a', 'small', 'on', 'photo'];
+  AT.ui.table(show6.map(w => pT.W_txt[wi(w)]), { cols: C.axes.map(a => ({ label: a, cls: 'q' })), rowLabels: show6.map(w => 'row for “' + w + '”'), rowCls: 'q', cornerLabel: '$W_{\\mathrm{txt}}$, step 60', decimals: 2,
+    caption: 'Word rows after training. The object words stayed near their axes; the function words learned the company they kept. “photo” never appeared, so it is still zero.', into: S.querySelector('#s06-words') });
+  const a = pT.W_txt[wi('a')], small = pT.W_txt[wi('small')];
+  S.querySelector('#s06-words-read').innerHTML = 'Reading the row for “a”: ' + AT.escape(C.readVec(a, C.axes, 2)) + ', so “a” now speaks slightly against mug. Reading “small”: ' + AT.escape(C.readVec(small, C.axes, 2)) + ', so it pushes away from mug too: it only ever appeared next to the plant.';
+  /* frame 5: bars before and after */
+  AT.ui.bars(names.map((n, i) => ({ label: n, p: f0.diag[i] })), { cls: 'a', max: 1, decimals: 3, sorted: false, size: 'lg', into: S.querySelector('#s06-bars0') });
+  AT.ui.bars(names.map((n, i) => ({ label: n, p: fT.diag[i] })), { cls: 'a', max: 1, decimals: 3, sorted: false, size: 'lg', into: S.querySelector('#s06-bars60') });
+  const gains = fT.diag.map((p, i) => p - f0.diag[i]), gi = gains.indexOf(Math.max(...gains));
+  S.querySelector('#s06-bars-read').innerHTML = 'Reading the bars: the ' + AT.escape(names[gi]) + ' pair gained most, from ' + AT.fmt(f0.diag[gi], 3) + ' to ' + AT.fmt(fT.diag[gi], 3) + '. The loss fell from ' + AT.fmt(f0.loss, 3) + ' to ' + AT.fmt(fT.loss, 3) + ' and τ from ' + AT.fmt(f0.tau, 2) + ' to ' + AT.fmt(fT.tau, 2) + '.';
+})();
+</script>
 </section>

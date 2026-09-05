@@ -1,64 +1,162 @@
-<section id="s01" class="sec" data-title="A caption can supply supervision" data-lit="e q">
+<section id="s01" class="sec" data-title="A fixed menu or an open caption" data-lit="">
 <style>
-.clip-controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:12px 0 18px;font-family:var(--font-ui)}
-.clip-controls button,.clip-controls select{font:inherit;padding:9px 13px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:7px}
-.clip-controls button{cursor:pointer}.clip-controls label{display:flex;gap:9px;align-items:center}.clip-controls input{max-width:150px}
-.clip-controls output{min-width:3ch}.clip-pair{display:grid;grid-template-columns:1fr 1.2fr;gap:32px;align-items:center;margin:16px 0}
-.clip-pair h3{margin:0 0 16px;font-size:1.12em}.clip-pair p{margin:10px 0}.clip-flow{font-size:1.2em;text-align:center;margin:22px 0}
-.clip-number{text-align:center;font-size:1.6em;font-weight:600;margin:22px 0;color:var(--c-d)}
-.clip-phone-table{display:none}
-.clip-plot-pair,.clip-geometry{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:24px;margin:16px 0}
-.clip-geometry{grid-template-columns:.8fr 1.2fr}.clip-geometry-legend{display:grid;gap:18px}
-.clip-geometry-row{display:grid;grid-template-columns:88px minmax(0,1fr);gap:16px;align-items:center}
-.clip-geometry-row p{margin:0 0 8px;font-family:var(--font-ui)}.clip-geometry-row p:first-child{font-weight:600}
-.clip-pair-score{color:var(--ink-2);font-variant-numeric:tabular-nums;font-size:.9em}
-.clip-checkpoint-status{font-size:.9em}.clip-controls button[aria-pressed="true"]{border-color:var(--c-e);background:var(--t-e)}
-@media(max-width:600px){body:not(.present) .clip-plot-pair,body:not(.present) .clip-geometry{grid-template-columns:1fr}body:not(.present) .clip-geometry-row{grid-template-columns:76px minmax(0,1fr)}}
-@media(max-width:600px){body:not(.present) .clip-table .dt-scroll{display:none}body:not(.present) .clip-phone-table{display:grid;gap:12px}body:not(.present) .clip-phone-table h4{margin:0;font-size:1em}body:not(.present) .clip-phone-row{border:1px solid var(--line);border-radius:7px;background:var(--card);padding:12px}body:not(.present) .clip-phone-row dl{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 14px;margin:10px 0 0}body:not(.present) .clip-phone-row dt{color:var(--muted)}body:not(.present) .clip-phone-row dd{margin:0;font-family:var(--font-mono);font-variant-numeric:tabular-nums;text-align:right}}
-@media(max-width:700px){body:not(.present) .clip-pair{grid-template-columns:1fr}.clip-controls{align-items:stretch}}
+#s01 .scope{border:1px solid var(--line);border-radius:var(--radius);background:var(--card);padding:18px 22px;margin:0 0 28px}
+#s01 .scope h3{margin:0 0 8px;font-size:1.05em}
+#s01 .scope ul{margin:0;padding-left:20px}
+#s01 .scope li{margin:4px 0}
+#s01 .menu-grid{display:grid;grid-template-columns:auto minmax(0,1fr);gap:20px 32px;align-items:center}
+@media (max-width:640px){#s01 .menu-grid{grid-template-columns:minmax(0,1fr)}}
+#s01 .menu-grid>*{min-width:0}
+#s01 .bars{max-width:100%;min-width:0}
+@media (max-width:640px){#s01 .bars{grid-template-columns:auto minmax(60px,1fr) auto}#s01 .bars .bl{font-size:14px}}
+#s01 .menu-box{border:2px solid var(--ink);border-radius:var(--radius);padding:12px 16px;background:var(--card);min-width:220px}
+#s01 .menu-box .mk{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--ink-3);margin-bottom:6px}
+#s01 .menu-box .mi{font-family:var(--font-mono);font-size:15px;padding:3px 0}
+#s01 .menu-box .mi.is-hl{background:var(--t-a);border-radius:4px;padding-left:6px}
+#s01 .caption-box{border:2px solid var(--c-q);background:var(--t-q);border-radius:var(--radius);padding:12px 16px;font-size:1.05em;font-weight:600}
+#s01 .caption-box .mk{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--c-q);margin-bottom:6px;display:block}
+#s01 .two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:start;margin-top:8px}
+@media (max-width:640px){#s01 .two{grid-template-columns:minmax(0,1fr)}}
+#s01 .big{font-size:2.6em;font-weight:700;letter-spacing:-.02em;line-height:1.1;margin:0}
+#s01 .big small{display:block;font-size:.34em;font-weight:500;color:var(--ink-2);letter-spacing:0;margin-top:6px}
+#s01 .nums{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;align-items:start}
+@media (max-width:640px){#s01 .nums{grid-template-columns:minmax(0,1fr)}}
+#s01 .read{font-size:15px;color:var(--ink-2);margin:10px 0 0;max-width:72ch;line-height:1.5}
+body.present #s01 .read{font-size:22px;line-height:1.35}
+body.present #s01 .menu-box .mi{font-size:24px}
+body.present #s01 .menu-box .mk,body.present #s01 .caption-box .mk{font-size:16px}
+body.present #s01 .caption-box{font-size:1em}
+body.present #s01 .big{font-size:2.4em}
+body.present #s01 .bars .bt{height:1.1em}
 </style>
-<header class="sec-head"><span class="sec-num">01</span><div><p class="eyebrow">The image encoder now has language as a training partner.</p><h2>A caption can supply supervision</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>The earlier parts built image representations from patches and from relationships between images. CLIP connects those representations to text. Its training example is an image together with the caption that accompanied it. The learning problem is to recognize those pairings among other images and captions in the batch.</p><p>Radford and colleagues trained CLIP on 400 million internet image-text pairs and evaluated transfer without training a new classifier on each target dataset. We will use three tiny pairs to inspect the objective. <a href="https://arxiv.org/abs/2103.00020">The original CLIP paper</a> describes the full models and experiments.</p></div>
-<div class="frame" data-title="What if the label we want is not an output?" data-autobuild="off">
-  <p>Suppose our image classifier was trained to choose <strong>mug</strong>, <strong>book</strong>, or <strong>plant</strong>.</p>
-  <div class="clip-pair" data-build="1">
-    <div><h3>A fixed class head</h3><p>One learned output row per class.</p><p>There is no output for <em>two mugs</em> or <em>a blue book</em>.</p></div>
-    <div><h3>Use descriptions as candidates</h3><p>Encode each description into a vector.</p><p>Compare the image with <em>one mug</em>, <em>two mugs</em>, or <em>a blue book</em>.</p></div>
+<header class="sec-head">
+  <span class="sec-num">01</span>
+  <div>
+    <p class="eyebrow">A classifier can only say the names on its menu. A caption can say anything.</p>
+    <h2>A fixed menu or an open caption</h2>
   </div>
-  <p class="callout callout-key" data-build="2">We need to learn how image vectors and text vectors should match. Captions give us training pairs.</p>
-  <script type="text/x-notes">This is a limitation of the chosen fixed output head, not proof that its internal image representation lacks colour or count information.
+</header>
 
-Changing candidate descriptions does not guarantee correct answers. A pretrained CLIP model can score text it can encode; our tiny example is limited to its disclosed word vocabulary.</script>
+<div class="companion scope" data-kicker="Scope">
+  <h3>What this toy can and cannot show</h3>
+  <ul>
+    <li>The image encoder is Vision I's trained encoder on the shared 8×8 scene, kept frozen. It was trained for one yes-or-no question, so it summarises a scene by how much bright material it read. Only the small map after it learns here.</li>
+    <li>The text encoder adds one learned row per word from a 14-word vocabulary. Word order is ignored.</li>
+    <li>Training uses three pairs for 60 steps. That is memorisation of three examples; pairs 4 to 8 and the extra prompts are probes, not a test set.</li>
+    <li>A softmax over a candidate list compares that list and nothing else. It is not the probability that a caption is true.</li>
+    <li>Real CLIP trains both encoders from scratch on hundreds of millions of pairs. Every number on this page comes from the toy; claims about the full model cite the paper.</li>
+  </ul>
 </div>
-<div class="frame" data-title="One scene can support several captions" data-autobuild="off">
-  <div id="s01-scene"></div>
-  <p data-build="1">"Two mugs on a table" and "a blue book in front of the mugs" both fit. Neither caption needs to describe everything.</p>
-  <script type="text/x-notes">Ask for two different descriptions of the same scene.
 
-Point to the terracotta mug on the left, teal mug on the right, book in front, and plant behind. Both example captions are human descriptions of this teaching illustration, not outputs from CLIP. Captions are still supervision: someone supplied the text.</script>
+<div class="companion" data-kicker="For self-study">
+  <p>Vision I ended with a classifier: a head with one row per class name. Ask it about a scene it was not built for and it still answers from its menu. Below, the book-only scene is pushed through that frozen head and must choose between <em>mug on the right</em> and <em>no mug on the right</em>. Neither is a description of a book. A caption has no such limit. Someone who uploads a photo writes a sentence next to it, and that sentence can name any object, any count, any colour. CLIP's idea is to learn from those sentences: pair every image with its caption and learn to tell the true pairings from the wrong ones.</p>
 </div>
-<div class="frame" data-title="Matching nouns is not enough" data-autobuild="off">
-  <div id="s01-caption-scene"></div>
-  <p data-build="1">Relations and attributes matter, not just the object names.</p>
-  <script type="text/x-notes">Which caption changes only the relation, and which changes the book's colour?
 
-Read these as human judgments about the illustration. No model scores have been computed for it. CLIP's matching objective encourages useful image-text representations, but success at these relation and attribute distinctions still requires evaluation.</script>
-</div>
-<div class="frame" data-title="Keep these three pairs throughout" data-autobuild="off">
-  <div id="s01-batch"></div>
-  <p data-build="1">For exact arithmetic, switch to these three small grids. Their observed pairings are positives; the six crossed pairings are treated as negatives.</p>
-  <script type="text/x-notes">The first grid is the same anchor as the ViT example: four pixels of value 1 at top left and four of value 2 at bottom right.
+<div class="frame" data-title="What can a fixed menu say about this scene?" data-autobuild="off">
+  <script type="text/x-notes">
+What is in this picture, and what will the classifier answer?
+Let the room name the book first. Then reveal the bars: the head from Vision I answers with one of its two names, whatever the scene. Switch to the plant scene: same two names again.
 
-The other two patterns are deliberately simple. We will later discuss cases where an off-diagonal pair is also a valid description.</script>
+Timing: two minutes.
+  </script>
+  <div class="card">
+    <h3 class="card-title">Vision I's trained classifier, frozen, asked about a new scene</h3>
+    <div id="s01-pick" data-keep-state></div>
+    <div class="menu-grid">
+      <div id="s01-grid"></div>
+      <div>
+        <div id="s01-bars" data-build="1"></div>
+        <p class="read" id="s01-menu-read" data-build="1"></p>
+      </div>
+    </div>
+  </div>
+  <div class="callout callout-key" data-build="2">The menu has two names. Neither of them is <em>a book</em>. The head can only choose among the rows it was given.</div>
 </div>
-<div class="frame" data-title="One vector for the image, one for the caption" data-autobuild="off">
-  <div id="s01-encoders"></div>
-  <p data-build="1">The two encoders have different parameters but return vectors of the same width.</p>
-  <p class="callout callout-note" data-build="2">Here the width is three. These are global embeddings $g^{\mathrm{img}}$ and $g^{\mathrm{txt}}$, not the attention value vectors $v_j$.</p>
-  <script type="text/x-notes">Real CLIP can use a ViT or a ResNet for images and a Transformer for text.
 
-Our numerical encoder is much smaller so that the entire calculation is visible. The letter g deliberately avoids reusing v from attention.</script>
+<div class="frame" data-title="A name is not always the right word" data-autobuild="off">
+  <script type="text/x-notes">
+Which crane?
+A class list holds single words, and a word can be ambiguous. A caption is a sentence, so it can say which sense is meant, and it can mention a count, a colour or a relation. Point out that the caption on the right needs no menu at all.
+  </script>
+  <div class="two">
+    <div class="menu-box">
+      <div class="mk">A fixed menu of class names</div>
+      <div class="mi">cat</div><div class="mi">dog</div><div class="mi is-hl">crane</div><div class="mi">truck</div>
+      <p class="read" data-build="1">Is <em>crane</em> the bird or the machine? The menu cannot say. It also has no row for <em>two mugs</em> or <em>a book on a table</em>.</p>
+    </div>
+    <div class="caption-box" data-build="2"><span class="mk">An open caption</span>a crane lifting a steel beam onto a roof</div>
+  </div>
+  <div class="callout callout-key" data-build="3">A caption can name any object, count or sense. If a model can match images with captions, the caption list becomes the classifier.</div>
 </div>
-<div class="companion after"><h3>What this toy replaces</h3><p>The image branch is a learned linear map of 16 pixels. The text branch sums learned rows for words in an eleven-word vocabulary. There is no pretrained visual or language knowledge, no image augmentation, and no attention inside these toy encoders. The matching objective, unit normalization, and gradient update are computed exactly. This lets us examine the part of CLIP that connects the two modalities without repeating the full ViT calculation.</p></div>
-<script>(function(){const S=document.getElementById('s01');AT.visionScene.mount(S.querySelector('#s01-scene'),{mode:'scene',variant:'two'});AT.visionScene.mount(S.querySelector('#s01-caption-scene'),{mode:'captions',variant:'two',captions:[{text:'The teal mug is right of the terracotta mug.',label:'Fits'},{text:'The teal mug is left of the terracotta mug.',label:'Relation changed'},{text:'A red book is in front of the mugs.',label:'Attribute changed'}]});AT.clip.diagram(S.querySelector('#s01-batch'),'batch');AT.clip.diagram(S.querySelector('#s01-encoders'),'encoders');})();</script>
+
+<div class="frame" data-title="One number to remember" data-autobuild="off">
+  <script type="text/x-notes">
+Where would 400 million labelled images come from?
+From captions already written on the web. Nobody labelled them for a menu; the sentence was free. Contrast that with 1,000 fixed names.
+  </script>
+  <div class="nums">
+    <div class="card"><p class="big">1,000<small>class names in the usual ImageNet menu. A new object needs a new head and new labels.</small></p></div>
+    <div class="card" data-build="1"><p class="big">400 million<small>image and caption pairs collected from the web to train CLIP (Radford and colleagues, 2021). The captions were already written.</small></p></div>
+  </div>
+  <div class="callout callout-key" data-build="2">Captions are supervision that comes with the image. The learning problem: recognise which caption belongs to which image.</div>
+</div>
+
+<div class="frame" data-title="The plan for this part" data-autobuild="off">
+  <script type="text/x-notes">
+Which of these boxes is new, and which is Vision I again?
+The image encoder is the one we already trained; the caption encoder and the comparison are new. Keep this picture in mind: two encoders, one score per pair.
+  </script>
+  <div class="card">
+    <div id="s01-plan"></div>
+    <p class="read" data-build="1">The image side is Vision I's encoder, frozen. Everything to its right is new, and it is small: a 4×3 map, one row per word, and one temperature.</p>
+  </div>
+  <div class="callout callout-key" data-build="2">Two encoders end in the same three named coordinates: <strong>mug, book, plant</strong>. Comparing an image with a caption is one dot product.</div>
+</div>
+
+<div class="companion after">
+  <p>A classifier chooses from a fixed menu; a caption is open text. CLIP learns to score an image against any caption, so the candidate list can be written at the time of asking.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s01'), V = AT.vision, C = AT.clip;
+  const scenes = ['D', 'E', 'A'];
+  let cur = 'D';
+  const gridHost = S.querySelector('#s01-grid'), barHost = S.querySelector('#s01-bars'), read = S.querySelector('#s01-menu-read');
+  const chips = AT.ui.chips(scenes.map(k => V.sceneNames[k]), { active: 0, into: S.querySelector('#s01-pick'), onClick: (i) => { cur = scenes[i]; chips.setActive(i); paint(); } });
+  let grid = null;
+  function paint(){
+    const f = V.frozen(cur);
+    AT.clear(gridHost); AT.clear(barHost);
+    grid = V.grid(cur, { cell: 22, into: gridHost, caption: 'Scene ' + cur + ': ' + AT.escape(V.sceneNames[cur]) + '. The model sees exactly these 64 values.' });
+    const items = V.classes.map((label, i) => ({ label, p: f.probs[i] }));
+    const best = f.probs[0] >= f.probs[1] ? 0 : 1;
+    AT.ui.bars(items, { cls: 'neutral', size: 'lg', max: 1, decimals: 3, sorted: false, highlight: V.classes[best], into: barHost });
+    read.innerHTML = 'The frozen head reads the updated CLS row and answers <strong>' + AT.escape(V.classes[best]) + '</strong> with $p = ' + AT.fmt(f.probs[best], 3) + '$. Its two rows are the whole menu.';
+    AT.renderMath(read);
+  }
+  paint();
+  if (AT.present && AT.present.on) AT.present.on('frame', (st) => { if (st.frame && st.frame.id === 's01' && st.frame.index === 0 && cur !== 'D') { cur = 'D'; chips.setActive(0); paint(); } });
+
+  /* the plan: two encoders, one shared set of axes, one score per pair */
+  const W = 980, H = 250, sv = AT.svg;
+  const s = sv('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', style: 'display:block;width:100%;height:auto;max-width:980px', 'aria-label': 'An image goes through the frozen Vision I encoder and a learned 4 by 3 map; a caption goes through learned word rows; both give three numbers on the axes mug, book, plant, which are compared by a dot product.' });
+  const defs = sv('defs'), mk = sv('marker', { id: 's01-arr', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto' }); mk.appendChild(sv('path', { d: 'M0 0L10 5L0 10Z', fill: 'var(--ink-3)' })); defs.appendChild(mk); s.appendChild(defs);
+  function box(x, y, w, hh, label, sub, cls){ s.appendChild(sv('rect', { x: x - w / 2, y: y - hh / 2, width: w, height: hh, rx: 9, fill: cls ? 'var(--t-' + cls + ')' : 'var(--card)', stroke: cls ? 'var(--c-' + cls + ')' : 'var(--ink-3)', 'stroke-width': 2 })); s.appendChild(sv('text', { x, y: sub ? y - 8 : y + 1, 'text-anchor': 'middle', 'dominant-baseline': 'middle', 'font-family': 'var(--font-ui)', 'font-size': 19, 'font-weight': 700, fill: cls ? 'var(--c-' + cls + ')' : 'var(--ink)' }, label)); if (sub) s.appendChild(sv('text', { x, y: y + 16, 'text-anchor': 'middle', 'dominant-baseline': 'middle', 'font-family': 'var(--font-ui)', 'font-size': 15, fill: 'var(--ink-2)' }, sub)); }
+  function arrow(x1, y1, x2, y2){ s.appendChild(sv('line', { x1, y1, x2, y2, stroke: 'var(--ink-3)', 'stroke-width': 2, 'marker-end': 'url(#s01-arr)' })); }
+  const thumb = V.grid('A', { cell: 9, patchLines: false }).querySelector('svg'); thumb.setAttribute('x', 28); thumb.setAttribute('y', 30); s.appendChild(thumb);
+  s.appendChild(sv('text', { x: 64, y: 122, 'text-anchor': 'middle', 'font-family': 'var(--font-ui)', 'font-size': 14, fill: 'var(--ink-2)' }, 'scene A'));
+  box(250, 66, 230, 60, 'Vision I encoder', 'frozen: updated CLS row', 'e');
+  box(470, 66, 150, 60, 'map 4×3', 'learned', 'e');
+  box(660, 66, 190, 60, 'g_img', 'mug, book, plant', 'e');
+  box(122, 190, 216, 60, 'caption', '“two mugs on a table”', 'q');
+  box(385, 190, 220, 60, 'word rows 14×3', 'learned, added up', 'q');
+  box(660, 190, 190, 60, 'g_txt', 'mug, book, plant', 'q');
+  arrow(102, 66, 133, 66); arrow(367, 66, 393, 66); arrow(547, 66, 563, 66);
+  arrow(232, 190, 273, 190); arrow(497, 190, 563, 190);
+  box(890, 128, 150, 70, 'cosine', 'one score per pair');
+  arrow(757, 76, 813, 118); arrow(757, 180, 813, 138);
+  S.querySelector('#s01-plan').appendChild(s);
+})();
+</script>
 </section>

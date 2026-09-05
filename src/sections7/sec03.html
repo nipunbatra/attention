@@ -1,51 +1,208 @@
-<section id="s03" class="sec" data-title="Compare every image with every caption" data-lit="e q a">
-<header class="sec-head"><span class="sec-num">03</span><div><p class="eyebrow">One dot product becomes a matrix of candidate matches.</p><h2>Compare every image with every caption</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>We have three image vectors and three text vectors. Compare every image with every caption, including captions from the other pairs. The cosine matrix $C$ is $3\times3$: its row chooses an image, and its column chooses a caption. It is a matrix of matches between whole examples, not an attention map between token positions.</p></div>
-<div class="frame" data-title="Work one matching score" data-autobuild="off">
-  <p class="clip-flow">$\ve{\hat g_1^{\mathrm{img}}}=(2/\sqrt5,1/\sqrt5,0),\quad\vq{\hat g_1^{\mathrm{txt}}}=(1,0,0)$</p>
-  <p class="clip-flow" data-build="1">$C_{11}=(2/\sqrt5)\times1+(1/\sqrt5)\times0+0\times0$</p>
-  <p class="clip-number" data-build="2">$C_{11}=2/\sqrt5\approx0.894$</p>
-  <p class="callout callout-key" data-build="3">This is the two-square image matched against <code>two bright squares</code>. It is a similarity, not yet a probability.</p>
-  <script type="text/x-notes">The text row is exactly (1,0,0), so the dot product reads the image vector's first coordinate.
+<section id="s03" class="sec" data-title="Encode and normalise" data-lit="e q">
+<style>
+#s03 .read{font-size:15px;color:var(--ink-2);margin:10px 0 0;max-width:72ch;line-height:1.5}
+#s03 .enc-grid{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px 28px;align-items:start}
+@media (max-width:720px){#s03 .enc-grid{grid-template-columns:minmax(0,1fr)}}
+#s03 .arith{margin-top:10px}
+#s03 .sphere-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:center}
+@media (max-width:720px){#s03 .sphere-wrap{grid-template-columns:minmax(0,1fr)}}
+#s03 .legend-line{font-size:14px;color:var(--ink-2);margin:6px 0 0}
+#s03 .legend-line .sq{display:inline-block;width:12px;height:12px;background:var(--c-e);vertical-align:middle;margin-right:4px}
+#s03 .legend-line .tri{display:inline-block;width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:12px solid var(--c-q);vertical-align:middle;margin:0 4px 0 10px}
+body.present #s03 .read,body.present #s03 .legend-line{font-size:20px;line-height:1.3;margin-top:6px}
+body.present #s03 .dt td,body.present #s03 .dt th{font-size:20px;padding:.16em .45em}
+body.present #s03 .calc-rounding{display:none}
+body.present #s03 .enc-grid{grid-template-columns:auto minmax(0,1fr);gap:16px 36px}
+body.present #s03 .sphere-wrap{grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:16px;align-items:start}
+body.present #s03 .vcircle{max-width:260px!important}
+body.present #s03 .sphere-wrap .read{font-size:19px;margin-top:4px}
+body.present #s03 .sphere-wrap .dt td,body.present #s03 .sphere-wrap .dt th{font-size:19px;padding:.12em .4em}
+body.present #s03 .vfig{margin:0}
+body.present #s03 .vfig figcaption{font-size:19px;margin-top:2px}
+body.present #s03 .prose .katex-display{font-size:26px;margin:0}
+body.present #s03 .prose{margin:0}
+body.present #s03 .card{margin-bottom:10px;padding:16px 24px}
+body.present #s03 .callout{margin:8px 0}
+</style>
+<header class="sec-head">
+  <span class="sec-num">03</span>
+  <div>
+    <p class="eyebrow">Both encoders end in one row of three numbers on the same named axes. Then we keep only the direction.</p>
+    <h2>Encode and normalise</h2>
+  </div>
+</header>
 
-That simplicity comes from our starting parameters, not a rule that the first coordinate always means squares.</script>
+<div class="companion" data-kicker="For self-study">
+  <p>The image side reuses Vision I. Its trained encoder reads the 16 patches through CLS and writes an updated CLS row with four coordinates: brightness, contrast, row and col. We freeze that encoder and add one learned map from those four numbers to the three joint axes. The text side is smaller still: add the rows of the words in the caption. Both sides then divide by their own length, so an image and a caption are compared by direction alone. Six unit vectors result, and the sphere picture at the end shows them all. The captions start exactly on the axes; the images start near their own axis, because we chose the starting map that way.</p>
 </div>
-<div class="frame" data-title="Compute all nine comparisons" data-autobuild="off">
-  <div id="s03-cosine"></div>
-  <pre class="torch-snippet" data-build="1"><code>cosine = g_img_unit @ g_txt_unit.T  # [3, 3]
-# rows: images; columns: captions</code></pre>
-  <p data-build="2">Stripes also score $0.800$ against the dot caption: the encoders still confuse some pairs.</p>
-  <script type="text/x-notes">Point out the diagonal before discussing errors.
 
-The batch tells us which entries should win. The same caption can be a competitor for several images.</script>
-</div>
-<div class="frame" data-title="Temperature scales the logits" data-autobuild="off">
-  <p class="clip-flow">$S=C/\tau,\qquad\tau=0.5\quad\Rightarrow\quad S=2C$</p>
-  <div id="s03-logits" data-build="1"></div>
-  <pre class="torch-snippet" data-build="2"><code>logits = log_scale.exp() * cosine  # [3, 3]
-# exp(log_scale) = 1 / temperature</code></pre>
-  <script type="text/x-notes">The model stores a learned log scale a, so exp(a) is positive.
+<div class="frame" data-title="The image encoder is Vision I's, frozen" data-autobuild="off">
+  <script type="text/x-notes">
+Which patches does CLS read in this scene?
+Switch between the scenes. The rose tint is the attention row of CLS from the trained Vision I encoder; the table row is what CLS carries afterwards. Nothing in this frame is learned in this part.
 
-Initially a=log(2). We do not claim that tau=.5 is CLIP's pretrained temperature; it is this toy's starting setting.</script>
+Timing: two minutes.
+  </script>
+  <div class="card">
+    <h3 class="card-title">What CLS reads, and the row it carries out</h3>
+    <div id="s03-pick" data-keep-state></div>
+    <div class="enc-grid">
+      <div id="s03-overlay"></div>
+      <div>
+        <div id="s03-cls" data-build="1"></div>
+        <p class="read" id="s03-cls-read" data-build="1"></p>
+      </div>
+    </div>
+  </div>
+  <div class="callout callout-key" data-build="2">The encoder is frozen. Its updated CLS row is all the image side hands on.</div>
 </div>
-<div class="frame" data-title="For image 1, normalize across its captions" data-autobuild="off">
-  <div id="s03-row-work"></div>
-  <p id="s03-denominator" class="clip-flow" data-build="1"></p>
-  <p id="s03-p11" class="clip-number" data-build="2"></p>
-  <p class="callout callout-key" data-build="3">The denominator contains all three candidate captions for this one image.</p>
-  <script type="text/x-notes">Use the same displayed precision throughout the table.
 
-The code keeps full precision. The probability .603 is conditional on this candidate set; it is not a statement that the caption is true with .603 probability among all possible descriptions.</script>
+<div class="companion">
+  <p>Look at the three carried-out rows: they lie on one line. Vision I's encoder was trained to answer one question, so its update is one message scaled by how much bright material CLS read. That is why one number, essentially the row coordinate, orders the scenes: plant, book, mugs. A single linear map cannot make three points on a line into three orthogonal axes, but it can tilt the line so that each scene's largest coordinate is its own axis. That is what the starting map below does.</p>
 </div>
-<div class="frame" data-title="Same vectors, different probabilities" data-autobuild="off">
-  <p>Same two-square image and caption vectors. Change only the temperature $\tau$.</p>
-  <div id="s03-temperature"></div>
-  <p data-build="2">Smaller $\tau$: more probability on the highest score. No vector moves, and the winning caption stays the same.</p>
-  <script type="text/x-notes">Both charts use the same zero-to-one probability axis and the initial encoder weights. The cosine labels under the bars are unchanged.
 
-Ask students to predict which bars will grow before revealing the second chart. This is not another training step. Later, the candidate widget lets students vary temperature continuously.</script>
+<div class="frame" data-title="A learned 4×3 map onto mug, book, plant" data-autobuild="off">
+  <script type="text/x-notes">
+Read one column: which CLS coordinates feed the mug axis?
+Brightness, row and col, each with weight one at the start. Row and col are where Vision I's encoder wrote its mug-on-the-right evidence. The map is the only learned part of the image side.
+  </script>
+  <div class="card">
+    <h3 class="card-title">$\ve{g^{\mathrm{img}}} = e_0^{\prime}\,W_{\mathrm{img}}$: four CLS coordinates in, three named coordinates out</h3>
+    <div id="s03-wimg"></div>
+    <p class="read" id="s03-wimg-read" data-build="1"></p>
+  </div>
+  <pre class="torch-snippet" data-build="2"><code>cls_row = frozen_encoder(scene)[0]   # [4], no gradient
+g_img = cls_row @ W_img              # [3], learned map</code></pre>
 </div>
-<div class="companion after"><h3>What changing temperature can and cannot do</h3><p>For fixed vectors and a fixed candidate set, a positive temperature changes the sharpness of softmax but not the highest-scoring candidate. The ratio of two candidate probabilities is $\exp((C_a-C_b)/\tau)$. A cosine gap of $0.05$ at $\tau=0.01$ therefore gives a ratio of $e^5\approx148.4$, not a five-fold ratio.</p><p>The <a href="https://github.com/openai/CLIP/blob/main/clip/model.py">released CLIP implementation</a> stores a learned <code>logit_scale</code> and exponentiates it. Its initialization is $\log(1/0.07)$; $0.07$ is the corresponding initial temperature. It is not a universal fixed temperature for every model or use case.</p></div>
-<script>(function(){const S=document.getElementById('s03'),C=AT.clip,f=C.forward(),row=f.logits[0],ex=row.map(Math.exp),z=ex.reduce((a,b)=>a+b,0);C.diagram(S.querySelector('#s03-cosine'),'cosine');C.diagram(S.querySelector('#s03-logits'),'logits');C.table(S.querySelector('#s03-row-work'),row.map((score,j)=>[score,ex[j],f.rowProb[0][j]]),{cols:['logit S₁ⱼ','exp(S₁ⱼ)','exp(S₁ⱼ) / total'],rowLabels:['T1 · squares','T2 · stripes','T3 · dot'],cornerLabel:'Image 1 candidates'});AT.tex(S.querySelector('#s03-denominator'),'Z_1=\\sum_j e^{S_{1j}}\\approx'+z.toFixed(3));AT.tex(S.querySelector('#s03-p11'),'p(T_1\\mid I_1,\\mathcal B)\\approx '+ex[0].toFixed(3)+'/'+z.toFixed(3)+'\\approx'+f.rowProb[0][0].toFixed(3));})();</script>
+
+<div class="frame" data-title="Work the image vector of scene A" data-autobuild="off">
+  <script type="text/x-notes">
+Which term makes the plant coordinate negative?
+The row and col coordinates of the CLS row, which are large for the two-mug scene, times the negative entries of the plant column. One line per output axis, as in Part 2.
+  </script>
+  <div class="card">
+    <h3 class="card-title">One line per output axis: the CLS row times one column of $W_{\mathrm{img}}$</h3>
+    <div class="arith" id="s03-wimg-calc"></div>
+    <p class="read" id="s03-calc-read" data-build="1"></p>
+  </div>
+</div>
+
+<div class="frame" data-title="The caption encoder adds word rows" data-autobuild="off">
+  <script type="text/x-notes">
+Which rows are non-zero at the start?
+Only mugs. The footer is the caption vector. Point out that a, on and table contribute nothing yet, and that training will give them rows too.
+  </script>
+  <div class="card">
+    <h3 class="card-title">$\vq{g^{\mathrm{txt}}}$ for “<span id="s03-cap"></span>”: add the row of every word</h3>
+    <div id="s03-pickcap" data-keep-state></div>
+    <div id="s03-wtxt"></div>
+  </div>
+  <pre class="torch-snippet" data-build="1"><code>counts = word_counts(caption)   # [14]
+g_txt = counts @ W_txt          # [3], the rows added up</code></pre>
+</div>
+
+<div class="frame" data-title="Normalise: keep the direction, drop the length" data-autobuild="off">
+  <script type="text/x-notes">
+Why divide each vector by its own length?
+A longer image vector would score higher against every caption at once. After normalisation only the direction matters, and the dot product of two unit vectors is the cosine of the angle between them.
+  </script>
+  <div class="prose"><p>$$\ve{\hat g^{\mathrm{img}}} = \frac{\ve{g^{\mathrm{img}}}}{\lVert \ve{g^{\mathrm{img}}} \rVert}, \qquad \vq{\hat g^{\mathrm{txt}}} = \frac{\vq{g^{\mathrm{txt}}}}{\lVert \vq{g^{\mathrm{txt}}} \rVert}$$</p></div>
+  <div class="card" data-build="1">
+    <div id="s03-units"></div>
+  </div>
+  <pre class="torch-snippet" data-build="2"><code>g_img = F.normalize(g_img, dim=-1)
+g_txt = F.normalize(g_txt, dim=-1)</code></pre>
+</div>
+
+<div class="frame" data-title="Six directions on one sphere" data-autobuild="off">
+  <script type="text/x-notes">
+Where are the three captions, and where are the three images?
+The captions sit exactly on the axes. Each image leans toward its own axis, and not by much: the two-mug image is close to mug, but the plant image is far from the plant caption. Training will move all six.
+  </script>
+  <div class="card">
+    <div class="sphere-wrap">
+      <div id="s03-sphere"></div>
+      <div>
+        <p class="legend-line"><span class="sq"></span>images <span class="tri"></span>captions <span class="companion" style="display:inline">· unit vectors in three dimensions from a fixed camera; dashed spokes are the axes</span></p>
+        <div id="s03-sphere-table" data-build="1"></div>
+        <p class="read" id="s03-sphere-read" data-build="1"></p>
+      </div>
+    </div>
+  </div>
+  <div class="callout callout-key" data-build="2">Every image already points most toward its own axis: the names are true at the start. Next, one cosine per pair.</div>
+</div>
+
+<div class="companion after">
+  <p>An image becomes $\ve{\hat g^{\mathrm{img}}}$ through the frozen encoder and one learned map; a caption becomes $\vq{\hat g^{\mathrm{txt}}}$ by adding word rows. Both are unit vectors on the axes mug, book, plant.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s03'), V = AT.vision, C = AT.clip;
+  const N = C.N, pairs = C.pairs.slice(0, N), p0 = C.params('initial');
+  const clsCols = V.clsAxesShort.map((a, i) => ({ label: a, title: V.clsAxes[i] }));
+  /* frame 1: the frozen encoder */
+  let cur = 'A';
+  const ovHost = S.querySelector('#s03-overlay'), clsHost = S.querySelector('#s03-cls'), clsRead = S.querySelector('#s03-cls-read');
+  const chips = AT.ui.chips(pairs.map(p => V.sceneNames[p.scene]), { active: 0, into: S.querySelector('#s03-pick'), onClick: (i) => { cur = pairs[i].scene; chips.setActive(i); paintEnc(); } });
+  let ov = null, clsTab = null;
+  function paintEnc(){
+    const f = V.frozen(cur);
+    if (!ov) ov = V.overlay(cur, f.A[0], { cell: 22, receiver: 'CLS', into: ovHost, caption: 'Rose: the attention row of CLS in the frozen encoder.' });
+    else { ov.setScene(cur); ov.setAlpha(f.A[0]); }
+    const rows = [f.E[0], f.Delta[0], f.Enew[0]];
+    if (!clsTab) clsTab = AT.ui.table(rows, { cols: clsCols, rowLabels: ['$\\ve{e_0}$ start', '$\\vd{\\Delta e_0}$ read', '$e_0^{\\prime}$ carried out'], rowCls: ['e', 'd', 'ep'], cornerLabel: 'CLS row', decimals: 2, highlightRow: 2,
+      caption: 'The CLS row before, the update it read from the patches, and their sum. The columns are Vision I’s named axes. Only the last row leaves the encoder.', into: clsHost });
+    else clsTab.update(rows);
+    const top = f.A[0].map((a, j) => ({ a, j })).filter(x => x.j > 0).sort((a, b) => b.a - a.a)[0];
+    clsRead.innerHTML = 'Reading $e_0^{\\prime}$ for scene ' + cur + ': ' + V.clsAxesShort.map((a, k) => a + ' ' + AT.fmt(f.Enew[0][k], 2)).join(', ') + '. CLS read most from ' + AT.escape(V.patchLabel(cur, top.j - 1)) + ' (' + AT.fmt(top.a, 2) + ').';
+    AT.renderMath(clsRead);
+  }
+  paintEnc();
+  if (AT.present && AT.present.on) AT.present.on('frame', (st) => { if (st.frame && st.frame.id === 's03' && st.frame.index === 0 && cur !== 'A') { cur = 'A'; chips.setActive(0); paintEnc(); } });
+
+  /* frames 2 and 3: the image map and one worksheet */
+  const clsA = C.cls('A');
+  AT.ui.table(p0.W_img, { cols: C.axes.map(a => ({ label: a, cls: 'e' })), rowLabels: V.clsAxesShort.map((a, i) => a + (V.clsAxes[i] !== a ? ' (' + V.clsAxes[i] + ')' : '')), cornerLabel: '$W_{\\mathrm{img}}$, start', decimals: 1,
+    caption: 'Rows are the CLS coordinates, columns the joint axes. Chosen by hand so that each scene starts nearest its own axis; training changes every entry.', into: S.querySelector('#s03-wimg') });
+  S.querySelector('#s03-wimg-read').innerHTML = 'Reading the columns: brightness feeds every object, most of all mug and book; the row and col coordinates, which carry the mug evidence in Vision I, add to mug and subtract from plant. Contrast feeds nothing at the start.';
+  AT.ui.matVecCalc(clsA, p0.W_img, { from: V.clsAxesShort, to: C.axes, cls: 'e', xLabel: 'e′₀ · scene A', outLabel: 'g_img · scene A', decimals: 2, wDecimals: 1, into: S.querySelector('#s03-wimg-calc') });
+  const gA = C.encode(p0, ['A'], [pairs[0].caption]);
+  S.querySelector('#s03-calc-read').innerHTML = 'Reading $\\ve{g^{\\mathrm{img}}}$ for scene A: ' + AT.escape(C.readVec(gA.imgRaw[0], C.axes, 2)) + '. Bright material on the right of the scene pushes mug up and plant down. Its length, ' + AT.fmt(gA.imgNorm[0], 2) + ', is about to be divided away.';
+  AT.renderMath(S.querySelector('#s03-calc-read'));
+
+  /* frame 4: the caption rows added up */
+  let capIdx = 0;
+  const wtHost = S.querySelector('#s03-wtxt'), capEl = S.querySelector('#s03-cap');
+  const capChips = AT.ui.chips(pairs.map(p => '“' + p.caption + '”'), { numbered: false, active: 0, into: S.querySelector('#s03-pickcap'), onClick: (i) => { capIdx = i; capChips.setActive(i); paintCap(); } });
+  function paintCap(){
+    const cap = pairs[capIdx].caption, ws = cap.split(' ');
+    capEl.textContent = cap;
+    AT.clear(wtHost);
+    const rows = ws.map(w => p0.W_txt[C.vocab.indexOf(w)]);
+    const g = C.encode(p0, ['A'], [cap]).txtRaw[0];
+    const fig = AT.ui.table(rows, { cols: C.axes.map(a => ({ label: a, cls: 'q' })), rowLabels: ws.map(w => 'row for “' + w + '”'), rowCls: 'q', cornerLabel: 'word', decimals: 1,
+      footer: { label: '$\\vq{g^{\\mathrm{txt}}}$ = sum', values: g, cls: 'q' },
+      caption: 'The caption vector is the sum of its word rows, column by column. Hover or focus a footer cell for the addition.', into: wtHost });
+    fig.footer.cells.forEach((td, c) => fig.tipOn(td, () => rows.map(r => AT.fmt(r[c], 1)).join(' + ') + ' = ' + AT.fmt(g[c], 1)));
+  }
+  paintCap();
+  if (AT.present && AT.present.on) AT.present.on('frame', (st) => { if (st.frame && st.frame.id === 's03' && st.frame.index === 3 && capIdx !== 0) { capIdx = 0; capChips.setActive(0); paintCap(); } });
+
+  /* frame 5: raw vectors, lengths, unit vectors */
+  const f0 = C.forward(p0);
+  const rawRows = f0.imgRaw.concat(f0.txtRaw), lens = f0.imgNorm.concat(f0.txtNorm), units = f0.imgUnit.concat(f0.txtUnit);
+  const labels = pairs.map(p => C.thumbHTML(p.scene, 5) + ' ' + AT.escape(V.sceneNames[p.scene])).concat(pairs.map(p => C.quote(p.caption)));
+  const cls6 = pairs.map(() => 'e').concat(pairs.map(() => 'q'));
+  AT.ui.table(rawRows, { cols: C.axes.map(a => ({ label: a })), rowLabels: labels, rowCls: cls6, cornerLabel: 'g, before',
+    computed: [{ label: '‖g‖', fn: (r, i) => lens[i] }].concat(C.axes.map((a, c) => ({ label: a + ' ÷ ‖g‖', fn: (r, i) => units[i][c] }))),
+    caption: 'Left: the raw vectors and their lengths. Right: each coordinate divided by the length, so every row on the right has length 1. Blue rows are images, purple rows captions.', into: S.querySelector('#s03-units') });
+
+  /* frame 6: the sphere */
+  C.sphere(C.stateOf(f0), { size: 400, into: S.querySelector('#s03-sphere') });
+  AT.ui.table(f0.imgUnit, { cols: C.axes.map(a => ({ label: a })), rowLabels: pairs.map(p => C.thumbHTML(p.scene, 5) + ' ' + AT.escape(V.sceneNames[p.scene])), rowCls: 'e', cornerLabel: '$\\ve{\\hat g^{\\mathrm{img}}}$', decimals: 2, into: S.querySelector('#s03-sphere-table') });
+  const worst = f0.imgUnit.map((u, i) => u[i]).reduce((b, x, i, a) => x < a[b] ? i : b, 0);
+  S.querySelector('#s03-sphere-read').innerHTML = 'Reading the rows: ' + AT.escape(C.readDirection(f0.imgUnit[0], 'the two-mug scene')) + ' The ' + AT.escape(V.sceneNames[pairs[worst].scene]) + ' scene leans least toward its own axis (' + AT.fmt(f0.imgUnit[worst][worst], 2) + ').';
+})();
+</script>
 </section>
-<script>(function(){AT.clip.diagram(document.getElementById('s03-temperature'),'temperature');})();</script>

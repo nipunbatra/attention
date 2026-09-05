@@ -1,53 +1,136 @@
-<section id="s05" class="sec" data-title="A wrong match changes both encoders" data-lit="e q d">
-<header class="sec-head"><span class="sec-num">05</span><div><p class="eyebrow">The similarity matrix is computed; the encoder parameters are learned.</p><h2>A wrong match changes both encoders</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>Our first forward pass ends at a loss of about $0.578$. The computation graph connects that loss to the two parameter matrices and to the log scale. Backpropagation follows those connections through both softmax directions, every dot product, and the normalization of each vector. The optimizer then updates the parameters. The next forward pass recomputes the embeddings and the matching matrix.</p></div>
-<div class="frame" data-title="Autograd follows both branches" data-autobuild="off">
-  <div id="s05-graph"></div>
-  <pre class="torch-snippet" data-build="1"><code>optimizer.zero_grad()
-loss.backward()
-optimizer.step()</code></pre>
-  <p data-build="2">Update $W_{\mathrm{img}}$, $W_{\mathrm{txt}}$, and log scale. Recompute the vectors, scores, and probabilities.</p>
-  <script type="text/x-notes">The gradient passes through unit normalization too.
+<section id="s05" class="sec" data-title="Train retrieval in both directions" data-lit="d">
+<style>
+#s05 .read{font-size:15px;color:var(--ink-2);margin:10px 0 0;max-width:72ch;line-height:1.5}
+#s05 .dt td.is-diag{box-shadow:inset 0 0 0 2px var(--c-d)}
+#s05 .two{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:720px){#s05 .two{grid-template-columns:minmax(0,1fr)}}
+#s05 .big{font-size:1.5em;font-weight:600;text-align:center;margin:12px 0}
+#s05 .dir-pic svg{display:block;width:100%;max-width:620px;height:auto;margin:0 auto}
+body.present #s05 .read{font-size:21px;line-height:1.3}
+body.present #s05 .dt td,body.present #s05 .dt th{font-size:20px;padding:.18em .45em}
+body.present #s05 .dt td.dt-num{min-width:3em}
+body.present #s05 .katex-display{margin:6px 0}
+body.present #s05 .card{margin-bottom:12px}
+body.present #s05 .bars .bt{height:1.05em}
+body.present #s05 .big{font-size:1.1em;margin:6px 0 0}
+body.present #s05 pre.torch-snippet{font-size:21px;margin:8px 0}
+</style>
+<header class="sec-head">
+  <span class="sec-num">05</span>
+  <div>
+    <p class="eyebrow">Each observed pair must be found from either side: image to text and text to image.</p>
+    <h2>Train retrieval in both directions</h2>
+  </div>
+</header>
 
-It must account for the fact that changing one raw coordinate also changes the vector's norm. All gradients refer to the same pre-update parameters.</script>
+<div class="companion" data-kicker="For self-study">
+  <p>The row softmax asks an image to choose its caption. Turn the question around and a caption must choose its image: the same logits, normalised down a column instead of across a row. Each direction has its own cross-entropy, the mean of $-\log p$ on the observed pairs. CLIP averages the two. The column version is not the transpose of the row version, because the denominators differ: a caption competes against the other images, an image against the other captions. Both losses send gradients into both encoders and into the temperature, so nothing in the matrix is trained from one side only.</p>
 </div>
-<div class="frame" data-title="One actual update, then another forward pass" data-autobuild="off">
-  <div id="s05-update"></div>
-  <p id="s05-parameter" class="clip-flow" data-build="1"></p>
-  <p class="callout callout-note" data-build="2">The learning rate is $0.1$. The displayed parameter is one of 82 learned numbers; the step updates all of them together.</p>
-  <script type="text/x-notes">Read the table in order: first the image-to-text loss, then the reverse loss, then their mean.
 
-The row shown below is the first scalar of the image map. Its gradient was computed, not guessed from the desired result.</script>
+<div class="frame" data-title="Image to text: reward the diagonal" data-autobuild="off">
+  <script type="text/x-notes">
+Which entry of each row enters the loss?
+Only the diagonal, but every entry shaped its denominator. The stripe of −log p on the right is what the optimiser sees; the book scene contributes most because its own caption got the smallest probability.
+  </script>
+  <div class="prose"><p>$$\vd{L_{I \to T}} = -\frac{1}{N}\sum_{i=1}^{N} \log \va{p(T_i \mid I_i)}$$</p></div>
+  <div class="card" data-build="1">
+    <div id="s05-rows"></div>
+    <p class="read" id="s05-rows-read"></p>
+  </div>
 </div>
-<div class="frame" data-title="One update moves both sides of a pair" data-autobuild="off">
-  <div id="s05-directions-one"></div>
-  <p id="s05-angle-change" data-build="1"></p>
-  <script type="text/x-notes">For pair 1, cosine rises from 0.894 to 0.933 and the angle falls from 26.6 to about 21 degrees. Both the image and text vectors change.
 
-This picture shows actual coordinates, not arrows moved to an artist-chosen destination. Use the numerical cosines rather than measuring angles in the projected view.</script>
+<div class="frame" data-title="Text to image: hold a caption fixed" data-autobuild="off">
+  <script type="text/x-notes">
+What changes in the denominator?
+It now runs down a column: a caption is compared with the three images. Point out that the plant caption gives the plant image only 0.45 while the book image gets 0.33: the frozen encoder can barely tell them apart.
+  </script>
+  <div class="prose"><p>$$\vd{L_{T \to I}} = -\frac{1}{N}\sum_{j=1}^{N} \log \va{p(I_j \mid T_j)}$$</p></div>
+  <div class="card" data-build="1">
+    <div id="s05-cols"></div>
+    <p class="read" id="s05-cols-read"></p>
+  </div>
 </div>
-<div class="frame" data-title="Follow the directions through training" data-autobuild="off">
-  <div id="s05-geometry-widget"></div>
-  <p>Training compares each observed pair with the other pairings in this batch.</p>
-  <script type="text/x-notes">This frame opens at step 60, so its final state is also visible in a normal slide PDF. The earlier frame preserves step 1 and section 2 preserves the initial state.
 
-The camera, scale, input images and caption labels are fixed. Training also changes temperature, which does not change the directions drawn here. Not every paired cosine must increase at every step: the objective compares each positive against competitors.</script>
+<div class="frame" data-title="Two directions, two pictures" data-autobuild="off">
+  <script type="text/x-notes">
+Same matrix, two questions.
+Left: an image reads across its row. Right: a caption reads down its column. Ask which cell is shared: the diagonal entry appears in both, with two different denominators.
+  </script>
+  <div class="card">
+    <div class="two">
+      <div>
+        <p class="read" style="margin:0 0 6px">“<span id="s05-bars-cap"></span>” chooses among the images (one column):</p>
+        <div id="s05-col-bars"></div>
+      </div>
+      <div class="dir-pic" id="s05-dir" data-build="1"></div>
+    </div>
+  </div>
+  <div class="callout callout-key" data-build="2">A row asks <em>which caption fits this image</em>; a column asks <em>which image fits this caption</em>. Both must be right.</div>
 </div>
-<div class="frame" data-title="Direction learning and temperature do different jobs" data-autobuild="off">
-  <div id="s05-separate-temperature"></div>
-  <p data-build="1">Row 2 holds temperature at its starting value, so we can see what the learned directions changed.</p>
-  <p class="callout callout-key" data-build="2">Row 3 also uses the learned temperature. Sharper probabilities alone would not show that the encoders learned better directions.</p>
-  <script type="text/x-notes">The middle row is a diagnostic recombination, not a separate training experiment. It uses the step-60 encoder matrices and the initial log scale. The probability column is for the correct caption of image 1; loss averages both retrieval directions over all three pairs.
 
-All three rows are recomputed. We do not retrain the encoders while changing the temperature in this comparison.</script>
+<div class="frame" data-title="Average the two losses" data-autobuild="off">
+  <script type="text/x-notes">
+Why average instead of adding another division by three?
+Each cross-entropy already averages over the three pairs. The two directions are two different tasks on the same logits; the mean weights them equally. Then the code: two cross_entropy calls, one transposed.
+  </script>
+  <div class="card">
+    <div id="s05-both"></div>
+    <p class="big" id="s05-total" data-build="1"></p>
+  </div>
+  <pre class="torch-snippet" data-build="2"><code>t = torch.arange(3)   # image i belongs to caption i
+loss = 0.5 * (F.cross_entropy(logits, t) + F.cross_entropy(logits.T, t))</code></pre>
+  <div class="callout callout-key" data-build="3">Rows and columns are supervised separately; neither direction solves a one-to-one assignment.</div>
 </div>
-<div class="frame" data-title="Watch the same three pairs become easier to match" data-autobuild="off">
-  <div id="s05-widget"></div>
-  <script type="text/x-notes">Use One SGD step to reproduce the preceding table, or 20 steps to see faster progress.
 
-Reset returns to the disclosed starting matrices. This is memorization of three training pairs; a falling training loss is not evidence of generalization to photographs or arbitrary language.</script>
+<div class="companion after">
+  <p>The contrastive loss is the mean of two cross-entropies: image to text over rows, text to image over columns. Both use the same logits with different normalisers, and both push the diagonal up and the rest down.</p>
 </div>
-<div class="companion after"><h3>What was checked</h3><p>The numerical engine includes the exact derivative of $g/\lVert g\rVert_2$, averages both cross-entropies over the batch, and computes every gradient before changing any parameter. Central finite differences check all 82 parameter gradients. A separate NumPy implementation reproduces the forward pass, one-step update, and 60-step checkpoint.</p><p>The next section freezes the checkpoint after 60 steps. Its mean loss on these three training pairs is <span id="s05-trained-loss"></span>. That small number describes this toy batch only. It is not an accuracy measurement on unseen data.</p><div id="s05-parameter-maps"></div></div>
-<script>(function(){const S=document.getElementById('s05'),C=AT.clip,a=C.forward(),b=C.forward(C.params('afterOne')),d=C.data;C.diagram(S.querySelector('#s05-graph'),'training');C.table(S.querySelector('#s05-update'),[[a.rowLoss,b.rowLoss],[a.columnLoss,b.columnLoss],[a.loss,b.loss]],{cols:['before SGD','after one step'],rowLabels:['image → text loss','text → image loss','mean loss'],cornerLabel:'Recomputed objective',decimals:4});AT.tex(S.querySelector('#s05-parameter'),'W_{\\mathrm{img}}[1,1]:\\quad2-0.1\\times('+d.initialGradients.W_img[0][0].toFixed(6)+')\\approx'+d.snapshots.afterOne.W_img[0][0].toFixed(6));C.trainingWidget(S.querySelector('#s05-widget'));S.querySelector('#s05-trained-loss').textContent=d.reference.trained.loss.toFixed(6);C.table(S.querySelector('#s05-parameter-maps'),[[16,3,48],[11,3,33],[1,1,1]],{cols:['rows','columns','parameters'],rowLabels:['W_img','W_txt','log_scale'],cornerLabel:'Learned arrays',decimals:0});})();</script>
+
+<script>
+(function(){
+  const S = document.getElementById('s05'), V = AT.vision, C = AT.clip;
+  const N = C.N, pairs = C.pairs.slice(0, N), p0 = C.params('initial'), f = C.forward(p0);
+  const imgLab = pairs.map(p => C.thumbHTML(p.scene, 5) + ' ' + AT.escape(V.sceneNames[p.scene]));
+  const capLab = pairs.map(p => C.quote(p.caption));
+  const shortCap = ['“mugs…”', '“book…”', '“plant”'];
+  const names = pairs.map(p => V.sceneNames[p.scene]);
+  /* rows */
+  const rows = AT.ui.table(f.rowProb, { cols: shortCap.map((l, j) => ({ label: l, title: pairs[j].caption, kind: 'number' })), rowLabels: imgLab, cornerLabel: 'image ↓ caption →', decimals: 3, heatCols: [0, 1, 2], heatMax: 1, rowCls: 'a',
+    computed: [{ label: '$-\\log \\va{p}$ of own caption', cls: 'd', fn: (r, i) => f.rowLosses[i] }],
+    footer: { label: 'mean', values: '', computed: [f.rowLoss] },
+    caption: 'Row probabilities with the observed pair framed. The right-hand column is the loss of each image; the footer is $L_{I \\to T}$.', into: S.querySelector('#s05-rows') });
+  rows.cells.forEach((r, i) => r[i].classList.add('is-diag'));
+  const hi = f.rowLosses.indexOf(Math.max(...f.rowLosses));
+  S.querySelector('#s05-rows-read').innerHTML = 'Reading the loss column: ' + f.rowLosses.map((l, i) => AT.escape(names[i]) + ' ' + AT.fmt(l, 3)).join(', ') + '; the ' + AT.escape(names[hi]) + ' scene costs most because $p = ' + AT.fmt(f.rowProb[hi][hi], 3) + '$ for its own caption. A correct argmax does not mean zero loss.';
+  AT.renderMath(S.querySelector('#s05-rows-read'));
+  /* columns, transposed so the caption is the row label and the images are the columns */
+  const colT = f.colProb[0].map((_, j) => f.colProb.map(r => r[j]));
+  const cols = AT.ui.table(colT, { cols: imgLab.map(l => ({ label: l, kind: 'number' })), rowLabels: capLab, cornerLabel: 'caption ↓ image →', decimals: 3, heatCols: [0, 1, 2], heatMax: 1, rowCls: 'a',
+    computed: [{ label: '$-\\log \\va{p}$ of own image', cls: 'd', fn: (r, j) => f.colLosses[j] }],
+    footer: { label: 'mean', values: '', computed: [f.colLoss] },
+    caption: 'Column probabilities of the same logits, written with captions down the side: each caption spreads probability 1 over the three images. The footer is $L_{T \\to I}$.', into: S.querySelector('#s05-cols') });
+  cols.cells.forEach((r, i) => r[i].classList.add('is-diag'));
+  const hj = f.colLosses.indexOf(Math.max(...f.colLosses));
+  S.querySelector('#s05-cols-read').innerHTML = 'Reading it: the caption ' + capLab[hj] + ' gives its own image only $p = ' + AT.fmt(f.colProb[hj][hj], 3) + '$, so $L_{T \\to I} = ' + AT.fmt(f.colLoss, 3) + '$ differs from $L_{I \\to T} = ' + AT.fmt(f.rowLoss, 3) + '$: different denominators, different losses.';
+  AT.renderMath(S.querySelector('#s05-cols-read'));
+  /* bars for one column and the two-direction picture */
+  const jb = 1;
+  S.querySelector('#s05-bars-cap').textContent = pairs[jb].caption;
+  AT.ui.bars(names.map((n, i) => ({ label: n, p: f.colProb[i][jb] })), { cls: 'a', max: 1, decimals: 3, sorted: false, highlight: names[jb], size: 'lg', into: S.querySelector('#s05-col-bars') });
+  const sv = AT.svg, W = 700, H = 250, x0 = 150, y0 = 40, cw = 150, ch = 50;
+  const s = sv('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'The 3 by 3 matrix with an arrow across the first row (image to text) and an arrow down the second column (text to image)' });
+  for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) s.appendChild(sv('rect', { x: x0 + j * cw, y: y0 + i * ch, width: cw - 4, height: ch - 4, rx: 6, fill: i === j ? 'var(--t-d)' : 'var(--card)', stroke: i === j ? 'var(--c-d)' : 'var(--line)', 'stroke-width': 1.5 }));
+  for (let i = 0; i < N; i++) { const th = V.grid(pairs[i].scene, { cell: 4, patchLines: false }).querySelector('svg'); th.setAttribute('x', x0 - 44); th.setAttribute('y', y0 + i * ch + 7); s.appendChild(th); }
+  for (let j = 0; j < N; j++) s.appendChild(sv('text', { x: x0 + j * cw + cw / 2 - 2, y: y0 - 12, 'text-anchor': 'middle', 'font-family': 'var(--font-ui)', 'font-size': 12, fill: 'var(--c-q)' }, pairs[j].caption));
+  const defs = sv('defs'); ['e', 'q'].forEach(k => { const m = sv('marker', { id: 's05-arr-' + k, viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto' }); m.appendChild(sv('path', { d: 'M0 0L10 5L0 10Z', fill: 'var(--c-' + k + ')' })); defs.appendChild(m); }); s.appendChild(defs);
+  s.appendChild(sv('line', { x1: x0 + 8, y1: y0 + ch / 2 - 2, x2: x0 + N * cw - 12, y2: y0 + ch / 2 - 2, stroke: 'var(--c-e)', 'stroke-width': 3, 'marker-end': 'url(#s05-arr-e)' }));
+  s.appendChild(sv('line', { x1: x0 + cw + cw / 2 - 2, y1: y0 + 8, x2: x0 + cw + cw / 2 - 2, y2: y0 + N * ch - 12, stroke: 'var(--c-q)', 'stroke-width': 3, 'marker-end': 'url(#s05-arr-q)' }));
+  s.appendChild(sv('text', { x: x0 + N * cw + 8, y: y0 + ch / 2 + 2, 'font-family': 'var(--font-ui)', 'font-size': 13, fill: 'var(--c-e)' }, 'image → text: across'));
+  s.appendChild(sv('text', { x: x0 + cw + cw / 2 - 2, y: y0 + N * ch + 22, 'text-anchor': 'middle', 'font-family': 'var(--font-ui)', 'font-size': 13, fill: 'var(--c-q)' }, 'text → image: down'));
+  S.querySelector('#s05-dir').appendChild(s);
+  /* both */
+  AT.ui.table([[f.rowLoss], [f.colLoss], [f.loss]], { cols: [{ label: 'value', cls: 'd' }], rowLabels: ['$\\vd{L_{I \\to T}}$ image to text', '$\\vd{L_{T \\to I}}$ text to image', '$\\vd{L}$ mean of the two'], rowCls: 'd', cornerLabel: 'loss, before training', decimals: 4, highlightRow: 2, into: S.querySelector('#s05-both') });
+  AT.tex(S.querySelector('#s05-total'), '\\vd{L} = \\tfrac12\\,(' + AT.fmt(f.rowLoss, 3) + ' + ' + AT.fmt(f.colLoss, 3) + ') = ' + AT.fmt(f.loss, 3));
+})();
+</script>
 </section>
-<script>(function(){const S=document.getElementById('s05'),C=AT.clip,a=C.forward(),b=C.forward(C.checkpoint(1)),trained=C.params('trained'),fixed=Object.assign({},trained,{log_scale:C.params().log_scale}),f=C.forward(fixed),t=C.forward(trained);C.diagram(S.querySelector('#s05-directions-one'),'directions',{parameters:C.checkpoint(1),label:'After one SGD step'});C.geometryWidget(S.querySelector('#s05-geometry-widget'));const angle=x=>(Math.acos(Math.max(-1,Math.min(1,x)))*180/Math.PI).toFixed(1);S.querySelector('#s05-angle-change').textContent='Two-square pair: cosine '+a.cosine[0][0].toFixed(3)+' → '+b.cosine[0][0].toFixed(3)+'. Its 3D angle closes from '+angle(a.cosine[0][0])+'° to '+angle(b.cosine[0][0])+'°.';C.table(S.querySelector('#s05-separate-temperature'),[a,f,t].map(r=>[r.tau,r.rowProb[0][0],r.loss]),{cols:['temperature τ','p(T₁ | I₁)','mean loss'],rowLabels:['1 · initial directions','2 · trained directions; initial τ','3 · trained directions; learned τ'],cornerLabel:'Compare the same three pairs',decimals:3});})();</script>

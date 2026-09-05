@@ -1,58 +1,127 @@
-<section id="s02" class="sec" data-title="Pixels and words become comparable vectors" data-lit="e q">
-<header class="sec-head"><span class="sec-num">02</span><div><p class="eyebrow">Compute the vectors before comparing them.</p><h2>Pixels and words become comparable vectors</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>These two small encoders let us calculate both sides of a match. They start from the matrices shown here, not a saved MAE or DINO checkpoint. We carry over the idea of a visual representation and give it a new job: matching a caption.</p><p>Flatten the image in row-major order. Multiplying that sixteen-number row by $W_{\mathrm{img}}\in\mathbb R^{16\times3}$ produces one three-number image vector. For text, count the occurrences of each word and multiply by $W_{\mathrm{txt}}\in\mathbb R^{11\times3}$. The initial weights are chosen for readable arithmetic. Training can change every entry.</p></div>
-<div class="frame" data-title="The image vector comes from its pixels" data-autobuild="off">
-  <p class="clip-flow">$\ve{g_1^{\mathrm{img}}}=\underbrace{\operatorname{flatten}(I_1)}_{1\times16}\underbrace{W_{\mathrm{img}}}_{16\times3}=\ve{(2,1,0)}$</p>
-  <div id="s02-pixel-weights" data-build="1"></div>
-  <p data-build="2">These are the only nonzero starting rows. The anchor has $(1,0,0)$ at pixels 1, 3, and 7.</p>
-  <pre class="torch-snippet" data-build="3"><code>pixels = images.flatten(start_dim=1)  # [3, 16]
-g_img = pixels @ W_img                # [3, 3]</code></pre>
-  <script type="text/x-notes">Pixel positions are one-based here and row-major.
+<section id="s02" class="sec" data-title="Three pairs and three named axes" data-lit="">
+<style>
+#s02 .read{font-size:15px;color:var(--ink-2);margin:10px 0 0;max-width:72ch;line-height:1.5}
+#s02 .axis-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0 4px}
+#s02 .axis{border:2px solid var(--ink);border-radius:999px;padding:6px 16px;font-weight:700;font-size:1.05em;background:var(--card)}
+#s02 .dt td.dt-text{white-space:normal;min-width:10em}
+#s02 .tick{color:var(--c-d);font-weight:700}
+#s02 .cross{color:var(--ink-3)}
+body.present #s02 .read{font-size:22px;line-height:1.35}
+body.present #s02 .axis{font-size:1em;padding:8px 22px}
+body.present #s02 .dt td,body.present #s02 .dt th{font-size:21px;padding:.16em .5em}
+body.present #s02 #s02-counts .dt td,body.present #s02 #s02-counts .dt th{font-size:17px;padding:.12em .28em}
+body.present #s02 #s02-counts .dt td.dt-num{min-width:2.2em}
+body.present #s02 #s02-matrix .dt td.dt-text{min-width:0;white-space:nowrap;font-size:20px}
+body.present #s02 #s02-matrix .dt th{font-size:19px;padding:.16em .4em}
+body.present #s02 .axis-row{margin:2px 0}
+body.present #s02 .axis{padding:4px 18px}
+body.present #s02 .card{padding:14px 24px;margin-bottom:10px}
+body.present #s02 .callout{margin:8px 0}
+body.present #s02 .chips{gap:8px}
+</style>
+<header class="sec-head">
+  <span class="sec-num">02</span>
+  <div>
+    <p class="eyebrow">Three scenes, three captions. The joint coordinates get names before any number is chosen.</p>
+    <h2>Three pairs and three named axes</h2>
+  </div>
+</header>
 
-Position 1 is top left, position 3 is top row third column, and position 7 is second row third column. All other rows start at zero but remain trainable.</script>
+<div class="companion" data-kicker="For self-study">
+  <p>The training data is three pairs from the shared scene: the two-mug scene with <em>two mugs on a table</em>, the book-only scene with <em>a book on a table</em>, and the plant-only scene with <em>a small plant</em>. Nine pairings are possible; three are observed and six are wrong. As in Part 2, we name the coordinates first. Both encoders will end in three numbers, and we call them <strong>mug</strong>, <strong>book</strong> and <strong>plant</strong>. On the text side the names are true by construction: the row for <em>mugs</em> starts as one on the mug axis and zero elsewhere. Function words such as <em>a</em> and <em>on</em> start at zero and must learn whatever helps.</p>
 </div>
-<div class="frame" data-title="The caption vector sums its word rows" data-autobuild="off">
-  <div id="s02-word-rows"></div>
-  <p class="clip-flow" data-build="1">$\vq{g_1^{\mathrm{txt}}}=(1,0,0)+(0,0,0)+(1,0,0)=\vq{(2,0,0)}$</p>
-  <pre class="torch-snippet" data-build="2"><code>counts = word_counts(captions)  # [3, 11], toy vocabulary
-g_txt = counts @ W_txt          # [3, 3]</code></pre>
-  <p data-build="3">This toy ignores word order. Real CLIP's text Transformer uses sequence information.</p>
-  <script type="text/x-notes">Bright initially contributes a zero vector.
 
-It can receive a gradient and change. Do not assign a semantic meaning to any of the three learned coordinates.</script>
-</div>
-<div class="frame" data-title="Compare directions, not arrow lengths" data-autobuild="off">
-  <div id="s02-normalization-geometry"></div>
-  <p data-build="2">Blue: image. Purple: caption. Both lengths become one; their $26.6^\circ$ angle is unchanged. Their third coordinates are zero, so this pair lies in a plane.</p>
-  <script type="text/x-notes">The dashed arc has radius one. Both panels use the same coordinate scale. Making either arrow longer would not make the directions match any better.
+<div class="frame" data-title="Three image and caption pairs" data-autobuild="off">
+  <script type="text/x-notes">
+Which caption goes with which scene?
+Read the three captions aloud and match them. The pairing is the supervision: nobody labelled the scene with a class, someone wrote a sentence. The other six pairings will be treated as wrong.
 
-First point to the unchanged directions, then ask what division by each vector's own length does. The displayed angle is rounded from atan(1/2). Later vectors have nonzero third coordinates and require a 3D view.</script>
+Timing: one minute.
+  </script>
+  <div class="card">
+    <h3 class="card-title">The observed pairs. The model sees the 64 pixel values and the words.</h3>
+    <div class="clip-pairs" id="s02-pairs"></div>
+  </div>
+  <div class="callout callout-key" data-build="2">Three observed pairs, six wrong pairings. The task is to score the observed ones above the wrong ones, in both directions.</div>
 </div>
-<div class="frame" data-title="Normalize length; keep direction" data-autobuild="off">
-  <p class="clip-flow">$\ve{\hat g_1^{\mathrm{img}}}=\dfrac{\ve{(2,1,0)}}{\sqrt{2^2+1^2}}\approx\ve{(0.894,0.447,0)}$</p>
-  <p class="clip-flow" data-build="1">$\vq{\hat g_1^{\mathrm{txt}}}=\dfrac{\vq{(2,0,0)}}{2}=\vq{(1,0,0)}$</p>
-  <pre class="torch-snippet" data-build="2"><code>g_img_unit = F.normalize(g_img, dim=-1)
-g_txt_unit = F.normalize(g_txt, dim=-1)</code></pre>
-  <p class="callout callout-key" data-build="3">Both lengths are now one. Their dot product measures cosine similarity rather than the size of either vector.</p>
-  <script type="text/x-notes">Scaling a nonzero vector by a positive constant leaves its unit direction unchanged.
 
-Normalization prevents the encoder from increasing a cosine score just by making its output longer. The learned temperature still controls logit scale separately.</script>
+<div class="frame" data-title="A caption becomes a bag of word counts" data-autobuild="off">
+  <script type="text/x-notes">
+What does the text encoder receive?
+Not the sentence: a count for every word in a fixed vocabulary. Point out that two mugs on a table and a table on two mugs would be the same bag. This is the toy's simplification; real CLIP reads the order.
+  </script>
+  <div class="card">
+    <h3 class="card-title">The vocabulary and the word counts of the three captions</h3>
+    <div id="s02-vocab"></div>
+    <div id="s02-counts" data-build="1"></div>
+  </div>
+  <div class="callout callout-note" data-build="2">Order is dropped on purpose to keep the arithmetic visible. Words that never appear in a training caption keep their starting row.</div>
 </div>
-<div class="frame" data-title="Carry these six unit vectors forward" data-autobuild="off">
-  <div id="s02-units"></div>
-  <p class="callout callout-note" data-build="1">Every row is unit length at full precision. Three-decimal displays may not have a norm of exactly one.</p>
-  <script type="text/x-notes">The image and text vectors need not be equal initially.
 
-We want their paired directions to become useful for matching. The next slide performs one of the dot products by hand.</script>
+<div class="frame" data-title="Name the three joint coordinates first" data-autobuild="off">
+  <script type="text/x-notes">
+What should the row for mugs look like before training?
+One on the mug axis, zero elsewhere. Reveal the table: the four object words are one-hot; a, on, table, two and small start at zero. Then the callout: the image map uses the same three column names.
+  </script>
+  <div class="card">
+    <h3 class="card-title">The joint axes</h3>
+    <div class="axis-row" id="s02-axes"></div>
+    <div id="s02-rows" data-build="1"></div>
+    <p class="companion read" id="s02-rows-read"></p>
+  </div>
+  <div class="callout callout-key" data-build="2">The same three names label the columns of the image map. An image vector and a caption vector are comparable because they are written on the same axes.</div>
 </div>
-<div class="frame" data-title="Six directions, three observed pairs" data-autobuild="off">
-  <div id="s02-directions"></div>
-  <p data-build="1">Blue circles: images $I_i$. Purple diamonds: captions $T_i$. This is a fixed view of 3D; use all three coordinates to compute the cosines.</p>
-  <script type="text/x-notes">Each numbered image remains attached to its actual caption and its computed paired cosine.
 
-The wireframe shows the three coordinate-plane circles of the unit sphere. Dotted lines lead to labels; they are not extra vectors. Screen angles are foreshortened. The paired directions start close, but some competing captions are close too. The axes have no assigned semantic meanings. We will reuse this exact camera and scale after training.</script>
+<div class="frame" data-title="Which pairings count as right?" data-autobuild="off">
+  <script type="text/x-notes">
+Why is the two-mug scene against a book on a table a wrong pair?
+Because it was not observed together. The scene does contain a book, so this negative is imperfect; we will return to that in the batch section. For now the diagonal is right and everything else is wrong.
+  </script>
+  <div class="card">
+    <h3 class="card-title">Images down the side, captions across the top</h3>
+    <div id="s02-matrix"></div>
+  </div>
+  <div class="callout callout-key" data-build="1">The diagonal is the supervision. The next section turns every cell into a number.</div>
 </div>
-<div class="companion after"><h3>The complete starting maps</h3><div id="s02-all-image"></div><div id="s02-all-text"></div><p>The encoders output a whole-image or whole-caption vector. A real model has many internal token embeddings and attention values before this global output. Shared output width does not imply that the two encoder architectures, internal widths, or parameters are the same.</p></div>
-<script>(function(){const S=document.getElementById('s02'),C=AT.clip,p=C.params(),f=C.forward();const host=id=>S.querySelector(id);C.table(host('#s02-pixel-weights'),[p.W_img[0],p.W_img[2],p.W_img[6]],{cols:['coordinate 1','coordinate 2','coordinate 3'],rowLabels:['pixel 1','pixel 3','pixel 7'],cornerLabel:'Initial W_img rows'});C.table(host('#s02-word-rows'),p.W_txt.slice(0,3),{cols:['coordinate 1','coordinate 2','coordinate 3'],rowLabels:['two','bright','squares'],cornerLabel:'Initial W_txt rows'});C.table(host('#s02-units'),f.imageUnit.concat(f.textUnit),{cols:['coordinate 1','coordinate 2','coordinate 3'],rowLabels:['image 1 · squares','image 2 · stripes','image 3 · dot','text 1 · squares','text 2 · stripes','text 3 · dot'],cornerLabel:'Unit vector'});C.table(host('#s02-all-image'),p.W_img,{cols:['1','2','3'],rowLabels:Array.from({length:16},(_,i)=>'pixel '+(i+1)),cornerLabel:'W_img · 16×3'});C.table(host('#s02-all-text'),p.W_txt,{cols:['1','2','3'],rowLabels:C.data.vocab,cornerLabel:'W_txt · 11×3'});})();</script>
+
+<div class="companion after">
+  <p>Three pairs, one shared coordinate system with named axes, and a matrix whose diagonal is observed. The rest of the part fills that matrix with scores and trains them.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s02'), V = AT.vision, C = AT.clip;
+  const N = C.N, pairs = C.pairs.slice(0, N);
+  /* the pairs */
+  const host = S.querySelector('#s02-pairs');
+  pairs.forEach((p, i) => {
+    const box = AT.h('div', { class: 'clip-pair' });
+    V.grid(p.scene, { cell: 18, into: box });
+    box.appendChild(AT.h('div', { class: 'clip-scene' }, 'scene ' + p.scene + ' · ' + V.sceneNames[p.scene]));
+    box.appendChild(AT.h('div', { class: 'clip-cap', 'data-build': '1' }, '“' + p.caption + '”'));
+    host.appendChild(box);
+  });
+  /* vocabulary chips and word counts */
+  const used = new Set(pairs.flatMap(p => p.caption.split(' ')));
+  const chips = AT.ui.chips(C.vocab, { numbered: false, into: S.querySelector('#s02-vocab') });
+  chips.setMuted(C.vocab.map((w, i) => i).filter(i => !used.has(C.vocab[i])));
+  const counts = C.words(pairs.map(p => p.caption));
+  AT.ui.table(counts, { cols: C.vocab.map(w => ({ label: w, kind: 'number', decimals: 0 })), rowLabels: pairs.map(p => C.quote(p.caption)), cornerLabel: 'caption', decimals: 0, sticky: true,
+    caption: 'One row per caption, one column per vocabulary word. Greyed chips above are words that no training caption uses; they keep their starting rows.', into: S.querySelector('#s02-counts') });
+  /* the named axes and the starting word rows */
+  const axHost = S.querySelector('#s02-axes');
+  C.axes.forEach(a => axHost.appendChild(AT.h('span', { class: 'axis' }, a)));
+  const p0 = C.params('initial');
+  const show = ['mugs', 'book', 'plant', 'two', 'a', 'small'];
+  const idx = show.map(w => C.vocab.indexOf(w));
+  AT.ui.table(idx.map(i => p0.W_txt[i]), { cols: C.axes.map(a => ({ label: a, cls: 'q' })), rowLabels: show.map(w => 'row for “' + w + '”'), rowCls: 'q', cornerLabel: '$W_{\\mathrm{txt}}$, start', decimals: 1,
+    caption: 'Six of the 14 rows of $W_{\\mathrm{txt}}$ before training. Columns are the joint axes. The object words (mug, mugs, book, plant) are one-hot; every other word starts at zero and is learned.', into: S.querySelector('#s02-rows') });
+  const rr = S.querySelector('#s02-rows-read');
+  rr.innerHTML = 'Reading the row for “mugs”: ' + AT.escape(C.readVec(p0.W_txt[C.vocab.indexOf('mugs')], C.axes, 1)) + ', so the word says <em>mug</em> and nothing else. The row for “a” is all zeros: it says nothing yet.';
+  /* the matrix of pairings */
+  const cells = pairs.map((pi, i) => pairs.map((pj, j) => i === j ? '✓ observed' : '× wrong'));
+  AT.ui.table(cells, { cols: pairs.map(p => ({ label: C.quote(p.caption), kind: 'text' })), rowLabels: pairs.map(p => C.thumbHTML(p.scene, 5) + ' ' + AT.escape(V.sceneNames[p.scene])), cornerLabel: 'image ↓ caption →',
+    caption: 'Rows are the three scenes (thumbnails), columns the three captions. Only the diagonal was observed; the six other cells are treated as wrong pairings during training.', into: S.querySelector('#s02-matrix') });
+})();
+</script>
 </section>
-<script>(function(){const S=document.getElementById('s02');AT.clip.diagram(S.querySelector('#s02-normalization-geometry'),'normalization-geometry');AT.clip.diagram(S.querySelector('#s02-directions'),'directions');})();</script>

@@ -1,0 +1,193 @@
+<section id="s08" class="sec" data-title="Classify by writing candidates" data-lit="">
+<style>
+#s08 .read{font-size:15px;color:var(--ink-2);margin:10px 0 0;max-width:72ch;line-height:1.5}
+#s08 .ctrl{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;margin:0 0 10px}
+#s08 .ctrl .slider{flex:1 1 220px;margin:0}
+#s08 .two{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:720px){#s08 .two{grid-template-columns:minmax(0,1fr)}}
+#s08 .sub{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin:0 0 6px}
+#s08 .cands{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0 10px}
+#s08 .cand{border:1.5px solid var(--c-q);background:var(--t-q);color:var(--ink);border-radius:999px;padding:4px 12px;font-size:14px}
+#s08 .btn[aria-pressed=true]{background:var(--ink);color:var(--card)}
+#s08 .ratio{font-family:var(--font-mono);font-size:15px;margin:8px 0 0}
+body.present #s08 .read{font-size:20px;line-height:1.3}
+body.present #s08 .sub{font-size:18px}
+body.present #s08 .cand{font-size:20px}
+body.present #s08 .ratio{font-size:21px}
+body.present #s08 .dt td,body.present #s08 .dt th{font-size:19px;padding:.1em .4em}
+body.present #s08 .card{margin-bottom:10px;padding:14px 24px}
+body.present #s08 .callout{margin:8px 0}
+body.present #s08 .two{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr)}
+body.present #s08 .bars .bl,body.present #s08 .bars .bv{font-size:.68em}
+body.present #s08 .bars .bt{height:1em}
+body.present #s08 .bars .bl,body.present #s08 .bars .bv{font-size:.78em}
+body.present #s08 .clip-thumb svg{width:34px;height:34px}
+</style>
+<header class="sec-head">
+  <span class="sec-num">08</span>
+  <div>
+    <p class="eyebrow">Freeze both encoders. Write the candidate captions. The list is the classifier.</p>
+    <h2>Classify by writing candidates</h2>
+  </div>
+</header>
+
+<div class="companion" data-kicker="For self-study">
+  <p>After training, the encoders stay fixed. To classify a scene, write one caption per class, encode each into a unit vector, and let the image vector score them by cosine. Those caption vectors play the role of the class head's rows, and you can rewrite them at any time. The widget below runs every combination the toy allows: any scene from the batch, several candidate lists, a prompt template, and a temperature. Try the list that leaves out the right answer, then the one-mug scene the model never trained on. Every result comes from the same frozen parameters; nothing is retrained between clicks.</p>
+</div>
+
+<div class="frame" data-title="The candidate list is the classifier" data-autobuild="off">
+  <script type="text/x-notes">
+Which numbers change when we swap the list?
+Only the caption side: the image vector is computed once and reused. Show scene A with the three training captions, then switch scenes. The softmax is over the list on offer.
+
+Timing: three minutes.
+  </script>
+  <div class="card">
+    <div class="ctrl">
+      <div id="s08-scene" data-keep-state></div>
+      <div id="s08-list" data-keep-state></div>
+    </div>
+    <div class="cands" id="s08-cands"></div>
+    <div class="two">
+      <div id="s08-table"></div>
+      <div id="s08-bars" data-build="1"></div>
+    </div>
+    <p class="read" id="s08-read" data-build="1"></p>
+  </div>
+</div>
+
+<div class="frame" data-title="Leave out the right answer" data-autobuild="off">
+  <script type="text/x-notes">
+What does the softmax do when no candidate fits?
+It still hands out probability 1 across the list. Scene A against a book and a plant: a book wins with a low cosine. There is no none-of-the-above row unless you write one.
+  </script>
+  <div class="card">
+    <h3 class="card-title">Scene A, candidates: “a book”, “a plant”</h3>
+    <div class="two">
+      <div id="s08-missing"></div>
+      <div id="s08-missing-bars"></div>
+    </div>
+    <p class="read" id="s08-missing-read" data-build="1"></p>
+  </div>
+  <div class="callout callout-key" data-build="2">A candidate probability compares the list you wrote. It is not evidence that the winning caption is true.</div>
+</div>
+
+<div class="frame" data-title="Scenes the toy never trained on" data-autobuild="off">
+  <script type="text/x-notes">
+Can it count?
+Scene B has one mug. One mug beats two mugs by a hair, and only because the row for two learned to lean away from plant; the row for one is still zero. Then scene H, a mug and a plant: the model answers a book. Report both as they are.
+  </script>
+  <div class="card">
+    <div class="two">
+      <div><p class="sub">Scene B: one mug</p><div id="s08-b"></div></div>
+      <div><p class="sub">Scene H: one mug and a plant</p><div id="s08-h"></div></div>
+    </div>
+    <p class="read" id="s08-unseen-read" data-build="1"></p>
+  </div>
+  <div class="callout callout-note" data-build="2">Three training pairs fit three scenes. A held-out scene tests the frozen encoder and three sentences of word statistics, nothing more.</div>
+</div>
+
+<div class="frame" data-title="A prompt template changes the vectors" data-autobuild="off">
+  <script type="text/x-notes">
+Why would a photo of two mugs score differently from two mugs?
+Because the template adds word rows. The row for a learned to lean away from mug in three captions, so it lowers every mug cosine; the rows for photo and of are zero. The CLIP paper averages several templates for the same reason: wording moves the vector.
+  </script>
+  <div class="card">
+    <h3 class="card-title">Bare candidates against “a photo of …”, scene A and scene B</h3>
+    <div id="s08-template"></div>
+    <p class="read" id="s08-template-read" data-build="1"></p>
+  </div>
+  <div class="callout callout-note" data-build="2">The paper's templates, such as <em>a photo of a {label}</em>, fix ambiguous names and average away wording effects.</div>
+</div>
+
+<div class="frame" data-title="Temperature sharpens; it does not reorder" data-autobuild="off">
+  <script type="text/x-notes">
+Halve the temperature: what happens to the ratio of two candidates?
+It is exponentiated: the ratio is exp of the cosine gap over tau. A gap of 0.05 at tau 0.01 is e to the 5, about 148 to 1, not five to one. Drag the slider and read the ratio line.
+  </script>
+  <div class="card">
+    <div class="ctrl"><div id="s08-tau"></div></div>
+    <div class="two">
+      <div id="s08-tau-bars"></div>
+      <div><p class="ratio" id="s08-ratio"></p><p class="read" id="s08-tau-read"></p></div>
+    </div>
+  </div>
+  <div class="callout callout-key" data-build="1">For fixed vectors, a positive temperature never changes which candidate wins. It changes how sure the softmax looks.</div>
+</div>
+
+<div class="companion after">
+  <p>Zero-shot classification is retrieval against a list you wrote: encode the candidates, score by cosine, softmax over the list. The encoders do not move; the list does. A high probability compares candidates; it does not certify a description.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s08'), V = AT.vision, C = AT.clip;
+  const pT = C.params('trained'), tauT = Math.exp(-pT.log_scale);
+  const scenes = ['A', 'D', 'E', 'B', 'H'];
+  const lists = [
+    { name: 'three training captions', caps: ['two mugs on a table', 'a book on a table', 'a small plant'] },
+    { name: 'short names', caps: ['two mugs', 'a book', 'a plant'] },
+    { name: 'with counts', caps: ['one mug', 'two mugs', 'a book', 'a plant'] },
+    { name: 'wrong list', caps: ['a book', 'a plant'] }
+  ];
+  let scene = 'A', li = 0;
+  const sceneChips = AT.ui.chips(scenes.map(k => V.sceneNames[k]), { active: 0, into: S.querySelector('#s08-scene'), onClick: (i) => { scene = scenes[i]; sceneChips.setActive(i); paint(); } });
+  const listHost = S.querySelector('#s08-list');
+  const listBtns = lists.map((l, i) => { const b = AT.h('button', { type: 'button', class: 'btn', 'aria-pressed': i === li ? 'true' : 'false' }, l.name); b.addEventListener('click', () => { li = i; listBtns.forEach((x, k) => x.setAttribute('aria-pressed', k === i ? 'true' : 'false')); paint(); }); listHost.appendChild(b); return b; });
+  const candHost = S.querySelector('#s08-cands'), tHost = S.querySelector('#s08-table'), bHost = S.querySelector('#s08-bars'), read = S.querySelector('#s08-read');
+  function resultTable(r, into, opts){
+    opts = opts || {};
+    const rows = r.cosine.map((c, j) => opts.compact ? [c, r.probs[j]] : [c, r.logits[j], r.probs[j]]);
+    const cols = opts.compact ? [{ label: 'cosine' }, { label: 'p over the list', cls: 'a' }] : [{ label: 'cosine' }, { label: 'cosine ÷ τ' }, { label: 'p over the list', cls: 'a' }];
+    const fig = AT.ui.table(rows, { cols, rowLabels: r.captions.map(c => C.quote(c)), cornerLabel: opts.corner || (C.thumbHTML(r.scene, 5) + ' ' + AT.escape(V.sceneNames[r.scene])), decimals: 3, heatCols: [cols.length - 1], highlightRow: r.best, into });
+    return fig;
+  }
+  function paint(){
+    const caps = lists[li].caps, r = C.classify({ scene, captions: caps, params: pT });
+    AT.clear(candHost); caps.forEach(c => candHost.appendChild(AT.h('span', { class: 'cand' }, c)));
+    AT.clear(tHost); AT.clear(bHost);
+    resultTable(r, tHost);
+    AT.ui.bars(caps.map((c, j) => ({ label: c, p: r.probs[j] })), { cls: 'a', max: 1, decimals: 3, sorted: false, highlight: r.label, size: 'lg', into: bHost });
+    const second = r.cosine.map((c, j) => ({ c, j })).sort((a, b) => b.c - a.c)[1];
+    read.innerHTML = 'Scene ' + scene + ' (' + AT.escape(V.sceneNames[scene]) + '): the highest cosine is ' + C.quote(r.label) + ' at ' + AT.fmt(r.cosine[r.best], 3) + (second ? ', ahead of ' + C.quote(caps[second.j]) + ' at ' + AT.fmt(second.c, 3) : '') + '. With the learned τ = ' + AT.fmt(r.tau, 3) + ' that becomes $p = ' + AT.fmt(r.probs[r.best], 3) + '$ over this list. The encoders did not change.';
+    AT.renderMath(read);
+  }
+  paint();
+  if (AT.present && AT.present.on) AT.present.on('frame', (st) => { if (st.frame && st.frame.id === 's08' && st.frame.index === 0 && (scene !== 'A' || li !== 0)) { scene = 'A'; li = 0; sceneChips.setActive(0); listBtns.forEach((x, k) => x.setAttribute('aria-pressed', k === 0 ? 'true' : 'false')); paint(); } });
+  /* missing answer */
+  const rm = C.classify({ scene: 'A', captions: ['a book', 'a plant'], params: pT });
+  resultTable(rm, S.querySelector('#s08-missing'));
+  AT.ui.bars(rm.captions.map((c, j) => ({ label: c, p: rm.probs[j] })), { cls: 'a', max: 1, decimals: 3, sorted: false, highlight: rm.label, size: 'lg', into: S.querySelector('#s08-missing-bars') });
+  S.querySelector('#s08-missing-read').innerHTML = 'Reading it: neither caption fits, but the probabilities still sum to ' + AT.fmt(rm.probs.reduce((a, b) => a + b, 0), 2) + '. ' + C.quote(rm.label) + ' wins with cosine ' + AT.fmt(rm.cosine[rm.best], 3) + ' and $p = ' + AT.fmt(rm.probs[rm.best], 3) + '$. With only one candidate the answer would be exactly 1.';
+  AT.renderMath(S.querySelector('#s08-missing-read'));
+  /* unseen scenes */
+  const capsB = ['one mug', 'two mugs', 'a book', 'a plant'];
+  const rb = C.classify({ scene: 'B', captions: capsB, params: pT }), rh = C.classify({ scene: 'H', captions: capsB, params: pT });
+  resultTable(rb, S.querySelector('#s08-b'), { compact: true, corner: 'scene B' }); resultTable(rh, S.querySelector('#s08-h'), { compact: true, corner: 'scene H' });
+  const gap = rb.cosine[0] - rb.cosine[1];
+  S.querySelector('#s08-unseen-read').innerHTML = 'Reading scene B: ' + C.quote(rb.label) + ' wins over ' + C.quote(capsB[1 - rb.best] || capsB[1]) + ' by ' + AT.fmt(Math.abs(gap), 3) + ' in cosine. The row for “one” is still zero, so “one mug” is just “mug”; the difference is the row that “two” learned. Reading scene H: the model answers ' + C.quote(rh.label) + ' (cosine ' + AT.fmt(rh.cosine[rh.best], 3) + ') for a scene with a mug and a plant.';
+  /* template */
+  const bare = ['two mugs', 'a book', 'a plant'], tmpl = bare.map(c => 'a photo of ' + c);
+  const rows = [], labels = [];
+  ['A', 'B'].forEach(sc => { const r1 = C.classify({ scene: sc, captions: bare, params: pT }), r2 = C.classify({ scene: sc, captions: tmpl, params: pT }); bare.forEach((c, j) => { rows.push([r1.cosine[j], r2.cosine[j], r2.cosine[j] - r1.cosine[j]]); labels.push(C.thumbHTML(sc, 5) + ' ' + C.quote(c)); }); });
+  AT.ui.table(rows, { cols: [{ label: 'cosine, bare' }, { label: 'cosine, “a photo of …”' }, { label: 'change' }], rowLabels: labels, cornerLabel: 'scene · candidate', decimals: 3,
+    caption: 'The same six image and candidate pairs with and without the template, which adds the rows for “a”, “photo” and “of” before normalisation.', into: S.querySelector('#s08-template') });
+  const aRow = pT.W_txt[C.vocab.indexOf('a')];
+  S.querySelector('#s08-template-read').innerHTML = 'Reading the change column: every cosine moves because the row for “a” is ' + AT.escape(C.readVec(aRow, C.axes, 2)) + '; “photo” and “of” are zero. Winners stay, margins change.';
+  /* temperature */
+  const rt = C.classify({ scene: 'D', captions: ['a book', 'a plant', 'two mugs'], params: pT });
+  const tauHost = S.querySelector('#s08-tau-bars'), ratio = S.querySelector('#s08-ratio'), tread = S.querySelector('#s08-tau-read');
+  let tbars = null;
+  function paintTau(tau){
+    const r = C.classify({ scene: 'D', captions: rt.captions, params: pT, tau });
+    const items = r.captions.map((c, j) => ({ label: c, p: r.probs[j] }));
+    if (!tbars) tbars = AT.ui.bars(items, { cls: 'a', max: 1, decimals: 3, sorted: false, highlight: r.label, size: 'lg', into: tauHost }); else tbars.update(items);
+    const gap = r.cosine[0] - r.cosine[1];
+    ratio.textContent = 'p(book) / p(plant) = exp((' + AT.fmt(r.cosine[0], 3) + ' − ' + AT.fmt(r.cosine[1], 3) + ') / ' + AT.fmt(tau, 3) + ') = exp(' + AT.fmt(gap / tau, 2) + ') = ' + AT.fmt(r.probs[0] / r.probs[1], 1);
+    tread.textContent = 'Scene D against three candidates, cosines fixed. τ = ' + AT.fmt(tau, 3) + (Math.abs(tau - tauT) < 1e-9 ? ' (the learned value)' : '') + '. The cosine gap between the two best candidates is ' + AT.fmt(gap, 3) + '; the ratio of their probabilities is that gap divided by τ, exponentiated.';
+  }
+  AT.ui.slider({ label: 'temperature τ', min: 0.02, max: 1, step: 0.01, value: Math.round(tauT * 100) / 100, format: v => AT.fmt(v, 2), onInput: paintTau, into: S.querySelector('#s08-tau') });
+  paintTau(Math.round(tauT * 100) / 100);
+})();
+</script>
+</section>

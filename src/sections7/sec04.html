@@ -1,43 +1,139 @@
-<section id="s04" class="sec" data-title="Train retrieval in both directions" data-lit="a d">
-<header class="sec-head"><span class="sec-num">04</span><div><p class="eyebrow">Each observed pair must be retrievable from either side.</p><h2>Train retrieval in both directions</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>Image-to-text training asks each image to choose its observed caption. Text-to-image training asks each caption to choose its observed image. Both use the same logits, but they normalize over different candidates. Averaging the two losses trains both retrieval directions.</p></div>
-<div class="frame" data-title="Every image chooses among the three captions" data-autobuild="off">
-  <div id="s04-rows"></div>
-  <p data-build="1">The target indices are $[0,1,2]$: row 1 wants caption 1, row 2 wants caption 2, and row 3 wants caption 3.</p>
-  <pre class="torch-snippet" data-build="2"><code>targets = torch.arange(3)
-loss_image = F.cross_entropy(logits, targets)</code></pre>
-  <script type="text/x-notes">The matrix labels use one-based numbering; PyTorch target indices use zero-based numbering.
+<section id="s04" class="sec" data-title="Score every image against every caption" data-lit="a">
+<style>
+#s04 .read{font-size:15px;color:var(--ink-2);margin:10px 0 0;max-width:72ch;line-height:1.5}
+#s04 .dt td.is-diag{box-shadow:inset 0 0 0 2px var(--c-d)}
+#s04 .two{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:720px){#s04 .two{grid-template-columns:minmax(0,1fr)}}
+body.present #s04 .read{font-size:21px;line-height:1.3}
+body.present #s04 .dt td,body.present #s04 .dt th{font-size:21px;padding:.2em .5em}
+body.present #s04 .katex-display{margin:6px 0}
+body.present #s04 .card{margin-bottom:12px}
+body.present #s04 .bars .bt{height:1.05em}
+</style>
+<header class="sec-head">
+  <span class="sec-num">04</span>
+  <div>
+    <p class="eyebrow">One dot product per pair fills a 3×3 matrix. A temperature and a softmax turn each row into probabilities.</p>
+    <h2>Score every image against every caption</h2>
+  </div>
+</header>
 
-F.cross_entropy takes logits and performs log-softmax internally. Do not feed it the row probabilities.</script>
+<div class="companion" data-kicker="For self-study">
+  <p>With six unit vectors in hand, compare every image with every caption, including the captions that belong to other images. The result is a 3×3 matrix of cosines: the row picks an image, the column picks a caption. It is a matrix of matches between whole examples, not an attention map between positions. Dividing by a temperature $\tau$ stretches the cosines into logits, and a softmax across a row asks one image to spread probability over the three captions on offer. The diagonal wins in every row at the start, but the book row's lead is thin: 0.75 against 0.61 for the plant caption.</p>
 </div>
-<div class="frame" data-title="Reward the diagonal probabilities" data-autobuild="off">
-  <div id="s04-row-loss"></div>
-  <p class="clip-flow" data-build="1">$\vd{L_{I\to T}}=-\frac13\sum_{i=1}^3\log\va{p(T_i\mid I_i,\mathcal B)}$</p>
-  <p id="s04-row-total" class="clip-number" data-build="2"></p>
-  <p data-build="3">Competitor captions affect the denominator even though the target is one diagonal entry.</p>
-  <script type="text/x-notes">The stripe image has the largest row loss because its correct-caption probability is only about .501.
 
-A correct argmax does not imply zero loss.</script>
-</div>
-<div class="frame" data-title="Now hold each caption fixed and choose an image" data-autobuild="off">
-  <div id="s04-columns"></div>
-  <pre class="torch-snippet" data-build="1"><code>loss_text = F.cross_entropy(logits.T, targets)
-# Each original column is now a candidate-image row.</code></pre>
-  <p data-build="2">For <code>one bright dot</code>, stripes and the dot initially tie at cosine $0.800$.</p>
-  <script type="text/x-notes">Column softmax is not the transpose of the row-softmax result.
+<div class="frame" data-title="One score is one dot product" data-autobuild="off">
+  <script type="text/x-notes">
+What is being multiplied, coordinate by coordinate?
+The unit image vector of the two-mug scene and the unit vector of its own caption, on the same three named axes. The caption is exactly the mug axis, so the score reads off the image's mug coordinate.
 
-First transpose the logits, then normalize. In the diagram each original column sums to one.</script>
+Timing: two minutes.
+  </script>
+  <div class="card">
+    <h3 class="card-title">$C_{11} = \ve{\hat g_1^{\mathrm{img}}} \cdot \vq{\hat g_1^{\mathrm{txt}}}$: scene A against its own caption</h3>
+    <div id="s04-one"></div>
+    <p class="read" id="s04-one-read" data-build="1"></p>
+  </div>
+  <div class="callout callout-key" data-build="2">Both rows have length one, so the sum of products is the cosine of the angle between the two directions. It ranges from −1 to 1.</div>
 </div>
-<div class="frame" data-title="Average the two different losses" data-autobuild="off">
-  <div id="s04-column-loss"></div>
-  <p id="s04-both" class="clip-flow" data-build="1"></p>
-  <pre class="torch-snippet" data-build="2"><code>loss = 0.5 * (loss_image + loss_text)
-# Both cross-entropies already average over the 3 examples.</code></pre>
-  <p data-build="3">Different normalizers give different losses in the two directions.</p>
-  <script type="text/x-notes">This is where the two retrieval tasks meet.
 
-Both losses contribute gradients to both encoders and to the log scale. Avoid adding another division by three after the two cross_entropy calls.</script>
+<div class="frame" data-title="All nine cosines" data-autobuild="off">
+  <script type="text/x-notes">
+Which cell in each row is the largest?
+The diagonal, in all three rows, but look at the margins: the book row is nearly tied with the plant caption. Then the snippet: one matrix product computes all nine scores at once.
+  </script>
+  <div class="card">
+    <h3 class="card-title">Images down the side, captions across the top: $C = \ve{\hat G^{\mathrm{img}}}\,(\vq{\hat G^{\mathrm{txt}}})^\top$</h3>
+    <div id="s04-cos"></div>
+    <p class="read" id="s04-cos-read" data-build="1"></p>
+  </div>
+  <pre class="torch-snippet" data-build="2"><code>cosine = g_img @ g_txt.T   # [3, 3]; rows: images, columns: captions</code></pre>
 </div>
-<div class="companion after"><p>For a batch of $N$ pairs, the loss is $-\frac{1}{2N}\sum_i[\log p(T_i\mid I_i,\mathcal B)+\log p(I_i\mid T_i,\mathcal B)]$. Rows and columns are supervised separately; neither direction solves a global one-to-one assignment problem. During inference, two different images may legitimately retrieve the same description.</p></div>
-<script>(function(){const S=document.getElementById('s04'),C=AT.clip,f=C.forward();C.diagram(S.querySelector('#s04-rows'),'row');C.diagram(S.querySelector('#s04-columns'),'column');C.table(S.querySelector('#s04-row-loss'),f.rowLosses.map((loss,i)=>[f.rowProb[i][i],loss]),{cols:['correct-caption p','−log p'],rowLabels:['image 1','image 2','image 3'],cornerLabel:'Image → text'});C.table(S.querySelector('#s04-column-loss'),f.columnLosses.map((loss,j)=>[f.columnProb[j][j],loss]),{cols:['correct-image p','−log p'],rowLabels:['caption 1','caption 2','caption 3'],cornerLabel:'Text → image'});AT.tex(S.querySelector('#s04-row-total'),'L_{I\\to T}\\approx'+f.rowLoss.toFixed(3));AT.tex(S.querySelector('#s04-both'),'L=\\tfrac12('+f.rowLoss.toFixed(3)+'+'+f.columnLoss.toFixed(3)+')\\approx'+f.loss.toFixed(3));})();</script>
+
+<div class="frame" data-title="Temperature stretches cosines into logits" data-autobuild="off">
+  <script type="text/x-notes">
+What changes when tau is halved?
+Every logit doubles; the ranking in each row does not change. The model stores a learned log scale, so tau is a parameter like any other. It starts at 0.5 here.
+  </script>
+  <div class="prose"><p>$$S_{ij} = \frac{C_{ij}}{\tau}, \qquad \tau = e^{-a},\quad a \text{ learned}$$</p></div>
+  <div class="card" data-build="1">
+    <div id="s04-logits"></div>
+  </div>
+  <pre class="torch-snippet" data-build="2"><code>logits = log_scale.exp() * cosine   # exp(log_scale) = 1 / tau</code></pre>
+</div>
+
+<div class="frame" data-title="Softmax across a row: one image chooses a caption" data-autobuild="off">
+  <script type="text/x-notes">
+What is in the denominator?
+All three candidate captions for this one image. Read left to right: logit, its exponential, then the share of the total. The bars show the same three numbers.
+  </script>
+  <div class="card">
+    <h3 class="card-title">Scene A: $\va{p(T_j \mid I_1)} = \dfrac{e^{S_{1j}}}{\sum_{k} e^{S_{1k}}}$</h3>
+    <div class="two">
+      <div id="s04-row"></div>
+      <div id="s04-row-bars" data-build="1"></div>
+    </div>
+    <p class="read" id="s04-row-read" data-build="1"></p>
+  </div>
+</div>
+
+<div class="frame" data-title="Every row becomes a probability row" data-autobuild="off">
+  <script type="text/x-notes">
+Why does each row sum to one?
+Each image spreads probability over the captions it is offered. The book row is the weakest: its own caption gets less than half. That is the number training will raise.
+  </script>
+  <div class="card">
+    <h3 class="card-title">Image to text: each row sums to 1</h3>
+    <div id="s04-rowprob"></div>
+    <p class="read" id="s04-rowprob-read" data-build="1"></p>
+  </div>
+  <div class="callout callout-key" data-build="2">A probability here compares the three captions on offer. It says nothing about captions that were never written down.</div>
+</div>
+
+<div class="companion after">
+  <p>Nine cosines, one temperature, and a softmax over each row: every image now holds a probability for every caption in the batch. The diagonal is what the observed pairs say should win.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s04'), V = AT.vision, C = AT.clip;
+  const N = C.N, pairs = C.pairs.slice(0, N), p0 = C.params('initial'), f = C.forward(p0);
+  const imgLab = pairs.map(p => C.thumbHTML(p.scene, 5) + ' ' + AT.escape(V.sceneNames[p.scene]));
+  const capLab = pairs.map(p => C.quote(p.caption));
+  const axCols = cls => C.axes.map(a => ({ label: a, cls }));
+  /* frame 1: one dot product written out */
+  const u = f.imgUnit[0], t = f.txtUnit[0], prod = u.map((x, k) => x * t[k]);
+  const one = AT.ui.table([u, t, prod], { cols: axCols(), rowLabels: [imgLab[0] + ' $\\ve{\\hat g_1^{\\mathrm{img}}}$', capLab[0] + ' $\\vq{\\hat g_1^{\\mathrm{txt}}}$', 'products'], rowCls: ['e', 'q', 'neutral'], cornerLabel: 'row', decimals: 2,
+    computed: [{ label: 'sum', cls: 'a', fn: (r, i) => i === 2 ? f.cosine[0][0] : '' }],
+    caption: 'Multiply the two unit rows coordinate by coordinate and add. The sum on the right is the cosine $C_{11}$.', into: S.querySelector('#s04-one') });
+  S.querySelector('#s04-one-read').innerHTML = 'Reading it: ' + prod.map((x, k) => AT.fmt(u[k], 2) + '×' + (t[k] < 0 ? '(' + AT.fmt(t[k], 2) + ')' : AT.fmt(t[k], 2))).join(' + ') + ' = ' + AT.fmt(f.cosine[0][0], 2) + '. The caption is the mug axis itself, so the score is the image’s mug coordinate.';
+  /* frame 2: the cosine matrix */
+  const cosFig = AT.ui.table(f.cosine, { cols: capLab.map(l => ({ label: l, kind: 'number' })), rowLabels: imgLab, cornerLabel: 'image ↓ caption →', decimals: 2, heatCols: [0, 1, 2], heatMax: 1,
+    caption: 'Cosine similarity of every image (row) with every caption (column). Darker is closer. Green frames mark the observed pairs.', into: S.querySelector('#s04-cos') });
+  cosFig.cells.forEach((row, i) => row[i].classList.add('is-diag'));
+  const margins = f.cosine.map((r, i) => { const others = r.filter((_, j) => j !== i); return r[i] - Math.max(...others); });
+  const weak = margins.indexOf(Math.min(...margins));
+  S.querySelector('#s04-cos-read').innerHTML = 'Reading the rows: the diagonal is largest in every row. The narrowest lead is the ' + AT.escape(V.sceneNames[pairs[weak].scene]) + ' row, ' + AT.fmt(f.cosine[weak][weak], 2) + ' against ' + AT.fmt(Math.max(...f.cosine[weak].filter((_, j) => j !== weak)), 2) + ' for a wrong caption.';
+  /* frame 3: logits */
+  const lg = AT.ui.table(f.logits, { cols: capLab.map(l => ({ label: l, kind: 'number' })), rowLabels: imgLab, cornerLabel: '$S = C/\\tau$, τ = ' + AT.fmt(f.tau, 2), decimals: 2,
+    caption: 'Every cosine divided by τ = ' + AT.fmt(f.tau, 2) + '. The order inside each row is unchanged; only the gaps grow.', into: S.querySelector('#s04-logits') });
+  lg.cells.forEach((row, i) => row[i].classList.add('is-diag'));
+  /* frame 4: row 1 worked */
+  const row = f.logits[0], ex = row.map(Math.exp), Z = ex.reduce((a, b) => a + b, 0), pr = f.rowProb[0];
+  const rowFig = AT.ui.table(row.map((s, j) => [s, ex[j], pr[j]]), { cols: [{ label: '$S_{1j}$' }, { label: '$e^{S_{1j}}$' }, { label: '$\\va{p(T_j \\mid I_1)}$', cls: 'a' }], rowLabels: capLab, cornerLabel: 'caption', heatCols: [2],
+    footer: { label: 'total', values: ['', Z, pr.reduce((a, b) => a + b, 0)] }, decimals: 3,
+    caption: 'Logit, its exponential, and the exponential divided by the column total ' + AT.fmt(Z, 3) + '. Hover a probability for the division.', into: S.querySelector('#s04-row') });
+  pr.forEach((p, j) => rowFig.tipOn(rowFig.cells[j][2], AT.fmt(ex[j], 3) + ' ÷ ' + AT.fmt(Z, 3) + ' = ' + AT.fmt(p, 3)));
+  AT.ui.bars(capLab.map((l, j) => ({ label: pairs[j].caption, p: pr[j] })), { cls: 'a', max: 1, decimals: 3, sorted: false, highlight: pairs[0].caption, size: 'lg', into: S.querySelector('#s04-row-bars') });
+  S.querySelector('#s04-row-read').innerHTML = 'Reading the row: scene A gives its own caption $p = ' + AT.fmt(pr[0], 3) + '$ and leaves ' + AT.fmt(1 - pr[0], 3) + ' for the two wrong captions together. A full bar would be probability 1.';
+  AT.renderMath(S.querySelector('#s04-row-read'));
+  /* frame 5: all rows */
+  const rp = AT.ui.table(f.rowProb, { cols: capLab.map(l => ({ label: l, kind: 'number' })), rowLabels: imgLab, cornerLabel: 'image ↓ caption →', decimals: 3, heatCols: [0, 1, 2], heatMax: 1, rowCls: 'a',
+    computed: [{ label: 'row sum', fn: r => r.reduce((a, b) => a + b, 0), cls: 'neutral' }],
+    caption: 'Row softmax of the logits. Each image spreads probability 1 over the three captions; the green frame is its own caption.', into: S.querySelector('#s04-rowprob') });
+  rp.cells.forEach((r, i) => r[i].classList.add('is-diag'));
+  const diag = f.rowProb.map((r, i) => r[i]), lo = diag.indexOf(Math.min(...diag));
+  S.querySelector('#s04-rowprob-read').innerHTML = 'Reading the diagonal: ' + diag.map((p, i) => AT.escape(V.sceneNames[pairs[i].scene]) + ' ' + AT.fmt(p, 3)).join(', ') + '. The ' + AT.escape(V.sceneNames[pairs[lo].scene]) + ' scene gives its own caption the least, so it has the most to learn.';
+})();
+</script>
 </section>

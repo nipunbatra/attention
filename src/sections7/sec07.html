@@ -1,39 +1,165 @@
-<section id="s07" class="sec" data-title="A match score is not a truth judgment" data-lit="a d">
-<header class="sec-head"><span class="sec-num">07</span><div><p class="eyebrow">Keep the scope of the objective and the candidate set visible.</p><h2>A match score is not a truth judgment</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>There are two different claims to separate. Contrastive training can learn representations that transfer to new tasks. A particular softmax score, however, only compares the candidates supplied to it. Removing the correct candidate does not create an automatic "none of the above" output. Evaluation must account for that limitation.</p></div>
-<div class="frame" data-title="What does 99% refer to?" data-autobuild="off">
-  <p class="clip-flow">$\va{p(T_j\mid I,\mathcal C)}=\dfrac{\exp(C_j/\tau)}{\sum_{k\in\mathcal C}\exp(C_k/\tau)}$</p>
-  <ul><li>The candidate set $\mathcal C$ is chosen by us.</li><li data-build="1">Adding or removing a candidate changes the denominator.</li><li data-build="2">A smaller temperature can make the winner look more certain without adding image evidence.</li></ul>
-  <p class="callout callout-key" data-build="3">A high candidate probability is not calibrated confidence that a description is true in the world.</p>
-  <script type="text/x-notes">Refer back to the missing-candidate control.
+<section id="s07" class="sec" data-title="Grow the batch" data-lit="">
+<style>
+#s07 .read{font-size:15px;color:var(--ink-2);margin:10px 0 0;max-width:72ch;line-height:1.5}
+#s07 .status{font-family:var(--font-mono);font-size:14px;color:var(--ink-2);margin:8px 0 0}
+#s07 .dt td.is-diag{box-shadow:inset 0 0 0 2px var(--c-d)}
+#s07 .dt th .clip-thumb{margin:0}
+#s07 .chart svg{display:block;width:100%;max-width:560px;height:auto}
+#s07 .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:720px){#s07 .two{grid-template-columns:minmax(0,1fr)}}
+#s07 .sub{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin:0 0 6px}
+body.present #s07 .read{font-size:20px;line-height:1.3}
+body.present #s07 .status{font-size:19px}
+body.present #s07 .sub{font-size:18px}
+body.present #s07 .dt td,body.present #s07 .dt th{font-size:17px;padding:.1em .26em}
+body.present #s07 .dt td.dt-num{min-width:2.4em}
+body.present #s07 .clip-thumb svg{width:26px;height:26px}
+body.present #s07 .dt tbody th .small{display:block;font-size:13px;line-height:1}
+body.present #s07 .vcircle{max-width:300px!important}
+body.present #s07 .card{margin-bottom:10px;padding:16px 24px}
+body.present #s07 .vcircle{max-width:320px}
+body.present #s07 .vfig{margin:0}
+body.present #s07 .bars{gap:3px 10px;margin:4px 0}
+body.present #s07 .bars .bt{height:.85em}
+body.present #s07 .bars .bl,body.present #s07 .bars .bv{font-size:.68em}
+body.present #s07 .callout{margin:8px 0}
+body.present #s07 .slider{margin:0 0 6px}
+</style>
+<header class="sec-head">
+  <span class="sec-num">07</span>
+  <div>
+    <p class="eyebrow">Every extra pair is a competitor for every other pair. A collapsed model scores log N, whatever N is.</p>
+    <h2>Grow the batch</h2>
+  </div>
+</header>
 
-Both remaining descriptions are wrong for the anchor, but their probabilities still sum to one. A single candidate would receive probability one regardless of its absolute cosine.</script>
+<div class="companion" data-kicker="For self-study">
+  <p>With three pairs, a caption has two wrong images to reject. Real CLIP uses batches of tens of thousands of pairs, so each caption must beat tens of thousands of images at once. To see the effect on our toy, add five more scene and caption pairs that the model never trained on and watch the denominators grow. The slider keeps the trained parameters fixed; only the batch changes. Two things happen: the observed pair's probability drops as the list lengthens, and captions that are true of several scenes start to compete. The second thing is the batch's dirty secret: a wrong pair by construction can be a right pair in fact.</p>
 </div>
-<div class="frame" data-title="What if we offer only one caption?" data-autobuild="off">
-  <p>Keep the two-square image. Offer only <code>one bright dot</code>.</p>
-  <p class="clip-flow" data-build="1">One score $s$ gives $\va{p}=\dfrac{e^s}{e^s}$.</p>
-  <div id="s07-single-candidate" data-build="2"></div>
-  <script type="text/x-notes">Ask for the probability before revealing the answer.
 
-The result is one even for a bad match. Connect this calculation to the missing-candidate control: softmax has no automatic none-of-the-above option.</script>
-</div>
-<div class="frame" data-title="An off-diagonal pair can also be valid" data-autobuild="off">
-  <div id="s07-false-negative"></div>
-  <p class="callout callout-note" data-build="1">Two images may share a valid description. A one-positive-per-row batch objective still treats the other pairing as a negative.</p>
-  <p data-build="2">Batch construction, duplicate handling, and richer positive sets matter. Larger batches can add both useful competitors and false negatives.</p>
-  <script type="text/x-notes">The dashed links in this diagram are semantically valid but unpaired in the supplied batch.
+<div class="frame" data-title="More pairs, more competitors" data-autobuild="off">
+  <script type="text/x-notes">
+What happens to the diagonal as the batch grows?
+Drag from 3 to 8. The parameters do not change; the denominators do. Pairs 4 to 8 were never trained, and their captions reuse the words the model learned, so several rows get confused.
 
-Calling them negatives describes the training objective, not a claim that the captions are false.</script>
+Timing: three minutes.
+  </script>
+  <div class="card">
+    <div id="s07-slider"></div>
+    <div id="s07-table"></div>
+    <p class="status" id="s07-status" aria-live="polite" data-build="1"></p>
+  </div>
 </div>
-<div class="frame" data-title="Matching representations are not a text generator" data-autobuild="off">
-  <p class="clip-flow">image + candidate descriptions → scores → retrieve or classify</p>
-  <p class="clip-flow" data-build="1">image + a language decoder → next-token probabilities → generated answer</p>
-  <p class="callout callout-key" data-build="2">CLIP provides a visual-language matching representation. The next part adds a language model that can produce words.</p>
-  <p data-build="3">Zero-shot means no task-specific training in that evaluation. The encoders have already learned from image-text data.</p>
-  <script type="text/x-notes">A CLIP image encoder may be one ingredient in a vision-language model.
 
-A decoder and a way to condition it on visual information are still needed for captioning or visual question answering.</script>
+<div class="frame" data-title="The loss climbs toward log N" data-autobuild="off">
+  <script type="text/x-notes">
+What is the dashed line?
+The loss of a model whose vectors are all identical: every row is uniform, so every observed pair gets 1/N and the loss is log N. The trained toy stays below it, but the gap shrinks as untrained pairs join.
+  </script>
+  <div class="card">
+    <div class="two">
+      <div class="chart" id="s07-chart"></div>
+      <div>
+        <div id="s07-ntable"></div>
+        <p class="read" id="s07-chart-read" data-build="1"></p>
+      </div>
+    </div>
+  </div>
+  <div class="callout callout-key" data-build="2">The loss rewards telling the observed pair from its competitors. More competitors make that harder, and more informative.</div>
 </div>
-<div class="companion after"><h3>Try a real model separately</h3><p>The <a href="https://nipunbatra.github.io/interactive-articles/clip-zero-shot/">original browser CLIP demo</a> accepts photos and candidate prompts and downloads a pretrained model. It requires network access and browser support; nothing in this lesson depends on it. Its pretrained embeddings must not be confused with the three-coordinate toy used here. The <a href="https://github.com/openai/CLIP">official CLIP examples</a> show normalization, zero-shot classification, and caching text features.</p><h3>Checks before using this in an application</h3><p>Evaluate the specific images, language, candidate classes, and errors that matter for the task. Pretraining on web captions does not remove biases or guarantee robust counting, spatial reasoning, or domain transfer. The <a href="https://github.com/openai/CLIP/blob/main/model-card.md">CLIP model card</a> records intended uses and limitations.</p><h3>Why a collapsed representation is not useful</h3><p>If every image and every caption returns the same unit vector, all scores tie. Each candidate then receives $1/N$, so each directional loss is $\log N$. With three pairs, that is <span id="s07-collapse"></span>. The objective rewards identifying the observed partner among competitors, not simply increasing every match score together.</p><p>The complete toy parameters and a reproducible training script are stored with this article. All displayed calculations retain full precision internally; rounding happens only when a number is rendered.</p></div>
-<script>(function(){const S=document.getElementById('s07');AT.clip.diagram(S.querySelector('#s07-false-negative'),'false-negatives');S.querySelector('#s07-collapse').textContent=Math.log(3).toFixed(3);AT.ui.reveal('What probability does the wrong caption receive?','Exactly 1. The numerator and denominator are identical. This says it is the only offered candidate, not that the image contains one dot.',{into:S.querySelector('#s07-single-candidate')});})();</script>
+
+<div class="frame" data-title="The collapse picture" data-autobuild="off">
+  <script type="text/x-notes">
+Why would a model ever put every vector at the same point?
+It would not, on purpose, but it is the failure that a matching loss must rule out. Show the sphere: six points on one spot, every cosine one, every row uniform. Loss is log 3 exactly.
+  </script>
+  <div class="card">
+    <div class="two">
+      <div id="s07-collapse-sphere"></div>
+      <div>
+        <div id="s07-collapse-table"></div>
+        <p class="read" id="s07-collapse-read" data-build="1"></p>
+      </div>
+    </div>
+  </div>
+  <div class="callout callout-key" data-build="2">If every image and every caption had the same vector, every score would tie. Contrastive training punishes that with $\log N$ per direction.</div>
+</div>
+
+<div class="frame" data-title="A wrong pair that is not wrong" data-autobuild="off">
+  <script type="text/x-notes">
+Does the two-mug scene contain a book?
+Yes: a book and a plant. In the eight-pair batch, a book and a plant is a true description of scene A, but the batch calls it a negative. Read the bars: the trained model gives it real probability, and the loss counts that as an error.
+  </script>
+  <div class="card">
+    <h3 class="card-title">Scene A against the eight captions of the batch, trained parameters</h3>
+    <div id="s07-false"></div>
+    <p class="read" id="s07-false-read" data-build="1"></p>
+  </div>
+  <div class="callout callout-note" data-build="2">A batch objective treats every off-diagonal pair as wrong. Web batches hold many such false negatives.</div>
+</div>
+
+<div class="companion after">
+  <p>Batch size sets how many competitors each pair must beat. The collapsed model scores exactly $\log N$; a trained model is measured by how far below that line it gets.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s07'), V = AT.vision, C = AT.clip;
+  const pT = C.params('trained'), M = C.pairs.length;
+  const names = C.pairs.map(p => V.sceneNames[p.scene]);
+  const thumbCols = n => C.pairs.slice(0, n).map(p => ({ label: C.thumbHTML(p.scene, 4) + ' ' + p.scene, title: V.sceneNames[p.scene], kind: 'number' }));
+  /* frame 1: the batch slider */
+  const tableHost = S.querySelector('#s07-table'), status = S.querySelector('#s07-status');
+  function paint(n){
+    const f = C.batch(n, pT);
+    AT.clear(tableHost);
+    const colT = f.colProb[0].map((_, j) => f.colProb.map(r => r[j]));
+    const fig = AT.ui.table(colT, { cols: thumbCols(n), rowLabels: C.pairs.slice(0, n).map((p, i) => C.quote(p.caption) + (i >= C.N ? ' <span class="muted small">untrained</span>' : '')), cornerLabel: 'caption ↓ image →', decimals: 2, heatCols: AT.range(n), heatMax: 1, rowCls: 'a',
+      computed: [{ label: 'p(own image)', cls: 'a', fn: (r, j) => f.colProb[j][j] }],
+      caption: 'Text to image with the first ' + n + ' pairs: each caption spreads probability 1 over the ' + n + ' images (columns are thumbnails). The green frame is the observed image.', into: tableHost });
+    fig.cells.forEach((r, i) => r[i].classList.add('is-diag'));
+    status.textContent = 'N = ' + n + ' pairs · mean p(own image) ' + AT.fmt(f.colLosses.reduce((s, l, j) => s + f.colProb[j][j], 0) / n, 3) + ' · loss L = ' + AT.fmt(f.loss, 3) + ' · collapse log N = ' + AT.fmt(Math.log(n), 3);
+  }
+  AT.ui.slider({ label: 'pairs in the batch N', min: C.N, max: M, step: 1, value: C.N, onInput: paint, into: S.querySelector('#s07-slider') });
+  paint(C.N);
+  /* frame 2: loss versus N */
+  const rows = [];
+  for (let n = C.N; n <= M; n++) { const f = C.batch(n, pT); rows.push({ n, loss: f.loss, collapse: Math.log(n), diag: f.diag.reduce((a, b) => a + b, 0) / n }); }
+  AT.ui.table(rows.map(r => [r.loss, r.collapse, r.diag]), { cols: [{ label: 'loss L', cls: 'd' }, { label: 'collapse log N' }, { label: 'mean p(own caption)', cls: 'a' }], rowLabels: rows.map(r => 'N = ' + r.n), cornerLabel: 'batch', decimals: 3, into: S.querySelector('#s07-ntable') });
+  const sv = AT.svg, W = 560, H = 300, m = { l: 56, r: 16, t: 18, b: 44 };
+  const ymax = Math.max(...rows.map(r => r.collapse)) * 1.1, X = n => m.l + (n - C.N) / (M - C.N) * (W - m.l - m.r), Y = y => H - m.b - y / ymax * (H - m.t - m.b);
+  const s = sv('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Loss of the trained toy against batch size, with the collapse line log N above it' });
+  s.appendChild(sv('rect', { x: m.l, y: m.t, width: W - m.l - m.r, height: H - m.t - m.b, fill: 'var(--card)', stroke: 'var(--line)' }));
+  s.appendChild(sv('path', { d: rows.map((r, i) => (i ? 'L' : 'M') + X(r.n) + ' ' + Y(r.collapse)).join(''), fill: 'none', stroke: 'var(--ink-3)', 'stroke-width': 2, 'stroke-dasharray': '6 4' }));
+  s.appendChild(sv('path', { d: rows.map((r, i) => (i ? 'L' : 'M') + X(r.n) + ' ' + Y(r.loss)).join(''), fill: 'none', stroke: 'var(--c-d)', 'stroke-width': 3 }));
+  rows.forEach(r => { s.appendChild(sv('circle', { cx: X(r.n), cy: Y(r.loss), r: 5, fill: 'var(--c-d)' })); s.appendChild(sv('text', { x: X(r.n), y: H - m.b + 18, 'text-anchor': 'middle', 'font-family': 'var(--font-mono)', 'font-size': 12, fill: 'var(--ink-2)' }, String(r.n))); });
+  [0, 1, 2].forEach(v => { if (v <= ymax) s.appendChild(sv('text', { x: m.l - 8, y: Y(v) + 4, 'text-anchor': 'end', 'font-family': 'var(--font-mono)', 'font-size': 12, fill: 'var(--ink-2)' }, String(v))); });
+  s.appendChild(sv('text', { x: (m.l + W - m.r) / 2, y: H - 8, 'text-anchor': 'middle', 'font-family': 'var(--font-ui)', 'font-size': 13, fill: 'var(--ink-2)' }, 'pairs in the batch, N'));
+  s.appendChild(sv('text', { x: X(M) - 6, y: Y(rows[rows.length - 1].collapse) - 8, 'text-anchor': 'end', 'font-family': 'var(--font-ui)', 'font-size': 13, fill: 'var(--ink-3)' }, 'collapse: log N'));
+  s.appendChild(sv('text', { x: X(M) - 6, y: Y(rows[rows.length - 1].loss) + 20, 'text-anchor': 'end', 'font-family': 'var(--font-ui)', 'font-size': 13, fill: 'var(--c-d)' }, 'trained toy'));
+  S.querySelector('#s07-chart').appendChild(s);
+  const first = rows[0], last = rows[rows.length - 1];
+  S.querySelector('#s07-chart-read').innerHTML = 'Reading the chart: at N = 3 the loss is ' + AT.fmt(first.loss, 3) + ' against a collapse value of ' + AT.fmt(first.collapse, 3) + '; at N = 8 it is ' + AT.fmt(last.loss, 3) + ' against ' + AT.fmt(last.collapse, 3) + '. The five added pairs were never trained on, so the toy gains little on them.';
+  /* frame 3: the collapse */
+  const pc = C.params('initial');
+  pc.W_img = [[1, 1, 1], [0, 0, 0], [0, 0, 0], [0, 0, 0]];
+  pc.W_txt = C.vocab.map(() => [1, 1, 1]);
+  const fc = C.forward(pc);
+  C.sphere(C.stateOf(fc), { size: 300, labels: false, into: S.querySelector('#s07-collapse-sphere'), caption: 'Every image and every caption at the same point.' });
+  const cfig = AT.ui.table(fc.rowProb, { cols: ['“mugs…”', '“book…”', '“plant”'].map((l, j) => ({ label: l, title: C.pairs[j].caption, kind: 'number' })), rowLabels: C.pairs.slice(0, C.N).map(p => C.thumbHTML(p.scene, 5) + ' ' + AT.escape(V.sceneNames[p.scene])), cornerLabel: 'row softmax', decimals: 3, rowCls: 'a', into: S.querySelector('#s07-collapse-table') });
+  cfig.cells.forEach((r, i) => r[i].classList.add('is-diag'));
+  S.querySelector('#s07-collapse-read').innerHTML = 'Computed with an image map and word rows that send everything to the same direction: every cosine is ' + AT.fmt(fc.cosine[0][0], 2) + ', every row is uniform, and the loss is $' + AT.fmt(fc.loss, 3) + ' = \\log 3$.';
+  AT.renderMath(S.querySelector('#s07-collapse-read'));
+  /* frame 4: scene A against all eight captions */
+  const fa = C.forward(pT, { scenes: ['A'], captions: C.pairs.map(p => p.caption) });
+  const pr = C.softmax(fa.logits[0]);
+  const items = C.pairs.map((p, j) => ({ label: p.caption, p: pr[j] }));
+  AT.ui.bars(items, { cls: 'a', max: 1, decimals: 3, sorted: false, highlight: C.pairs[0].caption, size: 'lg', into: S.querySelector('#s07-false') });
+  const ranked = pr.map((p, j) => ({ p, j })).sort((a, b) => b.p - a.p), top = ranked[0];
+  /* scene A holds two mugs, a book and a plant, so every caption except the one-mug count describes something in it */
+  const alsoTrue = C.pairs.map((p, j) => j).filter(j => j !== 0 && !/one mug/.test(C.pairs[j].caption));
+  const alsoP = alsoTrue.reduce((s, j) => s + pr[j], 0);
+  S.querySelector('#s07-false-read').innerHTML = 'Reading the bars: the observed caption gets ' + AT.fmt(pr[0], 3) + ', and the top bar is ' + C.quote(C.pairs[top.j].caption) + ' at ' + AT.fmt(top.p, 3) + '. Six of the other seven captions describe something in scene A and together hold ' + AT.fmt(alsoP, 3) + '; the batch objective counts all of that as error.';
+})();
+</script>
 </section>
