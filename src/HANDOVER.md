@@ -200,3 +200,13 @@ The exporter captures the actual 16:9 stage without navigation, preflights fit, 
 The user requested regular GitHub checkpoints. Verify the checkout, branch, remote, existing edits, and available GitHub authentication first. Preserve unrelated work. Stage only reviewed task files with explicit paths, inspect the staged diff, then commit and push after the relevant checks pass. Never use broad `git add -A` as a handover shortcut. Verify the pushed commit and Pages status before calling a checkpoint published.
 
 Give each parallel agent an explicit file boundary and a bounded task. Shared runtime changes affect both series and require all-part fit checks. Ask for changed files, tests actually run, screenshots inspected, and remaining limitations. Keep temporary previews outside the source tree and do not overwrite another agent's changes.
+
+## 7. Vision rebuild (2026-09-05)
+The four vision parts are being rebuilt to the standard of Part 2. Design: `VISION_FEEDBACK.md` (diagnosis and per-part plans) and `VISION_AXES.md`
+(one 8×8 scene with named regions, a fixed patch encoder with named axes brightness / contrast / row / col, keys "bright region? / on the right?",
+values "sends: brightness / sends: contrast", the shared figures). Foundation files: `vision-shared.js` (scene, encoder, grid, thumb, overlay, scatter,
+circle, triptych, curve; injected before partN.js for parts 5 to 8), `make_vision_toy.py` → `toy5.json` (Vision I asks "is there a mug on the right half?";
+scene C is the generalisation probe), `part5.js` (Vision I runtime), `sections5/sec00_vision_demo.html` (component gallery, not shipped), and the
+"Vision components" section of `CONTRACT.md`. Per-part briefs: `TASK_VISION_B.md` (Vision I), `_C` (II), `_D` (III), `_E` (IV); parts 6 to 8 copy
+`toy5.json.trained` into their toy as `encoder` and define `V.encode` in their runtime. Rebuild acceptance: named axes everywhere, thumbnails as row
+labels, one figure per section that is not a table, an end-to-end run with a loss curve, one caveat box per part, clean qa/sweep/mathdiff/walk.
