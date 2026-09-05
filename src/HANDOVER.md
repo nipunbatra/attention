@@ -207,3 +207,10 @@ scene C is the generalisation probe), `part5.js` (Vision I runtime), `sections5/
 "Vision components" section of `CONTRACT.md`. Per-part briefs: `TASK_VISION_B.md` (Vision I), `_C` (II), `_D` (III), `_E` (IV); parts 6 to 8 copy
 `toy5.json.trained` into their toy as `encoder` and define `V.encode` in their runtime. Rebuild acceptance: named axes everywhere, thumbnails as row
 labels, one figure per section that is not a table, an end-to-end run with a loss curve, one caveat box per part, clean qa/sweep/mathdiff/walk.
+
+## 8. Presentation openers (2026-09-05)
+Present mode now begins on a cover frame (`#s00/1/0`) that `shared.js` builds from the part config: `series · partLabel`, `title`, `subtitle`, the
+`hook` line (one question per part, in `partN.json`), the `central` chain, and `audience · minutes`. It exists only in present mode. Every part's first
+section frame is a hook, not machinery: Part 1 shows eight invented names, Part 2 the sentence with a blank, Part 3 one guess and one truth with its
+loss, Part 4 banque or rive, Vision I the photo and the question, Vision II the 142 million unlabelled images, Vision III the fixed menu, Vision IV the
+four-word question. Rule for new parts: cover, then a hook frame, then machinery; the fit check (`#at-fit-warning`) must stay empty on every frame.
