@@ -1,49 +1,104 @@
-<section id="s07" class="sec" data-title="What did the encoder learn?" data-lit="">
-<header class="sec-head"><span class="sec-num">07</span><div><p class="eyebrow">The downstream task tests whether the representation is useful.</p><h2>What did the encoder learn?</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>Pretraining produces encoder parameters, not a guarantee of task performance. A linear probe freezes the encoder and trains a linear classifier on labelled examples. Fine-tuning updates some or all of the pretrained encoder along with the task head. These measure different things, so comparisons should state the data, task, training protocol, and whether the backbone was frozen.</p></div>
-<div class="frame" data-title="Separate pretraining from downstream evaluation" data-autobuild="off">
-  <div id="s07-probe"></div>
-  <pre class="torch-snippet" data-build="1"><code>with torch.no_grad():
-    features = encoder(images)
-loss = F.cross_entropy(linear_head(features), labels)</code></pre>
-  <script type="text/x-notes">The code illustrates a frozen-encoder probe; the optimizer trains only the linear head.
+<section id="s07" class="sec" data-title="I-JEPA: predict a feature, not pixels" data-lit="">
+<style>
+#s07 .two{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px 28px;align-items:start}
+@media (max-width:820px){body:not(.present) #s07 .two{grid-template-columns:minmax(0,1fr)}}
+#s07 .stack6>*{margin-top:8px}
+body.present #s07 .two{gap:10px 36px}
+#s07 .two > :first-child{max-width:300px}
+#s07 .two.even > :first-child{max-width:470px}
+body.present #s07 pre.torch-snippet{font-size:.72em}
+body.present #s07 .two.even{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+body.present #s07 .vscatter{max-width:460px!important}
+body.present #s07 .vcurve{max-width:500px!important}
+</style>
+<header class="sec-head">
+  <span class="sec-num">07</span>
+  <div>
+    <p class="eyebrow">Keep the hole. Change what must be predicted: the hidden patch's representation instead of its pixels.</p>
+    <h2>I-JEPA: predict a feature, not pixels</h2>
+  </div>
+</header>
 
-Use a fixed image-level readout suited to that backbone. Final quality is measured on held-out task examples, not on the examples used to fit the head.</script>
+<div class="companion" data-kicker="For self-study">
+  <p>I-JEPA keeps the masked-image setup and replaces the target. A target encoder sees the whole image; its output rows at the hidden positions are the targets. A context encoder sees only the visible patches, and a predictor guesses the target rows from them. The loss is a squared error between representations, and the target encoder follows the context encoder by a moving average. Here both encoders are the frozen Vision I encoder, so the target for patch 8 is simply its output row on the content axes, and the predictor is the placeholder read of section 2 with a 4 × 2 head instead of a 4 × 4 one: 22 trained numbers.</p>
 </div>
-<div class="frame" data-title="Three objectives, three kinds of target" data-autobuild="off">
-  <div id="s07-compare"></div>
-  <p data-build="1">All train visual representations without manual class labels for pretraining. They do not ask the encoder to solve the same problem.</p>
-  <script type="text/x-notes">Ask students to name the target type, then its source.
 
-MAE uses the observed pixels. DINO and I-JEPA use EMA targets in different output spaces. The next frame separates the gradient and EMA updates.</script>
+<div class="frame" data-title="The target is an encoder row, not four pixels" data-autobuild="off">
+  <script type="text/x-notes">Why is the target's brightness 5.33 when the mug's pixels are 3?
+Because the target encoder saw the whole scene and patch 8 read the other bright patches through attention before its row was selected. A feature target already summarises: the row says bright and no left-right edge, not which of four pixels is which.</script>
+  <div class="card">
+    <div class="two">
+      <div id="s07-grid"></div>
+      <div class="stack6">
+        <div id="s07-pixels"></div>
+        <div id="s07-rows"></div>
+      </div>
+    </div>
+    <p class="v6-read" id="s07-target-read" data-build="1"></p>
+  </div>
 </div>
-<div class="frame" data-title="Our probe finds no classification gain" data-autobuild="off">
-  <p>Freeze each encoder. Fit a fresh linear classifier to distinguish vertical from horizontal tiles.</p>
-  <div id="s07-mae-probe"></div>
-  <p>Both probes get all six held-out images right. The starting features already separate this easy task.</p>
-  <p>Lower reconstruction loss alone does not show that classification improved.</p>
-</div>
-<div class="frame" data-title="Which parameters follow gradients, and which follow EMA?" data-autobuild="off">
-  <div id="s07-updates"></div>
-  <p data-build="1">MAE has no learned target network: the original pixels already supply its target.</p>
-  <script type="text/x-notes">The student in DINO includes its encoder and output head.
 
-In I-JEPA, the context encoder and predictor take gradients; only the context encoder is copied into the target encoder through EMA. The teacher or target branch receives no gradient from its prediction loss.</script>
+<div class="frame" data-title="Prediction and target as two points" data-autobuild="off">
+  <script type="text/x-notes">Where does the prediction land, and why there?
+Between the target for A and the target for B, because the visible context is the same for both. The ambiguity of section 3 has not gone away; it has moved from sixteen pixel values to two feature values.</script>
+  <div class="card">
+    <div class="two even">
+      <div id="s07-scatter"></div>
+      <div id="s07-points"></div>
+    </div>
+    <p class="v6-read" id="s07-points-read" data-build="1"></p>
+  </div>
 </div>
-<div class="frame" data-title="A visual representation is not yet aligned with language" data-autobuild="off">
-  <div id="s07-check"></div>
-  <p data-build="1">Next: use paired images and text to learn which visual and language representations should match.</p>
-  <p data-build="2">The image encoder can supply visual features. The image-text objective adds a new relationship to learn.</p>
-  <script type="text/x-notes">This is the bridge to CLIP.
 
-A good image representation does not automatically place the word river near a river image in a compatible text space. Paired image-caption training supplies that cross-modal signal.</script>
+<div class="frame" data-title="Train the predictor on the same three scenes" data-autobuild="off">
+  <script type="text/x-notes">What is different from the MAE run: the curve, or the target?
+Only the target and the head. The loss is now in feature units, so its value is not comparable with the pixel loss. The code shows where the gradient stops.</script>
+  <div class="card">
+    <div class="two even">
+      <div id="s07-curve"></div>
+      <div id="s07-losses"></div>
+    </div>
+    <p class="v6-read" id="s07-curve-read" data-build="1"></p>
+  </div>
+  <pre class="torch-snippet" data-build="2"><code>with torch.no_grad(): target = target_encoder(all_rows)[hidden][:, :2]  # sg[y]
+pred = predictor(context_encoder(rows[visible]), pos[hidden])           # 4-to-2 head
+loss = (pred - target).square().mean()</code></pre>
 </div>
-<div class="companion after"><p>The probe averages the four unmasked encoder output rows into one width-two image representation. It fits a binary linear classifier on the eight labelled training images with 600 SGD updates and learning rate 0.2. The encoder is frozen. We repeat the same procedure before and after reconstruction training and evaluate on the six held-out brightnesses. The orientation labels enter this probe, never the reconstruction objective. This tiny task is already separable at initialization, so the test does not establish a representation-learning gain.</p><p>For the next part, keep the distinction between a backbone representation and the objective used to train it. Image-text alignment can use visual features from a pretrained backbone, but it must learn a relationship to text. The visual pretraining methods in this part do not provide that relationship on their own.</p><p>Primary references: <a href="https://arxiv.org/abs/2111.06377">MAE</a>, <a href="https://arxiv.org/abs/2104.14294">DINO</a>, and <a href="https://arxiv.org/abs/2301.08243">I-JEPA</a>. This lesson and its calculations work offline once the page assets are available.</p></div>
+
+<div class="companion after">
+  <p>What a feature target changes is the currency of the error. A pixel loss charges for every wrong intensity, including texture the context could never determine. A feature loss charges in the encoder's own terms: here two numbers per patch that Vision I gave names to. In the real method those numbers are learned and unnamed, and the target encoder keeps moving as the moving average of the context encoder; here it is frozen, so the target for a patch is fixed for the whole run.</p>
+</div>
+
 <script>
-(function(){const S=document.getElementById('s07'),T=AT.visionSSL;T.diagram(S.querySelector('#s07-probe'),'probe');
-const D=AT.mae.view.data;AT.ui.table([[D.probeBefore.accuracy*100],[D.probeAfter.accuracy*100]],{cols:['held-out accuracy (%)'],rowLabels:['before reconstruction training','after 800 reconstruction updates'],decimals:1,cornerLabel:'frozen encoder + fitted linear head',into:S.querySelector('#s07-mae-probe')});
-AT.ui.table([['hidden pixels','original image'],['distribution from another view','EMA teacher + head'],['hidden-region features','EMA target encoder']],{cols:[{label:'prediction target',kind:'text'},{label:'target comes from',kind:'text'}],rowLabels:['MAE','DINO','I-JEPA'],cornerLabel:'method',into:S.querySelector('#s07-compare')});
-AT.ui.table([['encoder + decoder','none'],['student encoder + head','teacher encoder + head'],['context encoder + predictor','target encoder']],{cols:[{label:'gradient updates',kind:'text'},{label:'EMA updates',kind:'text'}],rowLabels:['MAE','DINO','I-JEPA'],cornerLabel:'method',into:S.querySelector('#s07-updates')});
-AT.ui.reveal('If an encoder learns useful river features without captions, has it learned what the word “river” means?','Not from these objectives alone. They supervise visual targets, not a mapping between image features and language. Image-text pairs provide that missing signal in the next part.',{into:S.querySelector('#s07-check')});})();
+(function(){
+  const S = document.getElementById('s07'), V = AT.vision, T = AT.model;
+  const j = 7, n = j + 1, pix = T.mae.pixel_names, hidden = V.hidden;
+  const full = V.forwardFull('A'), e = full.E[j + 1], ep = full.Enew[j + 1], d = full.Delta[j + 1];
+  V.grid6('A', { cell: 24, highlight: [j], into: S.querySelector('#s07-grid'), caption: 'Scene A, whole. The target encoder sees all of it; ' + V.patchLabel('A', j) + ' is outlined.' });
+  AT.ui.table([V.patchify('A')[j]], { cols: pix, rowLabels: ['$r_{' + n + '}$'], rowCls: 'neutral', cornerLabel: 'pixels', decimals: 0, into: S.querySelector('#s07-pixels') });
+  AT.ui.table([e, d, ep], { axes: 'e', rowLabels: ['$\\ve{e_{' + n + '}}$ input row', '$\\vd{\\Delta e_{' + n + '}}$ read from the scene', '$\\vp{e_{' + n + '}\'}$ the target'], rowCls: ['e', 'd', 'ep'], cornerLabel: 'row', decimals: 2, highlightRow: 2,
+    caption: 'The target is $y_{' + n + '} = (' + AT.fmt(ep[0], 2) + ', ' + AT.fmt(ep[1], 2) + ')$: brightness and contrast of the encoder’s output row.', into: S.querySelector('#s07-rows') });
+  S.querySelector('#s07-target-read').textContent = 'Reading the target: brightness ' + AT.fmt(ep[0], 2) + ' = the patch’s own ' + AT.fmt(e[0], 2) + ' plus ' + AT.fmt(d[0], 2) + ' read from the other bright patches; contrast ' + AT.fmt(ep[1], 2) + ', because a mug centre has no left-right edge. Two numbers stand in for four pixels.';
+
+  /* prediction and targets as points */
+  const f0 = V.jepa(0, 'A'), f1 = V.jepa(100, 'A'), fB = V.jepa(100, 'B');
+  const yA = f1.target[j], yB = fB.target[j], p0 = f0.pred[j], p1 = f1.pred[j];
+  V.scatter([
+    { x: yA[0], y: yA[1], label: 'target, scene A', cls: 'ep' },
+    { x: yB[0], y: yB[1], label: 'target, scene B', cls: 'ep' },
+    { x: p0[0], y: p0[1], label: 'prediction, step 0', cls: 'd' },
+    { x: p1[0], y: p1[1], label: 'prediction, step 100', cls: 'd' }
+  ], { axes: [AT.axes.e[0], AT.axes.e[1]], width: 440, height: 300, arrows: [{ from: p0, to: p1, label: '100 steps' }], into: S.querySelector('#s07-scatter'), caption: 'Slot of ' + V.patchLabel('A', j) + ' on the two content axes. Blue: targets; green: the predictor’s guess, the same for A and B.' });
+  AT.ui.table([yA, yB, p1], { cols: V.contentCols, rowLabels: ['$y_{' + n + '}$ in A (mug)', '$y_{' + n + '}$ in B (table)', '$\\hat y_{' + n + '}$, step 100, A and B'], rowCls: ['ep', 'ep', 'd'], cornerLabel: 'row', decimals: 2, into: S.querySelector('#s07-points') });
+  const frac = (p1[0] - yB[0]) / (yA[0] - yB[0]);
+  S.querySelector('#s07-points-read').textContent = 'Reading the points: on the brightness axis the prediction sits ' + AT.fmt(100 * frac, 0) + '% of the way from B’s target to A’s. Squared error on A: ' + AT.fmt(f1.loss, 2) + ' per feature; on B: ' + AT.fmt(fB.loss, 2) + '. One guess, two targets, as before.';
+
+  /* the curve */
+  V.curve(T.jepa.curve, { label: 'Mean squared feature error, hidden slots of A, B, D.', mark: 100, width: 420, height: 170, into: S.querySelector('#s07-curve') });
+  const scenes = T.jepa.scenes, per0 = scenes.map(s => V.jepa(0, s).loss), per1 = scenes.map(s => V.jepa(100, s).loss);
+  AT.ui.table(scenes.map((s, i) => [per0[i], per1[i]]), { cols: [{ label: 'step 0', decimals: 3 }, { label: 'step 100', decimals: 3 }], rowLabels: scenes.map(s => 'scene ' + s), cornerLabel: 'feature loss', decimals: 3,
+    footer: { label: 'mean', values: [per0.reduce((a, b) => a + b, 0) / 3, per1.reduce((a, b) => a + b, 0) / 3] }, into: S.querySelector('#s07-losses') });
+  S.querySelector('#s07-curve-read').textContent = 'Reading the run: ' + AT.fmt(T.jepa.curve[0][1], 2) + ' at step 0, ' + AT.fmt(T.jepa.curve[10][1], 2) + ' at step 10, ' + AT.fmt(T.jepa.curve[100][1], 2) + ' at step 100; D reaches ' + AT.fmt(per1[2], 3) + ', A and B share one guess. Toy numbers, not the paper\u2019s.';
+})();
 </script>
 </section>

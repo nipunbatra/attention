@@ -1,0 +1,80 @@
+<section id="s09" class="sec" data-title="Three targets, one frozen encoder" data-lit="">
+<style>
+#s09 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 24px;align-items:start}
+@media (max-width:820px){body:not(.present) #s09 .three{grid-template-columns:minmax(0,1fr)}}
+#s09 .three h4{margin:0 0 6px;font-size:15px}
+#s09 .three .what{font-size:14px;color:var(--ink-2);margin:6px 0 0}
+body.present #s09 .three h4{font-size:24px}
+body.present #s09 .three .what{font-size:22px;line-height:1.35}
+body.present #s09 .dt td.dt-text{font-size:.78em;line-height:1.3}
+body.present #s09 .dt{width:100%;table-layout:fixed}
+body.present #s09 .dt th,body.present #s09 .dt td{white-space:normal}
+body.present #s09 .dt tbody th{width:9em}
+</style>
+<header class="sec-head">
+  <span class="sec-num">09</span>
+  <div>
+    <p class="eyebrow">Same scene, same hidden patch, three different things to predict.</p>
+    <h2>Three targets, one frozen encoder</h2>
+  </div>
+</header>
+
+<div class="companion" data-kicker="For self-study">
+  <p>Put the three methods side by side on the one patch we followed. MAE's target is the patch's four pixels, read off the image. DINO's target is a distribution over three slots, produced by a teacher head on another view of the whole scene. I-JEPA's target is the encoder's own row for the patch, two named numbers. All three targets are made from the image without a label, and all three are compared with something the model predicts from what it was shown. The table below also records which parameters received gradients in this toy and which followed the moving average, because that distinction is what keeps the two teacher methods from cheating.</p>
+</div>
+
+<div class="frame" data-title="The same hidden patch, three targets" data-autobuild="off">
+  <script type="text/x-notes">Name each target's units before reading the values.
+Pixels: four intensities. DINO: three probabilities that sum to one, about the whole scene. I-JEPA: two feature values on the named axes. Only the first can be drawn as an image.</script>
+  <div class="card">
+    <div class="three">
+      <div><h4>MAE: the pixels of patch 8</h4><div id="s09-mae"></div><p class="what">Four numbers from the file. Ambiguous when the context allows a mug or a table.</p></div>
+      <div data-build="1"><h4>DINO: the teacher's distribution</h4><div id="s09-dino"></div><p class="what" id="s09-dino-what"></p></div>
+      <div data-build="2"><h4>I-JEPA: the encoder's row</h4><div id="s09-jepa"></div><p class="what" id="s09-jepa-what"></p></div>
+    </div>
+  </div>
+</div>
+
+<div class="frame" data-title="Three objectives compared" data-autobuild="off">
+  <script type="text/x-notes">Ask for the target, then its source, then what this toy reached.
+The loss values are in different units: pixels squared, nats, feature units squared. Compare the columns, not the numbers across rows.</script>
+  <div id="s09-compare"></div>
+  <p class="v6-read" data-build="1">The losses are not comparable across rows; they are the numbers each run reached in its own units, from the curves in sections 3, 6 and 7.</p>
+</div>
+
+<div class="frame" data-title="Which numbers followed the gradient, and which followed the average?" data-autobuild="off">
+  <script type="text/x-notes">Where could a shortcut have entered, and what blocked it?
+A target that receives gradients could move toward whatever the student says. MAE's target cannot move at all; DINO's and I-JEPA's move only by the moving average. In this toy the encoder itself moved by neither.</script>
+  <div id="s09-updates"></div>
+  <div class="callout callout-key" data-build="1">A self-made target must not be free to agree with the prediction. Pixels cannot move; a teacher moves only as a slow copy of the student.</div>
+</div>
+
+<div class="companion after">
+  <p>The comparison is the map for the next part. CLIP keeps the two-branch shape of DINO but replaces the second view with a caption, so the target is no longer made from the image alone: it comes from text written by a person, and the two encoders learn to agree across that gap.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s09'), V = AT.vision, T = AT.model, j = 7, n = j + 1;
+  V.patchTile(V.patchify('A')[j], { cell: 34, decimals: 0, caption: 'r' + n + ' = (' + V.patchify('A')[j].join(', ') + ')', into: S.querySelector('#s09-mae') });
+  const oA = V.dino.outputs(true, true, 200)[0];
+  AT.ui.bars([0, 1, 2].map(i => ({ label: 'slot ' + (i + 1), p: oA.pt[i] })), { cls: 'a', sorted: false, decimals: 2, into: S.querySelector('#s09-dino') });
+  S.querySelector('#s09-dino-what').textContent = 'Teacher target for scene A, view 2, step 200 of the full recipe. About the whole scene, not this patch; the slots have no names.';
+  const y = V.jepaTarget('A', j);
+  AT.ui.table([y], { cols: V.contentCols, rowLabels: ['$y_{' + n + '}$'], rowCls: 'ep', cornerLabel: 'row', decimals: 2, into: S.querySelector('#s09-jepa') });
+  S.querySelector('#s09-jepa-what').textContent = 'The frozen encoder’s output row for patch ' + n + ' on its two content axes, after it read the whole scene.';
+
+  const maeL = V.maeMeanLoss(100), jepaL = T.jepa.curve[100][1], dinoL = V.dino.finalLoss(true, true);
+  AT.ui.table([
+    ['the hidden pixels', 'the image file', '32-number decoder, encoder frozen', maeL],
+    ['a distribution over 3 slots', 'a teacher head on the other view, centred and sharpened', '15-number head; teacher by moving average', dinoL],
+    ['the hidden patch’s (brightness, contrast)', 'the frozen encoder on the whole scene', '22-number predictor, encoder frozen', jepaL]
+  ], { cols: [{ label: 'target', kind: 'text' }, { label: 'the target comes from', kind: 'text' }, { label: 'trained in this toy', kind: 'text' }, { label: 'loss reached', decimals: 3 }], rowLabels: ['MAE', 'DINO', 'I-JEPA'], cornerLabel: 'method', decimals: 3, into: S.querySelector('#s09-compare') });
+  AT.ui.table([
+    ['decoder (m, Wₑ, W_dec, b_dec)', 'none', 'frozen'],
+    ['student head (W, b)', 'teacher head, centre', 'frozen'],
+    ['predictor (m, Wₑ, W_pred, b_pred)', 'target encoder (in the paper)', 'frozen; the target encoder is the same frozen encoder here']
+  ], { cols: [{ label: 'follows the gradient', kind: 'text' }, { label: 'follows the moving average', kind: 'text' }, { label: 'the encoder', kind: 'text' }], rowLabels: ['MAE', 'DINO', 'I-JEPA'], cornerLabel: 'method', into: S.querySelector('#s09-updates') });
+})();
+</script>
+</section>

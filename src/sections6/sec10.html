@@ -1,0 +1,137 @@
+<section id="s10" class="sec" data-title="Summaries and pause-and-think" data-lit="">
+<style>
+#s10 .lvl{font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--ink-3);margin:0 0 6px}
+#s10 .quote{font-size:1.2em;line-height:1.45;font-weight:500;margin:0}
+#s10 .chain{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 4px}
+#s10 .chain .cbox{border:2px solid var(--line);border-radius:var(--radius-s);padding:8px 14px;font-weight:600;color:var(--ink-2);background:var(--card)}
+#s10 .chain .carr{color:var(--ink-3);font-size:20px;line-height:1}
+#s10 .eqs{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 24px;align-items:center}
+#s10 .eqs .who{font-weight:600;color:var(--ink-2)}
+#s10 .eqs .katex-display{margin:.3em 0;text-align:left}
+#s10 .q-ctrls{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin:0 0 12px}
+#s10 .q-count{font-family:var(--font-mono);font-size:14px;color:var(--ink-2)}
+#s10 .reveal-body p{margin:0 0 8px}
+#s10 .reveal-body .dt-fig{margin:10px 0 4px}
+body.present #s10 .lvl{font-size:22px}
+body.present #s10 .quote{font-size:1em}
+body.present #s10 .chain .cbox{font-size:23px;padding:9px 12px}
+body.present #s10 .eqs .who{font-size:24px}
+body.present #s10 .eqs .katex-display{font-size:26px;margin:.15em 0}
+body.present #s10 .q-ctrls{display:none}
+body.present #s10 .reveal-body p{font-size:26px;line-height:1.35}
+</style>
+<header class="sec-head">
+  <span class="sec-num">10</span>
+  <div>
+    <p class="eyebrow">Say it in words, trace it as operations, write the three losses. Then four questions.</p>
+    <h2>Summaries and pause-and-think</h2>
+  </div>
+</header>
+
+<div class="companion" data-kicker="For self-study">
+  <p>Try to explain the part without the page: one sentence, one chain of operations, three losses. The sentence is what you would say in a corridor; the chain is what you would draw on a board; the losses are what you would write in an exam. Then answer the four questions before opening them. Each answer is computed from the toy, so you can check yours against a number. The notation card at the end collects every symbol this part added to Vision I's.</p>
+</div>
+
+<div class="frame" data-title="Can we tell the whole story without labels?" data-autobuild="off">
+  <script type="text/x-notes">Read the sentence, then have the room name the next box before it appears.
+The chain is the same for all three methods; only the target box changes. Read the three losses last and say what each compares.</script>
+  <div class="card">
+    <p class="lvl">1 · Intuitive</p>
+    <blockquote class="quote">Hide part of the image or change its view, run the encoder on what remains, predict what the image already contained, and let the error teach you. A label is never asked for.</blockquote>
+  </div>
+  <div class="card" data-build="1">
+    <p class="lvl">2 · Operational</p>
+    <div class="chain" id="s10-chain"></div>
+  </div>
+</div>
+
+<div class="frame" data-title="The three losses" data-autobuild="off">
+  <script type="text/x-notes">Say what each loss compares and in which units.
+Pixels against pixels; a teacher's distribution against the student's; a feature against a stop-gradient feature. The stop-gradient and the moving average are what keep a self-made target honest.</script>
+  <div class="card">
+    <p class="lvl">3 · Mathematical</p>
+    <div class="eqs" id="s10-eqs"></div>
+  </div>
+  <p data-build="1">$\mathcal M$ is the hidden set, $\operatorname{sg}[\cdot]$ the stop-gradient, and in DINO the teacher parameters follow $\phi \leftarrow \beta\phi + (1-\beta)\theta$ instead of the gradient.</p>
+</div>
+
+<div class="frame" data-title="Pause and think: a flat guess" data-autobuild="off">
+  <script type="text/x-notes">Ask for a number before opening the answer.
+Every hidden pixel is 3 or 0, so a guess of 1.5 is off by 1.5 everywhere: 2.25. The trained decoder does better on A and worse on B.</script>
+  <div class="card">
+    <div class="q-ctrls">
+      <button type="button" class="btn" id="s10-open-all">Reveal all</button>
+      <button type="button" class="btn btn-quiet" id="s10-close-all">Hide all</button>
+      <span class="q-count" id="s10-count" aria-live="polite"></span>
+    </div>
+    <div id="s10-q1" data-build="1"></div>
+  </div>
+</div>
+<div class="frame" data-title="Pause and think: everything uniform" data-autobuild="off">
+  <script type="text/x-notes">What is the cross-entropy of a uniform target against a uniform student?
+log 3. Finite, stable, and empty: the sharpening-off run of section 6 lands there.</script>
+  <div class="card"><div id="s10-q2" data-build="1"></div></div>
+</div>
+<div class="frame" data-title="Pause and think: a target above 3" data-autobuild="off">
+  <script type="text/x-notes">Why is a feature target not simply the patch's pixels?
+Because it is the encoder's output row: the input row plus what the patch read through attention. Context is baked into the target.</script>
+  <div class="card"><div id="s10-q3" data-build="1"></div></div>
+</div>
+<div class="frame" data-title="Pause and think: who received a gradient" data-autobuild="off">
+  <script type="text/x-notes">List the four trained parts, then the parts that never received a gradient.
+The encoder never did, in any method here; the teacher head and its centre followed the moving average; the I-JEPA target sat behind a stop-gradient.</script>
+  <div class="card"><div id="s10-q4" data-build="1"></div></div>
+</div>
+
+<div class="frame" data-title="Notation, and the bridge to CLIP" data-autobuild="off">
+  <script type="text/x-notes">Which symbols are new since Vision I?
+The hidden set, the placeholder and its read, the two distributions and the moving average. Then the bridge: every target so far came from the image; the next part takes it from a caption.</script>
+  <div class="callout callout-note">New since Vision I: the hidden set $\mathcal M$; the placeholder $u_j = m + p_j$, its question $\vq{q_j}$ and its read $g_j$; the decoder row $z_j$ and the two predictions $\hat r_j$ (pixels) and $\hat y_j$ (feature); the DINO logits $z_s, z_t$, centre $c$, temperatures $\tau_s, \tau_t$ and distributions $p_s, p_t$; the moving average $\phi \leftarrow \beta\phi + (1-\beta)\theta$ and the stop-gradient $\operatorname{sg}[\cdot]$; the pooled feature $f$ of the probe.</div>
+  <div class="companion" id="s10-notation"></div>
+  <div class="callout callout-key" data-build="1">Every target in this part came from the image itself. Vision III takes the target from a caption, so the encoder learns to agree with words.</div>
+</div>
+
+<div class="companion after">
+  <p>Three targets, one encoder, and one probe with labels at the end to say what the features kept. When you read a pretraining paper, find those four things first: what is hidden or transformed, what is predicted, what is compared, and how the result was measured.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s10'), V = AT.vision, T = AT.model;
+  const chain = S.querySelector('#s10-chain');
+  ['image', 'hide patches, or make two views', 'frozen encoder on what remains', 'predict: pixels, a distribution, or a feature', 'compare with the self-made target', 'update the small part that predicted'].forEach((t, i) => {
+    if (i) chain.appendChild(AT.h('span', { class: 'carr', 'aria-hidden': 'true' }, '→'));
+    chain.appendChild(AT.h('span', { class: 'cbox' }, t));
+  });
+  const eqs = S.querySelector('#s10-eqs');
+  [['MAE', 'L=\\frac{1}{4|\\mathcal M|}\\sum_{j\\in\\mathcal M}\\sum_{c}(\\hat r_{jc}-r_{jc})^2'],
+   ['DINO', 'L=-\\sum_k p_{t,k}\\log p_{s,k},\\quad p_t=\\operatorname{softmax}\\!\\big((z_t-c)/\\tau_t\\big),\\ p_s=\\operatorname{softmax}(z_s/\\tau_s)'],
+   ['I-JEPA', 'L=\\frac{1}{2|\\mathcal M|}\\sum_{j\\in\\mathcal M}\\big\\|\\hat y_j-\\operatorname{sg}[y_j]\\big\\|^2']].forEach(([who, tex]) => {
+    eqs.appendChild(AT.h('div', { class: 'who' }, who));
+    const d = AT.h('div'); AT.tex(d, tex, { display: true }); eqs.appendChild(d);
+  });
+
+  /* the questions, each answered with a number from the toy */
+  const reveals = [];
+  const j = 7, n = j + 1, hidden = V.hidden;
+  function add(q, body){ const d = AT.ui.reveal(q, body, { into: S.querySelector('#s10-q' + (reveals.length + 1)), onToggle: count }); reveals.push(d); return d; }
+  const RA = V.patchify('A'), px = hidden.flatMap(h => RA[h]);
+  const flat = px.reduce((s, r) => s + (1.5 - r) ** 2, 0) / px.length, fA = V.mae(100, 'A');
+  add('If the decoder wrote 1.5 into every hidden pixel of scene A, what would its loss be? Better or worse than the trained decoder?',
+    '<p>Every hidden pixel is 3 or 0, so every squared error is $1.5^2 = 2.25$ and the mean is <strong>' + AT.fmt(flat, 2) + '</strong>. The trained decoder reaches ' + AT.fmt(fA.loss, 3) + ' on A: it also gets the seven table pixels close to 0 while drawing the nine mug pixels grey. On B it pays for that grey: ' + AT.fmt(V.mae(100, 'B').loss, 3) + '.</p>');
+  add('The teacher and the student both output (1/3, 1/3, 1/3) for every scene. What is the DINO loss, and what has been learned?',
+    '<p>$-\\sum_k \\tfrac13 \\log \\tfrac13 = \\log 3 = $ <strong>' + AT.fmt(V.dino.log3, 3) + '</strong>. Nothing has been learned: the loss is finite and stable, and the head says the same thing about every image. The run without sharpening in section 6 ends at ' + AT.fmt(V.dino.finalLoss(true, false), 3) + '.</p>');
+  const full = V.forwardFull('A'), ep = full.Enew[j + 1], e = full.E[j + 1], dlt = full.Delta[j + 1];
+  add('The mug pixels are all 3. Why is I-JEPA’s target brightness for patch ' + n + ' equal to ' + AT.fmt(ep[0], 2) + '?',
+    '<p>The target is the encoder’s <em>output</em> row, and the encoder is one attention update: patch ' + n + ' started at brightness ' + AT.fmt(e[0], 2) + ' and received $\\vd{\\Delta e_{' + n + '}}$ with brightness ' + AT.fmt(dlt[0], 2) + ' from the other bright patches it read. A feature target contains context; a pixel target does not.</p>');
+  add('Which parameter sets received a gradient in this part, and which did not?',
+    '<p>Gradients: the MAE decoder (' + Object.keys(T.mae.checkpoints['100'].params).length + ' matrices, 32 numbers), the I-JEPA predictor (22), the DINO student head (15) and the probe line (3). No gradient: the encoder, in every method here; the DINO teacher head and its centre, which follow the moving average; the I-JEPA target rows, behind a stop-gradient.</p>');
+  const cnt = S.querySelector('#s10-count');
+  function count(){ cnt.textContent = reveals.filter(d => d.open).length + ' of ' + reveals.length + ' revealed'; }
+  S.querySelector('#s10-open-all').addEventListener('click', () => { reveals.forEach(d => { d.open = true; }); count(); });
+  S.querySelector('#s10-close-all').addEventListener('click', () => { reveals.forEach(d => { d.open = false; }); count(); });
+  count();
+  AT.ui.notationCard({ groups: ['masked', 'distill'], into: S.querySelector('#s10-notation') });
+})();
+</script>
+</section>

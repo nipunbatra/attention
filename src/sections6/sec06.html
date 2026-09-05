@@ -1,52 +1,163 @@
-<section id="s06" class="sec" data-title="I-JEPA predicts a target representation" data-lit="">
-<header class="sec-head"><span class="sec-num">06</span><div><p class="eyebrow">Keep the hidden-region idea; change what must be predicted.</p><h2>I-JEPA predicts a target representation</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>I-JEPA, the Image-based Joint-Embedding Predictive Architecture, predicts representations of hidden target regions from a visible context. Its target is not the raw pixel row. A target encoder first processes the complete image; the training program then selects the encoded rows at the target positions. A separate context encoder sees the visible context, and a predictor uses those context representations plus the requested target positions.</p></div>
-<div class="frame" data-title="A pixel target preserves the withheld appearance" data-autobuild="off">
-  <div id="s06-pixel-target"></div>
-  <p data-build="1">MAE compares pixel predictions with the original withheld pixels.</p>
-  <script type="text/x-notes">Point to the actual withheld image region.
+<section id="s06" class="sec" data-title="DINO: a teacher supplies the target" data-lit="">
+<style>
+#s06 .dg svg{display:block;width:100%;max-width:980px;height:auto}
+#s06 .dg text{font-family:var(--font-ui)}
+#s06 .two{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px 28px;align-items:start}
+@media (max-width:820px){body:not(.present) #s06 .two{grid-template-columns:minmax(0,1fr)}}
+#s06 .switches{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:center;margin:0 0 12px}
+body.present #s06 .two{gap:10px 36px}
+body.present #s06 .dg svg{max-width:1180px}
+body.present #s06 .vcurve{max-width:500px!important}
+body.present #s06 .vsimplex{max-width:300px!important}
+body.present #s06 pre.torch-snippet{font-size:.72em}
+</style>
+<header class="sec-head">
+  <span class="sec-num">06</span>
+  <div>
+    <p class="eyebrow">A copy of the model answers for the other view. Two small tricks keep the answers from becoming empty.</p>
+    <h2>DINO: a teacher supplies the target</h2>
+  </div>
+</header>
 
-Pixel reconstruction is scored against its appearance, including colour, edges, and texture. This is the target, not a model's completion. A wrong prediction would be compared with these existing pixels, as in our four-patch MSE calculation.</script>
+<div class="companion" data-kicker="For self-study">
+  <p>DINO has a student and a teacher with the same architecture. The student learns by gradient descent; the teacher is a slow moving average of the student and receives no gradient. The student sees one view and outputs a distribution over some slots; the teacher sees the other view and produces the target distribution, after subtracting a running mean of its own logits (centring) and dividing by a smaller temperature (sharpening). Here the encoder is frozen and the two "networks" are two 4 × 3 heads on the CLS row, trained on scenes A, B, D and E with two views each. The numbers in every table come from that run.</p>
 </div>
-<div class="frame" data-title="A feature target comes from an encoder" data-autobuild="off">
-  <div id="s06-feature-target"></div>
-  <p data-build="1">I-JEPA matches selected target-encoder rows, not pixel colours.</p>
-  <script type="text/x-notes">Follow the complete-image path into the target encoder.
 
-The encoder processes the full image before we select the hidden region's target rows. The vector is symbolic: no trained encoder was run on this illustration, and we have not assigned coordinates such as mug or object meaning. Its learned parameters determine the feature space. We will next show the context prediction path and EMA update.</script>
+<div class="frame" data-title="Two heads, one recipe" data-autobuild="off">
+  <script type="text/x-notes">Follow the two paths and name what is learned on each.
+Top path: the student head, updated by the gradient. Bottom path: the teacher head, updated only by the moving average, and its output is centred and sharpened before it becomes the target. Nothing on the bottom path receives a gradient.</script>
+  <div class="card"><div class="dg dotgrid" id="s06-diagram"></div></div>
+  <p data-build="1">Both heads read the frozen encoder's CLS row $\vp{e_0'}$. The student's logits are $z_s = \vp{e_0'}W_\theta + b_\theta$; the teacher's are $z_t = \vp{e_0'}W_\phi + b_\phi$ on the other view.</p>
 </div>
-<div class="companion"><p>Both objectives can use the same hidden region, but they ask for different outputs. A pixel target gives its original intensities. A feature target gives the selected rows produced by a target encoder that has seen the full image. Predicting those rows need not require reproducing each colour or texture detail, but the features are learned; we cannot assume they discard exactly the details we would choose.</p><p>For the separate four-patch worksheet, the distinction is:</p><div id="s06-targets"></div><p>Its hidden patch 4 has known pixels $(2,2,2,2)$. Numerical feature targets would require a specified target encoder. The illustration therefore shows their role symbolically rather than inventing semantic coordinates.</p></div>
-<div class="frame" data-title="Encode the full image, then select the target rows" data-autobuild="off">
-  <div id="s06-jepa"></div>
-  <p data-build="1">The context branch cannot read patch 4. The target branch can, because it supplies the training target.</p>
-  <script type="text/x-notes">Follow the bottom path first: full image, target encoder, selected patch-4 row.
 
-Do not crop patch 4 before the target encoder. Then follow the top path: remove patch 4, encode context, predict the representation at position 4. The full method uses larger context and target blocks; one patch keeps the roles visible here.</script>
+<div class="frame" data-title="The teacher's target is computed, not typed" data-autobuild="off">
+  <script type="text/x-notes">Read the four rows top to bottom for scene A at step 20.
+Logits from the encoder's CLS row through the teacher head; subtract the centre, the running mean of teacher logits; divide by the teacher temperature 0.5; softmax. The centre removes what every scene has in common; the temperature makes the rest decisive.</script>
+  <div class="card">
+    <h3 class="card-title" id="s06-target-title"></h3>
+    <div id="s06-target"></div>
+    <p class="v6-read" id="s06-target-read" data-build="1"></p>
+  </div>
 </div>
-<div class="frame" data-title="Match the target features without backpropagating into them" data-autobuild="off">
-  <pre class="torch-snippet"><code>with torch.no_grad():
-    target = target_encoder(full_rows)[target_ids]
-pred = predictor(context_encoder(visible_rows), target_pos)
-loss = (pred - target).square().mean()</code></pre>
-  <p data-build="1">Gradients update the context encoder and predictor. EMA updates the target encoder.</p>
-  <p data-build="2">The target-position vectors tell the predictor <em>where</em> to predict. They do not reveal the missing pixels.</p>
-  <script type="text/x-notes">This is schematic single-image code using mean squared feature error.
 
-The context and target encoders have separate parameter copies. The target copy follows an EMA of the context parameters, not gradients from this loss. The predictor has its own trainable parameters.</script>
+<div class="frame" data-title="The student's loss on the other view" data-autobuild="off">
+  <script type="text/x-notes">Where does the gradient go, and where does it not?
+Into the student head only. The target row is detached; the teacher head moves by the moving average after each step. Read the three products and their sum.</script>
+  <div class="card">
+    <div id="s06-loss"></div>
+    <p class="v6-read" id="s06-loss-read" data-build="1"></p>
+  </div>
+  <pre class="torch-snippet" data-build="2"><code>target = ((z_teacher - center) / tau_t).softmax(-1).detach()  # no gradient
+loss = -(target * (z_student / tau_s).log_softmax(-1)).sum(-1).mean()
+teacher = 0.9 * teacher + 0.1 * student                        # after the step</code></pre>
 </div>
-<div class="frame" data-title="The target branch is not an input shortcut" data-autobuild="off">
-  <div id="s06-check"></div>
-  <p data-build="1">At inference, the pretrained encoder represents the supplied image. It need not run a hidden-region prediction exercise for every downstream task.</p>
-  <script type="text/x-notes">A target contains information the predictor is meant to learn to recover.
 
-That is allowed. Leakage would be feeding the target representation into the context prediction path before computing its answer.</script>
+<div class="frame" data-title="Run it for 200 steps, then flip the switches" data-autobuild="off">
+  <script type="text/x-notes">Run with both switches on first and read the eight points. Then switch centring off, then sharpening off.
+Centring off: every scene lands on the same slot and the loss goes to zero, which looks like success and is not. Sharpening off: every point drifts to the centre of the triangle and the loss sits at log 3 = 1.099. Both are collapses; the recipe balances them.</script>
+  <div class="card">
+    <div class="switches" id="s06-switches"></div>
+    <div class="two">
+      <div id="s06-curve"></div>
+      <div id="s06-simplex"></div>
+    </div>
+    <p class="v6-read" id="s06-run-read" aria-live="polite" data-build="1"></p>
+  </div>
 </div>
-<div class="companion after"><p>I-JEPA's target rows are contextual: the target encoder has processed the whole image before the rows are selected. Its parameters are an exponential moving average of the context encoder's parameters. The predictor is trained with the context encoder, while the target is treated as fixed for each backward pass. The two encoders therefore do not share one gradient-updated parameter object.</p><p>The published method samples several target blocks and a larger context block, excludes target regions from the context, and predicts the selected features. Our single hidden patch is an architecture illustration, not a reproduction of its masking recipe or trained predictions. The code shows a mean-squared feature loss to make the target space explicit; it does not reproduce every implementation detail of the paper.</p><p>Predicting features can reduce the requirement to reproduce every pixel detail, but it does not guarantee that learned features are semantic or useful for every task. See <a href="https://arxiv.org/abs/2301.08243" target="_blank" rel="noreferrer">Self-Supervised Learning from Images with a Joint-Embedding Predictive Architecture</a>.</p></div>
+
+<div class="frame" data-title="What each switch does" data-autobuild="off">
+  <script type="text/x-notes">Which of the four numbers is the good one?
+Only the top-left run keeps different scenes apart. A loss of zero and a loss of log 3 are the two ways of saying nothing: one slot for everything, or every slot for everything.</script>
+  <div class="card">
+    <div id="s06-table"></div>
+    <p class="v6-read" id="s06-table-read" data-build="1"></p>
+  </div>
+  <div class="callout callout-key" data-build="2">Centring stops one slot from winning everywhere; sharpening stops the output from going flat. Without the first the loss falls to 0; without the second it sits at $\log 3 = 1.099$. Neither number means the encoder learned anything.</div>
+</div>
+
+<div class="companion after">
+  <p>The real DINO uses many more slots, a teacher momentum near 1 and temperatures near 0.1 and 0.05, and it trains the whole encoder on many crops per image. The two collapses it guards against are the ones on this page, and the paper shows them the same way: switch a part of the recipe off and watch the teacher's entropy go to zero or to log K (<a href="https://arxiv.org/abs/2104.14294">Caron et al. 2021</a>, section 5.3).</p>
+</div>
+
 <script>
-(function(){const S=document.getElementById('s06'),T=AT.visionSSL;
-AT.visionScene.mount(S.querySelector('#s06-pixel-target'),{mode:'targets',target:'pixels',variant:'two'});AT.visionScene.mount(S.querySelector('#s06-feature-target'),{mode:'targets',target:'features',variant:'two'});
-AT.ui.table([['four pixel intensities','(2, 2, 2, 2)'],['d learned coordinates','target encoder output at patch 4']],{cols:[{label:'what the predictor must match',kind:'text'},{label:'target for our hidden patch',kind:'text'}],rowLabels:['MAE','I-JEPA'],cornerLabel:'pretraining target',into:S.querySelector('#s06-targets')});
-T.diagram(S.querySelector('#s06-jepa'),'jepa');
-AT.ui.reveal('Does the context encoder receive the full-image target representation as an input?','No. That representation is used to score its prediction. The prediction branch only receives visible context and target-position information. The target branch has no gradient from this loss.',{into:S.querySelector('#s06-check')});})();
+(function(){
+  const S = document.getElementById('s06'), V = AT.vision, T = AT.model, D = T.dino;
+  const slots = ['slot 1', 'slot 2', 'slot 3'];
+
+  /* the diagram */
+  (function(){
+    const s = AT.svg('svg', { viewBox: '0 0 980 250', role: 'img', 'aria-label': 'View 1 goes through the frozen encoder and the student head to a softmax; view 2 goes through the frozen encoder and the teacher head, is centred and sharpened, and becomes the target of a cross-entropy loss; the teacher head follows the student head by a moving average' });
+    const defs = AT.svg('defs'), mk = AT.svg('marker', { id: 's06-arr', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto' }); mk.appendChild(AT.svg('path', { d: 'M0 0L10 5L0 10Z', fill: 'var(--ink-3)' })); defs.appendChild(mk); s.appendChild(defs);
+    function box(x, y, w, hh, a, b, cls){ s.appendChild(AT.svg('rect', { x, y, width: w, height: hh, rx: 9, fill: cls ? 'var(--t-' + cls + ')' : 'var(--card)', stroke: cls ? 'var(--c-' + cls + ')' : 'var(--line)', 'stroke-width': 2 })); s.appendChild(AT.svg('text', { x: x + w / 2, y: y + hh / 2 + (b ? -6 : 5), 'text-anchor': 'middle', 'font-size': 17, 'font-weight': 600, fill: cls ? 'var(--c-' + cls + ')' : 'var(--ink)' }, a)); if (b) s.appendChild(AT.svg('text', { x: x + w / 2, y: y + hh / 2 + 14, 'text-anchor': 'middle', 'font-size': 13, fill: 'var(--ink-2)' }, b)); }
+    function arrow(x1, y1, x2, y2, dash, label){ s.appendChild(AT.svg('path', { d: 'M' + x1 + ' ' + y1 + 'L' + x2 + ' ' + y2, stroke: 'var(--ink-3)', 'stroke-width': 2, fill: 'none', 'marker-end': 'url(#s06-arr)', 'stroke-dasharray': dash ? '6 5' : 'none' })); if (label) s.appendChild(AT.svg('text', { x: (x1 + x2) / 2 + 8, y: (y1 + y2) / 2 + 4, 'font-size': 13, fill: 'var(--ink-2)' }, label)); }
+    box(10, 20, 120, 54, 'view 1', 'flip'); box(10, 176, 120, 54, 'view 2', 'crop, × 0.75');
+    arrow(132, 47, 160, 47); arrow(132, 203, 160, 203);
+    box(162, 20, 170, 54, 'frozen encoder', 'CLS row e\u2080\u2032', 'e'); box(162, 176, 170, 54, 'frozen encoder', 'CLS row e\u2080\u2032', 'e');
+    arrow(334, 47, 362, 47); arrow(334, 203, 362, 203);
+    box(364, 20, 150, 54, 'student head \u03b8', 'gradient step'); box(364, 176, 150, 54, 'teacher head \u03c6', 'moving average');
+    arrow(439, 174, 439, 78, true, 'EMA: \u03c6 \u2190 0.9\u03c6 + 0.1\u03b8');
+    arrow(516, 47, 544, 47); arrow(516, 203, 544, 203);
+    box(546, 20, 170, 54, 'softmax(z\u209b / \u03c4\u209b)', 'student p\u209b'); box(546, 176, 170, 54, 'softmax((z\u209c \u2212 c) / \u03c4\u209c)', 'centre, sharpen: p\u209c');
+    arrow(718, 47, 800, 110); arrow(718, 203, 800, 140);
+    s.appendChild(AT.svg('text', { x: 700, y: 170, 'font-size': 13, fill: 'var(--ink-2)' }, 'stop gradient'));
+    box(802, 98, 168, 54, 'loss', '\u2212 \u03a3 p\u209c log p\u209b', 'a');
+    S.querySelector('#s06-diagram').appendChild(s);
+  })();
+
+  /* the computed target, scene A, view 2, checkpoint 20 of the full recipe */
+  const runOn = V.dino.run(true, true), cp = runOn.checkpoints['20'], tau = runOn.tau_t;
+  const oA = V.dino.outputs(true, true, 20)[0];
+  const centred = oA.zt.map((x, i) => x - cp.center[i]), scaled = centred.map(x => x / tau);
+  S.querySelector('#s06-target-title').innerHTML = 'Scene A, view 2 (' + V.viewNames[D.views[1]] + '), step 20: from the teacher\u2019s logits to the target $p_t$';
+  AT.ui.table([oA.zt, cp.center, centred, scaled, oA.pt], { cols: slots, rowLabels: ['$z_t = \\vp{e_0\'}W_\\phi + b_\\phi$', 'centre $c$ (running mean of $z_t$)', '$z_t - c$', '$(z_t - c)/\\tau_t$, with $\\tau_t = ' + AT.fmt(tau, 1) + '$', '$p_t = \\operatorname{softmax}$'], rowCls: ['neutral', 'neutral', 'neutral', 'neutral', 'a'], cornerLabel: 'row', decimals: 3, heatCols: [], highlightRow: 4,
+    caption: '$\\vp{e_0\'}$ of view 2 is ' + V.readRow(oA.f2, 'e', 2) + '; the teacher head at step 20 turns it into the first row.', into: S.querySelector('#s06-target') });
+  const tp = oA.pt.indexOf(Math.max(...oA.pt)), cz = oA.zt.indexOf(Math.max(...oA.zt));
+  S.querySelector('#s06-target-read').textContent = 'Reading the target: the raw logits favour slot ' + (cz + 1) + '; subtracting the centre removes the part all four scenes share, and dividing by ' + AT.fmt(tau, 1) + ' doubles the gaps, so the target puts ' + AT.fmt(oA.pt[tp], 2) + ' on slot ' + (tp + 1) + '. Nothing in this table was typed in.';
+
+  /* the student's loss */
+  const terms = oA.pt.map((p, i) => -p * Math.log(oA.ps[i]));
+  AT.ui.table([oA.pt, oA.ps, terms], { cols: slots, rowLabels: ['target $p_t$ (view 2)', 'student $p_s = \\operatorname{softmax}(z_s/\\tau_s)$ (view 1)', '$-p_t \\log p_s$'], rowCls: ['a', 'neutral', 'neutral'], cornerLabel: 'row', decimals: 3,
+    footer: { label: 'sum: the loss for scene A', values: ['', '', AT.sum(terms)] }, caption: 'Step 20 of the full recipe. The student\u2019s logits on view 1 are ' + oA.zs.map(x => AT.fmt(x, 2)).join(', ') + ' with $\\tau_s = ' + AT.fmt(D.tau_s, 0) + '$.', into: S.querySelector('#s06-loss') });
+  S.querySelector('#s06-loss-read').textContent = 'Reading the loss: ' + terms.map(x => AT.fmt(x, 3)).join(' + ') + ' = ' + AT.fmt(AT.sum(terms), 3) + '; the run also swaps the views and averages over four scenes.';
+
+  /* the run with two switches */
+  let center = true, sharpen = true;
+  const sw = S.querySelector('#s06-switches');
+  const tC = AT.ui.toggle({ label: 'Centre the teacher logits', on: true, onChange: v => { center = v; paintRun(); }, into: sw });
+  const tS = AT.ui.toggle({ label: 'Sharpen (\u03c4t = 0.5)', on: true, onChange: v => { sharpen = v; paintRun(); }, offText: 'off (\u03c4t = 1)', into: sw });
+  const curveHost = S.querySelector('#s06-curve'), simHost = S.querySelector('#s06-simplex'), runRead = S.querySelector('#s06-run-read');
+  function paintRun(){
+    const run = V.dino.run(center, sharpen), last = run.curve[run.curve.length - 1];
+    AT.clear(curveHost); AT.clear(simHost);
+    V.curve(run.curve, { label: 'Loss over 200 steps, centring ' + (center ? 'on' : 'off') + ', sharpening ' + (sharpen ? 'on' : 'off') + '; final ' + AT.fmt(last[1], 3) + '.', width: 440, height: 190, into: curveHost });
+    /* the log 3 reference on the curve */
+    const sv = curveHost.querySelector('svg'), rect = sv.querySelector('rect'), ymax = +sv.querySelectorAll('text')[1].textContent.replace('\u2212', '-');
+    const top = +rect.getAttribute('y'), hgt = +rect.getAttribute('height');
+    if (V.dino.log3 <= ymax) {
+      const yl = top + hgt - hgt * V.dino.log3 / ymax;
+      sv.appendChild(AT.svg('line', { x1: rect.getAttribute('x'), x2: +rect.getAttribute('x') + +rect.getAttribute('width'), y1: yl, y2: yl, stroke: 'var(--ink-3)', 'stroke-dasharray': '3 4' }));
+      sv.appendChild(AT.svg('text', { x: +rect.getAttribute('x') + 6, y: yl - 4, 'font-size': 11, fill: 'var(--ink-3)' }, 'log 3 = ' + AT.fmt(V.dino.log3, 3)));
+    } else sv.appendChild(AT.svg('text', { x: +rect.getAttribute('x') + 6, y: top + 12, 'font-size': 11, fill: 'var(--ink-3)' }, 'log 3 = ' + AT.fmt(V.dino.log3, 3) + ' is above this axis'));
+    const outs = V.dino.outputs(center, sharpen, 200);
+    const argm = outs.map(o => o.pt.indexOf(Math.max(...o.pt))), maxp = outs.map(o => Math.max(...o.pt));
+    const sameSlot = argm.every(a => a === argm[0]) && Math.min(...maxp) > 0.9, flat = Math.max(...maxp) < 0.4;
+    const pts = [];
+    outs.forEach((o, i) => { pts.push({ p: o.ps, label: o.scene, kind: 'student', dx: 9, dy: 4 }); pts.push({ p: o.pt, label: '', kind: 'teacher' }); });
+    V.simplex(pts, { size: 340, labels: !(sameSlot || flat), into: simHost, caption: 'Step 200: circles student (view 1), triangles teacher (view 2), letters name the scene.' + (sameSlot || flat ? ' All eight coincide.' : '') });
+    let verdict;
+    if (sameSlot) verdict = 'every scene lands on slot ' + (argm[0] + 1) + ' with at least ' + AT.fmt(Math.min(...maxp), 2) + ': loss ' + AT.fmt(last[1], 3) + ', almost zero, and the head says the same about A, B, D and E. Collapse to one slot.';
+    else if (flat) verdict = 'every output is near 1/3 each: loss ' + AT.fmt(last[1], 3) + ', which is log 3 = ' + AT.fmt(V.dino.log3, 3) + ' to three decimals. Collapse to uniform.';
+    else verdict = outs.map((o, i) => o.scene + ' \u2192 slot ' + (argm[i] + 1) + ' (' + AT.fmt(maxp[i], 2) + ')').join(', ') + '; loss ' + AT.fmt(last[1], 3) + '. Different scenes get different answers.';
+    runRead.textContent = 'Reading step 200, centring ' + (center ? 'on' : 'off') + ', sharpening ' + (sharpen ? 'on' : 'off') + ': ' + verdict;
+  }
+  paintRun();
+  if (AT.present && AT.present.on) AT.present.on('frame', st => { if (st.frame && st.frame.id === 's06' && st.frame.index === 3 && !(center && sharpen)) { center = true; sharpen = true; tC.set(true, false); tS.set(true, false); paintRun(); } });
+
+  /* the 2 x 2 table of final losses */
+  const fl = (c, s) => V.dino.finalLoss(c, s);
+  AT.ui.table([[fl(true, true), fl(true, false)], [fl(false, true), fl(false, false)]], { cols: ['sharpening on (\u03c4t = 0.5)', 'sharpening off (\u03c4t = 1)'], rowLabels: ['centring on', 'centring off'], cornerLabel: 'loss at step 200', decimals: 3, highlightRow: 0,
+    caption: 'Four runs from the same seed and start. $\\log 3 = ' + AT.fmt(V.dino.log3, 3) + '$ is the loss of a uniform target matched by a uniform student.', into: S.querySelector('#s06-table') });
+  S.querySelector('#s06-table-read').textContent = 'Reading the table: ' + AT.fmt(fl(true, true), 3) + ' with the full recipe (scenes spread over the slots); ' + AT.fmt(fl(false, true), 3) + ' without centring (one slot for every scene); ' + AT.fmt(fl(true, false), 3) + ' without sharpening (uniform for every scene); ' + AT.fmt(fl(false, false), 3) + ' with neither (one flat answer for every scene, near log 3).';
+})();
 </script>
 </section>

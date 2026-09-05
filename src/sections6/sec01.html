@@ -1,36 +1,103 @@
-<section id="s01" class="sec" data-title="The image supplies a training target" data-lit="e">
-<header class="sec-head"><span class="sec-num">01</span><div><p class="eyebrow">An encoder can learn from an image even when its class label is missing.</p><h2>The image supplies a training target</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>In Part I, we turned an image into patch rows and passed them through a Transformer. A classifier can learn from those rows when we have labelled images. But a large image collection may have no class labels. Self-supervised learning constructs a training target from each image itself: hidden pixels, a teacher's output on another view, or a representation of a hidden region. These are different objectives, even when they use a similar ViT encoder.</p></div>
-<div class="frame" data-title="Hide image patches; keep their pixels as targets" data-autobuild="off">
-  <div id="s01-masked"></div>
-  <p data-build="1">Visible patches are inputs. Hidden pixels supply the target.</p>
-  <script type="text/x-notes">Which part can the encoder read, and which part is only a target?
+<section id="s01" class="sec" data-title="Labels are expensive; images are free" data-lit="e">
+<style>
+#s01 .bars6 svg{display:block;width:100%;max-width:760px;height:auto}
+#s01 .bars6 text{font-family:var(--font-ui);fill:var(--ink)}
+#s01 .bars6 .num{font-family:var(--font-mono);font-weight:700}
+#s01 .bars6 .sub{fill:var(--ink-2)}
+#s01 .big-number{font-size:1.35em;font-weight:700;margin:0 0 6px}
+#s01 .scope li{margin:6px 0}
+#s01 .hook{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px 28px;align-items:center}
+#s01 .hook > :first-child{max-width:250px}
+@media (max-width:820px){body:not(.present) #s01 .hook{grid-template-columns:minmax(0,1fr)}}
+body.present #s01 .bars6 svg{max-width:1100px}
+body.present #s01 .big-number{font-size:1.25em}
+body.present #s01 .scope{font-size:.82em;line-height:1.35}
+body.present #s01 .scope li{margin:4px 0}
+body.present #s01 .hook{gap:12px 40px}
+</style>
+<header class="sec-head">
+  <span class="sec-num">01</span>
+  <div>
+    <p class="eyebrow">Vision I needed a label for every image. Who writes millions of labels?</p>
+    <h2>Labels are expensive; images are free</h2>
+  </div>
+</header>
 
-The mug, book, and plant scene is a generated teaching illustration. We hide existing pixels from that illustration, rather than generating a completion. The training program keeps the original pixels to score a model's prediction. No trained MAE runs on this scene.</script>
+<div class="companion" data-kicker="For self-study">
+  <p>In Vision I an encoder learned from two labelled scenes. A label is a fact about an image that a person wrote down, and people are slow. Images, on the other hand, arrive by the billion without anyone writing anything. This part asks what an encoder can learn from an image alone. The answer is the one trick behind MAE, DINO and I-JEPA: hide or transform part of the image and ask the model for what the image already contains. We keep the same 8×8 scene and the frozen encoder from Vision I, so every number in the three methods can be traced on the page.</p>
 </div>
-<div class="companion"><p>The visible region may suggest a mug handle or a book edge, but it need not determine every hidden pixel. A reconstruction objective asks the model to make a prediction from that context and compares it with the withheld original. Across many images, this task can train useful visual representations.</p><p>We are reusing the idea of an encoder, rather than continuing the classifier's saved training run. The objective now asks for information from the image instead of a class label. The four-patch worksheet below keeps the arithmetic small. Its pixels are supplied separately from the mug illustration.</p></div>
-<div class="frame" data-title="Use four patches to work the numbers" data-autobuild="off">
-  <p>This is the $4\times4$ grayscale image from Part I, split into four $2\times2$ patches.</p>
-  <div id="s01-image"></div>
-  <p data-build="1">We have its pixel values, but no class label. What could the model learn to predict?</p>
-  <script type="text/x-notes">Point to the four rows.
 
-Patch 1 contains four ones; patches 2 and 3 contain zeros; patch 4 contains twos. These tiny numbers make the loss inspectable. They do not represent a realistic training dataset.</script>
-</div>
-<div class="frame" data-title="Pixels and embeddings have different jobs" data-autobuild="off">
-  <p>$r_j$: the four raw pixels in patch $j$.</p>
-  <p data-build="1">$\ve{e_j}=r_jW_{\mathrm{patch}}+b_{\mathrm{patch}}+p_j$: the input representation for that patch, as in Part I.</p>
-  <div id="s01-shapes" data-build="1"></div>
-  <p data-build="2">$E$ stacks the representation rows. We reserve $v,V$ for attention values, as before.</p>
-  <script type="text/x-notes">The patch projection changes width from four pixel coordinates to d representation coordinates.
+<div class="frame" data-title="Ten times ImageNet, and nobody labelled any of it" data-autobuild="off">
+  <script type="text/x-notes">How many labelled images does a model need, and who produced the labels?
+Read the three bars top to bottom. ImageNet's fourteen million labels were written by about forty-nine thousand crowd workers in 167 countries. DINOv2 trained on one hundred and forty-two million images with no labels at all. The point of this part is the second kind of training.
 
-Position contributes another d-wide row, not an extra coordinate. Later encoder outputs remain representations, not raw pixels.</script>
+Timing: two minutes.</script>
+  <p class="big-number">142 million images, zero labels.</p>
+  <div class="card"><div class="bars6" id="s01-bars"></div></div>
+  <p data-build="1">ImageNet's labels took about 49,000 crowd workers in 167 countries. DINOv2 learned from ten times as many images that nobody labelled.</p>
 </div>
-<div class="companion after"><p>The drawing uses four patches so we can see every input. Real pretraining uses many images and usually many more patches. Its objective does not by itself prove that the representation will work for recognition, segmentation, or another downstream task; that requires evaluation.</p><p>We will compare three target choices: MAE reconstructs pixels, DINO matches a teacher's probability distribution across views, and I-JEPA predicts target-region features. For MAE, we will train a small model on repeated-tile images and inspect its predictions. The DINO calculator isolates the loss arithmetic using supplied logits.</p></div>
+
+<div class="frame" data-title="The image is its own teacher" data-autobuild="off">
+  <script type="text/x-notes">What is under the hatching, and how would you check an answer?
+Nobody has to label this: the hidden pixels are still in the file. Reveal the original on the second press and count the hidden pixels aloud, nine mug and seven table.</script>
+  <div class="card">
+    <div class="hook">
+      <div id="s01-hook"></div>
+      <div>
+        <p>Hide part of scene A and ask the model for it back. <strong>The hidden pixels are the label</strong>, and the image supplied them itself.</p>
+        <p class="v6-read" id="s01-count" data-build="1"></p>
+      </div>
+    </div>
+  </div>
+  <div class="callout callout-key" data-build="2">Three ways to make a target from the image alone: the hidden pixels (MAE), a teacher's answer on another view (DINO), the hidden patch's feature (I-JEPA).</div>
+</div>
+
+<div class="frame" data-title="What this toy can and cannot show" data-autobuild="off">
+  <script type="text/x-notes">Read the five points once now; the sections do not repeat them.
+The encoder is frozen and came from Vision I with labels, so this page shows the three training targets and their losses exactly, not the benefit of pretraining a whole network.</script>
+  <div class="callout callout-note scope">
+    <ul>
+      <li>The encoder is Vision I's, frozen. Vision I trained it with labels to answer "is there a mug on the right?". Real MAE, DINO and I-JEPA train the whole encoder; here only small parts on top of it learn: a 32-number decoder, a 22-number predictor, a 15-number head and a 3-number probe.</li>
+      <li>One scene, four hidden patches and three or four training images are enough to trace every number and too few to learn a general skill. Section 8 reports a failure as well as a success.</li>
+      <li>The axis names (brightness, contrast, row, col) are true because Vision I fixed the patch projection. Trained encoders do not name their axes.</li>
+      <li>DINO's centre, temperatures and moving average are the real mechanisms at toy settings (temperatures 1 and 0.5, momentum 0.9), and the two collapses they prevent are shown by switching them off.</li>
+      <li>Every number is computed on this page from the parameters that <code>train_vision2.py</code> produced with a fixed seed. The losses are exact for this toy and say nothing about accuracy on real photographs.</li>
+    </ul>
+  </div>
+  <p data-build="1">With that said once, the sections can concentrate on the mechanisms.</p>
+</div>
+
+<div class="companion after">
+  <p>Keep one question in mind for each method: where does the target come from, and what could the model learn to predict it? Section 2 starts with the simplest target of all, the hidden pixels.</p>
+</div>
+
 <script>
-(function(){const S=document.getElementById('s01'),T=AT.visionSSL;
-T.diagram(S.querySelector('#s01-image'),'image');AT.visionScene.mount(S.querySelector('#s01-masked'),{mode:'masked',variant:'two'});
-AT.ui.table([['1 × 4','4 × d','1 × d','1 × d']],{cols:[{label:'pixel row r_j',kind:'code'},{label:'W_patch',kind:'code'},{label:'bias and position (each)',kind:'text'},{label:'sum e_j',kind:'code'}],rowLabels:['one patch'],cornerLabel:'row-vector shapes',into:S.querySelector('#s01-shapes')});
+(function(){
+  const S = document.getElementById('s01'), V = AT.vision;
+  /* sourced numbers, not toy numbers: ImageNet (Deng et al. 2009; Fei-Fei Li's account of the crowd labelling), MAE (arXiv 2111.06377), DINOv2 (arXiv 2304.07193) */
+  const rows = [
+    { label: 'ImageNet-1k, labelled', n: 1.28, text: '1.28 million images, 1,000 labels chosen by people', cls: 'lab' },
+    { label: 'ImageNet, all of it, labelled', n: 14.2, text: '14.2 million images; about 49,000 crowd workers, 167 countries', cls: 'lab' },
+    { label: 'DINOv2 pretraining, no labels', n: 142, text: '142 million curated web images, no labels', cls: 'unl' }
+  ];
+  const W = 760, H = 190, left = 268, right = 96, barH = 34, gap = 22, max = 142;
+  const s = AT.svg('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Three bars: 1.28 million labelled ImageNet-1k images, 14.2 million labelled ImageNet images, 142 million unlabelled DINOv2 images' });
+  rows.forEach((r, i) => {
+    const y = 18 + i * (barH + gap), w = Math.max(6, (W - left - right) * r.n / max);
+    s.appendChild(AT.svg('text', { x: left - 12, y: y + barH / 2 + 5, 'text-anchor': 'end', 'font-size': 15 }, r.label));
+    s.appendChild(AT.svg('rect', { x: left, y: y, width: w, height: barH, rx: 6, fill: r.cls === 'lab' ? 'var(--ink-3)' : 'var(--c-e)' }));
+    s.appendChild(AT.svg('text', { x: left + w + 10, y: y + barH / 2 + 5, 'font-size': 15, class: 'num' }, AT.fmt(r.n, r.n < 100 ? (r.n < 10 ? 2 : 1) : 0) + ' M'));
+    s.appendChild(AT.svg('text', { x: left, y: y + barH + 15, 'font-size': 12, class: 'sub' }, r.text));
+  });
+  S.querySelector('#s01-bars').appendChild(s);
+
+  /* the hook: scene A with the right-mug patches hidden; the count of hidden pixels comes from the scene */
+  const hidden = V.hidden, hook = S.querySelector('#s01-hook');
+  V.grid6('A', { cell: 26, labels: 'values', hidden: hidden, into: hook, caption: 'Scene A; hatched = hidden from the model.' });
+  const R = V.patchify('A');
+  const px = hidden.flatMap(j => R[j]);
+  const mugs = px.filter(v => v === 3).length, table = px.filter(v => v === 0).length;
+  S.querySelector('#s01-count').textContent = 'Reading the hidden region: ' + px.length + ' pixels in patches ' + hidden.map(j => j + 1).join(', ') + ' (the right mug); ' + mugs + ' of them mug (value 3), ' + table + ' table (value 0).';
 })();
 </script>
 </section>

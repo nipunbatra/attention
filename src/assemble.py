@@ -118,11 +118,6 @@ if N == 1:
     diagrams = os.path.join(here, 'part1-diagrams.js')
     if os.path.isfile(diagrams):
         shared_block += '<script>\n' + open(diagrams, encoding='utf-8').read() + '\n</script>\n'
-if N == 6:
-    with open(os.path.join(here, 'mae6.json'), encoding='utf-8') as model:
-        shared_block += '<script>\nwindow.__MAE__ = ' + js(json.load(model)) + ';\n</script>\n'
-    for filename in ('part6-learning.js', 'part6-learning-view.js'):
-        shared_block += '<script>\n' + open(os.path.join(here, filename), encoding='utf-8').read() + '\n</script>\n'
 if N == 2:
     # One SVG source powers both the standalone preview and the article stepper.
     diagram = os.path.join(here, '..', 'figures', 'attention-diagram-preview', 'diagram.js')

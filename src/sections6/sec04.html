@@ -1,33 +1,107 @@
-<section id="s04" class="sec" data-title="Learn from two views of one image" data-lit="">
-<header class="sec-head"><span class="sec-num">04</span><div><p class="eyebrow">A second view can supply a different kind of target.</p><h2>Learn from two views of one image</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>Instead of asking for missing pixels, we can ask two transformed views of an image to produce related representations. For an object-recognition task, a moderate crop or a colour change might preserve the information we want. This gives us a positive pair without a class label. The choice of transformations matters: agreement across an augmentation teaches the model to ignore some changes, including changes that may matter to another task.</p></div>
-<div class="frame" data-title="Two crops keep the mug; one loses it" data-autobuild="off">
-  <div id="s04-views"></div>
-  <p data-build="1">Which views contain evidence of the same terracotta mug?</p>
-  <script type="text/x-notes">Find the same mug in the wide crop and close crop.
+<section id="s04" class="sec" data-title="Which pixels enter the loss?" data-lit="">
+<style>
+#s04 .ctrl{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;margin:0 0 12px}
+#s04 .ctrl label{font-size:14px;font-weight:600;color:var(--ink-2)}
+#s04 select{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);padding:6px 10px;border-radius:6px}
+#s04 .dt td.dt-code{font-size:14px}
+body.present #s04 .ctrl label{font-size:22px}
+body.present #s04 select{font-size:22px}
+body.present #s04 .v6-pair{grid-template-columns:auto minmax(0,1fr);gap:8px 36px}
+</style>
+<header class="sec-head">
+  <span class="sec-num">04</span>
+  <div>
+    <p class="eyebrow">The calculator from the loss formula, fed by the trained decoder instead of a guess you type.</p>
+    <h2>Which pixels enter the loss?</h2>
+  </div>
+</header>
 
-The plant crop has no mug. These are crops from the generated illustration, not model outputs. A same-image pairing does not guarantee that every object survives in both views. Actual pretraining uses a crop-sampling recipe; this example lets us inspect what one set of crops preserves.</script>
+<div class="companion" data-kicker="For self-study">
+  <p>Every value here follows the formula of section 3. Choose a scene and a training step; the table lists the four hidden patches, the true pixels, the decoder's four numbers and the sum of squared errors per patch. The footer divides the total by the number of hidden pixels, sixteen, and that quotient is the loss the optimizer saw for this scene. The visible pixels never enter: they are copied into the drawing so you can see the whole scene, but the decoder is not asked about them and is not scored on them.</p>
 </div>
-<div class="frame" data-title="Agreement alone allows a useless answer" data-autobuild="off">
-  <p>If every image produces the same vector, its two views agree perfectly.</p>
-  <div id="s04-contrastive" data-build="1"></div>
-  <p data-build="2">Contrastive objectives also compare against other images. DINO uses a teacher and a different anti-collapse recipe.</p>
-  <script type="text/x-notes">The two views of the same image are the positive pair.
 
-Other images supply contrastive alternatives in a method such as SimCLR. This drawing introduces one family; DINO itself does not use this explicit negative-pair objective.</script>
+<div class="frame" data-title="Score the hidden pixels, and only those" data-autobuild="off">
+  <script type="text/x-notes">Change the scene first, then the step. What changes in the two pictures?
+The outlined patches are the only ones compared. With the step the prediction changes; with the scene the target changes, and the prediction changes only when the visible context changes. Compare A and B: same prediction, different target.</script>
+  <div class="card">
+    <div class="ctrl" data-present="manual">
+      <label for="s04-scene">Scene</label><select id="s04-scene"></select>
+      <div class="btn-row v6-btns" id="s04-btns-a" role="group" aria-label="Choose a training step"></div>
+    </div>
+    <div id="s04-grids"></div>
+    <p class="v6-read" id="s04-read" aria-live="polite" data-build="1"></p>
+  </div>
 </div>
-<div class="frame" data-title="The mug survives; the count changes" data-autobuild="off">
-  <div id="s04-counts"></div>
-  <p data-build="1">“Is there a mug?” agrees in the first two crops. “How many?” does not.</p>
-  <script type="text/x-notes">Count the visible mugs: two, one, zero.
 
-Recognising the terracotta mug and counting every mug are different tasks. The wide and close crops can agree about that mug's identity without having the same object count. The third crop cannot supply visual evidence of the mug at all. Choose augmentations with the information you want to preserve in mind.</script>
+<div class="frame" data-title="The four hidden patches, scored one by one" data-autobuild="off">
+  <script type="text/x-notes">Read one row: the true pixels, the decoder's four numbers, the sum of the four squared errors.
+The footer divides the total by sixteen. The same scene and step as the previous frame; change them here as well.</script>
+  <div class="card">
+    <div class="ctrl" data-present="manual">
+      <label for="s04-scene-b">Scene</label><select id="s04-scene-b"></select>
+      <div class="btn-row v6-btns" id="s04-btns-b" role="group" aria-label="Choose a training step"></div>
+    </div>
+    <div id="s04-table"></div>
+    <p class="v6-read" id="s04-read-b" aria-live="polite" data-build="1"></p>
+  </div>
 </div>
-<div class="companion"><p>The first two crops show the same terracotta mug, but the close crop excludes the other mug. An object-presence answer can stay the same while the count changes. A loss that encourages agreement is therefore making a choice about what the representation should retain; it is not declaring that the two images contain identical information.</p><p>The crop sampler does not receive object labels. Some sampled pairs retain the same object; others share only surrounding context. Our three crops make that distinction visible rather than assuming that every crop preserves every object.</p><h3>The same issue in the four-patch worksheet</h3><div id="s04-toy-views"></div><p>The flip moves the lower-right patch to the lower-left. Multiplying brightness by 0.75 changes all pixel intensities. These are actual transformations of the worksheet image; neither changes its number of image or patch coordinates.</p><div id="s04-changes"></div><div id="s04-check"></div></div>
-<div class="companion after"><p>Agreement need not mean that every intermediate patch row becomes identical across views. A method may apply its loss to a particular global output or to a separate projection head. The backbone still produces the representation used downstream.</p><p>The contrastive drawing is a schematic explanation of the positive/negative distinction, not a simulation of training. We will now work through DINO's alternative: a student matches a slowly changing teacher distribution. The teacher's targets and the training recipe are what make this more than matching two arbitrary random vectors.</p></div>
+
+<div class="frame" data-title="The visible pixels are copied, not scored" data-autobuild="off">
+  <script type="text/x-notes">Why not score all 64 pixels?
+Because the decoder is only asked about the hole. Scoring copied pixels would add zeros and shrink the number without teaching anything. The reveal computes what the diluted number would be.</script>
+  <pre class="torch-snippet"><code>squared = (pred_pixels[hidden] - pixels[hidden]).square()   # [4 patches, 4 pixels]
+loss = squared.mean()                                        # divide by 16, not 64</code></pre>
+  <div class="callout callout-key" data-build="1">Only the hole is scored. Visible patches are inputs; hidden patches are targets; no pixel is both.</div>
+</div>
+
+<div class="frame" data-title="What if all 64 pixels were scored?" data-autobuild="off">
+  <script type="text/x-notes">Take a guess at the diluted number before opening the answer.
+The total does not change; only the denominator does. The number falls and nothing was learned, which is why MAE divides by the hidden pixels.</script>
+  <div class="card"><div id="s04-reveal" data-build="1"></div></div>
+</div>
+
+<div class="companion after">
+  <p>The denominator is a design choice with a meaning: it makes the loss a per-hidden-pixel error, comparable across masks of different sizes. The real MAE also normalises each patch's pixels before comparing; our pixels are already on one small scale, so we compare them directly.</p>
+</div>
+
 <script>
-(function(){const S=document.getElementById('s04'),T=AT.visionSSL;AT.visionScene.mount(S.querySelector('#s04-views'),{mode:'crops',variant:'two'});AT.visionScene.mount(S.querySelector('#s04-counts'),{mode:'crops',variant:'two'});T.diagram(S.querySelector('#s04-toy-views'),'views');T.diagram(S.querySelector('#s04-contrastive'),'contrastive');
-AT.ui.table([['horizontal flip','left versus right'],['brightness scaling','absolute intensity']],{cols:[{label:'transformation',kind:'text'},{label:'a distinction it may remove',kind:'text'}],rowLabels:['our view A','our view B'],cornerLabel:'same source image',into:S.querySelector('#s04-changes')});
-AT.ui.reveal('If the task asks which side has the brighter patch, should a flip leave the answer unchanged?','No. The flip changes that answer. Augmentation choices should reflect what the downstream task needs to preserve.',{into:S.querySelector('#s04-check')});})();
+(function(){
+  const S = document.getElementById('s04'), V = AT.vision, T = AT.model;
+  const scenes = T.mae.scenes, steps = V.maeSteps, hidden = V.hidden;
+  let scene = 'A', step = 100;
+  const sels = [S.querySelector('#s04-scene'), S.querySelector('#s04-scene-b')];
+  sels.forEach(sel => { scenes.forEach(s => sel.appendChild(AT.h('option', { value: s }, 'Scene ' + s + ': ' + V.sceneNames[s]))); sel.value = scene; sel.addEventListener('change', () => { scene = sel.value; paint(); }); });
+  const groups = [S.querySelector('#s04-btns-a'), S.querySelector('#s04-btns-b')].map(host => steps.map(st => { const b = AT.h('button', { type: 'button', class: 'btn', 'aria-pressed': st === step ? 'true' : 'false' }, 'Step ' + st); b.addEventListener('click', () => { step = st; paint(); }); host.appendChild(b); return b; }));
+  const grids = S.querySelector('#s04-grids'), tab = S.querySelector('#s04-table'), read = S.querySelector('#s04-read'), readB = S.querySelector('#s04-read-b');
+  const code = r => r.map(x => AT.fmt(x, 2)).join('  ');
+  function paint(){
+    groups.forEach(g => g.forEach((b, i) => b.setAttribute('aria-pressed', steps[i] === step ? 'true' : 'false')));
+    sels.forEach(sel => { if (sel.value !== scene) sel.value = scene; });
+    const f = V.mae(step, scene);
+    AT.clear(grids); AT.clear(tab);
+    V.gridRow([
+      { scene: V.maskedImage(scene), hidden: hidden, outline: hidden, name: 'input: the scored patches outlined' },
+      { scene: V.maeImage(step, scene), outline: hidden, name: 'prediction at step ' + step }
+    ], { cell: 22, into: grids });
+    const sse = hidden.map(j => f.R[j].reduce((s, t, c) => s + (f.pred[j][c] - t) ** 2, 0));
+    const total = AT.sum(sse);
+    AT.ui.table(hidden.map((j, i) => [code(f.R[j]), code(f.pred[j]), sse[i]]), {
+      cols: [{ label: 'true pixels $r_j$', kind: 'code' }, { label: 'decoder $\\hat r_j$', kind: 'code' }, { label: 'sum of squared errors', kind: 'number', decimals: 2 }],
+      rowLabels: hidden.map(j => V.rowLabel(scene, j)), cornerLabel: 'hidden patch', decimals: 2,
+      footer: { label: 'total ÷ ' + (4 * hidden.length) + ' hidden pixels = loss', values: ['', '', AT.fmt(total, 2) + ' ÷ ' + (4 * hidden.length) + ' = ' + AT.fmt(f.loss, 3)] },
+      caption: 'Pixels in the order top left, top right, bottom left, bottom right, as in $r_j$.', into: tab });
+    const worst = hidden[sse.indexOf(Math.max(...sse))];
+    read.textContent = 'Reading scene ' + scene + ' at step ' + step + ': the sum of squared errors over the 16 outlined pixels is ' + AT.fmt(total, 2) + ', so the loss is ' + AT.fmt(total, 2) + ' ÷ 16 = ' + AT.fmt(f.loss, 3) + '.';
+    readB.textContent = 'Reading the rows: the largest share comes from ' + V.patchLabel(scene, worst) + ' (' + AT.fmt(Math.max(...sse), 2) + ' of ' + AT.fmt(total, 2) + '); loss = ' + AT.fmt(total, 2) + ' ÷ 16 = ' + AT.fmt(f.loss, 3) + '.';
+  }
+  paint();
+  if (AT.present && AT.present.on) AT.present.on('frame', st => { if (st.frame && st.frame.id === 's04' && st.frame.index === 0 && (scene !== 'A' || step !== 100)) { scene = 'A'; step = 100; paint(); } });
+
+  /* the reveal: what the number would read if the 48 copied pixels were counted too */
+  const fA = V.mae(100, 'A'), sseA = hidden.reduce((s, j) => s + fA.R[j].reduce((t, r, c) => t + (fA.pred[j][c] - r) ** 2, 0), 0);
+  AT.ui.reveal('If the 48 visible pixels of scene A were scored too (they are copied exactly), what would the mean read at step 100?',
+    'The same total, ' + AT.fmt(sseA, 2) + ', divided by 64 instead of 16: ' + AT.fmt(sseA / 64, 3) + ' instead of ' + AT.fmt(fA.loss, 3) + '. A smaller number, nothing more learned. MAE divides by the hidden pixels: error per pixel the decoder had to guess.',
+    { into: S.querySelector('#s04-reveal') });
+})();
 </script>
 </section>

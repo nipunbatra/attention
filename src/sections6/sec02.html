@@ -1,33 +1,155 @@
-<section id="s02" class="sec" data-title="MAE: hide patches, reconstruct pixels" data-lit="">
-<header class="sec-head"><span class="sec-num">02</span><div><p class="eyebrow">The encoder sees less than the decoder.</p><h2>MAE: hide patches, reconstruct pixels</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>A masked autoencoder, or MAE, has an asymmetric design. Its main encoder processes only the visible patch rows. A smaller decoder then receives those encoded rows and learned mask tokens in the missing positions. The decoder predicts pixel values. Hiding patches removes input rows from the expensive encoder; it does not merely cover their pixel values while leaving all rows in place.</p></div>
-<div class="frame" data-title="Only visible rows enter the MAE encoder" data-autobuild="off">
-  <div id="s02-encoder"></div>
-  <pre class="torch-snippet" data-build="1"><code>patch_rows = patch_pixels @ W_patch + patch_bias + pos
-encoded = encoder(patch_rows[visible])</code></pre>
-  <p data-build="2">Four patches, three hidden: one visible patch row. This schematic omits the CLS token.</p>
-  <script type="text/x-notes">This is one image, without a batch dimension in the schematic code.
+<section id="s02" class="sec" data-title="MAE: hide patches, predict the pixels" data-lit="q k v a ep">
+<style>
+#s02 .pair-tiles{display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap;margin-top:10px}
+#s02 .pair-tiles figcaption{font-size:14px;color:var(--ink-2);margin-top:6px}
+body.present #s02 .pair-tiles figcaption{font-size:22px}
+body.present #s02 .v6-pair{grid-template-columns:auto minmax(0,1fr)}
+body.present #s02 .calc-outrow .vec-label{font-size:.8em}
+body.present #s02 .calc{font-size:.85em}
+</style>
+<header class="sec-head">
+  <span class="sec-num">02</span>
+  <div>
+    <p class="eyebrow">Hide most of the picture, keep the rest, and ask a tiny decoder to draw the hole.</p>
+    <h2>MAE: hide patches, predict the pixels</h2>
+  </div>
+</header>
 
-The index list visible selects patch rows after projection and position addition. We omit the CLS token from this drawing and code to keep patch counting explicit; it has not become a masked image patch. Mask tokens appear in the next stage, not inside this encoder.</script>
+<div class="companion" data-kicker="For self-study">
+  <p>A masked autoencoder hides patches, runs the encoder on the visible ones only, and lets a small decoder predict the hidden pixels. The loss compares the prediction with the pixels that were hidden. Our version keeps Vision I's encoder frozen and trains only the decoder: for every hidden slot a placeholder row asks the visible patches a question, reads them through the same keys and values the encoder already computes, and turns four numbers into four pixels. That is 32 trained numbers. The frames below follow the slot of patch 8, the centre of the right mug, and show the decoder after training; the next section trains it.</p>
 </div>
-<div class="frame" data-title="Put mask tokens into the decoder's missing positions" data-autobuild="off">
-  <div id="s02-decoder"></div>
-  <pre class="torch-snippet" data-build="1"><code>decoder_rows = restore(encoded @ W_dec, mask_token, visible)
-pred_pixels = decoder(decoder_rows + decoder_pos)</code></pre>
-  <script type="text/x-notes">Restore is a schematic helper: put each encoded visible row back at its original position and fill the missing rows with the shared learned mask token.
 
-The decoder has its own width and added position vectors. Different target positions are distinguishable even though they use the same mask token.</script>
+<div class="frame" data-title="Masked, predicted, original" data-autobuild="off">
+  <script type="text/x-notes">Which panel did the model see, and which one did it never see?
+Left: the input, four patches hidden. Middle: what the trained decoder draws into the hole. Right: the original, used only to score the middle panel. Ask why the middle mug is grey before you explain it; section 3 answers.</script>
+  <div class="card">
+    <div id="s02-tri"></div>
+    <p class="v6-read" id="s02-tri-read" data-build="1"></p>
+  </div>
+  <div class="callout callout-key" data-build="2">The decoder never sees the right mug, and draws a faint one from what the visible patches say.</div>
 </div>
-<div class="frame" data-title="After pretraining, keep the encoder" data-autobuild="off">
-  <div id="s02-transfer"></div>
-  <p data-build="1">The pixel decoder helped create a training signal. It is not needed for a recognition task.</p>
-  <p data-build="2">Use the full image, then evaluate or fine-tune the pretrained encoder with a suitable task head.</p>
-  <script type="text/x-notes">The downstream classifier does not classify reconstructed pictures.
 
-It uses representations from the pretrained encoder. The encoder can process all patches even though it saw subsets during pretraining.</script>
+<div class="frame" data-title="Only the visible rows enter the encoder" data-autobuild="off">
+  <script type="text/x-notes">How many rows does the encoder receive?
+Thirteen: CLS and twelve visible patches. No row stands in for a hidden patch inside the encoder; that is what makes MAE cheap at scale. The placeholders appear only in the decoder, next frame.</script>
+  <div class="card">
+    <div class="v6-pair">
+      <div id="s02-visible"></div>
+      <div>
+        <p id="s02-rows"></p>
+        <p data-build="1">The hidden patches are dropped, not blanked: the encoder's attention runs among the 13 rows that remain, with the same $W_Q, W_K, W_V, W_O$ as Vision I.</p>
+        <pre class="torch-snippet" data-build="2"><code>rows = patches @ W_patch + pos          # 16 patch rows, plus CLS
+encoded = encoder(rows[visible])        # 13 rows in, 13 rows out</code></pre>
+      </div>
+    </div>
+  </div>
 </div>
-<div class="companion after"><p>The original MAE experiments often hide 75% of the patches. Our three-of-four example has that ratio, but it is not a required constant. Mask ratio, patch size, decoder design, and data all affect the training problem.</p><p>The decoder predicts the pixel row for each patch. Reconstruction loss is computed only on masked patches. The paper also studies per-patch normalised pixel targets; our numerical exercise uses the original grayscale numbers, without that normalisation. The two-line decoder code names a schematic <code>restore</code> operation rather than a built-in PyTorch function. See <a href="https://arxiv.org/abs/2111.06377" target="_blank" rel="noreferrer">Masked Autoencoders Are Scalable Vision Learners</a>.</p></div>
+
+<div class="frame" data-title="A placeholder at each hidden slot asks a question" data-autobuild="off">
+  <script type="text/x-notes">What does the decoder know about a hidden patch before it reads anything?
+Only where it is. The placeholder is one learned row m, the same for every hidden slot, plus the slot's position row. Multiplying it by the decoder's W_Q gives a query on the same two axes as the encoder's keys.</script>
+  <div class="card">
+    <div id="s02-placeholder"></div>
+    <div data-build="1"><div id="s02-qcalc"></div></div>
+    <p class="v6-read" id="s02-qread" data-build="1"></p>
+  </div>
+</div>
+
+<div class="frame" data-title="The placeholder reads the visible patches" data-autobuild="off">
+  <script type="text/x-notes">Which visible patches does the slot of patch 8 read most?
+The rose tint is the attention weight. Point to the left mug: the placeholder reads the bright patches on the other side of the scene, because its query asks for bright regions. The table lists the four heaviest rows and the weighted sum over all twelve.</script>
+  <div class="card">
+    <div class="v6-pair">
+      <div id="s02-overlay"></div>
+      <div id="s02-readtab"></div>
+    </div>
+    <p class="v6-read" id="s02-readline" data-build="1"></p>
+  </div>
+</div>
+
+<div class="frame" data-title="Four numbers become four pixels" data-autobuild="off">
+  <script type="text/x-notes">What is in the decoder row, and what comes out?
+Two numbers it read plus two numbers saying where it is. A 4 by 4 matrix and a bias turn them into four pixel values, top left to bottom right. Compare the predicted tile with the true tile: same order, different brightness.</script>
+  <div class="card">
+    <div id="s02-pixcalc"></div>
+    <p class="v6-read" data-build="1">One line per pixel: the decoder row times a column of $W_{\mathrm{dec}}$, plus the bias.</p>
+  </div>
+</div>
+
+<div class="frame" data-title="The predicted tile beside the true one" data-autobuild="off">
+  <script type="text/x-notes">Same four positions, different brightness. Which pixel came closest?
+The bottom right, 1.42 against 3. Every pixel is short of 3 by about the same amount; that is the grey mug of frame 1. The code is the whole decoder.</script>
+  <div class="card">
+    <div class="pair-tiles" id="s02-tiles"></div>
+    <p class="v6-read" id="s02-tiles-read" data-build="1"></p>
+  </div>
+  <pre class="torch-snippet" data-build="2"><code>z = torch.cat([message, pos[hidden, 2:]], dim=-1)   # what it read, where it is
+pred_pixels = z @ W_dec + b_dec                       # 4 numbers per hidden slot</code></pre>
+</div>
+
+<div class="companion after">
+  <p>The full read for the slot of patch 8, all twelve visible rows. The weight column is the attention row of the placeholder's query against the visible keys; the values are the encoder's, unchanged. The footer is the weighted sum the decoder actually receives.</p>
+  <div id="s02-mix"></div>
+  <p>Real MAE hides about 75% of the patches and trains a Transformer decoder with several layers together with the encoder. What survives from that design here is the sequence of decisions: drop the hidden rows, add a learned placeholder plus position for each hidden slot, read the visible rows, predict pixels, and score only the hole.</p>
+</div>
+
 <script>
-(function(){const S=document.getElementById('s02'),T=AT.visionSSL;T.diagram(S.querySelector('#s02-encoder'),'mae-encoder');T.diagram(S.querySelector('#s02-decoder'),'mae-decoder');T.diagram(S.querySelector('#s02-transfer'),'mae-transfer');})();
+(function(){
+  const S = document.getElementById('s02'), V = AT.vision, T = AT.model;
+  const step = 100, scene = 'A', j = 7, hidden = V.hidden;
+  const f = V.mae(step, scene);
+  const rd = f.read[j];
+  const n = j + 1, lab = V.patchLabel(scene, j);
+  const joinAnd = xs => xs.length <= 1 ? xs.join('') : xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1];
+
+  /* frame 1: the triptych with the trained prediction */
+  V.gridRow([
+    { scene: V.maskedImage(scene), hidden: hidden, name: 'masked input' },
+    { scene: V.maeImage(step, scene), name: 'prediction, step ' + step, outline: hidden },
+    { scene: scene, name: 'original, never seen' }
+  ], { cell: 20, into: S.querySelector('#s02-tri') });
+  const predMug = hidden.flatMap(h => f.pred[h].filter((v, c) => f.R[h][c] === 3));
+  S.querySelector('#s02-tri-read').textContent = 'Reading the middle panel: the nine mug pixels come back between ' + AT.fmt(Math.min(...predMug), 2) + ' and ' + AT.fmt(Math.max(...predMug), 2) + ' instead of 3: a grey mug. Visible pixels are copied.';
+
+  /* frame 2: what enters the encoder */
+  V.grid6(scene, { cell: 26, hidden: hidden, names: true, into: S.querySelector('#s02-visible'), caption: 'Numbered: the 12 patches that enter. Hatched: the 4 that do not.' });
+  S.querySelector('#s02-rows').innerHTML = 'Rows in: CLS and patches ' + f.vis.map(v => v + 1).join(', ') + ' (' + f.vis.length + ' patches). Hidden: patches ' + hidden.map(v => v + 1).join(', ') + ', the right mug.';
+
+  /* frame 3: the placeholder and its query */
+  const th = f.params;
+  AT.ui.table([th.m, V.pos[j + 1], rd.u], { axes: 'e', rowLabels: ['$m$ (learned, shared)', '$p_{' + n + '}$ (position)', '$u_{' + n + '} = m + p_{' + n + '}$'], rowCls: ['neutral', 'neutral', 'e'], cornerLabel: 'row', decimals: 2,
+    caption: 'The placeholder knows nothing about the pixels of ' + lab + ': its content axes hold the learned $m$, its row and col axes hold the position.', into: S.querySelector('#s02-placeholder') });
+  AT.ui.matVecCalc(rd.u, th.W_Qd, { from: 'e', to: 'qk', cls: 'q', xLabel: 'u \u00b7 patch ' + n, outLabel: 'q \u00b7 patch ' + n, decimals: 2, wDecimals: 2, into: S.querySelector('#s02-qcalc') });
+  const qk = AT.axes.short.qk;
+  const asks = rd.q.map((x, i) => ({ x, name: AT.axes.qk[i] })).sort((a, b) => Math.abs(b.x) - Math.abs(a.x));
+  S.querySelector('#s02-qread').textContent = 'Reading q' + n + ': ' + asks.map(a => a.name + ' ' + AT.fmt(a.x, 2)).join(', ') + ', so the slot asks ' + (asks[0].x > 0 ? 'for ' : 'against ') + asks[0].name.replace('?', '') + (Math.abs(asks[1].x) > 0.3 ? (asks[1].x > 0 ? ' and for ' : ' and against ') + asks[1].name.replace('?', '') : '') + '.';
+  AT.renderMath(S.querySelector('#s02-qread'));
+
+  /* frame 4: the read, painted and tabulated */
+  V.readOverlay(scene, f, j, { cell: 26, into: S.querySelector('#s02-overlay'), caption: 'Rose = attention weight of the slot (outlined, ?) on each visible patch.' });
+  const order = f.vis.map((v, i) => i).sort((a, b) => rd.alpha[b] - rd.alpha[a]);
+  const top = order.slice(0, 4), rest = order.slice(4);
+  const restW = rest.reduce((s, i) => s + rd.alpha[i], 0);
+  AT.ui.table(top.map(i => f.V[i]), { axes: 'v', rowLabels: top.map(i => V.rowLabel(scene, f.vis[i])), rowCls: 'v', cornerLabel: 'visible patch',
+    lead: [{ label: '$\\va{\\alpha_{' + n + 'i}}$', values: top.map(i => rd.alpha[i]), cls: 'a', heat: true, decimals: 2 }],
+    footer: { label: '$g_{' + n + '} = \\sum_i \\va{\\alpha_{' + n + 'i}}\\,\\vv{v_i}$ over all 12', values: rd.msg, lead: [AT.fmt(1, 2)], cls: 'm' },
+    caption: 'The four heaviest rows; the other ' + rest.length + ' share ' + AT.fmt(restW, 2) + '. Values are the encoder\u2019s $\\vv{v_i} = \\vp{e_i\'}\\,W_V$.', into: S.querySelector('#s02-readtab') });
+  S.querySelector('#s02-readline').innerHTML = 'Reading the row: ' + joinAnd(top.slice(0, 2).map(i => V.patchLabel(scene, f.vis[i]) + ' ' + AT.fmt(rd.alpha[i], 2))) + ' carry most of the weight, so the message is ' + V.readRow(rd.msg, 'v', 2) + ': mostly \u201chow bright were the patches I read\u201d.';
+
+  /* frame 5: four numbers to four pixels */
+  const decAxes = T.mae.decoder_axes, pix = T.mae.pixel_names;
+  const mv = AT.ui.matVecCalc(rd.z, th.W_dec, { from: decAxes, to: pix, cls: 'neutral', xLabel: 'z \u00b7 patch ' + n, outLabel: 'z W_dec', decimals: 2, wDecimals: 2, into: S.querySelector('#s02-pixcalc') });
+  const line = AT.h('p', { class: 'calc-line' }, 'add b_dec = (' + th.b_dec.map(x => AT.fmt(x, 2)).join(', ') + '): predicted pixels ', AT.h('span', { class: 'calc-r' }, '(' + f.pred[j].map(x => AT.fmt(x, 2)).join(', ') + ')'));
+  mv.appendChild(line);
+  const tiles = S.querySelector('#s02-tiles');
+  V.patchTile(f.pred[j], { cell: 30, caption: 'predicted ' + lab, into: tiles });
+  V.patchTile(f.R[j], { cell: 30, caption: 'true ' + lab + ' (hidden)', into: tiles });
+  const gaps = f.pred[j].map((v, c) => f.R[j][c] - v), best = gaps.indexOf(Math.min(...gaps));
+  S.querySelector('#s02-tiles-read').textContent = 'Reading the tiles: the decoder is short by ' + gaps.map((g, c) => pix[c] + ' ' + AT.fmt(g, 2)).join(', ') + '; the ' + pix[best] + ' pixel comes closest. One 4 × 4 matrix and one bias serve all four hidden slots; only the position axes tell them apart.';
+
+  /* companion: the full mix table */
+  AT.ui.mixTable(rd.alpha, f.V, { rowLabels: f.vis.map(v => V.rowLabel(scene, v)), cornerLabel: 'visible patch', alphaLabel: '$\\va{\\alpha_{' + n + 'i}}$', footerLabel: '$g_{' + n + '}$', decimals: 2,
+    caption: 'All twelve visible rows for the slot of ' + lab + '. Hover or focus a footer cell to see the weighted terms.', into: S.querySelector('#s02-mix') });
+})();
 </script>
 </section>

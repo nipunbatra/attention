@@ -1,0 +1,90 @@
+<section id="s08" class="sec" data-title="What did the encoder learn? A linear probe" data-lit="">
+<style>
+#s08 .two{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px 28px;align-items:start}
+@media (max-width:820px){body:not(.present) #s08 .two{grid-template-columns:minmax(0,1fr)}}
+#s08 .legend6{font-size:14px;color:var(--ink-2);margin:6px 0 0}
+#s08 .legend6 .sq{display:inline-block;width:11px;height:11px;background:var(--c-e);vertical-align:middle;margin-right:4px}
+#s08 .legend6 .ci{display:inline-block;width:10px;height:10px;border:2px solid var(--ink);border-radius:50%;vertical-align:middle;margin-right:4px}
+#s08 .legend6 .tst{display:inline-block;width:10px;height:10px;border:2.5px solid var(--warn);border-radius:50%;vertical-align:middle;margin-right:4px}
+body.present #s08 .legend6{font-size:22px}
+body.present #s08 .vplane{max-width:500px!important}
+body.present #s08 .dt td,body.present #s08 .dt th{padding:.15em .5em}
+body.present #s08 .two{gap:10px 36px}
+</style>
+<header class="sec-head">
+  <span class="sec-num">08</span>
+  <div>
+    <p class="eyebrow">Freeze the encoder, fit one line with labels, and see what the features already separate.</p>
+    <h2>What did the encoder learn? A linear probe</h2>
+  </div>
+</header>
+
+<div class="companion" data-kicker="For self-study">
+  <p>Pretraining gives you an encoder, not a promise. The standard test is a linear probe: freeze the encoder, pool its output rows into one feature per image, and fit a line with labels for a task it was never trained on. Our task is "two mugs or one mug?". The feature is the mean of the sixteen patch rows on brightness and contrast, so the probe is a line in that plane. Twelve views of three scenes give twelve points: A (two mugs) against B and C (one mug), each as the scene itself, flipped, dimmed, and cropped. The crops are held out.</p>
+</div>
+
+<div class="frame" data-title="Twelve views on two named axes" data-autobuild="off">
+  <script type="text/x-notes">Where do the two-mug views sit, and which side of the line are the crops on?
+Squares are two-mug views, circles one-mug views; amber rings are the held-out crops. The line is almost vertical: the probe reads brightness. Ask what a zoomed crop does to brightness before the next frames.</script>
+  <div class="card">
+    <div id="s08-plane"></div>
+    <p class="legend6"><span class="sq"></span> two mugs (A) <span class="ci"></span> one mug (B, C) <span class="tst"></span> held-out crops. Dashed: $w\cdot f + b = 0$; shaded: "two mugs".</p>
+    <p class="v6-read" id="s08-plane-read" data-build="1"></p>
+  </div>
+</div>
+
+<div class="frame" data-title="The probe's numbers: the nine training views" data-autobuild="off">
+  <script type="text/x-notes">Read one row: pooled brightness, pooled contrast, the probe's probability of two mugs, the label.
+All nine are on the right side. The weights say it: the brightness weight is large and positive, the contrast weight small. The line found the count of bright pixels.</script>
+  <div class="card">
+    <div id="s08-train"></div>
+    <p class="v6-read" id="s08-train-read" data-build="1"></p>
+  </div>
+</div>
+
+<div class="frame" data-title="The held-out crops cross the line" data-autobuild="off">
+  <script type="text/x-notes">Why do two of the three crops go wrong?
+A crop drops the outer pixels and stretches the rest: the mug and book grow, so the pooled brightness rises. The probe learned a brightness threshold, and a zoomed one-mug scene looks as bright as a two-mug scene. This is the honest result; the reveal asks whether more views would fix it.</script>
+  <div class="card">
+    <div id="s08-test"></div>
+    <p class="v6-read" id="s08-test-read" data-build="1"></p>
+  </div>
+  <div class="callout callout-key" data-build="2">The probe found an axis, brightness, that counts bright pixels rather than mugs.</div>
+</div>
+
+<div class="frame" data-title="Would more views fix it?" data-autobuild="off">
+  <script type="text/x-notes">Take guesses, then open the answer: it is a second fit, on all twelve views.
+Eleven of twelve. One view still lands on the wrong side, because in these two coordinates the classes overlap.</script>
+  <div class="card"><div id="s08-reveal" data-build="1"></div></div>
+</div>
+
+<div class="companion after">
+  <p>Read the probe as a measurement, not a verdict. It reports one line, on two named axes, fitted to nine points. The failure on the crops is informative in the same way the moved mug was in Vision I: it names the shortcut. Real probes use thousands of held-out images and features with hundreds of unnamed axes, and they report accuracy without being able to draw the line.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s08'), V = AT.vision, P = V.probe;
+  const pts = P.points.map(p => ({ x: p.feature[0], y: p.feature[1], label: p.scene + ' ' + p.view, cls: p.label ? 'two' : 'one', test: p.split === 'test', data: p }));
+  V.plane(pts, { axes: P.axes, w: P.w, b: P.b, width: 520, height: 320, into: S.querySelector('#s08-plane'), caption: 'Pooled feature $f$ of each view: the mean of the sixteen $\\vp{e_j\'}$ rows.' });
+  const two = pts.filter(p => p.cls === 'two' && !p.test), one = pts.filter(p => p.cls === 'one' && !p.test);
+  S.querySelector('#s08-plane-read').textContent = 'Reading the plane: two-mug training views have brightness ' + AT.fmt(Math.min(...two.map(p => p.x)), 2) + ' to ' + AT.fmt(Math.max(...two.map(p => p.x)), 2) + ', one-mug views ' + AT.fmt(Math.min(...one.map(p => p.x)), 2) + ' to ' + AT.fmt(Math.max(...one.map(p => p.x)), 2) + '; contrast separates nothing. Line: w = (' + AT.fmt(P.w[0], 2) + ', ' + AT.fmt(P.w[1], 2) + '), b = ' + AT.fmt(P.b, 2) + '.';
+
+  function tab(rows, host, corner){
+    AT.ui.table(rows.map(p => [p.feature[0], p.feature[1], p.p_two, p.label ? 'two mugs' : 'one mug', p.correct ? 'yes' : 'no']), {
+      cols: [V.contentCols[0], V.contentCols[1], { label: 'p(two mugs)', decimals: 2, cls: 'a', heat: true }, { label: 'label', kind: 'text' }, { label: 'correct', kind: 'text' }],
+      rowLabels: rows.map(p => p.scene + ' \u00b7 ' + p.view), cornerLabel: corner, decimals: 2, into: host });
+  }
+  const train = P.points.filter(p => p.split === 'train'), test = P.points.filter(p => p.split === 'test');
+  tab(train, S.querySelector('#s08-train'), 'training view');
+  S.querySelector('#s08-train-read').textContent = 'Reading the fit: ' + train.filter(p => p.correct).length + ' of ' + train.length + ' correct; p(two mugs) = σ(' + AT.fmt(P.w[0], 2) + ' × brightness ' + (P.w[1] < 0 ? '− ' + AT.fmt(-P.w[1], 2) : '+ ' + AT.fmt(P.w[1], 2)) + ' × contrast ' + (P.b < 0 ? '− ' + AT.fmt(-P.b, 2) : '+ ' + AT.fmt(P.b, 2)) + '). Brightness decides.';
+  tab(test, S.querySelector('#s08-test'), 'held-out crop');
+  const wrong = test.filter(p => !p.correct);
+  S.querySelector('#s08-test-read').textContent = 'Reading the test: ' + test.filter(p => p.correct).length + ' of ' + test.length + ' crops correct. ' + (wrong.length ? wrong.map(p => p.scene + ' cropped has brightness ' + AT.fmt(p.feature[0], 2)).join(', ') + ', above the one-mug training range: a zoomed one-mug scene is as bright as a two-mug one.' : 'Every crop stays on its side.');
+  const A = P.all;
+  AT.ui.reveal('With the crops in training, would one line separate all twelve?',
+    'Refit on all twelve: w = (' + AT.fmt(A.w[0], 2) + ', ' + AT.fmt(A.w[1], 2) + '), b = ' + AT.fmt(A.b, 2) + ', ' + Math.round(A.accuracy * 12) + ' of 12 correct. ' + (A.accuracy < 1 ? 'Still wrong: ' + P.points.map((p, i) => ({ p, ok: (A.p_two[i] >= .5) === (p.label === 1), q: A.p_two[i] })).filter(x => !x.ok).map(x => 'scene ' + x.p.scene + ' ' + x.p.view + ' (p = ' + AT.fmt(x.q, 2) + ')').join(', ') + '. In these two coordinates the classes overlap; no line fixes that, only a better feature.' : 'With the crops seen, a line separates all twelve.'),
+    { into: S.querySelector('#s08-reveal') });
+})();
+</script>
+</section>

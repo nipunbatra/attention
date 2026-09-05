@@ -1,129 +1,186 @@
-// Legacy illustrative calculators and authoring checks. The trained MAE-style
-// experiment has its own finite-difference and reproduction checks.
-// node src/check_vision2.mjs [--browser] [--page /absolute/path/vision2.html]
+// Independent checks for Vision II (toy6.json, part6.js, sections6/, part6.json).
+//   node src/check_vision2.mjs [--no-browser] [--page /absolute/path/vision2.html]
+// 1. A plain-JS reference implementation (not part6.js) recomputes the frozen Vision I encoder, the MAE decoder,
+//    the I-JEPA predictor, the DINO checkpoints and the probe from the stored parameters and compares every stored
+//    loss, prediction, attention row and probability with the JSON written by train_vision2.py.
+// 2. Fragment and config invariants: frames, notes, builds, unique ids, no "coordinate N", no dashes, code parses.
+// 3. With an existing Playwright runtime (default), the assembled page is loaded: the runtime's numbers match the
+//    JSON, the controls redraw, every frame fits the 1280x720 stage at its last build, and the 390px article has no
+//    horizontal overflow. Nothing is installed and nothing is written.
 import assert from 'node:assert/strict';
-import {readFileSync,readdirSync,existsSync} from 'node:fs';
-import {createRequire} from 'node:module';
-import {pathToFileURL} from 'node:url';
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
 import vm from 'node:vm';
+import { createRequire } from 'node:module';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const toy=JSON.parse(readFileSync(new URL('toy6.json',import.meta.url),'utf8'));
-const runtime=readFileSync(new URL('part6.js',import.meta.url),'utf8');
-const config=JSON.parse(readFileSync(new URL('part6.json',import.meta.url),'utf8'));
-const pristine=JSON.stringify(toy);
-class Element{
-  constructor(tag){this.tagName=tag;this.attributes={};this.children=[];this.style={};this._text='';}
-  setAttribute(k,v){this.attributes[k]=String(v);}getAttribute(k){return this.attributes[k];}
-  set textContent(t){this._text=String(t);}get textContent(){return this._text+this.children.map(c=>c.textContent).join(' ');}
-  appendChild(c){this.children.push(c);return c;}get firstChild(){return this.children[0];}
-  removeChild(c){this.children.splice(this.children.indexOf(c),1);}
-}
-const document={createElementNS:(_,tag)=>new Element(tag)};
-const window={__TOY__:toy,AT:{axes:{named:true},objects:[],notation:[],clear:e=>{e.children=[];}}};
-// Load the actual shared image convention into this small DOM test harness.
-const shadeSource=readFileSync(new URL('shared.js',import.meta.url),'utf8').match(/AT\.imageShade = function \(v\) \{[^\n]+\};/)[0];
-vm.runInNewContext(shadeSource,{AT:window.AT});
-vm.runInNewContext(runtime,{window,document,console});
-const T=window.AT.visionSSL,clone=x=>JSON.parse(JSON.stringify(x));
-const near=(a,b,label)=>assert(Math.abs(a-b)<1e-12,`${label}: ${a} != ${b}`);
-const sum=a=>a.reduce((s,x)=>s+x,0);
-assert.deepEqual(clone(T.patchify()),[[1,1,1,1],[0,0,0,0],[0,0,0,0],[2,2,2,2]]);
-let comparisons=0;
-for(const preset of toy.visionSSL.maskPresets)for(let guess=0;guess<=2;guess+=.25){
-  const R=T.reconstruction(preset.indices,guess),pixels=preset.indices.flatMap(i=>T.patchify()[i]);
-  const expected=sum(pixels.map(x=>(guess-x)**2))/pixels.length;
-  near(R.loss,expected,'masked pixel MSE');assert.equal(R.count,pixels.length);assert.equal(R.visible,4-preset.indices.length);
-  assert(R.rows.filter(r=>!r.hidden).every(r=>r.sse===0));comparisons++;
-}
-near(T.reconstruction([1,2,3],1).loss,1,'default');near(T.reconstruction([3],2).loss,0,'matching patch 4');near(T.reconstruction([0,3],1).loss,.5,'changed mask');
-for(const bad of [[],[0,1,2,3],[1,1],[-1],[4],[.5],null])assert.throws(()=>T.reconstruction(bad));
-assert.throws(()=>T.reconstruction([1],NaN));assert.throws(()=>T.patchify([[1]]));
-const expectedTarget=[Math.exp(3),Math.exp(1),1].map(x=>x/(Math.exp(3)+Math.exp(1)+1));
-let previous=Infinity;
-for(let a=0;a<=3;a+=.25){const R=T.dino(a);near(sum(R.target),1,'target normalization');near(sum(R.prediction),1,'student normalization');R.target.forEach((p,i)=>near(p,expectedTarget[i],'center/sharpen target'));near(R.loss,-sum(R.target.map((p,i)=>p*Math.log(R.prediction[i]))),'CE');assert(R.loss<=previous+1e-12,'CE should decrease toward this chosen target');previous=R.loss;comparisons++;}
-const match=T.dino(3);match.target.forEach((p,i)=>near(p,match.prediction[i],'matching target'));near(match.loss,-sum(match.target.map(p=>p*Math.log(p))),'CE at target is entropy');assert(match.loss>0);
-near(T.ema(),1.2,'EMA parameter');near(T.ema(1,3,1),1,'EMA endpoint');near(T.ema(1,3,0),3,'EMA endpoint');assert.throws(()=>T.ema(1,3,2));
-assert.deepEqual(clone(T.transform('flip'))[0],[0,0,1,1]);assert.deepEqual(clone(T.transform('dim'))[3],[0,0,1.5,1.5]);assert.throws(()=>T.transform('unknown'));
-assert.equal(JSON.stringify(toy),pristine,'runtime must not mutate embedded data');assert.equal(window.AT.axes.named,false);assert.equal(window.AT.notation.filter(r=>r.parts.includes('vision2')).length,9);
-assert.equal(config.part,2);assert.equal(config.series,'Vision to language');assert.equal(config.notation,'vision2');assert.equal(config.prev.href,'vision1.html');assert.equal(config.next.href,'vision3.html');
-const stages=['image','mae-encoder','mae-decoder','mae-transfer','views','contrastive','dino','dino-update','jepa','probe'];
-function nodes(e){return[e,...e.children.flatMap(nodes)];}
-const svgIds=new Set();
-for(const stage of stages){const svg=T.diagram(new Element('div'),stage),b=svg.getAttribute('viewBox').split(' ').map(Number);assert(b[2]===1100&&b[3]<=330);assert.equal(svg.getAttribute('role'),'img');assert(nodes(svg).some(e=>e.tagName==='title'&&e.textContent));for(const n of nodes(svg)){const id=n.getAttribute('id');if(id){assert(!svgIds.has(id));svgIds.add(id);}}
-  if(stage==='mae-encoder')assert(svg.textContent.includes('No mask tokens enter this encoder.'));
-  if(stage==='mae-decoder')assert(svg.textContent.includes('[M]   [M]   [M]'));
-  if(stage==='jepa')assert(svg.textContent.includes('full image')&&svg.textContent.includes('after encoding')&&svg.textContent.includes('stop gradient'));
-}
-const dir=new URL('sections6/',import.meta.url),sections=readdirSync(dir).filter(x=>/^sec\d\d\.html$/.test(x)).sort();assert.equal(sections.length,7);
-const ids=new Set();let frames=0;
-for(const file of sections){const source=readFileSync(new URL(file,dir),'utf8');frames+=(source.match(/class="frame"/g)||[]).length;
-  for(const m of source.matchAll(/\bid="([^"]+)"/g)){assert(!ids.has(m[1]),'duplicate ID '+m[1]);ids.add(m[1]);}
-  for(const m of source.matchAll(/<script>([\s\S]*?)<\/script>/g))new vm.Script(m[1],{filename:file});
-  for(const m of source.matchAll(/<pre class="torch-snippet"[^>]*><code>([\s\S]*?)<\/code><\/pre>/g))assert(m[1].trim().split('\n').length<=4,'short code on '+file);
-  assert(!source.includes('onChange:')&&!source.includes('overflow:auto'),'use shared widgets/no internal scroll');
-}
-assert(frames>=38&&frames<=45,'Keep the learning walkthrough in short classroom frames');console.log(`PASS: Vision II ${comparisons} numerical cases, invariants, ${stages.length} SVG stages, ${sections.length} sections / ${frames} frames, IDs, code syntax, and notebook-size snippets.`);
+const src = path.dirname(fileURLToPath(import.meta.url));
+const read = name => fs.readFileSync(path.join(src, name), 'utf8');
+const toy = JSON.parse(read('toy6.json')), toy5 = JSON.parse(read('toy5.json')), config = JSON.parse(read('part6.json'));
+const TOL = 5e-5;
+let compared = 0, maxErr = 0;
+const near = (a, b, label, tol = TOL) => { const d = Math.abs(a - b); compared++; maxErr = Math.max(maxErr, d); assert.ok(Number.isFinite(a) && d <= tol, `${label}: ${a} != ${b} (diff ${d})`); };
+const rowsNear = (A, B, label) => A.forEach((r, i) => r.forEach((x, j) => near(x, B[i][j], label + '[' + i + '][' + j + ']')));
 
-if(process.argv.includes('--browser')){
-  const require=createRequire(import.meta.url);let pw;
-  for(const candidate of [process.env.PLAYWRIGHT_PATH,'/Users/nipun/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright','/Users/nipun/.npm/_npx/360550e4913b8759/node_modules/playwright'].filter(Boolean)){try{pw=require(candidate);break;}catch{}}
-  if(!pw)throw new Error('Set PLAYWRIGHT_PATH to an existing Playwright installation.');
-  const browser=await pw.chromium.launch();
-  try{
-    const page=await browser.newPage({viewport:{width:1200,height:900}});
-    await page.setContent('<style>:root{--font-ui:Arial,sans-serif;--ink:#20272c;--ink-3:#606a70;--c-e:#658169;--card:#fff;--paper:#fff;--line:#ddd;--t-e:#f0f5f0}body{margin:20px}svg{display:block;width:1100px}</style><main></main>');
-    await page.evaluate(toy=>{window.__TOY__=toy;window.AT={axes:{},objects:[],notation:[],clear:e=>{e.innerHTML='';}};},clone(toy));
-    await page.addScriptTag({content:shadeSource});
-    await page.addScriptTag({content:runtime});
-    const fails=await page.evaluate(stages=>{const fails=[];for(const stage of stages){const host=document.createElement('div');document.querySelector('main').appendChild(host);const svg=AT.visionSSL.diagram(host,stage),v=svg.viewBox.baseVal;for(const text of svg.querySelectorAll('text')){const b=text.getBBox();if(b.x<0||b.y<0||b.x+b.width>v.width||b.y+b.height>v.height)fails.push(stage+': '+text.textContent);}}return fails;},stages);
-    assert.deepEqual(fails,[],'SVG text stays inside viewBox');console.log('PASS: browser SVG text bounds.');
-    const pixelLabels=await page.evaluate(()=>[...document.querySelectorAll('text[data-pixel-label]')].flatMap(text=>{
-      const b=text.getBBox(),cx=Number(text.getAttribute('x')),cy=Number(text.getAttribute('y'));
-      const cell=[...text.closest('svg').querySelectorAll('rect[data-pixel-value]')].find(rect=>{const r=rect.getBBox();return cx>=r.x&&cx<=r.x+r.width&&cy>=r.y&&cy<=r.y+r.height;})?.getBBox();
-      return !cell||b.x<cell.x+1||b.x+b.width>cell.x+cell.width-1?[text.textContent]:[];
-    }));
-    assert.deepEqual(pixelLabels,[],'pixel labels fit within their own cells, including fractional brightness values');
-    const arg=process.argv.indexOf('--page');if(arg>=0){
-      const path=process.argv[arg+1];assert(path&&existsSync(path),'assembled page required');const errors=[];page.on('pageerror',e=>errors.push(String(e)));
-      await page.goto(pathToFileURL(path).href);await page.waitForFunction(()=>window.AT?.visionSSL&&document.querySelector('#s03-lab-loss')?.textContent.includes('1.0000'));
-      const guess=page.locator('#s03-slider input');await page.selectOption('#s03-mask','1');await guess.fill('2');await guess.dispatchEvent('input');assert((await page.locator('#s03-lab-loss').textContent()).includes('0.0000'));
-      await page.selectOption('#s03-mask','2');await guess.fill('1');await guess.dispatchEvent('input');assert((await page.locator('#s03-lab-loss').textContent()).includes('0.5000'));
-      const before=await page.locator('#s05-ce-loss').textContent();await page.locator('#s05-slider input').fill('3');await page.locator('#s05-slider input').dispatchEvent('input');const after=await page.locator('#s05-ce-loss').textContent();assert.notEqual(after,before);assert(after.includes(T.dino(3).loss.toFixed(4)));assert.deepEqual(errors,[]);
-      for(const preset of ['0','1','2','1','0']){
-        await page.selectOption('#s03-mask',preset);
-        for(const value of ['0','0.75','2','1']){
-          await guess.fill(value);await guess.dispatchEvent('input');
-          assert.equal(await page.locator('#s03-lab-table table').count(),1,'MAE redraw replaces the previous table');
-          assert.equal(await page.locator('#s03-lab-table tbody tr').count(),toy.visionSSL.maskPresets[+preset].indices.length,'mask changes also replace rows');
-          const expected=T.reconstruction(toy.visionSSL.maskPresets[+preset].indices,+value);
-          assert((await page.locator('#s03-lab-loss').textContent()).includes(expected.loss.toFixed(4)));
-          assert((await page.locator('#s03-lab-table').innerText()).includes((+value).toFixed(2)),'current guess reaches the visible table');
-        }
-      }
-      for(const value of ['0','1','3','2','0.5']){
-        const slider=page.locator('#s05-slider input');await slider.fill(value);await slider.dispatchEvent('input');
-        assert.equal(await page.locator('#s05-ce-table table').count(),1,'DINO redraw replaces the previous table');
-        const expected=T.dino(+value),text=await page.locator('#s05-ce-table').innerText();
-        expected.prediction.forEach(p=>assert(text.includes(p.toFixed(4)),'current probability is visible'));
-        assert((await page.locator('#s05-ce-loss').textContent()).includes(expected.loss.toFixed(4)));
-      }
-      assert(await page.evaluate(()=>AT.imageShade(1.5)<AT.imageShade(2)&&AT.imageShade(0)<AT.imageShade(1)),'dimming lowers displayed intensity');
-      for(const step of [0,1,20,100,800,0]){
-        await page.locator('#s03-mae-controls').getByRole('button',{name:'Step '+step,exact:true}).click();
-        for(const brightness of [1,1.2]){
-          await page.locator('#s03-mae-controls').getByRole('button',{name:brightness===1?'Training brightness 1.0':'Held-out brightness 1.2',exact:true}).click();
-          const verified=await page.evaluate(({step,brightness})=>{
-            const host=document.querySelector('#s03-mae-controls'),f=AT.mae.view.get(step,brightness),svg=host.querySelector('svg');
-            return {oneFigure:host.querySelectorAll('svg').length===1,expected:svg.textContent.includes(AT.mae.view.vec(f.prediction[3]))&&svg.textContent.includes(f.loss.toFixed(6)),selected:host.querySelector('[aria-pressed="true"]').textContent};
-          },{step,brightness});
-          assert(verified.oneFigure&&verified.expected);assert.equal(verified.selected,'Step '+step);
-        }
-      }
-      const newBounds=await page.evaluate(()=>[...document.querySelectorAll('svg.mae-figure')].flatMap(svg=>[...svg.querySelectorAll('text')].flatMap(text=>{const b=text.getBBox(),v=svg.viewBox.baseVal;return b.x<0||b.y<0||b.x+b.width>v.width||b.y+b.height>v.height?[text.textContent]:[];})));
-      assert.deepEqual(newBounds,[],'new MAE labels stay within their SVG');
-      assert.deepEqual(errors,[]);
-      console.log('PASS: 12 trained-MAE control states match recomputed predictions; new SVG labels fit.');
-      console.log('PASS: assembled page interactions update MAE and DINO results without JavaScript errors.');
-    }
-  }finally{await browser.close();}
+/* ---------- the reference implementation (vision-shared.js conventions, written independently) ---------- */
+const SQ2 = Math.SQRT2;
+function blank() { return Array.from({ length: 8 }, () => Array(8).fill(0)); }
+function mug(g, c0) { for (let r = 1; r <= 3; r++) for (let c = c0; c < c0 + 3; c++) g[r][c] = 3; }
+function book(g) { for (let r = 5; r <= 6; r++) for (let c = 1; c <= 5; c++) g[r][c] = 2; }
+function plant(g) { g[4][7] = 1; }
+const SC = {};
+SC.A = blank(); mug(SC.A, 1); mug(SC.A, 5); book(SC.A); plant(SC.A);
+SC.B = blank(); mug(SC.B, 1); book(SC.B); plant(SC.B);
+SC.C = blank(); mug(SC.C, 4); book(SC.C); plant(SC.C);
+SC.D = blank(); book(SC.D);
+SC.E = blank(); plant(SC.E);
+for (const k of Object.keys(toy5.scenes)) assert.deepEqual(SC[k], toy5.scenes[k].pixels, 'scene ' + k + ' matches toy5');
+const W_PATCH = [[.25, .5, 0, 0], [.25, -.5, 0, 0], [.25, .5, 0, 0], [.25, -.5, 0, 0]], CLS = [1, 0, 0, 0];
+const POS = [[0, 0, -1, -1]].concat(Array.from({ length: 16 }, (_, j) => [0, 0, Math.floor(j / 4) / 3, (j % 4) / 3]));
+const ENC = toy.encoder;
+assert.deepEqual(ENC, toy5.trained, 'the encoder is exactly the trained Vision I encoder');
+const mm = (A, B) => A.map(r => B[0].map((_, c) => r.reduce((s, x, k) => s + x * B[k][c], 0)));
+const mv = (v, M) => M[0].map((_, c) => v.reduce((s, x, k) => s + x * M[k][c], 0));
+const add = (a, b) => a.map((x, i) => x + b[i]);
+const softmax = v => { const m = Math.max(...v), e = v.map(x => Math.exp(x - m)), z = e.reduce((a, b) => a + b, 0); return e.map(x => x / z); };
+const mean = a => a.reduce((s, x) => s + x, 0) / a.length;
+function patchify(g) { const rows = []; for (let pr = 0; pr < 4; pr++) for (let pc = 0; pc < 4; pc++) rows.push([g[2 * pr][2 * pc], g[2 * pr][2 * pc + 1], g[2 * pr + 1][2 * pc], g[2 * pr + 1][2 * pc + 1]]); return rows; }
+function embed(g) { return [CLS].concat(mm(patchify(g), W_PATCH)).map((r, i) => add(r, POS[i])); }
+function attend(E, P) { const Q = mm(E, P.W_Q), K = mm(E, P.W_K), Vv = mm(E, P.W_V); const S = Q.map(q => K.map(k => (q[0] * k[0] + q[1] * k[1]) / SQ2)); const A = S.map(softmax); const D = mm(mm(A, Vv), P.W_O); return { E, A, Enew: E.map((r, i) => add(r, D[i])) }; }
+const encode = g => attend(embed(g), ENC).Enew;
+function encodeVisible(g, hidden) { const em = embed(g), idx = [0]; for (let j = 0; j < 16; j++) if (!hidden.includes(j)) idx.push(j + 1); return { vis: idx.slice(1).map(i => i - 1), out: attend(idx.map(i => em[i]), ENC) }; }
+function readSlots(theta, g, hidden) {
+  const ev = encodeVisible(g, hidden), Ev = ev.out.Enew.slice(1), K = mm(Ev, ENC.W_K), Vv = mm(Ev, ENC.W_V), res = {};
+  for (const j of hidden) { const u = add(theta.m, POS[j + 1]), q = mv(u, theta.W_Qd), a = softmax(K.map(k => (q[0] * k[0] + q[1] * k[1]) / SQ2)); const msg = [0, 1].map(c => a.reduce((t, al, i) => t + al * Vv[i][c], 0)); res[j] = { alpha: a, z: [msg[0], msg[1], POS[j + 1][2], POS[j + 1][3]] }; }
+  return { vis: ev.vis, res };
 }
+const views = {
+  identity: g => g.map(r => r.slice()), flip: g => g.map(r => r.slice().reverse()), dim: g => g.map(r => r.map(x => .75 * x)),
+  crop: g => { const idx = Array.from({ length: 8 }, (_, r) => 1 + Math.floor(r * 7 / 8)); return idx.map(rr => idx.map(cc => g[rr][cc])); }
+};
+views['crop+dim'] = g => views.dim(views.crop(g));
+
+/* MAE and I-JEPA checkpoints */
+const hidden = toy.hidden; assert.deepEqual(hidden, [2, 3, 6, 7]);
+for (const [step, cp] of Object.entries(toy.mae.checkpoints)) {
+  const per = [];
+  for (const s of toy.mae.scenes) {
+    const rd = readSlots(cp.params, SC[s], hidden), R = patchify(SC[s]), se = [];
+    for (const j of hidden) { const r = add(mv(rd.res[j].z, cp.params.W_dec), cp.params.b_dec); r.forEach((x, c) => { near(x, cp.scenes[s].pred[j][c], `mae step ${step} ${s} pred ${j}`); se.push((x - R[j][c]) ** 2); }); rd.res[j].alpha.forEach((a, i) => near(a, cp.scenes[s].alpha[j][i], `mae alpha ${step} ${s} ${j}`)); rd.res[j].z.forEach((x, i) => near(x, cp.scenes[s].z[j][i], `mae z ${step} ${s} ${j}`)); }
+    near(mean(se), cp.scenes[s].loss, `mae loss ${step} ${s}`); per.push(mean(se));
+    assert.equal(rd.vis.length, 12);
+  }
+  near(mean(per), cp.mean_loss, 'mae mean ' + step); near(mean(per), toy.mae.curve[+step][1], 'mae curve ' + step);
+}
+assert.ok(toy.mae.curve[100][1] < toy.mae.curve[10][1] && toy.mae.curve[10][1] < toy.mae.curve[0][1], 'the MAE loss falls');
+{ const a = toy.mae.checkpoints['100'].scenes.A.pred, b = toy.mae.checkpoints['100'].scenes.B.pred; for (const j of hidden) a[j].forEach((x, c) => near(x, b[j][c], 'A and B share one prediction', 1e-9)); }
+for (const [step, cp] of Object.entries(toy.jepa.checkpoints)) {
+  const per = [];
+  for (const s of toy.jepa.scenes) {
+    const rd = readSlots(cp.params, SC[s], hidden), full = encode(SC[s]), se = [];
+    for (const j of hidden) { const y = add(mv(rd.res[j].z, cp.params.W_pred), cp.params.b_pred), t = full[j + 1].slice(0, 2); y.forEach((x, c) => { near(x, cp.scenes[s].pred[j][c], `jepa pred ${step} ${s} ${j}`); near(t[c], cp.scenes[s].target[j][c], `jepa target ${s} ${j}`); se.push((x - t[c]) ** 2); }); }
+    near(mean(se), cp.scenes[s].loss, `jepa loss ${step} ${s}`); per.push(mean(se));
+  }
+  near(mean(per), cp.mean_loss, 'jepa mean ' + step);
+}
+/* DINO checkpoints: recompute the outputs from the encoder and the stored heads */
+const D = toy.dino;
+for (const [key, run] of Object.entries(D.runs)) {
+  const tau = run.tau_t; assert.equal(tau, run.sharpen ? D.tau_t_sharpen : D.tau_s);
+  for (const [step, cp] of Object.entries(run.checkpoints)) {
+    cp.outputs.forEach(o => {
+      const f1 = encode(views[D.views[0]](SC[o.scene]))[0], f2 = encode(views[D.views[1]](SC[o.scene]))[0];
+      const zs = add(mv(f1, cp.student.W), cp.student.b), zt = add(mv(f2, cp.teacher.W), cp.teacher.b), c = run.center ? cp.center : [0, 0, 0];
+      zt.forEach((x, i) => near(x, o.teacher_logits_view2[i], `${key} ${step} ${o.scene} zt`));
+      softmax(zs.map(x => x / D.tau_s)).forEach((p, i) => near(p, o.student_view1[i], `${key} ${step} ${o.scene} ps`));
+      softmax(zt.map((x, i) => (x - c[i]) / tau)).forEach((p, i) => near(p, o.teacher_view2[i], `${key} ${step} ${o.scene} pt`));
+    });
+  }
+  const last = run.curve[run.curve.length - 1][1];
+  if (key === 'nocenter_sharpen') assert.ok(last < 0.01, 'no centring: the loss collapses to zero');
+  if (key === 'center_nosharpen') near(last, Math.log(3), 'no sharpening: the loss sits at log 3', 1e-4);
+  if (key === 'center_sharpen') assert.ok(last > 0.3 && last < Math.log(3), 'the full recipe keeps a non-trivial loss');
+}
+{ const outs = D.runs.center_sharpen.checkpoints['200'].outputs.map(o => o.teacher_view2.indexOf(Math.max(...o.teacher_view2))); assert.ok(new Set(outs).size >= 2, 'the full recipe assigns different slots to different scenes'); }
+{ const outs = D.runs.nocenter_sharpen.checkpoints['200'].outputs; assert.ok(outs.every(o => Math.max(...o.teacher_view2) > 0.99) && new Set(outs.map(o => o.teacher_view2.indexOf(Math.max(...o.teacher_view2)))).size === 1, 'no centring: one slot for every scene'); }
+{ const outs = D.runs.center_nosharpen.checkpoints['200'].outputs; assert.ok(outs.every(o => Math.max(...o.teacher_view2) < 0.34), 'no sharpening: uniform for every scene'); }
+/* the probe */
+const P = toy.probe;
+for (const p of P.points) {
+  const E = encode(views[p.view](SC[p.scene])).slice(1), f = [mean(E.map(r => r[0])), mean(E.map(r => r[1]))];
+  f.forEach((x, i) => near(x, p.feature[i], `probe feature ${p.scene} ${p.view}`));
+  near(1 / (1 + Math.exp(-(P.w[0] * f[0] + P.w[1] * f[1] + P.b))), p.p_two, `probe p ${p.scene} ${p.view}`);
+  assert.equal(p.correct, (p.p_two >= .5) === (p.label === 1) ? 1 : 0);
+}
+assert.equal(P.points.filter(p => p.split === 'train').length, 9); assert.equal(P.points.filter(p => p.split === 'test').length, 3);
+near(P.train_accuracy, mean(P.points.filter(p => p.split === 'train').map(p => p.correct)), 'train accuracy');
+near(P.test_accuracy, mean(P.points.filter(p => p.split === 'test').map(p => p.correct)), 'test accuracy');
+near(P.all.accuracy, mean(P.points.map((p, i) => (P.all.p_two[i] >= .5) === (p.label === 1) ? 1 : 0)), 'all-views accuracy');
+
+/* ---------- fragments and config ---------- */
+const dir = path.join(src, 'sections6'), files = fs.readdirSync(dir).filter(n => /^sec\d\d\.html$/.test(n)).sort();
+assert.equal(files.length, 10, 'ten sections');
+assert.deepEqual(config.sections.map(s => s.id), files.map(n => 's' + n.slice(3, 5)), 'config lists the files');
+const ids = new Set(); let frames = 0, notes = 0, builds = 0;
+for (const name of files) {
+  const s = fs.readFileSync(path.join(dir, name), 'utf8');
+  const fr = s.match(/<div class="frame"[^>]*>/g) || []; frames += fr.length;
+  notes += (s.match(/type="text\/x-notes"/g) || []).length;
+  for (const m of s.matchAll(/<div class="frame"[^>]*>([\s\S]*?)(?=<div class="frame"|<div class="companion after"|<script>\s*\(function)/g)) { assert.match(m[1], /data-build="\d"/, name + ': every frame has a build'); builds++; }
+  for (const m of s.matchAll(/\bid="([^"]+)"/g)) { assert.ok(!ids.has(m[1]), 'duplicate id ' + m[1]); ids.add(m[1]); }
+  for (const m of s.matchAll(/<script>([\s\S]*?)<\/script>/g)) new vm.Script(m[1], { filename: name });
+  assert.ok(!/coordinate \d/i.test(s), name + ': no "coordinate N"');
+  assert.ok(!/[—–]/.test(s), name + ': no em or en dashes');
+  assert.ok(!/overflow:auto/.test(s), name + ': no internal scrolling');
+}
+assert.equal(frames, 42, 'frame count'); assert.equal(notes, frames, 'every frame has presenter notes'); assert.equal(builds, frames);
+assert.equal(config.part, 2); assert.equal(config.notation, 'vision2'); assert.equal(config.prev.href, 'vision1.html'); assert.equal(config.next.href, 'vision3.html');
+assert.ok(config.provenance.includes('frozen') && config.provenance.includes('{{axes}}'), 'provenance states the scope with the named axes');
+console.log(JSON.stringify({ reference: 'pass', compared, maxErr, sections: files.length, frames, mae: ['0', '10', '100'].map(k => toy.mae.checkpoints[k].mean_loss), jepa: ['0', '10', '100'].map(k => toy.jepa.checkpoints[k].mean_loss), dino: Object.fromEntries(Object.entries(D.runs).map(([k, r]) => [k, r.curve[r.curve.length - 1][1]])), probe: [P.train_accuracy, P.test_accuracy] }));
+
+/* ---------- browser ---------- */
+if (process.argv.includes('--no-browser')) process.exit(0);
+const require = createRequire(import.meta.url), cands = [process.env.PLAYWRIGHT_MODULE, 'playwright', 'playwright-core'].filter(Boolean), cache = path.join(os.homedir(), '.npm', '_npx');
+if (fs.existsSync(cache)) for (const d of fs.readdirSync(cache).sort()) cands.push(path.join(cache, d, 'node_modules', 'playwright'));
+let pw; for (const c of cands) { try { pw = require(c); break; } catch { /* next */ } }
+if (!pw) throw new Error('No installed Playwright runtime; pass --no-browser or set PLAYWRIGHT_MODULE.');
+const argPage = process.argv.indexOf('--page'), page_path = argPage >= 0 ? process.argv[argPage + 1] : path.join(src, '..', 'vision2.html');
+assert.ok(fs.existsSync(page_path), 'assembled page: ' + page_path);
+const browser = await pw.chromium.launch(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE } : {});
+const errors = [];
+try {
+  const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+  page.on('pageerror', e => errors.push(String(e.message || e))); page.on('console', m => { if (m.type() === 'error' || m.type() === 'warning') errors.push(m.text()); });
+  await page.goto(pathToFileURL(page_path).href); await page.waitForTimeout(600);
+  const live = await page.evaluate(() => {
+    const V = AT.vision, T = AT.model, out = { mae: [], jepa: [], dino: [], probe: [], katex: document.querySelectorAll('.katex-error').length, sections: document.querySelectorAll('section.sec').length, coordinate: /coordinate \d/i.test(document.body.innerText) };
+    for (const st of ['0', '10', '100']) { out.mae.push([+st, V.maeMeanLoss(+st), T.mae.checkpoints[st].mean_loss]); out.jepa.push([+st, T.jepa.scenes.map(s => V.jepa(+st, s).loss).reduce((a, b) => a + b, 0) / 3, T.jepa.checkpoints[st].mean_loss]); }
+    for (const [c, s] of [[true, true], [false, true], [true, false], [false, false]]) V.dino.outputs(c, s, 200).forEach((o, i) => { const st = V.dino.run(c, s).checkpoints['200'].outputs[i]; out.dino.push(Math.max(...o.pt.map((x, k) => Math.abs(x - st.teacher_view2[k])), ...o.ps.map((x, k) => Math.abs(x - st.student_view1[k])))); });
+    V.probe.points.forEach(p => { const f = V.probe.pooled(V.view(p.view, p.scene)); out.probe.push(Math.abs(V.probe.p(f) - p.p_two)); });
+    out.encoderRows = V.encode('A').length; out.frames = AT.present.frames().length;
+    return out;
+  });
+  live.mae.forEach(([st, a, b]) => near(a, b, 'page mae ' + st)); live.jepa.forEach(([st, a, b]) => near(a, b, 'page jepa ' + st));
+  live.dino.forEach(d => near(d, 0, 'page dino outputs')); live.probe.forEach(d => near(d, 0, 'page probe'));
+  assert.equal(live.katex, 0); assert.equal(live.sections, 10); assert.equal(live.encoderRows, 17); assert.equal(live.frames, frames); assert.ok(!live.coordinate, 'the page never says "coordinate N"');
+  /* controls redraw */
+  await page.click('#s03-btns-a button:nth-child(3)'); assert.match(await page.locator('#s03-curve-read').innerText(), /step 100/);
+  await page.selectOption('#s04-scene', 'D'); assert.match(await page.locator('#s04-read').innerText(), /scene D/);
+  const before = await page.locator('#s06-run-read').innerText(); await page.click('#s06-switches .toggle:nth-child(1)'); const after = await page.locator('#s06-run-read').innerText();
+  assert.notEqual(before, after); assert.match(after, /Collapse to one slot/); await page.click('#s06-switches .toggle:nth-child(1)');
+  await page.click('#s06-switches .toggle:nth-child(2)'); assert.match(await page.locator('#s06-run-read').innerText(), /log 3/); await page.click('#s06-switches .toggle:nth-child(2)');
+  /* every frame fits at its last build */
+  await page.goto(pathToFileURL(page_path).href + '?present#s01/1/0'); await page.waitForTimeout(600);
+  const issues = [];
+  for (let fi = 0; fi < frames; fi++) {
+    await page.evaluate(fi => { AT.present.go(fi, null, 999); }, fi); await page.waitForTimeout(80);
+    const st = await page.evaluate(() => { const s = AT.present.state(), f = document.querySelector('.frame.is-live'); return { id: s.frame.id + '/' + (s.frame.index + 1), tall: f.scrollHeight - f.clientHeight, wide: f.scrollWidth - f.clientWidth }; });
+    if (st.tall > 2 || st.wide > 2) issues.push(st);
+  }
+  assert.deepEqual(issues, [], 'no presentation frame overflows its stage');
+  await page.setViewportSize({ width: 390, height: 844 }); await page.goto(pathToFileURL(page_path).href + '#s03'); await page.waitForTimeout(400);
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1), 'no horizontal overflow at 390px');
+  assert.deepEqual(errors, [], 'no page errors');
+  console.log(JSON.stringify({ browser: 'pass', frames, compared, maxErr }));
+} finally { await browser.close(); }
