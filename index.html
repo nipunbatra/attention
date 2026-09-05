@@ -102,29 +102,29 @@ a:hover{text-decoration-color:var(--ink)}
         <li class="card">
           <span class="n">VISION I</span>
           <h2><a href="vision1.html">An image becomes a sequence</a></h2>
-          <p class="build">One block or two? Follow the pixels into patch embeddings, let CLS gather information, work out a prediction, and train the same model after it gets an image wrong.</p>
-          <p class="meta">Builds on embeddings, attention, and residual updates.</p>
+          <p class="build">Cut the tabletop scene into sixteen patches, give every patch a row on named axes, and let one attention layer answer: is there a mug on the right? Then train it and watch what CLS reads.</p>
+          <p class="meta">Builds on Part 2. One scene, every number computed, the moved-mug probe shown whatever it gives.</p>
           <nav class="actions" aria-label="Vision I views"><a class="go" href="vision1.html">Read Vision I</a><a href="vision1.html?present">Present Vision I</a></nav>
         </li>
         <li class="card">
           <span class="n">VISION II</span>
           <h2><a href="vision2.html">Learn visual representations without class labels</a></h2>
-          <p class="build">Hide patches and work out reconstruction error. Then compare MAE, DINO, and I-JEPA: where does each target come from, what gets predicted, and what gets updated?</p>
-          <p class="meta">Exact loss calculators; clearly labelled illustrative teacher scores.</p>
+          <p class="build">Hide part of the scene and ask for it back. Train a small masked-image decoder, watch a teacher collapse and recover with DINO's two tricks, predict a feature with I-JEPA, then probe what the frozen encoder learned.</p>
+          <p class="meta">The same frozen encoder throughout; every loss computed live.</p>
           <nav class="actions" aria-label="Vision II views"><a class="go" href="vision2.html">Read Vision II</a><a href="vision2.html?present">Present Vision II</a></nav>
         </li>
         <li class="card">
           <span class="n">VISION III</span>
-          <h2><a href="vision3.html">CLIP: learn to match images and text</a></h2>
-          <p class="build">Follow three pairs through encoders, normalization, all nine matching scores, and contrastive learning. Change the candidate descriptions and see why probability is not confidence.</p>
-          <p class="meta">A trained CLIP-style toy with a reproducible parameter update.</p>
+          <h2><a href="vision3.html">CLIP: match an image with a caption</a></h2>
+          <p class="build">Three scenes, three captions, two encoders on named axes. Score every image against every caption, train for sixty steps and watch the six points move on the sphere, then classify by writing candidates.</p>
+          <p class="meta">Batch size, collapse, temperature and prompts shown with real numbers.</p>
           <nav class="actions" aria-label="Vision III views"><a class="go" href="vision3.html">Read Vision III</a><a href="vision3.html?present">Present Vision III</a></nav>
         </li>
         <li class="card">
           <span class="n">VISION IV</span>
           <h2><a href="vision4.html">An image becomes context for an answer</a></h2>
-          <p class="build">Connect the visual rows to a language decoder. Work through its mask, query, prediction, generation, and response loss. Compare a visual prefix with cross-attention.</p>
-          <p class="meta">Two fitted image–answer pairs; explicit checks of visual evidence and training regressions.</p>
+          <p class="build">Put the sixteen patch rows in front of a question and let one attention block read them. See what the answer token reads, painted on the scene, generate the answer, and test grounding by changing the image.</p>
+          <p class="meta">How many mugs? Counting, generation, one training step, and what pixels cannot tell you.</p>
           <nav class="actions" aria-label="Vision IV views"><a class="go" href="vision4.html">Read Vision IV</a><a href="vision4.html?present">Present Vision IV</a></nav>
         </li>
       </ol>

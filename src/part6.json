@@ -1,43 +1,129 @@
 {
-  "part": 2,
-  "series": "Vision to language",
-  "title": "Learn visual representations without class labels",
-  "subtitle": "Hide part of the scene and ask for it back: train a masked-image decoder, watch a teacher collapse and recover, predict a feature instead of pixels, then probe what the frozen encoder knows.",
-  "audience": "Students who know patch embeddings, one attention update, softmax and gradient descent",
-  "minutes": 60,
-  "centralLabel": "Where the training target comes from",
-  "central": "\\text{image}\\;\\longrightarrow\\;\\text{hide or transform}\\;\\longrightarrow\\;\\text{predict what the image already contains}",
-  "chain": [
-    { "label": "Labels are expensive, images are free", "section": "s01" },
-    { "label": "MAE: hide patches, predict pixels", "section": "s02" },
-    { "label": "Train the decoder: 0, 10, 100 steps", "section": "s03" },
-    { "label": "Which pixels enter the loss", "section": "s04" },
-    { "label": "Two views of one scene", "section": "s05" },
-    { "label": "DINO: a teacher, a centre, a collapse", "section": "s06" },
-    { "label": "I-JEPA: predict a feature", "section": "s07" },
-    { "label": "A linear probe", "section": "s08" },
-    { "label": "Three targets compared", "section": "s09" },
-    { "label": "Summaries", "section": "s10" }
-  ],
-  "sections": [
-    { "id": "s01", "title": "Labels are expensive; images are free", "lit": "e" },
-    { "id": "s02", "title": "MAE: hide patches, predict the pixels", "lit": "q k v a ep" },
-    { "id": "s03", "title": "Train the decoder: steps 0, 10 and 100", "lit": "" },
-    { "id": "s04", "title": "Which pixels enter the loss?", "lit": "" },
-    { "id": "s05", "title": "Two views of one scene", "lit": "" },
-    { "id": "s06", "title": "DINO: a teacher supplies the target", "lit": "" },
-    { "id": "s07", "title": "I-JEPA: predict a feature, not pixels", "lit": "" },
-    { "id": "s08", "title": "What did the encoder learn? A linear probe", "lit": "" },
-    { "id": "s09", "title": "Three targets, one frozen encoder", "lit": "" },
-    { "id": "s10", "title": "Summaries and pause-and-think", "lit": "" }
-  ],
-  "objects": ["e", "q", "k", "v", "a", "ep"],
-  "legendTitle": "The same colours; the rows are now patches of the scene",
-  "provenance": "Scope: the encoder is Vision I's, frozen (Vision I trained it with labels to answer whether a mug is on the right), with named axes{{axes}}. Vision II trains only small parts on top of it: a 32-number MAE decoder, a 22-number I-JEPA predictor, a 15-number DINO head and a 3-number probe line, all in a seeded numpy script (train_vision2.py) whose results the page recomputes. One 8×8 scene, four hidden patches, three to four training images. Real MAE, DINO and I-JEPA train the whole encoder on millions of images; the box in section 1 lists what this toy can and cannot show.",
-  "prev": { "label": "Vision I: An image becomes a sequence", "href": "vision1.html" },
-  "next": { "label": "Vision III: CLIP: learn to match images and text", "href": "vision3.html" },
-  "index": { "label": "Series home", "href": "index.html" },
-  "notation": "vision2",
-  "footer": "The image supplies its own training target; a probe with labels tells you what the representation kept.",
-  "partLabel": "Vision II"
+ "part": 2,
+ "series": "Vision to language",
+ "title": "Learn visual representations without class labels",
+ "subtitle": "Hide part of the scene and ask for it back: train a masked-image decoder, watch a teacher collapse and recover, predict a feature instead of pixels, then probe what the frozen encoder knows.",
+ "audience": "Students who know patch embeddings, one attention update, softmax and gradient descent",
+ "minutes": 60,
+ "centralLabel": "Where the training target comes from",
+ "central": "\\text{image}\\;\\longrightarrow\\;\\text{hide or transform}\\;\\longrightarrow\\;\\text{predict what the image already contains}",
+ "chain": [
+  {
+   "label": "Labels are expensive, images are free",
+   "section": "s01"
+  },
+  {
+   "label": "MAE: hide patches, predict pixels",
+   "section": "s02"
+  },
+  {
+   "label": "Train the decoder: 0, 10, 100 steps",
+   "section": "s03"
+  },
+  {
+   "label": "Which pixels enter the loss",
+   "section": "s04"
+  },
+  {
+   "label": "Two views of one scene",
+   "section": "s05"
+  },
+  {
+   "label": "DINO: a teacher, a centre, a collapse",
+   "section": "s06"
+  },
+  {
+   "label": "I-JEPA: predict a feature",
+   "section": "s07"
+  },
+  {
+   "label": "A linear probe",
+   "section": "s08"
+  },
+  {
+   "label": "Three targets compared",
+   "section": "s09"
+  },
+  {
+   "label": "Summaries",
+   "section": "s10"
+  }
+ ],
+ "sections": [
+  {
+   "id": "s01",
+   "title": "Labels are expensive; images are free",
+   "lit": "e"
+  },
+  {
+   "id": "s02",
+   "title": "MAE: hide patches, predict the pixels",
+   "lit": "q k v a ep"
+  },
+  {
+   "id": "s03",
+   "title": "Train the decoder: steps 0, 10 and 100",
+   "lit": ""
+  },
+  {
+   "id": "s04",
+   "title": "Which pixels enter the loss?",
+   "lit": ""
+  },
+  {
+   "id": "s05",
+   "title": "Two views of one scene",
+   "lit": ""
+  },
+  {
+   "id": "s06",
+   "title": "DINO: a teacher supplies the target",
+   "lit": ""
+  },
+  {
+   "id": "s07",
+   "title": "I-JEPA: predict a feature, not pixels",
+   "lit": ""
+  },
+  {
+   "id": "s08",
+   "title": "What did the encoder learn? A linear probe",
+   "lit": ""
+  },
+  {
+   "id": "s09",
+   "title": "Three targets, one frozen encoder",
+   "lit": ""
+  },
+  {
+   "id": "s10",
+   "title": "Summaries and pause-and-think",
+   "lit": ""
+  }
+ ],
+ "objects": [
+  "e",
+  "q",
+  "k",
+  "v",
+  "a",
+  "ep"
+ ],
+ "legendTitle": "The same colours; the rows are now patches of the scene",
+ "provenance": "Scope: the encoder is Vision I's, frozen (Vision I trained it with labels to answer whether a mug is on the right), with named axes{{axes}}. Vision II trains only small parts on top of it: a 32-number MAE decoder, a 22-number I-JEPA predictor, a 15-number DINO head and a 3-number probe line, all in a seeded numpy script (train_vision2.py) whose results the page recomputes. One 8×8 scene, four hidden patches, three to four training images. Real MAE, DINO and I-JEPA train the whole encoder on millions of images; the box in section 1 lists what this toy can and cannot show.",
+ "prev": {
+  "label": "Vision I: An image becomes a sequence",
+  "href": "vision1.html"
+ },
+ "next": {
+  "label": "Vision III: CLIP: match an image with a caption",
+  "href": "vision3.html"
+ },
+ "index": {
+  "label": "Series home",
+  "href": "index.html"
+ },
+ "notation": "vision2",
+ "footer": "The image supplies its own training target; a probe with labels tells you what the representation kept.",
+ "partLabel": "Vision II"
 }

@@ -1,43 +1,127 @@
 {
-  "part": 4,
-  "series": "Vision to language",
-  "title": "An image becomes context for an answer",
-  "subtitle": "Put the sixteen patch rows of the tabletop scene in front of a question, let one attention block read them, and follow the answer word by word: what it reads, why it says two, and where it goes wrong.",
-  "audience": "Students who completed the attention series and Vision I to III",
-  "minutes": 50,
-  "centralLabel": "The image is context; the answer is the next token",
-  "central": "g_1,\\ldots,g_{16}\\ \\text{and}\\ \\texttt{how many mugs ?}\\;\\to\\;\\ve{E}\\;\\to\\;p(\\text{next token})",
-  "chain": [
-    { "label": "CLIP cannot write an answer", "section": "s01" },
-    { "label": "The pipeline, end to end", "section": "s02" },
-    { "label": "Visual rows enter the decoder", "section": "s03" },
-    { "label": "Who may read whom", "section": "s04" },
-    { "label": "What ? reads", "section": "s05" },
-    { "label": "Generate", "section": "s06" },
-    { "label": "The grounding test", "section": "s07" },
-    { "label": "Train on the answer", "section": "s08" },
-    { "label": "What the pixels cannot say", "section": "s09" },
-    { "label": "Summaries", "section": "s10" }
-  ],
-  "sections": [
-    { "id": "s01", "title": "CLIP can rank captions; it cannot write an answer", "lit": "" },
-    { "id": "s02", "title": "The pipeline, end to end", "lit": "e" },
-    { "id": "s03", "title": "Visual rows enter the decoder", "lit": "" },
-    { "id": "s04", "title": "Two routes, one mask: who may read whom", "lit": "q k a" },
-    { "id": "s05", "title": "One prediction: what does the question mark read?", "lit": "v d ep" },
-    { "id": "s06", "title": "Generate: the answer supplies the next query", "lit": "" },
-    { "id": "s07", "title": "The grounding test: change the image, keep the question", "lit": "" },
-    { "id": "s08", "title": "Train on the answer", "lit": "" },
-    { "id": "s09", "title": "What the pixels cannot tell you", "lit": "" },
-    { "id": "s10", "title": "Summaries, questions, and back to a a b", "lit": "" }
-  ],
-  "objects": ["e", "q", "k", "v", "a", "d", "ep"],
-  "legendTitle": "The seven objects, now over sixteen image rows and a few words",
-  "provenance": "Scope: the image encoder is Vision I's frozen worksheet, applied to the same 8×8 scene; a 4×3 connector and a width-three one-head decoder with a ten-word vocabulary were fitted on scenes A and B only, then rounded to two decimals, and every number on this page is recomputed from those parameters in the browser. Scene C is a probe the model never saw. This is not a pretrained VLM and not a general counter; the toy has no LayerNorm, feed-forward sublayer or dropout.",
-  "prev": { "label": "Vision III: CLIP: learn to match images and text", "href": "vision3.html" },
-  "next": null,
-  "index": { "label": "Series home", "href": "index.html" },
-  "notation": "vision4",
-  "footer": "Image-conditioned generation still predicts one token at a time; the image is context, exactly like the earlier words.",
-  "partLabel": "Vision IV"
+ "part": 4,
+ "series": "Vision to language",
+ "title": "An image becomes context for an answer",
+ "subtitle": "Put the sixteen patch rows of the tabletop scene in front of a question, let one attention block read them, and follow the answer word by word: what it reads, why it says two, and where it goes wrong.",
+ "audience": "Students who completed the attention series and Vision I to III",
+ "minutes": 50,
+ "centralLabel": "The image is context; the answer is the next token",
+ "central": "g_1,\\ldots,g_{16}\\ \\text{and}\\ \\texttt{how many mugs ?}\\;\\to\\;\\ve{E}\\;\\to\\;p(\\text{next token})",
+ "chain": [
+  {
+   "label": "CLIP cannot write an answer",
+   "section": "s01"
+  },
+  {
+   "label": "The pipeline, end to end",
+   "section": "s02"
+  },
+  {
+   "label": "Visual rows enter the decoder",
+   "section": "s03"
+  },
+  {
+   "label": "Who may read whom",
+   "section": "s04"
+  },
+  {
+   "label": "What ? reads",
+   "section": "s05"
+  },
+  {
+   "label": "Generate",
+   "section": "s06"
+  },
+  {
+   "label": "The grounding test",
+   "section": "s07"
+  },
+  {
+   "label": "Train on the answer",
+   "section": "s08"
+  },
+  {
+   "label": "What the pixels cannot say",
+   "section": "s09"
+  },
+  {
+   "label": "Summaries",
+   "section": "s10"
+  }
+ ],
+ "sections": [
+  {
+   "id": "s01",
+   "title": "CLIP can rank captions; it cannot write an answer",
+   "lit": ""
+  },
+  {
+   "id": "s02",
+   "title": "The pipeline, end to end",
+   "lit": "e"
+  },
+  {
+   "id": "s03",
+   "title": "Visual rows enter the decoder",
+   "lit": ""
+  },
+  {
+   "id": "s04",
+   "title": "Two routes, one mask: who may read whom",
+   "lit": "q k a"
+  },
+  {
+   "id": "s05",
+   "title": "One prediction: what does the question mark read?",
+   "lit": "v d ep"
+  },
+  {
+   "id": "s06",
+   "title": "Generate: the answer supplies the next query",
+   "lit": ""
+  },
+  {
+   "id": "s07",
+   "title": "The grounding test: change the image, keep the question",
+   "lit": ""
+  },
+  {
+   "id": "s08",
+   "title": "Train on the answer",
+   "lit": ""
+  },
+  {
+   "id": "s09",
+   "title": "What the pixels cannot tell you",
+   "lit": ""
+  },
+  {
+   "id": "s10",
+   "title": "Summaries, questions, and back to a a b",
+   "lit": ""
+  }
+ ],
+ "objects": [
+  "e",
+  "q",
+  "k",
+  "v",
+  "a",
+  "d",
+  "ep"
+ ],
+ "legendTitle": "The seven objects, now over sixteen image rows and a few words",
+ "provenance": "Scope: the image encoder is Vision I's frozen worksheet, applied to the same 8×8 scene; a 4×3 connector and a width-three one-head decoder with a ten-word vocabulary were fitted on scenes A and B only, then rounded to two decimals, and every number on this page is recomputed from those parameters in the browser. Scene C is a probe the model never saw. This is not a pretrained VLM and not a general counter; the toy has no LayerNorm, feed-forward sublayer or dropout.",
+ "prev": {
+  "label": "Vision III: CLIP: match an image with a caption",
+  "href": "vision3.html"
+ },
+ "next": null,
+ "index": {
+  "label": "Series home",
+  "href": "index.html"
+ },
+ "notation": "vision4",
+ "footer": "Image-conditioned generation still predicts one token at a time; the image is context, exactly like the earlier words.",
+ "partLabel": "Vision IV"
 }

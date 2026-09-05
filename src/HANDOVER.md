@@ -31,7 +31,6 @@ Read this file, then `PRESENT.md` for the current layout/runtime contract and `C
 | 2: self-attention | `sections/secNN.html` | `toy.json`, `part2.json` | `../attention.html` |
 | 3: learning and Transformer blocks | `sections3/secNN.html` | `toy3.json`, `part3.js`, `part3.json` | `../part3.html` |
 | 4: cross-attention and translation | `sections4/secNN.html` | `toy4.json`, `part4.js`, `part4.json` | `../part4.html` |
-| Vision I: ViT (source ID 5) | `sections5/secNN.html` | `toy5.json`, `part5.js`, `part5-diagrams.js`, `part5-learning.js`, `part5.json` | `../vision1.html` |
 | Vision II: visual pretraining (source ID 6) | `sections6/secNN.html` | `toy6.json`, `part6.js`, `part6.json` | `../vision2.html` |
 | Vision III: CLIP (source ID 7) | `sections7/secNN.html` | `toy7.json`, `part7.js`, `part7.json` | `../vision3.html` |
 | Vision IV: VLM (source ID 8) | `sections8/secNN.html` | `toy8.json`, `part8.js`, `part8.json` | `../vision4.html` |
@@ -113,7 +112,7 @@ example. The scene never borrows scores, attention maps or predictions from the 
 
 The photo-style figures use one shared type/layout component. Narrow reading views stack the same crops and captions;
 the classroom view keeps the comparison on one 16:9 stage. Scope SVG sizing rules to direct children so they do not
-override nested crop viewports. `check_vision_scene.mjs` verifies image decoding, crop transforms, label bounds, offline
+override nested crop viewports. (retired) `check_vision_scene.mjs` verifies image decoding, crop transforms, label bounds, offline
 loading and mobile containment at every scene frame. It also records representative classroom and phone screenshots.
 
 - `AT.vision`: exact four-patch + CLS worksheet; full ViT pre-norm architecture is clearly separate from the no-LN/no-FFN numerical model. Position addition is same-width. Token permutation without positions is equivariant; the CLS readout is invariant to patch-only permutation.
@@ -199,7 +198,7 @@ The user requested regular GitHub checkpoints. Verify the checkout, branch, remo
 
 Give each parallel agent an explicit file boundary and a bounded task. Shared runtime changes affect both series and require all-part fit checks. Ask for changed files, tests actually run, screenshots inspected, and remaining limitations. Keep temporary previews outside the source tree and do not overwrite another agent's changes.
 
-## 7. Vision rebuild (2026-09-05, in progress: Vision II, III, IV rebuilt and pushed; Vision I in progress)
+## 7. Vision rebuild (2026-09-05, complete: all four vision parts rebuilt on the shared scene and pushed)
 The four vision parts are being rebuilt to the standard of Part 2. Design: `VISION_FEEDBACK.md` (diagnosis and per-part plans) and `VISION_AXES.md`
 (one 8×8 scene with named regions, a fixed patch encoder with named axes brightness / contrast / row / col, keys "bright region? / on the right?",
 values "sends: brightness / sends: contrast", the shared figures). Foundation files: `vision-shared.js` (scene, encoder, grid, thumb, overlay, scatter,
