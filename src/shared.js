@@ -728,7 +728,7 @@
   function labelInto(el, s) {
     s = s == null ? '' : String(s);
     if (s.length > 1 && s.charAt(0) === '$' && s.charAt(s.length - 1) === '$' && s.indexOf('$', 1) === s.length - 1) AT.tex(el, s.slice(1, -1));
-    else if (s.indexOf('$') >= 0) { el.innerHTML = s; AT.renderMath(el); }
+    else if (s.indexOf('$') >= 0 || /^\s*<(svg|span|em|strong|b|i|code)\b/.test(s)) { el.innerHTML = s; AT.renderMath(el); }   // inline markup labels (e.g. patch thumbnails)
     else el.textContent = s;
     return el;
   }
