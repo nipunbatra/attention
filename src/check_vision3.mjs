@@ -54,6 +54,15 @@ assert.equal(JSON.stringify(first), firstCopy, 'step must not mutate its input')
 let trained = C.params();
 for (let i = 0; i < d.trainedSteps; i++) { close(C.forward(trained).loss, d.history[i], 'training history'); trained = C.step(trained); }
 close(trained, d.snapshots.trained, '60 simultaneous updates');
+for (const [count, name] of [[0, 'initial'], [1, 'afterOne'], [60, 'trained']]) close(C.checkpoint(count), d.snapshots[name], 'geometry checkpoint ' + count);
+close(C.forward(C.checkpoint(20)).loss, d.history[20], 'geometry step 20');
+assert.throws(() => C.checkpoint(3));
+const screenX = [1 / Math.sqrt(2), -1 / Math.sqrt(2), 0], screenY = [1 / Math.sqrt(6), 1 / Math.sqrt(6), -2 / Math.sqrt(6)];
+close(C.projectDirection(screenX), [1, 0], 'fixed horizontal viewing basis');
+close(C.projectDirection(screenY), [0, 1], 'fixed vertical viewing basis');
+const initialTau = C.params().log_scale, fixedTemperature = Object.assign({}, C.params('trained'), { log_scale: initialTau });
+close(C.forward(fixedTemperature).cosine, C.forward(trained).cosine, 'temperature does not move directions');
+assert(C.forward(fixedTemperature).loss < C.forward().loss, 'encoder learning improves this batch even at fixed temperature');
 assert(C.forward(trained).loss < C.forward().loss);
 assert(Math.abs(C.forward().rowLoss - C.forward().columnLoss) > .001, 'directions are distinct');
 
@@ -92,9 +101,9 @@ assert.equal(JSON.stringify(toy), baseline, 'readout and training do not mutate 
 assert.equal(window.AT.axes.named, false);
 assert.equal(window.AT.notation.filter(n => n.parts.includes('vision3')).length, 10);
 const sections = Array.from({ length: 7 }, (_, i) => readFileSync(new URL(`sections7/sec0${i + 1}.html`, import.meta.url), 'utf8'));
-assert.equal(sections.reduce((n, text) => n + (text.match(/class="frame"/g) || []).length, 0), 28);
+assert.equal(sections.reduce((n, text) => n + (text.match(/class="frame"/g) || []).length, 0), 35);
 assert(!sections.some(text => /[—–]/.test(text)), 'natural prose uses no em/en dashes');
-console.log(`PASS: Vision III ${scalars} reference scalars (max error ${maximum}); ${gradientChecks} finite-difference gradients (max error ${gradientError}); training, normalization, row/column loss, prompt/candidate/temperature controls, source immutability, and 28-frame contract.`);
+console.log(`PASS: Vision III ${scalars} reference scalars (max error ${maximum}); ${gradientChecks} finite-difference gradients (max error ${gradientError}); training, normalization, row/column loss, fixed-projection checkpoints, prompt/candidate/temperature controls, source immutability, and 35-frame contract.`);
 
 const browserFlag = process.argv.indexOf('--browser');
 if (browserFlag >= 0) {
@@ -126,7 +135,7 @@ if (browserFlag >= 0) {
       const image = new Image(); image.src = src; await image.decode(); return [variant, image.naturalWidth, image.naturalHeight];
     })));
     assert.deepEqual(decodedScenes.sort(), [['one', 1536, 1024], ['two', 1536, 1024]], 'both offline scene assets decode');
-    assert.equal(await page.locator('.frame').count(), 28);
+    assert.equal(await page.locator('.frame').count(), 35);
     assert.equal(await page.locator('.katex-error').count(), 0, 'all lesson math renders');
     const initialTemperature=await page.locator('#s06-candidates [aria-label="Inference temperature"]').inputValue();
     close(Number(initialTemperature),C.classify().tau,'widget starts at exact learned temperature');
@@ -177,7 +186,7 @@ if (browserFlag >= 0) {
       await fit('candidate controls ' + [template, candidates, tau].join('/'));
       assert.match(await page.locator('#s06-candidates').innerText(),/Inference temperature changed from the learned/);
     }
-    await page.evaluate(() => AT.present.go('s05', 3, 0));
+    await page.evaluate(() => AT.present.go('s05', 6, 0));
     for (const n of [0, 1, 20, 200]) {
       await page.evaluate(n => {
         const buttons = [...document.querySelectorAll('#s05-widget button')]; buttons.find(b => b.textContent === 'Reset').click();
@@ -186,12 +195,30 @@ if (browserFlag >= 0) {
       }, n);
       await fit('training controls step ' + n);
     }
+    await page.evaluate(() => AT.present.go('s05', 4, 0));
+    for (const n of [0, 1, 20, 60]) {
+      await page.locator('#s05-geometry-widget button', { hasText: new RegExp('^' + n + ' steps?$') }).click();
+      await fit('geometry checkpoint ' + n);
+      assert.equal(await page.locator('#s05-geometry-widget button[aria-pressed="true"]').textContent(), n + (n === 1 ? ' step' : ' steps'));
+      const f = C.forward(C.checkpoint(n));
+      const drawn = await page.locator('#s05-geometry-widget [data-vector]').evaluateAll(nodes => nodes.map(el => ({ row: JSON.parse(el.dataset.vector), projection: JSON.parse(el.dataset.projected), path: el.getAttribute('d') })));
+      assert.equal(drawn.length, 6, 'replace the graph on checkpoint change');
+      drawn.forEach((v, i) => {
+        const row = f.imageUnit.concat(f.textUnit)[i], screen = C.projectDirection(row);
+        close(v.row, row, 'display actual checkpoint vector'); close(v.projection, screen, 'same camera at every checkpoint');
+        const numbers = v.path.match(/-?\d+(?:\.\d+)?(?:e[+-]?\d+)?/g).map(Number);
+        close(numbers, [228, 188, 228 + 127 * screen[0], 188 + 127 * screen[1]], 'fixed plot scale and origin');
+      });
+    }
+    const bars = await page.locator('#s03-temperature [data-probability]').evaluateAll(nodes => nodes.map(el => ({ tau: Number(el.dataset.temperature), j: Number(el.dataset.candidate), probability: Number(el.dataset.probability), height: Number(el.getAttribute('height')) })));
+    assert.equal(bars.length, 6);
+    bars.forEach(bar => { const p = C.classify({ snapshot: 'initial', tau: bar.tau }).probabilities[bar.j]; close(bar.probability, p, 'temperature bar probability'); close(bar.height, 145 * p, 'shared probability axis'); });
     await page.evaluate(() => AT.present.exit());
     await page.setViewportSize({ width: 390, height: 844 });
     await page.waitForTimeout(100);
     const phone = await page.evaluate(() => ({ viewport: innerWidth, page: document.documentElement.scrollWidth, errors: document.querySelectorAll('.katex-error').length }));
     assert.ok(phone.page <= phone.viewport + 1, 'phone article must not overflow the page: ' + JSON.stringify(phone));
     assert.deepEqual(errors, []);
-    console.log('PASS: offline assembled browser, SVG label bounds, math, 12 candidate-control layouts, 4 training-control layouts, and 390px phone article width.');
+    console.log('PASS: offline assembled browser, SVG label bounds, math, 12 candidate-control layouts, 4 training-control layouts, 4 fixed-camera geometry states, temperature bars, and 390px phone article width.');
   } finally { await b.close(); }
 }

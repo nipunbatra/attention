@@ -7,11 +7,29 @@
 .clip-pair h3{margin:0 0 16px;font-size:1.12em}.clip-pair p{margin:10px 0}.clip-flow{font-size:1.2em;text-align:center;margin:22px 0}
 .clip-number{text-align:center;font-size:1.6em;font-weight:600;margin:22px 0;color:var(--c-d)}
 .clip-phone-table{display:none}
+.clip-plot-pair,.clip-geometry{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:24px;margin:16px 0}
+.clip-geometry{grid-template-columns:.8fr 1.2fr}.clip-geometry-legend{display:grid;gap:18px}
+.clip-geometry-row{display:grid;grid-template-columns:88px minmax(0,1fr);gap:16px;align-items:center}
+.clip-geometry-row p{margin:0 0 8px;font-family:var(--font-ui)}.clip-geometry-row p:first-child{font-weight:600}
+.clip-pair-score{color:var(--ink-2);font-variant-numeric:tabular-nums;font-size:.9em}
+.clip-checkpoint-status{font-size:.9em}.clip-controls button[aria-pressed="true"]{border-color:var(--c-e);background:var(--t-e)}
+@media(max-width:600px){body:not(.present) .clip-plot-pair,body:not(.present) .clip-geometry{grid-template-columns:1fr}body:not(.present) .clip-geometry-row{grid-template-columns:76px minmax(0,1fr)}}
 @media(max-width:600px){body:not(.present) .clip-table .dt-scroll{display:none}body:not(.present) .clip-phone-table{display:grid;gap:12px}body:not(.present) .clip-phone-table h4{margin:0;font-size:1em}body:not(.present) .clip-phone-row{border:1px solid var(--line);border-radius:7px;background:var(--card);padding:12px}body:not(.present) .clip-phone-row dl{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 14px;margin:10px 0 0}body:not(.present) .clip-phone-row dt{color:var(--muted)}body:not(.present) .clip-phone-row dd{margin:0;font-family:var(--font-mono);font-variant-numeric:tabular-nums;text-align:right}}
 @media(max-width:700px){body:not(.present) .clip-pair{grid-template-columns:1fr}.clip-controls{align-items:stretch}}
 </style>
 <header class="sec-head"><span class="sec-num">01</span><div><p class="eyebrow">The image encoder now has language as a training partner.</p><h2>A caption can supply supervision</h2></div></header>
 <div class="companion" data-kicker="For self-study"><p>The earlier parts built image representations from patches and from relationships between images. CLIP connects those representations to text. Its training example is an image together with the caption that accompanied it. The learning problem is to recognize those pairings among other images and captions in the batch.</p><p>Radford and colleagues trained CLIP on 400 million internet image-text pairs and evaluated transfer without training a new classifier on each target dataset. We will use three tiny pairs to inspect the objective. <a href="https://arxiv.org/abs/2103.00020">The original CLIP paper</a> describes the full models and experiments.</p></div>
+<div class="frame" data-title="What if the label we want is not an output?" data-autobuild="off">
+  <p>Suppose our image classifier was trained to choose <strong>mug</strong>, <strong>book</strong>, or <strong>plant</strong>.</p>
+  <div class="clip-pair" data-build="1">
+    <div><h3>A fixed class head</h3><p>One learned output row per class.</p><p>There is no output for <em>two mugs</em> or <em>a blue book</em>.</p></div>
+    <div><h3>Use descriptions as candidates</h3><p>Encode each description into a vector.</p><p>Compare the image with <em>one mug</em>, <em>two mugs</em>, or <em>a blue book</em>.</p></div>
+  </div>
+  <p class="callout callout-key" data-build="2">We need to learn how image vectors and text vectors should match. Captions give us training pairs.</p>
+  <script type="text/x-notes">This is a limitation of the chosen fixed output head, not proof that its internal image representation lacks colour or count information.
+
+Changing candidate descriptions does not guarantee correct answers. A pretrained CLIP model can score text it can encode; our tiny example is limited to its disclosed word vocabulary.</script>
+</div>
 <div class="frame" data-title="One scene can support several captions" data-autobuild="off">
   <div id="s01-scene"></div>
   <p data-build="1">"Two mugs on a table" and "a blue book in front of the mugs" both fit. Neither caption needs to describe everything.</p>

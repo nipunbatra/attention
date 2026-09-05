@@ -4,7 +4,7 @@
   "title": "CLIP: learn to match images and text",
   "subtitle": "Follow three image-caption pairs through two encoders, a matching matrix, a contrastive loss, and a real update. Then keep the encoders fixed and change the candidate descriptions.",
   "audience": "Deep-learning students who have studied image encoders and contrastive learning",
-  "minutes": 40,
+  "minutes": 50,
   "centralLabel": "One score for an image and a candidate description",
   "central": "S_{ij}=\\frac{\\hat g_i^{\\mathrm{img}}(\\hat g_j^{\\mathrm{txt}})^\\top}{\\tau}",
   "chain": [

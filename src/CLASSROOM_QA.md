@@ -1,5 +1,14 @@
 # Classroom release checks
 
+## 2026-09-05: CLIP geometry and temperature checkpoint
+
+Seven short frames connect a fixed classifier's output menu to candidate descriptions, show normalization geometrically, plot the actual six unit vectors, follow their training updates, and separate directional learning from temperature. The first pair has zero third coordinates and uses an exact 2D slice; subsequent plots use a fixed orthographic view of all three coordinates. Numbered image thumbnails stay attached to captions and paired cosines. The 0/1/20/60-step control opens at step 60, while earlier authored frames preserve steps 0 and 1 for static readers and PDF export.
+
+- All 1,160 reference/invariant comparisons and 246 finite-difference gradients pass. The independent NumPy training reproduction is unchanged. New tests verify checkpoint values, the fixed projection/scale/origin, actual plotted vectors, probability bar heights, and a fixed-temperature comparison using the trained encoders.
+- All 35 frames / 101 progressive states fit without an internal scrollbar or overflow; 65 formulas strictly parse. Browser tests pass 12 candidate-control layouts, four training-control layouts, and four geometry-control states. All 27 table views pass reading, phone, and presentation checks. Eight isolated builds pass metadata checks.
+- New normalization, geometry, temperature, and comparison-table slides were visually inspected, along with the 390px phone geometry layout. The 35-page temporary PDF exports at 16:9 with its reveal answer shown; its normalization and trained-vector pages were rendered with Poppler and inspected. PDF text remains rasterized. This is a targeted visual review, not an exhaustive inspection of every PDF page.
+- No model weights, saved training data, shared presentation CSS, or production dependencies changed. Provenance and limitations remain in article/speaker notes and asset credits; the classroom does not repeat a production caption under every scene.
+
 ## 2026-09-05: classroom caption cleanup
 
 Removed the repeated production caption from the shared scene figure in all four vision lessons. Asset provenance remains in `figures/vision-scene/README.md` and the article scope/speaker notes. Human judgments and generated illustrations are still distinguished from calculated model outputs. All 17 scene frames pass offline asset decoding, crop geometry, SVG text bounds, and phone containment checks. No model parameters, numerical examples, or presentation styles changed.

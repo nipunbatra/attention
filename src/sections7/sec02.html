@@ -21,6 +21,13 @@ g_txt = counts @ W_txt          # [3, 3]</code></pre>
 
 It can receive a gradient and change. Do not assign a semantic meaning to any of the three learned coordinates.</script>
 </div>
+<div class="frame" data-title="Compare directions, not arrow lengths" data-autobuild="off">
+  <div id="s02-normalization-geometry"></div>
+  <p data-build="2">Blue: image. Purple: caption. Both lengths become one; their $26.6^\circ$ angle is unchanged. Their third coordinates are zero, so this pair lies in a plane.</p>
+  <script type="text/x-notes">The dashed arc has radius one. Both panels use the same coordinate scale. Making either arrow longer would not make the directions match any better.
+
+First point to the unchanged directions, then ask what division by each vector's own length does. The displayed angle is rounded from atan(1/2). Later vectors have nonzero third coordinates and require a 3D view.</script>
+</div>
 <div class="frame" data-title="Normalize length; keep direction" data-autobuild="off">
   <p class="clip-flow">$\ve{\hat g_1^{\mathrm{img}}}=\dfrac{\ve{(2,1,0)}}{\sqrt{2^2+1^2}}\approx\ve{(0.894,0.447,0)}$</p>
   <p class="clip-flow" data-build="1">$\vq{\hat g_1^{\mathrm{txt}}}=\dfrac{\vq{(2,0,0)}}{2}=\vq{(1,0,0)}$</p>
@@ -38,6 +45,14 @@ Normalization prevents the encoder from increasing a cosine score just by making
 
 We want their paired directions to become useful for matching. The next slide performs one of the dot products by hand.</script>
 </div>
+<div class="frame" data-title="Six directions, three observed pairs" data-autobuild="off">
+  <div id="s02-directions"></div>
+  <p data-build="1">Blue circles: images $I_i$. Purple diamonds: captions $T_i$. This is a fixed view of 3D; use all three coordinates to compute the cosines.</p>
+  <script type="text/x-notes">Each numbered image remains attached to its actual caption and its computed paired cosine.
+
+The wireframe shows the three coordinate-plane circles of the unit sphere. Dotted lines lead to labels; they are not extra vectors. Screen angles are foreshortened. The paired directions start close, but some competing captions are close too. The axes have no assigned semantic meanings. We will reuse this exact camera and scale after training.</script>
+</div>
 <div class="companion after"><h3>The complete starting maps</h3><div id="s02-all-image"></div><div id="s02-all-text"></div><p>The encoders output a whole-image or whole-caption vector. A real model has many internal token embeddings and attention values before this global output. Shared output width does not imply that the two encoder architectures, internal widths, or parameters are the same.</p></div>
 <script>(function(){const S=document.getElementById('s02'),C=AT.clip,p=C.params(),f=C.forward();const host=id=>S.querySelector(id);C.table(host('#s02-pixel-weights'),[p.W_img[0],p.W_img[2],p.W_img[6]],{cols:['coordinate 1','coordinate 2','coordinate 3'],rowLabels:['pixel 1','pixel 3','pixel 7'],cornerLabel:'Initial W_img rows'});C.table(host('#s02-word-rows'),p.W_txt.slice(0,3),{cols:['coordinate 1','coordinate 2','coordinate 3'],rowLabels:['two','bright','squares'],cornerLabel:'Initial W_txt rows'});C.table(host('#s02-units'),f.imageUnit.concat(f.textUnit),{cols:['coordinate 1','coordinate 2','coordinate 3'],rowLabels:['image 1 · squares','image 2 · stripes','image 3 · dot','text 1 · squares','text 2 · stripes','text 3 · dot'],cornerLabel:'Unit vector'});C.table(host('#s02-all-image'),p.W_img,{cols:['1','2','3'],rowLabels:Array.from({length:16},(_,i)=>'pixel '+(i+1)),cornerLabel:'W_img · 16×3'});C.table(host('#s02-all-text'),p.W_txt,{cols:['1','2','3'],rowLabels:C.data.vocab,cornerLabel:'W_txt · 11×3'});})();</script>
 </section>
+<script>(function(){const S=document.getElementById('s02');AT.clip.diagram(S.querySelector('#s02-normalization-geometry'),'normalization-geometry');AT.clip.diagram(S.querySelector('#s02-directions'),'directions');})();</script>

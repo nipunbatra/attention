@@ -37,6 +37,15 @@ Initially a=log(2). We do not claim that tau=.5 is CLIP's pretrained temperature
 
 The code keeps full precision. The probability .603 is conditional on this candidate set; it is not a statement that the caption is true with .603 probability among all possible descriptions.</script>
 </div>
+<div class="frame" data-title="Same vectors, different probabilities" data-autobuild="off">
+  <p>Same two-square image and caption vectors. Change only the temperature $\tau$.</p>
+  <div id="s03-temperature"></div>
+  <p data-build="2">Smaller $\tau$: more probability on the highest score. No vector moves, and the winning caption stays the same.</p>
+  <script type="text/x-notes">Both charts use the same zero-to-one probability axis and the initial encoder weights. The cosine labels under the bars are unchanged.
+
+Ask students to predict which bars will grow before revealing the second chart. This is not another training step. Later, the candidate widget lets students vary temperature continuously.</script>
+</div>
 <div class="companion after"><h3>What changing temperature can and cannot do</h3><p>For fixed vectors and a fixed candidate set, a positive temperature changes the sharpness of softmax but not the highest-scoring candidate. The ratio of two candidate probabilities is $\exp((C_a-C_b)/\tau)$. A cosine gap of $0.05$ at $\tau=0.01$ therefore gives a ratio of $e^5\approx148.4$, not a five-fold ratio.</p><p>The <a href="https://github.com/openai/CLIP/blob/main/clip/model.py">released CLIP implementation</a> stores a learned <code>logit_scale</code> and exponentiates it. Its initialization is $\log(1/0.07)$; $0.07$ is the corresponding initial temperature. It is not a universal fixed temperature for every model or use case.</p></div>
 <script>(function(){const S=document.getElementById('s03'),C=AT.clip,f=C.forward(),row=f.logits[0],ex=row.map(Math.exp),z=ex.reduce((a,b)=>a+b,0);C.diagram(S.querySelector('#s03-cosine'),'cosine');C.diagram(S.querySelector('#s03-logits'),'logits');C.table(S.querySelector('#s03-row-work'),row.map((score,j)=>[score,ex[j],f.rowProb[0][j]]),{cols:['logit S₁ⱼ','exp(S₁ⱼ)','exp(S₁ⱼ) / total'],rowLabels:['T1 · squares','T2 · stripes','T3 · dot'],cornerLabel:'Image 1 candidates'});AT.tex(S.querySelector('#s03-denominator'),'Z_1=\\sum_j e^{S_{1j}}\\approx'+z.toFixed(3));AT.tex(S.querySelector('#s03-p11'),'p(T_1\\mid I_1,\\mathcal B)\\approx '+ex[0].toFixed(3)+'/'+z.toFixed(3)+'\\approx'+f.rowProb[0][0].toFixed(3));})();</script>
 </section>
+<script>(function(){AT.clip.diagram(document.getElementById('s03-temperature'),'temperature');})();</script>
