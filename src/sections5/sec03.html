@@ -1,52 +1,185 @@
-<section id="s03" class="sec" data-title="Keep the layout; make room for an image answer" data-lit="e">
-<header class="sec-head"><span class="sec-num">03</span><div><p class="eyebrow">The patch contents are ready. What else does the model need?</p><h2>Keep the layout; make room for an image answer</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>Two pieces remain before attention. We add a position vector so that a row contains information about its location as well as its pixels. We also introduce an extra receiving row, CLS, because our output is one label for the whole image. Position and CLS are learned parameters; they are not extra pixels or supplied answers.</p></div>
-<div class="frame" data-title="Same patch contents. A different arrangement." data-autobuild="off">
-  <div class="vision1-story" id="s03-arrange"></div>
-  <p>Which side has the brightest block? Counting can ignore layout; this question cannot. <strong>Position additions preserve the distinction.</strong></p>
-  <script type="text/x-notes">This is a short location question, not a new classification target.
+<section id="s03" class="sec" data-title="Every patch becomes a row with named axes" data-lit="e">
+<style>
+#s03 .s03-one{display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+#s03 .s03-big{display:flex;align-items:center;gap:14px}
+#s03 .s03-big .vthumb{margin:0}
+#s03 .s03-big span{font-size:15px;color:var(--ink-2)}
+#s03 .rd{margin:10px 0 0;font-size:15px;color:var(--ink-2);max-width:72ch;line-height:1.5}
+#s03 .s03-pair{display:grid;grid-template-columns:repeat(2,minmax(0,max-content));justify-content:start;gap:8px 32px;align-items:start}
+#s03 .s03-pair>*{min-width:0;max-width:100%}
+#s03 .s03-rvec{overflow-x:auto;max-width:100%}
+#s03 .s03-pair .dt-fig{margin:6px 0 0}
+#s03 .s03-plane{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:12px 28px;align-items:center}
+@media(max-width:760px){#s03 .s03-plane,#s03 .s03-pair{grid-template-columns:minmax(0,1fr)}}
+body.present #s03 .rd,body.present #s03 .s03-big span{font-size:23px;line-height:1.35}
+body.present #s03 .dt-cap,body.present #s03 .dt-note{display:none}
+body.present #s03 .dt td,body.present #s03 .dt th{padding:.16em .45em}
+body.present #s03 .s03-pair{gap:0 40px}
+body.present #s03 .s03-pair .dt td.dt-num{font-size:21px;padding:.12em .4em}
+body.present #s03 .s03-pair .dt tbody th{font-size:19px;padding:.12em .4em}
+body.present #s03 .s03-pair .dt thead th{font-size:20px;padding:.14em .4em}
+body.present #s03 .calc-rounding{display:none}
+body.present #s03 .s03-rows .dt td,body.present #s03 .s03-rows .dt th{padding:.05em .45em;line-height:1.2}
+body.present #s03 .s03-rows .dt td.dt-num{font-size:20px}
+body.present #s03 .s03-rows .dt tbody th{font-size:19px}
+body.present #s03 .s03-rows .card{padding:14px 26px}
+body.present #s03 .s03-plane .vfig figcaption{font-size:20px}
+</style>
+<header class="sec-head">
+  <span class="sec-num">03</span>
+  <div>
+    <p class="eyebrow">A word became a row by lookup. A patch becomes a row by projection, and we can name what the row measures.</p>
+    <h2>Every patch becomes a row with named axes</h2>
+  </div>
+</header>
 
-Without positional information, permuting the patch rows permutes their outputs and leaves the global CLS result unchanged. Keep that formal fact in the article companion.</script>
+<div class="companion" data-kicker="For self-study">
+  <p>In Part 2 a token's row came from a table: the token ID picked a stored row. A patch has no ID, only four pixel values, and its row is a linear combination of them, $r_j W_{\text{patch}}$. We chose $W_{\text{patch}}$ by hand so that the first two output coordinates have honest names: brightness is the mean of the four pixels, contrast is the left column minus the right. The last two coordinates, row and col, stay zero here; the next section fills them with position. Work one patch by hand, then look at all sixteen rows as points in the brightness and contrast plane: the plane already separates mugs, book, plant and table.</p>
 </div>
-<div class="frame" data-title="Add a position vector; do not append a coordinate" data-autobuild="off">
-  <div class="vision1-story" id="s03-position"></div>
-  <p class="vision1-equation">$e_j=e_j^{\mathrm{patch}}+p_j\qquad(1\times2)+(1\times2)=(1\times2)$</p>
-  <p data-build="1">The two blank patches have the same pixels. Their <strong>different position additions</strong> let later computations distinguish their slots.</p>
-  <script type="text/x-notes">Do not call either coordinate the position dimension.
 
-A learned position vector has the full representation width, and its coordinates need not be literal row/column coordinates. Numbers are hand-chosen for this starting snapshot.</script>
+<div class="frame" data-title="Four pixels become one row" data-autobuild="off">
+  <script type="text/x-notes">Start from the pixels of patch 5: 0, 3 on top, 0, 3 below.
+The row we make from them has four coordinates, and only the first two depend on the pixels. Say the two names now, brightness and contrast, and keep using them for every table on this page.</script>
+  <div class="card">
+    <div class="s03-one">
+      <div class="s03-big" id="s03-big"></div>
+      <div id="s03-rvec" class="s03-rvec"></div>
+    </div>
+  </div>
+  <div class="prose" data-build="1">
+    <p>The row of patch $j$ is a projection of its pixels plus a position row, which section 4 adds:</p>
+    $$\underbrace{\ve{e_j}}_{1\times4} = \underbrace{r_j}_{1\times4}\,\underbrace{W_{\text{patch}}}_{4\times4} + \underbrace{p_j}_{1\times4}$$
+  </div>
+  <div class="callout callout-key" data-build="2">This is the image version of the token lookup. The numbers come from the pixels, not from an ID, so two patches with the same pixels get the same row.</div>
 </div>
-<div class="frame" data-title="Four patch rows—but which row should answer?" data-autobuild="off">
-  <div class="vision1-story" id="s03-collect-question"></div>
-  <p>Text used the last known word’s row. An image has no natural last token to represent the scene.</p>
-  <p data-build="1">Averaging the final patch rows is one option. We will use a <strong>separate collection row</strong>.</p>
-  <script type="text/x-notes">CLS is one readout design, not a mathematical requirement of self-attention.
 
-Motivate a global receiving slot before asking students to remember its name.</script>
+<div class="frame" data-title="The projection, read aloud" data-autobuild="off">
+  <script type="text/x-notes">Read one column at a time: which pixels feed brightness, and with what weight?
+A column is one output axis. Brightness weights every pixel by a quarter. Contrast weights the left column plus and the right column minus. Row and col take nothing from the pixels. We chose these numbers so the names are true; a trained ViT learns its projection and its coordinates have no such names.</script>
+  <div class="card">
+    <h3 class="card-title">$W_{\text{patch}}$: a pixel (row) feeds an axis of $\ve{e}$ (column)</h3>
+    <div id="s03-wpatch"></div>
+    <p class="rd" id="s03-wread" data-build="1"></p>
+  </div>
 </div>
-<div class="frame" data-title="CLS is a learned starting row, not the class label" data-autobuild="off">
-  <div class="vision1-story" id="s03-collect"></div>
-  <p>$e_0=c+p_0=(1,1)+(0,0)$. Both images start with this <strong>same CLS row</strong>; reading their patches can give different updated rows.</p>
-  <script type="text/x-notes">CLS is pronounced class token but is not the correct answer.
 
-It is a learned parameter copied into each image's computation. An attention update changes that image's representation; an optimizer update changes the stored parameter.</script>
+<div class="frame" data-title="One patch, worked" data-autobuild="off">
+  <script type="text/x-notes">One line per output axis: each pixel times the weight below it, added up.
+Pick a mug edge and a mug centre and compare: the centre has brightness 3 and contrast 0, the edge has half the brightness and a large contrast whose sign says which half is bright. Greyed terms have a zero weight.</script>
+  <div class="card">
+    <div id="s03-pick"></div>
+    <div id="s03-calc"></div>
+    <p class="rd" id="s03-cread" data-build="1"></p>
+  </div>
 </div>
-<div class="frame" data-title="Now name every input row before attention" data-autobuild="off">
-  <div id="s03-inputs"></div>
-  <p>From here, $e_j$ means the <strong>current row, including its position addition</strong>. Row 0 is CLS; rows 1–4 are the four patches.</p>
-  <pre class="torch-snippet" data-build="1"><code>E = torch.cat([cls[None, :], patch_embeddings], dim=0)
-E = E + positions               # [5, 2]</code></pre>
-  <script type="text/x-notes">Read the labels together with the matrix.
 
-E is a stack, not a new kind of embedding. Keep the index convention CLS0/patch 1–4 visible; the classifier will read updated row 0 later.</script>
+<div class="frame" data-title="The content rows of patches 1 to 8" data-autobuild="off">
+  <script type="text/x-notes">Every row is the same projection applied to different pixels.
+Point at two rows with equal numbers, patches 2 and 4: same pixels, same row. The row and col columns are all zero; that is the gap the next section fills.</script>
+  <div class="card s03-rows">
+    <h3 class="card-title">$r_j W_{\text{patch}}$ for scene A, patches 1 to 8, on the named axes</h3>
+    <div id="s03-rows1"></div>
+    <p class="rd" id="s03-rread1" data-build="1"></p>
+  </div>
 </div>
-<div class="frame" data-title="What should change when the image changes?" data-autobuild="off">
-  <div id="s03-check"></div>
-  <p class="callout callout-key" data-build="1">The starting CLS parameter is shared. The patch rows supply the image-specific information that CLS will read.</p>
-  <script type="text/x-notes">Ask before opening.
 
-Removing the top-left block changes raw patch 1 and its embedding; it does not select a new CLS vector or different shared projection weights.</script>
+<div class="frame" data-title="The content rows of patches 9 to 16" data-autobuild="off">
+  <script type="text/x-notes">The bottom half of the scene: book, plant and bare table.
+The bare table is the zero row. Four book edges share one row; the plane on the next frame shows the same thing as a picture.</script>
+  <div class="card s03-rows">
+    <h3 class="card-title">$r_j W_{\text{patch}}$ for scene A, patches 9 to 16</h3>
+    <div id="s03-rows2"></div>
+    <p class="rd" id="s03-rread2" data-build="1"></p>
+  </div>
 </div>
-<div class="companion after"><h3>A check on why positions matter</h3><p>Without position additions, permuting the four patch rows leaves the CLS output unchanged in this model. The patch outputs permute in the same way as the inputs. This is permutation equivariance, together with an invariant CLS readout. Adding different slot vectors lets the computation depend on which patch occupies which slot. The original ViT learns a full-width position vector for each slot; it does not append a special scalar “position dimension.”</p></div>
-<script>(function(){const S=document.getElementById('s03'),T=AT.vision,F=T.forward();T.story(S.querySelector('#s03-arrange'),{stage:'arrangements'});T.story(S.querySelector('#s03-position'),{stage:'positions'});T.story(S.querySelector('#s03-collect-question'),{stage:'cls',step:0});T.story(S.querySelector('#s03-collect'),{stage:'cls',step:1});AT.ui.table(F.E,{into:S.querySelector('#s03-inputs'),rowLabels:T.labels,cols:['coordinate 1','coordinate 2'],cornerLabel:'E · five input rows',rowCls:'e',decimals:0});AT.ui.reveal('Remove the top-left block. Does the starting CLS row change?','No. Patch 1 changes from $(2,2)$ to $(0,0)$ before its position addition. The shared CLS starting row remains $(1,1)$. Attention will bring the changed patch information to it.',{into:S.querySelector('#s03-check')});})();</script>
+
+<div class="frame" data-title="The patch plane" data-autobuild="off">
+  <script type="text/x-notes">Two coordinates, so we can draw them. Each marker is a patch; markers on the same spot share a label.
+Mug centres sit at the top right of the brightness axis with zero contrast. Edges have half the brightness and a contrast of plus or minus three. The bare table sits at the origin. No learning has happened yet; this structure comes from the pixels and our two names.</script>
+  <div class="card">
+    <h3 class="card-title">Sixteen patches as points on the brightness and contrast axes</h3>
+    <div class="s03-plane">
+      <div id="s03-scatter"></div>
+      <p class="rd" id="s03-pread" data-build="1"></p>
+    </div>
+  </div>
+</div>
+
+<div class="companion after">
+  <p>Each patch is now a row on named axes, and the sixteen rows already sort the scene into mugs, book, plant and table. Two of the four coordinates are still empty. They are for position, and position is what the question is about.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s03');
+  const V = AT.vision;
+  const g = 'A';
+  const R = V.patchify(g);
+  const content = R.map(r => AT.matmul(r, V.W_patch));
+  const ax = V.axes.e, sh = V.axes.short.e;
+  const px = V.pixelAxes;
+  let j = 4;   /* patch 5, a left mug edge */
+  const joinAnd = (xs) => xs.length <= 1 ? xs.join('') : xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1];
+
+  /* frame 1: the pixels of patch 5 as a row */
+  const big = S.querySelector('#s03-big');
+  big.appendChild(V.thumb(g, j, { size: 64 }));
+  big.appendChild(AT.h('span', {}, V.patchLabel(g, j) + ': pixels ' + R[j].join(', ') + ', read top-left, top-right, bottom-left, bottom-right'));
+  AT.ui.vec(R[j], { cls: 'neutral', axes: px, label: 'r_{' + (j + 1) + '}', decimals: 0, dims: true, into: S.querySelector('#s03-rvec') });
+
+  /* frame 2: W_patch as a readable weight table */
+  const wt = AT.ui.wTable(V.W_patch, { from: px, to: 'e', cls: 'e', decimals: 2, cornerLabel: 'pixel → axis', into: S.querySelector('#s03-wpatch'),
+    caption: 'Rows are the four pixels of a patch; columns are the axes of $\\ve{e}$. Zero cells are greyed. These weights are fixed by hand so that the column names are true.' });
+  (function(){
+    const lines = ax.map((name, c) => {
+      const terms = V.W_patch.map((row, r) => ({ w: row[c], p: px[r] })).filter(t => t.w !== 0);
+      if (!terms.length) return sh[c] + ' takes nothing from the pixels (position fills it in section 4)';
+      const same = terms.every(t => t.w === terms[0].w);
+      const list = same ? AT.fmt(terms[0].w, 2) + ' × each of the four pixels' : terms.map(t => AT.fmtSigned(t.w, 2) + ' × ' + t.p).join(' ');
+      return sh[c] + ' = ' + list + ', which is ' + name;
+    });
+    S.querySelector('#s03-wread').textContent = 'Reading the columns: ' + lines.join('; ') + '.';
+  })();
+
+  /* frame 3: the worked projection for one patch */
+  const calcHost = S.querySelector('#s03-calc'), cread = S.querySelector('#s03-cread');
+  let calc = null;
+  function readContent(v, jj){
+    const b = v[0], k = v[1];
+    const side = k > 0 ? 'the left column is brighter than the right' : k < 0 ? 'the right column is brighter than the left' : 'both columns are equally bright';
+    return 'Reading the row of ' + V.patchLabel(g, jj) + ': ' + sh[0] + ' ' + AT.fmt(b, 2) + ' out of a possible 3, ' + sh[1] + ' ' + AT.fmt(k, 2) + ', so ' + side + '; ' + sh[2] + ' and ' + sh[3] + ' are still 0.';
+  }
+  function drawCalc(){
+    const lab = 'patch ' + (j + 1);
+    if (!calc) calc = AT.ui.matVecCalc(R[j], V.W_patch, { from: px, to: 'e', cls: 'e', fromCls: 'neutral', xLabel: 'r · ' + lab, outLabel: 'r W_patch · ' + lab, decimals: 2, wDecimals: 2, into: calcHost });
+    else calc.update(R[j], { xLabel: 'r · ' + lab, outLabel: 'r W_patch · ' + lab });
+    cread.textContent = readContent(content[j], j);
+  }
+  const pick = V.picker(g, { cls: false, active: j + 1, label: 'Patch', into: S.querySelector('#s03-pick'), onClick: (i) => { j = i - 1; drawCalc(); } });
+  drawCalc();
+
+  /* frames 4 and 5: all sixteen content rows, eight per frame, with the shared rows read off */
+  [[0, 8, '#s03-rows1', '#s03-rread1'], [8, 16, '#s03-rows2', '#s03-rread2']].forEach(([a, b, host, readId]) => {
+    AT.ui.table(content.slice(a, b), { axes: 'e', rowLabels: AT.range(b - a).map(k => V.rowLabel(g, a + k)), rowCls: 'e', cornerLabel: 'patch', decimals: 2, into: S.querySelector(host),
+      caption: a === 0 ? 'Equal pixels give equal rows.' : 'The bare table is the zero row.' });
+    const grp = {};
+    for (let jj = a; jj < b; jj++) { const key = AT.fmt(content[jj][0], 2) + '|' + AT.fmt(content[jj][1], 2); (grp[key] = grp[key] || []).push(jj + 1); }
+    const shared = Object.keys(grp).filter(k => grp[k].length > 1).map(k => 'patches ' + joinAnd(grp[k].map(String)) + ' share (' + k.replace('|', ', ') + ')');
+    S.querySelector(readId).textContent = 'Reading the rows: ' + (shared.length ? shared.join('; ') : 'no two rows are equal') + '. Every row is (' + sh[0] + ', ' + sh[1] + ', 0, 0): the last two axes wait for position.';
+  });
+
+  /* frame 5: the patch plane, one marker per distinct point */
+  const groups = {};
+  content.forEach((v, jj) => { const key = AT.fmt(v[0], 2) + '|' + AT.fmt(v[1], 2); (groups[key] = groups[key] || { x: v[0], y: v[1], js: [] }).js.push(jj); });
+  const pts = Object.keys(groups).map(k => { const gr = groups[k]; return { x: gr.x, y: gr.y, thumb: { scene: g, j: gr.js[0] }, label: gr.js.length > 2 ? (gr.js[0] + 1) + '…' + (gr.js[gr.js.length - 1] + 1) : gr.js.map(x => x + 1).join(',') }; });
+  V.scatter(pts, { axes: [ax[0], sh[1] + ' (left minus right)'], width: 460, height: 320, into: S.querySelector('#s03-scatter'), caption: 'Each marker is one patch; the numbers name the patches on that spot (10…15 means 10, 11, 14, 15).' });
+  (function(){
+    const fam = (jj) => { const r = V.regionOf(g, jj); return r.indexOf('mug') >= 0 ? r.replace(/^(left|right) /, '') : r; };
+    const byFam = {};
+    content.forEach((v, jj) => { const f = fam(jj); (byFam[f] = byFam[f] || []).push(sh[0] + ' ' + AT.fmt(v[0], 2) + ', ' + sh[1] + ' ' + AT.fmt(v[1], 2)); });
+    const parts = Object.keys(byFam).map(f => { const uniq = [...new Set(byFam[f])]; return f + (byFam[f].length > 1 ? 's' : '') + ' at ' + joinAnd(uniq); });
+    S.querySelector('#s03-pread').textContent = 'Reading the plane: ' + parts.join('; ') + '. Patches with the same pixels share one point, so the sixteen rows make only ' + pts.length + ' distinct points.';
+  })();
+})();
+</script>
 </section>

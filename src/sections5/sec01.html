@@ -1,71 +1,152 @@
-<section id="s01" class="sec" data-title="What should this image classifier answer?" data-lit="e">
+<section id="s01" class="sec" data-title="Why patches?" data-lit="">
 <style>
-.vision1-pair{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
-.vision1-controls{display:flex;gap:22px;align-items:center;flex-wrap:wrap;margin:12px 0}
-.vision1-controls select,.sec select{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);padding:7px 10px;border-radius:6px}
-.vision1-equation{font-size:1.15em;margin:20px 0;text-align:center}
-.vision1-story{margin:14px 0}.vision1-story svg{display:block;width:100%;height:auto;overflow:visible}
-.vision1-caption{color:var(--ink-2);margin:12px 0;line-height:1.5}
-.vision1-list{display:grid;grid-template-columns:1fr 1fr;gap:14px 36px}.vision1-list p{margin:8px 0}
-body.present .vision1-caption{font-size:24px;line-height:1.4}
-body.present .sec .calc-rounding{display:none}
-@media(max-width:760px){body:not(.present) .vision1-pair,body:not(.present) .vision1-list{grid-template-columns:1fr}}
+#s01 .s01-lay{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:16px 32px;align-items:center}
+#s01 .s01-sq svg{display:block;width:100%;max-width:280px;height:auto;margin:0 auto}
+#s01 .s01-stats{display:grid;grid-template-columns:repeat(3,auto);justify-content:start;gap:12px 32px;margin:14px 0 0}
+#s01 .s01-num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:1.5em;margin:0;line-height:1.15;color:var(--ink)}
+#s01 .s01-num small{display:block;font-family:var(--font-ui);font-size:13px;color:var(--ink-3);margin-top:3px;font-weight:600}
+#s01 .s01-read{font-size:15px;color:var(--ink-2);margin:12px 0 0;line-height:1.5}
+#s01 .s01-scope p{margin:0 0 8px}
+#s01 .s01-scope ul{margin:6px 0 0;padding-left:20px}
+#s01 .s01-scope li{margin:4px 0}
+#s01 .s01-swap .dt td.dt-text{max-width:24em;line-height:1.35}
+@media(max-width:700px){#s01 .s01-lay{grid-template-columns:1fr}#s01 .s01-stats{grid-template-columns:1fr 1fr}}
+body.present #s01 .s01-lay{grid-template-columns:300px minmax(0,1fr);gap:0 48px}
+body.present #s01 .s01-num{font-size:46px}
+body.present #s01 .s01-num small{font-size:20px}
+body.present #s01 .s01-read{font-size:24px;line-height:1.35}
+body.present #s01 .s01-stats{gap:14px 40px}
+body.present #s01 .dt td.dt-text{font-size:20px;max-width:18em;line-height:1.25}
+body.present #s01 .dt td,body.present #s01 .dt th{padding:.16em .5em}
 </style>
-<header class="sec-head"><span class="sec-num">01</span><div><p class="eyebrow">Keep the attention we know. Give it an image to read.</p><h2>What should this image classifier answer?</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>Our text model used information from earlier words to predict the next token. Now we want one answer about a whole image. Start with this tabletop scene: two mugs, a book, and a plant. How could an attention model turn those pixels into an answer? After seeing what a patch contains, we will switch to a separate 4×4 worksheet so that we can calculate every number.</p></div>
-<div class="frame" data-title="How many mugs are in this image?" data-autobuild="off">
-  <div id="s01-scene"></div>
-  <p data-build="1">The input is the picture. Its training label is <strong>two mugs</strong>.</p>
-  <script type="text/x-notes">Point to the two mugs before discussing numbers.
+<header class="sec-head">
+  <span class="sec-num">01</span>
+  <div>
+    <p class="eyebrow">Attention needs a sequence of rows. A photograph is a grid of pixels. How many rows should it become?</p>
+    <h2>Why patches?</h2>
+  </div>
+</header>
 
-The book and plant are also part of the input. The class label says what answer we want, not which pixels to read. This generated illustration is a teaching example; no trained model has predicted its label here.</script>
+<div class="companion s01-scope" data-kicker="What this toy can and cannot show">
+  <p>The whole page runs on one small model that you can check by hand: an 8×8 grayscale scene, sixteen 2×2 patches, one extra CLS row, one attention head with two matching axes, and a class head with two answers. Its axes have names because we chose the patch projection and the position rows so that the names are true, and we never trained those two. Everything else (the four attention matrices and the class head) was trained on two scenes.</p>
+  <ul>
+    <li>It can show every number of a forward pass, what CLS reads before and after training, and how one update turns a wrong answer into a right one.</li>
+    <li>It cannot show what a real Vision Transformer learns: two training scenes fit a rule, and scene C in section 8 is the only test of that rule. A real ViT has LayerNorm, a feed-forward sublayer, several heads and a dozen blocks; section 10 adds those shapes without pretending we computed them.</li>
+    <li>The photograph in section 2 sets the task. The model never sees it; every later picture is the scene it computes on.</li>
+  </ul>
 </div>
-<div class="frame" data-title="Cut the image into patches" data-autobuild="off">
-  <div id="s01-scene-patches"></div>
-  <p data-build="1">Each rectangle supplies one input row. The grid is fixed before the model knows where the mugs are.</p>
-  <script type="text/x-notes">Follow the grid across a mug, the book, and the background.
 
-These coarse six-by-four patches make the boundaries easy to see. Patch splitting does not identify objects. The same projection will turn every patch into an embedding, regardless of what its pixels show.</script>
+<div class="companion" data-kicker="For self-study">
+  <p>Part 2 gave every word a row and let the rows exchange information through attention. An image has no words. It has pixels, and a photograph has a lot of them: 224×224 is a small input for a vision model and already 50,176 pixels. This section asks the first design question of a Vision Transformer, how many rows an image should become, and answers it with the slider below. Move the patch side and watch two numbers: the rows that go into attention, and the scores one head has to compute, which grow with the square of the row count. The rest of the page then follows one tiny image through the same chain as Part 2.</p>
 </div>
-<div class="frame" data-title="One patch can cross an object boundary" data-autobuild="off">
-  <div id="s01-scene-crop"></div>
-  <p data-build="1">One patch contains a mug edge, tabletop, and book.</p>
-  <script type="text/x-notes">Trace the highlighted square into its magnified crop.
 
-The crop is taken from this exact image. A patch is neither a mug ID nor a complete object. We will preserve the patch-to-embedding-to-attention route, but use a separate tiny image for the arithmetic.</script>
+<div class="frame" data-title="How many rows should a photograph become?" data-autobuild="off">
+  <script type="text/x-notes">Ask the room: if every pixel were a token, how many scores would one attention head compute for one image?
+Start the slider at one pixel per row and let students read the score count aloud before moving it to sixteen. The square shows the grid; the numbers come from the same formula for every setting. Timing: three minutes.</script>
+  <div class="card">
+    <h3 class="card-title">A 224×224 image, cut into square patches</h3>
+    <div class="s01-lay">
+      <div class="s01-sq" id="s01-square"></div>
+      <div>
+        <div id="s01-slider"></div>
+        <div class="s01-stats" id="s01-stats"></div>
+        <p class="s01-read" id="s01-read"></p>
+      </div>
+    </div>
+  </div>
+  <div class="callout callout-key" data-build="1" id="s01-key"></div>
 </div>
-<div class="companion"><p>The tabletop scene has more pixels than we can multiply by hand. The following worksheet uses two filled blocks instead of mugs. It is a separate numerical example, not a downsample of the scene and not evidence that a model trained on two block images can count mugs.</p></div>
-<div class="frame" data-title="For the arithmetic, use a separate 4 × 4 image" data-autobuild="off">
-  <div class="vision1-story" id="s01-task"></div>
-  <p class="callout callout-key" data-build="1">Our worksheet counts <strong>filled 2×2 blocks</strong>. These are new inputs with labels “two blocks” and “one block”.</p>
-  <script type="text/x-notes">Make the change of input explicit: these blocks are not the mugs.
 
-Both images will reappear at the learning step. Do not give the label to the encoder. Our two-example exercise demonstrates a computation and an update; it is not a general counting benchmark.</script>
+<div class="frame" data-title="Neither extreme works" data-autobuild="off">
+  <script type="text/x-notes">Two bad answers frame the good one.
+One row per pixel: the score matrix is too large, and a single pixel says almost nothing. One row per image: there is nothing left for attention to relate. A patch is the compromise, and its side is a design choice, not a discovery.</script>
+  <div class="prose">
+    <p>One row per pixel gives attention <strong id="s01-pix-rows"></strong> rows and <strong id="s01-pix-scores"></strong> scores per head for a single image. Each row would describe one pixel, which on its own says almost nothing.</p>
+    <p data-build="1">One row per image gives attention one row. There is nothing to relate, and the layer has no work to do.</p>
+    <p data-build="2">A patch of <strong id="s01-patch-side"></strong> pixels gives <strong id="s01-patch-rows"></strong> rows. Each row describes a piece of the image large enough to carry some structure, and the score matrix has <strong id="s01-patch-scores"></strong> entries.</p>
+  </div>
+  <div class="callout callout-key" data-build="3">A patch is a piece of the input, chosen by a grid. It is not an object, and the model does not know where the objects are when it cuts.</div>
 </div>
-<div class="frame" data-title="A pixel is already a number" data-autobuild="off">
-  <div class="vision1-story" id="s01-pixels"></div>
-  <p>Our image has <strong>4 rows × 4 columns × 1 channel</strong>. Dark pixels are 0; the two filled blocks use 1 and 2.</p>
-  <p data-build="1">These are brightness values, not token IDs. Changing a pixel changes the numerical input directly.</p>
-  <script type="text/x-notes">We use a grayscale image to keep the arithmetic visible.
 
-A color photograph has three channels, which we will account for later. The shades 0,1,2 are a toy scale rather than an 8-bit image format.</script>
+<div class="frame" data-title="The same chain, a new input" data-autobuild="off">
+  <script type="text/x-notes">Point at the pipeline: nothing after E is new.
+Only the way rows are made changes: a projection of pixels instead of a lookup by token ID. The page follows this chain for one 8×8 scene, and the last row of the table is the reason the answer comes from a new row called CLS.</script>
+  <div class="card">
+    <h3 class="card-title">The pipeline of Part 2, unchanged after the first arrow</h3>
+    <div id="s01-motif"></div>
+  </div>
+  <div class="callout callout-key" data-build="1">Only the way rows are made changes. Everything from $\ve{E}$ to $\vp{E'}$ is the operation of Part 2, run on seventeen rows instead of ten.</div>
 </div>
-<div class="frame" data-title="What will replace the words?" data-autobuild="off">
-  <div class="vision1-pair"><div><h3>In the text lesson</h3><p><code>She deposited money …</code></p><p>One word/token → one embedding row.</p></div><div data-build="1"><h3>For this image</h3><p>One small patch of pixels → one embedding row.</p><p>The rows will exchange information through attention.</p></div></div>
-  <p class="callout callout-key" data-build="2">The worksheet’s blocks line up with patches. The mug boundary did not. A patch is a piece of the input, not an object label.</p>
-  <script type="text/x-notes">The block/patch alignment is convenient in our worksheet, not a claim that tokenization detects objects.
 
-Image rows are created by a learned projection, not by looking up a discrete patch ID.</script>
+<div class="frame" data-title="What changes between text and image" data-autobuild="off">
+  <script type="text/x-notes">Read the table row by row; the right column is the plan of this page.
+Two changes matter most: a projection instead of a lookup, and a new row, CLS, because an image has no last token to predict from.</script>
+  <div class="card s01-swap">
+    <div id="s01-swap"></div>
+  </div>
+  <div class="callout callout-key" data-build="1">Two changes matter most: a projection instead of a lookup, and a new row, CLS, because an image has no last token to predict from.</div>
 </div>
-<div class="frame" data-title="First make rows. Then let them share information." data-autobuild="off">
-  <p class="vision1-equation">image → patch embeddings → attention → image answer</p>
-  <p>We will use <strong>two numbers per embedding</strong> so that every multiplication fits on the page.</p>
-  <p data-build="1">First we inspect one fixed set of starting weights. Later we train those same weights and run the images through again.</p>
-  <p class="callout callout-note" data-build="2">This small model contains patch projection, position addition, one attention update, and a class head. We add the rest of a full ViT after this calculation makes sense.</p>
-  <script type="text/x-notes">This is the one scope statement for the numerical model.
 
-LayerNorm, the row-wise MLP and multiple heads are not silently part of its arithmetic. Avoid introducing their mechanics here.</script>
+<div class="companion after">
+  <p>A Vision Transformer decides how many rows an image becomes by choosing a patch side. From there on, the chain is the one we know. The next section picks the scene we will compute on, and the question we will ask about it.</p>
 </div>
-<div class="companion after"><p>Notation follows the text lessons: $e$ is a representation, $q$ and $k$ are used for matching, and $v$ is the information sent. We introduce $r_j$ for the raw pixels of patch $j$ because those four numbers are not yet its two-number embedding. All calculations, diagrams, and training updates run in this page without downloading a model.</p></div>
-<script>(function(){const S=document.getElementById('s01'),T=AT.vision;AT.visionScene.mount(S.querySelector('#s01-scene'),{mode:'scene',variant:'two'});AT.visionScene.mount(S.querySelector('#s01-scene-patches'),{mode:'patches',variant:'two'});AT.visionScene.mount(S.querySelector('#s01-scene-crop'),{mode:'patch-crop',variant:'two'});T.story(S.querySelector('#s01-task'),{stage:'task'});T.story(S.querySelector('#s01-pixels'),{stage:'image'});})();</script>
+
+<script>
+(function(){
+  const S = document.getElementById('s01');
+  const V = AT.vision;
+  const SIDE = 224;
+  const fmtN = (n) => Number(n).toLocaleString('en-US');
+
+  /* the square: a 224-unit square with an n by n patch grid drawn as a pattern */
+  const sq = AT.svg('svg', { viewBox: '0 0 240 240', role: 'img', 'aria-label': 'A square image divided into equal square patches' });
+  const defs = AT.svg('defs');
+  const pat = AT.svg('pattern', { id: 's01-pat', patternUnits: 'userSpaceOnUse', width: 16, height: 16 });
+  const patRect = AT.svg('rect', { x: 0, y: 0, width: 16, height: 16, fill: 'var(--t-e)', stroke: 'var(--c-e)', 'stroke-width': 1 });
+  pat.appendChild(patRect); defs.appendChild(pat); sq.appendChild(defs);
+  sq.appendChild(AT.svg('rect', { x: 8, y: 8, width: SIDE, height: SIDE, fill: 'var(--card)', stroke: 'var(--ink)', 'stroke-width': 1.5 }));
+  const fill = AT.svg('rect', { x: 8, y: 8, width: SIDE, height: SIDE, fill: 'url(#s01-pat)' });
+  sq.appendChild(fill);
+  const sqLab = AT.svg('text', { x: 120, y: 236, 'text-anchor': 'middle', 'font-size': 11, 'font-family': 'var(--font-ui)', fill: 'var(--ink-3)' }, '');
+  sq.appendChild(sqLab);
+  S.querySelector('#s01-square').appendChild(sq);
+
+  const stats = S.querySelector('#s01-stats'), read = S.querySelector('#s01-read'), key = S.querySelector('#s01-key');
+  function stat(n, label){ return AT.h('p', { class: 's01-num' }, fmtN(n), AT.h('small', {}, label)); }
+  function draw(side){
+    const t = V.tokensPerImage(SIDE, side), n = Math.floor(SIDE / side);
+    const cell = SIDE / n;
+    pat.setAttribute('width', cell); pat.setAttribute('height', cell); patRect.setAttribute('width', cell); patRect.setAttribute('height', cell);
+    patRect.setAttribute('stroke-width', n > 56 ? 0.25 : n > 28 ? 0.5 : 1);
+    sqLab.textContent = n + ' × ' + n + ' patches of ' + side + ' × ' + side + ' pixels';
+    AT.clear(stats);
+    stats.appendChild(stat(t.patches, 'patches'));
+    stats.appendChild(stat(t.rows, 'rows into attention (with CLS)'));
+    stats.appendChild(stat(t.scores, 'scores per head'));
+    read.textContent = 'Patch side ' + side + ': ' + n + ' patches across and ' + n + ' down make ' + fmtN(t.patches) + ' patches. Add one CLS row and one head compares ' + fmtN(t.rows) + ' queries with ' + fmtN(t.rows) + ' keys: ' + fmtN(t.scores) + ' dot products for this one image.';
+  }
+  AT.ui.slider({ label: 'Patch side (pixels)', min: 1, max: 32, step: 1, value: 16, format: (v) => v + ' px', onInput: draw, into: S.querySelector('#s01-slider') });
+  draw(16);
+  const px = V.tokensPerImage(SIDE, 1), p16 = V.tokensPerImage(SIDE, 16);
+  key.innerHTML = 'With one row per pixel, one attention head computes <strong>' + fmtN(px.scores) + '</strong> scores for a single 224×224 image. With 16×16 patches it computes <strong>' + fmtN(p16.scores) + '</strong>, for ' + fmtN(p16.rows) + ' rows.';
+  S.querySelector('#s01-pix-rows').textContent = fmtN(px.rows);
+  S.querySelector('#s01-pix-scores').textContent = fmtN(px.scores);
+  S.querySelector('#s01-patch-side').textContent = '16 × 16';
+  S.querySelector('#s01-patch-rows').textContent = fmtN(p16.rows);
+  S.querySelector('#s01-patch-scores').textContent = fmtN(p16.scores);
+
+  /* the motif with the stage names of Part 2 */
+  AT.motif(S.querySelector('#s01-motif'), { active: 'e', labels: true });
+
+  /* what changes between the text lesson and this one */
+  AT.ui.table([
+    ['a word', 'a 2×2 patch of pixels'],
+    ['a lookup by token ID', 'a projection of the four pixel values'],
+    ['a position row, added', 'a position row, added (row and col)'],
+    ['the last known token', 'an extra row, CLS, with no pixels'],
+    ['a causal mask', 'no mask: every row reads every row'],
+    ['one logit per vocabulary word', 'one logit per answer: ' + V.classes.join(' / ')]
+  ], { cols: [{ label: 'Part 2: text', kind: 'text' }, { label: 'this page: an image', kind: 'text' }], rowLabels: ['one row is', 'the row comes from', 'position', 'the row that answers', 'who may read whom', 'the head'], cornerLabel: 'what changes', into: S.querySelector('#s01-swap') });
+})();
+</script>
 </section>

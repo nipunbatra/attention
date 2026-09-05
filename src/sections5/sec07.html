@@ -1,144 +1,153 @@
-<section id="s07" class="sec" data-title="Learn from the two images" data-lit="e q k v a d ep">
+<section id="s07" class="sec" data-title="From the CLS row to an answer" data-lit="">
 <style>
-#s07 .v1-train-graph svg{display:block;width:100%;height:auto}
-#s07 .v1-train-eq{font-size:1.1em;text-align:center;margin:16px 0}
-#s07 .v1-curve svg{display:block;width:100%;height:auto;max-height:225px}
-#s07 .v1-step-button{margin:12px 0}
+#s07 .rd{margin:10px 0 0;font-size:15px;color:var(--ink-2);max-width:74ch;line-height:1.5}
+#s07 .s07-head{display:grid;grid-template-columns:repeat(2,minmax(0,max-content));justify-content:start;gap:8px 32px;align-items:start}
+#s07 .s07-head>*{min-width:0;max-width:100%}
+#s07 .s07-head .dt-fig{margin:6px 0 0}
+#s07 .s07-eq{font-size:1.1em;text-align:center;margin:12px 0}
+#s07 .s07-soft{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px 32px;align-items:center}
+#s07 .s07-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 36px;align-items:start}
+#s07 .s07-two figure{margin:0}
+#s07 .s07-two figcaption{font-size:14px;color:var(--ink-2);margin:6px 0 8px}
+#s07 .s07-two .vgrid{display:block}
+@media(max-width:820px){#s07 .s07-head,#s07 .s07-soft,#s07 .s07-two{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:480px){#s07 .bars .bl{white-space:normal;text-align:left}}
+body.present #s07 .rd{font-size:22px;line-height:1.35}
+body.present #s07 .dt-cap,body.present #s07 .dt-note{display:none}
+body.present #s07 .dt td,body.present #s07 .dt th{padding:.16em .45em}
+body.present #s07 .s07-head{gap:0 48px}
+body.present #s07 .s07-soft{gap:0 48px}
+body.present #s07 .s07-two figcaption{font-size:21px;line-height:1.3}
+body.present #s07 .calc-rounding{display:none}
+body.present #s07 .s07-eq{font-size:1em;margin:8px 0}
 </style>
-<header class="sec-head"><span class="sec-num">07</span><div><p class="eyebrow">A wrong answer tells us which calculation needs to change.</p><h2>Learn from the two images</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>Train on both images: one has two occupied blocks, and one has only the lower-right block. Each image goes through the same model and gets its own cross-entropy loss. We average the two losses before taking an optimizer step. That step changes the patch projection, CLS and position parameters, attention projections, and classification head together. The page runs these calculations locally; the displayed training results come from the model we have just worked through.</p></div>
+<header class="sec-head">
+  <span class="sec-num">07</span>
+  <div>
+    <p class="eyebrow">CLS holds a row that depends on the scene. A class head turns it into one probability per answer, and a label scores it.</p>
+    <h2>From the CLS row to an answer</h2>
+  </div>
+</header>
 
-<div class="frame" data-title="Give both labelled images a say" data-autobuild="off">
-  <div id="s07-batch-loss"></div>
-  <p id="s07-mean-loss" class="v1-train-eq" data-build="1"></p>
-  <pre class="torch-snippet" data-build="2"><code># Two images produce two rows of class logits.
-logits = model(images)                 # [2, 2]
-loss = F.cross_entropy(logits, labels) # mean over both images</code></pre>
-  <script type="text/x-notes">Read each observed label and its probability.
-
-A lower probability for the correct label means a higher loss. The optimization objective is their mean, not whichever image was easiest.</script>
+<div class="companion" data-kicker="For self-study">
+  <p>The updated CLS row has four coordinates on named axes; it is a representation, not yet an answer. A class head is a small matrix with one column per answer and a bias for each: $\ell = \vp{e_0'} W_{\text{cls}} + b_{\text{cls}}$. Softmax over the two logits gives two probabilities, and the loss is minus the log of the probability of the true label, exactly as in the text parts. Work the two logits by hand, then run scene B through the same untrained model. It says “mug on the right” for both scenes, which is wrong for B. That wrong answer is the reason for the next section.</p>
 </div>
 
-<div class="frame" data-title="Follow the same image all the way to loss" data-autobuild="off">
-  <div id="s07-forward-graph" class="v1-train-graph"></div>
-  <p>$R$ stacks the flattened patch rows $r_1,\ldots,r_4$. Dashed boxes contain learned parameters; solid boxes show computations.</p>
-  <script type="text/x-notes">Trace the top branch for matching, then the lower branch for information.
-
-Dashed boxes are learned parameters. Both images use this graph. The labels enter only at loss.</script>
+<div class="frame" data-title="The class head reads the updated CLS row" data-autobuild="off">
+  <script type="text/x-notes">One column per answer, and a bias per answer. Read the columns: before training, the head only looks at brightness.
+The two answers are mirror images of each other in this starting head. Brightness above 1.5 favours “mug on the right”.</script>
+  <div class="prose">
+    <p>Two answers, so two logits: $\ell = \vp{e_0'}\,W_{\text{cls}} + b_{\text{cls}}$, with $W_{\text{cls}}$ of shape $4\times 2$.</p>
+  </div>
+  <div class="card" data-build="1">
+    <div class="s07-head" id="s07-head"></div>
+    <p class="rd" id="s07-hread"></p>
+  </div>
 </div>
 
-<div class="frame" data-title="Autograd follows every contributing path backward" data-autobuild="off">
-  <div id="s07-backward-graph" class="v1-train-graph"></div>
-  <p>Both the weights $A$ and the values $V$ receive gradients.</p>
-  <script type="text/x-notes">Start at loss, reverse the head and residual addition, and follow both inputs of the weighted sum.
-
-At E, gradient contributions from attention and the residual route add. The page differentiates this graph; students do not need to calculate these derivatives by hand.</script>
+<div class="frame" data-title="The two logits, worked" data-autobuild="off">
+  <script type="text/x-notes">One line per answer: each coordinate of the updated CLS row times the weight below it, then the bias.
+A logit is a score that can be any real number. It is not a probability yet.</script>
+  <div class="card">
+    <div id="s07-calc"></div>
+    <div id="s07-bias" data-build="1"></div>
+  </div>
 </div>
 
-<div class="frame" data-title="Which numbers does the optimizer keep?" data-autobuild="off">
-  <div id="s07-stored"></div>
-  <p class="callout callout-key" data-build="1">On the next forward pass, new parameters produce new embeddings, queries, keys, values, and predictions.</p>
-  <script type="text/x-notes">The image pixels and labels are data.
-
-The optimizer updates stored model parameters. It does not take a cached Q or attention matrix and save an improved version for this particular image.</script>
+<div class="frame" data-title="Softmax over the answers, not over the patches" data-autobuild="off">
+  <script type="text/x-notes">The same softmax formula as in section 5, over a different set: two answers instead of seventeen rows.
+Read the table left to right: logit, its exponential, the share of the total. The bars show the same two numbers.</script>
+  <div class="card">
+    <div class="s07-soft">
+      <div id="s07-soft"></div>
+      <div id="s07-bars"></div>
+    </div>
+    <p class="s07-eq" id="s07-peq"></p>
+  </div>
+  <div class="callout callout-key" data-build="1">Two softmaxes on this page: one over seventeen source rows (where CLS reads), one over two answers (what the model says). They share a formula and nothing else.</div>
 </div>
 
-<div class="frame" data-title="Compute gradients, then take one step" data-autobuild="off">
-  <pre class="torch-snippet"><code>optimizer.zero_grad()
-loss.backward()  # compute a gradient for each learned parameter
-optimizer.step() # update the parameters using those gradients</code></pre>
-  <p class="v1-train-eq" data-build="1">$\theta_{\mathrm{new}}=\theta-\eta\,\nabla_\theta L$</p>
-  <div id="s07-parameter-step" data-build="2"></div>
-  <script type="text/x-notes">The one displayed matrix entry is a window into the actual update, not the only parameter that changes.
-
-We use full-batch SGD on the two examples. Backward computes gradients; step changes parameters. A zero gradient leaves its parameter unchanged on that step.</script>
+<div class="frame" data-title="Score the answer: the loss" data-autobuild="off">
+  <script type="text/x-notes">The label enters only here, after the prediction.
+The loss is minus the log of the probability given to the true label. A confident right answer costs almost nothing; a confident wrong one costs a lot. PyTorch takes the logits, not the probabilities.</script>
+  <div class="card">
+    <h3 class="card-title">Scene A, label: <span id="s07-lab"></span></h3>
+    <div id="s07-lossbars"></div>
+    <p class="s07-eq" id="s07-leq" data-build="1"></p>
+  </div>
+  <pre class="torch-snippet" data-build="2"><code>logits = E_new[0] @ W_cls + b_cls          # [2]
+loss = F.cross_entropy(logits[None, :], torch.tensor([label]))</code></pre>
 </div>
 
-<div class="frame" data-title="Run the forward pass again after that step" data-autobuild="off">
-  <div id="s07-one-step"></div>
-  <p class="callout callout-key" data-build="1">The <strong>mean loss falls</strong>, although the two-block image gets worse on this first step.</p>
-  <p data-build="2">The optimizer is fitting both examples together. One step need not improve every example.</p>
-  <script type="text/x-notes">The two-block loss rises while the one-block loss falls enough to lower the mean.
-
-These are recomputed losses, not an extrapolation from the gradient. This is why we look at the training objective and keep checking individual examples too.</script>
+<div class="frame" data-title="The same untrained model on scene B" data-autobuild="off">
+  <script type="text/x-notes">Scene B has no mug on the right. Run the same seventeen-row computation and read the bars.
+The untrained model says “mug on the right” for both scenes, because its head only knows that brightness arrived and every scene has some. A wrong answer with a known label is what training needs.</script>
+  <div class="card">
+    <div class="s07-two" id="s07-two"></div>
+  </div>
+  <div class="callout callout-key" data-build="1" id="s07-verdict"></div>
 </div>
 
-<div class="frame" data-title="Repeat the same forward, backward, and update" data-autobuild="off">
-  <div id="s07-training-curve" class="v1-curve"></div>
-  <p id="s07-training-caption" data-build="1"></p>
-  <pre class="torch-snippet" data-build="2"><code>optimizer.zero_grad()
-F.cross_entropy(model(images), labels).backward()
-optimizer.step()</code></pre>
-  <script type="text/x-notes">Every point follows another forward pass with the latest parameters.
-
-The graph is unchanged; its numbers change. The training trace includes the first step already shown.</script>
+<div class="companion after">
+  <p>The forward pass is complete: pixels to rows, rows to a routed message, a message to an updated CLS row, the row to two probabilities, and a label to score them. The untrained model is wrong on scene B. Next we change its numbers.</p>
 </div>
 
-<div class="frame" data-title="Check both images with the learned parameters" data-autobuild="off">
-  <div id="s07-final-predictions"></div>
-  <p class="callout callout-key" data-build="1">The same model now gives the correct label most of the probability for <strong>both training images</strong>.</p>
-  <p data-build="2">Both were used for training. Next, move the one block to a location the model has not seen it occupy alone.</p>
-  <script type="text/x-notes">Do not call this a general block counter.
-
-With only two examples, it may rely on shortcuts such as brightness. A held-out test set is needed to find out what rule it learned.</script>
-</div>
-
-<div class="frame" data-title="Did it learn to count, or just fit these two images?" data-autobuild="off">
-  <div class="vision1-story" id="s07-held-out"></div>
-  <p>Same count, shape, and pixel values. Moving the block changes the model’s answer.</p>
-  <p data-build="1">Fitting two examples did not teach a reliable counting rule.</p>
-  <script type="text/x-notes">Count the blocks before reading the model's answer.
-
-Both pictures contain the same single block. Reuse the learned parameters without another training step. This one failure disproves reliable counting for this trained model, but does not identify exactly which shortcut it learned.</script>
-</div>
-<div class="companion after"><p>The numerical model contains one attention head, two-number representations, one residual addition, and the class head. It has no LayerNorm or feed-forward sublayer. The next section adds those components to the architecture rather than silently inserting them into the arithmetic we just trained.</p><p>The moved-block example is a diagnostic we chose to expose a failure. It is not an estimate of test accuracy. An evaluation should include a separately held-out set with varied positions, shapes, brightnesses, and counts covered by the task.</p></div>
 <script>
 (function(){
-  const S=document.getElementById('s07'),T=AT.vision,L=T.learning,X=L.experiment,names=L.classes,fmt=x=>x.toFixed(3);
-  T.story(S.querySelector('#s07-held-out'),{stage:'generalization'});
-  AT.ui.table(X.before.forwards.map((f,i)=>[names[L.targets[i]],f.probs[L.targets[i]],f.loss]),{into:S.querySelector('#s07-batch-loss'),cols:[{label:'observed label',kind:'text'},{label:'p(correct label)',kind:'number'},{label:'loss',kind:'number'}],rowLabels:['image 1','image 2'],cornerLabel:'initial model',decimals:3});
-  AT.tex(S.querySelector('#s07-mean-loss'),'L_{\\mathrm{batch}}=\\frac{'+fmt(X.before.losses[0])+'+'+fmt(X.before.losses[1])+'}{2}\\approx'+fmt(X.before.meanLoss),{display:true});
-  AT.ui.table([
-    ['W_patch, b_patch; CLS; positions','patch embeddings and input E'],
-    ['W_Q, W_K, W_V, W_O','Q, K, V, weights A, and update ΔE'],
-    ['W_class, b_class','class logits, probabilities, and loss']
-  ],{into:S.querySelector('#s07-stored'),cols:[{label:'parameters: update and store',kind:'text'},{label:'computed values: rebuild each pass',kind:'text'}],rowLabels:['input','attention','prediction'],cornerLabel:'model part'});
-  const cell=X.selectedCells.find(x=>x.name==='W_class');
-  AT.ui.table([[cell.before,cell.gradient,cell.afterSingle]],{into:S.querySelector('#s07-parameter-step'),cols:['before','gradient','after one step'],rowLabels:['W_class[0, 0]'],cornerLabel:'learning rate η = '+X.lr,decimals:3,caption:'This entry starts at 0.5. The same SGD rule updates all '+X.parameterCount+' learned numbers.'});
-  AT.ui.table([
-    [X.before.losses[0],X.afterSingle.losses[0]],
-    [X.before.losses[1],X.afterSingle.losses[1]],
-    [X.before.meanLoss,X.afterSingle.meanLoss]
-  ],{into:S.querySelector('#s07-one-step'),cols:['loss before','loss after one step'],rowLabels:['two-block image','one-block image','mean over both'],cornerLabel:'same two images',decimals:3,highlightRow:2});
-  S.querySelector('#s07-training-caption').textContent=X.nsteps+' SGD updates, learning rate '+X.lr+'. Mean loss: '+fmt(X.before.meanLoss)+' → '+fmt(X.afterTraining.meanLoss)+'.';
-  AT.ui.table(X.afterTraining.forwards.map((f,i)=>[names[L.targets[i]],X.before.forwards[i].probs[L.targets[i]],f.probs[L.targets[i]],names[X.afterTraining.predictions[i]]]),{into:S.querySelector('#s07-final-predictions'),cols:[{label:'correct label',kind:'text'},{label:'p(correct) before',kind:'number'},{label:'p(correct) after',kind:'number'},{label:'now chooses',kind:'text'}],rowLabels:['image 1','image 2'],cornerLabel:'training image',decimals:3});
-  function graph(host,back){
-    const svg=AT.svg('svg',{viewBox:'0 0 1160 468',role:'img','data-vision1-diagram':back?'backward graph':'forward graph','aria-label':back?'Gradients reverse the complete image classifier graph, including attention weights, values, residual path, patch projection, class token, and positions.':'The complete image classifier graph from pixels through patch embeddings, attention, residual update, head, and labelled loss.'});
-    const id=back?'v1-back':'v1-forward',ink='var(--ink)',line=back?'var(--warn)':'var(--ink-3)',defs=AT.svg('defs');
-    [id,id+'-data'].forEach((mid,i)=>{const m=AT.svg('marker',{id:mid,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:6,markerHeight:6,orient:'auto'});m.appendChild(AT.svg('path',{d:'M0 0 L10 5 L0 10Z',fill:i?'var(--ink-3)':line}));defs.appendChild(m);});svg.appendChild(defs);
-    function txt(x,y,text,size,fill){svg.appendChild(AT.svg('text',{x,y,fill:fill||ink,'font-family':'var(--font-ui)','font-size':size?Math.max(24,size):28,'text-anchor':'middle','dominant-baseline':'middle'},text));}
-    function box(x,y,w,h,label,sub,param,role){svg.appendChild(AT.svg('rect',{x:x-w/2,y:y-h/2,width:w,height:h,rx:7,fill:param?'var(--paper)':'var(--card)',stroke:role==='var(--c-ep)'?'var(--c-d)':role||'var(--ink-3)','stroke-width':1.8,'stroke-dasharray':param?'6 4':'none'}));txt(x,sub?y-13:y,label,28,role==='var(--c-ep)'?'var(--c-e)':role);if(sub)txt(x,y+18,sub,24);}
-    function edge(points,gradient=true){let p=points;if(back&&gradient)p=points.slice().reverse();svg.appendChild(AT.svg('path',{d:p.map((xy,i)=>(i?'L':'M')+xy.join(' ')).join(' '),fill:'none',stroke:back&&gradient?line:'var(--ink-3)','stroke-width':back&&gradient?2.6:1.7,'marker-end':'url(#'+id+(back&&!gradient?'-data':'')+')'}));}
-    edge([[114,166],[170,166]],false);edge([[250,89],[250,132]]);edge([[330,166],[365,166]]);edge([[420,89],[420,132]]);
-    edge([[475,166],[500,166],[500,114],[520,114]]);edge([[475,166],[500,166],[500,250],[520,250]]);edge([[590,51],[590,80]]);edge([[652,210],[590,210],[590,216]]);
-    edge([[660,114],[700,114]]);edge([[850,114],[900,114],[900,165]]);edge([[660,250],[900,250],[900,225]]);
-    edge([[980,195],[995,195]]);edge([[1060,89],[1060,160]]);edge([[1060,230],[1060,319]]);
-    edge([[420,201],[420,457],[1060,457],[1060,389]]);edge([[980,354],[900,354]]);edge([[790,314],[790,320]]);edge([[680,354],[630,354]]);
-    edge([[565,430],[565,388]],false);
-    box(60,166,108,65,'R','patches');box(250,166,160,68,'patch map','shared W');box(250,58,165,62,'W_patch','b_patch',true);box(420,58,150,62,'CLS, P','learned',true);box(420,166,110,68,'E','input rows',false,'var(--c-e)');
-    box(590,114,140,68,'Q, K','project E',false,'var(--c-q)');box(590,250,140,68,'V','E W_V',false,'var(--c-v)');box(775,114,150,68,'A','softmax(S)',false,'var(--c-a)');txt(790,55,'S = QKᵀ / √2',24);box(900,195,160,60,'message','A V',false,'var(--c-v)');
-    box(1060,58,135,62,'W_O','learned',true);box(1060,195,130,70,'ΔE','m W_O',false,'var(--c-d)');box(1060,354,160,70,'E′','E + ΔE',false,'var(--c-ep)');box(790,354,220,68,'class head','CLS row → logits');box(790,285,180,62,'W_class','b_class',true);box(565,354,130,68,'loss','−log p(y)');box(565,431,145,40,'label y',null,false);
-    box(590,31,155,40,'W_Q, W_K',null,true);box(710,210,115,38,'W_V',null,true);txt(210,290,'R and y are data.',20);
-    if(back){txt(990,112,'∂L/∂A',20,line);txt(825,239,'∂L/∂V',20,line);}
-    host.appendChild(svg);
-  }
-  graph(S.querySelector('#s07-forward-graph'),false);graph(S.querySelector('#s07-backward-graph'),true);
-  const svg=AT.svg('svg',{viewBox:'0 0 1100 215',role:'img','aria-label':'Mean cross-entropy over the two training images decreases across '+X.nsteps+' SGD updates.'}),mx=Math.max(...X.history.map(p=>p.loss)),left=80,right=1040,top=20,bottom=162;
-  svg.appendChild(AT.svg('path',{d:'M'+left+' '+top+'V'+bottom+'H'+right,fill:'none',stroke:'var(--ink-3)','stroke-width':1.5}));
-  const pts=X.history.map(p=>[left+(right-left)*p.step/X.nsteps,bottom-(bottom-top)*p.loss/mx]);
-  svg.appendChild(AT.svg('path',{d:pts.map((p,i)=>(i?'L':'M')+p.join(' ')).join(' '),fill:'none',stroke:'var(--c-d)','stroke-width':3}));
-  function ct(x,y,text,anchor){svg.appendChild(AT.svg('text',{x,y,'font-family':'var(--font-ui)','font-size':22,fill:'var(--ink)','text-anchor':anchor||'middle'},text));}
-  ct(45,27,fmt(mx));ct(45,bottom+5,'0');ct(left,192,'0');ct(right,192,String(X.nsteps));ct(560,207,'SGD updates');ct(280,30,'mean cross-entropy');S.querySelector('#s07-training-curve').appendChild(svg);
+  const S = document.getElementById('s07');
+  const V = AT.vision;
+  const P = V.params('initial');
+  const F = V.forward('A', 'initial'), FB = V.forward('B', 'initial');
+  const ep = F.Enew[0], cls = V.classes, shE = V.axes.short.e;
+  const labA = V.labelOf('A'), iA = V.labelIndex('A');
+  const joinAnd = (xs) => xs.length <= 1 ? xs.join('') : xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1];
+
+  /* frame 1: the head as a weight table plus the bias row */
+  const ans = [{ label: 'yes', title: cls[0] }, { label: 'no', title: cls[1] }];
+  AT.ui.wTable(P.W_cls, { from: 'e', to: ans, cls: 'neutral', decimals: 1, cornerLabel: '$W_{\\text{cls}}$', caption: 'An $\\ve{e}$ axis (row) feeds an answer (column): yes = ' + cls[0] + ', no = ' + cls[1] + '.', into: S.querySelector('#s07-head') });
+  AT.ui.table([P.b_cls], { cols: ans.map(a => ({ label: a.label, title: a.title, cls: 'neutral' })), rowLabels: ['$b_{\\text{cls}}$'], cornerLabel: 'bias', decimals: 1, caption: 'One bias per answer.', into: S.querySelector('#s07-head') });
+  (function(){
+    const lines = cls.map((c, k) => {
+      const ins = P.W_cls.map((row, r) => ({ w: row[k], n: shE[r] })).filter(t => t.w !== 0).map(t => AT.fmtSigned(t.w, 1) + ' × ' + t.n);
+      return '“' + c + '” = ' + (ins.length ? ins.join(' ') : '0') + ' ' + AT.fmtSigned(P.b_cls[k], 1);
+    });
+    S.querySelector('#s07-hread').textContent = 'Columns: yes = ' + cls[0] + ', no = ' + cls[1] + '. Reading the head: ' + lines.join('; ') + '. Only the brightness CLS collected matters to this starting head; contrast, row and col are ignored.';
+  })();
+
+  /* frame 2: the logits worked */
+  const mv = AT.ui.matVecCalc(ep, P.W_cls, { from: 'e', to: ans, cls: 'neutral', fromCls: 'ep', xLabel: "e′ · CLS", outLabel: "e′ W_cls", decimals: 2, wDecimals: 1, into: S.querySelector('#s07-calc') });
+  const bias = S.querySelector('#s07-bias');
+  cls.forEach((c, k) => {
+    const b = P.b_cls[k], dot = mv.out[k];
+    bias.appendChild(AT.h('p', { class: 'calc-line' }, 'logit for “' + c + '” = ' + AT.fmt(dot, 3) + ' + b ' + (b < 0 ? '(' + AT.fmt(b, 2) + ')' : AT.fmt(b, 2)) + ' = ', AT.h('span', { class: 'calc-r' }, AT.fmt(F.logits[k], 3))));
+  });
+
+  /* frame 3: softmax over the two answers */
+  const ex = F.logits.map(Math.exp), Z = AT.sum(ex);
+  const soft = AT.ui.table(F.logits.map((l, k) => [l, ex[k], F.probs[k]]), { cols: [{ label: 'logit $\\ell$' }, { label: '$e^{\\ell}$' }, { label: '$p = e^{\\ell}/\\sum e^{\\ell}$', decimals: 3 }], rowLabels: cls, cornerLabel: 'answer', decimals: 3, highlightRow: iA,
+    footer: { label: 'total', values: ['', Z, AT.sum(F.probs)] }, into: S.querySelector('#s07-soft'), caption: 'Read left to right. The last column sums to 1.' });
+  cls.forEach((c, k) => soft.tipOn(soft.cells[k][2], AT.fmt(ex[k], 3) + ' ÷ ' + AT.fmt(Z, 3) + ' = ' + AT.fmt(F.probs[k], 3)));
+  AT.ui.bars(cls.map((c, k) => ({ label: c, p: F.probs[k] })), { cls: 'neutral', sorted: false, decimals: 3, size: 'lg', max: 1, into: S.querySelector('#s07-bars') });
+  AT.tex(S.querySelector('#s07-peq'), 'p(\\text{' + labA + '}) = \\frac{' + AT.fmt(ex[iA], 3) + '}{' + AT.fmt(Z, 3) + '} = ' + AT.fmt(F.probs[iA], 3), { display: true });
+
+  /* frame 4: the loss */
+  S.querySelector('#s07-lab').textContent = labA;
+  AT.ui.bars(cls.map((c, k) => ({ label: c, p: F.probs[k] })), { cls: 'neutral', sorted: false, decimals: 3, size: 'lg', max: 1, highlight: labA, into: S.querySelector('#s07-lossbars') });
+  AT.tex(S.querySelector('#s07-leq'), 'L_A = -\\log p(\\text{' + labA + '}) = -\\log ' + AT.fmt(F.probs[iA], 3) + ' = ' + AT.fmt(V.loss('A', 'initial'), 3), { display: true });
+
+  /* frame 5: scene B through the same model */
+  const two = S.querySelector('#s07-two');
+  [['A', F], ['B', FB]].forEach(([k, Fx]) => {
+    const f = AT.h('figure');
+    f.appendChild(V.grid(k, { cell: 16, labels: 'none' }));
+    f.appendChild(AT.h('figcaption', {}, 'Scene ' + k + ' · label: ' + V.labelOf(k)));
+    AT.ui.bars(cls.map((c, i) => ({ label: c, p: Fx.probs[i] })), { cls: 'neutral', sorted: false, decimals: 3, max: 1, highlight: V.labelOf(k), into: f });
+    two.appendChild(f);
+  });
+  const rows = [['A', F], ['B', FB]].map(([k, Fx]) => { const pr = V.predict(k, 'initial'); return [V.labelOf(k), Fx.probs[0], Fx.probs[1], pr.label, pr.label === V.labelOf(k) ? 'yes' : 'no']; });
+  const wrong = rows.filter(r => r[4] === 'no').length;
+  S.querySelector('#s07-verdict').innerHTML = 'The untrained model answers “' + AT.escape(V.predict('B', 'initial').label) + '” for scene B with $p = ' + AT.fmt(FB.probs[0], 3) + '$. ' + (wrong ? 'It is wrong on ' + wrong + ' of the two labelled scenes' : 'It is right on both scenes') + ', and its loss on B is $' + AT.fmt(V.loss('B', 'initial'), 3) + '$ against $' + AT.fmt(V.loss('A', 'initial'), 3) + '$ on A.';
+  AT.renderMath(S.querySelector('#s07-verdict'));
 })();
 </script>
 </section>

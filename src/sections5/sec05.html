@@ -1,83 +1,290 @@
-<section id="s05" class="sec" data-title="Bring patch information into CLS" data-lit="v a d ep">
-<header class="sec-head"><span class="sec-num">05</span><div><p class="eyebrow">A weight says how much. A value supplies what arrives.</p><h2>Bring patch information into CLS</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>The attention weight tells CLS how much to read from a source. Its value vector tells CLS which numbers that source sends. Each source computes $v_j=e_jW_V$. Multiply that value by its weight, then add the contributions coordinate by coordinate. The resulting message belongs to the receiving CLS row.</p></div>
-<div class="frame" data-title="A patch’s key and value do different jobs" data-autobuild="off">
-  <div class="vision1-story" id="s05-value"></div>
-  <p>Starting with $W_V=I_2$ gives $v_4=e_4=(5,5)$. This equality comes from the identity map—not from the definition of a value.</p>
-  <script type="text/x-notes">The value equals the positioned input row only because we selected an identity W_V.
+<section id="s05" class="sec" data-title="Routing: CLS chooses where to read" data-lit="q k a">
+<style>
+#s05 .rd{margin:10px 0 0;font-size:15px;color:var(--ink-2);max-width:74ch;line-height:1.5}
+#s05 .s05-w{display:grid;grid-template-columns:repeat(2,minmax(0,max-content));justify-content:start;gap:8px 32px;align-items:start}
+#s05 .s05-w>*{min-width:0;max-width:100%}
+#s05 .s05-w .dt-fig{margin:6px 0 0}
+#s05 .s05-rec{display:grid;grid-template-columns:repeat(3,minmax(0,max-content));justify-content:start;gap:4px 24px;align-items:start}
+#s05 .s05-rec>*{min-width:0;max-width:100%}
+#s05 .s05-rec .dt-fig{margin:8px 0 0}
+#s05 .ws-lab{font-size:13px;color:var(--ink-3);font-weight:600;margin:12px 0 2px}
+#s05 .tree-wrap{padding:8px 4px}
+#s05 .tree{display:block;width:100%;max-width:1060px;min-width:900px;height:auto;font-family:var(--font-ui)}
+#s05 .tree .nd{stroke-width:1.6;rx:7;ry:7;fill:var(--card);stroke:var(--line)}
+#s05 .tree .nd-q{fill:var(--t-q);stroke:var(--c-q);stroke-width:2}
+#s05 .tree .nd-k{fill:var(--t-k);stroke:var(--c-k)}
+#s05 .tree .nd-s{fill:var(--card);stroke:var(--ink-3)}
+#s05 .tree .nd-a{stroke:var(--c-a);fill:var(--weight-fill)}
+#s05 .tree text{font-size:13px;fill:var(--ink);dominant-baseline:middle;text-anchor:middle}
+#s05 .tree .sym-t{font-family:var(--font-math);font-style:italic;font-size:17px}
+#s05 .tree .t-q{fill:var(--c-q)} #s05 .tree .t-k{fill:var(--c-k)}
+#s05 .tree .num{font-family:var(--font-mono);font-size:12.5px;font-variant-numeric:tabular-nums}
+#s05 .tree .weight-number{fill:var(--weight-ink)}
+#s05 .tree .rl{font-size:12px;fill:var(--ink-3);text-anchor:start;font-weight:600}
+#s05 .tree .edge{fill:none;stroke:var(--ink-3);stroke-width:1.3}
+#s05 .tree .key-btn{cursor:pointer}
+#s05 .tree .key-btn:focus{outline:none}
+#s05 .tree .key-btn:focus-visible .nd{stroke:var(--ink);stroke-width:3}
+#s05 .tree .key-btn.is-sel .nd{stroke-width:3.5}
+#s05 .tree .nd-s.is-sel{stroke:var(--c-a);stroke-width:3}
+#s05 .tree .edge.is-sel{stroke:var(--c-a);stroke-width:2.4}
+#s05 .scroll-hint{display:none;margin:0 0 6px}
+#s05 .s05-ov{display:grid;grid-template-columns:250px minmax(0,1fr);gap:12px 32px;align-items:center}
+#s05 .s05-ov .vfig{max-width:250px}
+#s05 .s05-two{display:grid;grid-template-columns:repeat(2,auto);justify-content:start;gap:12px 40px;align-items:start}
+@media(max-width:820px){#s05 .s05-ov,#s05 .s05-two,#s05 .s05-w,#s05 .s05-rec{grid-template-columns:minmax(0,1fr)}#s05 .scroll-hint{display:block}}
+body.present #s05 .rd,body.present #s05 .ws-lab{font-size:22px;line-height:1.35}
+body.present #s05 .dt-cap,body.present #s05 .dt-note,body.present #s05 .scroll-hint{display:none}
+body.present #s05 .dt td,body.present #s05 .dt th{padding:.16em .45em}
+body.present #s05 .s05-w{gap:0 48px}
+body.present #s05 .s05-rec{gap:0 28px;grid-template-columns:repeat(2,minmax(0,max-content))}
+body.present #s05 .s05-rec>:first-child{grid-column:1/-1}
+body.present #s05 .tree-wrap{overflow:visible;padding:0}
+body.present #s05 .tree{min-width:0;max-width:none;max-height:410px}
+body.present #s05 .tree text{font-size:16px}
+body.present #s05 .tree .num{font-size:15.5px}
+body.present #s05 .tree .sym-t{font-size:21px}
+body.present #s05 .tree .rl{font-size:15px}
+body.present #s05 .calc-rounding{display:none}
+body.present #s05 .vfig figcaption{font-size:21px}
+body.present #s05 .s05-ov{gap:0 40px}
+body.present #s05 .s05-ov figcaption{display:none}
+body.present #s05 .s05-two{gap:0 56px}
+</style>
+<header class="sec-head">
+  <span class="sec-num">05</span>
+  <div>
+    <p class="eyebrow">Seventeen rows are ready. CLS forms a query, every row offers a key, and the scores decide where CLS reads.</p>
+    <h2>Routing: CLS chooses where to read</h2>
+  </div>
+</header>
 
-It does not equal the original raw pixels or necessarily the pre-position patch embedding. Test this equality rather than asking students to accept a caveat.</script>
+<div class="companion" data-kicker="For self-study">
+  <p>Bring the search roles of Part 2 to the image. CLS is the receiver: it asks with its query $\vq{q_0} = \ve{e_0} W_Q$. Every row, CLS included, publishes a key $\vk{k_j} = \ve{e_j} W_K$ that says when it is worth reading, and a value $\vv{v_j} = \ve{e_j} W_V$ that says what it would send. The matching axes have names too: bright region? and on the right? Before training the query asks both with weight one; a key answers the first with brightness and the second with column. Open a record, click a key in the routing tree, then look at the softmax weights painted on the image: that picture is what the rest of the page tracks.</p>
 </div>
-<div class="frame" data-title="Change only the value map: do the weights change?" data-autobuild="off">
-  <div class="vision1-story" id="s05-value-change"></div>
-  <div id="s05-value-check" data-build="1"></div>
-  <script type="text/x-notes">The same patch 4 is still read with exactly the same weight.
 
-The second value coordinate is now 10 rather than 5, so twice as much enters that coordinate of its message contribution. This directly demonstrates why matching keys and sending values are different projections.</script>
+<div class="frame" data-title="CLS asks; every row offers" data-autobuild="off">
+  <script type="text/x-notes">Which row supplies the query, and which rows may answer?
+CLS supplies the one query. All seventeen rows, CLS included, supply a key and a value. Read the two matrices aloud: the query takes brightness into both questions; a key answers bright region? with brightness and on the right? with col.</script>
+  <div class="prose">
+    <p><strong>CLS is the receiver.</strong> Its <span class="sym sym-q">query</span> says what it looks for: $\vq{q_0} = \ve{e_0} W_Q$. Each row publishes a <span class="sym sym-k">key</span> to match against: $\vk{k_j} = \ve{e_j} W_K$.</p>
+  </div>
+  <div class="card" data-build="1">
+    <div class="s05-w" id="s05-wqk"></div>
+    <p class="rd" id="s05-wread"></p>
+  </div>
 </div>
-<div class="frame" data-title="Restore the original values, then pair them with weights" data-autobuild="off">
-  <div class="vision1-story" id="s05-pairs"></div>
-  <p class="callout callout-key" data-build="1">One weight scales <strong>every coordinate</strong> in the value from the same source.</p>
-  <script type="text/x-notes">Re-anchor the main calculation after the intervention.
 
-Keep the source picture, source index, alpha, and value aligned. No query/key vector is added here.</script>
+<div class="frame" data-title="One row's record: e, k and v" data-autobuild="off">
+  <script type="text/x-notes">Pick a row. Its three rows come from the same e through three different matrices.
+Compare a mug centre with a table patch: the key of the table patch offers no brightness, only its column. The value is what would arrive if this row is read; the key never travels.</script>
+  <div class="card">
+    <div id="s05-pick"></div>
+    <div class="s05-rec" id="s05-rec"></div>
+    <p class="rd" id="s05-rread" data-build="1"></p>
+  </div>
 </div>
-<div class="frame" data-title="Work one contribution from patch 4" data-autobuild="off">
-  <div class="vision1-story" id="s05-one-value"></div>
-  <div class="vision1-equation" id="s05-one-product" data-build="1"></div>
-  <p class="vision1-caption">Displayed numbers are rounded; calculations keep the unrounded weights.</p>
-  <script type="text/x-notes">Use the unrounded alpha for calculation.
 
-The displayed result is rounded. This is not selecting patch 4 and discarding all other patches; it is one term in a weighted sum.</script>
+<div class="frame" data-title="The key, worked" data-autobuild="off">
+  <script type="text/x-notes">One line per matching axis: each coordinate of e times the column of W_K below it.
+The row is the selected patch's own e, position included. That is how a key can say which column the patch is in.</script>
+  <div class="card">
+    <p class="ws-lab" id="s05-klab"></p>
+    <div id="s05-kcalc"></div>
+  </div>
+  <div class="callout callout-key" data-build="1">The key is a matching description. It is not the information CLS will receive; that is the value, in the next section.</div>
 </div>
-<div class="frame" data-title="Do the same multiplication for all five sources" data-autobuild="off">
-  <div class="vision1-story" id="s05-contributions"></div>
-  <p>Each contribution is a vector $\alpha_{0j}v_j$. Now add down coordinate 1, and separately down coordinate 2.</p>
-  <script type="text/x-notes">Pause on the blank patches: their positioned rows are not both zero, so their value contributions can be nonzero.
 
-The raw patch, content embedding, positioned input, and value are successive quantities.</script>
+<div class="frame" data-title="The routing tree: one query, seventeen keys" data-autobuild="off">
+  <script type="text/x-notes">The query at the top is reused on every edge. Click a key to inspect its score.
+Scores are q dot k over the square root of two. Below them, the softmax row: the brightest patch in the right column wins, because the untrained query asks for exactly that.</script>
+  <div class="card">
+    <h3 class="card-title">CLS's query against every key: scores, then softmax weights</h3>
+    <p class="muted small scroll-hint">Scroll sideways to see all seventeen keys.</p>
+    <div class="scroll-x tree-wrap dotgrid"><div id="s05-tree"></div></div>
+    <p class="rd" id="s05-tread" data-build="1"></p>
+  </div>
 </div>
-<div class="frame" data-title="The sum is information for this CLS query" data-autobuild="off">
-  <div id="s05-sum"></div>
-  <p class="callout callout-key" data-build="1">The two-number message $m_0$ combines this image’s source values. Its coordinates are <strong>features, not class probabilities</strong>.</p>
-  <script type="text/x-notes">The subscript0 belongs to the receiving CLS row.
 
-The message is query-specific; another receiver generally has different weights. Features do not need to sum to 1 even though the weights do.</script>
+<div class="frame" data-title="One edge, written out" data-autobuild="off">
+  <script type="text/x-notes">Multiply matching coordinates, add, divide by the square root of the key width.
+Two products only, because d_k is 2. Go back one frame to choose another key and compare.</script>
+  <div class="card">
+    <p class="ws-lab" id="s05-elab"></p>
+    <div id="s05-ecalc"></div>
+  </div>
+  <div class="prose" data-build="1">$$s_{0j} = \frac{\vq{q_0}\cdot\vk{k_j}}{\sqrt{d_k}}, \qquad \va{\alpha_{0j}} = \frac{e^{s_{0j}}}{\sum_{r=0}^{16} e^{s_{0r}}}$$</div>
 </div>
-<div class="frame" data-title="Add the incoming update to the original CLS row" data-autobuild="off">
-  <div class="vision1-story" id="s05-residual"></div>
-  <p>$W_O=I_2$ leaves the message unchanged here. The new CLS row includes its original $(1,1)$ <strong>plus information from this image</strong>.</p>
-  <script type="text/x-notes">W_O maps the message back to representation width before the residual addition.
 
-The widths are both 2 in this worksheet, and identity leaves the message unchanged. In a multi-head model the concatenated messages are projected back to model width.</script>
+<div class="frame" data-title="Softmax paints the weights on the image" data-autobuild="off">
+  <script type="text/x-notes">This is the figure to remember: every patch tinted by how much CLS reads it.
+Seventeen weights, one shared denominator, no mask: an image encoder lets every row read every row, CLS included. Read the top three aloud. Hover a patch for its key and value.</script>
+  <div class="card">
+    <h3 class="card-title">What CLS reads in scene A before training: $\va{\alpha_{0j}}$ per patch</h3>
+    <div class="s05-ov">
+      <div id="s05-ovA"></div>
+      <div>
+        <p class="rd" id="s05-oread"></p>
+        <p class="rd companion" id="s05-ohover">Hover or focus a patch to see its key and value.</p>
+      </div>
+    </div>
+  </div>
+  <div class="callout callout-key" data-build="1">Softmax runs over the seventeen source rows, not over the answers. Nothing has been sent yet.</div>
 </div>
-<div class="frame" data-title="This changes a representation, not the stored CLS parameter" data-autobuild="off">
-  <div id="s05-state"></div>
-  <p>The stored $c$ is still $(1,1)$. It is copied as the starting row for the next image too.</p>
-  <p data-build="1">Only a training step changes stored parameters. A forward pass computes new intermediate rows from them.</p>
-  <script type="text/x-notes">This distinction matters because 'update' has two meanings: adding contextual information to a token row and changing a learned parameter with an optimizer.
 
-Make the two rows in the table concrete rather than introducing a new symbol x.</script>
+<div class="frame" data-title="Before training, on both training scenes" data-autobuild="off">
+  <script type="text/x-notes">Same query, same matrices, different keys: the map follows the pixels.
+In scene A the right mug centre wins. In scene B there is nothing bright on the right, so the left mug centre wins and the weights spread. The untrained model already reacts to the scene; what it does with that is the next section.</script>
+  <div class="card">
+    <div class="s05-two" id="s05-both"></div>
+    <p class="rd" id="s05-bread" data-build="1"></p>
+  </div>
 </div>
-<div class="frame" data-title="Each of the five rows can collect its own message" data-autobuild="off">
-  <p>Stack all five reads. Row $i$ of the message matrix $H$ is the message $m_i$.</p>
-  <p class="vision1-equation" data-build="1">$\underbrace{A}_{5\times5}\;\underbrace{V}_{5\times2}=\underbrace{H}_{5\times2}$</p>
-  <pre class="torch-snippet" data-build="2"><code>Q, K, V = E @ W_Q, E @ W_K, E @ W_V
-A = ((Q @ K.T) / math.sqrt(2)).softmax(dim=-1)
-E_next = E + (A @ V) @ W_O       # [5, 2]</code></pre>
-  <p class="callout callout-key" data-build="3">All reads use the <strong>same original input rows</strong>. The classifier will use updated row 0; patch rows remain available for later layers.</p>
-  <script type="text/x-notes">There is no update order between neighbors.
 
-This is image self-attention because all queries, keys and values come from the same image-token sequence. The complete photo model later has multiple such layers.</script>
+<div class="companion">
+  <div class="card">
+    <h3 class="card-title">The same routing as a worksheet: the query above all seventeen keys</h3>
+    <div id="s05-dot"></div>
+  </div>
 </div>
-<div class="frame" data-title="Return to the patch swap: can CLS tell the layouts apart?" data-autobuild="off">
-  <div class="vision1-story" id="s05-position-check"></div>
-  <p>These are the two coordinates of <span class="m-ep">updated CLS</span>, computed with the same model weights. Turning off position additions makes the two outputs identical.</p>
-  <script type="text/x-notes">Compare across each row, not down a column.
 
-Without positions, CLS sees the same collection of patch contents and returns the same result. With positions, each content row is paired with a slot vector. Different outputs show sensitivity to layout; they do not prove that the model can answer every location question.</script>
+<div class="companion after">
+  <p>Queries and keys have chosen where CLS reads: a row of seventeen weights that sum to one, painted on the image. The values have not entered yet. Next, CLS collects them.</p>
 </div>
-<div class="companion after"><h3>Try another receiving row</h3><div id="s05-explore"></div><p>The receiving query changes; the source keys and values are still those of the original image-token rows. A large attention weight describes the amount of a source value in this weighted sum. By itself it does not establish that a patch caused the final class decision.</p><h3>What did changing only values do?</h3><div id="s05-value-results"></div><p>Query and key computations were untouched, so each of the five weights stayed unchanged. The second coordinate of every value doubled, which doubled the second coordinate of the message. This comparison returns to the identity value map for the main classifier calculation.</p></div>
-<script>AT.vision.story(document.getElementById('s05-position-check'),{stage:'position-check'});</script>
-<script>(function(){const S=document.getElementById('s05'),T=AT.vision,F=T.forward(),altParams={W_V:[[1,0],[0,2]]},G=Object.assign({},F,T.attention(F.E,altParams),{params:altParams});for(const [id,stage,step]of[['value','values',99],['pairs','mix',0],['one-value','values',99],['contributions','mix',1],['residual','residual',99]])T.story(S.querySelector('#s05-'+id),{stage:stage,step:step,source:4,forward:F});T.story(S.querySelector('#s05-value-change'),{stage:'values',source:4,forward:G,params:altParams});AT.ui.reveal('Does patch 4 receive a different weight?','No. Query and keys are unchanged, so its weight is unchanged. Its value is now $(5,10)$ instead of $(5,5)$: the same amount of a different message.',{into:S.querySelector('#s05-value-check')});AT.tex(S.querySelector('#s05-one-product'),'\\alpha_{04}v_4\\approx'+F.A[0][4].toFixed(3)+'(5,5)\\approx('+F.V[4].map(v=>(v*F.A[0][4]).toFixed(3)).join(',')+')',{display:true});AT.ui.mixTable(F.A[0],F.V,{into:S.querySelector('#s05-sum'),weighted:true,axes:false,cols:['contribution 1','contribution 2'],rowLabels:T.labels,cornerLabel:'source',alphaLabel:'weight α₀ⱼ',alphaDecimals:3,decimals:3,footerLabel:'message m₀',note:null});AT.ui.table([T.data.cls,F.updated[0]],{into:S.querySelector('#s05-state'),rowLabels:['stored starting parameter c','computed CLS for this image e₀′'],cols:['coordinate 1','coordinate 2'],cornerLabel:'two different quantities',decimals:3});AT.ui.table([F.message[0],G.message[0]],{into:S.querySelector('#s05-value-results'),rowLabels:['original value map I','second value coordinate doubled'],cols:['message coordinate 1','message coordinate 2'],cornerLabel:'identical attention weights',decimals:3});const host=S.querySelector('#s05-explore'),label=AT.h('label',{},'Receiving row: '),select=AT.h('select',{'aria-label':'Receiving image-token row'}),plot=AT.h('div',{class:'vision1-story'});T.labels.forEach((name,i)=>select.appendChild(AT.h('option',{value:String(i)},name)));label.appendChild(select);host.append(label,plot);const draw=()=>T.story(plot,{stage:'weights',receiver:Number(select.value),forward:F});select.addEventListener('change',draw);draw();})();</script>
+
+<script>
+(function(){
+  const S = document.getElementById('s05');
+  const V = AT.vision, sv = AT.svg;
+  const g = 'A';
+  const F = V.forward(g, 'initial'), FB = V.forward('B', 'initial');
+  const P = V.params('initial');
+  const N = F.E.length;               /* 17 rows */
+  const q = F.Q[0], scores = F.S[0], alpha = F.A[0];
+  const labelsE = V.rowLabelsE(g);
+  const shQK = V.axes.short.qk, shE = V.axes.short.e, shV = V.axes.short.v;
+  const joinAnd = (xs) => xs.length <= 1 ? xs.join('') : xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1];
+  const rowName = (i) => V.rowName(g, i);
+  let sel = 8;      /* the selected source row: patch 8, right mug centre */
+  let rec = 8;      /* the record on show */
+
+  /* ---------- readings computed from the matrices ---------- */
+  function readW(W, inAx, outAx, verb){
+    return outAx.map((o, c) => {
+      const ins = W.map((row, r) => ({ w: +row[c] || 0, n: inAx[r] })).filter(t => t.w !== 0).map(t => t.n + (t.w === 1 ? '' : ' (' + AT.fmt(t.w, 2) + ')'));
+      return o + ' ' + verb + ' ' + (ins.length ? joinAnd(ins) : 'nothing');
+    }).join('; ');
+  }
+  const wq = AT.ui.wTable(P.W_Q, { from: 'e', to: 'qk', cls: 'q', decimals: 1, caption: '$W_Q$: an $\\ve{e}$ axis (row) feeds a question (column). Only CLS uses it here.', into: S.querySelector('#s05-wqk') });
+  const wk = AT.ui.wTable(P.W_K, { from: 'e', to: 'qk', cls: 'k', decimals: 1, caption: '$W_K$: every row makes a key with it. Position rows of $W_Q$ are zero; $W_K$ reads col.', into: S.querySelector('#s05-wqk') });
+  S.querySelector('#s05-wread').innerHTML = 'Reading $W_Q$ (questions from axes): ' + AT.escape(readW(P.W_Q, shE, shQK, 'asks with')) + '. So $\\vq{q_0} = (' + q.map(x => AT.fmt(x, 2)).join(', ') + ')$: CLS asks ' + AT.escape(shQK[0]) + ' and ' + AT.escape(shQK[1]) + ' with equal weight. Reading $W_K$: ' + AT.escape(readW(P.W_K, shE, shQK, 'is answered by')) + '.';
+  AT.renderMath(S.querySelector('#s05-wread'));
+
+  /* ---------- the record view ---------- */
+  const recHost = S.querySelector('#s05-rec'), rread = S.querySelector('#s05-rread');
+  const klab = S.querySelector('#s05-klab'), kcalcHost = S.querySelector('#s05-kcalc');
+  let kcalc = null;
+  function readRecord(i){
+    const e = F.E[i], k = F.K[i], v = F.V[i];
+    const offers = k.map((x, c) => ({ x, n: shQK[c] })).filter(t => Math.abs(t.x) >= 0.05).map(t => t.n + ' ' + AT.fmt(t.x, 2));
+    const sends = v.map((x, c) => ({ x, n: V.axes.v[c].replace(/^sends: /, '') })).filter(t => Math.abs(t.x) >= 0.05).map(t => t.n + ' ' + AT.fmt(t.x, 2));
+    return 'Reading the record of ' + rowName(i) + ': ' + V.readRow(e, 'e', 2) + '; its key offers ' + (offers.length ? joinAnd(offers) : 'nothing') + '; its value sends ' + (sends.length ? joinAnd(sends) : 'nothing') + '.';
+  }
+  function drawRecord(){
+    AT.clear(recHost);
+    const n = rec, lab = rowName(n);
+    AT.ui.table([F.E[n]], { rowLabels: ['$\\ve{e_{' + n + '}}$'], rowCls: 'e', cornerLabel: lab, into: recHost });
+    AT.ui.table([F.K[n]], { rowLabels: ['$\\vk{k_{' + n + '}}$'], rowCls: 'k', cornerLabel: 'key', into: recHost });
+    AT.ui.table([F.V[n]], { rowLabels: ['$\\vv{v_{' + n + '}}$'], rowCls: 'v', cornerLabel: 'value', into: recHost });
+    rread.textContent = readRecord(n);
+    const xl = 'e · ' + (n === 0 ? 'CLS' : 'patch ' + n), ol = 'k · ' + (n === 0 ? 'CLS' : 'patch ' + n);
+    if (!kcalc) kcalc = AT.ui.matVecCalc(F.E[n], P.W_K, { from: 'e', to: 'qk', cls: 'k', xLabel: xl, outLabel: ol, into: kcalcHost });
+    else kcalc.update(F.E[n], { xLabel: xl, outLabel: ol });
+    klab.innerHTML = 'The key of ' + AT.escape(lab) + ': $\\vk{k_{' + n + '}} = \\ve{e_{' + n + '}}\\,W_K$, one line per matching axis.';
+    AT.renderMath(klab);
+  }
+  V.picker(g, { active: rec, label: 'Row', into: S.querySelector('#s05-pick'), onClick: (i) => { rec = i; drawRecord(); } });
+  drawRecord();
+
+  /* ---------- the routing tree with seventeen leaves ---------- */
+  const W = 1060, H = 330;
+  const svg = sv('svg', { viewBox: '0 0 ' + W + ' ' + H, class: 'tree', role: 'img', 'aria-label': 'Routing tree: the query of CLS compared with the key of every row, giving seventeen scores and softmax weights' });
+  const qx = 555, qy = 12, qw = 96, qh = 38;
+  const leafX = (j) => 78 + j * 57.5, leafW = 50, leafY = 138, leafH = 50, scY = 214, alY = 272, rowH = 30;
+  const ph = {}, scoreBoxes = [];
+  function grp(name){ const e = sv('g', { class: 'ph', 'data-ph': name }); svg.appendChild(e); ph[name] = e; return e; }
+  function label(gel, x, y, s){ gel.appendChild(sv('text', { x, y, class: 'rl' }, s)); }
+  const gl = grp('labels');
+  label(gl, 6, leafY + leafH / 2 - 8, 'keys');
+  gl.appendChild(sv('text', { x: 6, y: leafY + leafH / 2 + 8, class: 'rl' }, 'k · row'));
+  label(gl, 6, scY + rowH / 2 - 8, 'scores');
+  gl.appendChild(sv('text', { x: 6, y: scY + rowH / 2 + 8, class: 'rl' }, 'q·k/√2'));
+  label(gl, 6, alY + rowH / 2 - 8, 'softmax');
+  gl.appendChild(sv('text', { x: 6, y: alY + rowH / 2 + 8, class: 'rl' }, 'weights'));
+  for (let j = 0; j < N; j++) {
+    const cx = leafX(j) + leafW / 2;
+    const ge = grp('edge' + j);
+    ge.appendChild(sv('path', { class: 'edge', d: 'M' + qx + ' ' + (qy + qh) + ' C ' + qx + ' ' + (qy + qh + 50) + ', ' + cx + ' ' + (leafY - 50) + ', ' + cx + ' ' + leafY }));
+    const gk = grp('key' + j);
+    gk.setAttribute('class', 'ph key-btn'); gk.setAttribute('role', 'button'); gk.setAttribute('tabindex', '0');
+    gk.setAttribute('aria-label', 'show the score of the key of ' + rowName(j) + ' written out');
+    gk.addEventListener('click', () => selectKey(j));
+    gk.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); selectKey(j); } });
+    gk.appendChild(sv('rect', { class: 'nd nd-k', x: leafX(j), y: leafY, width: leafW, height: leafH }));
+    if (j === 0) gk.appendChild(sv('text', { x: cx, y: leafY + leafH / 2 + 1, class: 'sym-t t-k' }, 'CLS'));
+    else { const t = V.thumb(g, j - 1, { size: 22 }); t.setAttribute('x', cx - 11); t.setAttribute('y', leafY + 5); gk.appendChild(t); gk.appendChild(sv('text', { x: cx, y: leafY + leafH - 10, class: 'num' }, String(j))); }
+    gk.appendChild(sv('title', {}, rowName(j)));
+    const gs = grp('score' + j);
+    scoreBoxes[j] = sv('rect', { class: 'nd nd-s', x: leafX(j) + 2, y: scY, width: leafW - 4, height: rowH });
+    gs.appendChild(scoreBoxes[j]);
+    gs.appendChild(sv('text', { x: cx, y: scY + rowH / 2 + 1, class: 'num' }, AT.fmt(scores[j], 2)));
+    gs.appendChild(sv('path', { class: 'edge', d: 'M' + cx + ' ' + (leafY + leafH) + ' L ' + cx + ' ' + (scY - 2) }));
+    const ga = grp('alpha' + j);
+    const dark = alpha[j] > 0.6;
+    ga.appendChild(sv('rect', { class: 'nd nd-a', x: leafX(j) + 2, y: alY, width: leafW - 4, height: rowH, style: '--weight-fill:' + AT.heatColor(alpha[j]) }));
+    ga.appendChild(sv('text', { x: cx, y: alY + rowH / 2 + 1, class: 'num weight-number', style: '--weight-ink:' + (dark ? 'var(--card)' : 'var(--ink)') }, AT.fmt(alpha[j], 2)));
+    ga.appendChild(sv('path', { class: 'edge', d: 'M' + cx + ' ' + (scY + rowH) + ' L ' + cx + ' ' + (alY - 2) }));
+  }
+  const gq = grp('query');
+  gq.appendChild(sv('rect', { class: 'nd nd-q', x: qx - qw / 2, y: qy, width: qw, height: qh }));
+  const tq = sv('text', { x: qx, y: qy + qh / 2 + 1, class: 'sym-t t-q' }, 'q');
+  tq.appendChild(sv('tspan', { dy: '5', 'font-size': '12', 'font-style': 'normal', 'font-family': 'var(--font-ui)' }, ' CLS'));
+  gq.appendChild(tq);
+  S.querySelector('#s05-tree').appendChild(svg);
+  S.querySelector('#s05-tread').textContent = 'Reading the bottom row: ' + V.readAttention(alpha, g, 3) + '. The largest score belongs to the brightest patch in the rightmost column, which is what a query of (1, 1) on bright? and right? asks for.';
+
+  /* the worksheet for the selected edge */
+  const elab = S.querySelector('#s05-elab');
+  const ws = AT.ui.dotCalc(q, F.K[sel], { axes: 'qk', qLabel: 'q · CLS', kLabel: 'k · ' + rowName(sel), scale: true, d_k: AT.d_k, into: S.querySelector('#s05-ecalc') });
+  function selectKey(j){
+    sel = j;
+    for (let k = 0; k < N; k++) {
+      ph['key' + k].classList.toggle('is-sel', k === j);
+      scoreBoxes[k].classList.toggle('is-sel', k === j);
+      ph['edge' + k].querySelector('.edge').classList.toggle('is-sel', k === j);
+    }
+    ws.update(q, F.K[j], { kLabel: 'k · ' + rowName(j) });
+    elab.innerHTML = 'The edge to ' + AT.escape(rowName(j)) + ': $\\vq{q_0}\\cdot\\vk{k_{' + j + '}}/\\sqrt{d_k} = ' + AT.fmt(scores[j], 2) + '$, weight $\\va{\\alpha_{0,' + j + '}} = ' + AT.fmt(alpha[j], 2) + '$. Click another key in the tree to change it.';
+    AT.renderMath(elab);
+  }
+  selectKey(sel);
+
+  /* ---------- the overlay: attention painted on the image ---------- */
+  const hov = S.querySelector('#s05-ohover');
+  const onHover = (j) => { const i = j + 1; hov.textContent = V.patchLabel(g, j) + ': weight ' + AT.fmt(alpha[i], 3) + ', key (' + F.K[i].map(x => AT.fmt(x, 2)).join(', ') + '), value (' + F.V[i].map(x => AT.fmt(x, 2)).join(', ') + ').'; };
+  V.overlay(g, alpha, { cell: 30, decimals: 2, onHover, into: S.querySelector('#s05-ovA'), caption: 'Tint and number: the weight of each patch.' });
+  S.querySelector('#s05-oread').innerHTML = 'Reading $\\va{\\alpha_{0j}}$ for scene A: ' + AT.escape(V.readAttention(alpha, g, 3)) + '. The seventeen weights sum to ' + AT.fmt(AT.sum(alpha), 2) + '; the mug patches together receive ' + AT.fmt(V.regionMass(alpha, g, 'mug'), 2) + '.';
+  AT.renderMath(S.querySelector('#s05-oread'));
+
+  /* both training scenes */
+  const both = S.querySelector('#s05-both');
+  V.overlay('A', alpha, { cell: 24, decimals: 2, into: both, caption: 'Scene A, untrained: ' + V.topSources(alpha, 'A', 1)[0].label + ' wins' });
+  V.overlay('B', FB.A[0], { cell: 24, decimals: 2, into: both, caption: 'Scene B, untrained: ' + V.topSources(FB.A[0], 'B', 1)[0].label + ' wins' });
+  S.querySelector('#s05-bread').textContent = 'Scene A: ' + V.readAttention(alpha, 'A', 2) + '. Scene B: ' + V.readAttention(FB.A[0], 'B', 2) + '. The query is the same row in both; the keys changed because the pixels did.';
+
+  /* reading view: the full dotTable */
+  AT.ui.dotTable(q, F.K, { rowLabels: labelsE.map((s, j) => '$\\vk{k_{' + j + '}}$ ' + s), queryLabel: '$\\vq{q_0}$ CLS', cornerLabel: 'row', scaled: true, d_k: AT.d_k, into: S.querySelector('#s05-dot'),
+    caption: 'The query row above every key row, under the same two matching axes. The score column is $\\vq{q_0}\\cdot\\vk{k_j}/\\sqrt{2}$; softmax of this column is the routing row painted above.', note: 'Click a score to see the dot product written out.' });
+})();
+</script>
 </section>

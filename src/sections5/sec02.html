@@ -1,60 +1,122 @@
-<section id="s02" class="sec" data-title="Make one embedding from each patch" data-lit="e">
-<header class="sec-head"><span class="sec-num">02</span><div><p class="eyebrow">Follow four pixels into two features, one coordinate at a time.</p><h2>Make one embedding from each patch</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>A Transformer expects a sequence of equal-width rows. We could flatten the whole image into one long row, but then attention would have no separate regions to relate. We could use one row per pixel, but photographs would produce very long sequences. Patches choose an intermediate scale. Here a 2×2 patch gives four raw pixel values.</p></div>
-<div class="frame" data-title="Cut the image into four 2×2 patches" data-autobuild="off">
-  <div class="vision1-story" id="s02-patches"></div>
-  <p>Number patches left to right, then top to bottom. Keep this order throughout the calculation.</p>
-  <p class="vision1-equation" data-build="1">$N=(4/2)\times(4/2)=4\text{ patches}$</p>
-  <script type="text/x-notes">Point to each crop and its original location.
+<section id="s02" class="sec" data-title="The scene: one picture, one question" data-lit="">
+<style>
+#s02 .s02-two{display:grid;grid-template-columns:272px minmax(0,1fr);gap:16px 32px;align-items:start}
+#s02 .s02-two .vfig{max-width:272px}
+#s02 .s02-names{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;max-width:520px}
+#s02 .s02-cell{border:1px solid var(--line);border-radius:6px;padding:5px 6px;font-size:12.5px;line-height:1.25;display:flex;gap:6px;align-items:center;background:var(--card);min-width:0}
+#s02 .s02-cell .vthumb{flex:none;margin:0}
+#s02 .s02-cell b{display:block;font-family:var(--font-mono);font-weight:600;font-size:11.5px;color:var(--ink-3)}
+#s02 .s02-three{display:grid;grid-template-columns:repeat(3,auto);justify-content:start;gap:12px 28px;align-items:start}
+#s02 .s02-three figure{margin:0}
+#s02 .s02-three figcaption{font-size:14px;color:var(--ink-2);margin-top:6px;max-width:16em}
+#s02 .s02-three figcaption b{display:block;color:var(--ink)}
+#s02 .s02-read{font-size:15px;color:var(--ink-2);margin:12px 0 0;line-height:1.5}
+@media(max-width:760px){#s02 .s02-two{grid-template-columns:minmax(0,1fr)}#s02 .s02-three{grid-template-columns:1fr 1fr}}
+body.present #s02 .s02-two{grid-template-columns:272px minmax(0,1fr);gap:0 40px;align-items:center}
+body.present #s02 .s02-names{max-width:none;gap:6px}
+body.present #s02 .s02-cell{font-size:18px;padding:4px 8px;gap:8px;line-height:1.2}
+body.present #s02 .s02-cell b{font-size:16px}
+body.present #s02 .s02-three{gap:16px 44px}
+body.present #s02 .s02-three figcaption{font-size:22px;line-height:1.3}
+body.present #s02 .s02-read{font-size:24px;line-height:1.35}
+body.present #s02 .vfig figcaption{font-size:22px}
+</style>
+<header class="sec-head">
+  <span class="sec-num">02</span>
+  <div>
+    <p class="eyebrow">Before any arithmetic: a picture, a question, and the small scene we will compute on.</p>
+    <h2>The scene: one picture, one question</h2>
+  </div>
+</header>
 
-Cutting does not change any pixel value. The sequence order is a bookkeeping choice; we will separately tell the model where each crop belonged.</script>
+<div class="companion" data-kicker="For self-study">
+  <p>Part 2 had one sentence and one blank. This page has one scene and one question: is there a mug on the right half of the table? The photograph shows why the question is easy for you and hard for a grid of pixels: the mugs sit wherever they sit, and a patch grid cuts straight through them. We cannot multiply a photograph by hand, so the arithmetic runs on an 8×8 version of the same tabletop, with four grey levels and named regions. Read the pixel values once; from here on, every table on this page is about these sixteen patches, and every attention map is painted on this grid.</p>
 </div>
-<div class="frame" data-title="Flatten one patch without changing its pixels" data-autobuild="off">
-  <div class="vision1-story" id="s02-flatten"></div>
-  <p class="callout callout-key" data-build="1"><strong>Flattening only rearranges.</strong> It has no learned weights and does not mix the four pixels.</p>
-  <script type="text/x-notes">The four values happen to be equal.
 
-Follow the numbered positions and colored connectors, not just the number 2. We will change one pixel shortly to check that the order matters.</script>
+<div class="frame" data-title="Is there a mug on the right half?" data-autobuild="off">
+  <script type="text/x-notes">Ask the question before showing the label. Everyone answers instantly; the rest of the page is about how a model could.
+The book and the plant are part of the input too. The label says what answer we want, not which pixels to read. This illustration is generated; no model has looked at it.</script>
+  <div id="s02-photo"></div>
+  <p data-build="1">The input is the picture. Its label is <strong id="s02-label-a"></strong>. The other answer the model can give is <strong id="s02-label-b"></strong>.</p>
 </div>
-<div class="frame" data-title="Why make an embedding instead of keeping the pixels?" data-autobuild="off">
-  <p>Give each patch a row whose width we choose: here, $d_{\mathrm{model}}=2$.</p>
-  <p class="vision1-equation" data-build="1">$\underbrace{r_j}_{1\times4}\;\underbrace{W_{\mathrm{patch}}}_{4\times2}+\underbrace{b_{\mathrm{patch}}}_{1\times2}=\underbrace{e_j^{\mathrm{patch}}}_{1\times2}$</p>
-  <p data-build="2">Each output coordinate can combine several pixels. Training will change those combinations to help with the image task.</p>
-  <p class="callout callout-key" data-build="3">This is the image equivalent of making a token embedding. The patch’s actual pixels determine its row.</p>
-  <script type="text/x-notes">An embedding width is not always smaller than the raw patch width.
 
-We use four to two for hand calculation. The general purpose is a learned representation with a consistent model width.</script>
+<div class="frame" data-title="Cut the image into patches" data-autobuild="off">
+  <script type="text/x-notes">Follow the grid across a mug, the book and the empty table.
+The grid is fixed before the model knows where anything is. Some cells are all mug, some are half mug and half table, most are table. Every cell becomes one row, whatever it contains.</script>
+  <div id="s02-photo-grid"></div>
+  <p data-build="1">Every cell becomes one row of the input. The grid does not move to fit the mugs.</p>
 </div>
-<div class="frame" data-title="The first output uses the first matrix column" data-autobuild="off">
-  <div class="vision1-story" id="s02-project1"></div>
-  <p data-build="1">At these starting weights, coordinate 1 adds the <strong>left column</strong> of the patch. The bias is zero.</p>
-  <script type="text/x-notes">Point from each pixel to its coefficient.
 
-W_patch rows correspond to the flattened pixel positions; columns correspond to output features. These simple starting weights are specified, not discovered properties of a trained ViT.</script>
+<div class="frame" data-title="A patch is a piece of the input, not an object" data-autobuild="off">
+  <script type="text/x-notes">Trace the outlined cell into its enlargement: mug edge, table and part of the book in one patch.
+A row will describe this mixture. Nothing in the model knows the word mug. Whatever it learns about mugs, it learns from rows like this one.</script>
+  <div id="s02-photo-crop"></div>
+  <p data-build="1">One patch holds a mug edge, some table and a corner of the book. Its row will describe that mixture, and nothing else.</p>
 </div>
-<div class="frame" data-title="The second output uses the second column" data-autobuild="off">
-  <div class="vision1-story" id="s02-project2"></div>
-  <p data-build="1">Coordinate 2 adds the <strong>right column</strong>. Patch 4’s embedding is now $e_4^{\mathrm{patch}}=(4,4)$.</p>
-  <script type="text/x-notes">The two outputs happen to match because this patch is uniform.
 
-The matrix columns are different, which the next small perturbation will expose.</script>
+<div class="frame" data-title="The scene we can compute on" data-autobuild="off">
+  <script type="text/x-notes">This is the same table at 8×8: two mugs, a book, a plant, four grey levels.
+Read a few pixel values aloud: 3 is a mug, 2 the book, 1 the plant, 0 the table. The dashed lines are the sixteen 2×2 patches, numbered left to right and top to bottom. The names on the right come from the pixels each patch contains; the model never sees the names, only the numbers.</script>
+  <div class="card">
+    <h3 class="card-title">Scene A, 8×8 pixels with values 0 to 3, cut into sixteen 2×2 patches</h3>
+    <div class="s02-two">
+      <div id="s02-grid"></div>
+      <div>
+        <div class="s02-names" id="s02-names"></div>
+        <p class="s02-read" id="s02-read" data-build="1"></p>
+      </div>
+    </div>
+  </div>
 </div>
-<div class="frame" data-title="Change the top-left pixel from 2 to 1" data-autobuild="off">
-  <div class="vision1-story" id="s02-perturb"></div>
-  <p data-build="1">Only the left-column sum changes: $(4,4)\to(3,4)$. The right-column sum stays 4.</p>
-  <script type="text/x-notes">Ask students to predict the changed coordinate before the reveal.
 
-The raw row is (1,2,2,2); only the first coordinate drops, from 4 to 3. Return to the original image in the next frame.</script>
+<div class="frame" data-title="Three scenes, one question" data-autobuild="off">
+  <script type="text/x-notes">Scenes A and B are the training set. Scene C is the probe: the same single mug, moved to the right half.
+The model will be fitted to A and B only. Whether it answers C correctly is the test of what it learned, and we will look at that number in section 8 whatever it is.</script>
+  <div class="card">
+    <h3 class="card-title">The two training scenes and the probe</h3>
+    <div class="s02-three" id="s02-three"></div>
+  </div>
+  <div class="callout callout-key" data-build="1">A and B train the model. C never enters training: it asks whether the rule the model found is about the right half, or only about scenes A and B.</div>
 </div>
-<div class="frame" data-title="Back to the original image: one shared projection" data-autobuild="off">
-  <div class="vision1-story" id="s02-rows"></div>
-  <pre class="torch-snippet" data-build="1"><code>patch_embeddings = raw_patches @ W_patch + b_patch
-# [4, 4] @ [4, 2] + [2] → [4, 2]</code></pre>
-  <script type="text/x-notes">The zero patches have equal embeddings because their pixels are equal and the projection is shared.
 
-This observation is the reason for the position discussion next.</script>
+<div class="companion after">
+  <p>One scene, four grey levels, sixteen patches with names, and two possible answers. The next section turns each patch into a row of four numbers, and the names of those four numbers are the names of the axes for the rest of the page.</p>
 </div>
-<div class="companion after"><h3>Extract the rows in PyTorch</h3><pre class="torch-snippet"><code>rows = F.unfold(image, kernel_size=2, stride=2).transpose(1, 2)
-patch_embeddings = rows @ W_patch + b_patch</code></pre><p>Here <code>image</code> has shape <code>[batch, 1, 4, 4]</code>. The rows have shape <code>[batch, 4 patches, 4 pixels]</code>. A convolution with kernel size and stride equal to the patch side can perform this same shared patch projection.</p><h3>What if the patch size changes?</h3><div id="s02-explore"></div><p>These controls inspect how pixels are grouped. A new patch width needs a correspondingly sized projection; they do not silently run the fixed 4×2 weight matrix on a different-width row.</p></div>
-<script>(function(){const S=document.getElementById('s02'),T=AT.vision,F=T.forward();for(const [id,stage,opts]of[['patches','patches',{}],['flatten','flatten',{patch:3}],['project1','project',{patch:3,coordinate:0}],['project2','project',{patch:3,coordinate:1}],['perturb','project',{patch:3,coordinate:0,forward:T.forward({image:T.editImage(1)})}],['rows','patchRows',{}]])T.story(S.querySelector('#s02-'+id),Object.assign({stage:stage,forward:F},opts));T.patchExplorer(S.querySelector('#s02-explore'));})();</script>
+
+<script>
+(function(){
+  const S = document.getElementById('s02');
+  const V = AT.vision;
+  /* the photo hook, three views, only here */
+  AT.visionScene.mount(S.querySelector('#s02-photo'), { mode: 'scene', variant: 'two' });
+  AT.visionScene.mount(S.querySelector('#s02-photo-grid'), { mode: 'patches', variant: 'two' });
+  AT.visionScene.mount(S.querySelector('#s02-photo-crop'), { mode: 'patch-crop', variant: 'two' });
+  S.querySelector('#s02-label-a').textContent = V.labelOf('A');
+  S.querySelector('#s02-label-b').textContent = V.classes.filter(c => c !== V.labelOf('A'))[0];
+
+  /* the 8x8 scene with values and patch numbers */
+  V.grid('A', { cell: 32, labels: 'values', names: true, into: S.querySelector('#s02-grid'), caption: '0 table, 1 plant, 2 book, 3 mug. Dashed lines: the sixteen patches.' });
+  const names = S.querySelector('#s02-names');
+  const regions = V.regions('A');
+  regions.forEach((r, j) => {
+    const cell = AT.h('div', { class: 's02-cell' });
+    cell.appendChild(V.thumb('A', j, { size: 22 }));
+    cell.appendChild(AT.h('span', {}, AT.h('b', {}, 'patch ' + (j + 1)), r));
+    names.appendChild(cell);
+  });
+  const count = {};
+  regions.forEach(r => { const fam = r.indexOf('mug') >= 0 ? 'mug' : r.split(' ')[0]; count[fam] = (count[fam] || 0) + 1; });
+  S.querySelector('#s02-read').textContent = 'Sixteen patches: ' + (count.mug || 0) + ' touch a mug, ' + (count.book || 0) + ' touch the book, ' + (count.plant || 0) + ' holds the plant, ' + (count.table || 0) + ' is bare table. Every name comes from the pixels inside the patch; the model reads the numbers, not the names.';
+
+  /* the three scenes */
+  const three = S.querySelector('#s02-three');
+  [['A', 'training scene'], ['B', 'training scene'], ['C', 'the probe, never trained on']].forEach(([k, role]) => {
+    const f = AT.h('figure');
+    f.appendChild(V.grid(k, { cell: 20, labels: 'none' }));
+    const cap = AT.h('figcaption', {}, AT.h('b', {}, 'Scene ' + k + ': ' + V.sceneNames[k]), 'label: ' + V.labelOf(k) + ' · ' + role);
+    f.appendChild(cap);
+    three.appendChild(f);
+  });
+})();
+</script>
 </section>

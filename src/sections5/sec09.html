@@ -1,0 +1,110 @@
+<section id="s09" class="sec" data-title="What a trained model attends to" data-lit="">
+<style>
+#s09 .rd{margin:10px 0 0;font-size:15px;color:var(--ink-2);max-width:76ch;line-height:1.5}
+#s09 .btn[aria-pressed=true]{background:var(--ink);color:var(--card)}
+#s09 .s09-lay{display:grid;grid-template-columns:250px minmax(0,1fr);gap:12px 32px;align-items:center}
+#s09 .s09-lay .vfig{max-width:250px}
+#s09 .s09-q{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:12px 32px;align-items:center}
+#s09 .s09-q .vfig{max-width:230px}
+#s09 .s09-links a{color:var(--ink)}
+@media(max-width:820px){#s09 .s09-lay,#s09 .s09-q{grid-template-columns:minmax(0,1fr)}}
+body.present #s09 .rd{font-size:22px;line-height:1.35}
+body.present #s09 .dt-cap,body.present #s09 .dt-note{display:none}
+body.present #s09 .dt td,body.present #s09 .dt th{padding:.16em .45em}
+body.present #s09 .s09-lay,body.present #s09 .s09-q{gap:0 40px}
+body.present #s09 .vfig figcaption{font-size:21px}
+body.present #s09 .s09-links{font-size:.92em}
+</style>
+<header class="sec-head">
+  <span class="sec-num">09</span>
+  <div>
+    <p class="eyebrow">CLS is one receiver among seventeen. Every row reads the others; paint any of those rows on the image.</p>
+    <h2>What a trained model attends to</h2>
+  </div>
+</header>
+
+<div class="companion" data-kicker="For self-study">
+  <p>Attention runs for all seventeen rows at once, not only for CLS. Each patch row forms its own query, reads the other rows and receives its own update, which a second layer would use. Pick any receiver and any scene and the overlay shows its row of $\va{A}$. In this one-head toy the picture repeats itself, and the numbers say why: the trained query depends on brightness alone, so every row asks the same question at a different volume, and a dark patch asks nothing and reads every row equally. Real Vision Transformers have several heads and many layers; the last frame links to their published maps instead of drawing one we did not compute.</p>
+</div>
+
+<div class="frame" data-title="Pick a receiver" data-autobuild="off">
+  <script type="text/x-notes">Any row can be the receiver. Choose a scene and a row; the outline marks the receiver and the tints show its weights.
+Try patch 8 in scene A, then patch 16: a bright patch reads the right column hard, a dark patch reads everything equally. That difference is the query's length, nothing else.</script>
+  <div class="card">
+    <div class="btn-row" id="s09-scenes" role="group" aria-label="Choose a scene"></div>
+    <div id="s09-pick"></div>
+    <div class="s09-lay">
+      <div id="s09-ov"></div>
+      <p class="rd" id="s09-read" aria-live="polite" data-build="1"></p>
+    </div>
+  </div>
+</div>
+
+<div class="frame" data-title="Every row asks the same question here" data-autobuild="off">
+  <script type="text/x-notes">Read the table: the query of every row is its brightness times the same two numbers.
+The trained W_Q takes only the brightness axis. So all queries point the same way; a brighter patch asks louder. Patch 16 has brightness zero, so its query is zero, every score is zero, and its weights are all one seventeenth. This is a property of this one-head toy, not of Vision Transformers.</script>
+  <div class="card">
+    <div class="s09-q">
+      <div id="s09-qtab"></div>
+      <div id="s09-ov16"></div>
+    </div>
+    <p class="rd" id="s09-qread" data-build="1"></p>
+  </div>
+</div>
+
+<div class="frame" data-title="Attention maps of real Vision Transformers" data-autobuild="off">
+  <script type="text/x-notes">We did not compute a map on the photograph, so we do not show one.
+The ViT paper reports maps by attention rollout that often highlight the object named by the label. DINO shows that self-supervised ViTs put the CLS attention of some heads on object boundaries. Different heads read different things, and a map is a description of one forward pass, not an explanation of the answer.</script>
+  <div class="prose s09-links">
+    <p>The overlay is a row of $\va{A}$ painted on the input, and the same picture is drawn for real models: which patches does CLS read in the last layer, head by head?</p>
+    <p data-build="1">Dosovitskiy et al. (<a href="https://arxiv.org/abs/2010.11929">An image is worth 16×16 words</a>, 2021, figures 6 and 7) combine the maps of all layers by attention rollout and find that the highlighted patches often cover the object named by the label, with some heads reading globally already in the first layers.</p>
+    <p data-build="2">Caron et al. (<a href="https://arxiv.org/abs/2104.14294">Emerging properties in self-supervised Vision Transformers</a>, DINO, 2021) show CLS maps of a self-supervised ViT whose heads follow object outlines without any label.</p>
+  </div>
+  <div class="callout callout-note" data-build="3">A map shows where one row read on one forward pass. It does not by itself show that those patches caused the answer; our value-only intervention in section 6 is the kind of test that question needs.</div>
+</div>
+
+<div class="companion after">
+  <p>Every row reads every row, and in our toy they all ask the same question at different volumes. The overlay is the picture to carry to the next parts: what a row reads is what its update is made of.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s09');
+  const V = AT.vision;
+  const P1 = V.params('trained');
+  const shE = V.axes.short.e, shQK = V.axes.short.qk;
+  let scene = 'A', recv = 0;
+  const F = {}; ['A', 'B', 'C'].forEach(k => { F[k] = V.forward(k, 'trained'); });
+
+  /* frame 1: scene buttons, the picker and the overlay */
+  const sceneHost = S.querySelector('#s09-scenes');
+  const sceneBtns = ['A', 'B', 'C'].map(k => {
+    const b = AT.h('button', { type: 'button', class: 'btn', 'aria-pressed': k === scene ? 'true' : 'false' }, 'Scene ' + k + ': ' + V.sceneNames[k]);
+    b.addEventListener('click', () => { scene = k; sceneBtns.forEach((x, i) => x.setAttribute('aria-pressed', ['A', 'B', 'C'][i] === k ? 'true' : 'false')); pick.setScene(k); draw(); });
+    sceneHost.appendChild(b); return b;
+  });
+  const pick = V.picker(scene, { active: recv, label: 'Receiver', into: S.querySelector('#s09-pick'), onClick: (i) => { recv = i; draw(); } });
+  const ovHost = S.querySelector('#s09-ov'), read = S.querySelector('#s09-read');
+  function draw(){
+    const A = F[scene].A[recv];
+    AT.clear(ovHost);
+    V.overlay(scene, A, { cell: 28, decimals: 2, receiver: recv === 0 ? 'CLS' : recv - 1, into: ovHost, caption: 'Scene ' + scene + ', trained model: the row of ' + V.rowName(scene, recv) + ' in A. Purple outline: the receiver.' });
+    const q = F[scene].Q[recv], e = F[scene].E[recv];
+    read.innerHTML = 'Receiver ' + AT.escape(V.rowName(scene, recv)) + ': its query is $(' + q.map(x => AT.fmt(x, 2)).join(', ') + ')$, from brightness ' + AT.fmt(e[0], 2) + '. It reads ' + AT.escape(V.readAttention(A, scene, 3)) + '. The right column of the grid receives ' + AT.fmt([3, 7, 11, 15].reduce((s, j) => s + A[j + 1], 0), 2) + ' in total' + (recv > 0 ? '; its own weight is ' + AT.fmt(A[recv], 2) : '; the CLS self-weight is ' + AT.fmt(A[0], 2)) + '.';
+    AT.renderMath(read);
+  }
+  draw();
+  if (AT.present && AT.present.on) AT.present.on('frame', (st) => { if (st.frame && st.frame.id === 's09' && st.frame.index === 0 && (scene !== 'A' || recv !== 0)) { scene = 'A'; recv = 0; sceneBtns.forEach((x, i) => x.setAttribute('aria-pressed', i === 0 ? 'true' : 'false')); pick.setScene('A'); pick.setActive(0); draw(); } });
+
+  /* frame 2: the queries of four rows in scene A */
+  const FA = F.A;
+  const rowsQ = [0, 8, 9, 16];
+  const onlyBright = P1.W_Q.slice(1).every(r => r.every(x => x === 0));
+  AT.ui.table(rowsQ.map(i => [FA.E[i][0], FA.Q[i][0], FA.Q[i][1]]), { cols: [{ label: shE[0] + ' of $\\ve{e_i}$', cls: 'e' }, { label: shQK[0], cls: 'q' }, { label: shQK[1], cls: 'q' }], rowLabels: rowsQ.map(i => V.rowLabelRow('A', i)), cornerLabel: 'row', decimals: 2, into: S.querySelector('#s09-qtab'),
+    caption: 'Scene A, trained. The query of a row is its brightness times the first row of $W_Q$, $(' + P1.W_Q[0].map(x => AT.fmt(x, 2)).join(', ') + ')$' + (onlyBright ? ', because the other rows of $W_Q$ are zero.' : '.') });
+  V.overlay('A', FA.A[16], { cell: 22, decimals: 2, receiver: 15, into: S.querySelector('#s09-ov16'), caption: 'Receiver: ' + V.rowName('A', 16) + '. Zero query, equal weights.' });
+  S.querySelector('#s09-qread').innerHTML = (onlyBright ? 'Only the brightness row of the trained $W_Q$ is non-zero, so $\\vq{q_i} = \\text{brightness}_i \\times (' + P1.W_Q[0].map(x => AT.fmt(x, 2)).join(', ') + ')$ for every row. ' : '') + 'Every row asks the same question; a brighter row asks it louder and gets sharper weights. ' + AT.escape(V.rowName('A', 16)) + ' has brightness ' + AT.fmt(FA.E[16][0], 2) + ', a zero query, seventeen equal scores and weights of ' + AT.fmt(FA.A[16][0], 3) + ' each. A real ViT has several heads and many layers, and its queries are not all parallel.';
+  AT.renderMath(S.querySelector('#s09-qread'));
+})();
+</script>
+</section>

@@ -1,78 +1,209 @@
-<section id="s08" class="sec" data-title="Return to the tabletop scene" data-lit="e q k v a d ep">
+<section id="s08" class="sec" data-title="Learning from two labelled scenes" data-lit="">
 <style>
-#s08 .v1-scale-figure > svg{display:block;width:100%;height:auto}
-#s08 .v1-scale-eq{font-size:1.14em;text-align:center;margin:16px 0}
-#s08 .v1-scale-row{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:center}
-@media(max-width:650px){body:not(.present) #s08 .v1-scale-row{grid-template-columns:1fr}}
+#s08 .rd{margin:10px 0 0;font-size:15px;color:var(--ink-2);max-width:76ch;line-height:1.5}
+#s08 .s08-eq{font-size:1.1em;text-align:center;margin:12px 0}
+#s08 .s08-w{display:grid;grid-template-columns:repeat(2,minmax(0,max-content));justify-content:start;gap:8px 32px;align-items:start}
+#s08 .s08-w>*{min-width:0;max-width:100%}
+#s08 .s08-w3{grid-template-columns:repeat(3,minmax(0,max-content))}
+#s08 .s08-w .dt-fig{margin:6px 0 0}
+#s08 .s08-curve{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:12px 28px;align-items:center}
+#s08 .s08-two{display:grid;grid-template-columns:repeat(2,auto);justify-content:start;gap:12px 40px;align-items:start}
+#s08 .s08-probe{display:grid;grid-template-columns:230px minmax(0,1fr);gap:12px 32px;align-items:center}
+#s08 .s08-probe .vfig{max-width:230px}
+#s08 .dt td.dt-text{max-width:26em;line-height:1.35}
+@media(max-width:820px){#s08 .s08-w,#s08 .s08-w3,#s08 .s08-curve,#s08 .s08-two,#s08 .s08-probe{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:480px){#s08 .bars .bl{white-space:normal;text-align:left}}
+body.present #s08 .rd{font-size:22px;line-height:1.35}
+body.present #s08 .dt-cap,body.present #s08 .dt-note{display:none}
+body.present #s08 .dt td,body.present #s08 .dt th{padding:.16em .45em}
+body.present #s08 .dt td.dt-text{font-size:20px;max-width:20em;line-height:1.25}
+body.present #s08 .s08-which .dt td,body.present #s08 .s08-which .dt th{padding:.04em .45em;line-height:1.2}
+body.present #s08 .s08-which .card{padding:14px 26px}
+body.present #s08 .s08-w{gap:0 40px}
+body.present #s08 .s08-w3 .dt td.dt-num{font-size:21px;padding:.1em .4em}
+body.present #s08 .s08-w3 .dt th{font-size:19px;padding:.1em .4em}
+body.present #s08 .s08-eq{font-size:1em;margin:8px 0}
+body.present #s08 .vfig figcaption{font-size:21px}
+body.present #s08 .s08-two{gap:0 56px}
+body.present #s08 .s08-curve{gap:0 40px}
+body.present #s08 .s08-probe{gap:0 40px}
+body.present #s08 .s08-probe figcaption{display:none}
 </style>
-<header class="sec-head"><span class="sec-num">08</span><div><p class="eyebrow">More pixels change the sizes. The route to a prediction stays familiar.</p><h2>Return to the tabletop scene</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>The small example let us inspect every value and train a complete attention classifier. A practical Vision Transformer uses wider representations and several encoder blocks. We can scale the shapes without losing track of the input: count the patches, work out the raw width of each patch, choose a representation width, and add the class token. The architecture then adds normalization, multiple attention heads, and a feed-forward network.</p></div>
+<header class="sec-head">
+  <span class="sec-num">08</span>
+  <div>
+    <p class="eyebrow">A wrong answer with a known label is a gradient waiting to happen. Train the attention matrices and the head, then look again at what CLS reads.</p>
+    <h2>Learning from two labelled scenes</h2>
+  </div>
+</header>
 
-<div class="frame" data-title="Return to the scene: 196 patches" data-autobuild="off">
-  <div id="s08-patch-grid" class="v1-scale-figure"></div>
-  <p data-build="1">Center-crop and resize to 224×224, then use 16×16 patches.<br>$14\times14=196$ patches; add CLS for <strong>197 input rows</strong>.</p>
-  <script type="text/x-notes">Return to the same two-mug scene, now with a finer grid.
-
-We center-crop the original landscape illustration to a square and resize it to 224 by 224 pixels. Each patch contains 16 by 16 pixels. Fourteen across and fourteen down gives 196; add one CLS row. These are input shapes, not predictions from the two-block worksheet model.</script>
+<div class="companion" data-kicker="For self-study">
+  <p>The model is wrong on scene B. Training changes stored numbers so that the mean loss over the two labelled scenes falls. We keep the patch projection, the position rows and the CLS start fixed, so the axis names stay true, and let Adam fit the four attention matrices and the class head for 1,500 steps. Every later number is the fitted model. Read the trained matrices as you read the starting ones: CLS now asks mostly “on the right?”, and keys now answer mostly with their column. The overlay before and after training is the picture to keep. Scene C, a mug the model never saw at that place, is the one test of what was learned.</p>
 </div>
 
-<div class="frame" data-title="RGB gives each pixel three numbers" data-autobuild="off">
-  <div id="s08-rgb"></div>
-  <p class="v1-scale-eq" data-build="1">$\underbrace{r_j}_{1\times768}\;\underbrace{W_{\mathrm{patch}}}_{768\times384}+\underbrace{b_{\mathrm{patch}}}_{1\times384}=\underbrace{e_j^{\mathrm{patch}}}_{1\times384}$</p>
-  <p data-build="2">Here we choose a model width of <strong>384</strong>. Every learned position vector and the CLS row also has 384 numbers.</p>
-  <script type="text/x-notes">RGB gives three values per pixel, so each raw patch has 16 times 16 times three values.
-
-Representation width is a separate model choice. We choose 384 to make that distinction visible; it is not forced by the 768 pixel values.</script>
+<div class="frame" data-title="Two labelled scenes, one mean loss" data-autobuild="off">
+  <script type="text/x-notes">Each scene has its own loss; the objective is their mean.
+Scene B carries almost all of it. One optimizer step moves every trained number a little in the direction that lowers this mean.</script>
+  <div class="card">
+    <div id="s08-losses"></div>
+    <p class="s08-eq" id="s08-mean" data-build="1"></p>
+  </div>
+  <pre class="torch-snippet" data-build="2"><code>logits = model(scenes)                      # [2, 2]: two scenes, two answers
+loss = F.cross_entropy(logits, labels)      # mean over both scenes</code></pre>
 </div>
 
-<div class="frame" data-title="A full encoder block makes two residual updates" data-autobuild="off">
-  <div id="s08-block"></div>
-  <pre class="torch-snippet" data-build="1"><code>E = E + attention(norm1(E))  # exchange information across rows
-E = E + mlp(norm2(E))        # transform each row's features</code></pre>
-  <p data-build="2">Repeat the blocks. A final normalization and class head read the final CLS row.</p>
-  <script type="text/x-notes">Our numerical model isolated the attention path.
-
-This is the full pre-norm encoder pattern: normalization before each sublayer, a residual addition after each, and final normalization after the stack. The MLP shares weights across positions but does not mix different rows.</script>
+<div class="frame" data-title="Which numbers change, and which we keep" data-autobuild="off">
+  <script type="text/x-notes">Training changes stored parameters. The rows E, the keys, the weights and the messages are recomputed on every pass.
+We freeze three things so the names stay true: the patch projection, the position rows and the CLS start. Their row entries in W_Q and W_V are also kept at zero, so a query asks about content and a key may answer with content or column.</script>
+  <div class="card s08-which">
+    <div id="s08-which"></div>
+  </div>
+  <div class="callout callout-key" data-build="1">The optimizer stores new matrices, not a better map for scene B: the map is recomputed from them on every pass.</div>
 </div>
 
-<div class="frame" data-title="Several heads can collect different information" data-autobuild="off">
-  <div id="s08-heads" class="v1-scale-figure"></div>
-  <p data-build="1">Each head reads all <strong>384 input features</strong>. Its own projections make 64-number queries, keys, and values.</p>
-  <p data-build="2">Concatenate the six messages. $W_O$ returns an update with the same width as $E$.</p>
-  <script type="text/x-notes">We choose six heads of width sixty-four for the 384-wide illustration.
-
-Do not describe this as giving each head a different slice of the input. Every head projects the full input row. Their separate learned projections can collect different information.</script>
+<div class="frame" data-title="The loss curve" data-autobuild="off">
+  <script type="text/x-notes">Every point is another forward pass with the latest numbers.
+The mean loss starts at the value from the previous frame and is below 0.05 after fifty steps. The rest is the head growing confident.</script>
+  <div class="card">
+    <div class="s08-curve">
+      <div id="s08-curve"></div>
+      <p class="rd" id="s08-cread"></p>
+    </div>
+  </div>
+  <pre class="torch-snippet" data-build="1"><code>for step in range(1500):
+    optimizer.zero_grad()
+    F.cross_entropy(model(scenes), labels).backward()
+    optimizer.step()</code></pre>
 </div>
 
-<div class="frame" data-title="What if we do not have an image label?" data-autobuild="off">
-  <div id="s08-hide-patch" class="v1-scale-figure"></div>
-  <p data-build="1">Hide a patch. Use its original pixels as the training target.</p>
-  <script type="text/x-notes">This is one way to obtain supervision, not the definition of every self-supervised vision method.
+<div class="frame" data-title="What CLS asks for now" data-autobuild="off">
+  <script type="text/x-notes">Read the trained W_Q and W_K as you read the starting ones.
+The query still comes from brightness only, but it now weights “on the right?” about twice as much as “bright region?”. The keys answer both questions mostly with col: a key now says where a patch is more than how bright it is.</script>
+  <div class="card">
+    <div class="s08-w" id="s08-wqk"></div>
+    <p class="rd" id="s08-qkread" data-build="1"></p>
+  </div>
+</div>
 
-The next part distinguishes pixel reconstruction, matching views, and teacher feature targets. Keep the image-encoder machinery separate from the objective used to train it.</script>
+<div class="frame" data-title="What arrives, and where it lands" data-autobuild="off">
+  <script type="text/x-notes">Three more trained matrices: the value, the output projection and the head.
+The value still carries brightness. W_O now writes most of it onto the row and col axes of CLS, and the head reads exactly those two. For a patch, row and col mean position; for CLS after training they mean “how much brightness arrived from the right”. Say this out loud: names are true for the inputs, and a trained model may reuse a coordinate for whatever helps.</script>
+  <div class="card">
+    <div class="s08-w s08-w3" id="s08-wvo"></div>
+    <p class="rd" id="s08-voread" data-build="1"></p>
+  </div>
+</div>
+
+<div class="frame" data-title="What CLS reads, before and after" data-autobuild="off">
+  <script type="text/x-notes">The same scene, the same seventeen rows, two sets of matrices.
+Before: the brightest patches anywhere, with a tilt to the right. After: the right column of the image, mug or not, with the right mug centre far ahead. The trained model looks where the question points.</script>
+  <div class="card">
+    <div class="s08-two" id="s08-ba"></div>
+    <p class="rd" id="s08-baread" data-build="1"></p>
+  </div>
+</div>
+
+<div class="frame" data-title="Both training scenes, now" data-autobuild="off">
+  <script type="text/x-notes">Both scenes are now answered correctly with high probability.
+Both were used for training, so this is a fit, not a test. The next frame is the test.</script>
+  <div class="card">
+    <div id="s08-after"></div>
+  </div>
+  <div class="callout callout-key" data-build="1" id="s08-afterkey"></div>
+</div>
+
+<div class="frame" data-title="The probe: the same mug, moved to the right" data-autobuild="off">
+  <script type="text/x-notes">Scene C was never shown to the model. Its single mug sits in columns 4 to 6, in the right half.
+Read the overlay first, then the bars: CLS reads the mug's right edge and answers “mug on the right”, with less confidence than for scene A. One probe shows that the rule was about the right half in this case; it does not show that the model finds mugs anywhere.</script>
+  <div class="card">
+    <div class="s08-probe">
+      <div id="s08-probe"></div>
+      <div>
+        <div id="s08-probebars"></div>
+        <p class="rd" id="s08-pread"></p>
+      </div>
+    </div>
+  </div>
+  <div class="callout callout-key" data-build="1" id="s08-probekey"></div>
 </div>
 
 <div class="companion after">
-  <h3>Two details worth returning to</h3>
-  <p>Patch positions describe slots in the image. Without them, permuting the patch inputs permutes their self-attention outputs. If CLS stays in its slot, its output is unchanged by that patch permutation. This is permutation equivariance of the patch rows and invariance of the CLS readout, not invariance of the whole output matrix.</p>
-  <p>Smaller patches create more rows. For this 224×224 image, changing the patch side from 16 to 8 raises the patch count from 196 to 784. Including CLS, the attention matrix grows from 197×197 to 785×785. That counts score entries per head, not the complete runtime or all model memory.</p>
-  <p>The full encoder pattern follows the <a href="https://arxiv.org/html/2010.11929v2#S3">original Vision Transformer</a> and its <a href="https://github.com/google-research/vision_transformer/blob/main/vit_jax/models_vit.py">reference implementation</a>. Our two-image model demonstrates a calculation and a learning loop; it does not reproduce those trained models. Continue to <a href="vision2.html">Vision Part 2: learning visual features</a>.</p>
+  <p>Training changed six small matrices and one bias, and the model now answers both training scenes and the probe correctly. What it reads has changed with it: from the brightest patches to the right column. The next section looks at that reading for every row, not only CLS.</p>
 </div>
+
 <script>
 (function(){
-  const S=document.getElementById('s08'),T=AT.vision;
-  function svg(host,w,h,label){const s=AT.svg('svg',{viewBox:'0 0 '+w+' '+h,role:'img','data-vision1-diagram':label,'aria-label':label});host.appendChild(s);return s;}
-  function text(s,x,y,value,size,color,anchor){s.appendChild(AT.svg('text',{x,y,'font-size':size?Math.max(22,size):26,fill:color||'var(--ink)','font-family':'var(--font-ui)','text-anchor':anchor||'middle','dominant-baseline':'middle'},value));}
-  function rect(s,x,y,w,h,stroke,fill){s.appendChild(AT.svg('rect',{x,y,width:w,height:h,rx:5,stroke:stroke||'var(--ink-3)',fill:fill||'var(--card)','stroke-width':1.8}));}
-  function arrow(s,x1,y1,x2,y2,color){s.appendChild(AT.svg('path',{d:'M'+x1+' '+y1+'L'+x2+' '+y2,fill:'none',stroke:color||'var(--ink-3)','stroke-width':2}));const dx=x2-x1,dy=y2-y1,n=Math.hypot(dx,dy),ux=dx/n,uy=dy/n;s.appendChild(AT.svg('path',{d:'M'+(x2-10*ux+5*uy)+' '+(y2-10*uy-5*ux)+'L'+x2+' '+y2+'L'+(x2-10*ux-5*uy)+' '+(y2-10*uy+5*ux),fill:'none',stroke:color||'var(--ink-3)','stroke-width':2}));}
-  AT.visionScene.mount(S.querySelector('#s08-patch-grid'),{mode:'patches',variant:'two',grid:14,square:true});
-  T.story(S.querySelector('#s08-rgb'),{stage:'rgb'});
-  T.diagram(S.querySelector('#s08-block'),'block');
-  const heads=svg(S.querySelector('#s08-heads'),1100,285,'Six heads project the same 384-wide input rows into separate 64-wide messages, concatenate them, and apply an output projection.');
-  rect(heads,20,91,185,91,'var(--c-e)','var(--t-e)');text(heads,112,122,'same input E',25,'var(--c-e)');text(heads,112,155,'197 × 384',24);
-  for(let i=0;i<6;i++){const y=10+i*43;rect(heads,290,y,275,35,'var(--c-v)','var(--t-v)');text(heads,427,y+18,'head '+(i+1)+': 197 × 64',26);arrow(heads,205,137,278,y+18);arrow(heads,565,y+18,658,137,'var(--c-v)');}
-  rect(heads,670,89,175,94,'var(--c-v)','var(--t-v)');text(heads,757,117,'concatenate',24,'var(--c-v)');text(heads,757,151,'197 × 384',24);arrow(heads,845,137,898,137);rect(heads,909,89,165,94,'var(--c-d)','var(--t-d)');text(heads,991,116,'apply W_O',25,'var(--c-d)');text(heads,991,150,'197 × 384',24);text(heads,835,244,'384 numbers: one update per input row',24);
-  AT.visionScene.mount(S.querySelector('#s08-hide-patch'),{mode:'masked',variant:'two'});
+  const S = document.getElementById('s08');
+  const V = AT.vision;
+  const P0 = V.params('initial'), P1 = V.params('trained');
+  const cls = V.classes, shE = V.axes.short.e, shQK = V.axes.short.qk, fullV = V.axes.v, vName = V.axes.v.map(s => s.replace(/^sends: /, ''));
+  const L0 = { A: V.loss('A', 'initial'), B: V.loss('B', 'initial') }, L1 = { A: V.loss('A', 'trained'), B: V.loss('B', 'trained') };
+  const mean0 = V.meanLoss('initial'), mean1 = V.meanLoss('trained');
+  const curve = V.trainingCurve, steps = curve.length ? curve[curve.length - 1][0] : 0;
+  const joinAnd = (xs) => xs.length <= 1 ? xs.join('') : xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1];
+
+  /* frame 1: the two losses */
+  AT.ui.table(['A', 'B'].map(k => { const f = V.forward(k, 'initial'); return [V.labelOf(k), f.probs[V.labelIndex(k)], L0[k]]; }),
+    { cols: [{ label: 'label', kind: 'text' }, { label: 'p(label)', kind: 'number' }, { label: 'loss = −log p(label)', kind: 'number' }], rowLabels: ['scene A', 'scene B'], cornerLabel: 'untrained', decimals: 3, into: S.querySelector('#s08-losses') });
+  AT.tex(S.querySelector('#s08-mean'), 'L = \\tfrac{1}{2}(' + AT.fmt(L0.A, 3) + ' + ' + AT.fmt(L0.B, 3) + ') = ' + AT.fmt(mean0, 3), { display: true });
+
+  /* frame 2: fixed against trained */
+  const shape = (M) => Array.isArray(M[0]) ? M.length + '×' + M[0].length : '1×' + M.length;
+  const changed = (A, B) => A.flat().filter((x, i) => x !== B.flat()[i]).length;
+  AT.ui.table([
+    [shape(V.W_patch), 'fixed', 'brightness and contrast keep their names'],
+    [shape(V.pos), 'fixed', 'row and col keep their names'],
+    [shape(V.cls), 'fixed', 'the same start for every scene'],
+    [shape(P1.W_Q), changed(P0.W_Q, P1.W_Q) + ' entries changed', 'asks about content only'],
+    [shape(P1.W_K), changed(P0.W_K, P1.W_K) + ' entries changed', 'answers with content and col'],
+    [shape(P1.W_V), changed(P0.W_V, P1.W_V) + ' entries changed', 'what a row sends'],
+    [shape(P1.W_O), changed(P0.W_O, P1.W_O) + ' entries changed', 'where the message lands'],
+    [shape(P1.W_cls) + ', ' + shape(P1.b_cls), (changed(P0.W_cls, P1.W_cls) + changed(P0.b_cls, P1.b_cls)) + ' entries changed', 'the head']
+  ], { cols: [{ label: 'shape', kind: 'text' }, { label: 'after 1,500 steps', kind: 'text' }, { label: 'role', kind: 'text' }], rowLabels: ['W_patch', 'P (17 position rows)', 'c (CLS start)', 'W_Q', 'W_K', 'W_V', 'W_O', 'W_cls, b_cls'], cornerLabel: 'stored numbers', into: S.querySelector('#s08-which') });
+
+  /* frame 3: the loss curve, with the untrained loss as step 0 */
+  const data = [[0, mean0]].concat(curve);
+  V.curve(data, { width: 460, height: 220, label: 'Mean cross-entropy over scenes A and B, Adam, ' + steps + ' steps. Step 0 is the untrained model.', xlabel: 'training steps', mark: steps, into: S.querySelector('#s08-curve') });
+  const at = (s) => { let y = null; data.forEach(d => { if (d[0] <= s) y = d[1]; }); return y; };
+  S.querySelector('#s08-cread').textContent = 'Mean loss ' + AT.fmt(mean0, 3) + ' at step 0, ' + AT.fmt(at(1), 3) + ' after one step, ' + AT.fmt(at(50), 3) + ' after 50, ' + AT.fmt(at(steps), 4) + ' after ' + steps + '. Recomputed from the trained matrices: ' + AT.fmt(mean1, 4) + '. The two per-scene losses end at ' + AT.fmt(L1.A, 4) + ' (A) and ' + AT.fmt(L1.B, 4) + ' (B).';
+
+  /* frames 4 and 5: the trained matrices, read aloud */
+  function readW(W, inAx, outAx, verb){
+    return outAx.map((o, c) => {
+      const ins = W.map((row, r) => ({ w: +row[c] || 0, n: inAx[r] })).filter(t => Math.abs(t.w) >= 0.005).sort((a, b) => Math.abs(b.w) - Math.abs(a.w)).map(t => t.n + ' (' + AT.fmt(t.w, 2) + ')');
+      return o + ' ' + verb + ' ' + (ins.length ? joinAnd(ins) : 'nothing');
+    }).join('; ');
+  }
+  AT.ui.wTable(P1.W_Q, { from: 'e', to: 'qk', cls: 'q', decimals: 2, caption: '$W_Q$ after training.', into: S.querySelector('#s08-wqk') });
+  AT.ui.wTable(P1.W_K, { from: 'e', to: 'qk', cls: 'k', decimals: 2, caption: '$W_K$ after training.', into: S.querySelector('#s08-wqk') });
+  const q1 = V.forward('A', 'trained').Q[0];
+  S.querySelector('#s08-qkread').innerHTML = 'Reading $W_Q$: ' + AT.escape(readW(P1.W_Q, shE, shQK, 'asks with')) + '. So $\\vq{q_0} = (' + q1.map(x => AT.fmt(x, 2)).join(', ') + ')$: CLS asks ' + AT.escape(shQK[1]) + ' ' + AT.fmt(q1[1] / q1[0], 1) + ' times as hard as ' + AT.escape(shQK[0]) + '. Reading $W_K$: ' + AT.escape(readW(P1.W_K, shE, shQK, 'is answered by')) + '. Col dominates both columns: a key now mostly says which column its patch is in.';
+  AT.renderMath(S.querySelector('#s08-qkread'));
+  AT.ui.wTable(P1.W_V, { from: 'e', to: 'v', cls: 'v', decimals: 2, caption: '$W_V$ after training.', into: S.querySelector('#s08-wvo') });
+  AT.ui.wTable(P1.W_O, { from: 'v', to: 'e', cls: 'd', decimals: 2, caption: '$W_O$ after training.', into: S.querySelector('#s08-wvo') });
+  AT.ui.wTable(P1.W_cls, { from: 'e', to: [{ label: 'yes', title: cls[0] }, { label: 'no', title: cls[1] }], cls: 'neutral', decimals: 2, cornerLabel: '$W_{\\text{cls}}$', caption: 'The head after training: yes = ' + cls[0] + ', no = ' + cls[1] + '; bias ' + P1.b_cls.map(x => AT.fmt(x, 2)).join(', ') + '.', into: S.querySelector('#s08-wvo') });
+  S.querySelector('#s08-voread').innerHTML = 'Reading $W_V$: the value\'s ' + AT.escape(readW(P1.W_V, shE, vName, 'takes').replace('; ', '; its ')) + ', so a value still carries brightness. Reading $W_O$: ' + AT.escape(readW(P1.W_O, vName, shE, 'lands on')) + '. Reading the head: yes reads ' + AT.escape(readW(P1.W_cls, shE, ['yes'], 'from').replace(/^yes from /, '')) + ' with bias ' + AT.fmt(P1.b_cls[0], 2) + '; no is its mirror image. The brightness that arrives is written mostly onto the row and col axes of CLS and read from there. For a patch those axes mean position; for CLS, after training, they hold what it collected. The names are true for the inputs; a trained model may reuse a coordinate for whatever helps.';
+  AT.renderMath(S.querySelector('#s08-voread'));
+
+  /* frame 6: before and after, painted */
+  const a0 = V.attention('A', 'initial'), a1 = V.attention('A', 'trained');
+  const ba = S.querySelector('#s08-ba');
+  V.overlay('A', a0, { cell: 24, decimals: 2, into: ba, caption: 'Before training: ' + V.topSources(a0, 'A', 1)[0].label + ' ' + AT.fmt(a0[V.topSources(a0, 'A', 1)[0].i], 2) });
+  V.overlay('A', a1, { cell: 24, decimals: 2, into: ba, caption: 'After training: ' + V.topSources(a1, 'A', 1)[0].label + ' ' + AT.fmt(a1[V.topSources(a1, 'A', 1)[0].i], 2) });
+  const right = (al) => [3, 7, 11, 15].reduce((s, j) => s + al[j + 1], 0);
+  S.querySelector('#s08-baread').textContent = 'Before: ' + V.readAttention(a0, 'A', 3) + '. After: ' + V.readAttention(a1, 'A', 3) + '. The right column of the grid (patches 4, 8, 12, 16) receives ' + AT.fmt(right(a0), 2) + ' before and ' + AT.fmt(right(a1), 2) + ' after; the right mug alone receives ' + AT.fmt(V.regionMass(a1, 'A', 'right mug'), 2) + ' after training.';
+
+  /* frame 7: both scenes after training */
+  const rows = ['A', 'B'].map(k => { const f0 = V.forward(k, 'initial'), f1 = V.forward(k, 'trained'), i = V.labelIndex(k); return [f0.probs[i], f1.probs[i], L0[k], L1[k], V.predict(k, 'trained').label]; });
+  AT.ui.table(rows, { cols: [{ label: 'p before', kind: 'number' }, { label: 'p after', kind: 'number' }, { label: 'loss before', kind: 'number' }, { label: 'loss after', kind: 'number' }, { label: 'says', kind: 'text' }], rowLabels: ['A · ' + V.labelOf('A'), 'B · ' + V.labelOf('B')], cornerLabel: 'scene · label; p = p(label)', decimals: 3, into: S.querySelector('#s08-after') });
+  S.querySelector('#s08-afterkey').textContent = 'The trained model gives the true label p = ' + AT.fmt(rows[0][1], 3) + ' on scene A and p = ' + AT.fmt(rows[1][1], 3) + ' on scene B. Both scenes were in the training set, so this shows a fit, not a rule.';
+
+  /* frame 8: the probe */
+  const FC = V.forward('C', 'trained'), aC = FC.A[0], iC = V.labelIndex('C'), prC = V.predict('C', 'trained');
+  V.overlay('C', aC, { cell: 26, decimals: 2, into: S.querySelector('#s08-probe'), caption: 'Scene C, trained. Label: ' + V.labelOf('C') + '.' });
+  AT.ui.bars(cls.map((c, k) => ({ label: c, p: FC.probs[k] })), { cls: 'neutral', sorted: false, decimals: 3, max: 1, highlight: V.labelOf('C'), into: S.querySelector('#s08-probebars') });
+  S.querySelector('#s08-pread').textContent = 'CLS reads ' + V.readAttention(aC, 'C', 3) + '. The mug patches together receive ' + AT.fmt(V.regionMass(aC, 'C', 'mug'), 2) + '. The model says “' + prC.label + '” with p = ' + AT.fmt(FC.probs[iC], 3) + ' (scene A, trained on: ' + AT.fmt(V.forward('A', 'trained').probs[V.labelIndex('A')], 3) + ').';
+  S.querySelector('#s08-probekey').textContent = (prC.label === V.labelOf('C') ? 'The probe succeeds: a mug never seen at columns 4 to 6 is read as a mug on the right, p = ' + AT.fmt(FC.probs[iC], 3) + '.' : 'The probe fails: the model answers “' + prC.label + '” with p = ' + AT.fmt(FC.probs[1 - iC], 3) + '.') + ' One probe shows the rule held here, not that the model finds mugs anywhere.';
 })();
 </script>
 </section>

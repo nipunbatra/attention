@@ -2,111 +2,44 @@
   "part": 1,
   "series": "Vision to language",
   "title": "An image becomes a sequence",
-  "subtitle": "Start with a tabletop scene, then work through every number in a small image classifier and its training updates.",
-  "audience": "Students who know self-attention and residual updates",
-  "minutes": 70,
-  "centralLabel": "The new input; the same attention operation",
-  "central": "\\text{pixels}\\;\\longrightarrow\\;\\ve{E}\\;\\longrightarrow\\;\\vq{Q},\\vk{K},\\vv{V}\\;\\longrightarrow\\;\\vp{E'}",
+  "subtitle": "Cut a picture into patches, give every patch a row, and let one attention layer answer a question about the whole image: is there a mug on the right half?",
+  "audience": "Students who know self-attention and residual updates from Part 2",
+  "minutes": 75,
+  "centralLabel": "The same chain, a new input",
+  "central": "\\text{pixels}\\;\\longrightarrow\\;\\ve{E}\\;\\longrightarrow\\;\\vq{Q},\\vk{K},\\vv{V}\\;\\longrightarrow\\;\\va{A}\\;\\longrightarrow\\;\\vd{\\Delta E}\\;\\longrightarrow\\;\\vp{E'}\\;\\longrightarrow\\;p(\\text{answer})",
   "chain": [
-    {
-      "label": "The scene and the worksheet",
-      "section": "s01"
-    },
-    {
-      "label": "Make patch embeddings",
-      "section": "s02"
-    },
-    {
-      "label": "Layout and a collection row",
-      "section": "s03"
-    },
-    {
-      "label": "Choose how much to read",
-      "section": "s04"
-    },
-    {
-      "label": "Receive patch information",
-      "section": "s05"
-    },
-    {
-      "label": "Predict a class",
-      "section": "s06"
-    },
-    {
-      "label": "Learn from both images",
-      "section": "s07"
-    },
-    {
-      "label": "Return to the scene",
-      "section": "s08"
-    }
+    { "label": "Why patches?", "section": "s01" },
+    { "label": "The scene", "section": "s02" },
+    { "label": "Patch embeddings", "section": "s03" },
+    { "label": "Position and CLS", "section": "s04" },
+    { "label": "Routing", "section": "s05" },
+    { "label": "Values and the update", "section": "s06" },
+    { "label": "Prediction", "section": "s07" },
+    { "label": "Learning", "section": "s08" },
+    { "label": "What it attends to", "section": "s09" },
+    { "label": "Scale up", "section": "s10" },
+    { "label": "Pause and summarise", "section": "s11" }
   ],
   "sections": [
-    {
-      "id": "s01",
-      "title": "What should this image classifier answer?",
-      "lit": "e"
-    },
-    {
-      "id": "s02",
-      "title": "Make one embedding from each patch",
-      "lit": "e"
-    },
-    {
-      "id": "s03",
-      "title": "Keep the layout; make room for an image answer",
-      "lit": "e"
-    },
-    {
-      "id": "s04",
-      "title": "Let CLS choose how much to read",
-      "lit": "q k a"
-    },
-    {
-      "id": "s05",
-      "title": "Bring patch information into CLS",
-      "lit": "v a d ep"
-    },
-    {
-      "id": "s06",
-      "title": "Turn the image representation into a prediction",
-      "lit": "ep"
-    },
-    {
-      "id": "s07",
-      "title": "Learn from the two images",
-      "lit": "e q k v a d ep"
-    },
-    {
-      "id": "s08",
-      "title": "Return to the tabletop scene",
-      "lit": "e q k v a d ep"
-    }
+    { "id": "s01", "title": "Why patches?", "lit": "" },
+    { "id": "s02", "title": "The scene: one picture, one question", "lit": "" },
+    { "id": "s03", "title": "Every patch becomes a row with named axes", "lit": "e" },
+    { "id": "s04", "title": "Position and a row for the answer", "lit": "" },
+    { "id": "s05", "title": "Routing: CLS chooses where to read", "lit": "q k a" },
+    { "id": "s06", "title": "Values and the update", "lit": "v d ep" },
+    { "id": "s07", "title": "From the CLS row to an answer", "lit": "" },
+    { "id": "s08", "title": "Learning from two labelled scenes", "lit": "" },
+    { "id": "s09", "title": "What a trained model attends to", "lit": "" },
+    { "id": "s10", "title": "Scale up to a real Vision Transformer", "lit": "" },
+    { "id": "s11", "title": "Pause and think, then three summaries", "lit": "" }
   ],
-  "objects": [
-    "e",
-    "q",
-    "k",
-    "v",
-    "a",
-    "d",
-    "ep"
-  ],
-  "legendTitle": "The same symbols now refer to image-token rows",
-  "provenance": "The generated tabletop scene illustrates the task. A separate one-head model uses 4×4 grayscale grids and two-number rows: we inspect its starting weights, then train all 44 parameters on two grids. LayerNorm and the feed-forward sublayer appear in the full ViT architecture after the numerical worksheet. Everything runs offline.",
-  "prev": {
-    "label": "Part 4: Cross-attention: translate one phrase",
-    "href": "part4.html"
-  },
-  "next": {
-    "label": "Vision II: Learn visual representations without class labels",
-    "href": "vision2.html"
-  },
-  "index": {
-    "label": "Series home",
-    "href": "index.html"
-  },
+  "objects": ["e", "q", "k", "v", "a", "d", "ep"],
+  "legendTitle": "The same seven objects, now for image rows",
+  "provenance": "Every number on this page is computed in the page by one hand-named attention layer: an 8×8 scene, sixteen 2×2 patches and a CLS row, with d<sub>model</sub> = {{d_model}}{{axes}}. The patch projection, the position rows and the CLS start are fixed so that the names stay true; W<sub>Q</sub>, W<sub>K</sub>, W<sub>V</sub>, W<sub>O</sub> and the class head were trained on scenes A and B for 1,500 Adam steps, and scene C is a probe the model never saw. The arithmetic has no LayerNorm, no feed-forward sublayer and no second head; those return in section 10. The photograph in section 2 is an illustration, and the model never sees it.",
+  "prev": { "label": "Part 4: Cross-attention: translate one phrase", "href": "part4.html" },
+  "next": { "label": "Vision II: Learn visual representations without class labels", "href": "vision2.html" },
+  "index": { "label": "Series home", "href": "index.html" },
   "notation": "vision1",
-  "footer": "Patch embeddings supply the rows; attention computes their contextual updates.",
+  "footer": "Patch rows supply the input; one attention layer computes the update CLS needs; a class head reads the result.",
   "partLabel": "Vision I"
 }

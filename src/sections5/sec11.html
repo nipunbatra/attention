@@ -1,0 +1,320 @@
+<section id="s11" class="sec" data-title="Pause and think, then three summaries" data-lit="">
+<style>
+#s11 .q-ctrls{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin:0 0 12px}
+#s11 .q-count{font-family:var(--font-mono);font-size:14px;color:var(--ink-2)}
+#s11 .reveal-body p{margin:0 0 8px}
+#s11 .reveal-body .row{margin-top:10px}
+#s11 .ans{font-weight:600}
+#s11 .rd{margin:8px 0 0;font-size:14px;color:var(--ink-2);max-width:70ch;line-height:1.5}
+#s11 .lvl{font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--ink-3);margin:0 0 6px}
+#s11 .quote{font-size:1.2em;line-height:1.45;font-weight:500;margin:0}
+#s11 .chain{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 6px}
+#s11 .chain .cbox{border:2px solid var(--line);border-radius:var(--radius-s);padding:8px 14px;font-weight:600;color:var(--ink-2);background:var(--card);transition:border-color var(--dur),background var(--dur),color var(--dur),opacity var(--dur)}
+#s11 .chain .cbox.is-on{border-color:var(--oc,var(--ink));background:var(--ot,var(--paper));color:var(--ink)}
+#s11 .chain .cbox.is-on.obj-ep{border-color:var(--oc2)}
+#s11 .chain .cbox.is-past{opacity:.55}
+#s11 .chain .carr{color:var(--ink-3);font-size:20px;line-height:1}
+#s11 .chain-state{font-family:var(--font-mono);font-size:14px;color:var(--ink-2);min-height:1.4em;margin:4px 0 0}
+#s11 .eqs{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 24px;align-items:center}
+#s11 .eqs .dim{font-size:16px;color:var(--ink-2)}
+#s11 .eqs .katex-display{margin:.3em 0;text-align:left}
+#s11 .btn[aria-pressed=true]{background:var(--ink);color:var(--card)}
+#s11 .s11-final{display:grid;grid-template-columns:220px minmax(0,1fr);gap:12px 32px;align-items:center}
+#s11 .s11-final .vfig{max-width:220px}
+#s11 .close-line{font-size:1.05em;margin:14px 0 0}
+@media(max-width:700px){#s11 .eqs{grid-template-columns:minmax(0,1fr)}#s11 .s11-final{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:480px){#s11 .bars .bl{white-space:normal;text-align:left}}
+@media(prefers-reduced-motion:reduce){#s11 .chain .cbox{transition:none}}
+body.present #s11 .q-ctrls,body.present #s11 .card-title{display:none}
+body.present #s11 .rd{font-size:21px;line-height:1.35}
+body.present #s11 .dt-cap,body.present #s11 .dt-note{display:none}
+body.present #s11 .dt td,body.present #s11 .dt th{padding:.16em .45em}
+body.present #s11 .reveal-body p{font-size:26px;line-height:1.35}
+body.present #s11 .lvl,body.present #s11 .eqs .dim{font-size:22px}
+body.present #s11 .chain .cbox{font-size:23px;padding:9px 12px}
+body.present #s11 .chain-state{font-size:19px}
+body.present #s11 #s11-motif svg{max-height:200px}
+body.present #s11 .s11-final{gap:0 40px}
+body.present #s11 #s11-q7 figcaption{display:none}
+body.present #s11 #s11-q7 .reveal-body p{font-size:23px;line-height:1.3}
+body.present #s11 .close-line{font-size:1em}
+</style>
+<header class="sec-head">
+  <span class="sec-num">11</span>
+  <div>
+    <p class="eyebrow">Seven questions with the numbers to check them, then the whole page in a sentence, a chain and four equations.</p>
+    <h2>Pause and think, then three summaries</h2>
+  </div>
+</header>
+
+<div class="companion" data-kicker="For self-study">
+  <p>Say each answer aloud before opening it. Every answer carries a small table or vector from the trained toy, with the same named columns as the rest of the page, so you can check the words against the arithmetic. Then read the three summaries: one sentence for a conversation, the operational chain for a whiteboard, and the matrix equations with their shapes for an exam. The last card runs the whole chain on a scene of your choice and ends where section 2 started, with a probability for “mug on the right”.</p>
+</div>
+
+<div class="frame" data-title="Can you explain the roles without the equations?" data-autobuild="off">
+  <script type="text/x-notes">One question at a time. Ask the room before opening.
+Keys decide whether a row is read; values decide what arrives. Compare the two rows of patch 8: different numbers, different jobs.</script>
+  <div class="card">
+    <h3 class="card-title">1 · Matching against sending</h3>
+    <div class="q-ctrls">
+      <button type="button" class="btn" id="s11-open-all">Reveal all</button>
+      <button type="button" class="btn btn-quiet" id="s11-close-all">Hide all</button>
+      <span class="q-count" id="s11-count" aria-live="polite"></span>
+    </div>
+    <div id="s11-q1" data-build="1"></div>
+  </div>
+</div>
+<div class="frame" data-title="If every score were equal, what would CLS receive?" data-autobuild="off">
+  <script type="text/x-notes">Equal scores mean equal weights of one seventeenth, and the message is the plain mean of the seventeen values. Compare it with the real message.</script>
+  <div class="card"><h3 class="card-title">2 · The equal-score case</h3><div id="s11-q2" data-build="1"></div></div>
+</div>
+<div class="frame" data-title="Is the query the updated CLS row?" data-autobuild="off">
+  <script type="text/x-notes">Count the coordinates: two against four. The query is a working vector for matching; the updated row is the residual sum.</script>
+  <div class="card"><h3 class="card-title">3 · A working vector is not the output</h3><div id="s11-q3" data-build="1"></div></div>
+</div>
+<div class="frame" data-title="What does the optimizer keep, and what is recomputed?" data-autobuild="off">
+  <script type="text/x-notes">Stored: the matrices and the bias. Recomputed on every pass: rows, queries, keys, values, weights, messages, updates. Here three inputs were frozen on purpose.</script>
+  <div class="card"><h3 class="card-title">4 · Parameters against intermediate results</h3><div id="s11-q4" data-build="1"></div></div>
+</div>
+<div class="frame" data-title="Why does the model need position rows?" data-autobuild="off">
+  <script type="text/x-notes">Without them, exchanging two patches leaves CLS exactly where it was. The numbers from section 4 answer this.</script>
+  <div class="card"><h3 class="card-title">5 · A bag of rows cannot see a side</h3><div id="s11-q5" data-build="1"></div></div>
+</div>
+<div class="frame" data-title="Can CLS read every row, including itself?" data-autobuild="off">
+  <script type="text/x-notes">Yes: an image encoder has no causal mask. Every row, CLS included, gets a weight and the seventeen sum to one. Part 2's mask existed because the future was unknown; a whole image is known at once.</script>
+  <div class="card"><h3 class="card-title">6 · No mask in an image encoder</h3><div id="s11-q6" data-build="1"></div></div>
+</div>
+<div class="frame" data-title="What does the trained CLS read when the mug is on the left?" data-autobuild="off">
+  <script type="text/x-notes">Scene B: CLS still reads the right column, finds only table there, receives a small message, and answers no. Reading the right column is the rule; what it finds there decides the answer.</script>
+  <div class="card"><h3 class="card-title">7 · The rule, applied to scene B</h3><div id="s11-q7" data-build="1"></div></div>
+</div>
+
+<div class="frame" data-title="Three summaries: in a sentence" data-autobuild="off">
+  <script type="text/x-notes">Read the sentence aloud once, then ask a student to say it back without the page.
+Every clause is one section of the page: patches, rows with names and places, CLS, routing, mixing and adding, the head.</script>
+  <div class="card">
+    <p class="lvl">1 · In a sentence</p>
+    <blockquote class="quote" data-build="1">Cut the image into patches, give each patch a row that knows its content and its place, add an empty CLS row, let CLS read the patches through queries, keys and values, add what it read to its row, and let a small head turn that row into an answer.</blockquote>
+  </div>
+</div>
+
+<div class="frame" data-title="Three summaries: the chain" data-autobuild="off">
+  <script type="text/x-notes">Advance the chain and name the next box before it lights.
+The chain is the motif of Part 2 with one extra box for the head. Nothing between E and E prime is new.</script>
+  <div class="card">
+    <p class="lvl">2 · The chain</p>
+    <div class="btn-row">
+      <button type="button" class="btn btn-primary" id="s11-play">Play the chain</button>
+      <button type="button" class="btn" id="s11-step">Next stage</button>
+      <button type="button" class="btn btn-quiet" id="s11-reset">Reset</button>
+    </div>
+    <div class="chain" id="s11-chain" aria-label="Operational chain"></div>
+    <p class="chain-state" id="s11-state" aria-live="polite"></p>
+    <div id="s11-motif" data-build="1"></div>
+  </div>
+</div>
+
+<div class="frame" data-title="Matrix summary: from rows to weights" data-autobuild="off">
+  <script type="text/x-notes">Read the shapes on the right. Seventeen rows in, a seventeen by seventeen weight matrix out.
+Softmax is row-wise over the seventeen sources; there is no mask term.</script>
+  <div class="card">
+    <p class="lvl">3 · The equations, first phase: route</p>
+    <div class="eqs" id="s11-eqs"></div>
+  </div>
+</div>
+
+<div class="frame" data-title="Matrix summary: update and answer" data-autobuild="off">
+  <script type="text/x-notes">Only the boxed line returns to 17 by 4, the space every row started in. The head reads its first row.
+This is the whole page in two lines.</script>
+  <div class="card">
+    <p class="lvl">3 · The equations, second phase: carry and read</p>
+    <div class="eqs" id="s11-eqs2"></div>
+    <p class="muted small" id="s11-dims"></p>
+  </div>
+</div>
+
+<div class="frame" data-title="From a scene to an answer" data-autobuild="off">
+  <script type="text/x-notes">Choose a scene and read the bars: the trained model's answer to the question of section 2.
+A and B were trained on; C was not. The overlay shows where CLS read to get there.</script>
+  <div class="card">
+    <div class="btn-row" id="s11-scenes" role="group" aria-label="Choose a scene"></div>
+    <div class="s11-final">
+      <div id="s11-ov"></div>
+      <div>
+        <div id="s11-bars"></div>
+        <p class="close-line" id="s11-close" data-build="1"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="companion" id="s11-notation"></div>
+
+<div class="companion after">
+  <p>One scene, seventeen rows, one attention layer and a head: every number on this page came from that chain, and the chain is the one Part 2 built for words. Vision II keeps the encoder and asks how it can learn when nobody wrote the labels.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s11');
+  const V = AT.vision;
+  const P1 = V.params('trained'), P0 = V.params('initial');
+  const F = V.forward('A', 'trained'), FB = V.forward('B', 'trained');
+  const cls = V.classes;
+  const j8 = 8;
+  const reveals = [];
+  const vecRow = () => AT.h('div', { class: 'row scroll-x' });
+  function add(n, q, html, render){
+    const d = AT.ui.reveal(q, '', { into: S.querySelector('#s11-q' + n), onToggle: updateCount });
+    const body = AT.h('div', { html: html }); d.body.appendChild(body);
+    if (render) render(body);
+    AT.renderMath(d.body);
+    reveals.push(d);
+  }
+  function rd(html){ const p = AT.h('p', { class: 'rd', html: html }); AT.renderMath(p); return p; }
+
+  /* 1 */
+  add(1, 'Why does a row need both a key and a value?',
+    '<p class="ans">The key decides whether the row is read; the value is what arrives when it is.</p><p>Both come from the same $\\ve{e_j}$ through different matrices, so they hold different numbers on different axes. For ' + V.rowName('A', j8) + ' in the trained model:</p>',
+    (el) => {
+      const r = vecRow();
+      AT.ui.vec(F.K[j8], { cls: 'k', label: '\\vk{k_{' + j8 + '}}', dims: true, into: r });
+      AT.ui.vec(F.V[j8], { cls: 'v', label: '\\vv{v_{' + j8 + '}}', dims: true, into: r });
+      el.appendChild(r);
+      el.appendChild(rd('Reading: the key offers ' + AT.escape(V.axes.short.qk[0]) + ' ' + AT.fmt(F.K[j8][0], 2) + ' and ' + AT.escape(V.axes.short.qk[1]) + ' ' + AT.fmt(F.K[j8][1], 2) + ', mostly from its column; the value sends ' + AT.escape(V.axes.v[0]) + ' ' + AT.fmt(F.V[j8][0], 2) + '. Section 6 muted the value and every weight stayed put.'));
+    });
+
+  /* 2 */
+  add(2, 'If every score were equal, what would CLS receive?',
+    '<p class="ans">The plain mean of the seventeen values.</p><p>Equal scores give seventeen weights of $1/17$, so $m_0 = \\tfrac{1}{17}\\sum_j \\vv{v_j}$. Compare it with the real message of the trained model on scene A:</p>',
+    (el) => {
+      const uni = AT.softmax(AT.zeros(17));
+      const mean = AT.matmul(uni, F.V);
+      const r = vecRow();
+      AT.ui.vec(mean, { cls: 'm', label: 'm_0\\ \\text{(equal weights)}', dims: true, into: r });
+      AT.ui.vec(F.H[0], { cls: 'm', label: 'm_0\\ \\text{(real weights)}', dims: true, into: r });
+      el.appendChild(r);
+      el.appendChild(rd('The real weights put ' + AT.fmt(V.regionMass(F.A[0], 'A', 'right mug'), 2) + ' of the mass on the right mug, so the real message carries more brightness (' + AT.fmt(F.H[0][0], 2) + ' against ' + AT.fmt(mean[0], 2) + '). Equal weights would make every scene with the same patches look alike.'));
+    });
+
+  /* 3 */
+  add(3, 'Is $\\vq{q_0}$ the updated CLS row?',
+    '<p class="ans">No.</p><p>$\\vq{q_0}$ has $d_k = ' + AT.d_k + '$ entries on the question axes; the updated row has $d_{\\text{model}} = ' + AT.d_model + '$ entries on the named axes, and it is $\\vp{e_0\'} = \\ve{e_0} + \\vd{\\Delta e_0}$.</p>',
+    (el) => {
+      const r = vecRow();
+      AT.ui.vec(F.Q[0], { cls: 'q', label: '\\vq{q_0}', dims: true, into: r });
+      AT.ui.vec(F.E[0], { cls: 'e', label: '\\ve{e_0}', dims: true, into: r });
+      AT.ui.vec(F.Enew[0], { cls: 'ep', label: "\\vp{e_0'}", dims: true, into: r });
+      el.appendChild(r);
+    });
+
+  /* 4 */
+  add(4, 'What does the optimizer store, and what is recomputed on every forward pass?',
+    '<p class="ans">Stored and updated: $W_Q, W_K, W_V, W_O, W_{\\text{cls}}, b_{\\text{cls}}$. Recomputed for every scene: $\\ve{E}$, $\\vq{Q}$, $\\vk{K}$, $\\vv{V}$, $\\va{A}$, the messages, $\\vd{\\Delta E}$ and $\\vp{E\'}$.</p><p>On this page $W_{\\text{patch}}$, the position rows and the CLS start were stored but frozen, so that the axis names stay true. A real ViT trains them too.</p>');
+
+  /* 5 */
+  add(5, 'Why does the model need position rows?',
+    '<p class="ans">Without them, the layer sees a bag of rows and cannot tell left from right.</p><p>Section 4 exchanged patches 6 and 8 of scene B and ran the starting model:</p>',
+    (el) => {
+      const sw = V.swapPatches('B', 5, 7);
+      const rows = [V.forward('B', 'initial').Enew[0], V.forward(sw, 'initial').Enew[0], V.forwardOpts('B', 'initial', { positions: false }).Enew[0], V.forwardOpts(sw, 'initial', { positions: false }).Enew[0]];
+      AT.ui.table(rows, { axes: 'e', rowLabels: ['with positions, B', 'with positions, swapped', 'no positions, B', 'no positions, swapped'], rowCls: 'ep', cornerLabel: "$\\vp{e_0'}$", decimals: 3, into: el });
+      el.appendChild(rd('The last two rows are equal to every digit. The trained model uses the col axis in $W_K$ (' + AT.fmt(P1.W_K[3][1], 2) + ' on ' + AT.escape(V.axes.short.qk[1]) + '), which is how it reads the right half at all.'));
+    });
+
+  /* 6 */
+  add(6, 'Can CLS read every row, including itself?',
+    '<p class="ans">Yes. An image encoder has no causal mask: all seventeen rows are known at once.</p>',
+    (el) => {
+      const a0 = V.attention('A', 'initial'), a1 = V.attention('A', 'trained');
+      AT.ui.table([[a0[0], AT.sum(a0), 17], [a1[0], AT.sum(a1), 17]], { cols: [{ label: 'CLS self-weight $\\va{\\alpha_{00}}$' }, { label: 'sum of the row' }, { label: 'rows with weight > 0', decimals: 0 }], rowLabels: ['untrained, scene A', 'trained, scene A'], cornerLabel: 'row 0 of A', decimals: 3, into: el });
+      el.appendChild(rd('Part 2 masked the future because the next token was unknown. Here nothing is unknown, so nothing is masked; the seventeen weights of every row sum to 1.'));
+    });
+
+  /* 7 */
+  add(7, 'What does the trained CLS read when the mug is on the left?',
+    '<p class="ans">The same right column, now only table, so the message is small and the answer is “' + V.labelOf('B') + '”.</p>',
+    (el) => {
+      const wrap = AT.h('div', { class: 'row top' });
+      V.overlay('B', FB.A[0], { cell: 16, decimals: 2, into: wrap, caption: 'Scene B, trained: what CLS reads' });
+      const right = AT.h('div');
+      AT.ui.bars(cls.map((c, k) => ({ label: c, p: FB.probs[k] })), { cls: 'neutral', sorted: false, decimals: 3, max: 1, highlight: V.labelOf('B'), into: right });
+      wrap.appendChild(right); el.appendChild(wrap);
+      el.appendChild(rd('CLS reads ' + AT.escape(V.readAttention(FB.A[0], 'B', 2)) + '. Those table values are zero, so the message carries brightness ' + AT.fmt(FB.H[0][0], 2) + ' against ' + AT.fmt(F.H[0][0], 2) + ' for scene A.'));
+    });
+
+  const count = S.querySelector('#s11-count');
+  function updateCount(){ count.textContent = reveals.filter(d => d.open).length + ' of ' + reveals.length + ' revealed'; }
+  S.querySelector('#s11-open-all').addEventListener('click', () => { reveals.forEach(d => { d.open = true; }); updateCount(); });
+  S.querySelector('#s11-close-all').addEventListener('click', () => { reveals.forEach(d => { d.open = false; }); updateCount(); });
+  updateCount();
+
+  /* the operational chain with the motif */
+  const STAGES = [
+    { key: 'e', cls: 'e', tex: '\\ve{E}', pre: 'rows', say: 'Sixteen patch rows on named axes, positions added, and the CLS row in front.' },
+    { key: 'qkv', cls: 'q', tex: '\\vq{q_0}\\cdot\\vk{k_j}', pre: 'match', say: 'CLS forms a query; every row offers a key. One dot product per row, divided by the square root of two.' },
+    { key: 'att', cls: 'a', tex: '\\operatorname{softmax}\\Rightarrow\\va{\\alpha_{0j}}', pre: '', say: 'Seventeen scores become seventeen weights that sum to one: the map painted on the image.' },
+    { key: 'att', cls: 'v', tex: 'm_0=\\textstyle\\sum_j\\va{\\alpha_{0j}}\\vv{v_j}', pre: 'mix', say: 'Each row sends its value scaled by its weight; CLS adds them into one message.' },
+    { key: 'delta', cls: 'd', tex: '\\vd{\\Delta e_0}=m_0W_O', pre: '', say: 'W_O maps the message onto the four named axes: the update.' },
+    { key: 'ep', cls: 'ep', tex: "\\vp{e_0'}=\\ve{e_0}+\\vd{\\Delta e_0}", pre: 'add', say: 'The residual addition keeps the original row and adds what was read.' },
+    { key: null, cls: 'neutral', tex: "p=\\operatorname{softmax}(\\vp{e_0'}W_{\\text{cls}}+b)", pre: 'read', say: 'The head reads the updated CLS row: one logit per answer, then probabilities.' }
+  ];
+  const chainHost = S.querySelector('#s11-chain');
+  const boxes = STAGES.map((st, i) => {
+    if (i) chainHost.appendChild(AT.h('span', { class: 'carr', 'aria-hidden': 'true' }, '→'));
+    const b = AT.h('span', { class: 'cbox obj-' + st.cls, html: (st.pre ? st.pre + ' ' : '') + AT.texStr(st.tex) });
+    chainHost.appendChild(b); return b;
+  });
+  const motif = AT.motif(S.querySelector('#s11-motif'), { active: null, labels: true });
+  const state = S.querySelector('#s11-state'), stepBtn = S.querySelector('#s11-step');
+  let cur = -1, timer = null;
+  function show(i){
+    cur = i; stepBtn.disabled = i >= STAGES.length - 1;
+    boxes.forEach((b, j) => { b.classList.toggle('is-on', j === i); b.classList.toggle('is-past', i >= 0 && j < i); });
+    motif.setActive(i >= 0 ? STAGES[i].key : null);
+    state.textContent = i >= 0 ? 'Stage ' + (i + 1) + ' of ' + STAGES.length + ': ' + STAGES[i].say : 'Press “Play the chain” or “Next stage”.';
+  }
+  function stop(){ if (timer) { clearTimeout(timer); timer = null; } }
+  function play(){ stop(); let i = 0; const tick = () => { show(i); i++; if (i < STAGES.length) timer = setTimeout(tick, 900); else timer = null; }; if (AT.reducedMotion()) { show(STAGES.length - 1); return; } tick(); }
+  S.querySelector('#s11-play').addEventListener('click', play);
+  stepBtn.addEventListener('click', () => { stop(); show(Math.min(cur + 1, STAGES.length - 1)); });
+  S.querySelector('#s11-reset').addEventListener('click', () => { stop(); show(-1); });
+  show(-1);
+
+  /* the equations with their shapes */
+  const eqs = S.querySelector('#s11-eqs'), eqs2 = S.querySelector('#s11-eqs2');
+  const T = F.E.length;
+  function eq(into, latex, dim, build){ const d = AT.h('div'); AT.tex(d, latex, { display: true }); into.appendChild(d); const m = AT.h('div', { class: 'dim' }); AT.tex(m, dim); into.appendChild(m); if (build) { d.setAttribute('data-build', String(build)); m.setAttribute('data-build', String(build)); } }
+  eq(eqs, '\\ve{E}:\\ \\text{row } 0 = c + p_0,\\quad \\text{row } j = r_j W_{\\text{patch}} + p_j', '\\ve{E} \\in \\mathbb{R}^{' + T + '\\times ' + AT.d_model + '}');
+  eq(eqs, '\\vq{Q} = \\ve{E} W_Q,\\quad \\vk{K} = \\ve{E} W_K,\\quad \\vv{V} = \\ve{E} W_V', '\\vq{Q},\\vk{K} \\in \\mathbb{R}^{' + T + '\\times ' + AT.d_k + '},\\ \\vv{V} \\in \\mathbb{R}^{' + T + '\\times ' + AT.d_v + '}', 1);
+  eq(eqs, '\\va{A} = \\operatorname{softmax}\\!\\left(\\frac{\\vq{Q}\\vk{K}^\\top}{\\sqrt{d_k}}\\right)', '\\va{A} \\in \\mathbb{R}^{' + T + '\\times ' + T + '},\\ \\text{rows sum to } 1,\\ \\text{no mask}', 2);
+  eq(eqs2, "\\boxed{\\vp{E'} = \\ve{E} + \\va{A}\\vv{V}W_O}", "\\vp{E'} \\in \\mathbb{R}^{" + T + '\\times ' + AT.d_model + '}');
+  eq(eqs2, "p = \\operatorname{softmax}\\bigl(\\vp{e_0'}\\,W_{\\text{cls}} + b_{\\text{cls}}\\bigr)", 'p \\in \\mathbb{R}^{1\\times ' + cls.length + '}', 1);
+  S.querySelector('#s11-dims').innerHTML = '$' + T + '$ rows, $d_{\\text{model}} = ' + AT.d_model + '$, $d_k = d_v = ' + AT.d_k + '$, ' + cls.length + ' answers. Row 0 of $\\vp{E\'}$ is CLS.';
+  AT.renderMath(S.querySelector('#s11-dims'));
+
+  /* from a scene to an answer */
+  let scene = 'A';
+  const sceneHost = S.querySelector('#s11-scenes');
+  const sceneBtns = ['A', 'B', 'C'].map(k => {
+    const b = AT.h('button', { type: 'button', class: 'btn', 'aria-pressed': k === scene ? 'true' : 'false' }, 'Scene ' + k + ': ' + V.sceneNames[k]);
+    b.addEventListener('click', () => { scene = k; sceneBtns.forEach((x, i) => x.setAttribute('aria-pressed', ['A', 'B', 'C'][i] === k ? 'true' : 'false')); paint(); });
+    sceneHost.appendChild(b); return b;
+  });
+  const ovHost = S.querySelector('#s11-ov'), barHost = S.querySelector('#s11-bars'), closeEl = S.querySelector('#s11-close');
+  function paint(){
+    const Fx = V.forward(scene, 'trained'), pr = V.predict(scene, 'trained'), i = V.labelIndex(scene);
+    AT.clear(ovHost); AT.clear(barHost);
+    V.overlay(scene, Fx.A[0], { cell: 24, decimals: 2, into: ovHost, caption: 'Scene ' + scene + ': what CLS reads' });
+    AT.ui.bars(cls.map((c, k) => ({ label: c, p: Fx.probs[k] })), { cls: 'neutral', sorted: false, decimals: 3, max: 1, size: 'lg', highlight: V.labelOf(scene), into: barHost });
+    closeEl.innerHTML = 'Scene ' + scene + (scene === 'C' ? ' (never trained on)' : '') + ': CLS read ' + AT.escape(V.readAttention(Fx.A[0], scene, 2)) + ', received $m_0 = (' + Fx.H[0].map(x => AT.fmt(x, 2)).join(', ') + ')$, and the head says <strong>' + AT.escape(pr.label) + '</strong> with $p = ' + AT.fmt(Fx.probs[i], 3) + '$ on the true label.';
+    AT.renderMath(closeEl);
+  }
+  paint();
+  if (AT.present && AT.present.on) AT.present.on('frame', (st) => { if (st.frame && st.frame.id === 's11' && scene !== 'A' && st.frame.index === 11) { scene = 'A'; sceneBtns.forEach((x, i) => x.setAttribute('aria-pressed', i === 0 ? 'true' : 'false')); paint(); } });
+
+  /* notation recap */
+  AT.ui.notationCard({ part: 'vision1', groups: ['token', 'matrix', 'sizes', 'axes'], into: S.querySelector('#s11-notation') });
+})();
+</script>
+</section>

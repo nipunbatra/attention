@@ -1,0 +1,117 @@
+<section id="s10" class="sec" data-title="Scale up to a real Vision Transformer" data-lit="">
+<style>
+#s10 .rd{margin:10px 0 0;font-size:15px;color:var(--ink-2);max-width:76ch;line-height:1.5}
+#s10 .s10-lay{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:12px 32px;align-items:center}
+#s10 .s10-plot svg{display:block;width:100%;max-width:480px;height:auto}
+#s10 .s10-plot text{font-family:var(--font-ui);fill:var(--ink-2)}
+#s10 .s10-eq{font-size:1.05em;text-align:center;margin:12px 0}
+#s10 .s10-links a{color:var(--ink)}
+#s10 .dt td.dt-text{max-width:24em;line-height:1.35}
+@media(max-width:820px){#s10 .s10-lay{grid-template-columns:minmax(0,1fr)}}
+body.present #s10 .rd{font-size:22px;line-height:1.35}
+body.present #s10 .dt-cap,body.present #s10 .dt-note{display:none}
+body.present #s10 .dt td,body.present #s10 .dt th{padding:.16em .45em}
+body.present #s10 .dt td.dt-text{font-size:21px;max-width:none}
+body.present #s10 .s10-lay{gap:0 40px}
+body.present #s10 .s10-plot text{font-size:15px}
+body.present #s10 .s10-eq{font-size:1em;margin:8px 0}
+body.present #s10 .s10-links{font-size:.92em}
+</style>
+<header class="sec-head">
+  <span class="sec-num">10</span>
+  <div>
+    <p class="eyebrow">Sixteen patches of four pixels became seventeen rows of four numbers. A real model changes every size and keeps every step.</p>
+    <h2>Scale up to a real Vision Transformer</h2>
+  </div>
+</header>
+
+<div class="companion" data-kicker="For self-study">
+  <p>Return to the slider of section 1 with the whole chain in mind. A 224×224 photograph with 16×16 patches gives 196 patches and, with CLS, 197 rows, so one head compares 197 queries with 197 keys. Each patch has three colour channels, so its raw row has 768 numbers, and the projection maps them to a model width of a few hundred. The steps are the ones we computed: project, add position, prepend CLS, route, mix, project back, add, read CLS. A real block wraps attention in LayerNorm, follows it with a feed-forward sublayer, runs several heads and stacks a dozen blocks; those are named with their shapes and left out of the arithmetic on purpose.</p>
+</div>
+
+<div class="frame" data-title="Back to the slider: rows and scores at 224 pixels" data-autobuild="off">
+  <script type="text/x-notes">The same formula as section 1, now that every row has a meaning.
+Both axes are logarithmic. Halving the patch side multiplies the rows by four and the scores by sixteen. Sixteen pixels is the usual compromise; eight is affordable for smaller images.</script>
+  <div class="card">
+    <div id="s10-slider"></div>
+    <div class="s10-lay">
+      <div class="s10-plot dotgrid" id="s10-plot"></div>
+      <p class="rd" id="s10-read" data-build="1"></p>
+    </div>
+  </div>
+</div>
+
+<div class="frame" data-title="Four numbers become 768" data-autobuild="off">
+  <script type="text/x-notes">The raw row of a colour patch has 16 by 16 by 3 numbers; the projection maps it to the model width.
+Read the table row by row: every quantity of the toy has a counterpart, and only the sizes change. The learned projection has no named axes; that is the price of learning it.</script>
+  <div class="card">
+    <div id="s10-shapes"></div>
+    <p class="s10-eq" data-build="1">$$\underbrace{r_j}_{1\times768}\;\underbrace{W_{\text{patch}}}_{768\times384}+\underbrace{b_{\text{patch}}}_{1\times384}=\underbrace{\ve{e_j}}_{1\times384}$$</p>
+  </div>
+</div>
+
+<div class="frame" data-title="What a full encoder block adds" data-autobuild="off">
+  <script type="text/x-notes">Our arithmetic was one attention sublayer with a residual addition. The full block has two sublayers, each normalized before and added after.
+Heads: each of the six projects the same 384-wide row to 64-wide queries, keys and values; the six messages are concatenated and W_O returns to width 384. Stack twelve blocks, normalize once more, and read CLS. None of that changes the meaning of any step we computed.</script>
+  <pre class="torch-snippet"><code>E = E + attention(norm1(E))   # rows exchange information (sections 5 and 6, six heads)
+E = E + mlp(norm2(E))         # each row is transformed on its own</code></pre>
+  <div class="prose s10-links">
+    <p data-build="1">LayerNorm before each sublayer keeps the rows at a common scale. The feed-forward sublayer transforms each row separately with two matrices and a non-linearity; it moves no information between rows.</p>
+    <p data-build="2">Six heads read the same rows with six sets of $W_Q, W_K, W_V$ of width 64, and their six messages are concatenated before $W_O$. Twelve such blocks are stacked, a final LayerNorm is applied, and the class head reads the last CLS row.</p>
+    <p data-build="3">The block follows the <a href="https://arxiv.org/abs/2010.11929">original Vision Transformer</a> and its <a href="https://github.com/google-research/vision_transformer/blob/main/vit_jax/models_vit.py">reference implementation</a>; the sizes in the table are those of ViT-S/16. Vision II asks how such a model can learn without labels.</p>
+  </div>
+</div>
+
+<div class="companion after">
+  <p>Everything we computed survives the change of size: patches become rows, rows are routed and mixed, CLS collects and a head reads. The extras of a real block, normalization, a feed-forward sublayer, heads and depth, are additions to that chain, not replacements.</p>
+</div>
+
+<script>
+(function(){
+  const S = document.getElementById('s10');
+  const V = AT.vision;
+  const SIDE = 224, fmtN = (n) => Number(n).toLocaleString('en-US');
+  const sides = AT.range(32).map(i => i + 1);
+
+  /* the log-log plot of scores per head against patch side */
+  const W = 480, H = 270, m = { l: 62, r: 16, t: 14, b: 44 };
+  const svg = AT.svg('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Scores per attention head against patch side, both axes logarithmic' });
+  const lx = (s) => Math.log10(s), ly = (n) => Math.log10(n);
+  const xmin = 0, xmax = lx(32), ymin = ly(V.tokensPerImage(SIDE, 32).scores) - 0.3, ymax = ly(V.tokensPerImage(SIDE, 1).scores) + 0.3;
+  const X = (s) => m.l + (lx(s) - xmin) / (xmax - xmin) * (W - m.l - m.r), Y = (n) => H - m.b - (ly(n) - ymin) / (ymax - ymin) * (H - m.t - m.b);
+  svg.appendChild(AT.svg('rect', { x: m.l, y: m.t, width: W - m.l - m.r, height: H - m.t - m.b, fill: 'var(--card)', stroke: 'var(--line)' }));
+  [1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9].forEach(v => { if (ly(v) < ymin || ly(v) > ymax) return; svg.appendChild(AT.svg('line', { x1: m.l, y1: Y(v), x2: W - m.r, y2: Y(v), stroke: 'var(--line)' })); svg.appendChild(AT.svg('text', { x: m.l - 6, y: Y(v) + 4, 'text-anchor': 'end', 'font-size': 11, 'font-family': 'var(--font-mono)' }, '10^' + Math.round(ly(v)))); });
+  [1, 2, 4, 8, 16, 32].forEach(s => { svg.appendChild(AT.svg('line', { x1: X(s), y1: m.t, x2: X(s), y2: H - m.b, stroke: 'var(--line)' })); svg.appendChild(AT.svg('text', { x: X(s), y: H - m.b + 14, 'text-anchor': 'middle', 'font-size': 11, 'font-family': 'var(--font-mono)' }, String(s))); });
+  svg.appendChild(AT.svg('text', { x: (m.l + W - m.r) / 2, y: H - 8, 'text-anchor': 'middle', 'font-size': 13 }, 'patch side (pixels)'));
+  const yl = AT.svg('text', { x: 14, y: (m.t + H - m.b) / 2, 'text-anchor': 'middle', 'font-size': 13, transform: 'rotate(-90 14 ' + (m.t + H - m.b) / 2 + ')' }, 'scores per head'); svg.appendChild(yl);
+  svg.appendChild(AT.svg('path', { d: sides.map((s, i) => (i ? 'L' : 'M') + X(s) + ' ' + Y(V.tokensPerImage(SIDE, s).scores)).join(''), fill: 'none', stroke: 'var(--ink)', 'stroke-width': 2 }));
+  const dot = AT.svg('circle', { r: 6, fill: 'var(--c-a)' }), dotLab = AT.svg('text', { 'font-size': 12, fill: 'var(--c-a)', 'font-family': 'var(--font-mono)' });
+  svg.appendChild(dot); svg.appendChild(dotLab);
+  S.querySelector('#s10-plot').appendChild(svg);
+  const read = S.querySelector('#s10-read');
+  function draw(side){
+    const t = V.tokensPerImage(SIDE, side), n = Math.floor(SIDE / side);
+    dot.setAttribute('cx', X(side)); dot.setAttribute('cy', Y(t.scores));
+    dotLab.setAttribute('x', X(side) + (side > 16 ? -10 : 10)); dotLab.setAttribute('y', Y(t.scores) - 10); dotLab.setAttribute('text-anchor', side > 16 ? 'end' : 'start'); dotLab.textContent = fmtN(t.scores);
+    read.textContent = 'Patch side ' + side + ': ' + n + ' × ' + n + ' = ' + fmtN(t.patches) + ' patches, ' + fmtN(t.rows) + ' rows with CLS, ' + fmtN(t.scores) + ' scores per head. Our toy had ' + fmtN(V.tokensPerImage(8, 2).rows) + ' rows and ' + fmtN(V.tokensPerImage(8, 2).scores) + ' scores; a 224 image with 16-pixel patches has ' + fmtN(V.tokensPerImage(SIDE, 16).scores) + '.';
+  }
+  AT.ui.slider({ label: 'Patch side (pixels)', min: 1, max: 32, step: 1, value: 16, format: (v) => v + ' px', onInput: draw, into: S.querySelector('#s10-slider') });
+  draw(16);
+
+  /* the shapes table: the toy against ViT-S/16 */
+  const toy = V.tokensPerImage(8, 2), vit = V.tokensPerImage(SIDE, 16);
+  const rawVit = 16 * 16 * 3;
+  AT.ui.table([
+    ['8 × 8, one grey channel', '224 × 224, three colour channels'],
+    ['2 × 2 = 4 numbers', '16 × 16 × 3 = ' + fmtN(rawVit) + ' numbers'],
+    [fmtN(toy.patches) + ' + CLS = ' + fmtN(toy.rows), fmtN(vit.patches) + ' + CLS = ' + fmtN(vit.rows)],
+    [String(AT.d_model) + ', with named axes', '384, learned, no names'],
+    [String(AT.d_k) + ', one head', '64 per head, 6 heads'],
+    [fmtN(toy.scores), fmtN(vit.scores)],
+    ['1, attention only', '12, each with attention, LayerNorm and a feed-forward sublayer'],
+    [String(V.classes.length), '1,000 classes on ImageNet']
+  ], { cols: [{ label: 'this page', kind: 'text' }, { label: 'ViT-S/16', kind: 'text' }], rowLabels: ['image', 'raw row of a patch', 'rows into attention', 'd_model', 'd_k', 'scores per head', 'blocks', 'answers'], cornerLabel: 'size', into: S.querySelector('#s10-shapes'),
+    caption: 'Every row of the toy has a counterpart; only the sizes change. ViT-S/16 sizes from the Vision Transformer paper.' });
+})();
+</script>
+</section>

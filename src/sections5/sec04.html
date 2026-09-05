@@ -1,81 +1,157 @@
-<section id="s04" class="sec" data-title="Let CLS choose how much to read" data-lit="q k a">
-<header class="sec-head"><span class="sec-num">04</span><div><p class="eyebrow">One receiver, five available sources, one mixing weight per source.</p><h2>Let CLS choose how much to read</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>We want the collection row to depend on the image. The query is the receiving row’s matching request; each source key is a description it can match. These are vectors, not written questions. In this starting model, CLS’s query gives equal positive weight to both key coordinates, so it favors keys with a larger sum. A trained model can learn different combinations.</p></div>
-<div class="frame" data-title="CLS makes the query for this read" data-autobuild="off">
-  <div class="vision1-story" id="s04-query"></div>
-  <p class="callout callout-key" data-build="1">This query comes from <strong>CLS, not the label</strong>. It will compare both coordinates of each source key.</p>
-  <script type="text/x-notes">The query is not asking for another copy of CLS.
+<section id="s04" class="sec" data-title="Position and a row for the answer" data-lit="">
+<style>
+#s04 .rd{margin:10px 0 0;font-size:15px;color:var(--ink-2);max-width:72ch;line-height:1.5}
+#s04 .s04-swap{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:flex-start}
+#s04 .s04-swap>*{min-width:0;max-width:100%;flex:0 1 auto}
+#s04 .s04-swap figure{margin:0}
+#s04 .s04-swap figcaption{font-size:14px;color:var(--ink-2);margin-top:6px;max-width:14em}
+#s04 .s04-swap .dt-fig{margin:0}
+#s04 .s04-eq{margin:8px 0 0}
+@media(max-width:760px){#s04 .s04-swap{gap:12px 20px}}
+body.present #s04 .rd{font-size:23px;line-height:1.35}
+body.present #s04 .dt-cap,body.present #s04 .dt-note{display:none}
+body.present #s04 .dt td,body.present #s04 .dt th{padding:.14em .45em}
+body.present #s04 .s04-e .dt td.dt-num{font-size:21px;padding:.1em .45em}
+body.present #s04 .s04-e .dt tbody th{font-size:19px;padding:.1em .4em}
+body.present #s04 .s04-e .dt thead th{font-size:20px;padding:.12em .4em}
+body.present #s04 .s04-swap{gap:0 32px;align-items:center;flex-wrap:nowrap}
+body.present #s04 .s04-swap figure{flex:none}
+body.present #s04 .s04-swap figcaption{font-size:20px;line-height:1.3}
+body.present #s04 .s04-swap .dt td.dt-num{font-size:21px;padding:.12em .4em}
+body.present #s04 .s04-swap .dt tbody th{font-size:19px;padding:.12em .4em}
+</style>
+<header class="sec-head">
+  <span class="sec-num">04</span>
+  <div>
+    <p class="eyebrow">Two patches with the same pixels get the same row. The question asks about the right half, so a row must know where it came from.</p>
+    <h2>Position and a row for the answer</h2>
+  </div>
+</header>
 
-It specifies a learned matching direction. This first-layer query is the same for the two images because their initial CLS rows are the same.</script>
+<div class="companion" data-kicker="For self-study">
+  <p>Two things are still missing. The first is position. Patches 2 and 4 contain the same pixels and therefore the same row, yet one sits in the left half and one in the right, and our question is about the right half. As in Part 2, we add a position row of the same width; because the toy's last two axes are named row and col, the position row simply fills them. The second missing piece is a row that will carry the answer. An image has no last patch, so we add one extra row with no pixels, CLS, and let it read all sixteen. The last frame swaps two patches to show what position buys.</p>
 </div>
-<div class="frame" data-title="Patch 4 makes a key from its own row" data-autobuild="off">
-  <div class="vision1-story" id="s04-key"></div>
-  <p>Patch 4’s key comes from <strong>its own positioned row</strong>, $e_4=(5,5)$. It describes when this source should be read by CLS’s query.</p>
-  <script type="text/x-notes">Query from the receiver, key from the source.
 
-W_Q and W_K happen to start with the same entries, but they are separate parameters and perform separate jobs. Neither is tied to the other during training.</script>
+<div class="frame" data-title="Same pixels, different place" data-autobuild="off">
+  <script type="text/x-notes">Patches 2 and 4 are both the top edge of a mug: same four pixels, same row.
+One is in the left half and one in the right. If the model only saw these rows, it could not answer our question. Ask what else the row needs to carry.</script>
+  <div class="card">
+    <h3 class="card-title">Two patches of scene A with identical content rows</h3>
+    <div id="s04-same"></div>
+  </div>
+  <div class="callout callout-key" data-build="1">The projection cannot tell these two apart. Their place in the grid can, and the model has to be told it.</div>
 </div>
-<div class="frame" data-title="Keep each key attached to its source" data-autobuild="off">
-  <div class="vision1-story" id="s04-keys"></div>
-  <p>CLS can read the four patches <strong>and its own row</strong>.</p>
-  <script type="text/x-notes">All the image's patches are already known.
 
-Unlike a next-token decoder, this image encoder does not need to hide later patches with a causal mask. The five arrows mean five sources, not five possible class labels.</script>
+<div class="frame" data-title="Add a position row of the same width" data-autobuild="off">
+  <script type="text/x-notes">Add, do not append: both rows already have four numbers.
+For patch 4 the position row is zero on brightness and contrast and puts its row and column, scaled to 0 to 1, on the last two axes. Hover a cell of the sum to see the addition. Part 2 did the same with a fifth axis; here the toy reserves two.</script>
+  <div class="card">
+    <h3 class="card-title">$\ve{e_4} = r_4 W_{\text{patch}} + p_4$</h3>
+    <div id="s04-add"></div>
+    <p class="rd" id="s04-aread"></p>
+  </div>
+  <div class="prose s04-eq" data-build="1">$$p_j = \bigl(0,\ 0,\ \tfrac{\text{row}}{3},\ \tfrac{\text{col}}{3}\bigr)$$<p>Row and column of the patch grid, counted from 0, so both run from 0 to 1.</p></div>
 </div>
-<div class="frame" data-title="Work one match: CLS with patch 4" data-autobuild="off">
-  <div class="vision1-story" id="s04-dot"></div>
-  <p>The dot product favors patch 4’s large key coordinates. This starting query <strong>has not learned to count blocks</strong> yet.</p>
-  <script type="text/x-notes">The score reflects these chosen parameters, not a semantic explanation such as 'this is the important object'.
 
-The two blocks have different brightness, and the current query responds strongly to that magnitude.</script>
+<div class="frame" data-title="A row for the answer: CLS" data-autobuild="off">
+  <script type="text/x-notes">A sentence had a last token to predict from. An image has sixteen equal patches and no last one.
+So we add a seventeenth row with no pixels: a fixed start c plus its own position marker. Every scene starts from this same row; reading the patches is what will make it different per scene. CLS is a learned parameter, not the class label.</script>
+  <div class="card">
+    <h3 class="card-title">$\ve{e_0} = c + p_0$: a fixed start row plus a position of its own</h3>
+    <div id="s04-cls"></div>
+    <p class="rd" id="s04-cread"></p>
+  </div>
+  <div class="callout callout-key" data-build="1">CLS is the row that will answer. It starts the same for every scene and knows nothing yet; attention will bring the patches to it.</div>
 </div>
-<div class="frame" data-title="Why divide by the square root of the key width?" data-autobuild="off">
-  <div class="vision1-story" id="s04-scale"></div>
-  <p>More coordinates tend to widen the spread of dot products. Dividing by $\sqrt{d_k}$ controls that spread before softmax. Here $d_k=2$.</p>
-  <script type="text/x-notes">This does not normalize vectors to unit length.
 
-Under roughly independent zero-mean unit-variance coordinates, the dot product has variance d_k, hence standard deviation sqrt(d_k). Scaling controls score magnitude; it does not change ranking within the row.</script>
+<div class="frame" data-title="E: CLS and patches 1 to 8" data-autobuild="off">
+  <script type="text/x-notes">Seventeen rows, four named columns. This is the input to attention.
+Read row 0, then a mug row, then a table row. The row and col columns now differ between patches with equal pixels.</script>
+  <div class="card s04-e">
+    <h3 class="card-title">$\ve{E}$ for scene A, rows 0 to 8 (CLS first)</h3>
+    <div id="s04-e1"></div>
+    <p class="rd" id="s04-eread" data-build="1"></p>
+  </div>
 </div>
-<div class="frame" data-title="Scaling softens this read without changing the ranking" data-autobuild="off">
-  <div id="s04-scale-compare"></div>
-  <p>The largest score still belongs to patch 4. Dividing by $\sqrt2$ makes its advantage less extreme.</p>
-  <p class="callout callout-note" data-build="1">The next three frames unpack how softmax produced these weights.</p>
-  <script type="text/x-notes">Use the concrete comparison before the optional variance derivation.
 
-Both distributions are computed from the same raw dot products. A larger or smaller scaling factor changes the distribution, not just its displayed units.</script>
+<div class="frame" data-title="E, continued: patches 9 to 16" data-autobuild="off">
+  <script type="text/x-notes">The same columns for the bottom half of the scene.
+Patch 16 is bare table: content zero, position one and one. In code, E is one concatenation and one addition.</script>
+  <div class="card s04-e">
+    <h3 class="card-title">$\ve{E}$ for scene A, rows 9 to 16</h3>
+    <div id="s04-e2"></div>
+  </div>
+  <pre class="torch-snippet" data-build="1"><code>E = torch.cat([cls[None, :], patches @ W_patch], dim=0)
+E = E + P     # [17, 4]: one position row per slot</code></pre>
 </div>
-<div class="frame" data-title="First collect the five scaled scores" data-autobuild="off">
-  <div class="vision1-story" id="s04-scores"></div>
-  <p>$s_{0j}=q_0\cdot k_j/\sqrt2$. The first index, 0, stays fixed: <strong>CLS is the receiver</strong>.</p>
-  <p data-build="1">The source index $j$ runs over CLS and patches 1–4. We need one weight for each of these five sources.</p>
-  <script type="text/x-notes">Keep the image crops beside the numerical rows.
 
-The next step changes the scores into positive quantities; it does not add any sources.</script>
+<div class="frame" data-title="Swap two patches: what changes?" data-autobuild="off">
+  <script type="text/x-notes">Take scene B and exchange the pixels of patches 6 and 8: the mug centre moves to the right half.
+Run the whole layer, which the next three sections open up, and read the updated CLS row. With position rows the two scenes give different CLS rows. Leave every position row out, CLS's included, and they give exactly the same row: without positions the layer sees a bag of rows, and a bag does not know which side a patch is on.</script>
+  <div class="card">
+    <h3 class="card-title">Scene B, and scene B with patches 6 and 8 exchanged</h3>
+    <div class="s04-swap" id="s04-swap"></div>
+    <p class="rd" id="s04-sread" data-build="1"></p>
+  </div>
 </div>
-<div class="frame" data-title="Exponentiate each score to get a positive number" data-autobuild="off">
-  <div class="vision1-story" id="s04-exponents"></div>
-  <p>Apply $\exp(s_{0j})$ to each score. Larger scores produce larger positive numbers.</p>
-  <p data-build="1">Add these five numbers to get one common total, $Z$. They are not normalized yet.</p>
-  <script type="text/x-notes">The exponential function exp is unrelated to our representation symbol e_j.
 
-Saying exp(score) here avoids introducing an unexplained second meaning of e.</script>
+<div class="companion">
+  <p>Why are the last two rows exactly equal? Without positions, the swap only reorders the sixteen patch rows. Every key and value is still there, the softmax sums over all of them in any order, and CLS receives the same weighted sum. Attention is permutation invariant for CLS unless the rows themselves carry their place. The position row is what makes “on the right” visible to the layer.</p>
 </div>
-<div class="frame" data-title="Divide every row by the same total" data-autobuild="off">
-  <div class="vision1-story" id="s04-weights"></div>
-  <p>These five amounts add to 1. They mix <strong>input information</strong>; they are not output-class probabilities.</p>
-  <script type="text/x-notes">Calculations use full precision; displays round to three decimals.
 
-Do not recompute from the rounded labels when explaining small last-digit differences. Class probabilities come later from a different softmax.</script>
+<div class="companion after">
+  <p>Seventeen rows on four named axes: sixteen patches that know their place, and one CLS row that knows nothing yet. The next section gives CLS a query and every row a key, and lets CLS decide where to read.</p>
 </div>
-<div class="frame" data-title="We have chosen amounts. What information will arrive?" data-autobuild="off">
-  <p>For this CLS query, patch 4 receives weight <strong id="s04-top-weight"></strong>.</p>
-  <div id="s04-check"></div>
-  <pre class="torch-snippet" data-build="1"><code>scores = (q0 @ K.T) / math.sqrt(K.shape[-1])
-alpha0 = scores.softmax(dim=-1)   # [5], sum = 1</code></pre>
-  <script type="text/x-notes">The scores and weights are scalars.
 
-We still need source vectors to construct a two-number update for CLS. Values provide those vectors; the key is not the vector automatically added.</script>
-</div>
-<div class="companion after"><h3>Why the square root, more precisely?</h3><p>If corresponding query and key coordinates are independent, roughly zero-mean, and unit-variance, the variance of their summed products grows like $d_k$. Dividing by $\sqrt{d_k}$ keeps the score variance around 1 under those assumptions. This is a scale-control argument, not a guarantee for every learned vector. See the scaled dot-product discussion in <a href="https://arxiv.org/abs/1706.03762">Attention Is All You Need</a>.</p><p>Our starting $W_Q$ and $W_K$ are equal for easy arithmetic; training stores and updates them separately. The CLS query is not yet image-dependent in this first layer. Its matches are image-dependent because the source keys come from each image. In later layers, an already-contextual CLS row can also produce an image-dependent query.</p></div>
-<script>(function(){const S=document.getElementById('s04'),T=AT.vision,F=T.forward();for(const [id,stage,step]of[['query','query',99],['key','key',99],['keys','keys',99],['dot','score',1],['scale','score',2],['scores','weights',0],['exponents','weights',1],['weights','weights',2]])T.story(S.querySelector('#s04-'+id),{stage:stage,step:step,source:4,receiver:0,forward:F});const unscaled=T.math.softmax(F.raw[0]);AT.ui.table(F.raw[0].map((x,j)=>[unscaled[j],F.A[0][j]]),{into:S.querySelector('#s04-scale-compare'),cols:['without ÷√2','with ÷√2'],rowLabels:T.labels,cornerLabel:'CLS mixing amounts',decimals:3});S.querySelector('#s04-top-weight').textContent=F.A[0][4].toFixed(3);AT.ui.reveal('Does that weight tell us what vector to add to CLS?','Not by itself. The weight says how much. We must multiply it by the value from the same source to know what information arrives.',{into:S.querySelector('#s04-check')});})();</script>
+<script>
+(function(){
+  const S = document.getElementById('s04');
+  const V = AT.vision;
+  const g = 'A';
+  const R = V.patchify(g);
+  const content = R.map(r => AT.matmul(r, V.W_patch));
+  const F = V.forward(g, 'initial');
+  const E = F.E;
+  const sh = V.axes.short.e;
+  const labelsE = V.rowLabelsE(g);
+
+  /* frame 1: two equal content rows */
+  const i2 = 1, i4 = 3;
+  AT.ui.table([content[i2], content[i4]], { axes: 'e', rowLabels: [V.rowLabel(g, i2), V.rowLabel(g, i4)], rowCls: 'e', cornerLabel: 'patch', decimals: 2, into: S.querySelector('#s04-same'),
+    caption: 'Both patches contain the pixels ' + R[i2].join(', ') + '. Their content rows are identical, and the row and col columns are still empty.' });
+
+  /* frame 2: content + position = e_4 */
+  const fig = AT.ui.table([content[i4], V.pos[i4 + 1]], { axes: 'e', rowLabels: ['$r_4 W_{\\text{patch}}$ ' + V.rowLabel(g, i4), '$p_4$ position of slot 4'], rowCls: ['e', 'neutral'], cornerLabel: 'row',
+    footer: { label: '$\\ve{e_4} = r_4 W_{\\text{patch}} + p_4$', values: E[i4 + 1], cls: 'e' }, decimals: 2, into: S.querySelector('#s04-add'),
+    caption: 'The position row is zero on brightness and contrast and carries the grid row and column, scaled to 0 to 1, on the last two axes.', note: 'Hover or focus a cell of the sum to see the addition.' });
+  fig.footer.cells.forEach((td, c) => fig.tipOn(td, () => AT.fmt(content[i4][c], 2) + ' + ' + AT.fmt(V.pos[i4 + 1][c], 2) + ' = ' + AT.fmt(E[i4 + 1][c], 2)));
+  S.querySelector('#s04-aread').textContent = 'Reading e for patch 4: ' + V.readRow(E[i4 + 1], 'e', 2) + '. Patch 4 sits in grid row 0 and grid column 3, so its position row is (0, 0, 0, 1): the top row, the rightmost column.';
+
+  /* frame 3: CLS */
+  const cf = AT.ui.table([V.cls, V.pos[0]], { axes: 'e', rowLabels: ['$c$ the CLS start row', '$p_0$ the CLS position'], rowCls: ['e', 'neutral'], cornerLabel: 'row',
+    footer: { label: '$\\ve{e_0} = c + p_0$', values: E[0], cls: 'e' }, decimals: 2, into: S.querySelector('#s04-cls'),
+    caption: 'CLS has no pixels. Its start row and its position are fixed numbers; both are the same for every scene.' });
+  cf.footer.cells.forEach((td, c) => cf.tipOn(td, () => AT.fmt(V.cls[c], 2) + ' + ' + AT.fmt(V.pos[0][c], 2) + ' = ' + AT.fmt(E[0][c], 2)));
+  S.querySelector('#s04-cread').textContent = 'Reading e for CLS: ' + V.readRow(E[0], 'e', 2) + '. The row and col of ' + AT.fmt(V.pos[0][2], 0) + ' put CLS outside the grid, where no patch can be.';
+
+  /* frames 4 and 5: E in two halves */
+  AT.ui.table(E.slice(0, 9), { axes: 'e', rowLabels: labelsE.slice(0, 9), rowCls: 'e', cornerLabel: 'row', decimals: 2, into: S.querySelector('#s04-e1'), caption: 'Row 0 is CLS. Rows 1 to 8 are the top half of scene A with their positions added.' });
+  S.querySelector('#s04-eread').textContent = 'Reading rows 2 and 4: the same content, ' + V.readRow(E[2].slice(0, 2), 'e', 2) + ', now with col ' + AT.fmt(E[2][3], 2) + ' against col ' + AT.fmt(E[4][3], 2) + '. Reading row 0: ' + V.readRow(E[0], 'e', 2) + '.';
+  AT.ui.table(E.slice(9), { axes: 'e', rowLabels: labelsE.slice(9), rowCls: 'e', cornerLabel: 'row', decimals: 2, into: S.querySelector('#s04-e2'), caption: 'Rows 9 to 16: the bottom half of scene A.' });
+
+  /* frame 6: the swap check, run through the whole layer with the starting parameters */
+  const a = 5, b = 7;   /* patches 6 and 8, zero-based */
+  const swapped = V.swapPatches('B', a, b);
+  const host = S.querySelector('#s04-swap');
+  [['B', 'Scene B: ' + V.sceneNames.B], [swapped, 'Patches 6 and 8 exchanged']].forEach(([sc, cap]) => {
+    const f = AT.h('figure'); f.appendChild(V.grid(sc, { cell: 20, labels: 'none', highlight: [a, b] })); f.appendChild(AT.h('figcaption', {}, cap)); host.appendChild(f);
+  });
+  const withB = V.forward('B', 'initial').Enew[0], withS = V.forward(swapped, 'initial').Enew[0];
+  const noB = V.forwardOpts('B', 'initial', { positions: false }).Enew[0], noS = V.forwardOpts(swapped, 'initial', { positions: false }).Enew[0];
+  AT.ui.table([withB, withS, noB, noS], { axes: 'e', rowLabels: ['positions on, B', 'positions on, swapped', 'positions off, B', 'positions off, swapped'], rowCls: ['ep', 'ep', 'ep', 'ep'], cornerLabel: "updated CLS $\\vp{e_0'}$", decimals: 3, into: host,
+    caption: 'The updated CLS row after one attention layer with the starting parameters (sections 5 and 6 show every step).' });
+  const differ = withB.some((x, c) => Math.abs(x - withS[c]) > 1e-9), same = noB.every((x, c) => Math.abs(x - noS[c]) < 1e-9);
+  S.querySelector('#s04-sread').textContent = 'With position rows the two CLS rows ' + (differ ? 'differ' : 'agree') + ' (brightness ' + AT.fmt(withB[0], 3) + ' against ' + AT.fmt(withS[0], 3) + '). Without any position rows they are ' + (same ? 'identical' : 'different') + ': the layer received the same seventeen rows in a different order, and nothing in it depends on the order.';
+})();
+</script>
 </section>
