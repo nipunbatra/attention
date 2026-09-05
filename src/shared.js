@@ -1676,10 +1676,30 @@
     }
 
     /* ---- discovery: every section becomes one or more frames ---- */
+    /* The cover frame: a title slide built from the part config, shown first in present mode only. */
+    function addCover() {
+      var main = document.querySelector('main'); var part = window.__PART__ || {};
+      if (!main || !part.title || document.getElementById('s00')) return;
+      var first = main.querySelector('.sec'); if (!first) return;
+      var label = (part.series ? part.series + ' · ' : '') + (part.partLabel || ('Part ' + (part.part || '')));
+      var fr = h('div', { class: 'frame cover', 'data-title': part.title, 'data-autobuild': 'off' });
+      var notes = h('script', { type: 'text/x-notes' }); notes.textContent = 'Read the question aloud and collect two or three guesses before the first section.\nThe chain under the title is the whole part in one line; it comes back at the end.';
+      fr.appendChild(notes);
+      fr.appendChild(h('p', { class: 'cover-kicker' }, label));
+      fr.appendChild(h('h1', { class: 'cover-title' }, part.title));
+      if (part.subtitle) fr.appendChild(h('p', { class: 'cover-sub' }, part.subtitle));
+      if (part.hook) fr.appendChild(h('p', { class: 'cover-hook', 'data-build': '1' }, part.hook));
+      if (part.central) { var c = h('div', { class: 'cover-central', 'data-build': part.hook ? '2' : '1' }); AT.tex(c, part.central, { display: true }); fr.appendChild(c); }
+      var meta = []; if (part.audience) meta.push(part.audience); if (part.minutes) meta.push('about ' + part.minutes + ' minutes');
+      if (meta.length) fr.appendChild(h('p', { class: 'cover-meta' }, meta.join(' · ')));
+      var sec = h('section', { id: 's00', class: 'sec sec-cover', 'data-title': part.title, 'data-lit': '' }, fr);
+      main.insertBefore(sec, first);
+    }
     function discover() {
       if (P.discovered) return;
       P.discovered = true;
       P.frames = [];
+      addCover();
       var secs = Array.prototype.slice.call(document.querySelectorAll('main .sec'));
       secs.forEach(function (sec, si) {
         var head = sec.querySelector(':scope > .sec-head');

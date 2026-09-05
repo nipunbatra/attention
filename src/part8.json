@@ -123,5 +123,6 @@
  },
  "notation": "vision4",
  "footer": "Image-conditioned generation still predicts one token at a time; the image is context, exactly like the earlier words.",
- "partLabel": "Vision IV"
+ "partLabel": "Vision IV",
+ "hook": "How many mugs? Four words and a picture. How does an image become context for an answer that is written one token at a time?"
 }

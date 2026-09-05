@@ -1,211 +1,212 @@
 {
-  "part": 2,
-  "series": "Attention and language",
-  "title": "Self-attention, from first principles",
-  "subtitle": "How a token reads from the tokens before it, and why that makes the next word easier to predict.",
-  "audience": "For students who know embeddings, dot products, softmax and next-token prediction, and who have not yet met attention.",
-  "minutes": null,
-  "central": "\\ve{e} \\;\\rightarrow\\; \\vq{Q},\\vk{K},\\vv{V} \\;\\rightarrow\\; \\text{attention } (\\va{\\alpha}) \\;\\rightarrow\\; \\vd{\\Delta e} \\;\\rightarrow\\; \\vp{e + \\Delta e}",
-  "centralLabel": "The one chain to remember",
-  "legendTitle": "How to read this page: seven colours, seven objects",
-  "provenance": "Where the numbers come from: a tiny demonstration model with {{d_model}}-number representations and a {{vocab}}-word vocabulary. Each coordinate was given an illustrative name{{axes}}, and the weights were written by hand so that the names are true. The arithmetic is real, but the model is not a trained language model.",
-  "chain": [
-    {
-      "label": "Predict the next token",
-      "section": "s01"
-    },
-    {
-      "label": "Baseline: only the last token",
-      "section": "s02"
-    },
-    {
-      "label": "Baseline: a fixed window of w tokens",
-      "section": "s03"
-    },
-    {
-      "label": "Weighted pooling: where should weights come from?",
-      "section": "s04"
-    },
-    {
-      "label": "A detour through search: query, key, value",
-      "section": "s05"
-    },
-    {
-      "label": "Hard retrieval → soft retrieval",
-      "section": "s06"
-    },
-    {
-      "label": "Every token becomes a searchable record",
-      "section": "s07"
-    },
-    {
-      "label": "Two jobs: choose weights, then mix values",
-      "section": "s08"
-    },
-    {
-      "label": "The contextual update Δe",
-      "section": "s09"
-    },
-    {
-      "label": "“bank”: same start, different context",
-      "section": "s10"
-    },
-    {
-      "label": "What exactly are Q, K, and V?",
-      "section": "s11"
-    },
-    {
-      "label": "Why divide by √d_k?",
-      "section": "s12"
-    },
-    {
-      "label": "Causal masking",
-      "section": "s13"
-    },
-    {
-      "label": "From Δe to the next-token probabilities",
-      "section": "s14"
-    },
-    {
-      "label": "Full walkthrough, one step at a time",
-      "section": "s15"
-    },
-    {
-      "label": "The same thing in matrix form",
-      "section": "s16"
-    },
-    {
-      "label": "Attention versus the alternatives",
-      "section": "s17"
-    },
-    {
-      "label": "Pause and think",
-      "section": "s18"
-    },
-    {
-      "label": "Three summaries",
-      "section": "s19"
-    }
-  ],
-  "sections": [
-    {
-      "id": "s01",
-      "title": "Predict the next token",
-      "lit": ""
-    },
-    {
-      "id": "s02",
-      "title": "Baseline: only the last token",
-      "lit": "e"
-    },
-    {
-      "id": "s03",
-      "title": "Baseline: a fixed window of w tokens",
-      "lit": ""
-    },
-    {
-      "id": "s04",
-      "title": "Weighted pooling: where should weights come from?",
-      "lit": "a"
-    },
-    {
-      "id": "s05",
-      "title": "A detour through search: query, key, value",
-      "lit": "q k v"
-    },
-    {
-      "id": "s06",
-      "title": "Hard retrieval → soft retrieval",
-      "lit": ""
-    },
-    {
-      "id": "s07",
-      "title": "Every token becomes a searchable record",
-      "lit": ""
-    },
-    {
-      "id": "s08",
-      "title": "Two jobs: choose weights, then mix values",
-      "lit": ""
-    },
-    {
-      "id": "s09",
-      "title": "The contextual update Δe",
-      "lit": "d ep"
-    },
-    {
-      "id": "s10",
-      "title": "“bank”: same start, different context",
-      "lit": ""
-    },
-    {
-      "id": "s11",
-      "title": "What exactly are Q, K, and V?",
-      "lit": ""
-    },
-    {
-      "id": "s12",
-      "title": "Why divide by √d_k?",
-      "lit": ""
-    },
-    {
-      "id": "s13",
-      "title": "Causal masking",
-      "lit": ""
-    },
-    {
-      "id": "s14",
-      "title": "From Δe to the next-token probabilities",
-      "lit": ""
-    },
-    {
-      "id": "s15",
-      "title": "Full walkthrough, one step at a time",
-      "lit": ""
-    },
-    {
-      "id": "s16",
-      "title": "The same thing in matrix form",
-      "lit": ""
-    },
-    {
-      "id": "s17",
-      "title": "Attention versus the alternatives",
-      "lit": ""
-    },
-    {
-      "id": "s18",
-      "title": "Pause and think",
-      "lit": ""
-    },
-    {
-      "id": "s19",
-      "title": "Three summaries",
-      "lit": ""
-    }
-  ],
-  "objects": [
-    "e",
-    "q",
-    "k",
-    "v",
-    "a",
-    "d",
-    "ep"
-  ],
-  "prev": {
-    "label": "Part 1: From characters to next-token prediction",
-    "href": "part1.html"
+ "part": 2,
+ "series": "Attention and language",
+ "title": "Self-attention, from first principles",
+ "subtitle": "How a token reads from the tokens before it, and why that makes the next word easier to predict.",
+ "audience": "For students who know embeddings, dot products, softmax and next-token prediction, and who have not yet met attention.",
+ "minutes": null,
+ "central": "\\ve{e} \\;\\rightarrow\\; \\vq{Q},\\vk{K},\\vv{V} \\;\\rightarrow\\; \\text{attention } (\\va{\\alpha}) \\;\\rightarrow\\; \\vd{\\Delta e} \\;\\rightarrow\\; \\vp{e + \\Delta e}",
+ "centralLabel": "The one chain to remember",
+ "legendTitle": "How to read this page: seven colours, seven objects",
+ "provenance": "Where the numbers come from: a tiny demonstration model with {{d_model}}-number representations and a {{vocab}}-word vocabulary. Each coordinate was given an illustrative name{{axes}}, and the weights were written by hand so that the names are true. The arithmetic is real, but the model is not a trained language model.",
+ "chain": [
+  {
+   "label": "Predict the next token",
+   "section": "s01"
   },
-  "next": {
-    "label": "Part 3: Learning, heads, and the Transformer",
-    "href": "part3.html"
+  {
+   "label": "Baseline: only the last token",
+   "section": "s02"
   },
-  "index": {
-    "label": "Series home",
-    "href": "index.html"
+  {
+   "label": "Baseline: a fixed window of w tokens",
+   "section": "s03"
   },
-  "notation": "part2",
-  "footer": "Notation: <span class=\"sym sym-e\">e</span> is always the current token representation, and <span class=\"sym sym-d\">Δe</span> is this page's pedagogical name for the attention output. The addition <span class=\"sym sym-e\">e</span>&thinsp;+&thinsp;<span class=\"sym sym-d\">Δe</span> is the standard residual connection.",
-  "durationLabel": "The full walkthrough takes multiple sessions. A classroom route is suggested in Section 1."
+  {
+   "label": "Weighted pooling: where should weights come from?",
+   "section": "s04"
+  },
+  {
+   "label": "A detour through search: query, key, value",
+   "section": "s05"
+  },
+  {
+   "label": "Hard retrieval → soft retrieval",
+   "section": "s06"
+  },
+  {
+   "label": "Every token becomes a searchable record",
+   "section": "s07"
+  },
+  {
+   "label": "Two jobs: choose weights, then mix values",
+   "section": "s08"
+  },
+  {
+   "label": "The contextual update Δe",
+   "section": "s09"
+  },
+  {
+   "label": "“bank”: same start, different context",
+   "section": "s10"
+  },
+  {
+   "label": "What exactly are Q, K, and V?",
+   "section": "s11"
+  },
+  {
+   "label": "Why divide by √d_k?",
+   "section": "s12"
+  },
+  {
+   "label": "Causal masking",
+   "section": "s13"
+  },
+  {
+   "label": "From Δe to the next-token probabilities",
+   "section": "s14"
+  },
+  {
+   "label": "Full walkthrough, one step at a time",
+   "section": "s15"
+  },
+  {
+   "label": "The same thing in matrix form",
+   "section": "s16"
+  },
+  {
+   "label": "Attention versus the alternatives",
+   "section": "s17"
+  },
+  {
+   "label": "Pause and think",
+   "section": "s18"
+  },
+  {
+   "label": "Three summaries",
+   "section": "s19"
+  }
+ ],
+ "sections": [
+  {
+   "id": "s01",
+   "title": "Predict the next token",
+   "lit": ""
+  },
+  {
+   "id": "s02",
+   "title": "Baseline: only the last token",
+   "lit": "e"
+  },
+  {
+   "id": "s03",
+   "title": "Baseline: a fixed window of w tokens",
+   "lit": ""
+  },
+  {
+   "id": "s04",
+   "title": "Weighted pooling: where should weights come from?",
+   "lit": "a"
+  },
+  {
+   "id": "s05",
+   "title": "A detour through search: query, key, value",
+   "lit": "q k v"
+  },
+  {
+   "id": "s06",
+   "title": "Hard retrieval → soft retrieval",
+   "lit": ""
+  },
+  {
+   "id": "s07",
+   "title": "Every token becomes a searchable record",
+   "lit": ""
+  },
+  {
+   "id": "s08",
+   "title": "Two jobs: choose weights, then mix values",
+   "lit": ""
+  },
+  {
+   "id": "s09",
+   "title": "The contextual update Δe",
+   "lit": "d ep"
+  },
+  {
+   "id": "s10",
+   "title": "“bank”: same start, different context",
+   "lit": ""
+  },
+  {
+   "id": "s11",
+   "title": "What exactly are Q, K, and V?",
+   "lit": ""
+  },
+  {
+   "id": "s12",
+   "title": "Why divide by √d_k?",
+   "lit": ""
+  },
+  {
+   "id": "s13",
+   "title": "Causal masking",
+   "lit": ""
+  },
+  {
+   "id": "s14",
+   "title": "From Δe to the next-token probabilities",
+   "lit": ""
+  },
+  {
+   "id": "s15",
+   "title": "Full walkthrough, one step at a time",
+   "lit": ""
+  },
+  {
+   "id": "s16",
+   "title": "The same thing in matrix form",
+   "lit": ""
+  },
+  {
+   "id": "s17",
+   "title": "Attention versus the alternatives",
+   "lit": ""
+  },
+  {
+   "id": "s18",
+   "title": "Pause and think",
+   "lit": ""
+  },
+  {
+   "id": "s19",
+   "title": "Three summaries",
+   "lit": ""
+  }
+ ],
+ "objects": [
+  "e",
+  "q",
+  "k",
+  "v",
+  "a",
+  "d",
+  "ep"
+ ],
+ "prev": {
+  "label": "Part 1: From characters to next-token prediction",
+  "href": "part1.html"
+ },
+ "next": {
+  "label": "Part 3: Learning, heads, and the Transformer",
+  "href": "part3.html"
+ },
+ "index": {
+  "label": "Series home",
+  "href": "index.html"
+ },
+ "notation": "part2",
+ "footer": "Notation: <span class=\"sym sym-e\">e</span> is always the current token representation, and <span class=\"sym sym-d\">Δe</span> is this page's pedagogical name for the attention output. The addition <span class=\"sym sym-e\">e</span>&thinsp;+&thinsp;<span class=\"sym sym-d\">Δe</span> is the standard residual connection.",
+ "durationLabel": "The full walkthrough takes multiple sessions. A classroom route is suggested in Section 1.",
+ "hook": "The fisherman sat beside the river bank and watched the ___. You know the next word. What would a model have to read to know it too?"
 }

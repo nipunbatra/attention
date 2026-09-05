@@ -12,6 +12,16 @@
 <div class="companion" data-kicker="For self-study">
   <p>In Part 2, we followed one causal attention head from a token representation to a next-token distribution. The same bank row changed toward water in the river sentence and toward finance in the cheque sentence. The coordinates below come from that hand-written toy, with its named representation, query, key, and value axes. We chose the weights to make the calculation easy to follow, but the arithmetic is real. We will first reuse those weights, then compare the prediction with the observed word water. That error lets us change the parameters that contributed to the prediction: the forward pass we already know becomes a training example.</p>
 </div>
+<div class="frame" data-title="One guess, one truth" data-autobuild="off">
+  <script type="text/x-notes">Ask: the model put this much probability on the right word. Is that good? What should change, and who decides?
+Do not name gradients yet. Let the room say "the numbers inside" first.</script>
+  <div class="chips" id="s01-hook-chips"></div>
+  <div class="card" data-build="1"><div id="s01-hook-bars"></div><p class="muted small" id="s01-hook-line"></p></div>
+  <div class="callout callout-key" data-build="2">A half-right guess is the signal that tells hundreds of stored numbers which way to move. This part: learning, then what a full Transformer stacks on top.</div>
+</div>
+<script>
+(function(){ try{ var toks=AT.sentences.river; var F=AT.forward(toks); var last=F.probs[toks.length-1]; var V=AT.vocab; var items=V.map(function(t,i){return {label:t,p:last[i]};}).sort(function(a,b){return b.p-a.p;}).slice(0,4); AT.ui.chips(toks.concat(['___']),{numbered:true,into:document.getElementById('s01-hook-chips')}); AT.ui.bars(items,{highlight:'water',decimals:3,into:document.getElementById('s01-hook-bars')}); var pw=last[V.indexOf('water')]; document.getElementById('s01-hook-line').textContent='The next word was water: p = '+AT.fmt(pw,3)+', loss −log p = '+AT.fmt(-Math.log(pw),3)+'.'; }catch(e){} })();
+</script>
 <div class="frame" data-title="The calculation we already know">
   <script type="text/x-notes">Which object carries context back to the current representation?
   Trace the motif once. The dashed path retains the input while attention computes the update.</script>

@@ -1,174 +1,175 @@
 {
-  "part": 1,
-  "series": "Attention and language",
-  "title": "From characters to next-token prediction",
-  "subtitle": "Build a character model for names, train it on real examples, and use it one prediction at a time.",
-  "audience": "For deep-learning students who know MLPs, softmax and cross-entropy.",
-  "minutes": 60,
-  "centralLabel": "The character model",
-  "central": "t_{i-2:i} \\rightarrow \\ve{E_{\\text{tok}}}[t] \\rightarrow a_0 \\rightarrow a_1 \\rightarrow z \\rightarrow p(t_{i+1})",
-  "chain": [
-    {
-      "label": "Language tasks",
-      "section": "s01"
-    },
-    {
-      "label": "Generate a name",
-      "section": "s02"
-    },
-    {
-      "label": "Choose a context length",
-      "section": "s03"
-    },
-    {
-      "label": "Characters become embeddings",
-      "section": "s04"
-    },
-    {
-      "label": "Concatenate the window",
-      "section": "s05"
-    },
-    {
-      "label": "Pass it through an MLP",
-      "section": "s06"
-    },
-    {
-      "label": "Softmax over 27 scores",
-      "section": "s07"
-    },
-    {
-      "label": "Cross-entropy loss",
-      "section": "s08"
-    },
-    {
-      "label": "Learn the parameters",
-      "section": "s09"
-    },
-    {
-      "label": "Sample, append, repeat",
-      "section": "s10"
-    },
-    {
-      "label": "Training and generation",
-      "section": "s11"
-    },
-    {
-      "label": "Choose a token",
-      "section": "s12"
-    },
-    {
-      "label": "Use word tokens",
-      "section": "s13"
-    },
-    {
-      "label": "Face the growing context",
-      "section": "s14"
-    },
-    {
-      "label": "Pause and think",
-      "section": "s15"
-    },
-    {
-      "label": "Three summaries",
-      "section": "s16"
-    }
-  ],
-  "sections": [
-    {
-      "id": "s01",
-      "title": "What can a network do with text?",
-      "lit": ""
-    },
-    {
-      "id": "s02",
-      "title": "Generate a name",
-      "lit": ""
-    },
-    {
-      "id": "s03",
-      "title": "Choose a context length",
-      "lit": ""
-    },
-    {
-      "id": "s04",
-      "title": "Characters to numbers",
-      "lit": "e"
-    },
-    {
-      "id": "s05",
-      "title": "Concatenate the embeddings",
-      "lit": ""
-    },
-    {
-      "id": "s06",
-      "title": "Pass the vector through an MLP",
-      "lit": ""
-    },
-    {
-      "id": "s07",
-      "title": "27 scores to probabilities",
-      "lit": ""
-    },
-    {
-      "id": "s08",
-      "title": "The loss",
-      "lit": ""
-    },
-    {
-      "id": "s09",
-      "title": "Learn the embeddings and the weights",
-      "lit": ""
-    },
-    {
-      "id": "s10",
-      "title": "Sample, append, repeat",
-      "lit": ""
-    },
-    {
-      "id": "s11",
-      "title": "Training and generation",
-      "lit": ""
-    },
-    {
-      "id": "s12",
-      "title": "What should a token be?",
-      "lit": ""
-    },
-    {
-      "id": "s13",
-      "title": "Same model, word tokens",
-      "lit": ""
-    },
-    {
-      "id": "s14",
-      "title": "The context keeps growing",
-      "lit": ""
-    },
-    {
-      "id": "s15",
-      "title": "Pause and think",
-      "lit": ""
-    },
-    {
-      "id": "s16",
-      "title": "Three summaries",
-      "lit": ""
-    }
-  ],
-  "objects": [
-    "e"
-  ],
-  "legendTitle": "The learned object in this part",
-  "provenance": "The arithmetic comes from a character model trained on a cleaned list of names. It uses {{d_model}}-number embeddings, a {{vocab}}-token vocabulary, and named embedding axes{{axes}}. Displays round the model's full-precision values to two decimal places.",
-  "prev": null,
-  "next": {
-    "label": "Part 2: Self-attention, from first principles",
-    "href": "attention.html"
+ "part": 1,
+ "series": "Attention and language",
+ "title": "From characters to next-token prediction",
+ "subtitle": "Build a character model for names, train it on real examples, and use it one prediction at a time.",
+ "audience": "For deep-learning students who know MLPs, softmax and cross-entropy.",
+ "minutes": 60,
+ "centralLabel": "The character model",
+ "central": "t_{i-2:i} \\rightarrow \\ve{E_{\\text{tok}}}[t] \\rightarrow a_0 \\rightarrow a_1 \\rightarrow z \\rightarrow p(t_{i+1})",
+ "chain": [
+  {
+   "label": "Language tasks",
+   "section": "s01"
   },
-  "index": {
-    "label": "Series home",
-    "href": "index.html"
+  {
+   "label": "Generate a name",
+   "section": "s02"
   },
-  "notation": "part1",
-  "footer": "Part 1 builds next-token prediction from a fixed character window. Part 2 replaces that fixed context with a content-dependent read."
+  {
+   "label": "Choose a context length",
+   "section": "s03"
+  },
+  {
+   "label": "Characters become embeddings",
+   "section": "s04"
+  },
+  {
+   "label": "Concatenate the window",
+   "section": "s05"
+  },
+  {
+   "label": "Pass it through an MLP",
+   "section": "s06"
+  },
+  {
+   "label": "Softmax over 27 scores",
+   "section": "s07"
+  },
+  {
+   "label": "Cross-entropy loss",
+   "section": "s08"
+  },
+  {
+   "label": "Learn the parameters",
+   "section": "s09"
+  },
+  {
+   "label": "Sample, append, repeat",
+   "section": "s10"
+  },
+  {
+   "label": "Training and generation",
+   "section": "s11"
+  },
+  {
+   "label": "Choose a token",
+   "section": "s12"
+  },
+  {
+   "label": "Use word tokens",
+   "section": "s13"
+  },
+  {
+   "label": "Face the growing context",
+   "section": "s14"
+  },
+  {
+   "label": "Pause and think",
+   "section": "s15"
+  },
+  {
+   "label": "Three summaries",
+   "section": "s16"
+  }
+ ],
+ "sections": [
+  {
+   "id": "s01",
+   "title": "What can a network do with text?",
+   "lit": ""
+  },
+  {
+   "id": "s02",
+   "title": "Generate a name",
+   "lit": ""
+  },
+  {
+   "id": "s03",
+   "title": "Choose a context length",
+   "lit": ""
+  },
+  {
+   "id": "s04",
+   "title": "Characters to numbers",
+   "lit": "e"
+  },
+  {
+   "id": "s05",
+   "title": "Concatenate the embeddings",
+   "lit": ""
+  },
+  {
+   "id": "s06",
+   "title": "Pass the vector through an MLP",
+   "lit": ""
+  },
+  {
+   "id": "s07",
+   "title": "27 scores to probabilities",
+   "lit": ""
+  },
+  {
+   "id": "s08",
+   "title": "The loss",
+   "lit": ""
+  },
+  {
+   "id": "s09",
+   "title": "Learn the embeddings and the weights",
+   "lit": ""
+  },
+  {
+   "id": "s10",
+   "title": "Sample, append, repeat",
+   "lit": ""
+  },
+  {
+   "id": "s11",
+   "title": "Training and generation",
+   "lit": ""
+  },
+  {
+   "id": "s12",
+   "title": "What should a token be?",
+   "lit": ""
+  },
+  {
+   "id": "s13",
+   "title": "Same model, word tokens",
+   "lit": ""
+  },
+  {
+   "id": "s14",
+   "title": "The context keeps growing",
+   "lit": ""
+  },
+  {
+   "id": "s15",
+   "title": "Pause and think",
+   "lit": ""
+  },
+  {
+   "id": "s16",
+   "title": "Three summaries",
+   "lit": ""
+  }
+ ],
+ "objects": [
+  "e"
+ ],
+ "legendTitle": "The learned object in this part",
+ "provenance": "The arithmetic comes from a character model trained on a cleaned list of names. It uses {{d_model}}-number embeddings, a {{vocab}}-token vocabulary, and named embedding axes{{axes}}. Displays round the model's full-precision values to two decimal places.",
+ "prev": null,
+ "next": {
+  "label": "Part 2: Self-attention, from first principles",
+  "href": "attention.html"
+ },
+ "index": {
+  "label": "Series home",
+  "href": "index.html"
+ },
+ "notation": "part1",
+ "footer": "Part 1 builds next-token prediction from a fixed character window. Part 2 replaces that fixed context with a content-dependent read.",
+ "hook": "Can a small network invent an Indian name it has never seen? By the end of this part it will, and we will have written down every number it uses."
 }

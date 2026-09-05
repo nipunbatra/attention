@@ -40,6 +40,18 @@ body.present #s01 .dt td,body.present #s01 .dt th{padding:.16em .5em}
   <p>Part 2 gave every word a row and let the rows exchange information through attention. An image has no words. It has pixels, and a photograph has a lot of them: 224×224 is a small input for a vision model and already 50,176 pixels. This section asks the first design question of a Vision Transformer, how many rows an image should become, and answers it with the slider below. Move the patch side and watch two numbers: the rows that go into attention, and the scores one head has to compute, which grow with the square of the row count. The rest of the page then follows one tiny image through the same chain as Part 2.</p>
 </div>
 
+<div class="frame" data-title="Is there a mug on the right?" data-autobuild="off">
+  <script type="text/x-notes">Ask the room and count hands. Then ask how they knew, and how long it took.
+Build 1 shows what the model gets instead: sixty-four numbers and the attention operation from Part 2.</script>
+  <div class="side-by-side" style="align-items:start">
+    <div style="max-width:440px"><div id="s01-hook-photo"></div><p class="muted small" style="margin:4px 0 0">Your eye answers before you finish the question.</p></div>
+    <div data-build="1"><div id="s01-hook-grid"></div><p class="muted small" style="margin:4px 0 0">The model gets these sixty-four numbers and the attention operation from Part 2. Nothing else.</p></div>
+  </div>
+  <div class="callout callout-key" data-build="2">This part turns those numbers into one answer, every step written out, then trains the model to get it right.</div>
+</div>
+<script>
+(function(){ try{ if(AT.visionScene) AT.visionScene.mount(document.getElementById('s01-hook-photo'), { mode:'scene', variant:'two' }); AT.vision.grid('A', { cell: 24, labels: 'values', patchLines: true, into: document.getElementById('s01-hook-grid') }); }catch(e){} })();
+</script>
 <div class="frame" data-title="How many rows should a photograph become?" data-autobuild="off">
   <script type="text/x-notes">Ask the room: if every pixel were a token, how many scores would one attention head compute for one image?
 Start the slider at one pixel per row and let students read the score count aloud before moving it to sixteen. The square shows the grid; the numbers come from the same formula for every setting. Timing: three minutes.</script>

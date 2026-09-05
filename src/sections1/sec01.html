@@ -10,6 +10,16 @@
 </style>
 <header class="sec-head"><span class="sec-num">01</span><div><p class="eyebrow">Language tasks ask for different outputs, but all use text to make predictions.</p><h2>What can a network do with text?</h2></div></header>
 <div class="companion" data-kicker="For self-study"><p>A network can label a passage, label each token, translate between languages, shorten a notice, answer a question from context, or continue a prompt. These tasks need different output shapes. Generation leaves more room for choice: several continuations may fit the same prefix. We give the network a precise job anyway. It must assign a probability to every possible next token. Choosing or sampling one token then gives us a continuation. This gives us a small prediction task to build with embeddings, an MLP, softmax, and cross-entropy.</p></div>
+<div class="frame" data-title="Can a network invent a name?" data-autobuild="off">
+  <script type="text/x-notes">Ask: which of these names have you heard before? None of them is in the training list.
+Collect guesses about how a machine could produce them before revealing the second build.</script>
+  <p class="prose-lead">Eight names. None of them exists in the list the model learned from.</p>
+  <div class="chips lg" id="s01-names" aria-label="Eight names the model invented"></div>
+  <div class="callout callout-key" data-build="1">Every name came from a model with 1,169 numbers. By the end of this part you will have written every one of them by hand and watched the model choose each letter.</div>
+</div>
+<script>
+(function(){ var host=document.getElementById('s01-names'); var toy=window.__TOY__||{}; var names=(toy.sampled_names||[]).slice(0,8).map(function(x){return typeof x==='string'?x:x.name;}); if(host&&names.length){ names.forEach(function(n){ var c=document.createElement('span'); c.className='chip'; c.textContent=n; host.appendChild(c); }); } })();
+</script>
 <div class="frame" data-title="Different tasks need different outputs" data-autobuild="off">
   <script type="text/x-notes">What changes across these six language tasks?
   Reveal one row at a time. Ask whether the output is one label, one label per token, or another sequence.</script>

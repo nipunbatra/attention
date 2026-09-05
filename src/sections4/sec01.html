@@ -9,9 +9,9 @@
 </style>
 <header class="sec-head"><span class="sec-num">01</span><div><p class="eyebrow">The next token now depends on two sequences: the source and the answer so far.</p><h2>Translate one phrase</h2></div></header>
 <div class="companion" data-kicker="For self-study"><p>Our earlier model continued a single sequence. A translation model has a complete source phrase to read and a new sequence to write. We will use <em>the river bank</em> and its French translation <em>la rive</em>. The task is still next-token prediction: after generating <em>la</em>, what should come next? The model can use both the English source and the French prefix. We will follow those two inputs separately until cross-attention brings them together.</p></div>
-<div class="frame" data-title="English in, French out" data-autobuild="off">
-  <div class="s01-pair"><div><h3>Source, already known</h3><p>the river bank</p></div><div data-build="1"><h3>Observed translation</h3><p>la rive</p></div></div>
-  <p class="callout callout-key" data-build="2">After the French prefix <strong>la</strong>, predict <strong>rive</strong> using the English source.</p>
+<div class="frame" data-title="Banque or rive?" data-autobuild="off">
+  <div class="s01-pair"><div><h3>English, already known</h3><p>the river bank</p></div><div data-build="1"><h3>Two French words for bank</h3><p><em>la banque</em> (money) &nbsp;or&nbsp; <em>la rive</em> (river)?</p></div></div>
+  <p class="callout callout-key" data-build="2">Only the English sentence can settle it: <strong>river</strong> rules out <em>banque</em>. The decoder has written <strong>la</strong> and must choose the next French token while reading the English source. Observed: <strong>la rive</strong>.</p>
 <script type="text/x-notes">Ask what information the word bank needs for this translation.
 River identifies the intended sense. The decoder must also know that la has already been written. We are predicting the next French token, not classifying the English word by itself.</script>
 </div>

@@ -125,5 +125,6 @@
  },
  "notation": "vision2",
  "footer": "The image supplies its own training target; a probe with labels tells you what the representation kept.",
- "partLabel": "Vision II"
+ "partLabel": "Vision II",
+ "hook": "142 million images and not one label. What can a model learn from a picture with nothing written under it?"
 }

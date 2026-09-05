@@ -1,41 +1,119 @@
 {
-  "part": 3,
-  "series": "Vision to language",
-  "title": "CLIP: match an image with a caption",
-  "subtitle": "Three scenes, three captions, two encoders. Score every image against every caption, train the scores for 60 steps, then classify by writing a candidate list instead of a class head.",
-  "audience": "Students who have followed Vision I and know softmax and cross-entropy",
-  "minutes": 55,
-  "centralLabel": "One score for an image and a caption",
-  "central": "S_{ij}=\\frac{\\ve{\\hat g_i^{\\mathrm{img}}}\\cdot\\vq{\\hat g_j^{\\mathrm{txt}}}}{\\tau}",
-  "chain": [
-    { "label": "A menu or a caption", "section": "s01" },
-    { "label": "Three pairs, three axes", "section": "s02" },
-    { "label": "Encode and normalise", "section": "s03" },
-    { "label": "Score every pair", "section": "s04" },
-    { "label": "Both directions", "section": "s05" },
-    { "label": "Train for 60 steps", "section": "s06" },
-    { "label": "Grow the batch", "section": "s07" },
-    { "label": "Classify with prompts", "section": "s08" },
-    { "label": "Scope and summaries", "section": "s09" }
-  ],
-  "sections": [
-    { "id": "s01", "title": "A fixed menu or an open caption", "lit": "" },
-    { "id": "s02", "title": "Three pairs and three named axes", "lit": "" },
-    { "id": "s03", "title": "Encode and normalise", "lit": "e q" },
-    { "id": "s04", "title": "Score every image against every caption", "lit": "a" },
-    { "id": "s05", "title": "Train retrieval in both directions", "lit": "d" },
-    { "id": "s06", "title": "Sixty steps on the sphere", "lit": "" },
-    { "id": "s07", "title": "Grow the batch", "lit": "" },
-    { "id": "s08", "title": "Classify by writing candidates", "lit": "" },
-    { "id": "s09", "title": "Scope, questions and summaries", "lit": "" }
-  ],
-  "objects": [ "e", "q", "a", "d" ],
-  "legendTitle": "Whole-image and whole-caption vectors, not attention values",
-  "provenance": "Scope: the image encoder is Vision I's trained encoder on the shared 8×8 scene, frozen; only a 4×3 map after it, a 14-word bag-of-words text map and one temperature learn, on three image–caption pairs for 60 SGD steps. Every number on this page is computed by that toy in your browser; the checked reference is train_vision3.py. This is a CLIP-style teaching toy, not pretrained CLIP.",
-  "prev": { "label": "Vision II: Learn visual representations without class labels", "href": "vision2.html" },
-  "next": { "label": "Vision IV: An image becomes context for an answer", "href": "vision4.html" },
-  "index": { "label": "Series home", "href": "index.html" },
-  "notation": "vision3",
-  "footer": "Learn matching representations; keep the encoders fixed when writing candidate captions.",
-  "partLabel": "Vision III"
+ "part": 3,
+ "series": "Vision to language",
+ "title": "CLIP: match an image with a caption",
+ "subtitle": "Three scenes, three captions, two encoders. Score every image against every caption, train the scores for 60 steps, then classify by writing a candidate list instead of a class head.",
+ "audience": "Students who have followed Vision I and know softmax and cross-entropy",
+ "minutes": 55,
+ "centralLabel": "One score for an image and a caption",
+ "central": "S_{ij}=\\frac{\\ve{\\hat g_i^{\\mathrm{img}}}\\cdot\\vq{\\hat g_j^{\\mathrm{txt}}}}{\\tau}",
+ "chain": [
+  {
+   "label": "A menu or a caption",
+   "section": "s01"
+  },
+  {
+   "label": "Three pairs, three axes",
+   "section": "s02"
+  },
+  {
+   "label": "Encode and normalise",
+   "section": "s03"
+  },
+  {
+   "label": "Score every pair",
+   "section": "s04"
+  },
+  {
+   "label": "Both directions",
+   "section": "s05"
+  },
+  {
+   "label": "Train for 60 steps",
+   "section": "s06"
+  },
+  {
+   "label": "Grow the batch",
+   "section": "s07"
+  },
+  {
+   "label": "Classify with prompts",
+   "section": "s08"
+  },
+  {
+   "label": "Scope and summaries",
+   "section": "s09"
+  }
+ ],
+ "sections": [
+  {
+   "id": "s01",
+   "title": "A fixed menu or an open caption",
+   "lit": ""
+  },
+  {
+   "id": "s02",
+   "title": "Three pairs and three named axes",
+   "lit": ""
+  },
+  {
+   "id": "s03",
+   "title": "Encode and normalise",
+   "lit": "e q"
+  },
+  {
+   "id": "s04",
+   "title": "Score every image against every caption",
+   "lit": "a"
+  },
+  {
+   "id": "s05",
+   "title": "Train retrieval in both directions",
+   "lit": "d"
+  },
+  {
+   "id": "s06",
+   "title": "Sixty steps on the sphere",
+   "lit": ""
+  },
+  {
+   "id": "s07",
+   "title": "Grow the batch",
+   "lit": ""
+  },
+  {
+   "id": "s08",
+   "title": "Classify by writing candidates",
+   "lit": ""
+  },
+  {
+   "id": "s09",
+   "title": "Scope, questions and summaries",
+   "lit": ""
+  }
+ ],
+ "objects": [
+  "e",
+  "q",
+  "a",
+  "d"
+ ],
+ "legendTitle": "Whole-image and whole-caption vectors, not attention values",
+ "provenance": "Scope: the image encoder is Vision I's trained encoder on the shared 8×8 scene, frozen; only a 4×3 map after it, a 14-word bag-of-words text map and one temperature learn, on three image–caption pairs for 60 SGD steps. Every number on this page is computed by that toy in your browser; the checked reference is train_vision3.py. This is a CLIP-style teaching toy, not pretrained CLIP.",
+ "prev": {
+  "label": "Vision II: Learn visual representations without class labels",
+  "href": "vision2.html"
+ },
+ "next": {
+  "label": "Vision IV: An image becomes context for an answer",
+  "href": "vision4.html"
+ },
+ "index": {
+  "label": "Series home",
+  "href": "index.html"
+ },
+ "notation": "vision3",
+ "footer": "Learn matching representations; keep the encoders fixed when writing candidate captions.",
+ "partLabel": "Vision III",
+ "hook": "A classifier can only say the names on its menu. A caption can say anything. How do you teach a model to match pictures with words?"
 }
