@@ -214,3 +214,10 @@ Present mode now begins on a cover frame (`#s00/1/0`) that `shared.js` builds fr
 section frame is a hook, not machinery: Part 1 shows eight invented names, Part 2 the sentence with a blank, Part 3 one guess and one truth with its
 loss, Part 4 banque or rive, Vision I the photo and the question, Vision II the 142 million unlabelled images, Vision III the fixed menu, Vision IV the
 four-word question. Rule for new parts: cover, then a hook frame, then machinery; the fit check (`#at-fit-warning`) must stay empty on every frame.
+
+## 9. Whiteboard pass (2026-09-05)
+`STYLE_WHITEBOARD.md` distils how the instructor teaches (his handwritten decks in ~/git/ml-teaching and Part 2 here): example before machinery, one
+held drawing that gains one mark per build, exact small numbers on the drawing, colour = identity, at most 40 words of prose on a frame, notes that
+ask a question. `FRAME_AUDIT.md` lists the frames of every part that break those rules (measured from the built pages). Parts 1, 3, 4 and Vision I
+to IV are being reworked frame by frame against that list; Part 2 is the reference and is left alone. Re-run the audit after any change: build the
+part, then count per frame words, builds, svg, tables (the script is small; see git history of FRAME_AUDIT.md for the measurement).
