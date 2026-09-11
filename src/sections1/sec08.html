@@ -11,8 +11,17 @@
   <script type="text/x-notes">Which probability does cross-entropy keep for aab to i?
   The distribution uses all logits, but the target selects one final probability for this row's loss.</script>
   <div class="card"><h3 class="card-title">Loss for a a b → i</h3><div id="s08-live"></div></div>
-  <div class="prose" data-build="1"><p>$$\operatorname{loss}=-\log p(\text{target}).$$</p></div>
-  <div class="compare" data-build="2"><div class="case"><p>Confident and correct</p><div id="s08-good"></div></div><div class="case"><p>Confident and wrong</p><div id="s08-bad"></div></div></div>
+  <div data-build="1" data-math-guide><div class="p1-math">$$\pLoss{\operatorname{loss}}=-\log\pProb{p}(\pTarget{\text{target}})$$</div>
+  <dl class="p1-key">
+    <div class="p1-target"><dt>Target: the observed next character</dt><dd>For this training row, it is “i”.</dd></div>
+    <div class="p1-prob"><dt>$\pProb{p}$: assigned probability</dt><dd>Read the probability at the observed target.</dd></div>
+    <div class="p1-loss"><dt>Loss: prediction penalty</dt><dd>One number used to train the model.</dd></div>
+    <div><dt>$-\log$: negative natural logarithm</dt><dd>A lower target probability gives a larger penalty.</dd></div>
+  </dl></div>
+</div>
+<div class="frame" data-title="Low target probability gives a large loss" data-autobuild="off">
+  <div class="compare"><div class="case"><p>Confident and correct</p><div id="s08-good"></div></div><div class="case"><p>Confident and wrong</p><div id="s08-bad"></div></div></div>
+  <p class="p1-read"><span class="p1-prob">$\pProb{p}(\text{target})$ is the probability of the observed next character.</span> <span class="p1-loss">Loss measures the penalty for that prediction.</span></p>
 </div>
 <div class="frame" data-title="Inspect all six rows" data-autobuild="off">
   <script type="text/x-notes">Which aabid row is hardest for this trained model?
@@ -27,11 +36,11 @@
   function worksheet(host,row){AT.clear(host);const box=AT.h('div',{class:'loss-live'});box.textContent='probability '+AT.fmt(row.probability,2)+' → -log('+AT.fmt(row.probability,2)+') ≈ '+AT.fmt(AT.mlp.loss(row.ids,row.target_id),2);host.appendChild(box);}
   worksheet(S.querySelector('#s08-live'),main);
   const examples=[[.80,S.querySelector('#s08-good')],[.01,S.querySelector('#s08-bad')]];
-  examples.forEach(x=>{x[1].textContent='p(target) = '+AT.fmt(x[0],2)+' → loss = '+AT.fmt(-Math.log(x[0]),3);});
+  examples.forEach(x=>{AT.tex(x[1],'\\pProb{p}(\\pTarget{\\text{target}})='+AT.fmt(x[0],2)+'\\quad\\pLoss{\\text{loss}}='+AT.fmt(-Math.log(x[0]),3));});
   let active=0,out=S.querySelector('#s08-row-loss');
   const labels=rows.map(r=>r.context.join('')+' → '+r.target);
   const chips=AT.ui.chips(labels,{active:0,onClick:i=>{active=i;chips.setActive(i);draw();},into:S.querySelector('#s08-rows')});
-  function draw(){const r=rows[active];out.textContent='p('+r.target+' | '+r.context.join('')+') = '+AT.fmt(r.probability,2)+'; loss = '+AT.fmt(AT.mlp.loss(r.ids,r.target_id),2);}
+  function draw(){const r=rows[active];AT.tex(out,'\\pProb{p}(\\pTarget{\\mathtt{'+r.target+'}}\\mid\\pIn{\\mathtt{'+r.context.join('')+'}})='+AT.fmt(r.probability,2)+'\\qquad\\pLoss{\\text{loss}}='+AT.fmt(AT.mlp.loss(r.ids,r.target_id),2));}
   draw();
 })();
 </script>

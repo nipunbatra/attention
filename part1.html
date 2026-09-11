@@ -3187,6 +3187,16 @@ window.__PART__ = {"part":1,"series":"Attention and language","title":"From char
   'use strict';
 
   var AT = window.AT;
+  // Part 1's notation roles. The same classes colour math and its nearby prose.
+  Object.assign(AT.macros || (AT.macros = {}), {
+    '\\pIn': '\\htmlClass{p1-input}{#1}',
+    '\\pTarget': '\\htmlClass{p1-target}{#1}',
+    '\\pParam': '\\htmlClass{p1-param}{#1}',
+    '\\pProb': '\\htmlClass{p1-prob}{#1}',
+    '\\pAct': '\\htmlClass{p1-activation}{#1}',
+    '\\pScore': '\\htmlClass{p1-score}{#1}',
+    '\\pLoss': '\\htmlClass{p1-loss}{#1}'
+  });
   var model = window.__TOY__ || {};
   var vocab = Array.isArray(model.vocab) ? model.vocab.slice() : [];
   var stoi = {};
@@ -3956,6 +3966,16 @@ window.__PART__ = {"part":1,"series":"Attention and language","title":"From char
 <!-- ===== sec03.html ===== -->
 <section id="s03" class="sec" data-title="Choose a context length" data-lit="">
 <style>
+/* These notation classes belong to Part 1, including later sections. */
+.p1-input,.dt td.p1-input{color:var(--c-e)} .p1-target,.dt td.p1-target{color:var(--c-k)}
+.p1-param,.dt td.p1-param{color:var(--c-q)} .p1-prob,.dt td.p1-prob{color:var(--c-d)}
+.p1-activation,.dt td.p1-activation{color:var(--c-v)} .p1-score,.dt td.p1-score{color:var(--ink-2)} .p1-loss,.dt td.p1-loss{color:var(--c-a)}
+.p1-key{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 28px;margin:20px 0}
+.p1-key>div{min-width:0}
+.p1-key dt{font-weight:650;margin:0 0 4px}
+.p1-key dd{margin:0;line-height:1.35}
+.p1-read{line-height:1.5;margin:16px 0}
+@media(max-width:640px){body:not(.present) .p1-key{grid-template-columns:1fr}}
 #s03 .choice{padding:18px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--paper)}
 #s03 .choice.chosen{border:2px solid var(--ink);background:var(--card)}
 #s03 .choice .mono{font-size:1.2em;font-weight:700}
@@ -3968,17 +3988,24 @@ window.__PART__ = {"part":1,"series":"Attention and language","title":"From char
   <script type="text/x-notes">What would each context choice let the model remember?
   Compare one, three, and all. Use three for this model because it needs a fixed input width.</script>
   <div class="card"><div class="grid-3"><div class="choice"><span class="mono">w = 1</span><p>One previous character</p></div><div class="choice chosen" data-build="1"><span class="mono">w = 3</span><p>Three previous characters</p></div><div class="choice" data-build="2"><span class="mono">w = all</span><p>A growing prefix</p></div></div></div>
-  <p data-build="3">For <strong class="mono">aabid</strong>, the window <strong class="mono">a a b</strong> is the input. The next character <strong class="mono">i</strong> is the training target.</p>
+  <p data-build="3">For <strong class="mono">aabid</strong>, the window <strong class="mono p1-input">a a b</strong> is the input. The next character <strong class="mono p1-target">i</strong> is the training target.</p>
 </div>
 <div class="frame" data-title="Writing the same question as a probability" data-autobuild="off">
   <script type="text/x-notes">Read the formula in words before naming the symbols: the chance of i next, given a, a, b.
   The subscript numbers are positions, starting at one. Theta stands for the learned parameters, which we will inspect later.</script>
-  <p>We have read <strong class="mono">a a b</strong>. How likely is <strong class="mono">i</strong> next?</p>
-  <p>Positions: $t_1=a$, $t_2=a$, $t_3=b$. We are predicting position 4.</p>
-  <div class="tex-display" data-build="1">$$p_\theta(t_4=i\mid t_1=a,\ t_2=a,\ t_3=b)$$</div>
-  <p data-build="2">The bar $\mid$ means “given”. $\theta$ stands for the model's learned parameters.</p>
+  <p>We have read <strong class="mono p1-input">a a b</strong>. How likely is <strong class="mono p1-target">i</strong> next?</p>
+  <div data-build="1" data-math-guide>
+    <div class="p1-math tex-display">$$\pProb{p}_{\pParam{\theta}}(\pTarget{t_4=\mathtt{i}}\mid \pIn{t_1=\mathtt{a},\ t_2=\mathtt{a},\ t_3=\mathtt{b}})$$</div>
+    <dl class="p1-key">
+      <div class="p1-prob"><dt>$\pProb{p}$: probability</dt><dd>How likely the model thinks this next character is.</dd></div>
+      <div class="p1-param"><dt>$\pParam{\theta}$: learned parameters</dt><dd>The model's current embedding table, weights, and biases.</dd></div>
+      <div class="p1-target"><dt>$\pTarget{t_4=\mathtt{i}}$: proposed next character</dt><dd>Character 4 is “i”. Here, “i” is a letter, not an index.</dd></div>
+      <div class="p1-input"><dt>$\pIn{t_1,t_2,t_3}$: known context</dt><dd>Characters 1, 2, and 3 are “a”, “a”, and “b”.</dd></div>
+    </dl>
+  </div>
+  <p data-build="2">Read $\mid$ as “given”: the probability of <span class="p1-target">“i” next</span>, given <span class="p1-input">“a a b” already read</span>.</p>
 </div>
-<div class="companion"><p>At a general position $i$, the same three-character rule is $p_\theta(t_i\mid t_{i-3},t_{i-2},t_{i-1})$. The three characters after the bar are the input. The character before it is what we predict.</p></div>
+<div class="companion" data-math-guide><p>The same rule at any position:</p><div class="p1-math">$$\pProb{p}_{\pParam{\theta}}(\pTarget{t_i}\mid\pIn{t_{i-3},t_{i-2},t_{i-1}})$$</div><p class="p1-read"><span class="p1-prob">Probability</span> under the <span class="p1-param">learned parameters $\pParam{\theta}$</span> of the <span class="p1-target">next token $\pTarget{t_i}$ at position $i$</span>, given the <span class="p1-input">three previous tokens</span>. Here $i$ is a position index. The compact notation <span class="p1-input">$\pIn{t_{i-3:i-1}}$</span> names those same three tokens, including both endpoints.</p></div>
 <div class="frame" data-title="Slide across aabid" data-autobuild="off">
   <script type="text/x-notes">How many training rows does a five-letter name produce?
   Walk the stepper through each context. The sixth target is the boundary, which teaches the model to stop.</script>
@@ -4035,7 +4062,7 @@ body.present #s04 .embedding-space>svg{max-height:380px}
   <script type="text/x-notes">Which embedding axis separates vowels from consonants?
   Read the column headers before the values. Highlight a, b, and i as the rows needed by the running examples.</script>
   <div class="card"><h3 class="card-title">Selected rows of the trained table $\ve{E_{\text{tok}}}$</h3><div id="s04-embed"></div></div>
-  <div class="prose" data-build="1"><p>Lookup uses $$\ve{e_c}=\ve{E_{\text{tok}}}[\operatorname{id}(c)].$$</p></div>
+  <div data-build="1" data-math-guide><div class="p1-math">$$\pIn{e_c}=\pIn{E_{\text{tok}}}[\operatorname{id}(c)]$$</div><p class="p1-read"><span class="p1-input">$\pIn{E_{\text{tok}}}$ is the learned embedding table. $\pIn{e_c}$ is the row for character $c$.</span> The ID of $c$ selects a row; the square brackets mean “look up”.</p></div>
 </div>
 <div class="frame" data-title="The learned rows form a geometry" data-autobuild="off">
   <script type="text/x-notes">What does it mean for two learned rows to be close?
@@ -4093,7 +4120,7 @@ body.present #s04 .embedding-space>svg{max-height:380px}
   <script type="text/x-notes">Where does the second a live in the concatenated row?
   Read the position labels across the headers. Each position has a separate two-coordinate segment.</script>
   <div class="card"><h3 class="card-title">The three rows for a a b</h3><div id="s05-rows"></div></div>
-  <div class="join-eq" id="s05-eq" data-build="1"></div>
+  <div data-build="1" data-math-guide><div class="join-eq p1-math" id="s05-eq"></div><p class="p1-read"><span class="p1-input">$\pIn{e_1,e_2,e_3}$ are the embedding rows at the three window positions. $\pIn{a_0}$ is their concatenation, the MLP input.</span> $\mathbb R^{1\times6}$ means one row of six real numbers.</p></div>
 </div>
 <div class="frame" data-title="Six numbers, with a slot for each position" data-autobuild="off">
   <div class="card"><div id="s05-joined"></div></div>
@@ -4119,7 +4146,7 @@ body.present #s04 .embedding-space>svg{max-height:380px}
     {title:'Place each occurrence in its slot',render:host=>host.appendChild(AT.part1Diagrams.lookupConcat({stage:2}))}
   ]});
   AT.ui.table(rows(['a','a','b']),{axes:'e',rowLabels:['position 1 · a','position 2 · a','position 3 · b'],rowCls:'e',cornerLabel:'window',caption:'Read each row left to right, then place the rows side by side.',into:S.querySelector('#s05-rows')});
-  AT.tex(S.querySelector('#s05-eq'),'a_0=[\\ve{e_1},\\ve{e_2},\\ve{e_3}]\\in\\mathbb{R}^{1\\times '+(M.w*M.d_model)+'}',{display:true});
+  AT.tex(S.querySelector('#s05-eq'),'\\pIn{a_0}=[\\pIn{e_1},\\pIn{e_2},\\pIn{e_3}]\\in\\mathbb{R}^{1\\times '+(M.w*M.d_model)+'}',{display:true});
   const cols=[];for(let pos=0;pos<M.w;pos++)axes.forEach((a,i)=>cols.push({label:'p'+(pos+1)+' · c'+(i+1),cls:'e'}));
   const jfig=AT.ui.table([joined(['a','a','b'])],{cols:cols,rowLabels:['$a_0$'],cornerLabel:'input',decimals:2,caption:'p = position; c1 = '+axes[0]+', c2 = '+axes[1]+'.',into:S.querySelector('#s05-joined')});
   jfig.cells[0].forEach((cell,i)=>cell.classList.add('p'+(Math.floor(i/M.d_model)+1)));
@@ -4146,9 +4173,24 @@ body.present #s06 .net{max-width:650px}
   Trace six scalar inputs through the hidden layer. The marked output is the target i for aab.</script>
   <div class="card"><h3 class="card-title">The MLP for a a b</h3><div class="net" id="s06-net"></div></div>
 </div>
-<div class="frame" data-title="Two learned layers" data-autobuild="off">
-  <div class="prose eqs"><p>$$a_1=\tanh(a_0W_1+b_1)$$</p><p data-build="1">$$z=a_1W_2+b_2$$</p></div>
-  <div class="callout callout-note" data-build="2">The first layer mixes the six inputs. The second makes one score per vocabulary token.</div>
+<div class="frame" data-title="The hidden layer combines the input numbers" data-autobuild="off">
+  <div data-math-guide><div class="p1-math">$$\pAct{a_1}=\tanh(\pIn{a_0}\pParam{W_1}+\pParam{b_1})$$</div>
+  <dl class="p1-key">
+    <div class="p1-input"><dt>$\pIn{a_0}$: input row</dt><dd>The six numbers from our three embeddings.</dd></div>
+    <div class="p1-param"><dt>$\pParam{W_1,b_1}$: learned weights and bias</dt><dd>Multiply by the weight matrix, then add the bias.</dd></div>
+    <div class="p1-activation"><dt>$\pAct{a_1}$: hidden activations</dt><dd>The row of numbers produced by this layer.</dd></div>
+    <div><dt>$\tanh$: activation function</dt><dd>Apply it to each result, giving a number between −1 and 1.</dd></div>
+  </dl></div>
+  <p data-build="1">Each hidden unit can combine information from all six input coordinates.</p>
+</div>
+<div class="frame" data-title="The output layer makes one score per token" data-autobuild="off">
+  <div data-math-guide><div class="p1-math">$$\pScore{z}=\pAct{a_1}\pParam{W_2}+\pParam{b_2}$$</div>
+  <dl class="p1-key">
+    <div class="p1-activation"><dt>$\pAct{a_1}$: hidden activations</dt><dd>The same row we just calculated.</dd></div>
+    <div class="p1-param"><dt>$\pParam{W_2,b_2}$: output weights and bias</dt><dd>A second learned transformation.</dd></div>
+    <div class="p1-score"><dt>$\pScore{z}$: logits</dt><dd>One score for each of the 27 vocabulary tokens.</dd></div>
+  </dl></div>
+  <p data-build="1">These scores become probabilities in the next step.</p>
 </div>
 <div class="frame" data-title="Check the shapes before multiplying" data-autobuild="off">
   <div class="card"><div id="s06-shapes"></div></div>
@@ -4156,7 +4198,7 @@ body.present #s06 .net{max-width:650px}
 <div class="frame" data-title="One hidden unit" data-autobuild="off">
   <script type="text/x-notes">What does one hidden unit read?
   It receives all six input coordinates through one column of W1, then adds one bias and applies tanh.</script>
-  <div class="card"><h3 class="card-title">Column 1 of $W_1$</h3><div id="s06-hidden-compact"></div><p class="calc-note" id="s06-hidden-note"></p></div>
+  <div class="card"><h3 class="card-title">Column 1 of $\pParam{W_1}$</h3><div id="s06-hidden-compact"></div><p class="calc-note" id="s06-hidden-note"></p></div>
 </div>
 <div class="frame" data-title="One output logit" data-autobuild="off">
   <script type="text/x-notes">Which column of W2 produces the score for i?
@@ -4170,7 +4212,10 @@ body.present #s06 .net{max-width:650px}
   const S=document.getElementById('s06'),M=window.__TOY__,ids=['a','a','b'].map(c=>AT.mlp.stoi[c]),F=AT.mlp.forward(ids);
   AT.netSketch(S.querySelector('#s06-net'),{inputs:F.a0.length,hidden:5,outputs:M.vocab,highlightOutput:'i',labels:{input:i=>'(a_0)_{'+i+'}',output:x=>x},inputCaption:()=>F.a0.length+' inputs',hiddenCaption:M.d_h+' hidden',outputCaption:M.vocab.length+' logits'});
   const shapeRows=[['1 × '+F.a0.length],[''+F.a0.length+' × '+M.d_h],['1 × '+M.d_h],['1 × '+M.d_h],[M.d_h+' × '+M.vocab.length],['1 × '+M.vocab.length],['1 × '+M.vocab.length]];
-  AT.ui.table(shapeRows,{cols:['shape'],rowLabels:['$a_0$','$W_1$','$b_1$','$a_1$','$W_2$','$b_2$','$z$'],cornerLabel:'object',into:S.querySelector('#s06-shapes')});
+  const meanings=['input row','hidden weights','hidden bias','hidden activations','output weights','output bias','vocabulary scores'];
+  const roles=['p1-input','p1-param','p1-param','p1-activation','p1-param','p1-param','p1-score'];
+  const shapeTable=AT.ui.table(shapeRows.map((r,i)=>[meanings[i],r[0]]),{cols:['meaning','shape'],rowLabels:['$\\pIn{a_0}$','$\\pParam{W_1}$','$\\pParam{b_1}$','$\\pAct{a_1}$','$\\pParam{W_2}$','$\\pParam{b_2}$','$\\pScore{z}$'],cornerLabel:'object',into:S.querySelector('#s06-shapes')});
+  shapeTable.cells.forEach((row,i)=>row[0].classList.add(roles[i]));
   const inAxes=[];for(let p=0;p<M.w;p++)M.axes.e.forEach(a=>inAxes.push('p'+(p+1)+' · '+a));
   const j=0,W1col=M.W1.map(r=>[r[j]]),dot1=AT.matmul(F.a0,W1col)[0],pre=dot1+M.b1[j];
   AT.ui.matVecCalc(F.a0,W1col,{from:inAxes,to:['hidden 1'],cls:'neutral',xLabel:'a0',outLabel:'dot product',decimals:2,wDecimals:2,into:S.querySelector('#s06-hidden')});
@@ -4198,8 +4243,23 @@ body.present #s06 .net{max-width:650px}
   <div class="card"><h3 class="card-title">Top logits for a a b</h3><div id="s07-logits"></div></div>
 </div>
 <div class="frame" data-title="Exponentiate, then divide by the total" data-autobuild="off">
-  <div class="prose"><p>For every token $j$, $$p_j=\frac{\exp(z_j)}{\sum_{r\in\mathcal V}\exp(z_r)}.$$</p></div>
+  <div data-math-guide><div class="p1-math">$$\pProb{p_j}=\frac{\exp(\pScore{z_j})}{\sum_{r\in\mathcal V}\exp(\pScore{z_r})}$$</div>
+  <dl class="p1-key">
+    <div class="p1-prob"><dt>$\pProb{p_j}$: probability for token $j$</dt><dd>The share of the total assigned to this token.</dd></div>
+    <div class="p1-score"><dt>$\pScore{z_j}$: score for token $j$</dt><dd>The output layer's logit for that token.</dd></div>
+    <div><dt>$\exp(z_j)=e^{z_j}$: exponentiate</dt><dd>Turn the score into a positive number.</dd></div>
+    <div><dt>$\sum_{r\in\mathcal V}$: sum over the vocabulary</dt><dd>Add the exponentials for all 27 tokens. $r$ visits each token in $\mathcal V$.</dd></div>
+  </dl></div>
   <div class="callout callout-key" data-build="1">Each token gets a positive share of the same total.</div>
+</div>
+<div class="frame" data-title="The same softmax, with smaller intermediate numbers" data-autobuild="off">
+  <div data-math-guide><div class="p1-math">$$\pProb{p_j}=\frac{\exp(\pScore{z_j}-\pScore{z_{\max}})}{\sum_{r\in\mathcal V}\exp(\pScore{z_r}-\pScore{z_{\max}})}$$</div>
+  <dl class="p1-key">
+    <div class="p1-score"><dt>$\pScore{z_{\max}}$: the largest logit</dt><dd>Subtract this same number from every score before exponentiating.</dd></div>
+    <div class="p1-prob"><dt>$\pProb{p_j}$: the same probability</dt><dd>Numerator and denominator both lose the factor $e^{z_{\max}}$, so it cancels.</dd></div>
+  </dl></div>
+  <p>$j$ is the token we are scoring. The sum visits every token $r$ in the vocabulary $\mathcal V$.</p>
+  <p data-build="1">The largest exponential is now 1. This avoids very large intermediate numbers.</p>
 </div>
 <div class="frame" data-title="Softmax worksheet" data-autobuild="off">
   <script type="text/x-notes">Where do the other vocabulary entries affect the probability of i?
@@ -4220,7 +4280,7 @@ body.present #s06 .net{max-width:650px}
   AT.ui.table(idx.map(i=>[F.z[i],F.p[i]]).concat([['',rest.reduce((a,i)=>a+F.p[i],0)]]),{cols:['logit','probability'],rowLabels:idx.map(i=>M.vocab[i]).concat(['other ×'+rest.length]),cornerLabel:'token',highlightRow:idx.indexOf(AT.mlp.stoi.i),decimals:2,caption:'The other row groups the vocabulary entries outside the top five.',into:S.querySelector('#s07-logits')});
   const shown=idx.concat(rest.length?[rest[0]]:[]),rows=idx.map(i=>[F.z[i],ex[i],ex[i]/den]);
   rows.push(['',rest.reduce((a,i)=>a+ex[i],0),rest.reduce((a,i)=>a+F.p[i],0)]);
-  AT.ui.table(rows,{cols:['logit','$\\exp(z-z_{\\max})$','divide by denominator'],rowLabels:idx.map(i=>M.vocab[i]).concat(['other ×'+rest.length]),cornerLabel:'token',highlightRow:idx.indexOf(AT.mlp.stoi.i),decimals:2,footer:{label:'denominator',values:['',den,'1.00']},caption:'The grouped row contains the remaining entries. Displayed values are rounded; the denominator and probabilities use unrounded exponentials.',into:S.querySelector('#s07-softmax')});
+  AT.ui.table(rows,{cols:['logit','$\\exp(\\pScore{z}-\\pScore{z_{\\max}})$','divide by denominator'],rowLabels:idx.map(i=>M.vocab[i]).concat(['other ×'+rest.length]),cornerLabel:'token',highlightRow:idx.indexOf(AT.mlp.stoi.i),decimals:2,footer:{label:'denominator',values:['',den,'1.00']},caption:'The grouped row contains the remaining entries. Displayed values are rounded; the denominator and probabilities use unrounded exponentials.',into:S.querySelector('#s07-softmax')});
   const items=top.map(x=>({label:x.tok,p:x.p})).concat([{label:'other ×'+rest.length,p:rest.reduce((a,i)=>a+F.p[i],0)}]);
   AT.ui.bars(items,{highlight:'i',sorted:false,size:'lg',decimals:2,into:S.querySelector('#s07-bars')});
 })();
@@ -4241,8 +4301,17 @@ body.present #s06 .net{max-width:650px}
   <script type="text/x-notes">Which probability does cross-entropy keep for aab to i?
   The distribution uses all logits, but the target selects one final probability for this row's loss.</script>
   <div class="card"><h3 class="card-title">Loss for a a b → i</h3><div id="s08-live"></div></div>
-  <div class="prose" data-build="1"><p>$$\operatorname{loss}=-\log p(\text{target}).$$</p></div>
-  <div class="compare" data-build="2"><div class="case"><p>Confident and correct</p><div id="s08-good"></div></div><div class="case"><p>Confident and wrong</p><div id="s08-bad"></div></div></div>
+  <div data-build="1" data-math-guide><div class="p1-math">$$\pLoss{\operatorname{loss}}=-\log\pProb{p}(\pTarget{\text{target}})$$</div>
+  <dl class="p1-key">
+    <div class="p1-target"><dt>Target: the observed next character</dt><dd>For this training row, it is “i”.</dd></div>
+    <div class="p1-prob"><dt>$\pProb{p}$: assigned probability</dt><dd>Read the probability at the observed target.</dd></div>
+    <div class="p1-loss"><dt>Loss: prediction penalty</dt><dd>One number used to train the model.</dd></div>
+    <div><dt>$-\log$: negative natural logarithm</dt><dd>A lower target probability gives a larger penalty.</dd></div>
+  </dl></div>
+</div>
+<div class="frame" data-title="Low target probability gives a large loss" data-autobuild="off">
+  <div class="compare"><div class="case"><p>Confident and correct</p><div id="s08-good"></div></div><div class="case"><p>Confident and wrong</p><div id="s08-bad"></div></div></div>
+  <p class="p1-read"><span class="p1-prob">$\pProb{p}(\text{target})$ is the probability of the observed next character.</span> <span class="p1-loss">Loss measures the penalty for that prediction.</span></p>
 </div>
 <div class="frame" data-title="Inspect all six rows" data-autobuild="off">
   <script type="text/x-notes">Which aabid row is hardest for this trained model?
@@ -4257,11 +4326,11 @@ body.present #s06 .net{max-width:650px}
   function worksheet(host,row){AT.clear(host);const box=AT.h('div',{class:'loss-live'});box.textContent='probability '+AT.fmt(row.probability,2)+' → -log('+AT.fmt(row.probability,2)+') ≈ '+AT.fmt(AT.mlp.loss(row.ids,row.target_id),2);host.appendChild(box);}
   worksheet(S.querySelector('#s08-live'),main);
   const examples=[[.80,S.querySelector('#s08-good')],[.01,S.querySelector('#s08-bad')]];
-  examples.forEach(x=>{x[1].textContent='p(target) = '+AT.fmt(x[0],2)+' → loss = '+AT.fmt(-Math.log(x[0]),3);});
+  examples.forEach(x=>{AT.tex(x[1],'\\pProb{p}(\\pTarget{\\text{target}})='+AT.fmt(x[0],2)+'\\quad\\pLoss{\\text{loss}}='+AT.fmt(-Math.log(x[0]),3));});
   let active=0,out=S.querySelector('#s08-row-loss');
   const labels=rows.map(r=>r.context.join('')+' → '+r.target);
   const chips=AT.ui.chips(labels,{active:0,onClick:i=>{active=i;chips.setActive(i);draw();},into:S.querySelector('#s08-rows')});
-  function draw(){const r=rows[active];out.textContent='p('+r.target+' | '+r.context.join('')+') = '+AT.fmt(r.probability,2)+'; loss = '+AT.fmt(AT.mlp.loss(r.ids,r.target_id),2);}
+  function draw(){const r=rows[active];AT.tex(out,'\\pProb{p}(\\pTarget{\\mathtt{'+r.target+'}}\\mid\\pIn{\\mathtt{'+r.context.join('')+'}})='+AT.fmt(r.probability,2)+'\\qquad\\pLoss{\\text{loss}}='+AT.fmt(AT.mlp.loss(r.ids,r.target_id),2));}
   draw();
 })();
 </script>
@@ -4286,7 +4355,8 @@ body.present #s06 .net{max-width:650px}
 <div class="frame" data-title="What the optimizer changes" data-autobuild="off">
   <script type="text/x-notes">Which learned objects receive gradients from the loss?
   Read each shape and parameter count. The embedding table and both MLP layers are trained together.</script>
-  <div class="card"><h3 class="card-title">All learned parameters</h3><div id="s09-params"></div></div>
+  <div class="card"><h3 class="card-title">All learned parameters $\pParam{\theta}$</h3><div id="s09-params"></div></div>
+  <p class="p1-read"><span class="p1-input">$\pIn{E_{\text{tok}}}$ stores embedding rows.</span> <span class="p1-param">$\pParam{W_1,W_2}$ are weight matrices. $\pParam{b_1,b_2}$ are bias rows.</span></p>
 </div>
 <div class="frame" data-title="The target is not part of the input" data-autobuild="off">
   <div class="prose"><p>For <strong>aab → i</strong>:</p><p data-build="1">The input looks up embedding rows <strong>a</strong> and <strong>b</strong>.</p><p data-build="2">The observed target <strong>i</strong> selects the cross-entropy loss.</p></div>
@@ -4313,7 +4383,7 @@ body.present #s06 .net{max-width:650px}
     {title:'Observed i defines the loss',render:host=>host.appendChild(AT.part1Diagrams.learningGraph({stage:2}))},
     {title:'Autograd returns parameter gradients',render:host=>host.appendChild(AT.part1Diagrams.learningGraph({stage:3}))}
   ]});
-  const specs=[['$\\ve{E_{\\text{tok}}}$',V+' × '+D,V*D],['$W_1$',(M.w*D)+' × '+H,M.w*D*H],['$b_1$','1 × '+H,H],['$W_2$',H+' × '+V,H*V],['$b_2$','1 × '+V,V]];
+  const specs=[['$\\pIn{E_{\\text{tok}}}$',V+' × '+D,V*D],['$\\pParam{W_1}$',(M.w*D)+' × '+H,M.w*D*H],['$\\pParam{b_1}$','1 × '+H,H],['$\\pParam{W_2}$',H+' × '+V,H*V],['$\\pParam{b_2}$','1 × '+V,V]];
   AT.ui.table(specs.map(r=>[r[1],r[2]]),{cols:['shape','parameter count'],rowLabels:specs.map(r=>r[0]),cornerLabel:'parameter',decimals:0,footer:{label:'total',values:['',specs.reduce((a,r)=>a+r[2],0)]},into:S.querySelector('#s09-params')});
   const curve=M.training_curve,host=S.querySelector('#s09-curve'),W=800,Ht=260,pad={l:58,r:20,t:18,b:42},xs=curve.map(d=>d.step),ys=curve.map(d=>d.loss),xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys),x=v=>pad.l+(v-xmin)/(xmax-xmin)*(W-pad.l-pad.r),y=v=>pad.t+(ymax-v)/(ymax-ymin)*(Ht-pad.t-pad.b),svg=AT.svg('svg',{viewBox:'0 0 '+W+' '+Ht,class:'curve',role:'img','aria-label':'Training loss curve'});
   svg.appendChild(AT.svg('line',{x1:pad.l,y1:pad.t,x2:pad.l,y2:Ht-pad.b,class:'axis'}));svg.appendChild(AT.svg('line',{x1:pad.l,y1:Ht-pad.b,x2:W-pad.r,y2:Ht-pad.b,class:'axis'}));
@@ -4518,6 +4588,7 @@ body.present #s12 .tok-row:not(.is-active){display:none}
 </div>
 <div class="frame" data-title="A larger window makes a larger weight matrix" data-autobuild="off">
   <div class="card"><p class="readout" id="s14-large"></p></div>
+  <p class="p1-read">$w$ counts context tokens. $d$ counts numbers per embedding. $d_h$ counts hidden units. <span class="p1-param">$\pParam{W_1}$ has $wd$ input rows and $d_h$ output columns.</span></p>
   <div class="callout callout-key" data-build="1">Change the window, and we must change the network.</div>
 </div>
 <div class="frame" data-title="A question for attention" data-autobuild="off">
@@ -4530,10 +4601,10 @@ body.present #s12 .tok-row:not(.is-active){display:none}
 (function(){
   const S=document.getElementById('s14'),M=window.__TOY__,presets=[3,5,10,100],read=S.querySelector('#s14-read');
   const net=AT.netSketch(S.querySelector('#s14-net'),{inputs:presets[0],hidden:5,outputs:M.vocab,highlightOutput:'i',collapseAbove:8,inputCaption:w=>w+' embedding slots',hiddenCaption:M.d_h+' hidden',outputCaption:M.vocab.length+' outputs'});
-  function draw(index){const w=presets[index],inputs=w*M.d_model,weights=inputs*M.d_h;net.setInputs(w);read.innerHTML='$w = '+w+'$<br>$W_1$: '+inputs+' × '+M.d_h+'<br>'+AT.fmt(weights,0)+' weights';AT.renderMath(read);}
+  function draw(index){const w=presets[index],inputs=w*M.d_model,weights=inputs*M.d_h;net.setInputs(w);read.innerHTML='Context tokens: $w = '+w+'$<br><span class="p1-param">Weights $\\pParam{W_1}$: '+inputs+' × '+M.d_h+'</span><br>'+AT.fmt(weights,0)+' weights';AT.renderMath(read);}
   const slider=AT.ui.slider({label:'Window choice',min:0,max:presets.length-1,step:1,value:0,format:i=>'w = '+presets[i],onInput:i=>draw(i),into:S.querySelector('#s14-slider')});draw(0);
   const realW=100,realD=256,realH=1024,realCount=realW*realD*realH;
-  S.querySelector('#s14-large').innerHTML='If $d = '+realD+'$, $d_h = '+realH+'$, and $w = '+realW+'$, then $W_1$ alone has '+AT.fmt(realCount,0)+' weights, about '+AT.fmt(realCount/1000000,0)+' million.';AT.renderMath(S.querySelector('#s14-large'));
+  S.querySelector('#s14-large').innerHTML='If $d = '+realD+'$, $d_h = '+realH+'$, and $w = '+realW+'$, then $\\pParam{W_1}$ alone has '+AT.fmt(realCount,0)+' weights, about '+AT.fmt(realCount/1000000,0)+' million.';AT.renderMath(S.querySelector('#s14-large'));
   if(AT.present&&AT.present.on){const sync=st=>{if(!st.frame||st.frame.id!=='s14'||st.frame.index!==0)return;const i=Math.min(st.build,presets.length-1);if(slider.value()!==i)slider.setValue(i,true);};AT.present.on('frame',sync);AT.present.on('build',sync);}
 })();
 </script>
@@ -4582,10 +4653,17 @@ body.present #s12 .tok-row:not(.is-active){display:none}
 </style>
 <header class="sec-head"><span class="sec-num">16</span><div><p class="eyebrow">Connect the token IDs to the loss, then to generation and the fixed-context limit.</p><h2>Three summaries</h2></div></header>
 <div class="companion" data-kicker="For self-study"><p>We have built a complete character language model. Three token IDs select embedding rows. Concatenation keeps their positions separate, the MLP produces one logit per vocabulary token, and softmax gives us probabilities. Cross-entropy scores the observed next character; its gradients train every learned table and matrix. To generate, we run the same model, sample a character, append it, shift the window, and repeat. This works, but $W_1$ fixes the window width. Part 2 keeps the next-token objective and changes how a token gathers information from its preceding context.</p></div>
-<div class="frame" data-title="Intuitive, operational, mathematical" data-autobuild="off">
+<div class="frame" data-title="The idea and the operations" data-autobuild="off">
   <script type="text/x-notes">Which summary would you use to explain the model to someone else?
-  Reveal the operational and mathematical versions after students give the intuitive account.</script>
-  <div class="stack"><div class="summary"><h3 class="card-title">Intuitive</h3><p>Use the last few characters to guess what character tends to come next.</p></div><div class="summary" data-build="1"><h3 class="card-title">Operational</h3><p>Look up embeddings, concatenate the window, run the MLP, apply softmax, then sample or score the observed target.</p></div><div class="summary" data-build="2"><h3 class="card-title">Mathematical</h3><p>$a_0=[\ve{e_1},\ldots,\ve{e_w}]$, $a_1=\tanh(a_0W_1+b_1)$, $p=\operatorname{softmax}(a_1W_2+b_2)$.</p></div></div>
+  Reveal the operations after students give the intuitive account. The next frame translates those operations back into symbols.</script>
+  <div class="stack"><div class="summary"><h3 class="card-title">Intuitive</h3><p>Use the last few characters to guess what character tends to come next.</p></div><div class="summary" data-build="1"><h3 class="card-title">Operational</h3><p>Look up embeddings, concatenate the window, run the MLP, apply softmax, then sample or score the observed target.</p></div></div>
+</div>
+<div class="frame" data-title="The same model in symbols" data-autobuild="off">
+  <div data-math-guide>
+  <div class="p1-math">$$\pIn{a_0}=[\pIn{e_1},\ldots,\pIn{e_w}]$$</div><p class="p1-read p1-input">Place the $w$ embedding rows side by side to form the input row.</p>
+  <div data-build="1"><div class="p1-math">$$\pAct{a_1}=\tanh(\pIn{a_0}\pParam{W_1}+\pParam{b_1})$$</div><p class="p1-read"><span class="p1-activation">Hidden activations</span> combine the <span class="p1-input">input row</span> using <span class="p1-param">learned weights and bias</span>.</p></div>
+  <div data-build="2"><div class="p1-math">$$\pProb{p}=\operatorname{softmax}(\pAct{a_1}\pParam{W_2}+\pParam{b_2})$$</div><p class="p1-read"><span class="p1-prob">Next-token probabilities</span> come from transforming the <span class="p1-activation">hidden row</span> with the <span class="p1-param">output weights and bias</span>, then applying softmax.</p></div>
+  </div>
 </div>
 <div class="frame" data-title="Keep predicting; change how we use context" data-autobuild="off">
   <div class="callout callout-key">We still want to predict the next token. We need a different way to represent its context.</div>
@@ -4602,8 +4680,10 @@ body.present #s12 .tok-row:not(.is-active){display:none}
 <script>
 (function(){
   const S=document.getElementById('s16');
-  AT.ui.table([['token ID','integer'],['learned lookup table','$|\\mathcal V|\\times d$'],['one embedding row','$1\\times d$'],['concatenated window','$1\\times wd$']],{cols:['meaning','shape'],rowLabels:['$t_i$','$\\ve{E_{\\text{tok}}}$','$\\ve{e_i}=\\ve{E_{\\text{tok}}}[t_i]$','$a_0$'],cornerLabel:'symbol',into:S.querySelector('#s16-input-notation')});
-  AT.ui.table([['hidden activations','$1\\times d_h$'],['vocabulary logits','$1\\times |\\mathcal V|$'],['next-token probabilities','$1\\times |\\mathcal V|$'],['cross-entropy','scalar']],{cols:['meaning','shape'],rowLabels:['$a_1$','$z$','$p$','$-\\log p(\\mathrm{target})$'],cornerLabel:'symbol',into:S.querySelector('#s16-output-notation')});
+  const input=AT.ui.table([['token ID (shown by its character)','integer'],['learned lookup table','$|\\mathcal V|\\times d$'],['one embedding row','$1\\times d$'],['concatenated window','$1\\times wd$']],{cols:['meaning','shape'],rowLabels:['$\\pIn{t_i}$','$\\pIn{E_{\\text{tok}}}$','$\\pIn{e_i}=\\pIn{E_{\\text{tok}}}[\\pIn{t_i}]$','$\\pIn{a_0}$'],cornerLabel:'symbol',into:S.querySelector('#s16-input-notation')});
+  input.cells.forEach(row=>row[0].classList.add('p1-input'));
+  const output=AT.ui.table([['hidden activations','$1\\times d_h$'],['vocabulary logits','$1\\times |\\mathcal V|$'],['next-token probabilities','$1\\times |\\mathcal V|$'],['cross-entropy','scalar']],{cols:['meaning','shape'],rowLabels:['$\\pAct{a_1}$','$\\pScore{z}$','$\\pProb{p}$','$\\pLoss{-\\log p(\\mathrm{target})}$'],cornerLabel:'symbol',into:S.querySelector('#s16-output-notation')});
+  output.cells.forEach((row,i)=>row[0].classList.add(['p1-activation','p1-score','p1-prob','p1-loss'][i]));
   AT.ui.notationCard({part:'part1',groups:['mlp','sizes','axes'],into:S.querySelector('#s16-notation')});
 })();
 </script>

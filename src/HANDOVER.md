@@ -21,6 +21,12 @@ question answering. A comparison precedes next-word prediction and the `aabid` c
 teaser and “every number by hand” claim were removed. Three-character probability notation is introduced with explicit
 positions before the general expression. All trained data and arithmetic remain unchanged.
 
+The subsequent notation pass adds same-colour, plain-language keys beside Part 1's probability, embedding lookup,
+concatenation, MLP, softmax, and loss equations. It explains the conditioning bar and index meanings explicitly.
+The MLP layers, stable-softmax calculation, loss comparison, and mathematical recap have room for those explanations
+on separate frames. Part 1's role macros are scoped to its runtime; other parts retain their existing Q/K/V palette.
+Use the equation-key convention in `PRESENT.md` for future revisions and `notation_test.mjs` to check this implementation.
+
 The shared-layout pass removes permanent presentation header/footer bars. A small **Controls** button (or **C**) opens
 navigation without changing the stage scale. Slides show one title without repeated section labels. The article's notation
 strip is no longer sticky, and the end note is collapsed under “About this page”.

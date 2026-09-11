@@ -27,7 +27,7 @@ body.present #s04 .embedding-space>svg{max-height:380px}
   <script type="text/x-notes">Which embedding axis separates vowels from consonants?
   Read the column headers before the values. Highlight a, b, and i as the rows needed by the running examples.</script>
   <div class="card"><h3 class="card-title">Selected rows of the trained table $\ve{E_{\text{tok}}}$</h3><div id="s04-embed"></div></div>
-  <div class="prose" data-build="1"><p>Lookup uses $$\ve{e_c}=\ve{E_{\text{tok}}}[\operatorname{id}(c)].$$</p></div>
+  <div data-build="1" data-math-guide><div class="p1-math">$$\pIn{e_c}=\pIn{E_{\text{tok}}}[\operatorname{id}(c)]$$</div><p class="p1-read"><span class="p1-input">$\pIn{E_{\text{tok}}}$ is the learned embedding table. $\pIn{e_c}$ is the row for character $c$.</span> The ID of $c$ selects a row; the square brackets mean “look up”.</p></div>
 </div>
 <div class="frame" data-title="The learned rows form a geometry" data-autobuild="off">
   <script type="text/x-notes">What does it mean for two learned rows to be close?

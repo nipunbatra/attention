@@ -16,7 +16,7 @@
   <script type="text/x-notes">Where does the second a live in the concatenated row?
   Read the position labels across the headers. Each position has a separate two-coordinate segment.</script>
   <div class="card"><h3 class="card-title">The three rows for a a b</h3><div id="s05-rows"></div></div>
-  <div class="join-eq" id="s05-eq" data-build="1"></div>
+  <div data-build="1" data-math-guide><div class="join-eq p1-math" id="s05-eq"></div><p class="p1-read"><span class="p1-input">$\pIn{e_1,e_2,e_3}$ are the embedding rows at the three window positions. $\pIn{a_0}$ is their concatenation, the MLP input.</span> $\mathbb R^{1\times6}$ means one row of six real numbers.</p></div>
 </div>
 <div class="frame" data-title="Six numbers, with a slot for each position" data-autobuild="off">
   <div class="card"><div id="s05-joined"></div></div>
@@ -42,7 +42,7 @@
     {title:'Place each occurrence in its slot',render:host=>host.appendChild(AT.part1Diagrams.lookupConcat({stage:2}))}
   ]});
   AT.ui.table(rows(['a','a','b']),{axes:'e',rowLabels:['position 1 · a','position 2 · a','position 3 · b'],rowCls:'e',cornerLabel:'window',caption:'Read each row left to right, then place the rows side by side.',into:S.querySelector('#s05-rows')});
-  AT.tex(S.querySelector('#s05-eq'),'a_0=[\\ve{e_1},\\ve{e_2},\\ve{e_3}]\\in\\mathbb{R}^{1\\times '+(M.w*M.d_model)+'}',{display:true});
+  AT.tex(S.querySelector('#s05-eq'),'\\pIn{a_0}=[\\pIn{e_1},\\pIn{e_2},\\pIn{e_3}]\\in\\mathbb{R}^{1\\times '+(M.w*M.d_model)+'}',{display:true});
   const cols=[];for(let pos=0;pos<M.w;pos++)axes.forEach((a,i)=>cols.push({label:'p'+(pos+1)+' · c'+(i+1),cls:'e'}));
   const jfig=AT.ui.table([joined(['a','a','b'])],{cols:cols,rowLabels:['$a_0$'],cornerLabel:'input',decimals:2,caption:'p = position; c1 = '+axes[0]+', c2 = '+axes[1]+'.',into:S.querySelector('#s05-joined')});
   jfig.cells[0].forEach((cell,i)=>cell.classList.add('p'+(Math.floor(i/M.d_model)+1)));

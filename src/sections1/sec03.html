@@ -1,5 +1,15 @@
 <section id="s03" class="sec" data-title="Choose a context length" data-lit="">
 <style>
+/* These notation classes belong to Part 1, including later sections. */
+.p1-input,.dt td.p1-input{color:var(--c-e)} .p1-target,.dt td.p1-target{color:var(--c-k)}
+.p1-param,.dt td.p1-param{color:var(--c-q)} .p1-prob,.dt td.p1-prob{color:var(--c-d)}
+.p1-activation,.dt td.p1-activation{color:var(--c-v)} .p1-score,.dt td.p1-score{color:var(--ink-2)} .p1-loss,.dt td.p1-loss{color:var(--c-a)}
+.p1-key{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 28px;margin:20px 0}
+.p1-key>div{min-width:0}
+.p1-key dt{font-weight:650;margin:0 0 4px}
+.p1-key dd{margin:0;line-height:1.35}
+.p1-read{line-height:1.5;margin:16px 0}
+@media(max-width:640px){body:not(.present) .p1-key{grid-template-columns:1fr}}
 #s03 .choice{padding:18px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--paper)}
 #s03 .choice.chosen{border:2px solid var(--ink);background:var(--card)}
 #s03 .choice .mono{font-size:1.2em;font-weight:700}
@@ -12,17 +22,24 @@
   <script type="text/x-notes">What would each context choice let the model remember?
   Compare one, three, and all. Use three for this model because it needs a fixed input width.</script>
   <div class="card"><div class="grid-3"><div class="choice"><span class="mono">w = 1</span><p>One previous character</p></div><div class="choice chosen" data-build="1"><span class="mono">w = 3</span><p>Three previous characters</p></div><div class="choice" data-build="2"><span class="mono">w = all</span><p>A growing prefix</p></div></div></div>
-  <p data-build="3">For <strong class="mono">aabid</strong>, the window <strong class="mono">a a b</strong> is the input. The next character <strong class="mono">i</strong> is the training target.</p>
+  <p data-build="3">For <strong class="mono">aabid</strong>, the window <strong class="mono p1-input">a a b</strong> is the input. The next character <strong class="mono p1-target">i</strong> is the training target.</p>
 </div>
 <div class="frame" data-title="Writing the same question as a probability" data-autobuild="off">
   <script type="text/x-notes">Read the formula in words before naming the symbols: the chance of i next, given a, a, b.
   The subscript numbers are positions, starting at one. Theta stands for the learned parameters, which we will inspect later.</script>
-  <p>We have read <strong class="mono">a a b</strong>. How likely is <strong class="mono">i</strong> next?</p>
-  <p>Positions: $t_1=a$, $t_2=a$, $t_3=b$. We are predicting position 4.</p>
-  <div class="tex-display" data-build="1">$$p_\theta(t_4=i\mid t_1=a,\ t_2=a,\ t_3=b)$$</div>
-  <p data-build="2">The bar $\mid$ means “given”. $\theta$ stands for the model's learned parameters.</p>
+  <p>We have read <strong class="mono p1-input">a a b</strong>. How likely is <strong class="mono p1-target">i</strong> next?</p>
+  <div data-build="1" data-math-guide>
+    <div class="p1-math tex-display">$$\pProb{p}_{\pParam{\theta}}(\pTarget{t_4=\mathtt{i}}\mid \pIn{t_1=\mathtt{a},\ t_2=\mathtt{a},\ t_3=\mathtt{b}})$$</div>
+    <dl class="p1-key">
+      <div class="p1-prob"><dt>$\pProb{p}$: probability</dt><dd>How likely the model thinks this next character is.</dd></div>
+      <div class="p1-param"><dt>$\pParam{\theta}$: learned parameters</dt><dd>The model's current embedding table, weights, and biases.</dd></div>
+      <div class="p1-target"><dt>$\pTarget{t_4=\mathtt{i}}$: proposed next character</dt><dd>Character 4 is “i”. Here, “i” is a letter, not an index.</dd></div>
+      <div class="p1-input"><dt>$\pIn{t_1,t_2,t_3}$: known context</dt><dd>Characters 1, 2, and 3 are “a”, “a”, and “b”.</dd></div>
+    </dl>
+  </div>
+  <p data-build="2">Read $\mid$ as “given”: the probability of <span class="p1-target">“i” next</span>, given <span class="p1-input">“a a b” already read</span>.</p>
 </div>
-<div class="companion"><p>At a general position $i$, the same three-character rule is $p_\theta(t_i\mid t_{i-3},t_{i-2},t_{i-1})$. The three characters after the bar are the input. The character before it is what we predict.</p></div>
+<div class="companion" data-math-guide><p>The same rule at any position:</p><div class="p1-math">$$\pProb{p}_{\pParam{\theta}}(\pTarget{t_i}\mid\pIn{t_{i-3},t_{i-2},t_{i-1}})$$</div><p class="p1-read"><span class="p1-prob">Probability</span> under the <span class="p1-param">learned parameters $\pParam{\theta}$</span> of the <span class="p1-target">next token $\pTarget{t_i}$ at position $i$</span>, given the <span class="p1-input">three previous tokens</span>. Here $i$ is a position index. The compact notation <span class="p1-input">$\pIn{t_{i-3:i-1}}$</span> names those same three tokens, including both endpoints.</p></div>
 <div class="frame" data-title="Slide across aabid" data-autobuild="off">
   <script type="text/x-notes">How many training rows does a five-letter name produce?
   Walk the stepper through each context. The sixth target is the boundary, which teaches the model to stop.</script>

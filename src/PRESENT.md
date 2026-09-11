@@ -117,6 +117,26 @@ frames must still fit without internal scrolling.
 presentation state for text/numeric styling, worksheet type size, cell text overlap, and table containment. It saves
 JSON evidence and representative screenshots. Pair it with `frame_audit.mjs`; neither test replaces visual inspection.
 
+## Equations need a nearby reading key
+
+Introduce notation through the current worked example. On the same frame, pair each unfamiliar symbol with a short
+plain-language explanation in the **same colour**. Explain the conditioning bar, indices, sums, functions, and shapes
+too. Colour supplements the words; it must not be the only way to identify a role. Reveal a formula and its key
+together. If they crowd the frame, split the explanation before reducing type size.
+
+Part 1 registers scoped macros in `part1.js`: `\\pIn{...}` for the input/embedding row, `\\pTarget{...}` for the candidate
+or observed target, `\\pParam{...}` for theta/MLP weights and biases, `\\pAct{...}` for hidden activations,
+`\\pScore{...}` for logits, `\\pProb{...}` for probabilities, and `\\pLoss{...}` for loss. Their CSS classes are
+`p1-input`, `p1-target`, `p1-param`, `p1-activation`, `p1-score`, `p1-prob`, and `p1-loss`. The embedding table stays blue
+even though it is learned. These are Part 1 roles, not new meanings for Part 2's query/key/value colours.
+
+Wrap a formula and its key in `data-math-guide`. Put the equation inside `.p1-math` and use a `.p1-key` definition list
+or `.p1-read` prose for the matching explanations. `node src/notation_test.mjs` checks actual rendered colour matches,
+phone layout, print styling, and representative fully revealed frames. Pair it with the complete frame audit.
+
+Apply this authoring rule to new or revised equations across the series. The September 11 implementation covers
+Part 1's introductory equations and recap; it is not a claim that every equation in the other seven parts has been revised.
+
 ## Fit preflight
 
 The live frame is checked after entry, resize, build changes, step changes, images, and form changes:

@@ -2,6 +2,16 @@
   'use strict';
 
   var AT = window.AT;
+  // Part 1's notation roles. The same classes colour math and its nearby prose.
+  Object.assign(AT.macros || (AT.macros = {}), {
+    '\\pIn': '\\htmlClass{p1-input}{#1}',
+    '\\pTarget': '\\htmlClass{p1-target}{#1}',
+    '\\pParam': '\\htmlClass{p1-param}{#1}',
+    '\\pProb': '\\htmlClass{p1-prob}{#1}',
+    '\\pAct': '\\htmlClass{p1-activation}{#1}',
+    '\\pScore': '\\htmlClass{p1-score}{#1}',
+    '\\pLoss': '\\htmlClass{p1-loss}{#1}'
+  });
   var model = window.__TOY__ || {};
   var vocab = Array.isArray(model.vocab) ? model.vocab.slice() : [];
   var stoi = {};

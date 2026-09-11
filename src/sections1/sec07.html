@@ -10,8 +10,23 @@
   <div class="card"><h3 class="card-title">Top logits for a a b</h3><div id="s07-logits"></div></div>
 </div>
 <div class="frame" data-title="Exponentiate, then divide by the total" data-autobuild="off">
-  <div class="prose"><p>For every token $j$, $$p_j=\frac{\exp(z_j)}{\sum_{r\in\mathcal V}\exp(z_r)}.$$</p></div>
+  <div data-math-guide><div class="p1-math">$$\pProb{p_j}=\frac{\exp(\pScore{z_j})}{\sum_{r\in\mathcal V}\exp(\pScore{z_r})}$$</div>
+  <dl class="p1-key">
+    <div class="p1-prob"><dt>$\pProb{p_j}$: probability for token $j$</dt><dd>The share of the total assigned to this token.</dd></div>
+    <div class="p1-score"><dt>$\pScore{z_j}$: score for token $j$</dt><dd>The output layer's logit for that token.</dd></div>
+    <div><dt>$\exp(z_j)=e^{z_j}$: exponentiate</dt><dd>Turn the score into a positive number.</dd></div>
+    <div><dt>$\sum_{r\in\mathcal V}$: sum over the vocabulary</dt><dd>Add the exponentials for all 27 tokens. $r$ visits each token in $\mathcal V$.</dd></div>
+  </dl></div>
   <div class="callout callout-key" data-build="1">Each token gets a positive share of the same total.</div>
+</div>
+<div class="frame" data-title="The same softmax, with smaller intermediate numbers" data-autobuild="off">
+  <div data-math-guide><div class="p1-math">$$\pProb{p_j}=\frac{\exp(\pScore{z_j}-\pScore{z_{\max}})}{\sum_{r\in\mathcal V}\exp(\pScore{z_r}-\pScore{z_{\max}})}$$</div>
+  <dl class="p1-key">
+    <div class="p1-score"><dt>$\pScore{z_{\max}}$: the largest logit</dt><dd>Subtract this same number from every score before exponentiating.</dd></div>
+    <div class="p1-prob"><dt>$\pProb{p_j}$: the same probability</dt><dd>Numerator and denominator both lose the factor $e^{z_{\max}}$, so it cancels.</dd></div>
+  </dl></div>
+  <p>$j$ is the token we are scoring. The sum visits every token $r$ in the vocabulary $\mathcal V$.</p>
+  <p data-build="1">The largest exponential is now 1. This avoids very large intermediate numbers.</p>
 </div>
 <div class="frame" data-title="Softmax worksheet" data-autobuild="off">
   <script type="text/x-notes">Where do the other vocabulary entries affect the probability of i?
@@ -32,7 +47,7 @@
   AT.ui.table(idx.map(i=>[F.z[i],F.p[i]]).concat([['',rest.reduce((a,i)=>a+F.p[i],0)]]),{cols:['logit','probability'],rowLabels:idx.map(i=>M.vocab[i]).concat(['other ×'+rest.length]),cornerLabel:'token',highlightRow:idx.indexOf(AT.mlp.stoi.i),decimals:2,caption:'The other row groups the vocabulary entries outside the top five.',into:S.querySelector('#s07-logits')});
   const shown=idx.concat(rest.length?[rest[0]]:[]),rows=idx.map(i=>[F.z[i],ex[i],ex[i]/den]);
   rows.push(['',rest.reduce((a,i)=>a+ex[i],0),rest.reduce((a,i)=>a+F.p[i],0)]);
-  AT.ui.table(rows,{cols:['logit','$\\exp(z-z_{\\max})$','divide by denominator'],rowLabels:idx.map(i=>M.vocab[i]).concat(['other ×'+rest.length]),cornerLabel:'token',highlightRow:idx.indexOf(AT.mlp.stoi.i),decimals:2,footer:{label:'denominator',values:['',den,'1.00']},caption:'The grouped row contains the remaining entries. Displayed values are rounded; the denominator and probabilities use unrounded exponentials.',into:S.querySelector('#s07-softmax')});
+  AT.ui.table(rows,{cols:['logit','$\\exp(\\pScore{z}-\\pScore{z_{\\max}})$','divide by denominator'],rowLabels:idx.map(i=>M.vocab[i]).concat(['other ×'+rest.length]),cornerLabel:'token',highlightRow:idx.indexOf(AT.mlp.stoi.i),decimals:2,footer:{label:'denominator',values:['',den,'1.00']},caption:'The grouped row contains the remaining entries. Displayed values are rounded; the denominator and probabilities use unrounded exponentials.',into:S.querySelector('#s07-softmax')});
   const items=top.map(x=>({label:x.tok,p:x.p})).concat([{label:'other ×'+rest.length,p:rest.reduce((a,i)=>a+F.p[i],0)}]);
   AT.ui.bars(items,{highlight:'i',sorted:false,size:'lg',decimals:2,into:S.querySelector('#s07-bars')});
 })();

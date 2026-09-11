@@ -6,10 +6,17 @@
 </style>
 <header class="sec-head"><span class="sec-num">16</span><div><p class="eyebrow">Connect the token IDs to the loss, then to generation and the fixed-context limit.</p><h2>Three summaries</h2></div></header>
 <div class="companion" data-kicker="For self-study"><p>We have built a complete character language model. Three token IDs select embedding rows. Concatenation keeps their positions separate, the MLP produces one logit per vocabulary token, and softmax gives us probabilities. Cross-entropy scores the observed next character; its gradients train every learned table and matrix. To generate, we run the same model, sample a character, append it, shift the window, and repeat. This works, but $W_1$ fixes the window width. Part 2 keeps the next-token objective and changes how a token gathers information from its preceding context.</p></div>
-<div class="frame" data-title="Intuitive, operational, mathematical" data-autobuild="off">
+<div class="frame" data-title="The idea and the operations" data-autobuild="off">
   <script type="text/x-notes">Which summary would you use to explain the model to someone else?
-  Reveal the operational and mathematical versions after students give the intuitive account.</script>
-  <div class="stack"><div class="summary"><h3 class="card-title">Intuitive</h3><p>Use the last few characters to guess what character tends to come next.</p></div><div class="summary" data-build="1"><h3 class="card-title">Operational</h3><p>Look up embeddings, concatenate the window, run the MLP, apply softmax, then sample or score the observed target.</p></div><div class="summary" data-build="2"><h3 class="card-title">Mathematical</h3><p>$a_0=[\ve{e_1},\ldots,\ve{e_w}]$, $a_1=\tanh(a_0W_1+b_1)$, $p=\operatorname{softmax}(a_1W_2+b_2)$.</p></div></div>
+  Reveal the operations after students give the intuitive account. The next frame translates those operations back into symbols.</script>
+  <div class="stack"><div class="summary"><h3 class="card-title">Intuitive</h3><p>Use the last few characters to guess what character tends to come next.</p></div><div class="summary" data-build="1"><h3 class="card-title">Operational</h3><p>Look up embeddings, concatenate the window, run the MLP, apply softmax, then sample or score the observed target.</p></div></div>
+</div>
+<div class="frame" data-title="The same model in symbols" data-autobuild="off">
+  <div data-math-guide>
+  <div class="p1-math">$$\pIn{a_0}=[\pIn{e_1},\ldots,\pIn{e_w}]$$</div><p class="p1-read p1-input">Place the $w$ embedding rows side by side to form the input row.</p>
+  <div data-build="1"><div class="p1-math">$$\pAct{a_1}=\tanh(\pIn{a_0}\pParam{W_1}+\pParam{b_1})$$</div><p class="p1-read"><span class="p1-activation">Hidden activations</span> combine the <span class="p1-input">input row</span> using <span class="p1-param">learned weights and bias</span>.</p></div>
+  <div data-build="2"><div class="p1-math">$$\pProb{p}=\operatorname{softmax}(\pAct{a_1}\pParam{W_2}+\pParam{b_2})$$</div><p class="p1-read"><span class="p1-prob">Next-token probabilities</span> come from transforming the <span class="p1-activation">hidden row</span> with the <span class="p1-param">output weights and bias</span>, then applying softmax.</p></div>
+  </div>
 </div>
 <div class="frame" data-title="Keep predicting; change how we use context" data-autobuild="off">
   <div class="callout callout-key">We still want to predict the next token. We need a different way to represent its context.</div>
@@ -26,8 +33,10 @@
 <script>
 (function(){
   const S=document.getElementById('s16');
-  AT.ui.table([['token ID','integer'],['learned lookup table','$|\\mathcal V|\\times d$'],['one embedding row','$1\\times d$'],['concatenated window','$1\\times wd$']],{cols:['meaning','shape'],rowLabels:['$t_i$','$\\ve{E_{\\text{tok}}}$','$\\ve{e_i}=\\ve{E_{\\text{tok}}}[t_i]$','$a_0$'],cornerLabel:'symbol',into:S.querySelector('#s16-input-notation')});
-  AT.ui.table([['hidden activations','$1\\times d_h$'],['vocabulary logits','$1\\times |\\mathcal V|$'],['next-token probabilities','$1\\times |\\mathcal V|$'],['cross-entropy','scalar']],{cols:['meaning','shape'],rowLabels:['$a_1$','$z$','$p$','$-\\log p(\\mathrm{target})$'],cornerLabel:'symbol',into:S.querySelector('#s16-output-notation')});
+  const input=AT.ui.table([['token ID (shown by its character)','integer'],['learned lookup table','$|\\mathcal V|\\times d$'],['one embedding row','$1\\times d$'],['concatenated window','$1\\times wd$']],{cols:['meaning','shape'],rowLabels:['$\\pIn{t_i}$','$\\pIn{E_{\\text{tok}}}$','$\\pIn{e_i}=\\pIn{E_{\\text{tok}}}[\\pIn{t_i}]$','$\\pIn{a_0}$'],cornerLabel:'symbol',into:S.querySelector('#s16-input-notation')});
+  input.cells.forEach(row=>row[0].classList.add('p1-input'));
+  const output=AT.ui.table([['hidden activations','$1\\times d_h$'],['vocabulary logits','$1\\times |\\mathcal V|$'],['next-token probabilities','$1\\times |\\mathcal V|$'],['cross-entropy','scalar']],{cols:['meaning','shape'],rowLabels:['$\\pAct{a_1}$','$\\pScore{z}$','$\\pProb{p}$','$\\pLoss{-\\log p(\\mathrm{target})}$'],cornerLabel:'symbol',into:S.querySelector('#s16-output-notation')});
+  output.cells.forEach((row,i)=>row[0].classList.add(['p1-activation','p1-score','p1-prob','p1-loss'][i]));
   AT.ui.notationCard({part:'part1',groups:['mlp','sizes','axes'],into:S.querySelector('#s16-notation')});
 })();
 </script>

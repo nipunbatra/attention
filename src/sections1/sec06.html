@@ -12,9 +12,24 @@ body.present #s06 .net{max-width:650px}
   Trace six scalar inputs through the hidden layer. The marked output is the target i for aab.</script>
   <div class="card"><h3 class="card-title">The MLP for a a b</h3><div class="net" id="s06-net"></div></div>
 </div>
-<div class="frame" data-title="Two learned layers" data-autobuild="off">
-  <div class="prose eqs"><p>$$a_1=\tanh(a_0W_1+b_1)$$</p><p data-build="1">$$z=a_1W_2+b_2$$</p></div>
-  <div class="callout callout-note" data-build="2">The first layer mixes the six inputs. The second makes one score per vocabulary token.</div>
+<div class="frame" data-title="The hidden layer combines the input numbers" data-autobuild="off">
+  <div data-math-guide><div class="p1-math">$$\pAct{a_1}=\tanh(\pIn{a_0}\pParam{W_1}+\pParam{b_1})$$</div>
+  <dl class="p1-key">
+    <div class="p1-input"><dt>$\pIn{a_0}$: input row</dt><dd>The six numbers from our three embeddings.</dd></div>
+    <div class="p1-param"><dt>$\pParam{W_1,b_1}$: learned weights and bias</dt><dd>Multiply by the weight matrix, then add the bias.</dd></div>
+    <div class="p1-activation"><dt>$\pAct{a_1}$: hidden activations</dt><dd>The row of numbers produced by this layer.</dd></div>
+    <div><dt>$\tanh$: activation function</dt><dd>Apply it to each result, giving a number between −1 and 1.</dd></div>
+  </dl></div>
+  <p data-build="1">Each hidden unit can combine information from all six input coordinates.</p>
+</div>
+<div class="frame" data-title="The output layer makes one score per token" data-autobuild="off">
+  <div data-math-guide><div class="p1-math">$$\pScore{z}=\pAct{a_1}\pParam{W_2}+\pParam{b_2}$$</div>
+  <dl class="p1-key">
+    <div class="p1-activation"><dt>$\pAct{a_1}$: hidden activations</dt><dd>The same row we just calculated.</dd></div>
+    <div class="p1-param"><dt>$\pParam{W_2,b_2}$: output weights and bias</dt><dd>A second learned transformation.</dd></div>
+    <div class="p1-score"><dt>$\pScore{z}$: logits</dt><dd>One score for each of the 27 vocabulary tokens.</dd></div>
+  </dl></div>
+  <p data-build="1">These scores become probabilities in the next step.</p>
 </div>
 <div class="frame" data-title="Check the shapes before multiplying" data-autobuild="off">
   <div class="card"><div id="s06-shapes"></div></div>
@@ -22,7 +37,7 @@ body.present #s06 .net{max-width:650px}
 <div class="frame" data-title="One hidden unit" data-autobuild="off">
   <script type="text/x-notes">What does one hidden unit read?
   It receives all six input coordinates through one column of W1, then adds one bias and applies tanh.</script>
-  <div class="card"><h3 class="card-title">Column 1 of $W_1$</h3><div id="s06-hidden-compact"></div><p class="calc-note" id="s06-hidden-note"></p></div>
+  <div class="card"><h3 class="card-title">Column 1 of $\pParam{W_1}$</h3><div id="s06-hidden-compact"></div><p class="calc-note" id="s06-hidden-note"></p></div>
 </div>
 <div class="frame" data-title="One output logit" data-autobuild="off">
   <script type="text/x-notes">Which column of W2 produces the score for i?
@@ -36,7 +51,10 @@ body.present #s06 .net{max-width:650px}
   const S=document.getElementById('s06'),M=window.__TOY__,ids=['a','a','b'].map(c=>AT.mlp.stoi[c]),F=AT.mlp.forward(ids);
   AT.netSketch(S.querySelector('#s06-net'),{inputs:F.a0.length,hidden:5,outputs:M.vocab,highlightOutput:'i',labels:{input:i=>'(a_0)_{'+i+'}',output:x=>x},inputCaption:()=>F.a0.length+' inputs',hiddenCaption:M.d_h+' hidden',outputCaption:M.vocab.length+' logits'});
   const shapeRows=[['1 × '+F.a0.length],[''+F.a0.length+' × '+M.d_h],['1 × '+M.d_h],['1 × '+M.d_h],[M.d_h+' × '+M.vocab.length],['1 × '+M.vocab.length],['1 × '+M.vocab.length]];
-  AT.ui.table(shapeRows,{cols:['shape'],rowLabels:['$a_0$','$W_1$','$b_1$','$a_1$','$W_2$','$b_2$','$z$'],cornerLabel:'object',into:S.querySelector('#s06-shapes')});
+  const meanings=['input row','hidden weights','hidden bias','hidden activations','output weights','output bias','vocabulary scores'];
+  const roles=['p1-input','p1-param','p1-param','p1-activation','p1-param','p1-param','p1-score'];
+  const shapeTable=AT.ui.table(shapeRows.map((r,i)=>[meanings[i],r[0]]),{cols:['meaning','shape'],rowLabels:['$\\pIn{a_0}$','$\\pParam{W_1}$','$\\pParam{b_1}$','$\\pAct{a_1}$','$\\pParam{W_2}$','$\\pParam{b_2}$','$\\pScore{z}$'],cornerLabel:'object',into:S.querySelector('#s06-shapes')});
+  shapeTable.cells.forEach((row,i)=>row[0].classList.add(roles[i]));
   const inAxes=[];for(let p=0;p<M.w;p++)M.axes.e.forEach(a=>inAxes.push('p'+(p+1)+' · '+a));
   const j=0,W1col=M.W1.map(r=>[r[j]]),dot1=AT.matmul(F.a0,W1col)[0],pre=dot1+M.b1[j];
   AT.ui.matVecCalc(F.a0,W1col,{from:inAxes,to:['hidden 1'],cls:'neutral',xLabel:'a0',outLabel:'dot product',decimals:2,wDecimals:2,into:S.querySelector('#s06-hidden')});

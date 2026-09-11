@@ -1,5 +1,19 @@
 # Classroom release checks
 
+## 2026-09-11: Part 1 equation reading keys
+
+- Added ten introductory/recap equation-guide groups, including the long-form general probability expression.
+  Symbols and adjacent plain-language explanations share scoped Part 1 colours. Conditioning, indices, operators,
+  shapes, and the distinction between the letter “i” and an index are explained in words.
+- Split the two MLP equations, stable softmax, loss examples, and mathematical recap across appropriate frames.
+  All 160 progressive states pass `frame_audit.mjs`, with 114 unique formulas parsed and no overflow or nested scrolling.
+- `notation_test.mjs` checks exact rendered symbol/prose colours, shape-table meanings, 16 representative full-build
+  frames, the 390px article layout, and print-media styling. Ten guide groups pass. This is not a new PDF export.
+- `check_part1.mjs` still matches all six trained rows to 1.6653345369377348e-16 and generation at four temperatures.
+  The table audit passes 33 reading, 33 phone, and 24 presentation table views. Metadata and isolated builds pass.
+- Visually reviewed probability, hidden-layer, loss, stable-softmax, parameter, shape-table, recap, and phone views.
+  The new authoring convention applies to future equation revisions across the series; this pass changes Part 1 only.
+
 ## 2026-09-11: presentation controls and the Part 1 introduction
 
 Baseline: local `main`, `origin/main`, and the successful Pages deployment all pointed to `632093b`. This includes Claude's
