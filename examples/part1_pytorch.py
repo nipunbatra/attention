@@ -29,6 +29,7 @@ one_hot = F.one_hot(ctx, num_classes=27)
 print(one_hot.shape)  # [1, 3, 27]
 
 # embedding
+ctx = torch.tensor([[1, 1, 2]])  # one example: "a", "a", "b"
 embedding = nn.Embedding(27, 2)
 e = embedding(ctx)
 print(e.shape)  # [1, 3, 2]

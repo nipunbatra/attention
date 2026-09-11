@@ -4782,13 +4782,16 @@ print(one_hot.shape)  # [1, 3, 27]</code></pre>
 </div>
 <div class="companion"><p>Our vowel-sign constraint is an extra teaching choice. Ordinary embedding layers need no named axes or such constraint.</p></div>
 <div class="frame" data-title="PyTorch: a learned embedding lookup" data-autobuild="off">
-  <pre class="pytorch" data-torch="embedding"><code>embedding = nn.Embedding(27, 2)
+  <p><code>ctx</code> means <strong>context</strong>. Here the characters <code class="p1-token">"a", "a", "b"</code> have IDs <code class="p1-index">1, 1, 2</code>.</p>
+  <pre class="pytorch" data-torch="embedding"><code>ctx = torch.tensor([[1, 1, 2]])  # one example: "a", "a", "b"
+embedding = nn.Embedding(27, 2)
 e = embedding(ctx)
 print(e.shape)  # [1, 3, 2]</code></pre>
-  <p><span class="p1-input"><code>embedding.weight</code> is the table $\pIn{E_{\text{tok}}}$, with 27 rows of two numbers. <code>e</code> holds the three selected rows.</span></p>
-  <p>The output axes are <strong>example, position, embedding coordinate</strong>. Calling the layer selects rows; training changes their values.</p>
-  <p class="small muted">Construct the layer once, not for each input. We leave the boundary row trainable, so we do not set <code>padding_idx</code>.</p>
+  <p><span class="p1-index"><code>ctx</code> has shape <code>[1, 3]</code>: <strong>1 example, 3 character IDs</strong>.</span> The outer brackets keep the example dimension.</p>
+  <p class="p1-input"><code>e</code> has shape <code>[1, 3, 2]</code>: <strong>1 example, 3 positions, 2 embedding coordinates per position</strong>.</p>
+  <p class="small p1-input"><code>embedding.weight</code> is the table $\pIn{E_{\text{tok}}}$: 27 rows of two numbers. The two occurrences of ID 1 select the same row.</p>
 </div>
+<div class="companion"><p>Construct the embedding layer once, not for each input. Calling it selects rows, while training changes their values. We leave the boundary row trainable, so we do not set <code>padding_idx</code>.</p></div>
 <div class="frame" data-title="PyTorch: look up just the character a" data-autobuild="off" data-lookup-step="code">
   <pre class="pytorch" data-torch="single-character-lookup"><code>char_id = torch.tensor([stoi["a"]])
 e_a = embedding(char_id)

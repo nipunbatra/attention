@@ -121,6 +121,7 @@ for (const [section, title, name] of [
   ['s04', 'Square brackets select a row', 'lookup-select'],
   ['s04', 'Lowercase e names the retrieved vector', 'lookup-row'],
   ['s04', 'The complete lookup equation', 'lookup-equation'],
+  ['s04', 'PyTorch: a learned embedding lookup', 'lookup-context'],
   ['s04', 'PyTorch: look up just the character a', 'lookup-code'],
   ['s05', 'Three rows become one row', 'concatenation'],
   ['s06', 'The hidden layer combines the input numbers', 'hidden-layer'],

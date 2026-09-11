@@ -77,8 +77,18 @@ for name, source in parser.items:
         assert scope["X"].shape == (6, 3) and scope["y"].shape == (6,)
         assert scope["X"][3].tolist() == [1, 1, 2] and scope["y"][3].item() == 9
     if name == "embedding":
+        assert scope["ctx"].shape == (1, 3) and scope["ctx"].tolist() == [[1, 1, 2]]
+        assert scope["ctx"].dtype == torch.long
         assert scope["e"].shape == (1, 3, 2)
         assert scope["embedding"].padding_idx is None
+        torch.testing.assert_close(scope["e"][0, 0], scope["e"][0, 1])
+        torch.testing.assert_close(scope["e"][0, 2], scope["embedding"].weight[2])
+        # This slide must run with only imports, without earlier ctx/stoi state.
+        isolated = {"torch": torch, "nn": torch.nn}
+        with torch.random.fork_rng(), redirect_stdout(io.StringIO()):
+            exec(compile(source, "standalone-embedding", "exec"), isolated)
+        assert isolated["ctx"].tolist() == [[1, 1, 2]]
+        assert isolated["e"].shape == (1, 3, 2)
     if name == "single-character-lookup":
         assert scope["char_id"].tolist() == [1] and scope["e_a"].shape == (1, 2)
         torch.testing.assert_close(scope["e_a"][0], scope["embedding"].weight[1])
