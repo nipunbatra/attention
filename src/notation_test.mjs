@@ -146,6 +146,47 @@ const temperatureSequence = await page.evaluate(() => {
   return {articleArithmeticVisible:table.getBoundingClientRect().height>0,issues};
 });
 errors.push(...temperatureSequence.issues);
+const generationLoop = await page.evaluate(() => {
+  const root=document.getElementById('s10-loop-code'), issues=[];
+  const original=JSON.stringify(__TOY__), trace=AT.part1Diagrams.generationExample().trace;
+  const lines=[1,2,3,4,5,3];
+  if(root.stepperApi.steps.length!==6)issues.push('Expected six line-by-line generation states');
+  if(trace.map(t=>t.chosen_id).join(',')!=='19,1,13,0')issues.push('Loop walkthrough must replay the earlier sam sample');
+  const required=[
+    ['tensor([[0, 19, 1]])','name = ["s", "a"]','_ = 2','0, 1, …, 17'],
+    ['ctx = tensor([[0, 19, 1]])','next_id = tensor([[13]])','shape [1, 1]'],
+    ['next_id.item() = 13','stoi["-"] = 0','13 == 0  is False'],
+    ['vocab[13] = "m"','name = ["s", "a", "m"]'],
+    ['ctx[:, 1:] = tensor([[19, 1]])','next_id    = tensor([[13]])','ctx = tensor([[19, 1, 13]])'],
+    ['ctx = tensor([[19, 1, 13]])','next_id = tensor([[0]])','0 == 0  is True','name = ["s", "a", "m"]']
+  ];
+  const frame=root.closest('.frame'), frameIndex=[...document.querySelectorAll('#s10 .frame')].indexOf(frame)+1;
+  AT.present.enter(); AT.present.go('s10',frameIndex,0);
+  for(let i=0;i<6;i++){
+    root.stepperApi.go(i);
+    const active=frame.querySelectorAll('.loop-line.is-current');
+    if(active.length!==1||Number(active[0].dataset.line)!==lines[i]||active[0].getAttribute('aria-current')!=='step')issues.push('Wrong active code line at step '+i);
+    if(required[i].some(text=>!root.stepperApi.stage.textContent.includes(text)))issues.push('Incorrect input/output at step '+i);
+    if(AT.present.fitReport().overflow)issues.push('Loop step '+i+' overflows');
+  }
+  const reference=document.getElementById('s10-loop-reference');
+  if(reference.getBoundingClientRect().height)issues.push('Article reference should not appear in the presentation');
+  AT.present.exit();
+  if(reference.querySelectorAll('.loop-reference').length!==6||!reference.getBoundingClientRect().height)issues.push('Article should retain all six explanations together');
+  if(JSON.stringify(__TOY__)!==original)issues.push('Walkthrough must not change model parameters');
+  root.stepperApi.go(0);
+  return {steps:6,highlightedLines:lines,issues};
+});
+errors.push(...generationLoop.issues);
+for(let step=0;step<6;step++){
+  await page.evaluate(step=>{
+    const root=document.getElementById('s10-loop-code'),frames=[...document.querySelectorAll('#s10 .frame')];
+    AT.present.enter();AT.present.go('s10',frames.indexOf(root.closest('.frame'))+1,0);
+    root.stepperApi.go(step);
+  },step);
+  await page.waitForTimeout(80);
+  await page.screenshot({path:path.join(out,'generation-loop-'+step+'.png')});
+}
 // Include the fully revealed notation frames and the tables adjacent to them.
 for (const [section, title, name] of [
   ['s03', 'Writing the same question as a probability', 'probability'],
@@ -209,5 +250,5 @@ await page.emulateMedia({ media: 'print' });
 const printed = await page.evaluate(checkGuides);
 errors.push(...printed.issues.map(x => 'print: ' + x));
 await browser.close();
-console.log(JSON.stringify({ article, lookup, shapes, probabilitySequence, registration, temperatureSequence, phone, print: printed, screenshots: out, errors }, null, 2));
+console.log(JSON.stringify({ article, lookup, shapes, probabilitySequence, registration, temperatureSequence, generationLoop, phone, print: printed, screenshots: out, errors }, null, 2));
 if (errors.length) process.exitCode = 1;

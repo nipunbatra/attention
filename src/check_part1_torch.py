@@ -183,6 +183,32 @@ for name, source in parser.items:
         assert scope["ctx"].shape == (1, 3)
         assert len(scope["name"]) <= 18 and "-" not in scope["name"]
         assert not scope["sample_next"](scope["ctx"]).requires_grad
+        # Replay the browser example's draws through the exact displayed loop.
+        # This tests control flow; it does not claim a shared PyTorch/browser RNG.
+        draws = iter([19, 1, 13, 0])
+        seen_inputs = []
+        def replay_sample(ctx, temperature):
+            assert ctx.shape == (1, 3) and temperature == 1.0
+            seen_inputs.append(ctx.tolist())
+            return torch.tensor([[next(draws)]])
+        replay = {"torch": torch, "sample_next": replay_sample,
+                  "ctx": torch.zeros((1, 3), dtype=torch.long), "name": [],
+                  "temperature": 1.0, "stoi": scope["stoi"], "vocab": scope["vocab"]}
+        exec(compile(source, "generation-loop-replay", "exec"), replay)
+        assert seen_inputs == [[[0, 0, 0]], [[0, 0, 19]], [[0, 19, 1]], [[19, 1, 13]]]
+        assert replay["name"] == ["s", "a", "m"]
+        assert replay["ctx"].tolist() == [[19, 1, 13]]  # no shift after boundary
+        assert replay["_"] == 3 and replay["next_id"].item() == 0
+        ctx = torch.tensor([[0, 19, 1]])
+        next_id = torch.tensor([[13]])
+        assert ctx[:, 1:].tolist() == [[19, 1]]
+        assert torch.cat([ctx[:, 1:], next_id], dim=1).tolist() == [[19, 1, 13]]
+        assert next_id.item() == 13 and scope["vocab"][next_id.item()] == "m"
+        # Without a boundary draw, range(18) must cap the run at 18 calls.
+        replay.update(ctx=torch.zeros((1, 3), dtype=torch.long), name=[],
+                      sample_next=lambda ctx, temperature: torch.tensor([[1]]))
+        exec(compile(source, "generation-loop-cap", "exec"), replay)
+        assert replay["name"] == ["a"] * 18 and replay["_"] == 17
     if name == "generation-choices":
         assert scope["ctx"].tolist() == [[0, 19, 1]]
         assert scope["greedy_id"].shape == scope["sampled_id"].shape == (1, 1)

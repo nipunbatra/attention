@@ -5,6 +5,22 @@ body:not(.present) #s10 .generation-walk .stage-title{display:block}
 #s10 .walk-controls{display:flex;gap:12px;align-items:center;margin-top:8px}
 #s10 .walk-controls .small{margin:0}
 #s10 .p1-temperature{color:#9D4007}
+#s10 .generation-loop-code .stepper-body{display:block}
+#s10 .generation-loop-code .stepper-stage{min-height:0}
+#s10 [data-torch="generation-loop"]{margin:8px 0 12px}
+#s10 [data-torch="generation-loop"] code{display:flex;flex-direction:column}
+#s10 .loop-line{display:block;border-left:3px solid transparent;padding-left:10px;margin-left:-13px}
+#s10 .loop-line.is-current{background:var(--t-e);border-color:var(--c-e);font-weight:700}
+#s10 .loop-example{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:10px 0}
+#s10 .loop-example>div{min-width:0}
+#s10 .loop-example h4{font:inherit;font-weight:600;margin:0 0 4px}
+#s10 .loop-example pre{font-family:var(--font-mono);font-size:.85em;line-height:1.4;white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
+#s10 .loop-explanation{margin:12px 0 0}
+#s10 .loop-reference{margin-bottom:24px}
+#s10 .loop-reference h3{font-size:1.05em}
+body.present #s10 .loop-example pre{font-size:23px}
+body:not(.present) #s10 [data-torch="generation-loop"]{white-space:pre-wrap;overflow-wrap:anywhere}
+@media(max-width:640px){body:not(.present) #s10 .loop-example{grid-template-columns:1fr;gap:12px}}
 @media print{#s10 .walk-controls{display:none}}
 #s10 .gen-name{font-family:var(--font-mono);font-size:1.3em;overflow-wrap:anywhere;margin:8px 0}
 #s10 .gen-prefix{color:var(--ink-2)}
@@ -81,14 +97,15 @@ temperature = 1.0</code></pre>
   <p><code>eval()</code> selects evaluation behaviour. It does not disable gradients; the decorator on <code>sample_next</code> does that. Our small model has no dropout or batch normalization, so its forward calculation is unchanged.</p>
 </div>
 <div class="frame" data-title="PyTorch: append, shift, and predict again" data-autobuild="off">
+  <script type="text/x-notes">Follow the same sampled sam run. The first two calls chose s and a. Start at call 3 with input minus s a, then follow each line as m is selected and appended. On call 4 the boundary ends the name. These are the earlier browser sample's draws, not a promise about a PyTorch random seed. Each step shows the state before and after that line.</script>
   <pre class="pytorch" data-torch="generation-loop"><code>for _ in range(18):
     next_id = sample_next(ctx, temperature)
     if next_id.item() == stoi["-"]: break
     name.append(vocab[next_id.item()])
     ctx = torch.cat([ctx[:, 1:], next_id], dim=1)</code></pre>
-  <p><code>ctx[:, 1:]</code> keeps the newest two IDs. <code>cat</code> appends the chosen ID to make another three-token window.</p>
-  <p>Sampling the boundary stops the loop without adding it to the name. The limit of 18 is a safety cap, so a sample can also stop before choosing the boundary.</p>
+  <div id="s10-loop-code" class="generation-loop-code"></div>
 </div>
+<div class="companion" data-kicker="The loop, line by line"><p>Replay the earlier sample: the first two calls chose <code>s</code> and <code>a</code>. We now have <code>name = ["s", "a"]</code> and <code>ctx = tensor([[0, 19, 1]])</code>, representing <code>− s a</code>. The next draw in that run is <code>m</code>. Another sampling run can choose a different letter.</p><div id="s10-loop-reference"></div></div>
 <div class="frame" data-title="Greedy choice or sampling?" data-autobuild="off">
   <script type="text/x-notes">After s then a, must the next letter be n?
   Greedy chooses the largest entry each time. Sampling uses the entire distribution, including entries outside the displayed bars. It can choose n too. The seeded browser example happens to draw m. Greedy maximizes each local choice, which need not maximize the probability of a whole name. PyTorch uses its own random generator, so the code need not reproduce this browser sample.</script>
@@ -131,6 +148,62 @@ sampled_id = torch.multinomial(p, num_samples=1)</code></pre>
 (function(){
   const S=document.getElementById('s10'),M=window.__TOY__;let greedy=false,temp=M.sample_temperature,steps=0,seed=M.sample_seed,result=null;
   const worked=AT.part1Diagrams.generationExample(),walk=S.querySelector('#s10-walk'),play=S.querySelector('#s10-play');
+  // Reuse the actual saved-model trace, including its sampled IDs and boundary.
+  const call=worked.trace[2],stopCall=worked.trace[3],stoi=AT.mlp.stoi;
+  const inputIds=call.context.map(c=>stoi[c]),nextIds=call.next_context.map(c=>stoi[c]);
+  const tensor=ids=>'tensor([['+ids.join(', ')+']])';
+  const samplePrefix=worked.trace.slice(0,2).map(t=>t.chosen),fullName=samplePrefix.concat(call.chosen);
+  const nameText=letters=>'name = ['+letters.map(c=>'"'+c+'"').join(', ')+']';
+  const loopStages=[
+    {line:1,title:'Call 3: the first two calls have produced s and a',
+      before:'After calls 1 and 2',input:'ctx = '+tensor(inputIds)+'\n'+nameText(samplePrefix),
+      after:'Next iteration',output:'_ = 2  (the third call)\nrange(18): 0, 1, …, 17',
+      explanation:'Repeat at most 18 times. The counter _ is unused here. It is a Python variable, not the boundary token "-".'},
+    {line:2,title:'The model samples one next-token ID',
+      before:'Input window: − s a',input:'ctx = '+tensor(inputIds)+'\nshape [1, 3]; temperature = 1.0',
+      after:'Sampled output: "'+call.chosen+'"',output:'next_id = '+tensor([call.chosen_id])+'\nshape [1, 1]',
+      explanation:'sample_next predicts 27 probabilities and draws one ID. We replay the earlier draw of m (ID 13). Sampling can choose a different letter.'},
+    {line:3,title:'The stop test is false, so this call continues',
+      before:'One-element tensor',input:'next_id = '+tensor([call.chosen_id])+'\nnext_id.item() = '+call.chosen_id,
+      after:'Compare with the boundary ID',output:'stoi["-"] = '+stoi['-']+'\n'+call.chosen_id+' == '+stoi['-']+'  is False',
+      explanation:'.item() extracts the integer from the tensor. This draw is m, not the boundary, so Python continues to the append line.'},
+    {line:4,title:'The ID becomes a letter in the output name',
+      before:'Before append',input:nameText(samplePrefix)+'\nvocab['+call.chosen_id+'] = "'+call.chosen+'"',
+      after:'After append',output:nameText(fullName)+'\noutput so far: "'+fullName.join('')+'"',
+      explanation:'vocab maps an ID back to its character. append adds that character to the list. The model input ctx has not changed yet.'},
+    {line:5,title:'The next input keeps the newest three IDs',
+      before:'Keep two IDs, then add the new one',input:'ctx[:, 1:] = '+tensor(inputIds.slice(1))+'\nnext_id    = '+tensor([call.chosen_id]),
+      after:'Join along dim=1 (columns)',output:'ctx = '+tensor(nextIds)+'\nshape [1, 3]; tokens: s a m',
+      explanation:'The first : keeps all example rows. 1: keeps columns from index 1 onward. cat joins the two tensors across columns. Next call uses s a m.'},
+    {line:3,title:'Call 4: the boundary stops the loop',
+      before:'The next call samples the boundary',input:'ctx = '+tensor(nextIds)+'\nnext_id = '+tensor([stopCall.chosen_id]),
+      after:'The stop test is now true',output:stopCall.chosen_id+' == '+stoi['-']+'  is True → break\n'+nameText(fullName),
+      explanation:'break exits the loop immediately. It skips append and the window update. The final name is "sam", with no boundary character added.'}
+  ];
+  const loopCode=S.querySelector('[data-torch="generation-loop"] code');
+  const sourceLines=loopCode.textContent.split('\n');AT.clear(loopCode);
+  const lineEls=sourceLines.map((line,i)=>{
+    const el=AT.h('span',{class:'loop-line',dataset:{line:i+1}},line);loopCode.appendChild(el);
+    if(i<sourceLines.length-1)loopCode.appendChild(document.createTextNode('\n'));
+    return el;
+  });
+  function loopExample(stage){
+    return AT.h('div',{class:'loop-example'},
+      AT.h('div',{class:'p1-input'},AT.h('h4',{},stage.before),AT.h('pre',{},stage.input)),
+      AT.h('div',{class:'p1-token'},AT.h('h4',{},stage.after),AT.h('pre',{},stage.output)));
+  }
+  AT.ui.stepper({el:S.querySelector('#s10-loop-code'),compact:true,hideList:true,scrollList:false,
+    steps:loopStages.map((stage,index)=>({title:stage.title,render:host=>{
+      host.dataset.loopStage=index;host.appendChild(loopExample(stage));
+      host.appendChild(AT.h('p',{class:'loop-explanation'},stage.explanation));
+    }})),onChange:index=>lineEls.forEach((el,i)=>{
+      const active=i+1===loopStages[index].line;el.classList.toggle('is-current',active);
+      if(active)el.setAttribute('aria-current','step');else el.removeAttribute('aria-current');
+    })});
+  const reference=S.querySelector('#s10-loop-reference');
+  loopStages.forEach(stage=>reference.appendChild(AT.h('div',{class:'loop-reference'},
+    AT.h('h3',{},stage.title),AT.h('p',{},AT.h('code',{},sourceLines[stage.line-1].trim())),
+    loopExample(stage),AT.h('p',{},stage.explanation))));
   let timer=null,advancing=false;
   function pause(){clearInterval(timer);timer=null;play.textContent='Play example';play.setAttribute('aria-pressed','false');}
   const walkSteps=worked.trace.flatMap((t,round)=>[
