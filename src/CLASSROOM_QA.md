@@ -1,5 +1,19 @@
 # Classroom release checks
 
+## 2026-09-11: compact MLP-to-probability sequence
+
+- Reduced the nine classroom frames beginning with the worked hidden unit to four. Kept a combined MLP calculation,
+  softmax with matching-colour explanations and code, one numerical table, and the final distribution. Full article
+  mode retains the product worksheets and numerical-stability derivation/code. No snippets or model data were removed.
+- The table now uses direct exp(z), matching the displayed softmax formula, with three-decimal logits, exponentials,
+  and probabilities. It includes all 27 tokens in the total, grouping 22 in the last row. Target i remains 0.1169677634.
+  The hidden/logit calculation and final bars use the same three-decimal convention. Computation retains full precision.
+- All 32 PyTorch snippets pass, including the stable-softmax equivalence and saved-model checks. New browser assertions
+  verify compact-frame count, retained article worksheets, numerical sums, every table row, and the target probability.
+- All 215 progressive states and 124 unique formulas pass with no overflow or nested scrolling. Seventeen equation
+  guides pass matching-colour checks. Tables pass at reading, phone, and classroom widths (35/35/24 tables). Visually
+  inspected all four classroom frames. Isolated metadata builds pass. No other lesson, shared runtime, or PDF changed.
+
 ## 2026-09-11: examples versus features in tensor shapes
 
 - Split the section 6 shape table into activation and parameter frames. The activation table explicitly labels rows

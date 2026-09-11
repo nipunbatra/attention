@@ -95,14 +95,22 @@ print(a0_batch.shape, a1_batch.shape, z_batch.shape)
   <p><span class="p1-input">4 rows of 6 input features.</span> <span class="p1-activation">4 rows of 32 hidden activations.</span> <span class="p1-score">4 rows of 27 vocabulary scores.</span></p>
   <p>Each row is processed independently using the <span class="p1-param">same weights and biases</span>. We changed the number of examples, not the network.</p>
 </div>
-<div class="frame" data-title="One hidden unit" data-autobuild="off">
-  <script type="text/x-notes">What does one hidden unit read?
-  It receives all six input coordinates through one column of W1, then adds one bias and applies ReLU.</script>
-  <div class="card"><h3 class="card-title">Column 1 of $\pParam{W_1}$</h3><div id="s06-hidden-compact"></div><p class="calc-note" id="s06-hidden-note"></p></div>
+<div class="frame" data-title="A hidden activation and an output score" data-autobuild="off">
+  <script type="text/x-notes">Does the output score use only hidden unit 1?
+  No. The first calculation illustrates one of the 32 hidden units. The second combines all 32 activations to score i.</script>
+  <p>Two entries from the forward pass for <strong>a a b</strong>:</p>
+  <div data-math-guide>
+    <p class="p1-read"><span class="p1-activation">Hidden unit 1:</span> sum six input-weight products, <span class="p1-param">add its bias</span>, then apply ReLU.</p>
+    <div class="p1-math" id="s06-worked-hidden"></div>
+    <p class="p1-read"><span class="p1-score">Score for i:</span> sum <strong>all 32</strong> hidden-weight products, then <span class="p1-param">add the output bias</span>.</p>
+    <div class="p1-math" id="s06-worked-logit"></div>
+  </div>
+  <p>The output layer repeats this calculation for every vocabulary token, giving <span class="p1-score">27 logits</span>. Softmax will turn them into probabilities.</p>
+  <p class="small">Displayed values are rounded. Both sums use the full-precision products.</p>
 </div>
-<div class="frame" data-title="One output logit" data-autobuild="off">
-  <script type="text/x-notes">Which column of W2 produces the score for i?
-  Every hidden activation contributes through the i column. The bias is added after the dot product.</script>
+<div class="companion" data-kicker="Arithmetic worksheets">
+  <p>For a closer look, these tables show the products inside the two sums above.</p>
+  <div class="card"><h3 class="card-title">Column 1 of $\pParam{W_1}$</h3><div id="s06-hidden-compact"></div><p class="calc-note" id="s06-hidden-note"></p></div>
   <div class="card"><h3 class="card-title">The logit for target i</h3><div id="s06-logit-compact"></div><p class="calc-note" id="s06-logit-note"></p></div>
 </div>
 <div class="companion" data-kicker="Full arithmetic worksheets"><p>The network repeats the output calculation for every possible next character. To check the two shorter calculations shown in class, you can follow every scalar multiplication in these worksheets.</p><div id="s06-hidden"></div><div id="s06-logit"></div></div>
@@ -127,6 +135,8 @@ print(a0_batch.shape, a1_batch.shape, z_batch.shape)
   AT.ui.table(F.a0.map((x,i)=>[x,W1col[i][0],x*W1col[i][0]]),{cols:['input','weight','product'],rowLabels:F.a0.map((x,i)=>'coordinate '+(i+1)),cornerLabel:'$a_0$',decimals:2,caption:'Displayed operands are rounded; products and sums use the unrounded values.',into:S.querySelector('#s06-hidden-compact')});
   S.querySelector('#s06-hidden-note').textContent='dot '+AT.fmt(dot1,2)+' + bias '+AT.fmt(M.b1[j],2)+' = '+AT.fmt(pre,2)+'; ReLU gives '+AT.fmt(F.a1[j],2);
   const tid=AT.mlp.stoi.i,W2col=M.W2.map(r=>[r[tid]]),dot2=AT.matmul(F.a1,W2col)[0],logit=dot2+M.b2[tid];
+  AT.tex(S.querySelector('#s06-worked-hidden'),'\\pAct{(a_1)_1}\\approx\\operatorname{ReLU}('+AT.fmt(dot1,3)+'+\\pParam{('+AT.fmt(M.b1[j],3)+')})=\\pAct{'+AT.fmt(F.a1[j],3)+'}',{display:true});
+  AT.tex(S.querySelector('#s06-worked-logit'),'\\pScore{z_{\\mathrm{i}}}\\approx '+AT.fmt(dot2,3)+'+\\pParam{('+AT.fmt(M.b2[tid],3)+')}\\approx\\pScore{'+AT.fmt(logit,3)+'}',{display:true});
   AT.ui.matVecCalc(F.a1,W2col,{from:AT.range(M.d_h).map(i=>'hidden '+(i+1)),to:['logit i'],cls:'neutral',xLabel:'a1',outLabel:'dot product',decimals:2,wDecimals:2,into:S.querySelector('#s06-logit')});
   const shown=3,products=F.a1.map((x,i)=>x*W2col[i][0]);
   AT.ui.table(F.a1.slice(0,shown).map((x,i)=>[x,W2col[i][0],products[i]]).concat([['—','—',AT.sum(products.slice(shown))]]),{cols:['activation','weight','product'],rowLabels:['hidden 1','hidden 2','hidden 3','remaining '+(M.d_h-shown)],cornerLabel:'$a_1$',decimals:2,caption:'The last row sums the remaining products. Arithmetic uses unrounded values.',into:S.querySelector('#s06-logit-compact')});

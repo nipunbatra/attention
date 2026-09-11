@@ -10,6 +10,12 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+The classroom stretch from the worked hidden unit through final probabilities is now **four frames instead of nine**.
+One frame combines a hidden activation and the i logit, followed by softmax with its two-line code, the numerical table,
+and the probability bars. Detailed product worksheets and the stability derivation/code remain in full article mode.
+The classroom table uses exp(z) directly to match its preceding formula; PyTorch still evaluates softmax stably. All
+classroom numbers in this stretch use three decimals. Model parameters, probability values, and all 32 snippets are unchanged.
+
 Part 1's shape explanation now separates activations from parameters. For a0/a1/z, rows count examples and columns
 count input features, hidden activations, or vocabulary scores. The entire a a b window is one example. A separate
 parameter table explains W axes, shared bias rows, and PyTorch bias broadcasting. A five-line, four-example snippet

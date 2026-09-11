@@ -80,6 +80,29 @@ const shapes = await page.evaluate(() => {
   return {rows:expected,parameterShapes,issues};
 });
 errors.push(...shapes.issues);
+const probabilitySequence = await page.evaluate(() => {
+  const issues=[], M=window.__TOY__, F=AT.mlp.forward(['a','a','b']);
+  const top=AT.topk(F.p,5).map(item=>item.i), rest=F.p.map((_,i)=>i).filter(i=>!top.includes(i));
+  const exp=F.z.map(Math.exp), total=exp.reduce((a,b)=>a+b,0);
+  const expected=top.map(i=>[F.z[i],exp[i],F.p[i]].map(n=>AT.fmt(n,3)));
+  expected.push(['',AT.fmt(rest.reduce((a,i)=>a+exp[i],0),3),AT.fmt(rest.reduce((a,i)=>a+F.p[i],0),3)]);
+  const rows=[...document.querySelectorAll('#s07-softmax tbody tr')].map(row=>[...row.querySelectorAll('td')].map(cell=>cell.textContent.trim()));
+  if(JSON.stringify(rows)!==JSON.stringify(expected))issues.push('Compact softmax table differs from saved logits/exponentials/probabilities');
+  if(exp.some((n,i)=>Math.abs(n/total-F.p[i])>1e-12))issues.push('Direct and stable softmax disagree');
+  if(document.querySelector('#s07-target-prob').textContent!==AT.fmt(F.p[AT.mlp.stoi.i],3))issues.push('Final displayed target probability differs');
+  const frames=[...document.querySelectorAll('#s07 .frame')];
+  if(frames.length!==3||document.querySelectorAll('#s06-worked-hidden,#s06-worked-logit').length!==2)issues.push('Expected one combined MLP frame and three probability frames');
+  for(const id of ['s06-hidden-compact','s06-logit-compact'])if(!document.getElementById(id).closest('.companion'))issues.push('Detailed products must remain available in the article: '+id);
+  if(!document.querySelector('[data-torch="stable-softmax"]').closest('.companion'))issues.push('Stability derivation/code should stay in full article mode');
+  const hiddenSum=F.a0.reduce((sum,x,i)=>sum+x*M.W1[i][0],0);
+  const target=AT.mlp.stoi.i, outputSum=F.a1.reduce((sum,x,i)=>sum+x*M.W2[i][target],0);
+  for(const [id,terms] of [['s06-worked-hidden',[hiddenSum,M.b1[0],F.a1[0]]],['s06-worked-logit',[outputSum,M.b2[target],F.z[target]]]]){
+    const math=document.querySelector('#'+id+' annotation')?.textContent||'';
+    if(terms.some(n=>!math.includes(AT.fmt(n,3))))issues.push('Compact MLP arithmetic differs: '+id);
+  }
+  return {classroomFrames:1+frames.length, targetProbability:F.p[target], issues};
+});
+errors.push(...probabilitySequence.issues);
 // Include the fully revealed notation frames and the tables adjacent to them.
 for (const [section, title, name] of [
   ['s03', 'Writing the same question as a probability', 'probability'],
@@ -96,9 +119,10 @@ for (const [section, title, name] of [
   ['s06', 'Check the shapes before multiplying', 'shapes'],
   ['s06', 'Parameters are shared across examples', 'parameter-shapes'],
   ['s06', 'PyTorch: four examples, the same feature widths', 'batch-shapes'],
+  ['s06', 'A hidden activation and an output score', 'worked-mlp'],
   ['s07', 'Exponentiate, then divide by the total', 'softmax'],
-  ['s07', 'The same softmax, with smaller intermediate numbers', 'stable-softmax'],
   ['s07', 'Softmax worksheet', 'softmax-table'],
+  ['s07', 'A distribution over characters', 'probability-bars'],
   ['s08', 'One target probability', 'loss'],
   ['s08', 'Low target probability gives a large loss', 'loss-examples'],
   ['s09', 'What the optimizer changes', 'parameters'],
@@ -132,5 +156,5 @@ await page.emulateMedia({ media: 'print' });
 const printed = await page.evaluate(checkGuides);
 errors.push(...printed.issues.map(x => 'print: ' + x));
 await browser.close();
-console.log(JSON.stringify({ article, lookup, shapes, phone, print: printed, screenshots: out, errors }, null, 2));
+console.log(JSON.stringify({ article, lookup, shapes, probabilitySequence, phone, print: printed, screenshots: out, errors }, null, 2));
 if (errors.length) process.exitCode = 1;

@@ -4730,14 +4730,22 @@ print(a0_batch.shape, a1_batch.shape, z_batch.shape)
   <p><span class="p1-input">4 rows of 6 input features.</span> <span class="p1-activation">4 rows of 32 hidden activations.</span> <span class="p1-score">4 rows of 27 vocabulary scores.</span></p>
   <p>Each row is processed independently using the <span class="p1-param">same weights and biases</span>. We changed the number of examples, not the network.</p>
 </div>
-<div class="frame" data-title="One hidden unit" data-autobuild="off">
-  <script type="text/x-notes">What does one hidden unit read?
-  It receives all six input coordinates through one column of W1, then adds one bias and applies ReLU.</script>
-  <div class="card"><h3 class="card-title">Column 1 of $\pParam{W_1}$</h3><div id="s06-hidden-compact"></div><p class="calc-note" id="s06-hidden-note"></p></div>
+<div class="frame" data-title="A hidden activation and an output score" data-autobuild="off">
+  <script type="text/x-notes">Does the output score use only hidden unit 1?
+  No. The first calculation illustrates one of the 32 hidden units. The second combines all 32 activations to score i.</script>
+  <p>Two entries from the forward pass for <strong>a a b</strong>:</p>
+  <div data-math-guide>
+    <p class="p1-read"><span class="p1-activation">Hidden unit 1:</span> sum six input-weight products, <span class="p1-param">add its bias</span>, then apply ReLU.</p>
+    <div class="p1-math" id="s06-worked-hidden"></div>
+    <p class="p1-read"><span class="p1-score">Score for i:</span> sum <strong>all 32</strong> hidden-weight products, then <span class="p1-param">add the output bias</span>.</p>
+    <div class="p1-math" id="s06-worked-logit"></div>
+  </div>
+  <p>The output layer repeats this calculation for every vocabulary token, giving <span class="p1-score">27 logits</span>. Softmax will turn them into probabilities.</p>
+  <p class="small">Displayed values are rounded. Both sums use the full-precision products.</p>
 </div>
-<div class="frame" data-title="One output logit" data-autobuild="off">
-  <script type="text/x-notes">Which column of W2 produces the score for i?
-  Every hidden activation contributes through the i column. The bias is added after the dot product.</script>
+<div class="companion" data-kicker="Arithmetic worksheets">
+  <p>For a closer look, these tables show the products inside the two sums above.</p>
+  <div class="card"><h3 class="card-title">Column 1 of $\pParam{W_1}$</h3><div id="s06-hidden-compact"></div><p class="calc-note" id="s06-hidden-note"></p></div>
   <div class="card"><h3 class="card-title">The logit for target i</h3><div id="s06-logit-compact"></div><p class="calc-note" id="s06-logit-note"></p></div>
 </div>
 <div class="companion" data-kicker="Full arithmetic worksheets"><p>The network repeats the output calculation for every possible next character. To check the two shorter calculations shown in class, you can follow every scalar multiplication in these worksheets.</p><div id="s06-hidden"></div><div id="s06-logit"></div></div>
@@ -4762,6 +4770,8 @@ print(a0_batch.shape, a1_batch.shape, z_batch.shape)
   AT.ui.table(F.a0.map((x,i)=>[x,W1col[i][0],x*W1col[i][0]]),{cols:['input','weight','product'],rowLabels:F.a0.map((x,i)=>'coordinate '+(i+1)),cornerLabel:'$a_0$',decimals:2,caption:'Displayed operands are rounded; products and sums use the unrounded values.',into:S.querySelector('#s06-hidden-compact')});
   S.querySelector('#s06-hidden-note').textContent='dot '+AT.fmt(dot1,2)+' + bias '+AT.fmt(M.b1[j],2)+' = '+AT.fmt(pre,2)+'; ReLU gives '+AT.fmt(F.a1[j],2);
   const tid=AT.mlp.stoi.i,W2col=M.W2.map(r=>[r[tid]]),dot2=AT.matmul(F.a1,W2col)[0],logit=dot2+M.b2[tid];
+  AT.tex(S.querySelector('#s06-worked-hidden'),'\\pAct{(a_1)_1}\\approx\\operatorname{ReLU}('+AT.fmt(dot1,3)+'+\\pParam{('+AT.fmt(M.b1[j],3)+')})=\\pAct{'+AT.fmt(F.a1[j],3)+'}',{display:true});
+  AT.tex(S.querySelector('#s06-worked-logit'),'\\pScore{z_{\\mathrm{i}}}\\approx '+AT.fmt(dot2,3)+'+\\pParam{('+AT.fmt(M.b2[tid],3)+')}\\approx\\pScore{'+AT.fmt(logit,3)+'}',{display:true});
   AT.ui.matVecCalc(F.a1,W2col,{from:AT.range(M.d_h).map(i=>'hidden '+(i+1)),to:['logit i'],cls:'neutral',xLabel:'a1',outLabel:'dot product',decimals:2,wDecimals:2,into:S.querySelector('#s06-logit')});
   const shown=3,products=F.a1.map((x,i)=>x*W2col[i][0]);
   AT.ui.table(F.a1.slice(0,shown).map((x,i)=>[x,W2col[i][0],products[i]]).concat([['—','—',AT.sum(products.slice(shown))]]),{cols:['activation','weight','product'],rowLabels:['hidden 1','hidden 2','hidden 3','remaining '+(M.d_h-shown)],cornerLabel:'$a_1$',decimals:2,caption:'The last row sums the remaining products. Arithmetic uses unrounded values.',into:S.querySelector('#s06-logit-compact')});
@@ -4776,38 +4786,27 @@ print(a0_batch.shape, a1_batch.shape, z_batch.shape)
 #s07 .soft-note{font-size:.9em;color:var(--ink-2);margin:10px 0 0}
 </style>
 <header class="sec-head"><span class="sec-num">07</span><div><p class="eyebrow">Logits can be any real numbers. We need probabilities that add up to one.</p><h2>27 scores to probabilities</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>The output layer gives us one logit for each vocabulary token. A logit can be positive or negative; we cannot read it as a probability yet. Softmax exponentiates each score, then divides by the sum of all the exponentials. We subtract the largest logit first to keep this calculation numerically stable. That subtraction leaves the probabilities unchanged. The worksheet uses this stable form for <em>aab</em>, showing the five largest outcomes and grouping the rest. Every vocabulary entry still contributes to the denominator. The resulting probabilities are positive and sum to one, so we can sample from them.</p></div>
-<div class="frame" data-title="Read the logits" data-autobuild="off">
-  <script type="text/x-notes">Can we read a logit as a probability?
-  No. First inspect the five largest scores. The grouped row has no single logit because it contains several outputs.</script>
-  <div class="card"><h3 class="card-title">Top logits for a a b</h3><div id="s07-logits"></div></div>
-</div>
+<div class="companion" data-kicker="For self-study"><p>The output layer gives us one logit for each vocabulary token. A logit can be positive or negative; we cannot read it as a probability yet. Softmax exponentiates each score, then divides by the sum of all the exponentials. The classroom table uses that formula directly for <em>aab</em>, showing the five largest outcomes and grouping the rest. Every vocabulary entry still contributes to the denominator. PyTorch subtracts the largest logit internally for numerical stability, as explained below. This leaves the probabilities unchanged.</p></div>
 <div class="frame" data-title="Exponentiate, then divide by the total" data-autobuild="off">
   <div data-math-guide><div class="p1-math">$$\pProb{p_j}=\frac{\exp(\pScore{z_j})}{\sum_{r\in\mathcal V}\exp(\pScore{z_r})}$$</div>
   <dl class="p1-key">
-    <div class="p1-prob"><dt>$\pProb{p_j}$: probability for token $j$</dt><dd>The share of the total assigned to this token.</dd></div>
-    <div class="p1-score"><dt>$\pScore{z_j}$: score for token $j$</dt><dd>The output layer's logit for that token.</dd></div>
-    <div><dt>$\exp(z_j)=e^{z_j}$: exponentiate</dt><dd>Turn the score into a positive number.</dd></div>
-    <div><dt>$\sum_{r\in\mathcal V}$: sum over the vocabulary</dt><dd>Add the exponentials for all 27 tokens. $r$ visits each token in $\mathcal V$.</dd></div>
+    <div class="p1-score"><dt>$\pScore{z_j}$: logit for token $j$</dt><dd>$\exp(z_j)=e^{z_j}$ makes it positive.</dd></div>
+    <div class="p1-prob"><dt>$\pProb{p_j}$: probability for token $j$</dt><dd>Divide by the total for all 27 tokens.</dd></div>
   </dl></div>
-  <div class="callout callout-key" data-build="1">Each token gets a positive share of the same total.</div>
-</div>
-<div class="frame" data-title="PyTorch: probabilities across the vocabulary" data-autobuild="off">
+  <p>$\sum_{r\in\mathcal V}$ adds over the vocabulary $\mathcal V$. The index $r$ visits each token.</p>
   <pre class="pytorch" data-torch="softmax"><code>p = z.softmax(dim=-1)
 print(p.shape, p.sum(dim=-1))  # [1, 27], one total</code></pre>
-  <p><span class="p1-prob"><code>p</code> gives 27 probabilities for each example. Every row sums to one.</span></p>
-  <p><code>dim=-1</code> means the final dimension: vocabulary entries. We normalize across possible next characters, not across examples.</p>
+  <p><code>dim=-1</code> selects the vocabulary columns. <span class="p1-prob">Every example's probability row sums to one.</span></p>
 </div>
-<div class="frame" data-title="The same softmax, with smaller intermediate numbers" data-autobuild="off">
+<div class="companion" data-kicker="Numerical stability">
+  <h3>The same softmax, with smaller intermediate numbers</h3>
   <div data-math-guide><div class="p1-math">$$\pProb{p_j}=\frac{\exp(\pScore{z_j}-\pScore{z_{\max}})}{\sum_{r\in\mathcal V}\exp(\pScore{z_r}-\pScore{z_{\max}})}$$</div>
   <dl class="p1-key">
     <div class="p1-score"><dt>$\pScore{z_{\max}}$: the largest logit</dt><dd>Subtract this same number from every score before exponentiating.</dd></div>
     <div class="p1-prob"><dt>$\pProb{p_j}$: the same probability</dt><dd>Numerator and denominator both lose the factor $e^{z_{\max}}$, so it cancels.</dd></div>
   </dl></div>
   <p>$j$ is the token we are scoring. The sum visits every token $r$ in the vocabulary $\mathcal V$.</p>
-  <p data-build="1">The largest exponential is now 1. This avoids very large intermediate numbers.</p>
-</div>
-<div class="frame" data-title="PyTorch: the softmax calculation we worked out" data-autobuild="off">
+  <p>The largest exponential is now 1. This avoids very large intermediate numbers.</p>
   <pre class="pytorch" data-torch="stable-softmax"><code>shifted = z - z.max(dim=-1, keepdim=True).values
 weights = shifted.exp()
 p = weights / weights.sum(dim=-1, keepdim=True)</code></pre>
@@ -4824,19 +4823,20 @@ p = weights / weights.sum(dim=-1, keepdim=True)</code></pre>
 <div class="frame" data-title="A distribution over characters" data-autobuild="off">
   <script type="text/x-notes">Which next characters remain possible after aab?
   Read the target i, then compare it with the other high-probability outcomes.</script>
-  <div class="card"><h3 class="card-title">The same probabilities as bars</h3><div id="s07-bars"></div></div>
-  <div class="callout callout-key" data-build="1">Softmax turns all vocabulary scores into positive probabilities that sum to one.</div>
+  <div class="card"><h3 class="card-title">Next-character probabilities after a a b</h3><div id="s07-bars"></div></div>
+  <p>The observed next character is <strong>i</strong>. Its probability is <strong class="p1-prob" id="s07-target-prob"></strong>. Next, we use that probability to measure the prediction's loss.</p>
 </div>
 <div class="companion after"><p>Changing one vocabulary logit affects every probability, because all of them share the same softmax denominator.</p></div>
 <script>
 (function(){
-  const S=document.getElementById('s07'),M=window.__TOY__,F=AT.mlp.forward(['a','a','b']),top=AT.topk(F.p,5),idx=top.map(x=>x.i),mx=Math.max.apply(null,F.z),ex=F.z.map(z=>Math.exp(z-mx)),den=AT.sum(ex),rest=AT.range(F.p.length).filter(i=>idx.indexOf(i)<0);
-  AT.ui.table(idx.map(i=>[F.z[i],F.p[i]]).concat([['',rest.reduce((a,i)=>a+F.p[i],0)]]),{cols:['logit','probability'],rowLabels:idx.map(i=>M.vocab[i]).concat(['other ×'+rest.length]),cornerLabel:'token',highlightRow:idx.indexOf(AT.mlp.stoi.i),decimals:2,caption:'The other row groups the vocabulary entries outside the top five.',into:S.querySelector('#s07-logits')});
-  const shown=idx.concat(rest.length?[rest[0]]:[]),rows=idx.map(i=>[F.z[i],ex[i],ex[i]/den]);
+  const S=document.getElementById('s07'),M=window.__TOY__,F=AT.mlp.forward(['a','a','b']),top=AT.topk(F.p,5),idx=top.map(x=>x.i),ex=F.z.map(z=>Math.exp(z)),den=AT.sum(ex),rest=AT.range(F.p.length).filter(i=>idx.indexOf(i)<0);
+  const rows=idx.map(i=>[F.z[i],ex[i],ex[i]/den]);
   rows.push(['',rest.reduce((a,i)=>a+ex[i],0),rest.reduce((a,i)=>a+F.p[i],0)]);
-  AT.ui.table(rows,{cols:['logit','$\\exp(\\pScore{z}-\\pScore{z_{\\max}})$','divide by denominator'],rowLabels:idx.map(i=>M.vocab[i]).concat(['other ×'+rest.length]),cornerLabel:'token',highlightRow:idx.indexOf(AT.mlp.stoi.i),decimals:2,footer:{label:'denominator',values:['',den,'1.00']},caption:'The grouped row contains the remaining entries. Displayed values are rounded; the denominator and probabilities use unrounded exponentials.',into:S.querySelector('#s07-softmax')});
+  const table=AT.ui.table(rows,{cols:['logit $\\pScore{z_j}$','positive $\\exp(\\pScore{z_j})$','probability $\\pProb{p_j}$'],rowLabels:idx.map(i=>M.vocab[i]).concat(['other ×'+rest.length]),cornerLabel:'token',highlightRow:idx.indexOf(AT.mlp.stoi.i),decimals:3,footer:{label:'total',values:['',den,'1.000']},caption:'Divide each positive value by '+AT.fmt(den,3)+'. The other row sums 22 tokens. Calculations use unrounded values.',into:S.querySelector('#s07-softmax')});
+  table.cells.forEach(row=>{row[0].classList.add('p1-score');row[2].classList.add('p1-prob');});
   const items=top.map(x=>({label:x.tok,p:x.p})).concat([{label:'other ×'+rest.length,p:rest.reduce((a,i)=>a+F.p[i],0)}]);
-  AT.ui.bars(items,{highlight:'i',sorted:false,size:'lg',decimals:2,into:S.querySelector('#s07-bars')});
+  AT.ui.bars(items,{highlight:'i',sorted:false,size:'lg',decimals:3,into:S.querySelector('#s07-bars')});
+  S.querySelector('#s07-target-prob').textContent=AT.fmt(F.p[AT.mlp.stoi.i],3);
 })();
 </script>
 </section>
