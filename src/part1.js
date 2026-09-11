@@ -6,6 +6,7 @@
   Object.assign(AT.macros || (AT.macros = {}), {
     '\\pIn': '\\htmlClass{p1-input}{#1}',
     '\\pToken': '\\htmlClass{p1-token}{#1}',
+    '\\pSymbol': '\\htmlClass{p1-symbol}{#1}',
     '\\pIndex': '\\htmlClass{p1-index}{#1}',
     '\\pTarget': '\\htmlClass{p1-target}{#1}',
     '\\pParam': '\\htmlClass{p1-param}{#1}',

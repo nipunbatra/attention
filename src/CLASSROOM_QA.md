@@ -1,5 +1,14 @@
 # Classroom release checks
 
+## 2026-09-11: character placeholder versus literal
+
+- Section 4 now displays c = "a" with a grey placeholder and an orange quoted literal, each explained in matching
+  prose. The note explicitly excludes the quote marks from the name. Alternate values "b"/"i", id("a"), the
+  concrete embedding subscript, and generic lookup equation follow the same distinction.
+- Added the Part 1 pSymbol role and notation regressions for exact quoted values, distinct colours, and both generic
+  c occurrences. Visually inspected the changed character, ID, embedding, and full-equation frames. Article/print
+  colour-guide checks and slide-fit checks pass. No new frames, model changes, code snippets, or PDFs.
+
 ## 2026-09-11: window and embedding dimensions together
 
 - Replaced the section 14 window-only sketch with two labelled controls and a coordinate-grid/concatenation diagram.

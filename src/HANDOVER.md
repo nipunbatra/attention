@@ -10,6 +10,11 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+The section 4 lookup primer now distinguishes the placeholder c (dark grey, pSymbol) from the literal "a"
+(orange, pToken). Quoted monospaced literals carry through id("a") and the concrete embedding subscript. Generic
+e_c = E_tok[id(c)] keeps both c occurrences grey. Matching prose explains the quotes and the character/value
+distinction. The notation regression checks the quotes, distinct colours, and adjacent equations in article/print.
+
 Section 14 now explores both window w and embedding width d. The coordinate-grid diagram concatenates w rows of d
 numbers into one wd-wide activation, with explicit W1, hidden, W2, logits, and bias labels. Both controls keep their
 state across navigation. The following worksheet recalculates all five parameter groups and their total. w affects

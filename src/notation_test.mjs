@@ -22,7 +22,7 @@ await page.goto(pathToFileURL(path.resolve(process.argv[2] || 'part1.html')).hre
 await page.waitForTimeout(250);
 const checkGuides = () => {
   const issues = [], guides = [...document.querySelectorAll('[data-math-guide]')];
-  const roles = ['input', 'target', 'param', 'prob', 'activation', 'score', 'loss', 'token', 'index', 'temperature'];
+  const roles = ['input', 'target', 'param', 'prob', 'activation', 'score', 'loss', 'token', 'symbol', 'index', 'temperature'];
   for (const guide of guides) {
     for (const role of roles) {
       const cls = '.p1-' + role;
@@ -51,6 +51,15 @@ errors.push(...article.issues);
 const lookup = await page.evaluate(() => {
   const issues=[], steps=[...document.querySelectorAll('[data-lookup-step]')];
   const order=steps.map(f=>f.dataset.lookupStep);
+  const character=steps.find(f=>f.dataset.lookupStep==='character');
+  const symbol=character.querySelector('.katex-html .p1-symbol'),literal=character.querySelector('.katex-html .p1-token');
+  if(symbol?.textContent!=='c'||literal?.textContent!=='"a"')issues.push('Character choice must distinguish placeholder c from the quoted literal "a"');
+  if(symbol&&literal&&getComputedStyle(symbol).color===getComputedStyle(literal).color)issues.push('Placeholder and character literal need distinct colours');
+  for(const stage of ['id','row']){
+    if(steps.find(f=>f.dataset.lookupStep===stage).querySelector('.katex-html .p1-token')?.textContent!=='"a"')issues.push(stage+': retain the quoted character literal');
+  }
+  const equation=steps.find(f=>f.dataset.lookupStep==='equation');
+  if(equation.querySelectorAll('.p1-math .katex-html .p1-symbol').length!==2)issues.push('Both generic lookup occurrences of c must use the placeholder colour');
   if(order.join(',')!=='character,id,table,select,row,equation,code')issues.push('Lookup needs the paced symbol order before the complete equation');
   const ids=[...document.querySelectorAll('#s04-lookup-ids tbody tr')].map(r=>[r.querySelector('th').textContent,Number(r.querySelector('td').textContent)]);
   if(JSON.stringify(ids)!==JSON.stringify(['-','a','b','i'].map(c=>[c,AT.mlp.stoi[c]])))issues.push('Character IDs disagree with vocabulary');
