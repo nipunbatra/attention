@@ -61,6 +61,10 @@ const lookup = await page.evaluate(() => {
   const equation=steps.find(f=>f.dataset.lookupStep==='equation');
   if(equation.querySelectorAll('.p1-math .katex-html .p1-symbol').length!==2)issues.push('Both generic lookup occurrences of c must use the placeholder colour');
   if(order.join(',')!=='character,id,table,select,row,equation,code')issues.push('Lookup needs the paced symbol order before the complete equation');
+  const frames=[...document.querySelectorAll('#s04 .frame')];
+  const single=frames.findIndex(f=>f.querySelector('[data-torch="single-character-lookup"]'));
+  const context=frames.findIndex(f=>f.querySelector('[data-torch="embedding"]'));
+  if(single<0||context!==single+1)issues.push('Single-character lookup must immediately precede the three-character context lookup');
   const ids=[...document.querySelectorAll('#s04-lookup-ids tbody tr')].map(r=>[r.querySelector('th').textContent,Number(r.querySelector('td').textContent)]);
   if(JSON.stringify(ids)!==JSON.stringify(['-','a','b','i'].map(c=>[c,AT.mlp.stoi[c]])))issues.push('Character IDs disagree with vocabulary');
   for(const id of ['s04-embed','s04-selected-row']){
@@ -121,8 +125,8 @@ for (const [section, title, name] of [
   ['s04', 'Square brackets select a row', 'lookup-select'],
   ['s04', 'Lowercase e names the retrieved vector', 'lookup-row'],
   ['s04', 'The complete lookup equation', 'lookup-equation'],
-  ['s04', 'PyTorch: a learned embedding lookup', 'lookup-context'],
   ['s04', 'PyTorch: look up just the character a', 'lookup-code'],
+  ['s04', 'PyTorch: a learned embedding lookup', 'lookup-context'],
   ['s05', 'Three rows become one row', 'concatenation'],
   ['s06', 'The hidden layer combines the input numbers', 'hidden-layer'],
   ['s06', 'The output layer makes one score per token', 'output-layer'],

@@ -43,6 +43,8 @@ for file in sorted((ROOT / "sections1").glob("sec*.html")):
     parser.feed(file.read_text())
 assert len(parser.items) >= 20, "Missing computational-stage snippets"
 assert len({name for name, _ in parser.items}) == len(parser.items)
+snippet_names = [name for name, _ in parser.items]
+assert snippet_names.index("single-character-lookup") + 1 == snippet_names.index("embedding")
 for name, source in parser.items:
     lines = source.splitlines()
     assert 2 <= len(lines) <= 5, (name, "expected 2–5 code lines")
@@ -83,13 +85,19 @@ for name, source in parser.items:
         assert scope["embedding"].padding_idx is None
         torch.testing.assert_close(scope["e"][0, 0], scope["e"][0, 1])
         torch.testing.assert_close(scope["e"][0, 2], scope["embedding"].weight[2])
-        # This slide must run with only imports, without earlier ctx/stoi state.
+        assert scope["embedding"] is single_character_table
+        torch.testing.assert_close(scope["e"][0, 0], scope["e_a"][0])
+        # The two-slide sequence must run with imports and no earlier ctx/stoi state.
         isolated = {"torch": torch, "nn": torch.nn}
         with torch.random.fork_rng(), redirect_stdout(io.StringIO()):
+            exec(compile(dict(parser.items)["single-character-lookup"], "standalone-single-lookup", "exec"), isolated)
+            first_table = isolated["embedding"]
             exec(compile(source, "standalone-embedding", "exec"), isolated)
+        assert isolated["embedding"] is first_table
         assert isolated["ctx"].tolist() == [[1, 1, 2]]
         assert isolated["e"].shape == (1, 3, 2)
     if name == "single-character-lookup":
+        single_character_table = scope["embedding"]
         assert scope["char_id"].tolist() == [1] and scope["e_a"].shape == (1, 2)
         torch.testing.assert_close(scope["e_a"][0], scope["embedding"].weight[1])
     if name == "word-analogy":

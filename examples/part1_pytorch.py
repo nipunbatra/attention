@@ -28,16 +28,16 @@ y = torch.tensor(padded[w:])
 one_hot = F.one_hot(ctx, num_classes=27)
 print(one_hot.shape)  # [1, 3, 27]
 
-# embedding
-ctx = torch.tensor([[1, 1, 2]])  # one example: "a", "a", "b"
-embedding = nn.Embedding(27, 2)
-e = embedding(ctx)
-print(e.shape)  # [1, 3, 2]
-
 # single-character-lookup
-char_id = torch.tensor([stoi["a"]])
+embedding = nn.Embedding(27, 2)
+char_id = torch.tensor([1])  # id("a") = 1
 e_a = embedding(char_id)
 print(e_a.shape)  # [1, 2]
+
+# embedding
+ctx = torch.tensor([[1, 1, 2]])  # one example: "a", "a", "b"
+e = embedding(ctx)
+print(e.shape)  # [1, 3, 2]
 
 # word-analogy
 man, woman, king, queen = torch.tensor(
