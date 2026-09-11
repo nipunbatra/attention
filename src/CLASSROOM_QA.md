@@ -1,5 +1,26 @@
 # Classroom release checks
 
+## 2026-09-11: motivate embeddings before the lookup table
+
+- Section 4 adds 22 paced frames: motivation, a row as a 2D point, several points, training's role, representations across
+  domains, and a return to the same `a a b` context. The original trained coordinates and numerical model are unchanged.
+  The existing vowel-sign constraint is disclosed beside the plot; no claim of spontaneously discovered semantic axes.
+- Per Nipun's follow-up, Word2vec stays simple: six frames around king/queen/man/woman, including a prediction-learning
+  diagram, points, matching offsets, a same-colour equation reading key, and a four-line toy-vector calculation. The
+  coordinates are explicitly invented. The analogy is neither an exact general rule nor the training objective.
+- Documents, images, and signals each have an encoder diagram, task intuition, and short executable code. Their code uses
+  separate fresh layers, not pretrained encoders. The existing two-mug scene is embedded for offline use. No dependencies
+  or shared CSS/presentation runtime were changed; no new PDF was exported.
+- `check_embedding_primer.mjs` passes 11 SVG instances, bounds/accessibility, saved point coordinates, analogy arithmetic,
+  full-size diagram checks, 23 new/revised frame screenshots, and phone layout. Visually reviewed character plots/table,
+  learning flows, analogy points/arrows/equation/code, document/image/signal diagrams, and the return to character lookups.
+- `frame_audit.mjs` passes 212 progressive states, 115 unique formulas, with no overflow or internal scrollbars.
+  The table audit passes 33 reading, 33 phone, and 24 presentation tables. All 11 equation guides pass article and print
+  colour/layout checks. These are browser print-media checks, not a fresh PDF export.
+- All 29 literal PyTorch snippets execute; analogy and encoder shapes agree with the slides. The saved model's six
+  probability rows still agree within 1.53e-16. Original JS arithmetic and generation, 30 existing SVG regression instances,
+  and eight isolated metadata builds pass. The standalone Python download is synchronized with the HTML snippets.
+
 ## 2026-09-11: Part 1 executable PyTorch stages
 
 - Added 25 code frames, each with 2–5 literal lines, nearby explanations, and relevant tensor shapes. The same character

@@ -118,6 +118,12 @@ if N == 1:
     diagrams = os.path.join(here, 'part1-diagrams.js')
     if os.path.isfile(diagrams):
         shared_block += '<script>\n' + open(diagrams, encoding='utf-8').read() + '\n</script>\n'
+    # The representation detour reuses the existing scene as an input illustration.
+    with open(os.path.join(here, '..', 'figures', 'vision-scene', 'two-mugs.jpg'), 'rb') as asset:
+        scene_uri = 'data:image/jpeg;base64,' + base64.b64encode(asset.read()).decode('ascii')
+    shared_block += '<script>window.__EMBEDDING_SCENE__ = ' + js(scene_uri) + ';</script>\n'
+    with open(os.path.join(here, 'embedding-primer.js'), encoding='utf-8') as module:
+        shared_block += '<script>\n' + module.read() + '\n</script>\n'
 if N == 2:
     # One SVG source powers both the standalone preview and the article stepper.
     diagram = os.path.join(here, '..', 'figures', 'attention-diagram-preview', 'diagram.js')

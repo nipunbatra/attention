@@ -143,9 +143,11 @@ After a worked operation, show its 2–5-line PyTorch equivalent on a paced fram
 and output shapes, and how the code variables match the equation. Keep the motivation frames free of premature code.
 Split setup, computation, and interpretation when needed; do not squeeze a full training script into one slide.
 
-Part 1's 25 snippets use `<pre class="pytorch" data-torch="unique-stage"><code>…</code></pre>`. Their order constructs
+Part 1's 29 snippets use `<pre class="pytorch" data-torch="unique-stage"><code>…</code></pre>`. Their order constructs
 one character model: IDs → embedding lookup → concatenation → hidden layer → logits → probabilities/loss → an update
 → autoregressive sampling. The word-token and wider-window examples explicitly construct separate fresh layers.
+The representation detour uses hand-chosen analogy vectors and separate, untrained document/image/signal examples.
+It introduces their roles and shapes, not a second numerical training course before the name model.
 The final five-line forward pass reuses the original character layers. Plain-text code remains copyable.
 
 - Distinguish a fresh `nn.Embedding`/`nn.Linear` from the saved trained worksheet. Constructors do not load that checkpoint.

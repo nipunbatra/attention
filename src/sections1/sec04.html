@@ -5,10 +5,19 @@
 #s04 .shape{font-family:var(--font-mono);font-size:1.1em}
 #s04 .embedding-space{max-width:1100px;margin:0 auto}
 body.present #s04 .embedding-space>svg{max-height:380px}
+#s04 .primer-figure{width:100%;max-width:1000px;margin:0 auto 18px}
+body.present #s04 .primer-figure>svg{max-height:340px}
+#s04 .context-lines{font-size:1.25em;line-height:1.8}
+#s04 .context-lines p{margin:.25em 0}
+#s04 .context-word{color:var(--c-e);font-weight:700;border-bottom:3px solid currentColor}
+#s04 .context-clue{color:var(--c-k)}
+#s04 .primer-pair{display:grid;grid-template-columns:1fr 1fr;gap:35px}
+#s04 .primer-pair>div{min-width:0;border-top:2px solid var(--line);padding-top:15px}
 @media(max-width:820px){body:not(.present) #s04 .work-row{grid-template-columns:1fr}}
+@media(max-width:700px){body:not(.present) #s04 .primer-pair{grid-template-columns:1fr}}
 </style>
 <header class="sec-head"><span class="sec-num">04</span><div><p class="eyebrow">Characters are categorical symbols. An MLP needs rows of numbers.</p><h2>Characters to numbers</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>A one-hot vector identifies a character with one active coordinate. Any two different characters have zero dot product, so this geometry cannot express degrees of similarity. An embedding table gives each character a learned row of two numbers instead of a long one-hot vector. A lookup just selects that row; there is no averaging or arithmetic to do. During training, we constrained the first axis so vowels are positive and consonants are negative. The second axis was free to move wherever it helped lower the name-prediction loss. These labels make our toy table easier to read. Learned coordinates in larger models rarely have such simple names.</p></div>
+<div class="companion" data-kicker="For self-study"><p>A one-hot vector identifies a character with one active coordinate. Any two different characters have zero dot product. A network can still learn useful features from those IDs. An embedding layer makes that learned mapping explicit: each ID selects a trainable row. We will first draw those rows as points, then see how the same idea appears in other domains, and return to our name model.</p></div>
 <div class="frame" data-title="One-hot vectors identify characters" data-autobuild="off">
   <script type="text/x-notes">What is the dot product of two different one-hot vectors?
   Read the active columns, then use the two worksheets. Every product is zero for different characters.</script>
@@ -29,12 +38,34 @@ print(one_hot.shape)  # [1, 3, 27]</code></pre>
   <div class="card"><h3 class="card-title">Compare b with i</h3><div id="s04-dot2"></div></div>
   <div class="callout callout-note" data-build="1">One-hot dot products cannot tell us which characters behave similarly.</div>
 </div>
+<div class="frame" data-title="What should the numbers help us notice?" data-autobuild="off" data-embedding-primer>
+  <div class="context-lines"><p><span class="context-word">a</span> and <span class="context-word">i</span> are both vowels.</p><p><span class="context-word">b</span> is a consonant.</p></div>
+  <p>Could a learned representation make a useful distinction available to the next-character predictor?</p>
+  <p data-build="1">One-hot IDs give each character a separate identity. We will let training choose a short row of numbers for each character.</p>
+  <p class="small muted" data-build="1">A network can learn from one-hot inputs too. The limitation belongs to the raw one-hot geometry, not to every model that uses it.</p>
+</div>
+<div class="frame" data-title="Two numbers locate one character" data-autobuild="off" data-embedding-primer>
+  <div class="primer-figure" id="s04-point-one"></div>
+  <p><span class="p1-input">The vector for <strong>a</strong> is a row of two coordinates.</span> The plot shows the same two numbers as a point.</p>
+  <p class="small muted">This row comes from our saved character model. Values here are rounded. Next we will ask how training chose them.</p>
+</div>
+<div class="frame" data-title="Several characters share the same coordinate system" data-autobuild="off" data-embedding-primer>
+  <div class="primer-figure" id="s04-point-many"></div>
+  <p>Here <span class="p1-input"><strong>a</strong> and <strong>i</strong></span> are closer to each other than to <span class="p1-input"><strong>b</strong></span>.</p>
+  <p class="small muted">Our toy training constrains coordinate 1 to be positive for vowels and negative for consonants. This picture is not evidence that an unconstrained model discovered that rule.</p>
+</div>
 <div class="frame" data-title="Look up a learned row" data-autobuild="off">
   <script type="text/x-notes">Which embedding axis separates vowels from consonants?
   Read the column headers before the values. Highlight a, b, and i as the rows needed by the running examples.</script>
-  <div class="card"><h3 class="card-title">Selected rows of the trained table $\ve{E_{\text{tok}}}$</h3><div id="s04-embed"></div></div>
+  <div class="card"><h3 class="card-title">Embedding table: the same three vectors as rows</h3><div id="s04-embed"></div></div>
   <div data-build="1" data-math-guide><div class="p1-math">$$\pIn{e_c}=\pIn{E_{\text{tok}}}[\operatorname{id}(c)]$$</div><p class="p1-read"><span class="p1-input">$\pIn{E_{\text{tok}}}$ is the learned embedding table. $\pIn{e_c}$ is the row for character $c$.</span> The ID of $c$ selects a row; the square brackets mean “look up”.</p></div>
 </div>
+<div class="frame" data-title="Training gives the coordinates a job" data-autobuild="off" data-embedding-primer>
+  <div class="primer-figure" id="s04-learn-coordinates"></div>
+  <p>Start with initial coordinates. Make a prediction, measure its error, and update the table along with the predictor.</p>
+  <p>The objective is better next-character prediction. We do not directly tell every pair of characters how far apart to sit.</p>
+</div>
+<div class="companion"><p>Our vowel-sign constraint is an extra teaching choice. Ordinary embedding layers need no named axes or such constraint.</p></div>
 <div class="frame" data-title="PyTorch: a learned embedding lookup" data-autobuild="off">
   <pre class="pytorch" data-torch="embedding"><code>embedding = nn.Embedding(27, 2)
 e = embedding(ctx)
@@ -56,6 +87,115 @@ print(e.shape)  # [1, 3, 2]</code></pre>
   <div class="card"><h3 class="card-title">The context a a b</h3><div id="s04-shapes"></div></div>
   <div class="callout callout-key" data-build="1">Each ID selects one trainable row. Three IDs return three embedding rows.</div>
 </div>
+<div class="frame" data-title="A short detour: what is an embedding?" data-autobuild="off" data-embedding-primer>
+  <p>An <span class="p1-input"><strong>embedding</strong> is a numerical vector used to represent an object</span> so that a model can work with it.</p>
+  <div class="primer-pair"><div><h3>A character or word ID</h3><p>Select a stored row from a learned table.</p><p class="p1-input">One token ID gives one vector.</p></div><div><h3>A passage, image, or signal</h3><p>Run an encoder over the input to compute a vector.</p><p class="p1-input">Many input values can give one vector.</p></div></div>
+  <p data-build="1">A representation is useful when it preserves information the task needs. Its coordinates usually have no simple English names.</p>
+</div>
+<div class="frame" data-title="Word2vec: learn from the words around a word" data-autobuild="off" data-embedding-primer>
+  <div class="context-lines"><p>the <span class="context-word">king</span> <span class="context-clue">ruled the kingdom</span></p><p>the <span class="context-word">queen</span> <span class="context-clue">ruled the kingdom</span></p></div>
+  <p>King and queen can occur in similar surroundings. Across many sentences, these contexts supply a learning signal.</p>
+  <p data-build="1"><strong>Word2vec</strong> trains word vectors by predicting nearby words. Similar contexts can encourage related representations.</p>
+  <p class="small muted">These two sentences illustrate the idea; they are not enough to train useful word vectors.</p>
+</div>
+<div class="frame" data-title="Prediction is how the word vectors learn" data-autobuild="off" data-embedding-primer>
+  <div class="primer-figure" id="s04-word-learning"></div>
+  <p>The observed neighbour provides the target. Prediction errors update both the selected embedding row and the predictor.</p>
+  <p class="small muted">This direction is called skip-gram. Its context can include words on either side, unlike left-to-right name generation.</p>
+</div>
+<div class="frame" data-title="Four words, four points" data-autobuild="off" data-embedding-primer>
+  <div class="primer-figure" id="s04-word-points"></div>
+  <p>Each point represents one word vector: <span class="p1-input"><strong>man, woman, king, queen</strong></span>.</p>
+  <p class="small muted">A hand-drawn two-dimensional illustration, not measured Word2vec vectors. Real vectors have many coordinates, usually without named meanings.</p>
+</div>
+<div class="frame" data-title="Look for a similar direction, not just a nearby word" data-autobuild="off" data-embedding-primer>
+  <div class="primer-figure" id="s04-word-offsets"></div>
+  <p>The move from <span class="p1-input"><strong>man to king</strong></span> resembles the move from <span class="p1-input"><strong>woman to queen</strong></span>.</p>
+  <p>In a learned space, some relationships can appear as similar vector offsets. The diagram makes that pattern exact just to show the idea.</p>
+</div>
+<div class="frame" data-title="Start at woman and add the man-to-king move" data-autobuild="off" data-embedding-primer>
+  <div data-math-guide>
+    <div class="p1-math">$$\pIn{e_{\text{woman}}}+\pParam{\big(e_{\text{king}}-e_{\text{man}}\big)}\approx\pTarget{e_{\text{queen}}}$$</div>
+    <p class="p1-read"><span class="p1-input">Start at the vector for woman.</span> <span class="p1-param">Add the displacement from man to king.</span> <span class="p1-target">Look for a word vector near the result: queen.</span> The symbol ≈ means approximately.</p>
+  </div>
+  <p>This is the familiar <strong>king − man + woman ≈ queen</strong> example, read as a move through the vector space.</p>
+  <p class="small muted">This is an analogy to test after training, not Word2vec's training rule. It is not guaranteed for every model or word pair.</p>
+</div>
+<div class="frame" data-title="PyTorch: the same move with two-number toy vectors" data-autobuild="off" data-embedding-primer>
+  <pre class="pytorch" data-torch="word-analogy"><code>man, woman, king, queen = torch.tensor(
+    [[1., 1.], [3., 1.], [1., 3.], [3., 3.]])
+candidate = king - man + woman
+print(candidate)  # tensor([3., 3.])</code></pre>
+  <p>The move is <code>[0, 2]</code>. Starting at <code>[3, 1]</code> reaches <code>[3, 3]</code>: the toy queen vector.</p>
+  <p class="small muted">These are the diagram's invented coordinates. We have not trained Word2vec here; its learned vectors only approximately support some such relationships.</p>
+</div>
+<div class="companion" data-kicker="What this example does—and does not—say"><p>The <a href="https://arxiv.org/abs/1301.3781">original Word2vec paper</a> discusses the king–man+woman analogy. We use a hand-chosen 2D parallelogram to explain an offset, not to claim that a real model uses a “gender coordinate” or a “royalty coordinate.” Learned associations depend on the corpus and can also reflect its biases. Skip-gram predicts surrounding words from a center word; the other Word2vec architecture, CBOW, predicts a center word from surrounding words. Neither is trained by directly imposing this analogy.</p></div>
+<div class="frame" data-title="One word type still has one lookup vector" data-autobuild="off" data-embedding-primer>
+  <div class="context-lines"><p>She deposited money at the <span class="context-word">bank</span>.</p><p>They sat on the river <span class="context-word">bank</span>.</p></div>
+  <p>Ordinary Word2vec looks up the same stored <span class="p1-input"><strong>bank vector</strong></span> in both sentences.</p>
+  <p data-build="1">Its training contexts influence that row, but the lookup does not read the current sentence. Part 2 will make a representation depend on the context of this occurrence.</p>
+</div>
+<div class="frame" data-title="Documents: one vector for a whole passage" data-autobuild="off" data-embedding-primer>
+  <div class="primer-figure" id="s04-doc-flow"></div>
+  <p>A search system might compare a query about borrowing money with a passage about loan rates.</p>
+  <p>It needs an encoder trained for that comparison. The query and document vectors must live in a compatible space.</p>
+</div>
+<div class="frame" data-title="A simple document baseline averages its word rows" data-autobuild="off" data-embedding-primer>
+  <pre class="pytorch" data-torch="document-mean"><code>doc_embedding = nn.Embedding(4, 2)
+doc_ids = torch.tensor([[1, 2, 3]])  # bank lends money
+doc_rows = doc_embedding(doc_ids)
+e_doc = doc_rows.mean(dim=1)</code></pre>
+  <p><span class="p1-input">One passage with three word vectors, <code>[1, 3, 2]</code>, becomes one document vector, <code>[1, 2]</code>.</span></p>
+  <p>An average is a simple baseline. It gives “dog bites man” and “man bites dog” the same vector when they use the same lookup rows.</p>
+  <p class="small muted">This fresh, untrained table only shows the shapes. Learned document encoders can preserve more context and order; this mean is not a Doc2vec implementation.</p>
+</div>
+<div class="frame" data-title="Images: an encoder computes the vector from pixels" data-autobuild="off" data-embedding-primer>
+  <div class="primer-figure" id="s04-image-flow"></div>
+  <p><span class="p1-input">The image vector represents this image.</span> A new image can receive a vector by running the same encoder.</p>
+  <p class="small muted">This is the encoder's role, not a measured model output for this scene. A vocabulary lookup alone cannot encode arbitrary new images.</p>
+</div>
+<div class="frame" data-title="PyTorch: a tiny image encoder interface" data-autobuild="off" data-embedding-primer>
+  <pre class="pytorch" data-torch="image-encoder"><code>pixels = torch.tensor([[[[0., 1.], [1., 0.]]]])
+image_encoder = nn.Conv2d(1, 4, kernel_size=2)
+e_image = image_encoder(pixels).flatten(1)
+print(e_image.shape)  # [1, 4]</code></pre>
+  <p>The input is a separate <strong>2 × 2 grayscale toy</strong>, shaped <code>[batch, channels, height, width]</code>. Four learned filters produce four numbers.</p>
+  <p class="small muted">These fresh filters are untrained. They do not encode the photograph above. The vision lessons explain how filters or attention learn useful image features.</p>
+</div>
+<div class="frame" data-title="The image task determines which details matter" data-autobuild="off" data-embedding-primer>
+  <div class="primer-pair"><div><h3>Count the mugs</h3><p>The representation must preserve how many mugs appear.</p><p>Changing an orange mug to blue should not change the count.</p></div><div><h3>Identify the mug's colour</h3><p>The representation must preserve colour.</p><p>Ignoring that change would lose the information the task needs.</p></div></div>
+  <p>A useful similarity depends on the training objective. There is no single geometry that captures every possible task equally well.</p>
+</div>
+<div class="frame" data-title="Time series: one vector for an observed window" data-autobuild="off" data-embedding-primer>
+  <div class="primer-figure" id="s04-time-flow"></div>
+  <p>An encoder can represent a window of electricity use, movement, or temperature readings.</p>
+  <p><span class="p1-input">The window vector</span> can feed a classifier or a forecaster. For forecasting, encode only observations available at prediction time.</p>
+</div>
+<div class="frame" data-title="Which patterns should a time-series vector preserve?" data-autobuild="off" data-embedding-primer>
+  <div class="primer-figure" id="s04-time-patterns"></div>
+  <p>For recognizing repeating behaviour, A and B share a useful pattern despite their different levels. The isolated spike is different.</p>
+  <p class="small muted">These are synthetic signals. For a task about absolute consumption, their levels also matter. Training determines which distinctions the representation keeps.</p>
+</div>
+<div class="frame" data-title="PyTorch: a short signal becomes a vector" data-autobuild="off" data-embedding-primer>
+  <pre class="pytorch" data-torch="time-encoder"><code>signal = torch.tensor([[[0., 1., 0., -1., 0., 1.]]])
+time_encoder = nn.Conv1d(1, 3, kernel_size=3)
+e_time = time_encoder(signal).mean(dim=-1)
+print(e_time.shape)  # [1, 3]</code></pre>
+  <p><code>signal</code> is <code>[1, 1, 6]</code>: one example, one channel, six readings. Three filters give <code>[1, 3, 4]</code>; averaging over time gives <code>[1, 3]</code>.</p>
+  <p class="small muted">This fresh encoder only demonstrates the interface. Its numbers become useful after training for a suitable objective.</p>
+</div>
+<div class="frame" data-title="Equal vector lengths do not imply shared meanings" data-autobuild="off" data-embedding-primer>
+  <div class="primer-pair"><div><h3 class="p1-input">A word vector</h3><p>Coordinates reflect its word model and training data.</p></div><div><h3 class="p1-input">An image or signal vector</h3><p>Coordinates reflect that encoder and its task.</p></div></div>
+  <p>We cannot compare unrelated embeddings just because both contain, say, 128 numbers.</p>
+  <p data-build="1">Image–text retrieval needs training that aligns the two spaces. We will return to that idea in the CLIP lesson.</p>
+</div>
+<div class="frame" data-title="Back to aabid: predict the next character" data-autobuild="off" data-embedding-primer>
+  <div class="primer-figure" id="s04-back-to-name"></div>
+  <p>Our input is still <strong>a a b</strong>, and the observed next character is <strong>i</strong>. We learn the character table together with the MLP.</p>
+  <p><span class="p1-input">The lookup gives three rows of two numbers.</span> Next, we place them side by side to form the predictor's input.</p>
+</div>
+<div class="companion"><p>The name model learns its own character vectors. We are not inserting pretrained Word2vec vectors into it.</p></div>
+<div class="companion" data-kicker="Reading for the detour"><p>Sources: <a href="https://arxiv.org/abs/1301.3781">Mikolov et al., Word2vec architectures (2013)</a>; <a href="https://arxiv.org/abs/1310.4546">negative sampling and phrases (2013)</a>; <a href="https://arxiv.org/abs/1405.4053">Le and Mikolov, Paragraph Vector (2014)</a>; <a href="https://arxiv.org/abs/2002.05709">Chen et al., SimCLR (2020)</a>; <a href="https://arxiv.org/abs/2106.10466">Yue et al., TS2Vec (2022)</a>. The domain diagrams illustrate the role of a representation, not results from those models. The recurring scene is the existing generated teaching illustration documented in <a href="figures/vision-scene/README.md">the scene notes</a>.</p></div>
 <div class="companion after"><p>A lookup selects a learned row. Keep the axis labels beside the numbers so we can read what each column means.</p></div>
 <script>
 (function(){
@@ -72,6 +212,11 @@ print(e.shape)  # [1, 3, 2]</code></pre>
   const selected=['a','b','i'];
   AT.ui.table(selected.map(c=>M.E[M.vocab.indexOf(c)]),{axes:'e',rowLabels:selected,rowCls:'e',cornerLabel:'token',decimals:2,caption:'Axis 1 has a vowel sign constraint. Axis 2 is unconstrained.',into:S.querySelector('#s04-embed')});
   S.querySelector('#s04-space').appendChild(AT.part1Diagrams.embeddingSpace({highlight:selected}));
+  const primer=AT.embeddingPrimer;
+  [['point-one',()=>primer.points(false)],['point-many',()=>primer.points(true)],['learn-coordinates',primer.learning],
+   ['word-learning',primer.wordLearning],['word-points',()=>primer.wordMap(false)],['word-offsets',()=>primer.wordMap(true)],
+   ['doc-flow',primer.documentFlow],['image-flow',primer.imageFlow],['time-flow',primer.timeFlow],['time-patterns',primer.timePatterns],
+   ['back-to-name',primer.backToName]].forEach(([id,draw])=>S.querySelector('#s04-'+id).append(draw()));
   const fig=AT.ui.table(M.E,{axes:'e',rowLabels:M.vocab,rowCls:'e',cornerLabel:'token',decimals:2,caption:'All 27 trained embedding rows; displayed values are rounded.',into:S.querySelector('#s04-embed-full')});
   selected.forEach(c=>fig.rowEls[M.vocab.indexOf(c)].classList.add('is-hl'));
   const ids=['a','a','b'].map(c=>AT.mlp.stoi[c]),rows=AT.mlp.embed(ids);

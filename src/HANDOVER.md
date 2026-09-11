@@ -28,11 +28,25 @@ on separate frames. Part 1's role macros are scoped to its runtime; other parts 
 Use the equation-key convention in `PRESENT.md` for future revisions and `notation_test.mjs` to check this implementation.
 
 Part 1 also pairs each computational stage with a 2–5-line PyTorch snippet, a plain-language explanation, and tensor
-shapes. There are 25 executable snippets, including `nn.Embedding`, `nn.Linear`, the storage transpose, stable softmax,
+shapes. There are 29 executable snippets, including `nn.Embedding`, `nn.Linear`, the storage transpose, stable softmax,
 cross-entropy, autograd/SGD, and generation. Run `check_part1_torch.py` with PyTorch installed; it checks the literal HTML
 code and the matching download `../examples/part1_pytorch.py`, then reproduces the saved model's six probability rows.
 The classroom code starts fresh and illustrates one update; it does not claim to reproduce training from a single batch.
 The source data and JS computations are unchanged. `notation_test.mjs` locates its frames by title, not fragile indices.
+
+The embedding introduction now motivates learned rows before the table: one saved two-coordinate row becomes a point,
+then three points become table rows. The existing vowel-sign constraint is explicitly disclosed, not presented as a
+discovered semantic axis. A 22-frame addition in section 4 develops representations for words, documents, images, and
+time series, then returns to the original `a a b` character context. Word2vec is a six-frame, king/queen/man/woman detour:
+learning from surrounding words, a simple 2D analogy, and four lines of PyTorch. Its parallelogram uses invented numbers,
+not pretrained vectors or a claimed exact rule. Detailed skip-gram gradients and CBOW arithmetic were intentionally omitted
+at Nipun's request. Preserve this introductory pacing.
+
+`embedding-primer.js` supplies 11 editable SVG instances. Character coordinates come from `toy1.json`; analogy coordinates
+are hand-chosen; the domain encoders are schematic. The existing two-mug scene is embedded by `assemble.py` for offline use.
+`check_embedding_primer.mjs` checks coordinate consistency, accessibility, label bounds, full-size classroom diagrams,
+frame fit, and phone layout. The document/CNN/signal snippets create separate fresh models and do not load pretrained
+encoders or replace the character model. See `CLASSROOM_QA.md` for this checkpoint's verification.
 
 The shared-layout pass removes permanent presentation header/footer bars. A small **Controls** button (or **C**) opens
 navigation without changing the stage scale. Slides show one title without repeated section labels. The article's notation
@@ -51,7 +65,7 @@ Read this file, then `PRESENT.md` for the current layout/runtime contract and `C
 
 | Part | Editable sections | Data/runtime | Assembled output |
 |---|---|---|---|
-| 1: characters to prediction | `sections1/secNN.html` | `toy1.json`, `part1.js`, `part1-diagrams.js`, `part1.json` | `../part1.html` |
+| 1: characters to prediction | `sections1/secNN.html` | `toy1.json`, `part1.js`, `part1-diagrams.js`, `embedding-primer.js`, `part1.json` | `../part1.html` |
 | 2: self-attention | `sections/secNN.html` | `toy.json`, `part2.json` | `../attention.html` |
 | 3: learning and Transformer blocks | `sections3/secNN.html` | `toy3.json`, `part3.js`, `part3.json` | `../part3.html` |
 | 4: cross-attention and translation | `sections4/secNN.html` | `toy4.json`, `part4.js`, `part4.json` | `../part4.html` |

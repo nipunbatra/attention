@@ -145,8 +145,11 @@ def main():
         fixture = work / 'draft-source'
         fixture.mkdir()
         for filename in ['assemble.py', 'shell.html', 'katex-bundle.html', 'shared.js',
-                         'part1.json', 'part2.json', 'toy1.json', 'toy.json']:
+                         'part1.json', 'part2.json', 'toy1.json', 'toy.json', 'embedding-primer.js']:
             shutil.copy2(HERE / filename, fixture / filename)
+        scene_fixture = work / 'figures' / 'vision-scene'
+        scene_fixture.mkdir(parents=True)
+        shutil.copy2(ROOT / 'figures' / 'vision-scene' / 'two-mugs.jpg', scene_fixture / 'two-mugs.jpg')
         for dirname in ['sections1', 'sections']:
             shutil.copytree(HERE / dirname, fixture / dirname)
         draft = dict(configs[1], published=False)
