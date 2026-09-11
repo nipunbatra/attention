@@ -46,6 +46,7 @@ assert len({name for name, _ in parser.items}) == len(parser.items)
 snippet_names = [name for name, _ in parser.items]
 assert snippet_names.index("single-character-lookup") + 1 == snippet_names.index("embedding")
 assert snippet_names.index("model") + 1 == snippet_names.index("model-class")
+assert snippet_names.index("named-parameters") + 1 == snippet_names.index("optimizer")
 for name, source in parser.items:
     lines = source.splitlines()
     # Keep the class definition and its call intact, rather than split Python scope.
@@ -124,16 +125,16 @@ for name, source in parser.items:
     if name == "output":
         assert scope["z"].shape == (1, 27)
     if name == "model":
-        assert sum(p.numel() for p in scope["model"].parameters()) == 1169
+        assert sum(p.numel() for p in scope["model_seq"].parameters()) == 1169
     if name == "model-class":
-        sequential, object_model = scope["model"], scope["model_oop"]
+        sequential, object_model = scope["model_seq"], scope["model"]
         assert isinstance(object_model, torch.nn.Module)
         for layer in ("embedding", "hidden", "output"):
             assert getattr(object_model, layer) is scope[layer]
         params = tuple(sequential.parameters())
         assert tuple(map(id, params)) == tuple(map(id, object_model.parameters()))
         assert sum(p.numel() for p in object_model.parameters()) == 1169
-        torch.testing.assert_close(scope["z_oop"], scope["z"])
+        torch.testing.assert_close(scope["z"], scope["z_seq"])
         for inputs in (scope["ctx"], scope["X"]):
             torch.testing.assert_close(object_model(inputs), sequential(inputs))
         # Both forms must connect the loss to every shared parameter identically.
@@ -158,11 +159,26 @@ for name, source in parser.items:
     if name == "loss":
         expected = -scope["p"][0, scope["target"].item()].log()
         torch.testing.assert_close(scope["loss"], expected)
+    if name == "named-parameters":
+        assert isinstance(scope["model"], scope["NameMLP"])
+        named_params = dict(scope["model"].named_parameters())
+        expected_shapes = {"embedding.weight": (27, 2), "hidden.weight": (32, 6),
+                           "hidden.bias": (32,), "output.weight": (27, 32),
+                           "output.bias": (27,)}
+        assert {k: tuple(v.shape) for k, v in named_params.items()} == expected_shapes
+        assert tuple(named_params) == tuple(expected_shapes)
+        assert tuple(map(id, named_params.values())) == tuple(map(id, scope["model"].parameters()))
+        assert scope["NameMLP"].parameters is torch.nn.Module.parameters
+    if name == "optimizer":
+        actual_params = [p for group in scope["optimizer"].param_groups for p in group["params"]]
+        assert tuple(map(id, actual_params)) == tuple(map(id, scope["model"].parameters()))
+        assert len(actual_params) == 5 and sum(p.numel() for p in actual_params) == 1169
+        assert scope["model"].training
     if name == "training":
         params = list(scope["model"].parameters())
         assert all(p.grad is not None and torch.isfinite(p.grad).all() for p in params)
         assert any(not torch.equal(old, new) for old, new in zip(before_step, params))
-        torch.testing.assert_close(scope["model_oop"](scope["X"]), scope["model"](scope["X"]))
+        torch.testing.assert_close(scope["model_seq"](scope["X"]), scope["model"](scope["X"]))
     if name == "generation-loop":
         assert scope["ctx"].shape == (1, 3)
         assert len(scope["name"]) <= 18 and "-" not in scope["name"]
@@ -196,7 +212,7 @@ assert standalone.read_text() == exported, "Regenerate the standalone file from 
 # Fixture check: nn.Linear stores the transpose of the lecture's row-vector W.
 toy = json.loads((ROOT / "toy1.json").read_text())
 assert toy["activation"] == "relu"
-assert any(isinstance(layer, torch.nn.ReLU) for layer in scope["model"])
+assert any(isinstance(layer, torch.nn.ReLU) for layer in scope["model_seq"])
 model = scope["model"].double()
 embedding, hidden, output = scope["embedding"], scope["hidden"], scope["output"]
 with torch.no_grad():

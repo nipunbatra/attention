@@ -89,10 +89,10 @@ z = output(a1)
 print(z.shape)  # [1, 27]
 
 # model
-model = nn.Sequential(
+model_seq = nn.Sequential(
     embedding, nn.Flatten(1), hidden, nn.ReLU(), output
 )
-z = model(ctx)
+z_seq = model_seq(ctx)
 
 # model-class
 class NameMLP(nn.Module):
@@ -106,8 +106,8 @@ class NameMLP(nn.Module):
         a1 = torch.relu(self.hidden(a0))
         return self.output(a1)
 
-model_oop = NameMLP(embedding, hidden, output)
-z_oop = model_oop(ctx)  # [1, 27], same logits as before
+model = NameMLP(embedding, hidden, output)
+z = model(ctx)  # [1, 27], same logits as model_seq(ctx)
 
 # batch-shapes
 a0_batch = embedding(X[:4]).flatten(1)
@@ -129,8 +129,13 @@ p = weights / weights.sum(dim=-1, keepdim=True)
 loss = F.cross_entropy(z, target)
 print(loss.item())
 
+# named-parameters
+for name, param in model.named_parameters():
+    print(name, list(param.shape))
+
 # optimizer
-optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
+params = list(model.parameters())  # the five tensors above
+optimizer = torch.optim.SGD(params, lr=0.1)
 model.train()
 
 # training
@@ -141,8 +146,8 @@ loss.backward()
 optimizer.step()
 
 # gradients
-print(embedding.weight.grad.shape)  # [27, 2]
-print(hidden.weight.grad.shape)     # [32, 6]
+print(model.embedding.weight.grad.shape)  # [27, 2]
+print(model.hidden.weight.grad.shape)     # [32, 6]
 
 # sample-function
 @torch.no_grad()

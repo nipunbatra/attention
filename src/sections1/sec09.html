@@ -24,11 +24,21 @@
   <div class="card"><h3 class="card-title">All learned parameters $\pParam{\theta}$</h3><div id="s09-params"></div></div>
   <p class="p1-read"><span class="p1-input">$\pIn{E_{\text{tok}}}$ stores embedding rows.</span> <span class="p1-param">$\pParam{W_1,W_2}$ are weight matrices. $\pParam{b_1,b_2}$ are bias rows.</span></p>
 </div>
+<div class="frame" data-title="Where model.parameters() comes from" data-autobuild="off">
+  <p>Our <code>model</code> is a <code>NameMLP</code>, which inherits <code>parameters()</code> from <code>nn.Module</code>.</p>
+  <pre class="pytorch" data-torch="named-parameters"><code>for name, param in model.named_parameters():
+    print(name, list(param.shape))</code></pre>
+  <div id="s09-named-params"></div>
+  <p class="small">Assigning layers to <code>self</code> registers them. <code>parameters()</code> yields their tensors without names.</p>
+</div>
+<div class="companion"><p>The names describe paths inside the model object: <code>embedding.weight</code> belongs to <code>model.embedding</code>. In <code>NameMLP.__init__</code>, <code>self.embedding = embedding</code> registers the embedding layer as a child module, and the other assignments register the two linear layers. Each layer already stores its learned tensors as <code>nn.Parameter</code> objects. The inherited <code>parameters()</code> method visits the registered children and yields their parameter tensors. It does not create weights or return the temporary outputs <code>e</code>, <code>a0</code>, <code>a1</code>, or <code>z</code>. The shapes here follow PyTorch storage: linear weights are transposed relative to our equations, and biases are one-dimensional.</p></div>
 <div class="frame" data-title="PyTorch: choose the parameters to update" data-autobuild="off">
-  <pre class="pytorch" data-torch="optimizer"><code>optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
+  <p>Continue with <code>model</code>, the <code>NameMLP</code> object we inspected.</p>
+  <pre class="pytorch" data-torch="optimizer"><code>params = list(model.parameters())  # the five tensors above
+optimizer = torch.optim.SGD(params, lr=0.1)
 model.train()</code></pre>
-  <p><code>model.parameters()</code> includes the embedding table and both layers' weights and biases.</p>
-  <p><code>lr=0.1</code> sets the learning rate for this example. <code>model.train()</code> selects training mode; it does not update anything by itself.</p>
+  <p>The optimizer keeps references to these <strong>same five tensors</strong>. <code>lr=0.1</code> sets the learning rate.</p>
+  <p><code>model.train()</code> selects training mode. <code>optimizer.step()</code> will change the parameters after backpropagation.</p>
 </div>
 <div class="frame" data-title="PyTorch: one update on the six training rows" data-autobuild="off">
   <pre class="pytorch" data-torch="training"><code>optimizer.zero_grad()
@@ -41,8 +51,8 @@ optimizer.step()</code></pre>
   <p class="small muted">This is one illustrative update. Training the name model repeats updates over many batches from the training names.</p>
 </div>
 <div class="frame" data-title="PyTorch: inspect the parameter gradients" data-autobuild="off">
-  <pre class="pytorch" data-torch="gradients"><code>print(embedding.weight.grad.shape)  # [27, 2]
-print(hidden.weight.grad.shape)     # [32, 6]</code></pre>
+  <pre class="pytorch" data-torch="gradients"><code>print(model.embedding.weight.grad.shape)  # [27, 2]
+print(model.hidden.weight.grad.shape)     # [32, 6]</code></pre>
   <p>A parameter's <code>.grad</code> has the same shape as that parameter. It describes how changing each entry would affect the loss.</p>
   <p>The optimizer updates the tables and weights. The next forward pass recomputes <span class="p1-input"><code>e</code> and <code>a0</code></span>, <span class="p1-activation"><code>a1</code></span>, <span class="p1-score"><code>z</code></span>, and <span class="p1-prob"><code>p</code></span>.</p>
 </div>
@@ -74,6 +84,9 @@ print(hidden.weight.grad.shape)     # [32, 6]</code></pre>
   S.querySelector('#s09-embedding-gradients').appendChild(AT.part1Diagrams.embeddingGradients());
   const specs=[['$\\pIn{E_{\\text{tok}}}$',V+' × '+D,V*D],['$\\pParam{W_1}$',(M.w*D)+' × '+H,M.w*D*H],['$\\pParam{b_1}$','1 × '+H,H],['$\\pParam{W_2}$',H+' × '+V,H*V],['$\\pParam{b_2}$','1 × '+V,V]];
   AT.ui.table(specs.map(r=>[r[1],r[2]]),{cols:['shape','parameter count'],rowLabels:specs.map(r=>r[0]),cornerLabel:'parameter',decimals:0,footer:{label:'total',values:['',specs.reduce((a,r)=>a+r[2],0)]},into:S.querySelector('#s09-params')});
+  const namedSpecs=[['embedding.weight',[V,D]],['hidden.weight',[H,M.w*D]],['hidden.bias',[H]],['output.weight',[V,H]],['output.bias',[V]]];
+  const namedTable=AT.ui.table(namedSpecs.map(r=>['['+r[1].join(', ')+']']),{cols:[{label:'PyTorch shape',kind:'code'}],rowLabels:namedSpecs.map(r=>r[0]),cornerLabel:'parameter name',into:S.querySelector('#s09-named-params')});
+  namedTable.table.querySelectorAll('tbody th').forEach((cell,i)=>{cell.style.fontFamily='var(--font-mono)';cell.classList.add(i===0?'p1-input':'p1-param');});
   const curve=M.training_curve,host=S.querySelector('#s09-curve'),W=800,Ht=260,pad={l:58,r:20,t:18,b:42},xs=curve.map(d=>d.step),ys=curve.map(d=>d.loss),xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys),x=v=>pad.l+(v-xmin)/(xmax-xmin)*(W-pad.l-pad.r),y=v=>pad.t+(ymax-v)/(ymax-ymin)*(Ht-pad.t-pad.b),svg=AT.svg('svg',{viewBox:'0 0 '+W+' '+Ht,class:'curve',role:'img','aria-label':'Training loss curve'});
   svg.appendChild(AT.svg('line',{x1:pad.l,y1:pad.t,x2:pad.l,y2:Ht-pad.b,class:'axis'}));svg.appendChild(AT.svg('line',{x1:pad.l,y1:Ht-pad.b,x2:W-pad.r,y2:Ht-pad.b,class:'axis'}));
   svg.appendChild(AT.svg('path',{d:curve.map((d,i)=>(i?'L':'M')+x(d.step).toFixed(1)+' '+y(d.loss).toFixed(1)).join(' '),class:'line'}));

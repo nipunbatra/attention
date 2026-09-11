@@ -125,6 +125,20 @@ const probabilitySequence = await page.evaluate(() => {
   return {classroomFrames:1+frames.length, targetProbability:F.p[target], issues};
 });
 errors.push(...probabilitySequence.issues);
+const registration = await page.evaluate(() => {
+  const issues=[], M=window.__TOY__, V=M.vocab.length, D=M.d_model, H=M.d_h;
+  const expected=[['embedding.weight',[V,D]],['hidden.weight',[H,M.w*D]],['hidden.bias',[H]],['output.weight',[V,H]],['output.bias',[V]]]
+    .map(([name,shape])=>[name,'['+shape.join(', ')+']']);
+  const rows=[...document.querySelectorAll('#s09-named-params tbody tr')].map(row=>[row.querySelector('th').textContent,row.querySelector('td').textContent]);
+  if(JSON.stringify(rows)!==JSON.stringify(expected))issues.push('Named parameter output must show the five registered tensors with PyTorch shapes');
+  const frames=[...document.querySelectorAll('#s09 .frame')];
+  const inspection=frames.findIndex(f=>f.querySelector('[data-torch="named-parameters"]'));
+  if(inspection<0||!frames[inspection+1]?.querySelector('[data-torch="optimizer"]'))issues.push('Inspect the class parameters before passing them to SGD');
+  const explanation=frames[inspection]?.textContent||'';
+  if(!explanation.includes('nn.Module')||!explanation.includes('registers them'))issues.push('Explain inheritance and layer registration');
+  return {rows,issues};
+});
+errors.push(...registration.issues);
 // Include the fully revealed notation frames and the tables adjacent to them.
 for (const [section, title, name] of [
   ['s03', 'Writing the same question as a probability', 'probability'],
@@ -151,6 +165,8 @@ for (const [section, title, name] of [
   ['s08', 'One target probability', 'loss'],
   ['s08', 'Low target probability gives a large loss', 'loss-examples'],
   ['s09', 'What the optimizer changes', 'parameters'],
+  ['s09', 'Where model.parameters() comes from', 'named-parameters'],
+  ['s09', 'PyTorch: choose the parameters to update', 'optimizer'],
   ['s09', 'Only rows a and b receive embedding gradients', 'embedding-gradients'],
   ['s14', 'The same calculation at larger widths', 'window-shapes'],
   ['s16', 'The same model in symbols', 'summary'],
@@ -182,5 +198,5 @@ await page.emulateMedia({ media: 'print' });
 const printed = await page.evaluate(checkGuides);
 errors.push(...printed.issues.map(x => 'print: ' + x));
 await browser.close();
-console.log(JSON.stringify({ article, lookup, shapes, probabilitySequence, phone, print: printed, screenshots: out, errors }, null, 2));
+console.log(JSON.stringify({ article, lookup, shapes, probabilitySequence, registration, phone, print: printed, screenshots: out, errors }, null, 2));
 if (errors.length) process.exitCode = 1;
