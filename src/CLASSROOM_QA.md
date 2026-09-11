@@ -1,5 +1,23 @@
 # Classroom release checks
 
+## 2026-09-11: window and embedding dimensions together
+
+- Replaced the section 14 window-only sketch with two labelled controls and a coordinate-grid/concatenation diagram.
+  Both w and d change the wd input width, W1 shape, and weight count. Ellipses mark omitted coordinates and positions.
+  The diagram retains fixed hidden/output widths, labelled weights/biases, and says b1 is added before ReLU.
+- Added a synchronized five-row parameter worksheet including the embedding table and biases. It explains shared
+  token rows, separates the effects of w and d, and displays the total with thousands separators. Controls preserve
+  their state across frames and expose actual values to assistive technology rather than only preset indices.
+- The five-line PyTorch example and downloadable script create a separate model with w=5,d=4 and 1,671 parameters.
+  All 33 snippets execute. Independent PyTorch models verify all 25 choices, parameter counts, and batched outputs.
+  Existing saved-model forward, sampling, and 1,169-parameter gradient regressions still pass. No trained data changed.
+- Browser checks cover all 25 pairs, real tile counts and omissions, shape metadata, bounded SVG text, frame fit,
+  keyboard changes, retained state, and model immutability. The 84-instance SVG suite checks 2,680 bounded labels.
+  All 230 progressive states, 121 formulas, and 19 equation guides pass. Tables pass at reading, phone, and slide sizes.
+- Visually checked default and maximum settings, the full parameter worksheet, code, larger-width arithmetic, and
+  portrait slides. Phone controls fit. Print media retains the chosen width and five worksheet rows. No PDF regenerated.
+  Existing deck typography/colours and vanilla controls are retained. No dependency or shared presentation-style changes.
+
 ## 2026-09-11: concrete examples of training and generation inputs
 
 - Replaced the abstract "Many windows or one growing output" table with two diagrams. The training frame shows all

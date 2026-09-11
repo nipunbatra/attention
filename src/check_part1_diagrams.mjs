@@ -32,11 +32,11 @@ try {
     const fail = [], near = (a, b, tolerance = 1e-10) => Math.abs(a - b) <= tolerance;
     const check = (condition, description) => { if (!condition) fail.push(description); };
     const pretty = value => (Math.abs(value) < 0.005 ? 0 : value).toFixed(2).replace('-', '−');
-    const methods = { embeddingSpace: 0, lookupConcat: 2, learningGraph: 3, embeddingGradients: 0, trainingVsGeneration: 2, knownTrainingWindows: 0, chosenGenerationWindows: 0,
+    const methods = { windowDimensions: 0, embeddingSpace: 0, lookupConcat: 2, learningGraph: 3, embeddingGradients: 0, trainingVsGeneration: 2, knownTrainingWindows: 0, chosenGenerationWindows: 0,
       generationRun: 11, generationTrace: 0, generationChoice: 0, temperatureComparison: 0 };
     const toy = window.__TOY__, mlp = AT.mlp;
     const original = JSON.stringify(toy);
-    for (const id of ['s06-net', 's14-net']) {
+    for (const id of ['s06-net']) {
       const svg = document.querySelector(`#${id} svg`);
       check(!!svg, `${id}: missing network sketch`);
       if (!svg) continue;
@@ -313,6 +313,49 @@ try {
   });
   assert.deepEqual(errors, [], 'assembled Part I must have no browser errors');
   assert.deepEqual(report.failures, [], `Part I diagram regressions failed:\n${report.failures.join('\n')}`);
+  // Both architecture controls must change the diagram and the same worksheet.
+  const dimensions = await page.evaluate(() => {
+    const failures = [], original = JSON.stringify(__TOY__);
+    const windows = [1, 3, 5, 10, 100], widths = [1, 2, 4, 8, 256];
+    const set = (id, value) => {
+      const input = document.querySelector(id + ' input');
+      input.value = value; input.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+    AT.present.enter();
+    for (const [wi, w] of windows.entries()) for (const [di, d] of widths.entries()) {
+      set('#s14-window', wi); set('#s14-dimension', di);
+      const expected = [27*d, w*d*32, 32, 32*27, 27];
+      const counts = [...document.querySelectorAll('#s14-counts tbody tr')].map(row => Number(row.lastElementChild.textContent.replace(/,/g, '')));
+      if (JSON.stringify(counts) !== JSON.stringify(expected)) failures.push(`${w}/${d}: parameter rows disagree`);
+      if (Number(document.querySelector('#s14').dataset.parameterCount) !== expected.reduce((a,b)=>a+b,0)) failures.push(`${w}/${d}: total disagrees`);
+      const svg = document.querySelector('#s14-net svg');
+      if (Number(svg.dataset.inputWidth) !== w*d || Number(svg.dataset.window) !== w || Number(svg.dataset.dimension) !== d) failures.push(`${w}/${d}: diagram metadata differs`);
+      const indices = (n, limit) => n <= limit ? Array.from({length:n},(_,i)=>i+1) : [1,2,n-1,n];
+      const expectedCells = indices(w,5).flatMap(r=>indices(d,5).map(c=>`${r},${c}`));
+      if (JSON.stringify([...svg.querySelectorAll('[data-coordinate]')].map(el=>el.dataset.coordinate)) !== JSON.stringify(expectedCells)) failures.push(`${w}/${d}: wrong embedding tiles`);
+      if (JSON.stringify([...svg.querySelectorAll('[data-flat-coordinate]')].map(el=>Number(el.dataset.flatCoordinate))) !== JSON.stringify(indices(w*d,8))) failures.push(`${w}/${d}: wrong flattened tiles`);
+      const vb = svg.viewBox.baseVal;
+      for (const node of svg.querySelectorAll('text')) {
+        const b = node.getBBox();
+        if (b.x < -1 || b.y < -1 || b.x+b.width > vb.width+1 || b.y+b.height > vb.height+1) failures.push(`${w}/${d}: clipped label ${node.textContent}`);
+      }
+      for (const f of [1,2]) {
+        AT.present.go('s14', f, 0);
+        if (AT.present.fitReport().overflow) failures.push(`${w}/${d}: frame ${f} overflows`);
+      }
+    }
+    if (JSON.stringify(__TOY__) !== original) failures.push('Explorer mutated trained parameters');
+    AT.present.go('s14',1,0);
+    if (document.querySelector('#s14-window input').value !== '4' || document.querySelector('#s14-dimension input').value !== '4') failures.push('Navigation reset control values');
+    set('#s14-window',1);set('#s14-dimension',1);
+    return failures;
+  });
+  assert.deepEqual(dimensions, [], dimensions.join('\n'));
+  await page.locator('#s14-dimension input').focus();
+  await page.keyboard.press('ArrowRight');
+  assert.equal(await page.locator('#s14').getAttribute('data-dimension'), '4');
+  await page.keyboard.press('ArrowLeft');
+  assert.equal(await page.locator('#s14').getAttribute('data-dimension'), '2');
   // Actual classroom controls: play, pause on manual navigation, rewind, stop,
   // leave-frame cancellation, and reduced-motion support.
   await page.evaluate(() => { AT.present.enter(); AT.present.go('s10', 1, 0); });
@@ -345,7 +388,7 @@ try {
   await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
   await page.emulateMedia({ media: 'screen' });
   assert.equal(await page.locator('#s10-walk').evaluate(el => el.stepperApi.index()), 8);
-  console.log(`PASS: both MLP sketches show true layer widths and every omission; ${report.instances} Part I SVG instances, ${report.labels} bounded labels, ${report.markers} local marker references; all ${report.points} embedding coordinates, lookup values, model shapes, probability/loss, seeded generation, and boundary stop (seed ${report.boundarySeed}) agree with the live model.`);
+  console.log(`PASS: MLP widths and all 25 window/embedding choices; ${report.instances} Part I SVG instances, ${report.labels} bounded labels, ${report.markers} local marker references; all ${report.points} embedding coordinates, lookup values, model shapes, probability/loss, seeded generation, and boundary stop (seed ${report.boundarySeed}) agree with the live model.`);
 } finally {
   await browser.close();
 }

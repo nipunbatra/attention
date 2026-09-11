@@ -743,7 +743,72 @@
     return svg;
   }
 
+  // Architecture choices only: never resize or mutate the trained model.
+  function windowDimensions(options) {
+    options = options || {};
+    var w = options.w || M.w, d = options.d || M.d_model, hidden = M.d_h, vocab = M.vocab.length, n = w * d;
+    var inputLabel = n.toLocaleString('en-US');
+    var b = baseSvg('window-dimensions', w + ' embeddings of width ' + d + ' give ' + n + ' MLP inputs',
+      'Each tile is one coordinate. Concatenate ' + w + ' rows of ' + d + ' coordinates into one input row of width ' + n +
+      '. W1 has shape ' + n + ' by ' + hidden + '. The hidden layer still has ' + hidden + ' units and the output still has ' + vocab +
+      ' scores. Dots mark omitted coordinates or token slots. Shapes describe one example. These are architecture choices, not trained predictions.', 1100, 300);
+    var svg = b.svg;
+    svg.setAttribute('data-stage', '0');
+    svg.setAttribute('data-window', w);
+    svg.setAttribute('data-dimension', d);
+    svg.setAttribute('data-input-width', n);
+    add(svg, 'style', {}, '#' + b.id + ' .weight{fill:var(--c-q)} #' + b.id + ' .hidden{fill:var(--c-v)}');
+    function indices(count, limit) {
+      return count <= limit ? Array.from({ length: count }, function (_, i) { return i + 1; }) : [1, 2, null, count - 1, count];
+    }
+    var rows = indices(w, 5), cols = indices(d, 5);
+    text(svg, 152, 24, w + ' token slots', 'label blue');
+    text(svg, 152, 52, d + ' numbers per embedding', 'small blue');
+    var startY = 150 - rows.length * 17;
+    rows.forEach(function (r, ri) {
+      var y = startY + ri * 34;
+      if (r == null) { text(svg, 164, y + 13, '⋮', 'label'); return; }
+      text(svg, 56, y + 13, 'e' + String(r).replace(/\d/g, digit => '₀₁₂₃₄₅₆₇₈₉'[digit]), 'small blue', 'end');
+      cols.forEach(function (c, ci) {
+        var x = 75 + ci * 35;
+        if (c == null) { text(svg, x + 14, y + 13, '…', 'small'); return; }
+        var cell = box(svg, x, y, 27, 26, 'act', 3);
+        cell.setAttribute('data-coordinate', r + ',' + c);
+      });
+    });
+    text(svg, 152, 266, 'Each tile is one number.', 'small');
+    path(svg, 'M268 153 H360', 'blue-edge');
+    text(svg, 315, 124, 'join', 'small');
+    text(svg, 464, 75, 'a₀: ' + inputLabel + ' inputs', 'label blue');
+    var shown = indices(n, 8), left = 377, step = 174 / shown.length;
+    shown.forEach(function (c, i) {
+      if (c == null) { text(svg, left + i * step + step / 2, 153, '…', 'small'); return; }
+      var cell = box(svg, left + i * step, 138, step - 3, 30, 'act', 2);
+      cell.setAttribute('data-flat-coordinate', c);
+    });
+    text(svg, 464, 206, '1 × ' + inputLabel, 'label mono blue');
+    path(svg, 'M559 153 H735', 'edge');
+    text(svg, 646, 88, 'W₁', 'label weight');
+    text(svg, 646, 119, inputLabel + ' × ' + hidden, 'small mono weight');
+    box(svg, 744, 119, 124, 72, 'box');
+    text(svg, 806, 143, 'a₁', 'label hidden');
+    text(svg, 806, 171, '1 × ' + hidden, 'small mono hidden');
+    text(svg, 806, 75, 'ReLU', 'label hidden');
+    text(svg, 806, 231, '+ b₁: ' + hidden, 'small weight');
+    path(svg, 'M876 153 H960', 'edge');
+    text(svg, 919, 88, 'W₂', 'label weight');
+    text(svg, 919, 119, hidden + ' × ' + vocab, 'small mono weight');
+    box(svg, 968, 119, 124, 72, 'box');
+    text(svg, 1030, 143, 'z', 'label');
+    text(svg, 1030, 171, '1 × ' + vocab, 'small mono');
+    text(svg, 1030, 75, 'logits', 'label');
+    text(svg, 1030, 231, '+ b₂: ' + vocab, 'small weight');
+    text(svg, 786, 274, 'Add b₁ before ReLU. Add b₂ to logits.', 'small weight');
+    return svg;
+  }
+
   AT.part1Diagrams = {
+    windowDimensions: windowDimensions,
     annotateMLP: annotateMLP,
     embeddingSpace: embeddingSpace,
     lookupConcat: lookupConcat,

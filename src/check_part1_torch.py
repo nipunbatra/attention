@@ -137,7 +137,18 @@ for name, source in parser.items:
     if name == "word-output":
         assert scope["word_z"].shape == (1, 6)
     if name == "longer-window":
-        assert scope["wide_hidden"].weight.shape == (32, 10)
+        sized = scope["size_model"]
+        assert sized[0].weight.shape == (27, 4)
+        assert sized[2].weight.shape == (32, 20)
+        assert sum(p.numel() for p in sized.parameters()) == 1671
+        assert sized(torch.tensor([[0, 0, 1, 1, 2]])).shape == (1, 27)
+        for w in [1, 3, 5, 10, 100]:
+            for d in [1, 2, 4, 8, 256]:
+                candidate = torch.nn.Sequential(
+                    torch.nn.Embedding(27, d), torch.nn.Flatten(1),
+                    torch.nn.Linear(w * d, 32), torch.nn.ReLU(), torch.nn.Linear(32, 27))
+                assert sum(p.numel() for p in candidate.parameters()) == 27*d + w*d*32 + 32 + 32*27 + 27
+                assert candidate(torch.zeros((2, w), dtype=torch.long)).shape == (2, 27)
     print("PASS", name)
 
 standalone = ROOT.parent / "examples" / "part1_pytorch.py"

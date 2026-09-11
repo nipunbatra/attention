@@ -127,7 +127,7 @@ for (const [section, title, name] of [
   ['s08', 'Low target probability gives a large loss', 'loss-examples'],
   ['s09', 'What the optimizer changes', 'parameters'],
   ['s09', 'Only rows a and b receive embedding gradients', 'embedding-gradients'],
-  ['s14', 'A larger window makes a larger weight matrix', 'window-shapes'],
+  ['s14', 'The same calculation at larger widths', 'window-shapes'],
   ['s16', 'The same model in symbols', 'summary'],
   ['s16', 'Notation: from tokens to the MLP input', 'input-notation'],
   ['s16', 'Notation: from the input to a probability', 'output-notation']

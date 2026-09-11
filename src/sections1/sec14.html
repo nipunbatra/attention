@@ -1,44 +1,84 @@
 <section id="s14" class="sec" data-title="The context keeps growing" data-lit="">
 <style>
-#s14 .net-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(260px,.8fr);gap:24px;align-items:center}
-#s14 .readout{font-family:var(--font-mono);padding:14px;background:var(--paper);border-radius:var(--radius-s);line-height:1.7}
+#s14 .dimension-controls{display:grid;grid-template-columns:1fr 1fr;gap:14px 32px;margin-bottom:8px}
+#s14 .dimension-controls .slider{display:grid;grid-template-columns:1fr auto;gap:5px 14px}
+#s14 .dimension-controls .slider-label{grid-column:1 / -1;color:var(--c-e)}
+#s14 .dimension-controls input{width:100%;min-width:0}
+#s14 .dimension-result{font-family:var(--font-mono);font-variant-numeric:tabular-nums;line-height:1.45;margin:6px 0}
+#s14 .dt tbody th{color:var(--c-q)}
 #s14 .big-q{font-size:clamp(24px,3vw,38px);line-height:1.25;text-wrap:balance;margin:10px 0 20px}
-@media(max-width:820px){body:not(.present) #s14 .net-grid{grid-template-columns:1fr}}
+@media(max-width:640px){body:not(.present) #s14 .dimension-controls{grid-template-columns:1fr}}
 </style>
-<header class="sec-head"><span class="sec-num">14</span><div><p class="eyebrow">The shape of the first weight matrix fixes how many context slots we can concatenate.</p><h2>The context keeps growing</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>Our name model always receives exactly three embeddings. A larger window makes a longer concatenated row, so the first weight matrix must change shape too. Try increasing the window in the sketch while watching the embedding and hidden widths. At realistic widths, this becomes expensive: a hundred token slots, 256 coordinates per embedding, and 1,024 hidden units need about 26 million weights in the first layer alone. Even then, the number of slots is fixed. A natural-language prefix keeps growing. In Part 2, we need a way for a token to read from a variable amount of earlier context.</p></div>
-<div class="frame" data-title="The first layer grows with the window" data-autobuild="off">
-  <script type="text/x-notes">What changes in W1 when the window grows from three to five?
-  Move through the four marked window sizes. Read the shape and weight count after each change.</script>
-  <div class="card"><div class="net-grid"><div><div id="s14-slider"></div><div id="s14-net"></div></div><div><p class="readout" id="s14-read"></p></div></div></div>
+<header class="sec-head"><span class="sec-num">14</span><div><p class="eyebrow">Window size and embedding width determine the MLP input width.</p><h2>The context keeps growing</h2></div></header>
+<div class="companion" data-kicker="For self-study"><p>Our trained name model uses three token slots, with two numbers per embedding. Concatenation gives six inputs. Here we explore other architecture choices. Increasing the window adds more embeddings. Increasing the embedding width adds more numbers to every embedding. Both enlarge the first weight matrix. Only embedding width changes the size of the embedding table, because that table has one shared row per vocabulary token, not one row per position. None of these controls change the trained model used earlier.</p></div>
+<div class="frame" data-title="Window size and embedding width both matter" data-autobuild="off">
+  <script type="text/x-notes">What happens if we keep three token slots but double the numbers in each embedding?
+  First change w from 3 to 5 while keeping d at 2. Then change d from 2 to 4. Trace the tiles into the single concatenated row. The leading 1 in activation shapes means one example. W1 changes, while the hidden and vocabulary widths stay fixed. Dots mark omitted rows or coordinates, not extra neurons. These controls explore shapes only.</script>
+  <div class="dimension-controls" data-keep-state><div id="s14-window"></div><div id="s14-dimension"></div></div>
+  <div class="teaching-diagram" id="s14-net"></div>
+  <div id="s14-read" class="dimension-result" role="status" aria-live="polite" aria-atomic="true"></div>
+  <p class="p1-read">Shapes show <strong>one example</strong>. Hidden width stays 32, vocabulary size stays 27.</p>
 </div>
-<div class="frame" data-title="PyTorch: a longer window needs a wider first layer" data-autobuild="off">
-  <pre class="pytorch" data-torch="longer-window"><code>new_w = 5
-wide_hidden = nn.Linear(new_w * 2, 32)
-print(wide_hidden.weight.shape)  # [32, 10]</code></pre>
-  <p>Five embeddings with two coordinates each make ten inputs. PyTorch stores one row per hidden unit, so this weight tensor is <code>[32, 10]</code>.</p>
-  <p>This creates a new layer with fresh parameters. The old <code>hidden</code> layer still expects six inputs.</p>
+<div class="frame" data-title="Which parameter counts change?" data-autobuild="off">
+  <script type="text/x-notes">Does using a token at more positions add rows to the embedding table?
+  No. Every occurrence uses the same table. w changes W1. d changes E_tok and W1. The rest stays fixed because we kept hidden width 32 and vocabulary size 27. Bias counts do not multiply by the number of examples.</script>
+  <p id="s14-selected" class="p1-input"></p>
+  <div id="s14-counts"></div>
+  <p id="s14-total" class="dimension-result"></p>
+  <p class="p1-read">Larger <strong>w</strong> changes <span class="p1-param">W₁</span>. Larger <strong>d</strong> changes <span class="p1-param">$E_{\mathrm{tok}}$ and W₁</span>. Token positions share the embedding table.</p>
 </div>
-<div class="frame" data-title="A larger window makes a larger weight matrix" data-autobuild="off">
-  <div class="card"><p class="readout" id="s14-large"></p></div>
-  <p class="p1-read">$w$ counts context tokens. $d$ counts numbers per embedding. $d_h$ counts hidden units. <span class="p1-param">$\pParam{W_1}$ has $wd$ input rows and $d_h$ output columns.</span></p>
-  <div class="callout callout-key" data-build="1">Change the window, and we must change the network.</div>
+<div class="frame" data-title="PyTorch: both choices determine the layer sizes" data-autobuild="off">
+  <pre class="pytorch" data-torch="longer-window"><code>new_w, new_d = 5, 4
+size_model = nn.Sequential(
+    nn.Embedding(27, new_d), nn.Flatten(1),
+    nn.Linear(new_w * new_d, 32), nn.ReLU(), nn.Linear(32, 27))
+print(sum(p.numel() for p in size_model.parameters()))  # 1671</code></pre>
+  <p><span class="p1-input">5 embeddings × 4 numbers = 20 inputs per example.</span> <span class="p1-param">The table is [27, 4]. W₁ is [20, 32].</span></p>
+  <p class="p1-param">PyTorch stores the first linear weight as [32, 20], the transpose of our W₁. Each linear layer includes a bias.</p>
+  <p>This example creates a <strong>new, untrained model</strong>. The earlier trained model still uses w = 3 and d = 2.</p>
+</div>
+<div class="frame" data-title="The same calculation at larger widths" data-autobuild="off">
+  <p><span class="p1-input">w = 100 token slots; d = 256 numbers per embedding.</span><br><span class="p1-activation">Hidden width $d_h$ = 1,024 units.</span></p>
+  <div data-math-guide>
+    <div class="p1-math">$$\underbrace{\pIn{(w d)}}_{\text{input features}}\times\underbrace{\pAct{d_h}}_{\text{hidden units}}=\pIn{(100\times256)}\times\pAct{1{,}024}=26{,}214{,}400$$</div>
+    <p class="p1-read"><span class="p1-input">w d is the length of the concatenated input.</span> <span class="p1-activation">$d_h$ is the number of hidden units, each connected to every input.</span></p>
+  </div>
+  <p class="p1-param">That is about 26 million weights in W₁ alone. Its 1,024 biases and the other parameters are extra.</p>
+  <p>The model still expects exactly 100 input slots.</p>
 </div>
 <div class="frame" data-title="A question for attention" data-autobuild="off">
-  <script type="text/x-notes">How should we represent an arbitrarily long context?
-  Give students time to suggest an approach before revealing the link. Part 2 uses content-dependent reads from earlier tokens.</script>
-  <div class="card"><p class="big-q">How should we represent arbitrarily long context?</p><p data-build="1">A fixed concatenation cannot grow without changing the first layer.</p><p data-build="2"><a class="btn btn-primary" href="attention.html">Continue to Part 2: Self-attention</a></p></div>
+  <script type="text/x-notes">Can more context change what a token reads without changing the learned matrix shapes?
+  Part 2 uses content-dependent reads from earlier tokens. Variable length does not mean unlimited computation or memory.</script>
+  <div class="card"><p class="big-q">Can we read more context without changing the learned matrix shapes?</p><p data-build="1">A fixed concatenation needs a wider first layer whenever we add input slots.</p><p data-build="2"><a class="btn btn-primary" href="attention.html">Continue to Part 2: Self-attention</a></p></div>
 </div>
-<div class="companion after"><p>A larger window lets us look further back and requires a larger matrix. It still imposes a fixed limit on the context.</p></div>
+<div class="companion after"><p>A larger window lets us look further back and requires a larger matrix. It still imposes a fixed limit on the context. Attention lets the number of source positions vary while keeping the learned projection shapes fixed, though computation, memory, and positional schemes still impose practical limits.</p></div>
 <script>
 (function(){
-  const S=document.getElementById('s14'),M=window.__TOY__,presets=[3,5,10,100],read=S.querySelector('#s14-read');
-  const net=AT.netSketch(S.querySelector('#s14-net'),{inputs:presets[0],hidden:M.d_h,outputs:M.vocab,highlightOutput:'i',collapseAbove:8,inputCaption:w=>w+' embedding slots',hiddenCaption:M.d_h+' hidden',outputCaption:M.vocab.length+' outputs'});
-  function draw(index){const w=presets[index],inputs=w*M.d_model,weights=inputs*M.d_h;net.setInputs(w);read.innerHTML='Context tokens: $w = '+w+'$<br><span class="p1-param">Weights $\\pParam{W_1}$: '+inputs+' × '+M.d_h+'</span><br>'+AT.fmt(weights,0)+' weights';AT.renderMath(read);}
-  const slider=AT.ui.slider({label:'Window choice',min:0,max:presets.length-1,step:1,value:0,format:i=>'w = '+presets[i],onInput:i=>draw(i),into:S.querySelector('#s14-slider')});draw(0);
-  const realW=100,realD=256,realH=1024,realCount=realW*realD*realH;
-  S.querySelector('#s14-large').innerHTML='If $d = '+realD+'$, $d_h = '+realH+'$, and $w = '+realW+'$, then $\\pParam{W_1}$ alone has '+AT.fmt(realCount,0)+' weights, about '+AT.fmt(realCount/1000000,0)+' million.';AT.renderMath(S.querySelector('#s14-large'));
-  if(AT.present&&AT.present.on){const sync=st=>{if(!st.frame||st.frame.id!=='s14'||st.frame.index!==0)return;const i=Math.min(st.build,presets.length-1);if(slider.value()!==i)slider.setValue(i,true);};AT.present.on('frame',sync);AT.present.on('build',sync);}
+  const S=document.getElementById('s14'),M=window.__TOY__,windows=[1,3,5,10,100],dimensions=[1,2,4,8,256];
+  let w=M.w,d=M.d_model;
+  const count=n=>n.toLocaleString('en-US');
+  function draw(){
+    const n=w*d,h=M.d_h,v=M.vocab.length,first=n*h,total=v*d+first+h+h*v+v;
+    S.querySelector('#s14-net').replaceChildren(AT.part1Diagrams.windowDimensions({w,d}));
+    S.querySelector('#s14-read').innerHTML='<span class="p1-input">'+w+' embeddings × '+d+' numbers = '+count(n)+' inputs</span><br><span class="p1-param">W₁: ('+w+' × '+d+') × '+h+' = '+count(first)+' weights</span>';
+    S.querySelector('#s14-selected').textContent='Using w = '+w+' token slots and d = '+d+' numbers per embedding.';
+    S.querySelector('#s14-counts').replaceChildren();
+    AT.ui.table([
+      ['27 × d',v+' × '+d,count(v*d)],
+      ['(w × d) × 32',count(n)+' × '+h,count(first)],
+      ['32',String(h),String(h)],
+      ['32 × 27',h+' × '+v,count(h*v)],
+      ['27',String(v),String(v)]
+    ],{cols:['formula','calculation','parameters'],rowLabels:['$E_{\\mathrm{tok}}$','W₁','b₁','W₂','b₂'],cornerLabel:'learned object',into:S.querySelector('#s14-counts')});
+    S.querySelectorAll('#s14-counts tbody th').forEach(el=>el.classList.add('p1-param'));
+    S.querySelector('#s14-total').textContent='Total: '+[v*d,first,h,h*v,v].map(count).join(' + ')+' = '+count(total);
+    S.querySelector('#s14-window input').setAttribute('aria-valuetext',w+' token slots');
+    S.querySelector('#s14-dimension input').setAttribute('aria-valuetext',d+' numbers per embedding');
+    S.dataset.window=w;S.dataset.dimension=d;S.dataset.parameterCount=total;
+  }
+  AT.ui.slider({label:'Window w: token slots',min:0,max:windows.length-1,step:1,value:windows.indexOf(w),format:i=>'w = '+windows[i],onInput:i=>{w=windows[i];draw();},into:S.querySelector('#s14-window')});
+  AT.ui.slider({label:'Embedding d: numbers per token',min:0,max:dimensions.length-1,step:1,value:dimensions.indexOf(d),format:i=>'d = '+dimensions[i],onInput:i=>{d=dimensions[i];draw();},into:S.querySelector('#s14-dimension')});
+  draw();
 })();
 </script>
 </section>

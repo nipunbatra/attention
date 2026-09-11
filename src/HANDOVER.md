@@ -10,6 +10,14 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+Section 14 now explores both window w and embedding width d. The coordinate-grid diagram concatenates w rows of d
+numbers into one wd-wide activation, with explicit W1, hidden, W2, logits, and bias labels. Both controls keep their
+state across navigation. The following worksheet recalculates all five parameter groups and their total. w affects
+W1; d affects E_tok and W1. Hidden/vocabulary widths stay 32/27. These are architecture choices, never changes to the
+saved trained model. A five-line PyTorch example uses w=5,d=4 and counts 1,671 parameters. The larger-width worked
+example retains (100*256)*1024 = 26,214,400 W1 weights. Tests cover all 25 control pairs, shapes, counts, bounded labels,
+keyboard controls, retained state, and trained-model immutability. There are still 33 snippets and 230 progressive states.
+
 The abstract section 11 "Many windows or one growing output" table is replaced by concrete training and generation
 frames. Training shows all six contexts/targets from aabid, six independent score rows, and one shared MLP batch.
 The batch code now follows that picture and names both axes of X/logits plus the six target IDs in y. The generation

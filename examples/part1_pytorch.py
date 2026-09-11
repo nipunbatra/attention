@@ -177,9 +177,11 @@ word_a1 = torch.relu(word_hidden(word_e.flatten(1)))
 word_z = word_output(word_a1)
 
 # longer-window
-new_w = 5
-wide_hidden = nn.Linear(new_w * 2, 32)
-print(wide_hidden.weight.shape)  # [32, 10]
+new_w, new_d = 5, 4
+size_model = nn.Sequential(
+    nn.Embedding(27, new_d), nn.Flatten(1),
+    nn.Linear(new_w * new_d, 32), nn.ReLU(), nn.Linear(32, 27))
+print(sum(p.numel() for p in size_model.parameters()))  # 1671
 
 # forward-recap
 e = embedding(ctx)
