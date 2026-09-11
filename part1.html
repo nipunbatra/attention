@@ -5773,7 +5773,7 @@ body.present #s12 .token-modes [aria-pressed=true]{background:var(--ink);color:v
 body.present #s12 .tok-row:not(.is-active){display:none}
 </style>
 <header class="sec-head"><span class="sec-num">12</span><div><p class="eyebrow">A token need not be a character. We still ask the model to predict the next one.</p><h2>What should a token be?</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>A character vocabulary is small and can represent unfamiliar strings, but it turns ordinary sentences into long sequences. Whole words give shorter, readable sequences. Their vocabulary grows quickly, though, and unseen words collapse to an unknown token. Subwords offer a compromise: common pieces can be reused inside both frequent and rare words. Try the three simple tokenizers below on the same text. Each reports the sequence length and the number of distinct tokens in that sample. The subword merges illustrate the idea; they do not come from a trained tokenizer. Later, attention will compare pairs of tokens, so the sequence length $T$ will strongly affect its cost.</p></div>
+<div class="companion" data-kicker="For self-study"><p>A character vocabulary is small and can represent unfamiliar strings, but it turns ordinary sentences into long sequences. Whole words give shorter, readable sequences. Their vocabulary grows quickly, though, and unseen words collapse to an unknown token. Subwords offer a compromise: common pieces can be reused inside both frequent and rare words. Try the three simple tokenizers below on the same text. Each reports the sequence length and the number of distinct tokens in that sample. The subword merges illustrate the idea; they do not come from a trained tokenizer.</p></div>
 <div class="frame" data-title="Three token sizes" data-autobuild="off">
   <script type="text/x-notes">What becomes larger when tokens become smaller?
   Compare vocabulary coverage with sequence length. Keep the next-token objective fixed.</script>
@@ -5795,7 +5795,6 @@ word_tokens = text.split()</code></pre>
   <script type="text/x-notes">Why can a word tokenizer lose the difference between unfamiliar words?
   Reveal the trade-off table, then show three distinct strings mapping to the same unknown token.</script>
   <div class="card"><h3 class="card-title">The trade-off</h3><div id="s12-trade"></div></div>
-  <div class="callout callout-note" data-build="1">Attention cost will depend on $T$, the number of tokens in the sequence.</div>
 </div>
 <div class="frame" data-title="An unknown word can lose its identity" data-autobuild="off">
   <div class="card"><div id="s12-unk"></div></div>
@@ -5811,7 +5810,7 @@ word_tokens = text.split()</code></pre>
   function draw(){AT.clear(out);const text=input.value;out.appendChild(row('Characters',AT.mlp.tokenizeChars(text)));out.appendChild(row('Words',AT.mlp.tokenizeWords(text)));out.appendChild(row('Illustrative subwords',AT.mlp.tokenizeSubwords(text)));selectUnit(activeUnit);}
   S.querySelectorAll('[data-unit]').forEach(btn=>btn.addEventListener('click',()=>selectUnit(+btn.dataset.unit)));
   input.addEventListener('input',draw);draw();
-  AT.ui.table([['small','long','strong coverage'],['moderate','moderate','reuses pieces'],['large','short','unseen words need handling']],{cols:['vocabulary','sequence T','unseen text'],rowLabels:['character','subword','word'],cornerLabel:'unit',into:S.querySelector('#s12-trade')});
+  AT.ui.table([['small','long','strong coverage'],['moderate','moderate','reuses pieces'],['large','short','unseen words need handling']],{cols:['vocabulary','sequence length','unseen text'],rowLabels:['character','subword','word'],cornerLabel:'unit',into:S.querySelector('#s12-trade')});
   const unknown=['hyperhappiness','electrojoy','nanobotany'],mapped=AT.mlp.tokenizeWords(unknown.join(' '),{unknown:true});
   AT.ui.table(unknown.map((word,i)=>[mapped[i]]),{cols:['word-token output'],rowLabels:unknown,cornerLabel:'test string',caption:'This small illustrative word vocabulary maps each unseen word to the same token.',into:S.querySelector('#s12-unk')});
 })();

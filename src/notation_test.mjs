@@ -146,6 +146,7 @@ const temperatureSequence = await page.evaluate(() => {
   return {articleArithmeticVisible:table.getBoundingClientRect().height>0,issues};
 });
 errors.push(...temperatureSequence.issues);
+if(await page.evaluate(()=>/attention/i.test(document.querySelector('#s12').textContent)))errors.push('Tokenization section must not introduce attention');
 const generationLoop = await page.evaluate(() => {
   const root=document.getElementById('s10-loop-code'), issues=[];
   const original=JSON.stringify(__TOY__), trace=AT.part1Diagrams.generationExample().trace;
@@ -219,6 +220,7 @@ for (const [section, title, name] of [
   ['s10', 'Temperature changes the sampling probabilities', 'temperature-bars'],
   ['s10', 'Divide the logits by temperature, then apply softmax', 'temperature-guide'],
   ['s10', 'PyTorch: choose the next character', 'sampling-code'],
+  ['s12', 'Coverage and sequence length', 'tokenization-tradeoff'],
   ['s14', 'The same calculation at larger widths', 'window-shapes'],
   ['s16', 'The same model in symbols', 'summary'],
   ['s16', 'Notation: from tokens to the MLP input', 'input-notation'],
