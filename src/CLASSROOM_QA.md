@@ -1,5 +1,19 @@
 # Classroom release checks
 
+## 2026-09-11: examples versus features in tensor shapes
+
+- Split the section 6 shape table into activation and parameter frames. The activation table explicitly labels rows
+  as examples and columns as input features, hidden activations, or vocabulary scores. Each entire context window is
+  one example. Matching symbol/prose colours remain intact. The parameter frame distinguishes feature axes from the
+  batch dimension and explains shared bias rows and PyTorch broadcasting.
+- Added a five-line, four-example forward pass and synchronized the standalone download. All 32 snippets execute;
+  [4, 6], [4, 32], and [4, 27] match the displayed shapes. Every batched output agrees with a separate forward pass.
+  Saved probabilities and the NumPy/autograd gradient checks still pass; model parameters were not changed.
+- All 223 progressive states and 122 unique formulas pass, with no overflow or nested scrolling. The table audit
+  passes 36 reading, 36 phone, and 27 classroom tables. Sixteen equation guides pass article/print colour checks.
+  Visually inspected the activation table, parameter table, and batch-code frames. Eight isolated metadata builds pass.
+- Only Part 1 content, checks, and its download changed. No shared runtime, other lesson, or PDF changes.
+
 ## 2026-09-11: ReLU and visible weights/biases
 
 - Switched Part 1 consistently from tanh to ReLU, including NumPy forward/backward, JS runtime, worksheets, diagram,

@@ -93,6 +93,13 @@ model = nn.Sequential(
 )
 z = model(ctx)
 
+# batch-shapes
+a0_batch = embedding(X[:4]).flatten(1)
+a1_batch = torch.relu(hidden(a0_batch))
+z_batch = output(a1_batch)
+print(a0_batch.shape, a1_batch.shape, z_batch.shape)
+# [4, 6], [4, 32], [4, 27]
+
 # softmax
 p = z.softmax(dim=-1)
 print(p.shape, p.sum(dim=-1))  # [1, 27], one total

@@ -74,7 +74,26 @@ z = model(ctx)</code></pre>
   <p class="p1-score">The model returns logits. We apply softmax separately when we want probabilities.</p>
 </div>
 <div class="frame" data-title="Check the shapes before multiplying" data-autobuild="off">
+  <p>For <span class="p1-input">$\pIn{a_0}$</span>, <span class="p1-activation">$\pAct{a_1}$</span>, and <span class="p1-score">$\pScore{z}$</span>: <strong>rows count examples; columns count numbers per example.</strong></p>
+  <p>Our whole window <strong>a a b</strong> is <strong>one example</strong>, so each array has one row.</p>
   <div class="card"><div id="s06-shapes"></div></div>
+  <p>With <strong>B examples</strong>, the shapes become <code>[B, 6]</code>, <code>[B, 32]</code>, and <code>[B, 27]</code>. The feature and vocabulary widths stay the same.</p>
+</div>
+<div class="frame" data-title="Parameters are shared across examples" data-autobuild="off">
+  <p class="p1-param">Weight-matrix axes count input and output features—not examples.</p>
+  <div class="card"><div id="s06-parameter-shapes"></div></div>
+  <p class="p1-param">A bias row's leading 1 does <strong>not</strong> count examples. Its offsets are shared.</p>
+  <p>PyTorch stores biases as <code>[32]</code> and <code>[27]</code>. <strong>Broadcasting</strong> adds them to every row.</p>
+</div>
+<div class="frame" data-title="PyTorch: four examples, the same feature widths" data-autobuild="off">
+  <p>Take the first four context windows from our training array <code>X</code>. Each window becomes one row.</p>
+  <pre class="pytorch" data-torch="batch-shapes"><code>a0_batch = embedding(X[:4]).flatten(1)
+a1_batch = torch.relu(hidden(a0_batch))
+z_batch = output(a1_batch)
+print(a0_batch.shape, a1_batch.shape, z_batch.shape)
+# [4, 6], [4, 32], [4, 27]</code></pre>
+  <p><span class="p1-input">4 rows of 6 input features.</span> <span class="p1-activation">4 rows of 32 hidden activations.</span> <span class="p1-score">4 rows of 27 vocabulary scores.</span></p>
+  <p>Each row is processed independently using the <span class="p1-param">same weights and biases</span>. We changed the number of examples, not the network.</p>
 </div>
 <div class="frame" data-title="One hidden unit" data-autobuild="off">
   <script type="text/x-notes">What does one hidden unit read?
@@ -92,11 +111,16 @@ z = model(ctx)</code></pre>
 (function(){
   const S=document.getElementById('s06'),M=window.__TOY__,ids=['a','a','b'].map(c=>AT.mlp.stoi[c]),F=AT.mlp.forward(ids);
   AT.part1Diagrams.annotateMLP(AT.netSketch(S.querySelector('#s06-net'),{inputs:F.a0.length,hidden:M.d_h,outputs:M.vocab,highlightOutput:'i',labels:{input:i=>'(a_0)_{'+i+'}',output:x=>x},inputCaption:()=> 'a₀: '+F.a0.length+' inputs',hiddenCaption:'a₁: '+M.d_h+' hidden (ReLU)',outputCaption:'z: '+M.vocab.length+' logits'}));
-  const shapeRows=[['1 × '+F.a0.length],[''+F.a0.length+' × '+M.d_h],['1 × '+M.d_h],['1 × '+M.d_h],[M.d_h+' × '+M.vocab.length],['1 × '+M.vocab.length],['1 × '+M.vocab.length]];
-  const meanings=['input row','hidden weights','hidden bias','hidden activations','output weights','output bias','vocabulary scores'];
-  const roles=['p1-input','p1-param','p1-param','p1-activation','p1-param','p1-param','p1-score'];
-  const shapeTable=AT.ui.table(shapeRows.map((r,i)=>[meanings[i],r[0]]),{cols:['meaning','shape'],rowLabels:['$\\pIn{a_0}$','$\\pParam{W_1}$','$\\pParam{b_1}$','$\\pAct{a_1}$','$\\pParam{W_2}$','$\\pParam{b_2}$','$\\pScore{z}$'],cornerLabel:'object',into:S.querySelector('#s06-shapes')});
-  shapeTable.cells.forEach((row,i)=>row[0].classList.add(roles[i]));
+  const widths=[F.a0.length,M.d_h,M.vocab.length],roles=['p1-input','p1-activation','p1-score'];
+  const shapeTable=AT.ui.table(widths.map((width,i)=>['1 example',width+' '+['input features','hidden activations','vocabulary scores'][i],'1 × '+width]),{cols:['rows','columns','shape'],rowLabels:['$\\pIn{a_0}$','$\\pAct{a_1}$','$\\pScore{z}$'],cornerLabel:'object',into:S.querySelector('#s06-shapes')});
+  shapeTable.cells.forEach((row,i)=>row.forEach(cell=>cell.classList.add(roles[i])));
+  const parameters=AT.ui.table([
+    ['input features × hidden units',F.a0.length+' × '+M.d_h],
+    ['one bias for each hidden unit','1 × '+M.d_h],
+    ['hidden units × vocabulary scores',M.d_h+' × '+M.vocab.length],
+    ['one bias for each vocabulary score','1 × '+M.vocab.length]
+  ],{cols:['meaning of the dimensions','shape'],rowLabels:['$\\pParam{W_1}$','$\\pParam{b_1}$','$\\pParam{W_2}$','$\\pParam{b_2}$'],cornerLabel:'parameter',into:S.querySelector('#s06-parameter-shapes')});
+  parameters.cells.forEach(row=>row.forEach(cell=>cell.classList.add('p1-param')));
   const inAxes=[];for(let p=0;p<M.w;p++)M.axes.e.forEach(a=>inAxes.push('p'+(p+1)+' · '+a));
   const j=0,W1col=M.W1.map(r=>[r[j]]),dot1=AT.matmul(F.a0,W1col)[0],pre=dot1+M.b1[j];
   AT.ui.matVecCalc(F.a0,W1col,{from:inAxes,to:['hidden 1'],cls:'neutral',xLabel:'a0',outLabel:'dot product',decimals:2,wDecimals:2,into:S.querySelector('#s06-hidden')});

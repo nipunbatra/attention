@@ -104,6 +104,17 @@ for name, source in parser.items:
         assert scope["z"].shape == (1, 27)
     if name == "model":
         assert sum(p.numel() for p in scope["model"].parameters()) == 1169
+    if name == "batch-shapes":
+        assert scope["a0_batch"].shape == (4, 6)
+        assert scope["a1_batch"].shape == (4, 32)
+        assert scope["z_batch"].shape == (4, 27)
+        assert scope["hidden"].weight.shape == (32, 6)
+        assert scope["hidden"].bias.shape == (32,)
+        assert scope["output"].weight.shape == (27, 32)
+        assert scope["output"].bias.shape == (27,)
+        for j in range(4):
+            torch.testing.assert_close(
+                scope["z_batch"][j:j+1], scope["model"](scope["X"][j:j+1]))
     if name == "stable-softmax":
         torch.testing.assert_close(scope["p"], scope["z"].softmax(-1))
     if name == "loss":

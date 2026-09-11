@@ -37,7 +37,7 @@ const checkGuides = () => {
     }
   }
   if (guides.length < 10) issues.push('Missing introductory equation guides');
-  for (const row of document.querySelectorAll('#s06-shapes tbody tr, #s16-input-notation tbody tr, #s16-output-notation tbody tr')) {
+  for (const row of document.querySelectorAll('#s06-shapes tbody tr, #s06-parameter-shapes tbody tr, #s16-input-notation tbody tr, #s16-output-notation tbody tr')) {
     const symbol = row.querySelector('th .katex-html [class*="p1-"]');
     const meaning = row.querySelector('td');
     if (!symbol || !meaning || getComputedStyle(symbol).color !== getComputedStyle(meaning).color) {
@@ -68,6 +68,18 @@ const lookup = await page.evaluate(() => {
   return {steps:order,issues};
 });
 errors.push(...lookup.issues);
+const shapes = await page.evaluate(() => {
+  const issues=[], M=window.__TOY__, inputWidth=M.w*M.E[0].length;
+  const rows=id=>[...document.querySelectorAll('#'+id+' tbody tr')].map(row=>[...row.querySelectorAll('td')].map(cell=>cell.textContent.trim()));
+  const expected=[inputWidth,M.d_h,M.vocab.length].map((width,i)=>['1 example',width+' '+['input features','hidden activations','vocabulary scores'][i],'1 × '+width]);
+  if(JSON.stringify(rows('s06-shapes'))!==JSON.stringify(expected))issues.push('Activation shapes must label examples and feature/score counts separately');
+  const parameterShapes=rows('s06-parameter-shapes').map(row=>row[1]);
+  if(JSON.stringify(parameterShapes)!==JSON.stringify([inputWidth+' × '+M.d_h,'1 × '+M.d_h,M.d_h+' × '+M.vocab.length,'1 × '+M.vocab.length]))issues.push('Parameter shapes differ from model dimensions');
+  const explanation=document.getElementById('s06-parameter-shapes').closest('.frame').textContent;
+  if(!explanation.includes('does not count examples')||!explanation.includes('Broadcasting'))issues.push('Bias-row exception and broadcasting need an explanation');
+  return {rows:expected,parameterShapes,issues};
+});
+errors.push(...shapes.issues);
 // Include the fully revealed notation frames and the tables adjacent to them.
 for (const [section, title, name] of [
   ['s03', 'Writing the same question as a probability', 'probability'],
@@ -82,6 +94,8 @@ for (const [section, title, name] of [
   ['s06', 'The hidden layer combines the input numbers', 'hidden-layer'],
   ['s06', 'The output layer makes one score per token', 'output-layer'],
   ['s06', 'Check the shapes before multiplying', 'shapes'],
+  ['s06', 'Parameters are shared across examples', 'parameter-shapes'],
+  ['s06', 'PyTorch: four examples, the same feature widths', 'batch-shapes'],
   ['s07', 'Exponentiate, then divide by the total', 'softmax'],
   ['s07', 'The same softmax, with smaller intermediate numbers', 'stable-softmax'],
   ['s07', 'Softmax worksheet', 'softmax-table'],
@@ -118,5 +132,5 @@ await page.emulateMedia({ media: 'print' });
 const printed = await page.evaluate(checkGuides);
 errors.push(...printed.issues.map(x => 'print: ' + x));
 await browser.close();
-console.log(JSON.stringify({ article, lookup, phone, print: printed, screenshots: out, errors }, null, 2));
+console.log(JSON.stringify({ article, lookup, shapes, phone, print: printed, screenshots: out, errors }, null, 2));
 if (errors.length) process.exitCode = 1;

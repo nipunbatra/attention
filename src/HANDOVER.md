@@ -10,8 +10,14 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+Part 1's shape explanation now separates activations from parameters. For a0/a1/z, rows count examples and columns
+count input features, hidden activations, or vocabulary scores. The entire a a b window is one example. A separate
+parameter table explains W axes, shared bias rows, and PyTorch bias broadcasting. A five-line, four-example snippet
+shows [4, 6] → [4, 32] → [4, 27] with unchanged parameters. `check_part1_torch.py` checks its shapes and each batched
+row against a separate forward pass. The lesson and synchronized download now contain 32 executable snippets.
+
 Part 1 now uses **ReLU**, following Nipun's September 11 annotation. `train_names.py`, its backward pass, `part1.js`,
-all classroom equations, and the 31 literal PyTorch snippets agree. The model was retrained with the same names, split,
+all classroom equations, and the 32 literal PyTorch snippets agree. The model was retrained with the same names, split,
 seed, dimensions, sign penalty, and 6,000 steps. `toy1.json` explicitly records `activation: "relu"`. All worked values,
 embedding plots, losses, and generation therefore use new numbers. Historical tanh numbers must not be copied back.
 The seed-1 generation illustration now samples **h**, giving `a b h`; the observed training target is still **i**.
@@ -45,7 +51,7 @@ on separate frames. Part 1's role macros are scoped to its runtime; other parts 
 Use the equation-key convention in `PRESENT.md` for future revisions and `notation_test.mjs` to check this implementation.
 
 Part 1 also pairs each computational stage with a 2–5-line PyTorch snippet, a plain-language explanation, and tensor
-shapes. There are 31 executable snippets, including `nn.Embedding`, `nn.Linear`, ReLU, the storage transpose, stable softmax,
+shapes. There are 32 executable snippets, including `nn.Embedding`, `nn.Linear`, ReLU, the storage transpose, stable softmax,
 cross-entropy, autograd/SGD, and generation. Run `check_part1_torch.py` with PyTorch installed; it checks the literal HTML
 code and the matching download `../examples/part1_pytorch.py`, then reproduces the saved model's six probability rows.
 The classroom code starts fresh and illustrates one update; it does not claim to reproduce training from a single batch.
