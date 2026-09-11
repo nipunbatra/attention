@@ -10,6 +10,11 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+Part 1's two MLP sketches now pass the real hidden width (32) to `netSketch`. They show eight numbered hidden units,
+1–4 and 29–32, with an explicit gap. All six scalar inputs remain visible on the full-network frame. Output gaps appear
+both before and after the highlighted i. The shared helper abbreviates hidden widths above eight and connects only real
+displayed nodes. Keep the true counts in captions and accessibility labels. `check_part1_diagrams.mjs` covers both sketches.
+
 The September 11 pass keeps Claude's verified September 5 content on `main`; the partial whiteboard work remains on
 `wip/whiteboard-pass`. Presentation navigation is now one compact row, hidden after three idle seconds. **C**, lower-right
 pointer movement, and touch restore access; hover and keyboard focus prevent a timeout. `controls_test.mjs` checks these

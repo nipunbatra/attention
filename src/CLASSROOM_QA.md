@@ -1,5 +1,17 @@
 # Classroom release checks
 
+## 2026-09-11: honest layer widths in the MLP sketches
+
+- The full-network frame shows all six input coordinates, eight numbered hidden units (1–4, 29–32), and representative
+  outputs. Dots mark every omitted range, including both sides of output i. The hidden column is taller than either
+  neighbouring column. The window-size sketch uses the same correct 32-unit convention.
+- Regression checks cover real unit numbers, visible labels, gap counts, output order, true accessible widths, target
+  highlighting, and dense edges between displayed nodes only. Saved arithmetic and generation remain unchanged.
+- Part 1 passes all 220 progressive frame states with 121 unique formulas and no overflow or nested scrolling. Visually
+  inspected both changed classroom frames and the full-network diagram at 390px reading width. Shared presentation
+  interaction tests and eight isolated metadata builds pass. All eight HTML outputs were rebuilt for the shared helper.
+- No training data, computational snippets, or PDFs changed.
+
 ## 2026-09-11: the embedding lookup, symbol by symbol
 
 - Replaced the combined table/equation frame with six paced frames: character, ID mapping, whole table, square brackets,

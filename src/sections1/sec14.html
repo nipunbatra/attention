@@ -33,7 +33,7 @@ print(wide_hidden.weight.shape)  # [32, 10]</code></pre>
 <script>
 (function(){
   const S=document.getElementById('s14'),M=window.__TOY__,presets=[3,5,10,100],read=S.querySelector('#s14-read');
-  const net=AT.netSketch(S.querySelector('#s14-net'),{inputs:presets[0],hidden:5,outputs:M.vocab,highlightOutput:'i',collapseAbove:8,inputCaption:w=>w+' embedding slots',hiddenCaption:M.d_h+' hidden',outputCaption:M.vocab.length+' outputs'});
+  const net=AT.netSketch(S.querySelector('#s14-net'),{inputs:presets[0],hidden:M.d_h,outputs:M.vocab,highlightOutput:'i',collapseAbove:8,inputCaption:w=>w+' embedding slots',hiddenCaption:M.d_h+' hidden',outputCaption:M.vocab.length+' outputs'});
   function draw(index){const w=presets[index],inputs=w*M.d_model,weights=inputs*M.d_h;net.setInputs(w);read.innerHTML='Context tokens: $w = '+w+'$<br><span class="p1-param">Weights $\\pParam{W_1}$: '+inputs+' × '+M.d_h+'</span><br>'+AT.fmt(weights,0)+' weights';AT.renderMath(read);}
   const slider=AT.ui.slider({label:'Window choice',min:0,max:presets.length-1,step:1,value:0,format:i=>'w = '+presets[i],onInput:i=>draw(i),into:S.querySelector('#s14-slider')});draw(0);
   const realW=100,realD=256,realH=1024,realCount=realW*realD*realH;

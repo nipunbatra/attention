@@ -35,6 +35,30 @@ try {
     const methods = { embeddingSpace: 0, lookupConcat: 2, learningGraph: 3, trainingVsGeneration: 2 };
     const toy = window.__TOY__, mlp = AT.mlp;
     const original = JSON.stringify(toy);
+    for (const id of ['s06-net', 's14-net']) {
+      const svg = document.querySelector(`#${id} svg`);
+      check(!!svg, `${id}: missing network sketch`);
+      if (!svg) continue;
+      const hidden = [...svg.querySelectorAll('.col-hid .node:not(.ell)')];
+      check(toy.d_h === 32 && hidden.length === 8, `${id}: abbreviate 32 hidden units using eight visible units`);
+      check(JSON.stringify(hidden.map(node => Number(node.dataset.unit))) === JSON.stringify([1, 2, 3, 4, 29, 30, 31, 32]), `${id}: hidden endpoints must retain their real unit numbers`);
+      check(hidden.every(node => node.querySelector('.unit-l')?.textContent === node.dataset.unit), `${id}: hidden numbers must be visible`);
+      check(svg.querySelectorAll('.col-hid .ell').length === 1 && svg.querySelectorAll('.col-out .ell').length === 2, `${id}: every omitted hidden/output range needs dots`);
+      check(svg.querySelector('.col-out .is-hl')?.dataset.label === 'i', `${id}: preserve the observed target highlight`);
+      check(svg.getAttribute('aria-label').includes('32 hidden nodes') && svg.getAttribute('aria-label').includes('27 vocabulary entries'), `${id}: accessibility label must give actual widths`);
+      const shownOutputs = [...svg.querySelectorAll('.col-out .node')].map(node => node.classList.contains('ell') ? '…' : node.dataset.label);
+      check(JSON.stringify(shownOutputs) === JSON.stringify(['-', 'a', 'b', '…', 'i', '…', 'y', 'z']), `${id}: maintain vocabulary order with both gaps`);
+      const inputs = svg.querySelectorAll('.col-in circle').length;
+      const outputs = svg.querySelectorAll('.col-out circle').length;
+      check(svg.querySelectorAll('.edges line').length === inputs * hidden.length + hidden.length * outputs, `${id}: connect every visible real unit, never a gap`);
+      const span = selector => {
+        const ys = [...svg.querySelectorAll(selector)].map(node => node.transform.baseVal.getItem(0).matrix.f);
+        return Math.max(...ys) - Math.min(...ys);
+      };
+      check(span('.col-hid .node') > span('.col-out .node'), `${id}: hidden layer should look larger than the abbreviated output layer`);
+    }
+    check(document.querySelectorAll('#s06-net .col-in circle').length === toy.w * toy.d_model
+      && !document.querySelector('#s06-net .col-in .ell'), 'full-network sketch must show all six input coordinates');
     const oneHotProducts = [...document.querySelectorAll('#s04-dot1 tbody tr:last-child th, #s04-dot2 tbody tr:last-child th')];
     check(oneHotProducts.length === 2 && oneHotProducts.every(th => th.textContent === 'products'), 'Part I one-hot worksheets must not introduce query/key notation');
     const host = document.createElement('div');
@@ -167,7 +191,7 @@ try {
   });
   assert.deepEqual(errors, [], 'assembled Part I must have no browser errors');
   assert.deepEqual(report.failures, [], `Part I diagram regressions failed:\n${report.failures.join('\n')}`);
-  console.log(`PASS: ${report.instances} Part I SVG instances, ${report.labels} bounded labels, ${report.markers} local marker references; all ${report.points} embedding coordinates, lookup values, model shapes, probability/loss, seeded generation, and boundary stop (seed ${report.boundarySeed}) agree with the live model.`);
+  console.log(`PASS: both MLP sketches show true layer widths and every omission; ${report.instances} Part I SVG instances, ${report.labels} bounded labels, ${report.markers} local marker references; all ${report.points} embedding coordinates, lookup values, model shapes, probability/loss, seeded generation, and boundary stop (seed ${report.boundarySeed}) agree with the live model.`);
 } finally {
   await browser.close();
 }

@@ -27,7 +27,7 @@ s04 Characters to numbers
 s05 Concatenate the embeddings
   F1: a_0 = [e_1, e_2, e_3] as a table with position-coloured segments; F2: order test: a b i vs i b a (concatenate differs, sum is equal).
 s06 Pass the vector through an MLP
-  F1: AT.netSketch with 6 inputs, 5 drawn hidden nodes (label "32 hidden"), 27 outputs with the target lit; equations a_1 = sigma(a_0 W_1 + b_1), z = a_1 W_2 + b_2; shapes table.
+  F1: AT.netSketch with all 6 inputs, 32 hidden units abbreviated as numbered units 1–4 and 29–32 with dots, and 27 outputs with dots at each omitted range and the target lit; equations a_1 = tanh(a_0 W_1 + b_1), z = a_1 W_2 + b_2; shapes table.
   F2: worksheet for one hidden unit (a_0 dot W_1 column j + b) and one logit (a_1 dot W_2 column "i" + b), real numbers.
 s07 27 scores to probabilities
   F1: logits table (top 5 + other) -> softmax worksheet (exp, sum, divide) -> bars with the target highlighted.

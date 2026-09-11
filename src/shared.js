@@ -1473,8 +1473,8 @@
     var w = Math.max(1, (opts.inputs | 0) || 3);
     // geometry (constant, so the column can grow without the drawing jumping)
     var SP = 34, R = 11, X = [92, 290, 470], W = 560;
-    var outRows = outputRows();
-    var maxRows = Math.max(Math.min(collapseAbove, 12), hidden, outRows.length, 6);
+    var hidRows = hiddenRows(), outRows = outputRows();
+    var maxRows = Math.max(Math.min(collapseAbove, 12), hidRows.length, outRows.length, 6);
     var H = maxRows * SP + 64, CY = H / 2 + 12;
     var svg = sv('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'A network that reads ' + w + ' input rows through a hidden layer and scores every vocabulary entry' });
     var gEdges = sv('g', { class: 'edges' }), gIn = sv('g', { class: 'col col-in' }), gHid = sv('g', { class: 'col col-hid' }), gOut = sv('g', { class: 'col col-out' }), gCap = sv('g', { class: 'caps' });
@@ -1485,15 +1485,24 @@
       if (w <= collapseAbove) return AT.range(w).map(function (i) { return { key: 'i' + (i + 1), i: i + 1 }; });
       return [{ key: 'i1', i: 1 }, { key: 'i2', i: 2 }, { key: 'i3', i: 3 }, { key: 'ell', ell: true }, { key: 'i' + (w - 1), i: w - 1 }, { key: 'i' + w, i: w }];
     }
+    function hiddenRows() {
+      var idx = AT.range(hidden);
+      if (hidden > 8) idx = [0, 1, 2, 3, -1, hidden - 4, hidden - 3, hidden - 2, hidden - 1];
+      return idx.map(function (i) { return i < 0 ? { key: 'ell', ell: true } : { key: 'h' + i, i: i }; });
+    }
     function outputRows() {
       var n = outputs.length;
       var idx = AT.range(n);
       if (n > collapseAbove) {
         var hi = hl == null ? -1 : outputs.indexOf(hl);
-        idx = [0, 1, 2];
-        if (hi > 2 && hi < n - 2) idx.push(-1, hi); else idx.push(-1);
-        idx.push(n - 2, n - 1);
-        if (hi >= 0 && hi <= 2) { /* already shown */ }
+        var shown = [0, 1, 2, n - 2, n - 1];
+        if (hi > 2 && hi < n - 2) shown.push(hi);
+        shown.sort(function (a, b) { return a - b; });
+        idx = [];
+        shown.forEach(function (i, j) {
+          if (j && i > shown[j - 1] + 1) idx.push(-1);
+          idx.push(i);
+        });
       }
       return idx.map(function (i) { return i < 0 ? { key: 'ell', ell: true } : { key: 'o' + i, i: i, label: outputs[i] }; });
     }
@@ -1516,8 +1525,16 @@
       fo.appendChild(d); g.appendChild(fo);
     }
     // hidden column (fixed)
-    var hy = ys(hidden);
-    AT.range(hidden).forEach(function (j) { var g = node('hid', 'h' + j); place(g, X[1], hy[j]); gHid.appendChild(g); });
+    var hidY = ys(hidRows.length), hy = [];
+    hidRows.forEach(function (r, j) {
+      var g = r.ell ? ellipsis('hid') : node('hid', r.key);
+      if (!r.ell) {
+        g.setAttribute('data-unit', r.i + 1);
+        if (hidden > 8) g.appendChild(sv('text', { x: 0, y: 0, class: 'unit-l', 'text-anchor': 'middle', 'dominant-baseline': 'central' }, String(r.i + 1)));
+        hy.push(hidY[j]);
+      }
+      place(g, X[1], hidY[j]); gHid.appendChild(g);
+    });
     // output column (fixed)
     var oy = ys(outRows.length), outNodes = [];
     outRows.forEach(function (r, k) {
@@ -1568,7 +1585,7 @@
       if (animate) { ne.style.opacity = '0'; gEdges.appendChild(ne); void ne.getBoundingClientRect(); ne.style.opacity = '1'; } else gEdges.appendChild(ne);
       edgeSet = ne;
       capIn.textContent = (typeof opts.inputCaption === 'function' ? opts.inputCaption(w) : (w + (w === 1 ? ' input' : ' inputs')));
-      svg.setAttribute('aria-label', 'A network that reads ' + w + ' input rows through ' + hidden + ' hidden nodes and scores ' + outputs.length + ' vocabulary entries');
+      svg.setAttribute('aria-label', 'A network that reads ' + w + ' input rows through ' + hidden + ' hidden nodes and scores ' + outputs.length + ' vocabulary entries. Dots mark omitted units. All adjacent layers are fully connected.');
     }
     render(false);
     var api = {
