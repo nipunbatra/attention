@@ -49,14 +49,30 @@ const checkGuides = () => {
 const article = await page.evaluate(checkGuides);
 errors.push(...article.issues);
 // Include the fully revealed notation frames and the tables adjacent to them.
-for (const [section, frame, name] of [
-  ['s03', 2, 'probability'], ['s04', 4, 'lookup'], ['s05', 2, 'concatenation'],
-  ['s06', 2, 'hidden-layer'], ['s06', 3, 'output-layer'], ['s06', 4, 'shapes'],
-  ['s07', 2, 'softmax'], ['s07', 3, 'stable-softmax'], ['s07', 4, 'softmax-table'],
-  ['s08', 1, 'loss'], ['s08', 2, 'loss-examples'], ['s09', 2, 'parameters'],
-  ['s14', 2, 'window-shapes'], ['s16', 2, 'summary'], ['s16', 4, 'input-notation'], ['s16', 5, 'output-notation']
+for (const [section, title, name] of [
+  ['s03', 'Writing the same question as a probability', 'probability'],
+  ['s04', 'Look up a learned row', 'lookup'],
+  ['s05', 'Three rows become one row', 'concatenation'],
+  ['s06', 'The hidden layer combines the input numbers', 'hidden-layer'],
+  ['s06', 'The output layer makes one score per token', 'output-layer'],
+  ['s06', 'Check the shapes before multiplying', 'shapes'],
+  ['s07', 'Exponentiate, then divide by the total', 'softmax'],
+  ['s07', 'The same softmax, with smaller intermediate numbers', 'stable-softmax'],
+  ['s07', 'Softmax worksheet', 'softmax-table'],
+  ['s08', 'One target probability', 'loss'],
+  ['s08', 'Low target probability gives a large loss', 'loss-examples'],
+  ['s09', 'What the optimizer changes', 'parameters'],
+  ['s14', 'A larger window makes a larger weight matrix', 'window-shapes'],
+  ['s16', 'The same model in symbols', 'summary'],
+  ['s16', 'Notation: from tokens to the MLP input', 'input-notation'],
+  ['s16', 'Notation: from the input to a probability', 'output-notation']
 ]) {
-  await page.evaluate(({ section, frame }) => { AT.present.enter(); AT.present.go(section, frame, 99); }, { section, frame });
+  await page.evaluate(({ section, title }) => {
+    const frames = [...document.querySelectorAll('#' + section + ' .frame')];
+    const index = frames.findIndex(frame => frame.dataset.title === title);
+    if (index < 0) throw new Error('Missing notation frame: ' + title);
+    AT.present.enter(); AT.present.go(section, index + 1, 99);
+  }, { section, title });
   await page.waitForTimeout(80);
   const fit = await page.evaluate(() => AT.present.fitReport());
   if (fit.overflow) errors.push(name + ': frame overflow');

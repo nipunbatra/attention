@@ -22,6 +22,21 @@ body.present #s06 .net{max-width:650px}
   </dl></div>
   <p data-build="1">Each hidden unit can combine information from all six input coordinates.</p>
 </div>
+<div class="frame" data-title="PyTorch: the hidden layer" data-autobuild="off">
+  <pre class="pytorch" data-torch="hidden"><code>hidden = nn.Linear(6, 32)
+a1 = torch.tanh(hidden(a0))
+print(a1.shape)  # [1, 32]</code></pre>
+  <p><span class="p1-param"><code>nn.Linear(6, 32)</code> creates the learned weights and bias.</span> <span class="p1-activation"><code>a1</code> contains 32 hidden activations for each example.</span></p>
+  <p><code>hidden(a0)</code> multiplies and adds the bias. <code>torch.tanh</code> then acts on each result.</p>
+</div>
+<div class="frame" data-title="PyTorch stores the transposed weight matrix" data-autobuild="off">
+  <pre class="pytorch" data-torch="weight-convention"><code>W1 = hidden.weight.T
+b1 = hidden.bias
+check = torch.tanh(a0 @ W1 + b1)
+torch.testing.assert_close(a1, check)</code></pre>
+  <p><span class="p1-param">Our equation uses $\pParam{W_1}$ with shape <code>[6, 32]</code>. PyTorch stores <code>hidden.weight</code> with shape <code>[32, 6]</code>.</span></p>
+  <p><code>.T</code> swaps rows and columns. The bias has 32 entries and is added to every example. Both expressions calculate the same hidden row.</p>
+</div>
 <div class="frame" data-title="The output layer makes one score per token" data-autobuild="off">
   <div data-math-guide><div class="p1-math">$$\pScore{z}=\pAct{a_1}\pParam{W_2}+\pParam{b_2}$$</div>
   <dl class="p1-key">
@@ -30,6 +45,22 @@ body.present #s06 .net{max-width:650px}
     <div class="p1-score"><dt>$\pScore{z}$: logits</dt><dd>One score for each of the 27 vocabulary tokens.</dd></div>
   </dl></div>
   <p data-build="1">These scores become probabilities in the next step.</p>
+</div>
+<div class="frame" data-title="PyTorch: the vocabulary scores" data-autobuild="off">
+  <pre class="pytorch" data-torch="output"><code>output = nn.Linear(32, 27)
+z = output(a1)
+print(z.shape)  # [1, 27]</code></pre>
+  <p><span class="p1-score"><code>z</code> contains one logit for each vocabulary token.</span> <span class="p1-param"><code>output.weight.T</code> is $\pParam{W_2}$; <code>output.bias</code> is $\pParam{b_2}$.</span></p>
+  <p>A column index selects a possible next character. For example, <code>z[0, stoi["i"]]</code> is the score for “i”.</p>
+</div>
+<div class="frame" data-title="PyTorch: reuse the same layers as one model" data-autobuild="off">
+  <pre class="pytorch" data-torch="model"><code>model = nn.Sequential(
+    embedding, nn.Flatten(1), hidden, nn.Tanh(), output
+)
+z = model(ctx)</code></pre>
+  <p><code>model(ctx)</code> runs the lookup, concatenation, hidden layer, and output layer in order.</p>
+  <p>These are the <strong>same layer objects</strong> we just used. They share the same parameters. Calling the model does not create new weights.</p>
+  <p class="p1-score">The model returns logits. We apply softmax separately when we want probabilities.</p>
 </div>
 <div class="frame" data-title="Check the shapes before multiplying" data-autobuild="off">
   <div class="card"><div id="s06-shapes"></div></div>

@@ -19,6 +19,13 @@
     <div><dt>$-\log$: negative natural logarithm</dt><dd>A lower target probability gives a larger penalty.</dd></div>
   </dl></div>
 </div>
+<div class="frame" data-title="PyTorch: cross-entropy takes logits" data-autobuild="off">
+  <pre class="pytorch" data-torch="loss"><code>loss = F.cross_entropy(z, target)
+print(loss.item())</code></pre>
+  <p><span class="p1-score"><code>z</code>: logits shaped <code>[1, 27]</code>.</span> <span class="p1-target"><code>target</code>: the observed token ID, shaped <code>[1]</code>.</span></p>
+  <p><span class="p1-loss"><code>loss</code> is one scalar. <code>.item()</code> reads it as a Python number for display.</span></p>
+  <p>Pass <strong>logits, not <code>p</code></strong>. This function combines a numerically stable log-softmax with the target's negative log-probability.</p>
+</div>
 <div class="frame" data-title="Low target probability gives a large loss" data-autobuild="off">
   <div class="compare"><div class="case"><p>Confident and correct</p><div id="s08-good"></div></div><div class="case"><p>Confident and wrong</p><div id="s08-bad"></div></div></div>
   <p class="p1-read"><span class="p1-prob">$\pProb{p}(\text{target})$ is the probability of the observed next character.</span> <span class="p1-loss">Loss measures the penalty for that prediction.</span></p>

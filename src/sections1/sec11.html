@@ -9,6 +9,13 @@
   First trace the training update. Then use the same model for generation. Follow the reproducible sampled character into the next input. A boundary token would stop generation instead.</script>
   <div id="s11-compare" class="compare-step diagram-step"></div>
 </div>
+<div class="frame" data-title="PyTorch: a batch uses the same forward pass" data-autobuild="off">
+  <pre class="pytorch" data-torch="batch"><code>batch_z = model(X)
+batch_loss = F.cross_entropy(batch_z, y)</code></pre>
+  <p><code>X</code> is <code>[6, 3]</code>. The logits are <code>[6, 27]</code>: six independent rows of vocabulary scores.</p>
+  <p>Cross-entropy pairs row 0 with <code>y[0]</code>, row 1 with <code>y[1]</code>, and so on. Its default reduction is the mean of the six losses.</p>
+  <p>Computing a loss alone does not update the model. That still requires <code>backward()</code> and <code>optimizer.step()</code>.</p>
+</div>
 <div class="frame" data-title="Many windows or one growing output" data-autobuild="off">
   <script type="text/x-notes">Why can training prepare many rows before the model runs?
   Targets are already known in the data. Generation must wait for each sampled character before making the next input.</script>

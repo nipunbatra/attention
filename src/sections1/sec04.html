@@ -15,6 +15,12 @@ body.present #s04 .embedding-space>svg{max-height:380px}
   <div class="card"><h3 class="card-title">Selected columns of a 27-wide one-hot row</h3><div id="s04-onehot"></div></div>
   <div class="callout callout-note" data-build="1">Different characters occupy different coordinates.</div>
 </div>
+<div class="frame" data-title="PyTorch: one-hot rows" data-autobuild="off">
+  <pre class="pytorch" data-torch="one-hot"><code>one_hot = F.one_hot(ctx, num_classes=27)
+print(one_hot.shape)  # [1, 3, 27]</code></pre>
+  <p>Each of the three character IDs becomes a row with one 1 and twenty-six 0s.</p>
+  <p>This representation contains no learned parameters. The ID simply chooses where the 1 goes.</p>
+</div>
 <div class="frame" data-title="Different one-hot rows always have zero dot product" data-autobuild="off">
   <div class="card"><h3 class="card-title">Compare a with b</h3><div id="s04-dot1"></div></div>
   <div class="callout callout-note" data-build="1">Every coordinate-wise product is zero.</div>
@@ -28,6 +34,14 @@ body.present #s04 .embedding-space>svg{max-height:380px}
   Read the column headers before the values. Highlight a, b, and i as the rows needed by the running examples.</script>
   <div class="card"><h3 class="card-title">Selected rows of the trained table $\ve{E_{\text{tok}}}$</h3><div id="s04-embed"></div></div>
   <div data-build="1" data-math-guide><div class="p1-math">$$\pIn{e_c}=\pIn{E_{\text{tok}}}[\operatorname{id}(c)]$$</div><p class="p1-read"><span class="p1-input">$\pIn{E_{\text{tok}}}$ is the learned embedding table. $\pIn{e_c}$ is the row for character $c$.</span> The ID of $c$ selects a row; the square brackets mean “look up”.</p></div>
+</div>
+<div class="frame" data-title="PyTorch: a learned embedding lookup" data-autobuild="off">
+  <pre class="pytorch" data-torch="embedding"><code>embedding = nn.Embedding(27, 2)
+e = embedding(ctx)
+print(e.shape)  # [1, 3, 2]</code></pre>
+  <p><span class="p1-input"><code>embedding.weight</code> is the table $\pIn{E_{\text{tok}}}$, with 27 rows of two numbers. <code>e</code> holds the three selected rows.</span></p>
+  <p>The output axes are <strong>example, position, embedding coordinate</strong>. Calling the layer selects rows; training changes their values.</p>
+  <p class="small muted">Construct the layer once, not for each input. We leave the boundary row trainable, so we do not set <code>padding_idx</code>.</p>
 </div>
 <div class="frame" data-title="The learned rows form a geometry" data-autobuild="off">
   <script type="text/x-notes">What does it mean for two learned rows to be close?

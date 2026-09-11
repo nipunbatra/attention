@@ -3943,6 +3943,16 @@ window.__PART__ = {"part":1,"series":"Attention and language","title":"From char
   <div class="card"><h3 class="card-title">One boundary and the alphabet</h3><div id="s02-vocab"></div><div class="prose" data-build="1"><p>The vocabulary is $\mathcal V=\{\text{-},a,\ldots,z\}$, with one output class per token.</p></div></div>
   <div class="card" data-build="2"><h3 class="card-title">Names in the source list</h3><div class="name-row"><span class="name">aabid</span><span class="name">aarav</span><span class="name">avni</span><span class="name">naveen</span><span class="name">vani</span><span class="name">zeel</span></div></div>
 </div>
+<div class="frame" data-title="PyTorch: give each character an ID" data-autobuild="off">
+  <p>Run the snippets in order. We use the same 27-token vocabulary throughout.</p>
+  <pre class="pytorch" data-torch="vocabulary"><code>import torch
+from torch import nn
+from torch.nn import functional as F
+vocab = ["-"] + list("abcdefghijklmnopqrstuvwxyz")
+stoi = {c: j for j, c in enumerate(vocab)}</code></pre>
+  <p><code>stoi</code> maps a character to an integer: <code>"-" → 0</code>, <code>"a" → 1</code>, <code>"b" → 2</code>.</p>
+  <p class="small muted">These snippets construct a fresh model. The numerical worksheets show a saved trained model; creating a layer does not load those trained values.</p>
+</div>
 <div class="frame" data-title="One 27-class prediction" data-autobuild="off">
   <script type="text/x-notes">Which character receives the most probability after aab?
   Point out that the full distribution has one entry for every vocabulary token, including the boundary.</script>
@@ -4006,6 +4016,14 @@ window.__PART__ = {"part":1,"series":"Attention and language","title":"From char
   <p data-build="2">Read $\mid$ as “given”: the probability of <span class="p1-target">“i” next</span>, given <span class="p1-input">“a a b” already read</span>.</p>
 </div>
 <div class="companion" data-math-guide><p>The same rule at any position:</p><div class="p1-math">$$\pProb{p}_{\pParam{\theta}}(\pTarget{t_i}\mid\pIn{t_{i-3},t_{i-2},t_{i-1}})$$</div><p class="p1-read"><span class="p1-prob">Probability</span> under the <span class="p1-param">learned parameters $\pParam{\theta}$</span> of the <span class="p1-target">next token $\pTarget{t_i}$ at position $i$</span>, given the <span class="p1-input">three previous tokens</span>. Here $i$ is a position index. The compact notation <span class="p1-input">$\pIn{t_{i-3:i-1}}$</span> names those same three tokens, including both endpoints.</p></div>
+<div class="frame" data-title="PyTorch: the context and its observed target" data-autobuild="off">
+  <pre class="pytorch" data-torch="context"><code>ctx = torch.tensor([[stoi[c] for c in "aab"]])
+target = torch.tensor([stoi["i"]])
+print(ctx.shape, target.shape)</code></pre>
+  <p><span class="p1-input"><code>ctx</code> has shape <code>[1, 3]</code>: one example, three known character IDs.</span></p>
+  <p><span class="p1-target"><code>target</code> has shape <code>[1]</code>: the next character ID for that example.</span></p>
+  <p>Integer tensors select embedding rows. The extra outer brackets keep the batch dimension, even for one example.</p>
+</div>
 <div class="frame" data-title="Slide across aabid" data-autobuild="off">
   <script type="text/x-notes">How many training rows does a five-letter name produce?
   Walk the stepper through each context. The sixth target is the boundary, which teaches the model to stop.</script>
@@ -4013,6 +4031,15 @@ window.__PART__ = {"part":1,"series":"Attention and language","title":"From char
 </div>
 <div class="frame" data-title="A five-letter name gives six training pairs" data-autobuild="off">
   <div class="card"><div id="s03-table"></div></div>
+</div>
+<div class="frame" data-title="PyTorch: six windows from aabid" data-autobuild="off">
+  <pre class="pytorch" data-torch="windows"><code>w = 3
+padded = [stoi["-"]] * w + [stoi[c] for c in "aabid-"]
+X = torch.tensor([padded[j:j+w] for j in range(6)])
+y = torch.tensor(padded[w:])</code></pre>
+  <p><span class="p1-input"><code>X</code> has shape <code>[6, 3]</code>. Each row holds one context.</span> <span class="p1-target"><code>y</code> has shape <code>[6]</code>. Each entry is that row's observed target.</span></p>
+  <p>The first three boundary IDs pad the opening. The final boundary is the target that teaches stopping.</p>
+  <p>In Python, <code>j:j+w</code> includes position <code>j</code> and stops before <code>j+w</code>.</p>
 </div>
 <div class="frame" data-title="Repeat for every name" data-autobuild="off">
   <script type="text/x-notes">Why does a name of length L produce L plus one examples?
@@ -4050,6 +4077,12 @@ body.present #s04 .embedding-space>svg{max-height:380px}
   <div class="card"><h3 class="card-title">Selected columns of a 27-wide one-hot row</h3><div id="s04-onehot"></div></div>
   <div class="callout callout-note" data-build="1">Different characters occupy different coordinates.</div>
 </div>
+<div class="frame" data-title="PyTorch: one-hot rows" data-autobuild="off">
+  <pre class="pytorch" data-torch="one-hot"><code>one_hot = F.one_hot(ctx, num_classes=27)
+print(one_hot.shape)  # [1, 3, 27]</code></pre>
+  <p>Each of the three character IDs becomes a row with one 1 and twenty-six 0s.</p>
+  <p>This representation contains no learned parameters. The ID simply chooses where the 1 goes.</p>
+</div>
 <div class="frame" data-title="Different one-hot rows always have zero dot product" data-autobuild="off">
   <div class="card"><h3 class="card-title">Compare a with b</h3><div id="s04-dot1"></div></div>
   <div class="callout callout-note" data-build="1">Every coordinate-wise product is zero.</div>
@@ -4063,6 +4096,14 @@ body.present #s04 .embedding-space>svg{max-height:380px}
   Read the column headers before the values. Highlight a, b, and i as the rows needed by the running examples.</script>
   <div class="card"><h3 class="card-title">Selected rows of the trained table $\ve{E_{\text{tok}}}$</h3><div id="s04-embed"></div></div>
   <div data-build="1" data-math-guide><div class="p1-math">$$\pIn{e_c}=\pIn{E_{\text{tok}}}[\operatorname{id}(c)]$$</div><p class="p1-read"><span class="p1-input">$\pIn{E_{\text{tok}}}$ is the learned embedding table. $\pIn{e_c}$ is the row for character $c$.</span> The ID of $c$ selects a row; the square brackets mean “look up”.</p></div>
+</div>
+<div class="frame" data-title="PyTorch: a learned embedding lookup" data-autobuild="off">
+  <pre class="pytorch" data-torch="embedding"><code>embedding = nn.Embedding(27, 2)
+e = embedding(ctx)
+print(e.shape)  # [1, 3, 2]</code></pre>
+  <p><span class="p1-input"><code>embedding.weight</code> is the table $\pIn{E_{\text{tok}}}$, with 27 rows of two numbers. <code>e</code> holds the three selected rows.</span></p>
+  <p>The output axes are <strong>example, position, embedding coordinate</strong>. Calling the layer selects rows; training changes their values.</p>
+  <p class="small muted">Construct the layer once, not for each input. We leave the boundary row trainable, so we do not set <code>padding_idx</code>.</p>
 </div>
 <div class="frame" data-title="The learned rows form a geometry" data-autobuild="off">
   <script type="text/x-notes">What does it mean for two learned rows to be close?
@@ -4121,6 +4162,12 @@ body.present #s04 .embedding-space>svg{max-height:380px}
   Read the position labels across the headers. Each position has a separate two-coordinate segment.</script>
   <div class="card"><h3 class="card-title">The three rows for a a b</h3><div id="s05-rows"></div></div>
   <div data-build="1" data-math-guide><div class="join-eq p1-math" id="s05-eq"></div><p class="p1-read"><span class="p1-input">$\pIn{e_1,e_2,e_3}$ are the embedding rows at the three window positions. $\pIn{a_0}$ is their concatenation, the MLP input.</span> $\mathbb R^{1\times6}$ means one row of six real numbers.</p></div>
+</div>
+<div class="frame" data-title="PyTorch: concatenate without mixing examples" data-autobuild="off">
+  <pre class="pytorch" data-torch="flatten"><code>a0 = e.flatten(start_dim=1)
+print(a0.shape)  # [1, 6]</code></pre>
+  <p><span class="p1-input"><code>e</code> has three rows of two coordinates. <code>a0</code> places those six numbers side by side, in position order.</span></p>
+  <p><code>start_dim=1</code> preserves dimension 0, the batch dimension. For 6 examples, the same operation maps <code>[6, 3, 2]</code> to <code>[6, 6]</code>.</p>
 </div>
 <div class="frame" data-title="Six numbers, with a slot for each position" data-autobuild="off">
   <div class="card"><div id="s05-joined"></div></div>
@@ -4183,6 +4230,21 @@ body.present #s06 .net{max-width:650px}
   </dl></div>
   <p data-build="1">Each hidden unit can combine information from all six input coordinates.</p>
 </div>
+<div class="frame" data-title="PyTorch: the hidden layer" data-autobuild="off">
+  <pre class="pytorch" data-torch="hidden"><code>hidden = nn.Linear(6, 32)
+a1 = torch.tanh(hidden(a0))
+print(a1.shape)  # [1, 32]</code></pre>
+  <p><span class="p1-param"><code>nn.Linear(6, 32)</code> creates the learned weights and bias.</span> <span class="p1-activation"><code>a1</code> contains 32 hidden activations for each example.</span></p>
+  <p><code>hidden(a0)</code> multiplies and adds the bias. <code>torch.tanh</code> then acts on each result.</p>
+</div>
+<div class="frame" data-title="PyTorch stores the transposed weight matrix" data-autobuild="off">
+  <pre class="pytorch" data-torch="weight-convention"><code>W1 = hidden.weight.T
+b1 = hidden.bias
+check = torch.tanh(a0 @ W1 + b1)
+torch.testing.assert_close(a1, check)</code></pre>
+  <p><span class="p1-param">Our equation uses $\pParam{W_1}$ with shape <code>[6, 32]</code>. PyTorch stores <code>hidden.weight</code> with shape <code>[32, 6]</code>.</span></p>
+  <p><code>.T</code> swaps rows and columns. The bias has 32 entries and is added to every example. Both expressions calculate the same hidden row.</p>
+</div>
 <div class="frame" data-title="The output layer makes one score per token" data-autobuild="off">
   <div data-math-guide><div class="p1-math">$$\pScore{z}=\pAct{a_1}\pParam{W_2}+\pParam{b_2}$$</div>
   <dl class="p1-key">
@@ -4191,6 +4253,22 @@ body.present #s06 .net{max-width:650px}
     <div class="p1-score"><dt>$\pScore{z}$: logits</dt><dd>One score for each of the 27 vocabulary tokens.</dd></div>
   </dl></div>
   <p data-build="1">These scores become probabilities in the next step.</p>
+</div>
+<div class="frame" data-title="PyTorch: the vocabulary scores" data-autobuild="off">
+  <pre class="pytorch" data-torch="output"><code>output = nn.Linear(32, 27)
+z = output(a1)
+print(z.shape)  # [1, 27]</code></pre>
+  <p><span class="p1-score"><code>z</code> contains one logit for each vocabulary token.</span> <span class="p1-param"><code>output.weight.T</code> is $\pParam{W_2}$; <code>output.bias</code> is $\pParam{b_2}$.</span></p>
+  <p>A column index selects a possible next character. For example, <code>z[0, stoi["i"]]</code> is the score for “i”.</p>
+</div>
+<div class="frame" data-title="PyTorch: reuse the same layers as one model" data-autobuild="off">
+  <pre class="pytorch" data-torch="model"><code>model = nn.Sequential(
+    embedding, nn.Flatten(1), hidden, nn.Tanh(), output
+)
+z = model(ctx)</code></pre>
+  <p><code>model(ctx)</code> runs the lookup, concatenation, hidden layer, and output layer in order.</p>
+  <p>These are the <strong>same layer objects</strong> we just used. They share the same parameters. Calling the model does not create new weights.</p>
+  <p class="p1-score">The model returns logits. We apply softmax separately when we want probabilities.</p>
 </div>
 <div class="frame" data-title="Check the shapes before multiplying" data-autobuild="off">
   <div class="card"><div id="s06-shapes"></div></div>
@@ -4252,6 +4330,12 @@ body.present #s06 .net{max-width:650px}
   </dl></div>
   <div class="callout callout-key" data-build="1">Each token gets a positive share of the same total.</div>
 </div>
+<div class="frame" data-title="PyTorch: probabilities across the vocabulary" data-autobuild="off">
+  <pre class="pytorch" data-torch="softmax"><code>p = z.softmax(dim=-1)
+print(p.shape, p.sum(dim=-1))  # [1, 27], one total</code></pre>
+  <p><span class="p1-prob"><code>p</code> gives 27 probabilities for each example. Every row sums to one.</span></p>
+  <p><code>dim=-1</code> means the final dimension: vocabulary entries. We normalize across possible next characters, not across examples.</p>
+</div>
 <div class="frame" data-title="The same softmax, with smaller intermediate numbers" data-autobuild="off">
   <div data-math-guide><div class="p1-math">$$\pProb{p_j}=\frac{\exp(\pScore{z_j}-\pScore{z_{\max}})}{\sum_{r\in\mathcal V}\exp(\pScore{z_r}-\pScore{z_{\max}})}$$</div>
   <dl class="p1-key">
@@ -4260,6 +4344,14 @@ body.present #s06 .net{max-width:650px}
   </dl></div>
   <p>$j$ is the token we are scoring. The sum visits every token $r$ in the vocabulary $\mathcal V$.</p>
   <p data-build="1">The largest exponential is now 1. This avoids very large intermediate numbers.</p>
+</div>
+<div class="frame" data-title="PyTorch: the softmax calculation we worked out" data-autobuild="off">
+  <pre class="pytorch" data-torch="stable-softmax"><code>shifted = z - z.max(dim=-1, keepdim=True).values
+weights = shifted.exp()
+p = weights / weights.sum(dim=-1, keepdim=True)</code></pre>
+  <p><span class="p1-score">Subtract the largest score in each row, then exponentiate.</span> <span class="p1-prob">Divide by that row's total to get probabilities.</span></p>
+  <p><code>keepdim=True</code> keeps the maximum and total shaped <code>[batch, 1]</code>, so each broadcasts across its own row.</p>
+  <p>In normal model code, use <code>z.softmax(dim=-1)</code> for this operation.</p>
 </div>
 <div class="frame" data-title="Softmax worksheet" data-autobuild="off">
   <script type="text/x-notes">Where do the other vocabulary entries affect the probability of i?
@@ -4309,6 +4401,13 @@ body.present #s06 .net{max-width:650px}
     <div><dt>$-\log$: negative natural logarithm</dt><dd>A lower target probability gives a larger penalty.</dd></div>
   </dl></div>
 </div>
+<div class="frame" data-title="PyTorch: cross-entropy takes logits" data-autobuild="off">
+  <pre class="pytorch" data-torch="loss"><code>loss = F.cross_entropy(z, target)
+print(loss.item())</code></pre>
+  <p><span class="p1-score"><code>z</code>: logits shaped <code>[1, 27]</code>.</span> <span class="p1-target"><code>target</code>: the observed token ID, shaped <code>[1]</code>.</span></p>
+  <p><span class="p1-loss"><code>loss</code> is one scalar. <code>.item()</code> reads it as a Python number for display.</span></p>
+  <p>Pass <strong>logits, not <code>p</code></strong>. This function combines a numerically stable log-softmax with the target's negative log-probability.</p>
+</div>
 <div class="frame" data-title="Low target probability gives a large loss" data-autobuild="off">
   <div class="compare"><div class="case"><p>Confident and correct</p><div id="s08-good"></div></div><div class="case"><p>Confident and wrong</p><div id="s08-bad"></div></div></div>
   <p class="p1-read"><span class="p1-prob">$\pProb{p}(\text{target})$ is the probability of the observed next character.</span> <span class="p1-loss">Loss measures the penalty for that prediction.</span></p>
@@ -4357,6 +4456,28 @@ body.present #s06 .net{max-width:650px}
   Read each shape and parameter count. The embedding table and both MLP layers are trained together.</script>
   <div class="card"><h3 class="card-title">All learned parameters $\pParam{\theta}$</h3><div id="s09-params"></div></div>
   <p class="p1-read"><span class="p1-input">$\pIn{E_{\text{tok}}}$ stores embedding rows.</span> <span class="p1-param">$\pParam{W_1,W_2}$ are weight matrices. $\pParam{b_1,b_2}$ are bias rows.</span></p>
+</div>
+<div class="frame" data-title="PyTorch: choose the parameters to update" data-autobuild="off">
+  <pre class="pytorch" data-torch="optimizer"><code>optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
+model.train()</code></pre>
+  <p><code>model.parameters()</code> includes the embedding table and both layers' weights and biases.</p>
+  <p><code>lr=0.1</code> sets the learning rate for this example. <code>model.train()</code> selects training mode; it does not update anything by itself.</p>
+</div>
+<div class="frame" data-title="PyTorch: one update on the six training rows" data-autobuild="off">
+  <pre class="pytorch" data-torch="training"><code>optimizer.zero_grad()
+z = model(X)
+loss = F.cross_entropy(z, y)
+loss.backward()
+optimizer.step()</code></pre>
+  <p><code>zero_grad()</code> clears old gradients. The next two lines calculate fresh predictions and their mean loss.</p>
+  <p><code>backward()</code> computes gradients through the whole graph. <code>step()</code> uses them to change the stored parameters.</p>
+  <p class="small muted">This is one illustrative update. Training the name model repeats updates over many batches from the training names.</p>
+</div>
+<div class="frame" data-title="PyTorch: inspect the parameter gradients" data-autobuild="off">
+  <pre class="pytorch" data-torch="gradients"><code>print(embedding.weight.grad.shape)  # [27, 2]
+print(hidden.weight.grad.shape)     # [32, 6]</code></pre>
+  <p>A parameter's <code>.grad</code> has the same shape as that parameter. It describes how changing each entry would affect the loss.</p>
+  <p>The optimizer updates the tables and weights. The next forward pass recomputes <span class="p1-input"><code>e</code> and <code>a0</code></span>, <span class="p1-activation"><code>a1</code></span>, <span class="p1-score"><code>z</code></span>, and <span class="p1-prob"><code>p</code></span>.</p>
 </div>
 <div class="frame" data-title="The target is not part of the input" data-autobuild="off">
   <div class="prose"><p>For <strong>aab → i</strong>:</p><p data-build="1">The input looks up embedding rows <strong>a</strong> and <strong>b</strong>.</p><p data-build="2">The observed target <strong>i</strong> selects the cross-entropy loss.</p></div>
@@ -4419,6 +4540,32 @@ body.present #s10 .generator-layout .gen-name{overflow-wrap:anywhere}
   <div class="card"><div class="loop"><div class="loop-box">Predict a distribution</div><span class="loop-arrow">→</span><div class="loop-box" data-build="1">Choose one character</div><span class="loop-arrow">→</span><div class="loop-box" data-build="2">Append and shift</div></div></div>
   <div class="callout callout-key" data-build="3">Sample, append, repeat until the boundary token appears.</div>
 </div>
+<div class="frame" data-title="PyTorch: choose the next character" data-autobuild="off">
+  <pre class="pytorch" data-torch="sample-function"><code>@torch.no_grad()
+def sample_next(ctx, temperature=1.0):
+    z = model(ctx)
+    p = (z / temperature).softmax(dim=-1)
+    return torch.multinomial(p, num_samples=1)</code></pre>
+  <p><code>multinomial</code> samples one token ID from each probability row. For our single name, its result has shape <code>[1, 1]</code>.</p>
+  <p><code>no_grad()</code> skips building a gradient graph. Temperature must be positive; <code>1.0</code> leaves the logits unchanged.</p>
+</div>
+<div class="frame" data-title="PyTorch: start with three boundary tokens" data-autobuild="off">
+  <pre class="pytorch" data-torch="generation-setup"><code>model.eval()
+ctx = torch.full((1, 3), stoi["-"], dtype=torch.long)
+name = []
+temperature = 1.0</code></pre>
+  <p><code>ctx</code> is the opening window <code>- - -</code>. <code>name</code> will collect the chosen letters.</p>
+  <p><code>eval()</code> selects evaluation behaviour. It does not disable gradients; the decorator on <code>sample_next</code> does that. Our small model has no dropout or batch normalization, so its forward calculation is unchanged.</p>
+</div>
+<div class="frame" data-title="PyTorch: append, shift, and predict again" data-autobuild="off">
+  <pre class="pytorch" data-torch="generation-loop"><code>for _ in range(18):
+    next_id = sample_next(ctx, temperature)
+    if next_id.item() == stoi["-"]: break
+    name.append(vocab[next_id.item()])
+    ctx = torch.cat([ctx[:, 1:], next_id], dim=1)</code></pre>
+  <p><code>ctx[:, 1:]</code> keeps the newest two IDs. <code>cat</code> appends the chosen ID to make another three-token window.</p>
+  <p>Sampling the boundary stops the loop without adding it to the name. The limit of 18 is a safety cap, so a sample can also stop before choosing the boundary.</p>
+</div>
 <div class="frame" data-title="Generate with the trained model" data-autobuild="off">
   <script type="text/x-notes">How does temperature change the next-character distribution?
   Try sample and greedy modes. Press Next character to watch the window, then generate a complete name.</script>
@@ -4460,6 +4607,13 @@ body.present #s10 .generator-layout .gen-name{overflow-wrap:anywhere}
   <script type="text/x-notes">Where does the next token come from during training and during generation?
   First trace the training update. Then use the same model for generation. Follow the reproducible sampled character into the next input. A boundary token would stop generation instead.</script>
   <div id="s11-compare" class="compare-step diagram-step"></div>
+</div>
+<div class="frame" data-title="PyTorch: a batch uses the same forward pass" data-autobuild="off">
+  <pre class="pytorch" data-torch="batch"><code>batch_z = model(X)
+batch_loss = F.cross_entropy(batch_z, y)</code></pre>
+  <p><code>X</code> is <code>[6, 3]</code>. The logits are <code>[6, 27]</code>: six independent rows of vocabulary scores.</p>
+  <p>Cross-entropy pairs row 0 with <code>y[0]</code>, row 1 with <code>y[1]</code>, and so on. Its default reduction is the mean of the six losses.</p>
+  <p>Computing a loss alone does not update the model. That still requires <code>backward()</code> and <code>optimizer.step()</code>.</p>
 </div>
 <div class="frame" data-title="Many windows or one growing output" data-autobuild="off">
   <script type="text/x-notes">Why can training prepare many rows before the model runs?
@@ -4504,6 +4658,13 @@ body.present #s12 .tok-row:not(.is-active){display:none}
   Edit the text and compare T. The vocabulary count here means distinct tokens in the displayed sample.</script>
   <div class="card"><h3 class="card-title">One sentence, three token choices</h3><label for="s12-input" class="muted small">Text to tokenize</label><textarea id="s12-input">deep learning is amazing</textarea><div class="btn-row token-modes" role="group" aria-label="Show one tokenizer"><button class="btn" type="button" data-unit="0" aria-pressed="true">Characters</button><button class="btn" type="button" data-unit="1" aria-pressed="false">Words</button><button class="btn" type="button" data-unit="2" aria-pressed="false">Subwords</button></div><div id="s12-output"></div></div>
 </div>
+<div class="frame" data-title="Tokenization happens before the PyTorch tensor" data-autobuild="off">
+  <pre class="pytorch" data-torch="tokenization"><code>text = "deep learning is amazing"
+char_tokens = list(text)
+word_tokens = text.split()</code></pre>
+  <p>These Python operations choose the units first. Character tokens include spaces; <code>split()</code> produces four word tokens here.</p>
+  <p>Next, a vocabulary maps tokens to IDs, and <code>torch.tensor</code> stores those IDs. A trained subword tokenizer replaces this simple splitting step when we want subword tokens.</p>
+</div>
 <div class="frame" data-title="Coverage and sequence length" data-autobuild="off">
   <script type="text/x-notes">Why can a word tokenizer lose the difference between unfamiliar words?
   Reveal the trade-off table, then show three distinct strings mapping to the same unknown token.</script>
@@ -4545,6 +4706,23 @@ body.present #s12 .tok-row:not(.is-active){display:none}
   <div class="side-by-side"><div class="card"><h3 class="card-title">Character model</h3><p class="pair">a a b → i</p><p class="pipeline">embedding → concatenate → MLP → softmax</p></div><div class="card" data-build="1"><h3 class="card-title">Word model</h3><p class="pair">The cat sat on → the</p><p class="pipeline">embedding → concatenate → MLP → softmax</p></div></div>
   <div class="callout callout-key" data-build="2">We changed the vocabulary, tokenizer, and training data.</div>
 </div>
+<div class="frame" data-title="PyTorch: the lookup can index words too" data-autobuild="off">
+  <pre class="pytorch" data-torch="word-embedding"><code>word_vocab = ["&lt;unk&gt;", "The", "cat", "sat", "on", "the"]
+word_stoi = {t: j for j, t in enumerate(word_vocab)}
+word_ctx = torch.tensor([[2, 3, 4]])  # cat sat on
+word_embedding = nn.Embedding(len(word_vocab), 2)
+word_e = word_embedding(word_ctx)</code></pre>
+  <p><span class="p1-input"><code>word_e</code> is still <code>[1, 3, 2]</code>: one example, three tokens, two coordinates.</span></p>
+  <p>Keep the latest three words of “The cat sat on” to predict what follows. This is a separate word vocabulary and a fresh table, which must be trained on word sequences.</p>
+</div>
+<div class="frame" data-title="PyTorch: one output per word in the vocabulary" data-autobuild="off">
+  <pre class="pytorch" data-torch="word-output"><code>word_hidden = nn.Linear(6, 32)
+word_output = nn.Linear(32, len(word_vocab))
+word_a1 = torch.tanh(word_hidden(word_e.flatten(1)))
+word_z = word_output(word_a1)</code></pre>
+  <p><span class="p1-score"><code>word_z</code> has shape <code>[1, 6]</code>, matching this six-word vocabulary.</span></p>
+  <p>The operations stay the same. The learned parameters belong to this new word model; they are not the trained character model's weights.</p>
+</div>
 <div class="frame" data-title="Several words can fit" data-autobuild="off">
   <script type="text/x-notes">Which words could reasonably follow this prefix?
   These bars are illustrative. Ask why seeing one target in the data does not rule out every other continuation.</script>
@@ -4585,6 +4763,13 @@ body.present #s12 .tok-row:not(.is-active){display:none}
   <script type="text/x-notes">What changes in W1 when the window grows from three to five?
   Move through the four marked window sizes. Read the shape and weight count after each change.</script>
   <div class="card"><div class="net-grid"><div><div id="s14-slider"></div><div id="s14-net"></div></div><div><p class="readout" id="s14-read"></p></div></div></div>
+</div>
+<div class="frame" data-title="PyTorch: a longer window needs a wider first layer" data-autobuild="off">
+  <pre class="pytorch" data-torch="longer-window"><code>new_w = 5
+wide_hidden = nn.Linear(new_w * 2, 32)
+print(wide_hidden.weight.shape)  # [32, 10]</code></pre>
+  <p>Five embeddings with two coordinates each make ten inputs. PyTorch stores one row per hidden unit, so this weight tensor is <code>[32, 10]</code>.</p>
+  <p>This creates a new layer with fresh parameters. The old <code>hidden</code> layer still expects six inputs.</p>
 </div>
 <div class="frame" data-title="A larger window makes a larger weight matrix" data-autobuild="off">
   <div class="card"><p class="readout" id="s14-large"></p></div>
@@ -4664,6 +4849,16 @@ body.present #s12 .tok-row:not(.is-active){display:none}
   <div data-build="1"><div class="p1-math">$$\pAct{a_1}=\tanh(\pIn{a_0}\pParam{W_1}+\pParam{b_1})$$</div><p class="p1-read"><span class="p1-activation">Hidden activations</span> combine the <span class="p1-input">input row</span> using <span class="p1-param">learned weights and bias</span>.</p></div>
   <div data-build="2"><div class="p1-math">$$\pProb{p}=\operatorname{softmax}(\pAct{a_1}\pParam{W_2}+\pParam{b_2})$$</div><p class="p1-read"><span class="p1-prob">Next-token probabilities</span> come from transforming the <span class="p1-activation">hidden row</span> with the <span class="p1-param">output weights and bias</span>, then applying softmax.</p></div>
   </div>
+</div>
+<div class="frame" data-title="PyTorch: the complete forward pass in five lines" data-autobuild="off">
+  <pre class="pytorch" data-torch="forward-recap"><code>e = embedding(ctx)
+a0 = e.flatten(1)
+a1 = torch.tanh(hidden(a0))
+z = output(a1)
+p = z.softmax(dim=-1)</code></pre>
+  <p><span class="p1-input">Lookup and concatenate.</span> <span class="p1-activation">Calculate the hidden activations.</span> <span class="p1-score">Produce vocabulary scores.</span> <span class="p1-prob">Normalize them into probabilities.</span></p>
+  <p>During training, send <code>z</code> and an observed target to cross-entropy. During generation, sample from <code>p</code> and form the next context.</p>
+  <p class="small"><a href="examples/part1_pytorch.py" download>Download the code in lecture order</a></p>
 </div>
 <div class="frame" data-title="Keep predicting; change how we use context" data-autobuild="off">
   <div class="callout callout-key">We still want to predict the next token. We need a different way to represent its context.</div>

@@ -19,6 +19,32 @@ body.present #s10 .generator-layout .gen-name{overflow-wrap:anywhere}
   <div class="card"><div class="loop"><div class="loop-box">Predict a distribution</div><span class="loop-arrow">→</span><div class="loop-box" data-build="1">Choose one character</div><span class="loop-arrow">→</span><div class="loop-box" data-build="2">Append and shift</div></div></div>
   <div class="callout callout-key" data-build="3">Sample, append, repeat until the boundary token appears.</div>
 </div>
+<div class="frame" data-title="PyTorch: choose the next character" data-autobuild="off">
+  <pre class="pytorch" data-torch="sample-function"><code>@torch.no_grad()
+def sample_next(ctx, temperature=1.0):
+    z = model(ctx)
+    p = (z / temperature).softmax(dim=-1)
+    return torch.multinomial(p, num_samples=1)</code></pre>
+  <p><code>multinomial</code> samples one token ID from each probability row. For our single name, its result has shape <code>[1, 1]</code>.</p>
+  <p><code>no_grad()</code> skips building a gradient graph. Temperature must be positive; <code>1.0</code> leaves the logits unchanged.</p>
+</div>
+<div class="frame" data-title="PyTorch: start with three boundary tokens" data-autobuild="off">
+  <pre class="pytorch" data-torch="generation-setup"><code>model.eval()
+ctx = torch.full((1, 3), stoi["-"], dtype=torch.long)
+name = []
+temperature = 1.0</code></pre>
+  <p><code>ctx</code> is the opening window <code>- - -</code>. <code>name</code> will collect the chosen letters.</p>
+  <p><code>eval()</code> selects evaluation behaviour. It does not disable gradients; the decorator on <code>sample_next</code> does that. Our small model has no dropout or batch normalization, so its forward calculation is unchanged.</p>
+</div>
+<div class="frame" data-title="PyTorch: append, shift, and predict again" data-autobuild="off">
+  <pre class="pytorch" data-torch="generation-loop"><code>for _ in range(18):
+    next_id = sample_next(ctx, temperature)
+    if next_id.item() == stoi["-"]: break
+    name.append(vocab[next_id.item()])
+    ctx = torch.cat([ctx[:, 1:], next_id], dim=1)</code></pre>
+  <p><code>ctx[:, 1:]</code> keeps the newest two IDs. <code>cat</code> appends the chosen ID to make another three-token window.</p>
+  <p>Sampling the boundary stops the loop without adding it to the name. The limit of 18 is a safety cap, so a sample can also stop before choosing the boundary.</p>
+</div>
 <div class="frame" data-title="Generate with the trained model" data-autobuild="off">
   <script type="text/x-notes">How does temperature change the next-character distribution?
   Try sample and greedy modes. Press Next character to watch the window, then generate a complete name.</script>

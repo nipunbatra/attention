@@ -1,5 +1,21 @@
 # Classroom release checks
 
+## 2026-09-11: Part 1 executable PyTorch stages
+
+- Added 25 code frames, each with 2–5 literal lines, nearby explanations, and relevant tensor shapes. The same character
+  model runs from IDs through `nn.Embedding`, concatenation, `nn.Linear`, softmax, loss, an SGD update, and generation.
+  The stored-weight transpose, logits-versus-probabilities distinction, and train/eval-versus-gradient modes are explicit.
+- `check_part1_torch.py` executes the exact HTML snippets in order with PyTorch 2.13.0. All shapes, loss equivalence,
+  finite parameter gradients, parameter changes, sampling context, and standalone-file synchronization pass. Loading the
+  saved checkpoint into those layers reproduces all six full vocabulary distributions within 1.53e-16.
+- `examples/part1_pytorch.py` is the downloadable code in lesson order. It starts untrained and illustrates one update,
+  not the saved model's entire training run. No training data, numerical model, shared runtime, or dependencies changed.
+- The frame audit passes all 185 progressive states, with 114 unique formulas and no overflow, internal scrollbars, or
+  runtime errors. The table audit passes 33 reading, 33 phone, and 24 presentation views. Phone reading has no document-width
+  overflow. The notation test still passes all ten equation guides in article and print-media modes.
+- Visually checked the embedding, storage transpose, cross-entropy, training update, generation loop, and forward recap
+  at the 1280×720 classroom size. `check_part1.mjs` and eight isolated metadata builds also pass. No new PDF was exported.
+
 ## 2026-09-11: Part 1 equation reading keys
 
 - Added ten introductory/recap equation-guide groups, including the long-form general probability expression.

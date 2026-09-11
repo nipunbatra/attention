@@ -12,6 +12,13 @@
   Move through the four marked window sizes. Read the shape and weight count after each change.</script>
   <div class="card"><div class="net-grid"><div><div id="s14-slider"></div><div id="s14-net"></div></div><div><p class="readout" id="s14-read"></p></div></div></div>
 </div>
+<div class="frame" data-title="PyTorch: a longer window needs a wider first layer" data-autobuild="off">
+  <pre class="pytorch" data-torch="longer-window"><code>new_w = 5
+wide_hidden = nn.Linear(new_w * 2, 32)
+print(wide_hidden.weight.shape)  # [32, 10]</code></pre>
+  <p>Five embeddings with two coordinates each make ten inputs. PyTorch stores one row per hidden unit, so this weight tensor is <code>[32, 10]</code>.</p>
+  <p>This creates a new layer with fresh parameters. The old <code>hidden</code> layer still expects six inputs.</p>
+</div>
 <div class="frame" data-title="A larger window makes a larger weight matrix" data-autobuild="off">
   <div class="card"><p class="readout" id="s14-large"></p></div>
   <p class="p1-read">$w$ counts context tokens. $d$ counts numbers per embedding. $d_h$ counts hidden units. <span class="p1-param">$\pParam{W_1}$ has $wd$ input rows and $d_h$ output columns.</span></p>

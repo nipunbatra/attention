@@ -27,6 +27,13 @@ The MLP layers, stable-softmax calculation, loss comparison, and mathematical re
 on separate frames. Part 1's role macros are scoped to its runtime; other parts retain their existing Q/K/V palette.
 Use the equation-key convention in `PRESENT.md` for future revisions and `notation_test.mjs` to check this implementation.
 
+Part 1 also pairs each computational stage with a 2–5-line PyTorch snippet, a plain-language explanation, and tensor
+shapes. There are 25 executable snippets, including `nn.Embedding`, `nn.Linear`, the storage transpose, stable softmax,
+cross-entropy, autograd/SGD, and generation. Run `check_part1_torch.py` with PyTorch installed; it checks the literal HTML
+code and the matching download `../examples/part1_pytorch.py`, then reproduces the saved model's six probability rows.
+The classroom code starts fresh and illustrates one update; it does not claim to reproduce training from a single batch.
+The source data and JS computations are unchanged. `notation_test.mjs` locates its frames by title, not fragile indices.
+
 The shared-layout pass removes permanent presentation header/footer bars. A small **Controls** button (or **C**) opens
 navigation without changing the stage scale. Slides show one title without repeated section labels. The article's notation
 strip is no longer sticky, and the end note is collapsed under “About this page”.

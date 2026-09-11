@@ -66,7 +66,7 @@ Use one frame for one visible argument:
 - Keep the final conclusion visible in the fully built state.
 - Repeat a small amount of context when a continuation frame needs it; every frame should make sense when deep-linked.
 - Put the frame’s question, pointing cue, and transition in `text/x-notes`, not in tiny slide text.
-- Use `<pre class="torch-snippet"><code>…</code></pre>` for one- to four-line code. In reading it may scroll
+- Use `<pre class="pytorch"><code>…</code></pre>` (or `torch-snippet`) for two- to five-line code. In reading it may scroll
   horizontally; in presentation it wraps and participates in the same fit check.
 - Do not depend on viewport `@media (max-width: …)` rules for slide composition. Scope reading-only responsive rules to
   `body:not(.present)`, or override them under `body.present` with the canonical grid.
@@ -136,6 +136,28 @@ phone layout, print styling, and representative fully revealed frames. Pair it w
 
 Apply this authoring rule to new or revised equations across the series. The September 11 implementation covers
 Part 1's introductory equations and recap; it is not a claim that every equation in the other seven parts has been revised.
+
+## Pair computational stages with executable code
+
+After a worked operation, show its 2–5-line PyTorch equivalent on a paced frame. Explain what each line does, the input
+and output shapes, and how the code variables match the equation. Keep the motivation frames free of premature code.
+Split setup, computation, and interpretation when needed; do not squeeze a full training script into one slide.
+
+Part 1's 25 snippets use `<pre class="pytorch" data-torch="unique-stage"><code>…</code></pre>`. Their order constructs
+one character model: IDs → embedding lookup → concatenation → hidden layer → logits → probabilities/loss → an update
+→ autoregressive sampling. The word-token and wider-window examples explicitly construct separate fresh layers.
+The final five-line forward pass reuses the original character layers. Plain-text code remains copyable.
+
+- Distinguish a fresh `nn.Embedding`/`nn.Linear` from the saved trained worksheet. Constructors do not load that checkpoint.
+- The lecture uses row-vector `a @ W + b`; `nn.Linear` stores `W.T`. Keep this mapping and both shapes visible.
+- Cross-entropy takes logits and observed token IDs. Generation samples probabilities without updating parameters.
+- `model.train()` / `model.eval()` select behaviour; `backward()` computes gradients; the optimizer updates parameters.
+  `no_grad()` controls gradient recording. None of these roles should be conflated.
+
+Run `python src/check_part1_torch.py` in an existing PyTorch environment. It extracts and executes the literal HTML snippets,
+checks shapes, loss, gradients, and the update, then independently loads `toy1.json` into the layers to verify all six
+saved probability rows. `--export-text` prints the matching standalone `examples/part1_pytorch.py`; keep that download
+synchronized whenever editing snippets. Pair execution checks with frame, table, and visual checks after rebuilding.
 
 ## Fit preflight
 

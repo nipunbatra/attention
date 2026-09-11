@@ -18,6 +18,16 @@
   <div data-build="2"><div class="p1-math">$$\pProb{p}=\operatorname{softmax}(\pAct{a_1}\pParam{W_2}+\pParam{b_2})$$</div><p class="p1-read"><span class="p1-prob">Next-token probabilities</span> come from transforming the <span class="p1-activation">hidden row</span> with the <span class="p1-param">output weights and bias</span>, then applying softmax.</p></div>
   </div>
 </div>
+<div class="frame" data-title="PyTorch: the complete forward pass in five lines" data-autobuild="off">
+  <pre class="pytorch" data-torch="forward-recap"><code>e = embedding(ctx)
+a0 = e.flatten(1)
+a1 = torch.tanh(hidden(a0))
+z = output(a1)
+p = z.softmax(dim=-1)</code></pre>
+  <p><span class="p1-input">Lookup and concatenate.</span> <span class="p1-activation">Calculate the hidden activations.</span> <span class="p1-score">Produce vocabulary scores.</span> <span class="p1-prob">Normalize them into probabilities.</span></p>
+  <p>During training, send <code>z</code> and an observed target to cross-entropy. During generation, sample from <code>p</code> and form the next context.</p>
+  <p class="small"><a href="examples/part1_pytorch.py" download>Download the code in lecture order</a></p>
+</div>
 <div class="frame" data-title="Keep predicting; change how we use context" data-autobuild="off">
   <div class="callout callout-key">We still want to predict the next token. We need a different way to represent its context.</div>
   <p class="next" data-build="1"><a class="btn btn-primary" href="attention.html">Next: Part 2, Self-attention</a></p>

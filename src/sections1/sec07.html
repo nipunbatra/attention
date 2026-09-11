@@ -19,6 +19,12 @@
   </dl></div>
   <div class="callout callout-key" data-build="1">Each token gets a positive share of the same total.</div>
 </div>
+<div class="frame" data-title="PyTorch: probabilities across the vocabulary" data-autobuild="off">
+  <pre class="pytorch" data-torch="softmax"><code>p = z.softmax(dim=-1)
+print(p.shape, p.sum(dim=-1))  # [1, 27], one total</code></pre>
+  <p><span class="p1-prob"><code>p</code> gives 27 probabilities for each example. Every row sums to one.</span></p>
+  <p><code>dim=-1</code> means the final dimension: vocabulary entries. We normalize across possible next characters, not across examples.</p>
+</div>
 <div class="frame" data-title="The same softmax, with smaller intermediate numbers" data-autobuild="off">
   <div data-math-guide><div class="p1-math">$$\pProb{p_j}=\frac{\exp(\pScore{z_j}-\pScore{z_{\max}})}{\sum_{r\in\mathcal V}\exp(\pScore{z_r}-\pScore{z_{\max}})}$$</div>
   <dl class="p1-key">
@@ -27,6 +33,14 @@
   </dl></div>
   <p>$j$ is the token we are scoring. The sum visits every token $r$ in the vocabulary $\mathcal V$.</p>
   <p data-build="1">The largest exponential is now 1. This avoids very large intermediate numbers.</p>
+</div>
+<div class="frame" data-title="PyTorch: the softmax calculation we worked out" data-autobuild="off">
+  <pre class="pytorch" data-torch="stable-softmax"><code>shifted = z - z.max(dim=-1, keepdim=True).values
+weights = shifted.exp()
+p = weights / weights.sum(dim=-1, keepdim=True)</code></pre>
+  <p><span class="p1-score">Subtract the largest score in each row, then exponentiate.</span> <span class="p1-prob">Divide by that row's total to get probabilities.</span></p>
+  <p><code>keepdim=True</code> keeps the maximum and total shaped <code>[batch, 1]</code>, so each broadcasts across its own row.</p>
+  <p>In normal model code, use <code>z.softmax(dim=-1)</code> for this operation.</p>
 </div>
 <div class="frame" data-title="Softmax worksheet" data-autobuild="off">
   <script type="text/x-notes">Where do the other vocabulary entries affect the probability of i?

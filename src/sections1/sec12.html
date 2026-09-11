@@ -21,6 +21,13 @@ body.present #s12 .tok-row:not(.is-active){display:none}
   Edit the text and compare T. The vocabulary count here means distinct tokens in the displayed sample.</script>
   <div class="card"><h3 class="card-title">One sentence, three token choices</h3><label for="s12-input" class="muted small">Text to tokenize</label><textarea id="s12-input">deep learning is amazing</textarea><div class="btn-row token-modes" role="group" aria-label="Show one tokenizer"><button class="btn" type="button" data-unit="0" aria-pressed="true">Characters</button><button class="btn" type="button" data-unit="1" aria-pressed="false">Words</button><button class="btn" type="button" data-unit="2" aria-pressed="false">Subwords</button></div><div id="s12-output"></div></div>
 </div>
+<div class="frame" data-title="Tokenization happens before the PyTorch tensor" data-autobuild="off">
+  <pre class="pytorch" data-torch="tokenization"><code>text = "deep learning is amazing"
+char_tokens = list(text)
+word_tokens = text.split()</code></pre>
+  <p>These Python operations choose the units first. Character tokens include spaces; <code>split()</code> produces four word tokens here.</p>
+  <p>Next, a vocabulary maps tokens to IDs, and <code>torch.tensor</code> stores those IDs. A trained subword tokenizer replaces this simple splitting step when we want subword tokens.</p>
+</div>
 <div class="frame" data-title="Coverage and sequence length" data-autobuild="off">
   <script type="text/x-notes">Why can a word tokenizer lose the difference between unfamiliar words?
   Reveal the trade-off table, then show three distinct strings mapping to the same unknown token.</script>

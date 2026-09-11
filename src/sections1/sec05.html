@@ -18,6 +18,12 @@
   <div class="card"><h3 class="card-title">The three rows for a a b</h3><div id="s05-rows"></div></div>
   <div data-build="1" data-math-guide><div class="join-eq p1-math" id="s05-eq"></div><p class="p1-read"><span class="p1-input">$\pIn{e_1,e_2,e_3}$ are the embedding rows at the three window positions. $\pIn{a_0}$ is their concatenation, the MLP input.</span> $\mathbb R^{1\times6}$ means one row of six real numbers.</p></div>
 </div>
+<div class="frame" data-title="PyTorch: concatenate without mixing examples" data-autobuild="off">
+  <pre class="pytorch" data-torch="flatten"><code>a0 = e.flatten(start_dim=1)
+print(a0.shape)  # [1, 6]</code></pre>
+  <p><span class="p1-input"><code>e</code> has three rows of two coordinates. <code>a0</code> places those six numbers side by side, in position order.</span></p>
+  <p><code>start_dim=1</code> preserves dimension 0, the batch dimension. For 6 examples, the same operation maps <code>[6, 3, 2]</code> to <code>[6, 6]</code>.</p>
+</div>
 <div class="frame" data-title="Six numbers, with a slot for each position" data-autobuild="off">
   <div class="card"><div id="s05-joined"></div></div>
   <div class="callout callout-key" data-build="1">Concatenation keeps each position in its own part of the input row.</div>

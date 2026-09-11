@@ -20,6 +20,16 @@
   <div class="card"><h3 class="card-title">One boundary and the alphabet</h3><div id="s02-vocab"></div><div class="prose" data-build="1"><p>The vocabulary is $\mathcal V=\{\text{-},a,\ldots,z\}$, with one output class per token.</p></div></div>
   <div class="card" data-build="2"><h3 class="card-title">Names in the source list</h3><div class="name-row"><span class="name">aabid</span><span class="name">aarav</span><span class="name">avni</span><span class="name">naveen</span><span class="name">vani</span><span class="name">zeel</span></div></div>
 </div>
+<div class="frame" data-title="PyTorch: give each character an ID" data-autobuild="off">
+  <p>Run the snippets in order. We use the same 27-token vocabulary throughout.</p>
+  <pre class="pytorch" data-torch="vocabulary"><code>import torch
+from torch import nn
+from torch.nn import functional as F
+vocab = ["-"] + list("abcdefghijklmnopqrstuvwxyz")
+stoi = {c: j for j, c in enumerate(vocab)}</code></pre>
+  <p><code>stoi</code> maps a character to an integer: <code>"-" → 0</code>, <code>"a" → 1</code>, <code>"b" → 2</code>.</p>
+  <p class="small muted">These snippets construct a fresh model. The numerical worksheets show a saved trained model; creating a layer does not load those trained values.</p>
+</div>
 <div class="frame" data-title="One 27-class prediction" data-autobuild="off">
   <script type="text/x-notes">Which character receives the most probability after aab?
   Point out that the full distribution has one entry for every vocabulary token, including the boundary.</script>

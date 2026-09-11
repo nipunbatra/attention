@@ -19,6 +19,28 @@
   <div class="card"><h3 class="card-title">All learned parameters $\pParam{\theta}$</h3><div id="s09-params"></div></div>
   <p class="p1-read"><span class="p1-input">$\pIn{E_{\text{tok}}}$ stores embedding rows.</span> <span class="p1-param">$\pParam{W_1,W_2}$ are weight matrices. $\pParam{b_1,b_2}$ are bias rows.</span></p>
 </div>
+<div class="frame" data-title="PyTorch: choose the parameters to update" data-autobuild="off">
+  <pre class="pytorch" data-torch="optimizer"><code>optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
+model.train()</code></pre>
+  <p><code>model.parameters()</code> includes the embedding table and both layers' weights and biases.</p>
+  <p><code>lr=0.1</code> sets the learning rate for this example. <code>model.train()</code> selects training mode; it does not update anything by itself.</p>
+</div>
+<div class="frame" data-title="PyTorch: one update on the six training rows" data-autobuild="off">
+  <pre class="pytorch" data-torch="training"><code>optimizer.zero_grad()
+z = model(X)
+loss = F.cross_entropy(z, y)
+loss.backward()
+optimizer.step()</code></pre>
+  <p><code>zero_grad()</code> clears old gradients. The next two lines calculate fresh predictions and their mean loss.</p>
+  <p><code>backward()</code> computes gradients through the whole graph. <code>step()</code> uses them to change the stored parameters.</p>
+  <p class="small muted">This is one illustrative update. Training the name model repeats updates over many batches from the training names.</p>
+</div>
+<div class="frame" data-title="PyTorch: inspect the parameter gradients" data-autobuild="off">
+  <pre class="pytorch" data-torch="gradients"><code>print(embedding.weight.grad.shape)  # [27, 2]
+print(hidden.weight.grad.shape)     # [32, 6]</code></pre>
+  <p>A parameter's <code>.grad</code> has the same shape as that parameter. It describes how changing each entry would affect the loss.</p>
+  <p>The optimizer updates the tables and weights. The next forward pass recomputes <span class="p1-input"><code>e</code> and <code>a0</code></span>, <span class="p1-activation"><code>a1</code></span>, <span class="p1-score"><code>z</code></span>, and <span class="p1-prob"><code>p</code></span>.</p>
+</div>
 <div class="frame" data-title="The target is not part of the input" data-autobuild="off">
   <div class="prose"><p>For <strong>aab → i</strong>:</p><p data-build="1">The input looks up embedding rows <strong>a</strong> and <strong>b</strong>.</p><p data-build="2">The observed target <strong>i</strong> selects the cross-entropy loss.</p></div>
   <div class="callout callout-note" data-build="3">The i embedding is not looked up for this input.</div>
