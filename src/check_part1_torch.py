@@ -45,9 +45,12 @@ assert len(parser.items) >= 20, "Missing computational-stage snippets"
 assert len({name for name, _ in parser.items}) == len(parser.items)
 snippet_names = [name for name, _ in parser.items]
 assert snippet_names.index("single-character-lookup") + 1 == snippet_names.index("embedding")
+assert snippet_names.index("model") + 1 == snippet_names.index("model-class")
 for name, source in parser.items:
     lines = source.splitlines()
-    assert 2 <= len(lines) <= 5, (name, "expected 2–5 code lines")
+    # Keep the class definition and its call intact, rather than split Python scope.
+    max_lines = 13 if name == "model-class" else 5
+    assert 2 <= len(lines) <= max_lines, (name, "snippet too long")
     assert max(map(len, lines)) <= 85, (name, "line too long for the slide")
     ast.parse(source, filename=name)
 
@@ -122,6 +125,23 @@ for name, source in parser.items:
         assert scope["z"].shape == (1, 27)
     if name == "model":
         assert sum(p.numel() for p in scope["model"].parameters()) == 1169
+    if name == "model-class":
+        sequential, object_model = scope["model"], scope["model_oop"]
+        assert isinstance(object_model, torch.nn.Module)
+        for layer in ("embedding", "hidden", "output"):
+            assert getattr(object_model, layer) is scope[layer]
+        params = tuple(sequential.parameters())
+        assert tuple(map(id, params)) == tuple(map(id, object_model.parameters()))
+        assert sum(p.numel() for p in object_model.parameters()) == 1169
+        torch.testing.assert_close(scope["z_oop"], scope["z"])
+        for inputs in (scope["ctx"], scope["X"]):
+            torch.testing.assert_close(object_model(inputs), sequential(inputs))
+        # Both forms must connect the loss to every shared parameter identically.
+        seq_loss = torch.nn.functional.cross_entropy(sequential(scope["X"]), scope["y"])
+        oop_loss = torch.nn.functional.cross_entropy(object_model(scope["X"]), scope["y"])
+        for seq_grad, oop_grad in zip(torch.autograd.grad(seq_loss, params),
+                                      torch.autograd.grad(oop_loss, params)):
+            torch.testing.assert_close(seq_grad, oop_grad)
     if name == "batch-shapes":
         assert scope["a0_batch"].shape == (4, 6)
         assert scope["a1_batch"].shape == (4, 32)
@@ -142,6 +162,7 @@ for name, source in parser.items:
         params = list(scope["model"].parameters())
         assert all(p.grad is not None and torch.isfinite(p.grad).all() for p in params)
         assert any(not torch.equal(old, new) for old, new in zip(before_step, params))
+        torch.testing.assert_close(scope["model_oop"](scope["X"]), scope["model"](scope["X"]))
     if name == "generation-loop":
         assert scope["ctx"].shape == (1, 3)
         assert len(scope["name"]) <= 18 and "-" not in scope["name"]

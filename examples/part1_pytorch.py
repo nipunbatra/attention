@@ -94,6 +94,21 @@ model = nn.Sequential(
 )
 z = model(ctx)
 
+# model-class
+class NameMLP(nn.Module):
+    def __init__(self, embedding, hidden, output):
+        super().__init__()
+        self.embedding = embedding
+        self.hidden = hidden
+        self.output = output
+    def forward(self, ctx):
+        a0 = self.embedding(ctx).flatten(1)
+        a1 = torch.relu(self.hidden(a0))
+        return self.output(a1)
+
+model_oop = NameMLP(embedding, hidden, output)
+z_oop = model_oop(ctx)  # [1, 27], same logits as before
+
 # batch-shapes
 a0_batch = embedding(X[:4]).flatten(1)
 a1_batch = torch.relu(hidden(a0_batch))

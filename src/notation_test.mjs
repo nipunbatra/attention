@@ -130,6 +130,8 @@ for (const [section, title, name] of [
   ['s05', 'Three rows become one row', 'concatenation'],
   ['s06', 'The hidden layer combines the input numbers', 'hidden-layer'],
   ['s06', 'The output layer makes one score per token', 'output-layer'],
+  ['s06', 'PyTorch: reuse the same layers as one model', 'model-sequential'],
+  ['s06', 'PyTorch: the same model as a class', 'model-class'],
   ['s06', 'Check the shapes before multiplying', 'shapes'],
   ['s06', 'Parameters are shared across examples', 'parameter-shapes'],
   ['s06', 'PyTorch: four examples, the same feature widths', 'batch-shapes'],

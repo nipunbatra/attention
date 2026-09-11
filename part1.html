@@ -5094,10 +5094,26 @@ print(z.shape)  # [1, 27]</code></pre>
     embedding, nn.Flatten(1), hidden, nn.ReLU(), output
 )
 z = model(ctx)</code></pre>
-  <p><code>model(ctx)</code> runs the lookup, concatenation, hidden layer, and output layer in order.</p>
-  <p>These are the <strong>same layer objects</strong> we just used. They share the same parameters. Calling the model does not create new weights.</p>
-  <p class="p1-score">The model returns logits. We apply softmax separately when we want probabilities.</p>
+  <p><code>nn.Sequential</code> runs the <strong>same layers in order</strong>, with the same parameters.</p>
+  <p class="p1-score"><code>z</code>: 27 logits per example. Softmax comes next.</p>
 </div>
+<div class="frame" data-title="PyTorch: the same model as a class" data-autobuild="off">
+  <pre class="pytorch" data-torch="model-class"><code>class NameMLP(nn.Module):
+    def __init__(self, embedding, hidden, output):
+        super().__init__()
+        self.embedding = embedding
+        self.hidden = hidden
+        self.output = output
+    def forward(self, ctx):
+        a0 = self.embedding(ctx).flatten(1)
+        a1 = torch.relu(self.hidden(a0))
+        return self.output(a1)
+
+model_oop = NameMLP(embedding, hidden, output)
+z_oop = model_oop(ctx)  # [1, 27], same logits as before</code></pre>
+  <p><code>__init__</code>: store layers. <code>forward</code>: compute logits on each call.</p>
+</div>
+<div class="companion"><p><code>NameMLP</code> inherits from <code>nn.Module</code>. <code>self</code> refers to this model object. <code>super().__init__()</code> initializes the PyTorch module machinery before we attach layers. Storing each layer on <code>self</code> registers it, so <code>model_oop.parameters()</code> finds its learned weights. We pass in the existing layer objects, so this class and the <code>nn.Sequential</code> version share parameters and produce the same logits. Call <code>model_oop(ctx)</code> rather than calling <code>forward</code> directly, so PyTorch also handles registered hooks. Either model can be passed to the optimizer. We continue with <code>model</code> below.</p></div>
 <div class="frame" data-title="Check the shapes before multiplying" data-autobuild="off">
   <p>For <span class="p1-input">$\pIn{a_0}$</span>, <span class="p1-activation">$\pAct{a_1}$</span>, and <span class="p1-score">$\pScore{z}$</span>: <strong>rows count examples; columns count numbers per example.</strong></p>
   <p>Our whole window <strong>a a b</strong> is <strong>one example</strong>, so each array has one row.</p>
