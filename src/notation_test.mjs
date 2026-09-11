@@ -22,7 +22,7 @@ await page.goto(pathToFileURL(path.resolve(process.argv[2] || 'part1.html')).hre
 await page.waitForTimeout(250);
 const checkGuides = () => {
   const issues = [], guides = [...document.querySelectorAll('[data-math-guide]')];
-  const roles = ['input', 'target', 'param', 'prob', 'activation', 'score', 'loss', 'token', 'index'];
+  const roles = ['input', 'target', 'param', 'prob', 'activation', 'score', 'loss', 'token', 'index', 'temperature'];
   for (const guide of guides) {
     for (const role of roles) {
       const cls = '.p1-' + role;

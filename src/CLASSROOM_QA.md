@@ -1,5 +1,21 @@
 # Classroom release checks
 
+## 2026-09-11: temperature before the generation control
+
+- Added three paced frames before temperature first appears in executable code: a same-input comparison at
+  0.5/1.0/1.5, a colour-keyed softmax(z/T) explanation, and actual divided-logit arithmetic for n and m after `- s a`.
+  The charts retain a common scale and token order. Other probability mass is labelled as a total over 22 tokens.
+  The numerical softmax includes all 27 tokens and uses unrounded logits.
+- The text distinguishes changed sampling probabilities from unchanged weights and greedy choices. T must be positive.
+  The next frame's existing five-line PyTorch function implements the operation. The live generator adds a mode-aware
+  temperature note. Its generation and slider algorithms are unchanged. No PDF was regenerated.
+- All 229 progressive states, 126 unique formulas, and 18 equation guides pass fit/notation checks. Table checks pass
+  in reading, phone, and presentation modes. The chart, formula, numerical worksheet, and greedy-mode control were
+  visually inspected. All 33 snippets execute. Independent Torch tests reproduce n's probabilities at all three
+  temperatures, confirm normalization and fixed argmax, and show increasing entropy. Existing gradient tests pass.
+- SVG checks cover 72 instances and 2,342 bounded labels. New regressions compare every displayed temperature bar
+  and worksheet cell with the live generator, and require the explanation before its code/control.
+
 ## 2026-09-11: a complete animated generation run
 
 - Replaced the abstract loop with 12 progressive states covering four actual saved-model calls: `---`, `--s`, `-sa`,

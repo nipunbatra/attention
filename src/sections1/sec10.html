@@ -4,6 +4,7 @@
 body:not(.present) #s10 .generation-walk .stage-title{display:block}
 #s10 .walk-controls{display:flex;gap:12px;align-items:center;margin-top:8px}
 #s10 .walk-controls .small{margin:0}
+#s10 .p1-temperature{color:#9D4007}
 @media print{#s10 .walk-controls{display:none}}
 #s10 .gen-name{font-family:var(--font-mono);font-size:1.6em;min-height:1.6em;margin:12px 0}
 #s10 .window{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:12px 0}
@@ -25,6 +26,28 @@ body.present #s10 .generator-layout .gen-name{overflow-wrap:anywhere}
   <div class="card teaching-diagram" id="s10-trace"></div>
   <p>Each new input uses the newest three tokens. The output name keeps <strong>all</strong> the letters chosen so far.</p>
 </div>
+<div class="frame" data-title="Temperature changes the sampling probabilities" data-autobuild="off">
+  <script type="text/x-notes">Can we make the model favour n more strongly without retraining it?
+  Keep minus s a fixed. Read the same character across all three plots. Lower temperature concentrates probability on the highest scores. Higher temperature makes the whole distribution more even, but does not necessarily increase every individual alternative. The other row is a total over 22 characters, not another character we could draw. Higher temperature does not guarantee better names.</script>
+  <p>Keep the input <code>− s a</code> and the trained model fixed. Change only the <strong>temperature</strong> setting.</p>
+  <div class="teaching-diagram" id="s10-temperature-bars"></div>
+  <p>The highest-scoring character stays <strong>n</strong>. Greedy still chooses it. Sampling uses the changed probabilities.</p>
+</div>
+<div class="frame" data-title="Divide the logits by temperature, then apply softmax" data-autobuild="off">
+  <div data-math-guide id="s10-temperature-guide"><div class="p1-math">$$\pProb{p}=\operatorname{softmax}\!\left(\frac{\pScore{z}}{\htmlClass{p1-temperature}{T}}\right)$$</div>
+  <dl class="p1-key">
+    <div class="p1-score"><dt>$\pScore{z}$: the 27 logits</dt><dd>Scores from the unchanged model.</dd></div>
+    <div class="p1-temperature"><dt>$\htmlClass{p1-temperature}{T}$: temperature</dt><dd>A positive setting we choose. Divide every logit by it.</dd></div>
+    <div class="p1-prob"><dt>$\pProb{p}$: the 27 probabilities</dt><dd>Softmax makes them positive and normalizes their sum to 1.</dd></div>
+  </dl></div>
+  <p>Dividing by a number below 1 amplifies the differences between logits. Dividing by a number above 1 reduces those differences.</p>
+  <p>The model's weights stay fixed. We change how its scores become sampling probabilities.</p>
+</div>
+<div class="frame" data-title="Temperature in our − s a example" data-autobuild="off">
+  <p>For this input, the model's logits are <span class="p1-score" id="s10-temperature-logits"></span>.</p>
+  <div id="s10-temperature-table"></div>
+  <p>At temperature <strong>0.5</strong>, the logit gap doubles. At <strong>1.5</strong>, it shrinks. At <strong>1.0</strong>, nothing changes.</p>
+</div>
 <div class="frame" data-title="PyTorch: choose the next character" data-autobuild="off">
   <pre class="pytorch" data-torch="sample-function"><code>@torch.no_grad()
 def sample_next(ctx, temperature=1.0):
@@ -32,7 +55,7 @@ def sample_next(ctx, temperature=1.0):
     p = (z / temperature).softmax(dim=-1)
     return torch.multinomial(p, num_samples=1)</code></pre>
   <p><code>multinomial</code> samples one token ID from each probability row. For our single name, its result has shape <code>[1, 1]</code>.</p>
-  <p><code>no_grad()</code> skips building a gradient graph. Temperature must be positive; <code>1.0</code> leaves the logits unchanged.</p>
+  <p>Divide <code>z</code> by a positive temperature <em>before</em> softmax. <code>no_grad()</code> skips the gradient graph. For greedy choice, use <code>argmax</code> rather than dividing by zero.</p>
 </div>
 <div class="frame" data-title="PyTorch: start with three boundary tokens" data-autobuild="off">
   <pre class="pytorch" data-torch="generation-setup"><code>model.eval()
@@ -64,7 +87,7 @@ sampled_id = torch.multinomial(p, num_samples=1)</code></pre>
 <div class="frame" data-title="Generate with the trained model" data-autobuild="off">
   <script type="text/x-notes">How does temperature change the next-character distribution?
   Try sample and greedy modes. Press Next character to watch the window, then generate a complete name.</script>
-  <div class="card"><h3 class="card-title">A live name generator</h3><div class="generator-layout"><div><div class="btn-row" role="group" aria-label="Choose generation mode"><button type="button" class="btn" id="s10-sample" aria-pressed="true">Sample</button><button type="button" class="btn" id="s10-greedy" aria-pressed="false">Greedy</button></div><div id="s10-temp"></div><div class="gen-name" id="s10-name"></div><div class="window"><div id="s10-window"></div><span aria-hidden="true">→</span><span class="chosen" id="s10-chosen">?</span></div></div><div id="s10-bars"></div></div><div class="btn-row"><button type="button" class="btn btn-primary" id="s10-next">Next character</button><button type="button" class="btn" id="s10-all">Generate a name</button><button type="button" class="btn btn-quiet" id="s10-reset">Start over</button></div><p class="muted small" id="s10-status"></p></div>
+  <div class="card"><h3 class="card-title">A live name generator</h3><div class="generator-layout"><div><div class="btn-row" role="group" aria-label="Choose generation mode"><button type="button" class="btn" id="s10-sample" aria-pressed="true">Sample</button><button type="button" class="btn" id="s10-greedy" aria-pressed="false">Greedy</button></div><div id="s10-temp"></div><p class="small muted" id="s10-temp-note"></p><div class="gen-name" id="s10-name"></div><div class="window"><div id="s10-window"></div><span aria-hidden="true">→</span><span class="chosen" id="s10-chosen">?</span></div></div><div id="s10-bars"></div></div><div class="btn-row"><button type="button" class="btn btn-primary" id="s10-next">Next character</button><button type="button" class="btn" id="s10-all">Generate a name</button><button type="button" class="btn btn-quiet" id="s10-reset">Start over</button></div><p class="muted small" id="s10-status"></p></div>
 </div>
 <div class="frame" data-title="Twenty seeded samples" data-autobuild="off">
   <script type="text/x-notes">Which generated names look plausible, and which reveal the model's small context?
@@ -100,16 +123,25 @@ sampled_id = torch.multinomial(p, num_samples=1)</code></pre>
   new IntersectionObserver(entries=>{if(!entries[0].isIntersecting)pause();}).observe(walk);
   S.querySelector('#s10-trace').appendChild(AT.part1Diagrams.generationTrace());
   S.querySelector('#s10-choice').appendChild(AT.part1Diagrams.generationChoice());
+  S.querySelector('#s10-temperature-bars').appendChild(AT.part1Diagrams.temperatureComparison());
+  const temperatureContext=['-','s','a'],logits=AT.mlp.forward(temperatureContext).z,nid=AT.mlp.stoi.n,mid=AT.mlp.stoi.m;
+  S.querySelector('#s10-temperature-logits').textContent='n: '+AT.fmt(logits[nid],3)+' and m: '+AT.fmt(logits[mid],3);
+  const temperatureTable=AT.ui.table([.5,1,1.5].map(t=>[logits[nid]/t,logits[mid]/t,AT.mlp.distribution(temperatureContext,t).p[nid]]),{
+    rowLabels:['0.5','1.0','1.5'],cornerLabel:'temperature',decimals:3,
+    cols:['n: divided logit','m: divided logit','n: probability'],
+    caption:'All 27 divided logits enter softmax. Calculations use unrounded logits. Displayed values have 3 decimals.',
+    into:S.querySelector('#s10-temperature-table')});
+  temperatureTable.cells.forEach(row=>{row[0].classList.add('p1-score');row[1].classList.add('p1-score');row[2].classList.add('p1-prob');});
   const nameEl=S.querySelector('#s10-name'),windowEl=S.querySelector('#s10-window'),chosen=S.querySelector('#s10-chosen'),barsEl=S.querySelector('#s10-bars'),status=S.querySelector('#s10-status');
   function topItems(p){const top=AT.topk(p,6),rest=1-top.reduce((a,x)=>a+x.p,0);return top.map(x=>({label:x.tok,p:x.p})).concat([{label:'other ×'+(p.length-top.length),p:rest}]);}
   function paint(){AT.clear(windowEl);AT.clear(barsEl);let context=['-','-','-'],p=AT.mlp.distribution(context,temp).p,last=null;if(result&&result.trace.length){last=result.trace[result.trace.length-1];context=last.context;p=last.probabilities;}AT.ui.chips(context,{active:[0,1,2],into:windowEl});chosen.textContent=last?last.chosen:'?';nameEl.textContent=result?(result.name||'(boundary)'):' ';AT.ui.bars(topItems(p),{highlight:last?last.chosen:null,sorted:false,decimals:2,into:barsEl});status.textContent=(greedy?'Greedy':'Sample')+' · temperature '+AT.fmt(temp,2)+' · seed '+seed+(last&&last.chosen==='-'?' · boundary reached':'');}
-  function reset(){steps=0;result=null;paint();}
+  function reset(){steps=0;result=null;paint();S.querySelector('#s10-temp-note').textContent=greedy?'Temperature changes the bars, but greedy keeps the same choices.':'Lower temperature favours the top scores more strongly.';}
   function setMode(next){greedy=next;S.querySelector('#s10-sample').setAttribute('aria-pressed',String(!greedy));S.querySelector('#s10-greedy').setAttribute('aria-pressed',String(greedy));reset();}
   S.querySelector('#s10-sample').addEventListener('click',()=>setMode(false));S.querySelector('#s10-greedy').addEventListener('click',()=>setMode(true));
   AT.ui.slider({label:'Temperature',min:.3,max:1.5,step:.05,value:temp,format:v=>AT.fmt(v,2),onInput:v=>{temp=v;reset();},into:S.querySelector('#s10-temp')});
   S.querySelector('#s10-next').addEventListener('click',()=>{steps+=1;result=AT.mlp.generate({temperature:temp,greedy:greedy,seed:seed,maxLength:steps});paint();});
   S.querySelector('#s10-all').addEventListener('click',()=>{seed+=1;steps=18;result=AT.mlp.generate({temperature:temp,greedy:greedy,seed:seed,maxLength:steps});paint();});
-  S.querySelector('#s10-reset').addEventListener('click',reset);paint();
+  S.querySelector('#s10-reset').addEventListener('click',reset);reset();
   M.sampled_names.forEach(item=>S.querySelector('#s10-samples').appendChild(AT.h('span',{class:'sample'},item.name)));
   S.querySelector('#s10-sample-note').textContent='Sampling seed '+M.sample_seed+' · temperature '+AT.fmt(M.sample_temperature,2)+' · twenty saved names.';
 })();

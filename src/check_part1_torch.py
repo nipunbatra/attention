@@ -184,6 +184,18 @@ with torch.no_grad():
         context = context[1:] + [next_id]
     assert "".join(letters) == "san" and next_id == 0
 print("PASS worked sampling-run probabilities and complete greedy san run match PyTorch")
+with torch.no_grad():
+    ids = torch.tensor([[toy["vocab"].index(c) for c in "-sa"]])
+    logits = model(ids)
+    entropies = []
+    for temperature, expected in [(0.5, 0.3421538651134514), (1, 0.16144017394224666), (1.5, 0.11173754487935607)]:
+        probabilities = (logits / temperature).softmax(-1)[0]
+        assert abs(probabilities[toy["vocab"].index("n")].item() - expected) < 1e-12
+        assert probabilities.argmax().item() == toy["vocab"].index("n")
+        assert abs(probabilities.sum().item() - 1) < 1e-12
+        entropies.append(-(probabilities * probabilities.log()).sum().item())
+    assert entropies[0] < entropies[1] < entropies[2]
+print("PASS temperature comparison: three normalized distributions, increasing entropy, unchanged greedy choice")
 
 # This diagram concerns only aab -> i, not the six-row batch or the trainer's
 # extra embedding penalties. Repeated lookups must accumulate into one row.

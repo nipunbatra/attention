@@ -10,6 +10,13 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+Section 10 introduces temperature before the sampling function and live generator. Three frames compare the same
+`- s a` prediction at 0.5/1.0/1.5, explain coloured `p = softmax(z/T)` symbols, and work through the actual divided
+logits and n probability. All 27 logits enter each softmax. The model stays fixed, T is a positive user setting,
+and greedy preserves its choice. The existing five-line sampling function follows the explanation unchanged.
+A mode-aware note beside the generator slider explains that temperature changes bars but not greedy choices.
+There are still 33 executable snippets. Browser and independent Torch regressions check the three distributions.
+
 Section 10 now animates a complete saved-model generation run from `- - -`: seed 3, temperature 1 samples s, a, m,
 then the boundary. Its 12 managed steps separate prediction, selection, and append/shift (or stop). Next/Back gives
 manual pacing, Play replays the run, leaving the frame pauses playback, and reduced-motion/print disables movement.

@@ -571,7 +571,7 @@
     }
     line(svg, 18, 358, 1080, 358);
     text(svg, 18, 389, 'Name so far: ' + ((phase === 2 ? after : before) || '(empty)'), 'main mono', 'start');
-    text(svg, 1080, 389, 'Sampling, temperature 1.0, fixed seed 3', 'small', 'end');
+    text(svg, 1080, 389, 'Original probabilities, sampling seed 3', 'small', 'end');
     return svg;
   }
 
@@ -616,6 +616,33 @@
     return svg;
   }
 
+  function temperatureComparison() {
+    var context = ['-', 's', 'a'], tokens = ['n', 'r', 'h', 'm', 'a'];
+    var b = baseSvg('temperature-comparison', 'One prediction at three temperatures',
+      'Keep the input minus s a and the model fixed. Temperature 0.5 concentrates more probability on the highest-scoring character n. Temperature 1 preserves the original probabilities. Temperature 1.5 makes the full distribution more even. Each chart uses the same probability scale and shows the same five characters out of 27.', 1100, 335);
+    var svg = b.svg;
+    svg.setAttribute('data-stage', 0);
+    [.5, 1, 1.5].forEach(function (temperature, col) {
+      var x = col * 370, p = AT.mlp.distribution(context, temperature).p;
+      var panel = add(svg, 'g', { 'data-temperature': temperature, transform: 'translate(' + x + ',0)' });
+      text(panel, 175, 24, 'Temperature ' + temperature.toFixed(1), 'main');
+      text(panel, 175, 57, ['Lower: more concentrated', '1.0: original probabilities', 'Higher: more even'][col], 'small');
+      tokens.forEach(function (token, j) {
+        var prob = p[tokenId(token)], y = 98 + j * 36;
+        var row = add(panel, 'g', { 'data-temperature-token': token, 'data-probability': exact(prob) });
+        text(row, 22, y, token, 'label mono');
+        add(row, 'rect', { x: 46, y: y - 9, width: 215, height: 18, rx: 3, fill: 'var(--t-neutral,#EEF0F4)' });
+        add(row, 'rect', { x: 46, y: y - 9, width: 215 * prob / .4, height: 18, rx: 3, fill: 'var(--c-e,#2563EB)' });
+        text(row, 345, y, prob.toFixed(3), 'label mono', 'end');
+      });
+      [0, .2, .4].forEach(function (p) { text(panel, 46 + 215 * p / .4, 271, p.toFixed(1), 'small mono'); });
+      var rest = 1 - tokens.reduce(function (sum, t) { return sum + p[tokenId(t)]; }, 0);
+      text(panel, 175, 308, 'Other 22: ' + rest.toFixed(3) + ' in total', 'small');
+      if (col < 2) line(svg, x + 361, 10, x + 361, 320);
+    });
+    return svg;
+  }
+
   AT.part1Diagrams = {
     annotateMLP: annotateMLP,
     embeddingSpace: embeddingSpace,
@@ -626,6 +653,7 @@
     generationExample: generationExample,
     generationRun: generationRun,
     generationTrace: generationTrace,
-    generationChoice: generationChoice
+    generationChoice: generationChoice,
+    temperatureComparison: temperatureComparison
   };
 })();

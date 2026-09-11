@@ -33,7 +33,7 @@ try {
     const check = (condition, description) => { if (!condition) fail.push(description); };
     const pretty = value => (Math.abs(value) < 0.005 ? 0 : value).toFixed(2).replace('-', '−');
     const methods = { embeddingSpace: 0, lookupConcat: 2, learningGraph: 3, embeddingGradients: 0, trainingVsGeneration: 2,
-      generationRun: 11, generationTrace: 0, generationChoice: 0 };
+      generationRun: 11, generationTrace: 0, generationChoice: 0, temperatureComparison: 0 };
     const toy = window.__TOY__, mlp = AT.mlp;
     const original = JSON.stringify(toy);
     for (const id of ['s06-net', 's14-net']) {
@@ -237,6 +237,28 @@ try {
     check(final('generationChoice').textContent.includes(worked.trace[2].probabilities[mlp.stoi.n].toFixed(3)) && final('generationChoice').textContent.includes(worked.trace[2].probabilities[mlp.stoi.m].toFixed(3)), 'comparison probabilities must match the saved model');
     const frames = [...document.querySelectorAll('#s10 .frame')];
     check(frames.findIndex(f => f.contains(document.querySelector('#s10-choice'))) + 1 === frames.findIndex(f => f.contains(document.querySelector('#s10-next'))), 'choice comparison must immediately precede the original live generator');
+    const temperaturePanels = [...final('temperatureComparison').querySelectorAll('[data-temperature]')];
+    check(temperaturePanels.map(p => p.dataset.temperature).join(',') === '0.5,1,1.5', 'temperature comparison needs low, unchanged, and high settings');
+    const temperatureInput = ['-', 's', 'a'], temperatureForward = mlp.forward(temperatureInput);
+    const entropies = [], nProbabilities = [];
+    temperaturePanels.forEach((panel, i) => {
+      const t = Number(panel.dataset.temperature), distribution = mlp.distribution(temperatureInput, t);
+      const manual = AT.softmax(temperatureForward.z.map(z => z / t));
+      check(distribution.p.every((p, j) => near(p, manual[j])) && near(distribution.p.reduce((a,b)=>a+b,0),1), `temperature ${t}: normalize divided logits, not probabilities`);
+      check(distribution.z.every((z, j) => z === temperatureForward.z[j]), `temperature ${t}: original model scores must remain unchanged`);
+      check(AT.argmax(distribution.p) === mlp.stoi.n, `temperature ${t}: greedy's favourite must remain n`);
+      nProbabilities.push(distribution.p[mlp.stoi.n]);
+      entropies.push(-distribution.p.reduce((h, p) => h + p * Math.log(p), 0));
+      const rows = [...panel.querySelectorAll('[data-temperature-token]')];
+      check(rows.map(r=>r.dataset.temperatureToken).join(',') === 'n,r,h,m,a', `temperature ${t}: compare the same five labelled tokens`);
+      rows.forEach(r => check(near(Number(r.dataset.probability), distribution.p[mlp.stoi[r.dataset.temperatureToken]]), `temperature ${t}: bars must agree with live generation`));
+      const tableRow = document.querySelectorAll('#s10-temperature-table tbody tr')[i];
+      const expected = [temperatureForward.z[mlp.stoi.n]/t, temperatureForward.z[mlp.stoi.m]/t, distribution.p[mlp.stoi.n]].map(n=>AT.fmt(n,3));
+      check(JSON.stringify([...tableRow.querySelectorAll('td')].map(c=>c.textContent)) === JSON.stringify(expected), `temperature ${t}: worksheet must use actual logits and full 27-token softmax`);
+    });
+    check(entropies[0]<entropies[1] && entropies[1]<entropies[2] && nProbabilities[0]>nProbabilities[1] && nProbabilities[1]>nProbabilities[2], 'higher temperature must flatten this distribution and lower its maximum');
+    const codeIndex = frames.findIndex(f => f.querySelector('[data-torch="sample-function"]'));
+    check(['s10-temperature-bars','s10-temperature-guide','s10-temperature-table'].every(id => frames.findIndex(f=>f.contains(document.getElementById(id)))<codeIndex), 'explain temperature before both its code and the live control');
     check(JSON.stringify(toy) === original, 'rendering and generation must not modify learned model parameters');
     host.remove();
     return { failures: fail, instances: instances.length, labels, markers, points: points.length, boundarySeed: boundary?.seed };
