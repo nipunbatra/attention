@@ -306,7 +306,13 @@ try {
     });
     check(entropies[0]<entropies[1] && entropies[1]<entropies[2] && nProbabilities[0]>nProbabilities[1] && nProbabilities[1]>nProbabilities[2], 'higher temperature must flatten this distribution and lower its maximum');
     const codeIndex = frames.findIndex(f => f.querySelector('[data-torch="sample-function"]'));
-    check(['s10-temperature-bars','s10-temperature-guide','s10-temperature-table'].every(id => frames.findIndex(f=>f.contains(document.getElementById(id)))<codeIndex), 'explain temperature before both its code and the live control');
+    check(['s10-temperature-bars','s10-temperature-guide'].every(id => {
+      const index = frames.findIndex(f=>f.contains(document.getElementById(id)));
+      return index >= 0 && index < codeIndex;
+    }), 'explain temperature before both its code and the live control');
+    check(codeIndex > 0 && frames[codeIndex-1].contains(document.getElementById('s10-temperature-guide')), 'temperature formula must lead directly into sampling code');
+    const arithmetic = document.getElementById('s10-temperature-table');
+    check(!!arithmetic.closest('.companion') && !arithmetic.closest('.frame'), 'duplicate temperature arithmetic belongs only in the article companion');
     check(JSON.stringify(toy) === original, 'rendering and generation must not modify learned model parameters');
     host.remove();
     return { failures: fail, instances: instances.length, labels, markers, points: points.length, boundarySeed: boundary?.seed };

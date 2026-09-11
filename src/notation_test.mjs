@@ -139,6 +139,13 @@ const registration = await page.evaluate(() => {
   return {rows,issues};
 });
 errors.push(...registration.issues);
+const temperatureSequence = await page.evaluate(() => {
+  const issues=[], table=document.getElementById('s10-temperature-table');
+  if(!table.closest('.companion')||table.closest('.frame'))issues.push('Temperature arithmetic must be article-only');
+  if(!table.getBoundingClientRect().height)issues.push('Optional temperature arithmetic must remain visible in article mode');
+  return {articleArithmeticVisible:table.getBoundingClientRect().height>0,issues};
+});
+errors.push(...temperatureSequence.issues);
 // Include the fully revealed notation frames and the tables adjacent to them.
 for (const [section, title, name] of [
   ['s03', 'Writing the same question as a probability', 'probability'],
@@ -168,6 +175,9 @@ for (const [section, title, name] of [
   ['s09', 'Where model.parameters() comes from', 'named-parameters'],
   ['s09', 'PyTorch: choose the parameters to update', 'optimizer'],
   ['s09', 'Only rows a and b receive embedding gradients', 'embedding-gradients'],
+  ['s10', 'Temperature changes the sampling probabilities', 'temperature-bars'],
+  ['s10', 'Divide the logits by temperature, then apply softmax', 'temperature-guide'],
+  ['s10', 'PyTorch: choose the next character', 'sampling-code'],
   ['s14', 'The same calculation at larger widths', 'window-shapes'],
   ['s16', 'The same model in symbols', 'summary'],
   ['s16', 'Notation: from tokens to the MLP input', 'input-notation'],
@@ -182,6 +192,7 @@ for (const [section, title, name] of [
   await page.waitForTimeout(80);
   const fit = await page.evaluate(() => AT.present.fitReport());
   if (fit.overflow) errors.push(name + ': frame overflow');
+  if(section==='s10' && await page.locator('#s10-temperature-table').isVisible())errors.push(name+': optional arithmetic must stay hidden in presentation mode');
   await page.screenshot({ path: path.join(out, name + '.png') });
 }
 await page.evaluate(() => AT.present.exit());
@@ -198,5 +209,5 @@ await page.emulateMedia({ media: 'print' });
 const printed = await page.evaluate(checkGuides);
 errors.push(...printed.issues.map(x => 'print: ' + x));
 await browser.close();
-console.log(JSON.stringify({ article, lookup, shapes, probabilitySequence, registration, phone, print: printed, screenshots: out, errors }, null, 2));
+console.log(JSON.stringify({ article, lookup, shapes, probabilitySequence, registration, temperatureSequence, phone, print: printed, screenshots: out, errors }, null, 2));
 if (errors.length) process.exitCode = 1;

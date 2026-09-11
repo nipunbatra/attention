@@ -58,10 +58,10 @@ body.present #s10 .generator-field label,body.present #s10 .generator-field inpu
   <p>Dividing by a number below 1 amplifies the differences between logits. Dividing by a number above 1 reduces those differences.</p>
   <p>The model's weights stay fixed. We change how its scores become sampling probabilities.</p>
 </div>
-<div class="frame" data-title="Temperature in our − s a example" data-autobuild="off">
-  <p>For this input, the model's logits are <span class="p1-score" id="s10-temperature-logits"></span>.</p>
+<div class="companion" data-kicker="Optional temperature arithmetic">
+  <p>After generating <code>s</code> and <code>a</code>, the input window is <code>− s a</code>. The plots above use all 27 logits; two of them are <span class="p1-score" id="s10-temperature-logits"></span>.</p>
   <div id="s10-temperature-table"></div>
-  <p>At temperature <strong>0.5</strong>, the logit gap doubles. At <strong>1.5</strong>, it shrinks. At <strong>1.0</strong>, nothing changes.</p>
+  <p>The last column shows the probability of choosing <code>n</code> after softmax over <strong>all 27</strong> divided logits, not just the two shown. Lower temperature gives this highest-scoring character more probability; higher temperature gives it less.</p>
 </div>
 <div class="frame" data-title="PyTorch: choose the next character" data-autobuild="off">
   <pre class="pytorch" data-torch="sample-function"><code>@torch.no_grad()
