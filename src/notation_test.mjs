@@ -95,12 +95,21 @@ const shapes = await page.evaluate(() => {
 errors.push(...shapes.issues);
 const probabilitySequence = await page.evaluate(() => {
   const issues=[], M=window.__TOY__, F=AT.mlp.forward(['a','a','b']);
-  const top=AT.topk(F.p,5).map(item=>item.i), rest=F.p.map((_,i)=>i).filter(i=>!top.includes(i));
   const exp=F.z.map(Math.exp), total=exp.reduce((a,b)=>a+b,0);
-  const expected=top.map(i=>[F.z[i],exp[i],F.p[i]].map(n=>AT.fmt(n,3)));
-  expected.push(['',AT.fmt(rest.reduce((a,i)=>a+exp[i],0),3),AT.fmt(rest.reduce((a,i)=>a+F.p[i],0),3)]);
+  const tokens=['-','a','b',null,'z'];
+  const expected=tokens.map(token=>{
+    if(token===null)return ['⋮','⋮','⋮'];
+    const i=AT.mlp.stoi[token];
+    return [AT.fmt(F.z[i],3),AT.fmt(exp[i],3),F.p[i]<0.001?'<0.001':AT.fmt(F.p[i],3)];
+  });
   const rows=[...document.querySelectorAll('#s07-softmax tbody tr')].map(row=>[...row.querySelectorAll('td')].map(cell=>cell.textContent.trim()));
   if(JSON.stringify(rows)!==JSON.stringify(expected))issues.push('Compact softmax table differs from saved logits/exponentials/probabilities');
+  const labels=[...document.querySelectorAll('#s07-softmax tbody th')].map(cell=>cell.textContent.trim());
+  if(JSON.stringify(labels)!==JSON.stringify(tokens.map(token=>token===null?'⋮':token)))issues.push('Worksheet must keep vocabulary order with an explicit omission');
+  const footer=document.querySelector('#s07-softmax tfoot');
+  if(footer.querySelector('th').textContent!=='all 27 tokens')issues.push('Softmax total must be labelled as all 27 tokens');
+  if(JSON.stringify([...footer.querySelectorAll('td')].map(cell=>cell.textContent.trim()))!==JSON.stringify(['',AT.fmt(total,3),'1.000']))issues.push('Softmax denominator must include the omitted vocabulary rows');
+  if(!document.querySelector('#s07-softmax').textContent.includes('Dots omit c–y'))issues.push('Explain which rows the dots omit');
   if(exp.some((n,i)=>Math.abs(n/total-F.p[i])>1e-12))issues.push('Direct and stable softmax disagree');
   if(document.querySelector('#s07-target-prob').textContent!==AT.fmt(F.p[AT.mlp.stoi.i],3))issues.push('Final displayed target probability differs');
   const frames=[...document.querySelectorAll('#s07 .frame')];

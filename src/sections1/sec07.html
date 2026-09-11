@@ -3,7 +3,7 @@
 #s07 .soft-note{font-size:.9em;color:var(--ink-2);margin:10px 0 0}
 </style>
 <header class="sec-head"><span class="sec-num">07</span><div><p class="eyebrow">Logits can be any real numbers. We need probabilities that add up to one.</p><h2>27 scores to probabilities</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>The output layer gives us one logit for each vocabulary token. A logit can be positive or negative; we cannot read it as a probability yet. Softmax exponentiates each score, then divides by the sum of all the exponentials. The classroom table uses that formula directly for <em>aab</em>, showing the five largest outcomes and grouping the rest. Every vocabulary entry still contributes to the denominator. PyTorch subtracts the largest logit internally for numerical stability, as explained below. This leaves the probabilities unchanged.</p></div>
+<div class="companion" data-kicker="For self-study"><p>The output layer gives us one logit for each vocabulary token. A logit can be positive or negative; we cannot read it as a probability yet. Softmax exponentiates each score, then divides by the sum of all the exponentials. The classroom table uses that formula directly for <em>aab</em>, keeping vocabulary order and showing a few rows. Dots stand for the omitted tokens c through y. Every vocabulary entry still contributes to the denominator. PyTorch subtracts the largest logit internally for numerical stability, as explained below. This leaves the probabilities unchanged.</p></div>
 <div class="frame" data-title="Exponentiate, then divide by the total" data-autobuild="off">
   <div data-math-guide><div class="p1-math">$$\pProb{p_j}=\frac{\exp(\pScore{z_j})}{\sum_{r\in\mathcal V}\exp(\pScore{z_r})}$$</div>
   <dl class="p1-key">
@@ -33,10 +33,10 @@ p = weights / weights.sum(dim=-1, keepdim=True)</code></pre>
 </div>
 <div class="frame" data-title="Softmax worksheet" data-autobuild="off">
   <script type="text/x-notes">Where do the other vocabulary entries affect the probability of i?
-  They enter through the shared denominator. Point from the footer back to every row.</script>
+  The rows stay in vocabulary order: boundary, a, b, then omitted c through y, then z. Dots include i. All 27 tokens enter the shared denominator, including the omitted rows. The probability for z is very small but positive, so we display it as less than 0.001.</script>
   <div class="card"><div id="s07-softmax"></div></div>
 </div>
-<div class="companion"><p>Displayed values are rounded. The probabilities use all full-precision logits.</p></div>
+<div class="companion"><p>The boundary token is <code>-</code>, as in our vocabulary and code. Displayed values are rounded to three decimals. A positive probability below 0.001 is shown as <code>&lt;0.001</code>. The probabilities use all full-precision logits. The next chart ranks the most likely outcomes, while this worksheet preserves vocabulary order.</p></div>
 <div class="frame" data-title="A distribution over characters" data-autobuild="off">
   <script type="text/x-notes">Which next characters remain possible after aab?
   Read the target i, then compare it with the other high-probability outcomes.</script>
@@ -46,10 +46,14 @@ p = weights / weights.sum(dim=-1, keepdim=True)</code></pre>
 <div class="companion after"><p>Changing one vocabulary logit affects every probability, because all of them share the same softmax denominator.</p></div>
 <script>
 (function(){
-  const S=document.getElementById('s07'),M=window.__TOY__,F=AT.mlp.forward(['a','a','b']),top=AT.topk(F.p,5),idx=top.map(x=>x.i),ex=F.z.map(z=>Math.exp(z)),den=AT.sum(ex),rest=AT.range(F.p.length).filter(i=>idx.indexOf(i)<0);
-  const rows=idx.map(i=>[F.z[i],ex[i],ex[i]/den]);
-  rows.push(['',rest.reduce((a,i)=>a+ex[i],0),rest.reduce((a,i)=>a+F.p[i],0)]);
-  const table=AT.ui.table(rows,{cols:['logit $\\pScore{z_j}$','positive $\\exp(\\pScore{z_j})$','probability $\\pProb{p_j}$'],rowLabels:idx.map(i=>M.vocab[i]).concat(['other ×'+rest.length]),cornerLabel:'token',highlightRow:idx.indexOf(AT.mlp.stoi.i),decimals:3,footer:{label:'total',values:['',den,'1.000']},caption:'Divide each positive value by '+AT.fmt(den,3)+'. The other row sums 22 tokens. Calculations use unrounded values.',into:S.querySelector('#s07-softmax')});
+  const S=document.getElementById('s07'),F=AT.mlp.forward(['a','a','b']),top=AT.topk(F.p,5),idx=top.map(x=>x.i),ex=F.z.map(z=>Math.exp(z)),den=AT.sum(ex),rest=AT.range(F.p.length).filter(i=>idx.indexOf(i)<0);
+  const shown=['-','a','b',null,'z'];
+  const rows=shown.map(token=>{
+    if(token===null)return ['⋮','⋮','⋮'];
+    const i=AT.mlp.stoi[token],probability=ex[i]/den;
+    return [F.z[i],ex[i],probability<0.001?'<0.001':probability];
+  });
+  const table=AT.ui.table(rows,{cols:['logit $\\pScore{z_j}$','positive $\\exp(\\pScore{z_j})$','probability $\\pProb{p_j}$'],rowLabels:shown.map(token=>token===null?'⋮':token),cornerLabel:'token',kind:'number',decimals:3,footer:{label:'all 27 tokens',values:['',den,'1.000']},caption:'Divide each positive value by '+AT.fmt(den,3)+'. Dots omit c–y; all 27 tokens contribute. Rounded values.',into:S.querySelector('#s07-softmax')});
   table.cells.forEach(row=>{row[0].classList.add('p1-score');row[2].classList.add('p1-prob');});
   const items=top.map(x=>({label:x.tok,p:x.p})).concat([{label:'other ×'+rest.length,p:rest.reduce((a,i)=>a+F.p[i],0)}]);
   AT.ui.bars(items,{highlight:'i',sorted:false,size:'lg',decimals:3,into:S.querySelector('#s07-bars')});
