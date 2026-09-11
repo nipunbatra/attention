@@ -6,6 +6,14 @@
 </style>
 <header class="sec-head"><span class="sec-num">02</span><div><p class="eyebrow">With a small character vocabulary, we can inspect every input, score, and probability.</p><h2>Generate a name</h2></div></header>
 <div class="companion" data-kicker="For self-study"><p>We will train a network on Indian given names. One letter is one token. A boundary symbol fills the space before a name and marks where it ends, so our vocabulary is the alphabet plus this boundary. At each step, the network reads three character IDs and returns a probability for every possible next character. The bars for <em>aab</em> come from the trained model bundled with this page. The network does not need to be certain. It should assign useful probability to characters that often follow similar contexts.</p></div>
+<div class="frame" data-title="Our worked example: one character at a time" data-autobuild="off">
+  <script type="text/x-notes">The name in our training list is aabid. After the first three letters, what was the next letter?
+  Reveal i as the observed answer, not as a guaranteed model prediction. We will use this same example to see how the model learns.</script>
+  <p>A name in our data: <strong class="mono">aabid</strong></p>
+  <div class="question">Read <strong>a a b</strong>. Predict the next character: <strong data-build="1">i</strong></div>
+  <p data-build="2">During training, the name tells us what came next.</p>
+  <p data-build="3">During generation, the model chooses a character and continues from there.</p>
+</div>
 <div class="frame" data-title="A small vocabulary" data-autobuild="off">
   <script type="text/x-notes">What extra symbol does a name generator need besides the alphabet?
   Read the boundary token first. It fills missing context on the left and tells generation when to stop.</script>

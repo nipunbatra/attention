@@ -12,8 +12,17 @@
   <script type="text/x-notes">What would each context choice let the model remember?
   Compare one, three, and all. Use three for this model because it needs a fixed input width.</script>
   <div class="card"><div class="grid-3"><div class="choice"><span class="mono">w = 1</span><p>One previous character</p></div><div class="choice chosen" data-build="1"><span class="mono">w = 3</span><p>Three previous characters</p></div><div class="choice" data-build="2"><span class="mono">w = all</span><p>A growing prefix</p></div></div></div>
-  <div class="prose" data-build="3"><p>Use $$p_\theta(t_i\mid t_{i-3:i-1}).$$</p></div>
+  <p data-build="3">For <strong class="mono">aabid</strong>, the window <strong class="mono">a a b</strong> is the input. The next character <strong class="mono">i</strong> is the training target.</p>
 </div>
+<div class="frame" data-title="Writing the same question as a probability" data-autobuild="off">
+  <script type="text/x-notes">Read the formula in words before naming the symbols: the chance of i next, given a, a, b.
+  The subscript numbers are positions, starting at one. Theta stands for the learned parameters, which we will inspect later.</script>
+  <p>We have read <strong class="mono">a a b</strong>. How likely is <strong class="mono">i</strong> next?</p>
+  <p>Positions: $t_1=a$, $t_2=a$, $t_3=b$. We are predicting position 4.</p>
+  <div class="tex-display" data-build="1">$$p_\theta(t_4=i\mid t_1=a,\ t_2=a,\ t_3=b)$$</div>
+  <p data-build="2">The bar $\mid$ means “given”. $\theta$ stands for the model's learned parameters.</p>
+</div>
+<div class="companion"><p>At a general position $i$, the same three-character rule is $p_\theta(t_i\mid t_{i-3},t_{i-2},t_{i-1})$. The three characters after the bar are the input. The character before it is what we predict.</p></div>
 <div class="frame" data-title="Slide across aabid" data-autobuild="off">
   <script type="text/x-notes">How many training rows does a five-letter name produce?
   Walk the stepper through each context. The sixth target is the boundary, which teaches the model to stop.</script>

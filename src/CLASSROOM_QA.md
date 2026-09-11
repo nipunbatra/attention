@@ -1,5 +1,31 @@
 # Classroom release checks
 
+## 2026-09-11: presentation controls and the Part 1 introduction
+
+Baseline: local `main`, `origin/main`, and the successful Pages deployment all pointed to `632093b`. This includes Claude's
+September 5 rebuild and cover slides. The unfinished whiteboard pass remains separate on `wip/whiteboard-pass`.
+
+- Navigation uses one compact row and disappears after three idle seconds. Pointer hover and keyboard focus keep it open.
+  **C**, pointer movement at the lower-right corner, and touch restore access. Touch hover styling is explicitly scoped
+  so a tapped button does not remain painted after the timer expires. No teaching-widget controls are hidden by this timer.
+- The shared cover contains its label, title, and subtitle only. Part 1 removes the generated-name teaser and the promise
+  to write every parameter by hand. Six language tasks now get separate worked input/output examples before their output
+  shapes are compared. `aabid` bridges to character prediction, and one frame explains the indexed probability in words.
+- `controls_test.mjs` passes pointer, idle, focus, Tab, Escape, overview, and touch checks. Its stage geometry checks pass
+  at 1280×720, 2048×1011, 3650×1802, 1024×768, and 390×844. The stage retains its 16:9 ratio and logical 28px body type.
+- `pres_test.mjs` passes with zero errors/failures, including managed/manual controls, notes, presenter window, print
+  preparation/restoration, and real overflow warnings. `check_metadata.py` passes eight configs and eight isolated builds.
+  Part 1's six numerical rows and generation at four temperatures still pass `check_part1.mjs`.
+- The eight `frame_audit.mjs` walks pass 1,123 progressive states: Part 1 155, Part 2 298, Part 3 138, Part 4 86, Vision I
+  147, Vision II 96, Vision III 118, Vision IV 85. No frame overflow, nested scrollbar, runtime error, or strict math-parse
+  failure. Part 1 has 70 frames including the cover. Its table audit passes 33 desktop, 33 phone, and 24 presentation table
+  views. The article also passes 390px document-width checks.
+- Visually inspected the cover with controls open/hidden, Hindi translation, entity labels, summarization, next-word bars,
+  probability notation, and phone entity layout. Removed a redundant bar-chart caption that crowded the following line.
+- **Known test maintenance:** `interaction_test.mjs` reaches an obsolete Vision II selector `#s03-slider` after its earlier
+  shared-layout checks. Claude's September 5 vision rebuild replaced that widget. This run does not claim that full legacy
+  script passed. The independent presentation and new controls suites pass. No new PDF export was made in this UI pass.
+
 ## 2026-09-05: CLIP geometry and temperature checkpoint
 
 Seven short frames connect a fixed classifier's output menu to candidate descriptions, show normalization geometrically, plot the actual six unit vectors, follow their training updates, and separate directional learning from temperature. The first pair has zero third coordinates and uses an exact 2D slice; subsequent plots use a fixed orthographic view of all three coordinates. Numbered image thumbnails stay attached to captions and paired cosines. The 0/1/20/60-step control opens at step 60, while earlier authored frames preserve steps 0 and 1 for static readers and PDF export.

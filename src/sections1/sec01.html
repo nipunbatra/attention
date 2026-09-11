@@ -1,51 +1,92 @@
 <section id="s01" class="sec" data-title="What can a network do with text?" data-lit="">
 <style>
-#s01 .task-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-#s01 .task{padding:14px 16px;border-left:3px solid var(--line);background:var(--paper);border-radius:0 var(--radius-s) var(--radius-s) 0}
-#s01 .task b{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);display:block}
+#s01 .task-example{margin:12px 0 20px;padding-left:20px;border-left:3px solid var(--line)}
+#s01 .task-label{display:block;font-size:.8em;color:var(--ink-3);margin:0 0 8px}
+#s01 .task-text{font-size:1.25em;line-height:1.4;margin:0;max-width:48ch}
+#s01 .task-result{border-left-color:var(--c-e)}
+#s01 .task-result .task-text{color:var(--c-e)}
+#s01 .entity-example{display:grid;grid-template-columns:1fr 1fr 1fr 1.6fr;gap:16px;margin:20px 0}
+#s01 .entity-word{font-size:1.2em;padding:12px 0;border-bottom:2px solid var(--line);white-space:nowrap}
+#s01 .entity-label{font-size:.85em;color:var(--c-e);margin:12px 0 0}
+#s01 .task-summary{width:100%;border-collapse:collapse}
+#s01 .task-summary td,#s01 .task-summary th{text-align:left;padding:16px 12px;border-bottom:1px solid var(--line)}
 #s01 .prompt{font-size:1.18em;margin:0 0 14px}
 #s01 .answers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:16px}
 #s01 .answer{padding:12px;background:var(--t-neutral);border-radius:var(--radius-s)}
-@media(max-width:640px){body:not(.present) #s01 .task-grid,body:not(.present) #s01 .answers{grid-template-columns:1fr}}
+@media(max-width:640px){body:not(.present) #s01 .answers{grid-template-columns:1fr}body:not(.present) #s01 .entity-example{grid-template-columns:1fr;gap:8px}body:not(.present) #s01 .entity-example>[role="row"]{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:center}body:not(.present) #s01 .entity-label{margin:0}body:not(.present) #s01 .task-summary td,body:not(.present) #s01 .task-summary th{padding:12px 6px}}
 </style>
 <header class="sec-head"><span class="sec-num">01</span><div><p class="eyebrow">Language tasks ask for different outputs, but all use text to make predictions.</p><h2>What can a network do with text?</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>A network can label a passage, label each token, translate between languages, shorten a notice, answer a question from context, or continue a prompt. These tasks need different output shapes. Generation leaves more room for choice: several continuations may fit the same prefix. We give the network a precise job anyway. It must assign a probability to every possible next token. Choosing or sampling one token then gives us a continuation. This gives us a small prediction task to build with embeddings, an MLP, softmax, and cross-entropy.</p></div>
-<div class="frame" data-title="Can a network invent a name?" data-autobuild="off">
-  <script type="text/x-notes">Ask: which of these names have you heard before? None of them is in the training list.
-Collect guesses about how a machine could produce them before revealing the second build.</script>
-  <p class="prose-lead">Eight names. None of them exists in the list the model learned from.</p>
-  <div class="chips lg" id="s01-names" aria-label="Eight names the model invented"></div>
-  <div class="callout callout-key" data-build="1">Every name came from a model with 1,169 numbers. By the end of this part you will have written every one of them by hand and watched the model choose each letter.</div>
+<div class="companion" data-kicker="For self-study"><p>Before choosing a network, decide what its output should mean. A spam detector assigns one label to an email. An entity tagger attaches labels to words. Translation, summarization, and question answering return text. The examples below illustrate these tasks; they are not outputs of the character model we build later.</p></div>
+<div class="frame" data-title="Spam detection: one label for an email" data-autobuild="off">
+  <script type="text/x-notes">Would you put this message in the inbox or the spam folder?
+  Ask for the output before revealing the label. For this example, our two labels are spam and not spam.</script>
+  <div class="task-example"><span class="task-label">Email</span><p class="task-text">You have won a free phone! Click here to claim your prize.</p></div>
+  <div class="task-example task-result" data-build="1"><span class="task-label">Label</span><p class="task-text">Spam</p></div>
+  <p data-build="2">The whole email gets one label: spam or not spam.</p>
 </div>
-<script>
-(function(){ var host=document.getElementById('s01-names'); var toy=window.__TOY__||{}; var names=(toy.sampled_names||[]).slice(0,8).map(function(x){return typeof x==='string'?x:x.name;}); if(host&&names.length){ names.forEach(function(n){ var c=document.createElement('span'); c.className='chip'; c.textContent=n; host.appendChild(c); }); } })();
-</script>
+<div class="frame" data-title="Sentiment: how does the reviewer feel?" data-autobuild="off">
+  <script type="text/x-notes">What label would you assign to this review?
+  Reveal positive, then ask how the label would change for “I regret watching this film.” Sentiment is another classification task, with a different label set.</script>
+  <div class="task-example"><span class="task-label">Review</span><p class="task-text">I loved this film. I would watch it again.</p></div>
+  <div class="task-example task-result" data-build="1"><span class="task-label">Sentiment label</span><p class="task-text">Positive</p></div>
+  <p data-build="2">For this task, choose among positive, negative, and neutral.</p>
+</div>
+<div class="frame" data-title="Finding people and organizations in text" data-autobuild="off">
+  <script type="text/x-notes">Which words name a person? Which name an organization?
+  Reveal the labels together. IIT Gandhinagar is one organization spanning two words. This is a simplified word-level tagging example, before we discuss tokenization.</script>
+  <p>Here, the labels belong to individual words.</p>
+  <div class="entity-example" role="table" aria-label="Words and entity labels">
+    <div role="row"><div class="entity-word" role="cell">Maya</div><div class="entity-label" role="cell" data-build="1">Person</div></div>
+    <div role="row"><div class="entity-word" role="cell">joined</div><div class="entity-label" role="cell" data-build="1">Other</div></div>
+    <div role="row"><div class="entity-word" role="cell">IIT</div><div class="entity-label" role="cell" data-build="1">Organization</div></div>
+    <div role="row"><div class="entity-word" role="cell">Gandhinagar</div><div class="entity-label" role="cell" data-build="1">Organization</div></div>
+  </div>
+  <p data-build="2">The output has a label for each word, rather than one label for the sentence.</p>
+</div>
+<div class="frame" data-title="Translation: express the same meaning in Hindi" data-autobuild="off">
+  <script type="text/x-notes">What would you return for this English sentence?
+  Reveal one possible Hindi translation. The output is a sequence, and it need not have the same number of words as the input.</script>
+  <div class="task-example"><span class="task-label">English input</span><p class="task-text">The child is reading.</p></div>
+  <div class="task-example task-result" data-build="1"><span class="task-label">One Hindi translation</span><p class="task-text" lang="hi">बच्चा पढ़ रहा है।</p></div>
+  <p data-build="2">The network must produce another sequence of words.</p>
+</div>
+<div class="frame" data-title="Summarization: keep the important information" data-autobuild="off">
+  <script type="text/x-notes">How would you shorten this notice without losing when the library is closed?
+  Compare a student's version with the example. Several summaries can preserve the same information.</script>
+  <div class="task-example"><span class="task-label">Notice</span><p class="task-text">The library will close at 5 pm today for repairs. It will reopen at 9 am tomorrow.</p></div>
+  <div class="task-example task-result" data-build="1"><span class="task-label">One summary</span><p class="task-text">Library closed from 5 pm today until 9 am tomorrow.</p></div>
+  <p data-build="2">The output is shorter text that preserves the main information.</p>
+</div>
+<div class="frame" data-title="Question answering: use the supplied context" data-autobuild="off">
+  <script type="text/x-notes">What information do we need to answer the question?
+  Point back to the word library in the context. The answer depends on both the passage and the question.</script>
+  <div class="task-example"><span class="task-label">Context</span><p class="task-text">Maya left her notebook in the library.</p></div>
+  <div class="task-example" data-build="1"><span class="task-label">Question</span><p class="task-text">Where is Maya's notebook?</p></div>
+  <div class="task-example task-result" data-build="2"><span class="task-label">Answer</span><p class="task-text">In the library.</p></div>
+</div>
 <div class="frame" data-title="Different tasks need different outputs" data-autobuild="off">
-  <script type="text/x-notes">What changes across these six language tasks?
-  Reveal one row at a time. Ask whether the output is one label, one label per token, or another sequence.</script>
-  <div class="card"><h3 class="card-title">Six familiar tasks</h3><div class="task-grid">
-    <div class="task"><b>Classify</b>Email → spam?</div>
-    <div class="task" data-build="1"><b>Understand</b>Review → sentiment</div>
-    <div class="task" data-build="2"><b>Find entities</b>Sentence → a label for each token</div>
-    <div class="task" data-build="3"><b>Translate</b>English → Hindi</div>
-    <div class="task" data-build="4"><b>Summarize</b>Article → short summary</div>
-    <div class="task" data-build="5"><b>Answer</b>Context + question → answer</div>
-  </div></div>
-  <div class="callout callout-note" data-build="6">Text can produce one label, a row of labels, or a new sequence.</div>
+  <script type="text/x-notes">Which examples returned one label? Which returned labels on words? Which returned text?
+  Keep this distinction when introducing generation. We will build a model that generates a sequence through repeated predictions.</script>
+  <table class="task-summary"><thead><tr><th>Task</th><th>What comes out?</th></tr></thead><tbody>
+    <tr><td>Spam detection, sentiment</td><td>One label for the input</td></tr>
+    <tr data-build="1"><td>Finding entities</td><td>Labels attached to words</td></tr>
+    <tr data-build="2"><td>Translation, summarization, answering</td><td>A sequence of text</td></tr>
+  </tbody></table>
+  <p data-build="3">How could a network produce text of any length?</p>
 </div>
-<div class="frame" data-title="Generation is classification at one step" data-autobuild="off">
+<div class="frame" data-title="Several continuations can make sense" data-autobuild="off">
   <script type="text/x-notes">If four continuations make sense, what should the network output?
   Collect suggestions before revealing the examples. Then show that one distribution can leave room for several answers.</script>
   <div class="card"><p class="prompt">The student opened the laptop and …</p><div class="answers">
-    <div class="answer" data-build="1">started coding.</div><div class="answer" data-build="2">checked email.</div>
-    <div class="answer" data-build="3">joined class.</div><div class="answer" data-build="4">saw a warning.</div>
+    <div class="answer" data-build="1"><strong>started</strong> coding.</div><div class="answer" data-build="2"><strong>checked</strong> email.</div>
+    <div class="answer" data-build="3"><strong>joined</strong> class.</div><div class="answer" data-build="4"><strong>closed</strong> a browser tab.</div>
   </div></div>
 </div>
-<div class="frame" data-title="Give every next token a probability" data-autobuild="off">
-  <div class="card"><h3 class="card-title">After “The student opened the laptop and”</h3><div id="s01-bars"></div><p class="muted small">Illustrative next-token probabilities.</p></div>
-  <div class="callout callout-key" data-build="1">Generation is classification over the next token, repeated one step at a time.</div>
+<div class="frame" data-title="Predict the next word first" data-autobuild="off">
+  <div class="card"><h3 class="card-title">After “The student opened the laptop and”</h3><div id="s01-bars"></div><p class="muted small">Illustrative probabilities. “Other” groups the remaining words.</p></div>
+  <div class="prose" data-build="1"><p>Choose a word, append it to the text, then predict again.</p></div>
 </div>
-<div class="companion after"><p>A distribution lets us keep several reasonable continuations possible. We do not have to choose one in advance.</p></div>
+<div class="companion after"><p>We can produce a sequence by repeatedly predicting one next token. A token is a unit of text. We will start with characters, so every prediction chooses a letter or an ending marker. This keeps the vocabulary small enough to inspect each probability.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s01');

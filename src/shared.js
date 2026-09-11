@@ -1592,6 +1592,8 @@
   AT.present = (function () {
     var P = { active: false, discovered: false, frames: [], fi: -1, build: 0, listeners: {}, blank: false, overview: false, notes: false, help: false, presWin: null, isPresenter: false, printState: null, startedAt: null, fit: null, preflightPromise: null };
     var U = {}, pendingState = new WeakMap(), overviewFocus = null, overviewBackground = [], entryFocus = null, fitRaf = 0, svgPaintRaf = 0, svgPaintFrame = null;
+    var controlsIdleTimer = 0, controlsPointerInside = false, controlsKeyboardFocus = false;
+    var CONTROLS_IDLE_MS = 3000;
     var UNIT_SEL = '.card, .callout, .tex-display, .prose, p:not(.companion), .chips, table, .stepper, .reveal, .dt-fig, figure, .motif, .netsk, .row, .stack, .btn-row, .scroll-x, ul, ol, h3, blockquote';
     var SPLIT_SEL = '.side-by-side, .grid-2, .grid-3';
     function emit(ev, data) { arr(P.listeners[ev]).forEach(function (f) { try { f(data); } catch (e) { console.error('present listener failed', e); } }); }
@@ -1683,15 +1685,11 @@
       var first = main.querySelector('.sec'); if (!first) return;
       var label = (part.series ? part.series + ' · ' : '') + (part.partLabel || ('Part ' + (part.part || '')));
       var fr = h('div', { class: 'frame cover', 'data-title': part.title, 'data-autobuild': 'off' });
-      var notes = h('script', { type: 'text/x-notes' }); notes.textContent = 'Read the question aloud and collect two or three guesses before the first section.\nThe chain under the title is the whole part in one line; it comes back at the end.';
+      var notes = h('script', { type: 'text/x-notes' }); notes.textContent = 'Introduce the topic, then move to the first concrete example.\n' + (part.audience || '');
       fr.appendChild(notes);
       fr.appendChild(h('p', { class: 'cover-kicker' }, label));
       fr.appendChild(h('h1', { class: 'cover-title' }, part.title));
       if (part.subtitle) fr.appendChild(h('p', { class: 'cover-sub' }, part.subtitle));
-      if (part.hook) fr.appendChild(h('p', { class: 'cover-hook', 'data-build': '1' }, part.hook));
-      if (part.central) { var c = h('div', { class: 'cover-central', 'data-build': part.hook ? '2' : '1' }); AT.tex(c, part.central, { display: true }); fr.appendChild(c); }
-      var meta = []; if (part.audience) meta.push(part.audience); if (part.minutes) meta.push('about ' + part.minutes + ' minutes');
-      if (meta.length) fr.appendChild(h('p', { class: 'cover-meta' }, meta.join(' · ')));
       var sec = h('section', { id: 's00', class: 'sec sec-cover', 'data-title': part.title, 'data-lit': '' }, fr);
       main.insertBefore(sec, first);
     }
@@ -1751,14 +1749,65 @@
       document.addEventListener('click', scheduleFitCheck, true);
       document.addEventListener('toggle', scheduleFitCheck, true);
       document.addEventListener('load', scheduleFitCheck, true);
+      [U.controls, U.controlsToggle].forEach(function (el) {
+        el.addEventListener('pointerenter', function (ev) { controlsPointerInside = ev.pointerType === 'mouse'; wakeControls(); });
+        el.addEventListener('pointerleave', function () { controlsPointerInside = false; scheduleControlsIdle(); });
+        el.addEventListener('pointermove', wakeControls);
+        el.addEventListener('focusin', wakeControls);
+        el.addEventListener('focusout', scheduleControlsIdle);
+      });
+      document.addEventListener('pointerdown', function (ev) {
+        if (!P.active || P.overview) return;
+        controlsKeyboardFocus = false;
+        if (isControlsTarget(ev.target)) wakeControls();
+        else {
+          if (P.controls) setControls(false);
+          // Touch has no hover: one tap also brings back the small affordance.
+          if (ev.pointerType !== 'mouse') wakeControls();
+        }
+      }, true);
+      document.addEventListener('pointermove', function (ev) {
+        if (!P.active || P.overview || ev.pointerType !== 'mouse') return;
+        var bottom = innerHeight - (P.notes ? U.notes.getBoundingClientRect().height : 0);
+        // Do not bring navigation back while pointing at the teaching material.
+        if (ev.clientX >= innerWidth - 140 && ev.clientY >= bottom - 64 && ev.clientY <= bottom) wakeControls();
+      }, { passive: true });
     }
-    function setControls(on) {
+    function isControlsTarget(el) { return !!el && (el === U.controlsToggle || U.controls.contains(el)); }
+    function scheduleControlsIdle() {
+      clearTimeout(controlsIdleTimer);
+      if (!P.active || P.overview || P.printState) return;
+      controlsIdleTimer = setTimeout(function () {
+        if (!P.active || P.overview || P.printState || controlsPointerInside) return;
+        // Mouse/touch clicks leave focus behind too. Only deliberate keyboard
+        // focus holds the panel open; never hide a control someone is tabbing to.
+        if (controlsKeyboardFocus && isControlsTarget(document.activeElement)) return;
+        setControls(false, true);
+        document.body.classList.add('present-ui-idle');
+      }, CONTROLS_IDLE_MS);
+    }
+    function wakeControls() {
+      if (!P.active) return;
+      document.body.classList.remove('present-ui-idle');
+      scheduleControlsIdle();
+    }
+    function setControls(on, idle) {
+      clearTimeout(controlsIdleTimer);
       P.controls = !!on;
       if (!U.controls) return;
-      if (!P.controls && U.controls.contains(document.activeElement)) U.controlsToggle.focus({ preventScroll: true });
+      if (!P.controls) {
+        controlsPointerInside = false;
+        if (U.controls.contains(document.activeElement) || (idle && document.activeElement === U.controlsToggle)) {
+          var focus = idle && cur() ? cur().el : U.controlsToggle;
+          focus.focus({ preventScroll: true });
+        }
+      }
       U.controls.classList.toggle('is-on', P.controls);
       U.controls.inert = !P.controls;
       U.controlsToggle.setAttribute('aria-expanded', String(P.controls));
+      U.controlsToggle.textContent = P.controls ? 'Hide controls' : 'Controls';
+      U.controlsToggle.title = P.controls ? 'Hide classroom controls (C)' : 'Show classroom controls (C)';
+      if (!idle) wakeControls();
     }
     function measureChrome() {
       if (!P.active) return;
@@ -1997,6 +2046,7 @@
         var focus = overviewFocus && overviewFocus.isConnected && overviewFocus.getClientRects().length ? overviewFocus : U.overviewButton;
         if (focus) focus.focus({ preventScroll: true }); overviewFocus = null;
       }
+      scheduleControlsIdle();
       emit('overview', P.overview);
     }
     function setBlank(on) { P.blank = !!on; if (U.blank) U.blank.classList.toggle('is-on', P.blank); }
@@ -2088,7 +2138,9 @@
       setOverview(false); setBlank(false); setNotes(false); setHelp(false); setControls(false);
       if (fr) { leaveFrame(fr); fr.sec.classList.remove('is-live'); }
       P.active = false;
-      document.body.classList.remove('present');
+      clearTimeout(controlsIdleTimer);
+      controlsPointerInside = false; controlsKeyboardFocus = false;
+      document.body.classList.remove('present', 'present-ui-idle');
       U.announcement.textContent = '';
       if (U.fitWarning) U.fitWarning.textContent = '';
       document.body.style.removeProperty('--present-scale');
@@ -2164,7 +2216,10 @@
         case 'Home': showFrame(0, 0); return true;
         case 'End': showFrame(P.frames.length - 1, 0); return true;
         case 'o': case 'O': setOverview(!P.overview); return true;
-        case 'c': case 'C': setControls(!P.controls); return true;
+        case 'c': case 'C':
+          setControls(!P.controls);
+          if (P.controls) (!U.next.disabled ? U.next : !U.prev.disabled ? U.prev : U.overviewButton).focus({ preventScroll: true });
+          return true;
         case 'b': case 'B': case '.': setBlank(!P.blank); return true;
         case 's': case 'S': setNotes(!P.notes); return true;
         case '?': setHelp(!P.help); return true;
@@ -2174,6 +2229,10 @@
     }
     function onKeydown(ev) {
       if (ev.metaKey || ev.ctrlKey || ev.altKey || ev.defaultPrevented) return;
+      if (P.active) {
+        controlsKeyboardFocus = true;
+        if (isControlsTarget(ev.target)) wakeControls();
+      }
       if (handleKey(ev.key, ev.target, ev)) { ev.preventDefault(); ev.stopPropagation(); }
     }
 

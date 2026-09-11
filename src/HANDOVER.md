@@ -1,6 +1,6 @@
 # Handover: interactive teaching series
 
-Updated 2026-09-04. Owner: Nipun Batra.
+Updated 2026-09-11. Owner: Nipun Batra.
 
 - Repository: https://github.com/nipunbatra/attention
 - Published series: https://nipunbatra.github.io/attention/
@@ -9,6 +9,17 @@ Updated 2026-09-04. Owner: Nipun Batra.
 All four attention parts and the four-part Vision to language extension are implemented. They share a slide-first reading/presentation system, not separate article and slide sources. The first slide-first checkpoint was `a49f811`; `a1d609c` completed Part 3 and the numerical-correctness pass. `CLASSROOM_QA.md` records local verification. Check the checkout's Git log and the GitHub Pages workflow for the current published commit. A temporary checkout is not evidence of what is live.
 
 ## Start here
+
+The September 11 pass keeps Claude's verified September 5 content on `main`; the partial whiteboard work remains on
+`wip/whiteboard-pass`. Presentation navigation is now one compact row, hidden after three idle seconds. **C**, lower-right
+pointer movement, and touch restore access; hover and keyboard focus prevent a timeout. `controls_test.mjs` checks these
+behaviours. All cover slides contain only the series label, title, and subtitle, without opening formulas or duration text.
+The historical opener convention in section 8 is superseded by this paragraph.
+
+Part 1 now opens with a concrete example per language task: spam, sentiment, entities, translation, summarization, and
+question answering. A comparison precedes next-word prediction and the `aabid` character example. The generated-name
+teaser and “every number by hand” claim were removed. Three-character probability notation is introduced with explicit
+positions before the general expression. All trained data and arithmetic remain unchanged.
 
 The shared-layout pass removes permanent presentation header/footer bars. A small **Controls** button (or **C**) opens
 navigation without changing the stage scale. Slides show one title without repeated section labels. The article's notation

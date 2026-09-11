@@ -149,8 +149,12 @@ The command-line `frame_audit.mjs` also reparses rendered KaTeX with strict erro
   A short opening cue can be emphasised; multi-sentence paragraphs are not rendered entirely bold. Questions, pointing
   cues, and transition notes are all valid—there is no requirement that every note begin with a question.
 - Click **Controls** or press **C** for Previous, Next, Frames, Full screen, Presenter view, and Exit. The panel overlays
-  the page without resizing the stage. It starts closed, and hidden controls cannot receive keyboard focus. Escape closes
-  it first; Escape again returns to reading. Arrow-key navigation works with the panel closed.
+  the page without resizing the stage. It starts closed. After three seconds without control interaction, the panel closes
+  and its small toggle fades away. Move the pointer to the lower-right corner to reveal the toggle, press **C** to open the
+  panel, or tap the slide on a touchscreen to recover the toggle. Moving over teaching content does not reveal navigation.
+  Hovered and keyboard-focused controls stay visible. **C** focuses the next available navigation button. Escape closes
+  the panel first; Escape again returns to reading. Hidden tray buttons are inert. Arrow-key navigation works with the panel closed.
+  `node src/controls_test.mjs` checks idle, hover, focus, overview, touch, and stage geometry at five viewport sizes.
 - The URL hash `#sNN/f/b` follows the current frame and build for deep links and break-time resumption.
 - Presenter view opens the same file with `#presenter`, showing current/next frame, notes, build status, and a clock. It is
   synchronized through `postMessage`, including from `file://`.

@@ -2,11 +2,8 @@
  "part": 1,
  "series": "Attention and language",
  "title": "From characters to next-token prediction",
- "subtitle": "Build a character model for names, train it on real examples, and use it one prediction at a time.",
+ "subtitle": "How a neural network learns to continue text, one character at a time.",
  "audience": "For deep-learning students who know MLPs, softmax and cross-entropy.",
- "minutes": 60,
- "centralLabel": "The character model",
- "central": "t_{i-2:i} \\rightarrow \\ve{E_{\\text{tok}}}[t] \\rightarrow a_0 \\rightarrow a_1 \\rightarrow z \\rightarrow p(t_{i+1})",
  "chain": [
   {
    "label": "Language tasks",
@@ -170,6 +167,5 @@
   "href": "index.html"
  },
  "notation": "part1",
- "footer": "Part 1 builds next-token prediction from a fixed character window. Part 2 replaces that fixed context with a content-dependent read.",
- "hook": "Can a small network invent an Indian name it has never seen? By the end of this part it will, and we will have written down every number it uses."
+ "footer": "Part 1 builds next-token prediction from a fixed character window. Part 2 replaces that fixed context with a content-dependent read."
 }

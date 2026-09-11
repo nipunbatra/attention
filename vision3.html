@@ -566,14 +566,10 @@ body.present .frame-sub{display:block}
    ===================================================================== */
 body.present{--present-stage-w:1280px;--present-stage-h:720px;--present-scale:1;--present-body:28px;--present-title:42px;--present-caption:22px;--present-math:32px;--present-gutter:24px;--present-notes-h:0px;overflow:hidden;height:100vh;height:100dvh;font-size:var(--present-body);line-height:1.38}
 body:not(.present) .sec-cover{display:none}
-body.present .sec-cover .frame.cover{display:flex;flex-direction:column;justify-content:flex-start;padding-top:2vh;gap:.4em}
+body.present .sec-cover .frame.cover{display:flex;flex-direction:column;justify-content:flex-start;padding-top:14px;gap:.4em}
 body.present .cover-kicker{font-family:var(--font-mono);font-size:.62em;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin:0}
 body.present .cover-title{font-size:calc(var(--present-title) * 1.3);line-height:1.05;letter-spacing:-.02em;margin:0;max-width:24ch}
 body.present .cover-sub{font-size:1.05em;color:var(--ink-2);max-width:62ch;margin:0}
-body.present .cover-hook{font-size:1.12em;line-height:1.3;max-width:56ch;margin:.3em 0 0;padding-left:.7em;border-left:4px solid var(--c-a)}
-body.present .cover-central{margin:0}
-body.present .cover-central .katex-display{margin:.3em 0}
-body.present .cover-meta{font-size:.78em;color:var(--ink-3);margin:.5em 0 0}
 body.present #strip,body.present .hero,body.present footer,body.present .reading,body.present .companion{display:none!important}
 body.present #strip .wrap{flex-wrap:nowrap;padding-top:2px;padding-bottom:2px;min-height:var(--strip-h);max-width:none;padding-left:clamp(14px,1.6vw,30px);padding-right:clamp(14px,1.6vw,30px);gap:10px}
 body.present .nchips{gap:4px}
@@ -673,18 +669,21 @@ body.present .dt-scroll,body.present .mat-scroll,body.present .calc-scroll,body.
 #at-fit-warning{display:none;position:fixed;left:16px;right:16px;top:12px;z-index:62;margin:0;padding:10px 16px;border:1px solid var(--warn);border-radius:var(--radius-s);background:#FFF8E8;color:var(--ink);font-size:15px;line-height:1.35}
 body.present #at-fit-warning:not(:empty){display:block}
 body.present .frame[data-overflow="true"]{outline:2px dashed var(--warn);outline-offset:-2px}
-/* Navigation is available on demand, without reserving a header or footer. */
-#at-controls-toggle{display:none;position:fixed;right:12px;bottom:calc(10px + var(--present-notes-h,0px));z-index:60;font-size:13px;min-height:36px;padding:6px 12px;border-color:transparent;color:var(--ink-2);background:var(--paper)}
+/* Navigation overlays the viewport; it never changes the stage's available area. */
+#at-controls-toggle{display:none;position:fixed;right:12px;bottom:calc(10px + var(--present-notes-h,0px));z-index:60;font-size:13px;min-height:44px;padding:6px 12px;border-color:transparent;color:var(--ink-2);background:var(--paper);transition:opacity 180ms ease}
 body.present #at-controls-toggle{display:block}
+body.present.present-ui-idle #at-controls-toggle{opacity:0}
+body.present.present-ui-idle #at-controls-toggle:focus-visible{opacity:1}
+@media(hover:hover){body.present.present-ui-idle #at-controls-toggle:hover{opacity:1}}
 #at-controls-toggle:hover,#at-controls-toggle[aria-expanded="true"]{border-color:var(--line);background:var(--card)}
-#at-controls{position:fixed;right:12px;bottom:calc(54px + var(--present-notes-h,0px));max-width:calc(100vw - 24px);z-index:60;display:none;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:6px 8px;padding:12px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--card);box-shadow:0 4px 20px rgba(20,23,31,.10)}
+#at-controls{position:fixed;right:12px;bottom:calc(60px + var(--present-notes-h,0px));max-width:calc(100vw - 24px);z-index:60;display:none;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:4px 6px;padding:8px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--card);box-shadow:0 2px 12px rgba(20,23,31,.08)}
 body.present #at-controls.is-on{display:flex}
-#at-controls .pbtn{font-size:14px;min-height:40px;padding:6px 12px}
+#at-controls .pbtn{font-size:14px;min-height:44px;padding:6px 10px}
 #at-next{background:var(--ink);border-color:var(--ink);color:var(--paper)}
-#at-counter{flex-basis:100%;font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:14px;color:var(--ink-2);margin-bottom:4px}
+#at-counter{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:12px;color:var(--ink-2);padding:0 6px}
 #at-announcement{display:none;position:fixed;top:12px;left:16px;right:16px;z-index:61;margin:0;padding:10px 16px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-s);font-size:16px}
 body.present #at-announcement:not(:empty){display:block}
-@media(max-width:640px){#at-counter{flex-basis:100%}#at-controls{justify-content:flex-start;gap:4px 6px;padding-left:10px;padding-right:10px}#at-controls .pbtn{font-size:13px;min-height:40px;padding:6px 9px}}
+@media(max-width:640px){#at-counter{flex-basis:100%;padding:2px 4px}#at-controls{justify-content:flex-start}#at-controls .pbtn{font-size:13px;padding:6px 9px}}
 /* notes strip (S) */
 #at-notes{position:fixed;left:0;right:0;bottom:0;z-index:58;background:var(--ink);color:#fff;padding:12px 28px 14px;font-size:17px;line-height:1.45;max-height:32vh;max-height:32dvh;overflow:auto;display:none;box-shadow:0 -8px 24px rgba(20,23,31,.18)}
 #at-notes.is-on{display:block}
@@ -2433,6 +2432,8 @@ window.__PART__ = {"part":3,"series":"Vision to language","title":"CLIP: match a
   AT.present = (function () {
     var P = { active: false, discovered: false, frames: [], fi: -1, build: 0, listeners: {}, blank: false, overview: false, notes: false, help: false, presWin: null, isPresenter: false, printState: null, startedAt: null, fit: null, preflightPromise: null };
     var U = {}, pendingState = new WeakMap(), overviewFocus = null, overviewBackground = [], entryFocus = null, fitRaf = 0, svgPaintRaf = 0, svgPaintFrame = null;
+    var controlsIdleTimer = 0, controlsPointerInside = false, controlsKeyboardFocus = false;
+    var CONTROLS_IDLE_MS = 3000;
     var UNIT_SEL = '.card, .callout, .tex-display, .prose, p:not(.companion), .chips, table, .stepper, .reveal, .dt-fig, figure, .motif, .netsk, .row, .stack, .btn-row, .scroll-x, ul, ol, h3, blockquote';
     var SPLIT_SEL = '.side-by-side, .grid-2, .grid-3';
     function emit(ev, data) { arr(P.listeners[ev]).forEach(function (f) { try { f(data); } catch (e) { console.error('present listener failed', e); } }); }
@@ -2524,15 +2525,11 @@ window.__PART__ = {"part":3,"series":"Vision to language","title":"CLIP: match a
       var first = main.querySelector('.sec'); if (!first) return;
       var label = (part.series ? part.series + ' · ' : '') + (part.partLabel || ('Part ' + (part.part || '')));
       var fr = h('div', { class: 'frame cover', 'data-title': part.title, 'data-autobuild': 'off' });
-      var notes = h('script', { type: 'text/x-notes' }); notes.textContent = 'Read the question aloud and collect two or three guesses before the first section.\nThe chain under the title is the whole part in one line; it comes back at the end.';
+      var notes = h('script', { type: 'text/x-notes' }); notes.textContent = 'Introduce the topic, then move to the first concrete example.\n' + (part.audience || '');
       fr.appendChild(notes);
       fr.appendChild(h('p', { class: 'cover-kicker' }, label));
       fr.appendChild(h('h1', { class: 'cover-title' }, part.title));
       if (part.subtitle) fr.appendChild(h('p', { class: 'cover-sub' }, part.subtitle));
-      if (part.hook) fr.appendChild(h('p', { class: 'cover-hook', 'data-build': '1' }, part.hook));
-      if (part.central) { var c = h('div', { class: 'cover-central', 'data-build': part.hook ? '2' : '1' }); AT.tex(c, part.central, { display: true }); fr.appendChild(c); }
-      var meta = []; if (part.audience) meta.push(part.audience); if (part.minutes) meta.push('about ' + part.minutes + ' minutes');
-      if (meta.length) fr.appendChild(h('p', { class: 'cover-meta' }, meta.join(' · ')));
       var sec = h('section', { id: 's00', class: 'sec sec-cover', 'data-title': part.title, 'data-lit': '' }, fr);
       main.insertBefore(sec, first);
     }
@@ -2592,14 +2589,65 @@ window.__PART__ = {"part":3,"series":"Vision to language","title":"CLIP: match a
       document.addEventListener('click', scheduleFitCheck, true);
       document.addEventListener('toggle', scheduleFitCheck, true);
       document.addEventListener('load', scheduleFitCheck, true);
+      [U.controls, U.controlsToggle].forEach(function (el) {
+        el.addEventListener('pointerenter', function (ev) { controlsPointerInside = ev.pointerType === 'mouse'; wakeControls(); });
+        el.addEventListener('pointerleave', function () { controlsPointerInside = false; scheduleControlsIdle(); });
+        el.addEventListener('pointermove', wakeControls);
+        el.addEventListener('focusin', wakeControls);
+        el.addEventListener('focusout', scheduleControlsIdle);
+      });
+      document.addEventListener('pointerdown', function (ev) {
+        if (!P.active || P.overview) return;
+        controlsKeyboardFocus = false;
+        if (isControlsTarget(ev.target)) wakeControls();
+        else {
+          if (P.controls) setControls(false);
+          // Touch has no hover: one tap also brings back the small affordance.
+          if (ev.pointerType !== 'mouse') wakeControls();
+        }
+      }, true);
+      document.addEventListener('pointermove', function (ev) {
+        if (!P.active || P.overview || ev.pointerType !== 'mouse') return;
+        var bottom = innerHeight - (P.notes ? U.notes.getBoundingClientRect().height : 0);
+        // Do not bring navigation back while pointing at the teaching material.
+        if (ev.clientX >= innerWidth - 140 && ev.clientY >= bottom - 64 && ev.clientY <= bottom) wakeControls();
+      }, { passive: true });
     }
-    function setControls(on) {
+    function isControlsTarget(el) { return !!el && (el === U.controlsToggle || U.controls.contains(el)); }
+    function scheduleControlsIdle() {
+      clearTimeout(controlsIdleTimer);
+      if (!P.active || P.overview || P.printState) return;
+      controlsIdleTimer = setTimeout(function () {
+        if (!P.active || P.overview || P.printState || controlsPointerInside) return;
+        // Mouse/touch clicks leave focus behind too. Only deliberate keyboard
+        // focus holds the panel open; never hide a control someone is tabbing to.
+        if (controlsKeyboardFocus && isControlsTarget(document.activeElement)) return;
+        setControls(false, true);
+        document.body.classList.add('present-ui-idle');
+      }, CONTROLS_IDLE_MS);
+    }
+    function wakeControls() {
+      if (!P.active) return;
+      document.body.classList.remove('present-ui-idle');
+      scheduleControlsIdle();
+    }
+    function setControls(on, idle) {
+      clearTimeout(controlsIdleTimer);
       P.controls = !!on;
       if (!U.controls) return;
-      if (!P.controls && U.controls.contains(document.activeElement)) U.controlsToggle.focus({ preventScroll: true });
+      if (!P.controls) {
+        controlsPointerInside = false;
+        if (U.controls.contains(document.activeElement) || (idle && document.activeElement === U.controlsToggle)) {
+          var focus = idle && cur() ? cur().el : U.controlsToggle;
+          focus.focus({ preventScroll: true });
+        }
+      }
       U.controls.classList.toggle('is-on', P.controls);
       U.controls.inert = !P.controls;
       U.controlsToggle.setAttribute('aria-expanded', String(P.controls));
+      U.controlsToggle.textContent = P.controls ? 'Hide controls' : 'Controls';
+      U.controlsToggle.title = P.controls ? 'Hide classroom controls (C)' : 'Show classroom controls (C)';
+      if (!idle) wakeControls();
     }
     function measureChrome() {
       if (!P.active) return;
@@ -2838,6 +2886,7 @@ window.__PART__ = {"part":3,"series":"Vision to language","title":"CLIP: match a
         var focus = overviewFocus && overviewFocus.isConnected && overviewFocus.getClientRects().length ? overviewFocus : U.overviewButton;
         if (focus) focus.focus({ preventScroll: true }); overviewFocus = null;
       }
+      scheduleControlsIdle();
       emit('overview', P.overview);
     }
     function setBlank(on) { P.blank = !!on; if (U.blank) U.blank.classList.toggle('is-on', P.blank); }
@@ -2929,7 +2978,9 @@ window.__PART__ = {"part":3,"series":"Vision to language","title":"CLIP: match a
       setOverview(false); setBlank(false); setNotes(false); setHelp(false); setControls(false);
       if (fr) { leaveFrame(fr); fr.sec.classList.remove('is-live'); }
       P.active = false;
-      document.body.classList.remove('present');
+      clearTimeout(controlsIdleTimer);
+      controlsPointerInside = false; controlsKeyboardFocus = false;
+      document.body.classList.remove('present', 'present-ui-idle');
       U.announcement.textContent = '';
       if (U.fitWarning) U.fitWarning.textContent = '';
       document.body.style.removeProperty('--present-scale');
@@ -3005,7 +3056,10 @@ window.__PART__ = {"part":3,"series":"Vision to language","title":"CLIP: match a
         case 'Home': showFrame(0, 0); return true;
         case 'End': showFrame(P.frames.length - 1, 0); return true;
         case 'o': case 'O': setOverview(!P.overview); return true;
-        case 'c': case 'C': setControls(!P.controls); return true;
+        case 'c': case 'C':
+          setControls(!P.controls);
+          if (P.controls) (!U.next.disabled ? U.next : !U.prev.disabled ? U.prev : U.overviewButton).focus({ preventScroll: true });
+          return true;
         case 'b': case 'B': case '.': setBlank(!P.blank); return true;
         case 's': case 'S': setNotes(!P.notes); return true;
         case '?': setHelp(!P.help); return true;
@@ -3015,6 +3069,10 @@ window.__PART__ = {"part":3,"series":"Vision to language","title":"CLIP: match a
     }
     function onKeydown(ev) {
       if (ev.metaKey || ev.ctrlKey || ev.altKey || ev.defaultPrevented) return;
+      if (P.active) {
+        controlsKeyboardFocus = true;
+        if (isControlsTarget(ev.target)) wakeControls();
+      }
       if (handleKey(ev.key, ev.target, ev)) { ev.preventDefault(); ev.stopPropagation(); }
     }
 
