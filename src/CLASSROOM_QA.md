@@ -1,5 +1,21 @@
 # Classroom release checks
 
+## 2026-09-11: a complete animated generation run
+
+- Replaced the abstract loop with 12 progressive states covering four actual saved-model calls: `---`, `--s`, `-sa`,
+  then `sam`, which samples the boundary and stops. Each call separates its probabilities, draw, and append/shift.
+  The new window and accumulated name stay distinct. The sampled token stays visible even outside the top five.
+- Manual Next/Back, Play/Pause, replay, leave-frame cancellation, and reduced-motion support pass browser checks.
+  A separate four-row trace preserves the full example in final-state slide exports. No PDF was regenerated.
+- Added a same-context greedy/sampling comparison immediately before the unchanged live generator. The browser's
+  seed-3 sample yields sam; greedy yields san. Both draw from all 27 probabilities. Python RNG differences are explicit.
+- All 33 literal PyTorch snippets execute and match the download. Independent Torch checks reproduce all four chosen
+  probabilities and the full greedy run. Existing model and all 1,169 NumPy-gradient checks remain passing.
+- All 226 presentation states and 124 unique formulas pass fit/notation checks with no nested scrolling. Table checks
+  pass for desktop, phone, and presentation. SVG checks cover 68 instances, 2,150 bounded labels, local marker IDs,
+  every worked stage, and actual stored-model probabilities. Classroom start/shift/stop, full trace, and comparison
+  views were visually inspected. No shared presentation styling or other part changed.
+
 ## 2026-09-11: full embedding table during backpropagation
 
 - Added a single follow-on frame after the learning graph showing all 27 rows and 54 stored coordinates of E_tok.

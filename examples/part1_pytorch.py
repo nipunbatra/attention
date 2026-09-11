@@ -148,6 +148,12 @@ for _ in range(18):
     name.append(vocab[next_id.item()])
     ctx = torch.cat([ctx[:, 1:], next_id], dim=1)
 
+# generation-choices
+ctx = torch.tensor([[stoi["-"], stoi["s"], stoi["a"]]])
+with torch.no_grad(): p = model(ctx).softmax(dim=-1)
+greedy_id = p.argmax(dim=-1, keepdim=True)
+sampled_id = torch.multinomial(p, num_samples=1)
+
 # batch
 batch_z = model(X)
 batch_loss = F.cross_entropy(batch_z, y)

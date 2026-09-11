@@ -32,7 +32,8 @@ try {
     const fail = [], near = (a, b, tolerance = 1e-10) => Math.abs(a - b) <= tolerance;
     const check = (condition, description) => { if (!condition) fail.push(description); };
     const pretty = value => (Math.abs(value) < 0.005 ? 0 : value).toFixed(2).replace('-', '−');
-    const methods = { embeddingSpace: 0, lookupConcat: 2, learningGraph: 3, embeddingGradients: 0, trainingVsGeneration: 2 };
+    const methods = { embeddingSpace: 0, lookupConcat: 2, learningGraph: 3, embeddingGradients: 0, trainingVsGeneration: 2,
+      generationRun: 11, generationTrace: 0, generationChoice: 0 };
     const toy = window.__TOY__, mlp = AT.mlp;
     const original = JSON.stringify(toy);
     for (const id of ['s06-net', 's14-net']) {
@@ -208,12 +209,72 @@ try {
       if (candidate.trace.at(-1)?.chosen === '-') { boundary = candidate; break; }
     }
     check(boundary && boundary.trace.at(-1).chosen === '-' && !boundary.name.includes('-') && boundary.trace.length === boundary.name.length + 1, 'a sampled boundary must stop generation and must not enter the generated name');
+    const worked = AT.part1Diagrams.generationExample();
+    check(worked.name === 'sam' && worked.trace.length === 4 && worked.trace.at(-1).chosen === '-', 'worked run must reach the boundary after the three letters sam');
+    check(worked.trace[0].context.join('') === '---', 'worked run must start from three boundary tokens');
+    const walk = document.querySelector('#s10-walk');
+    check(walk.stepperApi.steps.length === worked.trace.length * 3, 'every call needs predict, choose, and append/stop phases');
+    for (const {svg, stage} of instances.filter(d => d.method === 'generationRun')) {
+      const s = stage === 'default' ? 11 : stage, round = Math.floor(s / 3), phase = s % 3, t = worked.trace[round];
+      const before = worked.trace.slice(0, round).map(t => t.chosen).join('');
+      const expectedName = before + (phase === 2 && t.chosen !== '-' ? t.chosen : '');
+      check(svg.dataset.context === t.context.join(',') && svg.dataset.generated === expectedName, `generation stage ${s}: context and growing name must remain distinct`);
+      const rows = [...svg.querySelectorAll('[data-prob-token]')];
+      check(rows.length === 6 && new Set(rows.map(r => r.dataset.probToken)).size === 6, `generation stage ${s}: show six distinct probability entries`);
+      rows.forEach(r => check(near(Number(r.dataset.probability), mlp.distribution(t.context, 1).p[mlp.stoi[r.dataset.probToken]]), `generation stage ${s}: probabilities must come from the displayed context`));
+      check(rows.some(r => r.dataset.probToken === t.chosen), `generation stage ${s}: chosen token must not be hidden in 'other'`);
+      check(rows.filter(r => r.dataset.selected === 'true').length === (phase ? 1 : 0), `generation stage ${s}: highlight only after the draw`);
+      check(t.probabilities.every(p => p <= .5), `generation stage ${s}: fixed chart axis must cover all probabilities`);
+      const next = [...svg.querySelectorAll('[data-next-token]')].map(n => n.dataset.nextToken);
+      check(JSON.stringify(next) === JSON.stringify(phase === 2 && t.chosen !== '-' ? t.next_context : []), `generation stage ${s}: shift only after appending a letter, never after END`);
+      check(svg.dataset.stopped === String(s === 11), `generation stage ${s}: stop only at the boundary`);
+    }
+    const traceRows = [...final('generationTrace').querySelectorAll('[data-trace-round]')];
+    check(traceRows.length === 4 && traceRows.every((r, i) => near(Number(r.dataset.probability), worked.trace[i].probabilities[worked.trace[i].chosen_id])), 'printable trace must retain all four real chosen-token probabilities');
+    const greedy = mlp.generate({greedy:true, temperature:1, maxLength:18});
+    check(greedy.name === 'san' && greedy.trace[2].context.join(',') === worked.trace[2].context.join(','), 'comparison must diverge from the same - s a probability row');
+    check(greedy.trace[2].chosen === 'n' && worked.trace[2].chosen === 'm', 'greedy picks n while this sampling run draws m');
+    check(final('generationChoice').textContent.includes(worked.trace[2].probabilities[mlp.stoi.n].toFixed(3)) && final('generationChoice').textContent.includes(worked.trace[2].probabilities[mlp.stoi.m].toFixed(3)), 'comparison probabilities must match the saved model');
+    const frames = [...document.querySelectorAll('#s10 .frame')];
+    check(frames.findIndex(f => f.contains(document.querySelector('#s10-choice'))) + 1 === frames.findIndex(f => f.contains(document.querySelector('#s10-next'))), 'choice comparison must immediately precede the original live generator');
     check(JSON.stringify(toy) === original, 'rendering and generation must not modify learned model parameters');
     host.remove();
     return { failures: fail, instances: instances.length, labels, markers, points: points.length, boundarySeed: boundary?.seed };
   });
   assert.deepEqual(errors, [], 'assembled Part I must have no browser errors');
   assert.deepEqual(report.failures, [], `Part I diagram regressions failed:\n${report.failures.join('\n')}`);
+  // Actual classroom controls: play, pause on manual navigation, rewind, stop,
+  // leave-frame cancellation, and reduced-motion support.
+  await page.evaluate(() => { AT.present.enter(); AT.present.go('s10', 1, 0); });
+  await page.clock.install();
+  await page.locator('#s10-play').click();
+  await page.clock.runFor(2450);
+  assert.equal(await page.locator('#s10-walk').evaluate(el => el.stepperApi.index()), 1);
+  await page.evaluate(() => document.querySelector('#s10-walk').stepperApi.prev());
+  assert.equal(await page.locator('#s10-play').getAttribute('aria-pressed'), 'false');
+  await page.clock.runFor(3000);
+  assert.equal(await page.locator('#s10-walk').evaluate(el => el.stepperApi.index()), 0);
+  await page.locator('#s10-play').click();
+  await page.clock.runFor(27000);
+  assert.equal(await page.locator('#s10-walk').evaluate(el => el.stepperApi.index()), 11);
+  assert.equal(await page.locator('#s10-play').getAttribute('aria-pressed'), 'false');
+  assert.equal(await page.locator('#s10-walk svg').getAttribute('data-generated'), 'sam');
+  await page.locator('#s10-play').click();
+  assert.equal(await page.locator('#s10-walk').evaluate(el => el.stepperApi.index()), 0);
+  await page.evaluate(() => AT.present.go('s10', 2, 0));
+  await page.clock.runFor(3000);
+  assert.equal(await page.locator('#s10-play').getAttribute('aria-pressed'), 'false');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.evaluate(() => { AT.present.go('s10', 1, 0); document.querySelector('#s10-walk').stepperApi.go(8); });
+  assert.equal(await page.locator('#s10-walk .token-move').first().evaluate(el => getComputedStyle(el).animationName), 'none');
+  await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
+  await page.emulateMedia({ media: 'print' });
+  assert.equal(await page.locator('#s10-walk').evaluate(el => el.stepperApi.index()), 11);
+  assert.equal(await page.locator('#s10-trace [data-trace-round]').count(), 4);
+  assert.equal(await page.locator('#s10-play').evaluate(el => getComputedStyle(el.parentElement).display), 'none');
+  await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+  await page.emulateMedia({ media: 'screen' });
+  assert.equal(await page.locator('#s10-walk').evaluate(el => el.stepperApi.index()), 8);
   console.log(`PASS: both MLP sketches show true layer widths and every omission; ${report.instances} Part I SVG instances, ${report.labels} bounded labels, ${report.markers} local marker references; all ${report.points} embedding coordinates, lookup values, model shapes, probability/loss, seeded generation, and boundary stop (seed ${report.boundarySeed}) agree with the live model.`);
 } finally {
   await browser.close();

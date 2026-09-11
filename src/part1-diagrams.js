@@ -486,12 +486,146 @@
     return net;
   }
 
+  // A complete, reproducible run of the saved model. Keep the random generator
+  // in AT.mlp.generate as the single source of choices and probabilities.
+  function generationExample() {
+    return AT.mlp.generate({ seed: 3, temperature: 1, maxLength: 18 });
+  }
+
+  function generationRun(options) {
+    options = options || {};
+    var run = generationExample(), stage = clampStage(options.stage, run.trace.length * 3 - 1);
+    var round = Math.floor(stage / 3), phase = stage % 3, t = run.trace[round];
+    var before = run.trace.slice(0, round).map(function (r) { return r.chosen; }).join('');
+    var stopped = t.chosen === '-', after = before + (stopped ? '' : t.chosen);
+    var b = baseSvg('generation-run', 'Generation round ' + (round + 1),
+      'Context ' + t.context.join(' ') + ' supplies the same trained model. ' +
+      (phase ? 'Sampling chooses ' + (stopped ? 'the boundary and stops' : t.chosen) +
+      ' with probability ' + t.probabilities[t.chosen_id].toFixed(3) + '.' : 'The chart shows next-character probabilities before a draw.') +
+      (phase === 2 && !stopped ? ' Append the letter to the name and keep only the newest three tokens for the next call.' : ''), 1100, 410);
+    var svg = b.svg;
+    svg.setAttribute('data-stage', stage);
+    svg.setAttribute('data-round', round);
+    svg.setAttribute('data-phase', phase);
+    svg.setAttribute('data-context', t.context.join(','));
+    svg.setAttribute('data-generated', phase === 2 ? after : before);
+    svg.setAttribute('data-stopped', String(phase === 2 && stopped));
+    add(svg, 'style', {}, [
+      '#' + b.id + ' .picked{fill:var(--warn,#B45309)}',
+      '#' + b.id + ' .picked-box{fill:var(--t-warn,#FFF4E5);stroke:var(--warn,#B45309);stroke-width:2}',
+      '#' + b.id + ' .token{font-size:30px;font-weight:700}',
+      '@keyframes p1-generation-move{from{transform:translate(var(--from-x),var(--from-y));opacity:.35}to{transform:translate(0,0);opacity:1}}',
+      '#' + b.id + ' .token-move{animation:p1-generation-move .75s ease-out both}',
+      '@media(prefers-reduced-motion:reduce){#' + b.id + ' .token-move{animation:none}}',
+      '@media print{#' + b.id + ' .token-move{animation:none}}'
+    ].join(''));
+    text(svg, 165, 24, 'Context for this prediction', 'label');
+    t.context.forEach(function (token, j) {
+      var x = 34 + j * 82;
+      box(svg, x, 60, 66, 60, 'act');
+      text(svg, x + 33, 90, token, 'mono token blue');
+    });
+    text(svg, 67, 141, 'oldest', 'small');
+    text(svg, 231, 141, 'newest', 'small');
+    line(svg, 276, 90, 334, 90, 'blue-edge');
+    box(svg, 344, 60, 170, 60);
+    text(svg, 429, 90, 'Same MLP', 'main');
+    text(svg, 429, 141, 'Weights stay fixed', 'small');
+    line(svg, 524, 90, 602, 90, 'edge');
+
+    text(svg, 835, 24, 'Probabilities for ' + t.context.join(' '), 'label');
+    // Keep the sampled token visible even when it lies outside the top five.
+    var top = AT.topk(t.probabilities, 5);
+    var sixth = top.some(function (r) { return r.i === t.chosen_id; })
+      ? AT.topk(t.probabilities, 6)[5] : { tok: t.chosen, i: t.chosen_id, p: t.probabilities[t.chosen_id] };
+    var shown = top.concat([sixth]).sort(function (a, c) { return c.p - a.p; });
+    var rest = 1 - shown.reduce(function (sum, r) { return sum + r.p; }, 0);
+    shown.forEach(function (r, j) {
+      var y = 65 + j * 34, selected = phase > 0 && r.i === t.chosen_id;
+      var row = add(svg, 'g', { 'data-prob-token': r.tok, 'data-probability': exact(r.p), 'data-selected': String(selected) });
+      text(row, 642, y, r.tok === '-' ? 'END' : r.tok, 'mono label' + (selected ? ' picked' : ''), 'end');
+      add(row, 'rect', { x: 660, y: y - 9, width: 310, height: 18, rx: 3, fill: 'var(--t-neutral,#EEF0F4)' });
+      add(row, 'rect', { x: 660, y: y - 9, width: 310 * r.p / .5, height: 18, rx: 3,
+        fill: selected ? 'var(--warn,#B45309)' : 'var(--c-e,#2563EB)' });
+      text(row, 1074, y, r.p.toFixed(3), 'mono label' + (selected ? ' picked' : ''), 'end');
+    });
+    [0, .25, .5].forEach(function (p) { text(svg, 660 + 620 * p, 266, p.toFixed(2), 'small mono'); });
+    text(svg, 835, 300, 'Other 21 characters: ' + rest.toFixed(3), 'small mono');
+    text(svg, 835, 328, 'Total: 1 before rounding to 3 decimals.', 'small');
+    text(svg, 18, 191, phase ? 'Sampled: ' + (stopped ? 'END (the “-” token)' : t.chosen) : 'Next: draw one of the 27 characters',
+      phase ? 'label picked' : 'label', 'start');
+    if (phase) text(svg, 18, 222, 'Probability of this choice: ' + t.probabilities[t.chosen_id].toFixed(3), 'small', 'start');
+    if (phase === 2 && !stopped) {
+      text(svg, 165, 256, 'Window for the next call', 'label');
+      t.next_context.forEach(function (token, j) {
+        var g = add(svg, 'g', { transform: 'translate(' + (34 + j * 82) + ',280)', 'data-next-token': token });
+        var inner = add(g, 'g', { class: 'token-move', style: '--from-x:' + (j < 2 ? 82 : 140) + 'px;--from-y:' + (j < 2 ? -220 : -90) + 'px' });
+        box(inner, 0, 0, 66, 60, j === 2 ? 'picked-box' : 'act');
+        text(inner, 33, 30, token, 'mono token ' + (j === 2 ? 'picked' : 'blue'));
+      });
+      text(svg, 367, 282, 'Drop the oldest token.', 'small', 'start');
+      text(svg, 367, 311, 'Keep two, append ' + t.chosen + '.', 'small', 'start');
+    } else if (phase === 2) {
+      text(svg, 18, 280, 'Stop. The name is complete.', 'main picked', 'start');
+      text(svg, 18, 315, 'Do not append END or run another prediction.', 'small', 'start');
+    }
+    line(svg, 18, 358, 1080, 358);
+    text(svg, 18, 389, 'Name so far: ' + ((phase === 2 ? after : before) || '(empty)'), 'main mono', 'start');
+    text(svg, 1080, 389, 'Sampling, temperature 1.0, fixed seed 3', 'small', 'end');
+    return svg;
+  }
+
+  function generationTrace() {
+    var run = generationExample();
+    var b = baseSvg('generation-trace', 'Every call in the sampled name sam',
+      'Starting from three boundary tokens, sample s, a, m, and then the boundary. Append only letters. Each new window contains the newest three tokens. All probabilities come from the saved model.', 1100, 330);
+    var svg = b.svg;
+    svg.setAttribute('data-stage', 0);
+    [[35, 'Call'], [160, 'Input window'], [425, 'Chosen'], [626, 'Probability'], [815, 'Name'], [985, 'Next window']].forEach(function (c) { text(svg, c[0], 26, c[1], 'label'); });
+    var name = '';
+    run.trace.forEach(function (t, j) {
+      var y = 82 + j * 49;
+      if (t.chosen !== '-') name += t.chosen;
+      var row = add(svg, 'g', { 'data-trace-round': j, 'data-probability': exact(t.probabilities[t.chosen_id]) });
+      line(row, 10, y - 25, 1090, y - 25);
+      [[35, String(j + 1)], [160, t.context.join(' ')], [425, t.chosen === '-' ? 'END (−)' : t.chosen],
+        [626, t.probabilities[t.chosen_id].toFixed(3)], [815, name], [985, t.chosen === '-' ? 'stop' : t.next_context.join(' ')]].forEach(function (c) {
+        text(row, c[0], y, c[1], 'label mono');
+      });
+    });
+    text(svg, 550, 291, 'Four model calls, three letters. The weights never change during generation.', 'label');
+    return svg;
+  }
+
+  function generationChoice() {
+    var run = generationExample(), t = run.trace[2], best = AT.argmax(t.probabilities);
+    var b = baseSvg('generation-choice', 'Greedy and sampling from the same probability row',
+      'At context minus s a, n has the largest probability. Greedy chooses n. The fixed sampling run draws m instead. Greedy completes san and this sample completes sam. Sampling can also choose n.', 1100, 230);
+    var svg = b.svg;
+    svg.setAttribute('data-stage', 0);
+    text(svg, 550, 22, 'Same input window: − s a. Same model. Same probabilities.', 'label');
+    text(svg, 260, 75, 'Greedy: choose the largest', 'main');
+    text(svg, 840, 75, 'Sampling: draw using probabilities', 'main');
+    text(svg, 260, 117, 'n   probability ' + t.probabilities[best].toFixed(3), 'label mono blue');
+    text(svg, 840, 117, 'm   probability ' + t.probabilities[t.chosen_id].toFixed(3), 'label mono blue');
+    text(svg, 260, 157, 'Next window: s a n', 'label mono');
+    text(svg, 840, 157, 'Next window: s a m', 'label mono');
+    text(svg, 260, 202, 'Greedy run finishes as san.', 'small');
+    text(svg, 840, 202, 'Seed 3 finishes as sam. Another draw can differ.', 'small');
+    line(svg, 550, 63, 550, 215);
+    return svg;
+  }
+
   AT.part1Diagrams = {
     annotateMLP: annotateMLP,
     embeddingSpace: embeddingSpace,
     lookupConcat: lookupConcat,
     learningGraph: learningGraph,
     embeddingGradients: embeddingGradients,
-    trainingVsGeneration: trainingVsGeneration
+    trainingVsGeneration: trainingVsGeneration,
+    generationExample: generationExample,
+    generationRun: generationRun,
+    generationTrace: generationTrace,
+    generationChoice: generationChoice
   };
 })();

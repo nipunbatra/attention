@@ -128,6 +128,12 @@ for name, source in parser.items:
         assert scope["ctx"].shape == (1, 3)
         assert len(scope["name"]) <= 18 and "-" not in scope["name"]
         assert not scope["sample_next"](scope["ctx"]).requires_grad
+    if name == "generation-choices":
+        assert scope["ctx"].tolist() == [[0, 19, 1]]
+        assert scope["greedy_id"].shape == scope["sampled_id"].shape == (1, 1)
+        assert scope["greedy_id"].item() == scope["p"].argmax().item()
+        assert 0 <= scope["sampled_id"].item() < 27
+        assert not scope["p"].requires_grad
     if name == "word-output":
         assert scope["word_z"].shape == (1, 6)
     if name == "longer-window":
@@ -156,6 +162,28 @@ with torch.no_grad():
         torch.testing.assert_close(got, expected, atol=1e-12, rtol=1e-12)
         worst = max(worst, (got - expected).abs().max().item())
 print(f"PASS all {len(parser.items)} snippets; saved model's six rows match within {worst:.3g}")
+
+# Independent reference for every probability used by the worked browser run.
+# The draw itself uses the browser RNG, not torch.multinomial's different RNG.
+with torch.no_grad():
+    for context, chosen, expected in [
+        ("---", "s", 0.19583967623795875),
+        ("--s", "a", 0.32189935464079333),
+        ("-sa", "m", 0.06398357772422884),
+        ("sam", "-", 0.28973532963383036),
+    ]:
+        ids = torch.tensor([[toy["vocab"].index(c) for c in context]])
+        probabilities = model(ids).softmax(-1)[0]
+        assert abs(probabilities[toy["vocab"].index(chosen)].item() - expected) < 1e-12
+    context, letters = [0, 0, 0], []
+    for _ in range(18):
+        next_id = model(torch.tensor([context])).argmax(-1).item()
+        if next_id == 0:
+            break
+        letters.append(toy["vocab"][next_id])
+        context = context[1:] + [next_id]
+    assert "".join(letters) == "san" and next_id == 0
+print("PASS worked sampling-run probabilities and complete greedy san run match PyTorch")
 
 # This diagram concerns only aab -> i, not the six-row batch or the trainer's
 # extra embedding penalties. Repeated lookups must accumulate into one row.

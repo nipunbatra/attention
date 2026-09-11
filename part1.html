@@ -3916,13 +3916,147 @@ window.__PART__ = {"part":1,"series":"Attention and language","title":"From char
     return net;
   }
 
+  // A complete, reproducible run of the saved model. Keep the random generator
+  // in AT.mlp.generate as the single source of choices and probabilities.
+  function generationExample() {
+    return AT.mlp.generate({ seed: 3, temperature: 1, maxLength: 18 });
+  }
+
+  function generationRun(options) {
+    options = options || {};
+    var run = generationExample(), stage = clampStage(options.stage, run.trace.length * 3 - 1);
+    var round = Math.floor(stage / 3), phase = stage % 3, t = run.trace[round];
+    var before = run.trace.slice(0, round).map(function (r) { return r.chosen; }).join('');
+    var stopped = t.chosen === '-', after = before + (stopped ? '' : t.chosen);
+    var b = baseSvg('generation-run', 'Generation round ' + (round + 1),
+      'Context ' + t.context.join(' ') + ' supplies the same trained model. ' +
+      (phase ? 'Sampling chooses ' + (stopped ? 'the boundary and stops' : t.chosen) +
+      ' with probability ' + t.probabilities[t.chosen_id].toFixed(3) + '.' : 'The chart shows next-character probabilities before a draw.') +
+      (phase === 2 && !stopped ? ' Append the letter to the name and keep only the newest three tokens for the next call.' : ''), 1100, 410);
+    var svg = b.svg;
+    svg.setAttribute('data-stage', stage);
+    svg.setAttribute('data-round', round);
+    svg.setAttribute('data-phase', phase);
+    svg.setAttribute('data-context', t.context.join(','));
+    svg.setAttribute('data-generated', phase === 2 ? after : before);
+    svg.setAttribute('data-stopped', String(phase === 2 && stopped));
+    add(svg, 'style', {}, [
+      '#' + b.id + ' .picked{fill:var(--warn,#B45309)}',
+      '#' + b.id + ' .picked-box{fill:var(--t-warn,#FFF4E5);stroke:var(--warn,#B45309);stroke-width:2}',
+      '#' + b.id + ' .token{font-size:30px;font-weight:700}',
+      '@keyframes p1-generation-move{from{transform:translate(var(--from-x),var(--from-y));opacity:.35}to{transform:translate(0,0);opacity:1}}',
+      '#' + b.id + ' .token-move{animation:p1-generation-move .75s ease-out both}',
+      '@media(prefers-reduced-motion:reduce){#' + b.id + ' .token-move{animation:none}}',
+      '@media print{#' + b.id + ' .token-move{animation:none}}'
+    ].join(''));
+    text(svg, 165, 24, 'Context for this prediction', 'label');
+    t.context.forEach(function (token, j) {
+      var x = 34 + j * 82;
+      box(svg, x, 60, 66, 60, 'act');
+      text(svg, x + 33, 90, token, 'mono token blue');
+    });
+    text(svg, 67, 141, 'oldest', 'small');
+    text(svg, 231, 141, 'newest', 'small');
+    line(svg, 276, 90, 334, 90, 'blue-edge');
+    box(svg, 344, 60, 170, 60);
+    text(svg, 429, 90, 'Same MLP', 'main');
+    text(svg, 429, 141, 'Weights stay fixed', 'small');
+    line(svg, 524, 90, 602, 90, 'edge');
+
+    text(svg, 835, 24, 'Probabilities for ' + t.context.join(' '), 'label');
+    // Keep the sampled token visible even when it lies outside the top five.
+    var top = AT.topk(t.probabilities, 5);
+    var sixth = top.some(function (r) { return r.i === t.chosen_id; })
+      ? AT.topk(t.probabilities, 6)[5] : { tok: t.chosen, i: t.chosen_id, p: t.probabilities[t.chosen_id] };
+    var shown = top.concat([sixth]).sort(function (a, c) { return c.p - a.p; });
+    var rest = 1 - shown.reduce(function (sum, r) { return sum + r.p; }, 0);
+    shown.forEach(function (r, j) {
+      var y = 65 + j * 34, selected = phase > 0 && r.i === t.chosen_id;
+      var row = add(svg, 'g', { 'data-prob-token': r.tok, 'data-probability': exact(r.p), 'data-selected': String(selected) });
+      text(row, 642, y, r.tok === '-' ? 'END' : r.tok, 'mono label' + (selected ? ' picked' : ''), 'end');
+      add(row, 'rect', { x: 660, y: y - 9, width: 310, height: 18, rx: 3, fill: 'var(--t-neutral,#EEF0F4)' });
+      add(row, 'rect', { x: 660, y: y - 9, width: 310 * r.p / .5, height: 18, rx: 3,
+        fill: selected ? 'var(--warn,#B45309)' : 'var(--c-e,#2563EB)' });
+      text(row, 1074, y, r.p.toFixed(3), 'mono label' + (selected ? ' picked' : ''), 'end');
+    });
+    [0, .25, .5].forEach(function (p) { text(svg, 660 + 620 * p, 266, p.toFixed(2), 'small mono'); });
+    text(svg, 835, 300, 'Other 21 characters: ' + rest.toFixed(3), 'small mono');
+    text(svg, 835, 328, 'Total: 1 before rounding to 3 decimals.', 'small');
+    text(svg, 18, 191, phase ? 'Sampled: ' + (stopped ? 'END (the “-” token)' : t.chosen) : 'Next: draw one of the 27 characters',
+      phase ? 'label picked' : 'label', 'start');
+    if (phase) text(svg, 18, 222, 'Probability of this choice: ' + t.probabilities[t.chosen_id].toFixed(3), 'small', 'start');
+    if (phase === 2 && !stopped) {
+      text(svg, 165, 256, 'Window for the next call', 'label');
+      t.next_context.forEach(function (token, j) {
+        var g = add(svg, 'g', { transform: 'translate(' + (34 + j * 82) + ',280)', 'data-next-token': token });
+        var inner = add(g, 'g', { class: 'token-move', style: '--from-x:' + (j < 2 ? 82 : 140) + 'px;--from-y:' + (j < 2 ? -220 : -90) + 'px' });
+        box(inner, 0, 0, 66, 60, j === 2 ? 'picked-box' : 'act');
+        text(inner, 33, 30, token, 'mono token ' + (j === 2 ? 'picked' : 'blue'));
+      });
+      text(svg, 367, 282, 'Drop the oldest token.', 'small', 'start');
+      text(svg, 367, 311, 'Keep two, append ' + t.chosen + '.', 'small', 'start');
+    } else if (phase === 2) {
+      text(svg, 18, 280, 'Stop. The name is complete.', 'main picked', 'start');
+      text(svg, 18, 315, 'Do not append END or run another prediction.', 'small', 'start');
+    }
+    line(svg, 18, 358, 1080, 358);
+    text(svg, 18, 389, 'Name so far: ' + ((phase === 2 ? after : before) || '(empty)'), 'main mono', 'start');
+    text(svg, 1080, 389, 'Sampling, temperature 1.0, fixed seed 3', 'small', 'end');
+    return svg;
+  }
+
+  function generationTrace() {
+    var run = generationExample();
+    var b = baseSvg('generation-trace', 'Every call in the sampled name sam',
+      'Starting from three boundary tokens, sample s, a, m, and then the boundary. Append only letters. Each new window contains the newest three tokens. All probabilities come from the saved model.', 1100, 330);
+    var svg = b.svg;
+    svg.setAttribute('data-stage', 0);
+    [[35, 'Call'], [160, 'Input window'], [425, 'Chosen'], [626, 'Probability'], [815, 'Name'], [985, 'Next window']].forEach(function (c) { text(svg, c[0], 26, c[1], 'label'); });
+    var name = '';
+    run.trace.forEach(function (t, j) {
+      var y = 82 + j * 49;
+      if (t.chosen !== '-') name += t.chosen;
+      var row = add(svg, 'g', { 'data-trace-round': j, 'data-probability': exact(t.probabilities[t.chosen_id]) });
+      line(row, 10, y - 25, 1090, y - 25);
+      [[35, String(j + 1)], [160, t.context.join(' ')], [425, t.chosen === '-' ? 'END (−)' : t.chosen],
+        [626, t.probabilities[t.chosen_id].toFixed(3)], [815, name], [985, t.chosen === '-' ? 'stop' : t.next_context.join(' ')]].forEach(function (c) {
+        text(row, c[0], y, c[1], 'label mono');
+      });
+    });
+    text(svg, 550, 291, 'Four model calls, three letters. The weights never change during generation.', 'label');
+    return svg;
+  }
+
+  function generationChoice() {
+    var run = generationExample(), t = run.trace[2], best = AT.argmax(t.probabilities);
+    var b = baseSvg('generation-choice', 'Greedy and sampling from the same probability row',
+      'At context minus s a, n has the largest probability. Greedy chooses n. The fixed sampling run draws m instead. Greedy completes san and this sample completes sam. Sampling can also choose n.', 1100, 230);
+    var svg = b.svg;
+    svg.setAttribute('data-stage', 0);
+    text(svg, 550, 22, 'Same input window: − s a. Same model. Same probabilities.', 'label');
+    text(svg, 260, 75, 'Greedy: choose the largest', 'main');
+    text(svg, 840, 75, 'Sampling: draw using probabilities', 'main');
+    text(svg, 260, 117, 'n   probability ' + t.probabilities[best].toFixed(3), 'label mono blue');
+    text(svg, 840, 117, 'm   probability ' + t.probabilities[t.chosen_id].toFixed(3), 'label mono blue');
+    text(svg, 260, 157, 'Next window: s a n', 'label mono');
+    text(svg, 840, 157, 'Next window: s a m', 'label mono');
+    text(svg, 260, 202, 'Greedy run finishes as san.', 'small');
+    text(svg, 840, 202, 'Seed 3 finishes as sam. Another draw can differ.', 'small');
+    line(svg, 550, 63, 550, 215);
+    return svg;
+  }
+
   AT.part1Diagrams = {
     annotateMLP: annotateMLP,
     embeddingSpace: embeddingSpace,
     lookupConcat: lookupConcat,
     learningGraph: learningGraph,
     embeddingGradients: embeddingGradients,
-    trainingVsGeneration: trainingVsGeneration
+    trainingVsGeneration: trainingVsGeneration,
+    generationExample: generationExample,
+    generationRun: generationRun,
+    generationTrace: generationTrace,
+    generationChoice: generationChoice
   };
 })();
 
@@ -5044,8 +5178,11 @@ print(hidden.weight.grad.shape)     # [32, 6]</code></pre>
 <!-- ===== sec10.html ===== -->
 <section id="s10" class="sec" data-title="Sample, append, repeat" data-lit="">
 <style>
-#s10 .loop{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:10px;align-items:center}
-#s10 .loop-box{padding:16px;text-align:center;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-s)}
+#s10 .generation-walk .stepper-stage svg{max-height:400px}
+body:not(.present) #s10 .generation-walk .stage-title{display:block}
+#s10 .walk-controls{display:flex;gap:12px;align-items:center;margin-top:8px}
+#s10 .walk-controls .small{margin:0}
+@media print{#s10 .walk-controls{display:none}}
 #s10 .gen-name{font-family:var(--font-mono);font-size:1.6em;min-height:1.6em;margin:12px 0}
 #s10 .window{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:12px 0}
 #s10 .chosen{font-family:var(--font-mono);font-size:1.25em;color:var(--warn)}
@@ -5053,15 +5190,18 @@ print(hidden.weight.grad.shape)     # [32, 6]</code></pre>
 #s10 [aria-pressed=true]{background:var(--ink);color:var(--card)}
 body.present #s10 .generator-layout{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center}
 body.present #s10 .generator-layout .gen-name{overflow-wrap:anywhere}
-@media(max-width:700px){body:not(.present) #s10 .loop{grid-template-columns:1fr}body:not(.present) #s10 .loop-arrow{transform:rotate(90deg);text-align:center}}
 </style>
 <header class="sec-head"><span class="sec-num">10</span><div><p class="eyebrow">To generate a name, feed each chosen character back into the model.</p><h2>Sample, append, repeat</h2></div></header>
 <div class="companion" data-kicker="For self-study"><p>We start generation with three boundary tokens. The model returns a distribution. We can choose the character with the largest probability or sample from the whole distribution. After appending that character, we shift the window right and run the same model again. Sampling allows different names because it can choose lower-probability characters too. Temperature controls how sharply the logits become probabilities: lower values concentrate probability near the largest logits, while higher values spread it out. The bars below always belong to the exact three tokens in the visible window. Choosing the boundary token ends generation.</p></div>
-<div class="frame" data-title="The generation loop" data-autobuild="off">
-  <script type="text/x-notes">What must happen after the model chooses one character?
-  Reveal predict, append, and shift. The same weights run again on the new window.</script>
-  <div class="card"><div class="loop"><div class="loop-box">Predict a distribution</div><span class="loop-arrow">→</span><div class="loop-box" data-build="1">Choose one character</div><span class="loop-arrow">→</span><div class="loop-box" data-build="2">Append and shift</div></div></div>
-  <div class="callout callout-key" data-build="3">Sample, append, repeat until the boundary token appears.</div>
+<div class="frame" data-title="A whole name, one character at a time" data-autobuild="off">
+  <script type="text/x-notes">We have no letters yet. What should enter the model?
+  The three minus signs are the same boundary token used during training. Advance through predict, sample, and append/shift for every call. The bars remain attached to the input window of that call. The orange token enters the NEXT window. At minus s a, sampling chooses m even though n has higher probability. When the boundary is drawn, stop without appending it.</script>
+  <div id="s10-walk" class="generation-walk diagram-step"></div>
+  <div class="walk-controls"><button type="button" class="btn btn-quiet" id="s10-play" aria-pressed="false">Play example</button><p class="small muted">Next/Back pauses at each step. <code>− − −</code> marks the start.</p></div>
+</div>
+<div class="frame" data-title="All four calls in this run" data-autobuild="off">
+  <div class="card teaching-diagram" id="s10-trace"></div>
+  <p>Each new input uses the newest three tokens. The output name keeps <strong>all</strong> the letters chosen so far.</p>
 </div>
 <div class="frame" data-title="PyTorch: choose the next character" data-autobuild="off">
   <pre class="pytorch" data-torch="sample-function"><code>@torch.no_grad()
@@ -5089,6 +5229,16 @@ temperature = 1.0</code></pre>
   <p><code>ctx[:, 1:]</code> keeps the newest two IDs. <code>cat</code> appends the chosen ID to make another three-token window.</p>
   <p>Sampling the boundary stops the loop without adding it to the name. The limit of 18 is a safety cap, so a sample can also stop before choosing the boundary.</p>
 </div>
+<div class="frame" data-title="Greedy choice or sampling?" data-autobuild="off">
+  <script type="text/x-notes">After s then a, must the next letter be n?
+  Greedy chooses the largest entry each time. Sampling uses the entire distribution, including entries outside the displayed bars. It can choose n too. The seeded browser example happens to draw m. Greedy maximizes each local choice, which need not maximize the probability of a whole name. PyTorch uses its own random generator, so the code need not reproduce this browser sample.</script>
+  <div class="teaching-diagram" id="s10-choice"></div>
+  <pre class="pytorch" data-torch="generation-choices"><code>ctx = torch.tensor([[stoi["-"], stoi["s"], stoi["a"]]])
+with torch.no_grad(): p = model(ctx).softmax(dim=-1)
+greedy_id = p.argmax(dim=-1, keepdim=True)
+sampled_id = torch.multinomial(p, num_samples=1)</code></pre>
+  <p><code>argmax</code> takes the largest entry. <code>multinomial</code> draws from all 27 entries. Both return one ID, shape <code>[1, 1]</code>.</p>
+</div>
 <div class="frame" data-title="Generate with the trained model" data-autobuild="off">
   <script type="text/x-notes">How does temperature change the next-character distribution?
   Try sample and greedy modes. Press Next character to watch the window, then generate a complete name.</script>
@@ -5099,10 +5249,35 @@ temperature = 1.0</code></pre>
   These samples use one fixed seed and the trained three-character model.</script>
   <div class="card"><h3 class="card-title">Saved outputs from the training script</h3><div class="samples" id="s10-samples"></div><p class="muted small" id="s10-sample-note"></p></div>
 </div>
-<div class="companion after"><p>Generation runs the trained model repeatedly. Each next token comes from a choice, rather than an observation in the data.</p></div>
+<div class="companion after"><p>Generation runs the trained model repeatedly. Each next token comes from a choice, rather than an observation in the data. The worked animation replays sampling seed 3 in the browser at temperature 1. Its probabilities come from the saved trained model. PyTorch uses a different random generator, so its sampled letters can differ even when the probabilities agree. Greedy choice takes the largest probability at each call. Those local choices need not produce the most probable whole name.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s10'),M=window.__TOY__;let greedy=false,temp=M.sample_temperature,steps=0,seed=M.sample_seed,result=null;
+  const worked=AT.part1Diagrams.generationExample(),walk=S.querySelector('#s10-walk'),play=S.querySelector('#s10-play');
+  let timer=null,advancing=false;
+  function pause(){clearInterval(timer);timer=null;play.textContent='Play example';play.setAttribute('aria-pressed','false');}
+  const walkSteps=worked.trace.flatMap((t,round)=>[
+    'Predict from '+t.context.join(' '),
+    'Sample '+(t.chosen==='-'?'the boundary':t.chosen),
+    t.chosen==='-'?'Stop at the boundary':'Append '+t.chosen+' and shift the window'
+  ].map((title,phase)=>({title:'Call '+(round+1)+' of '+worked.trace.length+': '+title,render:host=>host.appendChild(AT.part1Diagrams.generationRun({stage:round*3+phase}))})));
+  const walkApi=AT.ui.stepper({el:walk,big:true,compact:true,hideList:true,scrollList:false,steps:walkSteps,onChange:()=>{if(!advancing)pause();}});
+  play.addEventListener('click',()=>{
+    if(timer){pause();return;}
+    if(walkApi.index()===walkSteps.length-1)walkApi.go(0);
+    play.textContent='Pause example';play.setAttribute('aria-pressed','true');
+    timer=setInterval(()=>{
+      const r=walk.getBoundingClientRect();
+      if(document.hidden||!r.width||r.bottom<=0||r.top>=innerHeight){pause();return;}
+      advancing=true;walkApi.next();advancing=false;
+      if(walkApi.index()===walkSteps.length-1)pause();
+    },2400);
+  });
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});
+  window.addEventListener('beforeprint',pause);
+  new IntersectionObserver(entries=>{if(!entries[0].isIntersecting)pause();}).observe(walk);
+  S.querySelector('#s10-trace').appendChild(AT.part1Diagrams.generationTrace());
+  S.querySelector('#s10-choice').appendChild(AT.part1Diagrams.generationChoice());
   const nameEl=S.querySelector('#s10-name'),windowEl=S.querySelector('#s10-window'),chosen=S.querySelector('#s10-chosen'),barsEl=S.querySelector('#s10-bars'),status=S.querySelector('#s10-status');
   function topItems(p){const top=AT.topk(p,6),rest=1-top.reduce((a,x)=>a+x.p,0);return top.map(x=>({label:x.tok,p:x.p})).concat([{label:'other ×'+(p.length-top.length),p:rest}]);}
   function paint(){AT.clear(windowEl);AT.clear(barsEl);let context=['-','-','-'],p=AT.mlp.distribution(context,temp).p,last=null;if(result&&result.trace.length){last=result.trace[result.trace.length-1];context=last.context;p=last.probabilities;}AT.ui.chips(context,{active:[0,1,2],into:windowEl});chosen.textContent=last?last.chosen:'?';nameEl.textContent=result?(result.name||'(boundary)'):' ';AT.ui.bars(topItems(p),{highlight:last?last.chosen:null,sorted:false,decimals:2,into:barsEl});status.textContent=(greedy?'Greedy':'Sample')+' · temperature '+AT.fmt(temp,2)+' · seed '+seed+(last&&last.chosen==='-'?' · boundary reached':'');}

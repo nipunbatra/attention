@@ -1,7 +1,10 @@
 <section id="s10" class="sec" data-title="Sample, append, repeat" data-lit="">
 <style>
-#s10 .loop{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:10px;align-items:center}
-#s10 .loop-box{padding:16px;text-align:center;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-s)}
+#s10 .generation-walk .stepper-stage svg{max-height:400px}
+body:not(.present) #s10 .generation-walk .stage-title{display:block}
+#s10 .walk-controls{display:flex;gap:12px;align-items:center;margin-top:8px}
+#s10 .walk-controls .small{margin:0}
+@media print{#s10 .walk-controls{display:none}}
 #s10 .gen-name{font-family:var(--font-mono);font-size:1.6em;min-height:1.6em;margin:12px 0}
 #s10 .window{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:12px 0}
 #s10 .chosen{font-family:var(--font-mono);font-size:1.25em;color:var(--warn)}
@@ -9,15 +12,18 @@
 #s10 [aria-pressed=true]{background:var(--ink);color:var(--card)}
 body.present #s10 .generator-layout{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center}
 body.present #s10 .generator-layout .gen-name{overflow-wrap:anywhere}
-@media(max-width:700px){body:not(.present) #s10 .loop{grid-template-columns:1fr}body:not(.present) #s10 .loop-arrow{transform:rotate(90deg);text-align:center}}
 </style>
 <header class="sec-head"><span class="sec-num">10</span><div><p class="eyebrow">To generate a name, feed each chosen character back into the model.</p><h2>Sample, append, repeat</h2></div></header>
 <div class="companion" data-kicker="For self-study"><p>We start generation with three boundary tokens. The model returns a distribution. We can choose the character with the largest probability or sample from the whole distribution. After appending that character, we shift the window right and run the same model again. Sampling allows different names because it can choose lower-probability characters too. Temperature controls how sharply the logits become probabilities: lower values concentrate probability near the largest logits, while higher values spread it out. The bars below always belong to the exact three tokens in the visible window. Choosing the boundary token ends generation.</p></div>
-<div class="frame" data-title="The generation loop" data-autobuild="off">
-  <script type="text/x-notes">What must happen after the model chooses one character?
-  Reveal predict, append, and shift. The same weights run again on the new window.</script>
-  <div class="card"><div class="loop"><div class="loop-box">Predict a distribution</div><span class="loop-arrow">→</span><div class="loop-box" data-build="1">Choose one character</div><span class="loop-arrow">→</span><div class="loop-box" data-build="2">Append and shift</div></div></div>
-  <div class="callout callout-key" data-build="3">Sample, append, repeat until the boundary token appears.</div>
+<div class="frame" data-title="A whole name, one character at a time" data-autobuild="off">
+  <script type="text/x-notes">We have no letters yet. What should enter the model?
+  The three minus signs are the same boundary token used during training. Advance through predict, sample, and append/shift for every call. The bars remain attached to the input window of that call. The orange token enters the NEXT window. At minus s a, sampling chooses m even though n has higher probability. When the boundary is drawn, stop without appending it.</script>
+  <div id="s10-walk" class="generation-walk diagram-step"></div>
+  <div class="walk-controls"><button type="button" class="btn btn-quiet" id="s10-play" aria-pressed="false">Play example</button><p class="small muted">Next/Back pauses at each step. <code>− − −</code> marks the start.</p></div>
+</div>
+<div class="frame" data-title="All four calls in this run" data-autobuild="off">
+  <div class="card teaching-diagram" id="s10-trace"></div>
+  <p>Each new input uses the newest three tokens. The output name keeps <strong>all</strong> the letters chosen so far.</p>
 </div>
 <div class="frame" data-title="PyTorch: choose the next character" data-autobuild="off">
   <pre class="pytorch" data-torch="sample-function"><code>@torch.no_grad()
@@ -45,6 +51,16 @@ temperature = 1.0</code></pre>
   <p><code>ctx[:, 1:]</code> keeps the newest two IDs. <code>cat</code> appends the chosen ID to make another three-token window.</p>
   <p>Sampling the boundary stops the loop without adding it to the name. The limit of 18 is a safety cap, so a sample can also stop before choosing the boundary.</p>
 </div>
+<div class="frame" data-title="Greedy choice or sampling?" data-autobuild="off">
+  <script type="text/x-notes">After s then a, must the next letter be n?
+  Greedy chooses the largest entry each time. Sampling uses the entire distribution, including entries outside the displayed bars. It can choose n too. The seeded browser example happens to draw m. Greedy maximizes each local choice, which need not maximize the probability of a whole name. PyTorch uses its own random generator, so the code need not reproduce this browser sample.</script>
+  <div class="teaching-diagram" id="s10-choice"></div>
+  <pre class="pytorch" data-torch="generation-choices"><code>ctx = torch.tensor([[stoi["-"], stoi["s"], stoi["a"]]])
+with torch.no_grad(): p = model(ctx).softmax(dim=-1)
+greedy_id = p.argmax(dim=-1, keepdim=True)
+sampled_id = torch.multinomial(p, num_samples=1)</code></pre>
+  <p><code>argmax</code> takes the largest entry. <code>multinomial</code> draws from all 27 entries. Both return one ID, shape <code>[1, 1]</code>.</p>
+</div>
 <div class="frame" data-title="Generate with the trained model" data-autobuild="off">
   <script type="text/x-notes">How does temperature change the next-character distribution?
   Try sample and greedy modes. Press Next character to watch the window, then generate a complete name.</script>
@@ -55,10 +71,35 @@ temperature = 1.0</code></pre>
   These samples use one fixed seed and the trained three-character model.</script>
   <div class="card"><h3 class="card-title">Saved outputs from the training script</h3><div class="samples" id="s10-samples"></div><p class="muted small" id="s10-sample-note"></p></div>
 </div>
-<div class="companion after"><p>Generation runs the trained model repeatedly. Each next token comes from a choice, rather than an observation in the data.</p></div>
+<div class="companion after"><p>Generation runs the trained model repeatedly. Each next token comes from a choice, rather than an observation in the data. The worked animation replays sampling seed 3 in the browser at temperature 1. Its probabilities come from the saved trained model. PyTorch uses a different random generator, so its sampled letters can differ even when the probabilities agree. Greedy choice takes the largest probability at each call. Those local choices need not produce the most probable whole name.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s10'),M=window.__TOY__;let greedy=false,temp=M.sample_temperature,steps=0,seed=M.sample_seed,result=null;
+  const worked=AT.part1Diagrams.generationExample(),walk=S.querySelector('#s10-walk'),play=S.querySelector('#s10-play');
+  let timer=null,advancing=false;
+  function pause(){clearInterval(timer);timer=null;play.textContent='Play example';play.setAttribute('aria-pressed','false');}
+  const walkSteps=worked.trace.flatMap((t,round)=>[
+    'Predict from '+t.context.join(' '),
+    'Sample '+(t.chosen==='-'?'the boundary':t.chosen),
+    t.chosen==='-'?'Stop at the boundary':'Append '+t.chosen+' and shift the window'
+  ].map((title,phase)=>({title:'Call '+(round+1)+' of '+worked.trace.length+': '+title,render:host=>host.appendChild(AT.part1Diagrams.generationRun({stage:round*3+phase}))})));
+  const walkApi=AT.ui.stepper({el:walk,big:true,compact:true,hideList:true,scrollList:false,steps:walkSteps,onChange:()=>{if(!advancing)pause();}});
+  play.addEventListener('click',()=>{
+    if(timer){pause();return;}
+    if(walkApi.index()===walkSteps.length-1)walkApi.go(0);
+    play.textContent='Pause example';play.setAttribute('aria-pressed','true');
+    timer=setInterval(()=>{
+      const r=walk.getBoundingClientRect();
+      if(document.hidden||!r.width||r.bottom<=0||r.top>=innerHeight){pause();return;}
+      advancing=true;walkApi.next();advancing=false;
+      if(walkApi.index()===walkSteps.length-1)pause();
+    },2400);
+  });
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});
+  window.addEventListener('beforeprint',pause);
+  new IntersectionObserver(entries=>{if(!entries[0].isIntersecting)pause();}).observe(walk);
+  S.querySelector('#s10-trace').appendChild(AT.part1Diagrams.generationTrace());
+  S.querySelector('#s10-choice').appendChild(AT.part1Diagrams.generationChoice());
   const nameEl=S.querySelector('#s10-name'),windowEl=S.querySelector('#s10-window'),chosen=S.querySelector('#s10-chosen'),barsEl=S.querySelector('#s10-bars'),status=S.querySelector('#s10-status');
   function topItems(p){const top=AT.topk(p,6),rest=1-top.reduce((a,x)=>a+x.p,0);return top.map(x=>({label:x.tok,p:x.p})).concat([{label:'other ×'+(p.length-top.length),p:rest}]);}
   function paint(){AT.clear(windowEl);AT.clear(barsEl);let context=['-','-','-'],p=AT.mlp.distribution(context,temp).p,last=null;if(result&&result.trace.length){last=result.trace[result.trace.length-1];context=last.context;p=last.probabilities;}AT.ui.chips(context,{active:[0,1,2],into:windowEl});chosen.textContent=last?last.chosen:'?';nameEl.textContent=result?(result.name||'(boundary)'):' ';AT.ui.bars(topItems(p),{highlight:last?last.chosen:null,sorted:false,decimals:2,into:barsEl});status.textContent=(greedy?'Greedy':'Sample')+' · temperature '+AT.fmt(temp,2)+' · seed '+seed+(last&&last.chosen==='-'?' · boundary reached':'');}

@@ -10,6 +10,14 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+Section 10 now animates a complete saved-model generation run from `- - -`: seed 3, temperature 1 samples s, a, m,
+then the boundary. Its 12 managed steps separate prediction, selection, and append/shift (or stop). Next/Back gives
+manual pacing, Play replays the run, leaving the frame pauses playback, and reduced-motion/print disables movement.
+The following frame records all four calls so final-state PDF export retains the worked trace. A greedy-versus-sampling
+comparison at `- s a` shows n (0.161) versus this draw of m (0.064), just before the unchanged live generator.
+The literal PyTorch comparison and synchronized download bring the total to 33 snippets. Browser and Torch RNGs differ.
+New checks cover all stages, chosen tokens outside the top five, the boundary stop, controls, and independent Torch probabilities.
+
 Section 9 now follows the learning graph with a full `E_tok` view: all 27 rows and both actual stored coordinates,
 split into three blocks with no omissions. Only a and b are outlined. The text explains that two a occurrences send
 gradients to the same row, where autograd adds them, while b contributes once. The other 25 rows, including target i,
