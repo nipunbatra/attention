@@ -33,6 +33,11 @@ embedding = nn.Embedding(27, 2)
 e = embedding(ctx)
 print(e.shape)  # [1, 3, 2]
 
+# single-character-lookup
+char_id = torch.tensor([stoi["a"]])
+e_a = embedding(char_id)
+print(e_a.shape)  # [1, 2]
+
 # word-analogy
 man, woman, king, queen = torch.tensor(
     [[1., 1.], [3., 1.], [1., 3.], [3., 3.]])

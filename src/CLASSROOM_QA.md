@@ -1,5 +1,20 @@
 # Classroom release checks
 
+## 2026-09-11: the embedding lookup, symbol by symbol
+
+- Replaced the combined table/equation frame with six paced frames: character, ID mapping, whole table, square brackets,
+  retrieved vector, and complete equation. Added a seventh, three-line PyTorch example after constructing the layer.
+  The explanation includes parentheses, equals, capital/lowercase E/e, subscripts, and the token abbreviation.
+- Characters use rust and IDs muted violet, with matching symbol/prose colours. Embedding rows and their table retain
+  the established blue. Explicit row-ID columns distinguish labels from the two learned coordinate columns. Displayed
+  rows still come from the unchanged saved model. The complete equation appears only after its pieces are introduced.
+- All 220 progressive states pass frame checks, with 121 unique formulas, no overflow, and no internal scrolling.
+  Sixteen equation-guide groups pass article/print colour checks. The table checks pass 35 reading, 35 phone, and 26
+  presentation tables. All seven lookup frames were visually inspected at classroom size, including the selected row.
+- The 30 executable snippets pass, including ID 1 selecting the exact embedding row with shape [1, 2]. The standalone
+  Python file stays synchronized. Saved model probabilities still match within 1.53e-16. JS arithmetic/generation,
+  embedding-primer, original SVG regression, and isolated metadata checks pass. No PDF export or shared-runtime rewrite.
+
 ## 2026-09-11: motivate embeddings before the lookup table
 
 - Section 4 adds 22 paced frames: motivation, a row as a 2D point, several points, training's role, representations across

@@ -22,7 +22,7 @@ await page.goto(pathToFileURL(path.resolve(process.argv[2] || 'part1.html')).hre
 await page.waitForTimeout(250);
 const checkGuides = () => {
   const issues = [], guides = [...document.querySelectorAll('[data-math-guide]')];
-  const roles = ['input', 'target', 'param', 'prob', 'activation', 'score', 'loss'];
+  const roles = ['input', 'target', 'param', 'prob', 'activation', 'score', 'loss', 'token', 'index'];
   for (const guide of guides) {
     for (const role of roles) {
       const cls = '.p1-' + role;
@@ -48,10 +48,36 @@ const checkGuides = () => {
 };
 const article = await page.evaluate(checkGuides);
 errors.push(...article.issues);
+const lookup = await page.evaluate(() => {
+  const issues=[], steps=[...document.querySelectorAll('[data-lookup-step]')];
+  const order=steps.map(f=>f.dataset.lookupStep);
+  if(order.join(',')!=='character,id,table,select,row,equation,code')issues.push('Lookup needs the paced symbol order before the complete equation');
+  const ids=[...document.querySelectorAll('#s04-lookup-ids tbody tr')].map(r=>[r.querySelector('th').textContent,Number(r.querySelector('td').textContent)]);
+  if(JSON.stringify(ids)!==JSON.stringify(['-','a','b','i'].map(c=>[c,AT.mlp.stoi[c]])))issues.push('Character IDs disagree with vocabulary');
+  for(const id of ['s04-embed','s04-selected-row']){
+    const rows=[...document.querySelectorAll('#'+id+' tbody tr')];
+    for(const row of rows){
+      const c=row.querySelector('th').textContent, cells=[...row.querySelectorAll('td')].map(n=>n.textContent);
+      const expected=[String(AT.mlp.stoi[c]),...__TOY__.E[AT.mlp.stoi[c]].map(n=>AT.fmt(n,2))];
+      if(JSON.stringify(cells)!==JSON.stringify(expected))issues.push('Lookup table values differ: '+id+'/'+c);
+    }
+  }
+  const expected='['+__TOY__.E[AT.mlp.stoi.a].map(n=>AT.fmt(n,2)).join(', ')+']';
+  if(document.querySelector('[data-lookup-values]').textContent!==expected)issues.push('Retrieved a vector differs');
+  if(!/selected|hl|highlight/.test(document.querySelector('#s04-selected-row tbody tr').className))issues.push('Selected a row is not highlighted');
+  return {steps:order,issues};
+});
+errors.push(...lookup.issues);
 // Include the fully revealed notation frames and the tables adjacent to them.
 for (const [section, title, name] of [
   ['s03', 'Writing the same question as a probability', 'probability'],
+  ['s04', 'c stands for one character', 'lookup-character'],
+  ['s04', "id(c) gives that character's row number", 'lookup-id'],
   ['s04', 'Look up a learned row', 'lookup'],
+  ['s04', 'Square brackets select a row', 'lookup-select'],
+  ['s04', 'Lowercase e names the retrieved vector', 'lookup-row'],
+  ['s04', 'The complete lookup equation', 'lookup-equation'],
+  ['s04', 'PyTorch: look up just the character a', 'lookup-code'],
   ['s05', 'Three rows become one row', 'concatenation'],
   ['s06', 'The hidden layer combines the input numbers', 'hidden-layer'],
   ['s06', 'The output layer makes one score per token', 'output-layer'],
@@ -92,5 +118,5 @@ await page.emulateMedia({ media: 'print' });
 const printed = await page.evaluate(checkGuides);
 errors.push(...printed.issues.map(x => 'print: ' + x));
 await browser.close();
-console.log(JSON.stringify({ article, phone, print: printed, screenshots: out, errors }, null, 2));
+console.log(JSON.stringify({ article, lookup, phone, print: printed, screenshots: out, errors }, null, 2));
 if (errors.length) process.exitCode = 1;

@@ -130,6 +130,10 @@ or observed target, `\\pParam{...}` for theta/MLP weights and biases, `\\pAct{..
 `p1-input`, `p1-target`, `p1-param`, `p1-activation`, `p1-score`, `p1-prob`, and `p1-loss`. The embedding table stays blue
 even though it is learned. These are Part 1 roles, not new meanings for Part 2's query/key/value colours.
 
+The lookup walkthrough adds `\\pToken{...}` / `.p1-token` for a character and `\\pIndex{...}` / `.p1-index` for its
+integer ID. Character, ID, table, and retrieved row are introduced separately before the combined expression. Brackets,
+parentheses, subscripts, and the equals sign also get plain explanations. The ID is a row label, not an embedding coordinate.
+
 Wrap a formula and its key in `data-math-guide`. Put the equation inside `.p1-math` and use a `.p1-key` definition list
 or `.p1-read` prose for the matching explanations. `node src/notation_test.mjs` checks actual rendered colour matches,
 phone layout, print styling, and representative fully revealed frames. Pair it with the complete frame audit.
@@ -143,7 +147,7 @@ After a worked operation, show its 2–5-line PyTorch equivalent on a paced fram
 and output shapes, and how the code variables match the equation. Keep the motivation frames free of premature code.
 Split setup, computation, and interpretation when needed; do not squeeze a full training script into one slide.
 
-Part 1's 29 snippets use `<pre class="pytorch" data-torch="unique-stage"><code>…</code></pre>`. Their order constructs
+Part 1's 30 snippets use `<pre class="pytorch" data-torch="unique-stage"><code>…</code></pre>`. Their order constructs
 one character model: IDs → embedding lookup → concatenation → hidden layer → logits → probabilities/loss → an update
 → autoregressive sampling. The word-token and wider-window examples explicitly construct separate fresh layers.
 The representation detour uses hand-chosen analogy vectors and separate, untrained document/image/signal examples.

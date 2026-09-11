@@ -3,6 +3,13 @@
 #s04 .work-row{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 #s04 .work-row>*{min-width:0}
 #s04 .shape{font-family:var(--font-mono);font-size:1.1em}
+.p1-token{color:#8B3F18} .p1-index{color:#6E4BA5}
+#s04 .lookup-values{font-family:var(--font-mono);font-size:1.5em;white-space:nowrap;text-align:center}
+#s04 .lookup-table .dt tbody th{color:#8B3F18}
+#s04 .lookup-table .dt tbody td:first-of-type{color:#6E4BA5}
+#s04 .lookup-table .dt tbody td:not(:first-of-type){color:var(--c-e)}
+#s04 .lookup-id-map .dt tbody th{color:#8B3F18}
+#s04 .lookup-id-map .dt tbody td{color:#6E4BA5}
 #s04 .embedding-space{max-width:1100px;margin:0 auto}
 body.present #s04 .embedding-space>svg{max-height:380px}
 #s04 .primer-figure{width:100%;max-width:1000px;margin:0 auto 18px}
@@ -54,11 +61,59 @@ print(one_hot.shape)  # [1, 3, 27]</code></pre>
   <p>Here <span class="p1-input"><strong>a</strong> and <strong>i</strong></span> are closer to each other than to <span class="p1-input"><strong>b</strong></span>.</p>
   <p class="small muted">Our toy training constrains coordinate 1 to be positive for vowels and negative for consonants. This picture is not evidence that an unconstrained model discovered that rule.</p>
 </div>
-<div class="frame" data-title="Look up a learned row" data-autobuild="off">
-  <script type="text/x-notes">Which embedding axis separates vowels from consonants?
-  Read the column headers before the values. Highlight a, b, and i as the rows needed by the running examples.</script>
-  <div class="card"><h3 class="card-title">Embedding table: the same three vectors as rows</h3><div id="s04-embed"></div></div>
-  <div data-build="1" data-math-guide><div class="p1-math">$$\pIn{e_c}=\pIn{E_{\text{tok}}}[\operatorname{id}(c)]$$</div><p class="p1-read"><span class="p1-input">$\pIn{E_{\text{tok}}}$ is the learned embedding table. $\pIn{e_c}$ is the row for character $c$.</span> The ID of $c$ selects a row; the square brackets mean “look up”.</p></div>
+<div class="frame" data-title="c stands for one character" data-autobuild="off" data-lookup-step="character">
+  <div data-math-guide>
+    <div class="p1-math">$$\pToken{c}=\pToken{\text{a}}$$</div>
+    <p class="p1-read p1-token">The symbol c is a placeholder for the character we want to represent. In this example, that character is a.</p>
+  </div>
+  <p>Read this as “let the character be a”. The equals sign says what we chose for this example.</p>
+  <p data-build="1">Another example could choose <span class="p1-token"><strong>b</strong></span> or <span class="p1-token"><strong>i</strong></span>. The placeholder <span class="p1-token"><strong>c</strong></span> can stand for any character.</p>
+</div>
+<div class="frame" data-title="id(c) gives that character's row number" data-autobuild="off" data-lookup-step="id">
+  <div data-math-guide>
+    <div class="p1-math">$$\pIndex{\operatorname{id}}(\pToken{\text{a}})=\pIndex{1}$$</div>
+    <p class="p1-read"><span class="p1-index">id is our character-to-integer mapping. It gives a the ID 1.</span> <span class="p1-token">The a inside the parentheses is the character we give to that mapping.</span></p>
+  </div>
+  <div class="lookup-id-map" id="s04-lookup-ids"></div>
+  <p data-build="1">IDs start at 0 in our code. <span class="p1-index"><strong>1 identifies a's table row</strong></span>, regardless of where a occurs in a name.</p>
+</div>
+<div class="frame" data-title="Look up a learned row" data-autobuild="off" data-lookup-step="table">
+  <div data-math-guide>
+    <div class="p1-math">$$\pIn{E_{\text{tok}}}$$</div>
+    <p class="p1-read p1-input">Capital E names the whole embedding table. The subscript tok is short for token. Here, each token is a character.</p>
+  </div>
+  <div class="lookup-table" id="s04-embed"></div>
+  <p>Three of 27 rows are shown. <span class="p1-input">Each embedding contains two numbers.</span> <span class="p1-token">Character</span> and <span class="p1-index">ID</span> just label its row.</p>
+</div>
+<div class="frame" data-title="Square brackets select a row" data-autobuild="off" data-lookup-step="select">
+  <div data-math-guide>
+    <div class="p1-math">$$\pIn{E_{\text{tok}}}[\pIndex{1}]$$</div>
+    <p class="p1-read"><span class="p1-input">Take the embedding table.</span> <span class="p1-index">Select its row with ID 1.</span> The square brackets [ ] mean “look up this row”.</p>
+  </div>
+  <div class="lookup-table" id="s04-selected-row"></div>
+  <p data-build="1"><span class="p1-input">The two blue coordinates form the embedding.</span> <span class="p1-index">The purple 1 selects them and is not part of the vector.</span> This is selection, not multiplication.</p>
+</div>
+<div class="frame" data-title="Lowercase e names the retrieved vector" data-autobuild="off" data-lookup-step="row">
+  <div data-math-guide>
+    <div class="p1-math">$$\pIn{e}_{\pToken{\text{a}}}$$</div>
+    <p class="p1-read"><span class="p1-input">Lowercase e names one embedding vector.</span> <span class="p1-token">The small a below it says whose vector this is: the vector for character a.</span></p>
+  </div>
+  <p class="lookup-values p1-input" data-lookup-values></p>
+  <p class="small muted">The two saved coordinates, rounded to two decimal places.</p>
+  <p><span class="p1-input">Capital E with subscript tok is the whole table. Lowercase e with subscript a is one retrieved row.</span> Reading a row leaves the table unchanged.</p>
+</div>
+<div class="frame" data-title="The complete lookup equation" data-autobuild="off" data-lookup-step="equation">
+  <div data-math-guide>
+    <div class="p1-math">$$\pIn{e}_{\pToken{c}}=\pIn{E_{\text{tok}}}[\pIndex{\operatorname{id}}(\pToken{c})]$$</div>
+    <dl class="p1-key">
+      <div class="p1-token"><dt>$\pToken{c}$: the character</dt><dd>Our example chooses a.</dd></div>
+      <div class="p1-index"><dt>$\pIndex{\operatorname{id}}(\pToken{c})$: its integer ID</dt><dd>The mapping gives a the ID 1.</dd></div>
+      <div class="p1-input"><dt>$\pIn{E_{\text{tok}}}$: the whole table</dt><dd>All 27 embedding rows.</dd></div>
+      <div class="p1-input"><dt>$\pIn{e}_{\pToken{c}}$: the retrieved vector</dt><dd>The embedding row for that character.</dd></div>
+    </dl>
+  </div>
+  <p>Read right to left: find the character's ID, look up that row in the table, and call the returned vector its embedding.</p>
+  <p class="small muted">[ ] selects the row. = says the expressions on both sides name the same vector.</p>
 </div>
 <div class="frame" data-title="Training gives the coordinates a job" data-autobuild="off" data-embedding-primer>
   <div class="primer-figure" id="s04-learn-coordinates"></div>
@@ -74,6 +129,15 @@ print(e.shape)  # [1, 3, 2]</code></pre>
   <p>The output axes are <strong>example, position, embedding coordinate</strong>. Calling the layer selects rows; training changes their values.</p>
   <p class="small muted">Construct the layer once, not for each input. We leave the boundary row trainable, so we do not set <code>padding_idx</code>.</p>
 </div>
+<div class="frame" data-title="PyTorch: look up just the character a" data-autobuild="off" data-lookup-step="code">
+  <pre class="pytorch" data-torch="single-character-lookup"><code>char_id = torch.tensor([stoi["a"]])
+e_a = embedding(char_id)
+print(e_a.shape)  # [1, 2]</code></pre>
+  <p><span class="p1-index"><code>stoi["a"]</code> is our code for id(a), which gives 1.</span> <span class="p1-input"><code>embedding(char_id)</code> selects that row from <code>embedding.weight</code>.</span></p>
+  <p><span class="p1-input"><code>e_a</code> holds one embedding with two numbers.</span> The <code>[1, 2]</code> here describes its shape, not its coordinate values.</p>
+  <p class="small muted">The preceding code created a fresh table. Its coordinates differ from the saved trained table shown in the worksheet.</p>
+</div>
+<div class="companion"><p>The integer IDs stay fixed while training changes the embedding coordinates. In this example, <code>nn.Embedding</code> takes integer indices and returns one row per index. See the <a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Embedding.html">PyTorch Embedding documentation</a> for the input and output shapes.</p></div>
 <div class="frame" data-title="The learned rows form a geometry" data-autobuild="off">
   <script type="text/x-notes">What does it mean for two learned rows to be close?
   Every table row is a point. The first coordinate was deliberately constrained only by vowel versus consonant sign; the second was free to organize itself for prediction.</script>
@@ -210,7 +274,13 @@ print(e_time.shape)  # [1, 3]</code></pre>
     d.querySelector('.calc-rounding').textContent='The 0s and 1s are exact. Every omitted coordinate also contributes 0.';
   });
   const selected=['a','b','i'];
-  AT.ui.table(selected.map(c=>M.E[M.vocab.indexOf(c)]),{axes:'e',rowLabels:selected,rowCls:'e',cornerLabel:'token',decimals:2,caption:'Axis 1 has a vowel sign constraint. Axis 2 is unconstrained.',into:S.querySelector('#s04-embed')});
+  AT.ui.table(['-','a','b','i'].map(c=>[AT.mlp.stoi[c]]),{cols:['ID / row number'],rowLabels:['-','a','b','i'],cornerLabel:'character',decimals:0,into:S.querySelector('#s04-lookup-ids')});
+  ['#s04-embed','#s04-selected-row'].forEach((id,j)=>{
+    AT.ui.table(selected.map(c=>M.E[M.vocab.indexOf(c)]),{axes:'e',rowLabels:selected,rowCls:'e',cornerLabel:'character',decimals:2,
+      lead:[{label:'row ID',decimals:0,fn:(_,i)=>AT.mlp.stoi[selected[i]]}],
+      highlightRow:j===1?0:undefined,into:S.querySelector(id)});
+  });
+  S.querySelector('[data-lookup-values]').textContent='['+M.E[AT.mlp.stoi.a].map(n=>AT.fmt(n,2)).join(', ')+']';
   S.querySelector('#s04-space').appendChild(AT.part1Diagrams.embeddingSpace({highlight:selected}));
   const primer=AT.embeddingPrimer;
   [['point-one',()=>primer.points(false)],['point-many',()=>primer.points(true)],['learn-coordinates',primer.learning],

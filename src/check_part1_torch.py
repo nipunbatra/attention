@@ -79,6 +79,9 @@ for name, source in parser.items:
     if name == "embedding":
         assert scope["e"].shape == (1, 3, 2)
         assert scope["embedding"].padding_idx is None
+    if name == "single-character-lookup":
+        assert scope["char_id"].tolist() == [1] and scope["e_a"].shape == (1, 2)
+        torch.testing.assert_close(scope["e_a"][0], scope["embedding"].weight[1])
     if name == "word-analogy":
         torch.testing.assert_close(scope["candidate"], scope["queen"])
         torch.testing.assert_close(scope["king"] - scope["man"], torch.tensor([0., 2.]))

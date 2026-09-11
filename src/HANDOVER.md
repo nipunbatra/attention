@@ -28,7 +28,7 @@ on separate frames. Part 1's role macros are scoped to its runtime; other parts 
 Use the equation-key convention in `PRESENT.md` for future revisions and `notation_test.mjs` to check this implementation.
 
 Part 1 also pairs each computational stage with a 2–5-line PyTorch snippet, a plain-language explanation, and tensor
-shapes. There are 29 executable snippets, including `nn.Embedding`, `nn.Linear`, the storage transpose, stable softmax,
+shapes. There are 30 executable snippets, including `nn.Embedding`, `nn.Linear`, the storage transpose, stable softmax,
 cross-entropy, autograd/SGD, and generation. Run `check_part1_torch.py` with PyTorch installed; it checks the literal HTML
 code and the matching download `../examples/part1_pytorch.py`, then reproduces the saved model's six probability rows.
 The classroom code starts fresh and illustrates one update; it does not claim to reproduce training from a single batch.
@@ -41,6 +41,13 @@ time series, then returns to the original `a a b` character context. Word2vec is
 learning from surrounding words, a simple 2D analogy, and four lines of PyTorch. Its parallelogram uses invented numbers,
 not pretrained vectors or a claimed exact rule. Detailed skip-gram gradients and CBOW arithmetic were intentionally omitted
 at Nipun's request. Preserve this introductory pacing.
+
+The lookup equation is now introduced through six small frames: character `c`, mapping `id(c)`, full table `E_tok`,
+square-bracket row selection, retrieved vector `e_a`, then the complete equation. The two blue coordinates alone form
+the embedding; character and numeric ID are row labels. New Part 1 macros `pToken` and `pIndex` colour characters rust
+and lookup IDs muted violet, with matching prose. The established embedding/table blue is unchanged. These local lookup
+roles do not redefine Part 2's Q/K/V palette. A separate three-line PyTorch example retrieves just a and distinguishes
+its `[1, 2]` output shape from coordinate values. `notation_test.mjs` covers all seven frames, label colours, IDs, and rows.
 
 `embedding-primer.js` supplies 11 editable SVG instances. Character coordinates come from `toy1.json`; analogy coordinates
 are hand-chosen; the domain encoders are schematic. The existing two-mug scene is embedded by `assemble.py` for offline use.

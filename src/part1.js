@@ -5,6 +5,8 @@
   // Part 1's notation roles. The same classes colour math and its nearby prose.
   Object.assign(AT.macros || (AT.macros = {}), {
     '\\pIn': '\\htmlClass{p1-input}{#1}',
+    '\\pToken': '\\htmlClass{p1-token}{#1}',
+    '\\pIndex': '\\htmlClass{p1-index}{#1}',
     '\\pTarget': '\\htmlClass{p1-target}{#1}',
     '\\pParam': '\\htmlClass{p1-param}{#1}',
     '\\pProb': '\\htmlClass{p1-prob}{#1}',
