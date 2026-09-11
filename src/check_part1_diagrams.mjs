@@ -32,7 +32,7 @@ try {
     const fail = [], near = (a, b, tolerance = 1e-10) => Math.abs(a - b) <= tolerance;
     const check = (condition, description) => { if (!condition) fail.push(description); };
     const pretty = value => (Math.abs(value) < 0.005 ? 0 : value).toFixed(2).replace('-', '−');
-    const methods = { embeddingSpace: 0, lookupConcat: 2, learningGraph: 3, trainingVsGeneration: 2 };
+    const methods = { embeddingSpace: 0, lookupConcat: 2, learningGraph: 3, embeddingGradients: 0, trainingVsGeneration: 2 };
     const toy = window.__TOY__, mlp = AT.mlp;
     const original = JSON.stringify(toy);
     for (const id of ['s06-net', 's14-net']) {
@@ -177,6 +177,20 @@ try {
     for (const dim of dims) check(graphText.includes(dim), `learning graph: missing actual model shape ${dim}`);
     check(graphText.includes(`p(i) = ${p.toFixed(3)}`) && graphText.includes(`loss = ${pretty(loss)}`), 'learning graph probability/loss must agree with the actual forward pass');
     check(/target i is not looked up as an input/.test(graphText) && /reverse gradients/.test(graphText) && /ReLU/.test(graphText), 'learning graph must keep target, gradient direction, and hidden activation explicit');
+
+    const expanded = final('embeddingGradients'), embeddingRows = [...expanded.querySelectorAll('[data-embedding-row]')];
+    check(embeddingRows.length === toy.vocab.length && embeddingRows.length === 27, 'expanded embedding table must show every row without ellipses');
+    check(expanded.dataset.gradientScope === 'single-example-cross-entropy', 'row-gradient claim must be scoped to this example’s loss');
+    embeddingRows.forEach((row, i) => {
+      check(Number(row.dataset.embeddingRow) === i && row.dataset.token === toy.vocab[i], `expanded row ${i}: wrong row ID or token`);
+      check(JSON.stringify(JSON.parse(row.dataset.coordinates)) === JSON.stringify(toy.E[i]), `expanded row ${i}: changed stored coordinates`);
+      check(JSON.stringify([...row.querySelectorAll('[data-coordinate]')].map(n => n.textContent)) === JSON.stringify(toy.E[i].map(pretty)), `expanded row ${i}: displayed coordinates must match the actual table`);
+      const count = input.filter(token => token === toy.vocab[i]).length;
+      check(Number(row.dataset.lookupContributions) === count && !!row.querySelector('.lookup-gradient') === (count > 0), `expanded row ${i}: only a and b should receive lookup gradients`);
+    });
+    check(/Autograd adds them/.test(expanded.textContent) && /Other 25 rows: zero gradient/.test(expanded.textContent) && /Extra regularization/.test(expanded.textContent), 'expanded table must explain accumulation, untouched rows, and scope');
+    const learning = document.querySelector('#s09-learning .stepper') || document.querySelector('#s09-learning');
+    check(learning.stepperApi.steps.length === 4 && !!document.querySelector('#s09-embedding-gradients svg').closest('.frame'), 'full table needs its own follow-on frame so final-state PDF exports retain both the graph and table');
 
     const lanes = final('trainingVsGeneration');
     const seed = Number(lanes.getAttribute('data-sample-seed'));

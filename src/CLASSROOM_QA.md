@@ -1,5 +1,21 @@
 # Classroom release checks
 
+## 2026-09-11: full embedding table during backpropagation
+
+- Added a single follow-on frame after the learning graph showing all 27 rows and 54 stored coordinates of E_tok.
+  Three blocks keep the full table readable without omissions. Only a and b are outlined. The explanation distinguishes
+  the two accumulated a contributions, one b contribution, and zero embedding gradient for the remaining 25 rows.
+  Target i remains outside the input lookup. The claim explicitly concerns this example's cross-entropy only.
+- Preserved the original four-stage computation graph. Its separate frame keeps both views in default final-state
+  slide exports. No PDF was regenerated. Classroom code, model parameters, and the downloadable snippets are unchanged.
+- New PyTorch checks confirm exactly rows 1 and 2 have nonzero gradients, row a equals the sum from its two positions,
+  row b equals its single contribution, and a plain SGD step changes only these two embedding rows. All 32 snippets
+  and existing saved-model/NumPy gradient checks still pass.
+- SVG checks cover 34 instances, all 27 displayed rows and their actual values, row highlights, 1,174 bounded labels,
+  and local arrow markers. Matching-colour checks pass. Visually inspected the new classroom view; phone reading has
+  no horizontal overflow. Browser print media retains the separate graph and table frames. Metadata builds pass.
+- All 216 progressive presentation states and 124 unique formulas pass, with no overflow or nested scrolling.
+
 ## 2026-09-11: compact MLP-to-probability sequence
 
 - Reduced the nine classroom frames beginning with the worked hidden unit to four. Kept a combined MLP calculation,

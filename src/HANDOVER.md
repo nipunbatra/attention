@@ -10,6 +10,13 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+Section 9 now follows the learning graph with a full `E_tok` view: all 27 rows and both actual stored coordinates,
+split into three blocks with no omissions. Only a and b are outlined. The text explains that two a occurrences send
+gradients to the same row, where autograd adds them, while b contributes once. The other 25 rows, including target i,
+have zero embedding gradient from this single example's cross-entropy. Extra regularization is explicitly excluded.
+This is a separate frame so final-state slide exports retain both the computation graph and the expanded table.
+The new autograd regression verifies selected rows, repeated-row accumulation, and a plain SGD step touching only a/b.
+
 The classroom stretch from the worked hidden unit through final probabilities is now **four frames instead of nine**.
 One frame combines a hidden activation and the i logit, followed by softmax with its two-line code, the numerical table,
 and the probability bars. Detailed product worksheets and the stability derivation/code remain in full article mode.

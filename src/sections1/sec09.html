@@ -10,8 +10,13 @@
 <div class="companion" data-kicker="For self-study"><p>The optimizer updates the parameters that produced the loss: the embedding table, both weight matrices, and both bias rows. For a single context, only the embedding rows we looked up receive a direct embedding gradient. The shared MLP parameters receive gradients through the whole calculation. Repeating these updates over many shuffled training rows lowers the average loss. The curve records that loss at regular checkpoints. To see what changed for <em>aab</em>, compare the bars before and after training. They use two saved parameter sets with the same context, so a different input cannot explain the change.</p></div>
 <div class="frame" data-title="Follow prediction and learning in one graph" data-autobuild="off">
   <script type="text/x-notes">Where does the observed i enter this computation?
-  First trace the forward prediction. Then add the observed target only at the loss, and finally follow the gradient arrows back to the stored parameters.</script>
+  First trace the forward prediction. Then add the observed target only at the loss and follow the gradient arrows back. The next frame expands the complete embedding table.</script>
   <div id="s09-learning" class="learning-step diagram-step"></div>
+</div>
+<div class="frame" data-title="Only rows a and b receive embedding gradients" data-autobuild="off">
+  <script type="text/x-notes">Why does the a row receive two contributions?
+  Both a positions looked up the same row. Autograd adds their gradients; they need not be equal. b contributes once. The other 25 rows get zero gradient from this example's cross-entropy. This excludes any extra regularization loss. With plain SGD, no momentum or weight decay, only a and b change in the embedding table for this update.</script>
+  <div class="card" id="s09-embedding-gradients"></div>
 </div>
 <div class="frame" data-title="What the optimizer changes" data-autobuild="off">
   <script type="text/x-notes">Which learned objects receive gradients from the loss?
@@ -66,6 +71,7 @@ print(hidden.weight.grad.shape)     # [32, 6]</code></pre>
     {title:'Observed i defines the loss',render:host=>host.appendChild(AT.part1Diagrams.learningGraph({stage:2}))},
     {title:'Autograd returns parameter gradients',render:host=>host.appendChild(AT.part1Diagrams.learningGraph({stage:3}))}
   ]});
+  S.querySelector('#s09-embedding-gradients').appendChild(AT.part1Diagrams.embeddingGradients());
   const specs=[['$\\pIn{E_{\\text{tok}}}$',V+' × '+D,V*D],['$\\pParam{W_1}$',(M.w*D)+' × '+H,M.w*D*H],['$\\pParam{b_1}$','1 × '+H,H],['$\\pParam{W_2}$',H+' × '+V,H*V],['$\\pParam{b_2}$','1 × '+V,V]];
   AT.ui.table(specs.map(r=>[r[1],r[2]]),{cols:['shape','parameter count'],rowLabels:specs.map(r=>r[0]),cornerLabel:'parameter',decimals:0,footer:{label:'total',values:['',specs.reduce((a,r)=>a+r[2],0)]},into:S.querySelector('#s09-params')});
   const curve=M.training_curve,host=S.querySelector('#s09-curve'),W=800,Ht=260,pad={l:58,r:20,t:18,b:42},xs=curve.map(d=>d.step),ys=curve.map(d=>d.loss),xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys),x=v=>pad.l+(v-xmin)/(xmax-xmin)*(W-pad.l-pad.r),y=v=>pad.t+(ymax-v)/(ymax-ymin)*(Ht-pad.t-pad.b),svg=AT.svg('svg',{viewBox:'0 0 '+W+' '+Ht,class:'curve',role:'img','aria-label':'Training loss curve'});

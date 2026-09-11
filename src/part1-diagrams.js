@@ -320,6 +320,60 @@
     return svg;
   }
 
+  function embeddingGradients() {
+    var rows = M.E, vocab = M.vocab, input = ['a', 'a', 'b'];
+    var b = baseSvg(
+      'embedding-gradients', 'Only the looked-up embedding rows receive gradients from this example',
+      'The complete 27 by 2 embedding table, displayed in three blocks with no omitted rows. Cross-entropy for the input a a b and target i sends two lookup-gradient contributions to the shared a row and one to b. All other embedding rows, including i, have zero gradient from this loss. Additional regularization terms are excluded.',
+      1100, 420
+    );
+    var svg = b.svg;
+    svg.setAttribute('data-stage', '0');
+    svg.setAttribute('data-gradient-scope', 'single-example-cross-entropy');
+    add(svg, 'style', {}, '#' + b.id + ' .lookup-gradient{fill:var(--t-e,#E4ECFF);stroke:var(--warn,#B45309);stroke-width:2}');
+    text(svg, 18, 25, 'E_tok: ' + rows.length + ' \u00d7 ' + rows[0].length, 'main blue', 'start');
+    text(svg, 18, 52, 'One table, split into three blocks.', 'small', 'start');
+    var perBlock = Math.ceil(rows.length / 3), blockWidth = 252, rowHeight = 28;
+    for (var block = 0; block < 3; block++) {
+      var left = 18 + block * blockWidth;
+      text(svg, left + 16, 80, 'ID', 'small');
+      text(svg, left + 66, 80, 'token', 'small');
+      text(svg, left + 132, 80, 'coord 1', 'small');
+      text(svg, left + 208, 80, 'coord 2', 'small');
+      line(svg, left, 93, left + 238, 93);
+      for (var n = 0; n < perBlock; n++) {
+        var id = block * perBlock + n;
+        if (id >= rows.length) break;
+        var count = input.filter(function (token) { return token === vocab[id]; }).length;
+        var top = 96 + n * rowHeight, center = top + rowHeight / 2;
+        var g = add(svg, 'g', {
+          'data-embedding-row': id, 'data-token': vocab[id],
+          'data-coordinates': JSON.stringify(rows[id]), 'data-lookup-contributions': count
+        });
+        add(g, 'title', {}, vocab[id] + ': ' + JSON.stringify(rows[id]) + '; ' + count + ' lookup-gradient contributions');
+        if (count) box(g, left, top, 238, rowHeight, 'lookup-gradient', 3);
+        else line(g, left, top + rowHeight, left + 238, top + rowHeight);
+        text(g, left + 16, center, String(id), 'small mono');
+        text(g, left + 66, center, vocab[id], count ? 'main blue mono' : 'label mono');
+        rows[id].forEach(function (value, axis) {
+          var node = text(g, left + 132 + axis * 76, center, fmt(value), 'label blue mono');
+          node.setAttribute('data-coordinate', String(axis));
+        });
+      }
+    }
+    text(svg, 792, 25, 'One example: a a b \u2192 i', 'main', 'start');
+    text(svg, 792, 98, 'Row a: two contributions', 'label', 'start');
+    text(svg, 792, 127, 'One from each a position.', 'small', 'start');
+    text(svg, 792, 154, 'Autograd adds them.', 'small', 'start');
+    text(svg, 792, 203, 'Row b: one contribution', 'label', 'start');
+    text(svg, 792, 253, 'Other 25 rows: zero gradient.', 'small', 'start');
+    text(svg, 792, 280, 'That includes row i.', 'small', 'start');
+    text(svg, 792, 307, 'i labels the correct output.', 'small', 'start');
+    text(svg, 18, 375, 'Outlined rows receive the embedding gradient from this loss.', 'small', 'start');
+    text(svg, 18, 403, 'Cross-entropy for this example only. Extra regularization can affect other rows.', 'small', 'start');
+    return svg;
+  }
+
   function trainingVsGeneration(options) {
     options = options || {};
     var stage = clampStage(options.stage, 2);
@@ -437,6 +491,7 @@
     embeddingSpace: embeddingSpace,
     lookupConcat: lookupConcat,
     learningGraph: learningGraph,
+    embeddingGradients: embeddingGradients,
     trainingVsGeneration: trainingVsGeneration
   };
 })();

@@ -157,6 +157,25 @@ with torch.no_grad():
         worst = max(worst, (got - expected).abs().max().item())
 print(f"PASS all {len(parser.items)} snippets; saved model's six rows match within {worst:.3g}")
 
+# This diagram concerns only aab -> i, not the six-row batch or the trainer's
+# extra embedding penalties. Repeated lookups must accumulate into one row.
+ctx = torch.tensor([[toy["vocab"].index(c) for c in "aab"]])
+target = torch.tensor([toy["vocab"].index("i")])
+looked_up = embedding(ctx)
+logits = output(torch.relu(hidden(looked_up.flatten(1))))
+one_loss = torch.nn.functional.cross_entropy(logits, target)
+table_grad, lookup_grad = torch.autograd.grad(one_loss, (embedding.weight, looked_up))
+a, b = toy["vocab"].index("a"), toy["vocab"].index("b")
+nonzero_rows = torch.nonzero(table_grad.abs().sum(dim=1) > 0).flatten().tolist()
+assert nonzero_rows == [a, b], nonzero_rows
+torch.testing.assert_close(table_grad[a], lookup_grad[0, 0] + lookup_grad[0, 1])
+torch.testing.assert_close(table_grad[b], lookup_grad[0, 2])
+assert torch.count_nonzero(table_grad[target.item()]).item() == 0
+updated = embedding.weight.detach() - 0.1 * table_grad
+changed = torch.nonzero((updated != embedding.weight.detach()).any(dim=1)).flatten().tolist()
+assert changed == [a, b], changed
+print("PASS aab -> i: only embedding rows a/b get gradients; both a contributions add; plain SGD changes only those rows")
+
 # Independently check the NumPy trainer's ReLU backward pass against autograd,
 # including its existing embedding-axis penalties, for fresh and trained weights.
 import numpy as np
