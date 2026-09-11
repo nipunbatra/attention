@@ -147,6 +147,31 @@ const temperatureSequence = await page.evaluate(() => {
 });
 errors.push(...temperatureSequence.issues);
 if(await page.evaluate(()=>/attention/i.test(document.querySelector('#s12').textContent)))errors.push('Tokenization section must not introduce attention');
+const unknownTokens = await page.evaluate(() => {
+  const issues=[], words=['hyperhappiness','electrojoy','nanobotany','unbelievable'];
+  const expectedChars=words.map(word=>Array.from(word));
+  const expectedSubwords=[['h','y','p','e','r','h','a','p','p','in','e','s','s'],
+    ['e','le','c','t','r','o','j','o','y'],Array.from('nanobotany'),['un','believ','able']];
+  const specs=[['s12-unk',words.map(()=>['<UNK>']),word=>AT.mlp.tokenizeWords(word,{unknown:true})],
+    ['s12-char-unk',expectedChars,AT.mlp.tokenizeChars],['s12-subword-unk',expectedSubwords,AT.mlp.tokenizeSubwords]];
+  const counts={};
+  for(const [id,expected,tokenize] of specs){
+    const rows=[...document.querySelectorAll('#'+id+' tbody tr')];
+    if(rows.length!==words.length)issues.push(id+': missing an example word');
+    counts[id]=[];
+    rows.forEach((row,i)=>{
+      const tokens=[...row.querySelectorAll('.oov-piece')].map(piece=>piece.textContent);
+      if(row.dataset.word!==words[i]||row.querySelector('th').textContent!==words[i])issues.push(id+': comparisons must use the same four words in order');
+      if(JSON.stringify(tokens)!==JSON.stringify(expected[i])||JSON.stringify(tokens)!==JSON.stringify(tokenize(words[i])))issues.push(id+'/'+words[i]+': pieces must match the existing tokenizer');
+      const count=Number(row.querySelector('.oov-count').textContent);counts[id].push(count);
+      if(count!==tokens.length)issues.push(id+'/'+words[i]+': incorrect token count');
+      if(id!=='s12-unk'&&tokens.join('')!==words[i])issues.push(id+'/'+words[i]+': lost the original spelling');
+    });
+  }
+  if(AT.mlp.tokenizeWords('learning',{unknown:true})[0]!=='learning')issues.push('Known whole words should keep their own identity');
+  return {words,counts,issues};
+});
+errors.push(...unknownTokens.issues);
 const generationLoop = await page.evaluate(() => {
   const root=document.getElementById('s10-loop-code'), issues=[];
   const original=JSON.stringify(__TOY__), trace=AT.part1Diagrams.generationExample().trace;
@@ -221,6 +246,9 @@ for (const [section, title, name] of [
   ['s10', 'Divide the logits by temperature, then apply softmax', 'temperature-guide'],
   ['s10', 'PyTorch: choose the next character', 'sampling-code'],
   ['s12', 'Coverage and sequence length', 'tokenization-tradeoff'],
+  ['s12', 'Word tokens: unseen words become <UNK>', 'unknown-words'],
+  ['s12', 'Character tokens: known letters spell new words', 'unknown-characters'],
+  ['s12', 'Subword tokens: pieces first, letters when needed', 'unknown-subwords'],
   ['s14', 'The same calculation at larger widths', 'window-shapes'],
   ['s16', 'The same model in symbols', 'summary'],
   ['s16', 'Notation: from tokens to the MLP input', 'input-notation'],
@@ -252,5 +280,5 @@ await page.emulateMedia({ media: 'print' });
 const printed = await page.evaluate(checkGuides);
 errors.push(...printed.issues.map(x => 'print: ' + x));
 await browser.close();
-console.log(JSON.stringify({ article, lookup, shapes, probabilitySequence, registration, temperatureSequence, generationLoop, phone, print: printed, screenshots: out, errors }, null, 2));
+console.log(JSON.stringify({ article, lookup, shapes, probabilitySequence, registration, temperatureSequence, unknownTokens, generationLoop, phone, print: printed, screenshots: out, errors }, null, 2));
 if (errors.length) process.exitCode = 1;

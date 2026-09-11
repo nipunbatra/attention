@@ -5768,12 +5768,23 @@ batch_loss = F.cross_entropy(batch_z, y)</code></pre>
 #s12 .tok-row{padding:12px 0;border-bottom:1px solid var(--line)}#s12 .tok-row:last-child{border-bottom:0}
 #s12 .tok-meta{font-family:var(--font-mono);font-size:.82em;color:var(--ink-2);margin:6px 0 0}
 #s12 .token-modes{display:none}
+#s12 .oov-table{width:100%;table-layout:fixed;margin-bottom:14px}
+#s12 .oov-table thead th{text-align:left}
+#s12 .oov-table th:first-child{width:27%}
+#s12 .oov-table thead th:last-child{width:13%}
+#s12 .oov-table tbody th{font-family:var(--font-mono);font-weight:500;white-space:nowrap}
+#s12 .oov-table .oov-count{text-align:right;white-space:nowrap}
+#s12 .oov-pieces{display:flex;flex-wrap:wrap;gap:5px}
+#s12 .oov-piece{display:inline-block;padding:2px 6px;border:1px solid var(--line);border-radius:3px;font-family:var(--font-mono);background:var(--t-e);color:var(--c-e);line-height:1.3}
+#s12 .oov-piece.is-unknown{background:var(--t-neutral);color:var(--warn)}
+body.present #s12 .oov-table{font-size:23px}
+@media(max-width:640px){body:not(.present) #s12 .oov-table tbody th{white-space:normal;overflow-wrap:anywhere}body:not(.present) #s12 .oov-table{table-layout:fixed}body:not(.present) #s12 .oov-table th:first-child{width:30%}body:not(.present) #s12 .oov-table th:last-child{width:18%}}
 body.present #s12 .token-modes{display:flex;margin:12px 0}
 body.present #s12 .token-modes [aria-pressed=true]{background:var(--ink);color:var(--card)}
 body.present #s12 .tok-row:not(.is-active){display:none}
 </style>
 <header class="sec-head"><span class="sec-num">12</span><div><p class="eyebrow">A token need not be a character. We still ask the model to predict the next one.</p><h2>What should a token be?</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>A character vocabulary is small and can represent unfamiliar strings, but it turns ordinary sentences into long sequences. Whole words give shorter, readable sequences. Their vocabulary grows quickly, though, and unseen words collapse to an unknown token. Subwords offer a compromise: common pieces can be reused inside both frequent and rare words. Try the three simple tokenizers below on the same text. Each reports the sequence length and the number of distinct tokens in that sample. The subword merges illustrate the idea; they do not come from a trained tokenizer.</p></div>
+<div class="companion" data-kicker="For self-study"><p>A character vocabulary can represent unfamiliar words when it includes all their letters, but it turns ordinary sentences into long sequences. Whole words give shorter sequences. Their vocabulary grows quickly, though, and a fixed word vocabulary can map unseen words to one unknown token. Subwords offer a compromise: common pieces can be reused inside both frequent and rare words. Try the three simple tokenizers below on the same text. Each reports the sequence length and the number of distinct tokens in that sample. The subword merges illustrate the idea; they do not come from a trained tokenizer. This first demo shows splitting only. The examples below also show what happens when a fixed vocabulary does not contain a word.</p></div>
 <div class="frame" data-title="Three token sizes" data-autobuild="off">
   <script type="text/x-notes">What becomes larger when tokens become smaller?
   Compare vocabulary coverage with sequence length. Keep the next-token objective fixed.</script>
@@ -5796,11 +5807,24 @@ word_tokens = text.split()</code></pre>
   Reveal the trade-off table, then show three distinct strings mapping to the same unknown token.</script>
   <div class="card"><h3 class="card-title">The trade-off</h3><div id="s12-trade"></div></div>
 </div>
-<div class="frame" data-title="An unknown word can lose its identity" data-autobuild="off">
-  <div class="card"><div id="s12-unk"></div></div>
-  <div class="callout callout-note" data-build="1">Three different strings become the same unknown token.</div>
+<div class="frame" data-title="Word tokens: unseen words become &lt;UNK&gt;" data-autobuild="off">
+  <p>None of these whole words is in our small, fixed word vocabulary.</p>
+  <div id="s12-unk"></div>
+  <p data-build="1">All four use the <strong>same <code>&lt;UNK&gt;</code> ID</strong>. The model cannot recover which spelling appeared from that ID alone.</p>
 </div>
-<div class="companion after"><p>By the time the model receives token IDs, tokenization has already determined the vocabulary and the sequence length.</p></div>
+<div class="frame" data-title="Character tokens: known letters spell new words" data-autobuild="off">
+  <p>The same words, split into letters. All their letters are in <code>a–z</code>.</p>
+  <div id="s12-char-unk"></div>
+  <p>The spellings remain distinct. We need an entry for each <strong>letter</strong>, not each whole word.</p>
+  <p class="small muted">This works because every letter is covered. An unsupported character would still need handling.</p>
+</div>
+<div class="frame" data-title="Subword tokens: pieces first, letters when needed" data-autobuild="off">
+  <p>The same words, using our demo's fixed merge rules and base letters <code>a–z</code>.</p>
+  <div id="s12-subword-unk"></div>
+  <p><code>unbelievable</code> uses three pieces. <code>nanobotany</code> stays as letters because none of our rules merges them.</p>
+  <p class="small muted">These illustrative merges preserve each spelling. Subwords still need a vocabulary that covers the input.</p>
+</div>
+<div class="companion after"><p>An unseen whole word can still consist entirely of known letters or subword pieces. That is why the character and subword versions above preserve the four different spellings while the word version maps all four to <code>&lt;UNK&gt;</code>. Every box represents one token. Repeated pieces reuse the same vocabulary ID and embedding row. Splitting into more pieces means more tokens, but does not require a new embedding row for the entire word.</p><p>The word example turns on our demo's fixed-vocabulary lookup. Calling <code>split()</code> alone only separates words; it does not decide whether a word is known. The character and subword demos illustrate splitting and merges, not a complete production tokenizer. These examples use lowercase a–z, so every base letter is available. For other characters, coverage depends on the vocabulary and its fallback policy. Being able to spell a new word does not by itself mean the model understands it.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s12'),input=S.querySelector('#s12-input'),out=S.querySelector('#s12-output');
@@ -5811,8 +5835,21 @@ word_tokens = text.split()</code></pre>
   S.querySelectorAll('[data-unit]').forEach(btn=>btn.addEventListener('click',()=>selectUnit(+btn.dataset.unit)));
   input.addEventListener('input',draw);draw();
   AT.ui.table([['small','long','strong coverage'],['moderate','moderate','reuses pieces'],['large','short','unseen words need handling']],{cols:['vocabulary','sequence length','unseen text'],rowLabels:['character','subword','word'],cornerLabel:'unit',into:S.querySelector('#s12-trade')});
-  const unknown=['hyperhappiness','electrojoy','nanobotany'],mapped=AT.mlp.tokenizeWords(unknown.join(' '),{unknown:true});
-  AT.ui.table(unknown.map((word,i)=>[mapped[i]]),{cols:['word-token output'],rowLabels:unknown,cornerLabel:'test string',caption:'This small illustrative word vocabulary maps each unseen word to the same token.',into:S.querySelector('#s12-unk')});
+  const unknown=['hyperhappiness','electrojoy','nanobotany','unbelievable'];
+  function unknownTable(id,tokenize){
+    const table=AT.h('table',{class:'dt oov-table'},AT.h('thead',{},AT.h('tr',{},
+      AT.h('th',{scope:'col'},'Same input word'),AT.h('th',{scope:'col'},'Token output'),AT.h('th',{scope:'col',class:'oov-count'},'Tokens'))));
+    const body=AT.h('tbody');table.appendChild(body);
+    unknown.forEach(word=>{
+      const tokens=tokenize(word),pieces=AT.h('div',{class:'oov-pieces'});
+      tokens.forEach(token=>pieces.appendChild(AT.h('span',{class:'oov-piece'+(token==='<UNK>'?' is-unknown':'')},token)));
+      body.appendChild(AT.h('tr',{dataset:{word}},AT.h('th',{scope:'row'},word),AT.h('td',{},pieces),AT.h('td',{class:'oov-count'},String(tokens.length))));
+    });
+    S.querySelector('#'+id).appendChild(table);
+  }
+  unknownTable('s12-unk',word=>AT.mlp.tokenizeWords(word,{unknown:true}));
+  unknownTable('s12-char-unk',AT.mlp.tokenizeChars);
+  unknownTable('s12-subword-unk',AT.mlp.tokenizeSubwords);
 })();
 </script>
 </section>
