@@ -1,5 +1,22 @@
 # Classroom release checks
 
+## 2026-09-11: seed and starting text in the live generator
+
+- Added labelled seed and starting-text inputs. Starting fragments become lowercase, pad with boundary tokens when
+  shorter than three letters, and retain the whole prefix in the name while using only its last three letters as input.
+  Generate replays the exact entered seed; New seed is explicit. Start over preserves settings. Changing a setting
+  clears the run. Invalid text or non-uint32 seeds show an inline error and disable generation.
+- Added `check_part1_generator.mjs`: exact Generate/Next replay, seed zero and uint32 maximum, short/long/uppercase
+  prefixes, invalid settings, probability bars and grouped mass, chosen tail tokens, greedy invariance, boundary/cap
+  stopping, native typing/Enter/Escape, and retained settings across navigation. Model weights are unchanged.
+- Visually checked default presentation, the maximum 34-letter output (16 supplied + 18 generated), portrait slides,
+  and 390px article layout. All fit without slide scrollbars or horizontal article overflow. Print-media checks retain
+  the entered values and current output. No PDF regenerated. The duplicate card heading was removed to keep space
+  for the controls; the existing typography, colours, and 1280×720 stage are retained.
+- All 229 progressive states, 126 formulas, and 18 equation guides pass. Existing 72-instance SVG and numerical
+  generator regressions pass. Tables pass in reading, phone, and presentation modes. Metadata checks pass for all
+  eight parts. No other lesson, shared runtime/style, or model data changed.
+
 ## 2026-09-11: temperature before the generation control
 
 - Added three paced frames before temperature first appears in executable code: a same-input comparison at

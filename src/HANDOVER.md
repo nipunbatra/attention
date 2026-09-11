@@ -10,6 +10,17 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+Section 10's live generator now accepts a sampling seed and starting text (up to 16 letters, case-insensitive).
+Blank text uses `---`; shorter fragments are left-padded, longer ones keep only their last three letters in the
+model input. The full starting fragment stays in the output. Generate uses the entered seed exactly, without the
+old hidden increment. New seed selects another uint32 seed and clears the run; Start over replays the same settings.
+Invalid settings block generation instead of falling back to boundary tokens or silently wrapping the seed.
+The controls preserve their state across frame navigation, and Next stops at END or the 18-call safety cap.
+The chart now shows four individual tokens plus the remaining mass; a sampled tail token stays visible.
+`node src/check_part1_generator.mjs part1.html` checks replay, prefix handling, actual model probabilities, validation,
+terminal states, keyboard controls, navigation, and slide/phone/print behaviour. Source and shared model stay separate;
+no retraining, shared CSS changes, new snippets, extra frames, or PDF regeneration were needed.
+
 Section 10 introduces temperature before the sampling function and live generator. Three frames compare the same
 `- s a` prediction at 0.5/1.0/1.5, explain coloured `p = softmax(z/T)` symbols, and work through the actual divided
 logits and n probability. All 27 logits enter each softmax. The model stays fixed, T is a positive user setting,

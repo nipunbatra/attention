@@ -5212,13 +5212,28 @@ body:not(.present) #s10 .generation-walk .stage-title{display:block}
 #s10 .walk-controls .small{margin:0}
 #s10 .p1-temperature{color:#9D4007}
 @media print{#s10 .walk-controls{display:none}}
-#s10 .gen-name{font-family:var(--font-mono);font-size:1.6em;min-height:1.6em;margin:12px 0}
-#s10 .window{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:12px 0}
+#s10 .gen-name{font-family:var(--font-mono);font-size:1.3em;overflow-wrap:anywhere;margin:8px 0}
+#s10 .gen-prefix{color:var(--ink-2)}
+#s10 .window{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:8px 0}
 #s10 .chosen{font-family:var(--font-mono);font-size:1.25em;color:var(--warn)}
+#s10 .generator-settings{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+#s10 .generator-field{min-width:0}
+#s10 .generator-field label{display:block;font-weight:600;margin-bottom:4px}
+#s10 .seed-entry{display:flex;gap:8px}
+#s10 .generator-field input{font:inherit;font-family:var(--font-mono);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:5px 10px;width:100%;min-width:0;box-sizing:border-box}
+#s10 .generator-field input:focus-visible{outline:2px solid var(--c-e);outline-offset:2px}
+#s10 .generator-field input[aria-invalid=true]{border-color:var(--warn)}
+#s10 #s10-new-seed{white-space:nowrap}
+#s10 #s10-input-note,#s10 #s10-temp-note,#s10 #s10-status{margin:4px 0}
+#s10 #s10-input-note.is-error{color:var(--warn)}
+#s10 .generator-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:center}
+#s10 .generator-layout>div{min-width:0}
+#s10 .gen-output{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+@media(max-width:640px){body:not(.present) #s10 .generator-settings,body:not(.present) #s10 .generator-layout{grid-template-columns:minmax(0,1fr);gap:12px}}
+@media print{#s10 .generator-settings input{border:0;background:transparent}#s10 #s10-new-seed{display:none}}
 #s10 .samples{display:flex;flex-wrap:wrap;gap:8px}#s10 .sample{padding:8px 11px;background:var(--t-neutral);border-radius:var(--radius-s);font-family:var(--font-mono)}
 #s10 [aria-pressed=true]{background:var(--ink);color:var(--card)}
-body.present #s10 .generator-layout{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center}
-body.present #s10 .generator-layout .gen-name{overflow-wrap:anywhere}
+body.present #s10 .generator-field label,body.present #s10 .generator-field input{font-size:var(--present-caption)}
 </style>
 <header class="sec-head"><span class="sec-num">10</span><div><p class="eyebrow">To generate a name, feed each chosen character back into the model.</p><h2>Sample, append, repeat</h2></div></header>
 <div class="companion" data-kicker="For self-study"><p>We start generation with three boundary tokens. The model returns a distribution. We can choose the character with the largest probability or sample from the whole distribution. After appending that character, we shift the window right and run the same model again. Sampling allows different names because it can choose lower-probability characters too. Temperature controls how sharply the logits become probabilities: lower values concentrate probability near the largest logits, while higher values spread it out. The bars below always belong to the exact three tokens in the visible window. Choosing the boundary token ends generation.</p></div>
@@ -5292,15 +5307,32 @@ sampled_id = torch.multinomial(p, num_samples=1)</code></pre>
 </div>
 <div class="frame" data-title="Generate with the trained model" data-autobuild="off">
   <script type="text/x-notes">How does temperature change the next-character distribution?
-  Try sample and greedy modes. Press Next character to watch the window, then generate a complete name.</script>
-  <div class="card"><h3 class="card-title">A live name generator</h3><div class="generator-layout"><div><div class="btn-row" role="group" aria-label="Choose generation mode"><button type="button" class="btn" id="s10-sample" aria-pressed="true">Sample</button><button type="button" class="btn" id="s10-greedy" aria-pressed="false">Greedy</button></div><div id="s10-temp"></div><p class="small muted" id="s10-temp-note"></p><div class="gen-name" id="s10-name"></div><div class="window"><div id="s10-window"></div><span aria-hidden="true">→</span><span class="chosen" id="s10-chosen">?</span></div></div><div id="s10-bars"></div></div><div class="btn-row"><button type="button" class="btn btn-primary" id="s10-next">Next character</button><button type="button" class="btn" id="s10-all">Generate a name</button><button type="button" class="btn btn-quiet" id="s10-reset">Start over</button></div><p class="muted small" id="s10-status"></p></div>
+  Try sample and greedy modes. Supply a starting name fragment, then watch the three-token input window. Its initial boundaries are filled automatically. Seed controls the random draws, not the model's probabilities. Generate and Start over keep the entered seed; New seed chooses another. Changing any setting restarts the run. Prefix letters remain in the output, including letters outside the input window.</script>
+  <div class="card" role="group" aria-label="A live name generator" data-keep-state>
+    <div class="generator-settings">
+      <div class="generator-field"><label for="s10-prefix">Starting text (a–z, up to 16 letters)</label><input id="s10-prefix" type="text" placeholder="e.g. sa" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="s10-input-note"></div>
+      <div class="generator-field"><label for="s10-seed">Seed for sampling</label><div class="seed-entry"><input id="s10-seed" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" aria-describedby="s10-input-note"><button type="button" class="btn btn-quiet" id="s10-new-seed">New seed</button></div></div>
+    </div>
+    <p class="small muted" id="s10-input-note" aria-live="polite">Blank starts at − − −. Only the last 3 letters feed the model.</p>
+    <div class="generator-layout">
+      <div>
+        <div class="btn-row" role="group" aria-label="Choose generation mode"><button type="button" class="btn" id="s10-sample" aria-pressed="true">Sample</button><button type="button" class="btn" id="s10-greedy" aria-pressed="false">Greedy</button></div>
+        <div id="s10-temp"></div><p class="small muted" id="s10-temp-note"></p>
+        <div class="window" aria-label="Input window and chosen next character"><div id="s10-window"></div><span aria-hidden="true">→</span><span class="chosen" id="s10-chosen">?</span></div>
+      </div>
+      <div id="s10-bars" aria-label="Probabilities for the displayed input window"></div>
+    </div>
+    <div class="gen-output"><span class="small muted">Name so far</span><div class="gen-name" id="s10-name"></div></div>
+    <div class="btn-row"><button type="button" class="btn btn-primary" id="s10-next">Next character</button><button type="button" class="btn" id="s10-all">Generate a name</button><button type="button" class="btn btn-quiet" id="s10-reset">Start over</button></div>
+    <p class="muted small" id="s10-status" role="status"></p>
+  </div>
 </div>
 <div class="frame" data-title="Twenty seeded samples" data-autobuild="off">
   <script type="text/x-notes">Which generated names look plausible, and which reveal the model's small context?
   These samples use one fixed seed and the trained three-character model.</script>
   <div class="card"><h3 class="card-title">Saved outputs from the training script</h3><div class="samples" id="s10-samples"></div><p class="muted small" id="s10-sample-note"></p></div>
 </div>
-<div class="companion after"><p>Generation runs the trained model repeatedly. Each next token comes from a choice, rather than an observation in the data. The worked animation replays sampling seed 3 in the browser at temperature 1. Its probabilities come from the saved trained model. PyTorch uses a different random generator, so its sampled letters can differ even when the probabilities agree. Greedy choice takes the largest probability at each call. Those local choices need not produce the most probable whole name.</p></div>
+<div class="companion after"><p>Generation runs the trained model repeatedly. Each next token comes from a choice, rather than an observation in the data. The worked animation replays sampling seed 3 in the browser at temperature 1. Its probabilities come from the saved trained model. PyTorch uses a different random generator, so its sampled letters can differ even when the probabilities agree. Greedy choice takes the largest probability at each call. Those local choices need not produce the most probable whole name.</p><p>In the live generator, try starting text <code>sa</code>: its first input is <code>− s a</code>. A longer starting fragment stays in the name, but only its last three letters enter the model. Capitals become lowercase. The seed sets the sequence of random draws; it does not change the probabilities or retrain the model. Generate replays the entered settings from the start. New seed changes the seed and clears the run; Start over clears the run without changing any settings. Changing a setting also starts a fresh run.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s10'),M=window.__TOY__;let greedy=false,temp=M.sample_temperature,steps=0,seed=M.sample_seed,result=null;
@@ -5339,14 +5371,57 @@ sampled_id = torch.multinomial(p, num_samples=1)</code></pre>
     into:S.querySelector('#s10-temperature-table')});
   temperatureTable.cells.forEach(row=>{row[0].classList.add('p1-score');row[1].classList.add('p1-score');row[2].classList.add('p1-prob');});
   const nameEl=S.querySelector('#s10-name'),windowEl=S.querySelector('#s10-window'),chosen=S.querySelector('#s10-chosen'),barsEl=S.querySelector('#s10-bars'),status=S.querySelector('#s10-status');
-  function topItems(p){const top=AT.topk(p,6),rest=1-top.reduce((a,x)=>a+x.p,0);return top.map(x=>({label:x.tok,p:x.p})).concat([{label:'other ×'+(p.length-top.length),p:rest}]);}
-  function paint(){AT.clear(windowEl);AT.clear(barsEl);let context=['-','-','-'],p=AT.mlp.distribution(context,temp).p,last=null;if(result&&result.trace.length){last=result.trace[result.trace.length-1];context=last.context;p=last.probabilities;}AT.ui.chips(context,{active:[0,1,2],into:windowEl});chosen.textContent=last?last.chosen:'?';nameEl.textContent=result?(result.name||'(boundary)'):' ';AT.ui.bars(topItems(p),{highlight:last?last.chosen:null,sorted:false,decimals:2,into:barsEl});status.textContent=(greedy?'Greedy':'Sample')+' · temperature '+AT.fmt(temp,2)+' · seed '+seed+(last&&last.chosen==='-'?' · boundary reached':'');}
-  function reset(){steps=0;result=null;paint();S.querySelector('#s10-temp-note').textContent=greedy?'Temperature changes the bars, but greedy keeps the same choices.':'Lower temperature favours the top scores more strongly.';}
+  const prefixInput=S.querySelector('#s10-prefix'),seedInput=S.querySelector('#s10-seed'),inputNote=S.querySelector('#s10-input-note');
+  const nextButton=S.querySelector('#s10-next'),allButton=S.querySelector('#s10-all');
+  const maxCalls=18;let prefix='',valid=true;
+  seedInput.value=String(seed);
+  function initialContext(){return ('---'+prefix).slice(-3).split('');}
+  function topItems(p,last){
+    const top=AT.topk(p,4);
+    // Keep a sampled tail token visible, even if it is outside the top four.
+    if(last&&!top.some(x=>x.tok===last.chosen))top[3]={tok:last.chosen,p:p[last.chosen_id]};
+    const rest=1-top.reduce((a,x)=>a+x.p,0);
+    return top.map(x=>({label:x.tok,p:x.p})).concat([{label:'other ×'+(p.length-top.length),p:rest}]);
+  }
+  function paint(){
+    AT.clear(windowEl);AT.clear(barsEl);AT.clear(nameEl);
+    S.querySelector('#s10-temp-note').textContent=greedy?'Greedy ignores the seed; temperature still changes the bars.':'Same seed and settings replay the same sample.';
+    if(!valid){chosen.textContent='?';nameEl.textContent='—';status.textContent='Fix the settings above to start a run.';nextButton.disabled=true;allButton.disabled=true;return;}
+    let context=initialContext(),p=AT.mlp.distribution(context,temp).p,last=null;
+    if(result&&result.trace.length){last=result.trace[result.trace.length-1];context=last.context;p=last.probabilities;}
+    AT.ui.chips(context,{active:[0,1,2],into:windowEl});
+    chosen.textContent=last?(last.chosen==='-'?'END':last.chosen):'?';
+    nameEl.appendChild(AT.h('span',{class:'gen-prefix'},prefix));
+    nameEl.appendChild(AT.h('span',{class:'gen-suffix'},result?result.name:''));
+    if(!nameEl.textContent)nameEl.appendChild(document.createTextNode(last?'(empty name)':'—'));
+    AT.ui.bars(topItems(p,last),{highlight:last?last.chosen:null,sorted:false,decimals:2,into:barsEl});
+    const ended=last&&last.chosen==='-',capped=result&&result.trace.length>=maxCalls;
+    nextButton.disabled=!!(ended||capped);allButton.disabled=false;
+    status.textContent=last?'Call '+result.trace.length+(ended?': boundary reached — stop.':capped?': stopped at the 18-call safety limit.':': these bars produced '+last.chosen+'. Next uses the shifted window.'):'Ready. Next steps through; Generate replays from your starting text.';
+  }
+  function reset(){
+    steps=0;result=null;
+    const rawSeed=seedInput.value,parsedSeed=Number(rawSeed),rawPrefix=prefixInput.value;
+    const seedOK=/^\d+$/.test(rawSeed)&&Number.isSafeInteger(parsedSeed)&&parsedSeed>=0&&parsedSeed<=4294967295;
+    const prefixOK=/^[a-zA-Z]{0,16}$/.test(rawPrefix);
+    prefixInput.setAttribute('aria-invalid',String(!prefixOK));seedInput.setAttribute('aria-invalid',String(!seedOK));
+    valid=prefixOK&&seedOK;inputNote.classList.toggle('is-error',!valid);
+    inputNote.textContent=!prefixOK?'Starting text: use up to 16 letters (a–z), or leave it blank.':!seedOK?'Seed: enter a whole number from 0 to 4294967295.':'Blank starts at − − −. Only the last 3 letters feed the model.';
+    if(valid){prefix=rawPrefix.toLowerCase();seed=parsedSeed;}
+    paint();
+  }
   function setMode(next){greedy=next;S.querySelector('#s10-sample').setAttribute('aria-pressed',String(!greedy));S.querySelector('#s10-greedy').setAttribute('aria-pressed',String(greedy));reset();}
   S.querySelector('#s10-sample').addEventListener('click',()=>setMode(false));S.querySelector('#s10-greedy').addEventListener('click',()=>setMode(true));
   AT.ui.slider({label:'Temperature',min:.3,max:1.5,step:.05,value:temp,format:v=>AT.fmt(v,2),onInput:v=>{temp=v;reset();},into:S.querySelector('#s10-temp')});
-  S.querySelector('#s10-next').addEventListener('click',()=>{steps+=1;result=AT.mlp.generate({temperature:temp,greedy:greedy,seed:seed,maxLength:steps});paint();});
-  S.querySelector('#s10-all').addEventListener('click',()=>{seed+=1;steps=18;result=AT.mlp.generate({temperature:temp,greedy:greedy,seed:seed,maxLength:steps});paint();});
+  function generate(count){if(!valid)return;steps=count;result=AT.mlp.generate({ids:initialContext(),temperature:temp,greedy,seed,maxLength:steps});paint();}
+  nextButton.addEventListener('click',()=>generate(steps+1));
+  allButton.addEventListener('click',()=>generate(maxCalls));
+  prefixInput.addEventListener('input',reset);seedInput.addEventListener('input',reset);
+  [prefixInput,seedInput].forEach(input=>input.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();generate(maxCalls);}}));
+  S.querySelector('#s10-new-seed').addEventListener('click',()=>{
+    const old=Number(seedInput.value),draw=crypto.getRandomValues(new Uint32Array(1))[0];
+    seedInput.value=String(draw===old?(draw+1)>>>0:draw);reset();
+  });
   S.querySelector('#s10-reset').addEventListener('click',reset);reset();
   M.sampled_names.forEach(item=>S.querySelector('#s10-samples').appendChild(AT.h('span',{class:'sample'},item.name)));
   S.querySelector('#s10-sample-note').textContent='Sampling seed '+M.sample_seed+' · temperature '+AT.fmt(M.sample_temperature,2)+' · twenty saved names.';
