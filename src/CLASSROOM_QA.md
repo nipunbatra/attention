@@ -1,5 +1,18 @@
 # Classroom release checks
 
+## 2026-09-11: visible frozen parameters in the two-loop comparison
+
+- Kept the three-stage section 11 diagram. Training now has a trainable-parameter view and an orange gradient/optimizer
+  return arrow. Generation has a lock and five vector snowflakes, one for the embedding table and each weight/bias
+  group. Its next-input arrow remains separate. Plain-text keys distinguish fixed parameters from recomputed activations
+  and probabilities. The article clarifies no_grad(), no optimizer step, and why eval() alone does not freeze weights.
+- The actual seed-1 draw of h after a a b and its next window a b h are unchanged. SVG regressions now require every
+  frozen marker to belong to a parameter, not an activation, and verify the progressive reveal of the two loop arrows.
+  All 72 SVG instances, 2,388 bounded labels, and existing forward/sampling numerical checks pass.
+- All 229 progressive states and 126 formulas fit without overflow. The 18 equation guides pass. Visually checked
+  every changed reveal and portrait presentation. Print media keeps all five snowflakes. No PDF or new code snippet
+  was generated, and no other lesson or shared presentation style changed.
+
 ## 2026-09-11: seed and starting text in the live generator
 
 - Added labelled seed and starting-text inputs. Starting fragments become lowercase, pad with boundary tokens when

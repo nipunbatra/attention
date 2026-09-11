@@ -387,7 +387,7 @@
     var pTarget = result.p[target] || 0;
     var b = baseSvg(
       'training-vs-generation', 'Training and generation reuse the same learned character MLP',
-      'Training compares the distribution for a a b with observed i and updates shared parameters. Generation holds those parameters fixed. A real reproducible sample at temperature 1 with seed ' + sampleSeed + ' draws ' + chosen + ', then shifts the context to ' + nextContext.join(' ') + '. The boundary token would instead stop generation.',
+      'Two views of the same MLP architecture. Training compares the distribution for a a b with observed i. Autograd computes gradients and the optimizer updates the embedding table, both weights and both biases. In generation, a lock and five snowflakes mark those parameters as frozen. Activations and probabilities are recomputed for each input. A real reproducible sample at temperature 1 with seed ' + sampleSeed + ' draws ' + chosen + ', then shifts the context to ' + nextContext.join(' ') + '. The boundary token would instead stop generation.',
       1100, 420
     );
     var svg = b.svg;
@@ -396,6 +396,31 @@
     svg.setAttribute('data-sample-temperature', '1');
     svg.setAttribute('data-sample-token', chosen);
     svg.setAttribute('data-next-context', nextContext.join(' '));
+    add(svg, 'style', {}, [
+      '#' + b.id + ' .parameter-name{font-size:20px;fill:var(--c-q);font-family:var(--font-mono)}',
+      '#' + b.id + ' .parameter-icon{fill:none;stroke:var(--c-e);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}',
+      '#' + b.id + ' .state-heading{font-size:20px;font-weight:700}',
+      '#' + b.id + ' .trainable-heading{fill:var(--warn)}',
+      '#' + b.id + ' .frozen-heading{fill:var(--c-e)}'
+    ].join(''));
+
+    function parameters(y, frozen) {
+      var group = add(svg, 'g', { 'data-parameter-state': frozen ? 'frozen' : 'trainable' });
+      // Both rows name the same parameter types; icons belong only to parameters.
+      [['E_tok', 'E_tok', 416, 0, 376], ['W1', 'W\u2081', 510, 0, 486], ['b1', 'b\u2081', 588, 0, 564],
+        ['W2', 'W\u2082', 456, 28, 432], ['b2', 'b\u2082', 550, 28, 526]].forEach(function (item) {
+        var label = text(group, item[2], y + item[3], item[1], 'parameter-name');
+        label.setAttribute('data-parameter', item[0]);
+        if (frozen) {
+          var snow = add(group, 'g', { transform: 'translate(' + item[4] + ' ' + (y + item[3]) + ')', class: 'parameter-icon', 'data-frozen-symbol': item[0], 'aria-hidden': 'true' });
+          // A small vector snowflake stays crisp in slides and PDF exports.
+          for (var angle = 0; angle < 360; angle += 60) {
+            add(snow, 'path', { d: 'M0 0 L0 -8 M-3 -5 L0 -3 L3 -5', transform: 'rotate(' + angle + ')' });
+          }
+        }
+      });
+      return group;
+    }
 
     add(svg, 'rect', { x: 18, y: 26, width: 1064, height: 168, rx: 13, fill: 'var(--card,#fff)', stroke: 'var(--line,#D9DDE5)', 'stroke-width': 2 });
     if (stage >= 1) add(svg, 'rect', { x: 18, y: 202, width: 1064, height: 198, rx: 13, fill: 'var(--t-e,#E4ECFF)', opacity: 0.38, stroke: 'var(--line,#D9DDE5)', 'stroke-width': 2 });
@@ -404,13 +429,11 @@
     text(svg, 132, 104, 'context  a a b', 'label');
     text(svg, 132, 133, 'input only', 'small');
 
-    box(svg, 384, 73, 220, 248, 'param');
-    text(svg, 494, 105, 'same trained MLP', 'main');
-    text(svg, 494, 137, 'E_tok, W\u2081, b\u2081', 'small mono');
-    text(svg, 494, 163, 'W\u2082, b\u2082', 'small mono');
-    line(svg, 405, 194, 583, 194, 'guide');
-    text(svg, 494, 218, 'one parameter set', 'small');
-    text(svg, 494, 248, 'for both lanes', 'small');
+    box(svg, 344, 73, 284, 113, 'param');
+    text(svg, 508, 96, 'TRAINABLE MLP', 'state-heading trainable-heading');
+    var updateIcon = add(svg, 'g', { transform: 'translate(376 95)', 'data-update-symbol': 'optimizer', 'aria-hidden': 'true' });
+    add(updateIcon, 'path', { d: 'M8 -3 A9 9 0 1 0 8 5 M3 -3 L8 -3 L8 -8', fill: 'none', stroke: 'var(--warn)', 'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
+    parameters(130, false);
 
     box(svg, 660, 77, 168, 72, 'act');
     text(svg, 744, 100, 'distribution', 'label');
@@ -421,33 +444,41 @@
     box(svg, 748, 157, 126, 32, 'box', 7);
     text(svg, 811, 173, 'observed i', 'small');
     path(svg, 'M874 173 C910 173 949 173 949 152', 'edge');
-    path(svg, 'M208 115 L380 115', 'blue-edge');
-    path(svg, 'M604 115 L656 115', 'blue-edge');
+    path(svg, 'M208 115 L340 115', 'blue-edge');
+    path(svg, 'M628 115 L656 115', 'blue-edge');
     path(svg, 'M828 115 L888 115', 'edge');
-    path(svg, 'M970 73 C970 31 653 31 598 76', 'grad-edge');
-    text(svg, 782, 22, 'update shared parameters', 'small mono');
+    path(svg, 'M970 73 C970 31 653 31 618 76', 'grad-edge', { 'data-loop': 'parameter-update' });
+    text(svg, 782, 22, 'gradients + optimizer update', 'small mono');
 
     if (stage >= 1) {
       text(svg, 42, 229, 'GENERATION', 'small mono', 'start');
       box(svg, 56, 259, 152, 64, 'box');
       text(svg, 132, 280, 'context  a a b', 'label');
       text(svg, 132, 309, 'no observed label', 'small');
+      text(svg, 486, 212, 'same MLP operations', 'small');
+      box(svg, 344, 239, 284, 100, 'param');
+      text(svg, 508, 259, 'FROZEN MLP', 'state-heading frozen-heading');
+      var lock = add(svg, 'g', { transform: 'translate(376 257)', class: 'parameter-icon', 'data-lock-symbol': 'parameters', 'aria-hidden': 'true' });
+      add(lock, 'path', { d: 'M-6 -2 V-7 A6 6 0 0 1 6 -7 V-2' });
+      add(lock, 'rect', { x: -9, y: -2, width: 18, height: 15, rx: 2 });
+      add(lock, 'path', { d: 'M0 4 V8' });
+      parameters(287, true);
       box(svg, 660, 255, 168, 72, 'act');
       text(svg, 744, 278, 'distribution', 'label');
-      text(svg, 744, 310, 'same weights', 'small mono');
+      text(svg, 744, 310, 'recomputed p', 'small mono');
       box(svg, 877, 255, 178, 72, 'box');
       text(svg, 966, 278, 'sample  ' + chosen, 'main');
       text(svg, 966, 310, 'one possible draw', 'small');
-      path(svg, 'M208 291 L380 291', 'blue-edge');
-      path(svg, 'M604 291 L656 291', 'blue-edge');
+      path(svg, 'M208 291 L340 291', 'blue-edge');
+      path(svg, 'M628 291 L656 291', 'blue-edge');
       path(svg, 'M828 291 L873 291', 'edge');
-      text(svg, 494, 303, 'fixed during generation', 'small');
+      if (stage === 1) text(svg, 590, 378, 'All five parameter groups stay fixed during generation.', 'small');
     }
 
     if (stage >= 2) {
-      path(svg, 'M966 331 C966 354 274 354 132 328', 'blue-edge');
-      text(svg, 590, 375, 'append ' + chosen + ', shift window \u2192 ' + nextContext.join(' '), 'main');
-      text(svg, 590, 409, 'reuse the same model; boundary \u201c-\u201d would stop', 'small');
+      path(svg, 'M966 331 C966 374 274 374 132 328', 'blue-edge', { 'data-loop': 'next-input' });
+      text(svg, 590, 383, 'append ' + chosen + ', shift window \u2192 ' + nextContext.join(' '), 'main');
+      text(svg, 590, 409, 'weights fixed during generation; boundary \u201c-\u201d would stop', 'small');
     }
     return svg;
   }

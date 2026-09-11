@@ -10,6 +10,13 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+Section 11's three-stage training/generation comparison now marks all five parameter groups explicitly. The training
+MLP has an update symbol and an orange gradient/optimizer return arrow. The generation MLP has a lock plus a snowflake
+beside E_tok, W1, b1, W2, and b2. A separate blue loop changes the input, never the parameters. Each stage explains its
+meaning in plain text, including the distinction between frozen parameters and recomputed activations/probabilities.
+The article clarifies that eval() alone does not freeze weights. The saved-model arithmetic and three-stage structure
+remain unchanged. SVG tests require five correctly attached snowflakes and exclude them from activation boxes.
+
 Section 10's live generator now accepts a sampling seed and starting text (up to 16 letters, case-insensitive).
 Blank text uses `---`; shorter fragments are left-padded, longer ones keep only their last three letters in the
 model input. The full starting fragment stays in the output. Generate uses the entered seed exactly, without the

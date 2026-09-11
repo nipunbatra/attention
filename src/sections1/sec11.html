@@ -6,7 +6,7 @@
 <div class="companion" data-kicker="For self-study"><p>During training, the data gives us both the context and the observed next character. We run the model to get probabilities, use cross-entropy to score the observed target, and update the parameters. Since all windows have the same shape, we can process many in a batch. During generation, we do not know the next character. We run the same forward pass, then choose a character from its distribution using a rule. Appending that choice makes it part of the next input. We have no observed target and make no parameter update. The calculation inside the forward pass is unchanged; what we do with its output is different.</p></div>
 <div class="frame" data-title="Run the same model in two different loops" data-autobuild="off">
   <script type="text/x-notes">Where does the next token come from during training and during generation?
-  First trace the training update. Then use the same model for generation. Follow the reproducible sampled character into the next input. A boundary token would stop generation instead.</script>
+  First trace the training update: autograd computes gradients, then the optimizer changes parameters. The two MLP boxes are two uses of the same architecture. In generation, a lock and snowflakes mark the embedding table, both weights and both biases as frozen. The distribution boxes have no snowflake: we recompute activations and probabilities for every new context. Follow the reproducible sampled character into the next input. A boundary token would stop generation instead.</script>
   <div id="s11-compare" class="compare-step diagram-step"></div>
 </div>
 <div class="frame" data-title="PyTorch: a batch uses the same forward pass" data-autobuild="off">
@@ -21,15 +21,19 @@ batch_loss = F.cross_entropy(batch_z, y)</code></pre>
   Targets are already known in the data. Generation must wait for each sampled character before making the next input.</script>
   <div class="card"><div id="s11-table"></div></div>
 </div>
-<div class="companion after"><p>Training uses observed targets to change the model. Generation keeps the model fixed and extends the sequence.</p></div>
+<div class="companion after"><p>Training uses observed targets to change the model. Generation keeps the model fixed and extends the sequence. The lock and snowflakes refer to the stored parameters: the embedding table, both weight matrices, and both bias vectors. The activations and probabilities are still recomputed on each call. In the code we already used, <code>torch.no_grad()</code> skips gradient tracking and there is no optimizer step. <code>model.eval()</code> alone does not freeze parameters.</p></div>
 <script>
 (function(){
   const S=document.getElementById('s11');
-  AT.ui.stepper({el:S.querySelector('#s11-compare'),big:true,compact:true,scrollList:false,steps:[
-    {title:'Training uses an observed target',render:host=>host.appendChild(AT.part1Diagrams.trainingVsGeneration({stage:0}))},
-    {title:'Generation has no target or update',render:host=>host.appendChild(AT.part1Diagrams.trainingVsGeneration({stage:1}))},
-    {title:'Append, shift, and run again',render:host=>host.appendChild(AT.part1Diagrams.trainingVsGeneration({stage:2}))}
-  ]});
+  const steps=[
+    ['Training updates the parameters','Autograd computes gradients. The optimizer uses them to update the parameters.'],
+    ['Generation freezes the parameters','Lock and snowflakes mark fixed parameters. Activations and probabilities are recomputed.'],
+    ['New context, same frozen parameters','The input shifts to a b h. The model recomputes activations and probabilities with the same frozen parameters.']
+  ];
+  AT.ui.stepper({el:S.querySelector('#s11-compare'),big:true,compact:true,scrollList:false,steps:steps.map(([title,explanation],stage)=>({title,render:host=>{
+    host.appendChild(AT.part1Diagrams.trainingVsGeneration({stage}));
+    host.appendChild(AT.h('p',{class:'small'},explanation));
+  }}))});
   AT.ui.table([['given by data','chosen by model'],['known','unknown'],['yes','no'],['many windows','one step at a time']],{cols:['training','generation'],rowLabels:['next token','target','parameter update','execution'],cornerLabel:'difference',caption:'Both use embedding lookup, concatenation, MLP, and softmax.',into:S.querySelector('#s11-table')});
 })();
 </script>

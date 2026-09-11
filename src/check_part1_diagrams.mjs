@@ -203,6 +203,23 @@ try {
     check(JSON.stringify(draw.next_context) === JSON.stringify(['a', 'b', 'h']) && lanes.textContent.includes(`append ${draw.chosen}, shift window → ${draw.next_context.join(' ')}`), 'generation must append h and shift a a b to a b h');
     check(lanes.getAttribute('data-next-context') === draw.next_context.join(' '), 'generation metadata must retain the next input window');
     check(lanes.textContent.includes('fixed during generation') && lanes.textContent.includes('boundary “-” would stop'), 'generation must explain fixed parameters and the boundary stop');
+    const parameterNames = ['E_tok', 'W1', 'b1', 'W2', 'b2'];
+    for (const { svg, method, stage } of instances.filter(item => item.method === 'trainingVsGeneration')) {
+      const phase = stage === 'default' ? 2 : stage;
+      const trainable = svg.querySelector('[data-parameter-state="trainable"]');
+      const frozen = svg.querySelector('[data-parameter-state="frozen"]');
+      check(JSON.stringify([...trainable.querySelectorAll('[data-parameter]')].map(el => el.dataset.parameter)) === JSON.stringify(parameterNames), 'training must name the embedding table, both weights, and both biases');
+      check(!!svg.querySelector('[data-update-symbol]') && !!svg.querySelector('[data-loop="parameter-update"]'), 'training needs a visible update symbol and return arrow');
+      check(!!frozen === (phase >= 1) && !!svg.querySelector('[data-lock-symbol]') === (phase >= 1), 'frozen parameters and lock must appear only when generation is revealed');
+      check(svg.querySelectorAll('[data-frozen-symbol]').length === (phase >= 1 ? 5 : 0), 'show exactly five snowflakes for generation parameters');
+      if (frozen) {
+        check(JSON.stringify([...frozen.querySelectorAll('[data-parameter]')].map(el => el.dataset.parameter)) === JSON.stringify(parameterNames), 'generation must freeze all five parameter groups');
+        check(JSON.stringify([...frozen.querySelectorAll('[data-frozen-symbol]')].map(el => el.dataset.frozenSymbol)) === JSON.stringify(parameterNames), 'each snowflake must belong to its named parameter');
+        check(!frozen.querySelector('.grad-edge') && !svg.querySelector('[data-frozen-symbol]:not([data-parameter-state="frozen"] *)'), 'updates never enter the frozen group, and activations never get snowflakes');
+      }
+      check(!!svg.querySelector('[data-loop="next-input"]') === (phase === 2), 'the next-input loop must reveal last, separate from parameter updates');
+      check(svg.querySelector('desc').textContent.includes('Activations and probabilities are recomputed'), 'accessible description must distinguish frozen parameters from recomputed activations');
+    }
     let boundary;
     for (let boundarySeed = 1; boundarySeed <= 20000; boundarySeed++) {
       const candidate = mlp.generate({ ids: input, seed: boundarySeed, temperature: 1, maxLength: 8 });
