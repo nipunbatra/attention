@@ -32,7 +32,7 @@ try {
     const fail = [], near = (a, b, tolerance = 1e-10) => Math.abs(a - b) <= tolerance;
     const check = (condition, description) => { if (!condition) fail.push(description); };
     const pretty = value => (Math.abs(value) < 0.005 ? 0 : value).toFixed(2).replace('-', '−');
-    const methods = { embeddingSpace: 0, lookupConcat: 2, learningGraph: 3, embeddingGradients: 0, trainingVsGeneration: 2,
+    const methods = { embeddingSpace: 0, lookupConcat: 2, learningGraph: 3, embeddingGradients: 0, trainingVsGeneration: 2, knownTrainingWindows: 0, chosenGenerationWindows: 0,
       generationRun: 11, generationTrace: 0, generationChoice: 0, temperatureComparison: 0 };
     const toy = window.__TOY__, mlp = AT.mlp;
     const original = JSON.stringify(toy);
@@ -220,6 +220,37 @@ try {
       check(!!svg.querySelector('[data-loop="next-input"]') === (phase === 2), 'the next-input loop must reveal last, separate from parameter updates');
       check(svg.querySelector('desc').textContent.includes('Activations and probabilities are recomputed'), 'accessible description must distinguish frozen parameters from recomputed activations');
     }
+    const knownWindows = final('knownTrainingWindows');
+    const trainingRows = [...knownWindows.querySelectorAll('[data-training-row]')];
+    check(trainingRows.length === 6, 'batch explanation must show all six input/target pairs');
+    trainingRows.forEach((row, i) => {
+      check(Number(row.dataset.trainingRow) === i && row.dataset.context === toy.aabid_rows[i].context.join(' ')
+        && row.dataset.target === toy.aabid_rows[i].target, `batch row ${i}: input and target must come from the observed name`);
+      check(Number(row.dataset.outputWidth) === toy.vocab.length && row.textContent.includes('27 scores'), `batch row ${i}: each example must receive its own vocabulary score row`);
+    });
+    check(trainingRows[3].dataset.context === 'a a b' && trainingRows[3].dataset.target === 'i'
+      && trainingRows[4].dataset.context === 'a b i', 'observed i must enter the next training window');
+    const chosenWindows = final('chosenGenerationWindows');
+    const dependencyRun = mlp.generate({ ids: input, seed: Number(chosenWindows.dataset.sampleSeed), temperature: Number(chosenWindows.dataset.sampleTemperature), maxLength: 2 });
+    const calls = [...chosenWindows.querySelectorAll('[data-generation-call]')];
+    check(calls.length === 2 && dependencyRun.trace.length === 2 && dependencyRun.trace[0].chosen === 'h'
+      && dependencyRun.trace[1].chosen === '-', 'generation dependency must show the real h then stop run');
+    let generatedName = input.join('');
+    calls.forEach((call, i) => {
+      const step = dependencyRun.trace[i];
+      if (step.chosen !== '-') generatedName += step.chosen;
+      check(call.dataset.context === step.context.join(' ') && call.dataset.chosen === step.chosen, `dependency call ${i}: wrong sampled input/output`);
+      check(near(Number(call.dataset.chosenProbability), step.probabilities[step.chosen_id])
+        && call.textContent.includes(step.probabilities[step.chosen_id].toFixed(3)), `dependency call ${i}: show real sampling probability`);
+      check(call.dataset.name === generatedName && call.querySelector('[data-lock-symbol]'), `dependency call ${i}: preserve prefix, omit stop token, freeze parameters`);
+    });
+    check(calls[1].dataset.context === dependencyRun.trace[0].next_context.join(' ') && calls[1].dataset.context === 'a b h', 'sampled h must enter the next generation window');
+    check(calls[1].dataset.name === 'aabh' && chosenWindows.querySelector('[data-loop="chosen-input"]'), 'generation must stop after the real dependency chain');
+    const section11Frames = [...document.querySelectorAll('#s11 .frame')];
+    check(section11Frames[1].contains(document.querySelector('#s11-known-windows'))
+      && section11Frames[2].querySelector('[data-torch="batch"]')
+      && section11Frames[3].contains(document.querySelector('#s11-chosen-windows')), 'explain known windows before batch code, then contrast generation');
+    check(section11Frames[3].textContent.includes('several names in a batch'), 'sequential within one name must not imply that generation cannot batch independent names');
     let boundary;
     for (let boundarySeed = 1; boundarySeed <= 20000; boundarySeed++) {
       const candidate = mlp.generate({ ids: input, seed: boundarySeed, temperature: 1, maxLength: 8 });

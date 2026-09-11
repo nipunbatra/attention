@@ -674,6 +674,75 @@
     return svg;
   }
 
+  function knownTrainingWindows(options) {
+    var b = baseSvg('known-training-windows', 'Six training inputs already exist in the observed name aabid',
+      'The complete name aabid supplies six three-character contexts and six observed targets. All input rows can pass through the same MLP as one batch. Each input gets its own 27-score output, compared with its own target. No model choice is needed to construct a later training row.', 1100, 340);
+    var svg = b.svg;
+    svg.setAttribute('data-stage', '0');
+    text(svg, 140, 24, 'Input window', 'label blue');
+    text(svg, 446, 24, 'One batch', 'label');
+    text(svg, 746, 24, 'Model output', 'label');
+    text(svg, 976, 24, 'Observed target', 'label');
+    box(svg, 326, 52, 240, 260, 'param');
+    text(svg, 446, 145, 'same MLP', 'main');
+    text(svg, 446, 181, 'on each row', 'label');
+    text(svg, 446, 228, 'shared weights', 'small');
+    M.aabid_rows.forEach(function (row, i) {
+      var y = 72 + i * 44;
+      var group = add(svg, 'g', { 'data-training-row': i, 'data-context': row.context.join(' '), 'data-target': row.target, 'data-output-width': M.vocab.length });
+      box(group, 30, y - 20, 220, 40, 'act', 6);
+      text(group, 140, y, row.context.join(' '), 'label mono');
+      path(group, 'M254 ' + y + ' H322', 'blue-edge');
+      path(group, 'M570 ' + y + ' H652', 'blue-edge');
+      box(group, 656, y - 20, 180, 40, 'box', 6);
+      text(group, 746, y, M.vocab.length + ' scores', 'label');
+      text(group, 884, y, 'vs.', 'small');
+      text(group, 976, y, row.target === '-' ? '− (stop)' : row.target, 'label mono');
+    });
+    return svg;
+  }
+
+  function chosenGenerationWindows(options) {
+    var initial = ['a', 'a', 'b'], seed = 1, temperature = 1;
+    var run = AT.mlp.generate({ ids: initial, seed: seed, temperature: temperature, maxLength: 2 });
+    var b = baseSvg('chosen-generation-windows', 'A generated character determines the next input window',
+      'Continue from aab with the frozen model at temperature 1 and sampling seed 1. The first call samples h. Append it to make aabh, then shift the input to a b h. The second call samples the boundary and stops. The boundary is not appended. There is no observed target or parameter update.', 1100, 356);
+    var svg = b.svg;
+    svg.setAttribute('data-stage', '0');
+    svg.setAttribute('data-sample-seed', String(seed));
+    svg.setAttribute('data-sample-temperature', String(temperature));
+    var name = initial.join('');
+    run.trace.forEach(function (t, i) {
+      var top = 60 + i * 190, y = top + 35, stop = t.chosen === '-';
+      if (!stop) name += t.chosen;
+      var group = add(svg, 'g', { 'data-generation-call': i + 1, 'data-context': t.context.join(' '), 'data-chosen': t.chosen,
+        'data-name': name, 'data-chosen-probability': exact(t.probabilities[t.chosen_id]) });
+      text(group, 38, top - 20, 'CALL ' + (i + 1), 'small mono', 'start');
+      box(group, 38, top, 200, 70, 'act');
+      text(group, 138, y - 10, t.context.join(' '), 'label mono');
+      text(group, 138, y + 18, 'input window', 'small');
+      path(group, 'M242 ' + y + ' H298', 'blue-edge');
+      box(group, 302, top, 240, 70, 'param');
+      text(group, 436, y - 10, 'frozen MLP', 'main');
+      text(group, 422, y + 18, 'same parameters', 'small');
+      // Match the lock convention from the preceding training/generation diagram.
+      add(group, 'path', { d: 'M331 ' + (y - 12) + ' v-7 a6 6 0 0 1 12 0 v7 m-15 0 h18 v15 h-18 z',
+        fill: 'none', stroke: 'var(--c-e)', 'stroke-width': 2, 'stroke-linejoin': 'round', 'data-lock-symbol': 'parameters', 'aria-hidden': 'true' });
+      path(group, 'M546 ' + y + ' H608', 'blue-edge');
+      box(group, 612, top, 220, 70, 'box');
+      text(group, 722, y - 10, stop ? 'draw − (stop)' : 'draw ' + t.chosen, 'main');
+      text(group, 722, y + 18, 'probability ' + t.probabilities[t.chosen_id].toFixed(3), 'small mono');
+      path(group, 'M836 ' + y + ' H906', 'edge');
+      box(group, 910, top, 160, 70, 'box');
+      text(group, 990, y - 10, name, 'label mono');
+      text(group, 990, y + 18, stop ? 'stop here' : 'name so far', 'small');
+    });
+    path(svg, 'M722 134 V175 H138 V244', 'blue-edge', { 'data-loop': 'chosen-input' });
+    text(svg, 500, 209, 'The chosen h makes the next input a b h.', 'label');
+    text(svg, 554, 341, 'Both draws use all 27 probabilities. Seed 1, temperature 1.', 'small');
+    return svg;
+  }
+
   AT.part1Diagrams = {
     annotateMLP: annotateMLP,
     embeddingSpace: embeddingSpace,
@@ -681,6 +750,8 @@
     learningGraph: learningGraph,
     embeddingGradients: embeddingGradients,
     trainingVsGeneration: trainingVsGeneration,
+    knownTrainingWindows: knownTrainingWindows,
+    chosenGenerationWindows: chosenGenerationWindows,
     generationExample: generationExample,
     generationRun: generationRun,
     generationTrace: generationTrace,

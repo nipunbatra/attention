@@ -10,6 +10,14 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+The abstract section 11 "Many windows or one growing output" table is replaced by concrete training and generation
+frames. Training shows all six contexts/targets from aabid, six independent score rows, and one shared MLP batch.
+The batch code now follows that picture and names both axes of X/logits plus the six target IDs in y. The generation
+frame uses the actual seed-1 run from aab: draw h, shift to abh, draw stop, keep aabh. It explicitly distinguishes
+observed i in the next training window from sampled h in generation, and notes that independent names can be batched.
+Browser tests verify source pairs, dependency transitions, probabilities, boundary handling, and frame order. Torch
+independently reproduces both new displayed probabilities. There are 230 progressive states and still 33 snippets.
+
 Section 11's three-stage training/generation comparison now marks all five parameter groups explicitly. The training
 MLP has an update symbol and an orange gradient/optimizer return arrow. The generation MLP has a lock plus a snowflake
 beside E_tok, W1, b1, W2, and b2. A separate blue loop changes the input, never the parameters. Each stage explains its

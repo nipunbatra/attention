@@ -1,5 +1,21 @@
 # Classroom release checks
 
+## 2026-09-11: concrete examples of training and generation inputs
+
+- Replaced the abstract "Many windows or one growing output" table with two diagrams. The training frame shows all
+  six observed aabid input/target pairs and six separate output rows from one MLP batch. It explicitly says that a
+  wrong prediction cannot replace observed i in the next training window abi. The existing batch code now follows
+  that motivation, with X [6, 3], logits [6, 27], and target IDs y [6] explained.
+- The generation frame follows the actual seed-1, temperature-1 run from aab: draw h (0.090), shift to abh, then draw
+  stop (0.183), keeping the name aabh. Its lock symbols preserve the frozen-parameter convention. Text distinguishes
+  sequential steps within one name from batching independent names. No model values or executable snippets changed.
+- New browser tests verify each training pair against the saved data, each generation transition/probability/name
+  against the live sampler, the boundary stop, and the new teaching order. Independent Torch checks reproduce both
+  displayed probabilities. All 33 literal snippets and existing 1,169-parameter gradient checks pass.
+- All 230 progressive states, 126 formulas, 18 equation guides, and table checks pass without slide overflow. SVG
+  checks cover 80 instances and 2,592 bounded labels. Visually inspected both new frames, the adjacent code frame,
+  and portrait presentation. Print media retains all six training rows and both generation calls. No PDF regenerated.
+
 ## 2026-09-11: visible frozen parameters in the two-loop comparison
 
 - Kept the three-stage section 11 diagram. Training now has a trainable-parameter view and an orange gradient/optimizer

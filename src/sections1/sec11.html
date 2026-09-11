@@ -9,17 +9,26 @@
   First trace the training update: autograd computes gradients, then the optimizer changes parameters. The two MLP boxes are two uses of the same architecture. In generation, a lock and snowflakes mark the embedding table, both weights and both biases as frozen. The distribution boxes have no snowflake: we recompute activations and probabilities for every new context. Follow the reproducible sampled character into the next input. A boundary token would stop generation instead.</script>
   <div id="s11-compare" class="compare-step diagram-step"></div>
 </div>
+<div class="frame" data-title="Training: all six input windows are already known" data-autobuild="off">
+  <script type="text/x-notes">What lets us prepare the next training input before making any prediction?
+  We have the whole observed name aabid. Trace each input row to its own score row and target. Targets are used in the loss, not fed to the MLP with the input. The six examples share weights but do not mix with one another. A wrong prediction for a a b does not replace the observed i in the next training window.</script>
+  <p>The full name <strong class="mono">aabid</strong> is in the data. We can prepare every input and target before running the model.</p>
+  <div class="teaching-diagram" id="s11-known-windows"></div>
+  <p>A wrong prediction for <code>a a b</code> does not change the next training input <code>a b i</code>. The <strong>i comes from the data</strong>.</p>
+</div>
 <div class="frame" data-title="PyTorch: a batch uses the same forward pass" data-autobuild="off">
   <pre class="pytorch" data-torch="batch"><code>batch_z = model(X)
 batch_loss = F.cross_entropy(batch_z, y)</code></pre>
-  <p><code>X</code> is <code>[6, 3]</code>. The logits are <code>[6, 27]</code>: six independent rows of vocabulary scores.</p>
-  <p>Cross-entropy pairs row 0 with <code>y[0]</code>, row 1 with <code>y[1]</code>, and so on. Its default reduction is the mean of the six losses.</p>
+  <p><code>X</code> holds the six windows we just saw: <code>[6, 3]</code> means <strong>6 examples, 3 token IDs each</strong>. The output <code>[6, 27]</code> has <strong>27 scores for each example</strong>.</p>
+  <p><code>y</code> is <code>[6]</code>: one observed target ID per example. Cross-entropy pairs each score row with its target and averages the six losses.</p>
   <p>Computing a loss alone does not update the model. That still requires <code>backward()</code> and <code>optimizer.step()</code>.</p>
 </div>
-<div class="frame" data-title="Many windows or one growing output" data-autobuild="off">
-  <script type="text/x-notes">Why can training prepare many rows before the model runs?
-  Targets are already known in the data. Generation must wait for each sampled character before making the next input.</script>
-  <div class="card"><div id="s11-table"></div></div>
+<div class="frame" data-title="Generation: each choice creates the next input" data-autobuild="off">
+  <script type="text/x-notes">Can we know the second input before sampling the first character?
+  Continue from aab using the same frozen model. This is the actual seed-1 run, not an invented transition. It samples h, so the second input is a b h, not the training window a b i. The second call samples the boundary and stops without adding the boundary to the name. Different names can run in a batch, but each individual name still has this dependency.</script>
+  <p>No next letter is supplied. Continue from <strong class="mono">aab</strong> by sampling from the frozen model.</p>
+  <div class="teaching-diagram" id="s11-chosen-windows"></div>
+  <p>Within one name, each step waits for the previous choice. We can still generate <strong>several names in a batch</strong>.</p>
 </div>
 <div class="companion after"><p>Training uses observed targets to change the model. Generation keeps the model fixed and extends the sequence. The lock and snowflakes refer to the stored parameters: the embedding table, both weight matrices, and both bias vectors. The activations and probabilities are still recomputed on each call. In the code we already used, <code>torch.no_grad()</code> skips gradient tracking and there is no optimizer step. <code>model.eval()</code> alone does not freeze parameters.</p></div>
 <script>
@@ -34,7 +43,8 @@ batch_loss = F.cross_entropy(batch_z, y)</code></pre>
     host.appendChild(AT.part1Diagrams.trainingVsGeneration({stage}));
     host.appendChild(AT.h('p',{class:'small'},explanation));
   }}))});
-  AT.ui.table([['given by data','chosen by model'],['known','unknown'],['yes','no'],['many windows','one step at a time']],{cols:['training','generation'],rowLabels:['next token','target','parameter update','execution'],cornerLabel:'difference',caption:'Both use embedding lookup, concatenation, MLP, and softmax.',into:S.querySelector('#s11-table')});
+  S.querySelector('#s11-known-windows').appendChild(AT.part1Diagrams.knownTrainingWindows());
+  S.querySelector('#s11-chosen-windows').appendChild(AT.part1Diagrams.chosenGenerationWindows());
 })();
 </script>
 </section>

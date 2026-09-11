@@ -171,6 +171,8 @@ with torch.no_grad():
         ("--s", "a", 0.32189935464079333),
         ("-sa", "m", 0.06398357772422884),
         ("sam", "-", 0.28973532963383036),
+        ("aab", "h", 0.0895428129572067),
+        ("abh", "-", 0.1829015840077302),
     ]:
         ids = torch.tensor([[toy["vocab"].index(c) for c in context]])
         probabilities = model(ids).softmax(-1)[0]

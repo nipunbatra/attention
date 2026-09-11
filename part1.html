@@ -4104,6 +4104,75 @@ window.__PART__ = {"part":1,"series":"Attention and language","title":"From char
     return svg;
   }
 
+  function knownTrainingWindows(options) {
+    var b = baseSvg('known-training-windows', 'Six training inputs already exist in the observed name aabid',
+      'The complete name aabid supplies six three-character contexts and six observed targets. All input rows can pass through the same MLP as one batch. Each input gets its own 27-score output, compared with its own target. No model choice is needed to construct a later training row.', 1100, 340);
+    var svg = b.svg;
+    svg.setAttribute('data-stage', '0');
+    text(svg, 140, 24, 'Input window', 'label blue');
+    text(svg, 446, 24, 'One batch', 'label');
+    text(svg, 746, 24, 'Model output', 'label');
+    text(svg, 976, 24, 'Observed target', 'label');
+    box(svg, 326, 52, 240, 260, 'param');
+    text(svg, 446, 145, 'same MLP', 'main');
+    text(svg, 446, 181, 'on each row', 'label');
+    text(svg, 446, 228, 'shared weights', 'small');
+    M.aabid_rows.forEach(function (row, i) {
+      var y = 72 + i * 44;
+      var group = add(svg, 'g', { 'data-training-row': i, 'data-context': row.context.join(' '), 'data-target': row.target, 'data-output-width': M.vocab.length });
+      box(group, 30, y - 20, 220, 40, 'act', 6);
+      text(group, 140, y, row.context.join(' '), 'label mono');
+      path(group, 'M254 ' + y + ' H322', 'blue-edge');
+      path(group, 'M570 ' + y + ' H652', 'blue-edge');
+      box(group, 656, y - 20, 180, 40, 'box', 6);
+      text(group, 746, y, M.vocab.length + ' scores', 'label');
+      text(group, 884, y, 'vs.', 'small');
+      text(group, 976, y, row.target === '-' ? '− (stop)' : row.target, 'label mono');
+    });
+    return svg;
+  }
+
+  function chosenGenerationWindows(options) {
+    var initial = ['a', 'a', 'b'], seed = 1, temperature = 1;
+    var run = AT.mlp.generate({ ids: initial, seed: seed, temperature: temperature, maxLength: 2 });
+    var b = baseSvg('chosen-generation-windows', 'A generated character determines the next input window',
+      'Continue from aab with the frozen model at temperature 1 and sampling seed 1. The first call samples h. Append it to make aabh, then shift the input to a b h. The second call samples the boundary and stops. The boundary is not appended. There is no observed target or parameter update.', 1100, 356);
+    var svg = b.svg;
+    svg.setAttribute('data-stage', '0');
+    svg.setAttribute('data-sample-seed', String(seed));
+    svg.setAttribute('data-sample-temperature', String(temperature));
+    var name = initial.join('');
+    run.trace.forEach(function (t, i) {
+      var top = 60 + i * 190, y = top + 35, stop = t.chosen === '-';
+      if (!stop) name += t.chosen;
+      var group = add(svg, 'g', { 'data-generation-call': i + 1, 'data-context': t.context.join(' '), 'data-chosen': t.chosen,
+        'data-name': name, 'data-chosen-probability': exact(t.probabilities[t.chosen_id]) });
+      text(group, 38, top - 20, 'CALL ' + (i + 1), 'small mono', 'start');
+      box(group, 38, top, 200, 70, 'act');
+      text(group, 138, y - 10, t.context.join(' '), 'label mono');
+      text(group, 138, y + 18, 'input window', 'small');
+      path(group, 'M242 ' + y + ' H298', 'blue-edge');
+      box(group, 302, top, 240, 70, 'param');
+      text(group, 436, y - 10, 'frozen MLP', 'main');
+      text(group, 422, y + 18, 'same parameters', 'small');
+      // Match the lock convention from the preceding training/generation diagram.
+      add(group, 'path', { d: 'M331 ' + (y - 12) + ' v-7 a6 6 0 0 1 12 0 v7 m-15 0 h18 v15 h-18 z',
+        fill: 'none', stroke: 'var(--c-e)', 'stroke-width': 2, 'stroke-linejoin': 'round', 'data-lock-symbol': 'parameters', 'aria-hidden': 'true' });
+      path(group, 'M546 ' + y + ' H608', 'blue-edge');
+      box(group, 612, top, 220, 70, 'box');
+      text(group, 722, y - 10, stop ? 'draw − (stop)' : 'draw ' + t.chosen, 'main');
+      text(group, 722, y + 18, 'probability ' + t.probabilities[t.chosen_id].toFixed(3), 'small mono');
+      path(group, 'M836 ' + y + ' H906', 'edge');
+      box(group, 910, top, 160, 70, 'box');
+      text(group, 990, y - 10, name, 'label mono');
+      text(group, 990, y + 18, stop ? 'stop here' : 'name so far', 'small');
+    });
+    path(svg, 'M722 134 V175 H138 V244', 'blue-edge', { 'data-loop': 'chosen-input' });
+    text(svg, 500, 209, 'The chosen h makes the next input a b h.', 'label');
+    text(svg, 554, 341, 'Both draws use all 27 probabilities. Seed 1, temperature 1.', 'small');
+    return svg;
+  }
+
   AT.part1Diagrams = {
     annotateMLP: annotateMLP,
     embeddingSpace: embeddingSpace,
@@ -4111,6 +4180,8 @@ window.__PART__ = {"part":1,"series":"Attention and language","title":"From char
     learningGraph: learningGraph,
     embeddingGradients: embeddingGradients,
     trainingVsGeneration: trainingVsGeneration,
+    knownTrainingWindows: knownTrainingWindows,
+    chosenGenerationWindows: chosenGenerationWindows,
     generationExample: generationExample,
     generationRun: generationRun,
     generationTrace: generationTrace,
@@ -5472,17 +5543,26 @@ sampled_id = torch.multinomial(p, num_samples=1)</code></pre>
   First trace the training update: autograd computes gradients, then the optimizer changes parameters. The two MLP boxes are two uses of the same architecture. In generation, a lock and snowflakes mark the embedding table, both weights and both biases as frozen. The distribution boxes have no snowflake: we recompute activations and probabilities for every new context. Follow the reproducible sampled character into the next input. A boundary token would stop generation instead.</script>
   <div id="s11-compare" class="compare-step diagram-step"></div>
 </div>
+<div class="frame" data-title="Training: all six input windows are already known" data-autobuild="off">
+  <script type="text/x-notes">What lets us prepare the next training input before making any prediction?
+  We have the whole observed name aabid. Trace each input row to its own score row and target. Targets are used in the loss, not fed to the MLP with the input. The six examples share weights but do not mix with one another. A wrong prediction for a a b does not replace the observed i in the next training window.</script>
+  <p>The full name <strong class="mono">aabid</strong> is in the data. We can prepare every input and target before running the model.</p>
+  <div class="teaching-diagram" id="s11-known-windows"></div>
+  <p>A wrong prediction for <code>a a b</code> does not change the next training input <code>a b i</code>. The <strong>i comes from the data</strong>.</p>
+</div>
 <div class="frame" data-title="PyTorch: a batch uses the same forward pass" data-autobuild="off">
   <pre class="pytorch" data-torch="batch"><code>batch_z = model(X)
 batch_loss = F.cross_entropy(batch_z, y)</code></pre>
-  <p><code>X</code> is <code>[6, 3]</code>. The logits are <code>[6, 27]</code>: six independent rows of vocabulary scores.</p>
-  <p>Cross-entropy pairs row 0 with <code>y[0]</code>, row 1 with <code>y[1]</code>, and so on. Its default reduction is the mean of the six losses.</p>
+  <p><code>X</code> holds the six windows we just saw: <code>[6, 3]</code> means <strong>6 examples, 3 token IDs each</strong>. The output <code>[6, 27]</code> has <strong>27 scores for each example</strong>.</p>
+  <p><code>y</code> is <code>[6]</code>: one observed target ID per example. Cross-entropy pairs each score row with its target and averages the six losses.</p>
   <p>Computing a loss alone does not update the model. That still requires <code>backward()</code> and <code>optimizer.step()</code>.</p>
 </div>
-<div class="frame" data-title="Many windows or one growing output" data-autobuild="off">
-  <script type="text/x-notes">Why can training prepare many rows before the model runs?
-  Targets are already known in the data. Generation must wait for each sampled character before making the next input.</script>
-  <div class="card"><div id="s11-table"></div></div>
+<div class="frame" data-title="Generation: each choice creates the next input" data-autobuild="off">
+  <script type="text/x-notes">Can we know the second input before sampling the first character?
+  Continue from aab using the same frozen model. This is the actual seed-1 run, not an invented transition. It samples h, so the second input is a b h, not the training window a b i. The second call samples the boundary and stops without adding the boundary to the name. Different names can run in a batch, but each individual name still has this dependency.</script>
+  <p>No next letter is supplied. Continue from <strong class="mono">aab</strong> by sampling from the frozen model.</p>
+  <div class="teaching-diagram" id="s11-chosen-windows"></div>
+  <p>Within one name, each step waits for the previous choice. We can still generate <strong>several names in a batch</strong>.</p>
 </div>
 <div class="companion after"><p>Training uses observed targets to change the model. Generation keeps the model fixed and extends the sequence. The lock and snowflakes refer to the stored parameters: the embedding table, both weight matrices, and both bias vectors. The activations and probabilities are still recomputed on each call. In the code we already used, <code>torch.no_grad()</code> skips gradient tracking and there is no optimizer step. <code>model.eval()</code> alone does not freeze parameters.</p></div>
 <script>
@@ -5497,7 +5577,8 @@ batch_loss = F.cross_entropy(batch_z, y)</code></pre>
     host.appendChild(AT.part1Diagrams.trainingVsGeneration({stage}));
     host.appendChild(AT.h('p',{class:'small'},explanation));
   }}))});
-  AT.ui.table([['given by data','chosen by model'],['known','unknown'],['yes','no'],['many windows','one step at a time']],{cols:['training','generation'],rowLabels:['next token','target','parameter update','execution'],cornerLabel:'difference',caption:'Both use embedding lookup, concatenation, MLP, and softmax.',into:S.querySelector('#s11-table')});
+  S.querySelector('#s11-known-windows').appendChild(AT.part1Diagrams.knownTrainingWindows());
+  S.querySelector('#s11-chosen-windows').appendChild(AT.part1Diagrams.chosenGenerationWindows());
 })();
 </script>
 </section>
