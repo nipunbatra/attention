@@ -13,6 +13,15 @@
 #s01 .prompt{font-size:1.18em;margin:0 0 14px}
 #s01 .answers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:16px}
 #s01 .answer{padding:12px;background:var(--t-neutral);border-radius:var(--radius-s)}
+#s01 .names-intro{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:32px;align-items:center}
+#s01 .names-source{margin:0;min-width:0}
+#s01 .names-source img{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:var(--radius-s)}
+#s01 .names-source figcaption{margin-top:12px;font-size:.8em;line-height:1.4}
+#s01 .names-source a{color:var(--c-e);text-decoration:underline;text-underline-offset:3px}
+#s01 .names-intro-copy p{margin:0 0 24px}
+#s01 .names-intro-copy p:last-child{margin-bottom:0}
+#s01 .names-intro-copy .source-names{color:var(--c-e);font-family:var(--font-mono);font-size:1.15em;line-height:1.6}
+@media(max-width:700px){body:not(.present) #s01 .names-intro{grid-template-columns:1fr;gap:24px}}
 @media(max-width:640px){body:not(.present) #s01 .answers{grid-template-columns:1fr}body:not(.present) #s01 .entity-example{grid-template-columns:1fr;gap:8px}body:not(.present) #s01 .entity-example>[role="row"]{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:center}body:not(.present) #s01 .entity-label{margin:0}body:not(.present) #s01 .task-summary td,body:not(.present) #s01 .task-summary th{padding:12px 6px}}
 </style>
 <header class="sec-head"><span class="sec-num">01</span><div><p class="eyebrow">Language tasks ask for different outputs, but all use text to make predictions.</p><h2>What can a network do with text?</h2></div></header>
@@ -85,6 +94,23 @@
 <div class="frame" data-title="Predict the next word first" data-autobuild="off">
   <div class="card"><h3 class="card-title">After “The student opened the laptop and”</h3><div id="s01-bars"></div><p class="muted small">Illustrative probabilities. “Other” groups the remaining words.</p></div>
   <div class="prose" data-build="1"><p>Choose a word, append it to the text, then predict again.</p></div>
+</div>
+<div class="frame" id="s01-names-intro" data-title="Generate Indian names, one character at a time" data-autobuild="off">
+  <script type="text/x-notes">We just predicted the next word. Our classroom model will predict the next letter in a name.
+  The screenshot shows real input data, not generated names. Point to aabid in the file: this will be our worked training example in the next slide.
+  Source: https://github.com/balasahebgulave/Dataset-indian-names/blob/80401358aaa609cbe30ae57afbea37654879d0ab/Indian_Names.csv
+  Our bundled src/names.csv matches this source file byte for byte. Training uses its Name column.</script>
+  <div class="names-intro">
+    <figure class="names-source">
+      <a href="https://github.com/balasahebgulave/Dataset-indian-names" target="_blank" rel="noopener noreferrer" aria-label="Open the Indian names dataset repository on GitHub"><img src="figures/indian-names/github-dataset.png" width="1520" height="1072" alt="GitHub preview of balasahebgulave's Dataset-indian-names repository: Indian_Names.csv, with entries aabid, aabida, aachal, and aadesh."></a>
+      <figcaption><a href="https://github.com/balasahebgulave/Dataset-indian-names/blob/80401358aaa609cbe30ae57afbea37654879d0ab/Indian_Names.csv" target="_blank" rel="noopener noreferrer">Indian_Names.csv on GitHub</a></figcaption>
+    </figure>
+    <div class="names-intro-copy">
+      <p>We’ll learn from a list of Indian given names, with one name per row.</p>
+      <p class="source-names">aabid, aabida, aachal, …</p>
+      <p>Then we’ll generate a name: choose the next letter, append it, and repeat until the name ends.</p>
+    </div>
+  </div>
 </div>
 <div class="companion after"><p>We can produce a sequence by repeatedly predicting one next token. A token is a unit of text. We will start with characters, so every prediction chooses a letter or an ending marker. This keeps the vocabulary small enough to inspect each probability.</p></div>
 <script>

@@ -48,6 +48,19 @@ const checkGuides = () => {
 };
 const article = await page.evaluate(checkGuides);
 errors.push(...article.issues);
+await page.locator('#s01-names-intro img').evaluate(img => img.decode());
+const namesIntro = await page.evaluate(() => {
+  const issues=[], frames=[...document.querySelectorAll('#s01 .frame')];
+  const intro=document.getElementById('s01-names-intro'), index=frames.indexOf(intro);
+  if(frames[index-1]?.dataset.title!=='Predict the next word first')issues.push('Name-generation introduction must follow next-word prediction');
+  const img=intro.querySelector('img'), repo=intro.querySelector('.names-source > a');
+  if(repo.href!=='https://github.com/balasahebgulave/Dataset-indian-names')issues.push('Screenshot must link to the source dataset repository');
+  if(!intro.querySelector('figcaption a').href.endsWith('/80401358aaa609cbe30ae57afbea37654879d0ab/Indian_Names.csv'))issues.push('CSV link must identify the verified dataset revision');
+  if(!img.src.startsWith('data:image/png;base64,')||img.naturalWidth!==1520||img.naturalHeight!==1072)issues.push('Dataset screenshot must load in standalone HTML');
+  if(intro.querySelector('.katex, .pytorch'))issues.push('Name-generation introduction should stay free of maths and code');
+  return {frame:index+1,screenshot:[img.naturalWidth,img.naturalHeight],issues};
+});
+errors.push(...namesIntro.issues);
 const lookup = await page.evaluate(() => {
   const issues=[], steps=[...document.querySelectorAll('[data-lookup-step]')];
   const order=steps.map(f=>f.dataset.lookupStep);
@@ -215,6 +228,7 @@ for(let step=0;step<6;step++){
 }
 // Include the fully revealed notation frames and the tables adjacent to them.
 for (const [section, title, name] of [
+  ['s01', 'Generate Indian names, one character at a time', 'names-intro'],
   ['s03', 'Writing the same question as a probability', 'probability'],
   ['s04', 'c stands for one character', 'lookup-character'],
   ['s04', "id(c) gives that character's row number", 'lookup-id'],
@@ -276,9 +290,16 @@ const phone = await page.evaluate(() => ({
 }));
 if (phone.overflow || phone.columns !== 1) errors.push('Phone article legend does not fit one column');
 await page.screenshot({ path: path.join(out, 'phone-probability.png') });
+await page.locator('#s01-names-intro').scrollIntoViewIfNeeded();
+const namesPhone = await page.evaluate(() => ({
+  columns:getComputedStyle(document.querySelector('#s01 .names-intro')).gridTemplateColumns.split(' ').length,
+  overflow:document.documentElement.scrollWidth>innerWidth
+}));
+if(namesPhone.columns!==1||namesPhone.overflow)errors.push('Phone dataset introduction must fit one column');
+await page.screenshot({path:path.join(out,'phone-names-intro.png')});
 await page.emulateMedia({ media: 'print' });
 const printed = await page.evaluate(checkGuides);
 errors.push(...printed.issues.map(x => 'print: ' + x));
 await browser.close();
-console.log(JSON.stringify({ article, lookup, shapes, probabilitySequence, registration, temperatureSequence, unknownTokens, generationLoop, phone, print: printed, screenshots: out, errors }, null, 2));
+console.log(JSON.stringify({ article, namesIntro, lookup, shapes, probabilitySequence, registration, temperatureSequence, unknownTokens, generationLoop, phone, namesPhone, print: printed, screenshots: out, errors }, null, 2));
 if (errors.length) process.exitCode = 1;

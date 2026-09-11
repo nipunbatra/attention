@@ -141,6 +141,11 @@ parts = []
 ids = []
 for f in files:
     txt = open(f, encoding='utf-8').read()
+    if N == 1 and 'figures/indian-names/github-dataset.png' in txt:
+        # Keep the dataset screenshot available in the standalone/offline HTML.
+        with open(os.path.join(here, '..', 'figures', 'indian-names', 'github-dataset.png'), 'rb') as asset:
+            dataset_uri = 'data:image/png;base64,' + base64.b64encode(asset.read()).decode('ascii')
+        txt = txt.replace('src="figures/indian-names/github-dataset.png"', 'src="' + dataset_uri + '"')
     m = re.search(r'<section\s+id="(s\d+)"', txt)
     if m:
         ids.append(m.group(1))
