@@ -59,6 +59,15 @@ try {
     }
     check(document.querySelectorAll('#s06-net .col-in circle').length === toy.w * toy.d_model
       && !document.querySelector('#s06-net .col-in .ell'), 'full-network sketch must show all six input coordinates');
+    const net = document.querySelector('#s06-net svg');
+    const params = [...net.querySelectorAll('[data-parameter]')];
+    check(params.map(node => node.dataset.parameter).join(',') === 'W1,W2,b1,b2', 'label both weight matrices and both biases on the network');
+    const proseColour = getComputedStyle(document.querySelector('#s06 .p1-param')).color;
+    check(params.every(node => getComputedStyle(node).fill === proseColour), 'network parameters and their prose must share a colour');
+    for (const label of params) {
+      const b = label.getBBox(), v = net.viewBox.baseVal;
+      check(b.x >= 0 && b.y >= 0 && b.x + b.width <= v.width && b.y + b.height <= v.height, `network parameter ${label.dataset.parameter} must fit its SVG`);
+    }
     const oneHotProducts = [...document.querySelectorAll('#s04-dot1 tbody tr:last-child th, #s04-dot2 tbody tr:last-child th')];
     check(oneHotProducts.length === 2 && oneHotProducts.every(th => th.textContent === 'products'), 'Part I one-hot worksheets must not introduce query/key notation');
     const host = document.createElement('div');
@@ -167,16 +176,16 @@ try {
     const dims = [`${toy.E.length} × ${toy.E[0].length}`, `1 × ${forward.a0.length}`, `${toy.W1.length} × ${toy.W1[0].length}`, `1 × ${forward.a1.length}`, `${toy.W2.length} × ${toy.W2[0].length}`, `1 × ${forward.p.length}`];
     for (const dim of dims) check(graphText.includes(dim), `learning graph: missing actual model shape ${dim}`);
     check(graphText.includes(`p(i) = ${p.toFixed(3)}`) && graphText.includes(`loss = ${pretty(loss)}`), 'learning graph probability/loss must agree with the actual forward pass');
-    check(/target i is not looked up as an input/.test(graphText) && /reverse gradients/.test(graphText) && /tanh/.test(graphText), 'learning graph must keep target, gradient direction, and hidden activation explicit');
+    check(/target i is not looked up as an input/.test(graphText) && /reverse gradients/.test(graphText) && /ReLU/.test(graphText), 'learning graph must keep target, gradient direction, and hidden activation explicit');
 
     const lanes = final('trainingVsGeneration');
     const seed = Number(lanes.getAttribute('data-sample-seed'));
     const temperature = Number(lanes.getAttribute('data-sample-temperature'));
     const sample = mlp.generate({ ids: input, seed, temperature, maxLength: 1, greedy: false });
     const draw = sample.trace[0];
-    check(seed === 1 && temperature === 1 && draw.chosen === 'i', 'generation example must use the actual seed-1, temperature-1 draw of i');
+    check(seed === 1 && temperature === 1 && draw.chosen === 'h', 'generation example must use the ReLU model’s actual seed-1, temperature-1 draw of h');
     check(lanes.getAttribute('data-sample-token') === draw.chosen && lanes.textContent.includes(`sample  ${draw.chosen}`), 'generation label must match the sampled token');
-    check(JSON.stringify(draw.next_context) === JSON.stringify(['a', 'b', 'i']) && lanes.textContent.includes(`append ${draw.chosen}, shift window → ${draw.next_context.join(' ')}`), 'generation must append i and shift a a b to a b i');
+    check(JSON.stringify(draw.next_context) === JSON.stringify(['a', 'b', 'h']) && lanes.textContent.includes(`append ${draw.chosen}, shift window → ${draw.next_context.join(' ')}`), 'generation must append h and shift a a b to a b h');
     check(lanes.getAttribute('data-next-context') === draw.next_context.join(' '), 'generation metadata must retain the next input window');
     check(lanes.textContent.includes('fixed during generation') && lanes.textContent.includes('boundary “-” would stop'), 'generation must explain fixed parameters and the boundary stop');
     let boundary;

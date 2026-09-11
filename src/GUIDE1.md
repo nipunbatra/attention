@@ -7,7 +7,7 @@ frames + builds from the start. Running example: the name "aabid" with w = 3 and
 
 ## Toy model (toy1.json, produced by train_names.py with numpy)
 - Data: names.csv in the scratchpad (about 6,500 Indian given names, columns index,Name; lowercase, keep a-z only, dedupe). The page bundles only the trained weights and 20 sample names, not the list.
-- Model: E (27 x 2), W_1 (6 x 32), b_1, W_2 (32 x 27), b_2, tanh hidden, w = 3. Train with cross-entropy, Adam, a few thousand steps.
+- Model: E (27 x 2), W_1 (6 x 32), b_1, W_2 (32 x 27), b_2, ReLU hidden, w = 3. Train with cross-entropy, Adam, a few thousand steps.
 - Make axis 1 of E readable: add a penalty so that vowels get positive axis-1 values and consonants negative ("vowel-ness"); axis 2 is learned ("learned axis 2").
   Report in toy1.json "axes": {"e": ["vowel-ness", "learned axis 2"]} and a note that axis 1 was constrained during training.
 - Export: vocab, E, W1, b1, W2, b2, w, the six aabid rows, a training curve (loss every 50 steps), the before-training parameters too (for the s09 before/after),
@@ -27,7 +27,7 @@ s04 Characters to numbers
 s05 Concatenate the embeddings
   F1: a_0 = [e_1, e_2, e_3] as a table with position-coloured segments; F2: order test: a b i vs i b a (concatenate differs, sum is equal).
 s06 Pass the vector through an MLP
-  F1: AT.netSketch with all 6 inputs, 32 hidden units abbreviated as numbered units 1–4 and 29–32 with dots, and 27 outputs with dots at each omitted range and the target lit; equations a_1 = tanh(a_0 W_1 + b_1), z = a_1 W_2 + b_2; shapes table.
+  F1: AT.netSketch with all 6 inputs, 32 hidden units abbreviated as numbered units 1–4 and 29–32 with dots, and 27 outputs with dots at each omitted range and the target lit. annotateMLP labels W1/W2 and b1/b2. Equations a_1 = ReLU(a_0 W_1 + b_1), z = a_1 W_2 + b_2; separate explanations of each parameter and its shape.
   F2: worksheet for one hidden unit (a_0 dot W_1 column j + b) and one logit (a_1 dot W_2 column "i" + b), real numbers.
 s07 27 scores to probabilities
   F1: logits table (top 5 + other) -> softmax worksheet (exp, sum, divide) -> bars with the target highlighted.

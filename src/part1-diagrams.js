@@ -283,7 +283,7 @@
       path(svg, 'M302 219 L334 219', 'blue-edge');
 
       box(svg, 480, 177, 148, 84, 'act');
-      text(svg, 554, 201, 'affine \u2192 tanh', 'label');
+      text(svg, 554, 201, 'affine \u2192 ReLU', 'label');
       text(svg, 554, 238, 'a\u2081 : 1 \u00d7 32', 'small mono');
       box(svg, 477, 56, 154, 68, 'param');
       text(svg, 554, 80, 'W\u2081  6 \u00d7 32', 'label mono');
@@ -333,7 +333,7 @@
     var pTarget = result.p[target] || 0;
     var b = baseSvg(
       'training-vs-generation', 'Training and generation reuse the same learned character MLP',
-      'Training compares the distribution for a a b with observed i and updates shared parameters. Generation holds those parameters fixed. A real reproducible sample at temperature 1 with seed 1 draws i, then shifts the context to a b i. The boundary token would instead stop generation.',
+      'Training compares the distribution for a a b with observed i and updates shared parameters. Generation holds those parameters fixed. A real reproducible sample at temperature 1 with seed ' + sampleSeed + ' draws ' + chosen + ', then shifts the context to ' + nextContext.join(' ') + '. The boundary token would instead stop generation.',
       1100, 420
     );
     var svg = b.svg;
@@ -398,7 +398,42 @@
     return svg;
   }
 
+  // Add parameter labels to the existing editable MLP sketch. Node positions
+  // come from netSketch so that labels remain tied to the actual columns.
+  function annotateMLP(net) {
+    var svg = net.svg;
+    if (svg.classList.contains('p1-mlp-labelled')) return net;
+    svg.classList.add('p1-mlp-labelled');
+    var columns = ['in', 'hid', 'out'].map(function (name) {
+      return svg.querySelector('.col-' + name + ' .node').transform.baseVal.getItem(0).matrix.e;
+    });
+    add(svg, 'style', {}, [
+      '.p1-mlp-labelled .parameter-label{font-family:var(--font-mono);font-size:17px;fill:var(--c-q)}',
+      '.p1-mlp-labelled .edges line{stroke:var(--c-q);opacity:.24}',
+      '.p1-mlp-labelled .edges line.hl{stroke:var(--c-q);opacity:.85}',
+      '.netsk .p1-mlp-labelled .col-hid circle{fill:var(--t-v);stroke:var(--c-v)}',
+      '.p1-mlp-labelled .col-hid .unit-l{fill:var(--c-v)}',
+      '.p1-mlp-labelled .lab-in-box{color:var(--c-e)}',
+      '.p1-mlp-labelled .cap{text-transform:none;font-size:12px}',
+      '.p1-mlp-labelled .cap:nth-child(1){fill:var(--c-e)}',
+      '.p1-mlp-labelled .cap:nth-child(2){fill:var(--c-v)}'
+    ].join(''));
+    [
+      ['W1', 'W₁ weights', (columns[0] + columns[1]) / 2, 48, '6 × 32 learned weights, one per input-to-hidden connection.'],
+      ['W2', 'W₂ weights', (columns[1] + columns[2]) / 2, 48, '32 × 27 learned weights, one per hidden-to-output connection.'],
+      ['b1', '+ b₁: 32 biases', columns[1], svg.viewBox.baseVal.height - 10, 'One learned bias added at each hidden unit, before ReLU.'],
+      ['b2', '+ b₂: 27 biases', columns[2], svg.viewBox.baseVal.height - 10, 'One learned bias added at each output logit.']
+    ].forEach(function (label) {
+      var node = text(svg, label[2], label[3], label[1], 'parameter-label');
+      node.setAttribute('data-parameter', label[0]);
+      add(node, 'title', {}, label[4]);
+    });
+    svg.setAttribute('aria-label', svg.getAttribute('aria-label') + ' W1 and W2 are connection weights. b1 adds one bias per hidden unit before ReLU. b2 adds one bias per output logit.');
+    return net;
+  }
+
   AT.part1Diagrams = {
+    annotateMLP: annotateMLP,
     embeddingSpace: embeddingSpace,
     lookupConcat: lookupConcat,
     learningGraph: learningGraph,

@@ -75,7 +75,7 @@ def initialise(rng: np.random.Generator) -> dict[str, np.ndarray]:
 def forward(params: dict[str, np.ndarray], ids: np.ndarray) -> dict[str, np.ndarray]:
     rows = params["E"][ids]
     a0 = rows.reshape(ids.shape[0], WINDOW * EMBED_DIM)
-    a1 = np.tanh(a0 @ params["W1"] + params["b1"])
+    a1 = np.maximum(0.0, a0 @ params["W1"] + params["b1"])
     z = a1 @ params["W2"] + params["b2"]
     shifted = z - z.max(axis=1, keepdims=True)
     exp = np.exp(shifted)
@@ -108,7 +108,7 @@ def loss_and_grads(
         "b2": dz.sum(axis=0),
     }
     da1 = dz @ params["W2"].T
-    du = da1 * (1.0 - a1 * a1)
+    du = da1 * (a1 > 0.0)
     grads["W1"] = a0.T @ du
     grads["b1"] = du.sum(axis=0)
     da0 = (du @ params["W1"].T).reshape(n, WINDOW, EMBED_DIM)
@@ -244,6 +244,7 @@ def main() -> None:
         "w": WINDOW,
         "d_model": EMBED_DIM,
         "d_h": HIDDEN_DIM,
+        "activation": "relu",
         "axes": {"e": ["vowel-ness", "learned axis 2"]},
         "aabid_rows": rows,
         "training_curve": curve,

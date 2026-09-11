@@ -3,6 +3,7 @@ import fs from 'fs';
 import vm from 'vm';
 
 const toy = JSON.parse(fs.readFileSync(new URL('./toy1.json', import.meta.url), 'utf8'));
+if (toy.activation !== 'relu') throw new Error('Part 1 requires a checkpoint trained with ReLU.');
 const source = fs.readFileSync(new URL('./part1.js', import.meta.url), 'utf8');
 const AT = {
   matmul(a, B) {
@@ -24,7 +25,9 @@ vm.runInContext(source, context, { filename: 'part1.js' });
 
 let worst = 0;
 for (const row of toy.aabid_rows) {
-  const got = context.window.AT.mlp.forward(row.ids).p;
+  const forward = context.window.AT.mlp.forward(row.ids);
+  if (forward.a1.some(value => value < 0)) throw new Error('ReLU hidden activations cannot be negative.');
+  const got = forward.p;
   for (let i = 0; i < got.length; i++) worst = Math.max(worst, Math.abs(got[i] - row.probabilities[i]));
 }
 if (worst > 1e-6) {

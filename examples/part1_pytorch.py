@@ -66,15 +66,20 @@ print(e_time.shape)  # [1, 3]
 a0 = e.flatten(start_dim=1)
 print(a0.shape)  # [1, 6]
 
+# relu-rule
+before_relu = torch.tensor([-2., 0., 3.])
+after_relu = torch.relu(before_relu)
+print(after_relu)  # tensor([0., 0., 3.])
+
 # hidden
 hidden = nn.Linear(6, 32)
-a1 = torch.tanh(hidden(a0))
+a1 = torch.relu(hidden(a0))
 print(a1.shape)  # [1, 32]
 
 # weight-convention
 W1 = hidden.weight.T
 b1 = hidden.bias
-check = torch.tanh(a0 @ W1 + b1)
+check = torch.relu(a0 @ W1 + b1)
 torch.testing.assert_close(a1, check)
 
 # output
@@ -84,7 +89,7 @@ print(z.shape)  # [1, 27]
 
 # model
 model = nn.Sequential(
-    embedding, nn.Flatten(1), hidden, nn.Tanh(), output
+    embedding, nn.Flatten(1), hidden, nn.ReLU(), output
 )
 z = model(ctx)
 
@@ -155,7 +160,7 @@ word_e = word_embedding(word_ctx)
 # word-output
 word_hidden = nn.Linear(6, 32)
 word_output = nn.Linear(32, len(word_vocab))
-word_a1 = torch.tanh(word_hidden(word_e.flatten(1)))
+word_a1 = torch.relu(word_hidden(word_e.flatten(1)))
 word_z = word_output(word_a1)
 
 # longer-window
@@ -166,6 +171,6 @@ print(wide_hidden.weight.shape)  # [32, 10]
 # forward-recap
 e = embedding(ctx)
 a0 = e.flatten(1)
-a1 = torch.tanh(hidden(a0))
+a1 = torch.relu(hidden(a0))
 z = output(a1)
 p = z.softmax(dim=-1)

@@ -10,6 +10,18 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+Part 1 now uses **ReLU**, following Nipun's September 11 annotation. `train_names.py`, its backward pass, `part1.js`,
+all classroom equations, and the 31 literal PyTorch snippets agree. The model was retrained with the same names, split,
+seed, dimensions, sign penalty, and 6,000 steps. `toy1.json` explicitly records `activation: "relu"`. All worked values,
+embedding plots, losses, and generation therefore use new numbers. Historical tanh numbers must not be copied back.
+The seed-1 generation illustration now samples **h**, giving `a b h`; the observed training target is still **i**.
+`check_part1_torch.py` checks every NumPy parameter gradient against autograd for both fresh and trained parameters.
+
+The full-network diagram labels W1/W2 on the connection sets and b1/b2 below their receiving columns. Purple parameter
+labels match the equation explanations, blue marks the six inputs, and teal marks hidden activations. The Part 1-only
+`annotateMLP` helper extends the shared sketch without changing other parts. A three-number ReLU example precedes the
+hidden-layer PyTorch frame. Weight matrices and biases have separate explanations and shapes.
+
 Part 1's two MLP sketches now pass the real hidden width (32) to `netSketch`. They show eight numbered hidden units,
 1–4 and 29–32, with an explicit gap. All six scalar inputs remain visible on the full-network frame. Output gaps appear
 both before and after the highlighted i. The shared helper abbreviates hidden widths above eight and connects only real
@@ -33,11 +45,11 @@ on separate frames. Part 1's role macros are scoped to its runtime; other parts 
 Use the equation-key convention in `PRESENT.md` for future revisions and `notation_test.mjs` to check this implementation.
 
 Part 1 also pairs each computational stage with a 2–5-line PyTorch snippet, a plain-language explanation, and tensor
-shapes. There are 30 executable snippets, including `nn.Embedding`, `nn.Linear`, the storage transpose, stable softmax,
+shapes. There are 31 executable snippets, including `nn.Embedding`, `nn.Linear`, ReLU, the storage transpose, stable softmax,
 cross-entropy, autograd/SGD, and generation. Run `check_part1_torch.py` with PyTorch installed; it checks the literal HTML
 code and the matching download `../examples/part1_pytorch.py`, then reproduces the saved model's six probability rows.
 The classroom code starts fresh and illustrates one update; it does not claim to reproduce training from a single batch.
-The source data and JS computations are unchanged. `notation_test.mjs` locates its frames by title, not fragile indices.
+The current source data and JS computations use the retrained ReLU model described above. `notation_test.mjs` locates its frames by title, not fragile indices.
 
 The embedding introduction now motivates learned rows before the table: one saved two-coordinate row becomes a point,
 then three points become table rows. The existing vowel-sign constraint is explicitly disclosed, not presented as a

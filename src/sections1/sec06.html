@@ -6,33 +6,43 @@
 body.present #s06 .net{max-width:650px}
 </style>
 <header class="sec-head"><span class="sec-num">06</span><div><p class="eyebrow">The MLP combines the six input numbers to score each possible next character.</p><h2>Pass the vector through an MLP</h2></div></header>
-<div class="companion" data-kicker="For self-study"><p>The concatenated row enters an MLP with one hidden layer. Each hidden unit combines all six input coordinates through the first weight matrix, adds a bias, and applies tanh. The second weight matrix combines the hidden activations to give one logit per vocabulary token. We draw only a few hidden nodes; the label beside them gives the trained layer's full width. The worksheets work through one hidden unit and the logit for <em>i</em>. Every other unit and output uses the same operations. Throughout this series, our vectors are rows and multiply matrices on the right.</p></div>
+<div class="companion" data-kicker="For self-study"><p>The concatenated row enters an MLP with one hidden layer. Each hidden unit combines all six input coordinates through the first weight matrix, adds a bias, and applies ReLU. ReLU keeps a positive result and replaces a negative result with zero. The second weight matrix combines the hidden activations to give one logit per vocabulary token. We draw only a few hidden nodes; the label beside them gives the trained layer's full width. The worksheets work through one hidden unit and the logit for <em>i</em>. Every other unit and output uses the same operations. Throughout this series, our vectors are rows and multiply matrices on the right.</p></div>
 <div class="frame" data-title="The full network" data-autobuild="off">
   <script type="text/x-notes">Why does the output column contain one node for every vocabulary token?
   Trace all six scalar inputs through the hidden layer. Its numbered circles show units 1–4 and 29–32, with dots for the omitted units. Output dots also mark omitted characters. Every adjacent pair of layers is fully connected. The marked output is the target i for aab.</script>
-  <div class="card"><h3 class="card-title">The MLP for a a b</h3><div class="net" id="s06-net"></div><p>Dots mark omitted units. Both layers are fully connected.</p></div>
+  <div class="card"><div class="net" id="s06-net"></div><p><span class="p1-param">W: weights on connections. b: one bias per receiving unit.</span><br>Dots mark omitted units. All six inputs come from <strong>a a b</strong>.</p></div>
 </div>
 <div class="frame" data-title="The hidden layer combines the input numbers" data-autobuild="off">
-  <div data-math-guide><div class="p1-math">$$\pAct{a_1}=\tanh(\pIn{a_0}\pParam{W_1}+\pParam{b_1})$$</div>
+  <div data-math-guide><div class="p1-math">$$\pAct{a_1}=\operatorname{ReLU}(\pIn{a_0}\pParam{W_1}+\pParam{b_1})$$</div>
   <dl class="p1-key">
     <div class="p1-input"><dt>$\pIn{a_0}$: input row</dt><dd>The six numbers from our three embeddings.</dd></div>
-    <div class="p1-param"><dt>$\pParam{W_1,b_1}$: learned weights and bias</dt><dd>Multiply by the weight matrix, then add the bias.</dd></div>
+    <div class="p1-param"><dt>$\pParam{W_1}$: connection weights</dt><dd>$6\times32$ learned numbers. Each hidden unit reads all six inputs.</dd></div>
+    <div class="p1-param"><dt>$\pParam{b_1}$: hidden biases</dt><dd>32 learned numbers. Add one to each hidden unit's weighted sum.</dd></div>
     <div class="p1-activation"><dt>$\pAct{a_1}$: hidden activations</dt><dd>The row of numbers produced by this layer.</dd></div>
-    <div><dt>$\tanh$: activation function</dt><dd>Apply it to each result, giving a number between −1 and 1.</dd></div>
+    <div><dt>$\operatorname{ReLU}$: activation function</dt><dd>Keep positive numbers. Replace negative numbers with zero.</dd></div>
   </dl></div>
   <p data-build="1">Each hidden unit can combine information from all six input coordinates.</p>
 </div>
+<div class="frame" data-title="ReLU keeps positive results" data-autobuild="off">
+  <p>After adding the bias, apply the same rule to every hidden unit:</p>
+  <div class="p1-math">$$\begin{aligned}-2 &\;\longrightarrow\; \pAct{0}\\0 &\;\longrightarrow\; \pAct{0}\\3 &\;\longrightarrow\; \pAct{3}\end{aligned}$$</div>
+  <p class="p1-activation">Negative results become zero. Positive results stay unchanged.</p>
+  <pre class="pytorch" data-torch="relu-rule"><code>before_relu = torch.tensor([-2., 0., 3.])
+after_relu = torch.relu(before_relu)
+print(after_relu)  # tensor([0., 0., 3.])</code></pre>
+  <p>These three numbers illustrate the rule. Our model applies it to all 32 hidden results.</p>
+</div>
 <div class="frame" data-title="PyTorch: the hidden layer" data-autobuild="off">
   <pre class="pytorch" data-torch="hidden"><code>hidden = nn.Linear(6, 32)
-a1 = torch.tanh(hidden(a0))
+a1 = torch.relu(hidden(a0))
 print(a1.shape)  # [1, 32]</code></pre>
   <p><span class="p1-param"><code>nn.Linear(6, 32)</code> creates the learned weights and bias.</span> <span class="p1-activation"><code>a1</code> contains 32 hidden activations for each example.</span></p>
-  <p><code>hidden(a0)</code> multiplies and adds the bias. <code>torch.tanh</code> then acts on each result.</p>
+  <p><code>hidden(a0)</code> multiplies and adds the bias. <code>torch.relu</code> then acts on each result.</p>
 </div>
 <div class="frame" data-title="PyTorch stores the transposed weight matrix" data-autobuild="off">
   <pre class="pytorch" data-torch="weight-convention"><code>W1 = hidden.weight.T
 b1 = hidden.bias
-check = torch.tanh(a0 @ W1 + b1)
+check = torch.relu(a0 @ W1 + b1)
 torch.testing.assert_close(a1, check)</code></pre>
   <p><span class="p1-param">Our equation uses $\pParam{W_1}$ with shape <code>[6, 32]</code>. PyTorch stores <code>hidden.weight</code> with shape <code>[32, 6]</code>.</span></p>
   <p><code>.T</code> swaps rows and columns. The bias has 32 entries and is added to every example. Both expressions calculate the same hidden row.</p>
@@ -41,7 +51,8 @@ torch.testing.assert_close(a1, check)</code></pre>
   <div data-math-guide><div class="p1-math">$$\pScore{z}=\pAct{a_1}\pParam{W_2}+\pParam{b_2}$$</div>
   <dl class="p1-key">
     <div class="p1-activation"><dt>$\pAct{a_1}$: hidden activations</dt><dd>The same row we just calculated.</dd></div>
-    <div class="p1-param"><dt>$\pParam{W_2,b_2}$: output weights and bias</dt><dd>A second learned transformation.</dd></div>
+    <div class="p1-param"><dt>$\pParam{W_2}$: output weights</dt><dd>$32\times27$ learned numbers. Each logit reads all 32 hidden activations.</dd></div>
+    <div class="p1-param"><dt>$\pParam{b_2}$: output biases</dt><dd>27 learned numbers. Add one to each vocabulary score.</dd></div>
     <div class="p1-score"><dt>$\pScore{z}$: logits</dt><dd>One score for each of the 27 vocabulary tokens.</dd></div>
   </dl></div>
   <p data-build="1">These scores become probabilities in the next step.</p>
@@ -55,7 +66,7 @@ print(z.shape)  # [1, 27]</code></pre>
 </div>
 <div class="frame" data-title="PyTorch: reuse the same layers as one model" data-autobuild="off">
   <pre class="pytorch" data-torch="model"><code>model = nn.Sequential(
-    embedding, nn.Flatten(1), hidden, nn.Tanh(), output
+    embedding, nn.Flatten(1), hidden, nn.ReLU(), output
 )
 z = model(ctx)</code></pre>
   <p><code>model(ctx)</code> runs the lookup, concatenation, hidden layer, and output layer in order.</p>
@@ -67,7 +78,7 @@ z = model(ctx)</code></pre>
 </div>
 <div class="frame" data-title="One hidden unit" data-autobuild="off">
   <script type="text/x-notes">What does one hidden unit read?
-  It receives all six input coordinates through one column of W1, then adds one bias and applies tanh.</script>
+  It receives all six input coordinates through one column of W1, then adds one bias and applies ReLU.</script>
   <div class="card"><h3 class="card-title">Column 1 of $\pParam{W_1}$</h3><div id="s06-hidden-compact"></div><p class="calc-note" id="s06-hidden-note"></p></div>
 </div>
 <div class="frame" data-title="One output logit" data-autobuild="off">
@@ -80,7 +91,7 @@ z = model(ctx)</code></pre>
 <script>
 (function(){
   const S=document.getElementById('s06'),M=window.__TOY__,ids=['a','a','b'].map(c=>AT.mlp.stoi[c]),F=AT.mlp.forward(ids);
-  AT.netSketch(S.querySelector('#s06-net'),{inputs:F.a0.length,hidden:M.d_h,outputs:M.vocab,highlightOutput:'i',labels:{input:i=>'(a_0)_{'+i+'}',output:x=>x},inputCaption:()=>F.a0.length+' inputs',hiddenCaption:M.d_h+' hidden',outputCaption:M.vocab.length+' logits'});
+  AT.part1Diagrams.annotateMLP(AT.netSketch(S.querySelector('#s06-net'),{inputs:F.a0.length,hidden:M.d_h,outputs:M.vocab,highlightOutput:'i',labels:{input:i=>'(a_0)_{'+i+'}',output:x=>x},inputCaption:()=> 'a₀: '+F.a0.length+' inputs',hiddenCaption:'a₁: '+M.d_h+' hidden (ReLU)',outputCaption:'z: '+M.vocab.length+' logits'}));
   const shapeRows=[['1 × '+F.a0.length],[''+F.a0.length+' × '+M.d_h],['1 × '+M.d_h],['1 × '+M.d_h],[M.d_h+' × '+M.vocab.length],['1 × '+M.vocab.length],['1 × '+M.vocab.length]];
   const meanings=['input row','hidden weights','hidden bias','hidden activations','output weights','output bias','vocabulary scores'];
   const roles=['p1-input','p1-param','p1-param','p1-activation','p1-param','p1-param','p1-score'];
@@ -90,7 +101,7 @@ z = model(ctx)</code></pre>
   const j=0,W1col=M.W1.map(r=>[r[j]]),dot1=AT.matmul(F.a0,W1col)[0],pre=dot1+M.b1[j];
   AT.ui.matVecCalc(F.a0,W1col,{from:inAxes,to:['hidden 1'],cls:'neutral',xLabel:'a0',outLabel:'dot product',decimals:2,wDecimals:2,into:S.querySelector('#s06-hidden')});
   AT.ui.table(F.a0.map((x,i)=>[x,W1col[i][0],x*W1col[i][0]]),{cols:['input','weight','product'],rowLabels:F.a0.map((x,i)=>'coordinate '+(i+1)),cornerLabel:'$a_0$',decimals:2,caption:'Displayed operands are rounded; products and sums use the unrounded values.',into:S.querySelector('#s06-hidden-compact')});
-  S.querySelector('#s06-hidden-note').textContent='dot '+AT.fmt(dot1,2)+' + bias '+AT.fmt(M.b1[j],2)+' = '+AT.fmt(pre,2)+'; tanh gives '+AT.fmt(F.a1[j],2);
+  S.querySelector('#s06-hidden-note').textContent='dot '+AT.fmt(dot1,2)+' + bias '+AT.fmt(M.b1[j],2)+' = '+AT.fmt(pre,2)+'; ReLU gives '+AT.fmt(F.a1[j],2);
   const tid=AT.mlp.stoi.i,W2col=M.W2.map(r=>[r[tid]]),dot2=AT.matmul(F.a1,W2col)[0],logit=dot2+M.b2[tid];
   AT.ui.matVecCalc(F.a1,W2col,{from:AT.range(M.d_h).map(i=>'hidden '+(i+1)),to:['logit i'],cls:'neutral',xLabel:'a1',outLabel:'dot product',decimals:2,wDecimals:2,into:S.querySelector('#s06-logit')});
   const shown=3,products=F.a1.map((x,i)=>x*W2col[i][0]);

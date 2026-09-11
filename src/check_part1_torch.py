@@ -97,6 +97,9 @@ for name, source in parser.items:
         assert scope["a0"].shape == (1, 6)
     if name == "hidden":
         assert scope["a1"].shape == (1, 32)
+        assert torch.all(scope["a1"] >= 0)
+    if name == "relu-rule":
+        torch.testing.assert_close(scope["after_relu"], torch.tensor([0., 0., 3.]))
     if name == "output":
         assert scope["z"].shape == (1, 27)
     if name == "model":
@@ -125,6 +128,8 @@ assert standalone.read_text() == exported, "Regenerate the standalone file from 
 
 # Fixture check: nn.Linear stores the transpose of the lecture's row-vector W.
 toy = json.loads((ROOT / "toy1.json").read_text())
+assert toy["activation"] == "relu"
+assert any(isinstance(layer, torch.nn.ReLU) for layer in scope["model"])
 model = scope["model"].double()
 embedding, hidden, output = scope["embedding"], scope["hidden"], scope["output"]
 with torch.no_grad():
@@ -140,3 +145,27 @@ with torch.no_grad():
         torch.testing.assert_close(got, expected, atol=1e-12, rtol=1e-12)
         worst = max(worst, (got - expected).abs().max().item())
 print(f"PASS all {len(parser.items)} snippets; saved model's six rows match within {worst:.3g}")
+
+# Independently check the NumPy trainer's ReLU backward pass against autograd,
+# including its existing embedding-axis penalties, for fresh and trained weights.
+import numpy as np
+import train_names as trainer
+
+ids = np.asarray([row["ids"] for row in toy["aabid_rows"]])
+targets = np.asarray([row["target_id"] for row in toy["aabid_rows"]])
+for label, checkpoint in [("before", toy["before"]), ("trained", toy)]:
+    params = {key: np.asarray(checkpoint[key]) for key in ["E", "W1", "b1", "W2", "b2"]}
+    ce, penalty, gradients = trainer.loss_and_grads(params, ids, targets)
+    tensors = {key: torch.tensor(value, dtype=torch.float64, requires_grad=True) for key, value in params.items()}
+    a0 = tensors["E"][torch.tensor(ids)].flatten(1)
+    a1 = torch.relu(a0 @ tensors["W1"] + tensors["b1"])
+    logits = a1 @ tensors["W2"] + tensors["b2"]
+    objective = torch.nn.functional.cross_entropy(logits, torch.tensor(targets))
+    signs = torch.tensor([1. if c in trainer.VOWELS else -1. for c in trainer.VOCAB[1:]], dtype=torch.float64)
+    violations = torch.relu(trainer.VOWEL_MARGIN - signs * tensors["E"][1:, 0])
+    objective = objective + trainer.VOWEL_PENALTY * violations.square().mean() + 0.02 * tensors["E"][0, 0].square()
+    objective.backward()
+    np.testing.assert_allclose(objective.detach().item(), ce + penalty, atol=1e-12, rtol=1e-12)
+    for key in params:
+        np.testing.assert_allclose(tensors[key].grad.numpy(), gradients[key], atol=1e-12, rtol=1e-12)
+    print(f"PASS {label} NumPy objective and all 1,169 parameter gradients agree with PyTorch")

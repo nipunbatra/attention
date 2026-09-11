@@ -55,7 +55,7 @@
     var rows = embedWith(parameters, ids);
     var a0 = concat(rows);
     var pre = addBias(AT.matmul(a0, parameters.W1 || []), parameters.b1 || []);
-    var a1 = pre.map(function (value) { return Math.tanh(value); });
+    var a1 = pre.map(function (value) { return Math.max(0, value); });
     var z = addBias(AT.matmul(a1, parameters.W2 || []), parameters.b2 || []);
     var p = AT.softmax(z);
     return { a0: a0, a1: a1, z: z, p: p };

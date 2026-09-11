@@ -23,7 +23,7 @@ word_e = word_embedding(word_ctx)</code></pre>
 <div class="frame" data-title="PyTorch: one output per word in the vocabulary" data-autobuild="off">
   <pre class="pytorch" data-torch="word-output"><code>word_hidden = nn.Linear(6, 32)
 word_output = nn.Linear(32, len(word_vocab))
-word_a1 = torch.tanh(word_hidden(word_e.flatten(1)))
+word_a1 = torch.relu(word_hidden(word_e.flatten(1)))
 word_z = word_output(word_a1)</code></pre>
   <p><span class="p1-score"><code>word_z</code> has shape <code>[1, 6]</code>, matching this six-word vocabulary.</span></p>
   <p>The operations stay the same. The learned parameters belong to this new word model; they are not the trained character model's weights.</p>

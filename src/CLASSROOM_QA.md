@@ -1,5 +1,23 @@
 # Classroom release checks
 
+## 2026-09-11: ReLU and visible weights/biases
+
+- Switched Part 1 consistently from tanh to ReLU, including NumPy forward/backward, JS runtime, worksheets, diagram,
+  recap, word-model example, and downloadable PyTorch code. Retrained the 1,169-parameter model using the existing
+  dataset, split, seed, dimensions, 6,000 steps, and embedding sign penalty. Train loss is 2.200583 and held-out loss
+  2.203077. These are results from the regenerated checkpoint, not unchanged tanh values.
+- Added W1/W2 labels on the network connections and b1/b2 labels at the hidden/output columns. Parameters and their
+  prose use the same purple. Hidden activations use teal. Explanations separately identify each matrix/bias and shape.
+  A simple negative/zero/positive example and three-line PyTorch snippet introduce ReLU's rule.
+- All 31 literal snippets execute and match the standalone download. PyTorch and JS match the saved six probability
+  rows within 2.78e-16. NumPy's objective and all 1,169 gradients agree with independent autograd checks for both the
+  initial and fitted checkpoints. Generation retains the original seed; it now samples h from a a b, yielding a b h.
+- All 221 presentation states pass, with 122 unique formulas, no overflow, and no nested scrolling. Sixteen equation
+  guides pass matching-colour checks in article and print media. Tables pass in reading, phone, and classroom modes.
+  Both MLP sketches, 30 original diagram instances, and all 11 embedding-primer diagrams pass their regression checks.
+  Visually inspected the labelled network, equations, ReLU example, and regenerated hidden/logit worksheets.
+- No shared runtime, other lesson, or PDF files were changed in this checkpoint.
+
 ## 2026-09-11: honest layer widths in the MLP sketches
 
 - The full-network frame shows all six input coordinates, eight numbered hidden units (1–4, 29–32), and representative
