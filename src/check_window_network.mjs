@@ -79,6 +79,54 @@ try{
     });
     assert.deepEqual(bounds,[],'Keep all SVG labels within the diagram.');
     if([1,3,5,10].includes(w))await page.screenshot({path:path.join(shots,`window-${w}.png`)});
+    await page.evaluate(()=>AT.present.go('s03',3,0));
+    assert.equal(await page.locator('.concat-after').evaluate(e=>getComputedStyle(e).visibility),'hidden','Show the stacked rows before revealing concatenation.');
+    const concat=await page.evaluate(()=>{
+      const flat=document.getElementById('s03-concat-flat'),w=Number(flat.dataset.window),tokens=AT.sentences.river;
+      const table=document.querySelector('#s03-ctab table');
+      return {
+        data:{...flat.dataset},expected:AT.embed(tokens).slice(-w).flat(),
+        before:document.getElementById('s03-concat-before-shape').textContent,
+        after:document.getElementById('s03-concat-after-shape').textContent,
+        scope:document.getElementById('s03-concat-scope').textContent,
+        definition:document.querySelector('.concat-definition').textContent,
+        footer:table.querySelector('tfoot th').textContent,
+        headers:[...table.querySelectorAll('thead th')].map(e=>e.textContent),
+        shownRows:[...table.querySelectorAll('tbody tr:not(.s03-window-hidden):not(.s03-window-ellipsis)')].map(e=>Number(e.querySelector('th').textContent.match(/^\d+/)[0])),
+        pieces:[...flat.querySelectorAll('.concat-piece')].map(e=>Number(e.dataset.tokenPosition)),
+        entries:[...flat.querySelectorAll('.concat-value')].map(e=>({value:Number(e.dataset.value),expected:AT.embed(tokens)[Number(e.dataset.position)-1][Number(e.dataset.coordinate)-1]})),
+        equation:document.querySelector('#s03-ceq annotation').textContent,
+        colours:['concat-name','concat-position'].map(cls=>{
+          const root=document.querySelector('.concat-definition');
+          return getComputedStyle(root.querySelector('.katex-html .'+cls)).color===getComputedStyle(root.querySelector('p .'+cls)).color;
+        })
+      };
+    });
+    assert.equal(concat.data.rows,'1');assert.equal(Number(concat.data.columns),w*4);
+    assert.deepEqual(JSON.parse(concat.data.values),concat.expected,'Concatenation preserves every coordinate and token order.');
+    assert.equal(concat.before,`Before: ${w} × 4 (token rows × coordinates)`);
+    assert.equal(concat.after,`After concatenation: 1 × ${w*4} (one row)`);
+    assert(concat.scope.includes('predicting position 11'));
+    assert(concat.definition.includes('the concatenated context row')&&concat.definition.includes('the last input position')&&concat.definition.includes('stays 10'));
+    assert.equal(concat.footer,'before concatenation','Do not label the stacked table as c_10.');
+    assert.deepEqual(concat.headers,['token','water','finance','person','glue']);
+    assert.deepEqual(concat.shownRows,concat.pieces,'Use matching token blocks before and after.');
+    assert(concat.entries.every(e=>e.value===e.expected));
+    assert.equal(concat.entries.length+Number(concat.data.omittedCoordinates),w*4);
+    assert(concat.equation.includes(`1\\times ${w*4}`),'Use an explicit row-vector shape.');
+    assert(concat.colours.every(Boolean),'Match the c and subscript definitions to the equation colours.');
+    for(const build of [0,1]){
+      await page.evaluate(build=>AT.present.go('s03',3,build),build);
+      await page.waitForTimeout(200);
+      assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,`Concatenation w=${w}, build=${build} must fit.`);
+      if(build===1){
+        assert.equal(await page.locator('.concat-after').evaluate(e=>getComputedStyle(e).visibility),'visible');
+        const tops=await page.locator('.concat-value').evaluateAll(els=>els.map(e=>Math.round(e.getBoundingClientRect().top)));
+        assert.equal(new Set(tops).size,1,'All joined coordinates must visibly lie on one row.');
+      }
+      if([3,10].includes(w))await page.screenshot({path:path.join(shots,`concat-${w}-${build}.png`)});
+    }
+    await page.evaluate(()=>AT.present.go('s03',2,1));
   }
   await slider.fill('3');await slider.focus();await page.keyboard.press('ArrowRight');
   assert.equal(await slider.inputValue(),'4');
@@ -115,9 +163,12 @@ try{
   assert(phone.slider>=180,'The phone control needs a usable track, not a collapsed thumb.');
   assert(!phone.overflow,'No phone document overflow.');assert.deepEqual(phone.labels,[]);
   await page.locator('#s03-frame2').screenshot({path:path.join(shots,'phone-window-5.png')});
+  const rowScroll=await page.locator('.concat-row-scroll').evaluate(e=>({width:e.clientWidth,content:e.scrollWidth,overflow:getComputedStyle(e).overflowX}));
+  assert.equal(rowScroll.overflow,'auto');assert(rowScroll.content>rowScroll.width,'A long joined row should scroll locally on a phone, never wrap into a matrix.');
+  await page.locator('#s03-frame-concatenate').screenshot({path:path.join(shots,'phone-concat-5.png')});
   const final=await page.evaluate(()=>JSON.stringify({model:AT.model,probs:AT.forward(AT.sentences.river).probs}));
   assert.equal(final,initial,'Architecture controls must not mutate the trained toy or its predictions.');
   assert.deepEqual(errors,[]);
-  console.log('PASS: ten windows, scalar nodes/edges, omissions, shapes, fixed outputs, keyboard, retained state, reduced motion, MLP consistency, phone layout, and model immutability.');
+  console.log('PASS: ten windows, scalar nodes/edges, stacked-to-concatenated values and shapes, notation definitions, progressive reveal, fixed outputs, keyboard, retained state, reduced motion, MLP consistency, phone layout, and model immutability.');
   console.log('Screenshots: '+shots);
 }finally{await browser.close();}

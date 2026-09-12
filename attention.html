@@ -4213,7 +4213,45 @@ body.present #s03 .bound .lab{font-size:16px}
 body.present #s03 .s03-window-hidden{display:none}
 body.present #s03 .s03-window-ellipsis{display:table-row;color:var(--ink-3);text-align:center}
 body.present #s03 .s03-window-ellipsis td{padding:3px 12px}
-body.present #s03 #s03-ceq .katex-display{margin:4px 0 16px}
+#s03 .concat-name{color:var(--c-e)}
+#s03 .concat-position{color:var(--c-k)}
+#s03 .concat-scope{margin:0 0 14px}
+#s03 .concat-before{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:28px;align-items:center}
+#s03 .concat-before>*{min-width:0}
+#s03 .concat-label{font-size:17px;font-weight:600;margin:0 0 8px}
+#s03 .concat-definition p{margin:8px 0;font-size:17px;line-height:1.4}
+#s03 .concat-definition .katex-display{margin:0 0 12px}
+#s03 .concat-after{border-top:1px solid var(--line);padding-top:14px;margin-top:16px}
+#s03 .concat-row-scroll{max-width:100%;overflow-x:auto}
+#s03 .concat-flat{display:flex;align-items:flex-end;gap:12px;width:max-content;max-width:100%;margin:8px 0}
+#s03 .concat-piece{flex:none;text-align:center;color:var(--c-e)}
+#s03 .concat-piece-label{font-size:14px;margin-bottom:4px}
+#s03 .concat-values{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--c-e);background:var(--t-e);font:15px var(--font-mono)}
+#s03 .concat-value{padding:7px 6px;min-width:43px;border-right:1px solid var(--card)}
+#s03 .concat-value:last-child{border:0}
+#s03 .concat-omitted{font-size:14px;color:var(--ink-3);text-align:center;align-self:center;min-width:64px}
+#s03 .concat-omitted strong{display:block;font-size:22px}
+#s03 .concat-result{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+#s03 .concat-result p{font-size:16px;margin:0}
+#s03 .concat-scroll-hint{display:none}
+#s03 #s03-ceq .katex-display{margin:6px 0}
+body.present #s03 #s03-frame-concatenate>.card{padding:16px 24px}
+body.present #s03 .concat-scope{font-size:22px;line-height:1.35;margin:0 0 12px}
+body.present #s03 .concat-label{font-size:22px;line-height:1.3;margin-bottom:8px}
+body.present #s03 .concat-before{align-items:start}
+body.present #s03 .concat-definition{padding-top:24px}
+body.present #s03 .concat-definition p{font-size:23px}
+body.present #s03 #s03-frame-concatenate .dt th,body.present #s03 #s03-frame-concatenate .dt td{font-size:20px;padding:5px 9px}
+body.present #s03 #s03-frame-concatenate tfoot{display:none}
+body.present #s03 .concat-after{padding-top:12px;margin-top:12px}
+body.present #s03 .concat-flat{gap:14px}
+body.present #s03 .concat-piece-label{font-size:20px}
+body.present #s03 .concat-values{font-size:21px}
+body.present #s03 .concat-value{padding:6px 10px;min-width:59px}
+body.present #s03 .concat-omitted{font-size:19px;min-width:85px}
+body.present #s03 .concat-result p{font-size:21px}
+body.present #s03 #s03-ceq{font-size:25px}
+@media(max-width:700px){body:not(.present) #s03 .concat-before{grid-template-columns:1fr;gap:16px}body:not(.present) #s03 .concat-flat{max-width:none}body:not(.present) #s03 .concat-scroll-hint{display:block;font-size:14px;color:var(--ink-3);margin:4px 0 12px}}
 #s03 .window-input{color:var(--c-e);fill:var(--c-e)}
 #s03 .window-param{color:var(--c-q);fill:var(--c-q)}
 #s03 .window-score{color:var(--ink-2);fill:var(--ink-2)}
@@ -4314,12 +4352,29 @@ body.present #s03 #s03-frame2 .bound .bar{height:26px}
   </div>
 </div>
 
-<div class="frame" id="s03-frame-concatenate" data-title="Concatenate the rows that are inside" data-autobuild="off">
-  <script type="text/x-notes">How many numbers reach the head for the selected window?
-Read each row left to right, then move to the next row. The full article shows every row; long classroom tables show the first two and last two with an explicit ellipsis.</script>
+<div class="frame" id="s03-frame-concatenate" data-title="Concatenation makes one context row" data-autobuild="off">
+  <script type="text/x-notes">Have we joined the rows yet?
+At build zero, the table is still w rows by four coordinates. Define c as the concatenated context and its subscript 10 as the last input position, not the window size. We use it to predict position 11. The next build joins the same numbers left to right, keeping token order. Point to the matching token labels above the blocks. The result is one row by 4w coordinates. At w=10 this is 10 by 4 before and 1 by 40 afterward. No entries are added or averaged. Dots stand for whole omitted token rows, not discarded inputs.</script>
   <div class="card">
-      <div id="s03-ceq"></div>
-      <div id="s03-ctab"></div>
+      <p class="concat-scope" id="s03-concat-scope"></p>
+      <div class="concat-before">
+        <div>
+          <h3 class="concat-label" id="s03-concat-before-shape"></h3>
+          <div id="s03-ctab"></div>
+        </div>
+        <div class="concat-definition">
+          $$\htmlClass{concat-name}{c}_{\htmlClass{concat-position}{10}}$$
+          <p><span class="concat-name"><strong>c</strong>: the concatenated context row.</span></p>
+          <p><span class="concat-position"><strong>10</strong>: the last input position.</span><br>It stays 10 when the window changes.</p>
+        </div>
+      </div>
+      <div class="concat-after" data-build="1">
+        <h3 class="concat-label" id="s03-concat-after-shape"></h3>
+        <div class="concat-row-scroll"><div class="concat-flat" id="s03-concat-flat"></div></div>
+        <p class="concat-scroll-hint">Scroll horizontally to follow the joined row.</p>
+        <div class="concat-result"><div id="s03-ceq"></div><p>Same numbers, in token order. No summing.</p></div>
+      </div>
+      <p class="companion" id="s03-concat-shorthand"></p>
       <p class="companion read-line" id="s03-ctab-reading"></p>
   </div>
 </div>
@@ -4328,7 +4383,7 @@ Read each row left to right, then move to the next row. The full article shows e
   <script type="text/x-notes">Is this the same vocabulary matrix as the one-row baseline?
 No. Concatenating w rows creates w times as many input coordinates, so the prediction matrix has w times as many input rows.</script>
   <div class="prose">
-    $$c_t = [\ve{e_{t-w+1}};\,\ldots;\,\ve{e_t}] \in \mathbb R^{w d_{\text{model}}}$$
+    $$\ve{c_t}=\operatorname{concat}(\ve{e_{t-w+1}},\ldots,\ve{e_t})\in\mathbb R^{1\times(w d_{\text{model}})}$$
     <div data-build="1">$$p(x_{t+1}\mid x_{\le t}) = \operatorname{softmax}(c_t W + b)$$</div>
   </div>
   <div class="callout callout-key" data-build="2">$W$ has shape $w d_{\text{model}}\times |\mathcal V|$.</div>
@@ -4506,24 +4561,45 @@ The input width and the parameter count. More tokens fit in this finite sentence
     AT.renderMath(winNote);
     drawWindowNetwork(inside);
 
-    /* c_t as a table: one row per included token, one column per coordinate, a dimension total in the footer */
-    const parts = w <= 4 ? inside.map(i => '\\ve{e_{' + (i + 1) + '}}').join(';\\,') : '\\ve{e_{' + (first + 1) + '}};\\,\\ldots;\\,\\ve{e_{' + T + '}}';
-    AT.tex(ceq, 'c_{' + T + '} = [' + parts + '] \\in \\mathbb{R}^{' + (w * D) + '}', { display: true });
+    /* First show the stacked rows. The next build concatenates their unchanged
+       scalar entries into a single row, using the same selected window. */
+    const inputSize=w*D;
+    S.querySelector('#s03-concat-scope').textContent='Window w = '+w+': input position'+(w===1?' ':'s ')+(w===1?T:(first+1)+'–'+T)+'. We are predicting position '+(T+1)+'.';
+    S.querySelector('#s03-concat-before-shape').textContent='Before: '+w+' × '+D+' (token rows × coordinates)';
+    S.querySelector('#s03-concat-after-shape').textContent='After concatenation: 1 × '+inputSize+' (one row)';
+    AT.tex(ceq,'\\htmlClass{concat-name}{c}_{\\htmlClass{concat-position}{'+T+'}}\\in\\mathbb R^{1\\times '+inputSize+'}',{display:true});
+    const flat=S.querySelector('#s03-concat-flat');
+    AT.clear(flat);
+    flat.dataset.window=w;flat.dataset.rows='1';flat.dataset.columns=inputSize;
+    flat.dataset.values=JSON.stringify(inside.flatMap(i=>E0[i]));
+    const flatShown=w<=3?inside:[inside[0],inside[1],inside[inside.length-1]];
+    flat.dataset.omittedCoordinates=(w-flatShown.length)*D;
+    flat.setAttribute('role','img');
+    flat.setAttribute('aria-label','After concatenation, c '+T+' is one row of '+inputSize+' numbers. '+inside.map(i=>'Position '+(i+1)+' '+toks[i]+': '+E0[i].map(v=>AT.fmt(v,2)).join(', ')).join('. '));
+    flatShown.forEach((i,k)=>{
+      if(w>3&&k===2)flat.appendChild(AT.h('div',{class:'concat-omitted'},AT.h('strong',{},'…'),(w-flatShown.length)*D+' numbers'));
+      const values=AT.h('div',{class:'concat-values'});
+      E0[i].forEach((value,j)=>values.appendChild(AT.h('span',{class:'concat-value','data-position':i+1,'data-coordinate':j+1,'data-value':value},AT.fmt(value,1))));
+      flat.appendChild(AT.h('div',{class:'concat-piece','data-token-position':i+1},AT.h('div',{class:'concat-piece-label'},(i+1)+' '+toks[i]),values));
+    });
+    const shorthand=S.querySelector('#s03-concat-shorthand');
+    shorthand.innerHTML='The stacked table has shape $'+w+'\\times '+D+'$. Joining its rows gives $c_{'+T+'}$ with shape $1\\times '+inputSize+'$. You may also see $c_{'+T+'}\\in\\mathbb R^{'+inputSize+'}$, shorthand for a vector with '+inputSize+' entries. The subscript '+T+' identifies where the context ends, not its length. Dots omit whole token blocks from the drawing only.';
+    AT.renderMath(shorthand);
     AT.clear(ctabHost);
     const winTable = AT.ui.table(inside.map(i => E0[i]), {
       axes: 'e', cornerLabel: 'token',
       rowLabels: inside.map(i => (i + 1) + ' ' + AT.escape(toks[i]) + ' $\\ve{e_{' + (i + 1) + '}}$'),
       rowCls: 'e',
-      footer: { label: 'size of $c_{' + T + '}$', values: w + ' × ' + D + ' = ' + (w * D) + ' numbers', cls: 'neutral' },
-      caption: 'Every included token contributes one row of $d_{\\text{model}} = ' + D + '$ numbers, read left to right into $c_{' + T + '}$. The columns are the named coordinates of $\\ve{e}$; the rows are stacked by position, so the last row is always the current token.',
+      footer: { label: 'before concatenation', values: w + ' × ' + D + ' = ' + (w * D) + ' numbers', cls: 'neutral' },
+      caption: 'The table still has one row per token and '+D+' coordinates per row. Concatenation reads each row left to right and joins the rows in token order.',
       into: ctabHost
     });
-    // The article keeps every row. A long classroom window shows its ends and
-    // explicitly marks the omitted middle, rather than shrinking or scrolling.
-    if (inside.length > 4) {
-      winTable.rowEls.forEach((tr, r) => { if (r >= 2 && r < inside.length - 2) tr.classList.add('s03-window-hidden'); });
-      const omitted = AT.h('tr', { class: 's03-window-ellipsis' }, AT.h('td', { colspan: String(D + 1) }, '⋮  ' + (inside.length - 4) + ' more input row' + (inside.length > 5 ? 's' : '') + '  ⋮'));
-      winTable.rowEls[inside.length - 2].before(omitted);
+    // The article keeps every row. In slides, show exactly the same token
+    // groups before and after joining and explicitly count omitted rows.
+    if (inside.length > 3) {
+      winTable.rowEls.forEach((tr, r) => { if (r >= 2 && r < inside.length - 1) tr.classList.add('s03-window-hidden'); });
+      const omitted = AT.h('tr', { class: 's03-window-ellipsis' }, AT.h('td', { colspan: String(D + 1) }, '⋮  ' + (inside.length - 3) + ' more input row' + (inside.length > 4 ? 's' : '') + '  ⋮'));
+      winTable.rowEls[inside.length - 1].before(omitted);
     }
     ctabReading.innerHTML = readWindow(inside, outside);
     AT.renderMath(ctabReading);
