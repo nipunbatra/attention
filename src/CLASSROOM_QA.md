@@ -5,6 +5,7 @@
 - The concatenation frame now shows a labelled before table (w × 4), then reveals a single joined context row (1 × 4w). It defines c as the concatenated context and the subscript 10 as the last input position, with matching blue/orange notation and prose. The scope line identifies the selected input positions and prediction position 11. The table no longer calls its stacked shape the size of c10.
 - Matching token blocks and actual values make the joining operation explicit. Longer windows show the same first two/final rows in both views, with counted omissions. All rows remain available in the article. The article explains the shorthand R^(4w); the following general equation uses concat and the explicit 1 × (wd) shape. No model or parameter values change.
 - Regression checks all ten windows for exact flattened values/order, full coordinate counts, unchanged subscript, shape labels, colour matches, progressive visibility, one-row layout and both slide builds. Full audit passes 297 states and 516 formulas, numerical reference checks and the 121-control sweep pass, and the phone article has no document overflow. Visually inspected small/full windows and phone rendering. One extra reveal, no additional slide or regenerated PDF.
+- A frame-entry refresh fixes Chromium retaining a blank paint cache for the notation column after the hidden table changes height. Pixel checks require both blue c text and orange position text in full-slide screenshots at w=3 and w=10, at both reveal steps.
 
 ## 2026-09-12: connect the window boundary to scalar network inputs
 

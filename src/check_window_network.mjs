@@ -12,8 +12,15 @@ const require=createRequire(import.meta.url);
 const candidates=[process.env.PLAYWRIGHT_MODULE,'playwright','playwright-core'].filter(Boolean);
 const cache=path.join(os.homedir(),'.npm','_npx');
 if(fs.existsSync(cache))for(const dir of fs.readdirSync(cache))candidates.push(path.join(cache,dir,'node_modules/playwright'));
-let pw;
-for(const candidate of candidates){try{pw=require(candidate);break;}catch{}}
+let pw,PNG;
+for(const candidate of candidates){try{
+  pw=require(candidate);
+  const localRequire=createRequire(require.resolve(candidate));
+  const core=path.dirname(localRequire.resolve('playwright-core/package.json'));
+  // Reuse Playwright's own PNG reader for the visible-notation regression.
+  PNG=localRequire(path.join(core,'lib/utilsBundle.js')).PNG;
+  break;
+}catch{pw=undefined;}}
 assert(pw,'Use an existing Playwright installation; do not install another dependency.');
 const shots=fs.mkdtempSync(path.join(os.tmpdir(),'attention-window-network-'));
 const browser=await pw.chromium.launch();
@@ -124,7 +131,18 @@ try{
         const tops=await page.locator('.concat-value').evaluateAll(els=>els.map(e=>Math.round(e.getBoundingClientRect().top)));
         assert.equal(new Set(tops).size,1,'All joined coordinates must visibly lie on one row.');
       }
-      if([3,10].includes(w))await page.screenshot({path:path.join(shots,`concat-${w}-${build}.png`)});
+      if([3,10].includes(w)){
+        const screenshot=await page.screenshot({path:path.join(shots,`concat-${w}-${build}.png`)});
+        const box=await page.locator('.concat-definition').boundingBox();
+        const png=PNG.sync.read(screenshot);
+        let blue=0,orange=0;
+        for(let y=Math.ceil(box.y);y<Math.floor(box.y+box.height);y++)for(let x=Math.ceil(box.x);x<Math.floor(box.x+box.width);x++){
+          const i=(y*png.width+x)*4,[r,g,b]=png.data.subarray(i,i+3);
+          if(b>r*1.3&&b>g*1.2)blue++;
+          if(r>g*1.5&&g>b*1.5)orange++;
+        }
+        assert(blue>50&&orange>20,`The c/10 explanation must actually paint at w=${w}, build=${build}, not merely exist in the DOM.`);
+      }
     }
     await page.evaluate(()=>AT.present.go('s03',2,1));
   }

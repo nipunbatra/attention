@@ -4629,6 +4629,16 @@ The input width and the parameter count. More tokens fit in this finite sentence
 
   AT.ui.slider({ label: 'Window size w', min: 1, max: T, step: 1, value: w, onInput: (v) => { w = v; draw(); }, into: S.querySelector('#s03-slider') });
   draw();
+  // Refresh the static notation after this frame becomes visible. Chromium can
+  // otherwise retain an empty paint cache for the grid's second column when
+  // the hidden table changes height under the scaled presentation stage.
+  if(AT.present && AT.present.on)AT.present.on('frame',state=>{
+    if(!state.frame || state.frame.id!=='s03' || state.frame.index!==2)return;
+    requestAnimationFrame(()=>{
+      const definition=S.querySelector('.concat-definition');
+      definition.replaceWith(definition.cloneNode(true));
+    });
+  });
 
   /* ---------- frame 3: "relevant context changes dynamically": two prediction slots, illustrative outlines ---------- */
   const rel1 = topReaders(5, 2), rel2 = topReaders(t, 3);
