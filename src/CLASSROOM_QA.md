@@ -1,5 +1,12 @@
 # Classroom release checks
 
+## 2026-09-12: distinguish current position from window size
+
+- Added one comparison frame before the mean calculation. The same current input position i drives two token strips: a fixed three-token window and all tokens so far. At bank (i=7), the window supplies positions 5–7, while full-prefix pooling supplies 1–7 and retains fisherman. At i<3 both rules show only the words available so far. Positions after i never contribute.
+- Renamed the controls to “Current token position i” and synchronized comparison, mean result and worksheet state. Blue marks every contributing input; a separate outline identifies the current token. The mean slide uses the same distinction instead of highlighting only the current token. The article connects the user's k to the existing w notation and explains that averaging only the last k rows is a valid local variant that retains the window cutoff.
+- The presentation skill guided a separate visual comparison before the arithmetic rather than adding another definition to the equation slide. Regression covers both source sets at all seven positions, exact named words and ranges, exclusion of later tokens, the fixed window width, bidirectional control synchronization, keyboard input, retained state and unchanged model outputs. Existing seven-mean/four-preset arithmetic and equation-paint checks still pass.
+- All 297 presentation states / 516 formulas, the 128-control sweep, eight independent live/reference cases (7,980 finite values, max error 8.88e-16) and 390px article QA pass. Visually inspected the comparison at i=2, 4 and 7, the mean result and phone views. No model, Part I, shared runtime, dependency or PDF changes.
+
 ## 2026-09-12: repair the window-to-pooling teaching sequence
 
 - The focused teaching audit found three prerequisite gaps: a slide highlighted outputs of a later query mechanism before teaching queries; the task silently switched from next-word prediction to gathering context for the already-known bank token; and c denoted both concatenation and a fixed-width pooled summary. Replaced the premature clue slide, moved parameter cost before the alternative, and kept the redundant fixed-slot recap in the article only.

@@ -4915,6 +4915,17 @@ The previous slides showed unavailable earlier words and a matrix that grows wit
 #s04 .pool-preview p{font-size:16px;line-height:1.4;margin:0}
 #s04 .pool-definitions{font-size:17px;line-height:1.4;margin:8px 0 0}
 #s04 .pool-equation .katex-display{margin:12px 0}
+#s04 .prefix-row{padding:14px 0;border-top:1px solid var(--line)}
+#s04 .prefix-row h3{font-size:18px;margin:0 0 10px}
+#s04 .prefix-row p{font-size:16px;line-height:1.4;margin:8px 0 0}
+#s04 .prefix-legend{font-size:15px;color:var(--ink-2);margin:8px 0 14px}
+#s04 .prefix-takeaway{font-size:19px;line-height:1.4;margin:14px 0 0}
+#s04 .chip.is-current{outline:2px solid var(--ink);outline-offset:2px}
+#s04 .prefix-row .chips{gap:8px}
+body.present #s04 .prefix-row{padding:16px 0}
+body.present #s04 .prefix-row h3{font-size:25px}
+body.present #s04 .prefix-row p,body.present #s04 .prefix-legend{font-size:22px;line-height:1.35}
+body.present #s04 .prefix-takeaway{font-size:24px;line-height:1.35}
 body.present #s04 .pool-intro{font-size:24px;line-height:1.35}
 body.present #s04 .pool-preview p,body.present #s04 .pool-definitions{font-size:22px;line-height:1.35}
 body.present #s04 #s04-frame-mean>.card{padding:16px 24px;margin-bottom:12px}
@@ -4922,7 +4933,7 @@ body.present #s04 .pool-preview .vec-ax{font-size:18px}
 /* KaTeX's nested table-layout spans can retain inherited hidden visibility
    after a reveal in Chromium. Only the live, revealed equation is visible. */
 body.present:not(.is-preflighting) #s04 #s04-frame-mean.is-live .pool-equation:not(.is-pending) .katex-html *{visibility:visible}
-@media(max-width:640px){body:not(.present) #s04 #s04-islider .slider{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px}body:not(.present) #s04 #s04-islider .slider-label{grid-column:1/-1}body:not(.present) #s04 #s04-islider input{width:100%;max-width:none;min-width:0}}
+@media(max-width:640px){body:not(.present) #s04 .position-control .slider{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px}body:not(.present) #s04 .position-control .slider-label{grid-column:1/-1}body:not(.present) #s04 .position-control input{width:100%;max-width:none;min-width:0}}
 body.present #s04 .s04-classroom{display:block}
 body.present #s04 .dt td,body.present #s04 .dt th{font-size:22px;padding:7px 10px}
 body.present #s04 .dt-cap,body.present #s04 .dt-note{display:none}
@@ -4946,10 +4957,32 @@ body.present #s04 #s04-live-pool{margin-top:14px}
   <p>We now build context for a token already in the input. Begin at position 7, bank, using the seven known token rows. A pooled summary $m_i$ combines their corresponding coordinates, while the earlier $c_t$ concatenated rows. Try averaging first, then choose unequal contributions yourself. The summary stays four numbers wide. Later, we will build a summary at every input position before prediction. These arithmetic operations do not update the stored vocabulary table.</p>
 </div>
 
+<div class="frame" id="s04-frame-prefix" data-title="Last 3 tokens versus all tokens so far" data-autobuild="off">
+  <script type="text/x-notes">What stays fixed when this slider moves?
+The window width stays at three. The slider moves the current input position i, whose context summary we are building. It is a different control from the window-size slider in the previous section. At i=7, both methods end at bank. The fixed window uses positions 5, 6 and 7: the river bank. Full-prefix pooling uses positions 1 through 7, including fisherman. Move to i=4: the window uses fisherman sat beside, while the full prefix also includes The. At i=1 or 2 there are fewer than three available words, so both rows show the same available inputs. Grey later words are visible on the slide to explain the sequence but cannot contribute to the current position. The current token itself is allowed because it is already an input. Full-prefix pooling replaces the finite-window restriction in this example. An average of only the latest three rows would be a possible local-pooling variant, but would retain the window's cutoff. Next we calculate the mean of the blue rows.</script>
+  <p class="pool-intro">$i$ is the position of the input token whose context summary we are building.</p>
+  <div class="card">
+    <div id="s04-prefix-slider" class="position-control" data-keep-state></div>
+    <p class="prefix-legend"><span class="pool-input">Blue = contributes.</span> Outline = current token. Grey = excluded.</p>
+    <div class="prefix-row">
+      <h3>Fixed window, w = 3</h3>
+      <div id="s04-window-chips"></div>
+      <p id="s04-window-scope"></p>
+    </div>
+    <div class="prefix-row">
+      <h3>Full prefix: all tokens so far</h3>
+      <div id="s04-prefix-chips"></div>
+      <p id="s04-prefix-scope"></p>
+    </div>
+  </div>
+  <p class="prefix-takeaway" id="s04-prefix-takeaway"></p>
+  <div class="companion"><p>The previous section called window size w. A “last k tokens” rule is the same idea with k in place of w. Both w and k count how many recent input rows we keep. In contrast, i identifies the current input position. At that position a window includes max(1, i − w + 1) through i, while this full-prefix average includes 1 through i. Neither uses positions after i. At i=7, averaging the last three rows would be mathematically valid, but it would discard rows 1–4. Here we deliberately try a summary that lets all seven available rows contribute. Later we will choose their contributions unequally.</p></div>
+</div>
+
 <div class="frame" id="s04-frame-mean" data-title="Mean pooling: averaging matching coordinates" data-autobuild="off">
   <script type="text/x-notes">
 Why not just average?
-Bank is already known, at position 7. We are building a context summary for it, not guessing that input word. Start with the result and the four matching coordinate names. Move the position control to 3 and back to 7: the number of source rows changes but the summary width remains four. Reveal the equation only after explaining that each column is summed and divided by the number of included rows. Define m as the summary, i as the current receiving position and j as a source position. The next slide shows every term in the same calculation. All included rows have equal influence under this first rule.
+Bank is already known, at position 7. We are building a context summary for it, not guessing that input word. Continue the full-prefix rule from the previous comparison: all blue rows contribute, including the outlined current token. Start with the result and the four matching coordinate names. Move the current-position control to 3 and back to 7: the number of source rows changes but the summary width remains four. Reveal the equation only after explaining that each column is summed and divided by the number of included rows. Define m as the summary, i as the current receiving position and j as a source position. The next slide shows every term in the same calculation. All included rows have equal influence under this first rule.
 
 Timing: three minutes.
   </script>
@@ -4957,7 +4990,7 @@ Timing: three minutes.
   <div class="card">
     <h3 class="card-title" id="s04-mean-scope"></h3>
     <div id="s04-chips"></div>
-    <div id="s04-islider" data-keep-state></div>
+    <div id="s04-islider" class="position-control" data-keep-state></div>
     <div class="pool-preview"><div id="s04-mean-live"></div><p class="pool-summary" id="s04-mean-shape"></p></div>
     <div class="companion eqline no-math" id="s04-mean-eq"></div>
   </div>
@@ -4978,7 +5011,7 @@ All available rows have the same 1/i weight. Reveal the footer and read it as th
 
 <div class="companion" data-kicker="Mean-pooling worksheet"><div id="s04-mean-arith"></div></div>
 
-<div class="frame" data-title="Let useful rows contribute more" data-autobuild="off">
+<div class="frame" id="s04-frame-weight-rule" data-title="Let useful rows contribute more" data-autobuild="off">
   <script type="text/x-notes">
 If you could set the weights by hand for bank, what would you choose and why?
 The table starts with equal weights, so it is the mean again. Reveal the sliders and press "Focus on river": the footer drifts towards row 6. Try "Only bank itself" too: the footer is just row 7.
@@ -5084,7 +5117,32 @@ Timing: two minutes.
     if (tr) tr.setAttribute('data-build', String(n));
   }
 
-  /* ---- frame 1, mean pooling: weight column 1/i, rows after i greyed out ---- */
+  /* Compare the same current position under two source-selection rules. */
+  const windowWidth=3;
+  const windowChips=AT.ui.chips(toks,{into:S.querySelector('#s04-window-chips')});
+  const prefixChips=AT.ui.chips(toks,{into:S.querySelector('#s04-prefix-chips')});
+  function markSources(view,used,i){
+    view.setActive(used);
+    view.setMuted(AT.range(T).filter(j=>!used.includes(j)));
+    view.chips.forEach((chip,j)=>{
+      chip.classList.toggle('is-current',j===i-1);
+      chip.title=(j===i-1?'Current token. ':'')+(used.includes(j)?'Contributes to this summary.':j>=i?'After the current position: unavailable.':'Outside the fixed window.');
+    });
+  }
+  function drawPrefix(i){
+    const start=Math.max(0,i-windowWidth),prefix=AT.range(i),window=prefix.slice(start);
+    markSources(windowChips,window,i);markSources(prefixChips,prefix,i);
+    const scope=(first,last)=>first===last?'position '+first:'positions '+first+'–'+last;
+    S.querySelector('#s04-window-scope').textContent='Use '+scope(start+1,i)+': '+(i<windowWidth?'only '+i+' token'+(i===1?'':'s')+' so far.':'the latest '+windowWidth+' tokens.');
+    S.querySelector('#s04-prefix-scope').textContent='Use '+scope(1,i)+': all '+i+' token'+(i===1?'':'s')+' so far.';
+    S.querySelector('#s04-prefix-takeaway').textContent=i<T
+      ?'Both end at '+i+' ('+toks[i-1]+'). '+scope(i+1,T).replace(/^p/,'P')+(i===T-1?' comes':' come')+' later and cannot contribute yet.'
+      :'At bank, the full prefix keeps fisherman available. The three-token window drops it.';
+    const root=S.querySelector('#s04-frame-prefix');
+    root.dataset.position=i;root.dataset.windowWidth=windowWidth;
+  }
+
+  /* Mean pooling: weight column 1/i, rows after i greyed out. */
   const chips = AT.ui.chips(toks, { active: T - 1, into: S.querySelector('#s04-chips') });
   const meanW = toks.map(() => NaN);
   const meanTab = AT.ui.table(E, { rowLabels: labels, rowCls: 'e', cornerLabel: 'token', decimals: 2,
@@ -5105,8 +5163,8 @@ Timing: two minutes.
   const meanLive=AT.ui.vec(AT.zeros(D),{cls:'v',axes:'e',label:'m_7',into:S.querySelector('#s04-mean-live')});
   function drawMean(i){
     toks.forEach((t, j) => { meanW[j] = j < i ? 1 / i : NaN; });
-    chips.setActive(i - 1);
-    chips.setMuted(AT.range(T).filter(j => j >= i));
+    markSources(chips,AT.range(i),i);
+    drawPrefix(i);
     meanTab.update(E);
     meanTab.setDim(AT.range(T).filter(j => j >= i));
     meanTab.setFooter(pooled(meanW.map(a => a > 0 ? a : 0)), [AT.sum(meanW.filter(a => a > 0))]);
@@ -5114,12 +5172,17 @@ Timing: two minutes.
     const mean=pooled(meanW.map(a=>a>0?a:0));
     meanLive.update(mean);meanLive.setLabel('m_{'+i+'}');
     meanLive.dataset.values=JSON.stringify(mean);meanLive.dataset.position=i;
-    S.querySelector('#s04-mean-scope').textContent='Current input position i = '+i+': '+toks[i-1]+'. Use rows 1–'+i+'.';
+    S.querySelector('#s04-mean-scope').textContent='Current position i = '+i+': '+toks[i-1]+'. Average all blue rows 1–'+i+'.';
     S.querySelector('#s04-mean-shape').textContent=i+' row'+(i===1?'':'s')+' × '+D+' coordinates become one 1 × '+D+' summary.';
     meanCalc.update(meanW.map(a => a > 0 ? a : 0), { outLabel: 'm' + sub(i) });
     AT.tex(meanEq, 'm_{' + i + '} = \\tfrac{1}{' + i + '}\\left(' + AT.range(i).map(j => '\\ve{e_{' + (j + 1) + '}}').join(' + ') + '\\right)');
   }
-  AT.ui.slider({ label: 'Pool up to position i', min: 1, max: T, step: 1, value: T, format: v => v + ' (' + toks[v - 1] + ')', onInput: drawMean, into: S.querySelector('#s04-islider') });
+  function setPosition(i){
+    prefixSlider.setValue(i,false);meanSlider.setValue(i,false);drawMean(i);
+  }
+  const sliderOptions={label:'Current token position i',min:1,max:T,step:1,value:T,format:v=>v+' ('+toks[v-1]+')',onInput:setPosition};
+  const prefixSlider=AT.ui.slider({...sliderOptions,into:S.querySelector('#s04-prefix-slider')});
+  const meanSlider=AT.ui.slider({...sliderOptions,into:S.querySelector('#s04-islider')});
   drawMean(T);
 
   /* ---- frame 2, weighted pooling (i = 7, bank): sliders set raw weights, the table shows the normalised α ---- */
