@@ -25,8 +25,13 @@
 #s02 .problem-example p{margin:0 0 6px}
 #s02 .problem-clue{color:#AA4E08;font-weight:650}
 #s02 .problem-ending{color:var(--c-e)}
+#s02 .baseline-input{font-size:14px;line-height:1.35;margin:12px 0 16px}
+#s02 .baseline-takeaway{margin:18px 0 0;font-weight:600}
+body.present #s02 #s02-frame-probabilities>.card{margin-bottom:0}
+body.present #s02 #s02-frame-probabilities .bars{gap:4px 16px}
+body.present #s02 .baseline-takeaway{margin:8px 0 0}
 @media (max-width:640px){#s02 .pipe{grid-template-columns:1fr;grid-template-rows:none}#s02 .pipe .pipe-bars,#s02 .pipe .read-line{grid-column:auto;grid-row:auto}#s02 .pipe .read-line{margin-top:6px}}
-body.present #s02 .ctx-lab,body.present #s02 .arrow-lab,body.present #s02 .look,body.present #s02 .used-note,body.present #s02 .read-line{font-size:22px;line-height:1.35}
+body.present #s02 .ctx-lab,body.present #s02 .arrow-lab,body.present #s02 .look,body.present #s02 .used-note,body.present #s02 .read-line,body.present #s02 .baseline-input{font-size:22px;line-height:1.35}
 body.present #s02 .head-box{padding:16px 26px}
 body.present #s02 .head-box b{font-size:28px}
 body.present #s02 .head-box span{font-size:22px}
@@ -89,19 +94,22 @@ The question is how earlier clues can change the next-word probabilities. Next w
   <p class="small muted">The earlier rows do not reach this prediction. Can it tell the two contexts apart?</p>
 </div>
 
-<div class="frame" id="s02-frame-probabilities" data-title="Switch the context. Do the probabilities move?" data-autobuild="off">
+<div class="frame" id="s02-frame-probabilities" data-title="This baseline cannot tell the contexts apart" data-autobuild="off">
   <script type="text/x-notes">Before switching the context: will any probability move?
-No. Both sentences end with the at position 10, so the head receives the same row. The sentence chips in the previous frame update too.</script>
+No. Both sentences end with the at position 10, so the head receives exactly the same starting row. Switching river for cheque earlier in the context changes nothing the head can see. Point out the unchanged probabilities as the failure of this restricted baseline. The eight-way tie is incidental to our toy weights: even unequal bars would remain unchanged between these two contexts. Earlier clues must influence the prediction. The sentence chips in the previous frame update too.</script>
   <div class="card">
     <div class="btn-row" id="s02-ctx" role="group" aria-label="Choose the context sentence" data-keep-state>
       <span class="ctx-lab">Context:</span>
       <button type="button" class="btn" id="s02-ctx-a" aria-pressed="true">A: The fisherman … river bank</button>
       <button type="button" class="btn" id="s02-ctx-b" aria-pressed="false">B: She deposited … the bank</button>
     </div>
+    <p class="baseline-input" id="s02-baseline-input">Both contexts give the head the same input: <span class="problem-ending"><strong>“the” at position 10</strong></span>.</p>
     <div id="s02-bars"></div>
     <p class="look" id="s02-bars-note"></p>
   </div>
+  <p class="baseline-takeaway" id="s02-baseline-takeaway">We need <span class="problem-clue">earlier clues</span> to influence the prediction.</p>
   <div class="companion callout callout-key">Same last token + same position → same input row → same prediction.</div>
+  <p class="companion">All eight displayed candidates tie at about 0.094 each in this hand-chosen toy. “Other ×12” adds the probabilities of the remaining twelve vocabulary tokens. Full bar = probability 1. The important comparison is between contexts A and B: every individual token keeps the same probability.</p>
 </div>
 
 <div class="frame" id="s02-frame-head" data-title="The head can only use the row it receives" data-autobuild="off">
@@ -243,8 +251,8 @@ Nowhere: neither word reaches the head. A better representation has to bring the
     if (bars) bars.update(its); else bars = AT.ui.bars(its, { cls: 'neutral', size: 'lg', max: 1, decimals: 3, sorted: false, into: barsHost });
     const top = AT.topk(p, 8), tied = top.every(x => x.p === top[0].p);
     note.innerHTML = tied
-      ? 'All eight candidates are exactly tied at about $' + AT.fmt(top[0].p, 3) + '$ each. Switching context leaves every bar unchanged. Full bar = probability 1.'
-      : 'Switching context leaves every probability unchanged: the head receives the same row. Full bar = probability 1.';
+      ? 'Every probability stays unchanged. The eight-way tie is specific to this toy.'
+      : 'Every probability stays unchanged because the head receives the same input row.';
     AT.renderMath(note);
     mv.update(B.E[t], { xLabel: 'e · ' + T + ' ' + toks[t] });
     calcTab.update(calcRows(B));

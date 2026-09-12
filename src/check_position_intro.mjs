@@ -183,6 +183,23 @@ try{
     return [a.probs.at(-1),b.probs.at(-1)];
   });
   assert.deepEqual(...baselineProbabilities,'The baseline must still give identical distributions for these contexts.');
+  await goFrame('s02-frame-probabilities',0);
+  assert.equal(await page.locator('#s02-frame-probabilities').getAttribute('data-title'),'This baseline cannot tell the contexts apart');
+  assert(await page.locator('#s02-baseline-input').isVisible(),'The reason must be visible on the probability slide, including build zero.');
+  assert(await page.locator('#s02-baseline-takeaway').isVisible(),'The takeaway must be visible, not relegated to notes or article companions.');
+  assert((await page.locator('#s02-baseline-input').innerText()).includes('“the” at position 10'));
+  assert((await page.locator('#s02-baseline-takeaway').innerText()).includes('earlier clues'));
+  const distributions=[];
+  for(const context of ['a','b']){
+    await page.locator('#s02-ctx-'+context).click();
+    assert.equal(await page.locator('#s02-ctx-'+context).getAttribute('aria-pressed'),'true');
+    distributions.push(await page.locator('#s02-bars .bv').allTextContents());
+    assert((await page.locator('#s02-bars-note').innerText()).includes('Every probability stays unchanged. The eight-way tie is specific to this toy.'));
+    assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'The conclusion, input explanation and bars must fit together.');
+    await page.screenshot({path:path.join(screenshots,'baseline-takeaway-'+context+'.png')});
+  }
+  assert.equal(distributions[0].length,9,'Keep all eight candidates and the aggregate bar.');
+  assert.deepEqual(distributions[0],distributions[1],'Context switching must visibly leave the probability bars unchanged.');
   for(const entry of ['s02-frame-problem','s02-frame1']){
     await goFrame('s02-frame-probabilities');
     await page.locator('#s02-ctx-b').click();
@@ -192,6 +209,9 @@ try{
   }
   await page.evaluate(()=>AT.present.exit());
   await page.setViewportSize({width:390,height:844});
+  await page.locator('#s02-frame-probabilities').scrollIntoViewIfNeeded();
+  assert(await page.locator('#s02-frame-probabilities').evaluate(el=>el.scrollWidth<=el.clientWidth+1),'The baseline explanation must fit the phone article.');
+  await page.screenshot({path:path.join(screenshots,'phone-baseline-takeaway.png')});
   await page.locator('#s01-frame-coordinates').scrollIntoViewIfNeeded();
   assert(await page.locator('#s01-coordinate-table').evaluate(el=>el.scrollWidth<=el.clientWidth+1&&!Array.from(el.querySelectorAll('*')).some(n=>n.clientWidth>0&&n.scrollWidth>n.clientWidth+1)),'Feature definitions and table must fit on a phone.');
   await page.screenshot({path:path.join(screenshots,'phone-coordinate-meaning.png')});

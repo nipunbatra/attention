@@ -1,5 +1,11 @@
 # Classroom release checks
 
+## 2026-09-12: explicit last-token baseline takeaway
+
+- The context-switch slide now states its result in the title: this baseline cannot tell the contexts apart. A visible explanation identifies the shared input, the final “the” at position 10. The closing line says that earlier clues need to influence the prediction. The eight-way tie is explicitly incidental to the toy.
+- Preserved all eight candidate bars and the aggregate. Browser regression switches both contexts, checks identical rendered probabilities, and requires the reason and takeaway to be visible at build zero. Visually checked both states and the phone article.
+- Opening-flow regression, all 294 presentation states / 490 formulas, phone-width QA, and 8 independent live/reference numerical cases pass. No model or slide-count changes.
+
 ## 2026-09-12: remove the dedicated position axis consistently
 
 - The bank model now uses four coordinates (water, finance, person, glue) and adds small hand-chosen position vectors across those coordinates. This supersedes older five-coordinate/ignored-position notes below. The new opening frame defines the four feature columns using river, bank, fisherman and the, with matching coloured definitions and an explicit real-embedding caveat.
