@@ -1,4 +1,6 @@
-// Check Part II's lookup -> order -> position-cue teaching sequence.
+// Protect the opening flow: task -> lookup -> order -> one position example
+// -> concrete sentence matrix -> last-token baseline. Keep extra notation in
+// article companions instead of reintroducing standalone recap/caveat slides.
 // node src/check_position_intro.mjs [attention.html]
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
@@ -22,13 +24,19 @@ page.on('pageerror',e=>errors.push(e.message));
 try{
   await page.goto(pathToFileURL(path.resolve(process.argv[2]||'attention.html')).href);
   await page.evaluate(()=>document.fonts.ready);
+  async function goFrame(id,build=0){
+    await page.evaluate(({id,build})=>{
+      const frame=document.getElementById(id),section=frame.closest('.sec');
+      const number=[...section.querySelectorAll('.frame')].indexOf(frame)+1;
+      AT.present.enter();AT.present.go(section.id,number,build);
+    },{id,build});
+  }
   const content=await page.evaluate(()=>{
     const frames=[...document.querySelectorAll('#s01 .frame')];
-    const ids=['s01-frame-lookup','s01-frame-order','s01-frame-position-cue'];
-    const indices=ids.map(id=>frames.findIndex(f=>f.id===id));
-    const lookup=document.getElementById(ids[0]),order=document.getElementById(ids[1]),cue=document.getElementById(ids[2]);
+    const lookup=document.getElementById('s01-frame-lookup'),order=document.getElementById('s01-frame-order'),cue=document.getElementById('s01-position-notation');
     return {
-      indices,
+      flow:frames.map(frame=>frame.id),
+      notationInArticle:cue.classList.contains('companion')&&cue.closest('.frame').id==='s01-frame2',
       lookupMath:[...lookup.querySelectorAll('annotation')].map(el=>el.textContent).join(' '),
       rows:[...order.querySelectorAll('tbody tr')].map(row=>[...row.cells].map(c=>c.textContent)),
       hasPart1Bridge:order.textContent.includes('concatenation kept the positions in separate input slots'),
@@ -36,10 +44,18 @@ try{
         const symbol=cue.querySelector('.katex-display .katex-html .'+role),key=cue.querySelector('.position-key .'+role);
         return symbol&&key&&getComputedStyle(symbol).color===getComputedStyle(key).color;
       }),
-      toyCaveat:document.getElementById('s01-frame-position-limit').textContent.includes('ignore coordinate 5')
+      toyCaveat:document.getElementById('s01-model-scope').textContent.includes('ignore coordinate 5'),
+      modelScopeInArticle:document.getElementById('s01-model-scope').classList.contains('companion'),
+      baselineBridge:document.querySelector('#s02-frame1 .prose').textContent.includes('Of those ten rows'),
+      baselineRow:[...document.querySelectorAll('#s02-frame1 annotation')].filter(el=>!el.closest('.companion')).map(el=>el.textContent),
+      baselineStartingNotation:document.querySelector('#s02-frame-head .prose').textContent.includes('The superscript')
     };
   });
-  assert.deepEqual(content.indices,[3,4,5],'Lookup, order intuition, and positional addition must be consecutive.');
+  assert.deepEqual(content.flow,['s01-frame1','s01-frame-probabilities','s01-frame-lookup','s01-frame-order','s01-frame2','s01-frame-starting-row'],'Each opening frame has one new job; do not add repeated task, position-formula, or position-caveat frames.');
+  assert(content.notationInArticle&&content.modelScopeInArticle,'Keep elaboration with the example in the article, not on extra recap slides.');
+  assert(content.baselineBridge,'The next experiment must explicitly start from the ten-row matrix.');
+  assert(content.baselineRow.every(expr=>!expr.includes('e_t')&&!expr.includes('^{(0)}')),'Keep the first baseline view on the already-defined row e_10.');
+  assert(content.baselineStartingNotation,'Define the starting-row superscript where the head first uses it.');
   assert(!/p_i|e_i/.test(content.lookupMath),'Keep position addition out of the lookup introduction.');
   assert.deepEqual(content.rows,[['Maya','helps','Ravi'],['Ravi','helps','Maya']]);
   assert(content.hasPart1Bridge,'Connect to the previous fixed-window MLP.');
@@ -48,7 +64,6 @@ try{
   const matrix=await page.evaluate(()=>{
     const frame=document.getElementById('s01-frame-starting-row'),table=frame.querySelector('table');
     const rows=[...table.querySelectorAll('tbody tr')];
-    const frames=[...document.querySelectorAll('#s01 .frame')];
     return {
       sentence:document.getElementById('s01-matrix-sentence').textContent,
       labels:rows.map(row=>row.querySelector('th').textContent.trim()),
@@ -57,7 +72,8 @@ try{
       headers:[...table.querySelectorAll('thead th')].map(cell=>cell.textContent),
       formulas:[...frame.querySelectorAll('annotation')].map(el=>el.textContent),
       text:frame.querySelector('.sentence-legend').textContent,
-      scopeBeforeTable:frames.findIndex(el=>el.id==='s01-frame-position-limit')<frames.indexOf(frame),
+      scopeBeforeTable:!!(document.getElementById('s01-model-scope').compareDocumentPosition(frame)&Node.DOCUMENT_POSITION_FOLLOWING),
+      visibleScope:frame.querySelector('h3').textContent.includes('hand-chosen bank example')&&frame.querySelector('.sentence-legend').textContent.includes('This toy ignores column 5.'),
       colours:[
         getComputedStyle(frame.querySelector('.sentence-row-number')).color===getComputedStyle(frame.querySelector('.sentence-legend .sentence-count')).color,
         getComputedStyle(table.querySelector('thead th:nth-child(2)')).color===getComputedStyle(frame.querySelector('.sentence-legend .sentence-width')).color
@@ -65,6 +81,7 @@ try{
     };
   });
   assert(matrix.scopeBeforeTable,'Explain the return to five-coordinate bank vectors before showing them.');
+  assert(matrix.visibleScope,'Retain the model limitation as a short label with its data.');
   assert.equal(matrix.sentence,'“'+matrix.tokens.join(' ')+' ___”');
   assert.deepEqual(matrix.labels,matrix.tokens.map((token,i)=>(i+1)+' '+token));
   assert.deepEqual(matrix.headers,['Token / row','1','2','3','4','5']);
@@ -109,25 +126,15 @@ try{
   }
   assert.equal(await page.evaluate(()=>JSON.stringify({model:AT.model,probs:AT.forward(AT.sentences.river).probs})),bankBefore,'The separate encoding demo must not change bank-model arithmetic.');
   for(const position of [1,5,10]){
-    await page.evaluate(()=>{AT.present.enter();AT.present.go('s01',7,0);});
+    await goFrame('s01-frame2');
     await page.locator('#s01-position-choice [data-position="'+position+'"]').click();
     await page.waitForTimeout(300);
     assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'Every encoding choice must fit.');
     await page.screenshot({path:path.join(screenshots,'sinusoidal-position-'+position+'.png')});
   }
-  for(const [i,id] of ['lookup','order','position-cue'].entries()){
+  for(const id of content.flow.concat(['s02-frame1','s02-frame-head'])){
     for(const build of [0,1,2]){
-      await page.evaluate(({frame,build})=>{AT.present.enter();AT.present.go('s01',frame,build);},{frame:i+4,build});
-      await page.waitForTimeout(90);
-      assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,id+' build '+build+' must fit.');
-    }
-    // Let the build's opacity transition finish before inspecting KaTeX glyphs.
-    await page.waitForTimeout(300);
-    await page.screenshot({path:path.join(screenshots,id+'.png')});
-  }
-  for(const [id,frame] of [['bank-scope',8],['starting-rows',9]]){
-    for(const build of [0,1,2]){
-      await page.evaluate(({frame,build})=>AT.present.go('s01',frame,build),{frame,build});
+      await goFrame(id,build);
       await page.waitForTimeout(300);
       assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,id+' build '+build+' must fit.');
     }
@@ -135,10 +142,10 @@ try{
   }
   await page.evaluate(()=>AT.present.exit());
   await page.setViewportSize({width:390,height:844});
-  await page.locator('#s01-frame-position-cue').scrollIntoViewIfNeeded();
+  await page.locator('#s01-position-notation').scrollIntoViewIfNeeded();
   const phone=await page.evaluate(()=>({
     columns:getComputedStyle(document.querySelector('#s01 .position-key')).gridTemplateColumns.split(' ').length,
-    fits:[...document.querySelectorAll('#s01-frame-order,#s01-frame-position-cue')].every(el=>el.scrollWidth<=el.clientWidth+1)
+    fits:[...document.querySelectorAll('#s01-frame-order,#s01-position-notation')].every(el=>el.scrollWidth<=el.clientWidth+1)
   }));
   assert(phone.columns===1&&phone.fits,'Phone article explanations must wrap without horizontal scrolling.');
   await page.screenshot({path:path.join(screenshots,'phone-position-cue.png')});

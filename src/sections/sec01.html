@@ -123,18 +123,6 @@ The previous frame's context selection is retained. These bars come from the toy
   </div>
 </div>
 
-<div class="frame" id="s01-frame-task" data-title="A useful next-token guess needs relevant context" data-autobuild="off">
-  <script type="text/x-notes">What must reach the prediction if the two endings are identical?
-It must receive information about river or cheque from earlier in the sentence. The rest of Part II will open the black box one operation at a time.</script>
-  <div class="prose">
-    <p>A language model reads the tokens so far and assigns a probability to every possible next token:
-    $$p(x_{t+1}\mid x_1,\ldots,x_t)$$</p>
-  </div>
-
-  <div class="callout callout-key" data-build="1">To predict the next token well, the model needs a useful representation of everything relevant in the preceding context.</div>
-
-</div>
-
 <div class="frame" id="s01-frame-lookup" data-title="A token starts with a vocabulary lookup" data-autobuild="off">
   <script type="text/x-notes">Is the vocabulary table the same object as the rows for this sentence?
 E_tok stores one learned row per vocabulary token. The token ID selects a row. A lookup on its own says which token we have, but not where it occurs. We will motivate a position cue next. These toy parameters are hand-chosen, not trained.</script>
@@ -159,22 +147,6 @@ Part I's concatenation preserved order by assigning each input position its own 
   <p data-build="2">In Part I, concatenation kept the positions in separate input slots. Here, we’ll give each token row a <strong>position cue</strong> before the rows interact.</p>
 </div>
 
-<div class="frame" id="s01-frame-position-cue" data-title="A starting row carries both what and where" data-autobuild="off">
-  <script type="text/x-notes">What changes when the same word moves to another position?
-The vocabulary row stays the same. The position cue changes. We use the additive positional encoding design here. Addition keeps the width fixed, so the next layers still receive one fixed-width row per token. It is a design choice, not the only way to represent position.
-Source: Attention Is All You Need, Section 3.5, https://arxiv.org/html/1706.03762v7#S3.SS5
-Leave the construction of the position vectors for a later discussion. These hand-chosen toy projections ignore the position coordinate, so the bank example demonstrates contextual information gathering, not word-order understanding.</script>
-  <p>We add a <span class="start-position"><strong>vector for the token’s position</strong></span> to its vocabulary row. Moving the same word to another slot changes this position cue.</p>
-  <div class="position-key">
-    <div class="start-token"><strong>What: $E_{\text{tok}}[t_i]$</strong><p>The row selected by the token ID.</p></div>
-    <div class="start-position"><strong>Where: $p_i$</strong><p>A vector for position $i$.</p></div>
-    <div class="start-row"><strong>Starting row: $e_i^{(0)}$</strong><p>Their sum, before any contextual update.</p></div>
-  </div>
-  <div data-build="1">$$\htmlClass{start-row}{e_i^{(0)}}=\htmlClass{start-token}{E_{\text{tok}}[t_i]}+\htmlClass{start-position}{p_i}$$</div>
-  <p data-build="1">Both vectors have the same width. Adding them keeps that width unchanged.</p>
-  <p class="small muted" data-build="2">For now, keep “what + where” in mind. How we choose the position vectors can wait.</p>
-</div>
-
 <div class="frame" data-title="The same word, at three positions" id="s01-frame2" data-autobuild="off">
   <script type="text/x-notes">
     Which row stays the same when we move the word?
@@ -194,34 +166,35 @@ Leave the construction of the position vectors for a later discussion. These han
   </div>
   <p>The starting row still has <strong>four coordinates</strong>.</p>
   <p class="small muted">Illustrative word vector. Sinusoidal position vectors. Values rounded to three decimals.</p>
-  <div class="companion">
-    <p>The position cue uses the existing coordinates. It does not add a “pos” column or assign a human meaning to each coordinate. In this example, changing position changes several entries in the row. At position 1, the pattern is $[0,1,0,1]$ because the sine of zero is zero and the cosine of zero is one.</p>
+  <div class="companion" id="s01-position-notation" data-kicker="The notation behind the example">
+    <div class="position-key">
+      <div class="start-token"><strong>Word row: $E_{\text{tok}}[t_i]$</strong><p>The row selected by token ID $t_i$.</p></div>
+      <div class="start-position"><strong>Position row: $p_i$</strong><p>A vector for position $i$.</p></div>
+      <div class="start-row"><strong>Starting row: $e_i^{(0)}$</strong><p>Their sum, before any contextual update.</p></div>
+    </div>
+    $$\htmlClass{start-row}{e_i^{(0)}}=\htmlClass{start-token}{E_{\text{tok}}[t_i]}+\htmlClass{start-position}{p_i}$$
+    <p>The superscript $(0)$ means “before any contextual update.” The position cue uses the existing coordinates. At position 1, the pattern is $[0,1,0,1]$ because the sine of zero is zero and the cosine of zero is one.</p>
     <p>For readers who want the calculation: let <code>pos = i - 1</code>, so the first displayed position has index zero. With four coordinates, the <a href="https://arxiv.org/html/1706.03762v7#S3.SS5" target="_blank" rel="noopener">original Transformer’s positional encoding</a> gives <code>p = [sin(pos), cos(pos), sin(pos / 100), cos(pos / 100)]</code>. The pairs vary at different frequencies. The position values here come from that formula, while the word values are chosen just to show the addition.</p>
     <p>Positional vectors can also be learned from data. Addition is one way to supply position information, not a requirement for every Transformer architecture. We’ll return to the design choices later.</p>
   </div>
 </div>
 
-<div class="frame" id="s01-frame-position-limit" data-title="Back to the bank example" data-autobuild="off">
-  <script type="text/x-notes">What will the hand-worked bank example demonstrate?
-It demonstrates how relevant content reaches the prediction. Its five-dimensional rows and parameters differ from the separate four-dimensional sinusoidal illustration. The legacy fifth coordinate contains a position offset, but the Q/K/V projections and output head ignore it. Do not claim the bank predictions demonstrate word-order sensitivity or that real embedding dimensions have semantic names.</script>
-  <div class="prose">
-    <p>For the bank calculations, we use <strong>five hand-chosen coordinates</strong>. Names such as <em>water</em> and <em>finance</em> help us follow the numbers.</p>
-    <p data-build="1">These are different vectors from the four-coordinate position example. Real learned coordinates need not have such tidy meanings.</p>
-  </div>
-  <div class="callout callout-note" data-build="2">The bank toy’s calculations <strong>ignore coordinate 5</strong>, labelled “pos” in its tables. We’ll use this toy to study <strong>which words supply information</strong>. The positional-encoding example above shows how a position cue normally spans the vector.</div>
-  <div class="companion"><p>The toy stores an offset in its fifth coordinate, but that coordinate has zero weights in its matching, message, and prediction projections. Its changing predictions therefore demonstrate content gathering, not sensitivity to word order. The named axes and this unused offset are simplifications of the hand-worked example.</p></div>
+<div class="companion" id="s01-model-scope" data-kicker="The bank model used below">
+  <p>The bank example uses five hand-chosen coordinates, different from the four-coordinate sinusoidal illustration above. Names such as <em>water</em> and <em>finance</em> let us follow the arithmetic. Real learned coordinates need not have these meanings.</p>
+  <p>The bank model’s matching, message, and prediction calculations <strong>ignore coordinate 5</strong>. That coordinate stores a position offset, labelled “pos” in its tables, but it has zero projection weights. The changing bank predictions demonstrate content gathering, not sensitivity to word order.</p>
 </div>
 
 <div class="frame" id="s01-frame-starting-row" data-title="Our ten tokens become ten rows" data-autobuild="off">
   <script type="text/x-notes">How many rows do we need for this sentence?
 Count all ten input tokens, including each occurrence of the. The blank is the token to predict, so it has no input row yet. T counts tokens in one sequence, not the number of examples in a batch. Reveal the five-coordinate width, then the shape of E. Point to river at row 6 to give e_6 a concrete meaning.
-The table uses AT.embed on the river sentence, exactly the starting rows used by the bank calculations. It does not use the separate four-coordinate sinusoidal illustration. These are hand-chosen values, not learned measurements.</script>
+The table uses AT.embed on the river sentence, exactly the starting rows used by the bank calculations. It does not use the separate four-coordinate sinusoidal illustration. These are hand-chosen values, not learned measurements. Coordinate 5 is unused by this model's matching, message, and prediction projections. The class is now finished with the position detour.
+The next experiment will give the output head only the final row, for the. Ask whether that row yet contains information about river.</script>
   <p id="s01-matrix-sentence"></p>
   <div class="sentence-rows">
-    <div><h3 class="card-title start-row">$\ve{E}$: the sentence matrix</h3><div id="s01-sentence-matrix"></div></div>
+    <div><h3 class="card-title start-row">$\ve{E}$: the hand-chosen bank example</h3><div id="s01-sentence-matrix"></div></div>
     <div class="sentence-legend">
       <p class="sentence-count"><strong>$T=10$</strong><br>Tokens in this input.</p>
-      <p class="sentence-width" data-build="1"><strong>$d_{\text{model}}=5$</strong><br>Numbers in each token row.</p>
+      <p class="sentence-width" data-build="1"><strong>$d_{\text{model}}=5$</strong><br>Numbers in each token row.<br><span class="small muted">This toy ignores column 5.</span></p>
       <div data-build="2">
         <p class="sentence-shape">$\ve{E}$ has shape $\htmlClass{sentence-count}{10}\times\htmlClass{sentence-width}{5}$<br><span class="sentence-count">token rows</span> × <span class="sentence-width">coordinates</span></p>
         <p>$\ve{e_6}$ is row 6: <strong>river</strong>.</p>

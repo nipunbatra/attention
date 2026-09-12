@@ -54,13 +54,13 @@ body.present #s02 .title-row{margin-bottom:16px}
     Timing: about three minutes.
   </script>
   <div class="prose">
-    <p>First try: let only the <strong>last known token</strong> reach the output head.</p>
+    <p>Of those ten rows, suppose the output head reads <strong>only row 10</strong>, for the last token <strong>“the”</strong>.</p>
   </div>
 
   <div class="card">
     <h3 class="card-title">Only the highlighted position is used.</h3>
     <div id="s02-chips"></div>
-    <div class="used-note"><span><span class="swatch on"></span>used: its $\ve{e_t}$ enters the output head</span><span><span class="swatch dim"></span>not used: invisible to the prediction</span></div>
+    <div class="used-note"><span><span class="swatch on"></span>used: row $\ve{e_{10}}$ enters the output head</span><span><span class="swatch dim"></span>not used: invisible to the prediction</span></div>
     <div class="pipe" data-build="1">
         <div id="s02-evec"></div>
         <p class="arrow-lab">→</p>
@@ -89,7 +89,7 @@ No. Both sentences end with the at position 10, so the head receives the same ro
   <script type="text/x-notes">Where could river or cheque enter this calculation?
 Nowhere: neither word reaches the head. A better representation has to bring their information into the last row first.</script>
   <div class="prose">
-    <p>The starting row $\ve{e_t^{(0)}}$ goes straight to the output head:</p>
+    <p>Here $t=10$ is the last input position. The superscript $(0)$ marks its <strong>starting row</strong>, before it receives information from other tokens.</p>
     $$\ell = \ve{e_t^{(0)}}\,W_{\text{vocab}} + b$$
     <div data-build="1">$$p(x_{t+1}\mid x_{\le t}) = \operatorname{softmax}(\ell)$$</div>
   </div>
@@ -103,7 +103,7 @@ Nowhere: neither word reaches the head. A better representation has to bring the
 <div class="frame" data-title="The only input, in both contexts" id="s02-frame2" data-autobuild="off">
   <script type="text/x-notes">
     Which coordinate could tell the two sentences apart?
-    None: the difference row is all zeros. If someone asks why position does not help, point at the position row of section 01: the blank sits at the same position in both sentences. Open the arithmetic only if the room wants to see the output head multiply.
+    None: the difference row is all zeros. Both inputs end in the same word at position 10. Compare the two rows here, then continue to how we could supply more context. Open the arithmetic only if the room wants to see the output head multiply.
   </script>
   <div class="companion">
     <p>The eight candidate bars are exactly tied, at about 0.094 each. The ordering of tied bars does not identify a winner. More importantly, both sentences give this head the same input. Compare their coordinates in the table.</p>
@@ -217,7 +217,7 @@ Nowhere: neither word reaches the head. A better representation has to bring the
     AT.clear(chipHost);
     AT.ui.chips(toks, { size: 'lg', active: t, muted: AT.range(t), slot: '___', into: chipHost });
     AT.clear(evecHost);
-    AT.ui.vec(B.E[t], { cls: 'e', label: '\\ve{e_{' + T + '}^{(0)}}', dims: true, into: evecHost });
+    AT.ui.vec(B.E[t], { cls: 'e', label: '\\ve{e_{' + T + '}}', dims: true, into: evecHost });
     evecReading.innerHTML = 'Reading $\\ve{e_{' + T + '}^{(0)}}$: ' + readE(B.E[t], toks[t]);
     AT.renderMath(evecReading);
     const its = items(p);
