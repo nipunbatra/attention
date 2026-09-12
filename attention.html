@@ -4214,6 +4214,42 @@ body.present #s03 .s03-window-hidden{display:none}
 body.present #s03 .s03-window-ellipsis{display:table-row;color:var(--ink-3);text-align:center}
 body.present #s03 .s03-window-ellipsis td{padding:3px 12px}
 body.present #s03 #s03-ceq .katex-display{margin:4px 0 16px}
+#s03 .window-input{color:var(--c-e);fill:var(--c-e)}
+#s03 .window-param{color:var(--c-q);fill:var(--c-q)}
+#s03 .window-score{color:var(--ink-2);fill:var(--ink-2)}
+#s03 .window-network svg{display:block;width:100%;height:auto}
+#s03 .window-network .window-net-compact{display:none}
+#s03 .window-network text{font:20px var(--font-ui)}
+#s03 .window-network .net-caption{font-size:19px;font-weight:600}
+#s03 .window-network .omitted{font-size:17px}
+#s03 .window-network .connection{stroke:var(--c-q);stroke-width:1;opacity:.17}
+#s03 .window-network .input-node{fill:var(--t-e);stroke:var(--c-e);stroke-width:1.8}
+#s03 .window-network .output-node{fill:var(--card);stroke:var(--ink-2);stroke-width:1.8}
+#s03 .window-network .token-group{animation:window-node-in .18s ease-out}
+#s03 .window-dimensions{display:flex;flex-wrap:wrap;gap:4px 26px;font-size:15px;line-height:1.4;margin:6px 0 0}
+#s03 .window-dimensions span{white-space:nowrap}
+#s03 .window-sketch-note{margin:8px 0 0;font-size:14px;color:var(--ink-2)}
+#s03-net .edges line{stroke:var(--c-q)}
+#s03-net .col-hid circle{fill:var(--t-v);stroke:var(--c-v)}
+#s03-net .lab-in-box{color:var(--c-e)}
+body.present #s03 #s03-frame2>.card{padding:12px 24px;margin-bottom:10px}
+body.present #s03 #s03-frame2 .card-title{font-size:22px;margin-bottom:10px}
+body.present #s03 #s03-frame2 .win-note{margin:4px 0 6px;font-size:20px}
+body.present #s03 .window-network{max-width:1000px;margin:0 auto}
+body.present #s03 .window-dimensions{font-size:21px;gap:4px 24px;margin:4px 0 0}
+#s03 .window-takeaway{margin:8px 0 0;padding-top:8px;border-top:1px solid var(--line)}
+body.present #s03 .window-takeaway{font-size:22px;line-height:1.3;margin:8px 0 0;padding-top:8px}
+body.present #s03 #s03-frame2 .bound .bar{height:26px}
+@keyframes window-node-in{from{opacity:.25}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){#s03 .window-network .token-group{animation:none}}
+@media(max-width:640px){
+  body:not(.present) #s03 .window-dimensions{display:grid;gap:4px}
+  body:not(.present) #s03 .window-network .window-net-wide{display:none}
+  body:not(.present) #s03 .window-network .window-net-compact{display:block}
+  body:not(.present) #s03 #s03-slider .slider{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px}
+  body:not(.present) #s03 #s03-slider .slider-label{grid-column:1/-1}
+  body:not(.present) #s03 #s03-slider input{width:100%;max-width:none;min-width:0}
+}
 </style>
 <header class="sec-head">
   <span class="sec-num">03</span>
@@ -4224,7 +4260,7 @@ body.present #s03 #s03-ceq .katex-display{margin:4px 0 16px}
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Give the model more context by concatenating the last $w$ representations into one long row. A larger matrix can read that row. In the first diagram, the input column contains the window, so widening the window also widens the first layer's input. Use the second slider to see which tokens reach it: each token adds four numbers. At $w=3$, <em>river</em> is outside. At $w=10$, every token fits because this sentence is short. The network can learn to use the content it receives, including the difference between <em>river</em> and <em>the</em>. But its input width is fixed, and it gets no information from beyond the window. We want a way to choose useful information by content, rather than deciding which words are available only by position.</p>
+  <p>Give the model more context by concatenating the last $w$ representations into one long row. A larger matrix can read that row. The first diagram uses an MLP with eight hidden units. The “Inside the window” slider connects the selected words to a simpler linear head, matching the equation that follows. In both sketches, each token adds four input nodes. At $w=3$, <em>river</em> is outside. At $w=10$, every token fits because this sentence is short. Changing the window changes the required parameter shapes. These are architecture sketches, not trained predictions for every window size. A network can learn to use the content it receives, but it gets no information from beyond its fixed window.</p>
 </div>
 
 <div class="frame" data-title="Grow the window" id="s03-frame1" data-autobuild="off">
@@ -4240,7 +4276,7 @@ body.present #s03 #s03-ceq .katex-display{margin:4px 0 16px}
 
   <div class="card">
     <h3 class="card-title">More input tokens → a wider first layer</h3>
-    <p class="companion muted small" style="margin:0 0 6px">Sketch, not the toy's arithmetic: the hidden width $h$ is a stated choice, the outputs are the toy vocabulary with the answer for context A marked. Drag the slider or press the arrow key.</p>
+    <p class="companion muted small" style="margin:0 0 6px">Architecture sketch with eight hidden units and the toy vocabulary. Each input circle represents one scalar coordinate of the concatenated row. No trained predictions are shown. Drag the slider or press the arrow key.</p>
     <div class="net-wrap">
       <div>
         <div id="s03-net-slider"></div>
@@ -4260,19 +4296,22 @@ body.present #s03 #s03-ceq .katex-display{margin:4px 0 16px}
 <div class="frame" data-title="Inside the window" id="s03-frame2" data-autobuild="off">
   <script type="text/x-notes">
     Which tokens does w = 3 keep, and which does it throw away?
-    Move the slider to 3 and ask where river went. Then reveal the concatenation table: one row of four numbers per kept token, stacked by position. Then the readouts: input size and parameter count grow with w.
+    Start at 3: and, watched, the supply twelve scalar inputs. Move to 5: river enters and the linear head needs twenty scalar inputs. At 10 all forty inputs fit this sentence. Each labelled token group contributes four input circles. For wider windows, the first two and final groups are drawn and an explicit count represents the omitted groups. Every retained scalar has a connection to every vocabulary output, including outputs omitted by dots. No unavailable token has a connection. This direct linear head matches the following c W + b equation; the previous MLP sketch additionally used a hidden layer. Changing w compares architectures with different weight shapes, not inference under one fixed trained matrix.
   </script>
   <div class="companion">
     <p>Concatenate the previous $w$ token representations into one long vector and predict from that. $w$ denotes the window width; we reserve $K$ for the matrix of attention keys later.</p>
   </div>
 
   <div class="card">
-    <h3 class="card-title">Choose the window: which tokens reach the prediction?</h3>
+    <h3 class="card-title">Linear-head sketch: each token supplies four input nodes.</h3>
     <div id="s03-slider" data-keep-state></div>
     <div id="s03-chips"></div>
-    <p class="win-note" id="s03-win-note"></p>
+    <p class="companion win-note" id="s03-win-note"></p>
+    <div class="window-network" id="s03-window-network"></div>
+    <p class="window-dimensions" id="s03-window-dimensions" aria-live="polite"></p>
+    <p class="companion window-sketch-note">Architecture sketch: resizing the window requires a matching weight matrix, not an update to the same trained network.</p>
+    <p class="window-takeaway" data-build="1">Behind the boundary means <strong>unavailable</strong>: no input node, no connection.</p>
   </div>
-  <div class="callout callout-key" data-build="1">A word behind the boundary is <strong>unavailable</strong>, not merely down-weighted.</div>
 </div>
 
 <div class="frame" id="s03-frame-concatenate" data-title="Concatenate the rows that are inside" data-autobuild="off">
@@ -4361,15 +4400,15 @@ The input width and the parameter count. More tokens fit in this finite sentence
   /* ---------- frame 1: a fixed window feeds a fixed network (a sketch; d = d_model, h is a stated choice) ---------- */
   const H = 8;                                   // hidden width of the sketch, stated on the page
   const PRESET = [3, 5, 100];                    // window sizes for builds 0, 1, 2
-  const answer = AT.topk(F.probs[t], 1)[0].tok;  // the output to mark: the toy's own top prediction for context A
-  const net = AT.netSketch(S.querySelector('#s03-net'), { inputs: PRESET[0], hidden: H, outputs: AT.vocab, collapseAbove: 8, highlightOutput: answer, hiddenCaption: 'hidden, h = ' + H, outputCaption: 'next token, ' + V + ' words' });
+  const net = AT.netSketch(S.querySelector('#s03-net'), { inputs: PRESET[0]*D, hidden: H, outputs: AT.vocab, collapseAbove: 8, labels:{input:i=>'(c_t)_{'+i+'}'}, inputCaption:n=>n+' input numbers', hiddenCaption: 'hidden, h = ' + H, outputCaption: V + ' vocabulary scores' });
   const netRead = S.querySelector('#s03-net-read');
   function shapeText(w){
     const inD = w * D;
     return 'the first layer reads $w \\cdot d_{\\text{model}} = ' + w + ' \\times ' + D + ' = ' + inD + '$ numbers, so $W_1$ is $' + inD + ' \\times ' + H + '$: ' + AT.fmt(inD * H, 0) + ' weights. $W_2$ is $' + H + ' \\times ' + V + '$ whatever $w$ is.';
   }
   function drawNet(w){
-    net.setInputs(w);
+    net.setInputs(w*D);
+    net.svg.setAttribute('aria-label','MLP architecture sketch: '+w+' tokens supply '+(w*D)+' scalar input nodes, followed by '+H+' hidden units and '+V+' vocabulary scores.');
     netRead.innerHTML = 'Now $w=' + w + '$: <strong>' + (w * D) + ' input numbers</strong>.<br>$W_1\\in\\mathbb R^{' + (w * D) + '\\times ' + H + '}$; $W_2\\in\\mathbb R^{' + H + '\\times ' + V + '}$.';
     AT.renderMath(netRead);
   }
@@ -4416,15 +4455,56 @@ The input width and the parameter count. More tokens fit in this finite sentence
   /* which earlier tokens matter for a slot: the largest attention weights of the last known token (computed, not typed) */
   function topReaders(i, n){ return AT.range(i + 1).map(j => ({ j, a: F.A[i][j] })).sort((a, b) => b.a - a.a).slice(0, n).map(p => p.j); }
 
+  /* Direct linear-head architecture, synchronized with the selected real token rows.
+     No weights are fitted here and no probabilities are attributed to this sketch. */
+  function drawWindowNetwork(inside){
+    const host=S.querySelector('#s03-window-network');
+    const shown=inside.length<=3?inside:[inside[0],inside[1],inside[inside.length-1]];
+    const omitted=inside.length-shown.length,outputs=['the','water','teller','money'];
+    const centers=shown.length===1?[142]:shown.length===2?[85,215]:omitted?[66,134,230]:[66,148,230];
+    const outYs=[58,112,166,220],inputCount=inside.length*D;
+    AT.clear(host);
+    [false,true].forEach(compact=>{
+      const width=compact?560:1060,xIn=compact?180:285,xOut=compact?430:810,xLabel=compact?140:235;
+      const svg=AT.svg('svg',{viewBox:'0 0 '+width+' 280',role:'img',class:compact?'window-net-compact':'window-net-wide','data-window':w,'data-input-count':inputCount,'data-output-count':V,'data-omitted-inputs':omitted*D,'data-weight-rows':inputCount,'data-weight-cols':V,'data-weight-count':inputCount*V,'data-bias-count':V,'aria-label':'Linear-head architecture for window '+w+': '+inside.map(i=>(i+1)+' '+toks[i]).join(', ')+'. Each token supplies '+D+' scalar inputs, '+inputCount+' total. '+(omitted?omitted*D+' input nodes are represented by dots. ':'')+'The matrix has '+inputCount+' rows and '+V+' columns, '+inputCount*V+' weights, plus '+V+' output biases. No predictions are computed.'});
+      const text=(x,y,value,cls,anchor='middle')=>svg.appendChild(AT.svg('text',{x,y,class:cls,'text-anchor':anchor},value));
+      text(compact?135:260,22,inputCount+' input nodes','net-caption window-input');
+      text(compact?305:548,22,'W: '+inputCount+' × '+V,'net-caption window-param');
+      text(compact?445:850,22,compact?V+' scores':V+' scores (4 shown)','net-caption window-score');
+      const edges=svg.appendChild(AT.svg('g',{class:'connections'}));
+      shown.forEach((position,k)=>{
+        const group=svg.appendChild(AT.svg('g',{class:'token-group','data-token-position':position+1,'data-token':toks[position]}));
+        group.appendChild(AT.svg('text',{x:xLabel,y:centers[k]+6,class:'window-input','text-anchor':'end'},(position+1)+' '+toks[position]));
+        group.appendChild(AT.svg('path',{d:'M '+(xIn-18)+' '+(centers[k]-26)+' h -6 v 52 h 6',fill:'none',stroke:'var(--c-e)','stroke-width':1.5}));
+        E0[position].forEach((value,j)=>{
+          const y=centers[k]+(j-(D-1)/2)*14;
+          outputs.forEach((word,q)=>edges.appendChild(AT.svg('line',{x1:xIn+7,y1:y,x2:xOut-10,y2:outYs[q],class:'connection','data-source-position':position+1,'data-coordinate':j+1,'data-output-word':word})));
+          group.appendChild(AT.svg('circle',{cx:xIn,cy:y,r:6.5,class:'input-node','data-coordinate':j+1,'data-value':value},AT.svg('title',{},'Position '+(position+1)+' '+toks[position]+', coordinate '+(j+1)+' ('+AT.axes.short.e[j]+'): '+AT.fmt(value,2))));
+        });
+      });
+      if(omitted)text(xLabel,185,'⋮ +'+(omitted*D)+' inputs'+(compact?'':' ('+omitted+' tokens)'),'omitted window-input','end');
+      outputs.forEach((word,q)=>{
+        svg.appendChild(AT.svg('circle',{cx:xOut,cy:outYs[q],r:10,class:'output-node','data-output-word':word}));
+        text(xOut+20,outYs[q]+6,word,'window-score','start');
+      });
+      [85,139,193].forEach(y=>text(xOut,y+5,'⋮','window-score'));
+      text(xOut,270,'+ b: '+V+' biases','net-caption window-param');
+      host.appendChild(svg);
+    });
+    const dimensions=S.querySelector('#s03-window-dimensions');
+    AT.clear(dimensions);
+    dimensions.append(AT.h('span',{class:'window-input'},w+' tokens × '+D+' numbers = '+inputCount+' inputs'),AT.h('span',{class:'window-param'},'W: '+inputCount+' × '+V+' = '+(inputCount*V)+' weights'),AT.h('span',{class:'window-score'},V+' outputs stay fixed'));
+  }
+
   function draw(){
     const first = t - w + 1;                       // first index inside the window (0-based)
     const inside = AT.range(T).filter(i => i >= first), outside = AT.range(T).filter(i => i < first);
     chips.setActive(inside); chips.setMuted(outside);
     if (bound.parentNode) bound.parentNode.removeChild(bound);
     if (outside.length) chips.insertBefore(bound, chips.chips[first]);
-    winNote.innerHTML = 'Window $w = ' + w + '$: tokens ' + (first + 1) + ' to ' + T + ' are in, '
-      + (outside.length ? 'tokens 1 to ' + first + ' (' + AT.escape(list(outside)) + ') are behind the boundary.' : 'nothing is left behind, but only because this sentence is short.');
+    winNote.innerHTML = 'Tokens '+(first+1)+'–'+T+' are inside. '+(outside.length?outside.length+' earlier token'+(outside.length===1?' is':'s are')+' unavailable.':'All ten fit this short sentence.');
     AT.renderMath(winNote);
+    drawWindowNetwork(inside);
 
     /* c_t as a table: one row per included token, one column per coordinate, a dimension total in the footer */
     const parts = w <= 4 ? inside.map(i => '\\ve{e_{' + (i + 1) + '}}').join(';\\,') : '\\ve{e_{' + (first + 1) + '}};\\,\\ldots;\\,\\ve{e_{' + T + '}}';

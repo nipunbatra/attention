@@ -1,5 +1,11 @@
 # Classroom release checks
 
+## 2026-09-12: connect the window boundary to scalar network inputs
+
+- The “Inside the window” slider now updates token groups, four scalar input nodes per token, their connections, the linear-head matrix shape and its weight count. Vocabulary outputs stay fixed at twenty. Dots explicitly account for omitted inputs and outputs. The existing concatenation table shares the same window state; no extra slide or control was added.
+- Blue inputs, purple parameters and grey scores match Part I. The preceding MLP sketch now also counts scalar inputs correctly (wd rather than w), retains eight hidden units, and no longer marks an attention-model prediction as if it belonged to this architecture sketch. Notes distinguish the two architectures and explain that resizing requires a differently shaped matrix, not inference under unchanged weights.
+- New regression covers all ten windows: retained positions, actual coordinate values, visible edges, omissions, parameter counts, fixed outputs, keyboard interaction, navigation state, reduced motion, phone track width, SVG bounds and unchanged model predictions. All 296 presentation states and 512 formulas, opening-flow regression, eight independent live/reference cases and phone article QA pass. Visually inspected small/wide windows, the MLP at w=100, and the phone layout. No model, Part I, shared runtime, dependency or PDF changes.
+
 ## 2026-09-12: identify the two baseline contexts on the comparison slide
 
 - Replaced A/B row labels with River sentence and Cheque sentence. Both complete contexts now appear above the table, with the earlier clue in orange and the final “the” in blue. The title and visible explanation connect the identical starting rows to identical predictions. The difference row compares input coordinates rather than conflating them with a probability-gap statistic.
