@@ -238,6 +238,66 @@ try{
   }
   await page.evaluate(()=>AT.present.go('s03',1,2));
   await page.screenshot({path:path.join(shots,'mlp-100.png')});
+  // Longer prefixes illustrate token visibility, without running out-of-vocab
+  // words or positions through the saved ten-position toy model.
+  const shortWindow=await slider.inputValue();
+  await page.evaluate(()=>AT.present.go('s03',5,0));
+  const longSlider=page.locator('#s03-long-slider input');
+  assert.equal(await longSlider.inputValue(),'10','Introduce the longer example with ten slots.');
+  for(let w=10;w<=20;w++){
+    await longSlider.fill(String(w));
+    const long=await page.evaluate(()=>({
+      examples:['river','cheque'].map(id=>{
+        const host=document.getElementById('s03-long-'+id);
+        return {
+          tokens:JSON.parse(host.dataset.tokens),first:Number(host.dataset.firstPosition),prediction:Number(host.dataset.predictionPosition),
+          inside:[...host.querySelectorAll('.is-inside')].map(e=>Number(e.dataset.position)),
+          outside:[...host.querySelectorAll('.is-outside')].map(e=>Number(e.dataset.position)),
+          clue:{word:host.querySelector('.is-clue').dataset.word,position:Number(host.querySelector('.is-clue').dataset.position),inside:host.querySelector('.is-clue').classList.contains('is-inside')},
+          firstMarker:[...host.querySelectorAll('.is-first')].map(e=>Number(e.dataset.position)),
+          slotCount:host.querySelectorAll('.long-slot').length
+        };
+      }),
+      result:{...document.getElementById('s03-long-result').dataset},
+      cost:{...document.getElementById('s03-long-cost').dataset},
+      scope:document.getElementById('s03-long-scope').textContent,
+      table:[...document.querySelectorAll('#s03-ktab tbody tr')].map(tr=>[...tr.querySelectorAll('th,td')].map(e=>Number(e.textContent.replaceAll(',','')))),
+      notes:document.getElementById('s03-frame-boundary').textContent,
+      costNotes:document.getElementById('s03-frame-window-cost').textContent
+    }));
+    assert.deepEqual(long.examples.map(e=>e.tokens.length),[20,20]);
+    assert.deepEqual(long.examples[0].tokens.slice(-10),['after','a','long','quiet','afternoon','turned','around','and','watched','the']);
+    assert.deepEqual(long.examples[0].tokens.slice(-10),long.examples[1].tokens.slice(-10),'Both twenty-token prefixes have exactly the same last ten words.');
+    for(const example of long.examples){
+      assert.deepEqual(example.inside,Array.from({length:w},(_,i)=>21-w+i));
+      assert.deepEqual(example.outside,Array.from({length:20-w},(_,i)=>i+1));
+      assert.equal(example.first,21-w);assert.equal(example.prediction,21);
+      assert.deepEqual(example.firstMarker,[21-w]);assert.equal(example.slotCount,1);
+      assert.equal(example.clue.inside,example.clue.position>=21-w);
+    }
+    assert.deepEqual(long.examples.map(e=>[e.clue.word,e.clue.position]),[['river',6],['cheque',5]]);
+    assert.equal(long.result.identical,String(w<=11),'Sunday/yesterday already differ at w=12, before the main clues enter.');
+    assert.equal(Number(long.result.cluesAvailable),Number(w>=15)+Number(w>=16));
+    assert.equal(Number(long.cost.weights),w*4*20);assert.equal(Number(long.cost.biases),20);assert.equal(Number(long.cost.parameters),w*80+20);
+    assert(long.scope.includes(`positions ${21-w}–20`)&&long.scope.includes('Predict 21'));
+    assert.deepEqual(long.table,[[10,40,800,20,820],[20,80,1600,20,1620],[100,400,8000,20,8020]]);
+    assert(long.notes.includes('Sentences illustrate visibility only')&&long.notes.includes('35-token prefix')&&long.notes.includes('positions 16–35'));
+    assert(long.costNotes.includes('linear head only')&&long.costNotes.includes('12.8 million')&&long.costNotes.includes('128 million'));
+    assert.equal(10*128*10000,12.8e6);assert.equal(100*128*10000,128e6);
+    assert.equal(await slider.inputValue(),shortWindow,'The longer illustration must not resize the saved short-prefix example.');
+    for(const frame of [5,8])for(const build of [0,1]){
+      await page.evaluate(({frame,build})=>AT.present.go('s03',frame,build),{frame,build});
+      await page.waitForTimeout(100);
+      assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,`Long-window frame ${frame}, w=${w}, build=${build} fits.`);
+      if(frame===5)assert.equal(await page.locator('#s03-long-result').evaluate(e=>getComputedStyle(e).visibility),build?'visible':'hidden');
+      if([10,20].includes(w)&&build===1)await page.screenshot({path:path.join(shots,`long-${w}-frame-${frame}.png`)});
+    }
+    await page.evaluate(()=>AT.present.go('s03',5,1));
+    assert.equal(await longSlider.inputValue(),String(w),'Long-window control survives navigation and reveals.');
+  }
+  await longSlider.focus();await page.keyboard.press('ArrowLeft');
+  assert.equal(await longSlider.inputValue(),'19');
+  assert.equal(await page.locator('#s03-long-cost').getAttribute('data-weights'),String(19*80));
   await page.evaluate(()=>AT.present.exit());
   await page.setViewportSize({width:390,height:844});
   await slider.fill('5');
@@ -261,12 +321,18 @@ try{
   assert.equal(rowScroll.overflow,'auto');assert(rowScroll.content>rowScroll.width,'A long joined row should scroll locally on a phone, never wrap into a matrix.');
   await page.locator('#s03-frame-concatenate').screenshot({path:path.join(shots,'phone-concat-5.png')});
   await page.locator('#s03-frame-window-head').screenshot({path:path.join(shots,'phone-head-5.png')});
+  await longSlider.fill('10');
+  await page.locator('#s03-frame-boundary').screenshot({path:path.join(shots,'phone-long-10.png')});
+  await page.locator('#s03-frame-window-cost').screenshot({path:path.join(shots,'phone-window-cost.png')});
+  const phoneCostTable=await page.locator('#s03-ktab table').evaluate(table=>({width:table.getBoundingClientRect().width,available:table.parentElement.clientWidth,cellOverflow:[...table.querySelectorAll('th,td')].some(cell=>cell.scrollWidth>cell.clientWidth+1)}));
+  assert(phoneCostTable.width<=phoneCostTable.available+1&&!phoneCostTable.cellOverflow,'Show every cost-table column on the phone, including biases and the head total.');
+  assert((await longSlider.boundingBox()).width>=180);
   assert.equal(await headSlider.inputValue(),'5');
   assert((await headSlider.boundingBox()).width>=180);
   assert(!(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1)));
   const final=await page.evaluate(()=>JSON.stringify({model:AT.model,probs:AT.forward(AT.sentences.river).probs}));
   assert.equal(final,initial,'Architecture controls must not mutate the trained toy or its predictions.');
   assert.deepEqual(errors,[]);
-  console.log('PASS: ten windows, scalar nodes/edges, stacked-to-concatenated values/shapes, linked linear head, output-column tracing, colour-matched equations, weight/bias counts, bidirectional controls, progressive reveal, keyboard, retained state, reduced motion, MLP consistency, phone layout, and model immutability.');
+  console.log('PASS: ten short windows, eleven long windows, exact suffixes and clue boundaries, head-only parameter scaling, scalar nodes/edges, concatenation, output tracing, coloured math, controls, progressive reveal, keyboard, retained state, reduced motion, phone layout, and model immutability.');
   console.log('Screenshots: '+shots);
 }finally{await browser.close();}

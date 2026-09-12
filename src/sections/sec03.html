@@ -75,6 +75,52 @@ body.present #s03 #s03-ceq{font-size:25px}
 #s03 .window-param{color:var(--c-q);fill:var(--c-q)}
 #s03 .window-score{color:var(--ink-2);fill:var(--ink-2)}
 #s03 .window-prob{color:var(--c-d);fill:var(--c-d)}
+#s03 .long-intro{margin:0 0 12px;font-size:18px}
+#s03 .long-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+#s03 .long-scope{font-size:15px;color:var(--ink-2);margin:0}
+#s03 .long-example{margin:12px 0}
+#s03 .long-example h3{font-size:17px;margin:0 0 6px;font-weight:600}
+#s03 .long-tokens{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+#s03 .long-token{display:inline-flex;align-items:baseline;gap:4px;padding:3px 5px;border-bottom:2px solid transparent;border-radius:3px;color:var(--ink-3);font-size:16px;background:var(--paper)}
+#s03 .long-token .long-position{font-size:10px;opacity:.8}
+#s03 .long-token.is-inside{color:var(--c-e);background:var(--t-e);border-bottom-color:var(--c-e)}
+#s03 .long-token.is-clue .long-word{color:var(--c-k);font-weight:700;text-decoration:underline;text-underline-offset:3px}
+#s03 .long-token.is-first{border-left:3px solid var(--c-e)}
+#s03 .long-slot{border:1px dashed var(--ink-3);background:var(--card);color:var(--ink)}
+#s03 .long-legend{font-size:14px;color:var(--ink-2);margin:8px 0}
+#s03 .long-result{font-size:18px;margin:12px 0 0;line-height:1.4}
+#s03 .long-cost{font-size:16px;margin:10px 0 0;border-top:1px solid var(--line);padding-top:10px}
+#s03 .long-caveat{font-size:14px;color:var(--ink-2);margin:10px 0 0}
+#s03 .window-cost-formula{font-size:23px}
+#s03 .window-cost-formula .katex-display{margin:8px 0 12px}
+#s03 .window-cost-scope,#s03 .window-cost-large{font-size:17px;line-height:1.4;margin:8px 0 12px}
+#s03 .window-cost-takeaway{font-size:18px;line-height:1.4;margin:14px 0 0}
+body.present #s03 #s03-frame-boundary>.card{padding:14px 24px}
+body.present #s03 .long-intro{font-size:22px;line-height:1.3;margin-bottom:10px}
+body.present #s03 .long-example{margin:10px 0}
+body.present #s03 .long-example h3{font-size:20px;margin-bottom:6px}
+body.present #s03 .long-token{font-size:21px;padding:3px 6px}
+body.present #s03 .long-token .long-position{font-size:13px}
+body.present #s03 .long-controls .slider{margin:0}
+body.present #s03 .long-scope,body.present #s03 .long-legend{font-size:19px;line-height:1.3}
+body.present #s03 .long-result{font-size:23px;line-height:1.3;margin-top:10px}
+body.present #s03 .long-cost{font-size:21px;line-height:1.3;margin-top:10px;padding-top:10px}
+body.present #s03 .long-caveat{font-size:18px;line-height:1.3;margin-top:8px}
+body.present #s03 .window-cost-formula{font-size:28px}
+body.present #s03 .window-cost-scope,body.present #s03 .window-cost-large{font-size:22px}
+body.present #s03 #s03-frame-window-cost>.card{padding:14px 24px;margin:0}
+body.present #s03 .window-cost-takeaway{font-size:23px;line-height:1.3;margin:14px 0 0}
+body.present #s03 #s03-frame-window-cost .dt th,body.present #s03 #s03-frame-window-cost .dt td{font-size:21px;padding:6px 12px}
+@media(max-width:640px){
+  body:not(.present) #s03 #s03-long-slider{width:100%}
+  body:not(.present) #s03 #s03-long-slider .slider{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px}
+  body:not(.present) #s03 #s03-long-slider .slider-label{grid-column:1/-1}
+  body:not(.present) #s03 #s03-long-slider input{width:100%;max-width:none;min-width:0}
+  body:not(.present) #s03 .window-cost-formula{font-size:17px}
+  body:not(.present) #s03 #s03-frame-window-cost .dt{width:100%;min-width:0;table-layout:fixed}
+  body:not(.present) #s03 #s03-frame-window-cost .dt th,body:not(.present) #s03 #s03-frame-window-cost .dt td{font-size:13px;padding:6px 5px}
+  body:not(.present) #s03 #s03-frame-window-cost .dt th{white-space:normal}
+}
 #s03 .window-head-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 #s03 .window-head-controls p{font-size:15px;color:var(--ink-2);margin:0}
 #s03 .window-head-layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:24px;align-items:center}
@@ -268,14 +314,25 @@ No. The concatenated context row c_10 is now the input. Its subscript is the las
   </div>
 </div>
 
-<div class="frame" id="s03-frame-boundary" data-title="A larger window moves the hard boundary" data-autobuild="off">
-  <script type="text/x-notes">If we double w, is the boundary gone?
-No. We have only moved it. The observation is about availability of information, not about the ability of an MLP to use content that is inside the window.</script>
+<div class="frame" id="s03-frame-boundary" data-title="Ten tokens can miss the earlier clue" data-autobuild="off">
+  <script type="text/x-notes">Does a window of ten mean the first ten positions?
+It keeps the most recent ten input tokens. Our original prefix had only ten, so all fitted. These two prefixes have twenty input tokens and exactly the same final ten. Read both full sentences, then read only the blue tokens. At w=10 the baseline receives identical input in both scenes and therefore cannot tailor its prediction to river versus cheque. Water is a plausible continuation in the river scene and teller in the bank scene, not a computed or uniquely correct answer. The sentence examples illustrate visibility and are not passed to the twenty-word toy model. Widen the example's separate control to twenty: both clues enter, but the linear head doubles its weights from 800 to 1600, plus twenty biases in either case. At intermediate widths, the words Sunday/yesterday enter before the main clues, so do not claim the visible suffixes are still identical. No finite window covers every possible longer prefix.</script>
+  <p class="long-intro">A window keeps the <strong>most recent w tokens</strong>. Our original prefix had 10 tokens. These have 20.</p>
   <div class="card">
-    <h3 class="card-title">Anything before the previous $w$ tokens is absent.</h3>
-    <span class="live" id="s03-live1"></span>
+    <div class="long-controls"><div id="s03-long-slider" data-keep-state></div><p class="long-scope" id="s03-long-scope"></p></div>
+    <div class="long-example"><h3>River scene: “water” is a plausible next word</h3><div class="long-tokens" id="s03-long-river"></div></div>
+    <div class="long-example"><h3>Bank scene: “teller” is a plausible next word</h3><div class="long-tokens" id="s03-long-cheque"></div></div>
+    <p class="long-legend"><span class="window-input">Blue = available input.</span> Grey = outside the window. <span class="concat-position">Underlined orange = earlier clue.</span></p>
+    <div data-build="1">
+      <p class="long-result" id="s03-long-result" aria-live="polite"></p>
+      <p class="long-cost window-param" id="s03-long-cost"></p>
+    </div>
+    <p class="long-caveat">Sentences illustrate visibility only. Costs use the earlier 4-coordinate, 20-output linear head.</p>
   </div>
-  <div class="callout callout-key" data-build="1">A longer sentence can always put a useful clue beyond that boundary.</div>
+  <div class="companion">
+    <p>We count whitespace-separated words for these illustrative prefixes and leave punctuation out of the token count. Both contain twenty input tokens. At w=10 the input consists of positions 11 through 20: “after a long quiet afternoon turned around and watched the”. The blank is position 21, the token to predict. The first ten words still exist in the text, but this baseline never supplies their rows to the prediction head. With the same visible words in the same positions and the same fixed parameters, the head returns the same probability distribution. Drawing a random next word can differ without making that distribution depend on the unseen clue.</p>
+    <p>The complete river scene makes “water” a plausible continuation, while the bank scene suggests “teller”. These are examples, not forced answers or measured probabilities. The word river is at position 6 and first enters at w=15. Cheque is at position 5 and enters at w=16. At w=20 both entire prefixes fit. For a 35-token prefix, a window of 20 would keep positions 16–35 and could again miss an important clue at position 6. The window slides with the prediction position rather than cutting every sentence at a fixed absolute position.</p>
+  </div>
 </div>
 
 <div class="frame" data-title="The input slots stay fixed" id="s03-frame3" data-autobuild="off">
@@ -308,12 +365,18 @@ The outlines preview the largest weights in the later toy mechanism, not ground-
 
 <div class="frame" id="s03-frame-window-cost" data-title="More slots also mean more parameters" data-autobuild="off">
   <script type="text/x-notes">What grows as we increase w?
-The input width and the parameter count. More tokens fit in this finite sentence, but no finite w removes the boundary for arbitrarily long sentences.</script>
+For this direct linear head there is one weight for every input-coordinate/output-word pair. w tokens each supply d coordinates, and each connects to V output words. Thus W has wdV weights, plus V biases. Read the toy table, then the separate hypothetical larger design: with d=128 and V=10000, ten slots need 12.8 million weights and a hundred slots need 128 million. These are calculated architecture sizes, not measurements of our saved model. The table counts the linear head only. Other learned parameters, including token embeddings, are additional. The earlier MLP puts its window-dependent growth in the first matrix wd by hidden width instead. A larger finite window still cannot guarantee access to every useful earlier clue.</script>
     <div class="card">
+      <div class="window-cost-formula">$$\htmlClass{window-param}{N_{\text{head}}}=\underbrace{\htmlClass{window-input}{w d}\,\htmlClass{window-score}{V}}_{\text{weights in }W}+\underbrace{\htmlClass{window-score}{V}}_{\text{biases}}$$</div>
+      <p class="window-cost-scope"><span class="window-input">w = token slots, d = numbers per token.</span> <span class="window-score">V = vocabulary size.</span> Below: d = 4, V = 20. Counts cover the linear head only.</p>
       <div id="s03-ktab"></div>
-      <p class="companion look" id="s03-ktab-note"></p>
+      <p class="window-cost-large" data-build="1">For a larger illustrative design, d = 128 and V = 10,000:<br><span class="window-param">w = 10: 12.8 million weights. w = 100: 128 million.</span></p>
     </div>
-  <div class="callout callout-key" data-build="1">Could we collect useful information without growing the input width every time the prefix grows?</div>
+  <p class="window-cost-takeaway" data-build="1"><strong>More slots cost more parameters.</strong> A still longer prefix can put the clue outside again.</p>
+  <div class="companion">
+    <p>For fixed embedding width and vocabulary, doubling w doubles the number of weights in W. The V bias parameters stay fixed, so the head total is not exactly doubled. A trainable token lookup adds Vd parameters independently of the window width. A learned absolute-position table, if used, adds its own parameters based on the supported positions. Neither is included in this head-only table.</p>
+    <p>For the MLP sketch earlier in this section, the first layer has wdH weights and H biases, where H is the hidden width. Its output layer has HV weights and V biases. Increasing w enlarges the first matrix while the hidden and output widths can stay fixed. The direct linear-head formula above should not be mistaken for the parameter count of an entire transformer.</p>
+  </div>
 </div>
 
 <div class="companion after">
@@ -367,8 +430,51 @@ The input width and the parameter count. More tokens fit in this finite sentence
   const winNote = S.querySelector('#s03-win-note');
   const ceq = S.querySelector('#s03-ceq');
   const ctabHost = S.querySelector('#s03-ctab'), ctabReading = S.querySelector('#s03-ctab-reading');
-  const live1 = S.querySelector('#s03-live1'), live2 = S.querySelector('#s03-live2');
-  const ktabHost = S.querySelector('#s03-ktab'), ktabNote = S.querySelector('#s03-ktab-note');
+  const live2 = S.querySelector('#s03-live2');
+  const ktabHost = S.querySelector('#s03-ktab');
+
+  // These longer word sequences demonstrate visibility only. They deliberately
+  // do not call AT.embed/forward or extend the toy vocabulary/position table.
+  const longSuffix='after a long quiet afternoon turned around and watched the'.split(' ');
+  const longCases=[
+    {id:'river',prefix:'The fisherman sat beside the river bank on Sunday and',clue:'river'},
+    {id:'cheque',prefix:'She deposited her salary cheque at the bank yesterday and',clue:'cheque'}
+  ].map(example=>({...example,tokens:example.prefix.split(' ').concat(longSuffix)}));
+  let longW=10;
+  function drawLongExample(){
+    const length=longCases[0].tokens.length,first=length-longW;
+    longCases.forEach(example=>{
+      const host=S.querySelector('#s03-long-'+example.id);
+      AT.clear(host);
+      host.dataset.window=longW;host.dataset.tokens=JSON.stringify(example.tokens);
+      host.dataset.firstPosition=first+1;host.dataset.predictionPosition=length+1;
+      example.tokens.forEach((word,i)=>{
+        const inside=i>=first,clue=word===example.clue;
+        host.appendChild(AT.h('span',{class:'long-token'+(inside?' is-inside':' is-outside')+(clue?' is-clue':'')+(i===first?' is-first':''),'data-position':i+1,'data-word':word,'aria-label':'Position '+(i+1)+': '+word+'. '+(inside?'Available input.':'Outside the window.')+(clue?' Earlier clue.':'')},AT.h('span',{class:'long-position','aria-hidden':'true'},String(i+1)),AT.h('span',{class:'long-word'},word)));
+      });
+      host.appendChild(AT.h('span',{class:'long-token long-slot','aria-label':'Predict the word at position '+(length+1)},AT.h('span',{class:'long-position'},String(length+1)),AT.h('span',{class:'long-word'},'___')));
+    });
+    S.querySelector('#s03-long-scope').textContent='Keep positions '+(first+1)+'–'+length+'. Predict '+(length+1)+'.';
+    const same=longCases[0].tokens.slice(-longW).join(' ')===longCases[1].tokens.slice(-longW).join(' ');
+    const clueCount=longCases.filter(example=>example.tokens.indexOf(example.clue)>=first).length;
+    const result=S.querySelector('#s03-long-result');
+    result.dataset.identical=String(same);result.dataset.cluesAvailable=clueCount;
+    result.textContent=same?'The visible words are identical. This head cannot use river or cheque to change its prediction.'
+      :clueCount===2?'Both earlier clues now enter the window. The head can use them, although that does not guarantee a correct prediction.'
+      :'Some earlier words now enter. River needs w ≥ 15, and cheque needs w ≥ 16.';
+    const weights=longW*D*V,biases=V;
+    const cost=S.querySelector('#s03-long-cost');
+    cost.dataset.weights=weights;cost.dataset.biases=biases;cost.dataset.parameters=weights+biases;
+    cost.textContent='w = '+longW+': '+longW*D+' × '+V+' = '+weights.toLocaleString('en-US')+' weights + '+biases+' biases = '+(weights+biases).toLocaleString('en-US')+' head parameters.';
+    const widths=[10,20,100];
+    AT.clear(ktabHost);
+    ktabHost.dataset.selectedWindow=longW;
+    AT.ui.table(widths.map(width=>[width*D,width*D*V,V,width*D*V+V]),{
+      cols:['input numbers','weights in W','biases','head total'],cornerLabel:'window w',
+      rowLabels:widths.map(String),decimals:0,highlightRow:widths.indexOf(longW),
+      caption:'Linear head only: w × '+D+' × '+V+' weights plus '+V+' biases. When the long-sentence window matches a listed width, its row is highlighted.',into:ktabHost
+    });
+  }
 
   function list(idx){ return idx.map(i => toks[i]).join(', '); }
   function fmtN(x){ const r = Math.round(x * 10) / 10; return Math.abs(r - x) < 1e-9 ? AT.fmt(x, 1) : AT.fmt(x, 2); }
@@ -546,25 +652,10 @@ The input width and the parameter count. More tokens fit in this finite sentence
     ctabReading.innerHTML = readWindow(inside, outside);
     AT.renderMath(ctabReading);
 
-    /* live discussion lines (frame 3 reads the current w) */
-    live1.innerHTML = 'With $w = ' + w + '$: ' + (outside.length ? '<strong>' + outside.length + '</strong> token' + (outside.length > 1 ? 's' : '') + ' unavailable: ' + AT.escape(list(outside)) + '.' : 'every token is inside, but a longer sentence would still be cut at ' + w + '.')
-      + (outside.indexOf(5) >= 0 && inside.indexOf(6) >= 0 ? ' The explicit <em>river</em> clue is outside the window.'
-        : outside.indexOf(6) >= 0 ? ' The explicit <em>river bank</em> clues are outside the window.' : '');
-    AT.renderMath(live1);
+    /* The input-slot discussion retains the original short-prefix window. */
     live2.innerHTML = 'With $w = ' + w + '$: <strong>' + w + '</strong> slot' + (w > 1 ? 's' : '') + ' of ' + D + ' numbers each (' + AT.escape(list(inside)) + '), each mapped through fixed parameters, with an output that still depends on the word.';
     AT.renderMath(live2);
 
-    /* w table */
-    const ks = [1, 3, 5, 10].concat([1, 3, 5, 10].indexOf(w) < 0 ? [w] : []).sort((a, b) => a - b);
-    AT.clear(ktabHost);
-    AT.ui.table(ks.map(k => [k * D, V * k * D, T - k]), {
-      cols: ['input size $w d_{\\text{model}}$', 'parameters in $W$', 'tokens cut off'], cornerLabel: 'window',
-      rowLabels: ks.map(k => '$w = ' + k + '$'), decimals: 0, highlightRow: ks.indexOf(w),
-      caption: 'Tokens cut off: counted for this ' + T + '-token sentence. A longer sentence is cut at $w$ no matter how large $w$ is.',
-      into: ktabHost
-    });
-    ktabNote.innerHTML = 'Look at the highlighted row, the current $w = ' + w + '$. Going down the table, every column but the last grows and the last never reaches a longer sentence.';
-    AT.renderMath(ktabNote);
   }
 
   function setWindow(v){
@@ -574,6 +665,8 @@ The input width and the parameter count. More tokens fit in this finite sentence
   }
   const windowSlider=AT.ui.slider({ label: 'Window size w', min: 1, max: T, step: 1, value: w, onInput: setWindow, into: S.querySelector('#s03-slider') });
   const headSlider=AT.ui.slider({ label: 'Window size w', min: 1, max: T, step: 1, value: w, onInput: setWindow, into: S.querySelector('#s03-head-slider') });
+  AT.ui.slider({label:'Long example: window w',min:10,max:longCases[0].tokens.length,step:1,value:longW,onInput:value=>{longW=value;drawLongExample();},into:S.querySelector('#s03-long-slider')});
+  drawLongExample();
   draw();
   // Refresh the static notation after this frame becomes visible. Chromium can
   // otherwise retain an empty paint cache for the grid's second column when

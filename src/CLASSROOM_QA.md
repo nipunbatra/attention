@@ -1,5 +1,12 @@
 # Classroom release checks
 
+## 2026-09-12: longer prefixes and the cost of widening the window
+
+- Replaced “cut at ten” with an explicit most-recent-token rule and two twenty-token prefixes. Their final ten words are identical, while river at position 6 and cheque at position 5 lie outside a ten-token window. A separate 10–20 control marks available words, the moving boundary and prediction position 21. Plausible water/teller continuations motivate the lost clues without claiming measured predictions or sending new words through the toy model.
+- The visible conclusion handles intermediate widths correctly: Sunday/yesterday already differ at w=12, river enters at w=15 and cheque at w=16. At twenty slots both prefixes fit, with 1,600 weights versus 800 at ten slots. Twenty biases stay fixed. The article adds a 35-token example showing that twenty slots can again miss a clue.
+- The cost slide derives wdV + V for the direct linear head, defines each variable and separates weights, biases and head totals. Benchmarks cover w=10, 20 and 100. A labelled larger illustrative design, d=128 and V=10,000, needs 12.8 million weights at w=10 and 128 million at w=100. Notes distinguish head-only counts from embeddings, positional parameters, the earlier MLP and a whole transformer.
+- Regression checks all eleven long-window settings, exact suffix equality, clue-entry thresholds, positions, parameter arithmetic, independent short-window state, progressive visibility, keyboard and retained navigation state. All 297 presentation states / 518 formulas, the 127-control sweep, eight live/reference cases (7,980 finite values, max error 8.88e-16) and 390px article QA pass. Visually inspected both window extremes, the cost slide and phone views, including every cost-table column. No new slides, model, Part I, shared runtime, dependencies or PDF changes.
+
 ## 2026-09-12: link window-head nodes to colour-matched mathematics
 
 - Replaced the matrix-growth frame's bare equations with an interactive linear-head diagram. Its window control shares state with Inside the window and the concatenation example. Each token supplies four actual scalar coordinates; twenty vocabulary outputs remain fixed. Selecting an output traces exactly its incoming column of W, by mouse or Enter/Space. Dots explicitly account for omitted nodes.
