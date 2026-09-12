@@ -1,5 +1,5 @@
 // Protect the opening flow: task -> lookup -> order -> one position example
-// -> concrete sentence matrix -> last-token baseline. Keep extra notation in
+// -> concrete sentence matrix -> context problem -> last-token baseline. Keep extra notation in
 // article companions instead of reintroducing standalone recap/caveat slides.
 // node src/check_position_intro.mjs [attention.html]
 import assert from 'node:assert/strict';
@@ -46,7 +46,7 @@ try{
       }),
       toyCaveat:document.getElementById('s01-model-scope').textContent.includes('ignore coordinate 5'),
       modelScopeInArticle:document.getElementById('s01-model-scope').classList.contains('companion'),
-      baselineBridge:document.querySelector('#s02-frame1 .prose').textContent.includes('Of those ten rows'),
+      baselineBridge:document.querySelector('#s02-frame1 .prose').textContent.includes('of the ten rows'),
       baselineRow:[...document.querySelectorAll('#s02-frame1 annotation')].filter(el=>!el.closest('.companion')).map(el=>el.textContent),
       baselineStartingNotation:document.querySelector('#s02-frame-head .prose').textContent.includes('The superscript')
     };
@@ -61,6 +61,29 @@ try{
   assert(content.hasPart1Bridge,'Connect to the previous fixed-window MLP.');
   assert(content.colours.every(Boolean),'Explain each equation term in the same colour.');
   assert(content.toyCaveat,'Keep the toy position limitation explicit.');
+  const problem=await page.evaluate(()=>{
+    const root=document.getElementById('s02-frame-problem');
+    return {
+      flow:[...document.querySelectorAll('#s02 .frame')].map(frame=>frame.id),
+      sentences:[...root.querySelectorAll('.problem-sentence')].map(p=>p.textContent),
+      expected:[AT.sentences.river,AT.sentences.cheque].map(tokens=>tokens.join(' ')+' ___'),
+      clues:[...root.querySelectorAll('.problem-clue')].map(el=>el.textContent),
+      endings:[...root.querySelectorAll('.problem-ending')].map(el=>el.textContent),
+      question:root.querySelector(':scope > p:last-of-type').textContent,
+      formulas:root.querySelectorAll('.katex').length,
+      baselineTitle:document.getElementById('s02-frame1').dataset.title,
+      restricted:document.querySelector('#s02-frame1 .prose').textContent.includes('A deliberately limited test'),
+      nextStep:document.querySelector('#s02-frame2 > p').textContent
+    };
+  });
+  assert.deepEqual(problem.flow,['s02-frame-problem','s02-frame1','s02-frame-probabilities','s02-frame-head','s02-frame2'],'State the problem before the baseline, observe its prediction, then explain its limitation.');
+  assert.deepEqual(problem.sentences,problem.expected,'Use the exact two contexts from the numerical example.');
+  assert.deepEqual(problem.clues,['river','cheque']);
+  assert.deepEqual(problem.endings,['and watched the ___','and watched the ___']);
+  assert(problem.question.includes('earlier clues change the next-word probabilities'));
+  assert.equal(problem.formulas,0,'The section break should state the problem in plain language.');
+  assert(problem.baselineTitle.startsWith('Baseline 1:')&&problem.restricted,'Do not present the restricted baseline as the solution.');
+  assert(problem.nextStep.includes('several recent token rows'),'Explain the next experiment after establishing the limitation.');
   const matrix=await page.evaluate(()=>{
     const frame=document.getElementById('s01-frame-starting-row'),table=frame.querySelector('table');
     const rows=[...table.querySelectorAll('tbody tr')];
@@ -132,7 +155,7 @@ try{
     assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'Every encoding choice must fit.');
     await page.screenshot({path:path.join(screenshots,'sinusoidal-position-'+position+'.png')});
   }
-  for(const id of content.flow.concat(['s02-frame1','s02-frame-head'])){
+  for(const id of content.flow.concat(problem.flow)){
     for(const build of [0,1,2]){
       await goFrame(id,build);
       await page.waitForTimeout(300);
@@ -140,8 +163,23 @@ try{
     }
     await page.screenshot({path:path.join(screenshots,id+'.png')});
   }
+  const baselineProbabilities=await page.evaluate(()=>{
+    const a=AT.baseline(AT.sentences.river),b=AT.baseline(AT.sentences.cheque);
+    return [a.probs.at(-1),b.probs.at(-1)];
+  });
+  assert.deepEqual(...baselineProbabilities,'The baseline must still give identical distributions for these contexts.');
+  for(const entry of ['s02-frame-problem','s02-frame1']){
+    await goFrame('s02-frame-probabilities');
+    await page.locator('#s02-ctx-b').click();
+    assert.equal(await page.locator('#s02-ctx-b').getAttribute('aria-pressed'),'true');
+    await goFrame(entry);
+    assert.equal(await page.locator('#s02-ctx-a').getAttribute('aria-pressed'),'true','Re-entering the experiment resets A after the new section break.');
+  }
   await page.evaluate(()=>AT.present.exit());
   await page.setViewportSize({width:390,height:844});
+  await page.locator('#s02-frame-problem').scrollIntoViewIfNeeded();
+  assert(await page.locator('#s02-frame-problem').evaluate(el=>el.scrollWidth<=el.clientWidth+1),'The problem statement must fit the phone article.');
+  await page.screenshot({path:path.join(screenshots,'phone-context-problem.png')});
   await page.locator('#s01-position-notation').scrollIntoViewIfNeeded();
   const phone=await page.evaluate(()=>({
     columns:getComputedStyle(document.querySelector('#s01 .position-key')).gridTemplateColumns.split(' ').length,
@@ -164,5 +202,5 @@ try{
   assert(phoneMatrix.fits&&phoneMatrix.scrolls.length===0,'The full sentence matrix must fit a phone.');
   await page.screenshot({path:path.join(screenshots,'phone-sentence-matrix.png')});
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({content,matrix,samples,phone,phoneTable,phoneMatrix,screenshots,errors},null,2));
+  console.log(JSON.stringify({content,problem,matrix,samples,phone,phoneTable,phoneMatrix,screenshots,errors},null,2));
 }finally{await browser.close();}

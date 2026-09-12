@@ -3652,7 +3652,7 @@ Part I's concatenation preserved order by assigning each input position its own 
   <script type="text/x-notes">How many rows do we need for this sentence?
 Count all ten input tokens, including each occurrence of the. The blank is the token to predict, so it has no input row yet. T counts tokens in one sequence, not the number of examples in a batch. Reveal the five-coordinate width, then the shape of E. Point to river at row 6 to give e_6 a concrete meaning.
 The table uses AT.embed on the river sentence, exactly the starting rows used by the bank calculations. It does not use the separate four-coordinate sinusoidal illustration. These are hand-chosen values, not learned measurements. Coordinate 5 is unused by this model's matching, message, and prediction projections. The class is now finished with the position detour.
-The next experiment will give the output head only the final row, for the. Ask whether that row yet contains information about river.</script>
+Next, return to the prediction problem: the earlier clues should change what can fill the blank. The section break compares both sentences before introducing any baseline.</script>
   <p id="s01-matrix-sentence"></p>
   <div class="sentence-rows">
     <div><h3 class="card-title start-row">$\ve{E}$: the hand-chosen bank example</h3><div id="s01-sentence-matrix"></div></div>
@@ -3784,6 +3784,10 @@ The next experiment will give the output head only the final row, for the. Ask w
 #s02 .calc-wrap{margin-top:14px}
 #s02 .calc-wrap .reveal-body>*+*{margin-top:12px}
 #s02 .calc-wrap .dt-fig{margin-top:12px}
+#s02 .problem-example{margin:24px 0}
+#s02 .problem-example p{margin:0 0 6px}
+#s02 .problem-clue{color:#AA4E08;font-weight:650}
+#s02 .problem-ending{color:var(--c-e)}
 @media (max-width:640px){#s02 .pipe{grid-template-columns:1fr;grid-template-rows:none}#s02 .pipe .pipe-bars,#s02 .pipe .read-line{grid-column:auto;grid-row:auto}#s02 .pipe .read-line{margin-top:6px}}
 body.present #s02 .ctx-lab,body.present #s02 .arrow-lab,body.present #s02 .look,body.present #s02 .used-note,body.present #s02 .read-line{font-size:22px;line-height:1.35}
 body.present #s02 .head-box{padding:16px 26px}
@@ -3805,19 +3809,33 @@ body.present #s02 .title-row{margin-bottom:16px}
   </div>
 </header>
 
+<div class="frame" data-title="The problem: using earlier context" id="s02-frame-problem" data-autobuild="off">
+  <script type="text/x-notes">What must change between these two predictions?
+We have represented each token, but we have not yet decided how its information reaches the prediction. Point to river and cheque, then to the shared ending. Water and teller are plausible continuations, not unique correct answers or measured model outputs.
+The question is how earlier clues can change the next-word probabilities. Next we test a deliberately restricted baseline that reads only the final token's starting row. It is a comparison, not the proposed solution or a replacement for Part I's wider-window model.</script>
+  <p>We have one starting row per token. These rows have not yet exchanged information.</p>
+  <div class="problem-example">
+    <p class="problem-sentence">The fisherman sat beside the <span class="problem-clue">river</span> bank <span class="problem-ending">and watched the ___</span></p>
+    <p class="small muted">Plausible next word: <strong>water</strong></p>
+  </div>
+  <div class="problem-example">
+    <p class="problem-sentence">She deposited the <span class="problem-clue">cheque</span> at the bank <span class="problem-ending">and watched the ___</span></p>
+    <p class="small muted">Plausible next word: <strong>teller</strong></p>
+  </div>
+  <p><strong>How can the earlier clues change the next-word probabilities, even when the ending stays the same?</strong></p>
+</div>
+
 <div class="companion" data-kicker="For self-study">
   <p>Start with a model that sends only the last token to the output head. Its entire input is one row of $d_{\text{model}}$ numbers. Switch the context and the bars stay put. The table below explains why: both sentences end with <em>the</em> at position 10, so they supply exactly the same starting row. The same row gives the same probabilities. In this toy, eight candidates also happen to tie. A last-token-only model need not produce a uniform distribution; it must produce the same distribution whenever it receives the same row.</p>
 </div>
 
-<div class="frame" data-title="The last token alone" id="s02-frame1" data-autobuild="off">
+<div class="frame" data-title="Baseline 1: only the last token" id="s02-frame1" data-autobuild="off">
   <script type="text/x-notes">
-    Before I switch the context: will the bars move?
-    They cannot: same token, same position, same row of numbers. Reveal the input row, then the output head equation, then the bars. Collect predictions from the room, then switch the context and let the bars stay put.
-
-    Timing: about three minutes.
+    Could this restricted model distinguish the two contexts?
+    We deliberately send only the final token's starting row to the output head. That row has not received any earlier word's information. Reveal the input row and the head, then use the next slide to test both contexts. The same token at the same position gives the same starting row and hence the same probabilities. Later, reading the final row can work after we update that row using context.
   </script>
   <div class="prose">
-    <p>Of those ten rows, suppose the output head reads <strong>only row 10</strong>, for the last token <strong>“the”</strong>.</p>
+    <p>A deliberately limited test: of the ten rows, the output head reads <strong>only the starting row for “the”</strong>, at position 10.</p>
   </div>
 
   <div class="card">
@@ -3831,6 +3849,7 @@ body.present #s02 .title-row{margin-bottom:16px}
     </div>
     <p class="companion read-line" id="s02-evec-reading"></p>
   </div>
+  <p class="small muted">The earlier rows do not reach this prediction. Can it tell the two contexts apart?</p>
 </div>
 
 <div class="frame" id="s02-frame-probabilities" data-title="Switch the context. Do the probabilities move?" data-autobuild="off">
@@ -3877,7 +3896,7 @@ Nowhere: neither word reaches the head. A better representation has to bring the
     <div id="s02-same-tab"></div>
     <p class="look" id="s02-same-note"></p>
   </div>
-
+  <p>The starting row for <strong>“the”</strong> is missing the earlier clues. Next, we’ll let several recent token rows reach the model.</p>
 </div>
 
 <div class="companion" data-kicker="Output-head worksheet">
@@ -4000,8 +4019,12 @@ Nowhere: neither word reaches the head. A better representation has to bring the
   S.querySelector('#s02-ctx-a').addEventListener('click', () => { ctx = 'A'; paint(); });
   S.querySelector('#s02-ctx-b').addEventListener('click', () => { ctx = 'B'; paint(); });
   paint();
-  /* present mode: the frame starts in context A every time it is entered */
-  if (AT.present && AT.present.on) AT.present.on('frame', (st) => { if (st.frame && st.frame.id === 's02' && st.frame.index === 0 && ctx !== 'A') { ctx = 'A'; paint(); } });
+  /* Reset the experiment at either entry point, independently of frame numbering. */
+  if (AT.present && AT.present.on) AT.present.on('frame', (st) => {
+    if (!st.frame || st.frame.id !== 's02') return;
+    const frame = S.querySelectorAll('.frame')[st.frame.index];
+    if (frame && ['s02-frame-problem', 's02-frame1'].includes(frame.id) && ctx !== 'A') { ctx = 'A'; paint(); }
+  });
 })();
 </script>
 </section>

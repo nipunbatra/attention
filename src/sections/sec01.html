@@ -188,7 +188,7 @@ Part I's concatenation preserved order by assigning each input position its own 
   <script type="text/x-notes">How many rows do we need for this sentence?
 Count all ten input tokens, including each occurrence of the. The blank is the token to predict, so it has no input row yet. T counts tokens in one sequence, not the number of examples in a batch. Reveal the five-coordinate width, then the shape of E. Point to river at row 6 to give e_6 a concrete meaning.
 The table uses AT.embed on the river sentence, exactly the starting rows used by the bank calculations. It does not use the separate four-coordinate sinusoidal illustration. These are hand-chosen values, not learned measurements. Coordinate 5 is unused by this model's matching, message, and prediction projections. The class is now finished with the position detour.
-The next experiment will give the output head only the final row, for the. Ask whether that row yet contains information about river.</script>
+Next, return to the prediction problem: the earlier clues should change what can fill the blank. The section break compares both sentences before introducing any baseline.</script>
   <p id="s01-matrix-sentence"></p>
   <div class="sentence-rows">
     <div><h3 class="card-title start-row">$\ve{E}$: the hand-chosen bank example</h3><div id="s01-sentence-matrix"></div></div>
