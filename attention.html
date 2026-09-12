@@ -4187,10 +4187,30 @@ All twenty words participate. Eight have logit zero and twelve have logit -1.5. 
 #s03 .win-note{font-size:15px;margin:6px 0 14px}
 #s03 .look{font-size:14px;color:var(--ink-2);margin:14px 0 0}
 #s03 .live{display:block;margin:10px 0 0;padding:8px 12px;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-s);font-size:15px}
-#s03 .chip.rel{border:2px solid var(--ink);box-shadow:0 0 0 2px var(--card),0 0 0 3.5px var(--ink-3)}
 #s03 .illus{font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--ink-3)}
-#s03 .dyn-row{margin-top:10px}
-#s03 .dyn-note{font-size:14px;color:var(--ink-2);margin:6px 0 0}
+#s03 .pool-bridge-intro{font-size:18px;line-height:1.4;margin:0 0 14px}
+#s03 .pool-bridge-source{font-size:16px;color:var(--ink-2);margin:8px 0 16px}
+#s03 .pool-bridge-row{display:grid;grid-template-columns:180px minmax(0,1fr);gap:12px 20px;align-items:center;padding:16px 0;border-top:1px solid var(--line)}
+#s03 .pool-bridge-row h3{font-size:19px;margin:0}
+#s03 .pool-bridge-row p{font-size:16px;margin:6px 0 0}
+#s03 .pool-bridge-blocks{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto}
+#s03 .pool-bridge-block{display:grid;grid-template-columns:repeat(4,18px);gap:2px;flex:none}
+#s03 .pool-bridge-block span{height:25px;background:var(--t-e);border:1px solid var(--c-e)}
+#s03 .pool-bridge-summary{display:flex;gap:8px;color:var(--c-v)}
+#s03 .pool-bridge-summary span{border:1px solid var(--c-v);background:var(--t-v);padding:8px 14px;font-size:22px}
+#s03 .pool-bridge-summary-text{color:var(--c-v)}
+#s03 .pool-bridge-next{font-size:20px;line-height:1.4;margin:16px 0 0}
+body.present #s03 .pool-bridge-intro{font-size:26px;line-height:1.35}
+body.present #s03 .pool-bridge-source{font-size:22px;margin:10px 0 16px}
+body.present #s03 .pool-bridge-row{grid-template-columns:215px minmax(0,1fr);padding:18px 0}
+body.present #s03 .pool-bridge-row h3{font-size:26px}
+body.present #s03 .pool-bridge-row p{font-size:22px;line-height:1.35}
+body.present #s03 .pool-bridge-blocks{gap:10px}
+body.present #s03 .pool-bridge-block{grid-template-columns:repeat(4,21px)}
+body.present #s03 .pool-bridge-block span{height:30px}
+body.present #s03 .pool-bridge-summary span{font-size:28px;min-width:66px;text-align:center}
+body.present #s03 .pool-bridge-next{font-size:26px;line-height:1.35}
+@media(max-width:700px){body:not(.present) #s03 .pool-bridge-row{grid-template-columns:minmax(0,1fr)}body:not(.present) #s03 .pool-bridge-block{grid-template-columns:repeat(4,14px)}}
 #s03 .read-line{font-size:15px;color:var(--ink);margin:12px 0 0;padding:8px 12px;border-left:3px solid var(--c-e);background:var(--t-e);border-radius:0 var(--radius-s) var(--radius-s) 0}
 #s03 .net-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px 28px;align-items:center}
 #s03 .net-wrap .netsk{margin:0}
@@ -4516,32 +4536,10 @@ It keeps the most recent ten input tokens. Our original prefix had only ten, so 
   </div>
 </div>
 
-<div class="frame" data-title="The input slots stay fixed" id="s03-frame3" data-autobuild="off">
-  <script type="text/x-notes">
-    Which of these does a bigger w fix?
-    A bigger w can include both sets of clues in this finite example, but it moves rather than removes the boundary, increases the first-layer input width, and still gives a fixed number of slots. Do not claim that an MLP cannot use content within those slots. Reveal one card per press, then the question.
-  </script>
-    <div class="card">
-      <h3 class="card-title">Each input slot is set by its distance from the end.</h3>
-      <span class="live" id="s03-live2"></span>
-    </div>
-    <div class="callout callout-note" data-build="1">The network <strong>can</strong> respond to the words in those slots. What stays fixed is how many slots there are and which positions are supplied.</div>
-    <p class="companion">There is no explicit query-dependent retrieval step in this baseline. This does not mean that an MLP is incapable of using content within a sufficiently large window.</p>
-</div>
-
-<div class="frame" id="s03-frame-changing-clues" data-title="Different predictions need different clues" data-autobuild="off">
-  <script type="text/x-notes">Do the same earlier words help both blanks?
-The outlines preview the largest weights in the later toy mechanism, not ground-truth explanations of language. The relevant sets occur at different distances from their prediction slots.</script>
-    <div class="card">
-      <h3 class="card-title">Two prediction positions in the same sentence</h3>
-      <div class="dyn-row" id="s03-dyn1"></div>
-      <p class="dyn-note" id="s03-dyn1-note"></p>
-    </div>
-    <div class="card" data-build="1">
-      <div class="dyn-row" id="s03-dyn2"></div>
-      <p class="dyn-note" id="s03-dyn2-note"></p>
-    </div>
-    <p class="companion">The outlined words are illustrative: they are computed from the largest weights of the later toy mechanism. A sufficiently large window includes both sets, but still retains one hard boundary.</p>
+<div class="companion" id="s03-frame3">
+  <h3>The input slots stay fixed</h3>
+  <span class="live" id="s03-live2"></span>
+  <p>The network can respond to words inside those slots. The limit is which input rows reach it, not an inability to use the content they contain.</p>
 </div>
 
 <div class="frame" id="s03-frame-window-cost" data-title="More slots also mean more parameters" data-autobuild="off">
@@ -4560,8 +4558,28 @@ For this direct linear head there is one weight for every input-coordinate/outpu
   </div>
 </div>
 
+<div class="frame" id="s03-frame-pooling-bridge" data-title="A fixed-width summary of the prefix" data-autobuild="off">
+  <script type="text/x-notes">What would let more input rows contribute without lengthening the row sent onward?
+The previous slides showed unavailable earlier words and a matrix that grows with the window. Introduce a design alternative. Pooling combines matching coordinates into one row. Name the subtask: bank is already an input token at position 7, and we want to gather context for it from positions 1 through 7. We will later do this at every input position before prediction. Each blue block is one four-number row. Concatenation preserves seven separate blocks. A pooled summary has four coordinates, so it compresses them. Question marks mean the combining rule is still to be chosen. Reveal averaging as the first rule to try, then calculate it in the next section. Pooling can lose information, and processing more rows still takes computation.</script>
+  <p class="pool-bridge-intro">Before prediction, let input tokens collect context.<br>Start with <strong>bank at position 7</strong>: it is already in the input, not a word to guess.</p>
+  <div class="card">
+    <div id="s03-pool-bridge-chips"></div>
+    <p class="pool-bridge-source" id="s03-pool-bridge-source"></p>
+    <div class="pool-bridge-row">
+      <h3 class="window-input">Concatenate</h3>
+      <div><div class="pool-bridge-blocks" id="s03-pool-bridge-concat"></div><p class="window-input" id="s03-pool-bridge-concat-shape"></p></div>
+    </div>
+    <div class="pool-bridge-row" data-build="1">
+      <h3 class="pool-bridge-summary-text">Pool into a summary</h3>
+      <div><div class="pool-bridge-summary" id="s03-pool-bridge-summary"></div><p class="pool-bridge-summary-text">Combine matching coordinates. The result stays 1 × 4.</p></div>
+    </div>
+  </div>
+  <p class="pool-bridge-next" data-build="1">First rule to try: <strong>average each coordinate</strong> across the available rows.</p>
+  <div class="companion"><p>The seven blocks above are the representations of the seven words, each with four coordinates. Concatenation keeps all 28 entries separately. A pooled summary compresses the available rows into four entries, so more tokens do not increase its width. Combining more rows still takes computation, and compression can lose information. We will call this new summary m, keeping c for concatenation. After learning how to build a summary at one position, we can apply the same idea at each input position before making next-token predictions.</p></div>
+</div>
+
 <div class="companion after">
-  <p>A fixed window decides which tokens are available by position. Next we will build a way to choose their contributions by content.</p>
+  <p>Next we calculate a mean, inspect what it gives equal importance to, and then try unequal contributions.</p>
 </div>
 
 <script>
@@ -4571,7 +4589,6 @@ For this direct linear head there is one weight for every input-coordinate/outpu
   const T = toks.length, t = T - 1;
   const E0 = AT.embed(toks);
   const D = AT.d_model, V = AT.vocab.length;
-  const F = AT.forward(toks);
   let w = 3;
 
   /* ---------- frame 1: a fixed window feeds a fixed network (a sketch; d = d_model, h is a stated choice) ---------- */
@@ -4672,8 +4689,6 @@ For this direct linear head there is one weight for every input-coordinate/outpu
       : 'This time most of the ' + AT.escape(toks[RIVER]) + ' evidence is inside.';
     return txt;
   }
-  /* which earlier tokens matter for a slot: the largest attention weights of the last known token (computed, not typed) */
-  function topReaders(i, n){ return AT.range(i + 1).map(j => ({ j, a: F.A[i][j] })).sort((a, b) => b.a - a.a).slice(0, n).map(p => p.j); }
 
   /* Direct linear-head architecture, synchronized with the selected real token rows.
      No weights are fitted here and no probabilities are attributed to this sketch. */
@@ -4860,15 +4875,20 @@ For this direct linear head there is one weight for every input-coordinate/outpu
     });
   });
 
-  /* ---------- frame 3: "relevant context changes dynamically": two prediction slots, illustrative outlines ---------- */
-  const rel1 = topReaders(5, 2), rel2 = topReaders(t, 3);
-  const em = (idx) => idx.slice().sort((a, b) => a - b).map(i => '<em>' + AT.escape(toks[i]) + '</em>').join(', ').replace(/, ([^,]*)$/, ' and $1');
-  const dyn1 = AT.ui.chips(toks.slice(0, 6), { slot: '___', into: S.querySelector('#s03-dyn1') });
-  rel1.forEach(i => dyn1.chips[i].classList.add('rel'));
-  S.querySelector('#s03-dyn1-note').innerHTML = 'Predicting position 7 (the answer is <em>' + AT.escape(toks[6]) + '</em>): the later toy query at position 6 reads most from ' + em(rel1) + '.';
-  const dyn2 = AT.ui.chips(toks, { slot: '___', into: S.querySelector('#s03-dyn2') });
-  rel2.forEach(i => dyn2.chips[i].classList.add('rel'));
-  S.querySelector('#s03-dyn2-note').innerHTML = 'Predicting position 11 (after <em>watched the</em>): the later toy query at position 10 reads most from ' + em(rel2) + '.';
+  const poolTokens=toks.slice(0,7);
+  AT.ui.chips(poolTokens,{active:6,into:S.querySelector('#s03-pool-bridge-chips')});
+  S.querySelector('#s03-pool-bridge-source').textContent='Positions 1–7 are available: '+poolTokens.length+' token rows, '+D+' numbers per row.';
+  const blocks=S.querySelector('#s03-pool-bridge-concat');
+  blocks.setAttribute('role','img');blocks.setAttribute('aria-label','Seven four-coordinate rows concatenate into one row of 28 numbers.');
+  poolTokens.forEach((word,i)=>{
+    const block=AT.h('div',{class:'pool-bridge-block','data-position':i+1,title:(i+1)+' '+word+': '+D+' coordinates'});
+    AT.range(D).forEach(()=>block.appendChild(AT.h('span',{'aria-hidden':'true'})));
+    blocks.appendChild(block);
+  });
+  S.querySelector('#s03-pool-bridge-concat-shape').textContent='1 × '+(poolTokens.length*D)+' here. More tokens make this row longer.';
+  const summary=S.querySelector('#s03-pool-bridge-summary');
+  summary.setAttribute('role','img');summary.setAttribute('aria-label','Proposed summary: four coordinates. The combining rule is not chosen yet.');
+  AT.range(D).forEach(()=>summary.appendChild(AT.h('span',{'aria-hidden':'true'},'?')));
 })();
 </script>
 </section>
@@ -4888,6 +4908,21 @@ For this direct linear head there is one weight for every input-coordinate/outpu
 #s04 .reveal-body{padding-left:18px}
 #s04 .calc-rl.calc-outlab{color:var(--ink-2)}
 #s04 .s04-classroom{display:none}
+#s04 .pool-summary,#s04 .vec-label{color:var(--c-v)}
+#s04 .pool-input{color:var(--c-e)}
+#s04 .pool-intro{font-size:18px;line-height:1.4;margin:0 0 14px}
+#s04 .pool-preview{display:flex;align-items:center;gap:12px 24px;flex-wrap:wrap;margin-top:12px}
+#s04 .pool-preview p{font-size:16px;line-height:1.4;margin:0}
+#s04 .pool-definitions{font-size:17px;line-height:1.4;margin:8px 0 0}
+#s04 .pool-equation .katex-display{margin:12px 0}
+body.present #s04 .pool-intro{font-size:24px;line-height:1.35}
+body.present #s04 .pool-preview p,body.present #s04 .pool-definitions{font-size:22px;line-height:1.35}
+body.present #s04 #s04-frame-mean>.card{padding:16px 24px;margin-bottom:12px}
+body.present #s04 .pool-preview .vec-ax{font-size:18px}
+/* KaTeX's nested table-layout spans can retain inherited hidden visibility
+   after a reveal in Chromium. Only the live, revealed equation is visible. */
+body.present:not(.is-preflighting) #s04 #s04-frame-mean.is-live .pool-equation:not(.is-pending) .katex-html *{visibility:visible}
+@media(max-width:640px){body:not(.present) #s04 #s04-islider .slider{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px}body:not(.present) #s04 #s04-islider .slider-label{grid-column:1/-1}body:not(.present) #s04 #s04-islider input{width:100%;max-width:none;min-width:0}}
 body.present #s04 .s04-classroom{display:block}
 body.present #s04 .dt td,body.present #s04 .dt th{font-size:22px;padding:7px 10px}
 body.present #s04 .dt-cap,body.present #s04 .dt-note{display:none}
@@ -4908,26 +4943,27 @@ body.present #s04 #s04-live-pool{margin-top:14px}
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Before choosing weights with attention, try choosing them yourself. A pooled vector $c_i$ is a weighted sum of earlier representations. The tables show one row per token, one column per coordinate, the weights on the left and the sum at the bottom. Drag the position slider: the mean gives every included row equal weight. Then adjust the raw weights for <em>bank</em>. The result moves towards the rows you favour. These weights determine what information reaches bank, so how should a model choose them?</p>
+  <p>We now build context for a token already in the input. Begin at position 7, bank, using the seven known token rows. A pooled summary $m_i$ combines their corresponding coordinates, while the earlier $c_t$ concatenated rows. Try averaging first, then choose unequal contributions yourself. The summary stays four numbers wide. Later, we will build a summary at every input position before prediction. These arithmetic operations do not update the stored vocabulary table.</p>
 </div>
 
-<div class="frame" data-title="Average every earlier token" data-autobuild="off">
+<div class="frame" id="s04-frame-mean" data-title="Mean pooling: averaging matching coordinates" data-autobuild="off">
   <script type="text/x-notes">
 Why not just average?
-Point at the weight column first: every included row gets the same 1/i, so river and the count the same for bank. Then reveal the pooled row. Drag the position slider back to 3 and forward to 7: the footer moves, but nothing in the table chooses.
+Bank is already known, at position 7. We are building a context summary for it, not guessing that input word. Start with the result and the four matching coordinate names. Move the position control to 3 and back to 7: the number of source rows changes but the summary width remains four. Reveal the equation only after explaining that each column is summed and divided by the number of included rows. Define m as the summary, i as the current receiving position and j as a source position. The next slide shows every term in the same calculation. All included rows have equal influence under this first rule.
 
 Timing: three minutes.
   </script>
-  <div class="prose">
-    <p>Drop the window: combine every available input row into one fixed-width row.</p>
-    $$c_i = \frac{1}{i}\sum_{j \le i} \ve{e_j}$$
-  </div>
-
+  <p class="pool-intro">For each coordinate, add the numbers from the available rows and divide by the number of rows.</p>
   <div class="card">
-    <h3 class="card-title">Choose how much of the prefix is available.</h3>
+    <h3 class="card-title" id="s04-mean-scope"></h3>
     <div id="s04-chips"></div>
     <div id="s04-islider" data-keep-state></div>
+    <div class="pool-preview"><div id="s04-mean-live"></div><p class="pool-summary" id="s04-mean-shape"></p></div>
     <div class="companion eqline no-math" id="s04-mean-eq"></div>
+  </div>
+  <div class="pool-equation" data-build="1">
+    $$\htmlClass{pool-summary}{m_i}=\frac{1}{i}\sum_{j=1}^{i}\ve{e_j}$$
+    <p class="pool-definitions"><span class="pool-summary">$m_i$ = pooled summary.</span> $i$ = current position. <span class="pool-input">$e_j$ = input row at source position $j$, from 1 through $i$.</span></p>
   </div>
 </div>
 
@@ -4950,8 +4986,8 @@ The table starts with equal weights, so it is the mean again. Reveal the sliders
 Timing: three minutes.
   </script>
   <div class="prose">
-    <p>For <em>bank</em>, <em>river</em> may carry more useful information than <em>the</em>.</p>
-    $$c_i = \sum_{j \le i} \va{\alpha_{ij}}\, \ve{e_j}, \qquad \sum_{j} \va{\alpha_{ij}} = 1$$
+    <p>The mean gives <em>river</em> and <em>the</em> the same share. When summarizing context for <em>bank</em>, could <em>river</em> contribute more?</p>
+    $$\htmlClass{pool-summary}{m_i} = \sum_{j \le i} \va{\alpha_{ij}}\, \ve{e_j}, \qquad \sum_{j \le i} \va{\alpha_{ij}} = 1$$
     <p data-build="1">The weight $\va{\alpha_{ij}}$ says how much position $i$ takes from source $j$.</p>
   </div>
 </div>
@@ -5053,8 +5089,8 @@ Timing: two minutes.
   const meanW = toks.map(() => NaN);
   const meanTab = AT.ui.table(E, { rowLabels: labels, rowCls: 'e', cornerLabel: 'token', decimals: 2,
     lead: [{ label: 'weight $1/i$', cls: 'a', heat: true, values: meanW }],
-    footer: { label: '$c_7$', values: AT.zeros(D), cls: 'neutral', lead: [1] },
-    caption: 'Look at the weight column: every included row gets the same $1/i$, so <em>river</em> and <em>the</em> count the same. The footer $c_i$ adds the weighted rows.',
+    footer: { label: '$m_7$', values: AT.zeros(D), cls: 'v', lead: [1] },
+    caption: 'Look at the weight column: every included row gets the same $1/i$, so <em>river</em> and <em>the</em> count the same. The footer $m_i$ adds the weighted rows.',
     note: 'Hover or focus a footer cell to see the terms of its sum.', into: S.querySelector('#s04-mean-tab') });
   markFooter(meanTab, 1);
   meanTab.footer.cells.forEach((td, c) => meanTab.tipOn(td, () => termLine(meanW, c)));
@@ -5063,9 +5099,10 @@ Timing: two minutes.
     S.querySelector('#s04-e-read').innerHTML = 'Reading ' + AT.texStr('\\ve{e_7}') + ' (bank): ' + AT.escape(b.list) + ', so bank is ' + b.gist + '. Row 6 (river) is ' + r.gist + ' (' + AT.escape(r.list) + '); row 5 (the) is ' + t.gist + ' (' + AT.escape(t.list) + ').';
   })();
   /* worksheet: the footer, one line per coordinate (α times each row, added up) */
-  const meanCalc = AT.ui.matVecCalc(meanW.map(a => a > 0 ? a : 0), E, { from: labels, to: 'e', cls: 'e', fromCls: 'a', xLabel: 'weight', outLabel: 'c' + sub(T), wDecimals: 2 });
-  AT.ui.reveal('Show the arithmetic: one line per coordinate of $c_i$', meanCalc, { hint: 'Worksheet', into: S.querySelector('#s04-mean-arith') });
+  const meanCalc = AT.ui.matVecCalc(meanW.map(a => a > 0 ? a : 0), E, { from: labels, to: 'e', cls: 'e', fromCls: 'a', xLabel: 'weight', outLabel: 'm' + sub(T), wDecimals: 2 });
+  AT.ui.reveal('Show the arithmetic: one line per coordinate of $m_i$', meanCalc, { hint: 'Worksheet', into: S.querySelector('#s04-mean-arith') });
   const meanEq = S.querySelector('#s04-mean-eq');
+  const meanLive=AT.ui.vec(AT.zeros(D),{cls:'v',axes:'e',label:'m_7',into:S.querySelector('#s04-mean-live')});
   function drawMean(i){
     toks.forEach((t, j) => { meanW[j] = j < i ? 1 / i : NaN; });
     chips.setActive(i - 1);
@@ -5073,9 +5110,14 @@ Timing: two minutes.
     meanTab.update(E);
     meanTab.setDim(AT.range(T).filter(j => j >= i));
     meanTab.setFooter(pooled(meanW.map(a => a > 0 ? a : 0)), [AT.sum(meanW.filter(a => a > 0))]);
-    AT.tex(meanTab.footer.label, 'c_{' + i + '}');
-    meanCalc.update(meanW.map(a => a > 0 ? a : 0), { outLabel: 'c' + sub(i) });
-    AT.tex(meanEq, 'c_{' + i + '} = \\tfrac{1}{' + i + '}\\left(' + AT.range(i).map(j => '\\ve{e_{' + (j + 1) + '}}').join(' + ') + '\\right)');
+    AT.tex(meanTab.footer.label, 'm_{' + i + '}');
+    const mean=pooled(meanW.map(a=>a>0?a:0));
+    meanLive.update(mean);meanLive.setLabel('m_{'+i+'}');
+    meanLive.dataset.values=JSON.stringify(mean);meanLive.dataset.position=i;
+    S.querySelector('#s04-mean-scope').textContent='Current input position i = '+i+': '+toks[i-1]+'. Use rows 1–'+i+'.';
+    S.querySelector('#s04-mean-shape').textContent=i+' row'+(i===1?'':'s')+' × '+D+' coordinates become one 1 × '+D+' summary.';
+    meanCalc.update(meanW.map(a => a > 0 ? a : 0), { outLabel: 'm' + sub(i) });
+    AT.tex(meanEq, 'm_{' + i + '} = \\tfrac{1}{' + i + '}\\left(' + AT.range(i).map(j => '\\ve{e_{' + (j + 1) + '}}').join(' + ') + '\\right)');
   }
   AT.ui.slider({ label: 'Pool up to position i', min: 1, max: T, step: 1, value: T, format: v => v + ' (' + toks[v - 1] + ')', onInput: drawMean, into: S.querySelector('#s04-islider') });
   drawMean(T);
@@ -5095,15 +5137,15 @@ Timing: two minutes.
   });
   const wTab = AT.ui.table(E, { rowLabels: labels, rowCls: 'e', cornerLabel: 'token', decimals: 2,
     lead: [{ label: '$\\va{\\alpha_{7j}}$', cls: 'a', heat: true, values: alpha }],
-    footer: { label: '$c_7$', values: AT.zeros(D), cls: 'neutral', lead: [1] },
-    caption: 'Look at the $\\va{\\alpha_{7j}}$ column: the darker the cell, the more of that row ends up in the footer $c_7 = \\sum_j \\va{\\alpha_{7j}}\\,\\ve{e_j}$. The row with the largest weight is outlined.',
+    footer: { label: '$m_7$', values: AT.zeros(D), cls: 'v', lead: [1] },
+    caption: 'Look at the $\\va{\\alpha_{7j}}$ column: the darker the cell, the more of that row ends up in the footer $m_7 = \\sum_j \\va{\\alpha_{7j}}\\,\\ve{e_j}$. The row with the largest weight is outlined.',
     note: 'Hover or focus a footer cell to see the terms of its sum.', into: S.querySelector('#s04-w-tab') });
   markFooter(wTab, 1);
   wTab.footer.cells.forEach((td, c) => wTab.tipOn(td, () => termLine(alpha, c)));
-  const wCalc = AT.ui.matVecCalc(alpha, E, { from: labels, to: 'e', cls: 'e', fromCls: 'a', xLabel: 'α', outLabel: 'c' + sub(T), wDecimals: 2 });
-  AT.ui.reveal('Show the arithmetic: one line per coordinate of $c_7$', wCalc, { hint: 'Worksheet', into: S.querySelector('#s04-w-arith') });
+  const wCalc = AT.ui.matVecCalc(alpha, E, { from: labels, to: 'e', cls: 'e', fromCls: 'a', xLabel: 'α', outLabel: 'm' + sub(T), wDecimals: 2 });
+  AT.ui.reveal('Show the arithmetic: one line per coordinate of $m_7$', wCalc, { hint: 'Worksheet', into: S.querySelector('#s04-w-arith') });
   const noteEl = S.querySelector('#s04-w-note');
-  const livePool = AT.ui.vec(pooled(alpha), { cls: 'e', axes: 'e', label: 'c_7', into: S.querySelector('#s04-live-pool') });
+  const livePool = AT.ui.vec(pooled(alpha), { cls: 'v', axes: 'e', label: 'm_7', into: S.querySelector('#s04-live-pool') });
   const shortNote = S.querySelector('#s04-weight-summary');
   function drawW(){
     const tot = AT.sum(W);
@@ -5117,11 +5159,13 @@ Timing: two minutes.
     wCalc.update(alpha);
     const c = pooled(alpha), rc = readE(c);
     livePool.update(c);
+    livePool.dataset.values=JSON.stringify(c);
+    livePool.dataset.weights=JSON.stringify(alpha);
     shortNote.textContent = spread < 1e-9 ? 'Equal weights give the mean again.' : 'Most weight: ' + toks[top] + '. The pooled row moves toward that source.';
     noteEl.textContent = (spread < 1e-9
       ? 'All weights equal: this is exactly mean pooling again.'
       : 'Largest weight on token ' + (top + 1) + ' (' + toks[top] + '): the footer moves towards that row.')
-      + ' Reading the footer: ' + (rc.list || 'everything near 0') + ', so the pooled bank is ' + rc.gist + '.';
+      + ' Reading the summary for bank: ' + (rc.list || 'everything near 0') + ', ' + rc.gist + '.';
   }
   const presets = {
     equal: toks.map(() => 1),

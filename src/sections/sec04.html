@@ -12,6 +12,21 @@
 #s04 .reveal-body{padding-left:18px}
 #s04 .calc-rl.calc-outlab{color:var(--ink-2)}
 #s04 .s04-classroom{display:none}
+#s04 .pool-summary,#s04 .vec-label{color:var(--c-v)}
+#s04 .pool-input{color:var(--c-e)}
+#s04 .pool-intro{font-size:18px;line-height:1.4;margin:0 0 14px}
+#s04 .pool-preview{display:flex;align-items:center;gap:12px 24px;flex-wrap:wrap;margin-top:12px}
+#s04 .pool-preview p{font-size:16px;line-height:1.4;margin:0}
+#s04 .pool-definitions{font-size:17px;line-height:1.4;margin:8px 0 0}
+#s04 .pool-equation .katex-display{margin:12px 0}
+body.present #s04 .pool-intro{font-size:24px;line-height:1.35}
+body.present #s04 .pool-preview p,body.present #s04 .pool-definitions{font-size:22px;line-height:1.35}
+body.present #s04 #s04-frame-mean>.card{padding:16px 24px;margin-bottom:12px}
+body.present #s04 .pool-preview .vec-ax{font-size:18px}
+/* KaTeX's nested table-layout spans can retain inherited hidden visibility
+   after a reveal in Chromium. Only the live, revealed equation is visible. */
+body.present:not(.is-preflighting) #s04 #s04-frame-mean.is-live .pool-equation:not(.is-pending) .katex-html *{visibility:visible}
+@media(max-width:640px){body:not(.present) #s04 #s04-islider .slider{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px}body:not(.present) #s04 #s04-islider .slider-label{grid-column:1/-1}body:not(.present) #s04 #s04-islider input{width:100%;max-width:none;min-width:0}}
 body.present #s04 .s04-classroom{display:block}
 body.present #s04 .dt td,body.present #s04 .dt th{font-size:22px;padding:7px 10px}
 body.present #s04 .dt-cap,body.present #s04 .dt-note{display:none}
@@ -32,26 +47,27 @@ body.present #s04 #s04-live-pool{margin-top:14px}
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Before choosing weights with attention, try choosing them yourself. A pooled vector $c_i$ is a weighted sum of earlier representations. The tables show one row per token, one column per coordinate, the weights on the left and the sum at the bottom. Drag the position slider: the mean gives every included row equal weight. Then adjust the raw weights for <em>bank</em>. The result moves towards the rows you favour. These weights determine what information reaches bank, so how should a model choose them?</p>
+  <p>We now build context for a token already in the input. Begin at position 7, bank, using the seven known token rows. A pooled summary $m_i$ combines their corresponding coordinates, while the earlier $c_t$ concatenated rows. Try averaging first, then choose unequal contributions yourself. The summary stays four numbers wide. Later, we will build a summary at every input position before prediction. These arithmetic operations do not update the stored vocabulary table.</p>
 </div>
 
-<div class="frame" data-title="Average every earlier token" data-autobuild="off">
+<div class="frame" id="s04-frame-mean" data-title="Mean pooling: averaging matching coordinates" data-autobuild="off">
   <script type="text/x-notes">
 Why not just average?
-Point at the weight column first: every included row gets the same 1/i, so river and the count the same for bank. Then reveal the pooled row. Drag the position slider back to 3 and forward to 7: the footer moves, but nothing in the table chooses.
+Bank is already known, at position 7. We are building a context summary for it, not guessing that input word. Start with the result and the four matching coordinate names. Move the position control to 3 and back to 7: the number of source rows changes but the summary width remains four. Reveal the equation only after explaining that each column is summed and divided by the number of included rows. Define m as the summary, i as the current receiving position and j as a source position. The next slide shows every term in the same calculation. All included rows have equal influence under this first rule.
 
 Timing: three minutes.
   </script>
-  <div class="prose">
-    <p>Drop the window: combine every available input row into one fixed-width row.</p>
-    $$c_i = \frac{1}{i}\sum_{j \le i} \ve{e_j}$$
-  </div>
-
+  <p class="pool-intro">For each coordinate, add the numbers from the available rows and divide by the number of rows.</p>
   <div class="card">
-    <h3 class="card-title">Choose how much of the prefix is available.</h3>
+    <h3 class="card-title" id="s04-mean-scope"></h3>
     <div id="s04-chips"></div>
     <div id="s04-islider" data-keep-state></div>
+    <div class="pool-preview"><div id="s04-mean-live"></div><p class="pool-summary" id="s04-mean-shape"></p></div>
     <div class="companion eqline no-math" id="s04-mean-eq"></div>
+  </div>
+  <div class="pool-equation" data-build="1">
+    $$\htmlClass{pool-summary}{m_i}=\frac{1}{i}\sum_{j=1}^{i}\ve{e_j}$$
+    <p class="pool-definitions"><span class="pool-summary">$m_i$ = pooled summary.</span> $i$ = current position. <span class="pool-input">$e_j$ = input row at source position $j$, from 1 through $i$.</span></p>
   </div>
 </div>
 
@@ -74,8 +90,8 @@ The table starts with equal weights, so it is the mean again. Reveal the sliders
 Timing: three minutes.
   </script>
   <div class="prose">
-    <p>For <em>bank</em>, <em>river</em> may carry more useful information than <em>the</em>.</p>
-    $$c_i = \sum_{j \le i} \va{\alpha_{ij}}\, \ve{e_j}, \qquad \sum_{j} \va{\alpha_{ij}} = 1$$
+    <p>The mean gives <em>river</em> and <em>the</em> the same share. When summarizing context for <em>bank</em>, could <em>river</em> contribute more?</p>
+    $$\htmlClass{pool-summary}{m_i} = \sum_{j \le i} \va{\alpha_{ij}}\, \ve{e_j}, \qquad \sum_{j \le i} \va{\alpha_{ij}} = 1$$
     <p data-build="1">The weight $\va{\alpha_{ij}}$ says how much position $i$ takes from source $j$.</p>
   </div>
 </div>
@@ -177,8 +193,8 @@ Timing: two minutes.
   const meanW = toks.map(() => NaN);
   const meanTab = AT.ui.table(E, { rowLabels: labels, rowCls: 'e', cornerLabel: 'token', decimals: 2,
     lead: [{ label: 'weight $1/i$', cls: 'a', heat: true, values: meanW }],
-    footer: { label: '$c_7$', values: AT.zeros(D), cls: 'neutral', lead: [1] },
-    caption: 'Look at the weight column: every included row gets the same $1/i$, so <em>river</em> and <em>the</em> count the same. The footer $c_i$ adds the weighted rows.',
+    footer: { label: '$m_7$', values: AT.zeros(D), cls: 'v', lead: [1] },
+    caption: 'Look at the weight column: every included row gets the same $1/i$, so <em>river</em> and <em>the</em> count the same. The footer $m_i$ adds the weighted rows.',
     note: 'Hover or focus a footer cell to see the terms of its sum.', into: S.querySelector('#s04-mean-tab') });
   markFooter(meanTab, 1);
   meanTab.footer.cells.forEach((td, c) => meanTab.tipOn(td, () => termLine(meanW, c)));
@@ -187,9 +203,10 @@ Timing: two minutes.
     S.querySelector('#s04-e-read').innerHTML = 'Reading ' + AT.texStr('\\ve{e_7}') + ' (bank): ' + AT.escape(b.list) + ', so bank is ' + b.gist + '. Row 6 (river) is ' + r.gist + ' (' + AT.escape(r.list) + '); row 5 (the) is ' + t.gist + ' (' + AT.escape(t.list) + ').';
   })();
   /* worksheet: the footer, one line per coordinate (α times each row, added up) */
-  const meanCalc = AT.ui.matVecCalc(meanW.map(a => a > 0 ? a : 0), E, { from: labels, to: 'e', cls: 'e', fromCls: 'a', xLabel: 'weight', outLabel: 'c' + sub(T), wDecimals: 2 });
-  AT.ui.reveal('Show the arithmetic: one line per coordinate of $c_i$', meanCalc, { hint: 'Worksheet', into: S.querySelector('#s04-mean-arith') });
+  const meanCalc = AT.ui.matVecCalc(meanW.map(a => a > 0 ? a : 0), E, { from: labels, to: 'e', cls: 'e', fromCls: 'a', xLabel: 'weight', outLabel: 'm' + sub(T), wDecimals: 2 });
+  AT.ui.reveal('Show the arithmetic: one line per coordinate of $m_i$', meanCalc, { hint: 'Worksheet', into: S.querySelector('#s04-mean-arith') });
   const meanEq = S.querySelector('#s04-mean-eq');
+  const meanLive=AT.ui.vec(AT.zeros(D),{cls:'v',axes:'e',label:'m_7',into:S.querySelector('#s04-mean-live')});
   function drawMean(i){
     toks.forEach((t, j) => { meanW[j] = j < i ? 1 / i : NaN; });
     chips.setActive(i - 1);
@@ -197,9 +214,14 @@ Timing: two minutes.
     meanTab.update(E);
     meanTab.setDim(AT.range(T).filter(j => j >= i));
     meanTab.setFooter(pooled(meanW.map(a => a > 0 ? a : 0)), [AT.sum(meanW.filter(a => a > 0))]);
-    AT.tex(meanTab.footer.label, 'c_{' + i + '}');
-    meanCalc.update(meanW.map(a => a > 0 ? a : 0), { outLabel: 'c' + sub(i) });
-    AT.tex(meanEq, 'c_{' + i + '} = \\tfrac{1}{' + i + '}\\left(' + AT.range(i).map(j => '\\ve{e_{' + (j + 1) + '}}').join(' + ') + '\\right)');
+    AT.tex(meanTab.footer.label, 'm_{' + i + '}');
+    const mean=pooled(meanW.map(a=>a>0?a:0));
+    meanLive.update(mean);meanLive.setLabel('m_{'+i+'}');
+    meanLive.dataset.values=JSON.stringify(mean);meanLive.dataset.position=i;
+    S.querySelector('#s04-mean-scope').textContent='Current input position i = '+i+': '+toks[i-1]+'. Use rows 1–'+i+'.';
+    S.querySelector('#s04-mean-shape').textContent=i+' row'+(i===1?'':'s')+' × '+D+' coordinates become one 1 × '+D+' summary.';
+    meanCalc.update(meanW.map(a => a > 0 ? a : 0), { outLabel: 'm' + sub(i) });
+    AT.tex(meanEq, 'm_{' + i + '} = \\tfrac{1}{' + i + '}\\left(' + AT.range(i).map(j => '\\ve{e_{' + (j + 1) + '}}').join(' + ') + '\\right)');
   }
   AT.ui.slider({ label: 'Pool up to position i', min: 1, max: T, step: 1, value: T, format: v => v + ' (' + toks[v - 1] + ')', onInput: drawMean, into: S.querySelector('#s04-islider') });
   drawMean(T);
@@ -219,15 +241,15 @@ Timing: two minutes.
   });
   const wTab = AT.ui.table(E, { rowLabels: labels, rowCls: 'e', cornerLabel: 'token', decimals: 2,
     lead: [{ label: '$\\va{\\alpha_{7j}}$', cls: 'a', heat: true, values: alpha }],
-    footer: { label: '$c_7$', values: AT.zeros(D), cls: 'neutral', lead: [1] },
-    caption: 'Look at the $\\va{\\alpha_{7j}}$ column: the darker the cell, the more of that row ends up in the footer $c_7 = \\sum_j \\va{\\alpha_{7j}}\\,\\ve{e_j}$. The row with the largest weight is outlined.',
+    footer: { label: '$m_7$', values: AT.zeros(D), cls: 'v', lead: [1] },
+    caption: 'Look at the $\\va{\\alpha_{7j}}$ column: the darker the cell, the more of that row ends up in the footer $m_7 = \\sum_j \\va{\\alpha_{7j}}\\,\\ve{e_j}$. The row with the largest weight is outlined.',
     note: 'Hover or focus a footer cell to see the terms of its sum.', into: S.querySelector('#s04-w-tab') });
   markFooter(wTab, 1);
   wTab.footer.cells.forEach((td, c) => wTab.tipOn(td, () => termLine(alpha, c)));
-  const wCalc = AT.ui.matVecCalc(alpha, E, { from: labels, to: 'e', cls: 'e', fromCls: 'a', xLabel: 'α', outLabel: 'c' + sub(T), wDecimals: 2 });
-  AT.ui.reveal('Show the arithmetic: one line per coordinate of $c_7$', wCalc, { hint: 'Worksheet', into: S.querySelector('#s04-w-arith') });
+  const wCalc = AT.ui.matVecCalc(alpha, E, { from: labels, to: 'e', cls: 'e', fromCls: 'a', xLabel: 'α', outLabel: 'm' + sub(T), wDecimals: 2 });
+  AT.ui.reveal('Show the arithmetic: one line per coordinate of $m_7$', wCalc, { hint: 'Worksheet', into: S.querySelector('#s04-w-arith') });
   const noteEl = S.querySelector('#s04-w-note');
-  const livePool = AT.ui.vec(pooled(alpha), { cls: 'e', axes: 'e', label: 'c_7', into: S.querySelector('#s04-live-pool') });
+  const livePool = AT.ui.vec(pooled(alpha), { cls: 'v', axes: 'e', label: 'm_7', into: S.querySelector('#s04-live-pool') });
   const shortNote = S.querySelector('#s04-weight-summary');
   function drawW(){
     const tot = AT.sum(W);
@@ -241,11 +263,13 @@ Timing: two minutes.
     wCalc.update(alpha);
     const c = pooled(alpha), rc = readE(c);
     livePool.update(c);
+    livePool.dataset.values=JSON.stringify(c);
+    livePool.dataset.weights=JSON.stringify(alpha);
     shortNote.textContent = spread < 1e-9 ? 'Equal weights give the mean again.' : 'Most weight: ' + toks[top] + '. The pooled row moves toward that source.';
     noteEl.textContent = (spread < 1e-9
       ? 'All weights equal: this is exactly mean pooling again.'
       : 'Largest weight on token ' + (top + 1) + ' (' + toks[top] + '): the footer moves towards that row.')
-      + ' Reading the footer: ' + (rc.list || 'everything near 0') + ', so the pooled bank is ' + rc.gist + '.';
+      + ' Reading the summary for bank: ' + (rc.list || 'everything near 0') + ', ' + rc.gist + '.';
   }
   const presets = {
     equal: toks.map(() => 1),

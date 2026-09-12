@@ -285,7 +285,7 @@ try{
     assert(long.costNotes.includes('linear head only')&&long.costNotes.includes('12.8 million')&&long.costNotes.includes('128 million'));
     assert.equal(10*128*10000,12.8e6);assert.equal(100*128*10000,128e6);
     assert.equal(await slider.inputValue(),shortWindow,'The longer illustration must not resize the saved short-prefix example.');
-    for(const frame of [5,8])for(const build of [0,1]){
+    for(const frame of [5,6])for(const build of [0,1]){
       await page.evaluate(({frame,build})=>AT.present.go('s03',frame,build),{frame,build});
       await page.waitForTimeout(100);
       assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,`Long-window frame ${frame}, w=${w}, build=${build} fits.`);
