@@ -43,7 +43,7 @@ body.present #s03 #s03-ceq .katex-display{margin:4px 0 16px}
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Give the model more context by concatenating the last $w$ representations into one long row. A larger matrix can read that row. In the first diagram, the input column contains the window, so widening the window also widens the first layer's input. Use the second slider to see which tokens reach it: each token adds five numbers. At $w=3$, <em>river</em> is outside. At $w=10$, every token fits because this sentence is short. The network can learn to use the content it receives, including the difference between <em>river</em> and <em>the</em>. But its input width is fixed, and it gets no information from beyond the window. We want a way to choose useful information by content, rather than deciding which words are available only by position.</p>
+  <p>Give the model more context by concatenating the last $w$ representations into one long row. A larger matrix can read that row. In the first diagram, the input column contains the window, so widening the window also widens the first layer's input. Use the second slider to see which tokens reach it: each token adds four numbers. At $w=3$, <em>river</em> is outside. At $w=10$, every token fits because this sentence is short. The network can learn to use the content it receives, including the difference between <em>river</em> and <em>the</em>. But its input width is fixed, and it gets no information from beyond the window. We want a way to choose useful information by content, rather than deciding which words are available only by position.</p>
 </div>
 
 <div class="frame" data-title="Grow the window" id="s03-frame1" data-autobuild="off">
@@ -79,7 +79,7 @@ body.present #s03 #s03-ceq .katex-display{margin:4px 0 16px}
 <div class="frame" data-title="Inside the window" id="s03-frame2" data-autobuild="off">
   <script type="text/x-notes">
     Which tokens does w = 3 keep, and which does it throw away?
-    Move the slider to 3 and ask where river went. Then reveal the concatenation table: one row of five numbers per kept token, stacked by position. Then the readouts: input size and parameter count grow with w.
+    Move the slider to 3 and ask where river went. Then reveal the concatenation table: one row of four numbers per kept token, stacked by position. Then the readouts: input size and parameter count grow with w.
   </script>
   <div class="companion">
     <p>Concatenate the previous $w$ token representations into one long vector and predict from that. $w$ denotes the window width; we reserve $K$ for the matrix of attention keys later.</p>

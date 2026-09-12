@@ -21,6 +21,14 @@
 #s01 .start-token{color:var(--ink)}
 #s01 .start-position{color:#AA4E08}
 #s01 .start-row{color:var(--c-e)}
+#s01 .feature-water,#s01 #s01-coordinate-table tr>:nth-child(2){color:var(--c-e)}
+#s01 .feature-finance,#s01 #s01-coordinate-table tr>:nth-child(3){color:#7C3CA0}
+#s01 .feature-person,#s01 #s01-coordinate-table tr>:nth-child(4){color:#AA4E08}
+#s01 .feature-glue,#s01 #s01-coordinate-table tr>:nth-child(5){color:var(--ink-2)}
+#s01 .coordinate-key{font-size:.85em;line-height:1.5}
+#s01 #s01-coordinate-table .dt{width:100%;table-layout:fixed}
+#s01 #s01-coordinate-table .dt th{white-space:normal}
+@media(max-width:640px){body:not(.present) #s01 #s01-coordinate-table .dt th,body:not(.present) #s01 #s01-coordinate-table .dt td{font-size:12px;padding:8px 3px}}
 #s01 .position-key{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin:20px 0}
 #s01 .position-key p{margin:8px 0 0;font-size:.86em;line-height:1.4}
 #s01 #s01-emb-tab .dt{width:100%;table-layout:fixed}
@@ -134,6 +142,16 @@ E_tok stores one learned row per vocabulary token. The token ID selects a row. A
   <div class="companion"><p>In a trained model, learning adjusts the table. Here we use hand-chosen rows so we can follow the arithmetic.</p></div>
 </div>
 
+<div class="frame" id="s01-frame-coordinates" data-title="What does an embedding coordinate mean?" data-autobuild="off">
+  <script type="text/x-notes">What does the 3 in river's row stand for?
+Each coordinate is one numerical feature. Our hand-chosen vocabulary rows use four named features so the arithmetic is readable. Water and finance are scene features, person represents people, and glue marks function words. These feature scores are not probabilities or token IDs. Real learned embeddings need not assign one human concept to each coordinate. Their features can be distributed across many coordinates.
+This table is the vocabulary lookup before position is added. All later rows retain the same four-coordinate width.</script>
+  <p>One coordinate is one number in the row. <span class="start-row">$d_{\text{model}}=4$ means <strong>four features per token</strong>.</span></p>
+  <div id="s01-coordinate-table"></div>
+  <p class="coordinate-key"><span class="feature-water"><strong>Water</strong>: water scenes.</span> <span class="feature-finance"><strong>Finance</strong>: money scenes.</span><br><span class="feature-person"><strong>Person</strong>: people.</span> <span class="feature-glue"><strong>Glue</strong>: function words such as “the” and “and”.</span></p>
+  <p class="small muted">We chose these feature scores and names for teaching. They are not probabilities. Real learned embeddings usually mix features across coordinates without such tidy labels.</p>
+</div>
+
 <div class="frame" id="s01-frame-order" data-title="The same words can mean different things" data-autobuild="off">
   <script type="text/x-notes">Who is helping whom? Read the first sentence, then reveal the second.
 Both sentences use exactly the same words, so they look up the same three vocabulary vectors in different slots. A word's lookup vector alone does not encode its slot. This illustrates why we want order information; these sentences are not inputs to the hand-chosen bank toy.
@@ -151,10 +169,10 @@ Part I's concatenation preserved order by assigning each input position its own 
   <script type="text/x-notes">
     Which row stays the same when we move the word?
     Click positions 1, 5, and 10. The token vector stays fixed. The position vector and the sum change across the existing coordinates. There is no extra position column.
-    This is a separate four-dimensional example, not the parameters used by the bank model. The word vector is illustrative. The position vectors use the original Transformer's sinusoidal construction, with zero-based positions: p = [sin(pos), cos(pos), sin(pos/100), cos(pos/100)]. Show the resulting numbers now and leave the frequency formula for later. At the first slot, the zeros and ones follow from sin(0) and cos(0), not from one-hot encoding.
+    These are the actual four-coordinate vectors used by the bank model throughout the lesson. We chose small position-table entries to make the sums easy to inspect. They are illustrative values, not trained measurements or sinusoidal encodings. Real models can learn a position table or use other constructions. Position adds across the existing coordinates, so the sum mixes the word and position information.
     Source: Attention Is All You Need, Section 3.5, https://arxiv.org/html/1706.03762v7#S3.SS5
   </script>
-  <p>A separate four-coordinate example: the word <strong>“the”</strong> stays the same. Its position changes.</p>
+  <p>Same word row. Different position row. <strong>Add them coordinate by coordinate.</strong></p>
   <div class="card">
     <div id="s01-position-choice" class="btn-row" role="group" aria-label="Position of the word the" data-keep-state>
       <button type="button" class="btn" data-position="1" aria-pressed="false">Position 1</button>
@@ -164,8 +182,7 @@ Part I's concatenation preserved order by assigning each input position its own 
     <div class="emb-tab" id="s01-emb-tab"></div>
     <p class="position-example" id="s01-position-example" aria-live="polite" aria-atomic="true"></p>
   </div>
-  <p>The starting row still has <strong>four coordinates</strong>.</p>
-  <p class="small muted">Illustrative word vector. Sinusoidal position vectors. Values rounded to three decimals.</p>
+  <p class="small muted">Still <strong>four coordinates</strong>. These hand-chosen table entries are used throughout the example.</p>
   <div class="companion" id="s01-position-notation" data-kicker="The notation behind the example">
     <div class="position-key">
       <div class="start-token"><strong>Word row: $E_{\text{tok}}[t_i]$</strong><p>The row selected by token ID $t_i$.</p></div>
@@ -173,38 +190,36 @@ Part I's concatenation preserved order by assigning each input position its own 
       <div class="start-row"><strong>Starting row: $e_i^{(0)}$</strong><p>Their sum, before any contextual update.</p></div>
     </div>
     $$\htmlClass{start-row}{e_i^{(0)}}=\htmlClass{start-token}{E_{\text{tok}}[t_i]}+\htmlClass{start-position}{p_i}$$
-    <p>The superscript $(0)$ means “before any contextual update.” The position cue uses the existing coordinates. At position 1, the pattern is $[0,1,0,1]$ because the sine of zero is zero and the cosine of zero is one.</p>
-    <p>For readers who want the calculation: let <code>pos = i - 1</code>, so the first displayed position has index zero. With four coordinates, the <a href="https://arxiv.org/html/1706.03762v7#S3.SS5" target="_blank" rel="noopener">original Transformer’s positional encoding</a> gives <code>p = [sin(pos), cos(pos), sin(pos / 100), cos(pos / 100)]</code>. The pairs vary at different frequencies. The position values here come from that formula, while the word values are chosen just to show the addition.</p>
-    <p>Positional vectors can also be learned from data. Addition is one way to supply position information, not a requirement for every Transformer architecture. We’ll return to the design choices later.</p>
+    <p>The superscript $(0)$ means “before any contextual update.” The result already combines word and position information. The labels describe our illustrative word features, not a clean separation of meaning and position in the sum.</p>
+    <p>A learned position table has one row per supported position, much like the vocabulary table has one row per token. Here we set its values by hand. The <a href="https://arxiv.org/html/1706.03762v7#S3.SS5" target="_blank" rel="noopener">original Transformer also describes fixed sinusoidal vectors</a>. Both designs add vectors of the same width. Other architectures can supply position information differently.</p>
   </div>
 </div>
 
 <div class="companion" id="s01-model-scope" data-kicker="The bank model used below">
-  <p>The bank example uses five hand-chosen coordinates, different from the four-coordinate sinusoidal illustration above. Names such as <em>water</em> and <em>finance</em> let us follow the arithmetic. Real learned coordinates need not have these meanings.</p>
-  <p>The bank model’s matching, message, and prediction calculations <strong>ignore coordinate 5</strong>. That coordinate stores a position offset, labelled “pos” in its tables, but it has zero projection weights. The changing bank predictions demonstrate content gathering, not sensitivity to word order.</p>
+  <p>All following bank calculations use these same four-coordinate sums. The named features and the small position offsets are hand-chosen teaching values. Attention and prediction can use the position information because it shares coordinates with the word features.</p>
 </div>
 
 <div class="frame" id="s01-frame-starting-row" data-title="Our ten tokens become ten rows" data-autobuild="off">
   <script type="text/x-notes">How many rows do we need for this sentence?
-Count all ten input tokens, including each occurrence of the. The blank is the token to predict, so it has no input row yet. T counts tokens in one sequence, not the number of examples in a batch. Reveal the five-coordinate width, then the shape of E. Point to river at row 6 to give e_6 a concrete meaning.
-The table uses AT.embed on the river sentence, exactly the starting rows used by the bank calculations. It does not use the separate four-coordinate sinusoidal illustration. These are hand-chosen values, not learned measurements. Coordinate 5 is unused by this model's matching, message, and prediction projections. The class is now finished with the position detour.
+Count all ten input tokens, including each occurrence of the. The blank is the token to predict, so it has no input row yet. T counts tokens in one sequence, not the number of examples in a batch. Reveal the four-coordinate width, then the shape of E. Point to river at row 6 to give e_6 a concrete meaning.
+The table uses AT.embed on the river sentence, exactly the starting rows used by the bank calculations and the position example. These are hand-chosen values, not learned measurements.
 Next, return to the prediction problem: the earlier clues should change what can fill the blank. The section break compares both sentences before introducing any baseline.</script>
   <p id="s01-matrix-sentence"></p>
   <div class="sentence-rows">
     <div><h3 class="card-title start-row">$\ve{E}$: the hand-chosen bank example</h3><div id="s01-sentence-matrix"></div></div>
     <div class="sentence-legend">
       <p class="sentence-count"><strong>$T=10$</strong><br>Tokens in this input.</p>
-      <p class="sentence-width" data-build="1"><strong>$d_{\text{model}}=5$</strong><br>Numbers in each token row.<br><span class="small muted">This toy ignores column 5.</span></p>
+      <p class="sentence-width" data-build="1"><strong>$d_{\text{model}}=4$</strong><br>Numbers in each token row.</p>
       <div data-build="2">
-        <p class="sentence-shape">$\ve{E}$ has shape $\htmlClass{sentence-count}{10}\times\htmlClass{sentence-width}{5}$<br><span class="sentence-count">token rows</span> × <span class="sentence-width">coordinates</span></p>
+        <p class="sentence-shape">$\ve{E}$ has shape $\htmlClass{sentence-count}{10}\times\htmlClass{sentence-width}{4}$<br><span class="sentence-count">token rows</span> × <span class="sentence-width">coordinates</span></p>
         <p>$\ve{e_6}$ is row 6: <strong>river</strong>.</p>
         <p class="small muted">One sentence, ten token rows. The blank has no row yet.</p>
       </div>
     </div>
   </div>
   <div class="companion">
-    <p>We call the number of input tokens <span class="sentence-count">$T$</span>. Here we have ten tokens, even though some words repeat. The symbol <span class="sentence-width">$d_{\text{model}}$</span> counts the numbers used to represent each token. In our bank toy, that count is five. So the sentence matrix $\ve{E}$ has <span class="sentence-count">ten rows</span> and <span class="sentence-width">five columns</span>.</p>
-    <p>Lowercase $\ve{e_i}$ means the row for token position $i$. For example, $\ve{e_6}=[3.0,0.0,0.0,0.0,0.6]$ is the row for <em>river</em>. Before any contextual update, $e_i=e_i^{(0)}$. Stacking the rows gives $E=[e_1;\ldots;e_T]$, with shape $T\times d_{\text{model}}$. The table shows the starting values from our hand-chosen bank model.</p>
+    <p>We call the number of input tokens <span class="sentence-count">$T$</span>. Here we have ten tokens, even though some words repeat. The symbol <span class="sentence-width">$d_{\text{model}}$</span> counts the numbers used to represent each token. In our bank toy, that count is four. So the sentence matrix $\ve{E}$ has <span class="sentence-count">ten rows</span> and <span class="sentence-width">four columns</span>.</p>
+    <p>Lowercase $\ve{e_i}$ means the row for token position $i$. For example, $\ve{e_6}=[3.1,-0.1,0.0,0.1]$ is the row for <em>river</em> after adding position 6. Before any contextual update, $e_i=e_i^{(0)}$. Stacking the rows gives $E=[e_1;\ldots;e_T]$, with shape $T\times d_{\text{model}}$. The table shows the starting values from our hand-chosen bank model.</p>
     <p>$E_{\text{tok}}$ is the vocabulary lookup table shared across sentences. $E$ holds the rows for this particular input. Contextual updates change the rows of $E$ during the forward pass. Training can change the stored lookup table.</p>
   </div>
 </div>
@@ -220,6 +235,11 @@ Next, return to the prediction problem: the earlier clues should change what can
   const FA = AT.forward(SA), FB = AT.forward(SB);
   const T = SA.length;
   let ctx = 'A';
+  AT.ui.table(['river','bank','fisherman','the'].map(token=>AT.model.tok_emb[token]), {
+    cols: AT.axes.short.e.map((name,j)=>(j+1)+': '+name),
+    rowLabels:['river','bank','fisherman','the'],cornerLabel:'Token',decimals:1,
+    into:S.querySelector('#s01-coordinate-table')
+  });
 
   /* One input occurrence per row, using the bank model's actual starting E. */
   S.querySelector('#s01-matrix-sentence').textContent = '“' + SA.join(' ') + ' ___”';
@@ -266,16 +286,15 @@ Next, return to the prediction problem: the earlier clues should change what can
   /* present mode: the frame starts in context A every time it is entered */
   if (AT.present && AT.present.on) AT.present.on('frame', (st) => { if (st.frame && st.frame.id === 's01' && st.frame.index === 0 && ctx !== 'A') { ctx = 'A'; paint(); } });
 
-  /* Separate sinusoidal illustration; never change the bank model's vectors. */
-  const word = [0.2, -0.4, 0.6, 0.1];
+  /* The same lookup and position tables used by every bank calculation. */
+  const word = AT.model.tok_emb.the;
   let position = 5;
   function positionRow(i){
-    const pos = i - 1; // Display slots from 1; the sinusoidal index starts at 0.
-    return [Math.sin(pos), Math.cos(pos), Math.sin(pos / 100), Math.cos(pos / 100)];
+    return AT.model.pos_emb[i - 1];
   }
   function sumRow(){ return word.map((x, j) => x + positionRow(position)[j]); }
   const fig = AT.ui.table([word, positionRow(position)], {
-    cols: ['1', '2', '3', '4'], axes: false, cornerLabel: 'Coordinate', decimals: 3,
+    cols: ['1', '2', '3', '4'], axes: false, cornerLabel: 'Coordinate', decimals: 1,
     rowLabels: ['Word “the”', '+ Position ' + position], rowCls: ['neutral', 'neutral'],
     footer: { label: '= Starting row', values: sumRow(), cls: 'e' },
     into: S.querySelector('#s01-emb-tab')
@@ -288,7 +307,7 @@ Next, return to the prediction problem: the earlier clues should change what can
     fig.setFooter(sumRow());
     fig.rowLabelEls[1].textContent = '+ Position ' + position;
     S.querySelectorAll('[data-position]').forEach(btn => btn.setAttribute('aria-pressed', Number(btn.dataset.position) === position ? 'true' : 'false'));
-    S.querySelector('#s01-position-example').innerHTML = 'Coordinate 1: <span class="start-token">' + AT.fmt(word[0], 3) + '</span> + <span class="start-position">(' + AT.fmt(positionRow(position)[0], 3) + ')</span> = <span class="start-row">' + AT.fmt(sumRow()[0], 3) + '</span>';
+    S.querySelector('#s01-position-example').innerHTML = 'Coordinate 4: <span class="start-token">' + AT.fmt(word[3], 1) + '</span> + <span class="start-position">(' + AT.fmt(positionRow(position)[3], 1) + ')</span> = <span class="start-row">' + AT.fmt(sumRow()[3], 1) + '</span>';
   }
   S.querySelectorAll('[data-position]').forEach(btn => btn.addEventListener('click', () => { position = Number(btn.dataset.position); drawEmb(); }));
   drawEmb();

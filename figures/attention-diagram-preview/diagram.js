@@ -27,7 +27,7 @@
   ];
   // Keep every shape tied to the same model used by the arithmetic.
   stages[0].code[1]=`e = E[i:i+1]  # keep a row: [1, ${dm}]`;
-  if(D.provenance.positionIgnored) stages[0].note=['E includes token embedding + position. In this toy,','the projections ignore position; the causal mask still applies.'];
+  stages[0].note=['E adds word and position vectors of the same width.', 'These are hand-chosen tables; there is no extra position column.'];
   stages[1].lines[1]=`Its ${dk} numbers match the ${dk} coordinates of each key.`;
   stages[1].code=[`q = e @ W_Q  # [1, ${dm}] @ [${dm}, ${dk}] → [1, ${dk}]`];
   stages[2].code=[`K = E @ W_K  # [${T}, ${dm}] @ [${dm}, ${dk}] → [${T}, ${dk}]`];

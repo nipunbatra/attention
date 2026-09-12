@@ -1273,9 +1273,8 @@
   function axesNotation() {
     if (!AT.axes.named) return [];
     var q = function (list) { return list.map(function (s) { return '\u201c' + AT.escape(s) + '\u201d'; }).join(', '); };
-    var hasPosition = AT.axes.e.some(function (s) { return String(s).toLowerCase() === 'position'; });
     return [
-      { g: 'axes', sym: '\\ve{e}', mean: 'coordinates ' + q(AT.axes.e) + (hasPosition ? ': meaning coordinates plus a separate position coordinate; this toy carries position but does not use it in attention' : ': coordinates of the current token representation'), shape: '1\\times d_{\\text{model}}', dims: function () { return '1×' + AT.d_model; } },
+      { g: 'axes', sym: '\\ve{e}', mean: 'coordinates ' + q(AT.axes.e) + ': illustrative feature labels, not a universal interpretation of learned embeddings; current rows also include position information', shape: '1\\times d_{\\text{model}}', dims: function () { return '1×' + AT.d_model; } },
       { g: 'axes', sym: '\\vq{q},\\; \\vk{k}', mean: 'coordinates ' + q(AT.axes.qk) + ': a query row reads \u201cwhat I ask for\u201d, a key row \u201cwhat I offer\u201d', shape: '1\\times d_k', dims: function () { return '1×' + AT.d_k; } },
       { g: 'axes', sym: '\\vv{v}', mean: 'coordinates ' + q(AT.axes.v) + ': what the token sends if it is read; values have their own width and $W_O$ maps them back onto the $\\ve{e}$ coordinates', shape: '1\\times d_v', dims: function () { return '1×' + AT.d_v; } }
     ];

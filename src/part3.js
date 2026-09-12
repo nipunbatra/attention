@@ -62,29 +62,28 @@
     [0.8, -0.4, 0.2, 0.0, 0.5, -0.3, 0.1, 0.0],
     [-0.3, 0.9, 0.0, 0.2, -0.2, 0.4, 0.0, 0.1],
     [0.2, 0.1, 0.8, -0.4, 0.0, 0.2, 0.3, -0.1],
-    [0.1, 0.2, -0.2, 0.8, 0.3, 0.0, -0.3, 0.4],
-    [0.0, 0.1, 0.2, 0.1, 0.4, 0.3, -0.2, 0.6]
+    [0.1, 0.2, -0.2, 0.8, 0.3, 0.0, -0.3, 0.4]
   ];
   var b1 = [0.1, -0.1, 0.0, 0.2, 0.0, -0.2, 0.1, 0.0];
   var W2 = [
-    [0.5, -0.1, 0.1, 0.0, 0.0],
-    [-0.2, 0.6, 0.0, 0.1, 0.0],
-    [0.1, 0.0, 0.5, -0.1, 0.1],
-    [0.0, 0.1, -0.2, 0.5, 0.0],
-    [0.3, -0.2, 0.0, 0.1, 0.2],
-    [-0.1, 0.3, 0.2, 0.0, 0.1],
-    [0.2, 0.0, 0.3, -0.2, 0.0],
-    [0.0, 0.1, -0.1, 0.2, 0.4]
+    [0.5, -0.1, 0.1, 0.0],
+    [-0.2, 0.6, 0.0, 0.1],
+    [0.1, 0.0, 0.5, -0.1],
+    [0.0, 0.1, -0.2, 0.5],
+    [0.3, -0.2, 0.0, 0.1],
+    [-0.1, 0.3, 0.2, 0.0],
+    [0.2, 0.0, 0.3, -0.2],
+    [0.0, 0.1, -0.1, 0.2]
   ];
-  var b2 = [0.0, 0.0, 0.0, 0.0, 0.0];
+  var b2 = [0.0, 0.0, 0.0, 0.0];
 
   function addBias(row, bias) {
     return row.map(function (v, i) { return v + bias[i]; });
   }
 
   function ffn(row) {
-    var input = Array.isArray(row) ? row.slice(0, 5).map(function (v) { return Number(v) || 0; }) : [];
-    while (input.length < 5) input.push(0);
+    var input = Array.isArray(row) ? row.slice(0, AT.d_model).map(function (v) { return Number(v) || 0; }) : [];
+    while (input.length < AT.d_model) input.push(0);
     var pre = addBias(AT.matmul(input, W1), b1);
     var hidden = pre.map(function (v) { return Math.max(0, v); });
     var output = addBias(AT.matmul(hidden, W2), b2);
@@ -94,7 +93,7 @@
   ffn.b1 = b1;
   ffn.W2 = W2;
   ffn.b2 = b2;
-  ffn.d_model = 5;
+  ffn.d_model = AT.d_model;
   ffn.d_ff = 8;
   ffn.illustrative = true;
   AT.ffn = ffn;

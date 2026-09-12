@@ -11,7 +11,7 @@
   <div><p class="eyebrow">Attention gathers information from other token rows. The feed-forward network then works on the features inside each row.</p><h2>Attention mixes rows; the FFN mixes features</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>For one receiving token, attention combines value rows from several source positions. The feed-forward network (FFN) works within that token's row, combining its features. We apply the same FFN weights independently to every position. In the example below, a five-number representation becomes eight hidden numbers. ReLU replaces negative hidden values with zero, and a second projection returns to five numbers so we can add the result to the residual stream. We chose one-decimal weights to keep the arithmetic readable.</p>
+  <p>For one receiving token, attention combines value rows from several source positions. The feed-forward network (FFN) works within that token's row, combining its features. We apply the same FFN weights independently to every position. In the example below, a four-number representation becomes eight hidden numbers. ReLU replaces negative hidden values with zero, and a second projection returns to four numbers so we can add the result to the residual stream. We chose one-decimal weights to keep the arithmetic readable.</p>
 </div>
 <div class="frame" data-title="Two axes of mixing">
   <script type="text/x-notes">Which operation crosses token positions?

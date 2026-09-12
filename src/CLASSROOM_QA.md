@@ -1,5 +1,14 @@
 # Classroom release checks
 
+## 2026-09-12: remove the dedicated position axis consistently
+
+- The bank model now uses four coordinates (water, finance, person, glue) and adds small hand-chosen position vectors across those coordinates. This supersedes older five-coordinate/ignored-position notes below. The new opening frame defines the four feature columns using river, bank, fisherman and the, with matching coloured definitions and an explicit real-embedding caveat.
+- The position example now reads the actual model tables; the ten-by-four matrix, baseline, Q/K/V worksheets, walkthrough, SVG exports and Part III training results all use the same data. Removed the repeated late position frame; the diagnostic explanation is an article companion. Part III's FFN is 4→8→4.
+- Python and independent JavaScript agree on 6,465 intermediate numbers (max error 1.78e-15). All toy targets pass, including the position-on/off prefix-permutation regression. Saved training agrees on 1,386 entries; finite differences verify all 212 used parameter scalars (max error 5.38e-11), and 40 unused-position scalars do not affect the loss.
+- Browser/reference comparison: 48 capacity/mask/scale cases, 82,544 finite values, 12 invalid-input checks; independent FFN arithmetic agrees. Live diagram evidence: 299 values checked; all 12 classroom stages fit. Routing/value ablation and score-scaling regressions pass.
+- Full presentation audits: Part II 294 progressive states / 491 formulas, Part III 138 states / 139 formulas; no overflow, JavaScript errors or math failures. Interaction sweeps exercised 121 and 34 controls with zero errors. Both articles fit 390px width. The opening test checks actual table values, colours, flow, all three position choices, and phone tables.
+- Visually inspected the coordinate primer, position sums, sentence matrix, corrected last-token vector, query worksheet, residual calculation, diagram and Part III FFN; also inspected the phone coordinate primer. No new dependencies or changes to Part I.
+
 ## 2026-09-11: character placeholder versus literal
 
 - Section 4 now displays c = "a" with a grey placeholder and an orange quoted literal, each explained in matching

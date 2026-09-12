@@ -835,7 +835,7 @@ body.presenter>*:not(#at-presenter){display:none!important}
 </header>
 
 <script>
-window.__TOY__ = {"d_model":5,"d_k":3,"d_v":2,"max_context":20,"vocab":["the","fisherman","sat","beside","river","bank","and","watched","she","deposited","cheque","at","water","boats","fish","ducks","teller","clerk","queue","money"],"tok_emb":{"the":[0.0,0.0,0.0,2.4,0.0],"fisherman":[2.0,0.0,2.2,0.0,0.0],"sat":[0.4,0.0,0.6,1.8,0.0],"beside":[0.6,0.0,0.0,2.0,0.0],"river":[3.0,0.0,0.0,0.0,0.0],"bank":[0.7,0.7,0.0,0.7,0.0],"and":[0.0,0.0,0.0,2.2,0.0],"watched":[0.6,0.0,0.8,1.6,0.0],"she":[0.0,0.0,2.6,0.4,0.0],"deposited":[0.0,2.2,0.6,0.4,0.0],"cheque":[0.0,3.0,0.0,0.0,0.0],"at":[0.0,0.0,0.0,2.0,0.0],"water":[3.0,0.0,0.0,0.0,0.0],"boats":[2.4,0.0,0.4,0.0,0.0],"fish":[2.6,0.0,0.6,0.0,0.0],"ducks":[2.2,0.0,0.8,0.0,0.0],"teller":[0.0,2.6,1.8,0.0,0.0],"clerk":[0.0,2.4,1.8,0.0,0.0],"queue":[0.0,2.0,0.6,0.0,0.0],"money":[0.0,3.0,0.0,0.0,0.0]},"pos_emb":[[0.0,0.0,0.0,0.0,0.1],[0.0,0.0,0.0,0.0,0.2],[0.0,0.0,0.0,0.0,0.3],[0.0,0.0,0.0,0.0,0.4],[0.0,0.0,0.0,0.0,0.5],[0.0,0.0,0.0,0.0,0.6],[0.0,0.0,0.0,0.0,0.7],[0.0,0.0,0.0,0.0,0.8],[0.0,0.0,0.0,0.0,0.9],[0.0,0.0,0.0,0.0,1.0],[0.0,0.0,0.0,0.0,1.1],[0.0,0.0,0.0,0.0,1.2],[0.0,0.0,0.0,0.0,1.3],[0.0,0.0,0.0,0.0,1.4],[0.0,0.0,0.0,0.0,1.5],[0.0,0.0,0.0,0.0,1.6],[0.0,0.0,0.0,0.0,1.7],[0.0,0.0,0.0,0.0,1.8],[0.0,0.0,0.0,0.0,1.9],[0.0,0.0,0.0,0.0,2.0]],"W_Q":[[1.0,0.0,0.0],[0.0,1.0,0.0],[0.0,0.0,0.4],[0.7,0.7,0.0],[0.0,0.0,0.0]],"W_K":[[1.0,0.0,0.0],[0.0,1.0,0.0],[0.0,0.0,1.0],[0.0,0.0,0.0],[0.0,0.0,0.0]],"W_V":[[1.0,0.0],[0.0,1.0],[0.0,0.0],[0.0,0.0],[0.0,0.0]],"W_O":[[1.0,0.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0,0.0]],"W_vocab":[[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.5,1.2,1.0,0.7,0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.5,1.2,0.9,0.7],[0.0,0.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.2,0.0,0.0],[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]],"b_vocab":[-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"sentences":{"river":["The","fisherman","sat","beside","the","river","bank","and","watched","the"],"cheque":["She","deposited","the","cheque","at","the","bank","and","watched","the"]},"candidates":{"river":["water","boats","fish","ducks"],"cheque":["teller","clerk","queue","money"]},"axes":{"e":["water","finance","person","glue","position"],"qk":["setting: water?","setting: finance?","who?"],"v":["says: water scene","says: finance scene"],"short":{"e":["water","finance","person","glue","pos"],"qk":["water?","finance?","who?"],"v":["\u2192water","\u2192finance"]}},"notes":"Toy v2: single-head causal self-attention (d_model=5, d_k=3, d_v=2, vocab=20, ten-token examples, max_context=20), designed BY HAND so that every coordinate has a name that the numbers agree with (see 'axes'). e axes: water, finance, person, glue. q and k axes: setting: water?, setting: finance?, who? (a query row reads 'what I ask for', a key row 'what I offer'). The fifth e axis carries position, but its zero rows in W_Q, W_K, W_V and W_vocab mean this toy does not use it. v has its own narrower axes: says: water scene and says: finance scene; W_O maps them back onto the e axes. Names are illustrative; the matrices are sparse and one-decimal so a student can read each row of W_Q as 'axis -> asks', W_K as 'axis -> offers', W_V as 'axis -> says', W_vocab as 'axis -> votes for these words'. Values are narrower on purpose because they are mixed and sent rather than compared. Glue words have zero key and value rows but ask for both settings, which is why the final 'the' reads river or cheque. bank is equal parts water and finance (0.7, 0.7) plus a little glue (0.7); its entries are kept below 1.0 so that bank does not mostly attend to itself (the self score q_bank.k_bank grows with the square of those entries). Position rises from 0.1 to 2.0 in its own coordinate, with twenty same-width position vectors available for generation. The first ten positions are used in the worked examples. This toy's output ignores position; it illustrates content routing, not word-order sensitivity. Patterns produced (all checked on these rounded numbers by make_toy2.py and toy_ref.mjs): (1) in 'The fisherman sat beside the river bank', bank(7) attends river first, fisherman second, itself and the glue words little; (2) in 'She deposited the cheque at the bank', bank(7) attends cheque first, deposited second; (3) the final 'the'(10) reads mostly river/bank/fisherman or cheque/bank/deposited and the output head predicts water > boats > fish > ducks or teller > clerk > queue > money with every other word at most 0.04; (4) the baseline from e_the(10) alone is spread over the eight candidates and is identical for both sentences; (5) with the causal mask off, the early glue words leak attention onto river and bank. Nothing was optimised; a few magnitudes (bank, fisherman, the W_vocab weights) were adjusted by hand from AXES.md."};
+window.__TOY__ = {"d_model":4,"d_k":3,"d_v":2,"max_context":20,"vocab":["the","fisherman","sat","beside","river","bank","and","watched","she","deposited","cheque","at","water","boats","fish","ducks","teller","clerk","queue","money"],"tok_emb":{"the":[0.0,0.0,0.0,2.4],"fisherman":[2.0,0.0,2.2,0.0],"sat":[0.4,0.0,0.6,1.8],"beside":[0.6,0.0,0.0,2.0],"river":[3.0,0.0,0.0,0.0],"bank":[0.7,0.7,0.0,0.7],"and":[0.0,0.0,0.0,2.2],"watched":[0.6,0.0,0.8,1.6],"she":[0.0,0.0,2.6,0.4],"deposited":[0.0,2.2,0.6,0.4],"cheque":[0.0,3.0,0.0,0.0],"at":[0.0,0.0,0.0,2.0],"water":[3.0,0.0,0.0,0.0],"boats":[2.4,0.0,0.4,0.0],"fish":[2.6,0.0,0.6,0.0],"ducks":[2.2,0.0,0.8,0.0],"teller":[0.0,2.6,1.8,0.0],"clerk":[0.0,2.4,1.8,0.0],"queue":[0.0,2.0,0.6,0.0],"money":[0.0,3.0,0.0,0.0]},"pos_emb":[[0.1,0.0,0.1,-0.1],[0.0,0.1,-0.1,0.0],[-0.1,0.0,0.0,0.1],[0.0,-0.1,0.1,0.0],[0.1,0.1,0.0,-0.1],[0.1,-0.1,0.0,0.1],[0.0,0.0,0.1,0.1],[-0.1,0.1,0.1,0.0],[0.1,0.0,-0.1,0.1],[0.0,0.0,0.0,-0.1],[0.1,0.1,0.1,0.1],[-0.1,-0.1,-0.1,-0.1],[0.1,-0.1,0.1,-0.1],[-0.1,0.1,-0.1,0.1],[0.1,0.1,-0.1,-0.1],[-0.1,-0.1,0.1,0.1],[0.0,0.1,0.1,-0.1],[0.1,0.0,0.1,0.1],[-0.1,0.0,-0.1,0.1],[0.0,-0.1,-0.1,0.1]],"W_Q":[[1.0,0.0,0.0],[0.0,1.0,0.0],[0.0,0.0,0.4],[0.7,0.7,0.0]],"W_K":[[1.0,0.0,0.0],[0.0,1.0,0.0],[0.0,0.0,1.0],[0.0,0.0,0.0]],"W_V":[[1.0,0.0],[0.0,1.0],[0.0,0.0],[0.0,0.0]],"W_O":[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0]],"W_vocab":[[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.5,1.2,1.0,0.7,0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.5,1.2,0.9,0.7],[0.0,0.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.2,0.0,0.0],[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]],"b_vocab":[-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"sentences":{"river":["The","fisherman","sat","beside","the","river","bank","and","watched","the"],"cheque":["She","deposited","the","cheque","at","the","bank","and","watched","the"]},"candidates":{"river":["water","boats","fish","ducks"],"cheque":["teller","clerk","queue","money"]},"axes":{"e":["water","finance","person","glue"],"qk":["setting: water?","setting: finance?","who?"],"v":["says: water scene","says: finance scene"],"short":{"e":["water","finance","person","glue"],"qk":["water?","finance?","who?"],"v":["\u2192water","\u2192finance"]}},"notes":"Toy v3: single-head causal self-attention (d_model=4, d_k=3, d_v=2, vocab=20, ten-token examples, max_context=20), designed BY HAND so that every coordinate has a name that the numbers agree with (see 'axes'). e axes: water, finance, person, glue. q and k axes: setting: water?, setting: finance?, who? (a query row reads 'what I ask for', a key row 'what I offer'). Position vectors add small offsets across the same four coordinates. v has its own narrower axes: says: water scene and says: finance scene; W_O maps them back onto the e axes. Names are illustrative; the matrices are sparse and one-decimal so a student can read each row of W_Q as 'axis -> asks', W_K as 'axis -> offers', W_V as 'axis -> says', W_vocab as 'axis -> votes for these words'. Values are narrower on purpose because they are mixed and sent rather than compared. Before position is added, glue-only token rows have zero keys and values but ask for both settings, which is why the final 'the' reads river or cheque. bank is equal parts water and finance (0.7, 0.7) plus a little glue (0.7); its entries are kept below 1.0 so that bank does not mostly attend to itself (the self score q_bank.k_bank grows with the square of those entries). The twenty position rows are hand-chosen illustrative vectors, not sinusoidal or trained measurements. Real learned embedding coordinates usually mix features rather than matching these teaching labels. Prefix permutations can change this toy's final prediction through position offsets. Patterns produced (all checked on these rounded numbers by make_toy2.py and toy_ref.mjs): (1) in 'The fisherman sat beside the river bank', bank(7) attends river first, fisherman second, itself and the glue words little; (2) in 'She deposited the cheque at the bank', bank(7) attends cheque first, deposited second; (3) the final 'the'(10) reads mostly river/bank/fisherman or cheque/bank/deposited and the output head predicts water > boats > fish > ducks or teller > clerk > queue > money with every other word at most 0.04; (4) the baseline from e_the(10) alone is spread over the eight candidates and is identical for both sentences; (5) with the causal mask off, the early glue words leak attention onto river and bank. Nothing was optimised; a few magnitudes (bank, fisherman, the W_vocab weights) were adjusted by hand from AXES.md."};
 window.__PART__ = {"part":2,"series":"Attention and language","title":"Self-attention, from first principles","subtitle":"How a token reads from the tokens before it, and why that makes the next word easier to predict.","audience":"For students who know embeddings, dot products, softmax and next-token prediction, and who have not yet met attention.","minutes":null,"central":"\\ve{e} \\;\\rightarrow\\; \\vq{Q},\\vk{K},\\vv{V} \\;\\rightarrow\\; \\text{attention } (\\va{\\alpha}) \\;\\rightarrow\\; \\vd{\\Delta e} \\;\\rightarrow\\; \\vp{e + \\Delta e}","centralLabel":"The one chain to remember","legendTitle":"How to read this page: seven colours, seven objects","provenance":"Where the numbers come from: a tiny demonstration model with {{d_model}}-number representations and a {{vocab}}-word vocabulary. Each coordinate was given an illustrative name{{axes}}, and the weights were written by hand so that the names are true. The arithmetic is real, but the model is not a trained language model.","chain":[{"label":"Predict the next token","section":"s01"},{"label":"Baseline: only the last token","section":"s02"},{"label":"Baseline: a fixed window of w tokens","section":"s03"},{"label":"Weighted pooling: where should weights come from?","section":"s04"},{"label":"A detour through search: query, key, value","section":"s05"},{"label":"Hard retrieval \u2192 soft retrieval","section":"s06"},{"label":"Every token becomes a searchable record","section":"s07"},{"label":"Two jobs: choose weights, then mix values","section":"s08"},{"label":"The contextual update \u0394e","section":"s09"},{"label":"\u201cbank\u201d: same start, different context","section":"s10"},{"label":"What exactly are Q, K, and V?","section":"s11"},{"label":"Why divide by \u221ad_k?","section":"s12"},{"label":"Causal masking","section":"s13"},{"label":"From \u0394e to the next-token probabilities","section":"s14"},{"label":"Full walkthrough, one step at a time","section":"s15"},{"label":"The same thing in matrix form","section":"s16"},{"label":"Attention versus the alternatives","section":"s17"},{"label":"Pause and think","section":"s18"},{"label":"Three summaries","section":"s19"}],"sections":[{"id":"s01","title":"Predict the next token","lit":""},{"id":"s02","title":"Baseline: only the last token","lit":"e"},{"id":"s03","title":"Baseline: a fixed window of w tokens","lit":""},{"id":"s04","title":"Weighted pooling: where should weights come from?","lit":"a"},{"id":"s05","title":"A detour through search: query, key, value","lit":"q k v"},{"id":"s06","title":"Hard retrieval \u2192 soft retrieval","lit":""},{"id":"s07","title":"Every token becomes a searchable record","lit":""},{"id":"s08","title":"Two jobs: choose weights, then mix values","lit":""},{"id":"s09","title":"The contextual update \u0394e","lit":"d ep"},{"id":"s10","title":"\u201cbank\u201d: same start, different context","lit":""},{"id":"s11","title":"What exactly are Q, K, and V?","lit":""},{"id":"s12","title":"Why divide by \u221ad_k?","lit":""},{"id":"s13","title":"Causal masking","lit":""},{"id":"s14","title":"From \u0394e to the next-token probabilities","lit":""},{"id":"s15","title":"Full walkthrough, one step at a time","lit":""},{"id":"s16","title":"The same thing in matrix form","lit":""},{"id":"s17","title":"Attention versus the alternatives","lit":""},{"id":"s18","title":"Pause and think","lit":""},{"id":"s19","title":"Three summaries","lit":""}],"objects":["e","q","k","v","a","d","ep"],"prev":{"label":"Part 1: From characters to next-token prediction","href":"part1.html","available":true},"next":{"label":"Part 3: Learning, heads, and the Transformer","href":"part3.html","available":true},"index":{"label":"Series home","href":"index.html","available":true},"notation":"part2","footer":"Notation: <span class=\"sym sym-e\">e<\/span> is always the current token representation, and <span class=\"sym sym-d\">\u0394e<\/span> is this page's pedagogical name for the attention output. The addition <span class=\"sym sym-e\">e<\/span>&thinsp;+&thinsp;<span class=\"sym sym-d\">\u0394e<\/span> is the standard residual connection.","durationLabel":"The full walkthrough takes multiple sessions. A classroom route is suggested in Section 1.","hook":"The fisherman sat beside the river bank and watched the ___. You know the next word. What would a model have to read to know it too?"};
 </script>
 <script>
@@ -2114,9 +2114,8 @@ window.__PART__ = {"part":2,"series":"Attention and language","title":"Self-atte
   function axesNotation() {
     if (!AT.axes.named) return [];
     var q = function (list) { return list.map(function (s) { return '\u201c' + AT.escape(s) + '\u201d'; }).join(', '); };
-    var hasPosition = AT.axes.e.some(function (s) { return String(s).toLowerCase() === 'position'; });
     return [
-      { g: 'axes', sym: '\\ve{e}', mean: 'coordinates ' + q(AT.axes.e) + (hasPosition ? ': meaning coordinates plus a separate position coordinate; this toy carries position but does not use it in attention' : ': coordinates of the current token representation'), shape: '1\\times d_{\\text{model}}', dims: function () { return '1×' + AT.d_model; } },
+      { g: 'axes', sym: '\\ve{e}', mean: 'coordinates ' + q(AT.axes.e) + ': illustrative feature labels, not a universal interpretation of learned embeddings; current rows also include position information', shape: '1\\times d_{\\text{model}}', dims: function () { return '1×' + AT.d_model; } },
       { g: 'axes', sym: '\\vq{q},\\; \\vk{k}', mean: 'coordinates ' + q(AT.axes.qk) + ': a query row reads \u201cwhat I ask for\u201d, a key row \u201cwhat I offer\u201d', shape: '1\\times d_k', dims: function () { return '1×' + AT.d_k; } },
       { g: 'axes', sym: '\\vv{v}', mean: 'coordinates ' + q(AT.axes.v) + ': what the token sends if it is read; values have their own width and $W_O$ maps them back onto the $\\ve{e}$ coordinates', shape: '1\\times d_v', dims: function () { return '1×' + AT.d_v; } }
     ];
@@ -3216,11 +3215,9 @@ window.__PART__ = {"part":2,"series":"Attention and language","title":"Self-atte
       rawScores:raw,scaledScores:scaled,maskedScores:scaled.map(function(s,j){return j>i?null:s;}),
       alpha:alpha,mixture:mixture,delta:F.Delta[i],updated:F.Enew[i],logits:F.logits[i],probabilities:F.probs[i],topVocabulary:top.slice(0,6)};
   }
-  var pi=AT.axes.short.e.indexOf('pos');
-  var positionIgnored=pi>=0 && ['W_Q','W_K','W_V','W_vocab'].every(function(k){return AT.model[k][pi].every(function(x){return x===0;});});
   window.ATTENTION_PREVIEW_DATA={tokens:tokens,vocabulary:AT.vocab,axes:AT.axes,
     dims:{T:tokens.length,dModel:AT.d_model,dKey:AT.d_k,dValue:AT.d_v,vocabSize:AT.vocab.length},
-    provenance:{source:'AT.model / AT.forward',handDesigned:true,trained:false,positionIgnored:positionIgnored},bank:row(6),last:row(tokens.length-1)};
+    provenance:{source:'AT.model / AT.forward',handDesigned:true,trained:false,positionEncoding:'additive-table'},bank:row(6),last:row(tokens.length-1)};
 })();
 
 </script>
@@ -3254,7 +3251,7 @@ window.__PART__ = {"part":2,"series":"Attention and language","title":"Self-atte
   ];
   // Keep every shape tied to the same model used by the arithmetic.
   stages[0].code[1]=`e = E[i:i+1]  # keep a row: [1, ${dm}]`;
-  if(D.provenance.positionIgnored) stages[0].note=['E includes token embedding + position. In this toy,','the projections ignore position; the causal mask still applies.'];
+  stages[0].note=['E adds word and position vectors of the same width.', 'These are hand-chosen tables; there is no extra position column.'];
   stages[1].lines[1]=`Its ${dk} numbers match the ${dk} coordinates of each key.`;
   stages[1].code=[`q = e @ W_Q  # [1, ${dm}] @ [${dm}, ${dk}] → [1, ${dk}]`];
   stages[2].code=[`K = E @ W_K  # [${T}, ${dm}] @ [${dm}, ${dk}] → [${T}, ${dk}]`];
@@ -3485,6 +3482,14 @@ window.__PART__ = {"part":2,"series":"Attention and language","title":"Self-atte
 #s01 .start-token{color:var(--ink)}
 #s01 .start-position{color:#AA4E08}
 #s01 .start-row{color:var(--c-e)}
+#s01 .feature-water,#s01 #s01-coordinate-table tr>:nth-child(2){color:var(--c-e)}
+#s01 .feature-finance,#s01 #s01-coordinate-table tr>:nth-child(3){color:#7C3CA0}
+#s01 .feature-person,#s01 #s01-coordinate-table tr>:nth-child(4){color:#AA4E08}
+#s01 .feature-glue,#s01 #s01-coordinate-table tr>:nth-child(5){color:var(--ink-2)}
+#s01 .coordinate-key{font-size:.85em;line-height:1.5}
+#s01 #s01-coordinate-table .dt{width:100%;table-layout:fixed}
+#s01 #s01-coordinate-table .dt th{white-space:normal}
+@media(max-width:640px){body:not(.present) #s01 #s01-coordinate-table .dt th,body:not(.present) #s01 #s01-coordinate-table .dt td{font-size:12px;padding:8px 3px}}
 #s01 .position-key{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin:20px 0}
 #s01 .position-key p{margin:8px 0 0;font-size:.86em;line-height:1.4}
 #s01 #s01-emb-tab .dt{width:100%;table-layout:fixed}
@@ -3598,6 +3603,16 @@ E_tok stores one learned row per vocabulary token. The token ID selects a row. A
   <div class="companion"><p>In a trained model, learning adjusts the table. Here we use hand-chosen rows so we can follow the arithmetic.</p></div>
 </div>
 
+<div class="frame" id="s01-frame-coordinates" data-title="What does an embedding coordinate mean?" data-autobuild="off">
+  <script type="text/x-notes">What does the 3 in river's row stand for?
+Each coordinate is one numerical feature. Our hand-chosen vocabulary rows use four named features so the arithmetic is readable. Water and finance are scene features, person represents people, and glue marks function words. These feature scores are not probabilities or token IDs. Real learned embeddings need not assign one human concept to each coordinate. Their features can be distributed across many coordinates.
+This table is the vocabulary lookup before position is added. All later rows retain the same four-coordinate width.</script>
+  <p>One coordinate is one number in the row. <span class="start-row">$d_{\text{model}}=4$ means <strong>four features per token</strong>.</span></p>
+  <div id="s01-coordinate-table"></div>
+  <p class="coordinate-key"><span class="feature-water"><strong>Water</strong>: water scenes.</span> <span class="feature-finance"><strong>Finance</strong>: money scenes.</span><br><span class="feature-person"><strong>Person</strong>: people.</span> <span class="feature-glue"><strong>Glue</strong>: function words such as “the” and “and”.</span></p>
+  <p class="small muted">We chose these feature scores and names for teaching. They are not probabilities. Real learned embeddings usually mix features across coordinates without such tidy labels.</p>
+</div>
+
 <div class="frame" id="s01-frame-order" data-title="The same words can mean different things" data-autobuild="off">
   <script type="text/x-notes">Who is helping whom? Read the first sentence, then reveal the second.
 Both sentences use exactly the same words, so they look up the same three vocabulary vectors in different slots. A word's lookup vector alone does not encode its slot. This illustrates why we want order information; these sentences are not inputs to the hand-chosen bank toy.
@@ -3615,10 +3630,10 @@ Part I's concatenation preserved order by assigning each input position its own 
   <script type="text/x-notes">
     Which row stays the same when we move the word?
     Click positions 1, 5, and 10. The token vector stays fixed. The position vector and the sum change across the existing coordinates. There is no extra position column.
-    This is a separate four-dimensional example, not the parameters used by the bank model. The word vector is illustrative. The position vectors use the original Transformer's sinusoidal construction, with zero-based positions: p = [sin(pos), cos(pos), sin(pos/100), cos(pos/100)]. Show the resulting numbers now and leave the frequency formula for later. At the first slot, the zeros and ones follow from sin(0) and cos(0), not from one-hot encoding.
+    These are the actual four-coordinate vectors used by the bank model throughout the lesson. We chose small position-table entries to make the sums easy to inspect. They are illustrative values, not trained measurements or sinusoidal encodings. Real models can learn a position table or use other constructions. Position adds across the existing coordinates, so the sum mixes the word and position information.
     Source: Attention Is All You Need, Section 3.5, https://arxiv.org/html/1706.03762v7#S3.SS5
   </script>
-  <p>A separate four-coordinate example: the word <strong>“the”</strong> stays the same. Its position changes.</p>
+  <p>Same word row. Different position row. <strong>Add them coordinate by coordinate.</strong></p>
   <div class="card">
     <div id="s01-position-choice" class="btn-row" role="group" aria-label="Position of the word the" data-keep-state>
       <button type="button" class="btn" data-position="1" aria-pressed="false">Position 1</button>
@@ -3628,8 +3643,7 @@ Part I's concatenation preserved order by assigning each input position its own 
     <div class="emb-tab" id="s01-emb-tab"></div>
     <p class="position-example" id="s01-position-example" aria-live="polite" aria-atomic="true"></p>
   </div>
-  <p>The starting row still has <strong>four coordinates</strong>.</p>
-  <p class="small muted">Illustrative word vector. Sinusoidal position vectors. Values rounded to three decimals.</p>
+  <p class="small muted">Still <strong>four coordinates</strong>. These hand-chosen table entries are used throughout the example.</p>
   <div class="companion" id="s01-position-notation" data-kicker="The notation behind the example">
     <div class="position-key">
       <div class="start-token"><strong>Word row: $E_{\text{tok}}[t_i]$</strong><p>The row selected by token ID $t_i$.</p></div>
@@ -3637,38 +3651,36 @@ Part I's concatenation preserved order by assigning each input position its own 
       <div class="start-row"><strong>Starting row: $e_i^{(0)}$</strong><p>Their sum, before any contextual update.</p></div>
     </div>
     $$\htmlClass{start-row}{e_i^{(0)}}=\htmlClass{start-token}{E_{\text{tok}}[t_i]}+\htmlClass{start-position}{p_i}$$
-    <p>The superscript $(0)$ means “before any contextual update.” The position cue uses the existing coordinates. At position 1, the pattern is $[0,1,0,1]$ because the sine of zero is zero and the cosine of zero is one.</p>
-    <p>For readers who want the calculation: let <code>pos = i - 1</code>, so the first displayed position has index zero. With four coordinates, the <a href="https://arxiv.org/html/1706.03762v7#S3.SS5" target="_blank" rel="noopener">original Transformer’s positional encoding</a> gives <code>p = [sin(pos), cos(pos), sin(pos / 100), cos(pos / 100)]</code>. The pairs vary at different frequencies. The position values here come from that formula, while the word values are chosen just to show the addition.</p>
-    <p>Positional vectors can also be learned from data. Addition is one way to supply position information, not a requirement for every Transformer architecture. We’ll return to the design choices later.</p>
+    <p>The superscript $(0)$ means “before any contextual update.” The result already combines word and position information. The labels describe our illustrative word features, not a clean separation of meaning and position in the sum.</p>
+    <p>A learned position table has one row per supported position, much like the vocabulary table has one row per token. Here we set its values by hand. The <a href="https://arxiv.org/html/1706.03762v7#S3.SS5" target="_blank" rel="noopener">original Transformer also describes fixed sinusoidal vectors</a>. Both designs add vectors of the same width. Other architectures can supply position information differently.</p>
   </div>
 </div>
 
 <div class="companion" id="s01-model-scope" data-kicker="The bank model used below">
-  <p>The bank example uses five hand-chosen coordinates, different from the four-coordinate sinusoidal illustration above. Names such as <em>water</em> and <em>finance</em> let us follow the arithmetic. Real learned coordinates need not have these meanings.</p>
-  <p>The bank model’s matching, message, and prediction calculations <strong>ignore coordinate 5</strong>. That coordinate stores a position offset, labelled “pos” in its tables, but it has zero projection weights. The changing bank predictions demonstrate content gathering, not sensitivity to word order.</p>
+  <p>All following bank calculations use these same four-coordinate sums. The named features and the small position offsets are hand-chosen teaching values. Attention and prediction can use the position information because it shares coordinates with the word features.</p>
 </div>
 
 <div class="frame" id="s01-frame-starting-row" data-title="Our ten tokens become ten rows" data-autobuild="off">
   <script type="text/x-notes">How many rows do we need for this sentence?
-Count all ten input tokens, including each occurrence of the. The blank is the token to predict, so it has no input row yet. T counts tokens in one sequence, not the number of examples in a batch. Reveal the five-coordinate width, then the shape of E. Point to river at row 6 to give e_6 a concrete meaning.
-The table uses AT.embed on the river sentence, exactly the starting rows used by the bank calculations. It does not use the separate four-coordinate sinusoidal illustration. These are hand-chosen values, not learned measurements. Coordinate 5 is unused by this model's matching, message, and prediction projections. The class is now finished with the position detour.
+Count all ten input tokens, including each occurrence of the. The blank is the token to predict, so it has no input row yet. T counts tokens in one sequence, not the number of examples in a batch. Reveal the four-coordinate width, then the shape of E. Point to river at row 6 to give e_6 a concrete meaning.
+The table uses AT.embed on the river sentence, exactly the starting rows used by the bank calculations and the position example. These are hand-chosen values, not learned measurements.
 Next, return to the prediction problem: the earlier clues should change what can fill the blank. The section break compares both sentences before introducing any baseline.</script>
   <p id="s01-matrix-sentence"></p>
   <div class="sentence-rows">
     <div><h3 class="card-title start-row">$\ve{E}$: the hand-chosen bank example</h3><div id="s01-sentence-matrix"></div></div>
     <div class="sentence-legend">
       <p class="sentence-count"><strong>$T=10$</strong><br>Tokens in this input.</p>
-      <p class="sentence-width" data-build="1"><strong>$d_{\text{model}}=5$</strong><br>Numbers in each token row.<br><span class="small muted">This toy ignores column 5.</span></p>
+      <p class="sentence-width" data-build="1"><strong>$d_{\text{model}}=4$</strong><br>Numbers in each token row.</p>
       <div data-build="2">
-        <p class="sentence-shape">$\ve{E}$ has shape $\htmlClass{sentence-count}{10}\times\htmlClass{sentence-width}{5}$<br><span class="sentence-count">token rows</span> × <span class="sentence-width">coordinates</span></p>
+        <p class="sentence-shape">$\ve{E}$ has shape $\htmlClass{sentence-count}{10}\times\htmlClass{sentence-width}{4}$<br><span class="sentence-count">token rows</span> × <span class="sentence-width">coordinates</span></p>
         <p>$\ve{e_6}$ is row 6: <strong>river</strong>.</p>
         <p class="small muted">One sentence, ten token rows. The blank has no row yet.</p>
       </div>
     </div>
   </div>
   <div class="companion">
-    <p>We call the number of input tokens <span class="sentence-count">$T$</span>. Here we have ten tokens, even though some words repeat. The symbol <span class="sentence-width">$d_{\text{model}}$</span> counts the numbers used to represent each token. In our bank toy, that count is five. So the sentence matrix $\ve{E}$ has <span class="sentence-count">ten rows</span> and <span class="sentence-width">five columns</span>.</p>
-    <p>Lowercase $\ve{e_i}$ means the row for token position $i$. For example, $\ve{e_6}=[3.0,0.0,0.0,0.0,0.6]$ is the row for <em>river</em>. Before any contextual update, $e_i=e_i^{(0)}$. Stacking the rows gives $E=[e_1;\ldots;e_T]$, with shape $T\times d_{\text{model}}$. The table shows the starting values from our hand-chosen bank model.</p>
+    <p>We call the number of input tokens <span class="sentence-count">$T$</span>. Here we have ten tokens, even though some words repeat. The symbol <span class="sentence-width">$d_{\text{model}}$</span> counts the numbers used to represent each token. In our bank toy, that count is four. So the sentence matrix $\ve{E}$ has <span class="sentence-count">ten rows</span> and <span class="sentence-width">four columns</span>.</p>
+    <p>Lowercase $\ve{e_i}$ means the row for token position $i$. For example, $\ve{e_6}=[3.1,-0.1,0.0,0.1]$ is the row for <em>river</em> after adding position 6. Before any contextual update, $e_i=e_i^{(0)}$. Stacking the rows gives $E=[e_1;\ldots;e_T]$, with shape $T\times d_{\text{model}}$. The table shows the starting values from our hand-chosen bank model.</p>
     <p>$E_{\text{tok}}$ is the vocabulary lookup table shared across sentences. $E$ holds the rows for this particular input. Contextual updates change the rows of $E$ during the forward pass. Training can change the stored lookup table.</p>
   </div>
 </div>
@@ -3684,6 +3696,11 @@ Next, return to the prediction problem: the earlier clues should change what can
   const FA = AT.forward(SA), FB = AT.forward(SB);
   const T = SA.length;
   let ctx = 'A';
+  AT.ui.table(['river','bank','fisherman','the'].map(token=>AT.model.tok_emb[token]), {
+    cols: AT.axes.short.e.map((name,j)=>(j+1)+': '+name),
+    rowLabels:['river','bank','fisherman','the'],cornerLabel:'Token',decimals:1,
+    into:S.querySelector('#s01-coordinate-table')
+  });
 
   /* One input occurrence per row, using the bank model's actual starting E. */
   S.querySelector('#s01-matrix-sentence').textContent = '“' + SA.join(' ') + ' ___”';
@@ -3730,16 +3747,15 @@ Next, return to the prediction problem: the earlier clues should change what can
   /* present mode: the frame starts in context A every time it is entered */
   if (AT.present && AT.present.on) AT.present.on('frame', (st) => { if (st.frame && st.frame.id === 's01' && st.frame.index === 0 && ctx !== 'A') { ctx = 'A'; paint(); } });
 
-  /* Separate sinusoidal illustration; never change the bank model's vectors. */
-  const word = [0.2, -0.4, 0.6, 0.1];
+  /* The same lookup and position tables used by every bank calculation. */
+  const word = AT.model.tok_emb.the;
   let position = 5;
   function positionRow(i){
-    const pos = i - 1; // Display slots from 1; the sinusoidal index starts at 0.
-    return [Math.sin(pos), Math.cos(pos), Math.sin(pos / 100), Math.cos(pos / 100)];
+    return AT.model.pos_emb[i - 1];
   }
   function sumRow(){ return word.map((x, j) => x + positionRow(position)[j]); }
   const fig = AT.ui.table([word, positionRow(position)], {
-    cols: ['1', '2', '3', '4'], axes: false, cornerLabel: 'Coordinate', decimals: 3,
+    cols: ['1', '2', '3', '4'], axes: false, cornerLabel: 'Coordinate', decimals: 1,
     rowLabels: ['Word “the”', '+ Position ' + position], rowCls: ['neutral', 'neutral'],
     footer: { label: '= Starting row', values: sumRow(), cls: 'e' },
     into: S.querySelector('#s01-emb-tab')
@@ -3752,7 +3768,7 @@ Next, return to the prediction problem: the earlier clues should change what can
     fig.setFooter(sumRow());
     fig.rowLabelEls[1].textContent = '+ Position ' + position;
     S.querySelectorAll('[data-position]').forEach(btn => btn.setAttribute('aria-pressed', Number(btn.dataset.position) === position ? 'true' : 'false'));
-    S.querySelector('#s01-position-example').innerHTML = 'Coordinate 1: <span class="start-token">' + AT.fmt(word[0], 3) + '</span> + <span class="start-position">(' + AT.fmt(positionRow(position)[0], 3) + ')</span> = <span class="start-row">' + AT.fmt(sumRow()[0], 3) + '</span>';
+    S.querySelector('#s01-position-example').innerHTML = 'Coordinate 4: <span class="start-token">' + AT.fmt(word[3], 1) + '</span> + <span class="start-position">(' + AT.fmt(positionRow(position)[3], 1) + ')</span> = <span class="start-row">' + AT.fmt(sumRow()[3], 1) + '</span>';
   }
   S.querySelectorAll('[data-position]').forEach(btn => btn.addEventListener('click', () => { position = Number(btn.dataset.position); drawEmb(); }));
   drawEmb();
@@ -4075,7 +4091,7 @@ body.present #s03 #s03-ceq .katex-display{margin:4px 0 16px}
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Give the model more context by concatenating the last $w$ representations into one long row. A larger matrix can read that row. In the first diagram, the input column contains the window, so widening the window also widens the first layer's input. Use the second slider to see which tokens reach it: each token adds five numbers. At $w=3$, <em>river</em> is outside. At $w=10$, every token fits because this sentence is short. The network can learn to use the content it receives, including the difference between <em>river</em> and <em>the</em>. But its input width is fixed, and it gets no information from beyond the window. We want a way to choose useful information by content, rather than deciding which words are available only by position.</p>
+  <p>Give the model more context by concatenating the last $w$ representations into one long row. A larger matrix can read that row. In the first diagram, the input column contains the window, so widening the window also widens the first layer's input. Use the second slider to see which tokens reach it: each token adds four numbers. At $w=3$, <em>river</em> is outside. At $w=10$, every token fits because this sentence is short. The network can learn to use the content it receives, including the difference between <em>river</em> and <em>the</em>. But its input width is fixed, and it gets no information from beyond the window. We want a way to choose useful information by content, rather than deciding which words are available only by position.</p>
 </div>
 
 <div class="frame" data-title="Grow the window" id="s03-frame1" data-autobuild="off">
@@ -4111,7 +4127,7 @@ body.present #s03 #s03-ceq .katex-display{margin:4px 0 16px}
 <div class="frame" data-title="Inside the window" id="s03-frame2" data-autobuild="off">
   <script type="text/x-notes">
     Which tokens does w = 3 keep, and which does it throw away?
-    Move the slider to 3 and ask where river went. Then reveal the concatenation table: one row of five numbers per kept token, stacked by position. Then the readouts: input size and parameter count grow with w.
+    Move the slider to 3 and ask where river went. Then reveal the concatenation table: one row of four numbers per kept token, stacked by position. Then the readouts: input size and parameter count grow with w.
   </script>
   <div class="companion">
     <p>Concatenate the previous $w$ token representations into one long vector and predict from that. $w$ denotes the window width; we reserve $K$ for the matrix of attention keys later.</p>
@@ -5619,12 +5635,12 @@ k_j, v_j = e_j @ W_K, e_j @ W_V</code></pre>
     const content = [0, 1, 2].map(i => ({ i: i, v: +vals[i] || 0 })).filter(o => o.v >= SIG).sort((a, b) => b.v - a.v);
     const glue = +vals[3] || 0;
     const csum = content.reduce((s, o) => s + o.v, 0);
-    if (!content.length) return glue >= SIG ? tok + ' is a glue word with no setting' : tok + ' says almost nothing';
+    if (!content.length) return glue >= SIG ? tok + ' is mainly a glue word, with no large setting feature' : tok + ' has only small feature scores';
     if (glue >= SIG && csum <= glue) return tok + ' is a glue word with a hint of ' + joinAnd(content.map(o => names[o.i]));
     const top = content[0], near = content.filter(o => o.v >= 0.75 * top.v);
     let s;
     if (near.length >= 2) s = tok + ' is ' + near.map((o, k) => (k === 0 ? 'half ' : 'half ') + d(o.i).replace(/^a /, '')).join(', ');
-    else if (content.length === 1 && glue < SIG) s = tok + ' is ' + d(top.i) + ' and nothing else';
+    else if (content.length === 1 && glue < SIG) s = tok + ' is dominated by ' + d(top.i);
     else s = tok + ' is mostly ' + d(top.i) + (content.length > 1 ? ', with some ' + joinAnd(content.slice(1).map(o => names[o.i])) : '');
     if (glue >= SIG) s += ', plus a glue part';
     return s;
@@ -5638,7 +5654,7 @@ k_j, v_j = e_j @ W_K, e_j @ W_V</code></pre>
     let s;
     if (!asks.length) s = 'it asks for almost nothing';
     else if (!not.length) s = 'it asks across all the matching axes';
-    else s = 'it asks for ' + joinAnd(asks) + ' evidence, not for ' + joinAnd(not);
+    else s = 'it mainly asks for ' + joinAnd(asks) + ' evidence; the other matching coordinates are small';
     return 'Reading $\\vq{q_{' + (i + 1) + '}}$ (' + AT.escape(toks[i]) + '): ' + AT.escape(s) + (/\?$/.test(s) ? '' : '.');
   }
   function kClause(j){
@@ -8533,7 +8549,7 @@ The stage label names the query. Follow bank by default, or choose another recei
       case 1:
         operation('E\\in\\mathbb{R}^{' + T + '\\times' + dm + '},\\qquad e_' + nn + '=\\text{token row}+\\text{position row}');
         vector(F.E[i], 'e_' + nn, 'e', 'e');
-        explain('All ten input rows are computed before attention. This toy stores position in its last coordinate; its current attention projections ignore that coordinate.');
+        explain('All ten input rows are computed before attention. Each adds a word vector and a position vector in the same four coordinates, which the projections then read.');
         code('E = token_embedding[token_ids] + position_embedding[:T]');
         break;
       case 2:
@@ -9763,15 +9779,8 @@ Training compares the distribution with an observed next token, backpropagates, 
 loss.backward(); optimizer.step()</code></pre>
 </div>
 
-<div class="frame" id="s19-frame-position-limit" data-title="This toy does not demonstrate word order" data-autobuild="off">
-  <script type="text/x-notes">If we shuffle the earlier tokens but keep the final token fixed, does this one-layer toy's final prediction change?
-No. Verify that the fifth rows of W_Q, W_K, W_V and W_vocab are zero. The causal mask still restricts each position to its prefix, but the final position sees the same set of tokens after the shuffle. This is a limitation of these hand-chosen parameters, not a general property of Transformers.</script>
-  <div class="prose">
-    <p>We added $p_i$ to the lookup row: $e_i^{(0)}=E_{\text{tok}}[t_i]+p_i$. But adding position only helps if later computations <strong>use it</strong>.</p>
-    <p data-build="1">In this toy, $W_Q$, $W_K$, $W_V$ and $W_{\text{vocab}}$ have zero fifth rows. They <strong>ignore the position coordinate</strong>.</p>
-  </div>
-  <div class="callout callout-note" data-build="2">Keep the final token fixed and shuffle the earlier tokens: this one-layer toy gives the <strong>same final prediction</strong>. It demonstrates content routing, not word-order sensitivity.</div>
-  <p data-build="3">The causal mask prevents reading future tokens; it does not fix this toy's unused position signal. <a href="vision1.html#s03">Vision I compares positions on and off numerically.</a></p>
+<div class="companion" id="s19-position-check" data-kicker="Checking the position signal">
+  <p>The position vectors introduced at the start share the four word-feature coordinates. Moving an earlier word can therefore change its key and value, and the final prediction. Our numerical regression swaps “The” and “river” while keeping the final token fixed: the prediction changes with position vectors, but stays the same when those vectors are zeroed. This is a test of this single-layer example, not a claim that the hand-designed toy understands grammar.</p>
 </div>
 
 <div class="frame" id="s19-frame4" data-title="What have we built, and what remains?">

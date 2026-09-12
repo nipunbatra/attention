@@ -166,12 +166,12 @@ k_j, v_j = e_j @ W_K, e_j @ W_V</code></pre>
     const content = [0, 1, 2].map(i => ({ i: i, v: +vals[i] || 0 })).filter(o => o.v >= SIG).sort((a, b) => b.v - a.v);
     const glue = +vals[3] || 0;
     const csum = content.reduce((s, o) => s + o.v, 0);
-    if (!content.length) return glue >= SIG ? tok + ' is a glue word with no setting' : tok + ' says almost nothing';
+    if (!content.length) return glue >= SIG ? tok + ' is mainly a glue word, with no large setting feature' : tok + ' has only small feature scores';
     if (glue >= SIG && csum <= glue) return tok + ' is a glue word with a hint of ' + joinAnd(content.map(o => names[o.i]));
     const top = content[0], near = content.filter(o => o.v >= 0.75 * top.v);
     let s;
     if (near.length >= 2) s = tok + ' is ' + near.map((o, k) => (k === 0 ? 'half ' : 'half ') + d(o.i).replace(/^a /, '')).join(', ');
-    else if (content.length === 1 && glue < SIG) s = tok + ' is ' + d(top.i) + ' and nothing else';
+    else if (content.length === 1 && glue < SIG) s = tok + ' is dominated by ' + d(top.i);
     else s = tok + ' is mostly ' + d(top.i) + (content.length > 1 ? ', with some ' + joinAnd(content.slice(1).map(o => names[o.i])) : '');
     if (glue >= SIG) s += ', plus a glue part';
     return s;
@@ -185,7 +185,7 @@ k_j, v_j = e_j @ W_K, e_j @ W_V</code></pre>
     let s;
     if (!asks.length) s = 'it asks for almost nothing';
     else if (!not.length) s = 'it asks across all the matching axes';
-    else s = 'it asks for ' + joinAnd(asks) + ' evidence, not for ' + joinAnd(not);
+    else s = 'it mainly asks for ' + joinAnd(asks) + ' evidence; the other matching coordinates are small';
     return 'Reading $\\vq{q_{' + (i + 1) + '}}$ (' + AT.escape(toks[i]) + '): ' + AT.escape(s) + (/\?$/.test(s) ? '' : '.');
   }
   function kClause(j){

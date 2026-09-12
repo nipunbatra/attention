@@ -148,15 +148,16 @@ export function checkTargets(toy) {
     `${all.length} numbers, max|x|=${Math.max(...all.map(Math.abs)).toFixed(1)}`);
   const want = 'the fisherman sat beside river bank and watched she deposited cheque at water boats fish ducks teller clerk queue money'.split(' ');
   rec('T8 hard: vocabulary is the 20 tokens', toy.vocab.length === 20 && want.every((w, i) => toy.vocab[i] === w), '20 tokens');
-  const posAxis = toy.axes && toy.axes.e ? toy.axes.e.indexOf('position') : -1;
   const thes = [0, 4, 9].map((i) => fa.E[i].join(','));
-  const positionRowsOk = posAxis >= 0 && toy.pos_emb.every((row, i) => row.every((x, d) =>
-    Math.abs(x - (d === posAxis ? 0.1 * (i + 1) : 0)) < 1e-9));
-  const zeroAt = (M) => posAxis >= 0 && M[posAxis] && M[posAxis].every((x) => x === 0);
-  rec("T9 hard: position has its own coordinate and the three 'the' rows differ",
-    positionRowsOk && toy.vocab.every((w) => toy.tok_emb[w][posAxis] === 0) &&
-      zeroAt(toy.W_Q) && zeroAt(toy.W_K) && zeroAt(toy.W_V) && zeroAt(toy.W_vocab) && new Set(thes).size === 3,
-    `position rows 0.1 to ${(0.1 * toy.pos_emb.length).toFixed(1)}; token and projection position rows are zero`);
+  const noPos = {...toy, pos_emb:toy.pos_emb.map(row=>row.map(()=>0))};
+  const shuffled = [SA[5],...SA.slice(1,5),SA[0],...SA.slice(6)];
+  const gap = (a,b) => Math.max(...a.map((x,i)=>Math.abs(x-b[i])));
+  rec("T9 hard: position spans existing coordinates and affects the prediction",
+    toy.d_model === 4 && !toy.axes.e.includes('position') &&
+      toy.axes.e.every((_,j)=>toy.pos_emb.some(row=>row[j]!==0)) && new Set(thes).size === 3 &&
+      gap(fa.probs[LAST],forward(toy,shuffled).probs[LAST]) > 1e-8 &&
+      gap(forward(noPos,SA).probs[LAST],forward(noPos,shuffled).probs[LAST]) < 1e-12,
+    'four-coordinate sums; prefix swap changes the final prediction only with the position table');
   const hasShape = (M, rows, cols) => Array.isArray(M) && M.length === rows && M.every((row) => Array.isArray(row) && row.length === cols);
   rec('T10 hard: parameter shapes match d_model, d_k and d_v',
     toy.axes.e.length === toy.d_model && toy.axes.qk.length === toy.d_k && toy.axes.v.length === toy.d_v &&

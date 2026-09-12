@@ -3,11 +3,11 @@
 Notation: F = frame, b = build. "held" = the drawing that stays while builds add one mark. Notes = presenter notes (first line = question before reveal).
 
 ## s01 Predict the next token
-F1 "One blank": sentence chips, context switch, then the claim that the context matters. F2 show the resulting probability bars for the selected context. F3 state the conditional next-token task. F4 distinguish the learned vocabulary table E_tok from one looked-up row. F5 "Where a token starts": select a token and inspect its three aligned rows, token + position = e^{(0)}. F6 assemble E by stacking the current rows of this sentence. F7 explain same-width position addition, and explicitly disclose that this hand-designed toy ignores its dedicated position coordinate.
+F1 "One blank": sentence chips and the prediction task. F2 show probability bars. F3 distinguish E_tok from a looked-up row. F4 explain the four illustrative word features with actual river/bank/the rows and matching colour labels. F5 motivate order with Maya/Ravi and bridge from Part I's concatenation. F6 add actual word/position rows at positions 1, 5, and 10, without an extra axis. F7 assemble the ten-by-four sentence matrix and define T and d_model. Keep technical position details in the article companion, not repeated recap slides.
   Notes: "What could come next, and why do you think so?" Collect answers before switching context. The selected context and token survive continuation frames. Do not introduce attention yet.
 
 ## s02 Only the last token
-F1 isolate the last token and its input row. F2 switch between contexts and observe identical probability bars. F3 connect that row to the vocabulary head and softmax. F4 compare the two identical last-token rows side by side. The full head-arithmetic worksheet remains in reading mode.
+F1 state the context problem using the two full sentences. F2 isolate the last token as a deliberately limited baseline. F3 switch contexts and observe identical bars. F4 connect that row to the vocabulary head. F5 explain the limitation and motivate reading several rows. Full head arithmetic remains in reading mode.
   Notes: "Before I switch the context: will the bars move?" They cannot: the baseline receives the same token at the same position.
 
 ## s03 A fixed window

@@ -10,6 +10,8 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+2026-09-12 position revision: Parts II and III now share a four-coordinate toy, with no dedicated `pos` axis. The hand-chosen position table adds small offsets across the same word-feature coordinates. The opening defines the illustrative features before introducing position; every worked example, reference result, training trace and exported diagram must use this model. This supersedes historical five-coordinate/ignored-position guidance below and in REV2_TASK.md. See AXES.md and check_position_intro.mjs; T9 in both numerical references tests position-sensitive predictions.
+
 The section 4 lookup primer now distinguishes the placeholder c (dark grey, pSymbol) from the literal "a"
 (orange, pToken). Quoted monospaced literals carry through id("a") and the concrete embedding subscript. Generic
 e_c = E_tok[id(c)] keeps both c occurrences grey. Matching prose explains the quotes and the character/value

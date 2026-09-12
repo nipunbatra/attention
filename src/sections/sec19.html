@@ -181,15 +181,8 @@ Training compares the distribution with an observed next token, backpropagates, 
 loss.backward(); optimizer.step()</code></pre>
 </div>
 
-<div class="frame" id="s19-frame-position-limit" data-title="This toy does not demonstrate word order" data-autobuild="off">
-  <script type="text/x-notes">If we shuffle the earlier tokens but keep the final token fixed, does this one-layer toy's final prediction change?
-No. Verify that the fifth rows of W_Q, W_K, W_V and W_vocab are zero. The causal mask still restricts each position to its prefix, but the final position sees the same set of tokens after the shuffle. This is a limitation of these hand-chosen parameters, not a general property of Transformers.</script>
-  <div class="prose">
-    <p>We added $p_i$ to the lookup row: $e_i^{(0)}=E_{\text{tok}}[t_i]+p_i$. But adding position only helps if later computations <strong>use it</strong>.</p>
-    <p data-build="1">In this toy, $W_Q$, $W_K$, $W_V$ and $W_{\text{vocab}}$ have zero fifth rows. They <strong>ignore the position coordinate</strong>.</p>
-  </div>
-  <div class="callout callout-note" data-build="2">Keep the final token fixed and shuffle the earlier tokens: this one-layer toy gives the <strong>same final prediction</strong>. It demonstrates content routing, not word-order sensitivity.</div>
-  <p data-build="3">The causal mask prevents reading future tokens; it does not fix this toy's unused position signal. <a href="vision1.html#s03">Vision I compares positions on and off numerically.</a></p>
+<div class="companion" id="s19-position-check" data-kicker="Checking the position signal">
+  <p>The position vectors introduced at the start share the four word-feature coordinates. Moving an earlier word can therefore change its key and value, and the final prediction. Our numerical regression swaps “The” and “river” while keeping the final token fixed: the prediction changes with position vectors, but stays the same when those vectors are zeroed. This is a test of this single-layer example, not a claim that the hand-designed toy understands grammar.</p>
 </div>
 
 <div class="frame" id="s19-frame4" data-title="What have we built, and what remains?">

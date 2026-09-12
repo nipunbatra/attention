@@ -100,6 +100,22 @@ try {
     for (const key of ['max_context', 'd_model', 'd_k', 'd_v', 'vocab', 'tok_emb', 'pos_emb', 'W_Q', 'W_K', 'W_V', 'W_O', 'W_vocab', 'b_vocab', 'sentences']) {
       assert.deepEqual(liveModel[key], model[key], name + ': assembled model is stale at ' + key);
     }
+    if (partIndex === 1) {
+      const ffn = await page.evaluate(() => {
+        const input = AT.forward(AT.sentences.river).Enew.at(-1);
+        return { input, result: AT.ffn(input), W1: AT.ffn.W1, b1: AT.ffn.b1, W2: AT.ffn.W2, b2: AT.ffn.b2, width: AT.ffn.d_model };
+      });
+      assert.equal(ffn.width, model.d_model, 'FFN must use the shared model width.');
+      assert.equal(ffn.W1.length, model.d_model);
+      assert(ffn.W1.every(row=>row.length===8)&&ffn.W2.length===8&&ffn.W2.every(row=>row.length===model.d_model));
+      const affine = (x,W,b) => b.map((bias,j)=>bias+x.reduce((sum,value,i)=>sum+value*W[i][j],0));
+      const pre = affine(ffn.input,ffn.W1,ffn.b1), hidden = pre.map(x=>Math.max(0,x));
+      compare(ffn.result.input,ffn.input,'FFN input must not append a coordinate');
+      compare(ffn.result.pre,pre,'FFN affine');
+      compare(ffn.result.hidden,hidden,'FFN ReLU');
+      compare(ffn.result.output,affine(hidden,ffn.W2,ffn.b2),'FFN output');
+      console.log('PASS: Part 3 FFN is 4→8→4; independent arithmetic agrees.');
+    }
 
     for (const sentence of ['river', 'cheque']) {
       const initial = model.sentences[sentence];

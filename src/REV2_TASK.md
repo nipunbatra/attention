@@ -1,4 +1,6 @@
-# REV2 task: position column + narrower values (see AXES.md "Revision 2")
+# Historical REV2 task — superseded by the 2026-09-12 position revision
+
+Do not implement the dedicated position column below. The current contract is in AXES.md: four shared coordinates with additive position vectors, d_k=3 and d_v=2. This file preserves the old request only.
 
 Working directory: this scratchpad (absolute paths). Never touch /Users/nipun/git/attention. No network.
 Read AXES.md (revision 2 at the end), PARTS.md, CONTRACT.md, toy_report.md, and skim sections/sec01.html, sec07.html, sec11.html.

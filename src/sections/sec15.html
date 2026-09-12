@@ -471,7 +471,7 @@ The stage label names the query. Follow bank by default, or choose another recei
       case 1:
         operation('E\\in\\mathbb{R}^{' + T + '\\times' + dm + '},\\qquad e_' + nn + '=\\text{token row}+\\text{position row}');
         vector(F.E[i], 'e_' + nn, 'e', 'e');
-        explain('All ten input rows are computed before attention. This toy stores position in its last coordinate; its current attention projections ignore that coordinate.');
+        explain('All ten input rows are computed before attention. Each adds a word vector and a position vector in the same four coordinates, which the projections then read.');
         code('E = token_embedding[token_ids] + position_embedding[:T]');
         break;
       case 2:

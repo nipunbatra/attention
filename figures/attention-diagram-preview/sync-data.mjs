@@ -14,12 +14,10 @@ function row(i){
     topVocabulary:model.vocab.map((token,j)=>({token,index:j,logit:F.logits[i][j],probability:F.probs[i][j]})).sort((a,b)=>b.probability-a.probability).slice(0,6)};
 }
 const shapes=Object.fromEntries(Object.entries({WQ:'W_Q',WK:'W_K',WV:'W_V',WO:'W_O',WVocab:'W_vocab'}).map(([k,v])=>[k,[model[v].length,model[v][0].length]]));
-const pi=model.axes.short.e.indexOf('pos');
-const positionIgnored=pi>=0&&['W_Q','W_K','W_V','W_vocab'].every(k=>model[k][pi].every(x=>x===0));
 const data={schemaVersion:1,provenance:{source:'src/toy.json',reference:'src/toy_ref.mjs',
   repositoryCommit:execFileSync('git',['rev-parse','HEAD'],{cwd:new URL('../../',import.meta.url),encoding:'utf8'}).trim(),
   modelSha256:createHash('sha256').update(source).digest('hex'),snapshotDate:new Date().toISOString().slice(0,10),
-  handDesigned:true,trained:false,positionIgnored,description:'Named-axis, single-head causal attention toy. Actual arithmetic from hand-designed weights, not a trained language model.',
+  handDesigned:true,trained:false,positionEncoding:'additive-table',description:'Named-axis, single-head causal attention toy. Actual arithmetic from hand-designed weights, not a trained language model.',
   convention:'Row vectors. e=token embedding + position; q=e WQ; k=e WK; v=e WV; scores=q K^T/sqrt(dKey); mixture=alpha V; delta=mixture WO; updated=e+delta; logits=updated WVocab+b.',
   maskEncoding:'null means forbidden future score (negative infinity); its attention weight is zero.',
   predictionBoundary:'bank is receiver 7. Prediction after the full ten-token prefix uses receiver 10, the last the.'},

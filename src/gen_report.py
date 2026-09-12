@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""gen_report.py - writes toy_report.md from toy.json using make_toy2.py's numpy forward pass (toy v2, named axes)."""
+"""gen_report.py - writes toy_report.md from toy.json using make_toy2.py's numpy forward pass (toy v3, additive positions)."""
 import json, os
 import numpy as np
 from make_toy2 import load_json_params, run, check, VOCAB, VI, SA, SB, CAND_A, CAND_B, CANDS, HERE, OUT_JSON, T
@@ -17,7 +17,7 @@ w = L.append
 fmt = lambda v: "[" + ", ".join(f"{x:.2f}" for x in v) + "]"
 num = lambda x: ("0" if abs(x) < 1e-12 else f"{x:.1f}")
 
-w("# toy_report.md - numbers produced by the hand-designed toy.json (v2, named axes)\n")
+w("# toy_report.md - numbers produced by the hand-designed toy.json (v3, additive positions)\n")
 w(f"All values below are computed from the ONE-DECIMAL parameters in `toy.json` ({nparams} numbers, max |x| = {maxabs:.1f}) by "
   "`make_toy2.py`; `node toy_ref.mjs --compare py_check.json` reproduces every intermediate to < 1e-12. "
   "Attention weights are shown to 2 decimals, probabilities to 3. The previous, optimised toy is kept as `toy_v1.json` "
@@ -26,13 +26,13 @@ w("## How the numbers were obtained\n")
 w("Nothing was optimised. AXES.md names every coordinate, and the embeddings and projection matrices were written by hand "
   "so that the names are true: each row of a projection reads as 'input axis -> asks / offers / says'. The forward pass "
   "(the same arithmetic as `toy_ref.mjs`) was then evaluated and a few magnitudes were adjusted from the AXES.md starting "
-  "point until the targets held on the rounded numbers: `bank` became [0.7, 0.7, 0, 0.7, 0] and "
-  "`fisherman` became [2.0, 0, 2.2, 0, 0], because the self score q_bank . k_bank grows with the square of "
+  "point until the targets held on the rounded numbers: `bank` became [0.7, 0.7, 0, 0.7] and "
+  "`fisherman` became [2.0, 0, 2.2, 0], because the self score q_bank . k_bank grows with the square of "
   "bank's water/finance entries and at 1.5 bank attended to itself as much as to river; the W_vocab weights were raised to "
   "1.5/1.2/1.0/0.7 (water words) and 1.5/1.2/0.9/0.7 (finance words) so that every non-candidate word stays at or below 0.04. "
-  f"Position has a dedicated coordinate only as a toy simplification. It rises from 0.1 to {toy['pos_emb'][-1][-1]:.1f} "
-  f"across {len(toy['pos_emb'])} supported positions, while its rows in W_Q, W_K, W_V and W_vocab are zero. "
-  "The toy demonstrates content routing, not sensitivity to word order.\n")
+  f"The position table has {len(toy['pos_emb'])} rows of four small offsets, added across the existing coordinates. "
+  "It is hand-chosen, not learned or sinusoidal. Position affects the projections and can change predictions. "
+  "The named word features are a teaching device; real learned embeddings need not have one human concept per axis.\n")
 
 w("## Axes (from `toy.json` -> `axes`)\n")
 axis_width = max(len(AX["e"]), len(AX["qk"]), len(AX["v"]))
@@ -64,7 +64,7 @@ w("|---:|" + "---:|" * len(AX["e"]))
 for i, row in enumerate(toy["pos_emb"]):
     w(f"| {i+1} | " + " | ".join(num(x) for x in row) + " |")
 w("")
-w("Only the position coordinate changes. The attention projections and output head ignore that coordinate in this toy.\n")
+w("Position is added across the four existing coordinates. T9 checks that swapping earlier words can change the final prediction with these offsets, while the same permutation leaves it unchanged with zero offsets.\n")
 
 def wtable(title, W, rows, cols, rowname, colname):
     w(f"### {title}\n")
@@ -131,7 +131,7 @@ att_table("attention row of the(10)", SB, fb["A"][9], 10)
 prob_table("p(next token | S_B) from e'_the(10)", fb["probs"][9], CAND_B)
 w(f"Target: teller > clerk > queue > money, every other token <= .04; attention mostly on cheque, bank, deposited: {status('T4')}\n")
 w("## T5 - baseline (no attention): softmax(e^(0)_the(10) W_vocab + b)\n")
-w("Identical for both sentences (same token, same position 10). e^(0)_the(10) has nothing on the water or finance axes, and the output head ignores its position coordinate.\n")
+w("Identical for both sentences (same token, same position 10). The starting row of the final 'the' is [0, 0, 0, 2.3]: no water or finance component, so only the output biases affect these logits.\n")
 w("| token | probability |"); w("|---|---:|")
 for c in CANDS: w(f"| {c} | {base[VI[c]]:.3f} |")
 oth = [base[i] for i in range(20) if VOCAB[i] not in CANDS]

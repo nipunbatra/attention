@@ -24,7 +24,7 @@ A focused slider keeps its native arrow and Page Up/Down controls. Press **N** t
 
 The sources are slide-first: one bounded teaching idea per 16:9 frame, with large classroom type and no internal scrollbars. Reading mode unfolds those same frames and their companion explanations into a responsive article. There is one source, one set of widgets, and one numerical model per part, not a second deck to keep synchronized.
 
-Part 1 uses a trained small name model. Part 2 uses hand-designed weights so every step can be inspected; Part 3 trains that toy before introducing the larger Transformer architecture. The toy's position coordinate is added at the same width, but its initial projections ignore it: the example demonstrates content routing, not sensitivity to word order. The text marks this boundary explicitly.
+Part 1 uses a trained small name model. Part 2 uses hand-designed weights so every step can be inspected; Part 3 trains that toy before introducing the larger Transformer architecture. The toy uses four illustrative word features and adds hand-chosen position vectors across those same coordinates. There is no extra position axis. Position can affect predictions; the named features and numbers are teaching choices, not measurements from a trained language model.
 
 The standalone SVG preview is at `figures/attention-diagram-preview/index.html`. Its twelve stages build one causal attention head, then the output projection, residual addition, and the final-token vocabulary prediction. Section16 embeds the same diagram source and reads the article's live numerical model.
 
