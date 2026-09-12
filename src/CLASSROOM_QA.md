@@ -1,5 +1,12 @@
 # Classroom release checks
 
+## 2026-09-12: explain alpha with a concrete source contribution
+
+- Replaced the abstract weighted-pooling introduction with two frames. The first identifies receiver bank at i=7 and source river at j=6, reads alpha aloud, and works through a conditional, hand-chosen weight of 0.5. Both the input row and its half-weighted contribution come directly from the existing embedding data. The example changes no preset or model value, and explicitly leaves the other six weights a total share of 0.5.
+- The second frame expands bank's seven-source sum before introducing Sigma and the general rule. Rose identifies scalar weights, blue identifies input rows, and teal identifies the four-number summary in both equations and explanatory text. The slide defines each symbol, distinguishes scalar and row shapes, states nonnegative weights summing to one for a fixed receiver, includes the current source, excludes later sources, and connects equal weights back to the mean.
+- The presentation skill guided concrete arithmetic before general notation and retained the deck's colours, editable tables and progressive reveals. Regression now checks both indices and highlighted tokens, every product against independent arithmetic, colour matches, definition-column bounds, repeated hide/reveal states, actual summation pixels and phone table fit. Scoped visible/hidden rules prevent Chromium from retaining stale visibility inside nested KaTeX table spans.
+- All 299 presentation states / 526 formulas, 128 controls, eight independent live/reference cases (7,980 finite values, max error 8.88e-16), the full pooling regression and 390px article QA pass. Visually inspected the worked example, expanded/general rule and phone layout. One additional teaching frame. No model, Part I, shared runtime, dependency or PDF changes.
+
 ## 2026-09-12: distinguish current position from window size
 
 - Added one comparison frame before the mean calculation. The same current input position i drives two token strips: a fixed three-token window and all tokens so far. At bank (i=7), the window supplies positions 5–7, while full-prefix pooling supplies 1–7 and retains fisherman. At i<3 both rules show only the words available so far. Positions after i never contribute.

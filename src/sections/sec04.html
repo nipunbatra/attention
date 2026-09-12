@@ -14,6 +14,33 @@
 #s04 .s04-classroom{display:none}
 #s04 .pool-summary,#s04 .vec-label{color:var(--c-v)}
 #s04 .pool-input{color:var(--c-e)}
+#s04 .pool-weight{color:var(--c-a)}
+#s04 .alpha-example,#s04 .alpha-rule{font-size:18px;line-height:1.45}
+#s04 .alpha-example p,#s04 .alpha-rule p{margin:12px 0}
+#s04 .alpha-reading{display:flex;align-items:center;gap:16px 36px;flex-wrap:wrap;margin:18px 0}
+#s04 .alpha-symbol{font-size:30px}
+#s04 .alpha-indices{display:grid;gap:6px}
+#s04 .alpha-table{border-collapse:collapse;font-size:17px;margin:12px 0;width:100%;max-width:850px}
+#s04 .alpha-table th,#s04 .alpha-table td{padding:10px 14px;border-bottom:1px solid var(--line);text-align:right}
+#s04 .alpha-table th:first-child{text-align:left}
+#s04 .alpha-table thead th{font-size:.85em;color:var(--ink-2);font-weight:600}
+#s04 .alpha-table tbody th{font-weight:500}
+#s04 .alpha-table td{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+#s04 .alpha-table .alpha-source td{color:var(--c-e);background:var(--t-e)}
+#s04 .alpha-table .alpha-product td{background:var(--paper)}
+#s04 .alpha-legend{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin:18px 0}
+#s04 .alpha-legend p{margin:0}
+#s04 .alpha-constraints{border-top:1px solid var(--line);padding-top:14px}
+#s04 .alpha-example .chip.is-receiver{outline:2px solid var(--c-v);outline-offset:2px;color:var(--c-v)}
+body.present #s04 .alpha-example,body.present #s04 .alpha-rule{font-size:24px;line-height:1.35}
+body.present #s04 .alpha-symbol{font-size:36px}
+body.present #s04 .alpha-table{font-size:24px}
+body.present #s04 .alpha-table th,body.present #s04 .alpha-table td{padding:10px 16px}
+body.present #s04 .alpha-legend{font-size:22px}
+body.present #s04 .alpha-rule .katex-display{margin:18px 0}
+body.present:not(.is-preflighting) #s04 .is-live .alpha-reveal:not(.is-pending) .katex-html *{visibility:visible}
+body.present #s04 .alpha-reveal.is-pending .katex-html *{visibility:hidden}
+@media(max-width:640px){body:not(.present) #s04 .alpha-legend{grid-template-columns:1fr;gap:10px}body:not(.present) #s04 .alpha-table{font-size:13px}body:not(.present) #s04 .alpha-table th,body:not(.present) #s04 .alpha-table td{padding:9px 4px}body:not(.present) #s04 .alpha-symbol{font-size:26px}body:not(.present) #s04 .alpha-expanded{font-size:15px}}
 #s04 .pool-intro{font-size:18px;line-height:1.4;margin:0 0 14px}
 #s04 .pool-preview{display:flex;align-items:center;gap:12px 24px;flex-wrap:wrap;margin-top:12px}
 #s04 .pool-preview p{font-size:16px;line-height:1.4;margin:0}
@@ -115,17 +142,49 @@ All available rows have the same 1/i weight. Reveal the footer and read it as th
 
 <div class="companion" data-kicker="Mean-pooling worksheet"><div id="s04-mean-arith"></div></div>
 
-<div class="frame" id="s04-frame-weight-rule" data-title="Let useful rows contribute more" data-autobuild="off">
+<div class="frame" id="s04-frame-weight-rule" data-title="A weight tells us how much of a row to take" data-autobuild="off">
   <script type="text/x-notes">
-If you could set the weights by hand for bank, what would you choose and why?
-The table starts with equal weights, so it is the mean again. Reveal the sliders and press "Focus on river": the footer drifts towards row 6. Try "Only bank itself" too: the footer is just row 7.
-
-Timing: three minutes.
+What does a weight of one half do to a four-number row?
+Bank is the already-known input at position 7. We are gathering context for it. River at position 6 is one source. Read alpha, then its two indices in order: receiver 7, source 6. The comma only separates the indices. Choose 0.5 by hand to make the arithmetic easy. This value is an example, not a measured or learned weight. Reveal the table and multiply every coordinate by the same scalar, including the negative and zero coordinates. The second row is only river's contribution. The other six nonnegative weights must together sum to 0.5. A weight is a mixing coefficient, not the probability that the next word is river. The next slide adds all source contributions. The later interactive slide lets students choose a complete set of weights.
   </script>
-  <div class="prose">
-    <p>The mean gives <em>river</em> and <em>the</em> the same share. When summarizing context for <em>bank</em>, could <em>river</em> contribute more?</p>
-    $$\htmlClass{pool-summary}{m_i} = \sum_{j \le i} \va{\alpha_{ij}}\, \ve{e_j}, \qquad \sum_{j \le i} \va{\alpha_{ij}} = 1$$
-    <p data-build="1">The weight $\va{\alpha_{ij}}$ says how much position $i$ takes from source $j$.</p>
+  <div class="alpha-example">
+    <p>We are building <span class="pool-summary"><strong>bank's</strong> context at $i=7$</span>. Could <span class="pool-input">river</span> get more than the mean's $1/7$ share?</p>
+    <div id="s04-alpha-chips"></div>
+    <div class="alpha-reading">
+      <div class="alpha-symbol">$\va{\alpha_{7,6}=0.5}$</div>
+      <div class="alpha-indices">
+        <span><span class="pool-summary">First index 7: receiver bank.</span> <span class="pool-input">Second index 6: source river.</span></span>
+        <span class="pool-weight">Read “alpha”: river's chosen share for bank is 0.5.</span>
+      </div>
+    </div>
+    <div class="alpha-reveal" data-build="1">
+      <p>If we choose <span class="pool-weight">a weight of 0.5</span>, multiply <span class="pool-input">every coordinate of river's row</span> by 0.5.</p>
+      <table class="alpha-table" id="s04-alpha-example-table" aria-label="Half of river's input row, coordinate by coordinate"></table>
+      <p>This is river's contribution only. The other six weights must add up to <span class="pool-weight">0.5</span>.</p>
+    </div>
+    <div class="companion"><p>The example chooses 0.5 by hand. It is a single scalar shared by all four coordinates. These weights mix input rows, whereas the output-head probabilities describe possible next tokens. We have not yet introduced a method for computing the weights from the inputs.</p></div>
+  </div>
+</div>
+
+<div class="frame" id="s04-frame-weight-sum" data-title="Weighted pooling: scale each row, then add" data-autobuild="off">
+  <script type="text/x-notes">How do we finish bank's summary?
+Keep the receiving position fixed at i=7 and add one contribution for each source j=1 through 7. Point to the rose coefficient and blue row in each term, then the teal summary. The river term is the multiplication from the previous slide. Reveal the general rule after the concrete seven-source expansion. Sigma means add those terms. The weight is one scalar, each input is a four-number row, and the sum remains a four-number row. The weights are nonnegative and sum to one across sources for this fixed receiver. This rule includes the current input itself and excludes later positions. Equal weights of 1/7 recover the mean. The next slide lets students choose a complete set by hand.</script>
+  <div class="alpha-rule">
+    <p>For <span class="pool-summary">bank, keep $i=7$ fixed</span>. Take a weighted share of each <span class="pool-input">source row $j=1,\ldots,7$</span>.</p>
+    <div class="alpha-expanded">
+      $$\htmlClass{pool-summary}{m_7}=\va{\alpha_{7,1}}\ve{e_1}+\cdots+\va{\alpha_{7,6}}\ve{e_6}+\va{\alpha_{7,7}}\ve{e_7}$$
+    </div>
+    <div class="alpha-reveal" data-build="1">
+      <p>The sum sign $\sum$ means “add these weighted rows”:</p>
+      $$\htmlClass{pool-summary}{m_i}=\sum_{j=1}^{i}\va{\alpha_{ij}}\,\ve{e_j}$$
+      <div class="alpha-legend">
+        <p class="pool-summary">$m_i$: the resulting summary.<br>One row of 4 numbers.</p>
+        <p class="pool-weight">$\alpha_{ij}$: share from source $j$.<br>One number, for receiver $i$.</p>
+        <p class="pool-input">$e_j$: the input at source $j$.<br>One row of 4 numbers.</p>
+      </div>
+      <p class="alpha-constraints">For this receiver: $\va{\alpha_{ij}\geq0}$ and $\sum_{j=1}^{i}\va{\alpha_{ij}}=1$.</p>
+      <p>Only sources 1 through $i$ contribute, including $i$ itself. Equal weights $\va{1/i}$ give the mean again.</p>
+    </div>
   </div>
 </div>
 
@@ -188,6 +247,22 @@ Timing: two minutes.
   const D = AT.d_model;
   const labels = toks.map((t, j) => (j + 1) + ' ' + t);
   const AX = AT.axisLabels('e', D) || AT.range(D).map(j => String(j + 1));
+  /* A conditional half-weight illustrates one term, without changing the live presets. */
+  const exampleWeight=0.5, source=5, receiver=6;
+  const exampleChips=AT.ui.chips(toks,{active:source,into:S.querySelector('#s04-alpha-chips')});
+  exampleChips.chips[receiver].classList.add('is-receiver');
+  exampleChips.chips.forEach((chip,j)=>chip.title=j===source?'Source j = 6: river.':j===receiver?'Receiver i = 7: bank.':'Another available source row.');
+  const exampleTable=S.querySelector('#s04-alpha-example-table');
+  exampleTable.dataset.weight=String(exampleWeight);
+  exampleTable.dataset.source=String(source+1);exampleTable.dataset.receiver=String(receiver+1);
+  exampleTable.appendChild(AT.h('thead',{},AT.h('tr',{},...['Row',...AX].map(a=>AT.h('th',{scope:'col'},a)))));
+  const exampleBody=AT.h('tbody');
+  [[E[source],'alpha-source','\\ve{e_6}'],[AT.scale(E[source],exampleWeight),'alpha-product','\\va{0.5}\\,\\ve{e_6}']].forEach(([values,cls,label])=>{
+    const head=AT.h('th',{scope:'row'});AT.tex(head,label);
+    const row=AT.h('tr',{class:cls},head,...values.map(x=>AT.h('td',{},AT.fmt(x,2))));
+    row.dataset.values=JSON.stringify(values);exampleBody.appendChild(row);
+  });
+  exampleTable.appendChild(exampleBody);
   /* one-line reading of an e row: the entries that matter, in axis order, then what they add up to */
   function readE(v){
     const parts = [];

@@ -169,9 +169,62 @@ try{
   await page.evaluate(()=>AT.present.next());
   await page.waitForTimeout(100);
   assert.equal(await page.locator('.pool-equation').evaluate(e=>getComputedStyle(e).visibility),'visible','The normal Next action reveals the equation.');
+  const poolOrder=await page.locator('#s04 .frame').evaluateAll(els=>els.map(e=>e.id));
+  assert.deepEqual(poolOrder.slice(3,6),['s04-frame-weight-rule','s04-frame-weight-sum','s04-frame-choose'],'Explain one scalar contribution, then the sum, then let students choose all weights.');
   await goPool('s04-frame-weight-rule',1);
-  const formula=await page.locator('#s04-frame-weight-rule annotation').allTextContents();
-  assert(formula.some(t=>t.includes('{m_i}')&&t.includes('j \\le i')));
+  const example=await page.locator('#s04-frame-weight-rule').evaluate(root=>{
+    const table=root.querySelector('.alpha-table');
+    return {text:root.querySelector('.alpha-example').textContent,
+      data:{...table.dataset},
+      rows:[...table.querySelectorAll('tbody tr')].map(tr=>({values:JSON.parse(tr.dataset.values),cells:[...tr.querySelectorAll('td')].map(e=>Number(e.textContent.replace('−','-')))})),
+      axes:[...table.querySelectorAll('thead th')].slice(1).map(e=>e.textContent),
+      source:[...root.querySelectorAll('.chip.is-active')].map(e=>Number(e.dataset.i)),
+      receiver:[...root.querySelectorAll('.chip.is-receiver')].map(e=>Number(e.dataset.i)),
+      colours:{weight:getComputedStyle(root.querySelector('.alpha-symbol .m-a')).color,
+        weightText:getComputedStyle(root.querySelector('.alpha-indices .pool-weight')).color,
+        source:getComputedStyle(table.querySelector('.alpha-source .m-e')).color,
+        sourceCell:getComputedStyle(table.querySelector('.alpha-source td')).color,
+        sourceText:getComputedStyle(root.querySelector('.alpha-indices .pool-input')).color}};
+  });
+  assert.equal(example.data.weight,'0.5');assert.equal(example.data.source,'6');assert.equal(example.data.receiver,'7');
+  assert.deepEqual(example.axes,['water','finance','person','glue']);
+  assert.deepEqual(example.source,[5]);assert.deepEqual(example.receiver,[6]);
+  close(example.rows[0].values,E[5]);close(example.rows[1].values,E[5].map(x=>0.5*x));
+  for(const row of example.rows)close(row.cells,row.values.map(x=>Number(x.toFixed(2))));
+  assert(example.text.includes('First index 7: receiver bank')&&example.text.includes('Second index 6: source river'));
+  assert(example.text.includes('chosen share')&&example.text.includes('other six weights must add up to'));
+  assert.equal(example.colours.weight,example.colours.weightText);
+  assert.equal(example.colours.source,example.colours.sourceCell);assert.equal(example.colours.source,example.colours.sourceText);
+  for(const id of ['s04-frame-weight-rule','s04-frame-weight-sum']){
+    for(const build of [0,1,0,1]){
+      await goPool(id,build);
+      const visibility=await page.locator('#'+id+' .alpha-reveal').evaluate(root=>({root:getComputedStyle(root).visibility,
+        glyphs:[...root.querySelectorAll('.katex-html .m-a,.katex-html .m-e,.katex-html .op-symbol,.katex-html .pool-summary')].map(e=>getComputedStyle(e).visibility)}));
+      assert.equal(visibility.root,build?'visible':'hidden');
+      assert(visibility.glyphs.length>0&&visibility.glyphs.every(v=>v===(build?'visible':'hidden')),`Every coloured term follows the reveal, including after revisiting: ${id}/${build} ${JSON.stringify(visibility)}`);
+      await page.screenshot({path:path.join(shots,`${id}-${build}.png`)});
+    }
+  }
+  const formula=await page.locator('#s04-frame-weight-sum annotation').allTextContents();
+  assert(formula.some(t=>t.includes('{m_7}')&&t.includes('\\alpha_{7,6}')&&t.includes('\\ve{e_6}')));
+  assert(formula.some(t=>t.includes('{m_i}')&&t.includes('\\sum_{j=1}^{i}')));
+  assert(formula.some(t=>t.includes('\\alpha_{ij}\\geq0'))&&formula.some(t=>t.includes('\\sum_{j=1}^{i}')&&t.includes('=1')),'State nonnegative weights normalized over sources for a fixed receiver.');
+  const legend=await page.locator('#s04-frame-weight-sum').evaluate(root=>{
+    const colour=selector=>getComputedStyle(root.querySelector(selector)).color;
+    return {summary:[colour('.alpha-reveal .katex-html .pool-summary'),colour('.alpha-legend .pool-summary')],
+      weight:[colour('.alpha-reveal .katex-html .m-a'),colour('.alpha-legend .pool-weight')],
+      input:[colour('.alpha-reveal .katex-html .m-e'),colour('.alpha-legend .pool-input')],
+      widths:[...root.querySelectorAll('.alpha-legend p')].map(e=>({content:e.scrollWidth,box:e.clientWidth}))};
+  });
+  for(const role of ['summary','weight','input'])assert.equal(...legend[role],`Match the ${role} symbol to its prose.`);
+  assert(new Set(['summary','weight','input'].map(role=>legend[role][0])).size===3,'Summary, scalar weights and input rows have distinct colours.');
+  assert(legend.widths.every(w=>w.content<=w.box+1),'Colour definitions must not overlap neighbouring columns.');
+  const sumGlyph=await page.locator('#s04-frame-weight-sum .alpha-reveal .katex-display .op-symbol').first().boundingBox();
+  const sumPNG=PNG.sync.read(await page.screenshot());let sumInk=0;
+  for(let y=Math.ceil(sumGlyph.y);y<Math.floor(sumGlyph.y+sumGlyph.height);y++)for(let x=Math.ceil(sumGlyph.x);x<Math.floor(sumGlyph.x+sumGlyph.width);x++){
+    const p=(y*sumPNG.width+x)*4;if(sumPNG.data[p]<100&&sumPNG.data[p+1]<100&&sumPNG.data[p+2]<100)sumInk++;
+  }
+  assert(sumInk>150,'The weighted summation actually paints after its reveal.');
   const presets={equal:[1,1,1,1,1,1,1],river:[.3,1.2,.3,.8,.3,4,.6],fisherman:[.3,4,.3,.6,.3,1,.6],self:[0,0,0,0,0,0,1]};
   await goPool('s04-frame-choose');
   async function checkWeighted(raw){
@@ -196,7 +249,7 @@ try{
   await page.evaluate(()=>AT.present.exit());
   await page.setViewportSize({width:390,height:844});
   await page.locator('#s04-presets [data-preset="equal"]').click();
-  for(const [id,name]of [['s03-frame-pooling-bridge','phone-bridge'],['s04-frame-prefix','phone-prefix'],['s04-frame-mean','phone-mean']]){
+  for(const [id,name]of [['s03-frame-pooling-bridge','phone-bridge'],['s04-frame-prefix','phone-prefix'],['s04-frame-mean','phone-mean'],['s04-frame-weight-rule','phone-alpha-example'],['s04-frame-weight-sum','phone-alpha-sum']]){
     await page.locator('#'+id).scrollIntoViewIfNeeded();
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No phone document overflow.');
     await page.screenshot({path:path.join(shots,name+'.png')});
@@ -205,7 +258,9 @@ try{
   assert.equal(new Set(tops).size,1,'The phone concatenation strip scrolls locally instead of wrapping into a matrix.');
   const phoneVector=await page.locator('#s04-mean-live .vec').boundingBox();
   assert(phoneVector.x>=0&&phoneVector.x+phoneVector.width<=391,'The complete four-coordinate mean fits on a phone.');
+  const phoneExample=await page.locator('#s04-alpha-example-table').boundingBox();
+  assert(phoneExample.x>=0&&phoneExample.x+phoneExample.width<=391,'All four coordinates of the worked alpha term fit on a phone.');
   for(const control of [positionSlider,slider])assert((await control.boundingBox()).width>160,'Both current-position sliders have usable phone tracks.');
   assert.deepEqual(errors,[]);
-  console.log(`PASS: fixed-window versus full-prefix selection at all 7 positions, synchronized controls, 7 means, 4 weighted presets, zero-weight fallback, retained state, colour/shape semantics and phone layout. Screenshots: ${shots}`);
+  console.log(`PASS: all 7 window/prefix positions and means, concrete alpha indices and scalar products, matched colours and painted reveals, 4 weighted presets, zero-weight fallback, retained state and phone layout. Screenshots: ${shots}`);
 }finally{await browser.close();}
