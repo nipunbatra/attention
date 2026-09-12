@@ -1,5 +1,11 @@
 # Classroom release checks
 
+## 2026-09-12: identify the two baseline contexts on the comparison slide
+
+- Replaced A/B row labels with River sentence and Cheque sentence. Both complete contexts now appear above the table, with the earlier clue in orange and the final “the” in blue. The title and visible explanation connect the identical starting rows to identical predictions. The difference row compares input coordinates rather than conflating them with a probability-gap statistic.
+- The preceding context-switch buttons use the same descriptive names. Both comparison rows keep equal emphasis after either button is selected. No model, frame-count or numerical changes.
+- Regression checks require the full saved sentences, correct named rows and four coordinates, matching control names, final-token highlights, zero differences and mobile table fit. Opening/interaction checks, 296 presentation states, 511 formulas, eight independent live/reference cases and mobile QA pass. Visually inspected the revised slide and phone article.
+
 ## 2026-09-12: diagram-first output head, matching Part I
 
 - Replaced the bare head equations with a labelled four-input / twenty-output network and matching blue input, purple parameter, grey logit definitions. The actual toy values populate the nodes and the water worksheet. Dots explicitly omit sixteen output nodes; the drawing does not invent an extra hidden layer. Input, weight, bias and logit shapes are defined, and Part II's ell is linked to Part I's z.

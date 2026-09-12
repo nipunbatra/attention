@@ -92,7 +92,7 @@ try{
       formulas:root.querySelectorAll('.katex').length,
       baselineTitle:document.getElementById('s02-frame1').dataset.title,
       restricted:document.querySelector('#s02-frame1 .prose').textContent.includes('A deliberately limited test'),
-      nextStep:document.querySelector('#s02-frame2 > p').textContent
+      nextStep:document.querySelector('#s02-frame2 .same-next').textContent
     };
   });
   assert.deepEqual(problem.flow,['s02-frame-problem','s02-frame1','s02-frame-probabilities','s02-frame-head','s02-frame-head-softmax','s02-frame2'],'State the problem, test the baseline, then explain its nodes, scores and probabilities in order.');
@@ -103,6 +103,41 @@ try{
   assert.equal(problem.formulas,0,'The section break should state the problem in plain language.');
   assert(problem.baselineTitle.startsWith('Baseline 1:')&&problem.restricted,'Do not present the restricted baseline as the solution.');
   assert(problem.nextStep.includes('several recent token rows'),'Explain the next experiment after establishing the limitation.');
+  const comparison=await page.evaluate(()=>{
+    const frame=document.getElementById('s02-frame2'),table=frame.querySelector('table');
+    return {
+      title:frame.dataset.title,
+      names:[...frame.querySelectorAll('.same-name')].map(el=>el.textContent),
+      sentences:[...frame.querySelectorAll('.same-sentence')].map(el=>el.textContent),
+      expected:[AT.sentences.river,AT.sentences.cheque].map(tokens=>tokens.join(' ')+' ___'),
+      selected:[...frame.querySelectorAll('.same-last')].map(el=>el.textContent),
+      clues:[...frame.querySelectorAll('.problem-clue')].map(el=>el.textContent),
+      headers:[...table.querySelectorAll('thead th')].map(el=>el.textContent),
+      rowNames:[...table.querySelectorAll('tbody th')].map(el=>el.textContent),
+      rows:[...table.querySelectorAll('tbody tr')].map(tr=>[...tr.querySelectorAll('td')].map(td=>Number(td.textContent))),
+      expectedRows:[AT.baseline(AT.sentences.river).E.at(-1),AT.baseline(AT.sentences.cheque).E.at(-1)],
+      difference:[...table.querySelectorAll('tfoot td')].map(td=>Number(td.textContent)),
+      footer:table.querySelector('tfoot th').textContent,
+      reason:document.getElementById('s02-same-reason').textContent,
+      conclusion:document.getElementById('s02-same-note').textContent,
+      controls:['s02-ctx-a','s02-ctx-b'].map(id=>document.getElementById(id).textContent),
+      highlighted:table.querySelectorAll('.is-hl').length
+    };
+  });
+  assert.equal(comparison.title,'Why both sentences give the same prediction');
+  assert.deepEqual(comparison.names,['River sentence','Cheque sentence']);
+  assert.deepEqual(comparison.sentences,comparison.expected,'Show both full contexts beside the named rows.');
+  assert.deepEqual(comparison.selected,['the','the']);
+  assert.deepEqual(comparison.clues,['river','cheque']);
+  assert.deepEqual(comparison.headers,['sentence','water','finance','person','glue']);
+  assert.deepEqual(comparison.rowNames,comparison.names,'Use descriptive names, never unexplained A/B abbreviations.');
+  assert.deepEqual(comparison.controls,comparison.names,'Use the same names on the context-switch buttons.');
+  assert.deepEqual(comparison.rows,comparison.expectedRows);
+  assert.deepEqual(comparison.difference,[0,0,0,0]);
+  assert.equal(comparison.footer,'Difference');
+  assert(comparison.reason.includes('only the final')&&comparison.reason.includes('position 10'));
+  assert(comparison.conclusion.includes('Every difference is zero')&&comparison.conclusion.includes('predictions are identical'));
+  assert.equal(comparison.highlighted,0,'Both input rows deserve equal emphasis.');
   const head=await page.evaluate(()=>{
     const frame=document.getElementById('s02-frame-head'),softmax=document.getElementById('s02-frame-head-softmax');
     const svg=frame.querySelector('svg'),baseline=AT.baseline(AT.sentences.river),row=baseline.E.at(-1),logits=baseline.logits.at(-1);
@@ -236,6 +271,7 @@ try{
     await page.locator('#s02-ctx-'+context).click();
     assert.equal(await page.locator('#s02-ctx-'+context).getAttribute('aria-pressed'),'true');
     distributions.push(await page.locator('#s02-bars .bv').allTextContents());
+    assert.equal(await page.locator('#s02-same-tab .is-hl').count(),0,'Switching the earlier chart must not emphasize one of the equal comparison rows.');
     assert((await page.locator('#s02-bars-note').innerText()).includes('Every probability stays unchanged. The eight-way tie is specific to this toy.'));
     assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'The conclusion, input explanation and bars must fit together.');
     await page.screenshot({path:path.join(screenshots,'baseline-takeaway-'+context+'.png')});
@@ -251,6 +287,9 @@ try{
   }
   await page.evaluate(()=>AT.present.exit());
   await page.setViewportSize({width:390,height:844});
+  await page.locator('#s02-frame2').scrollIntoViewIfNeeded();
+  assert(await page.locator('#s02-frame2').evaluate(el=>[el,...el.querySelectorAll('.dt-scroll')].every(node=>node.scrollWidth<=node.clientWidth+1)),'Both named contexts and all four coordinate columns must fit on a phone.');
+  await page.locator('#s02-frame2').screenshot({path:path.join(screenshots,'phone-context-comparison.png')});
   for(const id of ['s02-frame-head','s02-frame-head-softmax']){
     await page.locator('#'+id).scrollIntoViewIfNeeded();
     assert(await page.locator('#'+id).evaluate(el=>el.scrollWidth<=el.clientWidth+1),'The head explanation must fit the phone article.');
@@ -288,5 +327,5 @@ try{
   assert(phoneMatrix.fits&&phoneMatrix.scrolls.length===0,'The full sentence matrix must fit a phone.');
   await page.screenshot({path:path.join(screenshots,'phone-sentence-matrix.png')});
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({content,features,problem,head,matrix,samples,phone,phoneTable,phoneMatrix,screenshots,errors},null,2));
+  console.log(JSON.stringify({content,features,problem,comparison,head,matrix,samples,phone,phoneTable,phoneMatrix,screenshots,errors},null,2));
 }finally{await browser.close();}

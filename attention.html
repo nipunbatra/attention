@@ -3806,6 +3806,16 @@ Next, return to the prediction problem: the earlier clues should change what can
 #s02 .problem-ending{color:var(--c-e)}
 #s02 .baseline-input{font-size:14px;line-height:1.35;margin:12px 0 16px}
 #s02 .baseline-takeaway{margin:18px 0 0;font-weight:600}
+#s02 .same-contexts{display:grid;gap:12px;margin:14px 0 20px}
+#s02 .same-context{display:grid;grid-template-columns:155px minmax(0,1fr);gap:16px;align-items:baseline}
+#s02 .same-context p{margin:0;line-height:1.4}
+#s02 .same-context strong{font-weight:650}
+#s02 #s02-same-reason{margin:0 0 12px}
+body.present #s02 .same-contexts{font-size:22px}
+body.present #s02 .same-context{grid-template-columns:190px minmax(0,1fr)}
+body.present #s02 #s02-frame2>.card{margin-bottom:16px}
+body.present #s02 #s02-frame2>.same-next{font-size:24px;margin:0}
+@media(max-width:640px){body:not(.present) #s02 .same-context{grid-template-columns:1fr;gap:3px}body:not(.present) #s02-same-tab .dt{width:100%}body:not(.present) #s02-same-tab .dt td{font-size:13px;padding:6px}body:not(.present) #s02-same-tab .dt th{font-size:11px;padding:6px;letter-spacing:0;white-space:normal}}
 body.present #s02 #s02-frame-probabilities>.card{margin-bottom:0}
 body.present #s02 #s02-frame-probabilities .bars{gap:4px 16px}
 body.present #s02 .baseline-takeaway{margin:8px 0 0}
@@ -3907,8 +3917,8 @@ No. Both sentences end with the at position 10, so the head receives exactly the
   <div class="card">
     <div class="btn-row" id="s02-ctx" role="group" aria-label="Choose the context sentence" data-keep-state>
       <span class="ctx-lab">Context:</span>
-      <button type="button" class="btn" id="s02-ctx-a" aria-pressed="true">A: The fisherman … river bank</button>
-      <button type="button" class="btn" id="s02-ctx-b" aria-pressed="false">B: She deposited … the bank</button>
+      <button type="button" class="btn" id="s02-ctx-a" aria-pressed="true">River sentence</button>
+      <button type="button" class="btn" id="s02-ctx-b" aria-pressed="false">Cheque sentence</button>
     </div>
     <p class="baseline-input" id="s02-baseline-input">Both contexts give the head the same input: <span class="problem-ending"><strong>“the” at position 10</strong></span>.</p>
     <div id="s02-bars"></div>
@@ -3916,7 +3926,7 @@ No. Both sentences end with the at position 10, so the head receives exactly the
   </div>
   <p class="baseline-takeaway" id="s02-baseline-takeaway">We need <span class="problem-clue">earlier clues</span> to influence the prediction.</p>
   <div class="companion callout callout-key">Same last token + same position → same input row → same prediction.</div>
-  <p class="companion">All eight displayed candidates tie at about 0.094 each in this hand-chosen toy. “Other ×12” adds the probabilities of the remaining twelve vocabulary tokens. Full bar = probability 1. The important comparison is between contexts A and B: every individual token keeps the same probability.</p>
+  <p class="companion">All eight displayed candidates tie at about 0.094 each in this hand-chosen toy. “Other ×12” adds the probabilities of the remaining twelve vocabulary tokens. Full bar = probability 1. The important comparison is between the river and cheque sentences: every individual token keeps the same probability.</p>
 </div>
 
 <div class="frame" id="s02-frame-head" data-title="Inside the head: four numbers to 20 scores" data-autobuild="off">
@@ -3962,21 +3972,19 @@ All twenty words participate. Eight have logit zero and twelve have logit -1.5. 
   </div>
 </div>
 
-<div class="frame" data-title="The only input, in both contexts" id="s02-frame2" data-autobuild="off">
+<div class="frame" data-title="Why both sentences give the same prediction" id="s02-frame2" data-autobuild="off">
   <script type="text/x-notes">
     Which coordinate could tell the two sentences apart?
-    None: the difference row is all zeros. Both inputs end in the same word at position 10. Compare the two rows here, then continue to how we could supply more context. Open the arithmetic only if the room wants to see the output head multiply.
+    Read the two complete sentences first. Orange marks an earlier clue and blue marks the only token row that reaches this baseline's head. Both sentences end in the at position 10. The table labels identify the sentences directly, without requiring students to remember A and B. Its four columns are coordinates of that final token row, not four earlier tokens. Subtract the cheque-sentence row from the river-sentence row: every difference is zero. With the same fixed output head, identical input rows give identical probabilities. Next we try supplying several recent rows.
   </script>
-  <div class="companion">
-    <p>The eight candidate bars are exactly tied, at about 0.094 each. The ordering of tied bars does not identify a winner. More importantly, both sentences give this head the same input. Compare their coordinates in the table.</p>
-  </div>
-
+  <p id="s02-same-reason">This baseline reads only the final <span class="head-input"><strong>“the” at position 10</strong></span> in each sentence.</p>
+  <div class="same-contexts" id="s02-same-contexts"></div>
   <div class="card">
-    <h3 class="card-title">The only input, in both contexts</h3>
+    <h3 class="card-title">The four numbers the head receives for “the”</h3>
     <div id="s02-same-tab"></div>
     <p class="look" id="s02-same-note"></p>
   </div>
-  <p>The starting row for <strong>“the”</strong> is missing the earlier clues. Next, we’ll let several recent token rows reach the model.</p>
+  <p class="same-next">Next: let several recent token rows reach the model.</p>
 </div>
 
 <div class="companion" data-kicker="Output-head worksheet">
@@ -4082,16 +4090,27 @@ All twenty words participate. Eight have logit zero and twelve have logit -1.5. 
   const diff = AT.sub(BA.E[t], BB.E[t]);
   const eSame = diff.every(v => v === 0);
 
-  /* the comparison table: e_10^(0) in A and in B, and their difference; columns are the named e axes */
-  const same = AT.ui.table([BA.E[t], BB.E[t]], {
-    axes: 'e', cornerLabel: 'coordinate',
-    rowLabels: ['A: $\\ve{e_{' + T + '}^{(0)}}$', 'B: $\\ve{e_{' + T + '}^{(0)}}$'],
-    rowCls: 'e', highlightRow: 0,
-    footer: { label: 'A − B', values: diff, cls: 'neutral' },
-    caption: 'Two sentences, one input row: “' + AT.escape(SA[t]) + '” at position ' + T + ' in A and “' + AT.escape(SB[t]) + '” at position ' + T + ' in B. ' + (eSame ? 'Every coordinate agrees, so the difference row is all zeros.' : 'The difference row is not zero.'),
+  /* Keep the evidence self-contained: name and show both complete contexts. */
+  [{name:'River sentence',tokens:SA,clue:'river'},{name:'Cheque sentence',tokens:SB,clue:'cheque'}].forEach(context=>{
+    const sentence=AT.h('p',{class:'same-sentence'});
+    context.tokens.forEach((word,i)=>{
+      if(i)sentence.append(' ');
+      sentence.append(AT.h('span',{class:i===t?'head-input same-last':word.toLowerCase()===context.clue?'problem-clue':'same-earlier'},word));
+    });
+    sentence.append(' ___');
+    S.querySelector('#s02-same-contexts').appendChild(AT.h('div',{class:'same-context'},AT.h('strong',{class:'same-name'},context.name),sentence));
+  });
+  AT.ui.table([BA.E[t], BB.E[t]], {
+    axes: 'e', cornerLabel: 'sentence',
+    rowLabels: ['River sentence', 'Cheque sentence'],
+    rowCls: 'e',
+    footer: { label: 'Difference', values: diff, cls: 'neutral' },
+    caption: 'Each row is the starting representation of “the” at position '+T+'. The difference subtracts the cheque-sentence row from the river-sentence row.',
     into: S.querySelector('#s02-same-tab')
   });
-  sameNote.innerHTML = 'Look at the difference row. Largest gap between the two probability distributions: <span class="mono">' + AT.fmt(maxDiff, 3) + '</span>' + (maxDiff === 0 ? ', exactly identical.' : '.');
+  sameNote.textContent = eSame&&maxDiff===0
+    ? 'Every difference is zero. The earlier clues “river” and “cheque” never reached these rows, so the predictions are identical.'
+    : 'The difference subtracts the cheque-sentence input from the river-sentence input. Largest probability gap: '+AT.fmt(maxDiff,3)+'.';
 
   /* --- the arithmetic of the output head for the eight candidates: e W_vocab, + b, logit, softmax --- */
   const cands = AT.candidates.river.concat(AT.candidates.cheque);
@@ -4143,7 +4162,6 @@ All twenty words participate. Eight have logit zero and twelve have logit -1.5. 
     mv.update(B.E[t], { xLabel: 'e · ' + T + ' ' + toks[t] });
     calcTab.update(calcRows(B));
     calcReading.textContent = calcReadingText(B);
-    same.setHighlightRow(ctx === 'A' ? 0 : 1);
     S.querySelector('#s02-ctx-a').setAttribute('aria-pressed', ctx === 'A' ? 'true' : 'false');
     S.querySelector('#s02-ctx-b').setAttribute('aria-pressed', ctx === 'B' ? 'true' : 'false');
   }
