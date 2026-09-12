@@ -45,6 +45,46 @@ try{
   assert(content.hasPart1Bridge,'Connect to the previous fixed-window MLP.');
   assert(content.colours.every(Boolean),'Explain each equation term in the same colour.');
   assert(content.toyCaveat,'Keep the toy position limitation explicit.');
+  const bankBefore=await page.evaluate(()=>JSON.stringify({model:AT.model,probs:AT.forward(AT.sentences.river).probs}));
+  const samples=[];
+  for(const position of [1,5,10]){
+    await page.locator('#s01-position-choice [data-position="'+position+'"]').click();
+    const sample=await page.evaluate(()=>{
+      const root=document.querySelector('#s01-emb-tab');
+      const nums=selector=>[...root.querySelectorAll(selector)].map(row=>[...row.querySelectorAll('td')].map(cell=>Number(cell.textContent.replaceAll('−','-'))));
+      return {
+        headers:[...root.querySelectorAll('thead th')].map(el=>el.textContent),
+        rows:nums('tbody tr'),sum:nums('tfoot tr')[0],
+        label:root.querySelector('tbody tr:nth-child(2) th').textContent,
+        selected:[...document.querySelectorAll('#s01-position-choice [aria-pressed="true"]')].map(el=>Number(el.dataset.position)),
+        colours:[root.querySelector('tbody tr:first-child td'),root.querySelector('tbody tr:nth-child(2) td'),root.querySelector('tfoot td')].map(el=>getComputedStyle(el).color),
+        equationColours:[...document.querySelectorAll('#s01-position-example span')].map(el=>getComputedStyle(el).color)
+      };
+    });
+    const word=[.2,-.4,.6,.1],pos=position-1;
+    // Independent general formula, rather than the demo's four-entry shortcut.
+    const encoding=Array.from({length:4},(_,j)=>{
+      const angle=pos/Math.pow(10000,2*Math.floor(j/2)/4);
+      return j%2===0?Math.sin(angle):Math.cos(angle);
+    });
+    const close=(actual,expected)=>assert(Math.abs(actual-expected)<=.000501,actual+' vs '+expected);
+    assert.deepEqual(sample.headers,['Coordinate','1','2','3','4'],'No dedicated position coordinate.');
+    assert.deepEqual(sample.rows[0],word,'Moving a word keeps its vocabulary row fixed.');
+    encoding.forEach((x,j)=>{close(sample.rows[1][j],x);close(sample.sum[j],word[j]+x);});
+    assert.equal(sample.label,'+ Position '+position);
+    assert.deepEqual(sample.selected,[position]);
+    assert.deepEqual(sample.colours,sample.equationColours,'Colours link the table to the worked addition.');
+    assert.equal(new Set(sample.colours).size,3,'Word, position, and sum have distinct colours.');
+    samples.push({position,...sample});
+  }
+  assert.equal(await page.evaluate(()=>JSON.stringify({model:AT.model,probs:AT.forward(AT.sentences.river).probs})),bankBefore,'The separate encoding demo must not change bank-model arithmetic.');
+  for(const position of [1,5,10]){
+    await page.evaluate(()=>{AT.present.enter();AT.present.go('s01',7,0);});
+    await page.locator('#s01-position-choice [data-position="'+position+'"]').click();
+    await page.waitForTimeout(300);
+    assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'Every encoding choice must fit.');
+    await page.screenshot({path:path.join(screenshots,'sinusoidal-position-'+position+'.png')});
+  }
   for(const [i,id] of ['lookup','order','position-cue'].entries()){
     for(const build of [0,1,2]){
       await page.evaluate(({frame,build})=>{AT.present.enter();AT.present.go('s01',frame,build);},{frame:i+4,build});
@@ -53,6 +93,12 @@ try{
     }
     // Let the build's opacity transition finish before inspecting KaTeX glyphs.
     await page.waitForTimeout(300);
+    await page.screenshot({path:path.join(screenshots,id+'.png')});
+  }
+  for(const [id,frame] of [['starting-rows',8],['bank-scope',9]]){
+    await page.evaluate(frame=>AT.present.go('s01',frame,2),frame);
+    await page.waitForTimeout(300);
+    assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,id+' must fit.');
     await page.screenshot({path:path.join(screenshots,id+'.png')});
   }
   await page.evaluate(()=>AT.present.exit());
@@ -64,6 +110,13 @@ try{
   }));
   assert(phone.columns===1&&phone.fits,'Phone article explanations must wrap without horizontal scrolling.');
   await page.screenshot({path:path.join(screenshots,'phone-position-cue.png')});
+  await page.locator('#s01-frame2').scrollIntoViewIfNeeded();
+  const phoneTable=await page.locator('#s01-emb-tab').evaluate(el=>({
+    fits:el.scrollWidth<=el.clientWidth+1,
+    scrolls:[...el.querySelectorAll('*')].filter(node=>node.clientWidth>0&&node.scrollWidth>node.clientWidth+1).map(node=>node.className)
+  }));
+  assert(phoneTable.fits&&phoneTable.scrolls.length===0,'The article position table must fit a phone without a nested scrollbar.');
+  await page.screenshot({path:path.join(screenshots,'phone-sinusoidal.png')});
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({content,phone,screenshots,errors},null,2));
+  console.log(JSON.stringify({content,samples,phone,phoneTable,screenshots,errors},null,2));
 }finally{await browser.close();}

@@ -23,6 +23,14 @@
 #s01 .start-row{color:var(--c-e)}
 #s01 .position-key{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin:20px 0}
 #s01 .position-key p{margin:8px 0 0;font-size:.86em;line-height:1.4}
+#s01 #s01-emb-tab .dt{width:100%;table-layout:fixed}
+#s01 #s01-emb-tab .dt th:first-child{width:31%;white-space:normal}
+#s01 #s01-emb-tab tbody tr:first-child>*{color:var(--ink)}
+#s01 #s01-emb-tab tbody tr:nth-child(2)>*{color:#AA4E08;background:#FFF7ED}
+#s01 #s01-emb-tab tfoot tr>*{color:var(--c-e);background:var(--t-e)}
+#s01 .position-example{margin:16px 0 0;font-variant-numeric:tabular-nums}
+#s01 .position-example span{white-space:nowrap}
+@media(max-width:640px){body:not(.present) #s01 #s01-emb-tab .dt td,body:not(.present) #s01 #s01-emb-tab .dt th{font-size:12px;padding:9px 3px}body:not(.present) #s01 #s01-emb-tab .dt th:first-child{width:29%}}
 @media(max-width:640px){body:not(.present) #s01 .position-key{grid-template-columns:1fr;gap:14px}body:not(.present) #s01 .order-example td{padding:16px 4px}}
 @media (max-width:640px){#s01 .pipe{grid-template-columns:1fr}}
 body.present #s01 .ctx-lab,body.present #s01 .arrow-lab,body.present #s01 .look,body.present #s01 .read-line{font-size:22px;line-height:1.35}
@@ -59,7 +67,7 @@ body.present #s01 .emb-tab{margin-top:20px}
 </div>
 
 <div class="companion" data-kicker="For self-study">
-  <p>We want to predict the next word. As we add each part of the model, we will ask how it helps that prediction. Switch between the two contexts below and watch the probability bars move. The last three words are identical, so the model needs information about <em>river</em> or <em>cheque</em> from earlier in the sentence. The second widget shows what it starts with: a row of $d_{\text{model}}$ numbers for each token, with named coordinates (<span id="s01-axes-names"></span>). We chose these names and numbers by hand to make the example readable. The fifth coordinate carries a position offset, but the later projections ignore it. This toy shows how the model gathers relevant content; it does not demonstrate sensitivity to word order.</p>
+  <p>We want to predict the next word. As we add each part of the model, we will ask how it helps that prediction. Switch between the two contexts below and watch the probability bars move. The last three words are identical, so the model needs information about <em>river</em> or <em>cheque</em> from earlier in the sentence. Before opening that model, we’ll separate two ideas: a word’s vocabulary vector and the position where that word occurs.</p>
 </div>
 
 <div class="frame" data-title="One blank" id="s01-frame1" data-autobuild="off">
@@ -155,21 +163,29 @@ Leave the construction of the position vectors for a later discussion. These han
   <p class="small muted" data-build="2">For now, keep “what + where” in mind. How we choose the position vectors can wait.</p>
 </div>
 
-<div class="frame" data-title="Where a token starts" id="s01-frame2" data-autobuild="off">
+<div class="frame" data-title="The same word, at three positions" id="s01-frame2" data-autobuild="off">
   <script type="text/x-notes">
-    What does position add, and which coordinate changes in this toy?
-    Click two or three tokens and read the sum row aloud. Point at the first row: it is the same wherever the word appears. Then reveal the equation and the note.
+    Which row stays the same when we move the word?
+    Click positions 1, 5, and 10. The token vector stays fixed. The position vector and the sum change across the existing coordinates. There is no extra position column.
+    This is a separate four-dimensional example, not the parameters used by the bank model. The word vector is illustrative. The position vectors use the original Transformer's sinusoidal construction, with zero-based positions: p = [sin(pos), cos(pos), sin(pos/100), cos(pos/100)]. Show the resulting numbers now and leave the frequency formula for later. At the first slot, the zeros and ones follow from sin(0) and cos(0), not from one-hot encoding.
+    Source: Attention Is All You Need, Section 3.5, https://arxiv.org/html/1706.03762v7#S3.SS5
   </script>
-  <div class="companion">
-    <p>The last three words, <em>and watched the</em>, are the same in both contexts, yet the answers differ. Whatever the model does inside, it must carry <em>river</em> or <em>cheque</em> forward to the blank. Where does it start?</p>
-  </div>
+  <p>A separate four-coordinate example: the word <strong>“the”</strong> stays the same. Its position changes.</p>
   <div class="card">
-    <h3 class="card-title">Choose a token. Its starting row is the sum below.</h3>
-    <p class="companion muted small" style="margin:0 0 6px">Click a token in context A. Each column is one named coordinate (the names are illustrative; the numbers were chosen to agree with them); the last row is the sum of the two above it.</p>
-    <div id="s01-emb-chips" data-keep-state></div>
+    <div id="s01-position-choice" class="btn-row" role="group" aria-label="Position of the word the" data-keep-state>
+      <button type="button" class="btn" data-position="1" aria-pressed="false">Position 1</button>
+      <button type="button" class="btn" data-position="5" aria-pressed="true">Position 5</button>
+      <button type="button" class="btn" data-position="10" aria-pressed="false">Position 10</button>
+    </div>
     <div class="emb-tab" id="s01-emb-tab"></div>
-    <p class="companion read-line" id="s01-emb-reading"></p>
-    <p class="companion look" id="s01-emb-cap"></p>
+    <p class="position-example" id="s01-position-example" aria-live="polite" aria-atomic="true"></p>
+  </div>
+  <p><strong>Still four coordinates.</strong> The position cue changes their values without adding another column.</p>
+  <p class="small muted">Illustrative word vector. Sinusoidal position vectors. Values rounded to three decimals.</p>
+  <div class="companion">
+    <p>The position cue uses the existing coordinates. It does not add a “pos” column or assign a human meaning to each coordinate. In this example, changing position changes several entries in the row. At position 1, the pattern is $[0,1,0,1]$ because the sine of zero is zero and the cosine of zero is one.</p>
+    <p>For readers who want the calculation: let <code>pos = i - 1</code>, so the first displayed position has index zero. With four coordinates, the <a href="https://arxiv.org/html/1706.03762v7#S3.SS5" target="_blank" rel="noopener">original Transformer’s positional encoding</a> gives <code>p = [sin(pos), cos(pos), sin(pos / 100), cos(pos / 100)]</code>. The pairs vary at different frequencies. The position values here come from that formula, while the word values are chosen just to show the addition.</p>
+    <p>Positional vectors can also be learned from data. Addition is one way to supply position information, not a requirement for every Transformer architecture. We’ll return to the design choices later.</p>
   </div>
 </div>
 
@@ -184,15 +200,15 @@ One row per input position. Initially each e_i is e_i^(0); later e_i denotes the
   <div class="callout callout-note" data-build="2">$E_{\text{tok}}$ is stored across sentences. $E$ is built for <em>this sentence</em>; contextual updates change its position rows, not the lookup table.</div>
 </div>
 
-<div class="frame" id="s01-frame-position-limit" data-title="Position is added, not appended" data-autobuild="off">
-  <script type="text/x-notes">Does the fifth coordinate mean a position was appended to a four-dimensional embedding?
-No: both the token and position vectors already have five coordinates. Only this hand-designed toy reserves coordinate five for position. Its later projections ignore that coordinate, so do not claim that its changing predictions demonstrate sensitivity to word order.</script>
+<div class="frame" id="s01-frame-position-limit" data-title="Back to the bank example" data-autobuild="off">
+  <script type="text/x-notes">What will the hand-worked bank example demonstrate?
+It demonstrates how relevant content reaches the prediction. Its five-dimensional rows and parameters differ from the separate four-dimensional sinusoidal illustration. The legacy fifth coordinate contains a position offset, but the Q/K/V projections and output head ignore it. Do not claim the bank predictions demonstrate word-order sensitivity or that real embedding dimensions have semantic names.</script>
   <div class="prose">
-    <p>Both vectors already have five coordinates:</p>
-    $$\underbrace{E_{\text{tok}}[t_i]}_{1\times5}+\underbrace{p_i}_{1\times5}=\underbrace{e_i^{(0)}}_{1\times5}$$
-    <p data-build="1">Only this toy reserves coordinate 5 for position. A positional vector need not have its own dedicated coordinate.</p>
+    <p>For the bank calculations, we use <strong>five hand-chosen coordinates</strong>. Names such as <em>water</em> and <em>finance</em> help us follow the numbers.</p>
+    <p data-build="1">These are different vectors from the four-coordinate position example. Real learned coordinates need not have such tidy meanings.</p>
   </div>
-  <div class="callout callout-note" data-build="2">The later matching, message and prediction calculations <strong>ignore coordinate 5</strong>. This toy shows which words supply information, <strong>not how word order changes the prediction</strong>.</div>
+  <div class="callout callout-note" data-build="2">The bank toy’s calculations <strong>ignore coordinate 5</strong>, labelled “pos” in its tables. We’ll use this toy to study <strong>which words supply information</strong>. The positional-encoding example above shows how a position cue normally spans the vector.</div>
+  <div class="companion"><p>The toy stores an offset in its fifth coordinate, but that coordinate has zero weights in its matching, message, and prediction projections. Its changing predictions therefore demonstrate content gathering, not sensitivity to word order. The named axes and this unused offset are simplifications of the hand-worked example.</p></div>
 </div>
 
 <div class="companion after">
@@ -204,11 +220,8 @@ No: both the token and position vectors already have five coordinates. Only this
   const S = document.getElementById('s01');
   const SA = AT.sentences.river, SB = AT.sentences.cheque;
   const FA = AT.forward(SA), FB = AT.forward(SB);
-  const T = SA.length, D = AT.d_model;
+  const T = SA.length;
   let ctx = 'A';
-
-  /* the axis names, read from the toy, never retyped */
-  S.querySelector('#s01-axes-names').textContent = AT.axes.e.join(', ');
 
   /* --- sentence chips with the blank slot --- */
   const chipHost = S.querySelector('#s01-chips');
@@ -245,70 +258,31 @@ No: both the token and position vectors already have five coordinates. Only this
   /* present mode: the frame starts in context A every time it is entered */
   if (AT.present && AT.present.on) AT.present.on('frame', (st) => { if (st.frame && st.frame.id === 's01' && st.frame.index === 0 && ctx !== 'A') { ctx = 'A'; paint(); } });
 
-  /* --- reading a row of e: the numbers, then what they say (axis names from AT.axes, verdict from the numbers) --- */
-  function fmtN(x){ const r = Math.round(x * 10) / 10; return Math.abs(r - x) < 1e-9 ? AT.fmt(x, 1) : AT.fmt(x, 2); }
-  function readE(v, tok, pos){
-    const ax = AT.axes.e;
-    const list = ax.map((n, j) => ({ n, x: v[j] })).filter(p => Math.abs(p.x) >= 0.05).map(p => p.n + ' ' + fmtN(p.x)).join(', ');
-    const at = (name) => { const j = ax.indexOf(name); return j < 0 ? 0 : v[j]; };
-    const w = at('water'), f = at('finance'), pe = at('person'), g = at('glue');
-    const scene = Math.max(w, f), who = pe >= 0.4 * scene && pe >= 0.3;
-    let so;
-    if (w >= 0.3 && f >= 0.3 && Math.abs(w - f) <= 0.2) so = 'half river, half money' + (g >= 0.3 ? ', with some glue' : '');
-    else if (g >= scene && g >= pe) so = 'a glue word';
-    else if (scene < 0.3) so = 'a person';
-    else so = (who ? 'a person in a ' : 'a ') + (w >= f ? 'water' : 'finance') + ' scene';
-    let posNote = '';
-    if (pos) {
-      const tokRow = AT.model.tok_emb[AT.lower(tok)] || [];
-      const only = ax.map((n, j) => ({ n, j })).filter(p => Math.abs(+pos[p.j] || 0) >= 0.05 && Math.abs(+tokRow[p.j] || 0) < 1e-9);
-      if (only.length) posNote = '; ' + only.map(p => p.n + ' ' + fmtN(v[p.j])).join(' and ') + ' is only the position offset';
-    }
-    return list + ', so “' + AT.escape(tok) + '” is ' + so + posNote + '.';
+  /* Separate sinusoidal illustration; never change the bank model's vectors. */
+  const word = [0.2, -0.4, 0.6, 0.1];
+  let position = 5;
+  function positionRow(i){
+    const pos = i - 1; // Display slots from 1; the sinusoidal index starts at 0.
+    return [Math.sin(pos), Math.cos(pos), Math.sin(pos / 100), Math.cos(pos / 100)];
   }
-
-  /* --- starting representation as a three-row table: tok + pos = e^(0) --- */
-  const E0 = AT.embed(SA);
-  const embCap = S.querySelector('#s01-emb-cap');
-  const embReading = S.querySelector('#s01-emb-reading');
-  let ei = T - 1;
-  function rowsFor(i){ return [AT.model.tok_emb[AT.lower(SA[i])], AT.model.pos_emb[i]]; }
-  function labelsFor(i){
-    const n = i + 1, tok = AT.escape(SA[i]);
-    return {
-      tok: '$E_{\\text{tok}}[t_{' + n + '}]$ “' + tok + '”',
-      pos: '$p_{' + n + '}$',
-      sum: '$\\ve{e_{' + n + '}^{(0)}}$'
-    };
-  }
-  const L0 = labelsFor(ei);
-  const fig = AT.ui.table(rowsFor(ei), {
-    axes: 'e', cornerLabel: 'coordinate',
-    rowLabels: [L0.tok, L0.pos], rowCls: ['neutral', 'neutral'],
-    footer: { label: L0.sum, values: E0[ei], cls: 'e' },
-    caption: 'Both rows have five coordinates. Only this toy uses coordinate 5 solely for position; its projections ignore that coordinate.',
-    note: 'Hover or focus a cell of the sum row to see the addition.',
+  function sumRow(){ return word.map((x, j) => x + positionRow(position)[j]); }
+  const fig = AT.ui.table([word, positionRow(position)], {
+    cols: ['1', '2', '3', '4'], axes: false, cornerLabel: 'Coordinate', decimals: 3,
+    rowLabels: ['Word “the”', '+ Position ' + position], rowCls: ['neutral', 'neutral'],
+    footer: { label: '= Starting row', values: sumRow(), cls: 'e' },
     into: S.querySelector('#s01-emb-tab')
   });
   fig.footer.cells.forEach((td, j) => fig.tipOn(td, () => {
-    const r = rowsFor(ei);
-    return AT.fmt(r[0][j]) + ' + ' + AT.fmt(r[1][j]) + ' = ' + AT.fmt(E0[ei][j]);
+    return AT.fmt(word[j], 3) + ' + (' + AT.fmt(positionRow(position)[j], 3) + ') = ' + AT.fmt(sumRow()[j], 3);
   }));
-  function setLabel(el, html){ el.innerHTML = html; AT.renderMath(el); }
   function drawEmb(){
-    const L = labelsFor(ei);
-    fig.update(rowsFor(ei));
-    fig.setFooter(E0[ei]);
-    setLabel(fig.rowLabelEls[0], L.tok);
-    setLabel(fig.rowLabelEls[1], L.pos);
-    setLabel(fig.footer.label, L.sum);
-    const tok = AT.escape(SA[ei]);
-    embReading.innerHTML = 'Reading $\\ve{e_{' + (ei + 1) + '}^{(0)}}$: ' + readE(E0[ei], SA[ei], AT.model.pos_emb[ei]);
-    AT.renderMath(embReading);
-    embCap.innerHTML = 'Look at the first row, the token embedding: it is the same wherever “' + tok + '” appears. The second row is the position vector for position ' + (ei + 1) + '. Their sum is the starting representation $\\ve{e_{' + (ei + 1) + '}^{(0)}}$.';
-    AT.renderMath(embCap);
+    fig.update([word, positionRow(position)]);
+    fig.setFooter(sumRow());
+    fig.rowLabelEls[1].textContent = '+ Position ' + position;
+    S.querySelectorAll('[data-position]').forEach(btn => btn.setAttribute('aria-pressed', Number(btn.dataset.position) === position ? 'true' : 'false'));
+    S.querySelector('#s01-position-example').innerHTML = 'Coordinate 1: <span class="start-token">' + AT.fmt(word[0], 3) + '</span> + <span class="start-position">(' + AT.fmt(positionRow(position)[0], 3) + ')</span> = <span class="start-row">' + AT.fmt(sumRow()[0], 3) + '</span>';
   }
-  const embChips = AT.ui.chips(SA, { active: ei, into: S.querySelector('#s01-emb-chips'), onClick: (i) => { ei = i; embChips.setActive(i); drawEmb(); } });
+  S.querySelectorAll('[data-position]').forEach(btn => btn.addEventListener('click', () => { position = Number(btn.dataset.position); drawEmb(); }));
   drawEmb();
 })();
 </script>
