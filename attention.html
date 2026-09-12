@@ -4255,6 +4255,41 @@ body.present #s03 #s03-ceq{font-size:25px}
 #s03 .window-input{color:var(--c-e);fill:var(--c-e)}
 #s03 .window-param{color:var(--c-q);fill:var(--c-q)}
 #s03 .window-score{color:var(--ink-2);fill:var(--ink-2)}
+#s03 .window-prob{color:var(--c-d);fill:var(--c-d)}
+#s03 .window-head-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+#s03 .window-head-controls p{font-size:15px;color:var(--ink-2);margin:0}
+#s03 .window-head-layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:24px;align-items:center}
+#s03 .window-head-layout>*{min-width:0}
+#s03 .window-head-network svg{width:100%;height:auto;display:block}
+#s03 .window-head-network text{font:18px var(--font-ui)}
+#s03 .window-head-network .head-caption{font-size:18px;font-weight:600}
+#s03 .window-head-network .head-edge{stroke:var(--c-q);stroke-width:1;opacity:.12}
+#s03 .window-head-network .head-edge.is-traced{stroke-width:1.8;opacity:.75}
+#s03 .window-head-network .head-input-node{fill:var(--t-e);stroke:var(--c-e);stroke-width:1.6}
+#s03 .window-head-network .head-output circle{fill:var(--card);stroke:var(--ink-2);stroke-width:1.8}
+#s03 .window-head-network .head-output{cursor:pointer}
+#s03 .window-head-network .head-output.is-traced circle{stroke:var(--c-q);stroke-width:3;fill:var(--t-q)}
+#s03 .window-head-network .head-output:focus-visible{outline:2px solid var(--c-q);outline-offset:4px}
+#s03 .window-head-network .head-output .hit-area{fill:transparent;stroke:none}
+#s03 .window-head-trace{font-size:16px;margin:4px 0 0;line-height:1.4}
+#s03 .window-head-math p{font-size:16px;margin:8px 0;line-height:1.4}
+#s03 .window-head-math .katex-display{margin:10px 0}
+#s03 .window-head-count{font-size:16px;padding-top:10px;margin:10px 0 0;border-top:1px solid var(--line)}
+#s03 .window-head-takeaway{font-size:17px;margin:12px 0 0;line-height:1.4}
+body.present #s03 #s03-frame-window-head>.card{padding:16px 24px}
+body.present #s03 .window-head-controls p{font-size:20px}
+body.present #s03 .window-head-layout{gap:26px}
+body.present #s03 .window-head-trace,body.present #s03 .window-head-math p,body.present #s03 .window-head-count{font-size:21px}
+body.present #s03 .window-head-math{font-size:23px}
+body.present #s03 .window-head-takeaway{font-size:23px;margin-top:12px}
+@media(max-width:820px){body:not(.present) #s03 .window-head-layout{grid-template-columns:1fr;gap:14px}}
+@media(max-width:640px){
+  body:not(.present) #s03 #s03-head-slider{width:100%}
+  body:not(.present) #s03 #s03-head-slider .slider{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px}
+  body:not(.present) #s03 #s03-head-slider .slider-label{grid-column:1/-1}
+  body:not(.present) #s03 #s03-head-slider input{width:100%;max-width:none;min-width:0}
+  body:not(.present) #s03 .window-head-math{font-size:14px}
+}
 #s03 .window-network svg{display:block;width:100%;height:auto}
 #s03 .window-network .window-net-compact{display:none}
 #s03 .window-network text{font:20px var(--font-ui)}
@@ -4381,13 +4416,37 @@ At build zero, the table is still w rows by four coordinates. Define c as the co
 
 <div class="frame" id="s03-frame-window-head" data-title="A larger input needs a larger prediction matrix" data-autobuild="off">
   <script type="text/x-notes">Is this the same vocabulary matrix as the one-row baseline?
-No. Concatenating w rows creates w times as many input coordinates, so the prediction matrix has w times as many input rows.</script>
-  <div class="prose">
-    $$\ve{c_t}=\operatorname{concat}(\ve{e_{t-w+1}},\ldots,\ve{e_t})\in\mathbb R^{1\times(w d_{\text{model}})}$$
-    <div data-build="1">$$p(x_{t+1}\mid x_{\le t}) = \operatorname{softmax}(c_t W + b)$$</div>
+No. The concatenated context row c_10 is now the input. Its subscript is the last input position, 10, not the window width. Each blue circle is one scalar coordinate; each purple edge is a weight. Select water or another displayed output to highlight one column of W: all input coordinates contribute to that word's score, plus its bias. The omitted inputs and outputs still have connections. Reveal the shape-annotated equation, then softmax. This is the direct linear head from Inside the window, not the earlier MLP with a hidden layer. Drag w from 3 to 5 to 10: W grows from 12 by 20 to 20 by 20 to 40 by 20, while the twenty outputs and biases stay fixed. The controls compare parameter shapes, not trained predictions under a resized model.</script>
+  <div class="card">
+    <div class="window-head-controls">
+      <div id="s03-head-slider" data-keep-state></div>
+      <p>Linear head · 4 numbers/token · 20 vocabulary words</p>
+    </div>
+    <div class="window-head-layout">
+      <div>
+        <div class="window-head-network" id="s03-head-network"></div>
+        <p class="window-head-trace window-param" id="s03-head-trace" aria-live="polite"></p>
+      </div>
+      <div class="window-head-math">
+        <p class="window-input" id="s03-head-context"></p>
+        <p class="window-param">W = connection weights; b = one bias per word.</p>
+        <div data-build="1">
+          <div id="s03-head-equation"></div>
+          <p class="window-score">ℓ = logits (scores): multiply → sum → add bias.</p>
+        </div>
+        <div data-build="2">
+          <div>$$\htmlClass{window-prob}{p}=\operatorname{softmax}(\htmlClass{window-score}{\ell})$$</div>
+          <p class="window-prob">All 20 scores → 20 probabilities; they sum to 1.</p>
+        </div>
+      </div>
+    </div>
+    <p class="window-head-count" id="s03-head-count" aria-live="polite"></p>
   </div>
-  <div class="callout callout-key" data-build="2">$W$ has shape $w d_{\text{model}}\times |\mathcal V|$.</div>
-  <p class="look" id="s03-ctab-note" data-build="2"></p>
+  <p class="window-head-takeaway" data-build="2">Each extra token adds <span class="window-input">4 inputs</span> and <span class="window-param">4 × 20 = 80 weights</span>. <strong>The 20 outputs stay fixed.</strong></p>
+  <div class="companion">
+    <p>Click an output circle or focus it and press Enter/Space. Four of the twenty output nodes are shown, in vocabulary order; dots stand for the other sixteen. For windows wider than three tokens, the diagram shows the first two and final token groups and counts the omitted coordinates. Every retained coordinate connects to every output, including nodes hidden by dots. These are architecture sketches: changing w requires a differently shaped weight matrix. No numerical weights or probabilities are invented.</p>
+    <p>In general, $c_t$ is the concatenated context ending at input position $t$. Here $t=10$, so $p$ predicts the word at position 11. With $d_{\text{model}}=4$ coordinates per token and vocabulary size $|\mathcal V|=20$, $c_t$ has shape $1\times(wd_{\text{model}})$, $W$ has shape $(wd_{\text{model}})\times|\mathcal V|$, and $b$, $\ell$ and $p$ each have shape $1\times|\mathcal V|$. The weight matrix contains $wd_{\text{model}}|\mathcal V|$ parameters, plus $|\mathcal V|$ bias parameters. Each column of W holds the weights for one vocabulary word. Softmax uses all twenty scores, not just the four drawn here.</p>
+  </div>
 </div>
 
 <div class="frame" id="s03-frame-boundary" data-title="A larger window moves the hard boundary" data-autobuild="off">
@@ -4488,7 +4547,7 @@ The input width and the parameter count. More tokens fit in this finite sentence
   const bound = AT.h('span', { class: 'bound', 'aria-hidden': 'true' }, AT.h('span', { class: 'lab' }, 'boundary'), AT.h('span', { class: 'bar' }));
   const winNote = S.querySelector('#s03-win-note');
   const ceq = S.querySelector('#s03-ceq');
-  const ctabHost = S.querySelector('#s03-ctab'), ctabNote = S.querySelector('#s03-ctab-note'), ctabReading = S.querySelector('#s03-ctab-reading');
+  const ctabHost = S.querySelector('#s03-ctab'), ctabReading = S.querySelector('#s03-ctab-reading');
   const live1 = S.querySelector('#s03-live1'), live2 = S.querySelector('#s03-live2');
   const ktabHost = S.querySelector('#s03-ktab'), ktabNote = S.querySelector('#s03-ktab-note');
 
@@ -4551,6 +4610,69 @@ The input width and the parameter count. More tokens fit in this finite sentence
     dimensions.append(AT.h('span',{class:'window-input'},w+' tokens × '+D+' numbers = '+inputCount+' inputs'),AT.h('span',{class:'window-param'},'W: '+inputCount+' × '+V+' = '+(inputCount*V)+' weights'),AT.h('span',{class:'window-score'},V+' outputs stay fixed'));
   }
 
+  /* The next view traces one output column while showing the complete row
+     multiplication. Highlighting is explanatory; it never changes AT.model. */
+  let tracedWord='water';
+  function traceHead(word){
+    tracedWord=word;
+    const host=S.querySelector('#s03-head-network');
+    host.dataset.tracedWord=word;
+    host.querySelectorAll('[data-output-word]').forEach(el=>{
+      const selected=el.dataset.outputWord===word;
+      el.classList.toggle('is-traced',selected);
+      if(el.getAttribute('role')==='button')el.setAttribute('aria-pressed',String(selected));
+    });
+    S.querySelector('#s03-head-trace').textContent=word+': '+(w*D)+' incoming weights + 1 bias. Select a node to trace its score.';
+  }
+  function drawHead(inside){
+    const host=S.querySelector('#s03-head-network'),n=w*D;
+    const shown=w<=3?inside:[inside[0],inside[1],inside[inside.length-1]];
+    const omitted=w-shown.length,outputs=['the','water','teller','money'];
+    const centers=shown.length===1?[142]:shown.length===2?[85,215]:omitted?[66,134,230]:[66,148,230];
+    const outYs=[58,112,166,220],xIn=160,xOut=415;
+    AT.clear(host);
+    const svg=AT.svg('svg',{viewBox:'0 0 560 280',role:'group','aria-label':'Interactive linear head: '+w+' tokens, '+n+' input coordinates, '+V+' output scores. Each circle is one number. Select an output to trace its weights. Dots omit '+(omitted*D)+' inputs and '+(V-outputs.length)+' outputs. No trained predictions are computed.','data-window':w,'data-input-count':n,'data-output-count':V,'data-omitted-inputs':omitted*D,'data-omitted-outputs':V-outputs.length,'data-weight-rows':n,'data-weight-cols':V,'data-weight-count':n*V,'data-bias-count':V});
+    const label=(x,y,text,cls,anchor='middle')=>svg.appendChild(AT.svg('text',{x,y,class:cls,'text-anchor':anchor},text));
+    label(122,22,n+' input numbers','head-caption window-input');
+    label(286,22,'W: '+n+' × '+V,'head-caption window-param');
+    label(460,22,V+' scores','head-caption window-score');
+    const edges=svg.appendChild(AT.svg('g'));
+    shown.forEach((position,k)=>{
+      const group=svg.appendChild(AT.svg('g',{class:'head-token-group','data-token-position':position+1}));
+      group.appendChild(AT.svg('text',{x:130,y:centers[k]+6,class:'window-input','text-anchor':'end'},(position+1)+' '+toks[position]));
+      group.appendChild(AT.svg('path',{d:'M 144 '+(centers[k]-26)+' h -6 v 52 h 6',fill:'none',stroke:'var(--c-e)','stroke-width':1.4}));
+      E0[position].forEach((value,j)=>{
+        const y=centers[k]+(j-(D-1)/2)*14;
+        outputs.forEach((word,q)=>edges.appendChild(AT.svg('line',{x1:xIn+7,y1:y,x2:xOut-11,y2:outYs[q],class:'head-edge','data-output-word':word,'data-source-position':position+1,'data-coordinate':j+1})));
+        group.appendChild(AT.svg('circle',{cx:xIn,cy:y,r:6.5,class:'head-input-node','data-coordinate':j+1,'data-value':value},AT.svg('title',{},'Position '+(position+1)+' '+toks[position]+', coordinate '+(j+1)+' ('+AT.axes.short.e[j]+'): '+AT.fmt(value,2))));
+      });
+    });
+    if(omitted)label(144,185,'⋮ +'+(omitted*D)+' inputs','window-input','end');
+    outputs.forEach((word,q)=>{
+      const group=svg.appendChild(AT.svg('g',{class:'head-output',role:'button',tabindex:'0','data-output-word':word,'aria-label':'Trace '+word+': '+n+' weights and one bias','aria-pressed':'false'}));
+      group.appendChild(AT.svg('rect',{x:xOut-22,y:outYs[q]-22,width:124,height:44,class:'hit-area'}));
+      group.appendChild(AT.svg('circle',{cx:xOut,cy:outYs[q],r:11}));
+      group.appendChild(AT.svg('text',{x:xOut+22,y:outYs[q]+6,class:'window-score'},word));
+      group.addEventListener('click',()=>traceHead(word));
+      group.addEventListener('keydown',event=>{
+        if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();traceHead(word);}
+      });
+    });
+    [85,139,193].forEach(y=>label(xOut,y+5,'⋮','window-score'));
+    label(xOut,269,'+ b: '+V+' biases','head-caption window-param');
+    host.appendChild(svg);
+    const context=S.querySelector('#s03-head-context');
+    context.innerHTML='$\\htmlClass{window-input}{c_{10}}$: one row of '+w+' × '+D+' = '+n+' numbers.<br>10 = last input position; predict position 11.';
+    AT.renderMath(context);
+    const coloured=(cls,term,shape)=>'\\htmlClass{'+cls+'}{\\underbrace{'+term+'}_{'+shape+'}}';
+    AT.tex(S.querySelector('#s03-head-equation'),coloured('window-score','\\ell','1\\times '+V)+'='+coloured('window-input','c_{10}','1\\times '+n)+'\\;'+coloured('window-param','W',n+'\\times '+V)+'+'+coloured('window-param','b','1\\times '+V),{display:true});
+    const count=S.querySelector('#s03-head-count');
+    AT.clear(count);
+    count.dataset.parameters=n*V+V;
+    count.append(AT.h('span',{class:'window-param'},'W: '+n+' × '+V+' = '+n*V+' weights; + '+V+' biases = '+(n*V+V)+' parameters.'),AT.h('span',{},' Each circle is one number; dots omit nodes.'));
+    traceHead(tracedWord);
+  }
+
   function draw(){
     const first = t - w + 1;                       // first index inside the window (0-based)
     const inside = AT.range(T).filter(i => i >= first), outside = AT.range(T).filter(i => i < first);
@@ -4560,6 +4682,7 @@ The input width and the parameter count. More tokens fit in this finite sentence
     winNote.innerHTML = 'Tokens '+(first+1)+'–'+T+' are inside. '+(outside.length?outside.length+' earlier token'+(outside.length===1?' is':'s are')+' unavailable.':'All ten fit this short sentence.');
     AT.renderMath(winNote);
     drawWindowNetwork(inside);
+    drawHead(inside);
 
     /* First show the stacked rows. The next build concatenates their unchanged
        scalar entries into a single row, using the same selected window. */
@@ -4603,8 +4726,6 @@ The input width and the parameter count. More tokens fit in this finite sentence
     }
     ctabReading.innerHTML = readWindow(inside, outside);
     AT.renderMath(ctabReading);
-    ctabNote.innerHTML = 'Look at the row count. Input size $w \\cdot d_{\\text{model}} = ' + w + ' \\times ' + D + ' = ' + (w * D) + '$; parameters in $W$: $|\\mathcal V| \\times w d_{\\text{model}} = ' + V + ' \\times ' + (w * D) + ' = ' + (V * w * D) + '$.';
-    AT.renderMath(ctabNote);
 
     /* live discussion lines (frame 3 reads the current w) */
     live1.innerHTML = 'With $w = ' + w + '$: ' + (outside.length ? '<strong>' + outside.length + '</strong> token' + (outside.length > 1 ? 's' : '') + ' unavailable: ' + AT.escape(list(outside)) + '.' : 'every token is inside, but a longer sentence would still be cut at ' + w + '.')
@@ -4627,7 +4748,13 @@ The input width and the parameter count. More tokens fit in this finite sentence
     AT.renderMath(ktabNote);
   }
 
-  AT.ui.slider({ label: 'Window size w', min: 1, max: T, step: 1, value: w, onInput: (v) => { w = v; draw(); }, into: S.querySelector('#s03-slider') });
+  function setWindow(v){
+    w=v;
+    windowSlider.setValue(w,false);headSlider.setValue(w,false);
+    draw();
+  }
+  const windowSlider=AT.ui.slider({ label: 'Window size w', min: 1, max: T, step: 1, value: w, onInput: setWindow, into: S.querySelector('#s03-slider') });
+  const headSlider=AT.ui.slider({ label: 'Window size w', min: 1, max: T, step: 1, value: w, onInput: setWindow, into: S.querySelector('#s03-head-slider') });
   draw();
   // Refresh the static notation after this frame becomes visible. Chromium can
   // otherwise retain an empty paint cache for the grid's second column when

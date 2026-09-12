@@ -34,7 +34,9 @@ for (const id of secs) {
       }
       select.value = original; select.dispatchEvent(new Event('change', { bubbles: true })); c.selects++;
     }
-    for (const t of S.querySelectorAll('[aria-pressed]')) { t.click(); await sleep(30); t.click(); await sleep(30); c.toggles++; }
+    // SVG nodes can be accessible toggle buttons without HTMLElement.click().
+    const activate = el => typeof el.click === 'function' ? el.click() : el.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    for (const t of S.querySelectorAll('[aria-pressed]')) { activate(t); await sleep(30); activate(t); await sleep(30); c.toggles++; }
     const btns = [...S.querySelectorAll('button:not([aria-pressed])')];
     for (const bt of btns) { if (bt.disabled) continue; const txt = (bt.textContent || '').trim().toLowerCase(); const n = /next/.test(txt) ? 22 : 1; for (let i = 0; i < n; i++) { if (bt.disabled) break; bt.click(); await sleep(25); } c.buttons++; }
     // reset steppers if present

@@ -1,5 +1,12 @@
 # Classroom release checks
 
+## 2026-09-12: link window-head nodes to colour-matched mathematics
+
+- Replaced the matrix-growth frame's bare equations with an interactive linear-head diagram. Its window control shares state with Inside the window and the concatenation example. Each token supplies four actual scalar coordinates; twenty vocabulary outputs remain fixed. Selecting an output traces exactly its incoming column of W, by mouse or Enter/Space. Dots explicitly account for omitted nodes.
+- Blue inputs, purple weights/biases, grey logits and green probabilities follow Part I. Progressive builds connect the nodes to the shape-annotated row multiplication and then softmax. The slide defines c10 and its last-position subscript, counts weights separately from biases, and shows that each extra token needs eighty more weights. It does not add a hidden layer or invent predictions for differently shaped architectures.
+- Regression covers all ten windows, every drawn edge/value, output selection, colour matches, matrix shapes, total parameters, both slider directions, keyboard, navigation state, progressive visibility, SVG bounds and model immutability. Visually inspected one-, three- and ten-token slides and the phone article. The general interaction sweep now supports accessible SVG buttons as well as HTML buttons.
+- All 297 presentation states / 521 unique formulas pass; the 126-control sweep and 390px article QA report no errors or overflow. Eight independent live/reference cases agree on 7,980 finite values (max error 8.88e-16). No new frames, model, Part I, shared runtime, dependencies or PDF changes.
+
 ## 2026-09-12: distinguish stacked rows from concatenated context
 
 - The concatenation frame now shows a labelled before table (w × 4), then reveals a single joined context row (1 × 4w). It defines c as the concatenated context and the subscript 10 as the last input position, with matching blue/orange notation and prose. The scope line identifies the selected input positions and prediction position 11. The table no longer calls its stacked shape the size of c10.

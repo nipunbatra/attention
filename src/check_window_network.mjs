@@ -144,6 +144,61 @@ try{
         assert(blue>50&&orange>20,`The c/10 explanation must actually paint at w=${w}, build=${build}, not merely exist in the DOM.`);
       }
     }
+    await page.evaluate(()=>AT.present.go('s03',4,0));
+    const headSlider=page.locator('#s03-head-slider input');
+    assert.equal(await headSlider.inputValue(),String(w),'Both window controls share the same choice.');
+    const head=await page.evaluate(()=>{
+      const root=document.getElementById('s03-head-network'),svg=root.querySelector('svg');
+      return {
+        data:{...svg.dataset},label:svg.getAttribute('aria-label'),
+        groups:[...svg.querySelectorAll('.head-token-group')].map(g=>({position:Number(g.dataset.tokenPosition),values:[...g.querySelectorAll('circle')].map(c=>Number(c.dataset.value)),expected:AT.embed(AT.sentences.river)[Number(g.dataset.tokenPosition)-1]})),
+        edges:[...svg.querySelectorAll('.head-edge')].map(e=>[Number(e.dataset.sourcePosition),Number(e.dataset.coordinate),e.dataset.outputWord]),
+        outputs:[...svg.querySelectorAll('.head-output')].map(e=>e.dataset.outputWord),
+        equation:document.querySelector('#s03-head-equation annotation').textContent,
+        count:Number(document.getElementById('s03-head-count').dataset.parameters),
+        context:document.getElementById('s03-head-context').textContent,
+        colours:['window-input','window-param','window-score'].map(cls=>{
+          const eq=document.querySelector('#s03-head-equation .katex-html .'+cls),label=svg.querySelector('text.'+cls),prose=document.querySelector('.window-head-math p.'+cls);
+          return [eq,label,prose].map(e=>getComputedStyle(e).color);
+        })
+      };
+    });
+    const shown=w<=3?inside:[inside[0],inside[1],10];
+    assert.deepEqual(head.groups.map(g=>g.position),shown);
+    for(const group of head.groups)assert.deepEqual(group.values,group.expected);
+    assert.deepEqual(head.outputs,['the','water','teller','money']);
+    assert.deepEqual(head.edges,shown.flatMap(i=>[1,2,3,4].flatMap(j=>head.outputs.map(word=>[i,j,word]))));
+    for(const [key,value]of Object.entries({window:w,inputCount:w*4,outputCount:20,omittedInputs:Math.max(w-3,0)*4,omittedOutputs:16,weightRows:w*4,weightCols:20,weightCount:w*80,biasCount:20}))assert.equal(Number(head.data[key]),value);
+    assert(head.label.includes('No trained predictions are computed.'));
+    assert(head.context.includes('10 = last input position; predict position 11.'));
+    assert(head.equation.includes(`c_{10}}_{1\\times ${w*4}}`)&&head.equation.includes(`W}_{${w*4}\\times 20}`),'The coloured equation uses this exact window and explicit row shapes.');
+    assert(head.colours.every(values=>new Set(values).size===1),'Match diagram, equation, and definition colours.');
+    assert.equal(head.count,w*80+20);
+    for(const build of [0,1,2]){
+      await page.evaluate(build=>AT.present.go('s03',4,build),build);
+      await page.waitForTimeout(100);
+      assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,`Head w=${w}, build=${build} must fit.`);
+      assert.equal(await page.locator('#s03-head-equation').evaluate(e=>getComputedStyle(e).visibility),build===0?'hidden':'visible');
+      assert.equal(await page.locator('.window-head-math>[data-build="2"]').evaluate(e=>getComputedStyle(e).visibility),build<2?'hidden':'visible');
+      assert.equal(await headSlider.inputValue(),String(w));
+    }
+    for(const word of head.outputs){
+      await page.locator(`#s03-head-network [role="button"][data-output-word="${word}"]`).click();
+      const trace=await page.evaluate(()=>({
+        pressed:[...document.querySelectorAll('#s03-head-network [aria-pressed="true"]')].map(e=>e.dataset.outputWord),
+        edges:[...document.querySelectorAll('#s03-head-network .head-edge.is-traced')].map(e=>e.dataset.outputWord),
+        note:document.getElementById('s03-head-trace').textContent
+      }));
+      assert.deepEqual(trace.pressed,[word]);
+      assert.deepEqual(trace.edges,Array(shown.length*4).fill(word),'One output highlights exactly one column of W, not all columns.');
+      assert(trace.note.startsWith(`${word}: ${w*4} incoming weights + 1 bias.`));
+    }
+    const headBounds=await page.locator('#s03-head-network svg').evaluate(svg=>{
+      const v=svg.viewBox.baseVal;
+      return [...svg.querySelectorAll('text')].filter(e=>{const b=e.getBBox();return b.x<0||b.y<0||b.x+b.width>v.width+1||b.y+b.height>v.height+1;}).map(e=>e.textContent);
+    });
+    assert.deepEqual(headBounds,[],'All interactive head labels fit in the viewBox.');
+    if([1,3,5,10].includes(w))await page.screenshot({path:path.join(shots,`head-${w}.png`)});
     await page.evaluate(()=>AT.present.go('s03',2,1));
   }
   await slider.fill('3');await slider.focus();await page.keyboard.press('ArrowRight');
@@ -151,6 +206,27 @@ try{
   await page.evaluate(()=>AT.present.go('s03',3,0));
   await page.evaluate(()=>AT.present.go('s03',2,1));
   assert.equal(await slider.inputValue(),'4','Keep the same window when navigating to the concatenation table and back.');
+  await page.evaluate(()=>AT.present.go('s03',4,2));
+  const headSlider=page.locator('#s03-head-slider input');
+  for(let w=1;w<=10;w++){
+    await headSlider.fill(String(w));
+    assert.equal(await slider.inputValue(),String(w),'Head slider updates the earlier window control.');
+    assert.equal(await page.locator('#s03-concat-flat').getAttribute('data-columns'),String(w*4),'Head control also updates the concatenation example.');
+    assert.equal(await page.locator('#s03-head-network svg').getAttribute('data-weight-count'),String(w*80));
+  }
+  await headSlider.focus();await page.keyboard.press('ArrowLeft');
+  assert.equal(await headSlider.inputValue(),'9');assert.equal(await slider.inputValue(),'9');
+  for(const [word,key]of [['water','Enter'],['teller',' ']]){
+    const output=page.locator(`#s03-head-network [role="button"][data-output-word="${word}"]`);
+    await output.focus();await page.keyboard.press(key);
+    assert.equal(await output.getAttribute('aria-pressed'),'true');
+    assert.equal(await page.locator('#s03-head-network [aria-pressed="true"]').count(),1);
+    assert.equal((await page.evaluate(()=>AT.present.fitReport())).frame,4,'Tracing with the keyboard must not advance the presentation.');
+  }
+  await page.evaluate(()=>AT.present.go('s03',3,1));
+  await page.evaluate(()=>AT.present.go('s03',4,2));
+  assert.equal(await headSlider.inputValue(),'9');
+  assert.equal(await page.locator('#s03-head-network').getAttribute('data-traced-word'),'teller');
   await page.evaluate(()=>AT.present.go('s03',1,0));
   for(const w of [1,3,5,100]){
     await page.locator('#s03-net-slider input').fill(String(w));
@@ -184,9 +260,13 @@ try{
   const rowScroll=await page.locator('.concat-row-scroll').evaluate(e=>({width:e.clientWidth,content:e.scrollWidth,overflow:getComputedStyle(e).overflowX}));
   assert.equal(rowScroll.overflow,'auto');assert(rowScroll.content>rowScroll.width,'A long joined row should scroll locally on a phone, never wrap into a matrix.');
   await page.locator('#s03-frame-concatenate').screenshot({path:path.join(shots,'phone-concat-5.png')});
+  await page.locator('#s03-frame-window-head').screenshot({path:path.join(shots,'phone-head-5.png')});
+  assert.equal(await headSlider.inputValue(),'5');
+  assert((await headSlider.boundingBox()).width>=180);
+  assert(!(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1)));
   const final=await page.evaluate(()=>JSON.stringify({model:AT.model,probs:AT.forward(AT.sentences.river).probs}));
   assert.equal(final,initial,'Architecture controls must not mutate the trained toy or its predictions.');
   assert.deepEqual(errors,[]);
-  console.log('PASS: ten windows, scalar nodes/edges, stacked-to-concatenated values and shapes, notation definitions, progressive reveal, fixed outputs, keyboard, retained state, reduced motion, MLP consistency, phone layout, and model immutability.');
+  console.log('PASS: ten windows, scalar nodes/edges, stacked-to-concatenated values/shapes, linked linear head, output-column tracing, colour-matched equations, weight/bias counts, bidirectional controls, progressive reveal, keyboard, retained state, reduced motion, MLP consistency, phone layout, and model immutability.');
   console.log('Screenshots: '+shots);
 }finally{await browser.close();}
