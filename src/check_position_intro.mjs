@@ -45,6 +45,36 @@ try{
   assert(content.hasPart1Bridge,'Connect to the previous fixed-window MLP.');
   assert(content.colours.every(Boolean),'Explain each equation term in the same colour.');
   assert(content.toyCaveat,'Keep the toy position limitation explicit.');
+  const matrix=await page.evaluate(()=>{
+    const frame=document.getElementById('s01-frame-starting-row'),table=frame.querySelector('table');
+    const rows=[...table.querySelectorAll('tbody tr')];
+    const frames=[...document.querySelectorAll('#s01 .frame')];
+    return {
+      sentence:document.getElementById('s01-matrix-sentence').textContent,
+      labels:rows.map(row=>row.querySelector('th').textContent.trim()),
+      values:rows.map(row=>[...row.querySelectorAll('td')].map(cell=>Number(cell.textContent.replaceAll('−','-')))),
+      expected:AT.embed(AT.sentences.river),tokens:AT.sentences.river,
+      headers:[...table.querySelectorAll('thead th')].map(cell=>cell.textContent),
+      formulas:[...frame.querySelectorAll('annotation')].map(el=>el.textContent),
+      text:frame.querySelector('.sentence-legend').textContent,
+      scopeBeforeTable:frames.findIndex(el=>el.id==='s01-frame-position-limit')<frames.indexOf(frame),
+      colours:[
+        getComputedStyle(frame.querySelector('.sentence-row-number')).color===getComputedStyle(frame.querySelector('.sentence-legend .sentence-count')).color,
+        getComputedStyle(table.querySelector('thead th:nth-child(2)')).color===getComputedStyle(frame.querySelector('.sentence-legend .sentence-width')).color
+      ]
+    };
+  });
+  assert(matrix.scopeBeforeTable,'Explain the return to five-coordinate bank vectors before showing them.');
+  assert.equal(matrix.sentence,'“'+matrix.tokens.join(' ')+' ___”');
+  assert.deepEqual(matrix.labels,matrix.tokens.map((token,i)=>(i+1)+' '+token));
+  assert.deepEqual(matrix.headers,['Token / row','1','2','3','4','5']);
+  assert.equal(matrix.values.length,10,'All ten occurrences need rows, including repeated the.');
+  matrix.expected.forEach((row,i)=>row.forEach((x,j)=>assert(Math.abs(matrix.values[i][j]-x)<.050001)));
+  assert.deepEqual(matrix.values[5],[3,0,0,0,.6],'Row 6 is river in the actual bank model.');
+  assert(matrix.formulas.includes('T=10')&&matrix.formulas.includes('d_{\\text{model}}=5'));
+  assert(matrix.text.includes('Tokens in this input.')&&matrix.text.includes('Numbers in each token row.'));
+  assert(matrix.text.includes('One sentence, ten token rows.')&&matrix.text.includes('The blank has no row yet.'));
+  assert(matrix.colours.every(Boolean),'Match row-count and column-width explanations to the table.');
   const bankBefore=await page.evaluate(()=>JSON.stringify({model:AT.model,probs:AT.forward(AT.sentences.river).probs}));
   const samples=[];
   for(const position of [1,5,10]){
@@ -95,10 +125,12 @@ try{
     await page.waitForTimeout(300);
     await page.screenshot({path:path.join(screenshots,id+'.png')});
   }
-  for(const [id,frame] of [['starting-rows',8],['bank-scope',9]]){
-    await page.evaluate(frame=>AT.present.go('s01',frame,2),frame);
-    await page.waitForTimeout(300);
-    assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,id+' must fit.');
+  for(const [id,frame] of [['bank-scope',8],['starting-rows',9]]){
+    for(const build of [0,1,2]){
+      await page.evaluate(({frame,build})=>AT.present.go('s01',frame,build),{frame,build});
+      await page.waitForTimeout(300);
+      assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,id+' build '+build+' must fit.');
+    }
     await page.screenshot({path:path.join(screenshots,id+'.png')});
   }
   await page.evaluate(()=>AT.present.exit());
@@ -117,6 +149,13 @@ try{
   }));
   assert(phoneTable.fits&&phoneTable.scrolls.length===0,'The article position table must fit a phone without a nested scrollbar.');
   await page.screenshot({path:path.join(screenshots,'phone-sinusoidal.png')});
+  await page.locator('#s01-sentence-matrix').scrollIntoViewIfNeeded();
+  const phoneMatrix=await page.locator('#s01-sentence-matrix').evaluate(el=>({
+    fits:el.scrollWidth<=el.clientWidth+1,
+    scrolls:[...el.querySelectorAll('*')].filter(node=>node.clientWidth>0&&node.scrollWidth>node.clientWidth+1).map(node=>node.className)
+  }));
+  assert(phoneMatrix.fits&&phoneMatrix.scrolls.length===0,'The full sentence matrix must fit a phone.');
+  await page.screenshot({path:path.join(screenshots,'phone-sentence-matrix.png')});
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({content,samples,phone,phoneTable,screenshots,errors},null,2));
+  console.log(JSON.stringify({content,matrix,samples,phone,phoneTable,phoneMatrix,screenshots,errors},null,2));
 }finally{await browser.close();}

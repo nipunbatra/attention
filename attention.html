@@ -3494,6 +3494,18 @@ window.__PART__ = {"part":2,"series":"Attention and language","title":"Self-atte
 #s01 #s01-emb-tab tfoot tr>*{color:var(--c-e);background:var(--t-e)}
 #s01 .position-example{margin:16px 0 0;font-variant-numeric:tabular-nums}
 #s01 .position-example span{white-space:nowrap}
+#s01 .sentence-rows{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:34px;align-items:center}
+#s01 .sentence-count{color:#AA4E08}
+#s01 .sentence-width{color:#0F766E}
+#s01 .sentence-rows .dt{width:100%;table-layout:fixed}
+#s01 .sentence-rows .dt th:first-child{width:32%;white-space:normal}
+#s01 .sentence-rows .dt thead th:not(:first-child){color:#0F766E}
+#s01 .sentence-row-number{display:inline-block;min-width:1.5em;color:#AA4E08;font-variant-numeric:tabular-nums}
+#s01 .sentence-legend p{margin:0 0 22px}
+#s01 .sentence-legend .sentence-shape{font-size:1.15em}
+#s01 .sentence-rows .dt th,#s01 .sentence-rows .dt td{padding:5px 8px}
+body.present #s01 .sentence-rows .dt th,body.present #s01 .sentence-rows .dt td{font-size:22px;line-height:1.15;padding:5px 8px}
+@media(max-width:640px){body:not(.present) #s01 .sentence-rows{grid-template-columns:1fr;gap:20px}body:not(.present) #s01 .sentence-rows .dt th,body:not(.present) #s01 .sentence-rows .dt td{font-size:12px;padding:7px 3px}}
 @media(max-width:640px){body:not(.present) #s01 #s01-emb-tab .dt td,body:not(.present) #s01 #s01-emb-tab .dt th{font-size:12px;padding:9px 3px}body:not(.present) #s01 #s01-emb-tab .dt th:first-child{width:29%}}
 @media(max-width:640px){body:not(.present) #s01 .position-key{grid-template-columns:1fr;gap:14px}body:not(.present) #s01 .order-example td{padding:16px 4px}}
 @media (max-width:640px){#s01 .pipe{grid-template-columns:1fr}}
@@ -3653,17 +3665,6 @@ Leave the construction of the position vectors for a later discussion. These han
   </div>
 </div>
 
-<div class="frame" id="s01-frame-starting-row" data-title="E stacks the current rows of this sentence" data-autobuild="off">
-  <script type="text/x-notes">Does E have one row per vocabulary token or per input position?
-One row per input position. Initially each e_i is e_i^(0); later e_i denotes the current representation after earlier contextual updates. E_tok is the stored lookup table, not this sentence matrix.</script>
-  <div class="prose">
-    <p>Write $e_i$ for the <strong>current representation at position $i$</strong>. Initially, $e_i=e_i^{(0)}$.</p>
-    $$\ve{E}=\begin{bmatrix}e_1\\e_2\\\vdots\\e_T\end{bmatrix}\in\mathbb{R}^{T\times d_{\text{model}}}$$
-    <p data-build="1">$T$ input positions give $T$ rows. Every row still has $d_{\text{model}}$ numbers.</p>
-  </div>
-  <div class="callout callout-note" data-build="2">$E_{\text{tok}}$ is stored across sentences. $E$ is built for <em>this sentence</em>; contextual updates change its position rows, not the lookup table.</div>
-</div>
-
 <div class="frame" id="s01-frame-position-limit" data-title="Back to the bank example" data-autobuild="off">
   <script type="text/x-notes">What will the hand-worked bank example demonstrate?
 It demonstrates how relevant content reaches the prediction. Its five-dimensional rows and parameters differ from the separate four-dimensional sinusoidal illustration. The legacy fifth coordinate contains a position offset, but the Q/K/V projections and output head ignore it. Do not claim the bank predictions demonstrate word-order sensitivity or that real embedding dimensions have semantic names.</script>
@@ -3673,6 +3674,30 @@ It demonstrates how relevant content reaches the prediction. Its five-dimensiona
   </div>
   <div class="callout callout-note" data-build="2">The bank toy’s calculations <strong>ignore coordinate 5</strong>, labelled “pos” in its tables. We’ll use this toy to study <strong>which words supply information</strong>. The positional-encoding example above shows how a position cue normally spans the vector.</div>
   <div class="companion"><p>The toy stores an offset in its fifth coordinate, but that coordinate has zero weights in its matching, message, and prediction projections. Its changing predictions therefore demonstrate content gathering, not sensitivity to word order. The named axes and this unused offset are simplifications of the hand-worked example.</p></div>
+</div>
+
+<div class="frame" id="s01-frame-starting-row" data-title="Our ten tokens become ten rows" data-autobuild="off">
+  <script type="text/x-notes">How many rows do we need for this sentence?
+Count all ten input tokens, including each occurrence of the. The blank is the token to predict, so it has no input row yet. T counts tokens in one sequence, not the number of examples in a batch. Reveal the five-coordinate width, then the shape of E. Point to river at row 6 to give e_6 a concrete meaning.
+The table uses AT.embed on the river sentence, exactly the starting rows used by the bank calculations. It does not use the separate four-coordinate sinusoidal illustration. These are hand-chosen values, not learned measurements.</script>
+  <p id="s01-matrix-sentence"></p>
+  <div class="sentence-rows">
+    <div><h3 class="card-title start-row">$\ve{E}$: the sentence matrix</h3><div id="s01-sentence-matrix"></div></div>
+    <div class="sentence-legend">
+      <p class="sentence-count"><strong>$T=10$</strong><br>Tokens in this input.</p>
+      <p class="sentence-width" data-build="1"><strong>$d_{\text{model}}=5$</strong><br>Numbers in each token row.</p>
+      <div data-build="2">
+        <p class="sentence-shape">$\ve{E}$ has shape $\htmlClass{sentence-count}{10}\times\htmlClass{sentence-width}{5}$<br><span class="sentence-count">token rows</span> × <span class="sentence-width">coordinates</span></p>
+        <p>$\ve{e_6}$ is row 6: <strong>river</strong>.</p>
+        <p class="small muted">One sentence, ten token rows. The blank has no row yet.</p>
+      </div>
+    </div>
+  </div>
+  <div class="companion">
+    <p>We call the number of input tokens <span class="sentence-count">$T$</span>. Here we have ten tokens, even though some words repeat. The symbol <span class="sentence-width">$d_{\text{model}}$</span> counts the numbers used to represent each token. In our bank toy, that count is five. So the sentence matrix $\ve{E}$ has <span class="sentence-count">ten rows</span> and <span class="sentence-width">five columns</span>.</p>
+    <p>Lowercase $\ve{e_i}$ means the row for token position $i$. For example, $\ve{e_6}=[3.0,0.0,0.0,0.0,0.6]$ is the row for <em>river</em>. Before any contextual update, $e_i=e_i^{(0)}$. Stacking the rows gives $E=[e_1;\ldots;e_T]$, with shape $T\times d_{\text{model}}$. The table shows the starting values from our hand-chosen bank model.</p>
+    <p>$E_{\text{tok}}$ is the vocabulary lookup table shared across sentences. $E$ holds the rows for this particular input. Contextual updates change the rows of $E$ during the forward pass. Training can change the stored lookup table.</p>
+  </div>
 </div>
 
 <div class="companion after">
@@ -3686,6 +3711,16 @@ It demonstrates how relevant content reaches the prediction. Its five-dimensiona
   const FA = AT.forward(SA), FB = AT.forward(SB);
   const T = SA.length;
   let ctx = 'A';
+
+  /* One input occurrence per row, using the bank model's actual starting E. */
+  S.querySelector('#s01-matrix-sentence').textContent = '“' + SA.join(' ') + ' ___”';
+  AT.ui.table(AT.embed(SA), {
+    cols: AT.range(AT.d_model).map(j => String(j + 1)), axes: false, decimals: 1,
+    cornerLabel: 'Token / row',
+    rowLabels: SA.map((token, i) => '<span class="sentence-row-number">' + (i + 1) + '</span> ' + AT.escape(token)),
+    rowCls: 'neutral', highlightRow: 5,
+    into: S.querySelector('#s01-sentence-matrix')
+  });
 
   /* --- sentence chips with the blank slot --- */
   const chipHost = S.querySelector('#s01-chips');
