@@ -13,6 +13,17 @@
 #s01 .look{font-size:14px;color:var(--ink-2);margin:14px 0 0}
 #s01 .read-line{font-size:15px;color:var(--ink);margin:12px 0 0;padding:8px 12px;border-left:3px solid var(--c-e);background:var(--t-e);border-radius:0 var(--radius-s) var(--radius-s) 0}
 #s01 .emb-tab{margin-top:12px}
+#s01 .order-example{width:100%;border-collapse:collapse;margin:20px 0 28px;table-layout:fixed}
+#s01 .order-example th{font-weight:500;font-size:.8em;color:var(--ink-3);padding:10px;text-align:center}
+#s01 .order-example td{padding:22px 10px;border-top:1px solid var(--line);text-align:center;font-size:1.3em}
+#s01 .order-example .maya{color:var(--c-e);font-weight:600}
+#s01 .order-example .ravi{color:#7C3CA0;font-weight:600}
+#s01 .start-token{color:var(--ink)}
+#s01 .start-position{color:#AA4E08}
+#s01 .start-row{color:var(--c-e)}
+#s01 .position-key{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin:20px 0}
+#s01 .position-key p{margin:8px 0 0;font-size:.86em;line-height:1.4}
+@media(max-width:640px){body:not(.present) #s01 .position-key{grid-template-columns:1fr;gap:14px}body:not(.present) #s01 .order-example td{padding:16px 4px}}
 @media (max-width:640px){#s01 .pipe{grid-template-columns:1fr}}
 body.present #s01 .ctx-lab,body.present #s01 .arrow-lab,body.present #s01 .look,body.present #s01 .read-line{font-size:22px;line-height:1.35}
 body.present #s01 .blackbox{padding:22px 26px;min-width:230px}
@@ -106,13 +117,42 @@ It must receive information about river or cheque from earlier in the sentence. 
 
 <div class="frame" id="s01-frame-lookup" data-title="A token starts with a vocabulary lookup" data-autobuild="off">
   <script type="text/x-notes">Is the vocabulary table the same object as the rows for this sentence?
-No. E_tok stores one learned row per vocabulary token. The token ID selects a row; the position vector is added to create this occurrence's starting representation. These toy parameters are hand-chosen, not trained.</script>
+E_tok stores one learned row per vocabulary token. The token ID selects a row. A lookup on its own says which token we have, but not where it occurs. We will motivate a position cue next. These toy parameters are hand-chosen, not trained.</script>
   <div class="prose">
     <p>$E_{\text{tok}}$ is the <strong>learned vocabulary lookup table</strong>: one stored row per token.</p>
-    <p data-build="1">At position $i$, the token ID $t_i$ selects a row. Add the same-width position vector $p_i$:</p>
-    <div data-build="1">$$\ve{e_i^{(0)}} = E_{\text{tok}}[t_i] + p_i$$</div>
+    <p data-build="1">$t_i$ is the token ID at position $i$. Writing $E_{\text{tok}}[t_i]$ means “read that token’s row from the table.”</p>
+    <p data-build="2">The word <strong>bank</strong> gets the same lookup row wherever it appears.</p>
   </div>
-  <div class="callout callout-note" data-build="2">The superscript $(0)$ means before any contextual update. We use <strong>hand-chosen rows</strong> here so we can follow the arithmetic.</div>
+  <div class="companion"><p>In a trained model, learning adjusts the table. Here we use hand-chosen rows so we can follow the arithmetic.</p></div>
+</div>
+
+<div class="frame" id="s01-frame-order" data-title="The same words can mean different things" data-autobuild="off">
+  <script type="text/x-notes">Who is helping whom? Read the first sentence, then reveal the second.
+Both sentences use exactly the same words, so they look up the same three vocabulary vectors in different slots. A word's lookup vector alone does not encode its slot. This illustrates why we want order information; these sentences are not inputs to the hand-chosen bank toy.
+Part I's concatenation preserved order by assigning each input position its own block of features. Do not claim every masked attention architecture is permutation invariant: the causal mask itself carries an order constraint.</script>
+  <table class="order-example" aria-label="Same words in different positions">
+    <thead><tr><th scope="col">Position 1</th><th scope="col">Position 2</th><th scope="col">Position 3</th></tr></thead>
+    <tbody><tr><td class="maya">Maya</td><td>helps</td><td class="ravi">Ravi</td></tr>
+    <tr data-build="1"><td class="ravi">Ravi</td><td>helps</td><td class="maya">Maya</td></tr></tbody>
+  </table>
+  <p data-build="1"><strong>Maya</strong> gets the same lookup vector in both sentences. That vector alone does not tell us whether Maya came first or last.</p>
+  <p data-build="2">In Part I, concatenation kept the positions in separate input slots. Here, we’ll give each token row a <strong>position cue</strong> before the rows interact.</p>
+</div>
+
+<div class="frame" id="s01-frame-position-cue" data-title="A starting row carries both what and where" data-autobuild="off">
+  <script type="text/x-notes">What changes when the same word moves to another position?
+The vocabulary row stays the same. The position cue changes. We use the additive positional encoding design here. Addition keeps the width fixed, so the next layers still receive one fixed-width row per token. It is a design choice, not the only way to represent position.
+Source: Attention Is All You Need, Section 3.5, https://arxiv.org/html/1706.03762v7#S3.SS5
+Leave the construction of the position vectors for a later discussion. These hand-chosen toy projections ignore the position coordinate, so the bank example demonstrates contextual information gathering, not word-order understanding.</script>
+  <p>We add a <span class="start-position"><strong>vector for the token’s position</strong></span> to its vocabulary row. Moving the same word to another slot changes this position cue.</p>
+  <div class="position-key">
+    <div class="start-token"><strong>What: $E_{\text{tok}}[t_i]$</strong><p>The row selected by the token ID.</p></div>
+    <div class="start-position"><strong>Where: $p_i$</strong><p>A vector for position $i$.</p></div>
+    <div class="start-row"><strong>Starting row: $e_i^{(0)}$</strong><p>Their sum, before any contextual update.</p></div>
+  </div>
+  <div data-build="1">$$\htmlClass{start-row}{e_i^{(0)}}=\htmlClass{start-token}{E_{\text{tok}}[t_i]}+\htmlClass{start-position}{p_i}$$</div>
+  <p data-build="1">Both vectors have the same width. Adding them keeps that width unchanged.</p>
+  <p class="small muted" data-build="2">For now, keep “what + where” in mind. How we choose the position vectors can wait.</p>
 </div>
 
 <div class="frame" data-title="Where a token starts" id="s01-frame2" data-autobuild="off">
