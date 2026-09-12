@@ -1,5 +1,12 @@
 # Classroom release checks
 
+## 2026-09-12: diagram-first output head, matching Part I
+
+- Replaced the bare head equations with a labelled four-input / twenty-output network and matching blue input, purple parameter, grey logit definitions. The actual toy values populate the nodes and the water worksheet. Dots explicitly omit sixteen output nodes; the drawing does not invent an extra hidden layer. Input, weight, bias and logit shapes are defined, and Part II's ell is linked to Part I's z.
+- The next frame defines softmax and works through water's probability, 0.094, using all twenty logits in the denominator (10.678 rounded). The conclusion connects the arithmetic to the baseline failure. Full conditional-probability notation is explained in the article instead of appearing unexplained on the slide.
+- Browser regression verifies all drawn edges against the model weights, every displayed node value, colour matches across SVG/math/prose, output omissions, worksheet products, normalization, opening order and phone layout. Visually inspected both new frames, the phone network and the complete phone worksheet. One additional teaching frame; no model, Part I, or shared runtime changes.
+- Full Part II frame audit, independent live/reference numerical check, mobile article QA and the 121-control interaction sweep pass. No JavaScript or KaTeX errors, slide overflow or phone document overflow. PDFs were not regenerated.
+
 ## 2026-09-12: explicit last-token baseline takeaway
 
 - The context-switch slide now states its result in the title: this baseline cannot tell the contexts apart. A visible explanation identifies the shared input, the final “the” at position 10. The closing line says that earlier clues need to influence the prediction. The eight-way tie is explicitly incidental to the toy.

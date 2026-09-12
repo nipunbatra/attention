@@ -49,7 +49,7 @@ try{
       modelScopeInArticle:document.getElementById('s01-model-scope').classList.contains('companion'),
       baselineBridge:document.querySelector('#s02-frame1 .prose').textContent.includes('of the ten rows'),
       baselineRow:[...document.querySelectorAll('#s02-frame1 annotation')].filter(el=>!el.closest('.companion')).map(el=>el.textContent),
-      baselineStartingNotation:document.querySelector('#s02-frame-head .prose').textContent.includes('The superscript')
+      baselineStartingNotation:document.querySelector('#s02-frame-head .head-key .head-input').textContent.includes('before context updates')
     };
   });
   assert.deepEqual(content.flow,['s01-frame1','s01-frame-probabilities','s01-frame-lookup','s01-frame-coordinates','s01-frame-order','s01-frame2','s01-frame-starting-row'],'Define coordinate meaning before position; do not add repeated position recaps.');
@@ -95,7 +95,7 @@ try{
       nextStep:document.querySelector('#s02-frame2 > p').textContent
     };
   });
-  assert.deepEqual(problem.flow,['s02-frame-problem','s02-frame1','s02-frame-probabilities','s02-frame-head','s02-frame2'],'State the problem before the baseline, observe its prediction, then explain its limitation.');
+  assert.deepEqual(problem.flow,['s02-frame-problem','s02-frame1','s02-frame-probabilities','s02-frame-head','s02-frame-head-softmax','s02-frame2'],'State the problem, test the baseline, then explain its nodes, scores and probabilities in order.');
   assert.deepEqual(problem.sentences,problem.expected,'Use the exact two contexts from the numerical example.');
   assert.deepEqual(problem.clues,['river','cheque']);
   assert.deepEqual(problem.endings,['and watched the ___','and watched the ___']);
@@ -103,6 +103,48 @@ try{
   assert.equal(problem.formulas,0,'The section break should state the problem in plain language.');
   assert(problem.baselineTitle.startsWith('Baseline 1:')&&problem.restricted,'Do not present the restricted baseline as the solution.');
   assert(problem.nextStep.includes('several recent token rows'),'Explain the next experiment after establishing the limitation.');
+  const head=await page.evaluate(()=>{
+    const frame=document.getElementById('s02-frame-head'),softmax=document.getElementById('s02-frame-head-softmax');
+    const svg=frame.querySelector('svg'),baseline=AT.baseline(AT.sentences.river),row=baseline.E.at(-1),logits=baseline.logits.at(-1);
+    const probability=document.getElementById('s02-head-water-prob'),water=AT.vocab.indexOf('water');
+    const pairs=[['head-input','--c-e'],['head-param','--c-q'],['head-score','--ink-2']];
+    return {
+      widths:[Number(svg.dataset.inputWidth),Number(svg.dataset.outputWidth)],
+      inputs:[...svg.querySelectorAll('[data-input-node]')].map(el=>Number(el.dataset.inputNode)),
+      outputs:[...svg.querySelectorAll('[data-output-token]')].map(el=>({word:el.dataset.outputToken,logit:Number(el.dataset.logit),expected:logits[AT.vocab.indexOf(el.dataset.outputToken)]})),
+      edges:[...svg.querySelectorAll('[data-weight]')].map(el=>({actual:Number(el.dataset.weight),expected:AT.model.W_vocab[Number(el.dataset.input)][AT.vocab.indexOf(el.dataset.token)]})),
+      inputValues:[...svg.querySelectorAll('.net-value.head-input')].map(el=>Number(el.textContent)),row,
+      colours:pairs.map(([role,variable])=>{
+        const key=frame.querySelector('.head-key .'+role),math=frame.querySelector('.head-equation .katex-html .'+role),node=svg.querySelector('text.'+role);
+        const probe=document.createElement('span');probe.style.color='var('+variable+')';frame.appendChild(probe);
+        const expected=getComputedStyle(probe).color;probe.remove();
+        return [getComputedStyle(key).color,getComputedStyle(math).color,getComputedStyle(node).fill].every(value=>value===expected);
+      }),
+      probabilityColours:[softmax.querySelector('.head-key .head-prob'),softmax.querySelector('.head-equation .katex-html .head-prob'),probability.querySelector('.katex-html .head-prob')].map(el=>getComputedStyle(el).color),
+      text:frame.textContent,
+      probability:Number(probability.dataset.probability),expectedProbability:baseline.probs.at(-1)[water],
+      denominator:Number(probability.dataset.denominator),expectedDenominator:logits.reduce((s,x)=>s+Math.exp(x),0),
+      calculation:probability.querySelector('annotation').textContent,
+      boundedLabels:[...svg.querySelectorAll('text')].every(el=>{const b=el.getBBox();return b.x>=0&&b.y>=0&&b.x+b.width<=520&&b.y+b.height<=350;}),
+      worksheet:[...document.querySelectorAll('#s02-head-worked tbody tr')].map(tr=>[...tr.querySelectorAll('td')].map(td=>Number(td.textContent))),
+      expectedWorksheet:row.map((x,i)=>[x,AT.model.W_vocab[i][water],x*AT.model.W_vocab[i][water]])
+    };
+  });
+  assert.deepEqual(head.widths,[4,20]);
+  assert.deepEqual(head.inputs,[0,1,2,3],'Four coordinate nodes, not four tokens or an invented hidden layer.');
+  assert.deepEqual(head.inputValues,head.row);
+  assert.deepEqual(head.outputs.map(o=>o.word),['the','water','teller','money']);
+  assert(head.outputs.every(o=>o.logit===o.expected));
+  assert.equal(head.edges.length,16,'Every displayed output reads all four input coordinates.');
+  assert(head.edges.every(e=>e.actual===e.expected));
+  assert(head.colours.every(Boolean),'Match Part I colours between nodes, equations, and definitions.');
+  assert.equal(new Set(head.probabilityColours).size,1,'Probability symbols and prose must share green.');
+  assert(head.text.includes('called')&&head.text.includes('in Part I')&&head.text.includes('Dots omit 16 output nodes'));
+  assert.equal(head.probability,head.expectedProbability);
+  assert.equal(head.denominator,head.expectedDenominator,'Normalize across the entire saved vocabulary.');
+  assert(head.calculation.includes('10.678')&&head.calculation.includes('0.094')&&head.calculation.includes('\\approx'));
+  assert(head.boundedLabels,'Every SVG label must fit within the drawing.');
+  assert.deepEqual(head.worksheet,head.expectedWorksheet);
   const matrix=await page.evaluate(()=>{
     const frame=document.getElementById('s01-frame-starting-row'),table=frame.querySelector('table');
     const rows=[...table.querySelectorAll('tbody tr')];
@@ -209,6 +251,12 @@ try{
   }
   await page.evaluate(()=>AT.present.exit());
   await page.setViewportSize({width:390,height:844});
+  for(const id of ['s02-frame-head','s02-frame-head-softmax']){
+    await page.locator('#'+id).scrollIntoViewIfNeeded();
+    assert(await page.locator('#'+id).evaluate(el=>el.scrollWidth<=el.clientWidth+1),'The head explanation must fit the phone article.');
+    await page.screenshot({path:path.join(screenshots,'phone-'+id+'.png')});
+  }
+  assert(await page.locator('#s02-head-worked').evaluate(el=>[el,...el.querySelectorAll('.dt-scroll,.katex-display')].every(node=>node.scrollWidth<=node.clientWidth+1)),'The worked water calculation must fit without a nested horizontal scrollbar (exclude KaTeX’s intentionally clipped accessibility tree).');
   await page.locator('#s02-frame-probabilities').scrollIntoViewIfNeeded();
   assert(await page.locator('#s02-frame-probabilities').evaluate(el=>el.scrollWidth<=el.clientWidth+1),'The baseline explanation must fit the phone article.');
   await page.screenshot({path:path.join(screenshots,'phone-baseline-takeaway.png')});
@@ -240,5 +288,5 @@ try{
   assert(phoneMatrix.fits&&phoneMatrix.scrolls.length===0,'The full sentence matrix must fit a phone.');
   await page.screenshot({path:path.join(screenshots,'phone-sentence-matrix.png')});
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({content,features,problem,matrix,samples,phone,phoneTable,phoneMatrix,screenshots,errors},null,2));
+  console.log(JSON.stringify({content,features,problem,head,matrix,samples,phone,phoneTable,phoneMatrix,screenshots,errors},null,2));
 }finally{await browser.close();}
