@@ -1,5 +1,10 @@
 # Classroom release checks
 
+## 2026-09-14: label weighted contribution columns at their reveal
+
+- Each of the eight value headers in Section 6's multiplication table now gains a rose alpha_j × prefix when the weighted cells appear at build 2. Feature names stay teal and keep their original order. The prefix remains for the column sums, disappears when returning to original values, and stays visible in reading mode with the weighted table. The presentation skill guided the existing palette, aligned header labels and unchanged reveal sequence. No additional slide, model, shared-runtime or dependency changes.
+- Regression checks all eight prefixes against the cell reveal states, backward navigation, colour matching, feature order and column bounds, together with all existing retrieval arithmetic. A focused final-layout check verifies aligned multipliers and phone reading labels. Visually inspected the original, weighted and summed desktop states and phone scrolling. All 325 presentation states / 557 formulas, 151 controls and 390px article QA pass. Stored values, weighted products and column sums are unchanged.
+
 ## 2026-09-14: reconnect the score table to query–key matching
 
 - Section 6's second frame now explicitly identifies the same gradient-information query and six video keys, defines each score as s_j = q dot k_j, and expands Backpropagation's four coordinate products to 4.8. The presentation skill guided reuse of the query/key colours and the existing rose score colour in both text and arithmetic. No new slide or reveal. The table, original numbers and clickable worksheets remain intact.

@@ -24,6 +24,7 @@ F1–F3 introduce attention and mark the retrieval detour. F4–F7 establish a q
 
 ## s06 Hard to soft
 F1 explain hard retrieval with matching query/key/value colours in prose and math, label the match score and define the winning video index j*. F2 connects the six scores to the same query/key dot products and expands Backpropagation's 4.8 with matching query/key/score colours. Later slider interventions are explicitly labelled when revisiting the table. F3 define exponentiation and division by the common total. F4 compare hard/soft weights in an aligned three-decimal table. F5 starts with the same eight original value coordinates, then reveals weights, weighted rows and their eight-coordinate sum. F6 interprets that 1×8 result on the same content axes. F7 changes one score and updates all weights. F8 changes temperature. The eight source values and their order remain fixed throughout. Full result cards and arithmetic worksheets remain in reading mode.
+  F5 header labels: feature names alone for original values, then alpha_j × feature name when the weighted cells appear. The multiplier stays for the column sums and reverses with backward navigation. Reading mode shows weighted headers with weighted cells.
   Notes: "If Gradient Descent's score rises to 4.8 too, what should come back?" These are weights over available records, not next-token probabilities. Numeric tables identify the current temperature when it differs from one.
 
 ## s07 Tokens as records

@@ -191,11 +191,13 @@ try{
   }
   // Same eight source coordinates in the next section, before and after weighting.
   for(const id of ['s05-vals','s05-return-value','s06-mix','s06-card-mix']){
-    const headers=await page.locator('#'+id+' thead th:not(.dt-comp):not(.dt-lead)').allTextContents();
-    assert.deepEqual(headers.slice(1).map(s=>s.trim().toLowerCase()),valueAxes);
+    const headers=id==='s06-mix'
+      ?await page.locator('#s06-mix .s06-value-axis').allTextContents()
+      :(await page.locator('#'+id+' thead th:not(.dt-comp):not(.dt-lead)').allTextContents()).slice(1);
+    assert.deepEqual(headers.map(s=>s.trim().toLowerCase()),valueAxes);
   }
   for(const id of valueFrames){
-    for(const build of id==='s06-frame-weighted-values'?[0,1,2,3,0,3]:id==='s05-frame-values'?[0]:['s05-frame-return','s05-frame-payload'].includes(id)?[0,1,2,0,2]:[0,1]){
+    for(const build of id==='s06-frame-weighted-values'?[0,1,2,3,1,0,2,3]:id==='s05-frame-values'?[0]:['s05-frame-return','s05-frame-payload'].includes(id)?[0,1,2,0,2]:[0,1]){
       await go(id,build);await page.screenshot({path:path.join(shots,id+'-'+build+'.png')});
       if(id==='s06-frame-weighted-values'){
         const view=await page.locator('#s06-mix .s06-mix-value').evaluateAll(cells=>cells.map(cell=>{
@@ -203,6 +205,23 @@ try{
           return {raw:getComputedStyle(raw).display!=='none',weighted:getComputedStyle(weighted).display!=='none'&&getComputedStyle(weighted).visibility==='visible'};
         }));
         assert(view.every(v=>v.raw===(build<2)&&v.weighted===(build>=2)),'Original and weighted entries have distinct reveal stages.');
+        const headers=await page.locator('#s06-mix .s06-weight-label').evaluateAll(es=>es.map(e=>({
+          shown:getComputedStyle(e).display!=='none'&&getComputedStyle(e).visibility==='visible',
+          math:e.querySelector('annotation').textContent,
+          alphaColor:getComputedStyle(e.querySelector('.m-a')).color,
+          axis:e.nextElementSibling.textContent,
+          axisColor:getComputedStyle(e.nextElementSibling).color,
+          clipped:[e,e.nextElementSibling].some(label=>{
+            const box=e.closest('th').getBoundingClientRect(),range=document.createRange();range.selectNodeContents(label);
+            return [...range.getClientRects()].some(r=>r.width>0&&(r.left<box.left-1||r.right>box.right+1));
+          })
+        })));
+        assert.equal(headers.length,8);
+        assert.deepEqual(headers.map(h=>h.axis),valueAxes);
+        assert(headers.every(h=>h.shown===(build>=2)&&h.math==='\\va{\\alpha_j}\\times'&&!h.clipped),'Every header gains alpha_j times at the same stage as its weighted cells, and reverses without clipping.');
+        const alphaColor=await page.locator('#s06-mix th.dt-lead .m-a').evaluate(e=>getComputedStyle(e).color);
+        const valueColor=await page.locator('#s05-role-value-label .m-v').evaluate(e=>getComputedStyle(e).color);
+        assert(headers.every(h=>h.alphaColor===alphaColor&&h.axisColor===valueColor),'Weights stay rose and feature names stay teal.');
       }
     }
   }
@@ -256,6 +275,7 @@ try{
   assert.deepEqual(await matrix('s05-query-vector'),[queries[0]],'New search visits keep the original query reset.');
   assert.equal(await page.evaluate(()=>JSON.stringify({model:AT.model,p:AT.forward(AT.sentences.river).probs})),model);
   await page.evaluate(()=>AT.present.exit());await page.setViewportSize({width:390,height:844});
+  assert.equal(await page.locator('#s06-mix .s06-weight-label:visible').count(),8,'Reading mode labels the weighted contributions it displays.');
   for(const id of [...queryFrames,...keyFrames,...valueFrames,'s06-frame-hard-retrieval','s06-frame-scores']){
     await page.locator('#'+id).scrollIntoViewIfNeeded();
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No phone document overflow.');

@@ -6471,6 +6471,9 @@ body.present #s06 .score-origin{font-size:24px}
 #s06 .calc-rl.calc-outlab{color:var(--ink-2)}
 #s06 .s06-stage{display:contents}
 #s06 .s06-raw{display:none}
+#s06 .s06-weight-label{display:block;color:var(--ink-2);text-transform:none;letter-spacing:0;margin-bottom:4px}
+#s06 .s06-value-axis{display:block;color:var(--c-v)}
+body.present #s06 .s06-value-axis{min-height:2.4em}
 #s06 .result-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 12px}
 #s06 .result-card{display:grid;grid-template-columns:72px minmax(0,1fr) auto;gap:5px 9px;align-items:start;border:1px solid var(--line);border-radius:var(--radius-s);padding:8px;background:var(--card);transition:opacity var(--dur),border-color var(--dur),box-shadow var(--dur)}
 #s06 .result-card.is-winner{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
@@ -6613,7 +6616,7 @@ In soft mode, exponentiate each score and divide by the total. Switch to hard mo
 
 <div class="frame" id="s06-frame-weighted-values" data-title="Multiply each value by its own weight, then add" data-autobuild="off">
 <script type="text/x-notes">Which value does alpha_j multiply?
-The value from the same item j. First reveal the alpha column, then the weighted coordinates, then the sum. This changes the returned information, not the stored video records.</script>
+The value from the same item j. First reveal the alpha column, then the weighted coordinates, then the sum. At the multiplication step, each feature header gains alpha_j times: every cell now contains that video's weighted contribution to the named feature. Going back restores the original feature headers and values. The footer adds each column's contributions. This changes the returned information, not the stored video records.</script>
 <div class="card">
   <div id="s06-mix"></div>
   <p class="look">Same eight value coordinates. Displayed numbers are rounded. The sum uses unrounded weights.</p>
@@ -6787,6 +6790,13 @@ Its weight approaches one. If top scores tie, those top items keep sharing the w
     note: 'Hover or focus a footer cell to see the weighted terms. Weights are shown rounded to three decimals; the sum uses the unrounded ones.' });
   const alphaHead = mix.table.querySelector('thead th.dt-lead');
   if (alphaHead) alphaHead.setAttribute('data-build', '1');
+  const valueHeads = [...mix.table.querySelectorAll('thead th')].slice(2);
+  valueHeads.forEach((th, c) => {
+    const multiplier = AT.h('span', { class: 's06-weight s06-weight-label', 'data-build': '2' });
+    AT.tex(multiplier, '\\va{\\alpha_j}\\times');
+    AT.clear(th);
+    th.append(multiplier, AT.h('span', { class: 's06-value-axis' }, VAL_AXES[c]));
+  });
   mix.leadCells.forEach(r => r.forEach(td => td.setAttribute('data-build', '1')));
   const footRow = mix.footer.label && mix.footer.label.closest('tr');
   if (footRow) footRow.setAttribute('data-build', '3');
