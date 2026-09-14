@@ -443,17 +443,20 @@ try{
   await page.screenshot({path:path.join(shots,'retrieval-detour.png')});
   await page.evaluate(()=>AT.present.next());await page.waitForTimeout(100);
   assert.equal(await page.locator('#s05 .frame.is-live').getAttribute('id'),'s05-frame-search');
-  assert(!(await visibleCopy('s05-frame-search')).includes('Two separate jobs'),'Use a concrete matching topic and returned explanation instead of the abstract callout.');
+  assert(!/\b(key|value)\b/i.test(await visibleCopy('s05-frame-search')),'Establish the learner request before source roles.');
   const searchExamples=[
     {title:'Backpropagation',topic:'how gradients flow backwards',summary:'The chain rule applied layer by layer, from the loss back to every weight.'},
     {title:'Regularisation',topic:'how models avoid overfitting',summary:'Penalise complexity so the model generalises beyond its training data.'}
   ];
   for(const [query,example]of searchExamples.entries()){
+    await goSearch('s05-frame-search');
     await page.locator('#s05-qbtns button').nth(query).click();
+    await goSearch('s05-frame-three-jobs');
     for(const build of [0,1,0,1]){
       await page.evaluate(b=>AT.present.setBuild(b),build);await page.waitForTimeout(250);
       assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow);
-      assert.equal(await page.locator('.search-example').evaluate(e=>getComputedStyle(e).visibility),build?'visible':'hidden');
+      assert.equal(await page.locator('.search-example>div').first().evaluate(e=>getComputedStyle(e).visibility),'visible');
+      assert.equal(await page.locator('.search-example>div').last().evaluate(e=>getComputedStyle(e).visibility),build?'visible':'hidden');
       assert.equal(await page.locator('#s05-example-title').textContent(),example.title);
       assert.equal(await page.locator('#s05-example-topic').textContent(),example.topic);
       assert.equal(await page.locator('#s05-example-explanation').textContent(),example.summary);
@@ -467,6 +470,7 @@ try{
     return ['k','v'].map(role=>[c('.search-example h3.sym-'+role),c('.retrieval-roles .sym-'+role)]);
   });
   searchColours.forEach(pair=>assert.equal(...pair,'Keep the example labels in the established key/value colours.'));
+  await goSearch('s05-frame-search');
   await page.locator('#s05-qbtns button').nth(1).click();
   await goSearch('s05-frame-results');
   assert.equal(await page.locator('#s05-vgrid .is-top .vt').textContent(),'Regularisation','The overfitting request still ranks the matching source first.');

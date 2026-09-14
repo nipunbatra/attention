@@ -170,6 +170,28 @@ body.present #s05 .retrieval-roles{grid-template-columns:115px minmax(0,1fr);gap
 body.present #s05 .search-example{font-size:24px;gap:36px}
 body.present #s05 .search-example h3{font-size:22px}
 @media(max-width:640px){body:not(.present) #s05 .search-example{grid-template-columns:1fr}}
+#s05 .concept-copy{font-size:19px;line-height:1.4}
+#s05 .concept-copy p{margin:14px 0}
+#s05 .axis-definitions{display:grid;grid-template-columns:200px minmax(0,1fr);gap:18px 24px;margin:24px 0}
+#s05 .axis-definitions dt{font-weight:700;color:var(--c-q)}
+#s05 .axis-definitions dd{margin:0}
+#s05 .teaching-table .dt{width:100%;min-width:640px}
+#s05 .teaching-table .dt-fig{margin:18px 0}
+#s05 .teaching-table .dt th:first-child{min-width:145px}
+#s05 .teaching-table .dt td{min-width:85px}
+#s05 .teaching-table td.is-axis-focus{font-weight:750;color:var(--oc);box-shadow:inset 0 -3px var(--oc)}
+#s05 .teaching-table tr.is-selected th{font-weight:750;box-shadow:inset 3px 0 var(--c-q)}
+#s05 .source-description{border-left:3px solid var(--c-k);padding:12px 20px;margin:18px 0}
+#s05 .source-description h3{font-size:26px;margin:0 0 10px;color:var(--c-k)}
+#s05 .source-description p{margin:0}
+#s05 .concept-note{font-size:16px;color:var(--ink-2);margin:16px 0}
+body.present #s05 .concept-copy{font-size:26px;line-height:1.35}
+body.present #s05 .axis-definitions{grid-template-columns:270px minmax(0,1fr);gap:22px 28px}
+body.present #s05 .source-description h3{font-size:30px}
+body.present #s05 .concept-note{font-size:22px;line-height:1.35}
+body.present #s05 .teaching-table .dt td,body.present #s05 .teaching-table .dt th{font-size:22px;padding:9px 10px}
+body.present #s05 #s05-key-collection .dt td,body.present #s05 #s05-key-collection .dt th{padding:6px 10px}
+@media(max-width:640px){body:not(.present) #s05 .axis-definitions{grid-template-columns:1fr;gap:6px}body:not(.present) #s05 .axis-definitions dd{margin-bottom:14px}}
 </style>
 <header class="sec-head">
   <span class="sec-num">05</span>
@@ -224,13 +246,13 @@ Information retrieval means finding useful information in a collection. Mark thi
 </div>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Think of searching a video site. For each item, we need to decide whether it matches our request and what information to return. In this example, each video has a key for matching and a value for returning. The first table puts the query above six keys so you can compare their coordinates. Each score on the right is a dot product. Switch to the overfitting question and see which item now scores highest. Its key helps us choose it; its value is what we receive.</p>
+  <p>We will first express several questions as query vectors. Each coordinate has a named topic in this example, and a larger number represents a stronger request for that topic. After comparing the questions, we will describe videos on the same axes, then calculate which descriptions best match the request. These numerical examples are chosen by hand to make the roles visible. Learned representations do not generally have one human-readable topic per coordinate.</p>
 </div>
 
-<div class="frame" id="s05-frame-search" data-title="A search box" data-autobuild="off">
+<div class="frame" id="s05-frame-search" data-title="A query says what we want to know" data-autobuild="off">
   <script type="text/x-notes">
-What does the site compare, and what does it hand back?
-Read the request and connect it to the first role on the detour slide: query. Ask which topic would help answer it, then reveal the concrete example. For the gradients question, Backpropagation's key emphasizes gradient flow. The information we receive is its explanation of the chain rule, not the topic label. Switching to overfitting changes the example to Regularisation and its explanation about penalising complexity. The example uses the same selected video and summary as the following result and return slides. The English topic description previews the strongest feature of its illustrative key; later we show the vector and matching calculation. These are hand-chosen search examples, not results from a live video site.
+What does the learner want to know?
+Read each question before discussing numbers. The gradients question asks how derivatives travel backwards, while the updates question asks how an optimiser changes weights. Overfitting asks about generalisation, and the convolution question asks about architecture. The learner's request is the query. Establish this role on its own. The following slides name the axes, show an individual query vector, and compare all four requests before introducing source descriptions.
 
 Timing: two minutes.
   </script>
@@ -244,40 +266,92 @@ Timing: two minutes.
     </div>
     <div class="btn-row" id="s05-qbtns" data-keep-state></div>
   </div>
-  <div class="search-example" data-build="1">
-    <div>
-      <h3 class="sym-k">1. Match the topic (key)</h3>
-      <p><strong id="s05-example-title"></strong> covers <span id="s05-example-topic" class="sym-k"></span>.</p>
-    </div>
-    <div>
-      <h3 class="sym-v">2. Get its explanation (value)</h3>
-      <p id="s05-example-explanation"></p>
-    </div>
+  <div class="callout callout-key" data-build="1">A <span class="sym-q">query</span> represents the information the learner wants. Change the question and the request changes.</div>
+</div>
+
+<div class="frame" id="s05-frame-query-axes" data-title="Four named axes for the request" data-autobuild="off">
+  <script type="text/x-notes">What will each number mean?
+Define every axis before showing a numerical row. Contrast gradient flow with optimisation: computing derivatives is different from using them to update weights. These four axes and all example numbers are hand-chosen, not measured probabilities. Real learned coordinates can mix many features and may be negative. The fixed order matters: the third coordinate always refers to architecture in this search example.</script>
+  <div class="concept-copy">
+    <p>Represent the request with <strong>four numbers in a fixed order</strong>.</p>
+    <dl class="axis-definitions">
+      <dt>1. Gradient flow</dt><dd>How derivatives travel backwards through layers.</dd>
+      <dt>2. Optimisation</dt><dd>How we use gradients to update weights.</dd>
+      <dt>3. Architecture</dt><dd>How a network's layers are structured.</dd>
+      <dt>4. Generalisation</dt><dd>How a model avoids overfitting to training data.</dd>
+    </dl>
+    <p data-build="1">A larger number means a stronger request for that topic. <strong>These are not probabilities.</strong></p>
+    <p class="concept-note" data-build="1">We choose the axes and numbers by hand. Learned coordinates need not have these names.</p>
   </div>
 </div>
 
-<div class="frame" id="s05-frame-results" data-title="The same collection can answer different queries" data-autobuild="off">
-  <script type="text/x-notes">Which result would you expect for this question?
-These are the same six items for both queries. Their rank changes with the request, but the item descriptions and content do not.</script>
-  <div class="card">
-    <h3 class="card-title s05-qtext"></h3>
-    <div class="search-meta"><span id="s05-result-count">Six results, ranked by key score</span><span class="companion">Open a result to see its key calculation and value.</span></div>
-    <div class="vgrid" id="s05-vgrid"></div>
-  </div>
-</div>
-
-<div class="frame" id="s05-frame-request" data-title="Represent the request on matching axes" data-autobuild="off">
+<div class="frame" id="s05-frame-request" data-title="A query becomes four numbers" data-autobuild="off">
   <script type="text/x-notes">What does the query ask for most strongly?
-Read the request before the named features. These are hand-chosen matching features for intuition; the query and keys will use the same axes.</script>
-  <div class="card">
+Read the selected question, then each of the four coordinates under its axis name. For the first request, gradient flow 2.0 dominates, optimisation 0.6 and architecture 0.2 contribute less, and generalisation is exactly zero. Do not describe a small nonzero coordinate as absent. The row has shape one by four. Switching the question changes the numbers, not the axes or width. The choices illustrate a representation; we have not trained a text encoder.</script>
+  <div>
     <div class="qbox obj-q"><span class="qk">Query</span><span class="qt s05-qtext" id="s05-qtext"></span></div>
-    <div class="btn-row s05-present-only" id="s05-score-qbtns" data-keep-state></div>
-    <p class="look" id="s05-qread"></p>
+    <div class="btn-row" id="s05-score-qbtns" data-keep-state></div>
+    <div class="teaching-table" id="s05-query-vector"></div>
+    <p class="look" id="s05-qread" data-build="1"></p>
+    <p class="concept-note">$\vq{q}$ is one row of four numbers: $1\times4$. Underlined numbers mark the strongest topic.</p>
   </div>
-  <div class="callout callout-key" data-build="1">The <span class="sym sym-q">query</span> describes the request. Each item's <span class="sym sym-k">key</span> describes when it is a useful match.</div>
 </div>
 
-<div class="frame" data-title="Compare the query with each key" data-autobuild="off">
+<div class="frame" id="s05-frame-query-examples" data-title="Different questions, different query vectors" data-autobuild="off">
+  <script type="text/x-notes">Which coordinate changes most when the question changes?
+Compare the four requests under the same headers. Ask students to point to the strongest axis before reading its name. The first two query vectors are the original gradients and overfitting examples; the added convolution and weight-update requests emphasize architecture and optimisation. Underlined entries show the maximum in each row. Different questions can share smaller topic signals. The numbers are hand-chosen illustrative features, not normalized probabilities or word counts.</script>
+  <div class="concept-copy">
+    <p>Every request uses <strong>the same axes in the same order</strong>.</p>
+    <div class="teaching-table" id="s05-query-examples"></div>
+    <p class="concept-note" data-build="1">The question changes the row. Its width stays four, even when the question has more words.</p>
+  </div>
+</div>
+
+<div class="frame" id="s05-frame-key-idea" data-title="A key describes what a source covers" data-autobuild="off">
+  <script type="text/x-notes">When would this video help someone?
+We have established the query as the learner's request. Now switch perspective to a stored source. Read the Backpropagation description, then ask students which of the four topics it covers. A key is the source's representation for matching against a request. Its description is attached to the video and does not change just because a different learner asks a different question. Source keys will use exactly the same four axes as queries.</script>
+  <div class="concept-copy">
+    <div class="source-description"><h3>Video 1: Backpropagation</h3><p>The chain rule applied layer by layer, from the loss back to every weight.</p></div>
+    <p>Which topic does this video cover most strongly?</p>
+    <p data-build="1">Its <span class="sym-k">key</span> describes the source: <strong class="sym-k">gradient flow</strong> is the main topic.</p>
+    <p class="concept-note" data-build="1"><span class="sym-q">Query: what the learner wants.</span> <span class="sym-k">Key: what the video covers.</span></p>
+  </div>
+</div>
+
+<div class="frame" id="s05-frame-key-vector" data-title="Backpropagation on the same four axes" data-autobuild="off">
+  <script type="text/x-notes">How do we describe this source numerically?
+Read all four entries of video 1's key k1. Gradient flow 2.2 is strongest, optimisation 0.6 is smaller, architecture 0.2 is small but nonzero, and generalisation is zero. The subscript 1 identifies the first video, not the first coordinate. We reused the query's axis order and width so corresponding topics can be compared. These are the original illustrative key numbers. Save dot products for after the other source examples.</script>
+  <div class="concept-copy">
+    <p><strong>Video 1: Backpropagation.</strong> One description, four topic strengths.</p>
+    <div class="teaching-table" id="s05-key-first"></div>
+    <p data-build="1"><strong class="sym-k">2.2 under gradient flow</strong> is strongest. Optimisation 0.6 and architecture 0.2 are smaller. Generalisation is 0.0.</p>
+    <p class="concept-note">$\vk{k_1}$ means the key of video 1. It has the same $1\times4$ shape and axis order as $\vq{q}$.</p>
+  </div>
+</div>
+
+<div class="frame" id="s05-frame-key-examples" data-title="Different videos, different keys" data-autobuild="off">
+  <script type="text/x-notes">Which axis should dominate for this video?
+Start with CNNs, then compare Regularisation and Gradient descent. Read the description first and predict the strongest topic before revealing the row. Each source has a fixed key on the same four axes. The controls choose a source record, not a learner's question; they do not change the selected query. All source keys come from the original illustrative data.</script>
+  <div class="btn-row" id="s05-key-example-buttons" data-keep-state></div>
+  <div class="concept-copy">
+    <div class="source-description"><h3 id="s05-key-example-title"></h3><p id="s05-key-example-description"></p></div>
+    <div data-build="1">
+      <div class="teaching-table" id="s05-key-example-vector"></div>
+      <p class="concept-note" id="s05-key-example-read"></p>
+    </div>
+  </div>
+</div>
+
+<div class="frame" id="s05-frame-key-collection" data-title="New query, same source keys" data-autobuild="off">
+  <script type="text/x-notes">Which row changes when the learner asks a new question?
+Use the query buttons and watch only the purple row change. All six orange key rows remain fixed. Every column refers to the same topic above and below. There are no match scores on this slide yet: students should first see the request and stored descriptions as separate objects. The next frame will multiply corresponding coordinates to compare them. Fixed here means fixed for this collection and representation, not that keys can never change during training.</script>
+  <div class="btn-row" id="s05-collection-qbtns" data-keep-state></div>
+  <p class="look s05-qtext"></p>
+  <div class="teaching-table" id="s05-key-collection"></div>
+  <p class="concept-note">Only the <span class="sym-q">request row</span> changes. Every <span class="sym-k">video key</span> keeps its four numbers.</p>
+</div>
+
+<div class="frame" id="s05-frame-matching" data-title="Compare the query with each key" data-autobuild="off">
   <script type="text/x-notes">
 Which column decides the winner here?
 Point at the query row and read it aloud: mostly gradient flow. Reveal the scores one row at a time and let the room predict each before it appears. Then the equation: a score is the dot product of the query row with a key row, nothing else. Switch to the overfitting question and repeat quickly.
@@ -297,14 +371,29 @@ Timing: four minutes.
   </div>
 </div>
 
-<div class="frame" id="s05-frame-three-jobs" data-title="Three representations, three different jobs" data-autobuild="off">
-  <script type="text/x-notes">Which pair decides relevance, and which object travels?
-Read query and key as matching roles. Reveal value last: it is the payload associated with the matched item, not another matching score.</script>
-  <div class="grid-3" style="margin:20px 0">
-    <div class="slogan obj-q"><span class="big">Q</span><span class="txt">What am I looking for?<small>the query, formed by the searcher</small></span></div>
-    <div class="slogan obj-k" data-build="1"><span class="big">K</span><span class="txt">When should you retrieve me?<small>the key, one per item, used for matching</small></span></div>
-    <div class="slogan obj-v" data-build="2"><span class="big">V</span><span class="txt">What information do I send?<small>the value, one per item, the payload</small></span></div>
+<div class="frame" id="s05-frame-results" data-title="The same collection can answer different queries" data-autobuild="off">
+  <script type="text/x-notes">Which result wins for this question?
+These are the same six items for all four queries. We have already compared the query with their keys. Rank changes with the request, but the source descriptions and content do not.</script>
+  <div class="card">
+    <h3 class="card-title s05-qtext"></h3>
+    <div class="search-meta"><span id="s05-result-count">Six results, ranked by key score</span><span class="companion">Open a result to see its key calculation and value.</span></div>
+    <div class="vgrid" id="s05-vgrid"></div>
   </div>
+</div>
+
+<div class="frame" id="s05-frame-three-jobs" data-title="Matching topics and returned information" data-autobuild="off">
+  <script type="text/x-notes">Which pair decides relevance, and which object travels?
+The selected query has chosen a source through its key. For gradients, Backpropagation matches the topic and returns the chain-rule explanation. For overfitting, Regularisation returns its explanation about penalising complexity. Reveal the returned information as the value. The content and the matching description have different jobs. Both come from the same selected source. The following slide gives the information a numerical value representation.</script>
+  <div class="prose"><p>We found a video for the <span class="sym-q">query</span>: <strong class="s05-qtext"></strong></p></div>
+  <div class="search-example">
+    <div><h3 class="sym-k">1. Match the topic (key)</h3><p><strong id="s05-example-title"></strong> covers <span id="s05-example-topic" class="sym-k"></span>.</p></div>
+    <div data-build="1"><h3 class="sym-v">2. Get its explanation (value)</h3><p id="s05-example-explanation"></p></div>
+  </div>
+  <div class="companion"><div class="grid-3" style="margin:20px 0">
+    <div class="slogan obj-q"><span class="big">Q</span><span class="txt">What am I looking for?<small>the query, formed by the searcher</small></span></div>
+    <div class="slogan obj-k"><span class="big">K</span><span class="txt">When should you retrieve me?<small>the key, one per item, used for matching</small></span></div>
+    <div class="slogan obj-v"><span class="big">V</span><span class="txt">What information do I send?<small>the value, one per item, the payload</small></span></div>
+  </div></div>
 </div>
 
 <div class="frame" data-title="The value is a different table" data-autobuild="off">
@@ -355,8 +444,10 @@ The numeric value and content of that same item arrive. Keep the source pairing 
     { title: 'Regularisation',      kind: 'regularise', duration: '11:43', k: [0.1, 0.5, 0.0, 2.0], v: [0.2, 0.7, 0.1], summary: 'Penalise complexity so the model generalises beyond its training data.' }
   ];
   const QUERIES = [
-    { short: 'Query 1: gradients',   text: 'How does a neural network send gradient information backwards?', q: [2.0, 0.6, 0.2, 0.0] },
-    { short: 'Query 2: overfitting', text: 'How do I stop overfitting?',                                      q: [0.0, 0.4, 0.1, 2.0] }
+    { short: 'Query 1: gradients',   label: 'How do gradients flow?', text: 'How does a neural network send gradient information backwards?', q: [2.0, 0.6, 0.2, 0.0] },
+    { short: 'Query 2: overfitting', label: 'How do I stop overfitting?', text: 'How do I stop overfitting?', q: [0.0, 0.4, 0.1, 2.0] },
+    { short: 'Query 3: CNNs', label: 'How do CNNs work?', text: 'How do convolution layers process an image?', q: [0.0, 0.1, 2.0, 0.0] },
+    { short: 'Query 4: updates', label: 'How do I update weights?', text: 'How should I update weights using gradients?', q: [0.2, 2.0, 0.0, 0.1] }
   ];
   const titles = VIDEOS.map(V => V.title);
   let qi = 0;
@@ -453,7 +544,7 @@ The numeric value and content of that same item arrive. Keep the source pairing 
   }
 
   /* frame 2: query presets, the query box (one per frame, kept in step), the score table */
-  const qBtnGroups = [S.querySelector('#s05-qbtns'), S.querySelector('#s05-score-qbtns')].map(host => QUERIES.map((Q, i) => {
+  const qBtnGroups = ['#s05-qbtns','#s05-score-qbtns','#s05-collection-qbtns'].map(selector => QUERIES.map((Q, i) => {
     const b = AT.h('button', { type: 'button', class: 'btn', 'aria-pressed': i === qi ? 'true' : 'false' }, Q.short);
     b.addEventListener('click', () => {
       qi = i;
@@ -461,12 +552,47 @@ The numeric value and content of that same item arrive. Keep the source pairing 
       draw();
       syncBuilds();
     });
-    host.appendChild(b);
+    S.querySelector(selector).appendChild(b);
     return b;
   }));
   const qtexts = Array.from(S.querySelectorAll('.s05-qtext'));
   const dotHost = S.querySelector('#s05-dot');
   const topline = S.querySelector('#s05-topline');
+
+  /* Query-first teaching rows, then four source-key frames, all using the same data. */
+  const topicCols = KEY_AXES.map(label => ({label}));
+  const queryVector = AT.ui.table([QUERIES[qi].q], {cols:topicCols,rowLabels:['$\\vq{q}$'],rowCls:'q',decimals:1,cornerLabel:'request',into:S.querySelector('#s05-query-vector')});
+  const queryExamples = AT.ui.table(QUERIES.map(Q=>Q.q), {cols:topicCols,rowLabels:QUERIES.map((Q,i)=>(i+1)+'. '+Q.label),rowCls:'q',decimals:1,cornerLabel:'question',into:S.querySelector('#s05-query-examples')});
+  const firstKey = AT.ui.table([VIDEOS[0].k], {cols:topicCols,rowLabels:['$\\vk{k_1}$'],rowCls:'k',decimals:1,cornerLabel:'video 1',into:S.querySelector('#s05-key-first')});
+  const keyCollection = AT.ui.table([QUERIES[qi].q,...VIDEOS.map(V=>V.k)], {cols:topicCols,rowLabels:['$\\vq{q}$',...VIDEOS.map((V,j)=>(j+1)+'. '+V.title)],rowCls:['q',...VIDEOS.map(()=>'k')],decimals:1,cornerLabel:'request / video',into:S.querySelector('#s05-key-collection')});
+  function markStrongest(fig, rows){
+    rows.forEach((row,r)=>fig.cells[r].forEach((cell,c)=>cell.classList.toggle('is-axis-focus',row[c]===Math.max(...row))));
+  }
+  function conceptReading(row){
+    const top=AT.argmax(row), detail=c=>KEY_AXES[c]+' ('+AT.fmt(row[c],1)+')';
+    const smaller=row.flatMap((x,c)=>x>0&&c!==top?[detail(c)]:[]), zero=row.flatMap((x,c)=>x===0?[KEY_AXES[c]]:[]);
+    return 'Strongest topic: '+detail(top)+'.'+(smaller.length?' Smaller signals: '+smaller.join(', ')+'.':'')+(zero.length?' Zero signal: '+zero.join(', ')+'.':'');
+  }
+  markStrongest(queryExamples,QUERIES.map(Q=>Q.q));
+  markStrongest(firstKey,[VIDEOS[0].k]);
+  let exampleSource=2;
+  const keyExample = AT.ui.table([VIDEOS[exampleSource].k], {cols:topicCols,rowLabels:['$\\vk{k_3}$'],rowCls:'k',decimals:1,cornerLabel:'source key',into:S.querySelector('#s05-key-example-vector')});
+  const keyButtons=[2,5,1].map(j=>{
+    const b=AT.h('button',{type:'button',class:'btn','aria-pressed':j===exampleSource?'true':'false',dataset:{source:j}},VIDEOS[j].title);
+    b.addEventListener('click',()=>{exampleSource=j;drawKeyExample();syncBuilds();});
+    S.querySelector('#s05-key-example-buttons').appendChild(b);return b;
+  });
+  function drawKeyExample(){
+    const V=VIDEOS[exampleSource];
+    S.querySelector('#s05-key-example-title').textContent='Video '+(exampleSource+1)+': '+V.title;
+    S.querySelector('#s05-key-example-description').textContent=V.summary;
+    keyExample.update([V.k]);
+    keyExample.rowEls[0].querySelector('th').innerHTML=AT.texStr('\\vk{k_'+(exampleSource+1)+'}');
+    markStrongest(keyExample,[V.k]);
+    S.querySelector('#s05-key-example-read').textContent=conceptReading(V.k);
+    keyButtons.forEach(b=>b.setAttribute('aria-pressed',+b.dataset.source===exampleSource?'true':'false'));
+  }
+  drawKeyExample();
 
   /* frame 3: value table, its own columns plus the summary text that is handed back */
   const vals = AT.ui.table(VIDEOS.map(V => V.v), { cols: VAL_AXES.map(a => ({ label: a, cls: 'v' })), rowLabels: titles, rowCls: 'v', cornerLabel: 'video', decimals: 1,
@@ -509,7 +635,10 @@ The numeric value and content of that same item arrive. Keep the source pairing 
     S.querySelector('#s05-example-title').textContent = VIDEOS[top].title;
     S.querySelector('#s05-example-topic').textContent = KEY_TOPICS[rk.top];
     S.querySelector('#s05-example-explanation').textContent = VIDEOS[top].summary;
-    qread.innerHTML = 'Reading the query row: it asks mainly for ' + AT.escape(rq.main) + (rq.rest ? ', a little ' + AT.escape(rq.rest) : '') + (rq.off.length ? ', and not for ' + AT.escape(rq.off.join(' or ')) : '') + '.';
+    queryVector.update([Q.q]);markStrongest(queryVector,[Q.q]);
+    queryExamples.rowEls.forEach((row,j)=>row.classList.toggle('is-selected',j===qi));
+    keyCollection.update([Q.q,...VIDEOS.map(V=>V.k)]);markStrongest(keyCollection,[Q.q,...VIDEOS.map(V=>V.k)]);
+    qread.textContent = conceptReading(Q.q);
     kread.innerHTML = 'Reading the key of ' + AT.escape(VIDEOS[top].title) + ': it offers mainly ' + AT.escape(rk.main) + (rk.rest ? ', some ' + AT.escape(rk.rest) : '') + (rk.top === rq.top ? '. Its largest entry sits in the column the query asks for most, so the products add up.' : '.');
     vread.innerHTML = 'Reading the value of ' + AT.escape(VIDEOS[top].title) + ': it sends mainly ' + AT.escape(rv.main) + (rv.rest ? ', a little ' + AT.escape(rv.rest) : '') + '. That, plus the summary, is what the searcher receives.';
     dot.keyRows.forEach((tr, j) => {
