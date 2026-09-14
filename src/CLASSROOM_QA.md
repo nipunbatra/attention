@@ -1,5 +1,11 @@
 # Classroom release checks
 
+## 2026-09-14: make the search-box distinction concrete
+
+- Replaced the abstract two-jobs callout on the existing search frame with a paired example: a named video's matching topic, followed by the explanation it returns. The gradients question shows Backpropagation and its chain-rule explanation; the overfitting question shows Regularisation and its explanation about penalising complexity. Both update from the existing winning source and summary, while the plain-language topic follows its strongest key feature. No numerical search data changed.
+- The presentation skill guided the concrete example, flat side-by-side layout and matching key/value colours. The existing first reveal displays both parts together; the phone article stacks them in reading order. Teaching notes connect the topic description to the later illustrative key vector and distinguish the example from a live video search. No additional slide or repetition of the scoring arithmetic was added.
+- Regression checks both queries at repeated forward/back reveal states, exact returned summaries, consistency with the later results, reset behaviour, colours and phone bounds. Visually inspected both desktop examples and phone layouts. All 309 presentation states / 542 formulas, 132 controls, eight independent live/reference cases (7,980 finite values, max error 8.88e-16), and 390px article QA pass. Model parameters, Part I, shared runtime, dependencies and PDFs are unchanged.
+
 ## 2026-09-14: mark the retrieval detour and the return to tokens
 
 - Turned the existing information-retrieval introduction into a prominent section break immediately before the search box. It previews query, key and value in their established colours, explains the connection to the alpha weights, and promises a return to bank and river. This replaces the brief introduction rather than adding a second detour slide.

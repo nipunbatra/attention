@@ -443,6 +443,30 @@ try{
   await page.screenshot({path:path.join(shots,'retrieval-detour.png')});
   await page.evaluate(()=>AT.present.next());await page.waitForTimeout(100);
   assert.equal(await page.locator('#s05 .frame.is-live').getAttribute('id'),'s05-frame-search');
+  assert(!(await visibleCopy('s05-frame-search')).includes('Two separate jobs'),'Use a concrete matching topic and returned explanation instead of the abstract callout.');
+  const searchExamples=[
+    {title:'Backpropagation',topic:'how gradients flow backwards',summary:'The chain rule applied layer by layer, from the loss back to every weight.'},
+    {title:'Regularisation',topic:'how models avoid overfitting',summary:'Penalise complexity so the model generalises beyond its training data.'}
+  ];
+  for(const [query,example]of searchExamples.entries()){
+    await page.locator('#s05-qbtns button').nth(query).click();
+    for(const build of [0,1,0,1]){
+      await page.evaluate(b=>AT.present.setBuild(b),build);await page.waitForTimeout(250);
+      assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow);
+      assert.equal(await page.locator('.search-example').evaluate(e=>getComputedStyle(e).visibility),build?'visible':'hidden');
+      assert.equal(await page.locator('#s05-example-title').textContent(),example.title);
+      assert.equal(await page.locator('#s05-example-topic').textContent(),example.topic);
+      assert.equal(await page.locator('#s05-example-explanation').textContent(),example.summary);
+      assert.equal(await page.locator('#s05-example-explanation').textContent(),await page.locator('#s05-return-summary').textContent(),'The preview and later returned value use the same source content.');
+      assert.equal(await page.locator('#s05-vgrid .is-top .vt').textContent(),example.title);
+      await page.screenshot({path:path.join(shots,`search-example-${query}-${build}.png`)});
+    }
+  }
+  const searchColours=await page.evaluate(()=>{
+    const c=s=>getComputedStyle(document.querySelector(s)).color;
+    return ['k','v'].map(role=>[c('.search-example h3.sym-'+role),c('.retrieval-roles .sym-'+role)]);
+  });
+  searchColours.forEach(pair=>assert.equal(...pair,'Keep the example labels in the established key/value colours.'));
   await page.locator('#s05-qbtns button').nth(1).click();
   await goSearch('s05-frame-results');
   assert.equal(await page.locator('#s05-vgrid .is-top .vt').textContent(),'Regularisation','The overfitting request still ranks the matching source first.');
@@ -454,6 +478,7 @@ try{
   assert.equal(await page.locator('#s05-vgrid .is-top .vt').textContent(),'Regularisation','Visiting the new introduction does not masquerade as entering the search demo.');
   await goSearch('s05-frame-search');
   assert((await page.locator('#s05-frame-search .s05-qtext').textContent()).includes('gradient information backwards'),'Re-entering the original search frame keeps its original query-reset behaviour.');
+  assert.equal(await page.locator('#s05-example-title').textContent(),'Backpropagation','The concrete example follows the reset query.');
   const sectionLabels=await page.evaluate(()=>[
     document.querySelector('#s05').dataset.title,document.querySelector('#s05 .sec-head h2').textContent,
     window.__PART__.chain.find(x=>x.section==='s05').label,window.__PART__.sections.find(x=>x.id==='s05').title]);
@@ -497,6 +522,15 @@ try{
     await page.screenshot({path:path.join(shots,name+'.png')});
   }
   const tops=await page.locator('.pool-bridge-block span').evaluateAll(els=>els.map(e=>Math.round(e.getBoundingClientRect().top)));
+  for(const [query,example]of searchExamples.entries()){
+    await page.locator('#s05-qbtns button').nth(query).click();
+    await page.locator('.search-example').scrollIntoViewIfNeeded();
+    const rows=await page.locator('.search-example>div').evaluateAll(els=>els.map(e=>{const b=e.getBoundingClientRect();return{x:b.x,right:b.right,top:b.top,bottom:b.bottom};}));
+    assert(rows.every(r=>r.x>=0&&r.right<=391),'Both concrete explanations fit in the phone article.');
+    assert(rows[1].top>=rows[0].bottom,'Stack matching and returned content in reading order on phones.');
+    assert.equal(await page.locator('#s05-example-title').textContent(),example.title);
+    await page.screenshot({path:path.join(shots,`phone-search-example-${query}.png`)});
+  }
   assert.equal(new Set(tops).size,1,'The phone concatenation strip scrolls locally instead of wrapping into a matrix.');
   const phoneVector=await page.locator('#s04-mean-live .vec').boundingBox();
   assert(phoneVector.x>=0&&phoneVector.x+phoneVector.width<=391,'The complete four-coordinate mean fits on a phone.');

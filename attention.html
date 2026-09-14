@@ -5776,6 +5776,12 @@ body.present #s05 .retrieval-intro{font-size:24px;line-height:1.4}
 body.present #s05 .retrieval-intro h3{font-size:64px}
 body.present #s05 .retrieval-intro .detour-kicker{font-size:18px}
 body.present #s05 .retrieval-roles{grid-template-columns:115px minmax(0,1fr);gap:14px 24px}
+#s05 .search-example{display:grid;grid-template-columns:1fr 1fr;gap:24px;border-top:1px solid var(--line);padding-top:18px;font-size:18px;line-height:1.4}
+#s05 .search-example h3{font-size:18px;line-height:1.3;margin:0 0 10px}
+#s05 .search-example p{margin:0}
+body.present #s05 .search-example{font-size:24px;gap:36px}
+body.present #s05 .search-example h3{font-size:22px}
+@media(max-width:640px){body:not(.present) #s05 .search-example{grid-template-columns:1fr}}
 </style>
 <header class="sec-head">
   <span class="sec-num">05</span>
@@ -5836,7 +5842,7 @@ Information retrieval means finding useful information in a collection. Mark thi
 <div class="frame" id="s05-frame-search" data-title="A search box" data-autobuild="off">
   <script type="text/x-notes">
 What does the site compare, and what does it hand back?
-Read the request and connect it to the first role on the detour slide: query. Ask the room what the site must know about each video to answer. Reveal the two jobs on the first press. The next slide shows the collection; the matching and return examples will make key and value concrete.
+Read the request and connect it to the first role on the detour slide: query. Ask which topic would help answer it, then reveal the concrete example. For the gradients question, Backpropagation's key emphasizes gradient flow. The information we receive is its explanation of the chain rule, not the topic label. Switching to overfitting changes the example to Regularisation and its explanation about penalising complexity. The example uses the same selected video and summary as the following result and return slides. The English topic description previews the strongest feature of its illustrative key; later we show the vector and matching calculation. These are hand-chosen search examples, not results from a live video site.
 
 Timing: two minutes.
   </script>
@@ -5850,7 +5856,16 @@ Timing: two minutes.
     </div>
     <div class="btn-row" id="s05-qbtns" data-keep-state></div>
   </div>
-  <div class="callout callout-key" data-build="1">Two separate jobs: decide <strong>which items match</strong>, then decide <strong>what information to return</strong>.</div>
+  <div class="search-example" data-build="1">
+    <div>
+      <h3 class="sym-k">1. Match the topic (key)</h3>
+      <p><strong id="s05-example-title"></strong> covers <span id="s05-example-topic" class="sym-k"></span>.</p>
+    </div>
+    <div>
+      <h3 class="sym-v">2. Get its explanation (value)</h3>
+      <p id="s05-example-explanation"></p>
+    </div>
+  </div>
 </div>
 
 <div class="frame" id="s05-frame-results" data-title="The same collection can answer different queries" data-autobuild="off">
@@ -5941,6 +5956,7 @@ The numeric value and content of that same item arrive. Keep the source pairing 
   const S = document.getElementById('s05');
   /* illustrative search-engine data (SPEC section 5); keys chosen by hand so q·k reproduces the SPEC similarity table */
   const KEY_AXES = ['gradient flow', 'optimisation', 'architecture', 'generalisation'];
+  const KEY_TOPICS = ['how gradients flow backwards', 'how weights are updated', 'how networks are structured', 'how models avoid overfitting'];
   const VAL_AXES = ['gradients', 'optimisation', 'architecture'];
   const VIDEOS = [
     { title: 'Backpropagation',     kind: 'backprop', duration: '12:48', k: [2.2, 0.6, 0.2, 0.0], v: [0.9, 0.3, 0.1], summary: 'The chain rule applied layer by layer, from the loss back to every weight.' },
@@ -6102,6 +6118,9 @@ The numeric value and content of that same item arrive. Keep the source pairing 
     if (dot.computedCells[0] && dot.computedCells[0][0]) dot.computedCells[0][0].setAttribute('data-build', '1');
     dot.scoreCells.forEach((td, j) => td.setAttribute('data-build', String(j + 1)));
     const rq = readRow(Q.q, KEY_AXES), rk = readRow(VIDEOS[top].k, KEY_AXES), rv = readRow(VIDEOS[top].v, VAL_AXES);
+    S.querySelector('#s05-example-title').textContent = VIDEOS[top].title;
+    S.querySelector('#s05-example-topic').textContent = KEY_TOPICS[rk.top];
+    S.querySelector('#s05-example-explanation').textContent = VIDEOS[top].summary;
     qread.innerHTML = 'Reading the query row: it asks mainly for ' + AT.escape(rq.main) + (rq.rest ? ', a little ' + AT.escape(rq.rest) : '') + (rq.off.length ? ', and not for ' + AT.escape(rq.off.join(' or ')) : '') + '.';
     kread.innerHTML = 'Reading the key of ' + AT.escape(VIDEOS[top].title) + ': it offers mainly ' + AT.escape(rk.main) + (rk.rest ? ', some ' + AT.escape(rk.rest) : '') + (rk.top === rq.top ? '. Its largest entry sits in the column the query asks for most, so the products add up.' : '.');
     vread.innerHTML = 'Reading the value of ' + AT.escape(VIDEOS[top].title) + ': it sends mainly ' + AT.escape(rv.main) + (rv.rest ? ', a little ' + AT.escape(rv.rest) : '') + '. That, plus the summary, is what the searcher receives.';
