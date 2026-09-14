@@ -1,5 +1,17 @@
 # Classroom release checks
 
+## 2026-09-14: introduce attention before the retrieval analogy
+
+- Ended the weighted-pooling sequence with an explicit open question: how should the model calculate the source weights? Added a dedicated Attention section break, a three-step plain-language explanation (compare, normalize, mix), and a signposted information-retrieval detour before the existing search example. The explanation retains bank at position 7 and river at position 6, distinguishes input-dependent weights from learned parameters, and defers query/key/value terminology until the analogy introduces their roles.
+- Updated the chapter and navigation titles together. The search reset hook now targets its stable frame ID rather than the first frame in the section, preserving the existing query interaction after inserting the three new frames. Regression checks natural navigation, progressive reveals, matching colours, absence of premature jargon, divider-only header hiding, and retained/reset search state.
+- The presentation skill guided a clear topic break and concrete explanation before terminology, while preserving the deck's native HTML, colours and interactive format. Visually inspected the divider, explanation and retrieval detour on desktop, and the explanation and detour in the phone article.
+
+## 2026-09-14: label both matrices in the growing-window network
+
+- Labelled W1 above the input-to-hidden connections and W2 above the hidden-to-vocabulary connections. Matching purple readouts show both matrix shapes and weight counts, and explicitly state that only W1 grows with the window. At w=20, W1 has shape 80×8 and 640 weights; W2 remains 8×20 with 160 weights. These are weight-only counts, not whole-model totals.
+- Regression exercises all 100 MLP window widths, checking both connection groups, labels, colour matches, matrix shapes, counts and slide bounds. Existing short-window, long-window, keyboard, reduced-motion and numerical-immutability checks still pass. Visually inspected w=1, 20 and 100; the labels and expanded readout fit without overlap.
+- Combined release checks pass: all 304 presentation states / 529 unique formulas, 128 controls, eight independent live/reference cases (7,980 finite values, max error 8.88e-16), pooling and window regressions, and 390px article QA. No JavaScript, KaTeX, slide-overflow or phone document-overflow errors. No model, Part I, shared runtime, dependency or PDF changes.
+
 ## 2026-09-12: explain alpha with a concrete source contribution
 
 - Replaced the abstract weighted-pooling introduction with two frames. The first identifies receiver bank at i=7 and source river at j=6, reads alpha aloud, and works through a conditional, hand-chosen weight of 0.5. Both the input row and its half-weighted contribution come directly from the existing embedding data. The example changes no preset or model value, and explicitly leaves the other six weights a total share of 0.5.

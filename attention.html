@@ -836,7 +836,7 @@ body.presenter>*:not(#at-presenter){display:none!important}
 
 <script>
 window.__TOY__ = {"d_model":4,"d_k":3,"d_v":2,"max_context":20,"vocab":["the","fisherman","sat","beside","river","bank","and","watched","she","deposited","cheque","at","water","boats","fish","ducks","teller","clerk","queue","money"],"tok_emb":{"the":[0.0,0.0,0.0,2.4],"fisherman":[2.0,0.0,2.2,0.0],"sat":[0.4,0.0,0.6,1.8],"beside":[0.6,0.0,0.0,2.0],"river":[3.0,0.0,0.0,0.0],"bank":[0.7,0.7,0.0,0.7],"and":[0.0,0.0,0.0,2.2],"watched":[0.6,0.0,0.8,1.6],"she":[0.0,0.0,2.6,0.4],"deposited":[0.0,2.2,0.6,0.4],"cheque":[0.0,3.0,0.0,0.0],"at":[0.0,0.0,0.0,2.0],"water":[3.0,0.0,0.0,0.0],"boats":[2.4,0.0,0.4,0.0],"fish":[2.6,0.0,0.6,0.0],"ducks":[2.2,0.0,0.8,0.0],"teller":[0.0,2.6,1.8,0.0],"clerk":[0.0,2.4,1.8,0.0],"queue":[0.0,2.0,0.6,0.0],"money":[0.0,3.0,0.0,0.0]},"pos_emb":[[0.1,0.0,0.1,-0.1],[0.0,0.1,-0.1,0.0],[-0.1,0.0,0.0,0.1],[0.0,-0.1,0.1,0.0],[0.1,0.1,0.0,-0.1],[0.1,-0.1,0.0,0.1],[0.0,0.0,0.1,0.1],[-0.1,0.1,0.1,0.0],[0.1,0.0,-0.1,0.1],[0.0,0.0,0.0,-0.1],[0.1,0.1,0.1,0.1],[-0.1,-0.1,-0.1,-0.1],[0.1,-0.1,0.1,-0.1],[-0.1,0.1,-0.1,0.1],[0.1,0.1,-0.1,-0.1],[-0.1,-0.1,0.1,0.1],[0.0,0.1,0.1,-0.1],[0.1,0.0,0.1,0.1],[-0.1,0.0,-0.1,0.1],[0.0,-0.1,-0.1,0.1]],"W_Q":[[1.0,0.0,0.0],[0.0,1.0,0.0],[0.0,0.0,0.4],[0.7,0.7,0.0]],"W_K":[[1.0,0.0,0.0],[0.0,1.0,0.0],[0.0,0.0,1.0],[0.0,0.0,0.0]],"W_V":[[1.0,0.0],[0.0,1.0],[0.0,0.0],[0.0,0.0]],"W_O":[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0]],"W_vocab":[[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.5,1.2,1.0,0.7,0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.5,1.2,0.9,0.7],[0.0,0.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.2,0.0,0.0],[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]],"b_vocab":[-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"sentences":{"river":["The","fisherman","sat","beside","the","river","bank","and","watched","the"],"cheque":["She","deposited","the","cheque","at","the","bank","and","watched","the"]},"candidates":{"river":["water","boats","fish","ducks"],"cheque":["teller","clerk","queue","money"]},"axes":{"e":["water","finance","person","glue"],"qk":["setting: water?","setting: finance?","who?"],"v":["says: water scene","says: finance scene"],"short":{"e":["water","finance","person","glue"],"qk":["water?","finance?","who?"],"v":["\u2192water","\u2192finance"]}},"notes":"Toy v3: single-head causal self-attention (d_model=4, d_k=3, d_v=2, vocab=20, ten-token examples, max_context=20), designed BY HAND so that every coordinate has a name that the numbers agree with (see 'axes'). e axes: water, finance, person, glue. q and k axes: setting: water?, setting: finance?, who? (a query row reads 'what I ask for', a key row 'what I offer'). Position vectors add small offsets across the same four coordinates. v has its own narrower axes: says: water scene and says: finance scene; W_O maps them back onto the e axes. Names are illustrative; the matrices are sparse and one-decimal so a student can read each row of W_Q as 'axis -> asks', W_K as 'axis -> offers', W_V as 'axis -> says', W_vocab as 'axis -> votes for these words'. Values are narrower on purpose because they are mixed and sent rather than compared. Before position is added, glue-only token rows have zero keys and values but ask for both settings, which is why the final 'the' reads river or cheque. bank is equal parts water and finance (0.7, 0.7) plus a little glue (0.7); its entries are kept below 1.0 so that bank does not mostly attend to itself (the self score q_bank.k_bank grows with the square of those entries). The twenty position rows are hand-chosen illustrative vectors, not sinusoidal or trained measurements. Real learned embedding coordinates usually mix features rather than matching these teaching labels. Prefix permutations can change this toy's final prediction through position offsets. Patterns produced (all checked on these rounded numbers by make_toy2.py and toy_ref.mjs): (1) in 'The fisherman sat beside the river bank', bank(7) attends river first, fisherman second, itself and the glue words little; (2) in 'She deposited the cheque at the bank', bank(7) attends cheque first, deposited second; (3) the final 'the'(10) reads mostly river/bank/fisherman or cheque/bank/deposited and the output head predicts water > boats > fish > ducks or teller > clerk > queue > money with every other word at most 0.04; (4) the baseline from e_the(10) alone is spread over the eight candidates and is identical for both sentences; (5) with the causal mask off, the early glue words leak attention onto river and bank. Nothing was optimised; a few magnitudes (bank, fisherman, the W_vocab weights) were adjusted by hand from AXES.md."};
-window.__PART__ = {"part":2,"series":"Attention and language","title":"Self-attention, from first principles","subtitle":"How a token reads from the tokens before it, and why that makes the next word easier to predict.","audience":"For students who know embeddings, dot products, softmax and next-token prediction, and who have not yet met attention.","minutes":null,"central":"\\ve{e} \\;\\rightarrow\\; \\vq{Q},\\vk{K},\\vv{V} \\;\\rightarrow\\; \\text{attention } (\\va{\\alpha}) \\;\\rightarrow\\; \\vd{\\Delta e} \\;\\rightarrow\\; \\vp{e + \\Delta e}","centralLabel":"The one chain to remember","legendTitle":"How to read this page: seven colours, seven objects","provenance":"Where the numbers come from: a tiny demonstration model with {{d_model}}-number representations and a {{vocab}}-word vocabulary. Each coordinate was given an illustrative name{{axes}}, and the weights were written by hand so that the names are true. The arithmetic is real, but the model is not a trained language model.","chain":[{"label":"Predict the next token","section":"s01"},{"label":"Baseline: only the last token","section":"s02"},{"label":"Baseline: a fixed window of w tokens","section":"s03"},{"label":"Weighted pooling: where should weights come from?","section":"s04"},{"label":"A detour through search: query, key, value","section":"s05"},{"label":"Hard retrieval \u2192 soft retrieval","section":"s06"},{"label":"Every token becomes a searchable record","section":"s07"},{"label":"Two jobs: choose weights, then mix values","section":"s08"},{"label":"The contextual update \u0394e","section":"s09"},{"label":"\u201cbank\u201d: same start, different context","section":"s10"},{"label":"What exactly are Q, K, and V?","section":"s11"},{"label":"Why divide by \u221ad_k?","section":"s12"},{"label":"Causal masking","section":"s13"},{"label":"From \u0394e to the next-token probabilities","section":"s14"},{"label":"Full walkthrough, one step at a time","section":"s15"},{"label":"The same thing in matrix form","section":"s16"},{"label":"Attention versus the alternatives","section":"s17"},{"label":"Pause and think","section":"s18"},{"label":"Three summaries","section":"s19"}],"sections":[{"id":"s01","title":"Predict the next token","lit":""},{"id":"s02","title":"Baseline: only the last token","lit":"e"},{"id":"s03","title":"Baseline: a fixed window of w tokens","lit":""},{"id":"s04","title":"Weighted pooling: where should weights come from?","lit":"a"},{"id":"s05","title":"A detour through search: query, key, value","lit":"q k v"},{"id":"s06","title":"Hard retrieval \u2192 soft retrieval","lit":""},{"id":"s07","title":"Every token becomes a searchable record","lit":""},{"id":"s08","title":"Two jobs: choose weights, then mix values","lit":""},{"id":"s09","title":"The contextual update \u0394e","lit":"d ep"},{"id":"s10","title":"\u201cbank\u201d: same start, different context","lit":""},{"id":"s11","title":"What exactly are Q, K, and V?","lit":""},{"id":"s12","title":"Why divide by \u221ad_k?","lit":""},{"id":"s13","title":"Causal masking","lit":""},{"id":"s14","title":"From \u0394e to the next-token probabilities","lit":""},{"id":"s15","title":"Full walkthrough, one step at a time","lit":""},{"id":"s16","title":"The same thing in matrix form","lit":""},{"id":"s17","title":"Attention versus the alternatives","lit":""},{"id":"s18","title":"Pause and think","lit":""},{"id":"s19","title":"Three summaries","lit":""}],"objects":["e","q","k","v","a","d","ep"],"prev":{"label":"Part 1: From characters to next-token prediction","href":"part1.html","available":true},"next":{"label":"Part 3: Learning, heads, and the Transformer","href":"part3.html","available":true},"index":{"label":"Series home","href":"index.html","available":true},"notation":"part2","footer":"Notation: <span class=\"sym sym-e\">e<\/span> is always the current token representation, and <span class=\"sym sym-d\">\u0394e<\/span> is this page's pedagogical name for the attention output. The addition <span class=\"sym sym-e\">e<\/span>&thinsp;+&thinsp;<span class=\"sym sym-d\">\u0394e<\/span> is the standard residual connection.","durationLabel":"The full walkthrough takes multiple sessions. A classroom route is suggested in Section 1.","hook":"The fisherman sat beside the river bank and watched the ___. You know the next word. What would a model have to read to know it too?"};
+window.__PART__ = {"part":2,"series":"Attention and language","title":"Self-attention, from first principles","subtitle":"How a token reads from the tokens before it, and why that makes the next word easier to predict.","audience":"For students who know embeddings, dot products, softmax and next-token prediction, and who have not yet met attention.","minutes":null,"central":"\\ve{e} \\;\\rightarrow\\; \\vq{Q},\\vk{K},\\vv{V} \\;\\rightarrow\\; \\text{attention } (\\va{\\alpha}) \\;\\rightarrow\\; \\vd{\\Delta e} \\;\\rightarrow\\; \\vp{e + \\Delta e}","centralLabel":"The one chain to remember","legendTitle":"How to read this page: seven colours, seven objects","provenance":"Where the numbers come from: a tiny demonstration model with {{d_model}}-number representations and a {{vocab}}-word vocabulary. Each coordinate was given an illustrative name{{axes}}, and the weights were written by hand so that the names are true. The arithmetic is real, but the model is not a trained language model.","chain":[{"label":"Predict the next token","section":"s01"},{"label":"Baseline: only the last token","section":"s02"},{"label":"Baseline: a fixed window of w tokens","section":"s03"},{"label":"Weighted pooling: where should weights come from?","section":"s04"},{"label":"Attention and the search analogy","section":"s05"},{"label":"Hard retrieval \u2192 soft retrieval","section":"s06"},{"label":"Every token becomes a searchable record","section":"s07"},{"label":"Two jobs: choose weights, then mix values","section":"s08"},{"label":"The contextual update \u0394e","section":"s09"},{"label":"\u201cbank\u201d: same start, different context","section":"s10"},{"label":"What exactly are Q, K, and V?","section":"s11"},{"label":"Why divide by \u221ad_k?","section":"s12"},{"label":"Causal masking","section":"s13"},{"label":"From \u0394e to the next-token probabilities","section":"s14"},{"label":"Full walkthrough, one step at a time","section":"s15"},{"label":"The same thing in matrix form","section":"s16"},{"label":"Attention versus the alternatives","section":"s17"},{"label":"Pause and think","section":"s18"},{"label":"Three summaries","section":"s19"}],"sections":[{"id":"s01","title":"Predict the next token","lit":""},{"id":"s02","title":"Baseline: only the last token","lit":"e"},{"id":"s03","title":"Baseline: a fixed window of w tokens","lit":""},{"id":"s04","title":"Weighted pooling: where should weights come from?","lit":"a"},{"id":"s05","title":"Attention and the search analogy","lit":"q k v"},{"id":"s06","title":"Hard retrieval \u2192 soft retrieval","lit":""},{"id":"s07","title":"Every token becomes a searchable record","lit":""},{"id":"s08","title":"Two jobs: choose weights, then mix values","lit":""},{"id":"s09","title":"The contextual update \u0394e","lit":"d ep"},{"id":"s10","title":"\u201cbank\u201d: same start, different context","lit":""},{"id":"s11","title":"What exactly are Q, K, and V?","lit":""},{"id":"s12","title":"Why divide by \u221ad_k?","lit":""},{"id":"s13","title":"Causal masking","lit":""},{"id":"s14","title":"From \u0394e to the next-token probabilities","lit":""},{"id":"s15","title":"Full walkthrough, one step at a time","lit":""},{"id":"s16","title":"The same thing in matrix form","lit":""},{"id":"s17","title":"Attention versus the alternatives","lit":""},{"id":"s18","title":"Pause and think","lit":""},{"id":"s19","title":"Three summaries","lit":""}],"objects":["e","q","k","v","a","d","ep"],"prev":{"label":"Part 1: From characters to next-token prediction","href":"part1.html","available":true},"next":{"label":"Part 3: Learning, heads, and the Transformer","href":"part3.html","available":true},"index":{"label":"Series home","href":"index.html","available":true},"notation":"part2","footer":"Notation: <span class=\"sym sym-e\">e<\/span> is always the current token representation, and <span class=\"sym sym-d\">\u0394e<\/span> is this page's pedagogical name for the attention output. The addition <span class=\"sym sym-e\">e<\/span>&thinsp;+&thinsp;<span class=\"sym sym-d\">\u0394e<\/span> is the standard residual connection.","durationLabel":"The full walkthrough takes multiple sessions. A classroom route is suggested in Section 1.","hook":"The fisherman sat beside the river bank and watched the ___. You know the next word. What would a model have to read to know it too?"};
 </script>
 <script>
 /* shared.js: the AT namespace, with toy-model math, KaTeX helpers, UI components, motif and flow.
@@ -4371,6 +4371,11 @@ body.present #s03 .window-head-takeaway{font-size:23px;margin-top:12px}
 #s03-net .edges line{stroke:var(--c-q)}
 #s03-net .col-hid circle{fill:var(--t-v);stroke:var(--c-v)}
 #s03-net .lab-in-box{color:var(--c-e)}
+#s03-net .matrix-label{font:italic 25px var(--font-math);fill:var(--c-q)}
+#s03 #s03-net-read .mlp-matrix{display:block;margin-top:12px}
+#s03 #s03-net-read .mlp-matrix-role{display:block;font-size:.9em;color:var(--ink-2);margin-bottom:2px}
+#s03 #s03-net-read .mlp-matrix-shape{color:var(--c-q)}
+#s03 #s03-net-read .mlp-growth-note{display:block;margin-top:14px}
 body.present #s03 #s03-frame2>.card{padding:12px 24px;margin-bottom:10px}
 body.present #s03 #s03-frame2 .card-title{font-size:22px;margin-bottom:10px}
 body.present #s03 #s03-frame2 .win-note{margin:4px 0 6px;font-size:20px}
@@ -4405,7 +4410,7 @@ body.present #s03 #s03-frame2 .bound .bar{height:26px}
 <div class="frame" data-title="Grow the window" id="s03-frame1" data-autobuild="off">
   <script type="text/x-notes">
     What changes in the network if we use five tokens?
-    Start at w = 3 and name the three columns: the window, a hidden layer, one output per word. The next key press moves the slider to 5: point at the new input nodes and at the first layer's shape. The press after that jumps to 100: the input column collapses and the parameter count in the first layer is read out. Then the claim.
+    Start at w = 3 and name the three columns: the window, a hidden layer, one output per word. Point to W1 above the input-to-hidden connections and W2 above the hidden-to-output connections. These are the two linear layers of the MLP, with the hidden activation between them. The side note gives both matrix shapes and weight counts. The next key press moves the slider to 5: W1 grows while W2 remains 8 by 20. The press after that jumps to 100: the input column collapses and W1 has 3,200 weights, while W2 still has 160. Counts refer to weights and exclude biases.
 
     Timing: about three minutes.
   </script>
@@ -4595,6 +4600,11 @@ The previous slides showed unavailable earlier words and a matrix that grows wit
   const H = 8;                                   // hidden width of the sketch, stated on the page
   const PRESET = [3, 5, 100];                    // window sizes for builds 0, 1, 2
   const net = AT.netSketch(S.querySelector('#s03-net'), { inputs: PRESET[0]*D, hidden: H, outputs: AT.vocab, collapseAbove: 8, labels:{input:i=>'(c_t)_{'+i+'}'}, inputCaption:n=>n+' input numbers', hiddenCaption: 'hidden, h = ' + H, outputCaption: V + ' vocabulary scores' });
+  const columns=['.col-in','.col-hid','.col-out'].map(selector=>net.svg.querySelector(selector+' .node').transform.baseVal.consolidate().matrix.e);
+  const matrixLabels=net.svg.appendChild(AT.svg('g',{class:'matrix-labels'}));
+  ['W₁','W₂'].forEach((name,j)=>matrixLabels.appendChild(AT.svg('text',{
+    x:(columns[j]+columns[j+1])/2,y:52,class:'matrix-label','text-anchor':'middle','data-matrix':'W'+(j+1)
+  },name)));
   const netRead = S.querySelector('#s03-net-read');
   function shapeText(w){
     const inD = w * D;
@@ -4602,8 +4612,13 @@ The previous slides showed unavailable earlier words and a matrix that grows wit
   }
   function drawNet(w){
     net.setInputs(w*D);
-    net.svg.setAttribute('aria-label','MLP architecture sketch: '+w+' tokens supply '+(w*D)+' scalar input nodes, followed by '+H+' hidden units and '+V+' vocabulary scores.');
-    netRead.innerHTML = 'Now $w=' + w + '$: <strong>' + (w * D) + ' input numbers</strong>.<br>$W_1\\in\\mathbb R^{' + (w * D) + '\\times ' + H + '}$; $W_2\\in\\mathbb R^{' + H + '\\times ' + V + '}$.';
+    net.svg.setAttribute('aria-label','MLP architecture sketch: '+w+' tokens supply '+(w*D)+' scalar input nodes. W1 connects these inputs to '+H+' hidden units; W2 connects the hidden units to '+V+' vocabulary scores. W1 has '+(w*D*H)+' weights and W2 has '+(H*V)+'. Only W1 grows with the window.');
+    net.svg.dataset.w1Rows=String(w*D);net.svg.dataset.w1Cols=String(H);net.svg.dataset.w2Rows=String(H);net.svg.dataset.w2Cols=String(V);
+    net.svg.querySelectorAll('.edges line').forEach(line=>line.dataset.matrix=Number(line.getAttribute('x1'))<columns[1]?'W1':'W2');
+    netRead.innerHTML = 'Now $w=' + w + '$: <strong>' + (w * D) + ' input numbers</strong>.'
+      + '<span class="mlp-matrix" data-matrix="W1"><span class="mlp-matrix-role">Input to hidden</span><span class="mlp-matrix-shape">$W_1$: $'+(w*D)+'\\times '+H+'$ = '+(w*D*H)+' weights</span></span>'
+      + '<span class="mlp-matrix" data-matrix="W2"><span class="mlp-matrix-role">Hidden to vocabulary scores</span><span class="mlp-matrix-shape">$W_2$: $'+H+'\\times '+V+'$ = '+(H*V)+' weights</span></span>'
+      + '<span class="mlp-growth-note">Only $W_1$ grows with $w$.</span>';
     AT.renderMath(netRead);
   }
   const b1 = S.querySelector('#s03-net-b1'), b2 = S.querySelector('#s03-net-b2');
@@ -5112,26 +5127,26 @@ The row from the same source index j. The footer is the sum of those weighted ro
 
 <div class="companion" data-kicker="Weighted-pooling worksheet"><div id="s04-w-arith"></div></div>
 
-<div class="frame" data-title="Where should the weights come from?" data-autobuild="off">
+<div class="frame" id="s04-frame-weight-question" data-title="Where should the weights come from?" data-autobuild="off">
   <script type="text/x-notes">
-Who chose those weights, and what did they know that the model does not?
-Let the room answer before the question callout: you chose them by hand because you know bank wants river. Then reveal the answer and read it slowly: the weights must come from the representations themselves. Do not say attention until the next section.
+Who chose those weights?
+The students chose them by hand. The remaining problem is how a model computes them from the input representations. Bank is the receiving token, and river is one of its available sources. Reveal those two roles before posing the question about computing their shares. Leave the question open here. The next section break names attention, explains the operation in plain language, and only then introduces the search analogy.
 
 Timing: two minutes.
   </script>
   <div class="prose">
-    <p><em>You</em> gave <em>river</em> more weight because it helps interpret <em>bank</em>. A model needs to choose those weights from its inputs. A different receiving token may need different information.</p>
+    <p>So far, <em>you</em> chose the weights by hand. We need a rule that computes the shares from the input rows.</p>
   </div>
 
   <div class="callout callout-key" data-build="1">
-    <p class="qbig">Where should the weights $\va{\alpha_{ij}}$ come from?</p>
-    <p data-build="2">They should depend on <strong>what token $i$ currently needs</strong> and <strong>what information token $j$ contains</strong>.
-    Both are functions of the representations themselves, $\ve{e_i}$ and $\ve{e_j}$. Attention is a way to build that function.</p>
+    <p class="qbig">Which sources are useful for this receiving token?</p>
+    <p><span class="pool-summary">Receiver: bank at $i=7$.</span> <span class="pool-input">One source: river at $j=6$.</span></p>
+    <p data-build="2">How can the model calculate <span class="pool-weight">their weights $\alpha_{ij}$</span> from the inputs?</p>
   </div>
 </div>
 
 <div class="companion after">
-  <p>The weights determine the pooled vector. They should depend on both the receiving token and the sources it could read. A search example will help us separate those two roles.</p>
+  <p>The weighted sum is already defined. The next step is a mechanism that computes its weights from the receiving token and the available sources.</p>
 </div>
 
 <script>
@@ -5324,7 +5339,7 @@ Timing: two minutes.
 </section>
 
 <!-- ===== sec05.html ===== -->
-<section id="s05" class="sec" data-title="A detour through search: query, key, value" data-lit="q k v">
+<section id="s05" class="sec" data-title="Attention and the search analogy" data-lit="q k v">
 <style>
 #s05 .qbox{border:2px solid var(--oc);background:var(--ot);border-radius:var(--radius);padding:12px 18px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin:12px 0 6px}
 #s05 .qbox .qk{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--oc)}
@@ -5456,23 +5471,84 @@ body.present #s05 .s05-pair{display:block}
 body.present #s05 .s05-pair>.prose{font-size:28px;margin:0}
 body.present #s05 #s05-return-title{font-size:32px;margin:0 0 18px}
 body.present #s05 #s05-return-summary{font-size:28px;line-height:1.4;margin:0 0 24px}
+#s05 .attention-break h3{font-size:40px;line-height:1.1;margin:0 0 20px;letter-spacing:-.02em}
+#s05 .attention-break p{font-size:23px;line-height:1.4;max-width:48ch;margin:0 0 20px}
+#s05 .attention-break .attention-next{font-size:18px;color:var(--ink-2);margin-top:32px}
+#s05 .attention-intro,#s05 .retrieval-intro{font-size:19px;line-height:1.45}
+#s05 .attention-intro p,#s05 .retrieval-intro p{margin:14px 0}
+#s05 .attention-input{color:var(--c-e)}
+#s05 .attention-weight{color:var(--c-a)}
+#s05 .attention-summary{color:var(--c-v)}
+#s05 .attention-steps{list-style:decimal;padding-left:1.6em;margin:24px 0}
+#s05 .attention-steps li{padding-left:10px;margin:18px 0}
+#s05 .attention-steps li::marker{font-weight:700;color:var(--ink-2)}
+#s05 .attention-steps strong{font-weight:650}
+#s05 .attention-steps li>span{display:block;margin-top:3px}
+#s05 .attention-learning{border-top:1px solid var(--line);padding-top:16px;color:var(--ink-2)}
+#s05 .retrieval-route{border-top:1px solid var(--line);padding-top:22px;margin-top:28px}
+body.present #s05:has(#s05-frame-attention-break.is-live)>.sec-head{display:none}
+body.present #s05 .attention-break h3{font-size:80px;margin-bottom:26px}
+body.present #s05 .attention-break p{font-size:34px}
+body.present #s05 .attention-break .attention-next{font-size:26px;margin-top:40px}
+body.present #s05 .attention-intro{font-size:24px;line-height:1.35}
+body.present #s05 .attention-steps{margin:22px 0}
+body.present #s05 .attention-steps li{margin:16px 0}
+body.present #s05 .attention-steps li>span{font-size:22px}
+body.present #s05 .retrieval-intro{font-size:28px;line-height:1.4}
 </style>
 <header class="sec-head">
   <span class="sec-num">05</span>
   <div>
-    <p class="eyebrow">Search separates what we need from what each source can offer.</p>
-    <h2>A detour through search: query, key, value</h2>
+    <p class="eyebrow">Attention computes the shares from the inputs. Search will help us understand how to match sources and retrieve information.</p>
+    <h2>Attention and the search analogy</h2>
   </div>
 </header>
+
+<div class="frame" id="s05-frame-attention-break" data-title="Attention" data-autobuild="off">
+  <script type="text/x-notes">Pause at the new section.
+We know how to combine rows once someone supplies the weights. Our new topic is how to compute those weights from the inputs. Name attention here, without assuming that students already know what the name means. The next slide explains the operation using the same bank and river example. The information-retrieval detour comes after that explanation.</script>
+  <div class="attention-break">
+    <h3>Attention</h3>
+    <p>How does a token gather useful information from its context?</p>
+    <p class="attention-next">We will compute the weights from the inputs.</p>
+  </div>
+</div>
+
+<div class="frame" id="s05-frame-attention-idea" data-title="What attention does" data-autobuild="off">
+  <script type="text/x-notes">What changes from our hand-weighted example?
+The combining operation is familiar. Attention computes the mixing weights from the input representations. Keep bank at position 7 as the receiving token and river at position 6 as one possible source. Read the three operations in order. A match score measures compatibility, and converting all available scores into normalized weights gives the shares. The receiving token is already known, so this operation gathers context rather than guessing bank. Information from several sources can contribute. We will give matching and returned information different representations later. Do not introduce query, key or value yet. In a trained model, training learns the projection parameters. The alpha values are activations computed anew for the current inputs. Our numerical demonstration uses hand-chosen parameters, so do not describe it as a trained model.</script>
+  <div class="attention-intro">
+    <p>For <span class="attention-summary">bank at position 7</span>, attention computes <span class="attention-weight">how much each available source contributes</span> to its context.</p>
+    <ol class="attention-steps">
+      <li><strong>Compare the receiver with each source.</strong><span>For example, compare <span class="attention-summary">bank</span> with <span class="attention-input">river</span> to get a matching score.</span></li>
+      <li data-build="1"><strong class="attention-weight">Convert the scores into weights.</strong><span>Higher scores get larger shares. All the shares add up to 1.</span></li>
+      <li data-build="2"><strong>Mix <span class="attention-input">source information</span> using those <span class="attention-weight">weights</span>.</strong><span class="attention-summary">The result is one fixed-width context summary.</span></li>
+    </ol>
+    <p class="attention-learning" data-build="2">A trained model learns how to compute these weights. A new input can produce different weights.</p>
+    <div class="companion"><p>Attention weights describe contributions to a context summary, not next-word probabilities. During generation, the learned parameters stay fixed while the weights depend on the current inputs. This deck's demonstration parameters were chosen by hand. The distinction between matching a source and returning its information motivates the search example next.</p></div>
+  </div>
+</div>
+
+<div class="frame" id="s05-frame-retrieval-detour" data-title="A detour through information retrieval" data-autobuild="off">
+  <script type="text/x-notes">Why pause the language example for a search example?
+Information retrieval means finding useful information in a collection. Students can reason about a question and a collection of videos without manipulating token vectors. Search makes the distinction between deciding which source matches and deciding what to return concrete. We will name those roles query, key and value after the search box appears. The first simplified lookup selects a single result, and the following section replaces that selection with a weighted mixture. Real search systems may return many ranked results. This is an analogy for matching and returning information, not a claim that this language model browses or searches an external database. We return to the same sentence afterward.</script>
+  <div class="retrieval-intro">
+    <p><strong>Information retrieval</strong> means finding useful information in a collection, such as videos on a topic.</p>
+    <p>Search makes two jobs concrete: <strong>deciding which sources match a request</strong> and <strong>deciding what information to return</strong>.</p>
+    <div class="retrieval-route">
+      <p>First, we will retrieve one video's information. Then we will mix information from several sources and return to our sentence.</p>
+    </div>
+  </div>
+</div>
 
 <div class="companion" data-kicker="For self-study">
   <p>Think of searching a video site. For each item, we need to decide whether it matches our request and what information to return. In this example, each video has a key for matching and a value for returning. The first table puts the query above six keys so you can compare their coordinates. Each score on the right is a dot product. Switch to the overfitting question and see which item now scores highest. Its key helps us choose it; its value is what we receive.</p>
 </div>
 
-<div class="frame" data-title="A search box" data-autobuild="off">
+<div class="frame" id="s05-frame-search" data-title="A search box" data-autobuild="off">
   <script type="text/x-notes">
 What does the site compare, and what does it hand back?
-Read the query, then ask the room what the site must know about each video to answer. Reveal the amber key strips on the first press. Reveal the teal value strips and summaries on the second press. Do not use the spreadsheet yet.
+Read the request and name its role: query. Ask the room what the site must know about each video to answer. Reveal the two jobs on the first press. The next slide shows the collection. Keep key and value for the later matching and return examples.
 
 Timing: two minutes.
   </script>
@@ -5754,7 +5830,8 @@ The numeric value and content of that same item arrive. Keep the source pairing 
   draw();
   /* A new visit starts from query 1; continuation frames retain the chosen query. */
   if (AT.present && AT.present.on) AT.present.on('frame', (st) => {
-    if (!st.frame || st.frame.id !== 's05' || st.frame.index !== 0 || qi === 0) return;
+    if (!st.frame || st.frame.id !== 's05' || qi === 0) return;
+    if (S.querySelectorAll('.frame')[st.frame.index]?.id !== 's05-frame-search') return;
     qi = 0;
     qBtnGroups.forEach(group => group.forEach((x, j) => x.setAttribute('aria-pressed', j === 0 ? 'true' : 'false')));
     draw();

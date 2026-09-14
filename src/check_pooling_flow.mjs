@@ -245,11 +245,68 @@ try{
   }
   for(let j=0;j<7;j++)await page.locator(`#s04-w${j}`).fill('0');
   await checkWeighted(Array(7).fill(0));
+  const searchOrder=await page.locator('#s05 .frame').evaluateAll(els=>els.map(e=>e.id));
+  assert.deepEqual(searchOrder.slice(0,4),['s05-frame-attention-break','s05-frame-attention-idea','s05-frame-retrieval-detour','s05-frame-search'],'Name and explain attention before the retrieval analogy or query terminology.');
+  const visibleCopy=async(id)=>page.locator('#'+id).evaluate(root=>{
+    const copy=root.cloneNode(true);copy.querySelectorAll('script,.companion').forEach(e=>e.remove());return copy.textContent;
+  });
+  assert(!(await visibleCopy('s04-frame-weight-question')).includes('Attention is a way to build that function'));
+  for(const id of searchOrder.slice(0,3))assert(!/\b(query|keys?|values?)\b/i.test(await visibleCopy(id)),'Introduce the mechanism and purpose before retrieval jargon.');
+  const definition=await visibleCopy('s05-frame-attention-idea');
+  assert(definition.includes('bank at position 7')&&definition.includes('river'));
+  assert(definition.includes('Higher scores get larger shares')&&definition.includes('add up to 1')&&definition.includes('fixed-width context summary'));
+  assert(definition.includes('A trained model')&&definition.includes('A new input can produce different weights'));
+  const detour=await visibleCopy('s05-frame-retrieval-detour');
+  assert(detour.includes('Information retrieval')&&detour.includes('finding useful information in a collection'));
+  assert(detour.includes("one video's information")&&detour.includes('mix information from several sources')&&detour.includes('return to our sentence'));
+  const goSearch=async(id,build=0)=>{
+    const index=searchOrder.indexOf(id);assert(index>=0);await go('s05',index+1,build);
+  };
+  await goPool('s04-frame-weight-question',2);
+  await page.evaluate(()=>AT.present.next());await page.waitForTimeout(100);
+  assert.equal(await page.locator('#s05 .frame.is-live').getAttribute('id'),'s05-frame-attention-break','Normal Next crosses the new section break.');
+  assert.equal(await page.locator('#s05>.sec-head').evaluate(e=>getComputedStyle(e).display),'none','The section break has a single prominent title.');
+  assert((await page.locator('.attention-break h3').evaluate(e=>parseFloat(getComputedStyle(e).fontSize)))>=64);
+  await page.screenshot({path:path.join(shots,'attention-break.png')});
+  await page.evaluate(()=>AT.present.next());await page.waitForTimeout(100);
+  assert.equal(await page.locator('#s05 .frame.is-live').getAttribute('id'),'s05-frame-attention-idea');
+  assert.notEqual(await page.locator('#s05>.sec-head').evaluate(e=>getComputedStyle(e).display),'none','The normal title returns after the section break.');
+  for(const build of [0,1,2,0,2]){
+    await goSearch('s05-frame-attention-idea',build);
+    const steps=await page.locator('.attention-steps li').evaluateAll(els=>els.map(e=>getComputedStyle(e).visibility));
+    assert.deepEqual(steps,['visible',build>=1?'visible':'hidden',build>=2?'visible':'hidden']);
+    assert.equal(await page.locator('.attention-learning').evaluate(e=>getComputedStyle(e).visibility),build>=2?'visible':'hidden');
+    await page.screenshot({path:path.join(shots,`attention-idea-${build}.png`)});
+  }
+  const introColours=await page.evaluate(()=>{
+    const colour=selector=>getComputedStyle(document.querySelector(selector)).color;
+    return ['input','weight','summary'].map(role=>[colour('#s05 .attention-'+role),colour('#s04 .pool-'+role)]);
+  });
+  introColours.forEach(pair=>assert.equal(...pair,'Keep the pooling colour meanings in the attention introduction.'));
+  await page.evaluate(()=>AT.present.next());await page.waitForTimeout(100);
+  assert.equal(await page.locator('#s05 .frame.is-live').getAttribute('id'),'s05-frame-retrieval-detour');
+  await page.screenshot({path:path.join(shots,'retrieval-detour.png')});
+  await page.evaluate(()=>AT.present.next());await page.waitForTimeout(100);
+  assert.equal(await page.locator('#s05 .frame.is-live').getAttribute('id'),'s05-frame-search');
+  await page.locator('#s05-qbtns button').nth(1).click();
+  await goSearch('s05-frame-results');
+  assert.equal(await page.locator('#s05-vgrid .is-top .vt').textContent(),'Regularisation','The overfitting request still ranks the matching source first.');
+  await goSearch('s05-frame-return');
+  assert((await page.locator('#s05-return-title').textContent()).includes('Regularisation'),'Continuation frames retain the chosen query and source/value pairing.');
+  await goSearch('s05-frame-attention-break');
+  await goSearch('s05-frame-results');
+  assert.equal(await page.locator('#s05-vgrid .is-top .vt').textContent(),'Regularisation','Visiting the new introduction does not masquerade as entering the search demo.');
+  await goSearch('s05-frame-search');
+  assert((await page.locator('#s05-frame-search .s05-qtext').textContent()).includes('gradient information backwards'),'Re-entering the original search frame keeps its original query-reset behaviour.');
+  const sectionLabels=await page.evaluate(()=>[
+    document.querySelector('#s05').dataset.title,document.querySelector('#s05 .sec-head h2').textContent,
+    window.__PART__.chain.find(x=>x.section==='s05').label,window.__PART__.sections.find(x=>x.id==='s05').title]);
+  assert(sectionLabels.every(t=>t==='Attention and the search analogy'),'Navigation and article heading match the broader section contents.');
   assert.equal(await page.evaluate(()=>JSON.stringify({model:AT.model,probs:AT.forward(AT.sentences.river).probs})),original,'Pooling controls never update model parameters.');
   await page.evaluate(()=>AT.present.exit());
   await page.setViewportSize({width:390,height:844});
   await page.locator('#s04-presets [data-preset="equal"]').click();
-  for(const [id,name]of [['s03-frame-pooling-bridge','phone-bridge'],['s04-frame-prefix','phone-prefix'],['s04-frame-mean','phone-mean'],['s04-frame-weight-rule','phone-alpha-example'],['s04-frame-weight-sum','phone-alpha-sum']]){
+  for(const [id,name]of [['s03-frame-pooling-bridge','phone-bridge'],['s04-frame-prefix','phone-prefix'],['s04-frame-mean','phone-mean'],['s04-frame-weight-rule','phone-alpha-example'],['s04-frame-weight-sum','phone-alpha-sum'],['s05-frame-attention-break','phone-attention-break'],['s05-frame-attention-idea','phone-attention-idea'],['s05-frame-retrieval-detour','phone-retrieval-detour']]){
     await page.locator('#'+id).scrollIntoViewIfNeeded();
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No phone document overflow.');
     await page.screenshot({path:path.join(shots,name+'.png')});
@@ -262,5 +319,5 @@ try{
   assert(phoneExample.x>=0&&phoneExample.x+phoneExample.width<=391,'All four coordinates of the worked alpha term fit on a phone.');
   for(const control of [positionSlider,slider])assert((await control.boundingBox()).width>160,'Both current-position sliders have usable phone tracks.');
   assert.deepEqual(errors,[]);
-  console.log(`PASS: all 7 window/prefix positions and means, concrete alpha indices and scalar products, matched colours and painted reveals, 4 weighted presets, zero-weight fallback, retained state and phone layout. Screenshots: ${shots}`);
+  console.log(`PASS: 7 window/prefix positions and means, alpha arithmetic, matching colours and reveals, 4 weighted presets, attention-before-retrieval flow, search state, zero-weight fallback and phone layout. Screenshots: ${shots}`);
 }finally{await browser.close();}

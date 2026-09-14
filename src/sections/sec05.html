@@ -1,4 +1,4 @@
-<section id="s05" class="sec" data-title="A detour through search: query, key, value" data-lit="q k v">
+<section id="s05" class="sec" data-title="Attention and the search analogy" data-lit="q k v">
 <style>
 #s05 .qbox{border:2px solid var(--oc);background:var(--ot);border-radius:var(--radius);padding:12px 18px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin:12px 0 6px}
 #s05 .qbox .qk{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--oc)}
@@ -130,23 +130,84 @@ body.present #s05 .s05-pair{display:block}
 body.present #s05 .s05-pair>.prose{font-size:28px;margin:0}
 body.present #s05 #s05-return-title{font-size:32px;margin:0 0 18px}
 body.present #s05 #s05-return-summary{font-size:28px;line-height:1.4;margin:0 0 24px}
+#s05 .attention-break h3{font-size:40px;line-height:1.1;margin:0 0 20px;letter-spacing:-.02em}
+#s05 .attention-break p{font-size:23px;line-height:1.4;max-width:48ch;margin:0 0 20px}
+#s05 .attention-break .attention-next{font-size:18px;color:var(--ink-2);margin-top:32px}
+#s05 .attention-intro,#s05 .retrieval-intro{font-size:19px;line-height:1.45}
+#s05 .attention-intro p,#s05 .retrieval-intro p{margin:14px 0}
+#s05 .attention-input{color:var(--c-e)}
+#s05 .attention-weight{color:var(--c-a)}
+#s05 .attention-summary{color:var(--c-v)}
+#s05 .attention-steps{list-style:decimal;padding-left:1.6em;margin:24px 0}
+#s05 .attention-steps li{padding-left:10px;margin:18px 0}
+#s05 .attention-steps li::marker{font-weight:700;color:var(--ink-2)}
+#s05 .attention-steps strong{font-weight:650}
+#s05 .attention-steps li>span{display:block;margin-top:3px}
+#s05 .attention-learning{border-top:1px solid var(--line);padding-top:16px;color:var(--ink-2)}
+#s05 .retrieval-route{border-top:1px solid var(--line);padding-top:22px;margin-top:28px}
+body.present #s05:has(#s05-frame-attention-break.is-live)>.sec-head{display:none}
+body.present #s05 .attention-break h3{font-size:80px;margin-bottom:26px}
+body.present #s05 .attention-break p{font-size:34px}
+body.present #s05 .attention-break .attention-next{font-size:26px;margin-top:40px}
+body.present #s05 .attention-intro{font-size:24px;line-height:1.35}
+body.present #s05 .attention-steps{margin:22px 0}
+body.present #s05 .attention-steps li{margin:16px 0}
+body.present #s05 .attention-steps li>span{font-size:22px}
+body.present #s05 .retrieval-intro{font-size:28px;line-height:1.4}
 </style>
 <header class="sec-head">
   <span class="sec-num">05</span>
   <div>
-    <p class="eyebrow">Search separates what we need from what each source can offer.</p>
-    <h2>A detour through search: query, key, value</h2>
+    <p class="eyebrow">Attention computes the shares from the inputs. Search will help us understand how to match sources and retrieve information.</p>
+    <h2>Attention and the search analogy</h2>
   </div>
 </header>
+
+<div class="frame" id="s05-frame-attention-break" data-title="Attention" data-autobuild="off">
+  <script type="text/x-notes">Pause at the new section.
+We know how to combine rows once someone supplies the weights. Our new topic is how to compute those weights from the inputs. Name attention here, without assuming that students already know what the name means. The next slide explains the operation using the same bank and river example. The information-retrieval detour comes after that explanation.</script>
+  <div class="attention-break">
+    <h3>Attention</h3>
+    <p>How does a token gather useful information from its context?</p>
+    <p class="attention-next">We will compute the weights from the inputs.</p>
+  </div>
+</div>
+
+<div class="frame" id="s05-frame-attention-idea" data-title="What attention does" data-autobuild="off">
+  <script type="text/x-notes">What changes from our hand-weighted example?
+The combining operation is familiar. Attention computes the mixing weights from the input representations. Keep bank at position 7 as the receiving token and river at position 6 as one possible source. Read the three operations in order. A match score measures compatibility, and converting all available scores into normalized weights gives the shares. The receiving token is already known, so this operation gathers context rather than guessing bank. Information from several sources can contribute. We will give matching and returned information different representations later. Do not introduce query, key or value yet. In a trained model, training learns the projection parameters. The alpha values are activations computed anew for the current inputs. Our numerical demonstration uses hand-chosen parameters, so do not describe it as a trained model.</script>
+  <div class="attention-intro">
+    <p>For <span class="attention-summary">bank at position 7</span>, attention computes <span class="attention-weight">how much each available source contributes</span> to its context.</p>
+    <ol class="attention-steps">
+      <li><strong>Compare the receiver with each source.</strong><span>For example, compare <span class="attention-summary">bank</span> with <span class="attention-input">river</span> to get a matching score.</span></li>
+      <li data-build="1"><strong class="attention-weight">Convert the scores into weights.</strong><span>Higher scores get larger shares. All the shares add up to 1.</span></li>
+      <li data-build="2"><strong>Mix <span class="attention-input">source information</span> using those <span class="attention-weight">weights</span>.</strong><span class="attention-summary">The result is one fixed-width context summary.</span></li>
+    </ol>
+    <p class="attention-learning" data-build="2">A trained model learns how to compute these weights. A new input can produce different weights.</p>
+    <div class="companion"><p>Attention weights describe contributions to a context summary, not next-word probabilities. During generation, the learned parameters stay fixed while the weights depend on the current inputs. This deck's demonstration parameters were chosen by hand. The distinction between matching a source and returning its information motivates the search example next.</p></div>
+  </div>
+</div>
+
+<div class="frame" id="s05-frame-retrieval-detour" data-title="A detour through information retrieval" data-autobuild="off">
+  <script type="text/x-notes">Why pause the language example for a search example?
+Information retrieval means finding useful information in a collection. Students can reason about a question and a collection of videos without manipulating token vectors. Search makes the distinction between deciding which source matches and deciding what to return concrete. We will name those roles query, key and value after the search box appears. The first simplified lookup selects a single result, and the following section replaces that selection with a weighted mixture. Real search systems may return many ranked results. This is an analogy for matching and returning information, not a claim that this language model browses or searches an external database. We return to the same sentence afterward.</script>
+  <div class="retrieval-intro">
+    <p><strong>Information retrieval</strong> means finding useful information in a collection, such as videos on a topic.</p>
+    <p>Search makes two jobs concrete: <strong>deciding which sources match a request</strong> and <strong>deciding what information to return</strong>.</p>
+    <div class="retrieval-route">
+      <p>First, we will retrieve one video's information. Then we will mix information from several sources and return to our sentence.</p>
+    </div>
+  </div>
+</div>
 
 <div class="companion" data-kicker="For self-study">
   <p>Think of searching a video site. For each item, we need to decide whether it matches our request and what information to return. In this example, each video has a key for matching and a value for returning. The first table puts the query above six keys so you can compare their coordinates. Each score on the right is a dot product. Switch to the overfitting question and see which item now scores highest. Its key helps us choose it; its value is what we receive.</p>
 </div>
 
-<div class="frame" data-title="A search box" data-autobuild="off">
+<div class="frame" id="s05-frame-search" data-title="A search box" data-autobuild="off">
   <script type="text/x-notes">
 What does the site compare, and what does it hand back?
-Read the query, then ask the room what the site must know about each video to answer. Reveal the amber key strips on the first press. Reveal the teal value strips and summaries on the second press. Do not use the spreadsheet yet.
+Read the request and name its role: query. Ask the room what the site must know about each video to answer. Reveal the two jobs on the first press. The next slide shows the collection. Keep key and value for the later matching and return examples.
 
 Timing: two minutes.
   </script>
@@ -428,7 +489,8 @@ The numeric value and content of that same item arrive. Keep the source pairing 
   draw();
   /* A new visit starts from query 1; continuation frames retain the chosen query. */
   if (AT.present && AT.present.on) AT.present.on('frame', (st) => {
-    if (!st.frame || st.frame.id !== 's05' || st.frame.index !== 0 || qi === 0) return;
+    if (!st.frame || st.frame.id !== 's05' || qi === 0) return;
+    if (S.querySelectorAll('.frame')[st.frame.index]?.id !== 's05-frame-search') return;
     qi = 0;
     qBtnGroups.forEach(group => group.forEach((x, j) => x.setAttribute('aria-pressed', j === 0 ? 'true' : 'false')));
     draw();

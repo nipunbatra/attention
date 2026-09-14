@@ -228,13 +228,37 @@ try{
   assert.equal(await headSlider.inputValue(),'9');
   assert.equal(await page.locator('#s03-head-network').getAttribute('data-traced-word'),'teller');
   await page.evaluate(()=>AT.present.go('s03',1,0));
-  for(const w of [1,3,5,100]){
+  for(let w=1;w<=100;w++){
     await page.locator('#s03-net-slider input').fill(String(w));
     const label=await page.locator('#s03-net svg').getAttribute('aria-label');
     assert(label.includes(`${w*4} scalar input nodes`),'The preceding MLP must also count scalar coordinates, not tokens.');
     assert((await page.locator('#s03-net .caps').textContent()).includes(`${w*4} input numbers`));
     assert((await page.locator('#s03-net-read').innerText()).includes(`${w*4} input numbers`));
+    const matrices=await page.locator('#s03-net svg').evaluate(svg=>{
+      const columns=['.col-in','.col-hid','.col-out'].map(selector=>svg.querySelector(selector+' .node').transform.baseVal.consolidate().matrix.e);
+      const v=svg.viewBox.baseVal;
+      return {data:{...svg.dataset},columns,
+        labels:[...svg.querySelectorAll('.matrix-label')].map(e=>({name:e.textContent,matrix:e.dataset.matrix,x:Number(e.getAttribute('x')),colour:getComputedStyle(e).fill})),
+        edges:['W1','W2'].map(m=>[...svg.querySelectorAll('.edges line[data-matrix="'+m+'"]')].map(e=>[Number(e.getAttribute('x1')),Number(e.getAttribute('x2'))])),
+        shapeText:['W1','W2'].map(m=>{const e=document.querySelector('#s03-net-read [data-matrix="'+m+'"]');return {text:e.innerText,colour:getComputedStyle(e.querySelector('.mlp-matrix-shape')).color};}),
+        overflow:[...svg.querySelectorAll('.matrix-label')].filter(e=>{const b=e.getBBox();return b.x<0||b.y<0||b.x+b.width>v.width||b.y+b.height>v.height;}).map(e=>e.textContent)};
+    });
+    assert.deepEqual(matrices.labels.map(e=>e.name),['W₁','W₂'],'Label both connection banks on the MLP itself.');
+    assert.deepEqual(matrices.labels.map(e=>e.matrix),['W1','W2']);
+    assert.deepEqual(matrices.data,{w1Rows:String(w*4),w1Cols:'8',w2Rows:'8',w2Cols:'20'});
+    matrices.labels.forEach((e,j)=>{
+      assert(e.x>matrices.columns[j]&&e.x<matrices.columns[j+1],'Place each matrix label between the layers it connects.');
+      assert.equal(e.colour,matrices.shapeText[j].colour,'The on-diagram label matches its matrix/weight-count text.');
+    });
+    assert.equal(matrices.edges[0].length,(w*4<=8?w*4:5)*8);
+    assert.equal(matrices.edges[1].length,8*5,'The hidden-to-output connections stay fixed.');
+    assert(matrices.edges[0].every(([x1,x2])=>x1>matrices.columns[0]&&x2<matrices.columns[1]));
+    assert(matrices.edges[1].every(([x1,x2])=>x1>matrices.columns[1]&&x2<matrices.columns[2]));
+    assert(matrices.shapeText[0].text.includes('Input to hidden')&&matrices.shapeText[0].text.includes(`${w*32} weights`));
+    assert(matrices.shapeText[1].text.includes('Hidden to vocabulary scores')&&matrices.shapeText[1].text.includes('160 weights'));
+    assert.deepEqual(matrices.overflow,[]);
     assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow);
+    if([1,3,20].includes(w))await page.screenshot({path:path.join(shots,`mlp-${w}.png`)});
   }
   await page.evaluate(()=>AT.present.go('s03',1,2));
   await page.screenshot({path:path.join(shots,'mlp-100.png')});

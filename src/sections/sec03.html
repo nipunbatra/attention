@@ -190,6 +190,11 @@ body.present #s03 .window-head-takeaway{font-size:23px;margin-top:12px}
 #s03-net .edges line{stroke:var(--c-q)}
 #s03-net .col-hid circle{fill:var(--t-v);stroke:var(--c-v)}
 #s03-net .lab-in-box{color:var(--c-e)}
+#s03-net .matrix-label{font:italic 25px var(--font-math);fill:var(--c-q)}
+#s03 #s03-net-read .mlp-matrix{display:block;margin-top:12px}
+#s03 #s03-net-read .mlp-matrix-role{display:block;font-size:.9em;color:var(--ink-2);margin-bottom:2px}
+#s03 #s03-net-read .mlp-matrix-shape{color:var(--c-q)}
+#s03 #s03-net-read .mlp-growth-note{display:block;margin-top:14px}
 body.present #s03 #s03-frame2>.card{padding:12px 24px;margin-bottom:10px}
 body.present #s03 #s03-frame2 .card-title{font-size:22px;margin-bottom:10px}
 body.present #s03 #s03-frame2 .win-note{margin:4px 0 6px;font-size:20px}
@@ -224,7 +229,7 @@ body.present #s03 #s03-frame2 .bound .bar{height:26px}
 <div class="frame" data-title="Grow the window" id="s03-frame1" data-autobuild="off">
   <script type="text/x-notes">
     What changes in the network if we use five tokens?
-    Start at w = 3 and name the three columns: the window, a hidden layer, one output per word. The next key press moves the slider to 5: point at the new input nodes and at the first layer's shape. The press after that jumps to 100: the input column collapses and the parameter count in the first layer is read out. Then the claim.
+    Start at w = 3 and name the three columns: the window, a hidden layer, one output per word. Point to W1 above the input-to-hidden connections and W2 above the hidden-to-output connections. These are the two linear layers of the MLP, with the hidden activation between them. The side note gives both matrix shapes and weight counts. The next key press moves the slider to 5: W1 grows while W2 remains 8 by 20. The press after that jumps to 100: the input column collapses and W1 has 3,200 weights, while W2 still has 160. Counts refer to weights and exclude biases.
 
     Timing: about three minutes.
   </script>
@@ -414,6 +419,11 @@ The previous slides showed unavailable earlier words and a matrix that grows wit
   const H = 8;                                   // hidden width of the sketch, stated on the page
   const PRESET = [3, 5, 100];                    // window sizes for builds 0, 1, 2
   const net = AT.netSketch(S.querySelector('#s03-net'), { inputs: PRESET[0]*D, hidden: H, outputs: AT.vocab, collapseAbove: 8, labels:{input:i=>'(c_t)_{'+i+'}'}, inputCaption:n=>n+' input numbers', hiddenCaption: 'hidden, h = ' + H, outputCaption: V + ' vocabulary scores' });
+  const columns=['.col-in','.col-hid','.col-out'].map(selector=>net.svg.querySelector(selector+' .node').transform.baseVal.consolidate().matrix.e);
+  const matrixLabels=net.svg.appendChild(AT.svg('g',{class:'matrix-labels'}));
+  ['W₁','W₂'].forEach((name,j)=>matrixLabels.appendChild(AT.svg('text',{
+    x:(columns[j]+columns[j+1])/2,y:52,class:'matrix-label','text-anchor':'middle','data-matrix':'W'+(j+1)
+  },name)));
   const netRead = S.querySelector('#s03-net-read');
   function shapeText(w){
     const inD = w * D;
@@ -421,8 +431,13 @@ The previous slides showed unavailable earlier words and a matrix that grows wit
   }
   function drawNet(w){
     net.setInputs(w*D);
-    net.svg.setAttribute('aria-label','MLP architecture sketch: '+w+' tokens supply '+(w*D)+' scalar input nodes, followed by '+H+' hidden units and '+V+' vocabulary scores.');
-    netRead.innerHTML = 'Now $w=' + w + '$: <strong>' + (w * D) + ' input numbers</strong>.<br>$W_1\\in\\mathbb R^{' + (w * D) + '\\times ' + H + '}$; $W_2\\in\\mathbb R^{' + H + '\\times ' + V + '}$.';
+    net.svg.setAttribute('aria-label','MLP architecture sketch: '+w+' tokens supply '+(w*D)+' scalar input nodes. W1 connects these inputs to '+H+' hidden units; W2 connects the hidden units to '+V+' vocabulary scores. W1 has '+(w*D*H)+' weights and W2 has '+(H*V)+'. Only W1 grows with the window.');
+    net.svg.dataset.w1Rows=String(w*D);net.svg.dataset.w1Cols=String(H);net.svg.dataset.w2Rows=String(H);net.svg.dataset.w2Cols=String(V);
+    net.svg.querySelectorAll('.edges line').forEach(line=>line.dataset.matrix=Number(line.getAttribute('x1'))<columns[1]?'W1':'W2');
+    netRead.innerHTML = 'Now $w=' + w + '$: <strong>' + (w * D) + ' input numbers</strong>.'
+      + '<span class="mlp-matrix" data-matrix="W1"><span class="mlp-matrix-role">Input to hidden</span><span class="mlp-matrix-shape">$W_1$: $'+(w*D)+'\\times '+H+'$ = '+(w*D*H)+' weights</span></span>'
+      + '<span class="mlp-matrix" data-matrix="W2"><span class="mlp-matrix-role">Hidden to vocabulary scores</span><span class="mlp-matrix-shape">$W_2$: $'+H+'\\times '+V+'$ = '+(H*V)+' weights</span></span>'
+      + '<span class="mlp-growth-note">Only $W_1$ grows with $w$.</span>';
     AT.renderMath(netRead);
   }
   const b1 = S.querySelector('#s03-net-b1'), b2 = S.querySelector('#s03-net-b2');

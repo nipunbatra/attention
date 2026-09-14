@@ -216,26 +216,26 @@ The row from the same source index j. The footer is the sum of those weighted ro
 
 <div class="companion" data-kicker="Weighted-pooling worksheet"><div id="s04-w-arith"></div></div>
 
-<div class="frame" data-title="Where should the weights come from?" data-autobuild="off">
+<div class="frame" id="s04-frame-weight-question" data-title="Where should the weights come from?" data-autobuild="off">
   <script type="text/x-notes">
-Who chose those weights, and what did they know that the model does not?
-Let the room answer before the question callout: you chose them by hand because you know bank wants river. Then reveal the answer and read it slowly: the weights must come from the representations themselves. Do not say attention until the next section.
+Who chose those weights?
+The students chose them by hand. The remaining problem is how a model computes them from the input representations. Bank is the receiving token, and river is one of its available sources. Reveal those two roles before posing the question about computing their shares. Leave the question open here. The next section break names attention, explains the operation in plain language, and only then introduces the search analogy.
 
 Timing: two minutes.
   </script>
   <div class="prose">
-    <p><em>You</em> gave <em>river</em> more weight because it helps interpret <em>bank</em>. A model needs to choose those weights from its inputs. A different receiving token may need different information.</p>
+    <p>So far, <em>you</em> chose the weights by hand. We need a rule that computes the shares from the input rows.</p>
   </div>
 
   <div class="callout callout-key" data-build="1">
-    <p class="qbig">Where should the weights $\va{\alpha_{ij}}$ come from?</p>
-    <p data-build="2">They should depend on <strong>what token $i$ currently needs</strong> and <strong>what information token $j$ contains</strong>.
-    Both are functions of the representations themselves, $\ve{e_i}$ and $\ve{e_j}$. Attention is a way to build that function.</p>
+    <p class="qbig">Which sources are useful for this receiving token?</p>
+    <p><span class="pool-summary">Receiver: bank at $i=7$.</span> <span class="pool-input">One source: river at $j=6$.</span></p>
+    <p data-build="2">How can the model calculate <span class="pool-weight">their weights $\alpha_{ij}$</span> from the inputs?</p>
   </div>
 </div>
 
 <div class="companion after">
-  <p>The weights determine the pooled vector. They should depend on both the receiving token and the sources it could read. A search example will help us separate those two roles.</p>
+  <p>The weighted sum is already defined. The next step is a mechanism that computes its weights from the receiving token and the available sources.</p>
 </div>
 
 <script>
