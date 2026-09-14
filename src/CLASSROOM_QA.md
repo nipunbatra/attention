@@ -1,5 +1,12 @@
 # Classroom release checks
 
+## 2026-09-14: motivate unequal shares before alpha
+
+- Inserted one example-led frame between the mean worksheet and the numbered hand-chosen-weight example. The seven-word prefix ends at the known input bank. Fisherman and river are bold, blue and marked as earlier clues, while bank keeps the teal receiving-token colour. The first question asks students to distinguish the riverside meaning from the financial meaning.
+- Progressive reveals first explain the clues and question the mean's equal treatment of river and “the”, then propose unequal shares chosen by hand. There are no alpha symbols, numerical shares or query terminology on the motivation slide. The existing alpha example follows naturally and now continues the decision rather than reopening the motivation. Notes distinguish human-selected clues from measured weights and avoid implying that grammatical words are always unimportant.
+- The presentation skill guided the example-before-notation order and simple, colour-matched text emphasis. Visually inspected all new content on desktop and phone. Regression verifies the exact prefix, highlighted/bold words, colour meanings, natural mean-to-motivation-to-alpha navigation, repeated reveals, and unchanged pooling/model arithmetic.
+- All 303 presentation states / 539 formulas, the pooling regression, 128 controls, eight live/reference cases (7,980 finite values, max error 8.88e-16), and 390px article QA pass. No JavaScript, KaTeX or overflow failures. The numerical examples, controls, model, Part I, shared runtime, dependencies and PDFs are unchanged.
+
 ## 2026-09-14: a summary section with numbered approaches
 
 - Added a dedicated “Summarizing the prefix” divider after the fixed-window limitation. It defines prefix, states the fixed-width-summary problem, and numbers the progression: 1 averaging, 2 hand-chosen weights, 3 attention-computed weights. The same numbers appear at the existing approach introductions. The roadmap distinguishes how contributions are chosen, without suggesting that averaging and weighted pooling are unrelated operations.

@@ -4983,6 +4983,16 @@ body.present #s04 .pool-bridge-next{font-size:26px;line-height:1.35}
 #s04 .pool-summary,#s04 .vec-label{color:var(--c-v)}
 #s04 .pool-input{color:var(--c-e)}
 #s04 .pool-weight{color:var(--c-a)}
+#s04 .weight-motivation{font-size:20px;line-height:1.45}
+#s04 .weight-motivation p{margin:16px 0}
+#s04 .weight-motivation .clue-sentence{font-size:30px;line-height:1.8;margin:28px 0}
+#s04 .clue-sentence [data-position]{white-space:nowrap}
+#s04 .clue-sentence mark{color:var(--c-e);background:var(--t-e);padding:2px 5px;border-bottom:3px solid var(--c-e)}
+#s04 .clue-sentence .clue-receiver{color:var(--c-v);border-bottom:3px solid var(--c-v);padding:2px 5px}
+#s04 .clue-proposal{border-top:1px solid var(--line);padding-top:18px;margin-top:24px}
+body.present #s04 .weight-motivation{font-size:28px;line-height:1.4}
+body.present #s04 .weight-motivation .clue-sentence{font-size:36px;margin:30px 0}
+@media(max-width:640px){body:not(.present) #s04 .weight-motivation .clue-sentence{font-size:26px;line-height:1.9}}
 #s04 .alpha-example,#s04 .alpha-rule{font-size:18px;line-height:1.45}
 #s04 .alpha-example p,#s04 .alpha-rule p{margin:12px 0}
 #s04 .alpha-reading{display:flex;align-items:center;gap:16px 36px;flex-wrap:wrap;margin:18px 0}
@@ -5145,13 +5155,38 @@ All available rows have the same 1/i weight. Reveal the footer and read it as th
 
 <div class="companion" data-kicker="Mean-pooling worksheet"><div id="s04-mean-arith"></div></div>
 
+<div class="frame" id="s04-frame-weight-motivation" data-title="Which words help us understand bank?" data-autobuild="off">
+  <script type="text/x-notes">Which earlier words tell us what bank means here?
+Return to the seven-word prefix ending at the known input bank. Ask students whether bank means a riverside or a financial institution. Fisherman and river are bold and marked as possible clues. Let students explain their choice before the first reveal. Then contrast those clues with the equal treatment in the mean: river and the get the same share. The point is specific to interpreting bank in this sentence, not that grammatical words are generally useless. On the final reveal, propose unequal contributions. We are choosing them ourselves at this stage. No numerical shares or alpha notation appear yet. The following slide gives one chosen share a number and a symbol.</script>
+  <div class="weight-motivation">
+    <p>Does <strong class="pool-summary">bank</strong> mean a riverside or a financial institution here?</p>
+    <p class="clue-sentence" aria-label="The fisherman sat beside the river bank">
+      <span data-position="1">The</span>
+      <mark data-position="2"><strong>fisherman</strong></mark>
+      <span data-position="3">sat</span>
+      <span data-position="4">beside</span>
+      <span data-position="5">the</span>
+      <mark data-position="6"><strong>river</strong></mark>
+      <strong class="clue-receiver" data-position="7">bank</strong>
+    </p>
+    <div class="clue-reading" data-build="1">
+      <p><strong class="pool-input">Fisherman</strong> and <strong class="pool-input">river</strong> suggest the riverside meaning.</p>
+      <p>But averaging gives <strong class="pool-input">river</strong> and <strong>“the”</strong> equal shares. Should they contribute equally to <span class="pool-summary">bank's context</span>?</p>
+    </div>
+    <div class="clue-proposal" data-build="2">
+      <p>Let's try <strong>unequal shares</strong>, giving these useful clues more influence. First, we will choose the shares ourselves.</p>
+    </div>
+  </div>
+  <div class="companion"><p>The highlights express our interpretation of this sentence, not measured attention weights. Words such as “the” can matter for other questions. No exact shares have been assigned yet. Bank is already an input word at position 7, and the task is to gather context for it from the available prefix.</p></div>
+</div>
+
 <div class="frame" id="s04-frame-weight-rule" data-title="2. Hand-chosen weights" data-autobuild="off">
   <script type="text/x-notes">
 What does a weight of one half do to a four-number row?
 Bank is the already-known input at position 7. We are gathering context for it. River at position 6 is one source. Read alpha, then its two indices in order: receiver 7, source 6. The comma only separates the indices. Choose 0.5 by hand to make the arithmetic easy. This value is an example, not a measured or learned weight. Reveal the table and multiply every coordinate by the same scalar, including the negative and zero coordinates. The second row is only river's contribution. The other six nonnegative weights must together sum to 0.5. A weight is a mixing coefficient, not the probability that the next word is river. The next slide adds all source contributions. The later interactive slide lets students choose a complete set of weights.
   </script>
   <div class="alpha-example">
-    <p>We are building <span class="pool-summary"><strong>bank's</strong> context at $i=7$</span>. Could <span class="pool-input">river</span> get more than the mean's $1/7$ share?</p>
+    <p>We are still building <span class="pool-summary"><strong>bank's</strong> context at $i=7$</span>. Now give <span class="pool-input">river</span> a larger share.</p>
     <div id="s04-alpha-chips"></div>
     <div class="alpha-reading">
       <div class="alpha-symbol">$\va{\alpha_{7,6}=0.5}$</div>

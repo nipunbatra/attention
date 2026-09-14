@@ -189,7 +189,38 @@ try{
   await page.waitForTimeout(100);
   assert.equal(await page.locator('.pool-equation').evaluate(e=>getComputedStyle(e).visibility),'visible','The normal Next action reveals the equation.');
   const poolOrder=await page.locator('#s04 .frame').evaluateAll(els=>els.map(e=>e.id));
-  assert.deepEqual(poolOrder.slice(5,8),['s04-frame-weight-rule','s04-frame-weight-sum','s04-frame-choose'],'Explain one scalar contribution, then the sum, then let students choose all weights.');
+  assert.deepEqual(poolOrder.slice(5,9),['s04-frame-weight-motivation','s04-frame-weight-rule','s04-frame-weight-sum','s04-frame-choose'],'Motivate unequal contributions before the scalar example, the sum and the interactive weights.');
+  await goPool('s04-frame-mean-table',1);
+  await page.evaluate(()=>AT.present.next());await page.waitForTimeout(100);
+  assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s04-frame-weight-motivation','The example-led motivation follows the mean worksheet naturally.');
+  const motivation=await page.locator('#s04-frame-weight-motivation').evaluate(root=>({
+    words:[...root.querySelectorAll('.clue-sentence [data-position]')].map(e=>e.textContent),
+    positions:[...root.querySelectorAll('.clue-sentence [data-position]')].map(e=>Number(e.dataset.position)),
+    clues:[...root.querySelectorAll('.clue-sentence mark')].map(e=>({word:e.textContent,weight:getComputedStyle(e.querySelector('strong')).fontWeight,colour:getComputedStyle(e).color,background:getComputedStyle(e).backgroundColor})),
+    receiver:root.querySelector('.clue-receiver').textContent,
+    receiverColour:getComputedStyle(root.querySelector('.clue-receiver')).color,
+    text:root.querySelector('.weight-motivation').textContent,
+    math:root.querySelectorAll('.katex').length,
+    inputColour:getComputedStyle(root.querySelector('.clue-reading .pool-input')).color,
+    summaryColour:getComputedStyle(root.querySelector('.weight-motivation .pool-summary')).color
+  }));
+  assert.deepEqual(motivation.words,await page.evaluate(()=>AT.sentences.river.slice(0,7)));
+  assert.deepEqual(motivation.positions,[1,2,3,4,5,6,7]);
+  assert.deepEqual(motivation.clues.map(c=>c.word),['fisherman','river']);
+  for(const clue of motivation.clues){assert(Number(clue.weight)>=700);assert.equal(clue.colour,motivation.inputColour);assert.notEqual(clue.background,'rgba(0, 0, 0, 0)');}
+  assert.equal(motivation.receiver,'bank');assert.equal(motivation.receiverColour,motivation.summaryColour);
+  assert(motivation.text.includes('riverside or a financial institution')&&motivation.text.includes('Should they contribute equally'));
+  assert(motivation.text.includes('unequal shares')&&motivation.text.includes('choose the shares ourselves'));
+  assert.equal(motivation.math,0,'Motivate the idea with words before showing a formula.');
+  assert(!/alpha|α|query|0\.5/i.test(motivation.text),'Do not introduce the later notation or numerical share here.');
+  for(const build of [0,1,2,0,2]){
+    await goPool('s04-frame-weight-motivation',build);
+    for(const [selector,step]of [['.clue-reading',1],['.clue-proposal',2]])assert.equal(await page.locator(selector).evaluate(e=>getComputedStyle(e).visibility),build>=step?'visible':'hidden');
+    assert(await page.locator('.clue-sentence').isVisible());
+    await page.screenshot({path:path.join(shots,`weight-motivation-${build}.png`)});
+  }
+  await page.evaluate(()=>AT.present.next());await page.waitForTimeout(100);
+  assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s04-frame-weight-rule','Only after proposing unequal shares do we introduce the alpha example.');
   await goPool('s04-frame-weight-rule',1);
   const example=await page.locator('#s04-frame-weight-rule').evaluate(root=>{
     const table=root.querySelector('.alpha-table');
@@ -327,7 +358,7 @@ try{
   assert.equal(await page.locator('.summary-break h3').evaluate(e=>getComputedStyle(e).display),'none','In the article, use the section heading instead of repeating the same divider title.');
   assert.notEqual(await page.locator('#s04>.sec-head').evaluate(e=>getComputedStyle(e).display),'none');
   await page.locator('#s04-presets [data-preset="equal"]').click();
-  for(const [id,name]of [['s04-frame-summary-break','phone-summary-break'],['s04-frame-pooling-bridge','phone-bridge'],['s04-frame-prefix','phone-prefix'],['s04-frame-mean','phone-mean'],['s04-frame-weight-rule','phone-alpha-example'],['s04-frame-weight-sum','phone-alpha-sum'],['s05-frame-attention-break','phone-attention-break'],['s05-frame-attention-idea','phone-attention-idea'],['s05-frame-retrieval-detour','phone-retrieval-detour']]){
+  for(const [id,name]of [['s04-frame-summary-break','phone-summary-break'],['s04-frame-pooling-bridge','phone-bridge'],['s04-frame-prefix','phone-prefix'],['s04-frame-mean','phone-mean'],['s04-frame-weight-motivation','phone-weight-motivation'],['s04-frame-weight-rule','phone-alpha-example'],['s04-frame-weight-sum','phone-alpha-sum'],['s05-frame-attention-break','phone-attention-break'],['s05-frame-attention-idea','phone-attention-idea'],['s05-frame-retrieval-detour','phone-retrieval-detour']]){
     await page.locator('#'+id).scrollIntoViewIfNeeded();
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No phone document overflow.');
     await page.screenshot({path:path.join(shots,name+'.png')});
@@ -340,5 +371,5 @@ try{
   assert(phoneExample.x>=0&&phoneExample.x+phoneExample.width<=391,'All four coordinates of the worked alpha term fit on a phone.');
   for(const control of [positionSlider,slider])assert((await control.boundingBox()).width>160,'Both current-position sliders have usable phone tracks.');
   assert.deepEqual(errors,[]);
-  console.log(`PASS: summary section break and numbered approaches, 7 window/prefix positions and means, alpha arithmetic, matching colours and reveals, 4 weighted presets, attention-before-retrieval flow, search state, zero-weight fallback and phone layout. Screenshots: ${shots}`);
+  console.log(`PASS: summary section break and numbered approaches, example-led motivation before alpha, 7 window/prefix positions and means, alpha arithmetic, matching colours and reveals, 4 weighted presets, attention-before-retrieval flow, search state, zero-weight fallback and phone layout. Screenshots: ${shots}`);
 }finally{await browser.close();}
