@@ -95,6 +95,18 @@ try{
   await page.waitForTimeout(300); // Nested text follows the existing reveal animation.
   assert.match(await page.locator('#s12-frame-scaling [data-build="2"]').innerText(),/mutually independent, mean 0, variance 1/);
   assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'The deferred explanation still fits.');
+  // Teach W_O as a learned dimension mapping; keep the fixed arithmetic optional.
+  assert.equal(await page.locator('#s09 .frame').count(),8,'The detailed projection calculation is outside the classroom sequence.');
+  assert.equal(await page.locator('#s09-frame-wo-calc').count(),0);
+  await go('s09-frame3');
+  assert.equal(await page.locator('#s09-frame3 table').count(),0,'No zero-heavy matrix on the mapping slide.');
+  assert.match(await page.locator('#s09-frame3 .prose').innerText(),/In a trained model.*learns.*required dimensions/s);
+  const projectionMath=(await page.locator('#s09-projection-shapes annotation').allTextContents()).join(' ');
+  for(const shape of ['1\\times '+model.d_v,model.d_v+'\\times '+model.d_model,'1\\times '+model.d_model])assert(projectionMath.includes(shape),'Projection shape '+shape+' matches the model.');
+  assert(!(await page.locator('#s09-projection-details').isVisible()),'The optional matrix never appears in presentation mode.');
+  assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow);
+  await page.evaluate(()=>AT.present.next());
+  assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s09-frame4','Proceed directly from the mapping to residual addition.');
   for(const context of ['river','cheque','river']){
     const F=forward(model,model.sentences[context]);
     await go('s09-frame-prediction-input');
@@ -124,13 +136,24 @@ try{
   }
   await go('s07-frame-pair');
   await page.locator('#s07-rchips button').nth(5).click();
-  const changedFrames=['s07-frame1','s07-frame-keys','s07-frame-values','s07-frame-pair','s08-frame-phases','s08-frame-scores','s12-frame-scaling','s09-frame-prediction-input','s09-frame-prediction-output','s11-frame1','s11-frame-query-calc','s11-frame-key-calc','s11-frame-value-calc'];
+  const changedFrames=['s07-frame1','s07-frame-keys','s07-frame-values','s07-frame-pair','s08-frame-phases','s08-frame-scores','s12-frame-scaling','s09-frame3','s09-frame4','s09-frame-prediction-input','s09-frame-prediction-output','s11-frame1','s11-frame-query-calc','s11-frame-key-calc','s11-frame-value-calc'];
   for(const id of changedFrames){
     await go(id);await page.screenshot({path:path.join(shots,id+'.png')});
   }
   assert.equal(await page.evaluate(()=>JSON.stringify(AT.model)),original,'All controls preserve the canonical model.');
   await page.evaluate(()=>AT.present.exit());
   await page.setViewportSize({width:390,height:844});
+  const woGlyphs=await page.locator('#s09-projection-shapes .mord.mathnormal').evaluateAll(els=>els.filter(e=>e.textContent==='W'||e.textContent==='O').map(e=>({text:e.textContent,rect:e.getBoundingClientRect().toJSON()})));
+  const wGlyph=woGlyphs.find(e=>e.text==='W').rect,oGlyph=woGlyphs.find(e=>e.text==='O').rect;
+  assert(oGlyph.left>=wGlyph.right-1&&oGlyph.top<wGlyph.bottom,'W_O stays together above its shape label on phones.');
+  assert.equal(await page.locator('#s09-projection-details').getAttribute('open'),null,'The zero-heavy arithmetic starts collapsed in reading mode.');
+  await page.locator('#s09-projection-details summary').click();
+  assert(await page.locator('#s09-wo').isVisible());
+  assert.deepEqual(await rows('#s09-wo'),model.W_O,'The optional source matrix is unchanged.');
+  assert(await page.locator('#s09-wocalc').isVisible());
+  assert.match(await page.locator('#s09-projection-details p').first().innerText(),/hand-chosen.*specific to this example/s);
+  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Optional arithmetic scrolls locally on phones.');
+  await page.locator('#s09-projection-details summary').click();
   assert(await page.locator('#s08 .companion [data-scale-intro]').isVisible(),'The first-use note also appears in reading mode.');
   for(const id of changedFrames){
     if(id==='s08-frame-scores')continue; // Reading mode uses the combined phase-A table.
@@ -146,5 +169,5 @@ try{
   await page.locator('.phase-overview').scrollIntoViewIfNeeded();
   await page.screenshot({path:path.join(shots,'phone-phase-message.png')});
   assert.deepEqual(errors,[]);
-  console.log('PASS: supplied Q/K/V match reference; seven paired source records; staged two-phase diagram and colour matching; first-use scaling signpost and later explanation; no premature projections; both position-10 predictions; all shared-matrix derivations; model/state retention; phone layout. Screenshots: '+shots);
+  console.log('PASS: supplied Q/K/V match reference; seven paired source records; staged two-phase diagram and colour matching; first-use scaling signpost and later explanation; learned output-mapping slide and optional fixed arithmetic; no premature projections; both position-10 predictions; all shared-matrix derivations; model/state retention; phone layout. Screenshots: '+shots);
 }finally{await browser.close();}

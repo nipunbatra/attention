@@ -31,10 +31,9 @@
 #s09 .rd{margin:10px 0 0;font-size:15px;color:var(--ink-2);max-width:72ch;line-height:1.5}
 #s09 .ws-lab{font-size:13px;color:var(--ink-3);font-weight:600;margin:16px 0 2px}
 #s09 #s09-chain .dt-fig{margin-top:8px}
-body.present #s09-frame3 .card{padding:.6em .8em}
-body.present #s09-frame3 .dt-note{font-size:.72em;line-height:1.35}
-body.present #s09-frame3 .ws-lab{margin:8px 0 2px}
-body.present #s09-frame3 .calc-rounding{display:none}
+#s09 .s09-projection-details summary{cursor:pointer;font-weight:600}
+#s09 .s09-projection-details .card{margin-top:14px}
+#s09-projection-shapes .katex{white-space:nowrap}
 body.present #s09 .rd,body.present #s09 .ws-lab,body.present #s09 .tab-lab{font-size:22px;line-height:1.35}
 body.present #s09 .dt-cap,body.present #s09 .dt-note{display:none}
 body.present #s09 .dt td,body.present #s09 .dt th{font-size:22px;padding:.2em .4em}
@@ -144,27 +143,28 @@ It is the weighted mixture of the selected values, in value space. W_O maps it i
   </div>
 </div>
 
-<div class="frame" id="s09-frame3" data-title="Where should each message coordinate land?">
+<div class="frame" id="s09-frame3" data-title="A learned mapping into embedding space" data-autobuild="off">
   <script type="text/x-notes">
 How does W_O turn a value-space message into a representation-space update?
-Read one column of the d_v × d_model output projection, then one coordinate of the addition. Delta e is an activation update for this input, not a learning update to the embedding table.
+Training learns the d_v × d_model mapping. Each output coordinate can combine all message coordinates. The two-coordinate message becomes a four-coordinate update that can be added to the input embedding. The worked model uses a fixed hand-chosen matrix for inspectable arithmetic; its zero columns are not a requirement of output projections. Delta e is an activation update for this input, not a learning update to the embedding table.
   </script>
-<div class="card">
-  <h3 class="card-title">The output projection: $m_7$ (value space, $1 \times d_v$) $\to$ $\vd{\Delta e_7}$ (representation space, $1 \times d_{\text{model}}$)</h3>
-  <div id="s09-wo"></div>
+  <div class="prose">
+    <p>In a trained model, $W_O$ learns how to map the <span class="sym-v">message $\vm{m_7}$</span> into an <span class="sym-d">update $\vd{\Delta e_7}$</span> with the embedding's required dimensions.</p>
+    <div id="s09-projection-shapes">$$\underbrace{\vm{m_7}}_{1\times 2}\;\underbrace{W_O}_{2\times 4}=\underbrace{\vd{\Delta e_7}}_{1\times 4}$$</div>
+    <p>Each update coordinate can combine both message coordinates. The <span class="sym-d">update</span> now matches the shape of the <span class="sym-e">embedding $\ve{e_7}$</span>, so we can add them.</p>
+  </div>
 </div>
 
-</div>
-<div class="frame" id="s09-frame-wo-calc" data-title="Work through the output projection">
-  <script type="text/x-notes">
-What does one column of W_O decide?
-It decides how every value-space message coordinate contributes to one representation-space update coordinate. This is an activation update, not an optimizer update.
-  </script>
+<details class="companion s09-projection-details" id="s09-projection-details">
+  <summary>Optional: the fixed matrix used in this worked example</summary>
+  <p>Our illustrative $W_O$ is hand-chosen, with simple entries so the arithmetic is easy to check. Its zero columns are specific to this example. A trained output projection learns the mapping and can mix message coordinates into every embedding coordinate.</p>
   <div class="card">
+    <h3 class="card-title">The example's $d_v\times d_{\text{model}}$ output projection</h3>
+    <div id="s09-wo"></div>
     <p class="ws-lab" id="s09-wolab"></p>
     <div id="s09-wocalc"></div>
   </div>
-</div>
+</details>
 <div class="frame" id="s09-frame4" data-title="Is Δe a new representation, or an update to add?">
   <script type="text/x-notes">
 What does the plus sign keep that the attention output alone would not keep?

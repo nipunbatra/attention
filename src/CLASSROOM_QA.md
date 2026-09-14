@@ -1,5 +1,10 @@
 # Classroom release checks
 
+## 2026-09-14: explain the output projection as a learned mapping
+
+- Replaced Section 9's zero-heavy output matrix slide with a concise explanation of the learned mapping into embedding space, using the 1×2 · 2×4 = 1×4 shapes and matching message/update/embedding colours. Moved the fixed matrix and its following arithmetic frame into one collapsed optional reading detail. It explicitly identifies the hand-chosen matrix and its zero columns as properties of this example, not requirements of a trained projection. The classroom sequence has one fewer slide and goes directly from the mapping to residual addition. Source weights and numerical outputs are unchanged.
+- The presentation skill guided the flat, editable math layout and preservation of the existing colours. Visually checked desktop, phone, the next-slide transition and expanded reading detail. A local nowrap rule keeps the W_O subscript attached above its shape label on phones. Regression checks the learned-mapping explanation and shapes, absence of matrix entries in the presentation frame, optional-detail visibility and unchanged source values. All 316 presentation states / 558 formulas, phone QA and eight independent numerical-model cases pass.
+
 ## 2026-09-14: introduce the square-root factor before deferring its derivation
 
 - Added a brief note beside the first scaled-score table in Section 8, in both reading and presentation modes. It defines d_k as the three coordinates per query/key, distinguishes that from the token count, and identifies division by sqrt(3) as scale control before softmax. The note points to Section 12, whose existing opening now explicitly returns to this example before the variance argument. No new frame, reveal, model or dependency changes. The presentation skill guided the existing layout and semantic math colours.
