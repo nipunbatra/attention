@@ -6448,15 +6448,9 @@ Reveal the query, then the winning video's key, then its value. Each SVG lists t
 <!-- ===== sec06.html ===== -->
 <section id="s06" class="sec" data-title="Hard retrieval → soft retrieval" data-lit="">
 <style>
-#s06 .srows{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:2px 32px;margin:14px 0 4px}
-#s06 .srows .slider{display:grid;grid-template-columns:minmax(150px,auto) minmax(80px,1fr) 3.6em;width:100%;gap:10px;padding:3px 0;align-items:center}
-#s06 .srows .slider-label{font-weight:500;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#s06 .srows .slider input[type=range]{width:100%;max-width:none;min-width:0}
-#s06 .srows .slider-val{text-align:right}
 #s06 .look{font-size:14px;color:var(--ink-2);margin:8px 0 0;max-width:84ch}
 #s06 .score-origin{font-size:16px;line-height:1.45;margin:0 0 14px}
 #s06 .score-term{display:inline-block;white-space:nowrap}
-#s06 #s06-score-edited[hidden]{display:none}
 body.present #s06 .score-origin{font-size:24px}
 #s06 .modebox{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;padding:10px 14px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--paper);margin:0 0 12px}
 #s06 .modebox .slider{margin:0}
@@ -6490,9 +6484,6 @@ body.present #s06 .dt-cap,body.present #s06 .dt-note{display:none}
 body.present #s06 .dt td.dt-num{font-size:.68em;min-width:3.35em;padding:.18em .45em}
 body.present #s06 .dt thead th{font-size:.62em;padding:.2em .45em}
 body.present #s06 .dt tbody th,body.present #s06 .dt tfoot th{font-size:.68em;padding:.18em .45em}
-body.present #s06 .srows{grid-template-columns:repeat(2,minmax(0,1fr));gap:.08em .7em;margin:.4em 0 .1em}
-body.present #s06 .srows .slider{grid-template-columns:minmax(0,1fr) minmax(3em,.9fr) 2.8em;gap:.35em;padding:.08em 0}
-body.present #s06 .srows .slider-label{font-size:.63em}
 body.present #s06 .look,body.present #s06 .hint,body.present #s06 .taunote{font-size:.62em}
 body.present #s06 .look,body.present #s06 .hint{margin:.35em 0 0}
 body.present #s06 .modebox{gap:.35em .7em;padding:.35em .55em;margin:0 0 .35em}
@@ -6523,7 +6514,6 @@ body.present #s06 .modebox .slider{font-size:.75em}
 body.present #s06 #s06-dot .dt tr>:nth-child(n+2):nth-child(-n+5){display:none}
 body.present #s06 #s06-dot .dt tbody tr:first-child{display:none}
 body.present #s06 #s06-dot .dt{width:100%}
-@media(max-width:380px){#s06 .srows{grid-template-columns:minmax(0,1fr)}#s06 .srows .slider{grid-template-columns:minmax(0,1fr) minmax(60px,1fr) 3em}}
 #s06 .s06-classroom{display:none}
 body.present #s06 .s06-classroom{display:block}
 body.present #s06 .dt td.dt-num,body.present #s06 .dt thead th,body.present #s06 .dt tbody th,body.present #s06 .dt tfoot th{font-size:22px;padding:7px 10px}
@@ -6532,15 +6522,9 @@ body.present #s06 .dt-fig{margin:0}
 body.present #s06 .modebox{padding:8px 14px;margin:0 0 14px;gap:14px}
 body.present #s06 #s06-score-scale{margin-left:auto;font-size:22px;color:var(--ink-2)}
 body.present #s06 .modebox .slider{font-size:28px}
-body.present #s06 .srows{grid-template-columns:minmax(0,1fr);gap:10px;margin:12px 0}
-body.present #s06 .srows .slider{grid-template-columns:230px minmax(70px,1fr) 58px;gap:12px;padding:0}
-body.present #s06 .srows .slider-label,body.present #s06 .srows .slider-val{font-size:22px}
 body.present #s06 .look,body.present #s06 .hint{display:block;font-size:22px;line-height:1.35;margin-top:14px}
 body.present #s06 .card-mix{display:block;border:0;padding:0;margin:0 0 24px}
 body.present #s06 .callout-key{font-size:28px;padding:16px 22px;margin:18px 0}
-body.present #s06 .s06-experiment{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:38px;align-items:start}
-body.present #s06 .s06-experiment .bars{gap:8px 16px;margin:18px 0}
-body.present #s06 .s06-experiment .bars .bt{height:26px}
 body.present #s06 #s06-mode-equation .katex-display{margin:10px 0 18px}
 body.present #s06 #s06-temp-bars .bars{gap:10px 16px;margin:22px 0}
 body.present #s06 #s06-temp-bars .bars .bt{height:28px}
@@ -6564,7 +6548,7 @@ body.present #s06 #s06-mix .dt td.dt-num,body.present #s06 #s06-card-mix .dt td.
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Hard retrieval returns the value of the highest-scoring item. Attention blends values according to how well their keys match the query. Follow that calculation in the tables: softmax converts the previous section's scores into the $\va{\alpha_j}$ weights, each weight scales its value row, and the bottom row adds the results. Start in hard mode, where one item gets all the weight. Switch to soft mode and lower the temperature to see it approach hard retrieval. Raising a single score changes every weight because they share a denominator. The returned row is a mixture of values.</p>
+  <p>Hard retrieval returns the value of the highest-scoring item. Attention blends values according to how well their keys match the query. Follow that calculation in the tables: softmax converts the previous section's scores into the $\va{\alpha_j}$ weights, each weight scales its value row, and the bottom row adds the results. Start in hard mode, where one item gets all the weight. Switch to soft mode and lower the temperature to see it approach hard retrieval. The returned row is a mixture of values.</p>
 </div>
 
 <div class="frame" id="s06-frame-hard-retrieval" data-title="Hard retrieval returns one item's value" data-autobuild="off">
@@ -6583,11 +6567,11 @@ Trace the matching colours: the purple query is the request, the orange key desc
 
 <div class="frame" id="s06-frame-scores" data-title="The scores come from query–key dot products" data-autobuild="off">
 <script type="text/x-notes">Where did the six scores come from?
-Use the same gradient-information query and six video keys from the retrieval example. For every video j, multiply matching query/key coordinates and add them: s_j = q dot k_j. Trace the purple query numbers and orange key numbers in the Backpropagation example, then point to 4.8 in its row. Repeat the same operation with each other key to obtain the other five rows. The score column supplies the numbers used to choose one winner on the previous slide. Next we will turn these scores into shares so several values can contribute. Later score sliders can override these dot products; the edited-score notice makes that intervention explicit.</script>
+Use the same gradient-information query and six video keys from the retrieval example. For every video j, multiply matching query/key coordinates and add them: s_j = q dot k_j. Trace the purple query numbers and orange key numbers in the Backpropagation example, then point to 4.8 in its row. Repeat the same operation with each other key to obtain the other five rows. The score column supplies the numbers used to choose one winner on the previous slide. Next we will turn these scores into shares so several values can contribute.</script>
 <div class="card">
   <p class="score-origin">Same <span class="sym sym-q">gradient-information query $\vq{q}$</span>, same six <span class="sym sym-k">video keys $\vk{k_j}$</span>.<br>Each <span class="sym sym-a">score</span> is $\va{s_j}=\vq{q}\cdot\vk{k_j}$, with $j$ identifying the video.</p>
   <div id="s06-dot"></div>
-  <p class="look" id="s06-score-example"><span id="s06-score-edited" hidden>Table scores were edited by the later sliders. Original </span>Backpropagation ($j=1$):<br><span class="score-term">$\va{s_1}=\vq{2.0}\times\vk{2.2}$</span> <span class="score-term">${}+\vq{0.6}\times\vk{0.6}$</span> <span class="score-term">${}+\vq{0.2}\times\vk{0.2}$</span> <span class="score-term">${}+\vq{0.0}\times\vk{0.0}=\va{4.8}$</span>.</p>
+  <p class="look" id="s06-score-example">Backpropagation ($j=1$):<br><span class="score-term">$\va{s_1}=\vq{2.0}\times\vk{2.2}$</span> <span class="score-term">${}+\vq{0.6}\times\vk{0.6}$</span> <span class="score-term">${}+\vq{0.2}\times\vk{0.2}$</span> <span class="score-term">${}+\vq{0.0}\times\vk{0.0}=\va{4.8}$</span>.</p>
 </div>
 </div>
 
@@ -6636,20 +6620,6 @@ They keep the same eight content axes and order as the video values. Point to ch
   <div id="s06-arith"></div>
 </div>
 
-<div class="frame" id="s06-frame-change-score" data-title="Change one score. Every soft weight responds." data-autobuild="off">
-<script type="text/x-notes">Raise Gradient descent to match Backpropagation. What should the two weights do?
-Softmax shares weight between tied top scores. Raising one score changes the common denominator, so every other weight moves too.</script>
-<div class="card s06-experiment">
-  <div>
-    <div class="srows" id="s06-sliders" data-keep-state></div>
-    <div class="btn-row"><button type="button" class="btn btn-quiet" id="s06-reset">Reset scores</button></div>
-  </div>
-  <div class="s06-classroom" id="s06-adjust-bars"></div>
-</div>
-<p class="companion hint" id="s06-hint"></p>
-<p class="companion">A score changed by a slider no longer equals the original dot product. Treat it as a controlled intervention on the matching result, as if the key had changed.</p>
-</div>
-
 <div class="frame" id="s06-frame-temperature" data-title="Temperature controls concentration" data-autobuild="off">
 <script type="text/x-notes">As temperature falls, what happens to a unique best match?
 Its weight approaches one. If top scores tie, those top items keep sharing the weight: the limit need not select one item.</script>
@@ -6666,7 +6636,7 @@ Its weight approaches one. If top scores tie, those top items keep sharing the w
 </div>
 
 <div class="companion after">
-  <p>The scores determine the weights, which determine the mixture. Changing one score changes the shared softmax denominator, so all the weights respond while still summing to 1.</p>
+  <p>The scores determine the weights, which determine the mixture.</p>
 </div>
 
 <script>
@@ -6737,31 +6707,24 @@ Its weight approaches one. If top scores tie, those top items keep sharing the w
   });
   const resultMix = AT.ui.table([AT.zeros(VAL_AXES.length)], { cols:VAL_AXES.map(label=>({label,cls:'v'})),rowCls:'m',rowLabels:['$\\sum_j \\va{\\alpha_j}\\,\\vv{v_j}$'],cornerLabel:'returned row',decimals:3,into:S.querySelector('#s06-card-mix') });
 
-  /* score table: query row, key rows, and a score column fed by the sliders */
+  /* score table: query row, key rows, and their fixed dot-product scores */
   const dot = AT.ui.table([Q].concat(VIDEOS.map(V => V.k)), { cols: KEY_AXES, rowLabels: ['the question'].concat(titles), rowCls: ['q'].concat(titles.map(() => 'k')), highlightRow: 0,
     cornerLabel: 'video', decimals: 1,
     computed: [{ label: 'score', cls: 'a', decimals: 1, fn: (row, i) => i === 0 ? '' : s[i - 1] }],
-    caption: 'The score column starts as the dot products from the previous section: $s_j = \\vq{q}\\cdot \\vk{k_j}$. The sliders below overwrite it.',
+    caption: 'The score column contains the dot products from the previous section: $s_j = \\vq{q}\\cdot \\vk{k_j}$.',
     note: 'Hover or focus a score to see where it comes from; click it for the worksheet.', into: S.querySelector('#s06-dot') });
   const pop = AT.ui.popover(dot, { label: 'Score arithmetic' });
   function openCalc(j, td){
     const calc = AT.ui.dotCalc(Q, VIDEOS[j].k, { axes: KEY_AXES, qLabel: 'q · the question', kLabel: 'k · ' + VIDEOS[j].title, scale: false, decimals: 1 });
-    const extra = Math.abs(s[j] - DEF[j]) < 0.05 ? [] : [AT.h('p', { class: 'calc-line' }, 'The slider has set this score to ' + AT.fmt(s[j], 1) + ' instead; think of it as a different key.')];
-    pop.show(td, 'score of ' + VIDEOS[j].title + ' for the query', [calc].concat(extra));
+    pop.show(td, 'score of ' + VIDEOS[j].title + ' for the query', [calc]);
   }
   VIDEOS.forEach((V, j) => {
     const td = dot.computedCells[j + 1][0];
-    dot.tipOn(td, () => (Math.abs(s[j] - DEF[j]) < 0.05
-      ? AT.productLine(Q, V.k, 1)
-      : 'set by the slider; the dot product of this row is ' + AT.fmt(DEF[j], 1)) + ' (click for the worksheet)');
+    dot.tipOn(td, () => AT.productLine(Q, V.k, 1) + ' (click for the worksheet)');
     td.classList.add('has-calc');
     td.addEventListener('click', () => openCalc(j, td));
     td.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); openCalc(j, td); } });
   });
-
-  const sliders = VIDEOS.map((V, j) => AT.ui.slider({ label: V.title, min: -2, max: 8, step: 0.1, value: s[j], format: v => AT.fmt(v, 1),
-    onInput: v => { s[j] = v; draw(); }, into: S.querySelector('#s06-sliders') }));
-  S.querySelector('#s06-reset').addEventListener('click', () => { DEF.forEach((v, j) => { s[j] = round1(v); sliders[j].setValue(s[j], false); }); draw(); });
 
   const mode = AT.ui.toggle({ label: 'Retrieval mode', on: false, offText: 'hard (argmax)', onText: 'soft (softmax)', onChange: on => { soft = on; draw(); }, into: S.querySelector('#s06-mode') });
   const temp = AT.ui.slider({ label: 'Temperature τ (soft mode)', min: 0.1, max: 4, step: 0.1, value: 1, format: v => AT.fmt(v, 1), onInput: v => { tau = v; draw(); }, into: S.querySelector('#s06-temp') });
@@ -6779,7 +6742,6 @@ Its weight approaches one. If top scores tie, those top items keep sharing the w
   });
   const expHeader = weightTable.table.querySelector('thead tr').children[2];
   const barItems = () => titles.map((label, j) => ({ label, p: alphaArr[j] }));
-  const adjustBars = AT.ui.bars(barItems(), { cls: 'a', max: 1, sorted: false, decimals: 3, into: S.querySelector('#s06-adjust-bars') });
   const tempBars = AT.ui.bars(barItems(), { cls: 'a', max: 1, sorted: false, decimals: 3, into: S.querySelector('#s06-temp-bars') });
   const mix = AT.ui.mixTable(alphaArr, VIDEOS.map(V => V.v), { cols: VAL_AXES, rowLabels: titles, cornerLabel: 'video', weighted: true, decimals: 3, footerCls: 'v', into: S.querySelector('#s06-mix'),
     caption: 'Each row is $\\va{\\alpha_j}\\,\\vv{v_j}$, the value row scaled by its weight; the footer adds the rows. Rows with weight 0 are greyed out, so in hard mode only the winner is left.',
@@ -6812,7 +6774,6 @@ Its weight approaches one. If top scores tie, those top items keep sharing the w
     temp.classList.toggle('is-off', !soft);
     temp.input.disabled = !soft;
     dot.update([Q].concat(VIDEOS.map(V => V.k)));
-    S.querySelector('#s06-score-edited').hidden = s.every((score, j) => Math.abs(score - round1(DEF[j])) < 1e-9);
     alpha.forEach((a, j) => { alphaArr[j] = a; });
     const exps = s.map(x => Math.exp(x / tau));
     AT.tex(expHeader, Math.abs(tau - 1) < 1e-9 ? 'e^{s_j}' : 'e^{s_j/\\tau}');
@@ -6820,7 +6781,7 @@ Its weight approaches one. If top scores tie, those top items keep sharing the w
     weightTable.update(s.map((score, j) => [score, expDisplay(exps[j]), alpha[j]]));
     weightTable.setFooter(['', expDisplay(AT.sum(exps)), AT.fmt(AT.sum(alpha), 3)]);
     weightTable.setHighlightRow(soft ? -1 : jstar);
-    adjustBars.update(barItems()); tempBars.update(barItems());
+    tempBars.update(barItems());
     mix.setAlpha(alphaArr);
     resultCards.forEach((card, j) => {
       card.classList.toggle('is-winner', j === jstar);
@@ -6849,16 +6810,9 @@ Its weight approaches one. If top scores tie, those top items keep sharing the w
   if (AT.present && AT.present.on) AT.present.on('frame', st => {
     if (!st.frame || st.frame.id !== 's06') return;
     if (st.frame.index === 0 && soft) mode.set(false, true);
-    if ((st.frame.index === 2 || st.frame.index >= 6) && !soft) mode.set(true, true);
+    if ((st.frame.index === 2 || st.frame.index === 6) && !soft) mode.set(true, true);
   });
 
-  /* "Try it" hint: the numbers are computed from the same scores, so the text always matches what the widget shows */
-  (function(){
-    const GD = 1, BP = 0, TIE = round1(DEF[BP]);
-    const sTry = DEF.slice(); sTry[GD] = TIE;
-    const aTry = AT.softmax(sTry);
-    S.querySelector('#s06-hint').innerHTML = 'Try it: drag ' + VIDEOS[GD].title + ' up to ' + AT.fmt(TIE, 1) + '. In soft mode the two now share the weight (about ' + AT.fmt(aTry[BP], 2) + ' / ' + AT.fmt(aTry[GD], 2) + ' at ' + AT.texStr('\\tau = 1') + '); hard retrieval still returns only the first top row, ' + VIDEOS[BP].title + '. Push ' + VIDEOS[GD].title + ' past ' + AT.fmt(DEF[BP], 1) + ' and hard retrieval snaps to ' + VIDEOS[GD].title + ' alone.';
-  })();
 })();
 </script>
 </section>

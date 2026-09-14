@@ -1,5 +1,10 @@
 # Classroom release checks
 
+## 2026-09-14: remove the score-change exercise
+
+- Removed Section 6's score-change frame and its six sliders, reset button, bar chart and exercise hints from both presentation and reading modes. Removed obsolete score-override notices and styles. The presentation skill guided the shorter sequence: the returned-vector frame now leads directly to temperature, then back to the sentence example. The original query–key scores, source values, hard/soft comparison and temperature control remain intact. The removed exercise is recoverable in Git history.
+- Regression verifies the seven-frame order, next/previous navigation, soft-mode activation at the new temperature index, and the handoff to Section 7. The four remaining hard/soft/temperature cases independently check 192 weighted products and 32 returned coordinates. Visually inspected desktop transitions and the phone article. All 324 presentation states / 556 formulas, 144 controls and 390px article QA pass.
+
 ## 2026-09-14: simplify the returned-information slide
 
 - Removed the redundant hard/soft status line, including the arbitrary 2% contribution count, from Section 6's returned-row frame. Kept the eight-coordinate result, its interpretation and the next-build takeaway. Removed the unused status calculation and scoped styles. The presentation skill guided removal of the extra text without changing the deck's layout conventions.

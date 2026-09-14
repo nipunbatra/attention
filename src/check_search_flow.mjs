@@ -84,7 +84,9 @@ try{
   const firstScore=queries[0].reduce((sum,q,c)=>sum+q*keys[0][c],0);
   assert(arithmetic.includes('=\\va{'+firstScore.toFixed(1)+'}'));
   assert.deepEqual((await page.locator('#s06-dot tbody td.dt-comp').allTextContents()).slice(1).map(Number),keys.map(k=>Number(k.reduce((sum,x,c)=>sum+x*queries[0][c],0).toFixed(1))));
-  assert(await page.locator('#s06-score-edited').isHidden());
+  assert.equal(await page.locator('#s06-frame-change-score, #s06-sliders, #s06-reset, #s06-adjust-bars, #s06-score-edited').count(),0,'Remove the score-change slide and its controls/notices from both views.');
+  assert.deepEqual(await page.locator('#s06 .frame').evaluateAll(es=>es.map(e=>e.id)),['s06-frame-hard-retrieval','s06-frame-scores','s06-frame-normalize','s06-frame-weights','s06-frame-weighted-values','s06-frame-message','s06-frame-temperature'],'The result now leads directly to temperature, with one fewer frame.');
+  assert(!/later sliders|sliders below|slider has set|Try it: drag/.test(await copy('s06')),'No obsolete instructions for the removed sliders remain.');
   await page.screenshot({path:path.join(shots,'score-provenance.png')});
   for(const id of [...queryFrames,...keyFrames]){
     for(const build of id==='s05-frame-key-collection'?[0]:[0,1]){
@@ -225,21 +227,18 @@ try{
       }
     }
   }
-  const setScores=async(scores)=>page.locator('#s06-sliders input').evaluateAll((els,vals)=>els.forEach((e,j)=>{e.value=vals[j];e.dispatchEvent(new Event('input',{bubbles:true}));}),scores);
   const setSoft=async(soft)=>{await go('s06-frame-weights');const button=page.locator('#s06-mode button');if((await button.getAttribute('aria-pressed')==='true')!==soft)await button.click();};
   const close=(actual,expected,label)=>{assert.equal(actual.length,expected.length,label);actual.forEach((x,i)=>assert(Math.abs(x-expected[i])<=.000501,label+' coordinate '+i));};
   const baseScores=keys.map(k=>Number(k.reduce((s,x,c)=>s+x*queries[0][c],0).toFixed(1)));
   for(const test of [
     {name:'hard',scores:baseScores,soft:false,tau:1},
     {name:'soft',scores:baseScores,soft:true,tau:1},
-    {name:'tied-soft',scores:baseScores.map((x,j)=>j===1?baseScores[0]:x),soft:true,tau:1},
     {name:'sharp',scores:baseScores,soft:true,tau:.1},
-    {name:'broad',scores:baseScores,soft:true,tau:4},
-    {name:'dropout-source',scores:baseScores.map((x,j)=>j===5?8:x),soft:false,tau:1}
+    {name:'broad',scores:baseScores,soft:true,tau:4}
   ]){
-    await setSoft(test.soft);await setScores(test.scores);
+    await setSoft(test.soft);
     await go('s06-frame-scores');
-    assert.equal(await page.locator('#s06-score-edited').isVisible(),test.scores.some((s,j)=>s!==baseScores[j]),'Edited-score notice distinguishes later interventions from original dot products.');
+    assert.deepEqual((await page.locator('#s06-dot tbody td.dt-comp').allTextContents()).slice(1).map(Number),baseScores,'All retrieval modes retain the original query–key scores.');
     assert.equal((await page.locator('#s06-score-example annotation').allTextContents()).join(' '),arithmetic,'The original worked example stays fixed.');
     await page.locator('#s06-temp input').evaluate((e,v)=>{e.value=v;e.dispatchEvent(new Event('input',{bubbles:true}));},test.tau);
     const max=Math.max(...test.scores),exp=test.scores.map(s=>Math.exp((s-max)/test.tau)),total=exp.reduce((a,b)=>a+b,0);
@@ -261,6 +260,15 @@ try{
     assert((await page.locator('#s06-mread').textContent()).includes('what comes back is'),'Keep the returned-feature explanation in every retrieval mode.');
     assert.equal(await page.evaluate(()=>AT.present.fitReport().overflow),false);
   }
+  await setSoft(false);
+  await go('s06-frame-message',1);await page.evaluate(()=>AT.present.next());
+  assert.equal(await page.locator('#s06 .frame.is-live').getAttribute('id'),'s06-frame-temperature','Next skips the removed slide.');
+  assert.equal(await page.locator('#s06-mode button').getAttribute('aria-pressed'),'true','Temperature still enters soft mode at its new frame index.');
+  assert(await page.locator('#s06-temp input').isEnabled());
+  await page.evaluate(()=>AT.present.prev());
+  assert.equal(await page.locator('#s06 .frame.is-live').getAttribute('id'),'s06-frame-message','Previous returns directly to the result.');
+  await go('s06-frame-temperature',1);await page.evaluate(()=>AT.present.next());
+  assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s07-frame-return-to-sentence','The final retrieval slide still hands off to the sentence example.');
   const qBefore=await matrix('s05-query-vector');
   await go('s05-frame-key-examples',1);
   for(const j of [2,5,1]){
@@ -315,5 +323,5 @@ try{
     assert(box.scroll>box.width&&box.x>=0&&box.right<=391,'Named axes scroll locally on phones.');
   }
   assert.deepEqual(errors,[]);
-  console.log('PASS: four expanded source explanations with exact returned vectors and linked content features; query/key lessons and 24 scores; four concrete Q/K/V recaps with exact SVG vectors, paired sources, scaled bars and staged reveals; eight named value axes, all 48 stored values, 288 weighted products, 48 mixture coordinates, hard/soft/tied/temperature cases, independent state, desktop and phone layout. Screenshots: '+shots);
+  console.log('PASS: four expanded source explanations with exact returned vectors and linked content features; query/key lessons and 24 scores; four concrete Q/K/V recaps with exact SVG vectors, paired sources, scaled bars and staged reveals; eight named value axes, all 48 stored values, 192 weighted products, 32 mixture coordinates, hard/soft/temperature cases, removed score-change slide and forward/back transitions, independent state, desktop and phone layout. Screenshots: '+shots);
 }finally{await browser.close();}
