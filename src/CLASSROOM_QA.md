@@ -1,5 +1,11 @@
 # Classroom release checks
 
+## 2026-09-14: use Q/K/V before deriving their projections
+
+- Section 7 now supplies the existing bank query, seven keys and their paired values on named axes, before any Q/K/V projection equation. The source inspector keeps bank as receiver. Section 8 carries those same rows through scores, shares and messages; its value-only experiment changes V directly and defers the output-space update. Section 9 completes the message → output projection → residual path, then previews the final-token update and actual next-word probabilities for both contexts.
+- Moved projection teaching to its existing Section 11 home: first ask where the supplied rows came from, then recover them from the current input rows with the shared W_Q/W_K/W_V matrices. Three coordinate-by-coordinate calculation frames replace the early derivations. The total authored frame count across Sections 7–11 is unchanged. The presentation skill guided the use-before-derivation order, existing semantic colours, editable numerical tables and visual checks.
+- `check_token_flow.mjs` verifies the supplied numbers against the independent reference, all seven paired source records, absence of premature projection equations, exact position-10 residuals/probabilities in both contexts, unchanged shared-matrix calculations, synchronized selectors, model preservation and phone layout. Desktop and phone views were visually inspected. The full frame audit passes 317 presentation states and 554 unique formulas; 152 control interactions, pooling/routing regression and eight independent model cases pass. The table audit found no issues in changed sections; its four narrow-column warnings are in unchanged Sections 3, 4 and 17.
+
 ## 2026-09-14: return to the prediction problem before token projections
 
 - Reworked the existing Section 7 transition into a dedicated section break with both original ten-token prefixes and highlighted river/cheque clues. Added one recap frame before the receiving-token equations. It connects last-token, concatenation and pooling attempts to the remaining need to compute context shares, then previews query/key matching, softmax shares and the weighted value sum. It explicitly distinguishes bank at position 7 from the final the at position 10 used later to predict word 11. No model or projection arithmetic changed.
@@ -688,6 +694,7 @@ node src/check_part1.mjs
 node src/check_part1_diagrams.mjs part1.html
 node src/toy_ref.mjs src/toy.json --compare src/py_check.json
 node src/check-live-model.mjs attention.html
+node src/check_token_flow.mjs attention.html
 python3 src/check_training.py
 node src/check_position_capacity.mjs
 node src/check-routing-scaling.mjs

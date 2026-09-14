@@ -51,7 +51,7 @@
    "section": "s10"
   },
   {
-   "label": "What exactly are Q, K, and V?",
+   "label": "Where do queries, keys and values come from?",
    "section": "s11"
   },
   {
@@ -140,7 +140,7 @@
   },
   {
    "id": "s11",
-   "title": "What exactly are Q, K, and V?",
+   "title": "Where do queries, keys and values come from?",
    "lit": ""
   },
   {

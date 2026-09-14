@@ -488,8 +488,8 @@ try{
     window.__PART__.chain.find(x=>x.section==='s05').label,window.__PART__.sections.find(x=>x.id==='s05').title]);
   assert(sectionLabels.every(t=>t==='Attention and the search analogy'),'Navigation and article heading match the broader section contents.');
   const recordsOrder=await page.locator('#s07 .frame').evaluateAll(els=>els.map(e=>e.id));
-  assert.deepEqual(recordsOrder.slice(0,3),['s07-frame-return-to-sentence','s07-frame-context-recap','s07-frame1'],'A problem-led section break and one recap precede projection formulas.');
-  assert.equal(recordsOrder.length,11,'Add only one recap frame to the existing section.');
+  assert.deepEqual(recordsOrder.slice(0,3),['s07-frame-return-to-sentence','s07-frame-context-recap','s07-frame1'],'A problem-led section break and one recap precede the supplied query example.');
+  assert.equal(recordsOrder.length,6,'The supplied-vector introduction replaces the earlier projection-first sequence.');
   const temperatureFrame=await page.locator('#s06-frame-temperature').evaluate(e=>[...e.closest('.sec').querySelectorAll('.frame')].indexOf(e)+1);
   await go('s06',temperatureFrame,1);
   await page.evaluate(()=>AT.present.next());await page.waitForTimeout(100);

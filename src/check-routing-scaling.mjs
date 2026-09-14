@@ -53,7 +53,7 @@ const html = read('shell.html')
 
 try {
   await page.setContent(html, { waitUntil: 'load' });
-  await page.waitForFunction(() => document.querySelectorAll('#s08-value-message table').length === 2);
+  await page.waitForFunction(() => document.querySelectorAll('#s08-value-message table').length === 1);
   const bodyRows = selector => page.locator(selector + ' tbody tr').evaluateAll(rows => rows.map(row => Array.from(row.querySelectorAll('td')).map(cell => cell.textContent.trim())));
   const numberRows = async selector => (await bodyRows(selector)).map(row => row.map(value => Number(value.replaceAll('−', '-'))));
   const rounded = vector => vector.map(value => Number(value.toFixed(3)));
@@ -63,7 +63,7 @@ try {
   assert.deepEqual(await bodyRows('#s08-value-alpha'), weightsBefore, 'visible weights unchanged');
   let messageTables = await page.locator('#s08-value-message table').evaluateAll(tables => tables.map(table => Array.from(table.querySelectorAll('tbody tr')).map(row => Array.from(row.querySelectorAll('td')).map(cell => Number(cell.textContent.replaceAll('−', '-'))))));
   assert.deepEqual(messageTables[0][1], rounded(Fa.Mmsg[6]));
-  assert.deepEqual(messageTables[1][1], rounded(Fa.Delta[6]));
+  assert.equal(messageTables.length,1,'This lesson stops at the message; the output projection is introduced next.');
   assert.match(await page.locator('#s08-value-result').innerText(), /finance message coordinate.*0\.000/);
   await page.click('#s08-values-baseline');
   messageTables = await page.locator('#s08-value-message table').evaluateAll(tables => tables.map(table => Array.from(table.querySelectorAll('tbody tr')).map(row => Array.from(row.querySelectorAll('td')).map(cell => Number(cell.textContent.replaceAll('−', '-'))))));

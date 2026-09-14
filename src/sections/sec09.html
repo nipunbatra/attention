@@ -51,6 +51,13 @@ body.present #s09 .s09-present-path{display:grid;gap:14px;margin:18px auto 8px}
 #s09 .s09-pnode.is-current{transform:translateY(-5px);box-shadow:0 8px 20px color-mix(in srgb,var(--oc,var(--ink)) 20%,transparent);border-width:4px}
 body.present #s09 .calc-rounding{display:none}
 body.present #s09-frame-chain .is-dim{opacity:1!important}
+#s09 .s09-preview-controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+#s09 .s09-preview-controls [aria-pressed=true]{background:var(--ink);color:#fff}
+#s09 .s09-preview-prefix{font-size:20px;line-height:1.4;margin:10px 0}
+#s09 .s09-preview-scope{font-size:16px;color:var(--ink-2)}
+#s09 .s09-prediction-route{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;font-size:20px;margin:16px 0 24px}
+body.present #s09 .s09-preview-prefix,body.present #s09 .s09-prediction-route{font-size:24px}
+body.present #s09 .s09-preview-scope{font-size:22px}
 </style>
 <header class="sec-head">
   <span class="sec-num">09</span>
@@ -102,7 +109,7 @@ Use Next step to follow the existing sequence. Point out the unchanged residual 
       <span class="s09-phase-label">1 · Choose where to read</span>
       <div class="s09-path-row">
         <div class="s09-pnode obj-e" data-pst="0"><span>start with</span><span>$\ve{e_7}$</span></div><span class="s09-parrow">→</span>
-        <div class="s09-pnode obj-q" data-pst="1"><span>make query</span><span>$\vq{q_7}$</span></div><span class="s09-parrow">→</span>
+        <div class="s09-pnode obj-q" data-pst="1"><span>given query</span><span>$\vq{q_7}$</span></div><span class="s09-parrow">→</span>
         <div class="s09-pnode obj-k" data-pst="2"><span>compare with</span><span>$\vk{k_j}$</span></div><span class="s09-parrow">→</span>
         <div class="s09-pnode obj-a" data-pst="3"><span>softmax</span><span>$\va{\alpha_{7j}}$</span></div>
       </div>
@@ -171,6 +178,33 @@ The residual path carries the current input representation. The contextual updat
 e_new_i = e_i + delta_e_i</code></pre>
 </div>
 
+
+<div class="frame" id="s09-frame-prediction-input" data-title="Now repeat at the final token to predict word 11" data-autobuild="off">
+<script type="text/x-notes">Which contextual row should reach the next-word head?
+Not bank at position 7. Extend to the complete ten-token prefix. The final the is now the receiver, with its own supplied query and all ten source key/value pairs. Recompute scores, shares and the message for position 10, project it and add the original e_10. Changing the sentence changes the update but not that final token's starting row. These are computed results from exactly the same model, not manually labelled predictions.</script>
+<div class="card">
+  <div class="s09-preview-controls" data-keep-state></div>
+  <p class="s09-preview-prefix"></p>
+  <p class="rd">The final <strong>the (10)</strong> now reads tokens 1–10 with its own query. Its context gives a new row:</p>
+  <div id="s09-prediction-input"></div>
+</div>
+</div>
+
+<div class="frame" id="s09-frame-prediction-output" data-title="Pass the updated row forward to predict the next token" data-autobuild="off">
+<script type="text/x-notes">What do we get out of the whole flow?
+The message is not a word and the attention weights are not next-word probabilities. The updated final row is a vector. The familiar vocabulary head converts it to twenty scores, then a second softmax gives next-token probabilities. Show the leading candidates for both contexts with one unchanged head. This small model goes straight to the vocabulary head; Transformer blocks also contain feed-forward sublayers, which will be introduced later. Q/K/V projection matrices have still not been derived. Now that we know the purpose of those rows, Section 11 can show where they come from.</script>
+<div class="card">
+  <div class="s09-preview-controls" data-keep-state></div>
+  <div class="s09-prediction-route">
+    <span class="sym-ep">updated row $\vp{e_{10}'}$</span><span>→</span><span>vocabulary scores</span><span>→</span><span>next-token probabilities</span>
+  </div>
+  <div id="s09-prediction-output"></div>
+  <p class="rd">Same prediction head, different context. These probabilities come from the updated <strong>final row</strong>, not directly from bank's message.</p>
+</div>
+<p class="s09-preview-scope">This small model goes straight to the vocabulary head. A Transformer also has feed-forward sublayers; we will add those later.</p>
+<div class="companion">The head computes $\operatorname{softmax}(\vp{e_{10}'}W_{\mathrm{vocab}}+b_{\mathrm{vocab}})$. The next-token softmax normalizes vocabulary scores; attention's softmax normalized source-token match scores. Section 14 opens up this same head calculation in detail.</div>
+</div>
+
 <div class="companion after">
   <p>In $\vp{e_7'} = \ve{e_7} + \vd{\Delta e_7}$, the right branch computed the update and the left branch carried $\ve{e_7}$ unchanged. They meet at the addition: the residual connection.</p>
 </div>
@@ -188,6 +222,10 @@ e_new_i = e_i + delta_e_i</code></pre>
 
   /* ---------- motif ---------- */
   const motif = AT.motif(S.querySelector('#s09-motif'), { active: 'e' });
+  // This first pass explains use, not provenance; projections are taught in Section 11.
+  const qkvLabels=motif.stages.qkv.querySelectorAll('.sub');
+  if(qkvLabels[0])qkvLabels[0].textContent='supplied Q, K, V';
+  if(qkvLabels[1])qkvLabels[1].textContent='derive them later';
   const motifStage = ['e', 'qkv', 'qkv', 'att', 'att', 'delta', 'add', 'ep'];
 
   /* ---------- the vertical diagram ---------- */
@@ -272,7 +310,7 @@ e_new_i = e_i + delta_e_i</code></pre>
   /* ---------- per-stage tables inside the stepper stage (q, scores, weights) ---------- */
   const stageTab = {
     1: (el) => AT.ui.table([F.Q[qi]], { rowLabels: ['$\\vq{q_{' + n + '}}$ ' + toks[qi]], rowCls: 'q', cornerLabel: 'row', cls: null,
-         caption: 'Multiplying $\\ve{e_{' + n + '}}$ (' + AT.d_model + ' coordinates) by $W_Q$ gives ' + AT.d_k + ' matching coordinates describing what ' + AT.escape(toks[qi]) + ' asks for.', into: el }),
+         caption: 'The supplied query has ' + AT.d_k + ' matching coordinates describing what ' + AT.escape(toks[qi]) + ' asks for. Its derivation comes in Section 11.', into: el }),
     2: (el) => AT.ui.table([F.S[qi].slice(0, T)], { cols: tokCols, rowLabels: ['$s_{' + n + 'j}$'], rowCls: 'neutral', cornerLabel: 'token j',
          caption: 'One score per earlier token, from phase A in section 8.', into: el }),
     3: (el) => AT.ui.table([F.S[qi].slice(0, T), F.A[qi].slice(0, T)], { cols: tokCols, rowLabels: ['$s_{' + n + 'j}$', '$\\va{\\alpha_{' + n + 'j}}$'], rowCls: ['neutral', 'a'], cornerLabel: 'token j',
@@ -292,13 +330,13 @@ e_new_i = e_i + delta_e_i</code></pre>
   }
   const steps = [
     { title: 'Start from the current representation', tex: '\\ve{e_{' + n + '}}', note: 'This is the representation of “bank” before attention: token embedding plus position. It will not be overwritten. It is the $\\ve{e_{' + n + '}}$ row of the table.' },
-    { title: 'Compute the query', tex: '\\vq{q_{' + n + '}} = \\ve{e_{' + n + '}}\\,W_Q', note: 'The right branch begins. $\\ve{e_{' + n + '}}$ itself waits on the left, untouched.' },
+    { title: 'Use the supplied query', tex: '\\vq{q_{' + n + '}}', note: 'Use the query we were given in Section 7. The original $\\ve{e_{' + n + '}}$ waits on the residual branch, untouched. How the query is made comes later.' },
     { title: 'Compare against the keys', tex: 's_{' + n + 'j} = \\vq{q_{' + n + '}}\\cdot \\vk{k_j} / \\sqrt{d_k}', note: 'One score for every token $j \\le ' + n + '$ (phase A of the previous section).' },
     { title: 'Softmax gives the attention weights', tex: '\\va{\\alpha_{' + n + 'j}} = \\operatorname{softmax}_j(s_{' + n + 'j})', note: 'Where to read from. The weights sum to 1.' },
     { title: 'Weight the values and add them up', tex: 'm_{' + n + '} = \\sum_{j \\le ' + n + '} \\va{\\alpha_{' + n + 'j}}\\, \\vv{v_j}', note: 'What is read (phase B). $m_{' + n + '}$ has $d_v$ numbers; it lives in value space. It is the first row of the table.' },
     { title: 'Project back: the contextual update', tex: '\\vd{\\Delta e_{' + n + '}} = m_{' + n + '}\\,W_O', note: '$W_O$ maps the message into representation space, so it can be added to $\\ve{e_{' + n + '}}$. The second row of the table.' },
     { title: 'Add the update to the original', tex: '\\ve{e_{' + n + '}} + \\vd{\\Delta e_{' + n + '}}', note: 'The two branches meet. The unchanged input is one term in the sum; the output is a new row. Add the two highlighted rows, column by column.' },
-    { title: 'The updated representation', tex: '\\vp{e_{' + n + "}'} = \\ve{e_{" + n + '}} + \\vd{\\Delta e_{' + n + '}}', note: '“' + AT.escape(toks[qi]) + '” now carries ' + AT.escape(AX.short.e[AT.argmax(F.Delta[qi].map(Math.abs))]) + ' context. This $\\vp{e_{' + n + "}'}$, the footer of the table, is what the output head will see." }
+    { title: 'The updated representation', tex: '\\vp{e_{' + n + "}'} = \\ve{e_{" + n + '}} + \\vd{\\Delta e_{' + n + '}}', note: '“' + AT.escape(toks[qi]) + '” now carries ' + AT.escape(AX.short.e[AT.argmax(F.Delta[qi].map(Math.abs))]) + ' context. This $\\vp{e_{' + n + "}'}$, the footer of the table, can now be passed to subsequent processing. To predict word 11, repeat this at the final token, position 10." }
   ];
   let playTimer = null, playing = false;
   function stopPlay(){ playing = false; if (playTimer) { clearTimeout(playTimer); playTimer = null; } playBtn.textContent = 'Play'; }
@@ -341,6 +379,31 @@ e_new_i = e_i + delta_e_i</code></pre>
   wolab.innerHTML = 'The update written out: $\\vd{\\Delta e_{' + n + '}} = m_{' + n + '}\\,W_O$, one line per $\\ve{e}$ axis. Terms with a zero weight are greyed.';
   AT.renderMath(wolab);
   AT.ui.matVecCalc(F.Mmsg[qi], AT.model.W_O, { from: 'v', to: 'e', cls: 'd', xLabel: 'm · ' + n + ' ' + toks[qi], outLabel: 'Δe · ' + n + ' ' + toks[qi], into: S.querySelector('#s09-wocalc') });
+
+  /* Full-flow preview: the output head uses position 10, never bank's position 7. */
+  const previewCases={river:AT.forward(AT.sentences.river),cheque:AT.forward(AT.sentences.cheque)};
+  const previewButtons=[];
+  let previewContext='river';
+  S.querySelectorAll('.s09-preview-controls').forEach(host=>{
+    ['river','cheque'].forEach(name=>{
+      const b=AT.h('button',{type:'button',class:'btn','data-context':name},name==='river'?'River context':'Cheque context');
+      b.addEventListener('click',()=>{previewContext=name;drawPrediction();});
+      host.appendChild(b);previewButtons.push(b);
+    });
+  });
+  function drawPrediction(){
+    const result=previewCases[previewContext],t=9;
+    previewButtons.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.context===previewContext)));
+    S.querySelector('.s09-preview-prefix').textContent=AT.sentences[previewContext].join(' ')+' ___';
+    const input=S.querySelector('#s09-prediction-input'),out=S.querySelector('#s09-prediction-output');
+    AT.clear(input);AT.clear(out);
+    AT.ui.table([result.E[t],result.Delta[t]],{axes:'e',rowLabels:['original e₁₀','+ update Δe₁₀'],rowCls:['e','d'],decimals:3,
+      footer:{label:'= updated e′₁₀',values:result.Enew[t],cls:'ep'},into:input});
+    const ranked=result.probs[t].map((p,i)=>({p,i})).sort((a,b)=>b.p-a.p).slice(0,4);
+    AT.ui.table([ranked.map(x=>x.p)],{cols:ranked.map(x=>AT.vocab[x.i]),rowLabels:['probability'],decimals:3,into:out});
+    out.appendChild(AT.h('p',{class:'s09-preview-scope'},'Four leading candidates out of '+AT.vocab.length+' tokens; other candidates retain probability. Largest: '+AT.vocab[ranked[0].i]+'.'));
+  }
+  drawPrediction();
 })();
 </script>
 </section>

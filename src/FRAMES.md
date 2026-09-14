@@ -28,23 +28,23 @@ F1 explain hard retrieval with matching query/key/value colours in prose and mat
   Notes: "If Gradient Descent's score rises to 4.8 too, what should come back?" These are weights over available records, not next-token probabilities. Numeric tables identify the current temperature when it differs from one.
 
 ## s07 Tokens as records
-F1 is a section break returning to the original two next-word prediction prefixes, with river and cheque highlighted. F2 is a single recap: earlier last-token/window/pooling attempts, the hand-chosen shares still to replace, then matching queries with keys, softmax shares, and weighted values forming m7. Distinguish the known input bank at position 7 from the final the at position 10 used later to predict word 11. F3 receiver/query/key/value jobs. F4 choose the receiving input row. F5 calculate q_bank. F6 inspect one source record. F7 calculate its key. F8 calculate its value. F9 compare one query with every key. F10 keep each key paired with its value. F11 shared W_Q/W_K/W_V and compact PyTorch.
-  Notes: the retrieval detour now supplies the rule for computing context shares from inputs. Keep projection arithmetic after the recap. Ask “Which row decides relevance, and which row carries content?” before F6. None of q, k, v is the token's new representation.
+F1 is a section break returning to the original two next-word prediction prefixes, with river and cheque highlighted. F2 is a single recap of last-token/window/pooling attempts and the match → weight → mix operation. F3 starts with bank's English need and its supplied query [1.26, 1.26, 0.04], on named water?/finance?/who? axes. F4 supplies seven source keys, highlighting river. F5 supplies the paired two-coordinate values. F6 lets students inspect each source key/value record while bank remains the receiver.
+  Notes: use these canonical example numbers without deriving them yet. Distinguish the known input bank at position 7 from the final the at position 10 used to predict word 11. The same values feed Section 8; no random resampling or model change. Q/K/V projection arithmetic moves to Section 11, after attention, residual addition and prediction have a purpose. None of q, k, v is the token's new representation.
 
 ## s08 Two phases
 F1 set up routing versus carrying. F2 show the seven query-key scores. F3 normalize those scores. F4 generalize one score. F5 generalize softmax. F6 see one query fan out to every key. F7 inspect a selected dot product. F8 pair weights with values. F9 add weighted values coordinate by coordinate. F10 intervene on values only. F11 read the changed message. In article mode, the F2/F3 tables combine into the original interactive phase-A table.
-  Notes: "Has any representation changed yet?" (no) ... "What would change if only W_V changed?"
+  Notes: "Has any representation changed yet?" (no) ... "What would change if we changed only the supplied values?" Hold Q/K fixed and zero the finance value coordinate. The intervention ends at the changed message; projection provenance and the output-space update are not prerequisites.
 
 ## s09 The update
-F1 explain W_O. F2 show where Delta e rejoins e. F3 two-row end-to-end path (“choose where” then “carry information”) with staged highlights. F4 numerical message/update/residual calculation. F5 introduce W_O coordinates. F6 calculate W_O row by row. F7 distinguish message, update, and contextualized row.
+F1 explain W_O. F2 show where Delta e rejoins e. F3 two-row end-to-end path (“choose where” then “carry information”) using the supplied query, with staged highlights. F4 numerical message/update/residual calculation. F5 introduce W_O coordinates. F6 calculate W_O row by row. F7 distinguish message, update, and contextualized row. F8 extends to the ten-token prefix and shows e_10 + Delta e_10 = e'_10. F9 passes that updated row to the familiar vocabulary head and displays four leading probabilities. River/cheque controls are synchronized across F8/F9. The same model and head are used throughout; Section 14 later opens up the head arithmetic.
   Notes: "If the message were zero, what reaches the predictor?"
 
 ## s10 bank
 F1 compare the two bank sentences. F2 compare incoming source information. F3 calculate the river-context update. F4 calculate the cheque-context update. F5 place both updates on the same starting bank embedding and plot the result.
   Notes: "Same starting row: must the contextual row be the same?"
 
-## s11 What are Q, K, V
-F1 reject the three-table misconception. F2 one input row, three jobs. F3 show the learned projection matrices. F4 separate stored parameters from per-pass intermediates. F5 follow one row’s lifetime through a layer. F6 reconnect the branch to the residual update.
+## s11 Where do queries, keys and values come from?
+F1 explicitly returns to the remaining question: where did the supplied rows come from? Only now introduce eW_Q/eW_K/eW_V. F2 compares one input row and its three projections. F3 shows the shared matrices. F4–F6 calculate query, key and value separately, reusing the exact numbers from Section 7. A shared token selector demonstrates that the matrices do not change from token to token. F7 separates stored parameters from per-pass intermediates. F8 follows one row’s lifetime through a layer. F9 reconnects the branch to the residual update.
 
 ## s12 Scaling
 F1 explain why larger dot-product dimension spreads scores. F2 hold raw scores fixed while changing the divisor. F3 verify the variance claim with a simulation. F4 compare bank weights with and without scaling. F5 interpret what scaling changed and what it did not.

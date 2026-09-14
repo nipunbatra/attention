@@ -187,10 +187,10 @@ Each source contributes to the same value axes. The sum runs over source positio
 <div class="frame" data-title="Change only the values: do the weights change?">
 <script type="text/x-notes">If we remove finance information from the values, will bank still attend to river?
 
-Ask for a prediction before pressing the value-only intervention. The weights stay exactly the same because E, W_Q and W_K are fixed. The message and its mapped update change because W_V changes. Point out whether the current toy happens to have identical key and value projections; equal numbers would not make their roles identical.</script>
+Ask for a prediction before pressing the value-only intervention. The weights stay exactly the same because the supplied query and keys stay fixed. The message changes because we change only the supplied values. No derivation of the vectors is needed to see their separate roles.</script>
 <div class="prose">
   <p id="s08-projection-note">Keys choose matches; values carry information. Their roles remain distinct even if some numbers happen to be equal.</p>
-  <p class="companion">Change only $W_V$’s “says finance” column. Keep the sentence, $W_Q$, $W_K$, and $W_O$ fixed.</p>
+  <p class="companion">Set only the values’ “says finance” coordinate to zero. Keep the query and every key fixed.</p>
 </div>
 <div class="card" data-build="1">
   <div class="companion eq" id="s08-value-experiment-eq"></div>
@@ -205,12 +205,12 @@ Ask for a prediction before pressing the value-only intervention. The weights st
 
 <div class="frame" data-title="Same weights, different information">
 <script type="text/x-notes">Which quantities changed after the value-only intervention?
-The attention weights did not. The message and its mapped update changed because their information came from V.</script>
+The attention weights did not. The message changed because its information came from the values.</script>
 <div class="card">
   <div id="s08-value-message"></div>
   <p class="intervention-result" id="s08-value-result" aria-live="polite"></p>
-  <pre class="pytorch"><code>W_V_alt = W_V.clone(); W_V_alt[:, 1] = 0
-m_alt = alpha @ (E @ W_V_alt)</code></pre>
+  <pre class="pytorch"><code>V_alt = V.clone(); V_alt[:, 1] = 0
+m_alt = alpha @ V_alt</code></pre>
 </div>
   <div class="companion callout callout-key">Keys chose the weights. Values determined the message. Next, $\vd{\Delta e_7}=m_7W_O$ maps it back to representation space.</div>
 </div>
@@ -396,33 +396,26 @@ m_alt = alpha @ (E @ W_V_alt)</code></pre>
   drawBCalc();
   S.querySelector('#s08-weighted').addEventListener('click', (ev) => { weighted = !weighted; ev.currentTarget.textContent = weighted ? 'Show the value rows v' : 'Show the products α·v'; drawB(); });
 
-  /* Controlled intervention: only W_V changes. Never mutate the shared model. */
+  /* Controlled intervention: only the supplied values change; Q and K stay fixed. */
   const financeIndex = Math.max(0, (AT.axesFor('v', AT.d_v) || []).findIndex(a => /finance/i.test(a.title || a.label || '')));
   // Show a source with nonzero finance payload, so the value change is visible.
   const exampleSource = F.V.reduce((best,row,j)=>row[financeIndex]>F.V[best][financeIndex]?j:best,0);
   const D = AT.range(AT.d_v).map(i => AT.range(AT.d_v).map(j => i === j && i !== financeIndex ? 1 : 0));
-  const WVAlt = AT.matmul(AT.model.W_V, D);
-  const VAlt = AT.matmul(F.E, WVAlt);
+  const VAlt = AT.matmul(F.V, D);
   const mAlt = AT.matmul(alpha, VAlt);
-  const deltaAlt = AT.matmul(mAlt, AT.model.W_O);
   const sourceHost = S.querySelector('#s08-value-source');
   const alphaHost = S.querySelector('#s08-value-alpha');
   const messageHost = S.querySelector('#s08-value-message');
   const baseBtn = S.querySelector('#s08-values-baseline'), altBtn = S.querySelector('#s08-values-alt');
-  const sameKV = JSON.stringify(AT.model.W_K) === JSON.stringify(AT.model.W_V);
   const projectionNote = S.querySelector('#s08-projection-note');
-  projectionNote.innerHTML = sameKV
-    ? 'The baseline toy happens to use <strong>identical numbers in $W_K$ and $W_V$</strong>. That is a simplifying choice, not a requirement of attention: the roles remain different.'
-    : 'Here $W_K$ has shape $' + AT.d_model + '\\times' + AT.d_k + '$ and $W_V$ has shape $' + AT.d_model + '\\times' + AT.d_v + '$. <strong>Keys choose matches; values carry the information to send.</strong> Their roles differ even when some coordinates happen to be equal.';
-  AT.renderMath(projectionNote);
-  AT.tex(S.querySelector('#s08-value-experiment-eq'), 'D=\\operatorname{diag}(' + AT.range(AT.d_v).map(i => i === financeIndex ? 0 : 1).join(',') + '),\\qquad W_V^{\\text{alt}}=W_VD,\\qquad V^{\\text{alt}}=EW_V^{\\text{alt}}', { display: true });
+  projectionNote.innerHTML = 'Keys have <strong>'+AT.d_k+' matching coordinates</strong>; values have <strong>'+AT.d_v+' information coordinates</strong>. Keep the matching rows fixed and change only what gets sent.';
+  AT.tex(S.querySelector('#s08-value-experiment-eq'), '\\vv{v_j}=[v_{j,1},v_{j,2}]\\quad\\longrightarrow\\quad\\vv{v_j^{\\mathrm{alt}}}=[v_{j,1},0]', { display: true });
   function drawValueIntervention(alternate){
     baseBtn.setAttribute('aria-pressed', String(!alternate));
     altBtn.setAttribute('aria-pressed', String(alternate));
     AT.clear(sourceHost); AT.clear(alphaHost); AT.clear(messageHost);
     const values = alternate ? VAlt : F.V;
     const message = alternate ? mAlt : F.Mmsg[qi];
-    const delta = alternate ? deltaAlt : F.Delta[qi];
     const vectorText = row => '(' + row.map(v => AT.fmt(v, 3)).join(', ') + ')';
     sourceHost.appendChild(AT.h('p', { class: 'value-source-row' }, 'Source '+(exampleSource+1)+', '+toks[exampleSource]+': ',
       AT.h('strong', { class: 'sym-k' }, 'key stays '), AT.h('span', { class: 'mono' }, vectorText(F.K[exampleSource])), '. These are matching features.'));
@@ -431,10 +424,8 @@ m_alt = alpha @ (E @ W_V_alt)</code></pre>
       AT.h('span', { class: 'mono' }, vectorText(values[exampleSource])), '. This is the information sent.'));
     AT.ui.table([alpha], { cols: toks.map((tok, j) => (j + 1) + ' ' + tok), rowLabels: ['bank’s weights: unchanged'], rowCls: 'a', decimals: 3, heatCols: AT.range(T), into: alphaHost });
     AT.ui.table([F.Mmsg[qi], message], { axes: 'v', rowLabels: ['original message m₇', 'selected message m₇'], rowCls: 'm', decimals: 3, into: messageHost });
-    AT.ui.table([F.Delta[qi], delta], { axes: 'e', rowLabels: ['original Δe₇', 'selected Δe₇'], rowCls: 'd', decimals: 3, into: messageHost,
-      caption: 'Fixed W_O: ' + AT.d_v + ' message coordinates → ' + AT.d_model + ' update coordinates.' });
     S.querySelector('#s08-value-result').textContent = alternate
-      ? 'River still receives weight ' + AT.fmt(alpha[5], 3) + '. No source sends finance information: the finance message coordinate is now ' + AT.fmt(message[financeIndex], 3) + '. The other message coordinate is unchanged, and the mapped update changes accordingly.'
+      ? 'River still receives weight ' + AT.fmt(alpha[5], 3) + '. No source sends finance information: the finance message coordinate is now ' + AT.fmt(message[financeIndex], 3) + '. The other message coordinate is unchanged.'
       : 'Original values are selected. Mute their finance column and predict which rows above will change.';
   }
   baseBtn.addEventListener('click', () => drawValueIntervention(false));

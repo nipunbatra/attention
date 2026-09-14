@@ -1,4 +1,4 @@
-<section id="s11" class="sec" data-title="What exactly are Q, K, and V?" data-lit="">
+<section id="s11" class="sec" data-title="Where do queries, keys and values come from?" data-lit="">
 <style>
 #s11 .s11-cap{font-size:14px;color:var(--ink-2);margin:0 0 12px;max-width:68ch}
 #s11 .s11-gap{height:18px}
@@ -58,12 +58,17 @@ body.present #s11 .s11-lifebox{overflow:visible}
 body.present #s11-frame2 .s11-life.has-active g[data-ph]{opacity:1}
 body.present #s11 .s11-ws,body.present #s11 .dt-note{display:none}
 body.present #s11-frame-lifetime-steps>.card{padding:0;background:none;border:0}
+body.present #s11 .s11-projection-calc .calc-rounding{display:none}
+#s11 .s11-calc-controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+#s11 .s11-calc-controls [aria-pressed=true]{background:var(--ink);color:#fff}
+#s11 .s11-calc-caption{font-size:18px;line-height:1.4}
+body.present #s11 .s11-calc-caption{font-size:22px}
 </style>
 <header class="sec-head">
   <span class="sec-num">11</span>
   <div>
-    <p class="eyebrow">Queries, keys and values are projections used during attention. How do they relate to the token row?</p>
-    <h2>What exactly are Q, K, and V?</h2>
+    <p class="eyebrow">We have used the rows to gather context and predict. Now explain how the model produces those rows.</p>
+    <h2>Where do queries, keys and values come from?</h2>
   </div>
 </header>
 
@@ -71,14 +76,15 @@ body.present #s11-frame-lifetime-steps>.card{padding:0;background:none;border:0}
   <p>Queries, keys and values come from projecting the current representation. They are not separate learned lookup tables. Pick a token and compare the four rows: three fixed matrices turn the top $\ve{e}$ row into the query, key and value below it, without changing that input row. Their axis names describe different roles: what the token asks for, when it is a useful match, and what it sends. The matrices below are shared by every token. Step through the lifetime diagram to see when the rows are computed and used. These working vectors help produce $\vd{\Delta e}$; the row passed to the next sublayer is $\ve{e} + \vd{\Delta e}$.</p>
 </div>
 
-<div class="frame" id="s11-frame1" data-title="Are Q, K and V three separate lookup tables?">
+<div class="frame" id="s11-frame1" data-title="Where did the supplied Q, K and V rows come from?">
   <script type="text/x-notes">
 Are q, k and v separately learned lookup rows?
 No: the trainable projection matrices transform the current token row. These projected representations have different jobs; none is the updated residual-stream row passed to the next sublayer.
   </script>
 <div class="prose">
-  <p>Take the current representation of one token, $\ve{e_i}$. Three fixed matrices read it and produce three short rows.
-  They are working vectors computed from $\ve{e_i}$; none of them replaces it.</p>
+  <p>We used supplied rows to match, mix values, update a token and predict. <strong>Now recover those same rows from the embeddings we already have.</strong></p>
+  <p>Take the current representation of one token, $\ve{e_i}$. Three shared matrices read it and produce three short rows.
+  Their weights are learned during training, then held fixed for this forward pass. Our example uses hand-set weights; none of these rows replaces $\ve{e_i}$.</p>
   $$\ve{e_i} \;\rightarrow\; \begin{cases} \vq{q_i} = \ve{e_i}\,W_Q \\[2pt] \vk{k_i} = \ve{e_i}\,W_K \\[2pt] \vv{v_i} = \ve{e_i}\,W_V \end{cases}$$
 </div>
 
@@ -109,6 +115,28 @@ Each column of a projection forms one output coordinate. The worksheet retains t
 
 <div class="companion" id="s11-callouts"></div>
 
+</div>
+
+
+<div class="frame" id="s11-frame-query-calc" data-title="Make a query from the receiving token's row" data-autobuild="off">
+<script type="text/x-notes">Can we recover the query we took as given?
+Start at bank. This is exactly q_7 from Section 7, not a different example. Each column of W_Q chooses a combination of the four input coordinates to form one matching coordinate. Select another token to reuse the same weights.</script>
+<div class="card"><div class="s11-calc-controls" data-keep-state></div><div id="s11-query-calc" class="s11-projection-calc"></div></div>
+<p class="s11-calc-caption sym-q">The receiver's row becomes its query: what information to look for.</p>
+</div>
+
+<div class="frame" id="s11-frame-key-calc" data-title="Make a key from each source token's row" data-autobuild="off">
+<script type="text/x-notes">Whose row supplies the key?
+A source's own row supplies its key, not the receiving token's row. Select river to recover the key we compared against bank's query. Every source uses the same W_K.</script>
+<div class="card"><div class="s11-calc-controls" data-keep-state></div><div id="s11-key-calc" class="s11-projection-calc"></div></div>
+<p class="s11-calc-caption sym-k">The source's row becomes its key: when this source could help.</p>
+</div>
+
+<div class="frame" id="s11-frame-value-calc" data-title="Read the same source through a different matrix" data-autobuild="off">
+<script type="text/x-notes">What changes between producing a key and a value?
+The source's input row stays the same. W_V now produces the information to send, on two value axes instead of three matching axes. This recovers the exact value used in the earlier weighted sum. The matrices are parameters; these vectors are computed anew for each input.</script>
+<div class="card"><div class="s11-calc-controls" data-keep-state></div><div id="s11-value-calc" class="s11-projection-calc"></div></div>
+<p class="s11-calc-caption sym-v">Same source row, different weights: the value is what this source sends.</p>
 </div>
 
 <div class="frame" id="s11-frame2" data-title="Which objects are used inside one layer?">
@@ -240,10 +268,35 @@ It returns the projected message, Delta e. The residual addition then combines t
     wg.appendChild(p);
   });
 
+  // The derivations live here, after the complete supplied-vector walkthrough.
+  function drawProjectionCalcs(){
+    for(const [id,W,to,cls,name] of [
+      ['query',AT.model.W_Q,'qk','q','W_Q'],
+      ['key',AT.model.W_K,'qk','k','W_K'],
+      ['value',AT.model.W_V,'v','v','W_V']
+    ]){
+      const host=S.querySelector('#s11-'+id+'-calc');
+      AT.clear(host);
+      const lab=(qi+1)+' '+toks[qi];
+      const heading=AT.h('p',{class:'s11-calc-caption'},'$\\v'+cls+'{'+cls+'_{'+(qi+1)+'}}=\\ve{e_{'+(qi+1)+'}}\\,'+name+'$');
+      host.appendChild(heading);AT.renderMath(heading);
+      AT.ui.matVecCalc(F.E[qi],W,{from:'e',to,cls,xLabel:'e · '+lab,outLabel:cls+' · '+lab,into:host});
+    }
+    S.querySelectorAll('.s11-calc-controls button').forEach(b=>b.setAttribute('aria-pressed',Number(b.dataset.token)===qi?'true':'false'));
+  }
+  S.querySelectorAll('.s11-calc-controls').forEach(host=>{
+    [6,5,1,0].forEach(i=>{
+      const b=AT.h('button',{type:'button',class:'btn','data-token':i},(i+1)+' '+toks[i]);
+      b.addEventListener('click',()=>{qi=i;chips.setActive(i);drawProj();drawWs();if(stepper)stepper.go(stepper.index());});
+      host.appendChild(b);
+    });
+  });
+
   /* ---- worksheet: the three projections of the selected token, written out ---- */
   const wsHost = S.querySelector('#s11-ws');
   let wsOpen = false;
   function drawWs(){
+    drawProjectionCalcs();
     AT.clear(wsHost);
     const n = qi + 1, x = F.E[qi], lab = n + ' ' + toks[qi];
     const body = AT.h('div');
