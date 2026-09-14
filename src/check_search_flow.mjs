@@ -55,6 +55,20 @@ try{
     assert.deepEqual(headers.slice(1).map(s=>s.trim().toLowerCase()),axes,id+' must use the same named axis order.');
   }
   await page.evaluate(()=>AT.present.enter());
+  for(const build of [0,1,0,1]){
+    await go('s06-frame-hard-retrieval',build);
+    const frame=page.locator('#s06-frame-hard-retrieval');
+    for(const role of ['q','k','v']){
+      const wordColor=await frame.locator('.sym-'+role).evaluate(e=>getComputedStyle(e).color);
+      const mathColors=await frame.locator('.katex-html .m-'+role).evaluateAll(es=>es.map(e=>getComputedStyle(e).color));
+      assert(mathColors.length>=2,'Each role appears in the prose and display equation.');
+      assert(mathColors.every(color=>color===wordColor),'Hard retrieval '+role+' text and math share the same colour.');
+    }
+    assert((await copy('s06-frame-hard-retrieval')).includes('winning index'));
+    assert(/match\s*score/.test(await copy('s06-frame-hard-retrieval')));
+    assert.equal(await frame.locator('[data-build="1"]').evaluate(e=>getComputedStyle(e).visibility),build?'visible':'hidden');
+    await page.screenshot({path:path.join(shots,'hard-retrieval-'+build+'.png')});
+  }
   for(const id of [...queryFrames,...keyFrames]){
     for(const build of id==='s05-frame-key-collection'?[0]:[0,1]){
       await go(id,build);await page.screenshot({path:path.join(shots,id+'-'+build+'.png')});
@@ -222,7 +236,7 @@ try{
   assert.deepEqual(await matrix('s05-query-vector'),[queries[0]],'New search visits keep the original query reset.');
   assert.equal(await page.evaluate(()=>JSON.stringify({model:AT.model,p:AT.forward(AT.sentences.river).probs})),model);
   await page.evaluate(()=>AT.present.exit());await page.setViewportSize({width:390,height:844});
-  for(const id of [...queryFrames,...keyFrames,...valueFrames]){
+  for(const id of [...queryFrames,...keyFrames,...valueFrames,'s06-frame-hard-retrieval']){
     await page.locator('#'+id).scrollIntoViewIfNeeded();
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No phone document overflow.');
     await page.screenshot({path:path.join(shots,'phone-'+id+'.png')});

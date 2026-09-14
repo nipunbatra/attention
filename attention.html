@@ -6563,17 +6563,16 @@ body.present #s06 #s06-mix .dt td.dt-num,body.present #s06 #s06-card-mix .dt td.
   <p>Hard retrieval returns the value of the highest-scoring item. Attention blends values according to how well their keys match the query. Follow that calculation in the tables: softmax converts the previous section's scores into the $\va{\alpha_j}$ weights, each weight scales its value row, and the bottom row adds the results. Start in hard mode, where one item gets all the weight. Switch to soft mode and lower the temperature to see it approach hard retrieval. Raising a single score changes every weight because they share a denominator. The returned row is a mixture of values.</p>
 </div>
 
-<div class="frame" data-title="Hard retrieval returns one item's value" data-autobuild="off">
+<div class="frame" id="s06-frame-hard-retrieval" data-title="Hard retrieval returns one item's value" data-autobuild="off">
   <script type="text/x-notes">
-If Gradient Descent's score rises to 4.8 too, what should come back?
-Start in hard mode and point to the single winner in both tables. Reveal the soft switch and click it. Then reveal the weighted rows, the sum, and the score sliders. Set Gradient Descent to 4.8 so the class can see both top items contribute. End with the weighted mixture callout and the temperature control.
-
-Timing: five minutes.
+Which video's information do we return?
+Trace the matching colours: the purple query is the request, the orange key describes a video's match, and the teal value carries that video's information. Compare the query with every key. The dot product is a score. Argmax gives the winning video's index j*, not the score itself. The same index selects its value. For the gradient question, video 1 (Backpropagation) wins with 4.8, so return v1, the same eight-number row from the previous section. Reveal the question about two useful items before moving to the score table.
   </script>
 
 <div class="prose">
-  <p>In our hard-retrieval baseline, choose the key with the largest score and return that item's value:</p>
-  $$j^* = \arg\max_j\, \vq{q}\cdot \vk{k_j}, \qquad \text{return } \vv{v_{j^*}}$$
+  <p>Compare the <span class="sym sym-q">query $\vq{q}$</span> with each video's <span class="sym sym-k">key $\vk{k_j}$</span>. Return the highest-scoring video's <span class="sym sym-v">value $\vv{v_{j^*}}$</span>.</p>
+  $$j^* = \arg\max_j\, \underbrace{\vq{q}\cdot \vk{k_j}}_{\text{match score}}, \qquad \text{return } \vv{v_{j^*}}$$
+  <p>Here $j$ is a video index. $\arg\max_j$ picks the <strong>winning index $j^*$</strong>.</p>
   <div class="callout callout-key" data-build="1">If two items are useful, why return information from only one?</div>
 </div>
 </div>

@@ -1,5 +1,10 @@
 # Classroom release checks
 
+## 2026-09-14: match hard-retrieval prose and equation colours
+
+- Updated Section 6's existing first frame so query, key and value names and inline symbols use the same purple, orange and teal as the display equation. Labelled the dot product as the match score and defined j* as the winning video's index. The presentation skill guided reuse of the existing colour and layout conventions. Kept the original follow-up reveal and slide count. Corrected the notes to describe this frame rather than later controls.
+- Visually checked the desktop slide and 390px reading layout. The retrieval regression verifies matching text/math colours, symbol explanations, repeated reveal states and phone bounds, alongside all existing query/key/value calculations. All 325 presentation states / 550 formulas, 151 controls, phone QA and eight independent model cases pass. No model, shared-runtime, dependency or Part I changes.
+
 ## 2026-09-14: expand what the matched source returns
 
 - Added one focused explanation before the three-role recap. Each of the four query choices now shows what its winning video teaches in three short explanations. Backpropagation unpacks the loss signal and chain rule, then distinguishes gradient computation from an optimiser's update. The other choices explain penalties/dropout, shared filters, and gradient steps/step size. Existing summaries and all source vectors remain unchanged.
