@@ -507,7 +507,7 @@ try{
   }
   const retrievalColours=await page.evaluate(()=>{
     const c=s=>getComputedStyle(document.querySelector(s)).color;
-    return ['q','k','v'].map(role=>[c('.retrieval-roles .sym-'+role),c('.return-roles .sym-'+role),c('.return-roles .katex-html .m-'+role),c('#s05-frame-three-jobs .obj-'+role+' .big')]);
+    return ['q','k','v'].map(role=>[c('.retrieval-roles .sym-'+role),c('.return-roles .sym-'+role),c('.return-roles .katex-html .m-'+role),c('#s05-frame-return .obj-'+role+' .big')]);
   });
   retrievalColours.forEach(colours=>colours.slice(1).forEach(c=>assert.equal(c,colours[0],'Match each retrieval role across text, math and the sentence example.')));
   assert.equal(await page.locator('.retrieval-route .m-a').first().evaluate(e=>getComputedStyle(e).color),await page.locator('.return-result .m-a').first().evaluate(e=>getComputedStyle(e).color));

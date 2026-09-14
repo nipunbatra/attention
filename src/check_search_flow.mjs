@@ -37,6 +37,8 @@ try{
   const model=await page.evaluate(()=>JSON.stringify({model:AT.model,p:AT.forward(AT.sentences.river).probs}));
   const order=await page.locator('#s05 .frame').evaluateAll(els=>els.map(e=>e.id));
   assert.deepEqual(order.slice(3,13),[...queryFrames,...keyFrames,'s05-frame-matching','s05-frame-results']);
+  assert.deepEqual(order.slice(-3),['s05-frame-value-axes','s05-frame-values','s05-frame-return'],'The recap follows the query, key and value foundations.');
+  assert.equal(order.length,17,'Enrich the existing recap without adding a repeated slide.');
   for(const id of queryFrames)assert(!/\b(keys?|values?)\b/i.test(await copy(id)),id+' must teach only the request before source roles.');
   assert.equal(keyFrames.length,4);
   assert((await copy('s05-frame-query-axes')).includes('not probabilities'));
@@ -91,7 +93,47 @@ try{
     await go('s05-frame-three-jobs',1);
     assert.equal(await page.locator('#s05-example-title').textContent(),titles[winner]);
     assert.equal(await page.locator('#s05-example-explanation').textContent(),await page.locator('#s05-return-summary').textContent());
-    await go('s05-frame-return',1);
+    await go('s05-frame-return',2);
+    await page.locator('#s05-role-qbtns button').nth(i).click();
+    for(const group of ['s05-qbtns','s05-score-qbtns','s05-collection-qbtns','s05-role-qbtns']){
+      assert.equal(await page.locator('#'+group+' button').nth(i).getAttribute('aria-pressed'),'true','Query controls stay synchronized.');
+    }
+    const roleRows=await page.locator('#s05-frame-return .role-vector').evaluateAll(svgs=>svgs.map(svg=>({
+      role:svg.dataset.role,vector:JSON.parse(svg.dataset.vector),description:svg.getAttribute('aria-label'),
+      axes:[...svg.querySelectorAll('.role-coordinate')].map(e=>e.dataset.axis),
+      values:[...svg.querySelectorAll('.role-coordinate')].map(e=>Number(e.dataset.value)),
+      bars:[...svg.querySelectorAll('.role-bar')].map(e=>Number(e.getAttribute('width'))),
+      color:getComputedStyle(svg).color,
+      headingColor:getComputedStyle(svg.closest('.role-card').querySelector('.big')).color,
+      collisions:[...svg.querySelectorAll('.role-coordinate')].filter(row=>{
+        const [label,number]=row.querySelectorAll('text');
+        const text=label.getBBox(),n=number.getBBox();
+        return text.x+text.width>182||n.x<267||n.x+n.width>320;
+      }).map(e=>e.dataset.axis)
+    })));
+    for(const [r,role]of ['q','k','v'].entries()){
+      const row=roleRows[r],expected=r===0?q:r===1?keys[winner]:values[winner];
+      assert.equal(row.role,role);assert.deepEqual(row.vector,expected);assert.deepEqual(row.values,expected);
+      assert.deepEqual(row.axes,r===2?valueAxes:axes);
+      expected.forEach((v,c)=>assert(Math.abs(row.bars[c]-79*v/(r===2?1:2.5))<1e-8,'Bars encode the exact coordinate on the stated scale.'));
+      assert.equal(row.color,row.headingColor,'SVGs and role labels share colours.');
+      assert.deepEqual(row.collisions,[],'Named axes, bars and values have separate space.');
+      assert(row.description.includes('row of '+(expected.length===4?'four':'eight')+' numbers'),'Accessible SVG description identifies the vector width.');
+    }
+    assert.equal(await page.locator('#s05-role-key-title').textContent(),titles[winner]);
+    assert.equal(await page.locator('#s05-return-title').textContent(),titles[winner]);
+    assert((await page.locator('#s05-role-key-label .katex annotation').textContent()).includes('k_'+(winner+1)));
+    assert((await page.locator('#s05-role-value-label .katex annotation').textContent()).includes('v_'+(winner+1)));
+    assert((await page.locator('#s05-role-outcome .katex annotation').first().textContent()).endsWith('='+scores[winner].toFixed(2)),'The winning score is independently recomputed without lossy rounding.');
+    for(const build of [0,1,2,0,2]){
+      await go('s05-frame-return',build);
+      for(const [r,role]of ['q','k','v'].entries()){
+        assert.equal(await page.locator('#s05-frame-return .role-card.obj-'+role).evaluate(e=>getComputedStyle(e).visibility),build>=r?'visible':'hidden','Reveal query, then key, then value.');
+      }
+      assert.deepEqual(await matrix('s05-query-vector'),[q],'Recap reveals do not reset the question.');
+      if(i===0)await page.screenshot({path:path.join(shots,'roles-reveal-'+build+'.png')});
+    }
+    await page.screenshot({path:path.join(shots,'roles-query-'+i+'.png')});
     assert.deepEqual(await matrix('s05-return-value'),[values[winner]],'Winning value stays eight-wide and source-paired.');
   }
   // Same eight source coordinates in the next section, before and after weighting.
@@ -100,7 +142,7 @@ try{
     assert.deepEqual(headers.slice(1).map(s=>s.trim().toLowerCase()),valueAxes);
   }
   for(const id of valueFrames){
-    for(const build of id==='s06-frame-weighted-values'?[0,1,2,3,0,3]:id==='s05-frame-values'?[0]:[0,1]){
+    for(const build of id==='s06-frame-weighted-values'?[0,1,2,3,0,3]:id==='s05-frame-values'?[0]:id==='s05-frame-return'?[0,1,2,0,2]:[0,1]){
       await go(id,build);await page.screenshot({path:path.join(shots,id+'-'+build+'.png')});
       if(id==='s06-frame-weighted-values'){
         const view=await page.locator('#s06-mix .s06-mix-value').evaluateAll(cells=>cells.map(cell=>{
@@ -163,6 +205,19 @@ try{
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No phone document overflow.');
     await page.screenshot({path:path.join(shots,'phone-'+id+'.png')});
   }
+  for(let i=0;i<queries.length;i++){
+    await page.locator('#s05-role-qbtns button').nth(i).click();
+    const boxes=await page.locator('#s05-frame-return .role-card').evaluateAll(cards=>cards.map(e=>{const b=e.getBoundingClientRect();return {left:b.left,right:b.right,top:b.top,bottom:b.bottom,visible:getComputedStyle(e).visibility};}));
+    assert(boxes.every(b=>b.left>=0&&b.right<=391&&b.visible==='visible'),'All three cards remain visible and inside phone width.');
+    assert(boxes[1].top>boxes[0].bottom&&boxes[2].top>boxes[1].bottom,'Phone cards follow query/key/value reading order.');
+    // Capture each card in the real viewport. Expanding Chromium's viewport for
+    // the entire tall grid can leave off-screen SVG text incompletely painted.
+    for(const role of ['q','k','v']){
+      const card=page.locator('#s05-frame-return .role-card.obj-'+role);
+      await card.scrollIntoViewIfNeeded();await page.waitForTimeout(250);
+      await card.screenshot({path:path.join(shots,'phone-role-'+i+'-'+role+'.png')});
+    }
+  }
   for(const id of ['s05-vals','s05-return-value','s06-mix','s06-card-mix']){
     const box=await page.locator('#'+id+' .dt-scroll').evaluate(e=>{e.scrollLeft=e.scrollWidth;return {width:e.clientWidth,scroll:e.scrollWidth,left:e.scrollLeft,right:e.getBoundingClientRect().right};});
     assert(box.scroll>box.width&&box.left>0&&box.right<=391,'All eight value columns remain reachable by local phone scrolling.');
@@ -172,5 +227,5 @@ try{
     assert(box.scroll>box.width&&box.x>=0&&box.right<=391,'Named axes scroll locally on phones.');
   }
   assert.deepEqual(errors,[]);
-  console.log('PASS: query/key lessons and 24 scores; eight named value axes, all 48 stored values, 288 weighted products, 48 mixture coordinates, hard/soft/tied/temperature cases, independent state, reveals, desktop and phone layout. Screenshots: '+shots);
+  console.log('PASS: query/key lessons and 24 scores; four concrete Q/K/V recaps with exact SVG vectors, paired sources, scaled bars and staged reveals; eight named value axes, all 48 stored values, 288 weighted products, 48 mixture coordinates, hard/soft/tied/temperature cases, independent state, desktop and phone layout. Screenshots: '+shots);
 }finally{await browser.close();}

@@ -1,5 +1,12 @@
 # Classroom release checks
 
+## 2026-09-14: concrete query/key/value recap
+
+- Rebuilt the existing final retrieval frame as the three-role recap, after the query, key and eight-value-feature foundations. Each column keeps its role question and adds the actual learner request or winning video, its exact vector and a small named-axis SVG chart. Four synchronized question controls contrast gradients, overfitting, CNNs and weight updates. Query/key rows remain 1×4; values remain 1×8. The key/value title and subscript identify the same source, and the displayed winning score comes from all six unchanged keys.
+- The presentation skill guided the preserved three-column colour convention, native data graphics and Q → K → V reveals. Removed the old role-only companion cards rather than adding a duplicate slide. The SVGs include accessible numeric descriptions; notes and reading text identify the hand-chosen numbers, row convention and bar scales. Phone reading stacks the cards in order. No source vectors, Part I, token model, shared runtime, dependencies or PDFs changed.
+- Full-deck checks pass for all 322 presentation states / 547 formulas, all 147 controls, the existing pooling regression, eight independent live/reference model cases (7,980 finite values, max error 8.88e-16), and 390px article QA. The table audit reports only the four pre-existing warnings outside Section 5. Visually inspected all four desktop recaps and the query/key/value reveals.
+- Expanded the retrieval regression to verify all four recap queries, exact SVG coordinates and axis order, common query/key bar scales, source pairing and score arithmetic, synchronized controls, repeated forward/back reveals, text/bar bounds and phone card stacking. All pass, together with the existing 24 score, 48 source-value, 288 weighted-product and 48 mixture-coordinate checks. Visually inspected the phone gradient and overfitting recaps.
+
 ## 2026-09-14: eight specific value features throughout retrieval
 
 - Replaced the three broad value topics, which resembled the query/key topics, with eight specific content features: chain rule, gradient step, step size, shared filters, token mixing, activation scaling, weight penalty and dropout. A new introductory frame defines all eight and shows Backpropagation's actual entries before the six-video comparison. Strongest source features are underlined. The guide explicitly labels these zero-to-one strengths as hand-chosen and not probabilities or literal learned-coordinate names.

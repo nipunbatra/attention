@@ -203,6 +203,30 @@ body.present #s05 #s05-vals .dt th,body.present #s05 #s05-return-value .dt th{wh
 body.present #s05 #s05-vals .dt tr>:first-child{width:180px}
 body.present #s05 #s05-return-value .dt tr>:first-child{width:80px}
 body.present #s05 #s05-vals .dt td.dt-num,body.present #s05 #s05-return-value .dt td.dt-num{min-width:0;padding:8px 5px}
+/* Concrete Q/K/V recap: the requested three columns, with data-driven SVG rows. */
+#s05 .role-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin:12px 0}
+#s05 .role-card{border:2px solid var(--oc);background:var(--ot);border-radius:var(--radius);padding:14px;min-width:0}
+#s05 .role-name{display:flex;align-items:baseline;gap:12px;color:var(--oc);font-weight:700;font-size:21px}
+#s05 .role-name .big{font:italic 32px var(--font-math)}
+#s05 .role-card h3{font-size:22px;line-height:1.2;min-height:53px;margin:10px 0}
+#s05 .role-example{font-size:18px;line-height:1.3;min-height:100px;margin:0 0 10px}
+#s05 .role-example p{margin:0}
+#s05 .role-card svg{display:block;width:100%;height:auto;color:var(--oc);overflow:visible}
+#s05 .role-vector-label{font-size:19px;color:var(--oc);margin:0 0 5px}
+#s05 .role-outcome{font-size:19px;line-height:1.35;margin:14px 0 0}
+#s05 #s05-frame-return .role-example #s05-return-title{font-size:18px;line-height:1.3;margin:0 0 5px}
+#s05 #s05-frame-return .role-example #s05-return-summary{font-size:18px;line-height:1.3;margin:0}
+body.present #s05 .role-grid{gap:18px;margin:10px 0}
+body.present #s05 .role-card{padding:12px 16px}
+body.present #s05 .role-card h3{font-size:24px;min-height:58px;margin:8px 0}
+body.present #s05 .role-example{font-size:20px;min-height:92px;margin-bottom:8px}
+body.present #s05 #s05-frame-return .role-example #s05-return-title,
+body.present #s05 #s05-frame-return .role-example #s05-return-summary{font-size:20px}
+body.present #s05 .role-vector-label{font-size:20px}
+body.present #s05 .role-name{font-size:22px}
+body.present #s05 .role-outcome{font-size:20px;margin:14px 0 0}
+body.present #s05 #s05-role-qbtns{margin:0 0 8px}
+@media(max-width:760px){body:not(.present) #s05 .role-grid{grid-template-columns:1fr}body:not(.present) #s05 .role-card h3,body:not(.present) #s05 .role-example{min-height:0}}
 </style>
 <header class="sec-head">
   <span class="sec-num">05</span>
@@ -400,11 +424,6 @@ The selected query has chosen a source through its key. For gradients, Backpropa
     <div><h3 class="sym-k">1. Match the topic (key)</h3><p><strong id="s05-example-title"></strong> covers <span id="s05-example-topic" class="sym-k"></span>.</p></div>
     <div data-build="1"><h3 class="sym-v">2. Get its explanation (value)</h3><p id="s05-example-explanation"></p></div>
   </div>
-  <div class="companion"><div class="grid-3" style="margin:20px 0">
-    <div class="slogan obj-q"><span class="big">Q</span><span class="txt">What am I looking for?<small>the query, formed by the searcher</small></span></div>
-    <div class="slogan obj-k"><span class="big">K</span><span class="txt">When should you retrieve me?<small>the key, one per item, used for matching</small></span></div>
-    <div class="slogan obj-v"><span class="big">V</span><span class="txt">What information do I send?<small>the value, one per item, the payload</small></span></div>
-  </div></div>
 </div>
 
 <div class="frame" id="s05-frame-value-axes" data-title="Eight details the value can carry" data-autobuild="off">
@@ -432,17 +451,37 @@ Timing: two minutes.
   </div>
 </div>
 
-<div class="frame" id="s05-frame-return" data-title="Return the matched item's information, not its key" data-autobuild="off">
-  <script type="text/x-notes">The highest-scoring key belonged to which item? What arrives?
-The numeric value and content of that same item arrive. Keep the source pairing explicit: choosing item j means retrieving v_j.</script>
-  <div class="card obj-v">
-    <h3 id="s05-return-title"></h3>
-    <p id="s05-return-summary"></p>
-    <div id="s05-return-value"></div>
+<div class="frame" id="s05-frame-return" data-title="Three representations, three different jobs" data-autobuild="off">
+  <script type="text/x-notes">Which numbers come from the learner, and which belong to the video?
+Reveal the query, then the winning video's key, then its value. Each SVG lists the vector's coordinates in their established order, with exact numeric labels and bars showing strengths. These lists display row vectors: four matching coordinates for q and k, eight content coordinates for v. Query and key bars share the same zero-to-2.5 scale. Value bars use zero-to-one. The numbers remain the hand-chosen teaching examples, not outputs of a trained text encoder. The displayed key has the largest score among all six videos, not just a comparison against itself. Switch between requests after the full reveal. Matching chooses the source, then that same source supplies its value. Use the shared subscript and video title to trace the pairing. The next section uses these same values for hard and soft retrieval.</script>
+  <div class="btn-row" id="s05-role-qbtns" data-keep-state></div>
+  <div class="role-grid">
+    <div class="role-card obj-q">
+      <div class="role-name"><span class="big">Q</span> Query</div>
+      <h3>What am I looking for?</h3>
+      <div class="role-example"><p class="s05-qtext"></p></div>
+      <div class="role-vector-label">$\vq{q}$: $1\times4$ matching row</div>
+      <div id="s05-role-query"></div>
+    </div>
+    <div class="role-card obj-k" data-build="1">
+      <div class="role-name"><span class="big">K</span> Key</div>
+      <h3>When should you retrieve me?</h3>
+      <div class="role-example"><strong id="s05-role-key-title"></strong><p id="s05-role-key-description"></p></div>
+      <div class="role-vector-label" id="s05-role-key-label"></div>
+      <div id="s05-role-key"></div>
+      <p class="role-outcome" id="s05-role-outcome" data-build="2"></p>
+    </div>
+    <div class="role-card obj-v" data-build="2">
+      <div class="role-name"><span class="big">V</span> Value</div>
+      <h3>What information do I send?</h3>
+      <div class="role-example"><h4 id="s05-return-title"></h4><p id="s05-return-summary"></p></div>
+      <div class="role-vector-label" id="s05-role-value-label"></div>
+      <div id="s05-role-value"></div>
+    </div>
   </div>
-  <div class="callout callout-key" data-build="1">The key chose the item. The value supplies the information returned.</div>
     <div class="companion prose">
-      <p>A high score says <em>retrieve Backpropagation</em>, but what arrives is its value, not its key. For this toy lookup, take the highest-scoring item. Real search engines usually rank several results; attention instead mixes values using soft weights.</p>
+      <p>The query comes from the learner's question. Each stored video has a key for matching and a value for returning information. These are the same hand-chosen example vectors used in the preceding tables. The coordinate lists above represent rows, not new column-vector conventions. Matching bars run from 0 to 2.5, while content bars run from 0 to 1.</p>
+      <div id="s05-return-value"></div>
     </div>
 </div>
 
@@ -566,7 +605,7 @@ The numeric value and content of that same item arrive. Keep the source pairing 
   }
 
   /* frame 2: query presets, the query box (one per frame, kept in step), the score table */
-  const qBtnGroups = ['#s05-qbtns','#s05-score-qbtns','#s05-collection-qbtns'].map(selector => QUERIES.map((Q, i) => {
+  const qBtnGroups = ['#s05-qbtns','#s05-score-qbtns','#s05-collection-qbtns','#s05-role-qbtns'].map(selector => QUERIES.map((Q, i) => {
     const b = AT.h('button', { type: 'button', class: 'btn', 'aria-pressed': i === qi ? 'true' : 'false' }, Q.short);
     b.addEventListener('click', () => {
       qi = i;
@@ -638,12 +677,36 @@ The numeric value and content of that same item arrive. Keep the source pairing 
     vals.rowEls[j].classList.toggle('is-hl', on);
     cardEls[j].classList.toggle('is-linked', on);
   }
+  function roleVector(hostId, role, label, axes, values, max){
+    const host=S.querySelector(hostId);AT.clear(host);
+    const rowHeight=24, height=values.length*rowHeight+10;
+    const svg=AT.svg('svg',{viewBox:'0 0 320 '+height,role:'img','aria-label':label+'. '+axes.map((a,c)=>a+' '+AT.fmt(values[c],1)).join(', '),class:'role-vector','data-role':role,'data-vector':JSON.stringify(values)},
+      AT.svg('title',{},label+' in coordinate order'));
+    axes.forEach((axis,c)=>{
+      const y=18+c*rowHeight;
+      const row=AT.svg('g',{class:'role-coordinate','data-axis':axis,'data-value':values[c]});
+      row.appendChild(AT.svg('text',{x:0,y,'font-size':18,'font-family':'var(--font)',fill:'currentColor'},(c+1)+'. '+axis));
+      row.appendChild(AT.svg('rect',{x:184,y:y-12,width:79,height:10,rx:2,fill:'currentColor',opacity:.12}));
+      row.appendChild(AT.svg('rect',{class:'role-bar',x:184,y:y-12,width:79*values[c]/max,height:10,rx:2,fill:'currentColor'}));
+      row.appendChild(AT.svg('text',{x:318,y,'text-anchor':'end','font-size':20,'font-family':'var(--font-mono)',fill:'var(--ink)'},AT.fmt(values[c],1)));
+      svg.appendChild(row);
+    });
+    host.appendChild(svg);
+  }
   function draw(){
     const Q = QUERIES[qi];
     const scores = VIDEOS.map(V => AT.dot(Q.q, V.k));
     const top = AT.argmax(scores);
     S.querySelector('#s05-return-title').textContent = VIDEOS[top].title;
     S.querySelector('#s05-return-summary').textContent = VIDEOS[top].summary;
+    S.querySelector('#s05-role-key-title').textContent=VIDEOS[top].title;
+    S.querySelector('#s05-role-key-description').textContent='Useful for '+KEY_TOPICS[AT.argmax(VIDEOS[top].k)]+'.';
+    S.querySelector('#s05-role-key-label').innerHTML=AT.texStr('\\vk{k_'+(top+1)+'}')+': 1 × 4 matching row';
+    S.querySelector('#s05-role-value-label').innerHTML=AT.texStr('\\vv{v_'+(top+1)+'}')+': 1 × 8 content row';
+    roleVector('#s05-role-query','q','Query, one row of four numbers',KEY_AXES,Q.q,2.5);
+    roleVector('#s05-role-key','k',VIDEOS[top].title+' key, one row of four numbers',KEY_AXES,VIDEOS[top].k,2.5);
+    roleVector('#s05-role-value','v',VIDEOS[top].title+' value, one row of eight numbers',VAL_AXES,VIDEOS[top].v,1);
+    S.querySelector('#s05-role-outcome').innerHTML=AT.texStr('\\vq{q}\\cdot\\vk{k_'+(top+1)+'}='+AT.fmt(scores[top],2))+': best of six key scores. Return '+AT.texStr('\\vv{v_'+(top+1)+'}')+' from this video.';
     const returnHost = S.querySelector('#s05-return-value');
     AT.clear(returnHost);
     AT.ui.table([VIDEOS[top].v], { cols:VAL_AXES.map(label=>({label,cls:'v'})),rowCls:'v',rowLabels:['$\\vv{v_{'+(top+1)+'}}$'],cornerLabel:'value',decimals:1,into:returnHost });
