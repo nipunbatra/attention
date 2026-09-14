@@ -84,13 +84,17 @@ wtable("W_V (e -> v): 'axis -> says'", toy["W_V"], AX["short"]["e"], AX["short"]
 w("Reading: water says water scene and finance says finance scene. The other input axes send zeros in this toy.\n")
 wtable("W_O (v -> e): back onto the e axes", toy["W_O"], AX["short"]["v"], AX["short"]["e"], "v axis", "e axis")
 w("Reading: says water -> water 1.0 and says finance -> finance 1.0. The other e axes receive zero.\n")
-w("### W_vocab (e -> logits): 'axis -> votes for these words' (only the non-zero columns; every other entry is 0)\n")
+w("### Prediction head: 4 → 8 ReLU hidden units → 20 vocabulary logits\n")
+w("h = ReLU(e W1 + b1), logits = h W2 + b2. In JSON: W1=W_hidden, b1=b_hidden, W2=W_vocab, b2=b_vocab. These hand-designed hidden units are numbered, not token positions or claimed learned concepts.\n")
+wtable("W_hidden / W1 (input → hidden)", toy["W_hidden"], AX["short"]["e"], [f"h{i+1}" for i in range(toy["d_hidden"])], "input", "hidden")
+w("b_hidden / b1: " + fmt(toy["b_hidden"]) + ". Apply ReLU after adding these offsets.\n")
+w("W_vocab / W2 (hidden → logits), non-zero columns:\n")
 Wv = toy["W_vocab"]
-nz_cols = [j for j in range(len(VOCAB)) if any(abs(Wv[r][j]) > 1e-9 for r in range(toy["d_model"]))]
-w("| e axis \\ word | " + " | ".join(VOCAB[j] for j in nz_cols) + " |")
+nz_cols = [j for j in range(len(VOCAB)) if any(abs(Wv[r][j]) > 1e-9 for r in range(toy["d_hidden"]))]
+w("| hidden unit \\ word | " + " | ".join(VOCAB[j] for j in nz_cols) + " |")
 w("|---|" + "---:|" * len(nz_cols))
-for r in range(toy["d_model"]):
-    w(f"| {AX['short']['e'][r]} | " + " | ".join(num(Wv[r][j]) for j in nz_cols) + " |")
+for r in range(toy["d_hidden"]):
+    w(f"| h{r+1} | " + " | ".join(num(Wv[r][j]) for j in nz_cols) + " |")
 w("")
 bset = sorted(set(toy["b_vocab"]))
 w("b_vocab: " + "; ".join(f"{num(b)} for " + ", ".join(VOCAB[j] for j in range(len(VOCAB)) if toy['b_vocab'][j] == b) for b in bset) + ".\n")
@@ -130,7 +134,7 @@ w("## T4 - S_B, query the(10): attention and next-token probabilities\n")
 att_table("attention row of the(10)", SB, fb["A"][9], 10)
 prob_table("p(next token | S_B) from e'_the(10)", fb["probs"][9], CAND_B)
 w(f"Target: teller > clerk > queue > money, every other token <= .04; attention mostly on cheque, bank, deposited: {status('T4')}\n")
-w("## T5 - baseline (no attention): softmax(e^(0)_the(10) W_vocab + b)\n")
+w("## T5 - baseline (no attention): softmax(ReLU(e^(0)_the(10) W1 + b1) W2 + b2)\n")
 w("Identical for both sentences (same token, same position 10). The starting row of the final 'the' is [0, 0, 0, 2.3]: no water or finance component, so only the output biases affect these logits.\n")
 w("| token | probability |"); w("|---|---:|")
 for c in CANDS: w(f"| {c} | {base[VI[c]]:.3f} |")

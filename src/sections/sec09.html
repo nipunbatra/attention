@@ -201,8 +201,8 @@ The message is not a word and the attention weights are not next-word probabilit
   <div id="s09-prediction-output"></div>
   <p class="rd">Same prediction head, different context. These probabilities come from the updated <strong>final row</strong>, not directly from bank's message.</p>
 </div>
-<p class="s09-preview-scope">This small model goes straight to the vocabulary head. A Transformer also has feed-forward sublayers; we will add those later.</p>
-<div class="companion">The head computes $\operatorname{softmax}(\vp{e_{10}'}W_{\mathrm{vocab}}+b_{\mathrm{vocab}})$. The next-token softmax normalizes vocabulary scores; attention's softmax normalized source-token match scores. Section 14 opens up this same head calculation in detail.</div>
+<p class="s09-preview-scope">This small model uses our 4 → 8 → 20 MLP predictor. This prediction head is distinct from the feed-forward sublayers inside a full Transformer.</p>
+<div class="companion">The head computes $h_{10}=\operatorname{ReLU}(\vp{e_{10}'}W_1+b_1)$, then $\ell=h_{10}W_2+b_2$ and $p=\operatorname{softmax}(\ell)$. The next-token softmax normalizes vocabulary scores; attention's softmax normalized source-token match scores. Section 14 opens up this same head calculation in detail.</div>
 </div>
 
 <div class="companion after">

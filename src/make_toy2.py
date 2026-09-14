@@ -27,6 +27,7 @@ CAND_A = ["water", "boats", "fish", "ducks"]
 CAND_B = ["teller", "clerk", "queue", "money"]
 CANDS = CAND_A + CAND_B
 D_MODEL, D_K, D_V, T = 4, 3, 2, 10
+HIDDEN = 8
 MAX_CONTEXT = 20  # ten-token examples plus room for the generation walkthrough
 BANK, LAST = 6, 9  # 0-indexed positions of bank(7) and the(10)
 
@@ -125,18 +126,37 @@ W_VOCAB_ROWS = {
 }
 B_OTHER = -1.5   # bias for every non-candidate word; candidates get 0
 
+# A real nonlinear 4 -> 8 -> 20 predictor, as in Part I. These are illustrative
+# parameters, not fitted weights. h1..h8 are hidden activations, not token rows.
+W_HIDDEN = [
+    [1, 0, 0, 1,  1, -1, 1, 0],
+    [0, 1, 0, 1, -1,  1, 0, 1],
+    [0, 0, 1, 0,  0,  0, 1, 1],
+    [0, 0, 0, -.2, 0, 0, -.1, -.1],
+]
+B_HIDDEN = [0, 0, 0, -.5, -.5, -.5, -.5, -.5]
+
 
 def build_params():
-    W_vocab = np.zeros((D_MODEL, len(VOCAB)))
-    for r, ax in enumerate(AXES["e"]):
+    W_vocab = np.zeros((HIDDEN, len(VOCAB)))
+    for r, ax in enumerate(AXES["e"][:3]):
         for w, x in W_VOCAB_ROWS[ax].items():
             W_vocab[r, VI[w]] = x
+    for w in CANDS:
+        W_vocab[3, VI[w]] = .1
+    for r, votes in [(4, {"water": .2, "boats": .1}),
+                     (5, {"teller": .2, "clerk": .1}),
+                     (6, {"fish": .1, "ducks": .1}),
+                     (7, {"teller": .1, "clerk": .1})]:
+        for w, weight in votes.items():
+            W_vocab[r, VI[w]] = weight
     b = np.full(len(VOCAB), B_OTHER)
     for c in CANDS:
         b[VI[c]] = 0.0
     return dict(tok=np.array([TOK[w] for w in VOCAB], float), pos=np.array(POS, float),
                 W_Q=np.array(W_Q, float), W_K=np.array(W_K, float), W_V=np.array(W_V, float),
-                W_O=np.array(W_O, float), W_vocab=W_vocab, b_vocab=b)
+                W_O=np.array(W_O, float), W_hidden=np.array(W_HIDDEN, float),
+                b_hidden=np.array(B_HIDDEN, float), W_vocab=W_vocab, b_vocab=b)
 
 
 # ----------------------------------------------------------------------------------------------
@@ -162,10 +182,12 @@ def run(P, tokens, mask=True, scale=True):
     M = A @ V
     Delta = M @ P["W_O"]
     Enew = E + Delta
-    logits = Enew @ P["W_vocab"] + P["b_vocab"]
-    base_logits = E @ P["W_vocab"] + P["b_vocab"]
+    HeadPre = Enew @ P["W_hidden"] + P["b_hidden"]
+    HeadHidden = np.maximum(HeadPre, 0)
+    logits = HeadHidden @ P["W_vocab"] + P["b_vocab"]
+    base_logits = np.maximum(E @ P["W_hidden"] + P["b_hidden"], 0) @ P["W_vocab"] + P["b_vocab"]
     return dict(E=E, Q=Q, K=K, V=V, Sraw=Sraw, S=S, A=A, Mmsg=M, Delta=Delta, Enew=Enew,
-                logits=logits, probs=softmax_rows(logits),
+                HeadPre=HeadPre, HeadHidden=HeadHidden, logits=logits, probs=softmax_rows(logits),
                 base_logits=base_logits, base_probs=softmax_rows(base_logits))
 
 
@@ -236,7 +258,8 @@ def check(P, verbose=True):
         P["pos"].shape == (MAX_CONTEXT, D_MODEL) and
         P["W_Q"].shape == (D_MODEL, D_K) and P["W_K"].shape == (D_MODEL, D_K) and
         P["W_V"].shape == (D_MODEL, D_V) and P["W_O"].shape == (D_V, D_MODEL) and
-        P["W_vocab"].shape == (D_MODEL, len(VOCAB)), "ok")
+        P["W_hidden"].shape == (D_MODEL, HIDDEN) and P["b_hidden"].shape == (HIDDEN,) and
+        P["W_vocab"].shape == (HIDDEN, len(VOCAB)), "ok")
     if verbose:
         print("=" * 100)
         for name, ok, detail, hard in res:
@@ -262,7 +285,7 @@ NOTES = (
     "setting: water?, setting: finance?, who? (a query row reads 'what I ask for', a key row 'what I offer'). Position vectors add small offsets across the same four coordinates. v has its own "
     "narrower axes: says: water scene and says: finance scene; W_O maps them back onto the e axes. Names are "
     "illustrative; the matrices are sparse and one-decimal so a student can read each row of W_Q as 'axis -> asks', "
-    "W_K as 'axis -> offers', W_V as 'axis -> says', W_vocab as 'axis -> votes for these words'. Values are narrower on "
+    "W_K as 'axis -> offers', W_V as 'axis -> says'. The predictor has eight ReLU hidden units: h=ReLU(e W_hidden+b_hidden), logits=h W_vocab+b_vocab. On slides these are W1, b1, W2, b2. Values are narrower on "
     "purpose because they are mixed and sent rather than compared. Before position is added, glue-only token rows have zero keys and values but ask for "
     "both settings, which is why the final 'the' reads river or cheque. bank is equal parts water "
     "and finance (0.7, 0.7) plus a little glue (0.7); its entries are kept below 1.0 so that bank does not mostly attend to itself "
@@ -280,12 +303,13 @@ NOTES = (
 
 def write_json(P):
     toy = {
-        "d_model": D_MODEL, "d_k": D_K, "d_v": D_V, "max_context": MAX_CONTEXT,
+        "d_model": D_MODEL, "d_k": D_K, "d_v": D_V, "max_context": MAX_CONTEXT, "d_hidden": HIDDEN,
         "vocab": VOCAB,
         "tok_emb": {w: fl(P["tok"][i]) for i, w in enumerate(VOCAB)},
         "pos_emb": fl(P["pos"]),
         "W_Q": fl(P["W_Q"]), "W_K": fl(P["W_K"]), "W_V": fl(P["W_V"]),
         "W_O": fl(P["W_O"]),
+        "W_hidden": fl(P["W_hidden"]), "b_hidden": fl(P["b_hidden"]),
         "W_vocab": fl(P["W_vocab"]), "b_vocab": fl(P["b_vocab"]),
         "sentences": {"river": SA, "cheque": SB},
         "candidates": {"river": CAND_A, "cheque": CAND_B},
@@ -303,7 +327,7 @@ def write_check(P):
                                     ("river_unmasked", SA, False, True), ("cheque_unmasked", SB, False, True),
                                     ("river_noscale", SA, True, False)):
         f = run(P, toks, mask, scale)
-        out[name] = {k: f[k].tolist() for k in ("E", "Q", "K", "V", "Sraw", "S", "A", "Mmsg", "Delta", "Enew", "logits", "probs")}
+        out[name] = {k: f[k].tolist() for k in ("E", "Q", "K", "V", "Sraw", "S", "A", "Mmsg", "Delta", "Enew", "HeadPre", "HeadHidden", "logits", "probs")}
         if mask:  # JS uses -Infinity for masked scores, python -1e9: compare only the visible entries
             out[name]["S"] = [[(None if j > i else f["S"][i, j]) for j in range(T)] for i in range(T)]
         out[name]["base_logits"] = f["base_logits"].tolist()
@@ -318,6 +342,7 @@ def load_json_params(path=OUT_JSON):
         toy = json.load(f)
     return dict(tok=np.array([toy["tok_emb"][w] for w in VOCAB]), pos=np.array(toy["pos_emb"]),
                 W_Q=np.array(toy["W_Q"]), W_K=np.array(toy["W_K"]), W_V=np.array(toy["W_V"]), W_O=np.array(toy["W_O"]),
+                W_hidden=np.array(toy["W_hidden"]), b_hidden=np.array(toy["b_hidden"]),
                 W_vocab=np.array(toy["W_vocab"]), b_vocab=np.array(toy["b_vocab"]))
 
 

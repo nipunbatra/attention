@@ -156,7 +156,7 @@ Queries and keys must have compatible matching coordinates. Values form the mess
       AT.ui.vec(F.Q[B], { cls:'q', label:'\\vq{q_7}', dims:true, into:row() });
       p("The row passed onward is $\\vp{e_7'}=\\ve{e_7}+\\vd{\\Delta e_7}$, in the model space.");
     } else if (i === 3) {
-      p('<strong>Stored and learned:</strong> the embedding table and matrices $W_Q,W_K,W_V,W_O,W_{\\mathrm{vocab}}$, plus biases.');
+      p('<strong>Stored and learned:</strong> the embedding table, attention matrices $W_Q,W_K,W_V,W_O$, and predictor matrices $W_1,W_2$ with biases $b_1,b_2$.');
       p('<strong>Recomputed for this input:</strong> $Q,K,V$, scores, weights, messages and updated token rows.');
       p('Backpropagation passes through the working vectors. The optimizer updates the underlying parameters.');
     } else if (i === 4) {

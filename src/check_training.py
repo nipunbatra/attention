@@ -150,7 +150,7 @@ def check_gradients(module, model, tokens, target):
 
 def main():
     module = load_training_module()
-    model = json.loads((HERE / "toy.json").read_text(encoding="utf-8"))
+    model = module.training_model(json.loads((HERE / "toy.json").read_text(encoding="utf-8")))
     saved = json.loads((HERE / "toy3.json").read_text(encoding="utf-8"))
     raw = module.build_training(model)
     computed = module.serialize_training(raw)

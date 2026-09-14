@@ -301,8 +301,29 @@ def serialize_training(training):
     return output
 
 
+def training_model(source):
+    """Keep Part III's explicit linear-readout experiment separate from Part II's MLP.
+
+    The attention parameters are shared. The training lesson and its full-GPT
+    sketch use a direct linear vocabulary layer; do not silently feed 4 rows to
+    the new 8-row MLP output matrix when rebuilding its existing worksheet.
+    """
+    model = copy.deepcopy(source)
+    if "W_hidden" in model:
+        from make_toy2 import W_VOCAB_ROWS, AXES
+        weights = np.zeros((model["d_model"], len(model["vocab"])))
+        for i, axis in enumerate(AXES["e"]):
+            for token, weight in W_VOCAB_ROWS[axis].items():
+                weights[i, model["vocab"].index(token)] = weight
+        model["W_vocab"] = weights.tolist()
+        for key in ("W_hidden", "b_hidden", "d_hidden"):
+            model.pop(key, None)
+        model["notes"] += " Part III variant: the prediction MLP is replaced by the original direct linear vocabulary readout for its separate gradient worksheet."
+    return model
+
+
 def main():
-    model = json.loads(SOURCE.read_text(encoding="utf-8"))
+    model = training_model(json.loads(SOURCE.read_text(encoding="utf-8")))
     output = copy.deepcopy(model)
     output["training"] = serialize_training(build_training(model))
     OUTPUT.write_text(json.dumps(output, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")

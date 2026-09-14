@@ -31,9 +31,10 @@ const close=(actual,expected)=>{
 };
 const weighted=(rows,weights)=>rows[0].map((_,c)=>rows.reduce((s,row,j)=>s+row[c]*weights[j],0));
 const model=JSON.parse(fs.readFileSync(new URL('toy.json',import.meta.url),'utf8'));
-// Independent affine/softmax calculation: never use the browser's AT.head as the oracle.
+// Independent MLP/softmax calculation: never use the browser's AT.head as the oracle.
 const referenceHead=c=>{
-  const logits=model.b_vocab.map((bias,j)=>bias+c.reduce((sum,x,k)=>sum+x*model.W_vocab[k][j],0));
+  const hidden=model.b_hidden.map((bias,j)=>Math.max(0,bias+c.reduce((s,x,k)=>s+x*model.W_hidden[k][j],0)));
+  const logits=model.b_vocab.map((bias,j)=>bias+hidden.reduce((sum,x,k)=>sum+x*model.W_vocab[k][j],0));
   const max=Math.max(...logits),exps=logits.map(x=>Math.exp(x-max)),total=exps.reduce((a,b)=>a+b,0);
   return {logits,probs:exps.map(x=>x/total),winners:logits.flatMap((x,j)=>Math.abs(x-max)<1e-12?[j]:[])};
 };

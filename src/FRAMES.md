@@ -7,7 +7,7 @@ F1 "One blank": sentence chips and the prediction task. F2 show probability bars
   Notes: "What could come next, and why do you think so?" Collect answers before switching context. The selected context and token survive continuation frames. Do not introduce attention yet.
 
 ## s02 Only the last token
-F1 state the context problem using the two full sentences. F2 isolate the last token as a deliberately limited baseline. F3 switch contexts and observe identical bars. F4 connect that row to the vocabulary head. F5 explain the limitation and motivate reading several rows. Full head arithmetic remains in reading mode.
+F1 state the context problem using the two full sentences. F2 isolate the last token as a deliberately limited baseline. F3 switch contexts and observe identical bars. F4 shows the actual 4→8→20 predictor: W1 and b1, ReLU hidden activations, W2 and b2, with matching input/hidden/parameter/logit colours. F5 turns all twenty scores into probabilities. F6 explains why identical last-token rows give identical predictions and motivates reading several rows. Full hidden-to-output arithmetic remains in reading mode. Baseline, pooling and post-attention examples all use this same hand-designed MLP; it is distinct from a Transformer block's FFN.
   Notes: "Before I switch the context: will the bars move?" They cannot: the baseline receives the same token at the same position.
 
 ## s03 A fixed window

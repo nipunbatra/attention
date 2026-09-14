@@ -6,7 +6,7 @@ Open `index.html` to step through the diagram. It is standalone and works offlin
 - Stages 1–11 follow receiver 7 (`bank`) in the ten-token river sentence.
 - Stage 12 recomputes the same path for receiver 10 (the final `the`) and adds the vocabulary predictor outside the attention core.
 - All projections in a layer use the same original input snapshot. The update of `bank` is not fed into the final `the` within the same layer.
-- Numerical data is frozen from `src/toy.json`, not trained. The current model uses five representation coordinates, three query/key coordinates, and two value coordinates. Shapes and labels are read from the model.
+- Numerical data is frozen from `src/toy.json`, not trained. The current model uses four representation coordinates, three query/key coordinates, two value coordinates, and a 4→8→20 ReLU predictor. Shapes and labels are read from the model.
 - Uses row vectors; `E` is the matrix of current input representations, not the shared vocabulary embedding table.
 - This is one attention head with an output projection and residual addition, not a full Transformer block. FFN, normalization, training and multiple heads are omitted.
 

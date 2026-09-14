@@ -15,9 +15,9 @@ assert.deepEqual(data.tokens, model.sentences.river);
 assert.deepEqual(data.vocabulary, model.vocab);
 assert.deepEqual(data.dims, {
   T: 10, dModel: model.d_model, dKey: model.d_k,
-  dValue: model.d_v, vocabSize: model.vocab.length,
+  dValue: model.d_v, dHidden: model.d_hidden, vocabSize: model.vocab.length,
 });
-for (const [name, key] of Object.entries({ WQ: 'W_Q', WK: 'W_K', WV: 'W_V', WO: 'W_O', WVocab: 'W_vocab' })) {
+for (const [name, key] of Object.entries({ WQ: 'W_Q', WK: 'W_K', WV: 'W_V', WO: 'W_O', WHidden: 'W_hidden', WVocab: 'W_vocab' })) {
   assert.deepEqual(data.shapes[name], [model[key].length, model[key][0].length]);
 }
 
@@ -55,7 +55,7 @@ for (const [name, index] of [['bank', 6], ['last', 9]]) {
     scaledScores: reference.Sraw[index].map(s => s / Math.sqrt(model.d_k)),
     maskedScores: reference.S[index].map(s => Number.isFinite(s) ? s : null),
     alpha: reference.A[index], mixture: reference.Mmsg[index],
-    delta: reference.Delta[index], updated: reference.Enew[index],
+    delta: reference.Delta[index], updated: reference.Enew[index], hidden: reference.HeadHidden[index],
     logits: reference.logits[index], probabilities: reference.probs[index],
   };
   for (const [key, value] of Object.entries(expected)) close(actual[key], value, `${name}.${key}`);

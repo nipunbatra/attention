@@ -93,11 +93,13 @@ try {
   });
 
   for (const [partIndex, file] of files.entries()) {
+    // Each lesson has its own readout: Part II MLP, Part III linear training toy.
+    const model = JSON.parse(readFileSync(path.join(src, partIndex === 1 ? 'toy3.json' : 'toy.json'), 'utf8'));
     const name = path.basename(file);
     await page.goto(pathToFileURL(path.resolve(file)).href, { waitUntil: 'load' });
     await page.waitForFunction(() => window.AT && typeof AT.forward === 'function');
     const liveModel = await page.evaluate(() => window.__TOY__);
-    for (const key of ['max_context', 'd_model', 'd_k', 'd_v', 'vocab', 'tok_emb', 'pos_emb', 'W_Q', 'W_K', 'W_V', 'W_O', 'W_vocab', 'b_vocab', 'sentences']) {
+    for (const key of ['max_context', 'd_model', 'd_k', 'd_v', 'vocab', 'tok_emb', 'pos_emb', 'W_Q', 'W_K', 'W_V', 'W_O', 'd_hidden', 'W_hidden', 'b_hidden', 'W_vocab', 'b_vocab', 'sentences']) {
       assert.deepEqual(liveModel[key], model[key], name + ': assembled model is stale at ' + key);
     }
     if (partIndex === 1) {

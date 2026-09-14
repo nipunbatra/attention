@@ -124,7 +124,7 @@ e_last_new = E[-1] + delta_last</code></pre>
 They are vocabulary probabilities. This is a second softmax: attention's softmax mixed source values; the vocabulary softmax turns logits into possible continuations. Reveal the numerical head calculation for the top candidate if needed.</script>
 <div class="card">
   <h3 class="card-title">The output head: logits, then probabilities</h3>
-  <p>$\ell = \vp{e_{10}'}W_{\text{vocab}}+b,\qquad p=\operatorname{softmax}(\ell)$</p>
+  <p>$h_{10}=\operatorname{ReLU}(\vp{e_{10}'}W_1+b_1)$<br>$\ell=h_{10}W_2+b_2,\qquad p=\operatorname{softmax}(\ell)$</p>
   <div id="s14-head"></div>
   <p class="muted small" id="s14-msg" aria-live="polite"></p>
   <p class="small">This softmax is over <strong>next-token candidates</strong>, not the source positions used by attention.</p>
@@ -133,12 +133,13 @@ They are vocabulary probabilities. This is a second softmax: attention's softmax
 
 <div class="companion" id="s14-output-rule" data-title="One updated row becomes one distribution over the vocabulary">
   <script type="text/x-notes">This is not the attention softmax. The columns now name possible next tokens, not source positions.</script>
-  <div class="prose">$$\ell = \vp{e_{10}'}\,W_{\text{vocab}} + b, \qquad p(x_{11}\mid x_{\le10}) = \operatorname{softmax}(\ell)$$</div>
+  <div class="prose">$$h_{10}=\operatorname{ReLU}(\vp{e_{10}'}W_1+b_1),\quad \ell=h_{10}W_2+b_2,\quad p(x_{11}\mid x_{\le10})=\operatorname{softmax}(\ell)$$</div>
   <div class="grid-2" data-build="1">
     <div class="card"><strong>Attention softmax</strong><p>One weight per <em>known source position</em>.</p></div>
     <div class="card"><strong>Vocabulary softmax</strong><p>One probability per <em>possible next token</em>.</p></div>
   </div>
-  <pre class="pytorch" data-build="2"><code>logits = e_last_new @ W_vocab + b_vocab
+  <pre class="pytorch" data-build="2"><code>h = (e_last_new @ W_hidden + b_hidden).relu()  # W1, b1: 4 → 8
+logits = h @ W_vocab + b_vocab  # W2, b2: 8 → 20
 p_next = logits.softmax(dim=-1)</code></pre>
 </div>
 
@@ -288,7 +289,7 @@ Not in the same layer. It reads bank's value formed from this layer's input. The
     const R = useAtt ? F[ctx] : B[ctx];
     const tok = ctxs[ctx][t];
     const probs = R.probs[t], logits = R.logits[t];
-    const x = useAtt ? R.Enew[t] : R.E[t];
+    const x = R.HeadHidden[t];
     const top = AT.topk(probs, 6);
     const rest = Math.max(0, 1 - top.reduce((s, x) => s + x.p, 0));
     const lRow = top.map(x => logits[x.i]).concat(['·']);
@@ -312,22 +313,22 @@ Not in the same layer. It reads bank's value formed from this layer's input. The
     const cBest = AT.vocab.indexOf(best.tok), biasBest = AT.model.b_vocab[cBest];
     const products = x.map((v,k) => AT.fmt(v,2) + ' × ' + AT.fmt(AT.model.W_vocab[k][cBest],2));
     const denom = AT.sum(logits.map(Math.exp));
-    worked.appendChild(AT.h('div', {}, AT.h('strong', {}, '1 · Logit for “' + best.tok + '”'), AT.h('p', {}, products.join(' + ') + ' + (' + AT.fmt(biasBest,2) + ') ≈ ' + AT.fmt(logits[cBest],3))));
+    worked.appendChild(AT.h('div', {}, AT.h('strong', {}, '1 · Hidden activations: h = ReLU(e W₁ + b₁)'), AT.h('p', {}, '['+x.map(v=>AT.fmt(v,2)).join(', ')+']'), AT.h('strong', {}, 'Then h W₂ + b₂: logit for “' + best.tok + '”'), AT.h('p', {}, products.join(' + ') + ' + (' + AT.fmt(biasBest,2) + ') ≈ ' + AT.fmt(logits[cBest],3))));
     normWorked.appendChild(AT.h('div', {}, AT.h('strong', {}, '2 · Exponentiate the logit for “' + best.tok + '”'), AT.h('p', {}, 'exp(' + AT.fmt(logits[cBest],3) + ') ≈ ' + AT.fmt(Math.exp(logits[cBest]),3))));
     normWorked.appendChild(AT.h('div', {'data-build':'1'}, AT.h('strong', {}, '3 · Divide by the vocabulary total'), AT.h('p', {}, AT.fmt(Math.exp(logits[cBest]),3) + ' ÷ ' + AT.fmt(denom,3) + ' ≈ ' + AT.fmt(best.p,3))));
     arith(calcHost, (box) => {
       const c = AT.vocab.indexOf(best.tok);
       const col = AT.model.W_vocab.map(r => [r[c]]);
       const b = AT.model.b_vocab[c];
-      const mv = AT.ui.matVecCalc(x, col, { from: 'e', to: [best.tok], cls: 'neutral', fromCls: useAtt ? 'ep' : 'e',
-        xLabel: (useAtt ? 'e′ · ' : 'e · ') + T + ' ' + tok, outLabel: 'before the bias', into: box });
+      const mv = AT.ui.matVecCalc(x, col, { from: x.map((_,i)=>'h'+(i+1)), to: [best.tok], cls: 'neutral', fromCls: 'v',
+        xLabel: 'h · ' + T + ' ' + tok, outLabel: 'h W₂, before the bias', into: box });
       const outrow = mv.querySelector('.calc-outrow'); if (outrow) outrow.hidden = true;
       const dot = mv.out[0], l = dot + b;
       const Z = logits.reduce((s, v) => s + Math.exp(v), 0);
       const line1 = AT.h('p', { class: 'calc-line' }, 'logit for “' + best.tok + '” ≈ ' + AT.fmt(dot, 2) + ' + b ' + (b < 0 ? '(' + AT.fmt(b, 2) + ')' : AT.fmt(b, 2)) + ' ≈ ', AT.h('span', { class: 'calc-r' }, AT.fmt(l, 2)));
       const line2 = AT.h('p', { class: 'calc-line' }, 'p(“' + best.tok + '”) ≈ exp(' + AT.fmt(l, 2) + ') / Σ exp(ℓ) ≈ ' + AT.fmt(Math.exp(l), 2) + ' / ' + AT.fmt(Z, 2) + ' ≈ ', AT.h('span', { class: 'calc-r' }, AT.fmt(best.p, 3)));
       mv.appendChild(line1); mv.appendChild(line2);
-      const foot = AT.h('p', { class: 'muted small', style: 'margin-top:8px', html: 'One line per word: the column of $W_{\\text{vocab}}$ for “' + best.tok + '” multiplies the ' + (useAtt ? 'contextual' : 'raw') + ' last token axis by axis. Only the non-zero weights count; the sum over all ' + AT.vocab.length + ' words is the softmax denominator.' });
+      const foot = AT.h('p', { class: 'muted small', style: 'margin-top:8px', html: 'First, $h=\\operatorname{ReLU}(eW_1+b_1)$. The column of $W_2$ for “' + best.tok + '” then weights the eight hidden activations. Add its bias; the sum over all ' + AT.vocab.length + ' exponentiated logits is the softmax denominator.' });
       AT.renderMath(foot); box.appendChild(foot);
     });
   }

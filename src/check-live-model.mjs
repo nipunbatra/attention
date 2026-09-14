@@ -24,7 +24,7 @@ try{
   for(const sentence of ['river','cheque'])for(const mask of [false,true])for(const scale of [false,true]){
     const tokens=model.sentences[sentence], ref=forward(model,tokens,{mask,scale});
     const live=await p.evaluate(({tokens,mask,scale})=>AT.forward(tokens,{mask,scale}),{tokens,mask,scale});
-    for(const k of ['E','Q','K','V','Sraw','S','A','Mmsg','Delta','Enew','logits','probs'])compare(live[k],ref[k],sentence+'.'+mask+'.'+scale+'.'+k);
+    for(const k of ['E','Q','K','V','Sraw','S','A','Mmsg','Delta','Enew','HeadPre','HeadHidden','logits','probs'])compare(live[k],ref[k],sentence+'.'+mask+'.'+scale+'.'+k);
     compare(live.Sfull,ref.Sraw.map(r=>r.map(x=>scale?x/Math.sqrt(model.d_k):x)),'scaled scores before mask');
   }
   assert.deepEqual(errors,[]);

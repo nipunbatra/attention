@@ -5,7 +5,7 @@
 // Q = E W_Q, K = E W_K, V = E W_V (each row = one token); Sraw[i][j] = Q[i].K[j];
 // S = Sraw / sqrt(d_k) when scale; A = row-softmax(S) with j>i set to -Infinity when mask;
 // Mmsg[i] = sum_j A[i][j] V[j]; Delta = Mmsg W_O; Enew = E + Delta;
-// logits[i] = Enew[i] W_vocab + b_vocab; probs = row-softmax(logits).
+// h[i] = ReLU(Enew[i] W_hidden + b_hidden); logits[i] = h[i] W_vocab + b_vocab.
 //
 // CLI:  node toy_ref.mjs [toy.json] [--compare py_check.json]
 //   prints the check report and exits 1 if any HARD target fails (or the comparison exceeds 1e-6).
@@ -55,6 +55,13 @@ export function embed(toy, tokens) {
   });
 }
 
+export function head(toy, rows) {
+  const HeadPre = toy.W_hidden ? matmul(rows, toy.W_hidden).map(row => row.map((x,j) => x + toy.b_hidden[j])) : rows;
+  const HeadHidden = toy.W_hidden ? HeadPre.map(row => row.map(x => Math.max(0,x))) : rows;
+  const logits = matmul(HeadHidden, toy.W_vocab).map(row => row.map((x,j) => x + toy.b_vocab[j]));
+  return {HeadPre, HeadHidden, logits, probs:logits.map(softmax)};
+}
+
 export function forward(toy, tokens, { mask = true, scale = true } = {}) {
   const T = tokens.length;
   const E = embed(toy, tokens);
@@ -68,16 +75,12 @@ export function forward(toy, tokens, { mask = true, scale = true } = {}) {
   const Mmsg = matmul(A, V);
   const Delta = matmul(Mmsg, toy.W_O);
   const Enew = E.map((e, i) => e.map((x, d) => x + Delta[i][d]));
-  const logits = matmul(Enew, toy.W_vocab).map((row) => row.map((x, j) => x + toy.b_vocab[j]));
-  const probs = logits.map((row) => softmax(row));
-  return { tokens, T, E, Q, K, V, Sraw, S, A, Mmsg, Delta, Enew, logits, probs };
+  return { tokens, T, E, Q, K, V, Sraw, S, A, Mmsg, Delta, Enew, ...head(toy, Enew) };
 }
 
 export function baseline(toy, tokens) {
   const E = embed(toy, tokens);
-  const logits = matmul(E, toy.W_vocab).map((row) => row.map((x, j) => x + toy.b_vocab[j]));
-  const probs = logits.map((row) => softmax(row));
-  return { E, logits, probs };
+  return { E, ...head(toy, E) };
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -143,6 +146,7 @@ export function checkTargets(toy) {
   for (const w of toy.vocab) all.push(...toy.tok_emb[w]);
   for (const k of ['pos_emb', 'W_Q', 'W_K', 'W_V', 'W_O', 'W_vocab']) for (const r of toy[k]) all.push(...r);
   all.push(...toy.b_vocab);
+  if (toy.W_hidden) all.push(...toy.W_hidden.flat(), ...toy.b_hidden);
   rec('T7 hard: all |x| <= 3.0 and 1-decimal',
     all.every((x) => Math.abs(x) <= 3 && Math.abs(x * 10 - Math.round(x * 10)) < 1e-9),
     `${all.length} numbers, max|x|=${Math.max(...all.map(Math.abs)).toFixed(1)}`);
@@ -165,7 +169,8 @@ export function checkTargets(toy) {
       toy.pos_emb.length >= toy.sentences.river.length && hasShape(toy.pos_emb, toy.max_context ?? toy.pos_emb.length, toy.d_model) &&
       hasShape(toy.W_Q, toy.d_model, toy.d_k) && hasShape(toy.W_K, toy.d_model, toy.d_k) &&
       hasShape(toy.W_V, toy.d_model, toy.d_v) && hasShape(toy.W_O, toy.d_v, toy.d_model) &&
-      hasShape(toy.W_vocab, toy.d_model, toy.vocab.length) && toy.b_vocab.length === toy.vocab.length, 'ok');
+      (!toy.W_hidden || (hasShape(toy.W_hidden, toy.d_model, toy.d_hidden) && toy.b_hidden.length === toy.d_hidden)) &&
+      hasShape(toy.W_vocab, toy.W_hidden ? toy.d_hidden : toy.d_model, toy.vocab.length) && toy.b_vocab.length === toy.vocab.length, 'ok');
   return { results: res, fa, fb, fu, ba };
 }
 
@@ -221,7 +226,7 @@ async function cli() {
       worst = Math.max(worst, Math.abs(a - b)); count++;
     };
     for (const [name, f] of Object.entries(cases)) {
-      for (const k of ['E', 'Q', 'K', 'V', 'Sraw', 'S', 'A', 'Mmsg', 'Delta', 'Enew', 'logits', 'probs']) cmp(f[k], ref[name][k]);
+      for (const k of ['E', 'Q', 'K', 'V', 'Sraw', 'S', 'A', 'Mmsg', 'Delta', 'Enew', 'HeadPre', 'HeadHidden', 'logits', 'probs']) cmp(f[k], ref[name][k]);
       const b = baseline(toy, name.startsWith('river') ? SA : SB);
       cmp(b.logits, ref[name].base_logits); cmp(b.probs, ref[name].base_probs);
     }

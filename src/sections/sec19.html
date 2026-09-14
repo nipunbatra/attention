@@ -133,7 +133,8 @@ It uses position 10, the final the, not bank’s position-7 update. Change the c
 </div>
 
 <p class="muted small">PyTorch · one vocabulary distribution from the final updated row.</p>
-<pre class="torch-snippet"><code>logits = E_new[-1] @ W_vocab + b
+<pre class="torch-snippet"><code>h = (E_new[-1] @ W_hidden + b_hidden).relu()
+logits = h @ W_vocab + b_vocab
 probs = logits.softmax(dim=-1)</code></pre>
 </div>
 
@@ -309,8 +310,8 @@ No. We traced a hand-designed single-head forward computation. Learning changes 
   /* ---- final connection ---- */
   function drawFinalChain(){
     AT.tex(S.querySelector('#s19-final-chain'), mq.matches
-      ? '\\begin{aligned}&\\vp{E\'} \\rightarrow \\text{vocabulary logits}\\\\ &\\ell = \\vp{e_t\'}\\,W_{\\text{vocab}} + b\\\\ &\\rightarrow \\operatorname{softmax}(\\ell) \\rightarrow p(\\text{next token})\\end{aligned}'
-      : '\\vp{E\'} \\rightarrow \\text{vocabulary logits } \\ell = \\vp{e_t\'}\\,W_{\\text{vocab}} + b \\rightarrow \\operatorname{softmax}(\\ell) \\rightarrow p(\\text{next token})',
+      ? '\\begin{aligned}h&=\\operatorname{ReLU}(\\vp{e_t\'}W_1+b_1)\\\\ \\ell&=hW_2+b_2\\\\ p&=\\operatorname{softmax}(\\ell)\\end{aligned}'
+      : '\\vp{e_t\'} \\xrightarrow{W_1,b_1,\\,\\mathrm{ReLU}} h \\xrightarrow{W_2,b_2} \\ell \\xrightarrow{\\mathrm{softmax}} p(\\text{next token})',
       { display: true });
   }
   drawFinalChain();
@@ -349,13 +350,13 @@ No. We traced a hand-designed single-head forward computation. Learning changes 
       cols: [{ label: 'logit $\\ell$', cls: 'neutral' }, { label: 'probability $p$', decimals: 3 }],
       rowLabels: cand.map(x => x.tok), cornerLabel: 'candidate', highlightRow: best >= 0 ? best : undefined,
       footer: { label: 'other ' + (AT.vocab.length - cand.length) + ' tokens together', values: ['', otherP], decimals: 3, cls: 'neutral' },
-      caption: 'Row $' + (t+1) + '$ of $\\vp{E\'}$ times $W_{\\text{vocab}}$, plus $b$, gives one logit per word; softmax turns the ' + AT.vocab.length + ' logits into probabilities. Only the ' + cand.length + ' candidate words are listed.',
+      caption: 'Row $' + (t+1) + '$ of $\\vp{E\'}$ enters the 4 → 8 → 20 ReLU predictor. Softmax turns the ' + AT.vocab.length + ' logits into probabilities. Only the ' + cand.length + ' candidate words are listed.',
       into: tableHost });
     AT.clear(arithHost);
     arith(arithHost, (box) => {
-      box.appendChild(AT.h('p', { class: 'arith-cap', html: 'The logit of the winner, <strong>' + AT.escape(top.tok) + '</strong>: row $' + (t+1) + '$ of $\\vp{E\'}$ times the <em>' + AT.escape(top.tok) + '</em> column of $W_{\\text{vocab}}$, plus its bias.' }));
+      box.appendChild(AT.h('p', { class: 'arith-cap', html: 'First compute $h=\\operatorname{ReLU}(e\'W_1+b_1)$. For <strong>' + AT.escape(top.tok) + '</strong>, multiply these hidden activations by its column of $W_2$, then add its output bias.' }));
       const col = AT.model.W_vocab.map(r => [r[top.i]]);
-      const mv = AT.ui.matVecCalc(F.Enew[t], col, { from: 'e', to: [top.tok], cls: 'neutral', xLabel: 'e′ · ' + (t+1) + ' ' + toks[t], outLabel: 'e′ W_vocab, column ' + top.tok, into: box });
+      const mv = AT.ui.matVecCalc(F.HeadHidden[t], col, { from: F.HeadHidden[t].map((_,i)=>'h'+(i+1)), to: [top.tok], cls: 'neutral', xLabel: 'h · ' + (t+1) + ' ' + toks[t], outLabel: 'h W₂, column ' + top.tok, into: box });
       const bias = +AT.model.b_vocab[top.i] || 0;
       box.appendChild(AT.h('p', { class: 'calc-line' }, 'logit = ' + AT.fmt(mv.out[0]) + ' + b(' + top.tok + ') = ' + AT.fmt(mv.out[0]) + ' + ' + (bias < 0 ? '(' + AT.fmt(bias) + ')' : AT.fmt(bias)) + ' = ', AT.h('span', { class: 'calc-r' }, AT.fmt(F.logits[t][top.i])), ', then the softmax over all ' + AT.vocab.length + ' logits gives p = ' + AT.fmt(top.p, 3) + '.'));
       AT.renderMath(box);

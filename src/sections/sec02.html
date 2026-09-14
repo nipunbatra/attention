@@ -54,10 +54,11 @@ body.present #s02 .dt-cap,body.present #s02 .dt-note{display:none}
 body.present #s02 .title-row{margin-bottom:16px}
 /* Part I's roles: input blue, parameters purple, logits grey, probabilities green. */
 #s02 .head-input{color:var(--c-e);fill:var(--c-e)}
+#s02 .head-hidden{color:var(--c-v);fill:var(--c-v)}
 #s02 .head-param{color:var(--c-q);fill:var(--c-q)}
 #s02 .head-score{color:var(--ink-2);fill:var(--ink-2)}
 #s02 .head-prob{color:var(--c-d);fill:var(--c-d)}
-#s02 .head-layout{display:grid;grid-template-columns:1.1fr 1fr;gap:30px;align-items:center}
+#s02 .head-layout{display:grid;grid-template-columns:1.6fr 1fr;gap:30px;align-items:center}
 #s02 .head-network svg{display:block;width:100%;height:auto}
 #s02 .head-network text{font-family:var(--font-ui);font-size:18px}
 #s02 .head-network .net-caption{font-size:17px;font-weight:600}
@@ -69,6 +70,8 @@ body.present #s02 .title-row{margin-bottom:16px}
 #s02 .head-key dd{margin:0;line-height:1.3}
 #s02 .head-equation{margin:12px 0}
 #s02 .head-equation .katex-display{margin:.3em 0}
+#s02-frame-head .head-equation{margin:0}
+#s02-frame-head .head-pair{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:0 28px}
 #s02 .head-softmax-key{grid-template-columns:1fr 1fr;gap:24px}
 #s02 .head-example{margin:24px 0;padding:16px 20px;border-left:3px solid var(--c-d);background:var(--card)}
 #s02 .head-example p{margin:0 0 8px}
@@ -150,23 +153,25 @@ No. Both sentences end with the at position 10, so the head receives exactly the
   <p class="companion">All eight displayed candidates tie at about 0.094 each in this hand-chosen toy. “Other ×12” adds the probabilities of the remaining twelve vocabulary tokens. Full bar = probability 1. The important comparison is between the river and cheque sentences: every individual token keeps the same probability.</p>
 </div>
 
-<div class="frame" id="s02-frame-head" data-title="Inside the head: four numbers to 20 scores" data-autobuild="off">
+<div class="frame" id="s02-frame-head" data-title="Inside the head: one hidden layer" data-autobuild="off">
   <script type="text/x-notes">What does one connection represent? What does one output node represent?
-Use Part I's colours: blue input coordinates, purple weights and biases, grey scores. This is the same kind of final linear layer as Part I, not its whole MLP. There is no new hidden layer or ReLU here. Each output combines all four numbers from one token row, not four token rows. Trace the purple connections to water. The diagram shows four of the twenty vocabulary outputs, in vocabulary order; dots mean omitted nodes and connections. Some of these toy weights are zero. Reveal the equation after explaining the nodes. The input remains the uncontextualized row for the at position 10 in both sentences. The weights and biases are hand-chosen for this toy; in a trained model they are learned.</script>
-  <p class="head-bridge">Like Part I’s final layer: <strong>multiply → sum → add bias.</strong> No new hidden layer here.</p>
+Use Part I's MLP: blue inputs, teal hidden activations, purple parameters, grey logits. W1 maps four input coordinates to eight pre-activations; add b1, then ReLU clips negative entries to zero. W2 reads those eight hidden activations and b2 supplies the twenty output offsets. Both weight matrices are shared across sentences. Each circle is one number, not one token. All eight hidden units are shown; sixteen vocabulary nodes and their edges are omitted. Here all hidden activations are zero, so the displayed logits come from b2. This is a consequence of our hand-chosen baseline input, not a general property of ReLU networks. Later contextual inputs activate the same hidden units. Reveal the two equations after tracing the two layers. These illustrative parameters are not trained measurements.</script>
+  <p class="head-bridge">Like Part I: <strong>input → hidden layer with ReLU → vocabulary scores.</strong></p>
   <div class="head-layout">
     <div class="head-network" id="s02-head-network"></div>
     <dl class="head-key">
-      <div class="head-input"><dt>$\htmlClass{head-input}{e_{10}^{(0)}}$: $1\times4$ input row</dt><dd>“the”, position 10: four numbers. Superscript $(0)$: before context updates.</dd></div>
-      <div class="head-param"><dt>$\htmlClass{head-param}{W_{\text{vocab}}}$: connection weights</dt><dd>$4\times20$ weights: input coordinates × vocabulary words.</dd></div>
-      <div class="head-param"><dt>$\htmlClass{head-param}{b}$: $1\times20$ bias row</dt><dd>20 offsets, one added at each output node.</dd></div>
-      <div class="head-score"><dt>$\htmlClass{head-score}{\ell}$: $1\times20$ logits</dt><dd>20 scores, called $z$ in Part I. Not probabilities yet.</dd></div>
+      <div class="head-input"><dt>$\htmlClass{head-input}{e_{10}^{(0)}}$: $1\times4$ input row</dt><dd>“the” at 10, before context updates.</dd></div>
+      <div class="head-hidden"><dt>$\htmlClass{head-hidden}{h_{10}}$: $1\times8$ hidden row</dt><dd>ReLU: $\max(0,x)$ for each entry.</dd></div>
+      <div class="head-param"><dt>$\htmlClass{head-param}{W_1}$: $4\times8$ · $\htmlClass{head-param}{b_1}$: $1\times8$</dt><dd>Input → hidden, then ReLU.</dd></div>
+      <div class="head-param"><dt>$\htmlClass{head-param}{W_2}$: $8\times20$ · $\htmlClass{head-param}{b_2}$: $1\times20$</dt><dd>Hidden → scores. One bias per output.</dd></div>
+      <div class="head-score"><dt>$\htmlClass{head-score}{\ell}$: $1\times20$ logits</dt><dd>Called $z$ in Part I; not probabilities.</dd></div>
     </dl>
   </div>
-  <div class="head-equation" data-build="1">$$\htmlClass{head-score}{\ell}=\htmlClass{head-input}{e_{10}^{(0)}}\;\htmlClass{head-param}{W_{\text{vocab}}}+\htmlClass{head-param}{b}$$</div>
-  <p class="head-footnote">Dots omit 16 output nodes. Every output combines all four input numbers.</p>
+  <div class="head-equation head-pair" data-build="1"><span>$$\htmlClass{head-hidden}{h_{10}}=\operatorname{ReLU}(\htmlClass{head-input}{e_{10}^{(0)}}\,\htmlClass{head-param}{W_1}+\htmlClass{head-param}{b_1})$$</span><span>$$\htmlClass{head-score}{\ell}=\htmlClass{head-hidden}{h_{10}}\,\htmlClass{head-param}{W_2}+\htmlClass{head-param}{b_2}$$</span></div>
+  <p class="head-footnote">Each score reads all eight hidden units. Dots omit 16 outputs.</p>
   <div class="companion">
-    <p>The diagram’s input circles are coordinates of <strong>one</strong> row, not different tokens. Its output circles are vocabulary scores, not tokens we have generated. All four coordinates connect to every output, although a weight can be zero. The leading 1 in the input, logits, and probability shapes means one prediction row. The bias is a shared row of offsets, not a separate example. Our toy parameters are hand-chosen; training would learn them. For example:</p>
+    <p>Superscript $(0)$: before context updates. The four inputs are coordinates of one token, not four tokens.</p>
+    <p>The diagram’s input circles are coordinates of <strong>one</strong> row, not different tokens. Each hidden unit receives all four coordinates; each score receives all eight hidden activations. A connection can have weight zero. The leading 1 in each shape means one prediction row. There are two learned affine layers, with ReLU between them; the final softmax comes next. Our parameters are hand-chosen illustrations, not trained measurements. In the source code, $W_1,b_1$ are <code>W_hidden,b_hidden</code> and $W_2,b_2$ are <code>W_vocab,b_vocab</code>. For the baseline, all eight hidden activations happen to be zero:</p>
     <div id="s02-head-worked"></div>
     <p>More generally, $t$ is the last input position ($t=10$ here), and $\htmlClass{head-input}{e_t^{(0)}}$ is its starting row. We sometimes write the current row simply as $\htmlClass{head-input}{e_t}$; later it will include information from other tokens. The output-head operation stays the same.</p>
   </div>
@@ -224,46 +229,53 @@ All twenty words participate. Eight have logit zero and twelve have logit -1.5. 
   const BA = AT.baseline(SA), BB = AT.baseline(SB);
   let ctx = 'A';
 
-  /* A two-layer drawing of the actual vocabulary head, not a second MLP.
+  /* The actual 4 -> 8 -> 20 ReLU predictor, with both parameter layers.
      Four displayed outputs are in vocabulary order; omitted outputs remain in softmax. */
-  const svg = AT.svg('svg', {viewBox:'0 0 520 350',role:'img','aria-labelledby':'s02-head-title s02-head-desc','data-input-width':D,'data-output-width':AT.vocab.length});
+  const H=AT.model.d_hidden, hidden=BA.HeadHidden[t], pre=BA.HeadPre[t];
+  const svg = AT.svg('svg', {viewBox:'0 0 660 390',role:'img','aria-labelledby':'s02-head-title s02-head-desc','data-input-width':D,'data-hidden-width':H,'data-output-width':AT.vocab.length});
   svg.append(AT.svg('title',{id:'s02-head-title'},'One token row enters the vocabulary output head'),
-    AT.svg('desc',{id:'s02-head-desc'},'Four blue input coordinates for the at position 10 connect through purple weights to twenty vocabulary scores. Four output nodes are shown: the, water, teller, money. Dots mark the omitted nodes. Add one purple bias per output. All input and output numbers come from the saved toy model.'));
+    AT.svg('desc',{id:'s02-head-desc'},'Four blue input coordinates for the at position 10 connect through W1 to eight teal hidden units. Add b1 and apply ReLU. W2 connects all eight hidden activations to twenty vocabulary scores, then add b2. Four output nodes are shown: the, water, teller, money. Dots mark omitted outputs. Every displayed number and connection weight comes from the saved toy model.'));
   const label=(x,y,text,cls,anchor='middle')=>svg.appendChild(AT.svg('text',{x,y,class:cls,'text-anchor':anchor},text));
-  label(134,22,'4 input numbers','net-caption head-input');
-  label(358,22,'20 scores (4 shown)','net-caption head-score');
-  const weightsLabel=label(246,52,'W','net-caption head-param');
-  weightsLabel.setAttribute('data-parameter','W_vocab');
-  weightsLabel.append(AT.svg('tspan',{'baseline-shift':'sub','font-size':12},'vocab'),AT.svg('tspan',{},' weights'));
-  const inputYs=[90,153,216,279],shown=['the','water','teller','money'],outputYs=[80,153,226,299];
+  label(110,22,'4 input numbers','net-caption head-input');
+  label(330,22,'8 hidden units','net-caption head-hidden');
+  label(542,22,'20 scores (4 shown)','net-caption head-score');
+  label(215,53,'W₁: 4 × 8','net-caption head-param').setAttribute('data-parameter','W_hidden');
+  label(435,53,'W₂: 8 × 20','net-caption head-param').setAttribute('data-parameter','W_vocab');
+  const inputYs=[103,170,237,304],hiddenYs=AT.range(H).map(i=>80+i*37),shown=['the','water','teller','money'],outputYs=[95,168,241,314];
   const edges=svg.appendChild(AT.svg('g',{class:'head-edges'}));
+  hiddenYs.forEach((y,k)=>inputYs.forEach((iy,i)=>edges.appendChild(AT.svg('line',{x1:137,y1:iy,x2:311,y2:y,class:'head-edge','data-layer':'hidden','data-input':i,'data-hidden':k,'data-weight':AT.model.W_hidden[i][k]}))));
   shown.forEach((word,k)=>{
     const j=AT.vocab.indexOf(word);
-    inputYs.forEach((y,i)=>edges.appendChild(AT.svg('line',{x1:160,y1:y,x2:328,y2:outputYs[k],class:'head-edge'+(word==='water'?' water-edge':''),'data-input':i,'data-token':word,'data-weight':AT.model.W_vocab[i][j]})));
+    hiddenYs.forEach((y,i)=>edges.appendChild(AT.svg('line',{x1:349,y1:y,x2:508,y2:outputYs[k],class:'head-edge'+(word==='water'?' water-edge':''),'data-layer':'output','data-hidden':i,'data-token':word,'data-weight':AT.model.W_vocab[i][j]})));
   });
   inputYs.forEach((y,i)=>{
-    svg.appendChild(AT.svg('circle',{cx:138,cy:y,r:22,fill:'var(--t-e)',stroke:'var(--c-e)','stroke-width':2,'data-input-node':i}));
-    label(138,y+6,AT.fmt(BA.E[t][i],1),'net-value head-input');
-    label(104,y+6,AT.axes.short.e[i],'head-input','end');
+    svg.appendChild(AT.svg('circle',{cx:115,cy:y,r:22,fill:'var(--t-e)',stroke:'var(--c-e)','stroke-width':2,'data-input-node':i}));
+    label(115,y+6,AT.fmt(BA.E[t][i],1),'net-value head-input');
+    label(81,y+6,AT.axes.short.e[i],'head-input','end');
+  });
+  hiddenYs.forEach((y,i)=>{
+    const node=AT.svg('circle',{cx:330,cy:y,r:18,fill:'var(--t-v)',stroke:'var(--c-v)','stroke-width':2,'data-hidden-node':i,'data-preactivation':pre[i],'data-activation':hidden[i]});
+    node.appendChild(AT.svg('title',{},'h'+(i+1)+' = ReLU('+AT.fmt(pre[i],2)+') = '+AT.fmt(hidden[i],1)));
+    svg.appendChild(node);label(330,y+6,AT.fmt(hidden[i],1),'net-value head-hidden');
   });
   shown.forEach((word,k)=>{
     const j=AT.vocab.indexOf(word),y=outputYs[k];
-    svg.appendChild(AT.svg('circle',{cx:350,cy:y,r:22,fill:'var(--card)',stroke:'var(--ink-2)','stroke-width':word==='water'?3:1.5,'data-output-token':word,'data-logit':BA.logits[t][j]}));
-    label(350,y+6,AT.fmt(BA.logits[t][j],1),'net-value head-score');
-    label(383,y+6,word,'head-score','start');
+    svg.appendChild(AT.svg('circle',{cx:530,cy:y,r:22,fill:'var(--card)',stroke:'var(--ink-2)','stroke-width':word==='water'?3:1.5,'data-output-token':word,'data-logit':BA.logits[t][j]}));
+    label(530,y+6,AT.fmt(BA.logits[t][j],1),'net-value head-score');
+    label(563,y+6,word,'head-score','start');
   });
-  [117,190,263].forEach(y=>label(350,y+5,'⋮','head-score'));
-  label(135,340,'One row, not four tokens','net-caption head-input');
-  label(363,340,'+ b: 20 biases','net-caption head-param');
+  [132,205,278].forEach(y=>label(530,y+5,'⋮','head-score'));
+  label(330,377,'+ b₁, then ReLU','net-caption head-param');
+  label(542,377,'+ b₂: 20 biases','net-caption head-param');
   S.querySelector('#s02-head-network').appendChild(svg);
 
   const water=AT.vocab.indexOf('water'),waterScore=BA.logits[t][water];
   const expTotal=AT.sum(BA.logits[t].map(Math.exp));
   const workedHost=S.querySelector('#s02-head-worked');
-  const workedTable=AT.ui.table(BA.E[t].map((x,i)=>[x,AT.model.W_vocab[i][water],x*AT.model.W_vocab[i][water]]),{cols:['input','weight','product'],rowLabels:AT.axes.short.e,cornerLabel:'coordinate',decimals:1,into:workedHost});
-  workedTable.cells.forEach(row=>row.forEach((cell,j)=>cell.classList.add(['head-input','head-param','head-score'][j])));
+  const workedTable=AT.ui.table(hidden.map((x,i)=>[x,AT.model.W_vocab[i][water],x*AT.model.W_vocab[i][water]]),{cols:['h','W₂','h × W₂'],rowLabels:AT.range(H).map(i=>'h'+(i+1)),cornerLabel:'unit',decimals:1,into:workedHost});
+  workedTable.cells.forEach(row=>row.forEach((cell,j)=>cell.classList.add(['head-hidden','head-param','head-score'][j])));
   const workedSum=AT.h('div');workedHost.appendChild(workedSum);
-  AT.tex(workedSum,'\\htmlClass{head-score}{\\ell_{\\text{water}}}=\\underbrace{'+AT.fmt(AT.dot(BA.E[t],AT.model.W_vocab.map(row=>row[water])),1)+'}_{\\text{sum of products}}+\\underbrace{\\htmlClass{head-param}{'+AT.fmt(AT.model.b_vocab[water],1)+'}}_{\\text{bias}}=\\htmlClass{head-score}{'+AT.fmt(waterScore,1)+'}',{display:true});
+  AT.tex(workedSum,'\\htmlClass{head-score}{\\ell_{\\text{water}}}=\\underbrace{'+AT.fmt(AT.dot(hidden,AT.model.W_vocab.map(row=>row[water])),1)+'}_{\\text{sum}}+\\underbrace{\\htmlClass{head-param}{'+AT.fmt(AT.model.b_vocab[water],1)+'}}_{\\text{bias}}=\\htmlClass{head-score}{'+AT.fmt(waterScore,1)+'}',{display:true});
   S.querySelector('#s02-head-water-logit').textContent=AT.fmt(waterScore,1);
   const probabilityExample=S.querySelector('#s02-head-water-prob');
   probabilityExample.dataset.probability=BA.probs[t][water];
@@ -333,26 +345,27 @@ All twenty words participate. Eight have logit zero and twelve have logit -1.5. 
     ? 'Every difference is zero. The earlier clues “river” and “cheque” never reached these rows, so the predictions are identical.'
     : 'The difference subtracts the cheque-sentence input from the river-sentence input. Largest probability gap: '+AT.fmt(maxDiff,3)+'.';
 
-  /* --- the arithmetic of the output head for the eight candidates: e W_vocab, + b, logit, softmax --- */
+  /* --- the arithmetic of the output head: hidden activations, W2, b2, softmax --- */
   const cands = AT.candidates.river.concat(AT.candidates.cheque);
   const cidx = cands.map(w => AT.vocab.indexOf(w));
   const Wsub = AT.model.W_vocab.map(r => cidx.map(i => r[i]));
   const bsub = cidx.map(i => AT.model.b_vocab[i]);
   const calcHost = S.querySelector('#s02-calc');
-  const mv = AT.ui.matVecCalc(BA.E[t], Wsub, { from: 'e', to: cands, cls: 'neutral', xLabel: 'e · ' + T + ' ' + SA[t], outLabel: 'e W_vocab (8 of ' + AT.vocab.length + ' words)' });
+  const hiddenLabels=AT.range(H).map(i=>'h'+(i+1));
+  const mv = AT.ui.matVecCalc(hidden, Wsub, { from: hiddenLabels, to: cands, cls: 'neutral', xLabel: 'h · ' + T + ' ' + SA[t], outLabel: 'h W₂ (8 of ' + AT.vocab.length + ' words)' });
   function calcRows(B){
-    const eW = cidx.map(i => AT.dot(B.E[t], AT.model.W_vocab.map(r => r[i])));
+    const eW = cidx.map(i => AT.dot(B.HeadHidden[t], AT.model.W_vocab.map(r => r[i])));
     return [eW, bsub, cidx.map(i => B.logits[t][i]), cidx.map(i => B.probs[t][i])];
   }
   const calcTab = AT.ui.table(calcRows(BA), {
     cols: cands.map(w => ({ label: w })), cornerLabel: 'candidate', decimals: 3,
-    rowLabels: ['$\\ve{e_{' + T + '}^{(0)}}\\,W_{\\text{vocab}}$', '$+\\; b$', '$\\ell$ (logit)', '$p = \\operatorname{softmax}(\\ell)$'],
+    rowLabels: ['$h_{' + T + '}\\,W_2$', '$+\\; b_2$', '$\\ell$ (logit)', '$p = \\operatorname{softmax}(\\ell)$'],
     rowCls: ['neutral', 'neutral', 'neutral', 'neutral'],
     caption: 'Each column is one candidate word. The first row is the worksheet result above, the bias is added, and the softmax runs over all ' + AT.vocab.length + ' words, not only these eight.'
   });
   const calcReading = AT.h('p', { class: 'read-line' });
   function calcReadingText(B){
-    const ax = AT.axes.e, x = B.E[t];
+    const ax = hiddenLabels, x = B.HeadHidden[t];
     const zeroAx = ax.filter((n, j) => Math.abs(x[j]) < 0.05);
     const liveAx = ax.filter((n, j) => Math.abs(x[j]) >= 0.05 && Wsub[j].some(wv => wv !== 0));
     const lifted = cands.filter((w, c) => Math.abs(AT.dot(x, Wsub.map(r => r[c]))) >= 0.005);
@@ -360,7 +373,7 @@ All twenty words participate. Eight have logit zero and twelve have logit -1.5. 
       + (lifted.length ? 'Only ' + liveAx.join(' and ') + ' vote' + (liveAx.length > 1 ? '' : 's') + ', which lifts ' + lifted.join(' and ') + ' a little; ' + ax.filter(n => liveAx.indexOf(n) < 0 && zeroAx.indexOf(n) < 0).join(' and ') + ' carries no votes at all.' : 'No candidate gets a vote at all.');
   }
   calcReading.textContent = calcReadingText(BA);
-  AT.ui.reveal('Show the arithmetic: $\\ell = \\ve{e_{' + T + '}^{(0)}}\\,W_{\\text{vocab}} + b$ for the eight candidates', [mv, calcTab, calcReading], { hint: 'Show', into: calcHost });
+  AT.ui.reveal('Show the arithmetic: $\\ell = h_{' + T + '}\\,W_2 + b_2$ for the eight candidates', [AT.h('p',{},'First compute h = ReLU(e W₁ + b₁) = ['+hidden.join(', ')+']. W₂ reads these eight activations.'), mv, calcTab, calcReading], { hint: 'Show', into: calcHost });
 
   let bars = null;
   function paint(){
@@ -380,7 +393,7 @@ All twenty words participate. Eight have logit zero and twelve have logit -1.5. 
       ? 'Every probability stays unchanged. The eight-way tie is specific to this toy.'
       : 'Every probability stays unchanged because the head receives the same input row.';
     AT.renderMath(note);
-    mv.update(B.E[t], { xLabel: 'e · ' + T + ' ' + toks[t] });
+    mv.update(B.HeadHidden[t], { xLabel: 'h · ' + T + ' ' + toks[t] });
     calcTab.update(calcRows(B));
     calcReading.textContent = calcReadingText(B);
     S.querySelector('#s02-ctx-a').setAttribute('aria-pressed', ctx === 'A' ? 'true' : 'false');

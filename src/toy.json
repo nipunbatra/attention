@@ -3,6 +3,7 @@
  "d_k": 3,
  "d_v": 2,
  "max_context": 20,
+ "d_hidden": 8,
  "vocab": [
   "the",
   "fisherman",
@@ -345,6 +346,58 @@
    0.0
   ]
  ],
+ "W_hidden": [
+  [
+   1.0,
+   0.0,
+   0.0,
+   1.0,
+   1.0,
+   -1.0,
+   1.0,
+   0.0
+  ],
+  [
+   0.0,
+   1.0,
+   0.0,
+   1.0,
+   -1.0,
+   1.0,
+   0.0,
+   1.0
+  ],
+  [
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   0.0,
+   1.0,
+   1.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   -0.2,
+   0.0,
+   0.0,
+   -0.1,
+   -0.1
+  ]
+ ],
+ "b_hidden": [
+  0.0,
+  0.0,
+  0.0,
+  -0.5,
+  -0.5,
+  -0.5,
+  -0.5,
+  -0.5
+ ],
  "W_vocab": [
   [
    0.0,
@@ -425,12 +478,100 @@
    0.0,
    0.0,
    0.0,
+   0.1,
+   0.1,
+   0.1,
+   0.1,
+   0.1,
+   0.1,
+   0.1,
+   0.1
+  ],
+  [
    0.0,
    0.0,
    0.0,
    0.0,
    0.0,
    0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.2,
+   0.1,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.2,
+   0.1,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.1,
+   0.1,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.1,
+   0.1,
    0.0,
    0.0
   ]
@@ -531,5 +672,5 @@
    ]
   }
  },
- "notes": "Toy v3: single-head causal self-attention (d_model=4, d_k=3, d_v=2, vocab=20, ten-token examples, max_context=20), designed BY HAND so that every coordinate has a name that the numbers agree with (see 'axes'). e axes: water, finance, person, glue. q and k axes: setting: water?, setting: finance?, who? (a query row reads 'what I ask for', a key row 'what I offer'). Position vectors add small offsets across the same four coordinates. v has its own narrower axes: says: water scene and says: finance scene; W_O maps them back onto the e axes. Names are illustrative; the matrices are sparse and one-decimal so a student can read each row of W_Q as 'axis -> asks', W_K as 'axis -> offers', W_V as 'axis -> says', W_vocab as 'axis -> votes for these words'. Values are narrower on purpose because they are mixed and sent rather than compared. Before position is added, glue-only token rows have zero keys and values but ask for both settings, which is why the final 'the' reads river or cheque. bank is equal parts water and finance (0.7, 0.7) plus a little glue (0.7); its entries are kept below 1.0 so that bank does not mostly attend to itself (the self score q_bank.k_bank grows with the square of those entries). The twenty position rows are hand-chosen illustrative vectors, not sinusoidal or trained measurements. Real learned embedding coordinates usually mix features rather than matching these teaching labels. Prefix permutations can change this toy's final prediction through position offsets. Patterns produced (all checked on these rounded numbers by make_toy2.py and toy_ref.mjs): (1) in 'The fisherman sat beside the river bank', bank(7) attends river first, fisherman second, itself and the glue words little; (2) in 'She deposited the cheque at the bank', bank(7) attends cheque first, deposited second; (3) the final 'the'(10) reads mostly river/bank/fisherman or cheque/bank/deposited and the output head predicts water > boats > fish > ducks or teller > clerk > queue > money with every other word at most 0.04; (4) the baseline from e_the(10) alone is spread over the eight candidates and is identical for both sentences; (5) with the causal mask off, the early glue words leak attention onto river and bank. Nothing was optimised; a few magnitudes (bank, fisherman, the W_vocab weights) were adjusted by hand from AXES.md."
+ "notes": "Toy v3: single-head causal self-attention (d_model=4, d_k=3, d_v=2, vocab=20, ten-token examples, max_context=20), designed BY HAND so that every coordinate has a name that the numbers agree with (see 'axes'). e axes: water, finance, person, glue. q and k axes: setting: water?, setting: finance?, who? (a query row reads 'what I ask for', a key row 'what I offer'). Position vectors add small offsets across the same four coordinates. v has its own narrower axes: says: water scene and says: finance scene; W_O maps them back onto the e axes. Names are illustrative; the matrices are sparse and one-decimal so a student can read each row of W_Q as 'axis -> asks', W_K as 'axis -> offers', W_V as 'axis -> says'. The predictor has eight ReLU hidden units: h=ReLU(e W_hidden+b_hidden), logits=h W_vocab+b_vocab. On slides these are W1, b1, W2, b2. Values are narrower on purpose because they are mixed and sent rather than compared. Before position is added, glue-only token rows have zero keys and values but ask for both settings, which is why the final 'the' reads river or cheque. bank is equal parts water and finance (0.7, 0.7) plus a little glue (0.7); its entries are kept below 1.0 so that bank does not mostly attend to itself (the self score q_bank.k_bank grows with the square of those entries). The twenty position rows are hand-chosen illustrative vectors, not sinusoidal or trained measurements. Real learned embedding coordinates usually mix features rather than matching these teaching labels. Prefix permutations can change this toy's final prediction through position offsets. Patterns produced (all checked on these rounded numbers by make_toy2.py and toy_ref.mjs): (1) in 'The fisherman sat beside the river bank', bank(7) attends river first, fisherman second, itself and the glue words little; (2) in 'She deposited the cheque at the bank', bank(7) attends cheque first, deposited second; (3) the final 'the'(10) reads mostly river/bank/fisherman or cheque/bank/deposited and the output head predicts water > boats > fish > ducks or teller > clerk > queue > money with every other word at most 0.04; (4) the baseline from e_the(10) alone is spread over the eight candidates and is identical for both sentences; (5) with the causal mask off, the early glue words leak attention onto river and bank. Nothing was optimised; a few magnitudes (bank, fisherman, the W_vocab weights) were adjusted by hand from AXES.md."
 }

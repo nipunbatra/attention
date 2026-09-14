@@ -45,6 +45,7 @@
   stages[9].note=['This output projection bridges the two coordinate spaces.',`The ${dv}-number mixture and ${dm}-number update are different objects.`];
   stages[10].code=[`e_prime = e + delta_e  # [1, ${dm}] + [1, ${dm}] → [1, ${dm}]`];
   stages[11].code[0]=`logits = e_prime @ W_vocab + b_vocab  # [1, ${nv}]`;
+  if(D.dims.dHidden) stages[11].code=[`h = (e_prime @ W_hidden + b_hidden).relu()  # [1, ${D.dims.dHidden}]`,`logits = h @ W_vocab + b_vocab  # [1, ${nv}]`,'p_next = logits.softmax(dim=-1)'];
   function node(x,y,w,h,title,caption,role,show,active,prefix) {
     if (!show) return '';
     const color=C[role]||C.ink;
@@ -215,7 +216,7 @@
     }
     if(si>=11) {
       out+=arrow('M1318 852 H1373','d',true,true,prefix);
-      out+=node(1373,824,175,58,'Vocabulary head',`${nv} logits → probabilities`,'d',true,true,'prediction');
+      out+=node(1373,824,175,58,D.dims.dHidden?'MLP predictor':'Vocabulary head',D.dims.dHidden?`${dm} → ${D.dims.dHidden} ReLU → ${nv}`:`${nv} logits → probabilities`,'d',true,true,'prediction');
       out+=txt(1460,909,`${d.topVocabulary[0].token} · p ≈ ${f(d.topVocabulary[0].probability)}`,'detail',`text-anchor="middle" fill="${C.d}"`);
     }
     out+=line(48,924,1552,924,`stroke="${C.line}"`);

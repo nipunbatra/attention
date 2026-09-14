@@ -835,7 +835,7 @@ body.presenter>*:not(#at-presenter){display:none!important}
 </header>
 
 <script>
-window.__TOY__ = {"d_model":4,"d_k":3,"d_v":2,"max_context":20,"vocab":["the","fisherman","sat","beside","river","bank","and","watched","she","deposited","cheque","at","water","boats","fish","ducks","teller","clerk","queue","money"],"tok_emb":{"the":[0.0,0.0,0.0,2.4],"fisherman":[2.0,0.0,2.2,0.0],"sat":[0.4,0.0,0.6,1.8],"beside":[0.6,0.0,0.0,2.0],"river":[3.0,0.0,0.0,0.0],"bank":[0.7,0.7,0.0,0.7],"and":[0.0,0.0,0.0,2.2],"watched":[0.6,0.0,0.8,1.6],"she":[0.0,0.0,2.6,0.4],"deposited":[0.0,2.2,0.6,0.4],"cheque":[0.0,3.0,0.0,0.0],"at":[0.0,0.0,0.0,2.0],"water":[3.0,0.0,0.0,0.0],"boats":[2.4,0.0,0.4,0.0],"fish":[2.6,0.0,0.6,0.0],"ducks":[2.2,0.0,0.8,0.0],"teller":[0.0,2.6,1.8,0.0],"clerk":[0.0,2.4,1.8,0.0],"queue":[0.0,2.0,0.6,0.0],"money":[0.0,3.0,0.0,0.0]},"pos_emb":[[0.1,0.0,0.1,-0.1],[0.0,0.1,-0.1,0.0],[-0.1,0.0,0.0,0.1],[0.0,-0.1,0.1,0.0],[0.1,0.1,0.0,-0.1],[0.1,-0.1,0.0,0.1],[0.0,0.0,0.1,0.1],[-0.1,0.1,0.1,0.0],[0.1,0.0,-0.1,0.1],[0.0,0.0,0.0,-0.1],[0.1,0.1,0.1,0.1],[-0.1,-0.1,-0.1,-0.1],[0.1,-0.1,0.1,-0.1],[-0.1,0.1,-0.1,0.1],[0.1,0.1,-0.1,-0.1],[-0.1,-0.1,0.1,0.1],[0.0,0.1,0.1,-0.1],[0.1,0.0,0.1,0.1],[-0.1,0.0,-0.1,0.1],[0.0,-0.1,-0.1,0.1]],"W_Q":[[1.0,0.0,0.0],[0.0,1.0,0.0],[0.0,0.0,0.4],[0.7,0.7,0.0]],"W_K":[[1.0,0.0,0.0],[0.0,1.0,0.0],[0.0,0.0,1.0],[0.0,0.0,0.0]],"W_V":[[1.0,0.0],[0.0,1.0],[0.0,0.0],[0.0,0.0]],"W_O":[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0]],"W_vocab":[[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.5,1.2,1.0,0.7,0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.5,1.2,0.9,0.7],[0.0,0.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.2,0.0,0.0],[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]],"b_vocab":[-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"sentences":{"river":["The","fisherman","sat","beside","the","river","bank","and","watched","the"],"cheque":["She","deposited","the","cheque","at","the","bank","and","watched","the"]},"candidates":{"river":["water","boats","fish","ducks"],"cheque":["teller","clerk","queue","money"]},"axes":{"e":["water","finance","person","glue"],"qk":["setting: water?","setting: finance?","who?"],"v":["says: water scene","says: finance scene"],"short":{"e":["water","finance","person","glue"],"qk":["water?","finance?","who?"],"v":["\u2192water","\u2192finance"]}},"notes":"Toy v3: single-head causal self-attention (d_model=4, d_k=3, d_v=2, vocab=20, ten-token examples, max_context=20), designed BY HAND so that every coordinate has a name that the numbers agree with (see 'axes'). e axes: water, finance, person, glue. q and k axes: setting: water?, setting: finance?, who? (a query row reads 'what I ask for', a key row 'what I offer'). Position vectors add small offsets across the same four coordinates. v has its own narrower axes: says: water scene and says: finance scene; W_O maps them back onto the e axes. Names are illustrative; the matrices are sparse and one-decimal so a student can read each row of W_Q as 'axis -> asks', W_K as 'axis -> offers', W_V as 'axis -> says', W_vocab as 'axis -> votes for these words'. Values are narrower on purpose because they are mixed and sent rather than compared. Before position is added, glue-only token rows have zero keys and values but ask for both settings, which is why the final 'the' reads river or cheque. bank is equal parts water and finance (0.7, 0.7) plus a little glue (0.7); its entries are kept below 1.0 so that bank does not mostly attend to itself (the self score q_bank.k_bank grows with the square of those entries). The twenty position rows are hand-chosen illustrative vectors, not sinusoidal or trained measurements. Real learned embedding coordinates usually mix features rather than matching these teaching labels. Prefix permutations can change this toy's final prediction through position offsets. Patterns produced (all checked on these rounded numbers by make_toy2.py and toy_ref.mjs): (1) in 'The fisherman sat beside the river bank', bank(7) attends river first, fisherman second, itself and the glue words little; (2) in 'She deposited the cheque at the bank', bank(7) attends cheque first, deposited second; (3) the final 'the'(10) reads mostly river/bank/fisherman or cheque/bank/deposited and the output head predicts water > boats > fish > ducks or teller > clerk > queue > money with every other word at most 0.04; (4) the baseline from e_the(10) alone is spread over the eight candidates and is identical for both sentences; (5) with the causal mask off, the early glue words leak attention onto river and bank. Nothing was optimised; a few magnitudes (bank, fisherman, the W_vocab weights) were adjusted by hand from AXES.md."};
+window.__TOY__ = {"d_model":4,"d_k":3,"d_v":2,"max_context":20,"d_hidden":8,"vocab":["the","fisherman","sat","beside","river","bank","and","watched","she","deposited","cheque","at","water","boats","fish","ducks","teller","clerk","queue","money"],"tok_emb":{"the":[0.0,0.0,0.0,2.4],"fisherman":[2.0,0.0,2.2,0.0],"sat":[0.4,0.0,0.6,1.8],"beside":[0.6,0.0,0.0,2.0],"river":[3.0,0.0,0.0,0.0],"bank":[0.7,0.7,0.0,0.7],"and":[0.0,0.0,0.0,2.2],"watched":[0.6,0.0,0.8,1.6],"she":[0.0,0.0,2.6,0.4],"deposited":[0.0,2.2,0.6,0.4],"cheque":[0.0,3.0,0.0,0.0],"at":[0.0,0.0,0.0,2.0],"water":[3.0,0.0,0.0,0.0],"boats":[2.4,0.0,0.4,0.0],"fish":[2.6,0.0,0.6,0.0],"ducks":[2.2,0.0,0.8,0.0],"teller":[0.0,2.6,1.8,0.0],"clerk":[0.0,2.4,1.8,0.0],"queue":[0.0,2.0,0.6,0.0],"money":[0.0,3.0,0.0,0.0]},"pos_emb":[[0.1,0.0,0.1,-0.1],[0.0,0.1,-0.1,0.0],[-0.1,0.0,0.0,0.1],[0.0,-0.1,0.1,0.0],[0.1,0.1,0.0,-0.1],[0.1,-0.1,0.0,0.1],[0.0,0.0,0.1,0.1],[-0.1,0.1,0.1,0.0],[0.1,0.0,-0.1,0.1],[0.0,0.0,0.0,-0.1],[0.1,0.1,0.1,0.1],[-0.1,-0.1,-0.1,-0.1],[0.1,-0.1,0.1,-0.1],[-0.1,0.1,-0.1,0.1],[0.1,0.1,-0.1,-0.1],[-0.1,-0.1,0.1,0.1],[0.0,0.1,0.1,-0.1],[0.1,0.0,0.1,0.1],[-0.1,0.0,-0.1,0.1],[0.0,-0.1,-0.1,0.1]],"W_Q":[[1.0,0.0,0.0],[0.0,1.0,0.0],[0.0,0.0,0.4],[0.7,0.7,0.0]],"W_K":[[1.0,0.0,0.0],[0.0,1.0,0.0],[0.0,0.0,1.0],[0.0,0.0,0.0]],"W_V":[[1.0,0.0],[0.0,1.0],[0.0,0.0],[0.0,0.0]],"W_O":[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0]],"W_hidden":[[1.0,0.0,0.0,1.0,1.0,-1.0,1.0,0.0],[0.0,1.0,0.0,1.0,-1.0,1.0,0.0,1.0],[0.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0],[0.0,0.0,0.0,-0.2,0.0,0.0,-0.1,-0.1]],"b_hidden":[0.0,0.0,0.0,-0.5,-0.5,-0.5,-0.5,-0.5],"W_vocab":[[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.5,1.2,1.0,0.7,0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.5,1.2,0.9,0.7],[0.0,0.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.2,0.0,0.0],[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1],[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.1,0.0,0.0,0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.1,0.0,0.0],[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.1,0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.1,0.0,0.0]],"b_vocab":[-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"sentences":{"river":["The","fisherman","sat","beside","the","river","bank","and","watched","the"],"cheque":["She","deposited","the","cheque","at","the","bank","and","watched","the"]},"candidates":{"river":["water","boats","fish","ducks"],"cheque":["teller","clerk","queue","money"]},"axes":{"e":["water","finance","person","glue"],"qk":["setting: water?","setting: finance?","who?"],"v":["says: water scene","says: finance scene"],"short":{"e":["water","finance","person","glue"],"qk":["water?","finance?","who?"],"v":["\u2192water","\u2192finance"]}},"notes":"Toy v3: single-head causal self-attention (d_model=4, d_k=3, d_v=2, vocab=20, ten-token examples, max_context=20), designed BY HAND so that every coordinate has a name that the numbers agree with (see 'axes'). e axes: water, finance, person, glue. q and k axes: setting: water?, setting: finance?, who? (a query row reads 'what I ask for', a key row 'what I offer'). Position vectors add small offsets across the same four coordinates. v has its own narrower axes: says: water scene and says: finance scene; W_O maps them back onto the e axes. Names are illustrative; the matrices are sparse and one-decimal so a student can read each row of W_Q as 'axis -> asks', W_K as 'axis -> offers', W_V as 'axis -> says'. The predictor has eight ReLU hidden units: h=ReLU(e W_hidden+b_hidden), logits=h W_vocab+b_vocab. On slides these are W1, b1, W2, b2. Values are narrower on purpose because they are mixed and sent rather than compared. Before position is added, glue-only token rows have zero keys and values but ask for both settings, which is why the final 'the' reads river or cheque. bank is equal parts water and finance (0.7, 0.7) plus a little glue (0.7); its entries are kept below 1.0 so that bank does not mostly attend to itself (the self score q_bank.k_bank grows with the square of those entries). The twenty position rows are hand-chosen illustrative vectors, not sinusoidal or trained measurements. Real learned embedding coordinates usually mix features rather than matching these teaching labels. Prefix permutations can change this toy's final prediction through position offsets. Patterns produced (all checked on these rounded numbers by make_toy2.py and toy_ref.mjs): (1) in 'The fisherman sat beside the river bank', bank(7) attends river first, fisherman second, itself and the glue words little; (2) in 'She deposited the cheque at the bank', bank(7) attends cheque first, deposited second; (3) the final 'the'(10) reads mostly river/bank/fisherman or cheque/bank/deposited and the output head predicts water > boats > fish > ducks or teller > clerk > queue > money with every other word at most 0.04; (4) the baseline from e_the(10) alone is spread over the eight candidates and is identical for both sentences; (5) with the causal mask off, the early glue words leak attention onto river and bank. Nothing was optimised; a few magnitudes (bank, fisherman, the W_vocab weights) were adjusted by hand from AXES.md."};
 window.__PART__ = {"part":2,"series":"Attention and language","title":"Self-attention, from first principles","subtitle":"How a token reads from the tokens before it, and why that makes the next word easier to predict.","audience":"For students who know embeddings, dot products, softmax and next-token prediction, and who have not yet met attention.","minutes":null,"central":"\\ve{e} \\;\\rightarrow\\; \\vq{Q},\\vk{K},\\vv{V} \\;\\rightarrow\\; \\text{attention } (\\va{\\alpha}) \\;\\rightarrow\\; \\vd{\\Delta e} \\;\\rightarrow\\; \\vp{e + \\Delta e}","centralLabel":"The one chain to remember","legendTitle":"How to read this page: seven colours, seven objects","provenance":"Where the numbers come from: a tiny demonstration model with {{d_model}}-number representations and a {{vocab}}-word vocabulary. Each coordinate was given an illustrative name{{axes}}, and the weights were written by hand so that the names are true. The arithmetic is real, but the model is not a trained language model.","chain":[{"label":"Predict the next token","section":"s01"},{"label":"Baseline: only the last token","section":"s02"},{"label":"Baseline: a fixed window of w tokens","section":"s03"},{"label":"Summarizing the prefix","section":"s04"},{"label":"Attention and the search analogy","section":"s05"},{"label":"Hard retrieval \u2192 soft retrieval","section":"s06"},{"label":"Every token becomes a searchable record","section":"s07"},{"label":"Two jobs: choose weights, then mix values","section":"s08"},{"label":"The contextual update \u0394e","section":"s09"},{"label":"\u201cbank\u201d: same start, different context","section":"s10"},{"label":"Where do queries, keys and values come from?","section":"s11"},{"label":"Why divide by \u221ad_k?","section":"s12"},{"label":"Causal masking","section":"s13"},{"label":"From \u0394e to the next-token probabilities","section":"s14"},{"label":"Optional numerical walkthrough","section":"s15"},{"label":"The same thing in matrix form","section":"s16"},{"label":"Attention versus the alternatives","section":"s17"},{"label":"Pause and think","section":"s18"},{"label":"Generation and training","section":"s19"}],"sections":[{"id":"s01","title":"Predict the next token","lit":""},{"id":"s02","title":"Baseline: only the last token","lit":"e"},{"id":"s03","title":"Baseline: a fixed window of w tokens","lit":""},{"id":"s04","title":"Summarizing the prefix","lit":"a"},{"id":"s05","title":"Attention and the search analogy","lit":"q k v"},{"id":"s06","title":"Hard retrieval \u2192 soft retrieval","lit":""},{"id":"s07","title":"Every token becomes a searchable record","lit":""},{"id":"s08","title":"Two jobs: choose weights, then mix values","lit":""},{"id":"s09","title":"The contextual update \u0394e","lit":"d ep"},{"id":"s10","title":"\u201cbank\u201d: same start, different context","lit":""},{"id":"s11","title":"Where do queries, keys and values come from?","lit":""},{"id":"s12","title":"Why divide by \u221ad_k?","lit":""},{"id":"s13","title":"Causal masking","lit":""},{"id":"s14","title":"From \u0394e to the next-token probabilities","lit":""},{"id":"s15","title":"Optional numerical walkthrough","lit":""},{"id":"s16","title":"The same thing in matrix form","lit":""},{"id":"s17","title":"Attention versus the alternatives","lit":""},{"id":"s18","title":"Pause and think","lit":""},{"id":"s19","title":"Generation and training","lit":""}],"objects":["e","q","k","v","a","d","ep"],"prev":{"label":"Part 1: From characters to next-token prediction","href":"part1.html","available":true},"next":{"label":"Part 3: Learning, heads, and the Transformer","href":"part3.html","available":true},"index":{"label":"Series home","href":"index.html","available":true},"notation":"part2","footer":"Notation: <span class=\"sym sym-e\">e<\/span> is always the current token representation, and <span class=\"sym sym-d\">\u0394e<\/span> is this page's pedagogical name for the attention output. The addition <span class=\"sym sym-e\">e<\/span>&thinsp;+&thinsp;<span class=\"sym sym-d\">\u0394e<\/span> is the standard residual connection.","durationLabel":"The full walkthrough takes multiple sessions. A classroom route is suggested in Section 1.","hook":"The fisherman sat beside the river bank and watched the ___. You know the next word. What would a model have to read to know it too?"};
 </script>
 <script>
@@ -1009,7 +1009,7 @@ window.__PART__ = {"part":2,"series":"Attention and language","title":"Self-atte
     tokens = arr(tokens);
     var T = tokens.length;
     var E = AT.embed(tokens);
-    var WQ = arr(model.W_Q), WK = arr(model.W_K), WV = arr(model.W_V), WO = arr(model.W_O), WVo = arr(model.W_vocab), b = arr(model.b_vocab);
+    var WQ = arr(model.W_Q), WK = arr(model.W_K), WV = arr(model.W_V), WO = arr(model.W_O);
     var Q = WQ.length ? AT.matmul(E, WQ) : E.map(function () { return AT.zeros(AT.d_k); });
     var K = WK.length ? AT.matmul(E, WK) : E.map(function () { return AT.zeros(AT.d_k); });
     var V = WV.length ? AT.matmul(E, WV) : E.map(function () { return AT.zeros(AT.d_v); });
@@ -1021,22 +1021,24 @@ window.__PART__ = {"part":2,"series":"Attention and language","title":"Self-atte
     var Mmsg = A.map(function (a) { var m = AT.zeros(V.length ? V[0].length : AT.d_v); a.forEach(function (w, j) { if (w) m = AT.add(m, AT.scale(V[j], w)); }); return m; });
     var Delta = WO.length ? AT.matmul(Mmsg, WO) : Mmsg.map(function () { return AT.zeros(AT.d_model); });
     var Enew = E.map(function (e, i) { return AT.add(e, Delta[i]); });
-    var logits = WVo.length ? AT.matmul(Enew, WVo).map(function (r) { return AT.add(r, b); }) : Enew.map(function () { return AT.zeros(AT.vocab.length); });
-    var probs = logits.map(function (r) { return AT.softmax(r); });
-    return { tokens: tokens, T: T, E: E, Q: Q, K: K, V: V, Sraw: Sraw, S: S, Sfull: Sfull, A: A, Mmsg: Mmsg, Delta: Delta, Enew: Enew, logits: logits, probs: probs, mask: mask, scale: scale };
+    var heads = Enew.map(AT.head);
+    var logits = heads.map(function (h) { return h.logits; }), probs = heads.map(function (h) { return h.probs; });
+    return { tokens: tokens, T: T, E: E, Q: Q, K: K, V: V, Sraw: Sraw, S: S, Sfull: Sfull, A: A, Mmsg: Mmsg, Delta: Delta, Enew: Enew, HeadPre: heads.map(function (h) { return h.pre; }), HeadHidden: heads.map(function (h) { return h.hidden; }), logits: logits, probs: probs, mask: mask, scale: scale };
   };
   /** output head applied directly to e^(0) (no attention) */
   AT.baseline = function (tokens) {
     var E = AT.embed(arr(tokens));
-    var WVo = arr(model.W_vocab), b = arr(model.b_vocab);
-    var logits = WVo.length ? AT.matmul(E, WVo).map(function (r) { return AT.add(r, b); }) : E.map(function () { return AT.zeros(AT.vocab.length); });
-    return { E: E, logits: logits, probs: logits.map(function (r) { return AT.softmax(r); }) };
+    var heads = E.map(AT.head);
+    return { E: E, HeadPre: heads.map(function (h) { return h.pre; }), HeadHidden: heads.map(function (h) { return h.hidden; }), logits: heads.map(function (h) { return h.logits; }), probs: heads.map(function (h) { return h.probs; }) };
   };
   /** output head applied to any single vector (row) → {logits, probs} */
   AT.head = function (e) {
     var WVo = arr(model.W_vocab), b = arr(model.b_vocab);
-    var logits = WVo.length ? AT.add(AT.matmul(arr(e), WVo), b) : AT.zeros(AT.vocab.length);
-    return { logits: logits, probs: AT.softmax(logits) };
+    // Older saved toys retain their explicit linear head; Part II uses the MLP.
+    var pre = model.W_hidden ? AT.add(AT.matmul(arr(e), model.W_hidden), model.b_hidden) : arr(e);
+    var hidden = model.W_hidden ? pre.map(function (x) { return Math.max(0, x); }) : pre;
+    var logits = WVo.length ? AT.add(AT.matmul(hidden, WVo), b) : AT.zeros(AT.vocab.length);
+    return { pre: pre, hidden: hidden, logits: logits, probs: AT.softmax(logits) };
   };
   AT.topk = function (probRow, k) {
     probRow = arr(probRow);
@@ -3213,10 +3215,10 @@ window.__PART__ = {"part":2,"series":"Attention and language","title":"Self-atte
     var top=AT.vocab.map(function(t,j){return {token:t,index:j,logit:F.logits[i][j],probability:F.probs[i][j]};}).sort(function(a,b){return b.probability-a.probability;});
     return {index:i,position:i+1,token:tokens[i],e:F.E[i],q:F.Q[i],keys:keys,values:values,
       rawScores:raw,scaledScores:scaled,maskedScores:scaled.map(function(s,j){return j>i?null:s;}),
-      alpha:alpha,mixture:mixture,delta:F.Delta[i],updated:F.Enew[i],logits:F.logits[i],probabilities:F.probs[i],topVocabulary:top.slice(0,6)};
+      alpha:alpha,mixture:mixture,delta:F.Delta[i],updated:F.Enew[i],hidden:F.HeadHidden[i],logits:F.logits[i],probabilities:F.probs[i],topVocabulary:top.slice(0,6)};
   }
   window.ATTENTION_PREVIEW_DATA={tokens:tokens,vocabulary:AT.vocab,axes:AT.axes,
-    dims:{T:tokens.length,dModel:AT.d_model,dKey:AT.d_k,dValue:AT.d_v,vocabSize:AT.vocab.length},
+    dims:{T:tokens.length,dModel:AT.d_model,dKey:AT.d_k,dValue:AT.d_v,dHidden:AT.model.d_hidden,vocabSize:AT.vocab.length},
     provenance:{source:'AT.model / AT.forward',handDesigned:true,trained:false,positionEncoding:'additive-table'},bank:row(6),last:row(tokens.length-1)};
 })();
 
@@ -3269,6 +3271,7 @@ window.__PART__ = {"part":2,"series":"Attention and language","title":"Self-atte
   stages[9].note=['This output projection bridges the two coordinate spaces.',`The ${dv}-number mixture and ${dm}-number update are different objects.`];
   stages[10].code=[`e_prime = e + delta_e  # [1, ${dm}] + [1, ${dm}] → [1, ${dm}]`];
   stages[11].code[0]=`logits = e_prime @ W_vocab + b_vocab  # [1, ${nv}]`;
+  if(D.dims.dHidden) stages[11].code=[`h = (e_prime @ W_hidden + b_hidden).relu()  # [1, ${D.dims.dHidden}]`,`logits = h @ W_vocab + b_vocab  # [1, ${nv}]`,'p_next = logits.softmax(dim=-1)'];
   function node(x,y,w,h,title,caption,role,show,active,prefix) {
     if (!show) return '';
     const color=C[role]||C.ink;
@@ -3439,7 +3442,7 @@ window.__PART__ = {"part":2,"series":"Attention and language","title":"Self-atte
     }
     if(si>=11) {
       out+=arrow('M1318 852 H1373','d',true,true,prefix);
-      out+=node(1373,824,175,58,'Vocabulary head',`${nv} logits → probabilities`,'d',true,true,'prediction');
+      out+=node(1373,824,175,58,D.dims.dHidden?'MLP predictor':'Vocabulary head',D.dims.dHidden?`${dm} → ${D.dims.dHidden} ReLU → ${nv}`:`${nv} logits → probabilities`,'d',true,true,'prediction');
       out+=txt(1460,909,`${d.topVocabulary[0].token} · p ≈ ${f(d.topVocabulary[0].probability)}`,'detail',`text-anchor="middle" fill="${C.d}"`);
     }
     out+=line(48,924,1552,924,`stroke="${C.line}"`);
@@ -3833,10 +3836,11 @@ body.present #s02 .dt-cap,body.present #s02 .dt-note{display:none}
 body.present #s02 .title-row{margin-bottom:16px}
 /* Part I's roles: input blue, parameters purple, logits grey, probabilities green. */
 #s02 .head-input{color:var(--c-e);fill:var(--c-e)}
+#s02 .head-hidden{color:var(--c-v);fill:var(--c-v)}
 #s02 .head-param{color:var(--c-q);fill:var(--c-q)}
 #s02 .head-score{color:var(--ink-2);fill:var(--ink-2)}
 #s02 .head-prob{color:var(--c-d);fill:var(--c-d)}
-#s02 .head-layout{display:grid;grid-template-columns:1.1fr 1fr;gap:30px;align-items:center}
+#s02 .head-layout{display:grid;grid-template-columns:1.6fr 1fr;gap:30px;align-items:center}
 #s02 .head-network svg{display:block;width:100%;height:auto}
 #s02 .head-network text{font-family:var(--font-ui);font-size:18px}
 #s02 .head-network .net-caption{font-size:17px;font-weight:600}
@@ -3848,6 +3852,8 @@ body.present #s02 .title-row{margin-bottom:16px}
 #s02 .head-key dd{margin:0;line-height:1.3}
 #s02 .head-equation{margin:12px 0}
 #s02 .head-equation .katex-display{margin:.3em 0}
+#s02-frame-head .head-equation{margin:0}
+#s02-frame-head .head-pair{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:0 28px}
 #s02 .head-softmax-key{grid-template-columns:1fr 1fr;gap:24px}
 #s02 .head-example{margin:24px 0;padding:16px 20px;border-left:3px solid var(--c-d);background:var(--card)}
 #s02 .head-example p{margin:0 0 8px}
@@ -3929,23 +3935,25 @@ No. Both sentences end with the at position 10, so the head receives exactly the
   <p class="companion">All eight displayed candidates tie at about 0.094 each in this hand-chosen toy. “Other ×12” adds the probabilities of the remaining twelve vocabulary tokens. Full bar = probability 1. The important comparison is between the river and cheque sentences: every individual token keeps the same probability.</p>
 </div>
 
-<div class="frame" id="s02-frame-head" data-title="Inside the head: four numbers to 20 scores" data-autobuild="off">
+<div class="frame" id="s02-frame-head" data-title="Inside the head: one hidden layer" data-autobuild="off">
   <script type="text/x-notes">What does one connection represent? What does one output node represent?
-Use Part I's colours: blue input coordinates, purple weights and biases, grey scores. This is the same kind of final linear layer as Part I, not its whole MLP. There is no new hidden layer or ReLU here. Each output combines all four numbers from one token row, not four token rows. Trace the purple connections to water. The diagram shows four of the twenty vocabulary outputs, in vocabulary order; dots mean omitted nodes and connections. Some of these toy weights are zero. Reveal the equation after explaining the nodes. The input remains the uncontextualized row for the at position 10 in both sentences. The weights and biases are hand-chosen for this toy; in a trained model they are learned.</script>
-  <p class="head-bridge">Like Part I’s final layer: <strong>multiply → sum → add bias.</strong> No new hidden layer here.</p>
+Use Part I's MLP: blue inputs, teal hidden activations, purple parameters, grey logits. W1 maps four input coordinates to eight pre-activations; add b1, then ReLU clips negative entries to zero. W2 reads those eight hidden activations and b2 supplies the twenty output offsets. Both weight matrices are shared across sentences. Each circle is one number, not one token. All eight hidden units are shown; sixteen vocabulary nodes and their edges are omitted. Here all hidden activations are zero, so the displayed logits come from b2. This is a consequence of our hand-chosen baseline input, not a general property of ReLU networks. Later contextual inputs activate the same hidden units. Reveal the two equations after tracing the two layers. These illustrative parameters are not trained measurements.</script>
+  <p class="head-bridge">Like Part I: <strong>input → hidden layer with ReLU → vocabulary scores.</strong></p>
   <div class="head-layout">
     <div class="head-network" id="s02-head-network"></div>
     <dl class="head-key">
-      <div class="head-input"><dt>$\htmlClass{head-input}{e_{10}^{(0)}}$: $1\times4$ input row</dt><dd>“the”, position 10: four numbers. Superscript $(0)$: before context updates.</dd></div>
-      <div class="head-param"><dt>$\htmlClass{head-param}{W_{\text{vocab}}}$: connection weights</dt><dd>$4\times20$ weights: input coordinates × vocabulary words.</dd></div>
-      <div class="head-param"><dt>$\htmlClass{head-param}{b}$: $1\times20$ bias row</dt><dd>20 offsets, one added at each output node.</dd></div>
-      <div class="head-score"><dt>$\htmlClass{head-score}{\ell}$: $1\times20$ logits</dt><dd>20 scores, called $z$ in Part I. Not probabilities yet.</dd></div>
+      <div class="head-input"><dt>$\htmlClass{head-input}{e_{10}^{(0)}}$: $1\times4$ input row</dt><dd>“the” at 10, before context updates.</dd></div>
+      <div class="head-hidden"><dt>$\htmlClass{head-hidden}{h_{10}}$: $1\times8$ hidden row</dt><dd>ReLU: $\max(0,x)$ for each entry.</dd></div>
+      <div class="head-param"><dt>$\htmlClass{head-param}{W_1}$: $4\times8$ · $\htmlClass{head-param}{b_1}$: $1\times8$</dt><dd>Input → hidden, then ReLU.</dd></div>
+      <div class="head-param"><dt>$\htmlClass{head-param}{W_2}$: $8\times20$ · $\htmlClass{head-param}{b_2}$: $1\times20$</dt><dd>Hidden → scores. One bias per output.</dd></div>
+      <div class="head-score"><dt>$\htmlClass{head-score}{\ell}$: $1\times20$ logits</dt><dd>Called $z$ in Part I; not probabilities.</dd></div>
     </dl>
   </div>
-  <div class="head-equation" data-build="1">$$\htmlClass{head-score}{\ell}=\htmlClass{head-input}{e_{10}^{(0)}}\;\htmlClass{head-param}{W_{\text{vocab}}}+\htmlClass{head-param}{b}$$</div>
-  <p class="head-footnote">Dots omit 16 output nodes. Every output combines all four input numbers.</p>
+  <div class="head-equation head-pair" data-build="1"><span>$$\htmlClass{head-hidden}{h_{10}}=\operatorname{ReLU}(\htmlClass{head-input}{e_{10}^{(0)}}\,\htmlClass{head-param}{W_1}+\htmlClass{head-param}{b_1})$$</span><span>$$\htmlClass{head-score}{\ell}=\htmlClass{head-hidden}{h_{10}}\,\htmlClass{head-param}{W_2}+\htmlClass{head-param}{b_2}$$</span></div>
+  <p class="head-footnote">Each score reads all eight hidden units. Dots omit 16 outputs.</p>
   <div class="companion">
-    <p>The diagram’s input circles are coordinates of <strong>one</strong> row, not different tokens. Its output circles are vocabulary scores, not tokens we have generated. All four coordinates connect to every output, although a weight can be zero. The leading 1 in the input, logits, and probability shapes means one prediction row. The bias is a shared row of offsets, not a separate example. Our toy parameters are hand-chosen; training would learn them. For example:</p>
+    <p>Superscript $(0)$: before context updates. The four inputs are coordinates of one token, not four tokens.</p>
+    <p>The diagram’s input circles are coordinates of <strong>one</strong> row, not different tokens. Each hidden unit receives all four coordinates; each score receives all eight hidden activations. A connection can have weight zero. The leading 1 in each shape means one prediction row. There are two learned affine layers, with ReLU between them; the final softmax comes next. Our parameters are hand-chosen illustrations, not trained measurements. In the source code, $W_1,b_1$ are <code>W_hidden,b_hidden</code> and $W_2,b_2$ are <code>W_vocab,b_vocab</code>. For the baseline, all eight hidden activations happen to be zero:</p>
     <div id="s02-head-worked"></div>
     <p>More generally, $t$ is the last input position ($t=10$ here), and $\htmlClass{head-input}{e_t^{(0)}}$ is its starting row. We sometimes write the current row simply as $\htmlClass{head-input}{e_t}$; later it will include information from other tokens. The output-head operation stays the same.</p>
   </div>
@@ -4003,46 +4011,53 @@ All twenty words participate. Eight have logit zero and twelve have logit -1.5. 
   const BA = AT.baseline(SA), BB = AT.baseline(SB);
   let ctx = 'A';
 
-  /* A two-layer drawing of the actual vocabulary head, not a second MLP.
+  /* The actual 4 -> 8 -> 20 ReLU predictor, with both parameter layers.
      Four displayed outputs are in vocabulary order; omitted outputs remain in softmax. */
-  const svg = AT.svg('svg', {viewBox:'0 0 520 350',role:'img','aria-labelledby':'s02-head-title s02-head-desc','data-input-width':D,'data-output-width':AT.vocab.length});
+  const H=AT.model.d_hidden, hidden=BA.HeadHidden[t], pre=BA.HeadPre[t];
+  const svg = AT.svg('svg', {viewBox:'0 0 660 390',role:'img','aria-labelledby':'s02-head-title s02-head-desc','data-input-width':D,'data-hidden-width':H,'data-output-width':AT.vocab.length});
   svg.append(AT.svg('title',{id:'s02-head-title'},'One token row enters the vocabulary output head'),
-    AT.svg('desc',{id:'s02-head-desc'},'Four blue input coordinates for the at position 10 connect through purple weights to twenty vocabulary scores. Four output nodes are shown: the, water, teller, money. Dots mark the omitted nodes. Add one purple bias per output. All input and output numbers come from the saved toy model.'));
+    AT.svg('desc',{id:'s02-head-desc'},'Four blue input coordinates for the at position 10 connect through W1 to eight teal hidden units. Add b1 and apply ReLU. W2 connects all eight hidden activations to twenty vocabulary scores, then add b2. Four output nodes are shown: the, water, teller, money. Dots mark omitted outputs. Every displayed number and connection weight comes from the saved toy model.'));
   const label=(x,y,text,cls,anchor='middle')=>svg.appendChild(AT.svg('text',{x,y,class:cls,'text-anchor':anchor},text));
-  label(134,22,'4 input numbers','net-caption head-input');
-  label(358,22,'20 scores (4 shown)','net-caption head-score');
-  const weightsLabel=label(246,52,'W','net-caption head-param');
-  weightsLabel.setAttribute('data-parameter','W_vocab');
-  weightsLabel.append(AT.svg('tspan',{'baseline-shift':'sub','font-size':12},'vocab'),AT.svg('tspan',{},' weights'));
-  const inputYs=[90,153,216,279],shown=['the','water','teller','money'],outputYs=[80,153,226,299];
+  label(110,22,'4 input numbers','net-caption head-input');
+  label(330,22,'8 hidden units','net-caption head-hidden');
+  label(542,22,'20 scores (4 shown)','net-caption head-score');
+  label(215,53,'W₁: 4 × 8','net-caption head-param').setAttribute('data-parameter','W_hidden');
+  label(435,53,'W₂: 8 × 20','net-caption head-param').setAttribute('data-parameter','W_vocab');
+  const inputYs=[103,170,237,304],hiddenYs=AT.range(H).map(i=>80+i*37),shown=['the','water','teller','money'],outputYs=[95,168,241,314];
   const edges=svg.appendChild(AT.svg('g',{class:'head-edges'}));
+  hiddenYs.forEach((y,k)=>inputYs.forEach((iy,i)=>edges.appendChild(AT.svg('line',{x1:137,y1:iy,x2:311,y2:y,class:'head-edge','data-layer':'hidden','data-input':i,'data-hidden':k,'data-weight':AT.model.W_hidden[i][k]}))));
   shown.forEach((word,k)=>{
     const j=AT.vocab.indexOf(word);
-    inputYs.forEach((y,i)=>edges.appendChild(AT.svg('line',{x1:160,y1:y,x2:328,y2:outputYs[k],class:'head-edge'+(word==='water'?' water-edge':''),'data-input':i,'data-token':word,'data-weight':AT.model.W_vocab[i][j]})));
+    hiddenYs.forEach((y,i)=>edges.appendChild(AT.svg('line',{x1:349,y1:y,x2:508,y2:outputYs[k],class:'head-edge'+(word==='water'?' water-edge':''),'data-layer':'output','data-hidden':i,'data-token':word,'data-weight':AT.model.W_vocab[i][j]})));
   });
   inputYs.forEach((y,i)=>{
-    svg.appendChild(AT.svg('circle',{cx:138,cy:y,r:22,fill:'var(--t-e)',stroke:'var(--c-e)','stroke-width':2,'data-input-node':i}));
-    label(138,y+6,AT.fmt(BA.E[t][i],1),'net-value head-input');
-    label(104,y+6,AT.axes.short.e[i],'head-input','end');
+    svg.appendChild(AT.svg('circle',{cx:115,cy:y,r:22,fill:'var(--t-e)',stroke:'var(--c-e)','stroke-width':2,'data-input-node':i}));
+    label(115,y+6,AT.fmt(BA.E[t][i],1),'net-value head-input');
+    label(81,y+6,AT.axes.short.e[i],'head-input','end');
+  });
+  hiddenYs.forEach((y,i)=>{
+    const node=AT.svg('circle',{cx:330,cy:y,r:18,fill:'var(--t-v)',stroke:'var(--c-v)','stroke-width':2,'data-hidden-node':i,'data-preactivation':pre[i],'data-activation':hidden[i]});
+    node.appendChild(AT.svg('title',{},'h'+(i+1)+' = ReLU('+AT.fmt(pre[i],2)+') = '+AT.fmt(hidden[i],1)));
+    svg.appendChild(node);label(330,y+6,AT.fmt(hidden[i],1),'net-value head-hidden');
   });
   shown.forEach((word,k)=>{
     const j=AT.vocab.indexOf(word),y=outputYs[k];
-    svg.appendChild(AT.svg('circle',{cx:350,cy:y,r:22,fill:'var(--card)',stroke:'var(--ink-2)','stroke-width':word==='water'?3:1.5,'data-output-token':word,'data-logit':BA.logits[t][j]}));
-    label(350,y+6,AT.fmt(BA.logits[t][j],1),'net-value head-score');
-    label(383,y+6,word,'head-score','start');
+    svg.appendChild(AT.svg('circle',{cx:530,cy:y,r:22,fill:'var(--card)',stroke:'var(--ink-2)','stroke-width':word==='water'?3:1.5,'data-output-token':word,'data-logit':BA.logits[t][j]}));
+    label(530,y+6,AT.fmt(BA.logits[t][j],1),'net-value head-score');
+    label(563,y+6,word,'head-score','start');
   });
-  [117,190,263].forEach(y=>label(350,y+5,'⋮','head-score'));
-  label(135,340,'One row, not four tokens','net-caption head-input');
-  label(363,340,'+ b: 20 biases','net-caption head-param');
+  [132,205,278].forEach(y=>label(530,y+5,'⋮','head-score'));
+  label(330,377,'+ b₁, then ReLU','net-caption head-param');
+  label(542,377,'+ b₂: 20 biases','net-caption head-param');
   S.querySelector('#s02-head-network').appendChild(svg);
 
   const water=AT.vocab.indexOf('water'),waterScore=BA.logits[t][water];
   const expTotal=AT.sum(BA.logits[t].map(Math.exp));
   const workedHost=S.querySelector('#s02-head-worked');
-  const workedTable=AT.ui.table(BA.E[t].map((x,i)=>[x,AT.model.W_vocab[i][water],x*AT.model.W_vocab[i][water]]),{cols:['input','weight','product'],rowLabels:AT.axes.short.e,cornerLabel:'coordinate',decimals:1,into:workedHost});
-  workedTable.cells.forEach(row=>row.forEach((cell,j)=>cell.classList.add(['head-input','head-param','head-score'][j])));
+  const workedTable=AT.ui.table(hidden.map((x,i)=>[x,AT.model.W_vocab[i][water],x*AT.model.W_vocab[i][water]]),{cols:['h','W₂','h × W₂'],rowLabels:AT.range(H).map(i=>'h'+(i+1)),cornerLabel:'unit',decimals:1,into:workedHost});
+  workedTable.cells.forEach(row=>row.forEach((cell,j)=>cell.classList.add(['head-hidden','head-param','head-score'][j])));
   const workedSum=AT.h('div');workedHost.appendChild(workedSum);
-  AT.tex(workedSum,'\\htmlClass{head-score}{\\ell_{\\text{water}}}=\\underbrace{'+AT.fmt(AT.dot(BA.E[t],AT.model.W_vocab.map(row=>row[water])),1)+'}_{\\text{sum of products}}+\\underbrace{\\htmlClass{head-param}{'+AT.fmt(AT.model.b_vocab[water],1)+'}}_{\\text{bias}}=\\htmlClass{head-score}{'+AT.fmt(waterScore,1)+'}',{display:true});
+  AT.tex(workedSum,'\\htmlClass{head-score}{\\ell_{\\text{water}}}=\\underbrace{'+AT.fmt(AT.dot(hidden,AT.model.W_vocab.map(row=>row[water])),1)+'}_{\\text{sum}}+\\underbrace{\\htmlClass{head-param}{'+AT.fmt(AT.model.b_vocab[water],1)+'}}_{\\text{bias}}=\\htmlClass{head-score}{'+AT.fmt(waterScore,1)+'}',{display:true});
   S.querySelector('#s02-head-water-logit').textContent=AT.fmt(waterScore,1);
   const probabilityExample=S.querySelector('#s02-head-water-prob');
   probabilityExample.dataset.probability=BA.probs[t][water];
@@ -4112,26 +4127,27 @@ All twenty words participate. Eight have logit zero and twelve have logit -1.5. 
     ? 'Every difference is zero. The earlier clues “river” and “cheque” never reached these rows, so the predictions are identical.'
     : 'The difference subtracts the cheque-sentence input from the river-sentence input. Largest probability gap: '+AT.fmt(maxDiff,3)+'.';
 
-  /* --- the arithmetic of the output head for the eight candidates: e W_vocab, + b, logit, softmax --- */
+  /* --- the arithmetic of the output head: hidden activations, W2, b2, softmax --- */
   const cands = AT.candidates.river.concat(AT.candidates.cheque);
   const cidx = cands.map(w => AT.vocab.indexOf(w));
   const Wsub = AT.model.W_vocab.map(r => cidx.map(i => r[i]));
   const bsub = cidx.map(i => AT.model.b_vocab[i]);
   const calcHost = S.querySelector('#s02-calc');
-  const mv = AT.ui.matVecCalc(BA.E[t], Wsub, { from: 'e', to: cands, cls: 'neutral', xLabel: 'e · ' + T + ' ' + SA[t], outLabel: 'e W_vocab (8 of ' + AT.vocab.length + ' words)' });
+  const hiddenLabels=AT.range(H).map(i=>'h'+(i+1));
+  const mv = AT.ui.matVecCalc(hidden, Wsub, { from: hiddenLabels, to: cands, cls: 'neutral', xLabel: 'h · ' + T + ' ' + SA[t], outLabel: 'h W₂ (8 of ' + AT.vocab.length + ' words)' });
   function calcRows(B){
-    const eW = cidx.map(i => AT.dot(B.E[t], AT.model.W_vocab.map(r => r[i])));
+    const eW = cidx.map(i => AT.dot(B.HeadHidden[t], AT.model.W_vocab.map(r => r[i])));
     return [eW, bsub, cidx.map(i => B.logits[t][i]), cidx.map(i => B.probs[t][i])];
   }
   const calcTab = AT.ui.table(calcRows(BA), {
     cols: cands.map(w => ({ label: w })), cornerLabel: 'candidate', decimals: 3,
-    rowLabels: ['$\\ve{e_{' + T + '}^{(0)}}\\,W_{\\text{vocab}}$', '$+\\; b$', '$\\ell$ (logit)', '$p = \\operatorname{softmax}(\\ell)$'],
+    rowLabels: ['$h_{' + T + '}\\,W_2$', '$+\\; b_2$', '$\\ell$ (logit)', '$p = \\operatorname{softmax}(\\ell)$'],
     rowCls: ['neutral', 'neutral', 'neutral', 'neutral'],
     caption: 'Each column is one candidate word. The first row is the worksheet result above, the bias is added, and the softmax runs over all ' + AT.vocab.length + ' words, not only these eight.'
   });
   const calcReading = AT.h('p', { class: 'read-line' });
   function calcReadingText(B){
-    const ax = AT.axes.e, x = B.E[t];
+    const ax = hiddenLabels, x = B.HeadHidden[t];
     const zeroAx = ax.filter((n, j) => Math.abs(x[j]) < 0.05);
     const liveAx = ax.filter((n, j) => Math.abs(x[j]) >= 0.05 && Wsub[j].some(wv => wv !== 0));
     const lifted = cands.filter((w, c) => Math.abs(AT.dot(x, Wsub.map(r => r[c]))) >= 0.005);
@@ -4139,7 +4155,7 @@ All twenty words participate. Eight have logit zero and twelve have logit -1.5. 
       + (lifted.length ? 'Only ' + liveAx.join(' and ') + ' vote' + (liveAx.length > 1 ? '' : 's') + ', which lifts ' + lifted.join(' and ') + ' a little; ' + ax.filter(n => liveAx.indexOf(n) < 0 && zeroAx.indexOf(n) < 0).join(' and ') + ' carries no votes at all.' : 'No candidate gets a vote at all.');
   }
   calcReading.textContent = calcReadingText(BA);
-  AT.ui.reveal('Show the arithmetic: $\\ell = \\ve{e_{' + T + '}^{(0)}}\\,W_{\\text{vocab}} + b$ for the eight candidates', [mv, calcTab, calcReading], { hint: 'Show', into: calcHost });
+  AT.ui.reveal('Show the arithmetic: $\\ell = h_{' + T + '}\\,W_2 + b_2$ for the eight candidates', [AT.h('p',{},'First compute h = ReLU(e W₁ + b₁) = ['+hidden.join(', ')+']. W₂ reads these eight activations.'), mv, calcTab, calcReading], { hint: 'Show', into: calcHost });
 
   let bars = null;
   function paint(){
@@ -4159,7 +4175,7 @@ All twenty words participate. Eight have logit zero and twelve have logit -1.5. 
       ? 'Every probability stays unchanged. The eight-way tie is specific to this toy.'
       : 'Every probability stays unchanged because the head receives the same input row.';
     AT.renderMath(note);
-    mv.update(B.E[t], { xLabel: 'e · ' + T + ' ' + toks[t] });
+    mv.update(B.HeadHidden[t], { xLabel: 'h · ' + T + ' ' + toks[t] });
     calcTab.update(calcRows(B));
     calcReading.textContent = calcReadingText(B);
     S.querySelector('#s02-ctx-a').setAttribute('aria-pressed', ctx === 'A' ? 'true' : 'false');
@@ -5308,9 +5324,9 @@ Begin with the original four-coordinate input rows and their normalized shares. 
 Read the four m7 rows first. Each is a saved preset from the sliders, not a new trained model. Keep the vocabulary head fixed. Reveal the score and probability columns, computed using all twenty vocabulary scores. Water remains the top choice for equal, river and fisherman presets, although its probability changes. Bank-only narrowly prefers teller. These results belong to the hand-set demonstration head. They are not validated language predictions: the original next word at position 8 is and. The largest coordinate in m7 is not itself a vocabulary probability, and the head must read all four coordinates. There is no residual addition here. Custom slider choices affect the live readout, while this table always compares the four saved presets.</script>
   <p class="preset-intro">Input: The fisherman sat beside the river <strong>bank</strong> ___ <span class="pool-score">(position 8)</span></p>
   <div class="preset-head-equation">
-    $$\htmlClass{pool-score}{\ell}=\htmlClass{pool-summary}{m_7}\,\htmlClass{pool-param}{W_{\mathrm{vocab}}}+\htmlClass{pool-param}{b},\qquad \htmlClass{pool-prob}{p}=\operatorname{softmax}(\htmlClass{pool-score}{\ell})$$
+    $$h_7=\operatorname{ReLU}(\htmlClass{pool-summary}{m_7}\,\htmlClass{pool-param}{W_1}+\htmlClass{pool-param}{b_1}),\quad \htmlClass{pool-score}{\ell}=h_7\htmlClass{pool-param}{W_2}+\htmlClass{pool-param}{b_2}$$
   </div>
-  <p class="prediction-note"><span class="pool-summary">Four context numbers</span> enter the <span class="pool-param">same fixed head</span>. Softmax turns all <span class="pool-score">20 word scores</span> into <span class="pool-prob">next-word probabilities</span>.</p>
+  <p class="prediction-note"><span class="pool-summary">Four context numbers</span> → <span class="pool-param">8 ReLU units</span> → <span class="pool-score">20 scores</span>. <span class="pool-prob">$\htmlClass{pool-prob}{p}=\operatorname{softmax}(\htmlClass{pool-score}{\ell})$</span>.</p>
   <div class="preset-table-wrap"><table class="preset-table" id="s04-preset-predictions" aria-label="Four saved summary presets and their predictions at position 8"></table></div>
   <p class="preset-takeaway" data-build="1">A different summary can change the probabilities <strong>without changing the top word</strong>.</p>
   <p class="prediction-note" data-build="1">Each row is a separate prediction. This untrained head does not recover the original next word, <strong>and</strong>.</p>
@@ -7743,8 +7759,8 @@ The message is not a word and the attention weights are not next-word probabilit
   <div id="s09-prediction-output"></div>
   <p class="rd">Same prediction head, different context. These probabilities come from the updated <strong>final row</strong>, not directly from bank's message.</p>
 </div>
-<p class="s09-preview-scope">This small model goes straight to the vocabulary head. A Transformer also has feed-forward sublayers; we will add those later.</p>
-<div class="companion">The head computes $\operatorname{softmax}(\vp{e_{10}'}W_{\mathrm{vocab}}+b_{\mathrm{vocab}})$. The next-token softmax normalizes vocabulary scores; attention's softmax normalized source-token match scores. Section 14 opens up this same head calculation in detail.</div>
+<p class="s09-preview-scope">This small model uses our 4 → 8 → 20 MLP predictor. This prediction head is distinct from the feed-forward sublayers inside a full Transformer.</p>
+<div class="companion">The head computes $h_{10}=\operatorname{ReLU}(\vp{e_{10}'}W_1+b_1)$, then $\ell=h_{10}W_2+b_2$ and $p=\operatorname{softmax}(\ell)$. The next-token softmax normalizes vocabulary scores; attention's softmax normalized source-token match scores. Section 14 opens up this same head calculation in detail.</div>
 </div>
 
 <div class="companion after">
@@ -9221,7 +9237,7 @@ e_last_new = E[-1] + delta_last</code></pre>
 They are vocabulary probabilities. This is a second softmax: attention's softmax mixed source values; the vocabulary softmax turns logits into possible continuations. Reveal the numerical head calculation for the top candidate if needed.</script>
 <div class="card">
   <h3 class="card-title">The output head: logits, then probabilities</h3>
-  <p>$\ell = \vp{e_{10}'}W_{\text{vocab}}+b,\qquad p=\operatorname{softmax}(\ell)$</p>
+  <p>$h_{10}=\operatorname{ReLU}(\vp{e_{10}'}W_1+b_1)$<br>$\ell=h_{10}W_2+b_2,\qquad p=\operatorname{softmax}(\ell)$</p>
   <div id="s14-head"></div>
   <p class="muted small" id="s14-msg" aria-live="polite"></p>
   <p class="small">This softmax is over <strong>next-token candidates</strong>, not the source positions used by attention.</p>
@@ -9230,12 +9246,13 @@ They are vocabulary probabilities. This is a second softmax: attention's softmax
 
 <div class="companion" id="s14-output-rule" data-title="One updated row becomes one distribution over the vocabulary">
   <script type="text/x-notes">This is not the attention softmax. The columns now name possible next tokens, not source positions.</script>
-  <div class="prose">$$\ell = \vp{e_{10}'}\,W_{\text{vocab}} + b, \qquad p(x_{11}\mid x_{\le10}) = \operatorname{softmax}(\ell)$$</div>
+  <div class="prose">$$h_{10}=\operatorname{ReLU}(\vp{e_{10}'}W_1+b_1),\quad \ell=h_{10}W_2+b_2,\quad p(x_{11}\mid x_{\le10})=\operatorname{softmax}(\ell)$$</div>
   <div class="grid-2" data-build="1">
     <div class="card"><strong>Attention softmax</strong><p>One weight per <em>known source position</em>.</p></div>
     <div class="card"><strong>Vocabulary softmax</strong><p>One probability per <em>possible next token</em>.</p></div>
   </div>
-  <pre class="pytorch" data-build="2"><code>logits = e_last_new @ W_vocab + b_vocab
+  <pre class="pytorch" data-build="2"><code>h = (e_last_new @ W_hidden + b_hidden).relu()  # W1, b1: 4 → 8
+logits = h @ W_vocab + b_vocab  # W2, b2: 8 → 20
 p_next = logits.softmax(dim=-1)</code></pre>
 </div>
 
@@ -9385,7 +9402,7 @@ Not in the same layer. It reads bank's value formed from this layer's input. The
     const R = useAtt ? F[ctx] : B[ctx];
     const tok = ctxs[ctx][t];
     const probs = R.probs[t], logits = R.logits[t];
-    const x = useAtt ? R.Enew[t] : R.E[t];
+    const x = R.HeadHidden[t];
     const top = AT.topk(probs, 6);
     const rest = Math.max(0, 1 - top.reduce((s, x) => s + x.p, 0));
     const lRow = top.map(x => logits[x.i]).concat(['·']);
@@ -9409,22 +9426,22 @@ Not in the same layer. It reads bank's value formed from this layer's input. The
     const cBest = AT.vocab.indexOf(best.tok), biasBest = AT.model.b_vocab[cBest];
     const products = x.map((v,k) => AT.fmt(v,2) + ' × ' + AT.fmt(AT.model.W_vocab[k][cBest],2));
     const denom = AT.sum(logits.map(Math.exp));
-    worked.appendChild(AT.h('div', {}, AT.h('strong', {}, '1 · Logit for “' + best.tok + '”'), AT.h('p', {}, products.join(' + ') + ' + (' + AT.fmt(biasBest,2) + ') ≈ ' + AT.fmt(logits[cBest],3))));
+    worked.appendChild(AT.h('div', {}, AT.h('strong', {}, '1 · Hidden activations: h = ReLU(e W₁ + b₁)'), AT.h('p', {}, '['+x.map(v=>AT.fmt(v,2)).join(', ')+']'), AT.h('strong', {}, 'Then h W₂ + b₂: logit for “' + best.tok + '”'), AT.h('p', {}, products.join(' + ') + ' + (' + AT.fmt(biasBest,2) + ') ≈ ' + AT.fmt(logits[cBest],3))));
     normWorked.appendChild(AT.h('div', {}, AT.h('strong', {}, '2 · Exponentiate the logit for “' + best.tok + '”'), AT.h('p', {}, 'exp(' + AT.fmt(logits[cBest],3) + ') ≈ ' + AT.fmt(Math.exp(logits[cBest]),3))));
     normWorked.appendChild(AT.h('div', {'data-build':'1'}, AT.h('strong', {}, '3 · Divide by the vocabulary total'), AT.h('p', {}, AT.fmt(Math.exp(logits[cBest]),3) + ' ÷ ' + AT.fmt(denom,3) + ' ≈ ' + AT.fmt(best.p,3))));
     arith(calcHost, (box) => {
       const c = AT.vocab.indexOf(best.tok);
       const col = AT.model.W_vocab.map(r => [r[c]]);
       const b = AT.model.b_vocab[c];
-      const mv = AT.ui.matVecCalc(x, col, { from: 'e', to: [best.tok], cls: 'neutral', fromCls: useAtt ? 'ep' : 'e',
-        xLabel: (useAtt ? 'e′ · ' : 'e · ') + T + ' ' + tok, outLabel: 'before the bias', into: box });
+      const mv = AT.ui.matVecCalc(x, col, { from: x.map((_,i)=>'h'+(i+1)), to: [best.tok], cls: 'neutral', fromCls: 'v',
+        xLabel: 'h · ' + T + ' ' + tok, outLabel: 'h W₂, before the bias', into: box });
       const outrow = mv.querySelector('.calc-outrow'); if (outrow) outrow.hidden = true;
       const dot = mv.out[0], l = dot + b;
       const Z = logits.reduce((s, v) => s + Math.exp(v), 0);
       const line1 = AT.h('p', { class: 'calc-line' }, 'logit for “' + best.tok + '” ≈ ' + AT.fmt(dot, 2) + ' + b ' + (b < 0 ? '(' + AT.fmt(b, 2) + ')' : AT.fmt(b, 2)) + ' ≈ ', AT.h('span', { class: 'calc-r' }, AT.fmt(l, 2)));
       const line2 = AT.h('p', { class: 'calc-line' }, 'p(“' + best.tok + '”) ≈ exp(' + AT.fmt(l, 2) + ') / Σ exp(ℓ) ≈ ' + AT.fmt(Math.exp(l), 2) + ' / ' + AT.fmt(Z, 2) + ' ≈ ', AT.h('span', { class: 'calc-r' }, AT.fmt(best.p, 3)));
       mv.appendChild(line1); mv.appendChild(line2);
-      const foot = AT.h('p', { class: 'muted small', style: 'margin-top:8px', html: 'One line per word: the column of $W_{\\text{vocab}}$ for “' + best.tok + '” multiplies the ' + (useAtt ? 'contextual' : 'raw') + ' last token axis by axis. Only the non-zero weights count; the sum over all ' + AT.vocab.length + ' words is the softmax denominator.' });
+      const foot = AT.h('p', { class: 'muted small', style: 'margin-top:8px', html: 'First, $h=\\operatorname{ReLU}(eW_1+b_1)$. The column of $W_2$ for “' + best.tok + '” then weights the eight hidden activations. Add its bias; the sum over all ' + AT.vocab.length + ' exponentiated logits is the softmax denominator.' });
       AT.renderMath(foot); box.appendChild(foot);
     });
   }
@@ -9884,7 +9901,7 @@ The stage label names the query. Follow bank by default, or choose another recei
         AT.ui.callout('Attention supplies the update. The residual connection adds it to the original token row.', { kind: 'key', into: el });
       } },
 
-    { title: 'Predict the next token', tex: '\\ell = \\vp{e_{' + T + '}\'}\\,W_{\\text{vocab}} + b, \\qquad p(x_{' + (T + 1) + '}\\mid x_{\\le ' + T + '}) = \\operatorname{softmax}(\\ell)',
+    { title: 'Predict the next token', tex: 'h=\\operatorname{ReLU}(\\vp{e_{' + T + '}\'}W_1+b_1),\\quad \\ell=hW_2+b_2,\\quad p=\\operatorname{softmax}(\\ell)',
       note: 'The query changes here. Steps 4 to 17 ran for every position at once, so the same computation also ran for position ' + T + ' (“' + toks[T - 1] + '”). The prediction comes from $\\vp{e_{' + T + '}\'}$, the updated last token, not from the update of “' + toks[qi] + '”.',
       render: (el) => {
         const aT = F.A[T - 1], bestT = AT.argmax(aT);
@@ -9902,12 +9919,12 @@ The stage label names the query. Follow bank by default, or choose another recei
         why(el, 'Without attention (section 02) “' + top[0].tok + '” had $p = ' + AT.fmt(bl.p, 3) + '$; with context it has $p = ' + AT.fmt(top[0].p, 3) + '$.');
         arith(el, (box) => {
           const best = top[0], c = AT.vocab.indexOf(best.tok), b = AT.model.b_vocab[c];
-          const mv = AT.ui.matVecCalc(F.Enew[T - 1], AT.model.W_vocab.map(r => [r[c]]), { from: 'e', to: [best.tok], cls: 'neutral', fromCls: 'ep', xLabel: 'e′ · ' + T + ' ' + toks[T - 1], outLabel: 'before the bias', into: box });
+          const mv = AT.ui.matVecCalc(F.HeadHidden[T - 1], AT.model.W_vocab.map(r => [r[c]]), { from: F.HeadHidden[T - 1].map((_,i)=>'h'+(i+1)), to: [best.tok], cls: 'neutral', fromCls: 'v', xLabel: 'h · ' + T + ' ' + toks[T - 1], outLabel: 'h W₂, before the bias', into: box });
           const outrow = mv.querySelector('.calc-outrow'); if (outrow) outrow.hidden = true;
           const dot = mv.out[0], l = dot + b, Z = F.logits[T - 1].reduce((s, v) => s + Math.exp(v), 0);
           mv.appendChild(AT.h('p', { class: 'calc-line' }, 'logit for “' + best.tok + '” = ' + AT.fmt(dot, 2) + ' + b ' + (b < 0 ? '(' + AT.fmt(b, 2) + ')' : AT.fmt(b, 2)) + ' = ', AT.h('span', { class: 'calc-r' }, AT.fmt(l, 2))));
           mv.appendChild(AT.h('p', { class: 'calc-line' }, 'p(“' + best.tok + '”) = exp(' + AT.fmt(l, 2) + ') / Σ exp(ℓ) = ' + AT.fmt(Math.exp(l), 2) + ' / ' + AT.fmt(Z, 2) + ' = ', AT.h('span', { class: 'calc-r' }, AT.fmt(best.p, 3))));
-          why(box, 'The logit of the top candidate: the column of $W_{\\text{vocab}}$ for “' + best.tok + '” multiplies $\\vp{e_{' + T + '}\'}$ axis by axis; the softmax divides by the sum over all ' + AT.vocab.length + ' words.');
+          why(box, 'First compute $h=\\operatorname{ReLU}(e\'W_1+b_1)$. The column of $W_2$ for “' + best.tok + '” then weights these eight hidden activations. Add the output bias, then softmax over all ' + AT.vocab.length + ' words.');
         });
       } }
   ];
@@ -10043,10 +10060,10 @@ The stage label names the query. Follow bank by default, or choose another recei
         result.classList.add('is-prediction');
         const top = AT.topk(F.probs[T - 1], 3);
         const rest = 1 - AT.sum(top.map(t => t.p));
-        operation('\\underbrace{e_{10}\'}_{1\\times' + dm + '}\\;\\underbrace{W_{\\mathrm{vocab}}}_{' + dm + '\\times' + AT.vocab.length + '}+b=\\ell,\\qquad p=\\mathrm{softmax}(\\ell)');
+        operation('h=\\mathrm{ReLU}(e_{10}\'W_1+b_1),\\quad \\ell=hW_2+b_2,\\quad p=\\mathrm{softmax}(\\ell)');
         AT.ui.table(top.map(t => [F.logits[T - 1][t.i], t.p]).concat([['·', rest]]), { decimals: 3, rowLabels: top.map(t => t.tok).concat(['all other tokens']), cols: [{ label: 'logit' }, { label: 'probability' }], cornerLabel: 'candidate', into: result });
-        explain('Use the updated last “the”, not bank. Both used the same frozen inputs. No sampling yet.');
-        code('logits = E_new[-1] @ W_vocab + b  # [' + AT.vocab.length + ']\np = logits.softmax(dim=-1)  # over vocabulary, not input positions');
+        explain('Use the updated last “the”, not bank: 4 inputs → 8 ReLU hidden units → 20 vocabulary scores. No sampling yet.');
+        code('h = (E_new[-1] @ W_hidden + b_hidden).relu()  # [8]\nlogits = h @ W_vocab + b_vocab  # [' + AT.vocab.length + ']\np = logits.softmax(dim=-1)  # over vocabulary');
         break;
       }
     }
@@ -10767,7 +10784,7 @@ Queries and keys must have compatible matching coordinates. Values form the mess
       AT.ui.vec(F.Q[B], { cls:'q', label:'\\vq{q_7}', dims:true, into:row() });
       p("The row passed onward is $\\vp{e_7'}=\\ve{e_7}+\\vd{\\Delta e_7}$, in the model space.");
     } else if (i === 3) {
-      p('<strong>Stored and learned:</strong> the embedding table and matrices $W_Q,W_K,W_V,W_O,W_{\\mathrm{vocab}}$, plus biases.');
+      p('<strong>Stored and learned:</strong> the embedding table, attention matrices $W_Q,W_K,W_V,W_O$, and predictor matrices $W_1,W_2$ with biases $b_1,b_2$.');
       p('<strong>Recomputed for this input:</strong> $Q,K,V$, scores, weights, messages and updated token rows.');
       p('Backpropagation passes through the working vectors. The optimizer updates the underlying parameters.');
     } else if (i === 4) {
@@ -11132,7 +11149,8 @@ It uses position 10, the final the, not bank’s position-7 update. Change the c
 </div>
 
 <p class="muted small">PyTorch · one vocabulary distribution from the final updated row.</p>
-<pre class="torch-snippet"><code>logits = E_new[-1] @ W_vocab + b
+<pre class="torch-snippet"><code>h = (E_new[-1] @ W_hidden + b_hidden).relu()
+logits = h @ W_vocab + b_vocab
 probs = logits.softmax(dim=-1)</code></pre>
 </div>
 
@@ -11308,8 +11326,8 @@ No. We traced a hand-designed single-head forward computation. Learning changes 
   /* ---- final connection ---- */
   function drawFinalChain(){
     AT.tex(S.querySelector('#s19-final-chain'), mq.matches
-      ? '\\begin{aligned}&\\vp{E\'} \\rightarrow \\text{vocabulary logits}\\\\ &\\ell = \\vp{e_t\'}\\,W_{\\text{vocab}} + b\\\\ &\\rightarrow \\operatorname{softmax}(\\ell) \\rightarrow p(\\text{next token})\\end{aligned}'
-      : '\\vp{E\'} \\rightarrow \\text{vocabulary logits } \\ell = \\vp{e_t\'}\\,W_{\\text{vocab}} + b \\rightarrow \\operatorname{softmax}(\\ell) \\rightarrow p(\\text{next token})',
+      ? '\\begin{aligned}h&=\\operatorname{ReLU}(\\vp{e_t\'}W_1+b_1)\\\\ \\ell&=hW_2+b_2\\\\ p&=\\operatorname{softmax}(\\ell)\\end{aligned}'
+      : '\\vp{e_t\'} \\xrightarrow{W_1,b_1,\\,\\mathrm{ReLU}} h \\xrightarrow{W_2,b_2} \\ell \\xrightarrow{\\mathrm{softmax}} p(\\text{next token})',
       { display: true });
   }
   drawFinalChain();
@@ -11348,13 +11366,13 @@ No. We traced a hand-designed single-head forward computation. Learning changes 
       cols: [{ label: 'logit $\\ell$', cls: 'neutral' }, { label: 'probability $p$', decimals: 3 }],
       rowLabels: cand.map(x => x.tok), cornerLabel: 'candidate', highlightRow: best >= 0 ? best : undefined,
       footer: { label: 'other ' + (AT.vocab.length - cand.length) + ' tokens together', values: ['', otherP], decimals: 3, cls: 'neutral' },
-      caption: 'Row $' + (t+1) + '$ of $\\vp{E\'}$ times $W_{\\text{vocab}}$, plus $b$, gives one logit per word; softmax turns the ' + AT.vocab.length + ' logits into probabilities. Only the ' + cand.length + ' candidate words are listed.',
+      caption: 'Row $' + (t+1) + '$ of $\\vp{E\'}$ enters the 4 → 8 → 20 ReLU predictor. Softmax turns the ' + AT.vocab.length + ' logits into probabilities. Only the ' + cand.length + ' candidate words are listed.',
       into: tableHost });
     AT.clear(arithHost);
     arith(arithHost, (box) => {
-      box.appendChild(AT.h('p', { class: 'arith-cap', html: 'The logit of the winner, <strong>' + AT.escape(top.tok) + '</strong>: row $' + (t+1) + '$ of $\\vp{E\'}$ times the <em>' + AT.escape(top.tok) + '</em> column of $W_{\\text{vocab}}$, plus its bias.' }));
+      box.appendChild(AT.h('p', { class: 'arith-cap', html: 'First compute $h=\\operatorname{ReLU}(e\'W_1+b_1)$. For <strong>' + AT.escape(top.tok) + '</strong>, multiply these hidden activations by its column of $W_2$, then add its output bias.' }));
       const col = AT.model.W_vocab.map(r => [r[top.i]]);
-      const mv = AT.ui.matVecCalc(F.Enew[t], col, { from: 'e', to: [top.tok], cls: 'neutral', xLabel: 'e′ · ' + (t+1) + ' ' + toks[t], outLabel: 'e′ W_vocab, column ' + top.tok, into: box });
+      const mv = AT.ui.matVecCalc(F.HeadHidden[t], col, { from: F.HeadHidden[t].map((_,i)=>'h'+(i+1)), to: [top.tok], cls: 'neutral', xLabel: 'h · ' + (t+1) + ' ' + toks[t], outLabel: 'h W₂, column ' + top.tok, into: box });
       const bias = +AT.model.b_vocab[top.i] || 0;
       box.appendChild(AT.h('p', { class: 'calc-line' }, 'logit = ' + AT.fmt(mv.out[0]) + ' + b(' + top.tok + ') = ' + AT.fmt(mv.out[0]) + ' + ' + (bias < 0 ? '(' + AT.fmt(bias) + ')' : AT.fmt(bias)) + ' = ', AT.h('span', { class: 'calc-r' }, AT.fmt(F.logits[t][top.i])), ', then the softmax over all ' + AT.vocab.length + ' logits gives p = ' + AT.fmt(top.p, 3) + '.'));
       AT.renderMath(box);

@@ -142,12 +142,13 @@ try{
     const frame=document.getElementById('s02-frame-head'),softmax=document.getElementById('s02-frame-head-softmax');
     const svg=frame.querySelector('svg'),baseline=AT.baseline(AT.sentences.river),row=baseline.E.at(-1),logits=baseline.logits.at(-1);
     const probability=document.getElementById('s02-head-water-prob'),water=AT.vocab.indexOf('water');
-    const pairs=[['head-input','--c-e'],['head-param','--c-q'],['head-score','--ink-2']];
+    const pairs=[['head-input','--c-e'],['head-hidden','--c-v'],['head-param','--c-q'],['head-score','--ink-2']];
     return {
-      widths:[Number(svg.dataset.inputWidth),Number(svg.dataset.outputWidth)],
+      widths:[Number(svg.dataset.inputWidth),Number(svg.dataset.hiddenWidth),Number(svg.dataset.outputWidth)],
+      hidden:[...svg.querySelectorAll('[data-hidden-node]')].map(el=>Number(el.dataset.activation)),expectedHidden:baseline.HeadHidden.at(-1),
       inputs:[...svg.querySelectorAll('[data-input-node]')].map(el=>Number(el.dataset.inputNode)),
       outputs:[...svg.querySelectorAll('[data-output-token]')].map(el=>({word:el.dataset.outputToken,logit:Number(el.dataset.logit),expected:logits[AT.vocab.indexOf(el.dataset.outputToken)]})),
-      edges:[...svg.querySelectorAll('[data-weight]')].map(el=>({actual:Number(el.dataset.weight),expected:AT.model.W_vocab[Number(el.dataset.input)][AT.vocab.indexOf(el.dataset.token)]})),
+      edges:[...svg.querySelectorAll('[data-weight]')].map(el=>({actual:Number(el.dataset.weight),expected:el.dataset.layer==='hidden'?AT.model.W_hidden[Number(el.dataset.input)][Number(el.dataset.hidden)]:AT.model.W_vocab[Number(el.dataset.hidden)][AT.vocab.indexOf(el.dataset.token)]})),
       inputValues:[...svg.querySelectorAll('.net-value.head-input')].map(el=>Number(el.textContent)),row,
       colours:pairs.map(([role,variable])=>{
         const key=frame.querySelector('.head-key .'+role),math=frame.querySelector('.head-equation .katex-html .'+role),node=svg.querySelector('text.'+role);
@@ -160,21 +161,22 @@ try{
       probability:Number(probability.dataset.probability),expectedProbability:baseline.probs.at(-1)[water],
       denominator:Number(probability.dataset.denominator),expectedDenominator:logits.reduce((s,x)=>s+Math.exp(x),0),
       calculation:probability.querySelector('annotation').textContent,
-      boundedLabels:[...svg.querySelectorAll('text')].every(el=>{const b=el.getBBox();return b.x>=0&&b.y>=0&&b.x+b.width<=520&&b.y+b.height<=350;}),
+      boundedLabels:[...svg.querySelectorAll('text')].every(el=>{const b=el.getBBox();return b.x>=0&&b.y>=0&&b.x+b.width<=660&&b.y+b.height<=390;}),
       worksheet:[...document.querySelectorAll('#s02-head-worked tbody tr')].map(tr=>[...tr.querySelectorAll('td')].map(td=>Number(td.textContent))),
-      expectedWorksheet:row.map((x,i)=>[x,AT.model.W_vocab[i][water],x*AT.model.W_vocab[i][water]])
+      expectedWorksheet:baseline.HeadHidden.at(-1).map((x,i)=>[x,AT.model.W_vocab[i][water],x*AT.model.W_vocab[i][water]])
     };
   });
-  assert.deepEqual(head.widths,[4,20]);
-  assert.deepEqual(head.inputs,[0,1,2,3],'Four coordinate nodes, not four tokens or an invented hidden layer.');
+  assert.deepEqual(head.widths,[4,8,20]);
+  assert.deepEqual(head.hidden,head.expectedHidden,'All eight hidden activations come from the actual ReLU predictor.');
+  assert.deepEqual(head.inputs,[0,1,2,3],'Four coordinate nodes, not four tokens.');
   assert.deepEqual(head.inputValues,head.row);
   assert.deepEqual(head.outputs.map(o=>o.word),['the','water','teller','money']);
   assert(head.outputs.every(o=>o.logit===o.expected));
-  assert.equal(head.edges.length,16,'Every displayed output reads all four input coordinates.');
+  assert.equal(head.edges.length,64,'32 input-to-hidden edges plus 32 hidden-to-displayed-output edges.');
   assert(head.edges.every(e=>e.actual===e.expected));
   assert(head.colours.every(Boolean),'Match Part I colours between nodes, equations, and definitions.');
   assert.equal(new Set(head.probabilityColours).size,1,'Probability symbols and prose must share green.');
-  assert(head.text.includes('called')&&head.text.includes('in Part I')&&head.text.includes('Dots omit 16 output nodes'));
+  assert(head.text.includes('Called')&&head.text.includes('in Part I')&&head.text.includes('Dots omit 16 outputs')&&head.text.includes('ReLU'));
   assert.equal(head.probability,head.expectedProbability);
   assert.equal(head.denominator,head.expectedDenominator,'Normalize across the entire saved vocabulary.');
   assert(head.calculation.includes('10.678')&&head.calculation.includes('0.094')&&head.calculation.includes('\\approx'));

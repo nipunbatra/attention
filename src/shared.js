@@ -168,7 +168,7 @@
     tokens = arr(tokens);
     var T = tokens.length;
     var E = AT.embed(tokens);
-    var WQ = arr(model.W_Q), WK = arr(model.W_K), WV = arr(model.W_V), WO = arr(model.W_O), WVo = arr(model.W_vocab), b = arr(model.b_vocab);
+    var WQ = arr(model.W_Q), WK = arr(model.W_K), WV = arr(model.W_V), WO = arr(model.W_O);
     var Q = WQ.length ? AT.matmul(E, WQ) : E.map(function () { return AT.zeros(AT.d_k); });
     var K = WK.length ? AT.matmul(E, WK) : E.map(function () { return AT.zeros(AT.d_k); });
     var V = WV.length ? AT.matmul(E, WV) : E.map(function () { return AT.zeros(AT.d_v); });
@@ -180,22 +180,24 @@
     var Mmsg = A.map(function (a) { var m = AT.zeros(V.length ? V[0].length : AT.d_v); a.forEach(function (w, j) { if (w) m = AT.add(m, AT.scale(V[j], w)); }); return m; });
     var Delta = WO.length ? AT.matmul(Mmsg, WO) : Mmsg.map(function () { return AT.zeros(AT.d_model); });
     var Enew = E.map(function (e, i) { return AT.add(e, Delta[i]); });
-    var logits = WVo.length ? AT.matmul(Enew, WVo).map(function (r) { return AT.add(r, b); }) : Enew.map(function () { return AT.zeros(AT.vocab.length); });
-    var probs = logits.map(function (r) { return AT.softmax(r); });
-    return { tokens: tokens, T: T, E: E, Q: Q, K: K, V: V, Sraw: Sraw, S: S, Sfull: Sfull, A: A, Mmsg: Mmsg, Delta: Delta, Enew: Enew, logits: logits, probs: probs, mask: mask, scale: scale };
+    var heads = Enew.map(AT.head);
+    var logits = heads.map(function (h) { return h.logits; }), probs = heads.map(function (h) { return h.probs; });
+    return { tokens: tokens, T: T, E: E, Q: Q, K: K, V: V, Sraw: Sraw, S: S, Sfull: Sfull, A: A, Mmsg: Mmsg, Delta: Delta, Enew: Enew, HeadPre: heads.map(function (h) { return h.pre; }), HeadHidden: heads.map(function (h) { return h.hidden; }), logits: logits, probs: probs, mask: mask, scale: scale };
   };
   /** output head applied directly to e^(0) (no attention) */
   AT.baseline = function (tokens) {
     var E = AT.embed(arr(tokens));
-    var WVo = arr(model.W_vocab), b = arr(model.b_vocab);
-    var logits = WVo.length ? AT.matmul(E, WVo).map(function (r) { return AT.add(r, b); }) : E.map(function () { return AT.zeros(AT.vocab.length); });
-    return { E: E, logits: logits, probs: logits.map(function (r) { return AT.softmax(r); }) };
+    var heads = E.map(AT.head);
+    return { E: E, HeadPre: heads.map(function (h) { return h.pre; }), HeadHidden: heads.map(function (h) { return h.hidden; }), logits: heads.map(function (h) { return h.logits; }), probs: heads.map(function (h) { return h.probs; }) };
   };
   /** output head applied to any single vector (row) → {logits, probs} */
   AT.head = function (e) {
     var WVo = arr(model.W_vocab), b = arr(model.b_vocab);
-    var logits = WVo.length ? AT.add(AT.matmul(arr(e), WVo), b) : AT.zeros(AT.vocab.length);
-    return { logits: logits, probs: AT.softmax(logits) };
+    // Older saved toys retain their explicit linear head; Part II uses the MLP.
+    var pre = model.W_hidden ? AT.add(AT.matmul(arr(e), model.W_hidden), model.b_hidden) : arr(e);
+    var hidden = model.W_hidden ? pre.map(function (x) { return Math.max(0, x); }) : pre;
+    var logits = WVo.length ? AT.add(AT.matmul(hidden, WVo), b) : AT.zeros(AT.vocab.length);
+    return { pre: pre, hidden: hidden, logits: logits, probs: AT.softmax(logits) };
   };
   AT.topk = function (probRow, k) {
     probRow = arr(probRow);

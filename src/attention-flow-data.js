@@ -11,9 +11,9 @@
     var top=AT.vocab.map(function(t,j){return {token:t,index:j,logit:F.logits[i][j],probability:F.probs[i][j]};}).sort(function(a,b){return b.probability-a.probability;});
     return {index:i,position:i+1,token:tokens[i],e:F.E[i],q:F.Q[i],keys:keys,values:values,
       rawScores:raw,scaledScores:scaled,maskedScores:scaled.map(function(s,j){return j>i?null:s;}),
-      alpha:alpha,mixture:mixture,delta:F.Delta[i],updated:F.Enew[i],logits:F.logits[i],probabilities:F.probs[i],topVocabulary:top.slice(0,6)};
+      alpha:alpha,mixture:mixture,delta:F.Delta[i],updated:F.Enew[i],hidden:F.HeadHidden[i],logits:F.logits[i],probabilities:F.probs[i],topVocabulary:top.slice(0,6)};
   }
   window.ATTENTION_PREVIEW_DATA={tokens:tokens,vocabulary:AT.vocab,axes:AT.axes,
-    dims:{T:tokens.length,dModel:AT.d_model,dKey:AT.d_k,dValue:AT.d_v,vocabSize:AT.vocab.length},
+    dims:{T:tokens.length,dModel:AT.d_model,dKey:AT.d_k,dValue:AT.d_v,dHidden:AT.model.d_hidden,vocabSize:AT.vocab.length},
     provenance:{source:'AT.model / AT.forward',handDesigned:true,trained:false,positionEncoding:'additive-table'},bank:row(6),last:row(tokens.length-1)};
 })();

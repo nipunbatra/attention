@@ -99,8 +99,8 @@ Fragment file for section NN is `sections/secNN.html` and its root element is `<
 - scores: `s_{ij} = q_i^\top k_j / \sqrt{d_k}`; weights: `\alpha_{ij}`; message: `m_i = \sum_j \alpha_{ij} v_j`; `\Delta e_i = W_O m_i`
 - matrices (row-per-token convention): `E \in \mathbb{R}^{T\times d_{\text{model}}}`, `Q = E W_Q`, `K = E W_K`, `V = E W_V`,
   `S = QK^\top/\sqrt{d_k}`, `A = \operatorname{softmax}(S+M)`, `H = AV`, `\Delta E = H W_O`, `E' = E + \Delta E`
-- output head: `\ell = W_{\text{vocab}} e_t + b`, `p(x_{t+1}\mid x_{\le t}) = \operatorname{softmax}(\ell)` (SPEC §2 writes W_out; we use W_vocab everywhere and say "the output head")
-- toy dimensions: `T = 10` (7 in the short walkthrough), `d_{\text{model}} = 4`, `d_k = d_v = 3`, vocabulary size 20.
+- Part II output head (row convention): `h_t = ReLU(e_t W_1 + b_1)`, `ell = h_t W_2 + b_2`, `p = softmax(ell)`. Here h is a hidden activation row, not a token representation. Code names: W_hidden/b_hidden and W_vocab/b_vocab.
+- toy dimensions: `T = 10` (7 in the short walkthrough), `d_{\text{model}} = 4`, `d_k = 3`, `d_v = 2`, predictor hidden width 8, vocabulary size 20.
 - The Δ-notation disclaimer (SPEC "Central notation") must appear verbatim-in-spirit in s09 AND s11 AND s16 AND s18.
 - Colour-coded math: KaTeX macros are pre-defined in the shell:  `\ve{…}` (e, blue) `\vq{…}` `\vk{…}` `\vv{…}` `\va{…}` (α) `\vd{…}` (Δe) `\vp{…}` (e′, blue text with green underline).
   Example: `\vp{e_i'} = \ve{e_i} + \vd{\Delta e_i}`,  `\va{\alpha_{ij}} = \operatorname{softmax}_j(\vq{q_i}^\top \vk{k_j}/\sqrt{d_k})`.
@@ -109,13 +109,14 @@ Fragment file for section NN is `sections/secNN.html` and its root element is `<
 ## 4. The shared toy model (`toy.json`) — exact schema
 ```
 {
-  "d_model": 4, "d_k": 3, "d_v": 3,
+  "d_model": 4, "d_k": 3, "d_v": 2, "max_context": 20,
   "vocab": [20 lowercase strings],
   "tok_emb": { "<token>": [4 numbers] },          // token embedding rows
-  "pos_emb": [[4 numbers] × 10],                   // positions 1..10 (index 0 = position 1)
-  "W_Q": [[3]×4], "W_K": [[3]×4], "W_V": [[3]×4],  // d_model × d_k   (row-vector convention: q = e·W_Q where e is a row)
-  "W_O": [[4]×3],                                  // d_v × d_model
-  "W_vocab": [[20]×4], "b_vocab": [20],            // d_model × |V|
+  "pos_emb": [[4 numbers] × 20],                 // positions 1..20 (index 0 = position 1)
+  "W_Q": [[3]×4], "W_K": [[3]×4], "W_V": [[2]×4], // row convention: q = e W_Q
+  "W_O": [[4]×2],                                // d_v × d_model
+  "d_hidden": 8, "W_hidden": [[8]×4], "b_hidden": [8],
+  "W_vocab": [[20]×8], "b_vocab": [20],           // hidden × vocabulary
   "sentences": {
     "river":  ["The","fisherman","sat","beside","the","river","bank","and","watched","the"],
     "cheque": ["She","deposited","the","cheque","at","the","bank","and","watched","the"]
@@ -127,7 +128,7 @@ Fragment file for section NN is `sections/secNN.html` and its root element is `<
 Tokens are looked up lowercase (`"The"` → `tok_emb["the"]`). Display uses the original casing.
 `e_i^{(0)} = tok_emb[token_i] + pos_emb[i-1]`. Forward pass (single head, causal):
 `q_i = e_i W_Q`, `k_j = e_j W_K`, `v_j = e_j W_V`, `s_ij = q_i·k_j/√d_k`, mask j>i, `α = softmax`, `m_i = Σ α_ij v_j`,
-`Δe_i = m_i W_O`, `e_i' = e_i + Δe_i`, `logits = e_i' W_vocab + b`, `p = softmax(logits)`.
+`Δe_i = m_i W_O`, `e_i' = e_i + Δe_i`, `h_i = ReLU(e_i' W_hidden + b_hidden)`, `logits = h_i W_vocab + b_vocab`, `p = softmax(logits)`.
 (Row-vector convention in code = column-vector convention in the single-token LaTeX. Both describe the same numbers; the
 page shows W_Q as a d_model × d_k matrix and vectors as rows of numbers.)
 Both sentences have **bank at position 7** and the prediction slot after **position 10** ("watched the ___").
