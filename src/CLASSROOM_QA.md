@@ -1,5 +1,10 @@
 # Classroom release checks
 
+## 2026-09-14: return to the prediction problem before token projections
+
+- Reworked the existing Section 7 transition into a dedicated section break with both original ten-token prefixes and highlighted river/cheque clues. Added one recap frame before the receiving-token equations. It connects last-token, concatenation and pooling attempts to the remaining need to compute context shares, then previews query/key matching, softmax shares and the weighted value sum. It explicitly distinguishes bank at position 7 from the final the at position 10 used later to predict word 11. No model or projection arithmetic changed.
+- The presentation skill guided the problem-first break, single-slide recap, existing colour conventions and staged explanation. Visually inspected the break, both recap builds, the following equation frame and phone layouts. Regression covers exact original prefixes, prerequisite order, forward/back navigation, matching text/math colours, the receiver/source indices and the unchanged model. All 325 presentation states / 556 formulas, 144 controls, 390px article QA and eight independent model cases pass. Updated the shifted query-calculation screenshot anchor.
+
 ## 2026-09-14: remove the score-change exercise
 
 - Removed Section 6's score-change frame and its six sliders, reset button, bar chart and exercise hints from both presentation and reading modes. Removed obsolete score-override notices and styles. The presentation skill guided the shorter sequence: the returned-vector frame now leads directly to temperature, then back to the sentence example. The original query–key scores, source values, hard/soft comparison and temperature control remain intact. The removed exercise is recoverable in Git history.

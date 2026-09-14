@@ -6836,16 +6836,24 @@ Its weight approaches one. If top scores tie, those top items keep sharing the w
 #s07 .sentence-return{font-size:19px;line-height:1.4}
 #s07 .sentence-return h3{font-size:38px;line-height:1.12;letter-spacing:-.02em;margin:0 0 20px}
 #s07 .sentence-return p{margin:16px 0}
-#s07 .return-prefix{font-size:22px;border-left:3px solid var(--c-q);padding:12px 18px}
-#s07 .return-roles{display:grid;grid-template-columns:100px minmax(0,1fr);gap:14px 18px;margin:24px 0}
+#s07 .return-prefix{font-size:22px;border-left:3px solid var(--c-e);padding:10px 18px}
+#s07 .return-prefix strong{color:var(--c-e)}
+#s07 .return-question{font-weight:650}
+#s07 .context-recap{font-size:18px;line-height:1.4}
+#s07 .context-recap p{margin:0 0 18px}
+#s07 .recap-before{color:var(--ink-2);border-bottom:1px solid var(--line);padding-bottom:18px}
+#s07 .return-roles{display:grid;grid-template-columns:100px minmax(0,1fr);gap:16px 18px;margin:20px 0}
 #s07 .return-roles dt{font-weight:650}
 #s07 .return-roles dd{margin:0}
-#s07 .return-result{border-top:1px solid var(--line);padding-top:18px}
+#s07 .return-result{border-top:1px solid var(--line);padding-top:16px;font-size:16px}
+@media(max-width:640px){body:not(.present) #s07 .return-roles{grid-template-columns:minmax(0,1fr);gap:5px}body:not(.present) #s07 .return-roles dd{margin-bottom:12px}}
 body.present #s07:has(#s07-frame-return-to-sentence.is-live)>.sec-head{display:none}
 body.present #s07 .sentence-return{font-size:24px}
 body.present #s07 .sentence-return h3{font-size:64px}
 body.present #s07 .return-prefix{font-size:28px}
-body.present #s07 .return-roles{grid-template-columns:150px minmax(0,1fr);gap:14px 24px}
+body.present #s07 .context-recap{font-size:24px;line-height:1.35}
+body.present #s07 .return-roles{grid-template-columns:120px minmax(0,1fr);gap:18px 24px}
+body.present #s07 .return-result{font-size:22px}
 body.present #s07 .rd,body.present #s07 .arith-lab{font-size:22px;line-height:1.35}
 body.present #s07 .dt-cap,body.present #s07 .dt-note{display:none}
 body.present #s07 .dt td,body.present #s07 .dt th{font-size:22px;padding:.18em .38em}
@@ -6872,20 +6880,31 @@ body.present #s07 .calc-rounding{display:none}
   <p>Read the column headers before the numbers: every coordinate has a name in this toy. Choose a different query token and watch which source rows remain available. Open a record to compare its rows. Query, key and value are three linear views of the same $\ve{e}$.</p>
 </div>
 
-<div class="frame" id="s07-frame-return-to-sentence" data-title="Back to our sentence" data-autobuild="off">
-  <script type="text/x-notes">What replaces the search request and the video collection?
-We have finished the information-retrieval detour. Return to the same seven-token prefix, with bank at position 7 already in the input. We are gathering its context, not predicting bank. Instead of videos, our sources are the available tokens, including bank itself. Preview one pair: bank supplies query q_7 and river at position 6 supplies key k_6 and value v_6. Compare bank's query with every available source key, not only river's, and normalize the scores together to obtain the alpha shares. Alpha_7,6 weights river's value, not its key. These are vector roles, not English questions written by the model. The next slide explains how each vector is computed from its token's representation; keep projection arithmetic there.</script>
+<div class="frame" id="s07-frame-return-to-sentence" data-title="Back to next-word prediction" data-autobuild="off">
+  <script type="text/x-notes">What problem did we leave to take the search detour?
+Return to the original two prefixes. Both end with the at position 10 and ask for word 11. Water and teller are plausible examples, not computed predictions or unique correct answers. The earlier clues differ, so a useful model should let them affect its probabilities. The retrieval detour supplied a way to choose and combine information. Our sources will now be tokens, not videos. The next recap locates bank at position 7 as an intermediate worked example, before returning to the final token later.</script>
   <div class="sentence-return">
-    <h3>Back to our sentence</h3>
-    <p class="return-prefix">The fisherman sat beside the <strong class="sym-k">river</strong> <strong class="sym-q">bank</strong></p>
-    <p>Build context for <strong>bank, position 7</strong>. Our sources are now tokens, not videos.</p>
+    <h3>Back to next-word prediction</h3>
+    <p class="return-prefix">The fisherman sat beside the <strong>river</strong> bank and watched the ___</p>
+    <p class="return-prefix">She deposited the <strong>cheque</strong> at the bank and watched the ___</p>
+    <p class="return-question">Same ending, different clues. How should the next-word probabilities change?</p>
+    <p>Use attention to collect context from <strong>tokens, not videos</strong>.</p>
+  </div>
+</div>
+
+<div class="frame" id="s07-frame-context-recap" data-title="Context mixing: where we left off" data-autobuild="off">
+  <script type="text/x-notes">Which missing step can the retrieval concepts now supply?
+Only the last starting row missed earlier clues. Concatenation increased the input width with the window. Pooling gave a fixed-width summary, but we set its unequal shares by hand. Now compute shares from the token representations. Work at bank, i=7, which is already in the input. Its available sources are positions 1 through 7, including itself. Match q_7 against each k_j, turn the scores into alpha_7j shares with softmax, then sum alpha_7j v_j to obtain m_7. For example, alpha_7,6 multiplies river's value, not its key. These are the same roles as in video retrieval, with tokens as records. This recap previews the operations without deriving their projection matrices or score scaling. The following slides show how Q, K and V are made. Later, repeat the mechanism at the final the, update its representation and feed that row to the vocabulary head. Bank's context is not directly the prediction for word 11. The projection matrices are learned in real models; this numerical example uses hand-set matrices.</script>
+  <div class="context-recap">
+    <p class="recap-before"><strong>Earlier:</strong> the last token alone missed clues. Concatenation grew with the window. Pooling kept a fixed width, but we chose the shares by hand.</p>
+    <p>Now build context for <strong>bank, position 7</strong>, using input tokens 1–7.</p>
     <div data-build="1">
       <dl class="return-roles">
-        <dt class="sym-q">Query $\vq{q_7}$</dt><dd>What information does <strong>bank</strong> seek?</dd>
-        <dt class="sym-k">Key $\vk{k_6}$</dt><dd>How well does <strong>river, position 6</strong>, match?</dd>
-        <dt class="sym-v">Value $\vv{v_6}$</dt><dd>What information will <strong>river</strong> send?</dd>
+        <dt>1. Match</dt><dd>Compare <span class="sym-q">bank's query $\vq{q_7}$</span> with every available <span class="sym-k">key $\vk{k_j}$</span>, including river's.</dd>
+        <dt>2. Weight</dt><dd>Softmax turns those scores into <span class="sym-a">shares $\va{\alpha_{7j}}$</span>. We compute them from the inputs.</dd>
+        <dt>3. Mix</dt><dd>Multiply each <span class="sym-v">value $\vv{v_j}$</span> by its share, then add:<br>$\vm{m_7}=\sum_{j\le7}\va{\alpha_{7j}}\,\vv{v_j}$, the context collected for bank.</dd>
       </dl>
-      <p class="return-result">Match <span class="sym-q">bank's query</span> against every available <span class="sym-k">key</span>, then normalize. The resulting weight $\va{\alpha_{7,6}}$ is <strong>river's share for bank</strong>; it multiplies <span class="sym-v">river's value</span>.</p>
+      <p class="return-result"><strong>Bank is already an input word.</strong> Later, repeat this at the final <em>the</em> (position 10), update its row, and predict word 11.</p>
     </div>
   </div>
 </div>

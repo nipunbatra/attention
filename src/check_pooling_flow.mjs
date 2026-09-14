@@ -488,20 +488,31 @@ try{
     window.__PART__.chain.find(x=>x.section==='s05').label,window.__PART__.sections.find(x=>x.id==='s05').title]);
   assert(sectionLabels.every(t=>t==='Attention and the search analogy'),'Navigation and article heading match the broader section contents.');
   const recordsOrder=await page.locator('#s07 .frame').evaluateAll(els=>els.map(e=>e.id));
-  assert.deepEqual(recordsOrder.slice(0,2),['s07-frame-return-to-sentence','s07-frame1'],'Return to the concrete sentence before projection formulas.');
+  assert.deepEqual(recordsOrder.slice(0,3),['s07-frame-return-to-sentence','s07-frame-context-recap','s07-frame1'],'A problem-led section break and one recap precede projection formulas.');
+  assert.equal(recordsOrder.length,11,'Add only one recap frame to the existing section.');
   const temperatureFrame=await page.locator('#s06-frame-temperature').evaluate(e=>[...e.closest('.sec').querySelectorAll('.frame')].indexOf(e)+1);
   await go('s06',temperatureFrame,1);
   await page.evaluate(()=>AT.present.next());await page.waitForTimeout(100);
   assert.equal(await page.locator('#s07 .frame.is-live').getAttribute('id'),'s07-frame-return-to-sentence','The retrieval example ends with an explicit return transition.');
   const returnCopy=await visibleCopy('s07-frame-return-to-sentence');
-  assert(returnCopy.includes('bank, position 7')&&returnCopy.includes('river, position 6')&&returnCopy.includes('tokens, not videos'));
-  assert(returnCopy.includes('every available')&&returnCopy.includes('normalize')&&returnCopy.includes("river's share for bank"));
-  assert.equal((await page.locator('.return-prefix').textContent()).trim(),'The fisherman sat beside the river bank');
-  assert.equal(await page.locator('#s07-frame-return-to-sentence annotation').evaluateAll(els=>els.some(e=>/W_[QKV]/.test(e.textContent))),false,'Defer projection equations to the next frame.');
+  assert(returnCopy.includes('next-word probabilities')&&returnCopy.includes('tokens, not videos'));
+  assert.deepEqual((await page.locator('.return-prefix').allTextContents()).map(s=>s.trim()),['river','cheque'].map(name=>model.sentences[name].join(' ')+' ___'),'The break returns to both original ten-token prediction prefixes.');
+  assert.equal(await page.locator('#s07>.sec-head').evaluate(e=>getComputedStyle(e).display),'none');
+  await page.screenshot({path:path.join(shots,'return-to-prediction-break.png')});
+  await page.evaluate(()=>AT.present.next());
+  assert.equal(await page.locator('#s07 .frame.is-live').getAttribute('id'),'s07-frame-context-recap');
+  await page.evaluate(()=>AT.present.prev());
+  assert.equal(await page.locator('#s07 .frame.is-live').getAttribute('id'),'s07-frame-return-to-sentence','Back navigation returns to the section break.');
+  await page.evaluate(()=>AT.present.next());
+  const recapCopy=await visibleCopy('s07-frame-context-recap');
+  for(const phrase of ['last token alone','Concatenation','Pooling','by hand','bank, position 7','input tokens 1–7','every available','Softmax','from the inputs','Bank is already an input word','position 10','predict word 11'])assert(recapCopy.includes(phrase),'Recap connects the original problem, earlier attempts and attention: '+phrase);
+  for(const id of recordsOrder.slice(0,2))assert.equal(await page.locator('#'+id+' annotation').evaluateAll(els=>els.some(e=>/W_[QKV]/.test(e.textContent))),false,'Defer projection equations until after the recap.');
+  const recapMath=(await page.locator('#s07-frame-context-recap annotation').allTextContents()).join(' ');
+  for(const term of ['\\vq{q_7}','\\vk{k_j}','\\va{\\alpha_{7j}}','\\vm{m_7}=\\sum_{j\\le7}\\va{\\alpha_{7j}}\\,\\vv{v_j}'])assert(recapMath.includes(term),'Preserve receiver/source pairing in '+term);
   for(const build of [0,1,0,1]){
-    await go('s07',1,build);
-    assert.equal(await page.locator('#s07>.sec-head').evaluate(e=>getComputedStyle(e).display),'none');
+    await go('s07',2,build);
     assert.equal(await page.locator('.return-roles').evaluate(e=>getComputedStyle(e).visibility),build?'visible':'hidden');
+    assert.equal(await page.locator('.return-result').evaluate(e=>getComputedStyle(e).visibility),build?'visible':'hidden');
     await page.waitForTimeout(250); // Let the reveal opacity settle before inspecting subscript pixels.
     await page.screenshot({path:path.join(shots,`return-to-sentence-${build}.png`)});
   }
@@ -510,7 +521,7 @@ try{
     return ['q','k','v'].map(role=>[c('.retrieval-roles .sym-'+role),c('.return-roles .sym-'+role),c('.return-roles .katex-html .m-'+role),c('#s05-frame-return .obj-'+role+' .big')]);
   });
   retrievalColours.forEach(colours=>colours.slice(1).forEach(c=>assert.equal(c,colours[0],'Match each retrieval role across text, math and the sentence example.')));
-  assert.equal(await page.locator('.retrieval-route .m-a').first().evaluate(e=>getComputedStyle(e).color),await page.locator('.return-result .m-a').first().evaluate(e=>getComputedStyle(e).color));
+  assert.equal(await page.locator('.retrieval-route .m-a').first().evaluate(e=>getComputedStyle(e).color),await page.locator('.return-roles .m-a').first().evaluate(e=>getComputedStyle(e).color));
   await page.evaluate(()=>AT.present.next());await page.waitForTimeout(100);
   assert.equal(await page.locator('#s07 .frame.is-live').getAttribute('id'),'s07-frame1');
   assert.notEqual(await page.locator('#s07>.sec-head').evaluate(e=>getComputedStyle(e).display),'none');
@@ -520,7 +531,7 @@ try{
   assert.equal(await page.locator('.summary-break h3').evaluate(e=>getComputedStyle(e).display),'none','In the article, use the section heading instead of repeating the same divider title.');
   assert.notEqual(await page.locator('#s04>.sec-head').evaluate(e=>getComputedStyle(e).display),'none');
   await page.locator('#s04-presets [data-preset="equal"]').click();
-  for(const [id,name]of [['s04-frame-summary-break','phone-summary-break'],['s04-frame-pooling-bridge','phone-bridge'],['s04-frame-prefix','phone-prefix'],['s04-frame-mean','phone-mean'],['s04-frame-weight-motivation','phone-weight-motivation'],['s04-frame-weight-rule','phone-alpha-example'],['s04-frame-weight-sum','phone-alpha-sum'],['s04-frame-choose','phone-weighted-prediction'],['s04-frame-weighted-table','phone-contributions'],['s04-frame-preset-predictions','phone-preset-predictions'],['s05-frame-attention-break','phone-attention-break'],['s05-frame-attention-idea','phone-attention-idea'],['s05-frame-retrieval-detour','phone-retrieval-detour'],['s07-frame-return-to-sentence','phone-return-to-sentence']]){
+  for(const [id,name]of [['s04-frame-summary-break','phone-summary-break'],['s04-frame-pooling-bridge','phone-bridge'],['s04-frame-prefix','phone-prefix'],['s04-frame-mean','phone-mean'],['s04-frame-weight-motivation','phone-weight-motivation'],['s04-frame-weight-rule','phone-alpha-example'],['s04-frame-weight-sum','phone-alpha-sum'],['s04-frame-choose','phone-weighted-prediction'],['s04-frame-weighted-table','phone-contributions'],['s04-frame-preset-predictions','phone-preset-predictions'],['s05-frame-attention-break','phone-attention-break'],['s05-frame-attention-idea','phone-attention-idea'],['s05-frame-retrieval-detour','phone-retrieval-detour'],['s07-frame-return-to-sentence','phone-return-to-sentence'],['s07-frame-context-recap','phone-context-recap']]){
     await page.locator('#'+id).scrollIntoViewIfNeeded();
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No phone document overflow.');
     await page.screenshot({path:path.join(shots,name+'.png')});
