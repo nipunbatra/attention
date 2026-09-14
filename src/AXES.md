@@ -26,7 +26,7 @@ This replaces the historical five-coordinate model. Do not restore a `pos` axis 
 - W_V: 4×2. The water and finance coordinates supply value content.
 - W_O: 2×4. Map the message back onto water and finance coordinates; the residual row retains all four coordinates.
 - Part II predictor: W_hidden (W1) is 4×8, b_hidden (b1) has 8 entries; h = ReLU(e′ W1 + b1). W_vocab (W2) is 8×20 and b_vocab (b2) has 20 entries. Both layers use the same fixed parameters for baseline, pooling and attention examples. Hidden units are numbered, not additional token positions. Parameters are hand-designed, not trained.
-- Part III retains its separately saved direct 4×20 linear vocabulary head for the attention-gradient worksheet; it does not use Part II's MLP parameters. Its full-Transformer architecture sketch also has the usual linear LM head.
+- Part III starts from this exact Part II attention model and 4→8→20 predictor, then trains both MLP layers and their biases along with the attention and embedding parameters. Its later full-Transformer schematic is a different architecture: nonlinear FFNs are inside the blocks, followed by final LayerNorm and a linear vocabulary readout. Do not substitute that linear readout into the toy’s training calculations.
 - Part III's illustrative FFN: 4→8→4, so residual addition preserves width.
 
 Queries and keys share a width because they are compared. Values have their own width because they are mixed and sent, then mapped back by W_O.
@@ -35,4 +35,4 @@ Queries and keys share a width because they are compared. Values have their own 
 
 Keep the river-context bank query focused first on river (≥.40), then fisherman. The cheque-context query focuses first on cheque, then deposited. Final predictions rank water > boats > fish > ducks in context A and teller > clerk > queue > money in context B. Other tokens each stay ≤.04. The last-token-only baseline remains identical in both contexts because it receives the same token at the same position.
 
-Run the Python generator, the independent JavaScript reference comparison and the browser regressions whenever these numbers change. Regenerate toy_report.md, preview evidence, SVG exports and the Part II HTML. The live flowchart reads that same model at runtime. Rebuild Part III and its training checks when its own numerical model changes; its direct linear readout is intentionally distinct. Historical reports are not the current numerical contract.
+Run the Python generator, the independent JavaScript reference comparison and the browser regressions whenever these numbers change. Regenerate toy_report.md, preview evidence, SVG exports and the Part II HTML. The live flowchart reads that same model at runtime. Regenerate Part III’s training results from the same model and rebuild its HTML. Historical reports are not the current numerical contract.

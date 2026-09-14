@@ -27,17 +27,16 @@ body.present #s06 #s06-mask .cell{min-width:3em}
   <script type="text/x-notes">All rows are computed together, but each row sees only its prefix. The mean loss gives one scalar for autograd.</script>
   <pre class="torch-snippet s06-code" data-build="1"><code>logits = model(tokens, causal_mask=True)
 targets = tokens_shifted_left
-loss = cross_entropy(logits, targets).mean()
-loss.backward(); optimizer.step()</code></pre>
+loss = cross_entropy(logits, targets, reduction="mean")
+optimizer.zero_grad()
+loss.backward()
+optimizer.step()</code></pre>
 </div>
 <div class="frame" data-title="Average the position losses">
   <script type="text/x-notes">Why can one position worsen while the mean improves?
   The shared update follows the average gradient. Inspect every row, then read the mean.</script>
   <div class="s06-pairs"><div id="s06-losses"></div><div id="s06-losses-rest"></div></div>
-</div>
-<div class="frame" data-title="The update follows the mean loss">
-  <script type="text/x-notes">A shared update may help some positions more than others. The training objective is their mean.</script>
-  <div id="s06-mean"></div>
+  <div id="s06-mean" data-build="1"></div>
 </div>
 <div class="companion"><h3>All position probabilities and losses</h3><div id="s06-full-losses"></div></div>
 <div class="companion after"><p>Computing the rows in parallel saves work. Each row still predicts from its own prefix because the mask blocks later positions.</p></div>

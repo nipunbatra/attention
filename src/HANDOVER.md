@@ -10,6 +10,8 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+2026-09-14 Part III continuity revision: training now starts from the exact Part II 4→8→20 ReLU prediction MLP, including both matrices and biases. This supersedes the temporary separate linear-readout experiment. Saved SGD parameters and outputs keep full precision. The classroom path has 51 frames including the title, with three section breaks and repeated material retained as reading companions. The block FFN remains a separate illustrative 4→8→4 network; the full Transformer schematic has FFNs inside blocks and a linear readout after final LayerNorm. See GUIDE3.md, AXES.md, check_training.py, and check_part3_continuity.mjs.
+
 2026-09-12 position revision: Parts II and III now share a four-coordinate toy, with no dedicated `pos` axis. The hand-chosen position table adds small offsets across the same word-feature coordinates. The opening defines the illustrative features before introducing position; every worked example, reference result, training trace and exported diagram must use this model. This supersedes historical five-coordinate/ignored-position guidance below and in REV2_TASK.md. See AXES.md and check_position_intro.mjs; T9 in both numerical references tests position-sensitive predictions.
 
 The section 4 lookup primer now distinguishes the placeholder c (dark grey, pSymbol) from the literal "a"

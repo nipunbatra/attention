@@ -1231,7 +1231,7 @@
     { g: 'sizes', sym: 'W_V', mean: 'value projection (learned)', shape: 'd_{\\text{model}}\\times d_v', dims: function () { return AT.d_model + '×' + AT.d_v; } },
     { g: 'sizes', sym: 'W_O', mean: 'output projection: message space back to representation space', shape: 'd_v\\times d_{\\text{model}}', dims: function () { return AT.d_v + '×' + AT.d_model; } },
     { g: 'sizes', sym: '\\ve{E_{\\text{tok}}}', mean: 'learned token lookup table; distinct from the current sequence stack $\\ve{E}$', shape: '|\\mathcal V|\\times d_{\\text{model}}', dims: function () { return (AT.vocab.length || 20) + '×' + AT.d_model; } },
-    { g: 'sizes', sym: 'W_{\\text{vocab}}', mean: 'output-head weights: $\\ell = \\vp{e_t\'}\\,W_{\\text{vocab}} + b$, then softmax', shape: 'd_{\\text{model}}\\times |\\mathcal V|', dims: function () { return AT.d_model + '×' + (AT.vocab.length || 20); } },
+    { g: 'sizes', sym: 'W_{\\text{vocab}}', mean: model.W_hidden ? 'prediction MLP second layer ($W_2$): $\\ell=hW_{\\text{vocab}}+b$, then softmax' : 'output-head weights: $\\ell = \\vp{e_t\'}\\,W_{\\text{vocab}} + b$, then softmax', shape: (model.W_hidden ? 'd_{\\text{hidden}}' : 'd_{\\text{model}}')+'\\times |\\mathcal V|', dims: function () { return (model.W_hidden ? model.d_hidden : AT.d_model) + '×' + (AT.vocab.length || 20); } },
     { g: 'sizes', sym: 'b', mean: 'one learned bias per vocabulary logit', shape: '1\\times |\\mathcal V|', dims: function () { return '1×' + (AT.vocab.length || 20); } }
   ];
   NOTATION.forEach(function (n) { n.parts = ['part2', 'part3']; });
@@ -1268,6 +1268,10 @@
   ];
   NOTATION_3.forEach(function (n) { n.parts = ['part3']; });
   AT.notation = NOTATION.concat(NOTATION_1, NOTATION_3);
+  if (model.W_hidden) AT.notation.push(
+    { g:'sizes', parts:['part2','part3'], sym:'W_1,\\ b_1', mean:'prediction MLP first layer; stored as W_hidden and b_hidden', shape:'d_{\\text{model}}\\times d_{\\text{hidden}},\\ 1\\times d_{\\text{hidden}}', dims:function(){return AT.d_model+'×'+model.d_hidden+', 1×'+model.d_hidden;} },
+    { g:'token', parts:['part2','part3'], sym:'h=\\operatorname{ReLU}(\\vp{e_t\'}W_1+b_1)', mean:'hidden activations of the prediction MLP; recomputed for this final token row', shape:'1\\times d_{\\text{hidden}}', dims:function(){return '1×'+model.d_hidden;} }
+  );
   AT.T = arr(AT.sentences.river).length || 10;
   var GROUP_TITLES = { token: 'One token at a time', matrix: 'All tokens at once', sizes: 'Sizes and learned weights', axes: 'Named coordinates (illustrative)', mlp: 'The character model, step by step', train: 'Learning', block: 'The Transformer block', image: 'Image representations', masked: 'Learning from hidden patches', distill: 'Learning from another view' };
   var PART_GROUPS = { part1: ['mlp', 'sizes', 'axes'], part2: ['token', 'matrix', 'sizes', 'axes'], part3: ['token', 'matrix', 'train', 'block', 'sizes', 'axes'], vision2: ['image', 'masked', 'distill', 'sizes'] };

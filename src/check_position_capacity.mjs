@@ -93,7 +93,7 @@ try {
   });
 
   for (const [partIndex, file] of files.entries()) {
-    // Each lesson has its own readout: Part II MLP, Part III linear training toy.
+    // Part III starts with the exact Part II MLP, plus saved training results.
     const model = JSON.parse(readFileSync(path.join(src, partIndex === 1 ? 'toy3.json' : 'toy.json'), 'utf8'));
     const name = path.basename(file);
     await page.goto(pathToFileURL(path.resolve(file)).href, { waitUntil: 'load' });

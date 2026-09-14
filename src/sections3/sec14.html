@@ -23,9 +23,9 @@
   <div class="prose">
     $$\vq{Q_{\text{dec}}}=\ve{E_{\text{dec}}}W_Q,\qquad \vk{K_{\text{src}}}=\ve{E_{\text{src}}}W_K,\qquad \vv{V_{\text{src}}}=\ve{E_{\text{src}}}W_V$$
   </div>
-  <div class="card" data-build="1"><h3 class="card-title">The same dot-product worksheet</h3><div id="s14-dot"></div></div>
+  <div class="card" data-build="1"><h3 class="card-title">Reuse the arithmetic, change the sources</h3><div id="s14-dot"></div><p class="small">These are the bank-query and river-key numbers from Part 2, reused to review the dot product. They are not outputs of a trained encoder-decoder. Part 4 supplies a cross-attention example.</p></div>
 </div>
-<div class="frame" data-title="The original arrangement">
+<div class="companion" data-title="The original arrangement">
   <script type="text/x-notes">What did the 2017 design combine?
   One line is enough: encoder blocks, decoder blocks, and cross-attention between them.</script>
   <div id="s14-line" data-build="1"></div>
@@ -35,7 +35,7 @@
 (function(){
   const S=document.getElementById('s14');
   const F=AT.forward(AT.train.sentence().slice(0,7));
-  AT.ui.dotCalc(F.Q[6],F.K[5],{axes:'qk',qLabel:'decoder query',kLabel:'source key',scale:true,d_k:AT.d_k,into:S.querySelector('#s14-dot')});
+  AT.ui.dotCalc(F.Q[6],F.K[5],{axes:'qk',qLabel:'example query',kLabel:'example key',scale:true,d_k:AT.d_k,into:S.querySelector('#s14-dot')});
   AT.ui.callout('The 2017 Transformer used an encoder stack, a decoder stack, and cross-attention from decoder queries to encoded source keys and values.',{kind:'key',into:S.querySelector('#s14-line')});
 })();
 </script>

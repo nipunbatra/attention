@@ -3,8 +3,8 @@
 
 The forward and backward passes use row vectors, matching shared.js.  The code
 keeps the attention graph explicit so each gradient can be checked or taught.
-Worked-example arrays are rounded for JSON; finite-difference diagnostics retain
-full precision. Every parameter update uses full precision.
+All saved arrays and parameter updates retain full precision. The browser rounds
+only the displayed text.
 """
 
 from __future__ import annotations
@@ -22,6 +22,7 @@ SOURCE = HERE / "toy.json"
 OUTPUT = HERE / "toy3.json"
 ETAS = (0.05, 0.1, 0.3)
 FD_EPS = 1e-4
+PARAMETER_NAMES = ("W_Q", "W_K", "W_V", "W_O", "W_hidden", "b_hidden", "W_vocab", "b_vocab")
 
 
 def array(model, name):
@@ -45,6 +46,8 @@ def parameter_arrays(model, tokens):
         "W_K": array(model, "W_K").copy(),
         "W_V": array(model, "W_V").copy(),
         "W_O": array(model, "W_O").copy(),
+        "W_hidden": array(model, "W_hidden").copy(),
+        "b_hidden": array(model, "b_hidden").copy(),
         "W_vocab": array(model, "W_vocab").copy(),
         "b_vocab": array(model, "b_vocab").copy(),
     }
@@ -69,7 +72,9 @@ def forward(model, tokens):
     messages = A @ V
     delta = messages @ W_O
     Enew = E + delta
-    logits = Enew @ W_vocab + b_vocab
+    head_pre = Enew @ array(model, "W_hidden") + array(model, "b_hidden")
+    head_hidden = np.maximum(0, head_pre)
+    logits = head_hidden @ W_vocab + b_vocab
     probs = softmax(logits)
     return {
         "tokens": tokens,
@@ -83,6 +88,8 @@ def forward(model, tokens):
         "messages": messages,
         "delta": delta,
         "Enew": Enew,
+        "head_pre": head_pre,
+        "head_hidden": head_hidden,
         "logits": logits,
         "probs": probs,
     }
@@ -110,9 +117,13 @@ def loss_and_grads(model, tokens, targets, output_positions):
 
     W_Q, W_K, W_V = array(model, "W_Q"), array(model, "W_K"), array(model, "W_V")
     W_O, W_vocab = array(model, "W_O"), array(model, "W_vocab")
-    dW_vocab = cache["Enew"].T @ dlogits
+    dW_vocab = cache["head_hidden"].T @ dlogits
     db_vocab = np.sum(dlogits, axis=0)
-    dEnew = dlogits @ W_vocab.T
+    dhead = dlogits @ W_vocab.T
+    dpre = dhead * (cache["head_pre"] > 0)
+    dW_hidden = cache["Enew"].T @ dpre
+    db_hidden = np.sum(dpre, axis=0)
+    dEnew = dpre @ array(model, "W_hidden").T
 
     ddelta = dEnew
     dmessages = ddelta @ W_O.T
@@ -142,6 +153,8 @@ def loss_and_grads(model, tokens, targets, output_positions):
         "W_K": dW_K,
         "W_V": dW_V,
         "W_O": dW_O,
+        "W_hidden": dW_hidden,
+        "b_hidden": db_hidden,
         "W_vocab": dW_vocab,
         "b_vocab": db_vocab,
     }
@@ -155,7 +168,7 @@ def apply_step(model, tokens, grads, eta):
     pos = array(updated, "pos_emb")
     pos[: len(tokens)] -= eta * grads["pos_emb_used"]
     updated["pos_emb"] = pos.tolist()
-    for name in ("W_Q", "W_K", "W_V", "W_O", "W_vocab", "b_vocab"):
+    for name in PARAMETER_NAMES:
         updated[name] = (array(updated, name) - eta * grads[name]).tolist()
     return updated
 
@@ -186,21 +199,6 @@ def finite_difference(model, tokens, target, name, index, analytic):
         "numeric": numeric,
         "abs_error": abs(analytic - numeric),
     }
-
-
-def rounded(value):
-    if isinstance(value, np.ndarray):
-        return rounded(value.tolist())
-    if isinstance(value, np.floating):
-        value = float(value)
-    if isinstance(value, dict):
-        return {k: rounded(v) for k, v in value.items()}
-    if isinstance(value, (list, tuple)):
-        return [rounded(v) for v in value]
-    if isinstance(value, float):
-        result = round(value, 4)
-        return 0.0 if result == 0 else result
-    return value
 
 
 def build_training(model):
@@ -249,6 +247,7 @@ def build_training(model):
 
     checks = [
         finite_difference(model, tokens, target, "W_Q", (3, 0), single_grads["W_Q"][3, 0]),
+        finite_difference(model, tokens, target, "W_hidden", (0, 0), single_grads["W_hidden"][0, 0]),
         finite_difference(
             model,
             tokens,
@@ -293,33 +292,17 @@ def build_training(model):
 
 
 def serialize_training(training):
-    """Keep the lesson's existing rounded arrays, but never round error checks."""
-    output = rounded(training)
-    # A four-decimal display convention would turn ~1e-10 errors into exact
-    # zeros and make distinct analytic/numeric estimates appear identical.
-    output["finite_difference"] = copy.deepcopy(training["finite_difference"])
-    return output
+    """Keep full-precision numbers; the UI rounds only the displayed text.
+
+    Saved optimizer steps must reproduce the reported forward pass. Rounding
+    parameters before that pass would silently create a different model.
+    """
+    return json.loads(json.dumps(training, default=lambda value: value.tolist()))
 
 
 def training_model(source):
-    """Keep Part III's explicit linear-readout experiment separate from Part II's MLP.
-
-    The attention parameters are shared. The training lesson and its full-GPT
-    sketch use a direct linear vocabulary layer; do not silently feed 4 rows to
-    the new 8-row MLP output matrix when rebuilding its existing worksheet.
-    """
-    model = copy.deepcopy(source)
-    if "W_hidden" in model:
-        from make_toy2 import W_VOCAB_ROWS, AXES
-        weights = np.zeros((model["d_model"], len(model["vocab"])))
-        for i, axis in enumerate(AXES["e"]):
-            for token, weight in W_VOCAB_ROWS[axis].items():
-                weights[i, model["vocab"].index(token)] = weight
-        model["W_vocab"] = weights.tolist()
-        for key in ("W_hidden", "b_hidden", "d_hidden"):
-            model.pop(key, None)
-        model["notes"] += " Part III variant: the prediction MLP is replaced by the original direct linear vocabulary readout for its separate gradient worksheet."
-    return model
+    """Start learning from exactly the Part II attention and ReLU predictor."""
+    return copy.deepcopy(source)
 
 
 def main():

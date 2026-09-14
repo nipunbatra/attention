@@ -176,7 +176,7 @@ Training compares the distribution with an observed next token, backpropagates, 
   <div class="training-loop">
     <div><strong>Forward</strong><p>Prefix $\rightarrow$ prediction $p$</p><p>Use the same attention and vocabulary head we just traced.</p></div>
     <div data-build="1"><strong>Measure error</strong><p>$L=-\log p(y)$</p><p>$y$ is the observed next token in the training text.</p></div>
-    <div data-build="2"><strong>Learn</strong><p>Autograd computes gradients; the optimizer updates the embedding table and weight matrices.</p></div>
+    <div data-build="2"><strong>Learn</strong><p>Autograd computes gradients; the optimizer updates the embedding tables, weight matrices, and biases.</p></div>
   </div>
   <pre class="torch-snippet" data-build="3"><code>optimizer.zero_grad(); loss = F.cross_entropy(logits, target)
 loss.backward(); optimizer.step()</code></pre>
@@ -193,13 +193,13 @@ No. We traced a hand-designed single-head forward computation. Learning changes 
   </script>
 <div class="card">
   <h3 class="card-title">One head, not yet a full Transformer</h3>
-  <p>We traced one causal attention head, its output projection and residual connection, then a vocabulary head. The example's parameters are hand-designed, not trained.</p>
+  <p>We traced a causal attention head, its output projection and residual addition, then a <strong>4 → 8 → 20 prediction MLP</strong>. We chose the example’s parameters by hand; we have not trained them yet.</p>
   <div class="companion" id="s19-notation"></div>
   <p class="companion look">Every symbol on this page in one place; the shape column uses the toy sizes.</p>
 </div>
 
 <div class="prose">
-  <p><strong>Part 3:</strong> multiple heads, feed-forward layers, normalization and stacked blocks.</p>
+  <p><strong>Part 3:</strong> first train this same model, then add multiple heads, block feed-forward networks, normalization, and depth.</p>
 </div>
 
 </div>

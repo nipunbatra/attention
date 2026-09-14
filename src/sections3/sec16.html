@@ -16,14 +16,14 @@
   Attention weights route value vectors. Other behavioral claims need separate tests.</script>
   <div class="card s16-list"><div class="s16-col"><h3 class="card-title">What it gives</h3><p>Learned routing that depends on the current representations and respects the mask.</p><p>A direct within-layer path between allowed token positions.</p></div><div class="s16-col" data-build="1"><h3 class="card-title">What it does not ensure</h3><p>Correct facts, reliable reasoning, complete explanations, or memory beyond the available context.</p></div></div>
 </div>
-<div class="frame" data-title="Is the attention map a full explanation?">
+<div class="companion" data-title="Is the attention map a full explanation?">
   <script type="text/x-notes">What can we infer from an attention map?
   Open each answer and ask which part of the calculation supports it.</script>
   <div class="card"><h3 class="card-title">Test the claims</h3><div id="s16-checks"></div></div>
 </div>
-<div class="frame" data-title="Does one head always mean one rule?"><div class="card" id="s16-check-2"></div></div>
-<div class="frame" data-title="When is the causal mask needed?"><div class="card" id="s16-check-3"></div></div>
-<div class="frame" data-title="Does a Transformer remember everything?"><div class="card" id="s16-check-4"></div></div>
+<div class="companion" data-title="Does one head always mean one rule?"><div class="card" id="s16-check-2"></div></div>
+<div class="companion" data-title="When is the causal mask needed?"><div class="card" id="s16-check-3"></div></div>
+<div class="companion" data-title="Does a Transformer remember everything?"><div class="card" id="s16-check-4"></div></div>
 <div class="companion"><div id="s16-note"></div></div>
 <div class="companion after"><p>Attention weights tell us how the model mixed value information. We need other evidence to explain its broader behavior.</p></div>
 <script>

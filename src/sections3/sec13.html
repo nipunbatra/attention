@@ -13,6 +13,12 @@
 <div class="companion" data-kicker="For self-study">
   <p>Read the probability distribution at the last position of the prefix. A decoding rule chooses one token; we append it and run the model for the new last position. Repeat until the stopping rule is met. Earlier keys and values cannot change when we append a later token under causal attention, so we can reuse them. A KV cache stores those projections and adds one new key and value per layer at each step. This saves projection work, but the new query still has to score all the cached keys. The cost display compares the size of the full score matrix with the growing cache.</p>
 </div>
+<div class="frame" id="s13-generation-break" data-title="3 · Generate with fixed parameters" data-autobuild="off">
+  <p class="eyebrow">From training to using the model</p>
+  <h3>The model now has to choose its own next token.</h3>
+  <p>Read the final row’s distribution, choose a token, append it, and predict again.</p>
+  <p><strong>Parameters stay fixed.</strong> The prefix and its activations change; a cache lets us reuse earlier keys and values.</p>
+</div>
 <div class="frame" data-title="Choose, append, repeat">
   <script type="text/x-notes">Which position supplies the distribution used for generation?
   Advance the stepper twice. The chosen token is computed from the top probability and appended to the prefix.</script>
@@ -53,7 +59,7 @@
   }
   AT.ui.slider({label:'Tokens cached',min:1,max:start.length,step:1,value:4,onInput:drawCache,into:S.querySelector('#s13-cache-slider')});drawCache(4);
   const cost=S.querySelector('#s13-cost');
-  function drawCost(t){cost.textContent='full score cells: '+(t*t)+'   |   cached key and value coordinates per layer: '+(t*(AT.d_k+AT.d_v));}
+  function drawCost(t){cost.textContent='This one-head toy: '+(t*t)+' full score cells (T²); '+(t*(AT.d_k+AT.d_v))+' cached coordinates (T × (d_k + d_v)).';}
   AT.ui.slider({label:'Sequence length T',min:1,max:start.length,step:1,value:start.length,onInput:drawCost,into:S.querySelector('#s13-cost-slider')});drawCost(start.length);
 })();
 </script>

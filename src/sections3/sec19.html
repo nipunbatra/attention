@@ -10,18 +10,18 @@
   <div><p class="eyebrow">Summarize one training step, one block, and the generation loop.</p><h2>Three summaries</h2></div>
 </header>
 <div class="companion" data-kicker="For self-study">
-  <p>For one training example, the observed next token gives us a loss. Reverse-mode autodiff computes gradients, and SGD updates the contributing parameters. Inside one block, LayerNorm prepares the residual rows, multi-head attention gathers information across allowed positions, and the FFN mixes features within each position. The language model passes token and position rows through a stack of these causal blocks and uses the vocabulary head to get next-token probabilities. During generation, we append one token at a time and reuse cached keys and values. The cards below separate these three views of the same model.</p>
+  <p>We trained the Part 2 toy by comparing its prediction with an observed token, computing gradients, and taking an SGD step. We then built a larger architecture: pre-norm attention and an FFN each add a residual update inside a block. A stack of those blocks, followed by final LayerNorm and a vocabulary readout, produces next-token distributions. Generation appends a chosen token and repeats with fixed parameters, reusing cached keys and values.</p>
 </div>
 <div class="frame" data-title="Learning, block, model">
   <script type="text/x-notes">Can each scale be stated in one sentence?
   Reveal the cards separately and ask students to supply the missing operations first.</script>
-  <div class="card s19-summaries"><div class="s19-summary"><h3 class="card-title">Learning</h3><p>Observed target $\to$ cross-entropy $\to$ gradients $\to$ one parameter update.</p></div><div class="s19-summary" data-build="1"><h3 class="card-title">One block</h3><p>Pre-norm causal multi-head attention and a pre-norm FFN each add an update to the residual stream.</p></div><div class="s19-summary" data-build="2"><h3 class="card-title">The model</h3><p>Embeddings plus positions $\to$ stacked causal blocks $\to$ vocabulary logits $\to$ repeated generation.</p></div></div>
+  <div class="card s19-summaries"><div class="s19-summary"><h3 class="card-title">Learning</h3><p>Score the observed target, compute gradients, and update stored parameters.</p></div><div class="s19-summary" data-build="1"><h3 class="card-title">One block</h3><p>Attention mixes positions; the FFN mixes features. Each normalized branch adds a residual update.</p></div><div class="s19-summary" data-build="2"><h3 class="card-title">The model</h3><p>Causal blocks → final LayerNorm → vocabulary scores. Choose a token and repeat with fixed parameters.</p></div></div>
+  <nav class="s19-links" data-build="3" aria-label="Series links"><a class="btn btn-primary" href="part4.html">Continue to Part 4: Cross-attention</a><a class="btn" href="attention.html">Revisit Part 2</a></nav>
 </div>
-<div class="frame" data-title="The attention path within the larger model">
+<div class="companion" data-title="The attention path within the larger model">
   <script type="text/x-notes">Where does the Part 2 calculation sit inside Part 3?
   It is the attention branch inside every block. The new material surrounds it with learning, FFNs, normalisation, and depth.</script>
   <div class="card"><h3 class="card-title">The familiar attention branch</h3><div id="s19-motif"></div></div>
-  <nav class="s19-links" data-build="1" aria-label="Series links"><a class="btn btn-primary" href="part4.html">Continue to Part 4: Cross-attention</a><a class="btn" href="attention.html">Revisit Part 2</a></nav>
 </div>
 <div class="companion"><div id="s19-note"></div></div>
 <div class="companion after"><p>The attention calculation we worked through in Part 2 is one branch in this trainable residual stack. The whole model predicts and generates tokens.</p></div>

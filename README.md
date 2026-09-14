@@ -26,6 +26,8 @@ The sources are slide-first: one bounded teaching idea per 16:9 frame, with larg
 
 Part 1 uses a trained small name model. Part 2 uses hand-designed weights so every step can be inspected; Part 3 trains that toy before introducing the larger Transformer architecture. The toy uses four illustrative word features and adds hand-chosen position vectors across those same coordinates. There is no extra position axis. Position can affect predictions; the named features and numbers are teaching choices, not measurements from a trained language model.
 
+Parts 2 and 3 share the exact 4→8→20 ReLU prediction MLP. Part 3 trains both layers and biases, then distinguishes that predictor from the separate 4→8→4 block FFN. The full pre-norm Transformer diagram uses FFNs inside the blocks and a linear vocabulary readout after final LayerNorm; the numerical toy does not execute that full stack.
+
 The standalone SVG preview is at `figures/attention-diagram-preview/index.html`. Its twelve stages build one causal attention head, then the output projection, residual addition, and the final-token vocabulary prediction. Section16 embeds the same diagram source and reads the article's live numerical model.
 
 Part 1 also has four model-backed diagrams: the trained embedding space, lookup-to-concatenation wiring, the forward/backward learning graph, and the shared model inside training versus generation. They build incrementally in class and stay interactive in the article. Every displayed coordinate, probability, and sampled character comes from the same bundled name model.
@@ -87,6 +89,7 @@ node src/check_vision_pixels.mjs vision1.html vision2.html vision3.html vision4.
 node src/toy_ref.mjs src/toy.json --compare src/py_check.json
 node src/check-live-model.mjs attention.html
 python3 src/check_training.py
+node src/check_part3_continuity.mjs
 node src/check_position_capacity.mjs
 node src/pres_test.mjs
 node src/interaction_test.mjs

@@ -5,7 +5,7 @@
 #s04 .s04-graph .s04-small{font-size:18px;fill:var(--ink-2)}
 #s04 .s04-graph .s04-param{fill:var(--t-neutral);stroke:var(--ink-3);stroke-dasharray:5 3}
 #s04 .s04-graph .s04-operation{fill:var(--card);stroke:var(--ink-3)}
-#s04 .s04-graph .s04-gradient{fill:var(--warn);font-size:19px}
+#s04 .s04-graph .s04-gradient{fill:var(--c-a);font-size:19px}
 body.present #s04 .s04-graph svg{max-height:530px}
 </style>
 <header class="sec-head">
@@ -48,8 +48,13 @@ optimizer.step()</pre>
   function makeSvg(host,w,h,label){const svg=AT.svg('svg',{viewBox:'0 0 '+w+' '+h,role:'img','aria-label':label});host.appendChild(svg);return svg;}
   function marker(svg,id,color){const defs=AT.svg('defs');const m=AT.svg('marker',{id,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:7,markerHeight:7,orient:'auto-start-reverse'});m.appendChild(AT.svg('path',{d:'M 0 0 L 10 5 L 0 10 z',fill:color}));defs.appendChild(m);svg.appendChild(defs);}
   function text(svg,x,y,label,cls){svg.appendChild(AT.svg('text',{x,y,class:cls||''},label));}
-  function box(svg,x,y,w,h,label,sub,kind){svg.appendChild(AT.svg('rect',{x:x-w/2,y:y-h/2,width:w,height:h,rx:8,class:kind==='param'?'s04-param':'s04-operation','stroke-width':1.7}));text(svg,x,y+(sub?-4:7),label);if(sub)text(svg,x,y+20,sub,'s04-small');}
-  function edge(svg,d,id,reverse){svg.appendChild(AT.svg('path',{d,fill:'none',stroke:reverse?'var(--warn)':'var(--ink-3)','stroke-width':reverse?2.5:1.8,[reverse?'marker-start':'marker-end']:'url(#'+id+')'}));}
+  function box(svg,x,y,w,h,label,sub,kind){
+    const role=kind==='param'?'q':({'E':'e','Q':'q','K':'k','V':'v','Q Kᵀ':'a','softmax':'a','H = A V':'v','ΔE = H W_O':'d',"E′ = E + ΔE":'ep','loss L':'a'})[label];
+    svg.appendChild(AT.svg('rect',{x:x-w/2,y:y-h/2,width:w,height:h,rx:8,class:kind==='param'?'s04-param':'s04-operation','stroke-width':1.7,style:role?'fill:'+AT.objTint(role)+';stroke:'+AT.objColor(role):''}));
+    text(svg,x,y+(sub?-4:7),label);if(role)svg.lastChild.style.fill=AT.objColor(role);
+    if(sub)text(svg,x,y+20,sub,'s04-small');
+  }
+  function edge(svg,d,id,reverse){svg.appendChild(AT.svg('path',{d,fill:'none',stroke:reverse?'var(--c-a)':'var(--ink-3)','stroke-width':reverse?2.5:1.8,[reverse?'marker-start':'marker-end']:'url(#'+id+')'}));}
 
   const p=makeSvg(S.querySelector('#s04-projections'),1080,360,'The token and position tables form E; E and three separate learned matrices form Q, K, and V.');
   marker(p,'s04-proj-arrow','var(--ink-3)');
@@ -60,31 +65,31 @@ optimizer.step()</pre>
 
   function full(host,reverse){
     const svg=makeSvg(host,1160,520,reverse?'Autograd reverses the one-head attention graph, including value and routing branches and the residual path.':'Complete one-head attention graph from learned parameters and input rows to loss.');
-    const id=reverse?'s04-back-arrow':'s04-forward-arrow';marker(svg,id,reverse?'var(--warn)':'var(--ink-3)');
+    const id=reverse?'s04-back-arrow':'s04-forward-arrow';marker(svg,id,reverse?'var(--c-a)':'var(--ink-3)');
     const edges=[
       'M 75 77 L 75 132',
       'M 140 165 L 165 165 L 165 100 L 220 100',
       'M 140 165 L 165 165 L 165 280 L 220 280',
-      'M 140 165 L 165 165 L 165 410 L 420 410',
-      'M 275 55 L 275 68','M 275 235 L 275 248','M 475 358 L 475 378',
+      'M 140 165 L 165 165 L 165 340 L 420 340',
+      'M 275 55 L 275 68','M 275 235 L 275 248','M 475 288 L 475 308',
       'M 330 100 L 367 100 L 367 145 L 405 145',
       'M 330 280 L 367 280 L 367 182 L 405 182',
       'M 535 165 L 575 165','M 725 165 L 775 165',
-      'M 840 197 L 840 253','M 530 410 L 555 410 L 555 295 L 775 295',
+      'M 840 197 L 840 253','M 530 340 L 555 340 L 555 295 L 775 295',
       'M 905 295 L 970 295','M 1045 230 L 1045 258',
       'M 1045 332 L 1045 398',
       'M 30 198 L 30 215 L 3 215 L 3 493 L 1045 493 L 1045 464',
       'M 970 430 L 915 430','M 840 379 L 840 398',
-      'M 765 430 L 715 430'
+      'M 765 430 L 715 430','M 645 379 L 645 398','M 575 430 L 525 430'
     ];
     edges.forEach(d=>edge(svg,d,id,reverse));
-    if(!reverse){edge(svg,'M 645 379 L 645 398',id,false);edge(svg,'M 110 268 L 110 198',id,false);}
+    if(!reverse){edge(svg,'M 345 430 L 385 430',id,false);edge(svg,'M 110 268 L 110 198',id,false);}
     box(svg,75,45,135,64,'E_tok, P','learned tables','param');
     box(svg,75,165,130,66,'E','lookup + add');
     box(svg,75,300,130,64,'token ids','positions 1:T');
     box(svg,275,32,110,46,'W_Q',null,'param');box(svg,275,100,110,64,'Q','E W_Q');
     box(svg,275,212,110,46,'W_K',null,'param');box(svg,275,280,110,64,'K','E W_K');
-    box(svg,475,335,110,46,'W_V',null,'param');box(svg,475,410,110,64,'V','E W_V');
+    box(svg,475,265,110,46,'W_V',null,'param');box(svg,475,340,110,64,'V','E W_V');
     box(svg,470,165,130,66,'Q Kᵀ','raw scores');
     box(svg,650,165,150,66,'÷ √d_k','causal mask');
     box(svg,840,165,130,66,'softmax','weights A');
@@ -92,10 +97,12 @@ optimizer.step()</pre>
     box(svg,1045,207,135,46,'W_O',null,'param');
     box(svg,1045,295,150,74,'ΔE = H W_O','context update');
     box(svg,1045,430,150,64,"E′ = E + ΔE",'residual sum');
-    box(svg,840,356,150,46,'W_vocab, b',null,'param');
-    box(svg,840,430,150,64,'logits','last row × head');
-    box(svg,645,356,140,46,'target y','observed data');
-    box(svg,645,430,140,64,'loss L','cross-entropy');
+    box(svg,840,356,150,46,'W₁, b₁',null,'param');
+    box(svg,840,430,150,64,'8 hidden','ReLU(e′ W₁ + b₁)');
+    box(svg,645,356,140,46,'W₂, b₂',null,'param');
+    box(svg,645,430,140,64,'20 logits','h W₂ + b₂');
+    box(svg,270,430,150,64,'target y','observed data');
+    box(svg,455,430,140,64,'loss L','cross-entropy');
     text(svg,405,484,reverse?'∂L/∂E: residual + attention paths':'E also reaches the sum directly',reverse?'s04-gradient':'s04-small');
     text(svg,865,56,reverse?'Red arrows carry gradients backward':'Part 2 toy · one head · no LayerNorm',reverse?'s04-gradient':'s04-small');
     if(reverse){text(svg,740,246,'∂L/∂A','s04-gradient');text(svg,610,285,'∂L/∂V','s04-gradient');text(svg,1045,174,'∂L/∂W_O','s04-gradient');}
@@ -104,10 +111,10 @@ optimizer.step()</pre>
   const G=AT.train.single().gradients;
   function flat(x){if(Array.isArray(x))return x.reduce((a,v)=>a.concat(flat(v)),[]);if(x&&typeof x==='object')return Object.keys(x).reduce((a,k)=>a.concat(flat(x[k])),[]);return [Number(x)||0];}
   function norm(x){return AT.norm(flat(x));}
-  const names=['tok_emb_used','pos_emb_used','W_Q','W_K','W_V','W_O','W_vocab','b_vocab'];
+  const names=['tok_emb_used','pos_emb_used','W_Q','W_K','W_V','W_O','W_hidden','b_hidden','W_vocab','b_vocab'];
   AT.ui.table(names.map(n=>[String(flat(G[n]).length),norm(G[n])]),{cols:['numbers in shown gradient','$L_2$ norm'],rowLabels:names.map(n=>n.replace(/_/g,' ')),cornerLabel:'gradient',decimals:4,caption:'Lookup gradients show only the rows used by this prefix. The full stored tables have additional rows with zero gradient. Norms are rounded to four decimals.',into:S.querySelector('#s04-grads')});
   const fd=AT.train.finiteDifference();
-  AT.ui.callout('Two saved spot checks use central differences with ε = '+fd.checks[0].epsilon.toExponential(0)+'. Maximum absolute error: '+fd.max_abs_error.toExponential(2)+'. The estimates and errors retain full precision. Separately, check_training.py checks all 260 used scalar parameters with ε = 1e−5.',{kind:'note',into:S.querySelector('#s04-check')});
+  AT.ui.callout(fd.checks.length+' saved spot checks use central differences with ε = '+fd.checks[0].epsilon.toExponential(0)+'. Maximum absolute error: '+fd.max_abs_error.toExponential(2)+'. The regression check covers '+names.reduce((n,k)=>n+flat(G[k]).length,0)+' scalar parameters on a smooth probe. At exact-zero ReLU inputs, the implementation uses derivative zero; central differences across those kinks are reported separately.',{kind:'note',into:S.querySelector('#s04-check')});
 })();
 </script>
 </section>

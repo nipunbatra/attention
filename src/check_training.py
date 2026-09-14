@@ -4,7 +4,9 @@
 Run ``python3 src/check_training.py`` from any directory. This imports the
 training functions without running their JSON-writing main(), reproduces every
 saved training result, and checks every scalar parameter used by the final-token
-loss with central finite differences. No model or other file is written.
+loss with central finite differences wherever ReLU is differentiable. A smooth
+probe checks every parameter; exact-zero ReLU units use derivative zero.
+No model or other file is written.
 """
 
 from __future__ import annotations
@@ -68,10 +70,9 @@ def compare_saved(actual, expected, path="training"):
             else:
                 error = abs(left - right)
                 max_error = max(max_error, error)
-                # Exact comparison remains appropriate for the rounded lesson
-                # arrays. BLAS implementations can differ slightly in the
-                # small, unrounded finite-difference errors.
-                tolerance = 2e-11 if ".finite_difference." in location else 0
+                # Keep full-precision results, allowing only floating-point
+                # summation differences across BLAS implementations.
+                tolerance = 2e-11 if ".finite_difference." in location else 1e-12
                 if error > tolerance:
                     mismatches.append(f"{location}: computed {left!r}, saved {right!r}")
         elif type(left) is not type(right) or left != right:
@@ -88,23 +89,30 @@ def parameters(grads):
             yield ("tok_emb", token, i), float(value)
     for index in np.ndindex(grads["pos_emb_used"].shape):
         yield ("pos_emb", *index), float(grads["pos_emb_used"][index])
-    for name in ("W_Q", "W_K", "W_V", "W_O", "W_vocab", "b_vocab"):
+    for name in ("W_Q", "W_K", "W_V", "W_O", "W_hidden", "b_hidden", "W_vocab", "b_vocab"):
         for index in np.ndindex(grads[name].shape):
             yield (name, *index), float(grads[name][index])
 
 
-def final_token_loss(module, model, tokens, target):
+def final_token_loss(module, model, tokens, target, parallel=False):
     """Evaluate only the forward graph, independently of the reverse pass."""
-    logits = module.forward(model, tokens)["logits"][-1]
-    target_id = model["vocab"].index(target)
+    logits = module.forward(model, tokens)["logits"]
+    targets = [token.lower() for token in tokens[1:]] + [target] if parallel else [target]
+    positions = list(range(len(tokens))) if parallel else [len(tokens)-1]
     # Stable log-sum-exp cross-entropy, without calling loss_and_grads.
-    peak = float(np.max(logits))
-    return peak + math.log(float(np.exp(logits - peak).sum())) - float(logits[target_id])
+    losses = []
+    for position, token in zip(positions, targets):
+        row = logits[position]
+        peak = float(np.max(row))
+        losses.append(peak + math.log(float(np.exp(row - peak).sum())) - float(row[model["vocab"].index(token)]))
+    return sum(losses) / len(losses)
 
 
-def check_gradients(module, model, tokens, target):
-    loss, _, grads, _ = module.loss_and_grads(model, tokens, [target], [len(tokens) - 1])
-    forward_loss = final_token_loss(module, model, tokens, target)
+def check_gradients(module, model, tokens, target, parallel=False):
+    targets = [token.lower() for token in tokens[1:]] + [target] if parallel else [target]
+    positions = list(range(len(tokens))) if parallel else [len(tokens)-1]
+    loss, _, grads, _ = module.loss_and_grads(model, tokens, targets, positions)
+    forward_loss = final_token_loss(module, model, tokens, target, parallel)
     if not math.isfinite(loss) or abs(loss - forward_loss) > 1e-12:
         raise RuntimeError(f"Forward loss mismatch: reverse-pass loss {loss}, independent loss {forward_loss}")
 
@@ -112,6 +120,7 @@ def check_gradients(module, model, tokens, target):
     max_error = 0.0
     worst = None
     failures = []
+    kinks = []
     work = copy.deepcopy(model)
     for path, analytic in parameters(grads):
         parent = work
@@ -121,15 +130,20 @@ def check_gradients(module, model, tokens, target):
         original = parent[index]
         try:
             parent[index] = original + EPSILON
-            plus = final_token_loss(module, work, tokens, target)
+            plus = final_token_loss(module, work, tokens, target, parallel)
+            plus_active = module.forward(work, tokens)["head_pre"][positions] > 0
             parent[index] = original - EPSILON
-            minus = final_token_loss(module, work, tokens, target)
+            minus = final_token_loss(module, work, tokens, target, parallel)
+            minus_active = module.forward(work, tokens)["head_pre"][positions] > 0
         finally:
             parent[index] = original
         numeric = (plus - minus) / (2 * EPSILON)
         error = abs(numeric - analytic)
         label = str(path[0]) + "".join(f"[{part}]" for part in path[1:])
         count += 1
+        if np.any(plus_active != minus_active):
+            kinks.append(label)
+            continue  # A central slope across a ReLU kink is not its derivative.
         if not math.isfinite(error):
             failures.append(f"{label}: non-finite analytic/numeric gradient")
             max_error, worst = math.inf, label
@@ -142,22 +156,28 @@ def check_gradients(module, model, tokens, target):
     used_tokens = list(dict.fromkeys(token.lower() for token in tokens))
     expected = sum(len(model["tok_emb"][token]) for token in used_tokens)
     expected += np.asarray(model["pos_emb"][: len(tokens)]).size
-    expected += sum(np.asarray(model[name]).size for name in ("W_Q", "W_K", "W_V", "W_O", "W_vocab", "b_vocab"))
+    expected += sum(np.asarray(model[name]).size for name in module.PARAMETER_NAMES)
     if count != expected:
         failures.append(f"Checked {count} scalar parameters, expected {expected}")
-    return count, len(used_tokens), max_error, worst, failures
+    inactive = np.all(module.forward(model, tokens)["head_pre"][positions] <= 0, axis=0)
+    if np.any(grads["W_hidden"][:, inactive] != 0) or np.any(grads["b_hidden"][inactive] != 0):
+        failures.append("Inactive/exact-zero ReLU units must use derivative zero")
+    return count, len(used_tokens), max_error, worst, failures, kinks
 
 
 def main():
     module = load_training_module()
     model = module.training_model(json.loads((HERE / "toy.json").read_text(encoding="utf-8")))
     saved = json.loads((HERE / "toy3.json").read_text(encoding="utf-8"))
+    for key, value in model.items():
+        if saved.get(key) != value:
+            raise RuntimeError(f"Part III must start from the exact Part II model: {key} differs")
     raw = module.build_training(model)
     computed = module.serialize_training(raw)
     numbers, saved_error, failures = compare_saved(computed, saved.get("training"))
     print(f"Saved training: {numbers} numeric entries; max absolute error {saved_error:.3g}")
     diagnostic = saved["training"]["finite_difference"]
-    if len(diagnostic["checks"]) != 2 or not 0 < diagnostic["max_abs_error"] < 1e-7:
+    if len(diagnostic["checks"]) != 3 or not 0 < diagnostic["max_abs_error"] < 1e-7:
         failures.append("Saved finite-difference diagnostics were rounded away or have the wrong check count")
     for check in diagnostic["checks"]:
         if check["epsilon"] != module.FD_EPS or check["analytic"] == check["numeric"]:
@@ -185,10 +205,24 @@ def main():
             failures.append("An optimizer step changed an unused position row")
 
     tokens, target = computed["sentence"], computed["target"]
-    count, token_rows, gradient_error, worst, gradient_failures = check_gradients(module, model, tokens, target)
+    count, token_rows, gradient_error, worst, gradient_failures, kinks = check_gradients(module, model, tokens, target)
     failures.extend(gradient_failures)
     print(f"Gradients: {count} scalars ({token_rows} token rows, {len(tokens)} position rows, all projections/head)")
-    print(f"Central differences: epsilon {EPSILON:g}; max absolute error {gradient_error:.3g} at {worst}")
+    print(f"Central differences: {count - len(kinks)} smooth coordinates; {len(kinks)} ReLU-kink directions excluded; max error {gradient_error:.3g} at {worst}")
+    # The hand-designed Part II model intentionally has exact zeros. Keep that
+    # model unchanged and check all reverse-pass paths on a separate smooth copy.
+    probe = copy.deepcopy(model)
+    probe["b_hidden"] = [x + .013 for x in probe["b_hidden"]]
+    probe_count, _, probe_error, probe_worst, probe_failures, probe_kinks = check_gradients(module, probe, tokens, target)
+    failures.extend(probe_failures)
+    if probe_kinks:
+        failures.append(f"Smooth probe still crosses ReLU kinks: {probe_kinks}")
+    print(f"Smooth probe: all {probe_count} scalar gradients; max error {probe_error:.3g} at {probe_worst}")
+    par_count, _, par_error, par_worst, par_failures, par_kinks = check_gradients(module, probe, tokens, target, parallel=True)
+    failures.extend(par_failures)
+    if par_kinks:
+        failures.append(f"Parallel smooth probe crosses ReLU kinks: {par_kinks}")
+    print(f"Parallel mean-loss smooth probe: all {par_count} gradients; max error {par_error:.3g} at {par_worst}")
     print(f"Unused positions: {unused_checks} scalar perturbations leave loss unchanged; optimizer leaves those rows unchanged")
     if failures:
         for failure in failures[:12]:
@@ -196,7 +230,7 @@ def main():
         if len(failures) > 12:
             print(f"... {len(failures) - 12} additional mismatches", file=sys.stderr)
         return 1
-    print("PASS: saved training and all used parameter gradients agree; no files written")
+    print("PASS: exact Part II initialization, saved training, smooth gradients, and zero-ReLU convention; no files written")
     return 0
 
 

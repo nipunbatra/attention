@@ -3,6 +3,8 @@
 #s12 .s12-objectives{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 @media(max-width:820px){body:not(.present) #s12 .s12-objectives{grid-template-columns:1fr}}
 #s12 .s12-objective{border:1px solid var(--line);border-radius:9px;padding:18px;background:var(--card)}
+#s12 p .obj-a{color:var(--c-a)}
+#s12 p .obj-ep{color:var(--c-ep)}
 </style>
 <header class="sec-head">
   <span class="sec-num">12</span>
@@ -11,20 +13,22 @@
 <div class="companion" data-kicker="For self-study">
   <p>One pass through the decoder produces a vocabulary distribution at every position. Shift the observed sequence by one position to get the targets. Because the causal mask limits each row to its prefix, we can use every row for next-token training. We average those losses into one scalar for the backward pass. The Part 1 aabid character model learned the same statistical task. What differs is how the models build their context representation: the MLP concatenates a fixed window, while the Transformer uses causal attention and stacked blocks over the available prefix.</p>
 </div>
-<div class="frame" data-title="One sequence produces many losses">
+<div class="companion" data-title="One sequence produces many losses">
   <script type="text/x-notes">How many supervised guesses come from this sequence?
   Reveal the target row, then the position losses. The mask makes each row a valid prefix prediction.</script>
   <div class="card"><h3 class="card-title">Parallel next-token objective</h3><div id="s12-table"></div></div>
 </div>
-<div class="frame" data-title="Continue through the rest of the prefix">
+<div class="companion" data-title="Continue through the rest of the prefix">
   <script type="text/x-notes">The same next-token task applies to each remaining input position. Water is the observed continuation for the final one.</script>
   <div class="card"><div id="s12-table-rest"></div></div>
 </div>
 <div class="frame" data-title="Average the valid prefix predictions">
   <script type="text/x-notes">Each term uses only its causal prefix. The mean is a single scalar for the backward pass.</script>
-  <div class="prose">$$L=\frac{1}{T}\sum_{i=1}^{T}-\log p(x_{i+1}\mid x_{\le i})$$</div>
+  <p>The full Transformer uses the same next-token objective as our toy. Its forward calculation is larger; the loss rule is unchanged.</p>
+  <div class="prose">$$\va{L}=\frac{1}{T}\sum_{i=1}^{T}-\log \vp{p(x_{i+1}\mid x_{\le i})}$$</div>
+  <p><span class="obj-ep">Each probability is for the observed next token</span>, using only the prefix through position $i$. Average over the $T$ valid target positions to get <span class="obj-a">one loss L</span>.</p>
 </div>
-<div class="frame" data-title="The objective matches Part 1">
+<div class="companion" data-title="The objective matches Part 1">
   <script type="text/x-notes">What stays the same between the aabid MLP and the Transformer?
   Both learn to increase the probability of the observed next token. They build context differently.</script>
   <div class="card s12-objectives"><div class="s12-objective"><h3 class="card-title">aabid character MLP</h3><p>Fixed window $\to$ concatenated embeddings $\to$ hidden layer $\to$ logits.</p><p>$$L=-\log p(\text{next character})$$</p></div><div class="s12-objective" data-build="1"><h3 class="card-title">Decoder-only Transformer</h3><p>Available prefix $\to$ causal blocks $\to$ final row $\to$ logits.</p><p>$$L=-\log p(\text{next token})$$</p></div></div>

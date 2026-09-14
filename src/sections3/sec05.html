@@ -2,6 +2,11 @@
 <style>
 #s05 .s05-eta{margin:10px 0 18px}
 #s05 .s05-eq{font-size:1.15em;text-align:center;margin:12px 0}
+#s05-rule .obj-q{color:var(--c-q)}
+#s05-rule .obj-k{color:var(--c-k)}
+#s05-rule .obj-a{color:var(--c-a)}
+#s05 .s05-scalar-line{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px 14px;margin:16px 0;font-size:1.1em}
+#s05 .s05-scalar-line>span{white-space:nowrap}
 </style>
 <header class="sec-head">
   <span class="sec-num">05</span>
@@ -13,7 +18,8 @@
 <div class="frame" data-title="Move against the gradient">
   <script type="text/x-notes">Why is the gradient subtracted?
   The gradient points toward increasing loss. Eta controls distance, not direction.</script>
-  <div class="prose s05-eq">$$\boxed{\theta \leftarrow \theta - \eta\,\frac{\partial L}{\partial\theta}}$$</div>
+  <div class="card" id="s05-scalar"></div>
+  <div class="prose s05-eq" data-build="1">$$\vq{\theta} \leftarrow \vq{\theta} - \vk{\eta}\,\va{\frac{\partial L}{\partial\theta}}$$</div>
   <div id="s05-rule" data-build="1"></div>
 </div>
 <div class="frame" data-title="Compare three step sizes">
@@ -28,13 +34,17 @@
 (function(){
   const S=document.getElementById('s05');
   const single=AT.train.single();
-  AT.ui.callout('SGD changes every stored number by its own gradient times the same learning rate.',{kind:'key',into:S.querySelector('#s05-rule')});
+  const start=AT.model.W_hidden[0][0],gradient=single.gradients.W_hidden[0][0],eta=.1;
+  const scalar=S.querySelector('#s05-scalar');
+  scalar.innerHTML='<h3 class="card-title">One connection into hidden unit 1</h3><div class="s05-scalar-line"></div><p class="small">Displayed numbers are rounded. The same rule updates every matrix entry and bias.</p>';
+  ['W_1[1,1]:','\\vq{'+AT.fmt(start,4)+'} - \\vk{'+eta+'}\\times(\\va{'+AT.fmt(gradient,4)+'})','\\approx \\vq{'+AT.fmt(AT.train.step(eta).parameters.W_hidden[0][0],4)+'}'].forEach(formula=>{const term=AT.h('span');scalar.querySelector('.s05-scalar-line').appendChild(term);AT.tex(term,formula);});
+  AT.ui.callout('<span class="obj-q">θ is one stored parameter</span>, <span class="obj-k">η is the learning rate</span>, and <span class="obj-a">∂L/∂θ is its slope</span>. Subtracting the slope moves locally toward lower loss.',{kind:'key',into:S.querySelector('#s05-rule')});
   const host=S.querySelector('#s05-table');
   const etas=AT.train.etas();
   function draw(k){
     AT.clear(host);
     const step=AT.train.step(etas[k]);
-    AT.ui.table([[single.p_target_before,single.loss_before],[step.p_target,step.loss]],{cols:['$p(\\text{water})$','loss'],rowLabels:['before','after $\\eta='+etas[k]+'$'],cornerLabel:'river example',highlightRow:1,decimals:4,caption:'The target probability rises as the loss falls.',into:host});
+    AT.ui.table([[single.p_target_before,single.loss_before],[step.p_target,step.loss]],{cols:['$p(\\text{water})$','loss'],rowLabels:['before','after $\\eta='+etas[k]+'$'],cornerLabel:'river example',highlightRow:1,decimals:4,caption:'Rounded to four decimals: 1.0000 does not mean certainty, and 0.0000 does not mean exactly zero loss.',into:host});
     const context=S.querySelector('#s05-context');AT.clear(context);
     AT.ui.table([single.e_prime_10_before,step.e_prime_10],{axes:'e',rowLabels:['before','$\\eta='+etas[k]+'$'],rowCls:['ep','ep'],highlightRow:1,cornerLabel:'$\\vp{e_{10}\'}$',caption:'The final contextual row after the parameter update.',into:context});
   }

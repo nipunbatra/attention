@@ -150,6 +150,9 @@ def main():
         scene_fixture = work / 'figures' / 'vision-scene'
         scene_fixture.mkdir(parents=True)
         shutil.copy2(ROOT / 'figures' / 'vision-scene' / 'two-mugs.jpg', scene_fixture / 'two-mugs.jpg')
+        names_fixture = work / 'figures' / 'indian-names'
+        names_fixture.mkdir(parents=True)
+        shutil.copy2(ROOT / 'figures' / 'indian-names' / 'github-dataset.png', names_fixture / 'github-dataset.png')
         for dirname in ['sections1', 'sections']:
             shutil.copytree(HERE / dirname, fixture / dirname)
         draft = dict(configs[1], published=False)

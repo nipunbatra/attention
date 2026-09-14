@@ -33,8 +33,8 @@ These quantities belong to this input and are recalculated after a parameter upd
 <script>
 (function(){
   const S=document.getElementById('s03');
-  const d=AT.d_model,dk=AT.d_k,dv=AT.d_v,V=AT.vocab.length,T=AT.train.sentence().length,P=AT.model.pos_emb.length;
-  const labels=['token embedding rows','position rows','$W_Q,W_K$','$W_V,W_O$','$W_{\\text{vocab}},b$','$\\ve{e},\\vq{q},\\vk{k},\\vv{v}$','$s,\\va{\\alpha},m$','$\\vd{\\Delta e},\\vp{e\'},\\ell,p$'];
+  const d=AT.d_model,dk=AT.d_k,dv=AT.d_v,H=AT.model.d_hidden,V=AT.vocab.length,T=AT.train.sentence().length,P=AT.model.pos_emb.length;
+  const labels=['token embedding rows','position rows','$W_Q,W_K$','$W_V,W_O$','prediction MLP: $W_1,b_1,W_2,b_2$','$\\ve{e},\\vq{q},\\vk{k},\\vv{v}$','$s,\\va{\\alpha},m$','$\\vd{\\Delta e},\\vp{e\'},h,\\ell,p$'];
   const rows=[['parameter','saved'],['parameter','saved'],['parameter','saved'],['parameter','saved'],['parameter','saved'],['intermediate','recomputed'],['intermediate','recomputed'],['intermediate','recomputed']];
   AT.ui.table(rows.slice(0,5),{cols:['kind','after this example'],rowLabels:labels.slice(0,5),cornerLabel:'object',caption:'The optimizer updates these stored numbers.',into:S.querySelector('#s03-table')});
   AT.ui.table(rows.slice(5),{cols:['kind','after this example'],rowLabels:labels.slice(5),cornerLabel:'object',caption:'Intermediates describe this forward pass.',into:S.querySelector('#s03-intermediates')});
@@ -42,7 +42,8 @@ These quantities belong to this input and are recalculated after a parameter upd
   AT.ui.table([
     [V,d,V,d],[P,d,P,d],[d,dk,d,dk],[d,dv,d,dv]
   ],{cols:['parameter rows','parameter cols','gradient rows','gradient cols'],rowLabels:['token table','position table','$W_Q,W_K$','$W_V$'],cornerLabel:'stored object',decimals:0,caption:'The position table stores '+P+' rows; this prefix uses the first '+T+'. Unused rows have zero gradient for this example.',into:S.querySelector('#s03-shapes')});
-  AT.ui.table([[dv,d,dv,d],[d,V,d,V],[1,V,1,V]],{cols:['parameter rows','parameter cols','gradient rows','gradient cols'],rowLabels:['$W_O$','$W_{\\text{vocab}}$','$b$'],cornerLabel:'stored object',decimals:0,caption:'Row-vector convention: b is 1 × |V|, broadcast across token rows. Code may store the same bias as a one-dimensional [|V|] tensor.',into:S.querySelector('#s03-output-shapes')});
+  const shapes=[dv+' × '+d,d+' × '+H,'1 × '+H,H+' × '+V,'1 × '+V];
+  AT.ui.table(shapes.map(shape=>[shape,shape]),{cols:['parameter shape','gradient shape'],rowLabels:['$W_O$','MLP $W_1$','MLP $b_1$','MLP $W_2$','MLP $b_2$'],cornerLabel:'stored object',caption:'W₁ and b₁ make 8 hidden activations; W₂ and b₂ make 20 logits. Each bias is shared across token rows.',into:S.querySelector('#s03-output-shapes')});
 })();
 </script>
 </section>

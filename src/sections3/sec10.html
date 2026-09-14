@@ -20,7 +20,7 @@
   <script type="text/x-notes">The second branch reads the attention-updated residual row. It mixes features independently at each token position.</script>
   <div class="card"><div id="s10-ffn-stepper"></div></div>
 </div>
-<div class="frame" data-title="Two residual additions make one block">
+<div class="companion" data-title="Two residual additions make one block">
   <script type="text/x-notes">The first line adds the attention update. The second adds the FFN update. Both preserve model width.</script>
   <div class="prose">
     $$\ve{u}=\ve{e}+\operatorname{MHA}(\operatorname{LN}(\ve{e}))$$

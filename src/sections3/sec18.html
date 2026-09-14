@@ -15,13 +15,13 @@
   Ask for an equation or table cell that supports each answer.</script>
   <div class="card s18-grid" id="s18-a" data-build="1"></div>
 </div>
-<div class="frame" data-title="Masking and one-example learning">
+<div class="companion" data-title="Masking and one-example learning">
   <script type="text/x-notes">Which distinction is still uncertain?
   Open the panels slowly and return to the relevant diagram when an answer is vague.</script>
   <div class="card s18-grid" id="s18-b" data-build="1"></div>
 </div>
 <div class="frame" data-title="Heads and feature mixing"><div class="card s18-grid" id="s18-c" data-build="1"></div></div>
-<div class="frame" data-title="Caching and contextual change"><div class="card s18-grid" id="s18-d" data-build="1"></div></div>
+<div class="companion" data-title="Caching and contextual change"><div class="card s18-grid" id="s18-d" data-build="1"></div></div>
 <div class="companion"><div id="s18-note"></div></div>
 <div class="companion after"><p>For each answer, explain what the model does, where the information flows, and what the calculation does or does not establish.</p></div>
 <script>
@@ -29,7 +29,7 @@
   const S=document.getElementById('s18');
   const qa=[
     ['What turns a prediction into a training signal?','The observed next token selects one probability, and cross-entropy forms $L=-\\log p(\\text{target})$.'],
-    ['Which objects does SGD change?','It changes stored token and position rows, projection matrices, and the vocabulary head. Intermediates are recomputed.'],
+    ['Which objects does SGD change?','It changes stored token and position rows, projection matrices, and both prediction-MLP layers, including their biases. Intermediates are recomputed.'],
     ['Why is the causal mask present during training?','It prevents each parallel prediction row from reading the future target positions.'],
     ['What does a smaller loss after one example prove?','It proves that the updated parameters fit that example better. It does not establish generalisation.'],
     ['Does each head receive a slice of the embedding?','No. Every head reads the full model-width input through its own projections. The projected outputs are smaller.'],

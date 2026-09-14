@@ -18,7 +18,7 @@
   The MLP combines fixed slots by concatenation. The Transformer keeps rows and routes between them with causal attention.</script>
   <div class="card s17-pipes"><div class="s17-pipe"><h3 class="card-title">aabid fixed-window MLP</h3><div class="s17-flow" id="s17-mlp"></div></div><div class="s17-pipe" data-build="1"><h3 class="card-title">Decoder-only Transformer</h3><div class="s17-flow" id="s17-tr"></div></div></div>
 </div>
-<div class="frame" data-title="Complete the comparison">
+<div class="companion" data-title="Complete the comparison">
   <script type="text/x-notes">What changes most between the models?
   Reveal the sentence after students name the context mechanism.</script>
   <div class="card" data-build="1"><div id="s17-reveal"></div></div>
@@ -29,7 +29,7 @@
   const S=document.getElementById('s17');
   function pipe(host,items){items.forEach((x,i)=>{host.appendChild(AT.h('div',{class:'s17-box'},x));if(i<items.length-1)host.appendChild(AT.h('span',{},'→'));});AT.renderMath(host);}
   pipe(S.querySelector('#s17-mlp'),['three embedding rows','concatenate','hidden layer','vocabulary logits']);
-  pipe(S.querySelector('#s17-tr'),['any prefix length','causal blocks','final contextual row','vocabulary logits']);
+  pipe(S.querySelector('#s17-tr'),['prefix within context limit','causal blocks','final LayerNorm','vocabulary logits']);
   AT.ui.reveal('A Transformer language model differs from our aabid MLP mainly because ...','it builds each context row with causal self-attention and stacked FFNs instead of concatenating a fixed number of embedding rows. The next-token loss is the same kind of objective.',{into:S.querySelector('#s17-reveal')});
 })();
 </script>

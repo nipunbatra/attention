@@ -22,7 +22,7 @@ body.present #s15 .dt th,body.present #s15 .dt td{white-space:normal;overflow-wr
   <script type="text/x-notes">Convolution enlarges its receptive field through depth. Attention directly connects allowed pairs, at a quadratic score cost.</script>
   <div class="card"><div id="s15-table-rest"></div></div>
 </div>
-<div class="frame" data-title="Longer memory has a price">
+<div class="companion" data-title="Longer memory has a price">
   <script type="text/x-notes">What grows when self-attention reads a longer sequence?
   The score matrix contains one cell for each query-key pair.</script>
   <div id="s15-price"></div>
@@ -33,13 +33,13 @@ body.present #s15 .dt th,body.present #s15 .dt td{white-space:normal;overflow-wr
 (function(){
   const S=document.getElementById('s15');
   const rows=[
-    ['fixed window','one layer inside the window','parallel','linear in window'],
-    ['state passed step by step','linear in distance','sequential','linear per step'],
-    ['grows with depth','set by its receptive field','parallel','linear in kernel'],
-    ['any allowed earlier token','one layer','parallel','quadratic']
+    ['fixed window','one layer inside the window','parallel','first-layer parameters grow with window width'],
+    ['state passed step by step','linear in distance','sequential','T recurrent steps for T tokens'],
+    ['grows with depth','set by its receptive field','parallel','local connections grow with T and kernel width'],
+    ['any allowed earlier token','one layer','parallel','T² query-key score cells']
   ];
   const labels=['fixed-window MLP','RNN','temporal convolution','self-attention'];
-  [0,2].forEach((from,j)=>AT.ui.table(rows.slice(from,from+2),{cols:['context','distant-token path','training','context cost'],rowLabels:labels.slice(from,from+2),cornerLabel:'model',highlightRow:j?1:undefined,caption:'Each row describes the usual dense form of the model family.',into:S.querySelector(j?'#s15-table-rest':'#s15-table')}));
+  [0,2].forEach((from,j)=>AT.ui.table(rows.slice(from,from+2),{cols:['context','distant-token path','training','what grows'],rowLabels:labels.slice(from,from+2),cornerLabel:'model',highlightRow:j?1:undefined,caption:'Usual forms, with other widths fixed. The last column names different costs; it is not a speed ranking.',into:S.querySelector(j?'#s15-table-rest':'#s15-table')}));
   AT.ui.callout('At the toy length $T='+AT.T+'$, a dense score matrix has '+(AT.T*AT.T)+' cells before the causal half is removed. Longer context increases both memory use and score work.',{kind:'note',into:S.querySelector('#s15-price')});
   AT.motif(S.querySelector('#s15-motif'),{active:'att',labels:true});
 })();
