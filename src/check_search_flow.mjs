@@ -69,6 +69,23 @@ try{
     assert.equal(await frame.locator('[data-build="1"]').evaluate(e=>getComputedStyle(e).visibility),build?'visible':'hidden');
     await page.screenshot({path:path.join(shots,'hard-retrieval-'+build+'.png')});
   }
+  await page.evaluate(()=>AT.present.next());
+  assert.equal(await page.locator('#s06 .frame.is-live').getAttribute('id'),'s06-frame-scores');
+  await go('s06-frame-scores');
+  const scoreFrame=page.locator('#s06-frame-scores');
+  for(const role of ['q','k','a']){
+    const color=await scoreFrame.locator('.sym-'+role).evaluate(e=>getComputedStyle(e).color);
+    const mathColors=await scoreFrame.locator('.katex-html .m-'+role).evaluateAll(es=>es.map(e=>getComputedStyle(e).color));
+    assert(mathColors.length>=2&&mathColors.every(c=>c===color),'Score provenance uses matching role colours.');
+  }
+  const arithmetic=(await page.locator('#s06-score-example annotation').allTextContents()).join(' ');
+  assert.deepEqual([...arithmetic.matchAll(/\\vq\{([\d.]+)\}/g)].map(m=>Number(m[1])),queries[0],'Worked row uses the original query coordinates.');
+  assert.deepEqual([...arithmetic.matchAll(/\\vk\{([\d.]+)\}/g)].map(m=>Number(m[1])),keys[0],'Worked row uses the Backpropagation key coordinates.');
+  const firstScore=queries[0].reduce((sum,q,c)=>sum+q*keys[0][c],0);
+  assert(arithmetic.includes('=\\va{'+firstScore.toFixed(1)+'}'));
+  assert.deepEqual((await page.locator('#s06-dot tbody td.dt-comp').allTextContents()).slice(1).map(Number),keys.map(k=>Number(k.reduce((sum,x,c)=>sum+x*queries[0][c],0).toFixed(1))));
+  assert(await page.locator('#s06-score-edited').isHidden());
+  await page.screenshot({path:path.join(shots,'score-provenance.png')});
   for(const id of [...queryFrames,...keyFrames]){
     for(const build of id==='s05-frame-key-collection'?[0]:[0,1]){
       await go(id,build);await page.screenshot({path:path.join(shots,id+'-'+build+'.png')});
@@ -202,6 +219,9 @@ try{
     {name:'dropout-source',scores:baseScores.map((x,j)=>j===5?8:x),soft:false,tau:1}
   ]){
     await setSoft(test.soft);await setScores(test.scores);
+    await go('s06-frame-scores');
+    assert.equal(await page.locator('#s06-score-edited').isVisible(),test.scores.some((s,j)=>s!==baseScores[j]),'Edited-score notice distinguishes later interventions from original dot products.');
+    assert.equal((await page.locator('#s06-score-example annotation').allTextContents()).join(' '),arithmetic,'The original worked example stays fixed.');
     await page.locator('#s06-temp input').evaluate((e,v)=>{e.value=v;e.dispatchEvent(new Event('input',{bubbles:true}));},test.tau);
     const max=Math.max(...test.scores),exp=test.scores.map(s=>Math.exp((s-max)/test.tau)),total=exp.reduce((a,b)=>a+b,0);
     const alpha=test.soft?exp.map(e=>e/total):test.scores.map((s,j)=>j===test.scores.indexOf(max)?1:0);
@@ -236,7 +256,7 @@ try{
   assert.deepEqual(await matrix('s05-query-vector'),[queries[0]],'New search visits keep the original query reset.');
   assert.equal(await page.evaluate(()=>JSON.stringify({model:AT.model,p:AT.forward(AT.sentences.river).probs})),model);
   await page.evaluate(()=>AT.present.exit());await page.setViewportSize({width:390,height:844});
-  for(const id of [...queryFrames,...keyFrames,...valueFrames,'s06-frame-hard-retrieval']){
+  for(const id of [...queryFrames,...keyFrames,...valueFrames,'s06-frame-hard-retrieval','s06-frame-scores']){
     await page.locator('#'+id).scrollIntoViewIfNeeded();
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No phone document overflow.');
     await page.screenshot({path:path.join(shots,'phone-'+id+'.png')});

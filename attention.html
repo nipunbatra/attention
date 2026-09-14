@@ -6454,6 +6454,10 @@ Reveal the query, then the winning video's key, then its value. Each SVG lists t
 #s06 .srows .slider input[type=range]{width:100%;max-width:none;min-width:0}
 #s06 .srows .slider-val{text-align:right}
 #s06 .look{font-size:14px;color:var(--ink-2);margin:8px 0 0;max-width:84ch}
+#s06 .score-origin{font-size:16px;line-height:1.45;margin:0 0 14px}
+#s06 .score-term{display:inline-block;white-space:nowrap}
+#s06 #s06-score-edited[hidden]{display:none}
+body.present #s06 .score-origin{font-size:24px}
 #s06 .modebox{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;padding:10px 14px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--paper);margin:0 0 12px}
 #s06 .modebox .slider{margin:0}
 #s06 .modebox .slider input[type=range]{max-width:40vw}
@@ -6577,12 +6581,13 @@ Trace the matching colours: the purple query is the request, the orange key desc
 </div>
 </div>
 
-<div class="frame" id="s06-frame-scores" data-title="Keep the match scores; set the keys aside" data-autobuild="off">
-<script type="text/x-notes">What does the next operation need from the matching step?
-Just one score per item. The query and key coordinates were already used to calculate these scores; we can put that worksheet aside now.</script>
+<div class="frame" id="s06-frame-scores" data-title="The scores come from query–key dot products" data-autobuild="off">
+<script type="text/x-notes">Where did the six scores come from?
+Use the same gradient-information query and six video keys from the retrieval example. For every video j, multiply matching query/key coordinates and add them: s_j = q dot k_j. Trace the purple query numbers and orange key numbers in the Backpropagation example, then point to 4.8 in its row. Repeat the same operation with each other key to obtain the other five rows. The score column supplies the numbers used to choose one winner on the previous slide. Next we will turn these scores into shares so several values can contribute. Later score sliders can override these dot products; the edited-score notice makes that intervention explicit.</script>
 <div class="card">
-  <h3 class="card-title">The scores from the gradient-information query</h3>
+  <p class="score-origin">Same <span class="sym sym-q">gradient-information query $\vq{q}$</span>, same six <span class="sym sym-k">video keys $\vk{k_j}$</span>.<br>Each <span class="sym sym-a">score</span> is $\va{s_j}=\vq{q}\cdot\vk{k_j}$, with $j$ identifying the video.</p>
   <div id="s06-dot"></div>
+  <p class="look" id="s06-score-example"><span id="s06-score-edited" hidden>Table scores were edited by the later sliders. Original </span>Backpropagation ($j=1$):<br><span class="score-term">$\va{s_1}=\vq{2.0}\times\vk{2.2}$</span> <span class="score-term">${}+\vq{0.6}\times\vk{0.6}$</span> <span class="score-term">${}+\vq{0.2}\times\vk{0.2}$</span> <span class="score-term">${}+\vq{0.0}\times\vk{0.0}=\va{4.8}$</span>.</p>
 </div>
 </div>
 
@@ -6802,6 +6807,7 @@ Its weight approaches one. If top scores tie, those top items keep sharing the w
     temp.classList.toggle('is-off', !soft);
     temp.input.disabled = !soft;
     dot.update([Q].concat(VIDEOS.map(V => V.k)));
+    S.querySelector('#s06-score-edited').hidden = s.every((score, j) => Math.abs(score - round1(DEF[j])) < 1e-9);
     alpha.forEach((a, j) => { alphaArr[j] = a; });
     const exps = s.map(x => Math.exp(x / tau));
     AT.tex(expHeader, Math.abs(tau - 1) < 1e-9 ? 'e^{s_j}' : 'e^{s_j/\\tau}');

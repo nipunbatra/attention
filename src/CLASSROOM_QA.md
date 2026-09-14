@@ -1,5 +1,11 @@
 # Classroom release checks
 
+## 2026-09-14: reconnect the score table to query–key matching
+
+- Section 6's second frame now explicitly identifies the same gradient-information query and six video keys, defines each score as s_j = q dot k_j, and expands Backpropagation's four coordinate products to 4.8. The presentation skill guided reuse of the query/key colours and the existing rose score colour in both text and arithmetic. No new slide or reveal. The table, original numbers and clickable worksheets remain intact.
+- The worked terms stay together when wrapping on phones. A compact notice appears if later score sliders overwrite the original dot products, including when navigating back to this frame, and disappears when the scores return to their starting values. Visually inspected the initial and edited desktop states and the phone reading layout. All 325 presentation states / 556 formulas, 151 controls and 390px article QA pass.
+- Retrieval regression verifies the transition from the preceding frame, matching role colours, the original four query/key coordinates and their independently computed result, all six starting scores, and unchanged arithmetic across score interventions. All existing retrieval cases and the independent live/reference token-model check pass. No model, shared-runtime, dependency or Part I changes.
+
 ## 2026-09-14: match hard-retrieval prose and equation colours
 
 - Updated Section 6's existing first frame so query, key and value names and inline symbols use the same purple, orange and teal as the display equation. Labelled the dot product as the match score and defined j* as the winning video's index. The presentation skill guided reuse of the existing colour and layout conventions. Kept the original follow-up reveal and slide count. Corrected the notes to describe this frame rather than later controls.
