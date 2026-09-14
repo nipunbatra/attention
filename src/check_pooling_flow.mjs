@@ -30,6 +30,13 @@ const close=(actual,expected)=>{
   actual.forEach((x,i)=>assert(Math.abs(x-expected[i])<1e-12,`${x} != ${expected[i]}`));
 };
 const weighted=(rows,weights)=>rows[0].map((_,c)=>rows.reduce((s,row,j)=>s+row[c]*weights[j],0));
+const model=JSON.parse(fs.readFileSync(new URL('toy.json',import.meta.url),'utf8'));
+// Independent affine/softmax calculation: never use the browser's AT.head as the oracle.
+const referenceHead=c=>{
+  const logits=model.b_vocab.map((bias,j)=>bias+c.reduce((sum,x,k)=>sum+x*model.W_vocab[k][j],0));
+  const max=Math.max(...logits),exps=logits.map(x=>Math.exp(x-max)),total=exps.reduce((a,b)=>a+b,0);
+  return {logits,probs:exps.map(x=>x/total),winners:logits.flatMap((x,j)=>Math.abs(x-max)<1e-12?[j]:[])};
+};
 const go=async(section,frame,build)=>{
   await page.evaluate(([s,f,b])=>AT.present.go(s,f,b),[section,frame,build]);
   await page.waitForTimeout(100);
@@ -277,6 +284,20 @@ try{
   assert(sumInk>150,'The weighted summation actually paints after its reveal.');
   const presets={equal:[1,1,1,1,1,1,1],river:[.3,1.2,.3,.8,.3,4,.6],fisherman:[.3,4,.3,.6,.3,1,.6],self:[0,0,0,0,0,0,1]};
   await goPool('s04-frame-choose');
+  assert.deepEqual(await page.locator('#s04 .frame').evaluateAll(els=>els.slice(-4).map(e=>e.id)),['s04-frame-choose','s04-frame-weighted-table','s04-frame-preset-predictions','s04-frame-weight-question'],'Build the context, inspect its contributions, compare cases, then ask how to compute weights.');
+  for(const build of [0,1,0,1]){
+    await goPool('s04-frame-choose',build);
+    assert.equal(await page.locator('#s04-prediction').evaluate(e=>getComputedStyle(e).visibility),build?'visible':'hidden');
+    assert.equal(await page.locator('#s04-live-pool').evaluate(e=>getComputedStyle(e).visibility),'visible','Show the context before its prediction.');
+  }
+  const readResult=el=>({values:JSON.parse(el.dataset.values),weights:JSON.parse(el.dataset.weights),
+    logits:JSON.parse(el.dataset.logits),probs:JSON.parse(el.dataset.probs),winners:JSON.parse(el.dataset.winners),position:el.dataset.position});
+  const checkHead=(actual,expected)=>{
+    close(actual.logits,expected.logits);close(actual.probs,expected.probs);
+    assert.equal(actual.logits.length,20,'Softmax includes the whole vocabulary, not just the displayed winners.');
+    assert(Math.abs(actual.probs.reduce((a,b)=>a+b,0)-1)<1e-12);
+    assert.deepEqual(actual.winners,expected.winners);assert.equal(actual.position,'8');
+  };
   async function checkWeighted(raw){
     const total=raw.reduce((a,b)=>a+b,0),weights=raw.map(x=>total?x/total:1/7);
     const expected=weighted(E,weights);
@@ -286,15 +307,72 @@ try{
     }));
     close(result.values,expected);close(result.weights,weights);close(result.cells,expected.map(x=>Number(x.toFixed(2))));
     assert.equal(result.label,'m_7');
+    const head=referenceHead(expected),actual=await page.locator('#s04-prediction').evaluate(readResult);
+    close(actual.values,expected);close(actual.weights,weights);checkHead(actual,head);
+    const winner=head.winners[0],tied=head.winners.length>1;
+    assert.equal(await page.locator('#s04-prediction-word').textContent(),tied?head.winners.length+' words tied for first':'Top word: '+model.vocab[winner]);
+    assert((await page.locator('#s04-prediction-score').textContent()).includes(head.logits[winner].toFixed(3)));
+    assert((await page.locator('#s04-prediction-prob').textContent()).includes(head.probs[winner].toFixed(3)));
+    const products=await page.locator('#s04-w-tab .dt-fig').evaluate(e=>JSON.parse(e.dataset.contributions));
+    const expectedProducts=E.map((row,j)=>row.map(x=>x*weights[j]));
+    close(products.flat(),expectedProducts.flat());
+    const displayed=await page.locator('#s04-w-tab tbody td[data-c]').allTextContents();
+    close(displayed.map(s=>Number(s.replace('−','-'))),expectedProducts.flat().map(x=>Number(x.toFixed(2))));
+    const footer=await page.locator('#s04-w-tab tfoot td:not(.dt-lead)').allTextContents();
+    close(footer.map(s=>Number(s.replace('−','-'))),expected.map(x=>Number(x.toFixed(2))));
+    const selected=Object.entries(presets).filter(([,values])=>values.every((x,j)=>Math.abs(x-raw[j])<1e-12)).map(([key])=>key);
+    for(const id of ['s04-presets','s04-contribution-presets']){
+      assert.deepEqual(await page.locator('#'+id+' [aria-pressed="true"]').evaluateAll(els=>els.map(e=>e.dataset.preset)),selected);
+    }
   }
   for(const [preset,raw]of Object.entries(presets)){
+    await goPool('s04-frame-choose',1);
     await page.locator(`#s04-presets [data-preset="${preset}"]`).click();
     await checkWeighted(raw);
-    await goPool('s04-frame-weighted-table',1);await goPool('s04-frame-choose');await checkWeighted(raw);
-    if(['river','self'].includes(preset))await page.screenshot({path:path.join(shots,`weighted-${preset}.png`)});
+    await page.screenshot({path:path.join(shots,`weighted-${preset}.png`)});
+    await page.evaluate(()=>AT.present.next());await page.waitForTimeout(100);
+    assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s04-frame-weighted-table');
+    await page.locator('#s04-contribution-presets [data-preset="equal"]').click();
+    await page.locator(`#s04-contribution-presets [data-preset="${preset}"]`).click();
+    await goPool('s04-frame-weighted-table',1);await checkWeighted(raw);
+    await page.screenshot({path:path.join(shots,`contributions-${preset}.png`)});
+    await goPool('s04-frame-choose',1);await checkWeighted(raw);
   }
+  await page.locator('#s04-w0').focus();await page.keyboard.press('ArrowRight');
+  await checkWeighted([.1,0,0,0,0,0,1]);
   for(let j=0;j<7;j++)await page.locator(`#s04-w${j}`).fill('0');
   await checkWeighted(Array(7).fill(0));
+  await page.locator('#s04-w4').fill('1');
+  const onlyThe=[0,0,0,0,1,0,0];await checkWeighted(onlyThe);
+  assert((await page.locator('#s04-prediction-word').textContent()).includes('2 words tied'),'Do not arbitrarily call the first tied word the winner.');
+  const caseRows=page.locator('#s04-preset-predictions tbody tr');
+  assert.equal(await caseRows.count(),4);
+  for(const [preset,raw]of Object.entries(presets)){
+    const weights=raw.map(w=>w/raw.reduce((a,b)=>a+b,0)),c=weighted(E,weights),h=referenceHead(c);
+    const caseRow=page.locator('#s04-preset-predictions tr[data-preset="'+preset+'"]');
+    const actual=await caseRow.evaluate(readResult);
+    close(actual.values,c);close(actual.weights,weights);checkHead(actual,h);
+    assert.equal(await caseRow.locator('.word-cell').textContent(),preset==='self'?'teller':'water');
+    assert.equal(await caseRow.locator('.pool-score').textContent(),h.logits[h.winners[0]].toFixed(3));
+    assert.equal(await caseRow.locator('.pool-prob').textContent(),h.probs[h.winners[0]].toFixed(3));
+    close((await caseRow.locator('.summary-cell').allTextContents()).map(Number),c.map(x=>Number(x.toFixed(2))));
+  }
+  for(const build of [0,1,0,1]){
+    await goPool('s04-frame-preset-predictions',build);
+    assert((await caseRows.locator('.summary-cell').evaluateAll(els=>els.map(e=>getComputedStyle(e).visibility))).every(v=>v==='visible'));
+    assert((await page.locator('#s04-preset-predictions [data-build="1"]').evaluateAll(els=>els.map(e=>getComputedStyle(e).visibility))).every(v=>v===(build?'visible':'hidden')));
+    await page.screenshot({path:path.join(shots,`preset-predictions-${build}.png`)});
+  }
+  for(const id of ['s04-frame-choose','s04-frame-preset-predictions']){
+    const note=await page.locator('#'+id+' > .prediction-note').last().textContent();
+    assert(note.includes('untrained')&&note.includes('and'),'Explain why this head is not a reliable language predictor.');
+  }
+  await goPool('s04-frame-choose',1);await checkWeighted(onlyThe);
+  const headColours=await page.locator('#s04-frame-preset-predictions').evaluate(root=>{
+    const c=s=>getComputedStyle(root.querySelector(s)).color;
+    return ['summary','param','score','prob'].map(role=>[c('.katex-html .pool-'+role),c('.prediction-note .pool-'+role)]);
+  });
+  headColours.forEach(pair=>assert.equal(...pair,'Match the head equation colours to their explanation.'));
   const searchOrder=await page.locator('#s05 .frame').evaluateAll(els=>els.map(e=>e.id));
   assert.deepEqual(searchOrder.slice(0,4),['s05-frame-attention-break','s05-frame-attention-idea','s05-frame-retrieval-detour','s05-frame-search'],'Name and explain attention before the retrieval analogy or query terminology.');
   const visibleCopy=async(id)=>page.locator('#'+id).evaluate(root=>{
@@ -358,7 +436,7 @@ try{
   assert.equal(await page.locator('.summary-break h3').evaluate(e=>getComputedStyle(e).display),'none','In the article, use the section heading instead of repeating the same divider title.');
   assert.notEqual(await page.locator('#s04>.sec-head').evaluate(e=>getComputedStyle(e).display),'none');
   await page.locator('#s04-presets [data-preset="equal"]').click();
-  for(const [id,name]of [['s04-frame-summary-break','phone-summary-break'],['s04-frame-pooling-bridge','phone-bridge'],['s04-frame-prefix','phone-prefix'],['s04-frame-mean','phone-mean'],['s04-frame-weight-motivation','phone-weight-motivation'],['s04-frame-weight-rule','phone-alpha-example'],['s04-frame-weight-sum','phone-alpha-sum'],['s05-frame-attention-break','phone-attention-break'],['s05-frame-attention-idea','phone-attention-idea'],['s05-frame-retrieval-detour','phone-retrieval-detour']]){
+  for(const [id,name]of [['s04-frame-summary-break','phone-summary-break'],['s04-frame-pooling-bridge','phone-bridge'],['s04-frame-prefix','phone-prefix'],['s04-frame-mean','phone-mean'],['s04-frame-weight-motivation','phone-weight-motivation'],['s04-frame-weight-rule','phone-alpha-example'],['s04-frame-weight-sum','phone-alpha-sum'],['s04-frame-choose','phone-weighted-prediction'],['s04-frame-weighted-table','phone-contributions'],['s04-frame-preset-predictions','phone-preset-predictions'],['s05-frame-attention-break','phone-attention-break'],['s05-frame-attention-idea','phone-attention-idea'],['s05-frame-retrieval-detour','phone-retrieval-detour']]){
     await page.locator('#'+id).scrollIntoViewIfNeeded();
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No phone document overflow.');
     await page.screenshot({path:path.join(shots,name+'.png')});
@@ -369,7 +447,11 @@ try{
   assert(phoneVector.x>=0&&phoneVector.x+phoneVector.width<=391,'The complete four-coordinate mean fits on a phone.');
   const phoneExample=await page.locator('#s04-alpha-example-table').boundingBox();
   assert(phoneExample.x>=0&&phoneExample.x+phoneExample.width<=391,'All four coordinates of the worked alpha term fit on a phone.');
+  const phoneLive=await page.locator('#s04-live-pool .vec').boundingBox();
+  assert(phoneLive.x>=0&&phoneLive.x+phoneLive.width<=391,'The complete live summary fits on a phone.');
+  const phoneComparison=await page.locator('.preset-table-wrap').evaluate(e=>({width:e.clientWidth,scroll:e.scrollWidth}));
+  assert(phoneComparison.scroll>phoneComparison.width,'The four-case table scrolls locally on narrow screens.');
   for(const control of [positionSlider,slider])assert((await control.boundingBox()).width>160,'Both current-position sliders have usable phone tracks.');
   assert.deepEqual(errors,[]);
-  console.log(`PASS: summary section break and numbered approaches, example-led motivation before alpha, 7 window/prefix positions and means, alpha arithmetic, matching colours and reveals, 4 weighted presets, attention-before-retrieval flow, search state, zero-weight fallback and phone layout. Screenshots: ${shots}`);
+  console.log(`PASS: pooling flow, 7 prefix positions, alpha arithmetic, 4 synchronized weighted presets and contribution sums, independent 20-word head predictions, four-case comparison, ties/custom/zero-weight states, colour/reveal/state retention, attention-before-retrieval flow and phone layout. Screenshots: ${shots}`);
 }finally{await browser.close();}

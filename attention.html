@@ -4983,6 +4983,35 @@ body.present #s04 .pool-bridge-next{font-size:26px;line-height:1.35}
 #s04 .pool-summary,#s04 .vec-label{color:var(--c-v)}
 #s04 .pool-input{color:var(--c-e)}
 #s04 .pool-weight{color:var(--c-a)}
+#s04 .pool-param{color:var(--c-q)}
+#s04 .pool-score{color:var(--ink-2)}
+#s04 .pool-prob{color:var(--c-d)}
+#s04 .pool-result{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center;margin-top:16px}
+#s04 .pool-prediction{border-left:2px solid var(--line);padding-left:24px;font-size:18px;line-height:1.35}
+#s04 .pool-prediction p{margin:3px 0}
+#s04 .pool-prediction .prediction-word{font-size:24px;font-weight:700}
+#s04 .prediction-note{font-size:16px;line-height:1.35;margin:12px 0 0;color:var(--ink-2)}
+#s04 .preset-scope{font-size:18px;margin:12px 0}
+#s04 .preset-table-wrap{overflow-x:auto}
+#s04 .preset-table{border-collapse:collapse;font-size:17px;width:100%;margin:16px 0}
+#s04 .preset-table th,#s04 .preset-table td{padding:12px 10px;border-bottom:1px solid var(--line);text-align:right}
+#s04 .preset-table th:first-child{text-align:left}
+#s04 .preset-table thead th{font-weight:600;font-size:.85em}
+#s04 .preset-table th[scope=colgroup]{text-align:center}
+#s04 .preset-table tbody th{font-weight:600;white-space:nowrap}
+#s04 .preset-table td{font-family:var(--font-mono)}
+#s04 .preset-table .summary-cell{color:var(--c-v);background:var(--t-v)}
+#s04 .preset-table .word-cell{font-family:var(--font-ui)}
+#s04 .preset-head-equation .katex-display{margin:8px 0}
+#s04 .preset-intro,#s04 .preset-takeaway{font-size:19px;line-height:1.4;margin:12px 0}
+body.present #s04 .pool-prediction{font-size:22px}
+body.present #s04 .pool-prediction .prediction-word{font-size:28px}
+body.present #s04 .prediction-note{font-size:21px;line-height:1.35}
+body.present #s04 .preset-scope,body.present #s04 .preset-intro,body.present #s04 .preset-takeaway{font-size:24px;line-height:1.35}
+body.present #s04 .preset-table{font-size:23px;margin:8px 0}
+body.present #s04 .preset-table th,body.present #s04 .preset-table td{padding:8px 10px}
+body.present #s04 .pool-result #s04-live-pool{margin:0}
+@media(max-width:640px){body:not(.present) #s04 .pool-result{grid-template-columns:1fr}body:not(.present) #s04 .pool-prediction{border-left:0;border-top:1px solid var(--line);padding:14px 0 0}body:not(.present) #s04 .preset-table{min-width:710px}body:not(.present) #s04 .preset-head-equation{font-size:16px}}
 #s04 .weight-motivation{font-size:20px;line-height:1.45}
 #s04 .weight-motivation p{margin:16px 0}
 #s04 .weight-motivation .clue-sentence{font-size:30px;line-height:1.8;margin:28px 0}
@@ -5228,7 +5257,7 @@ Keep the receiving position fixed at i=7 and add one contribution for each sourc
 
 <div class="frame" id="s04-frame-choose" data-title="Choose the weights for bank by hand" data-autobuild="off">
   <script type="text/x-notes">If you favour river, how will the pooled row change?
-The presets and sliders use one shared alpha array. The resulting row is visible here, and the next frame unfolds the same calculation into a table.</script>
+The presets and sliders use one shared alpha array. Begin with the four-number summary. Reveal its prediction through the same fixed vocabulary head used earlier. The head reads m7 directly here, with no residual addition or attention block. This is a pooled-summary baseline. We predict position 8, after the known input bank, not the later position after watched the. The model is hand-set and untrained, so its top choice may be grammatically unsuitable. The original sentence continues with and. Three presets rank water first with different probabilities, while bank-only narrowly ranks teller above water. The next frame unfolds the weighted contributions. Its preset buttons control the same state. The comparison after that shows all four saved cases.</script>
   <div class="card">
     <h3 class="card-title">The raw weights are normalized to sum to 1.</h3>
     <div class="btn-row" id="s04-presets" data-keep-state>
@@ -5238,21 +5267,45 @@ The presets and sliders use one shared alpha array. The resulting row is visible
       <button type="button" class="btn btn-quiet" data-preset="self">Only bank itself</button>
     </div>
     <div class="wrows" id="s04-wrows" data-keep-state></div>
-    <div class="s04-classroom" id="s04-live-pool"></div>
+    <div class="pool-result">
+      <div id="s04-live-pool"></div>
+      <div class="pool-prediction" id="s04-prediction" data-build="1">
+        <p class="pool-param">Same output head, then softmax</p>
+        <p class="prediction-word" id="s04-prediction-word"></p>
+        <p><span class="pool-score" id="s04-prediction-score"></span> <span class="pool-prob" id="s04-prediction-prob"></span></p>
+      </div>
+    </div>
     <p class="s04-classroom look" id="s04-weight-summary"></p>
     <p class="companion look" id="s04-w-note"></p>
   </div>
+  <p class="prediction-note" data-build="1">Predicting position 8, after <strong>bank</strong>. This untrained head is illustrative. The original sentence continues with <strong>and</strong>.</p>
 </div>
 
 <div class="frame" id="s04-frame-weighted-table" data-title="The chosen weights multiply the corresponding rows" data-autobuild="off">
   <script type="text/x-notes">Which embedding row should a large alpha multiply?
-The row from the same source index j. The footer is the sum of those weighted rows; it still has d_model coordinates.</script>
+The row from the same source index j. Each body cell now shows the product of that source's normalized share and input coordinate. Add down each column to build m7 in the footer. Do not multiply these products by the share again. Cycle all four presets using the synchronized buttons. Focus on river makes its water contribution large. Only bank itself makes every other contribution zero. The footer still has four coordinates.</script>
   <div class="card">
+    <div class="btn-row" id="s04-contribution-presets" data-keep-state></div>
+    <p class="preset-scope">Each contribution = <span class="pool-weight">share</span> × <span class="pool-input">input coordinate</span>. Sum columns for <span class="pool-summary">$m_7$</span>. Shown rounded.</p>
     <div id="s04-w-tab" class="s04-tab"></div>
   </div>
 </div>
 
 <div class="companion" data-kicker="Weighted-pooling worksheet"><div id="s04-w-arith"></div></div>
+
+<div class="frame" id="s04-frame-preset-predictions" data-title="Four summaries, one fixed prediction head" data-autobuild="off">
+  <script type="text/x-notes">Does a different summary always change the highest-ranked word?
+Read the four m7 rows first. Each is a saved preset from the sliders, not a new trained model. Keep the vocabulary head fixed. Reveal the score and probability columns, computed using all twenty vocabulary scores. Water remains the top choice for equal, river and fisherman presets, although its probability changes. Bank-only narrowly prefers teller. These results belong to the hand-set demonstration head. They are not validated language predictions: the original next word at position 8 is and. The largest coordinate in m7 is not itself a vocabulary probability, and the head must read all four coordinates. There is no residual addition here. Custom slider choices affect the live readout, while this table always compares the four saved presets.</script>
+  <p class="preset-intro">Input: The fisherman sat beside the river <strong>bank</strong> ___ <span class="pool-score">(position 8)</span></p>
+  <div class="preset-head-equation">
+    $$\htmlClass{pool-score}{\ell}=\htmlClass{pool-summary}{m_7}\,\htmlClass{pool-param}{W_{\mathrm{vocab}}}+\htmlClass{pool-param}{b},\qquad \htmlClass{pool-prob}{p}=\operatorname{softmax}(\htmlClass{pool-score}{\ell})$$
+  </div>
+  <p class="prediction-note"><span class="pool-summary">Four context numbers</span> enter the <span class="pool-param">same fixed head</span>. Softmax turns all <span class="pool-score">20 word scores</span> into <span class="pool-prob">next-word probabilities</span>.</p>
+  <div class="preset-table-wrap"><table class="preset-table" id="s04-preset-predictions" aria-label="Four saved summary presets and their predictions at position 8"></table></div>
+  <p class="preset-takeaway" data-build="1">A different summary can change the probabilities <strong>without changing the top word</strong>.</p>
+  <p class="prediction-note" data-build="1">Each row is a separate prediction. This untrained head does not recover the original next word, <strong>and</strong>.</p>
+  <div class="companion"><p>Probabilities use unrounded summaries and the existing saved vocabulary weights and biases. The rows compare the four saved presets, independent of custom slider values. The live readout on the weight-selection slide also supports custom weights and reports ties. The summary feeds the head directly in this diagnostic baseline. Later attention examples use a contextual update and residual addition, a different input to the same head.</p></div>
+</div>
 
 <div class="frame" id="s04-frame-weight-question" data-title="Where should the weights come from?" data-autobuild="off">
   <script type="text/x-notes">
@@ -5416,9 +5469,10 @@ Timing: two minutes.
   const meanSlider=AT.ui.slider({...sliderOptions,into:S.querySelector('#s04-islider')});
   drawMean(T);
 
-  /* ---- frame 2, weighted pooling (i = 7, bank): sliders set raw weights, the table shows the normalised α ---- */
+  /* Hand-chosen pooling: one state drives the summary, contribution worksheet and head. */
   const W = toks.map(() => 1);
   const alpha = toks.map(() => 1 / T);
+  const contributions = () => E.map((row,j) => row.map(x => alpha[j]*x));
   const rowsHost = S.querySelector('#s04-wrows');
   const inputs = toks.map((t, j) => {
     const id = 's04-w' + j;
@@ -5429,10 +5483,10 @@ Timing: two minutes.
     inp.addEventListener('input', () => { W[j] = +inp.value; drawW(); });
     return { inp: inp, out: out };
   });
-  const wTab = AT.ui.table(E, { rowLabels: labels, rowCls: 'e', cornerLabel: 'token', decimals: 2,
+  const wTab = AT.ui.table(contributions(), { rowLabels: labels, rowCls: 'e', cornerLabel: 'source', decimals: 2,
     lead: [{ label: '$\\va{\\alpha_{7j}}$', cls: 'a', heat: true, values: alpha }],
     footer: { label: '$m_7$', values: AT.zeros(D), cls: 'v', lead: [1] },
-    caption: 'Look at the $\\va{\\alpha_{7j}}$ column: the darker the cell, the more of that row ends up in the footer $m_7 = \\sum_j \\va{\\alpha_{7j}}\\,\\ve{e_j}$. The row with the largest weight is outlined.',
+    caption: 'The body already contains weighted contributions $\\va{\\alpha_{7j}}\\,\\ve{e_j}$. Add each column, without multiplying by the share again. Calculations use unrounded values.',
     note: 'Hover or focus a footer cell to see the terms of its sum.', into: S.querySelector('#s04-w-tab') });
   markFooter(wTab, 1);
   wTab.footer.cells.forEach((td, c) => wTab.tipOn(td, () => termLine(alpha, c)));
@@ -5441,22 +5495,49 @@ Timing: two minutes.
   const noteEl = S.querySelector('#s04-w-note');
   const livePool = AT.ui.vec(pooled(alpha), { cls: 'v', axes: 'e', label: 'm_7', into: S.querySelector('#s04-live-pool') });
   const shortNote = S.querySelector('#s04-weight-summary');
+  const prediction = S.querySelector('#s04-prediction');
+  function headResult(c){
+    const h = AT.head(c), max = Math.max(...h.logits);
+    const winners = AT.range(h.logits.length).filter(j => Math.abs(h.logits[j]-max)<1e-12);
+    return {...h,winners};
+  }
+  function recordResult(el,c,weights,h){
+    el.dataset.values=JSON.stringify(c);
+    el.dataset.weights=JSON.stringify(weights);
+    el.dataset.logits=JSON.stringify(h.logits);
+    el.dataset.probs=JSON.stringify(h.probs);
+    el.dataset.winners=JSON.stringify(h.winners);
+    el.dataset.position='8';
+  }
   function drawW(){
     const tot = AT.sum(W);
     W.forEach((w, j) => { alpha[j] = tot > 0 ? w / tot : 1 / T; });
     inputs.forEach((o, j) => { o.out.textContent = AT.fmt(W[j], 1); });
-    wTab.update(E);
-    wTab.setFooter(pooled(alpha), [AT.sum(alpha)]);
+    const c = pooled(alpha), rc = readE(c), h = headResult(c);
+    const products = contributions();
+    wTab.update(products);
+    wTab.dataset.contributions=JSON.stringify(products);
+    wTab.setFooter(c, [AT.sum(alpha)]);
     const top = AT.argmax(alpha);
     const spread = Math.max(...alpha) - Math.min(...alpha);
     wTab.setHighlightRow(spread < 1e-9 ? -1 : top);
     wCalc.update(alpha);
-    const c = pooled(alpha), rc = readE(c);
     livePool.update(c);
     livePool.dataset.values=JSON.stringify(c);
     livePool.dataset.weights=JSON.stringify(alpha);
-    shortNote.textContent = spread < 1e-9 ? 'Equal weights give the mean again.' : 'Most weight: ' + toks[top] + '. The pooled row moves toward that source.';
-    noteEl.textContent = (spread < 1e-9
+    recordResult(prediction,c,alpha,h);
+    const winner = h.winners[0], tied = h.winners.length>1;
+    const wordEl = S.querySelector('#s04-prediction-word');
+    wordEl.textContent=tied ? h.winners.length+' words tied for first' : 'Top word: '+AT.vocab[winner];
+    wordEl.title=h.winners.map(j=>AT.vocab[j]).join(', ');
+    S.querySelector('#s04-prediction-score').textContent='Score '+AT.fmt(h.logits[winner],3)+' ·';
+    S.querySelector('#s04-prediction-prob').textContent='Probability '+AT.fmt(h.probs[winner],3)+(tied?' each':'');
+    S.querySelectorAll('#s04-presets button, #s04-contribution-presets button').forEach(b=>{
+      const active=presets[b.dataset.preset].every((w,j)=>Math.abs(w-W[j])<1e-12);
+      b.setAttribute('aria-pressed',String(active));b.classList.toggle('is-active',active);
+    });
+    shortNote.textContent = tot===0 ? 'All raw weights are zero: using equal shares as a fallback.' : spread < 1e-9 ? 'Equal weights give the mean again.' : 'Most weight: ' + toks[top] + '. The pooled row moves toward that source.';
+    noteEl.textContent = (tot===0 ? 'All raw weights are zero: using equal shares as a fallback.' : spread < 1e-9
       ? 'All weights equal: this is exactly mean pooling again.'
       : 'Largest weight on token ' + (top + 1) + ' (' + toks[top] + '): the footer moves towards that row.')
       + ' Reading the summary for bank: ' + (rc.list || 'everything near 0') + ', ' + rc.gist + '.';
@@ -5467,13 +5548,37 @@ Timing: two minutes.
     fisherman: [0.3, 4.0, 0.3, 0.6, 0.3, 1.0, 0.6],
     self: [0, 0, 0, 0, 0, 0, 1]
   };
-  S.querySelector('#s04-presets').addEventListener('click', (ev) => {
-    const b = ev.target.closest('button[data-preset]');
-    if (!b) return;
-    const p = presets[b.dataset.preset] || presets.equal;
-    p.forEach((w, j) => { W[j] = w; inputs[j].inp.value = w; });
+  const primaryPresets = S.querySelector('#s04-presets');
+  const contributionPresets = S.querySelector('#s04-contribution-presets');
+  primaryPresets.querySelectorAll('button').forEach(b=>contributionPresets.appendChild(b.cloneNode(true)));
+  [primaryPresets,contributionPresets].forEach(host=>host.addEventListener('click',ev=>{
+    const b=ev.target.closest('button[data-preset]');
+    if(!b)return;
+    presets[b.dataset.preset].forEach((w,j)=>{W[j]=w;inputs[j].inp.value=w;});
     drawW();
+  }));
+  /* The comparison stays at the four saved cases, even while custom sliders change. */
+  const comparison=S.querySelector('#s04-preset-predictions');
+  const groupSummary=AT.h('th',{scope:'colgroup',colspan:D,class:'pool-summary'});
+  AT.tex(groupSummary,'m_7');
+  comparison.appendChild(AT.h('thead',{},
+    AT.h('tr',{},AT.h('th',{scope:'col',rowspan:2},'Preset'),groupSummary,
+      AT.h('th',{scope:'colgroup',colspan:3,'data-build':1},'Head prediction at position 8')),
+    AT.h('tr',{},...AX.map(a=>AT.h('th',{scope:'col',class:'pool-summary'},a)),
+      ...[['Top word',''],['Score','pool-score'],['Probability','pool-prob']].map(([label,cls])=>AT.h('th',{scope:'col',class:cls,'data-build':1},label)))
+  ));
+  const body=AT.h('tbody');
+  Object.entries(presets).forEach(([key,raw])=>{
+    const weights=raw.map(w=>w/AT.sum(raw)),c=pooled(weights),h=headResult(c),winner=h.winners[0];
+    const label=primaryPresets.querySelector('[data-preset="'+key+'"]').textContent;
+    const row=AT.h('tr',{'data-preset':key},AT.h('th',{scope:'row'},label),
+      ...c.map(x=>AT.h('td',{class:'summary-cell'},AT.fmt(x,2))),
+      AT.h('td',{class:'word-cell','data-build':1},AT.vocab[winner]),
+      AT.h('td',{class:'pool-score','data-build':1},AT.fmt(h.logits[winner],3)),
+      AT.h('td',{class:'pool-prob','data-build':1},AT.fmt(h.probs[winner],3)));
+    recordResult(row,c,weights,h);body.appendChild(row);
   });
+  comparison.appendChild(body);
   drawW();
 })();
 </script>

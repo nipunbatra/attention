@@ -1,5 +1,12 @@
 # Classroom release checks
 
+## 2026-09-14: connect hand-chosen summaries to word predictions
+
+- The four preset controls now reveal a live prediction from the existing fixed vocabulary head after showing the pooled row m7. The weighted-row worksheet has synchronized preset controls and displays the actual alpha-times-input contributions, whose columns add into m7. It labels rounding explicitly. Custom sliders, zero-total fallback and tied highest scores remain supported.
+- Added one comparison frame: four saved m7 rows first, then the top word, score and probability for each. All twenty unrounded logits enter softmax. Equal, river-focused and fisherman-focused presets rank water first, with probabilities approximately 0.223, 0.425 and 0.344; bank-only narrowly ranks teller first at 0.144. These are the unchanged hand-set head's outputs, not desirable language predictions. Slides and teaching notes explicitly identify position 8 after bank, the original continuation and, and the untrained-head limitation. This baseline feeds m7 directly to the head, without a residual addition.
+- The presentation skill guided the context-before-prediction reveals, native editable comparison, and matching summary/parameter/score/probability colours. Visually inspected desktop controls, contribution sums, four-case comparison and phone article. A local horizontal scroll preserves the comparison table on narrow screens.
+- Pooling regression independently recomputes every weighted contribution and all twenty logits/probabilities, tests the four presets in both control locations, custom keyboard input, zero weights, a two-word tie, state retention, reveal order, colour consistency and phone bounds. All 306 presentation states / 540 formulas, 132 controls, eight live/reference cases (7,980 finite values, max error 8.88e-16), and 390px article QA pass. No model, Part I, shared-runtime, dependency or PDF changes.
+
 ## 2026-09-14: motivate unequal shares before alpha
 
 - Inserted one example-led frame between the mean worksheet and the numbered hand-chosen-weight example. The seven-word prefix ends at the known input bank. Fisherman and river are bold, blue and marked as earlier clues, while bank keeps the teal receiving-token colour. The first question asks students to distinguish the riverside meaning from the financial meaning.
