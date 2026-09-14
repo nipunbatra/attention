@@ -70,7 +70,7 @@ Build the diagram one operation at a time. Q and K create the weights. V bypasse
   <div id="s16-flow-stepper"></div>
 </div>
 
-<div class="frame" id="s16-frame1" data-title="What does one row of each matrix mean?" data-autobuild="off">
+<div class="companion" id="s16-frame1" data-title="What does one row of each matrix mean?" data-autobuild="off">
   <script type="text/x-notes">
 Where is the bank calculation inside these matrices?
 Each token is one row. We use the short seven-token prefix here, so bank is the final row. Query and key widths must match. Value width may differ; W_O maps the message back to model width before residual addition. Read the current dimensions from the table.
@@ -88,7 +88,7 @@ Each token is one row. We use the short seven-token prefix here, so bank is the 
 
 </div>
 
-<div class="frame" id="s16-frame2" data-title="Can one matrix product do every row at once?">
+<div class="companion" id="s16-frame2" data-title="Can one matrix product do every row at once?">
   <script type="text/x-notes">
 How does the scalar calculation become a matrix product without changing its meaning?
 Keep row 7 highlighted and step through the products. Q and K are both T × 3, so Q K transpose is T × T. Each row of A independently mixes the rows of V.
@@ -101,16 +101,19 @@ Keep row 7 highlighted and step through the products. Q and K are both T × 3, s
 
 </div>
 
-<div class="frame" id="s16-frame3-routing" data-title="Matrix form, first phase: choose where every row reads">
-  <script type="text/x-notes">QK transpose compares every receiver with every source. The mask blocks the future; softmax makes each surviving row sum to one.</script>
+<div class="frame" id="s16-frame3-routing" data-title="The same calculation for every token" data-autobuild="off">
+  <script type="text/x-notes">Read the grid left to right, then down. QK transpose compares every receiver with every source. The mask blocks the future; row-wise softmax produces source weights. AV mixes values, W_O maps messages to model width, and the residual adds the original rows. These are the diagram's operations batched across tokens, not another mechanism.</script>
+  <p>Stack one token per row: $\vq{Q}=\ve{E}W_Q,\ \vk{K}=\ve{E}W_K,\ \vv{V}=\ve{E}W_V$.</p>
   <div class="eqs">
     <span>$S = \dfrac{\vq{Q}\,\vk{K}^\top}{\sqrt{d_k}}$</span>
     <span>$\va{A} = \operatorname{softmax}_{\text{row}}(S + M)$</span>
+    <span>$H = \va{A}\,\vv{V}$</span>
+    <span>$\vp{E'} = \ve{E} + \underbrace{H W_O}_{\vd{\Delta E}}$</span>
   </div>
-  <div class="callout callout-key" data-build="1"><strong>Routing weights:</strong> row $i$ of $\va{A}$ contains the source weights chosen by receiver $i$.</div>
+  <p class="why">$M$ blocks future positions. Each row of $\va{A}$ sums to 1; each row of $H$ is that receiver's message. $W_O$ maps it back to model width before addition.</p>
 </div>
 
-<div class="frame" id="s16-frame3" data-title="Matrix form, second phase: mix, project, and add">
+<div class="companion" id="s16-frame3" data-title="Matrix form, second phase: mix, project, and add">
   <script type="text/x-notes">
 Which operation chooses sources, which mixes information, and which adds the update?
 A contains the source weights; A V forms messages; W_O maps them back; the residual connection adds E. This is one attention sublayer, not the full Transformer block.
@@ -126,13 +129,13 @@ A contains the source weights; A V forms messages; W_O maps them back; the resid
 </div>
 
 </div>
-<div class="frame" id="s16-frame4" data-title="The matrix equations are the same token-by-token story">
+<div class="companion" id="s16-frame4" data-title="The matrix equations are the same token-by-token story">
 <script type="text/x-notes">Ask students to point from each matrix line to the corresponding single-token operation from the walkthrough.
 The matrix notation is batching, not a new mechanism.</script>
 <div id="s16-callouts"><div id="s16-callout-key"></div></div>
 </div>
 
-<div class="frame" id="s16-frame5" data-title="What have we built, and what is still missing?">
+<div class="companion" id="s16-frame5" data-title="What have we built, and what is still missing?">
 <script type="text/x-notes">This is one causal attention head, its output projection and residual addition.
 A full Transformer block adds the remaining architecture in Part 3.</script>
 <div id="s16-callout-note"></div>

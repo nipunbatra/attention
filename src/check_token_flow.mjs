@@ -88,7 +88,7 @@ try{
   const scaleMath=(await page.locator('#s08-frame-scores [data-scale-intro] annotation').allTextContents()).join(' ');
   assert(scaleMath.includes('d_k='+model.d_k)&&scaleMath.includes('\\sqrt{'+model.d_k+'}'));
   assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'First-use scale note fits with all seven scores.');
-  assert.equal(await page.locator('#s12 .frame').count(),5,'Keep the existing full scaling lesson.');
+  assert.equal(await page.locator('#s12 .frame').count(),2,'Keep the scaling explanation and real before/after example; extra experiments remain in reading mode.');
   await go('s12-frame-scaling');
   assert.match(await page.locator('#s12-frame-scaling .prose p').first().innerText(),/Earlier.*three-coordinate.*Here is why/s);
   await page.evaluate(()=>AT.present.go('s12',1,3));
@@ -123,7 +123,12 @@ try{
     await page.screenshot({path:path.join(shots,'prediction-'+context+'.png')});
   }
   for(const [role,field]of [['query','Q'],['key','K'],['value','V']]){
-    await go('s11-frame-'+role+'-calc');
+    if(role==='query') await go('s11-frame-query-calc');
+    else {
+      await page.evaluate(()=>AT.present.exit());
+      await page.locator('#s11-frame-'+role+'-calc').scrollIntoViewIfNeeded();
+      assert(await page.locator('#s11-frame-'+role+'-calc').evaluate(el=>el.classList.contains('companion')),'Additional projection arithmetic stays available in reading mode.');
+    }
     for(const j of [6,5,1,0,6]){
       await page.locator('#s11-frame-'+role+'-calc [data-token="'+j+'"]').click();
       for(const [r,f]of [['query','Q'],['key','K'],['value','V']]){
@@ -134,9 +139,10 @@ try{
     }
     await page.screenshot({path:path.join(shots,role+'-derivation.png')});
   }
+  await page.evaluate(()=>AT.present.enter());
   await go('s07-frame-pair');
   await page.locator('#s07-rchips button').nth(5).click();
-  const changedFrames=['s07-frame1','s07-frame-keys','s07-frame-values','s07-frame-pair','s08-frame-phases','s08-frame-scores','s12-frame-scaling','s09-frame3','s09-frame4','s09-frame-prediction-input','s09-frame-prediction-output','s11-frame1','s11-frame-query-calc','s11-frame-key-calc','s11-frame-value-calc'];
+  const changedFrames=['s07-frame1','s07-frame-keys','s07-frame-values','s07-frame-pair','s08-frame-phases','s08-frame-scores','s12-frame-scaling','s09-frame3','s09-frame4','s09-frame-prediction-input','s09-frame-prediction-output','s11-frame1','s11-frame-query-calc'];
   for(const id of changedFrames){
     await go(id);await page.screenshot({path:path.join(shots,id+'.png')});
   }

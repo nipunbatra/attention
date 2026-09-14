@@ -63,6 +63,7 @@ body.present #s11 .s11-projection-calc .calc-rounding{display:none}
 #s11 .s11-calc-controls [aria-pressed=true]{background:var(--ink);color:#fff}
 #s11 .s11-calc-caption{font-size:18px;line-height:1.4}
 body.present #s11 .s11-calc-caption{font-size:22px}
+body.present #s11-frame3 .motif.has-active [data-stage]{opacity:1}
 </style>
 <header class="sec-head">
   <span class="sec-num">11</span>
@@ -82,14 +83,13 @@ Are q, k and v separately learned lookup rows?
 No: the trainable projection matrices transform the current token row. These projected representations have different jobs; none is the updated residual-stream row passed to the next sublayer.
   </script>
 <div class="prose">
-  <p>We used supplied rows to match, mix values, update a token and predict. <strong>Now recover those same rows from the embeddings we already have.</strong></p>
-  <p>Take the current representation of one token, $\ve{e_i}$. Three shared matrices read it and produce three short rows.
-  Their weights are learned during training, then held fixed for this forward pass. Our example uses hand-set weights; none of these rows replaces $\ve{e_i}$.</p>
+  <p><strong>Recover the supplied rows from the current token representation.</strong> Every token uses the same three projection matrices:</p>
   $$\ve{e_i} \;\rightarrow\; \begin{cases} \vq{q_i} = \ve{e_i}\,W_Q \\[2pt] \vk{k_i} = \ve{e_i}\,W_K \\[2pt] \vv{v_i} = \ve{e_i}\,W_V \end{cases}$$
+  <p>The matrices are learned parameters, fixed during a forward pass. The rows are recomputed from the input; none replaces $\ve{e_i}$. Our example uses hand-set parameters.</p>
 </div>
 
 </div>
-<div class="frame" id="s11-frame-projections" data-title="One input row, three different jobs">
+<div class="companion" id="s11-frame-projections" data-title="One input row, three different jobs">
   <script type="text/x-notes">
 What changes when we select a different token?
 Read the input row, then its query, key and value. Each uses a shared matrix; none has received contextual information yet.
@@ -102,7 +102,7 @@ Read the input row, then its query, key and value. Each uses a shared matrix; no
   <div id="s11-proj"></div>
 </div>
 </div>
-<div class="frame" id="s11-frame-matrices" data-title="Which parameters produce those rows?">
+<div class="companion" id="s11-frame-matrices" data-title="Which parameters produce those rows?">
   <script type="text/x-notes">
 Which matrix is shared, and which row depends on the selected token?
 Each column of a projection forms one output coordinate. The worksheet retains the selected token from the preceding frame. In training, the matrices are parameters; q, k and v are recomputed.
@@ -125,21 +125,21 @@ Start at bank. This is exactly q_7 from Section 7, not a different example. Each
 <p class="s11-calc-caption sym-q">The receiver's row becomes its query: what information to look for.</p>
 </div>
 
-<div class="frame" id="s11-frame-key-calc" data-title="Make a key from each source token's row" data-autobuild="off">
+<div class="companion" id="s11-frame-key-calc" data-title="Make a key from each source token's row" data-autobuild="off">
 <script type="text/x-notes">Whose row supplies the key?
 A source's own row supplies its key, not the receiving token's row. Select river to recover the key we compared against bank's query. Every source uses the same W_K.</script>
 <div class="card"><div class="s11-calc-controls" data-keep-state></div><div id="s11-key-calc" class="s11-projection-calc"></div></div>
 <p class="s11-calc-caption sym-k">The source's row becomes its key: when this source could help.</p>
 </div>
 
-<div class="frame" id="s11-frame-value-calc" data-title="Read the same source through a different matrix" data-autobuild="off">
+<div class="companion" id="s11-frame-value-calc" data-title="Read the same source through a different matrix" data-autobuild="off">
 <script type="text/x-notes">What changes between producing a key and a value?
 The source's input row stays the same. W_V now produces the information to send, on two value axes instead of three matching axes. This recovers the exact value used in the earlier weighted sum. The matrices are parameters; these vectors are computed anew for each input.</script>
 <div class="card"><div class="s11-calc-controls" data-keep-state></div><div id="s11-value-calc" class="s11-projection-calc"></div></div>
 <p class="s11-calc-caption sym-v">Same source row, different weights: the value is what this source sends.</p>
 </div>
 
-<div class="frame" id="s11-frame2" data-title="Which objects are used inside one layer?">
+<div class="companion" id="s11-frame2" data-title="Which objects are used inside one layer?">
   <script type="text/x-notes">
 What gets computed for this layer, and what is passed onward?
 Advance the lifetime strip. Distinguish data flow between sublayers from storage: training may retain intermediates for backward, and generation may cache keys and values.
@@ -151,7 +151,7 @@ Advance the lifetime strip. Distinguish data flow between sublayers from storage
   <div class="scroll-x dotgrid s11-lifebox" id="s11-lifebox"><div id="s11-life"></div></div>
 </div>
 </div>
-<div class="frame" id="s11-frame-lifetime-steps" data-title="Follow one row through the layer">
+<div class="companion" id="s11-frame-lifetime-steps" data-title="Follow one row through the layer">
   <script type="text/x-notes">
 Which working vectors are inputs, and what is finally added?
 Advance the existing five-step calculation. The original row supplies the projections and remains the residual input; newly updated rows do not feed this same layer.

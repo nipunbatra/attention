@@ -34,7 +34,7 @@ The claim is about the spread of scores, not every particular dot product. State
 <pre class="companion pytorch"><code>scores = (Q @ K.T) / math.sqrt(Q.shape[-1])</code></pre>
 </div>
 
-<div class="frame" data-title="Fixed raw scores, changing only the divisor">
+<div class="companion" data-title="Fixed raw scores, changing only the divisor">
 <script type="text/x-notes">Which probability column changes when the raw scores stay fixed and the divisor grows?
 
 Before moving the slider, explain that these are illustrative scores, not new embeddings or a retrained model. The four raw scores never change. Only the division by sqrt(d_k) changes. This panel shows the effect of scaling. The simulation on the next frame supplies the variance-growth argument.</script>
@@ -49,7 +49,7 @@ Before moving the slider, explain that these are illustrative scores, not new em
 <div class="companion" id="s12-callout"></div>
 </div>
 
-<div class="frame" data-title="Does the variance calculation hold in a simulation?">
+<div class="companion" data-title="Does the variance calculation hold in a simulation?">
 <script type="text/x-notes">What should happen to the two variance columns as d_k grows?
 
 These are actual sampled dot products from independent standard-normal coordinates, not the four illustrative scores. Read d_k = 1, 16, 64: raw variance roughly follows the dimension; scaled variance remains near one. Finite sampling explains the small deviations.</script>
@@ -62,7 +62,7 @@ These are actual sampled dot products from independent standard-normal coordinat
 </div>
 </div>
 
-<div class="frame" data-title="Return to bank: the same query and keys, with and without scaling">
+<div class="frame" id="s12-frame-bank" data-title="Scaling changes the weights, not the ranking">
 <script type="text/x-notes">Does scaling change which key has the highest score?
 
 No: dividing all scores by the same positive number preserves their ordering. It changes the relative weights after softmax. Compare river's weight before and after division by sqrt(3); our earlier calculations used the scaled column.</script>
@@ -70,10 +70,11 @@ No: dividing all scores by the same positive number preserves their ordering. It
   <h3 class="card-title">In the toy model (d<sub>k</sub> = <span id="s12-dk"></span>): bank reading the first 7 tokens</h3>
   <p class="companion s12-cap">Same four columns, real numbers. The note in the following block says how much the factor $\sqrt{d_k}$ changes the top weight.</p>
   <div id="s12-toy"></div>
+  <p class="s12-cap"><strong>River still wins.</strong> Scaling reduces the score gaps, so softmax is less concentrated.</p>
 </div>
 </div>
 
-<div class="frame" data-title="What did scaling change for bank?">
+<div class="companion" data-title="What did scaling change for bank?">
 <script type="text/x-notes">Did scaling change the winning key?
 No. Dividing by one positive constant preserves score order. It changes the gap seen by softmax, and therefore the degree of concentration.</script>
   <div class="prose"><p id="s12-toy-note"></p></div>

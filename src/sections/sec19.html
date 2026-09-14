@@ -1,4 +1,4 @@
-<section id="s19" class="sec" data-title="Three summaries" data-lit="">
+<section id="s19" class="sec" data-title="Generation and training" data-lit="">
 <style>
 #s19 .lvl{font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--ink-3);margin:0 0 6px}
 #s19 .quote{font-size:1.25em;line-height:1.45;font-weight:500;margin:0}
@@ -54,8 +54,8 @@ body.present #s19-math-message>.card{padding:18px 22px;margin-bottom:0}
 <header class="sec-head">
   <span class="sec-num">19</span>
   <div>
-    <p class="eyebrow">Explain attention in words, trace its operations, then write the matrix equations.</p>
-    <h2>Three summaries</h2>
+    <p class="eyebrow">Use the prediction to generate text, or its error to learn parameters.</p>
+    <h2>Generation and training</h2>
   </div>
 </header>
 
@@ -64,7 +64,7 @@ body.present #s19-math-message>.card{padding:18px 22px;margin-bottom:0}
   <p>Play the chain to follow each stage in the diagram. Then switch the sentence in the last card: the highest-probability word changes, but the equations stay the same. Each token reads itself and earlier tokens, mixes their values, and receives the projected message through a residual addition.</p>
 </div>
 
-<div class="frame" id="s19-frame1" data-title="Can we tell the whole attention story?">
+<div class="companion" id="s19-frame1" data-title="Can we tell the whole attention story?">
   <script type="text/x-notes">
 Can you name each step before it lights up?
 Read the intuitive sentence, then advance the operational chain. Include self in the causal prefix. Distinguish attention’s projected message from the residual addition.
@@ -75,7 +75,7 @@ Read the intuitive sentence, then advance the operational chain. Include self in
 </div>
 </div>
 
-<div class="frame" id="s19-operational" data-title="Follow the operational chain one stage at a time">
+<div class="companion" id="s19-operational" data-title="Follow the operational chain one stage at a time">
 <script type="text/x-notes">Ask students to name the next box before advancing.
 The query-key branch routes; the values carry; the residual preserves the input.</script>
 <div class="card">
@@ -94,7 +94,7 @@ The query-key branch routes; the values carry; the residual preserves the input.
 
 </div>
 
-<div class="frame" id="s19-frame2" data-title="Matrix summary, first phase: route by content">
+<div class="companion" id="s19-frame2" data-title="Matrix summary, first phase: route by content">
   <script type="text/x-notes">
 Which equation gives the weights, and which gives the updated rows?
 Read dimensions beside each line. Row-wise softmax is over source positions; vocabulary softmax has not happened yet.
@@ -108,7 +108,7 @@ Read dimensions beside each line. Row-wise softmax is over source positions; voc
 
 </div>
 
-<div class="frame" id="s19-math-message" data-title="Matrix summary, second phase: carry and add information">
+<div class="companion" id="s19-math-message" data-title="Matrix summary, second phase: carry and add information">
   <script type="text/x-notes">A times V forms one message per receiver. W_O maps each message to model width. The residual adds it to the input row.</script>
   <div class="card">
     <p class="lvl">3 · Mathematical, continued</p>
@@ -117,7 +117,7 @@ Read dimensions beside each line. Row-wise softmax is over source positions; voc
   </div>
 </div>
 
-<div class="frame" id="s19-frame3" data-title="How does context change the next-token probabilities?">
+<div class="companion" id="s19-frame3" data-title="How does context change the next-token probabilities?">
   <script type="text/x-notes">
 Which updated row does the head use to predict after this prefix?
 It uses position 10, the final the, not bank’s position-7 update. Change the context and compare vocabulary probabilities. A sampling or decoding rule chooses a token; generation appends it and repeats with a new last position.
@@ -137,7 +137,7 @@ It uses position 10, the final the, not bank’s position-7 update. Change the c
 probs = logits.softmax(dim=-1)</code></pre>
 </div>
 
-<div class="frame" id="s19-frame-probabilities" data-title="From the updated row to vocabulary probabilities">
+<div class="companion" id="s19-frame-probabilities" data-title="From the updated row to vocabulary probabilities">
   <script type="text/x-notes">
 Which word has the highest probability, and has a token been selected yet?
 The head reads the final updated row. The table gives logits and probabilities; the bars show the same distribution. These are vocabulary probabilities, not attention weights. Return one frame to change the context.
@@ -191,19 +191,14 @@ Is this one attention sublayer already a trained full Transformer?
 No. We traced a hand-designed single-head forward computation. Learning changes parameters across examples; stacking applies later blocks to updated rows; generation repeats prediction with fixed parameters and a growing prefix.
   </script>
 <div class="card">
-  <h3 class="card-title">What this example has, and what it does not yet have</h3>
-  <ul class="s19-recap">
-    <li>One attention head computes a contextual update; residual addition forms $e_i' = e_i + \Delta e_i$.</li>
-    <li>The vocabulary head reads the final updated row to give next-token probabilities.</li>
-    <li>Generation repeats that prediction with a growing prefix and fixed parameters.</li>
-    <li>Training updates parameters; stacked layers apply further transformations. Those are different operations.</li>
-  </ul>
+  <h3 class="card-title">One head, not yet a full Transformer</h3>
+  <p>We traced one causal attention head, its output projection and residual connection, then a vocabulary head. The example's parameters are hand-designed, not trained.</p>
   <div class="companion" id="s19-notation"></div>
   <p class="companion look">Every symbol on this page in one place; the shape column uses the toy sizes.</p>
 </div>
 
 <div class="prose">
-  <p>Part 3 adds several heads, stacked layers and the rest of the Transformer.</p>
+  <p><strong>Part 3:</strong> multiple heads, feed-forward layers, normalization and stacked blocks.</p>
 </div>
 
 </div>

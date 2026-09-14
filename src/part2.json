@@ -67,7 +67,7 @@
    "section": "s14"
   },
   {
-   "label": "Full walkthrough, one step at a time",
+   "label": "Optional numerical walkthrough",
    "section": "s15"
   },
   {
@@ -83,7 +83,7 @@
    "section": "s18"
   },
   {
-   "label": "Three summaries",
+   "label": "Generation and training",
    "section": "s19"
   }
  ],
@@ -160,7 +160,7 @@
   },
   {
    "id": "s15",
-   "title": "Full walkthrough, one step at a time",
+   "title": "Optional numerical walkthrough",
    "lit": ""
   },
   {
@@ -180,7 +180,7 @@
   },
   {
    "id": "s19",
-   "title": "Three summaries",
+   "title": "Generation and training",
    "lit": ""
   }
  ],

@@ -836,7 +836,7 @@ body.presenter>*:not(#at-presenter){display:none!important}
 
 <script>
 window.__TOY__ = {"d_model":4,"d_k":3,"d_v":2,"max_context":20,"vocab":["the","fisherman","sat","beside","river","bank","and","watched","she","deposited","cheque","at","water","boats","fish","ducks","teller","clerk","queue","money"],"tok_emb":{"the":[0.0,0.0,0.0,2.4],"fisherman":[2.0,0.0,2.2,0.0],"sat":[0.4,0.0,0.6,1.8],"beside":[0.6,0.0,0.0,2.0],"river":[3.0,0.0,0.0,0.0],"bank":[0.7,0.7,0.0,0.7],"and":[0.0,0.0,0.0,2.2],"watched":[0.6,0.0,0.8,1.6],"she":[0.0,0.0,2.6,0.4],"deposited":[0.0,2.2,0.6,0.4],"cheque":[0.0,3.0,0.0,0.0],"at":[0.0,0.0,0.0,2.0],"water":[3.0,0.0,0.0,0.0],"boats":[2.4,0.0,0.4,0.0],"fish":[2.6,0.0,0.6,0.0],"ducks":[2.2,0.0,0.8,0.0],"teller":[0.0,2.6,1.8,0.0],"clerk":[0.0,2.4,1.8,0.0],"queue":[0.0,2.0,0.6,0.0],"money":[0.0,3.0,0.0,0.0]},"pos_emb":[[0.1,0.0,0.1,-0.1],[0.0,0.1,-0.1,0.0],[-0.1,0.0,0.0,0.1],[0.0,-0.1,0.1,0.0],[0.1,0.1,0.0,-0.1],[0.1,-0.1,0.0,0.1],[0.0,0.0,0.1,0.1],[-0.1,0.1,0.1,0.0],[0.1,0.0,-0.1,0.1],[0.0,0.0,0.0,-0.1],[0.1,0.1,0.1,0.1],[-0.1,-0.1,-0.1,-0.1],[0.1,-0.1,0.1,-0.1],[-0.1,0.1,-0.1,0.1],[0.1,0.1,-0.1,-0.1],[-0.1,-0.1,0.1,0.1],[0.0,0.1,0.1,-0.1],[0.1,0.0,0.1,0.1],[-0.1,0.0,-0.1,0.1],[0.0,-0.1,-0.1,0.1]],"W_Q":[[1.0,0.0,0.0],[0.0,1.0,0.0],[0.0,0.0,0.4],[0.7,0.7,0.0]],"W_K":[[1.0,0.0,0.0],[0.0,1.0,0.0],[0.0,0.0,1.0],[0.0,0.0,0.0]],"W_V":[[1.0,0.0],[0.0,1.0],[0.0,0.0],[0.0,0.0]],"W_O":[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0]],"W_vocab":[[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.5,1.2,1.0,0.7,0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.5,1.2,0.9,0.7],[0.0,0.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.2,0.0,0.0],[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]],"b_vocab":[-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"sentences":{"river":["The","fisherman","sat","beside","the","river","bank","and","watched","the"],"cheque":["She","deposited","the","cheque","at","the","bank","and","watched","the"]},"candidates":{"river":["water","boats","fish","ducks"],"cheque":["teller","clerk","queue","money"]},"axes":{"e":["water","finance","person","glue"],"qk":["setting: water?","setting: finance?","who?"],"v":["says: water scene","says: finance scene"],"short":{"e":["water","finance","person","glue"],"qk":["water?","finance?","who?"],"v":["\u2192water","\u2192finance"]}},"notes":"Toy v3: single-head causal self-attention (d_model=4, d_k=3, d_v=2, vocab=20, ten-token examples, max_context=20), designed BY HAND so that every coordinate has a name that the numbers agree with (see 'axes'). e axes: water, finance, person, glue. q and k axes: setting: water?, setting: finance?, who? (a query row reads 'what I ask for', a key row 'what I offer'). Position vectors add small offsets across the same four coordinates. v has its own narrower axes: says: water scene and says: finance scene; W_O maps them back onto the e axes. Names are illustrative; the matrices are sparse and one-decimal so a student can read each row of W_Q as 'axis -> asks', W_K as 'axis -> offers', W_V as 'axis -> says', W_vocab as 'axis -> votes for these words'. Values are narrower on purpose because they are mixed and sent rather than compared. Before position is added, glue-only token rows have zero keys and values but ask for both settings, which is why the final 'the' reads river or cheque. bank is equal parts water and finance (0.7, 0.7) plus a little glue (0.7); its entries are kept below 1.0 so that bank does not mostly attend to itself (the self score q_bank.k_bank grows with the square of those entries). The twenty position rows are hand-chosen illustrative vectors, not sinusoidal or trained measurements. Real learned embedding coordinates usually mix features rather than matching these teaching labels. Prefix permutations can change this toy's final prediction through position offsets. Patterns produced (all checked on these rounded numbers by make_toy2.py and toy_ref.mjs): (1) in 'The fisherman sat beside the river bank', bank(7) attends river first, fisherman second, itself and the glue words little; (2) in 'She deposited the cheque at the bank', bank(7) attends cheque first, deposited second; (3) the final 'the'(10) reads mostly river/bank/fisherman or cheque/bank/deposited and the output head predicts water > boats > fish > ducks or teller > clerk > queue > money with every other word at most 0.04; (4) the baseline from e_the(10) alone is spread over the eight candidates and is identical for both sentences; (5) with the causal mask off, the early glue words leak attention onto river and bank. Nothing was optimised; a few magnitudes (bank, fisherman, the W_vocab weights) were adjusted by hand from AXES.md."};
-window.__PART__ = {"part":2,"series":"Attention and language","title":"Self-attention, from first principles","subtitle":"How a token reads from the tokens before it, and why that makes the next word easier to predict.","audience":"For students who know embeddings, dot products, softmax and next-token prediction, and who have not yet met attention.","minutes":null,"central":"\\ve{e} \\;\\rightarrow\\; \\vq{Q},\\vk{K},\\vv{V} \\;\\rightarrow\\; \\text{attention } (\\va{\\alpha}) \\;\\rightarrow\\; \\vd{\\Delta e} \\;\\rightarrow\\; \\vp{e + \\Delta e}","centralLabel":"The one chain to remember","legendTitle":"How to read this page: seven colours, seven objects","provenance":"Where the numbers come from: a tiny demonstration model with {{d_model}}-number representations and a {{vocab}}-word vocabulary. Each coordinate was given an illustrative name{{axes}}, and the weights were written by hand so that the names are true. The arithmetic is real, but the model is not a trained language model.","chain":[{"label":"Predict the next token","section":"s01"},{"label":"Baseline: only the last token","section":"s02"},{"label":"Baseline: a fixed window of w tokens","section":"s03"},{"label":"Summarizing the prefix","section":"s04"},{"label":"Attention and the search analogy","section":"s05"},{"label":"Hard retrieval \u2192 soft retrieval","section":"s06"},{"label":"Every token becomes a searchable record","section":"s07"},{"label":"Two jobs: choose weights, then mix values","section":"s08"},{"label":"The contextual update \u0394e","section":"s09"},{"label":"\u201cbank\u201d: same start, different context","section":"s10"},{"label":"Where do queries, keys and values come from?","section":"s11"},{"label":"Why divide by \u221ad_k?","section":"s12"},{"label":"Causal masking","section":"s13"},{"label":"From \u0394e to the next-token probabilities","section":"s14"},{"label":"Full walkthrough, one step at a time","section":"s15"},{"label":"The same thing in matrix form","section":"s16"},{"label":"Attention versus the alternatives","section":"s17"},{"label":"Pause and think","section":"s18"},{"label":"Three summaries","section":"s19"}],"sections":[{"id":"s01","title":"Predict the next token","lit":""},{"id":"s02","title":"Baseline: only the last token","lit":"e"},{"id":"s03","title":"Baseline: a fixed window of w tokens","lit":""},{"id":"s04","title":"Summarizing the prefix","lit":"a"},{"id":"s05","title":"Attention and the search analogy","lit":"q k v"},{"id":"s06","title":"Hard retrieval \u2192 soft retrieval","lit":""},{"id":"s07","title":"Every token becomes a searchable record","lit":""},{"id":"s08","title":"Two jobs: choose weights, then mix values","lit":""},{"id":"s09","title":"The contextual update \u0394e","lit":"d ep"},{"id":"s10","title":"\u201cbank\u201d: same start, different context","lit":""},{"id":"s11","title":"Where do queries, keys and values come from?","lit":""},{"id":"s12","title":"Why divide by \u221ad_k?","lit":""},{"id":"s13","title":"Causal masking","lit":""},{"id":"s14","title":"From \u0394e to the next-token probabilities","lit":""},{"id":"s15","title":"Full walkthrough, one step at a time","lit":""},{"id":"s16","title":"The same thing in matrix form","lit":""},{"id":"s17","title":"Attention versus the alternatives","lit":""},{"id":"s18","title":"Pause and think","lit":""},{"id":"s19","title":"Three summaries","lit":""}],"objects":["e","q","k","v","a","d","ep"],"prev":{"label":"Part 1: From characters to next-token prediction","href":"part1.html","available":true},"next":{"label":"Part 3: Learning, heads, and the Transformer","href":"part3.html","available":true},"index":{"label":"Series home","href":"index.html","available":true},"notation":"part2","footer":"Notation: <span class=\"sym sym-e\">e<\/span> is always the current token representation, and <span class=\"sym sym-d\">\u0394e<\/span> is this page's pedagogical name for the attention output. The addition <span class=\"sym sym-e\">e<\/span>&thinsp;+&thinsp;<span class=\"sym sym-d\">\u0394e<\/span> is the standard residual connection.","durationLabel":"The full walkthrough takes multiple sessions. A classroom route is suggested in Section 1.","hook":"The fisherman sat beside the river bank and watched the ___. You know the next word. What would a model have to read to know it too?"};
+window.__PART__ = {"part":2,"series":"Attention and language","title":"Self-attention, from first principles","subtitle":"How a token reads from the tokens before it, and why that makes the next word easier to predict.","audience":"For students who know embeddings, dot products, softmax and next-token prediction, and who have not yet met attention.","minutes":null,"central":"\\ve{e} \\;\\rightarrow\\; \\vq{Q},\\vk{K},\\vv{V} \\;\\rightarrow\\; \\text{attention } (\\va{\\alpha}) \\;\\rightarrow\\; \\vd{\\Delta e} \\;\\rightarrow\\; \\vp{e + \\Delta e}","centralLabel":"The one chain to remember","legendTitle":"How to read this page: seven colours, seven objects","provenance":"Where the numbers come from: a tiny demonstration model with {{d_model}}-number representations and a {{vocab}}-word vocabulary. Each coordinate was given an illustrative name{{axes}}, and the weights were written by hand so that the names are true. The arithmetic is real, but the model is not a trained language model.","chain":[{"label":"Predict the next token","section":"s01"},{"label":"Baseline: only the last token","section":"s02"},{"label":"Baseline: a fixed window of w tokens","section":"s03"},{"label":"Summarizing the prefix","section":"s04"},{"label":"Attention and the search analogy","section":"s05"},{"label":"Hard retrieval \u2192 soft retrieval","section":"s06"},{"label":"Every token becomes a searchable record","section":"s07"},{"label":"Two jobs: choose weights, then mix values","section":"s08"},{"label":"The contextual update \u0394e","section":"s09"},{"label":"\u201cbank\u201d: same start, different context","section":"s10"},{"label":"Where do queries, keys and values come from?","section":"s11"},{"label":"Why divide by \u221ad_k?","section":"s12"},{"label":"Causal masking","section":"s13"},{"label":"From \u0394e to the next-token probabilities","section":"s14"},{"label":"Optional numerical walkthrough","section":"s15"},{"label":"The same thing in matrix form","section":"s16"},{"label":"Attention versus the alternatives","section":"s17"},{"label":"Pause and think","section":"s18"},{"label":"Generation and training","section":"s19"}],"sections":[{"id":"s01","title":"Predict the next token","lit":""},{"id":"s02","title":"Baseline: only the last token","lit":"e"},{"id":"s03","title":"Baseline: a fixed window of w tokens","lit":""},{"id":"s04","title":"Summarizing the prefix","lit":"a"},{"id":"s05","title":"Attention and the search analogy","lit":"q k v"},{"id":"s06","title":"Hard retrieval \u2192 soft retrieval","lit":""},{"id":"s07","title":"Every token becomes a searchable record","lit":""},{"id":"s08","title":"Two jobs: choose weights, then mix values","lit":""},{"id":"s09","title":"The contextual update \u0394e","lit":"d ep"},{"id":"s10","title":"\u201cbank\u201d: same start, different context","lit":""},{"id":"s11","title":"Where do queries, keys and values come from?","lit":""},{"id":"s12","title":"Why divide by \u221ad_k?","lit":""},{"id":"s13","title":"Causal masking","lit":""},{"id":"s14","title":"From \u0394e to the next-token probabilities","lit":""},{"id":"s15","title":"Optional numerical walkthrough","lit":""},{"id":"s16","title":"The same thing in matrix form","lit":""},{"id":"s17","title":"Attention versus the alternatives","lit":""},{"id":"s18","title":"Pause and think","lit":""},{"id":"s19","title":"Generation and training","lit":""}],"objects":["e","q","k","v","a","d","ep"],"prev":{"label":"Part 1: From characters to next-token prediction","href":"part1.html","available":true},"next":{"label":"Part 3: Learning, heads, and the Transformer","href":"part3.html","available":true},"index":{"label":"Series home","href":"index.html","available":true},"notation":"part2","footer":"Notation: <span class=\"sym sym-e\">e<\/span> is always the current token representation, and <span class=\"sym sym-d\">\u0394e<\/span> is this page's pedagogical name for the attention output. The addition <span class=\"sym sym-e\">e<\/span>&thinsp;+&thinsp;<span class=\"sym sym-d\">\u0394e<\/span> is the standard residual connection.","durationLabel":"The full walkthrough takes multiple sessions. A classroom route is suggested in Section 1.","hook":"The fisherman sat beside the river bank and watched the ___. You know the next word. What would a model have to read to know it too?"};
 </script>
 <script>
 /* shared.js: the AT namespace, with toy-model math, KaTeX helpers, UI components, motif and flow.
@@ -8308,6 +8308,7 @@ body.present #s11 .s11-projection-calc .calc-rounding{display:none}
 #s11 .s11-calc-controls [aria-pressed=true]{background:var(--ink);color:#fff}
 #s11 .s11-calc-caption{font-size:18px;line-height:1.4}
 body.present #s11 .s11-calc-caption{font-size:22px}
+body.present #s11-frame3 .motif.has-active [data-stage]{opacity:1}
 </style>
 <header class="sec-head">
   <span class="sec-num">11</span>
@@ -8327,14 +8328,13 @@ Are q, k and v separately learned lookup rows?
 No: the trainable projection matrices transform the current token row. These projected representations have different jobs; none is the updated residual-stream row passed to the next sublayer.
   </script>
 <div class="prose">
-  <p>We used supplied rows to match, mix values, update a token and predict. <strong>Now recover those same rows from the embeddings we already have.</strong></p>
-  <p>Take the current representation of one token, $\ve{e_i}$. Three shared matrices read it and produce three short rows.
-  Their weights are learned during training, then held fixed for this forward pass. Our example uses hand-set weights; none of these rows replaces $\ve{e_i}$.</p>
+  <p><strong>Recover the supplied rows from the current token representation.</strong> Every token uses the same three projection matrices:</p>
   $$\ve{e_i} \;\rightarrow\; \begin{cases} \vq{q_i} = \ve{e_i}\,W_Q \\[2pt] \vk{k_i} = \ve{e_i}\,W_K \\[2pt] \vv{v_i} = \ve{e_i}\,W_V \end{cases}$$
+  <p>The matrices are learned parameters, fixed during a forward pass. The rows are recomputed from the input; none replaces $\ve{e_i}$. Our example uses hand-set parameters.</p>
 </div>
 
 </div>
-<div class="frame" id="s11-frame-projections" data-title="One input row, three different jobs">
+<div class="companion" id="s11-frame-projections" data-title="One input row, three different jobs">
   <script type="text/x-notes">
 What changes when we select a different token?
 Read the input row, then its query, key and value. Each uses a shared matrix; none has received contextual information yet.
@@ -8347,7 +8347,7 @@ Read the input row, then its query, key and value. Each uses a shared matrix; no
   <div id="s11-proj"></div>
 </div>
 </div>
-<div class="frame" id="s11-frame-matrices" data-title="Which parameters produce those rows?">
+<div class="companion" id="s11-frame-matrices" data-title="Which parameters produce those rows?">
   <script type="text/x-notes">
 Which matrix is shared, and which row depends on the selected token?
 Each column of a projection forms one output coordinate. The worksheet retains the selected token from the preceding frame. In training, the matrices are parameters; q, k and v are recomputed.
@@ -8370,21 +8370,21 @@ Start at bank. This is exactly q_7 from Section 7, not a different example. Each
 <p class="s11-calc-caption sym-q">The receiver's row becomes its query: what information to look for.</p>
 </div>
 
-<div class="frame" id="s11-frame-key-calc" data-title="Make a key from each source token's row" data-autobuild="off">
+<div class="companion" id="s11-frame-key-calc" data-title="Make a key from each source token's row" data-autobuild="off">
 <script type="text/x-notes">Whose row supplies the key?
 A source's own row supplies its key, not the receiving token's row. Select river to recover the key we compared against bank's query. Every source uses the same W_K.</script>
 <div class="card"><div class="s11-calc-controls" data-keep-state></div><div id="s11-key-calc" class="s11-projection-calc"></div></div>
 <p class="s11-calc-caption sym-k">The source's row becomes its key: when this source could help.</p>
 </div>
 
-<div class="frame" id="s11-frame-value-calc" data-title="Read the same source through a different matrix" data-autobuild="off">
+<div class="companion" id="s11-frame-value-calc" data-title="Read the same source through a different matrix" data-autobuild="off">
 <script type="text/x-notes">What changes between producing a key and a value?
 The source's input row stays the same. W_V now produces the information to send, on two value axes instead of three matching axes. This recovers the exact value used in the earlier weighted sum. The matrices are parameters; these vectors are computed anew for each input.</script>
 <div class="card"><div class="s11-calc-controls" data-keep-state></div><div id="s11-value-calc" class="s11-projection-calc"></div></div>
 <p class="s11-calc-caption sym-v">Same source row, different weights: the value is what this source sends.</p>
 </div>
 
-<div class="frame" id="s11-frame2" data-title="Which objects are used inside one layer?">
+<div class="companion" id="s11-frame2" data-title="Which objects are used inside one layer?">
   <script type="text/x-notes">
 What gets computed for this layer, and what is passed onward?
 Advance the lifetime strip. Distinguish data flow between sublayers from storage: training may retain intermediates for backward, and generation may cache keys and values.
@@ -8396,7 +8396,7 @@ Advance the lifetime strip. Distinguish data flow between sublayers from storage
   <div class="scroll-x dotgrid s11-lifebox" id="s11-lifebox"><div id="s11-life"></div></div>
 </div>
 </div>
-<div class="frame" id="s11-frame-lifetime-steps" data-title="Follow one row through the layer">
+<div class="companion" id="s11-frame-lifetime-steps" data-title="Follow one row through the layer">
   <script type="text/x-notes">
 Which working vectors are inputs, and what is finally added?
 Advance the existing five-step calculation. The original row supplies the projections and remains the residual input; newly updated rows do not feed this same layer.
@@ -8670,7 +8670,7 @@ The claim is about the spread of scores, not every particular dot product. State
 <pre class="companion pytorch"><code>scores = (Q @ K.T) / math.sqrt(Q.shape[-1])</code></pre>
 </div>
 
-<div class="frame" data-title="Fixed raw scores, changing only the divisor">
+<div class="companion" data-title="Fixed raw scores, changing only the divisor">
 <script type="text/x-notes">Which probability column changes when the raw scores stay fixed and the divisor grows?
 
 Before moving the slider, explain that these are illustrative scores, not new embeddings or a retrained model. The four raw scores never change. Only the division by sqrt(d_k) changes. This panel shows the effect of scaling. The simulation on the next frame supplies the variance-growth argument.</script>
@@ -8685,7 +8685,7 @@ Before moving the slider, explain that these are illustrative scores, not new em
 <div class="companion" id="s12-callout"></div>
 </div>
 
-<div class="frame" data-title="Does the variance calculation hold in a simulation?">
+<div class="companion" data-title="Does the variance calculation hold in a simulation?">
 <script type="text/x-notes">What should happen to the two variance columns as d_k grows?
 
 These are actual sampled dot products from independent standard-normal coordinates, not the four illustrative scores. Read d_k = 1, 16, 64: raw variance roughly follows the dimension; scaled variance remains near one. Finite sampling explains the small deviations.</script>
@@ -8698,7 +8698,7 @@ These are actual sampled dot products from independent standard-normal coordinat
 </div>
 </div>
 
-<div class="frame" data-title="Return to bank: the same query and keys, with and without scaling">
+<div class="frame" id="s12-frame-bank" data-title="Scaling changes the weights, not the ranking">
 <script type="text/x-notes">Does scaling change which key has the highest score?
 
 No: dividing all scores by the same positive number preserves their ordering. It changes the relative weights after softmax. Compare river's weight before and after division by sqrt(3); our earlier calculations used the scaled column.</script>
@@ -8706,10 +8706,11 @@ No: dividing all scores by the same positive number preserves their ordering. It
   <h3 class="card-title">In the toy model (d<sub>k</sub> = <span id="s12-dk"></span>): bank reading the first 7 tokens</h3>
   <p class="companion s12-cap">Same four columns, real numbers. The note in the following block says how much the factor $\sqrt{d_k}$ changes the top weight.</p>
   <div id="s12-toy"></div>
+  <p class="s12-cap"><strong>River still wins.</strong> Scaling reduces the score gaps, so softmax is less concentrated.</p>
 </div>
 </div>
 
-<div class="frame" data-title="What did scaling change for bank?">
+<div class="companion" data-title="What did scaling change for bank?">
 <script type="text/x-notes">Did scaling change the winning key?
 No. Dividing by one positive constant preserves score order. It changes the gap seen by softmax, and therefore the degree of concentration.</script>
   <div class="prose"><p id="s12-toy-note"></p></div>
@@ -8861,7 +8862,7 @@ It is river at position 6, not river and bank together. Training can evaluate ma
 <div class="callout callout-warn" data-build="3">If position $i$ could read position $i+1$ during training, it could read the answer it is being graded on.</div>
 </div>
 
-<div class="frame" id="s13-frame-targets" data-title="Shift the same sentence by one token">
+<div class="companion" id="s13-frame-targets" data-title="Shift the same sentence by one token">
 <script type="text/x-notes">What is the one-token target for the row at position 5?
 It is river at position 6. Read one row horizontally: prefix in, the immediately following token is its target.</script>
 <div class="card">
@@ -8898,7 +8899,7 @@ Forbidden scores become negative infinity, so their exponentials are zero. Allow
 </div>
 </div>
 
-<div class="frame" id="s13-frame-mask-code" data-title="Make forbidden attention exactly zero">
+<div class="companion" id="s13-frame-mask-code" data-title="Make forbidden attention exactly zero">
 <script type="text/x-notes">Why add negative infinity before softmax?
 Because exp(-infinity) is zero. The allowed scores retain their relative values and the softmax renormalizes only across the prefix.</script>
   <div class="prose">
@@ -8919,7 +8920,7 @@ Toggle the mask manually. Row sums remain one; the locations receiving weight re
 <div class="card">
   <h3 class="card-title">The real attention matrix $\va{A}$ for sentence A (10 tokens), with the mask on or off</h3>
   <p class="s13-cap">Toggle the mask and watch the hatched triangle: with the mask off, weight moves into it, and the outlined cells $(i, i+1)$ are where each token could read its own answer. Click any cell for the score arithmetic behind its weight.</p>
-  <div class="row" id="s13-ctl"></div>
+  <div class="row" id="s13-ctl" data-keep-state></div>
   <div id="s13-heat"></div>
   <p class="muted small s13-msg" id="s13-msg">Hover a cell to read one weight.</p>
   <div id="s13-warn"></div>
@@ -8946,7 +8947,7 @@ Compare mask on and off, then send the values. Future attention weight is not th
 </div>
 </div>
 
-<div class="frame" id="s13-frame-why" data-title="Training must use only the prefix, just like generation">
+<div class="companion" id="s13-frame-why" data-title="Training must use only the prefix, just like generation">
 <script type="text/x-notes">What mismatch would we create by training without the mask?
 Training would allow evidence that generation can never have. The model could minimize loss with a shortcut rather than learning prefix-only prediction.</script>
   <div class="prose">
@@ -9141,7 +9142,7 @@ body.present #s14-head-normalize .worked-head{gap:12px;margin:10px 0}
   <p>Sections 09 to 13 built an updated vector for bank. Now extend the prefix through “and watched the” and predict the token <em>after that final the</em>. Its query, not bank’s query, determines this attention row. In this single-layer toy, earlier words reach the prediction through the update to that last position. Switch the context between the river and cheque sentences: the attention row, update and probabilities change. Then bypass attention and switch again: the probability row stays fixed, just as in section 02.</p>
 </div>
 
-<div class="frame" id="s14-receiver" data-title="The next prediction needs a new receiving position">
+<div class="companion" id="s14-receiver" data-title="The next prediction needs a new receiving position">
 <script type="text/x-notes">Which token must supply the query if the next token comes after “and watched the”?
 
 Point to position 10. Earlier we examined bank at position 7, but now q_10 searches the same-layer keys. Both sentences end in the same token at the same position. Switch contexts, then bypass attention: the latter is no contextual update, not self-only attention.</script>
@@ -9163,7 +9164,7 @@ Point to position 10. Earlier we examined bank at position 7, but now q_10 searc
 Switch river to cheque while holding the final word fixed. These are weights over input positions, not vocabulary probabilities.</script>
 <p class="context-line" data-context-line></p>
 <div class="card">
-  <h3 class="card-title">Where the last token reads from</h3>
+  <h3 class="card-title">The final token at position 10 chooses where to read</h3>
   <div class="row between controls">
     <div class="row">
       <span class="small muted">Context</span>
@@ -9178,7 +9179,7 @@ Switch river to cheque while holding the final word fixed. These are weights ove
 </div>
 </div>
 
-<div class="frame" id="s14-routing-code" data-title="Match, scale, then normalize the scores">
+<div class="companion" id="s14-routing-code" data-title="Match, scale, then normalize the scores">
 <script type="text/x-notes">Compare the same final query with all ten keys; scale; then softmax across source positions.
 Because the receiver is last, every displayed source is allowed.</script>
   <div class="grid-3">
@@ -9190,7 +9191,7 @@ Because the receiver is last, every displayed source is allowed.</script>
 alpha = scores.softmax(dim=-1)  # ten source weights; sum = 1</code></pre>
 </div>
 
-<div class="frame" id="s14-residual" data-title="Add the context update to the same last-token input">
+<div class="companion" id="s14-residual" data-title="Add the context update to the same last-token input">
 <script type="text/x-notes">What changes between the two contexts if the final token and its position are identical?
 
 The starting row e_10 is identical. Only the context-dependent update changes. Add each column vertically. If attention is bypassed, delta is zero and the input row reaches the prediction head unchanged.</script>
@@ -9201,7 +9202,7 @@ The starting row e_10 is identical. Only the context-dependent update changes. A
 </div>
 </div>
 
-<div class="frame" id="s14-residual-code" data-title="The message must return to model width before we add it">
+<div class="companion" id="s14-residual-code" data-title="The message must return to model width before we add it">
 <script type="text/x-notes">Alpha times V has value width.
 W_O changes the coordinate system and width; only then can the result be added to the original row.</script>
   <div class="grid-3">
@@ -9220,12 +9221,14 @@ e_last_new = E[-1] + delta_last</code></pre>
 They are vocabulary probabilities. This is a second softmax: attention's softmax mixed source values; the vocabulary softmax turns logits into possible continuations. Reveal the numerical head calculation for the top candidate if needed.</script>
 <div class="card">
   <h3 class="card-title">The output head: logits, then probabilities</h3>
+  <p>$\ell = \vp{e_{10}'}W_{\text{vocab}}+b,\qquad p=\operatorname{softmax}(\ell)$</p>
   <div id="s14-head"></div>
   <p class="muted small" id="s14-msg" aria-live="polite"></p>
+  <p class="small">This softmax is over <strong>next-token candidates</strong>, not the source positions used by attention.</p>
 </div>
 </div>
 
-<div class="frame" id="s14-output-rule" data-title="One updated row becomes one distribution over the vocabulary">
+<div class="companion" id="s14-output-rule" data-title="One updated row becomes one distribution over the vocabulary">
   <script type="text/x-notes">This is not the attention softmax. The columns now name possible next tokens, not source positions.</script>
   <div class="prose">$$\ell = \vp{e_{10}'}\,W_{\text{vocab}} + b, \qquad p(x_{11}\mid x_{\le10}) = \operatorname{softmax}(\ell)$$</div>
   <div class="grid-2" data-build="1">
@@ -9236,7 +9239,7 @@ They are vocabulary probabilities. This is a second softmax: attention's softmax
 p_next = logits.softmax(dim=-1)</code></pre>
 </div>
 
-<div class="frame" id="s14-head-arithmetic" data-title="One candidate: multiply, add the bias, then normalize">
+<div class="companion" id="s14-head-arithmetic" data-title="One candidate: multiply, add the bias, then normalize">
 <script type="text/x-notes">The selected vocabulary column supplies the prediction-head weights.
 Show the logit calculation first; then compare its exponential with the total over the vocabulary.</script>
 <p class="context-line" data-context-line></p>
@@ -9244,13 +9247,13 @@ Show the logit calculation first; then compare its exponential with the total ov
 <div class="companion" id="s14-head-calc"></div>
 </div>
 
-<div class="frame" id="s14-head-normalize" data-title="Finish the candidate probability with one shared denominator">
+<div class="companion" id="s14-head-normalize" data-title="Finish the candidate probability with one shared denominator">
   <script type="text/x-notes">Every candidate gets a positive exponential. Divide each by the same vocabulary total; that makes the probabilities sum to one.</script>
   <div id="s14-head-normalize-worked" class="worked-head"></div>
   <div class="callout callout-key" data-build="2">The denominator includes every token in the vocabulary, not only the few candidates shown in the table.</div>
 </div>
 
-<div class="frame" id="s14-chain-frame" data-title="Trace how earlier words change the next prediction">
+<div class="companion" id="s14-chain-frame" data-title="Trace how earlier words change the next prediction">
 <script type="text/x-notes">Can the vocabulary head tell which earlier word mattered without the attention update?
 
 In this one-layer toy it reads only the final row. Trace earlier tokens to the update, to e'_10, to vocabulary logits. Distinguish one layer's simultaneous reads from a later layer receiving all the updated representations.</script>
@@ -9466,7 +9469,7 @@ Not in the same layer. It reads bank's value formed from this layer's input. The
 </section>
 
 <!-- ===== sec15.html ===== -->
-<section id="s15" class="sec" data-title="Full walkthrough, one step at a time" data-lit="">
+<section id="s15" class="sec" data-title="Optional numerical walkthrough" data-lit="">
 <style>
 #s15 .status{font-family:var(--font-mono);font-size:14px;color:var(--ink-2);margin:6px 0 0;text-align:center}
 #s15 .arena{position:relative}
@@ -9483,14 +9486,15 @@ Not in the same layer. It reads bank's value formed from this layer's input. The
 /* Reading keeps every worksheet; projection shows one operation and its result. */
 body.present #s15 #s15-frame1>.prose,body.present #s15 #s15-motif{display:none}
 body.present #s15 #s15-frame1>.card{padding:0;border:0;background:none;margin:0 0 .2em}
-body.present #s15 .status{font-size:.78em;margin:0;text-align:left}
+body.present #s15 .status{display:none}
 body.present #s15 .s15-reading,body.present #s15 .stepper-list,
 body.present #s15 .stepper-stage>.stage-note,body.present #s15 .stepper-stage>.stage-tex{display:none}
 body.present #s15 .stepper{padding:.45em .7em;margin:.2em 0 0}
 body.present #s15 .stepper-body{display:block}
-/* The presentation controls advance the active stepper; its duplicate local
-   toolbar is useful in reading mode but wastes one full teaching line here. */
-body.present #s15 .stepper-bar{display:none}
+/* This worksheet is optional: local controls inspect numbers; presentation
+   Next continues to the flowchart instead of requiring all eighteen steps. */
+body.present #s15 .stepper-bar{display:flex;margin-bottom:.3em}
+body.present #s15 .s15-optional{font-size:22px;line-height:1.35;margin:0 0 .4em}
 body.present #s15 .stepper-stage .stage-title{margin:0 0 .3em}
 body.present #s15 .s15-classroom{display:grid;gap:.45em}
 body.present #s15 .s15-classroom p{margin:0;line-height:1.35}
@@ -9504,7 +9508,7 @@ body.present #s15 .s15-result .vec-axes{font-size:22px}
 body.present #s15 .s15-result .vec-dims{font-size:21px}
 body.present #s15 .s15-operation{font-size:.93em}
 body.present #s15 .s15-explain{font-size:.9em}
-body.present #s15 .s15-classroom pre{margin:0;padding:.45em .65em;font-size:.8em;line-height:1.35}
+body.present #s15 .s15-classroom pre{display:none}
 body.present #s15 .s15-strip{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:.25em}
 body.present #s15 .s15-tile{padding:.3em .2em;text-align:center;border:1px solid var(--line);border-radius:var(--radius-s);font-variant-numeric:tabular-nums}
 body.present #s15 .s15-tile small{display:block;font-size:21px;white-space:nowrap}
@@ -9524,7 +9528,7 @@ body.present #s15 .s15-classroom .dt-cap{margin-top:.25em}
   <span class="sec-num">15</span>
   <div>
     <p class="eyebrow">Follow one complete forward pass, with the numbers visible at every step.</p>
-    <h2>Full walkthrough, one step at a time</h2>
+    <h2>Optional numerical walkthrough</h2>
   </div>
 </header>
 
@@ -9532,7 +9536,7 @@ body.present #s15 .s15-classroom .dt-cap{margin-top:.25em}
   <p>Put the stages together for the ten-token sentence. Each table has one row per token and one column per coordinate, with the result in the last column or bottom row. The numbers come from the same calculation we have worked through by hand. Click a score or press Show the arithmetic to inspect it. At step 3, choose a different query token and advance again. The scores, mask and weights change, while the operations stay the same: score the sources for one query, mix their values, then project and add the update.</p>
 </div>
 
-<div class="frame" id="s15-frame1" data-title="Can we trace every number through one forward pass?">
+<div class="frame" id="s15-frame1" data-title="Optional: inspect one forward pass" data-autobuild="off">
   <script type="text/x-notes">
 Which token are we updating at this step?
 The stage label names the query. Follow bank by default, or choose another receiver at step 3. The final prediction explicitly switches to the updated last token, the at position 10. Every layer input is frozen during this computation; e prime of bank does not feed the same-layer update of the.
@@ -9547,7 +9551,8 @@ The stage label names the query. Follow bank by default, or choose another recei
   <p class="status" id="s15-status"></p>
 </div>
 
-<div id="s15-stepper"></div>
+<p class="s15-optional">Use <strong>Next step</strong> to inspect the numbers, or presentation <strong>Next</strong> to continue to the flowchart.</p>
+<div id="s15-stepper" data-present="manual"></div>
 
 </div>
 
@@ -10145,7 +10150,7 @@ Build the diagram one operation at a time. Q and K create the weights. V bypasse
   <div id="s16-flow-stepper"></div>
 </div>
 
-<div class="frame" id="s16-frame1" data-title="What does one row of each matrix mean?" data-autobuild="off">
+<div class="companion" id="s16-frame1" data-title="What does one row of each matrix mean?" data-autobuild="off">
   <script type="text/x-notes">
 Where is the bank calculation inside these matrices?
 Each token is one row. We use the short seven-token prefix here, so bank is the final row. Query and key widths must match. Value width may differ; W_O maps the message back to model width before residual addition. Read the current dimensions from the table.
@@ -10163,7 +10168,7 @@ Each token is one row. We use the short seven-token prefix here, so bank is the 
 
 </div>
 
-<div class="frame" id="s16-frame2" data-title="Can one matrix product do every row at once?">
+<div class="companion" id="s16-frame2" data-title="Can one matrix product do every row at once?">
   <script type="text/x-notes">
 How does the scalar calculation become a matrix product without changing its meaning?
 Keep row 7 highlighted and step through the products. Q and K are both T × 3, so Q K transpose is T × T. Each row of A independently mixes the rows of V.
@@ -10176,16 +10181,19 @@ Keep row 7 highlighted and step through the products. Q and K are both T × 3, s
 
 </div>
 
-<div class="frame" id="s16-frame3-routing" data-title="Matrix form, first phase: choose where every row reads">
-  <script type="text/x-notes">QK transpose compares every receiver with every source. The mask blocks the future; softmax makes each surviving row sum to one.</script>
+<div class="frame" id="s16-frame3-routing" data-title="The same calculation for every token" data-autobuild="off">
+  <script type="text/x-notes">Read the grid left to right, then down. QK transpose compares every receiver with every source. The mask blocks the future; row-wise softmax produces source weights. AV mixes values, W_O maps messages to model width, and the residual adds the original rows. These are the diagram's operations batched across tokens, not another mechanism.</script>
+  <p>Stack one token per row: $\vq{Q}=\ve{E}W_Q,\ \vk{K}=\ve{E}W_K,\ \vv{V}=\ve{E}W_V$.</p>
   <div class="eqs">
     <span>$S = \dfrac{\vq{Q}\,\vk{K}^\top}{\sqrt{d_k}}$</span>
     <span>$\va{A} = \operatorname{softmax}_{\text{row}}(S + M)$</span>
+    <span>$H = \va{A}\,\vv{V}$</span>
+    <span>$\vp{E'} = \ve{E} + \underbrace{H W_O}_{\vd{\Delta E}}$</span>
   </div>
-  <div class="callout callout-key" data-build="1"><strong>Routing weights:</strong> row $i$ of $\va{A}$ contains the source weights chosen by receiver $i$.</div>
+  <p class="why">$M$ blocks future positions. Each row of $\va{A}$ sums to 1; each row of $H$ is that receiver's message. $W_O$ maps it back to model width before addition.</p>
 </div>
 
-<div class="frame" id="s16-frame3" data-title="Matrix form, second phase: mix, project, and add">
+<div class="companion" id="s16-frame3" data-title="Matrix form, second phase: mix, project, and add">
   <script type="text/x-notes">
 Which operation chooses sources, which mixes information, and which adds the update?
 A contains the source weights; A V forms messages; W_O maps them back; the residual connection adds E. This is one attention sublayer, not the full Transformer block.
@@ -10201,13 +10209,13 @@ A contains the source weights; A V forms messages; W_O maps them back; the resid
 </div>
 
 </div>
-<div class="frame" id="s16-frame4" data-title="The matrix equations are the same token-by-token story">
+<div class="companion" id="s16-frame4" data-title="The matrix equations are the same token-by-token story">
 <script type="text/x-notes">Ask students to point from each matrix line to the corresponding single-token operation from the walkthrough.
 The matrix notation is batching, not a new mechanism.</script>
 <div id="s16-callouts"><div id="s16-callout-key"></div></div>
 </div>
 
-<div class="frame" id="s16-frame5" data-title="What have we built, and what is still missing?">
+<div class="companion" id="s16-frame5" data-title="What have we built, and what is still missing?">
 <script type="text/x-notes">This is one causal attention head, its output projection and residual addition.
 A full Transformer block adds the remaining architecture in Part 3.</script>
 <div id="s16-callout-note"></div>
@@ -10390,6 +10398,11 @@ body.present #s17 .dt{width:100%;table-layout:fixed}
 body.present #s17 .dt th,body.present #s17 .dt td.dt-num{min-width:0;padding:8px 6px}
 body.present #s17 .dt thead th{font-size:18px;white-space:normal;overflow-wrap:normal;word-break:normal}
 body.present #s17-table .dt thead th{letter-spacing:0;padding-left:3px;padding-right:3px}
+body.present #s17-table .dt tr>:first-child{width:130px}
+/* The numbered sentence is immediately above; repeat positions, not long
+   words, in the compact classroom header. Keep full labels for screen readers. */
+body.present #s17-table .dt thead th[data-source-position]{font-size:0}
+body.present #s17-table .dt thead th[data-source-position]::after{content:attr(data-source-position);font-size:18px}
 body.present #s17 .dt tbody th,body.present #s17 .dt tfoot th{font-size:18px;white-space:normal;overflow-wrap:normal;word-break:normal}
 @media (max-width:640px){#s17 #s17-box .katex{font-size:1.05em}}
 </style>
@@ -10406,19 +10419,13 @@ body.present #s17 .dt tbody th,body.present #s17 .dt tfoot th{font-size:18px;whi
   <p>Switch between the river and cheque sentences. The first three rows stay fixed because their inclusion or weighting rules do not read the content. The attention row gives more weight to different clues for the blank. Of these four schemes, only attention computes its mixing weights from the words.</p>
 </div>
 
-<div class="frame" id="s17-frame1" data-title="Which inclusion or mixing rule changes with the words?">
+<div class="companion" id="s17-frame1" data-title="Which inclusion or mixing rule changes with the words?">
   <script type="text/x-notes">
 When the sentence changes, which weights change, and which outputs might still change?
 Only attention recomputes the displayed mixing weights from content. A fixed window and a mean still receive different embeddings and can therefore produce different outputs. The window row is inclusion, not normalized attention.
   </script>
 <div class="prose">
   <p>All four schemes use $\ve{e_1},\ldots,\ve{e_t}$ to supply information to the last token, $t = 10$. How does each scheme choose what to include or how much weight to give it? Switch the sentence and compare the rows.</p>
-</div>
-<div class="card">
-  <h3 class="card-title">Choose the context</h3>
-  <div class="btn-row" id="s17-ctx"></div>
-  <div id="s17-chips"></div>
-  <p class="muted small ctx-note" id="s17-ctx-note"></p>
 </div>
 </div>
 
@@ -10427,6 +10434,9 @@ Only attention recomputes the displayed mixing weights from content. A fixed win
 The first three rules are fixed before reading content. Only attention recomputes its displayed weights.</script>
 <div class="card">
   <h3 class="card-title">Four weighting schemes, one table</h3>
+  <div class="btn-row" id="s17-ctx"></div>
+  <div id="s17-chips"></div>
+  <p class="companion muted small ctx-note" id="s17-ctx-note"></p>
   <div id="s17-table"></div>
   <div id="s17-read"></div>
   <p class="look">Look at the last row: its weights favour different evidence, and only that weight row changes when you switch the sentence.</p>
@@ -10434,7 +10444,7 @@ The first three rules are fixed before reading content. Only attention recompute
 
 </div>
 
-<div class="frame" id="s17-frame2" data-title="Fixed rules use the words but keep the same routes">
+<div class="companion" id="s17-frame2" data-title="Fixed rules use the words but keep the same routes">
   <script type="text/x-notes">
 Is the advantage that other models cannot understand words?
 No. Attention supplies explicit content-dependent routing and shared projections over the available prefix. The input context remains finite; a fixed-window network can still learn from content within its window.
@@ -10455,7 +10465,7 @@ No. Attention supplies explicit content-dependent routing and shared projections
 
 </div>
 
-<div class="frame" id="s17-attention-comparison" data-title="Attention recomputes the route from the words">
+<div class="companion" id="s17-attention-comparison" data-title="Attention recomputes the route from the words">
   <script type="text/x-notes">A fixed positional decay and attention both form weighted sums. The decisive difference is where the weights come from.</script>
 <div class="card">
   <h3 class="card-title">Two weighted sums, two very different rules</h3>
@@ -10471,7 +10481,7 @@ No. Attention supplies explicit content-dependent routing and shared projections
 </div>
 </div>
 
-<div class="frame" id="s17-conclusion" data-title="What exactly does attention improve?">
+<div class="companion" id="s17-conclusion" data-title="What exactly does attention improve?">
 <script type="text/x-notes">Attention is content-dependent soft retrieval.
 It does not imply infinite context or that fixed-window networks cannot use word content.</script>
   <div id="s17-callout"></div>
@@ -10532,13 +10542,14 @@ It does not imply infinite context or that fixed-window networks cannot use word
       cols: toks.map((tok, j) => (j + 1) + ' ' + tok),
       rowLabels: SCHEMES.map(s => s.label),
       rowCls: SCHEMES.map(s => s.cls),
-      cornerLabel: 'scheme / token',
+      cornerLabel: 'scheme / position',
       heatCols: AT.range(t), heatMax: 1, decimals: 2, highlightRow: 3,
       computed: [{ label: 'sum', fn: (row) => AT.sum(row.map(x => (typeof x === 'number' ? x : 0))), cls: 'neutral' }],
       caption: 'Each cell shows inclusion or a pooling weight for token ' + t + ' at source position $j$ in the ' + ctx + ' sentence: window with $w = ' + w + '$ (1 = included whole, × = unavailable; the window concatenates, it does not weight), mean $1/t$, positional $w_j \\propto ' + DECAY + '^{\\,t-j}$ (illustrative), and the attention row $\\va{\\alpha_{' + t + ',j}}$ from the toy model.',
       note: 'Hover or focus a cell in the attention row to see where its weight comes from; click it for the worksheet $\\vq{q_{' + t + '}} \\cdot \\vk{k_j} / \\sqrt{d_k}$.',
       into: tableHost
     });
+    toks.forEach((_, j) => { fig.table.tHead.rows[0].cells[j + 1].dataset.sourcePosition = String(j + 1); });
     const att = W[3];
     const pop = AT.ui.popover(fig, { label: 'Score arithmetic' });
     const qName = t + ' ' + toks[ti];
@@ -10657,38 +10668,38 @@ Ask one question before opening its reveal. For equal scores, the result is the 
 
 </div>
 
-<div class="frame" id="s18-question2" data-title="If every score is equal, what is the message?">
+<div class="companion" id="s18-question2" data-title="If every score is equal, what is the message?">
   <script type="text/x-notes">Ask for the weights before revealing the answer. Equal scores mean equal weights, not a zero update.</script>
   <div class="card"><h3 class="card-title">2 · The equal-score case</h3><div id="s18-q2"></div></div>
 </div>
-<div class="frame" id="s18-question3" data-title="Is the query the updated bank representation?">
+<div class="companion" id="s18-question3" data-title="Is the query the updated bank representation?">
   <script type="text/x-notes">Which vector is used for matching, and which one is passed onward? Ask students to name the addition.</script>
   <div class="card"><h3 class="card-title">3 · A working vector is not the output</h3><div id="s18-q3"></div></div>
 </div>
-<div class="frame" id="s18-question4" data-title="What does the optimizer keep and update?">
+<div class="companion" id="s18-question4" data-title="What does the optimizer keep and update?">
   <script type="text/x-notes">Distinguish stored parameters from vectors recomputed by a forward pass. Gradients may flow through both.</script>
   <div class="card"><h3 class="card-title">4 · Parameters versus intermediate results</h3><div id="s18-q4"></div></div>
 </div>
-<div class="frame" id="s18-question5" data-title="What exactly is the update Δe?">
+<div class="companion" id="s18-question5" data-title="What exactly is the update Δe?">
   <script type="text/x-notes">The weighted values first make a message. W_O puts that message into the model's coordinate space.</script>
   <div class="card"><h3 class="card-title">5 · From the message to an addable update</h3><div id="s18-q5"></div></div>
 </div>
-<div class="frame" id="s18-question6" data-title="Is Δe a new parameter or a standard name?">
+<div class="companion" id="s18-question6" data-title="Is Δe a new parameter or a standard name?">
   <script type="text/x-notes">Delta e is our explanatory label for the attention contribution, not an independently stored parameter.</script>
   <div class="card"><h3 class="card-title">6 · Our label for the attention contribution</h3><div id="s18-q6"></div></div>
 </div>
-<div class="frame" id="s18-question7" data-title="Why keep the original embedding as well?">
+<div class="companion" id="s18-question7" data-title="Why keep the original embedding as well?">
   <script type="text/x-notes">Ask what happens when the update is zero. The residual path carries the input through unchanged.</script>
   <div class="card"><h3 class="card-title">7 · The residual addition</h3><div id="s18-q7"></div></div>
 </div>
-<div class="frame" id="s18-question8" data-title="Can bank read words that come after it?">
+<div class="companion" id="s18-question8" data-title="Can bank read words that come after it?">
   <script type="text/x-notes">At position 7, source positions 8–10 are future. The mask makes their weights exactly zero.</script>
   <div class="card"><h3 class="card-title">8 · The causal restriction</h3><div id="s18-q8"></div></div>
 </div>
 
 <div class="companion" id="s18-standard"></div>
 
-<div class="frame" id="s18-frame2" data-title="Do the roles and shapes agree?">
+<div class="companion" id="s18-frame2" data-title="Do the roles and shapes agree?">
   <script type="text/x-notes">
 Which objects share a space, and which only happen to share a width in this toy?
 Queries and keys must have compatible matching coordinates. Values form the message space. The input, contextual update and updated token row have the model width.
@@ -10986,7 +10997,7 @@ Queries and keys must have compatible matching coordinates. Values form the mess
 </section>
 
 <!-- ===== sec19.html ===== -->
-<section id="s19" class="sec" data-title="Three summaries" data-lit="">
+<section id="s19" class="sec" data-title="Generation and training" data-lit="">
 <style>
 #s19 .lvl{font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--ink-3);margin:0 0 6px}
 #s19 .quote{font-size:1.25em;line-height:1.45;font-weight:500;margin:0}
@@ -11042,8 +11053,8 @@ body.present #s19-math-message>.card{padding:18px 22px;margin-bottom:0}
 <header class="sec-head">
   <span class="sec-num">19</span>
   <div>
-    <p class="eyebrow">Explain attention in words, trace its operations, then write the matrix equations.</p>
-    <h2>Three summaries</h2>
+    <p class="eyebrow">Use the prediction to generate text, or its error to learn parameters.</p>
+    <h2>Generation and training</h2>
   </div>
 </header>
 
@@ -11052,7 +11063,7 @@ body.present #s19-math-message>.card{padding:18px 22px;margin-bottom:0}
   <p>Play the chain to follow each stage in the diagram. Then switch the sentence in the last card: the highest-probability word changes, but the equations stay the same. Each token reads itself and earlier tokens, mixes their values, and receives the projected message through a residual addition.</p>
 </div>
 
-<div class="frame" id="s19-frame1" data-title="Can we tell the whole attention story?">
+<div class="companion" id="s19-frame1" data-title="Can we tell the whole attention story?">
   <script type="text/x-notes">
 Can you name each step before it lights up?
 Read the intuitive sentence, then advance the operational chain. Include self in the causal prefix. Distinguish attention’s projected message from the residual addition.
@@ -11063,7 +11074,7 @@ Read the intuitive sentence, then advance the operational chain. Include self in
 </div>
 </div>
 
-<div class="frame" id="s19-operational" data-title="Follow the operational chain one stage at a time">
+<div class="companion" id="s19-operational" data-title="Follow the operational chain one stage at a time">
 <script type="text/x-notes">Ask students to name the next box before advancing.
 The query-key branch routes; the values carry; the residual preserves the input.</script>
 <div class="card">
@@ -11082,7 +11093,7 @@ The query-key branch routes; the values carry; the residual preserves the input.
 
 </div>
 
-<div class="frame" id="s19-frame2" data-title="Matrix summary, first phase: route by content">
+<div class="companion" id="s19-frame2" data-title="Matrix summary, first phase: route by content">
   <script type="text/x-notes">
 Which equation gives the weights, and which gives the updated rows?
 Read dimensions beside each line. Row-wise softmax is over source positions; vocabulary softmax has not happened yet.
@@ -11096,7 +11107,7 @@ Read dimensions beside each line. Row-wise softmax is over source positions; voc
 
 </div>
 
-<div class="frame" id="s19-math-message" data-title="Matrix summary, second phase: carry and add information">
+<div class="companion" id="s19-math-message" data-title="Matrix summary, second phase: carry and add information">
   <script type="text/x-notes">A times V forms one message per receiver. W_O maps each message to model width. The residual adds it to the input row.</script>
   <div class="card">
     <p class="lvl">3 · Mathematical, continued</p>
@@ -11105,7 +11116,7 @@ Read dimensions beside each line. Row-wise softmax is over source positions; voc
   </div>
 </div>
 
-<div class="frame" id="s19-frame3" data-title="How does context change the next-token probabilities?">
+<div class="companion" id="s19-frame3" data-title="How does context change the next-token probabilities?">
   <script type="text/x-notes">
 Which updated row does the head use to predict after this prefix?
 It uses position 10, the final the, not bank’s position-7 update. Change the context and compare vocabulary probabilities. A sampling or decoding rule chooses a token; generation appends it and repeats with a new last position.
@@ -11125,7 +11136,7 @@ It uses position 10, the final the, not bank’s position-7 update. Change the c
 probs = logits.softmax(dim=-1)</code></pre>
 </div>
 
-<div class="frame" id="s19-frame-probabilities" data-title="From the updated row to vocabulary probabilities">
+<div class="companion" id="s19-frame-probabilities" data-title="From the updated row to vocabulary probabilities">
   <script type="text/x-notes">
 Which word has the highest probability, and has a token been selected yet?
 The head reads the final updated row. The table gives logits and probabilities; the bars show the same distribution. These are vocabulary probabilities, not attention weights. Return one frame to change the context.
@@ -11179,19 +11190,14 @@ Is this one attention sublayer already a trained full Transformer?
 No. We traced a hand-designed single-head forward computation. Learning changes parameters across examples; stacking applies later blocks to updated rows; generation repeats prediction with fixed parameters and a growing prefix.
   </script>
 <div class="card">
-  <h3 class="card-title">What this example has, and what it does not yet have</h3>
-  <ul class="s19-recap">
-    <li>One attention head computes a contextual update; residual addition forms $e_i' = e_i + \Delta e_i$.</li>
-    <li>The vocabulary head reads the final updated row to give next-token probabilities.</li>
-    <li>Generation repeats that prediction with a growing prefix and fixed parameters.</li>
-    <li>Training updates parameters; stacked layers apply further transformations. Those are different operations.</li>
-  </ul>
+  <h3 class="card-title">One head, not yet a full Transformer</h3>
+  <p>We traced one causal attention head, its output projection and residual connection, then a vocabulary head. The example's parameters are hand-designed, not trained.</p>
   <div class="companion" id="s19-notation"></div>
   <p class="companion look">Every symbol on this page in one place; the shape column uses the toy sizes.</p>
 </div>
 
 <div class="prose">
-  <p>Part 3 adds several heads, stacked layers and the rest of the Transformer.</p>
+  <p><strong>Part 3:</strong> multiple heads, feed-forward layers, normalization and stacked blocks.</p>
 </div>
 
 </div>

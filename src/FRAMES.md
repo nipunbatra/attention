@@ -44,34 +44,34 @@ F1 compare the two bank sentences. F2 compare incoming source information. F3 ca
   Notes: "Same starting row: must the contextual row be the same?"
 
 ## s11 Where do queries, keys and values come from?
-F1 explicitly returns to the remaining question: where did the supplied rows come from? Only now introduce eW_Q/eW_K/eW_V. F2 compares one input row and its three projections. F3 shows the shared matrices. F4–F6 calculate query, key and value separately, reusing the exact numbers from Section 7. A shared token selector demonstrates that the matrices do not change from token to token. F7 separates stored parameters from per-pass intermediates. F8 follows one row’s lifetime through a layer. F9 reconnects the branch to the residual update.
+F1 introduces the three shared learned projections and distinguishes their parameters from computed rows. F2 recovers the supplied query with one worked calculation and a token selector. F3 reconnects the branch to the residual update with the complete small diagram. Key/value worksheets, all-matrix inspection and the lifetime walkthrough remain in reading mode.
 
 ## s12 Scaling
-F1 returns explicitly to the earlier division by sqrt(3), then explains why larger dot-product dimension spreads scores under the stated independence assumptions. F2 hold raw scores fixed while changing the divisor. F3 verify the variance claim with a simulation. F4 compare bank weights with and without scaling. F5 interpret what scaling changed and what it did not.
-  Notes: "Which of the two bar charts would you trust for d_k = 64?"
+F1 pays off the earlier sqrt(3) signpost with the variance argument and its independence assumptions. F2 compares bank's actual weights with/without scaling and explains the preserved ranking but changed concentration. The fixed-score experiment, simulation and extended interpretation stay in reading mode.
+  Notes: "Did the winning key change? What changed after softmax?"
 
 ## s13 Causal mask
-F1 derive the prefix-only rule from next-token prediction. F2 shift one sentence to show each target. F3 write the causal triangle and mask matrix. F4 apply -infinity before softmax. F5 toggle the full 10×10 attention matrix. F6 inspect token 5’s received information with the mask on/off. F7 state why the mask is non-negotiable.
+F1 derives the prefix-only rule. F2 shows the causal triangle and mask equation. F3 toggles the full 10×10 matrix. F4 inspects token 5's received message, retaining the chosen mask state across the transition. The shifted-target staircase, extra code and repeated justification stay in reading mode.
   Notes: "When predicting x_{i+1}, what is the worst thing token i could read?"
 
 ## s14 To the probabilities
-F1 receiver handoff: bank/q7 earlier versus final the/q10 now. F2 dynamic alpha row + context switch/bypass. F3 match → scale → source-softmax with two-line PyTorch. F4 residual table. F5 message → W_O → add, with shapes and two-line PyTorch. F6 vocabulary table. F7 attention-softmax versus vocabulary-softmax + head code. F8 one candidate logit. F9 exponentiate and normalize. F10 causal chain. F11 same-layer versus next-layer boundary.
+F1 shows the final-position-10 attention weights with context switch/bypass. F2 combines the head formula, actual vocabulary probabilities and the distinction between source and vocabulary softmax. F3 preserves the same-layer versus next-layer boundary. Repeated route/residual/head derivations and the causal chain stay in reading mode; the full diagram follows in Section 16.
   Notes: ask "Which known position supplies the query now?", "Are these weights over sources or probabilities over words?", and finally "Does the final 'the' read the updated bank row?" (not within this layer).
 
 ## s15 Walkthrough
-F1: the compact classroom renderer replaces its result in place across the stepper's 18 builds; the full worksheets remain in reading mode. The presentation's own Next control advances the stepper, so the duplicate local toolbar is hidden. Notes: ask before each reveal what quantity and shape should come next.
+F1 is an explicitly optional numerical inspector. Its local Next step / Previous / Reset controls inspect all 18 operations. Presentation Next skips directly to Section 16; the manual stepper does not add 18 mandatory presentation states. The classroom view keeps the operation, result and interpretation, without duplicate status/code; reading mode retains the full worksheets.
 
 ## s16 Matrix form
-F1 incremental contextualized attention diagram. F2 matrix-shape table. F3 operation stepper (E, Q/K/V, S, A, H, DeltaE, E') with only the current result in the classroom view. F4 routing equations. F5 message/project/add equations. F6 batching-is-not-a-new-idea callout. F7 one-head boundary + two-line PyTorch.
+F1 preserves the full incremental flowchart, including scaling, causal mask, value branch, output projection, residual and final-token handoff. F2 collects the same computation in one four-equation matrix grid, with mask, row-wise normalization and output width explained. Matrix-shape/operation worksheets and duplicate summaries remain in reading mode.
   Notes: "Which row is the one we did by hand?" and "Which matrix stores routing weights?"
 
 ## s17 Alternatives
-F1 framing question + context switch. F2 four numerical weighting rows. F3 fixed window versus mean. F4 fixed positional weights versus attention. F5 boxed conclusion. The context control still drives the numerical table on F2.
+F1 combines the context controls, sentence and four weighting rows. Changing the words changes only attention's mixing weights; the fixed-window row denotes inclusion, not normalized weights. Extended comparisons and conclusion stay in reading mode.
 
 ## s18 Pause and think
-F1–F8: one misconception question per frame and one reveal each. Presentation answers are compact; reading mode keeps every original numerical worksheet and arithmetic control. F9 three-space notation recap: match (q/k), send (v/m), model/update (e/Delta e/e').
+F1 is one checkpoint on matching versus information sent. The other seven questions and notation recap remain available in reading mode, including their numerical worksheets and reveal controls.
 
-## s19 Summaries
-F1 intuitive sentence. F2 operational chain + synchronized motif. F3 routing matrix equations. F4 message/update matrix equations. F5 updated last row → head. F6 vocabulary table and bars. F7 explicit generation loop: predict → choose → append → new query, plus two-line PyTorch. F8 generation/training boundary: forward → loss → autograd/optimizer. F9 distinguish content routing from word-order sensitivity: this toy demonstrates only the former. F10 recap + Part 3 pointer.
+## s19 Generation and training
+F1 generation: predict → choose → append → new query, with fixed parameters. F2 training: forward → loss → autograd/optimizer. F3 closes with the single-head scope and Part 3's multiple heads, feed-forward layers, normalization and stacked blocks. Repeated intuitive, operational, matrix and vocabulary summaries stay in reading mode.
 
-Suggested pacing before discussion (about 75 min): s01-s04 12 min, s05-s06 10, s07-s09 15, s10-s13 12, s14-s15 15, s16 4, s17-s19 6. Allow longer for every worksheet or split the lesson across two meetings. Short-on-time: use either the full walkthrough in s15 or the matrix recap in s16, and leave s17 and detailed worksheets for self-study. Multi-head attention and stacked layers are Part 3.
+The Section 11–19 classroom tail is 20 frames, down from 63; the full flowchart still builds progressively. Suggested pacing for this tail: projections 4 min, scaling 3, masking 5, prediction/layer boundary 3, flowchart/matrix form 5, comparison/checkpoint/close 5. Skip the optional Section 15 inspector on a first pass. These are planning estimates, not a timed run. Detailed worksheets remain in reading mode; multi-head attention and stacked blocks are Part 3.

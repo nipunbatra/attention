@@ -45,7 +45,7 @@ body.present #s14-head-normalize .worked-head{gap:12px;margin:10px 0}
   <p>Sections 09 to 13 built an updated vector for bank. Now extend the prefix through “and watched the” and predict the token <em>after that final the</em>. Its query, not bank’s query, determines this attention row. In this single-layer toy, earlier words reach the prediction through the update to that last position. Switch the context between the river and cheque sentences: the attention row, update and probabilities change. Then bypass attention and switch again: the probability row stays fixed, just as in section 02.</p>
 </div>
 
-<div class="frame" id="s14-receiver" data-title="The next prediction needs a new receiving position">
+<div class="companion" id="s14-receiver" data-title="The next prediction needs a new receiving position">
 <script type="text/x-notes">Which token must supply the query if the next token comes after “and watched the”?
 
 Point to position 10. Earlier we examined bank at position 7, but now q_10 searches the same-layer keys. Both sentences end in the same token at the same position. Switch contexts, then bypass attention: the latter is no contextual update, not self-only attention.</script>
@@ -67,7 +67,7 @@ Point to position 10. Earlier we examined bank at position 7, but now q_10 searc
 Switch river to cheque while holding the final word fixed. These are weights over input positions, not vocabulary probabilities.</script>
 <p class="context-line" data-context-line></p>
 <div class="card">
-  <h3 class="card-title">Where the last token reads from</h3>
+  <h3 class="card-title">The final token at position 10 chooses where to read</h3>
   <div class="row between controls">
     <div class="row">
       <span class="small muted">Context</span>
@@ -82,7 +82,7 @@ Switch river to cheque while holding the final word fixed. These are weights ove
 </div>
 </div>
 
-<div class="frame" id="s14-routing-code" data-title="Match, scale, then normalize the scores">
+<div class="companion" id="s14-routing-code" data-title="Match, scale, then normalize the scores">
 <script type="text/x-notes">Compare the same final query with all ten keys; scale; then softmax across source positions.
 Because the receiver is last, every displayed source is allowed.</script>
   <div class="grid-3">
@@ -94,7 +94,7 @@ Because the receiver is last, every displayed source is allowed.</script>
 alpha = scores.softmax(dim=-1)  # ten source weights; sum = 1</code></pre>
 </div>
 
-<div class="frame" id="s14-residual" data-title="Add the context update to the same last-token input">
+<div class="companion" id="s14-residual" data-title="Add the context update to the same last-token input">
 <script type="text/x-notes">What changes between the two contexts if the final token and its position are identical?
 
 The starting row e_10 is identical. Only the context-dependent update changes. Add each column vertically. If attention is bypassed, delta is zero and the input row reaches the prediction head unchanged.</script>
@@ -105,7 +105,7 @@ The starting row e_10 is identical. Only the context-dependent update changes. A
 </div>
 </div>
 
-<div class="frame" id="s14-residual-code" data-title="The message must return to model width before we add it">
+<div class="companion" id="s14-residual-code" data-title="The message must return to model width before we add it">
 <script type="text/x-notes">Alpha times V has value width.
 W_O changes the coordinate system and width; only then can the result be added to the original row.</script>
   <div class="grid-3">
@@ -124,12 +124,14 @@ e_last_new = E[-1] + delta_last</code></pre>
 They are vocabulary probabilities. This is a second softmax: attention's softmax mixed source values; the vocabulary softmax turns logits into possible continuations. Reveal the numerical head calculation for the top candidate if needed.</script>
 <div class="card">
   <h3 class="card-title">The output head: logits, then probabilities</h3>
+  <p>$\ell = \vp{e_{10}'}W_{\text{vocab}}+b,\qquad p=\operatorname{softmax}(\ell)$</p>
   <div id="s14-head"></div>
   <p class="muted small" id="s14-msg" aria-live="polite"></p>
+  <p class="small">This softmax is over <strong>next-token candidates</strong>, not the source positions used by attention.</p>
 </div>
 </div>
 
-<div class="frame" id="s14-output-rule" data-title="One updated row becomes one distribution over the vocabulary">
+<div class="companion" id="s14-output-rule" data-title="One updated row becomes one distribution over the vocabulary">
   <script type="text/x-notes">This is not the attention softmax. The columns now name possible next tokens, not source positions.</script>
   <div class="prose">$$\ell = \vp{e_{10}'}\,W_{\text{vocab}} + b, \qquad p(x_{11}\mid x_{\le10}) = \operatorname{softmax}(\ell)$$</div>
   <div class="grid-2" data-build="1">
@@ -140,7 +142,7 @@ They are vocabulary probabilities. This is a second softmax: attention's softmax
 p_next = logits.softmax(dim=-1)</code></pre>
 </div>
 
-<div class="frame" id="s14-head-arithmetic" data-title="One candidate: multiply, add the bias, then normalize">
+<div class="companion" id="s14-head-arithmetic" data-title="One candidate: multiply, add the bias, then normalize">
 <script type="text/x-notes">The selected vocabulary column supplies the prediction-head weights.
 Show the logit calculation first; then compare its exponential with the total over the vocabulary.</script>
 <p class="context-line" data-context-line></p>
@@ -148,13 +150,13 @@ Show the logit calculation first; then compare its exponential with the total ov
 <div class="companion" id="s14-head-calc"></div>
 </div>
 
-<div class="frame" id="s14-head-normalize" data-title="Finish the candidate probability with one shared denominator">
+<div class="companion" id="s14-head-normalize" data-title="Finish the candidate probability with one shared denominator">
   <script type="text/x-notes">Every candidate gets a positive exponential. Divide each by the same vocabulary total; that makes the probabilities sum to one.</script>
   <div id="s14-head-normalize-worked" class="worked-head"></div>
   <div class="callout callout-key" data-build="2">The denominator includes every token in the vocabulary, not only the few candidates shown in the table.</div>
 </div>
 
-<div class="frame" id="s14-chain-frame" data-title="Trace how earlier words change the next prediction">
+<div class="companion" id="s14-chain-frame" data-title="Trace how earlier words change the next prediction">
 <script type="text/x-notes">Can the vocabulary head tell which earlier word mattered without the attention update?
 
 In this one-layer toy it reads only the final row. Trace earlier tokens to the update, to e'_10, to vocabulary logits. Distinguish one layer's simultaneous reads from a later layer receiving all the updated representations.</script>

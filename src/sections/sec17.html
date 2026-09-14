@@ -23,6 +23,11 @@ body.present #s17 .dt{width:100%;table-layout:fixed}
 body.present #s17 .dt th,body.present #s17 .dt td.dt-num{min-width:0;padding:8px 6px}
 body.present #s17 .dt thead th{font-size:18px;white-space:normal;overflow-wrap:normal;word-break:normal}
 body.present #s17-table .dt thead th{letter-spacing:0;padding-left:3px;padding-right:3px}
+body.present #s17-table .dt tr>:first-child{width:130px}
+/* The numbered sentence is immediately above; repeat positions, not long
+   words, in the compact classroom header. Keep full labels for screen readers. */
+body.present #s17-table .dt thead th[data-source-position]{font-size:0}
+body.present #s17-table .dt thead th[data-source-position]::after{content:attr(data-source-position);font-size:18px}
 body.present #s17 .dt tbody th,body.present #s17 .dt tfoot th{font-size:18px;white-space:normal;overflow-wrap:normal;word-break:normal}
 @media (max-width:640px){#s17 #s17-box .katex{font-size:1.05em}}
 </style>
@@ -39,19 +44,13 @@ body.present #s17 .dt tbody th,body.present #s17 .dt tfoot th{font-size:18px;whi
   <p>Switch between the river and cheque sentences. The first three rows stay fixed because their inclusion or weighting rules do not read the content. The attention row gives more weight to different clues for the blank. Of these four schemes, only attention computes its mixing weights from the words.</p>
 </div>
 
-<div class="frame" id="s17-frame1" data-title="Which inclusion or mixing rule changes with the words?">
+<div class="companion" id="s17-frame1" data-title="Which inclusion or mixing rule changes with the words?">
   <script type="text/x-notes">
 When the sentence changes, which weights change, and which outputs might still change?
 Only attention recomputes the displayed mixing weights from content. A fixed window and a mean still receive different embeddings and can therefore produce different outputs. The window row is inclusion, not normalized attention.
   </script>
 <div class="prose">
   <p>All four schemes use $\ve{e_1},\ldots,\ve{e_t}$ to supply information to the last token, $t = 10$. How does each scheme choose what to include or how much weight to give it? Switch the sentence and compare the rows.</p>
-</div>
-<div class="card">
-  <h3 class="card-title">Choose the context</h3>
-  <div class="btn-row" id="s17-ctx"></div>
-  <div id="s17-chips"></div>
-  <p class="muted small ctx-note" id="s17-ctx-note"></p>
 </div>
 </div>
 
@@ -60,6 +59,9 @@ Only attention recomputes the displayed mixing weights from content. A fixed win
 The first three rules are fixed before reading content. Only attention recomputes its displayed weights.</script>
 <div class="card">
   <h3 class="card-title">Four weighting schemes, one table</h3>
+  <div class="btn-row" id="s17-ctx"></div>
+  <div id="s17-chips"></div>
+  <p class="companion muted small ctx-note" id="s17-ctx-note"></p>
   <div id="s17-table"></div>
   <div id="s17-read"></div>
   <p class="look">Look at the last row: its weights favour different evidence, and only that weight row changes when you switch the sentence.</p>
@@ -67,7 +69,7 @@ The first three rules are fixed before reading content. Only attention recompute
 
 </div>
 
-<div class="frame" id="s17-frame2" data-title="Fixed rules use the words but keep the same routes">
+<div class="companion" id="s17-frame2" data-title="Fixed rules use the words but keep the same routes">
   <script type="text/x-notes">
 Is the advantage that other models cannot understand words?
 No. Attention supplies explicit content-dependent routing and shared projections over the available prefix. The input context remains finite; a fixed-window network can still learn from content within its window.
@@ -88,7 +90,7 @@ No. Attention supplies explicit content-dependent routing and shared projections
 
 </div>
 
-<div class="frame" id="s17-attention-comparison" data-title="Attention recomputes the route from the words">
+<div class="companion" id="s17-attention-comparison" data-title="Attention recomputes the route from the words">
   <script type="text/x-notes">A fixed positional decay and attention both form weighted sums. The decisive difference is where the weights come from.</script>
 <div class="card">
   <h3 class="card-title">Two weighted sums, two very different rules</h3>
@@ -104,7 +106,7 @@ No. Attention supplies explicit content-dependent routing and shared projections
 </div>
 </div>
 
-<div class="frame" id="s17-conclusion" data-title="What exactly does attention improve?">
+<div class="companion" id="s17-conclusion" data-title="What exactly does attention improve?">
 <script type="text/x-notes">Attention is content-dependent soft retrieval.
 It does not imply infinite context or that fixed-window networks cannot use word content.</script>
   <div id="s17-callout"></div>
@@ -165,13 +167,14 @@ It does not imply infinite context or that fixed-window networks cannot use word
       cols: toks.map((tok, j) => (j + 1) + ' ' + tok),
       rowLabels: SCHEMES.map(s => s.label),
       rowCls: SCHEMES.map(s => s.cls),
-      cornerLabel: 'scheme / token',
+      cornerLabel: 'scheme / position',
       heatCols: AT.range(t), heatMax: 1, decimals: 2, highlightRow: 3,
       computed: [{ label: 'sum', fn: (row) => AT.sum(row.map(x => (typeof x === 'number' ? x : 0))), cls: 'neutral' }],
       caption: 'Each cell shows inclusion or a pooling weight for token ' + t + ' at source position $j$ in the ' + ctx + ' sentence: window with $w = ' + w + '$ (1 = included whole, × = unavailable; the window concatenates, it does not weight), mean $1/t$, positional $w_j \\propto ' + DECAY + '^{\\,t-j}$ (illustrative), and the attention row $\\va{\\alpha_{' + t + ',j}}$ from the toy model.',
       note: 'Hover or focus a cell in the attention row to see where its weight comes from; click it for the worksheet $\\vq{q_{' + t + '}} \\cdot \\vk{k_j} / \\sqrt{d_k}$.',
       into: tableHost
     });
+    toks.forEach((_, j) => { fig.table.tHead.rows[0].cells[j + 1].dataset.sourcePosition = String(j + 1); });
     const att = W[3];
     const pop = AT.ui.popover(fig, { label: 'Score arithmetic' });
     const qName = t + ' ' + toks[ti];

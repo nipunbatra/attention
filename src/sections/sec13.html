@@ -63,7 +63,7 @@ It is river at position 6, not river and bank together. Training can evaluate ma
 <div class="callout callout-warn" data-build="3">If position $i$ could read position $i+1$ during training, it could read the answer it is being graded on.</div>
 </div>
 
-<div class="frame" id="s13-frame-targets" data-title="Shift the same sentence by one token">
+<div class="companion" id="s13-frame-targets" data-title="Shift the same sentence by one token">
 <script type="text/x-notes">What is the one-token target for the row at position 5?
 It is river at position 6. Read one row horizontally: prefix in, the immediately following token is its target.</script>
 <div class="card">
@@ -100,7 +100,7 @@ Forbidden scores become negative infinity, so their exponentials are zero. Allow
 </div>
 </div>
 
-<div class="frame" id="s13-frame-mask-code" data-title="Make forbidden attention exactly zero">
+<div class="companion" id="s13-frame-mask-code" data-title="Make forbidden attention exactly zero">
 <script type="text/x-notes">Why add negative infinity before softmax?
 Because exp(-infinity) is zero. The allowed scores retain their relative values and the softmax renormalizes only across the prefix.</script>
   <div class="prose">
@@ -121,7 +121,7 @@ Toggle the mask manually. Row sums remain one; the locations receiving weight re
 <div class="card">
   <h3 class="card-title">The real attention matrix $\va{A}$ for sentence A (10 tokens), with the mask on or off</h3>
   <p class="s13-cap">Toggle the mask and watch the hatched triangle: with the mask off, weight moves into it, and the outlined cells $(i, i+1)$ are where each token could read its own answer. Click any cell for the score arithmetic behind its weight.</p>
-  <div class="row" id="s13-ctl"></div>
+  <div class="row" id="s13-ctl" data-keep-state></div>
   <div id="s13-heat"></div>
   <p class="muted small s13-msg" id="s13-msg">Hover a cell to read one weight.</p>
   <div id="s13-warn"></div>
@@ -148,7 +148,7 @@ Compare mask on and off, then send the values. Future attention weight is not th
 </div>
 </div>
 
-<div class="frame" id="s13-frame-why" data-title="Training must use only the prefix, just like generation">
+<div class="companion" id="s13-frame-why" data-title="Training must use only the prefix, just like generation">
 <script type="text/x-notes">What mismatch would we create by training without the mask?
 Training would allow evidence that generation can never have. The model could minimize loss with a shortcut rather than learning prefix-only prediction.</script>
   <div class="prose">

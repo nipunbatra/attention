@@ -1,4 +1,4 @@
-<section id="s15" class="sec" data-title="Full walkthrough, one step at a time" data-lit="">
+<section id="s15" class="sec" data-title="Optional numerical walkthrough" data-lit="">
 <style>
 #s15 .status{font-family:var(--font-mono);font-size:14px;color:var(--ink-2);margin:6px 0 0;text-align:center}
 #s15 .arena{position:relative}
@@ -15,14 +15,15 @@
 /* Reading keeps every worksheet; projection shows one operation and its result. */
 body.present #s15 #s15-frame1>.prose,body.present #s15 #s15-motif{display:none}
 body.present #s15 #s15-frame1>.card{padding:0;border:0;background:none;margin:0 0 .2em}
-body.present #s15 .status{font-size:.78em;margin:0;text-align:left}
+body.present #s15 .status{display:none}
 body.present #s15 .s15-reading,body.present #s15 .stepper-list,
 body.present #s15 .stepper-stage>.stage-note,body.present #s15 .stepper-stage>.stage-tex{display:none}
 body.present #s15 .stepper{padding:.45em .7em;margin:.2em 0 0}
 body.present #s15 .stepper-body{display:block}
-/* The presentation controls advance the active stepper; its duplicate local
-   toolbar is useful in reading mode but wastes one full teaching line here. */
-body.present #s15 .stepper-bar{display:none}
+/* This worksheet is optional: local controls inspect numbers; presentation
+   Next continues to the flowchart instead of requiring all eighteen steps. */
+body.present #s15 .stepper-bar{display:flex;margin-bottom:.3em}
+body.present #s15 .s15-optional{font-size:22px;line-height:1.35;margin:0 0 .4em}
 body.present #s15 .stepper-stage .stage-title{margin:0 0 .3em}
 body.present #s15 .s15-classroom{display:grid;gap:.45em}
 body.present #s15 .s15-classroom p{margin:0;line-height:1.35}
@@ -36,7 +37,7 @@ body.present #s15 .s15-result .vec-axes{font-size:22px}
 body.present #s15 .s15-result .vec-dims{font-size:21px}
 body.present #s15 .s15-operation{font-size:.93em}
 body.present #s15 .s15-explain{font-size:.9em}
-body.present #s15 .s15-classroom pre{margin:0;padding:.45em .65em;font-size:.8em;line-height:1.35}
+body.present #s15 .s15-classroom pre{display:none}
 body.present #s15 .s15-strip{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:.25em}
 body.present #s15 .s15-tile{padding:.3em .2em;text-align:center;border:1px solid var(--line);border-radius:var(--radius-s);font-variant-numeric:tabular-nums}
 body.present #s15 .s15-tile small{display:block;font-size:21px;white-space:nowrap}
@@ -56,7 +57,7 @@ body.present #s15 .s15-classroom .dt-cap{margin-top:.25em}
   <span class="sec-num">15</span>
   <div>
     <p class="eyebrow">Follow one complete forward pass, with the numbers visible at every step.</p>
-    <h2>Full walkthrough, one step at a time</h2>
+    <h2>Optional numerical walkthrough</h2>
   </div>
 </header>
 
@@ -64,7 +65,7 @@ body.present #s15 .s15-classroom .dt-cap{margin-top:.25em}
   <p>Put the stages together for the ten-token sentence. Each table has one row per token and one column per coordinate, with the result in the last column or bottom row. The numbers come from the same calculation we have worked through by hand. Click a score or press Show the arithmetic to inspect it. At step 3, choose a different query token and advance again. The scores, mask and weights change, while the operations stay the same: score the sources for one query, mix their values, then project and add the update.</p>
 </div>
 
-<div class="frame" id="s15-frame1" data-title="Can we trace every number through one forward pass?">
+<div class="frame" id="s15-frame1" data-title="Optional: inspect one forward pass" data-autobuild="off">
   <script type="text/x-notes">
 Which token are we updating at this step?
 The stage label names the query. Follow bank by default, or choose another receiver at step 3. The final prediction explicitly switches to the updated last token, the at position 10. Every layer input is frozen during this computation; e prime of bank does not feed the same-layer update of the.
@@ -79,7 +80,8 @@ The stage label names the query. Follow bank by default, or choose another recei
   <p class="status" id="s15-status"></p>
 </div>
 
-<div id="s15-stepper"></div>
+<p class="s15-optional">Use <strong>Next step</strong> to inspect the numbers, or presentation <strong>Next</strong> to continue to the flowchart.</p>
+<div id="s15-stepper" data-present="manual"></div>
 
 </div>
 

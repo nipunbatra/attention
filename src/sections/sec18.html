@@ -57,38 +57,38 @@ Ask one question before opening its reveal. For equal scores, the result is the 
 
 </div>
 
-<div class="frame" id="s18-question2" data-title="If every score is equal, what is the message?">
+<div class="companion" id="s18-question2" data-title="If every score is equal, what is the message?">
   <script type="text/x-notes">Ask for the weights before revealing the answer. Equal scores mean equal weights, not a zero update.</script>
   <div class="card"><h3 class="card-title">2 · The equal-score case</h3><div id="s18-q2"></div></div>
 </div>
-<div class="frame" id="s18-question3" data-title="Is the query the updated bank representation?">
+<div class="companion" id="s18-question3" data-title="Is the query the updated bank representation?">
   <script type="text/x-notes">Which vector is used for matching, and which one is passed onward? Ask students to name the addition.</script>
   <div class="card"><h3 class="card-title">3 · A working vector is not the output</h3><div id="s18-q3"></div></div>
 </div>
-<div class="frame" id="s18-question4" data-title="What does the optimizer keep and update?">
+<div class="companion" id="s18-question4" data-title="What does the optimizer keep and update?">
   <script type="text/x-notes">Distinguish stored parameters from vectors recomputed by a forward pass. Gradients may flow through both.</script>
   <div class="card"><h3 class="card-title">4 · Parameters versus intermediate results</h3><div id="s18-q4"></div></div>
 </div>
-<div class="frame" id="s18-question5" data-title="What exactly is the update Δe?">
+<div class="companion" id="s18-question5" data-title="What exactly is the update Δe?">
   <script type="text/x-notes">The weighted values first make a message. W_O puts that message into the model's coordinate space.</script>
   <div class="card"><h3 class="card-title">5 · From the message to an addable update</h3><div id="s18-q5"></div></div>
 </div>
-<div class="frame" id="s18-question6" data-title="Is Δe a new parameter or a standard name?">
+<div class="companion" id="s18-question6" data-title="Is Δe a new parameter or a standard name?">
   <script type="text/x-notes">Delta e is our explanatory label for the attention contribution, not an independently stored parameter.</script>
   <div class="card"><h3 class="card-title">6 · Our label for the attention contribution</h3><div id="s18-q6"></div></div>
 </div>
-<div class="frame" id="s18-question7" data-title="Why keep the original embedding as well?">
+<div class="companion" id="s18-question7" data-title="Why keep the original embedding as well?">
   <script type="text/x-notes">Ask what happens when the update is zero. The residual path carries the input through unchanged.</script>
   <div class="card"><h3 class="card-title">7 · The residual addition</h3><div id="s18-q7"></div></div>
 </div>
-<div class="frame" id="s18-question8" data-title="Can bank read words that come after it?">
+<div class="companion" id="s18-question8" data-title="Can bank read words that come after it?">
   <script type="text/x-notes">At position 7, source positions 8–10 are future. The mask makes their weights exactly zero.</script>
   <div class="card"><h3 class="card-title">8 · The causal restriction</h3><div id="s18-q8"></div></div>
 </div>
 
 <div class="companion" id="s18-standard"></div>
 
-<div class="frame" id="s18-frame2" data-title="Do the roles and shapes agree?">
+<div class="companion" id="s18-frame2" data-title="Do the roles and shapes agree?">
   <script type="text/x-notes">
 Which objects share a space, and which only happen to share a width in this toy?
 Queries and keys must have compatible matching coordinates. Values form the message space. The input, contextual update and updated token row have the model width.
