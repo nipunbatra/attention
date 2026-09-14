@@ -1,5 +1,10 @@
 # Classroom release checks
 
+## 2026-09-14: introduce the square-root factor before deferring its derivation
+
+- Added a brief note beside the first scaled-score table in Section 8, in both reading and presentation modes. It defines d_k as the three coordinates per query/key, distinguishes that from the token count, and identifies division by sqrt(3) as scale control before softmax. The note points to Section 12, whose existing opening now explicitly returns to this example before the variance argument. No new frame, reveal, model or dependency changes. The presentation skill guided the existing layout and semantic math colours.
+- Visually inspected the first-use note, the full later explanation and the phone reading layout. Regression verifies both copies of the note, the current model dimension, the later payoff and unchanged frame counts. All 317 presentation states / 557 formulas, phone QA, routing/scaling regression and eight independent numerical-model cases pass.
+
 ## 2026-09-14: diagram for the two attention phases
 
 - Added an editable SVG overview to the existing Section 8 opening frame. Its upper path compares bank's query with seven keys and applies softmax. A rose connector takes those same weights to the lower path, where each weight multiplies its paired value and the contributions add into the two-coordinate message. Query/key/value/weight colours match the prose and equations. Phase A and Phase B reveal with builds 1 and 2, and the original takeaway stays at build 3. No additional frame or numerical-model change.

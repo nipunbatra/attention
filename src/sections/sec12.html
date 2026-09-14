@@ -21,12 +21,12 @@ body.present #s12 .dt td,body.present #s12 .dt th{font-size:22px;padding:.2em .4
   <p>Softmax is sensitive to score differences. Under the independence assumptions below, the <em>typical spread</em> of a dot product grows like $\sqrt{d_k}$; not every individual dot product must grow. The first illustration holds four raw scores fixed and changes only the divisor. It shows what scaling does, not how score variance grows. A separate seeded simulation checks the variance argument, and the final table returns to our actual bank query.</p>
 </div>
 
-<div class="frame" data-title="Control the spread of dot-product scores">
+<div class="frame" id="s12-frame-scaling" data-title="Control the spread of dot-product scores">
 <script type="text/x-notes">If we double the number of matching coordinates, should attention become more confident just because the vector is wider?
 
 The claim is about the spread of scores, not every particular dot product. State the assumptions: mutually independent, zero-mean, unit-variance query and key coordinates. The variance of each product is one and the variances of the d_k products add.</script>
 <div class="prose">
-  <p>The score between a query and a key is a dot product over $d_k$ coordinates. Standard attention divides it by $\sqrt{d_k}$:</p>
+  <p>Earlier, we divided our three-coordinate dot products by $\sqrt{3}$. Here is why. With $d_k$ matching coordinates, standard attention uses:</p>
   <div data-build="1">$$s_{ij} = \frac{\vq{q_i}\cdot\vk{k_j}}{\sqrt{d_k}}$$</div>
   <p data-build="2">For intuition, assume all query and key coordinates are <strong>mutually independent, mean 0, variance 1</strong>. Then $\operatorname{Var}(q_l k_l)=1$ and $\operatorname{Var}(\vq{q}\cdot\vk{k})=d_k$. The standard deviation is $\sqrt{d_k}$.</p>
   <p data-build="3">Dividing by $\sqrt{d_k}$ makes the variance 1 under those assumptions. Learned coordinates need not obey them exactly: this is a scale-control argument, not a promise that attention is always diffuse.</p>

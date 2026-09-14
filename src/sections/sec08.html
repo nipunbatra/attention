@@ -178,16 +178,18 @@ Keep the bank query fixed. At build 1 trace the upper path: query and seven keys
   <h3 class="card-title">$\vq{q_{7}}$ against every key $\vk{k_j}$: one score per row, then softmax turns the scores into weights $\va{\alpha_{7j}}$</h3>
   <div class="btn-row"><button type="button" class="btn btn-primary" id="s08-runA">Run phase A</button></div>
   <div id="s08-atab"></div>
+  <p class="rd" data-scale-intro></p>
   <p class="rd" id="s08-aread"></p>
 </div>
 </div>
 
-<div class="frame s08-present-only" data-title="Score bank against every key">
+<div class="frame s08-present-only" id="s08-frame-scores" data-title="Score bank against every key">
 <script type="text/x-notes">Which coordinates are being compared?
-The query and keys share three matching axes. One row-wise dot product produces one score per source position.</script>
+The query and keys share three matching axes. One row-wise dot product produces one score per source position. Briefly identify d_k as the three matching coordinates, not the seven source tokens. The square-root factor controls score scale before softmax; defer its variance explanation to Section 12.</script>
   <div class="card">
     <h3 class="card-title">Hold $\vq{q_7}$ fixed; compare it with seven $\vk{k_j}$ rows</h3>
     <div id="s08-score-present"></div>
+    <p class="rd" data-scale-intro></p>
   </div>
 </div>
 
@@ -320,6 +322,11 @@ m_alt = alpha @ V_alt</code></pre>
   const AX = AT.axes;
   const joinAnd = (xs) => xs.length <= 1 ? xs.join('') : xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1];
   const tokLab = (j) => (j + 1) + ' ' + toks[j];
+
+  S.querySelectorAll('[data-scale-intro]').forEach(el => {
+    el.innerHTML = 'Each score is $\\va{s_{7j}}=(\\vq{q_7}\\cdot\\vk{k_j})/\\sqrt{d_k}$. Here $d_k=' + AT.d_k + '$ counts coordinates per query/key, not tokens. Dividing by $\\sqrt{' + AT.d_k + '}$ controls the scale before softmax. <strong>Why the square root?</strong> We return to this in Section 12.';
+    AT.renderMath(el);
+  });
 
   /* ---------- Phase A: the routing table (primary) ---------- */
   const atab = AT.ui.table([F.Q[qi]].concat(F.K), {

@@ -7149,16 +7149,18 @@ Keep the bank query fixed. At build 1 trace the upper path: query and seven keys
   <h3 class="card-title">$\vq{q_{7}}$ against every key $\vk{k_j}$: one score per row, then softmax turns the scores into weights $\va{\alpha_{7j}}$</h3>
   <div class="btn-row"><button type="button" class="btn btn-primary" id="s08-runA">Run phase A</button></div>
   <div id="s08-atab"></div>
+  <p class="rd" data-scale-intro></p>
   <p class="rd" id="s08-aread"></p>
 </div>
 </div>
 
-<div class="frame s08-present-only" data-title="Score bank against every key">
+<div class="frame s08-present-only" id="s08-frame-scores" data-title="Score bank against every key">
 <script type="text/x-notes">Which coordinates are being compared?
-The query and keys share three matching axes. One row-wise dot product produces one score per source position.</script>
+The query and keys share three matching axes. One row-wise dot product produces one score per source position. Briefly identify d_k as the three matching coordinates, not the seven source tokens. The square-root factor controls score scale before softmax; defer its variance explanation to Section 12.</script>
   <div class="card">
     <h3 class="card-title">Hold $\vq{q_7}$ fixed; compare it with seven $\vk{k_j}$ rows</h3>
     <div id="s08-score-present"></div>
+    <p class="rd" data-scale-intro></p>
   </div>
 </div>
 
@@ -7291,6 +7293,11 @@ m_alt = alpha @ V_alt</code></pre>
   const AX = AT.axes;
   const joinAnd = (xs) => xs.length <= 1 ? xs.join('') : xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1];
   const tokLab = (j) => (j + 1) + ' ' + toks[j];
+
+  S.querySelectorAll('[data-scale-intro]').forEach(el => {
+    el.innerHTML = 'Each score is $\\va{s_{7j}}=(\\vq{q_7}\\cdot\\vk{k_j})/\\sqrt{d_k}$. Here $d_k=' + AT.d_k + '$ counts coordinates per query/key, not tokens. Dividing by $\\sqrt{' + AT.d_k + '}$ controls the scale before softmax. <strong>Why the square root?</strong> We return to this in Section 12.';
+    AT.renderMath(el);
+  });
 
   /* ---------- Phase A: the routing table (primary) ---------- */
   const atab = AT.ui.table([F.Q[qi]].concat(F.K), {
@@ -8650,12 +8657,12 @@ body.present #s12 .dt td,body.present #s12 .dt th{font-size:22px;padding:.2em .4
   <p>Softmax is sensitive to score differences. Under the independence assumptions below, the <em>typical spread</em> of a dot product grows like $\sqrt{d_k}$; not every individual dot product must grow. The first illustration holds four raw scores fixed and changes only the divisor. It shows what scaling does, not how score variance grows. A separate seeded simulation checks the variance argument, and the final table returns to our actual bank query.</p>
 </div>
 
-<div class="frame" data-title="Control the spread of dot-product scores">
+<div class="frame" id="s12-frame-scaling" data-title="Control the spread of dot-product scores">
 <script type="text/x-notes">If we double the number of matching coordinates, should attention become more confident just because the vector is wider?
 
 The claim is about the spread of scores, not every particular dot product. State the assumptions: mutually independent, zero-mean, unit-variance query and key coordinates. The variance of each product is one and the variances of the d_k products add.</script>
 <div class="prose">
-  <p>The score between a query and a key is a dot product over $d_k$ coordinates. Standard attention divides it by $\sqrt{d_k}$:</p>
+  <p>Earlier, we divided our three-coordinate dot products by $\sqrt{3}$. Here is why. With $d_k$ matching coordinates, standard attention uses:</p>
   <div data-build="1">$$s_{ij} = \frac{\vq{q_i}\cdot\vk{k_j}}{\sqrt{d_k}}$$</div>
   <p data-build="2">For intuition, assume all query and key coordinates are <strong>mutually independent, mean 0, variance 1</strong>. Then $\operatorname{Var}(q_l k_l)=1$ and $\operatorname{Var}(\vq{q}\cdot\vk{k})=d_k$. The standard deviation is $\sqrt{d_k}$.</p>
   <p data-build="3">Dividing by $\sqrt{d_k}$ makes the variance 1 under those assumptions. Learned coordinates need not obey them exactly: this is a scale-control argument, not a promise that attention is always diffuse.</p>

@@ -78,6 +78,23 @@ try{
   await page.screenshot({path:path.join(shots,'two-phase-overview.png')});
   await page.evaluate(()=>AT.present.next());
   assert.equal(await page.locator('.frame.is-live').getAttribute('data-title'),'Score bank against every key');
+  // Explain the first scaled score briefly, then pay off the signpost later.
+  const scaleNotes=page.locator('#s08 [data-scale-intro]');
+  assert.equal(await scaleNotes.count(),2,'Reading and presentation modes each need the first-use note.');
+  assert.equal((await scaleNotes.allTextContents())[0],(await scaleNotes.allTextContents())[1]);
+  await go('s08-frame-scores');
+  assert(await page.locator('#s08-frame-scores [data-scale-intro]').isVisible());
+  assert.match(await page.locator('#s08-frame-scores [data-scale-intro]').innerText(),/coordinates per query\/key, not tokens.*before softmax.*Section 12/s);
+  const scaleMath=(await page.locator('#s08-frame-scores [data-scale-intro] annotation').allTextContents()).join(' ');
+  assert(scaleMath.includes('d_k='+model.d_k)&&scaleMath.includes('\\sqrt{'+model.d_k+'}'));
+  assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'First-use scale note fits with all seven scores.');
+  assert.equal(await page.locator('#s12 .frame').count(),5,'Keep the existing full scaling lesson.');
+  await go('s12-frame-scaling');
+  assert.match(await page.locator('#s12-frame-scaling .prose p').first().innerText(),/Earlier.*three-coordinate.*Here is why/s);
+  await page.evaluate(()=>AT.present.go('s12',1,3));
+  await page.waitForTimeout(300); // Nested text follows the existing reveal animation.
+  assert.match(await page.locator('#s12-frame-scaling [data-build="2"]').innerText(),/mutually independent, mean 0, variance 1/);
+  assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'The deferred explanation still fits.');
   for(const context of ['river','cheque','river']){
     const F=forward(model,model.sentences[context]);
     await go('s09-frame-prediction-input');
@@ -107,14 +124,16 @@ try{
   }
   await go('s07-frame-pair');
   await page.locator('#s07-rchips button').nth(5).click();
-  const changedFrames=['s07-frame1','s07-frame-keys','s07-frame-values','s07-frame-pair','s08-frame-phases','s09-frame-prediction-input','s09-frame-prediction-output','s11-frame1','s11-frame-query-calc','s11-frame-key-calc','s11-frame-value-calc'];
+  const changedFrames=['s07-frame1','s07-frame-keys','s07-frame-values','s07-frame-pair','s08-frame-phases','s08-frame-scores','s12-frame-scaling','s09-frame-prediction-input','s09-frame-prediction-output','s11-frame1','s11-frame-query-calc','s11-frame-key-calc','s11-frame-value-calc'];
   for(const id of changedFrames){
     await go(id);await page.screenshot({path:path.join(shots,id+'.png')});
   }
   assert.equal(await page.evaluate(()=>JSON.stringify(AT.model)),original,'All controls preserve the canonical model.');
   await page.evaluate(()=>AT.present.exit());
   await page.setViewportSize({width:390,height:844});
+  assert(await page.locator('#s08 .companion [data-scale-intro]').isVisible(),'The first-use note also appears in reading mode.');
   for(const id of changedFrames){
+    if(id==='s08-frame-scores')continue; // Reading mode uses the combined phase-A table.
     await page.locator('#'+id).scrollIntoViewIfNeeded();
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No phone page overflow at '+id);
     await page.screenshot({path:path.join(shots,'phone-'+id+'.png')});
@@ -127,5 +146,5 @@ try{
   await page.locator('.phase-overview').scrollIntoViewIfNeeded();
   await page.screenshot({path:path.join(shots,'phone-phase-message.png')});
   assert.deepEqual(errors,[]);
-  console.log('PASS: supplied Q/K/V match reference; seven paired source records; staged two-phase diagram and colour matching; no premature projections; both position-10 predictions; all shared-matrix derivations; model/state retention; phone layout. Screenshots: '+shots);
+  console.log('PASS: supplied Q/K/V match reference; seven paired source records; staged two-phase diagram and colour matching; first-use scaling signpost and later explanation; no premature projections; both position-10 predictions; all shared-matrix derivations; model/state retention; phone layout. Screenshots: '+shots);
 }finally{await browser.close();}
