@@ -1,5 +1,12 @@
 # Classroom release checks
 
+## 2026-09-14: a summary section with numbered approaches
+
+- Added a dedicated “Summarizing the prefix” divider after the fixed-window limitation. It defines prefix, states the fixed-width-summary problem, and numbers the progression: 1 averaging, 2 hand-chosen weights, 3 attention-computed weights. The same numbers appear at the existing approach introductions. The roadmap distinguishes how contributions are chosen, without suggesting that averaging and weighted pooling are unrelated operations.
+- Moved the existing concatenation-versus-pooling bridge, its styles and initialization into Section 4 after the divider. Section 3 now ends at its longer-prefix counterexample. Section 4's article heading and navigation label agree. This adds only one teaching frame, preserves the existing examples, and leaves the attention explanation and retrieval detour in their established order.
+- The presentation skill guided the visible topic boundary and numbered progression. Visually inspected the divider, moved bridge, numbered mean/alpha/attention introductions and phone article. The article reuses its section heading rather than repeating the divider title.
+- Regression checks natural section navigation, consistent approach numbers and section labels, desktop/article title visibility, all seven prefix/mean positions, weighted presets and unchanged model outputs. Window regression passes all short/long widths and 100 MLP widths. All 300 presentation states / 540 formulas, 128 controls, eight live/reference cases (7,980 finite values, max error 8.88e-16), and 390px article QA pass with no JavaScript, KaTeX or overflow failures. No model, Part I, shared-runtime, dependency or PDF changes.
+
 ## 2026-09-14: consolidate the window and parameter-growth explanation
 
 - Reduced Section 3 from seven teaching frames to five: available inputs, concatenation, the windowed MLP, a longer-prefix counterexample, and the pooling alternative. The two redundant linear-head frames remain as explicitly labelled optional article companions, with a definition of every count term and a worked reading of the first table row. The longer-prefix slide now focuses on lost information rather than repeating parameter arithmetic.

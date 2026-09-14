@@ -1,5 +1,40 @@
-<section id="s04" class="sec" data-title="Weighted pooling: where should weights come from?" data-lit="a">
+<section id="s04" class="sec" data-title="Summarizing the prefix" data-lit="a">
 <style>
+#s04 .summary-break h3{font-size:40px;line-height:1.1;margin:0 0 24px;letter-spacing:-.02em}
+#s04 .summary-break p{font-size:22px;line-height:1.4;margin:0 0 24px;max-width:54ch}
+#s04 .summary-approaches{padding-left:1.5em;font-size:20px;line-height:1.4;margin:28px 0 0}
+#s04 .summary-approaches li{margin:16px 0;padding-left:8px}
+#s04 .summary-approaches li::marker{font-weight:700}
+#s04 .summary-approaches span{color:var(--ink-2)}
+body:not(.present) #s04 .summary-break h3{display:none}
+body.present #s04:has(#s04-frame-summary-break.is-live)>.sec-head{display:none}
+body.present #s04 .summary-break h3{font-size:64px;margin-bottom:28px}
+body.present #s04 .summary-break p{font-size:28px;line-height:1.35}
+body.present #s04 .summary-approaches{font-size:28px;margin-top:32px}
+body.present #s04 .summary-approaches li{margin:20px 0}
+#s04 .pool-bridge-intro{font-size:18px;line-height:1.4;margin:0 0 14px}
+#s04 .pool-bridge-source{font-size:16px;color:var(--ink-2);margin:8px 0 16px}
+#s04 .pool-bridge-row{display:grid;grid-template-columns:180px minmax(0,1fr);gap:12px 20px;align-items:center;padding:16px 0;border-top:1px solid var(--line)}
+#s04 .pool-bridge-row h3{font-size:19px;margin:0}
+#s04 .pool-bridge-row p{font-size:16px;margin:6px 0 0}
+#s04 .pool-bridge-blocks{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto}
+#s04 .pool-bridge-block{display:grid;grid-template-columns:repeat(4,18px);gap:2px;flex:none}
+#s04 .pool-bridge-block span{height:25px;background:var(--t-e);border:1px solid var(--c-e)}
+#s04 .pool-bridge-summary{display:flex;gap:8px;color:var(--c-v)}
+#s04 .pool-bridge-summary span{border:1px solid var(--c-v);background:var(--t-v);padding:8px 14px;font-size:22px}
+#s04 .pool-bridge-summary-text{color:var(--c-v)}
+#s04 .pool-bridge-next{font-size:20px;line-height:1.4;margin:16px 0 0}
+body.present #s04 .pool-bridge-intro{font-size:26px;line-height:1.35}
+body.present #s04 .pool-bridge-source{font-size:22px;margin:10px 0 16px}
+body.present #s04 .pool-bridge-row{grid-template-columns:215px minmax(0,1fr);padding:18px 0}
+body.present #s04 .pool-bridge-row h3{font-size:26px}
+body.present #s04 .pool-bridge-row p{font-size:22px;line-height:1.35}
+body.present #s04 .pool-bridge-blocks{gap:10px}
+body.present #s04 .pool-bridge-block{grid-template-columns:repeat(4,21px)}
+body.present #s04 .pool-bridge-block span{height:30px}
+body.present #s04 .pool-bridge-summary span{font-size:28px;min-width:66px;text-align:center}
+body.present #s04 .pool-bridge-next{font-size:26px;line-height:1.35}
+@media(max-width:700px){body:not(.present) #s04 .pool-bridge-row{grid-template-columns:minmax(0,1fr)}body:not(.present) #s04 .pool-bridge-block{grid-template-columns:repeat(4,14px)}}
 #s04 .wrows{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:2px 32px;margin:12px 0 2px}
 #s04 .wrow{display:grid;grid-template-columns:minmax(120px,auto) minmax(80px,1fr) 3em;gap:10px;align-items:center;padding:3px 0}
 #s04 .wrow label{display:inline-flex}
@@ -79,13 +114,48 @@ body.present #s04 #s04-live-pool{margin-top:14px}
 <header class="sec-head">
   <span class="sec-num">04</span>
   <div>
-    <p class="eyebrow">Could we <em>pool</em> information from the whole prefix instead of cutting it off at a fixed window?</p>
-    <h2>Weighted pooling: where should weights come from?</h2>
+    <p class="eyebrow">Combine all available token rows into one summary whose width stays fixed.</p>
+    <h2>Summarizing the prefix</h2>
   </div>
 </header>
 
+<div class="frame" id="s04-frame-summary-break" data-title="Summarizing the prefix" data-autobuild="off">
+  <script type="text/x-notes">Pause before changing the problem.
+The fixed window drops earlier clues, and enlarging its concatenated input adds parameters. We now ask how to combine all available token rows into one fixed-width summary. Prefix means all tokens up to and including the current input position. The three numbered approaches differ in how they choose source contributions: equal shares, shares chosen by us, and shares computed from the inputs. These are a progression, not three unrelated combining operations. Averaging is a weighted sum with equal weights. Attention will compute the weights and later separate matching from the information returned. Keep this roadmap brief. The next slide establishes bank at position 7 as the concrete receiving token.</script>
+  <div class="summary-break">
+    <h3>Summarizing the prefix</h3>
+    <p>The <strong>prefix</strong> is all tokens up to and including the current input position.</p>
+    <p>How can they contribute to <strong>one fixed-width context summary</strong>?</p>
+    <ol class="summary-approaches">
+      <li><strong>Averaging.</strong> <span>Every available row gets an equal share.</span></li>
+      <li><strong>Hand-chosen weights.</strong> <span>We choose each row's share.</span></li>
+      <li><strong>Attention.</strong> <span>The model computes shares from the inputs.</span></li>
+    </ol>
+  </div>
+</div>
+
 <div class="companion" data-kicker="For self-study">
   <p>We now build context for a token already in the input. Begin at position 7, bank, using the seven known token rows. A pooled summary $m_i$ combines their corresponding coordinates, while the earlier $c_t$ concatenated rows. Try averaging first, then choose unequal contributions yourself. The summary stays four numbers wide. Later, we will build a summary at every input position before prediction. These arithmetic operations do not update the stored vocabulary table.</p>
+</div>
+
+<div class="frame" id="s04-frame-pooling-bridge" data-title="A fixed-width summary of the prefix" data-autobuild="off">
+  <script type="text/x-notes">What would let more input rows contribute without lengthening the row sent onward?
+The previous slides showed unavailable earlier words and a matrix that grows with the window. Introduce a design alternative. Pooling combines matching coordinates into one row. Name the subtask: bank is already an input token at position 7, and we want to gather context for it from positions 1 through 7. We will later do this at every input position before prediction. Each blue block is one four-number row. Concatenation preserves seven separate blocks. A pooled summary has four coordinates, so it compresses them. Question marks mean the combining rule is still to be chosen. Reveal averaging as the first rule to try, then calculate it in this section. Pooling can lose information, and processing more rows still takes computation.</script>
+  <p class="pool-bridge-intro">Before prediction, let input tokens collect context.<br>Start with <strong>bank at position 7</strong>: it is already in the input, not a word to guess.</p>
+  <div class="card">
+    <div id="s04-pool-bridge-chips"></div>
+    <p class="pool-bridge-source" id="s04-pool-bridge-source"></p>
+    <div class="pool-bridge-row">
+      <h3 class="pool-input">Concatenate</h3>
+      <div><div class="pool-bridge-blocks" id="s04-pool-bridge-concat"></div><p class="pool-input" id="s04-pool-bridge-concat-shape"></p></div>
+    </div>
+    <div class="pool-bridge-row" data-build="1">
+      <h3 class="pool-bridge-summary-text">Pool into a summary</h3>
+      <div><div class="pool-bridge-summary" id="s04-pool-bridge-summary"></div><p class="pool-bridge-summary-text">Combine matching coordinates. The result stays 1 × 4.</p></div>
+    </div>
+  </div>
+  <p class="pool-bridge-next" data-build="1">First rule to try: <strong>average each coordinate</strong> across the available rows.</p>
+  <div class="companion"><p>The seven blocks above are the representations of the seven words, each with four coordinates. Concatenation keeps all 28 entries separately. A pooled summary compresses the available rows into four entries, so more tokens do not increase its width. Combining more rows still takes computation, and compression can lose information. We will call this new summary m, keeping c for concatenation. After learning how to build a summary at one position, we can apply the same idea at each input position before making next-token predictions.</p></div>
 </div>
 
 <div class="frame" id="s04-frame-prefix" data-title="Last 3 tokens versus all tokens so far" data-autobuild="off">
@@ -110,7 +180,7 @@ The window width stays at three. The slider moves the current input position i, 
   <div class="companion"><p>The previous section called window size w. A “last k tokens” rule is the same idea with k in place of w. Both w and k count how many recent input rows we keep. In contrast, i identifies the current input position. At that position a window includes max(1, i − w + 1) through i, while this full-prefix average includes 1 through i. Neither uses positions after i. At i=7, averaging the last three rows would be mathematically valid, but it would discard rows 1–4. Here we deliberately try a summary that lets all seven available rows contribute. Later we will choose their contributions unequally.</p></div>
 </div>
 
-<div class="frame" id="s04-frame-mean" data-title="Mean pooling: averaging matching coordinates" data-autobuild="off">
+<div class="frame" id="s04-frame-mean" data-title="1. Averaging: equal shares" data-autobuild="off">
   <script type="text/x-notes">
 Why not just average?
 Bank is already known, at position 7. We are building a context summary for it, not guessing that input word. Continue the full-prefix rule from the previous comparison: all blue rows contribute, including the outlined current token. Start with the result and the four matching coordinate names. Move the current-position control to 3 and back to 7: the number of source rows changes but the summary width remains four. Reveal the equation only after explaining that each column is summed and divided by the number of included rows. Define m as the summary, i as the current receiving position and j as a source position. The next slide shows every term in the same calculation. All included rows have equal influence under this first rule.
@@ -142,7 +212,7 @@ All available rows have the same 1/i weight. Reveal the footer and read it as th
 
 <div class="companion" data-kicker="Mean-pooling worksheet"><div id="s04-mean-arith"></div></div>
 
-<div class="frame" id="s04-frame-weight-rule" data-title="A weight tells us how much of a row to take" data-autobuild="off">
+<div class="frame" id="s04-frame-weight-rule" data-title="2. Hand-chosen weights" data-autobuild="off">
   <script type="text/x-notes">
 What does a weight of one half do to a four-number row?
 Bank is the already-known input at position 7. We are gathering context for it. River at position 6 is one source. Read alpha, then its two indices in order: receiver 7, source 6. The comma only separates the indices. Choose 0.5 by hand to make the arithmetic easy. This value is an example, not a measured or learned weight. Reveal the table and multiply every coordinate by the same scalar, including the negative and zero coordinates. The second row is only river's contribution. The other six nonnegative weights must together sum to 0.5. A weight is a mixing coefficient, not the probability that the next word is river. The next slide adds all source contributions. The later interactive slide lets students choose a complete set of weights.
@@ -245,6 +315,20 @@ Timing: two minutes.
   const E = AT.embed(toks);
   const T = toks.length;
   const D = AT.d_model;
+  const poolTokens=toks.slice(0,7);
+  AT.ui.chips(poolTokens,{active:6,into:S.querySelector('#s04-pool-bridge-chips')});
+  S.querySelector('#s04-pool-bridge-source').textContent='Positions 1–7 are available: '+poolTokens.length+' token rows, '+D+' numbers per row.';
+  const blocks=S.querySelector('#s04-pool-bridge-concat');
+  blocks.setAttribute('role','img');blocks.setAttribute('aria-label','Seven four-coordinate rows concatenate into one row of 28 numbers.');
+  poolTokens.forEach((word,i)=>{
+    const block=AT.h('div',{class:'pool-bridge-block','data-position':i+1,title:(i+1)+' '+word+': '+D+' coordinates'});
+    AT.range(D).forEach(()=>block.appendChild(AT.h('span',{'aria-hidden':'true'})));
+    blocks.appendChild(block);
+  });
+  S.querySelector('#s04-pool-bridge-concat-shape').textContent='1 × '+(poolTokens.length*D)+' here. More tokens make this row longer.';
+  const summary=S.querySelector('#s04-pool-bridge-summary');
+  summary.setAttribute('role','img');summary.setAttribute('aria-label','Proposed summary: four coordinates. The combining rule is not chosen yet.');
+  AT.range(D).forEach(()=>summary.appendChild(AT.h('span',{'aria-hidden':'true'},'?')));
   const labels = toks.map((t, j) => (j + 1) + ' ' + t);
   const AX = AT.axisLabels('e', D) || AT.range(D).map(j => String(j + 1));
   /* A conditional half-weight illustrates one term, without changing the live presets. */

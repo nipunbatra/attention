@@ -47,25 +47,44 @@ try{
   const E=await page.evaluate(()=>AT.embed(AT.sentences.river.slice(0,7)));
   assert.equal(E.length,7);assert(E.every(row=>row.length===4));
   const order=await page.locator('#s03 .frame').evaluateAll(els=>els.map(e=>e.id));
-  assert.deepEqual(order,['s03-frame2','s03-frame-concatenate','s03-frame1','s03-frame-boundary','s03-frame-pooling-bridge'],'Explain available inputs, concatenation and one MLP, then the longer-prefix limitation and pooling.');
+  assert.deepEqual(order,['s03-frame2','s03-frame-concatenate','s03-frame1','s03-frame-boundary'],'End the window section at its limitation, before the new summary topic.');
   for(const id of ['s03-frame-window-head','s03-frame-window-cost'])assert.equal(await page.locator('#'+id).getAttribute('class'),'companion','Keep the alternative linear-head derivation in the article only.');
   assert.equal(await page.locator('#s03-frame-changing-clues').count(),0);
   assert.equal(await page.locator('#s03-frame3').getAttribute('class'),'companion','Keep the redundant slot recap in the article only.');
   assert(!(await page.locator('#s03').textContent()).includes('later toy query'),'Do not use query results before teaching queries.');
   assert(!(await page.locator('#s03 script').allTextContents()).join('').includes('AT.forward('));
   await page.evaluate(()=>AT.present.enter());
+  await go('s03',4,1);
+  await page.evaluate(()=>AT.present.next());await page.waitForTimeout(100);
+  assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s04-frame-summary-break','Normal Next reaches the summary divider before the bridge.');
+  assert.equal(await page.locator('#s04>.sec-head').evaluate(e=>getComputedStyle(e).display),'none','Show one title on the divider.');
+  assert((await page.locator('.summary-break h3').evaluate(e=>parseFloat(getComputedStyle(e).fontSize)))>=64);
+  assert.deepEqual(await page.locator('.summary-approaches li strong').allTextContents(),['Averaging.','Hand-chosen weights.','Attention.']);
+  assert.equal(await page.locator('.summary-approaches').evaluate(e=>getComputedStyle(e).listStyleType),'decimal');
+  const summaryLabels=await page.evaluate(()=>[
+    document.querySelector('#s04').dataset.title,document.querySelector('#s04 .sec-head h2').textContent,
+    window.__PART__.chain.find(x=>x.section==='s04').label,window.__PART__.sections.find(x=>x.id==='s04').title]);
+  assert(summaryLabels.every(t=>t==='Summarizing the prefix'),'The new section name matches its navigation.');
+  for(const [id,title]of [['s04-frame-mean','1. Averaging: equal shares'],['s04-frame-weight-rule','2. Hand-chosen weights'],['s05-frame-attention-break','3. Attention']]){
+    assert.equal(await page.locator('#'+id).getAttribute('data-title'),title,'Carry the roadmap number into each approach introduction.');
+  }
+  await goPool('s04-frame-summary-break');
+  await page.screenshot({path:path.join(shots,'summary-break.png')});
+  await page.evaluate(()=>AT.present.next());await page.waitForTimeout(100);
+  assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s04-frame-pooling-bridge');
+  assert.notEqual(await page.locator('#s04>.sec-head').evaluate(e=>getComputedStyle(e).display),'none','Restore the usual frame title after the divider.');
   for(const build of [0,1]){
-    await go('s03',5,build);
+    await goPool('s04-frame-pooling-bridge',build);
     assert.equal(await page.locator('.pool-bridge-row[data-build="1"]').evaluate(e=>getComputedStyle(e).visibility),build?'visible':'hidden');
     const bridge=await page.evaluate(()=>({
       intro:document.querySelector('.pool-bridge-intro').textContent,
-      chips:[...document.querySelectorAll('#s03-pool-bridge-chips .chip-t')].map(e=>e.textContent),
-      active:[...document.querySelectorAll('#s03-pool-bridge-chips .is-active')].map(e=>e.dataset.i),
-      blanks:document.querySelectorAll('#s03-pool-bridge-chips .is-slot').length,
+      chips:[...document.querySelectorAll('#s04-pool-bridge-chips .chip-t')].map(e=>e.textContent),
+      active:[...document.querySelectorAll('#s04-pool-bridge-chips .is-active')].map(e=>e.dataset.i),
+      blanks:document.querySelectorAll('#s04-pool-bridge-chips .is-slot').length,
       blocks:[...document.querySelectorAll('.pool-bridge-block')].map(e=>[Number(e.dataset.position),e.children.length]),
       tops:[...document.querySelectorAll('.pool-bridge-block span')].map(e=>Math.round(e.getBoundingClientRect().top)),
-      summary:document.querySelector('#s03-pool-bridge-summary').children.length,
-      shape:document.querySelector('#s03-pool-bridge-concat-shape').textContent
+      summary:document.querySelector('#s04-pool-bridge-summary').children.length,
+      shape:document.querySelector('#s04-pool-bridge-concat-shape').textContent
     }));
     assert(bridge.intro.includes('Before prediction')&&bridge.intro.includes('not a word to guess'));
     assert.deepEqual(bridge.chips,['The','fisherman','sat','beside','the','river','bank']);
@@ -75,7 +94,7 @@ try{
     assert.equal(bridge.summary,4);assert(bridge.shape.startsWith('1 × 28'));
     await page.screenshot({path:path.join(shots,`bridge-${build}.png`)});
   }
-  assert.deepEqual(await page.locator('#s04 .frame').evaluateAll(els=>els.slice(0,3).map(e=>e.id)),['s04-frame-prefix','s04-frame-mean','s04-frame-mean-table'],'Explain available rows before averaging them.');
+  assert.deepEqual(await page.locator('#s04 .frame').evaluateAll(els=>els.slice(0,5).map(e=>e.id)),['s04-frame-summary-break','s04-frame-pooling-bridge','s04-frame-prefix','s04-frame-mean','s04-frame-mean-table'],'Introduce the topic and the fixed-width goal, then explain available rows before averaging them.');
   await goPool('s04-frame-prefix');
   const positionSlider=page.locator('#s04-prefix-slider input');
   const slider=page.locator('#s04-islider input');
@@ -170,7 +189,7 @@ try{
   await page.waitForTimeout(100);
   assert.equal(await page.locator('.pool-equation').evaluate(e=>getComputedStyle(e).visibility),'visible','The normal Next action reveals the equation.');
   const poolOrder=await page.locator('#s04 .frame').evaluateAll(els=>els.map(e=>e.id));
-  assert.deepEqual(poolOrder.slice(3,6),['s04-frame-weight-rule','s04-frame-weight-sum','s04-frame-choose'],'Explain one scalar contribution, then the sum, then let students choose all weights.');
+  assert.deepEqual(poolOrder.slice(5,8),['s04-frame-weight-rule','s04-frame-weight-sum','s04-frame-choose'],'Explain one scalar contribution, then the sum, then let students choose all weights.');
   await goPool('s04-frame-weight-rule',1);
   const example=await page.locator('#s04-frame-weight-rule').evaluate(root=>{
     const table=root.querySelector('.alpha-table');
@@ -305,8 +324,10 @@ try{
   assert.equal(await page.evaluate(()=>JSON.stringify({model:AT.model,probs:AT.forward(AT.sentences.river).probs})),original,'Pooling controls never update model parameters.');
   await page.evaluate(()=>AT.present.exit());
   await page.setViewportSize({width:390,height:844});
+  assert.equal(await page.locator('.summary-break h3').evaluate(e=>getComputedStyle(e).display),'none','In the article, use the section heading instead of repeating the same divider title.');
+  assert.notEqual(await page.locator('#s04>.sec-head').evaluate(e=>getComputedStyle(e).display),'none');
   await page.locator('#s04-presets [data-preset="equal"]').click();
-  for(const [id,name]of [['s03-frame-pooling-bridge','phone-bridge'],['s04-frame-prefix','phone-prefix'],['s04-frame-mean','phone-mean'],['s04-frame-weight-rule','phone-alpha-example'],['s04-frame-weight-sum','phone-alpha-sum'],['s05-frame-attention-break','phone-attention-break'],['s05-frame-attention-idea','phone-attention-idea'],['s05-frame-retrieval-detour','phone-retrieval-detour']]){
+  for(const [id,name]of [['s04-frame-summary-break','phone-summary-break'],['s04-frame-pooling-bridge','phone-bridge'],['s04-frame-prefix','phone-prefix'],['s04-frame-mean','phone-mean'],['s04-frame-weight-rule','phone-alpha-example'],['s04-frame-weight-sum','phone-alpha-sum'],['s05-frame-attention-break','phone-attention-break'],['s05-frame-attention-idea','phone-attention-idea'],['s05-frame-retrieval-detour','phone-retrieval-detour']]){
     await page.locator('#'+id).scrollIntoViewIfNeeded();
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No phone document overflow.');
     await page.screenshot({path:path.join(shots,name+'.png')});
@@ -319,5 +340,5 @@ try{
   assert(phoneExample.x>=0&&phoneExample.x+phoneExample.width<=391,'All four coordinates of the worked alpha term fit on a phone.');
   for(const control of [positionSlider,slider])assert((await control.boundingBox()).width>160,'Both current-position sliders have usable phone tracks.');
   assert.deepEqual(errors,[]);
-  console.log(`PASS: 7 window/prefix positions and means, alpha arithmetic, matching colours and reveals, 4 weighted presets, attention-before-retrieval flow, search state, zero-weight fallback and phone layout. Screenshots: ${shots}`);
+  console.log(`PASS: summary section break and numbered approaches, 7 window/prefix positions and means, alpha arithmetic, matching colours and reveals, 4 weighted presets, attention-before-retrieval flow, search state, zero-weight fallback and phone layout. Screenshots: ${shots}`);
 }finally{await browser.close();}

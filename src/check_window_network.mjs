@@ -39,9 +39,9 @@ try{
     };
   });
   const initial=await page.evaluate(()=>JSON.stringify({model:AT.model,probs:AT.forward(AT.sentences.river).probs}));
-  for(const [kind,lastBuild,nextId]of [['window',1,'s03-frame-concatenate'],['concatenate',1,'s03-frame1'],['mlp',2,'s03-frame-boundary'],['boundary',1,'s03-frame-pooling-bridge']]){
+  for(const [kind,lastBuild,nextId]of [['window',1,'s03-frame-concatenate'],['concatenate',1,'s03-frame1'],['mlp',2,'s03-frame-boundary'],['boundary',1,'s04-frame-summary-break']]){
     await page.evaluate(([kind,build])=>{goSection3(kind,build);AT.present.next();},[kind,lastBuild]);
-    assert.equal(await page.locator('#s03 .frame.is-live').getAttribute('id'),nextId,'Normal slide navigation must skip the optional derivations.');
+    assert.equal(await page.locator('.frame.is-live').getAttribute('id'),nextId,'Normal slide navigation must skip the optional derivations and reach the new section.');
   }
   await page.evaluate(()=>{AT.present.enter();goSection3('window',0);});
   const slider=page.locator('#s03-slider input');
@@ -404,6 +404,6 @@ try{
   const final=await page.evaluate(()=>JSON.stringify({model:AT.model,probs:AT.forward(AT.sentences.river).probs}));
   assert.equal(final,initial,'Architecture controls must not mutate the trained toy or its predictions.');
   assert.deepEqual(errors,[]);
-  console.log('PASS: five-slide flow, ten short windows, 100 MLP widths with both matrices/biases, eleven long windows, optional linear-head derivation, scalar nodes/edges, concatenation, coloured math, reveals, keyboard, retained state, reduced motion, phone layout and model immutability.');
+  console.log('PASS: four-slide window flow into the summary section, ten short windows, 100 MLP widths with both matrices/biases, eleven long windows, optional linear-head derivation, scalar nodes/edges, concatenation, coloured math, reveals, keyboard, retained state, reduced motion, phone layout and model immutability.');
   console.log('Screenshots: '+shots);
 }finally{await browser.close();}

@@ -7,29 +7,6 @@
 #s03 .look{font-size:14px;color:var(--ink-2);margin:14px 0 0}
 #s03 .live{display:block;margin:10px 0 0;padding:8px 12px;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-s);font-size:15px}
 #s03 .illus{font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--ink-3)}
-#s03 .pool-bridge-intro{font-size:18px;line-height:1.4;margin:0 0 14px}
-#s03 .pool-bridge-source{font-size:16px;color:var(--ink-2);margin:8px 0 16px}
-#s03 .pool-bridge-row{display:grid;grid-template-columns:180px minmax(0,1fr);gap:12px 20px;align-items:center;padding:16px 0;border-top:1px solid var(--line)}
-#s03 .pool-bridge-row h3{font-size:19px;margin:0}
-#s03 .pool-bridge-row p{font-size:16px;margin:6px 0 0}
-#s03 .pool-bridge-blocks{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto}
-#s03 .pool-bridge-block{display:grid;grid-template-columns:repeat(4,18px);gap:2px;flex:none}
-#s03 .pool-bridge-block span{height:25px;background:var(--t-e);border:1px solid var(--c-e)}
-#s03 .pool-bridge-summary{display:flex;gap:8px;color:var(--c-v)}
-#s03 .pool-bridge-summary span{border:1px solid var(--c-v);background:var(--t-v);padding:8px 14px;font-size:22px}
-#s03 .pool-bridge-summary-text{color:var(--c-v)}
-#s03 .pool-bridge-next{font-size:20px;line-height:1.4;margin:16px 0 0}
-body.present #s03 .pool-bridge-intro{font-size:26px;line-height:1.35}
-body.present #s03 .pool-bridge-source{font-size:22px;margin:10px 0 16px}
-body.present #s03 .pool-bridge-row{grid-template-columns:215px minmax(0,1fr);padding:18px 0}
-body.present #s03 .pool-bridge-row h3{font-size:26px}
-body.present #s03 .pool-bridge-row p{font-size:22px;line-height:1.35}
-body.present #s03 .pool-bridge-blocks{gap:10px}
-body.present #s03 .pool-bridge-block{grid-template-columns:repeat(4,21px)}
-body.present #s03 .pool-bridge-block span{height:30px}
-body.present #s03 .pool-bridge-summary span{font-size:28px;min-width:66px;text-align:center}
-body.present #s03 .pool-bridge-next{font-size:26px;line-height:1.35}
-@media(max-width:700px){body:not(.present) #s03 .pool-bridge-row{grid-template-columns:minmax(0,1fr)}body:not(.present) #s03 .pool-bridge-block{grid-template-columns:repeat(4,14px)}}
 #s03 .read-line{font-size:15px;color:var(--ink);margin:12px 0 0;padding:8px 12px;border-left:3px solid var(--c-e);background:var(--t-e);border-radius:0 var(--radius-s) var(--radius-s) 0}
 #s03 .net-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px 28px;align-items:center}
 #s03 .net-wrap .netsk{margin:0}
@@ -439,25 +416,6 @@ It keeps the most recent ten input tokens. Our original prefix had only ten, so 
   </div>
 </div>
 
-<div class="frame" id="s03-frame-pooling-bridge" data-title="A fixed-width summary of the prefix" data-autobuild="off">
-  <script type="text/x-notes">What would let more input rows contribute without lengthening the row sent onward?
-The previous slides showed unavailable earlier words and a matrix that grows with the window. Introduce a design alternative. Pooling combines matching coordinates into one row. Name the subtask: bank is already an input token at position 7, and we want to gather context for it from positions 1 through 7. We will later do this at every input position before prediction. Each blue block is one four-number row. Concatenation preserves seven separate blocks. A pooled summary has four coordinates, so it compresses them. Question marks mean the combining rule is still to be chosen. Reveal averaging as the first rule to try, then calculate it in the next section. Pooling can lose information, and processing more rows still takes computation.</script>
-  <p class="pool-bridge-intro">Before prediction, let input tokens collect context.<br>Start with <strong>bank at position 7</strong>: it is already in the input, not a word to guess.</p>
-  <div class="card">
-    <div id="s03-pool-bridge-chips"></div>
-    <p class="pool-bridge-source" id="s03-pool-bridge-source"></p>
-    <div class="pool-bridge-row">
-      <h3 class="window-input">Concatenate</h3>
-      <div><div class="pool-bridge-blocks" id="s03-pool-bridge-concat"></div><p class="window-input" id="s03-pool-bridge-concat-shape"></p></div>
-    </div>
-    <div class="pool-bridge-row" data-build="1">
-      <h3 class="pool-bridge-summary-text">Pool into a summary</h3>
-      <div><div class="pool-bridge-summary" id="s03-pool-bridge-summary"></div><p class="pool-bridge-summary-text">Combine matching coordinates. The result stays 1 × 4.</p></div>
-    </div>
-  </div>
-  <p class="pool-bridge-next" data-build="1">First rule to try: <strong>average each coordinate</strong> across the available rows.</p>
-  <div class="companion"><p>The seven blocks above are the representations of the seven words, each with four coordinates. Concatenation keeps all 28 entries separately. A pooled summary compresses the available rows into four entries, so more tokens do not increase its width. Combining more rows still takes computation, and compression can lose information. We will call this new summary m, keeping c for concatenation. After learning how to build a summary at one position, we can apply the same idea at each input position before making next-token predictions.</p></div>
-</div>
 
 <div class="companion after">
   <p>Next we calculate a mean, inspect what it gives equal importance to, and then try unequal contributions.</p>
@@ -787,20 +745,6 @@ The previous slides showed unavailable earlier words and a matrix that grows wit
     });
   });
 
-  const poolTokens=toks.slice(0,7);
-  AT.ui.chips(poolTokens,{active:6,into:S.querySelector('#s03-pool-bridge-chips')});
-  S.querySelector('#s03-pool-bridge-source').textContent='Positions 1–7 are available: '+poolTokens.length+' token rows, '+D+' numbers per row.';
-  const blocks=S.querySelector('#s03-pool-bridge-concat');
-  blocks.setAttribute('role','img');blocks.setAttribute('aria-label','Seven four-coordinate rows concatenate into one row of 28 numbers.');
-  poolTokens.forEach((word,i)=>{
-    const block=AT.h('div',{class:'pool-bridge-block','data-position':i+1,title:(i+1)+' '+word+': '+D+' coordinates'});
-    AT.range(D).forEach(()=>block.appendChild(AT.h('span',{'aria-hidden':'true'})));
-    blocks.appendChild(block);
-  });
-  S.querySelector('#s03-pool-bridge-concat-shape').textContent='1 × '+(poolTokens.length*D)+' here. More tokens make this row longer.';
-  const summary=S.querySelector('#s03-pool-bridge-summary');
-  summary.setAttribute('role','img');summary.setAttribute('aria-label','Proposed summary: four coordinates. The combining rule is not chosen yet.');
-  AT.range(D).forEach(()=>summary.appendChild(AT.h('span',{'aria-hidden':'true'},'?')));
 })();
 </script>
 </section>

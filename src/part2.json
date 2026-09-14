@@ -23,7 +23,7 @@
    "section": "s03"
   },
   {
-   "label": "Weighted pooling: where should weights come from?",
+   "label": "Summarizing the prefix",
    "section": "s04"
   },
   {
@@ -105,7 +105,7 @@
   },
   {
    "id": "s04",
-   "title": "Weighted pooling: where should weights come from?",
+   "title": "Summarizing the prefix",
    "lit": "a"
   },
   {

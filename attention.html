@@ -836,7 +836,7 @@ body.presenter>*:not(#at-presenter){display:none!important}
 
 <script>
 window.__TOY__ = {"d_model":4,"d_k":3,"d_v":2,"max_context":20,"vocab":["the","fisherman","sat","beside","river","bank","and","watched","she","deposited","cheque","at","water","boats","fish","ducks","teller","clerk","queue","money"],"tok_emb":{"the":[0.0,0.0,0.0,2.4],"fisherman":[2.0,0.0,2.2,0.0],"sat":[0.4,0.0,0.6,1.8],"beside":[0.6,0.0,0.0,2.0],"river":[3.0,0.0,0.0,0.0],"bank":[0.7,0.7,0.0,0.7],"and":[0.0,0.0,0.0,2.2],"watched":[0.6,0.0,0.8,1.6],"she":[0.0,0.0,2.6,0.4],"deposited":[0.0,2.2,0.6,0.4],"cheque":[0.0,3.0,0.0,0.0],"at":[0.0,0.0,0.0,2.0],"water":[3.0,0.0,0.0,0.0],"boats":[2.4,0.0,0.4,0.0],"fish":[2.6,0.0,0.6,0.0],"ducks":[2.2,0.0,0.8,0.0],"teller":[0.0,2.6,1.8,0.0],"clerk":[0.0,2.4,1.8,0.0],"queue":[0.0,2.0,0.6,0.0],"money":[0.0,3.0,0.0,0.0]},"pos_emb":[[0.1,0.0,0.1,-0.1],[0.0,0.1,-0.1,0.0],[-0.1,0.0,0.0,0.1],[0.0,-0.1,0.1,0.0],[0.1,0.1,0.0,-0.1],[0.1,-0.1,0.0,0.1],[0.0,0.0,0.1,0.1],[-0.1,0.1,0.1,0.0],[0.1,0.0,-0.1,0.1],[0.0,0.0,0.0,-0.1],[0.1,0.1,0.1,0.1],[-0.1,-0.1,-0.1,-0.1],[0.1,-0.1,0.1,-0.1],[-0.1,0.1,-0.1,0.1],[0.1,0.1,-0.1,-0.1],[-0.1,-0.1,0.1,0.1],[0.0,0.1,0.1,-0.1],[0.1,0.0,0.1,0.1],[-0.1,0.0,-0.1,0.1],[0.0,-0.1,-0.1,0.1]],"W_Q":[[1.0,0.0,0.0],[0.0,1.0,0.0],[0.0,0.0,0.4],[0.7,0.7,0.0]],"W_K":[[1.0,0.0,0.0],[0.0,1.0,0.0],[0.0,0.0,1.0],[0.0,0.0,0.0]],"W_V":[[1.0,0.0],[0.0,1.0],[0.0,0.0],[0.0,0.0]],"W_O":[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0]],"W_vocab":[[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.5,1.2,1.0,0.7,0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.5,1.2,0.9,0.7],[0.0,0.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.2,0.0,0.0],[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]],"b_vocab":[-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"sentences":{"river":["The","fisherman","sat","beside","the","river","bank","and","watched","the"],"cheque":["She","deposited","the","cheque","at","the","bank","and","watched","the"]},"candidates":{"river":["water","boats","fish","ducks"],"cheque":["teller","clerk","queue","money"]},"axes":{"e":["water","finance","person","glue"],"qk":["setting: water?","setting: finance?","who?"],"v":["says: water scene","says: finance scene"],"short":{"e":["water","finance","person","glue"],"qk":["water?","finance?","who?"],"v":["\u2192water","\u2192finance"]}},"notes":"Toy v3: single-head causal self-attention (d_model=4, d_k=3, d_v=2, vocab=20, ten-token examples, max_context=20), designed BY HAND so that every coordinate has a name that the numbers agree with (see 'axes'). e axes: water, finance, person, glue. q and k axes: setting: water?, setting: finance?, who? (a query row reads 'what I ask for', a key row 'what I offer'). Position vectors add small offsets across the same four coordinates. v has its own narrower axes: says: water scene and says: finance scene; W_O maps them back onto the e axes. Names are illustrative; the matrices are sparse and one-decimal so a student can read each row of W_Q as 'axis -> asks', W_K as 'axis -> offers', W_V as 'axis -> says', W_vocab as 'axis -> votes for these words'. Values are narrower on purpose because they are mixed and sent rather than compared. Before position is added, glue-only token rows have zero keys and values but ask for both settings, which is why the final 'the' reads river or cheque. bank is equal parts water and finance (0.7, 0.7) plus a little glue (0.7); its entries are kept below 1.0 so that bank does not mostly attend to itself (the self score q_bank.k_bank grows with the square of those entries). The twenty position rows are hand-chosen illustrative vectors, not sinusoidal or trained measurements. Real learned embedding coordinates usually mix features rather than matching these teaching labels. Prefix permutations can change this toy's final prediction through position offsets. Patterns produced (all checked on these rounded numbers by make_toy2.py and toy_ref.mjs): (1) in 'The fisherman sat beside the river bank', bank(7) attends river first, fisherman second, itself and the glue words little; (2) in 'She deposited the cheque at the bank', bank(7) attends cheque first, deposited second; (3) the final 'the'(10) reads mostly river/bank/fisherman or cheque/bank/deposited and the output head predicts water > boats > fish > ducks or teller > clerk > queue > money with every other word at most 0.04; (4) the baseline from e_the(10) alone is spread over the eight candidates and is identical for both sentences; (5) with the causal mask off, the early glue words leak attention onto river and bank. Nothing was optimised; a few magnitudes (bank, fisherman, the W_vocab weights) were adjusted by hand from AXES.md."};
-window.__PART__ = {"part":2,"series":"Attention and language","title":"Self-attention, from first principles","subtitle":"How a token reads from the tokens before it, and why that makes the next word easier to predict.","audience":"For students who know embeddings, dot products, softmax and next-token prediction, and who have not yet met attention.","minutes":null,"central":"\\ve{e} \\;\\rightarrow\\; \\vq{Q},\\vk{K},\\vv{V} \\;\\rightarrow\\; \\text{attention } (\\va{\\alpha}) \\;\\rightarrow\\; \\vd{\\Delta e} \\;\\rightarrow\\; \\vp{e + \\Delta e}","centralLabel":"The one chain to remember","legendTitle":"How to read this page: seven colours, seven objects","provenance":"Where the numbers come from: a tiny demonstration model with {{d_model}}-number representations and a {{vocab}}-word vocabulary. Each coordinate was given an illustrative name{{axes}}, and the weights were written by hand so that the names are true. The arithmetic is real, but the model is not a trained language model.","chain":[{"label":"Predict the next token","section":"s01"},{"label":"Baseline: only the last token","section":"s02"},{"label":"Baseline: a fixed window of w tokens","section":"s03"},{"label":"Weighted pooling: where should weights come from?","section":"s04"},{"label":"Attention and the search analogy","section":"s05"},{"label":"Hard retrieval \u2192 soft retrieval","section":"s06"},{"label":"Every token becomes a searchable record","section":"s07"},{"label":"Two jobs: choose weights, then mix values","section":"s08"},{"label":"The contextual update \u0394e","section":"s09"},{"label":"\u201cbank\u201d: same start, different context","section":"s10"},{"label":"What exactly are Q, K, and V?","section":"s11"},{"label":"Why divide by \u221ad_k?","section":"s12"},{"label":"Causal masking","section":"s13"},{"label":"From \u0394e to the next-token probabilities","section":"s14"},{"label":"Full walkthrough, one step at a time","section":"s15"},{"label":"The same thing in matrix form","section":"s16"},{"label":"Attention versus the alternatives","section":"s17"},{"label":"Pause and think","section":"s18"},{"label":"Three summaries","section":"s19"}],"sections":[{"id":"s01","title":"Predict the next token","lit":""},{"id":"s02","title":"Baseline: only the last token","lit":"e"},{"id":"s03","title":"Baseline: a fixed window of w tokens","lit":""},{"id":"s04","title":"Weighted pooling: where should weights come from?","lit":"a"},{"id":"s05","title":"Attention and the search analogy","lit":"q k v"},{"id":"s06","title":"Hard retrieval \u2192 soft retrieval","lit":""},{"id":"s07","title":"Every token becomes a searchable record","lit":""},{"id":"s08","title":"Two jobs: choose weights, then mix values","lit":""},{"id":"s09","title":"The contextual update \u0394e","lit":"d ep"},{"id":"s10","title":"\u201cbank\u201d: same start, different context","lit":""},{"id":"s11","title":"What exactly are Q, K, and V?","lit":""},{"id":"s12","title":"Why divide by \u221ad_k?","lit":""},{"id":"s13","title":"Causal masking","lit":""},{"id":"s14","title":"From \u0394e to the next-token probabilities","lit":""},{"id":"s15","title":"Full walkthrough, one step at a time","lit":""},{"id":"s16","title":"The same thing in matrix form","lit":""},{"id":"s17","title":"Attention versus the alternatives","lit":""},{"id":"s18","title":"Pause and think","lit":""},{"id":"s19","title":"Three summaries","lit":""}],"objects":["e","q","k","v","a","d","ep"],"prev":{"label":"Part 1: From characters to next-token prediction","href":"part1.html","available":true},"next":{"label":"Part 3: Learning, heads, and the Transformer","href":"part3.html","available":true},"index":{"label":"Series home","href":"index.html","available":true},"notation":"part2","footer":"Notation: <span class=\"sym sym-e\">e<\/span> is always the current token representation, and <span class=\"sym sym-d\">\u0394e<\/span> is this page's pedagogical name for the attention output. The addition <span class=\"sym sym-e\">e<\/span>&thinsp;+&thinsp;<span class=\"sym sym-d\">\u0394e<\/span> is the standard residual connection.","durationLabel":"The full walkthrough takes multiple sessions. A classroom route is suggested in Section 1.","hook":"The fisherman sat beside the river bank and watched the ___. You know the next word. What would a model have to read to know it too?"};
+window.__PART__ = {"part":2,"series":"Attention and language","title":"Self-attention, from first principles","subtitle":"How a token reads from the tokens before it, and why that makes the next word easier to predict.","audience":"For students who know embeddings, dot products, softmax and next-token prediction, and who have not yet met attention.","minutes":null,"central":"\\ve{e} \\;\\rightarrow\\; \\vq{Q},\\vk{K},\\vv{V} \\;\\rightarrow\\; \\text{attention } (\\va{\\alpha}) \\;\\rightarrow\\; \\vd{\\Delta e} \\;\\rightarrow\\; \\vp{e + \\Delta e}","centralLabel":"The one chain to remember","legendTitle":"How to read this page: seven colours, seven objects","provenance":"Where the numbers come from: a tiny demonstration model with {{d_model}}-number representations and a {{vocab}}-word vocabulary. Each coordinate was given an illustrative name{{axes}}, and the weights were written by hand so that the names are true. The arithmetic is real, but the model is not a trained language model.","chain":[{"label":"Predict the next token","section":"s01"},{"label":"Baseline: only the last token","section":"s02"},{"label":"Baseline: a fixed window of w tokens","section":"s03"},{"label":"Summarizing the prefix","section":"s04"},{"label":"Attention and the search analogy","section":"s05"},{"label":"Hard retrieval \u2192 soft retrieval","section":"s06"},{"label":"Every token becomes a searchable record","section":"s07"},{"label":"Two jobs: choose weights, then mix values","section":"s08"},{"label":"The contextual update \u0394e","section":"s09"},{"label":"\u201cbank\u201d: same start, different context","section":"s10"},{"label":"What exactly are Q, K, and V?","section":"s11"},{"label":"Why divide by \u221ad_k?","section":"s12"},{"label":"Causal masking","section":"s13"},{"label":"From \u0394e to the next-token probabilities","section":"s14"},{"label":"Full walkthrough, one step at a time","section":"s15"},{"label":"The same thing in matrix form","section":"s16"},{"label":"Attention versus the alternatives","section":"s17"},{"label":"Pause and think","section":"s18"},{"label":"Three summaries","section":"s19"}],"sections":[{"id":"s01","title":"Predict the next token","lit":""},{"id":"s02","title":"Baseline: only the last token","lit":"e"},{"id":"s03","title":"Baseline: a fixed window of w tokens","lit":""},{"id":"s04","title":"Summarizing the prefix","lit":"a"},{"id":"s05","title":"Attention and the search analogy","lit":"q k v"},{"id":"s06","title":"Hard retrieval \u2192 soft retrieval","lit":""},{"id":"s07","title":"Every token becomes a searchable record","lit":""},{"id":"s08","title":"Two jobs: choose weights, then mix values","lit":""},{"id":"s09","title":"The contextual update \u0394e","lit":"d ep"},{"id":"s10","title":"\u201cbank\u201d: same start, different context","lit":""},{"id":"s11","title":"What exactly are Q, K, and V?","lit":""},{"id":"s12","title":"Why divide by \u221ad_k?","lit":""},{"id":"s13","title":"Causal masking","lit":""},{"id":"s14","title":"From \u0394e to the next-token probabilities","lit":""},{"id":"s15","title":"Full walkthrough, one step at a time","lit":""},{"id":"s16","title":"The same thing in matrix form","lit":""},{"id":"s17","title":"Attention versus the alternatives","lit":""},{"id":"s18","title":"Pause and think","lit":""},{"id":"s19","title":"Three summaries","lit":""}],"objects":["e","q","k","v","a","d","ep"],"prev":{"label":"Part 1: From characters to next-token prediction","href":"part1.html","available":true},"next":{"label":"Part 3: Learning, heads, and the Transformer","href":"part3.html","available":true},"index":{"label":"Series home","href":"index.html","available":true},"notation":"part2","footer":"Notation: <span class=\"sym sym-e\">e<\/span> is always the current token representation, and <span class=\"sym sym-d\">\u0394e<\/span> is this page's pedagogical name for the attention output. The addition <span class=\"sym sym-e\">e<\/span>&thinsp;+&thinsp;<span class=\"sym sym-d\">\u0394e<\/span> is the standard residual connection.","durationLabel":"The full walkthrough takes multiple sessions. A classroom route is suggested in Section 1.","hook":"The fisherman sat beside the river bank and watched the ___. You know the next word. What would a model have to read to know it too?"};
 </script>
 <script>
 /* shared.js: the AT namespace, with toy-model math, KaTeX helpers, UI components, motif and flow.
@@ -4188,29 +4188,6 @@ All twenty words participate. Eight have logit zero and twelve have logit -1.5. 
 #s03 .look{font-size:14px;color:var(--ink-2);margin:14px 0 0}
 #s03 .live{display:block;margin:10px 0 0;padding:8px 12px;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-s);font-size:15px}
 #s03 .illus{font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--ink-3)}
-#s03 .pool-bridge-intro{font-size:18px;line-height:1.4;margin:0 0 14px}
-#s03 .pool-bridge-source{font-size:16px;color:var(--ink-2);margin:8px 0 16px}
-#s03 .pool-bridge-row{display:grid;grid-template-columns:180px minmax(0,1fr);gap:12px 20px;align-items:center;padding:16px 0;border-top:1px solid var(--line)}
-#s03 .pool-bridge-row h3{font-size:19px;margin:0}
-#s03 .pool-bridge-row p{font-size:16px;margin:6px 0 0}
-#s03 .pool-bridge-blocks{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto}
-#s03 .pool-bridge-block{display:grid;grid-template-columns:repeat(4,18px);gap:2px;flex:none}
-#s03 .pool-bridge-block span{height:25px;background:var(--t-e);border:1px solid var(--c-e)}
-#s03 .pool-bridge-summary{display:flex;gap:8px;color:var(--c-v)}
-#s03 .pool-bridge-summary span{border:1px solid var(--c-v);background:var(--t-v);padding:8px 14px;font-size:22px}
-#s03 .pool-bridge-summary-text{color:var(--c-v)}
-#s03 .pool-bridge-next{font-size:20px;line-height:1.4;margin:16px 0 0}
-body.present #s03 .pool-bridge-intro{font-size:26px;line-height:1.35}
-body.present #s03 .pool-bridge-source{font-size:22px;margin:10px 0 16px}
-body.present #s03 .pool-bridge-row{grid-template-columns:215px minmax(0,1fr);padding:18px 0}
-body.present #s03 .pool-bridge-row h3{font-size:26px}
-body.present #s03 .pool-bridge-row p{font-size:22px;line-height:1.35}
-body.present #s03 .pool-bridge-blocks{gap:10px}
-body.present #s03 .pool-bridge-block{grid-template-columns:repeat(4,21px)}
-body.present #s03 .pool-bridge-block span{height:30px}
-body.present #s03 .pool-bridge-summary span{font-size:28px;min-width:66px;text-align:center}
-body.present #s03 .pool-bridge-next{font-size:26px;line-height:1.35}
-@media(max-width:700px){body:not(.present) #s03 .pool-bridge-row{grid-template-columns:minmax(0,1fr)}body:not(.present) #s03 .pool-bridge-block{grid-template-columns:repeat(4,14px)}}
 #s03 .read-line{font-size:15px;color:var(--ink);margin:12px 0 0;padding:8px 12px;border-left:3px solid var(--c-e);background:var(--t-e);border-radius:0 var(--radius-s) var(--radius-s) 0}
 #s03 .net-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px 28px;align-items:center}
 #s03 .net-wrap .netsk{margin:0}
@@ -4620,25 +4597,6 @@ It keeps the most recent ten input tokens. Our original prefix had only ten, so 
   </div>
 </div>
 
-<div class="frame" id="s03-frame-pooling-bridge" data-title="A fixed-width summary of the prefix" data-autobuild="off">
-  <script type="text/x-notes">What would let more input rows contribute without lengthening the row sent onward?
-The previous slides showed unavailable earlier words and a matrix that grows with the window. Introduce a design alternative. Pooling combines matching coordinates into one row. Name the subtask: bank is already an input token at position 7, and we want to gather context for it from positions 1 through 7. We will later do this at every input position before prediction. Each blue block is one four-number row. Concatenation preserves seven separate blocks. A pooled summary has four coordinates, so it compresses them. Question marks mean the combining rule is still to be chosen. Reveal averaging as the first rule to try, then calculate it in the next section. Pooling can lose information, and processing more rows still takes computation.</script>
-  <p class="pool-bridge-intro">Before prediction, let input tokens collect context.<br>Start with <strong>bank at position 7</strong>: it is already in the input, not a word to guess.</p>
-  <div class="card">
-    <div id="s03-pool-bridge-chips"></div>
-    <p class="pool-bridge-source" id="s03-pool-bridge-source"></p>
-    <div class="pool-bridge-row">
-      <h3 class="window-input">Concatenate</h3>
-      <div><div class="pool-bridge-blocks" id="s03-pool-bridge-concat"></div><p class="window-input" id="s03-pool-bridge-concat-shape"></p></div>
-    </div>
-    <div class="pool-bridge-row" data-build="1">
-      <h3 class="pool-bridge-summary-text">Pool into a summary</h3>
-      <div><div class="pool-bridge-summary" id="s03-pool-bridge-summary"></div><p class="pool-bridge-summary-text">Combine matching coordinates. The result stays 1 × 4.</p></div>
-    </div>
-  </div>
-  <p class="pool-bridge-next" data-build="1">First rule to try: <strong>average each coordinate</strong> across the available rows.</p>
-  <div class="companion"><p>The seven blocks above are the representations of the seven words, each with four coordinates. Concatenation keeps all 28 entries separately. A pooled summary compresses the available rows into four entries, so more tokens do not increase its width. Combining more rows still takes computation, and compression can lose information. We will call this new summary m, keeping c for concatenation. After learning how to build a summary at one position, we can apply the same idea at each input position before making next-token predictions.</p></div>
-</div>
 
 <div class="companion after">
   <p>Next we calculate a mean, inspect what it gives equal importance to, and then try unequal contributions.</p>
@@ -4968,27 +4926,48 @@ The previous slides showed unavailable earlier words and a matrix that grows wit
     });
   });
 
-  const poolTokens=toks.slice(0,7);
-  AT.ui.chips(poolTokens,{active:6,into:S.querySelector('#s03-pool-bridge-chips')});
-  S.querySelector('#s03-pool-bridge-source').textContent='Positions 1–7 are available: '+poolTokens.length+' token rows, '+D+' numbers per row.';
-  const blocks=S.querySelector('#s03-pool-bridge-concat');
-  blocks.setAttribute('role','img');blocks.setAttribute('aria-label','Seven four-coordinate rows concatenate into one row of 28 numbers.');
-  poolTokens.forEach((word,i)=>{
-    const block=AT.h('div',{class:'pool-bridge-block','data-position':i+1,title:(i+1)+' '+word+': '+D+' coordinates'});
-    AT.range(D).forEach(()=>block.appendChild(AT.h('span',{'aria-hidden':'true'})));
-    blocks.appendChild(block);
-  });
-  S.querySelector('#s03-pool-bridge-concat-shape').textContent='1 × '+(poolTokens.length*D)+' here. More tokens make this row longer.';
-  const summary=S.querySelector('#s03-pool-bridge-summary');
-  summary.setAttribute('role','img');summary.setAttribute('aria-label','Proposed summary: four coordinates. The combining rule is not chosen yet.');
-  AT.range(D).forEach(()=>summary.appendChild(AT.h('span',{'aria-hidden':'true'},'?')));
 })();
 </script>
 </section>
 
 <!-- ===== sec04.html ===== -->
-<section id="s04" class="sec" data-title="Weighted pooling: where should weights come from?" data-lit="a">
+<section id="s04" class="sec" data-title="Summarizing the prefix" data-lit="a">
 <style>
+#s04 .summary-break h3{font-size:40px;line-height:1.1;margin:0 0 24px;letter-spacing:-.02em}
+#s04 .summary-break p{font-size:22px;line-height:1.4;margin:0 0 24px;max-width:54ch}
+#s04 .summary-approaches{padding-left:1.5em;font-size:20px;line-height:1.4;margin:28px 0 0}
+#s04 .summary-approaches li{margin:16px 0;padding-left:8px}
+#s04 .summary-approaches li::marker{font-weight:700}
+#s04 .summary-approaches span{color:var(--ink-2)}
+body:not(.present) #s04 .summary-break h3{display:none}
+body.present #s04:has(#s04-frame-summary-break.is-live)>.sec-head{display:none}
+body.present #s04 .summary-break h3{font-size:64px;margin-bottom:28px}
+body.present #s04 .summary-break p{font-size:28px;line-height:1.35}
+body.present #s04 .summary-approaches{font-size:28px;margin-top:32px}
+body.present #s04 .summary-approaches li{margin:20px 0}
+#s04 .pool-bridge-intro{font-size:18px;line-height:1.4;margin:0 0 14px}
+#s04 .pool-bridge-source{font-size:16px;color:var(--ink-2);margin:8px 0 16px}
+#s04 .pool-bridge-row{display:grid;grid-template-columns:180px minmax(0,1fr);gap:12px 20px;align-items:center;padding:16px 0;border-top:1px solid var(--line)}
+#s04 .pool-bridge-row h3{font-size:19px;margin:0}
+#s04 .pool-bridge-row p{font-size:16px;margin:6px 0 0}
+#s04 .pool-bridge-blocks{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto}
+#s04 .pool-bridge-block{display:grid;grid-template-columns:repeat(4,18px);gap:2px;flex:none}
+#s04 .pool-bridge-block span{height:25px;background:var(--t-e);border:1px solid var(--c-e)}
+#s04 .pool-bridge-summary{display:flex;gap:8px;color:var(--c-v)}
+#s04 .pool-bridge-summary span{border:1px solid var(--c-v);background:var(--t-v);padding:8px 14px;font-size:22px}
+#s04 .pool-bridge-summary-text{color:var(--c-v)}
+#s04 .pool-bridge-next{font-size:20px;line-height:1.4;margin:16px 0 0}
+body.present #s04 .pool-bridge-intro{font-size:26px;line-height:1.35}
+body.present #s04 .pool-bridge-source{font-size:22px;margin:10px 0 16px}
+body.present #s04 .pool-bridge-row{grid-template-columns:215px minmax(0,1fr);padding:18px 0}
+body.present #s04 .pool-bridge-row h3{font-size:26px}
+body.present #s04 .pool-bridge-row p{font-size:22px;line-height:1.35}
+body.present #s04 .pool-bridge-blocks{gap:10px}
+body.present #s04 .pool-bridge-block{grid-template-columns:repeat(4,21px)}
+body.present #s04 .pool-bridge-block span{height:30px}
+body.present #s04 .pool-bridge-summary span{font-size:28px;min-width:66px;text-align:center}
+body.present #s04 .pool-bridge-next{font-size:26px;line-height:1.35}
+@media(max-width:700px){body:not(.present) #s04 .pool-bridge-row{grid-template-columns:minmax(0,1fr)}body:not(.present) #s04 .pool-bridge-block{grid-template-columns:repeat(4,14px)}}
 #s04 .wrows{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:2px 32px;margin:12px 0 2px}
 #s04 .wrow{display:grid;grid-template-columns:minmax(120px,auto) minmax(80px,1fr) 3em;gap:10px;align-items:center;padding:3px 0}
 #s04 .wrow label{display:inline-flex}
@@ -5068,13 +5047,48 @@ body.present #s04 #s04-live-pool{margin-top:14px}
 <header class="sec-head">
   <span class="sec-num">04</span>
   <div>
-    <p class="eyebrow">Could we <em>pool</em> information from the whole prefix instead of cutting it off at a fixed window?</p>
-    <h2>Weighted pooling: where should weights come from?</h2>
+    <p class="eyebrow">Combine all available token rows into one summary whose width stays fixed.</p>
+    <h2>Summarizing the prefix</h2>
   </div>
 </header>
 
+<div class="frame" id="s04-frame-summary-break" data-title="Summarizing the prefix" data-autobuild="off">
+  <script type="text/x-notes">Pause before changing the problem.
+The fixed window drops earlier clues, and enlarging its concatenated input adds parameters. We now ask how to combine all available token rows into one fixed-width summary. Prefix means all tokens up to and including the current input position. The three numbered approaches differ in how they choose source contributions: equal shares, shares chosen by us, and shares computed from the inputs. These are a progression, not three unrelated combining operations. Averaging is a weighted sum with equal weights. Attention will compute the weights and later separate matching from the information returned. Keep this roadmap brief. The next slide establishes bank at position 7 as the concrete receiving token.</script>
+  <div class="summary-break">
+    <h3>Summarizing the prefix</h3>
+    <p>The <strong>prefix</strong> is all tokens up to and including the current input position.</p>
+    <p>How can they contribute to <strong>one fixed-width context summary</strong>?</p>
+    <ol class="summary-approaches">
+      <li><strong>Averaging.</strong> <span>Every available row gets an equal share.</span></li>
+      <li><strong>Hand-chosen weights.</strong> <span>We choose each row's share.</span></li>
+      <li><strong>Attention.</strong> <span>The model computes shares from the inputs.</span></li>
+    </ol>
+  </div>
+</div>
+
 <div class="companion" data-kicker="For self-study">
   <p>We now build context for a token already in the input. Begin at position 7, bank, using the seven known token rows. A pooled summary $m_i$ combines their corresponding coordinates, while the earlier $c_t$ concatenated rows. Try averaging first, then choose unequal contributions yourself. The summary stays four numbers wide. Later, we will build a summary at every input position before prediction. These arithmetic operations do not update the stored vocabulary table.</p>
+</div>
+
+<div class="frame" id="s04-frame-pooling-bridge" data-title="A fixed-width summary of the prefix" data-autobuild="off">
+  <script type="text/x-notes">What would let more input rows contribute without lengthening the row sent onward?
+The previous slides showed unavailable earlier words and a matrix that grows with the window. Introduce a design alternative. Pooling combines matching coordinates into one row. Name the subtask: bank is already an input token at position 7, and we want to gather context for it from positions 1 through 7. We will later do this at every input position before prediction. Each blue block is one four-number row. Concatenation preserves seven separate blocks. A pooled summary has four coordinates, so it compresses them. Question marks mean the combining rule is still to be chosen. Reveal averaging as the first rule to try, then calculate it in this section. Pooling can lose information, and processing more rows still takes computation.</script>
+  <p class="pool-bridge-intro">Before prediction, let input tokens collect context.<br>Start with <strong>bank at position 7</strong>: it is already in the input, not a word to guess.</p>
+  <div class="card">
+    <div id="s04-pool-bridge-chips"></div>
+    <p class="pool-bridge-source" id="s04-pool-bridge-source"></p>
+    <div class="pool-bridge-row">
+      <h3 class="pool-input">Concatenate</h3>
+      <div><div class="pool-bridge-blocks" id="s04-pool-bridge-concat"></div><p class="pool-input" id="s04-pool-bridge-concat-shape"></p></div>
+    </div>
+    <div class="pool-bridge-row" data-build="1">
+      <h3 class="pool-bridge-summary-text">Pool into a summary</h3>
+      <div><div class="pool-bridge-summary" id="s04-pool-bridge-summary"></div><p class="pool-bridge-summary-text">Combine matching coordinates. The result stays 1 × 4.</p></div>
+    </div>
+  </div>
+  <p class="pool-bridge-next" data-build="1">First rule to try: <strong>average each coordinate</strong> across the available rows.</p>
+  <div class="companion"><p>The seven blocks above are the representations of the seven words, each with four coordinates. Concatenation keeps all 28 entries separately. A pooled summary compresses the available rows into four entries, so more tokens do not increase its width. Combining more rows still takes computation, and compression can lose information. We will call this new summary m, keeping c for concatenation. After learning how to build a summary at one position, we can apply the same idea at each input position before making next-token predictions.</p></div>
 </div>
 
 <div class="frame" id="s04-frame-prefix" data-title="Last 3 tokens versus all tokens so far" data-autobuild="off">
@@ -5099,7 +5113,7 @@ The window width stays at three. The slider moves the current input position i, 
   <div class="companion"><p>The previous section called window size w. A “last k tokens” rule is the same idea with k in place of w. Both w and k count how many recent input rows we keep. In contrast, i identifies the current input position. At that position a window includes max(1, i − w + 1) through i, while this full-prefix average includes 1 through i. Neither uses positions after i. At i=7, averaging the last three rows would be mathematically valid, but it would discard rows 1–4. Here we deliberately try a summary that lets all seven available rows contribute. Later we will choose their contributions unequally.</p></div>
 </div>
 
-<div class="frame" id="s04-frame-mean" data-title="Mean pooling: averaging matching coordinates" data-autobuild="off">
+<div class="frame" id="s04-frame-mean" data-title="1. Averaging: equal shares" data-autobuild="off">
   <script type="text/x-notes">
 Why not just average?
 Bank is already known, at position 7. We are building a context summary for it, not guessing that input word. Continue the full-prefix rule from the previous comparison: all blue rows contribute, including the outlined current token. Start with the result and the four matching coordinate names. Move the current-position control to 3 and back to 7: the number of source rows changes but the summary width remains four. Reveal the equation only after explaining that each column is summed and divided by the number of included rows. Define m as the summary, i as the current receiving position and j as a source position. The next slide shows every term in the same calculation. All included rows have equal influence under this first rule.
@@ -5131,7 +5145,7 @@ All available rows have the same 1/i weight. Reveal the footer and read it as th
 
 <div class="companion" data-kicker="Mean-pooling worksheet"><div id="s04-mean-arith"></div></div>
 
-<div class="frame" id="s04-frame-weight-rule" data-title="A weight tells us how much of a row to take" data-autobuild="off">
+<div class="frame" id="s04-frame-weight-rule" data-title="2. Hand-chosen weights" data-autobuild="off">
   <script type="text/x-notes">
 What does a weight of one half do to a four-number row?
 Bank is the already-known input at position 7. We are gathering context for it. River at position 6 is one source. Read alpha, then its two indices in order: receiver 7, source 6. The comma only separates the indices. Choose 0.5 by hand to make the arithmetic easy. This value is an example, not a measured or learned weight. Reveal the table and multiply every coordinate by the same scalar, including the negative and zero coordinates. The second row is only river's contribution. The other six nonnegative weights must together sum to 0.5. A weight is a mixing coefficient, not the probability that the next word is river. The next slide adds all source contributions. The later interactive slide lets students choose a complete set of weights.
@@ -5234,6 +5248,20 @@ Timing: two minutes.
   const E = AT.embed(toks);
   const T = toks.length;
   const D = AT.d_model;
+  const poolTokens=toks.slice(0,7);
+  AT.ui.chips(poolTokens,{active:6,into:S.querySelector('#s04-pool-bridge-chips')});
+  S.querySelector('#s04-pool-bridge-source').textContent='Positions 1–7 are available: '+poolTokens.length+' token rows, '+D+' numbers per row.';
+  const blocks=S.querySelector('#s04-pool-bridge-concat');
+  blocks.setAttribute('role','img');blocks.setAttribute('aria-label','Seven four-coordinate rows concatenate into one row of 28 numbers.');
+  poolTokens.forEach((word,i)=>{
+    const block=AT.h('div',{class:'pool-bridge-block','data-position':i+1,title:(i+1)+' '+word+': '+D+' coordinates'});
+    AT.range(D).forEach(()=>block.appendChild(AT.h('span',{'aria-hidden':'true'})));
+    blocks.appendChild(block);
+  });
+  S.querySelector('#s04-pool-bridge-concat-shape').textContent='1 × '+(poolTokens.length*D)+' here. More tokens make this row longer.';
+  const summary=S.querySelector('#s04-pool-bridge-summary');
+  summary.setAttribute('role','img');summary.setAttribute('aria-label','Proposed summary: four coordinates. The combining rule is not chosen yet.');
+  AT.range(D).forEach(()=>summary.appendChild(AT.h('span',{'aria-hidden':'true'},'?')));
   const labels = toks.map((t, j) => (j + 1) + ' ' + t);
   const AX = AT.axisLabels('e', D) || AT.range(D).map(j => String(j + 1));
   /* A conditional half-weight illustrates one term, without changing the live presets. */
@@ -5582,11 +5610,11 @@ body.present #s05 .retrieval-intro{font-size:28px;line-height:1.4}
   </div>
 </header>
 
-<div class="frame" id="s05-frame-attention-break" data-title="Attention" data-autobuild="off">
+<div class="frame" id="s05-frame-attention-break" data-title="3. Attention" data-autobuild="off">
   <script type="text/x-notes">Pause at the new section.
 We know how to combine rows once someone supplies the weights. Our new topic is how to compute those weights from the inputs. Name attention here, without assuming that students already know what the name means. The next slide explains the operation using the same bank and river example. The information-retrieval detour comes after that explanation.</script>
   <div class="attention-break">
-    <h3>Attention</h3>
+    <h3>3. Attention</h3>
     <p>How does a token gather useful information from its context?</p>
     <p class="attention-next">We will compute the weights from the inputs.</p>
   </div>
