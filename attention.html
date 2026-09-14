@@ -7030,6 +7030,30 @@ body.present #s08 .bcalc .calc-line{font-size:22px;line-height:1.45}
 body.present #s08 .calc-rounding{display:none}
 #s08 .s08-present-only{display:none}
 body.present #s08 .s08-present-only.frame.is-live{display:flex}
+#s08 .phase-overview{margin:12px 0}
+#s08 .phase-overview-scroll{overflow-x:auto}
+#s08 .phase-overview svg{display:block;width:100%;min-width:760px;height:auto;font-family:var(--font-ui)}
+#s08 .phase-overview .phase-node{fill:var(--card);stroke:var(--line);stroke-width:1.8;rx:8}
+#s08 .phase-overview .phase-q{color:var(--c-q);fill:var(--c-q)}
+#s08 .phase-overview .phase-k{color:var(--c-k);fill:var(--c-k)}
+#s08 .phase-overview .phase-a{color:var(--c-a);fill:var(--c-a)}
+#s08 .phase-overview .phase-v{color:var(--c-v);fill:var(--c-v)}
+#s08 .phase-overview .phase-q .phase-node{fill:var(--t-q);stroke:var(--c-q)}
+#s08 .phase-overview .phase-k .phase-node{fill:var(--t-k);stroke:var(--c-k)}
+#s08 .phase-overview .phase-a .phase-node{fill:var(--t-a);stroke:var(--c-a)}
+#s08 .phase-overview .phase-v .phase-node{fill:var(--t-v);stroke:var(--c-v)}
+#s08 .phase-overview text{font-size:24px;text-anchor:middle;dominant-baseline:middle}
+#s08 .phase-overview .phase-symbol{font-family:var(--font-math);font-size:28px;font-style:italic}
+#s08 .phase-overview .phase-label{font-size:21px}
+#s08 .phase-overview .phase-edge{fill:none;stroke:var(--ink-3);stroke-width:2;marker-end:url(#s08-phase-arrow)}
+#s08 .phase-overview .phase-weight-edge{stroke:var(--c-a);marker-end:url(#s08-phase-weight-arrow)}
+#s08 .phase-overview .phase-neutral{fill:var(--ink)}
+#s08 .phase-overview .phase-scroll-hint{display:none;font-size:14px;color:var(--ink-2)}
+body.present #s08-frame-phases>.prose p{font-size:24px;line-height:1.3;margin:10px 0}
+body.present #s08-frame-phases .phase-overview{margin:4px 0}
+body.present #s08-frame-phases .phase-overview svg{min-width:0;max-height:245px}
+body.present #s08-frame-phases>.callout{font-size:24px;line-height:1.3;margin:12px 0 0;padding:12px 20px}
+@media(max-width:760px){body:not(.present) #s08 .phase-overview .phase-scroll-hint{display:block}}
 </style>
 <header class="sec-head">
   <span class="sec-num">08</span>
@@ -7044,15 +7068,79 @@ body.present #s08 .s08-present-only.frame.is-live{display:flex}
   <p>Run phase A and click a key in the diagram to inspect its dot product, coordinate by coordinate. Then run phase B and follow each coordinate into the sum. Switch between the original value rows and the $\va{\alpha}\vv{v}$ products to see what the weights changed.</p>
 </div>
 
-<div class="frame" data-title="Which earlier tokens should bank read?">
+<div class="frame" id="s08-frame-phases" data-title="Which earlier tokens should bank read?" data-autobuild="off">
 <script type="text/x-notes">Which numbers decide where bank reads: keys or values?
 
-Keep the bank query fixed. Reveal scores, then weights. The softmax runs across source positions, not vocabulary words. No embedding-table parameter is changed in this forward calculation.</script>
+Keep the bank query fixed. At build 1 trace the upper path: query and seven keys produce seven scores, then softmax produces seven weights. At build 2 follow those same weights down to the lower path. Each weight multiplies the value from the corresponding source j, then the seven contributions add to m_7. For river, alpha_7,6 multiplies v_6. Keys never enter the value sum. The softmax runs across source positions, not vocabulary words. The message has two value coordinates in this example. No embedding-table parameter is changed in this forward calculation.</script>
 <div class="prose">
   <p>Take “bank” (token 7) as the query in <em>The fisherman sat beside the river bank</em>. First choose <strong>where to read</strong>. Then mix <strong>what those sources send</strong>.</p>
   <p data-build="1">Phase A: compare $\vq{q_7}$ with every $\vk{k_j}$ to choose seven weights.</p>
   <p data-build="2">Phase B: use those weights to mix the seven $\vv{v_j}$ rows.</p>
 </div>
+<figure class="phase-overview">
+  <div class="phase-overview-scroll">
+    <svg viewBox="0 0 1040 265" role="img" aria-labelledby="s08-phase-title s08-phase-desc">
+      <title id="s08-phase-title">Queries and keys choose weights. The same weights mix the paired values.</title>
+      <desc id="s08-phase-desc">Phase A: compare bank's query q7 with keys k1 through k7 and scale the dot products, giving seven scores. Softmax turns those scores into alpha71 through alpha77, which sum to one. Phase B: those same weights multiply values v1 through v7 by source index. Adding the weighted values gives bank's two-coordinate message m7.</desc>
+      <defs>
+        <marker id="s08-phase-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10Z" fill="var(--ink-3)"/></marker>
+        <marker id="s08-phase-weight-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10Z" fill="var(--c-a)"/></marker>
+      </defs>
+      <g class="phase-q">
+        <text x="72" y="23" class="phase-label">bank's query</text>
+        <rect x="18" y="46" width="108" height="52" class="phase-node"/>
+        <text x="72" y="74" class="phase-symbol">q₇</text>
+      </g>
+      <g data-build="1" id="s08-phase-a">
+        <text x="148" y="74" class="phase-neutral">·</text>
+        <g class="phase-k">
+          <text x="242" y="23" class="phase-label">seven keys</text>
+          <rect x="170" y="46" width="145" height="52" class="phase-node"/>
+          <text x="242" y="74" class="phase-symbol">k₁ … k₇</text>
+        </g>
+        <path d="M324 72H356" class="phase-edge"/>
+        <g class="phase-neutral">
+          <text x="437" y="23" class="phase-label">compare + scale</text>
+          <rect x="365" y="46" width="145" height="52" class="phase-node"/>
+          <text x="437" y="74">7 scores</text>
+          <path d="M519 72H552" class="phase-edge"/>
+          <rect x="560" y="46" width="140" height="52" class="phase-node"/>
+          <text x="630" y="74">softmax</text>
+          <path d="M709 72H744" class="phase-edge"/>
+        </g>
+        <g class="phase-a">
+          <text x="875" y="23" class="phase-label">seven weights, sum = 1</text>
+          <rect x="755" y="46" width="240" height="52" class="phase-node"/>
+          <text x="875" y="74" class="phase-symbol">α₇₁ … α₇₇</text>
+        </g>
+      </g>
+      <g data-build="2" id="s08-phase-b">
+        <path d="M875 103V145H437V192" class="phase-edge phase-weight-edge"/>
+        <text x="650" y="129" class="phase-label phase-a">same seven weights</text>
+        <g class="phase-v">
+          <text x="242" y="175" class="phase-label">seven values</text>
+          <rect x="170" y="198" width="145" height="52" class="phase-node"/>
+          <text x="242" y="226" class="phase-symbol">v₁ … v₇</text>
+        </g>
+        <path d="M324 224H356" class="phase-edge"/>
+        <g class="phase-neutral">
+          <rect x="365" y="198" width="145" height="52" class="phase-node"/>
+          <text x="437" y="226" class="phase-symbol"><tspan class="phase-a">α₇ⱼ</tspan><tspan> × </tspan><tspan class="phase-v">vⱼ</tspan></text>
+          <path d="M519 224H552" class="phase-edge"/>
+          <rect x="560" y="198" width="140" height="52" class="phase-node"/>
+          <text x="630" y="226">add</text>
+          <path d="M709 224H744" class="phase-edge"/>
+        </g>
+        <g class="phase-v">
+          <text x="875" y="175" class="phase-label">bank's message, 2 numbers</text>
+          <rect x="755" y="198" width="240" height="52" class="phase-node"/>
+          <text x="875" y="226" class="phase-symbol">m₇ = ∑ⱼ <tspan class="phase-a">α₇ⱼ</tspan> vⱼ</text>
+        </g>
+      </g>
+    </svg>
+  </div>
+  <figcaption class="phase-scroll-hint">Scroll sideways to trace both paths. Each weight stays paired with its source's value.</figcaption>
+</figure>
 <div class="callout callout-key" data-build="3">First route with <span class="sym sym-q">Q</span> and <span class="sym sym-k">K</span>. Then retrieve with <span class="sym sym-v">V</span>.</div>
 </div>
 

@@ -1,5 +1,10 @@
 # Classroom release checks
 
+## 2026-09-14: diagram for the two attention phases
+
+- Added an editable SVG overview to the existing Section 8 opening frame. Its upper path compares bank's query with seven keys and applies softmax. A rose connector takes those same weights to the lower path, where each weight multiplies its paired value and the contributions add into the two-coordinate message. Query/key/value/weight colours match the prose and equations. Phase A and Phase B reveal with builds 1 and 2, and the original takeaway stays at build 3. No additional frame or numerical-model change.
+- The presentation skill guided the existing layout, semantic colours and native editable diagram. Visually inspected all builds and the phone scroll. Regression verifies forward/back reveal states, phase ordering, colour matching, the next-frame handoff and locally contained phone scrolling. The full 317-state frame audit, 554-formula check, phone QA, routing regression and eight numerical-reference cases pass.
+
 ## 2026-09-14: use Q/K/V before deriving their projections
 
 - Section 7 now supplies the existing bank query, seven keys and their paired values on named axes, before any Q/K/V projection equation. The source inspector keeps bank as receiver. Section 8 carries those same rows through scores, shares and messages; its value-only experiment changes V directly and defers the output-space update. Section 9 completes the message → output projection → residual path, then previews the final-token update and actual next-word probabilities for both contexts.

@@ -51,6 +51,33 @@ try{
     await page.waitForTimeout(150);
     assert.equal(await page.locator('.frame.is-live').getAttribute('id'),id);
   }
+  // The two-phase overview shares the prose's reveal schedule and colour roles.
+  assert.equal(await page.locator('#s08 .frame').count(),11,'Add the diagram to the existing slide, without another frame.');
+  await go('s08-frame-phases');
+  for(const build of [0,1,2,3,2,1,0,3]){
+    await page.evaluate(build=>AT.present.go('s08',1,build),build);
+    for(const [id,threshold] of [['s08-phase-a',1],['s08-phase-b',2]]){
+      assert.equal(await page.locator('#'+id).evaluate(e=>getComputedStyle(e).visibility),build>=threshold?'visible':'hidden','Diagram phase tracks its prose build in both directions.');
+    }
+    assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'The complete phase overview fits at build '+build);
+  }
+  for(const role of ['q','k','v']){
+    const colours=await page.evaluate(role=>({
+      diagram:getComputedStyle(document.querySelector('.phase-overview .phase-'+role+' .phase-symbol')).fill,
+      prose:getComputedStyle(document.querySelector('#s08-frame-phases .prose .m-'+role)).color
+    }),role);
+    assert.equal(colours.diagram,colours.prose,'Match '+role+' across the words, math and diagram.');
+  }
+  const alphaColours=await page.evaluate(()=>({
+    diagram:getComputedStyle(document.querySelector('.phase-overview tspan.phase-a')).fill,
+    weight:getComputedStyle(document.querySelector('.phase-overview .phase-weight-edge')).stroke
+  }));
+  assert.equal(alphaColours.diagram,alphaColours.weight,'Use the weight colour on the connector and both products.');
+  assert.match(await page.locator('#s08-phase-desc').textContent(),/scale the dot products.*same weights multiply values.*source index/);
+  await page.waitForTimeout(300); // Let the existing reveal animation settle before inspecting math glyphs.
+  await page.screenshot({path:path.join(shots,'two-phase-overview.png')});
+  await page.evaluate(()=>AT.present.next());
+  assert.equal(await page.locator('.frame.is-live').getAttribute('data-title'),'Score bank against every key');
   for(const context of ['river','cheque','river']){
     const F=forward(model,model.sentences[context]);
     await go('s09-frame-prediction-input');
@@ -80,7 +107,7 @@ try{
   }
   await go('s07-frame-pair');
   await page.locator('#s07-rchips button').nth(5).click();
-  const changedFrames=['s07-frame1','s07-frame-keys','s07-frame-values','s07-frame-pair','s09-frame-prediction-input','s09-frame-prediction-output','s11-frame1','s11-frame-query-calc','s11-frame-key-calc','s11-frame-value-calc'];
+  const changedFrames=['s07-frame1','s07-frame-keys','s07-frame-values','s07-frame-pair','s08-frame-phases','s09-frame-prediction-input','s09-frame-prediction-output','s11-frame1','s11-frame-query-calc','s11-frame-key-calc','s11-frame-value-calc'];
   for(const id of changedFrames){
     await go(id);await page.screenshot({path:path.join(shots,id+'.png')});
   }
@@ -92,6 +119,13 @@ try{
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No phone page overflow at '+id);
     await page.screenshot({path:path.join(shots,'phone-'+id+'.png')});
   }
+  assert.equal(await page.locator('#s08-phase-a').evaluate(e=>getComputedStyle(e).visibility),'visible');
+  assert.equal(await page.locator('#s08-phase-b').evaluate(e=>getComputedStyle(e).visibility),'visible');
+  const diagramScroll=await page.locator('.phase-overview-scroll').evaluate(e=>({client:e.clientWidth,scroll:e.scrollWidth}));
+  assert(diagramScroll.scroll>diagramScroll.client,'The full two-phase diagram scrolls locally on phones.');
+  await page.locator('.phase-overview-scroll').evaluate(e=>e.scrollLeft=e.scrollWidth);
+  await page.locator('.phase-overview').scrollIntoViewIfNeeded();
+  await page.screenshot({path:path.join(shots,'phone-phase-message.png')});
   assert.deepEqual(errors,[]);
-  console.log('PASS: supplied Q/K/V match reference; seven paired source records; no premature projections; both position-10 predictions; all shared-matrix derivations; model/state retention; phone layout. Screenshots: '+shots);
+  console.log('PASS: supplied Q/K/V match reference; seven paired source records; staged two-phase diagram and colour matching; no premature projections; both position-10 predictions; all shared-matrix derivations; model/state retention; phone layout. Screenshots: '+shots);
 }finally{await browser.close();}
