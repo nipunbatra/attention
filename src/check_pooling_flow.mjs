@@ -316,7 +316,13 @@ try{
     const products=await page.locator('#s04-w-tab .dt-fig').evaluate(e=>JSON.parse(e.dataset.contributions));
     const expectedProducts=E.map((row,j)=>row.map(x=>x*weights[j]));
     close(products.flat(),expectedProducts.flat());
-    const displayed=await page.locator('#s04-w-tab tbody td[data-c]').allTextContents();
+    const originals=await page.locator('#s04-w-tab .dt-fig').evaluate(e=>JSON.parse(e.dataset.inputs));
+    close(originals.flat(),E.flat());
+    const originalCells=await page.locator('#s04-w-tab tbody td[data-c]').allTextContents();
+    close(originalCells.map(s=>Number(s.replace('−','-'))),E.flat().map(x=>Number(x.toFixed(2))));
+    const shares=await page.locator('#s04-w-tab tbody td.dt-lead').allTextContents();
+    close(shares.map(Number),weights.map(x=>Number(x.toFixed(3))));
+    const displayed=await page.locator('#s04-w-tab tbody td[data-k]').allTextContents();
     close(displayed.map(s=>Number(s.replace('−','-'))),expectedProducts.flat().map(x=>Number(x.toFixed(2))));
     const footer=await page.locator('#s04-w-tab tfoot td:not(.dt-lead)').allTextContents();
     close(footer.map(s=>Number(s.replace('−','-'))),expected.map(x=>Number(x.toFixed(2))));
@@ -334,8 +340,23 @@ try{
     assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s04-frame-weighted-table');
     await page.locator('#s04-contribution-presets [data-preset="equal"]').click();
     await page.locator(`#s04-contribution-presets [data-preset="${preset}"]`).click();
-    await goPool('s04-frame-weighted-table',1);await checkWeighted(raw);
-    await page.screenshot({path:path.join(shots,`contributions-${preset}.png`)});
+    for(const build of [0,1,2,0,2]){
+      await goPool('s04-frame-weighted-table',build);await checkWeighted(raw);
+      const originalVisibility=await page.locator('#s04-w-tab tbody td[data-c], #s04-w-tab tbody .dt-lead').evaluateAll(els=>els.map(e=>getComputedStyle(e).visibility));
+      assert(originalVisibility.every(v=>v==='visible'),'Original rows and their shares stay visible in all three stages.');
+      const productVisibility=await page.locator('#s04-w-tab [data-build="1"]').evaluateAll(els=>els.map(e=>getComputedStyle(e).visibility));
+      assert(productVisibility.every(v=>v===(build>=1?'visible':'hidden')),'Reveal weighted rows after originals.');
+      assert.equal(await page.locator('#s04-w-tab tfoot tr').evaluate(e=>getComputedStyle(e).visibility),build>=2?'visible':'hidden','Add the weighted columns only on the third stage.');
+      const layout=await page.locator('#s04-w-tab tbody tr').evaluateAll(rows=>rows.map(row=>{
+        const left=row.querySelector('[data-c="0"]').getBoundingClientRect();
+        const right=row.querySelector('[data-k="0"]').getBoundingClientRect();
+        return {left:left.x,right:right.x,dy:Math.abs(left.y-right.y)};
+      }));
+      assert(layout.every(r=>r.right>r.left&&r.dy<1),'Keep corresponding original and weighted coordinates on the same source row.');
+      await page.screenshot({path:path.join(shots,`contributions-${preset}-${build}.png`)});
+    }
+    await page.evaluate(()=>AT.present.next());await page.waitForTimeout(100);
+    assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s04-frame-preset-predictions','The completed sum leads to the existing prediction comparison.');
     await goPool('s04-frame-choose',1);await checkWeighted(raw);
   }
   await page.locator('#s04-w0').focus();await page.keyboard.press('ArrowRight');
@@ -451,7 +472,11 @@ try{
   assert(phoneLive.x>=0&&phoneLive.x+phoneLive.width<=391,'The complete live summary fits on a phone.');
   const phoneComparison=await page.locator('.preset-table-wrap').evaluate(e=>({width:e.clientWidth,scroll:e.scrollWidth}));
   assert(phoneComparison.scroll>phoneComparison.width,'The four-case table scrolls locally on narrow screens.');
+  const phoneContributions=await page.locator('#s04-w-tab .dt-scroll').evaluate(e=>({width:e.clientWidth,scroll:e.scrollWidth}));
+  assert(phoneContributions.scroll>phoneContributions.width,'The original/product comparison scrolls locally on narrow screens.');
+  assert.equal(await page.locator('#s04-w-tab tbody td[data-c]').count(),28);
+  assert.equal(await page.locator('#s04-w-tab tbody td[data-k]').count(),28);
   for(const control of [positionSlider,slider])assert((await control.boundingBox()).width>160,'Both current-position sliders have usable phone tracks.');
   assert.deepEqual(errors,[]);
-  console.log(`PASS: pooling flow, 7 prefix positions, alpha arithmetic, 4 synchronized weighted presets and contribution sums, independent 20-word head predictions, four-case comparison, ties/custom/zero-weight states, colour/reveal/state retention, attention-before-retrieval flow and phone layout. Screenshots: ${shots}`);
+  console.log(`PASS: pooling flow, 7 prefix positions, alpha arithmetic, original/product/sum reveals for 4 synchronized presets, independent 20-word head predictions, four-case comparison, ties/custom/zero-weight states, colour/reveal/state retention, attention-before-retrieval flow and phone layout. Screenshots: ${shots}`);
 }finally{await browser.close();}

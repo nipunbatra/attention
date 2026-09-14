@@ -59,6 +59,16 @@ body.present #s04 .pool-bridge-next{font-size:26px;line-height:1.35}
 #s04 .pool-prediction .prediction-word{font-size:24px;font-weight:700}
 #s04 .prediction-note{font-size:16px;line-height:1.35;margin:12px 0 0;color:var(--ink-2)}
 #s04 .preset-scope{font-size:18px;margin:12px 0}
+#s04 #s04-w-tab .dt{width:100%}
+#s04 #s04-w-tab .contribution-group{text-align:center;text-transform:none;letter-spacing:0}
+#s04 #s04-w-tab .contribution-sum{text-align:right;text-transform:none;letter-spacing:0}
+#s04 #s04-w-tab .dt-comp-first{border-left:2px solid var(--line)}
+body.present #s04 #s04-frame-weighted-table>.card{padding:18px 24px}
+#s04 #s04-presets .btn[aria-pressed=true],#s04 #s04-contribution-presets .btn[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+body.present #s04 #s04-w-tab .dt th,body.present #s04 #s04-w-tab .dt td{font-size:20px;padding:7px 8px}
+body.present #s04 #s04-w-tab .dt thead tr:last-child th{font-size:17px}
+body.present:not(.is-preflighting) #s04 #s04-frame-weighted-table.is-live #s04-w-tab [data-build]:not(.is-pending) .katex-html *{visibility:visible}
+body.present #s04 #s04-w-tab .is-pending .katex-html *{visibility:hidden}
 #s04 .preset-table-wrap{overflow-x:auto}
 #s04 .preset-table{border-collapse:collapse;font-size:17px;width:100%;margin:16px 0}
 #s04 .preset-table th,#s04 .preset-table td{padding:12px 10px;border-bottom:1px solid var(--line);text-align:right}
@@ -348,12 +358,12 @@ The presets and sliders use one shared alpha array. Begin with the four-number s
   <p class="prediction-note" data-build="1">Predicting position 8, after <strong>bank</strong>. This untrained head is illustrative. The original sentence continues with <strong>and</strong>.</p>
 </div>
 
-<div class="frame" id="s04-frame-weighted-table" data-title="The chosen weights multiply the corresponding rows" data-autobuild="off">
+<div class="frame" id="s04-frame-weighted-table" data-title="Original rows, weighted rows, then their sum" data-autobuild="off">
   <script type="text/x-notes">Which embedding row should a large alpha multiply?
-The row from the same source index j. Each body cell now shows the product of that source's normalized share and input coordinate. Add down each column to build m7 in the footer. Do not multiply these products by the share again. Cycle all four presets using the synchronized buttons. Focus on river makes its water contribution large. Only bank itself makes every other contribution zero. The footer still has four coordinates.</script>
+Begin with the original four-coordinate input rows and their normalized shares. Both use the same source index j. On the first reveal, keep those originals visible and show each alpha-times-input product on the right. Read across river's row to follow each multiplication. One scalar multiplies all four coordinates. On the second reveal, add down the four product columns to build m7. The originals do not enter this sum a second time. Cycle all four presets with the synchronized buttons. Only bank itself leaves all other weighted rows at zero, while their original rows remain unchanged. The footer still contains four numbers. Displayed values are rounded, but all products and sums use full precision.</script>
   <div class="card">
     <div class="btn-row" id="s04-contribution-presets" data-keep-state></div>
-    <p class="preset-scope">Each contribution = <span class="pool-weight">share</span> × <span class="pool-input">input coordinate</span>. Sum columns for <span class="pool-summary">$m_7$</span>. Shown rounded.</p>
+    <p class="preset-scope"><span class="pool-weight">Normalized shares sum to 1.</span> Values shown rounded. Calculations use full precision.</p>
     <div id="s04-w-tab" class="s04-tab"></div>
   </div>
 </div>
@@ -550,13 +560,28 @@ Timing: two minutes.
     inp.addEventListener('input', () => { W[j] = +inp.value; drawW(); });
     return { inp: inp, out: out };
   });
-  const wTab = AT.ui.table(contributions(), { rowLabels: labels, rowCls: 'e', cornerLabel: 'source', decimals: 2,
-    lead: [{ label: '$\\va{\\alpha_{7j}}$', cls: 'a', heat: true, values: alpha }],
-    footer: { label: '$m_7$', values: AT.zeros(D), cls: 'v', lead: [1] },
-    caption: 'The body already contains weighted contributions $\\va{\\alpha_{7j}}\\,\\ve{e_j}$. Add each column, without multiplying by the share again. Calculations use unrounded values.',
-    note: 'Hover or focus a footer cell to see the terms of its sum.', into: S.querySelector('#s04-w-tab') });
-  markFooter(wTab, 1);
-  wTab.footer.cells.forEach((td, c) => wTab.tipOn(td, () => termLine(alpha, c)));
+  const wTab = AT.ui.table(E, { rowLabels: labels, rowCls: 'e', cornerLabel: 'source', decimals: 2,
+    lead: [{ label: 'Share $\\va{\\alpha_{7j}}$', cls: 'a', heat: true, values: alpha, decimals:3 }],
+    computed: AX.map((label,c)=>({label,fn:(row,j)=>alpha[j]*row[c]})),
+    footer: { label: '3. Add weighted rows: $\\htmlClass{pool-summary}{m_7}=$', values:'', cls:'v', computed:AT.zeros(D) },
+    caption: 'Each share multiplies the original row from the same source. The four columns on the right contain those products. Their column sums form $m_7$.',
+    note: 'Hover or focus a sum cell to see its arithmetic. Scroll horizontally on narrow screens to compare the original and weighted rows.', into: S.querySelector('#s04-w-tab') });
+  wTab.dataset.inputs=JSON.stringify(E);
+  const header=wTab.table.tHead,axisRow=header.rows[0],groupRow=AT.h('tr');
+  // Retain the original source and share headers across both header rows.
+  [...axisRow.children].slice(0,2).forEach(th=>{th.rowSpan=2;groupRow.appendChild(th);});
+  const originalGroup=AT.h('th',{scope:'colgroup',colspan:D,class:'contribution-group'},'1. Original rows ');
+  originalGroup.insertAdjacentHTML('beforeend',AT.texStr('\\ve{e_j}'));
+  const productGroup=AT.h('th',{scope:'colgroup',colspan:D,class:'contribution-group','data-build':1},'2. Weighted rows ');
+  productGroup.insertAdjacentHTML('beforeend',AT.texStr('\\va{\\alpha_{7j}}\\,\\ve{e_j}'));
+  groupRow.append(originalGroup,productGroup);header.prepend(groupRow);
+  [...axisRow.children].slice(D).forEach(th=>th.setAttribute('data-build','1'));
+  wTab.computedCells.flat().forEach(td=>td.setAttribute('data-build','1'));
+  // The sum spans only the product columns, so it cannot look like a sum of originals.
+  wTab.footer.label.colSpan=2+D;wTab.footer.label.classList.add('contribution-sum');
+  [...wTab.footer.lead,...wTab.footer.cells].forEach(td=>td.remove());
+  wTab.footer.label.closest('tr').setAttribute('data-build','2');
+  wTab.footer.computed.forEach((td,c)=>wTab.tipOn(td,()=>termLine(alpha,c)));
   const wCalc = AT.ui.matVecCalc(alpha, E, { from: labels, to: 'e', cls: 'e', fromCls: 'a', xLabel: 'α', outLabel: 'm' + sub(T), wDecimals: 2 });
   AT.ui.reveal('Show the arithmetic: one line per coordinate of $m_7$', wCalc, { hint: 'Worksheet', into: S.querySelector('#s04-w-arith') });
   const noteEl = S.querySelector('#s04-w-note');
@@ -582,9 +607,9 @@ Timing: two minutes.
     inputs.forEach((o, j) => { o.out.textContent = AT.fmt(W[j], 1); });
     const c = pooled(alpha), rc = readE(c), h = headResult(c);
     const products = contributions();
-    wTab.update(products);
+    wTab.update(E);
     wTab.dataset.contributions=JSON.stringify(products);
-    wTab.setFooter(c, [AT.sum(alpha)]);
+    wTab.setFooter([], [], c);
     const top = AT.argmax(alpha);
     const spread = Math.max(...alpha) - Math.min(...alpha);
     wTab.setHighlightRow(spread < 1e-9 ? -1 : top);

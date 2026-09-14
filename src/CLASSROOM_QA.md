@@ -1,5 +1,11 @@
 # Classroom release checks
 
+## 2026-09-14: original rows before weighted rows and their sum
+
+- Reworked the existing weighted-row worksheet into three progressive stages on the same frame. Original input rows and their normalized shares appear first. The first reveal adds aligned alpha-times-input columns while leaving the originals visible. The second reveal adds m7 directly below the product columns. The four preset controls update every stage together, and all original rows remain unchanged, including when their share is zero.
+- The presentation skill guided the native table, numbered column groups, matched colours, source-row alignment and sequential reveals. Kept all seven sources and four coordinates in each group, explicit rounding guidance, and the sum-cell arithmetic tooltips. Preset highlighting follows aria-pressed through navigation. The phone article scrolls the comparison locally and provides a scroll hint.
+- Regression verifies original cells, normalized shares, every product and the final sum for all presets and custom weights. It checks repeated forward/back reveals, row alignment, retained state and the following prediction frame. Visually inspected the original/product/sum sequence, river and bank-only cases, and phone layout. All 307 presentation states / 541 formulas, 132 controls, eight independent live/reference cases (7,980 finite values, max error 8.88e-16), and 390px article QA pass. No new slide, model, Part I, shared-runtime, dependency or PDF changes.
+
 ## 2026-09-14: connect hand-chosen summaries to word predictions
 
 - The four preset controls now reveal a live prediction from the existing fixed vocabulary head after showing the pooled row m7. The weighted-row worksheet has synchronized preset controls and displays the actual alpha-times-input contributions, whose columns add into m7. It labels rounding explicitly. Custom sliders, zero-total fallback and tied highest scores remain supported.
