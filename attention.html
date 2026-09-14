@@ -5839,6 +5839,28 @@ body.present #s05 .role-name{font-size:22px}
 body.present #s05 .role-outcome{font-size:20px;margin:14px 0 0}
 body.present #s05 #s05-role-qbtns{margin:0 0 8px}
 @media(max-width:760px){body:not(.present) #s05 .role-grid{grid-template-columns:1fr}body:not(.present) #s05 .role-card h3,body:not(.present) #s05 .role-example{min-height:0}}
+/* Expand the returned content before the compact three-role recap. */
+#s05 .payload-question{font-size:18px;line-height:1.35;margin:12px 0 18px}
+#s05 .payload-layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:36px;align-items:start}
+#s05 .payload-layout h3{font-size:23px;line-height:1.25;margin:0 0 14px}
+#s05 .payload-steps{margin:0;padding-left:25px;font-size:18px;line-height:1.35}
+#s05 .payload-steps li{padding-left:6px;margin:0 0 16px}
+#s05 .payload-steps li::marker{color:var(--ink-2);font-weight:650}
+#s05 .payload-steps strong{display:block;margin-bottom:3px}
+#s05 .payload-numbers{border-left:2px solid var(--c-v);padding-left:24px;min-width:0}
+#s05 .payload-numbers .role-vector{display:block;width:100%;height:auto;color:var(--c-v)}
+#s05 .payload-numbers .is-payload-feature text{font-weight:700}
+#s05 .payload-note{font-size:16px;line-height:1.35;margin:12px 0 0;color:var(--ink-2)}
+#s05 .payload-return{font-size:19px;line-height:1.35;border-top:1px solid var(--line);padding-top:14px;margin:14px 0 0}
+body.present #s05 .payload-question{font-size:22px;margin:10px 0 20px}
+body.present #s05 .payload-layout{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:42px}
+body.present #s05 .payload-layout h3{font-size:26px;margin-bottom:14px}
+body.present #s05 .payload-steps{font-size:22px;line-height:1.3}
+body.present #s05 .payload-steps li{margin-bottom:16px}
+body.present #s05 .payload-note{font-size:20px;line-height:1.3}
+body.present #s05 .payload-return{font-size:24px;margin-top:16px;padding-top:14px}
+body.present #s05 #s05-payload-qbtns{margin:0}
+@media(max-width:760px){body:not(.present) #s05 .payload-layout{grid-template-columns:1fr;gap:18px}body:not(.present) #s05 .payload-numbers{padding-left:14px}}
 </style>
 <header class="sec-head">
   <span class="sec-num">05</span>
@@ -6063,6 +6085,26 @@ Timing: two minutes.
   </div>
 </div>
 
+<div class="frame" id="s05-frame-payload" data-title="What the matched video teaches" data-autobuild="off">
+  <script type="text/x-notes">What would the learner actually learn from this matched source?
+Read the selected question and the matched video's explanation before revealing its value row. For Backpropagation, unpack the loss signal and chain rule, then distinguish computing gradients from the optimiser's later gradient step. Teal headings correspond to bold value coordinates. The values are the existing hand-chosen feature strengths, not measured video coverage or a transcript encoded by a trained model. The explanation helps us interpret the features; eight numbers cannot reconstruct the full text. The final reveal returns every coordinate of the selected source's value, including small and zero entries. Switching questions selects another source with its own fixed explanation and row. Keep the detailed example here and the three-role comparison on the next slide.</script>
+  <div class="btn-row" id="s05-payload-qbtns" data-keep-state></div>
+  <p class="payload-question"><span class="sym-q">Question:</span> <span class="s05-qtext"></span></p>
+  <div class="payload-layout">
+    <div class="payload-explanation">
+      <h3 id="s05-payload-title" class="sym-k"></h3>
+      <ul id="s05-payload-steps" class="payload-steps"></ul>
+    </div>
+    <div class="payload-numbers" data-build="1">
+      <h3 id="s05-payload-label" class="sym-v"></h3>
+      <div id="s05-payload-vector"></div>
+      <p class="payload-note">Same eight hand-chosen strengths. Bold entries link to the teal ideas in the explanation.</p>
+    </div>
+  </div>
+  <p class="payload-return" id="s05-payload-return" data-build="2"></p>
+  <div class="companion prose"><p>The text spells out the source's content for the reader. In the numerical retrieval calculation, the result is the entire value row. The row is an illustrative representation of that content, not a way to reconstruct the English explanation. Later, soft retrieval will combine value rows rather than combine sentences.</p></div>
+</div>
+
 <div class="frame" id="s05-frame-return" data-title="Three representations, three different jobs" data-autobuild="off">
   <script type="text/x-notes">Which numbers come from the learner, and which belong to the video?
 Reveal the query, then the winning video's key, then its value. Each SVG lists the vector's coordinates in their established order, with exact numeric labels and bars showing strengths. These lists display row vectors: four matching coordinates for q and k, eight content coordinates for v. Query and key bars share the same zero-to-2.5 scale. Value bars use zero-to-one. The numbers remain the hand-chosen teaching examples, not outputs of a trained text encoder. The displayed key has the largest score among all six videos, not just a comparison against itself. Switch between requests after the full reveal. Matching chooses the source, then that same source supplies its value. Use the shared subscript and video title to trace the pairing. The next section uses these same values for hard and soft retrieval.</script>
@@ -6122,6 +6164,30 @@ Reveal the query, then the winning video's key, then its value. Each SVG lists t
     { short: 'Query 3: CNNs', label: 'How do CNNs work?', text: 'How do convolution layers process an image?', q: [0.0, 0.1, 2.0, 0.0] },
     { short: 'Query 4: updates', label: 'How do I update weights?', text: 'How should I update weights using gradients?', q: [0.2, 2.0, 0.0, 0.1] }
   ];
+  // These four source lessons correspond to the four query winners. They
+  // explain existing value features without changing any stored vector.
+  const PAYLOAD_LESSONS = {
+    0: [
+      {title:'Loss signal',text:'Compare the prediction with its target to measure the error.'},
+      {title:'Chain rule',axis:0,text:'Work backwards through the operations. Multiply local derivatives and add contributions where paths meet.'},
+      {title:'Gradient step',axis:1,text:'An optimiser uses the weight gradients to update weights. Backpropagation computes the gradients for that separate step.'}
+    ],
+    1: [
+      {title:'Gradient direction',text:'The gradient points towards the steepest local increase in loss.'},
+      {title:'Gradient step',axis:1,text:'Move weights in the opposite direction to try to reduce the loss.'},
+      {title:'Step size',axis:2,text:'The learning rate scales the update. A step that is too large can overshoot.'}
+    ],
+    2: [
+      {title:'Local patch',text:'A small filter combines nearby image values.'},
+      {title:'Shared filters',axis:3,text:'Apply the same learned filter weights at each image location.'},
+      {title:'Feature map',text:'Collect the responses to show where a pattern appears in the image.'}
+    ],
+    5: [
+      {title:'Weight penalty',axis:6,text:'Add a cost for large weights to the training objective.'},
+      {title:'Dropout',axis:7,text:'Randomly set some activations to zero during training.'},
+      {title:'Generalisation check',text:'Evaluate on held-out examples to check whether these choices help.'}
+    ]
+  };
   const titles = VIDEOS.map(V => V.title);
   let qi = 0;
   /* one-line reading of a row: the axes that carry weight, largest first, and the axes that carry none */
@@ -6217,7 +6283,7 @@ Reveal the query, then the winning video's key, then its value. Each SVG lists t
   }
 
   /* frame 2: query presets, the query box (one per frame, kept in step), the score table */
-  const qBtnGroups = ['#s05-qbtns','#s05-score-qbtns','#s05-collection-qbtns','#s05-role-qbtns'].map(selector => QUERIES.map((Q, i) => {
+  const qBtnGroups = ['#s05-qbtns','#s05-score-qbtns','#s05-collection-qbtns','#s05-payload-qbtns','#s05-role-qbtns'].map(selector => QUERIES.map((Q, i) => {
     const b = AT.h('button', { type: 'button', class: 'btn', 'aria-pressed': i === qi ? 'true' : 'false' }, Q.short);
     b.addEventListener('click', () => {
       qi = i;
@@ -6309,6 +6375,17 @@ Reveal the query, then the winning video's key, then its value. Each SVG lists t
     const Q = QUERIES[qi];
     const scores = VIDEOS.map(V => AT.dot(Q.q, V.k));
     const top = AT.argmax(scores);
+    const lesson=PAYLOAD_LESSONS[top];
+    const steps=S.querySelector('#s05-payload-steps');AT.clear(steps);
+    lesson.forEach(step=>steps.appendChild(AT.h('li',{},
+      AT.h('strong',{class:step.axis===undefined?'':'sym-v',...(step.axis===undefined?{}:{'data-axis':VAL_AXES[step.axis]})},step.title),
+      AT.h('span',{},step.text))));
+    S.querySelector('#s05-payload-title').textContent='Matched video '+(top+1)+': '+VIDEOS[top].title;
+    S.querySelector('#s05-payload-label').innerHTML='Its value '+AT.texStr('\\vv{v_'+(top+1)+'}')+' (1 × 8)';
+    roleVector('#s05-payload-vector','v',VIDEOS[top].title+' value, one row of eight numbers',VAL_AXES,VIDEOS[top].v,1);
+    const linkedAxes=lesson.filter(step=>step.axis!==undefined).map(step=>VAL_AXES[step.axis]);
+    S.querySelectorAll('#s05-payload-vector .role-coordinate').forEach(row=>row.classList.toggle('is-payload-feature',linkedAxes.includes(row.dataset.axis)));
+    S.querySelector('#s05-payload-return').innerHTML='The match selects video '+(top+1)+'. The result carries <strong>all eight numbers</strong> of '+AT.texStr('\\vv{v_'+(top+1)+'}')+', including small and zero entries.';
     S.querySelector('#s05-return-title').textContent = VIDEOS[top].title;
     S.querySelector('#s05-return-summary').textContent = VIDEOS[top].summary;
     S.querySelector('#s05-role-key-title').textContent=VIDEOS[top].title;

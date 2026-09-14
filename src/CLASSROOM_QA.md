@@ -1,5 +1,12 @@
 # Classroom release checks
 
+## 2026-09-14: expand what the matched source returns
+
+- Added one focused explanation before the three-role recap. Each of the four query choices now shows what its winning video teaches in three short explanations. Backpropagation unpacks the loss signal and chain rule, then distinguishes gradient computation from an optimiser's update. The other choices explain penalties/dropout, shared filters, and gradient steps/step size. Existing summaries and all source vectors remain unchanged.
+- The presentation skill guided the content-first reveal, flat explanation/chart layout and matching teal emphasis. A second stage shows the same eight named value coordinates, with the corresponding content ideas in bold. The final stage explicitly returns every entry of the selected source's row, including small and zero values. Notes and reading text distinguish the illustrative feature encoding from a transcript or a trained text encoder. The Q/K/V recap remains compact on the following frame.
+- Full-deck checks pass for all 325 presentation states / 547 formulas, all 151 controls, the existing pooling regression, eight independent token-model cases (7,980 finite values, max error 8.88e-16), and 390px article QA. One additional frame. No Part I, model, shared-runtime, dependency or PDF changes.
+- The focused retrieval regression checks all four expanded explanations, source/subscript pairing, exact returned vectors, linked feature names, all three repeated reveal states, synchronized query controls and the natural transition to the recap. It also passes the existing 24 score, 48 stored-value, 288 weighted-product and 48 mixture-coordinate checks. Visually inspected all four desktop examples, the reveal sequence and phone explanation/value panels. Phone panels stack and keep every coordinate visible.
+
 ## 2026-09-14: concrete query/key/value recap
 
 - Rebuilt the existing final retrieval frame as the three-role recap, after the query, key and eight-value-feature foundations. Each column keeps its role question and adds the actual learner request or winning video, its exact vector and a small named-axis SVG chart. Four synchronized question controls contrast gradients, overfitting, CNNs and weight updates. Query/key rows remain 1×4; values remain 1×8. The key/value title and subscript identify the same source, and the displayed winning score comes from all six unchanged keys.

@@ -22,7 +22,7 @@ const keys=[[2.2,.6,.2,0],[.4,1,0,.2],[.1,0,2,.1],[0,0,1,0],[.2,.5,1,.6],[.1,.5,
 const titles=['Backpropagation','Gradient descent','CNNs','Transformers','Batch normalisation','Regularisation'];
 const valueAxes=['chain rule','gradient step','step size','shared filters','token mixing','activation scaling','weight penalty','dropout'];
 const values=[[1,.2,0,0,0,0,0,0],[.2,1,.9,0,0,0,0,0],[.2,.1,.1,1,0,0,0,0],[.2,.1,.1,0,1,0,0,0],[.1,.2,.2,0,0,1,0,0],[.1,.2,.1,0,0,0,1,.8]];
-const valueFrames=['s05-frame-value-axes','s05-frame-values','s05-frame-return','s06-frame-weighted-values','s06-frame-message'];
+const valueFrames=['s05-frame-value-axes','s05-frame-values','s05-frame-payload','s05-frame-return','s06-frame-weighted-values','s06-frame-message'];
 const queryFrames=['s05-frame-search','s05-frame-query-axes','s05-frame-request','s05-frame-query-examples'];
 const keyFrames=['s05-frame-key-idea','s05-frame-key-vector','s05-frame-key-examples','s05-frame-key-collection'];
 const go=async(id,build=0)=>{
@@ -37,8 +37,8 @@ try{
   const model=await page.evaluate(()=>JSON.stringify({model:AT.model,p:AT.forward(AT.sentences.river).probs}));
   const order=await page.locator('#s05 .frame').evaluateAll(els=>els.map(e=>e.id));
   assert.deepEqual(order.slice(3,13),[...queryFrames,...keyFrames,'s05-frame-matching','s05-frame-results']);
-  assert.deepEqual(order.slice(-3),['s05-frame-value-axes','s05-frame-values','s05-frame-return'],'The recap follows the query, key and value foundations.');
-  assert.equal(order.length,17,'Enrich the existing recap without adding a repeated slide.');
+  assert.deepEqual(order.slice(-4),['s05-frame-value-axes','s05-frame-values','s05-frame-payload','s05-frame-return'],'Unpack the returned content after defining its axes, before the compact recap.');
+  assert.equal(order.length,18,'One focused content explanation adds depth before the recap.');
   for(const id of queryFrames)assert(!/\b(keys?|values?)\b/i.test(await copy(id)),id+' must teach only the request before source roles.');
   assert.equal(keyFrames.length,4);
   assert((await copy('s05-frame-query-axes')).includes('not probabilities'));
@@ -93,9 +93,31 @@ try{
     await go('s05-frame-three-jobs',1);
     assert.equal(await page.locator('#s05-example-title').textContent(),titles[winner]);
     assert.equal(await page.locator('#s05-example-explanation').textContent(),await page.locator('#s05-return-summary').textContent());
+    await go('s05-frame-payload');await page.locator('#s05-payload-qbtns button').nth(i).click();
+    assert.equal(await page.locator('#s05-payload-title').textContent(),'Matched video '+(winner+1)+': '+titles[winner]);
+    const lesson=await page.locator('#s05-payload-steps li').allTextContents();
+    assert.equal(lesson.length,3);assert(lesson.every(text=>text.length>40),'The returned content has concrete explanations, not just labels.');
+    if(winner===0)assert(lesson[2].includes('separate step'),'Distinguish computing gradients from updating weights.');
+    const features=await page.locator('#s05-payload-steps [data-axis]').evaluateAll(es=>es.map(e=>e.dataset.axis));
+    const linked=await page.locator('#s05-payload-vector .is-payload-feature').evaluateAll(es=>es.map(e=>e.dataset.axis));
+    assert.deepEqual(linked,features,'Colour-matched ideas point to the same named coordinates.');
+    assert.deepEqual(features,[[valueAxes[0],valueAxes[1]],[valueAxes[6],valueAxes[7]],[valueAxes[3]],[valueAxes[1],valueAxes[2]]][i]);
+    assert((await page.locator('#s05-payload-label .katex annotation').textContent()).includes('v_'+(winner+1)));
+    assert((await page.locator('#s05-payload-return').textContent()).includes('all eight numbers'));
+    for(const build of [0,1,2,0,2]){
+      await go('s05-frame-payload',build);
+      assert.equal(await page.locator('#s05-frame-payload .payload-numbers').evaluate(e=>getComputedStyle(e).visibility),build>=1?'visible':'hidden');
+      assert.equal(await page.locator('#s05-payload-return').evaluate(e=>getComputedStyle(e).visibility),build>=2?'visible':'hidden');
+      assert.deepEqual(await page.locator('#s05-payload-vector svg').evaluate(e=>JSON.parse(e.dataset.vector)),values[winner],'The explanation never changes the returned value row.');
+      assert.deepEqual(await matrix('s05-vals'),values,'The six stored source values stay fixed.');
+      if(i===0)await page.screenshot({path:path.join(shots,'payload-reveal-'+build+'.png')});
+    }
+    await page.screenshot({path:path.join(shots,'payload-query-'+i+'.png')});
+    await page.evaluate(()=>AT.present.next());
+    assert.equal(await page.locator('#s05 .frame.is-live').getAttribute('id'),'s05-frame-return','The explanation leads directly into the three-role recap.');
     await go('s05-frame-return',2);
     await page.locator('#s05-role-qbtns button').nth(i).click();
-    for(const group of ['s05-qbtns','s05-score-qbtns','s05-collection-qbtns','s05-role-qbtns']){
+    for(const group of ['s05-qbtns','s05-score-qbtns','s05-collection-qbtns','s05-payload-qbtns','s05-role-qbtns']){
       assert.equal(await page.locator('#'+group+' button').nth(i).getAttribute('aria-pressed'),'true','Query controls stay synchronized.');
     }
     const roleRows=await page.locator('#s05-frame-return .role-vector').evaluateAll(svgs=>svgs.map(svg=>({
@@ -142,7 +164,7 @@ try{
     assert.deepEqual(headers.slice(1).map(s=>s.trim().toLowerCase()),valueAxes);
   }
   for(const id of valueFrames){
-    for(const build of id==='s06-frame-weighted-values'?[0,1,2,3,0,3]:id==='s05-frame-values'?[0]:id==='s05-frame-return'?[0,1,2,0,2]:[0,1]){
+    for(const build of id==='s06-frame-weighted-values'?[0,1,2,3,0,3]:id==='s05-frame-values'?[0]:['s05-frame-return','s05-frame-payload'].includes(id)?[0,1,2,0,2]:[0,1]){
       await go(id,build);await page.screenshot({path:path.join(shots,id+'-'+build+'.png')});
       if(id==='s06-frame-weighted-values'){
         const view=await page.locator('#s06-mix .s06-mix-value').evaluateAll(cells=>cells.map(cell=>{
@@ -206,6 +228,14 @@ try{
     await page.screenshot({path:path.join(shots,'phone-'+id+'.png')});
   }
   for(let i=0;i<queries.length;i++){
+    await page.locator('#s05-payload-qbtns button').nth(i).click();
+    const payloadBoxes=await page.locator('#s05-frame-payload .payload-layout>div').evaluateAll(es=>es.map(e=>{const b=e.getBoundingClientRect();return {left:b.left,right:b.right,top:b.top,bottom:b.bottom};}));
+    assert(payloadBoxes.every(b=>b.left>=0&&b.right<=391)&&payloadBoxes[1].top>payloadBoxes[0].bottom,'The phone shows the explanation before its full value chart.');
+    for(const part of ['payload-explanation','payload-numbers']){
+      const block=page.locator('#s05-frame-payload .'+part);
+      await block.scrollIntoViewIfNeeded();await page.waitForTimeout(250);
+      await block.screenshot({path:path.join(shots,'phone-payload-'+i+'-'+part+'.png')});
+    }
     await page.locator('#s05-role-qbtns button').nth(i).click();
     const boxes=await page.locator('#s05-frame-return .role-card').evaluateAll(cards=>cards.map(e=>{const b=e.getBoundingClientRect();return {left:b.left,right:b.right,top:b.top,bottom:b.bottom,visible:getComputedStyle(e).visibility};}));
     assert(boxes.every(b=>b.left>=0&&b.right<=391&&b.visible==='visible'),'All three cards remain visible and inside phone width.');
@@ -227,5 +257,5 @@ try{
     assert(box.scroll>box.width&&box.x>=0&&box.right<=391,'Named axes scroll locally on phones.');
   }
   assert.deepEqual(errors,[]);
-  console.log('PASS: query/key lessons and 24 scores; four concrete Q/K/V recaps with exact SVG vectors, paired sources, scaled bars and staged reveals; eight named value axes, all 48 stored values, 288 weighted products, 48 mixture coordinates, hard/soft/tied/temperature cases, independent state, desktop and phone layout. Screenshots: '+shots);
+  console.log('PASS: four expanded source explanations with exact returned vectors and linked content features; query/key lessons and 24 scores; four concrete Q/K/V recaps with exact SVG vectors, paired sources, scaled bars and staged reveals; eight named value axes, all 48 stored values, 288 weighted products, 48 mixture coordinates, hard/soft/tied/temperature cases, independent state, desktop and phone layout. Screenshots: '+shots);
 }finally{await browser.close();}
