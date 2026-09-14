@@ -30,8 +30,20 @@ page.on('pageerror',error=>errors.push(error.message));
 try{
   await page.goto(pathToFileURL(path.resolve(process.argv[2]||'attention.html')).href);
   await page.evaluate(()=>document.fonts.ready);
+  await page.evaluate(()=>{
+    window.goSection3=(kind,build=0)=>{
+      const ids={window:'s03-frame2',concatenate:'s03-frame-concatenate',mlp:'s03-frame1',boundary:'s03-frame-boundary',linear:'s03-frame-window-head',cost:'s03-frame-window-cost'};
+      const target=document.getElementById(ids[kind]);
+      if(target.classList.contains('companion')){AT.present.exit();target.scrollIntoView();return;}
+      AT.present.enter();AT.present.go('s03',[...document.querySelectorAll('#s03 .frame')].indexOf(target)+1,build);
+    };
+  });
   const initial=await page.evaluate(()=>JSON.stringify({model:AT.model,probs:AT.forward(AT.sentences.river).probs}));
-  await page.evaluate(()=>{AT.present.enter();AT.present.go('s03',2,0);});
+  for(const [kind,lastBuild,nextId]of [['window',1,'s03-frame-concatenate'],['concatenate',1,'s03-frame1'],['mlp',2,'s03-frame-boundary'],['boundary',1,'s03-frame-pooling-bridge']]){
+    await page.evaluate(([kind,build])=>{goSection3(kind,build);AT.present.next();},[kind,lastBuild]);
+    assert.equal(await page.locator('#s03 .frame.is-live').getAttribute('id'),nextId,'Normal slide navigation must skip the optional derivations.');
+  }
+  await page.evaluate(()=>{AT.present.enter();goSection3('window',0);});
   const slider=page.locator('#s03-slider input');
   for(let w=1;w<=10;w++){
     await slider.fill(String(w));
@@ -49,7 +61,9 @@ try{
             expected:E[Number(g.dataset.tokenPosition)-1],
             coordinates:[...g.querySelectorAll('circle')].map(c=>Number(c.dataset.coordinate))
           })),
-          edges:[...svg.querySelectorAll('.connection')].map(e=>[Number(e.dataset.sourcePosition),Number(e.dataset.coordinate),e.dataset.outputWord]),
+          inputsToHidden:[...svg.querySelectorAll('.connection[data-matrix="W1"]')].map(e=>[Number(e.dataset.sourcePosition),Number(e.dataset.coordinate),Number(e.dataset.hiddenIndex)]),
+          hiddenToOutputs:[...svg.querySelectorAll('.connection[data-matrix="W2"]')].map(e=>[Number(e.dataset.hiddenIndex),e.dataset.outputWord]),
+          hidden:[...svg.querySelectorAll('.hidden-node')].map(e=>Number(e.dataset.hiddenIndex)),
           outputs:[...svg.querySelectorAll('.output-node')].map(e=>e.dataset.outputWord)
         })),
         dimensions:document.getElementById('s03-window-dimensions').textContent,
@@ -63,19 +77,22 @@ try{
     assert.equal(result.boundary,w<10?String(10-w):undefined);
     assert.equal(result.animated,'none','Respect reduced-motion preferences.');
     assert(result.dimensions.includes(`${w} tokens × 4 numbers = ${w*4} inputs`));
-    assert(result.dimensions.includes(`W: ${w*4} × 20 = ${w*80} weights`));
+    assert(result.dimensions.includes('Eight hidden neurons and twenty vocabulary outputs'));
+    assert(!result.dimensions.includes('weights'),'Explain input availability here; count the parameters only in the MLP frame.');
     assert(result.concatenated.includes(`${w} × 4 = ${w*4} numbers`));
     for(const diagram of result.diagrams){
       const expectedShown=w<=3?inside:[inside[0],inside[1],10];
       assert.deepEqual(diagram.groups.map(g=>g.position),expectedShown);
       for(const group of diagram.groups){assert.deepEqual(group.values,group.expected);assert.deepEqual(group.coordinates,[1,2,3,4]);}
       assert.deepEqual(diagram.outputs,['the','water','teller','money']);
-      assert.deepEqual(diagram.edges,expectedShown.flatMap(i=>[1,2,3,4].flatMap(j=>diagram.outputs.map(word=>[i,j,word]))));
-      for(const [key,value] of Object.entries({window:w,inputCount:w*4,outputCount:20,omittedInputs:Math.max(w-3,0)*4,weightRows:w*4,weightCols:20,weightCount:w*80,biasCount:20}))assert.equal(Number(diagram.data[key]),value,`${key} at w=${w}`);
+      assert.deepEqual(diagram.hidden,[1,2,3,4,5,6,7,8]);
+      assert.deepEqual(diagram.inputsToHidden,expectedShown.flatMap(i=>[1,2,3,4].flatMap(j=>diagram.hidden.map(k=>[i,j,k]))));
+      assert.deepEqual(diagram.hiddenToOutputs,diagram.hidden.flatMap(k=>diagram.outputs.map(word=>[k,word])));
+      for(const [key,value] of Object.entries({window:w,inputCount:w*4,hiddenCount:8,outputCount:20,omittedInputs:Math.max(w-3,0)*4,w1Rows:w*4,w1Cols:8,w2Rows:8,w2Cols:20}))assert.equal(Number(diagram.data[key]),value,`${key} at w=${w}`);
       assert(diagram.label.includes('No predictions are computed.'));
     }
     for(const build of [0,1]){
-      await page.evaluate(build=>AT.present.go('s03',2,build),build);
+      await page.evaluate(build=>goSection3('window',build),build);
       await page.waitForTimeout(50);
       assert.equal(await slider.inputValue(),String(w),'Do not reset the chosen window on a build.');
       assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,`Window ${w}, build ${build} must fit.`);
@@ -86,7 +103,7 @@ try{
     });
     assert.deepEqual(bounds,[],'Keep all SVG labels within the diagram.');
     if([1,3,5,10].includes(w))await page.screenshot({path:path.join(shots,`window-${w}.png`)});
-    await page.evaluate(()=>AT.present.go('s03',3,0));
+    await page.evaluate(()=>goSection3('concatenate',0));
     assert.equal(await page.locator('.concat-after').evaluate(e=>getComputedStyle(e).visibility),'hidden','Show the stacked rows before revealing concatenation.');
     const concat=await page.evaluate(()=>{
       const flat=document.getElementById('s03-concat-flat'),w=Number(flat.dataset.window),tokens=AT.sentences.river;
@@ -123,7 +140,7 @@ try{
     assert(concat.equation.includes(`1\\times ${w*4}`),'Use an explicit row-vector shape.');
     assert(concat.colours.every(Boolean),'Match the c and subscript definitions to the equation colours.');
     for(const build of [0,1]){
-      await page.evaluate(build=>AT.present.go('s03',3,build),build);
+      await page.evaluate(build=>goSection3('concatenate',build),build);
       await page.waitForTimeout(200);
       assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,`Concatenation w=${w}, build=${build} must fit.`);
       if(build===1){
@@ -144,7 +161,7 @@ try{
         assert(blue>50&&orange>20,`The c/10 explanation must actually paint at w=${w}, build=${build}, not merely exist in the DOM.`);
       }
     }
-    await page.evaluate(()=>AT.present.go('s03',4,0));
+    await page.evaluate(()=>goSection3('linear',0));
     const headSlider=page.locator('#s03-head-slider input');
     assert.equal(await headSlider.inputValue(),String(w),'Both window controls share the same choice.');
     const head=await page.evaluate(()=>{
@@ -174,14 +191,9 @@ try{
     assert(head.equation.includes(`c_{10}}_{1\\times ${w*4}}`)&&head.equation.includes(`W}_{${w*4}\\times 20}`),'The coloured equation uses this exact window and explicit row shapes.');
     assert(head.colours.every(values=>new Set(values).size===1),'Match diagram, equation, and definition colours.');
     assert.equal(head.count,w*80+20);
-    for(const build of [0,1,2]){
-      await page.evaluate(build=>AT.present.go('s03',4,build),build);
-      await page.waitForTimeout(100);
-      assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,`Head w=${w}, build=${build} must fit.`);
-      assert.equal(await page.locator('#s03-head-equation').evaluate(e=>getComputedStyle(e).visibility),build===0?'hidden':'visible');
-      assert.equal(await page.locator('.window-head-math>[data-build="2"]').evaluate(e=>getComputedStyle(e).visibility),build<2?'hidden':'visible');
-      assert.equal(await headSlider.inputValue(),String(w));
-    }
+    assert.equal(await page.locator('#s03-head-equation').evaluate(e=>getComputedStyle(e).visibility),'visible','The article keeps the complete optional derivation.');
+    assert.equal(await page.locator('.window-head-math>[data-build="2"]').evaluate(e=>getComputedStyle(e).visibility),'visible');
+    assert.equal(await headSlider.inputValue(),String(w));
     for(const word of head.outputs){
       await page.locator(`#s03-head-network [role="button"][data-output-word="${word}"]`).click();
       const trace=await page.evaluate(()=>({
@@ -198,15 +210,15 @@ try{
       return [...svg.querySelectorAll('text')].filter(e=>{const b=e.getBBox();return b.x<0||b.y<0||b.x+b.width>v.width+1||b.y+b.height>v.height+1;}).map(e=>e.textContent);
     });
     assert.deepEqual(headBounds,[],'All interactive head labels fit in the viewBox.');
-    if([1,3,5,10].includes(w))await page.screenshot({path:path.join(shots,`head-${w}.png`)});
-    await page.evaluate(()=>AT.present.go('s03',2,1));
+    if([1,3,5,10].includes(w))await page.locator('#s03-frame-window-head').screenshot({path:path.join(shots,`article-head-${w}.png`)});
+    await page.evaluate(()=>goSection3('window',1));
   }
   await slider.fill('3');await slider.focus();await page.keyboard.press('ArrowRight');
   assert.equal(await slider.inputValue(),'4');
-  await page.evaluate(()=>AT.present.go('s03',3,0));
-  await page.evaluate(()=>AT.present.go('s03',2,1));
+  await page.evaluate(()=>goSection3('concatenate',0));
+  await page.evaluate(()=>goSection3('window',1));
   assert.equal(await slider.inputValue(),'4','Keep the same window when navigating to the concatenation table and back.');
-  await page.evaluate(()=>AT.present.go('s03',4,2));
+  await page.evaluate(()=>goSection3('linear',2));
   const headSlider=page.locator('#s03-head-slider input');
   for(let w=1;w<=10;w++){
     await headSlider.fill(String(w));
@@ -221,23 +233,28 @@ try{
     await output.focus();await page.keyboard.press(key);
     assert.equal(await output.getAttribute('aria-pressed'),'true');
     assert.equal(await page.locator('#s03-head-network [aria-pressed="true"]').count(),1);
-    assert.equal((await page.evaluate(()=>AT.present.fitReport())).frame,4,'Tracing with the keyboard must not advance the presentation.');
+    assert(!(await page.evaluate(()=>document.body.classList.contains('present'))),'The optional linear head belongs to article mode.');
   }
-  await page.evaluate(()=>AT.present.go('s03',3,1));
-  await page.evaluate(()=>AT.present.go('s03',4,2));
+  await page.evaluate(()=>goSection3('concatenate',1));
+  await page.evaluate(()=>goSection3('linear',2));
   assert.equal(await headSlider.inputValue(),'9');
   assert.equal(await page.locator('#s03-head-network').getAttribute('data-traced-word'),'teller');
-  await page.evaluate(()=>AT.present.go('s03',1,0));
+  await page.evaluate(()=>goSection3('mlp',0));
+  const definitions=await page.locator('.mlp-definitions').innerText();
+  for(const text of ['Token slots','Numbers in each token row','Hidden neurons','Words in the vocabulary'])assert(definitions.includes(text));
+  const intro=await page.locator('#s03-frame1').textContent();
+  for(const text of ['learned connection weights','learned biases added to the weighted sums','one per hidden neuron','Embedding and position tables are additional'])assert(intro.includes(text));
   for(let w=1;w<=100;w++){
     await page.locator('#s03-net-slider input').fill(String(w));
     const label=await page.locator('#s03-net svg').getAttribute('aria-label');
     assert(label.includes(`${w*4} scalar input nodes`),'The preceding MLP must also count scalar coordinates, not tokens.');
     assert((await page.locator('#s03-net .caps').textContent()).includes(`${w*4} input numbers`));
-    assert((await page.locator('#s03-net-read').innerText()).includes(`${w*4} input numbers`));
+    assert((await page.locator('#s03-net-input-count').textContent()).includes('input numbers'));
     const matrices=await page.locator('#s03-net svg').evaluate(svg=>{
       const columns=['.col-in','.col-hid','.col-out'].map(selector=>svg.querySelector(selector+' .node').transform.baseVal.consolidate().matrix.e);
       const v=svg.viewBox.baseVal;
       return {data:{...svg.dataset},columns,
+        inputLabels:[...svg.querySelectorAll('.col-in .node[data-key]')].map(e=>({index:Number(e.dataset.key.slice(1)),tex:e.querySelector('annotation').textContent})),
         labels:[...svg.querySelectorAll('.matrix-label')].map(e=>({name:e.textContent,matrix:e.dataset.matrix,x:Number(e.getAttribute('x')),colour:getComputedStyle(e).fill})),
         edges:['W1','W2'].map(m=>[...svg.querySelectorAll('.edges line[data-matrix="'+m+'"]')].map(e=>[Number(e.getAttribute('x1')),Number(e.getAttribute('x2'))])),
         shapeText:['W1','W2'].map(m=>{const e=document.querySelector('#s03-net-read [data-matrix="'+m+'"]');return {text:e.innerText,colour:getComputedStyle(e.querySelector('.mlp-matrix-shape')).color};}),
@@ -246,6 +263,7 @@ try{
     assert.deepEqual(matrices.labels.map(e=>e.name),['W₁','W₂'],'Label both connection banks on the MLP itself.');
     assert.deepEqual(matrices.labels.map(e=>e.matrix),['W1','W2']);
     assert.deepEqual(matrices.data,{w1Rows:String(w*4),w1Cols:'8',w2Rows:'8',w2Cols:'20'});
+    for(const label of matrices.inputLabels)assert.equal(label.tex,`(${w<=10?'c_{10}':'c_t'})_{${label.index}}`,'Retained input nodes must update their context label when moving beyond the example sentence.');
     matrices.labels.forEach((e,j)=>{
       assert(e.x>matrices.columns[j]&&e.x<matrices.columns[j+1],'Place each matrix label between the layers it connects.');
       assert.equal(e.colour,matrices.shapeText[j].colour,'The on-diagram label matches its matrix/weight-count text.');
@@ -254,18 +272,43 @@ try{
     assert.equal(matrices.edges[1].length,8*5,'The hidden-to-output connections stay fixed.');
     assert(matrices.edges[0].every(([x1,x2])=>x1>matrices.columns[0]&&x2<matrices.columns[1]));
     assert(matrices.edges[1].every(([x1,x2])=>x1>matrices.columns[1]&&x2<matrices.columns[2]));
-    assert(matrices.shapeText[0].text.includes('Input to hidden')&&matrices.shapeText[0].text.includes(`${w*32} weights`));
-    assert(matrices.shapeText[1].text.includes('Hidden to vocabulary scores')&&matrices.shapeText[1].text.includes('160 weights'));
+    assert(matrices.shapeText[0].text.includes('Input to hidden'));
+    assert(matrices.shapeText[1].text.includes('Hidden to vocabulary scores'));
     assert.deepEqual(matrices.overflow,[]);
-    assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow);
-    if([1,3,20].includes(w))await page.screenshot({path:path.join(shots,`mlp-${w}.png`)});
+    const counts=await page.evaluate(()=>({
+      rows:[...document.querySelectorAll('#s03-net-count-rows tr')].map(e=>[e.dataset.parameter,Number(e.dataset.count)]),
+      total:Number(document.getElementById('s03-net-total').dataset.parameters),
+      formula:document.querySelector('#s03-net-total annotation').textContent,
+      forward:[...document.querySelectorAll('#s03-net-forward annotation')].map(e=>e.textContent),
+      growth:document.getElementById('s03-net-growth').textContent,
+      context:document.getElementById('s03-net-context').textContent,
+      colours:['window-input','mlp-hidden','window-score','window-prob'].map(cls=>getComputedStyle(document.querySelector('#s03-net-forward .katex-html .'+cls)).color===getComputedStyle(document.querySelector('#s03-frame1 .mlp-pane .'+cls)).color)
+    }));
+    assert.deepEqual(counts.rows,[['W_1',w*4*8],['b_1',8],['W_2',8*20],['b_2',20]]);
+    assert.equal(counts.total,w*32+188,'Count both matrices and both biases, excluding embeddings.');
+    assert.equal(counts.formula.replace(/\\htmlClass\{[^}]+\}\{([^{}]*)\}/g,'$1'),'N=wdH+H+HV+V');
+    assert(counts.forward[0].includes(w<=10?'c_{10}':'c_t')&&counts.forward[0].includes('W_1')&&counts.forward[0].includes('b_1'));
+    assert(counts.forward[1].includes('W_2')&&counts.forward[1].includes('b_2')&&counts.forward[2].includes('softmax'));
+    assert(counts.growth.includes('both biases stay fixed'));
+    assert(counts.context.includes(w<=10?`positions ${11-w}–10`:`Capacity for ${w} tokens`));
+    assert(counts.colours.every(Boolean),'Match formula symbols to their definitions.');
+    if(w<=10)assert.equal(await slider.inputValue(),String(w),'The same short window supplies the MLP and concatenation.');
+    else assert.equal(await slider.inputValue(),'10','Do not invent rows beyond the saved ten-token sentence.');
+    for(const build of [0,1,2]){
+      await page.evaluate(build=>goSection3('mlp',build),build);
+      await page.waitForTimeout(25);
+      assert.equal(await page.locator('#s03-net-slider input').inputValue(),String(w),'Reveals must not change the chosen window.');
+      assert.deepEqual(await page.locator('.mlp-pane').evaluateAll(es=>es.filter(e=>getComputedStyle(e).display!=='none').map(e=>Number(e.dataset.step))),[build]);
+      assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,`MLP w=${w}, build=${build} fits.`);
+      if([1,3,20,100].includes(w))await page.screenshot({path:path.join(shots,`mlp-${w}-${build}.png`)});
+    }
   }
-  await page.evaluate(()=>AT.present.go('s03',1,2));
+  await page.evaluate(()=>goSection3('mlp',2));
   await page.screenshot({path:path.join(shots,'mlp-100.png')});
   // Longer prefixes illustrate token visibility, without running out-of-vocab
   // words or positions through the saved ten-position toy model.
   const shortWindow=await slider.inputValue();
-  await page.evaluate(()=>AT.present.go('s03',5,0));
+  await page.evaluate(()=>goSection3('boundary',0));
   const longSlider=page.locator('#s03-long-slider input');
   assert.equal(await longSlider.inputValue(),'10','Introduce the longer example with ten slots.');
   for(let w=10;w<=20;w++){
@@ -302,7 +345,7 @@ try{
     assert.deepEqual(long.examples.map(e=>[e.clue.word,e.clue.position]),[['river',6],['cheque',5]]);
     assert.equal(long.result.identical,String(w<=11),'Sunday/yesterday already differ at w=12, before the main clues enter.');
     assert.equal(Number(long.result.cluesAvailable),Number(w>=15)+Number(w>=16));
-    assert.equal(Number(long.cost.weights),w*4*20);assert.equal(Number(long.cost.biases),20);assert.equal(Number(long.cost.parameters),w*80+20);
+    assert.equal(Number(long.cost.weights),w*4*8+8*20);assert.equal(Number(long.cost.biases),28);assert.equal(Number(long.cost.parameters),w*32+188);
     assert(long.scope.includes(`positions ${21-w}–20`)&&long.scope.includes('Predict 21'));
     assert.deepEqual(long.table,[[10,40,800,20,820],[20,80,1600,20,1620],[100,400,8000,20,8020]]);
     assert(long.notes.includes('Sentences illustrate visibility only')&&long.notes.includes('35-token prefix')&&long.notes.includes('positions 16–35'));
@@ -310,18 +353,21 @@ try{
     assert.equal(10*128*10000,12.8e6);assert.equal(100*128*10000,128e6);
     assert.equal(await slider.inputValue(),shortWindow,'The longer illustration must not resize the saved short-prefix example.');
     for(const frame of [5,6])for(const build of [0,1]){
-      await page.evaluate(({frame,build})=>AT.present.go('s03',frame,build),{frame,build});
+      await page.evaluate(({frame,build})=>goSection3(frame===5?'boundary':'cost',build),{frame,build});
       await page.waitForTimeout(100);
-      assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,`Long-window frame ${frame}, w=${w}, build=${build} fits.`);
-      if(frame===5)assert.equal(await page.locator('#s03-long-result').evaluate(e=>getComputedStyle(e).visibility),build?'visible':'hidden');
-      if([10,20].includes(w)&&build===1)await page.screenshot({path:path.join(shots,`long-${w}-frame-${frame}.png`)});
+      if(frame===5){
+        assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,`Long-window w=${w}, build=${build} fits.`);
+        assert.equal(await page.locator('#s03-long-result').evaluate(e=>getComputedStyle(e).visibility),build?'visible':'hidden');
+        assert(!(await page.locator('#s03-long-cost').isVisible()),'Keep repeated parameter arithmetic out of the boundary slide.');
+      }
+      if([10,20].includes(w)&&build===1)await page.locator(frame===5?'#s03-frame-boundary':'#s03-frame-window-cost').screenshot({path:path.join(shots,`long-${w}-frame-${frame}.png`)});
     }
-    await page.evaluate(()=>AT.present.go('s03',5,1));
+    await page.evaluate(()=>goSection3('boundary',1));
     assert.equal(await longSlider.inputValue(),String(w),'Long-window control survives navigation and reveals.');
   }
   await longSlider.focus();await page.keyboard.press('ArrowLeft');
   assert.equal(await longSlider.inputValue(),'19');
-  assert.equal(await page.locator('#s03-long-cost').getAttribute('data-weights'),String(19*80));
+  assert.equal(await page.locator('#s03-long-cost').getAttribute('data-weights'),String(19*32+160));
   await page.evaluate(()=>AT.present.exit());
   await page.setViewportSize({width:390,height:844});
   await slider.fill('5');
@@ -341,6 +387,7 @@ try{
   assert(phone.slider>=180,'The phone control needs a usable track, not a collapsed thumb.');
   assert(!phone.overflow,'No phone document overflow.');assert.deepEqual(phone.labels,[]);
   await page.locator('#s03-frame2').screenshot({path:path.join(shots,'phone-window-5.png')});
+  await page.locator('#s03-frame1').screenshot({path:path.join(shots,'phone-mlp-5.png')});
   const rowScroll=await page.locator('.concat-row-scroll').evaluate(e=>({width:e.clientWidth,content:e.scrollWidth,overflow:getComputedStyle(e).overflowX}));
   assert.equal(rowScroll.overflow,'auto');assert(rowScroll.content>rowScroll.width,'A long joined row should scroll locally on a phone, never wrap into a matrix.');
   await page.locator('#s03-frame-concatenate').screenshot({path:path.join(shots,'phone-concat-5.png')});
@@ -357,6 +404,6 @@ try{
   const final=await page.evaluate(()=>JSON.stringify({model:AT.model,probs:AT.forward(AT.sentences.river).probs}));
   assert.equal(final,initial,'Architecture controls must not mutate the trained toy or its predictions.');
   assert.deepEqual(errors,[]);
-  console.log('PASS: ten short windows, eleven long windows, exact suffixes and clue boundaries, head-only parameter scaling, scalar nodes/edges, concatenation, output tracing, coloured math, controls, progressive reveal, keyboard, retained state, reduced motion, phone layout, and model immutability.');
+  console.log('PASS: five-slide flow, ten short windows, 100 MLP widths with both matrices/biases, eleven long windows, optional linear-head derivation, scalar nodes/edges, concatenation, coloured math, reveals, keyboard, retained state, reduced motion, phone layout and model immutability.');
   console.log('Screenshots: '+shots);
 }finally{await browser.close();}

@@ -4376,6 +4376,37 @@ body.present #s03 .window-head-takeaway{font-size:23px;margin-top:12px}
 #s03 #s03-net-read .mlp-matrix-role{display:block;font-size:.9em;color:var(--ink-2);margin-bottom:2px}
 #s03 #s03-net-read .mlp-matrix-shape{color:var(--c-q)}
 #s03 #s03-net-read .mlp-growth-note{display:block;margin-top:14px}
+#s03 .mlp-hidden{color:var(--c-v);fill:var(--c-v)}
+#s03 .mlp-panes{min-width:0}
+#s03 .mlp-pane{font-size:17px;line-height:1.4;margin:14px 0}
+#s03 .mlp-pane p{margin:8px 0}
+#s03 .mlp-pane h3{font-size:21px;margin:0 0 12px}
+#s03 .mlp-definitions{display:grid;grid-template-columns:48px minmax(0,1fr);gap:8px 12px;margin:12px 0}
+#s03 .mlp-definitions dt{font-weight:650}
+#s03 .mlp-definitions dd{margin:0}
+#s03 .mlp-pane .katex-display{margin:12px 0}
+#s03 .mlp-count-table{border-collapse:collapse;width:100%;font-size:17px;margin:12px 0}
+#s03 .mlp-count-table th,#s03 .mlp-count-table td{padding:6px 10px;border-bottom:1px solid var(--line);text-align:left}
+#s03 .mlp-count-table th{font-weight:600}
+#s03 .mlp-count-table td:last-child{text-align:right;font-family:var(--font-mono)}
+#s03 .mlp-count-scope{color:var(--ink-2);font-size:15px}
+#s03 .mlp-context-note{color:var(--c-e);font-size:16px;margin:8px 0}
+body.present #s03 #s03-frame1 .net-wrap{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:66px;align-items:start}
+body.present #s03 #s03-frame1>.card{padding:16px 24px}
+body.present #s03 #s03-frame1 .mlp-pane{display:none;font-size:23px;margin:0}
+body.present #s03 #s03-frame1[data-mlp-step="0"] .mlp-pane[data-step="0"],
+body.present #s03 #s03-frame1[data-mlp-step="1"] .mlp-pane[data-step="1"],
+body.present #s03 #s03-frame1[data-mlp-step="2"] .mlp-pane[data-step="2"]{display:block}
+body.present #s03 .mlp-pane h3{font-size:25px;margin-bottom:10px}
+body.present #s03 .mlp-definitions{grid-template-columns:38px minmax(0,1fr);gap:9px 12px}
+body.present #s03 .mlp-count-table{font-size:22px;margin:8px 0}
+body.present #s03 .mlp-count-table th,body.present #s03 .mlp-count-table td{padding:5px 8px}
+body.present #s03 .mlp-count-scope{font-size:20px;line-height:1.3}
+body.present #s03 .mlp-context-note{font-size:21px;line-height:1.35}
+body.present #s03 #s03-net-read{font-size:20px;line-height:1.35;background:none;border:0;padding:0;margin:6px 0 0}
+body.present #s03 #s03-net-read .mlp-matrix{margin-top:6px}
+body.present #s03 #s03-net-read .mlp-matrix-role{display:inline;margin-right:8px}
+#s03 .window-network .hidden-node{fill:var(--t-v);stroke:var(--c-v);stroke-width:1.8}
 body.present #s03 #s03-frame2>.card{padding:12px 24px;margin-bottom:10px}
 body.present #s03 #s03-frame2 .card-title{font-size:22px;margin-bottom:10px}
 body.present #s03 #s03-frame2 .win-note{margin:4px 0 6px;font-size:20px}
@@ -4387,7 +4418,11 @@ body.present #s03 #s03-frame2 .bound .bar{height:26px}
 @keyframes window-node-in{from{opacity:.25}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){#s03 .window-network .token-group{animation:none}}
 @media(max-width:640px){
-  body:not(.present) #s03 .window-dimensions{display:grid;gap:4px}
+  body:not(.present) #s03 .window-dimensions{display:grid;grid-template-columns:minmax(0,1fr);gap:4px}
+  body:not(.present) #s03 .window-dimensions span{white-space:normal}
+  body:not(.present) #s03 #s03-net-slider .slider{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px}
+  body:not(.present) #s03 #s03-net-slider .slider-label{grid-column:1/-1}
+  body:not(.present) #s03 #s03-net-slider input{width:100%;max-width:none;min-width:0}
   body:not(.present) #s03 .window-network .window-net-wide{display:none}
   body:not(.present) #s03 .window-network .window-net-compact{display:block}
   body:not(.present) #s03 #s03-slider .slider{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px}
@@ -4404,50 +4439,20 @@ body.present #s03 #s03-frame2 .bound .bar{height:26px}
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Give the model more context by concatenating the last $w$ representations into one long row. A larger matrix can read that row. The first diagram uses an MLP with eight hidden units. The “Inside the window” slider connects the selected words to a simpler linear head, matching the equation that follows. In both sketches, each token adds four input nodes. At $w=3$, <em>river</em> is outside. At $w=10$, every token fits because this sentence is short. Changing the window changes the required parameter shapes. These are architecture sketches, not trained predictions for every window size. A network can learn to use the content it receives, but it gets no information from beyond its fixed window.</p>
-</div>
-
-<div class="frame" data-title="Grow the window" id="s03-frame1" data-autobuild="off">
-  <script type="text/x-notes">
-    What changes in the network if we use five tokens?
-    Start at w = 3 and name the three columns: the window, a hidden layer, one output per word. Point to W1 above the input-to-hidden connections and W2 above the hidden-to-output connections. These are the two linear layers of the MLP, with the hidden activation between them. The side note gives both matrix shapes and weight counts. The next key press moves the slider to 5: W1 grows while W2 remains 8 by 20. The press after that jumps to 100: the input column collapses and W1 has 3,200 weights, while W2 still has 160. Counts refer to weights and exclude biases.
-
-    Timing: about three minutes.
-  </script>
-  <div class="companion">
-    <p>The last $w$ token rows can feed a fixed network. Its first layer reads all $w$ rows at once, followed by a hidden layer and one output per vocabulary word.</p>
-  </div>
-
-  <div class="card">
-    <h3 class="card-title">More input tokens → a wider first layer</h3>
-    <p class="companion muted small" style="margin:0 0 6px">Architecture sketch with eight hidden units and the toy vocabulary. Each input circle represents one scalar coordinate of the concatenated row. No trained predictions are shown. Drag the slider or press the arrow key.</p>
-    <div class="net-wrap">
-      <div>
-        <div id="s03-net-slider"></div>
-        <div id="s03-net"></div>
-      </div>
-      <div class="net-steps">
-        <p class="read-line" id="s03-net-read"></p>
-        <p id="s03-net-b1" data-build="1"></p>
-        <p id="s03-net-b2" data-build="2"></p>
-      </div>
-    </div>
-  </div>
-
-  <div class="companion">The window size is baked into the shape of the first layer before any word is read. The hidden width and output matrix can stay unchanged; it is the input-to-hidden matrix that grows.</div>
+  <p>Give the model more context by concatenating the last $w$ representations into one long row. Both network views use the MLP layout from Part I. Here we choose eight hidden units and twenty vocabulary scores. First identify the available inputs, then join their coordinates, then examine the network's equations and parameters. At $w=3$, <em>river</em> is outside. At $w=10$, every token fits because this sentence is short. Changing the window changes the required parameter shapes. These are architecture sketches, not trained predictions for every window size. The article also derives the optional simpler linear head separately.</p>
 </div>
 
 <div class="frame" data-title="Inside the window" id="s03-frame2" data-autobuild="off">
   <script type="text/x-notes">
     Which tokens does w = 3 keep, and which does it throw away?
-    Start at 3: and, watched, the supply twelve scalar inputs. Move to 5: river enters and the linear head needs twenty scalar inputs. At 10 all forty inputs fit this sentence. Each labelled token group contributes four input circles. For wider windows, the first two and final groups are drawn and an explicit count represents the omitted groups. Every retained scalar has a connection to every vocabulary output, including outputs omitted by dots. No unavailable token has a connection. This direct linear head matches the following c W + b equation; the previous MLP sketch additionally used a hidden layer. Changing w compares architectures with different weight shapes, not inference under one fixed trained matrix.
+    Start at 3: and, watched, the supply twelve scalar inputs to the MLP from Part I. Move to 5: river enters and supplies four more input coordinates along with bank. At 10 all forty inputs fit this sentence. Each labelled token group contributes four input circles. For wider windows, the first two and final groups are drawn and an explicit count represents the omitted groups. Every retained scalar connects to all eight hidden units. These feed the vocabulary scores. No unavailable token has a connection. Focus here on which information reaches the model. The next slide joins the rows, and the following network slide defines the weights and counts them. Changing w compares architectures with different weight shapes, not inference under one fixed trained matrix.
   </script>
   <div class="companion">
     <p>Concatenate the previous $w$ token representations into one long vector and predict from that. $w$ denotes the window width; we reserve $K$ for the matrix of attention keys later.</p>
   </div>
 
   <div class="card">
-    <h3 class="card-title">Linear-head sketch: each token supplies four input nodes.</h3>
+    <h3 class="card-title">The MLP can use only the words inside its window</h3>
     <div id="s03-slider" data-keep-state></div>
     <div id="s03-chips"></div>
     <p class="companion win-note" id="s03-win-note"></p>
@@ -4485,9 +4490,59 @@ At build zero, the table is still w rows by four coordinates. Define c as the co
   </div>
 </div>
 
-<div class="frame" id="s03-frame-window-head" data-title="A larger input needs a larger prediction matrix" data-autobuild="off">
-  <script type="text/x-notes">Is this the same vocabulary matrix as the one-row baseline?
-No. The concatenated context row c_10 is now the input. Its subscript is the last input position, 10, not the window width. Each blue circle is one scalar coordinate; each purple edge is a weight. Select water or another displayed output to highlight one column of W: all input coordinates contribute to that word's score, plus its bias. The omitted inputs and outputs still have connections. Reveal the shape-annotated equation, then softmax. This is the direct linear head from Inside the window, not the earlier MLP with a hidden layer. Drag w from 3 to 5 to 10: W grows from 12 by 20 to 20 by 20 to 40 by 20, while the twenty outputs and biases stay fixed. The controls compare parameter shapes, not trained predictions under a resized model.</script>
+<div class="frame" data-title="The windowed MLP" id="s03-frame1" data-mlp-step="0" data-autobuild="off">
+  <script type="text/x-notes">What does each symbol count in this network?
+The previous slide joined the selected token rows into c10. Start by reading the dimension definitions next to the same MLP architecture: w input token slots, d coordinates per token, H hidden units and V vocabulary outputs. Each circle represents one number. The hidden width H is a count, whereas lowercase h denotes its computed activations. At the initial w=3, c10 has twelve numbers. The two matrices connect adjacent columns. Dots omit nodes and their connections.
+
+The first reveal follows the forward pass with matching colours. W1 and b1 produce the hidden activations after ReLU, which replaces negative inputs by zero. W2 and b2 produce the vocabulary logits, and softmax turns those scores into probabilities. Biases are additional learned numbers, one per receiving neuron. The sketch does not supply trained numeric weights or probabilities.
+
+The second reveal counts the parameters of those same two layers. Every pair of connected neurons needs one weight. Read W1, b1, W2, b2 in that order, then add the counts. With w=3, d=4, H=8 and V=20, the total is 96+8+160+20=284. The total excludes the embedding and position tables. Change w to 10 and then 20: only W1 grows, by dH=32 weights per additional token. The slider explores architecture sizes. Values above ten describe capacity for a longer input, without inventing extra rows for our ten-token sentence. Keep the chosen w through the reveals.</script>
+  <div class="card">
+    <div class="net-wrap">
+      <div>
+        <div id="s03-net-slider" data-keep-state></div>
+        <p class="mlp-context-note" id="s03-net-context"></p>
+        <div id="s03-net"></div>
+        <div class="read-line" id="s03-net-read"></div>
+      </div>
+      <div class="mlp-panes">
+        <div class="mlp-pane" data-step="0">
+          <h3>What the dimensions mean</h3>
+          <dl class="mlp-definitions">
+            <dt class="window-input">w</dt><dd>Token slots in the input window.</dd>
+            <dt class="window-input">d</dt><dd>Numbers in each token row. Here, <strong>d = 4</strong>.</dd>
+            <dt class="mlp-hidden">H</dt><dd>Hidden neurons. We choose <strong>H = 8</strong>.</dd>
+            <dt class="window-score">V</dt><dd>Words in the vocabulary. Here, <strong>V = 20</strong>.</dd>
+          </dl>
+          <p class="window-input" id="s03-net-input-count"></p>
+          <p><span class="window-param">W₁ and W₂</span> hold the learned connection weights between the columns.</p>
+        </div>
+        <div class="mlp-pane" data-step="1" data-build="1">
+          <h3>The same forward pass as Part I</h3>
+          <div id="s03-net-forward"></div>
+          <p><span class="mlp-hidden">h = hidden activations.</span> ReLU replaces negative inputs by 0.</p>
+          <p><span class="window-score">ℓ = vocabulary scores.</span> <span class="window-prob">p = their probabilities.</span></p>
+          <p class="window-param">b₁ and b₂ are learned biases added to the weighted sums: one per hidden neuron and per output word.</p>
+        </div>
+        <div class="mlp-pane" data-step="2" data-build="2">
+          <h3>One weight per connection</h3>
+          <table class="mlp-count-table">
+            <thead><tr><th scope="col">Parameters</th><th scope="col">Count rule</th><th scope="col">Here</th></tr></thead>
+            <tbody id="s03-net-count-rows"></tbody>
+          </table>
+          <div id="s03-net-total"></div>
+          <p class="mlp-count-scope">N counts these two layers only. Embedding and position tables are additional.</p>
+          <p id="s03-net-growth"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="companion"><p>The input row has shape $1\times wd$. $W_1$ has shape $wd\times H$, $b_1$ and $h$ have shape $1\times H$, $W_2$ has shape $H\times V$, and $b_2$, $\ell$ and $p$ have shape $1\times V$. Training learns the weights and biases. The layer parameter count is $N=wdH+H+HV+V$. Doubling w doubles only the first term, not the entire model. Each additional token slot adds dH weights. This architecture sketch uses the same hidden-layer convention as Part I and does not run a trained MLP for each slider setting.</p></div>
+</div>
+
+<div class="companion" id="s03-frame-window-head" data-kicker="Optional: a head without a hidden layer">
+  <h3>A simpler linear head</h3>
+  <p>This alternative connects the concatenated input directly to the vocabulary scores. It removes the MLP's hidden layer, so its single matrix W has a different shape from either W₁ or W₂ above.</p>
   <div class="card">
     <div class="window-head-controls">
       <div id="s03-head-slider" data-keep-state></div>
@@ -4513,7 +4568,7 @@ No. The concatenated context row c_10 is now the input. Its subscript is the las
     </div>
     <p class="window-head-count" id="s03-head-count" aria-live="polite"></p>
   </div>
-  <p class="window-head-takeaway" data-build="2">Each extra token adds <span class="window-input">4 inputs</span> and <span class="window-param">4 × 20 = 80 weights</span>. <strong>The 20 outputs stay fixed.</strong></p>
+  <p class="window-head-takeaway">In this direct linear head, each extra token adds <span class="window-input">4 inputs</span> and <span class="window-param">4 × 20 = 80 weights</span>. <strong>The 20 outputs stay fixed.</strong></p>
   <div class="companion">
     <p>Click an output circle or focus it and press Enter/Space. Four of the twenty output nodes are shown, in vocabulary order; dots stand for the other sixteen. For windows wider than three tokens, the diagram shows the first two and final token groups and counts the omitted coordinates. Every retained coordinate connects to every output, including nodes hidden by dots. These are architecture sketches: changing w requires a differently shaped weight matrix. No numerical weights or probabilities are invented.</p>
     <p>In general, $c_t$ is the concatenated context ending at input position $t$. Here $t=10$, so $p$ predicts the word at position 11. With $d_{\text{model}}=4$ coordinates per token and vocabulary size $|\mathcal V|=20$, $c_t$ has shape $1\times(wd_{\text{model}})$, $W$ has shape $(wd_{\text{model}})\times|\mathcal V|$, and $b$, $\ell$ and $p$ each have shape $1\times|\mathcal V|$. The weight matrix contains $wd_{\text{model}}|\mathcal V|$ parameters, plus $|\mathcal V|$ bias parameters. Each column of W holds the weights for one vocabulary word. Softmax uses all twenty scores, not just the four drawn here.</p>
@@ -4522,7 +4577,7 @@ No. The concatenated context row c_10 is now the input. Its subscript is the las
 
 <div class="frame" id="s03-frame-boundary" data-title="Ten tokens can miss the earlier clue" data-autobuild="off">
   <script type="text/x-notes">Does a window of ten mean the first ten positions?
-It keeps the most recent ten input tokens. Our original prefix had only ten, so all fitted. These two prefixes have twenty input tokens and exactly the same final ten. Read both full sentences, then read only the blue tokens. At w=10 the baseline receives identical input in both scenes and therefore cannot tailor its prediction to river versus cheque. Water is a plausible continuation in the river scene and teller in the bank scene, not a computed or uniquely correct answer. The sentence examples illustrate visibility and are not passed to the twenty-word toy model. Widen the example's separate control to twenty: both clues enter, but the linear head doubles its weights from 800 to 1600, plus twenty biases in either case. At intermediate widths, the words Sunday/yesterday enter before the main clues, so do not claim the visible suffixes are still identical. No finite window covers every possible longer prefix.</script>
+It keeps the most recent ten input tokens. Our original prefix had only ten, so all fitted. These two prefixes have twenty input tokens and exactly the same final ten. Read both full sentences, then read only the blue tokens. At w=10 the baseline receives identical input in both scenes and therefore cannot tailor its prediction to river versus cheque. Water is a plausible continuation in the river scene and teller in the bank scene, not a computed or uniquely correct answer. The sentence examples illustrate visibility and are not passed to the twenty-word toy model. Widen the example's separate control to twenty: both clues enter. Focus on the boundary, since the preceding slide already established the parameter cost. At intermediate widths, the words Sunday/yesterday enter before the main clues, so do not claim the visible suffixes are still identical. No finite window covers every possible longer prefix.</script>
   <p class="long-intro">A window keeps the <strong>most recent w tokens</strong>. Our original prefix had 10 tokens. These have 20.</p>
   <div class="card">
     <div class="long-controls"><div id="s03-long-slider" data-keep-state></div><p class="long-scope" id="s03-long-scope"></p></div>
@@ -4531,9 +4586,9 @@ It keeps the most recent ten input tokens. Our original prefix had only ten, so 
     <p class="long-legend"><span class="window-input">Blue = available input.</span> Grey = outside the window. <span class="concat-position">Underlined orange = earlier clue.</span></p>
     <div data-build="1">
       <p class="long-result" id="s03-long-result" aria-live="polite"></p>
-      <p class="long-cost window-param" id="s03-long-cost"></p>
+      <p class="companion long-cost window-param" id="s03-long-cost"></p>
     </div>
-    <p class="long-caveat">Sentences illustrate visibility only. Costs use the earlier 4-coordinate, 20-output linear head.</p>
+    <p class="long-caveat">Sentences illustrate visibility only, not measured predictions.</p>
   </div>
   <div class="companion">
     <p>We count whitespace-separated words for these illustrative prefixes and leave punctuation out of the token count. Both contain twenty input tokens. At w=10 the input consists of positions 11 through 20: “after a long quiet afternoon turned around and watched the”. The blank is position 21, the token to predict. The first ten words still exist in the text, but this baseline never supplies their rows to the prediction head. With the same visible words in the same positions and the same fixed parameters, the head returns the same probability distribution. Drawing a random next word can differ without making that distribution depend on the unseen clue.</p>
@@ -4547,13 +4602,15 @@ It keeps the most recent ten input tokens. Our original prefix had only ten, so 
   <p>The network can respond to words inside those slots. The limit is which input rows reach it, not an inability to use the content they contain.</p>
 </div>
 
-<div class="frame" id="s03-frame-window-cost" data-title="More slots also mean more parameters" data-autobuild="off">
-  <script type="text/x-notes">What grows as we increase w?
-For this direct linear head there is one weight for every input-coordinate/output-word pair. w tokens each supply d coordinates, and each connects to V output words. Thus W has wdV weights, plus V biases. Read the toy table, then the separate hypothetical larger design: with d=128 and V=10000, ten slots need 12.8 million weights and a hundred slots need 128 million. These are calculated architecture sizes, not measurements of our saved model. The table counts the linear head only. Other learned parameters, including token embeddings, are additional. The earlier MLP puts its window-dependent growth in the first matrix wd by hidden width instead. A larger finite window still cannot guarantee access to every useful earlier clue.</script>
+<div class="companion" id="s03-frame-window-cost" data-kicker="Optional: parameter count for the linear head">
+  <h3>Counting the direct linear head</h3>
+  <p>This count belongs to the single-matrix alternative above. It differs from the two-layer MLP's count $wdH+H+HV+V$.</p>
     <div class="card">
       <div class="window-cost-formula">$$\htmlClass{window-param}{N_{\text{head}}}=\underbrace{\htmlClass{window-input}{w d}\,\htmlClass{window-score}{V}}_{\text{weights in }W}+\underbrace{\htmlClass{window-score}{V}}_{\text{biases}}$$</div>
       <p class="window-cost-scope"><span class="window-input">w = token slots, d = numbers per token.</span> <span class="window-score">V = vocabulary size.</span> Below: d = 4, V = 20. Counts cover the linear head only.</p>
+      <p>A slot holds one token row, so w slots of d numbers supply wd input numbers. Each input connects to all V outputs, giving wdV weights in W. Each output also has one learned bias, giving V biases. N<sub>head</sub> counts all those learned numbers together.</p>
       <div id="s03-ktab"></div>
+      <p>Read the first row: 10 token slots × 4 numbers = 40 inputs. Each connects to 20 output words, giving 40 × 20 = 800 weights. Add 20 biases to get 820 head parameters. The other rows change only the number of slots.</p>
       <p class="window-cost-large" data-build="1">For a larger illustrative design, d = 128 and V = 10,000:<br><span class="window-param">w = 10: 12.8 million weights. w = 100: 128 million.</span></p>
     </div>
   <p class="window-cost-takeaway" data-build="1"><strong>More slots cost more parameters.</strong> A still longer prefix can put the clue outside again.</p>
@@ -4596,43 +4653,58 @@ The previous slides showed unavailable earlier words and a matrix that grows wit
   const D = AT.d_model, V = AT.vocab.length;
   let w = 3;
 
-  /* ---------- frame 1: a fixed window feeds a fixed network (a sketch; d = d_model, h is a stated choice) ---------- */
+  /* One MLP architecture, after the input-window and concatenation explanations. */
   const H = 8;                                   // hidden width of the sketch, stated on the page
-  const PRESET = [3, 5, 100];                    // window sizes for builds 0, 1, 2
-  const net = AT.netSketch(S.querySelector('#s03-net'), { inputs: PRESET[0]*D, hidden: H, outputs: AT.vocab, collapseAbove: 8, labels:{input:i=>'(c_t)_{'+i+'}'}, inputCaption:n=>n+' input numbers', hiddenCaption: 'hidden, h = ' + H, outputCaption: V + ' vocabulary scores' });
+  let netWidth=w;
+  const net = AT.netSketch(S.querySelector('#s03-net'), { inputs: w*D, hidden: H, outputs: AT.vocab, collapseAbove: 8, labels:{input:i=>'(c_{'+(netWidth<=T?'10':'t')+'})_{'+i+'}'}, inputCaption:n=>n+' input numbers', hiddenCaption: 'H = ' + H + ' hidden', outputCaption: 'V = '+V+' scores' });
   const columns=['.col-in','.col-hid','.col-out'].map(selector=>net.svg.querySelector(selector+' .node').transform.baseVal.consolidate().matrix.e);
   const matrixLabels=net.svg.appendChild(AT.svg('g',{class:'matrix-labels'}));
   ['W₁','W₂'].forEach((name,j)=>matrixLabels.appendChild(AT.svg('text',{
     x:(columns[j]+columns[j+1])/2,y:52,class:'matrix-label','text-anchor':'middle','data-matrix':'W'+(j+1)
   },name)));
   const netRead = S.querySelector('#s03-net-read');
-  function shapeText(w){
-    const inD = w * D;
-    return 'the first layer reads $w \\cdot d_{\\text{model}} = ' + w + ' \\times ' + D + ' = ' + inD + '$ numbers, so $W_1$ is $' + inD + ' \\times ' + H + '$: ' + AT.fmt(inD * H, 0) + ' weights. $W_2$ is $' + H + ' \\times ' + V + '$ whatever $w$ is.';
-  }
-  function drawNet(w){
-    net.setInputs(w*D);
-    net.svg.setAttribute('aria-label','MLP architecture sketch: '+w+' tokens supply '+(w*D)+' scalar input nodes. W1 connects these inputs to '+H+' hidden units; W2 connects the hidden units to '+V+' vocabulary scores. W1 has '+(w*D*H)+' weights and W2 has '+(H*V)+'. Only W1 grows with the window.');
-    net.svg.dataset.w1Rows=String(w*D);net.svg.dataset.w1Cols=String(H);net.svg.dataset.w2Rows=String(H);net.svg.dataset.w2Cols=String(V);
+  function drawNet(width){
+    const n=width*D,first=n*H,second=H*V,total=first+H+second+V;
+    const c=width<=T?'c_{10}':'c_t';
+    netWidth=width;
+    net.setInputs(n);
+    net.svg.querySelectorAll('.col-in .node[data-key]').forEach(node=>{
+      const label=node.querySelector('.lab-in-box'),coordinate=Number(node.dataset.key.slice(1));
+      if(label.dataset.context!==c){AT.tex(label,'('+c+')_{'+coordinate+'}');label.dataset.context=c;}
+    });
+    net.svg.setAttribute('aria-label','MLP architecture sketch: '+width+' tokens supply '+n+' scalar input nodes. W1 connects these inputs to '+H+' hidden units; W2 connects the hidden units to '+V+' vocabulary scores. W1 has '+first+' weights and W2 has '+second+'. Only W1 grows with the window.');
+    net.svg.dataset.w1Rows=String(n);net.svg.dataset.w1Cols=String(H);net.svg.dataset.w2Rows=String(H);net.svg.dataset.w2Cols=String(V);
     net.svg.querySelectorAll('.edges line').forEach(line=>line.dataset.matrix=Number(line.getAttribute('x1'))<columns[1]?'W1':'W2');
-    netRead.innerHTML = 'Now $w=' + w + '$: <strong>' + (w * D) + ' input numbers</strong>.'
-      + '<span class="mlp-matrix" data-matrix="W1"><span class="mlp-matrix-role">Input to hidden</span><span class="mlp-matrix-shape">$W_1$: $'+(w*D)+'\\times '+H+'$ = '+(w*D*H)+' weights</span></span>'
-      + '<span class="mlp-matrix" data-matrix="W2"><span class="mlp-matrix-role">Hidden to vocabulary scores</span><span class="mlp-matrix-shape">$W_2$: $'+H+'\\times '+V+'$ = '+(H*V)+' weights</span></span>'
-      + '<span class="mlp-growth-note">Only $W_1$ grows with $w$.</span>';
-    AT.renderMath(netRead);
+    netRead.innerHTML = '<span class="mlp-matrix" data-matrix="W1"><span class="mlp-matrix-role">Input to hidden</span><span class="mlp-matrix-shape">$W_1: '+n+'\\times '+H+'$</span></span>'
+      + '<span class="mlp-matrix" data-matrix="W2"><span class="mlp-matrix-role">Hidden to vocabulary scores</span><span class="mlp-matrix-shape">$W_2: '+H+'\\times '+V+'$</span></span>';
+    const context=S.querySelector('#s03-net-context');
+    context.innerHTML=width<=T?'$c_{10}$ is the joined row for positions '+(T-width+1)+'–10. Each input circle is one coordinate.'
+      :'Capacity for '+width+' tokens. $c_t$ ends at the last input position $t$.';
+    S.querySelector('#s03-net-input-count').innerHTML='$wd='+width+'\\times '+D+'='+n+'$ input numbers.';
+    S.querySelector('#s03-net-forward').innerHTML='$$\\htmlClass{mlp-hidden}{h}=\\operatorname{ReLU}(\\htmlClass{window-input}{'+c+'}\\htmlClass{window-param}{W_1}+\\htmlClass{window-param}{b_1})$$'
+      +'$$\\htmlClass{window-score}{\\ell}=\\htmlClass{mlp-hidden}{h}\\htmlClass{window-param}{W_2}+\\htmlClass{window-param}{b_2}$$'
+      +'$$\\htmlClass{window-prob}{p}=\\operatorname{softmax}(\\htmlClass{window-score}{\\ell})$$';
+    const rows=S.querySelector('#s03-net-count-rows');
+    AT.clear(rows);
+    const wd='\\htmlClass{window-input}{wd}',dimH='\\htmlClass{mlp-hidden}{H}',dimV='\\htmlClass{window-score}{V}';
+    [['W_1','weights',wd+dimH,first],['b_1','biases',dimH,H],['W_2','weights',dimH+dimV,second],['b_2','biases',dimV,V]].forEach(([name,kind,rule,count])=>{
+      const row=AT.h('tr',{'data-parameter':name,'data-count':count});
+      row.append(AT.h('th',{scope:'row',class:'window-param'},'$'+name+'$ '+kind),AT.h('td',{},'$'+rule+'$'),AT.h('td',{},count.toLocaleString('en-US')));rows.appendChild(row);
+    });
+    const sum=S.querySelector('#s03-net-total');sum.dataset.parameters=total;sum.dataset.window=width;
+    sum.innerHTML='$$\\htmlClass{window-param}{N}='+wd+dimH+'+'+dimH+'+'+dimH+dimV+'+'+dimV+'$$'
+      +'<p class="window-param">Here: '+first.toLocaleString('en-US')+' + '+H+' + '+second+' + '+V+' = <strong>'+total.toLocaleString('en-US')+'</strong>.</p>';
+    S.querySelector('#s03-net-growth').innerHTML='One extra token adds <span class="window-param">$dH='+D+'\\times '+H+'='+D*H+'$ weights to $W_1$</span>. $W_2$ and both biases stay fixed.';
+    [netRead,context,S.querySelector('.mlp-panes')].forEach(el=>AT.renderMath(el));
   }
-  const b1 = S.querySelector('#s03-net-b1'), b2 = S.querySelector('#s03-net-b2');
-  b1.innerHTML = '<span class="k">w = ' + PRESET[1] + '</span> → ' + (PRESET[1] * D) + ' inputs, ' + (PRESET[1] * D * H) + ' first-layer weights.';
-  b2.innerHTML = '<span class="k">w = ' + PRESET[2] + '</span> → ' + (PRESET[2] * D) + ' inputs, ' + (PRESET[2] * D * H) + ' first-layer weights.';
-  AT.renderMath(b1); AT.renderMath(b2);
-  const netSlider = AT.ui.slider({ label: 'Window w', min: 1, max: PRESET[2], step: 1, value: PRESET[0], onInput: (w) => drawNet(w), into: S.querySelector('#s03-net-slider') });
-  drawNet(PRESET[0]);
-  /* present mode: builds 1 and 2 move the slider to their preset (the runtime restores it when the frame is left) */
+  const netSlider = AT.ui.slider({ label: 'Window w', min: 1, max: 100, step: 1, value: w, onInput: value=>{if(value<=T)setWindow(value);else drawNet(value);}, into: S.querySelector('#s03-net-slider') });
+  drawNet(w);
+  /* Keep the chosen architecture unchanged as definitions, equations and counts appear. */
   if (AT.present && AT.present.on) {
     const onState = (st) => {
-      if (!st.frame || st.frame.id !== 's03' || st.frame.index !== 0) return;
-      const w = PRESET[Math.min(st.build, PRESET.length - 1)];
-      if (netSlider.value() !== w) netSlider.setValue(w, true);
+      if (!st.frame || st.frame.id !== 's03') return;
+      if(S.querySelectorAll('.frame')[st.frame.index]?.id!=='s03-frame1')return;
+      S.querySelector('#s03-frame1').dataset.mlpStep=String(Math.min(st.build,2));
     };
     AT.present.on('frame', onState); AT.present.on('build', onState);
   }
@@ -4672,18 +4744,18 @@ The previous slides showed unavailable earlier words and a matrix that grows wit
     const clueCount=longCases.filter(example=>example.tokens.indexOf(example.clue)>=first).length;
     const result=S.querySelector('#s03-long-result');
     result.dataset.identical=String(same);result.dataset.cluesAvailable=clueCount;
-    result.textContent=same?'The visible words are identical. This head cannot use river or cheque to change its prediction.'
-      :clueCount===2?'Both earlier clues now enter the window. The head can use them, although that does not guarantee a correct prediction.'
+    result.textContent=same?'The visible words are identical. The MLP cannot use river or cheque to change its prediction.'
+      :clueCount===2?'Both earlier clues now enter the window. The MLP can use them, although that does not guarantee a correct prediction.'
       :'Some earlier words now enter. River needs w ≥ 15, and cheque needs w ≥ 16.';
-    const weights=longW*D*V,biases=V;
+    const weights=longW*D*H+H*V,biases=H+V;
     const cost=S.querySelector('#s03-long-cost');
     cost.dataset.weights=weights;cost.dataset.biases=biases;cost.dataset.parameters=weights+biases;
-    cost.textContent='w = '+longW+': '+longW*D+' × '+V+' = '+weights.toLocaleString('en-US')+' weights + '+biases+' biases = '+(weights+biases).toLocaleString('en-US')+' head parameters.';
+    cost.textContent='The MLP at w = '+longW+' has '+(longW*D*H).toLocaleString('en-US')+' weights in W1, '+(H*V)+' in W2 and '+biases+' biases: '+(weights+biases).toLocaleString('en-US')+' layer parameters. Embedding and position tables are additional.';
     const widths=[10,20,100];
     AT.clear(ktabHost);
     ktabHost.dataset.selectedWindow=longW;
     AT.ui.table(widths.map(width=>[width*D,width*D*V,V,width*D*V+V]),{
-      cols:['input numbers','weights in W','biases','head total'],cornerLabel:'window w',
+      cols:['inputs','weights in W','biases','head total'],cornerLabel:'window w',
       rowLabels:widths.map(String),decimals:0,highlightRow:widths.indexOf(longW),
       caption:'Linear head only: w × '+D+' × '+V+' weights plus '+V+' biases. When the long-sentence window matches a listed width, its row is highlighted.',into:ktabHost
     });
@@ -4705,21 +4777,21 @@ The previous slides showed unavailable earlier words and a matrix that grows wit
     return txt;
   }
 
-  /* Direct linear-head architecture, synchronized with the selected real token rows.
+  /* The same MLP architecture, synchronized with the selected real token rows.
      No weights are fitted here and no probabilities are attributed to this sketch. */
   function drawWindowNetwork(inside){
     const host=S.querySelector('#s03-window-network');
     const shown=inside.length<=3?inside:[inside[0],inside[1],inside[inside.length-1]];
     const omitted=inside.length-shown.length,outputs=['the','water','teller','money'];
     const centers=shown.length===1?[142]:shown.length===2?[85,215]:omitted?[66,134,230]:[66,148,230];
-    const outYs=[58,112,166,220],inputCount=inside.length*D;
+    const outYs=[58,112,166,220],hiddenYs=AT.range(H).map(i=>46+i*27),inputCount=inside.length*D;
     AT.clear(host);
     [false,true].forEach(compact=>{
-      const width=compact?560:1060,xIn=compact?180:285,xOut=compact?430:810,xLabel=compact?140:235;
-      const svg=AT.svg('svg',{viewBox:'0 0 '+width+' 280',role:'img',class:compact?'window-net-compact':'window-net-wide','data-window':w,'data-input-count':inputCount,'data-output-count':V,'data-omitted-inputs':omitted*D,'data-weight-rows':inputCount,'data-weight-cols':V,'data-weight-count':inputCount*V,'data-bias-count':V,'aria-label':'Linear-head architecture for window '+w+': '+inside.map(i=>(i+1)+' '+toks[i]).join(', ')+'. Each token supplies '+D+' scalar inputs, '+inputCount+' total. '+(omitted?omitted*D+' input nodes are represented by dots. ':'')+'The matrix has '+inputCount+' rows and '+V+' columns, '+inputCount*V+' weights, plus '+V+' output biases. No predictions are computed.'});
+      const width=compact?560:1060,xIn=compact?155:260,xHidden=compact?285:535,xOut=compact?420:810,xLabel=compact?130:215;
+      const svg=AT.svg('svg',{viewBox:'0 0 '+width+' 280',role:'img',class:compact?'window-net-compact':'window-net-wide','data-window':w,'data-input-count':inputCount,'data-hidden-count':H,'data-output-count':V,'data-omitted-inputs':omitted*D,'data-w1-rows':inputCount,'data-w1-cols':H,'data-w2-rows':H,'data-w2-cols':V,'aria-label':'MLP architecture for window '+w+': '+inside.map(i=>(i+1)+' '+toks[i]).join(', ')+'. Each token supplies '+D+' scalar inputs, '+inputCount+' total. '+(omitted?omitted*D+' input nodes are represented by dots. ':'')+'All inputs connect to '+H+' hidden neurons through W1. These connect to '+V+' vocabulary outputs through W2. No predictions are computed.'});
       const text=(x,y,value,cls,anchor='middle')=>svg.appendChild(AT.svg('text',{x,y,class:cls,'text-anchor':anchor},value));
-      text(compact?135:260,22,inputCount+' input nodes','net-caption window-input');
-      text(compact?305:548,22,'W: '+inputCount+' × '+V,'net-caption window-param');
+      text(compact?115:245,22,inputCount+' inputs','net-caption window-input');
+      text(xHidden,22,H+' hidden','net-caption mlp-hidden');
       text(compact?445:850,22,compact?V+' scores':V+' scores (4 shown)','net-caption window-score');
       const edges=svg.appendChild(AT.svg('g',{class:'connections'}));
       shown.forEach((position,k)=>{
@@ -4728,9 +4800,13 @@ The previous slides showed unavailable earlier words and a matrix that grows wit
         group.appendChild(AT.svg('path',{d:'M '+(xIn-18)+' '+(centers[k]-26)+' h -6 v 52 h 6',fill:'none',stroke:'var(--c-e)','stroke-width':1.5}));
         E0[position].forEach((value,j)=>{
           const y=centers[k]+(j-(D-1)/2)*14;
-          outputs.forEach((word,q)=>edges.appendChild(AT.svg('line',{x1:xIn+7,y1:y,x2:xOut-10,y2:outYs[q],class:'connection','data-source-position':position+1,'data-coordinate':j+1,'data-output-word':word})));
+          hiddenYs.forEach((hy,q)=>edges.appendChild(AT.svg('line',{x1:xIn+7,y1:y,x2:xHidden-9,y2:hy,class:'connection','data-matrix':'W1','data-source-position':position+1,'data-coordinate':j+1,'data-hidden-index':q+1})));
           group.appendChild(AT.svg('circle',{cx:xIn,cy:y,r:6.5,class:'input-node','data-coordinate':j+1,'data-value':value},AT.svg('title',{},'Position '+(position+1)+' '+toks[position]+', coordinate '+(j+1)+' ('+AT.axes.short.e[j]+'): '+AT.fmt(value,2))));
         });
+      });
+      hiddenYs.forEach((hy,k)=>{
+        svg.appendChild(AT.svg('circle',{cx:xHidden,cy:hy,r:9,class:'hidden-node','data-hidden-index':k+1}));
+        outputs.forEach((word,q)=>edges.appendChild(AT.svg('line',{x1:xHidden+9,y1:hy,x2:xOut-10,y2:outYs[q],class:'connection','data-matrix':'W2','data-hidden-index':k+1,'data-output-word':word})));
       });
       if(omitted)text(xLabel,185,'⋮ +'+(omitted*D)+' inputs'+(compact?'':' ('+omitted+' tokens)'),'omitted window-input','end');
       outputs.forEach((word,q)=>{
@@ -4738,12 +4814,13 @@ The previous slides showed unavailable earlier words and a matrix that grows wit
         text(xOut+20,outYs[q]+6,word,'window-score','start');
       });
       [85,139,193].forEach(y=>text(xOut,y+5,'⋮','window-score'));
-      text(xOut,270,'+ b: '+V+' biases','net-caption window-param');
+      text((xIn+xHidden)/2,270,'W₁','net-caption window-param');
+      text((xHidden+xOut)/2,270,'W₂','net-caption window-param');
       host.appendChild(svg);
     });
     const dimensions=S.querySelector('#s03-window-dimensions');
     AT.clear(dimensions);
-    dimensions.append(AT.h('span',{class:'window-input'},w+' tokens × '+D+' numbers = '+inputCount+' inputs'),AT.h('span',{class:'window-param'},'W: '+inputCount+' × '+V+' = '+(inputCount*V)+' weights'),AT.h('span',{class:'window-score'},V+' outputs stay fixed'));
+    dimensions.append(AT.h('span',{class:'window-input'},w+' tokens × '+D+' numbers = '+inputCount+' inputs'),AT.h('span',{class:'window-score'},'Eight hidden neurons and twenty vocabulary outputs. Dots omit nodes.'));
   }
 
   /* The next view traces one output column while showing the complete row
@@ -4871,7 +4948,8 @@ The previous slides showed unavailable earlier words and a matrix that grows wit
 
   function setWindow(v){
     w=v;
-    windowSlider.setValue(w,false);headSlider.setValue(w,false);
+    windowSlider.setValue(w,false);headSlider.setValue(w,false);netSlider.setValue(w,false);
+    drawNet(w);
     draw();
   }
   const windowSlider=AT.ui.slider({ label: 'Window size w', min: 1, max: T, step: 1, value: w, onInput: setWindow, into: S.querySelector('#s03-slider') });
@@ -4883,7 +4961,7 @@ The previous slides showed unavailable earlier words and a matrix that grows wit
   // otherwise retain an empty paint cache for the grid's second column when
   // the hidden table changes height under the scaled presentation stage.
   if(AT.present && AT.present.on)AT.present.on('frame',state=>{
-    if(!state.frame || state.frame.id!=='s03' || state.frame.index!==2)return;
+    if(!state.frame || state.frame.id!=='s03' || S.querySelectorAll('.frame')[state.frame.index]?.id!=='s03-frame-concatenate')return;
     requestAnimationFrame(()=>{
       const definition=S.querySelector('.concat-definition');
       definition.replaceWith(definition.cloneNode(true));

@@ -47,15 +47,15 @@ try{
   const E=await page.evaluate(()=>AT.embed(AT.sentences.river.slice(0,7)));
   assert.equal(E.length,7);assert(E.every(row=>row.length===4));
   const order=await page.locator('#s03 .frame').evaluateAll(els=>els.map(e=>e.id));
-  assert.equal(order.length,7);
-  assert.deepEqual(order.slice(-2),['s03-frame-window-cost','s03-frame-pooling-bridge'],'Show the cost before proposing pooling.');
+  assert.deepEqual(order,['s03-frame2','s03-frame-concatenate','s03-frame1','s03-frame-boundary','s03-frame-pooling-bridge'],'Explain available inputs, concatenation and one MLP, then the longer-prefix limitation and pooling.');
+  for(const id of ['s03-frame-window-head','s03-frame-window-cost'])assert.equal(await page.locator('#'+id).getAttribute('class'),'companion','Keep the alternative linear-head derivation in the article only.');
   assert.equal(await page.locator('#s03-frame-changing-clues').count(),0);
   assert.equal(await page.locator('#s03-frame3').getAttribute('class'),'companion','Keep the redundant slot recap in the article only.');
   assert(!(await page.locator('#s03').textContent()).includes('later toy query'),'Do not use query results before teaching queries.');
   assert(!(await page.locator('#s03 script').allTextContents()).join('').includes('AT.forward('));
   await page.evaluate(()=>AT.present.enter());
   for(const build of [0,1]){
-    await go('s03',7,build);
+    await go('s03',5,build);
     assert.equal(await page.locator('.pool-bridge-row[data-build="1"]').evaluate(e=>getComputedStyle(e).visibility),build?'visible':'hidden');
     const bridge=await page.evaluate(()=>({
       intro:document.querySelector('.pool-bridge-intro').textContent,
