@@ -446,7 +446,7 @@ try{
   assert(!/\b(key|value)\b/i.test(await visibleCopy('s05-frame-search')),'Establish the learner request before source roles.');
   const searchExamples=[
     {title:'Backpropagation',topic:'how gradients flow backwards',summary:'The chain rule applied layer by layer, from the loss back to every weight.'},
-    {title:'Regularisation',topic:'how models avoid overfitting',summary:'Penalise complexity so the model generalises beyond its training data.'}
+    {title:'Regularisation',topic:'how models avoid overfitting',summary:'Weight penalties and dropout help the model generalise beyond its training data.'}
   ];
   for(const [query,example]of searchExamples.entries()){
     await goSearch('s05-frame-search');

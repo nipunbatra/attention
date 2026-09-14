@@ -28,13 +28,13 @@ Standardise the sentence wording on "beside" (SPEC §1 says "near" once; use "be
 - Crucial question callout: "Where should the weights α_ij come from?" → "They should depend on what token i currently needs and what information token j contains." No Q/K/V yet.
 
 ## s05 A detour through search  (data-lit="q k v")
-- A fake search engine: fixed query "How does a neural network send gradient information backwards?"; six video cards (Backpropagation, Gradient Descent, CNNs, Transformers, Batch Normalization, Regularization). Each card shows a KEY (amber: short matching tags / a tiny key vector) and a VALUE (teal: the payload — a one-line summary the user gets back + a tiny 3-number topic vector, e.g. [gradients, optimisation, architecture]). Query shown in purple.
+- An illustrative video search: four selectable requests, taught before keys. Six fixed sources: Backpropagation, Gradient descent, CNNs, Transformers, Batch normalisation and Regularisation. Queries (purple) and keys (amber) use four broad matching topics. Values (teal) use eight specific content features in this order: chain rule, gradient step, step size, shared filters, token mixing, activation scaling, weight penalty, dropout. Define these features before the full value table. All numbers are hand-chosen strengths, not measured video coverage or probabilities. The returned explanation stays paired with the same source.
 - Similarity table with the SPEC numbers: Gradient Descent 1.4, Backpropagation 4.8, CNN 0.6, Transformers 0.2 (add Batch Normalization 0.9, Regularization 0.5 as illustrative). Hovering a row highlights the card. Equation $s_j = \vq{q}^\top \vk{k_j}$.
 - The three boxed slogans (Q: What am I looking for? K: When should you retrieve me? V: What information do I send if retrieved?) and the callout "The key is used to decide whether something matches. The value is the information we actually retrieve."
-- Optional second preset query ("How do I stop overfitting?") with a different illustrative similarity column.
+- Four query examples cover gradient flow, overfitting, CNNs and weight updates. Their controls change the request while preserving all source keys and values.
 
 ## s06 Hard → soft retrieval  (data-lit="")
-- Toggle "Hard (argmax)" vs "Soft (softmax)". Sliders for the six similarity scores (defaults = the s05 table). Softmax weights as $\va{\alpha_j}$ bars; retrieved result = $\sum_j \va{\alpha_j}\vv{v_j}$ shown as the mixed topic vector (teal) and, for hard mode, exactly $v_{j^*}$.
+- Toggle "Hard (argmax)" vs "Soft (softmax)". Sliders for the six similarity scores (defaults = query 1's s05 table). Softmax weights as $\va{\alpha_j}$ bars. The retrieved result $\sum_j \va{\alpha_j}\vv{v_j}$ keeps all eight value coordinates and their original order. Hard retrieval returns exactly $v_{j^*}$. Every weighted contribution and sum uses the unchanged s05 source values.
 - Equations $j^*=\arg\max_j q^\top k_j$, $\alpha_j=\operatorname{softmax}_j(q^\top k_j)$, boxed $\sum_j \alpha_j v_j$. Callout: "Attention does not necessarily retrieve one thing. It retrieves a weighted mixture of information."
 - Optional temperature slider to show hard as the sharp limit.
 

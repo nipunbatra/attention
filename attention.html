@@ -5737,7 +5737,7 @@ body.present #s05 .slogan{padding:26px 24px;display:block}
 body.present #s05 .slogan .big{font-size:42px;display:block;margin-bottom:20px}
 body.present #s05 .slogan .txt{font-size:28px;line-height:1.3;display:block}
 body.present #s05 .slogan .txt small{font-size:22px;margin-top:16px;line-height:1.35}
-body.present #s05 #s05-vals .dt tr>:last-child{display:none}
+body.present #s05 #s05-vals .dt .dt-comp{display:none}
 body.present #s05 .s05-pair{display:block}
 body.present #s05 .s05-pair>.prose{font-size:28px;margin:0}
 body.present #s05 #s05-return-title{font-size:32px;margin:0 0 18px}
@@ -5804,6 +5804,17 @@ body.present #s05 .concept-note{font-size:22px;line-height:1.35}
 body.present #s05 .teaching-table .dt td,body.present #s05 .teaching-table .dt th{font-size:22px;padding:9px 10px}
 body.present #s05 #s05-key-collection .dt td,body.present #s05 #s05-key-collection .dt th{padding:6px 10px}
 @media(max-width:640px){body:not(.present) #s05 .axis-definitions{grid-template-columns:1fr;gap:6px}body:not(.present) #s05 .axis-definitions dd{margin-bottom:14px}}
+/* Eight content coordinates stay readable without reusing the matching axes. */
+#s05 #s05-value-axis-guide .dt{width:100%}
+#s05 #s05-value-axis-guide tbody td:first-of-type{font-family:var(--font);text-align:left;white-space:normal}
+#s05 #s05-vals .dt,#s05 #s05-return-value .dt{min-width:960px}
+#s05 #s05-vals .is-value-peak{font-weight:750;color:var(--c-v);box-shadow:inset 0 -2px var(--c-v)}
+body.present #s05 #s05-value-axis-guide .dt th,body.present #s05 #s05-value-axis-guide .dt td{font-size:22px;padding:5px 10px}
+body.present #s05 #s05-vals .dt,body.present #s05 #s05-return-value .dt{width:100%;table-layout:fixed;min-width:0}
+body.present #s05 #s05-vals .dt th,body.present #s05 #s05-return-value .dt th{white-space:normal;font-size:20px;line-height:1.2;padding:8px 5px}
+body.present #s05 #s05-vals .dt tr>:first-child{width:180px}
+body.present #s05 #s05-return-value .dt tr>:first-child{width:80px}
+body.present #s05 #s05-vals .dt td.dt-num,body.present #s05 #s05-return-value .dt td.dt-num{min-width:0;padding:8px 5px}
 </style>
 <header class="sec-head">
   <span class="sec-num">05</span>
@@ -6008,16 +6019,27 @@ The selected query has chosen a source through its key. For gradients, Backpropa
   </div></div>
 </div>
 
-<div class="frame" data-title="The value is a different table" data-autobuild="off">
+<div class="frame" id="s05-frame-value-axes" data-title="Eight details the value can carry" data-autobuild="off">
+  <script type="text/x-notes">What specific information does the retrieved video supply?
+The key used four broad topics to match the question. The value uses eight more specific content features. Read the coordinate names and meanings before the numbers. Backpropagation has a strong chain-rule signal and a smaller gradient-step signal. Zero means no signal for that feature in this illustrative encoding. These numbers are chosen by hand on a zero-to-one scale, not measured coverage, probabilities or the literal contents of a video. Learned value coordinates need not have human-readable names. All subsequent video retrieval calculations reuse these eight coordinates in this order.</script>
+  <div class="concept-copy">
+    <p><span class="sym-k">Key: four broad matching topics.</span> <span class="sym-v">Value: eight specific content features.</span></p>
+    <div id="s05-value-axis-guide"></div>
+    <p class="concept-note" data-build="1">Hand-chosen strengths: <strong>0 = no signal, 1 = strong signal</strong>. They need not sum to 1. Learned coordinates need not have these names.</p>
+  </div>
+</div>
+
+<div class="frame" id="s05-frame-values" data-title="Each video has one eight-number value" data-autobuild="off">
   <script type="text/x-notes">
-The winner was Backpropagation. What does the searcher receive?
-Compare the headers with the key table: three value columns, not four, plus the summary. The key never leaves the matching step. Then the callout, read twice.
+Which video won for the selected request, and what does the searcher receive?
+Read the same eight content features across each video. CNNs carries shared-filter information, Transformers carries token-mixing information, and Regularisation carries weight-penalty and dropout information. These values do not affect the query-key scores. Every later retrieval uses these exact rows. The value width can differ from the matching width because we scale and add values rather than taking their dot product with the query.
 
 Timing: two minutes.
   </script>
   <div class="card">
-    <h3 class="card-title">Each video's <span class="sym sym-v">value</span>: the information returned</h3>
+    <h3 class="card-title">The same eight <span class="sym-v">content features</span> for every video</h3>
     <div id="s05-vals"></div>
+    <p class="concept-note">$\vv{v_j}$: one $1\times8$ row for video $j$. We keep these numbers and their order throughout retrieval.</p>
     <p class="companion look" id="s05-vread"></p>
   </div>
 </div>
@@ -6046,14 +6068,14 @@ The numeric value and content of that same item arrive. Keep the source pairing 
   /* illustrative search-engine data (SPEC section 5); keys chosen by hand so q·k reproduces the SPEC similarity table */
   const KEY_AXES = ['gradient flow', 'optimisation', 'architecture', 'generalisation'];
   const KEY_TOPICS = ['how gradients flow backwards', 'how weights are updated', 'how networks are structured', 'how models avoid overfitting'];
-  const VAL_AXES = ['gradients', 'optimisation', 'architecture'];
+  const VAL_AXES = ['chain rule', 'gradient step', 'step size', 'shared filters', 'token mixing', 'activation scaling', 'weight penalty', 'dropout'];
   const VIDEOS = [
-    { title: 'Backpropagation',     kind: 'backprop', duration: '12:48', k: [2.2, 0.6, 0.2, 0.0], v: [0.9, 0.3, 0.1], summary: 'The chain rule applied layer by layer, from the loss back to every weight.' },
-    { title: 'Gradient descent',    kind: 'descent', duration: '09:31', k: [0.4, 1.0, 0.0, 0.2], v: [0.4, 0.9, 0.0], summary: 'Move the weights against the gradient, one small step at a time.' },
-    { title: 'CNNs',                kind: 'cnn', duration: '14:06', k: [0.1, 0.0, 2.0, 0.1], v: [0.1, 0.1, 0.9], summary: 'Convolution layers share one filter across every image position.' },
-    { title: 'Transformers',        kind: 'transformer', duration: '18:22', k: [0.0, 0.0, 1.0, 0.0], v: [0.1, 0.2, 0.9], summary: 'Layers in which every token reads from the other tokens.' },
-    { title: 'Batch normalisation', kind: 'batchnorm', duration: '08:57', k: [0.2, 0.5, 1.0, 0.6], v: [0.3, 0.6, 0.5], summary: 'Normalise activations inside the network so training stays stable.' },
-    { title: 'Regularisation',      kind: 'regularise', duration: '11:43', k: [0.1, 0.5, 0.0, 2.0], v: [0.2, 0.7, 0.1], summary: 'Penalise complexity so the model generalises beyond its training data.' }
+    { title: 'Backpropagation',     kind: 'backprop', duration: '12:48', k: [2.2, 0.6, 0.2, 0.0], v: [1.0, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], summary: 'The chain rule applied layer by layer, from the loss back to every weight.' },
+    { title: 'Gradient descent',    kind: 'descent', duration: '09:31', k: [0.4, 1.0, 0.0, 0.2], v: [0.2, 1.0, 0.9, 0.0, 0.0, 0.0, 0.0, 0.0], summary: 'Move the weights against the gradient, one small step at a time.' },
+    { title: 'CNNs',                kind: 'cnn', duration: '14:06', k: [0.1, 0.0, 2.0, 0.1], v: [0.2, 0.1, 0.1, 1.0, 0.0, 0.0, 0.0, 0.0], summary: 'Convolution layers share one filter across every image position.' },
+    { title: 'Transformers',        kind: 'transformer', duration: '18:22', k: [0.0, 0.0, 1.0, 0.0], v: [0.2, 0.1, 0.1, 0.0, 1.0, 0.0, 0.0, 0.0], summary: 'Layers in which every token reads from the other tokens.' },
+    { title: 'Batch normalisation', kind: 'batchnorm', duration: '08:57', k: [0.2, 0.5, 1.0, 0.6], v: [0.1, 0.2, 0.2, 0.0, 0.0, 1.0, 0.0, 0.0], summary: 'Normalise activations inside the network so training stays stable.' },
+    { title: 'Regularisation',      kind: 'regularise', duration: '11:43', k: [0.1, 0.5, 0.0, 2.0], v: [0.1, 0.2, 0.1, 0.0, 0.0, 0.0, 1.0, 0.8], summary: 'Weight penalties and dropout help the model generalise beyond its training data.' }
   ];
   const QUERIES = [
     { short: 'Query 1: gradients',   label: 'How do gradients flow?', text: 'How does a neural network send gradient information backwards?', q: [2.0, 0.6, 0.2, 0.0] },
@@ -6206,12 +6228,18 @@ The numeric value and content of that same item arrive. Keep the source pairing 
   }
   drawKeyExample();
 
-  /* frame 3: value table, its own columns plus the summary text that is handed back */
+  const VAL_MEANINGS = ['Pass derivatives through composed functions.', 'Move weights against the gradient.', 'Choose how far each update moves.', 'Reuse a filter across image positions.', 'Combine information from other tokens.', 'Normalize activation magnitudes.', 'Discourage large weights in the loss.', 'Randomly drop units during training.'];
+  AT.ui.table(VAL_AXES.map((axis,c)=>[VAL_MEANINGS[c],VIDEOS[0].v[c]]), {
+    cols:[{label:'Information it carries'},{label:'Backpropagation',cls:'v'}],rowLabels:VAL_AXES.map((a,c)=>(c+1)+'. '+a),rowCls:'v',cornerLabel:'Value coordinate',decimals:1,
+    into:S.querySelector('#s05-value-axis-guide')
+  });
+  /* All retrieval stages keep the same eight content coordinates. */
   const vals = AT.ui.table(VIDEOS.map(V => V.v), { cols: VAL_AXES.map(a => ({ label: a, cls: 'v' })), rowLabels: titles, rowCls: 'v', cornerLabel: 'video', decimals: 1,
     computed: [{ label: 'summary returned', fn: (row, i) => VIDEOS[i].summary }],
-    caption: 'Compare the column headers with the key table: three value columns against four key columns, plus a text summary. Keys and values live in different spaces. The key decides whether a video matches; the value is what you get back.',
-    note: 'The value axes are illustrative, like the key axes.', into: S.querySelector('#s05-vals') });
+    caption: 'Eight specific content features, plus the returned explanation. The key uses four broad topics for matching. The value carries the information we retrieve.',
+    note: 'These are hand-chosen feature strengths, not measured video coverage or probabilities. The following calculations reuse these exact eight numbers per video.', into: S.querySelector('#s05-vals') });
   vals.computedCells.forEach(r => { r[0].classList.remove('dt-num'); r[0].classList.add('dt-text'); });
+  vals.cells.forEach((row,j)=>row.forEach((cell,c)=>cell.classList.toggle('is-value-peak',VIDEOS[j].v[c]===Math.max(...VIDEOS[j].v))));
   const vread = S.querySelector('#s05-vread'), qread = S.querySelector('#s05-qread'), kread = S.querySelector('#s05-kread');
   vals.table.querySelector('thead th.dt-comp').classList.add('s05-txt');
   vals.rowEls.forEach((tr, j) => { tr.addEventListener('mouseenter', () => hl(j, true)); tr.addEventListener('mouseleave', () => hl(j, false)); });
@@ -6230,7 +6258,7 @@ The numeric value and content of that same item arrive. Keep the source pairing 
     S.querySelector('#s05-return-summary').textContent = VIDEOS[top].summary;
     const returnHost = S.querySelector('#s05-return-value');
     AT.clear(returnHost);
-    AT.ui.vec(VIDEOS[top].v, { axes: VAL_AXES, cls: 'v', label: '\\vv{v_{' + (top + 1) + '}}', into: returnHost });
+    AT.ui.table([VIDEOS[top].v], { cols:VAL_AXES.map(label=>({label,cls:'v'})),rowCls:'v',rowLabels:['$\\vv{v_{'+(top+1)+'}}$'],cornerLabel:'value',decimals:1,into:returnHost });
     qtexts.forEach(el => { el.textContent = Q.text; });
     cardEls.forEach((card, j) => { card.classList.toggle('is-top', j === top); fillWhy(j, Q, scores[j]); });
     reorder(scores, top);
@@ -6372,6 +6400,16 @@ body.present #s06 .s06-experiment .bars .bt{height:26px}
 body.present #s06 #s06-mode-equation .katex-display{margin:10px 0 18px}
 body.present #s06 #s06-temp-bars .bars{gap:10px 16px;margin:22px 0}
 body.present #s06 #s06-temp-bars .bars .bt{height:28px}
+#s06 #s06-mix .dt,#s06 #s06-card-mix .dt{min-width:1050px}
+body.present #s06 #s06-mix .dt,body.present #s06 #s06-card-mix .dt{width:100%;table-layout:fixed;min-width:0}
+body.present #s06 #s06-mix .dt th,body.present #s06 #s06-card-mix .dt th{font-size:20px;white-space:normal;line-height:1.2;padding:8px 5px}
+body.present #s06 #s06-mix .dt tr>:first-child{width:170px}
+body.present #s06 #s06-mix .dt .dt-lead{width:72px}
+body.present #s06 #s06-mix .dt thead th:nth-child(8){width:132px}
+body.present #s06 .s06-weight.is-pending{display:none}
+body.present #s06 #s06-mix .dt thead th:not(:first-child):not(.dt-lead){color:var(--c-v)}
+body.present #s06 #s06-card-mix .dt tr>:first-child{width:140px}
+body.present #s06 #s06-mix .dt td.dt-num,body.present #s06 #s06-card-mix .dt td.dt-num{min-width:0;padding:8px 5px}
 </style>
 <header class="sec-head">
   <span class="sec-num">06</span>
@@ -6434,14 +6472,16 @@ In soft mode, exponentiate each score and divide by the total. Switch to hard mo
 The value from the same item j. First reveal the alpha column, then the weighted coordinates, then the sum. This changes the returned information, not the stored video records.</script>
 <div class="card">
   <div id="s06-mix"></div>
+  <p class="look">Same eight value coordinates. Displayed numbers are rounded. The sum uses unrounded weights.</p>
 </div>
 </div>
 
 <div class="frame" id="s06-frame-message" data-title="The result is information for this query" data-autobuild="off">
 <script type="text/x-notes">What do the coordinates of the returned row mean?
-They use the value axes: gradients, optimisation and architecture. This is not a distribution over items. It is the weighted information collected for the current query.</script>
+They keep the same eight content axes and order as the video values. Point to chain rule, gradient step and step size. A mixture combines their feature strengths without changing the coordinate meanings. This is not a distribution over items or a literal blend of English explanations.</script>
 <div class="card">
   <div class="card-mix" id="s06-card-mix"></div>
+  <p class="look">One $1\times8$ row, on the same eight content axes.</p>
   <p class="look" id="s06-mread"></p>
   <p class="verdict" id="s06-verdict"></p>
 </div>
@@ -6491,14 +6531,14 @@ Its weight approaches one. If top scores tie, those top items keep sharing the w
   const S = document.getElementById('s06');
   /* the same illustrative search-engine items as section 05 */
   const KEY_AXES = ['gradient flow', 'optimisation', 'architecture', 'generalisation'];
-  const VAL_AXES = ['gradients', 'optimisation', 'architecture'];
+  const VAL_AXES = ['chain rule', 'gradient step', 'step size', 'shared filters', 'token mixing', 'activation scaling', 'weight penalty', 'dropout'];
   const VIDEOS = [
-    { title: 'Backpropagation',     kind: 'backprop', duration: '12:48', k: [2.2, 0.6, 0.2, 0.0], v: [0.9, 0.3, 0.1], summary: 'The chain rule applied layer by layer, from the loss back to every weight.' },
-    { title: 'Gradient descent',    kind: 'descent', duration: '09:31', k: [0.4, 1.0, 0.0, 0.2], v: [0.4, 0.9, 0.0], summary: 'Move the weights against the gradient, one small step at a time.' },
-    { title: 'CNNs',                kind: 'cnn', duration: '14:06', k: [0.1, 0.0, 2.0, 0.1], v: [0.1, 0.1, 0.9], summary: 'Convolution layers share one filter across every image position.' },
-    { title: 'Transformers',        kind: 'transformer', duration: '18:22', k: [0.0, 0.0, 1.0, 0.0], v: [0.1, 0.2, 0.9], summary: 'Layers in which every token reads from the other tokens.' },
-    { title: 'Batch normalisation', kind: 'batchnorm', duration: '08:57', k: [0.2, 0.5, 1.0, 0.6], v: [0.3, 0.6, 0.5], summary: 'Normalise activations inside the network so training stays stable.' },
-    { title: 'Regularisation',      kind: 'regularise', duration: '11:43', k: [0.1, 0.5, 0.0, 2.0], v: [0.2, 0.7, 0.1], summary: 'Penalise complexity so the model generalises beyond its training data.' }
+    { title: 'Backpropagation',     kind: 'backprop', duration: '12:48', k: [2.2, 0.6, 0.2, 0.0], v: [1.0, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], summary: 'The chain rule applied layer by layer, from the loss back to every weight.' },
+    { title: 'Gradient descent',    kind: 'descent', duration: '09:31', k: [0.4, 1.0, 0.0, 0.2], v: [0.2, 1.0, 0.9, 0.0, 0.0, 0.0, 0.0, 0.0], summary: 'Move the weights against the gradient, one small step at a time.' },
+    { title: 'CNNs',                kind: 'cnn', duration: '14:06', k: [0.1, 0.0, 2.0, 0.1], v: [0.2, 0.1, 0.1, 1.0, 0.0, 0.0, 0.0, 0.0], summary: 'Convolution layers share one filter across every image position.' },
+    { title: 'Transformers',        kind: 'transformer', duration: '18:22', k: [0.0, 0.0, 1.0, 0.0], v: [0.2, 0.1, 0.1, 0.0, 1.0, 0.0, 0.0, 0.0], summary: 'Layers in which every token reads from the other tokens.' },
+    { title: 'Batch normalisation', kind: 'batchnorm', duration: '08:57', k: [0.2, 0.5, 1.0, 0.6], v: [0.1, 0.2, 0.2, 0.0, 0.0, 1.0, 0.0, 0.0], summary: 'Normalise activations inside the network so training stays stable.' },
+    { title: 'Regularisation',      kind: 'regularise', duration: '11:43', k: [0.1, 0.5, 0.0, 2.0], v: [0.1, 0.2, 0.1, 0.0, 0.0, 0.0, 1.0, 0.8], summary: 'Weight penalties and dropout help the model generalise beyond its training data.' }
   ];
   const Q = [2.0, 0.6, 0.2, 0.0];
   const titles = VIDEOS.map(V => V.title);
@@ -6552,7 +6592,7 @@ Its weight approaches one. If top scores tie, those top items keep sharing the w
       AT.h('p', { class: 'result-summary' }, V.summary));
     resultCards.push(card); resultBadges.push(badge); S.querySelector('#s06-cards').appendChild(card);
   });
-  const resultMix = AT.ui.vec(AT.zeros(VAL_AXES.length), { cls: 'm', axes: VAL_AXES, label: '\\sum_j \\va{\\alpha_j}\\,\\vv{v_j}', decimals: 3, into: S.querySelector('#s06-card-mix') });
+  const resultMix = AT.ui.table([AT.zeros(VAL_AXES.length)], { cols:VAL_AXES.map(label=>({label,cls:'v'})),rowCls:'m',rowLabels:['$\\sum_j \\va{\\alpha_j}\\,\\vv{v_j}$'],cornerLabel:'returned row',decimals:3,into:S.querySelector('#s06-card-mix') });
 
   /* score table: query row, key rows, and a score column fed by the sliders */
   const dot = AT.ui.table([Q].concat(VIDEOS.map(V => V.k)), { cols: KEY_AXES, rowLabels: ['the question'].concat(titles), rowCls: ['q'].concat(titles.map(() => 'k')), highlightRow: 0,
@@ -6614,7 +6654,7 @@ Its weight approaches one. If top scores tie, those top items keep sharing the w
   function readMix(v){
     const on = v.map((x, c) => ({ x: x, c: c })).filter(o => o.x >= 0.15).sort((a, b) => b.x - a.x);
     if (!on.length) return 'nothing above 0.15';
-    return 'mainly ' + VAL_AXES[on[0].c] + ' (' + AT.fmt(on[0].x, 2) + ')' + (on.length > 1 ? ', then ' + on.slice(1).map(o => VAL_AXES[o.c] + ' (' + AT.fmt(o.x, 2) + ')').join(', ') : '');
+    return 'mainly ' + VAL_AXES[on[0].c] + ' (' + AT.fmt(on[0].x, 3) + ')' + (on.length > 1 ? ', then ' + on.slice(1,3).map(o => VAL_AXES[o.c] + ' (' + AT.fmt(o.x, 3) + ')').join(', ') : '');
   }
 
   function draw(){
@@ -6638,7 +6678,7 @@ Its weight approaches one. If top scores tie, those top items keep sharing the w
       resultBadges[j].textContent = 'α ' + AT.fmt(alpha[j], 3);
       resultBadges[j].setAttribute('aria-label', 'attention weight ' + AT.fmt(alpha[j], 3));
     });
-    resultMix.update(mix.sum);
+    resultMix.update([mix.sum]);
     mix.setHighlightRow(soft ? -1 : jstar);
     dot.rowEls.forEach((tr, j) => tr.classList.toggle('s06-present-winner', !soft && j === jstar + 1));
     mix.cells.forEach((row, j) => row.forEach((td, c) => {
@@ -6730,6 +6770,7 @@ body.present #s07 .calc-rounding{display:none}
 </header>
 
 <div class="companion" data-kicker="For self-study">
+  <p>The video example keeps eight content coordinates throughout retrieval. For the sentence arithmetic, we return to our original smaller model: three query/key coordinates and two value coordinates. The matching and mixing rules stay the same.</p>
   <p>Bring the search roles back to our sentence. Each token gets a key and a value, computed from its own representation using two shared matrices. The token gathering context gets a query from a third matrix. Its query asks for information, each source's key describes when it can help, and its value carries what it will send.</p>
   <p>Read the column headers before the numbers: every coordinate has a name in this toy. Choose a different query token and watch which source rows remain available. Open a record to compare its rows. Query, key and value are three linear views of the same $\ve{e}$.</p>
 </div>

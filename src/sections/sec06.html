@@ -92,6 +92,16 @@ body.present #s06 .s06-experiment .bars .bt{height:26px}
 body.present #s06 #s06-mode-equation .katex-display{margin:10px 0 18px}
 body.present #s06 #s06-temp-bars .bars{gap:10px 16px;margin:22px 0}
 body.present #s06 #s06-temp-bars .bars .bt{height:28px}
+#s06 #s06-mix .dt,#s06 #s06-card-mix .dt{min-width:1050px}
+body.present #s06 #s06-mix .dt,body.present #s06 #s06-card-mix .dt{width:100%;table-layout:fixed;min-width:0}
+body.present #s06 #s06-mix .dt th,body.present #s06 #s06-card-mix .dt th{font-size:20px;white-space:normal;line-height:1.2;padding:8px 5px}
+body.present #s06 #s06-mix .dt tr>:first-child{width:170px}
+body.present #s06 #s06-mix .dt .dt-lead{width:72px}
+body.present #s06 #s06-mix .dt thead th:nth-child(8){width:132px}
+body.present #s06 .s06-weight.is-pending{display:none}
+body.present #s06 #s06-mix .dt thead th:not(:first-child):not(.dt-lead){color:var(--c-v)}
+body.present #s06 #s06-card-mix .dt tr>:first-child{width:140px}
+body.present #s06 #s06-mix .dt td.dt-num,body.present #s06 #s06-card-mix .dt td.dt-num{min-width:0;padding:8px 5px}
 </style>
 <header class="sec-head">
   <span class="sec-num">06</span>
@@ -154,14 +164,16 @@ In soft mode, exponentiate each score and divide by the total. Switch to hard mo
 The value from the same item j. First reveal the alpha column, then the weighted coordinates, then the sum. This changes the returned information, not the stored video records.</script>
 <div class="card">
   <div id="s06-mix"></div>
+  <p class="look">Same eight value coordinates. Displayed numbers are rounded. The sum uses unrounded weights.</p>
 </div>
 </div>
 
 <div class="frame" id="s06-frame-message" data-title="The result is information for this query" data-autobuild="off">
 <script type="text/x-notes">What do the coordinates of the returned row mean?
-They use the value axes: gradients, optimisation and architecture. This is not a distribution over items. It is the weighted information collected for the current query.</script>
+They keep the same eight content axes and order as the video values. Point to chain rule, gradient step and step size. A mixture combines their feature strengths without changing the coordinate meanings. This is not a distribution over items or a literal blend of English explanations.</script>
 <div class="card">
   <div class="card-mix" id="s06-card-mix"></div>
+  <p class="look">One $1\times8$ row, on the same eight content axes.</p>
   <p class="look" id="s06-mread"></p>
   <p class="verdict" id="s06-verdict"></p>
 </div>
@@ -211,14 +223,14 @@ Its weight approaches one. If top scores tie, those top items keep sharing the w
   const S = document.getElementById('s06');
   /* the same illustrative search-engine items as section 05 */
   const KEY_AXES = ['gradient flow', 'optimisation', 'architecture', 'generalisation'];
-  const VAL_AXES = ['gradients', 'optimisation', 'architecture'];
+  const VAL_AXES = ['chain rule', 'gradient step', 'step size', 'shared filters', 'token mixing', 'activation scaling', 'weight penalty', 'dropout'];
   const VIDEOS = [
-    { title: 'Backpropagation',     kind: 'backprop', duration: '12:48', k: [2.2, 0.6, 0.2, 0.0], v: [0.9, 0.3, 0.1], summary: 'The chain rule applied layer by layer, from the loss back to every weight.' },
-    { title: 'Gradient descent',    kind: 'descent', duration: '09:31', k: [0.4, 1.0, 0.0, 0.2], v: [0.4, 0.9, 0.0], summary: 'Move the weights against the gradient, one small step at a time.' },
-    { title: 'CNNs',                kind: 'cnn', duration: '14:06', k: [0.1, 0.0, 2.0, 0.1], v: [0.1, 0.1, 0.9], summary: 'Convolution layers share one filter across every image position.' },
-    { title: 'Transformers',        kind: 'transformer', duration: '18:22', k: [0.0, 0.0, 1.0, 0.0], v: [0.1, 0.2, 0.9], summary: 'Layers in which every token reads from the other tokens.' },
-    { title: 'Batch normalisation', kind: 'batchnorm', duration: '08:57', k: [0.2, 0.5, 1.0, 0.6], v: [0.3, 0.6, 0.5], summary: 'Normalise activations inside the network so training stays stable.' },
-    { title: 'Regularisation',      kind: 'regularise', duration: '11:43', k: [0.1, 0.5, 0.0, 2.0], v: [0.2, 0.7, 0.1], summary: 'Penalise complexity so the model generalises beyond its training data.' }
+    { title: 'Backpropagation',     kind: 'backprop', duration: '12:48', k: [2.2, 0.6, 0.2, 0.0], v: [1.0, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], summary: 'The chain rule applied layer by layer, from the loss back to every weight.' },
+    { title: 'Gradient descent',    kind: 'descent', duration: '09:31', k: [0.4, 1.0, 0.0, 0.2], v: [0.2, 1.0, 0.9, 0.0, 0.0, 0.0, 0.0, 0.0], summary: 'Move the weights against the gradient, one small step at a time.' },
+    { title: 'CNNs',                kind: 'cnn', duration: '14:06', k: [0.1, 0.0, 2.0, 0.1], v: [0.2, 0.1, 0.1, 1.0, 0.0, 0.0, 0.0, 0.0], summary: 'Convolution layers share one filter across every image position.' },
+    { title: 'Transformers',        kind: 'transformer', duration: '18:22', k: [0.0, 0.0, 1.0, 0.0], v: [0.2, 0.1, 0.1, 0.0, 1.0, 0.0, 0.0, 0.0], summary: 'Layers in which every token reads from the other tokens.' },
+    { title: 'Batch normalisation', kind: 'batchnorm', duration: '08:57', k: [0.2, 0.5, 1.0, 0.6], v: [0.1, 0.2, 0.2, 0.0, 0.0, 1.0, 0.0, 0.0], summary: 'Normalise activations inside the network so training stays stable.' },
+    { title: 'Regularisation',      kind: 'regularise', duration: '11:43', k: [0.1, 0.5, 0.0, 2.0], v: [0.1, 0.2, 0.1, 0.0, 0.0, 0.0, 1.0, 0.8], summary: 'Weight penalties and dropout help the model generalise beyond its training data.' }
   ];
   const Q = [2.0, 0.6, 0.2, 0.0];
   const titles = VIDEOS.map(V => V.title);
@@ -272,7 +284,7 @@ Its weight approaches one. If top scores tie, those top items keep sharing the w
       AT.h('p', { class: 'result-summary' }, V.summary));
     resultCards.push(card); resultBadges.push(badge); S.querySelector('#s06-cards').appendChild(card);
   });
-  const resultMix = AT.ui.vec(AT.zeros(VAL_AXES.length), { cls: 'm', axes: VAL_AXES, label: '\\sum_j \\va{\\alpha_j}\\,\\vv{v_j}', decimals: 3, into: S.querySelector('#s06-card-mix') });
+  const resultMix = AT.ui.table([AT.zeros(VAL_AXES.length)], { cols:VAL_AXES.map(label=>({label,cls:'v'})),rowCls:'m',rowLabels:['$\\sum_j \\va{\\alpha_j}\\,\\vv{v_j}$'],cornerLabel:'returned row',decimals:3,into:S.querySelector('#s06-card-mix') });
 
   /* score table: query row, key rows, and a score column fed by the sliders */
   const dot = AT.ui.table([Q].concat(VIDEOS.map(V => V.k)), { cols: KEY_AXES, rowLabels: ['the question'].concat(titles), rowCls: ['q'].concat(titles.map(() => 'k')), highlightRow: 0,
@@ -334,7 +346,7 @@ Its weight approaches one. If top scores tie, those top items keep sharing the w
   function readMix(v){
     const on = v.map((x, c) => ({ x: x, c: c })).filter(o => o.x >= 0.15).sort((a, b) => b.x - a.x);
     if (!on.length) return 'nothing above 0.15';
-    return 'mainly ' + VAL_AXES[on[0].c] + ' (' + AT.fmt(on[0].x, 2) + ')' + (on.length > 1 ? ', then ' + on.slice(1).map(o => VAL_AXES[o.c] + ' (' + AT.fmt(o.x, 2) + ')').join(', ') : '');
+    return 'mainly ' + VAL_AXES[on[0].c] + ' (' + AT.fmt(on[0].x, 3) + ')' + (on.length > 1 ? ', then ' + on.slice(1,3).map(o => VAL_AXES[o.c] + ' (' + AT.fmt(o.x, 3) + ')').join(', ') : '');
   }
 
   function draw(){
@@ -358,7 +370,7 @@ Its weight approaches one. If top scores tie, those top items keep sharing the w
       resultBadges[j].textContent = 'α ' + AT.fmt(alpha[j], 3);
       resultBadges[j].setAttribute('aria-label', 'attention weight ' + AT.fmt(alpha[j], 3));
     });
-    resultMix.update(mix.sum);
+    resultMix.update([mix.sum]);
     mix.setHighlightRow(soft ? -1 : jstar);
     dot.rowEls.forEach((tr, j) => tr.classList.toggle('s06-present-winner', !soft && j === jstar + 1));
     mix.cells.forEach((row, j) => row.forEach((td, c) => {
