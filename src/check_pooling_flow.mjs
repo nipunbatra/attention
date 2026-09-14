@@ -400,14 +400,17 @@ try{
     const copy=root.cloneNode(true);copy.querySelectorAll('script,.companion').forEach(e=>e.remove());return copy.textContent;
   });
   assert(!(await visibleCopy('s04-frame-weight-question')).includes('Attention is a way to build that function'));
-  for(const id of searchOrder.slice(0,3))assert(!/\b(query|keys?|values?)\b/i.test(await visibleCopy(id)),'Introduce the mechanism and purpose before retrieval jargon.');
+  for(const id of searchOrder.slice(0,2))assert(!/\b(query|keys?|values?)\b/i.test(await visibleCopy(id)),'Introduce the mechanism and purpose before retrieval jargon.');
   const definition=await visibleCopy('s05-frame-attention-idea');
   assert(definition.includes('bank at position 7')&&definition.includes('river'));
   assert(definition.includes('Higher scores get larger shares')&&definition.includes('add up to 1')&&definition.includes('fixed-width context summary'));
   assert(definition.includes('A trained model')&&definition.includes('A new input can produce different weights'));
   const detour=await visibleCopy('s05-frame-retrieval-detour');
-  assert(detour.includes('Information retrieval')&&detour.includes('finding useful information in a collection'));
-  assert(detour.includes("one video's information")&&detour.includes('mix information from several sources')&&detour.includes('return to our sentence'));
+  assert(detour.includes('Information retrieval')&&/finding useful information in a collection/i.test(detour));
+  assert(detour.includes('A short detour')&&detour.includes('determine the weights')&&detour.includes('return to bank and river'));
+  assert.deepEqual(await page.locator('.retrieval-roles dt').allTextContents(),['Query','Key','Value']);
+  assert.deepEqual(await page.locator('.retrieval-roles dd').allTextContents(),['What am I looking for?','A description of each source, used for matching.','The information that source returns.']);
+  assert.equal(await page.locator('#s05-frame-retrieval-detour .katex-error').count(),0);
   const goSearch=async(id,build=0)=>{
     const index=searchOrder.indexOf(id);assert(index>=0);await go('s05',index+1,build);
   };
@@ -434,6 +437,9 @@ try{
   introColours.forEach(pair=>assert.equal(...pair,'Keep the pooling colour meanings in the attention introduction.'));
   await page.evaluate(()=>AT.present.next());await page.waitForTimeout(100);
   assert.equal(await page.locator('#s05 .frame.is-live').getAttribute('id'),'s05-frame-retrieval-detour');
+  await goSearch('s05-frame-retrieval-detour');
+  assert.equal(await page.locator('#s05>.sec-head').evaluate(e=>getComputedStyle(e).display),'none','The detour is a visible section break, not a duplicate heading.');
+  assert((await page.locator('.retrieval-intro h3').evaluate(e=>parseFloat(getComputedStyle(e).fontSize)))>=64);
   await page.screenshot({path:path.join(shots,'retrieval-detour.png')});
   await page.evaluate(()=>AT.present.next());await page.waitForTimeout(100);
   assert.equal(await page.locator('#s05 .frame.is-live').getAttribute('id'),'s05-frame-search');
@@ -443,6 +449,7 @@ try{
   await goSearch('s05-frame-return');
   assert((await page.locator('#s05-return-title').textContent()).includes('Regularisation'),'Continuation frames retain the chosen query and source/value pairing.');
   await goSearch('s05-frame-attention-break');
+  await goSearch('s05-frame-retrieval-detour');
   await goSearch('s05-frame-results');
   assert.equal(await page.locator('#s05-vgrid .is-top .vt').textContent(),'Regularisation','Visiting the new introduction does not masquerade as entering the search demo.');
   await goSearch('s05-frame-search');
@@ -451,13 +458,40 @@ try{
     document.querySelector('#s05').dataset.title,document.querySelector('#s05 .sec-head h2').textContent,
     window.__PART__.chain.find(x=>x.section==='s05').label,window.__PART__.sections.find(x=>x.id==='s05').title]);
   assert(sectionLabels.every(t=>t==='Attention and the search analogy'),'Navigation and article heading match the broader section contents.');
+  const recordsOrder=await page.locator('#s07 .frame').evaluateAll(els=>els.map(e=>e.id));
+  assert.deepEqual(recordsOrder.slice(0,2),['s07-frame-return-to-sentence','s07-frame1'],'Return to the concrete sentence before projection formulas.');
+  const temperatureFrame=await page.locator('#s06-frame-temperature').evaluate(e=>[...e.closest('.sec').querySelectorAll('.frame')].indexOf(e)+1);
+  await go('s06',temperatureFrame,1);
+  await page.evaluate(()=>AT.present.next());await page.waitForTimeout(100);
+  assert.equal(await page.locator('#s07 .frame.is-live').getAttribute('id'),'s07-frame-return-to-sentence','The retrieval example ends with an explicit return transition.');
+  const returnCopy=await visibleCopy('s07-frame-return-to-sentence');
+  assert(returnCopy.includes('bank, position 7')&&returnCopy.includes('river, position 6')&&returnCopy.includes('tokens, not videos'));
+  assert(returnCopy.includes('every available')&&returnCopy.includes('normalize')&&returnCopy.includes("river's share for bank"));
+  assert.equal((await page.locator('.return-prefix').textContent()).trim(),'The fisherman sat beside the river bank');
+  assert.equal(await page.locator('#s07-frame-return-to-sentence annotation').evaluateAll(els=>els.some(e=>/W_[QKV]/.test(e.textContent))),false,'Defer projection equations to the next frame.');
+  for(const build of [0,1,0,1]){
+    await go('s07',1,build);
+    assert.equal(await page.locator('#s07>.sec-head').evaluate(e=>getComputedStyle(e).display),'none');
+    assert.equal(await page.locator('.return-roles').evaluate(e=>getComputedStyle(e).visibility),build?'visible':'hidden');
+    await page.waitForTimeout(250); // Let the reveal opacity settle before inspecting subscript pixels.
+    await page.screenshot({path:path.join(shots,`return-to-sentence-${build}.png`)});
+  }
+  const retrievalColours=await page.evaluate(()=>{
+    const c=s=>getComputedStyle(document.querySelector(s)).color;
+    return ['q','k','v'].map(role=>[c('.retrieval-roles .sym-'+role),c('.return-roles .sym-'+role),c('.return-roles .katex-html .m-'+role),c('#s05-frame-three-jobs .obj-'+role+' .big')]);
+  });
+  retrievalColours.forEach(colours=>colours.slice(1).forEach(c=>assert.equal(c,colours[0],'Match each retrieval role across text, math and the sentence example.')));
+  assert.equal(await page.locator('.retrieval-route .m-a').first().evaluate(e=>getComputedStyle(e).color),await page.locator('.return-result .m-a').first().evaluate(e=>getComputedStyle(e).color));
+  await page.evaluate(()=>AT.present.next());await page.waitForTimeout(100);
+  assert.equal(await page.locator('#s07 .frame.is-live').getAttribute('id'),'s07-frame1');
+  assert.notEqual(await page.locator('#s07>.sec-head').evaluate(e=>getComputedStyle(e).display),'none');
   assert.equal(await page.evaluate(()=>JSON.stringify({model:AT.model,probs:AT.forward(AT.sentences.river).probs})),original,'Pooling controls never update model parameters.');
   await page.evaluate(()=>AT.present.exit());
   await page.setViewportSize({width:390,height:844});
   assert.equal(await page.locator('.summary-break h3').evaluate(e=>getComputedStyle(e).display),'none','In the article, use the section heading instead of repeating the same divider title.');
   assert.notEqual(await page.locator('#s04>.sec-head').evaluate(e=>getComputedStyle(e).display),'none');
   await page.locator('#s04-presets [data-preset="equal"]').click();
-  for(const [id,name]of [['s04-frame-summary-break','phone-summary-break'],['s04-frame-pooling-bridge','phone-bridge'],['s04-frame-prefix','phone-prefix'],['s04-frame-mean','phone-mean'],['s04-frame-weight-motivation','phone-weight-motivation'],['s04-frame-weight-rule','phone-alpha-example'],['s04-frame-weight-sum','phone-alpha-sum'],['s04-frame-choose','phone-weighted-prediction'],['s04-frame-weighted-table','phone-contributions'],['s04-frame-preset-predictions','phone-preset-predictions'],['s05-frame-attention-break','phone-attention-break'],['s05-frame-attention-idea','phone-attention-idea'],['s05-frame-retrieval-detour','phone-retrieval-detour']]){
+  for(const [id,name]of [['s04-frame-summary-break','phone-summary-break'],['s04-frame-pooling-bridge','phone-bridge'],['s04-frame-prefix','phone-prefix'],['s04-frame-mean','phone-mean'],['s04-frame-weight-motivation','phone-weight-motivation'],['s04-frame-weight-rule','phone-alpha-example'],['s04-frame-weight-sum','phone-alpha-sum'],['s04-frame-choose','phone-weighted-prediction'],['s04-frame-weighted-table','phone-contributions'],['s04-frame-preset-predictions','phone-preset-predictions'],['s05-frame-attention-break','phone-attention-break'],['s05-frame-attention-idea','phone-attention-idea'],['s05-frame-retrieval-detour','phone-retrieval-detour'],['s07-frame-return-to-sentence','phone-return-to-sentence']]){
     await page.locator('#'+id).scrollIntoViewIfNeeded();
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No phone document overflow.');
     await page.screenshot({path:path.join(shots,name+'.png')});
@@ -478,5 +512,5 @@ try{
   assert.equal(await page.locator('#s04-w-tab tbody td[data-k]').count(),28);
   for(const control of [positionSlider,slider])assert((await control.boundingBox()).width>160,'Both current-position sliders have usable phone tracks.');
   assert.deepEqual(errors,[]);
-  console.log(`PASS: pooling flow, 7 prefix positions, alpha arithmetic, original/product/sum reveals for 4 synchronized presets, independent 20-word head predictions, four-case comparison, ties/custom/zero-weight states, colour/reveal/state retention, attention-before-retrieval flow and phone layout. Screenshots: ${shots}`);
+  console.log(`PASS: pooling flow, 7 prefix positions, alpha arithmetic, original/product/sum reveals for 4 synchronized presets, independent 20-word head predictions, four-case comparison, ties/custom/zero-weight states, colour/reveal/state retention, attention/retrieval detour/return-to-sentence flow and phone layout. Screenshots: ${shots}`);
 }finally{await browser.close();}

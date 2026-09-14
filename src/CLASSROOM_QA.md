@@ -1,5 +1,12 @@
 # Classroom release checks
 
+## 2026-09-14: mark the retrieval detour and the return to tokens
+
+- Turned the existing information-retrieval introduction into a prominent section break immediately before the search box. It previews query, key and value in their established colours, explains the connection to the alpha weights, and promises a return to bank and river. This replaces the brief introduction rather than adding a second detour slide.
+- Added one return transition after soft retrieval, before the token-projection equations. The seven-token prefix appears first; a reveal maps bank's query q7 and river's key k6/value v6 to the search roles. The text explicitly compares against every available key before normalization and identifies alpha7,6 as river's share for bank, applied to its value. Teaching notes distinguish gathering context for the known bank token from predicting it, and the analogy from an actual external search.
+- The presentation skill guided the clear topic boundaries, concrete-example-first reveal, and matching colours across role names, math and explanations. Visually inspected the detour and both return builds on desktop and the phone article, including settled mathematical subscripts. Updated the table-audit screenshot anchor for the shifted Section 7 frame.
+- Regression verifies the new natural transitions, role definitions and colours, reveal order, search-query retention/reset behaviour, phone bounds and unchanged model outputs. All 309 presentation states / 542 formulas, 132 controls, eight independent live/reference cases (7,980 finite values, max error 8.88e-16), and 390px article QA pass. The numerical examples, model, Part I, shared runtime, dependencies and PDFs are unchanged.
+
 ## 2026-09-14: original rows before weighted rows and their sum
 
 - Reworked the existing weighted-row worksheet into three progressive stages on the same frame. Original input rows and their normalized shares appear first. The first reveal adds aligned alpha-times-input columns while leaving the originals visible. The second reveal adds m7 directly below the product columns. The four preset controls update every stage together, and all original rows remain unchanged, including when their share is zero.

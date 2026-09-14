@@ -114,7 +114,7 @@ for (const file of files) {
   }[name] || [];
   const regressionFrames = {
     'part1.html': ['#s04/2/0:', '#s11/2/0:', '#s16/3/0:'],
-    'attention.html': ['#s07/3/0:', '#s11/3/0:', '#s14/2/1:', '#s17/2/0:'],
+    'attention.html': ['#s07/4/0:', '#s11/3/0:', '#s14/2/1:', '#s17/2/0:'],
     'part3.html': ['#s03/1/0:', '#s12/1/0:', '#s14/2/1:']
   }[name] || [];
   const context = await browser.newContext({viewport:{width:1280,height:720}});

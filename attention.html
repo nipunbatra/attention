@@ -5756,8 +5756,15 @@ body.present #s05 #s05-return-summary{font-size:28px;line-height:1.4;margin:0 0 
 #s05 .attention-steps strong{font-weight:650}
 #s05 .attention-steps li>span{display:block;margin-top:3px}
 #s05 .attention-learning{border-top:1px solid var(--line);padding-top:16px;color:var(--ink-2)}
-#s05 .retrieval-route{border-top:1px solid var(--line);padding-top:22px;margin-top:28px}
-body.present #s05:has(#s05-frame-attention-break.is-live)>.sec-head{display:none}
+#s05 .retrieval-intro h3{font-size:38px;line-height:1.12;letter-spacing:-.02em;margin:0 0 18px}
+#s05 .retrieval-intro .detour-kicker{font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);font-weight:650;margin:0 0 12px}
+#s05 .retrieval-roles{display:grid;grid-template-columns:90px minmax(0,1fr);gap:12px 18px;margin:24px 0}
+#s05 .retrieval-roles dt{font-weight:650}
+#s05 .retrieval-roles dd{margin:0}
+#s05 .retrieval-route{border-top:1px solid var(--line);padding-top:18px;margin-top:24px}
+#s05 .retrieval-route p{margin:0}
+#s05 .retrieval-route p+p{margin-top:6px}
+body.present #s05:has(#s05-frame-attention-break.is-live,#s05-frame-retrieval-detour.is-live)>.sec-head{display:none}
 body.present #s05 .attention-break h3{font-size:80px;margin-bottom:26px}
 body.present #s05 .attention-break p{font-size:34px}
 body.present #s05 .attention-break .attention-next{font-size:26px;margin-top:40px}
@@ -5765,7 +5772,10 @@ body.present #s05 .attention-intro{font-size:24px;line-height:1.35}
 body.present #s05 .attention-steps{margin:22px 0}
 body.present #s05 .attention-steps li{margin:16px 0}
 body.present #s05 .attention-steps li>span{font-size:22px}
-body.present #s05 .retrieval-intro{font-size:28px;line-height:1.4}
+body.present #s05 .retrieval-intro{font-size:24px;line-height:1.4}
+body.present #s05 .retrieval-intro h3{font-size:64px}
+body.present #s05 .retrieval-intro .detour-kicker{font-size:18px}
+body.present #s05 .retrieval-roles{grid-template-columns:115px minmax(0,1fr);gap:14px 24px}
 </style>
 <header class="sec-head">
   <span class="sec-num">05</span>
@@ -5802,12 +5812,19 @@ The combining operation is familiar. Attention computes the mixing weights from 
 
 <div class="frame" id="s05-frame-retrieval-detour" data-title="A detour through information retrieval" data-autobuild="off">
   <script type="text/x-notes">Why pause the language example for a search example?
-Information retrieval means finding useful information in a collection. Students can reason about a question and a collection of videos without manipulating token vectors. Search makes the distinction between deciding which source matches and deciding what to return concrete. We will name those roles query, key and value after the search box appears. The first simplified lookup selects a single result, and the following section replaces that selection with a weighted mixture. Real search systems may return many ranked results. This is an analogy for matching and returning information, not a claim that this language model browses or searches an external database. We return to the same sentence afterward.</script>
+Information retrieval means finding useful information in a collection. Mark this as a short detour within attention, not a new prediction task. Preview the three names using their matching colours: query is the request, key is a source's matching description, and value is the information it returns. The following video-search example makes those roles concrete before we calculate with them. First we retrieve one video's information; the following section replaces that selection with a weighted mixture. Query-key scores, normalized across the available sources, give the alpha shares. Real search systems may return many ranked results. This is an analogy for matching and returning information, not a claim that this language model browses or searches an external database. After soft retrieval, the Back to our sentence slide maps all three roles to bank and river.</script>
   <div class="retrieval-intro">
-    <p><strong>Information retrieval</strong> means finding useful information in a collection, such as videos on a topic.</p>
-    <p>Search makes two jobs concrete: <strong>deciding which sources match a request</strong> and <strong>deciding what information to return</strong>.</p>
+    <p class="detour-kicker">A short detour · three roles we need for attention</p>
+    <h3>Information retrieval</h3>
+    <p>Finding useful information in a collection. Our example: searching for a video.</p>
+    <dl class="retrieval-roles">
+      <dt class="sym-q">Query</dt><dd>What am I looking for?</dd>
+      <dt class="sym-k">Key</dt><dd>A description of each source, used for matching.</dd>
+      <dt class="sym-v">Value</dt><dd>The information that source returns.</dd>
+    </dl>
     <div class="retrieval-route">
-      <p>First, we will retrieve one video's information. Then we will mix information from several sources and return to our sentence.</p>
+      <p><span class="sym-q">Query</span>–<span class="sym-k">key</span> matches will determine the weights $\va{\alpha_{ij}}$.</p>
+      <p>Then <strong>return to bank and river</strong>: use those weights to mix <span class="sym-v">values</span>.</p>
     </div>
   </div>
 </div>
@@ -5819,7 +5836,7 @@ Information retrieval means finding useful information in a collection. Students
 <div class="frame" id="s05-frame-search" data-title="A search box" data-autobuild="off">
   <script type="text/x-notes">
 What does the site compare, and what does it hand back?
-Read the request and name its role: query. Ask the room what the site must know about each video to answer. Reveal the two jobs on the first press. The next slide shows the collection. Keep key and value for the later matching and return examples.
+Read the request and connect it to the first role on the detour slide: query. Ask the room what the site must know about each video to answer. Reveal the two jobs on the first press. The next slide shows the collection; the matching and return examples will make key and value concrete.
 
 Timing: two minutes.
   </script>
@@ -6531,6 +6548,19 @@ Its weight approaches one. If top scores tie, those top items keep sharing the w
 #s07 .arith{margin:10px 0 0}
 #s07 .arith .calc{margin:8px 0 14px}
 #s07 .arith-lab{font-size:13px;color:var(--ink-3);font-weight:600;margin:6px 0 2px}
+#s07 .sentence-return{font-size:19px;line-height:1.4}
+#s07 .sentence-return h3{font-size:38px;line-height:1.12;letter-spacing:-.02em;margin:0 0 20px}
+#s07 .sentence-return p{margin:16px 0}
+#s07 .return-prefix{font-size:22px;border-left:3px solid var(--c-q);padding:12px 18px}
+#s07 .return-roles{display:grid;grid-template-columns:100px minmax(0,1fr);gap:14px 18px;margin:24px 0}
+#s07 .return-roles dt{font-weight:650}
+#s07 .return-roles dd{margin:0}
+#s07 .return-result{border-top:1px solid var(--line);padding-top:18px}
+body.present #s07:has(#s07-frame-return-to-sentence.is-live)>.sec-head{display:none}
+body.present #s07 .sentence-return{font-size:24px}
+body.present #s07 .sentence-return h3{font-size:64px}
+body.present #s07 .return-prefix{font-size:28px}
+body.present #s07 .return-roles{grid-template-columns:150px minmax(0,1fr);gap:14px 24px}
 body.present #s07 .rd,body.present #s07 .arith-lab{font-size:22px;line-height:1.35}
 body.present #s07 .dt-cap,body.present #s07 .dt-note{display:none}
 body.present #s07 .dt td,body.present #s07 .dt th{font-size:22px;padding:.18em .38em}
@@ -6554,6 +6584,24 @@ body.present #s07 .calc-rounding{display:none}
 <div class="companion" data-kicker="For self-study">
   <p>Bring the search roles back to our sentence. Each token gets a key and a value, computed from its own representation using two shared matrices. The token gathering context gets a query from a third matrix. Its query asks for information, each source's key describes when it can help, and its value carries what it will send.</p>
   <p>Read the column headers before the numbers: every coordinate has a name in this toy. Choose a different query token and watch which source rows remain available. Open a record to compare its rows. Query, key and value are three linear views of the same $\ve{e}$.</p>
+</div>
+
+<div class="frame" id="s07-frame-return-to-sentence" data-title="Back to our sentence" data-autobuild="off">
+  <script type="text/x-notes">What replaces the search request and the video collection?
+We have finished the information-retrieval detour. Return to the same seven-token prefix, with bank at position 7 already in the input. We are gathering its context, not predicting bank. Instead of videos, our sources are the available tokens, including bank itself. Preview one pair: bank supplies query q_7 and river at position 6 supplies key k_6 and value v_6. Compare bank's query with every available source key, not only river's, and normalize the scores together to obtain the alpha shares. Alpha_7,6 weights river's value, not its key. These are vector roles, not English questions written by the model. The next slide explains how each vector is computed from its token's representation; keep projection arithmetic there.</script>
+  <div class="sentence-return">
+    <h3>Back to our sentence</h3>
+    <p class="return-prefix">The fisherman sat beside the <strong class="sym-k">river</strong> <strong class="sym-q">bank</strong></p>
+    <p>Build context for <strong>bank, position 7</strong>. Our sources are now tokens, not videos.</p>
+    <div data-build="1">
+      <dl class="return-roles">
+        <dt class="sym-q">Query $\vq{q_7}$</dt><dd>What information does <strong>bank</strong> seek?</dd>
+        <dt class="sym-k">Key $\vk{k_6}$</dt><dd>How well does <strong>river, position 6</strong>, match?</dd>
+        <dt class="sym-v">Value $\vv{v_6}$</dt><dd>What information will <strong>river</strong> send?</dd>
+      </dl>
+      <p class="return-result">Match <span class="sym-q">bank's query</span> against every available <span class="sym-k">key</span>, then normalize. The resulting weight $\va{\alpha_{7,6}}$ is <strong>river's share for bank</strong>; it multiplies <span class="sym-v">river's value</span>.</p>
+    </div>
+  </div>
 </div>
 
 <div class="frame" id="s07-frame1" data-title="What does the receiving token ask for?">
