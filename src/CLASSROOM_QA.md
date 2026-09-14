@@ -1,5 +1,10 @@
 # Classroom release checks
 
+## 2026-09-14: simplify the returned-information slide
+
+- Removed the redundant hard/soft status line, including the arbitrary 2% contribution count, from Section 6's returned-row frame. Kept the eight-coordinate result, its interpretation and the next-build takeaway. Removed the unused status calculation and scoped styles. The presentation skill guided removal of the extra text without changing the deck's layout conventions.
+- Regression checks that the status stays absent and the interpretation stays visible in all six retrieval cases, alongside unchanged weighted products and returned rows. Visually inspected both desktop builds and the 390px reading layout. All 325 presentation states / 556 formulas and phone article QA pass.
+
 ## 2026-09-14: label weighted contribution columns at their reveal
 
 - Each of the eight value headers in Section 6's multiplication table now gains a rose alpha_j × prefix when the weighted cells appear at build 2. Feature names stay teal and keep their original order. The prefix remains for the column sums, disappears when returning to original values, and stays visible in reading mode with the weighted table. The presentation skill guided the existing palette, aligned header labels and unchanged reveal sequence. No additional slide, model, shared-runtime or dependency changes.

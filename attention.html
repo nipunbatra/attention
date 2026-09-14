@@ -6463,8 +6463,6 @@ body.present #s06 .score-origin{font-size:24px}
 #s06 .modebox .slider input[type=range]{max-width:40vw}
 #s06 .slider.is-off{opacity:.4}
 #s06 .taunote{font-size:14px;color:var(--ink-2);margin:0;flex:1 1 100%}
-#s06 .verdict{font-weight:500;font-size:1.05em;margin:12px 0 0}
-#s06 .verdict .modeword{font-weight:700}
 #s06 .hint{font-size:14px;color:var(--ink-2);margin:10px 0 0}
 #s06 .reveal{margin:10px 0 0}
 #s06 .reveal-body{padding-left:18px}
@@ -6499,7 +6497,6 @@ body.present #s06 .look,body.present #s06 .hint,body.present #s06 .taunote{font-
 body.present #s06 .look,body.present #s06 .hint{margin:.35em 0 0}
 body.present #s06 .modebox{gap:.35em .7em;padding:.35em .55em;margin:0 0 .35em}
 body.present #s06 .modebox .slider input[type=range]{max-width:16em}
-body.present #s06 .verdict{font-size:.76em;margin:.35em 0 0}
 body.present #s06 .s06-mix-value .s06-raw{display:inline}
 body.present #s06 .s06-mix-value:has(.s06-weight:not(.is-pending)) .s06-raw{display:none}
 body.present #s06 tr.s06-present-winner>th,body.present #s06 tr.s06-present-winner>td{box-shadow:inset 0 0 0 2px var(--ink)}
@@ -6517,7 +6514,7 @@ body.present #s06 .card-mix{margin:.2em 0 .4em;padding-top:.3em}
 body.present #s06 .result-cards,body.present #s06 .card-mix,body.present #s06 .s06-close{display:none}
 body.present #s06 .s06-stage>.card{padding:.6em .7em}
 body.present #s06 .callout-key{font-size:.8em;margin:.5em 0 0;padding:.5em .8em}
-body.present #s06 .taunote,body.present #s06 .look,body.present #s06 .hint,body.present #s06 .verdict{display:none}
+body.present #s06 .taunote,body.present #s06 .look,body.present #s06 .hint{display:none}
 #s06 .classroom-temperature{display:none}
 body.present #s06 .classroom-temperature{display:block;font-size:.72em;flex-basis:100%;margin:0}
 body.present #s06 .modebox .slider{font-size:.75em}
@@ -6538,7 +6535,7 @@ body.present #s06 .modebox .slider{font-size:28px}
 body.present #s06 .srows{grid-template-columns:minmax(0,1fr);gap:10px;margin:12px 0}
 body.present #s06 .srows .slider{grid-template-columns:230px minmax(70px,1fr) 58px;gap:12px;padding:0}
 body.present #s06 .srows .slider-label,body.present #s06 .srows .slider-val{font-size:22px}
-body.present #s06 .look,body.present #s06 .hint,body.present #s06 .verdict{display:block;font-size:22px;line-height:1.35;margin-top:14px}
+body.present #s06 .look,body.present #s06 .hint{display:block;font-size:22px;line-height:1.35;margin-top:14px}
 body.present #s06 .card-mix{display:block;border:0;padding:0;margin:0 0 24px}
 body.present #s06 .callout-key{font-size:28px;padding:16px 22px;margin:18px 0}
 body.present #s06 .s06-experiment{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:38px;align-items:start}
@@ -6630,7 +6627,6 @@ They keep the same eight content axes and order as the video values. Point to ch
   <div class="card-mix" id="s06-card-mix"></div>
   <p class="look">One $1\times8$ row, on the same eight content axes.</p>
   <p class="look" id="s06-mread"></p>
-  <p class="verdict" id="s06-verdict"></p>
 </div>
 <div class="callout callout-key" data-build="1">Attention returns a <strong>weighted mixture of information</strong> for this query. Its coordinates are value features, not match scores.</div>
 </div>
@@ -6800,7 +6796,6 @@ Its weight approaches one. If top scores tie, those top items keep sharing the w
   mix.leadCells.forEach(r => r.forEach(td => td.setAttribute('data-build', '1')));
   const footRow = mix.footer.label && mix.footer.label.closest('tr');
   if (footRow) footRow.setAttribute('data-build', '3');
-  const verdict = S.querySelector('#s06-verdict');
   const mread = S.querySelector('#s06-mread');
   /* worksheet: the footer, one line per value axis (α times each value row, added up) */
   const mixCalc = AT.ui.matVecCalc(alphaArr, VIDEOS.map(V => V.v), { from: titles, to: VAL_AXES, cls: 'v', fromCls: 'a', xLabel: 'α', outLabel: 'Σ α v', wDecimals: 1 });
@@ -6845,13 +6840,6 @@ Its weight approaches one. If top scores tie, those top items keep sharing the w
     }));
     mixCalc.update(alphaArr);
     mread.textContent = 'Reading the footer: what comes back is ' + readMix(mix.sum) + '.';
-    const kept = alpha.filter(a => a >= 0.02).length;
-    if (soft) {
-      const tauNote = Math.abs(tau - 1) > 1e-9 ? ' at ' + AT.texStr('\\tau = ' + AT.fmt(tau, 1)) : '';
-      verdict.innerHTML = '<span class="modeword">Soft (softmax):</span> ' + kept + ' of 6 values contribute at least 2 %' + tauNote + '. Largest weight: ' + AT.escape(VIDEOS[jstar].title) + ' (' + AT.fmt(alpha[jstar], 2) + '). The footer is a blend.';
-    } else {
-      verdict.innerHTML = '<span class="modeword">Hard (argmax):</span> only ' + AT.escape(VIDEOS[jstar].title) + ' is returned (' + AT.texStr('j^* = ' + (jstar + 1)) + '). The footer equals ' + AT.texStr('\\vv{v_{' + (jstar + 1) + '}}') + '; every other row is discarded.';
-    }
     syncBuilds();
   }
   draw();

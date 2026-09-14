@@ -255,6 +255,10 @@ try{
     assert.deepEqual(await matrix('s05-vals'),values);
     await page.screenshot({path:path.join(shots,'mixture-'+test.name+'.png')});
     await go('s06-frame-message',1);close((await matrix('s06-card-mix'))[0],sum,test.name+' returned row');
+    assert.equal(await page.locator('#s06-verdict').count(),0,'The result slide omits the redundant mode/threshold status.');
+    assert(!/contribute at least|Largest weight:/.test(await copy('s06-frame-message')),'No arbitrary contribution cutoff appears on the result slide.');
+    assert(await page.locator('#s06-mread').isVisible(),'Keep the coordinate interpretation visible.');
+    assert((await page.locator('#s06-mread').textContent()).includes('what comes back is'),'Keep the returned-feature explanation in every retrieval mode.');
     assert.equal(await page.evaluate(()=>AT.present.fitReport().overflow),false);
   }
   const qBefore=await matrix('s05-query-vector');
