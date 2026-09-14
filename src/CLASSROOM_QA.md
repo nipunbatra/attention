@@ -1,5 +1,11 @@
 # Classroom release checks
 
+## 2026-09-14: bridge from the missed clue to a fixed-width summary
+
+- Added exactly one classroom frame after “Ten tokens can miss the earlier clue” and before the summarizing section divider. Its three states recover river/cheque with twenty tokens, compare the wider concatenated input and first MLP matrix, then ask how a fixed-width summary could collect useful history. Each token still has four coordinates; the hidden width stays eight and W2 is unchanged. Presenter notes distinguish input visibility from prediction quality and fixed summary width from free or unlimited context.
+- The presentation skill guided the existing clue/input/parameter colours, editable comparison table and progressive reveals. Inspected the final desktop and 390px reading layouts. Full-deck audit passes all 218 presentation states and 504 unique formulas, with no overflow or math failures; phone QA reports no page/console errors or horizontal overflow. Eight independent live/reference cases still agree (9,260 finite values; max error 1.78e-15).
+- Updated the window and pooling flow regressions for the new transition, dimensions, reveal order, matched colours and phone table bounds. No model, runtime, dependency, Part I or Part III changes. The existing derivations remain in reading mode; this slide motivates the next section rather than repeating the parameter-count lesson.
+
 ## 2026-09-14: use the Part I-style hidden-layer predictor
 
 - Section 2 now teaches an actual 4→8→20 ReLU MLP, not a direct linear 4→20 head. The native SVG shows all eight hidden activations and both matrices/biases; formulas and prose share input-blue, hidden-teal, parameter-purple and logit-grey roles. The presentation skill guided the editable diagram, compact definitions and phone equation wrapping. No classroom frames were added.

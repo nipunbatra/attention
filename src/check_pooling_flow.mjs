@@ -55,7 +55,7 @@ try{
   const E=await page.evaluate(()=>AT.embed(AT.sentences.river.slice(0,7)));
   assert.equal(E.length,7);assert(E.every(row=>row.length===4));
   const order=await page.locator('#s03 .frame').evaluateAll(els=>els.map(e=>e.id));
-  assert.deepEqual(order,['s03-frame2','s03-frame-concatenate','s03-frame1','s03-frame-boundary'],'End the window section at its limitation, before the new summary topic.');
+  assert.deepEqual(order,['s03-frame2','s03-frame-concatenate','s03-frame1','s03-frame-boundary','s03-frame-summary-need'],'Explain the longer-window trade-off after the missing clue and before the summary topic.');
   for(const id of ['s03-frame-window-head','s03-frame-window-cost'])assert.equal(await page.locator('#'+id).getAttribute('class'),'companion','Keep the alternative linear-head derivation in the article only.');
   assert.equal(await page.locator('#s03-frame-changing-clues').count(),0);
   assert.equal(await page.locator('#s03-frame3').getAttribute('class'),'companion','Keep the redundant slot recap in the article only.');
@@ -64,7 +64,10 @@ try{
   await page.evaluate(()=>AT.present.enter());
   await go('s03',4,1);
   await page.evaluate(()=>AT.present.next());await page.waitForTimeout(100);
-  assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s04-frame-summary-break','Normal Next reaches the summary divider before the bridge.');
+  assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s03-frame-summary-need','Normal Next first motivates why a fixed-width summary is needed.');
+  await go('s03',5,2);
+  await page.evaluate(()=>AT.present.next());await page.waitForTimeout(100);
+  assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s04-frame-summary-break','After the trade-off, introduce the summary approaches.');
   assert.equal(await page.locator('#s04>.sec-head').evaluate(e=>getComputedStyle(e).display),'none','Show one title on the divider.');
   assert((await page.locator('.summary-break h3').evaluate(e=>parseFloat(getComputedStyle(e).fontSize)))>=64);
   assert.deepEqual(await page.locator('.summary-approaches li strong').allTextContents(),['Averaging.','Hand-chosen weights.','Attention.']);

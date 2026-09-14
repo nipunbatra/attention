@@ -72,6 +72,26 @@ body.present #s03 #s03-ceq{font-size:25px}
 #s03 .window-param{color:var(--c-q);fill:var(--c-q)}
 #s03 .window-score{color:var(--ink-2);fill:var(--ink-2)}
 #s03 .window-prob{color:var(--c-d);fill:var(--c-d)}
+#s03 .history-intro{font-size:20px;line-height:1.45;margin:0 0 24px}
+#s03 .history-clue{color:var(--c-k);text-decoration:underline;text-underline-offset:3px}
+#s03 .history-table{width:100%;border-collapse:collapse;font-size:18px}
+#s03 .history-table th,#s03 .history-table td{padding:12px 16px;text-align:left;border-bottom:1px solid var(--line)}
+#s03 .history-table thead th{font-size:16px;font-weight:600}
+#s03 .history-table tbody th{font-weight:600}
+#s03 .history-table td{font-family:var(--font-mono)}
+#s03 .history-explanation{font-size:18px;line-height:1.45;margin:18px 0 0}
+#s03 .history-question{margin-top:24px}
+body.present #s03 .history-intro{font-size:27px;line-height:1.4;margin-bottom:22px}
+body.present #s03 .history-table{font-size:27px}
+body.present #s03 .history-table thead th{font-size:23px}
+body.present #s03 .history-table th,body.present #s03 .history-table td{padding:12px 16px}
+body.present #s03 .history-explanation{font-size:24px;line-height:1.4;margin-top:18px}
+body.present #s03 .history-question{margin-top:22px}
+@media(max-width:640px){
+  body:not(.present) #s03 .history-table{font-size:16px;table-layout:fixed}
+  body:not(.present) #s03 .history-table thead th{font-size:14px}
+  body:not(.present) #s03 .history-table th,body:not(.present) #s03 .history-table td{padding:10px 5px;overflow-wrap:break-word}
+}
 #s03 .long-intro{margin:0 0 12px;font-size:18px}
 #s03 .long-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
 #s03 .long-scope{font-size:15px;color:var(--ink-2);margin:0}
@@ -389,6 +409,29 @@ It keeps the most recent ten input tokens. Our original prefix had only ten, so 
   <div class="companion">
     <p>We count whitespace-separated words for these illustrative prefixes and leave punctuation out of the token count. Both contain twenty input tokens. At w=10 the input consists of positions 11 through 20: “after a long quiet afternoon turned around and watched the”. The blank is position 21, the token to predict. The first ten words still exist in the text, but this baseline never supplies their rows to the prediction head. With the same visible words in the same positions and the same fixed parameters, the head returns the same probability distribution. Drawing a random next word can differ without making that distribution depend on the unseen clue.</p>
     <p>The complete river scene makes “water” a plausible continuation, while the bank scene suggests “teller”. These are examples, not forced answers or measured probabilities. The word river is at position 6 and first enters at w=15. Cheque is at position 5 and enters at w=16. At w=20 both entire prefixes fit. For a 35-token prefix, a window of 20 would keep positions 16–35 and could again miss an important clue at position 6. The window slides with the prediction position rather than cutting every sentence at a fixed absolute position.</p>
+  </div>
+</div>
+
+<div class="frame" id="s03-frame-summary-need" data-title="Why not just keep more history?" data-autobuild="off">
+  <script type="text/x-notes">If ten tokens miss the clue, why not keep twenty?
+Start with the previous two twenty-token examples. A window of twenty includes river and cheque, so it fixes their visibility problem. It does not guarantee a correct prediction, and a still longer prefix could put another clue outside that window.
+
+Reveal the cost of extending the same concatenation-based MLP. Each token representation remains four numbers wide. Ten rows join into one row of forty numbers; twenty rows join into one row of eighty. With eight hidden neurons, the first matrix changes from 40 by 8 to 80 by 8. The second matrix stays 8 by 20. These are required architecture shapes, not two settings of one trained network. Do not repeat the earlier full parameter derivation here.
+
+Reveal the design question. We want earlier tokens to contribute without allocating a separate block of prediction-head inputs to every token. A fixed-width summary could collect their useful information. The next section compares ways of building that summary. Compression may lose information, and reading more source rows still requires computation; fixed summary width does not mean unlimited or free context.</script>
+  <p class="history-intro">Keeping <strong>20 tokens</strong> makes <strong class="history-clue">river</strong> and <strong class="history-clue">cheque</strong> available in those examples.</p>
+  <div class="card" data-build="1">
+    <table class="history-table" aria-label="A longer window widens the concatenated input and the first MLP matrix">
+      <thead><tr><th scope="col">Window</th><th scope="col" class="window-input">Joined input row</th><th scope="col" class="window-param">W₁ to 8 hidden neurons</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">10 tokens</th><td class="window-input">1 × 40</td><td class="window-param">40 × 8</td></tr>
+        <tr><th scope="row">20 tokens</th><td class="window-input">1 × 80</td><td class="window-param">80 × 8</td></tr>
+      </tbody>
+    </table>
+    <p class="history-explanation">Each token still has <strong>4 numbers</strong>. <span class="window-input">The joined row</span> and <span class="window-param">W₁ grow</span>; W₂ stays the same.</p>
+  </div>
+  <div class="callout callout-key history-question" data-build="2">
+    <p>Can we collect useful information from a longer prefix into <strong>one fixed-width summary</strong>?</p>
   </div>
 </div>
 

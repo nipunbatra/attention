@@ -32,17 +32,36 @@ try{
   await page.evaluate(()=>document.fonts.ready);
   await page.evaluate(()=>{
     window.goSection3=(kind,build=0)=>{
-      const ids={window:'s03-frame2',concatenate:'s03-frame-concatenate',mlp:'s03-frame1',boundary:'s03-frame-boundary',linear:'s03-frame-window-head',cost:'s03-frame-window-cost'};
+      const ids={window:'s03-frame2',concatenate:'s03-frame-concatenate',mlp:'s03-frame1',boundary:'s03-frame-boundary',bridge:'s03-frame-summary-need',linear:'s03-frame-window-head',cost:'s03-frame-window-cost'};
       const target=document.getElementById(ids[kind]);
       if(target.classList.contains('companion')){AT.present.exit();target.scrollIntoView();return;}
       AT.present.enter();AT.present.go('s03',[...document.querySelectorAll('#s03 .frame')].indexOf(target)+1,build);
     };
   });
   const initial=await page.evaluate(()=>JSON.stringify({model:AT.model,probs:AT.forward(AT.sentences.river).probs}));
-  for(const [kind,lastBuild,nextId]of [['window',1,'s03-frame-concatenate'],['concatenate',1,'s03-frame1'],['mlp',2,'s03-frame-boundary'],['boundary',1,'s04-frame-summary-break']]){
+  for(const [kind,lastBuild,nextId]of [['window',1,'s03-frame-concatenate'],['concatenate',1,'s03-frame1'],['mlp',2,'s03-frame-boundary'],['boundary',1,'s03-frame-summary-need'],['bridge',2,'s04-frame-summary-break']]){
     await page.evaluate(([kind,build])=>{goSection3(kind,build);AT.present.next();},[kind,lastBuild]);
     assert.equal(await page.locator('.frame.is-live').getAttribute('id'),nextId,'Normal slide navigation must skip the optional derivations and reach the new section.');
   }
+  const bridge=page.locator('#s03-frame-summary-need');
+  assert.equal(await page.locator('#s03 .frame').count(),5,'Add exactly one explanatory transition.');
+  assert.deepEqual(await bridge.locator('.history-clue').allTextContents(),['river','cheque']);
+  assert.deepEqual(await bridge.locator('tbody tr').evaluateAll(rows=>rows.map(row=>[...row.cells].map(cell=>cell.textContent))),[
+    ['10 tokens','1 × 40','40 × 8'],['20 tokens','1 × 80','80 × 8']
+  ],'Keep four coordinates per token and eight hidden neurons across both architecture sizes.');
+  assert.equal(JSON.parse(initial).model.d_model,4);
+  assert.match(await bridge.locator('.history-explanation').textContent(),/Each token still has 4 numbers/);
+  assert.match(await bridge.locator('.history-explanation').textContent(),/W₂ stays the same/);
+  assert.match(await bridge.locator('.history-question').textContent(),/one fixed-width summary/);
+  for(const build of [0,1,2,1,0,2]){
+    await page.evaluate(build=>goSection3('bridge',build),build);
+    await page.waitForTimeout(100);
+    assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'Every transition reveal fits the stage.');
+    for(const step of [1,2])assert.equal(await bridge.locator(`[data-build="${step}"]`).evaluate(e=>getComputedStyle(e).visibility),build>=step?'visible':'hidden','Reveal recovered clue, growing input, then summary question in order.');
+    await page.screenshot({path:path.join(shots,`summary-need-${build}.png`)});
+  }
+  const bridgeColours=await bridge.evaluate(root=>['window-input','window-param'].map(role=>[...root.querySelectorAll('.'+role)].map(e=>getComputedStyle(e).color)));
+  bridgeColours.forEach(colours=>assert(colours.every(c=>c===colours[0]),'Match table and explanatory text colours.'));
   await page.evaluate(()=>{AT.present.enter();goSection3('window',0);});
   const slider=page.locator('#s03-slider input');
   for(let w=1;w<=10;w++){
@@ -394,6 +413,9 @@ try{
   await page.locator('#s03-frame-window-head').screenshot({path:path.join(shots,'phone-head-5.png')});
   await longSlider.fill('10');
   await page.locator('#s03-frame-boundary').screenshot({path:path.join(shots,'phone-long-10.png')});
+  await bridge.screenshot({path:path.join(shots,'phone-summary-need.png')});
+  const bridgeBounds=await bridge.locator('table, th, td, .history-intro, .history-explanation, .history-question').evaluateAll(els=>els.map(e=>{const b=e.getBoundingClientRect();return{left:b.left,right:b.right,overflow:e.scrollWidth>e.clientWidth+1};}));
+  assert(bridgeBounds.every(b=>b.left>=0&&b.right<=391&&!b.overflow),'The transition and every comparison cell fit the phone article.');
   await page.locator('#s03-frame-window-cost').screenshot({path:path.join(shots,'phone-window-cost.png')});
   const phoneCostTable=await page.locator('#s03-ktab table').evaluate(table=>({width:table.getBoundingClientRect().width,available:table.parentElement.clientWidth,cellOverflow:[...table.querySelectorAll('th,td')].some(cell=>cell.scrollWidth>cell.clientWidth+1)}));
   assert(phoneCostTable.width<=phoneCostTable.available+1&&!phoneCostTable.cellOverflow,'Show every cost-table column on the phone, including biases and the head total.');
@@ -404,6 +426,6 @@ try{
   const final=await page.evaluate(()=>JSON.stringify({model:AT.model,probs:AT.forward(AT.sentences.river).probs}));
   assert.equal(final,initial,'Architecture controls must not mutate the trained toy or its predictions.');
   assert.deepEqual(errors,[]);
-  console.log('PASS: four-slide window flow into the summary section, ten short windows, 100 MLP widths with both matrices/biases, eleven long windows, optional linear-head derivation, scalar nodes/edges, concatenation, coloured math, reveals, keyboard, retained state, reduced motion, phone layout and model immutability.');
+  console.log('PASS: five-slide window flow with the longer-history trade-off, ten short windows, 100 MLP widths with both matrices/biases, eleven long windows, optional linear-head derivation, scalar nodes/edges, concatenation, coloured math, reveals, keyboard, retained state, reduced motion, phone layout and model immutability.');
   console.log('Screenshots: '+shots);
 }finally{await browser.close();}
