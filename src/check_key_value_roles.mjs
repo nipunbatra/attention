@@ -1,4 +1,4 @@
-// Concrete role examples and the independent two-feature projection example.
+// Concrete role examples and their connection to the learned Q/K/V mappings.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -83,21 +83,34 @@ try{
     }
     await page.screenshot({path:path.join(shots,id+'.png')});
   }
-  const copy=await page.locator('#s11-frame-separate-maps').innerText();
-  assert(copy.includes('their entries can differ')&&copy.includes('raw scores'));
-  const inputs=[[1,0],[0,1]],wq=[0,1],wk=[1,0],dot=(a,b)=>a.reduce((s,x,i)=>s+x*b[i],0);
-  const projected=inputs.map(e=>[dot(e,wq),dot(e,wk)]);
-  assert.deepEqual(projected,[[0,1],[1,0]]);
-  const displayed=await page.locator('#s11-frame-separate-maps tbody tr').evaluateAll(rows=>rows.map(row=>[...row.querySelectorAll('td')].map(cell=>JSON.parse(cell.textContent))));
-  assert.deepEqual(displayed,inputs.map((e,i)=>[e,[projected[i][0]],[projected[i][1]]]));
-  assert.equal(projected[1][0]*projected[0][1],1);
-  assert.equal(projected[0][0]*projected[1][1],0);
-  const formulas=await page.locator('#s11-frame-separate-maps annotation').allTextContents();
-  assert(formulas.some(s=>s.includes('q_{\\text{she}}')&&s.includes('=1')&&s.includes('=0')));
-  for(const role of ['q','k']){
-    const colour=await page.locator('#s11-frame-separate-maps .sym-'+role).first().evaluate(e=>getComputedStyle(e).color);
-    const math=await page.locator('#s11-frame-separate-maps .katex-html .m-'+role).evaluateAll(es=>es.map(e=>getComputedStyle(e).color));
-    assert(math.length&&math.every(c=>c===colour),'Roles and equations share colours.');
+  const mappings=page.locator('#s11-frame-separate-maps');
+  const copy=await mappings.locator('.s11-role-copy').innerText();
+  assert(!copy.includes('[1, 0]')&&!copy.includes('raw scores'),'No new binary encoding or symmetry detour in the classroom explanation.');
+  assert.equal(await mappings.locator('.role-prefix').textContent(),prefixes[0],'The projection explanation reuses the familiar story verbatim.');
+  assert.deepEqual(await mappings.locator('thead th').allTextContents(),['Mapping','Input token row','Output, explained in words']);
+  assert.deepEqual(await mappings.locator('tbody tr').evaluateAll(rows=>rows.map(r=>({
+    role:r.dataset.role,cells:[...r.querySelectorAll('td')].map(c=>c.textContent)
+  }))),[
+    {role:'q',cells:['“she”','Which earlier person could I refer to?']},
+    {role:'k',cells:['Second “Maya”','Person, singular. A candidate for “she”.']},
+    {role:'v',cells:['Same Maya row','Maya cycled home in rain. She is cold and tired.']}
+  ]);
+  assert.match(copy,/Asking for a person and being a person candidate are different signals/);
+  assert.match(copy,/Q and K have equal width for the dot product/);
+  assert.match(copy,/matrices can still learn different weights/);
+  assert.match(copy,/Every token uses the same three matrices/);
+  const mappingNotes=await mappings.locator('script').textContent();
+  assert.match(mappingNotes,/illustrative later-layer representations, not measured outputs/);
+  assert.match(mappingNotes,/Maya also has a query, and she also has a key and value/);
+  assert.match(mappingNotes,/Tying their weights is possible/);
+  assert.match(mappingNotes,/All three mappings learn together/);
+  assert.match(mappingNotes,/d_v need not equal d_k/);
+  for(const role of ['q','k','v']){
+    const row=mappings.locator('tr[data-role="'+role+'"]');
+    const colour=await row.locator('th').evaluate(e=>getComputedStyle(e).color);
+    const cells=await row.locator('.sym-'+role).evaluateAll(es=>es.map(e=>getComputedStyle(e).color));
+    assert(cells.length===2&&cells.every(c=>c===colour),'Mapping and described output share the role colour.');
+    assert.match(await row.locator('annotation').textContent(),new RegExp('W_'+role.toUpperCase()));
   }
   for(const [id,next]of [['s05-frame-three-jobs','s05-frame-contact-example'],['s05-frame-contact-example','s05-frame-pronoun-example'],['s05-frame-pronoun-example','s05-frame-coat-example'],['s05-frame-coat-example','s05-frame-value-axes'],['s11-frame-separate-maps','s11-frame-query-setup'],['s11-frame-query-setup','s11-frame-query-calc']]){
     await go(id,99);await page.evaluate(()=>AT.present.next());
@@ -114,7 +127,7 @@ try{
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No phone document overflow.');
     const boxes=await frame.locator('.role-example-table,.s11-role-table,blockquote,.example-source,.dt-scroll').evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return {left:r.left,right:r.right};}));
     assert(boxes.every(r=>r.left>=-1&&r.right<=391),id+' phone containment');
-    if(id==='s05-frame-contact-example'||id==='s05-frame-pronoun-example'||id==='s05-frame-coat-example'){
+    if(id==='s05-frame-contact-example'||id==='s05-frame-pronoun-example'||id==='s05-frame-coat-example'||id==='s11-frame-separate-maps'){
       const bounds=await frame.evaluate(e=>({frame:e.getBoundingClientRect().right,table:e.querySelector('table').getBoundingClientRect().right}));
       assert(bounds.table<=bounds.frame+1,'All value details fit inside the phone reading column.');
       const clipped=await frame.locator('table th,table td').evaluateAll(es=>es.filter(e=>e.scrollWidth>e.clientWidth+1).map(e=>e.textContent));
@@ -123,5 +136,5 @@ try{
     await frame.screenshot({path:path.join(shots,'phone-'+id+'.png')});
   }
   assert.deepEqual(errors,[]);
-  console.log('PASS: video/transcript, contact and pronoun examples; compatible query/key widths; independent directional projection arithmetic; staged and forward navigation; unchanged bank model; desktop and phone layout. Screenshots: '+shots);
+  console.log('PASS: video/transcript, contact and pronoun examples; familiar-story Q/K/V mappings and compatible widths; staged and forward navigation; unchanged bank model; desktop and phone layout. Screenshots: '+shots);
 }finally{await browser.close();}

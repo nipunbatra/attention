@@ -1,5 +1,11 @@
 # Classroom release checks
 
+## 2026-09-15: explain separate mappings through the familiar Maya story
+
+- Replaced the unlabelled binary projection example with the same Maya/coat prefix used earlier. A three-row table identifies each mapping, the current token row it reads, and its output in words: a person request from “she”, a person match from the second Maya, and richer information from that same Maya row. Removed the binary arithmetic and raw-score symmetry detour. The reveal explains why asking and being a candidate are different signals, while retaining equal Q/K width. The bank input/matrix setup still follows immediately.
+- The presentation skill guided the single native table, direct explanation, preserved role colours and unchanged slide count. Notes and reading text clarify shared matrices for every token, all three vectors per token, later-layer illustrative facts, possible weight tying, overlapping information and value width. Source facts precede the second Maya mention. No numerical model, shared-runtime, dependency or other lecture changes.
+- Updated the role regression to check continuity with the earlier story, meaningful headers and all three outputs, shared source rows, caveats, role colours, both reveal directions and phone cell containment. The 26-frame tail regression and full audit pass: 241 states / 537 formulas, no overflow or math errors. Visually checked both classroom reveal states and phone reading. The bank model and predictions remain unchanged.
+
 ## 2026-09-15: richer values for “she” and “it” in one shared story
 
 - Expanded the pronoun example to a two-sentence prefix about Maya cycling home in the rain and reaching for a hooded red wool coat. Maya's value sketch now carries identity, action, weather and state. The coat's sketch carries identity, colour, material and its hood. Added one adjacent frame with the same prefix and identical source keys/values but the receiver “it” in place of “she”. The matching row changes, and each final reveal gives a plausible continuation that uses the retrieved details. Interpreted the annotated “code” as “coat”, matching the original example.
