@@ -46,6 +46,7 @@ try{
   assert(index('s09-frame-chain')<index('s09-frame-prediction-input'));
   assert(index('s09-frame-prediction-output')<index('s11-frame1'),'Complete the prediction flow before deriving Q/K/V.');
   assert(index('s11-frame1')<index('s11-frame-query-calc'));
+  assert(index('s11-frame-query-setup')+1===index('s11-frame-query-calc'),'Show the input and matrix immediately before expanding the arithmetic.');
   for(let j=0;j<7;j++){
     await page.locator('#s07-rchips button').nth(j).click();
     assert.deepEqual(await rows('#s07-record-key'),[rounded(ref.K[j])]);
@@ -228,6 +229,26 @@ try{
     assert.equal(await page.locator('#s09 [data-context="'+context+'"][aria-pressed=true]').count(),2,'Both preview controls share the context.');
     await page.screenshot({path:path.join(shots,'prediction-'+context+'.png')});
   }
+  await go('s11-frame-query-setup');
+  for(const build of [0,1,2,1,0,2]){
+    await page.evaluate(build=>AT.present.setBuild(build),build);await page.waitForTimeout(150);
+    assert(await page.locator('#s11-query-input').isVisible(),'The input row is visible from the first build.');
+    assert.equal(await page.locator('#s11-query-matrix-block').evaluate(e=>getComputedStyle(e).visibility),build>=1?'visible':'hidden');
+    assert.equal(await page.locator('#s11 .s11-query-product').evaluate(e=>getComputedStyle(e).visibility),build>=2?'visible':'hidden');
+    assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'Query setup build '+build+' fits.');
+    await page.screenshot({path:path.join(shots,'query-setup-'+build+'.png')});
+  }
+  assert.deepEqual(await rows('#s11-query-matrix'),model.W_Q,'Show the canonical 4×3 query matrix in its row-vector orientation.');
+  assert.deepEqual(await page.locator('#s11-query-input .vec-ax').allTextContents(),model.axes.short.e);
+  assert.deepEqual(await page.locator('#s11-query-matrix tbody th').allTextContents(),model.axes.short.e,'Input axis order matches the weight-matrix rows.');
+  assert.deepEqual((await page.locator('#s11-query-matrix thead th').allTextContents()).slice(1),model.axes.short.qk,'Weight-matrix columns match query axes.');
+  const setupMath=(await page.locator('#s11-query-product-equation annotation').allTextContents()).join(' ');
+  for(const shape of ['1\\times 4','4\\times 3','1\\times 3'])assert(setupMath.includes(shape),'Show shape '+shape+'.');
+  assert(setupMath.indexOf('e_{7}')<setupMath.indexOf('W_Q')&&setupMath.indexOf('W_Q')<setupMath.indexOf('q_{7}'),'Multiply the input row on the left by W_Q on the right.');
+  await page.evaluate(()=>AT.present.next());
+  assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s11-frame-query-calc','The next slide expands the product.');
+  await page.evaluate(()=>AT.present.prev());
+  assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s11-frame-query-setup');
   for(const [role,field]of [['query','Q'],['key','K'],['value','V']]){
     if(role==='query') await go('s11-frame-query-calc');
     else {
@@ -242,13 +263,18 @@ try{
         assert.deepEqual(results.map(x=>Number(x.replaceAll('−','-').replace(/[=≈]/g,'').trim())),rounded(ref[f][j]),'Recover the supplied '+f+' row with the unchanged shared matrix.');
       }
       assert.equal(await page.locator('#s11 .s11-calc-controls [data-token="'+j+'"][aria-pressed=true]').count(),3);
+      for(const [id,f]of [['input','E'],['product-result','Q']]){
+        const cells=(await page.locator('#s11-query-'+id+' .cell').allTextContents()).map(x=>Number(x.replaceAll('−','-')));
+        assert.deepEqual(cells,rounded(ref[f][j]),'The setup retains the token selected in the arithmetic.');
+      }
+      assert.deepEqual(await rows('#s11-query-matrix'),model.W_Q,'Changing the token never changes W_Q.');
     }
     await page.screenshot({path:path.join(shots,role+'-derivation.png')});
   }
   await page.evaluate(()=>AT.present.enter());
   await go('s07-frame-pair');
   await page.locator('#s07-rchips button').nth(5).click();
-  const changedFrames=['s07-frame1','s07-frame-keys','s07-frame-values','s07-frame-pair','s08-frame-phases','s08-frame-scores','s12-frame-scaling','s09-frame1','s09-frame3','s09-frame4','s09-frame-prediction-input','s09-frame-prediction-output','s11-frame1','s11-frame-query-calc'];
+  const changedFrames=['s07-frame1','s07-frame-keys','s07-frame-values','s07-frame-pair','s08-frame-phases','s08-frame-scores','s12-frame-scaling','s09-frame1','s09-frame3','s09-frame4','s09-frame-prediction-input','s09-frame-prediction-output','s11-frame1','s11-frame-query-setup','s11-frame-query-calc'];
   for(const id of changedFrames){
     await go(id);await page.screenshot({path:path.join(shots,id+'.png')});
   }

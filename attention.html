@@ -8667,6 +8667,31 @@ body.present #s11 .s11-projection-calc .calc-rounding{display:none}
 #s11 .s11-calc-controls [aria-pressed=true]{background:var(--ink);color:#fff}
 #s11 .s11-calc-caption{font-size:18px;line-height:1.4}
 body.present #s11 .s11-calc-caption{font-size:22px}
+#s11 .s11-query-operands{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:center}
+#s11 .s11-query-operands>*{min-width:0}
+#s11 .s11-query-operands h3{font-size:21px;margin:0 0 16px}
+#s11 .s11-query-operands p{font-size:18px;line-height:1.45;margin:12px 0}
+#s11 .s11-query-operands .dt-fig{margin:0}
+#s11 .s11-query-product{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:8px 24px;border-top:1px solid var(--line);margin-top:20px;padding-top:16px}
+#s11 .s11-query-product>*{min-width:0}
+#s11 .s11-query-product .vec{display:flex;width:fit-content;margin:4px auto}
+#s11 .s11-query-product .tex-display{margin:4px 0}
+#s11 .s11-query-product p{grid-column:1/-1;font-size:18px;line-height:1.4;margin:8px 0 0;text-align:center}
+body.present #s11 .s11-query-operands h3{font-size:26px}
+body.present #s11 .s11-query-operands p,body.present #s11 .s11-query-product p{font-size:22px}
+body.present #s11-frame-query-setup .cell{font-size:24px}
+body.present #s11-frame-query-setup .vec-axes{font-size:22px}
+body.present #s11-frame-query-setup .dt th{font-size:20px;padding:7px 12px}
+body.present #s11-frame-query-setup .dt td{font-size:24px;padding:7px 12px}
+body.present #s11-frame-query-setup .katex-display{margin:6px 0}
+@media(max-width:700px){
+  body:not(.present) #s11 .s11-query-operands{grid-template-columns:minmax(0,1fr);gap:20px}
+  body:not(.present) #s11 .s11-query-product{grid-template-columns:minmax(0,1fr)}
+  body:not(.present) #s11 .s11-query-operands .vec{font-size:15px}
+  body:not(.present) #s11 .s11-query-operands .cell{min-width:0;padding:5px 7px}
+  body:not(.present) #s11 .s11-query-operands .vec-label{margin-right:7px}
+  body:not(.present) #s11 .s11-query-operands .dt th,body:not(.present) #s11 .s11-query-operands .dt td{padding:7px 8px}
+}
 body.present #s11-frame3 .motif.has-active [data-stage]{opacity:1}
 #s11 .s11-role-copy{font-size:19px;line-height:1.4}
 #s11 .s11-role-copy p{margin:12px 0}
@@ -8756,9 +8781,33 @@ Each column of a projection forms one output coordinate. The worksheet retains t
 </div>
 
 
-<div class="frame" id="s11-frame-query-calc" data-title="Make a query from the receiving token's row" data-autobuild="off">
+<div class="frame" id="s11-frame-query-setup" data-title="The input row and the query matrix" data-autobuild="off">
+<script type="text/x-notes">Which objects do we multiply to recover bank's query?
+First show the input row e_7=[0.70,0.70,0.10,0.80]. This is bank's current representation before this attention operation, including its position information. Its four named coordinates are the same ones used earlier.
+Next reveal W_Q. Its four rows align with the four input coordinates, in the same order: water, finance, person, glue. Its three columns correspond to the query coordinates water?, finance?, who?. This hand-chosen matrix is a parameter shared by every token, fixed during the forward calculation.
+Then reveal the product. With our row-vector convention, put e_7 on the left and W_Q on the right: (1×4)(4×3) gives (1×3). Each output is the input row dotted with one column. The result [1.26,1.26,0.04] is exactly the query supplied earlier. The next slide expands these three column calculations. Selecting another token there also updates this setup, while W_Q stays unchanged.</script>
+<div class="s11-query-operands">
+  <div id="s11-query-input-block">
+    <h3 id="s11-query-input-title"></h3>
+    <div id="s11-query-input"></div>
+    <p>Four input coordinates, before attention.</p>
+  </div>
+  <div id="s11-query-matrix-block" data-build="1">
+    <h3>The shared query matrix $\vq{W_Q}$</h3>
+    <div id="s11-query-matrix"></div>
+    <p>Four rows match the input axes.<br>Three columns form the query axes.</p>
+  </div>
+</div>
+<div class="s11-query-product" data-build="2">
+  <div id="s11-query-product-equation"></div>
+  <div id="s11-query-product-result"></div>
+  <p>Input row on the left, matrix on the right. Each matrix column gives one query coordinate.</p>
+</div>
+</div>
+
+<div class="frame" id="s11-frame-query-calc" data-title="The query calculation, one column at a time" data-autobuild="off">
 <script type="text/x-notes">Can we recover the query we took as given?
-Start at bank. This is exactly q_7 from Section 7, not a different example. Each column of W_Q chooses a combination of the four input coordinates to form one matching coordinate. Select another token to reuse the same weights.</script>
+Continue the preceding input-row × matrix product. Start at bank. This is exactly q_7 from Section 7, not a different example. Each column of W_Q chooses a combination of the four input coordinates to form one matching coordinate. Select another token to reuse the same weights.</script>
 <div class="card"><div class="s11-calc-controls" data-keep-state></div><div id="s11-query-calc" class="s11-projection-calc"></div></div>
 <p class="s11-calc-caption sym-q">The receiver's row becomes its query: what information to look for.</p>
 </div>
@@ -8907,7 +8956,18 @@ It returns the projected message, Delta e. The residual addition then combines t
   });
 
   // The derivations live here, after the complete supplied-vector walkthrough.
+  AT.ui.wTable(AT.model.W_Q,{from:'e',to:'qk',cls:'q',shortAxes:true,cornerLabel:'$\\vq{W_Q}$',into:S.querySelector('#s11-query-matrix')});
+  function drawQuerySetup(){
+    const n=qi+1;
+    S.querySelector('#s11-query-input-title').textContent='Current row: '+toks[qi]+' (token '+n+')';
+    const input=S.querySelector('#s11-query-input'),result=S.querySelector('#s11-query-product-result');
+    AT.clear(input);AT.clear(result);
+    AT.ui.vec(F.E[qi],{cls:'e',label:'\\ve{e_{'+n+'}}',into:input});
+    AT.ui.vec(F.Q[qi],{cls:'q',label:'\\vq{q_{'+n+'}}',into:result});
+    AT.tex(S.querySelector('#s11-query-product-equation'),'\\underbrace{\\ve{e_{'+n+'}}}_{1\\times '+AT.model.d_model+'}\\;\\underbrace{\\vq{W_Q}}_{'+AT.model.d_model+'\\times '+AT.model.d_k+'} = \\underbrace{\\vq{q_{'+n+'}}}_{1\\times '+AT.model.d_k+'}',{display:true});
+  }
   function drawProjectionCalcs(){
+    drawQuerySetup();
     for(const [id,W,to,cls,name] of [
       ['query',AT.model.W_Q,'qk','q','W_Q'],
       ['key',AT.model.W_K,'qk','k','W_K'],

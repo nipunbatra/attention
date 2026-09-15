@@ -1,5 +1,10 @@
 # Classroom release checks
 
+## 2026-09-15: query operands before expanded arithmetic
+
+- Added one setup frame immediately before the query calculation. Its builds show the current input row first, then the shared 4×3 W_Q table, then the ordered row-vector product with dimensions and the resulting query. Input axes match matrix rows, and query axes match matrix columns. The following slide retains its arithmetic and token controls under the title “The query calculation, one column at a time”. Selecting another token updates the setup vectors too, without changing the matrix. The presentation skill guided the existing typography, role colours and native editable tables/vectors. No model, shared runtime or other lecture changes.
+- Verified the matrix, input and output values against the independent reference for all four selectable tokens, dimension labels, axis order, reveal/reverse navigation and the direct handoff to the detailed calculation. Visually inspected all three builds, the next slide and the stacked phone layout. Token-flow, concise-tail and key/value regressions pass. The full deck audit passes all 228 states / 519 formulas with no overflow or math failures.
+
 ## 2026-09-15: mix both message coordinates in the output projection
 
 - Replaced the shared toy's copy-and-zero-pad W_O with the dense 2×4 matrix `[[.8,-.2,.3,.1],[-.1,1.1,.2,-.2]]`. Bank's unchanged message `[1.89,.07]` now produces `[1.51,-.30,.58,.18]`, then residual addition gives `[2.21,.40,.68,.98]`. Q/K/V, scores and attention weights are unchanged. Regenerated the reference report, independent check data, diagram exports and Lecture 3's dependent training results from the canonical model. The training algorithm and prediction-head architecture are unchanged.

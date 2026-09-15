@@ -10,7 +10,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_PATH||'/Users/nipun/.npm/_npx/36
 const model=JSON.parse(fs.readFileSync(new URL('toy.json',import.meta.url),'utf8'));
 const shots=fs.mkdtempSync('/private/tmp/concise-tail-');
 const expected={
-  s11:['s11-frame1','s11-frame-separate-maps','s11-frame-query-calc','s11-frame3'],
+  s11:['s11-frame1','s11-frame-separate-maps','s11-frame-query-setup','s11-frame-query-calc','s11-frame3'],
   s12:['s12-frame-scaling','s12-frame-bank'],
   s13:['s13-frame1','s13-frame2','s13-frame3','s13-frame4'],
   s14:['s14-routing','s14-probabilities','s14-layer-boundary'],
@@ -48,7 +48,7 @@ try{
       await page.screenshot({path:path.join(shots,id+'.png')});
     }
   }
-  assert.equal(Object.values(expected).flat().length,21);
+  assert.equal(Object.values(expected).flat().length,22);
   assert.equal(await page.locator('.frame-auto').count(),0,'No companion section accidentally becomes a slide.');
   for(const id of ['s11-frame-key-calc','s11-frame-value-calc','s13-frame-targets','s14-head-arithmetic','s16-frame2','s18-question8','s19-operational']){
     assert(await page.locator('#'+id).evaluate(el=>el.classList.contains('companion')));
@@ -120,5 +120,5 @@ try{
     await page.screenshot({path:path.join(shots,'phone-'+id+'.png')});
   }
   assert.deepEqual(errors,[]);
-  console.log('PASS: 21-frame tail; companion retention; manual walkthrough navigation and all 18 stages; full '+stageCount+'-stage flowchart; causal-mask tables/messages; synchronized four-rule comparison; unchanged model; phone reading. Screenshots: '+shots);
+  console.log('PASS: 22-frame tail; companion retention; manual walkthrough navigation and all 18 stages; full '+stageCount+'-stage flowchart; causal-mask tables/messages; synchronized four-rule comparison; unchanged model; phone reading. Screenshots: '+shots);
 }finally{await browser.close();}

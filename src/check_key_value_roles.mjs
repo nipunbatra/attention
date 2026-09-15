@@ -51,7 +51,7 @@ try{
     const math=await page.locator('#s11-frame-separate-maps .katex-html .m-'+role).evaluateAll(es=>es.map(e=>getComputedStyle(e).color));
     assert(math.length&&math.every(c=>c===colour),'Roles and equations share colours.');
   }
-  for(const [id,next]of [['s05-frame-three-jobs','s05-frame-contact-example'],['s05-frame-contact-example','s05-frame-pronoun-example'],['s05-frame-pronoun-example','s05-frame-value-axes'],['s11-frame-separate-maps','s11-frame-query-calc']]){
+  for(const [id,next]of [['s05-frame-three-jobs','s05-frame-contact-example'],['s05-frame-contact-example','s05-frame-pronoun-example'],['s05-frame-pronoun-example','s05-frame-value-axes'],['s11-frame-separate-maps','s11-frame-query-setup'],['s11-frame-query-setup','s11-frame-query-calc']]){
     await go(id,99);await page.evaluate(()=>AT.present.next());
     assert.equal(await page.locator('.frame.is-live').getAttribute('id'),next);
   }
