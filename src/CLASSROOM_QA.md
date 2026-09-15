@@ -1,5 +1,10 @@
 # Classroom release checks
 
+## 2026-09-15: plain-language explanation of hard retrieval
+
+- Kept the hard-retrieval equation and index explanation, then added an always-visible plain-language reading and the existing Backpropagation example below them. It explicitly returns all eight value coordinates from the winning video and no contribution from the other five. The later question about multiple useful items retains its original reveal.
+- Humanizer guided the direct wording; the presentation skill guided the existing typography and value colour. Visually inspected both reveal states and 390px reading layout. Narrow checks verify the explanation follows the equation, remains visible at both builds and preserves forward navigation. The full 227-state / 513-formula audit passes without overflow or math errors. No new frame, model, numerical-data or dependency changes.
+
 ## 2026-09-15: concrete keys, values and separate query/key mappings
 
 - Rebuilt the video-to-value transition around the selected result's existing diagram thumbnail and a labelled illustrative transcript. All four query winners have their own excerpt; the source, thumbnail and transcript stay paired when the request changes. These are authored examples, not transcripts of real videos. No separate generated video photo was present in the repository or the supplied task asset folder.

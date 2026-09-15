@@ -6573,6 +6573,9 @@ Reveal the query, then the winning video's key, then its value. Each SVG lists t
 #s06 .look{font-size:14px;color:var(--ink-2);margin:8px 0 0;max-width:84ch}
 #s06 .score-origin{font-size:16px;line-height:1.45;margin:0 0 14px}
 #s06 .score-term{display:inline-block;white-space:nowrap}
+#s06 .hard-plain{border-top:1px solid var(--line);padding-top:14px;margin-top:18px;font-size:18px;line-height:1.4}
+#s06 .hard-plain p{margin:0 0 10px}
+body.present #s06 .hard-plain{font-size:24px;line-height:1.35}
 body.present #s06 .score-origin{font-size:24px}
 #s06 .modebox{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;padding:10px 14px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--paper);margin:0 0 12px}
 #s06 .modebox .slider{margin:0}
@@ -6676,13 +6679,17 @@ body.present #s06 #s06-mix .dt td.dt-num,body.present #s06 #s06-card-mix .dt td.
 <div class="frame" id="s06-frame-hard-retrieval" data-title="Hard retrieval returns one item's value" data-autobuild="off">
   <script type="text/x-notes">
 Which video's information do we return?
-Trace the matching colours: the purple query is the request, the orange key describes a video's match, and the teal value carries that video's information. Compare the query with every key. The dot product is a score. Argmax gives the winning video's index j*, not the score itself. The same index selects its value. For the gradient question, video 1 (Backpropagation) wins with 4.8, so return v1, the same eight-number row from the previous section. Reveal the question about two useful items before moving to the score table.
+Trace the matching colours: the purple query is the request, the orange key describes a video's match, and the teal value carries that video's information. Compare the query with every key. The dot product is a score. Argmax gives the winning video's index j*, not the score itself. The same index selects its value. For the gradient question, video 1 (Backpropagation) wins with 4.8, so return v1, the same eight-number row from the previous section. Read the plain-language explanation below the equation: choose one best match and take information from that source only. All eight coordinates of its value are returned, not just the highest coordinate. The other five sources contribute nothing. Reveal the question about two useful items before moving to the score table.
   </script>
 
 <div class="prose">
   <p>Compare the <span class="sym sym-q">query $\vq{q}$</span> with each video's <span class="sym sym-k">key $\vk{k_j}$</span>. Return the highest-scoring video's <span class="sym sym-v">value $\vv{v_{j^*}}$</span>.</p>
   $$j^* = \arg\max_j\, \underbrace{\vq{q}\cdot \vk{k_j}}_{\text{match score}}, \qquad \text{return } \vv{v_{j^*}}$$
   <p>Here $j$ is a video index. $\arg\max_j$ picks the <strong>winning index $j^*$</strong>.</p>
+  <div class="hard-plain" id="s06-hard-plain">
+    <p><strong>In plain words:</strong> choose the video that best matches the question, then take information from that video only.</p>
+    <p>For our gradient question, <strong>Backpropagation</strong> wins. Return its <span class="sym-v">entire eight-number value row</span>. The other five videos contribute nothing.</p>
+  </div>
   <div class="callout callout-key" data-build="1">If two items are useful, why return information from only one?</div>
 </div>
 </div>

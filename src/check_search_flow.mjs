@@ -60,13 +60,18 @@ try{
     await go('s06-frame-hard-retrieval',build);
     const frame=page.locator('#s06-frame-hard-retrieval');
     for(const role of ['q','k','v']){
-      const wordColor=await frame.locator('.sym-'+role).evaluate(e=>getComputedStyle(e).color);
+      const wordColor=await frame.locator('.sym-'+role).first().evaluate(e=>getComputedStyle(e).color);
       const mathColors=await frame.locator('.katex-html .m-'+role).evaluateAll(es=>es.map(e=>getComputedStyle(e).color));
       assert(mathColors.length>=2,'Each role appears in the prose and display equation.');
       assert(mathColors.every(color=>color===wordColor),'Hard retrieval '+role+' text and math share the same colour.');
     }
     assert((await copy('s06-frame-hard-retrieval')).includes('winning index'));
     assert(/match\s*score/.test(await copy('s06-frame-hard-retrieval')));
+    const plain=frame.locator('#s06-hard-plain');
+    assert(await plain.isVisible(),'The simple explanation is visible alongside the equation, before the soft-retrieval question.');
+    assert((await plain.textContent()).includes('entire eight-number value row'));
+    assert((await plain.textContent()).includes('other five videos contribute nothing'));
+    assert(await frame.evaluate(e=>e.querySelector('#s06-hard-plain').getBoundingClientRect().top>e.querySelector('.katex-display').getBoundingClientRect().bottom),'Plain words follow the mathematical description.');
     assert.equal(await frame.locator('[data-build="1"]').evaluate(e=>getComputedStyle(e).visibility),build?'visible':'hidden');
     await page.screenshot({path:path.join(shots,'hard-retrieval-'+build+'.png')});
   }
