@@ -59,6 +59,10 @@ try {
   const rounded = vector => vector.map(value => Number(value.toFixed(3)));
 
   const weightsBefore = await bodyRows('#s08-value-alpha');
+  const exercise=page.locator('#s08-value-experiment');
+  assert.equal(await exercise.getAttribute('open'),null,'The optional experiment starts collapsed.');
+  assert(!(await page.locator('#s08-values-alt').isVisible()));
+  await exercise.locator('summary').click();
   await page.click('#s08-values-alt');
   assert.deepEqual(await bodyRows('#s08-value-alpha'), weightsBefore, 'visible weights unchanged');
   let messageTables = await page.locator('#s08-value-message table').evaluateAll(tables => tables.map(table => Array.from(table.querySelectorAll('tbody tr')).map(row => Array.from(row.querySelectorAll('td')).map(cell => Number(cell.textContent.replaceAll('−', '-'))))));
@@ -68,6 +72,8 @@ try {
   await page.click('#s08-values-baseline');
   messageTables = await page.locator('#s08-value-message table').evaluateAll(tables => tables.map(table => Array.from(table.querySelectorAll('tbody tr')).map(row => Array.from(row.querySelectorAll('td')).map(cell => Number(cell.textContent.replaceAll('−', '-'))))));
   assert.deepEqual(messageTables[0][1], rounded(F.Mmsg[6]));
+  await exercise.locator('summary').click();
+  assert.equal(await exercise.getAttribute('open'),null,'The experiment can be put away again.');
   await page.click('#s08-runB');
   await page.waitForFunction(() => document.querySelector('#s08-bread').textContent.includes('Reading'));
 
@@ -117,6 +123,8 @@ try {
   const shotsDir = shotsIndex < 0 ? null : path.resolve(process.argv[shotsIndex + 1]);
   if (shotsDir) assert(fs.statSync(shotsDir).isDirectory());
   await page.evaluate(() => AT.present.enter());
+  assert(!(await exercise.isVisible()),'The optional experiment has no classroom frame.');
+  assert.equal(frameCounts.s08,9);
   for (const id of ['s08', 's12', 's14']) {
     for (let frame = 1; frame <= frameCounts[id]; frame++) {
       await page.evaluate(({ id, frame }) => { AT.present.go(id, frame, 99); }, { id, frame });
@@ -126,6 +134,10 @@ try {
   }
   await page.evaluate(() => AT.present.exit());
   await page.setViewportSize({ width: 390, height: 844 });
+  await exercise.locator('summary').click();
+  await page.click('#s08-values-alt');
+  assert.deepEqual(await bodyRows('#s08-value-alpha'),weightsBefore,'Phone interaction preserves all seven weights.');
+  assert.deepEqual((await numberRows('#s08-value-message'))[1],rounded(Fa.Mmsg[6]),'The combined phone exercise still computes the changed message.');
   const widthAudit = await page.evaluate(() => ({
     viewport: document.documentElement.clientWidth, page: document.documentElement.scrollWidth,
     wide: Array.from(document.querySelectorAll('section.sec *')).filter(el => {

@@ -1,5 +1,10 @@
 # Classroom release checks
 
+## 2026-09-15: shorten the transition from the message to the output projection
+
+- Removed “Change only the values: do the weights change?” and “Same weights, different information” from the classroom route. Their point is already established by the earlier Q/K/V examples and the retained weighted-sum explanation. Section 8 now has nine frames instead of eleven and leads directly from the message to Section 9's projection diagram. The presentation skill guided that sequence decision. Preserved the interactive experiment and its result together in one collapsed, optional reading detail, with all existing controls and numerical hosts intact.
+- Verified forward/back navigation across the section boundary, default collapsed state, restored baseline, unchanged attention weights and the changed finance-message coordinate on desktop and phone. The token-flow and routing/scaling regressions pass. All 225 presentation states / 515 formulas pass the full audit without overflow or math failures. Visually inspected the retained sum slide, direct projection transition, and collapsed/expanded phone exercise. No model, shared runtime, dependency or other lecture changes.
+
 ## 2026-09-15: diagram before equations for the output projection
 
 - Rebuilt the existing Section 9 opening around an editable diagram of bank's seven weighted value rows, their two-coordinate message, the output projection into four embedding coordinates, and residual addition to the unchanged original row. The next reveal adds three equations in the same numbered order and colours. No classroom frame was added. Diagram values come directly from the existing forward calculation, with full-precision data and rounded display. The diagram says the projection can mix both inputs; notes distinguish the example's simple matrix from general learned mappings and distinguish activation updates from parameter training.

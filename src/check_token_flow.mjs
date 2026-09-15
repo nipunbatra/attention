@@ -52,7 +52,16 @@ try{
     assert.equal(await page.locator('.frame.is-live').getAttribute('id'),id);
   }
   // The two-phase overview shares the prose's reveal schedule and colour roles.
-  assert.equal(await page.locator('#s08 .frame').count(),11,'Add the diagram to the existing slide, without another frame.');
+  assert.equal(await page.locator('#s08 .frame').count(),9,'Keep the weighted-sum lesson and move the two value-intervention slides into one optional reading exercise.');
+  const section8Titles=await page.locator('#s08 .frame').evaluateAll(es=>es.map(e=>e.dataset.title));
+  assert.equal(section8Titles.at(-1),'Add the weighted values, coordinate by coordinate');
+  assert(!section8Titles.some(t=>/Change only the values|Same weights, different information/.test(t)),'Neither repetition remains in the classroom route.');
+  await page.evaluate(()=>AT.present.go('s08',9,99));
+  assert(!(await page.locator('#s08-value-experiment').isVisible()),'The optional exercise stays out of presentation mode.');
+  await page.evaluate(()=>AT.present.next());
+  assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s09-frame1','The message goes directly to the output-projection diagram.');
+  await page.evaluate(()=>AT.present.prev());
+  assert.equal(await page.locator('.frame.is-live').getAttribute('data-title'),'Add the weighted values, coordinate by coordinate','Reverse navigation also skips both optional slides.');
   await go('s08-frame-phases');
   for(const build of [0,1,2,3,2,1,0,3]){
     await page.evaluate(build=>AT.present.go('s08',1,build),build);

@@ -7139,15 +7139,15 @@ Choose river, fisherman, bank or the. Keep bank as the receiver throughout. The 
 #s08 .intervention-result{margin:14px 0;font-variant-numeric:tabular-nums}
 #s08 .value-source-row{margin:6px 0;font-size:.85em;line-height:1.5;font-variant-numeric:tabular-nums}
 #s08 .value-source-row .mono{white-space:nowrap}
+#s08 .value-experiment summary{cursor:pointer;font-weight:650}
+#s08 .value-experiment .card{margin-top:14px}
 #s08 #s08-value-message{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:16px;align-items:start}
 @media (max-width:820px){#s08 #s08-value-message{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:820px){#s08 .scroll-hint{display:block}}
 body.present #s08 .phase-tag,body.present #s08 .pic-lab,body.present #s08 .ws-lab{font-size:21px}
-body.present #s08 .rd,body.present #s08 .value-source-row{font-size:22px;line-height:1.35}
+body.present #s08 .rd{font-size:22px;line-height:1.35}
 body.present #s08 .dt-cap,body.present #s08 .dt-note,body.present #s08 .scroll-hint{display:none}
 body.present #s08 .dt td,body.present #s08 .dt th{font-size:22px;padding:.18em .4em}
-body.present #s08 #s08-value-message{grid-template-columns:max-content minmax(0,1fr);gap:24px}
-body.present #s08 #s08-value-message .dt td,body.present #s08 #s08-value-message .dt th{padding-left:.3em;padding-right:.3em}
 body.present #s08 .tree-wrap{overflow:visible;padding:0}
 body.present #s08 .tree{min-width:0;max-width:none;width:100%;max-height:390px}
 body.present #s08 .tree text,body.present #s08 .tree .num{font-size:18px}
@@ -7375,16 +7375,14 @@ Each source contributes to the same value axes. The sum runs over source positio
   <pre class="pytorch"><code>m_bank = alpha @ V  # [7] @ [7, d_v] → [d_v]</code></pre>
 </div>
 
-<div class="frame" data-title="Change only the values: do the weights change?">
-<script type="text/x-notes">If we remove finance information from the values, will bank still attend to river?
-
-Ask for a prediction before pressing the value-only intervention. The weights stay exactly the same because the supplied query and keys stay fixed. The message changes because we change only the supplied values. No derivation of the vectors is needed to see their separate roles.</script>
+<details class="companion value-experiment" id="s08-value-experiment">
+<summary>Optional: changing values with fixed weights</summary>
 <div class="prose">
   <p id="s08-projection-note">Keys choose matches; values carry information. Their roles remain distinct even if some numbers happen to be equal.</p>
-  <p class="companion">Set only the values’ “says finance” coordinate to zero. Keep the query and every key fixed.</p>
+  <p>Set only the values’ “says finance” coordinate to zero. Keep the query and every key fixed. Predict which numbers below will change, then try the switch.</p>
 </div>
-<div class="card" data-build="1">
-  <div class="companion eq" id="s08-value-experiment-eq"></div>
+<div class="card">
+  <div class="eq" id="s08-value-experiment-eq"></div>
   <div class="btn-row" role="group" aria-label="Value-only intervention">
     <button type="button" class="btn btn-primary" id="s08-values-baseline" aria-pressed="true">Original values</button>
     <button type="button" class="btn" id="s08-values-alt" aria-pressed="false">Mute the finance column</button>
@@ -7392,19 +7390,15 @@ Ask for a prediction before pressing the value-only intervention. The weights st
   <div id="s08-value-source"></div>
   <div id="s08-value-alpha"></div>
 </div>
-</div>
-
-<div class="frame" data-title="Same weights, different information">
-<script type="text/x-notes">Which quantities changed after the value-only intervention?
-The attention weights did not. The message changed because its information came from the values.</script>
 <div class="card">
+  <h3 class="card-title">The resulting message</h3>
   <div id="s08-value-message"></div>
   <p class="intervention-result" id="s08-value-result" aria-live="polite"></p>
   <pre class="pytorch"><code>V_alt = V.clone(); V_alt[:, 1] = 0
 m_alt = alpha @ V_alt</code></pre>
 </div>
-  <div class="companion callout callout-key">Keys chose the weights. Values determined the message. Next, $\vd{\Delta e_7}=m_7W_O$ maps it back to representation space.</div>
-</div>
+  <p>The query and keys determine the weights. With those held fixed, changing values can change the message without changing the weights.</p>
+</details>
 
 <div class="companion after">
   <p>Queries and keys gave us the weights $\va{\alpha_{7j}}$; the weighted values gave us the message $m_7$. Bank's representation is still unchanged. Next we will turn that message into an update.</p>
