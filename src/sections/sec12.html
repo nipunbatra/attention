@@ -119,12 +119,12 @@ Source: Vaswani et al., Attention Is All You Need, Section 3.2.1 and footnote 1,
 </div>
 
 <div class="frame" id="s12-frame-variance" data-title="Why the spread grows as the square root" data-autobuild="off">
-<script type="text/x-notes">Connect the simulation to a short derivation. A coordinate product X_l=q_l k_l is equally likely to be -1 or +1: the four equally likely input pairs give +1,-1,-1,+1. Its mean is zero. Variance is the expected squared distance from the mean. Here either result is distance one from zero, so Var(X_l)=1.
+<script type="text/x-notes">The -1/+1 entries are a teaching choice, not a restriction on attention. Real query/key coordinates can be arbitrary real numbers. Connect this simple simulation to a short derivation. Here a coordinate product X_l=q_l k_l is equally likely to be -1 or +1: the four equally likely input pairs give +1,-1,-1,+1. Its mean is zero. Variance is the expected squared distance from the mean. Here either result is distance one from zero, so Var(X_l)=1.
 The coordinate products are independent. On expanding the square of their sum, cross terms have expectation zero, since E[X_l X_m]=E[X_l]E[X_m]=0 for distinct coordinates. Only the d_k squared terms remain, each with expectation one. That is why variances add. Standard deviations do not add.
 Reveal: SD is the square root of variance. Four independent products give variance four and SD two. Sixteen give variance sixteen and SD four. Dividing a random variable by sqrt(d_k) divides its variance by d_k and its SD by sqrt(d_k), giving one here. Finite samples fluctuate around these theoretical values. The same result holds for mutually independent, mean-zero, unit-variance query/key coordinates beyond random signs, since E[(q_l k_l)^2]=E[q_l^2]E[k_l^2]=1. Real learned coordinates need not satisfy these assumptions exactly.
 Source: Vaswani et al., Attention Is All You Need, Section 3.2.1, footnote 1, https://arxiv.org/html/1706.03762v7#S3.SS2.SSS1. The random-sign derivation is an elementary worked instance of that argument.</script>
   <div class="s12-math-step">
-    <p><strong>One product:</strong> $X_l=q_lk_l$ is equally likely to be −1 or +1. Its mean is 0. Its squared distance from 0 is always 1, so its <strong>variance is 1</strong>.</p>
+    <p><strong>In our simple ±1 example:</strong> $X_l=q_lk_l$ is equally likely to be −1 or +1. Its mean is 0 and its squared distance from 0 is always 1, so its <strong>variance is 1</strong>.</p>
   </div>
   <div class="s12-math-step">
     <p><strong>A whole score:</strong> $s=X_1+\cdots+X_{d_k}$. For independent products, the variances add:</p>
@@ -134,7 +134,7 @@ Source: Vaswani et al., Attention Is All You Need, Section 3.2.1, footnote 1, ht
     <p><strong>SD is the square root of variance:</strong> width 4 gives SD 2. Width 16 gives SD 4.</p>
     $$\operatorname{SD}(s)=\sqrt{d_k}\qquad\operatorname{SD}\!\left(\frac{s}{\sqrt{d_k}}\right)=1$$
   </div>
-  <p class="s12-example-note">Exact for this independent random-sign model. Sample estimates fluctuate. Learned vectors need not obey these assumptions exactly.</p>
+  <p class="s12-example-note"><strong>Other distributions work too.</strong> Independent query/key coordinates with mean 0 and variance 1 (e.g. standard normal) give the same result. Their squared product averages 1. Learned vectors need not obey these assumptions exactly.</p>
 </div>
 
 <div class="frame" id="s12-frame-softmax" data-title="Large score gaps can make softmax almost one-hot" data-autobuild="off">

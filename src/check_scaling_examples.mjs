@@ -111,6 +111,8 @@ try{
     near(scores.reduce((s,x)=>s+(x/Math.sqrt(d))**2,0)/scores.length,1);
   }
   assert.match(await page.locator('#s12-frame-variance').innerText(),/squared distance.*variance is 1/s);
+  assert.match(await page.locator('#s12-frame-variance').innerText(),/In our simple ±1 example/);
+  assert.match(await page.locator('#s12-frame-variance .s12-example-note').innerText(),/Independent query\/key coordinates with mean 0 and variance 1.*standard normal.*squared product averages 1/s);
   assert.match(await page.locator('#s12-frame-variance').innerText(),/independent products, the variances add/);
   assert.match(await page.locator('#s12-frame-variance').innerText(),/Learned vectors need not obey/);
   for(let i=0;i<ids.length;i++){

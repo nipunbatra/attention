@@ -1,5 +1,10 @@
 # Classroom release checks
 
+## 2026-09-15: clarify that random signs are only a teaching example
+
+- Qualified the first paragraph of the classroom variance derivation with “In our simple ±1 example”. The visible closing note now extends the result to independent query/key coordinates with mean zero and variance one, gives standard normal draws as an example, and distinguishes a squared product that averages one from the random-sign case where it is always one. Retained the caveat for learned vectors and clarified it in speaker notes. No slide, formula, model or runtime changes.
+- The presentation skill guided a concise revision within the existing layout. Added regression assertions for the example qualification and general conditions. The scaling suite passes, including numerical checks, forward/reverse reveals and phone containment. Visually inspected the updated classroom slide with all equations revealed.
+
 ## 2026-09-15: live score-spread simulation and a classroom variance derivation
 
 - Added one interactive frame before the spread summary. It displays the latest width-4 query/key pair and its coordinate products while building score histograms for independent width-4 and width-16 experiments. Single-draw, add-100, finish-3,000 and reproducible reset controls preserve state across navigation. Both plots share horizontal and frequency scales, with exact counts in bar titles and numerical summaries in accessible descriptions. The completed samples feed the existing summary table directly.
