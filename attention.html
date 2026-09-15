@@ -3478,6 +3478,26 @@ body.present .lecture-topic-break h3{font-size:64px;margin-bottom:32px}
 body.present .lecture-topic-break p{font-size:28px;line-height:1.35;margin:24px 0}
 body:not(.present) .lecture-topic-break:not(.topic-midpoint) h3{display:none}
 #s01 .title-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 18px;margin-bottom:8px}
+#s01 .opening-table{width:100%;border-collapse:collapse;table-layout:fixed;margin:18px 0}
+#s01 .opening-table th,#s01 .opening-table td{padding:14px 16px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+#s01 .opening-table th{width:26%;font-weight:600}
+#s01 .opening-table p{margin:0}
+#s01 .opening-example{font-size:1.25em;color:var(--c-e)}
+#s01 .opening-note{font-size:.82em;line-height:1.4;color:var(--ink-2)}
+#s01 .paper-layout{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:42px;align-items:center}
+#s01 .paper-layout figure{margin:0;text-align:center}
+#s01 .paper-layout figure>a{display:block}
+#s01 .paper-layout img{display:block;width:auto;max-width:100%;height:420px;object-fit:contain;margin:0 auto}
+#s01 .paper-layout figcaption{font-size:14px;line-height:1.3;margin:10px 0 0;color:var(--ink-2)}
+#s01 .paper-copy p{margin:0 0 24px}
+#s01 .paper-copy p:last-child{margin-bottom:0}
+#s01 .paper-copy h3{font-size:1.2em;line-height:1.2;margin:0 0 20px}
+#s01 .paper-architecture img{height:460px}
+body.present #s01 .opening-table th,body.present #s01 .opening-table td{font-size:25px;line-height:1.35;padding:14px 16px}
+body.present #s01 .paper-copy{font-size:25px;line-height:1.4}
+body.present #s01 .paper-layout figcaption{font-size:17px}
+body.present #s01 .opening-note{font-size:22px}
+@media(max-width:640px){body:not(.present) #s01 .paper-layout{grid-template-columns:1fr;gap:24px}body:not(.present) #s01 .paper-layout img{height:auto;max-height:500px}body:not(.present) #s01 .opening-table th,body:not(.present) #s01 .opening-table td{padding:12px 8px;font-size:16px}body:not(.present) #s01 .opening-table th{width:29%}}
 #s01 .title-row .card-title{margin:0}
 #s01 .ctx-row{margin:0}
 #s01 .ctx-lab{font-size:14px;font-weight:600;color:var(--ink-2);margin-right:4px}
@@ -3567,10 +3587,99 @@ body.present #s01 .emb-tab{margin-top:20px}
   <p>We want to predict the next word. As we add each part of the model, we will ask how it helps that prediction. Switch between the two contexts below and watch the probability bars move. The last three words are identical, so the model needs information about <em>river</em> or <em>cheque</em> from earlier in the sentence. Before opening that model, we’ll separate two ideas: a word’s vocabulary vector and the position where that word occurs.</p>
 </div>
 
+<div class="frame" id="s01-recap-model" data-title="Part 1 recap: how we predicted one character" data-autobuild="off">
+  <script type="text/x-notes">What happened between the three input characters and the next-character probabilities?
+Return to the actual Part 1 name example: a, a, b is the context and i is the observed next character in aabid. The model looks up three two-coordinate embeddings, concatenates them in order, applies a 32-unit ReLU hidden layer and produces 27 logits. Softmax normalizes those logits. The vocabulary is 26 letters plus the boundary token. Do not imply that the observed target must already be the model's highest-probability prediction.
+Sources: this series, Part 1 Sections 5–7 and 16; src/toy1.json. These are Part 1's dimensions. The word-level teaching model later in this lecture has different dimensions.</script>
+  <p class="opening-example">Context: <strong>a a b</strong> &nbsp;→&nbsp; next character: <strong>?</strong></p>
+  <table class="opening-table" aria-label="Part 1 prediction pipeline">
+    <tbody>
+      <tr><th scope="row">Look up</th><td>Three token IDs select three learned embedding rows.</td></tr>
+      <tr data-build="1"><th scope="row">Join in order</th><td>2 numbers per row. Concatenation gives <strong>3 × 2 = 6 input numbers</strong>.</td></tr>
+      <tr data-build="2"><th scope="row">Predict</th><td>6 inputs → <strong>32 hidden units + ReLU</strong> → 27 scores → softmax probabilities.</td></tr>
+    </tbody>
+  </table>
+  <p data-build="2">In the training name <em>aabid</em>, the answer is <strong>i</strong>. We want the model to assign it high probability.</p>
+</div>
+
+<div class="frame" id="s01-recap-context" data-title="Part 1 recap: what stays, and what needs to change?" data-autobuild="off">
+  <script type="text/x-notes">What changes when we generate instead of train? What if the useful clue is outside the input window?
+During training, the observed next character is the target. Cross-entropy and backpropagation update the embedding table and MLP parameters. During generation, parameters stay fixed: sample a character, append it, shift the window and repeat. Part 1 used a fixed window of three characters. Concatenating more embeddings would widen the first layer's input; it would not widen each token's embedding.
+Today's change is how a representation gathers context, while retaining next-token prediction. We use words as tokens to make the examples readable; this is a new teaching model, not the same trained character model.
+Sources: this series, Part 1 Sections 8–11, 14 and 16.</script>
+  <table class="opening-table" aria-label="Training and generation in Part 1">
+    <tbody>
+      <tr><th scope="row">Training</th><td>Use the observed next character as the target. Cross-entropy and backpropagation update the model.</td></tr>
+      <tr><th scope="row">Generation</th><td>Keep the learned parameters fixed. Sample a character, append it, shift the window and repeat.</td></tr>
+    </tbody>
+  </table>
+  <div data-build="1">
+    <p>A fixed window misses clues outside it. A longer concatenated window makes the MLP input wider.</p>
+    <p><strong>Today: keep next-token prediction, change how we gather context.</strong></p>
+    <p class="opening-note">We’ll use word tokens and a small, hand-chosen model so we can follow the calculations.</p>
+  </div>
+</div>
+
+<div class="frame" id="s01-paper-intro" data-title="The 2017 paper that introduced the Transformer" data-autobuild="off">
+  <script type="text/x-notes">What did this paper change about a sequence model?
+Identify the paper and authors, then reveal the proposal. Attention mechanisms predate the Transformer. The change was an encoder-decoder architecture using attention to connect token positions without recurrent or convolutional sequence layers. Feed-forward networks, embeddings and other components remain. Do not interpret the title as claiming that every operation is attention.
+Source: Vaswani et al., Attention Is All You Need (2017), abstract and Sections 1–3, https://arxiv.org/abs/1706.03762. The screenshot is the first page of arXiv revision v7 (2023); the paper first appeared in 2017. The image opens at full size.</script>
+  <div class="paper-layout">
+    <figure>
+      <a href="figures/transformer-paper/first-page.png" target="_blank" rel="noopener" aria-label="Open the paper's first page at full size"><img src="figures/transformer-paper/first-page.png" width="1391" height="1800" alt="First page of Attention Is All You Need, showing the title, eight authors and abstract."></a>
+      <figcaption>Vaswani et al. (2017). First page, arXiv v7.<br><a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">Paper and version history</a> · click image to enlarge</figcaption>
+    </figure>
+    <div class="paper-copy">
+      <h3>Attention Is All You Need</h3>
+      <p>Ashish Vaswani and colleagues, 2017.<br>Original task: <strong>machine translation</strong>.</p>
+      <div data-build="1">
+        <p>The Transformer uses attention to connect token positions, without recurrent or convolutional sequence layers.</p>
+        <p class="opening-note">Attention already existed. The paper introduced this architecture; it still contains embeddings and feed-forward networks.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="frame" id="s01-paper-importance" data-title="Why this design mattered" data-autobuild="off">
+  <script type="text/x-notes">Why might we want a token to read a distant clue directly?
+Contrast an attention connection with information passing through successive recurrent states. Parallelism here concerns token positions during training on known sequences, with masks where needed. Autoregressive generation still produces new tokens sequentially. This is not a claim of unlimited context or universally lower cost: full attention forms a quadratic number of token-pair scores.
+The original paper reports translation gains against the systems in its experiments. Later BERT uses bidirectional Transformer encoders; the original GPT uses a Transformer decoder with an autoregressive language-model objective. These are examples of reuse, not identical architectures or objectives.
+Sources: Vaswani et al., Sections 4 and 6, https://arxiv.org/html/1706.03762v7#S4 ; Devlin et al., https://aclanthology.org/N19-1423/ ; Radford et al., Section 3, https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf</script>
+  <table class="opening-table" aria-label="Why Transformer attention mattered">
+    <tbody>
+      <tr><th scope="row">Distant clues</th><td>One attention layer can connect a token directly to an earlier clue.</td></tr>
+      <tr data-build="1"><th scope="row">Parallel training</th><td>Known token positions can be processed together. Generating new tokens still proceeds one at a time.</td></tr>
+      <tr data-build="2"><th scope="row">Beyond translation</th><td>Later models reuse Transformer components: <a href="https://aclanthology.org/N19-1423/" target="_blank" rel="noopener">BERT</a> for text representations; <a href="https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf" target="_blank" rel="noopener">GPT</a> for next-token language modelling.</td></tr>
+    </tbody>
+  </table>
+  <p class="opening-note" data-build="2">Full attention compares token pairs, so longer sequences still cost more. <a href="https://arxiv.org/html/1706.03762v7#S4" target="_blank" rel="noopener">Original paper, Section 4</a>.</p>
+</div>
+
+<div class="frame" id="s01-paper-architecture" data-title="The original architecture: a map for what comes next" data-autobuild="off">
+  <script type="text/x-notes">Which parts of this diagram already look familiar?
+Read the original figure from bottom to top. Left: the encoder reads the source sentence. Right: the decoder uses the output prefix and can attend to the encoder's source representations. At the top it predicts the next output token. This orientation is enough; do not explain every block or introduce Q/K/V arithmetic here.
+Point out the familiar embeddings, feed-forward layers and output softmax. Masked attention is the part that limits a decoder token to its available output prefix. The upper attention module on the right also reads the encoder. N times denotes repeated blocks. We will unpack the attention operation before returning to the full architecture. Our causal next-token teaching example is not the complete translation model, and its small prediction MLP is not the paper's entire decoder.
+Source: Vaswani et al. (2017), Figure 1 and Section 3, https://arxiv.org/html/1706.03762v7#S3.F1 . Original image reproduced with attribution under the paper's scholarly-use permission. Click it for the full-resolution figure.</script>
+  <div class="paper-layout paper-architecture">
+    <figure>
+      <a href="figures/transformer-paper/architecture.png" target="_blank" rel="noopener" aria-label="Open the original Transformer architecture at full size"><img src="figures/transformer-paper/architecture.png" width="1520" height="2239" alt="Original Transformer Figure 1: encoder on the left, decoder with masked self-attention and encoder-decoder attention on the right, then linear and softmax output layers."></a>
+      <figcaption>Original Figure 1, Vaswani et al. (2017).<br><a href="https://arxiv.org/html/1706.03762v7#S3.F1" target="_blank" rel="noopener">Source and attribution</a> · click image to enlarge</figcaption>
+    </figure>
+    <div class="paper-copy">
+      <p><strong>Left: encoder.</strong><br>Reads the input sentence.</p>
+      <p><strong>Right: decoder.</strong><br>Uses the output so far and the encoder’s information to predict the next token.</p>
+      <div data-build="1">
+        <p>Embeddings, feed-forward layers and softmax are familiar. We’ll unpack <strong>attention</strong> first.</p>
+        <p class="opening-note">Our lesson uses a causal next-token example, not this whole translation model.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="frame" data-title="One blank" id="s01-frame1" data-autobuild="off">
   <script type="text/x-notes">
     What could come next, and why do you think so?
-    Collect answers from the room before revealing the bars. Then switch the context and ask again. Do not say attention yet: the point of the frame is that the same three final words get different answers.
+    Collect answers from the room before revealing the bars. Then switch the context and ask again. Do not unpack attention yet: the point of the frame is that the same three final words get different answers.
 
     Timing: about three minutes.
   </script>
@@ -9234,6 +9343,10 @@ body.present #s12 .dt td,body.present #s12 .dt th{font-size:22px;padding:.2em .4
 #s12 .s12-live-pair .q{color:var(--c-q)}
 #s12 .s12-live-pair .k{color:var(--c-k)}
 #s12 .s12-live-pair .a{color:var(--c-a)}
+#s12 .s12-softmax-work .s12-example-lead{margin-bottom:12px}
+#s12 .s12-softmax-weights .katex-display{margin:16px 0}
+#s12 .s12-softmax-work .s12-work-note{margin:12px 0 0;font-size:19px;line-height:1.4}
+body.present #s12 .s12-softmax-work .s12-work-note{font-size:23px}
 body.present #s12 .s12-draw-controls,body.present #s12 .s12-live-pair{font-size:22px}
 body.present #s12 .s12-math-step{font-size:24px}
 body.present #s12 .s12-math-step .katex-display{margin:10px 0}
@@ -9336,13 +9449,34 @@ Source: Vaswani et al., Attention Is All You Need, Section 3.2.1, footnote 1, ht
   <p class="s12-example-note"><strong>Other distributions work too.</strong> Independent query/key coordinates with mean 0 and variance 1 (e.g. standard normal) give the same result. Their squared product averages 1. Learned vectors need not obey these assumptions exactly.</p>
 </div>
 
+<div class="frame s12-softmax-work" id="s12-frame-softmax-raw" data-title="Softmax for the raw scores −8 and +8" data-autobuild="off">
+<script type="text/x-notes">One query compares two keys, A and B. This is the same illustrative d_k=64 example used in the comparison after these two worked slides. We first leave the scores unscaled.
+Softmax exponentiates each score, adds the exponentials, then divides each exponential by that shared sum. Here e is Euler's number, approximately 2.718, not a token embedding. Start with the score column. Reveal the exponential column and the sum. The negative score still has a positive exponential, but it is tiny next to exp(8). The last row adds the exponentials, not the scores.
+Reveal both fractions. Both keys use the same denominator. The results are weights between zero and one which sum to one. The small weight is positive, not exactly zero. Convert to percentages by multiplying by 100. Displayed exponentials are rounded to eight decimal places, raw weights to ten, and percentages to five. Compute all results from unrounded inputs. This example is numerically representable, so the near-one-hot result does not require overflow.
+Source for the softmax definition: https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.softmax.html. These numbers are calculated from the illustrative scores.</script>
+  <p class="s12-example-lead">One query, keys A and B, $d_k=64$. First, use the <strong>raw scores</strong>. Softmax exponentiates each score, then divides by the sum of both exponentials.</p>
+  <div id="s12-softmax-raw-table"></div>
+  <div class="s12-softmax-weights" id="s12-softmax-raw-weights" data-build="2"></div>
+  <p class="s12-work-note" data-build="2"><strong>Almost all the weight goes to B.</strong> A's weight is tiny, but still positive. The two unrounded weights sum to 1.</p>
+</div>
+
+<div class="frame s12-softmax-work" id="s12-frame-softmax-scaled" data-title="Softmax after dividing the scores by 8" data-autobuild="off">
+<script type="text/x-notes">Keep the query and keys fixed. Divide both raw scores by sqrt(64)=8 before computing softmax: -8/8=-1 and 8/8=1. Repeat exactly the same operations as on the previous slide.
+Reveal exp(-1), exp(1), and their sum. Reveal the two normalized weights, about .1192 and .8808, or 11.92% and 88.08%. The same denominator appears in both fractions. B still receives more weight, but A is no longer almost excluded. Softmax responds to score gaps: a gap of sixteen became a gap of two. The next slide explains why this matters for learning and separates saturation from numerical overflow. Scaling is applied to the scores, not to the weights after softmax. All values come from the same unrounded scores as the comparison table.
+Source: Vaswani et al., Attention Is All You Need, Section 3.2.1, https://arxiv.org/html/1706.03762v7#S3.SS2.SSS1. Softmax definition: https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.softmax.html.</script>
+  <p class="s12-example-lead">The scaling factor is $\sqrt{64}=8$: $-8/8=-1$ and $8/8=1$. Now repeat <strong>the same softmax calculation</strong>.</p>
+  <div id="s12-softmax-scaled-table"></div>
+  <div class="s12-softmax-weights" id="s12-softmax-scaled-weights" data-build="2"></div>
+  <p class="s12-work-note" data-build="2"><strong>B still gets more weight.</strong> The score gap fell from 16 to 2, so A now contributes meaningfully too.</p>
+</div>
+
 <div class="frame" id="s12-frame-softmax" data-title="Large score gaps can make softmax almost one-hot" data-autobuild="off">
 <script type="text/x-notes">What problem does a wide score spread cause?
-Use a separate illustrative two-key example at d_k=64. Suppose the raw scores are -8 and +8, a gap of 16. Softmax gives almost all weight to the second value. Dividing by sqrt(64)=8 gives scores -1 and +1, a gap of 2. The winner is unchanged, but the two weights are about 12% and 88%.
+Summarize the same illustrative two-key example at d_k=64. The raw scores are -8 and +8, a gap of 16. Softmax gives almost all weight to the second value. Dividing by sqrt(64)=8 gives scores -1 and +1, a gap of 2. The winner is unchanged, but the two weights are about 12% and 88%.
 The concern is softmax saturation and weak gradient signals through the attention weights to Q and K. For two logits, the derivative of the winning probability with respect to its own softmax input is p(1-p): about 1.13e-7 before scaling and .105 after. With respect to the raw score, the latter also includes the factor 1/8. Do not generalize this to every loss derivative or claim that a confident prediction is always undesirable. We want sharp attention when learned relevance supports it, not merely because dimensions increased.
 Numerical overflow is a different issue. Subtracting the maximum leaves gaps and exact probabilities unchanged, but keeps exponentials bounded by one. In this example exp(8) is already representable, so saturation occurs without overflow. The stable implementation does not fix excessive concentration.
 Sources: Vaswani et al., Section 3.2.1, https://arxiv.org/html/1706.03762v7#S3.SS2.SSS1; SciPy softmax documentation, https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.softmax.html. Probabilities and derivatives are calculated from the illustrative scores.</script>
-  <p class="s12-example-lead">One query, two keys, $d_k=64$. Suppose their raw scores are −8 and +8. The scaling factor is $\sqrt{64}=8$.</p>
+  <p class="s12-example-lead">The two calculations, side by side. Dividing by $\sqrt{64}=8$ changes the score gap and the weights. <strong>B remains the winner.</strong></p>
   <div id="s12-saturation-table"></div>
   <div class="s12-explanation" data-build="1">
     <p><strong>The learning problem: softmax saturation.</strong> Near 0 or 1, the weights respond weakly to small score changes. Gradients through attention can become tiny, making queries and keys harder to adjust.</p>
@@ -9507,6 +9641,23 @@ alpha = scores.softmax(dim=-1)</code></pre>
   spread.table.querySelectorAll('thead th:nth-child(3),thead th:nth-child(4),tbody td:nth-child(3),tbody td:nth-child(4)').forEach(el=>el.setAttribute('data-build','1'));
 
   const saturationScores=[[-8,8],[-1,1]],saturationWeights=saturationScores.map(scores=>AT.softmax(scores));
+  ['raw','scaled'].forEach((name,i)=>{
+    const scores=saturationScores[i],exponentials=scores.map(x=>Math.exp(x));
+    const sum=exponentials.reduce((a,b)=>a+b,0),weights=exponentials.map(x=>x/sum);
+    const frame=S.querySelector('#s12-frame-softmax-'+name);
+    frame.dataset.working=JSON.stringify({scores,exponentials,sum,weights});
+    const table=AT.ui.table(scores.map((s,j)=>[s,exponentials[j]]),{
+      cols:[{label:'Score $s_j$',decimals:0},{label:'Exponential $e^{s_j}$',decimals:8}],
+      rowLabels:['Key A','Key B'],cornerLabel:'source',
+      footer:{label:'Sum of exponentials',values:['',sum],decimals:8},
+      into:S.querySelector('#s12-softmax-'+name+'-table')});
+    table.table.querySelectorAll('thead th:nth-child(3),tbody td:nth-child(3),tfoot').forEach(el=>el.setAttribute('data-build','1'));
+    const host=S.querySelector('#s12-softmax-'+name+'-weights');
+    weights.forEach((weight,j)=>{
+      const equation=AT.h('div');host.appendChild(equation);
+      AT.tex(equation,'\\va{\\alpha_'+['A','B'][j]+'}=\\frac{'+exponentials[j].toFixed(8)+'}{'+sum.toFixed(8)+'}\\approx '+weight.toFixed(i?8:10)+'\\quad('+ (100*weight).toFixed(i?2:5)+'\\%)',{display:true});
+    });
+  });
   S.querySelector('#s12-saturation-table').dataset.example=JSON.stringify({d:64,scores:saturationScores,weights:saturationWeights});
   AT.ui.table(saturationScores.map((scores,i)=>[
     '['+scores.map(x=>AT.fmt(x,0)).join(', ')+']',scores[1]-scores[0],

@@ -1,4 +1,4 @@
-// Protect the opening flow: task -> lookup -> coordinate meaning -> order -> position
+// Protect the opening flow: Part 1 recap -> Transformer paper -> task -> lookup -> coordinate meaning -> order -> position
 // -> concrete sentence matrix -> context problem -> last-token baseline. Keep extra notation in
 // article companions instead of reintroducing standalone recap/caveat slides.
 // node src/check_position_intro.mjs [attention.html]
@@ -52,7 +52,7 @@ try{
       baselineStartingNotation:document.querySelector('#s02-frame-head .head-key .head-input').textContent.includes('before context updates')
     };
   });
-  assert.deepEqual(content.flow,['s01-frame1','s01-frame-probabilities','s01-frame-lookup','s01-frame-coordinates','s01-frame-order','s01-frame2','s01-frame-starting-row'],'Define coordinate meaning before position; do not add repeated position recaps.');
+  assert.deepEqual(content.flow,['s01-recap-model','s01-recap-context','s01-paper-intro','s01-paper-importance','s01-paper-architecture','s01-frame1','s01-frame-probabilities','s01-frame-lookup','s01-frame-coordinates','s01-frame-order','s01-frame2','s01-frame-starting-row'],'Start with the requested recap and paper orientation, then define coordinate meaning before position.');
   assert(content.notationInArticle&&content.modelScopeInArticle,'Keep elaboration with the example in the article, not on extra recap slides.');
   assert(content.baselineBridge,'The next experiment must explicitly start from the ten-row matrix.');
   assert(content.baselineRow.every(expr=>!expr.includes('e_t')&&!expr.includes('^{(0)}')),'Keep the first baseline view on the already-defined row e_10.');
@@ -95,7 +95,7 @@ try{
       nextStep:document.querySelector('#s02-frame2 .same-next').textContent
     };
   });
-  assert.deepEqual(problem.flow,['s02-frame-problem','s02-frame1','s02-frame-probabilities','s02-frame-head','s02-frame-head-softmax','s02-frame2'],'State the problem, test the baseline, then explain its nodes, scores and probabilities in order.');
+  assert.deepEqual(problem.flow,['s02-topic-break','s02-frame-problem','s02-frame1','s02-frame-probabilities','s02-frame-head','s02-frame-head-softmax','s02-frame2'],'Pause at the topic break, state the problem, test the baseline, then explain its nodes, scores and probabilities in order.');
   assert.deepEqual(problem.sentences,problem.expected,'Use the exact two contexts from the numerical example.');
   assert.deepEqual(problem.clues,['river','cheque']);
   assert.deepEqual(problem.endings,['and watched the ___','and watched the ___']);

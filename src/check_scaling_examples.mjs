@@ -8,7 +8,7 @@ import {softmax} from './toy_ref.mjs';
 const require=createRequire(import.meta.url);
 const {chromium}=require(process.env.PLAYWRIGHT_PATH||'/Users/nipun/.npm/_npx/360550e4913b8759/node_modules/playwright');
 const shots=fs.mkdtempSync('/private/tmp/scaling-examples-');
-const ids=['s12-frame-scaling','s12-frame-draws','s12-frame-spread','s12-frame-variance','s12-frame-softmax','s12-frame-bank'];
+const ids=['s12-frame-scaling','s12-frame-draws','s12-frame-spread','s12-frame-variance','s12-frame-softmax-raw','s12-frame-softmax-scaled','s12-frame-softmax','s12-frame-bank'];
 const near=(a,b)=>assert(Math.abs(a-b)<1e-10,`${a} differs from ${b}`);
 function rng(seed){let a=seed>>>0;return()=>{a+=0x6D2B79F5;let t=a;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};}
 const browser=await chromium.launch();
@@ -48,6 +48,22 @@ try{
     assert.equal(+r[1],i?2:16);
     assert.deepEqual(r.slice(2),prob[i].map(x=>(100*x).toFixed(i?2:5)+'%'));
   });
+  for(const [i,name]of ['raw','scaled'].entries()){
+    const working=await page.locator('#s12-frame-softmax-'+name).evaluate(e=>JSON.parse(e.dataset.working));
+    const scores=i?scaled:raw,exps=scores.map(Math.exp),sum=exps.reduce((a,b)=>a+b,0);
+    assert.deepEqual(working.scores,scores);
+    working.exponentials.forEach((x,j)=>near(x,exps[j]));near(working.sum,sum);
+    working.weights.forEach((x,j)=>near(x,prob[i][j]));near(working.weights.reduce((a,b)=>a+b),1);
+    assert.deepEqual(await rows('#s12-softmax-'+name+'-table'),scores.map((s,j)=>[s<0?'−'+(-s):String(s),exps[j].toFixed(8)]));
+    assert.equal(await page.locator('#s12-softmax-'+name+'-table tfoot td').last().textContent(),sum.toFixed(8));
+    const equations=await page.locator('#s12-softmax-'+name+'-weights annotation').allTextContents();
+    assert.equal(equations.length,2);
+    equations.forEach((tex,j)=>{
+      assert(tex.includes('\\frac{'+exps[j].toFixed(8)+'}{'+sum.toFixed(8)+'}'),'Each fraction uses its exponential and the common sum.');
+      assert(tex.includes(prob[i][j].toFixed(i?8:10)),'Displayed weight agrees with the independent reference.');
+      assert(tex.includes((100*prob[i][j]).toFixed(i?2:5)+'\\%'),'Percentage equals 100 times the weight.');
+    });
+  }
   const stable=softmax(raw.map(x=>x-Math.max(...raw)));
   stable.forEach((x,j)=>near(x,prob[0][j]));
   assert(Number.isFinite(Math.exp(8)),'This example saturates without exponential overflow.');
@@ -116,11 +132,18 @@ try{
   assert.match(await page.locator('#s12-frame-variance').innerText(),/independent products, the variances add/);
   assert.match(await page.locator('#s12-frame-variance').innerText(),/Learned vectors need not obey/);
   for(let i=0;i<ids.length;i++){
-    for(const build of ['s12-frame-draws','s12-frame-bank'].includes(ids[i])?[0]:[0,1,0,1]){
+    const working=['s12-frame-softmax-raw','s12-frame-softmax-scaled'].includes(ids[i]);
+    for(const build of working?[0,1,2,1,0,2]:['s12-frame-draws','s12-frame-bank'].includes(ids[i])?[0]:[0,1,0,1]){
       await go(ids[i],build);
       assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,ids[i]+' fits');
       const reveals=await page.locator('#'+ids[i]+' [data-build="1"]').evaluateAll(es=>es.map(e=>getComputedStyle(e).visibility));
       assert(reveals.every(v=>v===(build?'visible':'hidden')),'Reveal and reverse all pieces together.');
+      if(working){
+        for(const n of [1,2]){
+          const states=await page.locator('#'+ids[i]+' [data-build="'+n+'"],#'+ids[i]+' [data-build="'+n+'"] .katex-html *').evaluateAll(es=>es.filter(e=>e.hasAttribute('data-build')||(!e.children.length&&e.textContent.trim())).map(e=>getComputedStyle(e).visibility));
+          assert(states.length>0);assert(states.every(v=>v===(build>=n?'visible':'hidden')),'Working and math leaves reveal in order, also in reverse.');
+        }
+      }
       if(ids[i]==='s12-frame-variance'){
         const leaves=await page.locator('#s12-frame-variance [data-build="1"] .katex-html *').evaluateAll(es=>es.filter(e=>!e.children.length&&e.textContent.trim()).map(e=>getComputedStyle(e).visibility));
         assert(leaves.every(v=>v===(build?'visible':'hidden')),'Square roots and subscripts follow forward and reverse reveals.');
@@ -140,5 +163,5 @@ try{
   }
   assert.equal(await page.evaluate(()=>JSON.stringify(AT.model)),model,'Explanatory experiments do not alter the model.');
   assert.deepEqual(await page.locator('#s12 .katex-error').allTextContents(),[]);assert.deepEqual(errors,[]);
-  console.log('PASS: live draw/batch/reset simulation, exact histograms and summary agreement, enumerated variance derivation, independent 3,000-pair calculations, common-scale bars, softmax/gradient contrast, reveals/navigation and phone layout. Screenshots: '+shots);
+  console.log('PASS: live draw/batch/reset simulation, exact histograms and summary agreement, enumerated variance derivation, independent 3,000-pair calculations, complete softmax exponential/sum/division arithmetic, common-scale bars, gradient contrast, reveals/navigation and phone layout. Screenshots: '+shots);
 }finally{await browser.close();}

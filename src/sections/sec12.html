@@ -35,6 +35,10 @@ body.present #s12 .dt td,body.present #s12 .dt th{font-size:22px;padding:.2em .4
 #s12 .s12-live-pair .q{color:var(--c-q)}
 #s12 .s12-live-pair .k{color:var(--c-k)}
 #s12 .s12-live-pair .a{color:var(--c-a)}
+#s12 .s12-softmax-work .s12-example-lead{margin-bottom:12px}
+#s12 .s12-softmax-weights .katex-display{margin:16px 0}
+#s12 .s12-softmax-work .s12-work-note{margin:12px 0 0;font-size:19px;line-height:1.4}
+body.present #s12 .s12-softmax-work .s12-work-note{font-size:23px}
 body.present #s12 .s12-draw-controls,body.present #s12 .s12-live-pair{font-size:22px}
 body.present #s12 .s12-math-step{font-size:24px}
 body.present #s12 .s12-math-step .katex-display{margin:10px 0}
@@ -137,13 +141,34 @@ Source: Vaswani et al., Attention Is All You Need, Section 3.2.1, footnote 1, ht
   <p class="s12-example-note"><strong>Other distributions work too.</strong> Independent query/key coordinates with mean 0 and variance 1 (e.g. standard normal) give the same result. Their squared product averages 1. Learned vectors need not obey these assumptions exactly.</p>
 </div>
 
+<div class="frame s12-softmax-work" id="s12-frame-softmax-raw" data-title="Softmax for the raw scores −8 and +8" data-autobuild="off">
+<script type="text/x-notes">One query compares two keys, A and B. This is the same illustrative d_k=64 example used in the comparison after these two worked slides. We first leave the scores unscaled.
+Softmax exponentiates each score, adds the exponentials, then divides each exponential by that shared sum. Here e is Euler's number, approximately 2.718, not a token embedding. Start with the score column. Reveal the exponential column and the sum. The negative score still has a positive exponential, but it is tiny next to exp(8). The last row adds the exponentials, not the scores.
+Reveal both fractions. Both keys use the same denominator. The results are weights between zero and one which sum to one. The small weight is positive, not exactly zero. Convert to percentages by multiplying by 100. Displayed exponentials are rounded to eight decimal places, raw weights to ten, and percentages to five. Compute all results from unrounded inputs. This example is numerically representable, so the near-one-hot result does not require overflow.
+Source for the softmax definition: https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.softmax.html. These numbers are calculated from the illustrative scores.</script>
+  <p class="s12-example-lead">One query, keys A and B, $d_k=64$. First, use the <strong>raw scores</strong>. Softmax exponentiates each score, then divides by the sum of both exponentials.</p>
+  <div id="s12-softmax-raw-table"></div>
+  <div class="s12-softmax-weights" id="s12-softmax-raw-weights" data-build="2"></div>
+  <p class="s12-work-note" data-build="2"><strong>Almost all the weight goes to B.</strong> A's weight is tiny, but still positive. The two unrounded weights sum to 1.</p>
+</div>
+
+<div class="frame s12-softmax-work" id="s12-frame-softmax-scaled" data-title="Softmax after dividing the scores by 8" data-autobuild="off">
+<script type="text/x-notes">Keep the query and keys fixed. Divide both raw scores by sqrt(64)=8 before computing softmax: -8/8=-1 and 8/8=1. Repeat exactly the same operations as on the previous slide.
+Reveal exp(-1), exp(1), and their sum. Reveal the two normalized weights, about .1192 and .8808, or 11.92% and 88.08%. The same denominator appears in both fractions. B still receives more weight, but A is no longer almost excluded. Softmax responds to score gaps: a gap of sixteen became a gap of two. The next slide explains why this matters for learning and separates saturation from numerical overflow. Scaling is applied to the scores, not to the weights after softmax. All values come from the same unrounded scores as the comparison table.
+Source: Vaswani et al., Attention Is All You Need, Section 3.2.1, https://arxiv.org/html/1706.03762v7#S3.SS2.SSS1. Softmax definition: https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.softmax.html.</script>
+  <p class="s12-example-lead">The scaling factor is $\sqrt{64}=8$: $-8/8=-1$ and $8/8=1$. Now repeat <strong>the same softmax calculation</strong>.</p>
+  <div id="s12-softmax-scaled-table"></div>
+  <div class="s12-softmax-weights" id="s12-softmax-scaled-weights" data-build="2"></div>
+  <p class="s12-work-note" data-build="2"><strong>B still gets more weight.</strong> The score gap fell from 16 to 2, so A now contributes meaningfully too.</p>
+</div>
+
 <div class="frame" id="s12-frame-softmax" data-title="Large score gaps can make softmax almost one-hot" data-autobuild="off">
 <script type="text/x-notes">What problem does a wide score spread cause?
-Use a separate illustrative two-key example at d_k=64. Suppose the raw scores are -8 and +8, a gap of 16. Softmax gives almost all weight to the second value. Dividing by sqrt(64)=8 gives scores -1 and +1, a gap of 2. The winner is unchanged, but the two weights are about 12% and 88%.
+Summarize the same illustrative two-key example at d_k=64. The raw scores are -8 and +8, a gap of 16. Softmax gives almost all weight to the second value. Dividing by sqrt(64)=8 gives scores -1 and +1, a gap of 2. The winner is unchanged, but the two weights are about 12% and 88%.
 The concern is softmax saturation and weak gradient signals through the attention weights to Q and K. For two logits, the derivative of the winning probability with respect to its own softmax input is p(1-p): about 1.13e-7 before scaling and .105 after. With respect to the raw score, the latter also includes the factor 1/8. Do not generalize this to every loss derivative or claim that a confident prediction is always undesirable. We want sharp attention when learned relevance supports it, not merely because dimensions increased.
 Numerical overflow is a different issue. Subtracting the maximum leaves gaps and exact probabilities unchanged, but keeps exponentials bounded by one. In this example exp(8) is already representable, so saturation occurs without overflow. The stable implementation does not fix excessive concentration.
 Sources: Vaswani et al., Section 3.2.1, https://arxiv.org/html/1706.03762v7#S3.SS2.SSS1; SciPy softmax documentation, https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.softmax.html. Probabilities and derivatives are calculated from the illustrative scores.</script>
-  <p class="s12-example-lead">One query, two keys, $d_k=64$. Suppose their raw scores are −8 and +8. The scaling factor is $\sqrt{64}=8$.</p>
+  <p class="s12-example-lead">The two calculations, side by side. Dividing by $\sqrt{64}=8$ changes the score gap and the weights. <strong>B remains the winner.</strong></p>
   <div id="s12-saturation-table"></div>
   <div class="s12-explanation" data-build="1">
     <p><strong>The learning problem: softmax saturation.</strong> Near 0 or 1, the weights respond weakly to small score changes. Gradients through attention can become tiny, making queries and keys harder to adjust.</p>
@@ -308,6 +333,23 @@ alpha = scores.softmax(dim=-1)</code></pre>
   spread.table.querySelectorAll('thead th:nth-child(3),thead th:nth-child(4),tbody td:nth-child(3),tbody td:nth-child(4)').forEach(el=>el.setAttribute('data-build','1'));
 
   const saturationScores=[[-8,8],[-1,1]],saturationWeights=saturationScores.map(scores=>AT.softmax(scores));
+  ['raw','scaled'].forEach((name,i)=>{
+    const scores=saturationScores[i],exponentials=scores.map(x=>Math.exp(x));
+    const sum=exponentials.reduce((a,b)=>a+b,0),weights=exponentials.map(x=>x/sum);
+    const frame=S.querySelector('#s12-frame-softmax-'+name);
+    frame.dataset.working=JSON.stringify({scores,exponentials,sum,weights});
+    const table=AT.ui.table(scores.map((s,j)=>[s,exponentials[j]]),{
+      cols:[{label:'Score $s_j$',decimals:0},{label:'Exponential $e^{s_j}$',decimals:8}],
+      rowLabels:['Key A','Key B'],cornerLabel:'source',
+      footer:{label:'Sum of exponentials',values:['',sum],decimals:8},
+      into:S.querySelector('#s12-softmax-'+name+'-table')});
+    table.table.querySelectorAll('thead th:nth-child(3),tbody td:nth-child(3),tfoot').forEach(el=>el.setAttribute('data-build','1'));
+    const host=S.querySelector('#s12-softmax-'+name+'-weights');
+    weights.forEach((weight,j)=>{
+      const equation=AT.h('div');host.appendChild(equation);
+      AT.tex(equation,'\\va{\\alpha_'+['A','B'][j]+'}=\\frac{'+exponentials[j].toFixed(8)+'}{'+sum.toFixed(8)+'}\\approx '+weight.toFixed(i?8:10)+'\\quad('+ (100*weight).toFixed(i?2:5)+'\\%)',{display:true});
+    });
+  });
   S.querySelector('#s12-saturation-table').dataset.example=JSON.stringify({d:64,scores:saturationScores,weights:saturationWeights});
   AT.ui.table(saturationScores.map((scores,i)=>[
     '['+scores.map(x=>AT.fmt(x,0)).join(', ')+']',scores[1]-scores[0],
