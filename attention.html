@@ -5839,12 +5839,28 @@ body.present #s05 .retrieval-intro{font-size:24px;line-height:1.4}
 body.present #s05 .retrieval-intro h3{font-size:64px}
 body.present #s05 .retrieval-intro .detour-kicker{font-size:18px}
 body.present #s05 .retrieval-roles{grid-template-columns:115px minmax(0,1fr);gap:14px 24px}
-#s05 .search-example{display:grid;grid-template-columns:1fr 1fr;gap:24px;border-top:1px solid var(--line);padding-top:18px;font-size:18px;line-height:1.4}
-#s05 .search-example h3{font-size:18px;line-height:1.3;margin:0 0 10px}
-#s05 .search-example p{margin:0}
-body.present #s05 .search-example{font-size:24px;gap:36px}
-body.present #s05 .search-example h3{font-size:22px}
-@media(max-width:640px){body:not(.present) #s05 .search-example{grid-template-columns:1fr}}
+#s05 .search-example{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.3fr);gap:28px;border-top:1px solid var(--line);padding-top:18px;font-size:18px;line-height:1.4}
+#s05 .search-example h3{font-size:20px;line-height:1.3;margin:0 0 10px}
+#s05 .search-example p{margin:10px 0}
+#s05 .example-source{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+#s05 .example-source .vthumb{display:block;width:128px;height:72px;flex:none}
+#s05 .example-source strong{font-size:25px}
+#s05 .transcript-label{font-size:14px;color:var(--ink-2);margin:0 0 8px}
+#s05 .example-transcript{margin:0;border-left:3px solid var(--c-v);padding:0 0 0 16px}
+#s05 .example-transcript p{margin:0 0 10px}
+#s05 .example-transcript strong{color:var(--c-v)}
+#s05 .example-takeaway{border-top:1px solid var(--line);padding-top:14px;font-size:19px;line-height:1.4}
+#s05 .role-example-table{width:100%;border-collapse:collapse;font-size:19px;line-height:1.4;margin:24px 0}
+#s05 .role-example-table th,#s05 .role-example-table td{text-align:left;padding:14px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+#s05 .role-example-table th{font-weight:650}
+#s05 .role-example-table .chosen{background:var(--t-v)}
+body.present #s05 .search-example{font-size:23px;gap:36px}
+body.present #s05 .search-example h3{font-size:25px}
+body.present #s05 .example-source strong{font-size:28px}
+body.present #s05 .transcript-label{font-size:19px}
+body.present #s05 .example-takeaway{font-size:24px}
+body.present #s05 .role-example-table{font-size:25px}
+@media(max-width:640px){body:not(.present) #s05 .search-example{grid-template-columns:1fr}body:not(.present) #s05 .role-example-table{font-size:16px}body:not(.present) #s05 .role-example-table th,body:not(.present) #s05 .role-example-table td{padding:10px 6px}}
 #s05 .concept-copy{font-size:19px;line-height:1.4}
 #s05 .concept-copy p{margin:14px 0}
 #s05 .axis-definitions{display:grid;grid-template-columns:200px minmax(0,1fr);gap:18px 24px;margin:24px 0}
@@ -6113,21 +6129,42 @@ These are the same six items for all four queries. We have already compared the 
   </div>
 </div>
 
-<div class="frame" id="s05-frame-three-jobs" data-title="Matching topics and returned information" data-autobuild="off">
-  <script type="text/x-notes">Which pair decides relevance, and which object travels?
-The selected query has chosen a source through its key. For gradients, Backpropagation matches the topic and returns the chain-rule explanation. For overfitting, Regularisation returns its explanation about penalising complexity. Reveal the returned information as the value. The content and the matching description have different jobs. Both come from the same selected source. The following slide gives the information a numerical value representation.</script>
-  <div class="prose"><p>We found a video for the <span class="sym-q">query</span>: <strong class="s05-qtext"></strong></p></div>
+<div class="frame" id="s05-frame-three-jobs" data-title="The video's key and value" data-autobuild="off">
+  <script type="text/x-notes">Does knowing the video's topic answer the learner's question?
+Keep the selected video attached to both roles. Its key is a representation used to compare with the query. A strong gradient-flow coordinate makes Backpropagation a good match, but does not explain the chain rule. Reveal the illustrative transcript: this is the kind of information the learner wanted. In our numerical analogy the value represents information from this content, not the topic label or the match score. The text was written for this lesson, not transcribed from a real video. The existing diagram thumbnail identifies the same video as in the results. Changing the earlier query updates this entire example to the matched source. After two everyday/language examples, the eight-coordinate value representation makes the analogy numerical. Real attention mixes learned value vectors, not English transcripts.</script>
+  <p class="payload-question"><span class="sym-q">Query:</span> <strong class="s05-qtext"></strong></p>
+  <div class="example-source"><span id="s05-example-thumbnail"></span><strong id="s05-example-title"></strong></div>
   <div class="search-example">
-    <div><h3 class="sym-k">1. Match the topic (key)</h3><p><strong id="s05-example-title"></strong> covers <span id="s05-example-topic" class="sym-k"></span>.</p></div>
-    <div data-build="1"><h3 class="sym-v">2. Get its explanation (value)</h3><p id="s05-example-explanation"></p></div>
+    <div><h3 class="sym-k">Key: why this video matches</h3><p>Its topic description signals <strong id="s05-example-topic" class="sym-k"></strong>.</p><p>Compare this description with the query. It helps select the video; it does not yet explain the topic.</p></div>
+    <div data-build="1"><h3 class="sym-v">Value: information from this video</h3><p class="transcript-label">Illustrative transcript · written for this example</p><blockquote class="example-transcript" id="s05-example-transcript"></blockquote></div>
   </div>
+  <p class="example-takeaway" data-build="2">The <span class="sym-k">key</span> helps find the source. The <span class="sym-v">value</span> represents what we take from it. Next, we will express that information as numbers.</p>
+</div>
+
+<div class="frame" id="s05-frame-contact-example" data-title="A contact's name and phone extension" data-autobuild="off">
+  <script type="text/x-notes">If you ask to call the library, should the lookup return the word library?
+The request supplies the query. Contact names are lookup keys; phone extensions are the associated values. Reveal the extensions only after identifying Library as the match. If the library changes its extension, the same name can still find it but the returned value changes. This literal lookup is an analogy for the roles, not a claim that neural attention uses exact string equality or phone numbers. The directory and extensions are invented for the lesson.</script>
+  <div class="concept-copy"><p><span class="sym-q">Query:</span> “Call the library.”</p></div>
+  <table class="role-example-table"><thead><tr><th class="sym-k">Key: contact to match</th><th class="sym-v" data-build="1">Value: extension to dial</th></tr></thead><tbody><tr class="chosen"><th class="sym-k">Library</th><td class="sym-v" data-build="1"><strong>204</strong></td></tr><tr><th class="sym-k">Admissions</th><td class="sym-v" data-build="1">118</td></tr></tbody></table>
+  <div class="concept-copy" data-build="1"><p>“Library” identifies the contact. <strong>204 lets us make the call.</strong> Returning the name alone would not give us the number.</p></div>
+  <p class="example-takeaway" data-build="2">A new extension changes the <span class="sym-v">value</span>; the contact can keep the same <span class="sym-k">key</span>.</p>
+  <p class="concept-note">Illustrative directory. Attention uses numerical representations and match scores rather than exact name lookup.</p>
+</div>
+
+<div class="frame" id="s05-frame-pronoun-example" data-title="A pronoun looking for a person" data-autobuild="off">
+  <script type="text/x-notes">What information might she need from the words before it?
+This is an imagined attention behavior, not a measured head. The receiver she could ask for a person it refers to. Maya's key could signal a person-name candidate; coat's key could signal an object. Maya's value could carry information about that person into she's updated representation. The key need only support the match, while the value carries features useful downstream. The same source supplies its paired key and value. We will later calculate a separate tiny example showing why asking for a person and offering person information need different mappings. Named roles are intuition; real learned coordinates need not be readable labels.</script>
+  <div class="concept-copy"><p><strong class="sym-k">Maya</strong> grabbed a coat because <strong class="sym-q">she</strong> was cold.</p><p><span class="sym-q">Query from “she”:</span> “Which earlier person could I refer to?”</p></div>
+  <table class="role-example-table"><thead><tr><th>Source</th><th class="sym-k">Key: useful match?</th><th class="sym-v" data-build="1">Value: information to send</th></tr></thead><tbody><tr class="chosen"><th>Maya</th><td class="sym-k">A person-name candidate</td><td class="sym-v" data-build="1">Identity: Maya; number: singular</td></tr><tr><th>coat</th><td class="sym-k">An object, not a person</td><td class="sym-v" data-build="1">Identity: coat; number: singular</td></tr></tbody></table>
+  <p class="example-takeaway" data-build="2">A strong match lets <span class="sym-q">“she”</span> receive more of <span class="sym-v">Maya's information</span>. The output is a context vector, not the word “Maya”.</p>
+  <p class="concept-note">A possible learned behavior, illustrated in words. The real queries, keys and values are vectors.</p>
 </div>
 
 <div class="frame" id="s05-frame-value-axes" data-title="Eight details the value can carry" data-autobuild="off">
   <script type="text/x-notes">What specific information does the retrieved video supply?
 The key used four broad topics to match the question. The value uses eight more specific content features. Read the coordinate names and meanings before the numbers. Backpropagation has a strong chain-rule signal and a smaller gradient-step signal. Zero means no signal for that feature in this illustrative encoding. These numbers are chosen by hand on a zero-to-one scale, not measured coverage, probabilities or the literal contents of a video. Learned value coordinates need not have human-readable names. All subsequent video retrieval calculations reuse these eight coordinates in this order.</script>
   <div class="concept-copy">
-    <p><span class="sym-k">Key: four broad matching topics.</span> <span class="sym-v">Value: eight specific content features.</span></p>
+    <p><span class="sym-q">Query</span> and <span class="sym-k">key</span> each have <strong>four matching coordinates</strong> for their dot product. The <span class="sym-v">value</span> has <strong>eight content coordinates</strong>; we do not dot it with the query.</p>
     <div id="s05-value-axis-guide"></div>
     <p class="concept-note" data-build="1">Hand-chosen strengths: <strong>0 = no signal, 1 = strong signal</strong>. They need not sum to 1. Learned coordinates need not have these names.</p>
   </div>
@@ -6143,7 +6180,7 @@ Timing: two minutes.
   <div class="card">
     <h3 class="card-title">The same eight <span class="sym-v">content features</span> for every video</h3>
     <div id="s05-vals"></div>
-    <p class="concept-note">$\vv{v_j}$: one $1\times8$ row for video $j$. We keep these numbers and their order throughout retrieval.</p>
+    <p class="concept-note">$\vv{v_j}$: one $1\times8$ row per video, reused throughout retrieval. Values <strong>can</strong> share width and information with keys. Their <strong>use</strong> differs; eight is our choice here.</p>
     <p class="companion look" id="s05-vread"></p>
   </div>
 </div>
@@ -6249,6 +6286,26 @@ Reveal the query, then the winning video's key, then its value. Each SVG lists t
       {title:'Weight penalty',axis:6,text:'Add a cost for large weights to the training objective.'},
       {title:'Dropout',axis:7,text:'Randomly set some activations to zero during training.'},
       {title:'Generalisation check',text:'Evaluate on held-out examples to check whether these choices help.'}
+    ]
+  };
+  // Fictional excerpts ground the analogy; they are not transcripts of real videos.
+  const TRANSCRIPTS = {
+    0: [
+      ['Start at the loss. ', 'How much would it change if the output changed?'],
+      ['Work backwards using the ', 'chain rule', ': multiply by each local derivative, adding contributions where paths meet.'],
+      ['This gives a gradient for each weight. ', 'The optimiser uses those gradients to update the weights.']
+    ],
+    1: [
+      ['The gradient points towards ', 'increasing loss', '. To try to reduce the loss, move the weights the other way.'],
+      ['The ', 'learning rate', ' sets the size of that step. Too large a step can overshoot.']
+    ],
+    2: [
+      ['Place a small filter over a patch of the image. ', 'Multiply and add the nearby pixel values', ' using the filter weights.'],
+      ['Slide it to the next patch and ', 'reuse the same weights', '. The responses form a feature map.']
+    ],
+    5: [
+      ['A ', 'weight penalty', ' adds a cost for large weights to the training objective.'],
+      ['With ', 'dropout', ', randomly set some activations to zero during training. Check on held-out data whether this helps.']
     ]
   };
   const titles = VIDEOS.map(V => V.title);
@@ -6476,8 +6533,10 @@ Reveal the query, then the winning video's key, then its value. Each SVG lists t
     dot.scoreCells.forEach((td, j) => td.setAttribute('data-build', String(j + 1)));
     const rq = readRow(Q.q, KEY_AXES), rk = readRow(VIDEOS[top].k, KEY_AXES), rv = readRow(VIDEOS[top].v, VAL_AXES);
     S.querySelector('#s05-example-title').textContent = VIDEOS[top].title;
+    S.querySelector('#s05-example-thumbnail').replaceChildren(thumb(VIDEOS[top].kind,VIDEOS[top].title));
+    S.querySelector('#s05-example-transcript').replaceChildren(...TRANSCRIPTS[top].map(parts=>AT.h('p',{},parts[0],AT.h('strong',{},parts[1]),parts[2]||'')));
+    S.querySelector('#s05-example-transcript').dataset.source=String(top);
     S.querySelector('#s05-example-topic').textContent = KEY_TOPICS[rk.top];
-    S.querySelector('#s05-example-explanation').textContent = VIDEOS[top].summary;
     queryVector.update([Q.q]);markStrongest(queryVector,[Q.q]);
     queryExamples.rowEls.forEach((row,j)=>row.classList.toggle('is-selected',j===qi));
     keyCollection.update([Q.q,...VIDEOS.map(V=>V.k)]);markStrongest(keyCollection,[Q.q,...VIDEOS.map(V=>V.k)]);
@@ -8372,6 +8431,18 @@ body.present #s11 .s11-projection-calc .calc-rounding{display:none}
 #s11 .s11-calc-caption{font-size:18px;line-height:1.4}
 body.present #s11 .s11-calc-caption{font-size:22px}
 body.present #s11-frame3 .motif.has-active [data-stage]{opacity:1}
+#s11 .s11-role-copy{font-size:19px;line-height:1.4}
+#s11 .s11-role-copy p{margin:12px 0}
+#s11 .s11-role-copy .role-widths{color:var(--ink-2)}
+#s11 .s11-role-table{width:100%;border-collapse:collapse;margin:12px 0}
+#s11 .s11-role-table th,#s11 .s11-role-table td{text-align:left;padding:8px 14px;border-bottom:1px solid var(--line)}
+#s11 .s11-role-table td{font-family:var(--font-mono)}
+#s11 .s11-role-reading{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:14px 0}
+#s11 .s11-role-reading p{margin:0}
+#s11 .s11-role-conclusion{border-top:1px solid var(--line);padding-top:14px}
+body.present #s11 .s11-role-copy{font-size:24px;line-height:1.35}
+body.present #s11 .s11-role-copy .katex-display{margin:10px 0}
+@media(max-width:640px){body:not(.present) #s11 .s11-role-table{font-size:15px}body:not(.present) #s11 .s11-role-table th,body:not(.present) #s11 .s11-role-table td{padding:8px 5px}body:not(.present) #s11 .s11-role-reading{grid-template-columns:1fr;gap:12px}}
 </style>
 <header class="sec-head">
   <span class="sec-num">11</span>
@@ -8396,6 +8467,28 @@ No: the trainable projection matrices transform the current token row. These pro
   <p>The matrices are learned parameters, fixed during a forward pass. The rows are recomputed from the input; none replaces $\ve{e_i}$. Our example uses hand-set parameters.</p>
 </div>
 
+</div>
+<div class="frame" id="s11-frame-separate-maps" data-title="Same width, different learned mappings" data-autobuild="off">
+  <script type="text/x-notes">If query and key must align, why not use the same matrix?
+They must have the same width d_k, but the matrices need not have the same entries. Both W_Q and W_K have shape d_model by d_k. Return to the pronoun example. This separate, hand-chosen two-feature toy uses e_Maya=[1,0], e_she=[0,1], with features person name and seeks person. W_Q=[0;1] reads the second feature and W_K=[1;0] reads the first. Both output one person-match coordinate. She asking about Maya scores 1, whereas Maya asking about she scores 0. These are raw scores before any mask, scaling or row softmax. Sharing one projection would make these raw pair scores symmetric, although masking and row softmax can still make the final weights asymmetric. Tying is possible; separate projections remove that restriction. This is not a claim that a trained model assigns these exact meanings or numbers. The miniature example does not replace our bank model. W_V separately chooses the features sent downstream. It can have shape d_model by d_v; d_v can differ from d_k because the weight on each value is a scalar. All three matrices learn together from the task loss, not from hand-written questions or key/value labels.
+Source for the attention operation and projection dimensions: Vaswani et al., Attention Is All You Need, Sections 3.2.1–3.2.2, https://arxiv.org/html/1706.03762v7#S3.SS2. The directional toy and tied-score identity are illustrative derivations.</script>
+  <div class="s11-role-copy">
+    <p><span class="sym-q">Query</span> and <span class="sym-k">key</span> both have $d_k$ coordinates. $W_Q$ and $W_K$ both have shape $d_{\text{model}}\times d_k$—<strong>their entries can differ.</strong></p>
+    <p class="role-widths">Tiny hand-chosen example: input = [person name, seeks person]. Both outputs use one “person match” coordinate.</p>
+    <table class="s11-role-table"><thead><tr><th>Token</th><th>Input row</th><th class="sym-q">Query</th><th class="sym-k">Key</th></tr></thead><tbody><tr><th>Maya</th><td>[1, 0]</td><td class="sym-q">[0]</td><td class="sym-k">[1]</td></tr><tr><th>she</th><td>[0, 1]</td><td class="sym-q">[1]</td><td class="sym-k">[0]</td></tr></tbody></table>
+    <div class="s11-role-reading"><p><span class="sym-q">$W_Q$ reads “seeks person”.</span><br>What does this token need?</p><p><span class="sym-k">$W_K$ reads “person name”.</span><br>When could this token help?</p></div>
+    <div data-build="1">
+      $$\vq{q_{\text{she}}}\cdot\vk{k_{\text{Maya}}}=1,\qquad \vq{q_{\text{Maya}}}\cdot\vk{k_{\text{she}}}=0$$
+      <p class="s11-role-conclusion">Tying $W_Q=W_K$ is possible, but forces symmetric <strong>raw scores</strong>. Separate mappings let the two directions differ.</p>
+    </div>
+  </div>
+  <div class="companion prose">
+    <p>For the two-feature example, the row-vector convention gives</p>
+    $$W_Q=\begin{bmatrix}0\\1\end{bmatrix},\qquad W_K=\begin{bmatrix}1\\0\end{bmatrix}.$$
+    <p>If both projections use one matrix $W$, then $(e_iW)\cdot(e_jW)=(e_jW)\cdot(e_iW)$. This restriction is on raw dot products, not the final masked and row-normalized attention weights.</p>
+    <p><strong>Why a separate value mapping?</strong> $\vv{v_j}=\ve{e_j}W_V$ chooses what information to send, rather than what helps match. $W_V$ has shape $d_{\text{model}}\times d_v$. The scalar $\va{\alpha_{ij}}$ multiplies every coordinate of $\vv{v_j}$, so $d_v$ need not equal $d_k$. Within a head all source values must have the same width so we can add them. A value may share information with a key; the roles do not require disjoint features, different numerical values, or different widths.</p>
+    <p>Holding Q and K fixed while changing V leaves this attention operation's match scores unchanged, but changes the retrieved message. During training, all three mappings learn together from the downstream loss. These are learned feature combinations, not manually assigned labels.</p>
+  </div>
 </div>
 <div class="companion" id="s11-frame-projections" data-title="One input row, three different jobs">
   <script type="text/x-notes">

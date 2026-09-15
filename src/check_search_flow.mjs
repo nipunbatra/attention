@@ -38,7 +38,8 @@ try{
   const order=await page.locator('#s05 .frame').evaluateAll(els=>els.map(e=>e.id));
   assert.deepEqual(order.slice(3,13),[...queryFrames,...keyFrames,'s05-frame-matching','s05-frame-results']);
   assert.deepEqual(order.slice(-4),['s05-frame-value-axes','s05-frame-values','s05-frame-payload','s05-frame-return'],'Unpack the returned content after defining its axes, before the compact recap.');
-  assert.equal(order.length,18,'One focused content explanation adds depth before the recap.');
+  assert.equal(order.length,20,'The video bridge is followed by contact and pronoun examples before numerical values.');
+  assert.deepEqual(order.slice(13,16),['s05-frame-three-jobs','s05-frame-contact-example','s05-frame-pronoun-example']);
   for(const id of queryFrames)assert(!/\b(keys?|values?)\b/i.test(await copy(id)),id+' must teach only the request before source roles.');
   assert.equal(keyFrames.length,4);
   assert((await copy('s05-frame-query-axes')).includes('not probabilities'));
@@ -125,7 +126,16 @@ try{
     await go('s05-frame-results');assert.equal(await page.locator('#s05-vgrid .is-top .vt').textContent(),titles[winner]);
     await go('s05-frame-three-jobs',1);
     assert.equal(await page.locator('#s05-example-title').textContent(),titles[winner]);
-    assert.equal(await page.locator('#s05-example-explanation').textContent(),await page.locator('#s05-return-summary').textContent());
+    assert.equal(await page.locator('#s05-example-transcript').getAttribute('data-source'),String(winner));
+    assert.equal(await page.locator('#s05-example-thumbnail svg title').textContent(),titles[winner]+' thumbnail');
+    assert((await page.locator('#s05-example-transcript').textContent()).includes(['chain rule','dropout','reuse the same weights','learning rate'][i]),'Each matched video supplies its own illustrative transcript.');
+    assert((await page.locator('#s05-frame-three-jobs .transcript-label').textContent()).includes('written for this example'));
+    for(const build of [0,1,2,0,2]){
+      await go('s05-frame-three-jobs',build);
+      assert.equal(await page.locator('#s05-example-transcript').evaluate(e=>getComputedStyle(e).visibility),build>=1?'visible':'hidden');
+      assert.equal(await page.locator('#s05-frame-three-jobs .example-takeaway').evaluate(e=>getComputedStyle(e).visibility),build>=2?'visible':'hidden');
+      if(build===2)await page.screenshot({path:path.join(shots,'key-value-transcript-'+i+'.png')});
+    }
     await go('s05-frame-payload');await page.locator('#s05-payload-qbtns button').nth(i).click();
     assert.equal(await page.locator('#s05-payload-title').textContent(),'Matched video '+(winner+1)+': '+titles[winner]);
     const lesson=await page.locator('#s05-payload-steps li').allTextContents();
@@ -288,7 +298,7 @@ try{
   assert.equal(await page.evaluate(()=>JSON.stringify({model:AT.model,p:AT.forward(AT.sentences.river).probs})),model);
   await page.evaluate(()=>AT.present.exit());await page.setViewportSize({width:390,height:844});
   assert.equal(await page.locator('#s06-mix .s06-weight-label:visible').count(),8,'Reading mode labels the weighted contributions it displays.');
-  for(const id of [...queryFrames,...keyFrames,...valueFrames,'s06-frame-hard-retrieval','s06-frame-scores']){
+  for(const id of [...queryFrames,...keyFrames,...valueFrames,'s05-frame-three-jobs','s05-frame-contact-example','s05-frame-pronoun-example','s06-frame-hard-retrieval','s06-frame-scores']){
     await page.locator('#'+id).scrollIntoViewIfNeeded();
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No phone document overflow.');
     await page.screenshot({path:path.join(shots,'phone-'+id+'.png')});

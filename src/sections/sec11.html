@@ -64,6 +64,18 @@ body.present #s11 .s11-projection-calc .calc-rounding{display:none}
 #s11 .s11-calc-caption{font-size:18px;line-height:1.4}
 body.present #s11 .s11-calc-caption{font-size:22px}
 body.present #s11-frame3 .motif.has-active [data-stage]{opacity:1}
+#s11 .s11-role-copy{font-size:19px;line-height:1.4}
+#s11 .s11-role-copy p{margin:12px 0}
+#s11 .s11-role-copy .role-widths{color:var(--ink-2)}
+#s11 .s11-role-table{width:100%;border-collapse:collapse;margin:12px 0}
+#s11 .s11-role-table th,#s11 .s11-role-table td{text-align:left;padding:8px 14px;border-bottom:1px solid var(--line)}
+#s11 .s11-role-table td{font-family:var(--font-mono)}
+#s11 .s11-role-reading{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:14px 0}
+#s11 .s11-role-reading p{margin:0}
+#s11 .s11-role-conclusion{border-top:1px solid var(--line);padding-top:14px}
+body.present #s11 .s11-role-copy{font-size:24px;line-height:1.35}
+body.present #s11 .s11-role-copy .katex-display{margin:10px 0}
+@media(max-width:640px){body:not(.present) #s11 .s11-role-table{font-size:15px}body:not(.present) #s11 .s11-role-table th,body:not(.present) #s11 .s11-role-table td{padding:8px 5px}body:not(.present) #s11 .s11-role-reading{grid-template-columns:1fr;gap:12px}}
 </style>
 <header class="sec-head">
   <span class="sec-num">11</span>
@@ -88,6 +100,28 @@ No: the trainable projection matrices transform the current token row. These pro
   <p>The matrices are learned parameters, fixed during a forward pass. The rows are recomputed from the input; none replaces $\ve{e_i}$. Our example uses hand-set parameters.</p>
 </div>
 
+</div>
+<div class="frame" id="s11-frame-separate-maps" data-title="Same width, different learned mappings" data-autobuild="off">
+  <script type="text/x-notes">If query and key must align, why not use the same matrix?
+They must have the same width d_k, but the matrices need not have the same entries. Both W_Q and W_K have shape d_model by d_k. Return to the pronoun example. This separate, hand-chosen two-feature toy uses e_Maya=[1,0], e_she=[0,1], with features person name and seeks person. W_Q=[0;1] reads the second feature and W_K=[1;0] reads the first. Both output one person-match coordinate. She asking about Maya scores 1, whereas Maya asking about she scores 0. These are raw scores before any mask, scaling or row softmax. Sharing one projection would make these raw pair scores symmetric, although masking and row softmax can still make the final weights asymmetric. Tying is possible; separate projections remove that restriction. This is not a claim that a trained model assigns these exact meanings or numbers. The miniature example does not replace our bank model. W_V separately chooses the features sent downstream. It can have shape d_model by d_v; d_v can differ from d_k because the weight on each value is a scalar. All three matrices learn together from the task loss, not from hand-written questions or key/value labels.
+Source for the attention operation and projection dimensions: Vaswani et al., Attention Is All You Need, Sections 3.2.1–3.2.2, https://arxiv.org/html/1706.03762v7#S3.SS2. The directional toy and tied-score identity are illustrative derivations.</script>
+  <div class="s11-role-copy">
+    <p><span class="sym-q">Query</span> and <span class="sym-k">key</span> both have $d_k$ coordinates. $W_Q$ and $W_K$ both have shape $d_{\text{model}}\times d_k$—<strong>their entries can differ.</strong></p>
+    <p class="role-widths">Tiny hand-chosen example: input = [person name, seeks person]. Both outputs use one “person match” coordinate.</p>
+    <table class="s11-role-table"><thead><tr><th>Token</th><th>Input row</th><th class="sym-q">Query</th><th class="sym-k">Key</th></tr></thead><tbody><tr><th>Maya</th><td>[1, 0]</td><td class="sym-q">[0]</td><td class="sym-k">[1]</td></tr><tr><th>she</th><td>[0, 1]</td><td class="sym-q">[1]</td><td class="sym-k">[0]</td></tr></tbody></table>
+    <div class="s11-role-reading"><p><span class="sym-q">$W_Q$ reads “seeks person”.</span><br>What does this token need?</p><p><span class="sym-k">$W_K$ reads “person name”.</span><br>When could this token help?</p></div>
+    <div data-build="1">
+      $$\vq{q_{\text{she}}}\cdot\vk{k_{\text{Maya}}}=1,\qquad \vq{q_{\text{Maya}}}\cdot\vk{k_{\text{she}}}=0$$
+      <p class="s11-role-conclusion">Tying $W_Q=W_K$ is possible, but forces symmetric <strong>raw scores</strong>. Separate mappings let the two directions differ.</p>
+    </div>
+  </div>
+  <div class="companion prose">
+    <p>For the two-feature example, the row-vector convention gives</p>
+    $$W_Q=\begin{bmatrix}0\\1\end{bmatrix},\qquad W_K=\begin{bmatrix}1\\0\end{bmatrix}.$$
+    <p>If both projections use one matrix $W$, then $(e_iW)\cdot(e_jW)=(e_jW)\cdot(e_iW)$. This restriction is on raw dot products, not the final masked and row-normalized attention weights.</p>
+    <p><strong>Why a separate value mapping?</strong> $\vv{v_j}=\ve{e_j}W_V$ chooses what information to send, rather than what helps match. $W_V$ has shape $d_{\text{model}}\times d_v$. The scalar $\va{\alpha_{ij}}$ multiplies every coordinate of $\vv{v_j}$, so $d_v$ need not equal $d_k$. Within a head all source values must have the same width so we can add them. A value may share information with a key; the roles do not require disjoint features, different numerical values, or different widths.</p>
+    <p>Holding Q and K fixed while changing V leaves this attention operation's match scores unchanged, but changes the retrieved message. During training, all three mappings learn together from the downstream loss. These are learned feature combinations, not manually assigned labels.</p>
+  </div>
 </div>
 <div class="companion" id="s11-frame-projections" data-title="One input row, three different jobs">
   <script type="text/x-notes">

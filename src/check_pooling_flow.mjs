@@ -463,7 +463,7 @@ try{
       assert.equal(await page.locator('.search-example>div').last().evaluate(e=>getComputedStyle(e).visibility),build?'visible':'hidden');
       assert.equal(await page.locator('#s05-example-title').textContent(),example.title);
       assert.equal(await page.locator('#s05-example-topic').textContent(),example.topic);
-      assert.equal(await page.locator('#s05-example-explanation').textContent(),example.summary);
+      assert.equal(await page.locator('#s05-example-transcript').getAttribute('data-source'),query===0?'0':'5');
       assert.equal(await page.locator('#s05-example-explanation').textContent(),await page.locator('#s05-return-summary').textContent(),'The preview and later returned value use the same source content.');
       assert.equal(await page.locator('#s05-vgrid .is-top .vt').textContent(),example.title);
       await page.screenshot({path:path.join(shots,`search-example-${query}-${build}.png`)});
