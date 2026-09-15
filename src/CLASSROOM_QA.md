@@ -1,5 +1,12 @@
 # Classroom release checks
 
+## 2026-09-15: live score-spread simulation and a classroom variance derivation
+
+- Added one interactive frame before the spread summary. It displays the latest width-4 query/key pair and its coordinate products while building score histograms for independent width-4 and width-16 experiments. Single-draw, add-100, finish-3,000 and reproducible reset controls preserve state across navigation. Both plots share horizontal and frequency scales, with exact counts in bar titles and numerical summaries in accessible descriptions. The completed samples feed the existing summary table directly.
+- Added one classroom derivation after the summary: a fair ±1 product has mean zero and variance one, independent variances add to d_k, and taking the square root gives SD sqrt(d_k). The reveal gives widths 4 and 16 as concrete examples and explains the scaled SD of one. Notes explain the vanishing cross terms, finite-sample variation and the limitations of the independence assumption, with the original paper as the primary source. The existing softmax-saturation and bank comparison follow unchanged.
+- The presentation skill guided the editable data charts, single-purpose slides, existing typography and role colours. Fixed nested KaTeX visibility locally in Section 12 so reverse reveals preserve square roots and subscripts. No numerical model, shared-runtime, dependency or other lecture changes.
+- Extended the scaling regression to independently reproduce individual pairs, batched histograms, SDs, summary agreement, reset/cap behavior and navigation. Exact enumeration of all sign-product outcomes at widths 4 and 16 verifies the variance and scaling claims. Forward/reverse math-leaf visibility, desktop/tall layouts and phone containment pass. Token-flow, topic-break and 34-frame tail checks pass. Full audit: 254 states / 541 formulas, no overflow or math failures. Visually inspected the live experiment and both derivation states.
+
 ## 2026-09-15: topic breaks throughout Lecture 2
 
 - Added ten single-state topic breaks: baselines, values, soft retrieval, token updates, learned Q/K/V mappings, score scaling, causal masking, next-token prediction, the complete calculation, and generation/training. Kept the existing summary, attention, retrieval-detour and sentence-return introductions. Each new pause has a large topic title, one recap and one guiding question, plus presenter notes. No worked example was split internally or removed. Section 12 now opens with scaling's question before the random-vector example.

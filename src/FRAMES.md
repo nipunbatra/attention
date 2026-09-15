@@ -66,8 +66,8 @@ F1 compare the two bank sentences. F2 compare incoming source information. F3 ca
 F1 introduces the three shared learned projections and distinguishes their parameters from computed rows. F2 recovers the supplied query with one worked calculation and a token selector. F3 reconnects the branch to the residual update with the complete small diagram. Key/value worksheets, all-matrix inspection and the lifetime walkthrough remain in reading mode.
 
 ## s12 Scaling
-F1 pays off the earlier sqrt(3) signpost with the variance argument and its independence assumptions. F2 compares bank's actual weights with/without scaling and explains the preserved ranking but changed concentration. The fixed-score experiment, simulation and extended interpretation stay in reading mode.
-  Notes: "Did the winning key change? What changed after softmax?"
+A topic break reopens the earlier sqrt(3) question. The worked sign-vector pair shows coordinate products and prefix sums. The live experiment then draws independent width-4 and width-16 pairs, displays the latest short pair, and builds comparable score histograms with single-draw, add-100, finish-3,000 and reset controls. Its samples feed the following four-width summary table exactly. One further frame derives variance d_k and SD sqrt(d_k) from independent ±1 products. A two-key example links large gaps to softmax saturation, then bank's actual weights close the section. The extended variance argument, fixed-score slider and Gaussian check remain in reading mode.
+  Notes: "One pair gives one score. What happens when we repeat? Why do variances add? Did scaling change the winning key?"
 
 ## s13 Causal mask
 F1 derives the prefix-only rule. F2 shows the causal triangle and mask equation. F3 toggles the full 10×10 matrix. F4 inspects token 5's received message, retaining the chosen mask state across the transition. The shifted-target staircase, extra code and repeated justification stay in reading mode.

@@ -113,7 +113,7 @@ try{
   const scaleMath=(await page.locator('#s08-frame-scores [data-scale-intro] annotation').allTextContents()).join(' ');
   assert(scaleMath.includes('d_k='+model.d_k)&&scaleMath.includes('\\sqrt{'+model.d_k+'}'));
   assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'First-use scale note fits with all seven scores.');
-  assert.equal(await page.locator('#s12 .frame').count(),5,'A topic break precedes the three scaling examples and bank comparison.');
+  assert.equal(await page.locator('#s12 .frame').count(),7,'A topic break precedes the worked pair, live draws, summary, variance derivation, softmax example and bank comparison.');
   await go('s12-frame-scaling');
   assert.match(await page.locator('#s12-frame-scaling .s12-example-lead').innerText(),/Earlier.*three-coordinate.*Here is why/s);
   await go('s12-frame-spread');await page.evaluate(()=>AT.present.setBuild(1));

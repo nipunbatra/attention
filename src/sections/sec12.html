@@ -19,6 +19,28 @@ body.present #s12 .dt td,body.present #s12 .dt th{font-size:22px;padding:.2em .4
 #s12 .s12-sd-bar{display:block;height:100%;background:var(--c-a)}
 #s12 .s12-sd-value{min-width:3.5em}
 #s12 .s12-stability{border-top:1px solid var(--line);padding-top:14px}
+#s12 .s12-draw-controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:12px 0}
+#s12 .s12-draw-controls button{font:inherit;padding:6px 12px;border:1px solid var(--ink);border-radius:5px;background:var(--paper);color:var(--ink);cursor:pointer}
+#s12 .s12-draw-controls button:disabled{opacity:.45;cursor:default}
+#s12 .s12-draw-controls output{margin-left:auto;font-variant-numeric:tabular-nums}
+#s12 .s12-live-pair{font-size:19px;line-height:1.4;margin:8px 0}
+#s12 .s12-live-pair .mono{white-space:nowrap}
+#s12 .s12-histogram{display:block;width:100%;height:auto;margin-top:12px}
+#s12 .s12-histogram text{font-family:inherit;fill:var(--ink-2);font-size:19px}
+#s12 .s12-histogram .hist-bar{fill:var(--c-a)}
+#s12 .s12-histogram .hist-axis{stroke:var(--line);stroke-width:1}
+#s12 .s12-histogram .hist-zero{stroke:var(--ink-3);stroke-dasharray:4 4}
+#s12 .s12-math-step{margin:12px 0;font-size:21px;line-height:1.4}
+#s12 .s12-math-step p{margin:0}
+#s12 .s12-live-pair .q{color:var(--c-q)}
+#s12 .s12-live-pair .k{color:var(--c-k)}
+#s12 .s12-live-pair .a{color:var(--c-a)}
+body.present #s12 .s12-draw-controls,body.present #s12 .s12-live-pair{font-size:22px}
+body.present #s12 .s12-math-step{font-size:24px}
+body.present #s12 .s12-math-step .katex-display{margin:10px 0}
+/* KaTeX's nested visibility must follow both forward and reverse reveals. */
+body.present:not(.is-preflighting) #s12 .frame.is-live [data-build] .katex :is(.vlist-r,.vlist){visibility:visible}
+body.present:not(.is-preflighting) #s12 .frame.is-live [data-build].is-pending .katex :is(.vlist-r,.vlist){visibility:hidden}
 body.present #s12 .s12-example-lead{font-size:26px}
 body.present #s12 .s12-example-note{font-size:22px}
 body.present #s12 .s12-explanation{font-size:24px}
@@ -27,6 +49,9 @@ body.present #s12 .s12-explanation .katex-display{margin:8px 0}
   body:not(.present) #s12 .s12-sd-track{width:85px}
   body:not(.present) #s12 .s12-sd-measure{gap:8px}
   body:not(.present) #s12 .s12-example-lead{font-size:20px}
+  body:not(.present) #s12 .s12-histogram{min-width:670px}
+  body:not(.present) #s12 .s12-histogram-scroll{overflow-x:auto}
+  body:not(.present) #s12 .s12-draw-controls output{width:100%;margin-left:0}
 }
 </style>
 <header class="sec-head">
@@ -42,7 +67,7 @@ body.present #s12 .s12-explanation .katex-display{margin:8px 0}
 </div>
 
 <div class="frame lecture-topic-break" id="s12-topic-break" data-title="Scaling the attention scores" data-autobuild="off">
-  <script type="text/x-notes">Pause before the scaling examples. Earlier we used the square-root divisor without deriving it. Return to that open question now. The following three slides examine coordinate products, the spread across many random pairs, and softmax saturation before returning to bank.</script>
+  <script type="text/x-notes">Pause before the scaling examples. Earlier we used the square-root divisor without deriving it. Return to that open question now. Inspect coordinate products, build a distribution with the live simulation, then read the summary and its variance explanation. Connect the result to softmax saturation before returning to bank.</script>
   <h3>Scaling the attention scores</h3>
   <p class="topic-recap">The query–key dot products determine the softmax weights.</p>
   <p class="topic-question">Why do we divide each score by the square root of the query/key width?</p>
@@ -61,19 +86,55 @@ Read q and k, then reveal their coordinatewise products. Using the first two ent
   </div>
 </div>
 
+<div class="frame" id="s12-frame-draws" data-title="A simulation, one random pair at a time" data-autobuild="off">
+<script type="text/x-notes">One dot product produces one score. Each click draws a fresh independent query and key at each width, using fair -1/+1 entries. Read the latest four-coordinate pair aloud: multiply corresponding entries and add. The second experiment does the same calculation with sixteen coordinates. It uses its own independent draws, rather than padding the short pair.
+Begin with a few single draws. Each score adds one observation to its histogram. Then add 100 pairs or finish the batch of 3,000. Both histograms always use the same score axis and vertical frequency scale. Height is the percentage of draws at that exact score. The common vertical maximum adapts as observations accumulate, so compare the horizontal spread, not heights between clicks. All possible scores for these widths fit between -16 and 16. The centre line is zero. With one observation, leave SD undefined because one draw cannot measure spread meaningfully. Thereafter use the empirical population SD with denominator N. Small samples can look irregular.
+Reset replays the same seeded sequence. These are precisely the width-4 and width-16 samples used by the following summary table (seeds 2400+d_k). No model weights or bank computations change. There is no timer or background animation.</script>
+  <p class="s12-example-lead">Draw fresh $\vq{q}$ and $\vk{k}$ with independent −1 / +1 entries. Multiply matching entries and add.</p>
+  <div class="s12-draw-controls">
+    <button type="button" id="s12-draw-one">Draw one pair</button>
+    <button type="button" id="s12-draw-hundred">Add 100 pairs</button>
+    <button type="button" id="s12-draw-all">Finish 3,000</button>
+    <button type="button" id="s12-draw-reset">Reset</button>
+    <output id="s12-draw-count" aria-live="polite"></output>
+  </div>
+  <div id="s12-live-pair" class="s12-live-pair"></div>
+  <div class="s12-histogram-scroll" id="s12-live-histogram"></div>
+  <p class="s12-example-note">Bar height = % of draws at that score. Standard deviation (SD) measures the <strong>horizontal spread</strong>. Both rows use the same axes.</p>
+</div>
+
 <div class="frame" id="s12-frame-spread" data-title="Across many pairs, wider vectors give a wider spread" data-autobuild="off">
 <script type="text/x-notes">How far from zero do these random scores typically land?
 For each dimension, generate 3,000 independent pairs using the same fair -1/+1 coordinate distribution. Each row reports population standard deviation across that finite batch, using denominator N. The bars start at zero and share the same 0–17 scale, so their lengths can be compared. The fixed seeds are 2400+d_k. These are actual computations, not manually chosen summary statistics.
 Raw standard deviation is close to 2, 4, 8 and 16. Four times as many coordinates gives about twice the standard deviation under these assumptions. Scores are still centered near zero. More dimensions create a wider spread, not a positive drift.
 Reveal the divisor and scaled columns. Dividing each score by sqrt(d_k) brings the standard deviation close to one. State the assumptions on the slide: all coordinates mutually independent, mean zero, variance one. Learned representations need not obey them exactly. We do not claim that every score grows, that dimensions alone determine sharpness, or that scaling always makes attention diffuse.
 Source: Vaswani et al., Attention Is All You Need, Section 3.2.1 and footnote 1, https://arxiv.org/html/1706.03762v7#S3.SS2.SSS1. The seeded sign-vector experiment is our illustrative calculation.</script>
-  <p class="s12-example-lead">3,000 random query/key pairs at each width. <strong>Standard deviation (SD)</strong> measures the typical distance from the mean.</p>
+  <p class="s12-example-lead">The same experiment, completed for four widths: 3,000 pairs each. <strong>Standard deviation (SD)</strong> measures the typical distance from the mean.</p>
   <div id="s12-spread-table"></div>
   <p class="s12-example-note">All coordinates: independent, mean 0, variance 1. Both bar columns use the same 0–17 scale.</p>
   <div class="s12-explanation" data-build="1">
     $$s_{ij}=\frac{\vq{q_i}\cdot\vk{k_j}}{\sqrt{d_k}}$$
     <p>Raw spread grows roughly like $\sqrt{d_k}$. Dividing by that factor keeps it near 1 in this experiment.</p>
   </div>
+</div>
+
+<div class="frame" id="s12-frame-variance" data-title="Why the spread grows as the square root" data-autobuild="off">
+<script type="text/x-notes">Connect the simulation to a short derivation. A coordinate product X_l=q_l k_l is equally likely to be -1 or +1: the four equally likely input pairs give +1,-1,-1,+1. Its mean is zero. Variance is the expected squared distance from the mean. Here either result is distance one from zero, so Var(X_l)=1.
+The coordinate products are independent. On expanding the square of their sum, cross terms have expectation zero, since E[X_l X_m]=E[X_l]E[X_m]=0 for distinct coordinates. Only the d_k squared terms remain, each with expectation one. That is why variances add. Standard deviations do not add.
+Reveal: SD is the square root of variance. Four independent products give variance four and SD two. Sixteen give variance sixteen and SD four. Dividing a random variable by sqrt(d_k) divides its variance by d_k and its SD by sqrt(d_k), giving one here. Finite samples fluctuate around these theoretical values. The same result holds for mutually independent, mean-zero, unit-variance query/key coordinates beyond random signs, since E[(q_l k_l)^2]=E[q_l^2]E[k_l^2]=1. Real learned coordinates need not satisfy these assumptions exactly.
+Source: Vaswani et al., Attention Is All You Need, Section 3.2.1, footnote 1, https://arxiv.org/html/1706.03762v7#S3.SS2.SSS1. The random-sign derivation is an elementary worked instance of that argument.</script>
+  <div class="s12-math-step">
+    <p><strong>One product:</strong> $X_l=q_lk_l$ is equally likely to be −1 or +1. Its mean is 0. Its squared distance from 0 is always 1, so its <strong>variance is 1</strong>.</p>
+  </div>
+  <div class="s12-math-step">
+    <p><strong>A whole score:</strong> $s=X_1+\cdots+X_{d_k}$. For independent products, the variances add:</p>
+    $$\operatorname{Var}(s)=\underbrace{1+\cdots+1}_{d_k\text{ terms}}=d_k$$
+  </div>
+  <div class="s12-math-step" data-build="1">
+    <p><strong>SD is the square root of variance:</strong> width 4 gives SD 2. Width 16 gives SD 4.</p>
+    $$\operatorname{SD}(s)=\sqrt{d_k}\qquad\operatorname{SD}\!\left(\frac{s}{\sqrt{d_k}}\right)=1$$
+  </div>
+  <p class="s12-example-note">Exact for this independent random-sign model. Sample estimates fluctuate. Learned vectors need not obey these assumptions exactly.</p>
 </div>
 
 <div class="frame" id="s12-frame-softmax" data-title="Large score gaps can make softmax almost one-hot" data-autobuild="off">
@@ -170,15 +231,68 @@ alpha = scores.softmax(dim=-1)</code></pre>
     into:S.querySelector('#s12-prefix-scores')});
 
   const signN=3000,signDimensions=[4,16,64,256];
-  const spreadRows=signDimensions.map(d=>{
-    const r=rng(2400+d);let total=0,totalSquares=0;
-    for(let n=0;n<signN;n++){
-      let dot=0;for(let l=0;l<d;l++)dot+=(r()<.5?-1:1)*(r()<.5?-1:1);
-      total+=dot;totalSquares+=dot*dot;
-    }
-    const mean=total/signN,sd=Math.sqrt(totalSquares/signN-mean*mean);
+  function drawPair(r,d){
+    const q=[],k=[];let score=0;
+    for(let l=0;l<d;l++){q.push(r()<.5?-1:1);k.push(r()<.5?-1:1);score+=q[l]*k[l];}
+    return {q,k,score};
+  }
+  function scoreStats(scores){
+    const mean=scores.reduce((a,b)=>a+b,0)/scores.length;
+    const sd=Math.sqrt(scores.reduce((sum,x)=>sum+(x-mean)**2,0)/scores.length);
+    return {mean,sd};
+  }
+  const experiments=signDimensions.map(d=>{
+    const r=rng(2400+d);
+    return {d,pairs:Array.from({length:signN},()=>{
+      const pair=drawPair(r,d);
+      return d<=16?pair:{score:pair.score};
+    })};
+  });
+  const spreadRows=experiments.map(({d,pairs})=>{
+    const {mean,sd}=scoreStats(pairs.map(p=>p.score));
     return {d,mean,sd,divisor:Math.sqrt(d),scaledSD:sd/Math.sqrt(d)};
   });
+
+  // The live chart and summary consume the exact same deterministic samples.
+  const live=S.querySelector('#s12-frame-draws'),liveWidths=experiments.slice(0,2);
+  let drawCount=1;
+  const signed=x=>x<0?'−1':'+1';
+  const vector=xs=>'['+xs.map(signed).join(', ')+']';
+  function renderDraws(){
+    const latest=liveWidths[0].pairs[drawCount-1];
+    const result=latest.q.map((q,l)=>signed(q*latest.k[l])).join(' ');
+    S.querySelector('#s12-live-pair').innerHTML='<span class="q">Latest width-4 query: <span class="mono">'+vector(latest.q)+'</span></span> &nbsp; <span class="k">key: <span class="mono">'+vector(latest.k)+'</span></span><br>Multiply, then add: <span class="mono a">'+result+' = '+latest.score+'</span>';
+    S.querySelector('#s12-draw-count').textContent=drawCount.toLocaleString('en-US')+(drawCount===1?' pair':' pairs')+' per width';
+    ['one','hundred','all'].forEach(id=>{S.querySelector('#s12-draw-'+id).disabled=drawCount===signN;});
+    const rows=liveWidths.map(({d,pairs})=>{
+      const scores=pairs.slice(0,drawCount).map(p=>p.score),counts=Array(17).fill(0);
+      scores.forEach(score=>counts[(score+16)/2]++);
+      return {d,scores,counts,...scoreStats(scores)};
+    });
+    const maximum=Math.max(...rows.flatMap(r=>r.counts));
+    // Two frequency plots with identical axes. Each bin is one exact even score.
+    let svg='<svg class="s12-histogram" viewBox="0 0 1080 236" role="img" aria-labelledby="s12-hist-title s12-hist-desc"><title id="s12-hist-title">Raw dot-product scores at widths 4 and 16</title><desc id="s12-hist-desc">'+drawCount+' draws per width. '+rows.map(r=>'Width '+r.d+': mean '+r.mean.toFixed(2)+', SD '+(drawCount>1?r.sd.toFixed(2):'not yet measured')+'.').join(' ')+'Both plots share score limits -16 to 16 and a frequency scale from 0 to '+(maximum/drawCount*100).toFixed(1)+' percent.</desc>';
+    svg+='<text x="220" y="15">Shared frequency scale: 0–'+(maximum/drawCount*100).toFixed(1)+'%</text>';
+    const x=score=>220+(score+16)*25;
+    rows.forEach((r,i)=>{
+      const bottom=84+i*101;
+      svg+='<text x="0" y="'+(bottom-45)+'">Width '+r.d+'</text><text x="0" y="'+(bottom-18)+'">SD '+(drawCount>1?r.sd.toFixed(2):'—')+'</text><text x="0" y="'+(bottom+7)+'">Latest score: '+r.scores.at(-1)+'</text>';
+      svg+='<line class="hist-axis" x1="195" x2="1045" y1="'+bottom+'" y2="'+bottom+'"/><line class="hist-zero" x1="620" x2="620" y1="'+(bottom-72)+'" y2="'+bottom+'"/>';
+      r.counts.forEach((count,j)=>{
+        const height=count/maximum*64,score=j*2-16;
+        svg+='<rect class="hist-bar" data-width="'+r.d+'" data-score="'+score+'" data-count="'+count+'" x="'+(x(score)-15)+'" y="'+(bottom-height)+'" width="30" height="'+height+'"><title>Score '+score+': '+count+' draws ('+(100*count/drawCount).toFixed(1)+'%)</title></rect>';
+      });
+    });
+    [-16,-8,0,8,16].forEach(score=>{svg+='<text x="'+x(score)+'" y="212" text-anchor="middle">'+score+'</text>';});
+    svg+='<text x="620" y="235" text-anchor="middle">Raw score (query · key)</text></svg>';
+    S.querySelector('#s12-live-histogram').innerHTML=svg;
+    live.dataset.simulation=JSON.stringify({n:drawCount,latest,rows:rows.map(({d,counts,mean,sd})=>({d,counts,mean,sd}))});
+  }
+  for(const [id,amount] of [['one',1],['hundred',100],['all',signN]]){
+    S.querySelector('#s12-draw-'+id).addEventListener('click',()=>{drawCount=Math.min(signN,drawCount+amount);renderDraws();});
+  }
+  S.querySelector('#s12-draw-reset').addEventListener('click',()=>{drawCount=1;renderDraws();});
+  renderDraws();
   const spreadHost=S.querySelector('#s12-spread-table');
   spreadHost.dataset.experiment=JSON.stringify({n:signN,seedBase:2400,rows:spreadRows});
   const spread=AT.ui.table(spreadRows.map(r=>[r.sd,r.divisor,r.scaledSD]),{
