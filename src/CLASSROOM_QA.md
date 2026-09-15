@@ -1,5 +1,10 @@
 # Classroom release checks
 
+## 2026-09-15: separate prose typography from mathematical symbols
+
+- Removed the symbol-only font class from ten prose spans in the search introduction, hard retrieval, score provenance and reading recap. Words such as “gradient-information query”, “video keys” and “score” now inherit the normal text font and wrap normally; role colours and the embedded KaTeX expressions are unchanged. Actual Q/K/V symbols retain their math font and italics. Shortened the hard-retrieval lead to “Return the winner's value” and kept punctuation attached to adjacent formulas on desktop and phones, without preventing long prose phrases from wrapping.
+- The presentation skill guided preservation of the existing typography and colour system. Visually checked the revised desktop slides and 390px reading layouts. Added a regression that failed on the original prose font and now checks text font, upright style, wrapping and unchanged symbol styling in reading, presentation and phone modes. The search-flow regression passes; all 227 presentation states / 513 formulas pass the frame audit without overflow or math failures. Phone QA reports no page/console errors or horizontal overflow. No numerical model, shared stylesheet, dependency or other lecture changes.
+
 ## 2026-09-15: plain-language explanation of hard retrieval
 
 - Kept the hard-retrieval equation and index explanation, then added an always-visible plain-language reading and the existing Backpropagation example below them. It explicitly returns all eight value coordinates from the winning video and no contribution from the other five. The later question about multiple useful items retains its original reveal.

@@ -3,6 +3,7 @@
 #s06 .look{font-size:14px;color:var(--ink-2);margin:8px 0 0;max-width:84ch}
 #s06 .score-origin{font-size:16px;line-height:1.45;margin:0 0 14px}
 #s06 .score-term{display:inline-block;white-space:nowrap}
+#s06 .math-punct{display:inline-block;white-space:nowrap}
 #s06 .hard-plain{border-top:1px solid var(--line);padding-top:14px;margin-top:18px;font-size:18px;line-height:1.4}
 #s06 .hard-plain p{margin:0 0 10px}
 body.present #s06 .hard-plain{font-size:24px;line-height:1.35}
@@ -113,7 +114,7 @@ Trace the matching colours: the purple query is the request, the orange key desc
   </script>
 
 <div class="prose">
-  <p>Compare the <span class="sym sym-q">query $\vq{q}$</span> with each video's <span class="sym sym-k">key $\vk{k_j}$</span>. Return the highest-scoring video's <span class="sym sym-v">value $\vv{v_{j^*}}$</span>.</p>
+  <p>Compare the <span class="sym-q">query $\vq{q}$</span> with each video's <span class="sym-k">key <span class="math-punct">$\vk{k_j}$.</span></span> Return the winner's <span class="sym-v">value <span class="math-punct">$\vv{v_{j^*}}$.</span></span></p>
   $$j^* = \arg\max_j\, \underbrace{\vq{q}\cdot \vk{k_j}}_{\text{match score}}, \qquad \text{return } \vv{v_{j^*}}$$
   <p>Here $j$ is a video index. $\arg\max_j$ picks the <strong>winning index $j^*$</strong>.</p>
   <div class="hard-plain" id="s06-hard-plain">
@@ -128,9 +129,9 @@ Trace the matching colours: the purple query is the request, the orange key desc
 <script type="text/x-notes">Where did the six scores come from?
 Use the same gradient-information query and six video keys from the retrieval example. For every video j, multiply matching query/key coordinates and add them: s_j = q dot k_j. Trace the purple query numbers and orange key numbers in the Backpropagation example, then point to 4.8 in its row. Repeat the same operation with each other key to obtain the other five rows. The score column supplies the numbers used to choose one winner on the previous slide. Next we will turn these scores into shares so several values can contribute.</script>
 <div class="card">
-  <p class="score-origin">Same <span class="sym sym-q">gradient-information query $\vq{q}$</span>, same six <span class="sym sym-k">video keys $\vk{k_j}$</span>.<br>Each <span class="sym sym-a">score</span> is $\va{s_j}=\vq{q}\cdot\vk{k_j}$, with $j$ identifying the video.</p>
+  <p class="score-origin">Same <span class="sym-q">gradient-information query <span class="math-punct">$\vq{q}$,</span></span> same six <span class="sym-k">video keys <span class="math-punct">$\vk{k_j}$.</span></span><br>Each <span class="sym-a">score</span> is <span class="math-punct">$\va{s_j}=\vq{q}\cdot\vk{k_j}$,</span> with $j$ identifying the video.</p>
   <div id="s06-dot"></div>
-  <p class="look" id="s06-score-example">Backpropagation ($j=1$):<br><span class="score-term">$\va{s_1}=\vq{2.0}\times\vk{2.2}$</span> <span class="score-term">${}+\vq{0.6}\times\vk{0.6}$</span> <span class="score-term">${}+\vq{0.2}\times\vk{0.2}$</span> <span class="score-term">${}+\vq{0.0}\times\vk{0.0}=\va{4.8}$</span>.</p>
+  <p class="look" id="s06-score-example">Backpropagation ($j=1$):<br><span class="score-term">$\va{s_1}=\vq{2.0}\times\vk{2.2}$</span> <span class="score-term">${}+\vq{0.6}\times\vk{0.6}$</span> <span class="score-term">${}+\vq{0.2}\times\vk{0.2}$</span> <span class="score-term">${}+\vq{0.0}\times\vk{0.0}=\va{4.8}$.</span></p>
 </div>
 </div>
 
@@ -191,7 +192,7 @@ Its weight approaches one. If top scores tie, those top items keep sharing the w
 </div>
 
 <div class="companion">
-  <p>The <span class="sym sym-q">query</span> describes what the searcher needs. <span class="sym sym-k">Keys</span> help score the matches; <span class="sym sym-v">values</span> carry the information to return. Softmax gives us the weights for mixing that information. We can use the same roles for tokens in a sentence.</p>
+  <p>The <span class="sym-q">query</span> describes what the searcher needs. <span class="sym-k">Keys</span> help score the matches; <span class="sym-v">values</span> carry the information to return. Softmax gives us the weights for mixing that information. We can use the same roles for tokens in a sentence.</p>
 </div>
 
 <div class="companion after">

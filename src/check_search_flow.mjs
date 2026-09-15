@@ -32,8 +32,28 @@ const go=async(id,build=0)=>{
 };
 const matrix=async(id)=>page.locator('#'+id+' tbody tr').evaluateAll(rows=>rows.map(row=>[...row.querySelectorAll('td[data-c]')].map(c=>Number(c.textContent))));
 const copy=async(id)=>page.locator('#'+id).evaluate(e=>{const n=e.cloneNode(true);n.querySelectorAll('script,.companion,.katex-mathml').forEach(x=>x.remove());return n.textContent;});
+// Role colours apply to words too; the symbol-only math font must not.
+const checkProseTypography=async()=>{
+  const spans=await page.locator('#s05-frame-search .prose [class*="sym-"], #s06 .prose [class*="sym-"], #s06 .score-origin [class*="sym-"], #s06 > .companion [class*="sym-"]').evaluateAll(es=>es.map(e=>{
+    const style=getComputedStyle(e),prose=getComputedStyle(e.closest('p'));
+    return {text:e.textContent,font:style.fontFamily,proseFont:prose.fontFamily,style:style.fontStyle,wrap:style.whiteSpace};
+  }));
+  assert(spans.length>=10,'Check the search introduction, hard retrieval, score provenance and reading recap.');
+  for(const span of spans){
+    assert.equal(span.font,span.proseFont,'Ordinary words inherit the prose font: '+span.text);
+    assert.equal(span.style,'normal','Reserve math italics for symbols: '+span.text);
+    assert.equal(span.wrap,'normal','Coloured phrases must wrap like surrounding prose: '+span.text);
+  }
+  const symbol=await page.locator('#s08 .sym.sym-q').first().evaluate(e=>({font:getComputedStyle(e).fontFamily,style:getComputedStyle(e).fontStyle}));
+  assert.equal(symbol.style,'italic','Actual plain-symbol Q retains its math styling.');
+  assert.notEqual(symbol.font,spans[0].font,'Do not globally replace the symbol font.');
+  const punctuation=await page.locator('#s06 .math-punct').evaluateAll(es=>es.map(e=>({style:getComputedStyle(e).whiteSpace,display:getComputedStyle(e).display,math:!!e.querySelector('.katex'),last:e.lastChild.textContent})));
+  assert.equal(punctuation.length,5);
+  assert(punctuation.every(e=>e.style==='nowrap'&&e.display==='inline-block'&&e.math&&/^[.,]$/.test(e.last)),'Keep punctuation with its mathematical expression, without making prose phrases unbreakable.');
+};
 try{
   await page.goto(pathToFileURL(path.resolve(process.argv[2]||'attention.html')).href);await page.evaluate(()=>document.fonts.ready);
+  await checkProseTypography();
   const model=await page.evaluate(()=>JSON.stringify({model:AT.model,p:AT.forward(AT.sentences.river).probs}));
   const order=await page.locator('#s05 .frame').evaluateAll(els=>els.map(e=>e.id));
   assert.deepEqual(order.slice(3,13),[...queryFrames,...keyFrames,'s05-frame-matching','s05-frame-results']);
@@ -56,6 +76,7 @@ try{
     assert.deepEqual(headers.slice(1).map(s=>s.trim().toLowerCase()),axes,id+' must use the same named axis order.');
   }
   await page.evaluate(()=>AT.present.enter());
+  await checkProseTypography();
   for(const build of [0,1,0,1]){
     await go('s06-frame-hard-retrieval',build);
     const frame=page.locator('#s06-frame-hard-retrieval');
@@ -302,6 +323,7 @@ try{
   assert.deepEqual(await matrix('s05-query-vector'),[queries[0]],'New search visits keep the original query reset.');
   assert.equal(await page.evaluate(()=>JSON.stringify({model:AT.model,p:AT.forward(AT.sentences.river).probs})),model);
   await page.evaluate(()=>AT.present.exit());await page.setViewportSize({width:390,height:844});
+  await checkProseTypography();
   assert.equal(await page.locator('#s06-mix .s06-weight-label:visible').count(),8,'Reading mode labels the weighted contributions it displays.');
   for(const id of [...queryFrames,...keyFrames,...valueFrames,'s05-frame-three-jobs','s05-frame-contact-example','s05-frame-pronoun-example','s06-frame-hard-retrieval','s06-frame-scores']){
     await page.locator('#'+id).scrollIntoViewIfNeeded();
