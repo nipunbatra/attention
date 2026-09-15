@@ -7729,6 +7729,26 @@ body.present #s09-frame-chain .is-dim{opacity:1!important}
 #s09 .s09-prediction-route{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;font-size:20px;margin:16px 0 24px}
 body.present #s09 .s09-preview-prefix,body.present #s09 .s09-prediction-route{font-size:24px}
 body.present #s09 .s09-preview-scope{font-size:22px}
+#s09 .projection-overview-scroll{overflow-x:auto;margin:8px 0}
+#s09 .projection-overview{display:block;width:100%;min-width:940px;height:auto;font-family:var(--font-ui)}
+#s09 .projection-overview text{fill:var(--ink);font-size:21px;text-anchor:middle;dominant-baseline:middle}
+#s09 .projection-overview .po-label{font-size:23px;font-weight:650}
+#s09 .projection-overview .po-note{font-size:19px;fill:var(--ink-2)}
+#s09 .projection-overview .po-number{font-family:var(--font-mono);font-size:20px;font-variant-numeric:tabular-nums}
+#s09 .projection-overview .po-symbol{font-family:var(--font-math);font-style:italic;font-size:28px}
+#s09 .projection-overview .po-edge{fill:none;stroke:var(--ink-3);stroke-width:2}
+#s09 .projection-overview .po-residual{stroke:var(--c-e);stroke-dasharray:6 4}
+#s09 .projection-overview .po-update{stroke:var(--c-d)}
+#s09 .projection-overview .po-cell{fill:var(--ot);stroke:var(--oc);stroke-width:1.2;rx:3}
+#s09 .projection-overview .po-role{fill:var(--oc)}
+#s09 .projection-intro{font-size:20px;line-height:1.4;margin:0 0 10px}
+#s09 .projection-equations{display:grid;grid-template-columns:1.25fr 1fr 1.1fr;gap:18px;border-top:1px solid var(--line);padding-top:12px}
+#s09 .projection-equations p{margin:0 0 4px;font-size:17px;font-weight:650}
+#s09 .projection-equations .katex-display{margin:6px 0;font-size:.88em}
+body.present #s09 .projection-intro{font-size:24px}
+body.present #s09 .projection-overview{min-width:0}
+body.present #s09 .projection-equations p{font-size:21px}
+@media (max-width:820px){body:not(.present) #s09 .projection-equations{grid-template-columns:minmax(0,1fr)}}
 </style>
 <header class="sec-head">
   <span class="sec-num">09</span>
@@ -7743,16 +7763,20 @@ body.present #s09 .s09-preview-scope{font-size:22px}
   <p>Press Play or advance one step at a time to follow the diagram. The next table shows the numerical result; hover a cell in the final row to inspect the addition. Watch the axis names change at $W_O$: it maps the message's value coordinates into representation coordinates. Attention computes the update, and the residual connection adds it.</p>
 </div>
 
-<div class="frame" id="s09-frame1" data-title="The message needs one final projection">
+<div class="frame" id="s09-frame1" data-title="The message needs one final projection" data-autobuild="off">
   <script type="text/x-notes">
 What shape must the update have before we can add it to e?
-The message has d_v value coordinates. W_O maps it to d_model representation coordinates; the residual connection performs the addition. Attention and residual addition have different jobs.
+First follow the diagram, using bank at position 7 and the same seven values and weights from Section 8. Each weight scales its entire two-number value row. Adding those rows leaves a two-number message, not fourteen numbers. The original embedding has four numbers, so we cannot add the message directly to it. W_O maps the message into the embedding's four-coordinate space. Follow the green update into the plus and the dashed blue path carrying the unchanged original embedding. Only the plus produces the updated embedding.
+Then reveal the three equations and match each one to its operation in the diagram. The letters d_v and d_model generalize this example's 2 and 4. A trained projection can mix both message coordinates into every output coordinate. The displayed zeros come from our fixed hand-chosen W_O, not a rule that projections pad vectors with zeros. Even if the two spaces have the same width, W_O can still learn a useful mapping. Delta e is an activation update for this input, not a training update to the stored embedding table. Displayed numbers are rounded after calculating the full-precision result.
   </script>
-<div class="prose">
-  <p>The message $m_i$ lives in value space ($d_v$ numbers). An output projection $W_O$ maps it into representation space ($d_{\text{model}}$ numbers). We call that vector the contextual update $\vd{\Delta e_i}$ and add it to $\ve{e_i}$.</p>
-  $$m_i = \sum_{j \le i} \va{\alpha_{ij}}\, \vv{v_j} \qquad \boxed{\vd{\Delta e_i} = m_i\,W_O} \qquad \boxed{\vp{e_i^{\text{new}}} = \ve{e_i} + \vd{\Delta e_i}}$$
+<p class="projection-intro">The <span class="sym-v">message has 2 numbers</span>. We need a <span class="sym-d">4-number update</span> to add to <span class="sym-e">bank's embedding</span>.</p>
+<div class="projection-overview-scroll" tabindex="0" role="region" aria-label="Message, output projection and residual addition diagram. Scroll horizontally on a small screen."><div id="s09-projection-overview"></div></div>
+<div class="projection-equations" id="s09-projection-equations" data-build="1">
+  <div><p class="sym-v">1. Mix the value rows</p>$$\underbrace{\vm{m_7}}_{1\times 2}=\sum_{j\le 7}\va{\alpha_{7j}}\,\vv{v_j}$$</div>
+  <div><p class="sym-d">2. Map into embedding space</p>$$\underbrace{\vd{\Delta e_7}}_{1\times 4}=\vm{m_7}\,W_O$$</div>
+  <div><p>3. Add to the original</p>$$\vp{e_7^{\text{new}}}=\ve{e_7}+\vd{\Delta e_7}$$</div>
 </div>
-
+<p class="companion">Here $d_v=2$ and $d_{\text{model}}=4$. Each output coordinate can combine both message coordinates. This diagram uses the same hand-chosen projection as our numerical example.</p>
 </div>
 
 <div class="frame" id="s09-frame-motif" data-title="Where does the contextual update rejoin bank?">
@@ -7891,6 +7915,67 @@ The message is not a word and the attention weights are not next-word probabilit
   const AX = AT.axes;
   const joinAnd = (xs) => xs.length <= 1 ? xs.join('') : xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1];
   const tokCols = toks.map((t, j) => (j + 1) + ' ' + t);
+
+  /* Diagram first: the same computed message, then mapping and residual addition. */
+  (function(){
+    const diagram=sv('svg',{class:'projection-overview',viewBox:'0 0 1120 374',role:'img','aria-labelledby':'s09-projection-title s09-projection-desc'});
+    diagram.appendChild(sv('title',{id:'s09-projection-title'},'Bank: a two-coordinate message becomes a four-coordinate embedding update'));
+    diagram.appendChild(sv('desc',{id:'s09-projection-desc'},'Seven attention weights multiply the corresponding two-coordinate value rows. Their sum is the two-coordinate message m7. The output projection W_O maps it into four embedding coordinates. The green update and the unchanged original embedding on the dashed blue branch meet at addition to form the updated embedding. All numbers come from the same bank calculation and are rounded only for display.'));
+    const defs=sv('defs');
+    for(const [name,color] of [['neutral','var(--ink-3)'],['e','var(--c-e)'],['d','var(--c-d)']]){
+      const marker=sv('marker',{id:'s09-po-arrow-'+name,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:7,markerHeight:7,orient:'auto'});
+      marker.appendChild(sv('path',{d:'M0 0 L10 5 L0 10 Z',fill:color}));defs.appendChild(marker);
+    }
+    diagram.appendChild(defs);
+    const label=(parent,x,y,text,cls='')=>{const el=sv('text',{x,y,class:cls},text);parent.appendChild(el);return el;};
+    const arrow=(d,role='neutral')=>diagram.appendChild(sv('path',{class:'po-edge'+(role==='e'?' po-residual':role==='d'?' po-update':''),d,'marker-end':'url(#s09-po-arrow-'+role+')'}));
+    function vector(id,x,y,values,role,cellWidth=58){
+      const g=sv('g',{id,class:'obj-'+role,'data-vector':JSON.stringify(values)});
+      values.forEach((value,c)=>{
+        g.appendChild(sv('rect',{class:'po-cell',x:x+c*cellWidth,y,width:cellWidth-4,height:32,'data-coordinate':c}));
+        label(g,x+c*cellWidth+(cellWidth-4)/2,y+17,AT.fmt(value,2),'po-number po-role');
+      });
+      diagram.appendChild(g);return g;
+    }
+    label(diagram,133,19,'1. Mix the value rows','po-label');
+    label(diagram,44,54,'weight','po-note');label(diagram,182,54,'2 value numbers','po-note');
+    for(let j=0;j<n;j++){
+      const y=76+j*27;
+      const weight=sv('g',{class:'obj-a','data-source':j,'data-weight':F.A[qi][j]});
+      label(weight,43,y+11,AT.fmt(F.A[qi][j],2),'po-number po-role');
+      label(weight,94,y+11,'×','po-role');diagram.appendChild(weight);
+      const row=vector('s09-po-value-'+j,120,y-5,F.V[j],'v',61);
+      row.querySelectorAll('rect').forEach(el=>el.setAttribute('height',26));
+      row.querySelectorAll('text').forEach(el=>el.setAttribute('y',y+9));
+    }
+    diagram.appendChild(sv('path',{class:'po-edge',d:'M254 73 H267 V261 H254'}));
+    arrow('M267 169 H321');label(diagram,295,146,'sum','po-note');
+    const message=vector('s09-po-message',334,153,F.Mmsg[qi],'m',70);
+    label(message,402,106,'Message','po-label po-role');label(message,402,215,'2 numbers','po-role');
+    label(diagram,402,241,'value space','po-note');
+    arrow('M478 169 H537');
+    label(diagram,630,106,'2. Output projection','po-label');
+    diagram.appendChild(sv('rect',{x:548,y:139,width:164,height:61,rx:6,fill:'var(--card)',stroke:'var(--ink-3)','stroke-width':2}));
+    const symbol=label(diagram,630,169,'W','po-symbol');symbol.appendChild(sv('tspan',{'baseline-shift':'sub','font-size':19},'O'));
+    label(diagram,630,222,'2 inputs, 4 outputs','po-note');
+    label(diagram,630,246,'can mix both inputs','po-note');
+    arrow('M721 169 H785');
+    const update=vector('s09-po-update',798,153,F.Delta[qi],'d');
+    label(update,912,106,'Update for bank','po-label po-role');label(update,912,215,'4 numbers','po-role');
+    label(diagram,912,241,'embedding space','po-note');
+    const original=vector('s09-po-original',343,301,F.E[qi],'e');
+    label(diagram,133,292,'Shown to 2 decimals','po-note');
+    label(original,457,280,'Original bank embedding','po-label po-role');
+    label(original,457,355,'4 numbers, unchanged','po-note');
+    arrow('M581 317 H695','e');
+    arrow('M1042 169 H1080 V259 H724 V290','d');
+    diagram.appendChild(sv('circle',{cx:724,cy:317,r:23,fill:'var(--card)',stroke:'var(--ink)','stroke-width':2}));
+    label(diagram,724,317,'+','po-label');label(diagram,724,355,'3. Add','po-label');
+    arrow('M751 317 H789');
+    const result=vector('s09-po-result',803,301,F.Enew[qi],'ep');
+    label(result,917,280,'Updated embedding','po-label po-role');label(result,917,355,'4 numbers','po-note');
+    S.querySelector('#s09-projection-overview').appendChild(diagram);
+  })();
 
   /* ---------- motif ---------- */
   const motif = AT.motif(S.querySelector('#s09-motif'), { active: 'e' });

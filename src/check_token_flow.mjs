@@ -97,6 +97,36 @@ try{
   assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'The deferred explanation still fits.');
   // Teach W_O as a learned dimension mapping; keep the fixed arithmetic optional.
   assert.equal(await page.locator('#s09 .frame').count(),8,'The detailed projection calculation is outside the classroom sequence.');
+  await go('s09-frame1');
+  for(const build of [0,1,0,1]){
+    await page.evaluate(build=>AT.present.go('s09',1,build),build);await page.waitForTimeout(350);
+    assert(await page.locator('#s09-projection-overview svg').isVisible(),'Show the graphical operation before the equations.');
+    assert.equal(await page.locator('#s09-projection-equations').evaluate(e=>getComputedStyle(e).visibility),build?'visible':'hidden');
+    assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'Projection overview fits in both reveal states.');
+    await page.screenshot({path:path.join(shots,'projection-overview-'+build+'.png')});
+  }
+  const checkVector=async(id,expected)=>{
+    const actual=await page.locator('#'+id).evaluate(e=>({vector:JSON.parse(e.dataset.vector),cells:e.querySelectorAll('rect[data-coordinate]').length,text:[...e.querySelectorAll('.po-number')].map(t=>Number(t.textContent.replaceAll('−','-')))}));
+    assert.equal(actual.cells,expected.length,'Visible coordinate count matches the vector width.');
+    assert.deepEqual(actual.text,rounded(expected),'Diagram displays the independently calculated coordinates.');
+    actual.vector.forEach((x,c)=>assert(Math.abs(x-expected[c])<1e-12,'Diagram data retain full precision.'));
+  };
+  for(let j=0;j<7;j++)await checkVector('s09-po-value-'+j,ref.V[j]);
+  for(const [id,field]of [['message','Mmsg'],['update','Delta'],['original','E'],['result','Enew']])await checkVector('s09-po-'+id,ref[field][6]);
+  const weights=await page.locator('#s09-projection-overview [data-weight]').evaluateAll(es=>es.map(e=>Number(e.dataset.weight)));
+  assert.equal(weights.length,7);weights.forEach((x,j)=>assert(Math.abs(x-ref.A[6][j])<1e-12,'Each displayed weight belongs to its own source value.'));
+  for(const [role,id]of [['v','message'],['d','update'],['e','original'],['ep','result']]){
+    const colors=await page.evaluate(({role,id})=>({diagram:getComputedStyle(document.querySelector('#s09-po-'+id+' .po-role')).fill,math:getComputedStyle(document.querySelector('#s09-projection-equations .m-'+role)).color}),{role,id});
+    assert.equal(colors.diagram,colors.math,'Match diagram and equation role colours.');
+  }
+  const escapedText=await page.locator('#s09-projection-overview svg text').evaluateAll(es=>es.filter(e=>{const r=e.getBBox();return r.x<0||r.y<0||r.x+r.width>1120||r.y+r.height>374;}).map(e=>e.textContent));
+  assert.deepEqual(escapedText,[],'Every diagram label fits within its viewBox.');
+  assert.match(await page.locator('#s09-projection-desc').textContent(),/two-coordinate message.*four embedding coordinates.*unchanged original embedding/s);
+  const overviewMath=(await page.locator('#s09-projection-equations annotation').allTextContents()).join(' ');
+  assert(overviewMath.includes('1\\times '+model.d_v)&&overviewMath.includes('1\\times '+model.d_model),'The revealed equations use the same concrete dimensions as the diagram.');
+  assert.equal(await page.locator('#s09-projection-overview .po-residual').getAttribute('d'),'M581 317 H695','The original embedding goes straight into the residual plus.');
+  await page.evaluate(()=>AT.present.next());
+  assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s09-frame-motif','The existing residual motif follows the equations without an extra slide.');
   assert.equal(await page.locator('#s09-frame-wo-calc').count(),0);
   await go('s09-frame3');
   assert.equal(await page.locator('#s09-frame3 table').count(),0,'No zero-heavy matrix on the mapping slide.');
@@ -142,13 +172,22 @@ try{
   await page.evaluate(()=>AT.present.enter());
   await go('s07-frame-pair');
   await page.locator('#s07-rchips button').nth(5).click();
-  const changedFrames=['s07-frame1','s07-frame-keys','s07-frame-values','s07-frame-pair','s08-frame-phases','s08-frame-scores','s12-frame-scaling','s09-frame3','s09-frame4','s09-frame-prediction-input','s09-frame-prediction-output','s11-frame1','s11-frame-query-calc'];
+  const changedFrames=['s07-frame1','s07-frame-keys','s07-frame-values','s07-frame-pair','s08-frame-phases','s08-frame-scores','s12-frame-scaling','s09-frame1','s09-frame3','s09-frame4','s09-frame-prediction-input','s09-frame-prediction-output','s11-frame1','s11-frame-query-calc'];
   for(const id of changedFrames){
     await go(id);await page.screenshot({path:path.join(shots,id+'.png')});
   }
   assert.equal(await page.evaluate(()=>JSON.stringify(AT.model)),original,'All controls preserve the canonical model.');
   await page.evaluate(()=>AT.present.exit());
   await page.setViewportSize({width:390,height:844});
+  assert.equal(await page.locator('#s09-projection-equations').evaluate(e=>getComputedStyle(e).visibility),'visible','Reading mode includes the equations without requiring a reveal.');
+  await page.locator('#s09-projection-overview').scrollIntoViewIfNeeded();
+  const projectionScroll=page.locator('#s09-frame1 .projection-overview-scroll');
+  assert(await projectionScroll.evaluate(e=>e.scrollWidth>e.clientWidth),'Keep diagram labels readable with local phone scrolling.');
+  await page.screenshot({path:path.join(shots,'phone-projection-mix.png')});
+  await projectionScroll.evaluate(e=>e.scrollLeft=e.scrollWidth);
+  await page.screenshot({path:path.join(shots,'phone-projection-add.png')});
+  const equations=await page.locator('#s09-projection-equations>div').evaluateAll(es=>es.map(e=>e.getBoundingClientRect().toJSON()));
+  assert(equations[1].top>=equations[0].bottom&&equations[2].top>=equations[1].bottom,'Phone equations stack in the same order as the diagram.');
   const woGlyphs=await page.locator('#s09-projection-shapes .mord.mathnormal').evaluateAll(els=>els.filter(e=>e.textContent==='W'||e.textContent==='O').map(e=>({text:e.textContent,rect:e.getBoundingClientRect().toJSON()})));
   const wGlyph=woGlyphs.find(e=>e.text==='W').rect,oGlyph=woGlyphs.find(e=>e.text==='O').rect;
   assert(oGlyph.left>=wGlyph.right-1&&oGlyph.top<wGlyph.bottom,'W_O stays together above its shape label on phones.');

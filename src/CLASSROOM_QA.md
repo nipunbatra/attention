@@ -1,5 +1,10 @@
 # Classroom release checks
 
+## 2026-09-15: diagram before equations for the output projection
+
+- Rebuilt the existing Section 9 opening around an editable diagram of bank's seven weighted value rows, their two-coordinate message, the output projection into four embedding coordinates, and residual addition to the unchanged original row. The next reveal adds three equations in the same numbered order and colours. No classroom frame was added. Diagram values come directly from the existing forward calculation, with full-precision data and rounded display. The diagram says the projection can mix both inputs; notes distinguish the example's simple matrix from general learned mappings and distinguish activation updates from parameter training.
+- The presentation skill guided the original theme, colour roles and diagram-first layout. Visually checked both desktop reveal states and the phone diagram's locally scrollable ends. Phone equations stack in operation order. The extended token-flow regression checks every displayed vector and weight against the independent reference, role colours, label bounds, reveal reversal, the direct residual path and forward navigation. It also retains both next-token predictions and the projection derivations. All 228 presentation states / 516 formulas pass the frame audit with no overflow or math failures. Phone QA has no page/console errors or horizontal overflow. No model, shared runtime, dependency or other lecture changes.
+
 ## 2026-09-15: separate prose typography from mathematical symbols
 
 - Removed the symbol-only font class from ten prose spans in the search introduction, hard retrieval, score provenance and reading recap. Words such as “gradient-information query”, “video keys” and “score” now inherit the normal text font and wrap normally; role colours and the embedded KaTeX expressions are unchanged. Actual Q/K/V symbols retain their math font and italics. Shortened the hard-retrieval lead to “Return the winner's value” and kept punctuation attached to adjacent formulas on desktop and phones, without preventing long prose phrases from wrapping.
