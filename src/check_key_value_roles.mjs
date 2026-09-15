@@ -27,11 +27,30 @@ try{
     assert(!fit.overflow,id+': '+JSON.stringify(fit));
   }
   await page.evaluate(()=>AT.present.enter());
+  // One matched contact returns a complete four-field record, not just its name.
+  const contact=page.locator('#s05-frame-contact-example');
+  assert.match(await contact.innerText(),/contact or visit the library/);
+  assert.equal(await contact.locator('thead th[colspan]').getAttribute('colspan'),'4');
+  assert.deepEqual(await contact.locator('thead tr:nth-child(2) th').allTextContents(),['Extension','Floor','Opens','Closes']);
+  assert.deepEqual(await contact.locator('tbody tr').evaluateAll(rows=>rows.map(r=>[...r.children].map(c=>c.textContent))),[
+    ['Library','204','2','09:00','20:00'],['Admissions','118','1','10:00','17:00']
+  ]);
+  assert.match(await contact.locator('#s05-contact-result').textContent(),/dial 204.*visit floor 2 between 09:00 and 20:00/);
+  assert.match(await contact.locator('.example-takeaway').textContent(),/opening time updates one value field/);
+  assert.match(await contact.locator('.concept-note').textContent(),/numerical feature vectors/);
+  const contactNotes=await contact.locator('script[type="text/x-notes"]').textContent();
+  assert.match(contactNotes,/Do not average extensions or opening times/);
+  assert.match(contactNotes,/weight scales its entire value vector/);
   for(const id of ids){
     for(const build of [0,1,2,0,2]){
       await go(id,build);
       const staged=await page.locator('#'+id+' [data-build]').evaluateAll(es=>es.filter(e=>!e.closest('.companion')).map(e=>({build:+e.dataset.build,visible:getComputedStyle(e).visibility==='visible'})));
       assert(staged.every(e=>e.visible===(e.build<=build)),id+' reveal order');
+      if(id==='s05-frame-contact-example'){
+        assert((await contact.locator('tbody th').evaluateAll(es=>es.map(e=>getComputedStyle(e).visibility))).every(v=>v==='visible'),'Contact keys stay visible.');
+        assert((await contact.locator('tbody td').evaluateAll(es=>es.map(e=>getComputedStyle(e).visibility))).every(v=>v===(build>=1?'visible':'hidden')),'All value fields reveal together.');
+        await page.screenshot({path:path.join(shots,'contact-build-'+build+'.png')});
+      }
     }
     await page.screenshot({path:path.join(shots,id+'.png')});
   }
@@ -64,6 +83,10 @@ try{
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No phone document overflow.');
     const boxes=await frame.locator('.role-example-table,.s11-role-table,blockquote,.example-source,.dt-scroll').evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return {left:r.left,right:r.right};}));
     assert(boxes.every(r=>r.left>=-1&&r.right<=391),id+' phone containment');
+    if(id==='s05-frame-contact-example'){
+      const bounds=await frame.evaluate(e=>({frame:e.getBoundingClientRect().right,table:e.querySelector('table').getBoundingClientRect().right}));
+      assert(bounds.table<=bounds.frame+1,'All four contact fields fit inside the phone reading column.');
+    }
     await frame.screenshot({path:path.join(shots,'phone-'+id+'.png')});
   }
   assert.deepEqual(errors,[]);

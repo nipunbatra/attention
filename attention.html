@@ -5854,6 +5854,9 @@ body.present #s05 .retrieval-roles{grid-template-columns:115px minmax(0,1fr);gap
 #s05 .role-example-table th,#s05 .role-example-table td{text-align:left;padding:14px 16px;border-bottom:1px solid var(--line);vertical-align:top}
 #s05 .role-example-table th{font-weight:650}
 #s05 .role-example-table .chosen{background:var(--t-v)}
+#s05 .contact-directory .chosen th{background:var(--t-k)}
+#s05 .contact-directory thead th[colspan]{text-align:center;border-bottom:2px solid var(--c-v)}
+#s05 .contact-directory tbody td{font-variant-numeric:tabular-nums;white-space:nowrap}
 body.present #s05 .search-example{font-size:23px;gap:36px}
 body.present #s05 .search-example h3{font-size:25px}
 body.present #s05 .example-source strong{font-size:28px}
@@ -5861,6 +5864,7 @@ body.present #s05 .transcript-label{font-size:19px}
 body.present #s05 .example-takeaway{font-size:24px}
 body.present #s05 .role-example-table{font-size:25px}
 @media(max-width:640px){body:not(.present) #s05 .search-example{grid-template-columns:1fr}body:not(.present) #s05 .role-example-table{font-size:16px}body:not(.present) #s05 .role-example-table th,body:not(.present) #s05 .role-example-table td{padding:10px 6px}}
+@media(max-width:640px){body:not(.present) #s05 .contact-directory th,body:not(.present) #s05 .contact-directory td{padding-left:4px;padding-right:4px}}
 #s05 .concept-copy{font-size:19px;line-height:1.4}
 #s05 .concept-copy p{margin:14px 0}
 #s05 .axis-definitions{display:grid;grid-template-columns:200px minmax(0,1fr);gap:18px 24px;margin:24px 0}
@@ -6141,14 +6145,25 @@ Keep the selected video attached to both roles. Its key is a representation used
   <p class="example-takeaway" data-build="2">The <span class="sym-k">key</span> helps find the source. The <span class="sym-v">value</span> represents what we take from it. Next, we will express that information as numbers.</p>
 </div>
 
-<div class="frame" id="s05-frame-contact-example" data-title="A contact's name and phone extension" data-autobuild="off">
-  <script type="text/x-notes">If you ask to call the library, should the lookup return the word library?
-The request supplies the query. Contact names are lookup keys; phone extensions are the associated values. Reveal the extensions only after identifying Library as the match. If the library changes its extension, the same name can still find it but the returned value changes. This literal lookup is an analogy for the roles, not a claim that neural attention uses exact string equality or phone numbers. The directory and extensions are invented for the lesson.</script>
-  <div class="concept-copy"><p><span class="sym-q">Query:</span> “Call the library.”</p></div>
-  <table class="role-example-table"><thead><tr><th class="sym-k">Key: contact to match</th><th class="sym-v" data-build="1">Value: extension to dial</th></tr></thead><tbody><tr class="chosen"><th class="sym-k">Library</th><td class="sym-v" data-build="1"><strong>204</strong></td></tr><tr><th class="sym-k">Admissions</th><td class="sym-v" data-build="1">118</td></tr></tbody></table>
-  <div class="concept-copy" data-build="1"><p>“Library” identifies the contact. <strong>204 lets us make the call.</strong> Returning the name alone would not give us the number.</p></div>
-  <p class="example-takeaway" data-build="2">A new extension changes the <span class="sym-v">value</span>; the contact can keep the same <span class="sym-k">key</span>.</p>
-  <p class="concept-note">Illustrative directory. Attention uses numerical representations and match scores rather than exact name lookup.</p>
+<div class="frame" id="s05-frame-contact-example" data-title="One key retrieves several useful details" data-autobuild="off">
+  <script type="text/x-notes">What do we need to know after finding the library?
+The query asks how to contact or visit the library. Match Library against the contact-name keys first. Then reveal the four columns under the single Value heading: extension, floor, opening time and closing time. They form one record associated with that key, not four competing search results. The names identify which record to retrieve; the fields supply useful information from it. Return all four fields together. We can dial 204 or visit floor 2 between 09:00 and 20:00. Returning only Library would supply none of those details.
+If opening time changes from 09:00 to 10:00, one value field changes while the key can remain Library. The other contact has a different complete record using the same four fields and field order. These entries are fictional, with hours shown in 24-hour local time, and do not describe a real campus directory.
+This is an exact-lookup analogy. Its four fields illustrate why a value can carry several pieces of information, but they are not literal learned attention coordinates. Do not average extensions or opening times to explain soft attention. Neural attention uses numerical feature vectors with a shared value width; each source's scalar attention weight scales its entire value vector, then the weighted vectors add. Learned features need not have readable labels. The later video example supplies eight numerical features for that calculation. Query and key must have matching widths for their dot product; value width is a separate choice.</script>
+  <div class="concept-copy"><p><span class="sym-q">Query:</span> “How can I contact or visit the library?”</p></div>
+  <table class="role-example-table contact-directory" aria-label="Fictional contact directory: each key has one value with four fields">
+    <thead>
+      <tr><th class="sym-k" rowspan="2" scope="col">Key: contact to match</th><th class="sym-v" colspan="4" scope="colgroup" data-build="1">Value: four fields returned together</th></tr>
+      <tr data-build="1"><th class="sym-v" scope="col">Extension</th><th class="sym-v" scope="col">Floor</th><th class="sym-v" scope="col">Opens</th><th class="sym-v" scope="col">Closes</th></tr>
+    </thead>
+    <tbody>
+      <tr class="chosen"><th class="sym-k" scope="row">Library</th><td class="sym-v" data-build="1"><strong>204</strong></td><td class="sym-v" data-build="1"><strong>2</strong></td><td class="sym-v" data-build="1"><strong>09:00</strong></td><td class="sym-v" data-build="1"><strong>20:00</strong></td></tr>
+      <tr><th class="sym-k" scope="row">Admissions</th><td class="sym-v" data-build="1">118</td><td class="sym-v" data-build="1">1</td><td class="sym-v" data-build="1">10:00</td><td class="sym-v" data-build="1">17:00</td></tr>
+    </tbody>
+  </table>
+  <div class="concept-copy" data-build="1" id="s05-contact-result"><p>The <span class="sym-k">key</span> finds Library. Its <span class="sym-v">value</span> lets us <strong>dial 204</strong> or <strong>visit floor 2 between 09:00 and 20:00</strong>.</p></div>
+  <p class="example-takeaway" data-build="2">A changed opening time updates one <span class="sym-v">value field</span>. The <span class="sym-k">key</span> can still be “Library”.</p>
+  <p class="concept-note">Fictional exact lookup. Attention combines numerical feature vectors, not literal contact fields.</p>
 </div>
 
 <div class="frame" id="s05-frame-pronoun-example" data-title="A pronoun looking for a person" data-autobuild="off">

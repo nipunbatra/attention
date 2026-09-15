@@ -1,5 +1,11 @@
 # Classroom release checks
 
+## 2026-09-15: one contact key returns a four-field value
+
+- Expanded the contact analogy from one extension to a complete record: extension, floor, opening time and closing time. A grouped Value header makes clear that all four fields belong to one matched source and return together. The query asks how to contact or visit the library, and the result explains how each returned detail helps. The final reveal explains how a changed opening time updates one value field without changing the contact key. Kept the existing single frame and reveal count.
+- The presentation skill guided the grouped native table, separate key/value colours, readable field labels and direct explanation. The directory is explicitly fictional. Notes distinguish exact-record lookup from learned numerical features and warn against averaging phone extensions or contact fields to explain soft attention. No model, shared runtime, dependency or other lecture changes.
+- Extended the role regression to verify both complete records, field order, the returned information, analogy caveats, and simultaneous field reveals with keys always visible. Checked desktop/reverse navigation, unchanged model output and phone column containment. Visually inspected the desktop and phone versions. Full audit: 238 states / 539 formulas, no math errors or overflow.
+
 ## 2026-09-15: explain how the final “the” retrieves useful context
 
 - Rebuilt Section 14's routing introduction around the actual shared query `[1.61,1.61,0]`: the final token asks broadly for water or finance clues without already knowing the scene. The context controls show the different source keys, top scaled score and full attention row. Promoted one reading companion into a classroom frame that follows a source value through its weighted contribution, the sum of all ten values, the dense output projection and residual addition. The next slide retains the 4→8→20 prediction head. Notes distinguish the hand-designed toy interpretation from learned queries and explain same-layer input values and later-layer contextual queries.
