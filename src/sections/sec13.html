@@ -95,6 +95,13 @@ body.present #s13 .mat-cl[data-present-label]::after,body.present #s13-frame3 .m
   <p>During training, the answer for position $i$ is already in the sentence at position $i+1$. We need to stop the model from reading it. Toggle the causal mask and watch row 5. With the mask on, token 5 (the) reads only positions 1 to 5. With it off, much of its weight moves to future tokens: river is the immediate target, and bank provides further future information. Send the values in both states and compare the messages. The mask enforces $j \le i$ by setting forbidden scores to $-\infty$ before softmax.</p>
 </div>
 
+<div class="frame lecture-topic-break" id="s13-topic-break" data-title="Causal masking" data-autobuild="off">
+  <script type="text/x-notes">Pause before introducing the visibility rule. Each input position predicts the next token. Ask why a stored training sentence creates an opportunity to see the answer, then use the next slide's concrete prefix to distinguish training, generation and test scoring. The mask calculation follows that motivation.</script>
+  <h3>Causal masking</h3>
+  <p class="topic-recap">Each position predicts the next token.</p>
+  <p class="topic-question">How do we prevent it from reading future tokens during training?</p>
+</div>
+
 <div class="frame" id="s13-frame1" data-title="Training and generation use the same prefix" data-autobuild="off">
   <script type="text/x-notes">
 We are discussing an autoregressive next-token model. Start with the training example: The fisherman sat beside the river bank. Position 5 is the second “the”. Its one-token target is river, at position 6. Bank is later information too, but is not this row's target.

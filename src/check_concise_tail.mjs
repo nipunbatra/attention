@@ -10,15 +10,15 @@ const {chromium}=require(process.env.PLAYWRIGHT_PATH||'/Users/nipun/.npm/_npx/36
 const model=JSON.parse(fs.readFileSync(new URL('toy.json',import.meta.url),'utf8'));
 const shots=fs.mkdtempSync('/private/tmp/concise-tail-');
 const expected={
-  s11:['s11-frame1','s11-frame-separate-maps','s11-frame-query-setup','s11-frame-query-calc','s11-frame3'],
-  s12:['s12-frame-scaling','s12-frame-spread','s12-frame-softmax','s12-frame-bank'],
-  s13:['s13-frame1','s13-frame2','s13-frame-mask-row','s13-frame3','s13-frame4'],
-  s14:['s14-routing','s14-residual','s14-probabilities','s14-layer-boundary'],
+  s11:['s11-topic-break','s11-frame1','s11-frame-separate-maps','s11-frame-query-setup','s11-frame-query-calc','s11-frame3'],
+  s12:['s12-topic-break','s12-frame-scaling','s12-frame-spread','s12-frame-softmax','s12-frame-bank'],
+  s13:['s13-topic-break','s13-frame1','s13-frame2','s13-frame-mask-row','s13-frame3','s13-frame4'],
+  s14:['s14-topic-break','s14-routing','s14-residual','s14-probabilities','s14-layer-boundary'],
   s15:['s15-frame1'],
-  s16:['s16-flow-frame','s16-frame3-routing'],
+  s16:['s16-topic-break','s16-flow-frame','s16-frame3-routing'],
   s17:['s17-weights'],
   s18:['s18-frame1'],
-  s19:['s19-frame-generation','s19-frame-training','s19-frame4']
+  s19:['s19-topic-break','s19-frame-generation','s19-frame-training','s19-frame4']
 };
 const browser=await chromium.launch();
 try{
@@ -69,7 +69,7 @@ try{
       await page.screenshot({path:path.join(shots,id+'.png')});
     }
   }
-  assert.equal(Object.values(expected).flat().length,26);
+  assert.equal(Object.values(expected).flat().length,32);
   assert.equal(await page.locator('.frame-auto').count(),0,'No companion section accidentally becomes a slide.');
   for(const id of ['s11-frame-key-calc','s11-frame-value-calc','s13-frame-targets','s13-frame-mask-triangle','s14-head-arithmetic','s16-frame2','s18-question8','s19-operational']){
     assert(await page.locator('#'+id).evaluate(el=>el.classList.contains('companion')));
@@ -81,7 +81,7 @@ try{
   await page.locator('#s15-stepper .btn-next').click();
   assert.equal(await page.evaluate(()=>document.querySelector('#s15-stepper .stepper').stepperApi.index()),1);
   await page.evaluate(()=>AT.present.next());
-  assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s16-flow-frame');
+  assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s16-topic-break');
   await page.evaluate(()=>AT.present.prev());
   assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s15-frame1');
   for(let i=0;i<18;i++){
@@ -188,5 +188,5 @@ try{
   const tableBox=await page.locator('#s13-frame1 table').boundingBox();
   assert(tableBox.x>=0&&tableBox.x+tableBox.width<=391,'The concrete prefix table fits a phone.');
   assert.deepEqual(errors,[]);
-  console.log('PASS: 26-frame tail; companion retention; manual walkthrough navigation and all 18 stages; full '+stageCount+'-stage flowchart; causal-mask arithmetic and tables/messages; final-query/value-path states and navigation; synchronized four-rule comparison; unchanged model; phone reading. Screenshots: '+shots);
+  console.log('PASS: 32-frame tail including six topic breaks; companion retention; manual walkthrough navigation and all 18 stages; full '+stageCount+'-stage flowchart; causal-mask arithmetic and tables/messages; final-query/value-path states and navigation; synchronized four-rule comparison; unchanged model; phone reading. Screenshots: '+shots);
 }finally{await browser.close();}

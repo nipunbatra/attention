@@ -154,6 +154,13 @@ The head reads the final updated row. The table gives logits and probabilities; 
 </div>
 </div>
 
+<div class="frame lecture-topic-break" id="s19-topic-break" data-title="Generation and training" data-autobuild="off">
+  <script type="text/x-notes">Pause before the closing distinction and handoff to Lecture 3. One forward pass gives next-token probabilities. Ask what changes while generating more tokens and what changes during learning. The next slides separate growing the input prefix from updating model parameters.</script>
+  <h3>Generation and training</h3>
+  <p class="topic-recap">One forward pass gives next-token probabilities.</p>
+  <p class="topic-question">What changes when we generate more tokens, and what changes when we train?</p>
+</div>
+
 <div class="frame" id="s19-frame-generation" data-title="What turns one prediction into generation?">
   <script type="text/x-notes">
 After choosing a token, what changes and what stays fixed?

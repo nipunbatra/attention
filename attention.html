@@ -3468,6 +3468,15 @@ window.__PART__ = {"part":2,"series":"Attention and language","title":"Self-atte
 <!-- ===== sec01.html ===== -->
 <section id="s01" class="sec" data-title="Predict the next token" data-lit="">
 <style>
+/* Topic pauses for Lecture 2 only; preserve the shared presentation runtime. */
+.lecture-topic-break h3{font-size:40px;line-height:1.12;letter-spacing:-.02em;margin:0 0 28px;max-width:24ch}
+.lecture-topic-break p{font-size:22px;line-height:1.4;margin:20px 0;max-width:54ch}
+.lecture-topic-break .topic-recap{color:var(--ink-2)}
+.lecture-topic-break .topic-question{font-weight:600}
+body.present .sec:has(>.lecture-topic-break.is-live)>.sec-head{display:none}
+body.present .lecture-topic-break h3{font-size:64px;margin-bottom:32px}
+body.present .lecture-topic-break p{font-size:28px;line-height:1.35;margin:24px 0}
+body:not(.present) .lecture-topic-break:not(.topic-midpoint) h3{display:none}
 #s01 .title-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 18px;margin-bottom:8px}
 #s01 .title-row .card-title{margin:0}
 #s01 .ctx-row{margin:0}
@@ -3877,6 +3886,13 @@ body.present #s02 .head-example{margin:20px 0;padding:12px 20px}
     <h2>Baseline: only the last token</h2>
   </div>
 </header>
+
+<div class="frame lecture-topic-break" id="s02-topic-break" data-title="Baselines for using context" data-autobuild="off">
+  <script type="text/x-notes">Pause before comparing the baselines. We have represented each input token as a row. Ask how much of the prefix the predictor should read. The next two sections try only the last token, then a fixed window, before motivating a summary.</script>
+  <h3>Baselines for using context</h3>
+  <p class="topic-recap">We have a row of numbers for each token.</p>
+  <p class="topic-question">How much of the prefix should the predictor read?</p>
+</div>
 
 <div class="frame" data-title="The problem: using earlier context" id="s02-frame-problem" data-autobuild="off">
   <script type="text/x-notes">What must change between these two predictions?
@@ -6147,6 +6163,13 @@ These are the same six items for all four queries. We have already compared the 
   </div>
 </div>
 
+<div class="frame lecture-topic-break topic-midpoint" id="s05-values-topic-break" data-title="Values: what a source sends" data-autobuild="off">
+  <script type="text/x-notes">Pause at the transition from matching to returned content. The query and keys have given us scores and a ranking. Ask what useful information the selected source should send. The next video example distinguishes the matching description from its explanation, followed by the contact and pronoun examples.</script>
+  <h3>Values: what a source sends</h3>
+  <p class="topic-recap">Query–key scores tell us which sources match.</p>
+  <p class="topic-question">What information should we get back from a matching source?</p>
+</div>
+
 <div class="frame" id="s05-frame-three-jobs" data-title="The video's key and value" data-autobuild="off">
   <script type="text/x-notes">Does knowing the video's topic answer the learner's question?
 Keep the selected video attached to both roles. Its key is a representation used to compare with the query. A strong gradient-flow coordinate makes Backpropagation a good match, but does not explain the chain rule. Reveal the illustrative transcript: this is the kind of information the learner wanted. In our numerical analogy the value represents information from this content, not the topic label or the match score. The text was written for this lesson, not transcribed from a real video. The existing diagram thumbnail identifies the same video as in the results. Changing the earlier query updates this entire example to the matched source. After the contact and paired pronoun examples, the eight-coordinate value representation makes the analogy numerical. Real attention mixes learned value vectors, not English transcripts.</script>
@@ -6734,6 +6757,13 @@ body.present #s06 #s06-mix .dt td.dt-num,body.present #s06 #s06-card-mix .dt td.
   <p>Hard retrieval returns the value of the highest-scoring item. Attention blends values according to how well their keys match the query. Follow that calculation in the tables: softmax converts the previous section's scores into the $\va{\alpha_j}$ weights, each weight scales its value row, and the bottom row adds the results. Start in hard mode, where one item gets all the weight. Switch to soft mode and lower the temperature to see it approach hard retrieval. The returned row is a mixture of values.</p>
 </div>
 
+<div class="frame lecture-topic-break" id="s06-topic-break" data-title="Soft retrieval" data-autobuild="off">
+  <script type="text/x-notes">Pause after the query, key and value examples. Hard retrieval returns one source's value. Ask how several sources could contribute to one answer. Briefly formalize the hard choice next, then keep the same scores and values while introducing softmax and the weighted sum.</script>
+  <h3>Soft retrieval</h3>
+  <p class="topic-recap">Hard retrieval returns one source’s value.</p>
+  <p class="topic-question">How can several sources contribute to one answer?</p>
+</div>
+
 <div class="frame" id="s06-frame-hard-retrieval" data-title="Hard retrieval returns one item's value" data-autobuild="off">
   <script type="text/x-notes">
 Which video's information do we return?
@@ -6996,8 +7026,9 @@ Its weight approaches one. If top scores tie, those top items keep sharing the w
   // Set the intended baseline when a new experiment starts, not on every build.
   if (AT.present && AT.present.on) AT.present.on('frame', st => {
     if (!st.frame || st.frame.id !== 's06') return;
-    if (st.frame.index === 0 && soft) mode.set(false, true);
-    if ((st.frame.index === 2 || st.frame.index === 6) && !soft) mode.set(true, true);
+    const id = S.querySelectorAll('.frame')[st.frame.index]?.id;
+    if (id === 's06-frame-hard-retrieval' && soft) mode.set(false, true);
+    if (['s06-frame-normalize', 's06-frame-temperature'].includes(id) && !soft) mode.set(true, true);
   });
 
 })();
@@ -7842,6 +7873,13 @@ body.present #s09 .attention-zoom-controls .btn{font-size:20px}
 <div class="companion" data-kicker="For self-study">
   <p>The message $m_7$ is a mixture of values, so it has $d_v$ value coordinates. To add it to bank's representation, we need $d_{\text{model}}$ representation coordinates. $W_O$ performs that mapping and gives us $\vd{\Delta e_7}$. The residual connection adds this update to the original $\ve{e_7}$, combining bank's existing representation with context.</p>
   <p>Press Play or advance one step at a time to follow the diagram. The next table shows the numerical result; hover a cell in the final row to inspect the addition. Watch the axis names change at $W_O$: it maps the message's value coordinates into representation coordinates. Attention computes the update, and the residual connection adds it.</p>
+</div>
+
+<div class="frame lecture-topic-break" id="s09-topic-break" data-title="Updating the token representation" data-autobuild="off">
+  <script type="text/x-notes">Pause after summing the weighted values. We have a message, but it has not yet updated the receiving token. Ask how to combine it with the existing token row. The next diagram introduces the output projection and residual addition without changing the worked example.</script>
+  <h3>Updating the token representation</h3>
+  <p class="topic-recap">The weighted values give us a message.</p>
+  <p class="topic-question">How do we add that message to the token’s existing representation?</p>
 </div>
 
 <div class="frame" id="s09-frame1" data-title="The message needs one final projection" data-autobuild="off">
@@ -8774,6 +8812,13 @@ body.present #s11 .s11-role-copy .role-note{font-size:19px}
   <p>Queries, keys and values come from projecting the current representation. They are not separate learned lookup tables. Pick a token and compare the four rows: three fixed matrices turn the top $\ve{e}$ row into the query, key and value below it, without changing that input row. Their axis names describe different roles: what the token asks for, when it is a useful match, and what it sends. The matrices below are shared by every token. Step through the lifetime diagram to see when the rows are computed and used. These working vectors help produce $\vd{\Delta e}$; the row passed to the next sublayer is $\ve{e} + \vd{\Delta e}$.</p>
 </div>
 
+<div class="frame lecture-topic-break" id="s11-topic-break" data-title="Learning queries, keys and values" data-autobuild="off">
+  <script type="text/x-notes">Pause before explaining the source of the working vectors. We have used supplied Q, K and V to gather context, update a token row and preview prediction. Now ask how the model can produce those vectors from the current representations. Keep the familiar role examples before the matrix arithmetic.</script>
+  <h3>Learning queries, keys and values</h3>
+  <p class="topic-recap">We have used supplied vectors to gather context and make a prediction.</p>
+  <p class="topic-question">How can the model produce those vectors from each token’s current row?</p>
+</div>
+
 <div class="frame" id="s11-frame1" data-title="Where did the supplied Q, K and V rows come from?">
   <script type="text/x-notes">
 Are q, k and v separately learned lookup rows?
@@ -9195,6 +9240,13 @@ body.present #s12 .s12-explanation .katex-display{margin:8px 0}
   <p>We first inspect random query/key entries, then repeat the calculation over many pairs to measure the spread. A two-key example connects that spread to softmax saturation. These demonstrations use separate illustrative numbers. The final table returns to our actual bank query. Extra reading below includes the variance derivation, a fixed-score divisor slider and a standard-normal simulation.</p>
 </div>
 
+<div class="frame lecture-topic-break" id="s12-topic-break" data-title="Scaling the attention scores" data-autobuild="off">
+  <script type="text/x-notes">Pause before the scaling examples. Earlier we used the square-root divisor without deriving it. Return to that open question now. The following three slides examine coordinate products, the spread across many random pairs, and softmax saturation before returning to bank.</script>
+  <h3>Scaling the attention scores</h3>
+  <p class="topic-recap">The query–key dot products determine the softmax weights.</p>
+  <p class="topic-question">Why do we divide each score by the square root of the query/key width?</p>
+</div>
+
 <div class="frame" id="s12-frame-scaling" data-title="More coordinates, more products to add" data-autobuild="off">
 <script type="text/x-notes">What changes when we use more coordinates in a dot product?
 Earlier we divided the three-coordinate bank scores by sqrt(3). This separate random-number experiment explains why. Each coordinate is an independent fair choice between -1 and +1, so its distribution has mean zero and variance one. These are not new bank vectors or learned features. The fixed seed makes the example reproducible.
@@ -9514,6 +9566,13 @@ body.present #s13 .mat-cl[data-present-label]::after,body.present #s13-frame3 .m
 
 <div class="companion" data-kicker="For self-study">
   <p>During training, the answer for position $i$ is already in the sentence at position $i+1$. We need to stop the model from reading it. Toggle the causal mask and watch row 5. With the mask on, token 5 (the) reads only positions 1 to 5. With it off, much of its weight moves to future tokens: river is the immediate target, and bank provides further future information. Send the values in both states and compare the messages. The mask enforces $j \le i$ by setting forbidden scores to $-\infty$ before softmax.</p>
+</div>
+
+<div class="frame lecture-topic-break" id="s13-topic-break" data-title="Causal masking" data-autobuild="off">
+  <script type="text/x-notes">Pause before introducing the visibility rule. Each input position predicts the next token. Ask why a stored training sentence creates an opportunity to see the answer, then use the next slide's concrete prefix to distinguish training, generation and test scoring. The mask calculation follows that motivation.</script>
+  <h3>Causal masking</h3>
+  <p class="topic-recap">Each position predicts the next token.</p>
+  <p class="topic-question">How do we prevent it from reading future tokens during training?</p>
 </div>
 
 <div class="frame" id="s13-frame1" data-title="Training and generation use the same prefix" data-autobuild="off">
@@ -9903,6 +9962,13 @@ Point to position 10. Earlier we examined bank at position 7, but now q_10 searc
   <p>The next token is still unknown. It cannot supply the query.</p>
 </div>
 <pre class="pytorch" data-build="2"><code>q_last = E[-1] @ W_Q  # the current last known position</code></pre>
+</div>
+
+<div class="frame lecture-topic-break" id="s14-topic-break" data-title="Predicting the next token" data-autobuild="off">
+  <script type="text/x-notes">Pause to return to the original prediction task with the causal rule in place. We now follow the final the at position 10, rather than the intermediate bank example. Its query collects context, the projected message updates its row, and the existing prediction head produces probabilities for word 11.</script>
+  <h3>Predicting the next token</h3>
+  <p class="topic-recap">Attention can collect context without looking ahead.</p>
+  <p class="topic-question">How does the final input token use that context to predict what comes next?</p>
 </div>
 
 <div class="frame" id="s14-routing" data-title="The final “the” asks for scene information" data-autobuild="off">
@@ -10948,6 +11014,13 @@ body.present #s16 .eqs>span{padding:28px 18px;border:1px solid var(--line);borde
   <p>Follow row 7 as you advance through the operations. It contains bank's numbers at every stage. Each matrix row belongs to a token, and $\vp{E'} = \ve{E} + \vd{\Delta E}$ adds all their updates at once.</p>
 </div>
 
+<div class="frame lecture-topic-break" id="s16-topic-break" data-title="The complete attention calculation" data-autobuild="off">
+  <script type="text/x-notes">Pause before assembling the full calculation. The optional numerical worksheet is complete if used. Ask students to connect the familiar steps in the full flowchart, then show how the matrix form applies them to every input token. Keep the later comparison and concept check with this recap.</script>
+  <h3>The complete attention calculation</h3>
+  <p class="topic-recap">We have followed one query from matching to an updated token row.</p>
+  <p class="topic-question">How do these steps fit together for every token?</p>
+</div>
+
 <div class="frame" id="s16-flow-frame" data-title="Can you trace one request through the whole diagram?">
   <script type="text/x-notes">
 Which branch chooses where to read, and which branch carries the information?
@@ -11957,6 +12030,13 @@ The head reads the final updated row. The table gives logits and probabilities; 
   <div id="s19-arith"></div>
   <p class="companion close-line" id="s19-close"></p>
 </div>
+</div>
+
+<div class="frame lecture-topic-break" id="s19-topic-break" data-title="Generation and training" data-autobuild="off">
+  <script type="text/x-notes">Pause before the closing distinction and handoff to Lecture 3. One forward pass gives next-token probabilities. Ask what changes while generating more tokens and what changes during learning. The next slides separate growing the input prefix from updating model parameters.</script>
+  <h3>Generation and training</h3>
+  <p class="topic-recap">One forward pass gives next-token probabilities.</p>
+  <p class="topic-question">What changes when we generate more tokens, and what changes when we train?</p>
 </div>
 
 <div class="frame" id="s19-frame-generation" data-title="What turns one prediction into generation?">

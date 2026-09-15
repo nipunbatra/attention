@@ -107,6 +107,13 @@ body.present #s06 #s06-mix .dt td.dt-num,body.present #s06 #s06-card-mix .dt td.
   <p>Hard retrieval returns the value of the highest-scoring item. Attention blends values according to how well their keys match the query. Follow that calculation in the tables: softmax converts the previous section's scores into the $\va{\alpha_j}$ weights, each weight scales its value row, and the bottom row adds the results. Start in hard mode, where one item gets all the weight. Switch to soft mode and lower the temperature to see it approach hard retrieval. The returned row is a mixture of values.</p>
 </div>
 
+<div class="frame lecture-topic-break" id="s06-topic-break" data-title="Soft retrieval" data-autobuild="off">
+  <script type="text/x-notes">Pause after the query, key and value examples. Hard retrieval returns one source's value. Ask how several sources could contribute to one answer. Briefly formalize the hard choice next, then keep the same scores and values while introducing softmax and the weighted sum.</script>
+  <h3>Soft retrieval</h3>
+  <p class="topic-recap">Hard retrieval returns one source’s value.</p>
+  <p class="topic-question">How can several sources contribute to one answer?</p>
+</div>
+
 <div class="frame" id="s06-frame-hard-retrieval" data-title="Hard retrieval returns one item's value" data-autobuild="off">
   <script type="text/x-notes">
 Which video's information do we return?
@@ -369,8 +376,9 @@ Its weight approaches one. If top scores tie, those top items keep sharing the w
   // Set the intended baseline when a new experiment starts, not on every build.
   if (AT.present && AT.present.on) AT.present.on('frame', st => {
     if (!st.frame || st.frame.id !== 's06') return;
-    if (st.frame.index === 0 && soft) mode.set(false, true);
-    if ((st.frame.index === 2 || st.frame.index === 6) && !soft) mode.set(true, true);
+    const id = S.querySelectorAll('.frame')[st.frame.index]?.id;
+    if (id === 's06-frame-hard-retrieval' && soft) mode.set(false, true);
+    if (['s06-frame-normalize', 's06-frame-temperature'].includes(id) && !soft) mode.set(true, true);
   });
 
 })();

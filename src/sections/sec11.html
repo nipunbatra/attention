@@ -113,6 +113,13 @@ body.present #s11 .s11-role-copy .role-note{font-size:19px}
   <p>Queries, keys and values come from projecting the current representation. They are not separate learned lookup tables. Pick a token and compare the four rows: three fixed matrices turn the top $\ve{e}$ row into the query, key and value below it, without changing that input row. Their axis names describe different roles: what the token asks for, when it is a useful match, and what it sends. The matrices below are shared by every token. Step through the lifetime diagram to see when the rows are computed and used. These working vectors help produce $\vd{\Delta e}$; the row passed to the next sublayer is $\ve{e} + \vd{\Delta e}$.</p>
 </div>
 
+<div class="frame lecture-topic-break" id="s11-topic-break" data-title="Learning queries, keys and values" data-autobuild="off">
+  <script type="text/x-notes">Pause before explaining the source of the working vectors. We have used supplied Q, K and V to gather context, update a token row and preview prediction. Now ask how the model can produce those vectors from the current representations. Keep the familiar role examples before the matrix arithmetic.</script>
+  <h3>Learning queries, keys and values</h3>
+  <p class="topic-recap">We have used supplied vectors to gather context and make a prediction.</p>
+  <p class="topic-question">How can the model produce those vectors from each token’s current row?</p>
+</div>
+
 <div class="frame" id="s11-frame1" data-title="Where did the supplied Q, K and V rows come from?">
   <script type="text/x-notes">
 Are q, k and v separately learned lookup rows?

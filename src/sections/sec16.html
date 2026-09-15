@@ -62,6 +62,13 @@ body.present #s16 .eqs>span{padding:28px 18px;border:1px solid var(--line);borde
   <p>Follow row 7 as you advance through the operations. It contains bank's numbers at every stage. Each matrix row belongs to a token, and $\vp{E'} = \ve{E} + \vd{\Delta E}$ adds all their updates at once.</p>
 </div>
 
+<div class="frame lecture-topic-break" id="s16-topic-break" data-title="The complete attention calculation" data-autobuild="off">
+  <script type="text/x-notes">Pause before assembling the full calculation. The optional numerical worksheet is complete if used. Ask students to connect the familiar steps in the full flowchart, then show how the matrix form applies them to every input token. Keep the later comparison and concept check with this recap.</script>
+  <h3>The complete attention calculation</h3>
+  <p class="topic-recap">We have followed one query from matching to an updated token row.</p>
+  <p class="topic-question">How do these steps fit together for every token?</p>
+</div>
+
 <div class="frame" id="s16-flow-frame" data-title="Can you trace one request through the whole diagram?">
   <script type="text/x-notes">
 Which branch chooses where to read, and which branch carries the information?

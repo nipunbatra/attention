@@ -121,6 +121,13 @@ body.present #s09 .attention-zoom-controls .btn{font-size:20px}
   <p>Press Play or advance one step at a time to follow the diagram. The next table shows the numerical result; hover a cell in the final row to inspect the addition. Watch the axis names change at $W_O$: it maps the message's value coordinates into representation coordinates. Attention computes the update, and the residual connection adds it.</p>
 </div>
 
+<div class="frame lecture-topic-break" id="s09-topic-break" data-title="Updating the token representation" data-autobuild="off">
+  <script type="text/x-notes">Pause after summing the weighted values. We have a message, but it has not yet updated the receiving token. Ask how to combine it with the existing token row. The next diagram introduces the output projection and residual addition without changing the worked example.</script>
+  <h3>Updating the token representation</h3>
+  <p class="topic-recap">The weighted values give us a message.</p>
+  <p class="topic-question">How do we add that message to the token’s existing representation?</p>
+</div>
+
 <div class="frame" id="s09-frame1" data-title="The message needs one final projection" data-autobuild="off">
   <script type="text/x-notes">
 What shape must the update have before we can add it to e?

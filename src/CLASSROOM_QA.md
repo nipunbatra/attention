@@ -1,5 +1,11 @@
 # Classroom release checks
 
+## 2026-09-15: topic breaks throughout Lecture 2
+
+- Added ten single-state topic breaks: baselines, values, soft retrieval, token updates, learned Q/K/V mappings, score scaling, causal masking, next-token prediction, the complete calculation, and generation/training. Kept the existing summary, attention, retrieval-detour and sentence-return introductions. Each new pause has a large topic title, one recap and one guiding question, plus presenter notes. No worked example was split internally or removed. Section 12 now opens with scaling's question before the random-vector example.
+- The presentation skill guided the consistent native-text layout, existing 64px divider typography and restrained content. Normal frame headers hide only on the new breaks and restore on the next slide. Reading mode reuses the section heading, except for the values midpoint within Section 5. Styles are confined to Lecture 2's source. Changed Section 6's hard/soft initialization from numerical frame indices to stable IDs so the added break preserves its behavior. No numerical model, shared-runtime, dependency or other lecture changes.
+- Added topic-break checks for all ten positions, existing breaks, both navigation directions, header restoration, one-step transitions, exact scaling deep-link/resume behavior, unchanged model output and desktop/tall/phone containment. Updated the affected route expectations in the existing regressions. Search, scaling, token-flow, key/value roles, window-network and the 32-frame tail checks pass. Full audit: 251 states / 537 formulas, no overflow or math failures. Visually inspected all ten new classroom slides, the scaling break at 1250×1041, and phone reading.
+
 ## 2026-09-15: explain separate mappings through the familiar Maya story
 
 - Replaced the unlabelled binary projection example with the same Maya/coat prefix used earlier. A three-row table identifies each mapping, the current token row it reads, and its output in words: a person request from “she”, a person match from the second Maya, and richer information from that same Maya row. Removed the binary arithmetic and raw-score symmetry detour. The reveal explains why asking and being a candidate are different signals, while retaining equal Q/K width. The bank input/matrix setup still follows immediately.

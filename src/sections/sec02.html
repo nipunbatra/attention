@@ -92,6 +92,13 @@ body.present #s02 .head-example{margin:20px 0;padding:12px 20px}
   </div>
 </header>
 
+<div class="frame lecture-topic-break" id="s02-topic-break" data-title="Baselines for using context" data-autobuild="off">
+  <script type="text/x-notes">Pause before comparing the baselines. We have represented each input token as a row. Ask how much of the prefix the predictor should read. The next two sections try only the last token, then a fixed window, before motivating a summary.</script>
+  <h3>Baselines for using context</h3>
+  <p class="topic-recap">We have a row of numbers for each token.</p>
+  <p class="topic-question">How much of the prefix should the predictor read?</p>
+</div>
+
 <div class="frame" data-title="The problem: using earlier context" id="s02-frame-problem" data-autobuild="off">
   <script type="text/x-notes">What must change between these two predictions?
 We have represented each token, but we have not yet decided how its information reaches the prediction. Point to river and cheque, then to the shared ending. Water and teller are plausible continuations, not unique correct answers or measured model outputs.

@@ -41,6 +41,13 @@ body.present #s12 .s12-explanation .katex-display{margin:8px 0}
   <p>We first inspect random query/key entries, then repeat the calculation over many pairs to measure the spread. A two-key example connects that spread to softmax saturation. These demonstrations use separate illustrative numbers. The final table returns to our actual bank query. Extra reading below includes the variance derivation, a fixed-score divisor slider and a standard-normal simulation.</p>
 </div>
 
+<div class="frame lecture-topic-break" id="s12-topic-break" data-title="Scaling the attention scores" data-autobuild="off">
+  <script type="text/x-notes">Pause before the scaling examples. Earlier we used the square-root divisor without deriving it. Return to that open question now. The following three slides examine coordinate products, the spread across many random pairs, and softmax saturation before returning to bank.</script>
+  <h3>Scaling the attention scores</h3>
+  <p class="topic-recap">The query–key dot products determine the softmax weights.</p>
+  <p class="topic-question">Why do we divide each score by the square root of the query/key width?</p>
+</div>
+
 <div class="frame" id="s12-frame-scaling" data-title="More coordinates, more products to add" data-autobuild="off">
 <script type="text/x-notes">What changes when we use more coordinates in a dot product?
 Earlier we divided the three-coordinate bank scores by sqrt(3). This separate random-number experiment explains why. Each coordinate is an independent fair choice between -1 and +1, so its distribution has mean zero and variance one. These are not new bank vectors or learned features. The fixed seed makes the example reproducible.

@@ -54,10 +54,14 @@ try{
   assert(prob[0][1]*(1-prob[0][1])<2e-7);
   assert(prob[1][1]*(1-prob[1][1])/8>.01,'Including the divisor, the local derivative is still much larger here.');
   await page.evaluate(()=>AT.present.enter());
-  assert.deepEqual(await page.locator('#s12 .frame').evaluateAll(es=>es.map(e=>e.id)),ids);
+  assert.deepEqual(await page.locator('#s12 .frame').evaluateAll(es=>es.map(e=>e.id)),['s12-topic-break',...ids]);
+  await page.evaluate(()=>AT.present.go('s12',1,0));
+  assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s12-topic-break');
+  await page.evaluate(()=>AT.present.next());
+  assert.equal(await page.locator('.frame.is-live').getAttribute('id'),ids[0]);
   for(let i=0;i<ids.length;i++){
     for(const build of i===3?[0]:[0,1,0,1]){
-      await page.evaluate(({i,build})=>AT.present.go('s12',i+1,build),{i,build});await page.waitForTimeout(200);
+      await page.evaluate(({i,build})=>AT.present.go('s12',i+2,build),{i,build});await page.waitForTimeout(200);
       assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,ids[i]+' fits');
       const reveals=await page.locator('#'+ids[i]+' [data-build="1"]').evaluateAll(es=>es.map(e=>getComputedStyle(e).visibility));
       assert(reveals.every(v=>v===(build?'visible':'hidden')),'Reveal and reverse all pieces together.');
@@ -65,7 +69,7 @@ try{
     }
     if(i<ids.length-1){await page.evaluate(()=>AT.present.next());assert.equal(await page.locator('.frame.is-live').getAttribute('id'),ids[i+1]);}
   }
-  await page.evaluate(()=>AT.present.go('s12',2,1));
+  await page.evaluate(()=>AT.present.go('s12',3,1));
   const bars=await page.locator('#s12-spread-table td[data-sd]').evaluateAll(es=>es.map(e=>({value:+e.dataset.sd,width:e.querySelector('.s12-sd-bar').getBoundingClientRect().width,track:e.querySelector('.s12-sd-track').getBoundingClientRect().width})));
   bars.forEach(b=>assert(Math.abs(b.width/b.track-b.value/17)<.001,'Bar length uses the common 0–17 scale.'));
   await page.evaluate(()=>AT.present.exit());await page.setViewportSize({width:390,height:844});

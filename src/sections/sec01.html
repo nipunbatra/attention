@@ -1,5 +1,14 @@
 <section id="s01" class="sec" data-title="Predict the next token" data-lit="">
 <style>
+/* Topic pauses for Lecture 2 only; preserve the shared presentation runtime. */
+.lecture-topic-break h3{font-size:40px;line-height:1.12;letter-spacing:-.02em;margin:0 0 28px;max-width:24ch}
+.lecture-topic-break p{font-size:22px;line-height:1.4;margin:20px 0;max-width:54ch}
+.lecture-topic-break .topic-recap{color:var(--ink-2)}
+.lecture-topic-break .topic-question{font-weight:600}
+body.present .sec:has(>.lecture-topic-break.is-live)>.sec-head{display:none}
+body.present .lecture-topic-break h3{font-size:64px;margin-bottom:32px}
+body.present .lecture-topic-break p{font-size:28px;line-height:1.35;margin:24px 0}
+body:not(.present) .lecture-topic-break:not(.topic-midpoint) h3{display:none}
 #s01 .title-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 18px;margin-bottom:8px}
 #s01 .title-row .card-title{margin:0}
 #s01 .ctx-row{margin:0}

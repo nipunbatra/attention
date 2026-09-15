@@ -2,6 +2,25 @@
 
 Notation: F = frame, b = build. "held" = the drawing that stays while builds add one mark. Notes = presenter notes (first line = question before reveal).
 
+## Topic pauses
+
+The classroom route now includes ten additional topic breaks. Each names the topic, recalls the previous result, and asks the next question. The existing summary, attention, retrieval-detour and return-to-sentence introductions remain. Keep multi-slide calculations together, especially Sections 7–8 and 9–10. The content descriptions below are a teaching outline; live frame numbers include these inserted pauses. Navigation tests should resolve stable element IDs rather than assume content-frame numbers.
+
+| Break ID | Topic | Followed by |
+| --- | --- | --- |
+| `s02-topic-break` | Baselines for using context | `s02-frame-problem` |
+| `s05-values-topic-break` | Values: what a source sends | `s05-frame-three-jobs` |
+| `s06-topic-break` | Soft retrieval | `s06-frame-hard-retrieval` |
+| `s09-topic-break` | Updating the token representation | `s09-frame1` |
+| `s11-topic-break` | Learning queries, keys and values | `s11-frame1` |
+| `s12-topic-break` | Scaling the attention scores | `s12-frame-scaling` |
+| `s13-topic-break` | Causal masking | `s13-frame1` |
+| `s14-topic-break` | Predicting the next token | `s14-routing` |
+| `s16-topic-break` | The complete attention calculation | `s16-flow-frame` |
+| `s19-topic-break` | Generation and training | `s19-frame-generation` |
+
+These are single-state frames with no new arithmetic. The regular slide header hides only while a break is live. Reading mode keeps the recap/question under its section heading; the values midpoint retains its own heading. The Section 6 hard/soft initialization uses stable frame IDs so inserting a pause does not change the experiment.
+
 ## s01 Predict the next token
 F1 "One blank": sentence chips and the prediction task. F2 show probability bars. F3 distinguish E_tok from a looked-up row. F4 explain the four illustrative word features with actual river/bank/the rows and matching colour labels. F5 motivate order with Maya/Ravi and bridge from Part I's concatenation. F6 add actual word/position rows at positions 1, 5, and 10, without an extra axis. F7 assemble the ten-by-four sentence matrix and define T and d_model. Keep technical position details in the article companion, not repeated recap slides.
   Notes: "What could come next, and why do you think so?" Collect answers before switching context. The selected context and token survive continuation frames. Do not introduce attention yet.

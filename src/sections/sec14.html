@@ -81,6 +81,13 @@ Point to position 10. Earlier we examined bank at position 7, but now q_10 searc
 <pre class="pytorch" data-build="2"><code>q_last = E[-1] @ W_Q  # the current last known position</code></pre>
 </div>
 
+<div class="frame lecture-topic-break" id="s14-topic-break" data-title="Predicting the next token" data-autobuild="off">
+  <script type="text/x-notes">Pause to return to the original prediction task with the causal rule in place. We now follow the final the at position 10, rather than the intermediate bank example. Its query collects context, the projected message updates its row, and the existing prediction head produces probabilities for word 11.</script>
+  <h3>Predicting the next token</h3>
+  <p class="topic-recap">Attention can collect context without looking ahead.</p>
+  <p class="topic-question">How does the final input token use that context to predict what comes next?</p>
+</div>
+
 <div class="frame" id="s14-routing" data-title="The final “the” asks for scene information" data-autobuild="off">
 <script type="text/x-notes">How can a word as uninformative as “the” provide a useful query?
 The known prefix ends at position 10, so that is the row used to predict token 11. Its initial representation is [0,0,0,2.3] on water, finance, person, glue axes in both sentences. The shared W_Q maps its glue coordinate into both setting-request coordinates: 2.3 times 0.7 gives 1.61. Thus q_10=[1.61,1.61,0] asks broadly for water or finance clues and has no preference between them. It does not already know which scene occurred. The unknown next word supplies no query. Bank's earlier q_7 is not reused.

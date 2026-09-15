@@ -58,8 +58,8 @@ try{
   const order=await page.locator('#s05 .frame').evaluateAll(els=>els.map(e=>e.id));
   assert.deepEqual(order.slice(3,13),[...queryFrames,...keyFrames,'s05-frame-matching','s05-frame-results']);
   assert.deepEqual(order.slice(-4),['s05-frame-value-axes','s05-frame-values','s05-frame-payload','s05-frame-return'],'Unpack the returned content after defining its axes, before the compact recap.');
-  assert.equal(order.length,21,'The video bridge is followed by the contact and two pronoun examples before numerical values.');
-  assert.deepEqual(order.slice(13,17),['s05-frame-three-jobs','s05-frame-contact-example','s05-frame-pronoun-example','s05-frame-coat-example']);
+  assert.equal(order.length,22,'A values topic break precedes the video, contact and pronoun examples.');
+  assert.deepEqual(order.slice(13,18),['s05-values-topic-break','s05-frame-three-jobs','s05-frame-contact-example','s05-frame-pronoun-example','s05-frame-coat-example']);
   for(const id of queryFrames)assert(!/\b(keys?|values?)\b/i.test(await copy(id)),id+' must teach only the request before source roles.');
   assert.equal(keyFrames.length,4);
   assert((await copy('s05-frame-query-axes')).includes('not probabilities'));
@@ -112,7 +112,7 @@ try{
   assert(arithmetic.includes('=\\va{'+firstScore.toFixed(1)+'}'));
   assert.deepEqual((await page.locator('#s06-dot tbody td.dt-comp').allTextContents()).slice(1).map(Number),keys.map(k=>Number(k.reduce((sum,x,c)=>sum+x*queries[0][c],0).toFixed(1))));
   assert.equal(await page.locator('#s06-frame-change-score, #s06-sliders, #s06-reset, #s06-adjust-bars, #s06-score-edited').count(),0,'Remove the score-change slide and its controls/notices from both views.');
-  assert.deepEqual(await page.locator('#s06 .frame').evaluateAll(es=>es.map(e=>e.id)),['s06-frame-hard-retrieval','s06-frame-scores','s06-frame-normalize','s06-frame-weights','s06-frame-weighted-values','s06-frame-message','s06-frame-temperature'],'The result now leads directly to temperature, with one fewer frame.');
+  assert.deepEqual(await page.locator('#s06 .frame').evaluateAll(es=>es.map(e=>e.id)),['s06-topic-break','s06-frame-hard-retrieval','s06-frame-scores','s06-frame-normalize','s06-frame-weights','s06-frame-weighted-values','s06-frame-message','s06-frame-temperature'],'The section break preserves the complete retrieval example and direct result-to-temperature handoff.');
   assert(!/later sliders|sliders below|slider has set|Try it: drag/.test(await copy('s06')),'No obsolete instructions for the removed sliders remain.');
   await page.screenshot({path:path.join(shots,'score-provenance.png')});
   for(const id of [...queryFrames,...keyFrames]){

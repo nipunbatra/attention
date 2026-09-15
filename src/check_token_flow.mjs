@@ -71,7 +71,11 @@ try{
   await page.evaluate(()=>AT.present.go('s08',9,99));
   assert(!(await page.locator('#s08-value-experiment').isVisible()),'The optional exercise stays out of presentation mode.');
   await page.evaluate(()=>AT.present.next());
-  assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s09-frame1','The message goes directly to the output-projection diagram.');
+  assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s09-topic-break','Pause between the value-space message and the embedding update.');
+  await page.evaluate(()=>AT.present.next());
+  assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s09-frame1','The topic break leads directly to the output-projection diagram.');
+  await page.evaluate(()=>AT.present.prev());
+  assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s09-topic-break');
   await page.evaluate(()=>AT.present.prev());
   assert.equal(await page.locator('.frame.is-live').getAttribute('data-title'),'Add the weighted values, coordinate by coordinate','Reverse navigation also skips both optional slides.');
   await go('s08-frame-phases');
@@ -109,18 +113,18 @@ try{
   const scaleMath=(await page.locator('#s08-frame-scores [data-scale-intro] annotation').allTextContents()).join(' ');
   assert(scaleMath.includes('d_k='+model.d_k)&&scaleMath.includes('\\sqrt{'+model.d_k+'}'));
   assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'First-use scale note fits with all seven scores.');
-  assert.equal(await page.locator('#s12 .frame').count(),4,'Three example-driven scaling slides precede the real bank comparison.');
+  assert.equal(await page.locator('#s12 .frame').count(),5,'A topic break precedes the three scaling examples and bank comparison.');
   await go('s12-frame-scaling');
   assert.match(await page.locator('#s12-frame-scaling .s12-example-lead').innerText(),/Earlier.*three-coordinate.*Here is why/s);
-  await page.evaluate(()=>AT.present.go('s12',2,1));
+  await go('s12-frame-spread');await page.evaluate(()=>AT.present.setBuild(1));
   await page.waitForTimeout(300); // Nested text follows the existing reveal animation.
   assert.match(await page.locator('#s12-frame-spread .s12-example-note').innerText(),/independent, mean 0, variance 1/);
   assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'The deferred explanation still fits.');
   // Teach W_O as a learned dimension mapping; keep the fixed arithmetic optional.
-  assert.equal(await page.locator('#s09 .frame').count(),8,'The detailed projection calculation is outside the classroom sequence.');
+  assert.equal(await page.locator('#s09 .frame').count(),9,'The topic break precedes the eight update frames; detailed arithmetic remains in reading mode.');
   await go('s09-frame1');
   for(const build of [0,1,0,1]){
-    await page.evaluate(build=>AT.present.go('s09',1,build),build);await page.waitForTimeout(350);
+    await page.evaluate(build=>AT.present.setBuild(build),build);await page.waitForTimeout(350);
     assert(await page.locator('#s09-projection-overview svg').isVisible(),'Show the graphical operation before the equations.');
     assert.equal(await page.locator('#s09-projection-equations').evaluate(e=>getComputedStyle(e).visibility),build?'visible':'hidden');
     assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'Projection overview fits in both reveal states.');
