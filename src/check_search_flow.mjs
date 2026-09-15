@@ -58,8 +58,8 @@ try{
   const order=await page.locator('#s05 .frame').evaluateAll(els=>els.map(e=>e.id));
   assert.deepEqual(order.slice(3,13),[...queryFrames,...keyFrames,'s05-frame-matching','s05-frame-results']);
   assert.deepEqual(order.slice(-4),['s05-frame-value-axes','s05-frame-values','s05-frame-payload','s05-frame-return'],'Unpack the returned content after defining its axes, before the compact recap.');
-  assert.equal(order.length,20,'The video bridge is followed by contact and pronoun examples before numerical values.');
-  assert.deepEqual(order.slice(13,16),['s05-frame-three-jobs','s05-frame-contact-example','s05-frame-pronoun-example']);
+  assert.equal(order.length,21,'The video bridge is followed by the contact and two pronoun examples before numerical values.');
+  assert.deepEqual(order.slice(13,17),['s05-frame-three-jobs','s05-frame-contact-example','s05-frame-pronoun-example','s05-frame-coat-example']);
   for(const id of queryFrames)assert(!/\b(keys?|values?)\b/i.test(await copy(id)),id+' must teach only the request before source roles.');
   assert.equal(keyFrames.length,4);
   assert((await copy('s05-frame-query-axes')).includes('not probabilities'));
@@ -323,11 +323,20 @@ try{
   assert.deepEqual(await matrix('s05-query-vector'),[queries[0]],'New search visits keep the original query reset.');
   assert.equal(await page.evaluate(()=>JSON.stringify({model:AT.model,p:AT.forward(AT.sentences.river).probs})),model);
   await page.evaluate(()=>AT.present.exit());await page.setViewportSize({width:390,height:844});
+  // Reading-mode layout settles on the next paint after a viewport/mode change.
+  // Check the settled width, rather than an intermediate desktop-width layout.
+  await page.waitForFunction(()=>document.documentElement.scrollWidth<=innerWidth+1,null,{timeout:2000});
   await checkProseTypography();
   assert.equal(await page.locator('#s06-mix .s06-weight-label:visible').count(),8,'Reading mode labels the weighted contributions it displays.');
-  for(const id of [...queryFrames,...keyFrames,...valueFrames,'s05-frame-three-jobs','s05-frame-contact-example','s05-frame-pronoun-example','s06-frame-hard-retrieval','s06-frame-scores']){
+  for(const id of [...queryFrames,...keyFrames,...valueFrames,'s05-frame-three-jobs','s05-frame-contact-example','s05-frame-pronoun-example','s05-frame-coat-example','s06-frame-hard-retrieval','s06-frame-scores']){
     await page.locator('#'+id).scrollIntoViewIfNeeded();
-    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No phone document overflow.');
+    const phoneBounds=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));
+    if(phoneBounds.scroll>phoneBounds.width+1){
+      await page.screenshot({path:path.join(shots,'phone-overflow-'+id+'.png')});
+      const outside=await page.locator('main *').evaluateAll(es=>es.filter(e=>{const r=e.getBoundingClientRect();return r.width&&r.right>innerWidth+1&&!e.closest('.dt-scroll,.vec,.matrix-scroll')}).map(e=>({tag:e.tagName,id:e.id,cls:e.className,right:e.getBoundingClientRect().right,text:e.textContent.slice(0,100)})).slice(0,25));
+      console.error({id,phoneBounds,outside,shots});
+    }
+    assert(phoneBounds.scroll<=phoneBounds.width+1,'No phone document overflow at '+id+': '+JSON.stringify(phoneBounds));
     await page.screenshot({path:path.join(shots,'phone-'+id+'.png')});
   }
   for(let i=0;i<queries.length;i++){

@@ -5857,6 +5857,20 @@ body.present #s05 .retrieval-roles{grid-template-columns:115px minmax(0,1fr);gap
 #s05 .contact-directory .chosen th{background:var(--t-k)}
 #s05 .contact-directory thead th[colspan]{text-align:center;border-bottom:2px solid var(--c-v)}
 #s05 .contact-directory tbody td{font-variant-numeric:tabular-nums;white-space:nowrap}
+#s05 .pronoun-example .concept-copy p{margin:8px 0}
+#s05 .pronoun-table{table-layout:fixed;margin:14px 0}
+#s05 .pronoun-table col:nth-child(1){width:12%}
+#s05 .pronoun-table col:nth-child(2){width:28%}
+#s05 .pronoun-table col:nth-child(3){width:60%}
+#s05 .pronoun-table th,#s05 .pronoun-table td{padding:10px 12px}
+#s05 .pronoun-table .chosen{background:transparent}
+#s05 .pronoun-table .chosen td:nth-child(2){background:var(--t-k)}
+#s05 .pronoun-table .chosen td:last-child{background:var(--t-v)}
+#s05 .pronoun-facts{display:grid;grid-template-columns:1fr 1fr;gap:6px 18px;margin:0}
+#s05 .pronoun-facts dt{display:inline;font-weight:600}
+#s05 .pronoun-facts dd{display:inline;margin:0}
+body.present #s05 .pronoun-example .example-takeaway{min-height:calc(2.8em + 15px)}
+@media(max-width:640px){body:not(.present) #s05 .pronoun-facts{grid-template-columns:1fr;gap:6px}body:not(.present) #s05 .pronoun-table th,body:not(.present) #s05 .pronoun-table td{padding:10px 5px}body:not(.present) #s05 .pronoun-table col:first-child{width:68px}body:not(.present) #s05 .pronoun-table col:last-child{width:auto}}
 body.present #s05 .search-example{font-size:23px;gap:36px}
 body.present #s05 .search-example h3{font-size:25px}
 body.present #s05 .example-source strong{font-size:28px}
@@ -6135,7 +6149,7 @@ These are the same six items for all four queries. We have already compared the 
 
 <div class="frame" id="s05-frame-three-jobs" data-title="The video's key and value" data-autobuild="off">
   <script type="text/x-notes">Does knowing the video's topic answer the learner's question?
-Keep the selected video attached to both roles. Its key is a representation used to compare with the query. A strong gradient-flow coordinate makes Backpropagation a good match, but does not explain the chain rule. Reveal the illustrative transcript: this is the kind of information the learner wanted. In our numerical analogy the value represents information from this content, not the topic label or the match score. The text was written for this lesson, not transcribed from a real video. The existing diagram thumbnail identifies the same video as in the results. Changing the earlier query updates this entire example to the matched source. After two everyday/language examples, the eight-coordinate value representation makes the analogy numerical. Real attention mixes learned value vectors, not English transcripts.</script>
+Keep the selected video attached to both roles. Its key is a representation used to compare with the query. A strong gradient-flow coordinate makes Backpropagation a good match, but does not explain the chain rule. Reveal the illustrative transcript: this is the kind of information the learner wanted. In our numerical analogy the value represents information from this content, not the topic label or the match score. The text was written for this lesson, not transcribed from a real video. The existing diagram thumbnail identifies the same video as in the results. Changing the earlier query updates this entire example to the matched source. After the contact and paired pronoun examples, the eight-coordinate value representation makes the analogy numerical. Real attention mixes learned value vectors, not English transcripts.</script>
   <p class="payload-question"><span class="sym-q">Query:</span> <strong class="s05-qtext"></strong></p>
   <div class="example-source"><span id="s05-example-thumbnail"></span><strong id="s05-example-title"></strong></div>
   <div class="search-example">
@@ -6166,13 +6180,41 @@ This is an exact-lookup analogy. Its four fields illustrate why a value can carr
   <p class="concept-note">Fictional exact lookup. Attention combines numerical feature vectors, not literal contact fields.</p>
 </div>
 
-<div class="frame" id="s05-frame-pronoun-example" data-title="A pronoun looking for a person" data-autobuild="off">
-  <script type="text/x-notes">What information might she need from the words before it?
-This is an imagined attention behavior, not a measured head. The receiver she could ask for a person it refers to. Maya's key could signal a person-name candidate; coat's key could signal an object. Maya's value could carry information about that person into she's updated representation. The key need only support the match, while the value carries features useful downstream. The same source supplies its paired key and value. We will later calculate a separate tiny example showing why asking for a person and offering person information need different mappings. Named roles are intuition; real learned coordinates need not be readable labels.</script>
-  <div class="concept-copy"><p><strong class="sym-k">Maya</strong> grabbed a coat because <strong class="sym-q">she</strong> was cold.</p><p><span class="sym-q">Query from “she”:</span> “Which earlier person could I refer to?”</p></div>
-  <table class="role-example-table"><thead><tr><th>Source</th><th class="sym-k">Key: useful match?</th><th class="sym-v" data-build="1">Value: information to send</th></tr></thead><tbody><tr class="chosen"><th>Maya</th><td class="sym-k">A person-name candidate</td><td class="sym-v" data-build="1">Identity: Maya; number: singular</td></tr><tr><th>coat</th><td class="sym-k">An object, not a person</td><td class="sym-v" data-build="1">Identity: coat; number: singular</td></tr></tbody></table>
-  <p class="example-takeaway" data-build="2">A strong match lets <span class="sym-q">“she”</span> receive more of <span class="sym-v">Maya's information</span>. The output is a context vector, not the word “Maya”.</p>
-  <p class="concept-note">A possible learned behavior, illustrated in words. The real queries, keys and values are vectors.</p>
+<div class="frame pronoun-example" id="s05-frame-pronoun-example" data-title="“She” can retrieve more than Maya’s name" data-autobuild="off">
+  <script type="text/x-notes">Once we have found the person, what useful information can that source send?
+Read the two-sentence prefix before the receiver she. The query could ask for a person mentioned earlier. Maya's key signals a singular person, while coat's key signals a singular object. Reveal the values: Maya can send evidence about her identity, cycling home, the rain and feeling cold and tired. The value carries information useful for continuing the story, beyond establishing who she refers to. The proposed continuation is an illustration, not a measured prediction or a uniquely correct answer.
+These are possible later-layer representations, not initial word embeddings or measured attention heads. The highlighted source is the second Maya. Cycling and rain occur in the earlier sentence, and cold and tired precede that second mention. Earlier layers may already have gathered those prefix facts into its representation. Hooded, red and wool all precede coat. Neither source reads future words, and the current layer reads the previous layer's inputs. The continuation after she is shown only to explain possible downstream use; it is not an input to the query.
+The four labelled facts are readable sketches of what a value could encode, not four literal slots of different types. Actual values share one numerical coordinate system and width; learned coordinates need not have readable meanings. Query and key widths must agree for the dot product, while value width is a separate choice. Keys and values can contain overlapping information; their roles differ. The table focuses on two candidate source positions, not every token or an exact one-hot attention pattern. In real attention, the weighted value mixture updates the receiver's numerical representation. More attention to Maya lets its information contribute more.
+On the next slide only the receiver changes to it. The prefix, source keys and source values remain the same.</script>
+  <div class="concept-copy"><p class="pronoun-prefix">Maya cycled home in the rain. Cold and tired, <strong class="sym-k">Maya</strong> reached for a hooded red wool <strong class="sym-k">coat</strong>. <strong class="sym-q">She</strong> …</p><p class="pronoun-query"><span class="sym-q">Query from “she”:</span> “Which earlier person could I refer to?”</p></div>
+  <table class="role-example-table pronoun-table" aria-label="Possible matching clues and value information for she">
+    <colgroup><col><col><col></colgroup>
+    <thead><tr><th scope="col">Source</th><th scope="col" class="sym-k">Key: matching clues</th><th scope="col" class="sym-v" data-build="1">Value: details it can send</th></tr></thead>
+    <tbody>
+      <tr class="chosen" data-source="maya"><th scope="row">Maya</th><td class="sym-k">Person, singular</td><td class="sym-v" data-build="1"><dl class="pronoun-facts"><div><dt>Who:</dt> <dd>Maya</dd></div><div><dt>Did:</dt> <dd>cycled home</dd></div><div><dt>Weather:</dt> <dd>rain</dd></div><div><dt>Feels:</dt> <dd>cold, tired</dd></div></dl></td></tr>
+      <tr data-source="coat"><th scope="row">coat</th><td class="sym-k">Object, singular</td><td class="sym-v" data-build="1"><dl class="pronoun-facts"><div><dt>What:</dt> <dd>coat</dd></div><div><dt>Colour:</dt> <dd>red</dd></div><div><dt>Material:</dt> <dd>wool</dd></div><div><dt>Has:</dt> <dd>a hood</dd></div></dl></td></tr>
+    </tbody>
+  </table>
+  <p class="example-takeaway" data-build="2">Knowing Maya is <span class="sym-v">cold and tired</span> can help continue the story: <strong>“She went inside to rest.”</strong></p>
+  <p class="concept-note">Illustrative later-layer vectors. Earlier layers have gathered these facts. The real vectors contain numbers.</p>
+</div>
+
+<div class="frame pronoun-example" id="s05-frame-coat-example" data-title="“It” can retrieve the coat’s properties" data-autobuild="off">
+  <script type="text/x-notes">What changes if the next sentence starts with it instead of she?
+Keep the identical two-sentence prefix and both candidate source rows. Only the receiver changes. Its query could ask for an earlier object. The same coat key is now a useful match, and the same coat value contributes evidence about its colour, material and hood. Maya's value does not lose its contents; it simply need not receive much weight from this query. The illustrative continuation shows how retrieving properties helps beyond resolving the reference.
+This is a later-layer illustration. The second Maya may carry earlier cycling, rain, cold and tired information gathered by preceding layers. Hooded, red and wool precede coat. The source keys and values come from those already contextualized input rows and do not depend on the following receiver. The current layer cannot read newly updated same-layer rows. Future continuation words are not query inputs. No particular trained model, exact winner, attention weights or vocabulary probabilities are claimed.
+The named facts sketch information encoded in shared-width numerical value vectors. They are not literal independent field slots. The output is a weighted feature mixture that enriches the representation of it, not an English sentence copied out of the table. Key/query matches set how much each source contributes; values supply the content. Comparing the two slides separates those roles while keeping the available source information fixed.</script>
+  <div class="concept-copy"><p class="pronoun-prefix">Maya cycled home in the rain. Cold and tired, <strong class="sym-k">Maya</strong> reached for a hooded red wool <strong class="sym-k">coat</strong>. <strong class="sym-q">It</strong> …</p><p class="pronoun-query"><span class="sym-q">Query from “it”:</span> “Which earlier object could I refer to?”</p></div>
+  <table class="role-example-table pronoun-table" aria-label="The same source keys and values, now queried by it">
+    <colgroup><col><col><col></colgroup>
+    <thead><tr><th scope="col">Source</th><th scope="col" class="sym-k">Key: matching clues</th><th scope="col" class="sym-v" data-build="1">Value: details it can send</th></tr></thead>
+    <tbody>
+      <tr data-source="maya"><th scope="row">Maya</th><td class="sym-k">Person, singular</td><td class="sym-v" data-build="1"><dl class="pronoun-facts"><div><dt>Who:</dt> <dd>Maya</dd></div><div><dt>Did:</dt> <dd>cycled home</dd></div><div><dt>Weather:</dt> <dd>rain</dd></div><div><dt>Feels:</dt> <dd>cold, tired</dd></div></dl></td></tr>
+      <tr class="chosen" data-source="coat"><th scope="row">coat</th><td class="sym-k">Object, singular</td><td class="sym-v" data-build="1"><dl class="pronoun-facts"><div><dt>What:</dt> <dd>coat</dd></div><div><dt>Colour:</dt> <dd>red</dd></div><div><dt>Material:</dt> <dd>wool</dd></div><div><dt>Has:</dt> <dd>a hood</dd></div></dl></td></tr>
+    </tbody>
+  </table>
+  <p class="example-takeaway" data-build="2">Same keys and values, a different query. Now the <span class="sym-v">colour and material</span> can help continue: <strong>“It was made of red wool.”</strong></p>
+  <p class="concept-note">A possible continuation, not a measured prediction. Attention mixes numerical features from the sources.</p>
 </div>
 
 <div class="frame" id="s05-frame-value-axes" data-title="Eight details the value can carry" data-autobuild="off">
