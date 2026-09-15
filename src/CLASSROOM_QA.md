@@ -1,5 +1,10 @@
 # Classroom release checks
 
+## 2026-09-15: clickable close-up of the residual overview
+
+- Kept Section 9's existing residual SVG and added an optional detailed view on the same classroom frame. “Zoom into attention” and the overview's attention box open it; “Back to overview” restores the original. The presentation skill guided the two-scale layout. The detailed SVG follows bank's supplied three-coordinate query and seven keys through scaled dot products, softmax, all seven two-coordinate value rows, their weighted sum, the 2×4 output projection, and residual addition. Every displayed score, weight and vector comes from the unchanged forward calculation. The original embedding visibly bypasses the projection. No frame, reveal, model or shared-runtime changes.
+- The token-flow regression independently checks all close-up numbers, coordinate counts, colours, label bounds, both reveal builds, button/SVG mouse and keyboard activation, focus return, navigation and default overview on revisiting. Verified phone-local scrolling and print inclusion of both versions. Visually inspected the overview and close-up at 1280×720 and the user's taller viewport, plus both ends of the phone diagram. All 225 presentation states / 515 formulas pass the full audit without overflow or math failures.
+
 ## 2026-09-15: shorten the transition from the message to the output projection
 
 - Removed “Change only the values: do the weights change?” and “Same weights, different information” from the classroom route. Their point is already established by the earlier Q/K/V examples and the retained weighted-sum explanation. Section 8 now has nine frames instead of eleven and leads directly from the message to Section 9's projection diagram. The presentation skill guided that sequence decision. Preserved the interactive experiment and its result together in one collapsed, optional reading detail, with all existing controls and numerical hosts intact.

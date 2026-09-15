@@ -136,6 +136,53 @@ try{
   assert.equal(await page.locator('#s09-projection-overview .po-residual').getAttribute('d'),'M581 317 H695','The original embedding goes straight into the residual plus.');
   await page.evaluate(()=>AT.present.next());
   assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s09-frame-motif','The existing residual motif follows the equations without an extra slide.');
+  // The same slide can open a numerical close-up without adding classroom frames.
+  const zoomButton=page.locator('#s09-attention-zoom');
+  assert.equal(await zoomButton.getAttribute('aria-expanded'),'false');
+  assert(await page.locator('#s09-motif svg').isVisible());
+  assert(!(await page.locator('#s09-attention-detail').isVisible()));
+  for(const build of [0,1]){
+    await page.evaluate(build=>AT.present.setBuild(build),build);
+    await zoomButton.click();await page.waitForTimeout(250);
+    assert.equal(await zoomButton.getAttribute('aria-expanded'),'true');
+    assert(!(await page.locator('#s09-attention-overview').isVisible()));
+    assert(await page.locator('#s09-attention-detail svg').isVisible());
+    assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'The detailed view fits at either reveal build.');
+    await page.screenshot({path:path.join(shots,'attention-zoom-'+build+'.png')});
+    await zoomButton.click();await page.waitForTimeout(150);
+    assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'The overview still fits after returning.');
+  }
+  const zoomTarget=page.locator('#s09-motif [data-stage=att]');
+  for(const key of ['Enter',' ']){
+    await zoomTarget.focus();await page.keyboard.press(key);await page.waitForTimeout(150);
+    assert.equal(await zoomButton.getAttribute('aria-expanded'),'true','The SVG attention box opens from the keyboard.');
+    assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s09-frame-motif','Space activates the zoom rather than advancing the slide.');
+    assert(await zoomButton.evaluate(e=>e===document.activeElement),'Focus moves to the visible return control.');
+    await page.keyboard.press('Enter');
+    assert.equal(await zoomButton.getAttribute('aria-expanded'),'false');
+  }
+  await zoomTarget.click();
+  const checkZoomVector=async(id,expected,decimals=2)=>{
+    const actual=await page.locator('#s09-az-'+id).evaluate(e=>({vector:JSON.parse(e.dataset.vector),cells:e.querySelectorAll('rect[data-coordinate]').length,text:[...e.querySelectorAll('.az-number')].map(t=>Number(t.textContent.replaceAll('−','-')))}));
+    assert.equal(actual.cells,expected.length);
+    assert.deepEqual(actual.text,rounded(expected,decimals),'Every close-up number matches the independent forward calculation.');
+    actual.vector.forEach((x,c)=>assert(Math.abs(x-expected[c])<1e-12,'Retain full precision before display rounding.'));
+  };
+  for(const [id,field]of [['query','Q'],['scores','S'],['message','Mmsg'],['update','Delta'],['original','E'],['result','Enew']])await checkZoomVector(id,ref[field][6]);
+  await checkZoomVector('weights',ref.A[6],3);
+  for(let j=0;j<7;j++)await checkZoomVector('value-'+j,ref.V[j]);
+  const zoomText=await page.locator('#s09-attention-detail svg').textContent();
+  for(const phrase of ['Dot product','Softmax','Mix values','Project','3 numbers per key','2 value numbers','4 embedding numbers','2 × 4 mapping','Original e₇ (unchanged)','Updated embedding'])assert(zoomText.includes(phrase),'The close-up explains '+phrase+'.');
+  assert.equal(await page.locator('#s09-attention-detail .az-residual').getAttribute('d'),'M629 420 H744','The original row bypasses the projection and meets the update at addition.');
+  for(const [role,id]of [['v','message'],['d','update'],['e','original'],['ep','result'],['a','weights'],['q','query']]){
+    const colour=await page.evaluate(({role,id})=>({actual:getComputedStyle(document.querySelector('#s09-az-'+id+' .az-role')).fill,reference:getComputedStyle(document.querySelector('#s09 .m-'+role)).color}),{role,id});
+    assert.equal(colour.actual,colour.reference,'The close-up preserves the '+role+' colour role.');
+  }
+  assert.deepEqual(await page.locator('#s09-attention-detail svg text').evaluateAll(es=>es.filter(e=>{const r=e.getBBox();return r.x<0||r.y<0||r.x+r.width>1120||r.y+r.height>450;}).map(e=>e.textContent)),[],'Detailed diagram labels stay within the viewBox.');
+  await page.evaluate(()=>AT.present.next());
+  assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s09-frame2','The optional zoom does not add an extra navigation step.');
+  await page.evaluate(()=>AT.present.prev());
+  assert.equal(await zoomButton.getAttribute('aria-expanded'),'false','Returning to the slide starts with its overview.');
   assert.equal(await page.locator('#s09-frame-wo-calc').count(),0);
   await go('s09-frame3');
   assert.equal(await page.locator('#s09-frame3 table').count(),0,'No zero-heavy matrix on the mapping slide.');
@@ -188,6 +235,20 @@ try{
   assert.equal(await page.evaluate(()=>JSON.stringify(AT.model)),original,'All controls preserve the canonical model.');
   await page.evaluate(()=>AT.present.exit());
   await page.setViewportSize({width:390,height:844});
+  await page.locator('#s09-frame-motif').scrollIntoViewIfNeeded();
+  await zoomButton.click();
+  assert(await page.locator('#s09-attention-detail svg').isVisible(),'The close-up also works in phone reading mode.');
+  const detailScroll=page.locator('#s09-attention-detail .attention-detail-scroll');
+  assert(await detailScroll.evaluate(e=>e.scrollWidth>e.clientWidth),'The detailed diagram scrolls locally on phones.');
+  await page.screenshot({path:path.join(shots,'phone-attention-zoom-start.png')});
+  await detailScroll.evaluate(e=>e.scrollLeft=e.scrollWidth);
+  await page.screenshot({path:path.join(shots,'phone-attention-zoom-end.png')});
+  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Zoom does not introduce phone page overflow.');
+  await zoomButton.click();
+  assert(await page.locator('#s09-attention-overview').isVisible());
+  await page.emulateMedia({media:'print'});
+  assert(await page.locator('#s09-attention-detail').isVisible()&&await page.locator('#s09-attention-overview').isVisible(),'Print includes both diagram versions.');
+  await page.emulateMedia({media:'screen'});
   assert.equal(await page.locator('#s09-projection-equations').evaluate(e=>getComputedStyle(e).visibility),'visible','Reading mode includes the equations without requiring a reveal.');
   await page.locator('#s09-projection-overview').scrollIntoViewIfNeeded();
   const projectionScroll=page.locator('#s09-frame1 .projection-overview-scroll');

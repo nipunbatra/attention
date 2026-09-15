@@ -7743,6 +7743,32 @@ body.present #s09 .projection-intro{font-size:24px}
 body.present #s09 .projection-overview{min-width:0}
 body.present #s09 .projection-equations p{font-size:21px}
 @media (max-width:820px){body:not(.present) #s09 .projection-equations{grid-template-columns:minmax(0,1fr)}}
+#s09 .attention-zoom-controls{margin:0 0 12px}
+#s09 #s09-frame-motif.is-zoomed .attention-zoom-controls{float:right;margin:-4px 0 0 12px}
+#s09 #s09-frame-motif.is-zoomed .card-title{min-height:42px;line-height:42px;margin-bottom:6px}
+#s09 #s09-frame-motif.is-zoomed .attention-detail-scroll{clear:both}
+#s09 #s09-frame-motif [hidden]{display:none!important}
+#s09 #s09-frame-motif.is-zoomed>.callout{display:none}
+#s09 #s09-motif [data-stage=att]{cursor:pointer;opacity:1}
+#s09 #s09-motif [data-stage=att]:focus-visible .box{stroke-width:4;stroke:var(--ink)}
+#s09 .attention-detail-scroll{overflow-x:auto}
+#s09 .attention-detail{display:block;width:100%;min-width:1000px;height:auto;font-family:var(--font-ui)}
+#s09 .attention-detail text{font-size:21px;fill:var(--ink);text-anchor:middle;dominant-baseline:middle}
+#s09 .attention-detail .az-label{font-size:23px;font-weight:650}
+#s09 .attention-detail .az-note{font-size:20px;fill:var(--ink-2)}
+#s09 .attention-detail .az-number{font-family:var(--font-mono);font-size:21px;font-variant-numeric:tabular-nums}
+#s09 #s09-az-weights .az-number{font-size:19px}
+#s09 .attention-detail .az-symbol{font-family:var(--font-math);font-style:italic;font-size:25px}
+#s09 .attention-detail .az-role{fill:var(--oc)}
+#s09 .attention-detail .az-cell{fill:var(--ot);stroke:var(--oc);stroke-width:1;rx:3}
+#s09 .attention-detail .az-edge{fill:none;stroke:var(--ink-3);stroke-width:2}
+#s09 .attention-detail .az-weight-path{stroke:var(--c-a)}
+#s09 .attention-detail .az-update-path{stroke:var(--c-d)}
+#s09 .attention-detail .az-residual{stroke:var(--c-e);stroke-dasharray:6 4}
+body.present #s09 .attention-detail{min-width:0}
+body.present #s09 .attention-zoom-controls .btn{font-size:20px}
+@media (max-width:820px){body:not(.present) #s09 #s09-frame-motif.is-zoomed .attention-zoom-controls{float:none;margin:0 0 12px}body:not(.present) #s09 #s09-frame-motif.is-zoomed .card-title{min-height:0;line-height:1.4;margin-bottom:12px}}
+@media print{#s09 .attention-zoom-controls{display:none}#s09 #s09-frame-motif #s09-attention-detail[hidden],#s09 #s09-frame-motif #s09-attention-overview[hidden]{display:block!important}#s09 #s09-attention-detail{margin-top:20px}#s09 .attention-detail{min-width:0}}
 </style>
 <header class="sec-head">
   <span class="sec-num">09</span>
@@ -7773,16 +7799,24 @@ Then reveal the three equations and match each one to its operation in the diagr
 <p class="companion">Here $d_v=2$ and $d_{\text{model}}=4$. Each output coordinate can combine both message coordinates. This diagram uses the same hand-chosen projection as our numerical example.</p>
 </div>
 
-<div class="frame" id="s09-frame-motif" data-title="Where does the contextual update rejoin bank?">
+<div class="frame" id="s09-frame-motif" data-title="Where does the contextual update rejoin bank?" data-autobuild="off">
   <script type="text/x-notes">
 Which path preserves the original bank representation?
 The dashed residual path. Attention computes Delta e on the other branch; the plus combines the two same-width vectors.
+Click “Zoom into attention” or the attention box to open the detailed version. Follow the same bank example: its supplied three-coordinate query meets each of the seven three-coordinate keys, the scaled dot products become seven softmax weights, and those weights multiply the seven two-coordinate values. Their sum is m_7, still two coordinates. W_O maps that message into the four-coordinate embedding space before the residual addition. The blue original row never passes through that mapping. All values use the same fixed model as the previous slide, rounded only for display. The example's zero update entries are not a general rule. Return to the overview to reconnect these steps to its attention branch. Q/K/V derivations still come later.
   </script>
   <div class="card">
-    <h3 class="card-title">The attention branch computes an update; the residual branch preserves $\ve{e_7}$</h3>
-    <div id="s09-motif"></div>
+    <div class="attention-zoom-controls"><button type="button" class="btn" id="s09-attention-zoom" aria-expanded="false" aria-controls="s09-attention-detail">Zoom into attention</button></div>
+    <div id="s09-attention-overview">
+      <h3 class="card-title">The attention branch computes an update; the residual branch preserves $\ve{e_7}$</h3>
+      <div id="s09-motif"></div>
+    </div>
+    <div id="s09-attention-detail" hidden>
+      <h3 class="card-title">Inside bank's attention update</h3>
+      <div class="attention-detail-scroll" tabindex="0" role="region" aria-label="Detailed attention calculation and residual addition. Scroll horizontally on a small screen."><div id="s09-attention-detail-svg"></div></div>
+    </div>
   </div>
-  <div class="callout callout-key">Two inputs meet at $+$: the old row $\ve{e_7}$ and the context-dependent update $\vd{\Delta e_7}$.</div>
+  <div class="callout callout-key" data-build="1">Two inputs meet at $+$: the old row $\ve{e_7}$ and the context-dependent update $\vd{\Delta e_7}$.</div>
 </div>
 
 <div class="frame" id="s09-frame2" data-title="How does bank receive its context?">
@@ -7978,6 +8012,109 @@ The message is not a word and the attention weights are not next-word probabilit
   if(qkvLabels[0])qkvLabels[0].textContent='supplied Q, K, V';
   if(qkvLabels[1])qkvLabels[1].textContent='derive them later';
   const motifStage = ['e', 'qkv', 'qkv', 'att', 'att', 'delta', 'add', 'ep'];
+
+  /* Optional close-up of the overview, using the very same bank calculation. */
+  (function(){
+    const frame=S.querySelector('#s09-frame-motif'),button=S.querySelector('#s09-attention-zoom');
+    const overview=S.querySelector('#s09-attention-overview'),detail=S.querySelector('#s09-attention-detail');
+    function zoom(open,focus=false){
+      overview.hidden=open;detail.hidden=!open;frame.classList.toggle('is-zoomed',open);
+      button.setAttribute('aria-expanded',String(open));
+      button.textContent=open?'Back to overview':'Zoom into attention';
+      motif.stages.att.setAttribute('aria-expanded',String(open));
+      if(focus)button.focus({preventScroll:true});
+    }
+    button.addEventListener('click',()=>zoom(detail.hidden));
+    const target=motif.stages.att;
+    target.setAttribute('role','button');target.setAttribute('tabindex','0');
+    target.setAttribute('aria-label','Zoom into the attention calculation');
+    target.setAttribute('aria-controls','s09-attention-detail');target.setAttribute('aria-expanded','false');
+    target.addEventListener('click',()=>zoom(true,true));
+    target.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();ev.stopPropagation();zoom(true,true);}});
+    // Each new visit starts with the overview; changing reveal builds preserves the chosen view.
+    AT.present.on('frame',()=>{if(frame.classList.contains('is-live'))zoom(false);});
+    motif.svg.setAttribute('role','group');
+
+    const diagram=sv('svg',{class:'attention-detail',viewBox:'0 0 1120 450',role:'img','aria-labelledby':'s09-az-title s09-az-desc'});
+    diagram.appendChild(sv('title',{id:'s09-az-title'},'Bank: query and keys to attention weights, values to message, output projection and residual addition'));
+    diagram.appendChild(sv('desc',{id:'s09-az-desc'},'Bank has a three-coordinate query. Compare it with seven three-coordinate keys and divide by square root of three to get seven scores. Softmax gives seven weights. Multiply each weight by its own two-coordinate value and sum to a two-coordinate message. W_O maps the message into a four-coordinate update. Add that update to the unchanged four-coordinate bank embedding on the blue residual path. All numbers are computed from the same example, rounded for display.'));
+    const defs=sv('defs');
+    for(const [name,color]of [['neutral','var(--ink-3)'],['a','var(--c-a)'],['d','var(--c-d)'],['e','var(--c-e)']]){
+      const marker=sv('marker',{id:'s09-az-arrow-'+name,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:6,markerHeight:6,orient:'auto'});
+      marker.appendChild(sv('path',{d:'M0 0 L10 5 L0 10 Z',fill:color}));defs.appendChild(marker);
+    }
+    diagram.appendChild(defs);
+    function text(parent,x,y,value,cls=''){const el=sv('text',{x,y,class:cls},value);parent.appendChild(el);return el;}
+    function arrow(d,role='neutral'){
+      const cls={a:' az-weight-path',d:' az-update-path',e:' az-residual'}[role]||'';
+      diagram.appendChild(sv('path',{d,class:'az-edge'+cls,'marker-end':'url(#s09-az-arrow-'+role+')'}));
+    }
+    function vector(id,x,y,values,role,width=64,decimals=2){
+      const g=sv('g',{id,class:'obj-'+role,'data-vector':JSON.stringify(values)});
+      values.forEach((value,c)=>{
+        g.appendChild(sv('rect',{x:x+c*width,y,width:width-3,height:29,class:'az-cell','data-coordinate':c}));
+        text(g,x+c*width+(width-3)/2,y+15,AT.fmt(value,decimals),'az-number az-role');
+      });diagram.appendChild(g);return g;
+    }
+    text(diagram,117,23,'Given query q₇','az-label').style.fill='var(--c-q)';
+    vector('s09-az-query',16,43,F.Q[qi],'q',69);
+    const keyLabel=text(diagram,117,95,'7 keys: k₁ … k₇','az-label');keyLabel.style.fill='var(--c-k)';
+    text(diagram,117,122,'3 numbers per key','az-note');
+    arrow('M231 58 H247 V70 H278');arrow('M231 98 H257 V88 H278');
+    diagram.appendChild(sv('rect',{x:286,y:37,width:199,height:78,rx:6,fill:'var(--card)',stroke:'var(--ink-3)','stroke-width':2}));
+    text(diagram,385,56,'1. Dot product','az-label');
+    const formula=text(diagram,385,92,'','az-symbol');
+    for(const [value,color]of [['q₇','var(--c-q)'],[' · ','var(--ink)'],['kⱼ','var(--c-k)'],[' / √3','var(--ink)']])formula.appendChild(sv('tspan',{fill:color},value));
+    arrow('M492 76 H517 V55 H596');
+    for(let j=0;j<n;j++)text(diagram,637+j*66,22,'j='+String(j+1),'az-note');
+    text(diagram,554,29,'scores','az-note');
+    vector('s09-az-scores',606,40,F.S[qi].slice(0,n),'a',66);
+    arrow('M837 75 V99','a');text(diagram,949,88,'2. Softmax','az-label');
+    const alpha=vector('s09-az-weights',606,109,F.A[qi].slice(0,n),'a',66,3);
+    text(diagram,554,124,'weights','az-note');
+    alpha.appendChild(sv('title',{},'One attention weight per source, in the same j order as the scores'));
+    arrow('M837 143 V163 H451 V230 H417 V235','a');
+
+    const valuesTitle=text(diagram,122,181,'Values V: 7 × 2','az-label');valuesTitle.style.fill='var(--c-v)';
+    for(let j=0;j<n;j++){
+      const y=198+j*25;
+      const name=text(diagram,38,y+12,'v'+['₁','₂','₃','₄','₅','₆','₇'][j],'az-symbol');name.style.fill='var(--c-v)';
+      const row=vector('s09-az-value-'+j,77,y,F.V[j],'v',69);
+      row.appendChild(sv('title',{},'Source '+(j+1)+': '+toks[j]));
+      row.querySelectorAll('rect').forEach(el=>el.setAttribute('height',24));
+      row.querySelectorAll('text').forEach(el=>el.setAttribute('y',y+13));
+    }
+    diagram.appendChild(sv('path',{class:'az-edge',d:'M223 198 H236 V371 H223'}));
+    arrow('M236 270 H264');
+    text(diagram,352,209,'3. Mix values','az-label');
+    diagram.appendChild(sv('rect',{x:272,y:239,width:161,height:62,rx:6,fill:'var(--t-v)',stroke:'var(--c-v)','stroke-width':2}));
+    const sum=text(diagram,352,270,'','az-symbol');
+    for(const [value,color]of [['Σ ','var(--ink)'],['α₇ⱼ','var(--c-a)'],[' vⱼ','var(--c-v)']])sum.appendChild(sv('tspan',{fill:color},value));
+    text(diagram,352,328,'weight each row','az-note');text(diagram,352,353,'then add','az-note');
+    arrow('M439 270 H468');
+    const message=vector('s09-az-message',477,256,F.Mmsg[qi],'m',67);
+    text(message,542,210,'Message m₇','az-label az-role');
+    text(diagram,542,313,'2 value numbers','az-note');
+    arrow('M613 270 H647');
+    text(diagram,709,209,'4. Project','az-label');
+    diagram.appendChild(sv('rect',{x:654,y:239,width:110,height:62,rx:6,fill:'var(--card)',stroke:'var(--ink-3)','stroke-width':2}));
+    const wo=text(diagram,709,270,'W','az-symbol');wo.appendChild(sv('tspan',{'baseline-shift':'sub','font-size':18},'O'));
+    text(diagram,709,328,'2 × 4 mapping','az-note');
+    arrow('M771 270 H820');
+    const update=vector('s09-az-update',828,256,F.Delta[qi],'d',66);
+    text(update,959,210,'Update Δe₇','az-label az-role');
+    text(diagram,959,313,'4 embedding numbers','az-note');
+    arrow('M1094 270 H1106 V361 H771 V394','d');
+    const original=vector('s09-az-original',359,405,F.E[qi],'e',66);
+    text(original,489,386,'Original e₇ (unchanged)','az-label az-role');
+    arrow('M629 420 H744','e');
+    diagram.appendChild(sv('circle',{cx:771,cy:420,r:23,fill:'var(--card)',stroke:'var(--ink)','stroke-width':2}));
+    text(diagram,771,420,'+','az-label');arrow('M799 420 H821');
+    const result=vector('s09-az-result',828,405,F.Enew[qi],'ep',66);
+    text(result,959,386,'Updated embedding','az-label az-role');
+    text(diagram,151,420,'Rounded for display','az-note');
+    S.querySelector('#s09-attention-detail-svg').appendChild(diagram);
+  })();
 
   /* ---------- the vertical diagram ---------- */
   const svg = sv('svg', { viewBox: '0 0 320 590', role: 'img', 'aria-label': 'e_i splits: one branch is kept unchanged, the other goes through query, keys, attention weights, weighted values and W_O to give delta e_i; the two branches are added to give e_i prime' });
