@@ -31,6 +31,9 @@
 #s09 .rd{margin:10px 0 0;font-size:15px;color:var(--ink-2);max-width:72ch;line-height:1.5}
 #s09 .ws-lab{font-size:13px;color:var(--ink-3);font-weight:600;margin:16px 0 2px}
 #s09 #s09-chain .dt-fig{margin-top:8px}
+#s09 .projection-mix-example{margin:12px 0;font-size:18px;line-height:1.45}
+#s09 .projection-mix-example .tex-display{margin:4px 0}
+body.present #s09 .projection-mix-example{font-size:22px}
 #s09 .s09-projection-details summary{cursor:pointer;font-weight:600}
 #s09 .s09-projection-details .card{margin-top:14px}
 #s09-projection-shapes .katex{white-space:nowrap}
@@ -49,7 +52,8 @@ body.present #s09 .s09-present-path{display:grid;gap:14px;margin:18px auto 8px}
 #s09 .s09-pnode.is-future{opacity:.2}
 #s09 .s09-pnode.is-current{transform:translateY(-5px);box-shadow:0 8px 20px color-mix(in srgb,var(--oc,var(--ink)) 20%,transparent);border-width:4px}
 body.present #s09 .calc-rounding{display:none}
-body.present #s09-frame-chain .is-dim{opacity:1!important}
+body.present #s09-frame-chain .is-dim,
+body.present #s09-frame-chain .is-dim td{opacity:1!important}
 #s09 .s09-preview-controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
 #s09 .s09-preview-controls [aria-pressed=true]{background:var(--ink);color:#fff}
 #s09 .s09-preview-prefix{font-size:20px;line-height:1.4;margin:10px 0}
@@ -121,7 +125,7 @@ body.present #s09 .attention-zoom-controls .btn{font-size:20px}
   <script type="text/x-notes">
 What shape must the update have before we can add it to e?
 First follow the diagram, using bank at position 7 and the same seven values and weights from Section 8. Each weight scales its entire two-number value row. Adding those rows leaves a two-number message, not fourteen numbers. The original embedding has four numbers, so we cannot add the message directly to it. W_O maps the message into the embedding's four-coordinate space. Follow the green update into the plus and the dashed blue path carrying the unchanged original embedding. Only the plus produces the updated embedding.
-Then reveal the three equations and match each one to its operation in the diagram. The letters d_v and d_model generalize this example's 2 and 4. A trained projection can mix both message coordinates into every output coordinate. The displayed zeros come from our fixed hand-chosen W_O, not a rule that projections pad vectors with zeros. Even if the two spaces have the same width, W_O can still learn a useful mapping. Delta e is an activation update for this input, not a training update to the stored embedding table. Displayed numbers are rounded after calculating the full-precision result.
+Then reveal the three equations and match each one to its operation in the diagram. The letters d_v and d_model generalize this example's 2 and 4. Our fixed dense W_O mixes both message coordinates into every output coordinate. Its positive and negative coefficients make the message and update visibly different. Even if the two spaces have the same width, W_O can still learn a useful mapping. Delta e is an activation update for this input, not a training update to the stored embedding table. Displayed numbers are rounded after calculating the full-precision result.
   </script>
 <p class="projection-intro">The <span class="sym-v">message has 2 numbers</span>. We need a <span class="sym-d">4-number update</span> to add to <span class="sym-e">bank's embedding</span>.</p>
 <div class="projection-overview-scroll" tabindex="0" role="region" aria-label="Message, output projection and residual addition diagram. Scroll horizontally on a small screen."><div id="s09-projection-overview"></div></div>
@@ -137,7 +141,7 @@ Then reveal the three equations and match each one to its operation in the diagr
   <script type="text/x-notes">
 Which path preserves the original bank representation?
 The dashed residual path. Attention computes Delta e on the other branch; the plus combines the two same-width vectors.
-Click “Zoom into attention” or the attention box to open the detailed version. Follow the same bank example: its supplied three-coordinate query meets each of the seven three-coordinate keys, the scaled dot products become seven softmax weights, and those weights multiply the seven two-coordinate values. Their sum is m_7, still two coordinates. W_O maps that message into the four-coordinate embedding space before the residual addition. The blue original row never passes through that mapping. All values use the same fixed model as the previous slide, rounded only for display. The example's zero update entries are not a general rule. Return to the overview to reconnect these steps to its attention branch. Q/K/V derivations still come later.
+Click “Zoom into attention” or the attention box to open the detailed version. Follow the same bank example: its supplied three-coordinate query meets each of the seven three-coordinate keys, the scaled dot products become seven softmax weights, and those weights multiply the seven two-coordinate values. Their sum is m_7, still two coordinates. W_O mixes both inputs into all four embedding coordinates before the residual addition. The blue original row never passes through that mapping. All values use the same fixed model as the previous slide, rounded only for display. Return to the overview to reconnect these steps to its attention branch. Q/K/V derivations still come later.
   </script>
   <div class="card">
     <div class="attention-zoom-controls"><button type="button" class="btn" id="s09-attention-zoom" aria-expanded="false" aria-controls="s09-attention-detail">Zoom into attention</button></div>
@@ -192,11 +196,13 @@ Use Next step to follow the existing sequence. Point out the unchanged residual 
   <script type="text/x-notes">
 What is m_7, and why is it not yet the updated bank representation?
 It is the weighted mixture of the selected values, in value space. W_O maps it into a same-width update; the residual addition produces e prime.
+Read the water-coordinate calculation: both entries of m_7 contribute, through 0.8 and -0.1. Every other output coordinate uses a different pair of coefficients. The negative finance update subtracts from bank's original finance coordinate. This example is a linear map into embedding space, not an orthogonal projection. An affine version would also add an output bias; this toy has none.
   </script>
   <div class="card">
     <h3 class="card-title">The numerical result of the eight-step path</h3>
     <p class="tab-lab">Message → representation-space update → residual addition</p>
     <div id="s09-chain"></div>
+    <div class="projection-mix-example" id="s09-projection-mix-example"></div>
     <p class="rd" id="s09-dread"></p>
   </div>
 </div>
@@ -204,7 +210,7 @@ It is the weighted mixture of the selected values, in value space. W_O maps it i
 <div class="frame" id="s09-frame3" data-title="A learned mapping into embedding space" data-autobuild="off">
   <script type="text/x-notes">
 How does W_O turn a value-space message into a representation-space update?
-Training learns the d_v × d_model mapping. Each output coordinate can combine all message coordinates. The two-coordinate message becomes a four-coordinate update that can be added to the input embedding. The worked model uses a fixed hand-chosen matrix for inspectable arithmetic; its zero columns are not a requirement of output projections. Delta e is an activation update for this input, not a learning update to the embedding table.
+Training learns the d_v × d_model mapping. Each output coordinate can combine all message coordinates. The two-coordinate message becomes a four-coordinate update that can be added to the input embedding. The worked model uses a fixed hand-chosen dense matrix for inspectable arithmetic. This is a linear map, not a requirement for an orthogonal projection. Delta e is an activation update for this input, not a learning update to the embedding table.
   </script>
   <div class="prose">
     <p>In a trained model, $W_O$ learns how to map the <span class="sym-v">message $\vm{m_7}$</span> into an <span class="sym-d">update $\vd{\Delta e_7}$</span> with the embedding's required dimensions.</p>
@@ -215,7 +221,8 @@ Training learns the d_v × d_model mapping. Each output coordinate can combine a
 
 <details class="companion s09-projection-details" id="s09-projection-details">
   <summary>Optional: the fixed matrix used in this worked example</summary>
-  <p>Our illustrative $W_O$ is hand-chosen, with simple entries so the arithmetic is easy to check. Its zero columns are specific to this example. A trained output projection learns the mapping and can mix message coordinates into every embedding coordinate.</p>
+  <p>Our illustrative $W_O$ is hand-chosen, with simple entries so the arithmetic is easy to check. Every column mixes both message coordinates. The four columns use different coefficients, including negative ones.</p>
+  <p>Here “projection” means a linear map into embedding space. It need not be an orthogonal projection. An affine version would add a bias, $\vd{\Delta e_7}=\vm{m_7}W_O+b_O$; this toy uses no output bias.</p>
   <div class="card">
     <h3 class="card-title">The example's $d_v\times d_{\text{model}}$ output projection</h3>
     <div id="s09-wo"></div>
@@ -306,7 +313,7 @@ The message is not a word and the attention weights are not next-word probabilit
       const weight=sv('g',{class:'obj-a','data-source':j,'data-weight':F.A[qi][j]});
       label(weight,43,y+11,AT.fmt(F.A[qi][j],2),'po-number po-role');
       label(weight,94,y+11,'×','po-role');diagram.appendChild(weight);
-      const row=vector('s09-po-value-'+j,120,y-5,F.V[j],'v',61);
+      const row=vector('s09-po-value-'+j,120,y-5,F.V[j],'v',68);
       row.querySelectorAll('rect').forEach(el=>el.setAttribute('height',26));
       row.querySelectorAll('text').forEach(el=>el.setAttribute('y',y+9));
     }
@@ -322,20 +329,20 @@ The message is not a word and the attention weights are not next-word probabilit
     label(diagram,630,222,'2 inputs, 4 outputs','po-note');
     label(diagram,630,246,'can mix both inputs','po-note');
     arrow('M721 169 H785');
-    const update=vector('s09-po-update',798,153,F.Delta[qi],'d');
-    label(update,912,106,'Update for bank','po-label po-role');label(update,912,215,'4 numbers','po-role');
-    label(diagram,912,241,'embedding space','po-note');
-    const original=vector('s09-po-original',343,301,F.E[qi],'e');
+    const update=vector('s09-po-update',798,153,F.Delta[qi],'d',68);
+    label(update,932,106,'Update for bank','po-label po-role');label(update,932,215,'4 numbers','po-role');
+    label(diagram,932,241,'embedding space','po-note');
+    const original=vector('s09-po-original',343,301,F.E[qi],'e',68);
     label(diagram,133,292,'Shown to 2 decimals','po-note');
-    label(original,457,280,'Original bank embedding','po-label po-role');
-    label(original,457,355,'4 numbers, unchanged','po-note');
-    arrow('M581 317 H695','e');
-    arrow('M1042 169 H1080 V259 H724 V290','d');
+    label(original,477,280,'Original bank embedding','po-label po-role');
+    label(original,477,355,'4 numbers, unchanged','po-note');
+    arrow('M618 317 H695','e');
+    arrow('M1073 169 H1090 V259 H724 V290','d');
     diagram.appendChild(sv('circle',{cx:724,cy:317,r:23,fill:'var(--card)',stroke:'var(--ink)','stroke-width':2}));
     label(diagram,724,317,'+','po-label');label(diagram,724,355,'3. Add','po-label');
     arrow('M751 317 H789');
-    const result=vector('s09-po-result',803,301,F.Enew[qi],'ep');
-    label(result,917,280,'Updated embedding','po-label po-role');label(result,917,355,'4 numbers','po-note');
+    const result=vector('s09-po-result',803,301,F.Enew[qi],'ep',68);
+    label(result,937,280,'Updated embedding','po-label po-role');label(result,937,355,'4 numbers','po-note');
     S.querySelector('#s09-projection-overview').appendChild(diagram);
   })();
 
@@ -434,17 +441,17 @@ The message is not a word and the attention weights are not next-word probabilit
     diagram.appendChild(sv('rect',{x:654,y:239,width:110,height:62,rx:6,fill:'var(--card)',stroke:'var(--ink-3)','stroke-width':2}));
     const wo=text(diagram,709,270,'W','az-symbol');wo.appendChild(sv('tspan',{'baseline-shift':'sub','font-size':18},'O'));
     text(diagram,709,328,'2 × 4 mapping','az-note');
-    arrow('M771 270 H820');
-    const update=vector('s09-az-update',828,256,F.Delta[qi],'d',66);
+    arrow('M771 270 H812');
+    const update=vector('s09-az-update',818,256,F.Delta[qi],'d',70);
     text(update,959,210,'Update Δe₇','az-label az-role');
     text(diagram,959,313,'4 embedding numbers','az-note');
-    arrow('M1094 270 H1106 V361 H771 V394','d');
-    const original=vector('s09-az-original',359,405,F.E[qi],'e',66);
+    arrow('M1101 270 H1110 V361 H771 V394','d');
+    const original=vector('s09-az-original',349,405,F.E[qi],'e',70);
     text(original,489,386,'Original e₇ (unchanged)','az-label az-role');
     arrow('M629 420 H744','e');
     diagram.appendChild(sv('circle',{cx:771,cy:420,r:23,fill:'var(--card)',stroke:'var(--ink)','stroke-width':2}));
-    text(diagram,771,420,'+','az-label');arrow('M799 420 H821');
-    const result=vector('s09-az-result',828,405,F.Enew[qi],'ep',66);
+    text(diagram,771,420,'+','az-label');arrow('M799 420 H812');
+    const result=vector('s09-az-result',818,405,F.Enew[qi],'ep',70);
     text(result,959,386,'Updated embedding','az-label az-role');
     text(diagram,151,420,'Rounded for display','az-note');
     S.querySelector('#s09-attention-detail-svg').appendChild(diagram);
@@ -514,6 +521,12 @@ The message is not a word and the attention weights are not next-word probabilit
   const footTr = chain.table.querySelector('tfoot tr');
   chain.footer.cells.forEach((td, c) => chain.tipOn(td, () => AT.fmt(F.E[qi][c], 2) + ' + ' + (F.Delta[qi][c] < 0 ? '(' + AT.fmt(F.Delta[qi][c], 2) + ')' : AT.fmt(F.Delta[qi][c], 2)) + ' = ' + AT.fmt(F.Enew[qi][c], 2)));
   const rowM = mtab.rowEls[0], rowD = chain.rowEls[0], rowE = chain.rowEls[1];
+  const mixExample=S.querySelector('#s09-projection-mix-example');
+  mixExample.appendChild(AT.h('p',{},'Each output mixes both message coordinates. For water:'));
+  const mixTerm=c=>AT.fmt(AT.model.W_O[c][0],1)+'\\times\\vm{'+AT.fmt(F.Mmsg[qi][c],3)+'}';
+  // Parenthesize the second coefficient so a negative sign is explicit.
+  mixExample.appendChild(AT.h('div',{class:'tex-display'},'$$\\vd{\\Delta e_{7,\\text{water}}}='+mixTerm(0)+'+('+AT.fmt(AT.model.W_O[1][0],1)+')\\times\\vm{'+AT.fmt(F.Mmsg[qi][1],3)+'}\\approx\\vd{'+AT.fmt(F.Delta[qi][0],2)+'}$$'));
+  AT.renderMath(mixExample);
   S.querySelectorAll('[data-pst]').forEach(el => { const k = +el.dataset.pst; st[k] = st[k] || []; st[k].push(el); });
   /* readings of the update and the result, computed from the numbers */
   (function(){
@@ -585,7 +598,7 @@ The message is not a word and the attention weights are not next-word probabilit
 
   /* ---------- W_O as a table: the rows of W_O weighted by m_7, summed in the footer ---------- */
   const wo = AT.ui.wTable(AT.model.W_O, { from: 'v', to: 'e', cls: 'd', cornerLabel: '$W_O$',
-    caption: 'Rows name value axes from the message; columns name the $\\ve{e}$ axes they contribute to. Zeros are greyed.',
+    caption: 'Rows name value axes from the message; columns name the $\\ve{e}$ axes they contribute to. Each column uses both message coordinates.',
     into: S.querySelector('#s09-wo') });
   (function(){
     const strip = (t) => String(t).replace(/^says:\s*/, '');
@@ -598,7 +611,7 @@ The message is not a word and the attention weights are not next-word probabilit
     wo.appendChild(note); AT.renderMath(note);
   })();
   const wolab = S.querySelector('#s09-wolab');
-  wolab.innerHTML = 'The update written out: $\\vd{\\Delta e_{' + n + '}} = m_{' + n + '}\\,W_O$, one line per $\\ve{e}$ axis. Terms with a zero weight are greyed.';
+  wolab.innerHTML = 'The update written out: $\\vd{\\Delta e_{' + n + '}} = m_{' + n + '}\\,W_O$, one line per $\\ve{e}$ axis. Each output uses a different pair of coefficients.';
   AT.renderMath(wolab);
   AT.ui.matVecCalc(F.Mmsg[qi], AT.model.W_O, { from: 'v', to: 'e', cls: 'd', xLabel: 'm · ' + n + ' ' + toks[qi], outLabel: 'Δe · ' + n + ' ' + toks[qi], into: S.querySelector('#s09-wocalc') });
 

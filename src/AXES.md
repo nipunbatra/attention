@@ -24,7 +24,7 @@ This replaces the historical five-coordinate model. Do not restore a `pos` axis 
 
 - W_Q and W_K: 4×3. Water/finance coordinates match scene clues; person contributes to who? Glue contributes to the query, not the key.
 - W_V: 4×2. The water and finance coordinates supply value content.
-- W_O: 2×4. Map the message back onto water and finance coordinates; the residual row retains all four coordinates.
+- W_O: 2×4, with rows `[.8,-.2,.3,.1]` and `[-.1,1.1,.2,-.2]`. Both message coordinates contribute to all four embedding coordinates. This is a dense linear map with no output bias, not an orthogonal projection or a copy into selected slots. Adding a bias would give an affine map. The residual row retains all four original coordinates before adding the update.
 - Part II predictor: W_hidden (W1) is 4×8, b_hidden (b1) has 8 entries; h = ReLU(e′ W1 + b1). W_vocab (W2) is 8×20 and b_vocab (b2) has 20 entries. Both layers use the same fixed parameters for baseline, pooling and attention examples. Hidden units are numbered, not additional token positions. Parameters are hand-designed, not trained.
 - Part III starts from this exact Part II attention model and 4→8→20 predictor, then trains both MLP layers and their biases along with the attention and embedding parameters. Its later full-Transformer schematic is a different architecture: nonlinear FFNs are inside the blocks, followed by final LayerNorm and a linear vocabulary readout. Do not substitute that linear readout into the toy’s training calculations.
 - Part III's illustrative FFN: 4→8→4, so residual addition preserves width.

@@ -10,6 +10,9 @@ const require=createRequire(import.meta.url);
 const {chromium}=require(process.env.PLAYWRIGHT_PATH||'/Users/nipun/.npm/_npx/360550e4913b8759/node_modules/playwright');
 const model=JSON.parse(fs.readFileSync(new URL('toy.json',import.meta.url),'utf8'));
 const ref=forward(model,model.sentences.river.slice(0,7));
+assert(model.W_O.every(row=>row.every(x=>x!==0)),'Both message coordinates contribute to every output coordinate.');
+assert(ref.Delta[6].every(x=>Math.abs(x)>.01),'All four update coordinates visibly change in the bank example.');
+assert(ref.Delta[6].slice(0,2).every((x,c)=>Math.abs(x-ref.Mmsg[6][c])>.1),'The first two coordinates must not look copied from the message.');
 const rounded=(row,n=2)=>row.map(x=>Number(x.toFixed(n)));
 const shots=fs.mkdtempSync('/private/tmp/token-flow-');
 const browser=await chromium.launch();
@@ -20,6 +23,14 @@ try{
   await page.evaluate(()=>document.fonts.ready);
   const original=await page.evaluate(()=>JSON.stringify(AT.model));
   const rows=selector=>page.locator(selector+' tbody tr').evaluateAll(els=>els.map(e=>[...e.querySelectorAll('td')].map(c=>Number(c.textContent.replaceAll('−','-').trim()))));
+  const checkNumberBounds=async selector=>{
+    assert(await page.locator(selector).first().isVisible(),'Measure cells while their diagram is visible.');
+    const clipped=await page.locator(selector).evaluateAll(groups=>groups.flatMap(g=>[...g.querySelectorAll('.po-number,.az-number')].flatMap((t,i)=>{
+      const text=t.getBBox(),cell=g.querySelectorAll('rect[data-coordinate]')[i].getBBox();
+      return text.x<cell.x+1||text.x+text.width>cell.x+cell.width-1?[g.id+': '+t.textContent]:[];
+    })));
+    assert.deepEqual(clipped,[],'Signed numbers fit inside their cells with padding.');
+  };
   assert.deepEqual(await rows('#s07-query-given'),[rounded(ref.Q[6])]);
   assert.deepEqual(await rows('#s07-keys-given'),ref.K.map(r=>rounded(r)));
   assert.deepEqual(await rows('#s07-vtab'),ref.V.map(r=>rounded(r)));
@@ -130,10 +141,11 @@ try{
   }
   const escapedText=await page.locator('#s09-projection-overview svg text').evaluateAll(es=>es.filter(e=>{const r=e.getBBox();return r.x<0||r.y<0||r.x+r.width>1120||r.y+r.height>374;}).map(e=>e.textContent));
   assert.deepEqual(escapedText,[],'Every diagram label fits within its viewBox.');
+  await checkNumberBounds('#s09-projection-overview [data-vector]');
   assert.match(await page.locator('#s09-projection-desc').textContent(),/two-coordinate message.*four embedding coordinates.*unchanged original embedding/s);
   const overviewMath=(await page.locator('#s09-projection-equations annotation').allTextContents()).join(' ');
   assert(overviewMath.includes('1\\times '+model.d_v)&&overviewMath.includes('1\\times '+model.d_model),'The revealed equations use the same concrete dimensions as the diagram.');
-  assert.equal(await page.locator('#s09-projection-overview .po-residual').getAttribute('d'),'M581 317 H695','The original embedding goes straight into the residual plus.');
+  assert.equal(await page.locator('#s09-projection-overview .po-residual').getAttribute('d'),'M618 317 H695','The original embedding goes straight into the residual plus.');
   await page.evaluate(()=>AT.present.next());
   assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s09-frame-motif','The existing residual motif follows the equations without an extra slide.');
   // The same slide can open a numerical close-up without adding classroom frames.
@@ -179,13 +191,14 @@ try{
     assert.equal(colour.actual,colour.reference,'The close-up preserves the '+role+' colour role.');
   }
   assert.deepEqual(await page.locator('#s09-attention-detail svg text').evaluateAll(es=>es.filter(e=>{const r=e.getBBox();return r.x<0||r.y<0||r.x+r.width>1120||r.y+r.height>450;}).map(e=>e.textContent)),[],'Detailed diagram labels stay within the viewBox.');
+  await checkNumberBounds('#s09-attention-detail [data-vector]');
   await page.evaluate(()=>AT.present.next());
   assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s09-frame2','The optional zoom does not add an extra navigation step.');
   await page.evaluate(()=>AT.present.prev());
   assert.equal(await zoomButton.getAttribute('aria-expanded'),'false','Returning to the slide starts with its overview.');
   assert.equal(await page.locator('#s09-frame-wo-calc').count(),0);
   await go('s09-frame3');
-  assert.equal(await page.locator('#s09-frame3 table').count(),0,'No zero-heavy matrix on the mapping slide.');
+  assert.equal(await page.locator('#s09-frame3 table').count(),0,'Keep full matrix arithmetic in optional reading.');
   assert.match(await page.locator('#s09-frame3 .prose').innerText(),/In a trained model.*learns.*required dimensions/s);
   const projectionMath=(await page.locator('#s09-projection-shapes annotation').allTextContents()).join(' ');
   for(const shape of ['1\\times '+model.d_v,model.d_v+'\\times '+model.d_model,'1\\times '+model.d_model])assert(projectionMath.includes(shape),'Projection shape '+shape+' matches the model.');
@@ -193,6 +206,13 @@ try{
   assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow);
   await page.evaluate(()=>AT.present.next());
   assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s09-frame4','Proceed directly from the mapping to residual addition.');
+  await go('s09-frame-chain');
+  assert.deepEqual(await rows('#s09-chain'),[rounded(ref.Mmsg[6]),rounded(ref.Delta[6]),rounded(ref.E[6])],'The chain uses the new dense projection and the unchanged message/input.');
+  assert((await page.locator('#s09-chain td').evaluateAll(es=>es.map(e=>getComputedStyle(e).opacity))).every(x=>x==='1'),'Show all numerical rows clearly on the classroom result slide.');
+  const mixMath=(await page.locator('#s09-projection-mix-example annotation').allTextContents()).join(' ');
+  for(const value of [model.W_O[0][0].toFixed(1),model.W_O[1][0].toFixed(1),ref.Mmsg[6][0].toFixed(3),ref.Mmsg[6][1].toFixed(3),ref.Delta[6][0].toFixed(2)])assert(mixMath.replaceAll('−','-').includes(value),'The shown scalar expansion includes '+value+'.');
+  assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'The mixed projection explanation fits with the numerical chain.');
+  await page.screenshot({path:path.join(shots,'dense-projection-chain.png')});
   for(const context of ['river','cheque','river']){
     const F=forward(model,model.sentences[context]);
     await go('s09-frame-prediction-input');
@@ -261,12 +281,13 @@ try{
   const woGlyphs=await page.locator('#s09-projection-shapes .mord.mathnormal').evaluateAll(els=>els.filter(e=>e.textContent==='W'||e.textContent==='O').map(e=>({text:e.textContent,rect:e.getBoundingClientRect().toJSON()})));
   const wGlyph=woGlyphs.find(e=>e.text==='W').rect,oGlyph=woGlyphs.find(e=>e.text==='O').rect;
   assert(oGlyph.left>=wGlyph.right-1&&oGlyph.top<wGlyph.bottom,'W_O stays together above its shape label on phones.');
-  assert.equal(await page.locator('#s09-projection-details').getAttribute('open'),null,'The zero-heavy arithmetic starts collapsed in reading mode.');
+  assert.equal(await page.locator('#s09-projection-details').getAttribute('open'),null,'The full projection arithmetic starts collapsed in reading mode.');
   await page.locator('#s09-projection-details summary').click();
   assert(await page.locator('#s09-wo').isVisible());
   assert.deepEqual(await rows('#s09-wo'),model.W_O,'The optional source matrix is unchanged.');
   assert(await page.locator('#s09-wocalc').isVisible());
-  assert.match(await page.locator('#s09-projection-details p').first().innerText(),/hand-chosen.*specific to this example/s);
+  assert.match(await page.locator('#s09-projection-details p').first().innerText(),/hand-chosen.*Every column mixes both message coordinates/s);
+  assert.match(await page.locator('#s09-projection-details p').nth(1).innerText(),/linear map.*orthogonal.*affine.*no output bias/s);
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Optional arithmetic scrolls locally on phones.');
   await page.locator('#s09-projection-details summary').click();
   assert(await page.locator('#s08 .companion [data-scale-intro]').isVisible(),'The first-use note also appears in reading mode.');

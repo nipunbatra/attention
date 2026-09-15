@@ -107,10 +107,10 @@ Reading: water says water scene and finance says finance scene. The other input 
 
 | v axis \ e axis | water | finance | person | glue |
 |---|---:|---:|---:|---:|
-| →water | 1.0 | 0 | 0 | 0 |
-| →finance | 0 | 1.0 | 0 | 0 |
+| →water | 0.8 | -0.2 | 0.3 | 0.1 |
+| →finance | -0.1 | 1.1 | 0.2 | -0.2 |
 
-Reading: says water -> water 1.0 and says finance -> finance 1.0. The other e axes receive zero.
+Reading: each output coordinate combines both message coordinates, using the two entries in its column. Positive coefficients add a contribution and negative coefficients subtract one. This toy uses a dense linear map with no output bias.
 
 ### Prediction head: 4 → 8 ReLU hidden units → 20 vocabulary logits
 
@@ -195,12 +195,12 @@ Target: cheque highest, deposited second, others low: **PASS**
 
 | token | probability |
 |---|---:|
-| water | 0.441 |
-| boats | 0.215 |
-| fish | 0.143 |
-| ducks | 0.080 |
-| every other token (max: teller) | 0.020 |
-| (sum of the other 16) | 0.121 |
+| water | 0.367 |
+| boats | 0.201 |
+| fish | 0.148 |
+| ducks | 0.093 |
+| every other token (max: teller) | 0.031 |
+| (sum of the other 16) | 0.190 |
 
 Target: water > boats > fish > ducks, every other token <= .04; attention mostly on river, bank, fisherman: **PASS**
 
@@ -225,12 +225,12 @@ Target: water > boats > fish > ducks, every other token <= .04; attention mostly
 
 | token | probability |
 |---|---:|
-| teller | 0.456 |
-| clerk | 0.231 |
-| queue | 0.104 |
-| money | 0.072 |
-| every other token (max: water) | 0.023 |
-| (sum of the other 16) | 0.137 |
+| teller | 0.521 |
+| clerk | 0.242 |
+| queue | 0.087 |
+| money | 0.058 |
+| every other token (max: water) | 0.014 |
+| (sum of the other 16) | 0.091 |
 
 Target: teller > clerk > queue > money, every other token <= .04; attention mostly on cheque, bank, deposited: **PASS**
 
@@ -271,13 +271,13 @@ Soft target (>= .25 on river+bank from some early token): **PASS**, strongest le
 | e_bank^(0) (identical) | [0.70, 0.70, 0.10, 0.80] | [0.70, 0.70, 0.10, 0.80] |
 | q_bank (q axes) | [1.26, 1.26, 0.04] | [1.26, 1.26, 0.04] |
 | m_bank (v axes) | [1.89, 0.07] | [0.11, 1.85] |
-| Delta e_bank | [1.89, 0.07, 0.00, 0.00] | [0.11, 1.85, 0.00, 0.00] |
-| e'_bank = e + Delta e | [2.59, 0.77, 0.10, 0.80] | [0.81, 2.55, 0.10, 0.80] |
+| Delta e_bank | [1.51, -0.30, 0.58, 0.18] | [-0.10, 2.02, 0.40, -0.36] |
+| e'_bank = e + Delta e | [2.21, 0.40, 0.68, 0.98] | [0.60, 2.72, 0.50, 0.44] |
 | e_the(10)^(0) (identical) | [0.00, 0.00, 0.00, 2.30] | [0.00, 0.00, 0.00, 2.30] |
 | q_the(10) (q axes) | [1.61, 1.61, 0.00] | [1.61, 1.61, 0.00] |
 | m_the(10) (v axes) | [1.94, 0.05] | [0.12, 1.86] |
-| Delta e_the(10) | [1.94, 0.05, 0.00, 0.00] | [0.12, 1.86, 0.00, 0.00] |
-| e'_the(10) | [1.94, 0.05, 0.00, 2.30] | [0.12, 1.86, 0.00, 2.30] |
+| Delta e_the(10) | [1.54, -0.33, 0.59, 0.18] | [-0.09, 2.02, 0.41, -0.36] |
+| e'_the(10) | [1.54, -0.33, 0.59, 2.48] | [-0.09, 2.02, 0.41, 1.94] |
 
 Reading: in S_A the update to bank lands on the water axis, in S_B on the finance axis; the same e_bank^(0) ends up as two different e'_bank. The final 'the' receives the same kind of update, and the output head turns it into water words or finance words.
 
@@ -321,16 +321,16 @@ Reading: in S_A the update to bank lands on the water axis, in S_B on the financ
 
 ## Score ranges (for heat-map colour scales)
 
-- S_A: scaled causal scores s_ij in [-0.02, 5.68]; raw q.k in [-0.04, 9.83]; |Delta e| rows up to 2.92; logits of the(10) in [-1.50, 3.28].
-- S_B: scaled causal scores s_ij in [-0.11, 4.86]; raw q.k in [-0.19, 8.41]; |Delta e| rows up to 2.71; logits of the(10) in [-1.50, 3.25].
+- S_A: scaled causal scores s_ij in [-0.02, 5.68]; raw q.k in [-0.04, 9.83]; |Delta e| rows up to 2.60; logits of the(10) in [-1.50, 2.61].
+- S_B: scaled causal scores s_ij in [-0.11, 4.86]; raw q.k in [-0.19, 8.41]; |Delta e| rows up to 3.09; logits of the(10) in [-1.50, 3.71].
 
 ## Check summary (make_toy2.py --check-only)
 
 - [PASS] T1 hard: bank(7) in S_A: river >= .40, fisherman second, bank(self) and glue words below fisherman: bank(7) row S_A: The=0.05 fisherman=0.23 sat=0.06 beside=0.07 the=0.05 river=0.41 bank=0.13
 - [PASS] T2 hard: bank(7) in S_B: cheque highest, deposited second, others low: bank(7) row S_B: She=0.06 deposited=0.26 the=0.05 cheque=0.40 at=0.06 the=0.05 bank=0.13
-- [PASS] T3 hard: the(10) in S_A: water > boats > fish > ducks, every other token <= .04: water=0.441 boats=0.215 fish=0.143 ducks=0.080 | max other=0.020
+- [PASS] T3 hard: the(10) in S_A: water > boats > fish > ducks, every other token <= .04: water=0.367 boats=0.201 fish=0.148 ducks=0.093 | max other=0.031
 - [PASS] T3 hard: attention of the(10) mostly on river, bank, fisherman (sum >= .60, each of them top-3): the(10) row S_A: The=0.03 fisherman=0.20 sat=0.04 beside=0.04 the=0.03 river=0.45 bank=0.10 and=0.03 watched=0.05 the=0.03
-- [PASS] T4 hard: the(10) in S_B: teller > clerk > queue > money, every other token <= .04: teller=0.456 clerk=0.231 queue=0.104 money=0.072 | max other=0.023
+- [PASS] T4 hard: the(10) in S_B: teller > clerk > queue > money, every other token <= .04: teller=0.521 clerk=0.242 queue=0.087 money=0.058 | max other=0.014
 - [PASS] T4 hard: attention of the(10) mostly on cheque, bank, deposited (sum >= .60, each of them top-3): the(10) row S_B: She=0.03 deposited=0.24 the=0.03 cheque=0.42 at=0.03 the=0.03 bank=0.10 and=0.03 watched=0.05 the=0.03
 - [PASS] T5 hard: baseline (no attention) candidates each in [.06,.18], others <= .04, identical for S_A/S_B: water=0.094 boats=0.094 fish=0.094 ducks=0.094 teller=0.094 clerk=0.094 queue=0.094 money=0.094 | max other=0.021
 - [PASS] (soft) T6 soft: mask off, some early token of S_A puts >= .25 on future river/bank: The(1):0.57 fisherman(2):0.49 sat(3):0.52 beside(4):0.64 the(5):0.57

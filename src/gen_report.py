@@ -83,7 +83,7 @@ w("Reading: water offers water, finance offers finance, person offers a person, 
 wtable("W_V (e -> v): 'axis -> says'", toy["W_V"], AX["short"]["e"], AX["short"]["v"], "e axis", "v axis")
 w("Reading: water says water scene and finance says finance scene. The other input axes send zeros in this toy.\n")
 wtable("W_O (v -> e): back onto the e axes", toy["W_O"], AX["short"]["v"], AX["short"]["e"], "v axis", "e axis")
-w("Reading: says water -> water 1.0 and says finance -> finance 1.0. The other e axes receive zero.\n")
+w("Reading: each output coordinate combines both message coordinates, using the two entries in its column. Positive coefficients add a contribution and negative coefficients subtract one. This toy uses a dense linear map with no output bias.\n")
 w("### Prediction head: 4 → 8 ReLU hidden units → 20 vocabulary logits\n")
 w("h = ReLU(e W1 + b1), logits = h W2 + b2. In JSON: W1=W_hidden, b1=b_hidden, W2=W_vocab, b2=b_vocab. These hand-designed hidden units are numbered, not token positions or claimed learned concepts.\n")
 wtable("W_hidden / W1 (input → hidden)", toy["W_hidden"], AX["short"]["e"], [f"h{i+1}" for i in range(toy["d_hidden"])], "input", "hidden")

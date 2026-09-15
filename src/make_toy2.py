@@ -114,9 +114,11 @@ W_V = [
 ]
 #            e axes:  water  finance  person  glue
 W_O = [
-    [1.0, 0.0, 0.0, 0.0],   # says water   -> water
-    [0.0, 1.0, 0.0, 0.0],   # says finance -> finance
+    [0.8, -0.2, 0.3, 0.1],   # water-scene message contributes to every embedding coordinate
+    [-0.1, 1.1, 0.2, -0.2],  # finance-scene message also contributes to every coordinate
 ]
+# This dense linear map mixes the two inputs instead of copying them into
+# two output slots. No output bias is used in this toy.
 # Output head: which e axis votes for which word (columns = vocabulary). Everything not listed is 0.
 W_VOCAB_ROWS = {
     "water":   {"water": 1.5, "boats": 1.2, "fish": 1.0, "ducks": 0.7},     # AXES.md starts at 1.2/0.9/0.8/0.5
@@ -283,8 +285,8 @@ NOTES = (
     "Toy v3: single-head causal self-attention (d_model=4, d_k=3, d_v=2, vocab=20, ten-token examples, max_context=20), designed BY HAND so that every "
     "coordinate has a name that the numbers agree with (see 'axes'). e axes: water, finance, person, glue. q and k axes: "
     "setting: water?, setting: finance?, who? (a query row reads 'what I ask for', a key row 'what I offer'). Position vectors add small offsets across the same four coordinates. v has its own "
-    "narrower axes: says: water scene and says: finance scene; W_O maps them back onto the e axes. Names are "
-    "illustrative; the matrices are sparse and one-decimal so a student can read each row of W_Q as 'axis -> asks', "
+    "narrower axes: says: water scene and says: finance scene; the dense W_O mixes both into every e coordinate, with positive and negative coefficients and no output bias. Names are "
+    "illustrative; the Q/K/V matrices are sparse and one-decimal so a student can read each row of W_Q as 'axis -> asks', "
     "W_K as 'axis -> offers', W_V as 'axis -> says'. The predictor has eight ReLU hidden units: h=ReLU(e W_hidden+b_hidden), logits=h W_vocab+b_vocab. On slides these are W1, b1, W2, b2. Values are narrower on "
     "purpose because they are mixed and sent rather than compared. Before position is added, glue-only token rows have zero keys and values but ask for "
     "both settings, which is why the final 'the' reads river or cheque. bank is equal parts water "
