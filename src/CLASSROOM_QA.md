@@ -1,5 +1,10 @@
 # Classroom release checks
 
+## 2026-09-15: label the mask calculation and follow one real row
+
+- Replaced the dense mask overview with a progressive definition table for S (scaled query-key scores), M (the fixed positional mask), and A (row-wise softmax attention weights). Defined receiving rows, source columns, table size, matching width and A_ij = alpha_ij. Added one worked classroom frame showing all ten columns of row 5 through S, M, S+M and A. River's actual 2.96 score becomes negative infinity, then zero attention weight and a zero value-vector contribution. The four-position triangle remains in reading mode. The existing full heatmap and message toggle immediately follow the worked row.
+- The presentation skill guided the split, native labelled tables, matched role colours and progressive reveals. The extended concise-tail check independently verifies every displayed score, mask entry and weight, prefix normalization, all reveals/reverse navigation, the new frame order and phone containment. The original masked/unmasked messages still match the independent reference and the model remains unchanged. Visually inspected both classroom slides and phone reading. Full audit: 235 states / 534 formulas, no math errors or overflow. No model, shared-runtime, dependency or other lecture changes.
+
 ## 2026-09-15: distinguish training, generation and test scoring in causal masking
 
 - Rebuilt the existing masking introduction around position 5's concrete prefix, its next-token target “river” at position 6, and later words. The training and generation explanations reveal separately, followed by the shared prefix-only rule and an explicit note about scoring full test sentences. Speaker notes explain parallel shifted targets, why a target's embedding cannot feed its own prediction, diagonal access, and the autoregressive scope. Corrected the later interactive note that implied future tokens do not exist in stored training data. No slide, model, numerical, shared-runtime or other lecture changes.

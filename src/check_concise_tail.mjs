@@ -12,7 +12,7 @@ const shots=fs.mkdtempSync('/private/tmp/concise-tail-');
 const expected={
   s11:['s11-frame1','s11-frame-separate-maps','s11-frame-query-setup','s11-frame-query-calc','s11-frame3'],
   s12:['s12-frame-scaling','s12-frame-spread','s12-frame-softmax','s12-frame-bank'],
-  s13:['s13-frame1','s13-frame2','s13-frame3','s13-frame4'],
+  s13:['s13-frame1','s13-frame2','s13-frame-mask-row','s13-frame3','s13-frame4'],
   s14:['s14-routing','s14-probabilities','s14-layer-boundary'],
   s15:['s15-frame1'],
   s16:['s16-flow-frame','s16-frame3-routing'],
@@ -69,9 +69,9 @@ try{
       await page.screenshot({path:path.join(shots,id+'.png')});
     }
   }
-  assert.equal(Object.values(expected).flat().length,24);
+  assert.equal(Object.values(expected).flat().length,25);
   assert.equal(await page.locator('.frame-auto').count(),0,'No companion section accidentally becomes a slide.');
-  for(const id of ['s11-frame-key-calc','s11-frame-value-calc','s13-frame-targets','s14-head-arithmetic','s16-frame2','s18-question8','s19-operational']){
+  for(const id of ['s11-frame-key-calc','s11-frame-value-calc','s13-frame-targets','s13-frame-mask-triangle','s14-head-arithmetic','s16-frame2','s18-question8','s19-operational']){
     assert(await page.locator('#'+id).evaluate(el=>el.classList.contains('companion')));
     assert(!(await page.locator('#'+id).isVisible()));
   }
@@ -103,6 +103,26 @@ try{
   await page.evaluate(()=>AT.present.next());
   assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s16-frame3-routing');
   // Masked and unmasked tables/messages retain the exact original computation.
+  const Fmasked=forward(model,model.sentences.river),Funmasked=forward(model,model.sentences.river,{mask:false});
+  const maskRow=await page.locator('#s13-mask-row tbody tr').evaluateAll(es=>es.map(e=>[...e.querySelectorAll('td')].map(c=>c.textContent)));
+  const display=(r,d)=>r.map(x=>Number.isFinite(x)?x.toFixed(d):'−∞');
+  assert.deepEqual(maskRow,[display(Funmasked.S[4],2),model.sentences.river.map((_,j)=>j<=4?'0':'−∞'),display(Fmasked.S[4],2),display(Fmasked.A[4],3)]);
+  assert(Math.abs(Fmasked.A[4].slice(0,5).reduce((s,x)=>s+x,0)-1)<1e-12);
+  assert(Fmasked.A[4].slice(5).every(x=>x===0));
+  assert.match(await page.locator('#s13-river-mask-arithmetic').textContent(),new RegExp(Funmasked.S[4][5].toFixed(2).replace('.','\\.')));
+  assert.match(await page.locator('#s13-frame2').innerText(),/match scores/);
+  assert.match(await page.locator('#s13-frame2').innerText(),/causal mask/);
+  assert.match(await page.locator('#s13-frame2').innerText(),/attention weights/);
+  assert.match(await page.locator('#s13-frame2').innerText(),/Softmax each row/);
+  for(const id of ['s13-frame2','s13-frame-mask-row']){
+    for(const build of [0,1,2,1,0,2]){
+      await go(id,build);await fit(id+' build '+build);
+      for(const n of [1,2])assert((await page.locator('#'+id+' [data-build="'+n+'"]').evaluateAll(es=>es.map(e=>getComputedStyle(e).visibility))).every(v=>v===(build>=n?'visible':'hidden')));
+      await page.screenshot({path:path.join(shots,id+'-'+build+'.png')});
+    }
+    await page.evaluate(()=>AT.present.next());
+    assert.equal(await page.locator('.frame.is-live').getAttribute('id'),id==='s13-frame2'?'s13-frame-mask-row':'s13-frame3');
+  }
   for(const on of [true,false,true]){
     await go('s13-frame3',0);
     await page.evaluate(on=>document.querySelector('#s13-ctl button').set(on),on);
@@ -134,7 +154,7 @@ try{
   assert.equal(await page.evaluate(()=>JSON.stringify(AT.model)),original);
   await page.evaluate(()=>AT.present.exit());
   await page.setViewportSize({width:390,height:844});
-  for(const id of ['s11-frame-key-calc','s12-frame-bank','s13-frame1','s14-head-arithmetic','s15-stepper','s16-frame3-routing','s17-weights','s18-question8']){
+  for(const id of ['s11-frame-key-calc','s12-frame-bank','s13-frame1','s13-frame2','s13-frame-mask-row','s14-head-arithmetic','s15-stepper','s16-frame3-routing','s17-weights','s18-question8']){
     await page.locator('#'+id).scrollIntoViewIfNeeded();
     assert(await page.locator('#'+id).isVisible(),'Reading retains '+id);
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Phone width at '+id);
@@ -146,5 +166,5 @@ try{
   const tableBox=await page.locator('#s13-frame1 table').boundingBox();
   assert(tableBox.x>=0&&tableBox.x+tableBox.width<=391,'The concrete prefix table fits a phone.');
   assert.deepEqual(errors,[]);
-  console.log('PASS: 24-frame tail; companion retention; manual walkthrough navigation and all 18 stages; full '+stageCount+'-stage flowchart; causal-mask tables/messages; synchronized four-rule comparison; unchanged model; phone reading. Screenshots: '+shots);
+  console.log('PASS: 25-frame tail; companion retention; manual walkthrough navigation and all 18 stages; full '+stageCount+'-stage flowchart; labelled causal-mask definitions, row arithmetic, reveals and tables/messages; synchronized four-rule comparison; unchanged model; phone reading. Screenshots: '+shots);
 }finally{await browser.close();}

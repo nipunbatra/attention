@@ -9371,6 +9371,34 @@ alpha = scores.softmax(dim=-1)</code></pre>
 #s13 .s13-times h3{font-size:18px;margin:0 0 8px}
 #s13 .s13-times p{margin:0;line-height:1.45}
 #s13 .s13-test-note{margin:10px 0 0;color:var(--ink-2);font-size:14px}
+#s13 .s13-mask-lead{font-size:19px;line-height:1.4;margin:0 0 16px}
+#s13 .s13-symbols{width:100%;border-collapse:collapse}
+#s13 .s13-symbols th,#s13 .s13-symbols td{text-align:left;vertical-align:middle;padding:12px 16px;border-bottom:1px solid var(--line)}
+#s13 .s13-symbols th{width:30%;font-weight:600}
+#s13 .s13-symbols p{margin:5px 0;font-size:17px;line-height:1.35}
+#s13 .s13-symbols .katex-display{margin:6px 0;text-align:left}
+#s13 .s13-symbols .katex-display>.katex{text-align:left}
+#s13 .s13-mask-name{color:var(--warn)}
+#s13 .s13-weight-name{color:var(--c-a)}
+#s13-mask-row .dt{width:100%}
+#s13-mask-row .dt-rl{white-space:normal;min-width:150px}
+#s13-mask-row .dt-ch{white-space:normal;text-align:center;text-transform:none;letter-spacing:0}
+#s13-mask-row .s13-col-position{display:block;color:var(--ink-3);font-size:.85em}
+#s13-mask-row .dt-ch:nth-child(7),#s13-mask-row td:nth-child(7){border-left:3px solid var(--warn)}
+#s13-mask-row td.s13-future{background:var(--t-neutral)}
+#s13-mask-row tr:last-child td.s13-future{font-weight:700;color:var(--c-a)}
+#s13 .s13-zero-explanation{font-size:18px;line-height:1.4;margin:14px 0}
+body.present #s13 .s13-mask-lead{font-size:25px}
+body.present #s13 .s13-symbols th{font-size:27px}
+body.present #s13 .s13-symbols td{font-size:26px}
+body.present #s13 .s13-symbols p{font-size:23px}
+body.present #s13 #s13-mask-row .dt th,body.present #s13 #s13-mask-row .dt td{font-size:20px;padding:4px 5px}
+body.present #s13 #s13-mask-row .dt-rl{min-width:170px}
+body.present #s13 #s13-mask-row .dt-ch{font-size:18px;text-transform:none;letter-spacing:0}
+body.present #s13 .s13-zero-explanation{font-size:24px}
+#s13-frame-mask-row .s13-zero-explanation p{margin:8px 0}
+#s13-frame-mask-row .callout{margin:14px 0 0}
+@media(max-width:620px){body:not(.present) #s13 .s13-symbols th,body:not(.present) #s13 .s13-symbols td{display:block;width:auto;padding:8px 0}body:not(.present) #s13 .s13-symbols th{border:0}body:not(.present) #s13 .s13-symbols td{padding-bottom:18px}body:not(.present) #s13 .s13-symbols .katex{font-size:1em}}
 body.present #s13-frame1 .card-title{font-size:24px}
 body.present #s13 .s13-prefix-table th{font-size:20px}
 body.present #s13 .s13-prefix-table td{font-size:25px}
@@ -9467,28 +9495,55 @@ It is river at position 6. Read one row horizontally: prefix in, the immediately
 
 </div>
 
-<div class="frame" id="s13-frame2" data-title="Where must future information be blocked?">
+<div class="frame" id="s13-frame2" data-title="The scores, the mask, and the attention weights" data-autobuild="off">
   <script type="text/x-notes">
-Why must the mask be applied before the softmax?
-Forbidden scores become negative infinity, so their exponentials are zero. Allowed positions include the diagonal: a token can read itself. Point to row i and column j before reading the triangle.
+S contains the scaled query-key dot products before masking. M is a fixed rule determined by token positions, not learned relevance. A contains the resulting attention weights after adding M and applying softmax separately to each row. All three tables are n by n. Here n is 10 and d_k is 3. The row index i identifies the receiver, and column j identifies the source whose key is compared and whose value could be read. A_ij is the same alpha_ij used in the weighted sum.
+Reveal the mask after the score definition. Adding zero leaves an allowed score alone. Adding negative infinity rules out a future source, whatever its finite match score. Reveal A next: exp(-infinity) is zero, and row-wise normalization divides it by a positive denominator, so the weight is exactly zero. The next slide follows a real row numerically. The diagonal remains allowed, so each row has at least one allowed source.
+The familiar matrix formula is A = softmax_rows(QK^T/sqrt(d_k) + M). Setting scores to zero would not block attention, since exp(0) is one. Masking must happen before softmax. The next token to predict must not influence the representation through any earlier layer either.
+Source: Attention Is All You Need, Sections 3.1 and 3.2.3, https://arxiv.org/html/1706.03762v7
   </script>
-<div class="card">
-  <h3 class="card-title">The rule, written twice <span class="s13-illus">illustrative 4×4</span></h3>
-  <p class="s13-cap">Same rule on both sides: the picture on the left, the mask matrix $M$ that section 16 will use on the right.</p>
-  <div class="s13-rule">
-    <p class="s13-sub s13-c1">Allowed and masked</p>
-    <div class="s13-body s13-c1">
-      $$\begin{bmatrix} \checkmark & \times & \times & \times\\ \checkmark & \checkmark & \times & \times\\ \checkmark & \checkmark & \checkmark & \times\\ \checkmark & \checkmark & \checkmark & \checkmark \end{bmatrix}$$
-      <p class="muted small">Row $i$ = query token, column $j$ = key token. $\checkmark$: allowed ($j \le i$). $\times$: masked ($j > i$).</p>
-    </div>
-    <p class="s13-sub s13-c2">As a mask matrix</p>
-    <div class="s13-body s13-c2">
-      <div id="s13-meq1"></div>
-      <div id="s13-meq2"></div>
-      <p class="muted small">Adding $-\infty$ before the softmax is the same as deleting that column for that row: $e^{-\infty} = 0$.</p>
-    </div>
-  </div>
+  <p class="s13-mask-lead">Each is a $10\times10$ table. <strong>Row $i$ is the receiving token. Column $j$ is the source token.</strong></p>
+  <table class="s13-symbols" aria-label="Definitions of score, mask and attention-weight matrices">
+    <tbody>
+      <tr><th scope="row">$S$: match scores</th><td>
+        $$S_{ij}=\frac{\vq{q_i}\cdot\vk{k_j}}{\sqrt{d_k}}$$
+        <p>Query $\vq{q_i}$, key $\vk{k_j}$, matching width $d_k=3$.</p>
+      </td></tr>
+      <tr data-build="1"><th scope="row" class="s13-mask-name">$M$: causal mask</th><td>
+        <div id="s13-meq2"></div>
+        <p>A fixed position rule: 0 keeps the score. $-\infty$ blocks a future source.</p>
+      </td></tr>
+      <tr data-build="2"><th scope="row" class="s13-weight-name">$\va{A}$: attention weights</th><td>
+        <div id="s13-meq1"></div>
+        <p><strong>Softmax each row.</strong> $\va{A_{ij}}=\va{\alpha_{ij}}$ weights the source's value $\vv{v_j}$.</p>
+      </td></tr>
+    </tbody>
+  </table>
 </div>
+
+<div class="frame" id="s13-frame-mask-row" data-title="Row 5: “river” gets zero attention weight" data-autobuild="off">
+  <script type="text/x-notes">
+Return to row i=5, the second “the”, whose target is river at position 6. The table shows all ten source columns in the same order as the next heatmap. Use the actual full-precision forward calculation. Only displayed numbers are rounded. The scores row is before masking, even though the runtime's masked forward result calls its already-masked table S.
+Reveal M and S+M together. The first five scores are unchanged. River has a large scaled match score, about 2.96, but j=6 is greater than i=5, so adding negative infinity overrides that score. The other four future tokens are blocked too. Then reveal A. Allowed weights sum to one and all five future weights are exactly zero. The mask chooses eligibility by position, not by whether the query finds the source relevant.
+The message is a sum of alpha_5j times v_j. A zero weight multiplies the whole source value vector by zero. This is the mechanical link between the prefix-only prediction rule and the attention operation. Setting a forbidden score to zero would fail, because exp(0)=1. The next slide expands these same weights to all receiving rows, with a mask toggle.
+Source: Attention Is All You Need, Section 3.2.3, https://arxiv.org/html/1706.03762v7#S3.SS2.SSS3
+  </script>
+  <p class="s13-mask-lead">Receiver: <strong>position 5, “the”</strong>. Its target is <strong>position 6, “river”</strong>. Columns below are source positions $j$.</p>
+  <div id="s13-mask-row"></div>
+  <div class="s13-zero-explanation" data-build="1">
+    <p id="s13-river-mask-arithmetic"></p>
+    <p>Softmax exponentiates, then divides by the row total. Since $e^{-\infty}=0$, river's final weight is zero.</p>
+  </div>
+  <div class="callout callout-key" data-build="2">River contributes $\va{\alpha_{5,6}}\vv{v_6}=0\times\vv{v_6}=\mathbf{0}$. <strong>Only positions 1&ndash;5 can send information.</strong> Their weights sum to 1.</div>
+</div>
+
+<div class="companion" id="s13-frame-mask-triangle">
+  <h3>The same rule for four positions</h3>
+  <p>Rows are receiving queries $i$. Columns are source keys and values $j$. A check allows that source, including the diagonal. A cross blocks a future source.</p>
+  <div class="s13-rule">
+    <div class="s13-c1">$$\begin{bmatrix} \checkmark & \times & \times & \times\\ \checkmark & \checkmark & \times & \times\\ \checkmark & \checkmark & \checkmark & \times\\ \checkmark & \checkmark & \checkmark & \checkmark \end{bmatrix}$$</div>
+    <div class="s13-c2">$$M=\begin{bmatrix}0&-\infty&-\infty&-\infty\\0&0&-\infty&-\infty\\0&0&0&-\infty\\0&0&0&0\end{bmatrix}$$</div>
+  </div>
 </div>
 
 <div class="companion" id="s13-frame-mask-code" data-title="Make forbidden attention exactly zero">
@@ -9566,7 +9621,22 @@ Training would allow evidence that generation can never have. The model could mi
   const li = 4;                                  // "the" at position 5; its next token is river (6)
 
   AT.tex(S.querySelector('#s13-meq1'), '\\va{A} = \\operatorname{softmax}(S + M)', { display: true });
-  AT.tex(S.querySelector('#s13-meq2'), 'M_{ij} = \\begin{cases} 0 & j \\le i \\\\ -\\infty & j > i \\end{cases}', { display: true });
+  AT.tex(S.querySelector('#s13-meq2'), '\\color{#B45309}{M_{ij}} = \\begin{cases} 0 & j \\le i\\quad\\text{(past or self)} \\\\ -\\infty & j > i\\quad\\text{(future)} \\end{cases}', { display: true });
+
+  /* Row 5 explains the mechanism with the same data as the following heatmap. */
+  const rowMask = toks.map((_, j) => j <= li ? 0 : -Infinity);
+  const maskRowsFig = AT.ui.table([Foff.S[li], rowMask, Fon.S[li], Fon.A[li]].map((r, i) => r.map(x => Number.isFinite(x) ? AT.fmt(x, i === 1 ? 0 : i === 3 ? 3 : 2) : '−∞')), {
+    cols: toks.map((t, j) => ({label: (j + 1) + ' ' + t, title: 'Source position ' + (j + 1) + ': ' + t})),
+    rowLabels: ['$S$: scores', '$M$: mask', '$S+M$: masked scores', '$\\va{A}$: weights'],
+    cornerLabel: 'Row 5', sticky: false, into: S.querySelector('#s13-mask-row')
+  });
+  maskRowsFig.table.querySelectorAll('thead .dt-ch').forEach((el, j) => {
+    AT.clear(el); el.appendChild(AT.h('span', {class:'s13-col-position'}, String(j + 1))); el.appendChild(AT.h('span', {}, toks[j]));
+  });
+  maskRowsFig.rowEls.forEach((el, i) => { if(i) el.dataset.build = String(i === 3 ? 2 : 1); });
+  maskRowsFig.cells.forEach(row => row.forEach((el, j) => { if(j > li) el.classList.add('s13-future'); }));
+  S.querySelector('#s13-river-mask-arithmetic').innerHTML = 'For river ($j=6>5$): $' + AT.fmt(Foff.S[li][li + 1], 2) + ' + (-\\infty) = -\\infty$.';
+  AT.renderMath(S.querySelector('#s13-river-mask-arithmetic'));
 
   /* ---- 10×10 heatmap with a mask toggle ---- */
   const msg = S.querySelector('#s13-msg');
