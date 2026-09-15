@@ -13,7 +13,7 @@ const expected={
   s11:['s11-frame1','s11-frame-separate-maps','s11-frame-query-setup','s11-frame-query-calc','s11-frame3'],
   s12:['s12-frame-scaling','s12-frame-spread','s12-frame-softmax','s12-frame-bank'],
   s13:['s13-frame1','s13-frame2','s13-frame-mask-row','s13-frame3','s13-frame4'],
-  s14:['s14-routing','s14-probabilities','s14-layer-boundary'],
+  s14:['s14-routing','s14-residual','s14-probabilities','s14-layer-boundary'],
   s15:['s15-frame1'],
   s16:['s16-flow-frame','s16-frame3-routing'],
   s17:['s17-weights'],
@@ -69,7 +69,7 @@ try{
       await page.screenshot({path:path.join(shots,id+'.png')});
     }
   }
-  assert.equal(Object.values(expected).flat().length,25);
+  assert.equal(Object.values(expected).flat().length,26);
   assert.equal(await page.locator('.frame-auto').count(),0,'No companion section accidentally becomes a slide.');
   for(const id of ['s11-frame-key-calc','s11-frame-value-calc','s13-frame-targets','s13-frame-mask-triangle','s14-head-arithmetic','s16-frame2','s18-question8','s19-operational']){
     assert(await page.locator('#'+id).evaluate(el=>el.classList.contains('companion')));
@@ -142,6 +142,28 @@ try{
     await fit('received message '+on);
   }
   // The comparison's control now lives on the table slide, not on a hidden slide.
+  for(const context of ['river','cheque']){
+    for(const on of [true,false,true]){
+      await go('s14-routing',0);
+      await page.locator('#s14-ctx-'+context).click();
+      await page.evaluate(on=>document.querySelector('#s14-toggle button').set(on),on);
+      for(const id of ['s14-routing','s14-residual']){
+        const max=id==='s14-routing'?1:2;
+        for(const build of [0,max,0,max]){
+          await go(id,build);await fit(id+' '+context+' '+on+' build '+build);
+          for(let n=1;n<=max;n++){
+            const visibility=build>=n?'visible':'hidden';
+            assert((await page.locator('#'+id+' [data-build="'+n+'"]').evaluateAll(es=>es.map(e=>getComputedStyle(e).visibility))).every(v=>v===visibility));
+            const mathVisibility=await page.locator('#'+id+' [data-build="'+n+'"] .katex-html *').evaluateAll(es=>es.filter(e=>!e.children.length&&e.textContent.trim()).map(e=>({text:e.textContent,visibility:getComputedStyle(e).visibility})));
+            assert(mathVisibility.every(e=>e.visibility===visibility),'Math leaves follow the reveal, including subscripts: '+JSON.stringify(mathVisibility.filter(e=>e.visibility!==visibility)));
+          }
+        }
+        await page.screenshot({path:path.join(shots,id+'-'+context+'-'+on+'.png')});
+        await page.evaluate(()=>AT.present.next());
+        assert.equal(await page.locator('.frame.is-live').getAttribute('id'),id==='s14-routing'?'s14-residual':'s14-probabilities');
+      }
+    }
+  }
   await go('s17-weights',0);let previous=null;
   for(const context of ['river','cheque','river']){
     await page.locator('#s17-ctx-'+(context==='river'?'a':'b')).click();
@@ -154,7 +176,7 @@ try{
   assert.equal(await page.evaluate(()=>JSON.stringify(AT.model)),original);
   await page.evaluate(()=>AT.present.exit());
   await page.setViewportSize({width:390,height:844});
-  for(const id of ['s11-frame-key-calc','s12-frame-bank','s13-frame1','s13-frame2','s13-frame-mask-row','s14-head-arithmetic','s15-stepper','s16-frame3-routing','s17-weights','s18-question8']){
+  for(const id of ['s11-frame-key-calc','s12-frame-bank','s13-frame1','s13-frame2','s13-frame-mask-row','s14-routing','s14-residual','s14-head-arithmetic','s15-stepper','s16-frame3-routing','s17-weights','s18-question8']){
     await page.locator('#'+id).scrollIntoViewIfNeeded();
     assert(await page.locator('#'+id).isVisible(),'Reading retains '+id);
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Phone width at '+id);
@@ -166,5 +188,5 @@ try{
   const tableBox=await page.locator('#s13-frame1 table').boundingBox();
   assert(tableBox.x>=0&&tableBox.x+tableBox.width<=391,'The concrete prefix table fits a phone.');
   assert.deepEqual(errors,[]);
-  console.log('PASS: 25-frame tail; companion retention; manual walkthrough navigation and all 18 stages; full '+stageCount+'-stage flowchart; labelled causal-mask definitions, row arithmetic, reveals and tables/messages; synchronized four-rule comparison; unchanged model; phone reading. Screenshots: '+shots);
+  console.log('PASS: 26-frame tail; companion retention; manual walkthrough navigation and all 18 stages; full '+stageCount+'-stage flowchart; causal-mask arithmetic and tables/messages; final-query/value-path states and navigation; synchronized four-rule comparison; unchanged model; phone reading. Screenshots: '+shots);
 }finally{await browser.close();}

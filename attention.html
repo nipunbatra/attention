@@ -9774,7 +9774,26 @@ Training would allow evidence that generation can never have. The model could mi
 #s14 .chain .cb.is-on{border-color:var(--oc,var(--ink));background:var(--ot,var(--paper));color:var(--ink);transform:translateY(-2px)}
 #s14 .chain .cb.obj-ep.is-on{box-shadow:0 0 0 2px var(--oc2)}
 #s14 .chain .ca{font-size:20px;color:var(--ink-3)}
-#s14 .context-line{max-width:72ch;margin:8px 0 16px;font-family:var(--font-mono);font-size:15px;line-height:1.6}
+#s14 .context-line{max-width:72ch;margin:8px 0 16px;font-size:15px;line-height:1.6}
+#s14 .receiver-query{display:flex;align-items:center;gap:24px;margin:12px 0}
+#s14 .receiver-query>p{margin:0;max-width:34ch;font-size:17px;line-height:1.4}
+#s14 .receiver-key{margin:12px 0 0;font-size:18px;line-height:1.4}
+#s14 .value-route{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:14px 0}
+#s14 .value-route h3{font-size:18px;margin:0 0 10px}
+#s14 .value-route p{font-size:17px;margin:8px 0;line-height:1.4}
+#s14 .receiver-takeaway{font-size:18px;line-height:1.4;margin:12px 0}
+#s14-residual .card-title{margin-bottom:8px}
+body.present #s14 .receiver-query>p{font-size:22px}
+body.present #s14 .receiver-key{font-size:23px}
+body.present #s14 .value-route h3{font-size:24px}
+body.present #s14 .value-route p,body.present #s14 .receiver-takeaway{font-size:23px}
+body.present #s14 .receiver-query .vec,body.present #s14 .value-route .vec{font-size:23px}
+/* Explicit table-row visibility keeps dynamic KaTeX subscripts in sync with
+   reveals in Chromium, including reduced-motion and backward navigation. */
+body.present:not(.is-preflighting) #s14 .frame.is-live [data-build] .katex :is(.vlist-r,.vlist){visibility:visible}
+body.present:not(.is-preflighting) #s14 .frame.is-live [data-build].is-pending .katex :is(.vlist-r,.vlist){visibility:hidden}
+body.present #s14-residual .dt th,body.present #s14-residual .dt td.dt-num{padding:6px 7px}
+@media(max-width:700px){body:not(.present) #s14 .receiver-query{display:block}body:not(.present) #s14 .receiver-query>p{margin-top:12px}body:not(.present) #s14 .value-route{grid-template-columns:1fr}}
 #s14 .worked-head{display:grid;gap:18px;margin:18px 0}
 #s14 .worked-head>div{padding:14px 20px;background:var(--card);border-left:4px solid var(--c-ep)}
 #s14 .layer-route{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin:24px 0}
@@ -9821,12 +9840,15 @@ Point to position 10. Earlier we examined bank at position 7, but now q_10 searc
 <pre class="pytorch" data-build="2"><code>q_last = E[-1] @ W_Q  # the current last known position</code></pre>
 </div>
 
-<div class="frame" id="s14-routing" data-title="Use the final the’s query to choose source weights">
-<script type="text/x-notes">Which source receives the largest weight?
-Switch river to cheque while holding the final word fixed. These are weights over input positions, not vocabulary probabilities.</script>
+<div class="frame" id="s14-routing" data-title="The final “the” asks for scene information" data-autobuild="off">
+<script type="text/x-notes">How can a word as uninformative as “the” provide a useful query?
+The known prefix ends at position 10, so that is the row used to predict token 11. Its initial representation is [0,0,0,2.3] on water, finance, person, glue axes in both sentences. The shared W_Q maps its glue coordinate into both setting-request coordinates: 2.3 times 0.7 gives 1.61. Thus q_10=[1.61,1.61,0] asks broadly for water or finance clues and has no preference between them. It does not already know which scene occurred. The unknown next word supplies no query. Bank's earlier q_7 is not reused.
+Switch contexts. The final e_10 and q_10 stay the same in this single-layer toy. The other words produce different keys, so their comparisons with q_10 yield different weights. Show the top source's key and scaled score, then the full row-softmax weight. The values provide the actual message on the next slide.
+The axis meanings and parameter values in this toy are hand-chosen to expose the mechanism. In a trained Transformer, the projections learn useful requests through the prediction loss, and later-layer queries use representations that already contain context. We are not claiming that real “the” queries always have this meaning or that a first-layer query knows the entire prefix.
+These are weights over input positions, not vocabulary probabilities. Attention bypass skips the query/key/value path entirely, rather than using self-only attention.</script>
 <p class="context-line" data-context-line></p>
 <div class="card">
-  <h3 class="card-title">The final token at position 10 chooses where to read</h3>
+  <h3 class="card-title">The same starting “the” gives the same query in both contexts</h3>
   <div class="row between controls">
     <div class="row">
       <span class="small muted">Context</span>
@@ -9837,7 +9859,14 @@ Switch river to cheque while holding the final word fixed. These are weights ove
     </div>
     <div id="s14-toggle"></div>
   </div>
-  <div id="s14-alpha"></div>
+  <div class="receiver-query">
+    <div id="s14-query"></div>
+    <p id="s14-query-meaning">Toy meaning: ask for <strong>water or finance clues</strong>. The query alone does not know which scene.</p>
+  </div>
+  <div data-build="1">
+    <div id="s14-alpha"></div>
+    <p class="receiver-key" id="s14-key-match"></p>
+  </div>
 </div>
 </div>
 
@@ -9853,15 +9882,29 @@ Because the receiver is last, every displayed source is allowed.</script>
 alpha = scores.softmax(dim=-1)  # ten source weights; sum = 1</code></pre>
 </div>
 
-<div class="companion" id="s14-residual" data-title="Add the context update to the same last-token input">
-<script type="text/x-notes">What changes between the two contexts if the final token and its position are identical?
-
-The starting row e_10 is identical. Only the context-dependent update changes. Add each column vertically. If attention is bypassed, delta is zero and the input row reaches the prediction head unchanged.</script>
-<p class="context-line" data-context-line></p>
-<div class="card">
-  <h3 class="card-title">The update, added axis by axis</h3>
+<div class="frame" id="s14-residual" data-title="Values give the final “the” its scene information" data-autobuild="off">
+<script type="text/x-notes">The query does not have to contain the answer. It chooses where to read, and the sources' values provide the evidence.
+The left side follows the largest-weight source, not a hard winner. Multiply its complete two-coordinate value by its attention weight. The right side sums all ten weighted values, including the other nine sources. Both message axes mean water-scene and finance-scene evidence. Read the values at full precision when checking arithmetic; the display rounds to two decimals.
+Then W_O maps the two-coordinate message to the four-coordinate representation space, and residual addition preserves the starting row. In the river context the starting water/finance coordinates [0,0] become approximately [1.54,-0.33]. In the cheque context they become [-0.09,2.02]. This is how a generic word's position can hold scene information for the prediction head without changing the token's identity.
+The following slide feeds this updated row through the 4-to-8 hidden layer and 8-to-20 vocabulary layer. In this toy the most likely continuations are water and teller respectively. These are outputs of a hand-designed model, not claims about a trained language model. The same-layer source values come from input representations, not newly updated rows.
+If attention is bypassed, no weights or value mixture are used. Delta is zero and the original row reaches the head unchanged, giving the same probabilities in both contexts.</script>
+<div class="value-route">
+  <div>
+    <h3 id="s14-value-title">One source's contribution</h3>
+    <div id="s14-source-value"></div>
+    <p id="s14-value-contribution"></p>
+  </div>
+  <div data-build="1">
+    <h3>All ten weighted values together</h3>
+    <div id="s14-message"></div>
+    <p id="s14-message-note">Sum of all ten contributions.</p>
+  </div>
+</div>
+<div class="card" data-build="2">
+  <h3 class="card-title">Project the message, then add it: $\vd{\Delta e_{10}}=\vm{m_{10}}W_O$</h3>
   <div id="s14-update"></div>
 </div>
+<p class="receiver-takeaway" data-build="2" id="s14-context-takeaway"></p>
 </div>
 
 <div class="companion" id="s14-residual-code" data-title="The message must return to model width before we add it">
@@ -10012,13 +10055,48 @@ Not in the same layer. It reads bank's value formed from this layer's input. The
     // Bypass is not self-only attention. No alpha row is evaluated or used.
     const row = useAtt ? A : AT.range(T).map(() => '');
     const best = AT.argmax(A);
-    const fig = AT.ui.table([row], { cols: tokCols(toks), rowLabels: [useAtt ? '$\\va{\\alpha_{' + T + ',j}}$' : 'attention bypassed'], cornerLabel: 'reads from →', rowCls: 'a', heatCols: AT.range(T), decimals: 2,
-      computed: [{ label: 'row sum', fn: (r) => useAtt ? AT.sum(r) : 'not computed', cls: 'neutral' }],
+    const fig = AT.ui.table([row], { cols: tokCols(toks), rowLabels: [useAtt ? '$\\va{\\alpha_{' + T + ',j}}$' : 'not used'], cornerLabel: 'reads from →', rowCls: 'a', heatCols: AT.range(T), decimals: 2,
+      computed: [{ label: 'row sum', fn: (r) => useAtt ? AT.sum(r) : 'not run', cls: 'neutral' }],
       caption: useAtt
         ? 'Look at the darkest cells: the last token reads mostly from “' + toks[best] + '” (' + AT.fmt(A[best], 2) + '). The row sums to 1.'
         : 'Attention bypassed: no weights are used and Δe₁₀ = 0. The head reads e₁₀ directly. Self-only attention would still send v₁₀ through W_O and is a different operation.',
       into: alphaHost });
     if (useAtt) fig.cells[0][best].classList.add('is-top');
+    const queryHost=S.querySelector('#s14-query'); AT.clear(queryHost);
+    const keyLine=S.querySelector('#s14-key-match');
+    if(useAtt){
+      AT.ui.vec(F[ctx].Q[t],{cls:'q',axes:'qk',label:'\\vq{q_{10}}=\\ve{e_{10}}W_Q',decimals:2,into:queryHost});
+      S.querySelector('#s14-query-meaning').innerHTML='Toy meaning: ask for <strong>water or finance clues</strong>. The query alone does not know which scene.';
+      keyLine.innerHTML='Top source: <strong>'+AT.escape(toks[best])+' ('+(best+1)+')</strong>. Its key $\\vk{k_{'+(best+1)+'}}=['+F[ctx].K[best].map(x=>AT.fmt(x,2)).join(',')+']$ gives score '+AT.fmt(F[ctx].S[t][best],3)+' and weight '+AT.fmt(A[best],3)+'.';
+    }else{
+      queryHost.textContent='Attention bypassed';
+      S.querySelector('#s14-query-meaning').textContent='No query–key comparison or value mixture is used.';
+      keyLine.textContent='The prediction head receives the original final row unchanged.';
+    }
+    AT.renderMath(keyLine);
+  }
+
+  function paintValuePath(){
+    const R=F[ctx],best=AT.argmax(R.A[t]),j=best+1;
+    const sourceHost=S.querySelector('#s14-source-value'),messageHost=S.querySelector('#s14-message');
+    AT.clear(sourceHost);AT.clear(messageHost);
+    const contribution=S.querySelector('#s14-value-contribution');
+    if(useAtt){
+      S.querySelector('#s14-value-title').textContent=ctxs[ctx][best]+' ('+j+'): one source sends';
+      AT.ui.vec(R.V[best],{cls:'v',axes:'v',label:'\\vv{v_{'+j+'}}',decimals:2,into:sourceHost});
+      contribution.innerHTML='$\\va{'+AT.fmt(R.A[t][best],3)+'}\\times\\vv{v_{'+j+'}}\\approx\\vv{['+R.V[best].map(x=>AT.fmt(x*R.A[t][best],2)).join(',')+']}$';
+      AT.ui.vec(R.Mmsg[t],{cls:'v',axes:'v',label:'\\vm{m_{10}}=\\sum_j\\va{\\alpha_{10,j}}\\vv{v_j}',decimals:2,into:messageHost});
+      S.querySelector('#s14-message-note').textContent='Sum of all ten contributions.';
+      S.querySelector('#s14-context-takeaway').innerHTML='The updated row now carries <strong>'+ (ctx==='river'?'water-scene':'finance-scene')+' information</strong>. This row enters the prediction head next.';
+    }else{
+      S.querySelector('#s14-value-title').textContent='Value path bypassed';
+      sourceHost.textContent='No source contribution is used.';
+      contribution.textContent='The attention branch sends no update.';
+      messageHost.textContent='No value mixture is computed.';
+      S.querySelector('#s14-message-note').textContent='This step is skipped when attention is bypassed.';
+      S.querySelector('#s14-context-takeaway').textContent='The same original “the” reaches the head in both contexts, so the probabilities are identical.';
+    }
+    AT.renderMath(contribution);
   }
 
   /* --- table 2: e_t, Δe_t and the footer e'_t, one column per named axis --- */
@@ -10122,9 +10200,9 @@ Not in the same layer. It reads bank's value formed from this layer's input. The
 
   function draw(){
     S.querySelectorAll('[data-context-line]').forEach(el => {
-      el.textContent = ctxs[ctx].join(' ') + ' ___  · query: the (10)' + (useAtt ? ' · attention on' : ' · attention bypassed');
+      el.textContent = ctxs[ctx].join(' ') + ' ___';
     });
-    paintAlpha(); paintUpdate(); paintHead(); lightChain();
+    paintAlpha(); paintValuePath(); paintUpdate(); paintHead(); lightChain();
   }
   draw();
 })();

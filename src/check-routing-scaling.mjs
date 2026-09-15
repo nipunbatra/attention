@@ -95,18 +95,47 @@ try {
   varianceRows.forEach(row => assert(row[1] > 0.8 && row[1] < 1.2, 'seeded scaled variance near 1'));
 
   const riverPrediction = await bodyRows('#s14-head');
+  const round2=r=>r.map(x=>Number(x.toFixed(2)));
+  const vecNumbers=async id=>(await page.locator('#'+id+' .cell').allTextContents()).map(x=>Number(x.replaceAll('−','-')));
+  async function checkLastTokenPath(context,on=true){
+    const R=forward(toy,toy.sentences[context]),best=R.A[9].indexOf(Math.max(...R.A[9]));
+    if(on){
+      assert.deepEqual(await vecNumbers('s14-query'),round2(R.Q[9]),'query is derived from the actual last input');
+      assert.deepEqual(await vecNumbers('s14-source-value'),round2(R.V[best]),'selected source value');
+      assert.deepEqual(await vecNumbers('s14-message'),round2(R.Mmsg[9]),'all ten source contributions');
+      const keyTex=(await page.locator('#s14-key-match .katex annotation').allTextContents()).map(s=>s.replaceAll('−','-'));
+      assert(keyTex.some(s=>s.includes('k_{'+(best+1)+'}')&&R.K[best].every(x=>s.includes(x.toFixed(2)))),'key belongs to the largest-weight source');
+      const contribution=(await page.locator('#s14-value-contribution .katex annotation').textContent()).replaceAll('−','-');
+      assert(contribution.includes(R.A[9][best].toFixed(3)),'actual attention weight');
+      assert(contribution.includes(R.V[best].map(x=>(x*R.A[9][best]).toFixed(2)).join(',')),'whole value vector is multiplied');
+      const expectedMsg=R.V[0].map((_,c)=>R.V.reduce((s,v,j)=>s+R.A[9][j]*v[c],0));
+      expectedMsg.forEach((x,c)=>assert(Math.abs(x-R.Mmsg[9][c])<1e-12));
+    }else{
+      for(const id of ['s14-query','s14-source-value','s14-message'])assert.deepEqual(await vecNumbers(id),[],'bypass must not invent a computed '+id);
+      assert.match(await page.locator('#s14-message').innerText(),/No value mixture is computed/);
+    }
+    assert.deepEqual(await numberRows('#s14-update'),[round2(R.E[9]),on?round2(R.Delta[9]):Array(toy.d_model).fill(0)]);
+    assert.deepEqual((await page.locator('#s14-update tfoot td').allTextContents()).map(s=>Number(s.replaceAll('−','-'))),round2(on?R.Enew[9]:R.E[9]));
+  }
+  await checkLastTokenPath('river');
+  const fixedQuery=await vecNumbers('s14-query');
   await page.click('#s14-ctx-cheque');
+  await checkLastTokenPath('cheque');
+  assert.deepEqual(await vecNumbers('s14-query'),fixedQuery,'same input row gives the same first-layer query across contexts');
   assert.notDeepEqual(await bodyRows('#s14-head'), riverPrediction, 'attention responds to context');
   await page.click('#s14-toggle button');
+  await checkLastTokenPath('cheque',false);
   const offWeights = await bodyRows('#s14-alpha');
   assert(offWeights[0].slice(0,10).every(x=>x===''||x==='—'),'bypass must not show fabricated numeric weights');
-  assert.equal(offWeights[0][10], 'not computed');
+  assert.equal(offWeights[0][10], 'not run');
   assert.match(await page.locator('#s14-alpha').innerText(),/Attention bypassed: no weights are used/);
   const offPrediction = await bodyRows('#s14-head');
   await page.click('#s14-ctx-river');
+  await checkLastTokenPath('river',false);
   assert.deepEqual(await bodyRows('#s14-head'), offPrediction, 'bypass prediction does not depend on earlier context');
   assert.deepEqual((await numberRows('#s14-update'))[1], Array(toy.d_model).fill(0));
   await page.click('#s14-toggle button');
+  await checkLastTokenPath('river');
   assert.deepEqual(await bodyRows('#s14-head'), riverPrediction, 'toggle returns to exact original display');
   await page.click('#s14-head-calc button');
   assert.match(await page.locator('#s14-head-calc').innerText(), /logit for.*water/);
