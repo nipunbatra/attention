@@ -9097,6 +9097,26 @@ body.present #s12 .s12-cap,body.present #s12 .s12-cur{font-size:22px;line-height
 body.present #s12 .s12-illus{font-size:21px}
 body.present #s12 .dt-cap,body.present #s12 .dt-note{display:none}
 body.present #s12 .dt td,body.present #s12 .dt th{font-size:22px;padding:.2em .45em}
+#s12 .s12-example-lead{font-size:21px;line-height:1.45;margin:0 0 18px}
+#s12 .s12-example-note{font-size:17px;line-height:1.4;margin:12px 0;color:var(--ink-2)}
+#s12 .s12-explanation{font-size:20px;line-height:1.4;margin:16px 0}
+#s12 .s12-explanation p{margin:12px 0}
+#s12 #s12-sign-vectors .dt{width:100%}
+#s12 #s12-sign-vectors th:nth-child(4),#s12 #s12-sign-vectors td:nth-child(4),#s12 #s12-sign-vectors th:nth-child(6),#s12 #s12-sign-vectors td:nth-child(6){border-left:2px solid var(--ink-3)}
+#s12 .s12-sd-measure{display:flex;align-items:center;gap:14px;justify-content:flex-end}
+#s12 .s12-sd-track{display:block;width:170px;height:15px;background:var(--t-neutral)}
+#s12 .s12-sd-bar{display:block;height:100%;background:var(--c-a)}
+#s12 .s12-sd-value{min-width:3.5em}
+#s12 .s12-stability{border-top:1px solid var(--line);padding-top:14px}
+body.present #s12 .s12-example-lead{font-size:26px}
+body.present #s12 .s12-example-note{font-size:22px}
+body.present #s12 .s12-explanation{font-size:24px}
+body.present #s12 .s12-explanation .katex-display{margin:8px 0}
+@media(max-width:700px){
+  body:not(.present) #s12 .s12-sd-track{width:85px}
+  body:not(.present) #s12 .s12-sd-measure{gap:8px}
+  body:not(.present) #s12 .s12-example-lead{font-size:20px}
+}
 </style>
 <header class="sec-head">
   <span class="sec-num">12</span>
@@ -9107,26 +9127,65 @@ body.present #s12 .dt td,body.present #s12 .dt th{font-size:22px;padding:.2em .4
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Softmax is sensitive to score differences. Under the independence assumptions below, the <em>typical spread</em> of a dot product grows like $\sqrt{d_k}$; not every individual dot product must grow. The first illustration holds four raw scores fixed and changes only the divisor. It shows what scaling does, not how score variance grows. A separate seeded simulation checks the variance argument, and the final table returns to our actual bank query.</p>
+  <p>We first inspect random query/key entries, then repeat the calculation over many pairs to measure the spread. A two-key example connects that spread to softmax saturation. These demonstrations use separate illustrative numbers. The final table returns to our actual bank query. Extra reading below includes the variance derivation, a fixed-score divisor slider and a standard-normal simulation.</p>
 </div>
 
-<div class="frame" id="s12-frame-scaling" data-title="Control the spread of dot-product scores">
-<script type="text/x-notes">If we double the number of matching coordinates, should attention become more confident just because the vector is wider?
-
-The claim is about the spread of scores, not every particular dot product. State the assumptions: mutually independent, zero-mean, unit-variance query and key coordinates. The variance of each product is one and the variances of the d_k products add.</script>
-<div class="prose">
-  <p>Earlier, we divided our three-coordinate dot products by $\sqrt{3}$. Here is why. With $d_k$ matching coordinates, standard attention uses:</p>
-  <div data-build="1">$$s_{ij} = \frac{\vq{q_i}\cdot\vk{k_j}}{\sqrt{d_k}}$$</div>
-  <p data-build="2">For intuition, assume all query and key coordinates are <strong>mutually independent, mean 0, variance 1</strong>. Then $\operatorname{Var}(q_l k_l)=1$ and $\operatorname{Var}(\vq{q}\cdot\vk{k})=d_k$. The standard deviation is $\sqrt{d_k}$.</p>
-  <p data-build="3">Dividing by $\sqrt{d_k}$ makes the variance 1 under those assumptions. Learned coordinates need not obey them exactly: this is a scale-control argument, not a promise that attention is always diffuse.</p>
+<div class="frame" id="s12-frame-scaling" data-title="More coordinates, more products to add" data-autobuild="off">
+<script type="text/x-notes">What changes when we use more coordinates in a dot product?
+Earlier we divided the three-coordinate bank scores by sqrt(3). This separate random-number experiment explains why. Each coordinate is an independent fair choice between -1 and +1, so its distribution has mean zero and variance one. These are not new bank vectors or learned features. The fixed seed makes the example reproducible.
+Read q and k, then reveal their coordinatewise products. Using the first two entries gives zero, the first four also gives zero, and all eight gives -2. Both vectors always use the same width. Positive and negative terms can cancel. A wider vector does not force each score to increase. We need many pairs to see how the typical spread changes.</script>
+  <p class="s12-example-lead">Earlier, we divided our three-coordinate scores by $\sqrt{3}$. Here is why, using random vectors.</p>
+  <p class="s12-example-note">Each entry is an independent fair choice: −1 or +1. Read the first 2, 4, or all 8 coordinates.</p>
+  <div id="s12-sign-vectors"></div>
+  <div data-build="1">
+    <div id="s12-prefix-scores"></div>
+    <p class="s12-explanation">Some terms cancel. One pair cannot establish a trend, so we will repeat this with many random pairs.</p>
+  </div>
 </div>
-<pre class="companion pytorch"><code>scores = (Q @ K.T) / math.sqrt(Q.shape[-1])</code></pre>
+
+<div class="frame" id="s12-frame-spread" data-title="Across many pairs, wider vectors give a wider spread" data-autobuild="off">
+<script type="text/x-notes">How far from zero do these random scores typically land?
+For each dimension, generate 3,000 independent pairs using the same fair -1/+1 coordinate distribution. Each row reports population standard deviation across that finite batch, using denominator N. The bars start at zero and share the same 0–17 scale, so their lengths can be compared. The fixed seeds are 2400+d_k. These are actual computations, not manually chosen summary statistics.
+Raw standard deviation is close to 2, 4, 8 and 16. Four times as many coordinates gives about twice the standard deviation under these assumptions. Scores are still centered near zero. More dimensions create a wider spread, not a positive drift.
+Reveal the divisor and scaled columns. Dividing each score by sqrt(d_k) brings the standard deviation close to one. State the assumptions on the slide: all coordinates mutually independent, mean zero, variance one. Learned representations need not obey them exactly. We do not claim that every score grows, that dimensions alone determine sharpness, or that scaling always makes attention diffuse.
+Source: Vaswani et al., Attention Is All You Need, Section 3.2.1 and footnote 1, https://arxiv.org/html/1706.03762v7#S3.SS2.SSS1. The seeded sign-vector experiment is our illustrative calculation.</script>
+  <p class="s12-example-lead">3,000 random query/key pairs at each width. <strong>Standard deviation (SD)</strong> measures the typical distance from the mean.</p>
+  <div id="s12-spread-table"></div>
+  <p class="s12-example-note">All coordinates: independent, mean 0, variance 1. Both bar columns use the same 0–17 scale.</p>
+  <div class="s12-explanation" data-build="1">
+    $$s_{ij}=\frac{\vq{q_i}\cdot\vk{k_j}}{\sqrt{d_k}}$$
+    <p>Raw spread grows roughly like $\sqrt{d_k}$. Dividing by that factor keeps it near 1 in this experiment.</p>
+  </div>
+</div>
+
+<div class="frame" id="s12-frame-softmax" data-title="Large score gaps can make softmax almost one-hot" data-autobuild="off">
+<script type="text/x-notes">What problem does a wide score spread cause?
+Use a separate illustrative two-key example at d_k=64. Suppose the raw scores are -8 and +8, a gap of 16. Softmax gives almost all weight to the second value. Dividing by sqrt(64)=8 gives scores -1 and +1, a gap of 2. The winner is unchanged, but the two weights are about 12% and 88%.
+The concern is softmax saturation and weak gradient signals through the attention weights to Q and K. For two logits, the derivative of the winning probability with respect to its own softmax input is p(1-p): about 1.13e-7 before scaling and .105 after. With respect to the raw score, the latter also includes the factor 1/8. Do not generalize this to every loss derivative or claim that a confident prediction is always undesirable. We want sharp attention when learned relevance supports it, not merely because dimensions increased.
+Numerical overflow is a different issue. Subtracting the maximum leaves gaps and exact probabilities unchanged, but keeps exponentials bounded by one. In this example exp(8) is already representable, so saturation occurs without overflow. The stable implementation does not fix excessive concentration.
+Sources: Vaswani et al., Section 3.2.1, https://arxiv.org/html/1706.03762v7#S3.SS2.SSS1; SciPy softmax documentation, https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.softmax.html. Probabilities and derivatives are calculated from the illustrative scores.</script>
+  <p class="s12-example-lead">One query, two keys, $d_k=64$. Suppose their raw scores are −8 and +8. The scaling factor is $\sqrt{64}=8$.</p>
+  <div id="s12-saturation-table"></div>
+  <div class="s12-explanation" data-build="1">
+    <p><strong>The learning problem: softmax saturation.</strong> Near 0 or 1, the weights respond weakly to small score changes. Gradients through attention can become tiny, making queries and keys harder to adjust.</p>
+    <p class="s12-stability"><strong>Overflow is separate.</strong> Stable softmax subtracts the largest score to keep exponentials safe. That leaves the score gaps unchanged.</p>
+  </div>
+</div>
+
+<div class="companion" id="s12-variance-derivation">
+  <h3>The variance argument</h3>
+  <p>Assume all query and key coordinates are mutually independent, mean 0, variance 1. Each product $q_lk_l$ has variance 1. Adding $d_k$ independent products gives</p>
+  $$\operatorname{Var}(\vq{q}\cdot\vk{k})=d_k,\qquad\operatorname{SD}(\vq{q}\cdot\vk{k})=\sqrt{d_k}.$$
+  <p>Dividing by $\sqrt{d_k}$ makes the variance 1 under those assumptions. Learned coordinates need not obey them exactly. Scaling controls the expected size of the scores, but attention can still be sharp.</p>
+  <p>Stable softmax uses $\exp(s_j-\max_l s_l)$. Subtracting one constant preserves every score difference and probability. Scaling divides those differences, so it changes the probabilities. These operations solve different problems.</p>
+  <pre class="pytorch"><code>scores = (Q @ K.T) / math.sqrt(Q.shape[-1])
+alpha = scores.softmax(dim=-1)</code></pre>
 </div>
 
 <div class="companion" data-title="Fixed raw scores, changing only the divisor">
 <script type="text/x-notes">Which probability column changes when the raw scores stay fixed and the divisor grows?
 
-Before moving the slider, explain that these are illustrative scores, not new embeddings or a retrained model. The four raw scores never change. Only the division by sqrt(d_k) changes. This panel shows the effect of scaling. The simulation on the next frame supplies the variance-growth argument.</script>
+Before moving the slider, explain that these are illustrative scores, not new embeddings or a retrained model. The four raw scores never change. Only the division by sqrt(d_k) changes. This panel isolates the effect of scaling. The classroom sign-vector experiment established growth with dimension, and the Gaussian check below repeats it for another distribution.</script>
 <div class="card">
   <h3 class="card-title">Four fixed raw scores, with and without scaling <span class="s12-illus">illustrative numbers</span></h3>
   <p class="companion s12-cap">Hold the raw scores $r=[0,0.5,1.5,-0.5]$ fixed. The scaled scores are $s=r/\sqrt{d_k}$. Increasing the divisor flattens softmax(scaled), while softmax(raw) stays fixed.</p>
@@ -9143,7 +9202,7 @@ Before moving the slider, explain that these are illustrative scores, not new em
 
 These are actual sampled dot products from independent standard-normal coordinates, not the four illustrative scores. Read d_k = 1, 16, 64: raw variance roughly follows the dimension; scaled variance remains near one. Finite sampling explains the small deviations.</script>
 <div class="card">
-  <h3 class="card-title">Why the dot product grows with $d_k$: a seeded simulation</h3>
+  <h3 class="card-title">Gaussian check: score variance across dimensions</h3>
   <p class="s12-cap">Read down the first column: the variance of the raw dot product tracks $d_k$. The second column stays near 1.</p>
   <p class="companion muted small" id="s12-sim-note"></p>
   <div id="s12-sim"></div>
@@ -9179,6 +9238,51 @@ alpha = scores.softmax(dim=-1)</code></pre>
 <script>
 (function(){
   const S = document.getElementById('s12');
+  // Classroom examples are separate from the canonical bank model.
+  const signRandom=rng(1234),sign=()=>signRandom()<.5?-1:1;
+  const exampleQ=Array.from({length:8},sign),exampleK=Array.from({length:8},sign);
+  const products=exampleQ.map((x,l)=>x*exampleK[l]);
+  const signs=AT.ui.table([exampleQ,exampleK,products],{
+    cols:AT.range(8).map(l=>'coord. '+(l+1)),rowLabels:['$\\vq{q}$','$\\vk{k}$','$q_l k_l$'],rowCls:['q','k','a'],
+    cornerLabel:'entry',decimals:0,into:S.querySelector('#s12-sign-vectors')});
+  signs.rowEls[2].setAttribute('data-build','1');
+  S.querySelector('#s12-sign-vectors').dataset.example=JSON.stringify({seed:1234,q:exampleQ,k:exampleK});
+  AT.ui.table([[2,4,8].map(d=>products.slice(0,d).reduce((a,b)=>a+b,0))],{
+    cols:[2,4,8].map(d=>'$d_k='+d+'$'),rowLabels:['$\\vq{q}\\cdot\\vk{k}$'],rowCls:'a',cornerLabel:'add the products',decimals:0,
+    into:S.querySelector('#s12-prefix-scores')});
+
+  const signN=3000,signDimensions=[4,16,64,256];
+  const spreadRows=signDimensions.map(d=>{
+    const r=rng(2400+d);let total=0,totalSquares=0;
+    for(let n=0;n<signN;n++){
+      let dot=0;for(let l=0;l<d;l++)dot+=(r()<.5?-1:1)*(r()<.5?-1:1);
+      total+=dot;totalSquares+=dot*dot;
+    }
+    const mean=total/signN,sd=Math.sqrt(totalSquares/signN-mean*mean);
+    return {d,mean,sd,divisor:Math.sqrt(d),scaledSD:sd/Math.sqrt(d)};
+  });
+  const spreadHost=S.querySelector('#s12-spread-table');
+  spreadHost.dataset.experiment=JSON.stringify({n:signN,seedBase:2400,rows:spreadRows});
+  const spread=AT.ui.table(spreadRows.map(r=>[r.sd,r.divisor,r.scaledSD]),{
+    cols:[{label:'Raw score SD',decimals:2},{label:'Divide by $\\sqrt{d_k}$',decimals:0},{label:'Scaled score SD',decimals:2}],
+    rowLabels:signDimensions.map(d=>'$d_k='+d+'$'),cornerLabel:'width',into:spreadHost});
+  for(const c of [0,2])spread.cells.forEach((row,i)=>{
+    const value=c===0?spreadRows[i].sd:spreadRows[i].scaledSD,cell=row[c];
+    AT.clear(cell);
+    const track=AT.h('span',{class:'s12-sd-track','aria-hidden':'true'},AT.h('span',{class:'s12-sd-bar',style:{width:(value/17*100)+'%'}}));
+    cell.appendChild(AT.h('span',{class:'s12-sd-measure'},track,AT.h('span',{class:'s12-sd-value'},AT.fmt(value,2))));
+    cell.dataset.sd=value;
+  });
+  spread.table.querySelectorAll('thead th:nth-child(3),thead th:nth-child(4),tbody td:nth-child(3),tbody td:nth-child(4)').forEach(el=>el.setAttribute('data-build','1'));
+
+  const saturationScores=[[-8,8],[-1,1]],saturationWeights=saturationScores.map(scores=>AT.softmax(scores));
+  S.querySelector('#s12-saturation-table').dataset.example=JSON.stringify({d:64,scores:saturationScores,weights:saturationWeights});
+  AT.ui.table(saturationScores.map((scores,i)=>[
+    '['+scores.map(x=>AT.fmt(x,0)).join(', ')+']',scores[1]-scores[0],
+    (100*saturationWeights[i][0]).toFixed(i===0?5:2)+'%',(100*saturationWeights[i][1]).toFixed(i===0?5:2)+'%'
+  ]),{cols:['Scores for A, B',{label:'Gap',decimals:0},{label:'Weight on A',cls:'a'},{label:'Weight on B',cls:'a'}],
+    rowLabels:['No scaling','Divide by 8'],cornerLabel:'same two keys',into:S.querySelector('#s12-saturation-table')});
+
   const reference = [0, 0.5, 1.5, -0.5]; // fixed illustrative raw scores, not the bank model
   let dk = 16;
   const jl = reference.map((_, j) => '$j = ' + (j + 1) + '$');

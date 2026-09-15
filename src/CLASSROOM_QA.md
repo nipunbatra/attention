@@ -1,5 +1,11 @@
 # Classroom release checks
 
+## 2026-09-15: example-driven explanation of square-root scaling
+
+- Replaced the dense scaling frame with three classroom slides: a reproducible -1/+1 query/key pair at widths 2, 4 and 8; measured score spread over 3,000 independent pairs at widths 4, 16, 64 and 256; and a two-key softmax example before/after division by eight. The original bank comparison follows. The spread table uses a common bar scale and reveals the divisors/scaled results after the raw spread. Coordinate products and prefix sums reveal together. The formal variance derivation, fixed-score slider and Gaussian check remain in reading mode.
+- Explained softmax saturation and weak attention gradients separately from overflow prevention by subtracting the maximum. Notes include the independence assumptions, finite-sample interpretation, exact derivative caveat, and primary sources. The presentation skill guided the existing editable tables, score colours and example-first sequence. No model, runtime or other lecture changes.
+- The new scaling-example regression independently recomputes all products and all four 3,000-pair summaries, checks bar lengths, displayed percentages, derivatives and invariance to subtracting the maximum, and verifies all reveals, navigation and phone containment. Existing routing/scaling, token-flow and concise-tail checks pass. Visually inspected each classroom slide and phone reading layout. Full audit: 230 states / 528 formulas, no math errors or overflow.
+
 ## 2026-09-15: query operands before expanded arithmetic
 
 - Added one setup frame immediately before the query calculation. Its builds show the current input row first, then the shared 4×3 W_Q table, then the ordered row-vector product with dimensions and the resulting query. Input axes match matrix rows, and query axes match matrix columns. The following slide retains its arithmetic and token controls under the title “The query calculation, one column at a time”. Selecting another token updates the setup vectors too, without changing the matrix. The presentation skill guided the existing typography, role colours and native editable tables/vectors. No model, shared runtime or other lecture changes.

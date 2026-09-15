@@ -109,12 +109,12 @@ try{
   const scaleMath=(await page.locator('#s08-frame-scores [data-scale-intro] annotation').allTextContents()).join(' ');
   assert(scaleMath.includes('d_k='+model.d_k)&&scaleMath.includes('\\sqrt{'+model.d_k+'}'));
   assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'First-use scale note fits with all seven scores.');
-  assert.equal(await page.locator('#s12 .frame').count(),2,'Keep the scaling explanation and real before/after example; extra experiments remain in reading mode.');
+  assert.equal(await page.locator('#s12 .frame').count(),4,'Three example-driven scaling slides precede the real bank comparison.');
   await go('s12-frame-scaling');
-  assert.match(await page.locator('#s12-frame-scaling .prose p').first().innerText(),/Earlier.*three-coordinate.*Here is why/s);
-  await page.evaluate(()=>AT.present.go('s12',1,3));
+  assert.match(await page.locator('#s12-frame-scaling .s12-example-lead').innerText(),/Earlier.*three-coordinate.*Here is why/s);
+  await page.evaluate(()=>AT.present.go('s12',2,1));
   await page.waitForTimeout(300); // Nested text follows the existing reveal animation.
-  assert.match(await page.locator('#s12-frame-scaling [data-build="2"]').innerText(),/mutually independent, mean 0, variance 1/);
+  assert.match(await page.locator('#s12-frame-spread .s12-example-note').innerText(),/independent, mean 0, variance 1/);
   assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'The deferred explanation still fits.');
   // Teach W_O as a learned dimension mapping; keep the fixed arithmetic optional.
   assert.equal(await page.locator('#s09 .frame').count(),8,'The detailed projection calculation is outside the classroom sequence.');
