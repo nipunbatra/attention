@@ -41,6 +41,27 @@ try{
     const report=await page.evaluate(()=>AT.present.fitReport());
     assert(!report.overflow,label+': '+JSON.stringify(report));
   }
+  // Training and generation share a concrete prefix, with the answer clearly separate.
+  const example=await page.locator('#s13-frame1 tbody td').allTextContents();
+  assert.deepEqual(example,[model.sentences.river.slice(0,5).join(' '),model.sentences.river[5],model.sentences.river[6]+' …']);
+  assert.match(await page.locator('#s13-frame1').getAttribute('data-title'),/Training and generation/);
+  assert.match(await page.locator('#s13-training').innerText(),/full sentence is available/);
+  assert.match(await page.locator('#s13-training').innerText(),/hides river and all later words/);
+  assert.match(await page.locator('#s13-generation').innerText(),/future words are not available/);
+  assert.match(await page.locator('#s13-prefix-rule').innerText(),/including itself/);
+  assert.match(await page.locator('#s13-prefix-rule').innerText(),/scoring a full test sentence/);
+  for(const build of [0,1,2,3,2,1,0,3]){
+    await go('s13-frame1',build);await fit('training/generation build '+build);
+    assert(await page.locator('#s13-frame1 table').isVisible(),'The concrete example stays visible.');
+    for(const [n,id]of ['s13-training','s13-generation','s13-prefix-rule'].entries()){
+      assert.equal(await page.locator('#'+id).evaluate(e=>getComputedStyle(e).visibility),build>n?'visible':'hidden');
+    }
+    await page.screenshot({path:path.join(shots,'causal-context-'+build+'.png')});
+  }
+  await page.evaluate(()=>AT.present.next());
+  assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s13-frame2');
+  await page.evaluate(()=>AT.present.prev());
+  assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s13-frame1');
   for(const [sec,ids]of Object.entries(expected)){
     assert.deepEqual(await page.locator('#'+sec+' .frame').evaluateAll(els=>els.map(e=>e.id)),ids);
     for(const id of ids){
@@ -113,12 +134,17 @@ try{
   assert.equal(await page.evaluate(()=>JSON.stringify(AT.model)),original);
   await page.evaluate(()=>AT.present.exit());
   await page.setViewportSize({width:390,height:844});
-  for(const id of ['s11-frame-key-calc','s12-frame-bank','s14-head-arithmetic','s15-stepper','s16-frame3-routing','s17-weights','s18-question8']){
+  for(const id of ['s11-frame-key-calc','s12-frame-bank','s13-frame1','s14-head-arithmetic','s15-stepper','s16-frame3-routing','s17-weights','s18-question8']){
     await page.locator('#'+id).scrollIntoViewIfNeeded();
     assert(await page.locator('#'+id).isVisible(),'Reading retains '+id);
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Phone width at '+id);
     await page.screenshot({path:path.join(shots,'phone-'+id+'.png')});
   }
+  assert(await page.locator('#s13-training').isVisible());
+  assert(await page.locator('#s13-generation').isVisible());
+  assert(await page.locator('#s13-prefix-rule').isVisible());
+  const tableBox=await page.locator('#s13-frame1 table').boundingBox();
+  assert(tableBox.x>=0&&tableBox.x+tableBox.width<=391,'The concrete prefix table fits a phone.');
   assert.deepEqual(errors,[]);
   console.log('PASS: 24-frame tail; companion retention; manual walkthrough navigation and all 18 stages; full '+stageCount+'-stage flowchart; causal-mask tables/messages; synchronized four-rule comparison; unchanged model; phone reading. Screenshots: '+shots);
 }finally{await browser.close();}

@@ -1,5 +1,10 @@
 # Classroom release checks
 
+## 2026-09-15: distinguish training, generation and test scoring in causal masking
+
+- Rebuilt the existing masking introduction around position 5's concrete prefix, its next-token target “river” at position 6, and later words. The training and generation explanations reveal separately, followed by the shared prefix-only rule and an explicit note about scoring full test sentences. Speaker notes explain parallel shifted targets, why a target's embedding cannot feed its own prediction, diagonal access, and the autoregressive scope. Corrected the later interactive note that implied future tokens do not exist in stored training data. No slide, model, numerical, shared-runtime or other lecture changes.
+- The presentation skill guided the native comparison table, existing role colours, direct wording and preserved reveal sequence. The extended concise-tail regression checks the example against the canonical sentence, all four builds and reverse navigation, the handoff to the mask matrix, and phone containment. Existing mask-on/off weights and messages still match the independent reference. Visually inspected desktop reveals and phone reading. Full audit: 230 states / 529 formulas, no math errors or overflow.
+
 ## 2026-09-15: example-driven explanation of square-root scaling
 
 - Replaced the dense scaling frame with three classroom slides: a reproducible -1/+1 query/key pair at widths 2, 4 and 8; measured score spread over 3,000 independent pairs at widths 4, 16, 64 and 256; and a two-key softmax example before/after division by eight. The original bank comparison follows. The spread table uses a common bar scale and reveals the divisors/scaled results after the raw spread. Coordinate products and prefix sums reveal together. The formal variance derivation, fixed-score slider and Gaussian check remain in reading mode.

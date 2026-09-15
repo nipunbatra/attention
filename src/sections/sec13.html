@@ -5,6 +5,23 @@
 #s13 .s13-stair td.tgt { font-weight: 600; color: var(--warn); }
 #s13 .s13-stair tr.is-hl td { background: var(--t-a); }
 #s13 .s13-stair .chips { flex-wrap: nowrap; gap: 4px; }
+#s13 .s13-prefix-table{width:100%;border-collapse:collapse;margin:12px 0 0}
+#s13 .s13-prefix-table th,#s13 .s13-prefix-table td{text-align:left;padding:8px 12px;border:1px solid var(--line);vertical-align:top}
+#s13 .s13-prefix-table th{font-size:13px;font-weight:600;color:var(--ink-2)}
+#s13 .s13-prefix-table td{font-size:18px}
+#s13 .s13-prefix-table .s13-allowed{background:var(--t-e);color:var(--c-e)}
+#s13 .s13-prefix-table .s13-answer{color:var(--warn);font-weight:700}
+#s13 .s13-times{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:20px}
+#s13 .s13-times h3{font-size:18px;margin:0 0 8px}
+#s13 .s13-times p{margin:0;line-height:1.45}
+#s13 .s13-test-note{margin:10px 0 0;color:var(--ink-2);font-size:14px}
+body.present #s13-frame1 .card-title{font-size:24px}
+body.present #s13 .s13-prefix-table th{font-size:20px}
+body.present #s13 .s13-prefix-table td{font-size:25px}
+body.present #s13 .s13-times h3{font-size:25px}
+body.present #s13 .s13-times p{font-size:24px;line-height:1.4}
+body.present #s13 .s13-test-note{font-size:21px}
+@media(max-width:620px){#s13 .s13-times{grid-template-columns:1fr;gap:18px}#s13 .s13-prefix-table th,#s13 .s13-prefix-table td{padding:6px;font-size:14px}}
 
 #s13 .s13-cap{font-size:14px;color:var(--ink-2);margin:0 0 12px;max-width:68ch}
 #s13 .s13-msg{min-height:1.5em;margin:6px 0 0}
@@ -50,17 +67,35 @@ body.present #s13 .mat-cl[data-present-label]::after,body.present #s13-frame3 .m
   <p>During training, the answer for position $i$ is already in the sentence at position $i+1$. We need to stop the model from reading it. Toggle the causal mask and watch row 5. With the mask on, token 5 (the) reads only positions 1 to 5. With it off, much of its weight moves to future tokens: river is the immediate target, and bank provides further future information. Send the values in both states and compare the messages. The mask enforces $j \le i$ by setting forbidden scores to $-\infty$ before softmax.</p>
 </div>
 
-<div class="frame" id="s13-frame1" data-title="What is the target at each position?">
+<div class="frame" id="s13-frame1" data-title="Training and generation use the same prefix" data-autobuild="off">
   <script type="text/x-notes">
-What is the one-token target for the row at position 5?
-It is river at position 6, not river and bank together. Training can evaluate many such shifted targets in parallel, but each row must only use its own available prefix.
+We are discussing an autoregressive next-token model. Start with the training example: The fisherman sat beside the river bank. Position 5 is the second “the”. Its one-token target is river, at position 6. Bank is later information too, but is not this row's target.
+The full training sentence is stored and processed, but the representation at position 5 may depend only on positions 1 to 5. River can serve as an input for its own row while remaining hidden from row 5. Its role as row 5's label does not authorize using its embedding to compute row 5's prediction. Apply the causal rule in every attention layer so future information cannot arrive indirectly.
+Training evaluates many shifted targets in parallel. During generation, only the existing prefix is available and the model appends one selected token at a time. The generated token need not be river. When evaluating next-token loss on a stored test sentence, retain the same mask. Evaluation does not update the weights.
+This is predicting each next token from its prefix, not using later words to reconstruct an earlier word. The diagonal is allowed: position i includes its own token when predicting i+1. A bidirectional encoder solves a different task and is outside this example.
+Source: Attention Is All You Need, Section 3.1 (decoder masking and shifted targets), https://arxiv.org/html/1706.03762v7#S3.SS1
   </script>
-<div class="prose">
-  <p>At position $i$, the model must predict token $i+1$.</p>
-  <p data-build="1">At generation time, token $i+1$ does not exist yet.</p>
-  <p data-build="2">Therefore the query at $i$ may read only keys at $j\le i$.</p>
+<div class="card">
+  <h3 class="card-title">Example: position 5 (&ldquo;the&rdquo;) predicts position 6 (&ldquo;river&rdquo;)</h3>
+  <table class="s13-prefix-table" aria-label="The prefix and next-token target for position 5">
+    <thead><tr><th scope="col">Allowed input: positions 1&ndash;5</th><th scope="col">Target: position 6</th><th scope="col">Later</th></tr></thead>
+    <tbody><tr><td class="s13-allowed">The fisherman sat beside <strong>the</strong></td><td class="s13-answer">river</td><td>bank &hellip;</td></tr></tbody>
+  </table>
 </div>
-<div class="callout callout-warn" data-build="3">If position $i$ could read position $i+1$ during training, it could read the answer it is being graded on.</div>
+<div class="s13-times">
+  <div id="s13-training" data-build="1">
+    <h3>During training</h3>
+    <p>The full sentence is available. The mask hides <strong>river and all later words</strong> from position 5. We use &ldquo;river&rdquo; to check its prediction.</p>
+  </div>
+  <div id="s13-generation" data-build="2">
+    <h3>During generation</h3>
+    <p>We have only the five-word prefix. The model predicts a next word, then we append it. <strong>The future words are not available.</strong></p>
+  </div>
+</div>
+<div id="s13-prefix-rule" data-build="3">
+  <div class="callout callout-key">To predict token $i+1$, position $i$ may read only positions $1\ldots i$, <strong>including itself</strong>.</div>
+  <p class="s13-test-note">When scoring a full test sentence, we keep this same mask.</p>
+</div>
 </div>
 
 <div class="companion" id="s13-frame-targets" data-title="Shift the same sentence by one token">
@@ -227,7 +262,7 @@ Training would allow evidence that generation can never have. The model could mi
     chips.setMark(maskOn ? [] : [li + 1, li + 2], 'v');
     const fut = Foff.A[li].slice(li + 1).reduce((a, b) => a + b, 0);
     S.querySelector('#s13-leak-text').innerHTML = 'The training target at position 5 is the token at position 6, <strong>' + AT.escape(toks[li + 1]) + '</strong>. Mask <strong>off</strong>: token 5 puts <span class="s13-leak">' + AT.fmt(Foff.A[li][li + 1], 2) + '</span> of its weight on ' + AT.escape(toks[li + 1]) + ' and <span class="s13-leak">' + AT.fmt(Foff.A[li][li + 2], 2) + '</span> on ' + AT.escape(toks[li + 2]) + '; <span class="s13-leak">' + AT.fmt(fut, 2) + '</span> of its attention weight is assigned to future positions, so the target is available to be exploited. Mask <strong>on</strong>: those weights are exactly <span class="s13-leak">' + AT.fmt(Fon.A[li][li + 1], 2) + '</span>.';
-    S.querySelector('#s13-send-note').innerHTML = (maskOn ? 'Only tokens 1 to 5 can send.' : 'Tokens 6 to 10 also send, though they should not exist yet.') + ' Press the button to compute ' + AT.texStr('m_5') + '.';
+    S.querySelector('#s13-send-note').innerHTML = (maskOn ? 'Only tokens 1 to 5 can send.' : 'Tokens 6 to 10 also send, leaking future words into this prediction.') + ' Press the button to compute ' + AT.texStr('m_5') + '.';
     target.setLabel('m_5' + (maskOn ? '' : '\\ \\text{(leaky)}'));
     target.update(blank());
     readEl.textContent = '';
