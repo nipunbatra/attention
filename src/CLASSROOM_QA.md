@@ -844,6 +844,14 @@ Full Transformer diagrams are architectural explanations. The original one-head 
 - Whole-deck frame audit: 373 progressive states, 668 unique formulas, no parse errors or overflow. Phone QA: no horizontal page overflow or console errors. Interaction sweep: 161 controls, no errors. Existing opening, live/reference model, token flow, topic-break and concise-core checks pass. Table audit has no fatal failures; its narrow-prose advisories include existing tables and the phone sinusoid headings.
 - Primary references are linked beside the reading material and in notes: Vaswani et al. (2017), Shaw et al. (2018), RoFormer, ALiBi and FlashAttention. Operation counts are analytical, not device timing claims. A position formula accepting a larger index is not evidence of reliable length extrapolation.
 
+## 2026-09-17: comparable neural-network and matrix diagrams for context costs
+
+- Added five frames before the corresponding cost tables. The same ten-token context feeds three comparable network sketches: three ordered four-number rows become 12 concatenation inputs, a coordinate-wise mean becomes four inputs, and attention's two-number message is projected to four coordinates and added to the final input row. Every sketch keeps the eight-unit ReLU hidden layer, both weight matrices and biases, twenty vocabulary logits and softmax. Four logits are drawn and labelled symbolically, not given invented values.
+- Two further SVGs expand attention into E/WQ/WK/WV/Q/K/V shapes and the score, mask/softmax, value-mixing and output-projection products. Every matrix draws its actual row/column count. The two A drawings refer to the same weights. The final caption adds E and selects the final row for prediction. Preserved the later all-row versus one-layer final-query-only cost distinction.
+- The presentation guidance kept the existing role colours, native editable SVGs, common network layout and input-first reveals. Visual review corrected a crowded input label, touching input neurons and a residual line passing through shape labels. Full-size logical-stage SVG labels are at least 22px. Narrow reading viewports contain a horizontally scrollable diagram instead of shrinking it to unreadable text.
+- `check_cost_networks.mjs` passes: all five frames, same-context/selected-window assertions, neuron and edge counts, exact matrix shapes/cells, residual routing, SVG reveal reversal and label bounds, 1280×720 and 1024×768 presentation layouts, and 390×844 reading containment. Visually inspected all five diagrams and the 4:3 attention network. These are screen-layout checks, not a physical projector or AirServer test.
+- `check_cost_position.mjs` now covers 45 frames and 205 forward/reverse build checks, including 1920×1080. Full-deck audit: 387 states and 672 unique formulas, no errors or overflow. Live/reference arithmetic, token-flow, topic-break, concise-core and metadata checks pass. Phone QA has no page overflow or console errors. The 161-control interaction sweep reports no problems. No numerical model, shared runtime, dependency or other lecture changes.
+
 ## Reproduce from the repository root
 
 ```sh
@@ -856,6 +864,7 @@ node src/toy_ref.mjs src/toy.json --compare src/py_check.json
 node src/check-live-model.mjs attention.html
 node src/check_token_flow.mjs attention.html
 node src/check_cost_position.mjs attention.html
+node src/check_cost_networks.mjs attention.html
 python3 src/check_training.py
 node src/check_position_capacity.mjs
 node src/check-routing-scaling.mjs

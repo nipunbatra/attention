@@ -23,6 +23,21 @@ body.present:not(.is-preflighting) .context-lesson.is-live [data-build].is-pendi
 body:not(.present) .context-lesson{margin:44px 0}
 @media(max-width:650px){body:not(.present) .context-lesson .lesson-pair{grid-template-columns:1fr;gap:22px}body:not(.present) .context-lesson .lesson-table th,body:not(.present) .context-lesson .lesson-table td{font-size:14px;padding:9px 5px}body:not(.present) .context-lesson .katex-display,body:not(.present) .context-lesson .lesson-large{overflow-x:auto;max-width:100%}body:not(.present) .context-lesson .lesson-table .katex{font-size:1.05em}}
 </style>
+<style>
+.cost-network-frame .cost-context{font-size:24px;line-height:1.5;margin:8px 0 12px}
+.cost-context .context-token{white-space:nowrap;color:var(--c-e)}
+.cost-context .context-token.outside-window{color:var(--ink-3)}
+.cost-context .context-token.window-start{border-left:2px solid var(--c-e);padding-left:8px}
+.cost-network-viewport{max-width:100%;overflow-x:auto}
+.cost-network-svg{display:block;width:100%;height:auto;font-family:var(--font-ui);overflow:visible}
+.cost-network-svg text{fill:var(--ink);font-size:24px}
+.cost-network-svg .net-small{font-size:22px;fill:var(--ink-2)}
+.cost-network-svg .net-label{font-weight:600}
+.cost-network-svg .net-edge{stroke:var(--c-q);stroke-width:1.3;opacity:.22}
+.cost-network-svg .net-wire{stroke:var(--ink-3);stroke-width:2;fill:none}
+.cost-network-frame .lesson-key{margin-top:10px}
+@media(max-width:650px){body:not(.present) .cost-network-svg{min-width:1000px}body:not(.present) .cost-network-frame .cost-context{font-size:18px}}
+</style>
 
 <div class="frame lecture-topic-break topic-midpoint context-lesson" id="s16-cost-break" data-title="The cost of a longer context" data-autobuild="off">
 <script type="text/x-notes">Pause after the complete matrix calculation. Students can now count the operations they understand. Compare equal prediction tasks, then distinguish all-position training, prompt processing, and one cached generation step. Counts here describe algorithms, not stopwatch measurements.</script>
@@ -50,6 +65,13 @@ body:not(.present) .context-lesson{margin:44px 0}
 <p class="lesson-result" data-build="3">Example: $[4\times3][3\times2]$ has 8 outputs, each using 3 products: <strong>24 MACs</strong>.</p>
 </div>
 
+<div class="frame context-lesson cost-network-frame" id="s16-cost-concat-network" data-title="Concatenation: keep each input slot separate" data-autobuild="off">
+<script type="text/x-notes">Use the same ten-word prefix for all three diagrams. Our fixed window has three slots: and, watched, the. Earlier words are outside this model's window. Each blue tile and input circle is one coordinate, not a token. Joining three four-number rows gives twelve distinct inputs. Reveal all eight hidden units and W1, then four of twenty vocabulary outputs and softmax. Circles and edges show architecture, not measured activations or fitted weights. W1 differs from the four-input predictors that follow.</script>
+<p class="cost-context" data-cost-context="concat"></p>
+<div class="cost-network-viewport" data-cost-network="concat"></div>
+<p class="lesson-key">Three ordered rows → <strong>12 separate inputs</strong>. Earlier words are outside the window. Circles are scalar units; 4 of 20 outputs are drawn.</p>
+</div>
+
 <div class="frame context-lesson" id="s16-cost-concat" data-title="Concatenation: one next-token prediction" data-autobuild="off">
 <script type="text/x-notes">This is Part I's architecture with general dimensions. Joining is a reshape or copy, not a trainable matrix multiplication. The large multiplication follows it. W1 has a separate set of rows for each input slot.</script>
 <table class="lesson-table"><thead><tr><th>Operation</th><th>Shapes</th><th>Work</th></tr></thead><tbody>
@@ -61,6 +83,13 @@ body:not(.present) .context-lesson{margin:44px 0}
 <p class="lesson-result" data-build="3">For one prediction: $O(wdh+hC)$. Doubling $w$ doubles the hidden-layer work <em>and its weights</em>.</p>
 </div>
 
+<div class="frame context-lesson cost-network-frame" id="s16-cost-average-network" data-title="Averaging: combine the rows before the network" data-autobuild="off">
+<script type="text/x-notes">Now all ten input rows contribute. Average each coordinate separately: ten first coordinates become one first coordinate, and similarly for the other three. This averaging has no learned weights. Only four numbers enter the learned MLP, whatever the prefix length. The same downstream architecture has eight hidden units and twenty logits. Its learned parameters need not equal those of another trained model. Four output circles stand for twenty outputs.</script>
+<p class="cost-context" data-cost-context="average"></p>
+<div class="cost-network-viewport" data-cost-network="average"></div>
+<p class="lesson-key">Ten rows → <strong>4 coordinate-wise means</strong> → the hidden-layer predictor. Every token has equal weight in the summary.</p>
+</div>
+
 <div class="frame context-lesson" id="s16-cost-average" data-title="Averaging: one next-token prediction" data-autobuild="off">
 <script type="text/x-notes">Average the n input rows, then use the same hidden-layer vocabulary predictor. This is a simple mean of input embeddings, not a recurrent or contextual encoder. Each input coordinate enters one sum. Its price is that the summary cannot retain which word occupied which slot.</script>
 <div class="lesson-large">$\bar e=\dfrac{e_1+\cdots+e_n}{n}\quad[1\times d]$</div>
@@ -69,6 +98,27 @@ body:not(.present) .context-lesson{margin:44px 0}
 <tr><td>Hidden layer, then vocabulary layer</td><td>$dh+hC$ MACs</td></tr>
 </tbody></table>
 <p class="lesson-result" data-build="2">For one prediction from scratch: $O(nd+dh+hC)$. The MLP input stays $d$ numbers wide.</p>
+</div>
+
+<div class="frame context-lesson cost-network-frame" id="s16-cost-attention-network" data-title="Attention: update the final row, then predict" data-autobuild="off">
+<script type="text/x-notes">All ten rows are available to the final token's query. Its attention weights mix two-coordinate value rows into a two-coordinate message. WO maps that message to a four-coordinate update. Add the original final row, then send the updated four numbers through our eight-hidden-unit prediction MLP. The residual bypass does not average or concatenate the prefix. Expand this box on the next two slides. This architecture sketch does not claim all query rows must be computed for a single-layer last-position-only prediction.</script>
+<p class="cost-context" data-cost-context="attention"></p>
+<div class="cost-network-viewport" data-cost-network="attention"></div>
+<p class="lesson-key">Query-dependent mixture → <strong>2-number message</strong> → $W_O$ → <strong>4-number update</strong>. Add $e_{10}$ before the MLP.</p>
+</div>
+
+<div class="frame context-lesson cost-network-frame" id="s16-cost-attention-projections" data-title="Inside attention: three views of the same input" data-autobuild="off">
+<script type="text/x-notes">Show the all-row matrix computation, as in our matrix-form walkthrough. Each square is one scalar entry; the exact number of rows and columns is drawn. The same E fans out into three matrix products, not three lookup tables. WQ and WK both map four input coordinates to three matching coordinates. WV maps them to two information coordinates. Values are deliberately shown with a different width. These are shape diagrams, not numerical matrices. One-layer final-row-only work is discussed later.</script>
+<p class="cost-context">Ten context tokens → ten rows of <span class="m-e">$E$</span>, each with four input numbers.</p>
+<div class="cost-network-viewport" data-cost-matrices="projections"></div>
+<p class="lesson-key">Queries and keys have the <strong>same width (3)</strong> for matching. Values carry <strong>2 numbers</strong> to mix. One square = one scalar entry.</p>
+</div>
+
+<div class="frame context-lesson cost-network-frame" id="s16-cost-attention-products" data-title="Inside attention: match, mix, project, add" data-autobuild="off">
+<script type="text/x-notes">Follow the top line to obtain A, then reuse that same A on the bottom line. Q times K transpose creates a ten-by-ten score matrix. Divide by square root of three, apply a causal mask and row softmax to get A. A times V yields ten two-number messages H. H times WO produces ten four-number updates. Add E, then take the final row for the prediction head. The drawings show the full all-row calculation; we will later contrast its quadratic pairwise work with computing only the final query row in a single layer. Every small square is a scalar, not a parameter. The two A drawings represent the same weights.</script>
+<p class="cost-context">Full matrix view: compute all ten rows; the prediction head below reads only the final row.</p>
+<div class="cost-network-viewport" data-cost-matrices="products"></div>
+<p class="lesson-key">$E'=E+\Delta E$ has shape $10\times4$. Take <strong>$e'_{10}$ (4 numbers)</strong> → 8 hidden units → 20 scores → softmax.</p>
 </div>
 
 <div class="frame context-lesson" id="s16-cost-projections" data-title="Attention: making every query, key and value" data-autobuild="off">
@@ -250,6 +300,132 @@ means = sums / counts       # [n, d]</code></pre>
 <p>Sources: <a href="https://arxiv.org/abs/1706.03762">Attention Is All You Need</a> (attention architecture and pairwise cost); <a href="https://arxiv.org/abs/2205.14135">FlashAttention</a> (exact attention without materializing the full score matrix). The baseline and predictor counts follow directly from the shapes above.</p>
 </div>
 <script>
+(function(){
+  // Architecture sketches: counts are literal, but no invented weights or activations.
+  const S=AT.svg, color=c=>AT.objColor(c), tint=c=>AT.objTint(c);
+  function text(g,x,y,value,cls='',anchor='middle',c){
+    const e=S('text',{x,y,class:cls,'text-anchor':anchor},value);
+    if(c)e.style.fill=color(c);g.append(e);return e;
+  }
+  function wire(g,points,arrow=true,attrs={}){
+    g.append(S('path',{d:points,class:'net-wire',...(arrow?{'marker-end':'url(#'+g.ownerSVGElement.dataset.arrow+')'}:{}),...attrs}));
+  }
+  function canvas(host,title,description){
+    const id='cost-net-'+(host.dataset.costNetwork||host.dataset.costMatrices),arrow=id+'-arrow';
+    const svg=S('svg',{viewBox:'0 0 1152 390',class:'cost-network-svg',role:'img','aria-labelledby':id+'-title '+id+'-desc','data-arrow':arrow});
+    svg.append(S('title',{id:id+'-title'},title),S('desc',{id:id+'-desc'},description));
+    svg.append(S('defs',{},S('marker',{id:arrow,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:6,markerHeight:6,orient:'auto-start-reverse'},S('path',{d:'M 0 0 L 10 5 L 0 10 z',fill:'var(--ink-3)'}))));
+    host.append(svg);const g=S('g');svg.append(g);return {svg,g};
+  }
+  function matrix(g,name,rows,cols,x,y,cell,c,labels=true){
+    const m=S('g',{'data-matrix':name,'data-rows':rows,'data-cols':cols});g.append(m);
+    for(let r=0;r<rows;r++)for(let k=0;k<cols;k++)m.append(S('rect',{x:x+k*cell,y:y+r*cell,width:cell-1,height:cell-1,fill:tint(c),stroke:color(c),'stroke-width':.6,'data-cell':''}));
+    if(labels){text(m,x+cols*cell/2,y-13,name,'net-label','middle',c);text(m,x+cols*cell/2,y+rows*cell+29,rows+' × '+cols,'net-small');}
+    return m;
+  }
+  function box(g,x,y,w,h,lines,c){
+    g.append(S('rect',{x,y,width:w,height:h,rx:8,fill:tint(c),stroke:color(c),'stroke-width':1.8}));
+    lines.forEach((line,i)=>text(g,x+w/2,y+h/2+(i-(lines.length-1)/2)*29+8,line,i===0?'net-label':'net-small'));
+  }
+  document.querySelectorAll('[data-cost-context]').forEach(p=>{
+    p.append('Context: ');
+    AT.sentences.river.forEach((token,i)=>{
+      const outside=p.dataset.costContext==='concat'&&i<7;
+      const span=document.createElement('span');span.className='context-token'+(outside?' outside-window':'')+(p.dataset.costContext==='concat'&&i===7?' window-start':'');
+      span.dataset.position=i+1;span.dataset.used=String(!outside);span.textContent=token;p.append(span,' ');
+    });p.append('→ ___ (11)');
+  });
+  document.querySelectorAll('[data-cost-network]').forEach(host=>{
+    const kind=host.dataset.costNetwork,concat=kind==='concat',attention=kind==='attention';
+    const {svg,g}=canvas(host,kind+' and the hidden-layer next-token predictor','The same ten-token prefix feeds '+(concat?'three ordered four-number rows, giving twelve input neurons':attention?'attention, an output projection and a residual addition, giving four updated input neurons':'coordinate-wise averaging, giving four input neurons')+'. Every input connects to eight ReLU hidden units. Every hidden unit connects to twenty vocabulary logits, four drawn. Softmax produces the next-token probabilities.');
+    const inputYs=concat?Array.from({length:12},(_,i)=>85+Math.floor(i/4)*100+(i%4)*21):[95,165,235,305];
+    const hiddenYs=Array.from({length:8},(_,i)=>92+i*33),outputYs=[110,170,245,305];
+    const xInput=480,xHidden=710,xOutput=930;
+    text(g,xInput,26,concat?'12 inputs':'4 inputs','net-label');
+    text(g,xInput,54,concat?'3 rows × 4':attention?'e′₁₀ · 1 × 4':'ē · 1 × 4','net-small');
+    if(concat){
+      [7,8,9].forEach((index,i)=>{
+        const cy=116+i*100; text(g,18,cy+6,'e'+['₈','₉','₁₀'][i]+' · '+AT.sentences.river[index],'net-label','start','e');
+        matrix(g,'e'+(index+1),1,4,190,cy-16,32,'e',false);
+        text(g,254,cy+44,'4 numbers','net-small');
+        wire(g,'M 324 '+cy+' H 427');
+        const top=inputYs[i*4]-14,bottom=inputYs[i*4+3]+14;
+        wire(g,'M 451 '+top+' H 441 V '+bottom+' H 451',false);
+      });
+      text(g,245,26,'Keep the three rows in order','net-label');
+    }else{
+      matrix(g,'E',10,4,36,118,17,'e');text(g,70,342,'10 rows','net-small');
+      if(attention){
+        wire(g,'M 110 203 H 167');
+        box(g,168,105,185,196,['Attention','message: 2','Wₒ: 2 × 4','update: 4'],'v');
+        wire(g,'M 353 203 H 382');
+        g.append(S('circle',{cx:401,cy:203,r:18,fill:'var(--card)',stroke:color('d'),'stroke-width':2,'data-residual-add':''}));
+        text(g,401,211,'+','net-label','middle','d');
+        wire(g,'M 104 280 H 125 V 350 H 401 V 225',true,{'stroke-dasharray':'5 4','data-residual-wire':''});
+        text(g,235,377,'Keep e₁₀: the original 4 numbers','net-small','middle','e');
+        wire(g,'M 419 203 H 442',false);
+      }else{
+        wire(g,'M 110 203 H 183');box(g,185,165,165,76,['Sum rows','then ÷ 10'],'v');wire(g,'M 350 203 H 442',false);
+        text(g,265,292,'No learned weights','net-small');
+      }
+      wire(g,'M 442 95 V 305',false);
+      inputYs.forEach(y=>wire(g,'M 442 '+y+' H 460'));
+    }
+    const hidden=S('g',{'data-build':1}),output=S('g',{'data-build':2});svg.append(hidden,output);
+    inputYs.forEach((y,i)=>hiddenYs.forEach((hy,j)=>hidden.append(S('line',{x1:xInput+(concat?10:16),y1:y,x2:xHidden-14,y2:hy,class:'net-edge','data-layer':'input-hidden','data-from':i,'data-to':j}))));
+    hiddenYs.forEach((y,i)=>outputYs.forEach((oy,j)=>output.append(S('line',{x1:xHidden+14,y1:y,x2:xOutput-22,y2:oy,class:'net-edge','data-layer':'hidden-output','data-from':i,'data-to':[0,1,18,19][j]}))));
+    inputYs.forEach((y,i)=>g.append(S('circle',{cx:xInput,cy:y,r:concat?10:16,fill:tint(attention?'d':'e'),stroke:color(attention?'d':'e'),'stroke-width':2,'data-neuron':'input','data-coordinate':i})));
+    hiddenYs.forEach((y,i)=>hidden.append(S('circle',{cx:xHidden,cy:y,r:14,fill:tint('v'),stroke:color('v'),'stroke-width':2,'data-neuron':'hidden','data-coordinate':i})));
+    outputYs.forEach((y,i)=>{
+      output.append(S('circle',{cx:xOutput,cy:y,r:22,fill:'var(--card)',stroke:'var(--ink-2)','stroke-width':2,'data-neuron':'output','data-coordinate':[0,1,18,19][i]}));
+      text(output,xOutput,y+7,['ℓ₁','ℓ₂','ℓ₁₉','ℓ₂₀'][i],'net-small');
+      wire(output,'M '+(xOutput+22)+' '+y+' H 988',false);
+    });
+    text(hidden,592,26,'W₁','net-label','middle','q');text(hidden,592,54,(concat?'12':'4')+' × 8','net-small');
+    text(hidden,xHidden,26,'8 hidden units','net-label');text(hidden,xHidden,54,'ReLU','net-small');text(hidden,xHidden,369,'+ b₁ (8 biases)','net-small');
+    text(output,820,26,'W₂','net-label','middle','q');text(output,820,54,'8 × 20','net-small');
+    text(output,xOutput,26,'20 scores','net-label');text(output,xOutput,54,'logits','net-small');text(output,xOutput,215,'⋮');text(output,xOutput,369,'+ b₂ (20 biases)','net-small');
+    wire(output,'M 988 110 V 305',false);wire(output,'M 988 207 H 1011');
+    box(output,1013,168,132,78,['Softmax','20 probs.'],'d');
+    svg.dataset.inputWidth=inputYs.length;svg.dataset.hiddenWidth=8;svg.dataset.outputWidth=20;
+  });
+  document.querySelectorAll('[data-cost-matrices]').forEach(host=>{
+    const projections=host.dataset.costMatrices==='projections';
+    const {svg,g}=canvas(host,projections?'Input to query, key and value matrices':'The full attention matrix calculation',projections?'E is ten by four. Multiply it by WQ, four by three, to make Q, ten by three; WK, four by three, makes K, ten by three; WV, four by two, makes V, ten by two.':'Q, ten by three, times K transpose, three by ten, produces ten-by-ten raw scores. Scale, mask and row softmax give A. A times V gives H, ten by two. H times WO, two by four, gives a ten-by-four update. Add E and read the final updated row.');
+    if(projections){
+      matrix(g,'E',10,4,100,102,18,'e');text(g,136,352,'same input','net-small');
+      wire(g,'M 178 192 H 290',false);wire(g,'M 290 66 V 306',false);
+      [['Q',3,'q'],['K',3,'k'],['V',2,'v']].forEach(([name,cols,c],i)=>{
+        const cy=66+i*120,branch=S('g',i?{'data-build':i}:{});svg.append(branch);
+        wire(branch,'M 290 '+cy+' H 405');
+        matrix(branch,'W'+name,4,cols,426,cy-28,14,c,false);
+        text(branch,524,cy-3,'W'+({Q:'Q',K:'K',V:'V'}[name]),'net-label','start',c);
+        text(branch,524,cy+28,'4 × '+cols,'net-small','start');
+        wire(branch,'M 634 '+cy+' H 735');
+        matrix(branch,name,10,cols,757,cy-40,8,c,false);
+        text(branch,826,cy-9,name+' · 10 × '+cols,'net-label','start',c);
+        text(branch,826,cy+22,{Q:'Queries: matching requests',K:'Keys: matching features',V:'Values: information to send'}[name],'net-small','start');
+      });
+    }else{
+      text(g,16,24,'1. Match each query against the keys','net-label','start');
+      const top=79;
+      matrix(g,'Q',10,3,58,top,9,'q');text(g,124,top+51,'×');
+      matrix(g,'Kᵀ',3,10,172,top+31,9,'k');text(g,310,top+51,'=');
+      matrix(g,'Raw scores',10,10,375,top,9,'a');
+      wire(g,'M 482 124 H 561');box(g,566,82,270,84,['÷ √3 → causal mask','→ row softmax'],'a');
+      wire(g,'M 844 124 H 925');matrix(g,'A',10,10,953,top,9,'a');
+      const mix=S('g',{'data-build':1});svg.append(mix);
+      text(mix,16,222,'2. Reuse those weights to mix values, then project','net-label','start');
+      const y=272;
+      matrix(mix,'A',10,10,40,y,8,'a');text(mix,162,y+44,'×');
+      matrix(mix,'V',10,2,225,y,8,'v');text(mix,290,y+44,'=');
+      matrix(mix,'H',10,2,358,y,8,'v');text(mix,455,y+44,'×');
+      matrix(mix,'Wₒ',2,4,548,y+30,10,'d');text(mix,695,y+44,'=');
+      matrix(mix,'ΔE',10,4,789,y,8,'d');text(mix,933,y+28,'2 → 4 numbers','net-label','start','d');
+      text(mix,933,y+59,'in each row','net-small','start');
+    }
+  });
+})();
 (function(){
   document.querySelectorAll('[data-cost-grid]').forEach(el=>{
     const n=Number(el.dataset.costGrid);el.style.gridTemplateColumns='repeat('+n+',1fr)';el.style.width=(28*n)+'px';

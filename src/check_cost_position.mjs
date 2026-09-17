@@ -12,7 +12,7 @@ const cache=path.join(os.homedir(),'.npm','_npx');
 if(fs.existsSync(cache))for(const dir of fs.readdirSync(cache))candidates.push(path.join(cache,dir,'node_modules/playwright'));
 let pw;for(const candidate of candidates){try{pw=require(candidate);break;}catch{}}
 assert(pw,'Use an existing Playwright installation.');
-const costs=['break','symbols','matmul','concat','average','projections','pairs','scores','mask','messages','predictor','calculator','training','baselines-training','prefix-sum','total','training-compare','backward','last-row','prompt','cache','generation-compare','memory'].map(x=>'s16-cost-'+x);
+const costs=['break','symbols','matmul','concat-network','concat','average-network','average','attention-network','attention-projections','attention-products','projections','pairs','scores','mask','messages','predictor','calculator','training','baselines-training','prefix-sum','total','training-compare','backward','last-row','prompt','cache','generation-compare','memory'].map(x=>'s16-cost-'+x);
 const positions=['break','order','permute','toy','experiment','add','append','width','routing','learned','sine','sine-rule','relative','rope','alibi','mean','choices'].map(x=>'s17-position-'+x);
 const ids=[...costs,...positions];
 const shots=fs.mkdtempSync(path.join(os.tmpdir(),'attention-cost-position-'));
