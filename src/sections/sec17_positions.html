@@ -1,0 +1,197 @@
+<!-- Part II extension: positional information, with a separate inspectable toy. -->
+<style>
+.position-lesson .position-sequence{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
+.position-lesson .position-token{padding:10px 15px;border-bottom:3px solid var(--c-e);background:var(--t-e)}
+.position-lesson .position-token small{display:block;color:var(--ink-2);font-size:.75em}
+.position-lesson .position-message{font-family:var(--font-mono);font-variant-numeric:tabular-nums;color:var(--c-v)}
+#position-query{color:var(--c-q)}
+#position-compare td.num{color:var(--c-a)}
+.position-lesson .position-flow{display:flex;flex-wrap:wrap;align-items:center;gap:16px;margin:24px 0}
+.position-lesson .position-flow>span{padding:13px 16px;border:1px solid var(--line);background:var(--card)}
+.position-lesson .position-flow>b{font-weight:400}
+.position-lesson .position-note{color:var(--ink-2)}
+.position-lesson .lesson-table th:first-child{width:27%}
+.position-lesson #position-compare th:first-child{width:64%}
+#s17-position-experiment .lesson-pair p{margin:0}
+#s17-position-experiment .lesson-table{margin:12px 0}
+#s17-position-experiment .lesson-result{padding:0;border:0;margin:16px 0 0}
+</style>
+
+<div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-break" data-title="Where does word order enter?" data-autobuild="off">
+<script type="text/x-notes">The opening introduced token plus position. Return to it now that students understand the attention calculation. Ask what happens if the same words change places. There is no universally best position encoding: compare what information the architecture receives and where it uses it.</script>
+<h3>Where does word order enter?</h3>
+<p class="topic-recap">We know how a query reads a collection of source rows.</p>
+<p class="topic-question">How can it tell who helped whom?</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-order" data-title="Same words, different roles" data-autobuild="off">
+<script type="text/x-notes">Compare two sentences with exactly the same word multiset and the same final token. Today is the receiving token. This separates word-order information from a change in the last-token query. Concatenation assigns different weight blocks to different slots. A mean of independent word embeddings does not.</script>
+<div class="position-sequence"><span class="position-token">Maya<small>slot 1</small></span><span class="position-token">helps<small>slot 2</small></span><span class="position-token">Ravi<small>slot 3</small></span><span class="position-token">today<small>slot 4 · receiver</small></span></div>
+<div class="position-sequence"><span class="position-token">Ravi<small>slot 1</small></span><span class="position-token">helps<small>slot 2</small></span><span class="position-token">Maya<small>slot 3</small></span><span class="position-token">today<small>slot 4 · receiver</small></span></div>
+<p data-build="1"><strong>Concatenation:</strong> Maya and Ravi enter different input slots. The MLP can treat those slots differently.</p>
+<p data-build="2"><strong>Plain averaging:</strong> the sum is unchanged. It cannot tell these two sentences apart.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-permute" data-title="Without position, one final attention row can miss the swap" data-autobuild="off">
+<script type="text/x-notes">Assume one attention layer on independent token embeddings, no position information, and a final-row output. Today's input and query stay fixed. Swapping the other tokens permutes paired keys and values. The score/weight entries permute together with the values, so their weighted sum is identical. This is a scoped demonstration, not a claim that arbitrary stacked causal models are permutation invariant.</script>
+<p>Use only token embeddings. The final word is still <strong>today</strong>, so its query is unchanged.</p>
+<div class="position-flow" data-build="1"><span>Swap source tokens</span><b>→</b><span>Keys and values move together</span><b>→</b><span>Same weighted sum</span></div>
+<p data-build="2">The causal mask allows all four sources here. It blocks the future; it does not directly label the distance to each source.</p>
+<p class="lesson-key" data-build="2">This claim is for one layer and the final row. In deeper causal networks, different visible prefixes can themselves provide order clues.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-toy" data-title="A small experiment we can inspect" data-autobuild="off">
+<script type="text/x-notes">These invented two-coordinate vectors are a separate position experiment, not replacements for the four-coordinate bank model. Identity query/key/value mappings make the experiment transparent. Values and keys may coincide in an illustrative constrained model; in our main model their mappings are independently learned.</script>
+<div class="lesson-pair"><div><p>Token lookup</p><table class="lesson-table"><thead><tr><th>Word</th><th>Two numbers</th></tr></thead><tbody><tr><td>Maya</td><td>[1.0, 0.0]</td></tr><tr><td>Ravi</td><td>[0.0, 1.0]</td></tr><tr><td>helps</td><td>[0.2, 0.2]</td></tr><tr><td>today</td><td>[0.6, 0.6]</td></tr></tbody></table></div>
+<div><p>Optional position rows</p><table class="lesson-table"><thead><tr><th>Slot</th><th>Two numbers</th></tr></thead><tbody><tr><td>1</td><td>[0.0, 0.0]</td></tr><tr><td>2</td><td>[0.2, −0.1]</td></tr><tr><td>3</td><td>[0.4, −0.2]</td></tr><tr><td>4</td><td>[0.6, −0.3]</td></tr></tbody></table></div></div>
+<p class="lesson-key">Invented numbers; no named semantic axes. Set $W_Q=W_K=W_V=I$ for this experiment, so $q_4=x_4$, $k_j=v_j=x_j$ and $d_k=2$.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-experiment" data-title="Try the swap, with and without position" data-autobuild="off">
+<script type="text/x-notes">Start with position off. Both rows are the same weighted mixture even though individual entries follow their source tokens. Turn position on: add the shown slot rows before making q/k/v. The returned messages now differ. The numbers are calculated live, with no trained model or invented accuracy claim. This does not guarantee a correct linguistic interpretation; it makes distinguishing order possible.</script>
+<div class="lesson-control"><label for="position-enabled">Input rows</label><select id="position-enabled"><option value="off">Token only</option><option value="on">Token + position</option></select><span id="position-query" class="position-message"></span></div>
+<div class="lesson-pair" id="position-compare"><div><p>Maya helps Ravi today</p><table class="lesson-table"><thead><tr><th>Slot · source</th><th>Weight</th></tr></thead><tbody id="position-weights-a"></tbody></table><p class="position-message" id="position-message-a"></p></div><div><p>Ravi helps Maya today</p><table class="lesson-table"><thead><tr><th>Slot · source</th><th>Weight</th></tr></thead><tbody id="position-weights-b"></tbody></table><p class="position-message" id="position-message-b"></p></div></div>
+<p id="position-outcome" class="lesson-result" aria-live="polite"></p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-add" data-title="Addition keeps the row the same width" data-autobuild="off">
+<script type="text/x-notes">Return to d=4 to match the width of the lecture. These are illustrative coordinates, not the bank model's rows. Token lookup depends on the word, position lookup depends on its slot. Their sum is the row fed into attention. The model learns with this combined representation; there is no promise that the two original vectors can be uniquely recovered from their sum.</script>
+<table class="lesson-table"><thead><tr><th>Four-coordinate row</th><th>1</th><th>2</th><th>3</th><th>4</th></tr></thead><tbody>
+<tr><th>Token $e_{\rm token}$</th><td>0.6</td><td>−0.2</td><td>1.0</td><td>0.1</td></tr>
+<tr data-build="1"><th>Slot $p_i$</th><td>0.1</td><td>0.3</td><td>−0.2</td><td>0.2</td></tr>
+<tr data-build="2"><th>Input $x_i=e_{\rm token}+p_i$</th><td>0.7</td><td>0.1</td><td>0.8</td><td>0.3</td></tr>
+</tbody></table>
+<p data-build="2">The same word has the same token lookup. At another slot, a different position row changes its input to attention.</p>
+<p class="lesson-key" data-build="2">Both rows have $d$ coordinates; their sum still has $d$. These example coordinates have no prescribed meaning.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-append" data-title="Could we append one or two position numbers? Yes." data-autobuild="off">
+<script type="text/x-notes">Answer the user's question directly. Appending a position index, a normalized index, or multiple engineered or learned features is mathematically valid. It is not universally worse. The model must learn how to use the feature; width, scale and generalization are design choices. Large raw indices can dominate dot products without suitable scaling or learned suppression. Normalizing by current prompt length changes old position features as tokens arrive and complicates cache reuse.</script>
+<div class="lesson-large">$[\ e_{\rm token}\ ;\ i\ ]\quad\text{has }d+1\text{ coordinates}$</div>
+<p data-build="1">Appending two features gives $d+2$. We can widen the next weight matrix or project the expanded row back to $d$.</p>
+<p data-build="2">One index tells us the slot, but the network must learn which distances and order relationships matter. Its numerical scale also matters.</p>
+<p class="lesson-result" data-build="3">This is a valid alternative. Addition is a convenient fixed-width choice—not a theorem about the best encoding.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-width" data-title="Why addition is a convenient design" data-autobuild="off">
+<script type="text/x-notes">A d-wide sum fits existing attention and residual shapes. Token and position embeddings can be learned jointly. Summation is not losslessly decodable for arbitrary pairs. Concatenation preserves separate input slots for the two sources, and its following matrix can learn separate projections. The displayed block matrix has 2d rows and d columns when both source vectors have d coordinates.</script>
+<p>Adding a $d$-wide position row keeps the attention input and residual path <strong>$d$ numbers wide</strong>.</p>
+<p data-build="1">Concatenation followed by a projection is another way to combine them:</p>
+<div data-build="1">$$[e;p]\begin{bmatrix}W_e\\W_p\end{bmatrix}=eW_e+pW_p$$</div>
+<p class="lesson-key" data-build="1">$W_e$ maps content; $W_p$ maps position. Both outputs must have the same width before adding.</p>
+<p class="lesson-result" data-build="2">Addition mixes the signals; it does not guarantee that we can recover each one separately. Training learns how to use the combined row.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-routing" data-title="Position can change what matches—and what is sent" data-autobuild="off">
+<script type="text/x-notes">Here x_i denotes the initial token-plus-position row, called e_i earlier in the lecture. A moved word changes its q/k/v because the input row changed. With additive input positions, positional signals reach values too. Contrast this later with RoPE, which typically rotates Q and K, and ALiBi, which adds a score bias. Causal masking remains a separate operation.</script>
+<div class="position-flow"><span>$x_i=e_{\rm token}+p_i$</span><b>→</b><span>$q_i=x_iW_Q$<br>$k_i=x_iW_K$<br>$v_i=x_iW_V$</span></div>
+<p data-build="1">A word in a different slot can produce different matching features and a different message.</p>
+<p data-build="2">The causal mask still decides <strong>which sources are allowed</strong>. Position information helps distinguish the allowed sources by where they occur.</p>
+<p class="lesson-key" data-build="2">Here $x_i$ is the initial input row called $e_i$ earlier. Position does not replace the token embedding.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-learned" data-title="Learned absolute positions: one row per slot" data-autobuild="off">
+<script type="text/x-notes">A learned absolute table is a common additive choice. P has Nmax rows and d columns. Its values are model parameters updated by training, unlike the fixed illustrative position table used in this lecture. Positions never seen during training have no learned evidence; extending a table with new random rows is not established length generalization. Vaswani et al. compared learned and sinusoidal encodings in Section 3.5.</script>
+<div class="position-flow"><span>Slot $i$</span><b>→</b><span>Read row $P[i]$</span><b>→</b><span>Add to token row</span></div>
+<p>The table has shape $N_{\max}\times d$: <strong>$N_{\max}d$ learned numbers</strong>.</p>
+<p data-build="1">Training can learn different cues for the first slot, the second slot, and so on.</p>
+<p class="lesson-result" data-build="2">Tradeoff: the table has a configured length. Adding new rows does not make them trained position representations.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-sine" data-title="Sinusoidal positions: a fixed pattern at several scales" data-autobuild="off">
+<script type="text/x-notes">Use actual computed values for the standard formula at d=4. The first pair changes by one radian per slot; the second by 0.01 radians per slot. The table is rounded to three decimals. These waves are fixed features, not probabilities. Source: Vaswani et al., Section 3.5, https://arxiv.org/abs/1706.03762.</script>
+<p>For a four-coordinate example, slot $i$ gets:</p>
+<div>$$p_i=[\sin i,\ \cos i,\ \sin(i/100),\ \cos(i/100)]$$</div>
+<table class="lesson-table"><thead><tr><th>Slot index $i$</th><th>Fast sine</th><th>Fast cosine</th><th>Slow sine</th><th>Slow cosine</th></tr></thead><tbody id="position-sinusoids"></tbody></table>
+<p class="lesson-key">Two pairs of waves, at two different rates. Add this fixed row to the token embedding; there is no learned position table.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-sine-rule" data-title="Why use sine and cosine together?" data-autobuild="off">
+<script type="text/x-notes">For even d and pair index r=0,...,d/2-1, frequency omega_r is 10000 raised to -2r/d. A shift by delta rotates a sine/cosine pair by a matrix that depends on delta, not the starting position. This makes offsets algebraically structured. It does not prove the model learns all offsets or extrapolates to arbitrary lengths.</script>
+<div>$$p_{i,2r}=\sin(i\omega_r),\qquad p_{i,2r+1}=\cos(i\omega_r)$$</div>
+<p class="lesson-key">$r$ labels a coordinate pair. $\omega_r=10000^{-2r/d}$ sets its rate; pairs use different rates.</p>
+<p data-build="1">Moving by a fixed number of slots rotates each pair by a fixed angle. Nearby positions change smoothly; different rates give different distance scales.</p>
+<p class="lesson-result" data-build="2">We can compute a row for an unseen index. That does <strong>not</strong> guarantee good predictions at unseen context lengths.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-relative" data-title="Relative position asks: how far away is this source?" data-autobuild="off">
+<script type="text/x-notes">Relative-position methods are a family, not one formula. This frame uses a score-bias version: add b of the distance to the content score. Other methods add relative vectors to keys or values, as in Shaw et al. 2018. Do not attribute this simple bias formula as the sole Shaw method. Source: https://arxiv.org/abs/1803.02155.</script>
+<table class="lesson-table"><thead><tr><th>Receiver slot</th><th>Source slot</th><th>Distance $i-j$</th></tr></thead><tbody><tr><td>8</td><td>7</td><td>1: one token back</td></tr><tr><td>80</td><td>79</td><td>1: one token back</td></tr></tbody></table>
+<p data-build="1">One design adds a distance-dependent bias to each allowed score:</p>
+<div data-build="1">$$s_{ij}=\frac{q_i\cdot k_j}{\sqrt{d_k}}+b(i-j)$$</div>
+<p class="lesson-key" data-build="1">$b$ supplies an offset for that distance. Content still matters; distance changes its score, not its visibility.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-rope" data-title="RoPE: rotate the query and key pairs" data-autobuild="off">
+<script type="text/x-notes">Rotary Position Embedding applies a position-dependent rotation to coordinate pairs in Q and K. Standard RoPE leaves V unrotated. The paired inner product contains R_i transpose R_j, which depends on the relative offset. Actual Q/K also vary with token content, so equal distance alone does not imply equal scores. Source: Su et al., RoFormer, https://arxiv.org/abs/2104.09864.</script>
+<div class="position-flow"><span>Content query/key</span><b>→</b><span>Rotate pairs by their slots</span><b>→</b><span>Dot product</span></div>
+<p>Toy: start with $q=k=[1,0]$; rotate 30° per slot.</p>
+<table class="lesson-table"><thead><tr><th>Query slot, key slot</th><th>Distance</th><th>Dot product</th></tr></thead><tbody><tr><td>3, 2</td><td>1</td><td>0.866</td></tr><tr><td>8, 7</td><td>1</td><td>0.866</td></tr><tr><td>5, 2</td><td>3</td><td>0.000</td></tr></tbody></table>
+<p class="lesson-key">Dot product = cosine of the angle difference: $\cos30^\circ\approx0.866$; $\cos90^\circ=0$. Real RoPE uses multiple rates and usually rotates Q and K, not V.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-alibi" data-title="ALiBi: give more distant sources a score penalty" data-autobuild="off">
+<script type="text/x-notes">ALiBi is a fixed linear distance bias in attention scores, with slopes differing across heads. This is one illustrative head with m=0.25 and three allowed sources. It is a soft recency preference, not a hard window: a strong content score can overcome the penalty. Source: Press et al., https://arxiv.org/abs/2108.12409. The table's weights are softmax([1,1.5,2]).</script>
+<div>$$s_{ij}=\frac{q_i\cdot k_j}{\sqrt{d_k}}-m(i-j),\qquad j\leq i$$</div>
+<p class="lesson-key">$m>0$ is a slope. Example: all content scores are 2; choose $m=0.25$.</p>
+<table class="lesson-table"><thead><tr><th>Distance back</th><th>Penalty</th><th>New score</th><th>Weight</th></tr></thead><tbody><tr><td>4</td><td>−1.0</td><td>1.0</td><td>18.6%</td></tr><tr><td>2</td><td>−0.5</td><td>1.5</td><td>30.7%</td></tr><tr><td>0</td><td>0.0</td><td>2.0</td><td>50.6%</td></tr></tbody></table>
+<p data-build="1">Nearby sources get a preference—not a guarantee. A stronger content match can still favor a distant source.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-mean" data-title="Adding position before a plain mean is not enough" data-autobuild="off">
+<script type="text/x-notes">Do not imply that additive positions fix order blindness for every architecture. Averaging independent token-plus-position rows is the sum of a token mean and a position mean. Under reassignment of the same words to the same occupied slots, both means stay fixed. Nonlinear processing before pooling or explicit token-position interactions can break this invariance; that would be a different baseline. Attention creates interactions through its query/key scores.</script>
+<div>$$\frac1n\sum_i(e_{{\rm token},i}+p_i)=\frac1n\sum_i e_{{\rm token},i}+\frac1n\sum_i p_i$$</div>
+<p data-build="1">Swap Maya and Ravi across the same four slots: the token sum stays the same, and the position sum stays the same.</p>
+<p class="lesson-result" data-build="2">The mean still loses <strong>which word was in which slot</strong>. We need interactions before pooling to preserve that association.</p>
+<p class="lesson-key" data-build="2">Attention is not just a fixed average: its weights depend on the token-and-position rows being compared.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-choices" data-title="Choose where position enters the calculation" data-autobuild="off">
+<script type="text/x-notes">These are design families, not a quality ranking. Learned absolute embeddings have trained table coverage. Sinusoids, RoPE and ALiBi define operations at larger indices, but actual length generalization still depends on training, data, architecture and any scaling changes. The lecture uses additive position rows to make each operation visible. The future-information mask is still needed for all these causal models.</script>
+<table class="lesson-table"><thead><tr><th>Method</th><th>Where it enters</th><th>What it supplies</th></tr></thead><tbody>
+<tr><td>Learned / sinusoidal absolute</td><td>Token input row</td><td>Features of slot $i$</td></tr>
+<tr><td>Relative score bias / ALiBi</td><td>Attention scores</td><td>Features of distance $i-j$</td></tr>
+<tr><td>RoPE</td><td>Query and key pairs</td><td>Relative offsets through rotations</td></tr>
+</tbody></table>
+<p class="lesson-result" data-build="1">Position describes order. The causal mask restricts visibility. Neither removes attention's pairwise compute cost.</p>
+<p class="lesson-key" data-build="1">A formula that accepts larger indices is not a guarantee of reliable longer-context predictions.</p>
+</div>
+
+<div class="companion">
+<h3>Position is a design choice, not an extra word</h3>
+<p>The four-coordinate teaching model uses explicit additive position rows. The two-coordinate swap experiment above is independent and uses identity Q/K/V projections solely to make every number inspectable. Its results show that positional inputs can distinguish two token orders, not that an untrained model understands either sentence.</p>
+<p>Appending a scalar index or a small position vector is valid. Scaling the index, choosing its range, and combining it with content are architectural decisions. Dividing indices by the current prefix length changes earlier features whenever the prefix grows; ordinary append-only KV caching relies on keeping those earlier representations unchanged.</p>
+<p>For a sine/cosine pair at rate $\omega$, the angle-addition formulas express the features at $i+\delta$ as a linear transformation of those at $i$, using coefficients $\sin(\delta\omega)$ and $\cos(\delta\omega)$. For RoPE, the orthogonal rotations satisfy $R_i^\top R_j=R_{j-i}$, so $\langle R_iq,R_jk\rangle=q^\top R_{j-i}k$. This relative-offset structure coexists with content-dependent queries and keys.</p>
+<p>Sources: <a href="https://arxiv.org/abs/1706.03762">Vaswani et al., Attention Is All You Need, §3.5</a>; <a href="https://arxiv.org/abs/1803.02155">Shaw et al., relative position representations</a>; <a href="https://arxiv.org/abs/2104.09864">Su et al., RoFormer / RoPE</a>; <a href="https://arxiv.org/abs/2108.12409">Press et al., ALiBi</a>.</p>
+</div>
+<script>
+(function(){
+  const embeddings={Maya:[1,0],Ravi:[0,1],helps:[.2,.2],today:[.6,.6]};
+  const positions=[[0,0],[.2,-.1],[.4,-.2],[.6,-.3]];
+  const sequences=[['Maya','helps','Ravi','today'],['Ravi','helps','Maya','today']];
+  function experiment(tokens,enabled){
+    const rows=tokens.map((t,i)=>embeddings[t].map((v,j)=>v+(enabled?positions[i][j]:0)));
+    const q=rows.at(-1),scores=rows.map(k=>k.reduce((s,v,j)=>s+v*q[j],0)/Math.sqrt(2));
+    const exps=scores.map(s=>Math.exp(s-Math.max(...scores))),denom=exps.reduce((a,b)=>a+b,0);
+    const weights=exps.map(x=>x/denom),message=[0,1].map(j=>rows.reduce((sum,row,i)=>sum+weights[i]*row[j],0));
+    return {rows,q,scores,weights,message};
+  }
+  function sinusoid(i){return [Math.sin(i),Math.cos(i),Math.sin(i/100),Math.cos(i/100)];}
+  function rotaryDot(i,j){const a=i*Math.PI/6,b=j*Math.PI/6;return Math.cos(a)*Math.cos(b)+Math.sin(a)*Math.sin(b);}
+  window.AT.positionLesson={experiment,sinusoid,rotaryDot,sequences};
+  const selector=document.getElementById('position-enabled');
+  function draw(){
+    const enabled=selector.value==='on',results=sequences.map(s=>experiment(s,enabled));
+    results.forEach((r,idx)=>{
+      const suffix=idx===0?'a':'b',body=document.getElementById('position-weights-'+suffix);body.replaceChildren();
+      sequences[idx].forEach((token,i)=>{const tr=document.createElement('tr'),name=document.createElement('td'),weight=document.createElement('td');name.textContent=(i+1)+' · '+token;weight.textContent=r.weights[i].toFixed(3);weight.className='num';tr.append(name,weight);body.append(tr);});
+      document.getElementById('position-message-'+suffix).textContent='message ['+r.message.map(x=>x.toFixed(3)).join(', ')+']';
+    });
+    document.getElementById('position-query').textContent='query ['+results[0].q.map(x=>x.toFixed(1)).join(', ')+']';
+    document.getElementById('position-outcome').textContent=enabled?'Different messages: the two orders are distinguishable.':'Same message, despite the different word order.';
+  }
+  selector.addEventListener('change',draw);draw();
+  const sineBody=document.getElementById('position-sinusoids');
+  for(let i=0;i<4;i++){const row=document.createElement('tr');[i,...sinusoid(i)].forEach((value,j)=>{const cell=document.createElement('td');cell.textContent=j?value.toFixed(3):String(value);row.append(cell);});sineBody.append(row);}
+})();
+</script>

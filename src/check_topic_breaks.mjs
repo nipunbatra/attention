@@ -17,6 +17,8 @@ const targets=[
   ['s13-topic-break','s13-frame1'],
   ['s14-topic-break','s14-routing'],
   ['s16-topic-break','s16-flow-frame'],
+  ['s16-cost-break','s16-cost-symbols'],
+  ['s17-position-break','s17-position-order'],
   ['s19-topic-break','s19-frame-generation']
 ];
 const browser=await chromium.launch();
@@ -77,7 +79,7 @@ try{
   await page.waitForFunction(()=>document.documentElement.scrollWidth<=innerWidth+1);
   for(const [id]of targets){
     const frame=page.locator('#'+id);await frame.scrollIntoViewIfNeeded();
-    assert.equal(await frame.locator('h3').isVisible(),id==='s05-values-topic-break','In reading mode, only the midpoint needs a new heading.');
+    assert.equal(await frame.locator('h3').isVisible(),['s05-values-topic-break','s16-cost-break','s17-position-break'].includes(id),'In reading mode, only mid-section breaks need an additional heading.');
     assert(await frame.locator('.topic-question').isVisible());
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
     const clipped=await frame.locator('h3,p').evaluateAll(es=>es.filter(e=>e.clientWidth&&e.scrollWidth>e.clientWidth+1).map(e=>e.textContent));
@@ -86,5 +88,5 @@ try{
   }
   assert.equal(await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)})),original);
   assert.deepEqual(errors,[]);
-  console.log('PASS: ten topic breaks, existing pauses, forward/back navigation, header restoration, scaling deep links, unchanged model, desktop/tall/phone layouts. Screenshots: '+shots);
+  console.log('PASS: twelve topic breaks, existing pauses, forward/back navigation, header restoration, scaling deep links, unchanged model, desktop/tall/phone layouts. Screenshots: '+shots);
 }finally{await browser.close();}

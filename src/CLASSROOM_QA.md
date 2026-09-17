@@ -834,6 +834,16 @@ The toy has twenty same-width position vectors. Its initial projection/head matr
 
 Full Transformer diagrams are architectural explanations. The original one-head numerical worksheet does not silently become a multi-head, normalized, stacked model. This release is a checked teaching implementation, not a claim of exhaustive browser/accessibility coverage or an absence of every possible pedagogical improvement.
 
+## 2026-09-17: Part II context costs and positional information
+
+- Added 23 cost frames and 17 position frames, with two dedicated topic breaks and notes. Kept the preceding concise core, flowchart, causal-mask calculation and existing deep links intact. Sources are included from `sec16_cost.html` and `sec17_positions.html`; no model parameters changed.
+- Counted each projection, score product, mask/softmax, value mixture, residual and hidden/vocabulary layer. Comparisons use equal workloads: one prediction, all-position training/scoring, and a cached generation step. Explained cumulative sums, fixed versus growing concatenation windows, the final-row-only one-layer optimization, and the distinction between compute, activations and model weights.
+- Position examples cover token-order swaps, addition and appended features, learned and sinusoidal positions, relative score biases, RoPE and ALiBi. The order experiment uses its own labelled hand-chosen vectors. All displayed experiment weights/messages, sinusoidal rows and rotation/bias examples are independently checked.
+- `check_cost_position.mjs`: 40 frames and 181 forward/reverse build checks; 1280×720, 1920×1080 and 1024×768 presentation viewports; 390×844 reading. Live controls retain state without changing the bank model. This checks screen geometry, not a physical projector or AirServer connection.
+- Visual review found and fixed disappearing KaTeX subscript/fraction/transpose layers after reverse reveals. New assertions check math visibility in both directions. A crowded order experiment and wide phone equations were repaired without shrinking classroom type.
+- Whole-deck frame audit: 373 progressive states, 668 unique formulas, no parse errors or overflow. Phone QA: no horizontal page overflow or console errors. Interaction sweep: 161 controls, no errors. Existing opening, live/reference model, token flow, topic-break and concise-core checks pass. Table audit has no fatal failures; its narrow-prose advisories include existing tables and the phone sinusoid headings.
+- Primary references are linked beside the reading material and in notes: Vaswani et al. (2017), Shaw et al. (2018), RoFormer, ALiBi and FlashAttention. Operation counts are analytical, not device timing claims. A position formula accepting a larger index is not evidence of reliable length extrapolation.
+
 ## Reproduce from the repository root
 
 ```sh
@@ -845,6 +855,7 @@ node src/check_part1_diagrams.mjs part1.html
 node src/toy_ref.mjs src/toy.json --compare src/py_check.json
 node src/check-live-model.mjs attention.html
 node src/check_token_flow.mjs attention.html
+node src/check_cost_position.mjs attention.html
 python3 src/check_training.py
 node src/check_position_capacity.mjs
 node src/check-routing-scaling.mjs

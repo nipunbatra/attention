@@ -71,11 +71,11 @@
    "section": "s15"
   },
   {
-   "label": "The same thing in matrix form",
+   "label": "Matrix form and context cost",
    "section": "s16"
   },
   {
-   "label": "Attention versus the alternatives",
+   "label": "Alternatives, position and order",
    "section": "s17"
   },
   {
@@ -165,12 +165,12 @@
   },
   {
    "id": "s16",
-   "title": "The same thing in matrix form",
+   "title": "Matrix form and context cost",
    "lit": ""
   },
   {
    "id": "s17",
-   "title": "Attention versus the alternatives",
+   "title": "Alternatives, position and order",
    "lit": ""
   },
   {

@@ -1,6 +1,6 @@
 # Handover: interactive teaching series
 
-Updated 2026-09-11. Owner: Nipun Batra.
+Updated 2026-09-17. Owner: Nipun Batra.
 
 - Repository: https://github.com/nipunbatra/attention
 - Published series: https://nipunbatra.github.io/attention/
@@ -9,6 +9,12 @@ Updated 2026-09-11. Owner: Nipun Batra.
 All four attention parts and the four-part Vision to language extension are implemented. They share a slide-first reading/presentation system, not separate article and slide sources. The first slide-first checkpoint was `a49f811`; `a1d609c` completed Part 3 and the numerical-correctness pass. `CLASSROOM_QA.md` records local verification. Check the checkout's Git log and the GitHub Pages workflow for the current published commit. A temporary checkout is not evidence of what is live.
 
 ## Start here
+
+2026-09-17 Part II cost and position extensions: 40 new classroom frames follow the matrix-form calculation in Section 16 and the alternatives comparison in Section 17. The sources are `sections/sec16_cost.html` (23 frames) and `sections/sec17_positions.html` (17 frames), included by `assemble.py` at explicit markers in their owning sections. Existing section IDs and core frames are unchanged. The two new topic breaks are `s16-cost-break` and `s17-position-break`; the opening reading guide identifies these as a later teaching sitting.
+
+The cost lesson derives dense MACs for each product, compares fixed-window concatenation, cumulative averaging and attention on equal workloads, and separates all-position training/scoring, prompt prefill and cached generation. Preserve the important one-layer exception: Part II's final-only prediction can compute all K/V and just its final query, without forming every attention row. Stacked-model prefill is a different workload. The calculator counts operations, not runtime or measured speedups. Pair grids use the same cell scale so doubled side lengths show quadrupled area.
+
+The position lesson includes an independent two-coordinate order-swap experiment, addition versus appended features, learned/sinusoidal absolute positions, relative score bias, RoPE and ALiBi. Appending features is valid; addition is not universally optimal. A plain mean of token-plus-position rows remains invariant to reassigning the same tokens to the same slots. Do not generalize the one-layer final-row invariance example to all stacked causal networks. Both extensions leave `toy.json`, shared model computations and Part III unchanged. `check_cost_position.mjs` checks independent arithmetic, every new build, reverse math reveals, controls, model immutability and projector/phone layouts. See the latest entry in `CLASSROOM_QA.md` for the verification record.
 
 2026-09-14 Part III continuity revision: training now starts from the exact Part II 4→8→20 ReLU prediction MLP, including both matrices and biases. This supersedes the temporary separate linear-readout experiment. Saved SGD parameters and outputs keep full precision. The classroom path has 51 frames including the title, with three section breaks and repeated material retained as reading companions. The block FFN remains a separate illustrative 4→8→4 network; the full Transformer schematic has FFNs inside blocks and a linear readout after final LayerNorm. See GUIDE3.md, AXES.md, check_training.py, and check_part3_continuity.mjs.
 

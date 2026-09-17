@@ -1,4 +1,4 @@
-// Concise classroom route; detailed arithmetic remains usable in reading mode.
+// Concise core route plus the explicitly requested cost/position extensions.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -63,7 +63,9 @@ try{
   await page.evaluate(()=>AT.present.prev());
   assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s13-frame1');
   for(const [sec,ids]of Object.entries(expected)){
-    assert.deepEqual(await page.locator('#'+sec+' .frame').evaluateAll(els=>els.map(e=>e.id)),ids);
+    // Extension frames are exhaustively checked by check_cost_position.mjs.
+    // Preserve the exact earlier core route and its article-only arithmetic.
+    assert.deepEqual(await page.locator('#'+sec+' .frame:not(.context-lesson)').evaluateAll(els=>els.map(e=>e.id)),ids);
     for(const id of ids){
       await go(id);await fit(id);
       await page.screenshot({path:path.join(shots,id+'.png')});
