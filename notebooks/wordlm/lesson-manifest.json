@@ -1,0 +1,331 @@
+[
+  {
+    "id": "data",
+    "title": "The data: complete short stories",
+    "chapter": "1. Data and tokens",
+    "index": 1,
+    "slide": 5
+  },
+  {
+    "id": "split",
+    "title": "Stories stay together when we split the data",
+    "chapter": "1. Data and tokens",
+    "index": 2,
+    "slide": 6
+  },
+  {
+    "id": "sentence",
+    "title": "A sentence we can trace completely",
+    "chapter": "1. Data and tokens",
+    "index": 3,
+    "slide": 7
+  },
+  {
+    "id": "tokenize",
+    "title": "Lowercase words and separate punctuation",
+    "chapter": "1. Data and tokens",
+    "index": 4,
+    "slide": 8
+  },
+  {
+    "id": "vocabulary",
+    "title": "Every vocabulary item gets an integer ID",
+    "chapter": "1. Data and tokens",
+    "index": 5,
+    "slide": 9
+  },
+  {
+    "id": "special",
+    "title": "Four special tokens have different jobs",
+    "chapter": "1. Data and tokens",
+    "index": 6,
+    "slide": 10
+  },
+  {
+    "id": "boundaries",
+    "title": "Add the story boundaries once",
+    "chapter": "1. Data and tokens",
+    "index": 7,
+    "slide": 11
+  },
+  {
+    "id": "one-pair",
+    "title": "One input window and its observed target",
+    "chapter": "2. Windows and batches",
+    "index": 8,
+    "slide": 12
+  },
+  {
+    "id": "windows-first",
+    "title": "Early prefixes need padding",
+    "chapter": "2. Windows and batches",
+    "index": 9,
+    "slide": 13
+  },
+  {
+    "id": "windows-last",
+    "title": "Later prefixes drop their oldest tokens",
+    "chapter": "2. Windows and batches",
+    "index": 10,
+    "slide": 14
+  },
+  {
+    "id": "counts",
+    "title": "Counting the supervised examples",
+    "chapter": "2. Windows and batches",
+    "index": 11,
+    "slide": 15
+  },
+  {
+    "id": "context",
+    "title": "Context length controls what is visible",
+    "chapter": "2. Windows and batches",
+    "index": 12,
+    "slide": 16
+  },
+  {
+    "id": "batch",
+    "title": "A real batch with B=2",
+    "chapter": "2. Windows and batches",
+    "index": 13,
+    "slide": 17
+  },
+  {
+    "id": "batches",
+    "title": "Seven examples do not mean seven optimizer steps",
+    "chapter": "2. Windows and batches",
+    "index": 14,
+    "slide": 18
+  },
+  {
+    "id": "shapes",
+    "title": "Concrete dimensions for the worked batch",
+    "chapter": "2. Windows and batches",
+    "index": 15,
+    "slide": 19
+  },
+  {
+    "id": "mlp-map",
+    "title": "The full MLP training map",
+    "chapter": "3. The MLP forward pass",
+    "index": 16,
+    "slide": 20
+  },
+  {
+    "id": "lookup",
+    "title": "An ID selects one embedding row",
+    "chapter": "3. The MLP forward pass",
+    "index": 17,
+    "slide": 21
+  },
+  {
+    "id": "embedding-batch",
+    "title": "The whole batch becomes a 2 \u00d7 4 \u00d7 4 tensor",
+    "chapter": "3. The MLP forward pass",
+    "index": 18,
+    "slide": 22
+  },
+  {
+    "id": "flatten",
+    "title": "Flatten the context axis, keep the batch axis",
+    "chapter": "3. The MLP forward pass",
+    "index": 19,
+    "slide": 23
+  },
+  {
+    "id": "hidden-affine",
+    "title": "One hidden neuron combines all sixteen inputs",
+    "chapter": "3. The MLP forward pass",
+    "index": 20,
+    "slide": 24
+  },
+  {
+    "id": "relu",
+    "title": "ReLU keeps positive activations",
+    "chapter": "3. The MLP forward pass",
+    "index": 21,
+    "slide": 25
+  },
+  {
+    "id": "vocab-head",
+    "title": "Eight hidden numbers produce ten word scores",
+    "chapter": "3. The MLP forward pass",
+    "index": 22,
+    "slide": 26
+  },
+  {
+    "id": "attention-map",
+    "title": "The full attention training map",
+    "chapter": "4. The attention forward pass",
+    "index": 23,
+    "slide": 27
+  },
+  {
+    "id": "positions",
+    "title": "Add a position vector to each token vector",
+    "chapter": "4. The attention forward pass",
+    "index": 24,
+    "slide": 28
+  },
+  {
+    "id": "query",
+    "title": "The final known token supplies one query",
+    "chapter": "4. The attention forward pass",
+    "index": 25,
+    "slide": 29
+  },
+  {
+    "id": "keys",
+    "title": "Each source has a matching key",
+    "chapter": "4. The attention forward pass",
+    "index": 26,
+    "slide": 30
+  },
+  {
+    "id": "values",
+    "title": "Each source also has information to send",
+    "chapter": "4. The attention forward pass",
+    "index": 27,
+    "slide": 31
+  },
+  {
+    "id": "scores",
+    "title": "Compare the query with all four keys",
+    "chapter": "4. The attention forward pass",
+    "index": 28,
+    "slide": 32
+  },
+  {
+    "id": "mask",
+    "title": "Padding must receive zero attention weight",
+    "chapter": "4. The attention forward pass",
+    "index": 29,
+    "slide": 33
+  },
+  {
+    "id": "attention-softmax",
+    "title": "Softmax turns four source scores into weights",
+    "chapter": "4. The attention forward pass",
+    "index": 30,
+    "slide": 34
+  },
+  {
+    "id": "mix",
+    "title": "Each weight scales a complete value row",
+    "chapter": "4. The attention forward pass",
+    "index": 31,
+    "slide": 35
+  },
+  {
+    "id": "output-map",
+    "title": "Project two message coordinates into four",
+    "chapter": "4. The attention forward pass",
+    "index": 32,
+    "slide": 36
+  },
+  {
+    "id": "residual",
+    "title": "Add the update to the original final row",
+    "chapter": "4. The attention forward pass",
+    "index": 33,
+    "slide": 37
+  },
+  {
+    "id": "word-softmax",
+    "title": "Ten logits become ten next-token probabilities",
+    "chapter": "5. Loss and learning",
+    "index": 34,
+    "slide": 38
+  },
+  {
+    "id": "target",
+    "title": "The text gives the target; the model gives a guess",
+    "chapter": "5. Loss and learning",
+    "index": 35,
+    "slide": 39
+  },
+  {
+    "id": "loss",
+    "title": "Two targets give two losses, then one batch mean",
+    "chapter": "5. Loss and learning",
+    "index": 36,
+    "slide": 40
+  },
+  {
+    "id": "gradient",
+    "title": "Backward computes a direction for every parameter",
+    "chapter": "5. Loss and learning",
+    "index": 37,
+    "slide": 41
+  },
+  {
+    "id": "update",
+    "title": "One optimizer step changes the stored weights",
+    "chapter": "5. Loss and learning",
+    "index": 38,
+    "slide": 42
+  },
+  {
+    "id": "training-loop",
+    "title": "Many batches, with validation between checkpoints",
+    "chapter": "5. Loss and learning",
+    "index": 39,
+    "slide": 43
+  },
+  {
+    "id": "evaluation",
+    "title": "Held-out scoring and free-running generation",
+    "chapter": "6. Inference",
+    "index": 40,
+    "slide": 44
+  },
+  {
+    "id": "mlp-inference",
+    "title": "The complete MLP generation loop",
+    "chapter": "6. Inference",
+    "index": 41,
+    "slide": 45
+  },
+  {
+    "id": "attention-inference",
+    "title": "Attention uses the same generation loop",
+    "chapter": "6. Inference",
+    "index": 42,
+    "slide": 46
+  },
+  {
+    "id": "prompt",
+    "title": "Prepare a prompt using the same rules",
+    "chapter": "6. Inference",
+    "index": 43,
+    "slide": 47
+  },
+  {
+    "id": "decode",
+    "title": "Greedy decoding and sampling make different choices",
+    "chapter": "6. Inference",
+    "index": 44,
+    "slide": 48
+  },
+  {
+    "id": "append",
+    "title": "The chosen token becomes input on the next step",
+    "chapter": "6. Inference",
+    "index": 45,
+    "slide": 49
+  },
+  {
+    "id": "benchmark",
+    "title": "The trained TinyStories comparison",
+    "chapter": "7. The real experiment",
+    "index": 46,
+    "slide": 50
+  },
+  {
+    "id": "next",
+    "title": "The same steps in the runnable notebooks",
+    "chapter": "7. The real experiment",
+    "index": 47,
+    "slide": 51
+  }
+]

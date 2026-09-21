@@ -63,11 +63,12 @@ try{
   await page.goto(pathToFileURL(path.resolve(process.argv[2]||'part3.html')).href);
   await page.evaluate(()=>document.fonts.ready);
   assert.deepEqual(await page.evaluate(()=>window.__TOY__),saved,'assembled model must be current');
-  assert.equal(await page.locator('.frame').count(),50,'authored classroom frames before presentation title');
+  assert.equal(await page.locator('.frame:not(.context-lesson)').count(),50,'original classroom frames before presentation title');
+  assert.equal(await page.locator('.frame.context-lesson').count(),28,'context-cost extension moved from Part II');
   for(const id of ['s02-learning-break','s07-block-break','s13-generation-break'])assert.equal(await page.locator('#'+id+'.frame').count(),1,id);
   assert.equal(await page.locator('#s01 .frame').count(),1,'one opening recap');
   assert.equal(await page.locator('#s12 .frame').count(),1,'one full-model objective reminder');
-  assert.equal(await page.locator('#s16 .frame').count(),1,'one limits frame');
+  assert.equal(await page.locator('#s16 .frame:not(.context-lesson)').count(),1,'one limits frame after the cost extension');
   for(const id of ['s04-forward','s04-backward']){
     const text=await page.locator('#'+id).textContent();
     for(const label of ['8 hidden','20 logits','W₁, b₁','W₂, b₂','loss L'])assert(text.includes(label),id+' includes '+label);
@@ -122,7 +123,7 @@ try{
     assert((await page.locator('#s13-cost').textContent()).includes(count*(base.d_k+base.d_v)+' cached coordinates'),'cache coordinates');
   }
   await page.evaluate(()=>AT.present.enter());
-  assert.equal(await page.locator('.frame').count(),51,'classroom frames including generated title');
+  assert.equal(await page.locator('.frame:not(.context-lesson)').count(),51,'core classroom frames including generated title');
   for(const [section,frame] of [['s01',1],['s02',1],['s04',2],['s04',3],['s05',1],['s07',1],['s08',2],['s09',1],['s11',1],['s13',1],['s19',1]]){
     await page.evaluate(([section,frame])=>AT.present.go(section,frame,99),[section,frame]);await page.waitForTimeout(100);
     assert.equal((await page.evaluate(()=>AT.present.fitReport())).overflow,false,section+' fits');

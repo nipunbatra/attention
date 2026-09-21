@@ -1,4 +1,4 @@
-// New Part II extensions: arithmetic, controls, fit, mobile reading and screenshots.
+// Part III costs and Part II positions: arithmetic, controls and responsive fit.
 // Run: node src/check_cost_position.mjs [attention.html]
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -13,18 +13,17 @@ if(fs.existsSync(cache))for(const dir of fs.readdirSync(cache))candidates.push(p
 let pw;for(const candidate of candidates){try{pw=require(candidate);break;}catch{}}
 assert(pw,'Use an existing Playwright installation.');
 const costs=['break','symbols','matmul','concat-network','concat','average-network','average','attention-network','attention-projections','attention-products','projections','pairs','scores','mask','messages','predictor','calculator','training','baselines-training','prefix-sum','total','training-compare','backward','last-row','prompt','cache','generation-compare','memory'].map(x=>'s16-cost-'+x);
-const positions=['break','order','permute','toy','experiment','add','append','width','routing','learned','sine','sine-rule','relative','rope','alibi','mean','choices'].map(x=>'s17-position-'+x);
-const ids=[...costs,...positions];
+const positions=['break','order','permute','toy','experiment','add','shift','append','width','routing','learned','clock','rates','sine','sine-rule','worked-sine','relative','rope','rotate','rope-shift','rope-identity','rope-pairs','insertion','alibi','mean','length','choices'].map(x=>'s17-position-'+x);
+const ids=positions;
 const shots=fs.mkdtempSync(path.join(os.tmpdir(),'attention-cost-position-'));
 const browser=await pw.chromium.launch();
 const page=await browser.newPage({viewport:{width:1280,height:720},reducedMotion:'reduce'});
 const errors=[];page.on('pageerror',e=>errors.push(e.message));
 const close=(a,b,label)=>assert(Math.abs(a-b)<1e-11,`${label}: ${a} vs ${b}`);
 try{
-  await page.goto(pathToFileURL(path.resolve(process.argv[2]||'attention.html')).href);
+  await page.goto(pathToFileURL(path.resolve(process.argv[3]||'part3.html')).href);
   await page.evaluate(()=>document.fonts.ready);
-  const original=await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)}));
-  assert.deepEqual(await page.locator('.frame.context-lesson').evaluateAll(es=>es.map(e=>e.id)),ids);
+  assert.deepEqual(await page.locator('.frame.context-lesson').evaluateAll(es=>es.map(e=>e.id)),costs);
   async function go(id,build=99){
     await page.evaluate(({id,build})=>{const f=document.getElementById(id),s=f.closest('.sec');AT.present.enter();AT.present.go(s.id,[...s.querySelectorAll('.frame')].indexOf(f)+1,build);},{id,build});
     await page.waitForTimeout(80);
@@ -52,6 +51,23 @@ try{
   assert.equal(await page.locator('#cost-length').inputValue(),'1024','Control state survives navigation.');
   await page.locator('#cost-length').selectOption('16');
   await page.screenshot({path:path.join(shots,'calculator-16.png')});
+  for(const viewport of [{width:1280,height:720},{width:1024,height:768}]){
+    await page.setViewportSize(viewport);
+    for(const id of costs){await go(id);assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,id+' in Part III at '+viewport.width);}
+  }
+  await page.goto(pathToFileURL(path.resolve(process.argv[2]||'attention.html')).href);
+  await page.setViewportSize({width:1280,height:720});await page.evaluate(()=>document.fonts.ready);
+  const original=await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)}));
+  assert.deepEqual(await page.locator('.frame.context-lesson').evaluateAll(es=>es.map(e=>e.id)),ids);
+  assert.equal(await page.locator('[id^="s16-cost-"]').count(),0,'cost lesson is absent from Part II');
+  for(const shift of [0,5,10]){
+    await go('s17-position-rope-shift');await page.locator('#rope-shift').selectOption(String(shift));
+    const r=await page.evaluate(s=>AT.positionVisuals.shifted(s),shift);
+    close(r.dot,Math.sqrt(3)/2,'relative rotary match after common shift');
+    close(r.q[0]**2+r.q[1]**2,1,'query norm');close(r.k[0]**2+r.k[1]**2,1,'key norm');
+    assert.match(await page.locator('#rope-shift-result').innerText(),/0.866/);
+  }
+  await page.locator('#rope-shift').selectOption('0');
   const base={Maya:[1,0],Ravi:[0,1],helps:[.2,.2],today:[.6,.6]},pos=[[0,0],[.2,-.1],[.4,-.2],[.6,-.3]];
   const sequences=[['Maya','helps','Ravi','today'],['Ravi','helps','Maya','today']];
   function reference(tokens,on){
@@ -110,6 +126,10 @@ try{
     const undersized=await page.locator('#'+id).evaluate(e=>[...e.querySelectorAll('p,td,th,label,select')].filter(x=>getComputedStyle(x).visibility!=='hidden'&&parseFloat(getComputedStyle(x).fontSize)<21).map(x=>x.textContent));
     assert.deepEqual(undersized,[],id+' has readable classroom text');
     await page.screenshot({path:path.join(shots,id+'.png')});
+    const clipped=await page.locator('#'+id+' .position-visual svg').evaluateAll(es=>es.flatMap(s=>{
+      const v=s.viewBox.baseVal;return [...s.querySelectorAll('text')].filter(t=>{const b=t.getBBox();return b.x<0||b.y<0||b.x+b.width>v.width+1||b.y+b.height>v.height+1;}).map(t=>t.textContent);
+    }));
+    assert.deepEqual(clipped,[],id+' diagram text is not clipped');
   }
   // Match both widescreen sharing and older 4:3 projector viewports.
   for(const viewport of [{width:1920,height:1080},{width:1024,height:768}]){

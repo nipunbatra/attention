@@ -125,6 +125,8 @@ if N == 1:
     with open(os.path.join(here, 'embedding-primer.js'), encoding='utf-8') as module:
         shared_block += '<script>\n' + module.read() + '\n</script>\n'
 if N == 2:
+    with open(os.path.join(here, 'position-visuals.js'), encoding='utf-8') as module:
+        shared_block += '<script>\n' + module.read() + '\n</script>\n'
     # One SVG source powers both the standalone preview and the article stepper.
     diagram = os.path.join(here, '..', 'figures', 'attention-diagram-preview', 'diagram.js')
     data_adapter = os.path.join(here, 'attention-flow-data.js')
@@ -143,8 +145,7 @@ for f in files:
     txt = open(f, encoding='utf-8').read()
     if N == 2:
         # Keep teaching extensions beside their owning sections.
-        for marker, fragment in [('<!--CONTEXT_COSTS-->', 'sec16_cost.html'),
-                                 ('<!--POSITION_DETAIL-->', 'sec17_positions.html'),
+        for marker, fragment in [('<!--POSITION_DETAIL-->', 'sec17_positions.html'),
                                  ('<!--WORDLM_PIPELINE-->', 'sec19_pipeline.html')]:
             if marker in txt:
                 with open(os.path.join(sec_dir, fragment), encoding='utf-8') as source:
@@ -157,6 +158,9 @@ for f in files:
                     with open(os.path.join(here, '..', 'figures', 'wordlm-pipeline', name + '.svg'), encoding='utf-8') as asset:
                         templates.append('<template id="pipeline-' + name + '">' + asset.read() + '</template>')
             txt = txt.replace('<!--PIPELINE_TEMPLATES-->', '\n'.join(templates))
+    if N == 3 and '<!--CONTEXT_COSTS-->' in txt:
+        with open(os.path.join(sec_dir, 'sec16_cost.html'), encoding='utf-8') as source:
+            txt = txt.replace('<!--CONTEXT_COSTS-->', source.read())
     if N == 1 and 'figures/indian-names/github-dataset.png' in txt:
         # Keep the dataset screenshot available in the standalone/offline HTML.
         with open(os.path.join(here, '..', 'figures', 'indian-names', 'github-dataset.png'), 'rb') as asset:

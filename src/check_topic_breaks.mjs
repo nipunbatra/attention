@@ -17,10 +17,9 @@ const targets=[
   ['s13-topic-break','s13-frame1'],
   ['s14-topic-break','s14-routing'],
   ['s16-topic-break','s16-flow-frame'],
-  ['s16-cost-break','s16-cost-symbols'],
   ['s17-position-break','s17-position-order'],
   ['s19-topic-break','s19-frame-generation'],
-  ['s19-pipeline-break','s19-pipeline-mlp']
+  ['s19-pipeline-break','s19-pipeline-data']
 ];
 const browser=await chromium.launch();
 try{

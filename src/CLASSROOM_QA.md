@@ -879,6 +879,17 @@ Full Transformer diagrams are architectural explanations. The original one-head 
 - `check_cost_networks.mjs` passes: all five frames, same-context/selected-window assertions, neuron and edge counts, exact matrix shapes/cells, residual routing, SVG reveal reversal and label bounds, 1280×720 and 1024×768 presentation layouts, and 390×844 reading containment. Visually inspected all five diagrams and the 4:3 attention network. These are screen-layout checks, not a physical projector or AirServer test.
 - `check_cost_position.mjs` now covers 45 frames and 205 forward/reverse build checks, including 1920×1080. Full-deck audit: 387 states and 672 unique formulas, no errors or overflow. Live/reference arithmetic, token-flow, topic-break, concise-core and metadata checks pass. Phone QA has no page overflow or console errors. The 161-control interaction sweep reports no problems. No numerical model, shared runtime, dependency or other lecture changes.
 
+## 2026-09-21: slower notebook walkthrough, positions, and Part III costs
+
+- Replaced the compact lab extension with 47 calculation steps plus a topic break. An authored six-token sentence produces seven supervised targets. The lesson constructs the actual `B=2, w=4, C=10` batch, traces both models, computes loss and gradients, applies an SGD update, and generates tokens. The untrained calculation is explicitly separate from the saved TinyStories experiment. Corpus counts, splits and measured results retain their provenance.
+- Published the chaptered companion source under `notebooks/wordlm/`. Its runnable Notebook 5 and the lecture use 47 identical generated numeric SVGs. Code, printed output, checks and expandable full-model maps accompany the figures. All five notebooks and the support modules are packaged together; raw stories, private Site files and machine-specific launch instructions are excluded. The existing private Site was not changed.
+- Added ten position frames (27 total), drawing on the supplied Serrano and Huang videos and checking the mathematics against primary papers. Original SVGs distinguish additive displacement from rotary Q/K transforms; the live common-shift experiment preserves the expected dot product. Numeric sinusoid construction, frequency pairs and limits of length extrapolation are explicit. No model parameters changed.
+- Moved all 28 cost frames, including the three network diagrams and matrix worksheets, into Part III Section 16. Part II retains the full attention calculation and links to the moved material. Metadata, teaching-route links and regression targets follow the new location.
+- `check_wordlm_pipeline.mjs`: all 48 frames, exact notebook slide indices, numeric SVG bounds, unchanged model and 1280×720 / 1024×768 presentation plus 390px reading layouts pass. `check_wordlm_companion.mjs`: all 47 executed figures match the lecture assets exactly; seven chapter links, local downloads, expandable maps and 1280 / 768 / 390px reading containment pass.
+- Notebook 5 was executed from a clean kernel. The 19 Python tests pass in both the working project and a fresh extraction of the downloadable ZIP. All seven saved artifact checksums match. Notebooks 1–4 retain their previously executed outputs; no training benchmark was rerun for this revision.
+- Position/cost regression: all 28 moved cost frames, 27 position frames and 103 position build checks pass, including controls and independent arithmetic. Cost-network and Part III continuity regressions pass. The full frame audits report 369 states / 602 formulas for Part II and 181 states / 254 formulas for Part III, with no formula errors, overflow or console errors. Topic-break, concise-core, token-flow and metadata regressions pass. The unchanged Part II model agrees with the reference on 9,260 finite values and 180 masked infinities, maximum error 1.78e−15.
+- Representative diagrams and the chaptered notebook were inspected visually. Phone figures pan within bounded panels. These checks verify browser geometry, not an actual projector or AirServer connection.
+
 ## Reproduce from the repository root
 
 ```sh
@@ -890,9 +901,10 @@ node src/check_part1_diagrams.mjs part1.html
 node src/toy_ref.mjs src/toy.json --compare src/py_check.json
 node src/check-live-model.mjs attention.html
 node src/check_token_flow.mjs attention.html
-node src/check_cost_position.mjs attention.html
-node src/check_cost_networks.mjs attention.html
+node src/check_cost_position.mjs attention.html part3.html
+node src/check_cost_networks.mjs part3.html
 node src/check_wordlm_pipeline.mjs attention.html
+node src/check_wordlm_companion.mjs
 python3 src/check_training.py
 node src/check_position_capacity.mjs
 node src/check-routing-scaling.mjs

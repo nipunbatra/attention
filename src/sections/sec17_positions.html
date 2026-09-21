@@ -1,5 +1,21 @@
 <!-- Part II extension: positional information, with a separate inspectable toy. -->
 <style>
+.context-lesson .lesson-table{width:100%;border-collapse:collapse;table-layout:fixed;margin:18px 0}
+.context-lesson .lesson-table th,.context-lesson .lesson-table td{padding:12px 14px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+.context-lesson .lesson-table th{color:var(--ink-2);font-weight:600}
+.context-lesson .lesson-table .num{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--font-mono)}
+.context-lesson .lesson-key{color:var(--ink-2);font-size:.86em;line-height:1.4;margin-top:18px}
+.context-lesson .lesson-pair{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start}
+.context-lesson .lesson-large{font-size:1.45em;margin:22px 0}
+.context-lesson .lesson-result{padding:14px 0;border-top:2px solid var(--line);margin-top:20px}
+.context-lesson .lesson-control{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin:12px 0 20px}
+.context-lesson select{font:inherit;padding:6px 12px;border:1px solid var(--ink-3);background:var(--card);color:var(--ink);border-radius:6px}
+body.present .context-lesson .lesson-table th,body.present .context-lesson .lesson-table td{font-size:24px;line-height:1.3;padding:12px 14px}
+body.present .context-lesson .lesson-key{font-size:22px}
+body.present:not(.is-preflighting) .context-lesson.is-live [data-build]:not(.is-pending) .katex-html *{visibility:visible}
+body.present:not(.is-preflighting) .context-lesson.is-live [data-build].is-pending .katex-html *{visibility:hidden}
+body:not(.present) .context-lesson{margin:44px 0}
+@media(max-width:650px){body:not(.present) .context-lesson .lesson-pair{grid-template-columns:1fr;gap:22px}body:not(.present) .context-lesson .lesson-table th,body:not(.present) .context-lesson .lesson-table td{font-size:14px;padding:9px 5px}body:not(.present) .context-lesson .katex-display,body:not(.present) .context-lesson .lesson-large{overflow-x:auto;max-width:100%}body:not(.present) .context-lesson .lesson-table .katex{font-size:1.05em}}
 .position-lesson .position-sequence{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
 .position-lesson .position-token{padding:10px 15px;border-bottom:3px solid var(--c-e);background:var(--t-e)}
 .position-lesson .position-token small{display:block;color:var(--ink-2);font-size:.75em}
@@ -15,6 +31,12 @@
 #s17-position-experiment .lesson-pair p{margin:0}
 #s17-position-experiment .lesson-table{margin:12px 0}
 #s17-position-experiment .lesson-result{padding:0;border:0;margin:16px 0 0}
+.position-visual{overflow-x:auto;margin:16px 0}
+.position-visual svg{display:block;width:100%;max-height:325px;height:auto;font-family:var(--font-ui)}
+.position-visual svg text{font-size:24px;fill:var(--ink)}
+.position-visual svg .label-small{font-size:22px;fill:var(--ink-2)}
+.position-numeric-scroll{max-width:100%;overflow-x:auto}.position-numeric-scroll .lesson-table{min-width:760px}
+@media(max-width:650px){body:not(.present) .position-visual svg{min-width:950px}}
 </style>
 
 <div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-break" data-title="Where does word order enter?" data-autobuild="off">
@@ -65,6 +87,13 @@
 <p class="lesson-key" data-build="2">Both rows have $d$ coordinates; their sum still has $d$. These example coordinates have no prescribed meaning.</p>
 </div>
 
+<div class="frame context-lesson position-lesson" id="s17-position-shift" data-title="Picture addition as a position-dependent move" data-autobuild="off">
+<script type="text/x-notes">Inspired by Luis Serrano's geometric explanation, redrawn with our own two-coordinate Maya example. The blue point is the same token lookup in both panels. The green displacement depends on the slot. Addition translates the point; it is not a rotation of the token vector. This supplies a distinguishable input, not an automatic understanding of word order. Coordinates are illustrative and are not the main bank model.</script>
+<div class="position-visual" data-position-visual="shift"></div>
+<p>Same word vector: $e_{\rm Maya}=[1,1]$. Different slot vectors produce different inputs.</p>
+<p class="lesson-key">The model learns with these combined inputs. Adding position makes order available; it does not itself tell the model who helped whom.</p>
+</div>
+
 <div class="frame context-lesson position-lesson" id="s17-position-append" data-title="Could we append one or two position numbers? Yes." data-autobuild="off">
 <script type="text/x-notes">Answer the user's question directly. Appending a position index, a normalized index, or multiple engineered or learned features is mathematically valid. It is not universally worse. The model must learn how to use the feature; width, scale and generalization are design choices. Large raw indices can dominate dot products without suitable scaling or learned suppression. Normalizing by current prompt length changes old position features as tokens arrive and complicates cache reuse.</script>
 <div class="lesson-large">$[\ e_{\rm token}\ ;\ i\ ]\quad\text{has }d+1\text{ coordinates}$</div>
@@ -98,6 +127,20 @@
 <p class="lesson-result" data-build="2">Tradeoff: the table has a configured length. Adding new rows does not make them trained position representations.</p>
 </div>
 
+<div class="frame context-lesson position-lesson" id="s17-position-clock" data-title="A sine and cosine pair marks one position" data-autobuild="off">
+<script type="text/x-notes">Use a clock-like two-coordinate feature before writing the general formula. Here we draw cosine horizontally and sine vertically, at an intentionally simple 90 degrees per slot. The original Transformer convention puts sine first and cosine second; swapping these coordinates changes the convention, not the purpose. These are position features that are ADDED to a token vector. This is not RoPE. The 90-degree rate is illustrative, not the original rate.</script>
+<div class="position-visual" data-position-visual="clock"></div>
+<p>At index $i$, record $[\cos(i\omega),\sin(i\omega)]$. Here $\omega=90^\circ$ per slot.</p>
+<p class="lesson-key">Index 0 and index 4 collide in this toy clock. One rapidly repeating pair is not enough.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-rates" data-title="Use several clocks running at different rates" data-autobuild="off">
+<script type="text/x-notes">Keep the intentionally simple fast rate at 90 degrees per slot and add a slow 30-degree pair. At indices 0 and 4 the fast pair is identical but the slow pair differs. Both toy rates still repeat jointly at index 12, so do not claim a small collection of clocks guarantees no collisions or arbitrary length generalization. The original geometric frequency schedule is different and comes next.</script>
+<div class="position-visual" data-position-visual="rates"></div>
+<p>The fast pair repeats after four slots; the slow pair distinguishes these two positions.</p>
+<p class="lesson-key">Combine pairs into one vector. Multiple rates provide different scales, not a guarantee of unlimited context.</p>
+</div>
+
 <div class="frame context-lesson position-lesson" id="s17-position-sine" data-title="Sinusoidal positions: a fixed pattern at several scales" data-autobuild="off">
 <script type="text/x-notes">Use actual computed values for the standard formula at d=4. The first pair changes by one radian per slot; the second by 0.01 radians per slot. The table is rounded to three decimals. These waves are fixed features, not probabilities. Source: Vaswani et al., Section 3.5, https://arxiv.org/abs/1706.03762.</script>
 <p>For a four-coordinate example, slot $i$ gets:</p>
@@ -112,6 +155,14 @@
 <p class="lesson-key">$r$ labels a coordinate pair. $\omega_r=10000^{-2r/d}$ sets its rate; pairs use different rates.</p>
 <p data-build="1">Moving by a fixed number of slots rotates each pair by a fixed angle. Nearby positions change smoothly; different rates give different distance scales.</p>
 <p class="lesson-result" data-build="2">We can compute a row for an unseen index. That does <strong>not</strong> guarantee good predictions at unseen context lengths.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-worked-sine" data-title="Build one full sinusoidal row, number by number" data-autobuild="off">
+<script type="text/x-notes">Return to the original sin-then-cos convention and radians. Use model width d=4, position index i=3, pair indices r=0 and r=1. The denominators are 1 and 100, not 10000 for the second pair. Each pair contributes two coordinates. The base 10000 is a design constant, not a token count or vocabulary size. These rows are fixed rather than trained.</script>
+<p>Choose width $d=4$ and position index $i=3$. There are two coordinate pairs.</p>
+<div class="position-numeric-scroll"><table class="lesson-table"><thead><tr><th>Pair $r$</th><th>Rate $10000^{-2r/4}$</th><th>Angle $i\omega_r$</th><th>$[\sin,\cos]$</th></tr></thead><tbody><tr><td>0</td><td>1 rad / slot</td><td>3 radians</td><td>[0.141, −0.990]</td></tr><tr><td>1</td><td>0.01 rad / slot</td><td>0.03 radians</td><td>[0.030, 1.000]</td></tr></tbody></table></div>
+<div style="overflow-x:auto;max-width:100%">$$p_3=[0.141,-0.990,0.030,1.000]$$</div>
+<p class="lesson-key">$i$ is a token position; $r$ is a coordinate-pair index; $d$ is vector width. The base 10000 controls the frequency range.</p>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-relative" data-title="Relative position asks: how far away is this source?" data-autobuild="off">
@@ -130,6 +181,44 @@
 <p class="lesson-key">Dot product = cosine of the angle difference: $\cos30^\circ\approx0.866$; $\cos90^\circ=0$. Real RoPE uses multiple rates and usually rotates Q and K, not V.</p>
 </div>
 
+<div class="frame context-lesson position-lesson" id="s17-position-rotate" data-title="First rotate just one two-number vector" data-autobuild="off">
+<script type="text/x-notes">Before the relative-position identity, show one real rotation. Use the geometric column-vector convention only for this two-dimensional derivation, unlike the row-vector projection notation elsewhere. Rotating [1,0] by 60 degrees gives [0.5,0.866]. Norm is preserved. Content is rotated, not replaced with a pure position vector.</script>
+<div class="position-visual" data-position-visual="rotate"></div>
+<div>$$R_\theta\begin{bmatrix}x\\y\end{bmatrix}=\begin{bmatrix}x\cos\theta-y\sin\theta\\x\sin\theta+y\cos\theta\end{bmatrix}$$</div>
+<p class="lesson-key">For $[x,y]=[1,0]$ and $\theta=60^\circ$, the result is $[0.500,0.866]$. Rotation preserves length.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-rope-shift" data-title="Shift both positions: the same relative match" data-autobuild="off">
+<script type="text/x-notes">The content vectors are held fixed at q=k=[1,0]. Rotate 30 degrees per slot. Compare query/key at 3/2 and 8/7, both one apart. The vectors rotate to different absolute angles, but their dot product is the same. This isolates the positional factor; real content vectors can differ with context, so an entire model is not guaranteed shift invariant.</script>
+<div class="lesson-control"><label for="rope-shift">Shift both slots</label><select id="rope-shift"><option value="0">+0: query 3, key 2</option><option value="5">+5: query 8, key 7</option><option value="10">+10: query 13, key 12</option></select></div>
+<div class="position-visual" id="rope-shift-picture"></div>
+<p id="rope-shift-result" class="lesson-result" aria-live="polite"></p>
+<p class="lesson-key">Held-fixed content isolates the effect: the positional part depends on the gap, not the shared shift.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-rope-identity" data-title="Why the absolute angles cancel" data-autobuild="off">
+<script type="text/x-notes">Use column vectors for this local derivation and state it explicitly. For a single pair with frequency omega, R_i means rotation by i omega. The transpose undoes the query's rotation. Composition leaves only j-i. This is a structural identity for fixed content vectors, not a promise that relative-distance-only models solve language or that attention falls monotonically with distance.</script>
+<p>For this two-coordinate derivation, write vectors as columns. $R_i$ rotates by $i\omega$.</p>
+<div>$$\underbrace{(R_iq)^\top(R_jk)}_{\text{rotated query-key match}}=q^\top\underbrace{R_i^\top R_j}_{R_{j-i}}k$$</div>
+<p>Undo the query rotation, then apply the key rotation. Only the angle difference $(j-i)\omega$ remains.</p>
+<p class="lesson-result">For $q=k=[1,0]$: one slot apart gives $\cos30^\circ=0.866$; three slots apart gives $\cos90^\circ=0$.</p>
+<p class="lesson-key">Content still determines the match. Cosine oscillates: this is not a rule that every farther token gets less attention.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-rope-pairs" data-title="A longer query is several two-number pairs" data-autobuild="off">
+<script type="text/x-notes">Use a separate d_k=4 rotary example. The main hand-chosen model has d_k=3 and additive positions; it is not silently changed into a RoPE model. Standard full-dimension RoPE uses an even width. Each pair has its own rate, and the key uses the same frequency schedule. Implement these pairwise operations directly rather than allocating a large dense block-diagonal rotation matrix.</script>
+<div class="position-visual" data-position-visual="pairs"></div>
+<p>Rotate each query and key pair at its assigned rate. Join the pairs back into a vector of the same width.</p>
+<p class="lesson-key">This rotary example uses $d_k=4$. Our bank worksheet and notebook use additive positions; they are unchanged. Standard RoPE rotates Q and K, not V.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-insertion" data-title="Addition and RoPE enter at different points" data-autobuild="off">
+<script type="text/x-notes">Contrast the two mechanisms visually, rather than saying both simply rotate embeddings. Additive sinusoidal encoding adds a position-only vector to the token representation before projecting Q,K,V. RoPE rotates content-dependent query/key pairs after projection. The value path is left unrotated by standard RoPE. These are two design alternatives; our notebook implements learned additive positions.</script>
+<div class="position-flow"><span><strong>Additive</strong><br>Token + position</span><b>→</b><span>Project Q, K and V</span><b>→</b><span>Match, then mix</span></div>
+<div class="position-flow"><span><strong>RoPE</strong><br>Project Q, K and V</span><b>→</b><span>Rotate Q and K<br>Keep V unrotated</span><b>→</b><span>Match, then mix</span></div>
+<p class="lesson-result">Sines and cosines appear in both. One adds a position vector; the other rotates matching vectors.</p>
+</div>
+
 <div class="frame context-lesson position-lesson" id="s17-position-alibi" data-title="ALiBi: give more distant sources a score penalty" data-autobuild="off">
 <script type="text/x-notes">ALiBi is a fixed linear distance bias in attention scores, with slopes differing across heads. This is one illustrative head with m=0.25 and three allowed sources. It is a soft recency preference, not a hard window: a strong content score can overcome the penalty. Source: Press et al., https://arxiv.org/abs/2108.12409. The table's weights are softmax([1,1.5,2]).</script>
 <div>$$s_{ij}=\frac{q_i\cdot k_j}{\sqrt{d_k}}-m(i-j),\qquad j\leq i$$</div>
@@ -146,6 +235,13 @@
 <p class="lesson-key" data-build="2">Attention is not just a fixed average: its weights depend on the token-and-position rows being compared.</p>
 </div>
 
+<div class="frame context-lesson position-lesson" id="s17-position-length" data-title="A longer formula is not yet a longer-context model" data-autobuild="off">
+<script type="text/x-notes">Separate mathematical evaluability from empirical generalization. A learned absolute position table has a configured size; sinusoidal and rotary formulas can evaluate unseen indices, but the model may not work reliably at those offsets. Position interpolation rescales positions or frequencies. The 4 to 8 illustration scales indices by one half. This changes nearby angle differences too. Finetuning and evaluation are required; the original position-interpolation paper reports adapted models, not a universal drop-in guarantee.</script>
+<table class="lesson-table"><thead><tr><th>Question</th><th>What to check</th></tr></thead><tbody><tr><td>Can we compute position 8192?</td><td>A formula may allow it; a learned table may need extension.</td></tr><tr><td>Can the model use that context well?</td><td>Measure held-out prediction and retrieval at that length.</td></tr></tbody></table>
+<p>One extension idea: use $i/2$ in place of $i$ when doubling the window. The rotations change more slowly.</p>
+<p class="lesson-key">This also changes local position differences. It is a model adaptation to test, not free memory. Detailed context costs follow in Part III.</p>
+</div>
+
 <div class="frame context-lesson position-lesson" id="s17-position-choices" data-title="Choose where position enters the calculation" data-autobuild="off">
 <script type="text/x-notes">These are design families, not a quality ranking. Learned absolute embeddings have trained table coverage. Sinusoids, RoPE and ALiBi define operations at larger indices, but actual length generalization still depends on training, data, architecture and any scaling changes. The lecture uses additive position rows to make each operation visible. The future-information mask is still needed for all these causal models.</script>
 <table class="lesson-table"><thead><tr><th>Method</th><th>Where it enters</th><th>What it supplies</th></tr></thead><tbody>
@@ -159,10 +255,11 @@
 
 <div class="companion">
 <h3>Position is a design choice, not an extra word</h3>
+<p>Visual companions: <a href="https://www.youtube.com/watch?v=IHu3QehUmrQ&amp;t=86s">Luis Serrano: positional encoding as a geometric displacement</a> and <a href="https://www.youtube.com/watch?v=SMBkImDWOyQ&amp;t=178s">Jia-Bin Huang: rotary position embedding and relative offsets</a>. Our figures are original redrawings with separate, labelled toy numbers. The videos motivated the visual sequence; the mathematical claims are checked against the papers below.</p>
 <p>The four-coordinate teaching model uses explicit additive position rows. The two-coordinate swap experiment above is independent and uses identity Q/K/V projections solely to make every number inspectable. Its results show that positional inputs can distinguish two token orders, not that an untrained model understands either sentence.</p>
 <p>Appending a scalar index or a small position vector is valid. Scaling the index, choosing its range, and combining it with content are architectural decisions. Dividing indices by the current prefix length changes earlier features whenever the prefix grows; ordinary append-only KV caching relies on keeping those earlier representations unchanged.</p>
 <p>For a sine/cosine pair at rate $\omega$, the angle-addition formulas express the features at $i+\delta$ as a linear transformation of those at $i$, using coefficients $\sin(\delta\omega)$ and $\cos(\delta\omega)$. For RoPE, the orthogonal rotations satisfy $R_i^\top R_j=R_{j-i}$, so $\langle R_iq,R_jk\rangle=q^\top R_{j-i}k$. This relative-offset structure coexists with content-dependent queries and keys.</p>
-<p>Sources: <a href="https://arxiv.org/abs/1706.03762">Vaswani et al., Attention Is All You Need, §3.5</a>; <a href="https://arxiv.org/abs/1803.02155">Shaw et al., relative position representations</a>; <a href="https://arxiv.org/abs/2104.09864">Su et al., RoFormer / RoPE</a>; <a href="https://arxiv.org/abs/2108.12409">Press et al., ALiBi</a>.</p>
+<p>Sources: <a href="https://arxiv.org/abs/1706.03762">Vaswani et al., Attention Is All You Need, §3.5</a>; <a href="https://arxiv.org/abs/1803.02155">Shaw et al., relative position representations</a>; <a href="https://arxiv.org/abs/2104.09864">Su et al., RoFormer / RoPE</a>; <a href="https://arxiv.org/abs/2108.12409">Press et al., ALiBi</a>; <a href="https://arxiv.org/abs/2306.15595">Chen et al., position interpolation</a>.</p>
 </div>
 <script>
 (function(){

@@ -10,6 +10,35 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+2026-09-21 slower lab and position revision (supersedes the entries below):
+
+- Section 19 has 47 concrete calculation frames plus its topic break. One
+  authored six-token sentence yields seven targets; a B=2, w=4, C=10 batch is
+  traced through the MLP, attention, loss, an SGD update and generation. Random
+  toy arithmetic is explicitly separate from the saved TinyStories benchmark.
+- `notebooks/wordlm/05_training_and_inference_maps.html` is the public illustrated
+  companion. Each step links to its exact slide and shares its numeric SVG with
+  the executable notebook. `slow_walkthrough.py` and `build_slow_lesson.py` are
+  the shared authoring source. All five notebooks and their support files are
+  downloadable; raw corpus data and the owner-private Site are excluded.
+- All 28 detailed cost frames moved to `sections3/sec16_cost.html` and are
+  included in Part III Section 16, after training and cached generation. Part II
+  Section 16 retains the matrix calculation, with a reading link to Part III.
+- Section 17 now has 27 position frames. Ten additional steps use geometric
+  addition, multiple-rate clocks, a numeric sinusoidal row, pairwise rotation,
+  an interactive common-shift RoPE experiment and length-generalization limits.
+  `position-visuals.js` supplies the original SVGs. Serrano and Huang video links
+  are credited in the reading companion; mathematical checks use the papers.
+- Preserve the caveats: appending position features is valid, addition is not
+  uniquely invertible, the one-layer final-row swap example is scoped, RoPE
+  rotates Q/K rather than V, and a formula accepting longer indices does not
+  establish reliable longer-context behavior.
+
+Use `check_wordlm_pipeline.mjs`, `check_wordlm_companion.mjs`,
+`check_cost_position.mjs attention.html part3.html`, and
+`check_cost_networks.mjs part3.html` for these changes. The model, benchmark
+parameters and saved measurements were not changed.
+
 2026-09-21 diagram-first notebook walkthrough: Section 19 now has 16 additional
 `pipeline-lesson` frames after the training/generation introduction. The source
 is `sections/sec19_pipeline.html`, included at `<!--WORDLM_PIPELINE-->`.

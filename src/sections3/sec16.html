@@ -1,4 +1,4 @@
-<section id="s16" class="sec" data-title="What attention gives, and what it does not" data-lit="">
+<section id="s16" class="sec" data-title="Context cost and attention limits" data-lit="">
 <style>
 #s16 .s16-list{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 #s16 .s16-col{border:1px solid var(--line);border-radius:10px;padding:18px;background:var(--card)}
@@ -6,8 +6,9 @@
 </style>
 <header class="sec-head">
   <span class="sec-num">16</span>
-  <div><p class="eyebrow">An attention map shows how values are mixed. It cannot tell us everything about the model's answer.</p><h2>What attention gives, and what it does not</h2></div>
+  <div><p class="eyebrow">We know the training and generation paths. Now count their work, then examine the limits.</p><h2>Context cost and attention limits</h2></div>
 </header>
+<!--CONTEXT_COSTS-->
 <div class="companion" data-kicker="For self-study">
   <p>Each receiving token uses attention to combine value rows from allowed positions. Learned projections compute the weights from the current representations, so the pattern can adapt to the input and shorten paths between distant tokens. An attention map alone does not guarantee correct facts, sound reasoning, a complete explanation, or unlimited memory. One head may handle several relations, and several heads may share a relation. The causal mask is needed during training as well as generation. Context length is finite, and computing the scores has a cost. Use the checks below to distinguish what the calculation shows from what would need more evidence.</p>
 </div>

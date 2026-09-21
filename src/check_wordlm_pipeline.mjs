@@ -15,13 +15,14 @@ try{
   await page.goto(url);await page.evaluate(()=>document.fonts.ready);
   const original=await page.evaluate(()=>JSON.stringify(AT.model));
   const ids=await page.locator('.pipeline-lesson').evaluateAll(es=>es.map(e=>e.id));
-  assert.equal(ids.length,16);
+  const manifest=JSON.parse(fs.readFileSync(new URL('../notebooks/wordlm/lesson-manifest.json',import.meta.url)));
+  assert.equal(ids.length,manifest.length+1);
   assert.equal(await page.locator('template[id^="pipeline-"]').count(),4);
   assert.equal(await page.locator('.pipeline-lesson script[type="text/x-notes"]').count(),ids.length);
-  assert.deepEqual(await page.locator('.pipeline-token-grid small').allTextContents(),['1','8','7','5','9','6','4','2']);
-  assert.match(await page.locator('#s19-pipeline-match').innerText(),/all-query views also need a causal triangle/);
+  assert.match(await page.locator('#s19-pipeline-boundaries').innerText(),/7 supervised targets/);
+  assert.match(await page.locator('#s19-pipeline-mask script').textContent(),/no future columns/);
   const summary=JSON.parse(fs.readFileSync(new URL('../figures/wordlm-pipeline/benchmark-summary.json',import.meta.url)));
-  for(const kind of ['mlp','attention'])assert.match(await page.locator('#s19-pipeline-results').innerText(),new RegExp(summary.aggregate[kind].test_perplexity.mean.toFixed(2).replace('.','\\.')));
+  for(const kind of ['mlp','attention'])assert.match(await page.locator('#s19-pipeline-benchmark').innerText(),new RegExp(summary.aggregate[kind].test_perplexity.mean.toFixed(2).replace('.','\\.')));
   await page.evaluate(()=>AT.present.enter());
   async function go(id){
     await page.evaluate(id=>{
@@ -40,6 +41,13 @@ try{
         return [...g.querySelectorAll('text')].filter(t=>{const b=t.getBBox();return b.x<r.x-1||b.x+b.width>r.x+r.width+1;}).map(t=>t.textContent);
       }));
       assert.deepEqual(outside,[],id+' SVG labels stay inside their nodes');
+      const clipped=await page.locator('#'+id+' .step-figure svg').evaluateAll(es=>es.flatMap(s=>{
+        const v=s.viewBox.baseVal;
+        return [...s.querySelectorAll('text')].filter(t=>{const b=t.getBBox();return b.x<v.x-1||b.y<v.y-1||b.x+b.width>v.x+v.width+1||b.y+b.height>v.y+v.height+1;}).map(t=>t.textContent);
+      }));
+      assert.deepEqual(clipped,[],id+' SVG text stays within the figure');
+      const stage=manifest.find(s=>'s19-pipeline-'+s.id===id);
+      if(stage)assert.equal(await page.evaluate(()=>AT.present.state().frame.index+1),stage.slide,'notebook link matches slide index');
       const button=page.locator('#'+id+' .pipeline-toggle');
       if(await button.count()){
         const svg=page.locator('#'+id+' .pipeline-map svg');const before=await svg.getAttribute('viewBox');

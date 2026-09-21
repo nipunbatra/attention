@@ -1,0 +1,207 @@
+{
+  "sample": {
+    "dataset": "roneneldan/TinyStories",
+    "row_idx": 12400,
+    "text_excerpt": "Once upon a time, there lived a little bunny.",
+    "revision": "f54c09fd23315a6f9c86f9dc80f725de7d8f9c64"
+  },
+  "audit": {
+    "document_overlap": {
+      "train_test": 0,
+      "train_validation": 0,
+      "validation_test": 0
+    },
+    "documents": {
+      "test": 592,
+      "train": 4822,
+      "validation": 586
+    },
+    "duplicates_removed_before_split": 0,
+    "oov": {
+      "test": {
+        "rate": 0.010776203871420104,
+        "tokens": 119801,
+        "unknown": 1291
+      },
+      "train": {
+        "rate": 0.007354267901918207,
+        "tokens": 964338,
+        "unknown": 7092
+      },
+      "validation": {
+        "rate": 0.011861176588595215,
+        "tokens": 119634,
+        "unknown": 1419
+      }
+    },
+    "split_seed": 31415,
+    "story_length_tokens": {
+      "test": {
+        "max": 768,
+        "median": 178,
+        "min": 78
+      },
+      "train": {
+        "max": 942,
+        "median": 176,
+        "min": 60
+      },
+      "validation": {
+        "max": 947,
+        "median": 177,
+        "min": 83
+      }
+    },
+    "vocab_fit_on": "train only",
+    "vocab_size": 4000
+  },
+  "benchmark": {
+    "source": "Word-level TinyStories lab: artifacts/benchmark.json",
+    "source_sha256": "d3a0273a9ca71ef4b4b74b2b04470c68e1e0bedae72e2129764aec5d885cbe58",
+    "dataset": "roneneldan/TinyStories",
+    "revision": "f54c09fd23315a6f9c86f9dc80f725de7d8f9c64",
+    "license": "CDLA-Sharing-1.0",
+    "device": "Apple MPS",
+    "seeds": [
+      11,
+      29,
+      47
+    ],
+    "context": 64,
+    "batch_size": 512,
+    "step_ceiling": 6000,
+    "maximum_supervised_targets": 3072000,
+    "checkpoint_rule": "best validation loss",
+    "documents": {
+      "test": 592,
+      "train": 4822,
+      "validation": 586
+    },
+    "configs": {
+      "attention": {
+        "context_len": 64,
+        "d_embed": 64,
+        "hidden": 256,
+        "learning_rate": 0.003,
+        "sweep_axis": "comparison_tune",
+        "sweep_value": "lr=0.003,wd=0.001",
+        "weight_decay": 0.001
+      },
+      "mlp": {
+        "context_len": 64,
+        "d_embed": 64,
+        "hidden": 256,
+        "learning_rate": 0.001,
+        "sweep_axis": "comparison_tune",
+        "sweep_value": "lr=0.001,wd=0.0001",
+        "weight_decay": 0.0001
+      }
+    },
+    "comparison": {
+      "attention_minus_mlp_test_loss": -0.4958402656538552,
+      "claim_scope": "bounded TinyStories subset and the documented training budget only",
+      "relative_perplexity_change": -0.39093694867207696,
+      "winner": "attention"
+    },
+    "aggregate": {
+      "attention": {
+        "runtime_seconds": {
+          "mean": 71.455527791637,
+          "sample_std": 0.8078739821623484,
+          "values": [
+            71.35300458292477,
+            72.30976954195648,
+            70.70380925002974
+          ]
+        },
+        "test_loss": {
+          "mean": 3.4440539920832625,
+          "sample_std": 0.009713459385727038,
+          "values": [
+            3.4548369977808355,
+            3.441335761448963,
+            3.435989217019989
+          ]
+        },
+        "test_perplexity": {
+          "mean": 31.31463254211675,
+          "sample_std": 0.3047408118077636,
+          "values": [
+            31.653128731517825,
+            31.228644339933375,
+            31.062124554899054
+          ]
+        },
+        "validation_loss": {
+          "mean": 3.399701939740792,
+          "sample_std": 0.004816304889397063,
+          "values": [
+            3.4035268613174026,
+            3.4012858018762477,
+            3.394293156028726
+          ]
+        },
+        "validation_perplexity": {
+          "mean": 29.955401728990562,
+          "sample_std": 0.14412100127140945,
+          "values": [
+            30.069965850030524,
+            30.00265272369824,
+            29.79358661324292
+          ]
+        }
+      },
+      "mlp": {
+        "runtime_seconds": {
+          "mean": 67.7688623056747,
+          "sample_std": 0.39186265349348787,
+          "values": [
+            67.44844783400185,
+            67.65237970801536,
+            68.20575937500689
+          ]
+        },
+        "test_loss": {
+          "mean": 3.9398942577371177,
+          "sample_std": 0.008605387703296864,
+          "values": [
+            3.937838947320572,
+            3.949341204592719,
+            3.9325026212980614
+          ]
+        },
+        "test_perplexity": {
+          "mean": 51.414434800867234,
+          "sample_std": 0.44307967119606395,
+          "values": [
+            51.30760297422742,
+            51.901163321481015,
+            51.03453810689327
+          ]
+        },
+        "validation_loss": {
+          "mean": 3.9006589441167754,
+          "sample_std": 0.010458471448268523,
+          "values": [
+            3.8907704740609015,
+            3.911606781813095,
+            3.89959957647633
+          ]
+        },
+        "validation_perplexity": {
+          "mean": 49.43681664227879,
+          "sample_std": 0.5174328678261898,
+          "values": [
+            48.94858561431488,
+            49.979193149699064,
+            49.38267116282243
+          ]
+        }
+      }
+    },
+    "parameter_counts": {
+      "mlp": 2332832,
+      "attention": 1321120
+    }
+  }
+}

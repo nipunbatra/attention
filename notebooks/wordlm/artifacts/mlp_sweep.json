@@ -1,0 +1,976 @@
+{
+  "protocol": {
+    "baseline": {
+      "context_len": 16,
+      "d_embed": 64,
+      "hidden": 256,
+      "learning_rate": 0.003,
+      "weight_decay": 0.0001
+    },
+    "batch_size": 512,
+    "one_variable_at_a_time": true,
+    "selection_metric": "token-weighted validation cross-entropy",
+    "selection_seed": 7,
+    "steps_per_run": 600,
+    "test_set_used": false
+  },
+  "records": [
+    {
+      "approximate_forward_multiplies": 1155072,
+      "checkpoint_selection": "lowest validation loss on the fixed selection slice",
+      "device": "mps",
+      "final_train_batch_loss": 3.6035051345825195,
+      "kind": "mlp",
+      "model_config": {
+        "context_len": 8,
+        "d_embed": 64,
+        "hidden": 256,
+        "learning_rate": 0.003,
+        "sweep_axis": "context_len",
+        "sweep_value": 8,
+        "weight_decay": 0.0001
+      },
+      "parameter_count": 1415328,
+      "runtime_seconds": 4.830047374940477,
+      "selected_step": 600,
+      "selected_tokens_seen": 307200,
+      "selection_slice_validation_loss": 3.8974741943359374,
+      "tokens_seen": 307200,
+      "torch_version": "2.14.0",
+      "trace": [
+        {
+          "step": 1,
+          "tokens_seen": 512,
+          "train_batch_loss": 8.291200637817383,
+          "validation_loss": 8.046875463867188
+        },
+        {
+          "step": 100,
+          "tokens_seen": 51200,
+          "train_batch_loss": 4.499398231506348,
+          "validation_loss": 4.627379858398437
+        },
+        {
+          "step": 200,
+          "tokens_seen": 102400,
+          "train_batch_loss": 4.2611284255981445,
+          "validation_loss": 4.297257189941406
+        },
+        {
+          "step": 300,
+          "tokens_seen": 153600,
+          "train_batch_loss": 3.9540762901306152,
+          "validation_loss": 4.130778491210937
+        },
+        {
+          "step": 400,
+          "tokens_seen": 204800,
+          "train_batch_loss": 3.8526828289031982,
+          "validation_loss": 4.022983618164062
+        },
+        {
+          "step": 500,
+          "tokens_seen": 256000,
+          "train_batch_loss": 3.5720787048339844,
+          "validation_loss": 3.961047814941406
+        },
+        {
+          "step": 600,
+          "tokens_seen": 307200,
+          "train_batch_loss": 3.6035051345825195,
+          "validation_loss": 3.8974741943359374
+        }
+      ],
+      "train_config": {
+        "batch_size": 512,
+        "eval_every": 100,
+        "eval_examples": 20000,
+        "gradient_clip": 1.0,
+        "learning_rate": 0.003,
+        "seed": 7,
+        "steps": 600,
+        "weight_decay": 0.0001
+      },
+      "validation_loss": 3.876726199314928,
+      "validation_perplexity": 48.26594305974077
+    },
+    {
+      "approximate_forward_multiplies": 1286144,
+      "checkpoint_selection": "lowest validation loss on the fixed selection slice",
+      "device": "mps",
+      "final_train_batch_loss": 3.694089889526367,
+      "kind": "mlp",
+      "model_config": {
+        "context_len": 16,
+        "d_embed": 64,
+        "hidden": 256,
+        "learning_rate": 0.003,
+        "sweep_axis": "baseline",
+        "sweep_value": 16,
+        "weight_decay": 0.0001
+      },
+      "parameter_count": 1546400,
+      "runtime_seconds": 4.9438133330550045,
+      "selected_step": 600,
+      "selected_tokens_seen": 307200,
+      "selection_slice_validation_loss": 4.019505249023437,
+      "tokens_seen": 307200,
+      "torch_version": "2.14.0",
+      "trace": [
+        {
+          "step": 1,
+          "tokens_seen": 512,
+          "train_batch_loss": 8.341434478759766,
+          "validation_loss": 8.07238828125
+        },
+        {
+          "step": 100,
+          "tokens_seen": 51200,
+          "train_batch_loss": 4.611723899841309,
+          "validation_loss": 4.731201159667969
+        },
+        {
+          "step": 200,
+          "tokens_seen": 102400,
+          "train_batch_loss": 4.374096870422363,
+          "validation_loss": 4.415515771484375
+        },
+        {
+          "step": 300,
+          "tokens_seen": 153600,
+          "train_batch_loss": 4.050529956817627,
+          "validation_loss": 4.257650891113281
+        },
+        {
+          "step": 400,
+          "tokens_seen": 204800,
+          "train_batch_loss": 3.9057459831237793,
+          "validation_loss": 4.152154602050781
+        },
+        {
+          "step": 500,
+          "tokens_seen": 256000,
+          "train_batch_loss": 3.68408203125,
+          "validation_loss": 4.0830283569335935
+        },
+        {
+          "step": 600,
+          "tokens_seen": 307200,
+          "train_batch_loss": 3.694089889526367,
+          "validation_loss": 4.019505249023437
+        }
+      ],
+      "train_config": {
+        "batch_size": 512,
+        "eval_every": 100,
+        "eval_examples": 20000,
+        "gradient_clip": 1.0,
+        "learning_rate": 0.003,
+        "seed": 7,
+        "steps": 600,
+        "weight_decay": 0.0001
+      },
+      "validation_loss": 3.993691917600935,
+      "validation_perplexity": 54.25482440553724
+    },
+    {
+      "approximate_forward_multiplies": 1548288,
+      "checkpoint_selection": "lowest validation loss on the fixed selection slice",
+      "device": "mps",
+      "final_train_batch_loss": 3.8721559047698975,
+      "kind": "mlp",
+      "model_config": {
+        "context_len": 32,
+        "d_embed": 64,
+        "hidden": 256,
+        "learning_rate": 0.003,
+        "sweep_axis": "context_len",
+        "sweep_value": 32,
+        "weight_decay": 0.0001
+      },
+      "parameter_count": 1808544,
+      "runtime_seconds": 5.325849417014979,
+      "selected_step": 600,
+      "selected_tokens_seen": 307200,
+      "selection_slice_validation_loss": 4.205956994628906,
+      "tokens_seen": 307200,
+      "torch_version": "2.14.0",
+      "trace": [
+        {
+          "step": 1,
+          "tokens_seen": 512,
+          "train_batch_loss": 8.330120086669922,
+          "validation_loss": 8.01520078125
+        },
+        {
+          "step": 100,
+          "tokens_seen": 51200,
+          "train_batch_loss": 4.774474620819092,
+          "validation_loss": 4.886729626464843
+        },
+        {
+          "step": 200,
+          "tokens_seen": 102400,
+          "train_batch_loss": 4.467178821563721,
+          "validation_loss": 4.591840380859375
+        },
+        {
+          "step": 300,
+          "tokens_seen": 153600,
+          "train_batch_loss": 4.230940341949463,
+          "validation_loss": 4.439052209472656
+        },
+        {
+          "step": 400,
+          "tokens_seen": 204800,
+          "train_batch_loss": 4.086901664733887,
+          "validation_loss": 4.332281494140625
+        },
+        {
+          "step": 500,
+          "tokens_seen": 256000,
+          "train_batch_loss": 3.746316909790039,
+          "validation_loss": 4.272677453613281
+        },
+        {
+          "step": 600,
+          "tokens_seen": 307200,
+          "train_batch_loss": 3.8721559047698975,
+          "validation_loss": 4.205956994628906
+        }
+      ],
+      "train_config": {
+        "batch_size": 512,
+        "eval_every": 100,
+        "eval_examples": 20000,
+        "gradient_clip": 1.0,
+        "learning_rate": 0.003,
+        "seed": 7,
+        "steps": 600,
+        "weight_decay": 0.0001
+      },
+      "validation_loss": 4.180059064079136,
+      "validation_perplexity": 65.3697141019557
+    },
+    {
+      "approximate_forward_multiplies": 2072576,
+      "checkpoint_selection": "lowest validation loss on the fixed selection slice",
+      "device": "mps",
+      "final_train_batch_loss": 4.031203269958496,
+      "kind": "mlp",
+      "model_config": {
+        "context_len": 64,
+        "d_embed": 64,
+        "hidden": 256,
+        "learning_rate": 0.003,
+        "sweep_axis": "context_len",
+        "sweep_value": 64,
+        "weight_decay": 0.0001
+      },
+      "parameter_count": 2332832,
+      "runtime_seconds": 6.069387542083859,
+      "selected_step": 600,
+      "selected_tokens_seen": 307200,
+      "selection_slice_validation_loss": 4.353334326171875,
+      "tokens_seen": 307200,
+      "torch_version": "2.14.0",
+      "trace": [
+        {
+          "step": 1,
+          "tokens_seen": 512,
+          "train_batch_loss": 8.310901641845703,
+          "validation_loss": 7.958351953125
+        },
+        {
+          "step": 100,
+          "tokens_seen": 51200,
+          "train_batch_loss": 4.9615478515625,
+          "validation_loss": 5.084548828125
+        },
+        {
+          "step": 200,
+          "tokens_seen": 102400,
+          "train_batch_loss": 4.719145774841309,
+          "validation_loss": 4.791822875976562
+        },
+        {
+          "step": 300,
+          "tokens_seen": 153600,
+          "train_batch_loss": 4.41969108581543,
+          "validation_loss": 4.622219885253906
+        },
+        {
+          "step": 400,
+          "tokens_seen": 204800,
+          "train_batch_loss": 4.283541679382324,
+          "validation_loss": 4.509894299316406
+        },
+        {
+          "step": 500,
+          "tokens_seen": 256000,
+          "train_batch_loss": 3.9765846729278564,
+          "validation_loss": 4.422892639160156
+        },
+        {
+          "step": 600,
+          "tokens_seen": 307200,
+          "train_batch_loss": 4.031203269958496,
+          "validation_loss": 4.353334326171875
+        }
+      ],
+      "train_config": {
+        "batch_size": 512,
+        "eval_every": 100,
+        "eval_examples": 20000,
+        "gradient_clip": 1.0,
+        "learning_rate": 0.003,
+        "seed": 7,
+        "steps": 600,
+        "weight_decay": 0.0001
+      },
+      "validation_loss": 4.3370743521317685,
+      "validation_perplexity": 76.48344805528629
+    },
+    {
+      "approximate_forward_multiplies": 1155072,
+      "checkpoint_selection": "lowest validation loss on the fixed selection slice",
+      "device": "mps",
+      "final_train_batch_loss": 3.7703843116760254,
+      "kind": "mlp",
+      "model_config": {
+        "context_len": 16,
+        "d_embed": 32,
+        "hidden": 256,
+        "learning_rate": 0.003,
+        "sweep_axis": "d_embed",
+        "sweep_value": 32,
+        "weight_decay": 0.0001
+      },
+      "parameter_count": 1287328,
+      "runtime_seconds": 4.148135583032854,
+      "selected_step": 600,
+      "selected_tokens_seen": 307200,
+      "selection_slice_validation_loss": 4.048518737792969,
+      "tokens_seen": 307200,
+      "torch_version": "2.14.0",
+      "trace": [
+        {
+          "step": 1,
+          "tokens_seen": 512,
+          "train_batch_loss": 8.349177360534668,
+          "validation_loss": 8.125511376953124
+        },
+        {
+          "step": 100,
+          "tokens_seen": 51200,
+          "train_batch_loss": 4.830295085906982,
+          "validation_loss": 4.91667958984375
+        },
+        {
+          "step": 200,
+          "tokens_seen": 102400,
+          "train_batch_loss": 4.488672256469727,
+          "validation_loss": 4.554055688476563
+        },
+        {
+          "step": 300,
+          "tokens_seen": 153600,
+          "train_batch_loss": 4.181149959564209,
+          "validation_loss": 4.341645178222656
+        },
+        {
+          "step": 400,
+          "tokens_seen": 204800,
+          "train_batch_loss": 3.965200185775757,
+          "validation_loss": 4.211043786621094
+        },
+        {
+          "step": 500,
+          "tokens_seen": 256000,
+          "train_batch_loss": 3.7330429553985596,
+          "validation_loss": 4.129445715332031
+        },
+        {
+          "step": 600,
+          "tokens_seen": 307200,
+          "train_batch_loss": 3.7703843116760254,
+          "validation_loss": 4.048518737792969
+        }
+      ],
+      "train_config": {
+        "batch_size": 512,
+        "eval_every": 100,
+        "eval_examples": 20000,
+        "gradient_clip": 1.0,
+        "learning_rate": 0.003,
+        "seed": 7,
+        "steps": 600,
+        "weight_decay": 0.0001
+      },
+      "validation_loss": 4.023497944198657,
+      "validation_perplexity": 55.89628635306325
+    },
+    {
+      "approximate_forward_multiplies": 1417216,
+      "checkpoint_selection": "lowest validation loss on the fixed selection slice",
+      "device": "mps",
+      "final_train_batch_loss": 3.6701745986938477,
+      "kind": "mlp",
+      "model_config": {
+        "context_len": 16,
+        "d_embed": 96,
+        "hidden": 256,
+        "learning_rate": 0.003,
+        "sweep_axis": "d_embed",
+        "sweep_value": 96,
+        "weight_decay": 0.0001
+      },
+      "parameter_count": 1805472,
+      "runtime_seconds": 5.046022832975723,
+      "selected_step": 600,
+      "selected_tokens_seen": 307200,
+      "selection_slice_validation_loss": 4.046247705078125,
+      "tokens_seen": 307200,
+      "torch_version": "2.14.0",
+      "trace": [
+        {
+          "step": 1,
+          "tokens_seen": 512,
+          "train_batch_loss": 8.328332901000977,
+          "validation_loss": 8.008674169921875
+        },
+        {
+          "step": 100,
+          "tokens_seen": 51200,
+          "train_batch_loss": 4.558663368225098,
+          "validation_loss": 4.6934222290039065
+        },
+        {
+          "step": 200,
+          "tokens_seen": 102400,
+          "train_batch_loss": 4.349815368652344,
+          "validation_loss": 4.412339123535157
+        },
+        {
+          "step": 300,
+          "tokens_seen": 153600,
+          "train_batch_loss": 4.069700241088867,
+          "validation_loss": 4.26906220703125
+        },
+        {
+          "step": 400,
+          "tokens_seen": 204800,
+          "train_batch_loss": 3.885246515274048,
+          "validation_loss": 4.1709749877929685
+        },
+        {
+          "step": 500,
+          "tokens_seen": 256000,
+          "train_batch_loss": 3.662424087524414,
+          "validation_loss": 4.1056864624023435
+        },
+        {
+          "step": 600,
+          "tokens_seen": 307200,
+          "train_batch_loss": 3.6701745986938477,
+          "validation_loss": 4.046247705078125
+        }
+      ],
+      "train_config": {
+        "batch_size": 512,
+        "eval_every": 100,
+        "eval_examples": 20000,
+        "gradient_clip": 1.0,
+        "learning_rate": 0.003,
+        "seed": 7,
+        "steps": 600,
+        "weight_decay": 0.0001
+      },
+      "validation_loss": 4.016744657499662,
+      "validation_perplexity": 55.52007446908773
+    },
+    {
+      "approximate_forward_multiplies": 643072,
+      "checkpoint_selection": "lowest validation loss on the fixed selection slice",
+      "device": "mps",
+      "final_train_batch_loss": 3.643207550048828,
+      "kind": "mlp",
+      "model_config": {
+        "context_len": 16,
+        "d_embed": 64,
+        "hidden": 128,
+        "learning_rate": 0.003,
+        "sweep_axis": "hidden",
+        "sweep_value": 128,
+        "weight_decay": 0.0001
+      },
+      "parameter_count": 903200,
+      "runtime_seconds": 3.4974088750313967,
+      "selected_step": 600,
+      "selected_tokens_seen": 307200,
+      "selection_slice_validation_loss": 4.0197748046875,
+      "tokens_seen": 307200,
+      "torch_version": "2.14.0",
+      "trace": [
+        {
+          "step": 1,
+          "tokens_seen": 512,
+          "train_batch_loss": 8.280553817749023,
+          "validation_loss": 8.154701733398438
+        },
+        {
+          "step": 100,
+          "tokens_seen": 51200,
+          "train_batch_loss": 4.6732330322265625,
+          "validation_loss": 4.799802429199219
+        },
+        {
+          "step": 200,
+          "tokens_seen": 102400,
+          "train_batch_loss": 4.4790358543396,
+          "validation_loss": 4.459048681640625
+        },
+        {
+          "step": 300,
+          "tokens_seen": 153600,
+          "train_batch_loss": 4.161118507385254,
+          "validation_loss": 4.283168542480468
+        },
+        {
+          "step": 400,
+          "tokens_seen": 204800,
+          "train_batch_loss": 3.95393443107605,
+          "validation_loss": 4.1690036499023435
+        },
+        {
+          "step": 500,
+          "tokens_seen": 256000,
+          "train_batch_loss": 3.705235242843628,
+          "validation_loss": 4.088535778808594
+        },
+        {
+          "step": 600,
+          "tokens_seen": 307200,
+          "train_batch_loss": 3.643207550048828,
+          "validation_loss": 4.0197748046875
+        }
+      ],
+      "train_config": {
+        "batch_size": 512,
+        "eval_every": 100,
+        "eval_examples": 20000,
+        "gradient_clip": 1.0,
+        "learning_rate": 0.003,
+        "seed": 7,
+        "steps": 600,
+        "weight_decay": 0.0001
+      },
+      "validation_loss": 4.00199547899164,
+      "validation_perplexity": 54.70720827003951
+    },
+    {
+      "approximate_forward_multiplies": 1929216,
+      "checkpoint_selection": "lowest validation loss on the fixed selection slice",
+      "device": "mps",
+      "final_train_batch_loss": 3.644382953643799,
+      "kind": "mlp",
+      "model_config": {
+        "context_len": 16,
+        "d_embed": 64,
+        "hidden": 384,
+        "learning_rate": 0.003,
+        "sweep_axis": "hidden",
+        "sweep_value": 384,
+        "weight_decay": 0.0001
+      },
+      "parameter_count": 2189600,
+      "runtime_seconds": 5.63774062495213,
+      "selected_step": 600,
+      "selected_tokens_seen": 307200,
+      "selection_slice_validation_loss": 4.024448303222656,
+      "tokens_seen": 307200,
+      "torch_version": "2.14.0",
+      "trace": [
+        {
+          "step": 1,
+          "tokens_seen": 512,
+          "train_batch_loss": 8.313325881958008,
+          "validation_loss": 7.92700966796875
+        },
+        {
+          "step": 100,
+          "tokens_seen": 51200,
+          "train_batch_loss": 4.598310470581055,
+          "validation_loss": 4.702398364257813
+        },
+        {
+          "step": 200,
+          "tokens_seen": 102400,
+          "train_batch_loss": 4.324221134185791,
+          "validation_loss": 4.39900751953125
+        },
+        {
+          "step": 300,
+          "tokens_seen": 153600,
+          "train_batch_loss": 4.079448223114014,
+          "validation_loss": 4.250687548828125
+        },
+        {
+          "step": 400,
+          "tokens_seen": 204800,
+          "train_batch_loss": 3.938727617263794,
+          "validation_loss": 4.152998852539063
+        },
+        {
+          "step": 500,
+          "tokens_seen": 256000,
+          "train_batch_loss": 3.6781835556030273,
+          "validation_loss": 4.0881978759765625
+        },
+        {
+          "step": 600,
+          "tokens_seen": 307200,
+          "train_batch_loss": 3.644382953643799,
+          "validation_loss": 4.024448303222656
+        }
+      ],
+      "train_config": {
+        "batch_size": 512,
+        "eval_every": 100,
+        "eval_examples": 20000,
+        "gradient_clip": 1.0,
+        "learning_rate": 0.003,
+        "seed": 7,
+        "steps": 600,
+        "weight_decay": 0.0001
+      },
+      "validation_loss": 4.004734368420266,
+      "validation_perplexity": 54.857250645382365
+    },
+    {
+      "approximate_forward_multiplies": 1286144,
+      "checkpoint_selection": "lowest validation loss on the fixed selection slice",
+      "device": "mps",
+      "final_train_batch_loss": 3.7947161197662354,
+      "kind": "mlp",
+      "model_config": {
+        "context_len": 16,
+        "d_embed": 64,
+        "hidden": 256,
+        "learning_rate": 0.001,
+        "sweep_axis": "learning_rate",
+        "sweep_value": 0.001,
+        "weight_decay": 0.0001
+      },
+      "parameter_count": 1546400,
+      "runtime_seconds": 4.5659599169157445,
+      "selected_step": 600,
+      "selected_tokens_seen": 307200,
+      "selection_slice_validation_loss": 4.080045825195312,
+      "tokens_seen": 307200,
+      "torch_version": "2.14.0",
+      "trace": [
+        {
+          "step": 1,
+          "tokens_seen": 512,
+          "train_batch_loss": 8.341434478759766,
+          "validation_loss": 8.24511025390625
+        },
+        {
+          "step": 100,
+          "tokens_seen": 51200,
+          "train_batch_loss": 4.943717956542969,
+          "validation_loss": 5.012629028320313
+        },
+        {
+          "step": 200,
+          "tokens_seen": 102400,
+          "train_batch_loss": 4.612807273864746,
+          "validation_loss": 4.627366748046875
+        },
+        {
+          "step": 300,
+          "tokens_seen": 153600,
+          "train_batch_loss": 4.2314934730529785,
+          "validation_loss": 4.411680407714844
+        },
+        {
+          "step": 400,
+          "tokens_seen": 204800,
+          "train_batch_loss": 4.056535243988037,
+          "validation_loss": 4.268573034667969
+        },
+        {
+          "step": 500,
+          "tokens_seen": 256000,
+          "train_batch_loss": 3.7672393321990967,
+          "validation_loss": 4.175607897949218
+        },
+        {
+          "step": 600,
+          "tokens_seen": 307200,
+          "train_batch_loss": 3.7947161197662354,
+          "validation_loss": 4.080045825195312
+        }
+      ],
+      "train_config": {
+        "batch_size": 512,
+        "eval_every": 100,
+        "eval_examples": 20000,
+        "gradient_clip": 1.0,
+        "learning_rate": 0.001,
+        "seed": 7,
+        "steps": 600,
+        "weight_decay": 0.0001
+      },
+      "validation_loss": 4.054949264767522,
+      "validation_perplexity": 57.68223640024934
+    },
+    {
+      "approximate_forward_multiplies": 1286144,
+      "checkpoint_selection": "lowest validation loss on the fixed selection slice",
+      "device": "mps",
+      "final_train_batch_loss": 3.8691091537475586,
+      "kind": "mlp",
+      "model_config": {
+        "context_len": 16,
+        "d_embed": 64,
+        "hidden": 256,
+        "learning_rate": 0.006,
+        "sweep_axis": "learning_rate",
+        "sweep_value": 0.006,
+        "weight_decay": 0.0001
+      },
+      "parameter_count": 1546400,
+      "runtime_seconds": 4.546873459010385,
+      "selected_step": 600,
+      "selected_tokens_seen": 307200,
+      "selection_slice_validation_loss": 4.177138293457031,
+      "tokens_seen": 307200,
+      "torch_version": "2.14.0",
+      "trace": [
+        {
+          "step": 1,
+          "tokens_seen": 512,
+          "train_batch_loss": 8.341434478759766,
+          "validation_loss": 7.8027779296875
+        },
+        {
+          "step": 100,
+          "tokens_seen": 51200,
+          "train_batch_loss": 4.6797332763671875,
+          "validation_loss": 4.790933129882813
+        },
+        {
+          "step": 200,
+          "tokens_seen": 102400,
+          "train_batch_loss": 4.451351642608643,
+          "validation_loss": 4.537756469726562
+        },
+        {
+          "step": 300,
+          "tokens_seen": 153600,
+          "train_batch_loss": 4.1863532066345215,
+          "validation_loss": 4.391162158203125
+        },
+        {
+          "step": 400,
+          "tokens_seen": 204800,
+          "train_batch_loss": 4.069850921630859,
+          "validation_loss": 4.286594104003906
+        },
+        {
+          "step": 500,
+          "tokens_seen": 256000,
+          "train_batch_loss": 3.803116798400879,
+          "validation_loss": 4.235466638183594
+        },
+        {
+          "step": 600,
+          "tokens_seen": 307200,
+          "train_batch_loss": 3.8691091537475586,
+          "validation_loss": 4.177138293457031
+        }
+      ],
+      "train_config": {
+        "batch_size": 512,
+        "eval_every": 100,
+        "eval_examples": 20000,
+        "gradient_clip": 1.0,
+        "learning_rate": 0.006,
+        "seed": 7,
+        "steps": 600,
+        "weight_decay": 0.0001
+      },
+      "validation_loss": 4.1559139928847895,
+      "validation_perplexity": 63.81026002656912
+    },
+    {
+      "approximate_forward_multiplies": 1286144,
+      "checkpoint_selection": "lowest validation loss on the fixed selection slice",
+      "device": "mps",
+      "final_train_batch_loss": 3.7163333892822266,
+      "kind": "mlp",
+      "model_config": {
+        "context_len": 16,
+        "d_embed": 64,
+        "hidden": 256,
+        "learning_rate": 0.003,
+        "sweep_axis": "weight_decay",
+        "sweep_value": 0.0,
+        "weight_decay": 0.0
+      },
+      "parameter_count": 1546400,
+      "runtime_seconds": 4.544455458060838,
+      "selected_step": 600,
+      "selected_tokens_seen": 307200,
+      "selection_slice_validation_loss": 4.020229150390625,
+      "tokens_seen": 307200,
+      "torch_version": "2.14.0",
+      "trace": [
+        {
+          "step": 1,
+          "tokens_seen": 512,
+          "train_batch_loss": 8.341434478759766,
+          "validation_loss": 8.072388232421876
+        },
+        {
+          "step": 100,
+          "tokens_seen": 51200,
+          "train_batch_loss": 4.613680839538574,
+          "validation_loss": 4.730631127929687
+        },
+        {
+          "step": 200,
+          "tokens_seen": 102400,
+          "train_batch_loss": 4.369443893432617,
+          "validation_loss": 4.4146751953125
+        },
+        {
+          "step": 300,
+          "tokens_seen": 153600,
+          "train_batch_loss": 4.071667671203613,
+          "validation_loss": 4.2530197998046875
+        },
+        {
+          "step": 400,
+          "tokens_seen": 204800,
+          "train_batch_loss": 3.91601824760437,
+          "validation_loss": 4.1524330078125
+        },
+        {
+          "step": 500,
+          "tokens_seen": 256000,
+          "train_batch_loss": 3.643649101257324,
+          "validation_loss": 4.083337634277344
+        },
+        {
+          "step": 600,
+          "tokens_seen": 307200,
+          "train_batch_loss": 3.7163333892822266,
+          "validation_loss": 4.020229150390625
+        }
+      ],
+      "train_config": {
+        "batch_size": 512,
+        "eval_every": 100,
+        "eval_examples": 20000,
+        "gradient_clip": 1.0,
+        "learning_rate": 0.003,
+        "seed": 7,
+        "steps": 600,
+        "weight_decay": 0.0
+      },
+      "validation_loss": 3.9937389180220375,
+      "validation_perplexity": 54.257374465057616
+    },
+    {
+      "approximate_forward_multiplies": 1286144,
+      "checkpoint_selection": "lowest validation loss on the fixed selection slice",
+      "device": "mps",
+      "final_train_batch_loss": 3.663588523864746,
+      "kind": "mlp",
+      "model_config": {
+        "context_len": 16,
+        "d_embed": 64,
+        "hidden": 256,
+        "learning_rate": 0.003,
+        "sweep_axis": "weight_decay",
+        "sweep_value": 0.001,
+        "weight_decay": 0.001
+      },
+      "parameter_count": 1546400,
+      "runtime_seconds": 4.54404729208909,
+      "selected_step": 600,
+      "selected_tokens_seen": 307200,
+      "selection_slice_validation_loss": 4.017129125976562,
+      "tokens_seen": 307200,
+      "torch_version": "2.14.0",
+      "trace": [
+        {
+          "step": 1,
+          "tokens_seen": 512,
+          "train_batch_loss": 8.341434478759766,
+          "validation_loss": 8.072389184570312
+        },
+        {
+          "step": 100,
+          "tokens_seen": 51200,
+          "train_batch_loss": 4.618200302124023,
+          "validation_loss": 4.730830932617187
+        },
+        {
+          "step": 200,
+          "tokens_seen": 102400,
+          "train_batch_loss": 4.353497505187988,
+          "validation_loss": 4.415255065917969
+        },
+        {
+          "step": 300,
+          "tokens_seen": 153600,
+          "train_batch_loss": 4.072154521942139,
+          "validation_loss": 4.255887719726562
+        },
+        {
+          "step": 400,
+          "tokens_seen": 204800,
+          "train_batch_loss": 3.9092845916748047,
+          "validation_loss": 4.1483759033203125
+        },
+        {
+          "step": 500,
+          "tokens_seen": 256000,
+          "train_batch_loss": 3.6509265899658203,
+          "validation_loss": 4.074095593261719
+        },
+        {
+          "step": 600,
+          "tokens_seen": 307200,
+          "train_batch_loss": 3.663588523864746,
+          "validation_loss": 4.017129125976562
+        }
+      ],
+      "train_config": {
+        "batch_size": 512,
+        "eval_every": 100,
+        "eval_examples": 20000,
+        "gradient_clip": 1.0,
+        "learning_rate": 0.003,
+        "seed": 7,
+        "steps": 600,
+        "weight_decay": 0.001
+      },
+      "validation_loss": 3.9912520852070683,
+      "validation_perplexity": 54.12261307975224
+    }
+  ],
+  "selected_primary_mlp_config": {
+    "context_len": 16,
+    "d_embed": 64,
+    "hidden": 256,
+    "learning_rate": 0.003,
+    "sweep_axis": "weight_decay",
+    "sweep_value": 0.001,
+    "weight_decay": 0.001
+  }
+}

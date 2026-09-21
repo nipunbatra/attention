@@ -71,7 +71,7 @@
    "section": "s15"
   },
   {
-   "label": "Matrix form and context cost",
+   "label": "The full attention calculation",
    "section": "s16"
   },
   {
@@ -165,7 +165,7 @@
   },
   {
    "id": "s16",
-   "title": "Matrix form and context cost",
+   "title": "The full attention calculation",
    "lit": ""
   },
   {

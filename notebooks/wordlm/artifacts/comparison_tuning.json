@@ -1,0 +1,538 @@
+{
+  "protocol": {
+    "batch_size": 512,
+    "same_context_length": 64,
+    "same_embedding_and_hidden_widths": true,
+    "same_steps_batch_size_and_seed": true,
+    "selection_metric": "token-weighted validation cross-entropy",
+    "selection_seed": 7,
+    "steps_per_run": 3000,
+    "test_set_used": false
+  },
+  "records": {
+    "attention": [
+      {
+        "kind": "attention",
+        "learning_rate": 0.0015,
+        "model_config": {
+          "context_len": 64,
+          "d_embed": 64,
+          "hidden": 256,
+          "learning_rate": 0.0015,
+          "sweep_axis": "comparison_tune",
+          "sweep_value": "lr=0.0015,wd=0.0001",
+          "weight_decay": 0.0001
+        },
+        "runtime_seconds": 36.92204249999486,
+        "tokens_seen": 1536000,
+        "trace": [
+          {
+            "step": 1,
+            "tokens_seen": 512,
+            "train_batch_loss": 8.296029090881348,
+            "validation_loss": 8.091258544921875
+          },
+          {
+            "step": 750,
+            "tokens_seen": 384000,
+            "train_batch_loss": 3.8533616065979004,
+            "validation_loss": 3.996762121582031
+          },
+          {
+            "step": 1500,
+            "tokens_seen": 768000,
+            "train_batch_loss": 3.7604856491088867,
+            "validation_loss": 3.738195556640625
+          },
+          {
+            "step": 2250,
+            "tokens_seen": 1152000,
+            "train_batch_loss": 3.387769937515259,
+            "validation_loss": 3.618282305908203
+          },
+          {
+            "step": 3000,
+            "tokens_seen": 1536000,
+            "train_batch_loss": 3.5057172775268555,
+            "validation_loss": 3.5518502319335936
+          }
+        ],
+        "validation_loss": 3.514071511595603,
+        "validation_perplexity": 33.58473041014852,
+        "weight_decay": 0.0001
+      },
+      {
+        "kind": "attention",
+        "learning_rate": 0.002,
+        "model_config": {
+          "context_len": 64,
+          "d_embed": 64,
+          "hidden": 256,
+          "learning_rate": 0.002,
+          "sweep_axis": "comparison_tune",
+          "sweep_value": "lr=0.002,wd=0.0001",
+          "weight_decay": 0.0001
+        },
+        "runtime_seconds": 35.11787779198494,
+        "tokens_seen": 1536000,
+        "trace": [
+          {
+            "step": 1,
+            "tokens_seen": 512,
+            "train_batch_loss": 8.296029090881348,
+            "validation_loss": 8.0276888671875
+          },
+          {
+            "step": 750,
+            "tokens_seen": 384000,
+            "train_batch_loss": 3.8039746284484863,
+            "validation_loss": 3.9200693115234375
+          },
+          {
+            "step": 1500,
+            "tokens_seen": 768000,
+            "train_batch_loss": 3.659182071685791,
+            "validation_loss": 3.6909421875
+          },
+          {
+            "step": 2250,
+            "tokens_seen": 1152000,
+            "train_batch_loss": 3.304676055908203,
+            "validation_loss": 3.5788869384765625
+          },
+          {
+            "step": 3000,
+            "tokens_seen": 1536000,
+            "train_batch_loss": 3.4400033950805664,
+            "validation_loss": 3.5218831420898438
+          }
+        ],
+        "validation_loss": 3.4797812876100847,
+        "validation_perplexity": 32.45262350877318,
+        "weight_decay": 0.0001
+      },
+      {
+        "kind": "attention",
+        "learning_rate": 0.003,
+        "model_config": {
+          "context_len": 64,
+          "d_embed": 64,
+          "hidden": 256,
+          "learning_rate": 0.003,
+          "sweep_axis": "comparison_tune",
+          "sweep_value": "lr=0.003,wd=0.0001",
+          "weight_decay": 0.0001
+        },
+        "runtime_seconds": 35.930692167021334,
+        "tokens_seen": 1536000,
+        "trace": [
+          {
+            "step": 1,
+            "tokens_seen": 512,
+            "train_batch_loss": 8.296029090881348,
+            "validation_loss": 7.901338256835937
+          },
+          {
+            "step": 750,
+            "tokens_seen": 384000,
+            "train_batch_loss": 3.7315869331359863,
+            "validation_loss": 3.8566969970703124
+          },
+          {
+            "step": 1500,
+            "tokens_seen": 768000,
+            "train_batch_loss": 3.61281681060791,
+            "validation_loss": 3.6569862548828125
+          },
+          {
+            "step": 2250,
+            "tokens_seen": 1152000,
+            "train_batch_loss": 3.2317686080932617,
+            "validation_loss": 3.5793242919921875
+          },
+          {
+            "step": 3000,
+            "tokens_seen": 1536000,
+            "train_batch_loss": 3.3679816722869873,
+            "validation_loss": 3.5267385314941406
+          }
+        ],
+        "validation_loss": 3.477159104183021,
+        "validation_perplexity": 32.36763824940853,
+        "weight_decay": 0.0001
+      },
+      {
+        "kind": "attention",
+        "learning_rate": 0.004,
+        "model_config": {
+          "context_len": 64,
+          "d_embed": 64,
+          "hidden": 256,
+          "learning_rate": 0.004,
+          "sweep_axis": "comparison_tune",
+          "sweep_value": "lr=0.004,wd=0.0001",
+          "weight_decay": 0.0001
+        },
+        "runtime_seconds": 35.986476583988406,
+        "tokens_seen": 1536000,
+        "trace": [
+          {
+            "step": 1,
+            "tokens_seen": 512,
+            "train_batch_loss": 8.296029090881348,
+            "validation_loss": 7.775541015625
+          },
+          {
+            "step": 750,
+            "tokens_seen": 384000,
+            "train_batch_loss": 3.68276309967041,
+            "validation_loss": 3.84498798828125
+          },
+          {
+            "step": 1500,
+            "tokens_seen": 768000,
+            "train_batch_loss": 3.5709738731384277,
+            "validation_loss": 3.6626529907226564
+          },
+          {
+            "step": 2250,
+            "tokens_seen": 1152000,
+            "train_batch_loss": 3.26731014251709,
+            "validation_loss": 3.5926908203125
+          },
+          {
+            "step": 3000,
+            "tokens_seen": 1536000,
+            "train_batch_loss": 3.4251017570495605,
+            "validation_loss": 3.5328479125976564
+          }
+        ],
+        "validation_loss": 3.4882114479573905,
+        "validation_perplexity": 32.72736074102907,
+        "weight_decay": 0.0001
+      },
+      {
+        "kind": "attention",
+        "learning_rate": 0.003,
+        "model_config": {
+          "context_len": 64,
+          "d_embed": 64,
+          "hidden": 256,
+          "learning_rate": 0.003,
+          "sweep_axis": "comparison_tune",
+          "sweep_value": "lr=0.003,wd=0.001",
+          "weight_decay": 0.001
+        },
+        "runtime_seconds": 35.93791674997192,
+        "tokens_seen": 1536000,
+        "trace": [
+          {
+            "step": 1,
+            "tokens_seen": 512,
+            "train_batch_loss": 8.296029090881348,
+            "validation_loss": 7.901339892578125
+          },
+          {
+            "step": 750,
+            "tokens_seen": 384000,
+            "train_batch_loss": 3.718583106994629,
+            "validation_loss": 3.8545928100585938
+          },
+          {
+            "step": 1500,
+            "tokens_seen": 768000,
+            "train_batch_loss": 3.596418857574463,
+            "validation_loss": 3.651371276855469
+          },
+          {
+            "step": 2250,
+            "tokens_seen": 1152000,
+            "train_batch_loss": 3.237884998321533,
+            "validation_loss": 3.571009069824219
+          },
+          {
+            "step": 3000,
+            "tokens_seen": 1536000,
+            "train_batch_loss": 3.3428001403808594,
+            "validation_loss": 3.5241543090820313
+          }
+        ],
+        "validation_loss": 3.4718473722248144,
+        "validation_perplexity": 32.19616584180828,
+        "weight_decay": 0.001
+      }
+    ],
+    "mlp": [
+      {
+        "kind": "mlp",
+        "learning_rate": 0.001,
+        "model_config": {
+          "context_len": 64,
+          "d_embed": 64,
+          "hidden": 256,
+          "learning_rate": 0.001,
+          "sweep_axis": "comparison_tune",
+          "sweep_value": "lr=0.001,wd=0.0001",
+          "weight_decay": 0.0001
+        },
+        "runtime_seconds": 30.47367249999661,
+        "tokens_seen": 1536000,
+        "trace": [
+          {
+            "step": 1,
+            "tokens_seen": 512,
+            "train_batch_loss": 8.310901641845703,
+            "validation_loss": 8.195753515625
+          },
+          {
+            "step": 750,
+            "tokens_seen": 384000,
+            "train_batch_loss": 3.854219913482666,
+            "validation_loss": 4.188317944335937
+          },
+          {
+            "step": 1500,
+            "tokens_seen": 768000,
+            "train_batch_loss": 3.6175007820129395,
+            "validation_loss": 3.978892517089844
+          },
+          {
+            "step": 2250,
+            "tokens_seen": 1152000,
+            "train_batch_loss": 3.2026453018188477,
+            "validation_loss": 3.934733068847656
+          },
+          {
+            "step": 3000,
+            "tokens_seen": 1536000,
+            "train_batch_loss": 3.2627785205841064,
+            "validation_loss": 3.9239018676757813
+          }
+        ],
+        "validation_loss": 3.899514827877407,
+        "validation_perplexity": 49.37848622796649,
+        "weight_decay": 0.0001
+      },
+      {
+        "kind": "mlp",
+        "learning_rate": 0.002,
+        "model_config": {
+          "context_len": 64,
+          "d_embed": 64,
+          "hidden": 256,
+          "learning_rate": 0.002,
+          "sweep_axis": "comparison_tune",
+          "sweep_value": "lr=0.002,wd=0.0001",
+          "weight_decay": 0.0001
+        },
+        "runtime_seconds": 29.832863125018775,
+        "tokens_seen": 1536000,
+        "trace": [
+          {
+            "step": 1,
+            "tokens_seen": 512,
+            "train_batch_loss": 8.310901641845703,
+            "validation_loss": 8.081200708007813
+          },
+          {
+            "step": 750,
+            "tokens_seen": 384000,
+            "train_batch_loss": 3.8543248176574707,
+            "validation_loss": 4.21205
+          },
+          {
+            "step": 1500,
+            "tokens_seen": 768000,
+            "train_batch_loss": 3.7060327529907227,
+            "validation_loss": 4.052784436035156
+          },
+          {
+            "step": 2250,
+            "tokens_seen": 1152000,
+            "train_batch_loss": 3.2874755859375,
+            "validation_loss": 3.9843030029296873
+          },
+          {
+            "step": 3000,
+            "tokens_seen": 1536000,
+            "train_batch_loss": 3.4299569129943848,
+            "validation_loss": 3.9948025634765627
+          }
+        ],
+        "validation_loss": 3.9707672977146067,
+        "validation_perplexity": 53.025201350298495,
+        "weight_decay": 0.0001
+      },
+      {
+        "kind": "mlp",
+        "learning_rate": 0.003,
+        "model_config": {
+          "context_len": 64,
+          "d_embed": 64,
+          "hidden": 256,
+          "learning_rate": 0.003,
+          "sweep_axis": "comparison_tune",
+          "sweep_value": "lr=0.003,wd=0.0001",
+          "weight_decay": 0.0001
+        },
+        "runtime_seconds": 31.46406804199796,
+        "tokens_seen": 1536000,
+        "trace": [
+          {
+            "step": 1,
+            "tokens_seen": 512,
+            "train_batch_loss": 8.310901641845703,
+            "validation_loss": 7.958352001953125
+          },
+          {
+            "step": 750,
+            "tokens_seen": 384000,
+            "train_batch_loss": 3.9648990631103516,
+            "validation_loss": 4.285216491699218
+          },
+          {
+            "step": 1500,
+            "tokens_seen": 768000,
+            "train_batch_loss": 3.9747772216796875,
+            "validation_loss": 4.100527722167969
+          },
+          {
+            "step": 2250,
+            "tokens_seen": 1152000,
+            "train_batch_loss": 3.5156521797180176,
+            "validation_loss": 4.041665393066406
+          },
+          {
+            "step": 3000,
+            "tokens_seen": 1536000,
+            "train_batch_loss": 3.710545063018799,
+            "validation_loss": 4.014366918945313
+          }
+        ],
+        "validation_loss": 3.983657400803605,
+        "validation_perplexity": 53.71312584571615,
+        "weight_decay": 0.0001
+      },
+      {
+        "kind": "mlp",
+        "learning_rate": 0.003,
+        "model_config": {
+          "context_len": 64,
+          "d_embed": 64,
+          "hidden": 256,
+          "learning_rate": 0.003,
+          "sweep_axis": "comparison_tune",
+          "sweep_value": "lr=0.003,wd=0.001",
+          "weight_decay": 0.001
+        },
+        "runtime_seconds": 31.30886350001674,
+        "tokens_seen": 1536000,
+        "trace": [
+          {
+            "step": 1,
+            "tokens_seen": 512,
+            "train_batch_loss": 8.310901641845703,
+            "validation_loss": 7.958353369140625
+          },
+          {
+            "step": 750,
+            "tokens_seen": 384000,
+            "train_batch_loss": 3.9941773414611816,
+            "validation_loss": 4.291508520507812
+          },
+          {
+            "step": 1500,
+            "tokens_seen": 768000,
+            "train_batch_loss": 4.004101276397705,
+            "validation_loss": 4.109083752441406
+          },
+          {
+            "step": 2250,
+            "tokens_seen": 1152000,
+            "train_batch_loss": 3.53456711769104,
+            "validation_loss": 4.035984973144531
+          },
+          {
+            "step": 3000,
+            "tokens_seen": 1536000,
+            "train_batch_loss": 3.7266883850097656,
+            "validation_loss": 4.004816979980469
+          }
+        ],
+        "validation_loss": 3.985399162001825,
+        "validation_perplexity": 53.806762807089896,
+        "weight_decay": 0.001
+      },
+      {
+        "kind": "mlp",
+        "learning_rate": 0.003,
+        "model_config": {
+          "context_len": 64,
+          "d_embed": 64,
+          "hidden": 256,
+          "learning_rate": 0.003,
+          "sweep_axis": "comparison_tune",
+          "sweep_value": "lr=0.003,wd=0.01",
+          "weight_decay": 0.01
+        },
+        "runtime_seconds": 28.99058108299505,
+        "tokens_seen": 1536000,
+        "trace": [
+          {
+            "step": 1,
+            "tokens_seen": 512,
+            "train_batch_loss": 8.310901641845703,
+            "validation_loss": 7.95836669921875
+          },
+          {
+            "step": 750,
+            "tokens_seen": 384000,
+            "train_batch_loss": 3.925078868865967,
+            "validation_loss": 4.2752001831054685
+          },
+          {
+            "step": 1500,
+            "tokens_seen": 768000,
+            "train_batch_loss": 3.9096946716308594,
+            "validation_loss": 4.084071020507812
+          },
+          {
+            "step": 2250,
+            "tokens_seen": 1152000,
+            "train_batch_loss": 3.476536750793457,
+            "validation_loss": 4.00987138671875
+          },
+          {
+            "step": 3000,
+            "tokens_seen": 1536000,
+            "train_batch_loss": 3.649599552154541,
+            "validation_loss": 3.9849229614257813
+          }
+        ],
+        "validation_loss": 3.950055044349032,
+        "validation_perplexity": 51.938225661971,
+        "weight_decay": 0.01
+      }
+    ]
+  },
+  "selected_configs": {
+    "attention": {
+      "context_len": 64,
+      "d_embed": 64,
+      "hidden": 256,
+      "learning_rate": 0.003,
+      "sweep_axis": "comparison_tune",
+      "sweep_value": "lr=0.003,wd=0.001",
+      "weight_decay": 0.001
+    },
+    "mlp": {
+      "context_len": 64,
+      "d_embed": 64,
+      "hidden": 256,
+      "learning_rate": 0.001,
+      "sweep_axis": "comparison_tune",
+      "sweep_value": "lr=0.001,wd=0.0001",
+      "weight_decay": 0.0001
+    }
+  }
+}

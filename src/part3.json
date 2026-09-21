@@ -69,7 +69,7 @@
    "section": "s15"
   },
   {
-   "label": "Limits of attention",
+   "label": "Context cost and attention limits",
    "section": "s16"
   },
   {
@@ -163,7 +163,7 @@
   },
   {
    "id": "s16",
-   "title": "What attention gives, and what it does not",
+   "title": "Context cost and attention limits",
    "lit": ""
   },
   {
