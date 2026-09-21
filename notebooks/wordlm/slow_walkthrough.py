@@ -289,7 +289,7 @@ print('Benchmark target presentations:', 6000 * 512)
 ''', focus=('windows','optimizer'))
 
 step('shapes', 'Batch and model dimensions', '2. Windows and batches',
-     'The batch and context axes describe the data. The representation widths are model choices. The vocabulary size is the number of output classes, including special tokens.', '''
+     'C includes the special tokens. Queries and keys use the same width dₖ, while values can use a different width dᵥ.', '''
 d, h, d_k, d_v = 4, 8, 3, 2
 torch.manual_seed(11)
 mlp = FixedWindowMLP(C, w, d, h, vocab.pad_id)
@@ -815,7 +815,19 @@ def render_figure(stage, ns):
     elif k=='batches':
         f.table(['Sequential batch','Example indices','Actual B'],[(1,'0, 1',2),(2,'2, 3',2),(3,'4, 5',2),(4,'6',1)],widths=[300,470,350],row_h=54)
     elif k=='shapes':
-        f.table(['Symbol','Value','Meaning'],[('B / w','2 / 4','examples per batch / context slots'),('C / d','10 / 4','vocabulary items / embedding coordinates'),('h','8','hidden units in the prediction head'),('dₖ / dᵥ','3 / 2','matching coordinates / value coordinates')],widths=[200,190,730],row_h=54)
+        f.text(20,32,'Data dimensions',size=28,weight=600)
+        f.table(['Symbol','Value','What it counts'],
+                [('B',ns['B'],'examples per batch'),
+                 ('w',ns['w'],'input slots per example'),
+                 ('C',ns['C'],'vocabulary items')],
+                x=20,y=55,widths=[95,85,360],row_h=48)
+        f.text(600,32,'Model dimensions',size=28,weight=600)
+        f.table(['Symbol','Value','What it counts'],
+                [('d',ns['d'],'embedding coordinates'),
+                 ('h',ns['h'],'prediction-head hidden units'),
+                 ('dₖ',ns['d_k'],'query and key coordinates'),
+                 ('dᵥ',ns['d_v'],'value coordinates')],
+                x=600,y=55,widths=[95,85,360],row_h=48)
     elif k=='lookup':
         rows=[(words[i],i,*[num(v) for v in ns['embedding_table'][i]]) for i in [0,7,8,9]]
         f.table(['Token','ID','coord. 1','coord. 2','coord. 3','coord. 4'],rows,widths=[200,100,205,205,205,205],row_h=55,colors=[INK,BLUE,BLUE,BLUE,BLUE,BLUE])

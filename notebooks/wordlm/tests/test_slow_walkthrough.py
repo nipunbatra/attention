@@ -152,3 +152,34 @@ def test_batch_count_explanation_states_the_update_assumption():
     assert 'B=2 with drop_last=False' in stage['body']
     assert 'With one update per batch' in stage['body']
     assert '512 windows per update with replacement' in stage['body']
+
+
+def test_dimensions_have_one_symbol_value_and_definition_per_row():
+    ns=initial_namespace()
+    for stage in STAGES:
+        exec(stage['code'],ns)
+        if stage['id']=='shapes': break
+    def labels():
+        return [t.text for t in ET.fromstring(render_figure(stage,ns))
+                .findall('{http://www.w3.org/2000/svg}text')]
+    shown=labels()
+    assert shown[:4]==['Data dimensions','Symbol','Value','What it counts']
+    assert shown[4:13]==[
+        'B','2','examples per batch',
+        'w','4','input slots per example',
+        'C','10','vocabulary items',
+    ]
+    assert shown[13:17]==['Model dimensions','Symbol','Value','What it counts']
+    assert shown[17:]==[
+        'd','4','embedding coordinates',
+        'h','8','prediction-head hidden units',
+        'dₖ','3','query and key coordinates',
+        'dᵥ','2','value coordinates',
+    ]
+    assert not any('/' in text for text in shown)
+    assert 'C includes the special tokens' in stage['body']
+    # The displayed values must come from the executed example, not fixed labels.
+    for key,value,index in [('B',5,5),('w',6,8),('C',12,11),
+                            ('d',7,18),('h',9,21),('d_k',4,24),('d_v',6,27)]:
+        ns[key]=value
+        assert labels()[index]==str(value)

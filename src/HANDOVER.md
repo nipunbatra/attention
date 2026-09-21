@@ -49,6 +49,10 @@ All four attention parts and the four-part Vision to language extension are impl
   contrasts such as the former examples-versus-updates heading with
   "Seven examples, four batches". Keep the conditional one-update-per-batch
   explanation in the body, along with the separate benchmark sampling rule.
+- The `shapes` frame uses two tables: data dimensions (B, w, C) and model
+  dimensions (d, h, dₖ, dᵥ). Keep one symbol, value and definition per row;
+  slash-separated pairs look like division. Values come from the executed
+  notebook namespace, and the shared figure keeps the guide and slide aligned.
 - `notebooks/wordlm/05_training_and_inference_maps.html` is the public illustrated
   companion. Each step links to its exact slide and shares its numeric SVG with
   the executable notebook. `slow_walkthrough.py` and `build_slow_lesson.py` are

@@ -37,6 +37,15 @@ try{
   assert.match(await page.locator('#s19-pipeline-batch-ids .step-copy').innerText(),/no embedding coordinates yet.*X goes through embedding lookup.*y stays as target IDs for the loss/s);
   assert.equal(await page.locator('#s19-pipeline-batches').getAttribute('data-title'),'Seven examples, four batches');
   assert.match(await page.locator('#s19-pipeline-batches .step-copy').innerText(),/With one update per batch.*four optimizer steps.*512 windows per update with replacement/s);
+  const dimensionText=await page.locator('#s19-pipeline-shapes svg text').allTextContents();
+  assert.deepEqual(dimensionText,[
+    'Data dimensions','Symbol','Value','What it counts',
+    'B','2','examples per batch','w','4','input slots per example','C','10','vocabulary items',
+    'Model dimensions','Symbol','Value','What it counts',
+    'd','4','embedding coordinates','h','8','prediction-head hidden units',
+    'dₖ','3','query and key coordinates','dᵥ','2','value coordinates',
+  ],'each dimension has its own symbol, value and definition');
+  assert(!dimensionText.some(text=>text.includes('/')),'dimension entries do not look like division');
   assert(!((await page.locator('#s19-pipeline-windows-last pre').innerText()).includes('torch.tensor')),'window example does not jump to tensor conversion');
   const codeBlocks=page.locator('pre > code');
   assert.equal(await codeBlocks.count(),await page.locator('pre > code.python-code').count(),'all Part II Python blocks have offline highlighting');
