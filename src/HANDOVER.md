@@ -12,7 +12,7 @@ All four attention parts and the four-part Vision to language extension are impl
 
 2026-09-21 slower lab and position revision (supersedes the entries below):
 
-- Section 19 has 67 concrete walkthrough frames plus its opening topic break. After the
+- Section 19 has 88 walkthrough frames plus its opening topic break. After the
   data introduction, two slides show three real TinyStories documents: one
   complete 52-word story, then excerpts from 107- and 248-word stories. Full-story
   token counts are computed with the notebook tokenizer; the shared source and
@@ -20,6 +20,16 @@ All four attention parts and the four-part Vision to language extension are impl
   One authored six-token sentence yields seven targets; a B=2, w=4, C=10 batch is
   traced through the MLP, attention, loss, an SGD update and generation. Random
   toy arithmetic is explicitly separate from the saved TinyStories benchmark.
+- Twenty visible map checkpoints precede the relevant calculations, including
+  splitting, tokenization, boundaries, window/batch preparation, MLP layers,
+  attention operations, learning and generation. `ROUTE_CHECKPOINTS` in
+  `slow_walkthrough.py` controls their order. They execute no model code.
+  Keep node locations fixed across highlight states and regenerate all slide links.
+  The new `lookup-flow` figure traces X[1] through selected rows of T [C,d]
+  into E[1], then labels the full batch E [B,w,d]. Every value is computed.
+  MLP logits now feed the loss vertically; observed y follows an outer lane.
+  A footer explains reusing updated parameters instead of a crossing return arrow.
+  Each SVG uses its own colored arrow markers so hidden frames cannot hide them.
 - Before `tokenize(sentence)`, three short tokenization frames explain the unit
   of prediction, compare word/character/illustrative subword splits of `redder!`,
   and demonstrate the actual notebook tokenizer. The first is a topic break.

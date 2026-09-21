@@ -46,6 +46,29 @@ try{
     'dₖ','3','query and key coordinates','dᵥ','2','value coordinates',
   ],'each dimension has its own symbol, value and definition');
   assert(!dimensionText.some(text=>text.includes('/')),'dimension entries do not look like division');
+  assert.equal(await page.locator('#s19 .map-checkpoint').count(),20,'recurring maps are visible lecture frames');
+  for(const [route,detail,focus] of [
+    ['route-data','data','stories'],['route-split','split','split'],
+    ['route-tokenize','tokenize','tokenize'],['route-boundaries','boundaries','ids'],
+    ['route-batch','batch','windows'],['route-flatten','flatten','flatten'],
+    ['route-hidden','hidden-affine','hidden'],['route-logits','vocab-head','logits'],
+    ['route-message','mix','message'],['route-backward','gradient','backward'],
+  ]){
+    const selector='#s19-pipeline-'+route;
+    assert.equal(await page.locator(selector+' .master svg').getAttribute('data-focus'),focus);
+    assert.equal(await page.locator(selector).evaluate(el=>el.nextElementSibling.id),'s19-pipeline-'+detail);
+    assert.equal(await page.locator(selector+' pre').count(),0,'map checkpoint has no dummy code');
+  }
+  assert.match(await page.locator('#s19-pipeline-lookup-flow').innerText(),/T: 10 rows × 4 coordinates/);
+  assert.match(await page.locator('#s19-pipeline-lookup-flow').innerText(),/X \[2,4\] indexes T \[10,4\] to produce E \[2,4,4\]/);
+  const markerProblems=await page.locator('.pipeline-lesson .master svg').evaluateAll(svgs=>svgs.flatMap(svg=>{
+    const ids=new Set([...svg.querySelectorAll('marker')].map(m=>m.id));
+    return [...svg.querySelectorAll('[marker-end]')].filter(p=>{
+      const id=p.getAttribute('marker-end').slice(5,-1);
+      return !ids.has(id)||document.querySelectorAll('[id="'+id+'"]').length!==1;
+    }).map(p=>p.getAttribute('marker-end'));
+  }));
+  assert.deepEqual(markerProblems,[],'arrow markers belong uniquely to the visible SVG');
   assert(!((await page.locator('#s19-pipeline-windows-last pre').innerText()).includes('torch.tensor')),'window example does not jump to tensor conversion');
   const codeBlocks=page.locator('pre > code');
   assert.equal(await codeBlocks.count(),await page.locator('pre > code.python-code').count(),'all Part II Python blocks have offline highlighting');

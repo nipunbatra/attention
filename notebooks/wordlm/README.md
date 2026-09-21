@@ -24,7 +24,8 @@ Transformer, LayerNorm, a block FFN, or pretrained embeddings.
    basis, cosine neighbours, contextual representations, attention maps, and
    controlled token interventions.
 5. [`05_training_and_inference_maps.ipynb`](05_training_and_inference_maps.ipynb)
-   — 67 small steps: actual stories, a brief tokenization detour, token IDs,
+   — 88 small steps, including 20 recurring map checkpoints: actual stories,
+   a brief tokenization detour, token IDs,
    individual pairs appended to lists, seven stored examples, an explicit B=2 batch,
    each MLP/attention operation, a real optimizer step, and generation with the
    tiny teaching model. The measured TinyStories results are clearly separate.
@@ -50,12 +51,14 @@ the four master SVGs and their graph data for reuse in slides.
 ### Illustrated study guide and matching slides
 
 [Read the chaptered guide](https://nipunbatra.github.io/attention/notebooks/wordlm/05_training_and_inference_maps.html).
-Every step links to its exact Part II slide, displays the same generated SVG,
-and includes the corresponding executable code. Expand the complete map to
-locate the current operation. The guide works on phones; wide figures scroll
+Every step links to its exact Part II slide and displays the same generated SVG.
+Visible map checkpoints highlight each phase before its worked example and code.
+You can also expand the complete map beside individual calculations. The lookup
+example traces four IDs into selected rows of the C×d embedding table, then
+connects the result to E with shape [B,w,d]. The guide works on phones; wide figures scroll
 inside their panels. The companion is public, separately from the private lab Site.
 
-`slow_walkthrough.py` is the shared source for the 67 explanations, calculations
+`slow_walkthrough.py` is the shared source for the 88 explanations, checkpoints, calculations
 and numeric figures. `lesson_evidence.json` records the saved corpus counts and
 benchmark provenance; it does not contain the raw story corpus.
 `story_examples.json` contains three unchanged TinyStories texts, source row IDs,

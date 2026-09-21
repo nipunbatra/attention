@@ -15,7 +15,7 @@ import shutil
 import zipfile
 
 import nbformat as nbf
-from slow_walkthrough import STAGES, initial_namespace, render_figure
+from slow_walkthrough import STAGES, initial_namespace, render_figure, map_mode
 from pipeline_maps import pipeline_svg
 from code_display import PYTHON_CSS, highlight_python, validate_python
 
@@ -70,6 +70,7 @@ SLIDE_CODE = {
  'batches':'for start in range(0, N, B):\n    batch_X = all_X[start:start+B]\n    print(len(batch_X))',
  'mlp-map':None,
  'lookup':"found_id = vocab.stoi['found']\nfound_vector = mlp.token_embedding.weight[found_id]",
+ 'lookup-flow':'selected_rows = embedding_table[X[1]]',
  'embedding-batch':'E_mlp = mlp.token_embedding(X)',
  'flatten':'flat = E_mlp.flatten(start_dim=1)',
  'hidden-affine':'pre_hidden = mlp.hidden_layer(flat)',
@@ -104,6 +105,7 @@ SLIDE_CODE = {
  'benchmark':None,
  'next':None,
 }
+SLIDE_CODE.update({stage['id']:None for stage in STAGES if stage.get('map_checkpoint')})
 
 
 def slide_code(stage):
@@ -120,8 +122,8 @@ def notebook_cells(md, code, setup=None):
     cells=[md('''# 5 · From a story to a trained predictor
 
 Trace the same two examples through an MLP and a one-layer attention model. Start
-with data, not equations. Every numbered section has one calculation, an actual
-numeric figure, and a link to its lecture slide. Run the cells in order.
+with data. Full-map checkpoints highlight the operation before its worked
+example. Every numbered section links to its lecture slide. Run the cells in order.
 
 The small calculation uses **B=2, w=4, C=10**. Its random weights are not the
 trained TinyStories model. The final comparison is explicitly labelled saved
@@ -182,19 +184,21 @@ def build(lecture):
         if s.get('check'):
             q,a=s['check'];checks=f'<aside class="check"><strong>Pause and predict</strong><p>{escape(q)}</p><details><summary>Show explanation</summary><p>{escape(a)}</p></details></aside>'
         map_html=''
-        if s['focus']:
-            mode='inference' if s['chapter'].startswith('6.') and s['id']!='evaluation' else 'training'
-            focused=pipeline_svg(s['kind'],mode,s['focus'])
+        if s['focus'] and not s.get('map_checkpoint'):
+            focused=pipeline_svg(s['kind'],map_mode(s),s['focus'],uid='locate-'+s['id'])
             map_html=f'<details class="route-map"><summary>Where are we on the full {s["kind"].upper()} map?</summary><div class="figure-wrap">{focused}</div></details>'
         result_html=f'<div class="code-label">Printed output</div><pre class="output">{escape(s["stdout"])}</pre>' if s['stdout'] else ''
         caption=('Same figure as the lecture. Full-story lengths are computed below. '+STORY_CREDIT+'. Display labels added; […] marks omissions.' if s['id'] in STORY_STAGES else 'Same figure as the lecture. Numeric values are computed from the code below.')
         if s['id'] in TOKENIZATION_STAGES:
             caption+=' Background: '+TOKENIZATION_LINKS+'. Notebook rules: <a href="wordlm.py">wordlm.py</a>.'
+        if s.get('map_checkpoint'):
+            caption='The highlighted boxes locate the next worked example. The layout stays the same as we move through the model.'
+        code_html='' if s.get('map_checkpoint') else f'<div class="code-label">Python · run after the previous step</div><pre>{highlight_python(s["code"])}</pre>'
         chunks.append(f'''<section class="lesson-step" id="{s['id']}">
 <div class="step-meta"><span>{escape(s['chapter'])} · Step {s['index']:02d} / {len(STAGES)}</span><a href="../../attention.html?present#s19/{s['slide']}/0">Open matching slide ↗</a></div>
 <h2>{escape(s['title'])}</h2><p>{escape(s['body'])}</p>
 <figure><div class="figure-wrap">{s['svg']}</div><figcaption>{caption}</figcaption></figure>
-{map_html}<div class="code-label">Python · run after the previous step</div><pre>{highlight_python(s['code'])}</pre>{result_html}{checks}</section>''')
+{map_html}{code_html}{result_html}{checks}</section>''')
     nav=''.join(f'<li><a href="#{key}">{escape(ch.split(". ",1)[1])}</a></li>' for ch,key in chapters.items())
     html=f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>From a story to a trained predictor · Part II companion</title><style>{css}</style></head><body>
 <header class="book-header"><div class="eyebrow">Attention and language · Notebook 5</div><h1>From a story to a trained predictor</h1><p>One sentence. Seven training examples. Two models. Follow the data, every tensor and one learning step before generating a new token.</p><div class="notebook-links"><a href="wordlm-notebooks.zip" download>Download all notebooks + support files</a><a href="{BOOK}.ipynb" download>Download this notebook</a><a href="../../attention.html?present#s19/4/0">Lecture slides ↗</a></div></header>
@@ -215,6 +219,7 @@ jupyter lab {BOOK}.ipynb</pre><p>Then choose <strong>Run → Run All Cells</stro
 #s19 .pipeline-lesson .step-figure{margin:12px 0;overflow-x:auto}
 #s19 .pipeline-lesson .step-figure svg{width:100%;height:auto;max-height:275px;display:block}
 #s19 .pipeline-lesson .step-figure.master svg{max-height:410px}
+#s19 #s19-pipeline-lookup-flow .step-figure svg{max-height:350px}
 #s19 .pipeline-lesson.story-sample .step-figure svg{max-height:350px}
 #s19 .pipeline-lesson.tokenization-lesson .step-figure svg{max-height:310px}
 #s19 #s19-pipeline-pairs-tensors .step-figure svg{max-height:310px}
@@ -239,7 +244,7 @@ body:not(.present) #s19 .pipeline-lesson{padding:30px 0;border-bottom:1px solid 
 <script type="text/x-notes">Use this as a slow, optional lab walkthrough over multiple sessions. The seven chapters connect real corpus provenance to a tiny, fully executable batch. Every figure also lives beside its code in Notebook 5. Distinguish toy arithmetic from saved benchmark evidence.</script><h3>From a story to a trained predictor</h3><p class="topic-recap">We have followed one attention calculation.</p><p class="topic-question">Now follow the data, each tensor, one learning step and the generation loop. <a href="notebooks/wordlm/05_training_and_inference_maps.html">Open the illustrated companion ↗</a></p></div>''']
     manifest=[]
     for s in results:
-        master=s['id'] in {'mlp-map','attention-map','mlp-inference','attention-inference'}
+        master=s.get('map_checkpoint') or s['id'] in {'mlp-map','attention-map','mlp-inference','attention-inference'}
         story_sample=s['id'] in STORY_STAGES
         tokenization=s['id'] in TOKENIZATION_STAGES
         excerpt=slide_code(s)
@@ -248,19 +253,20 @@ body:not(.present) #s19 .pipeline-lesson{padding:30px 0;border-bottom:1px solid 
             code_block=f'<p class="story-credit">{STORY_CREDIT}</p>'
         if s['id']=='next':
             code_block=f'<p class="step-meta"><a href="notebooks/wordlm/{BOOK}.html">Read the illustrated guide</a> · <a href="notebooks/wordlm/wordlm-notebooks.zip" download>Download all five notebooks</a></p>'
-        body='. '.join(s['body'].split('. ')[:1 if master or s['id']=='training-loop' else 2]).rstrip('.')+'.'
+        body='. '.join(s['body'].split('. ')[:1 if s['id']=='training-loop' else 2]).rstrip('.')+'.'
         if s['id']=='training-loop':
             body='Repeat this training step on batches of 512 windows.'
         if story_sample or tokenization or s['id']=='batches':
             body=s['body']
-        extra_class=(' story-sample' if story_sample else ' tokenization-lesson' if tokenization else '')
+        extra_class=(' story-sample' if story_sample else ' tokenization-lesson' if tokenization else ' map-checkpoint' if s.get('map_checkpoint') else '')
         intro=s['id']=='tokenization-intro'
         if intro: extra_class+=' lecture-topic-break topic-midpoint'
         heading='<h3>Tokenization</h3>' if intro else ''
         mobile=f'<div class="tokenization-mobile"><strong>Does “next token” always mean “next word”?</strong><span class="tokenization-example">{escape(ns["tokenization_text"])}</span><span>The same text can become different sequences of tokens.</span></div>' if intro else ''
         sources=' Background: '+'; '.join(label+': '+url for label,url in TOKENIZATION_SOURCES)+'. Notebook rules: notebooks/wordlm/wordlm.py.' if tokenization else ''
         fragments.append(f'''<div class="frame pipeline-lesson{extra_class}" id="s19-pipeline-{s['id']}" data-title="{escape(s['title'],quote=True)}" data-autobuild="off"><script type="text/x-notes">{escape(s['body']+sources)} Notebook step {s['index']}. {escape(s['code'])}</script>{heading}<p class="step-meta">{escape(s['chapter'])} · Step {s['index']} / {len(STAGES)} <a href="notebooks/wordlm/{BOOK}.html#{s['id']}">Notebook step ↗</a></p><div class="step-figure{' master' if master else ' topic-question' if intro else ''}">{s['svg']}{mobile}</div><p class="step-copy">{escape(body)}</p>{code_block}</div>''')
-        manifest.append({k:s[k] for k in ['id','title','chapter','index','slide']})
+        manifest.append(dict({k:s[k] for k in ['id','title','chapter','index','slide']},
+                             map_checkpoint=bool(s.get('map_checkpoint'))))
     (lecture/'src'/'sections'/'sec19_pipeline.html').write_text('\n\n'.join(fragments))
     (out/'lesson-manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
     export_bundle(out)

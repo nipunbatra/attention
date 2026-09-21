@@ -45,6 +45,9 @@ def test_attention_shapes_and_bypasses():
     assert '[B,1,dᵥ]' in n['message']['detail']
     edges = {(e['start'], e['end']) for e in g['edges']}
     assert {('qkv', 'message'), ('embedding', 'residual'), ('message', 'projection')} <= edges
+    by_edge={(e['start'],e['end']):e for e in g['edges']}
+    # Values enter a different port from the outgoing projection edge.
+    assert by_edge['qkv','message']['points'][-1][0] != by_edge['message','projection']['points'][0][0]
 
 
 def test_model_nodes_do_not_move_between_training_and_inference():
@@ -53,3 +56,27 @@ def test_model_nodes_do_not_move_between_training_and_inference():
         infer = {n['key']: n for n in graph(kind, 'inference')['nodes']}
         for key in (train.keys() & infer.keys()) - {'windows', 'tokenize'}:
             assert (train[key]['x'], train[key]['y']) == (infer[key]['x'], infer[key]['y'])
+
+
+def test_mlp_loss_has_separate_logit_and_target_lanes():
+    g=graph('mlp','training')
+    edges={(e['start'],e['end']):e for e in g['edges']}
+    points=edges['logits','loss']['points']
+    assert len(points)==2 and points[0][0]==points[1][0]
+    target=edges['windows','loss']['points']
+    assert all(x>=1470 for x,y in target)
+    assert ('parameters','embedding') not in edges
+    assert 'updated parameters in every learned layer' in pipeline_svg('mlp','training')
+
+
+def test_repeated_maps_keep_arrow_markers_local():
+    svg_a=ET.fromstring(pipeline_svg('mlp','training','embedding',uid='first'))
+    svg_b=ET.fromstring(pipeline_svg('mlp','training','embedding',uid='second'))
+    marker_ids=[]
+    for svg in [svg_a,svg_b]:
+        ids={node.attrib['id'] for node in svg.iter() if 'id' in node.attrib}
+        for path in svg.iter('{http://www.w3.org/2000/svg}path'):
+            if 'marker-end' in path.attrib:
+                assert path.attrib['marker-end'][5:-1] in ids
+        marker_ids.append(ids)
+    assert not marker_ids[0]&marker_ids[1]

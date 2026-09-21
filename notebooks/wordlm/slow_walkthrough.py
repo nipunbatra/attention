@@ -299,9 +299,9 @@ print(dict(B=B, w=w, C=C, d=d, h=h, d_k=d_k, d_v=d_v))
 ''', check=('Must d_k equal d_v?', 'No. Queries and keys need the same width for their dot product. Values may have a different width. Here d_k=3 and d_v=2.'))
 
 step('mlp-map', 'The full MLP training map', '3. The MLP forward pass',
-     'We have prepared X and y. Follow X through the network. The observed target bypasses the network and joins the logits at the loss. The purple loop updates every learned layer.', '''
+     'X has shape [2,4] and y has shape [2]. Input IDs enter token lookup, while the observed target goes directly to the loss. Each optimizer step updates all learned layers for the next batch.', '''
 print('X:', tuple(X.shape), 'y:', tuple(y.shape))
-''')
+''', focus=('windows','embedding','loss'))
 
 step('lookup', 'An ID selects one embedding row', '3. The MLP forward pass',
      'The embedding table has C=10 rows and d=4 columns. ID 7, found, selects one four-number row. The four coordinates below are learned features with no assigned word meanings.', '''
@@ -309,6 +309,13 @@ embedding_table = mlp.token_embedding.weight
 found_id = vocab.stoi['found']
 found_vector = embedding_table[found_id]
 assert found_vector.shape == (4,)
+''', focus=('embedding',))
+
+step('lookup-flow', 'Input IDs select rows from the embedding table', '3. The MLP forward pass',
+     'The learned table T has shape [C,d] = [10,4]. Each ID in X[1] selects one complete row, giving four vectors in the same slot order. The next slide stacks this result for both batch examples.', '''
+selected_rows = embedding_table[X[1]]
+assert selected_rows.shape == (w, d)
+assert torch.equal(selected_rows[2], found_vector)
 ''', focus=('embedding',))
 
 step('embedding-batch', 'The whole batch becomes a 2 × 4 × 4 tensor', '3. The MLP forward pass',
@@ -510,7 +517,7 @@ prompt = 'Lily found'
 prompt_ids = vocab.encode_tokens(tokenize(prompt), boundaries=False)
 history = [vocab.bos_id] + prompt_ids
 assert history == [1, 8, 7]
-''', kind='attention', focus=('prompt','tokenize'))
+''', focus=('prompt','tokenize'))
 
 step('prompt-window', 'The prompt fills the same four input slots', '6. Inference',
      'Keep the most recent w=4 IDs from the history. This prompt has only three IDs including BOS, so one PAD ID fills the unused slot on the left.', '''
@@ -518,7 +525,7 @@ kept = history[-w:]
 context_ids = [vocab.pad_id] * (w-len(kept)) + kept
 inference_X = torch.tensor([context_ids])
 assert inference_X.tolist() == [[0, 1, 8, 7]]
-''', kind='attention', focus=('windows',))
+''', focus=('windows',))
 
 step('generation-logits', 'A frozen model scores the next token', '6. Inference',
      'The MLP reads the prepared window and returns ten vocabulary scores. inference_mode disables gradient tracking for this forward pass, and no optimizer updates the parameters.', '''
@@ -587,6 +594,65 @@ print('Real experiment: 969,160 training windows; context 64; vocabulary 4,000.'
 ''')
 
 
+# Visible map checkpoints precede the calculations they locate. They execute no
+# model code, so revisiting the overview cannot change any example or weight.
+ROUTE_CHECKPOINTS = {
+    'data': ('route-data', 'The training map: stories', ('stories',),
+             'We begin with complete stories. The highlighted box supplies the data for everything that follows.'),
+    'split': ('route-split', 'The training map: splitting stories', ('split',),
+              'Keep each story in one split before making overlapping windows. Only the training stories fit the vocabulary and model.'),
+    'tokenize': ('route-tokenize', 'The training map: tokens and IDs', ('tokenize',),
+                 'Text becomes tokens, then integer vocabulary IDs. Learned embedding vectors come later at token lookup.'),
+    'boundaries': ('route-boundaries', 'The training map: story boundaries', ('ids',),
+                   'Add BOS and EOS to each story’s ID sequence. These boundaries let us create the first input and the final stopping target.'),
+    'story-indices': ('route-windows', 'The training map: context and target', ('windows',),
+                      'A window holds the previous w token IDs. Its target is the next observed ID in the story.'),
+    'batch': ('route-batch', 'The training map: one batch', ('windows',),
+              'We select B=2 examples, each with w=4 input slots. They form X with shape [2,4] and y with shape [2].'),
+    'flatten': ('route-flatten', 'The MLP map: joining the input vectors', ('flatten',),
+                'Token lookup produced E with shape [B,w,d] = [2,4,4]. Each example now becomes one row of w×d=16 numbers.'),
+    'hidden-affine': ('route-hidden', 'The MLP map: the hidden layer', ('hidden',),
+                      'The 16 input coordinates feed 8 hidden units. An affine operation followed by ReLU produces one hidden row per example.'),
+    'vocab-head': ('route-logits', 'The MLP map: vocabulary scores', ('logits',),
+                   'The hidden row produces one score for each of C=10 vocabulary items. With two examples, the logits have shape [2,10].'),
+    'positions': ('route-positions', 'The attention map: input vectors', ('embedding',),
+                  'Attention adds a position vector to each token vector. E still has shape [2,4,4] before the query, key and value projections.'),
+    'query': ('route-qkv', 'The attention map: queries, keys and values', ('qkv',),
+              'Each window supplies one final query and four source keys and values. The next three calculations use the same input tensor E.'),
+    'scores': ('route-scores', 'The attention map: source weights', ('scores','weights'),
+               'Query-key scores determine where to read. Scaling, padding masks and softmax produce one row of four weights per example.'),
+    'mix': ('route-message', 'The attention map: the message', ('message',),
+            'Each source weight multiplies a two-coordinate value row. Their sum gives one message of width dᵥ=2 per example.'),
+    'output-map': ('route-projection', 'The attention map: the output projection', ('projection','residual','readout'),
+                   'Wₒ maps the two-coordinate message into four coordinates. The residual addition then combines it with the original final input row.'),
+    'word-softmax': ('route-loss', 'The training map: predictions and targets', ('logits','loss'),
+                     'Return to the MLP’s two rows of vocabulary logits. The observed IDs y=[5,9], meaning a and red, meet those logits at the loss.'),
+    'gradient': ('route-backward', 'The training map: backpropagation', ('backward',),
+                 'The batch mean loss supplies gradients for the learned parameters. Backpropagation computes these gradients before any weight changes.'),
+    'update': ('route-update', 'The training map: updating parameters', ('optimizer','parameters'),
+               'The optimizer uses the gradients to change the learned parameters. The next batch repeats the forward pass with those updated weights.'),
+    'prompt': ('route-prompt', 'The generation map: preparing the prompt', ('prompt','tokenize','windows'),
+               'Generation uses the saved tokenizer and the latest w IDs. Our worked example follows the frozen MLP with B=1 and no observed next target.'),
+    'generation-probabilities': ('route-decoding', 'The generation map: choosing a token', ('probabilities','choose'),
+                                 'Vocabulary softmax turns the scores into probabilities. Greedy decoding or sampling chooses the next token ID.'),
+    'generation-append': ('route-repeat', 'The generation map: extending the history', ('stop','append','windows'),
+                          'EOS ends generation. Otherwise append the chosen ID and prepare the newest window for another forward pass.'),
+}
+_with_routes = []
+for _stage in STAGES:
+    if _stage['id'] in ROUTE_CHECKPOINTS:
+        _id, _title, _focus, _body = ROUTE_CHECKPOINTS[_stage['id']]
+        _with_routes.append(dict(id=_id, title=_title, chapter=_stage['chapter'],
+                                 body=_body, code='', kind=_stage['kind'],
+                                 focus=_focus, check=None, map_checkpoint=True))
+    _with_routes.append(_stage)
+STAGES = _with_routes
+
+
+def map_mode(stage):
+    return 'inference' if stage['chapter'].startswith('6.') and stage['id'] != 'evaluation' else 'training'
+
+
 BLUE, PURPLE, ORANGE, TEAL, RED, GREEN = '#245EDB','#8B2CDE','#AA4E08','#0F766E','#BE123C','#147737'
 INK, MUTED, LINE, PAPER = '#14171F','#4A5160','#D9DFE9','#F7F8FA'
 
@@ -637,8 +703,8 @@ def render_figure(stage, ns):
     k=stage['id'];f=Figure(stage['title']);words=ns.get('words',[])
     decode=lambda ids:' '.join(words[int(i)].replace('<','').replace('>','') for i in ids)
     X=ns.get('X'); row_tokens=lambda b:[words[int(i)] for i in X[b]]
-    if k in {'mlp-map','attention-map','mlp-inference','attention-inference'}:
-        return pipeline_svg(stage['kind'],'inference' if 'inference' in k else 'training')
+    if stage.get('map_checkpoint') or k in {'mlp-map','attention-map','mlp-inference','attention-inference'}:
+        return pipeline_svg(stage['kind'],map_mode(stage),stage['focus'],uid=stage['id'])
     if k=='data':
         f.text(25,50,'TinyStories · source row 12400',BLUE,27,600)
         f.text(25,115,'“Once upon a time, there lived a little bunny.”',size=35)
@@ -831,6 +897,28 @@ def render_figure(stage, ns):
     elif k=='lookup':
         rows=[(words[i],i,*[num(v) for v in ns['embedding_table'][i]]) for i in [0,7,8,9]]
         f.table(['Token','ID','coord. 1','coord. 2','coord. 3','coord. 4'],rows,widths=[200,100,205,205,205,205],row_h=55,colors=[INK,BLUE,BLUE,BLUE,BLUE,BLUE])
+    elif k=='lookup-flow':
+        f=Figure(stage['title'],height=390)
+        f.text(20,30,'X[1]: four input IDs',BLUE,25,600)
+        f.table(['Slot','ID','Token'],[(j,int(v),words[int(v)]) for j,v in enumerate(X[1])],
+                x=20,y=60,widths=[60,55,100],row_h=48,size=22)
+        f.text(300,30,f"T: {ns['C']} rows × {ns['d']} coordinates",BLUE,25,600)
+        # Show exactly the selected rows, with their vocabulary row IDs.
+        f.table(['T row','c₁','c₂','c₃','c₄'],
+                [(int(v),*[f'{float(x):.2f}' for x in ns['embedding_table'][v].detach()]) for v in X[1]],
+                x=300,y=60,widths=[75,67,67,67,67],row_h=48,size=21)
+        f.text(300,330,'Four selected rows of the 10-row table',MUTED,21)
+        f.text(715,30,'E[1]: four vectors in slot order',TEAL,25,600)
+        f.table(['Slot','c₁','c₂','c₃','c₄'],
+                [(j,*[f'{float(x):.2f}' for x in row.detach()]) for j,row in enumerate(ns['selected_rows'])],
+                x=715,y=60,widths=[70,87,87,87,87],row_h=48,size=21)
+        # Corresponding rows are aligned, so no connectors cross.
+        for j in range(ns['w']):
+            y=60+(j+1)*48+24
+            for start,end in [(235,291),(643,706)]:
+                f.line(start,y,end,y,BLUE)
+                f.parts.append(f'<path d="M{end-8} {y-5} L{end} {y} L{end-8} {y+5}" fill="none" stroke="{BLUE}" stroke-width="2"/>')
+        f.text(20,370,'Both examples together: X [2,4] indexes T [10,4] to produce E [2,4,4].',TEAL,27,600)
     elif k=='embedding-batch':
         for b in range(2):
             f.text(20+580*b,30,f'Example {b}: {decode(X[b])}',BLUE,24,600)
@@ -964,9 +1052,8 @@ def show_figure(key, namespace):
     from IPython.display import SVG, HTML, display
     stage=next(s for s in STAGES if s['id']==key)
     display(SVG(render_figure(stage, namespace)))
-    if stage['focus']:
-        mode='inference' if stage['chapter'].startswith('6.') and key!='evaluation' else 'training'
-        svg=pipeline_svg(stage['kind'],mode,stage['focus'])
+    if stage['focus'] and not stage.get('map_checkpoint'):
+        svg=pipeline_svg(stage['kind'],map_mode(stage),stage['focus'],uid='locate-'+stage['id'])
         display(HTML('<details><summary>Locate this step on the complete map</summary>'+svg+'</details>'))
 
 

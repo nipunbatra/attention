@@ -4,13 +4,13 @@ from pathlib import Path
 from xml.etree import ElementTree as ET
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from slow_walkthrough import STAGES, STORY_EXAMPLES, initial_namespace, render_figure
+from slow_walkthrough import STAGES, STORY_EXAMPLES, ROUTE_CHECKPOINTS, initial_namespace, render_figure, map_mode
 
 
 def test_all_lesson_steps_execute_and_render():
     ns=initial_namespace()
-    assert len(STAGES)==67
-    assert len({s['id'] for s in STAGES})==67
+    assert len(STAGES)==88
+    assert len({s['id'] for s in STAGES})==88
     for s in STAGES:
         exec(compile(s['code'],s['id'],'exec'),ns)
         root=ET.fromstring(render_figure(s,ns))
@@ -29,7 +29,8 @@ def test_all_lesson_steps_execute_and_render():
 def test_real_story_examples_have_reproducible_lengths_and_provenance():
     import hashlib
     from wordlm import tokenize
-    assert [s['id'] for s in STAGES[:4]] == ['data','story-complete','story-excerpts','split']
+    calculations=[s for s in STAGES if not s.get('map_checkpoint')]
+    assert [s['id'] for s in calculations[:4]] == ['data','story-complete','story-excerpts','split']
     assert STORY_EXAMPLES['license']=='CDLA-Sharing-1.0'
     assert STORY_EXAMPLES['revision']=='f54c09fd23315a6f9c86f9dc80f725de7d8f9c64'
     assert STORY_EXAMPLES['subset_documents']==6000
@@ -39,7 +40,7 @@ def test_real_story_examples_have_reproducible_lengths_and_provenance():
         assert len(story['text'].split())==story['word_count']
         assert len(tokenize(story['text']))==story['token_count']
     ns=initial_namespace()
-    for s in STAGES[:3]:
+    for s in calculations[:3]:
         exec(s['code'],ns)
         svg=render_figure(s,ns)
         if s['id']=='story-complete':
@@ -55,7 +56,7 @@ def test_real_story_examples_have_reproducible_lengths_and_provenance():
 def test_tokenization_detour_matches_the_actual_rules_without_changing_the_toy():
     keys=[s['id'] for s in STAGES]
     start=keys.index('sentence')
-    assert keys[start:start+5]==['sentence','tokenization-intro','tokenization-choices','tokenization-rules','tokenize']
+    assert keys[start:start+6]==['sentence','tokenization-intro','tokenization-choices','tokenization-rules','route-tokenize','tokenize']
     ns=initial_namespace()
     for stage in STAGES:
         exec(stage['code'],ns)
@@ -183,3 +184,32 @@ def test_dimensions_have_one_symbol_value_and_definition_per_row():
                             ('d',7,18),('h',9,21),('d_k',4,24),('d_v',6,27)]:
         ns[key]=value
         assert labels()[index]==str(value)
+
+
+def test_map_checkpoints_precede_examples_without_changing_state():
+    from pipeline_maps import graph
+    by_id={s['id']:i for i,s in enumerate(STAGES)}
+    for target,(key,title,focus,body) in ROUTE_CHECKPOINTS.items():
+        assert by_id[key]+1==by_id[target]
+        stage=STAGES[by_id[key]]
+        assert stage['map_checkpoint'] and stage['code']==''
+        svg=ET.fromstring(render_figure(stage,{}))
+        assert set(svg.attrib['data-focus'].split())==set(focus)
+        nodes=svg.findall("{http://www.w3.org/2000/svg}g[@data-stage]")
+        assert {n.attrib['data-stage'] for n in nodes if n.attrib['data-active']=='true'}==set(focus)
+        assert len(nodes)==len(graph(stage['kind'],map_mode(stage))['nodes'])
+    assert map_mode(STAGES[by_id['route-prompt']])=='inference'
+    assert STAGES[by_id['route-prompt']]['kind']=='mlp'
+
+
+def test_lookup_flow_selects_a_whole_row_for_each_input_id():
+    ns=initial_namespace()
+    for stage in STAGES:
+        exec(stage['code'],ns)
+        if stage['id']=='lookup-flow': break
+    assert ns['selected_rows'].shape==(4,4)
+    assert ns['torch'].equal(ns['selected_rows'],ns['embedding_table'][ns['X'][1]])
+    assert ns['torch'].equal(ns['selected_rows'][2],ns['found_vector'])
+    text=' '.join(ET.fromstring(render_figure(stage,ns)).itertext())
+    assert 'T: 10 rows × 4 coordinates' in text
+    assert 'X [2,4] indexes T [10,4] to produce E [2,4,4]' in text

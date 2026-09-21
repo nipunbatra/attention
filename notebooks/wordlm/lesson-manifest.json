@@ -1,471 +1,706 @@
 [
   {
+    "id": "route-data",
+    "title": "The training map: stories",
+    "chapter": "1. Data and tokens",
+    "index": 1,
+    "slide": 5,
+    "map_checkpoint": true
+  },
+  {
     "id": "data",
     "title": "The data: complete short stories",
     "chapter": "1. Data and tokens",
-    "index": 1,
-    "slide": 5
+    "index": 2,
+    "slide": 6,
+    "map_checkpoint": false
   },
   {
     "id": "story-complete",
     "title": "Read one complete story",
     "chapter": "1. Data and tokens",
-    "index": 2,
-    "slide": 6
+    "index": 3,
+    "slide": 7,
+    "map_checkpoint": false
   },
   {
     "id": "story-excerpts",
     "title": "Longer stories have several paragraphs",
     "chapter": "1. Data and tokens",
-    "index": 3,
-    "slide": 7
+    "index": 4,
+    "slide": 8,
+    "map_checkpoint": false
+  },
+  {
+    "id": "route-split",
+    "title": "The training map: splitting stories",
+    "chapter": "1. Data and tokens",
+    "index": 5,
+    "slide": 9,
+    "map_checkpoint": true
   },
   {
     "id": "split",
     "title": "Stories stay together when we split the data",
     "chapter": "1. Data and tokens",
-    "index": 4,
-    "slide": 8
+    "index": 6,
+    "slide": 10,
+    "map_checkpoint": false
   },
   {
     "id": "sentence",
     "title": "A sentence we can trace completely",
     "chapter": "1. Data and tokens",
-    "index": 5,
-    "slide": 9
+    "index": 7,
+    "slide": 11,
+    "map_checkpoint": false
   },
   {
     "id": "tokenization-intro",
     "title": "Tokenization",
     "chapter": "1. Data and tokens",
-    "index": 6,
-    "slide": 10
+    "index": 8,
+    "slide": 12,
+    "map_checkpoint": false
   },
   {
     "id": "tokenization-choices",
     "title": "Words, characters or pieces of words",
     "chapter": "1. Data and tokens",
-    "index": 7,
-    "slide": 11
+    "index": 9,
+    "slide": 13,
+    "map_checkpoint": false
   },
   {
     "id": "tokenization-rules",
     "title": "The tokenizer used in this notebook",
     "chapter": "1. Data and tokens",
-    "index": 8,
-    "slide": 12
+    "index": 10,
+    "slide": 14,
+    "map_checkpoint": false
+  },
+  {
+    "id": "route-tokenize",
+    "title": "The training map: tokens and IDs",
+    "chapter": "1. Data and tokens",
+    "index": 11,
+    "slide": 15,
+    "map_checkpoint": true
   },
   {
     "id": "tokenize",
     "title": "Lowercase words and separate punctuation",
     "chapter": "1. Data and tokens",
-    "index": 9,
-    "slide": 13
+    "index": 12,
+    "slide": 16,
+    "map_checkpoint": false
   },
   {
     "id": "vocabulary",
     "title": "Every vocabulary item gets an integer ID",
     "chapter": "1. Data and tokens",
-    "index": 10,
-    "slide": 14
+    "index": 13,
+    "slide": 17,
+    "map_checkpoint": false
   },
   {
     "id": "special",
     "title": "Four special tokens have different jobs",
     "chapter": "1. Data and tokens",
-    "index": 11,
-    "slide": 15
+    "index": 14,
+    "slide": 18,
+    "map_checkpoint": false
+  },
+  {
+    "id": "route-boundaries",
+    "title": "The training map: story boundaries",
+    "chapter": "1. Data and tokens",
+    "index": 15,
+    "slide": 19,
+    "map_checkpoint": true
   },
   {
     "id": "boundaries",
     "title": "Add the story boundaries once",
     "chapter": "1. Data and tokens",
-    "index": 12,
-    "slide": 16
+    "index": 16,
+    "slide": 20,
+    "map_checkpoint": false
+  },
+  {
+    "id": "route-windows",
+    "title": "The training map: context and target",
+    "chapter": "2. Windows and batches",
+    "index": 17,
+    "slide": 21,
+    "map_checkpoint": true
   },
   {
     "id": "story-indices",
     "title": "Token positions and vocabulary IDs",
     "chapter": "2. Windows and batches",
-    "index": 13,
-    "slide": 17
+    "index": 18,
+    "slide": 22,
+    "map_checkpoint": false
   },
   {
     "id": "one-pair",
     "title": "One input window and its observed target",
     "chapter": "2. Windows and batches",
-    "index": 14,
-    "slide": 18
+    "index": 19,
+    "slide": 23,
+    "map_checkpoint": false
   },
   {
     "id": "pair-lists",
     "title": "Lists for inputs and targets",
     "chapter": "2. Windows and batches",
-    "index": 15,
-    "slide": 19
+    "index": 20,
+    "slide": 24,
+    "map_checkpoint": false
   },
   {
     "id": "pair-first",
     "title": "The first pair has only BOS as history",
     "chapter": "2. Windows and batches",
-    "index": 16,
-    "slide": 20
+    "index": 21,
+    "slide": 25,
+    "map_checkpoint": false
   },
   {
     "id": "pair-append",
     "title": "Storing an input and its target",
     "chapter": "2. Windows and batches",
-    "index": 17,
-    "slide": 21
+    "index": 22,
+    "slide": 26,
+    "map_checkpoint": false
   },
   {
     "id": "pair-second",
     "title": "The next pair includes the previous observed target",
     "chapter": "2. Windows and batches",
-    "index": 18,
-    "slide": 22
+    "index": 23,
+    "slide": 27,
+    "map_checkpoint": false
   },
   {
     "id": "pair-append-second",
     "title": "The second pair becomes row 1 in both lists",
     "chapter": "2. Windows and batches",
-    "index": 19,
-    "slide": 23
+    "index": 24,
+    "slide": 28,
+    "map_checkpoint": false
   },
   {
     "id": "pairs-loop",
     "title": "Building the remaining training pairs",
     "chapter": "2. Windows and batches",
-    "index": 20,
-    "slide": 24
+    "index": 25,
+    "slide": 29,
+    "map_checkpoint": false
   },
   {
     "id": "windows-first",
     "title": "Early prefixes need padding",
     "chapter": "2. Windows and batches",
-    "index": 21,
-    "slide": 25
+    "index": 26,
+    "slide": 30,
+    "map_checkpoint": false
   },
   {
     "id": "windows-last",
     "title": "Later prefixes drop their oldest tokens",
     "chapter": "2. Windows and batches",
-    "index": 22,
-    "slide": 26
+    "index": 27,
+    "slide": 31,
+    "map_checkpoint": false
   },
   {
     "id": "pairs-tensors",
     "title": "The paired lists become two integer tensors",
     "chapter": "2. Windows and batches",
-    "index": 23,
-    "slide": 27
+    "index": 28,
+    "slide": 32,
+    "map_checkpoint": false
   },
   {
     "id": "counts-story",
     "title": "Six ordinary tokens give seven training examples",
     "chapter": "2. Windows and batches",
-    "index": 24,
-    "slide": 28
+    "index": 29,
+    "slide": 33,
+    "map_checkpoint": false
   },
   {
     "id": "counts-train",
     "title": "Training examples across the corpus",
     "chapter": "2. Windows and batches",
-    "index": 25,
-    "slide": 29
+    "index": 30,
+    "slide": 34,
+    "map_checkpoint": false
   },
   {
     "id": "counts",
     "title": "Example counts for each data split",
     "chapter": "2. Windows and batches",
-    "index": 26,
-    "slide": 30
+    "index": 31,
+    "slide": 35,
+    "map_checkpoint": false
   },
   {
     "id": "context",
     "title": "Context length controls what is visible",
     "chapter": "2. Windows and batches",
-    "index": 27,
-    "slide": 31
+    "index": 32,
+    "slide": 36,
+    "map_checkpoint": false
+  },
+  {
+    "id": "route-batch",
+    "title": "The training map: one batch",
+    "chapter": "2. Windows and batches",
+    "index": 33,
+    "slide": 37,
+    "map_checkpoint": true
   },
   {
     "id": "batch",
     "title": "A batch of two examples",
     "chapter": "2. Windows and batches",
-    "index": 28,
-    "slide": 32
+    "index": 34,
+    "slide": 38,
+    "map_checkpoint": false
   },
   {
     "id": "batch-ids",
     "title": "X and y contain integer token IDs",
     "chapter": "2. Windows and batches",
-    "index": 29,
-    "slide": 33
+    "index": 35,
+    "slide": 39,
+    "map_checkpoint": false
   },
   {
     "id": "batches",
     "title": "Seven examples, four batches",
     "chapter": "2. Windows and batches",
-    "index": 30,
-    "slide": 34
+    "index": 36,
+    "slide": 40,
+    "map_checkpoint": false
   },
   {
     "id": "shapes",
     "title": "Batch and model dimensions",
     "chapter": "2. Windows and batches",
-    "index": 31,
-    "slide": 35
+    "index": 37,
+    "slide": 41,
+    "map_checkpoint": false
   },
   {
     "id": "mlp-map",
     "title": "The full MLP training map",
     "chapter": "3. The MLP forward pass",
-    "index": 32,
-    "slide": 36
+    "index": 38,
+    "slide": 42,
+    "map_checkpoint": false
   },
   {
     "id": "lookup",
     "title": "An ID selects one embedding row",
     "chapter": "3. The MLP forward pass",
-    "index": 33,
-    "slide": 37
+    "index": 39,
+    "slide": 43,
+    "map_checkpoint": false
+  },
+  {
+    "id": "lookup-flow",
+    "title": "Input IDs select rows from the embedding table",
+    "chapter": "3. The MLP forward pass",
+    "index": 40,
+    "slide": 44,
+    "map_checkpoint": false
   },
   {
     "id": "embedding-batch",
     "title": "The whole batch becomes a 2 \u00d7 4 \u00d7 4 tensor",
     "chapter": "3. The MLP forward pass",
-    "index": 34,
-    "slide": 38
+    "index": 41,
+    "slide": 45,
+    "map_checkpoint": false
+  },
+  {
+    "id": "route-flatten",
+    "title": "The MLP map: joining the input vectors",
+    "chapter": "3. The MLP forward pass",
+    "index": 42,
+    "slide": 46,
+    "map_checkpoint": true
   },
   {
     "id": "flatten",
     "title": "Flatten the context axis, keep the batch axis",
     "chapter": "3. The MLP forward pass",
-    "index": 35,
-    "slide": 39
+    "index": 43,
+    "slide": 47,
+    "map_checkpoint": false
+  },
+  {
+    "id": "route-hidden",
+    "title": "The MLP map: the hidden layer",
+    "chapter": "3. The MLP forward pass",
+    "index": 44,
+    "slide": 48,
+    "map_checkpoint": true
   },
   {
     "id": "hidden-affine",
     "title": "One hidden neuron combines all sixteen inputs",
     "chapter": "3. The MLP forward pass",
-    "index": 36,
-    "slide": 40
+    "index": 45,
+    "slide": 49,
+    "map_checkpoint": false
   },
   {
     "id": "relu",
     "title": "ReLU keeps positive activations",
     "chapter": "3. The MLP forward pass",
-    "index": 37,
-    "slide": 41
+    "index": 46,
+    "slide": 50,
+    "map_checkpoint": false
+  },
+  {
+    "id": "route-logits",
+    "title": "The MLP map: vocabulary scores",
+    "chapter": "3. The MLP forward pass",
+    "index": 47,
+    "slide": 51,
+    "map_checkpoint": true
   },
   {
     "id": "vocab-head",
     "title": "Vocabulary logits from the hidden layer",
     "chapter": "3. The MLP forward pass",
-    "index": 38,
-    "slide": 42
+    "index": 48,
+    "slide": 52,
+    "map_checkpoint": false
   },
   {
     "id": "attention-map",
     "title": "The full attention training map",
     "chapter": "4. The attention forward pass",
-    "index": 39,
-    "slide": 43
+    "index": 49,
+    "slide": 53,
+    "map_checkpoint": false
+  },
+  {
+    "id": "route-positions",
+    "title": "The attention map: input vectors",
+    "chapter": "4. The attention forward pass",
+    "index": 50,
+    "slide": 54,
+    "map_checkpoint": true
   },
   {
     "id": "positions",
     "title": "Add a position vector to each token vector",
     "chapter": "4. The attention forward pass",
-    "index": 40,
-    "slide": 44
+    "index": 51,
+    "slide": 55,
+    "map_checkpoint": false
+  },
+  {
+    "id": "route-qkv",
+    "title": "The attention map: queries, keys and values",
+    "chapter": "4. The attention forward pass",
+    "index": 52,
+    "slide": 56,
+    "map_checkpoint": true
   },
   {
     "id": "query",
     "title": "The final known token supplies one query",
     "chapter": "4. The attention forward pass",
-    "index": 41,
-    "slide": 45
+    "index": 53,
+    "slide": 57,
+    "map_checkpoint": false
   },
   {
     "id": "keys",
     "title": "Each source has a matching key",
     "chapter": "4. The attention forward pass",
-    "index": 42,
-    "slide": 46
+    "index": 54,
+    "slide": 58,
+    "map_checkpoint": false
   },
   {
     "id": "values",
     "title": "Each source also has information to send",
     "chapter": "4. The attention forward pass",
-    "index": 43,
-    "slide": 47
+    "index": 55,
+    "slide": 59,
+    "map_checkpoint": false
+  },
+  {
+    "id": "route-scores",
+    "title": "The attention map: source weights",
+    "chapter": "4. The attention forward pass",
+    "index": 56,
+    "slide": 60,
+    "map_checkpoint": true
   },
   {
     "id": "scores",
     "title": "Compare the query with all four keys",
     "chapter": "4. The attention forward pass",
-    "index": 44,
-    "slide": 48
+    "index": 57,
+    "slide": 61,
+    "map_checkpoint": false
   },
   {
     "id": "mask",
     "title": "Padding must receive zero attention weight",
     "chapter": "4. The attention forward pass",
-    "index": 45,
-    "slide": 49
+    "index": 58,
+    "slide": 62,
+    "map_checkpoint": false
   },
   {
     "id": "attention-softmax",
     "title": "Softmax turns four source scores into weights",
     "chapter": "4. The attention forward pass",
-    "index": 46,
-    "slide": 50
+    "index": 59,
+    "slide": 63,
+    "map_checkpoint": false
+  },
+  {
+    "id": "route-message",
+    "title": "The attention map: the message",
+    "chapter": "4. The attention forward pass",
+    "index": 60,
+    "slide": 64,
+    "map_checkpoint": true
   },
   {
     "id": "mix",
     "title": "Each weight scales a complete value row",
     "chapter": "4. The attention forward pass",
-    "index": 47,
-    "slide": 51
+    "index": 61,
+    "slide": 65,
+    "map_checkpoint": false
+  },
+  {
+    "id": "route-projection",
+    "title": "The attention map: the output projection",
+    "chapter": "4. The attention forward pass",
+    "index": 62,
+    "slide": 66,
+    "map_checkpoint": true
   },
   {
     "id": "output-map",
     "title": "Project two message coordinates into four",
     "chapter": "4. The attention forward pass",
-    "index": 48,
-    "slide": 52
+    "index": 63,
+    "slide": 67,
+    "map_checkpoint": false
   },
   {
     "id": "residual",
     "title": "Add the update to the original final row",
     "chapter": "4. The attention forward pass",
-    "index": 49,
-    "slide": 53
+    "index": 64,
+    "slide": 68,
+    "map_checkpoint": false
+  },
+  {
+    "id": "route-loss",
+    "title": "The training map: predictions and targets",
+    "chapter": "5. Loss and learning",
+    "index": 65,
+    "slide": 69,
+    "map_checkpoint": true
   },
   {
     "id": "word-softmax",
     "title": "Ten logits become ten next-token probabilities",
     "chapter": "5. Loss and learning",
-    "index": 50,
-    "slide": 54
+    "index": 66,
+    "slide": 70,
+    "map_checkpoint": false
   },
   {
     "id": "target",
     "title": "Observed target and model prediction",
     "chapter": "5. Loss and learning",
-    "index": 51,
-    "slide": 55
+    "index": 67,
+    "slide": 71,
+    "map_checkpoint": false
   },
   {
     "id": "loss",
     "title": "Per-example loss and batch mean",
     "chapter": "5. Loss and learning",
-    "index": 52,
-    "slide": 56
+    "index": 68,
+    "slide": 72,
+    "map_checkpoint": false
+  },
+  {
+    "id": "route-backward",
+    "title": "The training map: backpropagation",
+    "chapter": "5. Loss and learning",
+    "index": 69,
+    "slide": 73,
+    "map_checkpoint": true
   },
   {
     "id": "gradient",
     "title": "Gradients from backpropagation",
     "chapter": "5. Loss and learning",
-    "index": 53,
-    "slide": 57
+    "index": 70,
+    "slide": 74,
+    "map_checkpoint": false
+  },
+  {
+    "id": "route-update",
+    "title": "The training map: updating parameters",
+    "chapter": "5. Loss and learning",
+    "index": 71,
+    "slide": 75,
+    "map_checkpoint": true
   },
   {
     "id": "update",
     "title": "One optimizer step changes the stored weights",
     "chapter": "5. Loss and learning",
-    "index": 54,
-    "slide": 58
+    "index": 72,
+    "slide": 76,
+    "map_checkpoint": false
   },
   {
     "id": "training-loop",
     "title": "Many batches, with validation between checkpoints",
     "chapter": "5. Loss and learning",
-    "index": 55,
-    "slide": 59
+    "index": 73,
+    "slide": 77,
+    "map_checkpoint": false
   },
   {
     "id": "evaluation",
     "title": "Held-out scoring and free-running generation",
     "chapter": "6. Inference",
-    "index": 56,
-    "slide": 60
+    "index": 74,
+    "slide": 78,
+    "map_checkpoint": false
   },
   {
     "id": "mlp-inference",
     "title": "The complete MLP generation loop",
     "chapter": "6. Inference",
-    "index": 57,
-    "slide": 61
+    "index": 75,
+    "slide": 79,
+    "map_checkpoint": false
   },
   {
     "id": "attention-inference",
     "title": "Attention uses the same generation loop",
     "chapter": "6. Inference",
-    "index": 58,
-    "slide": 62
+    "index": 76,
+    "slide": 80,
+    "map_checkpoint": false
+  },
+  {
+    "id": "route-prompt",
+    "title": "The generation map: preparing the prompt",
+    "chapter": "6. Inference",
+    "index": 77,
+    "slide": 81,
+    "map_checkpoint": true
   },
   {
     "id": "prompt",
     "title": "Prepare a prompt using the same rules",
     "chapter": "6. Inference",
-    "index": 59,
-    "slide": 63
+    "index": 78,
+    "slide": 82,
+    "map_checkpoint": false
   },
   {
     "id": "prompt-window",
     "title": "The prompt fills the same four input slots",
     "chapter": "6. Inference",
-    "index": 60,
-    "slide": 64
+    "index": 79,
+    "slide": 83,
+    "map_checkpoint": false
   },
   {
     "id": "generation-logits",
     "title": "A frozen model scores the next token",
     "chapter": "6. Inference",
-    "index": 61,
-    "slide": 65
+    "index": 80,
+    "slide": 84,
+    "map_checkpoint": false
+  },
+  {
+    "id": "route-decoding",
+    "title": "The generation map: choosing a token",
+    "chapter": "6. Inference",
+    "index": 81,
+    "slide": 85,
+    "map_checkpoint": true
   },
   {
     "id": "generation-probabilities",
     "title": "Special input tokens are excluded from generation",
     "chapter": "6. Inference",
-    "index": 62,
-    "slide": 66
+    "index": 82,
+    "slide": 86,
+    "map_checkpoint": false
   },
   {
     "id": "decode",
     "title": "Greedy decoding and sampling make different choices",
     "chapter": "6. Inference",
-    "index": 63,
-    "slide": 67
+    "index": 83,
+    "slide": 87,
+    "map_checkpoint": false
+  },
+  {
+    "id": "route-repeat",
+    "title": "The generation map: extending the history",
+    "chapter": "6. Inference",
+    "index": 84,
+    "slide": 88,
+    "map_checkpoint": true
   },
   {
     "id": "generation-append",
     "title": "A selected token extends the history unless it is EOS",
     "chapter": "6. Inference",
-    "index": 64,
-    "slide": 68
+    "index": 85,
+    "slide": 89,
+    "map_checkpoint": false
   },
   {
     "id": "append",
     "title": "The chosen token becomes input on the next step",
     "chapter": "6. Inference",
-    "index": 65,
-    "slide": 69
+    "index": 86,
+    "slide": 90,
+    "map_checkpoint": false
   },
   {
     "id": "benchmark",
     "title": "The trained TinyStories comparison",
     "chapter": "7. The real experiment",
-    "index": 66,
-    "slide": 70
+    "index": 87,
+    "slide": 91,
+    "map_checkpoint": false
   },
   {
     "id": "next",
     "title": "The same steps in the runnable notebooks",
     "chapter": "7. The real experiment",
-    "index": 67,
-    "slide": 71
+    "index": 88,
+    "slide": 92,
+    "map_checkpoint": false
   }
 ]
