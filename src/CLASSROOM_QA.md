@@ -937,3 +937,10 @@ git diff --check
 ```
 
 Repeat article QA, interaction sweeps, and PDF export for each changed part. Check the GitHub Pages workflow before assuming the latest pushed source is live.
+
+## 2026-09-21 · Read the stories before making training pairs
+
+- Added two slides immediately after the Section 19 data introduction. The first shows the complete shortest story in the saved subset (source row 1992490: 52 whitespace-separated words, 60 ordinary tokens). The next shows marked opening/ending excerpts from rows 12400 (107 words, 133 tokens, six paragraphs) and 588307 (248 words, 300 tokens, eight paragraphs). Counts refer to whole documents, not displayed excerpts. The training-story range is 60–942 tokens, median 176.
+- Compared all three full texts byte-for-byte with the saved 6,000-document corpus and recomputed the lengths using its tokenizer. Added source revision, row IDs, hashes, attribution and CDLA-Sharing-1.0 license links in `story_examples.json`. Only these three examples are bundled, not the full corpus. Quotes are unchanged; display labels and omissions are identified.
+- Notebook 5, the study guide, all downstream slide links and the downloadable package now have 49 synchronized steps. A freshly extracted download ran all 50 code cells in a fresh kernel without downloading data. All 20 Python tests pass; all 49 notebook SVGs match their slide assets, and local/chapter links pass.
+- All 50 pipeline frames pass 1280×720 and 1024×768 presentation checks, SVG text bounds and 390px reading containment. Visually inspected the two new slides. The full Part II audit passes 396 states and 624 formulas without overflow or math errors; eight live/reference model cases pass with unchanged arithmetic. No trained parameters, benchmark artifacts, other lecture parts, or private Site files changed.

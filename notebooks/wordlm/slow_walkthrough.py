@@ -13,6 +13,7 @@ from pipeline_maps import pipeline_svg
 
 ROOT = Path(__file__).resolve().parent
 EVIDENCE = json.loads((ROOT / 'lesson_evidence.json').read_text())
+STORY_EXAMPLES = json.loads((ROOT / 'story_examples.json').read_text())
 STAGES = []
 
 
@@ -28,6 +29,30 @@ sample = evidence['sample']
 print(sample['text_excerpt'])
 print('Source row:', sample['row_idx'])
 ''', focus=('stories',))
+
+step('story-complete', 'Read one complete story', '1. Data and tokens',
+     'One document is one complete story, not one sentence. This is the shortest story in our saved 6,000-document subset; many others are longer.', '''
+short_story = story_examples['examples'][0]
+short_words = len(short_story['text'].split())
+short_tokens = len(tokenize(short_story['text']))
+assert (short_words, short_tokens) == (52, 60)
+print(short_story['text'])
+print(f'Full story: {short_words} words; {short_tokens} tokens.')
+''', focus=('stories',))
+
+step('story-excerpts', 'Longer stories have several paragraphs', '1. Data and tokens',
+     'These beginnings and endings come from two other documents in the same subset. […] marks omitted text; the lengths count each whole story. Words are whitespace-separated items; tokens also separate punctuation and exclude start/end markers.', '''
+long_stories = story_examples['examples'][1:]
+story_lengths = []
+for story in long_stories:
+    counts = (len(story['text'].split()), len(tokenize(story['text'])))
+    assert counts == (story['word_count'], story['token_count'])
+    story_lengths.append(counts)
+    print(f"Source row {story['row_idx']}: {counts[0]} words; {counts[1]} tokens")
+    print(story['text'] + '\\n')  # full texts here; excerpts in the figure
+train_lengths = evidence['audit']['story_length_tokens']['train']
+print('Training-story token lengths:', train_lengths)
+''', focus=('stories',), check=('Is a 300-token story a single 64-token training input?', 'No. A story is a document. Later, we turn it into many next-token examples, each using at most the previous 64 tokens in the saved experiment.'))
 
 step('split', 'Stories stay together when we split the data', '1. Data and tokens',
      'The split happens before overlapping windows are made. Training fits parameters and the vocabulary. Validation chooses settings and checkpoints. Test measures the frozen choice.', '''
@@ -460,7 +485,32 @@ def render_figure(stage, ns):
         f.text(25,50,'TinyStories · source row 12400',BLUE,27,600)
         f.text(25,115,'“Once upon a time, there lived a little bunny.”',size=35)
         f.text(25,183,'One excerpt from a complete story; 6,000 documents in this subset.',size=27)
-        f.text(25,250,'The short sentence below will let us inspect every training pair.',MUTED,25)
+        f.text(25,250,'First, look at whole stories. Then we will build training pairs.',MUTED,25)
+    elif k=='story-complete':
+        f=Figure(stage['title'],height=350)
+        story=ns['short_story']
+        f.text(25,35,f"TinyStories · source row {story['row_idx']} · complete text",BLUE,26,600)
+        f.text(25,77,f"{ns['short_words']} words · {ns['short_tokens']} tokens",TEAL,27,600)
+        for i,line in enumerate(textwrap.wrap(story['text'],width=76)):
+            f.text(25,135+i*42,line,size=29)
+        f.text(25,332,'Everything above is one document, from the opening to “The end.”',MUTED,24)
+    elif k=='story-excerpts':
+        f=Figure(stage['title'],height=390)
+        f.line(580,12,580,337)
+        for j,(story,(word_count,token_count)) in enumerate(zip(ns['long_stories'],ns['story_lengths'])):
+            x=25+590*j
+            f.text(x,33,f"Source row {story['row_idx']}",BLUE,26,600)
+            f.text(x,72,f'{word_count} words · {token_count} tokens',TEAL,26,600)
+            # Exact opening/closing sentences; bracketed ellipsis marks omissions.
+            text=story['text'];opening=text.split('. ',1)[0]+'.'
+            ending=text.rsplit('. ',1)[1]
+            lines=textwrap.wrap(opening,width=39)+['[…]']+textwrap.wrap(ending,width=39)
+            for i,line in enumerate(lines):
+                f.text(x,120+i*33,line,MUTED if line=='[…]' else INK,26)
+            paragraphs=len(text.split('\n\n'))
+            f.text(x,329,f'Full story: {paragraphs} paragraphs',MUTED,23)
+        stats=ns['train_lengths']
+        f.text(25,378,f"Training stories: {stats['min']}–{stats['max']} tokens; median {stats['median']} tokens.",MUTED,24)
     elif k=='split':
         f.table(['Split','Whole stories','Used for'],[(s.capitalize(),f"{ns['audit']['documents'][s]:,}",use) for s,use in [('train','Parameter and vocabulary learning'),('validation','Settings and checkpoint selection'),('test','Final held-out measurement')]],widths=[220,260,640],row_h=65)
     elif k=='sentence':
@@ -630,4 +680,4 @@ def initial_namespace():
     return dict(torch=torch, math=math, F=F, tokenize=tokenize,
                 SPECIAL_TOKENS=SPECIAL_TOKENS, Vocabulary=Vocabulary,
                 FixedWindowMLP=FixedWindowMLP, CausalAttentionLM=CausalAttentionLM,
-                evidence=EVIDENCE)
+                evidence=EVIDENCE, story_examples=STORY_EXAMPLES)

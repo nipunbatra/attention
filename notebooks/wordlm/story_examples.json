@@ -1,0 +1,39 @@
+{
+  "dataset": "roneneldan/TinyStories",
+  "source_url": "https://huggingface.co/datasets/roneneldan/TinyStories",
+  "revision": "f54c09fd23315a6f9c86f9dc80f725de7d8f9c64",
+  "source_split": "train",
+  "license": "CDLA-Sharing-1.0",
+  "license_url": "https://cdla.dev/sharing-1-0/",
+  "attribution": "TinyStories by Ronen Eldan and Yuanzhi Li; synthetically generated stories.",
+  "modifications": "Three selected source texts are reproduced unchanged. Display labels are added; omissions on the excerpt slide are marked […].",
+  "counting": "Words are whitespace-separated items. Tokens use wordlm.tokenize, including punctuation but excluding BOS, EOS and PAD.",
+  "subset_documents": 6000,
+  "subset_sha256": "ecaf3b99879170311c1fcde645251b9793620f1f5bf57159210fb7ab7180a7b3",
+  "examples": [
+    {
+      "row_idx": 1992490,
+      "label": "The old hotel",
+      "text": "Once upon a time, there was an old hotel. The hotel was very big and had many rooms. One day, a big storm came and lightning struck the hotel. The hotel was very old and could not handle the strike. The hotel fell down and everyone had to go home. The end.",
+      "word_count": 52,
+      "token_count": 60,
+      "sha256": "9d36154ab27504017b40bb9de10f65575f1f804a5359ef444ad24a331769de97"
+    },
+    {
+      "row_idx": 12400,
+      "label": "The bunny and the rock",
+      "text": "Once upon a time, there lived a little bunny. The bunny loved carrots, so every day the bunny went outside to find carrots. One day, the bunny was looking for some carrots and came across something strange. It looked like a weird rock.\n\nThe bunny hopped closer and asked, \"What are you?\"\n\nThe rock replied, \"I'm a weird carrot!\"\n\nThe bunny was very surprised and said, \"Weird carrots don't exist!\"\n\nBut the rock said, \"Oh yes they do! I'm a cool carrot that always rocks!\"\n\nThe bunny was amazed. He thanked the rock for the new and weird carrot and hopped away to find more delicious snacks.",
+      "word_count": 107,
+      "token_count": 133,
+      "sha256": "4aa74bf429c7d149d7410b60206d5350351a594e0e1ea7e08bc84490540b242c"
+    },
+    {
+      "row_idx": 588307,
+      "label": "Sara and Tom draw",
+      "text": "Sara and Tom were playing with their crayons and paper. They liked to draw animals and flowers and cars. Sara was drawing a big red pepper, because she liked to eat peppers. Tom was drawing a blue fish, because he liked to swim.\n\n\"Look at my pepper!\" Sara said to Tom. \"It is very pretty and shiny. Do you like it?\"\n\nTom looked at Sara's pepper. He did not like it. He thought it was boring and ugly. He wanted to make Sara feel bad. He was very rude.\n\n\"I don't like your pepper,\" Tom said to Sara. \"It is not pretty and shiny. It is silly and dumb. Watch this!\"\n\nTom took his black crayon and made a big mark on Sara's pepper. He drew a line across it and made a face with a tongue sticking out. He laughed and said, \"Now your pepper is funny and silly!\"\n\nSara saw what Tom did to her pepper. She felt very sad and angry. She liked her pepper and she worked hard to draw it. She did not think it was funny or silly. She thought it was mean and nasty.\n\n\"Tom, you are very rude!\" Sara said to Tom. \"You ruined my pepper! You are not my friend! Go away!\"\n\nSara took her paper and crayons and ran to the other side of the room. She did not want to play with Tom anymore. She wanted to find a new friend who would be nice and kind.",
+      "word_count": 248,
+      "token_count": 300,
+      "sha256": "321581cc746e41a7b441c1fb5e05052779bc8a0c7e3e344926a325b03ff1b539"
+    }
+  ]
+}

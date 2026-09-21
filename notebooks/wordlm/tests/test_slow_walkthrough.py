@@ -4,13 +4,13 @@ from pathlib import Path
 from xml.etree import ElementTree as ET
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from slow_walkthrough import STAGES, initial_namespace, render_figure
+from slow_walkthrough import STAGES, STORY_EXAMPLES, initial_namespace, render_figure
 
 
 def test_all_lesson_steps_execute_and_render():
     ns=initial_namespace()
-    assert len(STAGES)==47
-    assert len({s['id'] for s in STAGES})==47
+    assert len(STAGES)==49
+    assert len({s['id'] for s in STAGES})==49
     for s in STAGES:
         exec(compile(s['code'],s['id'],'exec'),ns)
         root=ET.fromstring(render_figure(s,ns))
@@ -24,6 +24,32 @@ def test_all_lesson_steps_execute_and_render():
     assert ns['new_weight']!=ns['old_weight']
     assert ns['after_loss']<ns['before_loss']
     assert ns['comparison']['attention']['test_perplexity']['mean']<ns['comparison']['mlp']['test_perplexity']['mean']
+
+
+def test_real_story_examples_have_reproducible_lengths_and_provenance():
+    import hashlib
+    from wordlm import tokenize
+    assert [s['id'] for s in STAGES[:4]] == ['data','story-complete','story-excerpts','split']
+    assert STORY_EXAMPLES['license']=='CDLA-Sharing-1.0'
+    assert STORY_EXAMPLES['revision']=='f54c09fd23315a6f9c86f9dc80f725de7d8f9c64'
+    assert STORY_EXAMPLES['subset_documents']==6000
+    assert [(s['row_idx'],s['word_count'],s['token_count']) for s in STORY_EXAMPLES['examples']]==[(1992490,52,60),(12400,107,133),(588307,248,300)]
+    for story in STORY_EXAMPLES['examples']:
+        assert hashlib.sha256(story['text'].encode()).hexdigest()==story['sha256']
+        assert len(story['text'].split())==story['word_count']
+        assert len(tokenize(story['text']))==story['token_count']
+    ns=initial_namespace()
+    for s in STAGES[:3]:
+        exec(s['code'],ns)
+        svg=render_figure(s,ns)
+        if s['id']=='story-complete':
+            shown=' '.join(t.text for t in ET.fromstring(svg).findall('{http://www.w3.org/2000/svg}text')[2:-1])
+            assert shown==STORY_EXAMPLES['examples'][0]['text']
+        elif s['id']=='story-excerpts':
+            assert svg.count('[…]')==2
+            assert '107 words · 133 tokens' in svg
+            assert '248 words · 300 tokens' in svg
+            assert '60–942 tokens; median 176' in svg
 
 
 def test_notebook_stages_are_complete_and_linked():

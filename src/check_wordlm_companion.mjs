@@ -14,8 +14,8 @@ assert(pw,'Use an existing Playwright runtime.');
 const root=path.resolve('notebooks/wordlm');
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'lesson-manifest.json')));
 const book=JSON.parse(fs.readFileSync(path.join(root,'05_training_and_inference_maps.ipynb')));
-assert.equal(manifest.length,47);
-assert.equal(book.cells.filter(c=>c.cell_type==='code').length,48);
+assert.equal(manifest.length,49);
+assert.equal(book.cells.filter(c=>c.cell_type==='code').length,manifest.length+1);
 assert(book.cells.filter(c=>c.cell_type==='code').every(c=>c.execution_count!==null));
 assert(!book.cells.some(c=>c.outputs?.some(o=>o.output_type==='error')));
 const browser=await pw.chromium.launch();
@@ -26,7 +26,7 @@ try{
   page.on('pageerror',e=>errors.push(e.message));
   const url=pathToFileURL(path.join(root,'05_training_and_inference_maps.html')).href;
   await page.goto(url);await page.evaluate(()=>document.fonts.ready);
-  assert.equal(await page.locator('.lesson-step').count(),47);
+  assert.equal(await page.locator('.lesson-step').count(),manifest.length);
   assert.equal(await page.locator('.chapters ol a').count(),7);
   const broken=[];
   for(const href of await page.locator('a[href]').evaluateAll(es=>es.map(e=>e.href))){
@@ -59,5 +59,5 @@ try{
   await page.locator('#mix').scrollIntoViewIfNeeded();
   await page.screenshot({path:path.join(shots,'phone-mix.png')});
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({steps:47,chapters:7,executedNotebook:true,identicalFigures:47,localLinks:'pass',viewports:[1280,768,390],screenshots:shots},null,2));
+  console.log(JSON.stringify({steps:manifest.length,chapters:7,executedNotebook:true,identicalFigures:manifest.length,localLinks:'pass',viewports:[1280,768,390],screenshots:shots},null,2));
 }finally{await browser.close();}

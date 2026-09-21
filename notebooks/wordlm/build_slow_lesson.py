@@ -21,6 +21,10 @@ from pipeline_maps import pipeline_svg
 ROOT = Path(__file__).resolve().parent
 BOOK = '05_training_and_inference_maps'
 LIVE = 'https://nipunbatra.github.io/attention/'
+STORY_STAGES = {'story-complete', 'story-excerpts'}
+STORY_CREDIT = ('TinyStories · Ronen Eldan &amp; Yuanzhi Li · '
+    '<a href="https://huggingface.co/datasets/roneneldan/TinyStories">source dataset</a> · '
+    '<a href="https://cdla.dev/sharing-1-0/">CDLA-Sharing-1.0</a>')
 
 # Slides show only the operation being discussed; the notebook retains all checks.
 SLIDE_CODE = {
@@ -57,6 +61,8 @@ display(HTML('<style>' + Path('lesson.css').read_text() + '</style>'))''')]
     for index,s in enumerate(STAGES):
         link=LIVE+f"attention.html?present#s19/{index+5}/0"
         text=f"<a id='{s['id']}'></a>\n\n## {index+1:02d} · {s['title']}\n\n**{s['chapter']}** · [Matching slide]({link})\n\n{s['body']}"
+        if s['id'] in STORY_STAGES:
+            text+='\n\n'+STORY_CREDIT+'\n\nThree unchanged source texts are included in `story_examples.json`, with revision, row IDs and checksums. Display labels are ours; […] marks omitted text in the figure. The code below prints the complete text and recomputes the lengths.'
         if s.get('check'):
             q,a=s['check'];text+=f'\n\n<details><summary>Check yourself: {q}</summary>{a}</details>'
         cells.append(md(text))
@@ -98,10 +104,11 @@ def build(lecture):
             focused=pipeline_svg(s['kind'],mode,s['focus'])
             map_html=f'<details class="route-map"><summary>Where are we on the full {s["kind"].upper()} map?</summary><div class="figure-wrap">{focused}</div></details>'
         result_html=f'<div class="code-label">Printed output</div><pre class="output">{escape(s["stdout"])}</pre>' if s['stdout'] else ''
+        caption=('Same figure as the lecture. Full-story lengths are computed below. '+STORY_CREDIT+'. Display labels added; […] marks omissions.' if s['id'] in STORY_STAGES else 'Same figure as the lecture. Numeric values are computed from the code below.')
         chunks.append(f'''<section class="lesson-step" id="{s['id']}">
 <div class="step-meta"><span>{escape(s['chapter'])} · Step {s['index']:02d} / {len(STAGES)}</span><a href="../../attention.html?present#s19/{s['slide']}/0">Open matching slide ↗</a></div>
 <h2>{escape(s['title'])}</h2><p>{escape(s['body'])}</p>
-<figure><div class="figure-wrap">{s['svg']}</div><figcaption>Same figure as the lecture. Numeric values are computed from the code below.</figcaption></figure>
+<figure><div class="figure-wrap">{s['svg']}</div><figcaption>{caption}</figcaption></figure>
 {map_html}<div class="code-label">Python · run after the previous step</div><pre><code>{escape(s['code'])}</code></pre>{result_html}{checks}</section>''')
     nav=''.join(f'<li><a href="#{key}">{escape(ch.split(". ",1)[1])}</a></li>' for ch,key in chapters.items())
     html=f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>From a story to a trained predictor · Part II companion</title><style>{css}</style></head><body>
@@ -111,7 +118,7 @@ def build(lecture):
 source .venv/bin/activate
 python -m pip install -r requirements.txt
 jupyter lab {BOOK}.ipynb</pre><p>Then choose <strong>Run → Run All Cells</strong>. This notebook needs no GPU or data download. Notebooks 1 and 3 explain the real corpus and training runs. Keep <code>wordlm.py</code> and the other helpers beside the notebooks.</p></section>
-{''.join(chunks)}<footer class="footer">TinyStories: <a href="https://huggingface.co/datasets/roneneldan/TinyStories">dataset and CDLA-Sharing-1.0 terms</a>. Only a short source excerpt is shown. No raw story corpus is redistributed in this download. Benchmark source and checksums are included. The measured device was Apple MPS, not DGX Spark.</footer></main></div></body></html>'''
+{''.join(chunks)}<footer class="footer">{STORY_CREDIT}. Three selected stories are reproduced unchanged in the download; the figures add labels and mark omissions with […]. The full 6,000-story corpus is not bundled. Benchmark source and checksums are included. The measured device was Apple MPS, not DGX Spark.</footer></main></div></body></html>'''
     (out/(BOOK+'.html')).write_text(html)
     local_html=html.replace('../../attention.html',LIVE+'attention.html')
     for download in ['wordlm-notebooks.zip',BOOK+'.ipynb']:
@@ -123,6 +130,8 @@ jupyter lab {BOOK}.ipynb</pre><p>Then choose <strong>Run → Run All Cells</stro
 #s19 .pipeline-lesson .step-figure{margin:12px 0;overflow-x:auto}
 #s19 .pipeline-lesson .step-figure svg{width:100%;height:auto;max-height:275px;display:block}
 #s19 .pipeline-lesson .step-figure.master svg{max-height:410px}
+#s19 .pipeline-lesson.story-sample .step-figure svg{max-height:350px}
+#s19 .pipeline-lesson .story-credit{font-size:18px;color:var(--ink-2);margin:10px 0 0}
 #s19 .pipeline-lesson .step-copy{font-size:24px;line-height:1.4;margin:8px 0 12px}
 #s19 .pipeline-lesson .step-meta{font-size:18px;color:var(--ink-2);margin:8px 0}
 #s19 .pipeline-lesson .step-meta a{float:right}
@@ -138,14 +147,19 @@ body:not(.present) #s19 .pipeline-lesson{padding:30px 0;border-bottom:1px solid 
     manifest=[]
     for s in results:
         master=s['id'] in {'mlp-map','attention-map','mlp-inference','attention-inference'}
+        story_sample=s['id'] in STORY_STAGES
         excerpt=SLIDE_CODE.get(s['id'],'\n'.join(s['code'].splitlines()[:3]))
-        code_block='' if master else f'<div class="step-code"><pre><code>{escape(excerpt)}</code></pre></div>'
+        code_block='' if master or story_sample else f'<div class="step-code"><pre><code>{escape(excerpt)}</code></pre></div>'
+        if story_sample:
+            code_block=f'<p class="story-credit">{STORY_CREDIT}</p>'
         if s['id']=='next':
             code_block=f'<p class="step-meta"><a href="notebooks/wordlm/{BOOK}.html">Read the illustrated guide</a> · <a href="notebooks/wordlm/wordlm-notebooks.zip" download>Download all five notebooks</a></p>'
         body='. '.join(s['body'].split('. ')[:1 if master or s['id']=='training-loop' else 2]).rstrip('.')+'.'
         if s['id']=='training-loop':
             body='Repeat this training step on batches of 512 windows.'
-        fragments.append(f'''<div class="frame pipeline-lesson" id="s19-pipeline-{s['id']}" data-title="{escape(s['title'],quote=True)}" data-autobuild="off"><script type="text/x-notes">{escape(s['body'])} Notebook step {s['index']}. {escape(s['code'])}</script><p class="step-meta">{escape(s['chapter'])} · Step {s['index']} / {len(STAGES)} <a href="notebooks/wordlm/{BOOK}.html#{s['id']}">Notebook step ↗</a></p><div class="step-figure{' master' if master else ''}">{s['svg']}</div><p class="step-copy">{escape(body)}</p>{code_block}</div>''')
+        if story_sample:
+            body=s['body']
+        fragments.append(f'''<div class="frame pipeline-lesson{' story-sample' if story_sample else ''}" id="s19-pipeline-{s['id']}" data-title="{escape(s['title'],quote=True)}" data-autobuild="off"><script type="text/x-notes">{escape(s['body'])} Notebook step {s['index']}. {escape(s['code'])}</script><p class="step-meta">{escape(s['chapter'])} · Step {s['index']} / {len(STAGES)} <a href="notebooks/wordlm/{BOOK}.html#{s['id']}">Notebook step ↗</a></p><div class="step-figure{' master' if master else ''}">{s['svg']}</div><p class="step-copy">{escape(body)}</p>{code_block}</div>''')
         manifest.append({k:s[k] for k in ['id','title','chapter','index','slide']})
     (lecture/'src'/'sections'/'sec19_pipeline.html').write_text('\n\n'.join(fragments))
     (out/'lesson-manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
@@ -156,7 +170,7 @@ def export_bundle(out):
     from nbconvert import HTMLExporter
     css=(ROOT/'lesson.css').read_text()
     # Explicit allow-list. No private Site files, raw corpus, credentials or work/.
-    selected=['wordlm.py','pipeline_maps.py','slow_walkthrough.py','build_slow_lesson.py','make_notebooks.py','walkthrough_cells.py','lesson_evidence.json','lesson.css','requirements.txt','prepare_data.py','run_experiments.py','README.md']
+    selected=['wordlm.py','pipeline_maps.py','slow_walkthrough.py','build_slow_lesson.py','make_notebooks.py','walkthrough_cells.py','lesson_evidence.json','story_examples.json','lesson.css','requirements.txt','prepare_data.py','run_experiments.py','README.md']
     selected += [p.name for p in ROOT.glob('0[1-5]_*.ipynb')]
     selected += ['artifacts/'+p.name for p in (ROOT/'artifacts').iterdir() if p.suffix in {'.json','.npz','.csv'} or p.name=='SHA256SUMS']
     selected += ['tests/'+p.name for p in (ROOT/'tests').glob('test_*.py')]

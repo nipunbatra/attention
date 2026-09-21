@@ -21,6 +21,13 @@ try{
   assert.equal(await page.locator('.pipeline-lesson script[type="text/x-notes"]').count(),ids.length);
   assert.match(await page.locator('#s19-pipeline-boundaries').innerText(),/7 supervised targets/);
   assert.match(await page.locator('#s19-pipeline-mask script').textContent(),/no future columns/);
+  for(const id of ['story-complete','story-excerpts']){
+    const frame=page.locator('#s19-pipeline-'+id);
+    assert.equal(await frame.locator('pre').count(),0,'story slides prioritize reading the data');
+    assert.equal(await frame.locator('.story-credit a').count(),2,'dataset and license attribution');
+  }
+  assert.match(await page.locator('#s19-pipeline-story-complete').innerText(),/52 words · 60 tokens/);
+  assert.match(await page.locator('#s19-pipeline-story-excerpts').innerText(),/248 words · 300 tokens/);
   const summary=JSON.parse(fs.readFileSync(new URL('../figures/wordlm-pipeline/benchmark-summary.json',import.meta.url)));
   for(const kind of ['mlp','attention'])assert.match(await page.locator('#s19-pipeline-benchmark').innerText(),new RegExp(summary.aggregate[kind].test_perplexity.mean.toFixed(2).replace('.','\\.')));
   await page.evaluate(()=>AT.present.enter());
