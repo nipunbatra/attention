@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import {createRequire} from 'node:module';
+import {spawnSync} from 'node:child_process';
 import {pathToFileURL} from 'node:url';
 const require=createRequire(import.meta.url);
 const {chromium}=require(process.env.PLAYWRIGHT_PATH||'/Users/nipun/.npm/_npx/360550e4913b8759/node_modules/playwright');
@@ -28,6 +29,46 @@ try{
   assert.match(await page.locator('#s19-pipeline-one-pair pre').innerText(),/target_id = ids\[target_position\]/);
   assert.match(await page.locator('#s19-pipeline-pairs-tensors').innerText(),/torch.long/);
   assert(!((await page.locator('#s19-pipeline-windows-last pre').innerText()).includes('torch.tensor')),'window example does not jump to tensor conversion');
+  const codeBlocks=page.locator('pre > code');
+  assert.equal(await codeBlocks.count(),await page.locator('pre > code.python-code').count(),'all Part II Python blocks have offline highlighting');
+  const dynamicProbe = await page.evaluate(() => {
+    const source = 'name = "<script>&x</script>"\n# preserve < and >\nif name:\n    print(1.5, name)\n';
+    const code = AT.pythonCode(source);
+    return {same:code.textContent === source, scripts:code.querySelectorAll('script').length,
+      classes:['keyword','string','number','call','comment','operator'].every(k=>code.querySelector('.py-'+k))};
+  });
+  assert.deepEqual(dynamicProbe,{same:true,scripts:0,classes:true},'live snippets preserve source safely and use the same syntax classes');
+  const liveCode = await page.evaluate(() => {
+    const snippets = [], missing = [];
+    for (const id of ['s15-stepper','s16-flow-stepper']) {
+      const root = document.getElementById(id), api = root.querySelector('.stepper').stepperApi;
+      const previous = api.index();
+      for (let i=0;i<api.steps.length;i++) {
+        api.go(i);
+        for (const pre of root.querySelectorAll('pre')) {
+          snippets.push(pre.textContent);
+          if (!pre.querySelector('code.python-code')) missing.push(id+':'+i);
+        }
+      }
+      api.go(previous);
+    }
+    return {snippets,missing};
+  });
+  assert.deepEqual(liveCode.missing,[],'every live step retains its highlighting');
+  assert(liveCode.snippets.length>=30,'inspect all token and matrix-flow steps');
+  const syntax=spawnSync('python3',['-c','import ast,json,sys; [compile(ast.parse(s), "<live slide>", "exec") for s in json.load(sys.stdin)]'],{input:JSON.stringify(liveCode.snippets),encoding:'utf8'});
+  assert.equal(syntax.status,0,syntax.stderr);
+  assert.equal(await page.locator('#s19-pipeline-counts pre').count(),0,'totals summary does not introduce a comprehension');
+  assert.equal(await page.locator('#s19-pipeline-counts-train pre').innerText(),
+    'train_tokens = 964_338\ntrain_stories = 4_822\ntrain_examples = train_tokens + train_stories');
+  assert(await page.locator('#s19-pipeline-counts-train .py-number').count(),'count literals are highlighted');
+  const codeColors=await page.locator('#s19-pipeline-generation-append code').evaluate(el=>({
+    base:getComputedStyle(el).color,
+    keyword:getComputedStyle(el.querySelector('.py-keyword')).color,
+    call:getComputedStyle(el.querySelector('.py-call')).color,
+  }));
+  assert.notEqual(codeColors.base,codeColors.keyword,'keywords use a visible syntax color');
+  assert.notEqual(codeColors.base,codeColors.call,'function calls use a visible syntax color');
   assert.match(await page.locator('#s19-pipeline-mask script').textContent(),/no future columns/);
   for(const id of ['story-complete','story-excerpts']){
     const frame=page.locator('#s19-pipeline-'+id);

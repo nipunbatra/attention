@@ -281,7 +281,7 @@ E_new = E + (A @ V) @ W_O</code></pre>
         copy.appendChild(AT.h('h3',{text:st.title}));
         copy.appendChild(AT.h('p',{text:st.lines.join(' ')}));
         copy.appendChild(AT.h('p',{class:'flow-detail',text:st.note.join(' ')}));
-        copy.appendChild(AT.h('pre',{class:'torch-snippet',text:st.code.join('\n')}));
+        copy.appendChild(AT.h('pre',{class:'torch-snippet'},AT.pythonCode(st.code.join('\n'))));
         const graph=AT.h('div');graph.innerHTML=P.render(i,'class-flow-'+i);
         const svg=graph.querySelector('svg');
         // Keep the shared graph, not fragments of the article's left-hand worksheet.

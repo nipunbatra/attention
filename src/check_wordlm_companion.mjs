@@ -14,7 +14,7 @@ assert(pw,'Use an existing Playwright runtime.');
 const root=path.resolve('notebooks/wordlm');
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'lesson-manifest.json')));
 const book=JSON.parse(fs.readFileSync(path.join(root,'05_training_and_inference_maps.ipynb')));
-assert.equal(manifest.length,60);
+assert.equal(manifest.length,66);
 assert.equal(book.cells.filter(c=>c.cell_type==='code').length,manifest.length+1);
 assert(book.cells.filter(c=>c.cell_type==='code').every(c=>c.execution_count!==null));
 assert(!book.cells.some(c=>c.outputs?.some(o=>o.output_type==='error')));
@@ -39,6 +39,8 @@ try{
     const locator=page.locator('#'+stage.id);
     assert.equal(await locator.locator('figure > .figure-wrap > svg').count(),1);
     assert(await locator.locator('pre code').innerText(),'step has code');
+    assert.equal(await locator.locator('pre code.python-code').count(),1,'Python is highlighted '+stage.id);
+    assert(await locator.locator('pre code .py-operator, pre code .py-keyword, pre code .py-call').count(),'highlighted tokens '+stage.id);
     const numeric=await locator.locator('figure svg text').allTextContents();
     const notebookCell=book.cells.find(c=>c.metadata?.lesson_stage===stage.id);
     const svg=notebookCell.outputs.find(o=>o.data?.['image/svg+xml']).data['image/svg+xml'];

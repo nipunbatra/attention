@@ -8,6 +8,7 @@ Usage:
 Replaces <!--KATEX-->, <!--SHARED-->, <!--SECTIONS--> in shell.html and the <title>. Injects window.__TOY__ and window.__PART__
 before shared.js, then the optional part runtime (partN.js) after it."""
 import argparse, base64, glob, os, sys, json, re
+from html import unescape
 from urllib.parse import urlsplit
 
 
@@ -125,6 +126,8 @@ if N == 1:
     with open(os.path.join(here, 'embedding-primer.js'), encoding='utf-8') as module:
         shared_block += '<script>\n' + module.read() + '\n</script>\n'
 if N == 2:
+    with open(os.path.join(here, 'python-code.js'), encoding='utf-8') as module:
+        shared_block += '<script>\n' + module.read() + '\n</script>\n'
     with open(os.path.join(here, 'position-journey.js'), encoding='utf-8') as module:
         shared_block += '<script>\n' + module.read() + '\n</script>\n'
     with open(os.path.join(here, 'position-visuals.js'), encoding='utf-8') as module:
@@ -179,6 +182,21 @@ if not a.only:
     if missing or extra:
         print('warning: part config sections differ from the files (missing on disk: %s; not in config: %s)' % (missing, extra))
 out = shell.replace('<!--KATEX-->', katex).replace('<!--SHARED-->', shared_block).replace('<!--SECTIONS-->', '\n'.join(parts))
+if N == 2:
+    # Static highlighting works offline and in exported slides, without browser JS
+    # or a CDN. Reuse the notebook renderer for the earlier PyTorch examples too.
+    sys.path.insert(0, os.path.join(here, '..', 'notebooks', 'wordlm'))
+    from code_display import PYTHON_CSS, highlight_python
+
+    def python_block(match):
+        pre_attrs, code_attrs, body = match.groups()
+        if 'python-code' in code_attrs:
+            return match.group(0)
+        return '<pre' + pre_attrs + '>' + highlight_python(unescape(body)) + '</pre>'
+
+    out = re.sub(r'<pre\b([^>]*)>\s*<code\b([^>]*)>(.*?)</code>\s*</pre>',
+                 python_block, out, flags=re.S)
+    out = out.replace('</head>', '<style>\n' + PYTHON_CSS + '</style>\n</head>', 1)
 title = part.get('title') or ('Part %d' % N)
 out = re.sub(r'<title>.*?</title>', '<title>' + title.replace('&', '&amp;').replace('<', '&lt;') + '</title>', out, count=1, flags=re.S)
 open(a.out, 'w', encoding='utf-8').write(out)

@@ -9,8 +9,8 @@ from slow_walkthrough import STAGES, STORY_EXAMPLES, initial_namespace, render_f
 
 def test_all_lesson_steps_execute_and_render():
     ns=initial_namespace()
-    assert len(STAGES)==60
-    assert len({s['id'] for s in STAGES})==60
+    assert len(STAGES)==66
+    assert len({s['id'] for s in STAGES})==66
     for s in STAGES:
         exec(compile(s['code'],s['id'],'exec'),ns)
         root=ET.fromstring(render_figure(s,ns))

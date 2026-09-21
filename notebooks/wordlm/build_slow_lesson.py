@@ -17,6 +17,7 @@ import zipfile
 import nbformat as nbf
 from slow_walkthrough import STAGES, initial_namespace, render_figure
 from pipeline_maps import pipeline_svg
+from code_display import PYTHON_CSS, highlight_python, validate_python
 
 ROOT = Path(__file__).resolve().parent
 BOOK = '05_training_and_inference_maps'
@@ -32,8 +33,21 @@ STORY_CREDIT = ('TinyStories · Ronen Eldan &amp; Yuanzhi Li · '
     '<a href="https://huggingface.co/datasets/roneneldan/TinyStories">source dataset</a> · '
     '<a href="https://cdla.dev/sharing-1-0/">CDLA-Sharing-1.0</a>')
 
-# Slides show only the operation being discussed; the notebook retains all checks.
+# Every frame has an explicit excerpt or None for a conceptual/summary frame.
+# Never slice code by line count: that can remove closing delimiters or loop bodies.
 SLIDE_CODE = {
+ 'data':None,
+ 'story-complete':None,
+ 'story-excerpts':None,
+ 'split':None,
+ 'sentence':"sentence = 'Lily found a red ball.'",
+ 'tokenization-intro':None,
+ 'tokenization-choices':None,
+ 'tokenization-rules':None,
+ 'tokenize':'pieces = tokenize(sentence)',
+ 'vocabulary':'for token_id, word in enumerate(words):\n    print(word, token_id)',
+ 'special':"unknown = vocab.encode_tokens(['blue'], boundaries=False)",
+ 'boundaries':'ids = vocab.encode_tokens(pieces)',
  'shapes':'B, w, C = 2, 4, 10\nd, h, d_k, d_v = 4, 8, 3, 2',
  'positions':'token_rows = attention.token_embedding(X)\nposition_rows = attention.position_embedding(torch.arange(w))\nE = token_rows + position_rows[None, :, :]',
  'story-indices':'w = 4\ntarget_position = 4',
@@ -46,12 +60,60 @@ SLIDE_CODE = {
  'pairs-loop':'for t in range(3, len(ids)):\n    visible = ids[max(0, t-w):t]\n    context_ids = [vocab.pad_id] * (w-len(visible)) + visible\n    target_id = ids[t]\n    contexts.append(context_ids)\n    targets.append(target_id)',
  'windows-first':'for row in range(4):\n    print(row, contexts[row], targets[row])',
  'windows-last':'for row in range(4, 7):\n    print(row, contexts[row], targets[row])',
- 'gradient':'loss.backward()\ngrad = mlp.vocab_head.weight.grad[9, 0]',
+ 'pairs-tensors':'all_X = torch.tensor(contexts, dtype=torch.long)\nall_y = torch.tensor(targets, dtype=torch.long)\nN = len(all_y)',
+ 'counts-story':'ordinary_tokens = len(pieces)\nexamples_in_story = ordinary_tokens + 1',
+ 'counts-train':'train_tokens = 964_338\ntrain_stories = 4_822\ntrain_examples = train_tokens + train_stories',
+ 'counts':None,
+ 'context':'history = ids[:6]  # BOS lily found a red ball\nfor width in [2, 4, 6]:\n    print(history[-width:])',
+ 'batch':'selected = torch.tensor([2, 3])\nX, y = all_X[selected], all_y[selected]\nB = X.shape[0]',
+ 'batches':'for start in range(0, N, B):\n    batch_X = all_X[start:start+B]\n    print(len(batch_X))',
+ 'mlp-map':None,
+ 'lookup':"found_id = vocab.stoi['found']\nfound_vector = mlp.token_embedding.weight[found_id]",
+ 'embedding-batch':'E_mlp = mlp.token_embedding(X)',
+ 'flatten':'flat = E_mlp.flatten(start_dim=1)',
+ 'hidden-affine':'pre_hidden = mlp.hidden_layer(flat)',
+ 'relu':'hidden_mlp = torch.relu(pre_hidden)',
+ 'vocab-head':'logits_mlp = mlp.vocab_head(hidden_mlp)',
+ 'attention-map':None,
+ 'query':'q = attention.W_Q(E[:, -1:, :])',
+ 'keys':'K = attention.W_K(E)',
+ 'values':'V = attention.W_V(E)',
+ 'scores':'raw_scores = q @ K.transpose(-2, -1)\nscores = raw_scores / math.sqrt(d_k)',
+ 'mask':"pad_mask = X[:, None, :].eq(vocab.pad_id)\nmasked_scores = scores.masked_fill(pad_mask, float('-inf'))",
+ 'attention-softmax':'source_exp = (masked_scores - masked_scores.amax(-1, keepdim=True)).exp()\nA = source_exp / source_exp.sum(-1, keepdim=True)',
+ 'mix':'message = A @ V',
+ 'output-map':'update = attention.W_O(message).squeeze(1)',
+ 'residual':'final = E[:, -1, :] + update\nhidden_att = torch.relu(attention.hidden_layer(final))\nlogits_att = attention.vocab_head(hidden_att)',
+ 'word-softmax':'word_exp = (logits_mlp[1] - logits_mlp[1].max()).exp()\np = word_exp / word_exp.sum()',
+ 'target':'guess_id = int(p.argmax())\ntarget_id = int(y[1])',
+ 'loss':"losses = F.cross_entropy(logits_mlp, y, reduction='none')\nloss = losses.mean()",
+ 'gradient':'mlp.zero_grad(set_to_none=True)\nloss.backward()\ngrad = mlp.vocab_head.weight.grad[9, 0]',
  'update':'optimizer = torch.optim.SGD(mlp.parameters(), lr=0.1)\noptimizer.step()  # every trainable parameter',
- 'decode':'next_p = next_logits.softmax(-1)\ngreedy_id = next_p.argmax()\nsample_id = torch.searchsorted(next_p.cumsum(0), torch.tensor(0.8))',
- 'append':'if chosen == vocab.eos_id: break\nhistory.append(chosen)\nkept = history[-w:]  # prepare the next window',
- 'training-loop':'optimizer.zero_grad()\nloss = F.cross_entropy(model(X), y)\nloss.backward()\noptimizer.step()',
+ 'training-loop':None,
+ 'evaluation':'mlp.eval()\nwith torch.inference_mode():\n    frozen_loss = F.cross_entropy(mlp(X), y)',
+ 'mlp-inference':None,
+ 'attention-inference':None,
+ 'prompt':"prompt = 'Lily found'\nprompt_ids = vocab.encode_tokens(tokenize(prompt), boundaries=False)\nhistory = [vocab.bos_id] + prompt_ids",
+ 'prompt-window':'kept = history[-w:]\ncontext_ids = [vocab.pad_id] * (w-len(kept)) + kept\ninference_X = torch.tensor([context_ids])',
+ 'generation-logits':'with torch.inference_mode():\n    next_logits = mlp(inference_X)[0]',
+ 'generation-probabilities':"blocked_ids = [vocab.pad_id, vocab.bos_id, vocab.unk_id]\nwith torch.inference_mode():\n    next_logits[blocked_ids] = float('-inf')\n    next_p = next_logits.softmax(-1)",
+ 'decode':'greedy_id = int(next_p.argmax())\ncdf = next_p.cumsum(0)\nsample_id = int(torch.searchsorted(cdf, torch.tensor(0.8)))',
+ 'generation-append':'chosen = greedy_id\nif chosen != vocab.eos_id:\n    history.append(chosen)',
+ 'append':None,
+ 'benchmark':None,
+ 'next':None,
 }
+
+
+def slide_code(stage):
+    """An explicit choice is mandatory, even when a slide needs no code."""
+    source = SLIDE_CODE[stage['id']]
+    if source is not None:
+        validate_python(source, stage['id'])
+        limit = 6 if stage['id'] == 'pairs-loop' else 4
+        if len(source.splitlines()) > limit or any(len(line) > 88 for line in source.splitlines()):
+            raise ValueError(f"{stage['id']}: split this operation into smaller slides")
+    return source
 
 def notebook_cells(md, code, setup=None):
     cells=[md('''# 5 · From a story to a trained predictor
@@ -89,6 +151,9 @@ display(HTML('<style>' + Path('lesson.css').read_text() + '</style>'))''')]
     return cells
 
 def build(lecture):
+    assert set(SLIDE_CODE) == {stage['id'] for stage in STAGES}
+    for stage in STAGES:
+        slide_code(stage)
     lecture=Path(lecture).resolve()
     out=lecture/'notebooks'/'wordlm';out.mkdir(parents=True,exist_ok=True)
     figures=ROOT/'figures'/'slow-walkthrough';figures.mkdir(parents=True,exist_ok=True)
@@ -108,7 +173,7 @@ def build(lecture):
         c.outputs=([nbf.v4.new_output('stream',name='stdout',text=stdout)] if stdout else [])+[nbf.v4.new_output('display_data',data={'image/svg+xml':svg},metadata={})]
         results.append(dict(s,svg=svg,stdout=stdout,index=index+1,slide=index+5))
     nbf.write(nb,ROOT/(BOOK+'.ipynb'))
-    css=(ROOT/'lesson.css').read_text()
+    css=(ROOT/'lesson.css').read_text()+'\n'+PYTHON_CSS
     chunks=[];chapters={}
     for s in results:
         chapters.setdefault(s['chapter'],s['id'])
@@ -128,7 +193,7 @@ def build(lecture):
 <div class="step-meta"><span>{escape(s['chapter'])} · Step {s['index']:02d} / {len(STAGES)}</span><a href="../../attention.html?present#s19/{s['slide']}/0">Open matching slide ↗</a></div>
 <h2>{escape(s['title'])}</h2><p>{escape(s['body'])}</p>
 <figure><div class="figure-wrap">{s['svg']}</div><figcaption>{caption}</figcaption></figure>
-{map_html}<div class="code-label">Python · run after the previous step</div><pre><code>{escape(s['code'])}</code></pre>{result_html}{checks}</section>''')
+{map_html}<div class="code-label">Python · run after the previous step</div><pre>{highlight_python(s['code'])}</pre>{result_html}{checks}</section>''')
     nav=''.join(f'<li><a href="#{key}">{escape(ch.split(". ",1)[1])}</a></li>' for ch,key in chapters.items())
     html=f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>From a story to a trained predictor · Part II companion</title><style>{css}</style></head><body>
 <header class="book-header"><div class="eyebrow">Attention and language · Notebook 5</div><h1>From a story to a trained predictor</h1><p>One sentence. Seven training examples. Two models. Follow the data, every tensor and one learning step before generating a new token.</p><div class="notebook-links"><a href="wordlm-notebooks.zip" download>Download all notebooks + support files</a><a href="{BOOK}.ipynb" download>Download this notebook</a><a href="../../attention.html?present#s19/4/0">Lecture slides ↗</a></div></header>
@@ -176,8 +241,8 @@ body:not(.present) #s19 .pipeline-lesson{padding:30px 0;border-bottom:1px solid 
         master=s['id'] in {'mlp-map','attention-map','mlp-inference','attention-inference'}
         story_sample=s['id'] in STORY_STAGES
         tokenization=s['id'] in TOKENIZATION_STAGES
-        excerpt=SLIDE_CODE.get(s['id'],'\n'.join(s['code'].splitlines()[:3]))
-        code_block='' if master or story_sample or tokenization else f'<div class="step-code"><pre><code>{escape(excerpt)}</code></pre></div>'
+        excerpt=slide_code(s)
+        code_block='' if excerpt is None else f'<div class="step-code"><pre>{highlight_python(excerpt)}</pre></div>'
         if story_sample:
             code_block=f'<p class="story-credit">{STORY_CREDIT}</p>'
         if s['id']=='next':
@@ -204,7 +269,7 @@ def export_bundle(out):
     from nbconvert import HTMLExporter
     css=(ROOT/'lesson.css').read_text()
     # Explicit allow-list. No private Site files, raw corpus, credentials or work/.
-    selected=['wordlm.py','pipeline_maps.py','slow_walkthrough.py','build_slow_lesson.py','make_notebooks.py','walkthrough_cells.py','lesson_evidence.json','story_examples.json','lesson.css','requirements.txt','prepare_data.py','run_experiments.py','README.md']
+    selected=['wordlm.py','pipeline_maps.py','slow_walkthrough.py','build_slow_lesson.py','code_display.py','make_notebooks.py','walkthrough_cells.py','lesson_evidence.json','story_examples.json','lesson.css','requirements.txt','prepare_data.py','run_experiments.py','README.md']
     selected += [p.name for p in ROOT.glob('0[1-5]_*.ipynb')]
     selected += ['artifacts/'+p.name for p in (ROOT/'artifacts').iterdir() if p.suffix in {'.json','.npz','.csv'} or p.name=='SHA256SUMS']
     selected += ['tests/'+p.name for p in (ROOT/'tests').glob('test_*.py')]

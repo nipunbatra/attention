@@ -228,13 +228,31 @@ assert all_X.tolist() == contexts and all_y.tolist() == targets
 assert not all_y.eq(vocab.pad_id).any()
 ''', focus=('windows',), check=('Have these token IDs become embeddings yet?', 'No. This step only organizes the IDs into tensors. The embedding layer will later look up a learned vector for each ID.'))
 
-step('counts', 'Counting the supervised examples', '2. Windows and batches',
-     'With left-padding and one EOS target per story, T ordinary tokens give T+1 examples. Add this count over documents. These larger counts come from the saved corpus audit.', '''
+step('counts-story', 'Six ordinary tokens give seven training examples', '2. Windows and batches',
+     'Each ordinary token is a target once, and EOS supplies one more target. BOS starts the history, while PAD fills empty input slots, so neither adds a target.', '''
+ordinary_tokens = len(pieces)
+examples_in_story = ordinary_tokens + 1
+assert ordinary_tokens == 6 and examples_in_story == N == 7
+''', focus=('windows',))
+
+step('counts-train', 'The same count across all training stories', '2. Windows and batches',
+     'The saved training split has 964,338 ordinary tokens across 4,822 complete stories. Adding one EOS target per story gives 969,160 training examples.', '''
+train_tokens = 964_338
+train_stories = 4_822
+train_examples = train_tokens + train_stories
+assert train_tokens == audit['oov']['train']['tokens']
+assert train_stories == audit['documents']['train']
+assert train_examples == 969160
+''', focus=('stories','windows'))
+
+step('counts', 'Training, validation and test use the same counting rule', '2. Windows and batches',
+     'For each split, add its ordinary-token count and its story count. These are counts of supervised examples, not optimizer steps.', '''
 window_counts = {
     split: audit['oov'][split]['tokens'] + count
     for split, count in audit['documents'].items()
 }
 assert window_counts['train'] == 969160
+assert window_counts['train'] == train_examples
 print(window_counts)
 ''', focus=('stories','windows'), check=('Does w=8 create more targets than w=4 here?', 'No. With this padding rule, both give seven targets. A wider window changes the visible input history, not the target count.'))
 
@@ -479,27 +497,57 @@ print('Final query only; all available keys and values; no KV cache.')
 ''', kind='attention')
 
 step('prompt', 'Prepare a prompt using the same rules', '6. Inference',
-     'For a short prompt, prepend BOS once and left-pad to w=4. Do not append EOS to an unfinished prompt. For a long prompt, keep only its most recent four IDs.', '''
+     'Use the training tokenizer and vocabulary on the unfinished prompt. Prepend BOS once, and leave EOS out because generation has not finished.', '''
 prompt = 'Lily found'
-history = [vocab.bos_id] + vocab.encode_tokens(tokenize(prompt), boundaries=False)
-kept = history[-w:]
-inference_X = torch.tensor([[vocab.pad_id]*(w-len(kept)) + kept])
-assert inference_X.tolist() == [[0, 1, 8, 7]]
-''', kind='attention', focus=('prompt','tokenize','windows'))
+prompt_ids = vocab.encode_tokens(tokenize(prompt), boundaries=False)
+history = [vocab.bos_id] + prompt_ids
+assert history == [1, 8, 7]
+''', kind='attention', focus=('prompt','tokenize'))
 
-step('decode', 'Greedy decoding and sampling make different choices', '6. Inference',
-     'Mask PAD, BOS and UNK as generation candidates, then normalize the remaining logits. Greedy selects the maximum. Sampling selects according to probability. The fixed draw u=0.8 below makes the sampling calculation reproducible.', '''
+step('prompt-window', 'The prompt fills the same four input slots', '6. Inference',
+     'Keep the most recent w=4 IDs from the history. This prompt has only three IDs including BOS, so one PAD ID fills the unused slot on the left.', '''
+kept = history[-w:]
+context_ids = [vocab.pad_id] * (w-len(kept)) + kept
+inference_X = torch.tensor([context_ids])
+assert inference_X.tolist() == [[0, 1, 8, 7]]
+''', kind='attention', focus=('windows',))
+
+step('generation-logits', 'A frozen model scores the next token', '6. Inference',
+     'The MLP reads the prepared window and returns ten vocabulary scores. inference_mode disables gradient tracking for this forward pass, and no optimizer updates the parameters.', '''
 with torch.inference_mode():
     next_logits = mlp(inference_X)[0]
-    next_logits[[vocab.pad_id, vocab.bos_id, vocab.unk_id]] = float('-inf')
+assert next_logits.shape == (C,)
+''', focus=('logits',))
+
+step('generation-probabilities', 'Special input tokens are excluded from generation', '6. Inference',
+     'Set the scores of PAD, BOS and UNK to negative infinity before softmax. Their probabilities become zero, while EOS remains available as a stopping token.', '''
+blocked_ids = [vocab.pad_id, vocab.bos_id, vocab.unk_id]
+with torch.inference_mode():
+    next_logits[blocked_ids] = float('-inf')
     next_p = next_logits.softmax(-1)
+assert next_p[blocked_ids].eq(0).all()
+assert torch.allclose(next_p.sum(), torch.tensor(1.0))
+''', focus=('logits',))
+
+step('decode', 'Greedy decoding and sampling make different choices', '6. Inference',
+     'Greedy chooses the ID with the highest probability, while sampling uses the cumulative probabilities (CDF). The fixed draw 0.8 selects the first CDF entry at least 0.8, making this example reproducible.', '''
 greedy_id = int(next_p.argmax())
 cdf = next_p.cumsum(0)
 sample_id = int(torch.searchsorted(cdf, torch.tensor(0.8)))
 ''', focus=('logits',))
 
+step('generation-append', 'A selected token extends the history unless it is EOS', '6. Inference',
+     'Use the greedy ID for this demonstration, and check whether it is EOS before changing the history. If it is EOS, stop generation, otherwise append it and prepare the next window.', '''
+history_before_choice = history.copy()
+chosen = greedy_id
+if chosen != vocab.eos_id:
+    history.append(chosen)
+assert history_before_choice == [1, 8, 7]
+''', focus=('windows',))
+
 step('append', 'The chosen token becomes input on the next step', '6. Inference',
-     'Check EOS before appending. If generation continues, append the selected ID, crop and pad again. A longer history does not change w. This four-step trace uses the tiny teaching model, not a language-quality benchmark.', '''
+     'Repeat window preparation, scoring and token selection, stopping on EOS or after four steps. This table repeats generation from the original prompt, with all parameters frozen.', '''
+history = history_before_choice.copy()
 frozen = {n:p.detach().clone() for n,p in mlp.named_parameters()}
 generation_trace = []
 with torch.inference_mode():
@@ -719,6 +767,19 @@ def render_figure(stage, ns):
                 widths=[100,480,340,200],row_h=39,size=26,colors=[MUTED,BLUE,RED,RED])
         f.text(25,350,'all_X: 7 rows × 4 IDs',BLUE,28,600)
         f.text(610,350,'all_y: 7 targets     N = 7',RED,28,600)
+    elif k in {'counts-story','counts-train'}:
+        if k=='counts-story':
+            a,b,total=ns['ordinary_tokens'],1,ns['examples_in_story']
+            labels=['Ordinary tokens','EOS target','Training examples']
+        else:
+            a,b,total=ns['train_tokens'],ns['train_stories'],ns['train_examples']
+            labels=['Ordinary tokens','One EOS per story','Training examples']
+        for x,label,value in zip([25,420,820],labels,[a,b,total]):
+            f.text(x,65,label,MUTED,28,600)
+            f.text(x,155,f'{value:,}',TEAL if x==820 else BLUE,52,600)
+        f.text(325,155,'+',size=48)
+        f.text(720,155,'=',size=48)
+        f.text(25,265,'Every ordinary token and each story ending supplies one target.',size=30)
     elif k=='counts':
         rows=[(s.capitalize(),f"{ns['audit']['oov'][s]['tokens']:,}",f"{ns['audit']['documents'][s]:,}",f"{ns['window_counts'][s]:,}") for s in ['train','validation','test']]
         f.table(['Split','Ordinary tokens','One EOS / story','Total targets'],rows,widths=[190,290,310,330],row_h=57)
@@ -823,10 +884,37 @@ def render_figure(stage, ns):
     elif k=='evaluation':
         f.table(['Mode','Input','Observed target?','Parameter updates?'],[('Training','Training prefix','Yes','Yes'),('Held-out scoring','Test prefix','Yes','No'),('Generation','Growing prompt','No','No')],widths=[240,330,285,265],row_h=67,size=23)
     elif k=='prompt':
+        f.text(25,50,'Prompt: '+ns['prompt'],size=35)
+        f.text(25,125,'Token IDs: '+str(ns['prompt_ids']),BLUE,34)
+        f.text(25,200,'With BOS: '+str(ns['history'])+'  (BOS lily found)',BLUE,32)
+        f.text(25,275,'EOS is absent because the prompt is unfinished.',MUTED,29)
+    elif k=='prompt-window':
         f.text(25,50,'Prompt: Lily found',size=35)
         f.text(25,120,'History: BOS lily found',BLUE,33)
         f.text(25,190,'Model input: [PAD BOS lily found] = [0, 1, 8, 7]',BLUE,31)
         f.text(25,265,'B = 1; w = 4; no target supplied; parameters are frozen.',MUTED,29)
+    elif k=='generation-logits':
+        for group in range(2):
+            rows=[]
+            for i in range(group*5,(group+1)*5):
+                rows.append((f'{i}  {words[i]}',num(ns['next_logits'][i])))
+            f.table(['ID / token','Logit'],
+                    rows,x=20+570*group,widths=[280,250],row_h=46,
+                    colors=[INK,RED])
+    elif k=='generation-probabilities':
+        f=Figure(stage['title'],height=225)
+        selected=[ns['vocab'].pad_id,ns['vocab'].bos_id,ns['vocab'].unk_id,ns['vocab'].eos_id]
+        f.table(['Token']+[words[i] for i in selected],
+                [('Masked score',*[num(ns['next_logits'][i]) for i in selected]),
+                 ('Probability',*[f"{float(ns['next_p'][i])*100:.2f}%" for i in selected])],
+                widths=[260,215,215,215,215],row_h=54,size=28)
+        f.text(25,212,'Softmax still uses all 10 vocabulary entries.',MUTED,27)
+    elif k=='generation-append':
+        before=ns['history_before_choice'];after=ns['history']
+        f.text(25,50,'Chosen ID: '+str(ns['chosen'])+' ('+words[ns['chosen']]+')',GREEN,34,600)
+        f.text(25,125,'Before: '+decode(before),BLUE,32)
+        f.text(25,195,'After: '+decode(after),BLUE,32)
+        f.text(25,270,'EOS: stop.' if ns['chosen']==ns['vocab'].eos_id else 'Continue with the newest four IDs as the next input.',MUTED,29)
     elif k=='append':
         f.table(['Step','Prepared input','Chosen token'],[(j+1,decode(x),words[token]) for j,(x,token) in enumerate(ns['generation_trace'])],widths=[140,760,220],row_h=53)
         if len(ns['generation_trace'])<4:f.text(25,280,'EOS ended this trace early.',MUTED,26)
