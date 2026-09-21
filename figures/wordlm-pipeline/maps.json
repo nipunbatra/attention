@@ -1,0 +1,1690 @@
+[
+  {
+    "kind": "mlp",
+    "mode": "training",
+    "width": 1520,
+    "height": 530,
+    "nodes": [
+      {
+        "key": "stories",
+        "x": 40,
+        "y": 30,
+        "w": 230,
+        "h": 86,
+        "title": "TinyStories",
+        "detail": "complete documents",
+        "role": "data"
+      },
+      {
+        "key": "split",
+        "x": 340,
+        "y": 30,
+        "w": 230,
+        "h": 86,
+        "title": "Split stories",
+        "detail": "train / validation / test",
+        "role": "data"
+      },
+      {
+        "key": "tokenize",
+        "x": 640,
+        "y": 30,
+        "w": 230,
+        "h": 86,
+        "title": "Tokenize + lookup",
+        "detail": "train-only vocabulary",
+        "role": "data"
+      },
+      {
+        "key": "ids",
+        "x": 940,
+        "y": 30,
+        "w": 230,
+        "h": 86,
+        "title": "IDs + boundaries",
+        "detail": "<BOS> \u2026 <EOS>",
+        "role": "data"
+      },
+      {
+        "key": "windows",
+        "x": 1240,
+        "y": 30,
+        "w": 230,
+        "h": 86,
+        "title": "Context and target",
+        "detail": "X [B,w]   y [B]",
+        "role": "data"
+      },
+      {
+        "key": "embedding",
+        "x": 40,
+        "y": 230,
+        "w": 230,
+        "h": 86,
+        "title": "Token lookup",
+        "detail": "E [B,w,d]",
+        "role": "data"
+      },
+      {
+        "key": "flatten",
+        "x": 440,
+        "y": 230,
+        "w": 230,
+        "h": 86,
+        "title": "Join ordered rows",
+        "detail": "flatten [B,w\u00b7d]",
+        "role": "data"
+      },
+      {
+        "key": "hidden",
+        "x": 840,
+        "y": 230,
+        "w": 230,
+        "h": 86,
+        "title": "Affine + ReLU",
+        "detail": "hidden [B,h]",
+        "role": "v"
+      },
+      {
+        "key": "logits",
+        "x": 1240,
+        "y": 230,
+        "w": 230,
+        "h": 86,
+        "title": "Vocabulary affine",
+        "detail": "logits z [B,C]",
+        "role": "neutral"
+      },
+      {
+        "key": "loss",
+        "x": 40,
+        "y": 400,
+        "w": 230,
+        "h": 86,
+        "title": "Cross-entropy(z, y)",
+        "detail": "one target per window",
+        "role": "a"
+      },
+      {
+        "key": "backward",
+        "x": 440,
+        "y": 400,
+        "w": 230,
+        "h": 86,
+        "title": "loss.backward()",
+        "detail": "gradients for \u03b8",
+        "role": "q"
+      },
+      {
+        "key": "optimizer",
+        "x": 840,
+        "y": 400,
+        "w": 230,
+        "h": 86,
+        "title": "optimizer.step()",
+        "detail": "update learned \u03b8",
+        "role": "q"
+      },
+      {
+        "key": "parameters",
+        "x": 1240,
+        "y": 400,
+        "w": 230,
+        "h": 86,
+        "title": "Next training batch",
+        "detail": "reuse updated \u03b8",
+        "role": "q"
+      }
+    ],
+    "edges": [
+      {
+        "start": "stories",
+        "end": "split",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "split",
+        "end": "tokenize",
+        "points": null,
+        "label": "train",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": [
+          605,
+          63
+        ]
+      },
+      {
+        "start": "tokenize",
+        "end": "ids",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "ids",
+        "end": "windows",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "windows",
+        "end": "embedding",
+        "points": [
+          [
+            1355,
+            116
+          ],
+          [
+            1355,
+            165
+          ],
+          [
+            155,
+            165
+          ],
+          [
+            155,
+            230
+          ]
+        ],
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "embedding",
+        "end": "flatten",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "flatten",
+        "end": "hidden",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "hidden",
+        "end": "logits",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "logits",
+        "end": "loss",
+        "points": [
+          [
+            1355,
+            316
+          ],
+          [
+            1355,
+            350
+          ],
+          [
+            155,
+            350
+          ],
+          [
+            155,
+            400
+          ]
+        ],
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "windows",
+        "end": "loss",
+        "points": [
+          [
+            1470,
+            73
+          ],
+          [
+            1490,
+            73
+          ],
+          [
+            1490,
+            368
+          ],
+          [
+            280,
+            368
+          ],
+          [
+            280,
+            443
+          ],
+          [
+            270,
+            443
+          ]
+        ],
+        "label": "observed target y [B]",
+        "role": "a",
+        "dashed": true,
+        "label_pos": [
+          1110,
+          360
+        ]
+      },
+      {
+        "start": "loss",
+        "end": "backward",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "backward",
+        "end": "optimizer",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "optimizer",
+        "end": "parameters",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "parameters",
+        "end": "embedding",
+        "points": [
+          [
+            1355,
+            486
+          ],
+          [
+            1355,
+            512
+          ],
+          [
+            20,
+            512
+          ],
+          [
+            20,
+            205
+          ],
+          [
+            155,
+            205
+          ],
+          [
+            155,
+            230
+          ]
+        ],
+        "label": "",
+        "role": "q",
+        "dashed": true,
+        "label_pos": null
+      }
+    ]
+  },
+  {
+    "kind": "mlp",
+    "mode": "inference",
+    "width": 1520,
+    "height": 530,
+    "nodes": [
+      {
+        "key": "prompt",
+        "x": 40,
+        "y": 30,
+        "w": 230,
+        "h": 86,
+        "title": "Prompt text",
+        "detail": "known words only",
+        "role": "data"
+      },
+      {
+        "key": "tokenize",
+        "x": 440,
+        "y": 30,
+        "w": 230,
+        "h": 86,
+        "title": "Saved tokenizer",
+        "detail": "same vocabulary + <BOS>",
+        "role": "data"
+      },
+      {
+        "key": "windows",
+        "x": 840,
+        "y": 30,
+        "w": 230,
+        "h": 86,
+        "title": "Crop, then left-pad",
+        "detail": "last w IDs \u2192 X [1,w]",
+        "role": "data"
+      },
+      {
+        "key": "checkpoint",
+        "x": 1240,
+        "y": 30,
+        "w": 230,
+        "h": 86,
+        "title": "Saved parameters",
+        "detail": "\u03b8 stays fixed",
+        "role": "q"
+      },
+      {
+        "key": "embedding",
+        "x": 40,
+        "y": 230,
+        "w": 230,
+        "h": 86,
+        "title": "Token lookup",
+        "detail": "E [1,w,d]",
+        "role": "data"
+      },
+      {
+        "key": "flatten",
+        "x": 440,
+        "y": 230,
+        "w": 230,
+        "h": 86,
+        "title": "Join ordered rows",
+        "detail": "flatten [B,w\u00b7d]",
+        "role": "data"
+      },
+      {
+        "key": "hidden",
+        "x": 840,
+        "y": 230,
+        "w": 230,
+        "h": 86,
+        "title": "Affine + ReLU",
+        "detail": "hidden [B,h]",
+        "role": "v"
+      },
+      {
+        "key": "logits",
+        "x": 1240,
+        "y": 230,
+        "w": 230,
+        "h": 86,
+        "title": "Vocabulary affine",
+        "detail": "logits z [B,C]",
+        "role": "neutral"
+      },
+      {
+        "key": "probabilities",
+        "x": 40,
+        "y": 400,
+        "w": 230,
+        "h": 86,
+        "title": "Vocabulary softmax",
+        "detail": "z / temperature",
+        "role": "a"
+      },
+      {
+        "key": "choose",
+        "x": 440,
+        "y": 400,
+        "w": 230,
+        "h": 86,
+        "title": "Choose a token",
+        "detail": "sample or greedy",
+        "role": "update"
+      },
+      {
+        "key": "stop",
+        "x": 840,
+        "y": 400,
+        "w": 230,
+        "h": 86,
+        "title": "Is it <EOS>?",
+        "detail": "yes: finish \u00b7 no: append",
+        "role": "neutral"
+      },
+      {
+        "key": "append",
+        "x": 1240,
+        "y": 400,
+        "w": 230,
+        "h": 86,
+        "title": "Append to history",
+        "detail": "repeat if budget remains",
+        "role": "data"
+      }
+    ],
+    "edges": [
+      {
+        "start": "prompt",
+        "end": "tokenize",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "tokenize",
+        "end": "windows",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "windows",
+        "end": "embedding",
+        "points": [
+          [
+            955,
+            116
+          ],
+          [
+            955,
+            165
+          ],
+          [
+            155,
+            165
+          ],
+          [
+            155,
+            230
+          ]
+        ],
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "checkpoint",
+        "end": "embedding",
+        "points": [
+          [
+            1355,
+            116
+          ],
+          [
+            1355,
+            195
+          ],
+          [
+            285,
+            195
+          ],
+          [
+            285,
+            210
+          ],
+          [
+            200,
+            210
+          ],
+          [
+            200,
+            230
+          ]
+        ],
+        "label": "load weights for every learned layer",
+        "role": "q",
+        "dashed": true,
+        "label_pos": [
+          790,
+          190
+        ]
+      },
+      {
+        "start": "embedding",
+        "end": "flatten",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "flatten",
+        "end": "hidden",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "hidden",
+        "end": "logits",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "logits",
+        "end": "probabilities",
+        "points": [
+          [
+            1355,
+            316
+          ],
+          [
+            1355,
+            350
+          ],
+          [
+            155,
+            350
+          ],
+          [
+            155,
+            400
+          ]
+        ],
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "probabilities",
+        "end": "choose",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "choose",
+        "end": "stop",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "stop",
+        "end": "append",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "append",
+        "end": "windows",
+        "points": [
+          [
+            1470,
+            443
+          ],
+          [
+            1490,
+            443
+          ],
+          [
+            1490,
+            145
+          ],
+          [
+            955,
+            145
+          ],
+          [
+            955,
+            116
+          ]
+        ],
+        "label": "",
+        "role": "data",
+        "dashed": true,
+        "label_pos": null
+      }
+    ]
+  },
+  {
+    "kind": "attention",
+    "mode": "training",
+    "width": 1520,
+    "height": 695,
+    "nodes": [
+      {
+        "key": "stories",
+        "x": 40,
+        "y": 30,
+        "w": 230,
+        "h": 86,
+        "title": "TinyStories",
+        "detail": "complete documents",
+        "role": "data"
+      },
+      {
+        "key": "split",
+        "x": 340,
+        "y": 30,
+        "w": 230,
+        "h": 86,
+        "title": "Split stories",
+        "detail": "train / validation / test",
+        "role": "data"
+      },
+      {
+        "key": "tokenize",
+        "x": 640,
+        "y": 30,
+        "w": 230,
+        "h": 86,
+        "title": "Tokenize + lookup",
+        "detail": "train-only vocabulary",
+        "role": "data"
+      },
+      {
+        "key": "ids",
+        "x": 940,
+        "y": 30,
+        "w": 230,
+        "h": 86,
+        "title": "IDs + boundaries",
+        "detail": "<BOS> \u2026 <EOS>",
+        "role": "data"
+      },
+      {
+        "key": "windows",
+        "x": 1240,
+        "y": 30,
+        "w": 230,
+        "h": 86,
+        "title": "Context and target",
+        "detail": "X [B,w]   y [B]",
+        "role": "data"
+      },
+      {
+        "key": "embedding",
+        "x": 40,
+        "y": 230,
+        "w": 230,
+        "h": 86,
+        "title": "Token lookup + position",
+        "detail": "E [B,w,d]",
+        "role": "data"
+      },
+      {
+        "key": "qkv",
+        "x": 340,
+        "y": 230,
+        "w": 230,
+        "h": 86,
+        "title": "Final q, all K and V",
+        "detail": "q [B,1,d\u2096] \u00b7 K,V: w rows",
+        "role": "q"
+      },
+      {
+        "key": "scores",
+        "x": 640,
+        "y": 230,
+        "w": 230,
+        "h": 86,
+        "title": "qK\u1d40 / \u221ad\u2096",
+        "detail": "scores [B,1,w]",
+        "role": "a"
+      },
+      {
+        "key": "weights",
+        "x": 940,
+        "y": 230,
+        "w": 230,
+        "h": 86,
+        "title": "Mask PAD \u00b7 softmax",
+        "detail": "weights A [B,1,w]",
+        "role": "a"
+      },
+      {
+        "key": "message",
+        "x": 1240,
+        "y": 230,
+        "w": 230,
+        "h": 86,
+        "title": "A @ V",
+        "detail": "message [B,1,d\u1d65]",
+        "role": "v"
+      },
+      {
+        "key": "projection",
+        "x": 1240,
+        "y": 395,
+        "w": 230,
+        "h": 86,
+        "title": "Output map W\u2092",
+        "detail": "update [B,1,d]",
+        "role": "update"
+      },
+      {
+        "key": "residual",
+        "x": 940,
+        "y": 395,
+        "w": 230,
+        "h": 86,
+        "title": "Add original final row",
+        "detail": "e\u2032 = e + update",
+        "role": "update"
+      },
+      {
+        "key": "readout",
+        "x": 640,
+        "y": 395,
+        "w": 230,
+        "h": 86,
+        "title": "Final updated vector",
+        "detail": "[B,d]",
+        "role": "update"
+      },
+      {
+        "key": "hidden",
+        "x": 340,
+        "y": 395,
+        "w": 230,
+        "h": 86,
+        "title": "Affine + ReLU",
+        "detail": "hidden [B,h]",
+        "role": "v"
+      },
+      {
+        "key": "logits",
+        "x": 40,
+        "y": 395,
+        "w": 230,
+        "h": 86,
+        "title": "Vocabulary affine",
+        "detail": "logits z [B,C]",
+        "role": "neutral"
+      },
+      {
+        "key": "loss",
+        "x": 40,
+        "y": 565,
+        "w": 230,
+        "h": 86,
+        "title": "Cross-entropy(z, y)",
+        "detail": "one target per window",
+        "role": "a"
+      },
+      {
+        "key": "backward",
+        "x": 440,
+        "y": 565,
+        "w": 230,
+        "h": 86,
+        "title": "loss.backward()",
+        "detail": "gradients for \u03b8",
+        "role": "q"
+      },
+      {
+        "key": "optimizer",
+        "x": 840,
+        "y": 565,
+        "w": 230,
+        "h": 86,
+        "title": "optimizer.step()",
+        "detail": "update learned \u03b8",
+        "role": "q"
+      },
+      {
+        "key": "parameters",
+        "x": 1240,
+        "y": 565,
+        "w": 230,
+        "h": 86,
+        "title": "Next training batch",
+        "detail": "reuse updated \u03b8",
+        "role": "q"
+      }
+    ],
+    "edges": [
+      {
+        "start": "stories",
+        "end": "split",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "split",
+        "end": "tokenize",
+        "points": null,
+        "label": "train",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": [
+          605,
+          63
+        ]
+      },
+      {
+        "start": "tokenize",
+        "end": "ids",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "ids",
+        "end": "windows",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "windows",
+        "end": "embedding",
+        "points": [
+          [
+            1355,
+            116
+          ],
+          [
+            1355,
+            165
+          ],
+          [
+            155,
+            165
+          ],
+          [
+            155,
+            230
+          ]
+        ],
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "embedding",
+        "end": "qkv",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "qkv",
+        "end": "scores",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "scores",
+        "end": "weights",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "weights",
+        "end": "message",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "message",
+        "end": "projection",
+        "points": [
+          [
+            1355,
+            316
+          ],
+          [
+            1355,
+            395
+          ]
+        ],
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "projection",
+        "end": "residual",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "residual",
+        "end": "readout",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "readout",
+        "end": "hidden",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "hidden",
+        "end": "logits",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "qkv",
+        "end": "message",
+        "points": [
+          [
+            455,
+            316
+          ],
+          [
+            455,
+            342
+          ],
+          [
+            1355,
+            342
+          ],
+          [
+            1355,
+            316
+          ]
+        ],
+        "label": "V bypasses scoring",
+        "role": "v",
+        "dashed": true,
+        "label_pos": null
+      },
+      {
+        "start": "embedding",
+        "end": "residual",
+        "points": [
+          [
+            155,
+            316
+          ],
+          [
+            155,
+            370
+          ],
+          [
+            1055,
+            370
+          ],
+          [
+            1055,
+            395
+          ]
+        ],
+        "label": "keep the final input row",
+        "role": "data",
+        "dashed": true,
+        "label_pos": null
+      },
+      {
+        "start": "logits",
+        "end": "loss",
+        "points": [
+          [
+            155,
+            481
+          ],
+          [
+            155,
+            565
+          ]
+        ],
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "windows",
+        "end": "loss",
+        "points": [
+          [
+            1470,
+            73
+          ],
+          [
+            1490,
+            73
+          ],
+          [
+            1490,
+            533
+          ],
+          [
+            280,
+            533
+          ],
+          [
+            280,
+            608
+          ],
+          [
+            270,
+            608
+          ]
+        ],
+        "label": "observed target y [B]",
+        "role": "a",
+        "dashed": true,
+        "label_pos": [
+          1110,
+          525
+        ]
+      },
+      {
+        "start": "loss",
+        "end": "backward",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "backward",
+        "end": "optimizer",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "optimizer",
+        "end": "parameters",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "parameters",
+        "end": "embedding",
+        "points": [
+          [
+            1355,
+            651
+          ],
+          [
+            1355,
+            677
+          ],
+          [
+            20,
+            677
+          ],
+          [
+            20,
+            205
+          ],
+          [
+            155,
+            205
+          ],
+          [
+            155,
+            230
+          ]
+        ],
+        "label": "",
+        "role": "q",
+        "dashed": true,
+        "label_pos": null
+      }
+    ]
+  },
+  {
+    "kind": "attention",
+    "mode": "inference",
+    "width": 1520,
+    "height": 695,
+    "nodes": [
+      {
+        "key": "prompt",
+        "x": 40,
+        "y": 30,
+        "w": 230,
+        "h": 86,
+        "title": "Prompt text",
+        "detail": "known words only",
+        "role": "data"
+      },
+      {
+        "key": "tokenize",
+        "x": 440,
+        "y": 30,
+        "w": 230,
+        "h": 86,
+        "title": "Saved tokenizer",
+        "detail": "same vocabulary + <BOS>",
+        "role": "data"
+      },
+      {
+        "key": "windows",
+        "x": 840,
+        "y": 30,
+        "w": 230,
+        "h": 86,
+        "title": "Crop, then left-pad",
+        "detail": "last w IDs \u2192 X [1,w]",
+        "role": "data"
+      },
+      {
+        "key": "checkpoint",
+        "x": 1240,
+        "y": 30,
+        "w": 230,
+        "h": 86,
+        "title": "Saved parameters",
+        "detail": "\u03b8 stays fixed",
+        "role": "q"
+      },
+      {
+        "key": "embedding",
+        "x": 40,
+        "y": 230,
+        "w": 230,
+        "h": 86,
+        "title": "Token lookup + position",
+        "detail": "E [1,w,d]",
+        "role": "data"
+      },
+      {
+        "key": "qkv",
+        "x": 340,
+        "y": 230,
+        "w": 230,
+        "h": 86,
+        "title": "Final q, all K and V",
+        "detail": "q [B,1,d\u2096] \u00b7 K,V: w rows",
+        "role": "q"
+      },
+      {
+        "key": "scores",
+        "x": 640,
+        "y": 230,
+        "w": 230,
+        "h": 86,
+        "title": "qK\u1d40 / \u221ad\u2096",
+        "detail": "scores [B,1,w]",
+        "role": "a"
+      },
+      {
+        "key": "weights",
+        "x": 940,
+        "y": 230,
+        "w": 230,
+        "h": 86,
+        "title": "Mask PAD \u00b7 softmax",
+        "detail": "weights A [B,1,w]",
+        "role": "a"
+      },
+      {
+        "key": "message",
+        "x": 1240,
+        "y": 230,
+        "w": 230,
+        "h": 86,
+        "title": "A @ V",
+        "detail": "message [B,1,d\u1d65]",
+        "role": "v"
+      },
+      {
+        "key": "projection",
+        "x": 1240,
+        "y": 395,
+        "w": 230,
+        "h": 86,
+        "title": "Output map W\u2092",
+        "detail": "update [B,1,d]",
+        "role": "update"
+      },
+      {
+        "key": "residual",
+        "x": 940,
+        "y": 395,
+        "w": 230,
+        "h": 86,
+        "title": "Add original final row",
+        "detail": "e\u2032 = e + update",
+        "role": "update"
+      },
+      {
+        "key": "readout",
+        "x": 640,
+        "y": 395,
+        "w": 230,
+        "h": 86,
+        "title": "Final updated vector",
+        "detail": "[B,d]",
+        "role": "update"
+      },
+      {
+        "key": "hidden",
+        "x": 340,
+        "y": 395,
+        "w": 230,
+        "h": 86,
+        "title": "Affine + ReLU",
+        "detail": "hidden [B,h]",
+        "role": "v"
+      },
+      {
+        "key": "logits",
+        "x": 40,
+        "y": 395,
+        "w": 230,
+        "h": 86,
+        "title": "Vocabulary affine",
+        "detail": "logits z [B,C]",
+        "role": "neutral"
+      },
+      {
+        "key": "probabilities",
+        "x": 40,
+        "y": 565,
+        "w": 230,
+        "h": 86,
+        "title": "Vocabulary softmax",
+        "detail": "z / temperature",
+        "role": "a"
+      },
+      {
+        "key": "choose",
+        "x": 440,
+        "y": 565,
+        "w": 230,
+        "h": 86,
+        "title": "Choose a token",
+        "detail": "sample or greedy",
+        "role": "update"
+      },
+      {
+        "key": "stop",
+        "x": 840,
+        "y": 565,
+        "w": 230,
+        "h": 86,
+        "title": "Is it <EOS>?",
+        "detail": "yes: finish \u00b7 no: append",
+        "role": "neutral"
+      },
+      {
+        "key": "append",
+        "x": 1240,
+        "y": 565,
+        "w": 230,
+        "h": 86,
+        "title": "Append to history",
+        "detail": "repeat if budget remains",
+        "role": "data"
+      }
+    ],
+    "edges": [
+      {
+        "start": "prompt",
+        "end": "tokenize",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "tokenize",
+        "end": "windows",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "windows",
+        "end": "embedding",
+        "points": [
+          [
+            955,
+            116
+          ],
+          [
+            955,
+            165
+          ],
+          [
+            155,
+            165
+          ],
+          [
+            155,
+            230
+          ]
+        ],
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "checkpoint",
+        "end": "embedding",
+        "points": [
+          [
+            1355,
+            116
+          ],
+          [
+            1355,
+            195
+          ],
+          [
+            285,
+            195
+          ],
+          [
+            285,
+            210
+          ],
+          [
+            200,
+            210
+          ],
+          [
+            200,
+            230
+          ]
+        ],
+        "label": "load weights for every learned layer",
+        "role": "q",
+        "dashed": true,
+        "label_pos": [
+          790,
+          190
+        ]
+      },
+      {
+        "start": "embedding",
+        "end": "qkv",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "qkv",
+        "end": "scores",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "scores",
+        "end": "weights",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "weights",
+        "end": "message",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "message",
+        "end": "projection",
+        "points": [
+          [
+            1355,
+            316
+          ],
+          [
+            1355,
+            395
+          ]
+        ],
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "projection",
+        "end": "residual",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "residual",
+        "end": "readout",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "readout",
+        "end": "hidden",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "hidden",
+        "end": "logits",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "qkv",
+        "end": "message",
+        "points": [
+          [
+            455,
+            316
+          ],
+          [
+            455,
+            342
+          ],
+          [
+            1355,
+            342
+          ],
+          [
+            1355,
+            316
+          ]
+        ],
+        "label": "V bypasses scoring",
+        "role": "v",
+        "dashed": true,
+        "label_pos": null
+      },
+      {
+        "start": "embedding",
+        "end": "residual",
+        "points": [
+          [
+            155,
+            316
+          ],
+          [
+            155,
+            370
+          ],
+          [
+            1055,
+            370
+          ],
+          [
+            1055,
+            395
+          ]
+        ],
+        "label": "keep the final input row",
+        "role": "data",
+        "dashed": true,
+        "label_pos": null
+      },
+      {
+        "start": "logits",
+        "end": "probabilities",
+        "points": [
+          [
+            155,
+            481
+          ],
+          [
+            155,
+            565
+          ]
+        ],
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "probabilities",
+        "end": "choose",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "choose",
+        "end": "stop",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "stop",
+        "end": "append",
+        "points": null,
+        "label": "",
+        "role": "neutral",
+        "dashed": false,
+        "label_pos": null
+      },
+      {
+        "start": "append",
+        "end": "windows",
+        "points": [
+          [
+            1470,
+            608
+          ],
+          [
+            1490,
+            608
+          ],
+          [
+            1490,
+            145
+          ],
+          [
+            955,
+            145
+          ],
+          [
+            955,
+            116
+          ]
+        ],
+        "label": "",
+        "role": "data",
+        "dashed": true,
+        "label_pos": null
+      }
+    ]
+  }
+]

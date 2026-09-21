@@ -63,9 +63,9 @@ try{
   await page.evaluate(()=>AT.present.prev());
   assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s13-frame1');
   for(const [sec,ids]of Object.entries(expected)){
-    // Extension frames are exhaustively checked by check_cost_position.mjs.
+    // Extensions are checked by check_cost_position and check_wordlm_pipeline.
     // Preserve the exact earlier core route and its article-only arithmetic.
-    assert.deepEqual(await page.locator('#'+sec+' .frame:not(.context-lesson)').evaluateAll(els=>els.map(e=>e.id)),ids);
+    assert.deepEqual(await page.locator('#'+sec+' .frame:not(.context-lesson):not(.pipeline-lesson)').evaluateAll(els=>els.map(e=>e.id)),ids);
     for(const id of ids){
       await go(id);await fit(id);
       await page.screenshot({path:path.join(shots,id+'.png')});

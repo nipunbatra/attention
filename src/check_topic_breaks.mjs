@@ -19,7 +19,8 @@ const targets=[
   ['s16-topic-break','s16-flow-frame'],
   ['s16-cost-break','s16-cost-symbols'],
   ['s17-position-break','s17-position-order'],
-  ['s19-topic-break','s19-frame-generation']
+  ['s19-topic-break','s19-frame-generation'],
+  ['s19-pipeline-break','s19-pipeline-mlp']
 ];
 const browser=await chromium.launch();
 try{
@@ -88,5 +89,5 @@ try{
   }
   assert.equal(await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)})),original);
   assert.deepEqual(errors,[]);
-  console.log('PASS: twelve topic breaks, existing pauses, forward/back navigation, header restoration, scaling deep links, unchanged model, desktop/tall/phone layouts. Screenshots: '+shots);
+  console.log('PASS: '+targets.length+' topic breaks, existing pauses, forward/back navigation, header restoration, scaling deep links, unchanged model, desktop/tall/phone layouts. Screenshots: '+shots);
 }finally{await browser.close();}

@@ -189,6 +189,8 @@ Training compares the distribution with an observed next token, backpropagates, 
 loss.backward(); optimizer.step()</code></pre>
 </div>
 
+<!--WORDLM_PIPELINE-->
+
 <div class="companion" id="s19-position-check" data-kicker="Checking the position signal">
   <p>The position vectors introduced at the start share the four word-feature coordinates. Moving an earlier word can therefore change its key and value, and the final prediction. Our numerical regression swaps “The” and “river” while keeping the final token fixed: the prediction changes with position vectors, but stays the same when those vectors are zeroed. This is a test of this single-layer example, not a claim that the hand-designed toy understands grammar.</p>
 </div>
@@ -200,13 +202,13 @@ No. We traced a hand-designed single-head forward computation. Learning changes 
   </script>
 <div class="card">
   <h3 class="card-title">One head, not yet a full Transformer</h3>
-  <p>We traced a causal attention head, its output projection and residual addition, then a <strong>4 → 8 → 20 prediction MLP</strong>. We chose the example’s parameters by hand; we have not trained them yet.</p>
+  <p>Our <strong>4 → 8 → 20 worksheet</strong> used hand-chosen parameters. The companion TinyStories notebooks train the same one-head pattern at a larger width, then generate with frozen parameters.</p>
   <div class="companion" id="s19-notation"></div>
   <p class="companion look">Every symbol on this page in one place; the shape column uses the toy sizes.</p>
 </div>
 
 <div class="prose">
-  <p><strong>Part 3:</strong> first train this same model, then add multiple heads, block feed-forward networks, normalization, and depth.</p>
+  <p><strong>Part 3:</strong> build on this training loop with multiple heads, block feed-forward networks, normalization, and depth.</p>
 </div>
 
 </div>

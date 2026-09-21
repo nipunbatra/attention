@@ -142,12 +142,21 @@ ids = []
 for f in files:
     txt = open(f, encoding='utf-8').read()
     if N == 2:
-        # Keep the two long teaching extensions beside their owning sections.
+        # Keep teaching extensions beside their owning sections.
         for marker, fragment in [('<!--CONTEXT_COSTS-->', 'sec16_cost.html'),
-                                 ('<!--POSITION_DETAIL-->', 'sec17_positions.html')]:
+                                 ('<!--POSITION_DETAIL-->', 'sec17_positions.html'),
+                                 ('<!--WORDLM_PIPELINE-->', 'sec19_pipeline.html')]:
             if marker in txt:
                 with open(os.path.join(sec_dir, fragment), encoding='utf-8') as source:
                     txt = txt.replace(marker, source.read())
+        if '<!--PIPELINE_TEMPLATES-->' in txt:
+            templates = []
+            for kind in ['mlp', 'attention']:
+                for mode in ['training', 'inference']:
+                    name = kind + '-' + mode
+                    with open(os.path.join(here, '..', 'figures', 'wordlm-pipeline', name + '.svg'), encoding='utf-8') as asset:
+                        templates.append('<template id="pipeline-' + name + '">' + asset.read() + '</template>')
+            txt = txt.replace('<!--PIPELINE_TEMPLATES-->', '\n'.join(templates))
     if N == 1 and 'figures/indian-names/github-dataset.png' in txt:
         # Keep the dataset screenshot available in the standalone/offline HTML.
         with open(os.path.join(here, '..', 'figures', 'indian-names', 'github-dataset.png'), 'rb') as asset:

@@ -1,5 +1,32 @@
 # Classroom release checks
 
+## 2026-09-21: end-to-end notebook maps
+
+- Added 16 Part II frames with four shared editable maps: MLP and attention,
+  each in training and generation. One authored sentence makes token IDs,
+  context/target pairs, short-prefix padding, window cropping, hidden layers,
+  loss/backprop, frozen testing and autoregressive inference concrete. Focus
+  views connect the same diagram to short code snippets; full-map controls
+  temporarily replace the snippet so the layout stays contained.
+- The maps follow the actual companion code: one final query per window,
+  PAD-key masking, value/output projection and residual, hidden vocabulary
+  head, no KV cache, and EOS checked before append. The target branch bypasses
+  the model. Only the training split enters optimization. The TinyStories
+  result is attributed to the existing three-seed, validation-tuned benchmark,
+  not the authored sentence or the short smoke runs. Saved model/benchmark
+  checksums remain unchanged.
+- Notebook companion: all 5 notebooks executed; 17 Python model/diagram tests
+  pass. New notebook 5 verifies intermediate-tensor parity, performs a real
+  optimizer step, traces both saved models during generation and asserts
+  parameter immutability. Notebooks 1 and 3 highlight their corresponding maps.
+- Lecture: new regression checks all 16 frames and full/focus controls at
+  1280×720 and 1024×768, plus 390px reading containment, SVG label bounds,
+  actual benchmark numbers and unchanged lecture model. Full frame audit:
+  403 states and 676 unique formulas, no math or overflow failures. Existing
+  topic-break, token-flow, core-tail and live/reference checks are retained.
+  The presentation guidance kept the existing colours and editable SVGs;
+  prototype guidance tied the explanation to executable, checked tensors.
+
 ## 2026-09-15: Part 1 recap, Transformer paper introduction and complete softmax working
 
 - Added five opening slides before the existing prediction task: two recaps of Part 1's actual character model and training/generation loop, then three slides introducing the 2017 Transformer paper, its motivation and later BERT/GPT use, and its original encoder-decoder architecture. The recap retains the 6→32 ReLU→27 prediction path. It distinguishes the trained character model from the later hand-chosen word example, and the original translation architecture from our causal attention lesson.
@@ -865,6 +892,7 @@ node src/check-live-model.mjs attention.html
 node src/check_token_flow.mjs attention.html
 node src/check_cost_position.mjs attention.html
 node src/check_cost_networks.mjs attention.html
+node src/check_wordlm_pipeline.mjs attention.html
 python3 src/check_training.py
 node src/check_position_capacity.mjs
 node src/check-routing-scaling.mjs

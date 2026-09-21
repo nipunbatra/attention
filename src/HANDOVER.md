@@ -1,6 +1,6 @@
 # Handover: interactive teaching series
 
-Updated 2026-09-17. Owner: Nipun Batra.
+Updated 2026-09-21. Owner: Nipun Batra.
 
 - Repository: https://github.com/nipunbatra/attention
 - Published series: https://nipunbatra.github.io/attention/
@@ -9,6 +9,27 @@ Updated 2026-09-17. Owner: Nipun Batra.
 All four attention parts and the four-part Vision to language extension are implemented. They share a slide-first reading/presentation system, not separate article and slide sources. The first slide-first checkpoint was `a49f811`; `a1d609c` completed Part 3 and the numerical-correctness pass. `CLASSROOM_QA.md` records local verification. Check the checkout's Git log and the GitHub Pages workflow for the current published commit. A temporary checkout is not evidence of what is live.
 
 ## Start here
+
+2026-09-21 diagram-first notebook walkthrough: Section 19 now has 16 additional
+`pipeline-lesson` frames after the training/generation introduction. The source
+is `sections/sec19_pipeline.html`, included at `<!--WORDLM_PIPELINE-->`.
+Four master SVGs in `figures/wordlm-pipeline/` cover MLP/attention ×
+training/inference; the editable Python generator is beside them. Focus views
+keep the same node positions, and “Show full map” replaces the explanation
+temporarily without overflowing the slide. Preserve the one-target-per-window
+contract, final-query attention optimization, PAD-key mask, hidden prediction
+layer, and the uncached generation loop. This is a separate trained TinyStories
+companion, not a change to the hand-chosen `toy.json` model. The bounded three-seed
+comparison and its provenance are in `benchmark-summary.json`.
+
+The companion notebook work lives in the existing Word-level prediction task's
+worktree, under `lecture11/notebooks/word-level-next-token`. Notebooks 1 and 3
+now use these maps; notebook 5 is the complete sentence-to-loss and
+checkpoint-to-generation trace. `pipeline_maps.py` is identical in both projects.
+All five notebooks have fresh executed outputs. The owner-private notebook Site
+was not modified or republished. Run `check_wordlm_pipeline.mjs` in addition to
+the general frame audit; the core-tail regression excludes the explicit
+`pipeline-lesson` extension, just as it excludes the cost/position extension.
 
 2026-09-17 Part II cost and position extensions: 45 classroom frames follow the matrix-form calculation in Section 16 and the alternatives comparison in Section 17. The sources are `sections/sec16_cost.html` (28 frames) and `sections/sec17_positions.html` (17 frames), included by `assemble.py` at explicit markers in their owning sections. Existing section IDs and core frames are unchanged. The two new topic breaks are `s16-cost-break` and `s17-position-break`; the opening reading guide identifies these as a later teaching sitting.
 
