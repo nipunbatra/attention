@@ -85,7 +85,7 @@
   },
   {
     "id": "story-indices",
-    "title": "A position in the story is different from a token ID",
+    "title": "Token positions and vocabulary IDs",
     "chapter": "2. Windows and batches",
     "index": 13,
     "slide": 17
@@ -99,7 +99,7 @@
   },
   {
     "id": "pair-lists",
-    "title": "Two empty lists will collect the training pairs",
+    "title": "Lists for inputs and targets",
     "chapter": "2. Windows and batches",
     "index": 15,
     "slide": 19
@@ -113,7 +113,7 @@
   },
   {
     "id": "pair-append",
-    "title": "One append stores the input, the other stores its target",
+    "title": "Storing an input and its target",
     "chapter": "2. Windows and batches",
     "index": 17,
     "slide": 21
@@ -134,7 +134,7 @@
   },
   {
     "id": "pairs-loop",
-    "title": "The loop repeats those steps for the remaining positions",
+    "title": "Building the remaining training pairs",
     "chapter": "2. Windows and batches",
     "index": 20,
     "slide": 24
@@ -169,14 +169,14 @@
   },
   {
     "id": "counts-train",
-    "title": "The same count across all training stories",
+    "title": "Training examples across the corpus",
     "chapter": "2. Windows and batches",
     "index": 25,
     "slide": 29
   },
   {
     "id": "counts",
-    "title": "Training, validation and test use the same counting rule",
+    "title": "Example counts for each data split",
     "chapter": "2. Windows and batches",
     "index": 26,
     "slide": 30
@@ -190,7 +190,7 @@
   },
   {
     "id": "batch",
-    "title": "A real batch with B=2",
+    "title": "A batch of two examples",
     "chapter": "2. Windows and batches",
     "index": 28,
     "slide": 32
@@ -204,14 +204,14 @@
   },
   {
     "id": "batches",
-    "title": "Seven examples do not mean seven optimizer steps",
+    "title": "Seven examples, four batches",
     "chapter": "2. Windows and batches",
     "index": 30,
     "slide": 34
   },
   {
     "id": "shapes",
-    "title": "Concrete dimensions for the worked batch",
+    "title": "Batch and model dimensions",
     "chapter": "2. Windows and batches",
     "index": 31,
     "slide": 35
@@ -260,7 +260,7 @@
   },
   {
     "id": "vocab-head",
-    "title": "Eight hidden numbers produce ten word scores",
+    "title": "Vocabulary logits from the hidden layer",
     "chapter": "3. The MLP forward pass",
     "index": 38,
     "slide": 42
@@ -351,21 +351,21 @@
   },
   {
     "id": "target",
-    "title": "The text gives the target; the model gives a guess",
+    "title": "Observed target and model prediction",
     "chapter": "5. Loss and learning",
     "index": 51,
     "slide": 55
   },
   {
     "id": "loss",
-    "title": "Two targets give two losses, then one batch mean",
+    "title": "Per-example loss and batch mean",
     "chapter": "5. Loss and learning",
     "index": 52,
     "slide": 56
   },
   {
     "id": "gradient",
-    "title": "Backward computes a direction for every parameter",
+    "title": "Gradients from backpropagation",
     "chapter": "5. Loss and learning",
     "index": 53,
     "slide": 57

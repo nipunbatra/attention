@@ -132,7 +132,7 @@ print(ids)
 assert ids == [1, 8, 7, 5, 9, 6, 4, 2]
 ''', focus=('ids',), check=('How many ordinary tokens are there?', 'Six. The full stop counts as one token; BOS and EOS are additional boundary tokens.'))
 
-step('story-indices', 'A position in the story is different from a token ID', '2. Windows and batches',
+step('story-indices', 'Token positions and vocabulary IDs', '2. Windows and batches',
      'Python positions start at 0: position 4 contains red, whose vocabulary ID is 9. With a four-token window, this example reads positions 0 through 3 and predicts the token at position 4.', '''
 w = 4
 target_position = 4
@@ -147,7 +147,7 @@ assert context_ids == [1, 8, 7, 5] and target_id == 9
 print('context_ids:', context_ids, 'target_id:', target_id)
 ''', focus=('windows',))
 
-step('pair-lists', 'Two empty lists will collect the training pairs', '2. Windows and batches',
+step('pair-lists', 'Lists for inputs and targets', '2. Windows and batches',
      'We inspected the example with red as its target, but have not stored any pairs yet. To collect every example in order, start at position 1, where lily follows BOS.', '''
 contexts = []
 targets = []
@@ -163,7 +163,7 @@ target_id = ids[t]
 assert context_ids == [0, 0, 0, 1] and target_id == 8
 ''', focus=('windows',))
 
-step('pair-append', 'One append stores the input, the other stores its target', '2. Windows and batches',
+step('pair-append', 'Storing an input and its target', '2. Windows and batches',
      'contexts.append(context_ids) adds the whole four-ID list as one row. targets.append(target_id) adds one answer at the same row index, so contexts[0] and targets[0] belong together.', '''
 contexts.append(context_ids)
 targets.append(target_id)
@@ -192,7 +192,7 @@ print('contexts =', contexts)
 print('targets =', targets)
 ''', focus=('windows',))
 
-step('pairs-loop', 'The loop repeats those steps for the remaining positions', '2. Windows and batches',
+step('pairs-loop', 'Building the remaining training pairs', '2. Windows and batches',
      'Positions 1 and 2 are already stored, so this loop continues at 3 and stops before len(ids)=8. Each pass builds a fresh input list and appends it with the observed target, producing seven paired rows in total.', '''
 for t in range(3, len(ids)):
     visible = ids[max(0, t-w):t]
@@ -235,7 +235,7 @@ examples_in_story = ordinary_tokens + 1
 assert ordinary_tokens == 6 and examples_in_story == N == 7
 ''', focus=('windows',))
 
-step('counts-train', 'The same count across all training stories', '2. Windows and batches',
+step('counts-train', 'Training examples across the corpus', '2. Windows and batches',
      'The saved training split has 964,338 ordinary tokens across 4,822 complete stories. Adding one EOS target per story gives 969,160 training examples.', '''
 train_tokens = 964_338
 train_stories = 4_822
@@ -245,7 +245,7 @@ assert train_stories == audit['documents']['train']
 assert train_examples == 969160
 ''', focus=('stories','windows'))
 
-step('counts', 'Training, validation and test use the same counting rule', '2. Windows and batches',
+step('counts', 'Example counts for each data split', '2. Windows and batches',
      'For each split, add its ordinary-token count and its story count. These are counts of supervised examples, not optimizer steps.', '''
 window_counts = {
     split: audit['oov'][split]['tokens'] + count
@@ -263,7 +263,7 @@ contexts_by_width = {width: history[-width:] for width in [2, 4, 6]}
 print(contexts_by_width)
 ''', focus=('windows',))
 
-step('batch', 'A real batch with B=2', '2. Windows and batches',
+step('batch', 'A batch of two examples', '2. Windows and batches',
      'Each batch row pairs four input token IDs in X with one observed next-token ID in y. The text columns decode the IDs, and the targets come from the story.', '''
 selected = torch.tensor([2, 3])
 X, y = all_X[selected], all_y[selected]
@@ -280,15 +280,15 @@ assert X.shape == (2, 4) and y.shape == (2,)
 assert X.dtype == y.dtype == torch.long
 ''', focus=('windows',), check=('Are the four numbers in each row of X embedding coordinates?', 'No. They are IDs for four separate token slots. Embedding lookup later replaces each input ID with a learned vector. X.shape describes the size of the ID tensor, not its contents.'))
 
-step('batches', 'Seven examples do not mean seven optimizer steps', '2. Windows and batches',
-     'A simple loader with B=2 and drop_last=False makes four batches in one pass: 2, 2, 2 and 1 example. The real benchmark instead samples B=512 windows per step with replacement.', '''
+step('batches', 'Seven examples, four batches', '2. Windows and batches',
+     'B=2 with drop_last=False gives batches of 2, 2, 2 and 1 per pass. With one update per batch, that is four optimizer steps. The benchmark samples 512 windows per update with replacement.', '''
 batch_sizes = [len(all_y[start:start+B]) for start in range(0, N, B)]
 assert batch_sizes == [2, 2, 2, 1]
 print('One sequential pass:', batch_sizes)
 print('Benchmark target presentations:', 6000 * 512)
 ''', focus=('windows','optimizer'))
 
-step('shapes', 'Concrete dimensions for the worked batch', '2. Windows and batches',
+step('shapes', 'Batch and model dimensions', '2. Windows and batches',
      'The batch and context axes describe the data. The representation widths are model choices. The vocabulary size is the number of output classes, including special tokens.', '''
 d, h, d_k, d_v = 4, 8, 3, 2
 torch.manual_seed(11)
@@ -341,7 +341,7 @@ assert hidden_mlp.shape == (2, 8)
 assert hidden_mlp.ge(0).all()
 ''', focus=('hidden',))
 
-step('vocab-head', 'Eight hidden numbers produce ten word scores', '3. The MLP forward pass',
+step('vocab-head', 'Vocabulary logits from the hidden layer', '3. The MLP forward pass',
      'Every vocabulary item gets a logit, including words that are not the target. The output matrix is 8×10 in row-vector notation. Logits can be negative and need not sum to one.', '''
 logits_mlp = mlp.vocab_head(hidden_mlp)
 assert logits_mlp.shape == (2, 10)
@@ -441,7 +441,7 @@ assert torch.allclose(p, logits_mlp[1].softmax(-1))
 assert torch.allclose(p.sum(), torch.tensor(1.0))
 ''', focus=('logits','loss'))
 
-step('target', 'The text gives the target; the model gives a guess', '5. Loss and learning',
+step('target', 'Observed target and model prediction', '5. Loss and learning',
      'Argmax returns the largest-probability vocabulary ID. The target remains red because the corpus contains red after this prefix. Training does not replace that observed target with the model’s guess.', '''
 guess_id = int(p.argmax())
 target_id = int(y[1])
@@ -449,7 +449,7 @@ print('Guess:', words[guess_id], 'target:', words[target_id])
 print('Probability of target:', float(p[target_id].detach()))
 ''', focus=('logits','loss'))
 
-step('loss', 'Two targets give two losses, then one batch mean', '5. Loss and learning',
+step('loss', 'Per-example loss and batch mean', '5. Loss and learning',
      'For each example, cross-entropy is −log of the probability assigned to its observed target. PyTorch accepts raw logits and performs log-softmax internally. The optimizer uses the mean across B=2 examples.', '''
 losses = F.cross_entropy(logits_mlp, y, reduction='none')
 loss = losses.mean()
@@ -457,7 +457,7 @@ manual_loss = -logits_mlp.log_softmax(-1)[torch.arange(B), y]
 assert torch.allclose(losses, manual_loss)
 ''', focus=('loss',))
 
-step('gradient', 'Backward computes a direction for every parameter', '5. Loss and learning',
+step('gradient', 'Gradients from backpropagation', '5. Loss and learning',
      'For vocabulary weight W[j,r], the batch-mean gradient is the mean of (p_r − 1[y=r]) × hidden_j. Here we inspect the weight feeding the red logit from hidden unit 0.', '''
 mlp.zero_grad(set_to_none=True)
 loss.backward()

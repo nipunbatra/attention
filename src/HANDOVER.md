@@ -45,6 +45,10 @@ All four attention parts and the four-part Vision to language extension are impl
   `python-code.js` preserves the same colors in the two live steppers. Both
   work offline. Keep full notebook code/figures synchronized and check rendered
   snippet text, including after changing interactive steps.
+- Use short, descriptive walkthrough titles. The humanizer pass replaces long
+  contrasts such as the former examples-versus-updates heading with
+  "Seven examples, four batches". Keep the conditional one-update-per-batch
+  explanation in the body, along with the separate benchmark sampling rule.
 - `notebooks/wordlm/05_training_and_inference_maps.html` is the public illustrated
   companion. Each step links to its exact slide and shares its numeric SVG with
   the executable notebook. `slow_walkthrough.py` and `build_slow_lesson.py` are

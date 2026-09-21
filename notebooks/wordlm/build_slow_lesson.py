@@ -251,7 +251,7 @@ body:not(.present) #s19 .pipeline-lesson{padding:30px 0;border-bottom:1px solid 
         body='. '.join(s['body'].split('. ')[:1 if master or s['id']=='training-loop' else 2]).rstrip('.')+'.'
         if s['id']=='training-loop':
             body='Repeat this training step on batches of 512 windows.'
-        if story_sample or tokenization:
+        if story_sample or tokenization or s['id']=='batches':
             body=s['body']
         extra_class=(' story-sample' if story_sample else ' tokenization-lesson' if tokenization else '')
         intro=s['id']=='tokenization-intro'

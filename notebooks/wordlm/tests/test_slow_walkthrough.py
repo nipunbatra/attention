@@ -144,3 +144,11 @@ def test_batch_ids_decode_to_tokens_before_any_embedding_lookup():
             assert 'X.shape = (2, 4)' in text and 'y.shape = (2,)' in text
             assert 'y stays as target IDs for the loss' in stage['body']
             break
+
+
+def test_batch_count_explanation_states_the_update_assumption():
+    stage=next(s for s in STAGES if s['id']=='batches')
+    assert stage['title']=='Seven examples, four batches'
+    assert 'B=2 with drop_last=False' in stage['body']
+    assert 'With one update per batch' in stage['body']
+    assert '512 windows per update with replacement' in stage['body']

@@ -35,6 +35,8 @@ try{
   assert.match(await page.locator('#s19-pipeline-batch-ids').innerText(),/Tokenization and vocabulary lookup are complete/);
   assert.match(await page.locator('#s19-pipeline-batch-ids').innerText(),/X.shape = \(2, 4\).*y.shape = \(2,\)/s);
   assert.match(await page.locator('#s19-pipeline-batch-ids .step-copy').innerText(),/no embedding coordinates yet.*X goes through embedding lookup.*y stays as target IDs for the loss/s);
+  assert.equal(await page.locator('#s19-pipeline-batches').getAttribute('data-title'),'Seven examples, four batches');
+  assert.match(await page.locator('#s19-pipeline-batches .step-copy').innerText(),/With one update per batch.*four optimizer steps.*512 windows per update with replacement/s);
   assert(!((await page.locator('#s19-pipeline-windows-last pre').innerText()).includes('torch.tensor')),'window example does not jump to tensor conversion');
   const codeBlocks=page.locator('pre > code');
   assert.equal(await codeBlocks.count(),await page.locator('pre > code.python-code').count(),'all Part II Python blocks have offline highlighting');
