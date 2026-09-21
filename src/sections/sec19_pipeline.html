@@ -103,7 +103,7 @@ optimizer.step()                   # change learned parameters</code></pre>
 
 <div class="frame pipeline-lesson" id="s19-pipeline-qkv" data-title="The final position asks; every real input can answer" data-autobuild="off">
   <script type="text/x-notes">At the example input BOS lily found a, the query comes from a, not the unseen target red. This early single-layer query is token-plus-position based; it acquires context through the values. Q and K share dk, whereas V can use a different width dv. Linear modules store transposed weights relative to our row-vector convention, but the tensor shapes here follow actual PyTorch outputs.</script>
-  <div class="pipeline-map" data-pipeline-map="attention-training" data-focus="embedding qkv" data-view="10 200 610 185"></div>
+  <div class="pipeline-map" data-pipeline-map="attention-training" data-focus="embedding qkv" data-view="10 200 610 130"></div>
   <pre><code>E = token_embedding(X) + position_embedding(positions)
 q = W_Q(E[:, -1:, :])   # [B, 1, d_k]: final known token
 K = W_K(E)             # [B, w, d_k]: source matches
