@@ -20,6 +20,14 @@ try{
   assert.equal(await page.locator('template[id^="pipeline-"]').count(),4);
   assert.equal(await page.locator('.pipeline-lesson script[type="text/x-notes"]').count(),ids.length);
   assert.match(await page.locator('#s19-pipeline-boundaries').innerText(),/7 supervised targets/);
+  for(const id of ['pair-append','pair-append-second','pairs-loop']){
+    const code=await page.locator('#s19-pipeline-'+id+' pre').innerText();
+    assert(code.includes('contexts.append(context_ids)'),id+' exposes input storage');
+    assert(code.includes('targets.append(target_id)'),id+' exposes target storage');
+  }
+  assert.match(await page.locator('#s19-pipeline-one-pair pre').innerText(),/target_id = ids\[target_position\]/);
+  assert.match(await page.locator('#s19-pipeline-pairs-tensors').innerText(),/torch.long/);
+  assert(!((await page.locator('#s19-pipeline-windows-last pre').innerText()).includes('torch.tensor')),'window example does not jump to tensor conversion');
   assert.match(await page.locator('#s19-pipeline-mask script').textContent(),/no future columns/);
   for(const id of ['story-complete','story-excerpts']){
     const frame=page.locator('#s19-pipeline-'+id);

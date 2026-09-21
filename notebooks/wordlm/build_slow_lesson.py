@@ -36,7 +36,16 @@ STORY_CREDIT = ('TinyStories · Ronen Eldan &amp; Yuanzhi Li · '
 SLIDE_CODE = {
  'shapes':'B, w, C = 2, 4, 10\nd, h, d_k, d_v = 4, 8, 3, 2',
  'positions':'token_rows = attention.token_embedding(X)\nposition_rows = attention.position_embedding(torch.arange(w))\nE = token_rows + position_rows[None, :, :]',
- 'windows-first':'visible = ids[max(0, t-w):t]\nx = [PAD] * (w-len(visible)) + visible\ny = ids[t]',
+ 'story-indices':'w = 4\ntarget_position = 4',
+ 'one-pair':'context_ids = ids[target_position-w:target_position]\ntarget_id = ids[target_position]',
+ 'pair-lists':'contexts = []\ntargets = []',
+ 'pair-first':'t = 1\nvisible = ids[max(0, t-w):t]\ncontext_ids = [vocab.pad_id] * (w-len(visible)) + visible\ntarget_id = ids[t]',
+ 'pair-second':'t = 2\nvisible = ids[max(0, t-w):t]\ncontext_ids = [vocab.pad_id] * (w-len(visible)) + visible\ntarget_id = ids[t]',
+ 'pair-append':'contexts.append(context_ids)\ntargets.append(target_id)',
+ 'pair-append-second':'contexts.append(context_ids)\ntargets.append(target_id)',
+ 'pairs-loop':'for t in range(3, len(ids)):\n    visible = ids[max(0, t-w):t]\n    context_ids = [vocab.pad_id] * (w-len(visible)) + visible\n    target_id = ids[t]\n    contexts.append(context_ids)\n    targets.append(target_id)',
+ 'windows-first':'for row in range(4):\n    print(row, contexts[row], targets[row])',
+ 'windows-last':'for row in range(4, 7):\n    print(row, contexts[row], targets[row])',
  'gradient':'loss.backward()\ngrad = mlp.vocab_head.weight.grad[9, 0]',
  'update':'optimizer = torch.optim.SGD(mlp.parameters(), lr=0.1)\noptimizer.step()  # every trainable parameter',
  'decode':'next_p = next_logits.softmax(-1)\ngreedy_id = next_p.argmax()\nsample_id = torch.searchsorted(next_p.cumsum(0), torch.tensor(0.8))',
@@ -142,6 +151,9 @@ jupyter lab {BOOK}.ipynb</pre><p>Then choose <strong>Run → Run All Cells</stro
 #s19 .pipeline-lesson .step-figure.master svg{max-height:410px}
 #s19 .pipeline-lesson.story-sample .step-figure svg{max-height:350px}
 #s19 .pipeline-lesson.tokenization-lesson .step-figure svg{max-height:310px}
+#s19 #s19-pipeline-pairs-tensors .step-figure svg{max-height:310px}
+#s19 #s19-pipeline-pairs-tensors .step-figure{margin:6px 0}
+#s19 #s19-pipeline-pairs-tensors pre{margin:4px 0}
 #s19 .tokenization-lesson.lecture-topic-break h3{margin-bottom:20px}
 #s19 .tokenization-lesson.lecture-topic-break .step-meta{max-width:none}
 #s19 .tokenization-mobile{display:none}

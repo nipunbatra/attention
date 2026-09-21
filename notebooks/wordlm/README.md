@@ -24,8 +24,8 @@ Transformer, LayerNorm, a block FFN, or pretrained embeddings.
    basis, cosine neighbours, contextual representations, attention maps, and
    controlled token interventions.
 5. [`05_training_and_inference_maps.ipynb`](05_training_and_inference_maps.ipynb)
-   — 52 small steps: actual stories, a brief tokenization detour, token IDs,
-   seven examples, an explicit B=2 batch,
+   — 60 small steps: actual stories, a brief tokenization detour, token IDs,
+   individual pairs appended to lists, seven stored examples, an explicit B=2 batch,
    each MLP/attention operation, a real optimizer step, and generation with the
    tiny teaching model. The measured TinyStories results are clearly separate.
    Begin here for the visual walkthrough;
@@ -55,7 +55,7 @@ and includes the corresponding executable code. Expand the complete map to
 locate the current operation. The guide works on phones; wide figures scroll
 inside their panels. The companion is public, separately from the private lab Site.
 
-`slow_walkthrough.py` is the shared source for the 52 explanations, calculations
+`slow_walkthrough.py` is the shared source for the 60 explanations, calculations
 and numeric figures. `lesson_evidence.json` records the saved corpus counts and
 benchmark provenance; it does not contain the raw story corpus.
 `story_examples.json` contains three unchanged TinyStories texts, source row IDs,
@@ -73,6 +73,13 @@ show the actual English tokenizer's casing, apostrophe, number and punctuation
 rules. Token counts, context length and vocabulary IDs are distinct. Both models
 retain the same tokenizer and training-fitted vocabulary at generation time.
 The subword example is hand-chosen; no BPE tokenizer or new dependency is added.
+
+The window walkthrough distinguishes a story position from a vocabulary ID.
+`context_ids` and `target_id` name one input/answer pair. The first two pairs are
+built and appended separately, showing the lists after each operation. A loop
+adds the remaining five pairs before `torch.tensor` converts the complete lists
+to `all_X` (7 × 4) and `all_y` (7). Selecting dataset rows 2 and 3 creates the
+batch `X` (2 × 4) and `y` (2), preserving the input/target correspondence.
 
 After editing:
 

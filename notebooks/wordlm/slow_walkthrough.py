@@ -132,32 +132,101 @@ print(ids)
 assert ids == [1, 8, 7, 5, 9, 6, 4, 2]
 ''', focus=('ids',), check=('How many ordinary tokens are there?', 'Six. The full stop counts as one token; BOS and EOS are additional boundary tokens.'))
 
-step('one-pair', 'One input window and its observed target', '2. Windows and batches',
-     'At this point in the sentence, the next observed word is red. Its ID goes to the loss later. It is outside the model input for this example.', '''
+step('story-indices', 'A position in the story is different from a token ID', '2. Windows and batches',
+     'Python positions start at 0: position 4 contains red, whose vocabulary ID is 9. With a four-token window, this example reads positions 0 through 3 and predicts the token at position 4.', '''
 w = 4
 target_position = 4
-one_x = ids[target_position-w:target_position]
-one_y = ids[target_position]
-assert one_x == [1, 8, 7, 5] and one_y == 9
+print(list(enumerate(ids)))
+''', focus=('windows',))
+
+step('one-pair', 'One input window and its observed target', '2. Windows and batches',
+     'context_ids is the input for one example, often called x, and target_id is its single observed answer, often called y. The slice ids[0:4] stops before position 4, so red is outside this input.', '''
+context_ids = ids[target_position-w:target_position]
+target_id = ids[target_position]
+assert context_ids == [1, 8, 7, 5] and target_id == 9
+print('context_ids:', context_ids, 'target_id:', target_id)
+''', focus=('windows',))
+
+step('pair-lists', 'Two empty lists will collect the training pairs', '2. Windows and batches',
+     'We inspected the example with red as its target, but have not stored any pairs yet. To collect every example in order, start at position 1, where lily follows BOS.', '''
+contexts = []
+targets = []
+assert len(contexts) == len(targets) == 0
+''', focus=('windows',))
+
+step('pair-first', 'The first pair has only BOS as history', '2. Windows and batches',
+     'At position t=1, the visible prefix is [1], meaning BOS. Three PAD IDs fill the unused slots, giving context_ids=[0, 0, 0, 1] and target_id=8 for lily.', '''
+t = 1
+visible = ids[max(0, t-w):t]
+context_ids = [vocab.pad_id] * (w-len(visible)) + visible
+target_id = ids[t]
+assert context_ids == [0, 0, 0, 1] and target_id == 8
+''', focus=('windows',))
+
+step('pair-append', 'One append stores the input, the other stores its target', '2. Windows and batches',
+     'contexts.append(context_ids) adds the whole four-ID list as one row. targets.append(target_id) adds one answer at the same row index, so contexts[0] and targets[0] belong together.', '''
+contexts.append(context_ids)
+targets.append(target_id)
+assert contexts == [[0, 0, 0, 1]] and targets == [8]
+print('contexts =', contexts)
+print('targets =', targets)
+''', focus=('windows',))
+
+step('pair-second', 'The next pair includes the previous observed target', '2. Windows and batches',
+     'At t=2, BOS and lily form the known prefix, and the observed next word is found. Computing this pair changes context_ids and target_id, while the stored lists still contain only the first pair.', '''
+t = 2
+visible = ids[max(0, t-w):t]
+context_ids = [vocab.pad_id] * (w-len(visible)) + visible
+target_id = ids[t]
+assert context_ids == [0, 0, 1, 8] and target_id == 7
+assert contexts == [[0, 0, 0, 1]] and targets == [8]
+''', focus=('windows',))
+
+step('pair-append-second', 'The second pair becomes row 1 in both lists', '2. Windows and batches',
+     'The same two append calls add the new pair after the first one. Each row in contexts still lines up with exactly one entry in targets.', '''
+contexts.append(context_ids)
+targets.append(target_id)
+assert contexts == [[0, 0, 0, 1], [0, 0, 1, 8]]
+assert targets == [8, 7]
+print('contexts =', contexts)
+print('targets =', targets)
+''', focus=('windows',))
+
+step('pairs-loop', 'The loop repeats those steps for the remaining positions', '2. Windows and batches',
+     'Positions 1 and 2 are already stored, so this loop continues at 3 and stops before len(ids)=8. Each pass builds a fresh input list and appends it with the observed target, producing seven paired rows in total.', '''
+for t in range(3, len(ids)):
+    visible = ids[max(0, t-w):t]
+    context_ids = [vocab.pad_id] * (w-len(visible)) + visible
+    target_id = ids[t]
+    contexts.append(context_ids)
+    targets.append(target_id)
+assert len(contexts) == len(targets) == 7
+assert contexts[3] == ids[0:4] and targets[3] == ids[4]
 ''', focus=('windows',))
 
 step('windows-first', 'Early prefixes need padding', '2. Windows and batches',
-     'The model always receives four slots. Left-padding preserves the most recent token in the final slot. These are the first four supervised examples from the sentence.', '''
-contexts, targets = [], []
-for t in range(1, len(ids)):
-    visible = ids[max(0, t-w):t]
-    contexts.append([vocab.pad_id]*(w-len(visible)) + visible)
-    targets.append(ids[t])
+     'These are the first four stored rows, with the IDs translated back to tokens. Row 3 is the red-target pair we inspected first, now stored in contexts[3] and targets[3].', '''
+for row in range(4):
+    print(row, contexts[row], targets[row])
+assert contexts[3] == [1, 8, 7, 5] and targets[3] == 9
 ''', focus=('windows',))
 
 step('windows-last', 'Later prefixes drop their oldest tokens', '2. Windows and batches',
-     'The remaining three examples use full windows. The final target is EOS. No context crosses the end of this story into a different document.', '''
+     'The remaining three rows use full windows, keeping only the four tokens immediately before each target. The last target is EOS, and no window crosses into a different story.', '''
+for row in range(4, 7):
+    print(row, contexts[row], targets[row])
+assert targets[-1] == vocab.eos_id
+''', focus=('windows',))
+
+step('pairs-tensors', 'The paired lists become two integer tensors', '2. Windows and batches',
+     'The conversion preserves every token ID and row pairing. all_X has shape [7, 4], all_y has shape [7], and torch.long means integer IDs.', '''
 all_X = torch.tensor(contexts, dtype=torch.long)
 all_y = torch.tensor(targets, dtype=torch.long)
 N = len(all_y)
 assert N == 7 and all_X.shape == (7, 4)
+assert all_X.tolist() == contexts and all_y.tolist() == targets
 assert not all_y.eq(vocab.pad_id).any()
-''', focus=('windows',))
+''', focus=('windows',), check=('Have these token IDs become embeddings yet?', 'No. This step only organizes the IDs into tensors. The embedding layer will later look up a learned vector for each ID.'))
 
 step('counts', 'Counting the supervised examples', '2. Windows and batches',
      'With left-padding and one EOS target per story, T ordinary tokens give T+1 examples. Add this count over documents. These larger counts come from the saved corpus audit.', '''
@@ -177,7 +246,7 @@ print(contexts_by_width)
 ''', focus=('windows',))
 
 step('batch', 'A real batch with B=2', '2. Windows and batches',
-     'A batch stacks two independent training examples. B counts examples, not words, stories or context slots. Both models will receive these exact same X and y tensors.', '''
+     'all_X and all_y hold the whole toy dataset, while X and y hold the selected batch. Selecting rows [2, 3] from both tensors keeps each input with its target and gives B=2 examples for both models.', '''
 selected = torch.tensor([2, 3])
 X, y = all_X[selected], all_y[selected]
 B = X.shape[0]
@@ -587,18 +656,69 @@ def render_figure(stage, ns):
             x=20+j*140;f.rect(x,55,128,120,stroke=BLUE)
             f.text(x+64,95,words[i],BLUE,25,600,'middle');f.text(x+64,148,i,BLUE,32,500,'middle')
         f.text(25,250,'8 IDs total. Predict each ID after BOS: 7 supervised targets.',size=30)
+    elif k=='story-indices':
+        f.table(['Story position']+list(range(len(ns['ids']))),
+                [('Token',*[words[i] for i in ns['ids']]),('Token ID',*ns['ids'])],
+                widths=[216]+[113]*8,row_h=60,size=26)
+        f.text(25,257,'Input: positions 0, 1, 2, 3',BLUE,30,600)
+        f.text(640,257,'Target: position 4, ID 9 (red)',RED,30,600)
     elif k=='one-pair':
-        f.text(25,45,'Input X: four known tokens',BLUE,28,600)
-        f.text(25,120,decode(ns['one_x']),BLUE,38,600)
-        f.text(25,180,str(ns['one_x']),BLUE,30,mono=True)
-        f.text(730,45,'Observed target y',RED,28,600);f.text(730,120,'red',RED,42,600);f.text(730,180,'ID 9',RED,30)
-        f.line(630,100,680,100,RED)
-        f.text(25,270,'BOS lily found a  |  red ball . EOS',MUTED,29)
+        f.text(25,45,'context_ids: one input x',BLUE,30,600)
+        f.text(25,120,decode(ns['context_ids']),BLUE,38,600)
+        f.text(25,180,str(ns['context_ids']),BLUE,30,mono=True)
+        f.text(730,45,'target_id: one answer y',RED,30,600)
+        f.text(730,120,words[ns['target_id']],RED,42,600)
+        f.text(730,180,'ID '+str(ns['target_id']),RED,30)
+        f.text(25,270,'ids[0:4] contains four IDs',BLUE,29)
+        f.text(730,270,'ids[4] is one ID',RED,29)
+    elif k=='pair-lists':
+        f.text(25,65,'contexts = []',BLUE,38,600,mono=True)
+        f.text(25,130,'Will hold one input list per example',BLUE,29)
+        f.text(650,65,'targets = []',RED,38,600,mono=True)
+        f.text(650,130,'Will hold one answer per example',RED,29)
+        f.text(25,245,'Stored so far: 0 input rows and 0 targets',size=31)
+    elif k in {'pair-first','pair-second'}:
+        f=Figure(stage['title'],height=225)
+        visible=ns['visible'];padding=ns['w']-len(visible)
+        f.text(25,40,f"t = {ns['t']}    visible = {visible}    ({decode(visible)})",BLUE,29,600)
+        known='known token ID' if len(visible)==1 else 'known token IDs'
+        f.text(25,98,f"{padding} PAD IDs + {len(visible)} {known} = {ns['w']} input slots",size=28)
+        f.text(25,159,'context_ids = '+str(ns['context_ids']),BLUE,30,mono=True)
+        f.text(750,159,'target_id = '+str(ns['target_id']),RED,30,mono=True)
+        f.text(25,213,decode(ns['context_ids']),BLUE,27)
+        f.text(750,213,words[ns['target_id']],RED,27)
+    elif k in {'pair-append','pair-append-second'}:
+        f.text(25,42,'contexts: a list of input lists',BLUE,29,600)
+        f.text(735,42,'targets: a list of IDs',RED,29,600)
+        # Literal nested lists expose what append adds, including the outer brackets.
+        f.text(25,100,'[',BLUE,31,mono=True)
+        f.text(735,100,str(ns['targets']),RED,31,mono=True)
+        for row,context in enumerate(ns['contexts']):
+            y=148+row*51
+            f.text(60,y,str(context)+(',' if row<len(ns['contexts'])-1 else ''),BLUE,31,mono=True)
+            f.text(460,y,f'row {row}',MUTED,26)
+            f.text(735,y,f"targets[{row}] = {ns['targets'][row]} ({words[ns['targets'][row]]})",RED,27)
+        f.text(25,148+len(ns['contexts'])*51,']',BLUE,31,mono=True)
+        count=len(ns['contexts']);plural='' if count==1 else 's'
+        f.text(25,296,f"{count} input row{plural}, {count} target{plural}. Same index means the same example.",size=27)
+    elif k=='pairs-loop':
+        f=Figure(stage['title'],height=135)
+        f.table(['Already stored','This loop adds','Total pairs'],
+                [('t = 1, 2','t = 3, 4, 5, 6, 7',len(ns['targets']))],
+                widths=[360,500,260],row_h=53,size=29)
     elif k in {'windows-first','windows-last'}:
         start,end=(0,4) if k=='windows-first' else (4,7)
         rows=[(j,decode(ns['contexts'][j]),words[ns['targets'][j]]) for j in range(start,end)]
-        f.table(['Example','Input: exactly four slots','Next target'],rows,widths=[170,730,220],row_h=53,colors=[MUTED,BLUE,RED])
+        f.table(['Stored row','Input: exactly four slots','Next target'],rows,widths=[170,730,220],row_h=53,colors=[MUTED,BLUE,RED])
         if k=='windows-last':f.text(25,285,'Every ordinary token plus EOS is predicted once: N = 6 + 1 = 7.',size=27)
+    elif k=='pairs-tensors':
+        f=Figure(stage['title'],height=360)
+        rows=[(r,str(ns['all_X'][r].tolist()),int(ns['all_y'][r]),words[int(ns['all_y'][r])])
+              for r in range(ns['N'])]
+        f.table(['Row','contexts[r] = all_X[r]','targets[r] = all_y[r]','Word'],rows,
+                widths=[100,480,340,200],row_h=39,size=26,colors=[MUTED,BLUE,RED,RED])
+        f.text(25,350,'all_X: 7 rows × 4 IDs',BLUE,28,600)
+        f.text(610,350,'all_y: 7 targets     N = 7',RED,28,600)
     elif k=='counts':
         rows=[(s.capitalize(),f"{ns['audit']['oov'][s]['tokens']:,}",f"{ns['audit']['documents'][s]:,}",f"{ns['window_counts'][s]:,}") for s in ['train','validation','test']]
         f.table(['Split','Ordinary tokens','One EOS / story','Total targets'],rows,widths=[190,290,310,330],row_h=57)
@@ -606,7 +726,9 @@ def render_figure(stage, ns):
     elif k=='context':
         f.table(['w','Visible suffix','Target count / story'],[(i,decode(ns['contexts_by_width'][i]),7) for i in [2,4,6]],widths=[100,760,260],row_h=67,colors=[INK,BLUE,RED])
     elif k=='batch':
-        f.table(['Batch row','Four input IDs','Observed ID','Meaning'],[(i,str(X[i].tolist()),int(ns['y'][i]),words[int(ns['y'][i])]) for i in range(2)],widths=[180,430,230,280],row_h=65,colors=[INK,BLUE,RED,RED])
+        f.table(['Dataset row','Batch row','X: four input IDs','y: target'],
+                [(int(ns['selected'][i]),i,str(X[i].tolist()),f"{int(ns['y'][i])} ({words[int(ns['y'][i])]})") for i in range(2)],
+                widths=[210,190,440,280],row_h=65,colors=[MUTED,INK,BLUE,RED])
         f.text(25,280,'X has shape [2, 4]. y has shape [2]. B = 2; w = 4; N = 7.',size=31)
     elif k=='batches':
         f.table(['Sequential batch','Example indices','Actual B'],[(1,'0, 1',2),(2,'2, 3',2),(3,'4, 5',2),(4,'6',1)],widths=[300,470,350],row_h=54)

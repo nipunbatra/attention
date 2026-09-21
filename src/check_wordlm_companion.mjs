@@ -14,7 +14,7 @@ assert(pw,'Use an existing Playwright runtime.');
 const root=path.resolve('notebooks/wordlm');
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'lesson-manifest.json')));
 const book=JSON.parse(fs.readFileSync(path.join(root,'05_training_and_inference_maps.ipynb')));
-assert.equal(manifest.length,52);
+assert.equal(manifest.length,60);
 assert.equal(book.cells.filter(c=>c.cell_type==='code').length,manifest.length+1);
 assert(book.cells.filter(c=>c.cell_type==='code').every(c=>c.execution_count!==null));
 assert(!book.cells.some(c=>c.outputs?.some(o=>o.output_type==='error')));
