@@ -196,269 +196,276 @@
     "slide": 32
   },
   {
-    "id": "batches",
-    "title": "Seven examples do not mean seven optimizer steps",
+    "id": "batch-ids",
+    "title": "X and y contain integer token IDs",
     "chapter": "2. Windows and batches",
     "index": 29,
     "slide": 33
   },
   {
-    "id": "shapes",
-    "title": "Concrete dimensions for the worked batch",
+    "id": "batches",
+    "title": "Seven examples do not mean seven optimizer steps",
     "chapter": "2. Windows and batches",
     "index": 30,
     "slide": 34
   },
   {
-    "id": "mlp-map",
-    "title": "The full MLP training map",
-    "chapter": "3. The MLP forward pass",
+    "id": "shapes",
+    "title": "Concrete dimensions for the worked batch",
+    "chapter": "2. Windows and batches",
     "index": 31,
     "slide": 35
   },
   {
-    "id": "lookup",
-    "title": "An ID selects one embedding row",
+    "id": "mlp-map",
+    "title": "The full MLP training map",
     "chapter": "3. The MLP forward pass",
     "index": 32,
     "slide": 36
   },
   {
-    "id": "embedding-batch",
-    "title": "The whole batch becomes a 2 \u00d7 4 \u00d7 4 tensor",
+    "id": "lookup",
+    "title": "An ID selects one embedding row",
     "chapter": "3. The MLP forward pass",
     "index": 33,
     "slide": 37
   },
   {
-    "id": "flatten",
-    "title": "Flatten the context axis, keep the batch axis",
+    "id": "embedding-batch",
+    "title": "The whole batch becomes a 2 \u00d7 4 \u00d7 4 tensor",
     "chapter": "3. The MLP forward pass",
     "index": 34,
     "slide": 38
   },
   {
-    "id": "hidden-affine",
-    "title": "One hidden neuron combines all sixteen inputs",
+    "id": "flatten",
+    "title": "Flatten the context axis, keep the batch axis",
     "chapter": "3. The MLP forward pass",
     "index": 35,
     "slide": 39
   },
   {
-    "id": "relu",
-    "title": "ReLU keeps positive activations",
+    "id": "hidden-affine",
+    "title": "One hidden neuron combines all sixteen inputs",
     "chapter": "3. The MLP forward pass",
     "index": 36,
     "slide": 40
   },
   {
-    "id": "vocab-head",
-    "title": "Eight hidden numbers produce ten word scores",
+    "id": "relu",
+    "title": "ReLU keeps positive activations",
     "chapter": "3. The MLP forward pass",
     "index": 37,
     "slide": 41
   },
   {
-    "id": "attention-map",
-    "title": "The full attention training map",
-    "chapter": "4. The attention forward pass",
+    "id": "vocab-head",
+    "title": "Eight hidden numbers produce ten word scores",
+    "chapter": "3. The MLP forward pass",
     "index": 38,
     "slide": 42
   },
   {
-    "id": "positions",
-    "title": "Add a position vector to each token vector",
+    "id": "attention-map",
+    "title": "The full attention training map",
     "chapter": "4. The attention forward pass",
     "index": 39,
     "slide": 43
   },
   {
-    "id": "query",
-    "title": "The final known token supplies one query",
+    "id": "positions",
+    "title": "Add a position vector to each token vector",
     "chapter": "4. The attention forward pass",
     "index": 40,
     "slide": 44
   },
   {
-    "id": "keys",
-    "title": "Each source has a matching key",
+    "id": "query",
+    "title": "The final known token supplies one query",
     "chapter": "4. The attention forward pass",
     "index": 41,
     "slide": 45
   },
   {
-    "id": "values",
-    "title": "Each source also has information to send",
+    "id": "keys",
+    "title": "Each source has a matching key",
     "chapter": "4. The attention forward pass",
     "index": 42,
     "slide": 46
   },
   {
-    "id": "scores",
-    "title": "Compare the query with all four keys",
+    "id": "values",
+    "title": "Each source also has information to send",
     "chapter": "4. The attention forward pass",
     "index": 43,
     "slide": 47
   },
   {
-    "id": "mask",
-    "title": "Padding must receive zero attention weight",
+    "id": "scores",
+    "title": "Compare the query with all four keys",
     "chapter": "4. The attention forward pass",
     "index": 44,
     "slide": 48
   },
   {
-    "id": "attention-softmax",
-    "title": "Softmax turns four source scores into weights",
+    "id": "mask",
+    "title": "Padding must receive zero attention weight",
     "chapter": "4. The attention forward pass",
     "index": 45,
     "slide": 49
   },
   {
-    "id": "mix",
-    "title": "Each weight scales a complete value row",
+    "id": "attention-softmax",
+    "title": "Softmax turns four source scores into weights",
     "chapter": "4. The attention forward pass",
     "index": 46,
     "slide": 50
   },
   {
-    "id": "output-map",
-    "title": "Project two message coordinates into four",
+    "id": "mix",
+    "title": "Each weight scales a complete value row",
     "chapter": "4. The attention forward pass",
     "index": 47,
     "slide": 51
   },
   {
-    "id": "residual",
-    "title": "Add the update to the original final row",
+    "id": "output-map",
+    "title": "Project two message coordinates into four",
     "chapter": "4. The attention forward pass",
     "index": 48,
     "slide": 52
   },
   {
-    "id": "word-softmax",
-    "title": "Ten logits become ten next-token probabilities",
-    "chapter": "5. Loss and learning",
+    "id": "residual",
+    "title": "Add the update to the original final row",
+    "chapter": "4. The attention forward pass",
     "index": 49,
     "slide": 53
   },
   {
-    "id": "target",
-    "title": "The text gives the target; the model gives a guess",
+    "id": "word-softmax",
+    "title": "Ten logits become ten next-token probabilities",
     "chapter": "5. Loss and learning",
     "index": 50,
     "slide": 54
   },
   {
-    "id": "loss",
-    "title": "Two targets give two losses, then one batch mean",
+    "id": "target",
+    "title": "The text gives the target; the model gives a guess",
     "chapter": "5. Loss and learning",
     "index": 51,
     "slide": 55
   },
   {
-    "id": "gradient",
-    "title": "Backward computes a direction for every parameter",
+    "id": "loss",
+    "title": "Two targets give two losses, then one batch mean",
     "chapter": "5. Loss and learning",
     "index": 52,
     "slide": 56
   },
   {
-    "id": "update",
-    "title": "One optimizer step changes the stored weights",
+    "id": "gradient",
+    "title": "Backward computes a direction for every parameter",
     "chapter": "5. Loss and learning",
     "index": 53,
     "slide": 57
   },
   {
-    "id": "training-loop",
-    "title": "Many batches, with validation between checkpoints",
+    "id": "update",
+    "title": "One optimizer step changes the stored weights",
     "chapter": "5. Loss and learning",
     "index": 54,
     "slide": 58
   },
   {
-    "id": "evaluation",
-    "title": "Held-out scoring and free-running generation",
-    "chapter": "6. Inference",
+    "id": "training-loop",
+    "title": "Many batches, with validation between checkpoints",
+    "chapter": "5. Loss and learning",
     "index": 55,
     "slide": 59
   },
   {
-    "id": "mlp-inference",
-    "title": "The complete MLP generation loop",
+    "id": "evaluation",
+    "title": "Held-out scoring and free-running generation",
     "chapter": "6. Inference",
     "index": 56,
     "slide": 60
   },
   {
-    "id": "attention-inference",
-    "title": "Attention uses the same generation loop",
+    "id": "mlp-inference",
+    "title": "The complete MLP generation loop",
     "chapter": "6. Inference",
     "index": 57,
     "slide": 61
   },
   {
-    "id": "prompt",
-    "title": "Prepare a prompt using the same rules",
+    "id": "attention-inference",
+    "title": "Attention uses the same generation loop",
     "chapter": "6. Inference",
     "index": 58,
     "slide": 62
   },
   {
-    "id": "prompt-window",
-    "title": "The prompt fills the same four input slots",
+    "id": "prompt",
+    "title": "Prepare a prompt using the same rules",
     "chapter": "6. Inference",
     "index": 59,
     "slide": 63
   },
   {
-    "id": "generation-logits",
-    "title": "A frozen model scores the next token",
+    "id": "prompt-window",
+    "title": "The prompt fills the same four input slots",
     "chapter": "6. Inference",
     "index": 60,
     "slide": 64
   },
   {
-    "id": "generation-probabilities",
-    "title": "Special input tokens are excluded from generation",
+    "id": "generation-logits",
+    "title": "A frozen model scores the next token",
     "chapter": "6. Inference",
     "index": 61,
     "slide": 65
   },
   {
-    "id": "decode",
-    "title": "Greedy decoding and sampling make different choices",
+    "id": "generation-probabilities",
+    "title": "Special input tokens are excluded from generation",
     "chapter": "6. Inference",
     "index": 62,
     "slide": 66
   },
   {
-    "id": "generation-append",
-    "title": "A selected token extends the history unless it is EOS",
+    "id": "decode",
+    "title": "Greedy decoding and sampling make different choices",
     "chapter": "6. Inference",
     "index": 63,
     "slide": 67
   },
   {
-    "id": "append",
-    "title": "The chosen token becomes input on the next step",
+    "id": "generation-append",
+    "title": "A selected token extends the history unless it is EOS",
     "chapter": "6. Inference",
     "index": 64,
     "slide": 68
   },
   {
+    "id": "append",
+    "title": "The chosen token becomes input on the next step",
+    "chapter": "6. Inference",
+    "index": 65,
+    "slide": 69
+  },
+  {
     "id": "benchmark",
     "title": "The trained TinyStories comparison",
     "chapter": "7. The real experiment",
-    "index": 65,
-    "slide": 69
+    "index": 66,
+    "slide": 70
   },
   {
     "id": "next",
     "title": "The same steps in the runnable notebooks",
     "chapter": "7. The real experiment",
-    "index": 66,
-    "slide": 70
+    "index": 67,
+    "slide": 71
   }
 ]

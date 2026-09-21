@@ -66,6 +66,7 @@ SLIDE_CODE = {
  'counts':None,
  'context':'history = ids[:6]  # BOS lily found a red ball\nfor width in [2, 4, 6]:\n    print(history[-width:])',
  'batch':'selected = torch.tensor([2, 3])\nX, y = all_X[selected], all_y[selected]\nB = X.shape[0]',
+ 'batch-ids':'print(X.shape, X.dtype)\nprint(y.shape, y.dtype)',
  'batches':'for start in range(0, N, B):\n    batch_X = all_X[start:start+B]\n    print(len(batch_X))',
  'mlp-map':None,
  'lookup':"found_id = vocab.stoi['found']\nfound_vector = mlp.token_embedding.weight[found_id]",

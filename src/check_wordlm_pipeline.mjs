@@ -28,6 +28,13 @@ try{
   }
   assert.match(await page.locator('#s19-pipeline-one-pair pre').innerText(),/target_id = ids\[target_position\]/);
   assert.match(await page.locator('#s19-pipeline-pairs-tensors').innerText(),/torch.long/);
+  const batchText=await page.locator('#s19-pipeline-batch svg text').allTextContents();
+  assert.deepEqual(batchText.slice(0,6),['Data row','Batch row','X: input IDs','Input tokens','y: ID','Target token']);
+  assert.deepEqual(batchText.slice(6,12),['2','0','[0, 1, 8, 7]','<PAD> <BOS> lily found','5','a']);
+  assert.deepEqual(batchText.slice(12,18),['3','1','[1, 8, 7, 5]','<BOS> lily found a','9','red']);
+  assert.match(await page.locator('#s19-pipeline-batch-ids').innerText(),/Tokenization and vocabulary lookup are complete/);
+  assert.match(await page.locator('#s19-pipeline-batch-ids').innerText(),/X.shape = \(2, 4\).*y.shape = \(2,\)/s);
+  assert.match(await page.locator('#s19-pipeline-batch-ids .step-copy').innerText(),/no embedding coordinates yet.*X goes through embedding lookup.*y stays as target IDs for the loss/s);
   assert(!((await page.locator('#s19-pipeline-windows-last pre').innerText()).includes('torch.tensor')),'window example does not jump to tensor conversion');
   const codeBlocks=page.locator('pre > code');
   assert.equal(await codeBlocks.count(),await page.locator('pre > code.python-code').count(),'all Part II Python blocks have offline highlighting');

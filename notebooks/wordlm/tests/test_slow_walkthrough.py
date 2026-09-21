@@ -9,8 +9,8 @@ from slow_walkthrough import STAGES, STORY_EXAMPLES, initial_namespace, render_f
 
 def test_all_lesson_steps_execute_and_render():
     ns=initial_namespace()
-    assert len(STAGES)==66
-    assert len({s['id'] for s in STAGES})==66
+    assert len(STAGES)==67
+    assert len({s['id'] for s in STAGES})==67
     for s in STAGES:
         exec(compile(s['code'],s['id'],'exec'),ns)
         root=ET.fromstring(render_figure(s,ns))
@@ -123,3 +123,24 @@ def test_pairs_grow_in_lockstep_before_tensor_conversion():
         assert 'context_ids =' in SLIDE_CODE[key]
         assert 'target_id =' in SLIDE_CODE[key]
     assert all('one_x' not in s['code'] and 'one_y' not in s['code'] for s in STAGES)
+
+
+def test_batch_ids_decode_to_tokens_before_any_embedding_lookup():
+    ns=initial_namespace()
+    for stage in STAGES:
+        exec(stage['code'],ns)
+        if stage['id']=='batch':
+            svg=ET.fromstring(render_figure(stage,ns))
+            labels=[t.text for t in svg.findall('{http://www.w3.org/2000/svg}text')]
+            assert labels[:6]==['Data row','Batch row','X: input IDs','Input tokens','y: ID','Target token']
+            assert labels[6:12]==['2','0','[0, 1, 8, 7]','<PAD> <BOS> lily found','5','a']
+            assert labels[12:18]==['3','1','[1, 8, 7, 5]','<BOS> lily found a','9','red']
+            assert 'Meaning' not in labels
+        if stage['id']=='batch-ids':
+            assert ns['X'].dtype==ns['y'].dtype==ns['torch'].long
+            assert ns['X'].shape==(2,4) and ns['y'].shape==(2,)
+            assert 'E_mlp' not in ns and 'mlp' not in ns
+            text=' '.join(ET.fromstring(render_figure(stage,ns)).itertext())
+            assert 'X.shape = (2, 4)' in text and 'y.shape = (2,)' in text
+            assert 'y stays as target IDs for the loss' in stage['body']
+            break

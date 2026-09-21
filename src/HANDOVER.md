@@ -12,7 +12,7 @@ All four attention parts and the four-part Vision to language extension are impl
 
 2026-09-21 slower lab and position revision (supersedes the entries below):
 
-- Section 19 has 66 concrete walkthrough frames plus its opening topic break. After the
+- Section 19 has 67 concrete walkthrough frames plus its opening topic break. After the
   data introduction, two slides show three real TinyStories documents: one
   complete 52-word story, then excerpts from 107- and 248-word stories. Full-story
   token counts are computed with the notebook tokenizer; the shared source and
@@ -33,6 +33,10 @@ All four attention parts and the four-part Vision to language extension are impl
   Preserve both visible append calls and the position/index/ID distinction.
   Eight additional frames keep the seven toy pairs and all model arithmetic
   unchanged. The batch figure maps dataset rows 2 and 3 to batch rows 0 and 1.
+  It also decodes both inputs and targets beside their IDs. The following
+  `batch-ids` frame distinguishes the integer tensors from their shapes and
+  makes clear that tokenization is complete but embedding lookup comes later.
+  Only X goes through input embedding lookup; y stays as target IDs for the loss.
 - Slide code now has an explicit excerpt (or no code) for every walkthrough
   stage. Never restore first-N-line slicing. Counting and generation have six
   further frames, each showing a complete operation. `code_display.py` uses

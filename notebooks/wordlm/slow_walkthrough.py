@@ -264,13 +264,21 @@ print(contexts_by_width)
 ''', focus=('windows',))
 
 step('batch', 'A real batch with B=2', '2. Windows and batches',
-     'all_X and all_y hold the whole toy dataset, while X and y hold the selected batch. Selecting rows [2, 3] from both tensors keeps each input with its target and gives B=2 examples for both models.', '''
+     'Each batch row pairs four input token IDs in X with one observed next-token ID in y. The text columns decode the IDs, and the targets come from the story.', '''
 selected = torch.tensor([2, 3])
 X, y = all_X[selected], all_y[selected]
 B = X.shape[0]
 assert X.tolist() == [[0, 1, 8, 7], [1, 8, 7, 5]]
 assert y.tolist() == [5, 9] and B == 2
 ''', focus=('windows',))
+
+step('batch-ids', 'X and y contain integer token IDs', '2. Windows and batches',
+     'Tokenization and vocabulary lookup are complete: X and y contain integers, with no embedding coordinates yet. Next, X goes through embedding lookup, while y stays as target IDs for the loss.', '''
+print(X.shape, X.dtype)
+print(y.shape, y.dtype)
+assert X.shape == (2, 4) and y.shape == (2,)
+assert X.dtype == y.dtype == torch.long
+''', focus=('windows',), check=('Are the four numbers in each row of X embedding coordinates?', 'No. They are IDs for four separate token slots. Embedding lookup later replaces each input ID with a learned vector. X.shape describes the size of the ID tensor, not its contents.'))
 
 step('batches', 'Seven examples do not mean seven optimizer steps', '2. Windows and batches',
      'A simple loader with B=2 and drop_last=False makes four batches in one pass: 2, 2, 2 and 1 example. The real benchmark instead samples B=512 windows per step with replacement.', '''
@@ -787,10 +795,23 @@ def render_figure(stage, ns):
     elif k=='context':
         f.table(['w','Visible suffix','Target count / story'],[(i,decode(ns['contexts_by_width'][i]),7) for i in [2,4,6]],widths=[100,760,260],row_h=67,colors=[INK,BLUE,RED])
     elif k=='batch':
-        f.table(['Dataset row','Batch row','X: four input IDs','y: target'],
-                [(int(ns['selected'][i]),i,str(X[i].tolist()),f"{int(ns['y'][i])} ({words[int(ns['y'][i])]})") for i in range(2)],
-                widths=[210,190,440,280],row_h=65,colors=[MUTED,INK,BLUE,RED])
-        f.text(25,280,'X has shape [2, 4]. y has shape [2]. B = 2; w = 4; N = 7.',size=31)
+        f.table(['Data row','Batch row','X: input IDs','Input tokens','y: ID','Target token'],
+                [(int(ns['selected'][i]),i,str(X[i].tolist()),' '.join(row_tokens(i)),int(ns['y'][i]),words[int(ns['y'][i])]) for i in range(len(X))],
+                widths=[125,125,250,340,100,180],row_h=65,colors=[MUTED,INK,BLUE,BLUE,RED,RED])
+        f.text(25,250,'Dataset rows 2 and 3 become batch rows 0 and 1.',MUTED,27)
+        f.text(25,300,'PAD fills an empty slot. BOS marks the start of the story.',MUTED,27)
+    elif k=='batch-ids':
+        f=Figure(stage['title'],height=340)
+        f.text(25,40,'X: input token IDs',BLUE,30,600)
+        f.table(['Batch row','Slot 1','Slot 2','Slot 3','Slot 4'],
+                [(i,*X[i].tolist()) for i in range(len(X))],
+                y=65,widths=[160,125,125,125,125],row_h=52,colors=[MUTED,BLUE,BLUE,BLUE,BLUE],size=27)
+        f.text(25,275,'X.shape = (2, 4)',BLUE,31,600)
+        f.text(25,320,'2 examples × 4 input slots',MUTED,27)
+        f.text(775,40,'y: next-token IDs',RED,30,600)
+        f.text(775,163,str(ns['y'].tolist()),RED,44,600,mono=True)
+        f.text(775,275,'y.shape = (2,)',RED,31,600)
+        f.text(775,320,'2 targets, one per example',MUTED,27)
     elif k=='batches':
         f.table(['Sequential batch','Example indices','Actual B'],[(1,'0, 1',2),(2,'2, 3',2),(3,'4, 5',2),(4,'6',1)],widths=[300,470,350],row_h=54)
     elif k=='shapes':
