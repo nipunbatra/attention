@@ -12,7 +12,7 @@ All four attention parts and the four-part Vision to language extension are impl
 
 2026-09-21 slower lab and position revision (supersedes the entries below):
 
-- Section 19 has 49 concrete walkthrough frames plus its topic break. After the
+- Section 19 has 52 concrete walkthrough frames plus its opening topic break. After the
   data introduction, two slides show three real TinyStories documents: one
   complete 52-word story, then excerpts from 107- and 248-word stories. Full-story
   token counts are computed with the notebook tokenizer; the shared source and
@@ -20,6 +20,13 @@ All four attention parts and the four-part Vision to language extension are impl
   One authored six-token sentence yields seven targets; a B=2, w=4, C=10 batch is
   traced through the MLP, attention, loss, an SGD update and generation. Random
   toy arithmetic is explicitly separate from the saved TinyStories benchmark.
+- Before `tokenize(sentence)`, three short tokenization frames explain the unit
+  of prediction, compare word/character/illustrative subword splits of `redder!`,
+  and demonstrate the actual notebook tokenizer. The first is a topic break.
+  Preserve the distinction between tokens, IDs and embeddings, the context-token
+  count, training-only vocabulary fitting and fixed rules at generation time.
+  Subword splits are illustrative, not measured BPE output. The English teaching
+  tokenizer intentionally loses case and spacing and is not multilingual.
 - `notebooks/wordlm/05_training_and_inference_maps.html` is the public illustrated
   companion. Each step links to its exact slide and shares its numeric SVG with
   the executable notebook. `slow_walkthrough.py` and `build_slow_lesson.py` are

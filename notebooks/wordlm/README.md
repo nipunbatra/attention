@@ -24,7 +24,8 @@ Transformer, LayerNorm, a block FFN, or pretrained embeddings.
    basis, cosine neighbours, contextual representations, attention maps, and
    controlled token interventions.
 5. [`05_training_and_inference_maps.ipynb`](05_training_and_inference_maps.ipynb)
-   — 49 small steps: actual stories, token IDs, seven examples, an explicit B=2 batch,
+   — 52 small steps: actual stories, a brief tokenization detour, token IDs,
+   seven examples, an explicit B=2 batch,
    each MLP/attention operation, a real optimizer step, and generation with the
    tiny teaching model. The measured TinyStories results are clearly separate.
    Begin here for the visual walkthrough;
@@ -54,7 +55,7 @@ and includes the corresponding executable code. Expand the complete map to
 locate the current operation. The guide works on phones; wide figures scroll
 inside their panels. The companion is public, separately from the private lab Site.
 
-`slow_walkthrough.py` is the shared source for the 49 explanations, calculations
+`slow_walkthrough.py` is the shared source for the 52 explanations, calculations
 and numeric figures. `lesson_evidence.json` records the saved corpus counts and
 benchmark provenance; it does not contain the raw story corpus.
 `story_examples.json` contains three unchanged TinyStories texts, source row IDs,
@@ -64,7 +65,16 @@ the notebook prints all three full texts. These examples are from **TinyStories
 by Ronen Eldan and Yuanzhi Li**, distributed under
 [CDLA-Sharing-1.0](https://cdla.dev/sharing-1-0/). Display labels are added for the
 lesson; the saved source texts are unchanged. The full 6,000-story corpus is not
-bundled. After editing:
+bundled.
+
+Three short tokenization slides precede the first sentence-tokenization step.
+They compare word, character and illustrative subword splits of `redder!`, then
+show the actual English tokenizer's casing, apostrophe, number and punctuation
+rules. Token counts, context length and vocabulary IDs are distinct. Both models
+retain the same tokenizer and training-fitted vocabulary at generation time.
+The subword example is hand-chosen; no BPE tokenizer or new dependency is added.
+
+After editing:
 
 ```sh
 python build_slow_lesson.py --lecture-dir /path/to/attention

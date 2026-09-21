@@ -68,6 +68,39 @@ sentence = 'Lily found a red ball.'
 print(sentence)
 ''', focus=('stories',))
 
+step('tokenization-intro', 'Tokenization', '1. Data and tokens',
+     'A token is one item the model reads or predicts. The tokenizer chooses these items before we assign integer IDs and look up learned embeddings.', '''
+tokenization_text = 'redder!'
+print('The same text for three tokenization choices:', tokenization_text)
+''', focus=('tokenize',))
+
+step('tokenization-choices', 'Words, characters or pieces of words', '1. Data and tokens',
+     'Whole-word vocabularies need entries for many word forms, while characters produce longer sequences. Subword methods such as byte pair encoding (BPE) learn reusable pieces from training text to balance these concerns.', '''
+tokenization_choices = {
+    'Word + punctuation': tokenize(tokenization_text),
+    'Character': list(tokenization_text),
+    'Subword (illustrative)': ['red', 'der', '!'],
+}
+tokenization_counts = {name: len(parts) for name, parts in tokenization_choices.items()}
+assert list(tokenization_counts.values()) == [2, 7, 3]
+for name, parts in tokenization_choices.items():
+    assert ''.join(parts) == tokenization_text
+    print(name, parts, 'tokens:', len(parts))
+# The subword split is hand-chosen, not the output of a trained BPE tokenizer.
+''', focus=('tokenize',), check=('Does a context window of four tokens always hold four words?', 'No. It holds four items produced by that tokenizer. A word can take several subword or character tokens, and punctuation can use a token too.'))
+
+step('tokenization-rules', 'The tokenizer used in this notebook', '1. Data and tokens',
+     'Words plus punctuation keep our calculations easy to inspect. Both models use the same rules and vocabulary during training and generation. We build the vocabulary from training stories only and map missing words to the unknown-token marker, UNK.', '''
+tokenizer_probe = "Lily can't find 12 balls!"
+probe_tokens = tokenize(tokenizer_probe)
+assert probe_tokens == ['lily', "can't", 'find', '12', 'balls', '!']
+assert tokenize('LILY   found!') == ['lily', 'found', '!']
+print(tokenizer_probe)
+print(probe_tokens)
+# This English teaching tokenizer drops case and spacing.
+# Its word pattern is ASCII-based; it is not a general multilingual tokenizer.
+''', focus=('tokenize','ids'))
+
 step('tokenize', 'Lowercase words and separate punctuation', '1. Data and tokens',
      'This tokenizer normalizes Unicode, lowercases text and keeps punctuation as tokens. Five words plus the full stop give six tokens. A tokenizer decides what one prediction unit is.', '''
 pieces = tokenize(sentence)
@@ -516,6 +549,27 @@ def render_figure(stage, ns):
     elif k=='sentence':
         f.text(30,100,'Lily found a red ball.',BLUE,50,600)
         f.text(30,190,'A complete authored example, including its final punctuation.',MUTED,29)
+    elif k=='tokenization-intro':
+        f.text(25,60,'Does “next token” always mean “next word”?',size=36,weight=600)
+        f.text(25,150,ns['tokenization_text'],BLUE,52,600)
+        f.text(25,235,'The same text can become different sequences of tokens.',MUTED,28)
+    elif k=='tokenization-choices':
+        f=Figure(stage['title'],height=350)
+        rows=[(name, ' '.join('['+piece+']' for piece in parts),len(parts))
+              for name,parts in ns['tokenization_choices'].items()]
+        f.table(['Choice','Tokens for '+ns['tokenization_text'],'Count'],rows,
+                widths=[310,620,190],row_h=58,colors=[INK,BLUE,TEAL],size=26)
+        f.text(25,287,'Context length counts tokens. The same width can cover different amounts of text.',size=25)
+        f.text(25,332,'The subword split is illustrative. Actual splits depend on the tokenizer.',MUTED,24)
+    elif k=='tokenization-rules':
+        f=Figure(stage['title'],height=350)
+        f.text(25,42,'Text: '+ns['tokenizer_probe'],size=31)
+        f.text(25,100,' '.join('['+piece+']' for piece in ns['probe_tokens']),BLUE,29)
+        f.line(25,126,1135,126)
+        f.text(25,176,'Lily and lily share a token. Spaces separate words but are not tokens here.',size=26)
+        f.text(25,225,"The apostrophe stays inside can't. The digits in 12 stay together.",size=26)
+        f.text(25,274,'The exclamation mark is a separate token, just like the full stop in our story.',size=26)
+        f.text(25,332,'English teaching tokenizer. Original case and spacing are lost.',MUTED,24)
     elif k=='tokenize':
         f.text(25,50,'Text: Lily found a red ball.',size=32)
         f.text(25,110,'Tokens:',BLUE,27,600)

@@ -28,6 +28,11 @@ try{
   }
   assert.match(await page.locator('#s19-pipeline-story-complete').innerText(),/52 words · 60 tokens/);
   assert.match(await page.locator('#s19-pipeline-story-excerpts').innerText(),/248 words · 300 tokens/);
+  assert.equal(await page.locator('#s19-pipeline-tokenization-intro.lecture-topic-break h3').innerText(),'Tokenization');
+  assert.equal(await page.locator('.tokenization-lesson').count(),3);
+  assert.equal(await page.locator('.tokenization-lesson pre').count(),0,'conceptual detour precedes implementation');
+  assert.match(await page.locator('#s19-pipeline-tokenization-choices').innerText(),/Actual splits depend on the tokenizer/);
+  assert.match(await page.locator('#s19-pipeline-tokenization-rules').innerText(),/training and generation/);
   const summary=JSON.parse(fs.readFileSync(new URL('../figures/wordlm-pipeline/benchmark-summary.json',import.meta.url)));
   for(const kind of ['mlp','attention'])assert.match(await page.locator('#s19-pipeline-benchmark').innerText(),new RegExp(summary.aggregate[kind].test_perplexity.mean.toFixed(2).replace('.','\\.')));
   await page.evaluate(()=>AT.present.enter());
@@ -70,6 +75,8 @@ try{
   assert.equal(await page.locator('.pipeline-lesson .katex-error').count(),0);
   await page.goto(url);await page.setViewportSize({width:390,height:844});
   await page.waitForTimeout(150);
+  assert(await page.locator('#s19-pipeline-tokenization-intro .tokenization-mobile').isVisible(),'intro prose wraps on phones');
+  assert(!(await page.locator('#s19-pipeline-tokenization-intro svg').isVisible()),'wide intro SVG has a readable phone equivalent');
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'mobile overflow stays inside diagrams');
   assert.deepEqual(errors,[]);
   console.log(JSON.stringify({ok:true,frames:ids.length,viewports:[1280,1024,390],screenshots:shots}));

@@ -22,6 +22,12 @@ ROOT = Path(__file__).resolve().parent
 BOOK = '05_training_and_inference_maps'
 LIVE = 'https://nipunbatra.github.io/attention/'
 STORY_STAGES = {'story-complete', 'story-excerpts'}
+TOKENIZATION_STAGES = {'tokenization-intro', 'tokenization-choices', 'tokenization-rules'}
+TOKENIZATION_SOURCES = (
+    ('Hugging Face tokenizer overview', 'https://huggingface.co/docs/transformers/tokenizer_summary'),
+    ('Sennrich et al., 2016: subword units', 'https://aclanthology.org/P16-1162/'),
+)
+TOKENIZATION_LINKS = ' · '.join(f'<a href="{url}">{label}</a>' for label,url in TOKENIZATION_SOURCES)
 STORY_CREDIT = ('TinyStories · Ronen Eldan &amp; Yuanzhi Li · '
     '<a href="https://huggingface.co/datasets/roneneldan/TinyStories">source dataset</a> · '
     '<a href="https://cdla.dev/sharing-1-0/">CDLA-Sharing-1.0</a>')
@@ -63,6 +69,8 @@ display(HTML('<style>' + Path('lesson.css').read_text() + '</style>'))''')]
         text=f"<a id='{s['id']}'></a>\n\n## {index+1:02d} · {s['title']}\n\n**{s['chapter']}** · [Matching slide]({link})\n\n{s['body']}"
         if s['id'] in STORY_STAGES:
             text+='\n\n'+STORY_CREDIT+'\n\nThree unchanged source texts are included in `story_examples.json`, with revision, row IDs and checksums. Display labels are ours; […] marks omitted text in the figure. The code below prints the complete text and recomputes the lengths.'
+        if s['id'] in TOKENIZATION_STAGES:
+            text+='\n\nBackground: '+TOKENIZATION_LINKS+'. The notebook rules come from `normalize_text` and `tokenize` in `wordlm.py`. The subword example illustrates a possible split, not a trained tokenizer output.'
         if s.get('check'):
             q,a=s['check'];text+=f'\n\n<details><summary>Check yourself: {q}</summary>{a}</details>'
         cells.append(md(text))
@@ -105,6 +113,8 @@ def build(lecture):
             map_html=f'<details class="route-map"><summary>Where are we on the full {s["kind"].upper()} map?</summary><div class="figure-wrap">{focused}</div></details>'
         result_html=f'<div class="code-label">Printed output</div><pre class="output">{escape(s["stdout"])}</pre>' if s['stdout'] else ''
         caption=('Same figure as the lecture. Full-story lengths are computed below. '+STORY_CREDIT+'. Display labels added; […] marks omissions.' if s['id'] in STORY_STAGES else 'Same figure as the lecture. Numeric values are computed from the code below.')
+        if s['id'] in TOKENIZATION_STAGES:
+            caption+=' Background: '+TOKENIZATION_LINKS+'. Notebook rules: <a href="wordlm.py">wordlm.py</a>.'
         chunks.append(f'''<section class="lesson-step" id="{s['id']}">
 <div class="step-meta"><span>{escape(s['chapter'])} · Step {s['index']:02d} / {len(STAGES)}</span><a href="../../attention.html?present#s19/{s['slide']}/0">Open matching slide ↗</a></div>
 <h2>{escape(s['title'])}</h2><p>{escape(s['body'])}</p>
@@ -131,6 +141,10 @@ jupyter lab {BOOK}.ipynb</pre><p>Then choose <strong>Run → Run All Cells</stro
 #s19 .pipeline-lesson .step-figure svg{width:100%;height:auto;max-height:275px;display:block}
 #s19 .pipeline-lesson .step-figure.master svg{max-height:410px}
 #s19 .pipeline-lesson.story-sample .step-figure svg{max-height:350px}
+#s19 .pipeline-lesson.tokenization-lesson .step-figure svg{max-height:310px}
+#s19 .tokenization-lesson.lecture-topic-break h3{margin-bottom:20px}
+#s19 .tokenization-lesson.lecture-topic-break .step-meta{max-width:none}
+#s19 .tokenization-mobile{display:none}
 #s19 .pipeline-lesson .story-credit{font-size:18px;color:var(--ink-2);margin:10px 0 0}
 #s19 .pipeline-lesson .step-copy{font-size:24px;line-height:1.4;margin:8px 0 12px}
 #s19 .pipeline-lesson .step-meta{font-size:18px;color:var(--ink-2);margin:8px 0}
@@ -140,6 +154,7 @@ jupyter lab {BOOK}.ipynb</pre><p>Then choose <strong>Run → Run All Cells</stro
 #s19 .pipeline-lesson .step-code a{font-size:19px}
 body:not(.present) #s19 .pipeline-lesson{padding:30px 0;border-bottom:1px solid var(--line)}
 @media(max-width:650px){body:not(.present) #s19 .step-figure svg{min-width:900px}body:not(.present) #s19 .pipeline-lesson .step-code{grid-template-columns:1fr}body:not(.present) #s19 .pipeline-lesson .step-copy{font-size:18px}}
+@media(max-width:650px){body:not(.present) #s19-pipeline-tokenization-intro .step-figure{overflow:visible}body:not(.present) #s19-pipeline-tokenization-intro .step-figure svg{display:none}body:not(.present) #s19 .tokenization-mobile{display:block;font-size:20px;line-height:1.4}#s19 .tokenization-mobile strong{display:block;font-size:26px}#s19 .tokenization-mobile .tokenization-example{display:block;font-size:40px;color:var(--c-e,#245EDB);margin:24px 0}}
 </style>
 <!--PIPELINE_TEMPLATES-->
 <div class="frame pipeline-lesson lecture-topic-break" id="s19-pipeline-break" data-title="From a story to a trained predictor" data-autobuild="off">
@@ -148,8 +163,9 @@ body:not(.present) #s19 .pipeline-lesson{padding:30px 0;border-bottom:1px solid 
     for s in results:
         master=s['id'] in {'mlp-map','attention-map','mlp-inference','attention-inference'}
         story_sample=s['id'] in STORY_STAGES
+        tokenization=s['id'] in TOKENIZATION_STAGES
         excerpt=SLIDE_CODE.get(s['id'],'\n'.join(s['code'].splitlines()[:3]))
-        code_block='' if master or story_sample else f'<div class="step-code"><pre><code>{escape(excerpt)}</code></pre></div>'
+        code_block='' if master or story_sample or tokenization else f'<div class="step-code"><pre><code>{escape(excerpt)}</code></pre></div>'
         if story_sample:
             code_block=f'<p class="story-credit">{STORY_CREDIT}</p>'
         if s['id']=='next':
@@ -157,9 +173,15 @@ body:not(.present) #s19 .pipeline-lesson{padding:30px 0;border-bottom:1px solid 
         body='. '.join(s['body'].split('. ')[:1 if master or s['id']=='training-loop' else 2]).rstrip('.')+'.'
         if s['id']=='training-loop':
             body='Repeat this training step on batches of 512 windows.'
-        if story_sample:
+        if story_sample or tokenization:
             body=s['body']
-        fragments.append(f'''<div class="frame pipeline-lesson{' story-sample' if story_sample else ''}" id="s19-pipeline-{s['id']}" data-title="{escape(s['title'],quote=True)}" data-autobuild="off"><script type="text/x-notes">{escape(s['body'])} Notebook step {s['index']}. {escape(s['code'])}</script><p class="step-meta">{escape(s['chapter'])} · Step {s['index']} / {len(STAGES)} <a href="notebooks/wordlm/{BOOK}.html#{s['id']}">Notebook step ↗</a></p><div class="step-figure{' master' if master else ''}">{s['svg']}</div><p class="step-copy">{escape(body)}</p>{code_block}</div>''')
+        extra_class=(' story-sample' if story_sample else ' tokenization-lesson' if tokenization else '')
+        intro=s['id']=='tokenization-intro'
+        if intro: extra_class+=' lecture-topic-break topic-midpoint'
+        heading='<h3>Tokenization</h3>' if intro else ''
+        mobile=f'<div class="tokenization-mobile"><strong>Does “next token” always mean “next word”?</strong><span class="tokenization-example">{escape(ns["tokenization_text"])}</span><span>The same text can become different sequences of tokens.</span></div>' if intro else ''
+        sources=' Background: '+'; '.join(label+': '+url for label,url in TOKENIZATION_SOURCES)+'. Notebook rules: notebooks/wordlm/wordlm.py.' if tokenization else ''
+        fragments.append(f'''<div class="frame pipeline-lesson{extra_class}" id="s19-pipeline-{s['id']}" data-title="{escape(s['title'],quote=True)}" data-autobuild="off"><script type="text/x-notes">{escape(s['body']+sources)} Notebook step {s['index']}. {escape(s['code'])}</script>{heading}<p class="step-meta">{escape(s['chapter'])} · Step {s['index']} / {len(STAGES)} <a href="notebooks/wordlm/{BOOK}.html#{s['id']}">Notebook step ↗</a></p><div class="step-figure{' master' if master else ' topic-question' if intro else ''}">{s['svg']}{mobile}</div><p class="step-copy">{escape(body)}</p>{code_block}</div>''')
         manifest.append({k:s[k] for k in ['id','title','chapter','index','slide']})
     (lecture/'src'/'sections'/'sec19_pipeline.html').write_text('\n\n'.join(fragments))
     (out/'lesson-manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')

@@ -14,7 +14,7 @@ assert(pw,'Use an existing Playwright runtime.');
 const root=path.resolve('notebooks/wordlm');
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'lesson-manifest.json')));
 const book=JSON.parse(fs.readFileSync(path.join(root,'05_training_and_inference_maps.ipynb')));
-assert.equal(manifest.length,49);
+assert.equal(manifest.length,52);
 assert.equal(book.cells.filter(c=>c.cell_type==='code').length,manifest.length+1);
 assert(book.cells.filter(c=>c.cell_type==='code').every(c=>c.execution_count!==null));
 assert(!book.cells.some(c=>c.outputs?.some(o=>o.output_type==='error')));
@@ -44,7 +44,14 @@ try{
     const svg=notebookCell.outputs.find(o=>o.data?.['image/svg+xml']).data['image/svg+xml'];
     const source=Array.isArray(svg)?svg.join(''):svg;
     const file=fs.readFileSync(path.join('figures/wordlm-pipeline/steps',stage.id+'.svg'),'utf8');
-    assert.equal(source.trim(),file.trim(),'executed notebook and lecture use identical figure '+stage.id);
+    // IPython's SVG display normalizes XML entities (e.g. &#x27; to an apostrophe).
+    // Compare the parsed trees so text, geometry and attributes still match exactly.
+    const sameFigure=await page.evaluate(({source,file})=>{
+      const parser=new DOMParser();
+      return parser.parseFromString(source,'image/svg+xml').documentElement.isEqualNode(
+        parser.parseFromString(file,'image/svg+xml').documentElement);
+    },{source,file});
+    assert(sameFigure,'executed notebook and lecture use identical figure '+stage.id);
     assert(numeric.length>0);
   }
   const toggle=page.locator('#mix .route-map');

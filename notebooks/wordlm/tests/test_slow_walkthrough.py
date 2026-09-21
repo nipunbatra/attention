@@ -9,8 +9,8 @@ from slow_walkthrough import STAGES, STORY_EXAMPLES, initial_namespace, render_f
 
 def test_all_lesson_steps_execute_and_render():
     ns=initial_namespace()
-    assert len(STAGES)==49
-    assert len({s['id'] for s in STAGES})==49
+    assert len(STAGES)==52
+    assert len({s['id'] for s in STAGES})==52
     for s in STAGES:
         exec(compile(s['code'],s['id'],'exec'),ns)
         root=ET.fromstring(render_figure(s,ns))
@@ -50,6 +50,27 @@ def test_real_story_examples_have_reproducible_lengths_and_provenance():
             assert '107 words · 133 tokens' in svg
             assert '248 words · 300 tokens' in svg
             assert '60–942 tokens; median 176' in svg
+
+
+def test_tokenization_detour_matches_the_actual_rules_without_changing_the_toy():
+    keys=[s['id'] for s in STAGES]
+    start=keys.index('sentence')
+    assert keys[start:start+5]==['sentence','tokenization-intro','tokenization-choices','tokenization-rules','tokenize']
+    ns=initial_namespace()
+    for stage in STAGES:
+        exec(stage['code'],ns)
+        if stage['id']=='vocabulary': break
+    assert ns['tokenization_choices']=={
+        'Word + punctuation':['redder','!'],
+        'Character':list('redder!'),
+        'Subword (illustrative)':['red','der','!'],
+    }
+    assert list(ns['tokenization_counts'].values())==[2,7,3]
+    assert ns['probe_tokens']==['lily',"can't",'find','12','balls','!']
+    assert ns['pieces']==['lily','found','a','red','ball','.']
+    assert ns['C']==10 and ns['vocab'].stoi['red']==9
+    choices=next(s for s in STAGES if s['id']=='tokenization-choices')
+    assert 'illustrative' in render_figure(choices,ns)
 
 
 def test_notebook_stages_are_complete_and_linked():
