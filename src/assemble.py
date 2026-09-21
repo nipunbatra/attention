@@ -125,6 +125,8 @@ if N == 1:
     with open(os.path.join(here, 'embedding-primer.js'), encoding='utf-8') as module:
         shared_block += '<script>\n' + module.read() + '\n</script>\n'
 if N == 2:
+    with open(os.path.join(here, 'position-journey.js'), encoding='utf-8') as module:
+        shared_block += '<script>\n' + module.read() + '\n</script>\n'
     with open(os.path.join(here, 'position-visuals.js'), encoding='utf-8') as module:
         shared_block += '<script>\n' + module.read() + '\n</script>\n'
     # One SVG source powers both the standalone preview and the article stepper.

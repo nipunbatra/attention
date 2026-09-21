@@ -52,6 +52,13 @@ body:not(.present) .context-lesson{margin:44px 0}
 .position-worked .mix-pair>div{min-width:0;overflow-x:auto}
 .position-worked .mix-pair .worked-table th:first-child{width:38%}
 .position-worked .position-visual svg{max-height:340px}
+.position-journey{overflow-x:auto;margin:16px 0}
+.position-journey svg{display:block;width:100%;height:auto;font-family:var(--font-ui)}
+.position-journey svg text{font-size:24px;fill:var(--ink)}
+.position-journey-controls{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.position-journey-controls input{width:280px;accent-color:var(--c-d)}
+.position-journey-controls output{font-variant-numeric:tabular-nums;min-width:100px}
+@media(max-width:650px){body:not(.present) .position-journey svg{min-width:1000px}body:not(.present) .position-journey-controls input{width:190px}}
 @media(max-width:650px){body:not(.present) .position-worked .worked-table{min-width:920px}body:not(.present) .position-worked .mix-pair{grid-template-columns:1fr}body:not(.present) .position-worked .mix-pair .worked-table{min-width:540px}body:not(.present) .position-credit{font-size:18px}body:not(.present) .position-worked .worked-result{font-size:23px}}
 @media(max-width:650px){body:not(.present) .position-visual svg{min-width:950px}}
 </style>
@@ -109,6 +116,34 @@ body:not(.present) .context-lesson{margin:44px 0}
 <p class="lesson-key">One layer, token-only inputs, final receiver. Deeper causal layers can have additional order clues.</p>
 </div>
 
+<div class="frame context-lesson position-lesson" id="s17-position-shift" data-title="The word dots are identical before we add position" data-autobuild="off">
+<script type="text/x-notes">Geometric intuition inspired by Luis Serrano, using exactly the two-dimensional rows from our worked example. Both plots have the same scales. A word lookup puts Maya at [1,0] regardless of which slot she occupies. Ask students to locate all four words on both plots. Coordinate axes are invented features, not physical locations or named semantic dimensions.</script>
+<div class="position-journey" data-position-journey="initial"></div>
+<p>The word lookup gives the same four dots. The sentence order is missing from this picture.</p>
+<p class="lesson-key">Two-dimensional teaching example. The axes are embedding coordinates.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-move-a" data-title="Each slot supplies a small displacement" data-autobuild="off">
+<script type="text/x-notes">Advance once per word. Keep each blue hollow source dot visible, then draw the green displacement and its endpoint. Slot 1 has [0,0], so Maya stays. Helps moves by [0.2,-0.1], Ravi by [0.4,-0.2], and today by [0.6,-0.3]. Green endpoint numbers identify slots. All movement is an addition in the forward pass, not an optimizer changing the word embedding table. The final plot uses the same numbers as the following table.</script>
+<p><strong>Maya helps Ravi today.</strong> Blue: word lookup. Green: input with position.</p>
+<div class="position-journey"><svg viewBox="0 0 1120 370" role="img" aria-label="Move each word by its position offset in Maya helps Ravi today" data-position-moves="0"><g data-move-base></g><g data-move-slot="0" data-build="1"></g><g data-move-slot="1" data-build="2"></g><g data-move-slot="2" data-build="3"></g><g data-move-slot="3" data-build="4"></g></svg></div>
+<p class="lesson-key">$p_i$ is the position offset. Adding it changes this occurrence's input, not the shared word lookup.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-move-b" data-title="After the swap, the slot determines the move" data-autobuild="off">
+<script type="text/x-notes">Repeat the four reveals for Ravi helps Maya today. The word dots start in exactly the same places. Ravi now receives the zero offset at slot 1. Maya receives [0.4,-0.2] at slot 3 and moves from [1,0] to [1.4,-0.2]. Helps and today keep their slots and endpoints. Ask which word moved differently before showing the table.</script>
+<p><strong>Ravi helps Maya today.</strong> Maya and Ravi now receive different offsets.</p>
+<div class="position-journey"><svg viewBox="0 0 1120 370" role="img" aria-label="Move each word by its position offset in Ravi helps Maya today" data-position-moves="1"><g data-move-base></g><g data-move-slot="0" data-build="1"></g><g data-move-slot="1" data-build="2"></g><g data-move-slot="2" data-build="3"></g><g data-move-slot="3" data-build="4"></g></svg></div>
+<p class="lesson-key">Maya now ends at $[1.4,-0.2]$ instead of $[1,0]$. Today's input is unchanged between the sentences.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-moved" data-title="The two orders now give different input dots" data-autobuild="off">
+<script type="text/x-notes">Compare the final positioned input vectors on equal axes. Maya and Ravi differ between the two panels. Helps and today coincide across the panels because they kept their slots. We have changed the inputs to attention, not yet calculated the contextual update. The next table records these exact arrow endpoints.</script>
+<div class="position-journey" data-position-journey="positioned"></div>
+<p>Attention can now see a different Maya key and a different Ravi value. We can calculate what that changes.</p>
+<p class="lesson-key">These offsets were chosen for visibility. Later slides show learned offsets and fixed sine/cosine patterns.</p>
+</div>
+
 <div class="frame context-lesson position-lesson position-worked" id="s17-position-toy" data-title="A position row changes the input before attention" data-autobuild="off">
 <script type="text/x-notes">Keep the same two-coordinate toy and identity projections. Introduce a separate, invented row for each slot. Add it to the token row before computing Q/K/V. Show all four sums for Maya helps Ravi today. In the swapped sentence, Maya gets the slot-3 row and Ravi gets the slot-1 row. Today remains in slot 4 and therefore has the same new query in both sentences. The next interactive calculation compares the resulting messages with position off and on.</script>
 <p>For <strong>Maya helps Ravi today</strong>, add one row for the word and one for its slot.</p>
@@ -133,6 +168,13 @@ body:not(.present) .context-lesson{margin:44px 0}
 <p id="position-outcome" class="lesson-result" aria-live="polite"></p>
 </div>
 
+<div class="frame context-lesson position-lesson" id="s17-position-updated" data-title="Different messages can produce different updated rows" data-autobuild="off">
+<script type="text/x-notes">Complete the same two-dimensional toy. Choose W_O=I for this slide only, so the contextual update equals the message. Today's positioned input is [1.4,-0.1] in both orders. Compute the messages at full precision, then add the residual. This toy shows an order distinction, not measured language quality. Position offset p_4 enters before Q/K/V, while the contextual update delta x_4 is computed after attention.</script>
+<p>For this two-number toy, choose $W_O=I$. Today's input is $x_4=[1.4,-0.1]$ in both orders.</p>
+<div class="position-journey" data-position-journey="updated"></div>
+<p class="lesson-key">Position offset $p_4$ changes the input first. Attention then computes the context update $\Delta x_4=m_4W_O$.</p>
+</div>
+
 <div class="frame context-lesson position-lesson" id="s17-position-add" data-title="Addition keeps the row the same width" data-autobuild="off">
 <script type="text/x-notes">Return to d=4 to match the width of the lecture. These are illustrative coordinates, not the bank model's rows. Token lookup depends on the word, position lookup depends on its slot. Their sum is the row fed into attention. The model learns with this combined representation; there is no promise that the two original vectors can be uniquely recovered from their sum.</script>
 <table class="lesson-table"><thead><tr><th>Four-coordinate row</th><th>1</th><th>2</th><th>3</th><th>4</th></tr></thead><tbody>
@@ -142,13 +184,6 @@ body:not(.present) .context-lesson{margin:44px 0}
 </tbody></table>
 <p data-build="2">The same word has the same token lookup. At another slot, a different position row changes its input to attention.</p>
 <p class="lesson-key" data-build="2">Both rows have $d$ coordinates; their sum still has $d$. These example coordinates have no prescribed meaning.</p>
-</div>
-
-<div class="frame context-lesson position-lesson" id="s17-position-shift" data-title="Picture addition as a position-dependent move" data-autobuild="off">
-<script type="text/x-notes">Inspired by Luis Serrano's geometric explanation, redrawn with our own two-coordinate Maya example. The blue point is the same token lookup in both panels. The green displacement depends on the slot. Addition translates the point; it is not a rotation of the token vector. This supplies a distinguishable input, not an automatic understanding of word order. Coordinates are illustrative and are not the main bank model.</script>
-<div class="position-visual" data-position-visual="shift"></div>
-<p>Same word vector: $e_{\rm Maya}=[1,1]$. Different slot vectors produce different inputs.</p>
-<p class="lesson-key">The model learns with these combined inputs. Adding position makes order available; it does not itself tell the model who helped whom.</p>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-append" data-title="Could we append one or two position numbers? Yes." data-autobuild="off">
@@ -184,11 +219,20 @@ body:not(.present) .context-lesson{margin:44px 0}
 <p class="lesson-result" data-build="2">Tradeoff: the table has a configured length. Adding new rows does not make them trained position representations.</p>
 </div>
 
+<div class="frame context-lesson position-lesson" id="s17-position-clock-choice" data-title="A fixed rule can generate position offsets" data-autobuild="off">
+<script type="text/x-notes">The hand-chosen offsets established what addition does. Now ask how to generate them for many positions. A learned table is one option. A fixed sinusoidal rule is another. Keep the generated coordinates bounded rather than letting a raw position index grow without bound. Neither choice is a universal optimum. Starting here, clock indices count from zero: the first token has index zero.</script>
+<p>We could learn a row for every slot. Or we could calculate a row from the slot index.</p>
+<div class="position-flow"><span>Index $i$</span><b>→</b><span>A point on a circle</span><b>→</b><span>Two position coordinates</span><b>→</b><span>Add to the word</span></div>
+<p data-build="1">Sine and cosine keep each coordinate between $-1$ and $1$. Advancing the index moves the point smoothly around the circle.</p>
+<p class="lesson-key">The clocks below use zero-based indices: the first token has index 0.</p>
+</div>
+
 <div class="frame context-lesson position-lesson" id="s17-position-clock" data-title="A sine and cosine pair marks one position" data-autobuild="off">
 <script type="text/x-notes">Use a clock-like two-coordinate feature before writing the general formula. Here we draw cosine horizontally and sine vertically, at an intentionally simple 90 degrees per slot. The original Transformer convention puts sine first and cosine second; swapping these coordinates changes the convention, not the purpose. These are position features that are ADDED to a token vector. This is not RoPE. The 90-degree rate is illustrative, not the original rate.</script>
-<div class="position-visual" data-position-visual="clock"></div>
-<p>At index $i$, record $[\cos(i\omega),\sin(i\omega)]$. Here $\omega=90^\circ$ per slot.</p>
-<p class="lesson-key">Index 0 and index 4 collide in this toy clock. One rapidly repeating pair is not enough.</p>
+<div class="position-journey-controls"><label for="position-clock-index">Position index</label><input id="position-clock-index" type="range" min="0" max="4" step="1" value="0"><output id="position-clock-label" for="position-clock-index">0</output></div>
+<div class="position-journey" id="position-clock-picture"></div>
+<p>Record $[\cos(i\omega),\sin(i\omega)]$ as the offset to add. Here $\omega=90^\circ$ per slot.</p>
+<p class="lesson-key">Move through indices 0 to 4. The final arrow returns to the start: two positions receive the same offset.</p>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-rates" data-title="Use several clocks running at different rates" data-autobuild="off">
@@ -196,6 +240,29 @@ body:not(.present) .context-lesson{margin:44px 0}
 <div class="position-visual" data-position-visual="rates"></div>
 <p>The fast pair repeats after four slots; the slow pair distinguishes these two positions.</p>
 <p class="lesson-key">Combine pairs into one vector. Multiple rates provide different scales, not a guarantee of unlimited context.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-repeat" data-title="The whole position vector repeats only when every pair does" data-autobuild="off">
+<script type="text/x-notes">Inspect two deliberately simple clocks with integer periods four and twelve. At index four, only the fast pair returns. At twelve, both return and the four-number code repeats. This is an illustrative design, not the standard Transformer schedule. Multiple slower rates extend the range over which these positions can be distinguished. They do not prove arbitrary-length uniqueness or prediction quality.</script>
+<div class="position-journey-controls"><label for="position-pair-index">Compare with index 0</label><select id="position-pair-index"><option value="0">Index 0</option><option value="4">Index 4</option><option value="8">Index 8</option><option value="12">Index 12</option></select></div>
+<div class="position-journey" id="position-pair-picture"></div>
+<p id="position-pair-result" aria-live="polite"></p>
+<p class="lesson-key">The standard formula uses a range of rates instead of these two teaching clocks.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-waves" data-title="Fast and slow coordinates change on different scales" data-autobuild="off">
+<script type="text/x-notes">Both plots use the same position axis from zero to twenty and the same vertical range from minus one to one. The first pair has rate one radian per slot. The second has rate 0.01. Sine is solid and cosine is dashed. Curves show the continuous formula; actual token positions sample integer indices. This is the four-coordinate standard example, not the 90-degree teaching clock.</script>
+<div class="position-journey" data-position-journey="waves"></div>
+<p>The fast pair goes around several times while the slow pair changes only a little.</p>
+<p class="lesson-key">Same position axis in both plots. Solid: sine. Dashed: cosine. Tokens sample the curves at integer indices.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-period" data-title="A smaller rate gives a longer period" data-autobuild="off">
+<script type="text/x-notes">The continuous angular period is 2 pi divided by omega. For width four the pair rates are one and 0.01, so their periods are approximately 6.283 and 628.319 slots. Plot the slow pair over zero to 650 to show a full turn. Neither period is an integer. Thus index six is not identical to index zero, and index 628 is only near the starting phase. The frequency base is 10000, not a requirement that the period or context length equals 10000. Fixed features outside the training range do not guarantee good predictions.</script>
+<p>A full turn is $2\pi$ radians, so the period is $T_r=2\pi/\omega_r$.</p>
+<div class="position-journey" data-position-journey="period"></div>
+<p>Rate 1: about <strong>6.28 slots</strong> per turn. Rate 0.01: about <strong>628.32 slots</strong>.</p>
+<p class="lesson-key">These are continuous periods. Integer indices 6 and 628 do not exactly repeat index 0.</p>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-sine" data-title="Sinusoidal positions: a fixed pattern at several scales" data-autobuild="off">
@@ -222,20 +289,20 @@ body:not(.present) .context-lesson{margin:44px 0}
 <p class="lesson-key">$i$ is a token position; $r$ is a coordinate-pair index; $d$ is vector width. The base 10000 controls the frequency range.</p>
 </div>
 
+<div class="frame context-lesson position-lesson" id="s17-position-absolute-shift" data-title="Same gap, different absolute positions" data-autobuild="off">
+<script type="text/x-notes">Use a separate two-coordinate comparison with fixed content q=k=[1,0], identity projections, and additive p_i=[cos(i pi/6),sin(i pi/6)]. At receiver/source indices 3/2 the raw score is 2.3660254. At 8/7 it is 0.5. Both pairs are one slot apart. This is not proof that absolute methods cannot learn relative relations. It shows that ordinary addition has no structural guarantee of a common-shift invariant match. RoPE will supply that identity while holding content fixed.</script>
+<p>Content: $q=k=[1,0]$. Add $p_i=[\cos(i\pi/6),\sin(i\pi/6)]$ before matching.</p>
+<div class="position-journey" data-position-journey="absolute-shift"></div>
+<p>Can the positional effect depend on the gap, even when both indices shift?</p>
+<p class="lesson-key">Absolute encodings can learn relative cues. Addition alone does not enforce this common-shift property.</p>
+</div>
+
 <div class="frame context-lesson position-lesson" id="s17-position-relative" data-title="Relative position asks: how far away is this source?" data-autobuild="off">
 <script type="text/x-notes">Relative-position methods are a family, not one formula. This frame uses a score-bias version: add b of the distance to the content score. Other methods add relative vectors to keys or values, as in Shaw et al. 2018. Do not attribute this simple bias formula as the sole Shaw method. Source: https://arxiv.org/abs/1803.02155.</script>
 <table class="lesson-table"><thead><tr><th>Receiver slot</th><th>Source slot</th><th>Distance $i-j$</th></tr></thead><tbody><tr><td>8</td><td>7</td><td>1: one token back</td></tr><tr><td>80</td><td>79</td><td>1: one token back</td></tr></tbody></table>
 <p data-build="1">One design adds a distance-dependent bias to each allowed score:</p>
 <div data-build="1">$$s_{ij}=\frac{q_i\cdot k_j}{\sqrt{d_k}}+b(i-j)$$</div>
 <p class="lesson-key" data-build="1">$b$ supplies an offset for that distance. Content still matters; distance changes its score, not its visibility.</p>
-</div>
-
-<div class="frame context-lesson position-lesson" id="s17-position-rope" data-title="RoPE: rotate the query and key pairs" data-autobuild="off">
-<script type="text/x-notes">Rotary Position Embedding applies a position-dependent rotation to coordinate pairs in Q and K. Standard RoPE leaves V unrotated. The paired inner product contains R_i transpose R_j, which depends on the relative offset. Actual Q/K also vary with token content, so equal distance alone does not imply equal scores. Source: Su et al., RoFormer, https://arxiv.org/abs/2104.09864.</script>
-<div class="position-flow"><span>Content query/key</span><b>→</b><span>Rotate pairs by their slots</span><b>→</b><span>Dot product</span></div>
-<p>Toy: start with $q=k=[1,0]$; rotate 30° per slot.</p>
-<table class="lesson-table"><thead><tr><th>Query slot, key slot</th><th>Distance</th><th>Dot product</th></tr></thead><tbody><tr><td>3, 2</td><td>1</td><td>0.866</td></tr><tr><td>8, 7</td><td>1</td><td>0.866</td></tr><tr><td>5, 2</td><td>3</td><td>0.000</td></tr></tbody></table>
-<p class="lesson-key">Dot product = cosine of the angle difference: $\cos30^\circ\approx0.866$; $\cos90^\circ=0$. Real RoPE uses multiple rates and usually rotates Q and K, not V.</p>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-rotate" data-title="First rotate just one two-number vector" data-autobuild="off">
@@ -251,6 +318,14 @@ body:not(.present) .context-lesson{margin:44px 0}
 <div class="position-visual" id="rope-shift-picture"></div>
 <p id="rope-shift-result" class="lesson-result" aria-live="polite"></p>
 <p class="lesson-key">Held-fixed content isolates the effect: the positional part depends on the gap, not the shared shift.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-rope" data-title="RoPE: rotate the query and key pairs" data-autobuild="off">
+<script type="text/x-notes">Rotary Position Embedding applies a position-dependent rotation to coordinate pairs in Q and K. Standard RoPE leaves V unrotated. The paired inner product contains R_i transpose R_j, which depends on the relative offset. Actual Q/K also vary with token content, so equal distance alone does not imply equal scores. Source: Su et al., RoFormer, https://arxiv.org/abs/2104.09864.</script>
+<div class="position-flow"><span>Content query/key</span><b>→</b><span>Rotate pairs by their slots</span><b>→</b><span>Dot product</span></div>
+<p>Toy: start with $q=k=[1,0]$; rotate 30° per slot.</p>
+<table class="lesson-table"><thead><tr><th>Query slot, key slot</th><th>Distance</th><th>Dot product</th></tr></thead><tbody><tr><td>3, 2</td><td>1</td><td>0.866</td></tr><tr><td>8, 7</td><td>1</td><td>0.866</td></tr><tr><td>5, 2</td><td>3</td><td>0.000</td></tr></tbody></table>
+<p class="lesson-key">Dot product = cosine of the angle difference: $\cos30^\circ\approx0.866$; $\cos90^\circ=0$. Real RoPE uses multiple rates and usually rotates Q and K, not V.</p>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-rope-identity" data-title="Why the absolute angles cancel" data-autobuild="off">
@@ -308,6 +383,30 @@ body:not(.present) .context-lesson{margin:44px 0}
 </tbody></table>
 <p class="lesson-result" data-build="1">Position describes order. The causal mask restricts visibility. Neither removes attention's pairwise compute cost.</p>
 <p class="lesson-key" data-build="1">A formula that accepts larger indices is not a guarantee of reliable longer-context predictions.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-overview" data-title="The full attention path now includes position" data-autobuild="off">
+<script type="text/x-notes">Return to the earlier full attention flow, explicitly expanding its input stage. This overview uses learned additive position rows, as in the notebook, rather than combining addition and RoPE. T is the number of context tokens. E_tok is the token embedding table, P the position table, and X the sum of their selected rows. Shapes use d=4, d_k=3, d_v=2, hidden width eight and vocabulary size C. C is twenty in the bank worksheet and differs in the notebook. Only the final receiver is computed here. The bypass preserves x_T, which already includes position.</script>
+<div class="position-journey" data-position-journey="overview" data-focus="all"></div>
+<p class="lesson-key">Illustrative widths, with additive positions as in the notebook. $T$ is context length and $C$ is vocabulary size.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-overview-input" data-title="Word and slot lookups meet before Q, K and V" data-autobuild="off">
+<script type="text/x-notes">Walk the same map with the input region emphasized. Token IDs select rows of E_tok. Zero-based slot indices select rows of P. Add matching rows, preserving shape T by four. The final row makes q_T, all rows make K and V, and the residual carries x_T unchanged. All those paths see the positioned input, not bare word embeddings.</script>
+<div class="position-journey" data-position-journey="overview" data-focus="input"></div>
+<p class="lesson-key">$X=E_{\rm tok}[\mathrm{ids}]+P[0:T]$. All three projections and the residual read this positioned input.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-overview-attend" data-title="The positioned query selects the value mixture" data-autobuild="off">
+<script type="text/x-notes">Keep the full map in place while emphasizing matching and value mixing. q_T and K supply scores. Divide by sqrt(d_k), apply visibility and padding masks when present, and softmax over source positions. Values bypass scoring and are mixed with these weights. The causal mask permits all real tokens for this last receiver, but the same operation blocks future tokens for earlier receivers.</script>
+<div class="position-journey" data-position-journey="overview" data-focus="attention"></div>
+<p class="lesson-key">$\alpha_T=\mathrm{softmax}(q_TK^\top/\sqrt3+M_T)$ and $m_T=\alpha_TV$. The message has two coordinates.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-overview-predict" data-title="The contextual update reaches the prediction head" data-autobuild="off">
+<script type="text/x-notes">Emphasize W_O, the residual and the hidden prediction layer. W_O maps a two-number message to a four-number contextual update. Add the preserved positioned row x_T, apply the eight-unit ReLU hidden layer, then produce C logits and vocabulary probabilities. During training, compare these with the known next-token target. During generation, choose a token and append it to the input. Section 19 expands the data preparation and these computations using the TinyStories companion. This is the teaching model, not a complete modern Transformer block.</script>
+<div class="position-journey" data-position-journey="overview" data-focus="output"></div>
+<p class="lesson-key">Training: compare with the next-token target. Generation: choose a token and append it.</p>
 </div>
 
 <div class="companion">

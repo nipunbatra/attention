@@ -24,16 +24,25 @@ All four attention parts and the four-part Vision to language extension are impl
 - All 28 detailed cost frames moved to `sections3/sec16_cost.html` and are
   included in Part III Section 16, after training and cached generation. Part II
   Section 16 retains the matrix calculation, with a reading link to Part III.
-- Section 17 now has 32 position frames. Its opening computes both sentence
+- Section 17 now has 45 position frames. Its opening computes both sentence
   orders explicitly: query, scores, exponentials, normalized weights, weighted
   values and the identical message. The independent toy's `today` row is
   `[0.8,0.2]`, so Maya and Ravi have unequal weights. It then adds positions and
   computes why Maya's score changes with its slot. The topic break says
-  "Positional encoding" and visibly credits both videos. Later steps use geometric
-  addition, multiple-rate clocks, a numeric sinusoidal row, pairwise rotation,
-  an interactive common-shift RoPE experiment and length-generalization limits.
-  `position-visuals.js` supplies the original SVGs. Serrano and Huang video links
-  are credited in the reading companion; mathematical checks use the papers.
+  "Positional encoding" and visibly credits both videos. Before the addition
+  table, equal-axis SVG plots show all four original word dots. Four reversible
+  builds move each sentence's dots by the exact slot offsets used in the table.
+  The positioned rows, messages and residual updates are calculated from the
+  same data. Position offsets and contextual updates are explicitly separate.
+- Adjustable clocks expose collisions at indices 4 and 12. Fast/slow wave plots
+  and a full slow cycle precede the sinusoidal formula and numeric construction.
+  Integer-period toy clocks are distinct from the standard radian frequencies.
+  An additive common-shift counterexample motivates the rotation and relative
+  dot-product demonstration. The section closes with a full position-aware
+  attention map and three focus views, before the TinyStories walkthrough.
+  `position-visuals.js` and `position-journey.js` supply the original SVGs.
+  Serrano and Huang are credited; mathematical checks use the papers. New
+  builds are authored in the HTML before presenter boot, then populated by JS.
 - Preserve the caveats: appending position features is valid, addition is not
   uniquely invertible, the one-layer final-row swap example is scoped, RoPE
   rotates Q/K rather than V, and a formula accepting longer indices does not

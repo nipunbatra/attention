@@ -10,6 +10,22 @@ introducing position. The `today` row `[0.8,0.2]` makes the two person weights
 unequal. Adding slot rows changes Maya's key and score, which the next example
 calculates explicitly. Both video credits are visible on the topic-break slide.
 
+The diagram-first continuation keeps these same vectors. Each sentence has four
+reversible SVG builds, one slot offset per word, before the numeric addition
+table. The endpoints and residual results read the live experiment's data.
+Adding a position row is a forward-pass operation, not a training update to
+the shared word table. The closing full attention map distinguishes the input
+addition from the later contextual update and retains the hidden predictor.
+
+The circle controls use illustrative periods 4 and 12. The standard d=4 wave
+plots instead use rates 1 and 0.01 radians per slot, whose continuous periods
+are about 6.283 and 628.319. Integer token indices do not exactly repeat at 6
+or 628. Multiple rates do not guarantee unlimited unique positions or useful
+length extrapolation. The absolute-position counterexample holds content at
+q=k=[1,0] and adds [cos(i*pi/6),sin(i*pi/6)]. Matches at 3/2 and 8/7 differ,
+whereas the corresponding pure rotary matches agree. This contrasts structural
+properties; it does not claim absolute methods cannot learn relative cues.
+
 - [Luis Serrano Academy: positional encoding](https://www.youtube.com/watch?v=IHu3QehUmrQ),
   especially 1:26 (geometric displacement), 3:29 (sine/cosine coordinates) and
   4:47 (several rates). The lecture distinguishes repeated toy clocks from the

@@ -13,7 +13,7 @@ if(fs.existsSync(cache))for(const dir of fs.readdirSync(cache))candidates.push(p
 let pw;for(const candidate of candidates){try{pw=require(candidate);break;}catch{}}
 assert(pw,'Use an existing Playwright installation.');
 const costs=['break','symbols','matmul','concat-network','concat','average-network','average','attention-network','attention-projections','attention-products','projections','pairs','scores','mask','messages','predictor','calculator','training','baselines-training','prefix-sum','total','training-compare','backward','last-row','prompt','cache','generation-compare','memory'].map(x=>'s16-cost-'+x);
-const positions=['break','order','permute','scores','swapped','contributions','consequence','toy','slot-scores','experiment','add','shift','append','width','routing','learned','clock','rates','sine','sine-rule','worked-sine','relative','rope','rotate','rope-shift','rope-identity','rope-pairs','insertion','alibi','mean','length','choices'].map(x=>'s17-position-'+x);
+const positions=['break','order','permute','scores','swapped','contributions','consequence','shift','move-a','move-b','moved','toy','slot-scores','experiment','updated','add','append','width','routing','learned','clock-choice','clock','rates','repeat','waves','period','sine','sine-rule','worked-sine','absolute-shift','relative','rotate','rope-shift','rope','rope-identity','rope-pairs','insertion','alibi','mean','length','choices','overview','overview-input','overview-attend','overview-predict'].map(x=>'s17-position-'+x);
 const ids=positions;
 const shots=fs.mkdtempSync(path.join(os.tmpdir(),'attention-cost-position-'));
 const browser=await pw.chromium.launch();
@@ -78,6 +78,57 @@ try{
     return {rows,q:rows[3],scores,weights,message};
   }
   const unpositioned=sequences.map(tokens=>reference(tokens,false));
+  // The geometric displacements and final updates share the worked arithmetic.
+  for(const [index,suffix]of ['a','b'].entries()){
+    const id='s17-position-move-'+suffix;
+    const vectors=await page.locator('#'+id+' [data-endpoint]').evaluateAll(es=>es.map(e=>({token:e.dataset.endpoint,slot:Number(e.dataset.slot),v:JSON.parse(e.dataset.vector),x:Number(e.getAttribute('cx')),y:Number(e.getAttribute('cy'))})));
+    vectors.forEach((point,j)=>{
+      assert.equal(point.token,sequences[index][j]);assert.equal(point.slot,j+1);
+      const expected=reference(sequences[index],true).rows[j];
+      point.v.forEach((x,c)=>close(x,expected[c],'plotted endpoint coordinate'));
+      close(point.x,85+200*expected[0],'geometric x coordinate');close(point.y,270-200*expected[1],'geometric y coordinate');
+    });
+    for(const build of [0,1,2,3,4,3,2,1,0]){
+      await go(id,build);
+      const visible=await page.locator('#'+id+' [data-move-slot]').evaluateAll(es=>es.filter(e=>getComputedStyle(e).visibility==='visible').map(e=>Number(e.dataset.moveSlot)));
+      assert.deepEqual(visible,Array.from({length:build},(_,i)=>i),'One additional word displacement per build, reversible');
+    }
+  }
+  const updates=await page.locator('[data-updated-vector]').evaluateAll(es=>es.map(e=>JSON.parse(e.dataset.updatedVector)));
+  updates.forEach((v,j)=>{const r=reference(sequences[j],true);v.forEach((x,c)=>close(x,r.q[c]+r.message[c],'context update after position addition'));});
+  await go('s17-position-clock');
+  for(const i of [0,1,2,3,4,0]){
+    await page.locator('#position-clock-index').fill(String(i));
+    assert.equal(await page.locator('#position-clock-label').textContent(),String(i));
+    assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'Clock control fits');
+  }
+  await go('s17-position-repeat');
+  for(const i of [0,4,8,12,0]){
+    await page.locator('#position-pair-index').selectOption(String(i));
+    const actual=JSON.parse(await page.locator('#position-pair-result').getAttribute('data-vector'));
+    [Math.cos(i*Math.PI/2),Math.sin(i*Math.PI/2),Math.cos(i*Math.PI/6),Math.sin(i*Math.PI/6)].forEach((x,c)=>close(actual[c],x,'two-clock code'));
+    assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'Two-clock control fits');
+  }
+  const absScores=await page.locator('[data-absolute-score]').evaluateAll(es=>es.map(e=>Number(e.dataset.absoluteScore)));
+  close(absScores[0],1.5+Math.sqrt(3)/2,'absolute additive match at 3,2');close(absScores[1],.5,'absolute additive match at 8,7');
+  for(const id of ['overview','overview-input','overview-attend','overview-predict']){
+    assert.deepEqual(await page.locator('#s17-position-'+id+' [data-map-node]').evaluateAll(es=>es.map(e=>e.dataset.mapNode)),['tokens','positions','input','query','keys','values','scores','weights','message','projection','residual','hidden','prediction']);
+    await go('s17-position-'+id);
+    const spillingLabels=await page.locator('#s17-position-'+id+' [data-map-node]').evaluateAll(es=>es.flatMap(rect=>{
+      const b=rect.getBBox(),title=rect.nextElementSibling,caption=title.nextElementSibling;
+      return [title,caption].filter(e=>{const t=e.getBBox();return t.x<b.x+3||t.x+t.width>b.x+b.width-3||t.y<b.y||t.y+t.height>b.y+b.height;}).map(e=>e.textContent);
+    }));
+    assert.deepEqual(spillingLabels,[],id+' node labels fit their boxes');
+  }
+  for(const wave of await page.locator('[data-wave]').evaluateAll(es=>es.map(e=>({rate:Number(e.dataset.rate),end:Number(e.dataset.end),kind:e.dataset.wave,points:[...e.points].map(p=>[p.x,p.y])})))){
+    const fn=wave.kind==='sine'?Math.sin:Math.cos;
+    // SVG DOM stores coordinates as float32. Test the curve against its formula.
+    const center=wave.points[0][1]+44*fn(0);
+    wave.points.forEach(([x,y],i)=>{
+      assert(Math.abs(x-(170+880*i/1200))<.0001,'wave horizontal scale');
+      assert(Math.abs(y-(center-44*fn(wave.rate*wave.end*i/1200)))<.0001,'sinusoidal curve');
+    });
+  }
   assert(Math.abs(unpositioned[0].weights[0]-unpositioned[0].weights[2])>.05,'Use unequal weights so the example is not just averaging.');
   for(const [index,suffix]of ['a','b'].entries()){
     const r=unpositioned[index];
@@ -142,7 +193,7 @@ try{
     const undersized=await page.locator('#'+id).evaluate(e=>[...e.querySelectorAll('p,td,th,label,select')].filter(x=>getComputedStyle(x).visibility!=='hidden'&&parseFloat(getComputedStyle(x).fontSize)<21).map(x=>x.textContent));
     assert.deepEqual(undersized,[],id+' has readable classroom text');
     await page.screenshot({path:path.join(shots,id+'.png')});
-    const clipped=await page.locator('#'+id+' .position-visual svg').evaluateAll(es=>es.flatMap(s=>{
+    const clipped=await page.locator('#'+id+' .position-visual svg, #'+id+' .position-journey svg').evaluateAll(es=>es.flatMap(s=>{
       const v=s.viewBox.baseVal;return [...s.querySelectorAll('text')].filter(t=>{const b=t.getBBox();return b.x<0||b.y<0||b.x+b.width>v.width+1||b.y+b.height>v.height+1;}).map(t=>t.textContent);
     }));
     assert.deepEqual(clipped,[],id+' diagram text is not clipped');
@@ -159,5 +210,5 @@ try{
   await page.locator('#s17-position-experiment').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(shots,'reading-phone.png')});
   assert.equal(await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)})),original,'Extensions must not mutate the bank model.');
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({frames:ids.length,buildChecks:states,viewports:['1280×720','1920×1080','1024×768','390×844 reading'],checks:'MACs, grids, softmax, order swap, mean invariance, sinusoids, RoPE, ALiBi, controls, model immutability',screenshots:shots},null,2));
+  console.log(JSON.stringify({frames:ids.length,buildChecks:states,viewports:['1280×720','1920×1080','1024×768','390×844 reading'],checks:'MACs, grids, softmax, word-dot endpoints/reveals, position/context updates, order swap, mean invariance, clock collisions, sinusoid curves, absolute/rotary shifts, ALiBi, complete map, controls, model immutability',screenshots:shots},null,2));
 }finally{await browser.close();}
