@@ -4,6 +4,12 @@ The 21 September 2026 revision reads both user-supplied videos through their
 English captions. No video frames or transcripts are redistributed. The SVGs
 are original illustrations with explicitly separate toy vectors.
 
+The worked opening uses Maya / Ravi / today and our own two-coordinate rows.
+It shows the scores and weighted contributions in both word orders before
+introducing position. The `today` row `[0.8,0.2]` makes the two person weights
+unequal. Adding slot rows changes Maya's key and score, which the next example
+calculates explicitly. Both video credits are visible on the topic-break slide.
+
 - [Luis Serrano Academy: positional encoding](https://www.youtube.com/watch?v=IHu3QehUmrQ),
   especially 1:26 (geometric displacement), 3:29 (sine/cosine coordinates) and
   4:47 (several rates). The lecture distinguishes repeated toy clocks from the

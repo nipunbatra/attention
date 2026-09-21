@@ -890,6 +890,13 @@ Full Transformer diagrams are architectural explanations. The original one-head 
 - Position/cost regression: all 28 moved cost frames, 27 position frames and 103 position build checks pass, including controls and independent arithmetic. Cost-network and Part III continuity regressions pass. The full frame audits report 369 states / 602 formulas for Part II and 181 states / 254 formulas for Part III, with no formula errors, overflow or console errors. Topic-break, concise-core, token-flow and metadata regressions pass. The unchanged Part II model agrees with the reference on 9,260 finite values and 180 masked infinities, maximum error 1.78e−15.
 - Representative diagrams and the chaptered notebook were inspected visually. Phone figures pan within bounded panels. These checks verify browser geometry, not an actual projector or AirServer connection.
 
+## 2026-09-21: worked word-order example before positional encoding
+
+- The position break explicitly names the topic and credits the Luis Serrano and Jia-Bin Huang videos with visible links. Replaced the claim-only permutation slide with paired token rows and five further calculation/consequence steps. The full position sequence now has 32 frames.
+- In the independent toy, `today=[0.8,0.2]` produces unequal Maya/Ravi weights. The worked tables compute dot products, scaled scores, exponentials, the denominator and normalized weights for both source orders. Each weight follows its token. The contribution rows reorder but both messages round to `[0.578,0.300]`. Totals use full precision. With position on, Maya's key and score depend on its slot, and the messages differ. The bank model and notebook models are unchanged.
+- Native clock plots now accompany the fast/slow coordinate pairs. The geometric-addition plots have numbered axes. All diagrams use original examples; video links explain the inspiration, not ownership of the new numbers.
+- `check_cost_position.mjs`: 32 position frames and 116 build checks pass, with independent assertions for every worked score, weight and value contribution, the position-on score change, and visible video credits. Widescreen, 4:3 and phone layouts pass. Topic-break navigation and unchanged live-model arithmetic pass. Whole Part II audit: 372 states, 610 unique formulas, no errors or overflow. Rendered slides were inspected, including the explicit position-on calculation and the topic break.
+
 ## Reproduce from the repository root
 
 ```sh

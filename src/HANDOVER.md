@@ -24,7 +24,12 @@ All four attention parts and the four-part Vision to language extension are impl
 - All 28 detailed cost frames moved to `sections3/sec16_cost.html` and are
   included in Part III Section 16, after training and cached generation. Part II
   Section 16 retains the matrix calculation, with a reading link to Part III.
-- Section 17 now has 27 position frames. Ten additional steps use geometric
+- Section 17 now has 32 position frames. Its opening computes both sentence
+  orders explicitly: query, scores, exponentials, normalized weights, weighted
+  values and the identical message. The independent toy's `today` row is
+  `[0.8,0.2]`, so Maya and Ravi have unequal weights. It then adds positions and
+  computes why Maya's score changes with its slot. The topic break says
+  "Positional encoding" and visibly credits both videos. Later steps use geometric
   addition, multiple-rate clocks, a numeric sinusoidal row, pairwise rotation,
   an interactive common-shift RoPE experiment and length-generalization limits.
   `position-visuals.js` supplies the original SVGs. Serrano and Huang video links

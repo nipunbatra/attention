@@ -36,14 +36,32 @@ body:not(.present) .context-lesson{margin:44px 0}
 .position-visual svg text{font-size:24px;fill:var(--ink)}
 .position-visual svg .label-small{font-size:22px;fill:var(--ink-2)}
 .position-numeric-scroll{max-width:100%;overflow-x:auto}.position-numeric-scroll .lesson-table{min-width:760px}
+.position-credit{font-size:22px;line-height:1.5;margin-top:36px;color:var(--ink-2)}
+.position-credit a{color:inherit;text-decoration:underline;text-underline-offset:4px}
+.position-worked .worked-scroll{max-width:100%;overflow-x:auto}
+.position-worked .worked-table{width:100%;border-collapse:collapse;table-layout:fixed;margin:18px 0}
+.position-worked .worked-table th,.position-worked .worked-table td{font-size:24px;line-height:1.3;padding:11px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+.position-worked .worked-table th{font-size:22px;color:var(--ink-2);font-weight:600}
+.position-worked .worked-table .numbers{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.position-worked .worked-table .score{color:var(--c-k)}
+.position-worked .worked-table .weight{color:var(--c-a)}
+.position-worked .worked-table .message{color:var(--c-v)}
+.position-worked .worked-result{font-size:30px;line-height:1.4;margin:18px 0;color:var(--c-v)}
+.position-worked .worked-detail{font-size:24px;line-height:1.45;margin:14px 0;max-width:100%;overflow-x:auto}
+.position-worked .mix-pair{display:grid;grid-template-columns:1fr 1fr;gap:32px}
+.position-worked .mix-pair>div{min-width:0;overflow-x:auto}
+.position-worked .mix-pair .worked-table th:first-child{width:38%}
+.position-worked .position-visual svg{max-height:340px}
+@media(max-width:650px){body:not(.present) .position-worked .worked-table{min-width:920px}body:not(.present) .position-worked .mix-pair{grid-template-columns:1fr}body:not(.present) .position-worked .mix-pair .worked-table{min-width:540px}body:not(.present) .position-credit{font-size:18px}body:not(.present) .position-worked .worked-result{font-size:23px}}
 @media(max-width:650px){body:not(.present) .position-visual svg{min-width:950px}}
 </style>
 
-<div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-break" data-title="Where does word order enter?" data-autobuild="off">
+<div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-break" data-title="Positional encoding" data-autobuild="off">
 <script type="text/x-notes">The opening introduced token plus position. Return to it now that students understand the attention calculation. Ask what happens if the same words change places. There is no universally best position encoding: compare what information the architecture receives and where it uses it.</script>
-<h3>Where does word order enter?</h3>
-<p class="topic-recap">We know how a query reads a collection of source rows.</p>
-<p class="topic-question">How can it tell who helped whom?</p>
+<h3>Positional encoding</h3>
+<p class="topic-recap">Attention can choose which words to read.</p>
+<p class="topic-question">How does it know which word came first?</p>
+<aside class="position-credit">Visual explanations inspired by<br><a href="https://www.youtube.com/watch?v=IHu3QehUmrQ">Luis Serrano: Positional Encoding</a><br><a href="https://www.youtube.com/watch?v=SMBkImDWOyQ">Jia-Bin Huang: Rotary Position Embedding</a></aside>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-order" data-title="Same words, different roles" data-autobuild="off">
@@ -54,19 +72,58 @@ body:not(.present) .context-lesson{margin:44px 0}
 <p data-build="2"><strong>Plain averaging:</strong> the sum is unchanged. It cannot tell these two sentences apart.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-permute" data-title="Without position, one final attention row can miss the swap" data-autobuild="off">
-<script type="text/x-notes">Assume one attention layer on independent token embeddings, no position information, and a final-row output. Today's input and query stay fixed. Swapping the other tokens permutes paired keys and values. The score/weight entries permute together with the values, so their weighted sum is identical. This is a scoped demonstration, not a claim that arbitrary stacked causal models are permutation invariant.</script>
-<p>Use only token embeddings. The final word is still <strong>today</strong>, so its query is unchanged.</p>
-<div class="position-flow" data-build="1"><span>Swap source tokens</span><b>→</b><span>Keys and values move together</span><b>→</b><span>Same weighted sum</span></div>
-<p data-build="2">The causal mask allows all four sources here. It blocks the future; it does not directly label the distance to each source.</p>
-<p class="lesson-key" data-build="2">This claim is for one layer and the final row. In deeper causal networks, different visible prefixes can themselves provide order clues.</p>
+<div class="frame context-lesson position-lesson position-worked" id="s17-position-permute" data-title="Both sentences give today the same query" data-autobuild="off">
+<script type="text/x-notes">A separate two-coordinate toy isolates position. Use Maya=[1,0], Ravi=[0,1], helps=[0.2,0.2], today=[0.8,0.2]. Choose identity Q/K/V mappings for this demonstration only. Today is the receiving token at slot 4 in both sentences, so its query is [0.8,0.2]. The unequal coordinates deliberately give Maya and Ravi unequal attention weights. These are invented coordinates, not semantic features or a trained model. The following slides compute every score and contribution before stating the invariance.</script>
+<p>Two-number toy rows. Choose $W_Q=W_K=W_V=I$, so each mapping returns its input.</p>
+<div class="position-visual" data-position-visual="swap-rows"></div>
+<p class="lesson-key">Only the order changes. No position numbers have entered this calculation.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-toy" data-title="A small experiment we can inspect" data-autobuild="off">
-<script type="text/x-notes">These invented two-coordinate vectors are a separate position experiment, not replacements for the four-coordinate bank model. Identity query/key/value mappings make the experiment transparent. Values and keys may coincide in an illustrative constrained model; in our main model their mappings are independently learned.</script>
-<div class="lesson-pair"><div><p>Token lookup</p><table class="lesson-table"><thead><tr><th>Word</th><th>Two numbers</th></tr></thead><tbody><tr><td>Maya</td><td>[1.0, 0.0]</td></tr><tr><td>Ravi</td><td>[0.0, 1.0]</td></tr><tr><td>helps</td><td>[0.2, 0.2]</td></tr><tr><td>today</td><td>[0.6, 0.6]</td></tr></tbody></table></div>
-<div><p>Optional position rows</p><table class="lesson-table"><thead><tr><th>Slot</th><th>Two numbers</th></tr></thead><tbody><tr><td>1</td><td>[0.0, 0.0]</td></tr><tr><td>2</td><td>[0.2, −0.1]</td></tr><tr><td>3</td><td>[0.4, −0.2]</td></tr><tr><td>4</td><td>[0.6, −0.3]</td></tr></tbody></table></div></div>
-<p class="lesson-key">Invented numbers; no named semantic axes. Set $W_Q=W_K=W_V=I$ for this experiment, so $q_4=x_4$, $k_j=v_j=x_j$ and $d_k=2$.</p>
+<div class="frame context-lesson position-lesson position-worked" id="s17-position-scores" data-title="Today's query scores the first sentence" data-autobuild="off">
+<script type="text/x-notes">Read across one row at a time. Query [0.8,0.2] dotted with Maya's key [1,0] gives 0.8. Divide by sqrt(2) because the matching width is two. Exponentiate each scaled score, sum the four exponentials, then divide. Every displayed number comes from the same live experiment used on the following slides. The query is at the last slot, so all four source columns are allowed by the causal mask. Values have not been mixed yet. Show the denominator and Maya's normalized weight explicitly.</script>
+<p><strong>Maya helps Ravi today</strong>. The query is $q_4=[0.8,0.2]$. All four sources are allowed.</p>
+<div class="worked-scroll"><table class="worked-table" id="position-score-a"><thead><tr><th>Source</th><th>$q_4\cdot k_j$</th><th>Score $s_j$</th><th>$\exp(s_j)$</th><th>Weight $\alpha_j$</th></tr></thead><tbody></tbody></table></div>
+<div class="worked-detail">For Maya: $(0.8\times1+0.2\times0)/\sqrt2\approx0.566$.</div>
+<div class="worked-detail" id="position-softmax-work"></div>
+</div>
+
+<div class="frame context-lesson position-lesson position-worked" id="s17-position-swapped" data-title="The weight follows the word when it moves" data-autobuild="off">
+<script type="text/x-notes">Now the source order is Ravi, helps, Maya, today. The final query is unchanged. Each token keeps its key. Its score, exponential and normalized weight therefore follow it to the new slot. In particular Maya keeps the larger weight even though it moved from slot 1 to slot 3. This is not equal-weight averaging. The denominator is identical because the same four exponentials are merely reordered.</script>
+<p><strong>Ravi helps Maya today</strong>. Keep the same query $q_4=[0.8,0.2]$.</p>
+<div class="worked-scroll"><table class="worked-table" id="position-score-b"><thead><tr><th>Source</th><th>$q_4\cdot k_j$</th><th>Score $s_j$</th><th>$\exp(s_j)$</th><th>Weight $\alpha_j$</th></tr></thead><tbody></tbody></table></div>
+<p class="worked-detail" id="position-follow-weight"></p>
+<p class="lesson-key">A different slot has changed neither the token's key nor the query comparing it.</p>
+</div>
+
+<div class="frame context-lesson position-lesson position-worked" id="s17-position-contributions" data-title="The same contributions add to the same message" data-autobuild="off">
+<script type="text/x-notes">Each weight multiplies both coordinates of its value row. Show Maya's actual weight and vector product first. Then compare the four contribution rows in the two orders. The sums match even though Maya and Ravi received different weights. The displayed rows round to three decimals; compute totals at full precision. This establishes the numerical result before the next slide explains its consequence.</script>
+<div class="worked-detail" id="position-maya-contribution"></div>
+<div class="mix-pair"><div><p>Maya helps Ravi today</p><table class="worked-table" id="position-contribution-a"><thead><tr><th>Source</th><th>$\alpha_jv_j$</th></tr></thead><tbody></tbody><tfoot></tfoot></table></div><div><p>Ravi helps Maya today</p><table class="worked-table" id="position-contribution-b"><thead><tr><th>Source</th><th>$\alpha_jv_j$</th></tr></thead><tbody></tbody><tfoot></tfoot></table></div></div>
+<p class="lesson-key">Only the order of the terms changed. Rows round to 3 decimals. Totals use full precision.</p>
+</div>
+
+<div class="frame context-lesson position-lesson position-worked" id="s17-position-consequence" data-title="Today receives no clue about who helped whom" data-autobuild="off">
+<script type="text/x-notes">Both sentences give the last token the same old row and the same attention message. Any fixed output projection and residual addition therefore give the same updated row. Feeding that row to the same prediction head gives identical probabilities. No numerical head is invented here. This is a one-layer result on independent token embeddings, with no position information and a fixed final receiver. It does not claim every stacked causal network is permutation invariant. Earlier causal rows see different prefixes, and deeper layers can use those differences. Separate the lack of access to future words from the lack of explicit word-position information.</script>
+<div class="position-visual" data-position-visual="swap-result"></div>
+<p>Different helper, identical input to the prediction head. This layer cannot tell these two meanings apart at <strong>today</strong>.</p>
+<p class="lesson-key">One layer, token-only inputs, final receiver. Deeper causal layers can have additional order clues.</p>
+</div>
+
+<div class="frame context-lesson position-lesson position-worked" id="s17-position-toy" data-title="A position row changes the input before attention" data-autobuild="off">
+<script type="text/x-notes">Keep the same two-coordinate toy and identity projections. Introduce a separate, invented row for each slot. Add it to the token row before computing Q/K/V. Show all four sums for Maya helps Ravi today. In the swapped sentence, Maya gets the slot-3 row and Ravi gets the slot-1 row. Today remains in slot 4 and therefore has the same new query in both sentences. The next interactive calculation compares the resulting messages with position off and on.</script>
+<p>For <strong>Maya helps Ravi today</strong>, add one row for the word and one for its slot.</p>
+<div class="worked-scroll"><table class="worked-table" id="position-added-rows"><thead><tr><th>Slot / word</th><th>Token row</th><th>Position row</th><th>Sum $x_j$</th></tr></thead><tbody></tbody></table></div>
+<p>After the swap, Maya gets slot 3's position row. Ravi gets slot 1's.</p>
+<p class="lesson-key">These position rows are invented for the demonstration. The next slide repeats the same attention calculation.</p>
+</div>
+
+<div class="frame context-lesson position-lesson position-worked" id="s17-position-slot-scores" data-title="Maya's score now depends on its slot" data-autobuild="off">
+<script type="text/x-notes">Today's token row [0.8,0.2] plus slot 4's [0.6,-0.3] gives query [1.4,-0.1] for either sentence. Maya at slot 1 has key [1,0], giving dot product 1.4 and scaled score about 0.990. Maya at slot 3 has key [1.4,-0.2], giving dot product 1.98 and scaled score about 1.400. The token lookup did not change. Its position row changed the input, and therefore its key. Identity projections also make these the corresponding value rows. The next interactive slide computes all sources and both messages. Position makes an order distinction possible; these untrained numbers do not establish language understanding.</script>
+<p>Today's new query is $[0.8,0.2]+[0.6,-0.3]=[1.4,-0.1]$ in both sentences.</p>
+<div class="worked-scroll"><table class="worked-table" id="position-maya-slots"><thead><tr><th>Maya's slot</th><th>Position row</th><th>New key</th><th>Scaled score</th></tr></thead><tbody></tbody></table></div>
+<div class="worked-detail">Slot 1: $(1.4\times1+(-0.1)\times0)/\sqrt2\approx0.990$.</div>
+<div class="worked-detail">Slot 3: $(1.4\times1.4+(-0.1)\times(-0.2))/\sqrt2\approx1.400$.</div>
+<p class="lesson-key">The same word now has a different key in a different slot. Its value row changes too.</p>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-experiment" data-title="Try the swap, with and without position" data-autobuild="off">
@@ -263,7 +320,7 @@ body:not(.present) .context-lesson{margin:44px 0}
 </div>
 <script>
 (function(){
-  const embeddings={Maya:[1,0],Ravi:[0,1],helps:[.2,.2],today:[.6,.6]};
+  const embeddings={Maya:[1,0],Ravi:[0,1],helps:[.2,.2],today:[.8,.2]};
   const positions=[[0,0],[.2,-.1],[.4,-.2],[.6,-.3]];
   const sequences=[['Maya','helps','Ravi','today'],['Ravi','helps','Maya','today']];
   function experiment(tokens,enabled){
@@ -275,7 +332,7 @@ body:not(.present) .context-lesson{margin:44px 0}
   }
   function sinusoid(i){return [Math.sin(i),Math.cos(i),Math.sin(i/100),Math.cos(i/100)];}
   function rotaryDot(i,j){const a=i*Math.PI/6,b=j*Math.PI/6;return Math.cos(a)*Math.cos(b)+Math.sin(a)*Math.sin(b);}
-  window.AT.positionLesson={experiment,sinusoid,rotaryDot,sequences};
+  window.AT.positionLesson={experiment,sinusoid,rotaryDot,sequences,embeddings,positions};
   const selector=document.getElementById('position-enabled');
   function draw(){
     const enabled=selector.value==='on',results=sequences.map(s=>experiment(s,enabled));

@@ -13,7 +13,7 @@ if(fs.existsSync(cache))for(const dir of fs.readdirSync(cache))candidates.push(p
 let pw;for(const candidate of candidates){try{pw=require(candidate);break;}catch{}}
 assert(pw,'Use an existing Playwright installation.');
 const costs=['break','symbols','matmul','concat-network','concat','average-network','average','attention-network','attention-projections','attention-products','projections','pairs','scores','mask','messages','predictor','calculator','training','baselines-training','prefix-sum','total','training-compare','backward','last-row','prompt','cache','generation-compare','memory'].map(x=>'s16-cost-'+x);
-const positions=['break','order','permute','toy','experiment','add','shift','append','width','routing','learned','clock','rates','sine','sine-rule','worked-sine','relative','rope','rotate','rope-shift','rope-identity','rope-pairs','insertion','alibi','mean','length','choices'].map(x=>'s17-position-'+x);
+const positions=['break','order','permute','scores','swapped','contributions','consequence','toy','slot-scores','experiment','add','shift','append','width','routing','learned','clock','rates','sine','sine-rule','worked-sine','relative','rope','rotate','rope-shift','rope-identity','rope-pairs','insertion','alibi','mean','length','choices'].map(x=>'s17-position-'+x);
 const ids=positions;
 const shots=fs.mkdtempSync(path.join(os.tmpdir(),'attention-cost-position-'));
 const browser=await pw.chromium.launch();
@@ -68,7 +68,7 @@ try{
     assert.match(await page.locator('#rope-shift-result').innerText(),/0.866/);
   }
   await page.locator('#rope-shift').selectOption('0');
-  const base={Maya:[1,0],Ravi:[0,1],helps:[.2,.2],today:[.6,.6]},pos=[[0,0],[.2,-.1],[.4,-.2],[.6,-.3]];
+  const base={Maya:[1,0],Ravi:[0,1],helps:[.2,.2],today:[.8,.2]},pos=[[0,0],[.2,-.1],[.4,-.2],[.6,-.3]];
   const sequences=[['Maya','helps','Ravi','today'],['Ravi','helps','Maya','today']];
   function reference(tokens,on){
     const rows=tokens.map((token,i)=>base[token].map((x,j)=>x+(on?pos[i][j]:0)));
@@ -77,6 +77,22 @@ try{
     const weights=exps.map(x=>x/sum),message=rows[0].map((_,j)=>rows.reduce((s,r,i)=>s+r[j]*weights[i],0));
     return {rows,q:rows[3],scores,weights,message};
   }
+  const unpositioned=sequences.map(tokens=>reference(tokens,false));
+  assert(Math.abs(unpositioned[0].weights[0]-unpositioned[0].weights[2])>.05,'Use unequal weights so the example is not just averaging.');
+  for(const [index,suffix]of ['a','b'].entries()){
+    const r=unpositioned[index];
+    const actual=await page.locator('#position-score-'+suffix+' tbody tr').evaluateAll(rows=>rows.map(tr=>[...tr.querySelectorAll('[data-value]')].map(td=>Number(td.dataset.value))));
+    actual.forEach((row,j)=>{
+      const expected=[r.rows[j].reduce((sum,x,c)=>sum+x*r.q[c],0),r.scores[j],Math.exp(r.scores[j]),r.weights[j]];
+      row.forEach((x,c)=>close(x,expected[c],'worked score/softmax column'));
+    });
+    const terms=await page.locator('#position-contribution-'+suffix+' [data-vector]').evaluateAll(es=>es.map(e=>JSON.parse(e.dataset.vector)));
+    terms.forEach((row,j)=>row.forEach((x,c)=>close(x,r.weights[j]*r.rows[j][c],'weighted value coordinate')));
+    assert.equal(await page.locator('#position-contribution-'+suffix+' tfoot td:last-child').textContent(),'['+r.message.map(x=>x.toFixed(3)).join(', ')+']');
+  }
+  assert.deepEqual(await page.locator('#s17-position-break .position-credit a').evaluateAll(es=>es.map(e=>new URL(e.href).searchParams.get('v'))),['IHu3QehUmrQ','SMBkImDWOyQ'],'Both videos receive visible credit.');
+  const mayaScores=await page.locator('#position-maya-slots [data-value]').evaluateAll(es=>es.map(e=>Number(e.dataset.value)));
+  sequences.forEach((tokens,i)=>close(mayaScores[i],reference(tokens,true).scores[tokens.indexOf('Maya')],'Maya positional score'));
   for(const on of [false,true]){
     const results=[];
     for(const tokens of sequences){
