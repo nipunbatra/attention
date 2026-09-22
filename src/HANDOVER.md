@@ -347,7 +347,7 @@ Read this file, then `PRESENT.md` for the current layout/runtime contract and `C
 |---|---|---|---|
 | 1: characters to prediction | `sections1/secNN.html` | `toy1.json`, `part1.js`, `part1-diagrams.js`, `embedding-primer.js`, `part1.json` | `../part1.html` |
 | 2: self-attention | `sections/secNN.html` | `toy.json`, `part2.json` | `../attention.html` |
-| 3: multi-head attention | `build_multihead_lesson.py` → `sections3-heads/secNN.html` | `head_worksheet.py` → `toy3-heads.json`, `part3-heads.js`, `part3.json` | `../part3.html` |
+| 3: multi-head attention | `multihead_story.py` + `build_multihead_lesson.py` → `sections3-heads/secNN.html` | `head_worksheet.py` → `toy3-heads.json`, `part3-heads.js`, `part3.json` | `../part3.html` |
 | Optional 2B: training, blocks and cost | `sections3/secNN.html` (original Part III) | `toy3.json`, `part3.js`, `part2b.json` | `../part2b.html` |
 | 4: cross-attention and translation | `sections4/secNN.html` | `toy4.json`, `part4.js`, `part4.json` | `../part4.html` |
 | Vision II: visual pretraining (source ID 6) | `sections6/secNN.html` | `toy6.json`, `part6.js`, `part6.json` | `../vision2.html` |
@@ -361,6 +361,14 @@ The internal source IDs 5–8 are not displayed part numbers. Their configs set 
 Build each part once in any order. `assemble.py` derives available lesson targets from complete section/config/data sources, not existing output files. The conventional outputs are the filenames in the table above; a future source config can declare a different `output`. Set `published: false` for an unpublished draft, or `available: false` on an individual navigation entry to leave it disabled. Unknown destinations stay unavailable even if a stale HTML placeholder exists. Distribute the complete set of outputs for offline series navigation. `check_metadata.py` tests clean-directory builds and those planned-link cases.
 
 The standalone staged diagram lives in `figures/attention-diagram-preview/`. Part 2 embeds its same `diagram.js` source through `src/attention-flow-data.js`; keep the preview and article synchronized by changing that shared source.
+
+Part III now has a 30-frame visual story in `multihead_story.py`. Its generator
+also retains the 58-step detailed tensor lab for Notebook 7 only. The two manifests
+are `figures/multihead/manifest.json` and `lab-manifest.json`; do not put the
+full lab back into the lecture. The notebook embeds the visual story first,
+then the executable lab. See `PART3_HEADS_PLAN.md` for the critique and sequence.
+Keep M for the mask and H=AV for message rows, as in Part II. Use `n_heads` for
+the head count and parenthesized superscripts for individual heads.
 
 Part 1's four diagrams live in `part1-diagrams.js` and are inserted by `assemble.py`. They adapt the original handwritten
 notes' visual sequence while reading current `AT.mlp` numbers: actual embedding geometry, repeated lookup and ordered

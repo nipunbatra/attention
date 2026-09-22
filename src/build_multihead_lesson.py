@@ -1,4 +1,4 @@
-"""Build the paced Part III lesson, shared SVGs and its executable notebook."""
+"""Build the visual Part III story and retain the detailed notebook lab."""
 from pathlib import Path
 from html import escape
 import json
@@ -60,8 +60,8 @@ def master(focus='all'):
     body=''
     nodes=[('input',20,18,200,'Known tokens','IDs [B,T]','e'),
            ('embed',280,18,235,'Lookup + position','E [B,T,D]','e'),
-           ('one',310,160,205,'Head 1','Q₁ · K₁ · V₁','q'),
-           ('two',310,280,205,'Head 2','Q₂ · K₂ · V₂','q'),
+           ('one',310,160,205,'Head 1','Q¹ · K¹ · V¹','q'),
+           ('two',310,280,205,'Head 2','Q² · K² · V²','q'),
            ('join',590,218,200,'Concatenate','messages [B,T,D]','v'),
            ('project',900,218,220,'W_O + residual','E′ = E + ΔE','d'),
            ('predict',900,365,220,'Last row → MLP','next-token logits','e')]
@@ -149,12 +149,12 @@ def section(number,title,frames):
     return f'<section id="s{number:02}" class="sec" data-title="{title}" data-lit=""><header class="sec-head"><span class="sec-num">{number:02}</span><div><p class="eyebrow">Multi-head attention · a worked continuation</p><h2>{title}</h2></div></header>'+''.join(frames)+'</section>'
 
 
-def build():
+def lab_steps():
     OUT.mkdir(exist_ok=True)
     sections=[]
     def add(n,title,frames):
         sections.append(dict(id=f's{n:02}',title=title,lit=''))
-        (OUT/f'sec{n:02}.html').write_text(section(n,title,frames))
+        # The detailed tensor walkthrough belongs in the notebook, not the lecture.
     add(1,'The same prediction, more than one clue',[
         stage('s01-name','Which earlier characters might help?',flow(['a  b  i','Embeddings','Read context','Next character'],['3 known IDs','3 learned rows','MLP or attention','for example, d']),
               'Part I predicted the next character in a name such as aabid. The question stays the same; we are changing how the model reads the known context.'),
@@ -202,7 +202,7 @@ def build():
         stage('s04-live','Change the context; inspect both heads','',
               '<div id="s04-head-explorer"></div>',companion='<p>This explorer recomputes all projections, scores, softmaxes, messages and vocabulary probabilities when the sentence changes. It uses the worksheet matrices, not the trained TinyStories checkpoints. Try both contexts and both heads.</p>')])
     add(5,'Implement the same calculation',[
-        divider('s05-break','From the drawing to tensors','Keep B = 2 examples, T = 10 tokens, D = 4 coordinates and H = 2 heads.'),
+        divider('s05-break','From the drawing to tensors','Keep B = 2 examples, T = 10 tokens, D = 4 coordinates and n_heads = 2.'),
         stage('s05-model','Create the tables, projections and prediction MLP',flow(['Token + position','ScratchMultiHead','Hidden → vocabulary'],['20 × 4 and 10 × 4','4 coordinates, 2 heads','4 → 8 → 20']),
               'The download defines every layer. Load the hand-chosen worksheet weights to reproduce the printed numbers; ordinary training starts from random parameters.',code='model = TinyMultiHeadLM(vocab_size=20, context=10,\n                        width=4, heads=2, hidden=8)\nload_worksheet_weights(model, worksheet)'),
         stage('s05-batch','Two input windows form one batch',table(['Example','Ten token IDs','Observed next token'],[['river',str([BASE['vocab'].index(t.lower()) for t in BASE['sentences']['river']]),'water'],['cheque',str([BASE['vocab'].index(t.lower()) for t in BASE['sentences']['cheque']]),'teller']],[170,700,250]),
@@ -211,7 +211,7 @@ def build():
         stage('s05-embed','Look up token rows and add position rows',flow(['Token IDs [2,10]','Token + position rows','E [2,10,4]'],['integers','lookup, then add','floating-point vectors']),'The embedding tables are learned parameters. E contains floating-point vectors with shape [2,10,4].',code='positions = torch.arange(X.shape[1])\nE = model.token_embedding(X) + model.position_embedding(positions)'),
         stage('s05-project','Project the full input three times',flow(['E [2,10,4]','Three matrices','Q, K, V'],['same input','each 4 × 4','each [2,10,4]'],['e','q','q']),
               'Different learned matrices give matching queries, matching keys and transmitted values.',code='Q = model.attention.W_Q(E)\nK = model.attention.W_K(E)\nV = model.attention.W_V(E)'),
-        stage('s05-split','Make the head axis explicit',flow(['[2,10,4]','[2,10,2,2]','[2,2,10,2]'],['B, T, D','B, T, H, d_head','B, H, T, d_head'],['q','q','q']),
+        stage('s05-split','Make the head axis explicit',flow(['[2,10,4]','[2,10,2,2]','[2,2,10,2]'],['B, T, D','B, T, heads, d_head','B, heads, T, d_head'],['q','q','q']),
               'reshape groups projected coordinates; transpose puts heads before tokens. Apply the same operation to K and V.',code='Q = Q.reshape(2, 10, 2, 2).transpose(1, 2)\nK = K.reshape(2, 10, 2, 2).transpose(1, 2)\nV = V.reshape(2, 10, 2, 2).transpose(1, 2)'),
         stage('s05-scores','Compute every query–key pair within each head',flow(['Q [2,2,10,2]','Kᵀ [2,2,2,10]','Scores [2,2,10,10]'],['query rows','source columns','two 10 × 10 grids'],['q','k','a']),
               'The first two axes keep examples and heads separate. Matrix multiplication contracts only the matching-coordinate axis.',code='scores = Q @ K.transpose(-2, -1)\nscores = scores / math.sqrt(2)'),
@@ -220,7 +220,7 @@ def build():
         stage('s05-softmax','Each row becomes a distribution over sources',weight_row(0),'The final axis indexes source tokens. Every allowed row sums to one; masked entries have weight zero.',code='A = scores.softmax(dim=-1)\nassert A.shape == (2, 2, 10, 10)'),
         stage('s05-mix','Multiply the weights by the values',flow(['A [2,2,10,10]','V [2,2,10,2]','Messages [2,2,10,2]'],['source weights','source content','one row per query/head'],['a','v','v']),
               'The source-token axis is summed out. Each head keeps its own two-coordinate message.',code='messages = A @ V'),
-        stage('s05-join','Put each token’s head messages side by side',flow(['[2,2,10,2]','[2,10,2,2]','[2,10,4]'],['B, H, T, d_head','B, T, H, d_head','B, T, D'],['v','v','v']),
+        stage('s05-join','Put each token’s head messages side by side',flow(['[2,2,10,2]','[2,10,2,2]','[2,10,4]'],['B, heads, T, d_head','B, T, heads, d_head','B, T, D'],['v','v','v']),
               'Transpose before reshaping. A direct reshape of the original layout would mix token rows with head rows.',code='joined = messages.transpose(1, 2).contiguous()\njoined = joined.reshape(2, 10, 4)'),
         stage('s05-output-map','Return to the shared prediction path',master('project'),'The two head messages are joined. W_O mixes them, and the residual adds that update to the original E.'),
         stage('s05-output','Project, add, and keep the final row',flow(['Joined messages','W_O + residual','Last row → MLP'],['[2,10,4]','updated E′ [2,10,4]','logits [2,20]'],['v','d','e']),'W_O combines the heads. The residual keeps E. Only the last updated row feeds this next-token loss.',code='delta = model.attention.W_O(joined)\nupdated = E + delta\nlogits = model.readout(F.relu(model.hidden(updated[:, -1])))')])
@@ -247,7 +247,7 @@ def build():
               'nn.MultiheadAttention does not add position embeddings, the residual, a vocabulary head or a training loop.',companion='<p><a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.MultiheadAttention.html">PyTorch API reference</a>. A boolean attn_mask uses True for blocked query–source pairs. For padded real batches, also use a correctly shaped padding mask; the worked ten-token batch has no padding. Do not assume that boolean mask conventions are identical across different APIs.</p>')])
     result=json.loads((BOOK/'artifacts/heads/comparison.json').read_text())
     labels={'mlp':'MLP','attention':'One head','multihead':'Four heads'}
-    summary=[[labels[k],fmt(a['test_loss']['mean']),fmt(a['test_perplexity']['mean'],2)] for k,a in result['aggregate'].items()]
+    summary=[[labels[k],fmt(result['aggregate'][k]['test_loss']['mean']),fmt(result['aggregate'][k]['test_perplexity']['mean'],2)] for k in labels]
     costs=[[labels[k],f'{result["runs"][k][0]["parameter_count"]:,}',fmt(result['aggregate'][k]['runtime_seconds']['mean'],1)+' s'] for k in labels]
     add(8,'Compare the trained models',[
         divider('s08-break','Do more heads help this experiment?','Move from the small worksheet to the actual TinyStories checkpoints.'),
@@ -263,18 +263,32 @@ def build():
               '<a href="notebooks/wordlm/07_multihead_step_by_step.html">Step-by-step notebook</a> · <a href="notebooks/wordlm/06_multihead_comparison.html">Measured experiment</a> · <a href="part2b.html">Optional reference</a>'),
         stage('s08-next','Next: read a different sequence',flow(['French decoder row','Query','English keys + values'],['the next output token','what do I need?','where should I read?'],['e','q','v']),
               'So far, Q, K and V came from the same sequence. <a href="part4.html">Part IV changes that: cross-attention reads another sequence.</a>')])
+    return list(STEPS)
+
+
+def build():
+    from multihead_story import story
+    OUT.mkdir(exist_ok=True)
+    STEPS.clear()
+    lab = lab_steps()
+    (FIG/'lab-manifest.json').write_text(json.dumps([{k:v for k,v in s.items() if k!='figure'} for s in lab],indent=2)+'\n')
+    STEPS.clear()
+    sections=[]
+    for n,(title,frames) in enumerate(story(stage, BASE, DATA),1):
+        sections.append(dict(id=f's{n:02}',title=title,lit=''))
+        (OUT/f'sec{n:02}.html').write_text(section(n,title,frames))
     config=dict(part=3,series='Attention and language',title='Multi-head attention, step by step',
-                subtitle='Keep the same next-token problem. Follow two heads, combine their messages, and write the code.',
-                audience='Deep-learning students who completed Parts I–II',minutes=75,
-                centralLabel='The same update, several heads',central=r'\Delta E=\operatorname{Concat}(A^{(1)}V^{(1)},\ldots,A^{(H)}V^{(H)})W_O',
+                subtitle='One sentence, different clues. Watch two heads read, then combine what they find.',
+                audience='Deep-learning students who completed Parts I–II',minutes=40,
+                centralLabel='Two messages, one update',central=r"E'=E+\operatorname{Concat}(H^{(1)},H^{(2)})W_O",
                 chain=[dict(label=s['title'],section=s['id']) for s in sections],sections=sections,
                 objects=['e','q','k','v','a','d','ep'],legendTitle='The same objects as Part II',
-                provenance='The two-head worksheet reuses Part II’s exact token and position rows. Its projections are hand-chosen. The separate TinyStories comparison uses trained checkpoints and three seeds.',
+                provenance='Original worked river-bank example, with visual inspiration from 3Blue1Brown and Jay Alammar. The two-head numbers are hand-chosen; the separate TinyStories results come from trained models.',
                 prev=dict(label='Part 2: Self-attention, from first principles',href='attention.html'),
                 next=dict(label='Part 4: Cross-attention: translate one phrase',href='part4.html'),
                 index=dict(label='Series home',href='index.html'),notation='multihead',
-                footer='Several learned views, separate attention rows, one contextual update. Optional training and cost reference: Part 2B.',
-                objectSections=dict(e='s02',q='s03',k='s03',v='s03',a='s03',d='s04',ep='s04'),
+                footer='Same inputs. Separate attention patterns. One updated representation. Full code in Notebook 7; optional training and cost reference in Part 2B.',
+                objectSections=dict(e='s01',q='s02',k='s02',v='s02',a='s01',d='s03',ep='s03'),
                 hook='The final “the” may need both the river setting and the person in the scene. How can two heads retrieve both?',
                 sectionDirectory='sections3-heads',runtimeFile='part3-heads.js',toyFile='toy3-heads.json',syntaxHighlighting=True)
     (SRC/'part3.json').write_text(json.dumps(config,indent=2)+'\n')
@@ -283,7 +297,8 @@ def build():
     (FIG/'worksheet.json').write_text(json.dumps(toy,indent=2)+'\n')
     (BOOK/'multihead-worksheet.json').write_text(json.dumps(toy,indent=2)+'\n')
     (FIG/'manifest.json').write_text(json.dumps([{k:v for k,v in s.items() if k!='figure'} for s in STEPS],indent=2)+'\n')
-    print(f'{len(STEPS)} paced frames, {len(sections)} sections')
+    (BOOK/'multihead-story.json').write_text((FIG/'manifest.json').read_text())
+    print(f'{len(STEPS)} visual frames, {len(sections)} sections; {len(lab)} notebook lab steps')
 
 
 if __name__=='__main__':build()

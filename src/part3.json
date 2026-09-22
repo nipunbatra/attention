@@ -2,84 +2,66 @@
   "part": 3,
   "series": "Attention and language",
   "title": "Multi-head attention, step by step",
-  "subtitle": "Keep the same next-token problem. Follow two heads, combine their messages, and write the code.",
+  "subtitle": "One sentence, different clues. Watch two heads read, then combine what they find.",
   "audience": "Deep-learning students who completed Parts I\u2013II",
-  "minutes": 75,
-  "centralLabel": "The same update, several heads",
-  "central": "\\Delta E=\\operatorname{Concat}(A^{(1)}V^{(1)},\\ldots,A^{(H)}V^{(H)})W_O",
+  "minutes": 40,
+  "centralLabel": "Two messages, one update",
+  "central": "E'=E+\\operatorname{Concat}(H^{(1)},H^{(2)})W_O",
   "chain": [
     {
-      "label": "The same prediction, more than one clue",
+      "label": "What else could this token read?",
       "section": "s01"
     },
     {
-      "label": "Give each head its own view",
+      "label": "How does a second head get a different view?",
       "section": "s02"
     },
     {
-      "label": "Follow both heads through the numbers",
+      "label": "How do the two messages update the token?",
       "section": "s03"
     },
     {
-      "label": "Combine the messages and predict",
+      "label": "What are the matrix shapes?",
       "section": "s04"
     },
     {
-      "label": "Implement the same calculation",
+      "label": "Write the familiar operations twice",
       "section": "s05"
     },
     {
-      "label": "Train and generate with the same model",
+      "label": "Do more heads help our trained model?",
       "section": "s06"
-    },
-    {
-      "label": "Use the PyTorch block",
-      "section": "s07"
-    },
-    {
-      "label": "Compare the trained models",
-      "section": "s08"
     }
   ],
   "sections": [
     {
       "id": "s01",
-      "title": "The same prediction, more than one clue",
+      "title": "What else could this token read?",
       "lit": ""
     },
     {
       "id": "s02",
-      "title": "Give each head its own view",
+      "title": "How does a second head get a different view?",
       "lit": ""
     },
     {
       "id": "s03",
-      "title": "Follow both heads through the numbers",
+      "title": "How do the two messages update the token?",
       "lit": ""
     },
     {
       "id": "s04",
-      "title": "Combine the messages and predict",
+      "title": "What are the matrix shapes?",
       "lit": ""
     },
     {
       "id": "s05",
-      "title": "Implement the same calculation",
+      "title": "Write the familiar operations twice",
       "lit": ""
     },
     {
       "id": "s06",
-      "title": "Train and generate with the same model",
-      "lit": ""
-    },
-    {
-      "id": "s07",
-      "title": "Use the PyTorch block",
-      "lit": ""
-    },
-    {
-      "id": "s08",
-      "title": "Compare the trained models",
+      "title": "Do more heads help our trained model?",
       "lit": ""
     }
   ],
@@ -93,7 +75,7 @@
     "ep"
   ],
   "legendTitle": "The same objects as Part II",
-  "provenance": "The two-head worksheet reuses Part II\u2019s exact token and position rows. Its projections are hand-chosen. The separate TinyStories comparison uses trained checkpoints and three seeds.",
+  "provenance": "Original worked river-bank example, with visual inspiration from 3Blue1Brown and Jay Alammar. The two-head numbers are hand-chosen; the separate TinyStories results come from trained models.",
   "prev": {
     "label": "Part 2: Self-attention, from first principles",
     "href": "attention.html"
@@ -107,15 +89,15 @@
     "href": "index.html"
   },
   "notation": "multihead",
-  "footer": "Several learned views, separate attention rows, one contextual update. Optional training and cost reference: Part 2B.",
+  "footer": "Same inputs. Separate attention patterns. One updated representation. Full code in Notebook 7; optional training and cost reference in Part 2B.",
   "objectSections": {
-    "e": "s02",
-    "q": "s03",
-    "k": "s03",
-    "v": "s03",
-    "a": "s03",
-    "d": "s04",
-    "ep": "s04"
+    "e": "s01",
+    "q": "s02",
+    "k": "s02",
+    "v": "s02",
+    "a": "s01",
+    "d": "s03",
+    "ep": "s03"
   },
   "hook": "The final \u201cthe\u201d may need both the river setting and the person in the scene. How can two heads retrieve both?",
   "sectionDirectory": "sections3-heads",

@@ -27,9 +27,11 @@ try{
   await page.evaluate(()=>document.fonts.ready);
   assert.equal(await page.locator('.mh-frame').count(),manifest.length);
   const notation=await page.evaluate(()=>AT.ui.notationCard().textContent);
-  assert(notation.includes('4×2')&&notation.includes('2×10×2'),'Notation distinguishes per-head and packed widths');
+  assert(notation.includes('4×2')&&notation.includes('10×2'),'Notation distinguishes per-head and packed widths');
   assert(!notation.includes('4×3'),'No stale Part II query width');
-  assert(await page.locator('.mh-frame .python-code .py-call').count()>20,'Static syntax highlighting');
+  assert(notation.includes('Additive causal mask')&&notation.includes('message matrix'),'Mask and message notation stays consistent with Part II');
+  assert(await page.locator('.mh-frame .python-code .py-call').count()>4,'Static syntax highlighting');
+  assert(manifest.length<=32,'Keep the lecture compact; full tensor details belong in the notebook lab');
   for(const name of ['river','cheque']){
     const actual=await page.evaluate(name=>AT.multiheadWorksheet.compute(name),name);
     const ref=expected.headsLesson.cases[name];

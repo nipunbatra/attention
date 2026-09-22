@@ -15,10 +15,16 @@ def build():
     md=nbf.v4.new_markdown_cell;code=nbf.v4.new_code_cell
     cells=[md('''# Multi-head attention, step by step
 
-Keep the river-bank example from Part II. Follow two complete heads through the
-same figures as Part III, then implement the calculation and compare it with
-PyTorch. The toy uses hand-chosen parameters. The final links lead to genuinely
-trained TinyStories models, not this worksheet.
+Keep the river-bank example from Part II. First follow two different reading
+patterns through the lecture's figures. Then run the detailed implementation
+lab, including the batch axes and a numerical comparison with PyTorch.
+
+[Visual story](#visual-story) · [Executable lab](#executable-lab)
+
+The toy uses hand-chosen parameters. The final links lead to genuinely trained
+TinyStories models, not this worksheet. As in Part II, E stores embedding rows,
+M is the mask, H = AV stores message rows, and E′ = E + ΔE. Superscripts label
+heads; subscripts label tokens.
 
 [Part III](../../part3.html) · [Live models](../../word-lab/) · [Download code and notebooks](wordlm-notebooks.zip)
 
@@ -41,6 +47,7 @@ river_ids = [word_to_id[w.lower()] for w in worksheet['sentences']['river']]
 cheque_ids = [word_to_id[w.lower()] for w in worksheet['sentences']['cheque']]
 print('River tokens:', worksheet['sentences']['river'])
 print('River IDs:', river_ids)''')]
+    cells.append(md('<a id="visual-story"></a>\n# The visual story\n\nThe same figures appear in the lecture. Short code excerpts here are explained visually; the executable lab below builds their inputs and runs each operation.'))
     steps=json.loads((FIG/'manifest.json').read_text())
     section_counts={}
     for step in steps:
@@ -51,11 +58,28 @@ print('River IDs:', river_ids)''')]
         figure=figure_path.read_text() if figure_path.exists() else ''
         body = step['body']
         body = re.sub(r'href="(?!https?:|#)([^"]+)"', r'href="../../\1"', body)
+        if step['key'] == 's03-v-explore':
+            body = 'Switch contexts in the matching slide to see both reading patterns change. The executable lab below computes the river and cheque examples from the same parameters.'
+            figure = (FIG/'s01-v-both.svg').read_text()
+        cells.append(md(f'<a id="{step["key"]}"></a>\n## {step["title"]}\n\n[Matching slide]({link})\n\n{figure}\n\n{body}'+(f'\n\n```python\n{step["code"]}\n```' if step['code'] else '')))
+    cells.append(md('''<a id="executable-lab"></a>
+# The executable lab
+
+The lecture has now shown the whole idea. This optional lab slows down the code:
+we create two examples, project the embeddings, expose the head axis, calculate
+the messages and check the results. Here `D` means the same model width as
+`d_model` in the lecture. The head axis has size 2; it is not the message matrix H.
+
+The expanded figures below accompany the code rather than add new lecture slides.'''))
+    for step in json.loads((FIG/'lab-manifest.json').read_text()):
+        figure_path=FIG/(step['key']+'.svg')
+        figure=figure_path.read_text() if figure_path.exists() else ''
+        body=re.sub(r'href="(?!https?:|#)([^"]+)"',r'href="../../\1"',step['body'])
         if step['key'] == 's04-live':
             body = 'The matching slide lets you switch contexts and inspect either head. Here, compute both sentences and print their final-query messages. These are hand-chosen worksheet parameters, not trained results.'
             figure = (FIG/'s03-weights1.svg').read_text()
         # SVGs are embedded, not fetched: the saved notebook keeps its figures offline.
-        cells.append(md(f'<a id="{step["key"]}"></a>\n## {step["title"]}\n\n[Matching slide]({link})\n\n{figure}\n\n{body}'))
+        cells.append(md(f'<a id="{step["key"]}"></a>\n## {step["title"]}\n\n{figure}\n\n{body}'))
         if step['key'] == 's04-live':
             cells.append(code('''for name in ['river', 'cheque']:
     ids = torch.tensor([[word_to_id[w.lower()] for w in worksheet['sentences'][name]]])
@@ -98,7 +122,9 @@ print('Individual head weights agree:', tuple(A_api.shape))'''))
 checkpoint, per-head weights and all three-seed results. The browser demo loads
 the actual exported checkpoints and measures generation on your device.
 
-References: [Attention Is All You Need, §3.2.2](https://arxiv.org/abs/1706.03762)
+Visual teaching references: [3Blue1Brown](https://www.3blue1brown.com/lessons/attention/)
+and [Jay Alammar](https://jalammar.github.io/illustrated-transformer/).
+Formula and API references: [Attention Is All You Need, §3.2.2](https://arxiv.org/abs/1706.03762)
 and [PyTorch MultiheadAttention](https://docs.pytorch.org/docs/stable/generated/torch.nn.MultiheadAttention.html).
 The diagrams and worked numbers here are original adaptations of our Part II example.'''))
     notebook=nbf.v4.new_notebook(cells=cells,metadata=dict(kernelspec=dict(display_name='Python 3',language='python',name='python3')))

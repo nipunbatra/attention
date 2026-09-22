@@ -7,17 +7,42 @@ The old Part III stays reproducible as `part2b.html` (optional reference), using
 `part2b.json`, the unchanged `sections3/`, `part3.js` and `toy3.json`.
 The new Part III uses `sections3-heads/`, `part3-heads.js`, and the Part II toy.
 
-Teaching sequence:
+## What the first rewrite got wrong
 
-1. The same name prediction and river-bank sentence; what could two heads read?
-2. Keep the full input row; learn separate Q/K/V projections.
-3. Work both score rows, softmaxes and value messages numerically.
-4. Concatenate messages, apply W_O, add the residual and predict one next token.
-5. Keep the complete map in view while adding shapes and short executable code.
-6. Train and generate with the same loss/loop as before.
-7. Replace only the attention calculation with `nn.MultiheadAttention`, and
-   check numerical equivalence after copying the weights.
-8. Inspect the genuine three-model experiment and browser demo.
+The initial 58-frame lecture introduced tensor bookkeeping before students could
+see why a second head helps. Generic box chains and tables replaced the held
+SVG drawings used in Part II. It also reused M for messages even though Part II
+already reserved M for the mask, and used H as the head count instead of the
+message matrix. Fit tests did not catch those teaching failures.
+
+## Revised visual sequence (30 frames)
+
+1. Hold the river-bank sentence fixed. Show the setting-reading arrows, then
+   person-reading arrows, then both. Explain that one head shares a weight row
+   across its value coordinates; it is not limited to reading one word.
+2. Make the two readings concrete: full input, separate query projections,
+   example key matches, separate softmax rows, then weighted value messages.
+3. Join the messages, multiply by W_O and add the update to the original e.
+   Return to the familiar next-token MLP and try the other bank context.
+4. Stack the rows: show actual 10×4, 4×2, 10×2 and 10×10 matrix silhouettes.
+   Trace the same receiving row. Keep Q/K, the mask, A, V and H identifiable.
+5. Write one short head function, call it twice, then show the PyTorch equivalent.
+   Keep batching, packed projections and the full training loop in the notebook.
+6. Compare measured trained results and open the real browser demo.
+
+The original detailed steps remain in `figures/multihead/lab-manifest.json` and
+Notebook 7, after the new visual story. `multihead_story.py` authors the lecture;
+`build_multihead_lesson.py` builds both resources from `head_worksheet.py`.
+
+Notation follows Part II: row vectors; e, Δe, e′; A for attention weights;
+α_ij for one entry; M for the mask; H=AV for messages. Parenthesized superscripts
+label heads. The number of heads is `n_heads`, not H. The main visual story uses
+one sequence before the optional lab introduces the batch axis.
+
+Visual teaching references are credited in the article and notebook:
+3Blue1Brown’s attention lesson and Jay Alammar’s Illustrated Transformer.
+The river-bank diagrams and numerical example are our own. We deliberately
+retain Part II’s row-vector convention rather than import 3Blue1Brown’s columns.
 
 Two separate sources of numbers: an explicitly hand-chosen two-head worksheet
 using Part II's exact embeddings/positions, and trained four-head TinyStories

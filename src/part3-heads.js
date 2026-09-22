@@ -5,19 +5,21 @@
   // but give this lesson its own notation card with per-head and packed shapes.
   AT.axes.named = false;
   const notation = [
-    ['matrix','E','Token embeddings plus position rows, before attention','B\\times T\\times D','2×10×4'],
-    ['matrix','Q^{(h)}, K^{(h)}, V^{(h)}','Projected rows within one head; h identifies the head','B\\times T\\times d_{\\text{head}}','2×10×2'],
-    ['matrix','A^{(h)}','Source weights for each receiving token, within one head','B\\times T\\times T','2×10×10'],
-    ['matrix','M^{(h)}=A^{(h)}V^{(h)}','The message rows from one head','B\\times T\\times d_{\\text{head}}','2×10×2'],
-    ['matrix','\\Delta E=\\operatorname{Concat}(M^{(1)},M^{(2)})W_O','Join the two messages and project them back to model width','B\\times T\\times D','2×10×4'],
-    ['matrix',"E'=E+\\Delta E",'Updated rows after the residual addition','B\\times T\\times D','2×10×4'],
-    ['sizes','B','Examples in the worksheet batch','','2'],
+    ['matrix','E','Token embeddings plus position rows, before attention','T\\times d_{\\text{model}}','10×4'],
+    ['matrix','Q^{(h)}, K^{(h)}, V^{(h)}','Projected rows within head h; the superscript labels a head','T\\times d_{\\text{head}}','10×2'],
+    ['matrix','A^{(h)}','Source weights for each receiving token, within one head','T\\times T','10×10'],
+    ['matrix','\\alpha_{ij}^{(h)}','One entry of A: head h, receiving token i, source token j','','scalar'],
+    ['matrix','M','Additive causal mask: 0 for allowed entries, −∞ for future sources','T\\times T','10×10'],
+    ['matrix','H^{(h)}=A^{(h)}V^{(h)}','Message rows from one head, using Part II’s H notation','T\\times d_v','10×2'],
+    ['matrix','\\Delta E=\\operatorname{Concat}(H^{(1)},H^{(2)})W_O','Join the two messages and project back to model width','T\\times d_{\\text{model}}','10×4'],
+    ['matrix',"E'=E+\\Delta E",'Updated embedding rows after the residual addition','T\\times d_{\\text{model}}','10×4'],
+    ['sizes','B','Examples in the optional notebook batch; the lecture first follows one sequence','','2'],
     ['sizes','T','Known tokens in each worksheet input','','10'],
-    ['sizes','D','Model representation width','','4'],
-    ['sizes','H','Number of heads','','2'],
+    ['sizes','d_{\\text{model}}','Model representation width (D in the notebook code)','','4'],
+    ['sizes','n_{\\text{heads}}','Number of heads; H is reserved for the message matrix','','2'],
     ['sizes','d_{\\text{head}}','Matching and value width per head in this worksheet','','2'],
-    ['sizes','W_Q^{(h)},W_K^{(h)},W_V^{(h)}','Each head reads the full input width','D\\times d_{\\text{head}}','4×2'],
-    ['sizes','W_Q,W_K,W_V,W_O','Packed projections and the output projection','D\\times D','4×4']
+    ['sizes','W_Q^{(h)},W_K^{(h)},W_V^{(h)}','Each head reads the full input width','d_{\\text{model}}\\times d_{\\text{head}}','4×2'],
+    ['sizes','W_Q,W_K,W_V,W_O','Packed projections and the output projection','d_{\\text{model}}\\times d_{\\text{model}}','4×4']
   ];
   notation.forEach(([g,sym,mean,shape,dims])=>AT.notation.push({g,sym,mean,shape,dims:()=>dims,parts:['multihead']}));
   const style = document.createElement('style');
@@ -45,9 +47,10 @@
     host.innerHTML='<div class="mh-controls"><label>Context <select id="s04-context"><option value="river">River bank</option><option value="cheque">Cheque at the bank</option></select></label><label>Inspect <select id="s04-head"><option value="0">Head 1</option><option value="1">Head 2</option></select></label></div><div class="mh-live-svg" id="s04-live-weights"></div><p class="mh-readout" id="s04-live-message"></p><p class="mh-readout" id="s04-live-prediction"></p>';
     function draw(){
       const F=compute(host.querySelector('#s04-context').value),head=Number(host.querySelector('#s04-head').value);
-      const words=F.tokens.map((t,j)=>`<text x="${155+j*98}" y="40" text-anchor="middle" font-size="18">${t}</text>`).join('');
-      const rows=F.heads.map((h,i)=>`<text x="8" y="${112+i*73}" font-size="23">Head ${i+1}</text>`+h.A.at(-1).map((a,j)=>`<rect x="${110+j*98}" y="${80+i*73}" width="90" height="48" fill="var(--c-a)" fill-opacity="${(i === head ? .10 : .03)+a*.65}"/><text x="${155+j*98}" y="${112+i*73}" text-anchor="middle" font-size="25" fill="var(--c-a)">${a.toFixed(3)}</text>`).join('')).join('');
-      host.querySelector('#s04-live-weights').innerHTML=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 220" role="img" aria-label="Computed attention rows for the final query" style="font-family:inherit;fill:var(--ink)">${words}${rows}</svg>`;
+      const words=F.tokens.map((t,j)=>`<text x="${95+j*106}" y="48" text-anchor="middle" font-size="21" fill="${j===9?'var(--c-q)':'var(--ink)'}">${t}</text>`).join('');
+      const weights=F.heads[head].A.at(-1);
+      const arrows=weights.map((a,j)=>`<text x="${95+j*106}" y="86" text-anchor="middle" font-size="22" fill="var(--c-a)">${a.toFixed(3)}</text><path d="M${95+j*106} 100 L760 216" fill="none" stroke="var(--c-a)" stroke-width="${.7+a*10}"/>`).join('');
+      host.querySelector('#s04-live-weights').innerHTML=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 280" role="img" aria-label="Recomputed source weights and information paths for the selected head" style="font-family:inherit;fill:var(--ink)">${words}${arrows}<rect x="672" y="219" width="178" height="47" rx="4" stroke="var(--c-q)" fill="white"/><text x="761" y="250" font-size="25" text-anchor="middle" fill="var(--c-q)">10 · ${F.tokens[9]}</text><text x="18" y="227" font-size="25">Head ${head+1}</text><text x="18" y="259" font-size="22" fill="var(--muted)">thicker line = larger weight</text></svg>`;
       const vector=x=>'['+x.map(v=>v.toFixed(3)).join(', ')+']';
       host.querySelector('#s04-live-message').textContent=`Head ${head+1}: q₁₀ = ${vector(F.heads[head].Q.at(-1))}; message = ${vector(F.heads[head].messages.at(-1))}.`;
       const top=F.probabilities.at(-1).map((p,i)=>({word:model.vocab[i],p})).sort((a,b)=>b.p-a.p).slice(0,3);

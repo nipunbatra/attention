@@ -1,0 +1,350 @@
+[
+  {
+    "key": "s01-name",
+    "title": "Which earlier characters might help?",
+    "body": "Part I predicted the next character in a name such as aabid. The question stays the same; we are changing how the model reads the known context.",
+    "code": ""
+  },
+  {
+    "key": "s01-river",
+    "title": "Back to the river bank",
+    "body": "One query can benefit from several clues at once. What setting are we in? Who is there?",
+    "code": ""
+  },
+  {
+    "key": "s01-scope",
+    "title": "Keep the two examples separate",
+    "body": "The worksheet explains the arithmetic. Held-out results later tell us whether the trained models improved.",
+    "code": ""
+  },
+  {
+    "key": "s02-break",
+    "title": "From one weight row to two",
+    "body": "What changes when the same input passes through two sets of projections?",
+    "code": ""
+  },
+  {
+    "key": "s02-one",
+    "title": "One head produces one message",
+    "body": "One head can already read several sources. Its value coordinates share the same attention weights.",
+    "code": ""
+  },
+  {
+    "key": "s02-two",
+    "title": "Two heads keep two messages",
+    "body": "Each head has its own Q, K and V projections and its own softmax. Both receive the full E.",
+    "code": ""
+  },
+  {
+    "key": "s02-full",
+    "title": "Project first; split the projected coordinates",
+    "body": "We split Q, K and V after projection. We do not give head 1 the first half of the raw embedding and head 2 the second half.",
+    "code": ""
+  },
+  {
+    "key": "s02-columns",
+    "title": "Separate heads can use different input features",
+    "body": "These are two 4\u00d72 matrices placed side by side. Every head can learn from every input coordinate.",
+    "code": ""
+  },
+  {
+    "key": "s03-break",
+    "title": "Two heads, one receiving token",
+    "body": "Keep the final \u201cthe\u201d at position 10 as the query throughout.",
+    "code": ""
+  },
+  {
+    "key": "s03-input",
+    "title": "Start with the same position-aware rows",
+    "body": "E already includes token embedding + position embedding. Token IDs are not embedding coordinates.",
+    "code": ""
+  },
+  {
+    "key": "s03-q1",
+    "title": "The first query asks about the setting",
+    "body": "Our chosen projection copies the glue coordinate into both query coordinates: [2.3, 2.3].",
+    "code": ""
+  },
+  {
+    "key": "s03-q2",
+    "title": "The second query uses a different projection",
+    "body": "The same input row now produces [2.3, 0.0]. The query changes because the projection matrix changes.",
+    "code": ""
+  },
+  {
+    "key": "s03-keys",
+    "title": "The source keys are different too",
+    "body": "Head 1 exposes water/finance features. Head 2 exposes person/glue features. These labels belong to this designed worksheet.",
+    "code": ""
+  },
+  {
+    "key": "s03-dot1",
+    "title": "Head 1 scores the river key",
+    "body": "The scaling uses the head width: two coordinates, not four.",
+    "code": ""
+  },
+  {
+    "key": "s03-dot2",
+    "title": "Head 2 scores the fisherman key",
+    "body": "We compare each head\u2019s query only with keys from that same head.",
+    "code": ""
+  },
+  {
+    "key": "s03-weights1",
+    "title": "Head 1: scores become a weight row",
+    "body": "Each weight is exp(score) divided by the sum of exp(scores) in this row. All ten sources are allowed for the final query.",
+    "code": ""
+  },
+  {
+    "key": "s03-weights2",
+    "title": "Head 2 has its own softmax",
+    "body": "Normalize over sources within head 2. Do not normalize across heads or average their scores.",
+    "code": ""
+  },
+  {
+    "key": "s03-value1",
+    "title": "Head 1 sends water and finance information",
+    "body": "The river contribution is its weight \u00d7 its value row. Add the contributions from every source to get the two-coordinate message.",
+    "code": ""
+  },
+  {
+    "key": "s03-value2",
+    "title": "Head 2 sends a different kind of message",
+    "body": "The second head mixes its own values with its own weights. Matching features choose where to read; values carry the information.",
+    "code": ""
+  },
+  {
+    "key": "s04-break",
+    "title": "Bring the two messages back together",
+    "body": "How do two small message rows become one update to the original row?",
+    "code": ""
+  },
+  {
+    "key": "s04-join",
+    "title": "Concatenate the messages, not the tokens",
+    "body": "Two 2-coordinate rows become one 4-coordinate row. Concatenation preserves both feature groups; it does not average them.",
+    "code": ""
+  },
+  {
+    "key": "s04-wo",
+    "title": "W_O can mix information across heads",
+    "body": "Water update = 2.617 + 0.25 \u00d7 1.552 = 3.005. W_O maps the joined message back to model width.",
+    "code": ""
+  },
+  {
+    "key": "s04-residual",
+    "title": "Add the update to the original row",
+    "body": "The residual is the same addition as in Part II. There is still one updated row per input token.",
+    "code": ""
+  },
+  {
+    "key": "s04-predict",
+    "title": "The prediction MLP stays in place",
+    "body": "Choose a token only after vocabulary softmax. Attention weights choose source positions; vocabulary probabilities choose possible next tokens.",
+    "code": ""
+  },
+  {
+    "key": "s04-live",
+    "title": "Change the context; inspect both heads",
+    "body": "<div id=\"s04-head-explorer\"></div>",
+    "code": ""
+  },
+  {
+    "key": "s05-break",
+    "title": "From the drawing to tensors",
+    "body": "Keep B = 2 examples, T = 10 tokens, D = 4 coordinates and n_heads = 2.",
+    "code": ""
+  },
+  {
+    "key": "s05-model",
+    "title": "Create the tables, projections and prediction MLP",
+    "body": "The download defines every layer. Load the hand-chosen worksheet weights to reproduce the printed numbers; ordinary training starts from random parameters.",
+    "code": "model = TinyMultiHeadLM(vocab_size=20, context=10,\n                        width=4, heads=2, hidden=8)\nload_worksheet_weights(model, worksheet)"
+  },
+  {
+    "key": "s05-batch",
+    "title": "Two input windows form one batch",
+    "body": "These are integer IDs, not embeddings. Each example has one observed target.",
+    "code": "X = torch.tensor([river_ids, cheque_ids])\ny = torch.tensor([word_to_id[\"water\"], word_to_id[\"teller\"]])"
+  },
+  {
+    "key": "s05-embed-map",
+    "title": "Find the embedding lookup on the map",
+    "body": "We have token IDs. Next, look up their learned rows and add the position rows. Both heads will read the result.",
+    "code": ""
+  },
+  {
+    "key": "s05-embed",
+    "title": "Look up token rows and add position rows",
+    "body": "The embedding tables are learned parameters. E contains floating-point vectors with shape [2,10,4].",
+    "code": "positions = torch.arange(X.shape[1])\nE = model.token_embedding(X) + model.position_embedding(positions)"
+  },
+  {
+    "key": "s05-project",
+    "title": "Project the full input three times",
+    "body": "Different learned matrices give matching queries, matching keys and transmitted values.",
+    "code": "Q = model.attention.W_Q(E)\nK = model.attention.W_K(E)\nV = model.attention.W_V(E)"
+  },
+  {
+    "key": "s05-split",
+    "title": "Make the head axis explicit",
+    "body": "reshape groups projected coordinates; transpose puts heads before tokens. Apply the same operation to K and V.",
+    "code": "Q = Q.reshape(2, 10, 2, 2).transpose(1, 2)\nK = K.reshape(2, 10, 2, 2).transpose(1, 2)\nV = V.reshape(2, 10, 2, 2).transpose(1, 2)"
+  },
+  {
+    "key": "s05-scores",
+    "title": "Compute every query\u2013key pair within each head",
+    "body": "The first two axes keep examples and heads separate. Matrix multiplication contracts only the matching-coordinate axis.",
+    "code": "scores = Q @ K.transpose(-2, -1)\nscores = scores / math.sqrt(2)"
+  },
+  {
+    "key": "s05-mask",
+    "title": "Block future sources in every head",
+    "body": "True marks a blocked entry. The same causal mask broadcasts across both examples and both heads.",
+    "code": "future = torch.ones(10, 10, dtype=torch.bool).triu(1)\nscores = scores.masked_fill(future, float(\"-inf\"))"
+  },
+  {
+    "key": "s05-softmax",
+    "title": "Each row becomes a distribution over sources",
+    "body": "The final axis indexes source tokens. Every allowed row sums to one; masked entries have weight zero.",
+    "code": "A = scores.softmax(dim=-1)\nassert A.shape == (2, 2, 10, 10)"
+  },
+  {
+    "key": "s05-mix",
+    "title": "Multiply the weights by the values",
+    "body": "The source-token axis is summed out. Each head keeps its own two-coordinate message.",
+    "code": "messages = A @ V"
+  },
+  {
+    "key": "s05-join",
+    "title": "Put each token\u2019s head messages side by side",
+    "body": "Transpose before reshaping. A direct reshape of the original layout would mix token rows with head rows.",
+    "code": "joined = messages.transpose(1, 2).contiguous()\njoined = joined.reshape(2, 10, 4)"
+  },
+  {
+    "key": "s05-output-map",
+    "title": "Return to the shared prediction path",
+    "body": "The two head messages are joined. W_O mixes them, and the residual adds that update to the original E.",
+    "code": ""
+  },
+  {
+    "key": "s05-output",
+    "title": "Project, add, and keep the final row",
+    "body": "W_O combines the heads. The residual keeps E. Only the last updated row feeds this next-token loss.",
+    "code": "delta = model.attention.W_O(joined)\nupdated = E + delta\nlogits = model.readout(F.relu(model.hidden(updated[:, -1])))"
+  },
+  {
+    "key": "s06-break",
+    "title": "The rest of the learning loop is familiar",
+    "body": "More heads change the context update, not the definition of the next-token target.",
+    "code": ""
+  },
+  {
+    "key": "s06-loss",
+    "title": "Score the two observed targets",
+    "body": "Cross-entropy reads logits and observed token IDs. Do not sample a generated token to make the training target.",
+    "code": "logits = model(X)\nloss = F.cross_entropy(logits, y)"
+  },
+  {
+    "key": "s06-update",
+    "title": "One loss trains all the projections",
+    "body": "Heads are not assigned jobs or separate labels. They receive gradients from the same prediction loss.",
+    "code": "optimizer = torch.optim.AdamW(model.parameters(), lr=0.001)\noptimizer.zero_grad()\nloss.backward()\noptimizer.step()"
+  },
+  {
+    "key": "s06-prompt",
+    "title": "Start generation from known token IDs",
+    "body": "We already encoded the river sentence. A real application tokenizes and looks up a new prompt with the same vocabulary.",
+    "code": "history = torch.tensor([river_ids])\nmodel.eval()"
+  },
+  {
+    "key": "s06-infer",
+    "title": "Generate one token, then repeat",
+    "body": "At inference, weights stay fixed. The current prefix becomes longer; we keep only the configured context window.",
+    "code": "with torch.no_grad():\n    logits = model(history[:, -model.context:])\nnext_id = logits.argmax(dim=-1, keepdim=True)\nhistory = torch.cat([history, next_id], dim=1)"
+  },
+  {
+    "key": "s06-map",
+    "title": "Trace one request through the full model",
+    "body": "Start at the known IDs. Name the shape at each arrow. Where does the observed target enter during training? It enters only at the loss.",
+    "code": ""
+  },
+  {
+    "key": "s07-break",
+    "title": "The same operation, packaged by PyTorch",
+    "body": "Which boxes does nn.MultiheadAttention replace?",
+    "code": ""
+  },
+  {
+    "key": "s07-api-map",
+    "title": "Replace the head calculation, not the whole model",
+    "body": "The PyTorch layer replaces both heads, their concatenation and W_O. We still add the residual and use our prediction MLP.",
+    "code": ""
+  },
+  {
+    "key": "s07-api",
+    "title": "Create the multi-head attention layer",
+    "body": "batch_first=True means [B,T,D]. bias=False and dropout=0 match our scratch implementation.",
+    "code": "mha = nn.MultiheadAttention(\n    embed_dim=4, num_heads=2, bias=False,\n    dropout=0.0, batch_first=True)"
+  },
+  {
+    "key": "s07-call",
+    "title": "Pass E as query, key and value input",
+    "body": "PyTorch performs the learned projections internally. average_attn_weights=False preserves the head axis in the returned weight tensor.",
+    "code": "delta, A = mha(E, E, E, attn_mask=future,\n               average_attn_weights=False)\nupdated = E + delta"
+  },
+  {
+    "key": "s07-check",
+    "title": "Compare the same weights, not two random layers",
+    "body": "The notebook copies the scratch Q/K/V and W_O parameters into PyTorch, then checks both outputs numerically.",
+    "code": "mha = copy_to_pytorch(model.attention)\ndelta_scratch, A_scratch = model.attention(E)\ndelta_api, A_api = mha(E, E, E, attn_mask=future,\n                      average_attn_weights=False)\ntorch.testing.assert_close(delta_api, delta_scratch)"
+  },
+  {
+    "key": "s07-boundary",
+    "title": "What the attention block does not include",
+    "body": "nn.MultiheadAttention does not add position embeddings, the residual, a vocabulary head or a training loop.",
+    "code": ""
+  },
+  {
+    "key": "s08-break",
+    "title": "Do more heads help this experiment?",
+    "body": "Move from the small worksheet to the actual TinyStories checkpoints.",
+    "code": ""
+  },
+  {
+    "key": "s08-width",
+    "title": "More heads need not mean more parameters",
+    "body": "Q, K, V and W_O remain 64\u00d764. The number of attention patterns grows, while each pattern uses fewer matching coordinates.",
+    "code": ""
+  },
+  {
+    "key": "s08-scores",
+    "title": "Four heads improved held-out prediction here",
+    "body": "Three-seed means. Same stories, tokenizer, context and update budget; validation-selected checkpoints. Perplexity = exp(cross-entropy). Lower is better. This does not guarantee better text for every prompt.",
+    "code": ""
+  },
+  {
+    "key": "s08-costs",
+    "title": "Compare the cost as well as the score",
+    "body": "Mean training time on Apple M2 Max/MPS, including validation checks. Both attention models have equal parameter counts; the MLP is larger.",
+    "code": ""
+  },
+  {
+    "key": "s08-demo",
+    "title": "Try the same prompt with all three models",
+    "body": "<a href=\"word-lab/\" target=\"_blank\" rel=\"noopener\">Open the live browser demo \u2197</a> Compare continuations, vocabulary coverage and generation time. This runs real checkpoints with WebGPU or WASM.",
+    "code": ""
+  },
+  {
+    "key": "s08-notebooks",
+    "title": "Run the calculation yourself",
+    "body": "<a href=\"notebooks/wordlm/07_multihead_step_by_step.html\">Step-by-step notebook</a> \u00b7 <a href=\"notebooks/wordlm/06_multihead_comparison.html\">Measured experiment</a> \u00b7 <a href=\"part2b.html\">Optional reference</a>",
+    "code": ""
+  },
+  {
+    "key": "s08-next",
+    "title": "Next: read a different sequence",
+    "body": "So far, Q, K and V came from the same sequence. <a href=\"part4.html\">Part IV changes that: cross-attention reads another sequence.</a>",
+    "code": ""
+  }
+]

@@ -1,5 +1,36 @@
 # Classroom release checks
 
+## 2026-09-22 · Visual rewrite after instructor review
+
+- Replaced the 58-frame main lesson with 30 visual frames in six sections.
+  The first five frames hold the river sentence fixed and compare its two
+  reading patterns before introducing additional projection matrices. The
+  detailed tensor walkthrough remains in Notebook 7, after the visual story.
+- Audited against Part II and the instructor’s whiteboard rules. Fixed the
+  notation collision: M remains the mask; H=AV remains the message matrix;
+  e, Δe and e′ retain their earlier meanings. Head labels are parenthesized
+  superscripts, not token indices. The head count is not called H.
+- New editable SVGs show weighted source-to-receiver arrows, labelled toy
+  coordinates, query matrices, message concatenation, output projection,
+  residual addition and actual matrix row/column counts. The recurring model
+  map retains fixed node positions and adds the training loss at its final use.
+  Shorter titles and explanations follow the humanizer pass. Visual inspiration
+  from 3Blue1Brown and Jay Alammar is credited in the article and notebook.
+- Reviewed the rendered story, not just fit reports. Corrected touching diagram
+  nodes, crowded head-grid labels, source-column spacing, a parameter/activation
+  label, and the distinction between update rows ΔE and updated rows E′.
+- Verification: 30 frames and 1,840 independently computed values; live context
+  and head controls; SVG label bounds; matching embedded notebook figures;
+  executed notebook cells; local links and 390px reading-mode containment.
+  All 31 presentation states (including cover) and 31 formulas pass at both
+  1280×720 and 1024×768. All 52 Python tests pass. A freshly extracted download
+  passes the nine scratch/head-story tests, including direct execution of the
+  short slide code and identical-weight PyTorch parity. Metadata checks pass.
+- No trained weights, benchmark results, corpus, dependencies or other lecture
+  parts changed. Viewport checks are not physical projector/AirServer tests.
+  The prior fit checks did not establish teaching quality; instructor review
+  remains the test of whether this sequence is useful in class.
+
 ## 2026-09-22 · Part III rebuilt around multi-head attention
 
 - The main Part III now has 58 paced teaching frames plus the cover, in eight

@@ -278,7 +278,7 @@ def export_bundle(out):
     # Explicit allow-list. No private Site files, raw corpus, credentials or work/.
     selected=['wordlm.py','pipeline_maps.py','slow_walkthrough.py','build_slow_lesson.py','code_display.py','make_notebooks.py','walkthrough_cells.py','lesson_evidence.json','story_examples.json','lesson.css','requirements.txt','prepare_data.py','run_experiments.py','README.md']
     selected += ['multihead.py','run_head_comparison.py','export_browser_lab.py','build_head_lesson.py','requirements-export.txt']
-    selected += ['multihead_from_scratch.py','build_head_walkthrough.py','multihead-worksheet.json']
+    selected += ['multihead_from_scratch.py','build_head_walkthrough.py','multihead-worksheet.json','multihead-story.json']
     selected += [p.name for p in ROOT.glob('0[1-7]_*.ipynb')]
     selected += ['artifacts/heads/'+p.name for p in (ROOT/'artifacts/heads').glob('*') if p.suffix in {'.json','.npz'}]
     selected += ['artifacts/'+p.name for p in (ROOT/'artifacts').iterdir() if p.suffix in {'.json','.npz','.csv'} or p.name=='SHA256SUMS']
