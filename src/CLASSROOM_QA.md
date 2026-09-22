@@ -1,5 +1,20 @@
 # Classroom release checks
 
+## 2026-09-22: explain the unknown-token lookup
+
+- The special-token slide now explains that blue is absent from the ten-item
+  toy vocabulary and maps to UNK ID 3. Its two-line snippet names the result
+  token_ids and prints [3]. The visible copy explains that boundaries=False
+  omits BOS and EOS. No extra frame or change to the four-token table.
+- The matching notebook distinguishes tokens, IDs and embeddings, then executes
+  both boundary settings: [3] without boundaries and [1,3,2] with them. Rebuilt
+  the guide and download, executed Notebook 5 in a fresh kernel with an isolated
+  Jupyter config, and verified the ZIP contains that exact executed notebook.
+- All 38 Python tests pass. The 89 pipeline frames pass 1280/1024px presentation
+  and 390px reading checks. The companion passes all 88 figure comparisons,
+  execution and local-link checks at 1280/768/390px. Visually inspected the
+  updated slide at 1280×720 with no overflow or smaller fonts.
+
 ## 2026-09-22: motivate relative positions with worked limitations
 
 - Put the limitations before the relative-position divider. A four-row learned

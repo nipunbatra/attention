@@ -21,6 +21,10 @@ try{
   assert.equal(await page.locator('template[id^="pipeline-"]').count(),4);
   assert.equal(await page.locator('.pipeline-lesson script[type="text/x-notes"]').count(),ids.length);
   assert.match(await page.locator('#s19-pipeline-boundaries').innerText(),/7 supervised targets/);
+  const specialCopy=await page.locator('#s19-pipeline-special .step-copy').innerText();
+  assert.match(specialCopy,/blue is missing from our toy vocabulary.*\[3\], the UNK ID/s);
+  assert.match(specialCopy,/boundaries=False.*do not add BOS or EOS/s);
+  assert.equal(await page.locator('#s19-pipeline-special pre').innerText(),"token_ids = vocab.encode_tokens(['blue'], boundaries=False)\nprint(token_ids)  # [3]: UNK");
   for(const id of ['pair-append','pair-append-second','pairs-loop']){
     const code=await page.locator('#s19-pipeline-'+id+' pre').innerText();
     assert(code.includes('contexts.append(context_ids)'),id+' exposes input storage');

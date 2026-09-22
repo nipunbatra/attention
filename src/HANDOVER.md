@@ -10,6 +10,16 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+2026-09-22 unknown-token clarification:
+
+- Keep the special-token slide's explicit result: blue is absent from the toy
+  vocabulary, so encode_tokens returns [3], the UNK ID. boundaries=False omits
+  BOS/EOS. Notebook 5 also runs boundaries=True to show [1,3,2] and distinguishes
+  token-to-ID lookup from embedding lookup. The 88-step order is unchanged.
+- After build_slow_lesson.py, execute Notebook 5 with nbconvert in an isolated
+  JUPYTER_CONFIG_DIR, then call export_bundle(ROOT) to refresh the ZIP with the
+  fully executed notebook. The builder alone leaves the setup cell unexecuted.
+
 2026-09-22 position-section pacing and limitations (current structure):
 
 - The position lesson has 42 presentation frames instead of 49. Its five

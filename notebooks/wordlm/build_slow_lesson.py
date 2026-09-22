@@ -46,7 +46,7 @@ SLIDE_CODE = {
  'tokenization-rules':None,
  'tokenize':'pieces = tokenize(sentence)',
  'vocabulary':'for token_id, word in enumerate(words):\n    print(word, token_id)',
- 'special':"unknown = vocab.encode_tokens(['blue'], boundaries=False)",
+ 'special':"token_ids = vocab.encode_tokens(['blue'], boundaries=False)\nprint(token_ids)  # [3]: UNK",
  'boundaries':'ids = vocab.encode_tokens(pieces)',
  'shapes':'B, w, C = 2, 4, 10\nd, h, d_k, d_v = 4, 8, 3, 2',
  'positions':'token_rows = attention.token_embedding(X)\nposition_rows = attention.position_embedding(torch.arange(w))\nE = token_rows + position_rows[None, :, :]',

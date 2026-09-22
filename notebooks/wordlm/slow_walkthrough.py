@@ -119,10 +119,15 @@ print(vocab.stoi)
 ''', focus=('tokenize','ids'))
 
 step('special', 'Four special tokens have different jobs', '1. Data and tokens',
-     'BOS marks the start of each story. EOS is an observed stopping target. PAD fills unused input slots. UNK represents a word missing from the fitted vocabulary.', '''
-unknown = vocab.encode_tokens(tokenize('blue'), boundaries=False)
-assert unknown == [vocab.unk_id]
-print('blue maps to', words[unknown[0]])
+     'blue is missing from our toy vocabulary, so this lookup returns [3], the UNK ID. boundaries=False means “do not add BOS or EOS”. The input [\'blue\'] is already a list of tokens; encode_tokens looks up their integer IDs, without creating embeddings. With boundaries=True, the same call returns [1, 3, 2]: BOS, UNK, EOS.', '''
+assert 'blue' not in vocab.stoi
+token_ids = vocab.encode_tokens(['blue'], boundaries=False)
+print(token_ids)  # [3]: UNK
+assert token_ids == [3] == [vocab.unk_id]
+
+with_boundaries = vocab.encode_tokens(['blue'], boundaries=True)
+print('With BOS and EOS:', with_boundaries)  # [1, 3, 2]
+assert with_boundaries == [vocab.bos_id, vocab.unk_id, vocab.eos_id]
 ''', focus=('ids','windows'))
 
 step('boundaries', 'Add the story boundaries once', '1. Data and tokens',

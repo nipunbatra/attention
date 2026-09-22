@@ -74,6 +74,27 @@ def test_tokenization_detour_matches_the_actual_rules_without_changing_the_toy()
     assert 'illustrative' in render_figure(choices,ns)
 
 
+def test_unknown_token_example_explains_the_lookup_and_boundary_flag():
+    from build_slow_lesson import SLIDE_CODE
+    ns = initial_namespace()
+    for stage in STAGES:
+        exec(stage['code'], ns)
+        if stage['id'] == 'special':
+            break
+    assert 'blue' not in ns['vocab'].stoi
+    assert ns['token_ids'] == [3]
+    assert ns['words'][ns['token_ids'][0]] == '<UNK>'
+    assert ns['with_boundaries'] == [1, 3, 2]
+    assert "['blue']" in SLIDE_CODE['special']
+    assert 'print(token_ids)  # [3]: UNK' in SLIDE_CODE['special']
+    assert SLIDE_CODE['special'] in stage['code']
+    # The slide exporter keeps the first two sentences. Both must explain the call.
+    shown = '. '.join(stage['body'].split('. ')[:2])
+    assert 'missing from our toy vocabulary' in shown
+    assert '[3], the UNK ID' in shown
+    assert 'boundaries=False' in shown and 'do not add BOS or EOS' in shown
+
+
 def test_notebook_stages_are_complete_and_linked():
     from build_slow_lesson import notebook_cells
     import nbformat as nbf
