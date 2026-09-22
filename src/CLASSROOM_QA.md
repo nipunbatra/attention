@@ -1,5 +1,27 @@
 # Classroom release checks
 
+## 2026-09-22 · Q/K/V bridge and multi-head motivation
+
+- The opening now computes a two-source value mixture, then gives the two
+  features separate source weights. This labelled illustration precedes the
+  ten-token worksheet rather than silently replacing its numbers.
+- Recalled Part II's Maya query/key/value example, connected those roles to
+  the river prefix, and split the query calculation into one frame per head.
+  Source keys and values appear before scores. The equal K/V projection entries
+  are identified as a simplifying choice, not a requirement of attention.
+- Replaced numeric transition markers with topic dividers. The recurring
+  architecture diagram separates concatenation and output projection, including
+  the shapes and the fact that projection can mix features without resizing.
+  The humanizer pass kept titles and explanations tied to the visible example.
+- Verification: 55 Python tests pass. Notebook 7 has 131 cells, executes every
+  code cell, and embeds the same figures. The browser check passes for all 39 main frames,
+  1,840 worksheet values, live controls, SVG bounds, notebook parity and mobile
+  containment. All 40 presentation states fit at 1280×720 and 1024×768, with
+  35 parsed formulas and no errors. All eight affected teaching diagrams were
+  inspected at 1280×720; the recap, overview and query also at 1024×768.
+  Twelve focused tests pass from the extracted ZIP. Metadata and whitespace
+  checks pass. Trained weights and scores are unchanged.
+
 ## 2026-09-22 · Width and bias clarification audit
 
 - Kept the approved six-section story and added four frames (34 total).

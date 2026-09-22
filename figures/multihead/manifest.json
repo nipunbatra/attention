@@ -7,9 +7,23 @@
     "companion": ""
   },
   {
+    "key": "s01-v-shared",
+    "title": "One head mixes the value rows",
+    "body": "Suppose we want setting clues from river and person clues from fisherman. A single head uses one source weight for every coordinate of each value.",
+    "code": "",
+    "companion": "<p>This two-source illustration uses invented values and normalized weights, separately from the ten-token worksheet that follows. A weight of 0.8 on river scales both of its value coordinates. A head can attend to multiple sources, but cannot choose a separate attention weight for each value coordinate.</p>"
+  },
+  {
+    "key": "s01-v-independent",
+    "title": "Two heads can choose different mixtures",
+    "body": "Let one head return the setting feature and another return the person feature. Each head can choose its own source weights. Their outputs stay separate until the output projection.",
+    "code": "",
+    "companion": "<p>Both heads receive both source rows. For this illustration, one value projection selects the setting coordinate and the other selects the person coordinate. The total output width stays two. The example demonstrates independent weighting, not a guarantee that two trained heads outperform every one-head model. The following slides return to our ten-token, four-coordinate worksheet.</p>"
+  },
+  {
     "key": "s01-v-one",
-    "title": "One head can read the setting",
-    "body": "In this hand-chosen two-head example, the first head gives river a large weight. Its values carry setting information to the receiver.",
+    "title": "Setting clues in the full sentence",
+    "body": "Back to all ten tokens. Our hand-chosen head 1 gives river a large weight. Its values carry setting information to the receiver.",
     "code": "",
     "companion": "<p>These are hand-chosen two-head parameters applied to Part II\u2019s exact input rows. \u201cSetting\u201d and \u201cperson\u201d name the intended behaviour of this example, not jobs assigned to trained heads. Arrows show information moving from source to receiver; their widths encode computed attention weights.</p>"
   },
@@ -17,13 +31,6 @@
     "key": "s01-v-two",
     "title": "Another head can read who is there",
     "body": "The sentence and receiver stay fixed. A different head gives fisherman a large weight.",
-    "code": "",
-    "companion": ""
-  },
-  {
-    "key": "s01-v-shared",
-    "title": "One head shares one set of source weights",
-    "body": "A single head can mix many words. But every coordinate of its message uses the same attention-weight row.",
     "code": "",
     "companion": ""
   },
@@ -36,24 +43,52 @@
   },
   {
     "key": "s02-v-break",
-    "title": "How do we make the readings different?",
+    "title": "How does each head choose what to read?",
     "body": "",
     "code": "",
     "companion": "<p>Visual inspiration: <a href=\"https://www.3blue1brown.com/lessons/attention/\">3Blue1Brown\u2019s attention lesson</a> and <a href=\"https://jalammar.github.io/illustrated-transformer/\">Jay Alammar\u2019s Illustrated Transformer</a>. We keep our own river-bank example, numbers and Part II row-vector convention. A head-specific superscript labels a head; a subscript still labels a token.</p>"
   },
   {
+    "key": "s02-v-recall",
+    "title": "Recall the Maya example: query, key and value",
+    "body": "In Part II\u2019s illustrative later-layer example, the query asks for a person. Maya\u2019s key can match that request. Her value supplies useful details. A head uses separate projections for these roles.",
+    "code": "",
+    "companion": "<p>This is the verbal example from <a href=\"attention.html#s11-frame-separate-maps\">Part II</a>. It illustrates possible later-layer representations, not measured model outputs. Earlier layers may have gathered the preceding facts into the second Maya row. Every token has a query, key and value, even though this example follows only She\u2019s query and Maya\u2019s key/value. The actual vectors contain numbers, not written questions or records.</p>"
+  },
+  {
     "key": "s02-v-plan",
-    "title": "Give both heads the same input",
-    "body": "We will zoom into these two branches. Each starts with the same embedding rows and sends back its own message.",
+    "title": "The two heads and the output projection",
+    "body": "Both heads read \\(E\\). Concatenation joins their message coordinates. \\(W_O\\) projects the joined messages into embedding space before we add the update to \\(E\\).",
+    "code": "",
+    "companion": "<p>H\u00b9 and H\u00b2 each have shape [10, 2]. Concatenation gives [10, 4]. Multiplying by W_O [4, 4] gives \u0394E [10, 4]. Here the joined width already equals the embedding width. The projection still learns how to mix head outputs into embedding coordinates; it need not change the width. In general W_O has shape [n_heads \u00d7 d_v, d_model]. It is not an inverse of the input projections.</p>"
+  },
+  {
+    "key": "s02-v-roles",
+    "title": "The same roles in the river example",
+    "body": "Head 1 can ask about the setting; head 2 can ask about the person. These are interpretations of our chosen numbers. Training learns the projections without assigning these jobs.",
     "code": "",
     "companion": ""
   },
   {
     "key": "s02-v-query",
-    "title": "The same embedding makes two queries",
-    "body": "Both heads read all four input coordinates. Superscripts label the heads. We choose two query/key coordinates per head here; Part II\u2019s toy used three.",
+    "title": "Head 1: computing the setting query",
+    "body": "In this toy, the final \u201cthe\u201d has only a nonzero glue coordinate. The two columns of \\(W_Q\\) turn that input into water and finance matching features.",
     "code": "",
-    "companion": "<p>E contains position-aware embedding rows, not token IDs. The labelled water, finance, person and glue axes are invented for this teaching example. The displayed W_Q matrices are deliberately sparse; learned projections need not be. Superscripts 1 and 2 identify the two heads, not exponentiation.</p>"
+    "companion": "<p>E contains position-aware embedding rows, not token IDs. The water, finance, person and glue axes are invented for teaching; glue is our toy feature for function words such as \u201cthe\u201d. W_Q reads all four input coordinates. Each query coordinate is a dot product with one column of W_Q. These sparse matrices are hand-chosen; learned projections need not be sparse or interpretable. The head superscripts label heads, not powers. Query/key width is two per head here; Part II\u2019s single-head toy used three.</p>"
+  },
+  {
+    "key": "s02-v-query-person",
+    "title": "Head 2: computing the person query",
+    "body": "The input embedding stays [0, 0, 0, 2.3]. Head 2 uses its own \\(W_Q\\). Its query requests the person feature and gives zero weight to the glue matching feature.",
+    "code": "",
+    "companion": ""
+  },
+  {
+    "key": "s02-v-sources",
+    "title": "Source rows supply keys and values",
+    "body": "Each head has its own \\(W_K\\) and \\(W_V\\), both \\(4\\times2\\) here. For easy arithmetic, they select the same coordinates. Keys determine matching; values carry the numbers we mix.",
+    "code": "",
+    "companion": "<p>Head 1 uses W_K = W_V = [[1,0],[0,1],[0,0],[0,0]], selecting water and finance. Head 2 uses W_K = W_V = [[0,0],[0,0],[1,0],[0,1]], selecting person and glue. Each matrix is [4,2] and acts on every source row, including sources not shown here. W_K and W_V are distinct parameters with equal numerical entries in this worksheet. They need not be equal in a trained model. In Part II\u2019s Maya example they served different roles too.</p>"
   },
   {
     "key": "s02-v-match",

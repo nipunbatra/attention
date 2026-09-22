@@ -362,7 +362,7 @@ Build each part once in any order. `assemble.py` derives available lesson target
 
 The standalone staged diagram lives in `figures/attention-diagram-preview/`. Part 2 embeds its same `diagram.js` source through `src/attention-flow-data.js`; keep the preview and article synchronized by changing that shared source.
 
-Part III now has a 34-frame visual story in `multihead_story.py`. Its generator
+Part III now has a 39-frame visual story in `multihead_story.py`. Its generator
 also retains the 58-step detailed tensor lab for Notebook 7 only. The two manifests
 are `figures/multihead/manifest.json` and `lab-manifest.json`; do not put the
 full lab back into the lecture. The notebook embeds the visual story first,
@@ -372,6 +372,11 @@ the head count and parenthesized superscripts for individual heads.
 The four width/bias clarification frames keep the same worksheet projections:
 one wide head normalizes once, while two heads normalize separately. Optional
 projection biases are distinct from positions, masks and prediction-MLP biases.
+The opening two-source mixture illustration is separate from the ten-token
+worksheet. A Maya Q/K/V recap bridges Part II to the two query calculations.
+All three section dividers use topic labels, not ambiguous numeric transitions.
+The repeated architecture map separates concatenation from W_O and labels
+their shapes; W_O mixes into embedding coordinates even when width is unchanged.
 
 Part 1's four diagrams live in `part1-diagrams.js` and are inserted by `assemble.py`. They adapt the original handwritten
 notes' visual sequence while reading current `AT.mlp` numbers: actual embedding geometry, repeated lookup and ordered
@@ -389,7 +394,7 @@ Boundary `-` stops generation. The observed target enters loss on a separate bra
 - The vocabulary head maps the final known token's contextual row to next-token logits. During generation, append the chosen token and recompute for the new last position. The unknown next token does not provide a query.
 - Keep the bank/river/finance examples and work arithmetic progressively. Intuitive English questions and named axes explain a contrived model; real projections learn vectors, not literal questions or guaranteed semantic axes.
 - Preserve object colours: embedding blue, query purple, key amber, value teal, attention weight rose, update green, updated representation blue/green. Do not use these colours for unrelated decorations.
-- Part 2 teaches one attention head plus output projection and residual. Part 3 adds heads, FFN, normalization, and blocks. Label simplified numerical worksheets as such; they do not calculate the full pre-norm stack. That stack includes final LayerNorm before the vocabulary head.
+- Part 2 teaches one attention head plus output projection and residual. Part 3 adds multiple heads. FFNs, normalization and full blocks remain in optional Part 2B. Label simplified numerical worksheets as such; they do not calculate the full pre-norm stack.
 - Show the forward pass and generation before learning. For backpropagation, show the true branching graph and short autograd code, not hand-derived Jacobians. Parameters are updated; intermediate Q/K/V, weights, and messages are recomputed.
 
 ## The numerical model and its limits

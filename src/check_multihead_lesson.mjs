@@ -31,7 +31,15 @@ try{
   assert(!notation.includes('4×3'),'No stale Part II query width');
   assert(notation.includes('Additive causal mask')&&notation.includes('message matrix'),'Mask and message notation stays consistent with Part II');
   assert(await page.locator('.mh-frame .python-code .py-call').count()>4,'Static syntax highlighting');
-  assert(manifest.length<=34,'Keep the lecture compact, including the four width/bias clarification frames');
+  assert(manifest.length<=39,'Keep the lecture compact, with the worked mixture and Q/K/V bridge');
+  const keys=manifest.map(s=>s.key);
+  for(const key of ['s01-v-independent','s01-v-one','s02-v-recall','s02-v-query','s02-v-query-person','s02-v-match'])assert(keys.includes(key),'Required teaching step: '+key);
+  assert(keys.indexOf('s01-v-independent')<keys.indexOf('s01-v-one'),'Explain independent mixtures before showing computed head patterns');
+  assert(keys.indexOf('s02-v-recall')<keys.indexOf('s02-v-query'),'Recall query/key/value roles before the projection arithmetic');
+  assert(keys.indexOf('s02-v-query-person')<keys.indexOf('s02-v-match'),'Introduce both queries before key matching');
+  assert(!await page.locator('.mh-frame').evaluateAll(frames=>frames.some(f=>/0[1-3] → 0[2-4]/.test(f.textContent))),'No unexplained section-number transitions');
+  const plan=await page.locator('#s02-v-plan').textContent();
+  assert(plan.includes('Concatenate')&&plan.includes('Project with W')&&plan.includes('[4×4]'),'Show concatenation and output projection separately');
   for(const name of ['river','cheque']){
     const actual=await page.evaluate(name=>AT.multiheadWorksheet.compute(name),name);
     const ref=expected.headsLesson.cases[name];

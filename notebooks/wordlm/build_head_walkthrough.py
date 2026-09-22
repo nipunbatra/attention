@@ -63,6 +63,31 @@ print('River IDs:', river_ids)''')]
             figure = (FIG/'s01-v-both.svg').read_text()
         companion=re.sub(r'href="(?!https?:|#)([^\"]+)"',r'href="../../\1"',step.get('companion',''))
         cells.append(md(f'<a id="{step["key"]}"></a>\n## {step["title"]}\n\n[Matching slide]({link})\n\n{figure}\n\n{body}'+(f'\n\n```python\n{step["code"]}\n```' if step['code'] else '')+'\n\n'+companion))
+        if step['key']=='s01-v-independent':
+            cells.append(code('''# Separate two-source illustration, before the ten-token worksheet.
+values = torch.tensor([[10., 1.], [2., 8.]])  # river, fisherman
+setting_weights = torch.tensor([0.8, 0.2])
+person_weights = torch.tensor([0.2, 0.8])
+one_head = setting_weights @ values
+two_heads = torch.stack([setting_weights @ values[:, 0],
+                         person_weights @ values[:, 1]])
+print('One shared mixture:', one_head.tolist())
+print('Two separate mixtures:', two_heads.tolist())
+torch.testing.assert_close(one_head, torch.tensor([8.4, 2.4]))
+torch.testing.assert_close(two_heads, torch.tensor([8.4, 6.6]))'''))
+        if step['key']=='s02-v-sources':
+            cells.append(code('''# Every projected row is computed from an input embedding.
+case = worksheet['headsLesson']['cases']['river']
+E = torch.tensor(case['E'])
+for h, projection in enumerate(worksheet['headsLesson']['projections']):
+    Q, K, V = [E @ torch.tensor(projection[kind], dtype=torch.float32)
+               for kind in ['Q', 'K', 'V']]
+    source = 5 if h == 0 else 1  # river or fisherman, zero-based index
+    print(f'Head {h+1}: final query', Q[-1].tolist())
+    print('Source:', case['tokens'][source],
+          'key:', K[source].tolist(), 'value:', V[source].tolist())
+    for kind, actual in [('Q', Q), ('K', K), ('V', V)]:
+        torch.testing.assert_close(actual, torch.tensor(case['heads'][h][kind]))'''))
         if step['key']=='s02-v-separate':
             cells.append(code('''# Same projected coordinates, one wide softmax or two narrow softmaxes.
 case = worksheet['headsLesson']['cases']['river']

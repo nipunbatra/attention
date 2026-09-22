@@ -9,6 +9,24 @@ from torch import nn
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def test_intro_mixtures_and_projected_source_rows():
+    values = torch.tensor([[10., 1.], [2., 8.]])
+    a_setting = torch.tensor([.8, .2])
+    a_person = torch.tensor([.2, .8])
+    torch.testing.assert_close(a_setting @ values, torch.tensor([8.4, 2.4]))
+    separate = torch.stack([a_setting @ values[:, 0], a_person @ values[:, 1]])
+    torch.testing.assert_close(separate, torch.tensor([8.4, 6.6]))
+    data = json.loads((ROOT / 'multihead-worksheet.json').read_text())['headsLesson']
+    case = data['cases']['river']
+    E = torch.tensor(case['E'])
+    for h, projection in enumerate(data['projections']):
+        for kind in ['Q', 'K', 'V']:
+            actual = E @ torch.tensor(projection[kind], dtype=torch.float32)
+            torch.testing.assert_close(actual, torch.tensor(case['heads'][h][kind]))
+    assert case['heads'][0]['Q'][-1] == [2.3, 2.3]
+    assert case['heads'][1]['Q'][-1] == [2.3, 0.0]
+
+
 def test_printed_head_code_and_pytorch():
     steps = {s['key']: s for s in json.loads((ROOT / 'multihead-story.json').read_text())}
     data = json.loads((ROOT / 'multihead-worksheet.json').read_text())['headsLesson']

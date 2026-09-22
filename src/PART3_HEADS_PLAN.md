@@ -15,16 +15,19 @@ SVG drawings used in Part II. It also reused M for messages even though Part II
 already reserved M for the mask, and used H as the head count instead of the
 message matrix. Fit tests did not catch those teaching failures.
 
-## Revised visual sequence (34 frames)
+## Revised visual sequence (39 frames)
 
-1. Hold the river-bank sentence fixed. Show the setting-reading arrows, then
-   person-reading arrows, then both. Explain that one head shares a weight row
-   across its value coordinates; it is not limited to reading one word.
-2. Make the two readings concrete: full input, separate query projections,
-   example key matches, separate softmax rows, then weighted value messages.
+1. Start with the river-bank sentence. A separate two-source example computes
+   one shared value mixture and two independent mixtures before the full
+   ten-token setting/person patterns. One head is not limited to one word.
+2. Recall Part II’s Maya query/key/value roles before the matrices. Translate
+   those roles to the river prefix. Compute each head’s query on its own slide,
+   show source keys/values, then key matches, softmax rows and value messages.
    Repack those exact coordinates into one wide head. Compare the single
    softmax with the two independent rows, without claiming universal superiority.
 3. Join the messages, multiply by W_O and add the update to the original e.
+   The recurring diagram shows concatenation and projection separately, even
+   though joined width and embedding width both equal four in this worksheet.
    Return to the familiar next-token MLP and try the other bank context.
 4. Stack the rows: show actual 10×4, 4×2, 10×2 and 10×10 matrix silhouettes.
    Trace the same receiving row. Keep Q/K, the mask, A, V and H identifiable.
@@ -48,7 +51,8 @@ Visual teaching references are credited in the article and notebook:
 The river-bank diagrams and numerical example are our own. We deliberately
 retain Part II’s row-vector convention rather than import 3Blue1Brown’s columns.
 
-Two separate sources of numbers: an explicitly hand-chosen two-head worksheet
+The introductory two-source calculation is labelled as a separate illustration.
+The main lesson has two sources of numbers: a hand-chosen two-head worksheet
 using Part II's exact embeddings/positions, and trained four-head TinyStories
 results. Neither implies that heads are assigned semantic roles in training.
 Do not promise that every extra head or every continuation improves.

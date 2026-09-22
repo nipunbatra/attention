@@ -103,23 +103,30 @@ def reading(case,head=None,both=False):
     return svg(body,505 if both else 287,'Two different reading patterns' if both else f'Head {head+1} reads the known prefix')
 
 
-def bottleneck(case):
-    H=case['heads'][0];body=''
-    body+=t(700,28,'source position: 1 → 10',23,'muted','middle')
-    for row,(name,index) in enumerate([('water coordinate',0),('finance coordinate',1)]):
-        y=60+row*139
-        body+=t(20,y+28,name,25,'v')
-        for j in range(10):
-            xx=298+j*81
-            body+=rect(xx,y,75,55,'a',COLORS['a']+f'{int(20+150*H["A"][-1][j]):02x}')
-            body+=t(xx+37.5,y+35,f(H['A'][-1][j],2),21,'a','middle')
-        body+=t(700,y+85,'the same ten source weights',22,'muted','middle')
-    body+=t(580,352,'A second head can use a different row of weights.',31,'ink','middle')
-    return svg(body,390,'One head shares its source weights across value coordinates')
+def bottleneck(two=False):
+    """A separate two-source illustration, before the full ten-token worksheet."""
+    body=t(24,32,'Two-source illustration: invented values and weights',23,'muted')
+    for x,label in [(24,'Source'),(350,'Setting feature'),(675,'Person feature')]:
+        body+=t(x,91,label,25,'muted',weight=600)
+    for row,(word,values) in enumerate([('river',[10,1]),('fisherman',[2,8])]):
+        y=140+row*52
+        body+=t(24,y,word,29,'ink')+t(390,y,values[0],29,'v')+t(715,y,values[1],29,'v')
+    body+=path('M24 215 H1120','line',2)
+    if two:
+        body+=t(24,273,'Head 1: setting',26,'ink',weight=650)
+        body+=t(390,273,'0.8 × 10 + 0.2 × 2 = 8.4',30,'v')
+        body+=t(24,333,'Head 2: person',26,'ink',weight=650)
+        body+=t(390,333,'0.2 × 1 + 0.8 × 8 = 6.6',30,'v')
+        body+=t(580,399,'river gets 0.8 in one head; fisherman gets 0.8 in the other.',26,'a','middle')
+    else:
+        body+=t(24,267,'One head: river gets 0.8, fisherman gets 0.2',27,'a',weight=600)
+        body+=t(580,327,'0.8 × [10, 1] + 0.2 × [2, 8] = [8.4, 2.4]',33,'v','middle')
+        body+=t(580,399,'Both output coordinates use the same 80% / 20% mixture.',27,'ink','middle')
+    return svg(body,435,'Two heads weight the sources independently' if two else 'One weight per source multiplies every value coordinate')
 
 
-def divider(number,question,sub):
-    body=t(35,93,number,27,'muted')+t(35,181,question,43,'ink',weight=650)+t(35,250,sub,29,'muted')
+def divider(question,sub):
+    body=t(35,155,question,43,'ink',weight=650)+t(35,230,sub,29,'muted')
     return svg(body,325,question)
 
 
@@ -184,24 +191,68 @@ def bias_locations():
     return svg(body,429,'The bias flag controls all query, key, value and output projection biases, not the separate prediction MLP')
 
 
-def queries(case,data):
-    body=t(580,31,'Same input row e₁₀ = [0, 0, 0, 2.3]',29,'e','middle')
-    labels=['water','finance','person','glue']
-    for h in range(2):
-        x=90+h*585
-        body+=t(x+226,93,f'Head {h+1}',29,'ink','middle',650)
-        body+=t(x+226,130,'W_Q¹ · 4 × 2' if h==0 else 'W_Q² · 4 × 2',25,'q','middle')
-        for j,label in enumerate(['water?','finance?'] if h==0 else ['person?','glue?']):
-            body+=t(x+176+j*100,159,label,19,'muted','middle')
-        for i,row in enumerate(data['projections'][h]['Q']):
-            body+=t(x+108,196+i*38,labels[i],21,'muted','end')
-            for j,value in enumerate(row):
-                body+=rect(x+126+j*100,170+i*38,100,38,'q',COLORS['q']+'08')
-                body+=t(x+176+j*100,196+i*38,str(value),24,'q','middle')
-        body+=arrow(x+226,327,x+226,350,'q')
-        body+=t(x+80,387,'q₁₀¹' if h==0 else 'q₁₀²',26,'q','end')
-        body+=cells(x+105,355,[f(v,1) for v in case['heads'][h]['Q'][-1]],'q',100)
-    return svg(body,430,'Two different query matrices read all four input coordinates')
+def role_recap():
+    body=t(24,36,'Maya cycled home in the rain. Cold and tired, Maya reached',27,'ink')
+    body+=t(24,76,'for a hooded red wool coat. She …',27,'ink')
+    rows=[('q: what is needed?','She × W_Q','Which earlier person?','q'),
+          ('k: what can match?','Maya × W_K','Person candidate','k'),
+          ('v: what is sent?','Maya × W_V','Cold, tired; cycled in rain','v')]
+    for i,(role,source,meaning,c) in enumerate(rows):
+        y=148+i*83
+        body+=t(24,y,role,27,c,weight=650)+t(400,y,source,26,c)
+        body+=arrow(637,y-9,691,y-9,c)+t(717,y,meaning,25,c)
+    body+=t(580,399,'“Maya” and “She” here mean their current embedding rows.',25,'muted','middle')
+    return svg(body,435,'Recall Part II: the query asks, the key matches, the value supplies content')
+
+
+def reading_roles():
+    body=t(580,36,'Receiver: the final “the” in the river-bank prefix',28,'e','middle')
+    for x,label in [(24,'Head'),(230,'Query asks about'),(575,'A useful source'),(894,'Value carries')]:
+        body+=t(x,109,label,23,'muted',weight=600)
+    rows=[('1','the setting','river','setting clues'),('2','the person','fisherman','person clues')]
+    for i,(h,q,k,v) in enumerate(rows):
+        y=179+i*100
+        body+=t(24,y,h,32,'ink')+t(230,y,q,29,'q')+t(575,y,k,29,'k')+t(894,y,v,27,'v')
+    body+=t(580,365,'Each head computes q, k and v for every token.',28,'ink','middle')
+    body+=t(580,406,'We follow one receiver and two useful sources.',25,'muted','middle')
+    return svg(body,442,'The familiar query, key and value roles, now repeated in two heads')
+
+
+def queries(case,data,h=0):
+    sup='¹' if h==0 else '²'
+    body=t(24,43,'Receiver: final “the”',27,'ink',weight=650)
+    body+=t(620,43,'q₁₀'+sup+' = e₁₀ W_Q'+sup,31,'q')
+    body+=t(24,122,'e₁₀: four input coordinates',25,'e')
+    body+=cells(24,167,[f(v,1) for v in case['E'][-1]],'e',91,
+                labels=['water','finance','person','glue'])
+    body+=t(419,202,'×',37)
+    body+=t(678,92,'W_Q'+sup+'  [4 × 2]',27,'q','middle')
+    labels=['water','finance'] if h==0 else ['person','glue']
+    for j,label in enumerate(labels):body+=t(626+j*104,131,label+'?',23,'q','middle')
+    for i,row in enumerate(data['projections'][h]['Q']):
+        body+=cells(574,149+i*39,[str(v) for v in row],'q',104,39)
+    body+=arrow(803,216,869,216,'q')
+    body+=t(1000,132,'q₁₀'+sup+'  [1 × 2]',27,'q','middle')
+    body+=cells(890,167,[f(v,1) for v in case['heads'][h]['Q'][-1]],'q',110)
+    body+=t(580,359,'First query coordinate: 0×0 + 0×0 + 0×0 + 2.3×1 = 2.3',27,'q','middle')
+    last=data['projections'][h]['Q'][-1][1]
+    body+=t(580,403,f'Second query coordinate: 0×0 + 0×0 + 0×0 + 2.3×{last} = {f(2.3*last,1)}',27,'q','middle')
+    return svg(body,445,f'Head {h+1}: multiply the same four-coordinate embedding by its own query projection')
+
+
+def source_rows(case):
+    body=t(24,35,'Source input eⱼ: [water, finance, person, glue]',26,'e')
+    for h,j in [(0,5),(1,1)]:
+        y=102+h*164;sup='¹' if h==0 else '²';H=case['heads'][h]
+        body+=t(24,y,f'Head {h+1}: {case["tokens"][j]}',28,'ink',weight=650)
+        body+=t(24,y+44,str([round(v,1) for v in case['E'][j]]).replace('-','−'),27,'e')
+        selected='water, finance' if h==0 else 'person, glue'
+        body+=t(465,y,'W_K'+sup+' selects '+selected,24,'k')
+        body+=t(465,y+44,'W_V'+sup+' selects '+selected,24,'v')
+        body+=t(884,y,'k = '+str([round(v,1) for v in H['K'][j]]).replace('-','−'),25,'k')
+        body+=t(884,y+44,'v = '+str([round(v,1) for v in H['V'][j]]).replace('-','−'),25,'v')
+    body+=t(580,409,'kⱼ = eⱼ W_K sets the match.  vⱼ = eⱼ W_V supplies the message.',27,'ink','middle')
+    return svg(body,445,'Each source embedding supplies a key for matching and a value for the weighted message')
 
 
 def matching(case):
@@ -304,11 +355,13 @@ def full_map(focus='all',one=False):
         body+=node(285,y,235,f'Head {h}','Q, K, V → A → AV','q','heads')
         body+=arrow(520,y+35,602,y+35,'v')
         body+=node(604,y,182,f'H{chr(0x00b9) if h==1 else chr(0x00b2)}','10 messages × 2','v','heads')
-        body+=path(f'M786 {y+35} H821 V170 H867','v')
-    body+=node(867,136,265,'Join → W_O','ΔE · 10 × 4','d','join')
+        body+=path(f'M786 {y+35} H821 V149 H867','v')
+    body+=node(867,115,265,'Concatenate','two [10×2] → [10×4]','v','join')
+    body+=arrow(1000,184,1000,222,'v')
+    body+=node(867,226,265,'Project with W_O','[10×4] × [4×4]','d','join')
     body+=path('M110 136 V40 H1148 V379 H1046','e',2,'7 6')+arrow(1046,379,1025,379,'e')
     body+=t(980,25,'keep original E',20,'e','middle')
-    body+=arrow(1000,205,1000,353,'d')
+    body+=arrow(1000,295,1000,353,'d')+t(986,329,'ΔE [10×4]',21,'d','end')
     body+='<circle cx="1000" cy="379" r="24" fill="white" stroke="'+COLORS['d']+'" stroke-width="2"/>'+t(1000,388,'+',30,'d','middle')
     body+=arrow(973,379,822,379,'d')+node(608,345,210,'E′ = E + ΔE','same 10 × 4 shape','d','residual')
     body+=arrow(608,380,520,380,'d')+node(285,345,235,'last row → MLP','next-token prediction','e','predict')
@@ -393,25 +446,47 @@ def story(stage,base,data):
         s('s01-v-prefix','Back to the river bank',reading(R),
           'Which parts of this prefix would help you choose a continuation?',
           notes='Which earlier words would help you continue this sentence?\nPoint to river and fisherman, then to the final the—not the blank.'),
-        s('s01-v-one','One head can read the setting',reading(R,0),
-          'In this hand-chosen two-head example, the first head gives river a large weight. Its values carry setting information to the receiver.',
+        s('s01-v-shared','One head mixes the value rows',bottleneck(),
+          'Suppose we want setting clues from river and person clues from fisherman. A single head uses one source weight for every coordinate of each value.',
+          companion='<p>This two-source illustration uses invented values and normalized weights, separately from the ten-token worksheet that follows. A weight of 0.8 on river scales both of its value coordinates. A head can attend to multiple sources, but cannot choose a separate attention weight for each value coordinate.</p>',
+          notes='What happens to both numbers in the river value?\nMultiply both by 0.8. The setting and person outputs use the same mixture.'),
+        s('s01-v-independent','Two heads can choose different mixtures',bottleneck(two=True),
+          'Let one head return the setting feature and another return the person feature. Each head can choose its own source weights. Their outputs stay separate until the output projection.',
+          companion='<p>Both heads receive both source rows. For this illustration, one value projection selects the setting coordinate and the other selects the person coordinate. The total output width stays two. The example demonstrates independent weighting, not a guarantee that two trained heads outperform every one-head model. The following slides return to our ten-token, four-coordinate worksheet.</p>',
+          notes='Which source should contribute more to each feature?\nFollow the different weights: 0.8 on river for setting, 0.8 on fisherman for person.'),
+        s('s01-v-one','Setting clues in the full sentence',reading(R,0),
+          'Back to all ten tokens. Our hand-chosen head 1 gives river a large weight. Its values carry setting information to the receiver.',
           companion='<p>These are hand-chosen two-head parameters applied to Part II’s exact input rows. “Setting” and “person” name the intended behaviour of this example, not jobs assigned to trained heads. Arrows show information moving from source to receiver; their widths encode computed attention weights.</p>'),
         s('s01-v-two','Another head can read who is there',reading(R,1),
           'The sentence and receiver stay fixed. A different head gives fisherman a large weight.',
           notes='What changed: the words, the receiver, or how we read?\nPoint to the same token positions; compare the two thick arrows.'),
-        s('s01-v-shared','One head shares one set of source weights',bottleneck(R),
-          'A single head can mix many words. But every coordinate of its message uses the same attention-weight row.'),
         s('s01-v-both','Keep both readings',reading(R,both=True),
           'Two heads can retain different source mixtures at the same token. They run in parallel, not one after the other.')])
     add('How does a second head get a different view?',[
-        s('s02-v-break','How do we make the readings different?',divider('01 → 02','Same embeddings. Different projections.','Each head learns its own W_Q, W_K and W_V.'),
+        s('s02-v-break','How does each head choose what to read?',divider('Queries, keys and values in each head','Each head learns its own W_Q, W_K and W_V.'),
           '',companion='<p>Visual inspiration: <a href="https://www.3blue1brown.com/lessons/attention/">3Blue1Brown’s attention lesson</a> and <a href="https://jalammar.github.io/illustrated-transformer/">Jay Alammar’s Illustrated Transformer</a>. We keep our own river-bank example, numbers and Part II row-vector convention. A head-specific superscript labels a head; a subscript still labels a token.</p>'),
-        s('s02-v-plan','Give both heads the same input',full_map('heads'),
-          'We will zoom into these two branches. Each starts with the same embedding rows and sends back its own message.',
+        s('s02-v-recall','Recall the Maya example: query, key and value',role_recap(),
+          'In Part II’s illustrative later-layer example, the query asks for a person. Maya’s key can match that request. Her value supplies useful details. A head uses separate projections for these roles.',
+          companion='<p>This is the verbal example from <a href="attention.html#s11-frame-separate-maps">Part II</a>. It illustrates possible later-layer representations, not measured model outputs. Earlier layers may have gathered the preceding facts into the second Maya row. Every token has a query, key and value, even though this example follows only She’s query and Maya’s key/value. The actual vectors contain numbers, not written questions or records.</p>',
+          notes='Why do we need a value as well as a key?\nPerson-candidate features help match Maya; cold and tired supplies useful content for the continuation.'),
+        s('s02-v-plan','The two heads and the output projection',full_map('heads join'),
+          r'Both heads read \(E\). Concatenation joins their message coordinates. \(W_O\) projects the joined messages into embedding space before we add the update to \(E\).',
+          companion='<p>H¹ and H² each have shape [10, 2]. Concatenation gives [10, 4]. Multiplying by W_O [4, 4] gives ΔE [10, 4]. Here the joined width already equals the embedding width. The projection still learns how to mix head outputs into embedding coordinates; it need not change the width. In general W_O has shape [n_heads × d_v, d_model]. It is not an inverse of the input projections.</p>',
           notes='What does the second head receive as input?\nTrace both branches from E. Neither branch starts at the other head’s output.'),
-        s('s02-v-query','The same embedding makes two queries',queries(R,data),
-          'Both heads read all four input coordinates. Superscripts label the heads. We choose two query/key coordinates per head here; Part II’s toy used three.',
-          companion='<p>E contains position-aware embedding rows, not token IDs. The labelled water, finance, person and glue axes are invented for this teaching example. The displayed W_Q matrices are deliberately sparse; learned projections need not be. Superscripts 1 and 2 identify the two heads, not exponentiation.</p>'),
+        s('s02-v-roles','The same roles in the river example',reading_roles(),
+          'Head 1 can ask about the setting; head 2 can ask about the person. These are interpretations of our chosen numbers. Training learns the projections without assigning these jobs.',
+          notes='What changes between the heads?\nThe query, matching features and value content can differ. The receiver and available source tokens stay fixed.'),
+        s('s02-v-query','Head 1: computing the setting query',queries(R,data,0),
+          r'In this toy, the final “the” has only a nonzero glue coordinate. The two columns of \(W_Q\) turn that input into water and finance matching features.',
+          companion='<p>E contains position-aware embedding rows, not token IDs. The water, finance, person and glue axes are invented for teaching; glue is our toy feature for function words such as “the”. W_Q reads all four input coordinates. Each query coordinate is a dot product with one column of W_Q. These sparse matrices are hand-chosen; learned projections need not be sparse or interpretable. The head superscripts label heads, not powers. Query/key width is two per head here; Part II’s single-head toy used three.</p>',
+          notes='Where does the first 2.3 in the query come from?\nMultiply the four input entries by the first W_Q column, then add. Repeat for the second column.'),
+        s('s02-v-query-person','Head 2: computing the person query',queries(R,data,1),
+          r'The input embedding stays [0, 0, 0, 2.3]. Head 2 uses its own \(W_Q\). Its query requests the person feature and gives zero weight to the glue matching feature.',
+          notes='Did we change the input token or its embedding?\nKeep the blue input fixed. Compare the last rows of the two query matrices.'),
+        s('s02-v-sources','Source rows supply keys and values',source_rows(R),
+          r'Each head has its own \(W_K\) and \(W_V\), both \(4\times2\) here. For easy arithmetic, they select the same coordinates. Keys determine matching; values carry the numbers we mix.',
+          companion='<p>Head 1 uses W_K = W_V = [[1,0],[0,1],[0,0],[0,0]], selecting water and finance. Head 2 uses W_K = W_V = [[0,0],[0,0],[1,0],[0,1]], selecting person and glue. Each matrix is [4,2] and acts on every source row, including sources not shown here. W_K and W_V are distinct parameters with equal numerical entries in this worksheet. They need not be equal in a trained model. In Part II’s Maya example they served different roles too.</p>',
+          notes='Why are k and v equal here?\nWe chose equal projection entries for arithmetic. Point to the different uses of these same numbers on the next score and message slides.'),
         s('s02-v-match','Each query meets keys from its own head',matching(R),
           'Head 1 exposes water and finance in its keys. Head 2 exposes person and glue. Score every source with the matching query.'),
         s('s02-v-weights','Each head gets its own weight row',weights(R),
@@ -428,7 +503,7 @@ def story(stage,base,data):
           companion='<p>Every displayed attention row sums to one over all ten sources; “others” combines the remaining eight. One wide head uses its single row for all four value coordinates. The two heads use different rows for their two-coordinate values, preserving both mixtures before W_O combines them. This is a useful architectural choice, not proof that one wide head cannot learn useful relationships or that more heads always improve accuracy. See <a href="https://arxiv.org/abs/1706.03762">Attention Is All You Need, §3.2.2</a>.</p>',
           notes='Which word receives the largest weight in each row?\nCompare river and fisherman. Total value width stays four; the number of separately normalized mixtures changes.')])
     add('How do the two messages update the token?',[
-        s('s03-v-break','What reaches the receiving token?',divider('02 → 03','Two messages become one context update.','Keep both messages, map back, then add to the original embedding.'),''),
+        s('s03-v-break','What reaches the receiving token?',divider('Combining the head messages','Concatenate, project into embedding space, then add the update.'),''),
         s('s03-v-join','Put the messages side by side',join(R),
           'Concatenation keeps the two messages separate. It does not add them coordinate by coordinate.'),
         s('s03-v-output','Map the messages back to embedding space',output(R,data),
@@ -441,7 +516,7 @@ def story(stage,base,data):
         s('s03-v-explore','Try the other bank', '', '<div id="s04-head-explorer"></div>',
           companion='<p>Change to the cheque sentence. These controls recalculate Q, K, V, both attention rows, the messages and the vocabulary prediction from the hand-chosen parameters. This is a worked arithmetic explorer, not a trained language model.</p>')])
     add('What are the matrix shapes?',[
-        s('s04-v-break','Can every token do this at once?',divider('03 → 04','Stack the token rows into matrices.','Trace the same receiver row through the full calculation.'),''),
+        s('s04-v-break','Can every token do this at once?',divider('The same calculation for every token','Trace the receiver row through the full matrices.'),''),
         s('s04-v-project','Project every row with the same head matrix',projection_map(R),
           'Ten input rows × four coordinates. Multiplying by a 4 × 2 projection gives ten query rows × two coordinates.'),
         s('s04-v-grid','One head makes one attention grid',attention_grid(R),
