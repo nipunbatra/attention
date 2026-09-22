@@ -54,6 +54,27 @@ def test_printed_head_code_and_pytorch():
     assert weights.shape == (2, 10, 10)
 
 
+def test_each_head_dot_softmax_and_value_walkthrough():
+    data = json.loads((ROOT / 'multihead-worksheet.json').read_text())['headsLesson']
+    for case in data['cases'].values():
+        for head in case['heads']:
+            Q, K, V = [torch.tensor(head[kind], dtype=torch.float64) for kind in ['Q', 'K', 'V']]
+            q = Q[-1:]
+            raw = q @ K.T
+            assert raw.shape == (1, 10)
+            for j in range(10):
+                torch.testing.assert_close(raw[0, j], (q[0] * K[j]).sum())
+            scores = raw / math.sqrt(2)
+            torch.testing.assert_close(scores[0], torch.tensor(head['scores'][-1], dtype=torch.float64))
+            exponentials = scores.exp()
+            A_row = exponentials / exponentials.sum(-1, keepdim=True)
+            torch.testing.assert_close(A_row, scores.softmax(-1))
+            torch.testing.assert_close(A_row[0], torch.tensor(head['A'][-1], dtype=torch.float64))
+            contributions = A_row.T * V
+            torch.testing.assert_close(contributions.sum(0, keepdim=True), A_row @ V)
+            torch.testing.assert_close((A_row @ V)[0], torch.tensor(head['messages'][-1], dtype=torch.float64))
+
+
 def test_wide_head_uses_one_softmax_for_the_same_coordinates():
     data = json.loads((ROOT / 'multihead-worksheet.json').read_text())['headsLesson']
     for case in data['cases'].values():

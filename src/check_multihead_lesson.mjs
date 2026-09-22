@@ -31,12 +31,18 @@ try{
   assert(!notation.includes('4×3'),'No stale Part II query width');
   assert(notation.includes('Additive causal mask')&&notation.includes('message matrix'),'Mask and message notation stays consistent with Part II');
   assert(await page.locator('.mh-frame .python-code .py-call').count()>4,'Static syntax highlighting');
-  assert(manifest.length<=39,'Keep the lecture compact, with the worked mixture and Q/K/V bridge');
+  assert(manifest.length<=45,'Keep the lecture compact, including the separate head matrix walkthroughs');
   const keys=manifest.map(s=>s.key);
   for(const key of ['s01-v-independent','s01-v-one','s02-v-recall','s02-v-query','s02-v-query-person','s02-v-match'])assert(keys.includes(key),'Required teaching step: '+key);
   assert(keys.indexOf('s01-v-independent')<keys.indexOf('s01-v-one'),'Explain independent mixtures before showing computed head patterns');
   assert(keys.indexOf('s02-v-recall')<keys.indexOf('s02-v-query'),'Recall query/key/value roles before the projection arithmetic');
   assert(keys.indexOf('s02-v-query-person')<keys.indexOf('s02-v-match'),'Introduce both queries before key matching');
+  const arithmeticOrder=['s02-v-head1-matrices','s02-v-match','s02-v-weights','s02-v-head1-values',
+    's02-v-head2-matrices','s02-v-head2-dots','s02-v-head2-softmax','s02-v-head2-values','s02-v-message'];
+  for(let i=0;i<arithmeticOrder.length;i++){
+    assert(keys.includes(arithmeticOrder[i]),'Required arithmetic step: '+arithmeticOrder[i]);
+    if(i)assert(keys.indexOf(arithmeticOrder[i-1])<keys.indexOf(arithmeticOrder[i]),'Finish each head separately before combining');
+  }
   assert(!await page.locator('.mh-frame').evaluateAll(frames=>frames.some(f=>/0[1-3] → 0[2-4]/.test(f.textContent))),'No unexplained section-number transitions');
   const plan=await page.locator('#s02-v-plan').textContent();
   assert(plan.includes('Concatenate')&&plan.includes('Project with W')&&plan.includes('[4×4]'),'Show concatenation and output projection separately');

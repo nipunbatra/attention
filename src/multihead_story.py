@@ -255,54 +255,117 @@ def source_rows(case):
     return svg(body,445,'Each source embedding supplies a key for matching and a value for the weighted message')
 
 
-def matching(case):
-    body=''
-    for h,j in [(0,5),(1,1)]:
-        y=52+187*h;H=case['heads'][h];q=H['Q'][-1];k=H['K'][j]
-        body+=t(24,y,f'Head {h+1}',29,'ink',weight=650)
-        body+=t(225,y,'query',22,'q')+t(455,y,f'{case["tokens"][j]} key',22,'k')
-        body+=cells(224,y+17,[f(v,1) for v in q],'q',86)
-        body+=t(421,y+51,'·',31,'ink','middle')
-        body+=cells(451,y+17,[f(v,1) for v in k],'k',86)
-        body+=t(665,y+48,'÷ √2',28,'muted')+arrow(756,y+40,817,y+40)
-        body+=t(846,y+48,f(H['scores'][-1][j],3),30,'a')
-        body+=t(224,y+111,f'({f(q[0],1)} × {f(k[0],1)} + {f(q[1],1)} × {f(k[1],1)}) / √2',24,'muted')
-    return svg(body,416,'Compute a query-key score separately within each head')
+def numeric_cell(x,y,w,h,value,c,selected=False):
+    return '<g>'+rect(x,y,w,h,c if selected else 'line',COLORS[c]+('15' if selected else '06'),2 if selected else .7)+t(x+w/2,y+h*.7,value,25,c,'middle')+'</g>'
 
 
-def weights(case):
-    body=''
-    for h in range(2):
-        y=75+h*165;H=case['heads'][h]
-        body+=t(15,y+25,f'Head {h+1}',25,'ink',weight=650)
-        x=155
-        widths=[70,137,70,101,70,88,84,70,119,70]
-        for j,word in enumerate(case['tokens']):
-            w=widths[j]
-            body+=t(x+w/2,y-20,word,19,'ink','middle')
-            body+=rect(x,y,w,49,'line',COLORS['a']+f'{int(18+165*H["A"][-1][j]):02x}')
-            body+=t(x+w/2,y+33,f(H['A'][-1][j],3),23,'a','middle')
-            x+=w+10
-        body+=t(590,y+91,'row sum = 1',23,'muted','middle')
-    return svg(body,381,'Each head normalizes its own scores over the same source positions')
+def head_matrices(case,h):
+    H=case['heads'][h];sup='¹' if h==0 else '²';source=5 if h==0 else 1
+    axes=['water','finance'] if h==0 else ['person','glue']
+    body=t(24,109,'Token and position',25,'ink')
+    for x,kind,c in [(354,'Q','q'),(788,'K','k')]:
+        body+=t(x+110,38,kind+sup+' = E W_'+kind+sup,28,c,'middle')
+        body+=t(x+110,75,'[10 × 4] × [4 × 2] = [10 × 2]',22,'muted','middle')
+        for col,name in enumerate(axes):body+=t(x+55+col*110,109,name+('?' if kind=='Q' else ''),22,c,'middle')
+        for row,values in enumerate(H[kind]):
+            for col,value in enumerate(values):
+                body+=numeric_cell(x+col*110,126+row*30,110,30,f(value,1),c,row==(9 if kind=='Q' else source))
+    for j,word in enumerate(case['tokens']):body+=t(24,147+j*30,f'{j+1:2d}  {word}',25,'ink')
+    body+=t(580,476,f'Follow query row 10 (“the”) and key row {source+1} (“{case["tokens"][source]}”).',27,'ink','middle')
+    return svg(body,505,f'Head {h+1}: all ten query rows and key rows, with the receiver and example source highlighted')
+
+
+def matching(case,h):
+    H=case['heads'][h];sup='¹' if h==0 else '²';source=5 if h==0 else 1
+    q=H['Q'][-1];key=H['K'][source]
+    raw=[sum(a*b for a,b in zip(q,k)) for k in H['K']]
+    body=t(24,49,'q₁₀'+sup+' =',29,'q')+cells(185,15,[f(v,1) for v in q],'q',100)
+    body+=t(710,49,'Receiver 10: final “the”',27,'ink')
+    body+=t(580,107,'q [1 × 2]  ×  Kᵀ [2 × 10]  =  raw scores r [1 × 10]',27,'ink','middle')
+    widths=[68,124,67,92,67,80,79,67,110,67];x=155
+    axes=['water','finance'] if h==0 else ['person','glue']
+    body+=t(25,222,'Kᵀ',30,'k')
+    for c,name in enumerate(axes):body+=t(140,210+c*44,name,21,'k','end')
+    body+=t(25,323,'raw r',26,'a')
+    for j,(word,w) in enumerate(zip(case['tokens'],widths)):
+        body+=t(x+w/2,146,str(j+1),20,'muted','middle')+t(x+w/2,173,word,22,'ink','middle')
+        for c in range(2):body+=numeric_cell(x,185+c*44,w,44,f(H['K'][j][c],1),'k',j==source)
+        body+=numeric_cell(x,292,w,47,f(raw[j],2),'a',j==source)
+        x+=w+9
+    body+=t(580,399,f'Column {source+1}: query · {case["tokens"][source]} key',28,'ink','middle')
+    def factor(v):return '('+f(v,1)+')' if v<0 else f(v,1)
+    products=[a*b for a,b in zip(q,key)]
+    body+=t(580,452,f'{factor(q[0])} × {factor(key[0])} + {factor(q[1])} × {factor(key[1])} = {f(products[0],2)} + ({f(products[1],2)}) = {f(raw[source],2)}',30,'a','middle')
+    return svg(body,488,f'Head {h+1}: one query times the transposed key matrix yields ten dot products')
+
+
+def weights(case,h):
+    H=case['heads'][h];source=5 if h==0 else 1;q=H['Q'][-1]
+    raw=[sum(a*b for a,b in zip(q,k)) for k in H['K']]
+    scores=H['scores'][-1];exps=[math.exp(s) for s in scores];total=sum(exps)
+    body=t(580,34,'Ten matching scores, normalized within this head',27,'ink','middle')
+    xs=[24,352,579,807,1044]
+    for x,label in zip(xs,['Source','Raw dot r','s = r / √2','exp(s)','Weight α']):body+=t(x,86,label,24,'muted','start' if x==24 else 'middle',600)
+    for j,word in enumerate(case['tokens']):
+        y=115+j*30
+        if j==source:body+=rect(16,y-23,1118,30,'a',COLORS['a']+'0b',1)
+        body+=t(24,y,f'{j+1:2d}  {word}',24,'ink')
+        for x,value in zip(xs[1:],[f(raw[j],2),f(scores[j],3),f(exps[j],3),f(H['A'][-1][j],3)]):body+=t(x,y,value,25,'a','middle')
+    body+=t(580,438,f'Shared total: Σ exp(s) = {f(total,3)}',27,'a','middle')
+    body+=t(580,483,f'{case["tokens"][source]} weight: {f(exps[source],3)} / {f(total,3)} ≈ {f(H["A"][-1][source],3)}',29,'a','middle')
+    return svg(body,515,f'Head {h+1}: scale all ten dot products and divide each exponential by the sum of all ten exponentials')
+
+
+def message_products(case,h):
+    H=case['heads'][h];sup='¹' if h==0 else '²';source=5 if h==0 else 1
+    body=t(580,37,'weight row [1 × 10]  ×  V [10 × 2]  =  message m [1 × 2]',27,'ink','middle')
+    for x,label,c in [(24,'Source','muted'),(332,'Weight α','a'),(575,'Value row vⱼ','v'),(942,'Contribution α vⱼ','v')]:body+=t(x,91,label,25,c,'start' if x==24 else 'middle',600)
+    for j,(word,a,v) in enumerate(zip(case['tokens'],H['A'][-1],H['V'])):
+        y=122+j*30
+        if j==source:body+=rect(16,y-23,1118,30,'v',COLORS['v']+'0b',1)
+        body+=t(24,y,f'{j+1:2d}  {word}',24,'ink')+t(332,y,f(a,3),25,'a','middle')
+        body+=t(575,y,'['+', '.join(f(vv,1) for vv in v)+']',25,'v','middle')
+        body+=t(942,y,'['+', '.join(f(a*vv,3) for vv in v)+']',25,'v','middle')
+    body+=path('M778 414 H1125','v',2)
+    body+=t(24,458,'Add all ten contributions:',28,'ink')
+    body+=t(782,458,'m₁₀'+sup+' =',28,'v','end')+cells(813,425,[f(v,3) for v in H['messages'][-1]],'v',152)
+    return svg(body,505,f'Head {h+1}: each attention weight multiplies its source value row, and all ten products add to the message')
 
 
 def messages(case):
     body=''
-    for h,j in [(0,5),(1,1)]:
-        y=36+h*195;H=case['heads'][h];a=H['A'][-1][j];v=H['V'][j]
-        body+=t(24,y+2,f'Head {h+1} · {case["tokens"][j]} contributes',26,'ink',weight=650)
-        body+=t(43,y+68,f(a,3),29,'a')+t(150,y+68,'×',30)
-        body+=cells(186,y+33,[f(x,1) for x in v],'v',97)
-        body+=t(420,y+69,'+',30)+t(470,y+55,'other weighted',23,'muted')+t(470,y+85,'value rows',23,'muted')
-        body+=arrow(679,y+61,753,y+61,'v')
-        body+=cells(788,y+33,[f(x,3) for x in H['messages'][-1]],'v',147)
-        body+=t(938,y+2,'m₁₀¹' if h==0 else 'm₁₀²',26,'v','middle')
-        labels=['water','finance'] if h==0 else ['person','glue']
-        for k,label in enumerate(labels):
-            body+=t(234+k*97,y+111,label,22,'muted','middle')
-            body+=t(861+k*147,y+111,label,22,'muted','middle')
-    return svg(body,393,'Each head weights its own value rows to obtain its message')
+    for h in range(2):
+        H=case['heads'][h];sup='¹' if h==0 else '²';y=73+h*212
+        body+=t(24,y-33,f'Head {h+1}',29,'ink',weight=650)
+        body+=rect(24,y,244,98,'q',COLORS['q']+'08')+t(146,y+36,'q₁₀'+sup+' K'+sup+'ᵀ / √2',27,'q','middle')+t(146,y+72,'ten scores',24,'muted','middle')
+        body+=arrow(268,y+49,370,y+49,'a')+t(319,y+24,'softmax',21,'a','middle')
+        body+=rect(370,y,245,98,'a',COLORS['a']+'08')+t(492,y+36,'Own weight row',25,'a','middle')
+        j=5 if h==0 else 1
+        body+=t(492,y+73,case['tokens'][j]+': '+f(H['A'][-1][j],3),25,'a','middle')
+        body+=arrow(615,y+49,740,y+49,'v')+t(676,y+25,'× V'+sup,24,'v','middle')
+        body+=cells(740,y+25,[f(v,3) for v in H['messages'][-1]],'v',194)
+        body+=t(934,y-11,'m₁₀'+sup+' [1 × 2]',28,'v','middle')
+    body+=t(580,466,'Both heads read the same input E. Their score lists and value sums stay separate.',26,'ink','middle')
+    return svg(body,502,'Two complete head calculations produce two messages before concatenation and output projection')
+
+
+def head_walkthrough(stage,case,h):
+    n=h+1
+    return [
+        stage(f's02-v-head{n}-matrices',f'Head {n}: the query and key matrices',head_matrices(case,h),
+              'Every token has a query and a key. We follow the last query row, for the final “the”, and compare it with all ten key rows.',
+              notes='Which row is the receiver? Which rows are possible sources?\nPoint to query row 10, then all ten key rows. The highlighted key is only one example.'),
+        stage('s02-v-match' if h==0 else 's02-v-head2-dots',f'Head {n}: one dot product per key',matching(case,h),
+              r'Transposing \(K\) puts each source key in a column. Multiplying the query row by \(K^\top\) gives one raw dot product per source.',
+              notes='Why are there ten outputs from a two-coordinate query?\nEach of the ten columns is a different key. Expand the highlighted column coordinate by coordinate.'),
+        stage('s02-v-weights' if h==0 else 's02-v-head2-softmax',f'Head {n}: turning scores into weights',weights(case,h),
+              'Divide each dot product by √2, then apply softmax across these ten sources. The final query can see all ten tokens. The unrounded weights sum to one.',
+              companion='<p>Every source contributes to the denominator, including the receiver itself. All displayed numbers are rounded; calculations use full precision. At receiver row 10, the causal mask permits source positions 1 through 10. Earlier query rows cannot read later sources. The notebook also computes the full masked attention matrix. A numerically stable softmax subtracts the maximum score before exponentiating; this leaves the normalized weights unchanged.</p>',
+              notes='What goes into the shared denominator?\nAdd all ten exponentials, not just the largest ones. Each head has its own denominator.'),
+        stage(f's02-v-head{n}-values',f'Head {n}: weighting every value row',message_products(case,h),
+              'Multiply each value row by its source weight, then add all ten rows. Each scalar weight multiplies both value coordinates. The two column sums form the message. Displayed numbers are rounded.',
+              companion='<p>The table lists the entries of one attention row vertically to line them up with V’s ten source rows. The matrix product is still [1,10] × [10,2] = [1,2]. Displayed values and contributions are rounded; the result uses full precision. Keys chose the weights. Values supply the numbers in this sum.</p>',
+              notes='Which value row receives each weight?\nKeep the source index fixed across the table. Add the two contribution columns separately to recover the message.')]
 
 
 def join(case):
@@ -487,13 +550,12 @@ def story(stage,base,data):
           r'Each head has its own \(W_K\) and \(W_V\), both \(4\times2\) here. For easy arithmetic, they select the same coordinates. Keys determine matching; values carry the numbers we mix.',
           companion='<p>Head 1 uses W_K = W_V = [[1,0],[0,1],[0,0],[0,0]], selecting water and finance. Head 2 uses W_K = W_V = [[0,0],[0,0],[1,0],[0,1]], selecting person and glue. Each matrix is [4,2] and acts on every source row, including sources not shown here. W_K and W_V are distinct parameters with equal numerical entries in this worksheet. They need not be equal in a trained model. In Part II’s Maya example they served different roles too.</p>',
           notes='Why are k and v equal here?\nWe chose equal projection entries for arithmetic. Point to the different uses of these same numbers on the next score and message slides.'),
-        s('s02-v-match','Each query meets keys from its own head',matching(R),
-          'Head 1 exposes water and finance in its keys. Head 2 exposes person and glue. Score every source with the matching query.'),
-        s('s02-v-weights','Each head gets its own weight row',weights(R),
-          r'Softmax runs across source positions, separately for each head. As before, \(\alpha_{ij}\) is one weight and \(A\) is the whole weight matrix.'),
-        s('s02-v-message','Values turn those weights into messages',messages(R),
-          'Keys set the weights; values carry the content. Here we chose equal key/value numbers, but their learned projections are separate.',
-          companion='<p>In this particular worksheet W_K and W_V have equal numerical entries within each head, so the displayed key and value numbers coincide. They remain separate parameters with different roles: keys set scores; values are mixed into messages. All ten source contributions, including those not expanded on the slide, enter each result.</p>'),
+        *head_walkthrough(s,R,0),
+        *head_walkthrough(s,R,1),
+        s('s02-v-message','The two complete head calculations',messages(R),
+          'Each head has now computed its own scores, weights and message. We keep both messages, then concatenate and project them into the embedding update.',
+          companion='<p>As in Part II, αᵢⱼ is one attention weight and A stores the full attention matrix. The walkthrough follows its final row, A[10, :], using one-based token positions. Q/K choose weights and V supplies the weighted content. All ten source contributions enter each message. The calculations are independent across heads and can run in parallel.</p>',
+          notes='Where do the heads first combine?\nTheir score lists, softmaxes and value sums stay separate. Concatenation and W_O combine the resulting messages in the next section.'),
         s('s02-v-wide','What if we made one head wider?',wide_match(R),
           'A wider query/key can compare more features. Their products still add into one score per source, followed by one softmax.',
           companion='<p>For this controlled comparison, concatenate the two existing Q, K and V projections into width-four projections. A single wide head scales its dot products by √4. The two narrower heads each scale by √2 and normalize separately. The example changes no projection entries and does not compare separately trained models.</p>',

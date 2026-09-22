@@ -91,25 +91,67 @@
     "companion": "<p>Head 1 uses W_K = W_V = [[1,0],[0,1],[0,0],[0,0]], selecting water and finance. Head 2 uses W_K = W_V = [[0,0],[0,0],[1,0],[0,1]], selecting person and glue. Each matrix is [4,2] and acts on every source row, including sources not shown here. W_K and W_V are distinct parameters with equal numerical entries in this worksheet. They need not be equal in a trained model. In Part II\u2019s Maya example they served different roles too.</p>"
   },
   {
+    "key": "s02-v-head1-matrices",
+    "title": "Head 1: the query and key matrices",
+    "body": "Every token has a query and a key. We follow the last query row, for the final \u201cthe\u201d, and compare it with all ten key rows.",
+    "code": "",
+    "companion": ""
+  },
+  {
     "key": "s02-v-match",
-    "title": "Each query meets keys from its own head",
-    "body": "Head 1 exposes water and finance in its keys. Head 2 exposes person and glue. Score every source with the matching query.",
+    "title": "Head 1: one dot product per key",
+    "body": "Transposing \\(K\\) puts each source key in a column. Multiplying the query row by \\(K^\\top\\) gives one raw dot product per source.",
     "code": "",
     "companion": ""
   },
   {
     "key": "s02-v-weights",
-    "title": "Each head gets its own weight row",
-    "body": "Softmax runs across source positions, separately for each head. As before, \\(\\alpha_{ij}\\) is one weight and \\(A\\) is the whole weight matrix.",
+    "title": "Head 1: turning scores into weights",
+    "body": "Divide each dot product by \u221a2, then apply softmax across these ten sources. The final query can see all ten tokens. The unrounded weights sum to one.",
+    "code": "",
+    "companion": "<p>Every source contributes to the denominator, including the receiver itself. All displayed numbers are rounded; calculations use full precision. At receiver row 10, the causal mask permits source positions 1 through 10. Earlier query rows cannot read later sources. The notebook also computes the full masked attention matrix. A numerically stable softmax subtracts the maximum score before exponentiating; this leaves the normalized weights unchanged.</p>"
+  },
+  {
+    "key": "s02-v-head1-values",
+    "title": "Head 1: weighting every value row",
+    "body": "Multiply each value row by its source weight, then add all ten rows. Each scalar weight multiplies both value coordinates. The two column sums form the message. Displayed numbers are rounded.",
+    "code": "",
+    "companion": "<p>The table lists the entries of one attention row vertically to line them up with V\u2019s ten source rows. The matrix product is still [1,10] \u00d7 [10,2] = [1,2]. Displayed values and contributions are rounded; the result uses full precision. Keys chose the weights. Values supply the numbers in this sum.</p>"
+  },
+  {
+    "key": "s02-v-head2-matrices",
+    "title": "Head 2: the query and key matrices",
+    "body": "Every token has a query and a key. We follow the last query row, for the final \u201cthe\u201d, and compare it with all ten key rows.",
     "code": "",
     "companion": ""
   },
   {
-    "key": "s02-v-message",
-    "title": "Values turn those weights into messages",
-    "body": "Keys set the weights; values carry the content. Here we chose equal key/value numbers, but their learned projections are separate.",
+    "key": "s02-v-head2-dots",
+    "title": "Head 2: one dot product per key",
+    "body": "Transposing \\(K\\) puts each source key in a column. Multiplying the query row by \\(K^\\top\\) gives one raw dot product per source.",
     "code": "",
-    "companion": "<p>In this particular worksheet W_K and W_V have equal numerical entries within each head, so the displayed key and value numbers coincide. They remain separate parameters with different roles: keys set scores; values are mixed into messages. All ten source contributions, including those not expanded on the slide, enter each result.</p>"
+    "companion": ""
+  },
+  {
+    "key": "s02-v-head2-softmax",
+    "title": "Head 2: turning scores into weights",
+    "body": "Divide each dot product by \u221a2, then apply softmax across these ten sources. The final query can see all ten tokens. The unrounded weights sum to one.",
+    "code": "",
+    "companion": "<p>Every source contributes to the denominator, including the receiver itself. All displayed numbers are rounded; calculations use full precision. At receiver row 10, the causal mask permits source positions 1 through 10. Earlier query rows cannot read later sources. The notebook also computes the full masked attention matrix. A numerically stable softmax subtracts the maximum score before exponentiating; this leaves the normalized weights unchanged.</p>"
+  },
+  {
+    "key": "s02-v-head2-values",
+    "title": "Head 2: weighting every value row",
+    "body": "Multiply each value row by its source weight, then add all ten rows. Each scalar weight multiplies both value coordinates. The two column sums form the message. Displayed numbers are rounded.",
+    "code": "",
+    "companion": "<p>The table lists the entries of one attention row vertically to line them up with V\u2019s ten source rows. The matrix product is still [1,10] \u00d7 [10,2] = [1,2]. Displayed values and contributions are rounded; the result uses full precision. Keys chose the weights. Values supply the numbers in this sum.</p>"
+  },
+  {
+    "key": "s02-v-message",
+    "title": "The two complete head calculations",
+    "body": "Each head has now computed its own scores, weights and message. We keep both messages, then concatenate and project them into the embedding update.",
+    "code": "",
+    "companion": "<p>As in Part II, \u03b1\u1d62\u2c7c is one attention weight and A stores the full attention matrix. The walkthrough follows its final row, A[10, :], using one-based token positions. Q/K choose weights and V supplies the weighted content. All ten source contributions enter each message. The calculations are independent across heads and can run in parallel.</p>"
   },
   {
     "key": "s02-v-wide",

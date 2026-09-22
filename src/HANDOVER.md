@@ -362,7 +362,7 @@ Build each part once in any order. `assemble.py` derives available lesson target
 
 The standalone staged diagram lives in `figures/attention-diagram-preview/`. Part 2 embeds its same `diagram.js` source through `src/attention-flow-data.js`; keep the preview and article synchronized by changing that shared source.
 
-Part III now has a 39-frame visual story in `multihead_story.py`. Its generator
+Part III now has a 45-frame visual story in `multihead_story.py`. Its generator
 also retains the 58-step detailed tensor lab for Notebook 7 only. The two manifests
 are `figures/multihead/manifest.json` and `lab-manifest.json`; do not put the
 full lab back into the lecture. The notebook embeds the visual story first,
@@ -377,6 +377,10 @@ worksheet. A Maya Q/K/V recap bridges Part II to the two query calculations.
 All three section dividers use topic labels, not ambiguous numeric transitions.
 The repeated architecture map separates concatenation from W_O and labels
 their shapes; W_O mixes into embedding coordinates even when width is unchanged.
+The arithmetic passage finishes Head 1 before starting Head 2. For each head,
+four figures show all numerical Q/K rows, the final query times Kᵀ, all ten
+softmax terms and all ten weighted value rows. `head_walkthrough` shares their
+layout. The notebook executes each phase directly after its matching figure.
 
 Part 1's four diagrams live in `part1-diagrams.js` and are inserted by `assemble.py`. They adapt the original handwritten
 notes' visual sequence while reading current `AT.mlp` numbers: actual embedding geometry, repeated lookup and ordered

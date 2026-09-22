@@ -1,5 +1,27 @@
 # Classroom release checks
 
+## 2026-09-22 · Separate matrix walkthroughs for each head
+
+- Replaced the compact matching/weights/messages passage with four frames for
+  Head 1, the same four for Head 2, and a combined calculation. The main lesson
+  now has 45 frames. Each walkthrough shows the numerical Q/K matrices, the
+  final query times all ten key columns, raw and scaled scores, the complete
+  softmax denominator, and all ten weighted value contributions.
+- Kept receiver 10, source order, semantic colours and worksheet parameters
+  fixed. Labels distinguish raw dot products from scaled scores and attention
+  weights. Display rounding and the causal mask for the final row are explicit.
+  Humanizer guidance kept each title about the calculation on that frame.
+- Notebook 7 has 145 cells. Each new arithmetic figure has an executable cell
+  immediately after it. Every code cell runs successfully. All 56 Python tests
+  pass, including the full row calculation for both heads and both contexts;
+  13 focused tests also pass from the extracted downloadable ZIP.
+- Browser checks pass for 45 frames, the 1,840 worksheet values, live controls,
+  SVG label bounds, exact notebook figures and mobile containment. All 46
+  presentation states fit at 1280×720 and 1024×768, with 35 formulas and no
+  errors. Inspected all nine rewritten/new figures at widescreen size and the
+  five calculation layouts at 1024×768. Metadata and whitespace checks pass.
+  Trained models and benchmark numbers are unchanged.
+
 ## 2026-09-22 · Q/K/V bridge and multi-head motivation
 
 - The opening now computes a two-source value mixture, then gives the two

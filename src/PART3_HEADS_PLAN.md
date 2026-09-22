@@ -15,14 +15,17 @@ SVG drawings used in Part II. It also reused M for messages even though Part II
 already reserved M for the mask, and used H as the head count instead of the
 message matrix. Fit tests did not catch those teaching failures.
 
-## Revised visual sequence (39 frames)
+## Revised visual sequence (45 frames)
 
 1. Start with the river-bank sentence. A separate two-source example computes
    one shared value mixture and two independent mixtures before the full
    ten-token setting/person patterns. One head is not limited to one word.
 2. Recall Part II’s Maya query/key/value roles before the matrices. Translate
-   those roles to the river prefix. Compute each head’s query on its own slide,
-   show source keys/values, then key matches, softmax rows and value messages.
+   those roles to the river prefix. Compute each head’s query on its own slide.
+   Work through Head 1 completely: numerical Q/K matrices, the final query
+   times Kᵀ, all ten scaled scores and softmax weights, then every weighted
+   value contribution. Repeat that same four-frame layout for Head 2 before
+   the combined calculation. Keep receiver 10 fixed throughout.
    Repack those exact coordinates into one wide head. Compare the single
    softmax with the two independent rows, without claiming universal superiority.
 3. Join the messages, multiply by W_O and add the update to the original e.
@@ -40,6 +43,8 @@ message matrix. Fit tests did not catch those teaching failures.
 The original detailed steps remain in `figures/multihead/lab-manifest.json` and
 Notebook 7, after the new visual story. `multihead_story.py` authors the lecture;
 `build_multihead_lesson.py` builds both resources from `head_worksheet.py`.
+Notebook 7 pairs each of the eight head-arithmetic figures with code that
+reproduces its matrices, dot products, normalization or value contributions.
 
 Notation follows Part II: row vectors; e, Δe, e′; A for attention weights;
 α_ij for one entry; M for the mask; H=AV for messages. Parenthesized superscripts

@@ -88,6 +88,56 @@ for h, projection in enumerate(worksheet['headsLesson']['projections']):
           'key:', K[source].tolist(), 'value:', V[source].tolist())
     for kind, actual in [('Q', Q), ('K', K), ('V', V)]:
         torch.testing.assert_close(actual, torch.tensor(case['heads'][h][kind]))'''))
+        head_arithmetic = {
+            's02-v-head1-matrices': (0, 'matrices'), 's02-v-head2-matrices': (1, 'matrices'),
+            's02-v-match': (0, 'dots'), 's02-v-head2-dots': (1, 'dots'),
+            's02-v-weights': (0, 'softmax'), 's02-v-head2-softmax': (1, 'softmax'),
+            's02-v-head1-values': (0, 'values'), 's02-v-head2-values': (1, 'values'),
+        }
+        if step['key'] in head_arithmetic:
+            h, phase = head_arithmetic[step['key']]
+            if phase == 'matrices':
+                cells.append(code(f'''# Head {h+1}: these are its own projection matrices.
+head_index = {h}
+projection = worksheet['headsLesson']['projections'][head_index]
+Q, K, V = [E @ torch.tensor(projection[kind], dtype=torch.float32)
+           for kind in ['Q', 'K', 'V']]
+print('Q:', Q.shape)
+print(Q)
+print('K:', K.shape)
+print(K)
+q = Q[-1:]  # final "the", kept as a [1, 2] row matrix
+assert q.shape == (1, 2) and K.T.shape == (2, 10)'''))
+            elif phase == 'dots':
+                cells.append(code('''raw = q @ K.T  # [1, 2] @ [2, 10] -> [1, 10]
+for j, word in enumerate(case['tokens']):
+    products = q[0] * K[j]
+    print(j + 1, word, 'coordinate products:', products.tolist(),
+          'sum:', raw[0, j].item())
+    torch.testing.assert_close(products.sum(), raw[0, j])'''))
+            elif phase == 'softmax':
+                cells.append(code('''scores = raw / math.sqrt(q.shape[-1])
+exponentials = scores.exp()
+total = exponentials.sum(dim=-1, keepdim=True)
+weights = exponentials / total
+# Direct exponentials are safe for these small worksheet scores.
+# torch.softmax is numerically stable for general inputs.
+torch.testing.assert_close(weights, scores.softmax(dim=-1))
+torch.testing.assert_close(weights.sum(dim=-1), torch.ones(1))
+torch.testing.assert_close(weights[0], torch.tensor(case['heads'][head_index]['A'][-1]))
+for j, word in enumerate(case['tokens']):
+    print(word, 'score:', round(scores[0, j].item(), 3),
+          'exp:', round(exponentials[0, j].item(), 3),
+          'weight:', round(weights[0, j].item(), 3))
+print('Shared denominator:', total.item())'''))
+            else:
+                cells.append(code('''contributions = weights.T * V  # [10, 1] * [10, 2]
+message = weights @ V  # [1, 10] @ [10, 2] -> [1, 2]
+for word, row in zip(case['tokens'], contributions):
+    print(word, row.tolist())
+torch.testing.assert_close(contributions.sum(dim=0, keepdim=True), message)
+torch.testing.assert_close(message[0], torch.tensor(case['heads'][head_index]['messages'][-1]))
+print('Message:', message.tolist())'''))
         if step['key']=='s02-v-separate':
             cells.append(code('''# Same projected coordinates, one wide softmax or two narrow softmaxes.
 case = worksheet['headsLesson']['cases']['river']
