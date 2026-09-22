@@ -3331,11 +3331,11 @@ document.addEventListener('DOMContentLoaded',()=>{
     function route(g,coords,color){coords.slice(1,-1).forEach((p,i)=>line(g,...coords[i],...p,color,2.5));arrow(g,...coords.at(-2),...coords.at(-1),color);}
     box(input,10,15,178,65,'Word IDs','E_tok[ids] · T × 4','e','tokens');
     box(input,10,125,178,65,'Slots 0…T−1','P[slots] · T × 4','p','positions');
-    box(input,235,70,148,72,'Add rows','X · T × 4','e','input');
+    box(input,235,70,148,72,'Add rows','E · T × 4','e','input');
     route(input,[[188,47],[210,47],[210,95],[235,95]],C.e);route(input,[[188,157],[210,157],[210,120],[235,120]],C.p);
-    box(input,435,5,172,65,'q_T = x_T W_Q','1 × 3','q','query');
-    box(input,435,100,172,65,'K = XW_K','T × 3','k','keys');
-    box(input,435,210,172,65,'V = XW_V','T × 2','v','values');
+    box(input,435,5,172,65,'q_T = e_T W_Q','1 × 3','q','query');
+    box(input,435,100,172,65,'K = EW_K','T × 3','k','keys');
+    box(input,435,210,172,65,'V = EW_V','T × 2','v','values');
     route(input,[[383,95],[405,95],[405,37],[435,37]],C.q);
     route(input,[[383,108],[414,108],[414,132],[435,132]],C.k);
     route(input,[[383,124],[397,124],[397,242],[435,242]],C.v);
@@ -3346,11 +3346,11 @@ document.addEventListener('DOMContentLoaded',()=>{
     box(attn,885,210,220,70,'m_T = α_T V','message · 1 × 2','v','message');
     arrow(attn,995,102,995,210,C.a);text(attn,1013,161,'α_T',C.a,24);
     arrow(attn,607,242,885,242,C.v);text(attn,653,224,'Values bypass scoring',C.v,22);
-    box(out,885,350,220,70,'Δx_T = m_T W_O','W_O: 2 × 4','p','projection');
+    box(out,885,350,220,70,'Δe_T = m_T W_O','W_O: 2 × 4','p','projection');
     arrow(out,995,280,995,350,C.v);
-    box(out,655,350,172,70,'x′_T = x_T + Δx_T','updated · 1 × 4','p','residual');
+    box(out,655,350,172,70,'e′_T = e_T + Δe_T','updated · 1 × 4','p','residual');
     arrow(out,885,385,827,385,C.p);
-    route(out,[[309,142],[309,310],[741,310],[741,350]],C.e);text(out,334,301,'Residual keeps x_T (already includes position)',C.e,22);
+    route(out,[[309,142],[309,310],[741,310],[741,350]],C.e);text(out,334,301,'Residual keeps e_T (already includes position)',C.e,22);
     box(out,435,350,172,70,'ReLU hidden','4 → 8 units','q','hidden');arrow(out,655,385,607,385,C.p);
     box(out,10,350,373,70,'Logits → vocabulary softmax','hW_vocab + b · 1 × C','a','prediction');arrow(out,435,385,383,385,C.q);
   }
@@ -3375,7 +3375,7 @@ document.addEventListener('DOMContentLoaded',()=>{
         text(s,20,y,tokens.join(' '),C.ink,27);
         text(s,20,y+47,'Message m₄ = '+vec(r.message,3),C.v,28);
         arrow(s,462,y+40,545,y+40,C.v);
-        text(s,572,y+13,'x′₄ = x₄ + m₄',C.p,28);
+        text(s,572,y+13,'e′₄ = e₄ + Δe₄',C.p,28);
         const result=text(s,572,y+58,vec(r.q,3)+' + '+vec(r.message,3),C.ink,25);
         result.dataset.message=JSON.stringify(r.message);
         const t=text(s,572,y+97,'= '+vec(updated,3),C.p,29);t.dataset.updatedVector=JSON.stringify(updated);
@@ -3481,6 +3481,58 @@ document.addEventListener('DOMContentLoaded',()=>{
     const r=lesson.experiment(tokens,true),j=tokens.indexOf('Maya'),tr=document.createElement('tr');
     cell(tr,'Slot '+(j+1));cell(tr,fixed(lesson.positions[j]),'numbers');cell(tr,fixed(r.rows[j]),'numbers score');cell(tr,r.scores[j],'numbers score');mayaSlots.append(tr);
   });
+  // Reuse the same word rows in a separate appended-position experiment.
+  lesson.sequences.forEach((tokens,index)=>{
+    const r=lesson.appendedExperiment(tokens),suffix=index?'b':'a';
+    const body=document.querySelector('#position-append-'+suffix+' tbody');
+    tokens.forEach((token,j)=>{
+      const tr=document.createElement('tr');cell(tr,token);
+      const td=cell(tr,'','numbers');td.dataset.vector=JSON.stringify(r.rows[j]);
+      const slot=document.createElement('span');slot.className='append-index';slot.textContent=String(j+1);
+      td.append('['+r.rows[j].slice(0,2).map(x=>x.toFixed(1)).join(', ')+', ',slot,']');
+      body.append(tr);
+    });
+  });
+  const appended=lesson.appendedExperiment(lesson.sequences[0]);
+  const scoreBody=document.querySelector('#position-append-scores tbody');
+  lesson.sequences[0].forEach((token,j)=>{
+    const tr=document.createElement('tr');cell(tr,(j+1)+' '+token);
+    cell(tr,appended.wordTerms[j],'numbers score');
+    cell(tr,appended.positionTerms[j],'numbers append-index');
+    cell(tr,appended.rawScores[j],'numbers append-totals');
+    scoreBody.append(tr);
+  });
+  const softmaxBody=document.querySelector('#position-append-softmax tbody');
+  lesson.sequences[0].forEach((token,j)=>{
+    const tr=document.createElement('tr');cell(tr,token);cell(tr,appended.scores[j],'numbers score');
+    const exponential=cell(tr,Math.exp(appended.scores[j]),'numbers');
+    exponential.textContent=Math.exp(appended.scores[j]).toFixed(2);
+    const weight=cell(tr,appended.weights[j],'numbers weight');
+    weight.textContent=(100*appended.weights[j]).toFixed(1)+'%';softmaxBody.append(tr);
+  });
+  const appendDenominator=appended.scores.reduce((sum,s)=>sum+Math.exp(s),0);
+  document.getElementById('position-append-denominator').textContent='Sum of exponentials ≈ '+appendDenominator.toFixed(2)+'.';
+  document.getElementById('position-append-normalization').textContent='Today’s weight ≈ '+Math.exp(appended.scores[3]).toFixed(2)+' / '+appendDenominator.toFixed(2)+' = '+appended.weights[3].toFixed(3)+' ('+(100*appended.weights[3]).toFixed(1)+'%).';
+  const appendScale=document.getElementById('position-append-scale');
+  function drawAppended(){
+    const scale=Number(appendScale.value);
+    const results=lesson.sequences.map(tokens=>lesson.appendedExperiment(tokens,scale));
+    results.forEach((r,index)=>{
+      const suffix=index?'b':'a',body=document.querySelector('#position-append-weights-'+suffix+' tbody');
+      body.replaceChildren();
+      lesson.sequences[index].forEach((token,j)=>{
+        const tr=document.createElement('tr');cell(tr,token);
+        cell(tr,r.scores[j],'numbers score');
+        const weight=cell(tr,r.weights[j],'numbers weight');
+        weight.textContent=(100*r.weights[j]).toFixed(1)+'%';body.append(tr);
+      });
+    });
+    document.getElementById('position-append-query').textContent='q₄ = '+fixed(results[0].q);
+    document.getElementById('position-append-outcome').textContent=scale===1
+      ?'Today gets '+results.map(r=>(100*r.weights[3]).toFixed(1)+'%').join(' and ')+'. The raw slot index dominates in this toy.'
+      :'Today gets '+results.map(r=>(100*r.weights[3]).toFixed(1)+'%').join(' and ')+'. Scaling by 0.1 made the slot term 100× smaller.';
+  }
+  appendScale.addEventListener('change',drawAppended);drawAppended();
   document.querySelectorAll('[data-position-visual]').forEach(host=>{
     const kind=host.dataset.positionVisual,s=canvas(host,kind+' positional encoding illustration',kind.startsWith('swap')?330:kind==='shift'?310:280);
     if(kind==='swap-rows'){
@@ -12155,6 +12207,10 @@ body:not(.present) .context-lesson{margin:44px 0}
 .position-worked .mix-pair>div{min-width:0;overflow-x:auto}
 .position-worked .mix-pair .worked-table th:first-child{width:38%}
 .position-worked .position-visual svg{max-height:340px}
+.position-append .worked-table th:first-child{width:23%}
+.position-append .append-index{color:var(--c-d);font-weight:600}
+.position-append .append-totals{background:var(--t-d)}
+.position-append .append-result{font-size:26px;line-height:1.45;margin:14px 0}
 .position-journey{overflow-x:auto;margin:16px 0}
 .position-journey svg{display:block;width:100%;height:auto;font-family:var(--font-ui)}
 .position-journey svg text{font-size:24px;fill:var(--ink)}
@@ -12250,7 +12306,7 @@ body:not(.present) .context-lesson{margin:44px 0}
 <div class="frame context-lesson position-lesson position-worked" id="s17-position-toy" data-title="A position row changes the input before attention" data-autobuild="off">
 <script type="text/x-notes">Keep the same two-coordinate toy and identity projections. Introduce a separate, invented row for each slot. Add it to the token row before computing Q/K/V. Show all four sums for Maya helps Ravi today. In the swapped sentence, Maya gets the slot-3 row and Ravi gets the slot-1 row. Today remains in slot 4 and therefore has the same new query in both sentences. The next interactive calculation compares the resulting messages with position off and on.</script>
 <p>For <strong>Maya helps Ravi today</strong>, add one row for the word and one for its slot.</p>
-<div class="worked-scroll"><table class="worked-table" id="position-added-rows"><thead><tr><th>Slot / word</th><th>Token row</th><th>Position row</th><th>Sum $x_j$</th></tr></thead><tbody></tbody></table></div>
+<div class="worked-scroll"><table class="worked-table" id="position-added-rows"><thead><tr><th>Slot / word</th><th>Token row</th><th>Position row</th><th>Sum $e_j$</th></tr></thead><tbody></tbody></table></div>
 <p>After the swap, Maya gets slot 3's position row. Ravi gets slot 1's.</p>
 <p class="lesson-key">These position rows are invented for the demonstration. The next slide repeats the same attention calculation.</p>
 </div>
@@ -12272,46 +12328,89 @@ body:not(.present) .context-lesson{margin:44px 0}
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-updated" data-title="Different messages can produce different updated rows" data-autobuild="off">
-<script type="text/x-notes">Complete the same two-dimensional toy. Choose W_O=I for this slide only, so the contextual update equals the message. Today's positioned input is [1.4,-0.1] in both orders. Compute the messages at full precision, then add the residual. This toy shows an order distinction, not measured language quality. Position offset p_4 enters before Q/K/V, while the contextual update delta x_4 is computed after attention.</script>
-<p>For this two-number toy, choose $W_O=I$. Today's input is $x_4=[1.4,-0.1]$ in both orders.</p>
+<script type="text/x-notes">Keep the earlier e notation: e_4 is the representation entering attention, after token lookup and position addition. It is neither an integer token ID nor just the word lookup. Choose W_O=I for this two-dimensional toy, so delta e_4 equals m_4. Today's row is [0.8,0.2]+[0.6,-0.3]=[1.4,-0.1] in both orders. Compute messages at full precision, then add the residual. Position p_4 enters before Q/K/V. The contextual update delta e_4 comes from attention. These untrained numbers show an order distinction, not measured language quality.</script>
+<p>Today's representation before attention is $e_4=E_{\rm tok}[\text{today}]+p_4=[1.4,-0.1]$.</p>
 <div class="position-journey" data-position-journey="updated"></div>
-<p class="lesson-key">Position offset $p_4$ changes the input first. Attention then computes the context update $\Delta x_4=m_4W_O$.</p>
+<p class="lesson-key">Here $W_O=I$, so $\Delta e_4=m_4$. Position $p_4$ enters first. Attention supplies $\Delta e_4$, then $e'_4=e_4+\Delta e_4$.</p>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-add" data-title="Addition keeps the row the same width" data-autobuild="off">
 <script type="text/x-notes">Return to d=4 to match the width of the lecture. These are illustrative coordinates, not the bank model's rows. Token lookup depends on the word, position lookup depends on its slot. Their sum is the row fed into attention. The model learns with this combined representation; there is no promise that the two original vectors can be uniquely recovered from their sum.</script>
 <table class="lesson-table"><thead><tr><th>Four-coordinate row</th><th>1</th><th>2</th><th>3</th><th>4</th></tr></thead><tbody>
-<tr><th>Token $e_{\rm token}$</th><td>0.6</td><td>−0.2</td><td>1.0</td><td>0.1</td></tr>
+<tr><th>Token $E_{\rm tok}[t_i]$</th><td>0.6</td><td>−0.2</td><td>1.0</td><td>0.1</td></tr>
 <tr data-build="1"><th>Slot $p_i$</th><td>0.1</td><td>0.3</td><td>−0.2</td><td>0.2</td></tr>
-<tr data-build="2"><th>Input $x_i=e_{\rm token}+p_i$</th><td>0.7</td><td>0.1</td><td>0.8</td><td>0.3</td></tr>
+<tr data-build="2"><th>Sum $e_i$</th><td>0.7</td><td>0.1</td><td>0.8</td><td>0.3</td></tr>
 </tbody></table>
 <p data-build="2">The same word has the same token lookup. At another slot, a different position row changes its input to attention.</p>
 <p class="lesson-key" data-build="2">Both rows have $d$ coordinates; their sum still has $d$. These example coordinates have no prescribed meaning.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-append" data-title="Could we append one or two position numbers? Yes." data-autobuild="off">
-<script type="text/x-notes">Answer the user's question directly. Appending a position index, a normalized index, or multiple engineered or learned features is mathematically valid. It is not universally worse. The model must learn how to use the feature; width, scale and generalization are design choices. Large raw indices can dominate dot products without suitable scaling or learned suppression. Normalizing by current prompt length changes old position features as tokens arrive and complicates cache reuse.</script>
-<div class="lesson-large">$[\ e_{\rm token}\ ;\ i\ ]\quad\text{has }d+1\text{ coordinates}$</div>
-<p data-build="1">Appending two features gives $d+2$. We can widen the next weight matrix or project the expanded row back to $d$.</p>
-<p data-build="2">One index tells us the slot, but the network must learn which distances and order relationships matter. Its numerical scale also matters.</p>
-<p class="lesson-result" data-build="3">This is a valid alternative. Addition is a convenient fixed-width choice—not a theorem about the best encoding.</p>
+<div class="frame context-lesson position-lesson position-worked position-append" id="s17-position-append" data-title="Appending the slot number" data-autobuild="off">
+<script type="text/x-notes">Try an alternative to adding p_i. Return to the original two-number word lookups, then append the one-based slot index as a third coordinate. No additive position row is used in this experiment. The tilde marks this alternative representation. Both sentences now have different rows for Maya and Ravi, so appending position can distinguish order. Ask whether the numerical scale of this new coordinate is suitable. The next slide holds Q/K projections fixed at the three-dimensional identity to expose the effect.</script>
+<p>Return to the two-number word rows. Append the slot $i$ instead of adding $p_i$.</p>
+<div class="worked-detail">Alternative row: $\tilde e_i=[\,E_{\rm tok}[t_i]\,;\,i\,]$. Two coordinates become three.</div>
+<div class="mix-pair">
+<div><p>Maya helps Ravi today</p><table class="worked-table" id="position-append-a"><thead><tr><th>Word</th><th>Word row + slot</th></tr></thead><tbody></tbody></table></div>
+<div><p>Ravi helps Maya today</p><table class="worked-table" id="position-append-b"><thead><tr><th>Word</th><th>Word row + slot</th></tr></thead><tbody></tbody></table></div>
+</div>
+<p class="lesson-key">The green coordinate records the slot. Maya and Ravi now have different rows after the swap.</p>
+</div>
+
+<div class="frame context-lesson position-lesson position-worked position-append" id="s17-position-append-scores" data-title="The slot number can dominate the match" data-autobuild="off">
+<script type="text/x-notes">Use Maya helps Ravi today with the appended rows. For this untrained diagnostic toy only, choose W_Q=W_K=I_3. Today's query is [0.8,0.2,4]. Dotting against each key adds the word-only contribution to 4 times the source slot. Read Maya's row: 0.8 times 1 plus 0.2 times 0 plus 4 times 1 equals 4.8. Ravi's word contribution is smaller, 0.2, but its slot contributes 12. Thus it scores above Maya because of the appended index under these fixed projections. This is not a claim about the correct linguistic attention pattern. Softmax on the next slide divides all raw totals by sqrt(3), matching the new query/key width.</script>
+<p><strong>Maya helps Ravi today.</strong> Keep $W_Q=W_K=I_3$ for this untrained toy.</p>
+<div class="worked-detail">$q_4=[0.8,0.2,4]$, so $q_4\cdot k_j=\text{word contribution}+4j$.</div>
+<div class="worked-scroll"><table class="worked-table" id="position-append-scores"><thead><tr><th>Source</th><th>Word contribution</th><th>Slot contribution</th><th>Raw dot product</th></tr></thead><tbody></tbody></table></div>
+<p class="append-result">Ravi's larger slot outweighs Maya's stronger word match in this toy.</p>
+<p class="lesson-key">Learned projections could change the position term's influence.</p>
+</div>
+
+<div class="frame context-lesson position-lesson position-worked position-append" id="s17-position-append-softmax" data-title="Attention weights with the raw slot number" data-autobuild="off">
+<script type="text/x-notes">Complete the calculation for Maya helps Ravi today. The appended representation has three coordinates, so divide each raw dot product by sqrt(3). Exponentiate the resulting scores and normalize across all four sources. The visible table uses ordinary exponentials, safe at these small scores. The underlying computation uses an equivalent max-subtracted softmax. Full precision determines the denominator and weights. Today receives about 92.3 percent of the weight under this identity mapping, mostly because its slot term is 16. This is a diagnostic of scale, not a desired attention pattern or measured language quality.</script>
+<p>Three matching coordinates: $s_j=(q_4\cdot k_j)/\sqrt3$. Then normalize the exponentials.</p>
+<div class="worked-scroll"><table class="worked-table" id="position-append-softmax"><thead><tr><th>Source</th><th>Score $s_j$</th><th>$\exp(s_j)$</th><th>Weight $\alpha_j$</th></tr></thead><tbody></tbody></table></div>
+<div class="worked-detail" id="position-append-denominator"></div>
+<div class="worked-detail" id="position-append-normalization"></div>
+<p class="lesson-key">An untrained scale demonstration. The large weight on today is not evidence of a useful prediction.</p>
+</div>
+
+<div class="frame context-lesson position-lesson position-worked position-append" id="s17-position-append-scale" data-title="The position scale changes the attention weights" data-autobuild="off">
+<script type="text/x-notes">Keep the two word coordinates and identity projections unchanged. Change only the appended feature from i to c times i. Because the query and key both contain it, its dot-product contribution is c squared times 4j. Matching width stays three for both scales. The displayed score includes division by sqrt(3); apply softmax across the four sources in each sentence independently. With c=1, today gets over 89 percent in both orders. With c=0.1, its weight is below 30 percent. These are weights, not accuracy measurements. A smaller scale is not necessarily optimal. This controlled comparison shows why simply appending an unscaled slot index is an incomplete design choice.</script>
+<div class="lesson-control"><label for="position-append-scale">Position scale $c$</label><select id="position-append-scale"><option value="1">1: append i</option><option value="0.1">0.1: append 0.1 × i</option></select><span id="position-append-query" class="position-message"></span></div>
+<div class="mix-pair">
+<div><p>Maya helps Ravi today</p><table class="worked-table" id="position-append-weights-a"><thead><tr><th>Source</th><th>Score</th><th>Weight</th></tr></thead><tbody></tbody></table></div>
+<div><p>Ravi helps Maya today</p><table class="worked-table" id="position-append-weights-b"><thead><tr><th>Source</th><th>Score</th><th>Weight</th></tr></thead><tbody></tbody></table></div>
+</div>
+<p class="append-result" id="position-append-outcome" aria-live="polite"></p>
+<p class="lesson-key">The slot term is now $c^2\,4j$: both query and key contain $ci$. Score scaling still uses $\sqrt3$.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-append-tradeoffs" data-title="What the raw index leaves us to choose" data-autobuild="off">
+<script type="text/x-notes">Summarize only what the example establishes. A raw index is a valid position feature and can distinguish order. Under our fixed identity projections, its magnitude dominates the content contribution and creates a large-slot preference. Training could suppress, rescale or combine it differently. Two appended features similarly require a choice of scale and mapping, while increasing input width by two. Raw slot numbers do not directly provide a relative-distance score: the demonstrated term is i times j. Addition is convenient because it preserves width. The bounded sinusoidal features introduced next offer multiple rates, but no universal superiority is proved here.</script>
+<table class="lesson-table"><thead><tr><th>Choice</th><th>What the Maya–Ravi example showed</th></tr></thead><tbody>
+<tr><th>Scale</th><td>$i$ and $0.1i$ describe the same slots but produce very different weights here.</td></tr>
+<tr><th>How position affects a match</th><td>The raw term is $ij$. Even a self-match grows as $i^2$, although the distance is still zero.</td></tr>
+<tr><th>Input width</th><td>One appended feature changes $d$ to $d+1$. Two give $d+2$. The projection matrices must accept that width.</td></tr>
+</tbody></table>
+<p class="lesson-result"><strong>Concatenation can work</strong> with suitable scaling and learned projections. Appending the raw index alone leaves these choices unresolved.</p>
+<p class="lesson-key">Next: fixed-width addition, bounded sine/cosine features and relative positions.</p>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-width" data-title="Why addition is a convenient design" data-autobuild="off">
 <script type="text/x-notes">A d-wide sum fits existing attention and residual shapes. Token and position embeddings can be learned jointly. Summation is not losslessly decodable for arbitrary pairs. Concatenation preserves separate input slots for the two sources, and its following matrix can learn separate projections. The displayed block matrix has 2d rows and d columns when both source vectors have d coordinates.</script>
 <p>Adding a $d$-wide position row keeps the attention input and residual path <strong>$d$ numbers wide</strong>.</p>
 <p data-build="1">Concatenation followed by a projection is another way to combine them:</p>
-<div data-build="1">$$[e;p]\begin{bmatrix}W_e\\W_p\end{bmatrix}=eW_e+pW_p$$</div>
+<div data-build="1">$$[E_{\rm tok}[t_i];p_i]\begin{bmatrix}W_e\\W_p\end{bmatrix}=E_{\rm tok}[t_i]W_e+p_iW_p$$</div>
 <p class="lesson-key" data-build="1">$W_e$ maps content; $W_p$ maps position. Both outputs must have the same width before adding.</p>
 <p class="lesson-result" data-build="2">Addition mixes the signals; it does not guarantee that we can recover each one separately. Training learns how to use the combined row.</p>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-routing" data-title="Position can change what matches—and what is sent" data-autobuild="off">
-<script type="text/x-notes">Here x_i denotes the initial token-plus-position row, called e_i earlier in the lecture. A moved word changes its q/k/v because the input row changed. With additive input positions, positional signals reach values too. Contrast this later with RoPE, which typically rotates Q and K, and ALiBi, which adds a score bias. Causal masking remains a separate operation.</script>
-<div class="position-flow"><span>$x_i=e_{\rm token}+p_i$</span><b>→</b><span>$q_i=x_iW_Q$<br>$k_i=x_iW_K$<br>$v_i=x_iW_V$</span></div>
+<script type="text/x-notes">Keep the earlier e_i notation for the representation entering attention. A moved word changes its q/k/v because the input row changed. With additive input positions, positional signals reach values too. Contrast this later with RoPE, which typically rotates Q and K, and ALiBi, which adds a score bias. Causal masking remains a separate operation.</script>
+<div class="position-flow"><span>$e_i=E_{\rm tok}[t_i]+p_i$</span><b>→</b><span>$q_i=e_iW_Q$<br>$k_i=e_iW_K$<br>$v_i=e_iW_V$</span></div>
 <p data-build="1">A word in a different slot can produce different matching features and a different message.</p>
 <p data-build="2">The causal mask still decides <strong>which sources are allowed</strong>. Position information helps distinguish the allowed sources by where they occur.</p>
-<p class="lesson-key" data-build="2">Here $x_i$ is the initial input row called $e_i$ earlier. Position does not replace the token embedding.</p>
+<p class="lesson-key" data-build="2">$E_{\rm tok}[t_i]$ is the word lookup. Adding $p_i$ gives the representation $e_i$ entering attention.</p>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-learned" data-title="Learned absolute positions: one row per slot" data-autobuild="off">
@@ -12489,15 +12588,15 @@ body:not(.present) .context-lesson{margin:44px 0}
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-overview" data-title="The full attention path now includes position" data-autobuild="off">
-<script type="text/x-notes">Return to the earlier full attention flow, explicitly expanding its input stage. This overview uses learned additive position rows, as in the notebook, rather than combining addition and RoPE. T is the number of context tokens. E_tok is the token embedding table, P the position table, and X the sum of their selected rows. Shapes use d=4, d_k=3, d_v=2, hidden width eight and vocabulary size C. C is twenty in the bank worksheet and differs in the notebook. Only the final receiver is computed here. The bypass preserves x_T, which already includes position.</script>
+<script type="text/x-notes">Return to the earlier full attention flow, explicitly expanding its input stage. This overview uses learned additive position rows, as in the notebook, rather than combining addition and RoPE. T is the number of context tokens. E_tok is the token embedding table, P the position table, and E the sum of their selected rows. Shapes use d=4, d_k=3, d_v=2, hidden width eight and vocabulary size C. C is twenty in the bank worksheet and differs in the notebook. Only the final receiver is computed here. The bypass preserves e_T, which already includes position.</script>
 <div class="position-journey" data-position-journey="overview" data-focus="all"></div>
 <p class="lesson-key">Illustrative widths, with additive positions as in the notebook. $T$ is context length and $C$ is vocabulary size.</p>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-overview-input" data-title="Word and slot lookups meet before Q, K and V" data-autobuild="off">
-<script type="text/x-notes">Walk the same map with the input region emphasized. Token IDs select rows of E_tok. Zero-based slot indices select rows of P. Add matching rows, preserving shape T by four. The final row makes q_T, all rows make K and V, and the residual carries x_T unchanged. All those paths see the positioned input, not bare word embeddings.</script>
+<script type="text/x-notes">Walk the same map with the input region emphasized. Token IDs select rows of E_tok. Zero-based slot indices select rows of P. Add matching rows, preserving shape T by four. The final row makes q_T, all rows make K and V, and the residual carries e_T unchanged. All those paths see the positioned input, not bare word embeddings.</script>
 <div class="position-journey" data-position-journey="overview" data-focus="input"></div>
-<p class="lesson-key">$X=E_{\rm tok}[\mathrm{ids}]+P[0:T]$. All three projections and the residual read this positioned input.</p>
+<p class="lesson-key">$E=E_{\rm tok}[\mathrm{ids}]+P[0:T]$. All three projections and the residual read this positioned input.</p>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-overview-attend" data-title="The positioned query selects the value mixture" data-autobuild="off">
@@ -12507,7 +12606,7 @@ body:not(.present) .context-lesson{margin:44px 0}
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-overview-predict" data-title="The contextual update reaches the prediction head" data-autobuild="off">
-<script type="text/x-notes">Emphasize W_O, the residual and the hidden prediction layer. W_O maps a two-number message to a four-number contextual update. Add the preserved positioned row x_T, apply the eight-unit ReLU hidden layer, then produce C logits and vocabulary probabilities. During training, compare these with the known next-token target. During generation, choose a token and append it to the input. Section 19 expands the data preparation and these computations using the TinyStories companion. This is the teaching model, not a complete modern Transformer block.</script>
+<script type="text/x-notes">Emphasize W_O, the residual and the hidden prediction layer. W_O maps a two-number message to a four-number contextual update. Add the preserved positioned row e_T, apply the eight-unit ReLU hidden layer, then produce C logits and vocabulary probabilities. During training, compare these with the known next-token target. During generation, choose a token and append it to the input. Section 19 expands the data preparation and these computations using the TinyStories companion. This is the teaching model, not a complete modern Transformer block.</script>
 <div class="position-journey" data-position-journey="overview" data-focus="output"></div>
 <p class="lesson-key">Training: compare with the next-token target. Generation: choose a token and append it.</p>
 </div>
@@ -12532,9 +12631,23 @@ body:not(.present) .context-lesson{margin:44px 0}
     const weights=exps.map(x=>x/denom),message=[0,1].map(j=>rows.reduce((sum,row,i)=>sum+weights[i]*row[j],0));
     return {rows,q,scores,weights,message};
   }
+  function appendedExperiment(tokens,scale=1){
+    // Alternative input: bare word lookup plus ONE appended coordinate.
+    // Identity Q/K projections deliberately expose the feature-scale effect.
+    const rows=tokens.map((token,j)=>[...embeddings[token],scale*(j+1)]);
+    const q=rows.at(-1);
+    const wordTerms=rows.map(k=>q[0]*k[0]+q[1]*k[1]);
+    const positionTerms=rows.map(k=>q[2]*k[2]);
+    const rawScores=wordTerms.map((word,j)=>word+positionTerms[j]);
+    const scores=rawScores.map(s=>s/Math.sqrt(q.length));
+    const max=Math.max(...scores),exps=scores.map(s=>Math.exp(s-max));
+    const denominator=exps.reduce((sum,x)=>sum+x,0);
+    const weights=exps.map(x=>x/denominator);
+    return {rows,q,wordTerms,positionTerms,rawScores,scores,weights};
+  }
   function sinusoid(i){return [Math.sin(i),Math.cos(i),Math.sin(i/100),Math.cos(i/100)];}
   function rotaryDot(i,j){const a=i*Math.PI/6,b=j*Math.PI/6;return Math.cos(a)*Math.cos(b)+Math.sin(a)*Math.sin(b);}
-  window.AT.positionLesson={experiment,sinusoid,rotaryDot,sequences,embeddings,positions};
+  window.AT.positionLesson={experiment,appendedExperiment,sinusoid,rotaryDot,sequences,embeddings,positions};
   const selector=document.getElementById('position-enabled');
   function draw(){
     const enabled=selector.value==='on',results=sequences.map(s=>experiment(s,enabled));

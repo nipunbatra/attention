@@ -13,7 +13,7 @@ if(fs.existsSync(cache))for(const dir of fs.readdirSync(cache))candidates.push(p
 let pw;for(const candidate of candidates){try{pw=require(candidate);break;}catch{}}
 assert(pw,'Use an existing Playwright installation.');
 const costs=['break','symbols','matmul','concat-network','concat','average-network','average','attention-network','attention-projections','attention-products','projections','pairs','scores','mask','messages','predictor','calculator','training','baselines-training','prefix-sum','total','training-compare','backward','last-row','prompt','cache','generation-compare','memory'].map(x=>'s16-cost-'+x);
-const positions=['break','order','permute','scores','swapped','contributions','consequence','shift','move-a','move-b','moved','toy','slot-scores','experiment','updated','add','append','width','routing','learned','clock-choice','clock','rates','repeat','waves','period','sine','sine-rule','worked-sine','absolute-shift','relative','rotate','rope-shift','rope','rope-identity','rope-pairs','insertion','alibi','mean','length','choices','overview','overview-input','overview-attend','overview-predict'].map(x=>'s17-position-'+x);
+const positions=['break','order','permute','scores','swapped','contributions','consequence','shift','move-a','move-b','moved','toy','slot-scores','experiment','updated','add','append','append-scores','append-softmax','append-scale','append-tradeoffs','width','routing','learned','clock-choice','clock','rates','repeat','waves','period','sine','sine-rule','worked-sine','absolute-shift','relative','rotate','rope-shift','rope','rope-identity','rope-pairs','insertion','alibi','mean','length','choices','overview','overview-input','overview-attend','overview-predict'].map(x=>'s17-position-'+x);
 const ids=positions;
 const shots=fs.mkdtempSync(path.join(os.tmpdir(),'attention-cost-position-'));
 const browser=await pw.chromium.launch();
@@ -78,6 +78,64 @@ try{
     return {rows,q:rows[3],scores,weights,message};
   }
   const unpositioned=sequences.map(tokens=>reference(tokens,false));
+  // Independent reference: append one feature, not the additive toy's offsets.
+  function appendedReference(tokens,scale){
+    const rows=tokens.map((token,j)=>[...base[token],scale*(j+1)]),q=rows[3];
+    const wordTerms=rows.map(row=>row[0]*.8+row[1]*.2);
+    const positionTerms=rows.map((_,j)=>scale*scale*4*(j+1));
+    const rawScores=rows.map(row=>row.reduce((sum,x,c)=>sum+x*q[c],0));
+    const scores=rawScores.map(x=>x/Math.sqrt(3)),max=Math.max(...scores);
+    const exps=scores.map(x=>Math.exp(x-max)),denominator=exps.reduce((a,b)=>a+b);
+    return {rows,q,wordTerms,positionTerms,rawScores,scores,weights:exps.map(x=>x/denominator)};
+  }
+  const toyBefore=await page.evaluate(()=>JSON.stringify({e:AT.positionLesson.embeddings,p:AT.positionLesson.positions}));
+  for(const scale of [0,.1,1,2]){
+    for(const tokens of sequences){
+      const expected=appendedReference(tokens,scale);
+      const actual=await page.evaluate(({tokens,scale})=>AT.positionLesson.appendedExperiment(tokens,scale),{tokens,scale});
+      assert.deepEqual(actual.rows,expected.rows);
+      for(const key of ['q','wordTerms','positionTerms','rawScores','scores','weights'])
+        actual[key].forEach((x,j)=>close(x,expected[key][j],'appended '+key));
+      close(actual.weights.reduce((a,b)=>a+b),1,'appended weights normalize');
+    }
+  }
+  for(const [index,suffix]of ['a','b'].entries()){
+    assert.deepEqual(await page.locator('#position-append-'+suffix+' [data-vector]').evaluateAll(es=>es.map(e=>JSON.parse(e.dataset.vector))),appendedReference(sequences[index],1).rows);
+  }
+  const appendedColumns=await page.locator('#position-append-scores tbody tr').evaluateAll(rows=>rows.map(tr=>[...tr.querySelectorAll('[data-value]')].map(e=>Number(e.dataset.value))));
+  appendedColumns.forEach((row,j)=>{
+    const r=appendedReference(sequences[0],1);
+    row.forEach((x,c)=>close(x,[r.wordTerms[j],r.positionTerms[j],r.rawScores[j]][c],'word / slot / raw score'));
+  });
+  const appendedSoftmax=await page.locator('#position-append-softmax tbody tr').evaluateAll(rows=>rows.map(tr=>[...tr.querySelectorAll('[data-value]')].map(e=>Number(e.dataset.value))));
+  appendedSoftmax.forEach((row,j)=>{
+    const r=appendedReference(sequences[0],1);
+    row.forEach((x,c)=>close(x,[r.scores[j],Math.exp(r.scores[j]),r.weights[j]][c],'appended softmax working'));
+  });
+  await go('s17-position-append-scale');
+  for(const scale of [1,.1,1,.1]){
+    await page.locator('#position-append-scale').selectOption(String(scale));
+    for(const [index,suffix]of ['a','b'].entries()){
+      const r=appendedReference(sequences[index],scale);
+      const actual=await page.locator('#position-append-weights-'+suffix+' tbody tr').evaluateAll(rows=>rows.map(tr=>[...tr.querySelectorAll('[data-value]')].map(e=>Number(e.dataset.value))));
+      actual.forEach((row,j)=>{close(row[0],r.scores[j],'live appended score');close(row[1],r.weights[j],'live appended weight');});
+      assert.deepEqual(await page.locator('#position-append-weights-'+suffix+' .weight').allTextContents(),r.weights.map(x=>(100*x).toFixed(1)+'%'));
+      assert(scale===1?r.weights[3]>.89:r.weights[3]<.30,'Position scale controls the demonstrated preference.');
+    }
+    assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'Appended-scale control fits at '+scale);
+    await page.screenshot({path:path.join(shots,'append-scale-'+scale+'.png')});
+  }
+  await go('s17-position-append-tradeoffs');await go('s17-position-append-scale');
+  assert.equal(await page.locator('#position-append-scale').inputValue(),'0.1','Appended scale survives navigation');
+  await page.locator('#position-append-scale').selectOption('1');
+  assert.equal(await page.evaluate(()=>JSON.stringify({e:AT.positionLesson.embeddings,p:AT.positionLesson.positions})),toyBefore,'Appended toy preserves existing embeddings and offsets.');
+  assert.match(await page.locator('#s17-position-append-tradeoffs').innerText(),/Concatenation can work/);
+  assert.match(await page.locator('#s17-position-updated').innerText(),/representation before attention/);
+  assert.match(await page.locator('#s17-position-updated svg').textContent(),/e′₄ = e₄ \+ Δe₄/);
+  for(const id of ['overview','overview-input','overview-attend','overview-predict']){
+    const text=await page.locator('#s17-position-'+id+' .position-journey svg').textContent();
+    assert(!/x[′_T]|XW/.test(text),'Position maps retain the established e/E notation.');
+  }
   // The geometric displacements and final updates share the worked arithmetic.
   for(const [index,suffix]of ['a','b'].entries()){
     const id='s17-position-move-'+suffix;
@@ -210,5 +268,5 @@ try{
   await page.locator('#s17-position-experiment').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(shots,'reading-phone.png')});
   assert.equal(await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)})),original,'Extensions must not mutate the bank model.');
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({frames:ids.length,buildChecks:states,viewports:['1280×720','1920×1080','1024×768','390×844 reading'],checks:'MACs, grids, softmax, word-dot endpoints/reveals, position/context updates, order swap, mean invariance, clock collisions, sinusoid curves, absolute/rotary shifts, ALiBi, complete map, controls, model immutability',screenshots:shots},null,2));
+  console.log(JSON.stringify({frames:ids.length,buildChecks:states,viewports:['1280×720','1920×1080','1024×768','390×844 reading'],checks:'MACs, grids, softmax, word-dot endpoints/reveals, appended-position rows/score terms/scales, e notation, position/context updates, order swap, mean invariance, clock collisions, sinusoid curves, absolute/rotary shifts, ALiBi, complete map, controls, model immutability',screenshots:shots},null,2));
 }finally{await browser.close();}

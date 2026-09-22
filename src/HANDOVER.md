@@ -1,6 +1,6 @@
 # Handover: interactive teaching series
 
-Updated 2026-09-21. Owner: Nipun Batra.
+Updated 2026-09-22. Owner: Nipun Batra.
 
 - Repository: https://github.com/nipunbatra/attention
 - Published series: https://nipunbatra.github.io/attention/
@@ -9,6 +9,24 @@ Updated 2026-09-21. Owner: Nipun Batra.
 All four attention parts and the four-part Vision to language extension are implemented. They share a slide-first reading/presentation system, not separate article and slide sources. The first slide-first checkpoint was `a49f811`; `a1d609c` completed Part 3 and the numerical-correctness pass. `CLASSROOM_QA.md` records local verification. Check the checkout's Git log and the GitHub Pages workflow for the current published commit. A temporary checkout is not evidence of what is live.
 
 ## Start here
+
+2026-09-22 appended-position example:
+
+- The former abstract `s17-position-append` frame is now a five-slide Maya/Ravi
+  calculation: appended rows, word/slot score contributions, full softmax,
+  an interactive scale comparison, and design tradeoffs. The new helper
+  `AT.positionLesson.appendedExperiment` uses the existing two-coordinate word
+  rows plus `c*i`, with identity Q/K projections and matching width three.
+  It deliberately does not add the earlier two-dimensional position offsets.
+- At c=1, today's weights are 92.3% and 89.7%; at c=0.1, they are 28.9% and
+  28.8%. These are untrained scale diagnostics, not model-quality evidence.
+  Preserve the visible caveat that appropriate scaling and learned projections
+  can make concatenation work. Addition is a convenient fixed-width choice,
+  not a theorem that concatenation is inferior.
+- Section 17 consistently uses e for the representation entering attention,
+  E for its stacked rows, and delta e for the contextual update. The word lookup
+  is E_tok[t_i], and the position offset remains p_i. Keep this distinction in
+  the numeric table, residual diagram and full position-aware attention map.
 
 2026-09-21 slower lab and position revision (supersedes the entries below):
 
@@ -71,7 +89,7 @@ All four attention parts and the four-part Vision to language extension are impl
 - All 28 detailed cost frames moved to `sections3/sec16_cost.html` and are
   included in Part III Section 16, after training and cached generation. Part II
   Section 16 retains the matrix calculation, with a reading link to Part III.
-- Section 17 now has 45 position frames. Its opening computes both sentence
+- Section 17 now has 49 position frames. Its opening computes both sentence
   orders explicitly: query, scores, exponentials, normalized weights, weighted
   values and the identical message. The independent toy's `today` row is
   `[0.8,0.2]`, so Maya and Ravi have unequal weights. It then adds positions and

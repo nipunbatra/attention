@@ -51,6 +51,58 @@ document.addEventListener('DOMContentLoaded',()=>{
     const r=lesson.experiment(tokens,true),j=tokens.indexOf('Maya'),tr=document.createElement('tr');
     cell(tr,'Slot '+(j+1));cell(tr,fixed(lesson.positions[j]),'numbers');cell(tr,fixed(r.rows[j]),'numbers score');cell(tr,r.scores[j],'numbers score');mayaSlots.append(tr);
   });
+  // Reuse the same word rows in a separate appended-position experiment.
+  lesson.sequences.forEach((tokens,index)=>{
+    const r=lesson.appendedExperiment(tokens),suffix=index?'b':'a';
+    const body=document.querySelector('#position-append-'+suffix+' tbody');
+    tokens.forEach((token,j)=>{
+      const tr=document.createElement('tr');cell(tr,token);
+      const td=cell(tr,'','numbers');td.dataset.vector=JSON.stringify(r.rows[j]);
+      const slot=document.createElement('span');slot.className='append-index';slot.textContent=String(j+1);
+      td.append('['+r.rows[j].slice(0,2).map(x=>x.toFixed(1)).join(', ')+', ',slot,']');
+      body.append(tr);
+    });
+  });
+  const appended=lesson.appendedExperiment(lesson.sequences[0]);
+  const scoreBody=document.querySelector('#position-append-scores tbody');
+  lesson.sequences[0].forEach((token,j)=>{
+    const tr=document.createElement('tr');cell(tr,(j+1)+' '+token);
+    cell(tr,appended.wordTerms[j],'numbers score');
+    cell(tr,appended.positionTerms[j],'numbers append-index');
+    cell(tr,appended.rawScores[j],'numbers append-totals');
+    scoreBody.append(tr);
+  });
+  const softmaxBody=document.querySelector('#position-append-softmax tbody');
+  lesson.sequences[0].forEach((token,j)=>{
+    const tr=document.createElement('tr');cell(tr,token);cell(tr,appended.scores[j],'numbers score');
+    const exponential=cell(tr,Math.exp(appended.scores[j]),'numbers');
+    exponential.textContent=Math.exp(appended.scores[j]).toFixed(2);
+    const weight=cell(tr,appended.weights[j],'numbers weight');
+    weight.textContent=(100*appended.weights[j]).toFixed(1)+'%';softmaxBody.append(tr);
+  });
+  const appendDenominator=appended.scores.reduce((sum,s)=>sum+Math.exp(s),0);
+  document.getElementById('position-append-denominator').textContent='Sum of exponentials ≈ '+appendDenominator.toFixed(2)+'.';
+  document.getElementById('position-append-normalization').textContent='Today’s weight ≈ '+Math.exp(appended.scores[3]).toFixed(2)+' / '+appendDenominator.toFixed(2)+' = '+appended.weights[3].toFixed(3)+' ('+(100*appended.weights[3]).toFixed(1)+'%).';
+  const appendScale=document.getElementById('position-append-scale');
+  function drawAppended(){
+    const scale=Number(appendScale.value);
+    const results=lesson.sequences.map(tokens=>lesson.appendedExperiment(tokens,scale));
+    results.forEach((r,index)=>{
+      const suffix=index?'b':'a',body=document.querySelector('#position-append-weights-'+suffix+' tbody');
+      body.replaceChildren();
+      lesson.sequences[index].forEach((token,j)=>{
+        const tr=document.createElement('tr');cell(tr,token);
+        cell(tr,r.scores[j],'numbers score');
+        const weight=cell(tr,r.weights[j],'numbers weight');
+        weight.textContent=(100*r.weights[j]).toFixed(1)+'%';body.append(tr);
+      });
+    });
+    document.getElementById('position-append-query').textContent='q₄ = '+fixed(results[0].q);
+    document.getElementById('position-append-outcome').textContent=scale===1
+      ?'Today gets '+results.map(r=>(100*r.weights[3]).toFixed(1)+'%').join(' and ')+'. The raw slot index dominates in this toy.'
+      :'Today gets '+results.map(r=>(100*r.weights[3]).toFixed(1)+'%').join(' and ')+'. Scaling by 0.1 made the slot term 100× smaller.';
+  }
+  appendScale.addEventListener('change',drawAppended);drawAppended();
   document.querySelectorAll('[data-position-visual]').forEach(host=>{
     const kind=host.dataset.positionVisual,s=canvas(host,kind+' positional encoding illustration',kind.startsWith('swap')?330:kind==='shift'?310:280);
     if(kind==='swap-rows'){

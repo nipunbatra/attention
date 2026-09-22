@@ -1,5 +1,31 @@
 # Classroom release checks
 
+## 2026-09-22: raw position indices in the Maya/Ravi example
+
+- Replaced the abstract append-position slide with five frames: the actual
+  three-coordinate rows in both orders, separate word/slot dot-product terms,
+  a worked softmax, an interactive c=1 versus c=0.1 comparison, and tradeoffs.
+  Queries and keys use identity projections solely to expose the scale effect.
+  The appended feature contributes c²ij, and all scores divide by sqrt(3).
+  The example keeps additive position offsets out of this alternative path.
+- Both displayed orders and all score terms, exponentials and normalized
+  weights match an independent numerical reference. Tests also cover c=0 and
+  c=2, control persistence, and unchanged source embeddings/position offsets.
+  Visible text says that scaling and learned projections can make concatenation
+  work. No untrained attention weight is presented as an accuracy result.
+- Restored e, E, delta e and e-prime notation in the positioned-row table,
+  residual arithmetic, Q/K/V equations and full attention maps. The slide now
+  identifies e_4 as the word lookup plus position before attention.
+- All 49 position frames pass 173 build checks, SVG text/node bounds,
+  1280×720, 1920×1080 and 1024×768 presentation layouts, and 390px reading
+  containment. Inspected all new slides, both control states, the revised
+  residual diagram and attention map visually. Physical projector/AirServer
+  use was not tested.
+- Full Part II audit: 436 states and 636 formulas, with no overflow, math
+  failures or console errors. Eight live/reference model cases pass with
+  unchanged arithmetic. No notebook, corpus, model, benchmark, dependency,
+  other lecture part or private Site files changed.
+
 ## 2026-09-21: end-to-end notebook maps
 
 - Added 16 Part II frames with four shared editable maps: MLP and attention,

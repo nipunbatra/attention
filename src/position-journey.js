@@ -79,11 +79,11 @@ document.addEventListener('DOMContentLoaded',()=>{
     function route(g,coords,color){coords.slice(1,-1).forEach((p,i)=>line(g,...coords[i],...p,color,2.5));arrow(g,...coords.at(-2),...coords.at(-1),color);}
     box(input,10,15,178,65,'Word IDs','E_tok[ids] · T × 4','e','tokens');
     box(input,10,125,178,65,'Slots 0…T−1','P[slots] · T × 4','p','positions');
-    box(input,235,70,148,72,'Add rows','X · T × 4','e','input');
+    box(input,235,70,148,72,'Add rows','E · T × 4','e','input');
     route(input,[[188,47],[210,47],[210,95],[235,95]],C.e);route(input,[[188,157],[210,157],[210,120],[235,120]],C.p);
-    box(input,435,5,172,65,'q_T = x_T W_Q','1 × 3','q','query');
-    box(input,435,100,172,65,'K = XW_K','T × 3','k','keys');
-    box(input,435,210,172,65,'V = XW_V','T × 2','v','values');
+    box(input,435,5,172,65,'q_T = e_T W_Q','1 × 3','q','query');
+    box(input,435,100,172,65,'K = EW_K','T × 3','k','keys');
+    box(input,435,210,172,65,'V = EW_V','T × 2','v','values');
     route(input,[[383,95],[405,95],[405,37],[435,37]],C.q);
     route(input,[[383,108],[414,108],[414,132],[435,132]],C.k);
     route(input,[[383,124],[397,124],[397,242],[435,242]],C.v);
@@ -94,11 +94,11 @@ document.addEventListener('DOMContentLoaded',()=>{
     box(attn,885,210,220,70,'m_T = α_T V','message · 1 × 2','v','message');
     arrow(attn,995,102,995,210,C.a);text(attn,1013,161,'α_T',C.a,24);
     arrow(attn,607,242,885,242,C.v);text(attn,653,224,'Values bypass scoring',C.v,22);
-    box(out,885,350,220,70,'Δx_T = m_T W_O','W_O: 2 × 4','p','projection');
+    box(out,885,350,220,70,'Δe_T = m_T W_O','W_O: 2 × 4','p','projection');
     arrow(out,995,280,995,350,C.v);
-    box(out,655,350,172,70,'x′_T = x_T + Δx_T','updated · 1 × 4','p','residual');
+    box(out,655,350,172,70,'e′_T = e_T + Δe_T','updated · 1 × 4','p','residual');
     arrow(out,885,385,827,385,C.p);
-    route(out,[[309,142],[309,310],[741,310],[741,350]],C.e);text(out,334,301,'Residual keeps x_T (already includes position)',C.e,22);
+    route(out,[[309,142],[309,310],[741,310],[741,350]],C.e);text(out,334,301,'Residual keeps e_T (already includes position)',C.e,22);
     box(out,435,350,172,70,'ReLU hidden','4 → 8 units','q','hidden');arrow(out,655,385,607,385,C.p);
     box(out,10,350,373,70,'Logits → vocabulary softmax','hW_vocab + b · 1 × C','a','prediction');arrow(out,435,385,383,385,C.q);
   }
@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded',()=>{
         text(s,20,y,tokens.join(' '),C.ink,27);
         text(s,20,y+47,'Message m₄ = '+vec(r.message,3),C.v,28);
         arrow(s,462,y+40,545,y+40,C.v);
-        text(s,572,y+13,'x′₄ = x₄ + m₄',C.p,28);
+        text(s,572,y+13,'e′₄ = e₄ + Δe₄',C.p,28);
         const result=text(s,572,y+58,vec(r.q,3)+' + '+vec(r.message,3),C.ink,25);
         result.dataset.message=JSON.stringify(r.message);
         const t=text(s,572,y+97,'= '+vec(updated,3),C.p,29);t.dataset.updatedVector=JSON.stringify(updated);
