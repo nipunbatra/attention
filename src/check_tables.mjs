@@ -110,12 +110,12 @@ for (const file of files) {
   const regressionOwners = {
     'part1.html': ['s11-table', 's12-trade', 's16-input-notation'],
     'attention.html': ['s11-wgrid', 's18-q7', 's18-notation', 's17-cmp-fixed'],
-    'part3.html': ['s03-table', 's06-shift', 's15-table-rest', 's02-softmax']
+    'part2b.html': ['s03-table', 's06-shift', 's15-table-rest', 's02-softmax']
   }[name] || [];
   const regressionFrames = {
     'part1.html': ['#s04/2/0:', '#s11/2/0:', '#s16/3/0:'],
     'attention.html': ['#s07/6/0:', '#s11/2/0:', '#s12/2/0:', '#s14/2/1:', '#s17/1/0:'],
-    'part3.html': ['#s03/1/0:', '#s12/1/0:', '#s14/2/1:']
+    'part2b.html': ['#s03/1/0:', '#s12/1/0:', '#s14/2/1:']
   }[name] || [];
   const context = await browser.newContext({viewport:{width:1280,height:720}});
   const page = await context.newPage();

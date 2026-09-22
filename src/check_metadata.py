@@ -78,7 +78,7 @@ def main():
         check(config.get('partLabel', 'Part ' + str(config.get('part'))) == prefix, f'{name}: displayed part label')
         check(config.get('series') == ('Attention and language' if number <= 4 else 'Vision to language'), f'{name}: series name')
         check(cards.get(output) == config['title'], f'{name}: landing-card title does not match destination h1')
-        directory = HERE / ('sections' + ('' if number == 2 else str(number)))
+        directory = HERE / config.get('sectionDirectory', 'sections' + ('' if number == 2 else str(number)))
         source_sections = []
         for path in sorted(directory.glob('sec[0-9][0-9].html')):
             markup = path.read_text(encoding='utf-8')
@@ -127,6 +127,11 @@ def main():
             for direction in ('prev', 'next', 'index'):
                 if part.get(direction):
                     check(part[direction].get('available') is True, f'{output}: {direction} unavailable in clean directory')
+
+        optional = config_in(build(HERE, 3, work / 'part2b.html', HERE / 'part2b.json'))
+        check(optional['partLabel'] == 'Part 2B · Optional reference', 'Optional reference label')
+        check(optional['sectionDirectory'] == 'sections3', 'Original sections must remain in Part 2B')
+        check(optional['next']['available'] is True, 'Part 2B must link to the new Part III in a clean build')
 
         # A stale output must not promote a future lesson to published status.
         planned = copy.deepcopy(configs[0])

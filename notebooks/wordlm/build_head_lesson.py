@@ -13,7 +13,7 @@ def build_notebook():
     md=nbf.v4.new_markdown_cell;code=nbf.v4.new_code_cell
     cells=[md('''# One head and four heads
 
-This notebook extends the Part II attention model. It changes the number of heads, while retaining one attention block, learned absolute positions, the residual update and the prediction MLP. Part III explains how these pieces fit into a full Transformer.
+This notebook extends the Part II attention model. It changes the number of heads, while retaining one attention block, learned absolute positions, the residual update and the prediction MLP. [Part III](../../part3.html) and [Notebook 7](07_multihead_step_by_step.html) walk through multi-head attention from scratch. The broader Transformer material is kept in [optional Part 2B](../../part2b.html).
 
 [Run the browser demo](../../word-lab/) · [Part II slides](../../attention.html?present#s19) · [Download all notebooks](wordlm-notebooks.zip)
 

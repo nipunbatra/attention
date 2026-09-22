@@ -347,7 +347,8 @@ Read this file, then `PRESENT.md` for the current layout/runtime contract and `C
 |---|---|---|---|
 | 1: characters to prediction | `sections1/secNN.html` | `toy1.json`, `part1.js`, `part1-diagrams.js`, `embedding-primer.js`, `part1.json` | `../part1.html` |
 | 2: self-attention | `sections/secNN.html` | `toy.json`, `part2.json` | `../attention.html` |
-| 3: learning and Transformer blocks | `sections3/secNN.html` | `toy3.json`, `part3.js`, `part3.json` | `../part3.html` |
+| 3: multi-head attention | `build_multihead_lesson.py` → `sections3-heads/secNN.html` | `head_worksheet.py` → `toy3-heads.json`, `part3-heads.js`, `part3.json` | `../part3.html` |
+| Optional 2B: training, blocks and cost | `sections3/secNN.html` (original Part III) | `toy3.json`, `part3.js`, `part2b.json` | `../part2b.html` |
 | 4: cross-attention and translation | `sections4/secNN.html` | `toy4.json`, `part4.js`, `part4.json` | `../part4.html` |
 | Vision II: visual pretraining (source ID 6) | `sections6/secNN.html` | `toy6.json`, `part6.js`, `part6.json` | `../vision2.html` |
 | Vision III: CLIP (source ID 7) | `sections7/secNN.html` | `toy7.json`, `part7.js`, `part7.json` | `../vision3.html` |

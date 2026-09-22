@@ -1,0 +1,225 @@
+{
+  "part": 3,
+  "series": "Attention and language",
+  "title": "Training, Transformer blocks and context cost",
+  "subtitle": "Optional deeper material: gradients, normalization, block structure and computational cost.",
+  "audience": "Deep-learning students who completed Part 2",
+  "minutes": 70,
+  "centralLabel": "The learning step",
+  "central": "\\theta \\leftarrow \\theta - \\eta\\,\\dfrac{\\partial L}{\\partial \\theta}",
+  "chain": [
+    {
+      "label": "Where Part 2 left us",
+      "section": "s01"
+    },
+    {
+      "label": "Observed token and loss",
+      "section": "s02"
+    },
+    {
+      "label": "Parameters",
+      "section": "s03"
+    },
+    {
+      "label": "Forward and backward graph",
+      "section": "s04"
+    },
+    {
+      "label": "One update",
+      "section": "s05"
+    },
+    {
+      "label": "Parallel causal training",
+      "section": "s06"
+    },
+    {
+      "label": "Multiple heads",
+      "section": "s07"
+    },
+    {
+      "label": "Feature mixing",
+      "section": "s08"
+    },
+    {
+      "label": "Residual stream and LayerNorm",
+      "section": "s09"
+    },
+    {
+      "label": "Blocks and depth",
+      "section": "s10"
+    },
+    {
+      "label": "Complete decoder-only model",
+      "section": "s11"
+    },
+    {
+      "label": "Training objective",
+      "section": "s12"
+    },
+    {
+      "label": "Generation and KV cache",
+      "section": "s13"
+    },
+    {
+      "label": "Block arrangements",
+      "section": "s14"
+    },
+    {
+      "label": "Sequence models",
+      "section": "s15"
+    },
+    {
+      "label": "Context cost and attention limits",
+      "section": "s16"
+    },
+    {
+      "label": "Back to aabid",
+      "section": "s17"
+    },
+    {
+      "label": "Pause and think",
+      "section": "s18"
+    },
+    {
+      "label": "Three summaries",
+      "section": "s19"
+    }
+  ],
+  "sections": [
+    {
+      "id": "s01",
+      "title": "Where Part 2 left us",
+      "lit": "e q k v a d ep"
+    },
+    {
+      "id": "s02",
+      "title": "The observed next token tells us the error",
+      "lit": ""
+    },
+    {
+      "id": "s03",
+      "title": "Which numbers will the optimizer change?",
+      "lit": ""
+    },
+    {
+      "id": "s04",
+      "title": "The forward pass is a graph",
+      "lit": ""
+    },
+    {
+      "id": "s05",
+      "title": "One update",
+      "lit": ""
+    },
+    {
+      "id": "s06",
+      "title": "Train every position at once",
+      "lit": ""
+    },
+    {
+      "id": "s07",
+      "title": "Multiple heads",
+      "lit": ""
+    },
+    {
+      "id": "s08",
+      "title": "Attention mixes rows; the FFN mixes features",
+      "lit": ""
+    },
+    {
+      "id": "s09",
+      "title": "The residual stream and LayerNorm",
+      "lit": ""
+    },
+    {
+      "id": "s10",
+      "title": "One block, then many",
+      "lit": ""
+    },
+    {
+      "id": "s11",
+      "title": "The complete decoder-only model",
+      "lit": ""
+    },
+    {
+      "id": "s12",
+      "title": "Training: one pass, many guesses",
+      "lit": ""
+    },
+    {
+      "id": "s13",
+      "title": "Generation: one token, then again",
+      "lit": ""
+    },
+    {
+      "id": "s14",
+      "title": "Three ways to arrange blocks",
+      "lit": ""
+    },
+    {
+      "id": "s15",
+      "title": "Sequence models side by side",
+      "lit": ""
+    },
+    {
+      "id": "s16",
+      "title": "Context cost and attention limits",
+      "lit": ""
+    },
+    {
+      "id": "s17",
+      "title": "Back to aabid",
+      "lit": ""
+    },
+    {
+      "id": "s18",
+      "title": "Pause and think",
+      "lit": ""
+    },
+    {
+      "id": "s19",
+      "title": "Three summaries",
+      "lit": ""
+    }
+  ],
+  "objects": [
+    "e",
+    "q",
+    "k",
+    "v",
+    "a",
+    "d",
+    "ep"
+  ],
+  "legendTitle": "Objects carried forward from Part 2",
+  "provenance": "Training starts from Part 2’s exact model: {{d_model}}-number representations, a 4→8→20 ReLU predictor, a {{vocab}}-word vocabulary, and named axes {{axes}}. The SGD results were computed offline. The later multi-head and FFN examples illustrate a larger architecture; they are not trained outputs of this toy.",
+  "prev": {
+    "label": "Part 2: Self-attention, from first principles",
+    "href": "attention.html"
+  },
+  "next": {
+    "label": "Part 3: Multi-head attention, step by step",
+    "href": "part3.html"
+  },
+  "index": {
+    "label": "Series home",
+    "href": "index.html"
+  },
+  "notation": "part3",
+  "footer": "Optional reference preserved from the earlier Part III. The main sequence continues with multi-head attention in Part III.",
+  "objectSections": {
+    "e": "s03",
+    "q": "s04",
+    "k": "s04",
+    "v": "s04",
+    "a": "s06",
+    "d": "s09",
+    "ep": "s09"
+  },
+  "hook": "The observed next word is water. Use its probability to calculate a loss and update the same attention model and prediction MLP from Part 2. Then build a Transformer block and follow generation.",
+  "partLabel": "Part 2B · Optional reference",
+  "output": "part2b.html",
+  "sectionDirectory": "sections3",
+  "runtimeFile": "part3.js",
+  "toyFile": "toy3.json"
+}

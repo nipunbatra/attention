@@ -1,5 +1,5 @@
 // Shape and layout regressions for the three comparable next-token networks.
-// Run: node src/check_cost_networks.mjs [part3.html]
+// Run: node src/check_cost_networks.mjs [part2b.html]
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -16,7 +16,7 @@ const shots=fs.mkdtempSync(path.join(os.tmpdir(),'attention-cost-networks-')),er
 page.on('pageerror',e=>errors.push(e.message));
 const ids=['concat-network','average-network','attention-network','attention-projections','attention-products'].map(x=>'s16-cost-'+x);
 try{
-  await page.goto(pathToFileURL(path.resolve(process.argv[2]||'part3.html')).href);
+  await page.goto(pathToFileURL(path.resolve(process.argv[2]||'part2b.html')).href);
   await page.evaluate(()=>document.fonts.ready);
   const original=await page.evaluate(()=>JSON.stringify({model:AT.model,forward:AT.forward(AT.sentences.river)}));
   const frames=await page.locator('#s16 .frame').evaluateAll(es=>es.map(e=>e.id));

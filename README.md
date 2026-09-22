@@ -4,7 +4,8 @@ Two connected, interactive, offline-capable series for a deep-learning course. [
 
 - [Part 1](https://nipunbatra.github.io/attention/part1.html): characters, embeddings, an MLP, next-token probabilities, training, and generation.
 - [Part 2](https://nipunbatra.github.io/attention/attention.html): query, key, and value; causal self-attention; a contextual update; next-token prediction.
-- [Part 3](https://nipunbatra.github.io/attention/part3.html): loss and learning, multiple heads, Transformer blocks, and autoregressive generation.
+- [Part 3](https://nipunbatra.github.io/attention/part3.html): multi-head attention, step by step, from the river-bank worksheet to scratch code, PyTorch and a trained model comparison.
+- [Optional Part 2B](https://nipunbatra.github.io/attention/part2b.html): the original longer reference on training, Transformer blocks and context cost.
 - [Part 4](https://nipunbatra.github.io/attention/part4.html): cross-attention through English-to-French translation, from source encoding to prediction, training, and generation.
 
 The four-part **Vision to language** sequence continues with:
@@ -24,9 +25,9 @@ A focused slider keeps its native arrow and Page Up/Down controls. Press **N** t
 
 The sources are slide-first: one bounded teaching idea per 16:9 frame, with large classroom type and no internal scrollbars. Reading mode unfolds those same frames and their companion explanations into a responsive article. There is one source, one set of widgets, and one numerical model per part, not a second deck to keep synchronized.
 
-Part 1 uses a trained small name model. Part 2 uses hand-designed weights so every step can be inspected; Part 3 trains that toy before introducing the larger Transformer architecture. The toy uses four illustrative word features and adds hand-chosen position vectors across those same coordinates. There is no extra position axis. Position can affect predictions; the named features and numbers are teaching choices, not measurements from a trained language model.
+Part 1 uses a trained small name model. Part 2 uses hand-designed weights so every step can be inspected. Part 3 reuses its exact token and position rows with two hand-chosen heads. The toy uses four illustrative word features and adds hand-chosen position vectors across those same coordinates. There is no extra position axis. These named features explain the arithmetic; they are not measurements from a trained language model.
 
-Parts 2 and 3 share the exact 4→8→20 ReLU prediction MLP. Part 3 trains both layers and biases, then distinguishes that predictor from the separate 4→8→4 block FFN. The full pre-norm Transformer diagram uses FFNs inside the blocks and a linear vocabulary readout after final LayerNorm; the numerical toy does not execute that full stack.
+Parts 2 and 3 share the exact 4→8→20 ReLU prediction MLP. Part 3 follows two heads through separate scores, softmaxes and value messages, concatenation, W_O, the residual and the next-token prediction. Notebook 7 embeds the same 58 figures/steps and checks the scratch implementation against PyTorch. A separate three-seed TinyStories experiment compares genuinely trained MLP, one-head and four-head models. The longer normalization, full Transformer and complexity material remains in optional Part 2B; it is not required for the multi-head walkthrough.
 
 The standalone SVG preview is at `figures/attention-diagram-preview/index.html`. Its twelve stages build one causal attention head, then the output projection, residual addition, and the final-token vocabulary prediction. Section16 embeds the same diagram source and reads the article's live numerical model.
 
@@ -40,6 +41,7 @@ The vision sequence adapts the earlier `vision-transformer`, `vision-ssl`, `clip
 python3 src/assemble.py --part 1 --out part1.html
 python3 src/assemble.py --part 2 --out attention.html
 python3 src/assemble.py --part 3 --out part3.html
+python3 src/assemble.py --part 3 --config src/part2b.json --out part2b.html
 python3 src/assemble.py --part 4 --out part4.html
 # Internal source IDs 5–8 display as Vision Parts I–IV.
 python3 src/assemble.py --part 5 --out vision1.html
@@ -90,6 +92,7 @@ node src/toy_ref.mjs src/toy.json --compare src/py_check.json
 node src/check-live-model.mjs attention.html
 python3 src/check_training.py
 node src/check_part3_continuity.mjs
+node src/check_multihead_lesson.mjs
 node src/check_position_capacity.mjs
 node src/pres_test.mjs
 node src/interaction_test.mjs
@@ -97,6 +100,7 @@ node src/export_test.mjs
 node src/frame_audit.mjs part1.html
 node src/frame_audit.mjs attention.html
 node src/frame_audit.mjs part3.html
+node src/frame_audit.mjs part2b.html
 node src/frame_audit.mjs part4.html
 node src/frame_audit.mjs vision1.html
 node src/frame_audit.mjs vision2.html

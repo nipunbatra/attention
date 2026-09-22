@@ -1,4 +1,4 @@
-// Part III costs and Part II positions: arithmetic, controls and responsive fit.
+// Optional Part 2B costs and Part II positions: arithmetic, controls and responsive fit.
 // Run: node src/check_cost_position.mjs [attention.html]
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -28,7 +28,7 @@ const page=await browser.newPage({viewport:{width:1280,height:720},reducedMotion
 const errors=[];page.on('pageerror',e=>errors.push(e.message));
 const close=(a,b,label)=>assert(Math.abs(a-b)<1e-11,`${label}: ${a} vs ${b}`);
 try{
-  await page.goto(pathToFileURL(path.resolve(process.argv[3]||'part3.html')).href);
+  await page.goto(pathToFileURL(path.resolve(process.argv[3]||'part2b.html')).href);
   await page.evaluate(()=>document.fonts.ready);
   assert.deepEqual(await page.locator('.frame.context-lesson').evaluateAll(es=>es.map(e=>e.id)),costs);
   async function go(id,build=99){

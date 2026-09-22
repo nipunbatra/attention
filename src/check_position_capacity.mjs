@@ -1,5 +1,5 @@
 // Read-only capacity and generation regression for the assembled Parts 2 and 3.
-// Usage: node src/check_position_capacity.mjs [attention.html] [part3.html]
+// Usage: node src/check_position_capacity.mjs [attention.html] [part2b.html]
 // Uses an existing Playwright installation; no dependencies or output files are written.
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
@@ -30,7 +30,7 @@ if (!pw) throw new Error('No existing Playwright runtime found. Set PLAYWRIGHT_M
 
 const files = [
   process.argv[2] || path.join(src, '..', 'attention.html'),
-  process.argv[3] || path.join(src, '..', 'part3.html')
+  process.argv[3] || path.join(src, '..', 'part2b.html')
 ];
 const model = JSON.parse(readFileSync(path.join(src, 'toy.json'), 'utf8'));
 assert.equal(model.max_context, 20, 'The toy must declare its 20-token capacity.');

@@ -1,5 +1,36 @@
 # Classroom release checks
 
+## 2026-09-22 · Part III rebuilt around multi-head attention
+
+- The main Part III now has 58 paced teaching frames plus the cover, in eight
+  sections. It continues the name-prediction and river-bank examples, keeps the
+  exact Part II token/position rows, and follows two hand-chosen heads through
+  projections, scaled scores, separate softmaxes, value messages, concatenation,
+  W_O, residual addition and the same prediction MLP. Short, statically highlighted
+  code follows the diagrams. Full maps and detailed code have separate frames.
+- The original broader training/normalization/Transformer/cost lesson is preserved
+  as optional `part2b.html`, with unchanged source sections and numerical data.
+  Cost links and old regression defaults now point there. Part IV remains the
+  cross-attention lesson; its navigation points back to the revised Part III.
+- Notebook 7 embeds the shared SVGs, runs every code cell, verifies every head
+  weight and final vocabulary logit against an independent worksheet, and checks
+  the scratch implementation against `nn.MultiheadAttention` with copied weights.
+  Notebook 6 and the live GitHub Pages demo retain the separate, genuinely trained
+  three-seed experiment. Head-count improvement is measured, not promised.
+- All 51 Python tests pass. The new browser check independently reproduces 1,840
+  numbers, tests both context/head controls, checks SVG label bounds, identical
+  notebook figures, local links, syntax highlighting and 390px reading containment.
+  Notebook 7 also runs from a freshly extracted download.
+- Every new Part III presentation state passes at 1280×720 and 1024×768, with 58
+  distinct math expressions and no overflow or browser errors. Optional Part 2B's
+  181 states and 254 expressions pass. Original training continuity (1,578 numeric
+  checks), context capacity (82,544 finite values), cost diagrams, position demos,
+  all metadata builds, and Part IV's 2,274 reference scalars pass.
+- Visually inspected the shared map, numerical value contributions, short code,
+  sentence intuition and exported notebook. Diagram labels remain readable when
+  another node is highlighted. Viewport checks do not claim a physical projector
+  or AirServer test.
+
 ## 2026-09-22: public browser inference and the four-head comparison
 
 - Added the GitHub Pages app at `word-lab/`: real ONNX Runtime Web inference,

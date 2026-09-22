@@ -1,220 +1,125 @@
 {
- "part": 3,
- "series": "Attention and language",
- "title": "Learning, heads, and the Transformer",
- "subtitle": "Follow one error backward, update the model, then assemble the decoder-only Transformer.",
- "audience": "Deep-learning students who completed Part 2",
- "minutes": 70,
- "centralLabel": "The learning step",
- "central": "\\theta \\leftarrow \\theta - \\eta\\,\\dfrac{\\partial L}{\\partial \\theta}",
- "chain": [
-  {
-   "label": "Where Part 2 left us",
-   "section": "s01"
+  "part": 3,
+  "series": "Attention and language",
+  "title": "Multi-head attention, step by step",
+  "subtitle": "Keep the same next-token problem. Follow two heads, combine their messages, and write the code.",
+  "audience": "Deep-learning students who completed Parts I\u2013II",
+  "minutes": 75,
+  "centralLabel": "The same update, several heads",
+  "central": "\\Delta E=\\operatorname{Concat}(A^{(1)}V^{(1)},\\ldots,A^{(H)}V^{(H)})W_O",
+  "chain": [
+    {
+      "label": "The same prediction, more than one clue",
+      "section": "s01"
+    },
+    {
+      "label": "Give each head its own view",
+      "section": "s02"
+    },
+    {
+      "label": "Follow both heads through the numbers",
+      "section": "s03"
+    },
+    {
+      "label": "Combine the messages and predict",
+      "section": "s04"
+    },
+    {
+      "label": "Implement the same calculation",
+      "section": "s05"
+    },
+    {
+      "label": "Train and generate with the same model",
+      "section": "s06"
+    },
+    {
+      "label": "Use the PyTorch block",
+      "section": "s07"
+    },
+    {
+      "label": "Compare the trained models",
+      "section": "s08"
+    }
+  ],
+  "sections": [
+    {
+      "id": "s01",
+      "title": "The same prediction, more than one clue",
+      "lit": ""
+    },
+    {
+      "id": "s02",
+      "title": "Give each head its own view",
+      "lit": ""
+    },
+    {
+      "id": "s03",
+      "title": "Follow both heads through the numbers",
+      "lit": ""
+    },
+    {
+      "id": "s04",
+      "title": "Combine the messages and predict",
+      "lit": ""
+    },
+    {
+      "id": "s05",
+      "title": "Implement the same calculation",
+      "lit": ""
+    },
+    {
+      "id": "s06",
+      "title": "Train and generate with the same model",
+      "lit": ""
+    },
+    {
+      "id": "s07",
+      "title": "Use the PyTorch block",
+      "lit": ""
+    },
+    {
+      "id": "s08",
+      "title": "Compare the trained models",
+      "lit": ""
+    }
+  ],
+  "objects": [
+    "e",
+    "q",
+    "k",
+    "v",
+    "a",
+    "d",
+    "ep"
+  ],
+  "legendTitle": "The same objects as Part II",
+  "provenance": "The two-head worksheet reuses Part II\u2019s exact token and position rows. Its projections are hand-chosen. The separate TinyStories comparison uses trained checkpoints and three seeds.",
+  "prev": {
+    "label": "Part 2: Self-attention, from first principles",
+    "href": "attention.html"
   },
-  {
-   "label": "Observed token and loss",
-   "section": "s02"
+  "next": {
+    "label": "Part 4: Cross-attention: translate one phrase",
+    "href": "part4.html"
   },
-  {
-   "label": "Parameters",
-   "section": "s03"
+  "index": {
+    "label": "Series home",
+    "href": "index.html"
   },
-  {
-   "label": "Forward and backward graph",
-   "section": "s04"
+  "notation": "part2",
+  "footer": "Several learned views, separate attention rows, one contextual update. Optional training and cost reference: Part 2B.",
+  "objectSections": {
+    "e": "s02",
+    "q": "s03",
+    "k": "s03",
+    "v": "s03",
+    "a": "s03",
+    "d": "s04",
+    "ep": "s04"
   },
-  {
-   "label": "One update",
-   "section": "s05"
-  },
-  {
-   "label": "Parallel causal training",
-   "section": "s06"
-  },
-  {
-   "label": "Multiple heads",
-   "section": "s07"
-  },
-  {
-   "label": "Feature mixing",
-   "section": "s08"
-  },
-  {
-   "label": "Residual stream and LayerNorm",
-   "section": "s09"
-  },
-  {
-   "label": "Blocks and depth",
-   "section": "s10"
-  },
-  {
-   "label": "Complete decoder-only model",
-   "section": "s11"
-  },
-  {
-   "label": "Training objective",
-   "section": "s12"
-  },
-  {
-   "label": "Generation and KV cache",
-   "section": "s13"
-  },
-  {
-   "label": "Block arrangements",
-   "section": "s14"
-  },
-  {
-   "label": "Sequence models",
-   "section": "s15"
-  },
-  {
-   "label": "Context cost and attention limits",
-   "section": "s16"
-  },
-  {
-   "label": "Back to aabid",
-   "section": "s17"
-  },
-  {
-   "label": "Pause and think",
-   "section": "s18"
-  },
-  {
-   "label": "Three summaries",
-   "section": "s19"
-  }
- ],
- "sections": [
-  {
-   "id": "s01",
-   "title": "Where Part 2 left us",
-   "lit": "e q k v a d ep"
-  },
-  {
-   "id": "s02",
-   "title": "The observed next token tells us the error",
-   "lit": ""
-  },
-  {
-   "id": "s03",
-   "title": "Which numbers will the optimizer change?",
-   "lit": ""
-  },
-  {
-   "id": "s04",
-   "title": "The forward pass is a graph",
-   "lit": ""
-  },
-  {
-   "id": "s05",
-   "title": "One update",
-   "lit": ""
-  },
-  {
-   "id": "s06",
-   "title": "Train every position at once",
-   "lit": ""
-  },
-  {
-   "id": "s07",
-   "title": "Multiple heads",
-   "lit": ""
-  },
-  {
-   "id": "s08",
-   "title": "Attention mixes rows; the FFN mixes features",
-   "lit": ""
-  },
-  {
-   "id": "s09",
-   "title": "The residual stream and LayerNorm",
-   "lit": ""
-  },
-  {
-   "id": "s10",
-   "title": "One block, then many",
-   "lit": ""
-  },
-  {
-   "id": "s11",
-   "title": "The complete decoder-only model",
-   "lit": ""
-  },
-  {
-   "id": "s12",
-   "title": "Training: one pass, many guesses",
-   "lit": ""
-  },
-  {
-   "id": "s13",
-   "title": "Generation: one token, then again",
-   "lit": ""
-  },
-  {
-   "id": "s14",
-   "title": "Three ways to arrange blocks",
-   "lit": ""
-  },
-  {
-   "id": "s15",
-   "title": "Sequence models side by side",
-   "lit": ""
-  },
-  {
-   "id": "s16",
-   "title": "Context cost and attention limits",
-   "lit": ""
-  },
-  {
-   "id": "s17",
-   "title": "Back to aabid",
-   "lit": ""
-  },
-  {
-   "id": "s18",
-   "title": "Pause and think",
-   "lit": ""
-  },
-  {
-   "id": "s19",
-   "title": "Three summaries",
-   "lit": ""
-  }
- ],
- "objects": [
-  "e",
-  "q",
-  "k",
-  "v",
-  "a",
-  "d",
-  "ep"
- ],
- "legendTitle": "Objects carried forward from Part 2",
- "provenance": "Training starts from Part 2’s exact model: {{d_model}}-number representations, a 4→8→20 ReLU predictor, a {{vocab}}-word vocabulary, and named axes {{axes}}. The SGD results were computed offline. The later multi-head and FFN examples illustrate a larger architecture; they are not trained outputs of this toy.",
- "prev": {
-  "label": "Part 2: Self-attention, from first principles",
-  "href": "attention.html"
- },
- "next": {
-  "label": "Part 4: Cross-attention: translate one phrase",
-  "href": "part4.html"
- },
- "index": {
-  "label": "Series home",
-  "href": "index.html"
- },
- "notation": "part3",
- "footer": "Part 3 completes the path from a fixed attention calculation to a trainable decoder-only Transformer.",
- "objectSections": {
-  "e": "s03",
-  "q": "s04",
-  "k": "s04",
-  "v": "s04",
-  "a": "s06",
-  "d": "s09",
-  "ep": "s09"
- },
- "hook": "The observed next word is water. Use its probability to calculate a loss and update the same attention model and prediction MLP from Part 2. Then build a Transformer block and follow generation."
+  "hook": "The final \u201cthe\u201d may need both the river setting and the person in the scene. How can two heads retrieve both?",
+  "sectionDirectory": "sections3-heads",
+  "runtimeFile": "part3-heads.js",
+  "toyFile": "toy3-heads.json",
+  "syntaxHighlighting": true
 }

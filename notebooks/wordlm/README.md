@@ -1,9 +1,10 @@
 # Word-level next-token prediction: MLP to attention
 
-This directory is a six-notebook, executable companion to *Attention and
+This directory is a seven-notebook, executable companion to *Attention and
 language*. Notebooks 1–5 cover Parts I–II: learned embeddings, an MLP, and one
-causal attention head. Notebook 6 previews Part III by splitting the same total
-width across four heads. None of these teaching models includes LayerNorm,
+causal attention head. Notebook 6 compares the trained one-head and four-head
+models. Notebook 7 follows Part III's two-head worksheet from scratch, using the
+same diagrams as the slides. None of these teaching models includes LayerNorm,
 a block FFN, stacked attention blocks, or pretrained embeddings.
 
 ## Notebooks
@@ -34,6 +35,10 @@ a block FFN, stacked attention blocks, or pretrained embeddings.
 6. [`06_multihead_comparison.ipynb`](06_multihead_comparison.ipynb) —
    four heads at fixed total width, per-head weight rows, a three-seed comparison,
    cross-entropy and perplexity, and optional training.
+7. [`07_multihead_step_by_step.ipynb`](07_multihead_step_by_step.ipynb) —
+   58 paced frames with embedded SVGs, two heads on the Part II river-bank
+   example, complete from-scratch code, training and inference, and numerical
+   agreement with `torch.nn.MultiheadAttention`. No dataset download is needed.
 
 Notebooks 1 and 3 show the complete training/inference maps first and highlight
 the relevant stages beside the code. The editable diagram source is

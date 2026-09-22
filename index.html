@@ -82,19 +82,20 @@ a:hover{text-decoration-color:var(--ink)}
       </li>
       <li class="card">
         <span class="n">PART 3</span>
-        <h2><a href="part3.html">Learning, heads, and the Transformer</a></h2>
-        <p class="build">Follow one error through the attention model and update its parameters. Assemble the Transformer, then compare the training and generation costs of concatenation, averaging and attention.</p>
+        <h2><a href="part3.html">Multi-head attention, step by step</a></h2>
+        <p class="build">Return to the names and river-bank examples. Follow two heads through their scores, messages and shared prediction. Build the calculation from scratch, check it against PyTorch, and try the trained four-head model.</p>
         <p class="meta">For students who finished Part 2.</p>
-        <nav class="actions" aria-label="Part 3 views"><a class="go" href="part3.html">Read Part 3</a><a href="part3.html?present">Present Part 3</a></nav>
+        <nav class="actions" aria-label="Part 3 views"><a class="go" href="part3.html">Read Part 3</a><a href="part3.html?present">Present Part 3</a><a href="notebooks/wordlm/07_multihead_step_by_step.html">Illustrated notebook</a></nav>
       </li>
       <li class="card">
         <span class="n">PART 4</span>
         <h2><a href="part4.html">Cross-attention: translate one phrase</a></h2>
         <p class="build">Translate "the river bank" into "la rive". Follow a decoder query as it reads the encoder's keys and values, then use the retrieved information to predict the next French token.</p>
-        <p class="meta">Builds on self-attention in Part 2 and Transformer blocks in Part 3.</p>
+        <p class="meta">Builds on self-attention in Part 2 and multiple heads in Part 3.</p>
         <nav class="actions" aria-label="Part 4 views"><a class="go" href="part4.html">Read Part 4</a><a href="part4.html?present">Present Part 4</a></nav>
       </li>
     </ol>
+    <p class="series-intro"><a href="part2b.html">Optional Part 2B: training, Transformer blocks and context cost</a> keeps the longer reference material separate from the multi-head walkthrough.</p>
     <section class="vision-series" aria-labelledby="vision-title">
       <h2 id="vision-title" class="series-title">Vision to language</h2>
       <p class="series-intro">Keep a small image in view as the task changes. Each part separates the worked toy from the full architecture and states what its numbers can, and cannot, demonstrate.</p>

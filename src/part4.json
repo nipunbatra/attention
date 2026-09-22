@@ -93,9 +93,9 @@
   "ep"
  ],
  "legendTitle": "The same attention roles, with source and target labels",
- "provenance": "A new trained toy uses three-number representations and one head in each attention block. The coordinates have no assigned English meanings. Source and target use separate learned embedding tables and added position vectors. The numerical toy omits feed-forward sublayers and LayerNorm; Part 3 covers those parts of the full architecture.",
+ "provenance": "A new trained toy uses three-number representations and one head in each attention block. The coordinates have no assigned English meanings. Source and target use separate learned embedding tables and added position vectors. The numerical toy omits feed-forward sublayers and LayerNorm; optional Part 2B covers those parts of the full architecture.",
  "prev": {
-  "label": "Part 3: Learning, heads, and the Transformer",
+  "label": "Part 3: Multi-head attention, step by step",
   "href": "part3.html"
  },
  "next": {

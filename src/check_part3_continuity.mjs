@@ -1,5 +1,5 @@
-// Read-only regression: Part II → Part III, MLP training, diagrams, and controls.
-// node src/check_part3_continuity.mjs [part3.html]
+// Read-only regression: original training lesson, now optional Part 2B.
+// node src/check_part3_continuity.mjs [part2b.html]
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
@@ -60,7 +60,7 @@ const browser=await pw.chromium.launch(),errors=[];
 try{
   const page=await browser.newPage({viewport:{width:1280,height:720},reducedMotion:'reduce'});
   page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(pathToFileURL(path.resolve(process.argv[2]||'part3.html')).href);
+  await page.goto(pathToFileURL(path.resolve(process.argv[2]||'part2b.html')).href);
   await page.evaluate(()=>document.fonts.ready);
   assert.deepEqual(await page.evaluate(()=>window.__TOY__),saved,'assembled model must be current');
   assert.equal(await page.locator('.frame:not(.context-lesson)').count(),50,'original classroom frames before presentation title');

@@ -3,7 +3,7 @@
 Usage:
   python3 assemble.py --part 2 --out attention.html            # Part 2: sections/, toy.json, part2.json
   python3 assemble.py --part 1 --out part1.html                # Part 1: sections1/, toy1.json, part1.json, runtime + diagrams (if present)
-  python3 assemble.py --part 3 --out part3.html                # Part 3: sections3/, toy3.json, part3.json, runtime part3.js (if present)
+  python3 assemble.py --part 3 --out part3.html                # Part 3: source directory, toy and runtime declared by part3.json
   python3 assemble.py --only sections/sec07.html --out t.html  # any part: test one or more fragments (pass --part so the right toy/config is used)
 Replaces <!--KATEX-->, <!--SHARED-->, <!--SECTIONS--> in shell.html and the <title>. Injects window.__TOY__ and window.__PART__
 before shared.js, then the optional part runtime (partN.js) after it."""
@@ -22,7 +22,7 @@ def source_outputs(source_dir):
     """
     outputs = set()
     for config_path in glob.glob(os.path.join(source_dir, 'part[0-9]*.json')):
-        match = re.fullmatch(r'part(\d+)\.json', os.path.basename(config_path))
+        match = re.fullmatch(r'part(\d+)([a-z]?)\.json', os.path.basename(config_path))
         if not match:
             continue
         number = int(match.group(1))
@@ -32,8 +32,8 @@ def source_outputs(source_dir):
             continue
         suffix = '' if number == 2 else str(number)
         sections = config.get('sections', [])
-        section_dir = os.path.join(source_dir, 'sections' + suffix)
-        complete = bool(sections) and os.path.isfile(os.path.join(source_dir, 'toy' + suffix + '.json'))
+        section_dir = os.path.join(source_dir, config.get('sectionDirectory', 'sections' + suffix))
+        complete = bool(sections) and os.path.isfile(os.path.join(source_dir, config.get('toyFile', 'toy' + suffix + '.json')))
         complete = complete and all(
             re.fullmatch(r's\d\d', section.get('id', ''))
             and os.path.isfile(os.path.join(section_dir, 'sec' + section['id'][1:] + '.html'))
@@ -63,10 +63,11 @@ ap.add_argument('--sections', default=None, help='sections directory (default se
 a = ap.parse_args()
 N = a.part
 suffix = '' if N == 2 else str(N)
-toy_path = a.toy or os.path.join(here, 'toy%s.json' % suffix)
 cfg_path = a.config or os.path.join(here, 'part%d.json' % N)
-rt_path = a.runtime or os.path.join(here, 'part%d.js' % N)
-sec_dir = a.sections or os.path.join(here, 'sections%s' % suffix)
+defaults = json.load(open(cfg_path, encoding='utf-8')) if os.path.exists(cfg_path) else {}
+toy_path = a.toy or os.path.join(here, defaults.get('toyFile', 'toy%s.json' % suffix))
+rt_path = a.runtime or os.path.join(here, defaults.get('runtimeFile', 'part%d.js' % N))
+sec_dir = a.sections or os.path.join(here, defaults.get('sectionDirectory', 'sections%s' % suffix))
 
 shell = open(a.shell, encoding='utf-8').read()
 for ph in ('<!--KATEX-->', '<!--SHARED-->', '<!--SECTIONS-->'):
@@ -125,9 +126,10 @@ if N == 1:
     shared_block += '<script>window.__EMBEDDING_SCENE__ = ' + js(scene_uri) + ';</script>\n'
     with open(os.path.join(here, 'embedding-primer.js'), encoding='utf-8') as module:
         shared_block += '<script>\n' + module.read() + '\n</script>\n'
-if N == 2:
+if N == 2 or part.get('syntaxHighlighting'):
     with open(os.path.join(here, 'python-code.js'), encoding='utf-8') as module:
         shared_block += '<script>\n' + module.read() + '\n</script>\n'
+if N == 2:
     with open(os.path.join(here, 'position-journey.js'), encoding='utf-8') as module:
         shared_block += '<script>\n' + module.read() + '\n</script>\n'
     with open(os.path.join(here, 'position-visuals.js'), encoding='utf-8') as module:
@@ -183,7 +185,7 @@ if not a.only:
     if missing or extra:
         print('warning: part config sections differ from the files (missing on disk: %s; not in config: %s)' % (missing, extra))
 out = shell.replace('<!--KATEX-->', katex).replace('<!--SHARED-->', shared_block).replace('<!--SECTIONS-->', '\n'.join(parts))
-if N == 2:
+if N == 2 or part.get('syntaxHighlighting'):
     # Static highlighting works offline and in exported slides, without browser JS
     # or a CDN. Reuse the notebook renderer for the earlier PyTorch examples too.
     sys.path.insert(0, os.path.join(here, '..', 'notebooks', 'wordlm'))
