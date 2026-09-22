@@ -10,12 +10,20 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
-2026-09-22 position-section pacing pass (current structure):
+2026-09-22 position-section pacing and limitations (current structure):
 
-- The position lesson has 40 presentation frames instead of 49. Its five
+- The position lesson has 42 presentation frames instead of 49. Its five
   topic pauses introduce the motivation, adding position to a word, Method 1
-  (learned positions), Method 2 (sinusoidal positions), and absolute versus
-  relative positions. Keep the numerical examples within their topic blocks.
+  (learned positions), Method 2 (sinusoidal positions), and relative positions.
+  Keep the numerical examples within their topic blocks.
+- Three frames now motivate the relative-position divider before it appears:
+  a four-row learned table has no rows 4 and 5, the same today/Ravi pair shifts
+  five slots when a prefix is added, and the held-fixed additive score changes
+  from 2.366 to 0.500 despite the gap staying one. The relative-bias table reuses
+  exactly the same receiver/source indices (3,2) and (8,7), followed by ALiBi
+  and RoPE. Preserve the distinction between table coverage and same-gap
+  matching; relative methods do not guarantee arbitrary-length predictions.
+  The explanatory cross-term algebra remains in reading notes.
 - Nine recap/reference frames are now reading companions with headings:
   the second addition example, concat-plus-projection, Q/K/V routing, static
   clock comparison, sinusoid row table, rotary score table, mean pooling,
@@ -105,7 +113,7 @@ All four attention parts and the four-part Vision to language extension are impl
 - All 28 detailed cost frames moved to `sections3/sec16_cost.html` and are
   included in Part III Section 16, after training and cached generation. Part II
   Section 16 retains the matrix calculation, with a reading link to Part III.
-- Section 17 now has 40 position frames. Its opening computes both sentence
+- Section 17 now has 42 position frames. Its opening computes both sentence
   orders explicitly: query, scores, exponentials, normalized weights, weighted
   values and the identical message. The independent toy's `today` row is
   `[0.8,0.2]`, so Maya and Ravi have unequal weights. It then adds positions and

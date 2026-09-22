@@ -1,5 +1,29 @@
 # Classroom release checks
 
+## 2026-09-22: motivate relative positions with worked limitations
+
+- Put the limitations before the relative-position divider. A four-row learned
+  table is shown with a six-token input and two missing position rows. A new
+  word-and-slot diagram shifts the today/Ravi pair from (3,2) to (8,7) by
+  inserting five words; the pair remains one token apart. The additive numerical
+  test then shows both dot-product calculations, 2.366 versus 0.500.
+- The next subsection reuses those same indices to introduce distance bias,
+  then continues through ALiBi and RoPE. Kept explicit caveats about learned
+  table coverage, relative cues in absolute encodings, held-fixed content and
+  the difference between computable positions and reliable length extension.
+  Reading notes explain the content–position cross terms. Both video credits
+  remain; the video pages could not be fetched during this pass, so the new
+  examples are original and the mathematical check uses the primary papers.
+- All 42 position frames pass 143 forward/reverse build checks, independent
+  arithmetic, new word/slot and table-coverage assertions, SVG bounds, unchanged
+  bank-model data, 1280×720, 1920×1080 and 1024×768 presentation layouts, and
+  390px reading containment. All 17 topic breaks pass navigation and header checks.
+- Full Part II audit: 420 states, 647 formulas, no overflow, math failures or
+  console errors. Inspected the new limitation examples, divider, relative-bias
+  table and rotary comparison visually; fixed overflow without smaller fonts.
+  Physical projector/AirServer use was not tested. No notebook, saved model,
+  benchmark, dependency, other lecture part or private Site changes.
+
 ## 2026-09-22: position subsections and fewer repeated slides
 
 - Reduced the position lesson from 49 to 40 frames. Five topic breaks now

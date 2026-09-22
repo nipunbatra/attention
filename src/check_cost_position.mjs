@@ -18,7 +18,7 @@ const positions=[
   'addition-break','shift','move-a','move-b','moved','toy','slot-scores','experiment','updated',
   'append','append-scores','append-softmax','append-scale','append-tradeoffs',
   'learned-break','learned','clock-choice','clock','repeat','waves','period','sine-rule','worked-sine',
-  'relative-break','absolute-shift','relative','alibi','rotate','rope-shift','rope-identity','rope-pairs','insertion','overview'
+  'absolute-range','absolute-context','absolute-shift','relative-break','relative','alibi','rotate','rope-shift','rope-identity','rope-pairs','insertion','overview'
 ].map(x=>'s17-position-'+x);
 const readingExtras=['add','width','routing','rates','sine','rope','mean','length','choices'].map(x=>'s17-position-'+x);
 const ids=positions;
@@ -66,7 +66,7 @@ try{
   await page.setViewportSize({width:1280,height:720});await page.evaluate(()=>document.fonts.ready);
   const original=await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)}));
   assert.deepEqual(await page.locator('.frame.context-lesson').evaluateAll(es=>es.map(e=>e.id)),ids);
-  assert.equal(ids.length,40,'Keep the slower worked examples while reducing the 49-frame sequence.');
+  assert.equal(ids.length,42,'Keep the worked limitations before the relative-position divider without restoring duplicate recaps.');
   assert.deepEqual(await page.locator('.position-reading[id]:not(#s17-position-map-notes)').evaluateAll(es=>es.map(e=>e.id)),readingExtras,'Recaps remain available for reading.');
   assert.equal(await page.locator('#s17 [data-position-journey="overview"]').count(),1,'Use one closing map with selectable highlights.');
   for(const id of readingExtras){
@@ -180,6 +180,18 @@ try{
   }
   const absScores=await page.locator('[data-absolute-score]').evaluateAll(es=>es.map(e=>Number(e.dataset.absoluteScore)));
   close(absScores[0],1.5+Math.sqrt(3)/2,'absolute additive match at 3,2');close(absScores[1],.5,'absolute additive match at 8,7');
+  assert.deepEqual(await page.locator('[data-missing-position]').evaluateAll(es=>es.map(e=>Number(e.dataset.missingPosition))),[4,5],'Four-row learned table has no row at indices 4 or 5.');
+  const shiftExamples=await page.locator('[data-shift-example]').evaluateAll(es=>es.map(e=>({example:Number(e.dataset.shiftExample),index:Number(e.dataset.position),word:e.dataset.word})));
+  for(const example of [0,1]){
+    const row=shiftExamples.filter(e=>e.example===example);
+    const words=example?['At','the','park','after','lunch',...sequences[0]]:sequences[0];
+    assert.deepEqual(row.map(e=>e.word),words,'Full sentence and prefix are visible.');
+    assert.deepEqual(row.map(e=>e.index),words.map((_,i)=>i),'Every word has its correct zero-based slot.');
+    const receiver=row.find(e=>e.word==='today').index,source=row.find(e=>e.word==='Ravi').index;
+    assert.deepEqual([receiver,source],example?[8,7]:[3,2]);assert.equal(receiver-source,1,'Shared shift preserves the gap.');
+  }
+  const relativeRows=await page.locator('#s17-position-relative tbody tr').evaluateAll(es=>es.map(e=>[Number(e.cells[0].textContent),Number(e.cells[1].textContent)]));
+  assert.deepEqual(relativeRows,[[3,2],[8,7]],'Relative bias reuses the exact absolute-position example.');
   await go('s17-position-overview');
   const mapGeometry=await page.locator('#position-overview-map [data-map-node]').evaluateAll(es=>es.map(e=>[e.dataset.mapNode,...['x','y','width','height'].map(a=>e.getAttribute(a))]));
   for(const focus of ['all','input','attention','output','all']){

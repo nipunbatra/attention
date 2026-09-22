@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     box(out,10,350,373,70,'Logits → vocabulary softmax','hW_vocab + b · 1 × C','a','prediction');arrow(out,435,385,383,385,C.q);
   }
   for(const host of document.querySelectorAll('[data-position-journey]')){
-    const kind=host.dataset.positionJourney,s=canvas(host,kind+' positional encoding diagram',kind==='overview'?440:kind==='period'?235:kind==='absolute-shift'?280:kind==='updated'?285:360);
+    const kind=host.dataset.positionJourney,s=canvas(host,kind+' positional encoding diagram',kind==='overview'?440:kind==='period'?235:kind==='context-shift'?335:kind==='absolute-shift'?280:kind==='updated'?285:360);
     if(kind==='initial'||kind==='positioned'){
       const positioned=kind==='positioned';
       L.sequences.forEach((tokens,panel)=>{
@@ -135,13 +135,30 @@ document.addEventListener('DOMContentLoaded',()=>{
       wave(s,{y:20,rate:.01,end:650,label:'Slow pair',color:C.v});
       const x=170+880*(2*Math.PI/.01)/650;line(s,x,36,x,155,C.v,2,{'stroke-dasharray':'3 4'});
       text(s,170,211,'One full turn at i ≈ 628.32 (continuous index)',C.v,27);
+    }else if(kind==='context-shift'){
+      const words=L.sequences[0],prefix=['At','the','park','after','lunch'];
+      [words,[...prefix,...words]].forEach((tokens,panel)=>{
+        const y=panel*168;
+        text(s,20,y+27,panel?'Add five words at the front':'Original sentence',C.ink,26);
+        tokens.forEach((token,index)=>{
+          const x=16+122*index,color=token==='today'?C.q:token==='Ravi'?C.k:C.muted;
+          const g=el('g',{'data-shift-example':panel,'data-position':index,'data-word':token});s.append(g);
+          text(g,x+54,y+63,String(index),color,22,'middle');
+          g.append(el('rect',{x,y:y+76,width:108,height:43,rx:5,fill:C.paper,stroke:color,'stroke-width':token==='today'||token==='Ravi'?2.5:1}));
+          text(g,x+54,y+105,token,color,24,'middle');
+        });
+        const i=panel?8:3,j=i-1;
+        arrow(s,70+122*i,y+140,70+122*j,y+140,C.q);
+        text(s,panel?430:512,y+148,`today → Ravi: ${i} − ${j} = 1`,C.q,25);
+      });
     }else if(kind==='absolute-shift'){
       [[3,2],[8,7]].forEach(([i,j],panel)=>{
         const r=absolutePair(i,j),x=20+560*panel;
-        text(s,x,34,`Query index ${i}, key index ${j}`,C.ink,27);
+        text(s,x,34,`Receiver ${i}, source ${j}`,C.ink,27);
         text(s,x,89,'Query after addition: '+vec(r.q,3),C.q,25);
         text(s,x,136,'Key after addition:    '+vec(r.k,3),C.k,25);
-        const t=text(s,x,208,'Raw dot product = '+r.score.toFixed(3),C.a,30);t.dataset.absoluteScore=String(r.score);
+        text(s,x,180,panel?'0.500 × 0.134 + (−0.866) × (−0.500)':'1.000 × 1.500 + 1.000 × 0.866',C.muted,23);
+        const t=text(s,x,226,'Raw dot product = '+r.score.toFixed(3),C.a,30);t.dataset.absoluteScore=String(r.score);
         text(s,x,261,'Same relative gap: one slot',C.muted,24);
       });
     }else if(kind==='overview')overview(s,host.dataset.focus);

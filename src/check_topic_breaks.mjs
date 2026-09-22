@@ -21,7 +21,7 @@ const targets=[
   ['s17-position-addition-break','s17-position-shift'],
   ['s17-position-learned-break','s17-position-learned'],
   ['s17-position-clock-choice','s17-position-clock'],
-  ['s17-position-relative-break','s17-position-absolute-shift'],
+  ['s17-position-relative-break','s17-position-relative'],
   ['s19-topic-break','s19-frame-generation'],
   ['s19-pipeline-break','s19-pipeline-route-data'],
   ['s19-pipeline-tokenization-intro','s19-pipeline-tokenization-choices']

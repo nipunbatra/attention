@@ -3355,7 +3355,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     box(out,10,350,373,70,'Logits → vocabulary softmax','hW_vocab + b · 1 × C','a','prediction');arrow(out,435,385,383,385,C.q);
   }
   for(const host of document.querySelectorAll('[data-position-journey]')){
-    const kind=host.dataset.positionJourney,s=canvas(host,kind+' positional encoding diagram',kind==='overview'?440:kind==='period'?235:kind==='absolute-shift'?280:kind==='updated'?285:360);
+    const kind=host.dataset.positionJourney,s=canvas(host,kind+' positional encoding diagram',kind==='overview'?440:kind==='period'?235:kind==='context-shift'?335:kind==='absolute-shift'?280:kind==='updated'?285:360);
     if(kind==='initial'||kind==='positioned'){
       const positioned=kind==='positioned';
       L.sequences.forEach((tokens,panel)=>{
@@ -3387,13 +3387,30 @@ document.addEventListener('DOMContentLoaded',()=>{
       wave(s,{y:20,rate:.01,end:650,label:'Slow pair',color:C.v});
       const x=170+880*(2*Math.PI/.01)/650;line(s,x,36,x,155,C.v,2,{'stroke-dasharray':'3 4'});
       text(s,170,211,'One full turn at i ≈ 628.32 (continuous index)',C.v,27);
+    }else if(kind==='context-shift'){
+      const words=L.sequences[0],prefix=['At','the','park','after','lunch'];
+      [words,[...prefix,...words]].forEach((tokens,panel)=>{
+        const y=panel*168;
+        text(s,20,y+27,panel?'Add five words at the front':'Original sentence',C.ink,26);
+        tokens.forEach((token,index)=>{
+          const x=16+122*index,color=token==='today'?C.q:token==='Ravi'?C.k:C.muted;
+          const g=el('g',{'data-shift-example':panel,'data-position':index,'data-word':token});s.append(g);
+          text(g,x+54,y+63,String(index),color,22,'middle');
+          g.append(el('rect',{x,y:y+76,width:108,height:43,rx:5,fill:C.paper,stroke:color,'stroke-width':token==='today'||token==='Ravi'?2.5:1}));
+          text(g,x+54,y+105,token,color,24,'middle');
+        });
+        const i=panel?8:3,j=i-1;
+        arrow(s,70+122*i,y+140,70+122*j,y+140,C.q);
+        text(s,panel?430:512,y+148,`today → Ravi: ${i} − ${j} = 1`,C.q,25);
+      });
     }else if(kind==='absolute-shift'){
       [[3,2],[8,7]].forEach(([i,j],panel)=>{
         const r=absolutePair(i,j),x=20+560*panel;
-        text(s,x,34,`Query index ${i}, key index ${j}`,C.ink,27);
+        text(s,x,34,`Receiver ${i}, source ${j}`,C.ink,27);
         text(s,x,89,'Query after addition: '+vec(r.q,3),C.q,25);
         text(s,x,136,'Key after addition:    '+vec(r.k,3),C.k,25);
-        const t=text(s,x,208,'Raw dot product = '+r.score.toFixed(3),C.a,30);t.dataset.absoluteScore=String(r.score);
+        text(s,x,180,panel?'0.500 × 0.134 + (−0.866) × (−0.500)':'1.000 × 1.500 + 1.000 × 0.866',C.muted,23);
+        const t=text(s,x,226,'Raw dot product = '+r.score.toFixed(3),C.a,30);t.dataset.absoluteScore=String(r.score);
         text(s,x,261,'Same relative gap: one slot',C.muted,24);
       });
     }else if(kind==='overview')overview(s,host.dataset.focus);
@@ -12518,27 +12535,46 @@ body:not(.present) .context-lesson{margin:44px 0}
 <p class="lesson-key">$i$ is a token position; $r$ is a coordinate-pair index; $d$ is vector width. The base 10000 controls the frequency range.</p>
 </div>
 
-<div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-relative-break" data-title="Absolute and relative positions" data-autobuild="off">
-<script type="text/x-notes">Both learned tables and fixed sinusoids above describe an absolute slot. The next example motivates dependence on the gap between a receiver and a source. Then show a distance bias and RoPE as two approaches. This is a structural comparison, not a claim that absolute encodings cannot learn relative cues.</script>
-<h3>Absolute and relative positions</h3>
-<p class="topic-recap">Both methods so far describe which slot a word occupies.</p>
-<p class="topic-question">What if the useful cue is how far the source is from the receiving word?</p>
+<div class="frame context-lesson position-lesson" id="s17-position-absolute-range" data-title="A learned table has a last row" data-autobuild="off">
+<script type="text/x-notes">First limitation: a learned absolute table has a configured number of rows. This separate miniature model has Nmax=4, so valid indices are 0 through 3. The longer six-token input requests two nonexistent rows. This is a table lookup limitation, not a failure of the tokenizer or the word embedding table. Extending or interpolating the table is possible, but new position representations need adaptation and evaluation. A sinusoidal formula can calculate rows at 4 and 5, so do not extend this table-specific limitation to every absolute encoding. Source: Su et al., RoFormer, Section 2.2.</script>
+<p>Suppose the learned position table $P$ has <strong>four rows</strong>: indices 0, 1, 2 and 3.</p>
+<p class="lesson-key">“Maya helps Ravi today” fits. Now try a longer input:</p>
+<div class="position-numeric-scroll"><table class="lesson-table position-range-table"><thead><tr><th style="width:16%">Index</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead><tbody>
+<tr><th>Word</th><td>Maya</td><td>helps</td><td>Ravi</td><td>at</td><td>school</td><td>today</td></tr>
+<tr><th>Position row</th><td>$P[0]$</td><td>$P[1]$</td><td>$P[2]$</td><td>$P[3]$</td><td data-missing-position="4"><strong>No row</strong></td><td data-missing-position="5"><strong>No row</strong></td></tr>
+</tbody></table></div>
+<p data-build="1">We can extend the table, but the new rows are not automatically trained.</p>
+<p class="lesson-key" data-build="1">Sinusoids avoid the missing-row problem. Being able to compute a position is still not a guarantee of useful predictions at longer lengths.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-absolute-shift" data-title="Same gap, different absolute positions" data-autobuild="off">
+<div class="frame context-lesson position-lesson" id="s17-position-absolute-context" data-title="Same word pair, five slots later" data-autobuild="off">
+<script type="text/x-notes">Second limitation: a relation can move to different absolute slots. Continue the Maya/Ravi example using zero-based indices, as in the sinusoid slides. Read from today to Ravi. Add the five-token prefix At the park after lunch. Today moves from 3 to 8; Ravi moves from 2 to 7. The source remains one token behind the receiver. This only identifies a preserved local distance, not identical meaning, attention weights or predictions. Extra prefix tokens and deeper-layer contextual representations can change the model's behavior.</script>
+<p>Let <strong>today</strong> read from <strong>Ravi</strong>. Add a five-word prefix:</p>
+<div class="position-journey" data-position-journey="context-shift"></div>
+<p class="lesson-key">Ravi stays <strong>one token back</strong>. Can position preserve that cue? Next, hold the content vectors fixed to isolate the positional effect.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-absolute-shift" data-title="Same distance, different scores" data-autobuild="off">
 <script type="text/x-notes">Use a separate two-coordinate comparison with fixed content q=k=[1,0], identity projections, and additive p_i=[cos(i pi/6),sin(i pi/6)]. At receiver/source indices 3/2 the raw score is 2.3660254. At 8/7 it is 0.5. Both pairs are one slot apart. This is not proof that absolute methods cannot learn relative relations. It shows that ordinary addition has no structural guarantee of a common-shift invariant match. RoPE will supply that identity while holding content fixed.</script>
-<p>Content: $q=k=[1,0]$. Add $p_i=[\cos(i\pi/6),\sin(i\pi/6)]$ before matching.</p>
+<p>Separate toy: hold both word rows at $[1,0]$ and use identity Q/K projections.</p>
+<p class="lesson-key">Add $p_i=[\cos(i\pi/6),\sin(i\pi/6)]$. Only the two position indices change:</p>
 <div class="position-journey" data-position-journey="absolute-shift"></div>
-<p>Can the positional effect depend on the gap, even when both indices shift?</p>
-<p class="lesson-key">Absolute encodings can learn relative cues. Addition alone does not enforce this common-shift property.</p>
+<p class="lesson-key">Absolute encodings can learn relative cues. But adding position does not guarantee the same match when both indices shift equally.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-relative" data-title="Relative position asks: how far away is this source?" data-autobuild="off">
+<div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-relative-break" data-title="Relative positions" data-autobuild="off">
+<script type="text/x-notes">Pause after both limitations have been demonstrated. The learned-table example concerns available rows; the additive example concerns a score changing despite a shared shift. Relative methods directly target the second issue, not every long-context problem. Introduce distance bias first, then rotary Q/K features. Avoid claiming that absolute encodings cannot learn relative cues or that RoPE guarantees length generalization.</script>
+<h3>Relative positions</h3>
+<p class="topic-recap">A word pair can keep its distance while moving to new absolute slots.</p>
+<p class="topic-question">How can we put that distance directly into the attention match?</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-relative" data-title="Use the gap between receiver and source" data-autobuild="off">
 <script type="text/x-notes">Relative-position methods are a family, not one formula. This frame uses a score-bias version: add b of the distance to the content score. Other methods add relative vectors to keys or values, as in Shaw et al. 2018. Do not attribute this simple bias formula as the sole Shaw method. Source: https://arxiv.org/abs/1803.02155.</script>
-<table class="lesson-table"><thead><tr><th>Receiver slot</th><th>Source slot</th><th>Distance $i-j$</th></tr></thead><tbody><tr><td>8</td><td>7</td><td>1: one token back</td></tr><tr><td>80</td><td>79</td><td>1: one token back</td></tr></tbody></table>
+<table class="lesson-table"><thead><tr><th>Receiver: today ($i$)</th><th>Source: Ravi ($j$)</th><th>Distance $i-j$</th></tr></thead><tbody><tr><td>3</td><td>2</td><td>$3-2=1$</td></tr><tr><td>8</td><td>7</td><td>$8-7=1$</td></tr></tbody></table>
 <p data-build="1">One design adds a distance-dependent bias to each allowed score:</p>
 <div data-build="1">$$s_{ij}=\frac{q_i\cdot k_j}{\sqrt{d_k}}+b(i-j)$$</div>
-<p class="lesson-key" data-build="1">$b$ supplies an offset for that distance. Content still matters; distance changes its score, not its visibility.</p>
+<p class="lesson-key" data-build="1">Both pairs receive the same offset $b(1)$. Content still matters; the causal mask still decides which sources are visible.</p>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-alibi" data-title="Distance bias: ALiBi" data-autobuild="off">
@@ -12561,7 +12597,7 @@ body:not(.present) .context-lesson{margin:44px 0}
 <div class="lesson-control"><label for="rope-shift">Shift both slots</label><select id="rope-shift"><option value="0">+0: query 3, key 2</option><option value="5">+5: query 8, key 7</option><option value="10">+10: query 13, key 12</option></select></div>
 <div class="position-visual" id="rope-shift-picture"></div>
 <p id="rope-shift-result" class="lesson-result" aria-live="polite"></p>
-<p class="lesson-key">Held-fixed content isolates the effect: the positional part depends on the gap, not the shared shift.</p>
+<p class="lesson-key">Same fixed $q=k=[1,0]$ as before; rotate 30° per slot instead of adding position offsets.</p>
 </div>
 
 <div class="companion context-lesson position-lesson position-reading" id="s17-position-rope">
@@ -12645,6 +12681,7 @@ body:not(.present) .context-lesson{margin:44px 0}
 <p>The four-coordinate teaching model uses explicit additive position rows. The two-coordinate swap experiment above is independent and uses identity Q/K/V projections solely to make every number inspectable. Its results show that positional inputs can distinguish two token orders, not that an untrained model understands either sentence.</p>
 <p>Appending a scalar index or a small position vector is valid. Scaling the index, choosing its range, and combining it with content are architectural decisions. Dividing indices by the current prefix length changes earlier features whenever the prefix grows; ordinary append-only KV caching relies on keeping those earlier representations unchanged.</p>
 <p>For a sine/cosine pair at rate $\omega$, the angle-addition formulas express the features at $i+\delta$ as a linear transformation of those at $i$, using coefficients $\sin(\delta\omega)$ and $\cos(\delta\omega)$. For RoPE, the orthogonal rotations satisfy $R_i^\top R_j=R_{j-i}$, so $\langle R_iq,R_jk\rangle=q^\top R_{j-i}k$. This relative-offset structure coexists with content-dependent queries and keys.</p>
+<p>Why can additive positions change a same-gap match? With identity projections, $(u+p_i)\cdot(v+p_j)=u\cdot v+u\cdot p_j+p_i\cdot v+p_i\cdot p_j$. For a sine/cosine pair, the last term depends on the gap, but the two content–position cross terms can still depend on the absolute indices. Learned projections can use these features; there is simply no built-in common-shift identity for the full additive score. Absolute location can itself be useful, for example for a start-of-sequence cue. The shifted sentence example preserves a local distance, not the full prediction: extra source tokens can change softmax weights, and contextual Q/K can change too.</p>
 <p>Sources: <a href="https://arxiv.org/abs/1706.03762">Vaswani et al., Attention Is All You Need, §3.5</a>; <a href="https://arxiv.org/abs/1803.02155">Shaw et al., relative position representations</a>; <a href="https://arxiv.org/abs/2104.09864">Su et al., RoFormer / RoPE</a>; <a href="https://arxiv.org/abs/2108.12409">Press et al., ALiBi</a>; <a href="https://arxiv.org/abs/2306.15595">Chen et al., position interpolation</a>.</p>
 </div>
 <script>
