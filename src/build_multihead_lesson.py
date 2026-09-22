@@ -130,7 +130,7 @@ def contribution(head):
 
 
 def stage(key,title,figure,body='',code='',notes='',companion=''):
-    STEPS.append(dict(key=key,title=title,figure=figure,body=body,code=code))
+    STEPS.append(dict(key=key,title=title,figure=figure,body=body,code=code,companion=companion))
     FIG.mkdir(parents=True,exist_ok=True)
     if figure:(FIG/(key+'.svg')).write_text(figure)
     extra=f'<pre class="pytorch"><code>{escape(code)}</code></pre>' if code else ''

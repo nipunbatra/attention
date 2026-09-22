@@ -362,13 +362,16 @@ Build each part once in any order. `assemble.py` derives available lesson target
 
 The standalone staged diagram lives in `figures/attention-diagram-preview/`. Part 2 embeds its same `diagram.js` source through `src/attention-flow-data.js`; keep the preview and article synchronized by changing that shared source.
 
-Part III now has a 30-frame visual story in `multihead_story.py`. Its generator
+Part III now has a 34-frame visual story in `multihead_story.py`. Its generator
 also retains the 58-step detailed tensor lab for Notebook 7 only. The two manifests
 are `figures/multihead/manifest.json` and `lab-manifest.json`; do not put the
 full lab back into the lecture. The notebook embeds the visual story first,
 then the executable lab. See `PART3_HEADS_PLAN.md` for the critique and sequence.
 Keep M for the mask and H=AV for message rows, as in Part II. Use `n_heads` for
 the head count and parenthesized superscripts for individual heads.
+The four width/bias clarification frames keep the same worksheet projections:
+one wide head normalizes once, while two heads normalize separately. Optional
+projection biases are distinct from positions, masks and prediction-MLP biases.
 
 Part 1's four diagrams live in `part1-diagrams.js` and are inserted by `assemble.py`. They adapt the original handwritten
 notes' visual sequence while reading current `AT.mlp` numbers: actual embedding geometry, repeated lookup and ordered

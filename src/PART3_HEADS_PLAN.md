@@ -15,18 +15,22 @@ SVG drawings used in Part II. It also reused M for messages even though Part II
 already reserved M for the mask, and used H as the head count instead of the
 message matrix. Fit tests did not catch those teaching failures.
 
-## Revised visual sequence (30 frames)
+## Revised visual sequence (34 frames)
 
 1. Hold the river-bank sentence fixed. Show the setting-reading arrows, then
    person-reading arrows, then both. Explain that one head shares a weight row
    across its value coordinates; it is not limited to reading one word.
 2. Make the two readings concrete: full input, separate query projections,
    example key matches, separate softmax rows, then weighted value messages.
+   Repack those exact coordinates into one wide head. Compare the single
+   softmax with the two independent rows, without claiming universal superiority.
 3. Join the messages, multiply by W_O and add the update to the original e.
    Return to the familiar next-token MLP and try the other bank context.
 4. Stack the rows: show actual 10×4, 4×2, 10×2 and 10×10 matrix silhouettes.
    Trace the same receiving row. Keep Q/K, the mask, A, V and H identifiable.
 5. Write one short head function, call it twice, then show the PyTorch equivalent.
+   Explain a bias with a two-number offset and locate it in all four projections.
+   Match `bias=False` to the worksheet and distinguish the separate MLP biases.
    Keep batching, packed projections and the full training loop in the notebook.
 6. Compare measured trained results and open the real browser demo.
 

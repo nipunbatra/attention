@@ -16,7 +16,7 @@ def f(x,n=2):
 
 
 def t(x,y,s,size=26,c='ink',anchor='start',weight=500):
-    label=re.sub(r'W_([QKVO])',r'W<tspan baseline-shift="sub" font-size="70%">\1</tspan>',escape(str(s)))
+    label=re.sub(r'([Wb])_([QKVO])',r'\1<tspan baseline-shift="sub" font-size="70%">\2</tspan>',escape(str(s)))
     for mark,head in [('¹','1'),('²','2')]:
         label=label.replace(mark,f'<tspan baseline-shift="super" font-size="65%">({head})</tspan>')
     return f'<text x="{x}" y="{y}" font-size="{size}" fill="{COLORS.get(c,c)}" text-anchor="{anchor}" font-weight="{weight}">{label}</text>'
@@ -121,6 +121,67 @@ def bottleneck(case):
 def divider(number,question,sub):
     body=t(35,93,number,27,'muted')+t(35,181,question,43,'ink',weight=650)+t(35,250,sub,29,'muted')
     return svg(body,325,question)
+
+
+def wide_match(case):
+    body=t(580,36,'Join the same query and key coordinates into one wider head.',27,'ink','middle')
+    body+=t(70,92,'q₁₀ =',28,'q')+cells(228,57,[f(v,1) for v in case['wide']['Q'][-1]],'q',145)
+    body+=path('M518 53 V113','ink',2)+t(374,144,'setting coordinates',22,'muted','middle')+t(663,144,'person coordinates',22,'muted','middle')
+    for row,j in enumerate([5,1]):
+        y=214+row*105
+        dots=[sum(q*k for q,k in zip(h['Q'][-1],h['K'][j])) for h in case['heads']]
+        body+=t(25,y,case['tokens'][j],28,'k',weight=650)
+        body+=t(264,y,f(dots[0],2),30,'a')+t(403,y,'+',30)+t(464,y,f(dots[1],2),30,'a')
+        body+=t(619,y,'= '+f(sum(dots),2),30,'a')
+        body+=arrow(782,y-10,904,y-10,'a')+t(842,y-29,'÷ √4',23,'muted','middle')
+        body+=t(945,y,f(case['wide']['scores'][-1][j],2),30,'a')
+    body+=t(325,385,'setting dot',22,'muted','middle')+t(515,385,'person dot',22,'muted','middle')+t(990,385,'one score',22,'muted','middle')
+    return svg(body,420,'A four-coordinate dot product adds both matching contributions before one softmax')
+
+
+def wide_weights(case):
+    body='';xs=[22,350,570,790,1010]
+    for x,label in zip(xs,['Receiver 10 reads','river','fisherman','others','value width']):
+        body+=t(x,48,label,23,'muted',weight=600)
+    rows=[('One wide head',case['wide']['A'][-1],4),
+          ('Head 1: setting',case['heads'][0]['A'][-1],2),
+          ('Head 2: person',case['heads'][1]['A'][-1],2)]
+    for i,(label,a,width) in enumerate(rows):
+        y=101+i*94
+        body+=t(22,y+26,label,27,'ink')
+        for x,value in zip(xs[1:4],[a[5],a[1],1-a[5]-a[1]]):
+            body+=rect(x-4,y-10,158,56,'a',COLORS['a']+f'{int(15+160*value):02x}')+t(x+75,y+26,f(value,3),27,'a','middle')
+        body+=t(1060,y+26,str(width),29,'v','middle')
+    body+=path('M22 166 H1125','line',2)
+    body+=t(580,390,'One shared mixture of four coordinates, or two separate mixtures of two.',27,'ink','middle')
+    return svg(body,423,'The same projection coordinates yield one attention row or two separately normalized rows')
+
+
+def bias_example(case):
+    q=case['heads'][0]['Q'][-1];offset=[.2,-.1]
+    body=t(580,43,'One head: qᵢ = eᵢ W_Q + b_Q',32,'q','middle')
+    body+=t(20,119,'bias=False',27,'ink',weight=650)+t(340,119,'e₁₀ W_Q',24,'q')+cells(653,83,[f(v,1) for v in q],'q',145)
+    body+=t(20,242,'bias=True',27,'ink',weight=650)
+    body+=cells(245,203,[f(v,1) for v in q],'q',105)+t(479,239,'+',32)
+    body+=cells(526,203,[f(v,1) for v in offset],'q',105)+t(764,239,'=',32)
+    body+=cells(815,203,[f(a+b,1) for a,b in zip(q,offset)],'q',145)
+    body+=t(630,299,'b_Q: learned offset [2]',23,'q','middle')
+    body+=t(580,369,'The same b_Q is added to every token row in this head.',29,'ink','middle')
+    return svg(body,409,'A bias adds a learned offset after the projection; the displayed offset is illustrative')
+
+
+def bias_locations():
+    body=t(23,40,'Inside nn.MultiheadAttention',29,'ink',weight=650)
+    for i,(kind,c) in enumerate([('Q','q'),('K','k'),('V','v')]):
+        x=23+i*378
+        body+=t(x,114,f'{kind} = E W_{kind} + b_{kind}',29,c)
+        body+=t(x,156,'offset after input projection',22,'muted')
+    body+=t(23,241,'ΔE = Concat(H¹, H²) W_O + b_O',30,'d')
+    body+=t(23,282,'offset after output projection',23,'muted')
+    body+=path('M23 312 H1125','line',2)
+    body+=t(23,353,'Our worksheet and trained attention layers: bias=False.',28,'ink')
+    body+=t(23,395,'The separate prediction MLP still has its own biases.',27,'muted')
+    return svg(body,429,'The bias flag controls all query, key, value and output projection biases, not the separate prediction MLP')
 
 
 def queries(case,data):
@@ -357,7 +418,15 @@ def story(stage,base,data):
           r'Softmax runs across source positions, separately for each head. As before, \(\alpha_{ij}\) is one weight and \(A\) is the whole weight matrix.'),
         s('s02-v-message','Values turn those weights into messages',messages(R),
           'Keys set the weights; values carry the content. Here we chose equal key/value numbers, but their learned projections are separate.',
-          companion='<p>In this particular worksheet W_K and W_V have equal numerical entries within each head, so the displayed key and value numbers coincide. They remain separate parameters with different roles: keys set scores; values are mixed into messages. All ten source contributions, including those not expanded on the slide, enter each result.</p>')])
+          companion='<p>In this particular worksheet W_K and W_V have equal numerical entries within each head, so the displayed key and value numbers coincide. They remain separate parameters with different roles: keys set scores; values are mixed into messages. All ten source contributions, including those not expanded on the slide, enter each result.</p>'),
+        s('s02-v-wide','What if we made one head wider?',wide_match(R),
+          'A wider query/key can compare more features. Their products still add into one score per source, followed by one softmax.',
+          companion='<p>For this controlled comparison, concatenate the two existing Q, K and V projections into width-four projections. A single wide head scales its dot products by √4. The two narrower heads each scale by √2 and normalize separately. The example changes no projection entries and does not compare separately trained models.</p>',
+          notes='Could a four-coordinate query read both kinds of clues?\nYes. Point to the two dot-product contributions adding into a single score for each source.'),
+        s('s02-v-separate','Two heads keep separate source preferences',wide_weights(R),
+          'A wider value vector carries more features with one shared weight row. Two heads can favour river for setting features and fisherman for person features.',
+          companion='<p>Every displayed attention row sums to one over all ten sources; “others” combines the remaining eight. One wide head uses its single row for all four value coordinates. The two heads use different rows for their two-coordinate values, preserving both mixtures before W_O combines them. This is a useful architectural choice, not proof that one wide head cannot learn useful relationships or that more heads always improve accuracy. See <a href="https://arxiv.org/abs/1706.03762">Attention Is All You Need, §3.2.2</a>.</p>',
+          notes='Which word receives the largest weight in each row?\nCompare river and fisherman. Total value width stays four; the number of separately normalized mixtures changes.')])
     add('How do the two messages update the token?',[
         s('s03-v-break','What reaches the receiving token?',divider('02 → 03','Two messages become one context update.','Keep both messages, map back, then add to the original embedding.'),''),
         s('s03-v-join','Put the messages side by side',join(R),
@@ -398,13 +467,20 @@ E_prime = E + delta_E'''),
         s('s05-v-train','The same loss trains both heads',full_map('heads join predict train'),
           'Next-token cross-entropy trains all the projections together. We do not label training examples “setting head” or “person head”.',
           companion='<p>At training time, the observed next-token ID is the target for the vocabulary logits. At inference time, weights remain fixed: tokenize a prefix, run the model, choose a next token and append it. These steps are unchanged from Part II; the full executable loop remains in Notebook 7.</p>'),
+        s('s05-v-bias','A bias adds a learned offset',bias_example(R),
+          'The offset [0.2, −0.1] is illustrative. With bias=True, training learns it along with the projection weights. We use bias=False so the code matches the worksheet.',
+          companion='<p>A projection bias is shared across token positions (and batches). Position embeddings depend on the position, so these are different operations. A bias can shift the projection even for a zero input. Omitting it keeps this example simpler; it is not a general claim that bias-free attention is better.</p>',
+          notes='Where does the offset enter?\nAfter the matrix multiply. Compare [2.3, 2.3] with [2.5, 2.2]; the two-coordinate shape is unchanged.'),
+        s('s05-v-bias-layers','Which projections use the bias flag?',bias_locations(),
+          'PyTorch defaults to bias=True. In this lesson, bias=False removes the Q, K, V and output offsets. It leaves the mask, position embeddings and separate prediction layers unchanged.',
+          companion='<p>With total width four, bias=True adds four query offsets, four key offsets, four value offsets and four output offsets: 16 additional trainable scalars. Within each head the Q/K/V bias slice has width two. PyTorch stores the three input offsets together in in_proj_bias and the output offset in out_proj.bias. The distinct add_bias_kv option is not the bias flag discussed here. <a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.MultiheadAttention.html">Official API documentation</a>. Both our scratch implementation and trained attention variants omit attention projection biases; their prediction MLP layers retain biases.</p>'),
         s('s05-v-pytorch','PyTorch packages the head calculation',svg(t(580,53,'E → nn.MultiheadAttention → ΔE',32,'q','middle'),100,'PyTorch returns the projected update, before our residual'),
           'Here E has shape [10, 4]: one unbatched sequence. PyTorch handles the projections and mixing. A contains two 10 × 10 weight grids.',code='''mha = nn.MultiheadAttention(embed_dim=4, num_heads=2, bias=False)
 future = torch.ones(10, 10, dtype=torch.bool).triu(1)
 delta_E, A = mha(E, E, E, attn_mask=future,
                  average_attn_weights=False)
 E_prime = E + delta_E''',
-          companion='<p>The library layer does not add position embeddings, the residual or the vocabulary classifier. The notebook copies identical weights from our scratch implementation to PyTorch and checks both ΔE and the per-head attention weights. See the <a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.MultiheadAttention.html">PyTorch documentation</a>.</p>')])
+          companion='<p>The library layer does not add position embeddings, the residual or the vocabulary classifier. attn_mask=future blocks future sources. average_attn_weights=False returns each head’s weight grid separately; it changes the returned diagnostic weights, not how the head messages combine. The notebook copies identical weights from our scratch implementation to PyTorch and checks both ΔE and the per-head attention weights. See the <a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.MultiheadAttention.html">PyTorch documentation</a>.</p>')])
     import json
     from pathlib import Path
     result=json.loads((Path(__file__).resolve().parents[1]/'notebooks/wordlm/artifacts/heads/comparison.json').read_text())

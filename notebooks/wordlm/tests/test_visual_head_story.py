@@ -34,3 +34,40 @@ def test_printed_head_code_and_pytorch():
     torch.testing.assert_close(scope['E'] + delta, expected)
     torch.testing.assert_close(weights, torch.tensor([h['A'] for h in case['heads']]))
     assert weights.shape == (2, 10, 10)
+
+
+def test_wide_head_uses_one_softmax_for_the_same_coordinates():
+    data = json.loads((ROOT / 'multihead-worksheet.json').read_text())['headsLesson']
+    for case in data['cases'].values():
+        E = torch.tensor(case['E'])
+        layer = nn.MultiheadAttention(4, 1, bias=False)
+        with torch.no_grad():
+            packed = [torch.cat([torch.tensor(p[k], dtype=torch.float32)
+                                 for p in data['projections']], dim=1).T
+                      for k in ['Q', 'K', 'V']]
+            layer.in_proj_weight.copy_(torch.cat(packed))
+            layer.out_proj.weight.copy_(torch.tensor(data['W_O']).T)
+        future = torch.ones(10, 10, dtype=torch.bool).triu(1)
+        delta, A = layer(E, E, E, attn_mask=future, average_attn_weights=False)
+        torch.testing.assert_close(A[0], torch.tensor(case['wide']['A']))
+        torch.testing.assert_close(delta, torch.tensor(case['wide']['messages']) @ torch.tensor(data['W_O']))
+        assert not torch.allclose(torch.tensor(case['wide']['messages']), torch.tensor(case['joined']))
+        assert sum(p.numel() for p in layer.parameters()) == 64
+
+
+def test_projection_bias_scope_and_broadcasting():
+    from multihead_from_scratch import TinyMultiHeadLM
+    plain = nn.MultiheadAttention(4, 2, bias=False)
+    biased = nn.MultiheadAttention(4, 2, bias=True)
+    assert plain.in_proj_bias is None and plain.out_proj.bias is None
+    assert biased.in_proj_bias.shape == (12,) and biased.out_proj.bias.shape == (4,)
+    count = lambda layer: sum(p.numel() for p in layer.parameters())
+    assert count(biased) - count(plain) == 16
+    E = torch.tensor([[0., 0., 0., 2.3], [0., 0., 0., 1.]])
+    W_Q = torch.tensor([[0., 0.], [0., 0.], [0., 0.], [1., 1.]])
+    b_Q = torch.tensor([.2, -.1])
+    torch.testing.assert_close(E @ W_Q + b_Q, torch.tensor([[2.5, 2.2], [1.2, .9]]))
+    model = TinyMultiHeadLM(20)
+    assert model.hidden.bias is not None and model.readout.bias is not None
+    for name in ['W_Q', 'W_K', 'W_V', 'W_O']:
+        assert getattr(model.attention, name).bias is None

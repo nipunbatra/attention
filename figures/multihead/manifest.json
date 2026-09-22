@@ -3,180 +3,238 @@
     "key": "s01-v-prefix",
     "title": "Back to the river bank",
     "body": "Which parts of this prefix would help you choose a continuation?",
-    "code": ""
+    "code": "",
+    "companion": ""
   },
   {
     "key": "s01-v-one",
     "title": "One head can read the setting",
     "body": "In this hand-chosen two-head example, the first head gives river a large weight. Its values carry setting information to the receiver.",
-    "code": ""
+    "code": "",
+    "companion": "<p>These are hand-chosen two-head parameters applied to Part II\u2019s exact input rows. \u201cSetting\u201d and \u201cperson\u201d name the intended behaviour of this example, not jobs assigned to trained heads. Arrows show information moving from source to receiver; their widths encode computed attention weights.</p>"
   },
   {
     "key": "s01-v-two",
     "title": "Another head can read who is there",
     "body": "The sentence and receiver stay fixed. A different head gives fisherman a large weight.",
-    "code": ""
+    "code": "",
+    "companion": ""
   },
   {
     "key": "s01-v-shared",
     "title": "One head shares one set of source weights",
     "body": "A single head can mix many words. But every coordinate of its message uses the same attention-weight row.",
-    "code": ""
+    "code": "",
+    "companion": ""
   },
   {
     "key": "s01-v-both",
     "title": "Keep both readings",
     "body": "Two heads can retain different source mixtures at the same token. They run in parallel, not one after the other.",
-    "code": ""
+    "code": "",
+    "companion": ""
   },
   {
     "key": "s02-v-break",
     "title": "How do we make the readings different?",
     "body": "",
-    "code": ""
+    "code": "",
+    "companion": "<p>Visual inspiration: <a href=\"https://www.3blue1brown.com/lessons/attention/\">3Blue1Brown\u2019s attention lesson</a> and <a href=\"https://jalammar.github.io/illustrated-transformer/\">Jay Alammar\u2019s Illustrated Transformer</a>. We keep our own river-bank example, numbers and Part II row-vector convention. A head-specific superscript labels a head; a subscript still labels a token.</p>"
   },
   {
     "key": "s02-v-plan",
     "title": "Give both heads the same input",
     "body": "We will zoom into these two branches. Each starts with the same embedding rows and sends back its own message.",
-    "code": ""
+    "code": "",
+    "companion": ""
   },
   {
     "key": "s02-v-query",
     "title": "The same embedding makes two queries",
     "body": "Both heads read all four input coordinates. Superscripts label the heads. We choose two query/key coordinates per head here; Part II\u2019s toy used three.",
-    "code": ""
+    "code": "",
+    "companion": "<p>E contains position-aware embedding rows, not token IDs. The labelled water, finance, person and glue axes are invented for this teaching example. The displayed W_Q matrices are deliberately sparse; learned projections need not be. Superscripts 1 and 2 identify the two heads, not exponentiation.</p>"
   },
   {
     "key": "s02-v-match",
     "title": "Each query meets keys from its own head",
     "body": "Head 1 exposes water and finance in its keys. Head 2 exposes person and glue. Score every source with the matching query.",
-    "code": ""
+    "code": "",
+    "companion": ""
   },
   {
     "key": "s02-v-weights",
     "title": "Each head gets its own weight row",
     "body": "Softmax runs across source positions, separately for each head. As before, \\(\\alpha_{ij}\\) is one weight and \\(A\\) is the whole weight matrix.",
-    "code": ""
+    "code": "",
+    "companion": ""
   },
   {
     "key": "s02-v-message",
     "title": "Values turn those weights into messages",
     "body": "Keys set the weights; values carry the content. Here we chose equal key/value numbers, but their learned projections are separate.",
-    "code": ""
+    "code": "",
+    "companion": "<p>In this particular worksheet W_K and W_V have equal numerical entries within each head, so the displayed key and value numbers coincide. They remain separate parameters with different roles: keys set scores; values are mixed into messages. All ten source contributions, including those not expanded on the slide, enter each result.</p>"
+  },
+  {
+    "key": "s02-v-wide",
+    "title": "What if we made one head wider?",
+    "body": "A wider query/key can compare more features. Their products still add into one score per source, followed by one softmax.",
+    "code": "",
+    "companion": "<p>For this controlled comparison, concatenate the two existing Q, K and V projections into width-four projections. A single wide head scales its dot products by \u221a4. The two narrower heads each scale by \u221a2 and normalize separately. The example changes no projection entries and does not compare separately trained models.</p>"
+  },
+  {
+    "key": "s02-v-separate",
+    "title": "Two heads keep separate source preferences",
+    "body": "A wider value vector carries more features with one shared weight row. Two heads can favour river for setting features and fisherman for person features.",
+    "code": "",
+    "companion": "<p>Every displayed attention row sums to one over all ten sources; \u201cothers\u201d combines the remaining eight. One wide head uses its single row for all four value coordinates. The two heads use different rows for their two-coordinate values, preserving both mixtures before W_O combines them. This is a useful architectural choice, not proof that one wide head cannot learn useful relationships or that more heads always improve accuracy. See <a href=\"https://arxiv.org/abs/1706.03762\">Attention Is All You Need, \u00a73.2.2</a>.</p>"
   },
   {
     "key": "s03-v-break",
     "title": "What reaches the receiving token?",
     "body": "",
-    "code": ""
+    "code": "",
+    "companion": ""
   },
   {
     "key": "s03-v-join",
     "title": "Put the messages side by side",
     "body": "Concatenation keeps the two messages separate. It does not add them coordinate by coordinate.",
-    "code": ""
+    "code": "",
+    "companion": ""
   },
   {
     "key": "s03-v-output",
     "title": "Map the messages back to embedding space",
     "body": "\\(W_O\\) learns how the head messages contribute to the embedding update. Four joined coordinates become four update coordinates.",
-    "code": ""
+    "code": "",
+    "companion": "<p>Equivalently, split W_O into a two-row block per head. Then \u0394e = m\u00b9 W_O\u00b9 + m\u00b2 W_O\u00b2: each head contributes a four-coordinate update. Concatenation followed by one matrix multiplication computes exactly that sum. We retain the standard concat notation from the original Transformer paper.</p>"
   },
   {
     "key": "s03-v-residual",
     "title": "Add context to the original embedding",
     "body": "Exactly as in Part II: \\(e_i\\) is the input embedding row, \\(\\Delta e_i\\) is the context update, and \\(e_i^{\\prime}=e_i+\\Delta e_i\\).",
-    "code": ""
+    "code": "",
+    "companion": ""
   },
   {
     "key": "s03-v-map",
     "title": "Return to the next-token prediction",
     "body": "The last updated row still feeds the prediction MLP. More heads change how it reads context\u2014not what the target means.",
-    "code": ""
+    "code": "",
+    "companion": ""
   },
   {
     "key": "s03-v-explore",
     "title": "Try the other bank",
     "body": "<div id=\"s04-head-explorer\"></div>",
-    "code": ""
+    "code": "",
+    "companion": "<p>Change to the cheque sentence. These controls recalculate Q, K, V, both attention rows, the messages and the vocabulary prediction from the hand-chosen parameters. This is a worked arithmetic explorer, not a trained language model.</p>"
   },
   {
     "key": "s04-v-break",
     "title": "Can every token do this at once?",
     "body": "",
-    "code": ""
+    "code": "",
+    "companion": ""
   },
   {
     "key": "s04-v-project",
     "title": "Project every row with the same head matrix",
     "body": "Ten input rows \u00d7 four coordinates. Multiplying by a 4 \u00d7 2 projection gives ten query rows \u00d7 two coordinates.",
-    "code": ""
+    "code": "",
+    "companion": ""
   },
   {
     "key": "s04-v-grid",
     "title": "One head makes one attention grid",
     "body": "Keep Part II\u2019s notation: \\(M\\) is the causal mask, \\(A=\\operatorname{softmax}(QK^\\top/\\sqrt{d_k}+M)\\), and \\(H=AV\\) stores the message rows.",
-    "code": ""
+    "code": "",
+    "companion": ""
   },
   {
     "key": "s04-v-parallel",
     "title": "Two heads make two attention grids",
     "body": "Both heads receive the same E. Each uses its own projections, attention grid and values. Neither reads the other head\u2019s output.",
-    "code": ""
+    "code": "",
+    "companion": ""
   },
   {
     "key": "s04-v-joined",
     "title": "Join coordinates, not token rows",
     "body": "\\(\\Delta E=\\operatorname{Concat}(H^{(1)},H^{(2)})W_O\\), then \\(E^{\\prime}=E+\\Delta E\\). The superscript labels the head; each matrix still has ten token rows.",
-    "code": ""
+    "code": "",
+    "companion": ""
   },
   {
     "key": "s05-v-scratch",
     "title": "One head is still the Part II calculation",
     "body": "No new attention rule is needed. We reuse the same calculation with different learned matrices.",
-    "code": "def head(E, W_Q, W_K, W_V):\n    Q, K, V = E @ W_Q, E @ W_K, E @ W_V\n    scores = Q @ K.T / math.sqrt(Q.shape[-1])\n    future = torch.ones(len(E), len(E), dtype=torch.bool).triu(1)\n    A = scores.masked_fill(future, -torch.inf).softmax(-1)\n    return A @ V"
+    "code": "def head(E, W_Q, W_K, W_V):\n    Q, K, V = E @ W_Q, E @ W_K, E @ W_V\n    scores = Q @ K.T / math.sqrt(Q.shape[-1])\n    future = torch.ones(len(E), len(E), dtype=torch.bool).triu(1)\n    A = scores.masked_fill(future, -torch.inf).softmax(-1)\n    return A @ V",
+    "companion": ""
   },
   {
     "key": "s05-v-combine",
     "title": "Call it with two sets of parameters",
     "body": "This unbatched example keeps one row per token. The notebook checks these outputs against the printed numbers.",
-    "code": "H1 = head(E, W_Q1, W_K1, W_V1)\nH2 = head(E, W_Q2, W_K2, W_V2)\njoined = torch.cat([H1, H2], dim=-1)  # [10, 4]\ndelta_E = joined @ W_O\nE_prime = E + delta_E"
+    "code": "H1 = head(E, W_Q1, W_K1, W_V1)\nH2 = head(E, W_Q2, W_K2, W_V2)\njoined = torch.cat([H1, H2], dim=-1)  # [10, 4]\ndelta_E = joined @ W_O\nE_prime = E + delta_E",
+    "companion": ""
   },
   {
     "key": "s05-v-train",
     "title": "The same loss trains both heads",
     "body": "Next-token cross-entropy trains all the projections together. We do not label training examples \u201csetting head\u201d or \u201cperson head\u201d.",
-    "code": ""
+    "code": "",
+    "companion": "<p>At training time, the observed next-token ID is the target for the vocabulary logits. At inference time, weights remain fixed: tokenize a prefix, run the model, choose a next token and append it. These steps are unchanged from Part II; the full executable loop remains in Notebook 7.</p>"
+  },
+  {
+    "key": "s05-v-bias",
+    "title": "A bias adds a learned offset",
+    "body": "The offset [0.2, \u22120.1] is illustrative. With bias=True, training learns it along with the projection weights. We use bias=False so the code matches the worksheet.",
+    "code": "",
+    "companion": "<p>A projection bias is shared across token positions (and batches). Position embeddings depend on the position, so these are different operations. A bias can shift the projection even for a zero input. Omitting it keeps this example simpler; it is not a general claim that bias-free attention is better.</p>"
+  },
+  {
+    "key": "s05-v-bias-layers",
+    "title": "Which projections use the bias flag?",
+    "body": "PyTorch defaults to bias=True. In this lesson, bias=False removes the Q, K, V and output offsets. It leaves the mask, position embeddings and separate prediction layers unchanged.",
+    "code": "",
+    "companion": "<p>With total width four, bias=True adds four query offsets, four key offsets, four value offsets and four output offsets: 16 additional trainable scalars. Within each head the Q/K/V bias slice has width two. PyTorch stores the three input offsets together in in_proj_bias and the output offset in out_proj.bias. The distinct add_bias_kv option is not the bias flag discussed here. <a href=\"https://docs.pytorch.org/docs/stable/generated/torch.nn.MultiheadAttention.html\">Official API documentation</a>. Both our scratch implementation and trained attention variants omit attention projection biases; their prediction MLP layers retain biases.</p>"
   },
   {
     "key": "s05-v-pytorch",
     "title": "PyTorch packages the head calculation",
     "body": "Here E has shape [10, 4]: one unbatched sequence. PyTorch handles the projections and mixing. A contains two 10 \u00d7 10 weight grids.",
-    "code": "mha = nn.MultiheadAttention(embed_dim=4, num_heads=2, bias=False)\nfuture = torch.ones(10, 10, dtype=torch.bool).triu(1)\ndelta_E, A = mha(E, E, E, attn_mask=future,\n                 average_attn_weights=False)\nE_prime = E + delta_E"
+    "code": "mha = nn.MultiheadAttention(embed_dim=4, num_heads=2, bias=False)\nfuture = torch.ones(10, 10, dtype=torch.bool).triu(1)\ndelta_E, A = mha(E, E, E, attn_mask=future,\n                 average_attn_weights=False)\nE_prime = E + delta_E",
+    "companion": "<p>The library layer does not add position embeddings, the residual or the vocabulary classifier. attn_mask=future blocks future sources. average_attn_weights=False returns each head\u2019s weight grid separately; it changes the returned diagnostic weights, not how the head messages combine. The notebook copies identical weights from our scratch implementation to PyTorch and checks both \u0394E and the per-head attention weights. See the <a href=\"https://docs.pytorch.org/docs/stable/generated/torch.nn.MultiheadAttention.html\">PyTorch documentation</a>.</p>"
   },
   {
     "key": "s06-v-width",
     "title": "Keep the total width fixed",
     "body": "The trained comparison uses width 64. Four smaller heads give four attention patterns with the same attention parameter count as one wide head.",
-    "code": ""
+    "code": "",
+    "companion": "<p>Implementations often concatenate the per-head W_Q matrices into one large W_Q (and similarly for K and V). They project E first and reshape the projected coordinates into heads. They do not assign disjoint slices of raw E to different heads. Our two-head arithmetic toy uses width 4; this experiment uses width 64.</p>"
   },
   {
     "key": "s06-v-scores",
     "title": "Compare held-out next-token prediction",
     "body": "For each run, perplexity = exp(cross-entropy using natural logs). Lower means higher probability for observed tokens. The table averages three seeds on the same test stories.",
-    "code": ""
+    "code": "",
+    "companion": "<p>Same 6,000-document TinyStories subset, tokenizer, 64-token context, 6,000-update budget and validation selection. Seeds 11, 29 and 47. More heads helped this experiment; this is not a guarantee for every dataset, head count or generated continuation. <a href=\"notebooks/wordlm/06_multihead_comparison.html\">Full experiment and variation across seeds</a>.</p>"
   },
   {
     "key": "s06-v-cost",
     "title": "Compare size and training time too",
     "body": "Mean training times on Apple M2 Max/MPS, including validation. The two attention models have equal parameter counts; four heads took slightly longer.",
-    "code": ""
+    "code": "",
+    "companion": ""
   },
   {
     "key": "s06-v-demo",
     "title": "Give all three models the same prompt",
     "body": "<a href=\"word-lab/\" target=\"_blank\" rel=\"noopener\">Open the live models \u2197</a> \u00b7 <a href=\"notebooks/wordlm/07_multihead_step_by_step.html\">Work through the code</a> \u00b7 <a href=\"notebooks/wordlm/06_multihead_comparison.html\">Inspect the trained experiment</a>",
-    "code": ""
+    "code": "",
+    "companion": "<p>The demo runs actual checkpoints with WebGPU or WebAssembly. It includes training, held-out and outside-domain prompts and measures generation locally. Normalization, full Transformer blocks and complexity remain in the <a href=\"part2b.html\">optional Part 2B reference</a>. Formula source: <a href=\"https://arxiv.org/abs/1706.03762\">Attention Is All You Need, \u00a73.2.2</a>. Visual teaching references: <a href=\"https://www.3blue1brown.com/lessons/attention/\">3Blue1Brown</a> and <a href=\"https://jalammar.github.io/illustrated-transformer/\">Jay Alammar</a>."
   }
 ]

@@ -31,7 +31,7 @@ try{
   assert(!notation.includes('4×3'),'No stale Part II query width');
   assert(notation.includes('Additive causal mask')&&notation.includes('message matrix'),'Mask and message notation stays consistent with Part II');
   assert(await page.locator('.mh-frame .python-code .py-call').count()>4,'Static syntax highlighting');
-  assert(manifest.length<=32,'Keep the lecture compact; full tensor details belong in the notebook lab');
+  assert(manifest.length<=34,'Keep the lecture compact, including the four width/bias clarification frames');
   for(const name of ['river','cheque']){
     const actual=await page.evaluate(name=>AT.multiheadWorksheet.compute(name),name);
     const ref=expected.headsLesson.cases[name];

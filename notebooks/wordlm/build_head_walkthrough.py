@@ -61,7 +61,43 @@ print('River IDs:', river_ids)''')]
         if step['key'] == 's03-v-explore':
             body = 'Switch contexts in the matching slide to see both reading patterns change. The executable lab below computes the river and cheque examples from the same parameters.'
             figure = (FIG/'s01-v-both.svg').read_text()
-        cells.append(md(f'<a id="{step["key"]}"></a>\n## {step["title"]}\n\n[Matching slide]({link})\n\n{figure}\n\n{body}'+(f'\n\n```python\n{step["code"]}\n```' if step['code'] else '')))
+        companion=re.sub(r'href="(?!https?:|#)([^\"]+)"',r'href="../../\1"',step.get('companion',''))
+        cells.append(md(f'<a id="{step["key"]}"></a>\n## {step["title"]}\n\n[Matching slide]({link})\n\n{figure}\n\n{body}'+(f'\n\n```python\n{step["code"]}\n```' if step['code'] else '')+'\n\n'+companion))
+        if step['key']=='s02-v-separate':
+            cells.append(code('''# Same projected coordinates, one wide softmax or two narrow softmaxes.
+case = worksheet['headsLesson']['cases']['river']
+Q_wide, K_wide, V_wide = [
+    torch.cat([torch.tensor(head[kind]) for head in case['heads']], dim=-1)
+    for kind in ['Q', 'K', 'V']
+]
+scores_wide = Q_wide[-1] @ K_wide.T / math.sqrt(4)
+weights_wide = scores_wide.softmax(-1)  # all ten sources allowed at row 10
+message_wide = weights_wide @ V_wide
+torch.testing.assert_close(weights_wide, torch.tensor(case['wide']['A'][-1]))
+torch.testing.assert_close(message_wide, torch.tensor(case['wide']['messages'][-1]))
+for label, row in [('one wide head', weights_wide)] + [
+    (f'head {h+1}', torch.tensor(head['A'][-1]))
+    for h, head in enumerate(case['heads'])
+]:
+    print(label, 'river:', round(row[5].item(), 3),
+          'fisherman:', round(row[1].item(), 3))'''))
+        if step['key']=='s05-v-bias-layers':
+            cells.append(code('''# A learned offset is broadcast to each token row.
+Q_no_bias = torch.tensor(case['heads'][0]['Q'])
+b_Q = torch.tensor([0.2, -0.1])  # illustrative, not a fitted parameter
+Q_with_bias = Q_no_bias + b_Q
+print('Receiver 10:', Q_no_bias[-1].tolist(), '->', Q_with_bias[-1].tolist())
+torch.testing.assert_close(Q_with_bias[-1], torch.tensor([2.5, 2.2]))
+
+without_bias = nn.MultiheadAttention(4, 2, bias=False)
+with_bias = nn.MultiheadAttention(4, 2, bias=True)
+count = lambda layer: sum(p.numel() for p in layer.parameters())
+print('Projection parameters:', count(without_bias), 'vs', count(with_bias))
+print('Packed Q/K/V bias:', tuple(with_bias.in_proj_bias.shape))
+print('Output bias:', tuple(with_bias.out_proj.bias.shape))
+assert count(with_bias) - count(without_bias) == 16
+assert without_bias.in_proj_bias is None
+assert without_bias.out_proj.bias is None'''))
     cells.append(md('''<a id="executable-lab"></a>
 # The executable lab
 

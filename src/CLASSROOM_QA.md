@@ -1,5 +1,27 @@
 # Classroom release checks
 
+## 2026-09-22 · Width and bias clarification audit
+
+- Kept the approved six-section story and added four frames (34 total).
+  After students calculate the two head messages, the same Q/K/V coordinates
+  are repacked into one wide head. Its single softmax is compared numerically
+  with the two separate weight rows. The explanation distinguishes a useful
+  architectural choice from a guarantee that more heads always help.
+- Added a two-number bias example and a diagram locating Q/K/V/output offsets.
+  Verified PyTorch's flag against its official API and the local scratch and
+  trained models. Attention uses `bias=False`; the separate prediction MLP
+  retains biases. Also explained what `average_attn_weights=False` returns.
+- The humanizer pass kept the additions direct and tied to the same example.
+  Notebook 7 embeds the figures and companion explanations, runs the wide-head
+  comparison and checks the 16 additional bias scalars at width four.
+- Verification: 54 Python tests pass, including identical-projection wide-head
+  PyTorch parity in both contexts. Notebook 7 executes all cells. The browser
+  check passes for 34 frames, 1,840 original worksheet values, live controls,
+  SVG label bounds, identical notebook figures, links and mobile containment.
+  All 35 presentation states fit 1280×720 and 1024×768, with no formula errors.
+  The four additions were also inspected as rendered slides. Metadata and
+  diff-whitespace checks pass. Trained weights and benchmark results are unchanged.
+
 ## 2026-09-22 · Visual rewrite after instructor review
 
 - Replaced the 58-frame main lesson with 30 visual frames in six sections.
