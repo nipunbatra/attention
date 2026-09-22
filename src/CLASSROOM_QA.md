@@ -21,7 +21,9 @@
   numbers, tests both context/head controls, checks SVG label bounds, identical
   notebook figures, local links, syntax highlighting and 390px reading containment.
   Notebook 7 also runs from a freshly extracted download.
-- Every new Part III presentation state passes at 1280×720 and 1024×768, with 58
+- The notation card explicitly distinguishes per-head 4×2 projections from
+  packed 4×4 projections, rather than inheriting Part II's query width of three.
+- Every new Part III presentation state passes at 1280×720 and 1024×768, with 19
   distinct math expressions and no overflow or browser errors. Optional Part 2B's
   181 states and 254 expressions pass. Original training continuity (1,578 numeric
   checks), context capacity (82,544 finite values), cost diagrams, position demos,

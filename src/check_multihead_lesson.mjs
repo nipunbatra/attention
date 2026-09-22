@@ -26,6 +26,9 @@ try{
   await page.goto(pathToFileURL(path.join(root,'part3.html')).href);
   await page.evaluate(()=>document.fonts.ready);
   assert.equal(await page.locator('.mh-frame').count(),manifest.length);
+  const notation=await page.evaluate(()=>AT.ui.notationCard().textContent);
+  assert(notation.includes('4×2')&&notation.includes('2×10×2'),'Notation distinguishes per-head and packed widths');
+  assert(!notation.includes('4×3'),'No stale Part II query width');
   assert(await page.locator('.mh-frame .python-code .py-call').count()>20,'Static syntax highlighting');
   for(const name of ['river','cheque']){
     const actual=await page.evaluate(name=>AT.multiheadWorksheet.compute(name),name);

@@ -106,7 +106,7 @@
     "label": "Series home",
     "href": "index.html"
   },
-  "notation": "part2",
+  "notation": "multihead",
   "footer": "Several learned views, separate attention rows, one contextual update. Optional training and cost reference: Part 2B.",
   "objectSections": {
     "e": "s02",

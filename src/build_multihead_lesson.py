@@ -272,7 +272,7 @@ def build():
                 provenance='The two-head worksheet reuses Part II’s exact token and position rows. Its projections are hand-chosen. The separate TinyStories comparison uses trained checkpoints and three seeds.',
                 prev=dict(label='Part 2: Self-attention, from first principles',href='attention.html'),
                 next=dict(label='Part 4: Cross-attention: translate one phrase',href='part4.html'),
-                index=dict(label='Series home',href='index.html'),notation='part2',
+                index=dict(label='Series home',href='index.html'),notation='multihead',
                 footer='Several learned views, separate attention rows, one contextual update. Optional training and cost reference: Part 2B.',
                 objectSections=dict(e='s02',q='s03',k='s03',v='s03',a='s03',d='s04',ep='s04'),
                 hook='The final “the” may need both the river setting and the person in the scene. How can two heads retrieve both?',

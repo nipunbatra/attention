@@ -1,6 +1,25 @@
 (function () {
   'use strict';
   const AT = window.AT, model = AT.model, data = model.headsLesson;
+  // The shared base model has Part II's one-head widths. Keep those data intact,
+  // but give this lesson its own notation card with per-head and packed shapes.
+  AT.axes.named = false;
+  const notation = [
+    ['matrix','E','Token embeddings plus position rows, before attention','B\\times T\\times D','2×10×4'],
+    ['matrix','Q^{(h)}, K^{(h)}, V^{(h)}','Projected rows within one head; h identifies the head','B\\times T\\times d_{\\text{head}}','2×10×2'],
+    ['matrix','A^{(h)}','Source weights for each receiving token, within one head','B\\times T\\times T','2×10×10'],
+    ['matrix','M^{(h)}=A^{(h)}V^{(h)}','The message rows from one head','B\\times T\\times d_{\\text{head}}','2×10×2'],
+    ['matrix','\\Delta E=\\operatorname{Concat}(M^{(1)},M^{(2)})W_O','Join the two messages and project them back to model width','B\\times T\\times D','2×10×4'],
+    ['matrix',"E'=E+\\Delta E",'Updated rows after the residual addition','B\\times T\\times D','2×10×4'],
+    ['sizes','B','Examples in the worksheet batch','','2'],
+    ['sizes','T','Known tokens in each worksheet input','','10'],
+    ['sizes','D','Model representation width','','4'],
+    ['sizes','H','Number of heads','','2'],
+    ['sizes','d_{\\text{head}}','Matching and value width per head in this worksheet','','2'],
+    ['sizes','W_Q^{(h)},W_K^{(h)},W_V^{(h)}','Each head reads the full input width','D\\times d_{\\text{head}}','4×2'],
+    ['sizes','W_Q,W_K,W_V,W_O','Packed projections and the output projection','D\\times D','4×4']
+  ];
+  notation.forEach(([g,sym,mean,shape,dims])=>AT.notation.push({g,sym,mean,shape,dims:()=>dims,parts:['multihead']}));
   const style = document.createElement('style');
   style.textContent = `.mh-frame{min-width:0}.mh-figure{max-width:100%;overflow-x:auto}.mh-figure svg{display:block;width:100%;height:auto;min-width:670px}body.present .mh-figure{overflow:visible}body.present .mh-figure svg{min-width:0;max-height:430px}body.present .mh-frame:has(pre) .mh-figure svg{max-height:265px}body.present .mh-frame pre{font-size:22px;line-height:1.35;padding:14px 18px;margin:12px 0}body.present .mh-frame p{margin:12px 0;line-height:1.4}body:not(.present) .mh-frame{padding:24px 0;border-bottom:1px solid var(--line)}body:not(.present) .mh-frame:before{content:attr(data-title);display:block;font-weight:700;font-size:1.25em;margin-bottom:18px}.mh-controls{display:flex;gap:16px;align-items:center;flex-wrap:wrap}.mh-controls select{font:inherit;padding:8px;border:1px solid var(--line);border-radius:5px;background:var(--card)}.mh-readout{font-size:.85em}.mh-live-svg{max-width:100%;overflow-x:auto}.mh-live-svg svg{min-width:800px;width:100%;display:block}body.present .mh-live-svg{overflow:visible}body.present .mh-live-svg svg{min-width:0}`;
   document.head.appendChild(style);
