@@ -10,6 +10,22 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+2026-09-22 position-section pacing pass (current structure):
+
+- The position lesson has 40 presentation frames instead of 49. Its five
+  topic pauses introduce the motivation, adding position to a word, Method 1
+  (learned positions), Method 2 (sinusoidal positions), and absolute versus
+  relative positions. Keep the numerical examples within their topic blocks.
+- Nine recap/reference frames are now reading companions with headings:
+  the second addition example, concat-plus-projection, Q/K/V routing, static
+  clock comparison, sinusoid row table, rotary score table, mean pooling,
+  length extension and the methods summary. Their calculations and caveats
+  remain available in reading mode; do not restore them as duplicate slides.
+- ALiBi immediately follows the general distance-bias formula, before RoPE.
+  The closing attention map appears once. Its accessible selector highlights
+  input, matching/mixing or update/prediction without moving any nodes.
+  Keep the map on learned additive positions to match the notebook.
+
 2026-09-22 appended-position example:
 
 - The former abstract `s17-position-append` frame is now a five-slide Maya/Ravi
@@ -89,7 +105,7 @@ All four attention parts and the four-part Vision to language extension are impl
 - All 28 detailed cost frames moved to `sections3/sec16_cost.html` and are
   included in Part III Section 16, after training and cached generation. Part II
   Section 16 retains the matrix calculation, with a reading link to Part III.
-- Section 17 now has 49 position frames. Its opening computes both sentence
+- Section 17 now has 40 position frames. Its opening computes both sentence
   orders explicitly: query, scores, exponentials, normalized weights, weighted
   values and the identical message. The independent toy's `today` row is
   `[0.8,0.2]`, so Maya and Ravi have unequal weights. It then adds positions and
@@ -103,8 +119,8 @@ All four attention parts and the four-part Vision to language extension are impl
   and a full slow cycle precede the sinusoidal formula and numeric construction.
   Integer-period toy clocks are distinct from the standard radian frequencies.
   An additive common-shift counterexample motivates the rotation and relative
-  dot-product demonstration. The section closes with a full position-aware
-  attention map and three focus views, before the TinyStories walkthrough.
+  dot-product demonstration. The section closes with one full position-aware
+  attention map with selectable focus states, before the TinyStories walkthrough.
   `position-visuals.js` and `position-journey.js` supply the original SVGs.
   Serrano and Huang are credited; mathematical checks use the papers. New
   builds are authored in the HTML before presenter boot, then populated by JS.

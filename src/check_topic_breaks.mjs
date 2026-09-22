@@ -18,8 +18,12 @@ const targets=[
   ['s14-topic-break','s14-routing'],
   ['s16-topic-break','s16-flow-frame'],
   ['s17-position-break','s17-position-order'],
+  ['s17-position-addition-break','s17-position-shift'],
+  ['s17-position-learned-break','s17-position-learned'],
+  ['s17-position-clock-choice','s17-position-clock'],
+  ['s17-position-relative-break','s17-position-absolute-shift'],
   ['s19-topic-break','s19-frame-generation'],
-  ['s19-pipeline-break','s19-pipeline-data'],
+  ['s19-pipeline-break','s19-pipeline-route-data'],
   ['s19-pipeline-tokenization-intro','s19-pipeline-tokenization-choices']
 ];
 const browser=await chromium.launch();
@@ -80,7 +84,7 @@ try{
   await page.waitForFunction(()=>document.documentElement.scrollWidth<=innerWidth+1);
   for(const [id]of targets){
     const frame=page.locator('#'+id);await frame.scrollIntoViewIfNeeded();
-    assert.equal(await frame.locator('h3').isVisible(),['s05-values-topic-break','s16-cost-break','s17-position-break','s19-pipeline-tokenization-intro'].includes(id),'In reading mode, only mid-section breaks need an additional heading.');
+    assert.equal(await frame.locator('h3').isVisible(),await frame.evaluate(e=>e.classList.contains('topic-midpoint')),'In reading mode, only mid-section breaks need an additional heading.');
     assert(await frame.locator('.topic-question').isVisible());
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
     const clipped=await frame.locator('h3,p').evaluateAll(es=>es.filter(e=>e.clientWidth&&e.scrollWidth>e.clientWidth+1).map(e=>e.textContent));

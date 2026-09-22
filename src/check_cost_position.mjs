@@ -13,7 +13,14 @@ if(fs.existsSync(cache))for(const dir of fs.readdirSync(cache))candidates.push(p
 let pw;for(const candidate of candidates){try{pw=require(candidate);break;}catch{}}
 assert(pw,'Use an existing Playwright installation.');
 const costs=['break','symbols','matmul','concat-network','concat','average-network','average','attention-network','attention-projections','attention-products','projections','pairs','scores','mask','messages','predictor','calculator','training','baselines-training','prefix-sum','total','training-compare','backward','last-row','prompt','cache','generation-compare','memory'].map(x=>'s16-cost-'+x);
-const positions=['break','order','permute','scores','swapped','contributions','consequence','shift','move-a','move-b','moved','toy','slot-scores','experiment','updated','add','append','append-scores','append-softmax','append-scale','append-tradeoffs','width','routing','learned','clock-choice','clock','rates','repeat','waves','period','sine','sine-rule','worked-sine','absolute-shift','relative','rotate','rope-shift','rope','rope-identity','rope-pairs','insertion','alibi','mean','length','choices','overview','overview-input','overview-attend','overview-predict'].map(x=>'s17-position-'+x);
+const positions=[
+  'break','order','permute','scores','swapped','contributions','consequence',
+  'addition-break','shift','move-a','move-b','moved','toy','slot-scores','experiment','updated',
+  'append','append-scores','append-softmax','append-scale','append-tradeoffs',
+  'learned-break','learned','clock-choice','clock','repeat','waves','period','sine-rule','worked-sine',
+  'relative-break','absolute-shift','relative','alibi','rotate','rope-shift','rope-identity','rope-pairs','insertion','overview'
+].map(x=>'s17-position-'+x);
+const readingExtras=['add','width','routing','rates','sine','rope','mean','length','choices'].map(x=>'s17-position-'+x);
 const ids=positions;
 const shots=fs.mkdtempSync(path.join(os.tmpdir(),'attention-cost-position-'));
 const browser=await pw.chromium.launch();
@@ -59,6 +66,13 @@ try{
   await page.setViewportSize({width:1280,height:720});await page.evaluate(()=>document.fonts.ready);
   const original=await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)}));
   assert.deepEqual(await page.locator('.frame.context-lesson').evaluateAll(es=>es.map(e=>e.id)),ids);
+  assert.equal(ids.length,40,'Keep the slower worked examples while reducing the 49-frame sequence.');
+  assert.deepEqual(await page.locator('.position-reading[id]:not(#s17-position-map-notes)').evaluateAll(es=>es.map(e=>e.id)),readingExtras,'Recaps remain available for reading.');
+  assert.equal(await page.locator('#s17 [data-position-journey="overview"]').count(),1,'Use one closing map with selectable highlights.');
+  for(const id of readingExtras){
+    assert.equal(await page.locator('#'+id).evaluate(e=>e.classList.contains('frame')),false);
+    assert(await page.locator('#'+id+' h3').count(),'Reading notes retain a descriptive heading.');
+  }
   assert.equal(await page.locator('[id^="s16-cost-"]').count(),0,'cost lesson is absent from Part II');
   for(const shift of [0,5,10]){
     await go('s17-position-rope-shift');await page.locator('#rope-shift').selectOption(String(shift));
@@ -132,10 +146,7 @@ try{
   assert.match(await page.locator('#s17-position-append-tradeoffs').innerText(),/Concatenation can work/);
   assert.match(await page.locator('#s17-position-updated').innerText(),/representation before attention/);
   assert.match(await page.locator('#s17-position-updated svg').textContent(),/e′₄ = e₄ \+ Δe₄/);
-  for(const id of ['overview','overview-input','overview-attend','overview-predict']){
-    const text=await page.locator('#s17-position-'+id+' .position-journey svg').textContent();
-    assert(!/x[′_T]|XW/.test(text),'Position maps retain the established e/E notation.');
-  }
+  assert(!/x[′_T]|XW/.test(await page.locator('#position-overview-map svg').textContent()),'Position map retains the established e/E notation.');
   // The geometric displacements and final updates share the worked arithmetic.
   for(const [index,suffix]of ['a','b'].entries()){
     const id='s17-position-move-'+suffix;
@@ -169,15 +180,27 @@ try{
   }
   const absScores=await page.locator('[data-absolute-score]').evaluateAll(es=>es.map(e=>Number(e.dataset.absoluteScore)));
   close(absScores[0],1.5+Math.sqrt(3)/2,'absolute additive match at 3,2');close(absScores[1],.5,'absolute additive match at 8,7');
-  for(const id of ['overview','overview-input','overview-attend','overview-predict']){
-    assert.deepEqual(await page.locator('#s17-position-'+id+' [data-map-node]').evaluateAll(es=>es.map(e=>e.dataset.mapNode)),['tokens','positions','input','query','keys','values','scores','weights','message','projection','residual','hidden','prediction']);
-    await go('s17-position-'+id);
-    const spillingLabels=await page.locator('#s17-position-'+id+' [data-map-node]').evaluateAll(es=>es.flatMap(rect=>{
+  await go('s17-position-overview');
+  const mapGeometry=await page.locator('#position-overview-map [data-map-node]').evaluateAll(es=>es.map(e=>[e.dataset.mapNode,...['x','y','width','height'].map(a=>e.getAttribute(a))]));
+  for(const focus of ['all','input','attention','output','all']){
+    await page.locator('#position-map-focus').selectOption(focus);
+    assert.equal(await page.locator('#position-overview-map').getAttribute('data-focus'),focus);
+    assert.deepEqual(await page.locator('#position-overview-map [data-map-node]').evaluateAll(es=>es.map(e=>e.dataset.mapNode)),['tokens','positions','input','query','keys','values','scores','weights','message','projection','residual','hidden','prediction']);
+    assert.deepEqual(await page.locator('#position-overview-map [data-map-node]').evaluateAll(es=>es.map(e=>[e.dataset.mapNode,...['x','y','width','height'].map(a=>e.getAttribute(a))])),mapGeometry,'Highlight changes preserve all node locations.');
+    const emphasized=await page.locator('#position-overview-map [data-map-node]').evaluateAll(es=>[...new Set(es.filter(e=>e.getAttribute('stroke-width')==='2.5').map(e=>e.closest('[data-map-stage]').dataset.mapStage))]);
+    assert.deepEqual(emphasized,focus==='all'?['input','attention','output']:[focus],'Highlight changes the intended stage.');
+    const spillingLabels=await page.locator('#position-overview-map [data-map-node]').evaluateAll(es=>es.flatMap(rect=>{
       const b=rect.getBBox(),title=rect.nextElementSibling,caption=title.nextElementSibling;
       return [title,caption].filter(e=>{const t=e.getBBox();return t.x<b.x+3||t.x+t.width>b.x+b.width-3||t.y<b.y||t.y+t.height>b.y+b.height;}).map(e=>e.textContent);
     }));
-    assert.deepEqual(spillingLabels,[],id+' node labels fit their boxes');
+    assert.deepEqual(spillingLabels,[],focus+' node labels fit their boxes');
+    assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'Map focus '+focus+' fits.');
+    await page.screenshot({path:path.join(shots,'map-'+focus+'.png')});
   }
+  await page.locator('#position-map-focus').selectOption('input');
+  await go('s17-position-insertion');await go('s17-position-overview');
+  assert.equal(await page.locator('#position-map-focus').inputValue(),'input','Map highlight survives navigation.');
+  await page.locator('#position-map-focus').selectOption('all');
   for(const wave of await page.locator('[data-wave]').evaluateAll(es=>es.map(e=>({rate:Number(e.dataset.rate),end:Number(e.dataset.end),kind:e.dataset.wave,points:[...e.points].map(p=>[p.x,p.y])})))){
     const fn=wave.kind==='sine'?Math.sin:Math.cos;
     // SVG DOM stores coordinates as float32. Test the curve against its formula.
@@ -226,7 +249,7 @@ try{
     assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'Position control '+state+' fits');
     await page.screenshot({path:path.join(shots,'position-'+state+'.png')});
   }
-  await go('s17-position-add');await go('s17-position-experiment');
+  await go('s17-position-append');await go('s17-position-experiment');
   assert.equal(await page.locator('#position-enabled').inputValue(),'on');
   for(let i=0;i<4;i++){
     const values=[Math.sin(i),Math.cos(i),Math.sin(i/100),Math.cos(i/100)];
@@ -263,6 +286,7 @@ try{
     await go('s17-position-experiment');await page.screenshot({path:path.join(shots,'projector-'+viewport.width+'.png')});
   }
   await page.evaluate(()=>AT.present.exit());await page.setViewportSize({width:390,height:844});
+  for(const id of readingExtras)assert(await page.locator('#'+id).isVisible(),'Recap is available in reading mode: '+id);
   const spills=await page.locator('.context-lesson').evaluateAll(es=>es.filter(e=>e.getBoundingClientRect().right>innerWidth+2||e.scrollWidth>e.clientWidth+2).map(e=>({id:e.id,client:e.clientWidth,scroll:e.scrollWidth})));
   assert.deepEqual(spills,[],'Mobile reading frames remain contained.');
   await page.locator('#s17-position-experiment').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(shots,'reading-phone.png')});

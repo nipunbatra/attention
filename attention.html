@@ -3319,7 +3319,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
   function absolutePair(i,j){const p=n=>[Math.cos(n*Math.PI/6),Math.sin(n*Math.PI/6)],q=add([1,0],p(i)),k=add([1,0],p(j));return {q,k,score:q[0]*k[0]+q[1]*k[1]};}
   function overview(s,focus){
-    // The full diagram stays in place in each focus view. Background paths
+    // One map changes its highlight without changing node locations. Background paths
     // remain legible; only the current stage has the stronger outline.
     function group(stage){const g=el('g',{'data-map-stage':stage});s.append(g);return g;}
     const input=group('input'),attn=group('attention'),out=group('output');
@@ -3398,6 +3398,12 @@ document.addEventListener('DOMContentLoaded',()=>{
       });
     }else if(kind==='overview')overview(s,host.dataset.focus);
   }
+  const mapFocus=document.getElementById('position-map-focus');
+  mapFocus.addEventListener('change',()=>{
+    const host=document.getElementById('position-overview-map');
+    host.dataset.focus=mapFocus.value;
+    overview(canvas(host,'overview positional encoding diagram',440),mapFocus.value);
+  });
   const clock=document.getElementById('position-clock-index');
   function clockDraw(){
     const i=Number(clock.value),a=i*Math.PI/2,p=[Math.cos(a),Math.sin(a)],s=canvas(document.getElementById('position-clock-picture'),'A position feature moves around a circle',275);
@@ -12217,6 +12223,9 @@ body:not(.present) .context-lesson{margin:44px 0}
 .position-journey-controls{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
 .position-journey-controls input{width:280px;accent-color:var(--c-d)}
 .position-journey-controls output{font-variant-numeric:tabular-nums;min-width:100px}
+.position-map-control{display:flex;align-items:center;gap:18px;margin:0 0 8px;flex-wrap:wrap}
+#s17-position-overview .position-journey{margin:8px 0}
+.position-reading h3{font-size:1.15em;line-height:1.3;margin:0 0 16px}
 @media(max-width:650px){body:not(.present) .position-journey svg{min-width:1000px}body:not(.present) .position-journey-controls input{width:190px}}
 @media(max-width:650px){body:not(.present) .position-worked .worked-table{min-width:920px}body:not(.present) .position-worked .mix-pair{grid-template-columns:1fr}body:not(.present) .position-worked .mix-pair .worked-table{min-width:540px}body:not(.present) .position-credit{font-size:18px}body:not(.present) .position-worked .worked-result{font-size:23px}}
 @media(max-width:650px){body:not(.present) .position-visual svg{min-width:950px}}
@@ -12273,6 +12282,13 @@ body:not(.present) .context-lesson{margin:44px 0}
 <div class="position-visual" data-position-visual="swap-result"></div>
 <p>Different helper, identical input to the prediction head. This layer cannot tell these two meanings apart at <strong>today</strong>.</p>
 <p class="lesson-key">One layer, token-only inputs, final receiver. Deeper causal layers can have additional order clues.</p>
+</div>
+
+<div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-addition-break" data-title="Adding position to a word" data-autobuild="off">
+<script type="text/x-notes">Pause after establishing why this one-layer example needs an order signal. The next sequence shows the actual operation before discussing how to obtain the position rows. The first rows are invented for a visible two-dimensional example. Learned and sinusoidal methods follow after the addition and appended-index alternatives.</script>
+<h3>Adding position to a word</h3>
+<p class="topic-recap">The word lookup stays the same when Maya and Ravi swap slots.</p>
+<p class="topic-question">What changes if each slot supplies an offset to that word's embedding?</p>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-shift" data-title="The word dots are identical before we add position" data-autobuild="off">
@@ -12334,7 +12350,8 @@ body:not(.present) .context-lesson{margin:44px 0}
 <p class="lesson-key">Here $W_O=I$, so $\Delta e_4=m_4$. Position $p_4$ enters first. Attention supplies $\Delta e_4$, then $e'_4=e_4+\Delta e_4$.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-add" data-title="Addition keeps the row the same width" data-autobuild="off">
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-add">
+<h3>Another addition example, with four coordinates</h3>
 <script type="text/x-notes">Return to d=4 to match the width of the lecture. These are illustrative coordinates, not the bank model's rows. Token lookup depends on the word, position lookup depends on its slot. Their sum is the row fed into attention. The model learns with this combined representation; there is no promise that the two original vectors can be uniquely recovered from their sum.</script>
 <table class="lesson-table"><thead><tr><th>Four-coordinate row</th><th>1</th><th>2</th><th>3</th><th>4</th></tr></thead><tbody>
 <tr><th>Token $E_{\rm tok}[t_i]$</th><td>0.6</td><td>−0.2</td><td>1.0</td><td>0.1</td></tr>
@@ -12396,7 +12413,8 @@ body:not(.present) .context-lesson{margin:44px 0}
 <p class="lesson-key">Next: fixed-width addition, bounded sine/cosine features and relative positions.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-width" data-title="Why addition is a convenient design" data-autobuild="off">
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-width">
+<h3>Concatenation followed by a projection</h3>
 <script type="text/x-notes">A d-wide sum fits existing attention and residual shapes. Token and position embeddings can be learned jointly. Summation is not losslessly decodable for arbitrary pairs. Concatenation preserves separate input slots for the two sources, and its following matrix can learn separate projections. The displayed block matrix has 2d rows and d columns when both source vectors have d coordinates.</script>
 <p>Adding a $d$-wide position row keeps the attention input and residual path <strong>$d$ numbers wide</strong>.</p>
 <p data-build="1">Concatenation followed by a projection is another way to combine them:</p>
@@ -12405,7 +12423,8 @@ body:not(.present) .context-lesson{margin:44px 0}
 <p class="lesson-result" data-build="2">Addition mixes the signals; it does not guarantee that we can recover each one separately. Training learns how to use the combined row.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-routing" data-title="Position can change what matches—and what is sent" data-autobuild="off">
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-routing">
+<h3>How the positioned row reaches Q, K and V</h3>
 <script type="text/x-notes">Keep the earlier e_i notation for the representation entering attention. A moved word changes its q/k/v because the input row changed. With additive input positions, positional signals reach values too. Contrast this later with RoPE, which typically rotates Q and K, and ALiBi, which adds a score bias. Causal masking remains a separate operation.</script>
 <div class="position-flow"><span>$e_i=E_{\rm tok}[t_i]+p_i$</span><b>→</b><span>$q_i=e_iW_Q$<br>$k_i=e_iW_K$<br>$v_i=e_iW_V$</span></div>
 <p data-build="1">A word in a different slot can produce different matching features and a different message.</p>
@@ -12413,20 +12432,26 @@ body:not(.present) .context-lesson{margin:44px 0}
 <p class="lesson-key" data-build="2">$E_{\rm tok}[t_i]$ is the word lookup. Adding $p_i$ gives the representation $e_i$ entering attention.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-learned" data-title="Learned absolute positions: one row per slot" data-autobuild="off">
+<div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-learned-break" data-title="Method 1: learned positions" data-autobuild="off">
+<script type="text/x-notes">The preceding offsets were chosen by hand. Introduce the first way to obtain them in a trained model: learn a table with one row per absolute slot. This is the method used in the notebook. Do not imply that the learned and sinusoidal methods must be used together.</script>
+<h3>Method 1: learned positions</h3>
+<p class="topic-recap">So far, we chose the position offsets by hand.</p>
+<p class="topic-question">Could training learn a useful row for each slot?</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-learned" data-title="One trainable row per slot" data-autobuild="off">
 <script type="text/x-notes">A learned absolute table is a common additive choice. P has Nmax rows and d columns. Its values are model parameters updated by training, unlike the fixed illustrative position table used in this lecture. Positions never seen during training have no learned evidence; extending a table with new random rows is not established length generalization. Vaswani et al. compared learned and sinusoidal encodings in Section 3.5.</script>
 <div class="position-flow"><span>Slot $i$</span><b>→</b><span>Read row $P[i]$</span><b>→</b><span>Add to token row</span></div>
 <p>The table has shape $N_{\max}\times d$: <strong>$N_{\max}d$ learned numbers</strong>.</p>
-<p data-build="1">Training can learn different cues for the first slot, the second slot, and so on.</p>
+<p data-build="1">Backpropagation updates $P$ along with the word embeddings. This is the method our notebook uses.</p>
 <p class="lesson-result" data-build="2">Tradeoff: the table has a configured length. Adding new rows does not make them trained position representations.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-clock-choice" data-title="A fixed rule can generate position offsets" data-autobuild="off">
-<script type="text/x-notes">The hand-chosen offsets established what addition does. Now ask how to generate them for many positions. A learned table is one option. A fixed sinusoidal rule is another. Keep the generated coordinates bounded rather than letting a raw position index grow without bound. Neither choice is a universal optimum. Starting here, clock indices count from zero: the first token has index zero.</script>
-<p>We could learn a row for every slot. Or we could calculate a row from the slot index.</p>
-<div class="position-flow"><span>Index $i$</span><b>→</b><span>A point on a circle</span><b>→</b><span>Two position coordinates</span><b>→</b><span>Add to the word</span></div>
-<p data-build="1">Sine and cosine keep each coordinate between $-1$ and $1$. Advancing the index moves the point smoothly around the circle.</p>
-<p class="lesson-key">The clocks below use zero-based indices: the first token has index 0.</p>
+<div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-clock-choice" data-title="Method 2: sinusoidal positions" data-autobuild="off">
+<script type="text/x-notes">The second absolute-position method calculates fixed offsets instead of learning a table. Begin with the circle intuition, then show different rates and the standard formula. The toy clocks use degrees and integer periods. The standard formula later uses radians. Starting here, indices are zero-based, as the next slide states.</script>
+<h3>Method 2: sinusoidal positions</h3>
+<p class="topic-recap">A learned table stores the offsets as model parameters.</p>
+<p class="topic-question">What if a fixed rule could calculate the offset for any slot?</p>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-clock" data-title="A sine and cosine pair marks one position" data-autobuild="off">
@@ -12434,17 +12459,18 @@ body:not(.present) .context-lesson{margin:44px 0}
 <div class="position-journey-controls"><label for="position-clock-index">Position index</label><input id="position-clock-index" type="range" min="0" max="4" step="1" value="0"><output id="position-clock-label" for="position-clock-index">0</output></div>
 <div class="position-journey" id="position-clock-picture"></div>
 <p>Record $[\cos(i\omega),\sin(i\omega)]$ as the offset to add. Here $\omega=90^\circ$ per slot.</p>
-<p class="lesson-key">Move through indices 0 to 4. The final arrow returns to the start: two positions receive the same offset.</p>
+<p class="lesson-key">The first token now has index 0. Each coordinate stays between $-1$ and $1$, but index 4 repeats index 0.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-rates" data-title="Use several clocks running at different rates" data-autobuild="off">
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-rates">
+<h3>Two clock rates at indices 0 and 4</h3>
 <script type="text/x-notes">Keep the intentionally simple fast rate at 90 degrees per slot and add a slow 30-degree pair. At indices 0 and 4 the fast pair is identical but the slow pair differs. Both toy rates still repeat jointly at index 12, so do not claim a small collection of clocks guarantees no collisions or arbitrary length generalization. The original geometric frequency schedule is different and comes next.</script>
 <div class="position-visual" data-position-visual="rates"></div>
 <p>The fast pair repeats after four slots; the slow pair distinguishes these two positions.</p>
 <p class="lesson-key">Combine pairs into one vector. Multiple rates provide different scales, not a guarantee of unlimited context.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-repeat" data-title="The whole position vector repeats only when every pair does" data-autobuild="off">
+<div class="frame context-lesson position-lesson" id="s17-position-repeat" data-title="Two clocks at different rates" data-autobuild="off">
 <script type="text/x-notes">Inspect two deliberately simple clocks with integer periods four and twelve. At index four, only the fast pair returns. At twelve, both return and the four-number code repeats. This is an illustrative design, not the standard Transformer schedule. Multiple slower rates extend the range over which these positions can be distinguished. They do not prove arbitrary-length uniqueness or prediction quality.</script>
 <div class="position-journey-controls"><label for="position-pair-index">Compare with index 0</label><select id="position-pair-index"><option value="0">Index 0</option><option value="4">Index 4</option><option value="8">Index 8</option><option value="12">Index 12</option></select></div>
 <div class="position-journey" id="position-pair-picture"></div>
@@ -12467,7 +12493,8 @@ body:not(.present) .context-lesson{margin:44px 0}
 <p class="lesson-key">These are continuous periods. Integer indices 6 and 628 do not exactly repeat index 0.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-sine" data-title="Sinusoidal positions: a fixed pattern at several scales" data-autobuild="off">
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-sine">
+<h3>Four rows of the sinusoidal pattern</h3>
 <script type="text/x-notes">Use actual computed values for the standard formula at d=4. The first pair changes by one radian per slot; the second by 0.01 radians per slot. The table is rounded to three decimals. These waves are fixed features, not probabilities. Source: Vaswani et al., Section 3.5, https://arxiv.org/abs/1706.03762.</script>
 <p>For a four-coordinate example, slot $i$ gets:</p>
 <div>$$p_i=[\sin i,\ \cos i,\ \sin(i/100),\ \cos(i/100)]$$</div>
@@ -12475,12 +12502,12 @@ body:not(.present) .context-lesson{margin:44px 0}
 <p class="lesson-key">Two pairs of waves, at two different rates. Add this fixed row to the token embedding; there is no learned position table.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-sine-rule" data-title="Why use sine and cosine together?" data-autobuild="off">
+<div class="frame context-lesson position-lesson" id="s17-position-sine-rule" data-title="The sinusoidal formula" data-autobuild="off">
 <script type="text/x-notes">For even d and pair index r=0,...,d/2-1, frequency omega_r is 10000 raised to -2r/d. A shift by delta rotates a sine/cosine pair by a matrix that depends on delta, not the starting position. This makes offsets algebraically structured. It does not prove the model learns all offsets or extrapolates to arbitrary lengths.</script>
 <div>$$p_{i,2r}=\sin(i\omega_r),\qquad p_{i,2r+1}=\cos(i\omega_r)$$</div>
 <p class="lesson-key">$r$ labels a coordinate pair. $\omega_r=10000^{-2r/d}$ sets its rate; pairs use different rates.</p>
 <p data-build="1">Moving by a fixed number of slots rotates each pair by a fixed angle. Nearby positions change smoothly; different rates give different distance scales.</p>
-<p class="lesson-result" data-build="2">We can compute a row for an unseen index. That does <strong>not</strong> guarantee good predictions at unseen context lengths.</p>
+<p class="lesson-result" data-build="2">The rule supplies a fixed $d$-coordinate row $p_i$. We add it to the word lookup just as before.</p>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-worked-sine" data-title="Build one full sinusoidal row, number by number" data-autobuild="off">
@@ -12489,6 +12516,13 @@ body:not(.present) .context-lesson{margin:44px 0}
 <div class="position-numeric-scroll"><table class="lesson-table"><thead><tr><th>Pair $r$</th><th>Rate $10000^{-2r/4}$</th><th>Angle $i\omega_r$</th><th>$[\sin,\cos]$</th></tr></thead><tbody><tr><td>0</td><td>1 rad / slot</td><td>3 radians</td><td>[0.141, −0.990]</td></tr><tr><td>1</td><td>0.01 rad / slot</td><td>0.03 radians</td><td>[0.030, 1.000]</td></tr></tbody></table></div>
 <div style="overflow-x:auto;max-width:100%">$$p_3=[0.141,-0.990,0.030,1.000]$$</div>
 <p class="lesson-key">$i$ is a token position; $r$ is a coordinate-pair index; $d$ is vector width. The base 10000 controls the frequency range.</p>
+</div>
+
+<div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-relative-break" data-title="Absolute and relative positions" data-autobuild="off">
+<script type="text/x-notes">Both learned tables and fixed sinusoids above describe an absolute slot. The next example motivates dependence on the gap between a receiver and a source. Then show a distance bias and RoPE as two approaches. This is a structural comparison, not a claim that absolute encodings cannot learn relative cues.</script>
+<h3>Absolute and relative positions</h3>
+<p class="topic-recap">Both methods so far describe which slot a word occupies.</p>
+<p class="topic-question">What if the useful cue is how far the source is from the receiving word?</p>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-absolute-shift" data-title="Same gap, different absolute positions" data-autobuild="off">
@@ -12507,7 +12541,15 @@ body:not(.present) .context-lesson{margin:44px 0}
 <p class="lesson-key" data-build="1">$b$ supplies an offset for that distance. Content still matters; distance changes its score, not its visibility.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-rotate" data-title="First rotate just one two-number vector" data-autobuild="off">
+<div class="frame context-lesson position-lesson" id="s17-position-alibi" data-title="Distance bias: ALiBi" data-autobuild="off">
+<script type="text/x-notes">Make the preceding distance-bias formula concrete before introducing RoPE. ALiBi is a fixed linear bias in attention scores, with slopes differing across heads. This is one illustrative head with m=0.25 and three allowed sources. It is a soft recency preference, not a hard window. A strong content score can overcome the penalty. Source: Press et al., https://arxiv.org/abs/2108.12409. The weights are softmax([1,1.5,2]).</script>
+<div>$$s_{ij}=\frac{q_i\cdot k_j}{\sqrt{d_k}}-m(i-j),\qquad j\leq i$$</div>
+<p class="lesson-key">$m>0$ is a slope. Example: all content scores are 2; choose $m=0.25$.</p>
+<table class="lesson-table"><thead><tr><th>Distance back</th><th>Penalty</th><th>New score</th><th>Weight</th></tr></thead><tbody><tr><td>4</td><td>−1.0</td><td>1.0</td><td>18.6%</td></tr><tr><td>2</td><td>−0.5</td><td>1.5</td><td>30.7%</td></tr><tr><td>0</td><td>0.0</td><td>2.0</td><td>50.6%</td></tr></tbody></table>
+<p data-build="1">This gives nearby sources a preference. A stronger content match can still favor a distant source.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-rotate" data-title="RoPE: rotating a query or key" data-autobuild="off">
 <script type="text/x-notes">Before the relative-position identity, show one real rotation. Use the geometric column-vector convention only for this two-dimensional derivation, unlike the row-vector projection notation elsewhere. Rotating [1,0] by 60 degrees gives [0.5,0.866]. Norm is preserved. Content is rotated, not replaced with a pure position vector.</script>
 <div class="position-visual" data-position-visual="rotate"></div>
 <div>$$R_\theta\begin{bmatrix}x\\y\end{bmatrix}=\begin{bmatrix}x\cos\theta-y\sin\theta\\x\sin\theta+y\cos\theta\end{bmatrix}$$</div>
@@ -12522,7 +12564,8 @@ body:not(.present) .context-lesson{margin:44px 0}
 <p class="lesson-key">Held-fixed content isolates the effect: the positional part depends on the gap, not the shared shift.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-rope" data-title="RoPE: rotate the query and key pairs" data-autobuild="off">
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-rope">
+<h3>A table of rotary matches</h3>
 <script type="text/x-notes">Rotary Position Embedding applies a position-dependent rotation to coordinate pairs in Q and K. Standard RoPE leaves V unrotated. The paired inner product contains R_i transpose R_j, which depends on the relative offset. Actual Q/K also vary with token content, so equal distance alone does not imply equal scores. Source: Su et al., RoFormer, https://arxiv.org/abs/2104.09864.</script>
 <div class="position-flow"><span>Content query/key</span><b>→</b><span>Rotate pairs by their slots</span><b>→</b><span>Dot product</span></div>
 <p>Toy: start with $q=k=[1,0]$; rotate 30° per slot.</p>
@@ -12551,17 +12594,11 @@ body:not(.present) .context-lesson{margin:44px 0}
 <div class="position-flow"><span><strong>Additive</strong><br>Token + position</span><b>→</b><span>Project Q, K and V</span><b>→</b><span>Match, then mix</span></div>
 <div class="position-flow"><span><strong>RoPE</strong><br>Project Q, K and V</span><b>→</b><span>Rotate Q and K<br>Keep V unrotated</span><b>→</b><span>Match, then mix</span></div>
 <p class="lesson-result">Sines and cosines appear in both. One adds a position vector; the other rotates matching vectors.</p>
+<p class="lesson-key">Neither method guarantees reliable predictions at lengths beyond training. The causal mask is still needed.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-alibi" data-title="ALiBi: give more distant sources a score penalty" data-autobuild="off">
-<script type="text/x-notes">ALiBi is a fixed linear distance bias in attention scores, with slopes differing across heads. This is one illustrative head with m=0.25 and three allowed sources. It is a soft recency preference, not a hard window: a strong content score can overcome the penalty. Source: Press et al., https://arxiv.org/abs/2108.12409. The table's weights are softmax([1,1.5,2]).</script>
-<div>$$s_{ij}=\frac{q_i\cdot k_j}{\sqrt{d_k}}-m(i-j),\qquad j\leq i$$</div>
-<p class="lesson-key">$m>0$ is a slope. Example: all content scores are 2; choose $m=0.25$.</p>
-<table class="lesson-table"><thead><tr><th>Distance back</th><th>Penalty</th><th>New score</th><th>Weight</th></tr></thead><tbody><tr><td>4</td><td>−1.0</td><td>1.0</td><td>18.6%</td></tr><tr><td>2</td><td>−0.5</td><td>1.5</td><td>30.7%</td></tr><tr><td>0</td><td>0.0</td><td>2.0</td><td>50.6%</td></tr></tbody></table>
-<p data-build="1">Nearby sources get a preference—not a guarantee. A stronger content match can still favor a distant source.</p>
-</div>
-
-<div class="frame context-lesson position-lesson" id="s17-position-mean" data-title="Adding position before a plain mean is not enough" data-autobuild="off">
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-mean">
+<h3>Why a plain mean still loses the word-to-slot assignment</h3>
 <script type="text/x-notes">Do not imply that additive positions fix order blindness for every architecture. Averaging independent token-plus-position rows is the sum of a token mean and a position mean. Under reassignment of the same words to the same occupied slots, both means stay fixed. Nonlinear processing before pooling or explicit token-position interactions can break this invariance; that would be a different baseline. Attention creates interactions through its query/key scores.</script>
 <div>$$\frac1n\sum_i(e_{{\rm token},i}+p_i)=\frac1n\sum_i e_{{\rm token},i}+\frac1n\sum_i p_i$$</div>
 <p data-build="1">Swap Maya and Ravi across the same four slots: the token sum stays the same, and the position sum stays the same.</p>
@@ -12569,14 +12606,16 @@ body:not(.present) .context-lesson{margin:44px 0}
 <p class="lesson-key" data-build="2">Attention is not just a fixed average: its weights depend on the token-and-position rows being compared.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-length" data-title="A longer formula is not yet a longer-context model" data-autobuild="off">
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-length">
+<h3>Computing a longer position versus using a longer context</h3>
 <script type="text/x-notes">Separate mathematical evaluability from empirical generalization. A learned absolute position table has a configured size; sinusoidal and rotary formulas can evaluate unseen indices, but the model may not work reliably at those offsets. Position interpolation rescales positions or frequencies. The 4 to 8 illustration scales indices by one half. This changes nearby angle differences too. Finetuning and evaluation are required; the original position-interpolation paper reports adapted models, not a universal drop-in guarantee.</script>
 <table class="lesson-table"><thead><tr><th>Question</th><th>What to check</th></tr></thead><tbody><tr><td>Can we compute position 8192?</td><td>A formula may allow it; a learned table may need extension.</td></tr><tr><td>Can the model use that context well?</td><td>Measure held-out prediction and retrieval at that length.</td></tr></tbody></table>
 <p>One extension idea: use $i/2$ in place of $i$ when doubling the window. The rotations change more slowly.</p>
 <p class="lesson-key">This also changes local position differences. It is a model adaptation to test, not free memory. Detailed context costs follow in Part III.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-choices" data-title="Choose where position enters the calculation" data-autobuild="off">
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-choices">
+<h3>Position methods at a glance</h3>
 <script type="text/x-notes">These are design families, not a quality ranking. Learned absolute embeddings have trained table coverage. Sinusoids, RoPE and ALiBi define operations at larger indices, but actual length generalization still depends on training, data, architecture and any scaling changes. The lecture uses additive position rows to make each operation visible. The future-information mask is still needed for all these causal models.</script>
 <table class="lesson-table"><thead><tr><th>Method</th><th>Where it enters</th><th>What it supplies</th></tr></thead><tbody>
 <tr><td>Learned / sinusoidal absolute</td><td>Token input row</td><td>Features of slot $i$</td></tr>
@@ -12588,27 +12627,16 @@ body:not(.present) .context-lesson{margin:44px 0}
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-overview" data-title="The full attention path now includes position" data-autobuild="off">
-<script type="text/x-notes">Return to the earlier full attention flow, explicitly expanding its input stage. This overview uses learned additive position rows, as in the notebook, rather than combining addition and RoPE. T is the number of context tokens. E_tok is the token embedding table, P the position table, and E the sum of their selected rows. Shapes use d=4, d_k=3, d_v=2, hidden width eight and vocabulary size C. C is twenty in the bank worksheet and differs in the notebook. Only the final receiver is computed here. The bypass preserves e_T, which already includes position.</script>
-<div class="position-journey" data-position-journey="overview" data-focus="all"></div>
-<p class="lesson-key">Illustrative widths, with additive positions as in the notebook. $T$ is context length and $C$ is vocabulary size.</p>
+<script type="text/x-notes">Return to the complete attention flow once, with selectable highlights instead of four repeated map slides. The notebook uses learned additive position rows, not RoPE. Start at All, then select Word + slot to emphasize E=E_tok[ids]+P[0:T], Matching + mixing for alpha and the value message, or Update + prediction for W_O, the residual and vocabulary head. Node locations remain fixed. T is context length, C vocabulary size, and the displayed widths are illustrative. The e_T residual already contains position. Training compares the prediction with the observed target; generation chooses and appends a token. This is the teaching model, not a full modern Transformer block.</script>
+<div class="position-map-control"><label for="position-map-focus">Highlight</label><select id="position-map-focus"><option value="all">Full path</option><option value="input">Word + slot</option><option value="attention">Matching + mixing</option><option value="output">Update + prediction</option></select><span>Notebook: learned additive positions</span></div>
+<div class="position-journey" id="position-overview-map" data-position-journey="overview" data-focus="all"></div>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-overview-input" data-title="Word and slot lookups meet before Q, K and V" data-autobuild="off">
-<script type="text/x-notes">Walk the same map with the input region emphasized. Token IDs select rows of E_tok. Zero-based slot indices select rows of P. Add matching rows, preserving shape T by four. The final row makes q_T, all rows make K and V, and the residual carries e_T unchanged. All those paths see the positioned input, not bare word embeddings.</script>
-<div class="position-journey" data-position-journey="overview" data-focus="input"></div>
-<p class="lesson-key">$E=E_{\rm tok}[\mathrm{ids}]+P[0:T]$. All three projections and the residual read this positioned input.</p>
-</div>
-
-<div class="frame context-lesson position-lesson" id="s17-position-overview-attend" data-title="The positioned query selects the value mixture" data-autobuild="off">
-<script type="text/x-notes">Keep the full map in place while emphasizing matching and value mixing. q_T and K supply scores. Divide by sqrt(d_k), apply visibility and padding masks when present, and softmax over source positions. Values bypass scoring and are mixed with these weights. The causal mask permits all real tokens for this last receiver, but the same operation blocks future tokens for earlier receivers.</script>
-<div class="position-journey" data-position-journey="overview" data-focus="attention"></div>
-<p class="lesson-key">$\alpha_T=\mathrm{softmax}(q_TK^\top/\sqrt3+M_T)$ and $m_T=\alpha_TV$. The message has two coordinates.</p>
-</div>
-
-<div class="frame context-lesson position-lesson" id="s17-position-overview-predict" data-title="The contextual update reaches the prediction head" data-autobuild="off">
-<script type="text/x-notes">Emphasize W_O, the residual and the hidden prediction layer. W_O maps a two-number message to a four-number contextual update. Add the preserved positioned row e_T, apply the eight-unit ReLU hidden layer, then produce C logits and vocabulary probabilities. During training, compare these with the known next-token target. During generation, choose a token and append it to the input. Section 19 expands the data preparation and these computations using the TinyStories companion. This is the teaching model, not a complete modern Transformer block.</script>
-<div class="position-journey" data-position-journey="overview" data-focus="output"></div>
-<p class="lesson-key">Training: compare with the next-token target. Generation: choose a token and append it.</p>
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-map-notes">
+<h3>Reading the full map</h3>
+<p>$E=E_{\rm tok}[\mathrm{ids}]+P[0:T]$ stacks the positioned rows. $T$ is context length and $C$ is vocabulary size. All three projections and the residual use these rows.</p>
+<p>The final receiver reads $\alpha_T=\mathrm{softmax}(q_TK^\top/\sqrt3+M_T)$ and forms $m_T=\alpha_TV$. The output projection gives $\Delta e_T=m_TW_O$, then $e'_T=e_T+\Delta e_T$ feeds the prediction head.</p>
+<p>Training compares the prediction with the observed next-token target. Generation chooses a token and appends it. The next walkthrough expands both processes with TinyStories.</p>
 </div>
 
 <div class="companion">

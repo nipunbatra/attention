@@ -1,5 +1,26 @@
 # Classroom release checks
 
+## 2026-09-22: position subsections and fewer repeated slides
+
+- Reduced the position lesson from 49 to 40 frames. Five topic breaks now
+  separate the motivation, addition, learned positions, sinusoidal positions,
+  and absolute/relative methods. Nine recap frames remain as reading companions
+  with visible headings. The detailed Maya/Ravi calculations are unchanged.
+- Moved ALiBi directly after the distance-bias formula. Combined the four
+  closing map frames into one map with a keyboard-accessible highlight selector.
+  Tests check the active region, fixed node geometry, label bounds, control
+  persistence and unchanged model data for all four highlight states.
+- All 40 position frames pass 136 build checks at 1280×720, 1920×1080 and
+  1024×768, with 390px reading containment and visibility of the retained notes.
+  All 17 lecture topic breaks pass forward/back navigation, header restoration
+  and reading-mode checks. Updated a stale existing test expectation to account
+  for the earlier data-map checkpoint before the TinyStories data slide.
+- Full Part II audit: 417 states and 639 formulas, with no overflow, math
+  failures or console errors. Eight live/reference model cases retain the same
+  arithmetic. Visually inspected the new dividers and consolidated map.
+  No notebook, trained-model, benchmark, dependency, other lecture part or
+  private Site change. Physical projector and AirServer use was not tested.
+
 ## 2026-09-22: raw position indices in the Maya/Ravi example
 
 - Replaced the abstract append-position slide with five frames: the actual

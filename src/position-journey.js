@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
   function absolutePair(i,j){const p=n=>[Math.cos(n*Math.PI/6),Math.sin(n*Math.PI/6)],q=add([1,0],p(i)),k=add([1,0],p(j));return {q,k,score:q[0]*k[0]+q[1]*k[1]};}
   function overview(s,focus){
-    // The full diagram stays in place in each focus view. Background paths
+    // One map changes its highlight without changing node locations. Background paths
     // remain legible; only the current stage has the stronger outline.
     function group(stage){const g=el('g',{'data-map-stage':stage});s.append(g);return g;}
     const input=group('input'),attn=group('attention'),out=group('output');
@@ -146,6 +146,12 @@ document.addEventListener('DOMContentLoaded',()=>{
       });
     }else if(kind==='overview')overview(s,host.dataset.focus);
   }
+  const mapFocus=document.getElementById('position-map-focus');
+  mapFocus.addEventListener('change',()=>{
+    const host=document.getElementById('position-overview-map');
+    host.dataset.focus=mapFocus.value;
+    overview(canvas(host,'overview positional encoding diagram',440),mapFocus.value);
+  });
   const clock=document.getElementById('position-clock-index');
   function clockDraw(){
     const i=Number(clock.value),a=i*Math.PI/2,p=[Math.cos(a),Math.sin(a)],s=canvas(document.getElementById('position-clock-picture'),'A position feature moves around a circle',275);
