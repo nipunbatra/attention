@@ -130,12 +130,20 @@ print('With BOS and EOS:', with_boundaries)  # [1, 3, 2]
 assert with_boundaries == [vocab.bos_id, vocab.unk_id, vocab.eos_id]
 ''', focus=('ids','windows'))
 
-step('boundaries', 'Add the story boundaries once', '1. Data and tokens',
-     'There are now eight IDs: BOS, six ordinary tokens and EOS. We can ask for the next ID after each prefix. BOS is input context; it is not one of the seven targets.', '''
-ids = vocab.encode_tokens(pieces)
+step('boundaries', 'One BOS and EOS per document', '1. Data and tokens',
+     'In this notebook, each document is a complete story with one BOS at its start and one EOS at its end. We do not add extra markers between sentences. The Lily sentence is our entire toy document, so its six ordinary tokens become eight IDs including BOS and EOS. BOS provides context, and the remaining seven IDs are prediction targets. encode_tokens wraps the token list we pass it, without detecting sentences. We pass a complete story once before creating its training windows, which never cross document boundaries. Other datasets may use different boundary conventions.', '''
+ids = vocab.encode_tokens(pieces, boundaries=True)
 print(ids)
 assert ids == [1, 8, 7, 5, 9, 6, 4, 2]
-''', focus=('ids',), check=('How many ordinary tokens are there?', 'Six. The full stop counts as one token; BOS and EOS are additional boundary tokens.'))
+
+# Two sentences still make one document with one pair of markers.
+two_sentence_story = 'Lily found a ball. Lily found a red ball.'
+two_sentence_ids = vocab.encode_tokens(tokenize(two_sentence_story), boundaries=True)
+print(' '.join(vocab.decode_ids(two_sentence_ids, skip_special=False)))
+assert two_sentence_ids.count(vocab.bos_id) == 1
+assert two_sentence_ids.count(vocab.eos_id) == 1
+assert two_sentence_ids.count(vocab.stoi['.']) == 2
+''', focus=('ids',), check=('A story has three sentences. How many BOS and EOS markers do we add?', 'One BOS before the whole story and one EOS after it. Full stops remain ordinary tokens inside the document. Our one-sentence example follows the same rule.'))
 
 step('story-indices', 'Token positions and vocabulary IDs', '2. Windows and batches',
      'Python positions start at 0: position 4 contains red, whose vocabulary ID is 9. With a four-token window, this example reads positions 0 through 3 and predicts the token at position 4.', '''
@@ -779,6 +787,7 @@ def render_figure(stage, ns):
     elif k=='special':
         f.table(['ID','Token','Role'],[(0,'PAD','Fill unused input slots'),(1,'BOS','First context token of a story'),(2,'EOS','Predict that the story ends'),(3,'UNK','Represent a missing vocabulary item')],widths=[100,170,850],row_h=55)
     elif k=='boundaries':
+        f.text(25,28,'One complete document: our one-sentence story',MUTED,26)
         for j,i in enumerate(ns['ids']):
             x=20+j*140;f.rect(x,55,128,120,stroke=BLUE)
             f.text(x+64,95,words[i],BLUE,25,600,'middle');f.text(x+64,148,i,BLUE,32,500,'middle')

@@ -10,6 +10,14 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+2026-09-22 document-boundary clarification:
+
+- BOS and EOS wrap each complete story/document once, not each sentence or
+  training window. The Lily sentence is a complete toy document. The boundary
+  slide states this rule, and Notebook 5 runs a two-sentence story with a single
+  BOS/EOS pair. Keep `boundaries=True` explicit and the original eight toy IDs
+  and seven targets unchanged. Other datasets may use different conventions.
+
 2026-09-22 unknown-token clarification:
 
 - Keep the special-token slide's explicit result: blue is absent from the toy

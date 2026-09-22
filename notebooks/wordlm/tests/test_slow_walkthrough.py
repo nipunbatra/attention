@@ -95,6 +95,25 @@ def test_unknown_token_example_explains_the_lookup_and_boundary_flag():
     assert 'boundaries=False' in shown and 'do not add BOS or EOS' in shown
 
 
+def test_story_boundaries_wrap_a_whole_document_including_multiple_sentences():
+    from build_slow_lesson import SLIDE_CODE
+    ns = initial_namespace()
+    for stage in STAGES:
+        exec(stage['code'], ns)
+        if stage['id'] == 'boundaries':
+            break
+    assert ns['ids'] == [1, 8, 7, 5, 9, 6, 4, 2]
+    text = ns['vocab'].decode_ids(ns['two_sentence_ids'], skip_special=False)
+    assert text == ['<BOS>', 'lily', 'found', 'a', 'ball', '.',
+                    'lily', 'found', 'a', 'red', 'ball', '.', '<EOS>']
+    shown = '. '.join(stage['body'].split('. ')[:2])
+    assert 'each document is a complete story' in shown
+    assert 'do not add extra markers between sentences' in shown
+    assert 'our one-sentence story' in render_figure(stage, ns)
+    assert SLIDE_CODE['boundaries'] in stage['code']
+    assert 'boundaries=True' in SLIDE_CODE['boundaries']
+
+
 def test_notebook_stages_are_complete_and_linked():
     from build_slow_lesson import notebook_cells
     import nbformat as nbf

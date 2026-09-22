@@ -21,6 +21,10 @@ try{
   assert.equal(await page.locator('template[id^="pipeline-"]').count(),4);
   assert.equal(await page.locator('.pipeline-lesson script[type="text/x-notes"]').count(),ids.length);
   assert.match(await page.locator('#s19-pipeline-boundaries').innerText(),/7 supervised targets/);
+  assert.equal(await page.locator('#s19-pipeline-boundaries').getAttribute('data-title'),'One BOS and EOS per document');
+  assert.match(await page.locator('#s19-pipeline-boundaries .step-copy').innerText(),/each document is a complete story.*do not add extra markers between sentences/s);
+  assert.match(await page.locator('#s19-pipeline-boundaries svg').textContent(),/One complete document: our one-sentence story/);
+  assert.match(await page.locator('#s19-pipeline-boundaries pre').innerText(),/encode_tokens\(pieces, boundaries=True\)/);
   const specialCopy=await page.locator('#s19-pipeline-special .step-copy').innerText();
   assert.match(specialCopy,/blue is missing from our toy vocabulary.*\[3\], the UNK ID/s);
   assert.match(specialCopy,/boundaries=False.*do not add BOS or EOS/s);

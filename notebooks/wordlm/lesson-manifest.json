@@ -121,7 +121,7 @@
   },
   {
     "id": "boundaries",
-    "title": "Add the story boundaries once",
+    "title": "One BOS and EOS per document",
     "chapter": "1. Data and tokens",
     "index": 16,
     "slide": 20,
