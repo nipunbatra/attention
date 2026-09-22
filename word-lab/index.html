@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Next-token prediction | MLP and attention</title>
+  <meta name="description" content="Compare trained MLP, single-head and four-head language models on the same prompt. Runs locally with WebGPU or WASM.">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='25' font-size='28'%3EA%3C/text%3E%3C/svg%3E">
+  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.30.0/dist/ort.webgpu.min.js" defer></script>
+  <script type="module" src="app.mjs"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to demo</a>
+<header><a href="../attention.html?present#s19">Part II lecture</a><nav aria-label="Demo sections"><a href="#results">Measured results</a><a href="#notebooks">Notebooks</a></nav></header>
+<main id="main">
+  <h1>Next-token prediction</h1>
+  <p class="intro">Give three trained models the same opening. Compare what they write and how long they take.</p>
+  <form id="generation-form">
+    <div class="prompt-heading"><label for="example">Example</label><span id="runtime-status" role="status">Models load when you generate.</span></div>
+    <select id="example" disabled><option>Loading examples…</option></select>
+    <p id="example-note" class="muted"></p>
+    <details id="source-details" hidden><summary>Read the source story</summary><blockquote id="source-text"></blockquote><p id="source-credit" class="muted"></p></details>
+    <label for="prompt">Prompt</label>
+    <textarea id="prompt" rows="3" maxlength="12000">once upon a time</textarea>
+    <p id="token-note" class="muted" aria-live="polite">Context: the most recent 64 tokens, including punctuation.</p>
+    <div class="actions"><button id="generate" type="submit" disabled>Generate with all three</button><button id="stop" type="button" hidden>Stop</button><span id="load-note" role="status" aria-live="polite">Downloading example metadata.</span></div>
+    <details class="settings"><summary>Generation settings</summary><div class="control-grid">
+      <label for="decoding">Token choice<select id="decoding"><option value="greedy">Highest probability</option><option value="sample">Sample</option></select></label>
+      <label for="token-count">New token limit<select id="token-count"><option>24</option><option selected>48</option><option>96</option></select></label>
+      <label for="temperature">Temperature<input id="temperature" type="number" min="0.1" max="2" step="0.1" value="0.9" disabled></label>
+      <label for="seed">Sampling seed<input id="seed" type="number" min="0" max="4294967295" value="7" disabled></label>
+      <label for="backend">Runtime<select id="backend"><option value="auto">WebGPU if available</option><option value="wasm">WASM (CPU)</option><option value="webgpu">WebGPU only</option></select></label>
+    </div><p class="muted">Greedy decoding makes the comparison repeatable. Sampling uses the same seed for each model. EOS ends a story early. PAD, BOS and UNK are excluded from generation.</p></details>
+  </form>
+  <section aria-label="Model continuations" class="outputs" id="outputs"></section>
+  <p class="muted">The prompt stays on this device. Initial downloads include the models and ONNX Runtime. Timings below each output exclude downloads and warm-up. Short continuations are examples, not a quality score.</p>
+
+  <section id="results"><h2>Held-out results</h2><p>All three models use the same stories, vocabulary, 64-token window and maximum training budget. Lower cross-entropy and perplexity are better.</p>
+  <div class="table-wrap"><table><thead><tr><th>Model</th><th>Parameters</th><th>Test cross-entropy</th><th>Test perplexity</th><th>Training time</th></tr></thead><tbody id="result-rows"></tbody></table></div>
+  <p id="protocol-note" class="muted"></p>
+  <details><summary>Cross-entropy and perplexity</summary><p>For each test example, take −ln of the probability assigned to the observed next token. The average is cross-entropy, in nats per token. Perplexity is exp(cross-entropy): a loss of ln(4) gives perplexity 4, equivalent to assigning probability 1/4 to every target. It is not an accuracy percentage. Compare these numbers only with the same tokenizer and test targets.</p></details>
+  <details><summary>What differs between the models?</summary><ul>
+    <li>The MLP concatenates the 64 token embeddings. Slot order is built into the concatenation.</li>
+    <li>Both attention models add learned absolute position embeddings before computing queries, keys and values. Positions refer to slots 0–63 in the current cropped window.</li>
+    <li>One head uses 64 matching coordinates. Four heads use 16 each, form separate weight rows, then concatenate their messages. The total width and parameter count stay fixed.</li>
+    <li>Each attention model has one attention block, an output projection and residual, then the same prediction MLP. These are teaching models without a full Transformer’s normalization, block FFN or stack of blocks.</li>
+  </ul><p>Four heads reuse the one-head optimizer settings. We did not tune them against test results. More heads need not improve every run or prompt.</p></details>
+  <a href="models/comparison.json">Full training results and protocol</a>
+  </section>
+  <section id="notebooks"><h2>Code behind the demo</h2><div class="notebook-links">
+    <a href="../notebooks/wordlm/01_words_to_probabilities.html">1. Embeddings and the MLP</a>
+    <a href="../notebooks/wordlm/03_causal_attention_from_scratch.html">3. One-head attention</a>
+    <a href="../notebooks/wordlm/05_training_and_inference_maps.html">5. Training and inference, step by step</a>
+    <a href="../notebooks/wordlm/06_multihead_comparison.html">6. One head and four heads</a>
+  </div><p><a href="../notebooks/wordlm/wordlm-notebooks.zip">Download the notebooks and checkpoints</a></p></section>
+</main>
+<footer>Training text: <a href="https://huggingface.co/datasets/roneneldan/TinyStories">TinyStories by Ronen Eldan and Yuanzhi Li</a>, <a href="https://cdla.dev/sharing-1-0/">CDLA-Sharing-1.0</a>. Source stories are unchanged. Prompts are tokenized prefixes. <a href="https://onnxruntime.ai/docs/get-started/with-javascript/web.html">ONNX Runtime Web</a>.</footer>
+</body></html>

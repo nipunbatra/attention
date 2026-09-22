@@ -1,5 +1,33 @@
 # Classroom release checks
 
+## 2026-09-22: public browser inference and the four-head comparison
+
+- Added the GitHub Pages app at `word-lab/`: real ONNX Runtime Web inference,
+  automatic WebGPU with WASM fallback, three checkpoints, six prompt presets,
+  source-story disclosure, UNK warnings, greedy/seeded sampling and measured
+  generation time. Prompts stay local. Saved examples are never fetched by the app.
+- Trained MLP, one-head and four-head variants for three seeds each, preserving
+  the earlier benchmark. Same data, vocabulary, context, batch and step budget;
+  four heads reuse the one-head optimizer settings at fixed total width 64.
+  Test PPL: 51.59, 31.34, 28.78 respectively. Recorded protocol, source/checkpoint
+  hashes, selected steps, actual training times and environment.
+- Exported three FP32 models and checked all 12,000 logits for three inputs per
+  model in native ONNX Runtime, WASM and WebGPU. Largest browser error versus
+  PyTorch: 3.82e-5. Real browser generation passed for all variants, including
+  an outside-domain prompt, source disclosure and changed-prompt output.
+- Executed notebook 6 in a fresh CPU kernel; HTML has no error output and contains
+  the four-head weight table. Rebuilt the six-notebook ZIP. All 43 Python tests
+  and the JavaScript tokenizer/window/sampling checks pass.
+- Added nine closing slides for architecture, worked CE/PPL, measured scores,
+  parameters/ONNX sizes/training time, recorded continuations, warm browser timing
+  and live-demo links. They fit at 1280×720 and 1024×768; reading tables contain
+  their horizontal scrolling at 390px. Inspected sample/cost/timing slides and
+  the demo visually. No changes to Part III or shared presentation runtime.
+- Existing 89 pipeline frames and all 88 matching notebook figures/links pass.
+  Full Part II audit passed 429 presentation states and 649 formulas, with no
+  overflow, math failures or console errors. Physical projector,
+  AirServer and non-Mac GPU devices were not tested.
+
 ## 2026-09-22: explain the unknown-token lookup
 
 - The special-token slide now explains that blue is absent from the ten-item

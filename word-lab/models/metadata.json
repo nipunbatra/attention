@@ -1,0 +1,42 @@
+{
+  "context_length": 64,
+  "format": "ONNX FP32",
+  "model_seed": 11,
+  "models": {
+    "attention": {
+      "bytes": 5289265,
+      "checkpoint_sha256": "f309dababf1546da5b6e08bd09e949ef9bb9652c82fbb29f3f76f40f54fc62ee",
+      "file": "./models/attention.onnx",
+      "onnx_cpu_max_absolute_error": 1.9073486328125e-05,
+      "parameters": 1321120,
+      "selected_step": 6000,
+      "sha256": "dc74bf37f01479aa70ae5adac8d6d77cd1e2d9a451dc8cdc1a3692790a2e93df",
+      "test_cross_entropy": 3.4540876047124054,
+      "test_perplexity": 31.629416982072325
+    },
+    "mlp": {
+      "bytes": 9332706,
+      "checkpoint_sha256": "a564c6e38d9b839520aa909691ff71ef03487d06c2e06fd8252cb69b40e44269",
+      "file": "./models/mlp.onnx",
+      "onnx_cpu_max_absolute_error": 3.0517578125e-05,
+      "parameters": 2332832,
+      "selected_step": 3000,
+      "sha256": "6d0471cb81414196cb8531299a59a2034e5e3cc35a5fa4a974daa638ca6f7dae",
+      "test_cross_entropy": 3.9486035934138615,
+      "test_perplexity": 51.86289455868806
+    },
+    "multihead": {
+      "bytes": 5293061,
+      "checkpoint_sha256": "3344ca61c1815372bcfb16dee6ff7f218213f4e64455399452304d41b777b041",
+      "file": "./models/multihead.onnx",
+      "onnx_cpu_max_absolute_error": 1.52587890625e-05,
+      "parameters": 1321120,
+      "selected_step": 6000,
+      "sha256": "dd597024664122d42cbe85977df4b52476e0716056c65eaa22697294dc69981b",
+      "test_cross_entropy": 3.3463387954578963,
+      "test_perplexity": 28.39857010425462
+    }
+  },
+  "positional_encoding": "learned absolute position rows, added to token rows",
+  "vocabulary_size": 4000
+}

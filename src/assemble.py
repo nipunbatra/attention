@@ -151,7 +151,8 @@ for f in files:
     if N == 2:
         # Keep teaching extensions beside their owning sections.
         for marker, fragment in [('<!--POSITION_DETAIL-->', 'sec17_positions.html'),
-                                 ('<!--WORDLM_PIPELINE-->', 'sec19_pipeline.html')]:
+                                 ('<!--WORDLM_PIPELINE-->', 'sec19_pipeline.html'),
+                                 ('<!--WORDLM_LAB-->', 'sec19_lab.html')]:
             if marker in txt:
                 with open(os.path.join(sec_dir, fragment), encoding='utf-8') as source:
                     txt = txt.replace(marker, source.read())

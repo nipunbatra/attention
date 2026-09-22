@@ -252,7 +252,7 @@ body:not(.present) #s19 .pipeline-lesson{padding:30px 0;border-bottom:1px solid 
         if story_sample:
             code_block=f'<p class="story-credit">{STORY_CREDIT}</p>'
         if s['id']=='next':
-            code_block=f'<p class="step-meta"><a href="notebooks/wordlm/{BOOK}.html">Read the illustrated guide</a> · <a href="notebooks/wordlm/wordlm-notebooks.zip" download>Download all five notebooks</a></p>'
+            code_block=f'<p class="step-meta"><a href="notebooks/wordlm/{BOOK}.html">Read the illustrated guide</a> · <a href="notebooks/wordlm/wordlm-notebooks.zip" download>Download all notebooks</a></p>'
         body='. '.join(s['body'].split('. ')[:1 if s['id']=='training-loop' else 2]).rstrip('.')+'.'
         if s['id']=='training-loop':
             body='Repeat this training step on batches of 512 windows.'
@@ -277,7 +277,9 @@ def export_bundle(out):
     css=(ROOT/'lesson.css').read_text()
     # Explicit allow-list. No private Site files, raw corpus, credentials or work/.
     selected=['wordlm.py','pipeline_maps.py','slow_walkthrough.py','build_slow_lesson.py','code_display.py','make_notebooks.py','walkthrough_cells.py','lesson_evidence.json','story_examples.json','lesson.css','requirements.txt','prepare_data.py','run_experiments.py','README.md']
-    selected += [p.name for p in ROOT.glob('0[1-5]_*.ipynb')]
+    selected += ['multihead.py','run_head_comparison.py','export_browser_lab.py','build_head_lesson.py','requirements-export.txt']
+    selected += [p.name for p in ROOT.glob('0[1-6]_*.ipynb')]
+    selected += ['artifacts/heads/'+p.name for p in (ROOT/'artifacts/heads').glob('*') if p.suffix in {'.json','.npz'}]
     selected += ['artifacts/'+p.name for p in (ROOT/'artifacts').iterdir() if p.suffix in {'.json','.npz','.csv'} or p.name=='SHA256SUMS']
     selected += ['tests/'+p.name for p in (ROOT/'tests').glob('test_*.py')]
     for name in selected:
@@ -293,9 +295,11 @@ def export_bundle(out):
         elif (ROOT/name).resolve()!=target.resolve():
             shutil.copy2(ROOT/name,target)
     exporter=HTMLExporter(template_name='lab')
-    for p in ROOT.glob('0[1-4]_*.ipynb'):
+    for p in list(ROOT.glob('0[1-4]_*.ipynb'))+list(ROOT.glob('06_*.ipynb')):
         nb=nbf.read(p,as_version=4)
         body,_=exporter.from_notebook_node(nb)
+        if p.name.startswith('06_'):
+            body=body.replace('<title>Notebook</title>','<title>One head and four heads · Notebook 6</title>')
         body=body.replace('</head>','<style>'+css+'</style></head>').replace('<body>','<body><header class="book-header"><a href="05_training_and_inference_maps.html">← Step-by-step illustrated guide</a> · <a href="wordlm-notebooks.zip" download>Download runnable notebooks</a></header>',1)
         (out/(p.stem+'.html')).write_text(body)
     with zipfile.ZipFile(out/'wordlm-notebooks.zip','w',zipfile.ZIP_DEFLATED) as archive:

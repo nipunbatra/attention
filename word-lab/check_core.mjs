@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {tokenize,makeContext,chooseToken,randomGenerator} from './core.mjs';
+assert.deepEqual(tokenize("Lily can't find 12 balls!"),['lily',"can't",'find','12','balls','!']);
+assert.deepEqual(tokenize('Élan _ 中文'),['lan']);
+assert.deepEqual([...makeContext([1,4,5],4)],[0,1,4,5]);
+assert.deepEqual([...makeContext([1,4,5,6,7],4)],[4,5,6,7]);
+assert.equal(chooseToken([100,100,1,100,2],'greedy'),4);
+assert.equal(chooseToken([100,100,3,100,2],'greedy'),2);
+assert.equal(chooseToken([100,100,1,100,2],'sample',.9,()=>0),2);
+const a=randomGenerator(7),b=randomGenerator(7);for(let i=0;i<20;i++)assert.equal(a(),b());
+assert.throws(()=>chooseToken([NaN,NaN,NaN,NaN,NaN],'greedy'));
+console.log('Tokenization, windows, special tokens and seeded sampling pass.');

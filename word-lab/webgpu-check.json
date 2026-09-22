@@ -1,0 +1,123 @@
+{
+  "browser": "131.0.6778.33",
+  "gpu": {
+    "available": true,
+    "vendor": "apple",
+    "architecture": "common-3",
+    "description": "",
+    "parity": {
+      "mlp": 0.00003814697265625,
+      "attention": 0.000019073486328125,
+      "multihead": 0.000019073486328125
+    }
+  },
+  "automatic_generation": {
+    "settings": {
+      "mode": "greedy",
+      "limit": 24,
+      "temperature": 0.9,
+      "seed": 7
+    },
+    "results": {
+      "mlp": {
+        "ids": [
+          4,
+          15,
+          47,
+          37,
+          39,
+          4,
+          15,
+          47,
+          26,
+          122,
+          8,
+          66,
+          8,
+          5,
+          98,
+          4,
+          15,
+          41,
+          9,
+          40,
+          207,
+          7,
+          443,
+          185
+        ],
+        "calls": 24,
+        "reason": "Token limit",
+        "inference_ms": 69,
+        "total_ms": 71.10000014305115,
+        "backend": "WebGPU"
+      },
+      "attention": {
+        "ids": [
+          4,
+          15,
+          283,
+          95,
+          5,
+          98,
+          4,
+          15,
+          104,
+          8,
+          44,
+          21,
+          55,
+          159,
+          4,
+          15,
+          62,
+          85,
+          4,
+          15,
+          52,
+          39,
+          4,
+          15
+        ],
+        "calls": 24,
+        "reason": "Token limit",
+        "inference_ms": 131.30000042915344,
+        "total_ms": 132.10000014305115,
+        "backend": "WebGPU"
+      },
+      "multihead": {
+        "ids": [
+          4,
+          15,
+          133,
+          8,
+          44,
+          21,
+          55,
+          159,
+          7,
+          291,
+          160,
+          14,
+          4,
+          15,
+          29,
+          9,
+          281,
+          27,
+          85,
+          4,
+          15,
+          283,
+          133,
+          8
+        ],
+        "calls": 24,
+        "reason": "Token limit",
+        "inference_ms": 132.50000023841858,
+        "total_ms": 133.29999995231628,
+        "backend": "WebGPU"
+      }
+    }
+  }
+}

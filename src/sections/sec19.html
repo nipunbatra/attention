@@ -191,6 +191,8 @@ loss.backward(); optimizer.step()</code></pre>
 
 <!--WORDLM_PIPELINE-->
 
+<!--WORDLM_LAB-->
+
 <div class="companion" id="s19-position-check" data-kicker="Checking the position signal">
   <p>The position vectors introduced at the start share the four word-feature coordinates. Moving an earlier word can therefore change its key and value, and the final prediction. Our numerical regression swaps “The” and “river” while keeping the final token fixed: the prediction changes with position vectors, but stays the same when those vectors are zeroed. This is a test of this single-layer example, not a claim that the hand-designed toy understands grammar.</p>
 </div>

@@ -1,10 +1,10 @@
-# Word-level next-token prediction: MLP to one-head attention
+# Word-level next-token prediction: MLP to attention
 
-This directory is a five-notebook, executable companion to *Attention and
-language* Parts I–II. It begins with a tuned learned-embedding MLP and stops at
-one causal attention head, output projection, residual addition, and a hidden
-prediction MLP. It does not silently introduce a multi-head/multi-block
-Transformer, LayerNorm, a block FFN, or pretrained embeddings.
+This directory is a six-notebook, executable companion to *Attention and
+language*. Notebooks 1–5 cover Parts I–II: learned embeddings, an MLP, and one
+causal attention head. Notebook 6 previews Part III by splitting the same total
+width across four heads. None of these teaching models includes LayerNorm,
+a block FFN, stacked attention blocks, or pretrained embeddings.
 
 ## Notebooks
 
@@ -31,6 +31,9 @@ Transformer, LayerNorm, a block FFN, or pretrained embeddings.
    tiny teaching model. The measured TinyStories results are clearly separate.
    Begin here for the visual walkthrough;
    return to notebooks 1 and 3 for the full data and training code.
+6. [`06_multihead_comparison.ipynb`](06_multihead_comparison.ipynb) —
+   four heads at fixed total width, per-head weight rows, a three-seed comparison,
+   cross-entropy and perplexity, and optional training.
 
 Notebooks 1 and 3 show the complete training/inference maps first and highlight
 the relevant stages beside the code. The editable diagram source is
@@ -56,7 +59,9 @@ Visible map checkpoints highlight each phase before its worked example and code.
 You can also expand the complete map beside individual calculations. The lookup
 example traces four IDs into selected rows of the C×d embedding table, then
 connects the result to E with shape [B,w,d]. The guide works on phones; wide figures scroll
-inside their panels. The companion is public, separately from the private lab Site.
+inside their panels. The companion and [live model demo](https://nipunbatra.github.io/attention/word-lab/)
+are both public on GitHub Pages. The demo computes fresh predictions on the
+student’s device using WebGPU or WASM; it does not replay saved continuations.
 
 `slow_walkthrough.py` is the shared source for the 88 explanations, checkpoints, calculations
 and numeric figures. `lesson_evidence.json` records the saved corpus counts and
@@ -205,6 +210,31 @@ The benchmark writes `benchmark_partial.json` after every completed seed. Run
 the same command to resume; matching completed model/seed pairs are skipped.
 
 ## Measured result
+
+The original two-model result below is preserved for notebooks 1–5. The new
+three-model repeat in notebook 6 and the browser demo has its own evidence in
+[`artifacts/heads/comparison.json`](artifacts/heads/comparison.json). All nine
+runs were measured on the same Apple M2 Max/MPS setup on 2026-09-22:
+
+| Model | Test cross-entropy | Test perplexity | Training per seed |
+|---|---:|---:|---:|
+| MLP | 3.943 ± 0.008 | 51.59 ± 0.40 | 58.2 ± 0.1 s |
+| One head | 3.445 ± 0.011 | 31.34 ± 0.33 | 65.6 ± 0.7 s |
+| Four heads | 3.360 ± 0.021 | 28.78 ± 0.61 | 69.7 ± 1.3 s |
+
+Both attention variants have 1,321,120 parameters; the MLP has 2,332,832.
+They share the data and update budget, not the parameter count. The four-head
+model reuses the single-head optimizer settings without a new sweep. These
+results concern this corpus and budget, not every prompt or model scale.
+
+```sh
+python run_head_comparison.py --data-dir work/data --output-dir work/head-repeat
+```
+
+See [the browser demo README](../../word-lab/README.md) for ONNX exports,
+checkpoint hashes, CPU/GPU checks and generation-timing definitions.
+
+### Original two-model benchmark
 
 The frozen three-seed benchmark was completed on Apple MPS after the DGX pilot
 found its GPU occupied by VLLM. Each run used the same 64-token context,
