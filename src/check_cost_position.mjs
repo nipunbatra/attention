@@ -19,10 +19,10 @@ const positions=[
   'alternatives-break','append','append-qk-a','append-qk-b','append-product-a','append-scores',
   'append-product-b','append-scores-b','append-masked','append-softmax','append-softmax-b',
   'append-weights','append-scale-effect','append-scale','append-tradeoffs',
-  'learned-break','learned','clock-choice','clock','repeat','waves','period','sine-rule','worked-sine',
-  'absolute-range','absolute-context','absolute-shift','relative-break','relative','alibi','rotate','rope-shift','rope-identity','rope-pairs','insertion','overview'
+  'learned-break','learned','learned-update','learned-limits','clock-choice','clock','repeat','waves','period','sine-rule','worked-sine',
+  'absolute-context','absolute-shift','relative-break','relative','alibi','rotate','rope-shift','rope-identity','rope-pairs','insertion','overview'
 ].map(x=>'s17-position-'+x);
-const readingExtras=['add','width','routing','rates','sine','rope','mean','length','choices'].map(x=>'s17-position-'+x);
+const readingExtras=['add','width','routing','rates','sine','absolute-range','rope','mean','length','choices'].map(x=>'s17-position-'+x);
 const ids=positions;
 const shots=fs.mkdtempSync(path.join(os.tmpdir(),'attention-cost-position-'));
 const browser=await pw.chromium.launch();
@@ -68,7 +68,7 @@ try{
   await page.setViewportSize({width:1280,height:720});await page.evaluate(()=>document.fonts.ready);
   const original=await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)}));
   assert.deepEqual(await page.locator('.frame.context-lesson').evaluateAll(es=>es.map(e=>e.id)),ids);
-  assert.equal(ids.length,52,'Include the complete QK-transpose, masking and softmax walkthrough for both sentences.');
+  assert.equal(ids.length,53,'Include three learned-position frames without repeating the table boundary in presentation mode.');
   assert.deepEqual(await page.locator('.position-reading[id]:not(#s17-position-map-notes)').evaluateAll(es=>es.map(e=>e.id)),readingExtras,'Recaps remain available for reading.');
   assert.equal(await page.locator('#s17 [data-position-journey="overview"]').count(),1,'Use one closing map with selectable highlights.');
   for(const id of readingExtras){
@@ -105,6 +105,50 @@ try{
     return {rows,q,wordTerms,positionTerms,rawScores,scores,weights:exps.map(x=>x/denominator)};
   }
   const toyBefore=await page.evaluate(()=>JSON.stringify({e:AT.positionLesson.embeddings,p:AT.positionLesson.positions}));
+  // The same word lookup, two slot lookups, then an explicitly illustrative SGD step.
+  const learned=await page.evaluate(()=>AT.positionVisuals.learnedExample());
+  assert.deepEqual(learned.word,[1,0]);assert.deepEqual(learned.position,[.4,-.2]);
+  assert.deepEqual(learned.input,[1.4,-.2]);assert.deepEqual(learned.gradient,[.2,-.4]);
+  close(learned.rate,.1,'SGD learning rate');
+  for(const [name,expected]of [['nextWord',[.98,.04]],['nextPosition',[.38,-.16]],['nextInput',[1.36,-.12]]])
+    learned[name].forEach((v,j)=>close(v,expected[j],name));
+  const lookups=await page.locator('[data-learned-slot]').evaluateAll(es=>es.map(e=>({slot:Number(e.dataset.learnedSlot),word:JSON.parse(e.dataset.wordRow),position:JSON.parse(e.dataset.positionRow),sum:JSON.parse(e.dataset.sumRow),text:e.textContent})));
+  assert.deepEqual(lookups.map(r=>r.slot),[1,3]);
+  lookups.forEach(r=>{
+    assert.deepEqual(r.word,[1,0],'A token ID always selects the same word row.');
+    assert.deepEqual(r.position,pos[r.slot-1]);
+    r.sum.forEach((v,j)=>close(v,r.word[j]+r.position[j],'word plus selected slot'));
+    assert(r.text.includes('['+r.sum.map(v=>v.toFixed(1)).join(', ')+']'),'Displayed sum matches its data.');
+  });
+  const updatesToRows=await page.locator('[data-learned-sgd]').evaluateAll(es=>es.map(e=>({kind:e.dataset.learnedSgd,before:JSON.parse(e.dataset.before),g:JSON.parse(e.dataset.gradient),after:JSON.parse(e.dataset.after),rate:Number(e.dataset.rate),text:e.textContent})));
+  assert.deepEqual(updatesToRows.map(r=>r.kind),['word','position']);
+  updatesToRows.forEach(r=>{
+    assert.deepEqual(r.g,[.2,-.4],'Addition passes the whole gradient to each branch.');
+    assert.deepEqual(r.before,r.kind==='word'?[1,0]:[.4,-.2]);
+    r.after.forEach((v,j)=>close(v,r.before[j]-.1*r.g[j],'SGD row update'));
+    assert(r.text.endsWith('['+r.after.map(v=>v.toFixed(2).replace('-','−')).join(', ')+']'),'Displayed SGD result matches its data.');
+  });
+  assert.deepEqual(await page.locator('[data-learned-coverage]').evaluateAll(es=>es.map(e=>[Number(e.dataset.slot),e.dataset.learnedCoverage])),[[1,'visited'],[2,'visited'],[3,'visited'],[4,'unvisited'],[5,'missing']]);
+  for(const [id,max]of [['learned',1],['learned-update',2],['learned-limits',2]]){
+    for(const build of [0,max,0,max]){
+      await go('s17-position-'+id,build);
+      assert.equal(await page.evaluate(()=>AT.present.state().frame.maxBuild),max);
+      const wrong=await page.locator('#s17-position-'+id+' svg [data-build]').evaluateAll((es,build)=>es.filter(e=>(getComputedStyle(e).visibility==='hidden')!==(Number(e.dataset.build)>build)).map(e=>e.dataset.build),build);
+      assert.deepEqual(wrong,[],id+' native SVG reveals work in both directions.');
+    }
+  }
+  // Also test a direct presentation URL: builds must exist before runtime discovery.
+  const updateFrame=await page.locator('#s17-position-learned-update').evaluate(e=>[...e.closest('.sec').querySelectorAll('.frame')].indexOf(e)+1);
+  const direct=await browser.newPage({viewport:{width:760,height:1041}});
+  await direct.goto(pathToFileURL(path.resolve(process.argv[2]||'attention.html')).href+'?present#s17/'+updateFrame+'/0');
+  assert.equal(await direct.locator('.frame.is-live').getAttribute('id'),'s17-position-learned-update');
+  assert.equal(await direct.evaluate(()=>AT.present.state().frame.maxBuild),2);
+  assert.equal(await direct.locator('[data-update-step]').evaluate(e=>getComputedStyle(e).visibility),'hidden');
+  await direct.evaluate(()=>{AT.present.next();AT.present.next();});
+  assert.equal(await direct.locator('[data-update-step]').evaluate(e=>getComputedStyle(e).visibility),'visible');
+  assert(!(await direct.evaluate(()=>AT.present.fitReport())).overflow);
+  await direct.close();
+  assert.equal(await page.evaluate(()=>JSON.stringify({e:AT.positionLesson.embeddings,p:AT.positionLesson.positions})),toyBefore,'The training illustration leaves the toy parameters unchanged.');
   for(const scale of [0,.1,1,2]){
     for(const tokens of sequences){
       const expected=appendedReference(tokens,scale);

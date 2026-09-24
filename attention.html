@@ -3714,6 +3714,96 @@ document.addEventListener('DOMContentLoaded',()=>{
       text(s,20,242,'At i=3:',C.ink,27);text(s,370,242,fmt(rotate([1,0],3)),C.q,29);text(s,740,242,fmt(rotate([.6,.8],.03)),C.q,29);
     }
   });
+  // An isolated training illustration: never update the attention toy's tables.
+  function learnedExample(){
+    const word=lesson.embeddings.Maya.slice(),position=lesson.positions[2].slice();
+    const gradient=[.2,-.4],rate=.1;
+    const nextWord=word.map((v,j)=>v-rate*gradient[j]);
+    const nextPosition=position.map((v,j)=>v-rate*gradient[j]);
+    return {word,position,gradient,rate,nextWord,nextPosition,
+      input:word.map((v,j)=>v+position[j]),nextInput:nextWord.map((v,j)=>v+nextPosition[j])};
+  }
+  const learned=learnedExample();
+  const decimalRow=v=>'['+v.map(n=>n.toFixed(2).replace('-', '−')).join(', ')+']';
+  function subscriptText(s,x,y,value,color,size){
+    const label=element('text',{x,y,style:`fill:${color};font-size:${size}px`});
+    value.split(/(_\{[^}]+\})/).forEach(part=>{
+      label.append(part.startsWith('_{')
+        ?element('tspan',{'baseline-shift':'sub','font-size':size*.7},part.slice(2,-1))
+        :document.createTextNode(part));
+    });
+    s.append(label);
+  }
+  const lookup=document.querySelector('[data-learned-lookup]');
+  const lookupBase=lookup.querySelector('[data-lookup-base]'),lookupSwap=lookup.querySelector('[data-lookup-swap]');
+  function tableRow(s,x,y,label,values,color,selected=false){
+    s.append(element('rect',{x,y:y-26,width:485,height:35,fill:selected?color:'none','fill-opacity':.08,stroke:selected?color:C.line}));
+    text(s,x+12,y,label,C.ink,25);
+    values.forEach((v,j)=>text(s,x+265+j*110,y,typeof v==='number'?v.toFixed(1).replace('-','−'):v,color,27));
+  }
+  subscriptText(lookupBase,20,36,'Word table E_{tok} [C × d]',C.e,30);
+  text(lookupBase,20,72,'C vocabulary items, d coordinates',C.ink,24);
+  subscriptText(lookupBase,610,36,'Position table P [N_{max} × d]',C.d,30);
+  subscriptText(lookupBase,610,72,'N_{max} slots, d coordinates',C.ink,24);
+  ['Maya','Ravi','helps'].forEach((token,j)=>tableRow(lookupBase,20,111+j*38,token,lesson.embeddings[token],C.e,j===0));
+  tableRow(lookupBase,20,225,'⋮',['⋮','⋮'],C.e);
+  lesson.positions.forEach((row,j)=>tableRow(lookupBase,610,111+j*38,'Slot '+(j+1),row,C.d,j===0));
+  lookupSwap.append(element('rect',{x:610,y:161,width:485,height:35,fill:C.d,'fill-opacity':.08,stroke:C.d}));
+  function lookupSum(s,slot,position,y){
+    const result=learned.word.map((v,j)=>v+position[j]);
+    const g=element('g',{'data-learned-slot':slot,'data-word-row':JSON.stringify(learned.word),'data-position-row':JSON.stringify(position),'data-sum-row':JSON.stringify(result)});s.append(g);
+    text(g,20,y,'Maya, slot '+slot,C.ink,27);
+    text(g,284,y,fixed(learned.word),C.e,29);text(g,458,y,'+',C.ink,29);
+    text(g,510,y,fixed(position),C.d,29);text(g,725,y,'=',C.ink,29);
+    text(g,785,y,(slot===1?'e₁':'e₃')+' = '+fixed(result),C.e,29);
+  }
+  lookupSum(lookupBase,1,lesson.positions[0],278);
+  lookupSum(lookupSwap,3,learned.position,332);
+
+  const update=document.querySelector('[data-learned-update]');
+  const forward=update.querySelector('[data-update-forward]'),backward=update.querySelector('[data-update-gradient]'),step=update.querySelector('[data-update-step]');
+  subscriptText(forward,20,36,'E_{tok}[Maya]',C.e,26);text(forward,20,81,fixed(learned.word),C.e,29);
+  text(forward,20,151,'P[3]',C.d,26);text(forward,20,195,fixed(learned.position),C.d,29);
+  line(forward,207,73,283,73,C.e);line(forward,283,73,283,120,C.e);arrow(forward,283,120,306,120,C.e);
+  line(forward,237,186,283,186,C.d);line(forward,283,186,283,120,C.d);
+  forward.append(element('circle',{cx:330,cy:120,r:22,fill:'var(--paper)',stroke:C.ink,'stroke-width':2}));
+  text(forward,320,130,'+',C.ink,30);arrow(forward,354,120,378,120,C.ink);
+  text(forward,397,99,'e₃',C.e,27);text(forward,397,143,fixed(learned.input),C.e,29);
+  arrow(forward,650,120,702,120,C.ink);
+  forward.append(element('rect',{x:715,y:78,width:196,height:86,rx:3,fill:'none',stroke:C.line,'stroke-width':2}));
+  text(forward,735,111,'Attention',C.ink,27);text(forward,735,146,'Prediction',C.ink,27);
+  arrow(forward,920,120,972,120,C.ink);
+  forward.append(element('rect',{x:984,y:78,width:115,height:86,rx:3,fill:'none',stroke:C.a,'stroke-width':2}));
+  text(forward,1013,111,'Loss',C.a,27);text(forward,1035,147,'L',C.a,30);
+  line(backward,1041,175,1041,220,C.a);line(backward,1041,220,512,220,C.a);arrow(backward,512,220,512,162,C.a);
+  line(backward,397,164,371,164,C.a);arrow(backward,371,164,351,145,C.a);
+  line(backward,313,102,313,48,C.a);arrow(backward,313,48,214,48,C.a);text(backward,247,36,'g',C.a,27);
+  line(backward,313,142,313,229,C.a);arrow(backward,313,229,214,229,C.a);text(backward,247,254,'g',C.a,27);
+  text(backward,565,202,'Backpropagation',C.a,25);
+  text(backward,480,257,'Suppose g = ∂L/∂e₃ = '+decimalRow(learned.gradient),C.a,25);
+  text(step,20,295,'SGD: stored row − 0.1 × gradient',C.ink,24);
+  [['word','E_{tok}[Maya]',learned.word,learned.nextWord,C.e],['position','P[3]',learned.position,learned.nextPosition,C.d]].forEach(([kind,label,before,after,color],j)=>{
+    const g=element('g',{'data-learned-sgd':kind,'data-before':JSON.stringify(before),'data-gradient':JSON.stringify(learned.gradient),'data-after':JSON.stringify(after),'data-rate':learned.rate});step.append(g);
+    const y=333+j*42;
+    subscriptText(g,20,y,label,color,25);text(g,211,y,'←',C.ink,26);text(g,259,y,decimalRow(before),color,26);
+    text(g,480,y,'− 0.1 ×',C.ink,26);text(g,590,y,decimalRow(learned.gradient),C.a,26);
+    text(g,824,y,'=',C.ink,26);text(g,871,y,decimalRow(after),color,26);
+  });
+
+  const limits=document.querySelector('[data-learned-limits]');
+  const limitsBase=limits.querySelector('[data-limits-base]'),unseen=limits.querySelector('[data-limits-unseen]'),missing=limits.querySelector('[data-limits-missing]');
+  subscriptText(limitsBase,20,34,'Example: N_{max} = 4. Training uses only slots 1–3.',C.ink,28);
+  for(let slot=1;slot<=5;slot++){
+    const s=slot<4?limitsBase:slot===4?unseen:missing,y=83+(slot-1)*44,color=slot<4?C.d:slot===4?C.ink:C.a;
+    const g=element('g',{'data-learned-coverage':slot<4?'visited':slot===4?'unvisited':'missing','data-slot':slot});s.append(g);
+    text(g,25,y+9,'Slot '+slot,C.ink,26);
+    g.append(element('rect',{x:165,y:y-21,width:235,height:40,fill:'none',stroke:color,'stroke-width':2,'stroke-dasharray':slot<4?'none':'7 5'}));
+    text(g,185,y+9,slot===5?'No P[5]':'P['+slot+']',color,27);
+    if(slot===2){arrow(g,416,y,469,y,C.d);text(g,490,y+9,'Training adapts these rows',C.d,28);}
+    if(slot===4){arrow(g,416,y,469,y,C.ink);text(g,490,y+9,'Row exists, but gets no task gradient',C.ink,28);}
+    if(slot===5){arrow(g,416,y,469,y,C.a);text(g,490,y+9,'No allocated row for this slot',C.a,28);}
+  }
+  text(missing,25,320,'Independent rows have no built-in distance rule.',C.ink,26);
   const selector=document.getElementById('rope-shift');
   function shifted(shift){const i=3+shift,j=2+shift,q=rotate([1,0],i*Math.PI/6),k=rotate([1,0],j*Math.PI/6);return {i,j,q,k,dot:q[0]*k[0]+q[1]*k[1]};}
   function draw(){
@@ -3724,7 +3814,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     document.getElementById('rope-shift-result').textContent='Both vectors moved, but their match stays cos(30°) ≈ '+r.dot.toFixed(3)+'.';
   }
   if(selector){selector.addEventListener('change',draw);draw();}
-  window.AT.positionVisuals={rotate,shifted};
+  window.AT.positionVisuals={rotate,shifted,learnedExample};
 });
 
 </script>
@@ -12645,12 +12735,28 @@ Point to both changed coordinates in the same sentence-1 match: today's query an
 <p class="topic-question">Could training learn a useful row for each slot?</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-learned" data-title="One trainable row per slot" data-autobuild="off">
-<script type="text/x-notes">A learned absolute table is a common additive choice. P has Nmax rows and d columns. Its values are model parameters updated by training, unlike the fixed illustrative position table used in this lecture. Positions never seen during training have no learned evidence; extending a table with new random rows is not established length generalization. Vaswani et al. compared learned and sinusoidal encodings in Section 3.5.</script>
-<div class="position-flow"><span>Slot $i$</span><b>→</b><span>Read row $P[i]$</span><b>→</b><span>Add to token row</span></div>
-<p>The table has shape $N_{\max}\times d$: <strong>$N_{\max}d$ learned numbers</strong>.</p>
-<p data-build="1">Backpropagation updates $P$ along with the word embeddings. This is the method our notebook uses.</p>
-<p class="lesson-result" data-build="2">Tradeoff: the table has a configured length. Adding new rows does not make them trained position representations.</p>
+<div class="frame context-lesson position-lesson" id="s17-position-learned" data-title="Word rows and position rows" data-autobuild="off">
+<script type="text/x-notes">Why can't learning Maya's word row also tell us which slot Maya occupies?
+Point to the same blue row in both sums, then reveal the different green row for slot 3. The two sentences are Maya helps Ravi today and Ravi helps Maya today. E_tok is a C-by-d parameter table addressed by token ID, with C vocabulary items. P is an Nmax-by-d parameter table addressed by slot. Both lookups return d coordinates, so their sum e_i still has width d. The word lookup alone receives no position argument: updating its Maya row changes that shared row at every occurrence. This claim concerns the lookup, not all possible order cues in a deeper causal network. The position table supplies a direct slot-dependent input. A slot's position row is shared across all words that occur there. These two tables share parameters rather than storing a different row for every word-slot combination. Their sum need not uniquely identify every pair, but the prediction loss can teach the downstream projections to use both signals. The notebook initializes trainable embeddings and optimizes both tables jointly. These are illustrative values reused from our two-coordinate toy, not measured trained weights. Slots here remain one-based; the notebook indexes from zero. Source: Vaswani et al., Section 3.5, https://arxiv.org/html/1706.03762v7#S3.SS5. Implementation: notebooks/wordlm/wordlm.py, CausalAttentionLM.</script>
+<div class="position-journey"><svg viewBox="0 0 1120 350" role="img" aria-label="The same Maya token row combines with different rows of the position table" data-learned-lookup><g data-lookup-base></g><g data-lookup-swap data-build="1"></g></svg></div>
+<p data-build="1">Both sentences look up the same Maya row. A word lookup has no slot input. $P$ supplies it.</p>
+<p class="lesson-key">Illustrative values, $d=2$. Both tables train together. The sum $e_i$ enters attention.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-learned-update" data-title="Learning both tables from the loss" data-autobuild="off">
+<script type="text/x-notes">When the prediction is wrong, which of these two stored rows can change?
+Follow the red gradient back through the addition. For Maya's single occurrence in slot 3, suppose backpropagation from the prediction loss returns g = partial L / partial e_3 = [0.2, -0.4]. Addition passes this gradient unchanged to each input, not half to each. Reveal the two SGD updates: subtract learning rate 0.1 times g from E_tok[Maya] and P[3]. The result is [0.98, 0.04] and [0.38, -0.16]. The gradient here is supplied for illustration; we are not deriving it from the earlier attention toy or claiming measured training results. In a full batch, gradients for the same word row sum across all its occurrences, while gradients for a position row sum across words using that slot. Their total gradients need not be equal. There is no separate target position vector: prediction error trains these features. Plain SGD without momentum or weight decay keeps the arithmetic visible; the benchmark notebook uses AdamW. This is a training-time parameter update, not the attention message Delta e in a forward pass. The original word and position toy tables remain unchanged. The diagram starts at the selected lookup rows, which are the parameters receiving these contributions.</script>
+<p>In <strong>Ravi helps Maya today</strong>, follow Maya at slot 3.</p>
+<div class="position-journey"><svg viewBox="0 0 1120 385" role="img" aria-label="Backpropagation sends the sum's gradient to both lookup rows, followed by two explicit SGD updates" data-learned-update><g data-update-forward></g><g data-update-gradient data-build="1"></g><g data-update-step data-build="2"></g></svg></div>
+<p class="lesson-key" data-build="2">SGD rate 0.1, one occurrence. Batch gradients sum into shared rows.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-learned-limits" data-title="What a learned position table can miss" data-autobuild="off">
+<script type="text/x-notes">Does allocating a row mean that training has taught us how to use it?
+Point to slot 4, then the missing slot 5. This separate coverage example assumes a four-row table but training inputs that use only slots 1 through 3. P[4] exists but receives no task gradient through this lookup. P[5] does not exist. Keep those cases distinct. Sparse training coverage can also make a row poorly learned. Optimizer momentum or weight decay can change a parameter even without a new task gradient, so do not say every untouched row is numerically frozen under every optimizer. Learned tables are flexible, can adapt to the task, and add Nmax*d parameters while preserving width d. Their rows do not have a built-in smooth or relative-distance relationship: training may learn such structure, but it is not guaranteed. A sinusoidal rule calculates position features without Nmax*d trainable position parameters and without requiring a separately trained row at every index. Computable features at a new index do not guarantee good predictions beyond the training range. Learned and fixed encodings are alternatives, not a universal ranking. Vaswani et al. reported nearly identical results for these alternatives in their experiment: Section 3.5, https://arxiv.org/html/1706.03762v7#S3.SS5. The later reading-only example spells out the same table boundary with zero-based indices.</script>
+<p>Flexible, task-learned features: $N_{\max}d$ extra parameters. The input stays $d$ wide.</p>
+<div class="position-journey"><svg viewBox="0 0 1120 330" role="img" aria-label="A four-row position table with three visited slots, one unvisited slot and a fifth slot outside the table" data-learned-limits><g data-limits-base></g><g data-limits-unseen data-build="1"></g><g data-limits-missing data-build="2"></g></svg></div>
+<p class="lesson-key" data-build="2">A fixed rule can calculate new rows without learning them individually. Good predictions at longer lengths still need testing.</p>
 </div>
 
 <div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-clock-choice" data-title="Alternative 3: sinusoidal positions" data-autobuild="off">
@@ -12724,7 +12830,8 @@ Point to both changed coordinates in the same sentence-1 match: today's query an
 <p class="lesson-key">$i$ is a token position; $r$ is a coordinate-pair index; $d$ is vector width. The base 10000 controls the frequency range.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-absolute-range" data-title="A learned table has a last row" data-autobuild="off">
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-absolute-range">
+<h3>A learned table has a last row</h3>
 <script type="text/x-notes">First limitation: a learned absolute table has a configured number of rows. This separate miniature model has Nmax=4, so valid indices are 0 through 3. The longer six-token input requests two nonexistent rows. This is a table lookup limitation, not a failure of the tokenizer or the word embedding table. Extending or interpolating the table is possible, but new position representations need adaptation and evaluation. A sinusoidal formula can calculate rows at 4 and 5, so do not extend this table-specific limitation to every absolute encoding. Source: Su et al., RoFormer, Section 2.2.</script>
 <p>Suppose the learned position table $P$ has <strong>four rows</strong>: indices 0, 1, 2 and 3.</p>
 <p class="lesson-key">“Maya helps Ravi today” fits. Now try a longer input:</p>

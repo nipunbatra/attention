@@ -261,6 +261,96 @@ document.addEventListener('DOMContentLoaded',()=>{
       text(s,20,242,'At i=3:',C.ink,27);text(s,370,242,fmt(rotate([1,0],3)),C.q,29);text(s,740,242,fmt(rotate([.6,.8],.03)),C.q,29);
     }
   });
+  // An isolated training illustration: never update the attention toy's tables.
+  function learnedExample(){
+    const word=lesson.embeddings.Maya.slice(),position=lesson.positions[2].slice();
+    const gradient=[.2,-.4],rate=.1;
+    const nextWord=word.map((v,j)=>v-rate*gradient[j]);
+    const nextPosition=position.map((v,j)=>v-rate*gradient[j]);
+    return {word,position,gradient,rate,nextWord,nextPosition,
+      input:word.map((v,j)=>v+position[j]),nextInput:nextWord.map((v,j)=>v+nextPosition[j])};
+  }
+  const learned=learnedExample();
+  const decimalRow=v=>'['+v.map(n=>n.toFixed(2).replace('-', '−')).join(', ')+']';
+  function subscriptText(s,x,y,value,color,size){
+    const label=element('text',{x,y,style:`fill:${color};font-size:${size}px`});
+    value.split(/(_\{[^}]+\})/).forEach(part=>{
+      label.append(part.startsWith('_{')
+        ?element('tspan',{'baseline-shift':'sub','font-size':size*.7},part.slice(2,-1))
+        :document.createTextNode(part));
+    });
+    s.append(label);
+  }
+  const lookup=document.querySelector('[data-learned-lookup]');
+  const lookupBase=lookup.querySelector('[data-lookup-base]'),lookupSwap=lookup.querySelector('[data-lookup-swap]');
+  function tableRow(s,x,y,label,values,color,selected=false){
+    s.append(element('rect',{x,y:y-26,width:485,height:35,fill:selected?color:'none','fill-opacity':.08,stroke:selected?color:C.line}));
+    text(s,x+12,y,label,C.ink,25);
+    values.forEach((v,j)=>text(s,x+265+j*110,y,typeof v==='number'?v.toFixed(1).replace('-','−'):v,color,27));
+  }
+  subscriptText(lookupBase,20,36,'Word table E_{tok} [C × d]',C.e,30);
+  text(lookupBase,20,72,'C vocabulary items, d coordinates',C.ink,24);
+  subscriptText(lookupBase,610,36,'Position table P [N_{max} × d]',C.d,30);
+  subscriptText(lookupBase,610,72,'N_{max} slots, d coordinates',C.ink,24);
+  ['Maya','Ravi','helps'].forEach((token,j)=>tableRow(lookupBase,20,111+j*38,token,lesson.embeddings[token],C.e,j===0));
+  tableRow(lookupBase,20,225,'⋮',['⋮','⋮'],C.e);
+  lesson.positions.forEach((row,j)=>tableRow(lookupBase,610,111+j*38,'Slot '+(j+1),row,C.d,j===0));
+  lookupSwap.append(element('rect',{x:610,y:161,width:485,height:35,fill:C.d,'fill-opacity':.08,stroke:C.d}));
+  function lookupSum(s,slot,position,y){
+    const result=learned.word.map((v,j)=>v+position[j]);
+    const g=element('g',{'data-learned-slot':slot,'data-word-row':JSON.stringify(learned.word),'data-position-row':JSON.stringify(position),'data-sum-row':JSON.stringify(result)});s.append(g);
+    text(g,20,y,'Maya, slot '+slot,C.ink,27);
+    text(g,284,y,fixed(learned.word),C.e,29);text(g,458,y,'+',C.ink,29);
+    text(g,510,y,fixed(position),C.d,29);text(g,725,y,'=',C.ink,29);
+    text(g,785,y,(slot===1?'e₁':'e₃')+' = '+fixed(result),C.e,29);
+  }
+  lookupSum(lookupBase,1,lesson.positions[0],278);
+  lookupSum(lookupSwap,3,learned.position,332);
+
+  const update=document.querySelector('[data-learned-update]');
+  const forward=update.querySelector('[data-update-forward]'),backward=update.querySelector('[data-update-gradient]'),step=update.querySelector('[data-update-step]');
+  subscriptText(forward,20,36,'E_{tok}[Maya]',C.e,26);text(forward,20,81,fixed(learned.word),C.e,29);
+  text(forward,20,151,'P[3]',C.d,26);text(forward,20,195,fixed(learned.position),C.d,29);
+  line(forward,207,73,283,73,C.e);line(forward,283,73,283,120,C.e);arrow(forward,283,120,306,120,C.e);
+  line(forward,237,186,283,186,C.d);line(forward,283,186,283,120,C.d);
+  forward.append(element('circle',{cx:330,cy:120,r:22,fill:'var(--paper)',stroke:C.ink,'stroke-width':2}));
+  text(forward,320,130,'+',C.ink,30);arrow(forward,354,120,378,120,C.ink);
+  text(forward,397,99,'e₃',C.e,27);text(forward,397,143,fixed(learned.input),C.e,29);
+  arrow(forward,650,120,702,120,C.ink);
+  forward.append(element('rect',{x:715,y:78,width:196,height:86,rx:3,fill:'none',stroke:C.line,'stroke-width':2}));
+  text(forward,735,111,'Attention',C.ink,27);text(forward,735,146,'Prediction',C.ink,27);
+  arrow(forward,920,120,972,120,C.ink);
+  forward.append(element('rect',{x:984,y:78,width:115,height:86,rx:3,fill:'none',stroke:C.a,'stroke-width':2}));
+  text(forward,1013,111,'Loss',C.a,27);text(forward,1035,147,'L',C.a,30);
+  line(backward,1041,175,1041,220,C.a);line(backward,1041,220,512,220,C.a);arrow(backward,512,220,512,162,C.a);
+  line(backward,397,164,371,164,C.a);arrow(backward,371,164,351,145,C.a);
+  line(backward,313,102,313,48,C.a);arrow(backward,313,48,214,48,C.a);text(backward,247,36,'g',C.a,27);
+  line(backward,313,142,313,229,C.a);arrow(backward,313,229,214,229,C.a);text(backward,247,254,'g',C.a,27);
+  text(backward,565,202,'Backpropagation',C.a,25);
+  text(backward,480,257,'Suppose g = ∂L/∂e₃ = '+decimalRow(learned.gradient),C.a,25);
+  text(step,20,295,'SGD: stored row − 0.1 × gradient',C.ink,24);
+  [['word','E_{tok}[Maya]',learned.word,learned.nextWord,C.e],['position','P[3]',learned.position,learned.nextPosition,C.d]].forEach(([kind,label,before,after,color],j)=>{
+    const g=element('g',{'data-learned-sgd':kind,'data-before':JSON.stringify(before),'data-gradient':JSON.stringify(learned.gradient),'data-after':JSON.stringify(after),'data-rate':learned.rate});step.append(g);
+    const y=333+j*42;
+    subscriptText(g,20,y,label,color,25);text(g,211,y,'←',C.ink,26);text(g,259,y,decimalRow(before),color,26);
+    text(g,480,y,'− 0.1 ×',C.ink,26);text(g,590,y,decimalRow(learned.gradient),C.a,26);
+    text(g,824,y,'=',C.ink,26);text(g,871,y,decimalRow(after),color,26);
+  });
+
+  const limits=document.querySelector('[data-learned-limits]');
+  const limitsBase=limits.querySelector('[data-limits-base]'),unseen=limits.querySelector('[data-limits-unseen]'),missing=limits.querySelector('[data-limits-missing]');
+  subscriptText(limitsBase,20,34,'Example: N_{max} = 4. Training uses only slots 1–3.',C.ink,28);
+  for(let slot=1;slot<=5;slot++){
+    const s=slot<4?limitsBase:slot===4?unseen:missing,y=83+(slot-1)*44,color=slot<4?C.d:slot===4?C.ink:C.a;
+    const g=element('g',{'data-learned-coverage':slot<4?'visited':slot===4?'unvisited':'missing','data-slot':slot});s.append(g);
+    text(g,25,y+9,'Slot '+slot,C.ink,26);
+    g.append(element('rect',{x:165,y:y-21,width:235,height:40,fill:'none',stroke:color,'stroke-width':2,'stroke-dasharray':slot<4?'none':'7 5'}));
+    text(g,185,y+9,slot===5?'No P[5]':'P['+slot+']',color,27);
+    if(slot===2){arrow(g,416,y,469,y,C.d);text(g,490,y+9,'Training adapts these rows',C.d,28);}
+    if(slot===4){arrow(g,416,y,469,y,C.ink);text(g,490,y+9,'Row exists, but gets no task gradient',C.ink,28);}
+    if(slot===5){arrow(g,416,y,469,y,C.a);text(g,490,y+9,'No allocated row for this slot',C.a,28);}
+  }
+  text(missing,25,320,'Independent rows have no built-in distance rule.',C.ink,26);
   const selector=document.getElementById('rope-shift');
   function shifted(shift){const i=3+shift,j=2+shift,q=rotate([1,0],i*Math.PI/6),k=rotate([1,0],j*Math.PI/6);return {i,j,q,k,dot:q[0]*k[0]+q[1]*k[1]};}
   function draw(){
@@ -271,5 +361,5 @@ document.addEventListener('DOMContentLoaded',()=>{
     document.getElementById('rope-shift-result').textContent='Both vectors moved, but their match stays cos(30°) ≈ '+r.dot.toFixed(3)+'.';
   }
   if(selector){selector.addEventListener('change',draw);draw();}
-  window.AT.positionVisuals={rotate,shifted};
+  window.AT.positionVisuals={rotate,shifted,learnedExample};
 });
