@@ -56,6 +56,16 @@ body:not(.present) .context-lesson{margin:44px 0}
 .position-append .append-index{color:var(--c-d);font-weight:600}
 .position-append .append-totals{background:var(--t-d)}
 .position-append .append-result{font-size:26px;line-height:1.45;margin:14px 0}
+.append-calculation .worked-table th:first-child{width:16%}
+.append-calculation .worked-table th:nth-child(2){width:40%}
+.append-calculation .worked-table th:nth-child(3){width:28%}
+.append-calculation .worked-table th:last-child{width:16%}
+.append-scale-control{display:flex;align-items:center;gap:14px;margin:10px 0 14px;font-size:24px}
+.append-scale-control select{font-size:24px;padding:2px 8px}
+[id^="position-append-softmax"].worked-table th:first-child{width:16%}
+[id^="position-append-softmax"].worked-table th:nth-child(2){width:28%}
+[id^="position-append-softmax"].worked-table th:nth-child(3){width:15%}
+[id^="position-append-softmax"].worked-table th:last-child{width:41%}
 .position-journey{overflow-x:auto;margin:16px 0}
 .position-journey svg{display:block;width:100%;height:auto;font-family:var(--font-ui)}
 .position-journey svg text{font-size:24px;fill:var(--ink)}
@@ -233,22 +243,81 @@ body:not(.present) .context-lesson{margin:44px 0}
 <p class="lesson-key">Today's query stays the same. Maya and Ravi carry their new slot numbers into Q and K.</p>
 </div>
 
-<div class="frame context-lesson position-lesson position-worked position-append" id="s17-position-append-scores" data-title="The slot number can dominate the match" data-autobuild="off">
-<script type="text/x-notes">Use Maya helps Ravi today with the appended rows. For this untrained diagnostic toy only, choose W_Q=W_K=I_3. Today's query is [0.8,0.2,4]. Dotting against each key adds the word-only contribution to 4 times the source slot. Read Maya's row: 0.8 times 1 plus 0.2 times 0 plus 4 times 1 equals 4.8. Ravi's word contribution is smaller, 0.2, but its slot contributes 12. Thus it scores above Maya because of the appended index under these fixed projections. This is not a claim about the correct linguistic attention pattern. Softmax on the next slide divides all raw totals by sqrt(3), matching the new query/key width.</script>
-<p>Back to <strong>sentence 1: Maya helps Ravi today.</strong> Use the Q and K we just computed.</p>
-<div class="worked-detail">$q_4=[0.8,0.2,4]$, so $q_4\cdot k_j=\text{word contribution}+4j$.</div>
-<div class="worked-scroll"><table class="worked-table" id="position-append-scores"><thead><tr><th>Source</th><th>Word contribution</th><th>Slot contribution</th><th>Raw dot product</th></tr></thead><tbody></tbody></table></div>
-<p class="append-result">Ravi's larger slot outweighs Maya's stronger word match in this toy.</p>
-<p class="lesson-key">Learned projections could change the position term's influence.</p>
+<div class="frame context-lesson position-lesson" id="s17-position-append-product-a" data-title="The dot-product matrix for sentence 1" data-autobuild="off">
+<script type="text/x-notes">Which query meets which key?
+Point to row 4 of Q, column 3 of K transpose, and their intersection in Q K transpose. A receiver query is a row; a source key becomes a column after transposing K. Read the three scalar products below the matrices. All 16 raw dot products are shown before scaling or masking. The same operation applies to every cell. Identity Q/K projections still have zero bias. Change c to 0.1 and watch only the third coordinates change. This shared control carries through the following calculation slides.</script>
+<div class="append-scale-control" data-append-control="Maya helps Ravi today"></div>
+<div class="position-journey" data-append-product="a"></div>
+<p class="lesson-key">Each input appends $ci$ to the word coordinates. Rows of $QK^\top$ are receivers; columns are sources.</p>
 </div>
 
-<div class="frame context-lesson position-lesson position-worked position-append" id="s17-position-append-softmax" data-title="Attention weights with the raw slot number" data-autobuild="off">
-<script type="text/x-notes">Complete the calculation for Maya helps Ravi today. The appended representation has three coordinates, so divide each raw dot product by sqrt(3). Exponentiate the resulting scores and normalize across all four sources. The visible table uses ordinary exponentials, safe at these small scores. The underlying computation uses an equivalent max-subtracted softmax. Full precision determines the denominator and weights. Today receives about 92.3 percent of the weight under this identity mapping, mostly because its slot term is 16. This is a diagnostic of scale, not a desired attention pattern or measured language quality.</script>
-<p>Three matching coordinates: $s_j=(q_4\cdot k_j)/\sqrt3$. Then normalize the exponentials.</p>
+<div class="frame context-lesson position-lesson position-worked position-append append-calculation" id="s17-position-append-scores" data-title="Today's four dot products: sentence 1" data-autobuild="off">
+<script type="text/x-notes">Where does each number in the last matrix row come from?
+Point to the two word-coordinate products and the separate position product. This expands all four matches, rather than only the highlighted Ravi match. At c=1 Maya contributes 0.8 from its word coordinates and 4 from its slot. Ravi contributes 0.2 and 12. At c=0.1 those slot terms become 0.04 and 0.12. The raw word rows and identity projections stay fixed. The next sentence uses the same operation with Maya and Ravi in different slots.</script>
+<div class="append-scale-control" data-append-control="Maya helps Ravi today"></div>
+<div class="worked-detail" data-append-query></div>
+<div class="worked-scroll"><table class="worked-table" id="position-append-scores"><thead><tr><th>Source</th><th>Word products</th><th>Position product</th><th>Total</th></tr></thead><tbody></tbody></table></div>
+<p class="lesson-key">These four totals form row 4 of $QK^\top$. The position contribution is $(4c)(jc)=4jc^2$.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-append-product-b" data-title="The dot-product matrix after the swap" data-autobuild="off">
+<script type="text/x-notes">What changes when Maya and Ravi exchange slots?
+Point to the first and third input rows and the corresponding columns of K transpose. Today's query stays the same, but the source keys include their new slot numbers. Read the highlighted match with Maya in slot 3. The product is Q K transpose, not K times Q. Dimensions and receiver/source orientation remain the same as on the previous matrix slide.</script>
+<div class="append-scale-control" data-append-control="Ravi helps Maya today"></div>
+<div class="position-journey" data-append-product="b"></div>
+<p class="lesson-key">The slot coordinates stay at their positions. Swapping words changes which word products combine with them.</p>
+</div>
+
+<div class="frame context-lesson position-lesson position-worked position-append append-calculation" id="s17-position-append-scores-b" data-title="Today's four dot products: sentence 2" data-autobuild="off">
+<script type="text/x-notes">Does Maya keep the same raw match after the swap?
+Compare its slot-3 position product with slot 1 in sentence 1. Its word contribution remains 0.8. Its position contribution is now 12 at c=1, or 0.12 at c=0.1. Ravi's word contribution remains 0.2 but its slot term changes in the opposite direction. The last query remains the same in both sentences.</script>
+<div class="append-scale-control" data-append-control="Ravi helps Maya today"></div>
+<div class="worked-detail" data-append-query></div>
+<div class="worked-scroll"><table class="worked-table" id="position-append-scores-b"><thead><tr><th>Source</th><th>Word products</th><th>Position product</th><th>Total</th></tr></thead><tbody></tbody></table></div>
+<p class="lesson-key">The word contributions follow the words. The position products follow the slots.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-append-masked" data-title="Scaled scores and the causal mask" data-autobuild="off">
+<script type="text/x-notes">Which raw dot products may each receiver use?
+Divide every entry of Q K transpose by sqrt(3), since each query and key has three coordinates. Then replace future-source entries above the diagonal by negative infinity. Grey cells will get exactly zero weight after softmax. Rows and columns use the sentence's token order. Today's last row has no future source, so all four scores remain. Position scale c changes input features; dividing by sqrt(3) is the separate attention score scaling operation.</script>
+<div class="append-scale-control" data-append-control="Both sentences"></div>
+<div class="position-journey" data-append-matrices="masked"></div>
+<p class="lesson-key">$S=QK^\top/\sqrt3+M$. $M_{ij}=0$ for $j\leq i$, and $-\infty$ for future sources.</p>
+</div>
+
+<div class="frame context-lesson position-lesson position-worked position-append" id="s17-position-append-softmax" data-title="Scores to weights: sentence 1" data-autobuild="off">
+<script type="text/x-notes">How does a score become a weight?
+Follow today's last row for Maya helps Ravi today. The score column displays the division by sqrt(3). Exponentiate each score, sum all four exponentials, then divide each exponential by that same sum. The denominator uses full precision; displayed numbers are rounded. The code uses equivalent max-subtracted softmax for numerical stability. The scale selector updates the dot products, scores, exponentials and denominator together. These toy weights do not establish language quality.</script>
+<div class="append-scale-control" data-append-control="Maya helps Ravi today"></div>
 <div class="worked-scroll"><table class="worked-table" id="position-append-softmax"><thead><tr><th>Source</th><th>Score $s_j$</th><th>$\exp(s_j)$</th><th>Weight $\alpha_j$</th></tr></thead><tbody></tbody></table></div>
 <div class="worked-detail" id="position-append-denominator"></div>
 <div class="worked-detail" id="position-append-normalization"></div>
-<p class="lesson-key">An untrained scale demonstration. The large weight on today is not evidence of a useful prediction.</p>
+<p class="lesson-key">Each weight uses the same denominator. The four weights add to 1.</p>
+</div>
+
+<div class="frame context-lesson position-lesson position-worked position-append" id="s17-position-append-softmax-b" data-title="Attention weights after the swap" data-autobuild="off">
+<script type="text/x-notes">Can we reuse the first sentence's softmax denominator?
+No: swapping Maya and Ravi changes the score row, so recompute its exponentials and their sum. Follow today's raw dot product through division by sqrt(3), exponentiation and normalization. The self-score is identical in both sentences, but its weight can differ because the other scores change the denominator. The same normalization applies separately to every receiver row.</script>
+<div class="append-scale-control" data-append-control="Ravi helps Maya today"></div>
+<div class="worked-scroll"><table class="worked-table" id="position-append-softmax-b"><thead><tr><th>Source</th><th>Score $s_j$</th><th>$\exp(s_j)$</th><th>Weight $\alpha_j$</th></tr></thead><tbody></tbody></table></div>
+<div class="worked-detail" id="position-append-denominator-b"></div>
+<div class="worked-detail" id="position-append-normalization-b"></div>
+<p class="lesson-key">Today's score stays the same, but the other scores change its share of the total.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-append-weights" data-title="The full attention-weight matrices" data-autobuild="off">
+<script type="text/x-notes">Where do the four weights we just calculated belong?
+Point to the highlighted last row of each matrix A. Apply softmax independently to every row of the masked score matrix. Each row sums to one; future-source cells are zero. Row 1 assigns one to itself because it has only one allowed source. Changing the shared position scale recomputes the matrices for both sentences. The pattern is a consequence of the illustrative identity projections, not a trained attention map.</script>
+<div class="append-scale-control" data-append-control="Both sentences"></div>
+<div class="position-journey" data-append-matrices="attention"></div>
+<p class="lesson-key">$A=\operatorname{softmax}_{\rm row}(S)$. Normalize each receiver's row separately. Each row sums to 1 before rounding.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-append-scale-effect" data-title="Scaling the position contribution" data-autobuild="off">
+<script type="text/x-notes">Why does reducing c by ten reduce the position product by one hundred?
+Point to both changed coordinates in the same sentence-1 match: today's query and Ravi's key. Their word coordinates stay fixed. The position product changes from 4 times 3 equals 12 to 0.4 times 0.3 equals 0.12. Add the unchanged word contribution 0.2, then divide by sqrt(3). Softmax still needs all four scores, so revisit the full row before discussing a weight. This is a controlled scale comparison, not proof that 0.1 is the best scale.</script>
+<div class="position-journey" data-append-scale-effect></div>
+<p class="lesson-key">Both query and key contain $ci$. The position term is $c^2ij$; the word term stays fixed.</p>
 </div>
 
 <div class="frame context-lesson position-lesson position-worked position-append" id="s17-position-append-scale" data-title="The position scale changes the attention weights" data-autobuild="off">
@@ -546,14 +615,19 @@ body:not(.present) .context-lesson{margin:44px 0}
     const WQ=[[1,0,0],[0,1,0],[0,0,1]],WK=[[1,0,0],[0,1,0],[0,0,1]];
     const project=W=>rows.map(row=>W[0].map((_,c)=>row.reduce((sum,x,j)=>sum+x*W[j][c],0)));
     const Q=project(WQ),K=project(WK),q=Q.at(-1); // No projection biases in this toy.
-    const wordTerms=K.map(k=>q[0]*k[0]+q[1]*k[1]);
-    const positionTerms=K.map(k=>q[2]*k[2]);
-    const rawScores=wordTerms.map((word,j)=>word+positionTerms[j]);
-    const scores=rawScores.map(s=>s/Math.sqrt(q.length));
-    const max=Math.max(...scores),exps=scores.map(s=>Math.exp(s-max));
-    const denominator=exps.reduce((sum,x)=>sum+x,0);
-    const weights=exps.map(x=>x/denominator);
-    return {rows,WQ,WK,Q,K,q,wordTerms,positionTerms,rawScores,scores,weights};
+    const wordMatrix=Q.map(query=>K.map(key=>query[0]*key[0]+query[1]*key[1]));
+    const positionMatrix=Q.map(query=>K.map(key=>query[2]*key[2]));
+    const rawMatrix=wordMatrix.map((row,i)=>row.map((word,j)=>word+positionMatrix[i][j]));
+    const scoreMatrix=rawMatrix.map(row=>row.map(value=>value/Math.sqrt(3)));
+    const maskedMatrix=scoreMatrix.map((row,i)=>row.map((value,j)=>j<=i?value:-Infinity));
+    const attentionMatrix=maskedMatrix.map(row=>{
+      const max=Math.max(...row),exps=row.map(value=>Math.exp(value-max));
+      const denominator=exps.reduce((sum,x)=>sum+x,0);
+      return exps.map(x=>x/denominator);
+    });
+    const wordTerms=wordMatrix.at(-1),positionTerms=positionMatrix.at(-1);
+    const rawScores=rawMatrix.at(-1),scores=scoreMatrix.at(-1),weights=attentionMatrix.at(-1);
+    return {rows,WQ,WK,Q,K,q,wordMatrix,positionMatrix,rawMatrix,scoreMatrix,maskedMatrix,attentionMatrix,wordTerms,positionTerms,rawScores,scores,weights};
   }
   function sinusoid(i){return [Math.sin(i),Math.cos(i),Math.sin(i/100),Math.cos(i/100)];}
   function rotaryDot(i,j){const a=i*Math.PI/6,b=j*Math.PI/6;return Math.cos(a)*Math.cos(b)+Math.sin(a)*Math.sin(b);}

@@ -2,7 +2,7 @@
    RoPE shift experiment so only the positional operation is being compared. */
 document.addEventListener('DOMContentLoaded',()=>{
   const NS='http://www.w3.org/2000/svg';
-  const C={e:'var(--c-e)',q:'var(--c-q)',k:'var(--c-k)',v:'var(--c-v)',d:'var(--c-d)',line:'var(--line)',ink:'var(--ink)'};
+  const C={e:'var(--c-e)',q:'var(--c-q)',k:'var(--c-k)',v:'var(--c-v)',a:'var(--c-a)',d:'var(--c-d)',line:'var(--line)',ink:'var(--ink)'};
   function element(tag,attrs={},text){const e=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs))e.setAttribute(k,v);if(text!==undefined)e.textContent=text;return e;}
   function canvas(host,label,h=280){const s=element('svg',{viewBox:`0 0 1120 ${h}`,role:'img','aria-label':label});s.append(element('title',{},label));host.replaceChildren(s);return s;}
   function text(s,x,y,value,color=C.ink,size=24){s.append(element('text',{x,y,style:`fill:${color};font-size:${size}px`},value));}
@@ -63,7 +63,6 @@ document.addEventListener('DOMContentLoaded',()=>{
       body.append(tr);
     });
   });
-  const appended=lesson.appendedExperiment(lesson.sequences[0]);
   document.querySelectorAll('[data-appended-projections]').forEach(host=>{
     const index=host.dataset.appendedProjections==='a'?0:1,tokens=lesson.sequences[index];
     const r=lesson.appendedExperiment(tokens);
@@ -89,29 +88,104 @@ document.addEventListener('DOMContentLoaded',()=>{
     text(s,160,362,'Two word coordinates + slot',C.ink,25);
     text(s,628,362,'q₄ = ['+r.q.map((value,c)=>c===2?String(value):value.toFixed(1)).join(', ')+']',C.q,29);
   });
-  const scoreBody=document.querySelector('#position-append-scores tbody');
-  lesson.sequences[0].forEach((token,j)=>{
-    const tr=document.createElement('tr');cell(tr,(j+1)+' '+token);
-    cell(tr,appended.wordTerms[j],'numbers score');
-    cell(tr,appended.positionTerms[j],'numbers append-index');
-    cell(tr,appended.rawScores[j],'numbers append-totals');
-    scoreBody.append(tr);
-  });
-  const softmaxBody=document.querySelector('#position-append-softmax tbody');
-  lesson.sequences[0].forEach((token,j)=>{
-    const tr=document.createElement('tr');cell(tr,token);cell(tr,appended.scores[j],'numbers score');
-    const exponential=cell(tr,Math.exp(appended.scores[j]),'numbers');
-    exponential.textContent=Math.exp(appended.scores[j]).toFixed(2);
-    const weight=cell(tr,appended.weights[j],'numbers weight');
-    weight.textContent=(100*appended.weights[j]).toFixed(1)+'%';softmaxBody.append(tr);
-  });
-  const appendDenominator=appended.scores.reduce((sum,s)=>sum+Math.exp(s),0);
-  document.getElementById('position-append-denominator').textContent='Sum of exponentials ≈ '+appendDenominator.toFixed(2)+'.';
-  document.getElementById('position-append-normalization').textContent='Today’s weight ≈ '+Math.exp(appended.scores[3]).toFixed(2)+' / '+appendDenominator.toFixed(2)+' = '+appended.weights[3].toFixed(3)+' ('+(100*appended.weights[3]).toFixed(1)+'%).';
   const appendScale=document.getElementById('position-append-scale');
+  const short=value=>Number(value.toFixed(3)).toString();
+  const dotFormula=(q,k)=>q.map((value,c)=>short(value)+' × '+short(k[c])).join(' + ');
+  // One experimental setting follows the student through all calculation stages.
+  document.querySelectorAll('[data-append-control]').forEach((host,index)=>{
+    const sentence=document.createElement('span');sentence.textContent=host.dataset.appendControl+'.';
+    const label=document.createElement('label');label.htmlFor='append-detail-scale-'+index;label.textContent='Position scale c =';
+    const select=document.createElement('select');select.id=label.htmlFor;select.dataset.appendScaleControl='';
+    for(const value of ['1','0.1']){const option=document.createElement('option');option.value=value;option.textContent=value;select.append(option);}
+    host.append(sentence,label,select);
+    select.addEventListener('change',()=>{appendScale.value=select.value;drawAppended();});
+  });
+  function numericMatrix(s,name,values,x,y,cw,color,format,highlight={}){
+    const group=element('g',{'data-append-matrix':name});s.append(group);
+    values.forEach((row,i)=>row.forEach((value,j)=>{
+        const marked=highlight.row===i||highlight.column===j,blocked=!Number.isFinite(value)||(highlight.causal&&j>i);
+        group.append(element('rect',{x:x+j*cw,y:y+i*48,width:cw,height:48,fill:blocked?C.line:color,'fill-opacity':blocked?.6:marked?.13:.025,stroke:C.line}));
+      group.append(element('text',{x:x+(j+.5)*cw,y:y+i*48+32,'text-anchor':'middle','data-row':i,'data-column':j,'data-value':String(value),style:`fill:${color};font-size:25px`},format(value)));
+    }));
+    if(highlight.row!==undefined)group.append(element('rect',{x,y:y+highlight.row*48,width:values[0].length*cw,height:48,fill:'none',stroke:color,'stroke-width':2}));
+  }
+  function drawProduct(host,r,tokens){
+    const s=canvas(host,tokens.join(' ')+': Q times K transpose gives every raw dot product',390);
+    text(s,80,30,'Q',C.q,29);text(s,80,61,'4 × 3',C.ink,23);
+    text(s,340,30,'Kᵀ',C.k,29);text(s,340,61,'3 × 4',C.ink,23);
+    text(s,728,30,'QKᵀ',C.ink,29);text(s,728,61,'4 × 4',C.ink,23);
+    numericMatrix(s,'Q',r.Q,80,105,54,C.q,short,{row:3});
+    const kt=r.K[0].map((_,c)=>r.K.map(row=>row[c]));
+    numericMatrix(s,'KT',kt,340,129,54,C.k,short,{column:2});
+    numericMatrix(s,'raw',r.rawMatrix,728,105,84,C.ink,value=>value.toFixed(2),{row:3});
+    s.append(element('rect',{x:728+2*84,y:105+3*48,width:84,height:48,fill:'none',stroke:C.ink,'stroke-width':4,'data-selected-product':'3,2'}));
+    for(let i=0;i<4;i++){
+      text(s,43,137+i*48,String(i+1),C.ink,23);
+      text(s,360+i*54,114,String(i+1),C.k,23);
+      text(s,701,137+i*48,String(i+1),C.q,23);
+      text(s,763+i*84,91,String(i+1),C.k,23);
+    }
+    text(s,278,215,'×',C.ink,32);text(s,633,215,'=',C.ink,32);
+    text(s,30,336,'Slots: '+tokens.map((token,j)=>(j+1)+' '+token).join(', '),C.ink,24);
+    text(s,30,378,'q₄ · k₃ = '+dotFormula(r.q,r.K[2])+' = '+short(r.rawScores[2]),C.ink,27);
+  }
+  function drawMatrixPair(host,results){
+    const attention=host.dataset.appendMatrices==='attention';
+    const s=canvas(host,attention?'Causal attention weights for both sentences':'Scaled, causally masked scores for both sentences',365);
+    results.forEach((r,index)=>{
+      const left=index*560,tokens=lesson.sequences[index],color=attention?C.a:C.k;
+      text(s,left+12,30,tokens.join(' '),C.ink,25);
+      text(s,left+145,69,(attention?'A':'S')+' · 4 × 4',color,26);
+      text(s,left+145,98,'Source slot j',C.k,22);
+      for(let j=0;j<4;j++)text(s,left+178+j*78,124,String(j+1),C.k,23);
+      numericMatrix(s,(attention?'attention':'masked')+'-'+index,attention?r.attentionMatrix:r.maskedMatrix,left+145,139,78,color,value=>Number.isFinite(value)?value.toFixed(3):'−∞',{row:3,causal:true});
+      tokens.forEach((token,i)=>text(s,left+12,171+i*48,(i+1)+' '+token,C.q,23));
+    });
+    text(s,12,355,'Rows: receiver i. The highlighted row belongs to today.',C.ink,24);
+  }
+  function drawCalculationTables(r,index){
+    const suffix=index?'-b':'',tokens=lesson.sequences[index];
+    const scores=document.querySelector('#position-append-scores'+suffix+' tbody');scores.replaceChildren();
+    const softmax=document.querySelector('#position-append-softmax'+suffix+' tbody');softmax.replaceChildren();
+    const exps=r.scores.map(Math.exp),denominator=exps.reduce((a,b)=>a+b,0);
+    tokens.forEach((token,j)=>{
+      const tr=document.createElement('tr');cell(tr,(j+1)+' '+token);
+      const word=cell(tr,r.wordTerms[j],'numbers score');
+      word.textContent=dotFormula(r.q.slice(0,2),r.K[j].slice(0,2))+' = '+short(r.wordTerms[j]);
+      const position=cell(tr,r.positionTerms[j],'numbers append-index');
+      position.textContent=short(r.q[2])+' × '+short(r.K[j][2])+' = '+short(r.positionTerms[j]);
+      cell(tr,r.rawScores[j],'numbers append-totals');scores.append(tr);
+      const row=document.createElement('tr');cell(row,token);
+      const scaled=cell(row,r.scores[j],'numbers score');scaled.textContent=short(r.rawScores[j])+' / √3 = '+r.scores[j].toFixed(3);
+      const exponential=cell(row,exps[j],'numbers');exponential.textContent=exps[j].toFixed(2);
+      const weight=cell(row,r.weights[j],'numbers weight');weight.textContent=exps[j].toFixed(2)+' / '+denominator.toFixed(2)+' ≈ '+(100*r.weights[j]).toFixed(1)+'%';softmax.append(row);
+    });
+    document.getElementById('position-append-denominator'+suffix).textContent='Sum: '+exps.map(x=>x.toFixed(2)).join(' + ')+' ≈ '+denominator.toFixed(2);
+    document.getElementById('position-append-normalization'+suffix).textContent='Normalize this sentence’s row using that sum. Displayed numbers are rounded.';
+  }
+  const effectHost=document.querySelector('[data-append-scale-effect]');
+  const effect=canvas(effectHost,'Same today-to-Ravi dot product with position scales 1 and 0.1',390);
+  [1,.1].forEach((scale,index)=>{
+    const r=lesson.appendedExperiment(lesson.sequences[0],scale),y=38+index*175;
+    text(effect,20,y,'c = '+scale,C.ink,30);
+    text(effect,200,y,'q₄ = '+fixed(r.q),C.q,29);
+    text(effect,740,y,'k₃ (Ravi) = '+fixed(r.K[2]),C.k,29);
+    text(effect,200,y+53,'Word: 0.8 × 0 + 0.2 × 1 = 0.2',C.ink,27);
+    text(effect,740,y+53,'Position: '+short(r.q[2])+' × '+short(r.K[2][2])+' = '+short(r.positionTerms[2]),C.d,27);
+    text(effect,200,y+106,'Total: 0.2 + '+short(r.positionTerms[2])+' = '+short(r.rawScores[2]),C.ink,27);
+    text(effect,740,y+106,'Score: '+short(r.rawScores[2])+' / √3 ≈ '+r.scores[2].toFixed(3),C.k,27);
+  });
+  text(effect,200,375,'10× smaller in Q and in K gives a 100× smaller position product.',C.d,27);
   function drawAppended(){
     const scale=Number(appendScale.value);
     const results=lesson.sequences.map(tokens=>lesson.appendedExperiment(tokens,scale));
+    document.querySelectorAll('[data-append-scale-control]').forEach(select=>{select.value=String(scale);});
+    document.querySelectorAll('[data-append-query]').forEach(host=>{host.textContent='Today’s query q₄ = '+fixed(results[0].q);});
+    document.querySelectorAll('[data-append-product]').forEach(host=>{
+      const index=host.dataset.appendProduct==='a'?0:1;drawProduct(host,results[index],lesson.sequences[index]);
+    });
+    document.querySelectorAll('[data-append-matrices]').forEach(host=>drawMatrixPair(host,results));
+    results.forEach(drawCalculationTables);
     results.forEach((r,index)=>{
       const suffix=index?'b':'a',body=document.querySelector('#position-append-weights-'+suffix+' tbody');
       body.replaceChildren();
