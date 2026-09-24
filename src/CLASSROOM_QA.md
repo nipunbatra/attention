@@ -1,5 +1,30 @@
 # Classroom release checks
 
+## 2026-09-24 · Positional-encoding sequence audit
+
+- Found three sequencing problems: the learned-table boundary remained after
+  the sinusoidal examples in reading mode, the standard wave plots used rates
+  before their derivation, and addition-related reading notes appeared during
+  later methods. Moved each explanation beside its prerequisite. Presentation
+  mode retains all 54 frames and the requested full matrix calculations.
+- The progression now separates the two motivations: learned-table coverage
+  and missing rows lead into fixed sinusoidal features; the later shared-shift
+  example motivates relative scores and RoPE. Dividers and presenter notes
+  name the next method accurately. The standard formula and worked row now
+  precede the wave and period plots, after the circle and two-clock intuition.
+- Kept one-based slot labels throughout the learned-table examples, then made
+  the switch to zero-based indices, radians and sine-first pairs explicit in
+  the sinusoidal sequence. The six-token reading table fits at 1024px without
+  scrolling. Retained the distinction between calculable position features
+  and measured prediction quality at unseen lengths. Checked the conceptual
+  claims against the original Transformer and RoFormer papers.
+- Added reading-order and forward/reverse presentation-transition assertions.
+  All 54 positional frames and 182 build checks pass at 1280×720, 1920×1080,
+  1024×768 and 390px reading width. All 18 topic breaks pass. Full Part II:
+  444 states, 656 formulas, no browser/math errors or overflow. Inspected the
+  affected transitions at 1280×720 and 760×1041, plus the reading table. No
+  trained model, calculation, notebook, dependency or Part III content changed.
+
 ## 2026-09-22 · Separate matrix walkthroughs for each head
 
 - Replaced the compact matching/weights/messages passage with four frames for

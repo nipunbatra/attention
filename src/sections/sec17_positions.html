@@ -36,6 +36,7 @@ body:not(.present) .context-lesson{margin:44px 0}
 .position-visual svg text{font-size:24px;fill:var(--ink)}
 .position-visual svg .label-small{font-size:22px;fill:var(--ink-2)}
 .position-numeric-scroll{max-width:100%;overflow-x:auto}.position-numeric-scroll .lesson-table{min-width:760px}
+.position-numeric-scroll .position-range-table{min-width:620px}
 .position-credit{font-size:22px;line-height:1.5;margin-top:36px;color:var(--ink-2)}
 .position-credit a{color:inherit;text-decoration:underline;text-underline-offset:4px}
 .position-worked .worked-scroll{max-width:100%;overflow-x:auto}
@@ -211,6 +212,24 @@ body:not(.present) .context-lesson{margin:44px 0}
 <p class="lesson-key" data-build="2">Both rows have $d$ coordinates; their sum still has $d$. These example coordinates have no prescribed meaning.</p>
 </div>
 
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-routing">
+<h3>How the positioned row reaches Q, K and V</h3>
+<script type="text/x-notes">Keep the earlier e_i notation for the representation entering attention. A moved word changes its q/k/v because the input row changed. With additive input positions, positional signals reach values too. Contrast this later with RoPE, which typically rotates Q and K, and ALiBi, which adds a score bias. Causal masking remains a separate operation.</script>
+<div class="position-flow"><span>$e_i=E_{\rm tok}[t_i]+p_i$</span><b>→</b><span>$q_i=e_iW_Q$<br>$k_i=e_iW_K$<br>$v_i=e_iW_V$</span></div>
+<p data-build="1">A word in a different slot can produce different matching features and a different message.</p>
+<p data-build="2">The causal mask still decides <strong>which sources are allowed</strong>. Position information helps distinguish the allowed sources by where they occur.</p>
+<p class="lesson-key" data-build="2">$E_{\rm tok}[t_i]$ is the word lookup. Adding $p_i$ gives the representation $e_i$ entering attention.</p>
+</div>
+
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-mean">
+<h3>Why a plain mean still loses the word-to-slot assignment</h3>
+<script type="text/x-notes">Do not imply that additive positions fix order blindness for every architecture. Averaging independent token-plus-position rows is the sum of a token mean and a position mean. Under reassignment of the same words to the same occupied slots, both means stay fixed. Nonlinear processing before pooling or explicit token-position interactions can break this invariance; that would be a different baseline. Attention creates interactions through its query/key scores.</script>
+<div>$$\frac1n\sum_i(e_{{\rm token},i}+p_i)=\frac1n\sum_i e_{{\rm token},i}+\frac1n\sum_i p_i$$</div>
+<p data-build="1">Swap Maya and Ravi across the same four slots: the token sum stays the same, and the position sum stays the same.</p>
+<p class="lesson-result" data-build="2">The mean still loses <strong>which word was in which slot</strong>. We need interactions before pooling to preserve that association.</p>
+<p class="lesson-key" data-build="2">Attention is not just a fixed average: its weights depend on the token-and-position rows being compared.</p>
+</div>
+
 <div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-alternatives-break" data-title="Alternative ways to encode position" data-autobuild="off">
 <script type="text/x-notes">Could we supply position without adding a full position vector? First try appending the raw slot number to the Maya–Ravi word rows. It records order, but the following fixed-projection example shows how its scale can dominate the match. This is a limitation of the naive setup, not proof that concatenating position cannot work. Then compare learned additive rows and fixed sinusoidal rows as alternatives 2 and 3.</script>
 <h3>Alternative ways to encode position</h3>
@@ -332,14 +351,14 @@ Point to both changed coordinates in the same sentence-1 match: today's query an
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-append-tradeoffs" data-title="What the raw index leaves us to choose" data-autobuild="off">
-<script type="text/x-notes">Summarize only what the example establishes. A raw index is a valid position feature and can distinguish order. Under our fixed identity projections, its magnitude dominates the content contribution and creates a large-slot preference. Training could suppress, rescale or combine it differently. Two appended features similarly require a choice of scale and mapping, while increasing input width by two. Raw slot numbers do not directly provide a relative-distance score: the demonstrated term is i times j. Addition is convenient because it preserves width. The bounded sinusoidal features introduced next offer multiple rates, but no universal superiority is proved here.</script>
+<script type="text/x-notes">Summarize only what the example establishes. A raw index is a valid position feature and can distinguish order. Under our fixed identity projections, its magnitude dominates the content contribution and creates a large-slot preference. Training could suppress, rescale or combine it differently. Two appended features similarly require a choice of scale and mapping, while increasing input width by two. Raw slot numbers do not directly provide a relative-distance score: the demonstrated term is i times j. Addition is convenient because it preserves width. The next method learns additive position rows. Fixed sinusoidal features follow after the learned-table limitations. These alternatives have different tradeoffs, not a universal quality ranking.</script>
 <table class="lesson-table"><thead><tr><th>Choice</th><th>What the Maya–Ravi example showed</th></tr></thead><tbody>
 <tr><th>Scale</th><td>$i$ and $0.1i$ describe the same slots but produce very different weights here.</td></tr>
 <tr><th>How position affects a match</th><td>The raw term is $ij$. Even a self-match grows as $i^2$, although the distance is still zero.</td></tr>
 <tr><th>Input width</th><td>One appended feature changes $d$ to $d+1$. Two give $d+2$. The projection matrices must accept that width.</td></tr>
 </tbody></table>
 <p class="lesson-result"><strong>Concatenation can work</strong> with suitable scaling and learned projections. Appending the raw index alone leaves these choices unresolved.</p>
-<p class="lesson-key">Next: fixed-width addition, bounded sine/cosine features and relative positions.</p>
+<p class="lesson-key">Next: return to addition and let training choose a position row for each slot.</p>
 </div>
 
 <div class="companion context-lesson position-lesson position-reading" id="s17-position-width">
@@ -350,15 +369,6 @@ Point to both changed coordinates in the same sentence-1 match: today's query an
 <div data-build="1">$$[E_{\rm tok}[t_i];p_i]\begin{bmatrix}W_e\\W_p\end{bmatrix}=E_{\rm tok}[t_i]W_e+p_iW_p$$</div>
 <p class="lesson-key" data-build="1">$W_e$ maps content; $W_p$ maps position. Both outputs must have the same width before adding.</p>
 <p class="lesson-result" data-build="2">Addition mixes the signals; it does not guarantee that we can recover each one separately. Training learns how to use the combined row.</p>
-</div>
-
-<div class="companion context-lesson position-lesson position-reading" id="s17-position-routing">
-<h3>How the positioned row reaches Q, K and V</h3>
-<script type="text/x-notes">Keep the earlier e_i notation for the representation entering attention. A moved word changes its q/k/v because the input row changed. With additive input positions, positional signals reach values too. Contrast this later with RoPE, which typically rotates Q and K, and ALiBi, which adds a score bias. Causal masking remains a separate operation.</script>
-<div class="position-flow"><span>$e_i=E_{\rm tok}[t_i]+p_i$</span><b>→</b><span>$q_i=e_iW_Q$<br>$k_i=e_iW_K$<br>$v_i=e_iW_V$</span></div>
-<p data-build="1">A word in a different slot can produce different matching features and a different message.</p>
-<p data-build="2">The causal mask still decides <strong>which sources are allowed</strong>. Position information helps distinguish the allowed sources by where they occur.</p>
-<p class="lesson-key" data-build="2">$E_{\rm tok}[t_i]$ is the word lookup. Adding $p_i$ gives the representation $e_i$ entering attention.</p>
 </div>
 
 <div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-learned-break" data-title="Alternative 2: learned positions" data-autobuild="off">
@@ -386,16 +396,29 @@ Follow the red gradient back through the addition. For Maya's single occurrence 
 
 <div class="frame context-lesson position-lesson" id="s17-position-learned-limits" data-title="What a learned position table can miss" data-autobuild="off">
 <script type="text/x-notes">Does allocating a row mean that training has taught us how to use it?
-Point to slot 4, then the missing slot 5. This separate coverage example assumes a four-row table but training inputs that use only slots 1 through 3. P[4] exists but receives no task gradient through this lookup. P[5] does not exist. Keep those cases distinct. Sparse training coverage can also make a row poorly learned. Optimizer momentum or weight decay can change a parameter even without a new task gradient, so do not say every untouched row is numerically frozen under every optimizer. Learned tables are flexible, can adapt to the task, and add Nmax*d parameters while preserving width d. Their rows do not have a built-in smooth or relative-distance relationship: training may learn such structure, but it is not guaranteed. A sinusoidal rule calculates position features without Nmax*d trainable position parameters and without requiring a separately trained row at every index. Computable features at a new index do not guarantee good predictions beyond the training range. Learned and fixed encodings are alternatives, not a universal ranking. Vaswani et al. reported nearly identical results for these alternatives in their experiment: Section 3.5, https://arxiv.org/html/1706.03762v7#S3.SS5. The later reading-only example spells out the same table boundary with zero-based indices.</script>
+Point to slot 4, then the missing slot 5. This separate coverage example assumes a four-row table but training inputs that use only slots 1 through 3. P[4] exists but receives no task gradient through this lookup. P[5] does not exist. Keep those cases distinct. Sparse training coverage can also make a row poorly learned. Optimizer momentum or weight decay can change a parameter even without a new task gradient, so do not say every untouched row is numerically frozen under every optimizer. Learned tables are flexible, can adapt to the task, and add Nmax*d parameters while preserving width d. Their rows do not have a built-in smooth or relative-distance relationship: training may learn such structure, but it is not guaranteed. A sinusoidal rule calculates position features without Nmax*d trainable position parameters and without requiring a separately trained row at every index. Computable features at a new index do not guarantee good predictions beyond the training range. Learned and fixed encodings are alternatives, not a universal ranking. Vaswani et al. reported nearly identical results for these alternatives in their experiment: Section 3.5, https://arxiv.org/html/1706.03762v7#S3.SS5. The reading example immediately below spells out the same table boundary, retaining the one-based slot labels.</script>
 <p>Flexible, task-learned features: $N_{\max}d$ extra parameters. The input stays $d$ wide.</p>
 <div class="position-journey"><svg viewBox="0 0 1120 330" role="img" aria-label="A four-row position table with three visited slots, one unvisited slot and a fifth slot outside the table" data-learned-limits><g data-limits-base></g><g data-limits-unseen data-build="1"></g><g data-limits-missing data-build="2"></g></svg></div>
 <p class="lesson-key" data-build="2">A fixed rule can calculate new rows without learning them individually. Good predictions at longer lengths still need testing.</p>
 </div>
 
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-absolute-range">
+<h3>A learned table has a last row</h3>
+<script type="text/x-notes">This is the learned-table limitation, immediately before the fixed-rule alternative. Keep the preceding one-based slot labels: this four-row miniature table supplies P[1] through P[4]. The longer six-token input requests P[5] and P[6], which do not exist. These are teaching labels; the notebook stores the same four rows at zero-based indices 0 through 3. This is a position-table lookup limitation, not a tokenizer or word-table failure. Extending the table allocates rows but does not train them. A fixed formula can calculate the missing position features, which motivates the next subsection. This does not establish prediction quality at longer lengths. Source: Vaswani et al., Section 3.5, https://arxiv.org/html/1706.03762v7#S3.SS5.</script>
+<p>Keep the <strong>four-row</strong> learned table. It supplies slots 1, 2, 3 and 4.</p>
+<p class="lesson-key">“Maya helps Ravi today” fits. Now try a longer input:</p>
+<div class="position-numeric-scroll"><table class="lesson-table position-range-table"><thead><tr><th style="width:16%">Slot</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th></tr></thead><tbody>
+<tr><th>Word</th><td>Maya</td><td>helps</td><td>Ravi</td><td>at</td><td>school</td><td>today</td></tr>
+<tr><th>Position row</th><td>$P[1]$</td><td>$P[2]$</td><td>$P[3]$</td><td>$P[4]$</td><td data-missing-position="5"><strong>No row</strong></td><td data-missing-position="6"><strong>No row</strong></td></tr>
+</tbody></table></div>
+<p data-build="1">We can extend the table, but the new rows are not automatically trained.</p>
+<p class="lesson-key" data-build="1">The next method calculates each row from its slot number. It avoids a missing lookup row, but longer-input predictions still need testing.</p>
+</div>
+
 <div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-clock-choice" data-title="Alternative 3: sinusoidal positions" data-autobuild="off">
-<script type="text/x-notes">The third alternative calculates fixed offsets instead of learning a table. Begin with the circle intuition, then show different rates and the standard formula. The toy clocks use degrees and integer periods. The standard formula later uses radians. Starting here, indices are zero-based, as the next slide states.</script>
+<script type="text/x-notes">The learned table has just run out of rows. The third alternative calculates fixed offsets instead of learning a separate row at each slot. Begin with the circle intuition and the need for different rates, then derive the standard rates before plotting them. Toy clocks use degrees and integer periods. The standard formula uses radians. Starting here, indices are zero-based, as the next slide states. A calculable row is not evidence of good predictions at unseen lengths.</script>
 <h3>Alternative 3: sinusoidal positions</h3>
-<p class="topic-recap">A learned table stores the offsets as model parameters.</p>
+<p class="topic-recap">A learned table has a fixed number of rows. New rows would need training.</p>
 <p class="topic-question">What if a fixed rule could calculate the offset for any slot?</p>
 </div>
 
@@ -415,14 +438,6 @@ Point to the two green tips at the same height, then reveal their different hori
 <p class="lesson-key">Indices start at 0. At index 4, this clock returns to index 0’s pair.</p>
 </div>
 
-<div class="companion context-lesson position-lesson position-reading" id="s17-position-rates">
-<h3>Two clock rates at indices 0 and 4</h3>
-<script type="text/x-notes">Keep the intentionally simple fast rate at 90 degrees per slot and add a slow 30-degree pair. At indices 0 and 4 the fast pair is identical but the slow pair differs. Both toy rates still repeat jointly at index 12, so do not claim a small collection of clocks guarantees no collisions or arbitrary length generalization. The original geometric frequency schedule is different and comes next.</script>
-<div class="position-visual" data-position-visual="rates"></div>
-<p>The fast pair repeats after four slots; the slow pair distinguishes these two positions.</p>
-<p class="lesson-key">Combine pairs into one vector. Multiple rates provide different scales, not a guarantee of unlimited context.</p>
-</div>
-
 <div class="frame context-lesson position-lesson" id="s17-position-repeat" data-title="Two clocks at different rates" data-autobuild="off">
 <script type="text/x-notes">Inspect two deliberately simple clocks with integer periods four and twelve. At index four, only the fast pair returns. At twelve, both return and the four-number code repeats. This is an illustrative design, not the standard Transformer schedule. Multiple slower rates extend the range over which these positions can be distinguished. They do not prove arbitrary-length uniqueness or prediction quality.</script>
 <div class="position-journey-controls"><label for="position-pair-index">Compare with index 0</label><select id="position-pair-index"><option value="0">Index 0</option><option value="4">Index 4</option><option value="8">Index 8</option><option value="12">Index 12</option></select></div>
@@ -431,32 +446,17 @@ Point to the two green tips at the same height, then reveal their different hori
 <p class="lesson-key">The standard formula uses a range of rates instead of these two teaching clocks.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-waves" data-title="Fast and slow coordinates change on different scales" data-autobuild="off">
-<script type="text/x-notes">Both plots use the same position axis from zero to twenty and the same vertical range from minus one to one. The first pair has rate one radian per slot. The second has rate 0.01. Sine is solid and cosine is dashed. Curves show the continuous formula; actual token positions sample integer indices. This is the four-coordinate standard example, not the 90-degree teaching clock.</script>
-<div class="position-journey" data-position-journey="waves"></div>
-<p>The fast pair goes around several times while the slow pair changes only a little.</p>
-<p class="lesson-key">Same position axis in both plots. Solid: sine. Dashed: cosine. Tokens sample the curves at integer indices.</p>
-</div>
-
-<div class="frame context-lesson position-lesson" id="s17-position-period" data-title="A smaller rate gives a longer period" data-autobuild="off">
-<script type="text/x-notes">The continuous angular period is 2 pi divided by omega. For width four the pair rates are one and 0.01, so their periods are approximately 6.283 and 628.319 slots. Plot the slow pair over zero to 650 to show a full turn. Neither period is an integer. Thus index six is not identical to index zero, and index 628 is only near the starting phase. The frequency base is 10000, not a requirement that the period or context length equals 10000. Fixed features outside the training range do not guarantee good predictions.</script>
-<p>A full turn is $2\pi$ radians, so the period is $T_r=2\pi/\omega_r$.</p>
-<div class="position-journey" data-position-journey="period"></div>
-<p>Rate 1: about <strong>6.28 slots</strong> per turn. Rate 0.01: about <strong>628.32 slots</strong>.</p>
-<p class="lesson-key">These are continuous periods. Integer indices 6 and 628 do not exactly repeat index 0.</p>
-</div>
-
-<div class="companion context-lesson position-lesson position-reading" id="s17-position-sine">
-<h3>Four rows of the sinusoidal pattern</h3>
-<script type="text/x-notes">Use actual computed values for the standard formula at d=4. The first pair changes by one radian per slot; the second by 0.01 radians per slot. The table is rounded to three decimals. These waves are fixed features, not probabilities. Source: Vaswani et al., Section 3.5, https://arxiv.org/abs/1706.03762.</script>
-<p>For a four-coordinate example, slot $i$ gets:</p>
-<div>$$p_i=[\sin i,\ \cos i,\ \sin(i/100),\ \cos(i/100)]$$</div>
-<table class="lesson-table"><thead><tr><th>Slot index $i$</th><th>Fast sine</th><th>Fast cosine</th><th>Slow sine</th><th>Slow cosine</th></tr></thead><tbody id="position-sinusoids"></tbody></table>
-<p class="lesson-key">Two pairs of waves, at two different rates. Add this fixed row to the token embedding; there is no learned position table.</p>
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-rates">
+<h3>Two clock rates at indices 0 and 4</h3>
+<script type="text/x-notes">Keep the intentionally simple fast rate at 90 degrees per slot and add a slow 30-degree pair. At indices 0 and 4 the fast pair is identical but the slow pair differs. Both toy rates still repeat jointly at index 12, so do not claim a small collection of clocks guarantees no collisions or arbitrary length generalization. The original geometric frequency schedule is different. The formula and worked row follow this toy comparison.</script>
+<div class="position-visual" data-position-visual="rates"></div>
+<p>The fast pair repeats after four slots; the slow pair distinguishes these two positions.</p>
+<p class="lesson-key">Combine pairs into one vector. Multiple rates provide different scales, not a guarantee of unlimited context.</p>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-sine-rule" data-title="The sinusoidal formula" data-autobuild="off">
-<script type="text/x-notes">For even d and pair index r=0,...,d/2-1, frequency omega_r is 10000 raised to -2r/d. A shift by delta rotates a sine/cosine pair by a matrix that depends on delta, not the starting position. This makes offsets algebraically structured. It does not prove the model learns all offsets or extrapolates to arbitrary lengths.</script>
+<script type="text/x-notes">Now replace the teaching clocks with the original Transformer schedule. Use radians and sine first, unlike the cosine-first circle diagram. For even d and pair index r=0,...,d/2-1, frequency omega_r is 10000 raised to -2r/d. A shift by delta rotates a sine/cosine pair by a matrix that depends on delta, not the starting position. This makes offsets algebraically structured. It does not prove the model learns all offsets or extrapolates to arbitrary lengths.</script>
+<p>The standard rule uses radians and puts sine first in each pair.</p>
 <div>$$p_{i,2r}=\sin(i\omega_r),\qquad p_{i,2r+1}=\cos(i\omega_r)$$</div>
 <p class="lesson-key">$r$ labels a coordinate pair. $\omega_r=10000^{-2r/d}$ sets its rate; pairs use different rates.</p>
 <p data-build="1">Moving by a fixed number of slots rotates each pair by a fixed angle. Nearby positions change smoothly; different rates give different distance scales.</p>
@@ -471,22 +471,33 @@ Point to the two green tips at the same height, then reveal their different hori
 <p class="lesson-key">$i$ is a token position; $r$ is a coordinate-pair index; $d$ is vector width. The base 10000 controls the frequency range.</p>
 </div>
 
-<div class="companion context-lesson position-lesson position-reading" id="s17-position-absolute-range">
-<h3>A learned table has a last row</h3>
-<script type="text/x-notes">First limitation: a learned absolute table has a configured number of rows. This separate miniature model has Nmax=4, so valid indices are 0 through 3. The longer six-token input requests two nonexistent rows. This is a table lookup limitation, not a failure of the tokenizer or the word embedding table. Extending or interpolating the table is possible, but new position representations need adaptation and evaluation. A sinusoidal formula can calculate rows at 4 and 5, so do not extend this table-specific limitation to every absolute encoding. Source: Su et al., RoFormer, Section 2.2.</script>
-<p>Suppose the learned position table $P$ has <strong>four rows</strong>: indices 0, 1, 2 and 3.</p>
-<p class="lesson-key">“Maya helps Ravi today” fits. Now try a longer input:</p>
-<div class="position-numeric-scroll"><table class="lesson-table position-range-table"><thead><tr><th style="width:16%">Index</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead><tbody>
-<tr><th>Word</th><td>Maya</td><td>helps</td><td>Ravi</td><td>at</td><td>school</td><td>today</td></tr>
-<tr><th>Position row</th><td>$P[0]$</td><td>$P[1]$</td><td>$P[2]$</td><td>$P[3]$</td><td data-missing-position="4"><strong>No row</strong></td><td data-missing-position="5"><strong>No row</strong></td></tr>
-</tbody></table></div>
-<p data-build="1">We can extend the table, but the new rows are not automatically trained.</p>
-<p class="lesson-key" data-build="1">Sinusoids avoid the missing-row problem. Being able to compute a position is still not a guarantee of useful predictions at longer lengths.</p>
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-sine">
+<h3>Four rows of the sinusoidal pattern</h3>
+<script type="text/x-notes">Use actual computed values for the standard formula at d=4. The first pair changes by one radian per slot; the second by 0.01 radians per slot. The table is rounded to three decimals. These waves are fixed features, not probabilities. Source: Vaswani et al., Section 3.5, https://arxiv.org/abs/1706.03762.</script>
+<p>For a four-coordinate example, slot $i$ gets:</p>
+<div>$$p_i=[\sin i,\ \cos i,\ \sin(i/100),\ \cos(i/100)]$$</div>
+<table class="lesson-table"><thead><tr><th>Slot index $i$</th><th>Fast sine</th><th>Fast cosine</th><th>Slow sine</th><th>Slow cosine</th></tr></thead><tbody id="position-sinusoids"></tbody></table>
+<p class="lesson-key">Two pairs of waves, at two different rates. Add this fixed row to the token embedding; there is no learned position table.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-waves" data-title="Fast and slow coordinates change on different scales" data-autobuild="off">
+<script type="text/x-notes">Reuse the rates just calculated for d=4. Both plots use the same position axis from zero to twenty and the same vertical range from minus one to one. The first pair has rate one radian per slot. The second has rate 0.01. Sine is solid and cosine is dashed. Curves show the continuous formula; actual token positions sample integer indices. This is the four-coordinate standard example, not the 90-degree teaching clock.</script>
+<div class="position-journey" data-position-journey="waves"></div>
+<p>The fast pair goes around several times while the slow pair changes only a little.</p>
+<p class="lesson-key">Same position axis in both plots. Solid: sine. Dashed: cosine. Tokens sample the curves at integer indices.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-period" data-title="A smaller rate gives a longer period" data-autobuild="off">
+<script type="text/x-notes">The continuous angular period is 2 pi divided by omega. For width four the pair rates are one and 0.01, so their periods are approximately 6.283 and 628.319 slots. Plot the slow pair over zero to 650 to show a full turn. Neither period is an integer. Thus index six is not identical to index zero, and index 628 is only near the starting phase. The frequency base is 10000, not a requirement that the period or context length equals 10000. Fixed features outside the training range do not guarantee good predictions.</script>
+<p>A full turn is $2\pi$ radians, so the period is $T_r=2\pi/\omega_r$.</p>
+<div class="position-journey" data-position-journey="period"></div>
+<p>Rate 1: about <strong>6.28 slots</strong> per turn. Rate 0.01: about <strong>628.32 slots</strong>.</p>
+<p class="lesson-key">These are continuous periods. Integer indices 6 and 628 do not exactly repeat index 0.</p>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-absolute-context" data-title="Same word pair, five slots later" data-autobuild="off">
-<script type="text/x-notes">Second limitation: a relation can move to different absolute slots. Continue the Maya/Ravi example using zero-based indices, as in the sinusoid slides. Read from today to Ravi. Add the five-token prefix At the park after lunch. Today moves from 3 to 8; Ravi moves from 2 to 7. The source remains one token behind the receiver. This only identifies a preserved local distance, not identical meaning, attention weights or predictions. Extra prefix tokens and deeper-layer contextual representations can change the model's behavior.</script>
-<p>Let <strong>today</strong> read from <strong>Ravi</strong>. Add a five-word prefix:</p>
+<script type="text/x-notes">Sinusoids address the missing-row issue, but a different question remains: should a match depend on the absolute slots or the relative gap? Continue the Maya/Ravi example using zero-based indices, as in the sinusoid slides. Read from today to Ravi. Add the five-token prefix At the park after lunch. Today moves from 3 to 8; Ravi moves from 2 to 7. The source remains one token behind the receiver. This only identifies a preserved local distance, not identical meaning, attention weights or predictions. Extra prefix tokens and deeper-layer contextual representations can change the model's behavior.</script>
+<p>Sinusoids supply new rows. Now move <strong>today</strong> and <strong>Ravi</strong> five slots later:</p>
 <div class="position-journey" data-position-journey="context-shift"></div>
 <p class="lesson-key">Ravi stays <strong>one token back</strong>. Can position preserve that cue? Next, hold the content vectors fixed to isolate the positional effect.</p>
 </div>
@@ -500,7 +511,7 @@ Point to the two green tips at the same height, then reveal their different hori
 </div>
 
 <div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-relative-break" data-title="Relative positions" data-autobuild="off">
-<script type="text/x-notes">Pause after both limitations have been demonstrated. The learned-table example concerns available rows; the additive example concerns a score changing despite a shared shift. Relative methods directly target the second issue, not every long-context problem. Introduce distance bias first, then rotary Q/K features. Avoid claiming that absolute encodings cannot learn relative cues or that RoPE guarantees length generalization.</script>
+<script type="text/x-notes">Pause after the shared-shift example. The earlier sinusoidal subsection addressed a missing learned row. Here the separate issue is an additive score changing even when both positions shift by the same amount. Relative methods put the gap directly into the match, rather than solving every long-context problem. Introduce distance bias first, then rotary Q/K features. Avoid claiming that absolute encodings cannot learn relative cues or that RoPE guarantees length generalization.</script>
 <h3>Relative positions</h3>
 <p class="topic-recap">A word pair can keep its distance while moving to new absolute slots.</p>
 <p class="topic-question">How can we put that distance directly into the attention match?</p>
@@ -568,15 +579,6 @@ Point to the two green tips at the same height, then reveal their different hori
 <div class="position-flow"><span><strong>RoPE</strong><br>Project Q, K and V</span><b>→</b><span>Rotate Q and K<br>Keep V unrotated</span><b>→</b><span>Match, then mix</span></div>
 <p class="lesson-result">Sines and cosines appear in both. One adds a position vector; the other rotates matching vectors.</p>
 <p class="lesson-key">Neither method guarantees reliable predictions at lengths beyond training. The causal mask is still needed.</p>
-</div>
-
-<div class="companion context-lesson position-lesson position-reading" id="s17-position-mean">
-<h3>Why a plain mean still loses the word-to-slot assignment</h3>
-<script type="text/x-notes">Do not imply that additive positions fix order blindness for every architecture. Averaging independent token-plus-position rows is the sum of a token mean and a position mean. Under reassignment of the same words to the same occupied slots, both means stay fixed. Nonlinear processing before pooling or explicit token-position interactions can break this invariance; that would be a different baseline. Attention creates interactions through its query/key scores.</script>
-<div>$$\frac1n\sum_i(e_{{\rm token},i}+p_i)=\frac1n\sum_i e_{{\rm token},i}+\frac1n\sum_i p_i$$</div>
-<p data-build="1">Swap Maya and Ravi across the same four slots: the token sum stays the same, and the position sum stays the same.</p>
-<p class="lesson-result" data-build="2">The mean still loses <strong>which word was in which slot</strong>. We need interactions before pooling to preserve that association.</p>
-<p class="lesson-key" data-build="2">Attention is not just a fixed average: its weights depend on the token-and-position rows being compared.</p>
 </div>
 
 <div class="companion context-lesson position-lesson position-reading" id="s17-position-length">

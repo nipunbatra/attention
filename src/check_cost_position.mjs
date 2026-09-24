@@ -19,10 +19,10 @@ const positions=[
   'alternatives-break','append','append-qk-a','append-qk-b','append-product-a','append-scores',
   'append-product-b','append-scores-b','append-masked','append-softmax','append-softmax-b',
   'append-weights','append-scale-effect','append-scale','append-tradeoffs',
-  'learned-break','learned','learned-update','learned-limits','clock-choice','clock-why','clock','repeat','waves','period','sine-rule','worked-sine',
+  'learned-break','learned','learned-update','learned-limits','clock-choice','clock-why','clock','repeat','sine-rule','worked-sine','waves','period',
   'absolute-context','absolute-shift','relative-break','relative','alibi','rotate','rope-shift','rope-identity','rope-pairs','insertion','overview'
 ].map(x=>'s17-position-'+x);
-const readingExtras=['add','width','routing','rates','sine','absolute-range','rope','mean','length','choices'].map(x=>'s17-position-'+x);
+const readingExtras=['add','routing','mean','width','absolute-range','rates','sine','rope','length','choices'].map(x=>'s17-position-'+x);
 const ids=positions;
 const shots=fs.mkdtempSync(path.join(os.tmpdir(),'attention-cost-position-'));
 const browser=await pw.chromium.launch();
@@ -68,8 +68,31 @@ try{
   await page.setViewportSize({width:1280,height:720});await page.evaluate(()=>document.fonts.ready);
   const original=await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)}));
   assert.deepEqual(await page.locator('.frame.context-lesson').evaluateAll(es=>es.map(e=>e.id)),ids);
-  assert.equal(ids.length,54,'Include one sine/cosine intuition frame before the interactive clock.');
+  assert.equal(ids.length,54,'The sequence audit preserves every presentation frame.');
   assert.deepEqual(await page.locator('.position-reading[id]:not(#s17-position-map-notes)').evaluateAll(es=>es.map(e=>e.id)),readingExtras,'Recaps remain available for reading.');
+  // Reading mode must follow the same teaching logic, including its extra explanations.
+  const lessonOrder=await page.locator('#s17 .frame.position-lesson,#s17 .position-reading[id]').evaluateAll(es=>es.map(e=>e.id));
+  for(const run of [
+    ['updated','add','routing','mean','alternatives-break'],
+    ['append-tradeoffs','width','learned-break'],
+    ['learned-break','learned','learned-update','learned-limits','absolute-range','clock-choice'],
+    ['clock-choice','clock-why','clock','repeat','rates','sine-rule','worked-sine','sine','waves','period','absolute-context','absolute-shift','relative-break'],
+    ['relative-break','relative','alibi','rotate','rope-shift']
+  ]){
+    const expected=run.map(x=>'s17-position-'+x),start=lessonOrder.indexOf(expected[0]);
+    assert(start>=0,'Sequence has its starting frame: '+expected[0]);
+    assert.deepEqual(lessonOrder.slice(start,start+expected.length),expected,'Keep each limitation and worked calculation beside the method it explains.');
+  }
+  for(const [from,to]of [
+    ['learned-limits','clock-choice'],['repeat','sine-rule'],['worked-sine','waves'],
+    ['period','absolute-context'],['absolute-shift','relative-break']
+  ]){
+    await go('s17-position-'+from);
+    await page.evaluate(()=>AT.present.next());
+    assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s17-position-'+to,'Presentation skips only reading companions.');
+    await page.evaluate(()=>AT.present.prev());
+    assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s17-position-'+from,'Reverse navigation preserves the teaching sequence.');
+  }
   assert.equal(await page.locator('#s17 [data-position-journey="overview"]').count(),1,'Use one closing map with selectable highlights.');
   for(const id of readingExtras){
     assert.equal(await page.locator('#'+id).evaluate(e=>e.classList.contains('frame')),false);
@@ -315,7 +338,8 @@ try{
   }
   const absScores=await page.locator('[data-absolute-score]').evaluateAll(es=>es.map(e=>Number(e.dataset.absoluteScore)));
   close(absScores[0],1.5+Math.sqrt(3)/2,'absolute additive match at 3,2');close(absScores[1],.5,'absolute additive match at 8,7');
-  assert.deepEqual(await page.locator('[data-missing-position]').evaluateAll(es=>es.map(e=>Number(e.dataset.missingPosition))),[4,5],'Four-row learned table has no row at indices 4 or 5.');
+  assert.deepEqual(await page.locator('[data-missing-position]').evaluateAll(es=>es.map(e=>Number(e.dataset.missingPosition))),[5,6],'Retain one-based slots through the learned-table examples: slots 5 and 6 have no row.');
+  assert.deepEqual(await page.locator('#s17-position-absolute-range thead th').allTextContents(),['Slot','1','2','3','4','5','6']);
   const shiftExamples=await page.locator('[data-shift-example]').evaluateAll(es=>es.map(e=>({example:Number(e.dataset.shiftExample),index:Number(e.dataset.position),word:e.dataset.word})));
   for(const example of [0,1]){
     const row=shiftExamples.filter(e=>e.example===example);
