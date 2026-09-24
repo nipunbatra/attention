@@ -399,12 +399,20 @@ Point to slot 4, then the missing slot 5. This separate coverage example assumes
 <p class="topic-question">What if a fixed rule could calculate the offset for any slot?</p>
 </div>
 
+<div class="frame context-lesson position-lesson" id="s17-position-clock-why" data-title="Why sine and cosine?" data-autobuild="off">
+<script type="text/x-notes">If we record only the hand's height, can we tell these two positions apart?
+Point to the two green tips at the same height, then reveal their different horizontal coordinates. We want a fixed, calculable position signal whose coordinates do not grow with the raw slot number. A unit-circle point provides exactly that: choose angle theta_i = i*omega and record [cos(theta_i), sin(theta_i)]. Horizontal means cosine and vertical means sine. Both coordinates are bounded, and changing the angle a little changes the pair smoothly. A fixed slot offset produces the same angular offset anywhere on the circle, a structure the next slides develop. This is an intuition for one useful design, not proof that trigonometric functions are the only option. Our illustrative omega is 90 degrees per slot, and we now number the first token 0. At indices 0 and 2, sine is zero in both cases, but cosine is +1 and -1. Either scalar alone is ambiguous around a full circle. The pair identifies the phase within one turn, not the number of completed turns: index 4 repeats index 0 at this teaching rate. The next slider makes that repetition visible, before we introduce multiple rates. We add these fixed position features to the token row; we are not rotating the content query/key vectors as in RoPE. The cosine-first order matches our geometric diagram; the original Transformer formula shown later lists sine first. Source for fixed sinusoidal positional features and their offset structure: Vaswani et al., Section 3.5, https://arxiv.org/html/1706.03762v7#S3.SS5.</script>
+<p>Position sets the angle: $\theta_i=i\omega$. Read horizontal cosine and vertical sine.</p>
+<div class="position-journey"><svg viewBox="0 0 1120 330" role="img" aria-label="Positions zero and two have the same sine value, but the cosine coordinate distinguishes their points on the circle" data-position-clock-why><g data-clock-why-base></g><g data-clock-why-pair data-build="1"></g></svg></div>
+<p class="lesson-key" data-build="1">Equal slot steps give equal turns. Both numbers stay in $[-1,1]$. A full turn still repeats.</p>
+</div>
+
 <div class="frame context-lesson position-lesson" id="s17-position-clock" data-title="A sine and cosine pair marks one position" data-autobuild="off">
 <script type="text/x-notes">Use a clock-like two-coordinate feature before writing the general formula. Here we draw cosine horizontally and sine vertically, at an intentionally simple 90 degrees per slot. The original Transformer convention puts sine first and cosine second; swapping these coordinates changes the convention, not the purpose. These are position features that are ADDED to a token vector. This is not RoPE. The 90-degree rate is illustrative, not the original rate.</script>
 <div class="position-journey-controls"><label for="position-clock-index">Position index</label><input id="position-clock-index" type="range" min="0" max="4" step="1" value="0"><output id="position-clock-label" for="position-clock-index">0</output></div>
 <div class="position-journey" id="position-clock-picture"></div>
 <p>Record $[\cos(i\omega),\sin(i\omega)]$ as the offset to add. Here $\omega=90^\circ$ per slot.</p>
-<p class="lesson-key">The first token now has index 0. Each coordinate stays between $-1$ and $1$, but index 4 repeats index 0.</p>
+<p class="lesson-key">Indices start at 0. At index 4, this clock returns to index 0’s pair.</p>
 </div>
 
 <div class="companion context-lesson position-lesson position-reading" id="s17-position-rates">

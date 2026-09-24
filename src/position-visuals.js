@@ -261,6 +261,31 @@ document.addEventListener('DOMContentLoaded',()=>{
       text(s,20,242,'At i=3:',C.ink,27);text(s,370,242,fmt(rotate([1,0],3)),C.q,29);text(s,740,242,fmt(rotate([.6,.8],.03)),C.q,29);
     }
   });
+  // One held circle: sine alone loses left/right information, the pair keeps it.
+  const whyClock=document.querySelector('[data-position-clock-why]');
+  const whyBase=whyClock.querySelector('[data-clock-why-base]'),whyPair=whyClock.querySelector('[data-clock-why-pair]');
+  axes(whyBase,235,175,110);
+  line(whyBase,95,175,380,175,C.line);line(whyBase,235,46,235,301,C.line);
+  text(whyBase,180,36,'sin θ (height)',C.ink,25);
+  text(whyBase,365,211,'cos θ',C.ink,25);
+  text(whyBase,246,84,'1',C.ink,23);text(whyBase,241,287,'−1',C.ink,23);
+  text(whyBase,520,36,'First token: i = 0. Here ω = 90° per slot.',C.ink,24);
+  text(whyBase,520,94,'Index, angle',C.ink,26);text(whyBase,726,94,'Sine only',C.ink,26);
+  text(whyPair,908,94,'[cos θ, sin θ]',C.d,25);
+  [0,2].forEach((i,row)=>{
+    const angle=i*Math.PI/2,p=[Math.cos(angle),Math.sin(angle)],x=235+110*p[0],y=175-110*p[1],baseline=153+row*64;
+    arrow(whyBase,235,175,x,y,C.d);
+    whyBase.append(element('circle',{cx:x,cy:y,r:7,fill:C.d,'data-clock-why-index':i,'data-angle':angle,'data-vector':JSON.stringify(p)}));
+    text(whyBase,i===0?327:80,144,'i = '+i,C.d,26);
+    text(whyPair,x-12,211,String(Math.round(p[0])).replace('-','−'),C.d,26);
+    text(whyBase,520,baseline,i+', '+i*90+'°',C.ink,29);
+    text(whyBase,759,baseline,String(Math.round(p[1])),C.d,30);
+    arrow(whyPair,818,baseline-10,887,baseline-10,C.d);
+    const label=element('text',{x:910,y:baseline,'data-clock-why-offset':i,style:`fill:${C.d};font-size:29px`},'['+p.map(n=>String(Math.round(n)).replace('-','−')).join(', ')+']');whyPair.append(label);
+  });
+  text(whyBase,520,270,'Same height: sine cannot distinguish them.',C.ink,25);
+  text(whyPair,520,315,'Different sides: cosine separates this pair.',C.d,25);
+
   // An isolated training illustration: never update the attention toy's tables.
   function learnedExample(){
     const word=lesson.embeddings.Maya.slice(),position=lesson.positions[2].slice();

@@ -19,7 +19,7 @@ const positions=[
   'alternatives-break','append','append-qk-a','append-qk-b','append-product-a','append-scores',
   'append-product-b','append-scores-b','append-masked','append-softmax','append-softmax-b',
   'append-weights','append-scale-effect','append-scale','append-tradeoffs',
-  'learned-break','learned','learned-update','learned-limits','clock-choice','clock','repeat','waves','period','sine-rule','worked-sine',
+  'learned-break','learned','learned-update','learned-limits','clock-choice','clock-why','clock','repeat','waves','period','sine-rule','worked-sine',
   'absolute-context','absolute-shift','relative-break','relative','alibi','rotate','rope-shift','rope-identity','rope-pairs','insertion','overview'
 ].map(x=>'s17-position-'+x);
 const readingExtras=['add','width','routing','rates','sine','absolute-range','rope','mean','length','choices'].map(x=>'s17-position-'+x);
@@ -68,7 +68,7 @@ try{
   await page.setViewportSize({width:1280,height:720});await page.evaluate(()=>document.fonts.ready);
   const original=await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)}));
   assert.deepEqual(await page.locator('.frame.context-lesson').evaluateAll(es=>es.map(e=>e.id)),ids);
-  assert.equal(ids.length,53,'Include three learned-position frames without repeating the table boundary in presentation mode.');
+  assert.equal(ids.length,54,'Include one sine/cosine intuition frame before the interactive clock.');
   assert.deepEqual(await page.locator('.position-reading[id]:not(#s17-position-map-notes)').evaluateAll(es=>es.map(e=>e.id)),readingExtras,'Recaps remain available for reading.');
   assert.equal(await page.locator('#s17 [data-position-journey="overview"]').count(),1,'Use one closing map with selectable highlights.');
   for(const id of readingExtras){
@@ -284,6 +284,22 @@ try{
   }
   const updates=await page.locator('[data-updated-vector]').evaluateAll(es=>es.map(e=>JSON.parse(e.dataset.updatedVector)));
   updates.forEach((v,j)=>{const r=reference(sequences[j],true);v.forEach((x,c)=>close(x,r.q[c]+r.message[c],'context update after position addition'));});
+  const clockTips=await page.locator('[data-clock-why-index]').evaluateAll(es=>es.map(e=>({i:Number(e.dataset.clockWhyIndex),angle:Number(e.dataset.angle),p:JSON.parse(e.dataset.vector),x:Number(e.getAttribute('cx')),y:Number(e.getAttribute('cy'))})));
+  assert.deepEqual(clockTips.map(r=>r.i),[0,2]);
+  clockTips.forEach(r=>{
+    close(r.angle,r.i*Math.PI/2,'Intro uses the same 90-degree rate as the next clock');
+    close(r.p[0],Math.cos(r.angle),'Cosine is horizontal');close(r.p[1],Math.sin(r.angle),'Sine is vertical');
+    close(r.x,235+110*r.p[0],'Point horizontal projection');close(r.y,175-110*r.p[1],'Point vertical projection');
+  });
+  close(clockTips[0].p[1],clockTips[1].p[1],'Sine alone collides for indices 0 and 2');
+  assert.equal(clockTips[0].p[0],1);assert.equal(clockTips[1].p[0],-1);
+  assert.deepEqual(await page.locator('[data-clock-why-offset]').allTextContents(),['[1, 0]','[−1, 0]']);
+  for(const build of [0,1,0,1]){
+    await go('s17-position-clock-why',build);
+    assert.equal(await page.locator('[data-clock-why-pair]').evaluate(e=>getComputedStyle(e).visibility),build?'visible':'hidden','Cosine/pair reveal follows presenter navigation');
+  }
+  await page.evaluate(()=>AT.present.next());
+  assert.equal(await page.locator('.frame.is-live').getAttribute('id'),'s17-position-clock','The intuition leads directly to the existing clock control.');
   await go('s17-position-clock');
   for(const i of [0,1,2,3,4,0]){
     await page.locator('#position-clock-index').fill(String(i));

@@ -21,7 +21,7 @@ const targets=[
   ['s17-position-addition-break','s17-position-shift'],
   ['s17-position-alternatives-break','s17-position-append'],
   ['s17-position-learned-break','s17-position-learned'],
-  ['s17-position-clock-choice','s17-position-clock'],
+  ['s17-position-clock-choice','s17-position-clock-why'],
   ['s17-position-relative-break','s17-position-relative'],
   ['s19-topic-break','s19-frame-generation'],
   ['s19-pipeline-break','s19-pipeline-route-data'],
