@@ -219,9 +219,23 @@ body:not(.present) .context-lesson{margin:44px 0}
 <p class="lesson-key">The green coordinate records the slot. Maya and Ravi now have different rows after the swap.</p>
 </div>
 
+<div class="frame context-lesson position-lesson" id="s17-position-append-qk-a" data-title="Queries and keys for the first sentence" data-autobuild="off">
+<script type="text/x-notes">Which numbers enter the dot products? Read one row of the augmented input: Maya has word coordinates [1,0] and slot 1, giving [1,0,1]. Stack the four rows to form E tilde, shape 4 by 3. For this untrained toy choose W_Q=W_K=I_3 and zero biases. Multiplying by the identity copies each coordinate: Q=E tilde W_Q and K=E tilde W_K both equal E tilde. For example, Maya's first output coordinate is 1 times 1 plus 0 times 0 plus 1 times 0, which is 1. Its third output coordinate is 1 times 0 plus 0 times 0 plus 1 times 1, which is 1. Point to today's highlighted final query row. These are three-number attention inputs including position, not the original two-number word lookups. Values have their own projection W_V. They equal this input only if we also choose W_V=I_3 with zero bias; the score calculation does not need values. Trained projections need not be identities.</script>
+<p><strong>Sentence 1: Maya helps Ravi today.</strong> Choose $W_Q=W_K=I_3$, with no biases.</p>
+<div class="position-journey" data-appended-projections="a"></div>
+<p class="lesson-key">$Q=\tilde E W_Q=\tilde E$ and $K=\tilde E W_K=\tilde E$: word coordinates plus slot. Values equal $\tilde E$ only if $W_V=I_3$ too, with no bias.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-append-qk-b" data-title="Queries and keys after the swap" data-autobuild="off">
+<script type="text/x-notes">Keep the identity matrices, zero biases and diagram layout unchanged. Swap only Maya and Ravi. Ravi's word lookup [0,1] now gets slot 1; Maya's lookup [1,0] now gets slot 3. Compute Q and K again by multiplying the displayed input by I_3. Today's input and query stay [0.8,0.2,4]. Unlike the earlier word-only experiment, the keys are not simply a permutation of the old keys: the appended slot stays attached to its position. Ask students to locate Maya's key [1,0,3] and compare it with [1,0,1] on the previous slide. Values still require a separate choice of W_V. The next slide returns explicitly to sentence 1 to work out its dot products.</script>
+<p><strong>Sentence 2: Ravi helps Maya today.</strong> Keep $W_Q=W_K=I_3$, with no biases.</p>
+<div class="position-journey" data-appended-projections="b"></div>
+<p class="lesson-key">Today's query stays the same. Maya and Ravi carry their new slot numbers into Q and K.</p>
+</div>
+
 <div class="frame context-lesson position-lesson position-worked position-append" id="s17-position-append-scores" data-title="The slot number can dominate the match" data-autobuild="off">
 <script type="text/x-notes">Use Maya helps Ravi today with the appended rows. For this untrained diagnostic toy only, choose W_Q=W_K=I_3. Today's query is [0.8,0.2,4]. Dotting against each key adds the word-only contribution to 4 times the source slot. Read Maya's row: 0.8 times 1 plus 0.2 times 0 plus 4 times 1 equals 4.8. Ravi's word contribution is smaller, 0.2, but its slot contributes 12. Thus it scores above Maya because of the appended index under these fixed projections. This is not a claim about the correct linguistic attention pattern. Softmax on the next slide divides all raw totals by sqrt(3), matching the new query/key width.</script>
-<p><strong>Maya helps Ravi today.</strong> Keep $W_Q=W_K=I_3$ for this untrained toy.</p>
+<p>Back to <strong>sentence 1: Maya helps Ravi today.</strong> Use the Q and K we just computed.</p>
 <div class="worked-detail">$q_4=[0.8,0.2,4]$, so $q_4\cdot k_j=\text{word contribution}+4j$.</div>
 <div class="worked-scroll"><table class="worked-table" id="position-append-scores"><thead><tr><th>Source</th><th>Word contribution</th><th>Slot contribution</th><th>Raw dot product</th></tr></thead><tbody></tbody></table></div>
 <p class="append-result">Ravi's larger slot outweighs Maya's stronger word match in this toy.</p>
@@ -529,15 +543,17 @@ body:not(.present) .context-lesson{margin:44px 0}
     // Alternative input: bare word lookup plus ONE appended coordinate.
     // Identity Q/K projections deliberately expose the feature-scale effect.
     const rows=tokens.map((token,j)=>[...embeddings[token],scale*(j+1)]);
-    const q=rows.at(-1);
-    const wordTerms=rows.map(k=>q[0]*k[0]+q[1]*k[1]);
-    const positionTerms=rows.map(k=>q[2]*k[2]);
+    const WQ=[[1,0,0],[0,1,0],[0,0,1]],WK=[[1,0,0],[0,1,0],[0,0,1]];
+    const project=W=>rows.map(row=>W[0].map((_,c)=>row.reduce((sum,x,j)=>sum+x*W[j][c],0)));
+    const Q=project(WQ),K=project(WK),q=Q.at(-1); // No projection biases in this toy.
+    const wordTerms=K.map(k=>q[0]*k[0]+q[1]*k[1]);
+    const positionTerms=K.map(k=>q[2]*k[2]);
     const rawScores=wordTerms.map((word,j)=>word+positionTerms[j]);
     const scores=rawScores.map(s=>s/Math.sqrt(q.length));
     const max=Math.max(...scores),exps=scores.map(s=>Math.exp(s-max));
     const denominator=exps.reduce((sum,x)=>sum+x,0);
     const weights=exps.map(x=>x/denominator);
-    return {rows,q,wordTerms,positionTerms,rawScores,scores,weights};
+    return {rows,WQ,WK,Q,K,q,wordTerms,positionTerms,rawScores,scores,weights};
   }
   function sinusoid(i){return [Math.sin(i),Math.cos(i),Math.sin(i/100),Math.cos(i/100)];}
   function rotaryDot(i,j){const a=i*Math.PI/6,b=j*Math.PI/6;return Math.cos(a)*Math.cos(b)+Math.sin(a)*Math.sin(b);}

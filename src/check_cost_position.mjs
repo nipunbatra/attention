@@ -16,7 +16,7 @@ const costs=['break','symbols','matmul','concat-network','concat','average-netwo
 const positions=[
   'break','order','permute','scores','swapped','contributions','consequence',
   'addition-break','shift','move-a','move-b','moved','toy','slot-scores','experiment','updated',
-  'alternatives-break','append','append-scores','append-softmax','append-scale','append-tradeoffs',
+  'alternatives-break','append','append-qk-a','append-qk-b','append-scores','append-softmax','append-scale','append-tradeoffs',
   'learned-break','learned','clock-choice','clock','repeat','waves','period','sine-rule','worked-sine',
   'absolute-range','absolute-context','absolute-shift','relative-break','relative','alibi','rotate','rope-shift','rope-identity','rope-pairs','insertion','overview'
 ].map(x=>'s17-position-'+x);
@@ -66,7 +66,7 @@ try{
   await page.setViewportSize({width:1280,height:720});await page.evaluate(()=>document.fonts.ready);
   const original=await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)}));
   assert.deepEqual(await page.locator('.frame.context-lesson').evaluateAll(es=>es.map(e=>e.id)),ids);
-  assert.equal(ids.length,43,'Include the alternatives divider and keep the worked limitations before relative positions, without duplicate recaps.');
+  assert.equal(ids.length,45,'Include separate Q/K calculations for both appended-position sentences.');
   assert.deepEqual(await page.locator('.position-reading[id]:not(#s17-position-map-notes)').evaluateAll(es=>es.map(e=>e.id)),readingExtras,'Recaps remain available for reading.');
   assert.equal(await page.locator('#s17 [data-position-journey="overview"]').count(),1,'Use one closing map with selectable highlights.');
   for(const id of readingExtras){
@@ -108,6 +108,11 @@ try{
       const expected=appendedReference(tokens,scale);
       const actual=await page.evaluate(({tokens,scale})=>AT.positionLesson.appendedExperiment(tokens,scale),{tokens,scale});
       assert.deepEqual(actual.rows,expected.rows);
+      assert.deepEqual(actual.WQ,[[1,0,0],[0,1,0],[0,0,1]]);
+      assert.deepEqual(actual.WK,actual.WQ);
+      assert.deepEqual(actual.Q,expected.rows,'Identity query projection copies the augmented input.');
+      assert.deepEqual(actual.K,expected.rows,'Identity key projection copies the augmented input.');
+      assert.deepEqual(actual.q,actual.Q[3]);
       for(const key of ['q','wordTerms','positionTerms','rawScores','scores','weights'])
         actual[key].forEach((x,j)=>close(x,expected[key][j],'appended '+key));
       close(actual.weights.reduce((a,b)=>a+b),1,'appended weights normalize');
@@ -115,7 +120,23 @@ try{
   }
   for(const [index,suffix]of ['a','b'].entries()){
     assert.deepEqual(await page.locator('#position-append-'+suffix+' [data-vector]').evaluateAll(es=>es.map(e=>JSON.parse(e.dataset.vector))),appendedReference(sequences[index],1).rows);
+    const diagram=page.locator('[data-appended-projections="'+suffix+'"]');
+    const expected=appendedReference(sequences[index],1).rows;
+    for(const name of ['input','identity','Q','K']){
+      const values=name==='identity'?[[1,0,0],[0,1,0],[0,0,1]]:expected;
+      const cells=await diagram.locator('[data-projection-matrix="'+name+'"] [data-value]').evaluateAll(es=>es.map(e=>({row:Number(e.dataset.row),column:Number(e.dataset.column),value:Number(e.dataset.value),text:e.textContent})));
+      assert.equal(cells.length,values.length*3);
+      for(const cell of cells){
+        assert.equal(cell.value,values[cell.row][cell.column]);
+        assert.equal(cell.text,name==='identity'||cell.column===2?String(cell.value):cell.value.toFixed(1));
+      }
+    }
+    assert.deepEqual(await diagram.locator('[data-source-row]').allTextContents(),sequences[index].map((token,j)=>(j+1)+' '+token));
+    assert.equal(await diagram.locator('[data-projection-matrix="Q"] [data-query-row="3"]').count(),1);
   }
+  const geometry=await page.locator('[data-appended-projections] svg').evaluateAll(es=>es.map(s=>[...s.querySelectorAll('rect,text')].map(e=>['x','y','width','height'].map(a=>e.getAttribute(a)))));
+  assert.deepEqual(geometry[0],geometry[1],'Both sentences use a held matrix layout.');
+  assert.match(await page.locator('#s17-position-append-qk-a .lesson-key').innerText(),/Values equal.*only if.*no bias/);
   const appendedColumns=await page.locator('#position-append-scores tbody tr').evaluateAll(rows=>rows.map(tr=>[...tr.querySelectorAll('[data-value]')].map(e=>Number(e.dataset.value))));
   appendedColumns.forEach((row,j)=>{
     const r=appendedReference(sequences[0],1);

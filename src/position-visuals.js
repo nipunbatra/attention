@@ -64,6 +64,31 @@ document.addEventListener('DOMContentLoaded',()=>{
     });
   });
   const appended=lesson.appendedExperiment(lesson.sequences[0]);
+  document.querySelectorAll('[data-appended-projections]').forEach(host=>{
+    const index=host.dataset.appendedProjections==='a'?0:1,tokens=lesson.sequences[index];
+    const r=lesson.appendedExperiment(tokens);
+    const s=canvas(host,tokens.join(' ')+': input times identity gives the complete query and key matrices',380);
+    function matrix(name,values,x,y,width,color,label){
+      const group=element('g',{'data-projection-matrix':name});s.append(group);
+      text(group,x,32,label,color,29);
+      text(group,x,65,values.length+' × '+values[0].length,C.ink,23);
+      values.forEach((row,j)=>row.forEach((value,c)=>{
+        const cx=x+c*width,cy=y+j*52;
+        group.append(element('rect',{x:cx,y:cy,width,height:52,fill:color,'fill-opacity':name==='Q'&&j===3?.14:.035,stroke:C.line,'stroke-width':1}));
+        group.append(element('text',{x:cx+width/2,y:cy+34,'text-anchor':'middle','data-row':j,'data-column':c,'data-value':value,style:`fill:${name==='input'&&c===2?C.d:color};font-size:29px`},name==='identity'||c===2?String(value):value.toFixed(1)));
+      }));
+      if(name==='Q')group.append(element('rect',{x,y:y+3*52,width:3*width,height:52,fill:'none',stroke:C.q,'stroke-width':3,'data-query-row':'3'}));
+    }
+    text(s,12,65,'Slot / word',C.ink,23);
+    tokens.forEach((token,j)=>s.append(element('text',{x:12,y:112+j*52+34,'data-source-row':j,style:`fill:${token==='today'?C.q:C.ink};font-size:26px`},(j+1)+' '+token)));
+    matrix('input',r.rows,160,112,66,C.e,'Input Ẽ');
+    matrix('identity',r.WQ,420,138,44,C.ink,'I₃');
+    matrix('Q',r.Q,628,112,66,C.q,'Queries Q');
+    matrix('K',r.K,890,112,66,C.k,'Keys K');
+    text(s,378,231,'×',C.ink,32);text(s,583,231,'=',C.ink,32);text(s,849,231,'=',C.ink,32);
+    text(s,160,362,'Two word coordinates + slot',C.ink,25);
+    text(s,628,362,'q₄ = ['+r.q.map((value,c)=>c===2?String(value):value.toFixed(1)).join(', ')+']',C.q,29);
+  });
   const scoreBody=document.querySelector('#position-append-scores tbody');
   lesson.sequences[0].forEach((token,j)=>{
     const tr=document.createElement('tr');cell(tr,(j+1)+' '+token);
