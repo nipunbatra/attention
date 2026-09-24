@@ -19,6 +19,7 @@ const targets=[
   ['s16-topic-break','s16-flow-frame'],
   ['s17-position-break','s17-position-order'],
   ['s17-position-addition-break','s17-position-shift'],
+  ['s17-position-alternatives-break','s17-position-append'],
   ['s17-position-learned-break','s17-position-learned'],
   ['s17-position-clock-choice','s17-position-clock'],
   ['s17-position-relative-break','s17-position-relative'],
@@ -35,6 +36,12 @@ try{
   const original=await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)}));
   await page.evaluate(()=>AT.present.enter());
   assert.deepEqual(await page.locator('.lecture-topic-break').evaluateAll(es=>es.map(e=>e.id)),targets.map(t=>t[0]));
+  const alternatives=['s17-position-append','s17-position-learned-break','s17-position-clock-choice'];
+  for(const [index,id] of alternatives.entries()){
+    assert((await page.locator('#'+id).getAttribute('data-title')).startsWith(`Alternative ${index+1}:`),'Number the alternatives consistently');
+  }
+  assert.match(await page.locator('#s17-position-alternatives-break .topic-question').textContent(),/scale overwhelm the word features/);
+  assert.match(await page.locator('#s17-position-append-tradeoffs .lesson-result').textContent(),/Concatenation can work/,'Keep the limitation specific to the naive setup');
   async function go(id,build=0){
     await page.evaluate(({id,build})=>{
       const e=document.getElementById(id),s=e.closest('.sec');

@@ -16,7 +16,7 @@ const costs=['break','symbols','matmul','concat-network','concat','average-netwo
 const positions=[
   'break','order','permute','scores','swapped','contributions','consequence',
   'addition-break','shift','move-a','move-b','moved','toy','slot-scores','experiment','updated',
-  'append','append-scores','append-softmax','append-scale','append-tradeoffs',
+  'alternatives-break','append','append-scores','append-softmax','append-scale','append-tradeoffs',
   'learned-break','learned','clock-choice','clock','repeat','waves','period','sine-rule','worked-sine',
   'absolute-range','absolute-context','absolute-shift','relative-break','relative','alibi','rotate','rope-shift','rope-identity','rope-pairs','insertion','overview'
 ].map(x=>'s17-position-'+x);
@@ -66,7 +66,7 @@ try{
   await page.setViewportSize({width:1280,height:720});await page.evaluate(()=>document.fonts.ready);
   const original=await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)}));
   assert.deepEqual(await page.locator('.frame.context-lesson').evaluateAll(es=>es.map(e=>e.id)),ids);
-  assert.equal(ids.length,42,'Keep the worked limitations before the relative-position divider without restoring duplicate recaps.');
+  assert.equal(ids.length,43,'Include the alternatives divider and keep the worked limitations before relative positions, without duplicate recaps.');
   assert.deepEqual(await page.locator('.position-reading[id]:not(#s17-position-map-notes)').evaluateAll(es=>es.map(e=>e.id)),readingExtras,'Recaps remain available for reading.');
   assert.equal(await page.locator('#s17 [data-position-journey="overview"]').count(),1,'Use one closing map with selectable highlights.');
   for(const id of readingExtras){

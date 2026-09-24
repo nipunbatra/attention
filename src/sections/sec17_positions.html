@@ -201,7 +201,14 @@ body:not(.present) .context-lesson{margin:44px 0}
 <p class="lesson-key" data-build="2">Both rows have $d$ coordinates; their sum still has $d$. These example coordinates have no prescribed meaning.</p>
 </div>
 
-<div class="frame context-lesson position-lesson position-worked position-append" id="s17-position-append" data-title="Appending the slot number" data-autobuild="off">
+<div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-alternatives-break" data-title="Alternative ways to encode position" data-autobuild="off">
+<script type="text/x-notes">Could we supply position without adding a full position vector? First try appending the raw slot number to the Maya–Ravi word rows. It records order, but the following fixed-projection example shows how its scale can dominate the match. This is a limitation of the naive setup, not proof that concatenating position cannot work. Then compare learned additive rows and fixed sinusoidal rows as alternatives 2 and 3.</script>
+<h3>Alternative ways to encode position</h3>
+<p class="topic-recap">We need an order signal. There are several ways to supply it.</p>
+<p class="topic-question">First idea: append the slot number. Could its scale overwhelm the word features?</p>
+</div>
+
+<div class="frame context-lesson position-lesson position-worked position-append" id="s17-position-append" data-title="Alternative 1: appending the slot number" data-autobuild="off">
 <script type="text/x-notes">Try an alternative to adding p_i. Return to the original two-number word lookups, then append the one-based slot index as a third coordinate. No additive position row is used in this experiment. The tilde marks this alternative representation. Both sentences now have different rows for Maya and Ravi, so appending position can distinguish order. Ask whether the numerical scale of this new coordinate is suitable. The next slide holds Q/K projections fixed at the three-dimensional identity to expose the effect.</script>
 <p>Return to the two-number word rows. Append the slot $i$ instead of adding $p_i$.</p>
 <div class="worked-detail">Alternative row: $\tilde e_i=[\,E_{\rm tok}[t_i]\,;\,i\,]$. Two coordinates become three.</div>
@@ -271,9 +278,9 @@ body:not(.present) .context-lesson{margin:44px 0}
 <p class="lesson-key" data-build="2">$E_{\rm tok}[t_i]$ is the word lookup. Adding $p_i$ gives the representation $e_i$ entering attention.</p>
 </div>
 
-<div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-learned-break" data-title="Method 1: learned positions" data-autobuild="off">
-<script type="text/x-notes">The preceding offsets were chosen by hand. Introduce the first way to obtain them in a trained model: learn a table with one row per absolute slot. This is the method used in the notebook. Do not imply that the learned and sinusoidal methods must be used together.</script>
-<h3>Method 1: learned positions</h3>
+<div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-learned-break" data-title="Alternative 2: learned positions" data-autobuild="off">
+<script type="text/x-notes">How could training choose the position features instead of using a raw index? Return to fixed-width addition and learn a table with one row per absolute slot. This is the second alternative in this subsection and the method used in the notebook. Do not imply that the learned and sinusoidal methods must be used together.</script>
+<h3>Alternative 2: learned positions</h3>
 <p class="topic-recap">So far, we chose the position offsets by hand.</p>
 <p class="topic-question">Could training learn a useful row for each slot?</p>
 </div>
@@ -286,9 +293,9 @@ body:not(.present) .context-lesson{margin:44px 0}
 <p class="lesson-result" data-build="2">Tradeoff: the table has a configured length. Adding new rows does not make them trained position representations.</p>
 </div>
 
-<div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-clock-choice" data-title="Method 2: sinusoidal positions" data-autobuild="off">
-<script type="text/x-notes">The second absolute-position method calculates fixed offsets instead of learning a table. Begin with the circle intuition, then show different rates and the standard formula. The toy clocks use degrees and integer periods. The standard formula later uses radians. Starting here, indices are zero-based, as the next slide states.</script>
-<h3>Method 2: sinusoidal positions</h3>
+<div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-clock-choice" data-title="Alternative 3: sinusoidal positions" data-autobuild="off">
+<script type="text/x-notes">The third alternative calculates fixed offsets instead of learning a table. Begin with the circle intuition, then show different rates and the standard formula. The toy clocks use degrees and integer periods. The standard formula later uses radians. Starting here, indices are zero-based, as the next slide states.</script>
+<h3>Alternative 3: sinusoidal positions</h3>
 <p class="topic-recap">A learned table stores the offsets as model parameters.</p>
 <p class="topic-question">What if a fixed rule could calculate the offset for any slot?</p>
 </div>
