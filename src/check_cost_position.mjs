@@ -16,13 +16,14 @@ const costs=['break','symbols','matmul','concat-network','concat','average-netwo
 const positions=[
   'break','order','permute','scores','swapped','contributions','consequence',
   'addition-break','shift','move-a','move-b','moved','toy','slot-scores','experiment','updated',
+  'learned-break','learned','learned-update','learned-limits','clock-choice','clock-why','clock','repeat','sine-rule','worked-sine','waves','period',
+  'absolute-context','absolute-shift','relative-break','relative','alibi','rotate','rope-shift','rope-identity','rope-pairs','insertion',
   'alternatives-break','append','append-qk-a','append-scores','append-softmax','append-values-a',
   'append-qk-b','append-scores-b','append-softmax-b','append-values-b',
   'append-scale-effect','append-scale','append-tradeoffs',
-  'learned-break','learned','learned-update','learned-limits','clock-choice','clock-why','clock','repeat','sine-rule','worked-sine','waves','period',
-  'absolute-context','absolute-shift','relative-break','relative','alibi','rotate','rope-shift','rope-identity','rope-pairs','insertion','overview'
+  'overview'
 ].map(x=>'s17-position-'+x);
-const readingExtras=['add','routing','mean','width','absolute-range','rates','sine','rope','length','choices'].map(x=>'s17-position-'+x);
+const readingExtras=['add','routing','mean','absolute-range','rates','sine','rope','length','choices','width'].map(x=>'s17-position-'+x);
 const ids=positions;
 const shots=fs.mkdtempSync(path.join(os.tmpdir(),'attention-cost-position-'));
 const browser=await pw.chromium.launch();
@@ -73,17 +74,18 @@ try{
   // Reading mode must follow the same teaching logic, including its extra explanations.
   const lessonOrder=await page.locator('#s17 .frame.position-lesson,#s17 .position-reading[id]').evaluateAll(es=>es.map(e=>e.id));
   for(const run of [
-    ['updated','add','routing','mean','alternatives-break'],
-    ['append','append-qk-a','append-scores','append-softmax','append-values-a','append-qk-b','append-scores-b','append-softmax-b','append-values-b','append-scale-effect','append-scale','append-tradeoffs','width','learned-break'],
+    ['updated','add','routing','mean','learned-break'],
+    ['alternatives-break','append','append-qk-a','append-scores','append-softmax','append-values-a','append-qk-b','append-scores-b','append-softmax-b','append-values-b','append-scale-effect','append-scale','append-tradeoffs','width','overview','map-notes'],
     ['learned-break','learned','learned-update','learned-limits','absolute-range','clock-choice'],
     ['clock-choice','clock-why','clock','repeat','rates','sine-rule','worked-sine','sine','waves','period','absolute-context','absolute-shift','relative-break'],
-    ['relative-break','relative','alibi','rotate','rope-shift']
+    ['relative-break','relative','alibi','rotate','rope-shift','rope','rope-identity','rope-pairs','insertion','length','choices','alternatives-break']
   ]){
     const expected=run.map(x=>'s17-position-'+x),start=lessonOrder.indexOf(expected[0]);
     assert(start>=0,'Sequence has its starting frame: '+expected[0]);
     assert.deepEqual(lessonOrder.slice(start,start+expected.length),expected,'Keep each limitation and worked calculation beside the method it explains.');
   }
   for(const [from,to]of [
+    ['updated','learned-break'],['insertion','alternatives-break'],['append-tradeoffs','overview'],
     ['learned-limits','clock-choice'],['repeat','sine-rule'],['worked-sine','waves'],
     ['period','absolute-context'],['absolute-shift','relative-break']
   ]){

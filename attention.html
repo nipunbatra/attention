@@ -12485,7 +12485,7 @@ body:not(.present) .context-lesson{margin:44px 0}
 </div>
 
 <div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-addition-break" data-title="Adding position to a word" data-autobuild="off">
-<script type="text/x-notes">Pause after establishing why this one-layer example needs an order signal. The next sequence shows the actual operation before discussing how to obtain the position rows. The first rows are invented for a visible two-dimensional example. Learned and sinusoidal methods follow after the addition and appended-index alternatives.</script>
+<script type="text/x-notes">Pause after establishing why this one-layer example needs an order signal. The next sequence shows the actual operation before discussing how to obtain the position rows. The first rows are invented for a visible two-dimensional example. Learned position rows follow the addition example, then fixed sinusoidal features and relative methods. The raw-index alternative is a closing discussion after these methods.</script>
 <h3>Adding position to a word</h3>
 <p class="topic-recap">The word lookup stays the same when Maya and Ravi swap slots.</p>
 <p class="topic-question">What changes if each slot supplies an offset to that word's embedding?</p>
@@ -12580,134 +12580,9 @@ body:not(.present) .context-lesson{margin:44px 0}
 <p class="lesson-key" data-build="2">Attention is not just a fixed average: its weights depend on the token-and-position rows being compared.</p>
 </div>
 
-<div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-alternatives-break" data-title="Alternative ways to encode position" data-autobuild="off">
-<script type="text/x-notes">Could we supply position without adding a full position vector? First try appending the raw slot number to the Maya–Ravi word rows. It records order, but the following fixed-projection example shows how its scale can dominate the match. This is a limitation of the naive setup, not proof that concatenating position cannot work. Then compare learned additive rows and fixed sinusoidal rows as alternatives 2 and 3.</script>
-<h3>Alternative ways to encode position</h3>
-<p class="topic-recap">We need an order signal. There are several ways to supply it.</p>
-<p class="topic-question">First idea: append the slot number. Could its scale overwhelm the word features?</p>
-</div>
-
-<div class="frame context-lesson position-lesson position-worked position-append" id="s17-position-append" data-title="Alternative 1: appending the slot number" data-autobuild="off">
-<script type="text/x-notes">Try an alternative to adding p_i. Return to the original two-number word lookups, then append the one-based slot index as a third coordinate. No additive position row is used in this experiment. The tilde marks this alternative representation. Both sentences now have different rows for Maya and Ravi, so appending position can distinguish order. Ask whether the numerical scale of this new coordinate is suitable. The next slide holds Q/K projections fixed at the three-dimensional identity to expose the effect.</script>
-<p>Return to the two-number word rows. Append the slot $i$ instead of adding $p_i$.</p>
-<div class="worked-detail">Alternative row: $\tilde e_i=[\,E_{\rm tok}[t_i]\,;\,i\,]$. Two coordinates become three.</div>
-<div class="mix-pair">
-<div><p>Maya helps Ravi today</p><table class="worked-table" id="position-append-a"><thead><tr><th>Word</th><th>Word row + slot</th></tr></thead><tbody></tbody></table></div>
-<div><p>Ravi helps Maya today</p><table class="worked-table" id="position-append-b"><thead><tr><th>Word</th><th>Word row + slot</th></tr></thead><tbody></tbody></table></div>
-</div>
-<p class="lesson-key">The green coordinate records the slot. Maya and Ravi now have different rows after the swap.</p>
-</div>
-
-<div class="frame context-lesson position-lesson position-worked position-append" id="s17-position-append-qk-a" data-title="Today's query and the four keys" data-autobuild="off">
-<script type="text/x-notes">Which source should today read from?
-Point to today's one query, then read the four source keys below it. The first two coordinates come from the word lookup. The third is c times the one-based slot number. In this untrained toy choose W_Q=W_K=W_V=I_3, with zero biases. Each projection therefore copies the augmented input, not just its original two-number word row. At c=1 today gives q_4=[0.8,0.2,4]. Values will use the same three numbers, but they play a different role: keys set the scores, values supply the message content. All four sources are visible because today is the final receiver. We calculate no other receiver in this walkthrough. Learned projections need not be identities. The scale control follows every subsequent query, score, weight and value.</script>
-<div class="append-scale-control" data-append-control="Maya helps Ravi today"></div>
-<div class="worked-detail append-query" data-append-query></div>
-<div class="worked-scroll"><table class="worked-table append-key-table" id="position-append-keys-a"><thead><tr><th>Source</th><th>Key $k_j$: word coordinates + slot</th></tr></thead><tbody></tbody></table></div>
-<p class="lesson-key">Toy choice: $W_Q=W_K=W_V=I_3$, no biases. Each projection copies the three-number input.</p>
-</div>
-
-<div class="frame context-lesson position-lesson position-worked position-append append-calculation" id="s17-position-append-scores" data-title="Word match versus slot number" data-autobuild="off">
-<script type="text/x-notes">Why can a weaker word match win?
-Hold today's query at the top and expand its dot product with each source key. The word contribution is 0.8 for Maya and 0.2 for Ravi in either sentence. At c=1 the position contribution is 4j, so the later slot can outweigh the better word match. Maya gets 0.8+4=4.8, while Ravi gets 0.2+12=12.2. Today gets 0.68+16=16.68, the largest total. These are raw dot products, not normalized weights. The next slide divides by sqrt(3), since the query and key each have three coordinates, then applies softmax across these four sources. The word contribution is a controlled comparison, not a claim about linguistic relevance.</script>
-<div class="append-scale-control" data-append-control="Maya helps Ravi today"></div>
-<div class="worked-detail append-query" data-append-query></div>
-<div class="worked-scroll"><table class="worked-table" id="position-append-scores"><thead><tr><th>Source</th><th>Word products</th><th>Slot product</th><th>Raw dot product</th></tr></thead><tbody></tbody></table></div>
-<p class="lesson-key" data-append-score-result="a"></p>
-</div>
-
-<div class="frame context-lesson position-lesson position-worked position-append" id="s17-position-append-softmax" data-title="Scores become four attention weights" data-autobuild="off">
-<script type="text/x-notes">How much of the message will come from each source?
-Read each raw dot product divided by sqrt(3), then its exponential and normalized weight. Sum the four exponentials before dividing. The weights add to one. Every source is allowed because today is last, so no future-source masking changes these four scores. At c=1 today receives 92.3 percent of the weight. The raw slot term makes the self-weight dominate despite Maya's stronger word-only match. This is a result of our fixed identity projections, not evidence that attending to oneself is always wrong. Values have not been mixed yet. Displayed numbers round; computation uses full precision and stable max-subtracted softmax.</script>
-<div class="append-scale-control" data-append-control="Maya helps Ravi today"></div>
-<div class="worked-scroll"><table class="worked-table" id="position-append-softmax"><thead><tr><th>Source</th><th>Score $s_j$</th><th>$\exp(s_j)$</th><th>Weight $\alpha_j$</th></tr></thead><tbody></tbody></table></div>
-<div class="worked-detail" id="position-append-denominator"></div>
-<p class="lesson-key" id="position-append-normalization"></p>
-</div>
-
-<div class="frame context-lesson position-lesson position-worked position-append" id="s17-position-append-values-a" data-title="The values form today's message" data-autobuild="off">
-<script type="text/x-notes">What does that large weight actually send to today?
-Multiply each source value by its own softmax weight, then reveal the sum. We explicitly chose W_V=I_3 without bias, so v_j equals the three-number augmented input. Keys and values happen to have equal numbers in this toy, but keys determined the match and values now carry the content. Every coordinate of a value gets the same source weight. Sum all four contribution vectors at full precision to obtain m_4. At c=1 the result is dominated by today's own value. These three coordinates include the appended position feature and are not probabilities or a predicted word. The output projection and residual come later in a full model; they are not needed to isolate this scale problem. Changing c changes both the scores and the third value coordinate. The original word coordinates and projection weights remain fixed.</script>
-<div class="append-scale-control" data-append-control="Maya helps Ravi today"></div>
-<div class="worked-scroll"><table class="worked-table append-value-table" id="position-append-values-a"><thead><tr><th>Source</th><th>Weight $\alpha_j$</th><th>Value $v_j$</th><th>Contribution $\alpha_jv_j$</th></tr></thead><tbody></tbody><tfoot data-build="1"></tfoot></table></div>
-<p class="lesson-key" data-build="1" data-append-message-result="a"></p>
-</div>
-
-<div class="frame context-lesson position-lesson position-worked position-append" id="s17-position-append-qk-b" data-title="The same query after the swap" data-autobuild="off">
-<script type="text/x-notes">Which source should today read from?
-Point to today's one query, then read the four source keys below it. Only Maya and Ravi swap slots. Their word coordinates follow them, while the slot coordinates stay in place. Today remains in slot 4. In this untrained toy choose W_Q=W_K=W_V=I_3, with zero biases. Each projection therefore copies the augmented input, not just its original two-number word row. At c=1 today gives q_4=[0.8,0.2,4]. Values will use the same three numbers, but they play a different role: keys set the scores, values supply the message content. All four sources are visible because today is the final receiver. We calculate no other receiver in this walkthrough. Learned projections need not be identities. The scale control follows every subsequent query, score, weight and value.</script>
-<div class="append-scale-control" data-append-control="Ravi helps Maya today"></div>
-<div class="worked-detail append-query" data-append-query></div>
-<div class="worked-scroll"><table class="worked-table append-key-table" id="position-append-keys-b"><thead><tr><th>Source</th><th>Key $k_j$: word coordinates + slot</th></tr></thead><tbody></tbody></table></div>
-<p class="lesson-key">Toy choice: $W_Q=W_K=W_V=I_3$, no biases. Each projection copies the three-number input.</p>
-</div>
-
-<div class="frame context-lesson position-lesson position-worked position-append append-calculation" id="s17-position-append-scores-b" data-title="Word and position contributions after the swap" data-autobuild="off">
-<script type="text/x-notes">Why can a weaker word match win?
-Hold today's query at the top and expand its dot product with each source key. The word contribution is 0.8 for Maya and 0.2 for Ravi in either sentence. At c=1 the position contribution is 4j, so the later slot can outweigh the better word match. Maya is now in slot 3, combining 0.8 with 12. The large slot term still favors later sources. These are raw dot products, not normalized weights. The next slide divides by sqrt(3), since the query and key each have three coordinates, then applies softmax across these four sources. The word contribution is a controlled comparison, not a claim about linguistic relevance.</script>
-<div class="append-scale-control" data-append-control="Ravi helps Maya today"></div>
-<div class="worked-detail append-query" data-append-query></div>
-<div class="worked-scroll"><table class="worked-table" id="position-append-scores-b"><thead><tr><th>Source</th><th>Word products</th><th>Slot product</th><th>Raw dot product</th></tr></thead><tbody></tbody></table></div>
-<p class="lesson-key" data-append-score-result="b"></p>
-</div>
-
-<div class="frame context-lesson position-lesson position-worked position-append" id="s17-position-append-softmax-b" data-title="Softmax weights after the swap" data-autobuild="off">
-<script type="text/x-notes">How much of the message will come from each source?
-Read each raw dot product divided by sqrt(3), then its exponential and normalized weight. Sum the four exponentials before dividing. The weights add to one. Every source is allowed because today is last, so no future-source masking changes these four scores. At c=1 today receives 89.7 percent of the weight. The raw slot term makes the self-weight dominate despite Maya's stronger word-only match. This is a result of our fixed identity projections, not evidence that attending to oneself is always wrong. Values have not been mixed yet. Displayed numbers round; computation uses full precision and stable max-subtracted softmax.</script>
-<div class="append-scale-control" data-append-control="Ravi helps Maya today"></div>
-<div class="worked-scroll"><table class="worked-table" id="position-append-softmax-b"><thead><tr><th>Source</th><th>Score $s_j$</th><th>$\exp(s_j)$</th><th>Weight $\alpha_j$</th></tr></thead><tbody></tbody></table></div>
-<div class="worked-detail" id="position-append-denominator-b"></div>
-<p class="lesson-key" id="position-append-normalization-b"></p>
-</div>
-
-<div class="frame context-lesson position-lesson position-worked position-append" id="s17-position-append-values-b" data-title="The weighted message after the swap" data-autobuild="off">
-<script type="text/x-notes">What does that large weight actually send to today?
-Multiply each source value by its own softmax weight, then reveal the sum. We explicitly chose W_V=I_3 without bias, so v_j equals the three-number augmented input. Keys and values happen to have equal numbers in this toy, but keys determined the match and values now carry the content. Every coordinate of a value gets the same source weight. Sum all four contribution vectors at full precision to obtain m_4. At c=1 the result is dominated by today's own value. These three coordinates include the appended position feature and are not probabilities or a predicted word. The output projection and residual come later in a full model; they are not needed to isolate this scale problem. Changing c changes both the scores and the third value coordinate. The original word coordinates and projection weights remain fixed.</script>
-<div class="append-scale-control" data-append-control="Ravi helps Maya today"></div>
-<div class="worked-scroll"><table class="worked-table append-value-table" id="position-append-values-b"><thead><tr><th>Source</th><th>Weight $\alpha_j$</th><th>Value $v_j$</th><th>Contribution $\alpha_jv_j$</th></tr></thead><tbody></tbody><tfoot data-build="1"></tfoot></table></div>
-<p class="lesson-key" data-build="1" data-append-message-result="b"></p>
-</div>
-
-<div class="frame context-lesson position-lesson" id="s17-position-append-scale-effect" data-title="Scaling the position contribution" data-autobuild="off">
-<script type="text/x-notes">Why does reducing c by ten reduce the position product by one hundred?
-Point to both changed coordinates in the same sentence-1 match: today's query and Ravi's key. Their word coordinates stay fixed. The position product changes from 4 times 3 equals 12 to 0.4 times 0.3 equals 0.12. Add the unchanged word contribution 0.2, then divide by sqrt(3). Softmax still needs all four scores, so revisit the full row before discussing a weight. This is a controlled scale comparison, not proof that 0.1 is the best scale.</script>
-<div class="position-journey" data-append-scale-effect></div>
-<p class="lesson-key">Both query and key contain $ci$. The position term is $c^2ij$; the word term stays fixed.</p>
-</div>
-
-<div class="frame context-lesson position-lesson position-worked position-append" id="s17-position-append-scale" data-title="The same sentence at two position scales" data-autobuild="off">
-<script type="text/x-notes">Does the preference survive a change of units?
-Compare the very same sentence and identity projections with c=1 and c=0.1. Only the appended position coordinate changes. The word coordinates, token order and visible sources remain fixed. The comparison lists both weight sets at once, so students need not remember a previous control state. Today's self-weight falls from about 92 percent to below 30 percent. This is not an accuracy comparison and does not prove 0.1 is best. It demonstrates that an arbitrary position scale can dominate the attention decision in this fixed-projection setup. Trainable projections could learn to rescale or ignore that feature.</script>
-<p><strong>Maya helps Ravi today.</strong> Same words and projections, smaller slot numbers.</p>
-<div class="worked-scroll"><table class="worked-table append-compare-table" id="position-append-scale-comparison"><thead><tr><th>Source</th><th>Weight with $c=1$</th><th>Weight with $c=0.1$</th></tr></thead><tbody></tbody></table></div>
-<p class="lesson-result">The unscaled slot number drives the preference for later sources in this toy.</p>
-<p class="lesson-key">Concatenation can work. The position scale and the projections need a deliberate choice.</p>
-</div>
-
-<div class="frame context-lesson position-lesson" id="s17-position-append-tradeoffs" data-title="What the raw index leaves us to choose" data-autobuild="off">
-<script type="text/x-notes">Summarize only what the example establishes. A raw index is a valid position feature and can distinguish order. Under our fixed identity projections, its magnitude dominates the content contribution and creates a large-slot preference. Training could suppress, rescale or combine it differently. Two appended features similarly require a choice of scale and mapping, while increasing input width by two. Raw slot numbers do not directly provide a relative-distance score: the demonstrated term is i times j. Addition is convenient because it preserves width. The next method learns additive position rows. Fixed sinusoidal features follow after the learned-table limitations. These alternatives have different tradeoffs, not a universal quality ranking.</script>
-<table class="lesson-table"><thead><tr><th>Choice</th><th>What the Maya–Ravi example showed</th></tr></thead><tbody>
-<tr><th>Scale</th><td>$i$ and $0.1i$ describe the same slots but produce very different weights here.</td></tr>
-<tr><th>How position affects a match</th><td>The raw term is $ij$. Even a self-match grows as $i^2$, although the distance is still zero.</td></tr>
-<tr><th>Input width</th><td>One appended feature changes $d$ to $d+1$. Two give $d+2$. The projection matrices must accept that width.</td></tr>
-</tbody></table>
-<p class="lesson-result"><strong>Concatenation can work</strong> with suitable scaling and learned projections. Appending the raw index alone leaves these choices unresolved.</p>
-<p class="lesson-key">Next: return to addition and let training choose a position row for each slot.</p>
-</div>
-
-<div class="companion context-lesson position-lesson position-reading" id="s17-position-width">
-<h3>Concatenation followed by a projection</h3>
-<script type="text/x-notes">A d-wide sum fits existing attention and residual shapes. Token and position embeddings can be learned jointly. Summation is not losslessly decodable for arbitrary pairs. Concatenation preserves separate input slots for the two sources, and its following matrix can learn separate projections. The displayed block matrix has 2d rows and d columns when both source vectors have d coordinates.</script>
-<p>Adding a $d$-wide position row keeps the attention input and residual path <strong>$d$ numbers wide</strong>.</p>
-<p data-build="1">Concatenation followed by a projection is another way to combine them:</p>
-<div data-build="1">$$[E_{\rm tok}[t_i];p_i]\begin{bmatrix}W_e\\W_p\end{bmatrix}=E_{\rm tok}[t_i]W_e+p_iW_p$$</div>
-<p class="lesson-key" data-build="1">$W_e$ maps content; $W_p$ maps position. Both outputs must have the same width before adding.</p>
-<p class="lesson-result" data-build="2">Addition mixes the signals; it does not guarantee that we can recover each one separately. Training learns how to use the combined row.</p>
-</div>
-
-<div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-learned-break" data-title="Alternative 2: learned positions" data-autobuild="off">
-<script type="text/x-notes">How could training choose the position features instead of using a raw index? Return to fixed-width addition and learn a table with one row per absolute slot. This is the second alternative in this subsection and the method used in the notebook. Do not imply that the learned and sinusoidal methods must be used together.</script>
-<h3>Alternative 2: learned positions</h3>
+<div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-learned-break" data-title="Learned position rows" data-autobuild="off">
+<script type="text/x-notes">How could training choose the position rows we just added by hand? Keep the same fixed-width addition and learn one row per absolute slot. This is the first method we study and the one used in the notebook. The learned-table limitations motivate the next method, fixed sinusoidal features. They are alternatives and need not be used together.</script>
+<h3>Learned position rows</h3>
 <p class="topic-recap">So far, we chose the position offsets by hand.</p>
 <p class="topic-question">Could training learn a useful row for each slot?</p>
 </div>
@@ -12749,9 +12624,9 @@ Point to slot 4, then the missing slot 5. This separate coverage example assumes
 <p class="lesson-key" data-build="1">The next method calculates each row from its slot number. It avoids a missing lookup row, but longer-input predictions still need testing.</p>
 </div>
 
-<div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-clock-choice" data-title="Alternative 3: sinusoidal positions" data-autobuild="off">
-<script type="text/x-notes">The learned table has just run out of rows. The third alternative calculates fixed offsets instead of learning a separate row at each slot. Begin with the circle intuition and the need for different rates, then derive the standard rates before plotting them. Toy clocks use degrees and integer periods. The standard formula uses radians. Starting here, indices are zero-based, as the next slide states. A calculable row is not evidence of good predictions at unseen lengths.</script>
-<h3>Alternative 3: sinusoidal positions</h3>
+<div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-clock-choice" data-title="Sinusoidal positions" data-autobuild="off">
+<script type="text/x-notes">The learned table has just run out of rows. This method calculates fixed offsets instead of learning a separate row at each slot. Begin with the circle intuition and the need for different rates, then derive the standard rates before plotting them. Toy clocks use degrees and integer periods. The standard formula uses radians. Starting here, indices are zero-based, as the next slide states. A calculable row is not evidence of good predictions at unseen lengths.</script>
+<h3>Sinusoidal positions</h3>
 <p class="topic-recap">A learned table has a fixed number of rows. New rows would need training.</p>
 <p class="topic-question">What if a fixed rule could calculate the offset for any slot?</p>
 </div>
@@ -12933,6 +12808,131 @@ Point to the two green tips at the same height, then reveal their different hori
 </tbody></table>
 <p class="lesson-result" data-build="1">Position describes order. The causal mask restricts visibility. Neither removes attention's pairwise compute cost.</p>
 <p class="lesson-key" data-build="1">A formula that accepts larger indices is not a guarantee of reliable longer-context predictions.</p>
+</div>
+
+<div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-alternatives-break" data-title="Why not just append the position?" data-autobuild="off">
+<script type="text/x-notes">After learned rows, sinusoids and relative methods, could a single raw number do the job? Return to the Maya–Ravi word rows and append the slot. This experiment starts from word lookups again, without added offsets, distance bias or RoPE. The fixed-projection example isolates the scale and width choices this shortcut leaves unresolved. It does not establish that concatenation cannot work or measure how often architectures use it. End by comparing those choices with the methods just studied, then return to the full attention map.</script>
+<h3>Why not just append the position?</h3>
+<p class="topic-recap">We have seen learned rows, sinusoidal features and relative methods.</p>
+<p class="topic-question">Would one raw slot number be enough? Its scale and the wider input need a closer look.</p>
+</div>
+
+<div class="frame context-lesson position-lesson position-worked position-append" id="s17-position-append" data-title="Appending the slot number" data-autobuild="off">
+<script type="text/x-notes">Try an alternative to adding p_i. Return to the original two-number word lookups, then append the one-based slot index as a third coordinate. No additive position row is used in this experiment. The tilde marks this alternative representation. Both sentences now have different rows for Maya and Ravi, so appending position can distinguish order. Ask whether the numerical scale of this new coordinate is suitable. The next slide holds Q/K projections fixed at the three-dimensional identity to expose the effect.</script>
+<p>Return to the two-number word rows and slots 1–4. Append $i$ instead of adding $p_i$.</p>
+<div class="worked-detail">Alternative row: $\tilde e_i=[\,E_{\rm tok}[t_i]\,;\,i\,]$. Two coordinates become three.</div>
+<div class="mix-pair">
+<div><p>Maya helps Ravi today</p><table class="worked-table" id="position-append-a"><thead><tr><th>Word</th><th>Word row + slot</th></tr></thead><tbody></tbody></table></div>
+<div><p>Ravi helps Maya today</p><table class="worked-table" id="position-append-b"><thead><tr><th>Word</th><th>Word row + slot</th></tr></thead><tbody></tbody></table></div>
+</div>
+<p class="lesson-key">The green coordinate records the slot. Maya and Ravi now have different rows after the swap.</p>
+</div>
+
+<div class="frame context-lesson position-lesson position-worked position-append" id="s17-position-append-qk-a" data-title="Today's query and the four keys" data-autobuild="off">
+<script type="text/x-notes">Which source should today read from?
+Point to today's one query, then read the four source keys below it. The first two coordinates come from the word lookup. The third is c times the one-based slot number. In this untrained toy choose W_Q=W_K=W_V=I_3, with zero biases. Each projection therefore copies the augmented input, not just its original two-number word row. At c=1 today gives q_4=[0.8,0.2,4]. Values will use the same three numbers, but they play a different role: keys set the scores, values supply the message content. All four sources are visible because today is the final receiver. We calculate no other receiver in this walkthrough. Learned projections need not be identities. The scale control follows every subsequent query, score, weight and value.</script>
+<div class="append-scale-control" data-append-control="Maya helps Ravi today"></div>
+<div class="worked-detail append-query" data-append-query></div>
+<div class="worked-scroll"><table class="worked-table append-key-table" id="position-append-keys-a"><thead><tr><th>Source</th><th>Key $k_j$: word coordinates + slot</th></tr></thead><tbody></tbody></table></div>
+<p class="lesson-key">Toy choice: $W_Q=W_K=W_V=I_3$, no biases. Each projection copies the three-number input.</p>
+</div>
+
+<div class="frame context-lesson position-lesson position-worked position-append append-calculation" id="s17-position-append-scores" data-title="Word match versus slot number" data-autobuild="off">
+<script type="text/x-notes">Why can a weaker word match win?
+Hold today's query at the top and expand its dot product with each source key. The word contribution is 0.8 for Maya and 0.2 for Ravi in either sentence. At c=1 the position contribution is 4j, so the later slot can outweigh the better word match. Maya gets 0.8+4=4.8, while Ravi gets 0.2+12=12.2. Today gets 0.68+16=16.68, the largest total. These are raw dot products, not normalized weights. The next slide divides by sqrt(3), since the query and key each have three coordinates, then applies softmax across these four sources. The word contribution is a controlled comparison, not a claim about linguistic relevance.</script>
+<div class="append-scale-control" data-append-control="Maya helps Ravi today"></div>
+<div class="worked-detail append-query" data-append-query></div>
+<div class="worked-scroll"><table class="worked-table" id="position-append-scores"><thead><tr><th>Source</th><th>Word products</th><th>Slot product</th><th>Raw dot product</th></tr></thead><tbody></tbody></table></div>
+<p class="lesson-key" data-append-score-result="a"></p>
+</div>
+
+<div class="frame context-lesson position-lesson position-worked position-append" id="s17-position-append-softmax" data-title="Scores become four attention weights" data-autobuild="off">
+<script type="text/x-notes">How much of the message will come from each source?
+Read each raw dot product divided by sqrt(3), then its exponential and normalized weight. Sum the four exponentials before dividing. The weights add to one. Every source is allowed because today is last, so no future-source masking changes these four scores. At c=1 today receives 92.3 percent of the weight. The raw slot term makes the self-weight dominate despite Maya's stronger word-only match. This is a result of our fixed identity projections, not evidence that attending to oneself is always wrong. Values have not been mixed yet. Displayed numbers round; computation uses full precision and stable max-subtracted softmax.</script>
+<div class="append-scale-control" data-append-control="Maya helps Ravi today"></div>
+<div class="worked-scroll"><table class="worked-table" id="position-append-softmax"><thead><tr><th>Source</th><th>Score $s_j$</th><th>$\exp(s_j)$</th><th>Weight $\alpha_j$</th></tr></thead><tbody></tbody></table></div>
+<div class="worked-detail" id="position-append-denominator"></div>
+<p class="lesson-key" id="position-append-normalization"></p>
+</div>
+
+<div class="frame context-lesson position-lesson position-worked position-append" id="s17-position-append-values-a" data-title="The values form today's message" data-autobuild="off">
+<script type="text/x-notes">What does that large weight actually send to today?
+Multiply each source value by its own softmax weight, then reveal the sum. We explicitly chose W_V=I_3 without bias, so v_j equals the three-number augmented input. Keys and values happen to have equal numbers in this toy, but keys determined the match and values now carry the content. Every coordinate of a value gets the same source weight. Sum all four contribution vectors at full precision to obtain m_4. At c=1 the result is dominated by today's own value. These three coordinates include the appended position feature and are not probabilities or a predicted word. The output projection and residual come later in a full model; they are not needed to isolate this scale problem. Changing c changes both the scores and the third value coordinate. The original word coordinates and projection weights remain fixed.</script>
+<div class="append-scale-control" data-append-control="Maya helps Ravi today"></div>
+<div class="worked-scroll"><table class="worked-table append-value-table" id="position-append-values-a"><thead><tr><th>Source</th><th>Weight $\alpha_j$</th><th>Value $v_j$</th><th>Contribution $\alpha_jv_j$</th></tr></thead><tbody></tbody><tfoot data-build="1"></tfoot></table></div>
+<p class="lesson-key" data-build="1" data-append-message-result="a"></p>
+</div>
+
+<div class="frame context-lesson position-lesson position-worked position-append" id="s17-position-append-qk-b" data-title="The same query after the swap" data-autobuild="off">
+<script type="text/x-notes">Which source should today read from?
+Point to today's one query, then read the four source keys below it. Only Maya and Ravi swap slots. Their word coordinates follow them, while the slot coordinates stay in place. Today remains in slot 4. In this untrained toy choose W_Q=W_K=W_V=I_3, with zero biases. Each projection therefore copies the augmented input, not just its original two-number word row. At c=1 today gives q_4=[0.8,0.2,4]. Values will use the same three numbers, but they play a different role: keys set the scores, values supply the message content. All four sources are visible because today is the final receiver. We calculate no other receiver in this walkthrough. Learned projections need not be identities. The scale control follows every subsequent query, score, weight and value.</script>
+<div class="append-scale-control" data-append-control="Ravi helps Maya today"></div>
+<div class="worked-detail append-query" data-append-query></div>
+<div class="worked-scroll"><table class="worked-table append-key-table" id="position-append-keys-b"><thead><tr><th>Source</th><th>Key $k_j$: word coordinates + slot</th></tr></thead><tbody></tbody></table></div>
+<p class="lesson-key">Toy choice: $W_Q=W_K=W_V=I_3$, no biases. Each projection copies the three-number input.</p>
+</div>
+
+<div class="frame context-lesson position-lesson position-worked position-append append-calculation" id="s17-position-append-scores-b" data-title="Word and position contributions after the swap" data-autobuild="off">
+<script type="text/x-notes">Why can a weaker word match win?
+Hold today's query at the top and expand its dot product with each source key. The word contribution is 0.8 for Maya and 0.2 for Ravi in either sentence. At c=1 the position contribution is 4j, so the later slot can outweigh the better word match. Maya is now in slot 3, combining 0.8 with 12. The large slot term still favors later sources. These are raw dot products, not normalized weights. The next slide divides by sqrt(3), since the query and key each have three coordinates, then applies softmax across these four sources. The word contribution is a controlled comparison, not a claim about linguistic relevance.</script>
+<div class="append-scale-control" data-append-control="Ravi helps Maya today"></div>
+<div class="worked-detail append-query" data-append-query></div>
+<div class="worked-scroll"><table class="worked-table" id="position-append-scores-b"><thead><tr><th>Source</th><th>Word products</th><th>Slot product</th><th>Raw dot product</th></tr></thead><tbody></tbody></table></div>
+<p class="lesson-key" data-append-score-result="b"></p>
+</div>
+
+<div class="frame context-lesson position-lesson position-worked position-append" id="s17-position-append-softmax-b" data-title="Softmax weights after the swap" data-autobuild="off">
+<script type="text/x-notes">How much of the message will come from each source?
+Read each raw dot product divided by sqrt(3), then its exponential and normalized weight. Sum the four exponentials before dividing. The weights add to one. Every source is allowed because today is last, so no future-source masking changes these four scores. At c=1 today receives 89.7 percent of the weight. The raw slot term makes the self-weight dominate despite Maya's stronger word-only match. This is a result of our fixed identity projections, not evidence that attending to oneself is always wrong. Values have not been mixed yet. Displayed numbers round; computation uses full precision and stable max-subtracted softmax.</script>
+<div class="append-scale-control" data-append-control="Ravi helps Maya today"></div>
+<div class="worked-scroll"><table class="worked-table" id="position-append-softmax-b"><thead><tr><th>Source</th><th>Score $s_j$</th><th>$\exp(s_j)$</th><th>Weight $\alpha_j$</th></tr></thead><tbody></tbody></table></div>
+<div class="worked-detail" id="position-append-denominator-b"></div>
+<p class="lesson-key" id="position-append-normalization-b"></p>
+</div>
+
+<div class="frame context-lesson position-lesson position-worked position-append" id="s17-position-append-values-b" data-title="The weighted message after the swap" data-autobuild="off">
+<script type="text/x-notes">What does that large weight actually send to today?
+Multiply each source value by its own softmax weight, then reveal the sum. We explicitly chose W_V=I_3 without bias, so v_j equals the three-number augmented input. Keys and values happen to have equal numbers in this toy, but keys determined the match and values now carry the content. Every coordinate of a value gets the same source weight. Sum all four contribution vectors at full precision to obtain m_4. At c=1 the result is dominated by today's own value. These three coordinates include the appended position feature and are not probabilities or a predicted word. The output projection and residual come later in a full model; they are not needed to isolate this scale problem. Changing c changes both the scores and the third value coordinate. The original word coordinates and projection weights remain fixed.</script>
+<div class="append-scale-control" data-append-control="Ravi helps Maya today"></div>
+<div class="worked-scroll"><table class="worked-table append-value-table" id="position-append-values-b"><thead><tr><th>Source</th><th>Weight $\alpha_j$</th><th>Value $v_j$</th><th>Contribution $\alpha_jv_j$</th></tr></thead><tbody></tbody><tfoot data-build="1"></tfoot></table></div>
+<p class="lesson-key" data-build="1" data-append-message-result="b"></p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-append-scale-effect" data-title="Scaling the position contribution" data-autobuild="off">
+<script type="text/x-notes">Why does reducing c by ten reduce the position product by one hundred?
+Point to both changed coordinates in the same sentence-1 match: today's query and Ravi's key. Their word coordinates stay fixed. The position product changes from 4 times 3 equals 12 to 0.4 times 0.3 equals 0.12. Add the unchanged word contribution 0.2, then divide by sqrt(3). Softmax still needs all four scores, so revisit the full row before discussing a weight. This is a controlled scale comparison, not proof that 0.1 is the best scale.</script>
+<div class="position-journey" data-append-scale-effect></div>
+<p class="lesson-key">Both query and key contain $ci$. The position term is $c^2ij$; the word term stays fixed.</p>
+</div>
+
+<div class="frame context-lesson position-lesson position-worked position-append" id="s17-position-append-scale" data-title="The same sentence at two position scales" data-autobuild="off">
+<script type="text/x-notes">Does the preference survive a change of units?
+Compare the very same sentence and identity projections with c=1 and c=0.1. Only the appended position coordinate changes. The word coordinates, token order and visible sources remain fixed. The comparison lists both weight sets at once, so students need not remember a previous control state. Today's self-weight falls from about 92 percent to below 30 percent. This is not an accuracy comparison and does not prove 0.1 is best. It demonstrates that an arbitrary position scale can dominate the attention decision in this fixed-projection setup. Trainable projections could learn to rescale or ignore that feature.</script>
+<p><strong>Maya helps Ravi today.</strong> Same words and projections, smaller slot numbers.</p>
+<div class="worked-scroll"><table class="worked-table append-compare-table" id="position-append-scale-comparison"><thead><tr><th>Source</th><th>Weight with $c=1$</th><th>Weight with $c=0.1$</th></tr></thead><tbody></tbody></table></div>
+<p class="lesson-result">The unscaled slot number drives the preference for later sources in this toy.</p>
+<p class="lesson-key">Concatenation can work. The position scale and the projections need a deliberate choice.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-append-tradeoffs" data-title="What the raw index leaves us to choose" data-autobuild="off">
+<script type="text/x-notes">Summarize only what the example establishes. A raw index is a valid position feature and can distinguish order. Under our fixed identity projections, its magnitude dominates the content contribution and creates a large-slot preference. Training could suppress, rescale or combine it differently. Two appended features similarly require a choice of scale and mapping, while increasing input width by two. Raw slot numbers do not directly provide a relative-distance score: the demonstrated term is i times j. Addition is convenient because it preserves width. Compare with the methods already studied: learned and sinusoidal additions preserve width d, while relative methods build offsets into matching. These are architectural tradeoffs, not a universal quality ranking. The closing map returns to the notebook's learned additive rows, not this appended-slot toy.</script>
+<table class="lesson-table"><thead><tr><th>Choice</th><th>What the Maya–Ravi example showed</th></tr></thead><tbody>
+<tr><th>Scale</th><td>$i$ and $0.1i$ describe the same slots but produce very different weights here.</td></tr>
+<tr><th>How position affects a match</th><td>The raw term is $ij$. Even a self-match grows as $i^2$, although the distance is still zero.</td></tr>
+<tr><th>Input width</th><td>One appended feature changes $d$ to $d+1$. Two give $d+2$. The projection matrices must accept that width.</td></tr>
+</tbody></table>
+<p class="lesson-result"><strong>Concatenation can work</strong> with suitable scaling and learned projections. Appending the raw index alone leaves these choices unresolved.</p>
+<p class="lesson-key">Additive rows keep width $d$. Relative methods build gaps into the matching rule.</p>
+</div>
+
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-width">
+<h3>Concatenation followed by a projection</h3>
+<script type="text/x-notes">A d-wide sum fits existing attention and residual shapes. Token and position embeddings can be learned jointly. Summation is not losslessly decodable for arbitrary pairs. Concatenation preserves separate input slots for the two sources, and its following matrix can learn separate projections. The displayed block matrix has 2d rows and d columns when both source vectors have d coordinates.</script>
+<p>Adding a $d$-wide position row keeps the attention input and residual path <strong>$d$ numbers wide</strong>.</p>
+<p data-build="1">Concatenation followed by a projection is another way to combine them:</p>
+<div data-build="1">$$[E_{\rm tok}[t_i];p_i]\begin{bmatrix}W_e\\W_p\end{bmatrix}=E_{\rm tok}[t_i]W_e+p_iW_p$$</div>
+<p class="lesson-key" data-build="1">$W_e$ maps content; $W_p$ maps position. Both outputs must have the same width before adding.</p>
+<p class="lesson-result" data-build="2">Addition mixes the signals; it does not guarantee that we can recover each one separately. Training learns how to use the combined row.</p>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-overview" data-title="The full attention path now includes position" data-autobuild="off">

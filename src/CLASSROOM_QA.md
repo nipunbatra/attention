@@ -1,5 +1,21 @@
 # Classroom release checks
 
+## 2026-09-25 · Raw-slot example after the position methods
+
+- Reordered both presentation and reading views: learned position rows,
+  sinusoidal features, relative methods including RoPE, then the full raw-slot
+  example. Kept the final attention map after that closing discussion.
+- Renamed the late divider to "Why not just append the position?", removed
+  stale alternative numbers, and corrected presenter notes and transitions.
+  Its conclusion now compares scaling, matching and width choices with the
+  earlier methods. Retained the distinction between the toy's scale problem
+  and a claim that concatenation cannot work. Calculations are unchanged.
+- Added order checks across the moved block in reading mode and forward/back
+  navigation at all three affected presentation boundaries. All 52 positional
+  frames, 178 build checks and 18 topic-break checks pass. Full Part II has
+  444 states and 646 formulas with no errors or overflow. Inspected the changed
+  dividers and captions at 1280×720 and 760×1041. No Part III work is included.
+
 ## 2026-09-25 · One-query walkthrough for appended positions
 
 - Removed the full Q/K, dot-product, masked-score and attention-matrix

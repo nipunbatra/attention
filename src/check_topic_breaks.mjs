@@ -19,10 +19,10 @@ const targets=[
   ['s16-topic-break','s16-flow-frame'],
   ['s17-position-break','s17-position-order'],
   ['s17-position-addition-break','s17-position-shift'],
-  ['s17-position-alternatives-break','s17-position-append'],
   ['s17-position-learned-break','s17-position-learned'],
   ['s17-position-clock-choice','s17-position-clock-why'],
   ['s17-position-relative-break','s17-position-relative'],
+  ['s17-position-alternatives-break','s17-position-append'],
   ['s19-topic-break','s19-frame-generation'],
   ['s19-pipeline-break','s19-pipeline-route-data'],
   ['s19-pipeline-tokenization-intro','s19-pipeline-tokenization-choices']
@@ -36,11 +36,11 @@ try{
   const original=await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)}));
   await page.evaluate(()=>AT.present.enter());
   assert.deepEqual(await page.locator('.lecture-topic-break').evaluateAll(es=>es.map(e=>e.id)),targets.map(t=>t[0]));
-  const alternatives=['s17-position-append','s17-position-learned-break','s17-position-clock-choice'];
-  for(const [index,id] of alternatives.entries()){
-    assert((await page.locator('#'+id).getAttribute('data-title')).startsWith(`Alternative ${index+1}:`),'Number the alternatives consistently');
+  for(const [id,title] of [['learned-break','Learned position rows'],['clock-choice','Sinusoidal positions'],['alternatives-break','Why not just append the position?']]){
+    assert.equal(await page.locator('#s17-position-'+id).getAttribute('data-title'),title,'Use descriptive method names without stale numbering.');
   }
-  assert.match(await page.locator('#s17-position-alternatives-break .topic-question').textContent(),/scale overwhelm the word features/);
+  assert.match(await page.locator('#s17-position-alternatives-break .topic-recap').textContent(),/learned rows, sinusoidal features and relative methods/);
+  assert.match(await page.locator('#s17-position-alternatives-break .topic-question').textContent(),/scale and the wider input/);
   assert.match(await page.locator('#s17-position-append-tradeoffs .lesson-result').textContent(),/Concatenation can work/,'Keep the limitation specific to the naive setup');
   async function go(id,build=0){
     await page.evaluate(({id,build})=>{
