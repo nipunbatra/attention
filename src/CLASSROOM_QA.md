@@ -1,5 +1,29 @@
 # Classroom release checks
 
+## 2026-09-25 · One-query walkthrough for appended positions
+
+- Removed the full Q/K, dot-product, masked-score and attention-matrix
+  drawings from the appended-slot discussion. Follow only today's query:
+  four source keys, the word/slot products, scaled scores, softmax and all
+  weighted value contributions. Complete sentence 1 before repeating the
+  same layout for the swapped sentence. Four matrix frames became two value
+  frames, leaving 52 positional-encoding frames.
+- State the issue using the toy's numbers: Maya's word-only match is stronger
+  than Ravi's, but the unscaled slot term reverses their ordering in sentence
+  1. A fixed side-by-side comparison shows today's self-weight changing from
+  92.3% to 28.9% when c changes from 1 to 0.1. This is a scale demonstration,
+  not an accuracy result or proof that concatenation cannot work.
+- Explicitly choose W_V = I_3 without bias for this extension. Each source
+  value copies its augmented three-coordinate input. Show every product and
+  the message sum, using unrounded weights. Eight linked controls update
+  both sentences; original word lookups and projection parameters stay fixed.
+- Arithmetic and control tests pass for 52 frames and 178 build checks.
+  All 18 topic breaks pass. Full Part II: 444 states, 646 formulas, no browser
+  or math errors and no overflow. The 12-frame passage also fits at 1280×720,
+  1024×768 and 760×1041; inspected the new tables, sums and comparison at
+  widescreen and tall sizes. No trained weights, benchmark scores, notebooks
+  or Part III files are included in this change.
+
 ## 2026-09-24 · Positional-encoding sequence audit
 
 - Found three sequencing problems: the learned-table boundary remained after

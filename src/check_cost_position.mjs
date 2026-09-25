@@ -16,9 +16,9 @@ const costs=['break','symbols','matmul','concat-network','concat','average-netwo
 const positions=[
   'break','order','permute','scores','swapped','contributions','consequence',
   'addition-break','shift','move-a','move-b','moved','toy','slot-scores','experiment','updated',
-  'alternatives-break','append','append-qk-a','append-qk-b','append-product-a','append-scores',
-  'append-product-b','append-scores-b','append-masked','append-softmax','append-softmax-b',
-  'append-weights','append-scale-effect','append-scale','append-tradeoffs',
+  'alternatives-break','append','append-qk-a','append-scores','append-softmax','append-values-a',
+  'append-qk-b','append-scores-b','append-softmax-b','append-values-b',
+  'append-scale-effect','append-scale','append-tradeoffs',
   'learned-break','learned','learned-update','learned-limits','clock-choice','clock-why','clock','repeat','sine-rule','worked-sine','waves','period',
   'absolute-context','absolute-shift','relative-break','relative','alibi','rotate','rope-shift','rope-identity','rope-pairs','insertion','overview'
 ].map(x=>'s17-position-'+x);
@@ -68,13 +68,13 @@ try{
   await page.setViewportSize({width:1280,height:720});await page.evaluate(()=>document.fonts.ready);
   const original=await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)}));
   assert.deepEqual(await page.locator('.frame.context-lesson').evaluateAll(es=>es.map(e=>e.id)),ids);
-  assert.equal(ids.length,54,'The sequence audit preserves every presentation frame.');
+  assert.equal(ids.length,52,'Replace four full-matrix frames with two last-receiver value mixtures.');
   assert.deepEqual(await page.locator('.position-reading[id]:not(#s17-position-map-notes)').evaluateAll(es=>es.map(e=>e.id)),readingExtras,'Recaps remain available for reading.');
   // Reading mode must follow the same teaching logic, including its extra explanations.
   const lessonOrder=await page.locator('#s17 .frame.position-lesson,#s17 .position-reading[id]').evaluateAll(es=>es.map(e=>e.id));
   for(const run of [
     ['updated','add','routing','mean','alternatives-break'],
-    ['append-tradeoffs','width','learned-break'],
+    ['append','append-qk-a','append-scores','append-softmax','append-values-a','append-qk-b','append-scores-b','append-softmax-b','append-values-b','append-scale-effect','append-scale','append-tradeoffs','width','learned-break'],
     ['learned-break','learned','learned-update','learned-limits','absolute-range','clock-choice'],
     ['clock-choice','clock-why','clock','repeat','rates','sine-rule','worked-sine','sine','waves','period','absolute-context','absolute-shift','relative-break'],
     ['relative-break','relative','alibi','rotate','rope-shift']
@@ -125,7 +125,9 @@ try{
     const rawScores=rows.map(row=>row.reduce((sum,x,c)=>sum+x*q[c],0));
     const scores=rawScores.map(x=>x/Math.sqrt(3)),max=Math.max(...scores);
     const exps=scores.map(x=>Math.exp(x-max)),denominator=exps.reduce((a,b)=>a+b);
-    return {rows,q,wordTerms,positionTerms,rawScores,scores,weights:exps.map(x=>x/denominator)};
+    const weights=exps.map(x=>x/denominator),contributions=rows.map((row,j)=>row.map(value=>value*weights[j]));
+    const message=[0,1,2].map(c=>contributions.reduce((sum,row)=>sum+row[c],0));
+    return {rows,q,wordTerms,positionTerms,rawScores,scores,weights,contributions,message};
   }
   const toyBefore=await page.evaluate(()=>JSON.stringify({e:AT.positionLesson.embeddings,p:AT.positionLesson.positions}));
   // The same word lookup, two slot lookups, then an explicitly illustrative SGD step.
@@ -179,6 +181,10 @@ try{
       assert.deepEqual(actual.rows,expected.rows);
       assert.deepEqual(actual.WQ,[[1,0,0],[0,1,0],[0,0,1]]);
       assert.deepEqual(actual.WK,actual.WQ);
+      assert.deepEqual(actual.WV,actual.WQ,'Values use an explicitly chosen identity projection.');
+      assert.deepEqual(actual.V,expected.rows);
+      actual.contributions.forEach((row,j)=>row.forEach((value,c)=>close(value,expected.contributions[j][c],'weighted value coordinate')));
+      actual.message.forEach((value,c)=>close(value,expected.message[c],'three-coordinate message sum'));
       assert.deepEqual(actual.Q,expected.rows,'Identity query projection copies the augmented input.');
       assert.deepEqual(actual.K,expected.rows,'Identity key projection copies the augmented input.');
       assert.deepEqual(actual.q,actual.Q[3]);
@@ -202,88 +208,62 @@ try{
       }
     }
   }
+  assert.equal(await page.locator('[data-appended-projections],[data-append-product],[data-append-matrices],[data-append-matrix]').count(),0,'No full Q/K/product/weight matrix drawings remain in this discussion.');
+  assert.equal(await page.locator('#s17-position-append-product-a,#s17-position-append-product-b,#s17-position-append-masked,#s17-position-append-weights').count(),0);
   for(const [index,suffix]of ['a','b'].entries()){
     assert.deepEqual(await page.locator('#position-append-'+suffix+' [data-vector]').evaluateAll(es=>es.map(e=>JSON.parse(e.dataset.vector))),appendedReference(sequences[index],1).rows);
-    const diagram=page.locator('[data-appended-projections="'+suffix+'"]');
-    const expected=appendedReference(sequences[index],1).rows;
-    for(const name of ['input','identity','Q','K']){
-      const values=name==='identity'?[[1,0,0],[0,1,0],[0,0,1]]:expected;
-      const cells=await diagram.locator('[data-projection-matrix="'+name+'"] [data-value]').evaluateAll(es=>es.map(e=>({row:Number(e.dataset.row),column:Number(e.dataset.column),value:Number(e.dataset.value),text:e.textContent})));
-      assert.equal(cells.length,values.length*3);
-      for(const cell of cells){
-        assert.equal(cell.value,values[cell.row][cell.column]);
-        assert.equal(cell.text,name==='identity'||cell.column===2?String(cell.value):cell.value.toFixed(1));
-      }
-    }
-    assert.deepEqual(await diagram.locator('[data-source-row]').allTextContents(),sequences[index].map((token,j)=>(j+1)+' '+token));
-    assert.equal(await diagram.locator('[data-projection-matrix="Q"] [data-query-row="3"]').count(),1);
   }
-  const geometry=await page.locator('[data-appended-projections] svg').evaluateAll(es=>es.map(s=>[...s.querySelectorAll('rect,text')].map(e=>['x','y','width','height'].map(a=>e.getAttribute(a)))));
-  assert.deepEqual(geometry[0],geometry[1],'Both sentences use a held matrix layout.');
-  assert.match(await page.locator('#s17-position-append-qk-a .lesson-key').innerText(),/Values equal.*only if.*no bias/);
-  const appendedColumns=await page.locator('#position-append-scores tbody tr').evaluateAll(rows=>rows.map(tr=>[...tr.querySelectorAll('[data-value]')].map(e=>Number(e.dataset.value))));
-  appendedColumns.forEach((row,j)=>{
-    const r=appendedReference(sequences[0],1);
-    row.forEach((x,c)=>close(x,[r.wordTerms[j],r.positionTerms[j],r.rawScores[j]][c],'word / slot / raw score'));
-  });
-  const appendedSoftmax=await page.locator('#position-append-softmax tbody tr').evaluateAll(rows=>rows.map(tr=>[...tr.querySelectorAll('[data-value]')].map(e=>Number(e.dataset.value))));
-  appendedSoftmax.forEach((row,j)=>{
-    const r=appendedReference(sequences[0],1);
-    row.forEach((x,c)=>close(x,[r.scores[j],Math.exp(r.scores[j]),r.weights[j]][c],'appended softmax working'));
-  });
-  await go('s17-position-append-scale');
+  const vectorText=row=>'['+row.map(value=>(Math.abs(value)<.0005?0:value).toFixed(3)).join(', ')+']';
   for(const scale of [1,.1,1,.1]){
+    await go('s17-position-append-qk-a');
     await page.locator('#position-append-scale').selectOption(String(scale));
-    for(const [index,suffix]of ['a','b'].entries()){
-      const r=appendedReference(sequences[index],scale);
-      const actual=await page.locator('#position-append-weights-'+suffix+' tbody tr').evaluateAll(rows=>rows.map(tr=>[...tr.querySelectorAll('[data-value]')].map(e=>Number(e.dataset.value))));
-      actual.forEach((row,j)=>{close(row[0],r.scores[j],'live appended score');close(row[1],r.weights[j],'live appended weight');});
-      assert.deepEqual(await page.locator('#position-append-weights-'+suffix+' .weight').allTextContents(),r.weights.map(x=>(100*x).toFixed(1)+'%'));
-      assert(scale===1?r.weights[3]>.89:r.weights[3]<.30,'Position scale controls the demonstrated preference.');
-    }
-    assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'Appended-scale control fits at '+scale);
-    await page.screenshot({path:path.join(shots,'append-scale-'+scale+'.png')});
-  }
-  await go('s17-position-append-tradeoffs');await go('s17-position-append-scale');
-  assert.equal(await page.locator('#position-append-scale').inputValue(),'0.1','Appended scale survives navigation');
-  await page.locator('#position-append-scale').selectOption('1');
-  // Detail controls and final comparison carry the same scale across stages.
-  for(const scale of [.1,1]){
-    await go('s17-position-append-product-a');
-    await page.locator('#s17-position-append-product-a select').selectOption(String(scale));
-    assert.equal(await page.locator('#position-append-scale').inputValue(),String(scale));
     assert.deepEqual(await page.locator('[data-append-scale-control]').evaluateAll(es=>es.map(e=>e.value)),Array(8).fill(String(scale)));
-    for(const [index,suffix] of ['a','b'].entries()){
-      const r=await page.evaluate(({index,scale})=>AT.positionLesson.appendedExperiment(AT.positionLesson.sequences[index],scale),{index,scale});
-      const product=page.locator('[data-append-product="'+suffix+'"]');
-      for(const [name,values] of [['Q',r.Q],['KT',r.K[0].map((_,c)=>r.K.map(row=>row[c]))],['raw',r.rawMatrix]]){
-        const cells=await product.locator('[data-append-matrix="'+name+'"] [data-value]').evaluateAll(es=>es.map(e=>({i:Number(e.dataset.row),j:Number(e.dataset.column),value:Number(e.dataset.value),text:e.textContent})));
-        assert.equal(cells.length,values.length*values[0].length);
-        for(const cell of cells){close(cell.value,values[cell.i][cell.j],'rendered '+name);assert.equal(cell.text,name==='raw'?cell.value.toFixed(2):Number(cell.value.toFixed(3)).toString());}
-      }
-      for(const [name,values] of [['masked',r.maskedMatrix],['attention',r.attentionMatrix]]){
-        const cells=await page.locator('[data-append-matrix="'+name+'-'+index+'"] [data-value]').evaluateAll(es=>es.map(e=>({i:Number(e.dataset.row),j:Number(e.dataset.column),value:Number(e.dataset.value),text:e.textContent})));
-        assert.equal(cells.length,16);
-        for(const cell of cells){
-          assert.equal(cell.value,values[cell.i][cell.j]);
-          assert.equal(cell.text,Number.isFinite(cell.value)?cell.value.toFixed(3):'−∞');
-        }
-      }
-      const ending=index?'-b':'';
+    for(const [index,suffix]of ['a','b'].entries()){
+      const r=appendedReference(sequences[index],scale),ending=index?'-b':'';
+      const names=sequences[index].map((token,j)=>(j+1)+' '+token);
+      const keys=page.locator('#position-append-keys-'+suffix);
+      assert.deepEqual(await keys.locator('tbody td:first-child').allTextContents(),names);
+      assert.deepEqual(await keys.locator('[data-vector]').evaluateAll(es=>es.map(e=>JSON.parse(e.dataset.vector))),r.rows);
+      assert.deepEqual(await page.locator('#s17-position-append-qk-'+suffix+' [data-append-query]').evaluate(e=>JSON.parse(e.dataset.vector)),r.q);
       const rows=await page.locator('#position-append-scores'+ending+' tbody tr').evaluateAll(es=>es.map(tr=>[...tr.querySelectorAll('[data-value]')].map(e=>Number(e.dataset.value))));
+      assert.equal(rows.length,4);
       rows.forEach((row,j)=>row.forEach((x,c)=>close(x,[r.wordTerms[j],r.positionTerms[j],r.rawScores[j]][c],'expanded products')));
-      const softmaxRows=await page.locator('#position-append-softmax'+ending+' tbody tr').evaluateAll(es=>es.map(tr=>[...tr.querySelectorAll('[data-value]')].map(e=>Number(e.dataset.value))));
+      const softmax=page.locator('#position-append-softmax'+ending);
+      assert.deepEqual(await softmax.locator('tbody td:first-child').allTextContents(),names);
+      const softmaxRows=await softmax.locator('tbody tr').evaluateAll(es=>es.map(tr=>[...tr.querySelectorAll('[data-value]')].map(e=>Number(e.dataset.value))));
       softmaxRows.forEach((row,j)=>row.forEach((x,c)=>close(x,[r.scores[j],Math.exp(r.scores[j]),r.weights[j]][c],'expanded normalization')));
       const denominator=r.scores.map(Math.exp).reduce((a,b)=>a+b);
-      assert.deepEqual(await page.locator('#position-append-softmax'+ending+' .weight').allTextContents(),r.weights.map((weight,j)=>Math.exp(r.scores[j]).toFixed(2)+' / '+denominator.toFixed(2)+' ≈ '+(100*weight).toFixed(1)+'%'));
-      assert.match(await page.locator('#position-append-denominator'+ending).textContent(),new RegExp(r.scores.map(Math.exp).reduce((a,b)=>a+b).toFixed(2).replace('.','\\.')));
+      assert.deepEqual(await softmax.locator('.weight').allTextContents(),r.weights.map((weight,j)=>Math.exp(r.scores[j]).toFixed(2)+' / '+denominator.toFixed(2)+' ≈ '+(100*weight).toFixed(1)+'%'));
+      assert.match(await page.locator('#position-append-denominator'+ending).textContent(),new RegExp(denominator.toFixed(2).replace('.','\\.')));
+      const values=page.locator('#position-append-values-'+suffix);
+      assert.deepEqual(await values.locator('tbody td:first-child').allTextContents(),names,'Sources keep the same order from keys through values.');
+      const displayed=await values.locator('tbody tr').evaluateAll(es=>es.map(tr=>({weight:Number(tr.querySelector('[data-value]').dataset.value),vectors:[...tr.querySelectorAll('[data-vector]')].map(e=>JSON.parse(e.dataset.vector))})));
+      assert.equal(displayed.length,4);
+      displayed.forEach((row,j)=>{
+        close(row.weight,r.weights[j],'displayed source weight');assert.deepEqual(row.vectors[0],r.rows[j],'displayed source value');
+        row.vectors[1].forEach((v,c)=>close(v,r.contributions[j][c],'displayed weighted contribution'));
+      });
+      assert.deepEqual(await values.locator('tbody td:last-child').allTextContents(),r.contributions.map(vectorText),'Rounded contributions are the computed products.');
+      const total=await values.locator('tfoot [data-vector]').evaluate(e=>JSON.parse(e.dataset.vector));
+      total.forEach((v,c)=>close(v,r.message[c],'visible message sum'));
+      assert.equal(await values.locator('tfoot td:last-child').textContent(),vectorText(r.message));
+      assert(scale===1?r.weights[3]>.89:r.weights[3]<.30,'Position scale controls the demonstrated self-preference.');
     }
-    for(const id of ids.filter(id=>/append-(product|scores|masked|softmax|weights)/.test(id))){
+    const first=appendedReference(sequences[0],scale);
+    assert(first.wordTerms[0]>first.wordTerms[2],'Maya always has the stronger word-only match.');
+    assert(scale===1?first.rawScores[0]<first.rawScores[2]:first.rawScores[0]>first.rawScores[2],'The raw slot scale reverses this comparison only at c=1.');
+    for(const id of ids.filter(id=>/append-(qk|scores|softmax|values)/.test(id))){
       await go(id);assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,id+' at scale '+scale);
       const collisions=await page.locator('#'+id+' td').evaluateAll(es=>es.filter(e=>{const range=document.createRange();range.selectNodeContents(e);return range.getBoundingClientRect().right>e.getBoundingClientRect().right-5;}).map(e=>e.textContent));
-      assert.deepEqual(collisions,[],id+' calculation text fits inside its own column at scale '+scale);
+      assert.deepEqual(collisions,[],id+' calculation text fits its own column at scale '+scale);
     }
   }
+  // The fixed comparison shows both scales side by side, independent of the control state.
+  const compared=await page.locator('#position-append-scale-comparison tbody tr').evaluateAll(es=>es.map(tr=>[...tr.querySelectorAll('[data-value]')].map(e=>Number(e.dataset.value))));
+  for(let j=0;j<4;j++)[1,.1].forEach((scale,c)=>close(compared[j][c],appendedReference(sequences[0],scale).weights[j],'fixed before/after weight'));
+  await go('s17-position-append-tradeoffs');await go('s17-position-append-qk-a');
+  assert.equal(await page.locator('#position-append-scale').inputValue(),'0.1','Scale survives navigation.');
+  await page.locator('#position-append-scale').selectOption('1');
   assert.equal(await page.evaluate(()=>JSON.stringify({e:AT.positionLesson.embeddings,p:AT.positionLesson.positions})),toyBefore,'Appended toy preserves existing embeddings and offsets.');
   assert.match(await page.locator('#s17-position-append-tradeoffs').innerText(),/Concatenation can work/);
   assert.match(await page.locator('#s17-position-updated').innerText(),/representation before attention/);

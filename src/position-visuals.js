@@ -63,106 +63,72 @@ document.addEventListener('DOMContentLoaded',()=>{
       body.append(tr);
     });
   });
-  document.querySelectorAll('[data-appended-projections]').forEach(host=>{
-    const index=host.dataset.appendedProjections==='a'?0:1,tokens=lesson.sequences[index];
-    const r=lesson.appendedExperiment(tokens);
-    const s=canvas(host,tokens.join(' ')+': input times identity gives the complete query and key matrices',380);
-    function matrix(name,values,x,y,width,color,label){
-      const group=element('g',{'data-projection-matrix':name});s.append(group);
-      text(group,x,32,label,color,29);
-      text(group,x,65,values.length+' × '+values[0].length,C.ink,23);
-      values.forEach((row,j)=>row.forEach((value,c)=>{
-        const cx=x+c*width,cy=y+j*52;
-        group.append(element('rect',{x:cx,y:cy,width,height:52,fill:color,'fill-opacity':name==='Q'&&j===3?.14:.035,stroke:C.line,'stroke-width':1}));
-        group.append(element('text',{x:cx+width/2,y:cy+34,'text-anchor':'middle','data-row':j,'data-column':c,'data-value':value,style:`fill:${name==='input'&&c===2?C.d:color};font-size:29px`},name==='identity'||c===2?String(value):value.toFixed(1)));
-      }));
-      if(name==='Q')group.append(element('rect',{x,y:y+3*52,width:3*width,height:52,fill:'none',stroke:C.q,'stroke-width':3,'data-query-row':'3'}));
-    }
-    text(s,12,65,'Slot / word',C.ink,23);
-    tokens.forEach((token,j)=>s.append(element('text',{x:12,y:112+j*52+34,'data-source-row':j,style:`fill:${token==='today'?C.q:C.ink};font-size:26px`},(j+1)+' '+token)));
-    matrix('input',r.rows,160,112,66,C.e,'Input Ẽ');
-    matrix('identity',r.WQ,420,138,44,C.ink,'I₃');
-    matrix('Q',r.Q,628,112,66,C.q,'Queries Q');
-    matrix('K',r.K,890,112,66,C.k,'Keys K');
-    text(s,378,231,'×',C.ink,32);text(s,583,231,'=',C.ink,32);text(s,849,231,'=',C.ink,32);
-    text(s,160,362,'Two word coordinates + slot',C.ink,25);
-    text(s,628,362,'q₄ = ['+r.q.map((value,c)=>c===2?String(value):value.toFixed(1)).join(', ')+']',C.q,29);
-  });
-  const appendScale=document.getElementById('position-append-scale');
   const short=value=>Number(value.toFixed(3)).toString();
   const dotFormula=(q,k)=>q.map((value,c)=>short(value)+' × '+short(k[c])).join(' + ');
-  // One experimental setting follows the student through all calculation stages.
+  let appendScale;
+  // One scale setting follows the last receiver through keys, scores and values.
   document.querySelectorAll('[data-append-control]').forEach((host,index)=>{
     const sentence=document.createElement('span');sentence.textContent=host.dataset.appendControl+'.';
-    const label=document.createElement('label');label.htmlFor='append-detail-scale-'+index;label.textContent='Position scale c =';
+    const label=document.createElement('label');label.htmlFor=index?'append-detail-scale-'+index:'position-append-scale';label.textContent='Position scale c =';
     const select=document.createElement('select');select.id=label.htmlFor;select.dataset.appendScaleControl='';
     for(const value of ['1','0.1']){const option=document.createElement('option');option.value=value;option.textContent=value;select.append(option);}
+    if(index===0)appendScale=select;
     host.append(sentence,label,select);
     select.addEventListener('change',()=>{appendScale.value=select.value;drawAppended();});
   });
-  function numericMatrix(s,name,values,x,y,cw,color,format,highlight={}){
-    const group=element('g',{'data-append-matrix':name});s.append(group);
-    values.forEach((row,i)=>row.forEach((value,j)=>{
-        const marked=highlight.row===i||highlight.column===j,blocked=!Number.isFinite(value)||(highlight.causal&&j>i);
-        group.append(element('rect',{x:x+j*cw,y:y+i*48,width:cw,height:48,fill:blocked?C.line:color,'fill-opacity':blocked?.6:marked?.13:.025,stroke:C.line}));
-      group.append(element('text',{x:x+(j+.5)*cw,y:y+i*48+32,'text-anchor':'middle','data-row':i,'data-column':j,'data-value':String(value),style:`fill:${color};font-size:25px`},format(value)));
-    }));
-    if(highlight.row!==undefined)group.append(element('rect',{x,y:y+highlight.row*48,width:values[0].length*cw,height:48,fill:'none',stroke:color,'stroke-width':2}));
-  }
-  function drawProduct(host,r,tokens){
-    const s=canvas(host,tokens.join(' ')+': Q times K transpose gives every raw dot product',390);
-    text(s,80,30,'Q',C.q,29);text(s,80,61,'4 × 3',C.ink,23);
-    text(s,340,30,'Kᵀ',C.k,29);text(s,340,61,'3 × 4',C.ink,23);
-    text(s,728,30,'QKᵀ',C.ink,29);text(s,728,61,'4 × 4',C.ink,23);
-    numericMatrix(s,'Q',r.Q,80,105,54,C.q,short,{row:3});
-    const kt=r.K[0].map((_,c)=>r.K.map(row=>row[c]));
-    numericMatrix(s,'KT',kt,340,129,54,C.k,short,{column:2});
-    numericMatrix(s,'raw',r.rawMatrix,728,105,84,C.ink,value=>value.toFixed(2),{row:3});
-    s.append(element('rect',{x:728+2*84,y:105+3*48,width:84,height:48,fill:'none',stroke:C.ink,'stroke-width':4,'data-selected-product':'3,2'}));
-    for(let i=0;i<4;i++){
-      text(s,43,137+i*48,String(i+1),C.ink,23);
-      text(s,360+i*54,114,String(i+1),C.k,23);
-      text(s,701,137+i*48,String(i+1),C.q,23);
-      text(s,763+i*84,91,String(i+1),C.k,23);
-    }
-    text(s,278,215,'×',C.ink,32);text(s,633,215,'=',C.ink,32);
-    text(s,30,336,'Slots: '+tokens.map((token,j)=>(j+1)+' '+token).join(', '),C.ink,24);
-    text(s,30,378,'q₄ · k₃ = '+dotFormula(r.q,r.K[2])+' = '+short(r.rawScores[2]),C.ink,27);
-  }
-  function drawMatrixPair(host,results){
-    const attention=host.dataset.appendMatrices==='attention';
-    const s=canvas(host,attention?'Causal attention weights for both sentences':'Scaled, causally masked scores for both sentences',365);
-    results.forEach((r,index)=>{
-      const left=index*560,tokens=lesson.sequences[index],color=attention?C.a:C.k;
-      text(s,left+12,30,tokens.join(' '),C.ink,25);
-      text(s,left+145,69,(attention?'A':'S')+' · 4 × 4',color,26);
-      text(s,left+145,98,'Source slot j',C.k,22);
-      for(let j=0;j<4;j++)text(s,left+178+j*78,124,String(j+1),C.k,23);
-      numericMatrix(s,(attention?'attention':'masked')+'-'+index,attention?r.attentionMatrix:r.maskedMatrix,left+145,139,78,color,value=>Number.isFinite(value)?value.toFixed(3):'−∞',{row:3,causal:true});
-      tokens.forEach((token,i)=>text(s,left+12,171+i*48,(i+1)+' '+token,C.q,23));
-    });
-    text(s,12,355,'Rows: receiver i. The highlighted row belongs to today.',C.ink,24);
+  function augmentedVector(host,row,prefix=''){
+    host.replaceChildren();host.dataset.vector=JSON.stringify(row);
+    const position=document.createElement('span');position.className='append-index';position.textContent=row[2].toFixed(1);
+    host.append(prefix+'['+row.slice(0,2).map(x=>x.toFixed(1)).join(', ')+', ',position,']');
   }
   function drawCalculationTables(r,index){
-    const suffix=index?'-b':'',tokens=lesson.sequences[index];
+    const letter=index?'b':'a',suffix=index?'-b':'',tokens=lesson.sequences[index];
+    const keys=document.querySelector('#position-append-keys-'+letter+' tbody');keys.replaceChildren();
     const scores=document.querySelector('#position-append-scores'+suffix+' tbody');scores.replaceChildren();
     const softmax=document.querySelector('#position-append-softmax'+suffix+' tbody');softmax.replaceChildren();
+    const values=document.querySelector('#position-append-values-'+letter+' tbody');values.replaceChildren();
     const exps=r.scores.map(Math.exp),denominator=exps.reduce((a,b)=>a+b,0);
     tokens.forEach((token,j)=>{
-      const tr=document.createElement('tr');cell(tr,(j+1)+' '+token);
+      const label=(j+1)+' '+token;
+      const keyRow=document.createElement('tr');cell(keyRow,label);
+      augmentedVector(cell(keyRow,'','numbers score'),r.K[j]);keys.append(keyRow);
+      const tr=document.createElement('tr');cell(tr,label);
       const word=cell(tr,r.wordTerms[j],'numbers score');
       word.textContent=dotFormula(r.q.slice(0,2),r.K[j].slice(0,2))+' = '+short(r.wordTerms[j]);
       const position=cell(tr,r.positionTerms[j],'numbers append-index');
       position.textContent=short(r.q[2])+' × '+short(r.K[j][2])+' = '+short(r.positionTerms[j]);
       cell(tr,r.rawScores[j],'numbers append-totals');scores.append(tr);
-      const row=document.createElement('tr');cell(row,token);
+      const row=document.createElement('tr');cell(row,label);
       const scaled=cell(row,r.scores[j],'numbers score');scaled.textContent=short(r.rawScores[j])+' / √3 = '+r.scores[j].toFixed(3);
       const exponential=cell(row,exps[j],'numbers');exponential.textContent=exps[j].toFixed(2);
       const weight=cell(row,r.weights[j],'numbers weight');weight.textContent=exps[j].toFixed(2)+' / '+denominator.toFixed(2)+' ≈ '+(100*r.weights[j]).toFixed(1)+'%';softmax.append(row);
+      const mix=document.createElement('tr');mix.dataset.source=String(j);cell(mix,label);
+      cell(mix,r.weights[j],'numbers weight');
+      const value=cell(mix,fixed(r.V[j]),'numbers message');value.dataset.vector=JSON.stringify(r.V[j]);
+      const contribution=cell(mix,fmt(r.contributions[j]),'numbers message');contribution.dataset.vector=JSON.stringify(r.contributions[j]);values.append(mix);
+      if(j===3){row.className='append-self';mix.className='append-self';}
     });
+    const sum=document.createElement('tr'),label=cell(sum,'Sum: message m₄');label.colSpan=3;
+    const total=cell(sum,fmt(r.message),'numbers message');total.dataset.vector=JSON.stringify(r.message);
+    document.querySelector('#position-append-values-'+letter+' tfoot').replaceChildren(sum);
     document.getElementById('position-append-denominator'+suffix).textContent='Sum: '+exps.map(x=>x.toFixed(2)).join(' + ')+' ≈ '+denominator.toFixed(2);
-    document.getElementById('position-append-normalization'+suffix).textContent='Normalize this sentence’s row using that sum. Displayed numbers are rounded.';
+    document.getElementById('position-append-normalization'+suffix).textContent='Today’s own value gets '+(100*r.weights[3]).toFixed(1)+'% of the weight. All four sources are allowed. Values come next.';
+    const maya=tokens.indexOf('Maya'),ravi=tokens.indexOf('Ravi');
+    document.querySelector('[data-append-score-result="'+letter+'"]').textContent=r.rawScores[maya]<r.rawScores[ravi]
+      ?'Maya has the stronger word match (0.8 versus 0.2). Ravi’s larger slot reverses that comparison.'
+      :'Maya’s word match is 0.8; Ravi’s is 0.2. The slot term '+(Number(appendScale.value)===1?'reinforces this order.':'is now small enough to keep that order.');
+    document.querySelector('[data-append-message-result="'+letter+'"]').textContent=Number(appendScale.value)===1
+      ?'Today supplies '+(100*r.weights[3]).toFixed(1)+'% of the mixture. Each value has three coordinates. Calculations use unrounded weights.'
+      :'The smaller slot feature spreads the weights more evenly. Each contribution uses the unrounded weight.';
   }
+  // A fixed before/after makes the scale effect visible without remembering a toggle.
+  const compared=[1,.1].map(scale=>lesson.appendedExperiment(lesson.sequences[0],scale));
+  const comparison=document.querySelector('#position-append-scale-comparison tbody');
+  lesson.sequences[0].forEach((token,j)=>{
+    const tr=document.createElement('tr');cell(tr,(j+1)+' '+token);
+    compared.forEach((r,index)=>{const td=cell(tr,r.weights[j],'numbers weight');td.dataset.scale=String(index?.1:1);td.textContent=(100*r.weights[j]).toFixed(1)+'%';});
+    if(j===3)tr.className='append-self';comparison.append(tr);
+  });
   const effectHost=document.querySelector('[data-append-scale-effect]');
   const effect=canvas(effectHost,'Same today-to-Ravi dot product with position scales 1 and 0.1',390);
   [1,.1].forEach((scale,index)=>{
@@ -175,33 +141,15 @@ document.addEventListener('DOMContentLoaded',()=>{
     text(effect,200,y+106,'Total: 0.2 + '+short(r.positionTerms[2])+' = '+short(r.rawScores[2]),C.ink,27);
     text(effect,740,y+106,'Score: '+short(r.rawScores[2])+' / √3 ≈ '+r.scores[2].toFixed(3),C.k,27);
   });
-  text(effect,200,375,'10× smaller in Q and in K gives a 100× smaller position product.',C.d,27);
+  text(effect,200,375,'10× smaller slot features give a 100× smaller position product.',C.d,27);
   function drawAppended(){
     const scale=Number(appendScale.value);
     const results=lesson.sequences.map(tokens=>lesson.appendedExperiment(tokens,scale));
     document.querySelectorAll('[data-append-scale-control]').forEach(select=>{select.value=String(scale);});
-    document.querySelectorAll('[data-append-query]').forEach(host=>{host.textContent='Today’s query q₄ = '+fixed(results[0].q);});
-    document.querySelectorAll('[data-append-product]').forEach(host=>{
-      const index=host.dataset.appendProduct==='a'?0:1;drawProduct(host,results[index],lesson.sequences[index]);
-    });
-    document.querySelectorAll('[data-append-matrices]').forEach(host=>drawMatrixPair(host,results));
+    document.querySelectorAll('[data-append-query]').forEach(host=>augmentedVector(host,results[0].q,'Today’s query q₄ = '));
     results.forEach(drawCalculationTables);
-    results.forEach((r,index)=>{
-      const suffix=index?'b':'a',body=document.querySelector('#position-append-weights-'+suffix+' tbody');
-      body.replaceChildren();
-      lesson.sequences[index].forEach((token,j)=>{
-        const tr=document.createElement('tr');cell(tr,token);
-        cell(tr,r.scores[j],'numbers score');
-        const weight=cell(tr,r.weights[j],'numbers weight');
-        weight.textContent=(100*r.weights[j]).toFixed(1)+'%';body.append(tr);
-      });
-    });
-    document.getElementById('position-append-query').textContent='q₄ = '+fixed(results[0].q);
-    document.getElementById('position-append-outcome').textContent=scale===1
-      ?'Today gets '+results.map(r=>(100*r.weights[3]).toFixed(1)+'%').join(' and ')+'. The raw slot index dominates in this toy.'
-      :'Today gets '+results.map(r=>(100*r.weights[3]).toFixed(1)+'%').join(' and ')+'. Scaling by 0.1 made the slot term 100× smaller.';
   }
-  appendScale.addEventListener('change',drawAppended);drawAppended();
+  drawAppended();
   document.querySelectorAll('[data-position-visual]').forEach(host=>{
     const kind=host.dataset.positionVisual,s=canvas(host,kind+' positional encoding illustration',kind.startsWith('swap')?330:kind==='shift'?310:280);
     if(kind==='swap-rows'){
