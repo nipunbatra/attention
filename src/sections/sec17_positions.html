@@ -44,6 +44,8 @@ body.present .position-lesson .alibi-weight-table th,body.present .position-less
 .position-coverage-table .position-unused{background:rgba(85,98,122,.08)}
 .position-coverage-table [data-learned-coverage="visited"]{color:var(--c-d)}
 .position-range-table [data-missing-position]{color:var(--c-a);background:var(--t-a)}
+#s17-position-rope-shift .lesson-result{padding:0;margin:12px 0}
+#s17-position-rope-shift .lesson-key{margin:12px 0}
 .position-credit{font-size:22px;line-height:1.5;margin-top:36px;color:var(--ink-2)}
 .position-credit a{color:inherit;text-decoration:underline;text-underline-offset:4px}
 .position-worked .worked-scroll{max-width:100%;overflow-x:auto}
@@ -508,25 +510,46 @@ Point to the gap rule, then distinguish the model's longer-input accuracy from t
 <p data-build="1">Longer-input accuracy needs testing. Full attention still has quadratic cost.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-rotate" data-title="RoPE: rotating a query or key" data-autobuild="off">
-<script type="text/x-notes">Before the relative-position identity, show one real rotation. Use the geometric column-vector convention only for this two-dimensional derivation, unlike the row-vector projection notation elsewhere. Rotating [1,0] by 60 degrees gives [0.5,0.866]. Norm is preserved. Content is rotated, not replaced with a pure position vector.</script>
-<div class="position-visual" data-position-visual="rotate"></div>
-<div>$$R_\theta\begin{bmatrix}x\\y\end{bmatrix}=\begin{bmatrix}x\cos\theta-y\sin\theta\\x\sin\theta+y\cos\theta\end{bmatrix}$$</div>
-<p class="lesson-key">For $[x,y]=[1,0]$ and $\theta=60^\circ$, the result is $[0.500,0.866]$. Rotation preserves length.</p>
+<div class="frame context-lesson position-lesson" id="s17-position-rope-queries" data-title="RoPE: match content and relative position" data-autobuild="off">
+<script type="text/x-notes">Ask: which earlier word could tell flowers its colour?
+Point from the receiving word flowers to the source red. This is the same zero-based, one-word-per-token sentence used for relative bias and ALiBi. Query means the receiver's learned matching features; key means a source's learned matching features. The informal question about colour motivates an example, not a claim that a trained coordinate literally represents colour. Use our existing row notation q_i=e_i W_Q and k_j=e_j W_K. These vectors are projections of representations, not IDs or the representation itself. RoPE is an alternative to the previous positional mechanisms: project first, then rotate Q and K before their dot product. Its goal is a content-dependent match whose explicit positional dependence is on the relative offset. Su et al., RoFormer: Enhanced Transformer with Rotary Position Embedding, 2021, Sections 3.1–3.2, https://arxiv.org/abs/2104.09864.</script>
+<div class="position-visual" data-position-visual="rope-queries"></div>
+<p data-build="1">Goal: compare word content while accounting for the <strong>gap</strong> between the words.</p>
+<p class="position-credit"><a href="https://arxiv.org/abs/2104.09864" target="_blank" rel="noopener noreferrer">Su et al. (2021), RoFormer</a> · Rotary Position Embedding (RoPE)</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-rope-shift" data-title="Shift both positions: the same relative match" data-autobuild="off">
-<script type="text/x-notes">The content vectors are held fixed at q=k=[1,0]. Rotate 30 degrees per slot. Compare query/key at 3/2 and 8/7, both one apart. The vectors rotate to different absolute angles, but their dot product is the same. This isolates the positional factor; real content vectors can differ with context, so an entire model is not guaranteed shift invariant.</script>
-<div class="lesson-control"><label for="rope-shift">Shift both slots</label><select id="rope-shift"><option value="0">+0: query 3, key 2</option><option value="5">+5: query 8, key 7</option><option value="10">+10: query 13, key 12</option></select></div>
+<div class="frame context-lesson position-lesson" id="s17-position-rotate" data-title="Rotate the query and key by their slots" data-autobuild="off">
+<script type="text/x-notes">Ask: what changes when we rotate the same content vector at two different slots?
+Point to red at j=2 and flowers at i=3. In this independent, untrained two-coordinate toy, choose both projected vectors to be [1,0]. We are not setting the projection matrices to identity and are not claiming the two word embeddings are equal. Choose omega=30 degrees, or pi/6 radians, per slot for easy arithmetic; this is a teaching rate, not the standard first RoPE frequency. Red's key rotates by 60 degrees and flowers' query by 90 degrees. Applying [x cos theta − y sin theta, x sin theta + y cos theta] gives [0.5,sqrt(3)/2] and [0,1]. Primes on q and k mean after rotation here; e-prime elsewhere is the updated representation. Dashed arrows show the chosen content vectors before rotation. Solid arrows keep their role colours. Rotation preserves length and width. Source: Su et al., https://arxiv.org/abs/2104.09864, Section 3.2.1.</script>
+<p>Toy: choose $q_3=k_2=[1,0]$. Rotate <strong>30° per slot</strong>; start counting at 0.</p>
+<div class="position-visual" data-position-visual="rotate"></div>
+<p class="lesson-key" data-build="1">Both vectors still have two coordinates and length 1. Their angle difference is now $90^\circ-60^\circ=30^\circ$.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-rope-match" data-title="The rotated query meets the rotated key" data-autobuild="off">
+<script type="text/x-notes">Ask: what score does flowers give red in this toy?
+Point to the same purple query and orange key. Multiply the corresponding coordinates, then add. The unrotated dot product was one. After the rotations, the raw dot product is sqrt(3)/2, approximately 0.866. Divide by sqrt(d_k)=sqrt(2) for a scaled score approximately 0.612. This is not a probability. Repeat the calculation against every causally allowed source, then apply one softmax over those scores. The resulting weights mix the value rows just as earlier in the lecture. Standard RoPE rotates Q and K, not V. We do not assign values or normalized weights in this pair-only example, because that would require all source scores. Source: Su et al., https://arxiv.org/abs/2104.09864, Sections 2.1 and 3.2.</script>
+<p>Maya carries <span style="color:var(--c-k)">red</span> <span style="color:var(--c-q)">flowers</span>. One receiver–source pair:</p>
+<div class="position-visual" data-position-visual="rope-match"></div>
+<div data-build="1">$$s_{3,2}=\frac{q'_3\cdot k'_2}{\sqrt{2}}=\frac{0.866\ldots}{\sqrt{2}}\approx0.612$$</div>
+<p class="lesson-key" data-build="2">Score every allowed source → softmax → mix its value rows. RoPE leaves the values unrotated.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-rope-shift" data-title="Add a prefix: the gap stays one" data-autobuild="off">
+<script type="text/x-notes">Ask: does adding At the park after lunch change how far red is from flowers?
+Switch between the two full sentences and point to the token indices. The prefix has five words. Red moves from 2 to 7 and flowers from 3 to 8. Keep their pre-rotation content vectors fixed at [1,0]. The key's angle goes from 60 to 210 degrees and the query's from 90 to 240 degrees. Both gain 150 degrees. The shifted key is [-sqrt(3)/2,-0.5] and query is [-0.5,-sqrt(3)/2]. Their raw dot product is still sqrt(3)/2. The two vectors remain 30 degrees apart. This demonstrates the shared-shift identity, which also holds for arbitrary fixed content vectors; it is not restricted to equal unit vectors. Adding a prefix in an actual network can change contextual representations and adds sources to the softmax denominator. Thus neither final attention weights nor model predictions are guaranteed unchanged. Nor does the identity guarantee successful length extrapolation. Source: Su et al., https://arxiv.org/abs/2104.09864, Section 3.2.</script>
+<div class="lesson-control"><label for="rope-shift">Sentence</label><select id="rope-shift"><option value="0">Original: Maya carries red flowers</option><option value="5">Add: At the park after lunch</option></select></div>
 <div class="position-visual" id="rope-shift-picture"></div>
 <p id="rope-shift-result" class="lesson-result" aria-live="polite"></p>
-<p class="lesson-key">Same fixed $q=k=[1,0]$ as before; rotate 30° per slot instead of adding position offsets.</p>
+<p class="lesson-key">Hold the content vectors fixed. A real prefix can change the content and the softmax weights.</p>
 </div>
 
 <div class="companion context-lesson position-lesson position-reading" id="s17-position-rope">
 <h3>A table of rotary matches</h3>
 <script type="text/x-notes">Rotary Position Embedding applies a position-dependent rotation to coordinate pairs in Q and K. Standard RoPE leaves V unrotated. The paired inner product contains R_i transpose R_j, which depends on the relative offset. Actual Q/K also vary with token content, so equal distance alone does not imply equal scores. Source: Su et al., RoFormer, https://arxiv.org/abs/2104.09864.</script>
 <div class="position-flow"><span>Content query/key</span><b>→</b><span>Rotate pairs by their slots</span><b>→</b><span>Dot product</span></div>
+<p>For any two-coordinate content vector, rotation uses:</p>
+<div>$$R_\theta\begin{bmatrix}x\\y\end{bmatrix}=\begin{bmatrix}x\cos\theta-y\sin\theta\\x\sin\theta+y\cos\theta\end{bmatrix}$$</div>
 <p>Toy: start with $q=k=[1,0]$; rotate 30° per slot.</p>
 <table class="lesson-table"><thead><tr><th>Query slot, key slot</th><th>Distance</th><th>Dot product</th></tr></thead><tbody><tr><td>3, 2</td><td>1</td><td>0.866</td></tr><tr><td>8, 7</td><td>1</td><td>0.866</td></tr><tr><td>5, 2</td><td>3</td><td>0.000</td></tr></tbody></table>
 <p class="lesson-key">Dot product = cosine of the angle difference: $\cos30^\circ\approx0.866$; $\cos90^\circ=0$. Real RoPE uses multiple rates and usually rotates Q and K, not V.</p>

@@ -17,7 +17,7 @@ const positions=[
   'break','order','permute','scores','swapped','contributions','consequence',
   'addition-break','shift','move-a','move-b','moved','toy','slot-scores','experiment','updated',
   'learned-break','learned','learned-update','learned-limits','absolute-range','clock-choice','sine-2d','sine-4d','sine-many','clock-why','clock','repeat','sine-rule','worked-sine','waves','period','sine-base','sine-width',
-  'absolute-context','absolute-shift','relative-break','relative','relative-bias','alibi','alibi-scores','alibi-weights','alibi-takeaways','rotate','rope-shift','rope-identity','rope-pairs','insertion',
+  'absolute-context','absolute-shift','relative-break','relative','relative-bias','alibi','alibi-scores','alibi-weights','alibi-takeaways','rope-queries','rotate','rope-match','rope-shift','rope-identity','rope-pairs','insertion',
   'alternatives-break','append','append-qk-a','append-scores','append-softmax','append-values-a',
   'append-qk-b','append-scores-b','append-softmax-b','append-values-b',
   'append-scale-effect','append-scale','append-tradeoffs',
@@ -69,7 +69,7 @@ try{
   await page.setViewportSize({width:1280,height:720});await page.evaluate(()=>document.fonts.ready);
   const original=await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)}));
   assert.deepEqual(await page.locator('.frame.context-lesson').evaluateAll(es=>es.map(e=>e.id)),ids);
-  assert.equal(ids.length,62,'ALiBi explains the problem, scores, weights and takeaways.');
+  assert.equal(ids.length,64,'RoPE identifies the sentence roles before rotation, scoring and the shared shift.');
   assert.deepEqual(await page.locator('.position-reading[id]:not(#s17-position-map-notes)').evaluateAll(es=>es.map(e=>e.id)),readingExtras,'Recaps remain available for reading.');
   // Reading mode must follow the same teaching logic, including its extra explanations.
   const lessonOrder=await page.locator('#s17 .frame.position-lesson,#s17 .position-reading[id]').evaluateAll(es=>es.map(e=>e.id));
@@ -78,7 +78,7 @@ try{
     ['alternatives-break','append','append-qk-a','append-scores','append-softmax','append-values-a','append-qk-b','append-scores-b','append-softmax-b','append-values-b','append-scale-effect','append-scale','append-tradeoffs','width','overview','map-notes'],
     ['learned-break','learned','learned-update','learned-limits','absolute-range','clock-choice'],
     ['clock-choice','sine-2d','sine-4d','sine-many','clock-why','clock','repeat','rates','sine-rule','worked-sine','sine','waves','period','sine-base','sine-width','absolute-context','absolute-shift','relative-break'],
-    ['relative-break','relative','relative-bias','alibi','alibi-scores','alibi-weights','alibi-takeaways','rotate','rope-shift','rope','rope-identity','rope-pairs','insertion','length','choices','alternatives-break']
+    ['relative-break','relative','relative-bias','alibi','alibi-scores','alibi-weights','alibi-takeaways','rope-queries','rotate','rope-match','rope-shift','rope','rope-identity','rope-pairs','insertion','length','choices','alternatives-break']
   ]){
     const expected=run.map(x=>'s17-position-'+x),start=lessonOrder.indexOf(expected[0]);
     assert(start>=0,'Sequence has its starting frame: '+expected[0]);
@@ -87,7 +87,7 @@ try{
   for(const [from,to]of [
     ['updated','learned-break'],['insertion','alternatives-break'],['append-tradeoffs','overview'],
     ['learned-limits','absolute-range'],['absolute-range','clock-choice'],['repeat','sine-rule'],['worked-sine','waves'],
-    ['period','sine-base'],['sine-width','absolute-context'],['absolute-shift','relative-break'],['relative','relative-bias'],['relative-bias','alibi'],['alibi','alibi-scores'],['alibi-scores','alibi-weights'],['alibi-weights','alibi-takeaways'],['alibi-takeaways','rotate']
+    ['period','sine-base'],['sine-width','absolute-context'],['absolute-shift','relative-break'],['relative','relative-bias'],['relative-bias','alibi'],['alibi','alibi-scores'],['alibi-scores','alibi-weights'],['alibi-weights','alibi-takeaways'],['alibi-takeaways','rope-queries'],['rope-queries','rotate'],['rotate','rope-match'],['rope-match','rope-shift']
   ]){
     await go('s17-position-'+from);
     await page.evaluate(()=>AT.present.next());
@@ -101,14 +101,35 @@ try{
     assert(await page.locator('#'+id+' h3').count(),'Reading notes retain a descriptive heading.');
   }
   assert.equal(await page.locator('[id^="s16-cost-"]').count(),0,'cost lesson is absent from Part II');
-  for(const shift of [0,5,10]){
+  for(const shift of [0,5]){
     await go('s17-position-rope-shift');await page.locator('#rope-shift').selectOption(String(shift));
     const r=await page.evaluate(s=>AT.positionVisuals.shifted(s),shift);
     close(r.dot,Math.sqrt(3)/2,'relative rotary match after common shift');
     close(r.q[0]**2+r.q[1]**2,1,'query norm');close(r.k[0]**2+r.k[1]**2,1,'key norm');
     assert.match(await page.locator('#rope-shift-result').innerText(),/0.866/);
+    const tokens=await page.locator('#rope-shift-picture [data-rope-word]').evaluateAll(es=>es.map(e=>({word:e.dataset.ropeWord,position:Number(e.dataset.position),role:e.dataset.role})));
+    const words=[...(shift?['At','the','park','after','lunch']:[]),'Maya','carries','red','flowers'];
+    assert.deepEqual(tokens.map(t=>t.word),words,'Show the entire sentence, not unexplained slot numbers.');
+    assert.deepEqual(tokens.filter(t=>t.role!=='context'),[{word:'red',position:2+shift,role:'key'},{word:'flowers',position:3+shift,role:'query'}]);
+    assert.match(await page.locator('#rope-shift-result').innerText(),/0.612/,'Distinguish scaled score from raw dot product.');
+
   }
   await page.locator('#rope-shift').selectOption('0');
+  assert.equal(await page.locator('#s17-position-rope-queries a').getAttribute('href'),'https://arxiv.org/abs/2104.09864','Visible primary RoFormer paper link.');
+  const match=await page.locator('#s17-position-rope-match').textContent();
+  assert.match(match,/0.866/);assert.match(match,/0.612/);assert.match(match,/values unrotated/);
+  const rotations=await page.evaluate(()=>[2,3,7,8].map(slot=>AT.positionVisuals.rotate([1,0],slot*Math.PI/6)));
+  const expectedRotations=[[.5,Math.sqrt(3)/2],[0,1],[-Math.sqrt(3)/2,-.5],[-.5,-Math.sqrt(3)/2]];
+  rotations.forEach((v,i)=>v.forEach((x,j)=>close(x,expectedRotations[i][j],'sentence rotation '+i+','+j)));
+  for(const shift of [0,5,10]){
+    const dot=await page.evaluate(shift=>{
+      const q=AT.positionVisuals.rotate([.3,-.7],(3+shift)*Math.PI/6),k=AT.positionVisuals.rotate([1.2,.4],(2+shift)*Math.PI/6);
+      return q[0]*k[0]+q[1]*k[1];
+    },shift);
+    const angle=-Math.PI/6,k=[1.2*Math.cos(angle)-.4*Math.sin(angle),1.2*Math.sin(angle)+.4*Math.cos(angle)];
+    close(dot,.3*k[0]-.7*k[1],'Shared-shift identity for unequal content vectors');
+  }
+
   const base={Maya:[1,0],Ravi:[0,1],helps:[.2,.2],today:[.8,.2]},pos=[[0,0],[.2,-.1],[.4,-.2],[.6,-.3]];
   const sequences=[['Maya','helps','Ravi','today'],['Ravi','helps','Maya','today']];
   function reference(tokens,on){

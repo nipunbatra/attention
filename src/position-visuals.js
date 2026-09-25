@@ -196,11 +196,31 @@ document.addEventListener('DOMContentLoaded',()=>{
         [[260,Math.PI/2,C.d],[705,Math.PI/6,C.v]].forEach(([x,rate,color])=>{const v=rotate([1,0],i*rate);axes(s,x,y,37);vector(s,x,y,37,v,color);text(s,x+66,y+8,fmt([v[1],v[0]]),color,27);});
       });
       text(s,220,264,'Fast pair repeats',C.d,24);text(s,665,264,'Slow pair differs',C.v,24);
+    }else if(kind==='rope-queries'){
+      ropeSentence(s,0);
+      text(s,65,132,'Source: red (j = 2)',C.k,27);
+      text(s,600,132,'Receiver: flowers (i = 3)',C.q,27);
+      subscriptText(s,65,185,'k₂ = e₂ W_{K}',C.k,31);
+      subscriptText(s,600,185,'q₃ = e₃ W_{Q}',C.q,31);
+      text(s,65,234,'Key: matching features it offers',C.k,25);
+      text(s,600,234,'Query: matching features it seeks',C.q,25);
+      text(s,65,267,'Project the word representations first. Then RoPE rotates these vectors.',C.ink,24);
     }else if(kind==='rotate'){
-      axes(s,190,150,95);vector(s,190,150,95,[1,0],C.q);vector(s,190,150,95,rotate([1,0],Math.PI/3),C.k);
-      text(s,320,160,'q = [1, 0]',C.q,28);text(s,300,62,'R₆₀°q = [0.500, 0.866]',C.k,28);
-      text(s,650,112,'0.500 = 1 × cos60° − 0 × sin60°',C.k,23);text(s,650,175,'0.866 = 1 × sin60° + 0 × cos60°',C.k,23);
-      text(s,80,270,'Rotate content; keep its length.',C.ink,26);
+      [[0,'red: key at slot 2',2,C.k,'k′₂'],[560,'flowers: query at slot 3',3,C.q,'q′₃']].forEach(([x,label,slot,color,name])=>{
+        text(s,x+20,32,label,color,27);axes(s,x+110,149,65);
+        const initial=element('g',{'stroke-dasharray':'5 4',opacity:.6});s.append(initial);vector(initial,x+110,149,65,[1,0],color);
+        const rotated=rotate([1,0],slot*Math.PI/6);vector(s,x+110,149,65,rotated,color);
+        text(s,x+205,106,slot+' × 30° = '+slot*30+'°',color,27);
+        text(s,x+205,158,'[cos'+slot*30+'°, sin'+slot*30+'°]',color,26);
+        text(s,x+205,213,name+' = '+fmt(rotated),color,26);
+      });
+      text(s,20,267,'Dashed: before rotation [1, 0]. Solid: after rotation.',C.ink,24);
+    }else if(kind==='rope-match'){
+      s.setAttribute('viewBox','0 0 1120 185');
+      text(s,35,34,'flowers: rotated query',C.q,27);text(s,610,34,'red: rotated key',C.k,27);
+      text(s,35,90,'q′₃ = [0.000, 1.000]',C.q,32);text(s,610,90,'k′₂ = [0.500, 0.866…]',C.k,32);
+      text(s,500,90,'·',C.ink,35);
+      text(s,35,167,'Raw dot product: 0 × 0.500 + 1 × 0.866… ≈ 0.866',C.ink,29);
     }else if(kind==='pairs'){
       text(s,20,45,'Query, width 4',C.q,29);text(s,370,45,'Pair 0',C.q,29);text(s,740,45,'Pair 1',C.q,29);
       text(s,20,120,'[1, 0, 0.6, 0.8]',C.q,30);arrow(s,280,112,330,112,C.line);
@@ -310,14 +330,31 @@ document.addEventListener('DOMContentLoaded',()=>{
     text(g,824,y,'=',C.ink,26);text(g,871,y,decimalRow(after),color,26);
   });
 
+  function ropeSentence(s,shift){
+    const words=[...(shift?['At','the','park','after','lunch']:[]),'Maya','carries','red','flowers'];
+    const g=element('g',{'data-rope-sentence':String(shift)});s.append(g);
+    words.forEach((word,index)=>{
+      const role=word==='flowers'?'query':word==='red'?'key':'context',color=role==='query'?C.q:role==='key'?C.k:C.ink;
+      const x=20+index*122+(shift?0:280),token=element('g',{'data-rope-word':word,'data-position':index,'data-role':role});g.append(token);
+      text(token,x,24,String(index),color,22);text(token,x,60,word,color,27);
+      line(token,x,73,x+108,73,role==='context'?C.line:color,role==='context'?1:3);
+    });
+  }
+
   const selector=document.getElementById('rope-shift');
   function shifted(shift){const i=3+shift,j=2+shift,q=rotate([1,0],i*Math.PI/6),k=rotate([1,0],j*Math.PI/6);return {i,j,q,k,dot:q[0]*k[0]+q[1]*k[1]};}
   function draw(){
-    const r=shifted(Number(selector.value));const s=canvas(document.getElementById('rope-shift-picture'),'Rotate queries and keys while preserving their relative angle',250);
-    axes(s,210,125,95);vector(s,210,125,95,r.q,C.q);vector(s,210,125,95,r.k,C.k);
-    text(s,390,60,'Query slot '+r.i+': '+fmt(r.q),C.q,28);text(s,390,112,'Key slot '+r.j+': '+fmt(r.k),C.k,28);
-    text(s,390,173,'Dot product: '+r.dot.toFixed(3),C.ink,31);text(s,390,226,'Slot gap = 1 → angle gap = 30°',C.ink,27);
-    document.getElementById('rope-shift-result').textContent='Both vectors moved, but their match stays cos(30°) ≈ '+r.dot.toFixed(3)+'.';
+    const shift=Number(selector.value),r=shifted(shift);
+    const s=canvas(document.getElementById('rope-shift-picture'),'The same red–flowers pair before or after a five-word prefix',330);
+    ropeSentence(s,shift);
+    axes(s,180,221,76);vector(s,180,221,76,r.q,C.q);vector(s,180,221,76,r.k,C.k);
+    text(s,330,135,'flowers query: i = '+r.i+' → '+r.i*30+'°',C.q,26);
+    text(s,330,180,'q′ = '+fmt(r.q),C.q,27);
+    text(s,740,135,'red key: j = '+r.j+' → '+r.j*30+'°',C.k,26);
+    text(s,740,180,'k′ = '+fmt(r.k),C.k,27);
+    text(s,330,240,'Gap: '+r.i+' − '+r.j+' = 1. Angle gap: 30°.',C.ink,28);
+    text(s,330,293,shift?'Both rotate an extra 5 × 30° = 150°.':'Add five prefix words: both slots will move by 5.',C.ink,26);
+    document.getElementById('rope-shift-result').textContent='Raw dot product stays '+r.dot.toFixed(3)+'; scaled score stays '+(r.dot/Math.sqrt(2)).toFixed(3)+'.';
   }
   if(selector){selector.addEventListener('change',draw);draw();}
   window.AT.positionVisuals={rotate,shifted,learnedExample};

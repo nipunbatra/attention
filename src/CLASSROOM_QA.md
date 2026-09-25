@@ -1,5 +1,27 @@
 # Classroom release checks
 
+## 2026-09-25 · Sentence-grounded RoPE walkthrough
+
+- Added two frames and revised the rotation/shift frames: identify flowers'
+  query and red's key, rotate their projected vectors, calculate the raw
+  dot product and scaled score, then add a five-word prefix. Link Su et al.,
+  RoFormer visibly and in notes. Reuse the existing e, q, k notation and
+  role colours; retain the general rotation formula in reading mode.
+- Label q=k=[1,0] and 30 degrees per slot as an illustrative toy. Red at
+  index 2 rotates to [0.500,0.866]; flowers at 3 rotates to [0,1]. Their
+  raw dot is 0.866 and scaled score is 0.612. Prefixing At the park after
+  lunch moves them to 7 and 8, adding 150 degrees to both rotations.
+  The pair's match is unchanged for fixed content, not necessarily its
+  softmax weight or the model's predictions. Standard RoPE leaves V unrotated.
+- Regression tests check sentence indices/roles, the four rotated vectors,
+  norms, scaled score, paper link and shared-shift identity for unequal
+  content vectors. All 64 positional frames and 231 build checks pass;
+  the full deck passes 473 states, 668 formulas and 18 topic-break checks.
+- Visually inspected the four revised/new frames at 1280×720 and 760×1041,
+  including both prefix choices; all 18 reveal/control states fit. Checked
+  390px reading containment and corrected an SVG text-boundary overrun.
+  No model or notebook changes.
+
 ## 2026-09-25 · ALiBi motivation and sentence walkthrough
 
 - Expanded one ALiBi frame into four: the train-short/test-long problem,
