@@ -1,5 +1,31 @@
 # Classroom release checks
 
+## 2026-09-25 · Why RoPE's cancellation helps and what is learned
+
+- Replaced the abstract identity frame with the red/flowers example.
+  Original angles 90 and 60 degrees become 240 and 210 after the prefix.
+  Cross out the common extra 150 degrees and retain the 30-degree gap
+  and 0.866 raw match. Explain the benefit as reusing the same nearby
+  colour-clue rule at different starting slots, for fixed content vectors.
+- Added one training frame: learned embeddings and W_Q/W_K, fixed RoPE,
+  computed scores and softmax, value mixing and prediction, then loss.
+  Reveal the gradient path back to embeddings and projection weights.
+  Cancellation holds before training; the loss learns useful content and
+  distance patterns. Standard RoPE's frequency schedule stays fixed.
+- Moved the column-vector proof into reading mode, with the signed j-i
+  offset distinguished from our positive backward gap i-j. Keep the
+  caveats about content, normalization and longer-context predictions.
+  No changes to the actual model or notebook implementation.
+- The regression suite passes 65 positional frames and 239 build checks.
+  Added checks for the two angle rows, learned/fixed/computed stages and
+  gradient reveals. Verify R-transpose times the upstream gradient against
+  finite differences through the fixed rotation. Whole-deck audit passes
+  479 states and 672 formulas; all 18 topic-break checks pass.
+- Inspected both final slides at 1280×720 and 760×1041. All 14 reveal
+  states fit; the three affected reading blocks remain contained at 390px.
+  Shortened one caption to separate adjacent SVG labels, then reran the
+  14-state layout check and JavaScript syntax validation.
+
 ## 2026-09-25 · Sentence-grounded RoPE walkthrough
 
 - Added two frames and revised the rotation/shift frames: identify flowers'

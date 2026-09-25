@@ -555,13 +555,35 @@ Switch between the two full sentences and point to the token indices. The prefix
 <p class="lesson-key">Dot product = cosine of the angle difference: $\cos30^\circ\approx0.866$; $\cos90^\circ=0$. Real RoPE uses multiple rates and usually rotates Q and K, not V.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-rope-identity" data-title="Why the absolute angles cancel" data-autobuild="off">
-<script type="text/x-notes">Use column vectors for this local derivation and state it explicitly. For a single pair with frequency omega, R_i means rotation by i omega. The transpose undoes the query's rotation. Composition leaves only j-i. This is a structural identity for fixed content vectors, not a promise that relative-distance-only models solve language or that attention falls monotonically with distance.</script>
-<p>For this two-coordinate derivation, write vectors as columns. $R_i$ rotates by $i\omega$.</p>
+<div class="frame context-lesson position-lesson" id="s17-position-rope-identity" data-title="One token back, wherever the pair occurs" data-autobuild="off">
+<script type="text/x-notes">Ask: should adding a prefix change the positional relationship between red and flowers?
+Point to the same one-word gap in Maya carries red flowers and At the park after lunch Maya carries red flowers. Hold the projected content vectors fixed at q=k=[1,0], with the same illustrative rate of 30 degrees per slot. This is why the preceding numerical match survives a shift: the query and key acquire the same extra angle. Reveal the second row, then subtract their angles. The shared 150 degrees cancels, leaving the original 30-degree difference. For these unit vectors the raw dot product is cosine of that difference, approximately 0.866. This is a raw dot product, not a softmax probability. The general identity also holds for unequal fixed content vectors, but then the result is not simply cosine of the positional gap alone. The benefit is a built-in sharing rule: an offset-dependent content pattern does not need a separate position rule at each starting slot. This can help reuse learned patterns across positions. It does not force red to receive attention, prove that an absolute method cannot learn the relationship, or guarantee longer-context accuracy. A real prefix can alter contextual vectors and the softmax denominator. Source: Su et al., RoFormer, Section 3.1–3.2, https://arxiv.org/abs/2104.09864.</script>
+<p>In both sentences, <span style="color:var(--c-k)">red</span> is one token before <span style="color:var(--c-q)">flowers</span>. Same toy: $q=k=[1,0]$.</p>
+<table class="lesson-table" id="position-rope-cancellation"><thead><tr><th>Sentence</th><th>Query angle<br>flowers</th><th>Key angle<br>red</th><th>Angle gap</th><th>Raw dot</th></tr></thead><tbody>
+<tr data-rope-offset="0"><td>Original</td><td>3 × 30° = 90°</td><td>2 × 30° = 60°</td><td>90° − 60° = 30°</td><td>cos 30° ≈ 0.866</td></tr>
+<tr data-rope-offset="5" data-build="1"><td>Five-word prefix</td><td>8 × 30° = 240°</td><td>7 × 30° = 210°</td><td>240° − 210° = 30°</td><td>cos 30° ≈ 0.866</td></tr>
+</tbody></table>
+<div data-build="2">$$(90^\circ+\cancel{150^\circ})-(60^\circ+\cancel{150^\circ})=90^\circ-60^\circ=30^\circ$$</div>
+<p class="lesson-key" data-build="3">Benefit: a head can use a colour clue one token back, whether “flowers” is at slot 3 or slot 8.</p>
+</div>
+
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-rope-proof">
+<h3>Why a shared rotation cancels for any fixed query and key</h3>
+<script type="text/x-notes">This is the optional algebra behind the classroom example. Write vectors as columns for this local derivation only. R_i denotes rotation by i omega. Its transpose is its inverse. The offset in the product is j-i, the key angle measured relative to the query; the positive backward distance used in our tables is i-j. In the equal-unit-vector toy cosine is even, so either sign gives 0.866. Preserve the signed matrix rotation for general content vectors. Source: Su et al., https://arxiv.org/abs/2104.09864, equation 16.</script>
+<p>For this derivation, write vectors as columns. $R_i$ rotates by $i\omega$.</p>
 <div>$$\underbrace{(R_iq)^\top(R_jk)}_{\text{rotated query-key match}}=q^\top\underbrace{R_i^\top R_j}_{R_{j-i}}k$$</div>
-<p>Undo the query rotation, then apply the key rotation. Only the angle difference $(j-i)\omega$ remains.</p>
-<p class="lesson-result">For $q=k=[1,0]$: one slot apart gives $\cos30^\circ=0.866$; three slots apart gives $\cos90^\circ=0$.</p>
-<p class="lesson-key">Content still determines the match. Cosine oscillates: this is not a rule that every farther token gets less attention.</p>
+<p>The transpose undoes the query rotation. Shifting both slots by $c$ leaves $(j+c)-(i+c)=j-i$. The relative rotation is unchanged.</p>
+<p>Our table uses the backward gap $i-j=1$. The key's signed angle relative to the query is $(j-i)\omega=-30^\circ$. For $q=k=[1,0]$, $\cos(-30^\circ)=\cos30^\circ\approx0.866$.</p>
+<p class="lesson-key">The identity holds before training and for arbitrary fixed content vectors. Content still matters. Cosine oscillates, so RoPE does not force every more distant token to receive less attention. A shifted real input can change both its contextual vectors and its softmax weights.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-rope-learning" data-title="What training learns with RoPE" data-autobuild="off">
+<script type="text/x-notes">Ask: if the rotations are fixed, which numbers does the loss change?
+Follow the forward path from word representations through learned W_Q and W_K, fixed rotations, scaled dot products and softmax, value mixing, and prediction. Use the illustrative training continuation Maya carries red flowers home: the observed next token is home. Cross-entropy is minus log of the model probability assigned to home. No teacher labels red as the correct source to attend to. The loss backpropagates through softmax, dot products and rotation, reaching the learned projections and word embeddings. In the diagram the red backward arrows represent gradients, not forward messages or an extra training stage. The small labels distinguish trainable parameters from computed q/k activations and fixed positional operations. In standard RoPE the frequency schedule is predefined and there is no separately learned position row at every slot. W_V and the output projection and prediction head also learn; the final box abbreviates those paths. Fixed differentiable operations still pass gradients, just like other non-parameter operations in the network. With column-vector geometry q'=R_i q, its input gradient is R_i transpose times the output gradient. Thus the rule is fixed but training can learn content-and-distance patterns useful for the prediction objective. This slide explains a RoPE model; our notebook remains the learned-additive-position model. Source: Su et al., RoFormer, Sections 3.2 and 4, https://arxiv.org/abs/2104.09864.</script>
+<p>Training example: Maya carries red flowers → <strong>home</strong>.</p>
+<div class="position-visual" data-position-visual="rope-learning"></div>
+<p data-build="1">Backpropagation updates embeddings and projections through the fixed rotations.</p>
+<p class="lesson-key" data-build="2">Cancellation is built in. Training learns which content and distance patterns help predict the next token.</p>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-rope-pairs" data-title="A longer query is several two-number pairs" data-autobuild="off">

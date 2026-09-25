@@ -221,6 +221,28 @@ document.addEventListener('DOMContentLoaded',()=>{
       text(s,35,90,'q′₃ = [0.000, 1.000]',C.q,32);text(s,610,90,'k′₂ = [0.500, 0.866…]',C.k,32);
       text(s,500,90,'·',C.ink,35);
       text(s,35,167,'Raw dot product: 0 × 0.500 + 1 × 0.866… ≈ 0.866',C.ink,29);
+    }else if(kind==='rope-learning'){
+      s.setAttribute('viewBox','0 0 1120 305');
+      const stages=[[20,170,'embeddings','learned',C.e],[240,190,'projections','learned',C.ink],[480,170,'rotation','fixed',C.d],[700,190,'scores','computed',C.ink],[940,160,'prediction','learned',C.v]];
+      stages.forEach(([x,w,name,status,color])=>{
+        const g=element('g',{'data-rope-stage':name,'data-parameter-status':status});s.append(g);
+        g.append(element('rect',{x,y:55,width:w,height:96,rx:3,fill:'none',stroke:color,'stroke-width':1.5}));
+        text(g,x+12,29,name==='projections'?'Learned W':status[0].toUpperCase()+status.slice(1),color,24);
+      });
+      subscriptText(s,35,92,'e_{i}, e_{j}',C.e,29);text(s,35,132,'word rows',C.e,25);
+      subscriptText(s,253,92,'q_{i} = e_{i} W_{Q}',C.q,25);subscriptText(s,253,132,'k_{j} = e_{j} W_{K}',C.k,25);
+      text(s,495,92,'q: angle iω',C.q,24);text(s,495,132,'k: angle jω',C.k,24);
+      text(s,715,92,'Dot / √dₖ',C.ink,26);text(s,715,132,'softmax',C.ink,26);
+      text(s,955,92,'Mix V',C.v,26);text(s,955,132,'predict',C.v,26);
+      [[190,240],[430,480],[650,700],[890,940]].forEach(([a,b])=>arrow(s,a+3,103,b-4,103,C.ink));
+      arrow(s,1020,151,1020,189,C.ink);
+      text(s,792,230,'Loss: −log p(home)',C.a,28);
+      const back=element('g',{'data-build':'1','data-rope-gradients':''});s.append(back);
+      text(back,352,199,'Gradients pass through RoPE',C.a,24);
+      arrow(back,772,220,105,220,C.a);
+      arrow(back,105,220,105,153,C.a);arrow(back,335,220,335,153,C.a);
+      text(back,20,281,'Update embeddings and W matrices.',C.a,24);
+      text(s,480,281,'RoPE rates stay fixed. No position table to train.',C.d,24);
     }else if(kind==='pairs'){
       text(s,20,45,'Query, width 4',C.q,29);text(s,370,45,'Pair 0',C.q,29);text(s,740,45,'Pair 1',C.q,29);
       text(s,20,120,'[1, 0, 0.6, 0.8]',C.q,30);arrow(s,280,112,330,112,C.line);
