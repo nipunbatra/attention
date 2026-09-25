@@ -1,5 +1,26 @@
 # Classroom release checks
 
+## 2026-09-25 · Sinusoids through embedding additions
+
+- The fixed-rule introduction now leads into a 2D addition for today, a 4D
+  addition using two pairs, and wider rows before the circle and repetition
+  examples. Added five frames in total, retaining the existing native tables,
+  plots and interactive clocks. Reading and presentation orders agree.
+- Keep sine first and radians throughout this subsection. Distinguish the
+  illustrative rates pi/2 and pi/6 from the standard geometric schedule.
+  Show the first toy collision, how the slower pair separates it, and their
+  later joint collision. No claim of unlimited uniqueness or accuracy.
+- New base and width comparisons hold the other setting fixed. Calculate the
+  slow rates, continuous periods, local sine changes and number of pairs.
+  Explicitly distinguish base from maximum context length, and model width
+  from a free position-only setting. Word and position rows remain d wide.
+- Numerical tests read the displayed additions and hyperparameter tables.
+  All 58 positional frames and 205 build checks pass, along with 18 topic
+  breaks. Full Part II: 459 states and 668 formulas, with no browser/math
+  errors or overflow. Inspected all 13 sinusoidal frames, checked their 48
+  reveal states at 1280x720 and 760x1041, and checked 390px reading layout.
+  Trained models, notebook choices and unrelated Part III work are unchanged.
+
 ## 2026-09-25 · Concrete learned-position limits
 
 - Replaced the abstract coverage diagram with two sentence-based cases. The

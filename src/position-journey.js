@@ -171,26 +171,27 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
   const clock=document.getElementById('position-clock-index');
   function clockDraw(){
-    const i=Number(clock.value),a=i*Math.PI/2,p=[Math.cos(a),Math.sin(a)],s=canvas(document.getElementById('position-clock-picture'),'A position feature moves around a circle',275);
+    const i=Number(clock.value),a=i*Math.PI/2,p=[Math.sin(a),Math.cos(a)],s=canvas(document.getElementById('position-clock-picture'),'A position feature moves around a circle',275);
     ring(s,165,136,94,a,C.p);
-    text(s,300,70,'Angle = '+i+' × 90° = '+i*90+'°',C.p,29);
+    text(s,300,70,'Angle = '+i+' × π/2 radians',C.p,29);
     text(s,300,123,'Offset pᵢ = '+vec(p,0),C.p,30);
-    text(s,300,176,'Record the arrow tip’s x and y coordinates.',C.ink,26);
-    text(s,300,233,i===4?'Index 4 repeats index 0: [1, 0].':'Index 0 starts at the hollow marker [1, 0].',C.muted,25);
+    text(s,300,176,'Position row: [height, horizontal] = [sin, cos].',C.ink,26);
+    text(s,300,233,i===4?'Index 4 repeats index 0: [0, 1].':'The hollow marker is index 0: offset [0, 1].',C.muted,25);
     document.getElementById('position-clock-label').textContent=String(i);
+    s.dataset.positionVector=JSON.stringify(p);
   }
   clock.addEventListener('input',clockDraw);clock.addEventListener('change',clockDraw);clockDraw();
   const pairs=document.getElementById('position-pair-index');
   function pairDraw(){
     const i=Number(pairs.value),s=canvas(document.getElementById('position-pair-picture'),'Fast and slow position clocks',290),code=[];
-    [[Math.PI/2,90,4,C.p],[Math.PI/6,30,12,C.v]].forEach(([rate,degrees,period,color],j)=>{
-      const x=140+j*560,a=i*rate,p=[Math.cos(a),Math.sin(a)];code.push(...p);
-      text(s,x-100,30,`${degrees}° / slot · period ${period}`,color,26);ring(s,x,139,78,a,color);
+    [[Math.PI/2,'π/2',4,C.p],[Math.PI/6,'π/6',12,C.v]].forEach(([rate,label,period,color],j)=>{
+      const x=140+j*560,a=i*rate,p=[Math.sin(a),Math.cos(a)];code.push(...p);
+      text(s,x-100,30,`${label} rad / slot, period ${period}`,color,26);ring(s,x,139,78,a,color);
       text(s,x+110,127,vec(p,3),color,26);text(s,x+110,166,`index ${i}`,C.muted,24);
     });
     text(s,40,280,'Combined position row: '+vec(code,3),C.p,28);
     const result=document.getElementById('position-pair-result');
-    result.textContent=i===0?'Starting code: both clocks point to [1, 0].':i===12?'At 12, both clocks repeat. This four-number toy code has a collision.':'The fast pair repeats, but the slow pair keeps this position distinct from 0.';
+    result.textContent=i===0?'At index 0, both pairs are [0, 1].':i===12?'At 12, both pairs repeat. The full toy row matches index 0.':'The fast pair repeats. The slow pair makes the full row different from index 0.';
     result.dataset.vector=JSON.stringify(code);
   }
   pairs.addEventListener('change',pairDraw);pairDraw();

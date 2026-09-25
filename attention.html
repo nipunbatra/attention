@@ -3423,26 +3423,27 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
   const clock=document.getElementById('position-clock-index');
   function clockDraw(){
-    const i=Number(clock.value),a=i*Math.PI/2,p=[Math.cos(a),Math.sin(a)],s=canvas(document.getElementById('position-clock-picture'),'A position feature moves around a circle',275);
+    const i=Number(clock.value),a=i*Math.PI/2,p=[Math.sin(a),Math.cos(a)],s=canvas(document.getElementById('position-clock-picture'),'A position feature moves around a circle',275);
     ring(s,165,136,94,a,C.p);
-    text(s,300,70,'Angle = '+i+' × 90° = '+i*90+'°',C.p,29);
+    text(s,300,70,'Angle = '+i+' × π/2 radians',C.p,29);
     text(s,300,123,'Offset pᵢ = '+vec(p,0),C.p,30);
-    text(s,300,176,'Record the arrow tip’s x and y coordinates.',C.ink,26);
-    text(s,300,233,i===4?'Index 4 repeats index 0: [1, 0].':'Index 0 starts at the hollow marker [1, 0].',C.muted,25);
+    text(s,300,176,'Position row: [height, horizontal] = [sin, cos].',C.ink,26);
+    text(s,300,233,i===4?'Index 4 repeats index 0: [0, 1].':'The hollow marker is index 0: offset [0, 1].',C.muted,25);
     document.getElementById('position-clock-label').textContent=String(i);
+    s.dataset.positionVector=JSON.stringify(p);
   }
   clock.addEventListener('input',clockDraw);clock.addEventListener('change',clockDraw);clockDraw();
   const pairs=document.getElementById('position-pair-index');
   function pairDraw(){
     const i=Number(pairs.value),s=canvas(document.getElementById('position-pair-picture'),'Fast and slow position clocks',290),code=[];
-    [[Math.PI/2,90,4,C.p],[Math.PI/6,30,12,C.v]].forEach(([rate,degrees,period,color],j)=>{
-      const x=140+j*560,a=i*rate,p=[Math.cos(a),Math.sin(a)];code.push(...p);
-      text(s,x-100,30,`${degrees}° / slot · period ${period}`,color,26);ring(s,x,139,78,a,color);
+    [[Math.PI/2,'π/2',4,C.p],[Math.PI/6,'π/6',12,C.v]].forEach(([rate,label,period,color],j)=>{
+      const x=140+j*560,a=i*rate,p=[Math.sin(a),Math.cos(a)];code.push(...p);
+      text(s,x-100,30,`${label} rad / slot, period ${period}`,color,26);ring(s,x,139,78,a,color);
       text(s,x+110,127,vec(p,3),color,26);text(s,x+110,166,`index ${i}`,C.muted,24);
     });
     text(s,40,280,'Combined position row: '+vec(code,3),C.p,28);
     const result=document.getElementById('position-pair-result');
-    result.textContent=i===0?'Starting code: both clocks point to [1, 0].':i===12?'At 12, both clocks repeat. This four-number toy code has a collision.':'The fast pair repeats, but the slow pair keeps this position distinct from 0.';
+    result.textContent=i===0?'At index 0, both pairs are [0, 1].':i===12?'At 12, both pairs repeat. The full toy row matches index 0.':'The fast pair repeats. The slow pair makes the full row different from index 0.';
     result.dataset.vector=JSON.stringify(code);
   }
   pairs.addEventListener('change',pairDraw);pairDraw();
@@ -3643,10 +3644,10 @@ document.addEventListener('DOMContentLoaded',()=>{
       text(s,400,50,'index i      [cos(iω), sin(iω)]',C.ink,26);
       ['0           [ 1,  0]','1           [ 0,  1]','2           [−1,  0]','3           [ 0, −1]','4           [ 1,  0]  ← repeats index 0'].forEach((v,i)=>text(s,400,93+i*36,v,C.d,24));
     }else if(kind==='rates'){
-      text(s,25,30,'Position',C.ink,26);text(s,220,30,'Fast pair: 90° / slot',C.d,26);text(s,665,30,'Slow pair: 30° / slot',C.v,26);
+      text(s,25,30,'Position',C.ink,26);text(s,220,30,'Fast pair: π/2 rad / slot',C.d,26);text(s,665,30,'Slow pair: π/6 rad / slot',C.v,26);
       [0,4].forEach((i,row)=>{
         const y=90+row*106;text(s,30,y+8,'index '+i,C.ink,27);
-        [[260,Math.PI/2,C.d],[705,Math.PI/6,C.v]].forEach(([x,rate,color])=>{const v=rotate([1,0],i*rate);axes(s,x,y,37);vector(s,x,y,37,v,color);text(s,x+66,y+8,fmt(v),color,27);});
+        [[260,Math.PI/2,C.d],[705,Math.PI/6,C.v]].forEach(([x,rate,color])=>{const v=rotate([1,0],i*rate);axes(s,x,y,37);vector(s,x,y,37,v,color);text(s,x+66,y+8,fmt([v[1],v[0]]),color,27);});
       });
       text(s,220,264,'Fast pair repeats',C.d,24);text(s,665,264,'Slow pair differs',C.v,24);
     }else if(kind==='rotate'){
@@ -3670,19 +3671,19 @@ document.addEventListener('DOMContentLoaded',()=>{
   text(whyBase,180,36,'sin θ (height)',C.ink,25);
   text(whyBase,365,211,'cos θ',C.ink,25);
   text(whyBase,246,84,'1',C.ink,23);text(whyBase,241,287,'−1',C.ink,23);
-  text(whyBase,520,36,'First token: i = 0. Here ω = 90° per slot.',C.ink,24);
+  text(whyBase,520,36,'Same toy rate: ω = π/2 radians per slot.',C.ink,24);
   text(whyBase,520,94,'Index, angle',C.ink,26);text(whyBase,726,94,'Sine only',C.ink,26);
-  text(whyPair,908,94,'[cos θ, sin θ]',C.d,25);
+  text(whyPair,908,94,'[sin θ, cos θ]',C.d,25);
   [0,2].forEach((i,row)=>{
     const angle=i*Math.PI/2,p=[Math.cos(angle),Math.sin(angle)],x=235+110*p[0],y=175-110*p[1],baseline=153+row*64;
     arrow(whyBase,235,175,x,y,C.d);
     whyBase.append(element('circle',{cx:x,cy:y,r:7,fill:C.d,'data-clock-why-index':i,'data-angle':angle,'data-vector':JSON.stringify(p)}));
     text(whyBase,i===0?327:80,144,'i = '+i,C.d,26);
     text(whyPair,x-12,211,String(Math.round(p[0])).replace('-','−'),C.d,26);
-    text(whyBase,520,baseline,i+', '+i*90+'°',C.ink,29);
+    text(whyBase,520,baseline,i+', '+(i===0?'0':'π')+' rad',C.ink,29);
     text(whyBase,759,baseline,String(Math.round(p[1])),C.d,30);
     arrow(whyPair,818,baseline-10,887,baseline-10,C.d);
-    const label=element('text',{x:910,y:baseline,'data-clock-why-offset':i,style:`fill:${C.d};font-size:29px`},'['+p.map(n=>String(Math.round(n)).replace('-','−')).join(', ')+']');whyPair.append(label);
+    const label=element('text',{x:910,y:baseline,'data-clock-why-offset':i,style:`fill:${C.d};font-size:29px`},'['+[p[1],p[0]].map(n=>String(Math.round(n)).replace('-','−')).join(', ')+']');whyPair.append(label);
   });
   text(whyBase,520,270,'Same height: sine cannot distinguish them.',C.ink,25);
   text(whyPair,520,315,'Different sides: cosine separates this pair.',C.d,25);
@@ -12363,6 +12364,8 @@ body:not(.present) .context-lesson{margin:44px 0}
 .position-visual svg .label-small{font-size:22px;fill:var(--ink-2)}
 .position-numeric-scroll{max-width:100%;overflow-x:auto}.position-numeric-scroll .lesson-table{min-width:760px}
 .position-numeric-scroll .position-range-table{min-width:620px}
+[data-sine-word] td{color:var(--c-e)}
+[data-sine-offset] td{color:var(--c-d)}
 .position-coverage-table .position-unused{background:rgba(85,98,122,.08)}
 .position-coverage-table [data-learned-coverage="visited"]{color:var(--c-d)}
 .position-range-table [data-missing-position]{color:var(--c-a);background:var(--t-a)}
@@ -12619,84 +12622,143 @@ Point to school and today in slots 5 and 6. Keep the same table and one-based te
 <p class="lesson-key" data-build="2">Extra rows need training. A sinusoidal rule calculates them. Longer-context accuracy still needs testing.</p>
 </div>
 
-<div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-clock-choice" data-title="Sinusoidal positions" data-autobuild="off">
-<script type="text/x-notes">The learned table has just run out of rows. This method calculates fixed offsets instead of learning a separate row at each slot. Begin with the circle intuition and the need for different rates, then derive the standard rates before plotting them. Toy clocks use degrees and integer periods. The standard formula uses radians. Starting here, indices are zero-based, as the next slide states. A calculable row is not evidence of good predictions at unseen lengths.</script>
-<h3>Sinusoidal positions</h3>
-<p class="topic-recap">A learned table has a fixed number of rows. New rows would need training.</p>
-<p class="topic-question">What if a fixed rule could calculate the offset for any slot?</p>
+<div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-clock-choice" data-title="Position rows from a fixed rule" data-autobuild="off">
+<script type="text/x-notes">Could we calculate a position row even when that slot never appeared in training?
+Point back to the missing lookup. A fixed formula accepts a position index and returns a d-coordinate row. It needs no separately trained position row. We will add that row to the learned word embedding, exactly as with the learned table. First work through width two, then four, then a wider row. Only after the additions discuss why sine/cosine pairs and different rates are useful. Starting with the next example, label the first token i=0. A formula that can be evaluated at a new position does not establish prediction accuracy at that length. The main notebook continues to use learned positions. Source for the alternative: Vaswani et al., §3.5, https://arxiv.org/html/1706.03762v7#S3.SS5.</script>
+<h3>Position rows from a fixed rule</h3>
+<p class="topic-recap">A formula can calculate a row for a new slot, without learning that row separately.</p>
+<p class="topic-question">How would we add it to a two-number word embedding?</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-clock-why" data-title="Why sine and cosine?" data-autobuild="off">
-<script type="text/x-notes">If we record only the hand's height, can we tell these two positions apart?
-Point to the two green tips at the same height, then reveal their different horizontal coordinates. We want a fixed, calculable position signal whose coordinates do not grow with the raw slot number. A unit-circle point provides exactly that: choose angle theta_i = i*omega and record [cos(theta_i), sin(theta_i)]. Horizontal means cosine and vertical means sine. Both coordinates are bounded, and changing the angle a little changes the pair smoothly. A fixed slot offset produces the same angular offset anywhere on the circle, a structure the next slides develop. This is an intuition for one useful design, not proof that trigonometric functions are the only option. Our illustrative omega is 90 degrees per slot, and we now number the first token 0. At indices 0 and 2, sine is zero in both cases, but cosine is +1 and -1. Either scalar alone is ambiguous around a full circle. The pair identifies the phase within one turn, not the number of completed turns: index 4 repeats index 0 at this teaching rate. The next slider makes that repetition visible, before we introduce multiple rates. We add these fixed position features to the token row; we are not rotating the content query/key vectors as in RoPE. The cosine-first order matches our geometric diagram; the original Transformer formula shown later lists sine first. Source for fixed sinusoidal positional features and their offset structure: Vaswani et al., Section 3.5, https://arxiv.org/html/1706.03762v7#S3.SS5.</script>
-<p>Position sets the angle: $\theta_i=i\omega$. Read horizontal cosine and vertical sine.</p>
-<div class="position-journey"><svg viewBox="0 0 1120 330" role="img" aria-label="Positions zero and two have the same sine value, but the cosine coordinate distinguishes their points on the circle" data-position-clock-why><g data-clock-why-base></g><g data-clock-why-pair data-build="1"></g></svg></div>
-<p class="lesson-key" data-build="1">Equal slot steps give equal turns. Both numbers stay in $[-1,1]$. A full turn still repeats.</p>
+<div class="frame context-lesson position-lesson" id="s17-position-sine-2d" data-title="A fixed offset for a 2D embedding" data-autobuild="off">
+<script type="text/x-notes">What two numbers do we add to today's word embedding?
+Use Maya helps Ravi today with zero-based indices 0,1,2,3. Today's word row remains [0.8,0.2] from the earlier toy, but the position rule is new. Choose omega=pi/2 radians per slot for easy arithmetic. Set theta_i=i*omega and p_i=[sin(theta_i),cos(theta_i)]. This is a teaching rate, not the standard Transformer's rate. At i=3 the angle is 3pi/2, sine is -1 and cosine is 0. Reveal that row, then its coordinatewise addition. e_3 is the representation entering attention, not a token ID. The word embedding is learned. The position numbers follow the fixed formula. Both rows and the result have width two. Keep sine first throughout this subsection. The rate's repetition will be examined after the wider examples.</script>
+<p>Token indices: Maya (0), helps (1), Ravi (2), <strong>today (3)</strong>. Word width $d=2$.</p>
+<p>$p_i=[\sin(i\omega),\cos(i\omega)]$, with toy rate $\omega=\pi/2$ radians per slot.</p>
+<table class="lesson-table" data-sine-example="2"><thead><tr><th>At index $i=3$</th><th>Coordinate 0</th><th>Coordinate 1</th></tr></thead><tbody>
+<tr data-sine-word><th>Word row</th><td>0.8</td><td>0.2</td></tr>
+<tr data-build="1" data-sine-offset><th>Fixed row $p_3$</th><td>$\sin(3\pi/2)=-1$</td><td>$\cos(3\pi/2)=0$</td></tr>
+<tr data-build="2" data-sine-sum><th>Sum $e_3$</th><td>$0.8-1=-0.2$</td><td>$0.2+0=0.2$</td></tr>
+</tbody></table>
+<p class="lesson-key" data-build="2">$e_3=E_{\rm tok}[\text{today}]+p_3$. Two numbers in, two numbers out.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-clock" data-title="A sine and cosine pair marks one position" data-autobuild="off">
-<script type="text/x-notes">Use a clock-like two-coordinate feature before writing the general formula. Here we draw cosine horizontally and sine vertically, at an intentionally simple 90 degrees per slot. The original Transformer convention puts sine first and cosine second; swapping these coordinates changes the convention, not the purpose. These are position features that are ADDED to a token vector. This is not RoPE. The 90-degree rate is illustrative, not the original rate.</script>
+<div class="frame context-lesson position-lesson" id="s17-position-sine-4d" data-title="A 4D embedding uses two pairs" data-autobuild="off">
+<script type="text/x-notes">How do we fill four position coordinates instead of two?
+Hold today's zero-based index at three. Use a separate four-coordinate word row [0.8,0.2,0.4,-0.1], chosen for this example. The first sine/cosine pair uses the previous pi/2 rate. Choose pi/6 for the second pair. We will explain the different rates shortly. Both pairs use the same token position i; they occupy different coordinate pairs. At i=3 the angles are 3pi/2 and pi/2, producing [-1,0] and [1,0]. Reveal the position row, then the sum [-0.2,0.2,1.4,-0.1]. We concatenate the position pairs with each other to make a four-coordinate offset. We ADD that complete row to the four-coordinate word row. We never append position coordinates to the word row. These toy rates remain in use for the repetition examples.</script>
+<p>Same <strong>today at $i=3$</strong>. Separate toy word row with width $d=4$.</p>
+<p>$p_i=[\sin(i\omega_0),\cos(i\omega_0),\sin(i\omega_1),\cos(i\omega_1)]$</p>
+<table class="lesson-table" data-sine-example="4"><thead><tr><th>Coordinate pair</th><th colspan="2">Pair 0: $\omega_0=\pi/2$</th><th colspan="2">Pair 1: $\omega_1=\pi/6$</th></tr></thead><tbody>
+<tr data-sine-word><th>Word row</th><td>0.8</td><td>0.2</td><td>0.4</td><td>−0.1</td></tr>
+<tr data-build="1"><th>Angle at $i=3$</th><td colspan="2">$3\pi/2$</td><td colspan="2">$\pi/2$</td></tr>
+<tr data-build="1" data-sine-offset><th>Fixed row $p_3$</th><td>−1</td><td>0</td><td>1</td><td>0</td></tr>
+<tr data-build="2" data-sine-sum><th>Sum $e_3$</th><td>−0.2</td><td>0.2</td><td>1.4</td><td>−0.1</td></tr>
+</tbody></table>
+<p class="lesson-key" data-build="2">Both pairs describe the same position. Each pair changes at its own rate.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-sine-many" data-title="Wider embeddings have more coordinate pairs" data-autobuild="off">
+<script type="text/x-notes">If the word row has eight coordinates, how many sine/cosine pairs do we need?
+Point to the width and pair counts. For an even width d, the position row contains d/2 pairs and d numbers. Every pair receives the same token index i, with its own rate omega_r. Reveal the eight-coordinate layout before stating the same-width addition. Pair index r selects coordinates, not a head, token, or batch row. d is the existing model width; changing it changes the word embeddings and model dimensions too. The 512-width count is an example, not the width of the earlier miniature. We restrict this discussion to even d. The later standard schedule supplies all rates without choosing each separately.</script>
+<table class="lesson-table" id="position-pair-counts"><thead><tr><th>Word width $d$</th><th>Sine/cosine pairs</th><th>Position width</th></tr></thead><tbody><tr><td>2</td><td>1</td><td>2</td></tr><tr><td>4</td><td>2</td><td>4</td></tr><tr><td>8</td><td>4</td><td>8</td></tr><tr><td>512</td><td>256</td><td>512</td></tr></tbody></table>
+<div data-build="1">$$p_i=\big[\underbrace{\sin(i\omega_0),\cos(i\omega_0)}_{\text{pair 0}},\ \ldots,\ \underbrace{\sin(i\omega_3),\cos(i\omega_3)}_{\text{pair 3}}\big]\quad(d=8)$$</div>
+<p class="lesson-key" data-build="1">One position $i$, several rates. Adding the row preserves width $d$.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-clock-why" data-title="Sine and cosine identify the angle together" data-autobuild="off">
+<script type="text/x-notes">Why did we use both functions for each pair?
+Return to the first toy pair after the concrete additions. The circle plots cosine horizontally and sine vertically, but our stored vector remains [sin,cos]. At i=0 and i=2 the angles are 0 and pi. Their sine values are both zero. Reveal cosine +1 versus -1. A pair identifies phase within a turn, while either scalar alone loses part of that information. Both coordinates stay between -1 and 1, and small angle changes produce small changes to the pair. It still cannot record the number of completed turns. The next slide shows that repetition. These position features are added to word rows, not rotations of content as in RoPE. Trigonometric functions are one useful design, not the only possible fixed rule.</script>
+<p>First pair: $\theta_i=i\pi/2$. The stored row is $[\sin\theta_i,\cos\theta_i]$.</p>
+<div class="position-journey"><svg viewBox="0 0 1120 330" role="img" aria-label="Sine is zero at indices zero and two, but cosine distinguishes the two positions" data-position-clock-why><g data-clock-why-base></g><g data-clock-why-pair data-build="1"></g></svg></div>
+<p class="lesson-key" data-build="1">The pair distinguishes these angles. Both coordinates stay in $[-1,1]$.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-clock" data-title="One pair repeats after a full turn" data-autobuild="off">
+<script type="text/x-notes">What happens at index four with our first toy rate?
+Move the index slider from zero through four. The angle advances by pi/2 radians at each slot. At four the angle is 2pi and the fixed row returns to [0,1]. This is an exact collision at integer slots for our chosen toy rate. The two words can still have different word embeddings, but this position pair cannot distinguish their indices. The rule can be evaluated indefinitely; evaluability alone does not imply distinguishability. Our later standard schedule has different, non-integer continuous periods, so do not transfer this four-slot collision to it.</script>
 <div class="position-journey-controls"><label for="position-clock-index">Position index</label><input id="position-clock-index" type="range" min="0" max="4" step="1" value="0"><output id="position-clock-label" for="position-clock-index">0</output></div>
 <div class="position-journey" id="position-clock-picture"></div>
-<p>Record $[\cos(i\omega),\sin(i\omega)]$ as the offset to add. Here $\omega=90^\circ$ per slot.</p>
-<p class="lesson-key">Indices start at 0. At index 4, this clock returns to index 0’s pair.</p>
+<p>$p_i=[\sin(i\pi/2),\cos(i\pi/2)]$. At $i=4$, the angle is $2\pi$.</p>
+<p class="lesson-key">This toy pair assigns the same position row to indices 0 and 4.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-repeat" data-title="Two clocks at different rates" data-autobuild="off">
-<script type="text/x-notes">Inspect two deliberately simple clocks with integer periods four and twelve. At index four, only the fast pair returns. At twelve, both return and the four-number code repeats. This is an illustrative design, not the standard Transformer schedule. Multiple slower rates extend the range over which these positions can be distinguished. They do not prove arbitrary-length uniqueness or prediction quality.</script>
+<div class="frame context-lesson position-lesson" id="s17-position-repeat" data-title="A slower pair separates the first repeat" data-autobuild="off">
+<script type="text/x-notes">Does the second pair from our 4D example distinguish indices zero and four?
+Use the same rates pi/2 and pi/6, with sine first. Select index four. The first pair repeats [0,1], but the second is [sqrt(3)/2,-1/2]. The full four-coordinate row differs from index zero. Select twelve. Both toy pairs repeat there, because their integer periods are four and twelve. We have separated one collision, not guaranteed unlimited uniqueness. This motivates choosing a spread of rates for the expected range, rather than blindly repeating the same pair. The standard geometric schedule follows. Do not claim more pairs or slower rates automatically improve measured model accuracy.</script>
 <div class="position-journey-controls"><label for="position-pair-index">Compare with index 0</label><select id="position-pair-index"><option value="0">Index 0</option><option value="4">Index 4</option><option value="8">Index 8</option><option value="12">Index 12</option></select></div>
 <div class="position-journey" id="position-pair-picture"></div>
 <p id="position-pair-result" aria-live="polite"></p>
-<p class="lesson-key">The standard formula uses a range of rates instead of these two teaching clocks.</p>
+<p class="lesson-key">Different rates help distinguish positions across more scales. These two toy rates still repeat together at 12.</p>
 </div>
 
 <div class="companion context-lesson position-lesson position-reading" id="s17-position-rates">
-<h3>Two clock rates at indices 0 and 4</h3>
-<script type="text/x-notes">Keep the intentionally simple fast rate at 90 degrees per slot and add a slow 30-degree pair. At indices 0 and 4 the fast pair is identical but the slow pair differs. Both toy rates still repeat jointly at index 12, so do not claim a small collection of clocks guarantees no collisions or arbitrary length generalization. The original geometric frequency schedule is different. The formula and worked row follow this toy comparison.</script>
+<h3>The two toy pairs at indices 0 and 4</h3>
+<script type="text/x-notes">The displayed vectors use sine first throughout. First rate pi/2 radians per slot, second rate pi/6. The geometric circle still uses horizontal cosine and vertical sine. Both toy pairs return at twelve. The standard schedule below replaces these illustrative rates.</script>
 <div class="position-visual" data-position-visual="rates"></div>
-<p>The fast pair repeats after four slots; the slow pair distinguishes these two positions.</p>
-<p class="lesson-key">Combine pairs into one vector. Multiple rates provide different scales, not a guarantee of unlimited context.</p>
+<p>At index 4 the fast pair repeats, but the slow pair differs. The whole four-coordinate row therefore differs.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-sine-rule" data-title="The sinusoidal formula" data-autobuild="off">
-<script type="text/x-notes">Now replace the teaching clocks with the original Transformer schedule. Use radians and sine first, unlike the cosine-first circle diagram. For even d and pair index r=0,...,d/2-1, frequency omega_r is 10000 raised to -2r/d. A shift by delta rotates a sine/cosine pair by a matrix that depends on delta, not the starting position. This makes offsets algebraically structured. It does not prove the model learns all offsets or extrapolates to arbitrary lengths.</script>
-<p>The standard rule uses radians and puts sine first in each pair.</p>
-<div>$$p_{i,2r}=\sin(i\omega_r),\qquad p_{i,2r+1}=\cos(i\omega_r)$$</div>
-<p class="lesson-key">$r$ labels a coordinate pair. $\omega_r=10000^{-2r/d}$ sets its rate; pairs use different rates.</p>
-<p data-build="1">Moving by a fixed number of slots rotates each pair by a fixed angle. Nearby positions change smoothly; different rates give different distance scales.</p>
-<p class="lesson-result" data-build="2">The rule supplies a fixed $d$-coordinate row $p_i$. We add it to the word lookup just as before.</p>
+<div class="frame context-lesson position-lesson" id="s17-position-sine-rule" data-title="A rule for choosing all the rates" data-autobuild="off">
+<script type="text/x-notes">How can we choose hundreds of rates without listing them by hand?
+Replace the pi/2 and pi/6 teaching rates with the original Transformer schedule. For even d, r=0,...,d/2-1 and omega_r=b^(-2r/d). b is a fixed design hyperparameter, conventionally 10000 in this rule. d is the model width. r identifies a coordinate pair. The position index i sets the angle in radians and is not a hyperparameter. At r=0 the rate is always 1 radian per slot, independent of b. Larger r gives progressively smaller rates. The numbers in these position rows are fixed; there are no learned position parameters. Source: Vaswani et al., §3.5, https://arxiv.org/html/1706.03762v7#S3.SS5.</script>
+<p>The original Transformer uses base $b=10000$ and even width $d$.</p>
+<div>$$\omega_r=b^{-2r/d},\qquad r=0,\ldots,d/2-1$$</div>
+<div data-build="1">$$p_{i,2r}=\sin(i\omega_r),\qquad p_{i,2r+1}=\cos(i\omega_r)$$</div>
+<p class="lesson-key" data-build="1">$i$: token index. $r$: pair index. $d$: row width. $b$: frequency base.</p>
+<p class="lesson-result" data-build="2">The first pair has rate 1. Later pairs change more slowly.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-worked-sine" data-title="Build one full sinusoidal row, number by number" data-autobuild="off">
-<script type="text/x-notes">Return to the original sin-then-cos convention and radians. Use model width d=4, position index i=3, pair indices r=0 and r=1. The denominators are 1 and 100, not 10000 for the second pair. Each pair contributes two coordinates. The base 10000 is a design constant, not a token count or vocabulary size. These rows are fixed rather than trained.</script>
-<p>Choose width $d=4$ and position index $i=3$. There are two coordinate pairs.</p>
-<div class="position-numeric-scroll"><table class="lesson-table"><thead><tr><th>Pair $r$</th><th>Rate $10000^{-2r/4}$</th><th>Angle $i\omega_r$</th><th>$[\sin,\cos]$</th></tr></thead><tbody><tr><td>0</td><td>1 rad / slot</td><td>3 radians</td><td>[0.141, −0.990]</td></tr><tr><td>1</td><td>0.01 rad / slot</td><td>0.03 radians</td><td>[0.030, 1.000]</td></tr></tbody></table></div>
-<div style="overflow-x:auto;max-width:100%">$$p_3=[0.141,-0.990,0.030,1.000]$$</div>
-<p class="lesson-key">$i$ is a token position; $r$ is a coordinate-pair index; $d$ is vector width. The base 10000 controls the frequency range.</p>
+<div class="frame context-lesson position-lesson" id="s17-position-worked-sine" data-title="The standard rule at width 4" data-autobuild="off">
+<script type="text/x-notes">What replaces the two toy rates at width four?
+Set d=4, b=10000 and i=3. For r=0 the exponent is zero and omega_0=1. For r=1 the exponent is -1/2 and omega_1=0.01. Multiplying by i gives angles three and 0.03 radians. Compute the pair values, rounded here to three decimals. In particular cos(0.03) is approximately 0.99955, displayed as 1.000. Use the same four-coordinate word row from the earlier example. The complete position row is [0.14112,-0.989992,0.029996,0.999550]. Its sum with [0.8,0.2,0.4,-0.1] is approximately [0.941,-0.790,0.430,0.900]. These are fixed-rule illustration numbers, not a trained model result.</script>
+<p>$d=4$, $b=10000$, $i=3$. Two pairs, both in radians.</p>
+<div class="position-numeric-scroll"><table class="lesson-table"><thead><tr><th>Pair $r$</th><th>Rate $b^{-2r/d}$</th><th>Angle $i\omega_r$</th><th>$[\sin,\cos]$</th></tr></thead><tbody><tr><td>0</td><td>1</td><td>3</td><td>[0.141, −0.990]</td></tr><tr><td>1</td><td>0.01</td><td>0.03</td><td>[0.030, 1.000]</td></tr></tbody></table></div>
+<div>$$p_3=[0.141,-0.990,0.030,1.000]$$</div>
+<p class="lesson-key" data-build="1">Same word row $[0.8,0.2,0.4,-0.1]$: the sum is $e_3\approx[0.941,-0.790,0.430,0.900]$.</p>
 </div>
 
 <div class="companion context-lesson position-lesson position-reading" id="s17-position-sine">
 <h3>Four rows of the sinusoidal pattern</h3>
-<script type="text/x-notes">Use actual computed values for the standard formula at d=4. The first pair changes by one radian per slot; the second by 0.01 radians per slot. The table is rounded to three decimals. These waves are fixed features, not probabilities. Source: Vaswani et al., Section 3.5, https://arxiv.org/abs/1706.03762.</script>
-<p>For a four-coordinate example, slot $i$ gets:</p>
+<script type="text/x-notes">Actual values for the standard formula at d=4 and b=10000, rounded to three decimals. The first pair changes by one radian per slot and the second by 0.01. These are fixed features, not probabilities. Source: Vaswani et al., §3.5, https://arxiv.org/html/1706.03762v7#S3.SS5.</script>
+<p>For width 4 and base 10000:</p>
 <div>$$p_i=[\sin i,\ \cos i,\ \sin(i/100),\ \cos(i/100)]$$</div>
-<table class="lesson-table"><thead><tr><th>Slot index $i$</th><th>Fast sine</th><th>Fast cosine</th><th>Slow sine</th><th>Slow cosine</th></tr></thead><tbody id="position-sinusoids"></tbody></table>
-<p class="lesson-key">Two pairs of waves, at two different rates. Add this fixed row to the token embedding; there is no learned position table.</p>
+<table class="lesson-table"><thead><tr><th>Index $i$</th><th>Fast sine</th><th>Fast cosine</th><th>Slow sine</th><th>Slow cosine</th></tr></thead><tbody id="position-sinusoids"></tbody></table>
+<p class="lesson-key">Add this fixed row to the word embedding. Its width stays 4.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-waves" data-title="Fast and slow coordinates change on different scales" data-autobuild="off">
-<script type="text/x-notes">Reuse the rates just calculated for d=4. Both plots use the same position axis from zero to twenty and the same vertical range from minus one to one. The first pair has rate one radian per slot. The second has rate 0.01. Sine is solid and cosine is dashed. Curves show the continuous formula; actual token positions sample integer indices. This is the four-coordinate standard example, not the 90-degree teaching clock.</script>
+<div class="frame context-lesson position-lesson" id="s17-position-waves" data-title="Fast and slow coordinates" data-autobuild="off">
+<script type="text/x-notes">Which pair changes more over twenty token positions?
+Reuse the rates just calculated for d=4. Both plots use the same position axis and vertical range. Sine is solid, cosine dashed. Curves show the continuous formula; actual token positions sample integer indices. The slow pair helps distinguish positions after the fast pair has nearly gone around again, while the fast pair is sensitive to nearby changes. These are properties of the features, not a measured accuracy claim.</script>
 <div class="position-journey" data-position-journey="waves"></div>
-<p>The fast pair goes around several times while the slow pair changes only a little.</p>
-<p class="lesson-key">Same position axis in both plots. Solid: sine. Dashed: cosine. Tokens sample the curves at integer indices.</p>
+<p>The fast pair completes several turns. The slow pair covers a small part of one turn.</p>
+<p class="lesson-key">Same index axis. Solid: sine. Dashed: cosine. Tokens sample integer indices.</p>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-period" data-title="A smaller rate gives a longer period" data-autobuild="off">
-<script type="text/x-notes">The continuous angular period is 2 pi divided by omega. For width four the pair rates are one and 0.01, so their periods are approximately 6.283 and 628.319 slots. Plot the slow pair over zero to 650 to show a full turn. Neither period is an integer. Thus index six is not identical to index zero, and index 628 is only near the starting phase. The frequency base is 10000, not a requirement that the period or context length equals 10000. Fixed features outside the training range do not guarantee good predictions.</script>
-<p>A full turn is $2\pi$ radians, so the period is $T_r=2\pi/\omega_r$.</p>
+<script type="text/x-notes">How many slots correspond to a full turn at each standard rate?
+A full turn is 2pi radians, so the continuous period is 2pi/omega. Rates 1 and 0.01 give approximately 6.283 and 628.319 slots. The slow plot extends to 650. Neither period is an integer: index six does not exactly repeat index zero, nor does 628. Unlike our integer-period toy, these standard pairs do not have that exact integer-slot collision in ideal arithmetic. Close phases and finite precision still matter. The next two slides vary b and d separately, showing which aspects of the rate schedule each controls.</script>
+<p>A full turn is $2\pi$ radians, so $T_r=2\pi/\omega_r$.</p>
 <div class="position-journey" data-position-journey="period"></div>
-<p>Rate 1: about <strong>6.28 slots</strong> per turn. Rate 0.01: about <strong>628.32 slots</strong>.</p>
-<p class="lesson-key">These are continuous periods. Integer indices 6 and 628 do not exactly repeat index 0.</p>
+<p>Rate 1: <strong>6.28 slots</strong> per turn. Rate 0.01: <strong>628.32 slots</strong>.</p>
+<p class="lesson-key">Continuous periods: integer indices 6 and 628 do not exactly repeat index 0.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-sine-base" data-title="The base controls the slower rates" data-autobuild="off">
+<script type="text/x-notes">If we increase b while holding width at four, what changes?
+Compare the rows. Pair zero always has omega=1 and period 2pi. Pair one has omega=b^(-1/2), so bases 100,10000,1000000 give rates 0.1,0.01,0.001. Their continuous periods are about 62.8,628.3,6283.2 slots. The last column computes sin(omega), the first slow-coordinate change from index zero to one, rounded to three decimals. A larger base gives a slower coordinate with a longer scale, but less local change in that coordinate. Fast pairs remain available. Therefore larger b is not automatically better and is not a maximum context length. This table is a calculation of the stated rule, not a benchmark. Models must be trained and evaluated with the chosen configuration, not have b silently changed at inference.</script>
+<p>Keep $d=4$. Pair 0 stays at rate 1. Pair 1 has rate $b^{-1/2}$.</p>
+<table class="lesson-table" id="position-base-effects"><thead><tr><th>Base $b$</th><th>Slow rate</th><th>Period (slots)</th><th>Slow sine:<br>index 0 to 1</th></tr></thead><tbody><tr><td>100</td><td>0.1</td><td>62.8</td><td>0.100</td></tr><tr><td>10000</td><td>0.01</td><td>628.3</td><td>0.010</td></tr><tr><td>1000000</td><td>0.001</td><td>6283.2</td><td>0.001</td></tr></tbody></table>
+<p data-build="1">Last column: $\sin(\omega_1)-\sin(0)$. Larger base means slower local change.</p>
+<p class="lesson-key" data-build="1">The base controls scales. It is not a maximum context length or an accuracy guarantee.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-sine-width" data-title="Width controls how many rates we have" data-autobuild="off">
+<script type="text/x-notes">What changes when the model width increases instead of the base?
+Hold b at 10000 and derive each row using omega_r=b^(-2r/d). Width two gives only rate one, so b has no effect in that case. Width four gives rates one and 0.01. Width eight gives one,0.1,0.01,0.001. Increasing d adds pairs on the geometric schedule and also reaches slower rates closer to 1/b. It does not simply add arbitrary copies of the same pair. d remains the model's embedding width, so it is not a free positional knob independent of the rest of the model. More scales provide more ways to distinguish phases but do not guarantee arbitrary-length accuracy. A fixed offset delta changes pair r's angle by delta*omega_r at any starting index. This structured offset relation is useful, while the later relative-position discussion will show that additive attention scores need not be invariant to a shared shift. Source for the schedule and offset rationale: Vaswani et al., §3.5, https://arxiv.org/html/1706.03762v7#S3.SS5.</script>
+<p>Keep $b=10000$. Every pair still uses $[\sin(i\omega_r),\cos(i\omega_r)]$.</p>
+<table class="lesson-table" id="position-width-effects"><thead><tr><th>Width $d$</th><th>Pairs</th><th>Rates (radians per slot)</th></tr></thead><tbody><tr><td>2</td><td>1</td><td>1</td></tr><tr><td>4</td><td>2</td><td>1, 0.01</td></tr><tr><td>8</td><td>4</td><td>1, 0.1, 0.01, 0.001</td></tr></tbody></table>
+<p data-build="1">More pairs give a spread of fast and slow features. The word and position rows must share width $d$.</p>
+<p class="lesson-key" data-build="1">The rule extends to new indices. Useful predictions at longer lengths still need testing.</p>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-absolute-context" data-title="Same word pair, five slots later" data-autobuild="off">

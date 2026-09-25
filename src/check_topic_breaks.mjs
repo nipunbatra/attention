@@ -20,7 +20,7 @@ const targets=[
   ['s17-position-break','s17-position-order'],
   ['s17-position-addition-break','s17-position-shift'],
   ['s17-position-learned-break','s17-position-learned'],
-  ['s17-position-clock-choice','s17-position-clock-why'],
+  ['s17-position-clock-choice','s17-position-sine-2d'],
   ['s17-position-relative-break','s17-position-relative'],
   ['s17-position-alternatives-break','s17-position-append'],
   ['s19-topic-break','s19-frame-generation'],
@@ -36,7 +36,7 @@ try{
   const original=await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)}));
   await page.evaluate(()=>AT.present.enter());
   assert.deepEqual(await page.locator('.lecture-topic-break').evaluateAll(es=>es.map(e=>e.id)),targets.map(t=>t[0]));
-  for(const [id,title] of [['learned-break','Learned position rows'],['clock-choice','Sinusoidal positions'],['alternatives-break','Why not just append the position?']]){
+  for(const [id,title] of [['learned-break','Learned position rows'],['clock-choice','Position rows from a fixed rule'],['alternatives-break','Why not just append the position?']]){
     assert.equal(await page.locator('#s17-position-'+id).getAttribute('data-title'),title,'Use descriptive method names without stale numbering.');
   }
   assert.match(await page.locator('#s17-position-alternatives-break .topic-recap').textContent(),/learned rows, sinusoidal features and relative methods/);

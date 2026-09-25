@@ -16,7 +16,7 @@ const costs=['break','symbols','matmul','concat-network','concat','average-netwo
 const positions=[
   'break','order','permute','scores','swapped','contributions','consequence',
   'addition-break','shift','move-a','move-b','moved','toy','slot-scores','experiment','updated',
-  'learned-break','learned','learned-update','learned-limits','absolute-range','clock-choice','clock-why','clock','repeat','sine-rule','worked-sine','waves','period',
+  'learned-break','learned','learned-update','learned-limits','absolute-range','clock-choice','sine-2d','sine-4d','sine-many','clock-why','clock','repeat','sine-rule','worked-sine','waves','period','sine-base','sine-width',
   'absolute-context','absolute-shift','relative-break','relative','alibi','rotate','rope-shift','rope-identity','rope-pairs','insertion',
   'alternatives-break','append','append-qk-a','append-scores','append-softmax','append-values-a',
   'append-qk-b','append-scores-b','append-softmax-b','append-values-b',
@@ -69,7 +69,7 @@ try{
   await page.setViewportSize({width:1280,height:720});await page.evaluate(()=>document.fonts.ready);
   const original=await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)}));
   assert.deepEqual(await page.locator('.frame.context-lesson').evaluateAll(es=>es.map(e=>e.id)),ids);
-  assert.equal(ids.length,53,'Separate untrained rows from the hard position-table limit with one additional frame.');
+  assert.equal(ids.length,58,'Examples before periodicity, then explicit base and width comparisons.');
   assert.deepEqual(await page.locator('.position-reading[id]:not(#s17-position-map-notes)').evaluateAll(es=>es.map(e=>e.id)),readingExtras,'Recaps remain available for reading.');
   // Reading mode must follow the same teaching logic, including its extra explanations.
   const lessonOrder=await page.locator('#s17 .frame.position-lesson,#s17 .position-reading[id]').evaluateAll(es=>es.map(e=>e.id));
@@ -77,7 +77,7 @@ try{
     ['updated','add','routing','mean','learned-break'],
     ['alternatives-break','append','append-qk-a','append-scores','append-softmax','append-values-a','append-qk-b','append-scores-b','append-softmax-b','append-values-b','append-scale-effect','append-scale','append-tradeoffs','width','overview','map-notes'],
     ['learned-break','learned','learned-update','learned-limits','absolute-range','clock-choice'],
-    ['clock-choice','clock-why','clock','repeat','rates','sine-rule','worked-sine','sine','waves','period','absolute-context','absolute-shift','relative-break'],
+    ['clock-choice','sine-2d','sine-4d','sine-many','clock-why','clock','repeat','rates','sine-rule','worked-sine','sine','waves','period','sine-base','sine-width','absolute-context','absolute-shift','relative-break'],
     ['relative-break','relative','alibi','rotate','rope-shift','rope','rope-identity','rope-pairs','insertion','length','choices','alternatives-break']
   ]){
     const expected=run.map(x=>'s17-position-'+x),start=lessonOrder.indexOf(expected[0]);
@@ -87,7 +87,7 @@ try{
   for(const [from,to]of [
     ['updated','learned-break'],['insertion','alternatives-break'],['append-tradeoffs','overview'],
     ['learned-limits','absolute-range'],['absolute-range','clock-choice'],['repeat','sine-rule'],['worked-sine','waves'],
-    ['period','absolute-context'],['absolute-shift','relative-break']
+    ['period','sine-base'],['sine-width','absolute-context'],['absolute-shift','relative-break']
   ]){
     await go('s17-position-'+from);
     await page.evaluate(()=>AT.present.next());
@@ -298,16 +298,49 @@ try{
   }
   const updates=await page.locator('[data-updated-vector]').evaluateAll(es=>es.map(e=>JSON.parse(e.dataset.updatedVector)));
   updates.forEach((v,j)=>{const r=reference(sequences[j],true);v.forEach((x,c)=>close(x,r.q[c]+r.message[c],'context update after position addition'));});
+  // Read the visible arithmetic, rather than trusting duplicate expected-value metadata.
+  const plainNumber=s=>Number(s.replaceAll('−','-'));
+  for(const d of [2,4]){
+    const table=page.locator('[data-sine-example="'+d+'"]');
+    const word=(await table.locator('[data-sine-word] td').allTextContents()).map(plainNumber);
+    const expectedWord=d===2?[.8,.2]:[.8,.2,.4,-.1];
+    assert.deepEqual(word,expectedWord);
+    const rates=d===2?[Math.PI/2]:[Math.PI/2,Math.PI/6];
+    const offset=rates.flatMap(w=>[Math.sin(3*w),Math.cos(3*w)]);
+    for(const [row,expected] of [['offset',offset],['sum',offset.map((v,j)=>v+word[j])]]){
+      const shown=await table.locator('[data-sine-'+row+'] td').evaluateAll(es=>es.map(e=>e.querySelector('annotation')?.textContent||e.textContent));
+      assert.equal(shown.length,d);
+      shown.map(x=>plainNumber(x.split('=').at(-1))).forEach((v,j)=>close(v,expected[j],d+'D '+row));
+    }
+  }
+  const pairCounts=await page.locator('#position-pair-counts tbody tr').evaluateAll(es=>es.map(e=>[...e.cells].map(c=>Number(c.textContent))));
+  for(const [d,count,width] of pairCounts){assert.equal(count,d/2);assert.equal(width,d);}
+  const baseRows=await page.locator('#position-base-effects tbody tr').evaluateAll(es=>es.map(e=>[...e.cells].map(c=>Number(c.textContent))));
+  assert.deepEqual(baseRows.map(r=>r[0]),[100,10000,1000000]);
+  for(const [base,rate,period,change] of baseRows){
+    close(rate,base**(-.5),'base sets slow rate');
+    assert.equal(period,Number((2*Math.PI/rate).toFixed(1)),'period uses displayed rounding');
+    assert.equal(change,Number(Math.sin(rate).toFixed(3)),'slow sine change from 0 to 1');
+  }
+  const widthRows=await page.locator('#position-width-effects tbody tr').evaluateAll(es=>es.map(e=>[...e.cells].map(c=>c.textContent)));
+  for(const [width,count,shown] of widthRows){
+    const d=Number(width);assert.equal(Number(count),d/2);
+    const rates=shown.split(',').map(Number);assert.equal(rates.length,d/2);
+    rates.forEach((v,r)=>close(v,10000**(-2*r/d),'width controls the geometric rate grid'));
+  }
+  assert.match(await page.locator('#s17-position-worked-sine .lesson-key annotation').last().textContent(),/0.941,-0.790,0.430,0.900/);
+  const standard=[1,.01].flatMap(w=>[Math.sin(3*w),Math.cos(3*w)]);
+  assert.deepEqual(standard.map((x,j)=>(x+[.8,.2,.4,-.1][j]).toFixed(3)),['0.941','-0.790','0.430','0.900']);
   const clockTips=await page.locator('[data-clock-why-index]').evaluateAll(es=>es.map(e=>({i:Number(e.dataset.clockWhyIndex),angle:Number(e.dataset.angle),p:JSON.parse(e.dataset.vector),x:Number(e.getAttribute('cx')),y:Number(e.getAttribute('cy'))})));
   assert.deepEqual(clockTips.map(r=>r.i),[0,2]);
   clockTips.forEach(r=>{
-    close(r.angle,r.i*Math.PI/2,'Intro uses the same 90-degree rate as the next clock');
+    close(r.angle,r.i*Math.PI/2,'Pair example retains the π/2 rate used in the additions');
     close(r.p[0],Math.cos(r.angle),'Cosine is horizontal');close(r.p[1],Math.sin(r.angle),'Sine is vertical');
     close(r.x,235+110*r.p[0],'Point horizontal projection');close(r.y,175-110*r.p[1],'Point vertical projection');
   });
   close(clockTips[0].p[1],clockTips[1].p[1],'Sine alone collides for indices 0 and 2');
   assert.equal(clockTips[0].p[0],1);assert.equal(clockTips[1].p[0],-1);
-  assert.deepEqual(await page.locator('[data-clock-why-offset]').allTextContents(),['[1, 0]','[−1, 0]']);
+  assert.deepEqual(await page.locator('[data-clock-why-offset]').allTextContents(),['[0, 1]','[0, −1]']);
   for(const build of [0,1,0,1]){
     await go('s17-position-clock-why',build);
     assert.equal(await page.locator('[data-clock-why-pair]').evaluate(e=>getComputedStyle(e).visibility),build?'visible':'hidden','Cosine/pair reveal follows presenter navigation');
@@ -318,13 +351,15 @@ try{
   for(const i of [0,1,2,3,4,0]){
     await page.locator('#position-clock-index').fill(String(i));
     assert.equal(await page.locator('#position-clock-label').textContent(),String(i));
+    const displayed=JSON.parse(await page.locator('#position-clock-picture svg').getAttribute('data-position-vector'));
+    [Math.sin(i*Math.PI/2),Math.cos(i*Math.PI/2)].forEach((v,j)=>close(displayed[j],v,'Clock preserves sine-first storage'));
     assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'Clock control fits');
   }
   await go('s17-position-repeat');
   for(const i of [0,4,8,12,0]){
     await page.locator('#position-pair-index').selectOption(String(i));
     const actual=JSON.parse(await page.locator('#position-pair-result').getAttribute('data-vector'));
-    [Math.cos(i*Math.PI/2),Math.sin(i*Math.PI/2),Math.cos(i*Math.PI/6),Math.sin(i*Math.PI/6)].forEach((x,c)=>close(actual[c],x,'two-clock code'));
+    [Math.sin(i*Math.PI/2),Math.cos(i*Math.PI/2),Math.sin(i*Math.PI/6),Math.cos(i*Math.PI/6)].forEach((x,c)=>close(actual[c],x,'two-clock code'));
     assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'Two-clock control fits');
   }
   const absScores=await page.locator('[data-absolute-score]').evaluateAll(es=>es.map(e=>Number(e.dataset.absoluteScore)));
