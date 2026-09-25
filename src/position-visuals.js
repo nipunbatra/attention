@@ -150,6 +150,136 @@ document.addEventListener('DOMContentLoaded',()=>{
     results.forEach(drawCalculationTables);
   }
   drawAppended();
+  // A controlled first-layer comparison: same word and projection weights.
+  function insertionExample(){
+    const word=[1,0],position=[0,1],WQ=[[0,1],[1,0]],WK=[[1,0],[0,2]],WV=[[2,0],[0,3]];
+    const product=(row,W)=>W[0].map((_,j)=>row.reduce((sum,x,i)=>sum+x*W[i][j],0));
+    const project=e=>({e,q:product(e,WQ),k:product(e,WK),v:product(e,WV)});
+    const additive=project(word.map((x,j)=>x+position[j])),rotary=project([...word]);
+    rotary.qRotated=rotate(rotary.q,Math.PI/3);rotary.kRotated=rotate(rotary.k,Math.PI/3);
+    rotary.receiverQuery=rotate(product([0,1],WQ),Math.PI/2);
+    rotary.score=rotary.receiverQuery.reduce((sum,x,j)=>sum+x*rotary.kRotated[j],0)/Math.sqrt(2);
+    return {word,position,WQ,WK,WV,additive,rotary};
+  }
+  function revealGroup(s,attributes={}){const g=element('g',{'data-build':'1',...attributes});s.append(g);return g;}
+  function routeBox(s,x,y,w,first,second,color){
+    s.append(element('rect',{x,y,width:w,height:70,rx:3,fill:'none',stroke:color,'stroke-width':1.5}));
+    subscriptText(s,x+14,y+24,first,color,28);text(s,x+14,y+62,second,color,24);
+  }
+  function drawInsertionPath(s,rotary){
+    s.setAttribute('viewBox','0 0 1120 360');
+    s.setAttribute('aria-label',rotary?'RoPE projects the input into Q, K and V, then rotates Q and K only':'Additive positions enter before all three projections');
+    const next=revealGroup(s,{'data-insertion-step':rotary?'rotate-after-project':'project-after-add'});
+    if(!rotary){
+      text(s,20,28,'1. Add word and position',C.ink,26);
+      routeBox(s,20,57,230,'E_{tok}[red]','[1, 0]',C.e);
+      routeBox(s,20,220,230,'p₂ (slot 2)','[0, 1]',C.d);
+      line(s,250,92,330,92,C.e);arrow(s,330,92,330,138,C.e);
+      line(s,250,255,330,255,C.d);arrow(s,330,255,330,185,C.d);
+      s.append(element('circle',{cx:330,cy:162,r:23,stroke:C.d,fill:'none','stroke-width':2}));
+      text(s,320,171,'+',C.d,30);arrow(s,355,162,400,162,C.e);
+      routeBox(s,400,127,190,'e₂ = [1, 1]','input · 1 × 2',C.e);
+      text(next,705,28,'2. Project that same row',C.ink,26);
+      line(next,590,162,650,162,C.e);line(next,650,80,650,270,C.e);
+      [['q',C.q,45,'query'],['k',C.k,140,'key'],['v',C.v,235,'value']].forEach(([name,color,y,role])=>{
+        arrow(next,650,y+35,704,y+35,color);
+        routeBox(next,705,y,370,name+'₂ = e₂ W_{'+name.toUpperCase()+'}',role+' · 1 × 2',color);
+      });
+    }else{
+      text(s,20,28,'1. Project the word row',C.ink,26);
+      routeBox(s,20,145,180,'e₂ = [1, 0]','word input',C.e);
+      line(s,200,180,235,180,C.e);line(s,235,85,235,275,C.e);
+      [['q',C.q,50,'query'],['k',C.k,145,'key'],['v',C.v,240,'value']].forEach(([name,color,y,role])=>{
+        arrow(s,235,y+35,284,y+35,color);
+        routeBox(s,285,y,250,name+'₂ = e₂ W_{'+name.toUpperCase()+'}',role+' · 1 × 2',color);
+        if(name!=='v'){
+          arrow(next,535,y+35,624,y+35,color);
+          routeBox(next,625,y,255,'Rotate '+name+'₂','slot 2 → 60°',color);
+          arrow(next,880,y+35,949,y+35,color);text(next,960,y+44,name+'′₂',color,32);
+        }else{
+          arrow(next,535,y+35,949,y+35,color);
+          text(next,654,y+19,'no rotation',color,26);text(next,960,y+44,'v₂',color,32);
+        }
+      });
+      text(next,625,28,'2. Use the slot to rotate',C.d,26);
+    }
+    text(s,400,345,'Every W is 2 × 2; every vector stays 1 × 2.',C.ink,23);
+  }
+  function projectionMatrix(s,x,y,name,W,color){
+    subscriptText(s,x+22,y-20,'W_{'+name+'}',color,26);
+    s.append(element('rect',{x,y,width:130,height:75,fill:'none',stroke:color,'stroke-width':1.5}));
+    line(s,x+65,y,x+65,y+75,C.line,1);line(s,x,y+37.5,x+130,y+37.5,C.line,1);
+    W.forEach((row,i)=>row.forEach((n,j)=>text(s,x+24+j*65,y+28+i*37.5,String(n),color,26)));
+  }
+  function drawInsertionNumbers(s,rotary){
+    s.setAttribute('viewBox','0 0 1120 365');
+    const r=insertionExample(),result=rotary?r.rotary:r.additive;
+    s.setAttribute('aria-label',rotary?'Same projections without addition: rotate the key, leave the value unrotated':'Project the position-enriched input into a key and a value');
+    [['k',r.WK,C.k,48],['v',r.WV,C.v,175]].forEach(([name,W,color,y])=>{
+      const g=element('g',{'data-insertion-method':rotary?'rotary':'additive','data-insertion-role':name,'data-input':JSON.stringify(result.e),'data-matrix':JSON.stringify(W),'data-output':JSON.stringify(result[name])});s.append(g);
+      text(g,20,y+46,'e₂ = '+JSON.stringify(result.e).replace(',',', '),C.e,28);
+      text(g,245,y+46,'×',C.ink,30);projectionMatrix(g,300,y,name.toUpperCase(),W,color);
+      text(g,465,y+46,'=',C.ink,30);text(g,510,y+46,name+'₂ = '+JSON.stringify(result[name]).replace(',',', '),color,28);
+      if(rotary){
+        arrow(g,710,y+37,749,y+37,color);
+        if(name==='k'){
+          text(g,770,y-15,'Rotate by 60°',C.d,25);
+          const out=element('g',{'data-insertion-rotated-key':JSON.stringify(result.kRotated)});g.append(out);
+          text(out,770,y+46,'k′₂ = '+fmt(result.kRotated),color,25);
+        }else{text(g,770,y+46,'keep [2, 0]',color,28);}
+      }else{
+        text(g,810,y+24,name==='k'?'Matching features':'Content to send',color,24);
+        subscriptText(g,810,y+58,name==='k'?'q₃ · k₂ / √2':'a_{3,2} × v₂',color,28);
+      }
+    });
+    const mix=revealGroup(s,{'data-insertion-mix':rotary?'rotary':'additive'});
+    line(mix,20,271,1090,271);
+    text(mix,20,307,rotary?'Score ≈ '+result.score.toFixed(3):'q₃ · k₂ / √2',C.ink,26);
+    text(mix,20,350,rotary?'q′₃ = [0, 1]':'Score for red',C.q,23);
+    arrow(mix,236,298,274,298,C.ink);
+    text(mix,294,306,'mask + softmax',C.a,25);text(mix,294,350,'over all sources',C.ink,23);
+    arrow(mix,500,298,544,298,C.a);subscriptText(mix,565,306,'a_{3,2}',C.a,29);
+    arrow(mix,648,298,694,298,C.v);
+    subscriptText(mix,718,306,'a_{3,2} × '+JSON.stringify(result.v).replace(',',', '),C.v,29);
+    text(mix,718,350,"red's part of the message",C.v,23);
+    if(rotary)mix.dataset.insertionScore=String(result.score);
+  }
+  function indexedTokens(s,name,words,ids,x,y,step,w,highlight=()=>true){
+    const row=element('g',{'data-position-example':name});s.append(row);
+    words.forEach((word,j)=>{
+      const g=element('g',{'data-position-word':word,'data-position-id':ids[j],opacity:highlight(j)?1:.35});row.append(g);
+      const color=word==='PAD'?C.ink:C.e;
+      text(g,x+j*step+w/2-7,y-14,String(ids[j]),C.d,24);
+      g.append(element('rect',{x:x+j*step,y,width:w,height:46,rx:3,fill:'none',stroke:color,'stroke-width':1.5,...(word==='PAD'?{'stroke-dasharray':'5 4'}:{})}));
+      const label=element('text',{x:x+j*step+w/2,y:y+30,'text-anchor':'middle',style:'fill:'+color+';font-size:24px'},word);g.append(label);
+    });
+  }
+  function drawPositionIds(s,kind){
+    if(kind==='token-ids'){
+      s.setAttribute('viewBox','0 0 1120 210');
+      text(s,20,30,'One input, two sentences',C.ink,27);
+      indexedTokens(s,'ten-tokens',['Maya','helps','Ravi','.','They','walk','to','school','today','.'],[0,1,2,3,4,5,6,7,8,9],20,93,108,98);
+      text(s,20,193,'They starts sentence 2, but uses position row P[4].',C.d,27);
+    }else if(kind==='window-ids'){
+      s.setAttribute('viewBox','0 0 1120 360');
+      text(s,20,76,'Original input',C.ink,26);
+      indexedTokens(s,'crop-original',['This','morning','Maya','helps','Ravi','at','school'],[0,1,2,3,4,5,6],230,45,124,114,j=>j>=4);
+      const next=revealGroup(s);
+      text(next,20,182,'Restart the window',C.ink,27);
+      text(next,20,219,'school − Ravi: 2 − 0 = 2',C.d,26);
+      indexedTokens(next,'crop-restart',['Ravi','at','school'],[0,1,2],726,152,124,114);
+      text(next,20,296,'Preserve the offset',C.ink,27);
+      text(next,20,333,'school − Ravi: 6 − 4 = 2',C.d,26);
+      indexedTokens(next,'crop-preserve',['Ravi','at','school'],[4,5,6],726,266,124,114);
+    }else{
+      s.setAttribute('viewBox','0 0 1120 227');
+      text(s,20,86,'History: Ravi at school',C.ink,26);
+      indexedTokens(s,'notebook-before',['PAD','Ravi','at','school'],[0,1,2,3],410,55,170,150);
+      const next=revealGroup(s);
+      text(next,20,193,'Then append home',C.ink,26);
+      indexedTokens(next,'notebook-after',['Ravi','at','school','home'],[0,1,2,3],410,162,170,150);
+    }
+  }
   document.querySelectorAll('[data-position-visual]').forEach(host=>{
     const kind=host.dataset.positionVisual,s=canvas(host,kind+' positional encoding illustration',kind.startsWith('swap')?330:kind==='shift'?310:280);
     if(kind==='swap-rows'){
@@ -196,6 +326,12 @@ document.addEventListener('DOMContentLoaded',()=>{
         [[260,Math.PI/2,C.d],[705,Math.PI/6,C.v]].forEach(([x,rate,color])=>{const v=rotate([1,0],i*rate);axes(s,x,y,37);vector(s,x,y,37,v,color);text(s,x+66,y+8,fmt([v[1],v[0]]),color,27);});
       });
       text(s,220,264,'Fast pair repeats',C.d,24);text(s,665,264,'Slow pair differs',C.v,24);
+    }else if(['token-ids','window-ids','notebook-ids'].includes(kind)){
+      drawPositionIds(s,kind);
+    }else if(kind==='additive-path'||kind==='rotary-path'){
+      drawInsertionPath(s,kind==='rotary-path');
+    }else if(kind==='additive-numbers'||kind==='rotary-numbers'){
+      drawInsertionNumbers(s,kind==='rotary-numbers');
     }else if(kind==='rope-queries'){
       ropeSentence(s,0);
       text(s,65,132,'Source: red (j = 2)',C.k,27);
@@ -379,5 +515,5 @@ document.addEventListener('DOMContentLoaded',()=>{
     document.getElementById('rope-shift-result').textContent='Raw dot product stays '+r.dot.toFixed(3)+'; scaled score stays '+(r.dot/Math.sqrt(2)).toFixed(3)+'.';
   }
   if(selector){selector.addEventListener('change',draw);draw();}
-  window.AT.positionVisuals={rotate,shifted,learnedExample};
+  window.AT.positionVisuals={rotate,shifted,learnedExample,insertionExample};
 });

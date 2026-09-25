@@ -1,5 +1,34 @@
 # Classroom release checks
 
+## 2026-09-25 · Position IDs, training coverage, and insertion points
+
+- Added a ten-token, two-sentence example before the learned-table limits.
+  Distinguish position IDs 0–9, sequence length T=10 and table capacity
+  Nmax=16. A row unused in one input may be trained by another input.
+- Compare cropping Ravi at school with restarted IDs 0,1,2 and preserved
+  IDs 4,5,6. Both are absolute-ID conventions; the pairwise gap stays 2.
+  Show the notebook's actual policy separately: left-pad a fresh window,
+  then number its tensor slots. Tests inspect wordlm.py for the matching
+  slice, padding and arange operations. No notebook behavior was changed.
+- Convert the coverage and missing-row examples to explicit zero-based
+  IDs. P[3] exists but receives no task training in the unpadded toy;
+  P[4] and P[5] do not exist in its four-row table. Compare two unfitted
+  P[3] choices, producing Ravi scores 0.071 and 0.212 for the same word.
+  State this as a generalization risk, not a guaranteed prediction failure.
+- Replace the compressed addition/RoPE comparison with four frames.
+  Trace the same red word row through addition before Q/K/V, versus
+  projection followed by Q/K rotation with V bypassing rotation. Use the
+  same non-identity key/value matrices, explicit shapes and bias=False.
+  Show values [2,3] versus [2,0], and the weighted-source contributions.
+  Preserve the e/E notation, SVG colours and short, concrete wording.
+- Regression passes all 72 positional frames and 268 build checks,
+  including the new examples, numeric products and unchanged bank model.
+  Whole-deck audit passes 494 states and 687 formulas. All 18 topic-break
+  checks pass. Inspected 42 presentation/reveal states at 1280×720 and
+  760×1041. Fixed a clipped SVG caption and the coverage-table overflow.
+  Code snippets and the numeric table now stay within 390px reading mode.
+
+
 ## 2026-09-25 · Why RoPE's cancellation helps and what is learned
 
 - Replaced the abstract identity frame with the red/flowers example.

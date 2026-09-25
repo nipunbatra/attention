@@ -3633,6 +3633,136 @@ document.addEventListener('DOMContentLoaded',()=>{
     results.forEach(drawCalculationTables);
   }
   drawAppended();
+  // A controlled first-layer comparison: same word and projection weights.
+  function insertionExample(){
+    const word=[1,0],position=[0,1],WQ=[[0,1],[1,0]],WK=[[1,0],[0,2]],WV=[[2,0],[0,3]];
+    const product=(row,W)=>W[0].map((_,j)=>row.reduce((sum,x,i)=>sum+x*W[i][j],0));
+    const project=e=>({e,q:product(e,WQ),k:product(e,WK),v:product(e,WV)});
+    const additive=project(word.map((x,j)=>x+position[j])),rotary=project([...word]);
+    rotary.qRotated=rotate(rotary.q,Math.PI/3);rotary.kRotated=rotate(rotary.k,Math.PI/3);
+    rotary.receiverQuery=rotate(product([0,1],WQ),Math.PI/2);
+    rotary.score=rotary.receiverQuery.reduce((sum,x,j)=>sum+x*rotary.kRotated[j],0)/Math.sqrt(2);
+    return {word,position,WQ,WK,WV,additive,rotary};
+  }
+  function revealGroup(s,attributes={}){const g=element('g',{'data-build':'1',...attributes});s.append(g);return g;}
+  function routeBox(s,x,y,w,first,second,color){
+    s.append(element('rect',{x,y,width:w,height:70,rx:3,fill:'none',stroke:color,'stroke-width':1.5}));
+    subscriptText(s,x+14,y+24,first,color,28);text(s,x+14,y+62,second,color,24);
+  }
+  function drawInsertionPath(s,rotary){
+    s.setAttribute('viewBox','0 0 1120 360');
+    s.setAttribute('aria-label',rotary?'RoPE projects the input into Q, K and V, then rotates Q and K only':'Additive positions enter before all three projections');
+    const next=revealGroup(s,{'data-insertion-step':rotary?'rotate-after-project':'project-after-add'});
+    if(!rotary){
+      text(s,20,28,'1. Add word and position',C.ink,26);
+      routeBox(s,20,57,230,'E_{tok}[red]','[1, 0]',C.e);
+      routeBox(s,20,220,230,'p₂ (slot 2)','[0, 1]',C.d);
+      line(s,250,92,330,92,C.e);arrow(s,330,92,330,138,C.e);
+      line(s,250,255,330,255,C.d);arrow(s,330,255,330,185,C.d);
+      s.append(element('circle',{cx:330,cy:162,r:23,stroke:C.d,fill:'none','stroke-width':2}));
+      text(s,320,171,'+',C.d,30);arrow(s,355,162,400,162,C.e);
+      routeBox(s,400,127,190,'e₂ = [1, 1]','input · 1 × 2',C.e);
+      text(next,705,28,'2. Project that same row',C.ink,26);
+      line(next,590,162,650,162,C.e);line(next,650,80,650,270,C.e);
+      [['q',C.q,45,'query'],['k',C.k,140,'key'],['v',C.v,235,'value']].forEach(([name,color,y,role])=>{
+        arrow(next,650,y+35,704,y+35,color);
+        routeBox(next,705,y,370,name+'₂ = e₂ W_{'+name.toUpperCase()+'}',role+' · 1 × 2',color);
+      });
+    }else{
+      text(s,20,28,'1. Project the word row',C.ink,26);
+      routeBox(s,20,145,180,'e₂ = [1, 0]','word input',C.e);
+      line(s,200,180,235,180,C.e);line(s,235,85,235,275,C.e);
+      [['q',C.q,50,'query'],['k',C.k,145,'key'],['v',C.v,240,'value']].forEach(([name,color,y,role])=>{
+        arrow(s,235,y+35,284,y+35,color);
+        routeBox(s,285,y,250,name+'₂ = e₂ W_{'+name.toUpperCase()+'}',role+' · 1 × 2',color);
+        if(name!=='v'){
+          arrow(next,535,y+35,624,y+35,color);
+          routeBox(next,625,y,255,'Rotate '+name+'₂','slot 2 → 60°',color);
+          arrow(next,880,y+35,949,y+35,color);text(next,960,y+44,name+'′₂',color,32);
+        }else{
+          arrow(next,535,y+35,949,y+35,color);
+          text(next,654,y+19,'no rotation',color,26);text(next,960,y+44,'v₂',color,32);
+        }
+      });
+      text(next,625,28,'2. Use the slot to rotate',C.d,26);
+    }
+    text(s,400,345,'Every W is 2 × 2; every vector stays 1 × 2.',C.ink,23);
+  }
+  function projectionMatrix(s,x,y,name,W,color){
+    subscriptText(s,x+22,y-20,'W_{'+name+'}',color,26);
+    s.append(element('rect',{x,y,width:130,height:75,fill:'none',stroke:color,'stroke-width':1.5}));
+    line(s,x+65,y,x+65,y+75,C.line,1);line(s,x,y+37.5,x+130,y+37.5,C.line,1);
+    W.forEach((row,i)=>row.forEach((n,j)=>text(s,x+24+j*65,y+28+i*37.5,String(n),color,26)));
+  }
+  function drawInsertionNumbers(s,rotary){
+    s.setAttribute('viewBox','0 0 1120 365');
+    const r=insertionExample(),result=rotary?r.rotary:r.additive;
+    s.setAttribute('aria-label',rotary?'Same projections without addition: rotate the key, leave the value unrotated':'Project the position-enriched input into a key and a value');
+    [['k',r.WK,C.k,48],['v',r.WV,C.v,175]].forEach(([name,W,color,y])=>{
+      const g=element('g',{'data-insertion-method':rotary?'rotary':'additive','data-insertion-role':name,'data-input':JSON.stringify(result.e),'data-matrix':JSON.stringify(W),'data-output':JSON.stringify(result[name])});s.append(g);
+      text(g,20,y+46,'e₂ = '+JSON.stringify(result.e).replace(',',', '),C.e,28);
+      text(g,245,y+46,'×',C.ink,30);projectionMatrix(g,300,y,name.toUpperCase(),W,color);
+      text(g,465,y+46,'=',C.ink,30);text(g,510,y+46,name+'₂ = '+JSON.stringify(result[name]).replace(',',', '),color,28);
+      if(rotary){
+        arrow(g,710,y+37,749,y+37,color);
+        if(name==='k'){
+          text(g,770,y-15,'Rotate by 60°',C.d,25);
+          const out=element('g',{'data-insertion-rotated-key':JSON.stringify(result.kRotated)});g.append(out);
+          text(out,770,y+46,'k′₂ = '+fmt(result.kRotated),color,25);
+        }else{text(g,770,y+46,'keep [2, 0]',color,28);}
+      }else{
+        text(g,810,y+24,name==='k'?'Matching features':'Content to send',color,24);
+        subscriptText(g,810,y+58,name==='k'?'q₃ · k₂ / √2':'a_{3,2} × v₂',color,28);
+      }
+    });
+    const mix=revealGroup(s,{'data-insertion-mix':rotary?'rotary':'additive'});
+    line(mix,20,271,1090,271);
+    text(mix,20,307,rotary?'Score ≈ '+result.score.toFixed(3):'q₃ · k₂ / √2',C.ink,26);
+    text(mix,20,350,rotary?'q′₃ = [0, 1]':'Score for red',C.q,23);
+    arrow(mix,236,298,274,298,C.ink);
+    text(mix,294,306,'mask + softmax',C.a,25);text(mix,294,350,'over all sources',C.ink,23);
+    arrow(mix,500,298,544,298,C.a);subscriptText(mix,565,306,'a_{3,2}',C.a,29);
+    arrow(mix,648,298,694,298,C.v);
+    subscriptText(mix,718,306,'a_{3,2} × '+JSON.stringify(result.v).replace(',',', '),C.v,29);
+    text(mix,718,350,"red's part of the message",C.v,23);
+    if(rotary)mix.dataset.insertionScore=String(result.score);
+  }
+  function indexedTokens(s,name,words,ids,x,y,step,w,highlight=()=>true){
+    const row=element('g',{'data-position-example':name});s.append(row);
+    words.forEach((word,j)=>{
+      const g=element('g',{'data-position-word':word,'data-position-id':ids[j],opacity:highlight(j)?1:.35});row.append(g);
+      const color=word==='PAD'?C.ink:C.e;
+      text(g,x+j*step+w/2-7,y-14,String(ids[j]),C.d,24);
+      g.append(element('rect',{x:x+j*step,y,width:w,height:46,rx:3,fill:'none',stroke:color,'stroke-width':1.5,...(word==='PAD'?{'stroke-dasharray':'5 4'}:{})}));
+      const label=element('text',{x:x+j*step+w/2,y:y+30,'text-anchor':'middle',style:'fill:'+color+';font-size:24px'},word);g.append(label);
+    });
+  }
+  function drawPositionIds(s,kind){
+    if(kind==='token-ids'){
+      s.setAttribute('viewBox','0 0 1120 210');
+      text(s,20,30,'One input, two sentences',C.ink,27);
+      indexedTokens(s,'ten-tokens',['Maya','helps','Ravi','.','They','walk','to','school','today','.'],[0,1,2,3,4,5,6,7,8,9],20,93,108,98);
+      text(s,20,193,'They starts sentence 2, but uses position row P[4].',C.d,27);
+    }else if(kind==='window-ids'){
+      s.setAttribute('viewBox','0 0 1120 360');
+      text(s,20,76,'Original input',C.ink,26);
+      indexedTokens(s,'crop-original',['This','morning','Maya','helps','Ravi','at','school'],[0,1,2,3,4,5,6],230,45,124,114,j=>j>=4);
+      const next=revealGroup(s);
+      text(next,20,182,'Restart the window',C.ink,27);
+      text(next,20,219,'school − Ravi: 2 − 0 = 2',C.d,26);
+      indexedTokens(next,'crop-restart',['Ravi','at','school'],[0,1,2],726,152,124,114);
+      text(next,20,296,'Preserve the offset',C.ink,27);
+      text(next,20,333,'school − Ravi: 6 − 4 = 2',C.d,26);
+      indexedTokens(next,'crop-preserve',['Ravi','at','school'],[4,5,6],726,266,124,114);
+    }else{
+      s.setAttribute('viewBox','0 0 1120 227');
+      text(s,20,86,'History: Ravi at school',C.ink,26);
+      indexedTokens(s,'notebook-before',['PAD','Ravi','at','school'],[0,1,2,3],410,55,170,150);
+      const next=revealGroup(s);
+      text(next,20,193,'Then append home',C.ink,26);
+      indexedTokens(next,'notebook-after',['Ravi','at','school','home'],[0,1,2,3],410,162,170,150);
+    }
+  }
   document.querySelectorAll('[data-position-visual]').forEach(host=>{
     const kind=host.dataset.positionVisual,s=canvas(host,kind+' positional encoding illustration',kind.startsWith('swap')?330:kind==='shift'?310:280);
     if(kind==='swap-rows'){
@@ -3679,6 +3809,12 @@ document.addEventListener('DOMContentLoaded',()=>{
         [[260,Math.PI/2,C.d],[705,Math.PI/6,C.v]].forEach(([x,rate,color])=>{const v=rotate([1,0],i*rate);axes(s,x,y,37);vector(s,x,y,37,v,color);text(s,x+66,y+8,fmt([v[1],v[0]]),color,27);});
       });
       text(s,220,264,'Fast pair repeats',C.d,24);text(s,665,264,'Slow pair differs',C.v,24);
+    }else if(['token-ids','window-ids','notebook-ids'].includes(kind)){
+      drawPositionIds(s,kind);
+    }else if(kind==='additive-path'||kind==='rotary-path'){
+      drawInsertionPath(s,kind==='rotary-path');
+    }else if(kind==='additive-numbers'||kind==='rotary-numbers'){
+      drawInsertionNumbers(s,kind==='rotary-numbers');
     }else if(kind==='rope-queries'){
       ropeSentence(s,0);
       text(s,65,132,'Source: red (j = 2)',C.k,27);
@@ -3862,7 +3998,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     document.getElementById('rope-shift-result').textContent='Raw dot product stays '+r.dot.toFixed(3)+'; scaled score stays '+(r.dot/Math.sqrt(2)).toFixed(3)+'.';
   }
   if(selector){selector.addEventListener('change',draw);draw();}
-  window.AT.positionVisuals={rotate,shifted,learnedExample};
+  window.AT.positionVisuals={rotate,shifted,learnedExample,insertionExample};
 });
 
 </script>
@@ -12453,10 +12589,12 @@ body.present .position-lesson .alibi-weight-table th,body.present .position-less
 .position-visual svg text{font-size:24px;fill:var(--ink)}
 .position-visual svg .label-small{font-size:22px;fill:var(--ink-2)}
 .position-numeric-scroll{max-width:100%;overflow-x:auto}.position-numeric-scroll .lesson-table{min-width:760px}
+body:not(.present) .position-lesson pre{max-width:100%;min-width:0;overflow-x:auto;box-sizing:border-box}
 .position-numeric-scroll .position-range-table{min-width:620px}
 [data-sine-word] td{color:var(--c-e)}
 [data-sine-offset] td{color:var(--c-d)}
 .position-coverage-table .position-unused{background:rgba(85,98,122,.08)}
+body.present .context-lesson .position-coverage-table th,body.present .context-lesson .position-coverage-table td{padding-top:10px;padding-bottom:10px}
 .position-coverage-table [data-learned-coverage="visited"]{color:var(--c-d)}
 .position-range-table [data-missing-position]{color:var(--c-a);background:var(--t-a)}
 #s17-position-rope-shift .lesson-result{padding:0;margin:12px 0}
@@ -12687,36 +12825,76 @@ Follow the red gradient back through the addition. For Maya's single occurrence 
 <p class="lesson-key" data-build="2">SGD rate 0.1, one occurrence. Batch gradients sum into shared rows.</p>
 </div>
 
+<div class="frame context-lesson position-lesson" id="s17-position-token-ids" data-title="Number the tokens, not the sentences" data-autobuild="off">
+<script type="text/x-notes">Ask: does the second sentence restart the position counter?
+Use zero-based code indices for these table, sinusoidal and relative examples. The final appended-slot alternative explicitly returns to the earlier one-based toy. The first token is index 0, not 1. The displayed tokenization is explicit: Maya, helps, Ravi, period, They, walk, to, school, today, period. These ten tokens form one input sequence, so the second sentence begins at index 4, not 0. No claim is made that every real tokenizer splits words this way. If BOS or EOS is present it also occupies a token slot. Position IDs differ from vocabulary token IDs: both may be integers, but they index different embedding tables. T=10 is the length of this unpadded input; Nmax=16 is the configured capacity of its learned position table, whose shape is 16 by d. Generate arange(T)=[0,...,9] and select those ten rows, not all 16. The remaining rows are unused by THIS input; they could be trained by longer inputs elsewhere in the dataset. Choosing the last three sentences chooses a span of text, after which we tokenize and number every token in that span; we do not assign only the sentence numbers 1,2,3. Independent sequences commonly start at zero, but packing, padding and cached generation require an explicit position-ID convention. The next two frames distinguish those cases. Source: notebooks/wordlm/wordlm.py, CausalAttentionLM.forward_details; PyTorch nn.Embedding documentation.</script>
+<p>Use code indices here: <strong>0, 1, 2, …</strong>. Earlier sketches counted from 1.</p>
+<div class="position-visual" data-position-visual="token-ids"></div>
+<pre data-build="1"><code class="language-python python-code">T <span class="py-operator">=</span> <span class="py-call">len</span><span class="py-operator">(</span>token_ids<span class="py-operator">)</span>                  <span class="py-comment"># 10 tokens</span>
+position_ids <span class="py-operator">=</span> torch<span class="py-operator">.</span><span class="py-call">arange</span><span class="py-operator">(</span>T<span class="py-operator">)</span>      <span class="py-comment"># 0, 1, ..., 9</span></code></pre>
+<p class="lesson-key" data-build="1">$N_{\max}=16$ reserves rows 0–15. This input selects 0–9; other training inputs may use the remaining rows.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-window-ids" data-title="A cropped window needs an index convention" data-autobuild="off">
+<script type="text/x-notes">Ask: if we keep Ravi at school, should the IDs be 0,1,2 or 4,5,6?
+The original seven-token input is This morning Maya helps Ravi at school, with indices 0 through 6. Keep its final three tokens. A fresh unpadded window can restart IDs at 0,1,2. A model preserving the original offset instead uses 4,5,6. Both are absolute IDs because each token looks up its own numbered row; absolute does not require a counter spanning the whole document. They select different learned rows and are not interchangeable at inference unless the model was trained or adapted for that convention. The preserved-offset version needs a table with valid rows through index 6, even though only three tokens are in the current window. A local attention mask over the last three tokens does not itself renumber them. In cached decoding implementations, newly supplied tokens usually continue past previous positions rather than restarting at zero; do not silently reset cached keys or positions. The relative gap from Ravi to school is 2-0=2 in the restarted window and 6-4=2 with preserved IDs. Renumbering a window alone does not implement relative attention: a relative mechanism uses pairwise gaps, as discussed later. The following frame shows our actual notebook's fresh, left-padded windows. Source: notebooks/wordlm/wordlm.py, make_windows, generate_text and forward_details; Hugging Face GPT-2 documentation for position_ids and past_key_values, https://huggingface.co/docs/transformers/model_doc/gpt2.</script>
+<p>Keep the last three <strong>tokens</strong>: Ravi at school.</p>
+<div class="position-visual" data-position-visual="window-ids"></div>
+<p class="lesson-key" data-build="1">Both use absolute IDs. The relative gap stays 2. Follow the model's training convention.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-notebook-ids" data-title="Our notebook numbers the padded window" data-autobuild="off">
+<script type="text/x-notes">Ask: with one PAD before Ravi, which position row does Ravi use?
+This is the actual notebook's indexing policy with a smaller illustrative window capacity Nmax=4, not a claim that the experiment was trained with four slots. make_windows and generate_text keep the most recent context_len IDs and left-pad shorter histories. forward_details then uses arange(length), where length includes padding. With history Ravi at school, the tensor is PAD Ravi at school and its IDs are 0,1,2,3. Thus Ravi uses P[1], not P[0] or its original document P[4]. On the reveal, after home arrives, the tensor Ravi at school home gets the same IDs 0,1,2,3; Ravi now uses P[0]. The notebook recomputes the current window rather than maintaining a KV cache. Its training data use the same policy. Padding represents absent history; real-token queries mask padded keys as well as future keys. The table is not resized for each example. Padded slots still have position lookups, but looking a row up is not enough to guarantee useful task gradients if it is masked out of all loss-relevant paths. Distinguish this from the next deliberately unpadded coverage toy, where an unused row is never even selected. A sliding window's absolute slots have a consistent relationship to the current receiver, but this is not the same operation as explicitly encoding i-j. This concrete policy is model-specific, not a rule for all Transformers. Source: notebooks/wordlm/wordlm.py, lines around make_windows, CausalAttentionLM.forward_details and generate_text.</script>
+<p>Small version of our notebook: $N_{\max}=4$. Keep recent tokens, then pad on the left.</p>
+<div class="position-visual" data-position-visual="notebook-ids"></div>
+<pre data-build="1"><code class="language-python python-code">context <span class="py-operator">=</span> history<span class="py-operator">[</span><span class="py-operator">-</span>Nmax<span class="py-operator">:</span><span class="py-operator">]</span>
+context <span class="py-operator">=</span> <span class="py-operator">[</span>PAD<span class="py-operator">]</span> <span class="py-operator">*</span> <span class="py-operator">(</span>Nmax <span class="py-operator">-</span> <span class="py-call">len</span><span class="py-operator">(</span>context<span class="py-operator">)</span><span class="py-operator">)</span> <span class="py-operator">+</span> context
+position_ids <span class="py-operator">=</span> torch<span class="py-operator">.</span><span class="py-call">arange</span><span class="py-operator">(</span><span class="py-call">len</span><span class="py-operator">(</span>context<span class="py-operator">)</span><span class="py-operator">)</span></code></pre>
+<p class="lesson-key" data-build="1">IDs label tensor slots, including padding. Real tokens cannot attend to PAD. This is not a document-wide counter.</p>
+</div>
+
 <div class="frame context-lesson position-lesson" id="s17-position-learned-limits" data-title="A new slot can use an untrained row" data-autobuild="off">
-<script type="text/x-notes">The model has seen the word today. Has it also trained a position row for slot 4?
-Read the two training examples across the same numbered columns. This is a separate coverage experiment, not a description of the benchmark notebook: every training input has at most three tokens, but the position table has four allocated rows. Each displayed word is one token. Ignore sentence punctuation and special boundary tokens in this miniature. The two rows are examples of the training data, not its entire contents. P[1], P[2] and P[3] can receive task gradients through their lookups. P[4] is never looked up during training, so it gets no task gradient through this input path. Reveal the four-token input. The token today already appeared in training, but it now needs P[4]. Its word lookup may have been trained; the position contribution has not been fitted to the task. The addition and forward pass are defined, so this is a generalization concern rather than an index error. Allocating a larger table alone does not fix missing training coverage. Longer training inputs can teach the extra rows. Optimizer weight decay or momentum may change an unused row numerically, so do not claim it necessarily stays exactly at its random initialization. Learned position embeddings can work well at covered lengths. The original Transformer paper found nearly identical results for learned and sinusoidal positions in its experiment, not a universal superiority of the fixed method. Source: Vaswani et al., §3.5 and Table 3(E), https://arxiv.org/html/1706.03762v7#S3.SS5.</script>
-<p>Learned rows can work well. Toy: <strong>training inputs ≤3 tokens</strong>, <strong>4 position rows</strong>.</p>
-<table class="lesson-table position-coverage-table" id="position-training-coverage" data-capacity="4"><thead><tr><th>Slot</th><th>1</th><th>2</th><th>3</th><th>4</th></tr></thead><tbody>
+<script type="text/x-notes">The model has seen the word today. Has it also trained a position row for index 3?
+Read the two training examples across the same numbered columns. This is a separate coverage experiment, not a description of the benchmark notebook: every training input has at most three tokens, but the position table has four allocated rows. Each displayed word is one token. Ignore sentence punctuation and special boundary tokens in this miniature. The two rows are examples of the training data, not its entire contents. P[0], P[1] and P[2] can receive task gradients through their lookups. P[3] is never looked up during training, so it gets no task gradient through this input path. Reveal the four-token input. The token today already appeared in training, but it now needs P[3]. Its word lookup may have been trained; the position contribution has not been fitted to the task. The addition and forward pass are defined, so this is a generalization concern rather than an index error. Allocating a larger table alone does not fix missing training coverage. Longer training inputs can teach the extra rows. Optimizer weight decay or momentum may change an unused row numerically, so do not claim it necessarily stays exactly at its random initialization. Learned position embeddings can work well at covered lengths. The original Transformer paper found nearly identical results for learned and sinusoidal positions in its experiment, not a universal superiority of the fixed method. Source: Vaswani et al., §3.5 and Table 3(E), https://arxiv.org/html/1706.03762v7#S3.SS5.</script>
+<p>Separate <strong>unpadded</strong> toy: <strong>training inputs ≤3 tokens</strong>, <strong>4 position rows</strong>.</p>
+<table class="lesson-table position-coverage-table" id="position-training-coverage" data-capacity="4"><thead><tr><th>Position ID</th><th>0</th><th>1</th><th>2</th><th>3</th></tr></thead><tbody>
 <tr data-training-example><th>Training example</th><td data-token>Maya</td><td data-token>helps</td><td data-token>Ravi</td><td class="position-unused">Unused</td></tr>
 <tr data-training-example><th>Training example</th><td data-token>Ravi</td><td data-token>helps</td><td data-token>today</td><td class="position-unused">Unused</td></tr>
-<tr><th>Position row</th><td data-learned-coverage="visited" data-slot="1">$P[1]$</td><td data-learned-coverage="visited" data-slot="2">$P[2]$</td><td data-learned-coverage="visited" data-slot="3">$P[3]$</td><td data-learned-coverage="unvisited" data-slot="4" class="position-unused">$P[4]$</td></tr>
+<tr><th>Position row</th><td data-learned-coverage="visited" data-slot="0">$P[0]$</td><td data-learned-coverage="visited" data-slot="1">$P[1]$</td><td data-learned-coverage="visited" data-slot="2">$P[2]$</td><td data-learned-coverage="unvisited" data-slot="3" class="position-unused">$P[3]$</td></tr>
 <tr data-position-gradients><th>Task gradient</th><td>Can flow</td><td>Can flow</td><td>Can flow</td><td class="position-unused">None</td></tr>
 <tr data-build="1" data-new-input><th>New input</th><td data-token>Maya</td><td data-token>helps</td><td data-token>Ravi</td><td data-token class="position-unused"><strong>today</strong></td></tr>
 </tbody></table>
-<p data-build="1">$e_4=E_{\rm tok}[\text{today}]+P[4]$</p>
-<p class="lesson-key" data-build="1">“today” appeared in training. $P[4]$ never did. The lookup runs, but its position feature is untrained.</p>
+<p data-build="1">$e_3=E_{\rm tok}[\text{today}]+P[3]$</p>
+<p class="lesson-key" data-build="1">“today” is familiar. No training input used $P[3]$, so that row is untrained.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-untrained-effect" data-title="Why an untrained position row is a risk" data-autobuild="off">
+<script type="text/x-notes">Ask: can two untrained choices for P[3] make the same word match Ravi differently?
+Continue the separate unpadded toy. The word today has a trained lookup [0.8,0.2], but no training input ever selected P[3]. Hold Ravi's key fixed at [0,1] and choose W_Q=I with no bias, so the query is the token-plus-position row. Compare two possible untrained position rows [0.1,-0.1] and [-0.1,0.1]. These are hand-chosen numerical illustrations, not measured initializations or model failures. They produce q_3=[0.9,0.1] and [0.7,0.3]. Their raw dot products with Ravi are 0.1 and 0.3; scaling by sqrt(2) gives approximately 0.071 and 0.212. Scores are not probabilities, and the full attention weights also need all other allowed keys. The loss had no examples at position ID 3 with which to fit that position feature to the downstream projections. The vocabulary word being familiar does not train an unused position row. An existing but untrained row therefore lets the forward pass run while leaving behavior at that slot untested. This is not a proof of wrong predictions: a network could ignore positional contributions or generalize anyway. Training on inputs that actually use this row can address the coverage problem. Merely allocating a larger table cannot. Fixed sinusoidal rows avoid separately learning each row, but do not by themselves guarantee accurate predictions beyond training lengths. The illustrative coverage toy differs from our padded notebook windows.</script>
+<p>Hold today $=[0.8,0.2]$ and Ravi's key $=[0,1]$ fixed. Choose $W_Q=I$.</p>
+<div class="position-numeric-scroll"><table class="lesson-table" id="position-untrained-effect" style="min-width:950px"><thead><tr><th>Possible $P[3]$</th><th>Today's query $q_3$</th><th>Score for Ravi</th></tr></thead><tbody>
+<tr data-untrained-position="0.1,-0.1"><td>$[0.1,-0.1]$</td><td>$[0.8,0.2]+[0.1,-0.1]=[0.9,0.1]$</td><td>$0.1/\sqrt{2}\approx0.071$</td></tr>
+<tr data-build="1" data-untrained-position="-0.1,0.1"><td>$[-0.1,0.1]$</td><td>$[0.8,0.2]+[-0.1,0.1]=[0.7,0.3]$</td><td>$0.3/\sqrt{2}\approx0.212$</td></tr>
+</tbody></table>
+</div><p class="lesson-key" data-build="1">Same word, different matches. Training never selected $P[3]$, so no prediction error fitted it to this task.</p>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-absolute-range" data-title="A longer input can run past the table" data-autobuild="off">
 <script type="text/x-notes">Could this same four-row table handle a six-token input?
-Point to school and today in slots 5 and 6. Keep the same table and one-based teaching labels from the previous slide. All six words are already in the vocabulary, so their token lookups exist. The position table supplies only P[1] through P[4]. School needs P[5] and today needs P[6], neither of which exists. At build 1 identify the failed position lookup. This is a hard configured-capacity limit, distinct from the previous slide's allocated but untrained row. A literal implementation must reject the input, shorten it, or change its position handling; it cannot read a nonexistent row. Extending the table fixes that allocation problem, but newly allocated rows still need training or another initialization/adaptation scheme. It does not retroactively give them task gradients. At build 2 motivate a sinusoidal rule: it can calculate a position vector for each index without separately training each row. Evaluability does not establish useful predictions outside the training-length distribution. Learned tables remain a reasonable choice when their size and training coverage suit the task. We use them in the notebook. This is about position coverage, not a claim that learned embeddings are generally worse. The notebook uses zero-based indices; this four-row teaching table labels them 1–4. Source for the learned/fixed alternatives and length motivation: Vaswani et al., §3.5, https://arxiv.org/html/1706.03762v7#S3.SS5.</script>
-<p>Same table: <strong>4 rows</strong>. All six words below are already in the vocabulary.</p>
-<div class="position-numeric-scroll"><table class="lesson-table position-range-table"><thead><tr><th style="width:16%">Slot</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th></tr></thead><tbody>
+Point to school and today in indices 4 and 5. Keep the same table and zero-based indices from the previous slide. All six words are already in the vocabulary, so their token lookups exist. The position table supplies only P[0] through P[3]. School needs P[4] and today needs P[5], neither of which exists. At build 1 identify the failed position lookup. This is a hard configured-capacity limit, distinct from the previous slide's allocated but untrained row. A literal implementation must reject the input, shorten it, or change its position handling; it cannot read a nonexistent row. Extending the table fixes that allocation problem, but newly allocated rows still need training or another initialization/adaptation scheme. It does not retroactively give them task gradients. At build 2 motivate a sinusoidal rule: it can calculate a position vector for each index without separately training each row. Evaluability does not establish useful predictions outside the training-length distribution. Learned tables remain a reasonable choice when their size and training coverage suit the task. We use them in the notebook. This is about position coverage, not a claim that learned embeddings are generally worse. All these position IDs are zero-based: four rows have IDs 0 through 3. Source for the learned/fixed alternatives and length motivation: Vaswani et al., §3.5, https://arxiv.org/html/1706.03762v7#S3.SS5.</script>
+<p>Same table: <strong>4 rows, IDs 0–3</strong>. This input has six tokens.</p>
+<div class="position-numeric-scroll"><table class="lesson-table position-range-table"><thead><tr><th style="width:16%">Position ID</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead><tbody>
 <tr><th>Word</th><td>Maya</td><td>helps</td><td>Ravi</td><td>at</td><td>school</td><td>today</td></tr>
-<tr><th>Position row</th><td>$P[1]$</td><td>$P[2]$</td><td>$P[3]$</td><td>$P[4]$</td><td data-missing-position="5"><strong>No row</strong></td><td data-missing-position="6"><strong>No row</strong></td></tr>
+<tr><th>Position row</th><td>$P[0]$</td><td>$P[1]$</td><td>$P[2]$</td><td>$P[3]$</td><td data-missing-position="4"><strong>No row</strong></td><td data-missing-position="5"><strong>No row</strong></td></tr>
 </tbody></table></div>
-<p class="lesson-result" data-build="1">The word lookups exist. The position lookups for slots 5 and 6 fail.</p>
+<p class="lesson-result" data-build="1">The word lookups exist. The position lookups for indices 4 and 5 fail.</p>
 <p class="lesson-key" data-build="2">Extra rows need training. A sinusoidal rule calculates them. Longer-context accuracy still needs testing.</p>
 </div>
 
 <div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-clock-choice" data-title="Position rows from a fixed rule" data-autobuild="off">
 <script type="text/x-notes">Could we calculate a position row even when that slot never appeared in training?
-Point back to the missing lookup. A fixed formula accepts a position index and returns a d-coordinate row. It needs no separately trained position row. We will add that row to the learned word embedding, exactly as with the learned table. First work through width two, then four, then a wider row. Only after the additions discuss why sine/cosine pairs and different rates are useful. Starting with the next example, label the first token i=0. A formula that can be evaluated at a new position does not establish prediction accuracy at that length. The main notebook continues to use learned positions. Source for the alternative: Vaswani et al., §3.5, https://arxiv.org/html/1706.03762v7#S3.SS5.</script>
+Point back to the missing lookup. A fixed formula accepts a position index and returns a d-coordinate row. It needs no separately trained position row. We will add that row to the learned word embedding, exactly as with the learned table. First work through width two, then four, then a wider row. Only after the additions discuss why sine/cosine pairs and different rates are useful. Continue using zero-based indices: the first token is i=0. A formula that can be evaluated at a new position does not establish prediction accuracy at that length. The main notebook continues to use learned positions. Source for the alternative: Vaswani et al., §3.5, https://arxiv.org/html/1706.03762v7#S3.SS5.</script>
 <h3>Position rows from a fixed rule</h3>
 <p class="topic-recap">A formula can calculate a row for a new slot, without learning that row separately.</p>
 <p class="topic-question">How would we add it to a two-number word embedding?</p>
@@ -13008,12 +13186,36 @@ Follow the forward path from word representations through learned W_Q and W_K, f
 <p class="lesson-key">This rotary example uses $d_k=4$. Our bank worksheet and notebook use additive positions; they are unchanged. Standard RoPE rotates Q and K, not V.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-insertion" data-title="Addition and RoPE enter at different points" data-autobuild="off">
-<script type="text/x-notes">Contrast the two mechanisms visually, rather than saying both simply rotate embeddings. Additive sinusoidal encoding adds a position-only vector to the token representation before projecting Q,K,V. RoPE rotates content-dependent query/key pairs after projection. The value path is left unrotated by standard RoPE. These are two design alternatives; our notebook implements learned additive positions.</script>
-<div class="position-flow"><span><strong>Additive</strong><br>Token + position</span><b>→</b><span>Project Q, K and V</span><b>→</b><span>Match, then mix</span></div>
-<div class="position-flow"><span><strong>RoPE</strong><br>Project Q, K and V</span><b>→</b><span>Rotate Q and K<br>Keep V unrotated</span><b>→</b><span>Match, then mix</span></div>
-<p class="lesson-result">Sines and cosines appear in both. One adds a position vector; the other rotates matching vectors.</p>
-<p class="lesson-key">Neither method guarantees reliable predictions at lengths beyond training. The causal mask is still needed.</p>
+<div class="frame context-lesson position-lesson" id="s17-position-insertion" data-title="Addition: put position into the input row" data-autobuild="off">
+<script type="text/x-notes">Ask: which row will all three projections read?
+Follow red in Maya carries red flowers, with zero-based slot 2. E_tok[red] is its vocabulary lookup, while e_2 is the row entering attention. For this independent, untrained two-coordinate illustration, choose E_tok[red]=[1,0] and a learned position row p_2=[0,1]. Add coordinate by coordinate to get e_2=[1,1]. These numbers are not the earlier Maya/Ravi toy and not measured model weights. The diagram first shows the addition, then reveals the three branches reading the same result: q_2=e_2 W_Q, k_2=e_2 W_K and v_2=e_2 W_V. All row vectors are 1 by 2 and the illustrative projection matrices are 2 by 2, with bias=False. Red has all three roles: its query is used when red is a receiver; its key and value are used when flowers reads red. Learned and fixed sinusoidal absolute position rows use the same insertion point. A sinusoidal row would be computed from its rule rather than using the chosen p_2 here. Addition does not widen the input. In the original Transformer it occurs at the bottom of the stack; it is not repeated before every block. Our notebook uses learned additive positions. Source: Vaswani et al., Section 3.5, https://arxiv.org/abs/1706.03762.</script>
+<p>Maya carries <span style="color:var(--c-k)">red</span> flowers. Follow <strong>red at slot 2</strong>, counting from 0.</p>
+<div class="position-visual" data-position-visual="additive-path"></div>
+<p class="lesson-key" data-build="1">The position row may be learned or sinusoidal. Here, choose $p_2=[0,1]$ for easy arithmetic.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-additive-projections" data-title="Addition can change keys and values" data-autobuild="off">
+<script type="text/x-notes">Ask: can adding position change what red sends, as well as how well it matches?
+Use the same position-enriched e_2=[1,1]. Compute the row-vector products explicitly. W_K=[[1,0],[0,2]] gives k_2=[1*1+1*0,1*0+1*2]=[1,2]. W_V=[[2,0],[0,3]] gives v_2=[1*2+1*0,1*0+1*3]=[2,3]. These are different projections, not identity matrices. Biases are disabled. Without the added row the same weights would give key [1,0] and value [2,0]. Thus position can enter both the matching path and the content path. It need not change every coordinate: a learned projection could suppress a positional component. Reveal the bottom drawing: flowers' query scores red's key along with every allowed source key, using dot product divided by sqrt(2), then a causal mask and softmax. The resulting a_{3,2} multiplies red's value row [2,3]. The full message sums these weighted values over all allowed sources. We leave a_{3,2} symbolic because we have not assigned every source score. No value vector is used to calculate the attention weights. Q is also projected from its own token-plus-position input, as the previous frame shows. Source: Vaswani et al., Sections 3.2 and 3.5, https://arxiv.org/abs/1706.03762.</script>
+<p>Same input $e_2=[1,1]$. Two hand-chosen $2\times2$ projections; <code>bias=False</code>.</p>
+<div class="position-visual" data-position-visual="additive-numbers"></div>
+<p class="lesson-key" data-build="1">Position can affect both the matching features and the content sent.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-rotary-insertion" data-title="RoPE: project first, then rotate Q and K" data-autobuild="off">
+<script type="text/x-notes">Ask: where does the slot number join the computation this time?
+Start afresh with red's word lookup [1,0]. In this first-attention-layer example with no additive position encoding, e_2 is that word row. Use the same W_K and W_V as the additive example, and the same W_Q within this controlled comparison. The three projections still happen. Reveal position entering AFTER projection: q'_2=rot(q_2,2 omega) and k'_2=rot(k_2,2 omega). With our teaching rate omega=30 degrees per slot, both rotate by 60 degrees. Each query and key uses its own token's slot. Their width stays 2. Standard RoPE leaves v_2=e_2 W_V unrotated; trace the straight teal path bypassing the two rotation operations. The green slot arrow is an angle control, not an extra vector added to q or k. A prime here means rotated, not the residual update of e. The following frame uses red as a source for flowers, so it follows red's key and value rather than red's query. Unlike adding absolute positions once at the input, RoPE is normally applied to Q and K in each attention layer. In later layers e can already be contextual and position-dependent; unrotated V does not mean position-free V throughout the network. The notebook model is not being converted to RoPE. Source: Su et al., Section 3.2 and Figure 1, https://arxiv.org/abs/2104.09864.</script>
+<p>Start again with red's word row. Same projections; <strong>no added position row</strong>.</p>
+<div class="position-visual" data-position-visual="rotary-path"></div>
+<p class="lesson-key" data-build="1">Slot 2 gives 60° in our 30°-per-slot toy. Only Q and K pass through rotations.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-rotary-projections" data-title="RoPE: rotate the key, keep the value unrotated" data-autobuild="off">
+<script type="text/x-notes">Ask: if we leave the values unrotated, can position still change the message?
+Start with the same red vocabulary row [1,0] and the SAME W_K and W_V shown in the additive calculation. Without the added p_2, the key is [1,0] and the value is [2,0]. Rotate only the key at red's slot 2 by 60 degrees, giving [0.5,sqrt(3)/2]. The value remains [2,0]. This is the projected value, not the raw token embedding. The preceding frame also rotates red's query; it is not used when flowers is the receiver. For flowers at slot 3, reuse our earlier chosen projected query [1,0], rotating it by 90 degrees to [0,1]. One consistent choice is E_tok[flowers]=[0,1] and W_Q=[[0,1],[1,0]], used in both methods; it also gives red a pre-rotation query [0,1]. No new Q/K/V identity assumption is required. Reveal flowers' rotated query scoring red's rotated key: (0*0.5+1*sqrt(3)/2)/sqrt(2)=0.612372. Softmax includes ALL allowed source scores, not just this one pair. The resulting a_{3,2} multiplies the unrotated [2,0]; sum every source contribution for m_3. In general these weights differ from the additive model's weights; reuse of the symbol a does not assert numerical equality. The output projection and residual addition after value mixing are unchanged in form. This controlled arithmetic illustrates where position enters, not which model predicts better. Standard RoPE still needs a causal mask for autoregressive prediction and does not guarantee reliable longer-context predictions. Sources: Su et al., https://arxiv.org/abs/2104.09864; Vaswani et al., https://arxiv.org/abs/1706.03762.</script>
+<p>Keep red's word row and both projection matrices fixed.</p>
+<div class="position-visual" data-position-visual="rotary-numbers"></div>
+<p class="lesson-key" data-build="1">Position can change the weights even though the values bypass rotation.</p>
 </div>
 
 <div class="companion context-lesson position-lesson position-reading" id="s17-position-length">

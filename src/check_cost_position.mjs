@@ -16,8 +16,8 @@ const costs=['break','symbols','matmul','concat-network','concat','average-netwo
 const positions=[
   'break','order','permute','scores','swapped','contributions','consequence',
   'addition-break','shift','move-a','move-b','moved','toy','slot-scores','experiment','updated',
-  'learned-break','learned','learned-update','learned-limits','absolute-range','clock-choice','sine-2d','sine-4d','sine-many','clock-why','clock','repeat','sine-rule','worked-sine','waves','period','sine-base','sine-width',
-  'absolute-context','absolute-shift','relative-break','relative','relative-bias','alibi','alibi-scores','alibi-weights','alibi-takeaways','rope-queries','rotate','rope-match','rope-shift','rope-identity','rope-learning','rope-pairs','insertion',
+  'learned-break','learned','learned-update','token-ids','window-ids','notebook-ids','learned-limits','untrained-effect','absolute-range','clock-choice','sine-2d','sine-4d','sine-many','clock-why','clock','repeat','sine-rule','worked-sine','waves','period','sine-base','sine-width',
+  'absolute-context','absolute-shift','relative-break','relative','relative-bias','alibi','alibi-scores','alibi-weights','alibi-takeaways','rope-queries','rotate','rope-match','rope-shift','rope-identity','rope-learning','rope-pairs','insertion','additive-projections','rotary-insertion','rotary-projections',
   'alternatives-break','append','append-qk-a','append-scores','append-softmax','append-values-a',
   'append-qk-b','append-scores-b','append-softmax-b','append-values-b',
   'append-scale-effect','append-scale','append-tradeoffs',
@@ -69,24 +69,24 @@ try{
   await page.setViewportSize({width:1280,height:720});await page.evaluate(()=>document.fonts.ready);
   const original=await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)}));
   assert.deepEqual(await page.locator('.frame.context-lesson').evaluateAll(es=>es.map(e=>e.id)),ids);
-  assert.equal(ids.length,65,'RoPE connects its shared-shift rule to the benefit and learned parameters.');
+  assert.equal(ids.length,72,'Ground table coverage in token IDs, window conventions and a numerical consequence.');
   assert.deepEqual(await page.locator('.position-reading[id]:not(#s17-position-map-notes)').evaluateAll(es=>es.map(e=>e.id)),readingExtras,'Recaps remain available for reading.');
   // Reading mode must follow the same teaching logic, including its extra explanations.
   const lessonOrder=await page.locator('#s17 .frame.position-lesson,#s17 .position-reading[id]').evaluateAll(es=>es.map(e=>e.id));
   for(const run of [
     ['updated','add','routing','mean','learned-break'],
     ['alternatives-break','append','append-qk-a','append-scores','append-softmax','append-values-a','append-qk-b','append-scores-b','append-softmax-b','append-values-b','append-scale-effect','append-scale','append-tradeoffs','width','overview','map-notes'],
-    ['learned-break','learned','learned-update','learned-limits','absolute-range','clock-choice'],
+    ['learned-break','learned','learned-update','token-ids','window-ids','notebook-ids','learned-limits','untrained-effect','absolute-range','clock-choice'],
     ['clock-choice','sine-2d','sine-4d','sine-many','clock-why','clock','repeat','rates','sine-rule','worked-sine','sine','waves','period','sine-base','sine-width','absolute-context','absolute-shift','relative-break'],
-    ['relative-break','relative','relative-bias','alibi','alibi-scores','alibi-weights','alibi-takeaways','rope-queries','rotate','rope-match','rope-shift','rope','rope-identity','rope-proof','rope-learning','rope-pairs','insertion','length','choices','alternatives-break']
+    ['relative-break','relative','relative-bias','alibi','alibi-scores','alibi-weights','alibi-takeaways','rope-queries','rotate','rope-match','rope-shift','rope','rope-identity','rope-proof','rope-learning','rope-pairs','insertion','additive-projections','rotary-insertion','rotary-projections','length','choices','alternatives-break']
   ]){
     const expected=run.map(x=>'s17-position-'+x),start=lessonOrder.indexOf(expected[0]);
     assert(start>=0,'Sequence has its starting frame: '+expected[0]);
     assert.deepEqual(lessonOrder.slice(start,start+expected.length),expected,'Keep each limitation and worked calculation beside the method it explains.');
   }
   for(const [from,to]of [
-    ['updated','learned-break'],['insertion','alternatives-break'],['append-tradeoffs','overview'],
-    ['learned-limits','absolute-range'],['absolute-range','clock-choice'],['repeat','sine-rule'],['worked-sine','waves'],
+    ['updated','learned-break'],['insertion','additive-projections'],['additive-projections','rotary-insertion'],['rotary-insertion','rotary-projections'],['rotary-projections','alternatives-break'],['append-tradeoffs','overview'],
+    ['learned-update','token-ids'],['token-ids','window-ids'],['window-ids','notebook-ids'],['notebook-ids','learned-limits'],['learned-limits','untrained-effect'],['untrained-effect','absolute-range'],['absolute-range','clock-choice'],['repeat','sine-rule'],['worked-sine','waves'],
     ['period','sine-base'],['sine-width','absolute-context'],['absolute-shift','relative-break'],['relative','relative-bias'],['relative-bias','alibi'],['alibi','alibi-scores'],['alibi-scores','alibi-weights'],['alibi-weights','alibi-takeaways'],['alibi-takeaways','rope-queries'],['rope-queries','rotate'],['rotate','rope-match'],['rope-match','rope-shift'],['rope-shift','rope-identity'],['rope-identity','rope-learning'],['rope-learning','rope-pairs']
   ]){
     await go('s17-position-'+from);
@@ -153,6 +153,37 @@ try{
     return {numeric,analytic:AT.positionVisuals.rotate(g,-angle)};
   });
   gradient.numeric.forEach((x,j)=>close(x,gradient.analytic[j],'Gradient through fixed rotation'));
+  // Same word and projections; only the positional operation changes.
+  const insertion=await page.evaluate(()=>AT.positionVisuals.insertionExample());
+  assert.deepEqual(insertion.WQ,[[0,1],[1,0]]);assert.deepEqual(insertion.WK,[[1,0],[0,2]]);assert.deepEqual(insertion.WV,[[2,0],[0,3]]);
+  assert.deepEqual(insertion.additive,{e:[1,1],q:[1,1],k:[1,2],v:[2,3]});
+  assert.deepEqual(insertion.rotary.e,[1,0]);assert.deepEqual(insertion.rotary.q,[0,1]);
+  assert.deepEqual(insertion.rotary.k,[1,0]);assert.deepEqual(insertion.rotary.v,[2,0]);
+  close(insertion.rotary.kRotated[0],.5,'Rotated red key coordinate 1');
+  close(insertion.rotary.kRotated[1],Math.sqrt(3)/2,'Rotated red key coordinate 2');
+  close(insertion.rotary.qRotated[0],-Math.sqrt(3)/2,'Rotated red query coordinate 1');
+  close(insertion.rotary.qRotated[1],.5,'Rotated red query coordinate 2');
+  close(insertion.rotary.score,Math.sqrt(3/8),'Flowers-to-red scaled score');
+  const displayed=await page.locator('[data-insertion-method]').evaluateAll(es=>es.map(e=>({method:e.dataset.insertionMethod,role:e.dataset.insertionRole,input:JSON.parse(e.dataset.input),matrix:JSON.parse(e.dataset.matrix),output:JSON.parse(e.dataset.output),text:e.textContent})));
+  assert.equal(displayed.length,4);
+  for(const d of displayed){
+    const expected=d.role==='k'?[d.input[0],2*d.input[1]]:[2*d.input[0],3*d.input[1]];
+    assert.deepEqual(d.output,expected,'Displayed projection product: '+d.method+' '+d.role);
+    assert.deepEqual(d.matrix,d.role==='k'?insertion.WK:insertion.WV);
+    assert(d.text.includes(JSON.stringify(expected).replace(',',', ')));
+  }
+  assert.match(await page.locator('#s17-position-insertion').textContent(),/position row may be learned or sinusoidal/);
+  assert.match(await page.locator('#s17-position-rotary-insertion').textContent(),/no added position row/);
+  assert.match(await page.locator('#s17-position-rotary-insertion [data-insertion-step]').textContent(),/no rotation/);
+  assert.match(await page.locator('#s17-position-rotary-projections [data-insertion-mix]').textContent(),/0.612/);
+  assert.equal(await page.locator('#s17-position-rotary-projections [data-insertion-role="v"] [data-insertion-rotated-key]').count(),0);
+  for(const id of ['insertion','additive-projections','rotary-insertion','rotary-projections']){
+    const selector='#s17-position-'+id+' [data-build="1"]';
+    await go('s17-position-'+id,0);
+    assert(await page.locator(selector).evaluateAll(es=>es.every(e=>e.classList.contains('is-pending'))),'Hold the base drawing before revealing the next step: '+id);
+    await go('s17-position-'+id,1);
+    assert(await page.locator(selector).evaluateAll(es=>es.every(e=>!e.classList.contains('is-pending'))));
+  }
   const base={Maya:[1,0],Ravi:[0,1],helps:[.2,.2],today:[.8,.2]},pos=[[0,0],[.2,-.1],[.4,-.2],[.6,-.3]];
   const sequences=[['Maya','helps','Ravi','today'],['Ravi','helps','Maya','today']];
   function reference(tokens,on){
@@ -199,7 +230,22 @@ try{
     r.after.forEach((v,j)=>close(v,r.before[j]-.1*r.g[j],'SGD row update'));
     assert(r.text.endsWith('['+r.after.map(v=>v.toFixed(2).replace('-','−')).join(', ')+']'),'Displayed SGD result matches its data.');
   });
-  assert.deepEqual(await page.locator('[data-learned-coverage]').evaluateAll(es=>es.map(e=>[Number(e.dataset.slot),e.dataset.learnedCoverage])),[[1,'visited'],[2,'visited'],[3,'visited'],[4,'unvisited']]);
+  assert.deepEqual(await page.locator('[data-learned-coverage]').evaluateAll(es=>es.map(e=>[Number(e.dataset.slot),e.dataset.learnedCoverage])),[[0,'visited'],[1,'visited'],[2,'visited'],[3,'unvisited']]);
+  const numbered=await page.locator('[data-position-example]').evaluateAll(es=>Object.fromEntries(es.map(e=>[e.dataset.positionExample,[...e.querySelectorAll('[data-position-word]')].map(t=>[t.dataset.positionWord,Number(t.dataset.positionId)])])));
+  assert.deepEqual(numbered['ten-tokens'],['Maya','helps','Ravi','.','They','walk','to','school','today','.'].map((word,i)=>[word,i]));
+  assert.deepEqual(numbered['crop-original'],['This','morning','Maya','helps','Ravi','at','school'].map((word,i)=>[word,i]));
+  assert.deepEqual(numbered['crop-restart'],[['Ravi',0],['at',1],['school',2]]);
+  assert.deepEqual(numbered['crop-preserve'],[['Ravi',4],['at',5],['school',6]]);
+  assert.equal(numbered['crop-restart'][2][1]-numbered['crop-restart'][0][1],numbered['crop-preserve'][2][1]-numbered['crop-preserve'][0][1]);
+  assert.deepEqual(numbered['notebook-before'],[['PAD',0],['Ravi',1],['at',2],['school',3]]);
+  assert.deepEqual(numbered['notebook-after'],[['Ravi',0],['at',1],['school',2],['home',3]]);
+  const notebookSource=fs.readFileSync(path.resolve('notebooks/wordlm/wordlm.py'),'utf8');
+  assert(notebookSource.includes('positions = torch.arange(length, device=context_ids.device)'));
+  assert(notebookSource.includes('context = history[-context_len:]'));
+  assert(notebookSource.includes('context = [vocab.pad_id] * (context_len - len(context)) + context'));
+  const unknownPositions=await page.locator('[data-untrained-position]').evaluateAll(es=>es.map(e=>({p:e.dataset.untrainedPosition.split(',').map(Number),text:e.textContent})));
+  assert.equal(unknownPositions.length,2);
+  for(const r of unknownPositions){const q=[.8+r.p[0],.2+r.p[1]],score=q[1]/Math.sqrt(2);assert(r.text.includes(score.toFixed(3)),'Untrained-row numerical score');}
   const coverage=page.locator('#position-training-coverage');
   assert.equal(await coverage.getAttribute('data-capacity'),'4');
   const training=await coverage.locator('[data-training-example]').evaluateAll(es=>es.map(e=>[...e.querySelectorAll('[data-token]')].map(td=>td.textContent)));
@@ -208,8 +254,8 @@ try{
   assert.deepEqual(longer,['Maya','helps','Ravi','today']);
   assert(longer.every(token=>training.flat().includes(token)),'The new slot is the issue, not an unknown word.');
   assert.deepEqual(await coverage.locator('[data-position-gradients] td').allTextContents(),['Can flow','Can flow','Can flow','None']);
-  assert.match(await page.locator('#s17-position-absolute-range .lesson-result').innerText(),/position lookups for slots 5 and 6 fail/);
-  for(const [id,max]of [['learned',1],['learned-update',2],['learned-limits',1],['absolute-range',2]]){
+  assert.match(await page.locator('#s17-position-absolute-range .lesson-result').innerText(),/position lookups for indices 4 and 5 fail/);
+  for(const [id,max]of [['learned',1],['learned-update',2],['token-ids',1],['window-ids',1],['notebook-ids',1],['learned-limits',1],['untrained-effect',1],['absolute-range',2]]){
     for(const build of [0,max,0,max]){
       await go('s17-position-'+id,build);
       assert.equal(await page.evaluate(()=>AT.present.state().frame.maxBuild),max);
@@ -408,8 +454,8 @@ try{
   }
   const absScores=await page.locator('[data-absolute-score]').evaluateAll(es=>es.map(e=>Number(e.dataset.absoluteScore)));
   close(absScores[0],1.5+Math.sqrt(3)/2,'absolute additive match at 3,2');close(absScores[1],.5,'absolute additive match at 8,7');
-  assert.deepEqual(await page.locator('[data-missing-position]').evaluateAll(es=>es.map(e=>Number(e.dataset.missingPosition))),[5,6],'Retain one-based slots through the learned-table examples: slots 5 and 6 have no row.');
-  assert.deepEqual(await page.locator('#s17-position-absolute-range thead th').allTextContents(),['Slot','1','2','3','4','5','6']);
+  assert.deepEqual(await page.locator('[data-missing-position]').evaluateAll(es=>es.map(e=>Number(e.dataset.missingPosition))),[4,5],'Four zero-based table rows have no entries at IDs 4 and 5.');
+  assert.deepEqual(await page.locator('#s17-position-absolute-range thead th').allTextContents(),['Position ID','0','1','2','3','4','5']);
   const shiftExamples=await page.locator('[data-shift-example]').evaluateAll(es=>es.map(e=>({example:Number(e.dataset.shiftExample),index:Number(e.dataset.position),word:e.dataset.word})));
   for(const example of [0,1]){
     const row=shiftExamples.filter(e=>e.example===example);
