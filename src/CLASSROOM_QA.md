@@ -1,5 +1,23 @@
 # Classroom release checks
 
+## 2026-09-25 · Relative position needs a sentence
+
+- Replaced the bare index table with two complete sentences: Maya carries
+  red flowers, then the same sentence after a five-word prefix. Label red
+  as the source and flowers as the receiver, and show 3−2 = 8−7 = 1.
+  The motivation is a reusable colour clue, not a claim about trained heads.
+- Added one follow-up frame carrying those indices into the distance-bias
+  formula. Separate content score from positional adjustment and calculate
+  the illustrative 2−0.25 = 1.75. Equal gaps share the bias, not necessarily
+  the content score or final softmax weight. Cite T5's scalar-bias design
+  in notes and distinguish this example from the following ALiBi toy.
+- All 59 positional frames and 209 build checks pass. Part II has 461
+  presentation states and 667 unique formulas, with no math/browser errors
+  or overflow; all 18 topic-break checks pass. Visually inspected both new
+  frames at 1280×720 and 760×1041, including all eight reveal states. At
+  390px, the article remains contained and wide diagrams retain their
+  existing horizontal scroll. Models, notebooks and Part III are unchanged.
+
 ## 2026-09-25 · Sinusoids through embedding additions
 
 - The fixed-rule introduction now leads into a 2D addition for today, a 4D

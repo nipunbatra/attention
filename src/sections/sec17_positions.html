@@ -456,12 +456,19 @@ Hold b at 10000 and derive each row using omega_r=b^(-2r/d). Width two gives onl
 <p class="topic-question">How can we put that distance directly into the attention match?</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-relative" data-title="Use the gap between receiver and source" data-autobuild="off">
-<script type="text/x-notes">Relative-position methods are a family, not one formula. This frame uses a score-bias version: add b of the distance to the content score. Other methods add relative vectors to keys or values, as in Shaw et al. 2018. Do not attribute this simple bias formula as the sole Shaw method. Source: https://arxiv.org/abs/1803.02155.</script>
-<table class="lesson-table"><thead><tr><th>Receiver: today ($i$)</th><th>Source: Ravi ($j$)</th><th>Distance $i-j$</th></tr></thead><tbody><tr><td>3</td><td>2</td><td>$3-2=1$</td></tr><tr><td>8</td><td>7</td><td>$8-7=1$</td></tr></tbody></table>
-<p data-build="1">One design adds a distance-dependent bias to each allowed score:</p>
-<div data-build="1">$$s_{ij}=\frac{q_i\cdot k_j}{\sqrt{d_k}}+b(i-j)$$</div>
-<p class="lesson-key" data-build="1">Both pairs receive the same offset $b(1)$. Content still matters; the causal mask still decides which sources are visible.</p>
+<div class="frame context-lesson position-lesson" id="s17-position-relative" data-title="A colour clue stays one token back" data-autobuild="off">
+<script type="text/x-notes">Ask: which word describes the colour of flowers? Point to red, then to flowers as the receiving row. This is a new sentence illustration, not output from the trained Maya/Ravi toy. Treat each displayed word as one token and omit punctuation. Indices are zero-based, as in the preceding shared-shift example. The arrow means the receiver looks back at a source, not value-flow direction. Add the five-word prefix and ask what changes: the indices move from 3/2 to 8/7, while the descriptive relationship and gap stay the same. A relative-position rule lets a head reuse the one-token-back cue without learning a different positional preference for each absolute pair. Content must still identify red as a useful colour clue; the immediately preceding word is not always relevant. Do not claim these sentences have identical queries, keys, attention weights or predictions.</script>
+<p>Which word describes the colour of <strong>flowers</strong>?</p>
+<div class="position-journey" data-position-journey="relative-sentences"></div>
+<p data-build="1">Reuse the <strong>one-token-back</strong> cue wherever the phrase appears. Content still decides whether the source is useful.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-relative-bias" data-title="Reuse the same distance adjustment" data-autobuild="off">
+<script type="text/x-notes">Keep the same red/flowers pair on screen. First calculate i-j for the two sentences. Then add a scalar bias b(g) to the scaled content score before softmax. Here b denotes a bias function, not the frequency base from the sinusoidal subsection. Relative methods are a family: this is the score-bias version, not their only form. A bias may be learned (as in T5, with distance buckets) or fixed (ALiBi, next). Source for scalar relative logit bias: Raffel et al., T5, section 2.1.1, https://www.jmlr.org/papers/volume21/20-074/20-074.pdf. On the reveal, explicitly choose b(1)=-0.25 and hold the scaled content score at 2 to isolate the positional adjustment. These are illustrative numbers, not measured scores for these sentences. Both scores become 1.75 under that assumption. Real content scores can differ and the prefix supplies extra sources, so final softmax weights need not match. The causal mask still limits visibility. The next ALiBi slide is a separate three-source toy, not a softmax over this nine-word sentence.</script>
+<table class="lesson-table"><thead><tr><th>Sentence</th><th>Receiver $i$<br>flowers</th><th>Source $j$<br>red</th><th>Gap $i-j$</th></tr></thead><tbody><tr><td>Original</td><td>3</td><td>2</td><td>1</td></tr><tr><td>With prefix</td><td>8</td><td>7</td><td>1</td></tr></tbody></table>
+<div>$$s_{ij}=\underbrace{\frac{q_i\cdot k_j}{\sqrt{d_k}}}_{\text{content score}}+\underbrace{b(i-j)}_{\text{distance adjustment}}$$</div>
+<div data-build="1" data-relative-content="2" data-relative-bias="-0.25" data-relative-score="1.75">$$\text{Both pairs:}\quad 2+b(1)=2-0.25=1.75$$</div>
+<p class="lesson-key" data-build="1">Illustration: content score 2, bias $b(1)=-0.25$, added before softmax. Same gap means the same bias, not necessarily the same final attention weight.</p>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-alibi" data-title="Distance bias: ALiBi" data-autobuild="off">

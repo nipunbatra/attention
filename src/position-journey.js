@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     box(out,10,350,373,70,'Logits → vocabulary softmax','hW_vocab + b · 1 × C','a','prediction');arrow(out,435,385,383,385,C.q);
   }
   for(const host of document.querySelectorAll('[data-position-journey]')){
-    const kind=host.dataset.positionJourney,s=canvas(host,kind+' positional encoding diagram',kind==='overview'?440:kind==='period'?235:kind==='context-shift'?335:kind==='absolute-shift'?280:kind==='updated'?285:360);
+    const kind=host.dataset.positionJourney,s=canvas(host,kind+' positional encoding diagram',kind==='overview'?440:kind==='period'?235:(kind==='context-shift'||kind==='relative-sentences')?335:kind==='absolute-shift'?280:kind==='updated'?285:360);
     if(kind==='initial'||kind==='positioned'){
       const positioned=kind==='positioned';
       L.sequences.forEach((tokens,panel)=>{
@@ -150,6 +150,26 @@ document.addEventListener('DOMContentLoaded',()=>{
         const i=panel?8:3,j=i-1;
         arrow(s,70+122*i,y+140,70+122*j,y+140,C.q);
         text(s,panel?430:512,y+148,`today → Ravi: ${i} − ${j} = 1`,C.q,25);
+      });
+    }else if(kind==='relative-sentences'){
+      s.setAttribute('aria-label','Red describes flowers in both sentences. Their indices change from 2 and 3 to 7 and 8; red stays one token before flowers.');
+      s.querySelector('title').textContent=s.getAttribute('aria-label');
+      const words=['Maya','carries','red','flowers'],prefix=['At','the','park','after','lunch'];
+      text(s,590,27,'Source: red',C.k,25);text(s,805,27,'Receiver: flowers',C.q,25);
+      [words,[...prefix,...words]].forEach((tokens,panel)=>{
+        const y=panel*168;
+        text(s,20,y+27,panel?'Add a five-word prefix':'Original sentence',C.ink,26);
+        tokens.forEach((token,index)=>{
+          const role=token==='flowers'?'receiver':token==='red'?'source':'context';
+          const x=16+122*index,color=role==='receiver'?C.q:role==='source'?C.k:C.muted;
+          const g=el('g',{'data-relative-example':panel,'data-position':index,'data-word':token,'data-role':role});s.append(g);
+          text(g,x+54,y+63,String(index),color,22,'middle');
+          g.append(el('rect',{x,y:y+76,width:108,height:43,rx:5,fill:C.paper,stroke:color,'stroke-width':role==='context'?1:2.5}));
+          text(g,x+54,y+105,token,color,24,'middle');
+        });
+        const i=panel?8:3,j=i-1;
+        arrow(s,70+122*i,y+140,70+122*j,y+140,C.q);
+        text(s,panel?430:530,y+148,i+' − '+j+' = 1: one token back',C.q,25);
       });
     }else if(kind==='absolute-shift'){
       [[3,2],[8,7]].forEach(([i,j],panel)=>{

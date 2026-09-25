@@ -17,7 +17,7 @@ const positions=[
   'break','order','permute','scores','swapped','contributions','consequence',
   'addition-break','shift','move-a','move-b','moved','toy','slot-scores','experiment','updated',
   'learned-break','learned','learned-update','learned-limits','absolute-range','clock-choice','sine-2d','sine-4d','sine-many','clock-why','clock','repeat','sine-rule','worked-sine','waves','period','sine-base','sine-width',
-  'absolute-context','absolute-shift','relative-break','relative','alibi','rotate','rope-shift','rope-identity','rope-pairs','insertion',
+  'absolute-context','absolute-shift','relative-break','relative','relative-bias','alibi','rotate','rope-shift','rope-identity','rope-pairs','insertion',
   'alternatives-break','append','append-qk-a','append-scores','append-softmax','append-values-a',
   'append-qk-b','append-scores-b','append-softmax-b','append-values-b',
   'append-scale-effect','append-scale','append-tradeoffs',
@@ -69,7 +69,7 @@ try{
   await page.setViewportSize({width:1280,height:720});await page.evaluate(()=>document.fonts.ready);
   const original=await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)}));
   assert.deepEqual(await page.locator('.frame.context-lesson').evaluateAll(es=>es.map(e=>e.id)),ids);
-  assert.equal(ids.length,58,'Examples before periodicity, then explicit base and width comparisons.');
+  assert.equal(ids.length,59,'Sentence motivation precedes the relative-bias calculation.');
   assert.deepEqual(await page.locator('.position-reading[id]:not(#s17-position-map-notes)').evaluateAll(es=>es.map(e=>e.id)),readingExtras,'Recaps remain available for reading.');
   // Reading mode must follow the same teaching logic, including its extra explanations.
   const lessonOrder=await page.locator('#s17 .frame.position-lesson,#s17 .position-reading[id]').evaluateAll(es=>es.map(e=>e.id));
@@ -78,7 +78,7 @@ try{
     ['alternatives-break','append','append-qk-a','append-scores','append-softmax','append-values-a','append-qk-b','append-scores-b','append-softmax-b','append-values-b','append-scale-effect','append-scale','append-tradeoffs','width','overview','map-notes'],
     ['learned-break','learned','learned-update','learned-limits','absolute-range','clock-choice'],
     ['clock-choice','sine-2d','sine-4d','sine-many','clock-why','clock','repeat','rates','sine-rule','worked-sine','sine','waves','period','sine-base','sine-width','absolute-context','absolute-shift','relative-break'],
-    ['relative-break','relative','alibi','rotate','rope-shift','rope','rope-identity','rope-pairs','insertion','length','choices','alternatives-break']
+    ['relative-break','relative','relative-bias','alibi','rotate','rope-shift','rope','rope-identity','rope-pairs','insertion','length','choices','alternatives-break']
   ]){
     const expected=run.map(x=>'s17-position-'+x),start=lessonOrder.indexOf(expected[0]);
     assert(start>=0,'Sequence has its starting frame: '+expected[0]);
@@ -87,7 +87,7 @@ try{
   for(const [from,to]of [
     ['updated','learned-break'],['insertion','alternatives-break'],['append-tradeoffs','overview'],
     ['learned-limits','absolute-range'],['absolute-range','clock-choice'],['repeat','sine-rule'],['worked-sine','waves'],
-    ['period','sine-base'],['sine-width','absolute-context'],['absolute-shift','relative-break']
+    ['period','sine-base'],['sine-width','absolute-context'],['absolute-shift','relative-break'],['relative','relative-bias'],['relative-bias','alibi']
   ]){
     await go('s17-position-'+from);
     await page.evaluate(()=>AT.present.next());
@@ -375,8 +375,26 @@ try{
     const receiver=row.find(e=>e.word==='today').index,source=row.find(e=>e.word==='Ravi').index;
     assert.deepEqual([receiver,source],example?[8,7]:[3,2]);assert.equal(receiver-source,1,'Shared shift preserves the gap.');
   }
-  const relativeRows=await page.locator('#s17-position-relative tbody tr').evaluateAll(es=>es.map(e=>[Number(e.cells[0].textContent),Number(e.cells[1].textContent)]));
-  assert.deepEqual(relativeRows,[[3,2],[8,7]],'Relative bias reuses the exact absolute-position example.');
+  const relativeExamples=await page.locator('[data-relative-example]').evaluateAll(es=>es.map(e=>({example:Number(e.dataset.relativeExample),index:Number(e.dataset.position),word:e.dataset.word,role:e.dataset.role})));
+  for(const example of [0,1]){
+    const row=relativeExamples.filter(e=>e.example===example),words=['Maya','carries','red','flowers'];
+    const expected=example?['At','the','park','after','lunch',...words]:words;
+    assert.deepEqual(row.map(e=>e.word),expected,'Use full sentences, not unexplained index pairs.');
+    assert.deepEqual(row.map(e=>e.index),expected.map((_,i)=>i));
+    const receiver=row.find(e=>e.role==='receiver'),source=row.find(e=>e.role==='source');
+    assert.equal(receiver.word,'flowers');assert.equal(source.word,'red');
+    assert.deepEqual([receiver.index,source.index],example?[8,7]:[3,2]);
+    assert.equal(receiver.index-source.index,1,'The useful colour clue stays one token back.');
+  }
+  const relativeRows=await page.locator('#s17-position-relative-bias tbody tr').evaluateAll(es=>es.map(e=>[1,2,3].map(c=>Number(e.cells[c].textContent))));
+  assert.deepEqual(relativeRows,[[3,2,1],[8,7,1]],'Carry the sentence indices into the bias calculation.');
+  await go('s17-position-relative-bias');
+  const relativeHeaderSpills=await page.locator('#s17-position-relative-bias th').evaluateAll(es=>es.filter(e=>e.scrollWidth>e.clientWidth+1).map(e=>e.textContent));
+  assert.deepEqual(relativeHeaderSpills,[],'Receiver/source labels fit their own table columns.');
+  const relativeScore=await page.locator('[data-relative-score]').evaluate(e=>({content:Number(e.dataset.relativeContent),bias:Number(e.dataset.relativeBias),score:Number(e.dataset.relativeScore)}));
+  assert.deepEqual(relativeScore,{content:2,bias:-.25,score:1.75});
+  close(relativeScore.content+relativeScore.bias,relativeScore.score,'Illustrative distance adjustment');
+  assert.match(await page.locator('#s17-position-relative-bias').innerText(),/not necessarily the same final attention weight/,'Do not imply whole-model shift invariance.');
   await go('s17-position-overview');
   const mapGeometry=await page.locator('#position-overview-map [data-map-node]').evaluateAll(es=>es.map(e=>[e.dataset.mapNode,...['x','y','width','height'].map(a=>e.getAttribute(a))]));
   for(const focus of ['all','input','attention','output','all']){
@@ -489,5 +507,5 @@ try{
   await page.locator('#s17-position-experiment').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(shots,'reading-phone.png')});
   assert.equal(await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)})),original,'Extensions must not mutate the bank model.');
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({frames:ids.length,buildChecks:states,viewports:['1280×720','1920×1080','1024×768','390×844 reading'],checks:'MACs, grids, softmax, word-dot endpoints/reveals, appended-position rows/score terms/scales, e notation, position/context updates, order swap, mean invariance, clock collisions, sinusoid curves, absolute/rotary shifts, ALiBi, complete map, controls, model immutability',screenshots:shots},null,2));
+  console.log(JSON.stringify({frames:ids.length,buildChecks:states,viewports:['1280×720','1920×1080','1024×768','390×844 reading'],checks:'MACs, grids, softmax, word-dot endpoints/reveals, appended-position rows/score terms/scales, e notation, position/context updates, order swap, mean invariance, clock collisions, sinusoid curves, sentence-based relative bias, absolute/rotary shifts, ALiBi, complete map, controls, model immutability',screenshots:shots},null,2));
 }finally{await browser.close();}
