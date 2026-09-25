@@ -1,5 +1,29 @@
 # Classroom release checks
 
+## 2026-09-25 · Compute Q/K before the RoPE geometry
+
+- Replace the equal unit-vector shortcut with an explicit first-layer example:
+  flowers [0,1] times W_Q gives [2,1]; red [1,0] times W_K gives [3,0].
+  Show the two non-identity 2x2 matrices, multiplication terms, shapes and
+  bias=False. Label the weights as hand-chosen, not a trained checkpoint.
+- Rotate those same projected vectors by 90 and 60 degrees. Plot both panels
+  at the same coordinate scale, with separate radii sqrt(5) and 3, dashed
+  original vectors and solid rotated vectors. State that no normalization
+  occurs. Distinguish the applied rotation from the final vector direction.
+- Carry the same data through the pair score, five-word prefix control,
+  cancellation table, reading derivation and addition/RoPE comparison.
+  The raw dot is 3.696152 and scaled score 2.613574 before and after a common
+  shift. Keep all-source softmax separate from this single-pair score.
+  The earlier bank model and trained notebook remain unchanged.
+- Regression passes 73 positional frames and 271 build checks, including
+  projection products, own-radius geometry, unequal norms, shift invariance
+  and insertion-path consistency. Whole-deck audit passes 495 states and
+  692 formulas; all 18 topic-break checks pass. Inspected the seven revised
+  frames at 1280x720 and 760x1041, plus the shifted-sentence control.
+  Fresh 390px reading mode remains contained. An immediate programmatic
+  exit/resize check required a fresh reading load; no reading overflow was
+  reproduced on that fresh load.
+
 ## 2026-09-25 · Position IDs, training coverage, and insertion points
 
 - Added a ten-token, two-sentence example before the learned-table limits.

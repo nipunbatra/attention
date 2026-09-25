@@ -17,7 +17,7 @@ const positions=[
   'break','order','permute','scores','swapped','contributions','consequence',
   'addition-break','shift','move-a','move-b','moved','toy','slot-scores','experiment','updated',
   'learned-break','learned','learned-update','token-ids','window-ids','notebook-ids','learned-limits','untrained-effect','absolute-range','clock-choice','sine-2d','sine-4d','sine-many','clock-why','clock','repeat','sine-rule','worked-sine','waves','period','sine-base','sine-width',
-  'absolute-context','absolute-shift','relative-break','relative','relative-bias','alibi','alibi-scores','alibi-weights','alibi-takeaways','rope-queries','rotate','rope-match','rope-shift','rope-identity','rope-learning','rope-pairs','insertion','additive-projections','rotary-insertion','rotary-projections',
+  'absolute-context','absolute-shift','relative-break','relative','relative-bias','alibi','alibi-scores','alibi-weights','alibi-takeaways','rope-queries','rope-projections','rotate','rope-match','rope-shift','rope-identity','rope-learning','rope-pairs','insertion','additive-projections','rotary-insertion','rotary-projections',
   'alternatives-break','append','append-qk-a','append-scores','append-softmax','append-values-a',
   'append-qk-b','append-scores-b','append-softmax-b','append-values-b',
   'append-scale-effect','append-scale','append-tradeoffs',
@@ -69,7 +69,7 @@ try{
   await page.setViewportSize({width:1280,height:720});await page.evaluate(()=>document.fonts.ready);
   const original=await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)}));
   assert.deepEqual(await page.locator('.frame.context-lesson').evaluateAll(es=>es.map(e=>e.id)),ids);
-  assert.equal(ids.length,72,'Ground table coverage in token IDs, window conventions and a numerical consequence.');
+  assert.equal(ids.length,73,'Compute non-unit Q/K before rotating; preserve the position-ID walkthrough.');
   assert.deepEqual(await page.locator('.position-reading[id]:not(#s17-position-map-notes)').evaluateAll(es=>es.map(e=>e.id)),readingExtras,'Recaps remain available for reading.');
   // Reading mode must follow the same teaching logic, including its extra explanations.
   const lessonOrder=await page.locator('#s17 .frame.position-lesson,#s17 .position-reading[id]').evaluateAll(es=>es.map(e=>e.id));
@@ -78,7 +78,7 @@ try{
     ['alternatives-break','append','append-qk-a','append-scores','append-softmax','append-values-a','append-qk-b','append-scores-b','append-softmax-b','append-values-b','append-scale-effect','append-scale','append-tradeoffs','width','overview','map-notes'],
     ['learned-break','learned','learned-update','token-ids','window-ids','notebook-ids','learned-limits','untrained-effect','absolute-range','clock-choice'],
     ['clock-choice','sine-2d','sine-4d','sine-many','clock-why','clock','repeat','rates','sine-rule','worked-sine','sine','waves','period','sine-base','sine-width','absolute-context','absolute-shift','relative-break'],
-    ['relative-break','relative','relative-bias','alibi','alibi-scores','alibi-weights','alibi-takeaways','rope-queries','rotate','rope-match','rope-shift','rope','rope-identity','rope-proof','rope-learning','rope-pairs','insertion','additive-projections','rotary-insertion','rotary-projections','length','choices','alternatives-break']
+    ['relative-break','relative','relative-bias','alibi','alibi-scores','alibi-weights','alibi-takeaways','rope-queries','rope-projections','rotate','rope-match','rope-shift','rope','rope-identity','rope-proof','rope-learning','rope-pairs','insertion','additive-projections','rotary-insertion','rotary-projections','length','choices','alternatives-break']
   ]){
     const expected=run.map(x=>'s17-position-'+x),start=lessonOrder.indexOf(expected[0]);
     assert(start>=0,'Sequence has its starting frame: '+expected[0]);
@@ -87,7 +87,7 @@ try{
   for(const [from,to]of [
     ['updated','learned-break'],['insertion','additive-projections'],['additive-projections','rotary-insertion'],['rotary-insertion','rotary-projections'],['rotary-projections','alternatives-break'],['append-tradeoffs','overview'],
     ['learned-update','token-ids'],['token-ids','window-ids'],['window-ids','notebook-ids'],['notebook-ids','learned-limits'],['learned-limits','untrained-effect'],['untrained-effect','absolute-range'],['absolute-range','clock-choice'],['repeat','sine-rule'],['worked-sine','waves'],
-    ['period','sine-base'],['sine-width','absolute-context'],['absolute-shift','relative-break'],['relative','relative-bias'],['relative-bias','alibi'],['alibi','alibi-scores'],['alibi-scores','alibi-weights'],['alibi-weights','alibi-takeaways'],['alibi-takeaways','rope-queries'],['rope-queries','rotate'],['rotate','rope-match'],['rope-match','rope-shift'],['rope-shift','rope-identity'],['rope-identity','rope-learning'],['rope-learning','rope-pairs']
+    ['period','sine-base'],['sine-width','absolute-context'],['absolute-shift','relative-break'],['relative','relative-bias'],['relative-bias','alibi'],['alibi','alibi-scores'],['alibi-scores','alibi-weights'],['alibi-weights','alibi-takeaways'],['alibi-takeaways','rope-queries'],['rope-queries','rope-projections'],['rope-projections','rotate'],['rotate','rope-match'],['rope-match','rope-shift'],['rope-shift','rope-identity'],['rope-identity','rope-learning'],['rope-learning','rope-pairs']
   ]){
     await go('s17-position-'+from);
     await page.evaluate(()=>AT.present.next());
@@ -104,23 +104,41 @@ try{
   for(const shift of [0,5]){
     await go('s17-position-rope-shift');await page.locator('#rope-shift').selectOption(String(shift));
     const r=await page.evaluate(s=>AT.positionVisuals.shifted(s),shift);
-    close(r.dot,Math.sqrt(3)/2,'relative rotary match after common shift');
-    close(r.q[0]**2+r.q[1]**2,1,'query norm');close(r.k[0]**2+r.k[1]**2,1,'key norm');
-    assert.match(await page.locator('#rope-shift-result').innerText(),/0.866/);
+    close(r.dot,-1.5+3*Math.sqrt(3),'relative rotary match after common shift');
+    close(r.q[0]**2+r.q[1]**2,5,'query squared norm');close(r.k[0]**2+r.k[1]**2,9,'key squared norm');
+    assert.match(await page.locator('#rope-shift-result').innerText(),/3.696/);
     const tokens=await page.locator('#rope-shift-picture [data-rope-word]').evaluateAll(es=>es.map(e=>({word:e.dataset.ropeWord,position:Number(e.dataset.position),role:e.dataset.role})));
     const words=[...(shift?['At','the','park','after','lunch']:[]),'Maya','carries','red','flowers'];
     assert.deepEqual(tokens.map(t=>t.word),words,'Show the entire sentence, not unexplained slot numbers.');
     assert.deepEqual(tokens.filter(t=>t.role!=='context'),[{word:'red',position:2+shift,role:'key'},{word:'flowers',position:3+shift,role:'query'}]);
-    assert.match(await page.locator('#rope-shift-result').innerText(),/0.612/,'Distinguish scaled score from raw dot product.');
+    assert.match(await page.locator('#rope-shift-result').innerText(),/2.614/,'Distinguish scaled score from raw dot product.');
 
   }
   await page.locator('#rope-shift').selectOption('0');
   assert.equal(await page.locator('#s17-position-rope-queries a').getAttribute('href'),'https://arxiv.org/abs/2104.09864','Visible primary RoFormer paper link.');
   const match=await page.locator('#s17-position-rope-match').textContent();
-  assert.match(match,/0.866/);assert.match(match,/0.612/);assert.match(match,/values unrotated/);
-  const rotations=await page.evaluate(()=>[2,3,7,8].map(slot=>AT.positionVisuals.rotate([1,0],slot*Math.PI/6)));
-  const expectedRotations=[[.5,Math.sqrt(3)/2],[0,1],[-Math.sqrt(3)/2,-.5],[-.5,-Math.sqrt(3)/2]];
-  rotations.forEach((v,i)=>v.forEach((x,j)=>close(x,expectedRotations[i][j],'sentence rotation '+i+','+j)));
+  assert.match(match,/3.696/);assert.match(match,/2.614/);assert.match(match,/values unrotated/);
+  const toy=await page.evaluate(()=>AT.positionVisuals.ropeExample());
+  assert.deepEqual(toy.q,[2,1]);assert.deepEqual(toy.k,[3,0]);
+  const projections=await page.locator('[data-rope-projection]').evaluateAll(es=>es.map(e=>({role:e.dataset.ropeProjection,input:JSON.parse(e.dataset.input),matrix:JSON.parse(e.dataset.matrix),output:JSON.parse(e.dataset.output)})));
+  assert.equal(projections.length,2);
+  for(const p of projections){
+    const product=p.matrix[0].map((_,j)=>p.input.reduce((sum,x,i)=>sum+x*p.matrix[i][j],0));
+    assert.deepEqual(p.output,product);assert.deepEqual(p.output,toy[p.role]);
+    assert.deepEqual(p.matrix,p.role==='q'?toy.WQ:toy.WK);
+  }
+  const visibleRotations=await page.locator('[data-rope-rotation]').evaluateAll(es=>es.map(e=>({role:e.dataset.ropeRotation,before:JSON.parse(e.dataset.before),after:JSON.parse(e.dataset.after),radius:Number(e.dataset.radius),unit:Number(e.dataset.pixelsPerUnit),circle:Number(e.querySelector('circle').getAttribute('r'))})));
+  for(const r of visibleRotations){
+    assert.deepEqual(r.before,toy[r.role]);close(Math.hypot(...r.before),r.radius,'Own-radius circle');
+    close(Math.hypot(...r.after),r.radius,'No normalization during rotation');close(r.circle,r.radius*r.unit,'Circle uses data length, not unit radius');
+  }
+  assert.equal(visibleRotations[0].unit,visibleRotations[1].unit,'Both plots use the same coordinate scale.');
+  const rotations=await page.evaluate(()=>[AT.positionVisuals.shifted(0),AT.positionVisuals.shifted(5)]);
+  const expectedRotations=[{q:[-1,2],k:[1.5,3*Math.sqrt(3)/2]},{q:[(Math.sqrt(3)-2)/2,-(2*Math.sqrt(3)+1)/2],k:[-3*Math.sqrt(3)/2,-1.5]}];
+  rotations.forEach((r,i)=>['q','k'].forEach(role=>r[role].forEach((x,j)=>close(x,expectedRotations[i][role][j],'sentence rotation '+i+' '+role+' '+j))));
+  assert.match(await page.locator('#s17-position-rope-projections').textContent(),/not a trained checkpoint/);
+  assert.match(await page.locator('#s17-position-rotate').textContent(),/No normalization/);
+  assert.match(await page.locator('#s17-position-rope-shift').textContent(),/Rotation gap/);
   for(const shift of [0,5,10]){
     const dot=await page.evaluate(shift=>{
       const q=AT.positionVisuals.rotate([.3,-.7],(3+shift)*Math.PI/6),k=AT.positionVisuals.rotate([1.2,.4],(2+shift)*Math.PI/6);
@@ -136,7 +154,7 @@ try{
   for(const {shift,cells}of cancellation){
     const queryAngle=(3+shift)*30,keyAngle=(2+shift)*30;
     assert(cells[1].includes(queryAngle+'°'));assert(cells[2].includes(keyAngle+'°'));
-    assert.equal(queryAngle-keyAngle,30);assert.match(cells[3],/= 30°/);assert.match(cells[4],/0.866/);
+    assert.equal(queryAngle-keyAngle,30);assert.match(cells[3],/= 30°/);assert.match(cells[4],/3.696/);
   }
   const stages=await page.locator('[data-rope-stage]').evaluateAll(es=>es.map(e=>[e.dataset.ropeStage,e.dataset.parameterStatus]));
   assert.deepEqual(stages,[['embeddings','learned'],['projections','learned'],['rotation','fixed'],['scores','computed'],['prediction','learned']]);
@@ -155,19 +173,19 @@ try{
   gradient.numeric.forEach((x,j)=>close(x,gradient.analytic[j],'Gradient through fixed rotation'));
   // Same word and projections; only the positional operation changes.
   const insertion=await page.evaluate(()=>AT.positionVisuals.insertionExample());
-  assert.deepEqual(insertion.WQ,[[0,1],[1,0]]);assert.deepEqual(insertion.WK,[[1,0],[0,2]]);assert.deepEqual(insertion.WV,[[2,0],[0,3]]);
-  assert.deepEqual(insertion.additive,{e:[1,1],q:[1,1],k:[1,2],v:[2,3]});
+  assert.deepEqual(insertion.WQ,[[0,1],[2,1]]);assert.deepEqual(insertion.WK,[[3,0],[0,2]]);assert.deepEqual(insertion.WV,[[2,0],[0,3]]);
+  assert.deepEqual(insertion.additive,{e:[1,1],q:[2,2],k:[3,2],v:[2,3]});
   assert.deepEqual(insertion.rotary.e,[1,0]);assert.deepEqual(insertion.rotary.q,[0,1]);
-  assert.deepEqual(insertion.rotary.k,[1,0]);assert.deepEqual(insertion.rotary.v,[2,0]);
-  close(insertion.rotary.kRotated[0],.5,'Rotated red key coordinate 1');
-  close(insertion.rotary.kRotated[1],Math.sqrt(3)/2,'Rotated red key coordinate 2');
+  assert.deepEqual(insertion.rotary.k,[3,0]);assert.deepEqual(insertion.rotary.v,[2,0]);
+  close(insertion.rotary.kRotated[0],1.5,'Rotated red key coordinate 1');
+  close(insertion.rotary.kRotated[1],3*Math.sqrt(3)/2,'Rotated red key coordinate 2');
   close(insertion.rotary.qRotated[0],-Math.sqrt(3)/2,'Rotated red query coordinate 1');
   close(insertion.rotary.qRotated[1],.5,'Rotated red query coordinate 2');
-  close(insertion.rotary.score,Math.sqrt(3/8),'Flowers-to-red scaled score');
+  close(insertion.rotary.score,(-1.5+3*Math.sqrt(3))/Math.sqrt(2),'Flowers-to-red scaled score');
   const displayed=await page.locator('[data-insertion-method]').evaluateAll(es=>es.map(e=>({method:e.dataset.insertionMethod,role:e.dataset.insertionRole,input:JSON.parse(e.dataset.input),matrix:JSON.parse(e.dataset.matrix),output:JSON.parse(e.dataset.output),text:e.textContent})));
   assert.equal(displayed.length,4);
   for(const d of displayed){
-    const expected=d.role==='k'?[d.input[0],2*d.input[1]]:[2*d.input[0],3*d.input[1]];
+    const expected=d.role==='k'?[3*d.input[0],2*d.input[1]]:[2*d.input[0],3*d.input[1]];
     assert.deepEqual(d.output,expected,'Displayed projection product: '+d.method+' '+d.role);
     assert.deepEqual(d.matrix,d.role==='k'?insertion.WK:insertion.WV);
     assert(d.text.includes(JSON.stringify(expected).replace(',',', ')));
@@ -175,7 +193,7 @@ try{
   assert.match(await page.locator('#s17-position-insertion').textContent(),/position row may be learned or sinusoidal/);
   assert.match(await page.locator('#s17-position-rotary-insertion').textContent(),/no added position row/);
   assert.match(await page.locator('#s17-position-rotary-insertion [data-insertion-step]').textContent(),/no rotation/);
-  assert.match(await page.locator('#s17-position-rotary-projections [data-insertion-mix]').textContent(),/0.612/);
+  assert.match(await page.locator('#s17-position-rotary-projections [data-insertion-mix]').textContent(),/2.614/);
   assert.equal(await page.locator('#s17-position-rotary-projections [data-insertion-role="v"] [data-insertion-rotated-key]').count(),0);
   for(const id of ['insertion','additive-projections','rotary-insertion','rotary-projections']){
     const selector='#s17-position-'+id+' [data-build="1"]';
