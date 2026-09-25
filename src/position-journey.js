@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     box(out,10,350,373,70,'Logits → vocabulary softmax','hW_vocab + b · 1 × C','a','prediction');arrow(out,435,385,383,385,C.q);
   }
   for(const host of document.querySelectorAll('[data-position-journey]')){
-    const kind=host.dataset.positionJourney,s=canvas(host,kind+' positional encoding diagram',kind==='overview'?440:kind==='period'?235:(kind==='context-shift'||kind==='relative-sentences')?335:kind==='absolute-shift'?280:kind==='updated'?285:360);
+    const kind=host.dataset.positionJourney,s=canvas(host,kind+' positional encoding diagram',kind==='alibi-lengths'?225:kind==='overview'?440:kind==='period'?235:(kind==='context-shift'||kind==='relative-sentences')?335:kind==='absolute-shift'?280:kind==='updated'?285:360);
     if(kind==='initial'||kind==='positioned'){
       const positioned=kind==='positioned';
       L.sequences.forEach((tokens,panel)=>{
@@ -170,6 +170,15 @@ document.addEventListener('DOMContentLoaded',()=>{
         const i=panel?8:3,j=i-1;
         arrow(s,70+122*i,y+140,70+122*j,y+140,C.q);
         text(s,panel?430:530,y+148,i+' − '+j+' = 1: one token back',C.q,25);
+      });
+    }else if(kind==='alibi-lengths'){
+      s.setAttribute('aria-label','Goal: train with 1,024-token inputs and use 2,048-token inputs at inference. The inference bar is twice as long.');
+      s.querySelector('title').textContent=s.getAttribute('aria-label');
+      [['Training input',1024],['Inference input',2048]].forEach(([label,length],row)=>{
+        const y=28+108*row,w=700*length/2048;
+        text(s,20,y+33,label,C.ink,29);
+        s.append(el('rect',{x:270,y,width:w,height:50,fill:C.paper,stroke:C.e,'stroke-width':2,'data-alibi-length':length}));
+        text(s,270+w/2,y+33,length.toLocaleString('en-US')+' tokens',C.e,27,'middle');
       });
     }else if(kind==='absolute-shift'){
       [[3,2],[8,7]].forEach(([i,j],panel)=>{

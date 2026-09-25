@@ -27,6 +27,8 @@ body:not(.present) .context-lesson{margin:44px 0}
 .position-lesson .position-flow>b{font-weight:400}
 .position-lesson .position-note{color:var(--ink-2)}
 .position-lesson .lesson-table th:first-child{width:27%}
+.position-lesson .alibi-weight-table{margin:12px 0}
+body.present .position-lesson .alibi-weight-table th,body.present .position-lesson .alibi-weight-table td{padding:10px 14px}
 .position-lesson #position-compare th:first-child{width:64%}
 #s17-position-experiment .lesson-pair p{margin:0}
 #s17-position-experiment .lesson-table{margin:12px 0}
@@ -464,19 +466,46 @@ Hold b at 10000 and derive each row using omega_r=b^(-2r/d). Width two gives onl
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-relative-bias" data-title="Reuse the same distance adjustment" data-autobuild="off">
-<script type="text/x-notes">Keep the same red/flowers pair on screen. First calculate i-j for the two sentences. Then add a scalar bias b(g) to the scaled content score before softmax. Here b denotes a bias function, not the frequency base from the sinusoidal subsection. Relative methods are a family: this is the score-bias version, not their only form. A bias may be learned (as in T5, with distance buckets) or fixed (ALiBi, next). Source for scalar relative logit bias: Raffel et al., T5, section 2.1.1, https://www.jmlr.org/papers/volume21/20-074/20-074.pdf. On the reveal, explicitly choose b(1)=-0.25 and hold the scaled content score at 2 to isolate the positional adjustment. These are illustrative numbers, not measured scores for these sentences. Both scores become 1.75 under that assumption. Real content scores can differ and the prefix supplies extra sources, so final softmax weights need not match. The causal mask still limits visibility. The next ALiBi slide is a separate three-source toy, not a softmax over this nine-word sentence.</script>
+<script type="text/x-notes">Keep the same red/flowers pair on screen. First calculate i-j for the two sentences. Then add a scalar bias b(g) to the scaled content score before softmax. Here b denotes a bias function, not the frequency base from the sinusoidal subsection. Relative methods are a family: this is the score-bias version, not their only form. A bias may be learned (as in T5, with distance buckets) or fixed (ALiBi, next). Source for scalar relative logit bias: Raffel et al., T5, section 2.1.1, https://www.jmlr.org/papers/volume21/20-074/20-074.pdf. On the reveal, explicitly choose b(1)=-0.25 and hold the scaled content score at 2 to isolate the positional adjustment. These are illustrative numbers, not measured scores for these sentences. Both scores become 1.75 under that assumption. Real content scores can differ and the prefix supplies extra sources, so final softmax weights need not match. The causal mask still limits visibility. The ALiBi walkthrough uses all four words of the original sentence, with chosen content scores.</script>
 <table class="lesson-table"><thead><tr><th>Sentence</th><th>Receiver $i$<br>flowers</th><th>Source $j$<br>red</th><th>Gap $i-j$</th></tr></thead><tbody><tr><td>Original</td><td>3</td><td>2</td><td>1</td></tr><tr><td>With prefix</td><td>8</td><td>7</td><td>1</td></tr></tbody></table>
 <div>$$s_{ij}=\underbrace{\frac{q_i\cdot k_j}{\sqrt{d_k}}}_{\text{content score}}+\underbrace{b(i-j)}_{\text{distance adjustment}}$$</div>
 <div data-build="1" data-relative-content="2" data-relative-bias="-0.25" data-relative-score="1.75">$$\text{Both pairs:}\quad 2+b(1)=2-0.25=1.75$$</div>
 <p class="lesson-key" data-build="1">Illustration: content score 2, bias $b(1)=-0.25$, added before softmax. Same gap means the same bias, not necessarily the same final attention weight.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-alibi" data-title="Distance bias: ALiBi" data-autobuild="off">
-<script type="text/x-notes">Make the preceding distance-bias formula concrete before introducing RoPE. ALiBi is a fixed linear bias in attention scores, with slopes differing across heads. This is one illustrative head with m=0.25 and three allowed sources. It is a soft recency preference, not a hard window. A strong content score can overcome the penalty. Source: Press et al., https://arxiv.org/abs/2108.12409. The weights are softmax([1,1.5,2]).</script>
-<div>$$s_{ij}=\frac{q_i\cdot k_j}{\sqrt{d_k}}-m(i-j),\qquad j\leq i$$</div>
-<p class="lesson-key">$m>0$ is a slope. Example: all content scores are 2; choose $m=0.25$.</p>
-<table class="lesson-table"><thead><tr><th>Distance back</th><th>Penalty</th><th>New score</th><th>Weight</th></tr></thead><tbody><tr><td>4</td><td>−1.0</td><td>1.0</td><td>18.6%</td></tr><tr><td>2</td><td>−0.5</td><td>1.5</td><td>30.7%</td></tr><tr><td>0</td><td>0.0</td><td>2.0</td><td>50.6%</td></tr></tbody></table>
-<p data-build="1">This gives nearby sources a preference. A stronger content match can still favor a distant source.</p>
+<div class="frame context-lesson position-lesson" id="s17-position-alibi" data-title="ALiBi: training short, reading longer" data-autobuild="off">
+<script type="text/x-notes">Ask: can shorter training inputs prepare a model for longer inputs at inference?
+Point to the two bar lengths. Longer training sequences cost more. The paper studies length extrapolation, meaning useful predictions beyond the training input length. A computable position rule alone does not establish accuracy. Source: Press, Smith and Lewis, Train Short, Test Long: Attention with Linear Biases Enables Input Length Extrapolation, ICLR 2022, https://arxiv.org/abs/2108.12409. The lengths shown are from its 1.3B-parameter experiment; the closing frame states the comparison. ALiBi means Attention with Linear Biases. Retain the preceding content-score convention and apply the bias after scaling, before softmax.</script>
+<p>Can 1,024-token training inputs prepare a model for 2,048-token inputs?</p>
+<div class="position-journey" data-position-journey="alibi-lengths"></div>
+<p data-build="1">Longer training inputs cost more. ALiBi's <strong>distance rule</strong> also applies to longer inputs at inference.</p>
+<aside class="position-credit"><a href="https://arxiv.org/abs/2108.12409" target="_blank" rel="noopener noreferrer">Paper: Train Short, Test Long: Attention with Linear Biases</a><br>Ofir Press, Noah A. Smith and Mike Lewis (2022)</aside>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-alibi-scores" data-title="ALiBi lowers scores for distant words" data-autobuild="off">
+<script type="text/x-notes">Ask: which source loses the most score when flowers receives information?
+Point to Maya at gap three, then red at gap one. Use all four tokens of Maya carries red flowers, indexed zero to three. The receiver is flowers at i=3 and can see every token here, including itself. These scaled content scores are chosen, not measured. ALiBi replaces additive position embeddings in the original method. Each head has a fixed slope chosen before training; 0.25 is an illustrative slope for this head, not a universal single-head default. Subtract the distance penalty from the already scaled dot product. Do not divide the penalty by sqrt(d_k). The paper applies this at every attention layer. Source: https://arxiv.org/html/2108.12409v2#S3.</script>
+<p>Maya carries red <strong>flowers</strong>. Receiver: $i=3$. Toy content scores: 2.</p>
+<div>$$s_{ij}=\frac{q_i\cdot k_j}{\sqrt{d_k}}-m(i-j),\quad j\leq i,\quad m=0.25$$</div>
+<table class="lesson-table" id="position-alibi-scores"><thead><tr><th>Source $j$</th><th>Gap $3-j$</th><th>Content</th><th>Bias</th><th>Score</th></tr></thead><tbody><tr><td>Maya (0)</td><td>3</td><td>2.00</td><td>−0.75</td><td>1.25</td></tr><tr><td>carries (1)</td><td>2</td><td>2.00</td><td>−0.50</td><td>1.50</td></tr><tr><td>red (2)</td><td>1</td><td>2.00</td><td>−0.25</td><td>1.75</td></tr><tr><td>flowers (3)</td><td>0</td><td>2.00</td><td>0.00</td><td>2.00</td></tr></tbody></table>
+<p class="lesson-key" data-build="1">Each extra token of distance subtracts 0.25. The slope is fixed per head, not learned.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-alibi-weights" data-title="The distance penalty changes the weights" data-autobuild="off">
+<script type="text/x-notes">Ask: what happens when softmax sees these four scores?
+Point across red's row. Without bias, the four equal scores give 25 percent each. With ALiBi, softmax([1.25,1.50,1.75,2.00]) gives approximately [0.1653,0.2122,0.2725,0.3499]. The table uses all four allowed sources, not a selected subset. These attention weights multiply their corresponding value rows, which ALiBi does not directly change. The highest weight here is on flowers itself because all content scores were deliberately equal. This is a recency preference, not learned grammatical knowledge. On the reveal, change only Maya's content score to 4: its score becomes 3.25 and its normalized weight is 59.4 percent. Thus distant sources remain accessible. The causal mask still blocks future positions. Source: https://arxiv.org/html/2108.12409v2#S3.</script>
+<p>Receiver: <strong>flowers</strong>. Softmax uses all four allowed sources.</p>
+<table class="lesson-table alibi-weight-table" id="position-alibi-weights"><thead><tr><th>Source</th><th>Weight<br>without bias</th><th>Score<br>with ALiBi</th><th>Weight<br>with ALiBi</th></tr></thead><tbody><tr><td>Maya</td><td>25.0%</td><td>1.25</td><td>16.5%</td></tr><tr><td>carries</td><td>25.0%</td><td>1.50</td><td>21.2%</td></tr><tr><td>red</td><td>25.0%</td><td>1.75</td><td>27.3%</td></tr><tr><td>flowers</td><td>25.0%</td><td>2.00</td><td>35.0%</td></tr></tbody></table>
+<div>$$\text{Weight on red}=\frac{e^{1.75}}{e^{1.25}+e^{1.50}+e^{1.75}+e^{2.00}}\approx27.3\%$$</div>
+<p class="lesson-key" data-build="1">Stronger content can win: give Maya a content score of 4. Then $4-0.75=3.25$, and its weight becomes 59.4%.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-alibi-takeaways" data-title="What ALiBi helps with" data-autobuild="off">
+<script type="text/x-notes">Ask: what can we carry to a longer input without learning a new position row?
+Point to the gap rule, then distinguish the model's longer-input accuracy from the arithmetic being defined. The original ALiBi model uses no additive position table. Different fixed slopes give heads different strengths of recency preference. In the paper's 1.3B-parameter comparison, ALiBi trained at length 1024 matches the perplexity of a sinusoidal baseline trained at length 2048 when both are evaluated at 2048. Its training is 11 percent faster and uses 11 percent less memory in that comparison. These are reported experimental results, not this lecture's toy-model measurements or guarantees for every length. Full attention still has quadratic pairwise work. Source: https://arxiv.org/abs/2108.12409, abstract and section 4.2. Next, contrast a scalar score bias with RoPE rotating queries and keys.</script>
+<table class="lesson-table"><thead><tr><th>ALiBi choice</th><th>Why it helps</th></tr></thead><tbody><tr><td>Bias depends on the gap</td><td>The same rule applies at new positions.</td></tr><tr><td>Fixed slope for each head</td><td>Heads can have different strengths of nearby-word preference.</td></tr><tr><td>No added position embeddings</td><td>No position table to extend. Word embeddings still learn.</td></tr></tbody></table>
+<p class="lesson-key" data-build="1"><a href="https://arxiv.org/abs/2108.12409" target="_blank" rel="noopener noreferrer">Paper result</a> (1.3B parameters): ALiBi trained on 1,024-token inputs matched the perplexity of a sinusoidal baseline trained on 2,048. Both tested at 2,048.</p>
+<p data-build="1">Longer-input accuracy needs testing. Full attention still has quadratic cost.</p>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-rotate" data-title="RoPE: rotating a query or key" data-autobuild="off">

@@ -17,7 +17,7 @@ const positions=[
   'break','order','permute','scores','swapped','contributions','consequence',
   'addition-break','shift','move-a','move-b','moved','toy','slot-scores','experiment','updated',
   'learned-break','learned','learned-update','learned-limits','absolute-range','clock-choice','sine-2d','sine-4d','sine-many','clock-why','clock','repeat','sine-rule','worked-sine','waves','period','sine-base','sine-width',
-  'absolute-context','absolute-shift','relative-break','relative','relative-bias','alibi','rotate','rope-shift','rope-identity','rope-pairs','insertion',
+  'absolute-context','absolute-shift','relative-break','relative','relative-bias','alibi','alibi-scores','alibi-weights','alibi-takeaways','rotate','rope-shift','rope-identity','rope-pairs','insertion',
   'alternatives-break','append','append-qk-a','append-scores','append-softmax','append-values-a',
   'append-qk-b','append-scores-b','append-softmax-b','append-values-b',
   'append-scale-effect','append-scale','append-tradeoffs',
@@ -69,7 +69,7 @@ try{
   await page.setViewportSize({width:1280,height:720});await page.evaluate(()=>document.fonts.ready);
   const original=await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)}));
   assert.deepEqual(await page.locator('.frame.context-lesson').evaluateAll(es=>es.map(e=>e.id)),ids);
-  assert.equal(ids.length,59,'Sentence motivation precedes the relative-bias calculation.');
+  assert.equal(ids.length,62,'ALiBi explains the problem, scores, weights and takeaways.');
   assert.deepEqual(await page.locator('.position-reading[id]:not(#s17-position-map-notes)').evaluateAll(es=>es.map(e=>e.id)),readingExtras,'Recaps remain available for reading.');
   // Reading mode must follow the same teaching logic, including its extra explanations.
   const lessonOrder=await page.locator('#s17 .frame.position-lesson,#s17 .position-reading[id]').evaluateAll(es=>es.map(e=>e.id));
@@ -78,7 +78,7 @@ try{
     ['alternatives-break','append','append-qk-a','append-scores','append-softmax','append-values-a','append-qk-b','append-scores-b','append-softmax-b','append-values-b','append-scale-effect','append-scale','append-tradeoffs','width','overview','map-notes'],
     ['learned-break','learned','learned-update','learned-limits','absolute-range','clock-choice'],
     ['clock-choice','sine-2d','sine-4d','sine-many','clock-why','clock','repeat','rates','sine-rule','worked-sine','sine','waves','period','sine-base','sine-width','absolute-context','absolute-shift','relative-break'],
-    ['relative-break','relative','relative-bias','alibi','rotate','rope-shift','rope','rope-identity','rope-pairs','insertion','length','choices','alternatives-break']
+    ['relative-break','relative','relative-bias','alibi','alibi-scores','alibi-weights','alibi-takeaways','rotate','rope-shift','rope','rope-identity','rope-pairs','insertion','length','choices','alternatives-break']
   ]){
     const expected=run.map(x=>'s17-position-'+x),start=lessonOrder.indexOf(expected[0]);
     assert(start>=0,'Sequence has its starting frame: '+expected[0]);
@@ -87,7 +87,7 @@ try{
   for(const [from,to]of [
     ['updated','learned-break'],['insertion','alternatives-break'],['append-tradeoffs','overview'],
     ['learned-limits','absolute-range'],['absolute-range','clock-choice'],['repeat','sine-rule'],['worked-sine','waves'],
-    ['period','sine-base'],['sine-width','absolute-context'],['absolute-shift','relative-break'],['relative','relative-bias'],['relative-bias','alibi']
+    ['period','sine-base'],['sine-width','absolute-context'],['absolute-shift','relative-break'],['relative','relative-bias'],['relative-bias','alibi'],['alibi','alibi-scores'],['alibi-scores','alibi-weights'],['alibi-weights','alibi-takeaways'],['alibi-takeaways','rotate']
   ]){
     await go('s17-position-'+from);
     await page.evaluate(()=>AT.present.next());
@@ -471,8 +471,17 @@ try{
     assert.deepEqual(await page.locator('#position-sinusoids tr').nth(i).locator('td').allTextContents(),[String(i),...values.map(x=>x.toFixed(3))]);
   }
   for(const [i,j]of [[3,2],[8,7],[5,2]])close(await page.evaluate(([i,j])=>AT.positionLesson.rotaryDot(i,j),[i,j]),Math.cos((i-j)*Math.PI/6),'RoPE relative offset');
-  const alibi=[1,1.5,2].map(Math.exp),denom=alibi.reduce((a,b)=>a+b);
-  assert.deepEqual(await page.locator('#s17-position-alibi tbody tr td:last-child').allTextContents(),alibi.map(x=>(100*x/denom).toFixed(1)+'%'));
+  const alibiScores=[1.25,1.5,1.75,2],alibi=alibiScores.map(Math.exp),denom=alibi.reduce((a,b)=>a+b);
+  const alibiWords=['Maya','carries','red','flowers'];
+  const displayedAlibi=await page.locator('#position-alibi-scores tbody tr').evaluateAll(es=>es.map(e=>[...e.cells].map(c=>c.textContent.replaceAll('−','-'))));
+  assert.deepEqual(displayedAlibi,alibiWords.map((word,j)=>[word+' ('+j+')',String(3-j),'2.00',(-.25*(3-j)).toFixed(2),alibiScores[j].toFixed(2)]));
+  const alibiWeights=await page.locator('#position-alibi-weights tbody tr').evaluateAll(es=>es.map(e=>[...e.cells].map(c=>c.textContent)));
+  assert.deepEqual(alibiWeights,alibiWords.map((word,j)=>[word,'25.0%',alibiScores[j].toFixed(2),(100*alibi[j]/denom).toFixed(1)+'%']));
+  const stronger=[4-.75,...alibiScores.slice(1)].map(Math.exp),strongerWeight=100*stronger[0]/stronger.reduce((a,b)=>a+b);
+  assert.match(await page.locator('#s17-position-alibi-weights .lesson-key').textContent(),new RegExp(strongerWeight.toFixed(1).replace('.','\\.')+'%'),'A strong distant content match can overcome the penalty.');
+  const lengths=await page.locator('[data-alibi-length]').evaluateAll(es=>es.map(e=>({length:Number(e.dataset.alibiLength),width:Number(e.getAttribute('width'))})));
+  assert.deepEqual(lengths.map(x=>x.length),[1024,2048]);close(lengths[1].width/lengths[0].width,2,'Input-length bars use the same scale');
+  for(const id of ['alibi','alibi-takeaways'])assert.equal(await page.locator('#s17-position-'+id+' a').getAttribute('href'),'https://arxiv.org/abs/2108.12409','Link the primary paper visibly.');
   // Every authored build must fit; reverse traversal must restore hidden math.
   let states=0;
   for(const id of ids){

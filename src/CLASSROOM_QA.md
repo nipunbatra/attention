@@ -1,5 +1,26 @@
 # Classroom release checks
 
+## 2026-09-25 · ALiBi motivation and sentence walkthrough
+
+- Expanded one ALiBi frame into four: the train-short/test-long problem,
+  distance penalties for Maya carries red flowers, normalized attention
+  weights, and takeaways. The opening and closing frames link the paper.
+  Preserve the original entry ID and the next RoPE transition.
+- Use all four allowed sources for the receiver flowers at index 3. Chosen
+  content scores of 2 and slope 0.25 give scores 1.25, 1.50, 1.75, 2.00.
+  The four weights are 16.5%, 21.2%, 27.3%, 35.0%. Raising only Maya's
+  content score to 4 gives it 59.4%, illustrating a soft preference.
+- Distinguish fixed head-specific slopes from learned word embeddings and
+  keep the causal condition visible. Identify the paper's 1.3B-model
+  length-extrapolation result as reported evidence, not a toy measurement.
+  State that longer-input accuracy needs testing and full attention retains
+  quadratic cost. Reuse native tables, SVG and existing typography.
+- All 62 positional frames and 221 build checks pass, as do 18 topic-break
+  checks. Full Part II: 467 states and 668 formulas, without browser/math
+  errors or overflow. Inspected all four slides, their 16 reveal states at
+  1280×720 and 760×1041, and 390px reading containment. Rechecked the final
+  causal equation at both display sizes. No model or notebook changes.
+
 ## 2026-09-25 · Relative position needs a sentence
 
 - Replaced the bare index table with two complete sentences: Maya carries
