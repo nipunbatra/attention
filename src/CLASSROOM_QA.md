@@ -1,5 +1,23 @@
 # Classroom release checks
 
+## 2026-09-25 · Concrete learned-position limits
+
+- Replaced the abstract coverage diagram with two sentence-based cases. The
+  first distinguishes a known word from an allocated position row that never
+  received task gradients. The second shows known words requesting rows past
+  the table boundary. Promoted the existing reading example to a presentation
+  frame, adding only one slide and keeping both views in the same order.
+- State that learned positions can work well. A larger table fixes allocation,
+  not training coverage. The sinusoidal transition explains calculable rows
+  without promising accurate predictions beyond the training lengths. Keep
+  the miniature's one-based labels and its separate toy assumptions explicit.
+- All 53 positional frames, 182 build checks and 18 topic-break checks pass.
+  Full Part II: 446 states and 646 formulas, no browser/math errors or overflow.
+  Inspected both cases at widescreen and tall sizes; checked all new reveals
+  at 1280×720, 1024×768 and 760×1041, plus 390px reading containment. Reused
+  native lesson tables and colours. No models, notebooks or Part III edits
+  are included in this change.
+
 ## 2026-09-25 · Raw-slot example after the position methods
 
 - Reordered both presentation and reading views: learned position rows,

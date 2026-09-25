@@ -3763,20 +3763,6 @@ document.addEventListener('DOMContentLoaded',()=>{
     text(g,824,y,'=',C.ink,26);text(g,871,y,decimalRow(after),color,26);
   });
 
-  const limits=document.querySelector('[data-learned-limits]');
-  const limitsBase=limits.querySelector('[data-limits-base]'),unseen=limits.querySelector('[data-limits-unseen]'),missing=limits.querySelector('[data-limits-missing]');
-  subscriptText(limitsBase,20,34,'Example: N_{max} = 4. Training uses only slots 1–3.',C.ink,28);
-  for(let slot=1;slot<=5;slot++){
-    const s=slot<4?limitsBase:slot===4?unseen:missing,y=83+(slot-1)*44,color=slot<4?C.d:slot===4?C.ink:C.a;
-    const g=element('g',{'data-learned-coverage':slot<4?'visited':slot===4?'unvisited':'missing','data-slot':slot});s.append(g);
-    text(g,25,y+9,'Slot '+slot,C.ink,26);
-    g.append(element('rect',{x:165,y:y-21,width:235,height:40,fill:'none',stroke:color,'stroke-width':2,'stroke-dasharray':slot<4?'none':'7 5'}));
-    text(g,185,y+9,slot===5?'No P[5]':'P['+slot+']',color,27);
-    if(slot===2){arrow(g,416,y,469,y,C.d);text(g,490,y+9,'Training adapts these rows',C.d,28);}
-    if(slot===4){arrow(g,416,y,469,y,C.ink);text(g,490,y+9,'Row exists, but gets no task gradient',C.ink,28);}
-    if(slot===5){arrow(g,416,y,469,y,C.a);text(g,490,y+9,'No allocated row for this slot',C.a,28);}
-  }
-  text(missing,25,320,'Independent rows have no built-in distance rule.',C.ink,26);
   const selector=document.getElementById('rope-shift');
   function shifted(shift){const i=3+shift,j=2+shift,q=rotate([1,0],i*Math.PI/6),k=rotate([1,0],j*Math.PI/6);return {i,j,q,k,dot:q[0]*k[0]+q[1]*k[1]};}
   function draw(){
@@ -12377,6 +12363,9 @@ body:not(.present) .context-lesson{margin:44px 0}
 .position-visual svg .label-small{font-size:22px;fill:var(--ink-2)}
 .position-numeric-scroll{max-width:100%;overflow-x:auto}.position-numeric-scroll .lesson-table{min-width:760px}
 .position-numeric-scroll .position-range-table{min-width:620px}
+.position-coverage-table .position-unused{background:rgba(85,98,122,.08)}
+.position-coverage-table [data-learned-coverage="visited"]{color:var(--c-d)}
+.position-range-table [data-missing-position]{color:var(--c-a);background:var(--t-a)}
 .position-credit{font-size:22px;line-height:1.5;margin-top:36px;color:var(--ink-2)}
 .position-credit a{color:inherit;text-decoration:underline;text-underline-offset:4px}
 .position-worked .worked-scroll{max-width:100%;overflow-x:auto}
@@ -12603,25 +12592,31 @@ Follow the red gradient back through the addition. For Maya's single occurrence 
 <p class="lesson-key" data-build="2">SGD rate 0.1, one occurrence. Batch gradients sum into shared rows.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-learned-limits" data-title="What a learned position table can miss" data-autobuild="off">
-<script type="text/x-notes">Does allocating a row mean that training has taught us how to use it?
-Point to slot 4, then the missing slot 5. This separate coverage example assumes a four-row table but training inputs that use only slots 1 through 3. P[4] exists but receives no task gradient through this lookup. P[5] does not exist. Keep those cases distinct. Sparse training coverage can also make a row poorly learned. Optimizer momentum or weight decay can change a parameter even without a new task gradient, so do not say every untouched row is numerically frozen under every optimizer. Learned tables are flexible, can adapt to the task, and add Nmax*d parameters while preserving width d. Their rows do not have a built-in smooth or relative-distance relationship: training may learn such structure, but it is not guaranteed. A sinusoidal rule calculates position features without Nmax*d trainable position parameters and without requiring a separately trained row at every index. Computable features at a new index do not guarantee good predictions beyond the training range. Learned and fixed encodings are alternatives, not a universal ranking. Vaswani et al. reported nearly identical results for these alternatives in their experiment: Section 3.5, https://arxiv.org/html/1706.03762v7#S3.SS5. The reading example immediately below spells out the same table boundary, retaining the one-based slot labels.</script>
-<p>Flexible, task-learned features: $N_{\max}d$ extra parameters. The input stays $d$ wide.</p>
-<div class="position-journey"><svg viewBox="0 0 1120 330" role="img" aria-label="A four-row position table with three visited slots, one unvisited slot and a fifth slot outside the table" data-learned-limits><g data-limits-base></g><g data-limits-unseen data-build="1"></g><g data-limits-missing data-build="2"></g></svg></div>
-<p class="lesson-key" data-build="2">A fixed rule can calculate new rows without learning them individually. Good predictions at longer lengths still need testing.</p>
+<div class="frame context-lesson position-lesson" id="s17-position-learned-limits" data-title="A new slot can use an untrained row" data-autobuild="off">
+<script type="text/x-notes">The model has seen the word today. Has it also trained a position row for slot 4?
+Read the two training examples across the same numbered columns. This is a separate coverage experiment, not a description of the benchmark notebook: every training input has at most three tokens, but the position table has four allocated rows. Each displayed word is one token. Ignore sentence punctuation and special boundary tokens in this miniature. The two rows are examples of the training data, not its entire contents. P[1], P[2] and P[3] can receive task gradients through their lookups. P[4] is never looked up during training, so it gets no task gradient through this input path. Reveal the four-token input. The token today already appeared in training, but it now needs P[4]. Its word lookup may have been trained; the position contribution has not been fitted to the task. The addition and forward pass are defined, so this is a generalization concern rather than an index error. Allocating a larger table alone does not fix missing training coverage. Longer training inputs can teach the extra rows. Optimizer weight decay or momentum may change an unused row numerically, so do not claim it necessarily stays exactly at its random initialization. Learned position embeddings can work well at covered lengths. The original Transformer paper found nearly identical results for learned and sinusoidal positions in its experiment, not a universal superiority of the fixed method. Source: Vaswani et al., §3.5 and Table 3(E), https://arxiv.org/html/1706.03762v7#S3.SS5.</script>
+<p>Learned rows can work well. Toy: <strong>training inputs ≤3 tokens</strong>, <strong>4 position rows</strong>.</p>
+<table class="lesson-table position-coverage-table" id="position-training-coverage" data-capacity="4"><thead><tr><th>Slot</th><th>1</th><th>2</th><th>3</th><th>4</th></tr></thead><tbody>
+<tr data-training-example><th>Training example</th><td data-token>Maya</td><td data-token>helps</td><td data-token>Ravi</td><td class="position-unused">Unused</td></tr>
+<tr data-training-example><th>Training example</th><td data-token>Ravi</td><td data-token>helps</td><td data-token>today</td><td class="position-unused">Unused</td></tr>
+<tr><th>Position row</th><td data-learned-coverage="visited" data-slot="1">$P[1]$</td><td data-learned-coverage="visited" data-slot="2">$P[2]$</td><td data-learned-coverage="visited" data-slot="3">$P[3]$</td><td data-learned-coverage="unvisited" data-slot="4" class="position-unused">$P[4]$</td></tr>
+<tr data-position-gradients><th>Task gradient</th><td>Can flow</td><td>Can flow</td><td>Can flow</td><td class="position-unused">None</td></tr>
+<tr data-build="1" data-new-input><th>New input</th><td data-token>Maya</td><td data-token>helps</td><td data-token>Ravi</td><td data-token class="position-unused"><strong>today</strong></td></tr>
+</tbody></table>
+<p data-build="1">$e_4=E_{\rm tok}[\text{today}]+P[4]$</p>
+<p class="lesson-key" data-build="1">“today” appeared in training. $P[4]$ never did. The lookup runs, but its position feature is untrained.</p>
 </div>
 
-<div class="companion context-lesson position-lesson position-reading" id="s17-position-absolute-range">
-<h3>A learned table has a last row</h3>
-<script type="text/x-notes">This is the learned-table limitation, immediately before the fixed-rule alternative. Keep the preceding one-based slot labels: this four-row miniature table supplies P[1] through P[4]. The longer six-token input requests P[5] and P[6], which do not exist. These are teaching labels; the notebook stores the same four rows at zero-based indices 0 through 3. This is a position-table lookup limitation, not a tokenizer or word-table failure. Extending the table allocates rows but does not train them. A fixed formula can calculate the missing position features, which motivates the next subsection. This does not establish prediction quality at longer lengths. Source: Vaswani et al., Section 3.5, https://arxiv.org/html/1706.03762v7#S3.SS5.</script>
-<p>Keep the <strong>four-row</strong> learned table. It supplies slots 1, 2, 3 and 4.</p>
-<p class="lesson-key">“Maya helps Ravi today” fits. Now try a longer input:</p>
+<div class="frame context-lesson position-lesson" id="s17-position-absolute-range" data-title="A longer input can run past the table" data-autobuild="off">
+<script type="text/x-notes">Could this same four-row table handle a six-token input?
+Point to school and today in slots 5 and 6. Keep the same table and one-based teaching labels from the previous slide. All six words are already in the vocabulary, so their token lookups exist. The position table supplies only P[1] through P[4]. School needs P[5] and today needs P[6], neither of which exists. At build 1 identify the failed position lookup. This is a hard configured-capacity limit, distinct from the previous slide's allocated but untrained row. A literal implementation must reject the input, shorten it, or change its position handling; it cannot read a nonexistent row. Extending the table fixes that allocation problem, but newly allocated rows still need training or another initialization/adaptation scheme. It does not retroactively give them task gradients. At build 2 motivate a sinusoidal rule: it can calculate a position vector for each index without separately training each row. Evaluability does not establish useful predictions outside the training-length distribution. Learned tables remain a reasonable choice when their size and training coverage suit the task. We use them in the notebook. This is about position coverage, not a claim that learned embeddings are generally worse. The notebook uses zero-based indices; this four-row teaching table labels them 1–4. Source for the learned/fixed alternatives and length motivation: Vaswani et al., §3.5, https://arxiv.org/html/1706.03762v7#S3.SS5.</script>
+<p>Same table: <strong>4 rows</strong>. All six words below are already in the vocabulary.</p>
 <div class="position-numeric-scroll"><table class="lesson-table position-range-table"><thead><tr><th style="width:16%">Slot</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th></tr></thead><tbody>
 <tr><th>Word</th><td>Maya</td><td>helps</td><td>Ravi</td><td>at</td><td>school</td><td>today</td></tr>
 <tr><th>Position row</th><td>$P[1]$</td><td>$P[2]$</td><td>$P[3]$</td><td>$P[4]$</td><td data-missing-position="5"><strong>No row</strong></td><td data-missing-position="6"><strong>No row</strong></td></tr>
 </tbody></table></div>
-<p data-build="1">We can extend the table, but the new rows are not automatically trained.</p>
-<p class="lesson-key" data-build="1">The next method calculates each row from its slot number. It avoids a missing lookup row, but longer-input predictions still need testing.</p>
+<p class="lesson-result" data-build="1">The word lookups exist. The position lookups for slots 5 and 6 fail.</p>
+<p class="lesson-key" data-build="2">Extra rows need training. A sinusoidal rule calculates them. Longer-context accuracy still needs testing.</p>
 </div>
 
 <div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-clock-choice" data-title="Sinusoidal positions" data-autobuild="off">

@@ -16,14 +16,14 @@ const costs=['break','symbols','matmul','concat-network','concat','average-netwo
 const positions=[
   'break','order','permute','scores','swapped','contributions','consequence',
   'addition-break','shift','move-a','move-b','moved','toy','slot-scores','experiment','updated',
-  'learned-break','learned','learned-update','learned-limits','clock-choice','clock-why','clock','repeat','sine-rule','worked-sine','waves','period',
+  'learned-break','learned','learned-update','learned-limits','absolute-range','clock-choice','clock-why','clock','repeat','sine-rule','worked-sine','waves','period',
   'absolute-context','absolute-shift','relative-break','relative','alibi','rotate','rope-shift','rope-identity','rope-pairs','insertion',
   'alternatives-break','append','append-qk-a','append-scores','append-softmax','append-values-a',
   'append-qk-b','append-scores-b','append-softmax-b','append-values-b',
   'append-scale-effect','append-scale','append-tradeoffs',
   'overview'
 ].map(x=>'s17-position-'+x);
-const readingExtras=['add','routing','mean','absolute-range','rates','sine','rope','length','choices','width'].map(x=>'s17-position-'+x);
+const readingExtras=['add','routing','mean','rates','sine','rope','length','choices','width'].map(x=>'s17-position-'+x);
 const ids=positions;
 const shots=fs.mkdtempSync(path.join(os.tmpdir(),'attention-cost-position-'));
 const browser=await pw.chromium.launch();
@@ -69,7 +69,7 @@ try{
   await page.setViewportSize({width:1280,height:720});await page.evaluate(()=>document.fonts.ready);
   const original=await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)}));
   assert.deepEqual(await page.locator('.frame.context-lesson').evaluateAll(es=>es.map(e=>e.id)),ids);
-  assert.equal(ids.length,52,'Replace four full-matrix frames with two last-receiver value mixtures.');
+  assert.equal(ids.length,53,'Separate untrained rows from the hard position-table limit with one additional frame.');
   assert.deepEqual(await page.locator('.position-reading[id]:not(#s17-position-map-notes)').evaluateAll(es=>es.map(e=>e.id)),readingExtras,'Recaps remain available for reading.');
   // Reading mode must follow the same teaching logic, including its extra explanations.
   const lessonOrder=await page.locator('#s17 .frame.position-lesson,#s17 .position-reading[id]').evaluateAll(es=>es.map(e=>e.id));
@@ -86,7 +86,7 @@ try{
   }
   for(const [from,to]of [
     ['updated','learned-break'],['insertion','alternatives-break'],['append-tradeoffs','overview'],
-    ['learned-limits','clock-choice'],['repeat','sine-rule'],['worked-sine','waves'],
+    ['learned-limits','absolute-range'],['absolute-range','clock-choice'],['repeat','sine-rule'],['worked-sine','waves'],
     ['period','absolute-context'],['absolute-shift','relative-break']
   ]){
     await go('s17-position-'+from);
@@ -155,13 +155,22 @@ try{
     r.after.forEach((v,j)=>close(v,r.before[j]-.1*r.g[j],'SGD row update'));
     assert(r.text.endsWith('['+r.after.map(v=>v.toFixed(2).replace('-','−')).join(', ')+']'),'Displayed SGD result matches its data.');
   });
-  assert.deepEqual(await page.locator('[data-learned-coverage]').evaluateAll(es=>es.map(e=>[Number(e.dataset.slot),e.dataset.learnedCoverage])),[[1,'visited'],[2,'visited'],[3,'visited'],[4,'unvisited'],[5,'missing']]);
-  for(const [id,max]of [['learned',1],['learned-update',2],['learned-limits',2]]){
+  assert.deepEqual(await page.locator('[data-learned-coverage]').evaluateAll(es=>es.map(e=>[Number(e.dataset.slot),e.dataset.learnedCoverage])),[[1,'visited'],[2,'visited'],[3,'visited'],[4,'unvisited']]);
+  const coverage=page.locator('#position-training-coverage');
+  assert.equal(await coverage.getAttribute('data-capacity'),'4');
+  const training=await coverage.locator('[data-training-example]').evaluateAll(es=>es.map(e=>[...e.querySelectorAll('[data-token]')].map(td=>td.textContent)));
+  assert.deepEqual(training,[['Maya','helps','Ravi'],['Ravi','helps','today']]);
+  const longer=await coverage.locator('[data-new-input] [data-token]').allTextContents();
+  assert.deepEqual(longer,['Maya','helps','Ravi','today']);
+  assert(longer.every(token=>training.flat().includes(token)),'The new slot is the issue, not an unknown word.');
+  assert.deepEqual(await coverage.locator('[data-position-gradients] td').allTextContents(),['Can flow','Can flow','Can flow','None']);
+  assert.match(await page.locator('#s17-position-absolute-range .lesson-result').innerText(),/position lookups for slots 5 and 6 fail/);
+  for(const [id,max]of [['learned',1],['learned-update',2],['learned-limits',1],['absolute-range',2]]){
     for(const build of [0,max,0,max]){
       await go('s17-position-'+id,build);
       assert.equal(await page.evaluate(()=>AT.present.state().frame.maxBuild),max);
-      const wrong=await page.locator('#s17-position-'+id+' svg [data-build]').evaluateAll((es,build)=>es.filter(e=>(getComputedStyle(e).visibility==='hidden')!==(Number(e.dataset.build)>build)).map(e=>e.dataset.build),build);
-      assert.deepEqual(wrong,[],id+' native SVG reveals work in both directions.');
+      const wrong=await page.locator('#s17-position-'+id+' [data-build]').evaluateAll((es,build)=>es.filter(e=>(getComputedStyle(e).visibility==='hidden')!==(Number(e.dataset.build)>build)).map(e=>e.dataset.build),build);
+      assert.deepEqual(wrong,[],id+' authored reveals work in both directions.');
     }
   }
   // Also test a direct presentation URL: builds must exist before runtime discovery.

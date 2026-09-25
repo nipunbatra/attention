@@ -310,20 +310,6 @@ document.addEventListener('DOMContentLoaded',()=>{
     text(g,824,y,'=',C.ink,26);text(g,871,y,decimalRow(after),color,26);
   });
 
-  const limits=document.querySelector('[data-learned-limits]');
-  const limitsBase=limits.querySelector('[data-limits-base]'),unseen=limits.querySelector('[data-limits-unseen]'),missing=limits.querySelector('[data-limits-missing]');
-  subscriptText(limitsBase,20,34,'Example: N_{max} = 4. Training uses only slots 1–3.',C.ink,28);
-  for(let slot=1;slot<=5;slot++){
-    const s=slot<4?limitsBase:slot===4?unseen:missing,y=83+(slot-1)*44,color=slot<4?C.d:slot===4?C.ink:C.a;
-    const g=element('g',{'data-learned-coverage':slot<4?'visited':slot===4?'unvisited':'missing','data-slot':slot});s.append(g);
-    text(g,25,y+9,'Slot '+slot,C.ink,26);
-    g.append(element('rect',{x:165,y:y-21,width:235,height:40,fill:'none',stroke:color,'stroke-width':2,'stroke-dasharray':slot<4?'none':'7 5'}));
-    text(g,185,y+9,slot===5?'No P[5]':'P['+slot+']',color,27);
-    if(slot===2){arrow(g,416,y,469,y,C.d);text(g,490,y+9,'Training adapts these rows',C.d,28);}
-    if(slot===4){arrow(g,416,y,469,y,C.ink);text(g,490,y+9,'Row exists, but gets no task gradient',C.ink,28);}
-    if(slot===5){arrow(g,416,y,469,y,C.a);text(g,490,y+9,'No allocated row for this slot',C.a,28);}
-  }
-  text(missing,25,320,'Independent rows have no built-in distance rule.',C.ink,26);
   const selector=document.getElementById('rope-shift');
   function shifted(shift){const i=3+shift,j=2+shift,q=rotate([1,0],i*Math.PI/6),k=rotate([1,0],j*Math.PI/6);return {i,j,q,k,dot:q[0]*k[0]+q[1]*k[1]};}
   function draw(){
