@@ -800,12 +800,60 @@
     "frame": 2
   },
   {
+    "id": "conv-one-patch",
+    "title": "Why does our ViT code use Conv2d?",
+    "caption": "One filter computes the same dot product as one column of the patch-projection matrix.",
+    "notes": "Have we already calculated this number using a flattened patch?\nMatch the four pixel\u2013weight pairs to the top-minus-bottom column in our earlier edge example.",
+    "section": "s08",
+    "frame": 3
+  },
+  {
+    "id": "conv-stride",
+    "title": "How far should the filter move?",
+    "caption": "A stride equal to the patch width gives non-overlapping patches.",
+    "notes": "What would happen if the stride were one?\nMove the 2\u00d72 outline two columns, then two rows; keep the weights unchanged.",
+    "section": "s08",
+    "frame": 4
+  },
+  {
+    "id": "conv-trainable",
+    "title": "Does this layer merely cut up the image?",
+    "caption": "Conv2d both selects each patch and applies a learned linear projection.",
+    "notes": "Where are the trainable numbers in this operation?\nCount four weights and one bias per filter, then read each output as a two-coordinate row.",
+    "section": "s08",
+    "frame": 5
+  },
+  {
     "id": "code-attention",
     "title": "Can you match each line to our calculation?",
     "caption": "Each row of A sums to one across its sources. Multiplying by V adds the weighted messages.",
     "notes": "Which axis must sum to one?\nMatch the source dimension in A to the row dimension in V.",
     "section": "s08",
-    "frame": 3
+    "frame": 6
+  },
+  {
+    "id": "batch-boundary",
+    "title": "Can a patch in image A read image B?",
+    "caption": "Ordinary image self-attention gives each image its own source rows.",
+    "notes": "Should putting a second photograph in the batch change the first image\u2019s message?\nKeep the two groups of rows separate; identify the image, token and coordinate axes.",
+    "section": "s08",
+    "frame": 7
+  },
+  {
+    "id": "batch-axis",
+    "title": "A tensor can have the right shape and the wrong meaning",
+    "caption": "For [B,N,D] input, set batch_first=True so attention runs across N.",
+    "notes": "Which axis should softmax normalize over in each image?\nUse uniform attention to calculate the first output row under both interpretations.",
+    "section": "s08",
+    "frame": 8
+  },
+  {
+    "id": "batch-check",
+    "title": "A quick check before training",
+    "caption": "Run the same image alone and beside another image. Its attention output should agree.",
+    "notes": "Why does the wrong version change when B is added?\nCompare the first patch\u2019s output under both layouts before looking at any accuracy curve.",
+    "section": "s08",
+    "frame": 9
   },
   {
     "id": "code-block",
@@ -813,7 +861,7 @@
     "caption": "MultiheadAttention includes concatenation and W_O. Both residual additions keep width D.",
     "notes": "Where did the output projection go in this code?\nOpen the accompanying Block class: PyTorch\u2019s attention module owns out_proj.",
     "section": "s08",
-    "frame": 4
+    "frame": 10
   },
   {
     "id": "code-add-cls",
@@ -821,7 +869,7 @@
     "caption": "Every image starts with the same learned CLS vector.",
     "notes": "Do we need a separate learned CLS parameter for each training image?\nExpand the same parameter across the batch, then concatenate along the row axis.",
     "section": "s08",
-    "frame": 5
+    "frame": 11
   },
   {
     "id": "code-add-pos",
@@ -829,7 +877,7 @@
     "caption": "Broadcast the same position table across the batch.",
     "notes": "Which position vector goes with the third image patch?\nPoint to CLS at index 0 and patch P3 at index 3.",
     "section": "s08",
-    "frame": 6
+    "frame": 12
   },
   {
     "id": "code-cls-readout",
@@ -837,7 +885,7 @@
     "caption": "We keep all rows through the blocks, then select CLS for this image-label task.",
     "notes": "Why is the second index zero here?\nPoint to the row dimension; the batch dimension stays in place.",
     "section": "s08",
-    "frame": 7
+    "frame": 13
   },
   {
     "id": "code-model",
@@ -845,7 +893,7 @@
     "caption": "Only the final readout selects CLS. Every transformer block processes all rows.",
     "notes": "At what point do we discard the patch rows for classification?\nKeep all 17 rows through both blocks, then select x[:,0].",
     "section": "s08",
-    "frame": 8
+    "frame": 14
   },
   {
     "id": "code-train",
@@ -853,7 +901,7 @@
     "caption": "Pass raw logits to cross_entropy. It combines log-softmax with the label loss.",
     "notes": "Which line computes gradients, and which one changes the weights?\nDistinguish backward from step. Point back to Part I\u2019s learning loop.",
     "section": "s08",
-    "frame": 9
+    "frame": 15
   },
   {
     "id": "code-backward",
@@ -861,7 +909,7 @@
     "caption": "backward computes gradients. The parameter values stay where they are until the optimizer step.",
     "notes": "Would another forward pass already use new weights?\nSeparate computing a derivative from using it to change a parameter.",
     "section": "s08",
-    "frame": 10
+    "frame": 16
   },
   {
     "id": "code-step",
@@ -869,7 +917,7 @@
     "caption": "The optimizer uses the gradients to update the parameters.",
     "notes": "Are AdamW updates exactly minus learning-rate times gradient?\nRecall the simple SGD bias example, then distinguish the optimizer used in this lab.",
     "section": "s08",
-    "frame": 11
+    "frame": 17
   },
   {
     "id": "training-data",

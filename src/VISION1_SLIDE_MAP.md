@@ -1,6 +1,6 @@
 # Vision I: slide map
 
-140 teaching frames plus the cover. Each link opens the first reveal of that slide. Use Right/Left for reveals and S for presenter notes.
+146 teaching frames plus the cover. Each link opens the first reveal of that slide. Use Right/Left for reveals and S for presenter notes.
 
 ## Review these additions first
 
@@ -19,6 +19,15 @@
 - [Who teaches CLS what information to collect?](https://nipunbatra.github.io/attention/vision1.html?present#s06/11/0)
 - [Could we classify the image without CLS?](https://nipunbatra.github.io/attention/vision1.html?present#s06/12/0)
 - [So why use CLS in our ViT?](https://nipunbatra.github.io/attention/vision1.html?present#s06/13/0)
+
+## Additions from the video review
+
+- [Why does our ViT code use Conv2d?](https://nipunbatra.github.io/attention/vision1.html?present#s08/3/0)
+- [How far should the filter move?](https://nipunbatra.github.io/attention/vision1.html?present#s08/4/0)
+- [Does this layer merely cut up the image?](https://nipunbatra.github.io/attention/vision1.html?present#s08/5/0)
+- [Can a patch in image A read image B?](https://nipunbatra.github.io/attention/vision1.html?present#s08/7/0)
+- [A tensor can have the right shape and the wrong meaning](https://nipunbatra.github.io/attention/vision1.html?present#s08/8/0)
+- [A quick check before training](https://nipunbatra.github.io/attention/vision1.html?present#s08/9/0)
 
 ## Complete sequence
 
@@ -124,15 +133,21 @@
 | s07 / 14 | [What changed when we made the model larger?](https://nipunbatra.github.io/attention/vision1.html?present#s07/14/0) | `s05-scale` |
 | s08 / 1 | [These two 16s mean different things](https://nipunbatra.github.io/attention/vision1.html?present#s08/1/0) | `two-sixteens` |
 | s08 / 2 | [How do image pixels become rows in code?](https://nipunbatra.github.io/attention/vision1.html?present#s08/2/0) | `code-patch` |
-| s08 / 3 | [Can you match each line to our calculation?](https://nipunbatra.github.io/attention/vision1.html?present#s08/3/0) | `code-attention` |
-| s08 / 4 | [What is the complete pre-LayerNorm block?](https://nipunbatra.github.io/attention/vision1.html?present#s08/4/0) | `code-block` |
-| s08 / 5 | [How do we add one CLS row per image?](https://nipunbatra.github.io/attention/vision1.html?present#s08/5/0) | `code-add-cls` |
-| s08 / 6 | [Where does location enter the code?](https://nipunbatra.github.io/attention/vision1.html?present#s08/6/0) | `code-add-pos` |
-| s08 / 7 | [Which row reaches the classifier?](https://nipunbatra.github.io/attention/vision1.html?present#s08/7/0) | `code-cls-readout` |
-| s08 / 8 | [How does the full model produce image logits?](https://nipunbatra.github.io/attention/vision1.html?present#s08/8/0) | `code-model` |
-| s08 / 9 | [Which call makes this model learn?](https://nipunbatra.github.io/attention/vision1.html?present#s08/9/0) | `code-train` |
-| s08 / 10 | [When are gradients computed?](https://nipunbatra.github.io/attention/vision1.html?present#s08/10/0) | `code-backward` |
-| s08 / 11 | [Which line changes the weights?](https://nipunbatra.github.io/attention/vision1.html?present#s08/11/0) | `code-step` |
+| s08 / 3 | [Why does our ViT code use Conv2d?](https://nipunbatra.github.io/attention/vision1.html?present#s08/3/0) | `conv-one-patch` |
+| s08 / 4 | [How far should the filter move?](https://nipunbatra.github.io/attention/vision1.html?present#s08/4/0) | `conv-stride` |
+| s08 / 5 | [Does this layer merely cut up the image?](https://nipunbatra.github.io/attention/vision1.html?present#s08/5/0) | `conv-trainable` |
+| s08 / 6 | [Can you match each line to our calculation?](https://nipunbatra.github.io/attention/vision1.html?present#s08/6/0) | `code-attention` |
+| s08 / 7 | [Can a patch in image A read image B?](https://nipunbatra.github.io/attention/vision1.html?present#s08/7/0) | `batch-boundary` |
+| s08 / 8 | [A tensor can have the right shape and the wrong meaning](https://nipunbatra.github.io/attention/vision1.html?present#s08/8/0) | `batch-axis` |
+| s08 / 9 | [A quick check before training](https://nipunbatra.github.io/attention/vision1.html?present#s08/9/0) | `batch-check` |
+| s08 / 10 | [What is the complete pre-LayerNorm block?](https://nipunbatra.github.io/attention/vision1.html?present#s08/10/0) | `code-block` |
+| s08 / 11 | [How do we add one CLS row per image?](https://nipunbatra.github.io/attention/vision1.html?present#s08/11/0) | `code-add-cls` |
+| s08 / 12 | [Where does location enter the code?](https://nipunbatra.github.io/attention/vision1.html?present#s08/12/0) | `code-add-pos` |
+| s08 / 13 | [Which row reaches the classifier?](https://nipunbatra.github.io/attention/vision1.html?present#s08/13/0) | `code-cls-readout` |
+| s08 / 14 | [How does the full model produce image logits?](https://nipunbatra.github.io/attention/vision1.html?present#s08/14/0) | `code-model` |
+| s08 / 15 | [Which call makes this model learn?](https://nipunbatra.github.io/attention/vision1.html?present#s08/15/0) | `code-train` |
+| s08 / 16 | [When are gradients computed?](https://nipunbatra.github.io/attention/vision1.html?present#s08/16/0) | `code-backward` |
+| s08 / 17 | [Which line changes the weights?](https://nipunbatra.github.io/attention/vision1.html?present#s08/17/0) | `code-step` |
 | s09 / 1 | [Will the model recognize a new noisy stripe?](https://nipunbatra.github.io/attention/vision1.html?present#s09/1/0) | `training-data` |
 | s09 / 2 | [Which images are allowed to influence the weights?](https://nipunbatra.github.io/attention/vision1.html?present#s09/2/0) | `three-splits` |
 | s09 / 3 | [Suppose the model gets this training image wrong](https://nipunbatra.github.io/attention/vision1.html?present#s09/3/0) | `training-one-image` |

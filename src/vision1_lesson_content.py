@@ -441,6 +441,8 @@ optimizer.step()''',t(30,65,'image + known label',26,'c-e')+arrow(180,92,180,160
     sections=expand(b,sections)
     from vision1_connections import connect
     sections=connect(b,sections)
+    from vision1_video_lessons import augment
+    sections=augment(b,sections)
     ordered=[]
     for n,(title,frames) in enumerate(sections,1):
         original_section(n,title,frames)

@@ -2,7 +2,7 @@
 
 **Deck:** [vision1.html](../vision1.html) · **Present:** open the deck and press **P** · **Lab:** [03_vision_transformer_lab.ipynb](../notebooks/vision/03_vision_transformer_lab.ipynb)
 
-140 teaching frames plus cover; 14 sections. Silent, self-contained HTML slides with image assets and math embedded. Reading mode includes the longer explanations, source links, and numerical tables. Arrow keys advance one reveal; **S** opens presenter notes; **O** opens the overview; **C** shows classroom controls. Every frame has a question to ask and a note about what to point at.
+146 teaching frames plus cover; 14 sections. Silent, self-contained HTML slides with image assets and math embedded. Reading mode includes the longer explanations, source links, and numerical tables. Arrow keys advance one reveal; **S** opens presenter notes; **O** opens the overview; **C** shows classroom controls. Every frame has a question to ask and a note about what to point at.
 
 ## The teaching thread
 
@@ -16,7 +16,7 @@ The two-crop Q/K/V warm-up and the pooling example use their own clearly labeled
 
 ## Suggested pacing
 
-Use three meetings, or teach sections 1–7 first and assign the implementation as a lab. The 140 frames are short steps; the total is not a target for one class. Pause for predictions and hand calculations.
+Use three meetings, or teach sections 1–7 first and assign the implementation as a lab. The 146 frames are short steps; the total is not a target for one class. Pause for predictions and hand calculations.
 
 | Meeting | Sections | Student activity |
 |---|---|---|
@@ -41,6 +41,8 @@ Use the [complete slide map](VISION1_SLIDE_MAP.md) for current frame numbers and
 - **`s04-join`:** Which operation joins messages, and which actually mixes their coordinates?
 - **`two-softmaxes`:** Are the alternatives source rows or class labels?
 - **`pooling-example`:** Calculate the mean. Does image classification require CLS?
+- **`conv-one-patch`, `conv-trainable`:** Calculate one filter output, then count its learned weights. Why does Conv2d match our linear patch projection?
+- **`batch-axis`, `batch-check`:** Average three rows in A, then average the first rows across A and B. Which result should be unchanged when another image enters the batch?
 - **`trained-position-control`:** Why can the chosen architecture not separate opposite-label pairs without positions?
 - **`cover-1` through `cover-4`:** Predict the change before revealing each measured probability.
 
@@ -85,7 +87,7 @@ uv run --with timm --with pillow python notebooks/vision/inspect_real_vit.py
 python src/build_vision1_lesson.py
 ```
 
-The notebook executes all 17 code cells, including independent PyTorch attention parity, the learning step, Conv2d/Linear equivalence, every full-model gradient, and re-evaluation of saved checkpoints. The checked numerical values are also used by the slides and browser controls.
+The notebook executes all 19 code cells, including independent PyTorch attention parity, the learning step, Conv2d/Linear equivalence, every full-model gradient, an explicit wrong-batch-axis negative control, and re-evaluation of saved checkpoints. The checked numerical values are also used by the slides and browser controls.
 
 ## References that shaped the lecture
 
@@ -101,6 +103,6 @@ The notebook executes all 17 code cells, including independent PyTorch attention
 - [Jay Alammar](https://jalammar.github.io/illustrated-transformer/): persistent objects and a visible calculation path.
 - [Original ViT paper](https://arxiv.org/abs/2010.11929): architecture and claims about scale and training.
 
-The [latest reference review](VISION1_REFERENCE_REVIEW.md) records the new sources and the two blocked transcript requests. The earlier [research plan](VISION1_REDESIGN_PLAN.md) records all the supplied articles and videos, including their review status. Videos were consulted silently through available text/transcripts. This is an original teaching sequence; it does not reproduce those lectures' slides.
+The [latest reference review](VISION1_REFERENCE_REVIEW.md) records the new sources and the successful review of both Vizuara recordings. The earlier [research plan](VISION1_REDESIGN_PLAN.md) records all the supplied articles and videos, including their review status. Videos were consulted silently through available text/transcripts. This is an original teaching sequence; it does not reproduce those lectures' slides.
 
 Photographs: Oxford-IIIT Pet dataset, Parkhi, Vedaldi, Zisserman and Jawahar, via the timm Hugging Face mirror. Image filenames, revision, checksums and attribution are in `figures/vision1/images.json`. Original image ownership and CC BY-SA 4.0 attribution are retained. `model-input.png` shows the checkpoint's exact evaluation crop.

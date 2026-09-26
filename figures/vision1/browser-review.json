@@ -3,16 +3,22 @@
     1280,
     720
   ],
-  "teaching_frames": 140,
+  "teaching_frames": 146,
   "cover_frames": 1,
-  "review": "All 141 final states (140 teaching frames plus cover) checked for SVG text bounds, text collisions, code overflow and viewport bounds through the in-app browser. Representative new slides visually inspected.",
+  "review": "The previous 141 final states (140 teaching frames plus cover) passed the full geometry review. All six added implementation frames passed SVG text bounds and collision checks at 1280\u00d7720 and were visually inspected. Phone reading mode was rechecked at 390\u00d7844.",
   "geometry": "No clipped SVG text, text collisions, overflowing captions or code found.",
   "visual_samples": [
     "qkv-match-numbers",
     "cls-two-images",
     "task-side-by-side",
     "q-dot",
-    "pooling-example"
+    "pooling-example",
+    "conv-one-patch",
+    "conv-stride",
+    "conv-trainable",
+    "batch-boundary",
+    "batch-axis",
+    "batch-check"
   ],
   "reading_viewport": [
     390,
@@ -46,5 +52,31 @@
     "s04/20/0 \u2192 s04/20/1 \u2192 s04/21/0"
   ],
   "presenter_notes": "Question and pointing instruction confirmed on s04/21/0",
-  "notebook_code_cells": 17
+  "notebook_code_cells": 19,
+  "new_frame_geometry": {
+    "conv-one-patch": {
+      "clipped": [],
+      "collisions": []
+    },
+    "conv-stride": {
+      "clipped": [],
+      "collisions": []
+    },
+    "conv-trainable": {
+      "clipped": [],
+      "collisions": []
+    },
+    "batch-boundary": {
+      "clipped": [],
+      "collisions": []
+    },
+    "batch-axis": {
+      "clipped": [],
+      "collisions": []
+    },
+    "batch-check": {
+      "clipped": [],
+      "collisions": []
+    }
+  }
 }

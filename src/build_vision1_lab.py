@@ -233,6 +233,22 @@ torch.testing.assert_close(manual_ln,F.layer_norm(z,(4,),eps=1e-5))
 print('LayerNorm mean',z.mean().item(),'variance',z.var(unbiased=False).item())
 print('Normalized row',manual_ln.numpy())
 ''')
+    md("""## 15. Two implementation checks from the video review
+
+First, work out the four patch rows produced by two 2×2 filters. Then predict whether adding image B to a batch should change image A's attention output. The deliberately wrong layout supplies a negative control: the check must catch it.
+
+The example uses Q=K=0 (uniform weights), V=identity and W_O=identity. Every number can be calculated by averaging the displayed source rows. No training is run here.
+""")
+    code((ROOT/'src/vision1_video_examples.py').read_text())
+    code('''checks = examples()
+print('Two-filter patch outputs:', checks['patch_projection']['output'])
+print('Trainable patch parameters:', checks['patch_projection']['parameters'])
+for key in ['correct_alone','correct_batched','wrong_alone','wrong_batched']:
+    print(key, checks['batch_axis'][key])
+assert checks['batch_axis']['correct_invariant']
+assert checks['batch_axis']['wrong_detected']
+print('Correct layout passes; incorrect layout is detected.')
+''')
     md('''## References and attribution
 
 - [UCSD CSE252D, Vision Transformers (2024)](https://cseweb.ucsd.edu/~mkchandraker/classes/CSE252D/Spring2024/Lectures/lec02_visiontransformers.pdf)

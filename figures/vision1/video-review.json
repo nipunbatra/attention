@@ -1,0 +1,34 @@
+{
+  "review_date": "2026-09-26",
+  "review_scope": "Full auto-captions retrieved; targeted transcript sections and one muted paused frame inspected, not full continuous viewing.",
+  "retrieval": {
+    "yt_dlp": "2026.08.19",
+    "http_impersonation": "curl-cffi chrome",
+    "javascript_runtime": "node",
+    "browser_cookies_used": false,
+    "browser_transcript_export": "also succeeded for both videos",
+    "audio_played": false
+  },
+  "videos": [
+    {
+      "id": "aIi5FsdURUA",
+      "title": "Introduction to Vision Transformer (ViT) | An image is worth 16x16 words | Computer Vision Series",
+      "channel": "Vizuara",
+      "duration_seconds": 5089,
+      "url": "https://www.youtube.com/watch?v=aIi5FsdURUA",
+      "caption_language": "en-orig",
+      "caption_type": "automatic",
+      "caption_sha256": "403ecc947c2f5a74a18991920cb885cfbd962c9df3ff1556dfd924db7ca3dbbf"
+    },
+    {
+      "id": "ZRo74xnN2SI",
+      "title": "Build Vision Transformer ViT From Scratch - Intuition and coding",
+      "channel": "Vizuara",
+      "duration_seconds": 6630,
+      "url": "https://www.youtube.com/watch?v=ZRo74xnN2SI",
+      "caption_language": "en-orig",
+      "caption_type": "automatic",
+      "caption_sha256": "bca23a4233ad2175b1c16e04b85fc66d94840eb649ad61e951508937cf66d906"
+    }
+  ]
+}

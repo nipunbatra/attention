@@ -133,7 +133,7 @@ def connect(b, sections):
     body+=g(t(35,270,'Mean readout',33,'c-e')+label(35,330,'updated patches','c-e',260)+arrow(325,360,460,360)+label(490,330,'average','c-v',245)+arrow(765,360,840,360)+label(870,330,'class scores','c-a',245),1)
     add('readout-choice','So why use CLS in our ViT?',body,'It gives the model a dedicated row whose final representation is trained for the image label.',
         'What must both of these paths produce before the class head?', 'Follow each route to one fixed-width vector.',
-        'CLS participates in the attention blocks, so it can gather a content-dependent summary at every layer. Mean pooling combines contextual patch rows at the end. Both are viable design choices. Our pretrained checkpoint and full small model use CLS, so we follow it consistently through the worked examples. Neither option is guaranteed to be best for every dataset.')
+        'CLS participates in the attention blocks, so it can gather a content-dependent summary at every layer. Mean pooling combines contextual patch rows at the end. Both are viable design choices. Our pretrained checkpoint and full small model use CLS, so we follow it consistently through the worked examples. Neither option is guaranteed to be best for every dataset. <a href="https://arxiv.org/html/2010.11929v2#A4.SS3">Appendix D.3 of the original ViT paper</a> reports that the early pooling gap disappeared after adjusting its learning rate.')
 
     def grid(x,y):
         out=''
