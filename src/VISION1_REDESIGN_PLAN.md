@@ -1,6 +1,6 @@
 # Vision I: research and redesign plan
 
-Status: complete local Vision I lecture built, 26 September 2026. The initial 19-frame prototype has been expanded into **58 teaching frames plus cover**, integrated into `../vision1.html`. See [the teaching guide](VISION1_TEACHING_GUIDE.md) and [the executed full lab](../notebooks/vision/03_vision_transformer_lab.ipynb).
+Status: complete local Vision I lecture built, 26 September 2026. The initial 19-frame prototype has been expanded into **140 teaching frames plus cover**, integrated into `../vision1.html`. See [the teaching guide](VISION1_TEACHING_GUIDE.md) and [the executed full lab](../notebooks/vision/03_vision_transformer_lab.ipynb).
 
 The completed lecture includes real-photo motivation; the entire two-head calculation; full-block code; actual training on 512 independently generated images with separate validation and test splits; and measured real-photo predictions, attention maps and occlusion. The original proposed Pets species fine-tuning benchmark was replaced in the teaching sequence by a controlled synthetic training experiment and an explicitly separate pretrained ImageNet demonstration. No Pets benchmark result is claimed. The research and design notes below retain the original proposals for provenance.
 

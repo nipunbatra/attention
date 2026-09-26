@@ -5,138 +5,138 @@
   "title": "An image becomes a sequence",
   "subtitle": "Real photographs, a complete four-patch calculation, and a Vision Transformer we can train and inspect.",
   "audience": "Students who have completed the text attention Parts I\u2013III.",
-  "durationLabel": "Two teaching sessions + a reproducible lab.",
+  "durationLabel": "A step-by-step lecture sequence with a worked lab.",
   "hook": "What can one patch borrow from the rest of its image?",
   "centralLabel": "Follow one computation",
   "central": "\\text{pixels}\\to E\\to Q,K,V\\to A\\to H\\to E\\prime\\to p(\\text{class})",
   "sections": [
     {
       "id": "s01",
-      "title": "What clues let us recognize the animal?",
+      "title": "What would we like the image model to do?",
       "lit": ""
     },
     {
       "id": "s02",
-      "title": "How does a photograph become a sequence?",
+      "title": "How do pixels become patch rows?",
       "lit": ""
     },
     {
       "id": "s03",
-      "title": "Can the same patches make different images?",
+      "title": "What does each row know about its patch?",
       "lit": ""
     },
     {
       "id": "s04",
-      "title": "What should the summary row read?",
+      "title": "How does one row read the other rows?",
       "lit": ""
     },
     {
       "id": "s05",
-      "title": "What does a second head contribute?",
+      "title": "What does a second head add?",
       "lit": ""
     },
     {
       "id": "s06",
-      "title": "How do messages become an image answer?",
+      "title": "How do the messages lead to a prediction?",
       "lit": ""
     },
     {
       "id": "s07",
-      "title": "What else belongs in a full ViT?",
+      "title": "What happens inside a complete block?",
       "lit": ""
     },
     {
       "id": "s08",
-      "title": "Can we build the model ourselves?",
+      "title": "Can we follow the same steps in code?",
       "lit": ""
     },
     {
       "id": "s09",
-      "title": "Will it learn beyond two clean images?",
+      "title": "How do we know the model learned something?",
       "lit": ""
     },
     {
       "id": "s10",
-      "title": "What does the actual photograph produce?",
+      "title": "What happens on the real photographs?",
       "lit": ""
     },
     {
       "id": "s11",
-      "title": "What can we measure inside the real model?",
+      "title": "What can we learn by inspecting the model?",
       "lit": ""
     },
     {
       "id": "s12",
-      "title": "How much does a finer patch grid cost?",
+      "title": "How much work does a finer patch grid require?",
       "lit": ""
     },
     {
       "id": "s13",
-      "title": "Can you work it out without the slides?",
+      "title": "Can you work through a new example?",
       "lit": ""
     },
     {
       "id": "s14",
-      "title": "Where can we take visual attention next?",
+      "title": "What can we build with visual rows next?",
       "lit": ""
     }
   ],
   "chain": [
     {
       "section": "s01",
-      "label": "What clues let us recognize the animal?"
+      "label": "What would we like the image model to do?"
     },
     {
       "section": "s02",
-      "label": "How does a photograph become a sequence?"
+      "label": "How do pixels become patch rows?"
     },
     {
       "section": "s03",
-      "label": "Can the same patches make different images?"
+      "label": "What does each row know about its patch?"
     },
     {
       "section": "s04",
-      "label": "What should the summary row read?"
+      "label": "How does one row read the other rows?"
     },
     {
       "section": "s05",
-      "label": "What does a second head contribute?"
+      "label": "What does a second head add?"
     },
     {
       "section": "s06",
-      "label": "How do messages become an image answer?"
+      "label": "How do the messages lead to a prediction?"
     },
     {
       "section": "s07",
-      "label": "What else belongs in a full ViT?"
+      "label": "What happens inside a complete block?"
     },
     {
       "section": "s08",
-      "label": "Can we build the model ourselves?"
+      "label": "Can we follow the same steps in code?"
     },
     {
       "section": "s09",
-      "label": "Will it learn beyond two clean images?"
+      "label": "How do we know the model learned something?"
     },
     {
       "section": "s10",
-      "label": "What does the actual photograph produce?"
+      "label": "What happens on the real photographs?"
     },
     {
       "section": "s11",
-      "label": "What can we measure inside the real model?"
+      "label": "What can we learn by inspecting the model?"
     },
     {
       "section": "s12",
-      "label": "How much does a finer patch grid cost?"
+      "label": "How much work does a finer patch grid require?"
     },
     {
       "section": "s13",
-      "label": "Can you work it out without the slides?"
+      "label": "Can you work through a new example?"
     },
     {
       "section": "s14",
-      "label": "Where can we take visual attention next?"
+      "label": "What can we build with visual rows next?"
     }
   ],
   "objects": [
@@ -157,7 +157,7 @@
     "d": "s05",
     "ep": "s06"
   },
-  "provenance": "Three explicit settings: a hand-chosen four-patch worksheet; a complete small ViT trained on independently generated noisy-image splits; and a pretrained ImageNet ViT measured on real photographs. All reported numbers come from saved, reproducible calculations.",
+  "provenance": "We use small, chosen numbers for the four-patch calculation. Then we train a complete small ViT on noisy images. Finally, we run a pretrained ViT on the photographs. The code and saved results keep these three examples separate.",
   "prev": {
     "label": "Part 4: Cross-attention: translate one phrase",
     "href": "part4.html"

@@ -2,13 +2,13 @@
 
 **Deck:** [vision1.html](../vision1.html) · **Present:** open the deck and press **P** · **Lab:** [03_vision_transformer_lab.ipynb](../notebooks/vision/03_vision_transformer_lab.ipynb)
 
-58 teaching frames plus cover; 14 sections. Silent, self-contained HTML slides with image assets and math embedded. Reading mode includes the longer explanations, source links, and numerical tables. Arrow keys advance one reveal; **S** opens presenter notes; **O** opens the overview; **C** shows classroom controls. Every frame has a question to ask and a note about what to point at.
+140 teaching frames plus cover; 14 sections. Silent, self-contained HTML slides with image assets and math embedded. Reading mode includes the longer explanations, source links, and numerical tables. Arrow keys advance one reveal; **S** opens presenter notes; **O** opens the overview; **C** shows classroom controls. Every frame has a question to ask and a note about what to point at.
 
 ## The teaching thread
 
 Start with a photograph and ask students to name the clues. Isolate one genuine crop and restore its context. Recall **aabid** from Part I, **river/bank** from Part II, and **red/wool/coat** from Part III. Then introduce patches, a tiny exact worksheet, the complete block, executable code, learning, and the original photograph again.
 
-Keep three settings explicit:
+The two-crop Q/K/V warm-up and the pooling example use their own clearly labeled, hand-chosen numbers. Then keep the three larger settings explicit:
 
 1. **Hand worksheet:** a 4×4 binary image, four 2×2 patches, D=4, two heads of width 2, five rows including CLS. Chosen weights; no LayerNorm or block MLP. Labels name two specific arrangements. Students can calculate every number.
 2. **Trained small ViT:** 8×8 noisy grayscale images, sixteen 2×2 patches, D=16, two complete pre-LayerNorm blocks, two heads per block and MLP width 32. All trainable components learn. Data splits are independent random draws, with opposite-label pairs sharing exactly the same patch multiset.
@@ -16,36 +16,33 @@ Keep three settings explicit:
 
 ## Suggested pacing
 
-Use two sessions so the calculations have room. The estimates include short student responses; adjust to the class.
+Use three meetings, or teach sections 1–7 first and assign the implementation as a lab. The 140 frames are short steps; the total is not a target for one class. Pause for predictions and hand calculations.
 
-| Session | Sections | What students should do | Suggested time |
-|---|---|---|---:|
-| A | 1–2 | Identify useful context; count RGB values and projection parameters | 15 min |
-| A | 3 | Reconstruct layouts from the same patch bag; compute the projection and positions | 12 min |
-| A | 4–5 | Calculate both source mixtures, then concatenate and apply W_O | 25 min |
-| A | 6 | Compute logits, probabilities, loss and one gradient step; run the position control | 15 min |
-| B | 7–8 | Explain both residual paths; trace the complete executable model | 20 min |
-| B | 9 | Predict the training control; interpret the validation and test evidence | 12 min |
-| B | 10–11 | Return to real photos; interpret attention maps and occlusion carefully | 18 min |
-| B | 12–14 | Count cost, solve the three exercises, connect to later vision topics | 15 min |
+| Meeting | Sections | Student activity |
+|---|---|---|
+| A | 1–4 | Compare tasks, turn pixels into rows, reason about position, explain Q/K/V, calculate a first attention message |
+| B | 5–7 | Work the second head, combine messages, predict a class, compare CLS with pooling, restore the full block |
+| C / lab | 8–14 | Run the code, interpret the training control and real-image measurements, solve transfer exercises |
 
-For an 80-minute introduction, retain sections 1–6, the full-block and real-scale frames in section 7, the trained position control in section 9, the opening-photo prediction in section 10, and the final shape exercise. Assign code, interpretation and cost as the follow-up lab. The complete deck remains available; no arithmetic is hidden from the student notes.
+For a short conceptual introduction, use the task comparison, the two-crop Q/K/V example, CLS and pooling, the whole-block drawing and the real-photo predictions. Keep the full four-patch calculation for a session with time to work alongside the class.
 
 ## Places to stop and ask
 
-- **s01 / frame 2:** Could the isolated dark crop be fur, shadow, or another object? Restore the same photograph.
-- **s03 / frame 2:** How can two filled and two empty patches reconstruct more than one image?
-- **s04 / frame 2:** What information would leak if a patch reads a later raster position? All input patches are already observed for classification.
-- **s04 / frame 6:** All five weights must sum to one, including CLS. Scores `[0,1,1,1,1]` give normalizer `1+4e`.
-- **s04 / frame 7:** A scalar weight multiplies every coordinate of its own source value. Sum the products, not the keys.
-- **s05 / frame 1:** Why is P2 now the highest-weight source? Head 2 compares ink and column.
-- **s05 / frame 4:** Which two message coordinates are subtracted by W_O? Concatenation itself does not subtract them.
-- **s06 / frame 2:** Which alternatives does this softmax normalize: source rows or class labels?
-- **s06 / frame 3:** For the correct class, why is `p-y` negative? Subtracting the gradient increases its logit.
-- **s06 / frame 4:** Move contents first, then disable positions. Expect 85.7/14.3 to reverse with the arrangement, and 50/50 for both without positions.
-- **s09 / frame 3:** Why can training never separate the paired layouts without position information in this architecture?
-- **s11 / frame 4:** Predict the effect of each quadrant removal before revealing the measured target-class probabilities.
-- **s12 / frame 2:** Change 224→384 with P=16: 576 patches, 577 tokens, 332,929 scores per head.
+Use the [complete slide map](VISION1_SLIDE_MAP.md) for current frame numbers and direct presentation links.
+
+- **`task-side-by-side`:** What is the input, target and readout in each task? Why does the loss still look familiar?
+- **`task-mask-reason`:** Which target would a future training token reveal? Why is a later raster patch already available?
+- **`cls-start`, `cls-two-images`:** How can a shared initial vector lead to different image summaries?
+- **`qkv-match-numbers`:** Exponentials 3 and 1 give which two shares?
+- **`qkv-read-numbers`:** What does each source send after weighting? Is the result a patch index or a vector?
+- **`qkv-change-key`, `qkv-change-value`:** Which intervention changes the heatmap? Which changes the message?
+- **`weight-denominator`:** Why does CLS belong in the denominator too?
+- **`one-value-product`:** Can an empty patch still send position information?
+- **`s04-join`:** Which operation joins messages, and which actually mixes their coordinates?
+- **`two-softmaxes`:** Are the alternatives source rows or class labels?
+- **`pooling-example`:** Calculate the mean. Does image classification require CLS?
+- **`trained-position-control`:** Why can the chosen architecture not separate opposite-label pairs without positions?
+- **`cover-1` through `cover-4`:** Predict the change before revealing each measured probability.
 
 ## Main calculation answers
 
@@ -88,9 +85,12 @@ uv run --with timm --with pillow python notebooks/vision/inspect_real_vit.py
 python src/build_vision1_lesson.py
 ```
 
-The notebook executes all 14 code cells, including independent PyTorch attention parity, the learning step, Conv2d/Linear equivalence, every full-model gradient, and re-evaluation of saved checkpoints. The checked numerical values are also used by the slides and browser controls.
+The notebook executes all 17 code cells, including independent PyTorch attention parity, the learning step, Conv2d/Linear equivalence, every full-model gradient, and re-evaluation of saved checkpoints. The checked numerical values are also used by the slides and browser controls.
 
 ## References that shaped the lecture
+
+- [UCSD CSE252D, Manmohan Chandraker (2024)](https://cseweb.ucsd.edu/~mkchandraker/classes/CSE252D/Spring2024/Lectures/lec02_visiontransformers.pdf): a visual question motivates matching, then each image token supplies its own query.
+- [MIT VisionBook, Chapter 26](https://visionbook.mit.edu/transformers.html): separate mixing rows from modifying a row; make the output depend on the task.
 
 - [Stanford CS231n, Lecture 8 (2025)](https://cs231n.stanford.edu/slides/2025/lecture_8.pdf): hold an actual image while exposing the patch-to-token path.
 - [UvA Vision Transformer tutorial](https://uvadlc-notebooks.readthedocs.io/en/latest/tutorial_notebooks/tutorial15/Vision_Transformer.html): complete implementation, training and image-patch interpretation.
@@ -101,6 +101,6 @@ The notebook executes all 14 code cells, including independent PyTorch attention
 - [Jay Alammar](https://jalammar.github.io/illustrated-transformer/): persistent objects and a visible calculation path.
 - [Original ViT paper](https://arxiv.org/abs/2010.11929): architecture and claims about scale and training.
 
-The earlier [research plan](VISION1_REDESIGN_PLAN.md) records all the supplied articles and videos, including their review status. Videos were consulted silently through available text/transcripts. This is an original teaching sequence; it does not reproduce those lectures' slides.
+The [latest reference review](VISION1_REFERENCE_REVIEW.md) records the new sources and the two blocked transcript requests. The earlier [research plan](VISION1_REDESIGN_PLAN.md) records all the supplied articles and videos, including their review status. Videos were consulted silently through available text/transcripts. This is an original teaching sequence; it does not reproduce those lectures' slides.
 
 Photographs: Oxford-IIIT Pet dataset, Parkhi, Vedaldi, Zisserman and Jawahar, via the timm Hugging Face mirror. Image filenames, revision, checksums and attribution are in `figures/vision1/images.json`. Original image ownership and CC BY-SA 4.0 attribution are retained. `model-input.png` shows the checkpoint's exact evaluation crop.

@@ -184,8 +184,59 @@ for P in [32,16,8]:
 print('Position answer: keep content-position associations when reordering complete rows.')
 print('Interpretation answer: values, output projection, residuals and later layers also affect logits.')
 ''')
+    md("""## 12. Separate the jobs of keys and values
+
+Use the two photo crops as labels for this **constructed** example. We choose the numbers; they are not measured neural features. Q and K have width one, while V has width two. Predict each intervention before running it.
+""")
+    code('''q = torch.tensor([[[1.]]], dtype=torch.float64)
+k = torch.tensor([[[np.log(3)], [0.]]], dtype=torch.float64)
+v = torch.tensor([[[2., 0.], [0., 2.]]], dtype=torch.float64)
+A = (q @ k.transpose(-2,-1)).softmax(-1)  # sqrt(d_k) = 1
+message = F.scaled_dot_product_attention(q,k,v)
+np.testing.assert_allclose(A.numpy(), [[[.75,.25]]])
+np.testing.assert_allclose(message.numpy(), [[[1.5,.5]]])
+print('Weights',A.numpy(),'message',message.numpy())
+# Swap only keys: source weights change, values stay fixed.
+changed_k = F.scaled_dot_product_attention(q,k.flip(-2),v)
+np.testing.assert_allclose(changed_k.numpy(), [[[.5,1.5]]])
+# Change only a value: weights are identical, message changes.
+v2 = v.clone(); v2[0,0,0] = 4.
+changed_v = F.scaled_dot_product_attention(q,k,v2)
+np.testing.assert_allclose(changed_v.numpy(), [[[3.,.5]]])
+print('Changed K',changed_k.numpy(),'changed V',changed_v.numpy())
+''')
+    md("""## 13. Calculate a pooled image representation
+
+These are final contextual patch rows in a separate toy example. A model can be trained with this readout instead of CLS. Do not simply remove CLS from a checkpoint trained to use it.
+""")
+    code('''final_patches = torch.tensor([[2.,0.],[0.,2.],[1.,1.],[1.,1.]])
+pooled = final_patches.mean(dim=0)
+torch.testing.assert_close(pooled,torch.tensor([1.,1.]))
+torch.testing.assert_close(final_patches[[2,0,3,1]].mean(0),pooled)
+print('One vector for the image:',pooled.numpy())
+print('The class head receives this vector when mean pooling is the chosen readout.')
+''')
+    md("""## 14. Why a patch needs more than its mean
+
+The top-edge and left-edge patches have the same mean. Try two projection columns. Then check the equal-score softmax and LayerNorm arithmetic used in the smaller teaching steps.
+""")
+    code('''patches = torch.tensor([[1.,1.,0.,0.],[1.,0.,1.,0.]],dtype=torch.float64)
+W = torch.tensor([[1.,1.],[1.,-1.],[-1.,1.],[-1.,-1.]],dtype=torch.float64)
+torch.testing.assert_close(patches.mean(1),torch.tensor([.5,.5],dtype=torch.float64))
+torch.testing.assert_close(patches@W,torch.tensor([[2.,0.],[0.,2.]],dtype=torch.float64))
+print('Same means',patches.mean(1).numpy(),'different projected rows', (patches@W).numpy())
+for scores in [[0.,0.],[-100.,-100.],[0.,np.log(3)]]:
+    print('Scores',scores,'weights',torch.tensor(scores).softmax(0).numpy())
+z = torch.tensor([1.,0.,0.,1.],dtype=torch.float64)
+manual_ln = (z-z.mean())/torch.sqrt(z.var(unbiased=False)+1e-5)
+torch.testing.assert_close(manual_ln,F.layer_norm(z,(4,),eps=1e-5))
+print('LayerNorm mean',z.mean().item(),'variance',z.var(unbiased=False).item())
+print('Normalized row',manual_ln.numpy())
+''')
     md('''## References and attribution
 
+- [UCSD CSE252D, Vision Transformers (2024)](https://cseweb.ucsd.edu/~mkchandraker/classes/CSE252D/Spring2024/Lectures/lec02_visiontransformers.pdf)
+- [MIT VisionBook, Chapter 26](https://visionbook.mit.edu/transformers.html)
 - [Original ViT paper](https://arxiv.org/abs/2010.11929)
 - [D2L: Vision Transformer](https://d2l.ai/chapter_attention-mechanisms-and-transformers/vision-transformer.html)
 - [UvA: Vision Transformer notebook](https://uvadlc-notebooks.readthedocs.io/en/latest/tutorial_notebooks/tutorial15/Vision_Transformer.html)

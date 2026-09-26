@@ -3,16 +3,16 @@
     1280,
     720
   ],
-  "teaching_frames": 58,
+  "teaching_frames": 140,
   "cover_frames": 1,
-  "review": "All final frame layouts inspected through the in-app browser; new mask frame and revised attention overlays inspected after rebuilding.",
-  "geometry": "No clipped slide text or text collisions found in the full frame scan; added mask frame visually confirmed.",
+  "review": "All 141 final states (140 teaching frames plus cover) checked for SVG text bounds, text collisions, code overflow and viewport bounds through the in-app browser. Representative new slides visually inspected.",
+  "geometry": "No clipped SVG text, text collisions, overflowing captions or code found.",
   "visual_samples": [
-    "opening photograph",
-    "code-block",
-    "image-mask",
-    "real-heads",
-    "cover"
+    "qkv-match-numbers",
+    "cls-two-images",
+    "task-side-by-side",
+    "q-dot",
+    "pooling-example"
   ],
   "reading_viewport": [
     390,
@@ -41,5 +41,10 @@
   },
   "console_errors_or_warnings": [],
   "audio_or_video_played": false,
-  "verification_date": "2026-09-26"
+  "verification_date": "2026-09-26",
+  "keyboard_reveals": [
+    "s04/20/0 \u2192 s04/20/1 \u2192 s04/21/0"
+  ],
+  "presenter_notes": "Question and pointing instruction confirmed on s04/21/0",
+  "notebook_code_cells": 17
 }

@@ -437,6 +437,10 @@ optimizer.step()''',t(30,65,'image + known label',26,'c-e')+arrow(180,92,180,160
       ('How much does a finer patch grid cost?',[e['patch-cost'],e['cost-control']]),
       ('Can you work it out without the slides?',[e['exercise-message'],e['exercise-shapes'],e['exercise-position']]),
       ('Where can we take visual attention next?',[e['next-vision'],e['closing']])]
+    from vision1_pedagogy import expand
+    sections=expand(b,sections)
+    from vision1_connections import connect
+    sections=connect(b,sections)
     ordered=[]
     for n,(title,frames) in enumerate(sections,1):
         original_section(n,title,frames)
@@ -449,14 +453,14 @@ optimizer.step()''',t(30,65,'image + known label',26,'c-e')+arrow(180,92,180,160
       'title':'An image becomes a sequence',
       'subtitle':'Real photographs, a complete four-patch calculation, and a Vision Transformer we can train and inspect.',
       'audience':'Students who have completed the text attention Parts I–III.',
-      'durationLabel':'Two teaching sessions + a reproducible lab.',
+      'durationLabel':'A step-by-step lecture sequence with a worked lab.',
       'hook':'What can one patch borrow from the rest of its image?',
       'centralLabel':'Follow one computation','central':r'\text{pixels}\to E\to Q,K,V\to A\to H\to E\prime\to p(\text{class})',
       'sections':[{'id':f's{i+1:02}','title':s[0],'lit':''} for i,s in enumerate(sections)],
       'chain':[{'section':f's{i+1:02}','label':s[0]} for i,s in enumerate(sections)],
       'objects':['e','q','k','v','a','d','ep'],
       'objectSections':{'e':'s03','q':'s04','k':'s04','v':'s04','a':'s04','d':'s05','ep':'s06'},
-      'provenance':'Three explicit settings: a hand-chosen four-patch worksheet; a complete small ViT trained on independently generated noisy-image splits; and a pretrained ImageNet ViT measured on real photographs. All reported numbers come from saved, reproducible calculations.',
+      'provenance':'We use small, chosen numbers for the four-patch calculation. Then we train a complete small ViT on noisy images. Finally, we run a pretrained ViT on the photographs. The code and saved results keep these three examples separate.',
       'prev':{'label':'Part 4: Cross-attention: translate one phrase','href':'part4.html'},
       'next':{'label':'Vision II: Learn visual representations without class labels','href':'vision2.html'},
       'index':{'label':'Series home','href':'index.html'},
