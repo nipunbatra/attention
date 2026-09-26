@@ -48,4 +48,12 @@ All learned numbers in this two-image experiment are updated, but this is not ev
 - Flamingo: https://arxiv.org/abs/2204.14198
 - BLIP-2: https://arxiv.org/abs/2301.12597
 
+## Vision I classification-first revision (2026-09-26)
+
+The opening now asks for the label of the exact 8×8 scene whose pixels drive the worksheet. The larger JPEG is explicitly an illustration. Early patch-count discussion moved to section 10 so the first calculation proceeds from the image to patch rows, position, attention, the CLS update and a class loss. The existing one-head, two-image fitted toy remains the main numerical model; its trained snapshot and Vision IV's dependency on the initial snapshot are unchanged.
+
+Section 10 replays scene A's 17×4 rows through two heads with separate 4×2 Q/K/V matrices, then concatenates the messages, applies a 4×4 output projection, adds the residual and computes a two-class prediction. The new second-head, output-projection and class-head weights are hand chosen and are labelled as such. Its five diagrams are original inline SVGs on a held layout. The executed notebook reads committed PNG files of scenes A, B and held-out C, reproduces the two-head worksheet in NumPy, checks the fitted one-head C prediction in PyTorch, and runs a separately pretrained ViT on the existing JPEG illustrations. That ImageNet model's results are reported as an example of the different label space, not evidence of the course toy's right-half task.
+
+Additional reading: https://jalammar.github.io/illustrated-transformer/ for visual pacing; https://huggingface.co/learn/computer-vision-course/unit3/vision-transformers/vision-transformers-for-image-classification and https://huggingface.co/blog/fine-tune-vit for practical classification; https://huggingface.co/docs/transformers/main/model_doc/vit for the library API. Architectural claims and the CLS/global-average-pooling alternative are checked against ViT section 3 and appendix D.3 at https://arxiv.org/abs/2010.11929. The course's example sequence and diagrams are original.
+
 The learner-facing articles link the relevant papers near architectural claims. Release test results belong in `CLASSROOM_QA.md`, not in this provenance record.
