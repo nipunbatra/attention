@@ -54,7 +54,7 @@ def augment(b,sections):
     body+=g(t(35,255,'read A’s three rows',31,'c-e')+t(635,255,'read P1 in A and B',31,'c-a'),1)
     body+=g(t(35,345,'( [2,0]+[4,0]+[6,0] ) / 3',28,'c-v')+t(635,345,'( [2,0]+[0,2] ) / 2',29,'c-v'),2)
     body+=g(t(35,425,'= [4,0]',35,'c-e')+t(635,425,'= [1,1]',35,'c-a'),3)
-    add('batch-axis','A tensor can have the right shape and the wrong meaning',body,'For [B,N,D] input, set batch_first=True so attention runs across N.',
+    add('batch-axis','A tensor can have the right shape and the wrong meaning',body,'Set Q=K=0, V=X and W_O=I. Each output is an average. With [B,N,D] input, batch_first=True keeps that average within each image.',
         'Which axis should softmax normalize over in each image?', 'Use uniform attention to calculate the first output row under both interpretations.',
         'Here Q=K=0, so all allowed sources have equal weight. V and W_O are identity maps. PyTorch MultiheadAttention defaults to [sequence,batch,features]. Passing our [2,3,2] tensor without batch_first=True makes the image axis act as the sequence axis. The output shape still looks valid. The notebook reproduces both calculations; see <a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.MultiheadAttention.html">the documented input layouts</a>.')
     body=t(35,60,'First output row for image A',33)

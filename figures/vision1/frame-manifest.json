@@ -842,7 +842,7 @@
   {
     "id": "batch-axis",
     "title": "A tensor can have the right shape and the wrong meaning",
-    "caption": "For [B,N,D] input, set batch_first=True so attention runs across N.",
+    "caption": "Set Q=K=0, V=X and W_O=I. Each output is an average. With [B,N,D] input, batch_first=True keeps that average within each image.",
     "notes": "Which axis should softmax normalize over in each image?\nUse uniform attention to calculate the first output row under both interpretations.",
     "section": "s08",
     "frame": 8
