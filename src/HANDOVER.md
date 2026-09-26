@@ -362,7 +362,7 @@ Build each part once in any order. `assemble.py` derives available lesson target
 
 The standalone staged diagram lives in `figures/attention-diagram-preview/`. Part 2 embeds its same `diagram.js` source through `src/attention-flow-data.js`; keep the preview and article synchronized by changing that shared source.
 
-Part III now has a 59-frame visual story in `multihead_story.py`. Its generator
+Part III now has a 63-frame visual story in `multihead_story.py`. Its generator
 also retains the 58-step detailed tensor lab for Notebook 7 only. The two manifests
 are `figures/multihead/manifest.json` and `lab-manifest.json`; do not put the
 full lab back into the lecture. The notebook embeds the visual story first,
@@ -383,6 +383,14 @@ Value mixing then uses four held frames: alpha weights, matching V rows,
 scalar–vector products, then a coordinate-wise sum. Keep the message hidden
 until the final frame and keep all ten source rows fixed. `head_walkthrough`
 shares the layouts. Notebook 7 executes each phase after its matching figure.
+
+Before the benchmark, repeat the complete two-head worksheet diagram and link
+back to both head calculations and the output projection. The next three SVGs
+trace the actual 64-token browser models: flattened-window MLP, one-head and
+four-head attention. The MLP distinguishes slots through concatenation and has
+no position table. Both attention variants use learned absolute positions;
+this comparison is not an ablation of position encoding. Model widths and
+readouts follow `wordlm.py`, `multihead.py` and the saved benchmark protocol.
 
 The opening now includes possible colour/material/detail, subject/location and
 object/event readings. These are schematic roles, not measured attention maps.

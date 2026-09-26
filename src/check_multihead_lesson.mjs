@@ -31,8 +31,25 @@ try{
   assert(!notation.includes('4×3'),'No stale Part II query width');
   assert(notation.includes('Additive causal mask')&&notation.includes('message matrix'),'Mask and message notation stays consistent with Part II');
   assert(await page.locator('.mh-frame .python-code .py-call').count()>4,'Static syntax highlighting');
-  assert(manifest.length<=59,'Keep the worked lesson compact, including motivation and the image-classification bridge');
+  assert(manifest.length<=63,'Keep the worked lesson compact, including motivation, model comparison and the image-classification bridge');
   const keys=manifest.map(s=>s.key);
+  const comparisonOrder=['s06-v-return','s06-v-model-mlp','s06-v-model-one','s06-v-model-many','s06-v-width','s06-v-scores','s06-v-cost','s06-v-demo'];
+  for(let i=0;i<comparisonOrder.length;i++){
+    assert(keys.includes(comparisonOrder[i]),'Required model-comparison step: '+comparisonOrder[i]);
+    if(i)assert(keys.indexOf(comparisonOrder[i-1])<keys.indexOf(comparisonOrder[i]),'Model paths before measured scores and the demo');
+  }
+  const modelText=async key=>page.locator('#'+key).textContent();
+  assert.match(await modelText('s06-v-model-mlp'),/No attention layer or separate position table/);
+  assert.match(await modelText('s06-v-model-mlp'),/4,096 → 256/);
+  for(const key of ['s06-v-model-one','s06-v-model-many']){
+    assert.match(await modelText(key),/Position lookup/);
+    assert.match(await modelText(key),/E′ = E \+ ΔE/);
+    assert.match(await modelText(key),/64 → 256/);
+  }
+  assert.equal(await page.locator('#s06-v-model-many [data-benchmark-head]').count(),4);
+  assert.equal(await page.locator('#s06-v-model-many [data-benchmark-concat]').count(),1);
+  assert.equal(await page.locator('#s06-v-return + .companion a[href="#s02-v-head1-matrices"]').count(),1);
+  assert.equal(await page.locator('#s06-v-return + .companion a[href="#s02-v-head2-matrices"]').count(),1);
   for(const [key,heads] of [['s01-v-coat-one',1],['s01-v-coat-many',3],['s01-v-grammar',2],['s01-v-event',2],['s01-v-event-change',2]]){
     const frame=page.locator('#'+key);
     assert.equal(await frame.locator('[data-example-head]').count(),heads,'Illustrated head count: '+key);

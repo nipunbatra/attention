@@ -371,6 +371,34 @@
     "companion": "<p>The library layer does not add position embeddings, the residual or the vocabulary classifier. attn_mask=future blocks future sources. average_attn_weights=False returns each head\u2019s weight grid separately; it changes the returned diagnostic weights, not how the head messages combine. The notebook copies identical weights from our scratch implementation to PyTorch and checks both \u0394E and the per-head attention weights. See the <a href=\"https://docs.pytorch.org/docs/stable/generated/torch.nn.MultiheadAttention.html\">PyTorch documentation</a>.</p>"
   },
   {
+    "key": "s06-v-return",
+    "title": "Back to the complete multi-head model",
+    "body": "We have computed both heads, joined their messages, applied the output projection and added the residual. The final updated row still goes to the familiar prediction MLP.",
+    "code": "",
+    "companion": "<p>This repeats the same two-head diagram after the detailed arithmetic, rather than introducing a new architecture. The worksheet uses ten rows of width four. <a href=\"#s02-v-head1-matrices\">Revisit Head 1\u2019s calculations</a>, <a href=\"#s02-v-head2-matrices\">Head 2\u2019s calculations</a>, or <a href=\"#s03-v-output\">the output projection</a>. <a href=\"notebooks/wordlm/07_multihead_step_by_step.html\">Notebook 7</a> executes the complete forward pass, including the prediction MLP and vocabulary probabilities. This teaching model has one attention update and a prediction MLP; it is not a diagram of every component in a deep production Transformer.</p>"
+  },
+  {
+    "key": "s06-v-model-mlp",
+    "title": "The live MLP reads a flattened window",
+    "body": "Now look at the genuinely trained browser models. The MLP reads all 64 token rows in fixed order. Its hidden layer receives 4,096 inputs.",
+    "code": "",
+    "companion": "<p>This diagram follows FixedWindowMLP in wordlm.py and the saved comparison protocol. Each token embedding has 64 coordinates; concatenating 64 rows gives 4,096. A 4,096\u2192256 hidden layer with ReLU feeds a 256\u21924,000 vocabulary layer. The fixed concatenation order already distinguishes slots. This baseline has no separate learned position table. Its larger first MLP matrix helps explain its parameter count.</p>"
+  },
+  {
+    "key": "s06-v-model-one",
+    "title": "One head adds a learned context update",
+    "body": "Add learned position rows before Q, K and V. One head mixes the sources, the output projection transforms its message, and the residual preserves E. Only the last updated row feeds the prediction MLP.",
+    "code": "",
+    "companion": "<p>The trained single-head model uses d_model = d_k = d_v = 64. The full attention matrix has shape 64\u00d764, with future and padding masks. The optimized browser inference path computes only the final query row, which gives the same next-token logits as taking the last row of this full diagram. The 64\u2192256 prediction MLP replaces the baseline\u2019s much wider 4,096\u2192256 input layer.</p>"
+  },
+  {
+    "key": "s06-v-model-many",
+    "title": "Four heads keep four source-weight patterns",
+    "body": "The input and output widths stay 64. Each head now uses 16 coordinates and its own softmax. Concatenation restores width 64 before the output projection, residual and the same prediction MLP.",
+    "code": "",
+    "companion": "<p>This follows MultiHeadAttentionLM in multihead.py. Each head has Q, K and V of shape 64\u00d716 and its own 64\u00d764 attention matrix. Its H = AV has shape 64\u00d716. Concatenating four H matrices gives 64\u00d764, followed by W_O [64\u00d764]. Both attention variants add learned absolute position rows to token rows. The comparison does not isolate the effect of position encoding, because it does not train a position-free attention ablation. Head count, total width, parameter count, measured losses and device timings must be distinguished.</p>"
+  },
+  {
     "key": "s06-v-width",
     "title": "Keep the total width fixed",
     "body": "The trained comparison uses width 64. Four smaller heads give four attention patterns with the same attention parameter count as one wide head.",

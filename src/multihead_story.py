@@ -659,6 +659,55 @@ def results_table(rows,headers):
     return svg(body,327,'; '.join(headers))
 
 
+def benchmark_map(kind):
+    """The actual browser-model paths, keeping embedding and readout landmarks."""
+    def box(x,y,w,label,sub,c='e',h=70):
+        return '<g>'+rect(x,y,w,h,c,COLORS[c]+'08')+t(x+w/2,y+28,label,25,c,'middle',650)+t(x+w/2,y+54,sub,21,'muted','middle')+'</g>'
+    body=t(24,34,'Same 64-token input window · vocabulary size C = 4,000',27,'ink')
+    body+=box(24,91,213,'Token lookup','64 rows × 64')
+    if kind=='mlp':
+        body+=arrow(237,126,348,126,'e')+box(366,91,186,'Concatenate','1 × 4,096')
+        body+=arrow(552,126,606,126,'e')+box(622,91,234,'MLP hidden layer','4,096 → 256 + ReLU','d')
+        body+=arrow(856,126,910,126,'d')+box(928,91,208,'Logits','256 → 4,000')
+        body+=t(580,268,'Different input slots occupy different parts of the flattened vector.',28,'ink','middle')
+        body+=t(580,322,'No attention layer or separate position table in this baseline.',27,'muted','middle')
+        body+=t(580,429,'Vocabulary softmax → next-token probabilities.',30,'e','middle')
+        return svg(f'<g data-benchmark-model="{kind}">{body}</g>',475,'The trained MLP concatenates all token rows before its prediction layers')
+    body+=box(24,224,213,'Position lookup','64 rows × 64','d')
+    body+=path('M237 126 H280 V189 H291','e')+path('M237 259 H280 V189','d')
+    body+='<circle cx="312" cy="189" r="20" fill="white" stroke="'+COLORS['d']+'" stroke-width="2"/>'+t(312,198,'+',29,'d','middle')
+    body+=arrow(334,189,366,189,'e')+box(382,155,153,'Input E','64 × 64')
+    if kind=='attention':
+        body+=path('M535 189 H567 V132','e')+arrow(567,132,600,132,'e')
+        body+=box(600,97,285,'One attention head','Q, K, V: each 64 × 64','q')
+        body+=arrow(742,167,742,182,'q')
+        body+=t(742,207,'A = softmax(masked scores)',23,'a','middle')
+        body+=arrow(742,219,742,237,'a')
+        body+=t(742,266,'H = AV: 64 × 64',26,'v','middle')
+        body+=path('M860 259 H915 V189','v')+arrow(915,189,945,189,'v')
+    else:
+        body+=path('M535 189 H566 M566 94.5 V229.5','e')
+        for h in range(4):
+            y=76+45*h
+            body+=arrow(566,y+18.5,600,y+18.5,'e')
+            body+=f'<g data-benchmark-head="{h+1}">'+rect(600,y,245,37,'q',COLORS['q']+'08')+t(722,y+26,f'Head {h+1}: H is 64 × 16',22,'q','middle')+'</g>'
+            body+=path(f'M845 {y+18.5} H870','v')
+        body+=path('M870 94.5 V249 H742','v')+arrow(742,249,742,271,'v')
+        body+='<g data-benchmark-concat="true">'+rect(600,271,285,45,'v',COLORS['v']+'08')+t(742,301,'Concat H: 64 × 64',25,'v','middle',650)+'</g>'
+        body+=path('M885 294 H915 V189','v')+arrow(915,189,945,189,'v')
+    body+=box(945,155,185,'Output W_O','64 × 64','d')
+    body+=path('M459 155 V61 H1150 V327 H1061','e',2,'7 6')
+    body+=t(1067,48,'keep E',20,'e','middle')
+    body+=arrow(1037,225,1037,300,'d')
+    body+='<circle cx="1037" cy="327" r="24" fill="white" stroke="'+COLORS['d']+'" stroke-width="2"/>'+t(1037,336,'+',30,'d','middle')
+    body+=path('M1037 351 V381 H1027','d')
+    body+=box(808,346,219,'E′ = E + ΔE','last row: 1 × 64','d')
+    body+=arrow(808,381,730,381,'d')+box(456,346,258,'Prediction MLP','64 → 256 + ReLU','e')
+    body+=arrow(456,381,360,381,'e')+box(24,346,320,'Vocabulary logits','256 → 4,000','e')
+    body+=t(580,467,'Vocabulary softmax → next-token probabilities.',28,'e','middle')
+    return svg(f'<g data-benchmark-model="{kind}">{body}</g>',507,'The trained '+('single-head' if kind=='attention' else 'four-head')+' browser model, including learned positions, output projection, residual and prediction MLP')
+
+
 def story(stage,base,data):
     R=data['cases']['river'];parts=[]
     def add(title,frames):parts.append((title,frames))
@@ -807,6 +856,22 @@ E_prime = E + delta_E''',
     scores=[[labels[k],f(result['aggregate'][k]['test_loss']['mean'],3),f(result['aggregate'][k]['test_perplexity']['mean'],2)] for k in labels]
     costs=[[labels[k],f'{result["runs"][k][0]["parameter_count"]:,}',f(result['aggregate'][k]['runtime_seconds']['mean'],1)+' s'] for k in labels]
     add('Do more heads help our trained model?',[
+        s('s06-v-return','Back to the complete multi-head model',full_map('all'),
+          'We have computed both heads, joined their messages, applied the output projection and added the residual. The final updated row still goes to the familiar prediction MLP.',
+          companion='<p>This repeats the same two-head diagram after the detailed arithmetic, rather than introducing a new architecture. The worksheet uses ten rows of width four. <a href="#s02-v-head1-matrices">Revisit Head 1’s calculations</a>, <a href="#s02-v-head2-matrices">Head 2’s calculations</a>, or <a href="#s03-v-output">the output projection</a>. <a href="notebooks/wordlm/07_multihead_step_by_step.html">Notebook 7</a> executes the complete forward pass, including the prediction MLP and vocabulary probabilities. This teaching model has one attention update and a prediction MLP; it is not a diagram of every component in a deep production Transformer.</p>',
+          notes='Can you name every operation between the input and the next-token prediction?\nFollow both branches, then their join, W_O, residual and prediction MLP.'),
+        s('s06-v-model-mlp','The live MLP reads a flattened window',benchmark_map('mlp'),
+          'Now look at the genuinely trained browser models. The MLP reads all 64 token rows in fixed order. Its hidden layer receives 4,096 inputs.',
+          companion='<p>This diagram follows FixedWindowMLP in wordlm.py and the saved comparison protocol. Each token embedding has 64 coordinates; concatenating 64 rows gives 4,096. A 4,096→256 hidden layer with ReLU feeds a 256→4,000 vocabulary layer. The fixed concatenation order already distinguishes slots. This baseline has no separate learned position table. Its larger first MLP matrix helps explain its parameter count.</p>',
+          notes='Where is order stored in the MLP baseline?\nPoint to the fixed positions in the concatenation. Multiplying 64 rows by 64 coordinates gives 4,096 inputs.'),
+        s('s06-v-model-one','One head adds a learned context update',benchmark_map('attention'),
+          'Add learned position rows before Q, K and V. One head mixes the sources, the output projection transforms its message, and the residual preserves E. Only the last updated row feeds the prediction MLP.',
+          companion='<p>The trained single-head model uses d_model = d_k = d_v = 64. The full attention matrix has shape 64×64, with future and padding masks. The optimized browser inference path computes only the final query row, which gives the same next-token logits as taking the last row of this full diagram. The 64→256 prediction MLP replaces the baseline’s much wider 4,096→256 input layer.</p>',
+          notes='What changed from the MLP baseline?\nFollow the added position lookup and attention update. The readout now sees one contextual 64-coordinate row.'),
+        s('s06-v-model-many','Four heads keep four source-weight patterns',benchmark_map('multihead'),
+          'The input and output widths stay 64. Each head now uses 16 coordinates and its own softmax. Concatenation restores width 64 before the output projection, residual and the same prediction MLP.',
+          companion='<p>This follows MultiHeadAttentionLM in multihead.py. Each head has Q, K and V of shape 64×16 and its own 64×64 attention matrix. Its H = AV has shape 64×16. Concatenating four H matrices gives 64×64, followed by W_O [64×64]. Both attention variants add learned absolute position rows to token rows. The comparison does not isolate the effect of position encoding, because it does not train a position-free attention ablation. Head count, total width, parameter count, measured losses and device timings must be distinguished.</p>',
+          notes='Which dimension changes when we use four heads?\nThe per-head width falls to 16; token count and total width stay the same. Trace four separate weight patterns before concatenation.'),
         s('s06-v-width','Keep the total width fixed',widths(),
           'The trained comparison uses width 64. Four smaller heads give four attention patterns with the same attention parameter count as one wide head.',
           companion='<p>Implementations often concatenate the per-head W_Q matrices into one large W_Q (and similarly for K and V). They project E first and reshape the projected coordinates into heads. They do not assign disjoint slices of raw E to different heads. Our two-head arithmetic toy uses width 4; this experiment uses width 64.</p>'),

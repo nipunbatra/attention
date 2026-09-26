@@ -15,7 +15,7 @@ SVG drawings used in Part II. It also reused M for messages even though Part II
 already reserved M for the mask, and used H as the head count instead of the
 message matrix. Fit tests did not catch those teaching failures.
 
-## Revised visual sequence (59 frames)
+## Revised visual sequence (63 frames)
 
 1. Start with the river-bank sentence, then motivate several independent readings:
    colour/material/detail in a coat; grammatical subject versus location; object
@@ -46,7 +46,14 @@ message matrix. Fit tests did not catch those teaching failures.
    Explain a bias with a two-number offset and locate it in all four projections.
    Match `bias=False` to the worksheet and distinguish the separate MLP biases.
    Keep batching, packed projections and the full training loop in the notebook.
-6. Compare measured trained results and open the real browser demo.
+6. Return to the complete two-head worksheet diagram after the arithmetic and
+   code. Then show the actual browser models with consistent landmarks:
+   flattened-window MLP, single-head attention, four-head attention. Label
+   the 64-token window, 64-coordinate embeddings, per-head widths, output
+   projection, residual and prediction layers. The MLP has no separate
+   position table: fixed concatenation order distinguishes slots. Both
+   attention variants use learned absolute positions; this is not a
+   position-encoding ablation. Compare measured results and open the live demo.
 7. Bridge to image classification: four image patches become four embedding
    rows through a shared projection. Add CLS and positions, update the five
    rows with an encoder, classify from the final CLS row. No causal mask is
