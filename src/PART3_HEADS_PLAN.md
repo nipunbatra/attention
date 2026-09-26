@@ -15,17 +15,25 @@ SVG drawings used in Part II. It also reused M for messages even though Part II
 already reserved M for the mask, and used H as the head count instead of the
 message matrix. Fit tests did not catch those teaching failures.
 
-## Revised visual sequence (45 frames)
+## Revised visual sequence (59 frames)
 
-1. Start with the river-bank sentence. A separate two-source example computes
+1. Start with the river-bank sentence, then motivate several independent readings:
+   colour/material/detail in a coat; grammatical subject versus location; object
+   reference versus the event affecting it. Hold the object fixed and change
+   dropped to washed. Label these as possible roles, not measured trained maps.
+   A separate two-source example computes
    one shared value mixture and two independent mixtures before the full
-   ten-token setting/person patterns. One head is not limited to one word.
+   ten-token setting/person patterns. Solve for the two incompatible source
+   weights with fixed values. One head is not limited to one word, and this is
+   not an impossibility result for arbitrary learned one-head networks.
 2. Recall Part II’s Maya query/key/value roles before the matrices. Translate
    those roles to the river prefix. Compute each head’s query on its own slide.
    Work through Head 1 completely: numerical Q/K matrices, the final query
-   times Kᵀ, all ten scaled scores and softmax weights, then every weighted
-   value contribution. Repeat that same four-frame layout for Head 2 before
-   the combined calculation. Keep receiver 10 fixed throughout.
+   times Kᵀ, all ten scaled scores and softmax weights. Then hold the source
+   rows in place across four frames: weights, matching values, products and
+   column sums. Both coordinates receive the same source weight. Reveal the
+   message only after every contribution is visible. Repeat the same seven
+   frames for Head 2 before the combined calculation. Keep receiver 10 fixed.
    Repack those exact coordinates into one wide head. Compare the single
    softmax with the two independent rows, without claiming universal superiority.
 3. Join the messages, multiply by W_O and add the update to the original e.
@@ -39,12 +47,18 @@ message matrix. Fit tests did not catch those teaching failures.
    Match `bias=False` to the worksheet and distinguish the separate MLP biases.
    Keep batching, packed projections and the full training loop in the notebook.
 6. Compare measured trained results and open the real browser demo.
+7. Bridge to image classification: four image patches become four embedding
+   rows through a shared projection. Add CLS and positions, update the five
+   rows with an encoder, classify from the final CLS row. No causal mask is
+   needed for this image task. This is a two-frame roadmap, not a rewritten
+   Vision I lecture or a new benchmark. Next navigation points to Vision I;
+   cross-attention remains an optional linked continuation.
 
 The original detailed steps remain in `figures/multihead/lab-manifest.json` and
 Notebook 7, after the new visual story. `multihead_story.py` authors the lecture;
 `build_multihead_lesson.py` builds both resources from `head_worksheet.py`.
-Notebook 7 pairs each of the eight head-arithmetic figures with code that
-reproduces its matrices, dot products, normalization or value contributions.
+Notebook 7 pairs each of the fourteen head-arithmetic figures with code that
+reproduces its matrices, dot products, normalization or value-mixing stage.
 
 Notation follows Part II: row vectors; e, Δe, e′; A for attention weights;
 α_ij for one entry; M for the mask; H=AV for messages. Parenthesized superscripts

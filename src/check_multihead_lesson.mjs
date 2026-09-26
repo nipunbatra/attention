@@ -31,17 +31,63 @@ try{
   assert(!notation.includes('4×3'),'No stale Part II query width');
   assert(notation.includes('Additive causal mask')&&notation.includes('message matrix'),'Mask and message notation stays consistent with Part II');
   assert(await page.locator('.mh-frame .python-code .py-call').count()>4,'Static syntax highlighting');
-  assert(manifest.length<=45,'Keep the lecture compact, including the separate head matrix walkthroughs');
+  assert(manifest.length<=59,'Keep the worked lesson compact, including motivation and the image-classification bridge');
   const keys=manifest.map(s=>s.key);
+  for(const [key,heads] of [['s01-v-coat-one',1],['s01-v-coat-many',3],['s01-v-grammar',2],['s01-v-event',2],['s01-v-event-change',2]]){
+    const frame=page.locator('#'+key);
+    assert.equal(await frame.locator('[data-example-head]').count(),heads,'Illustrated head count: '+key);
+    assert((await frame.textContent()).includes('not a trained model'),'Separate hypothetical roles from measured weights');
+  }
+  for(const [before,after] of [['s01-v-coat-one','s01-v-coat-many'],['s01-v-event','s01-v-event-change']]){
+    const heldHead=key=>page.locator(`#${key} [data-example-head="1"]`).evaluate(el=>el.outerHTML);
+    assert.equal(await heldHead(before),await heldHead(after),'Hold the first illustrative reading fixed while adding/changing another');
+  }
+  assert((await page.locator('#s01-v-grammar').textContent()).includes('usually'),'Follow a receiver after both useful source words');
+  const motivationOrder=['s01-v-coat-one','s01-v-coat-many','s01-v-grammar','s01-v-event','s01-v-event-change','s01-v-shared','s01-v-independent','s01-v-coupled','s01-v-one'];
+  for(let i=1;i<motivationOrder.length;i++)assert(keys.indexOf(motivationOrder[i-1])<keys.indexOf(motivationOrder[i]),'Examples, fixed-value bottleneck, then computed heads');
+  assert((await page.locator('#s01-v-coupled').textContent()).includes('α = 0.8'));
+  assert((await page.locator('#s01-v-coupled').textContent()).includes('α = 0.2'));
+  assert.match(await page.locator('#s07-v-patches').textContent(),/16 × 4/);
+  assert.match(await page.locator('#s07-v-classifier').textContent(),/no future-token mask/);
+  assert.equal(await page.locator('#s07-v-classifier a').getAttribute('href'),'vision1.html');
   for(const key of ['s01-v-independent','s01-v-one','s02-v-recall','s02-v-query','s02-v-query-person','s02-v-match'])assert(keys.includes(key),'Required teaching step: '+key);
   assert(keys.indexOf('s01-v-independent')<keys.indexOf('s01-v-one'),'Explain independent mixtures before showing computed head patterns');
   assert(keys.indexOf('s02-v-recall')<keys.indexOf('s02-v-query'),'Recall query/key/value roles before the projection arithmetic');
   assert(keys.indexOf('s02-v-query-person')<keys.indexOf('s02-v-match'),'Introduce both queries before key matching');
-  const arithmeticOrder=['s02-v-head1-matrices','s02-v-match','s02-v-weights','s02-v-head1-values',
-    's02-v-head2-matrices','s02-v-head2-dots','s02-v-head2-softmax','s02-v-head2-values','s02-v-message'];
+  const arithmeticOrder=['s02-v-head1-matrices','s02-v-match','s02-v-weights',
+    ...['alpha','values','products','sum'].map(phase=>'s02-v-head1-'+phase),
+    's02-v-head2-matrices','s02-v-head2-dots','s02-v-head2-softmax',
+    ...['alpha','values','products','sum'].map(phase=>'s02-v-head2-'+phase),'s02-v-message'];
   for(let i=0;i<arithmeticOrder.length;i++){
     assert(keys.includes(arithmeticOrder[i]),'Required arithmetic step: '+arithmeticOrder[i]);
     if(i)assert(keys.indexOf(arithmeticOrder[i-1])<keys.indexOf(arithmeticOrder[i]),'Finish each head separately before combining');
+  }
+  for(const head of [1,2]){
+    const stages=['alpha','values','products','sum'];
+    const parts=['sources','weights','values','contributions','sum'];
+    const held=new Map();
+    for(let level=0;level<stages.length;level++){
+      const figure=page.locator(`#s02-v-head${head}-${stages[level]} svg`);
+      assert.equal(await figure.locator('[data-value-phase]').getAttribute('data-value-phase'),stages[level]);
+      for(const [index,part] of parts.entries()){
+        const col=figure.locator(`[data-values-part="${part}"]`);
+        const visible=index<=level+1;
+        assert.equal(await col.count(),visible?1:0,`Head ${head}: reveal ${part} only when reached`);
+        if(!visible)continue;
+        const contents=await col.evaluate(el=>el.outerHTML);
+        if(held.has(part))assert.equal(contents,held.get(part),`Head ${head}: keep ${part} fixed between stages`);
+        else held.set(part,contents);
+        if(part!=='sum'){
+          assert.equal(await col.locator('[data-source-row]').count(),10,'Every source stays visible');
+          const gap=await col.evaluate(el=>{
+            const heading=el.querySelector(':scope > text').getBBox();
+            const row=el.querySelector('[data-source-row="1"] text').getBBox();
+            return row.y-heading.y-heading.height;
+          });
+          assert(gap>=2,`Head ${head}: ${part} heading must clear the first numeric row`);
+        }
+      }
+    }
   }
   assert(!await page.locator('.mh-frame').evaluateAll(frames=>frames.some(f=>/0[1-3] → 0[2-4]/.test(f.textContent))),'No unexplained section-number transitions');
   const plan=await page.locator('#s02-v-plan').textContent();

@@ -2,9 +2,9 @@
   "part": 3,
   "series": "Attention and language",
   "title": "Multi-head attention, step by step",
-  "subtitle": "One sentence, different clues. Watch two heads read, then combine what they find.",
+  "subtitle": "Different clues, separate readings. Work through two heads, then take the same idea to images.",
   "audience": "Deep-learning students who completed Parts I\u2013II",
-  "minutes": 40,
+  "minutes": 45,
   "centralLabel": "Two messages, one update",
   "central": "E'=E+\\operatorname{Concat}(H^{(1)},H^{(2)})W_O",
   "chain": [
@@ -31,6 +31,10 @@
     {
       "label": "Do more heads help our trained model?",
       "section": "s06"
+    },
+    {
+      "label": "Next: classify an image with the same attention operation",
+      "section": "s07"
     }
   ],
   "sections": [
@@ -63,6 +67,11 @@
       "id": "s06",
       "title": "Do more heads help our trained model?",
       "lit": ""
+    },
+    {
+      "id": "s07",
+      "title": "Next: classify an image with the same attention operation",
+      "lit": ""
     }
   ],
   "objects": [
@@ -81,8 +90,8 @@
     "href": "attention.html"
   },
   "next": {
-    "label": "Part 4: Cross-attention: translate one phrase",
-    "href": "part4.html"
+    "label": "Vision I: From pixels to an image class",
+    "href": "vision1.html"
   },
   "index": {
     "label": "Series home",

@@ -1,5 +1,33 @@
 # Classroom release checks
 
+## 2026-09-26 · Motivate multiple heads before the arithmetic
+
+- Added three families of possible head readings: coat colour/material/detail;
+  plural subject versus location; object reference versus the event affecting it.
+  Keep the first coat reading fixed while adding two heads. Keep the glass
+  reading fixed while changing dropped to washed. The grammar receiver is
+  usually, after both dogs and gate. These diagrams explicitly describe
+  illustrative roles, not measured trained attention or hard source selection.
+- The fixed-value example solves for two incompatible river weights (0.8 for
+  setting, 0.2 for person). This explains independent source weighting without
+  asserting that all one-head models fail. Keep the later controlled comparison
+  against one wider Q/K/V head and the separate measured three-seed benchmark.
+- Retained the staged per-head arithmetic: weights, source values, products,
+  coordinate sums. Notebook 7 embeds every figure and executes each calculation.
+  Added an executable check of the fixed-value weighting constraint.
+- Added two closing shape diagrams linking to Vision I: 8×8 grayscale image,
+  four 4×4 patches, shared 16×4 projection, then five 4-wide rows including CLS,
+  encoder and two-class readout. No causal mask for classification. This is a
+  transition, not a newly trained vision model or a rewrite of Vision I.
+- Verified 59 content frames / 60 presentation states at 1280×720 and 760×1041,
+  37 unique formulas, no overflowing frames or math failures. Inspected all eight
+  new diagrams in desktop presentation and representative portrait views.
+  The regression verifies 1,840 numbers, live controls, SVG label bounds, held
+  readings, notebook/figure parity and fresh mobile reading-mode containment.
+  Notebook 7 executes cleanly; all eight scratch/PyTorch tests pass. Rebuilding
+  with Python 3.13 changes worksheet floats by at most 1.78e-15, with identical
+  structure and unchanged displayed calculations. No training was rerun.
+
 ## 2026-09-25 · Compute Q/K before the RoPE geometry
 
 - Replace the equal unit-vector shortcut with an explicit first-layer example:

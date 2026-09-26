@@ -15,9 +15,10 @@ def build():
     md=nbf.v4.new_markdown_cell;code=nbf.v4.new_code_cell
     cells=[md('''# Multi-head attention, step by step
 
-Keep the river-bank example from Part II. First follow two different reading
-patterns through the lecture's figures. Then run the detailed implementation
-lab, including the batch axes and a numerical comparison with PyTorch.
+Begin with colour/material/detail, subject/location, and object/event examples.
+These illustrate possible head roles, not measured attention. Then return to
+Part II’s river-bank example and compute two complete head messages. Run the
+implementation lab, including the batch axes and a comparison with PyTorch.
 
 [Visual story](#visual-story) · [Executable lab](#executable-lab)
 
@@ -75,6 +76,14 @@ print('One shared mixture:', one_head.tolist())
 print('Two separate mixtures:', two_heads.tolist())
 torch.testing.assert_close(one_head, torch.tensor([8.4, 2.4]))
 torch.testing.assert_close(two_heads, torch.tensor([8.4, 6.6]))'''))
+        if step['key']=='s01-v-coupled':
+            cells.append(code('''# For fixed values, one river weight cannot meet both targets.
+a_for_setting = (8.4 - 2.) / (10. - 2.)
+a_for_person = (6.6 - 8.) / (1. - 8.)
+assert math.isclose(a_for_setting, 0.8)
+assert math.isclose(a_for_person, 0.2)
+assert not math.isclose(a_for_setting, a_for_person)
+print('Required river weights:', a_for_setting, a_for_person)'''))
         if step['key']=='s02-v-sources':
             cells.append(code('''# Every projected row is computed from an input embedding.
 case = worksheet['headsLesson']['cases']['river']
@@ -92,7 +101,10 @@ for h, projection in enumerate(worksheet['headsLesson']['projections']):
             's02-v-head1-matrices': (0, 'matrices'), 's02-v-head2-matrices': (1, 'matrices'),
             's02-v-match': (0, 'dots'), 's02-v-head2-dots': (1, 'dots'),
             's02-v-weights': (0, 'softmax'), 's02-v-head2-softmax': (1, 'softmax'),
+            's02-v-head1-alpha': (0, 'alpha'), 's02-v-head2-alpha': (1, 'alpha'),
             's02-v-head1-values': (0, 'values'), 's02-v-head2-values': (1, 'values'),
+            's02-v-head1-products': (0, 'products'), 's02-v-head2-products': (1, 'products'),
+            's02-v-head1-sum': (0, 'sum'), 's02-v-head2-sum': (1, 'sum'),
         }
         if step['key'] in head_arithmetic:
             h, phase = head_arithmetic[step['key']]
@@ -130,12 +142,39 @@ for j, word in enumerate(case['tokens']):
           'exp:', round(exponentials[0, j].item(), 3),
           'weight:', round(weights[0, j].item(), 3))
 print('Shared denominator:', total.item())'''))
-            else:
-                cells.append(code('''contributions = weights.T * V  # [10, 1] * [10, 2]
-message = weights @ V  # [1, 10] @ [10, 2] -> [1, 2]
+            elif phase == 'alpha':
+                cells.append(code('''# The final receiver uses row 10 of its head's attention matrix.
+# Python index 9 is the tenth token. Each j below names a source.
+assert weights.shape == (1, 10)
+for j, word in enumerate(case['tokens']):
+    print(f'source {j + 1}: {word}, alpha = {weights[0, j].item():.3f}')'''))
+            elif phase == 'values':
+                cells.append(code('''assert V.shape == (10, 2)
+for j, word in enumerate(case['tokens']):
+    print(word, 'weight:', round(weights[0, j].item(), 3),
+          'value row:', V[j].tolist())'''))
+            elif phase == 'products':
+                cells.append(code('''# One scalar multiplies both coordinates of its source's value.
+source = 5 if head_index == 0 else 1  # river or fisherman
+alpha = weights[0, source]
+value = V[source]
+print(case['tokens'][source], ':', alpha.item(), '*', value.tolist())
+print('Contribution:', (alpha * value).tolist())
+
+# Line up the ten weights with the ten value rows. Broadcasting
+# applies each [10, 1] weight to both columns of V [10, 2].
+contributions = weights.T * V
+assert contributions.shape == (10, 2)
 for word, row in zip(case['tokens'], contributions):
-    print(word, row.tolist())
-torch.testing.assert_close(contributions.sum(dim=0, keepdim=True), message)
+    print(word, row.tolist())'''))
+            else:
+                cells.append(code('''# Sum down the ten sources, keeping the two coordinates separate.
+message = contributions.sum(dim=0, keepdim=True)
+print('First coordinate:', contributions[:, 0].sum().item())
+print('Second coordinate:', contributions[:, 1].sum().item())
+assert message.shape == (1, 2)
+# The matrix product performs exactly the same multiply-and-sum.
+torch.testing.assert_close(message, weights @ V)
 torch.testing.assert_close(message[0], torch.tensor(case['heads'][head_index]['messages'][-1]))
 print('Message:', message.tolist())'''))
         if step['key']=='s02-v-separate':

@@ -278,14 +278,14 @@ def build():
         sections.append(dict(id=f's{n:02}',title=title,lit=''))
         (OUT/f'sec{n:02}.html').write_text(section(n,title,frames))
     config=dict(part=3,series='Attention and language',title='Multi-head attention, step by step',
-                subtitle='One sentence, different clues. Watch two heads read, then combine what they find.',
-                audience='Deep-learning students who completed Parts I–II',minutes=40,
+                subtitle='Different clues, separate readings. Work through two heads, then take the same idea to images.',
+                audience='Deep-learning students who completed Parts I–II',minutes=45,
                 centralLabel='Two messages, one update',central=r"E'=E+\operatorname{Concat}(H^{(1)},H^{(2)})W_O",
                 chain=[dict(label=s['title'],section=s['id']) for s in sections],sections=sections,
                 objects=['e','q','k','v','a','d','ep'],legendTitle='The same objects as Part II',
                 provenance='Original worked river-bank example, with visual inspiration from 3Blue1Brown and Jay Alammar. The two-head numbers are hand-chosen; the separate TinyStories results come from trained models.',
                 prev=dict(label='Part 2: Self-attention, from first principles',href='attention.html'),
-                next=dict(label='Part 4: Cross-attention: translate one phrase',href='part4.html'),
+                next=dict(label='Vision I: From pixels to an image class',href='vision1.html'),
                 index=dict(label='Series home',href='index.html'),notation='multihead',
                 footer='Same inputs. Separate attention patterns. One updated representation. Full code in Notebook 7; optional training and cost reference in Part 2B.',
                 objectSections=dict(e='s01',q='s02',k='s02',v='s02',a='s01',d='s03',ep='s03'),

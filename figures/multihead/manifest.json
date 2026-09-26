@@ -7,9 +7,44 @@
     "companion": ""
   },
   {
+    "key": "s01-v-coat-one",
+    "title": "One token can need several kinds of detail",
+    "body": "At \u201ccoat\u201d, colour is useful\u2014but so are material and shape. One head can read several words. The question is whether we want the same mixture for every feature.",
+    "code": "",
+    "companion": "<p>These next examples illustrate possible readings, not attention measured in our trained language model. A query is a numerical vector, not an English question. Each source also has a numerical key and value. The arrows highlight plausible useful sources; they do not mean all other sources are masked or have exactly zero weight. In deeper layers, source rows can already contain context.</p>"
+  },
+  {
+    "key": "s01-v-coat-many",
+    "title": "Three heads can keep three readings separate",
+    "body": "One head could favour red, another wool, another hooded. Each receives the same input rows but can return a different weighted message. The output projection combines those messages.",
+    "code": "",
+    "companion": "<p>This is a possible division of work, not three manually assigned jobs. All three heads see all seven rows, including coat. Head-specific projections can expose different matching and value features. A single head may also encode several attributes; the extra capability is independent source weighting, not a rule that each head can understand only one concept.</p>"
+  },
+  {
+    "key": "s01-v-grammar",
+    "title": "The nearest noun is not always the subject",
+    "body": "The plural subject and the location are both useful clues. Separate heads can preserve them without having to favour the same source.",
+    "code": "",
+    "companion": "<p>The receiver is usually, the last known token\u2014not the as-yet-unknown word bark. \u201cThe dogs near the gate usually bark at visitors\u201d is one possible continuation. Dogs supports bark, not barks; the nearer singular noun gate does not control subject agreement. Both useful source words occur before the receiver. These semantic roles are illustrative, not measured trained heads.</p>"
+  },
+  {
+    "key": "s01-v-event",
+    "title": "A reference and an event are different clues",
+    "body": "At \u201cIt\u201d, one reading could retrieve the object; another could retrieve what happened to it. Combining glass and dropping makes \u201cbroke\u201d a plausible continuation, not a certainty.",
+    "code": "",
+    "companion": "<p>We treat punctuation as a token in this illustration: It is receiver 6. Both useful sources are in its known prefix. The two heads run in parallel, so the event head does not wait for the reference head\u2019s result. Contextual input rows from earlier layers can help make these matches.</p>"
+  },
+  {
+    "key": "s01-v-event-change",
+    "title": "Change the event; keep the object",
+    "body": "The glass is unchanged. \u201cWashed\u201d supports a different continuation, such as \u201cgleamed\u201d. Separate messages carry both the object clue and the event clue.",
+    "code": "",
+    "companion": "<p>The arrows are a schematic of useful information, not a promise that a trained attention map remains unchanged after a word substitution. All head projections learn jointly from prediction loss. Interpretable roles sometimes emerge, but some heads overlap or can be pruned; see <a href=\"https://aclanthology.org/P19-1580/\">Voita et al. (2019)</a>. More heads are a capacity choice to test, not an automatic improvement.</p>"
+  },
+  {
     "key": "s01-v-shared",
     "title": "One head mixes the value rows",
-    "body": "Suppose we want setting clues from river and person clues from fisherman. A single head uses one source weight for every coordinate of each value.",
+    "body": "Back to river and fisherman. Suppose we want setting clues from one and person clues from the other. A single head uses one source weight for every coordinate of each value.",
     "code": "",
     "companion": "<p>This two-source illustration uses invented values and normalized weights, separately from the ten-token worksheet that follows. A weight of 0.8 on river scales both of its value coordinates. A head can attend to multiple sources, but cannot choose a separate attention weight for each value coordinate.</p>"
   },
@@ -19,6 +54,13 @@
     "body": "Let one head return the setting feature and another return the person feature. Each head can choose its own source weights. Their outputs stay separate until the output projection.",
     "code": "",
     "companion": "<p>Both heads receive both source rows. For this illustration, one value projection selects the setting coordinate and the other selects the person coordinate. The total output width stays two. The example demonstrates independent weighting, not a guarantee that two trained heads outperform every one-head model. The following slides return to our ten-token, four-coordinate worksheet.</p>"
+  },
+  {
+    "key": "s01-v-coupled",
+    "title": "Why can\u2019t one mixture give both results?",
+    "body": "With these fixed values, choosing the best mixture for one output changes the other output too. Two heads remove that coupling by learning separate source-weight rows.",
+    "code": "",
+    "companion": "<p>This is a claim about the displayed weighted-sum operation with fixed V, not a proof that every one-head network fails. A one-head model can learn other values and downstream transformations. Making Q/K wider still yields one score per source and one softmax row; making V wider still applies that row to every value coordinate. Later we compare one wide head and two narrow heads using the same projection entries.</p>"
   },
   {
     "key": "s01-v-one",
@@ -112,11 +154,32 @@
     "companion": "<p>Every source contributes to the denominator, including the receiver itself. All displayed numbers are rounded; calculations use full precision. At receiver row 10, the causal mask permits source positions 1 through 10. Earlier query rows cannot read later sources. The notebook also computes the full masked attention matrix. A numerically stable softmax subtracts the maximum score before exponentiating; this leaves the normalized weights unchanged.</p>"
   },
   {
-    "key": "s02-v-head1-values",
-    "title": "Head 1: weighting every value row",
-    "body": "Multiply each value row by its source weight, then add all ten rows. Each scalar weight multiplies both value coordinates. The two column sums form the message. Displayed numbers are rounded.",
+    "key": "s02-v-head1-alpha",
+    "title": "Head 1: the weights for each source",
+    "body": "\\(\\alpha_{10,j}\\) tells us how much the final \u201cthe\u201d reads from source \\(j\\). Keep these weights as we bring in the values.",
     "code": "",
-    "companion": "<p>The table lists the entries of one attention row vertically to line them up with V\u2019s ten source rows. The matrix product is still [1,10] \u00d7 [10,2] = [1,2]. Displayed values and contributions are rounded; the result uses full precision. Keys chose the weights. Values supply the numbers in this sum.</p>"
+    "companion": "<p>These are the ten entries of row 10 of this head\u2019s attention matrix A. We display them vertically so each weight can sit beside its source word and value row. The receiver stays fixed at token 10. Only the source index j changes.</p>"
+  },
+  {
+    "key": "s02-v-head1-values",
+    "title": "Head 1: the value beside each weight",
+    "body": "Each source supplies a two-number value row from this head\u2019s V matrix. The source words and weights stay in place, so we can see which weight belongs to which value.",
+    "code": "",
+    "companion": "<p>V = E W_V has one row per source. These are projected value vectors, not token IDs or attention weights. Our hand-chosen worksheet gives W_K and W_V equal entries, but they remain separate parameters with different roles. The keys helped compute the weights. V supplies the content to mix.</p>"
+  },
+  {
+    "key": "s02-v-head1-products",
+    "title": "Head 1: each source\u2019s contribution",
+    "body": "Multiply both value coordinates by the same source weight. The new column shows exactly what each source contributes. Displayed numbers are rounded.",
+    "code": "",
+    "companion": "<p>The calculation below the rows expands the highlighted source\u2019s scalar\u2013vector multiplication coordinate by coordinate. A small weight scales down the entire value vector. The sign of each coordinate comes from the value. All products use the unrounded weights.</p>"
+  },
+  {
+    "key": "s02-v-head1-sum",
+    "title": "Head 1: adding the contributions",
+    "body": "Add the first coordinates to get the first message coordinate. Add the second coordinates to get the second. All ten sources contribute. The sum uses unrounded products.",
+    "code": "",
+    "companion": "<p>This is one row of H = AV: m\u2081\u2080 = \u03a3\u2c7c \u03b1\u2081\u2080,\u2c7c v\u2c7c. The original weight row has shape [1,10] and V has shape [10,2], giving a [1,2] message. We arranged the weights vertically only to make the source correspondence visible. The displayed products are rounded, but the sums use full precision.</p>"
   },
   {
     "key": "s02-v-head2-matrices",
@@ -140,11 +203,32 @@
     "companion": "<p>Every source contributes to the denominator, including the receiver itself. All displayed numbers are rounded; calculations use full precision. At receiver row 10, the causal mask permits source positions 1 through 10. Earlier query rows cannot read later sources. The notebook also computes the full masked attention matrix. A numerically stable softmax subtracts the maximum score before exponentiating; this leaves the normalized weights unchanged.</p>"
   },
   {
-    "key": "s02-v-head2-values",
-    "title": "Head 2: weighting every value row",
-    "body": "Multiply each value row by its source weight, then add all ten rows. Each scalar weight multiplies both value coordinates. The two column sums form the message. Displayed numbers are rounded.",
+    "key": "s02-v-head2-alpha",
+    "title": "Head 2: the weights for each source",
+    "body": "\\(\\alpha_{10,j}\\) tells us how much the final \u201cthe\u201d reads from source \\(j\\). Keep these weights as we bring in the values.",
     "code": "",
-    "companion": "<p>The table lists the entries of one attention row vertically to line them up with V\u2019s ten source rows. The matrix product is still [1,10] \u00d7 [10,2] = [1,2]. Displayed values and contributions are rounded; the result uses full precision. Keys chose the weights. Values supply the numbers in this sum.</p>"
+    "companion": "<p>These are the ten entries of row 10 of this head\u2019s attention matrix A. We display them vertically so each weight can sit beside its source word and value row. The receiver stays fixed at token 10. Only the source index j changes.</p>"
+  },
+  {
+    "key": "s02-v-head2-values",
+    "title": "Head 2: the value beside each weight",
+    "body": "Each source supplies a two-number value row from this head\u2019s V matrix. The source words and weights stay in place, so we can see which weight belongs to which value.",
+    "code": "",
+    "companion": "<p>V = E W_V has one row per source. These are projected value vectors, not token IDs or attention weights. Our hand-chosen worksheet gives W_K and W_V equal entries, but they remain separate parameters with different roles. The keys helped compute the weights. V supplies the content to mix.</p>"
+  },
+  {
+    "key": "s02-v-head2-products",
+    "title": "Head 2: each source\u2019s contribution",
+    "body": "Multiply both value coordinates by the same source weight. The new column shows exactly what each source contributes. Displayed numbers are rounded.",
+    "code": "",
+    "companion": "<p>The calculation below the rows expands the highlighted source\u2019s scalar\u2013vector multiplication coordinate by coordinate. A small weight scales down the entire value vector. The sign of each coordinate comes from the value. All products use the unrounded weights.</p>"
+  },
+  {
+    "key": "s02-v-head2-sum",
+    "title": "Head 2: adding the contributions",
+    "body": "Add the first coordinates to get the first message coordinate. Add the second coordinates to get the second. All ten sources contribute. The sum uses unrounded products.",
+    "code": "",
+    "companion": "<p>This is one row of H = AV: m\u2081\u2080 = \u03a3\u2c7c \u03b1\u2081\u2080,\u2c7c v\u2c7c. The original weight row has shape [1,10] and V has shape [10,2], giving a [1,2] message. We arranged the weights vertically only to make the source correspondence visible. The displayed products are rounded, but the sums use full precision.</p>"
   },
   {
     "key": "s02-v-message",
@@ -313,5 +397,19 @@
     "body": "<a href=\"word-lab/\" target=\"_blank\" rel=\"noopener\">Open the live models \u2197</a> \u00b7 <a href=\"notebooks/wordlm/07_multihead_step_by_step.html\">Work through the code</a> \u00b7 <a href=\"notebooks/wordlm/06_multihead_comparison.html\">Inspect the trained experiment</a>",
     "code": "",
     "companion": "<p>The demo runs actual checkpoints with WebGPU or WebAssembly. It includes training, held-out and outside-domain prompts and measures generation locally. Normalization, full Transformer blocks and complexity remain in the <a href=\"part2b.html\">optional Part 2B reference</a>. Formula source: <a href=\"https://arxiv.org/abs/1706.03762\">Attention Is All You Need, \u00a73.2.2</a>. Visual teaching references: <a href=\"https://www.3blue1brown.com/lessons/attention/\">3Blue1Brown</a> and <a href=\"https://jalammar.github.io/illustrated-transformer/\">Jay Alammar</a>."
+  },
+  {
+    "key": "s07-v-patches",
+    "title": "Image patches can supply the embedding rows",
+    "body": "Replace word tokens with image patches. Flatten each patch and apply the same learned projection. Attention still receives a sequence of embedding rows.",
+    "code": "",
+    "companion": "<p>This is a tiny shape illustration, not a trained vision model: an 8\u00d78 grayscale image split into four 4\u00d74 patches. Each patch has 16 pixel values; a shared 16\u00d74 projection produces four-dimensional rows. For RGB images the flattened width is P\u00b2\u00d73. The general sequence length is (H/P)\u00d7(W/P). The projection is learned from the image task.</p>"
+  },
+  {
+    "key": "s07-v-classifier",
+    "title": "One updated row can classify the whole image",
+    "body": "The [CLS] row gathers image information. Its final representation feeds a classifier trained with the image label. <a href=\"vision1.html\">Next: Vision I, from pixels to an image class \u2197</a>",
+    "code": "",
+    "companion": "<p>For this two-class shape example, prepend one learned CLS token to the four patch embeddings, then add position embeddings to the five rows. A Transformer encoder updates all five rows. The final CLS row feeds a two-logit classifier; softmax produces class probabilities and cross-entropy uses the observed image label. Image classification does not need a causal future-token mask. The full encoder also includes per-row MLPs, residuals and normalization, which are grouped here rather than silently omitted. This is a roadmap, not a benchmark or a completed classifier. See <a href=\"https://arxiv.org/abs/2010.11929\">An Image is Worth 16\u00d716 Words</a>. <a href=\"part4.html\">Cross-attention remains a separate optional continuation</a>.</p>"
   }
 ]
