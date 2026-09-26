@@ -32,12 +32,12 @@ def connect(b, sections):
     body=t(30,45,'',25)+t(380,55,'Text generation',31,'c-e')+t(800,55,'Image classification',30,'c-e')
     for i,(name,left,right) in enumerate([
       ('given','prefix tokens','whole image'),('predict','next token','image label'),
-      ('read out','last available row','CLS or pooled rows'),('loss','−log p(next token)','−log p(correct class)')]):
+      ('use to predict','last available row','one image summary'),('loss','−log p(next token)','−log p(correct class)')]):
         y=140+87*i;mark=t(30,y,name,27,'ink-2')+t(380,y,left,29)+t(800,y,right,27)
         body+=mark if i==0 else g(mark,i)
-    add('task-side-by-side','What changed, and what stayed the same?',body,'Both models score possible answers. The target, available context and readout differ.',
-        'Which parts of our old calculation can we reuse unchanged?','Compare one row at a time, ending with cross-entropy.',
-        'Both tasks can use the same attention operation and a linear classifier followed by softmax. In the autoregressive setup, each position predicts the next token from its allowed prefix. In the image-classification setup, one image-level representation predicts the supplied label. “Text” alone does not imply a causal mask: text encoders can read both directions too.')
+    add('task-side-by-side','What changed, and what stayed the same?',body,'Both models score possible answers. What they observe, summarize and predict differs.',
+        'Which parts of our old calculation can we reuse unchanged?','Compare one row at a time. Refer to the image summary from the preceding slide; its construction comes later.',
+        'Both tasks can use the same attention operation and a linear classifier followed by softmax. In the autoregressive setup, each position predicts the next token from its allowed prefix. In the image-classification setup, one image summary predicts the supplied label. Here summary means a vector of numbers used by the classifier. Later we will build that summary and name the two approaches after explaining them. “Text” alone does not imply a causal mask: text encoders can read both directions too.')
     body=''
     for i,(x,title,causal) in enumerate([(70,'Predict the next token',True),(690,'Classify the whole image',False)]):
         body+=t(x,50,title,29,'c-e')
@@ -126,11 +126,11 @@ def connect(b, sections):
         body+=label(35+i*275,120,value,'c-e',200)
     body+=g(t(35,285,'mean = ([2,0] + [0,2] + [1,1] + [1,1]) / 4',33,'c-v'),1)
     body+=g(t(35,405,'= [1,1] → learned classifier → class scores',34,'c-a'),2)
-    add('pooling-example','Could we classify the image without CLS?',body,'Yes. One option is to average the final patch rows and train a classifier on that vector.',
+    add('pooling-example','Could we classify the image without CLS?',body,'Averaging the final patch rows gives one image summary. This is called mean pooling.',
         'Can you calculate the two coordinates of the mean?', 'Add each column and divide by the number of patch rows.',
-        'These are chosen final contextual rows, not raw pixels. Pooling is an alternative readout: build and train the network with that choice. Removing CLS from an already trained CLS-based checkpoint changes its computation and is not a guaranteed drop-in replacement. The task requires an image-level output; it does not require this particular summary token.')
+        'These are chosen final contextual rows, not raw pixels. Mean pooling means taking the average of each coordinate across the final patch rows. It is an alternative way to form the image summary: build and train the network with that choice. Removing CLS from an already trained CLS-based checkpoint changes its computation and is not a guaranteed drop-in replacement. The task requires an image-level output; it does not require this particular summary token.')
     body=t(35,60,'CLS readout',33,'c-q')+label(35,140,'updated CLS','c-q',260)+arrow(325,170,460,170)+label(490,140,'class scores','c-a',245)
-    body+=g(t(35,270,'Mean readout',33,'c-e')+label(35,330,'updated patches','c-e',260)+arrow(325,360,460,360)+label(490,330,'average','c-v',245)+arrow(765,360,840,360)+label(870,330,'class scores','c-a',245),1)
+    body+=g(t(35,270,'Mean pooling',33,'c-e')+label(35,330,'updated patches','c-e',260)+arrow(325,360,460,360)+label(490,330,'average','c-v',245)+arrow(765,360,840,360)+label(870,330,'class scores','c-a',245),1)
     add('readout-choice','So why use CLS in our ViT?',body,'It gives the model a dedicated row whose final representation is trained for the image label.',
         'What must both of these paths produce before the class head?', 'Follow each route to one fixed-width vector.',
         'CLS participates in the attention blocks, so it can gather a content-dependent summary at every layer. Mean pooling combines contextual patch rows at the end. Both are viable design choices. Our pretrained checkpoint and full small model use CLS, so we follow it consistently through the worked examples. Neither option is guaranteed to be best for every dataset. <a href="https://arxiv.org/html/2010.11929v2#A4.SS3">Appendix D.3 of the original ViT paper</a> reports that the early pooling gap disappeared after adjusting its learning rate.')

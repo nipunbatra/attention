@@ -7,15 +7,15 @@
 - [What were we asking the text model to predict?](https://nipunbatra.github.io/attention/vision1.html?present#s01/3/0)
 - [What are we asking the image model to predict?](https://nipunbatra.github.io/attention/vision1.html?present#s01/4/0)
 - [What changed, and what stayed the same?](https://nipunbatra.github.io/attention/vision1.html?present#s01/5/0)
-- [Where does CLS come from?](https://nipunbatra.github.io/attention/vision1.html?present#s04/2/0)
-- [How can the same starting CLS describe different pictures?](https://nipunbatra.github.io/attention/vision1.html?present#s04/3/0)
-- [Why did our text predictor hide later tokens?](https://nipunbatra.github.io/attention/vision1.html?present#s04/5/0)
-- [Which part of the picture could help this dark crop?](https://nipunbatra.github.io/attention/vision1.html?present#s04/7/0)
-- [How could the face crop get more weight?](https://nipunbatra.github.io/attention/vision1.html?present#s04/9/0)
-- [What do we receive after choosing those weights?](https://nipunbatra.github.io/attention/vision1.html?present#s04/10/0)
-- [Change only the keys. What happens?](https://nipunbatra.github.io/attention/vision1.html?present#s04/11/0)
-- [Change only a value. What happens?](https://nipunbatra.github.io/attention/vision1.html?present#s04/12/0)
-- [Do we type a question into this classifier?](https://nipunbatra.github.io/attention/vision1.html?present#s04/13/0)
+- [Where does CLS come from?](https://nipunbatra.github.io/attention/vision1.html?present#s03/11/0)
+- [How can the same starting CLS describe different pictures?](https://nipunbatra.github.io/attention/vision1.html?present#s03/12/0)
+- [Why did our text predictor hide later tokens?](https://nipunbatra.github.io/attention/vision1.html?present#s04/2/0)
+- [Which part of the picture could help this dark crop?](https://nipunbatra.github.io/attention/vision1.html?present#s04/4/0)
+- [How could the face crop get more weight?](https://nipunbatra.github.io/attention/vision1.html?present#s04/6/0)
+- [What do we receive after choosing those weights?](https://nipunbatra.github.io/attention/vision1.html?present#s04/7/0)
+- [Change only the keys. What happens?](https://nipunbatra.github.io/attention/vision1.html?present#s04/8/0)
+- [Change only a value. What happens?](https://nipunbatra.github.io/attention/vision1.html?present#s04/9/0)
+- [Do we type a question into this classifier?](https://nipunbatra.github.io/attention/vision1.html?present#s04/10/0)
 - [Who teaches CLS what information to collect?](https://nipunbatra.github.io/attention/vision1.html?present#s06/11/0)
 - [Could we classify the image without CLS?](https://nipunbatra.github.io/attention/vision1.html?present#s06/12/0)
 - [So why use CLS in our ViT?](https://nipunbatra.github.io/attention/vision1.html?present#s06/13/0)
@@ -61,38 +61,38 @@
 | s03 / 7 | [What row does an empty patch get?](https://nipunbatra.github.io/attention/vision1.html?present#s03/7/0) | `empty-patch` |
 | s03 / 8 | [Would the mean pixel value tell these patches apart?](https://nipunbatra.github.io/attention/vision1.html?present#s03/8/0) | `mean-loses-edge` |
 | s03 / 9 | [Could two projection columns keep that difference?](https://nipunbatra.github.io/attention/vision1.html?present#s03/9/0) | `edge-filters` |
-| s03 / 10 | [These patches look the same. How do we tell them apart?](https://nipunbatra.github.io/attention/vision1.html?present#s03/10/0) | `two-identical-patches` |
-| s03 / 11 | [Give each patch a location vector](https://nipunbatra.github.io/attention/vision1.html?present#s03/11/0) | `s02-positions-step-1` |
-| s03 / 12 | [Add content and location, coordinate by coordinate](https://nipunbatra.github.io/attention/vision1.html?present#s03/12/0) | `s02-positions` |
-| s04 / 1 | [We have several patch rows. Where does the answer go?](https://nipunbatra.github.io/attention/vision1.html?present#s04/1/0) | `why-cls` |
-| s04 / 2 | [Where does CLS come from?](https://nipunbatra.github.io/attention/vision1.html?present#s04/2/0) | `cls-start` |
-| s04 / 3 | [How can the same starting CLS describe different pictures?](https://nipunbatra.github.io/attention/vision1.html?present#s04/3/0) | `cls-two-images` |
-| s04 / 4 | [Can the top-left patch read the bottom-right?](https://nipunbatra.github.io/attention/vision1.html?present#s04/4/0) | `image-mask` |
-| s04 / 5 | [Why did our text predictor hide later tokens?](https://nipunbatra.github.io/attention/vision1.html?present#s04/5/0) | `task-mask-reason` |
-| s04 / 6 | [Why do we make three versions of each row?](https://nipunbatra.github.io/attention/vision1.html?present#s04/6/0) | `qkv-roles` |
-| s04 / 7 | [Which part of the picture could help this dark crop?](https://nipunbatra.github.io/attention/vision1.html?present#s04/7/0) | `qkv-photo-question` |
-| s04 / 8 | [Each row makes a query, a key and a value](https://nipunbatra.github.io/attention/vision1.html?present#s04/8/0) | `qkv-three-roles` |
-| s04 / 9 | [How could the face crop get more weight?](https://nipunbatra.github.io/attention/vision1.html?present#s04/9/0) | `qkv-match-numbers` |
-| s04 / 10 | [What do we receive after choosing those weights?](https://nipunbatra.github.io/attention/vision1.html?present#s04/10/0) | `qkv-read-numbers` |
-| s04 / 11 | [Change only the keys. What happens?](https://nipunbatra.github.io/attention/vision1.html?present#s04/11/0) | `qkv-change-key` |
-| s04 / 12 | [Change only a value. What happens?](https://nipunbatra.github.io/attention/vision1.html?present#s04/12/0) | `qkv-change-value` |
-| s04 / 13 | [Do we type a question into this classifier?](https://nipunbatra.github.io/attention/vision1.html?present#s04/13/0) | `qkv-no-prompt` |
-| s04 / 14 | [Which weights create the query, key and value?](https://nipunbatra.github.io/attention/vision1.html?present#s04/14/0) | `all-qkv` |
-| s04 / 15 | [Where does the CLS query [1,1] come from?](https://nipunbatra.github.io/attention/vision1.html?present#s04/15/0) | `q-dot` |
-| s04 / 16 | [How does P1 get the key [√2,0]?](https://nipunbatra.github.io/attention/vision1.html?present#s04/16/0) | `one-key-dot` |
-| s04 / 17 | [Which features does this head compare?](https://nipunbatra.github.io/attention/vision1.html?present#s04/17/0) | `s03-query` |
-| s04 / 18 | [Can we work out one score before filling the table?](https://nipunbatra.github.io/attention/vision1.html?present#s04/18/0) | `one-score` |
-| s04 / 19 | [What does softmax do when the scores tie?](https://nipunbatra.github.io/attention/vision1.html?present#s04/19/0) | `softmax-relative` |
-| s04 / 20 | [Repeat the dot product for every source](https://nipunbatra.github.io/attention/vision1.html?present#s04/20/0) | `s03-weights-step-1` |
-| s04 / 21 | [Exponentiate the five scores](https://nipunbatra.github.io/attention/vision1.html?present#s04/21/0) | `s03-weights-step-2` |
-| s04 / 22 | [Divide by one shared sum](https://nipunbatra.github.io/attention/vision1.html?present#s04/22/0) | `s03-weights` |
-| s04 / 23 | [Where does the 0.229 beside P1 come from?](https://nipunbatra.github.io/attention/vision1.html?present#s04/23/0) | `weight-denominator` |
-| s04 / 24 | [Put each value beside its weight](https://nipunbatra.github.io/attention/vision1.html?present#s04/24/0) | `s03-values-step-1` |
-| s04 / 25 | [Multiply the value by its weight](https://nipunbatra.github.io/attention/vision1.html?present#s04/25/0) | `s03-values-step-2` |
-| s04 / 26 | [Add the contributions to get one message](https://nipunbatra.github.io/attention/vision1.html?present#s04/26/0) | `s03-values` |
-| s04 / 27 | [Can an empty patch still send something?](https://nipunbatra.github.io/attention/vision1.html?present#s04/27/0) | `one-value-product` |
-| s04 / 28 | [Do equal weights send equal information?](https://nipunbatra.github.io/attention/vision1.html?present#s04/28/0) | `weight-message` |
-| s04 / 29 | [What if the query cared only about ink?](https://nipunbatra.github.io/attention/vision1.html?present#s04/29/0) | `change-query` |
+| s03 / 10 | [We have several patch rows. Where does the answer go?](https://nipunbatra.github.io/attention/vision1.html?present#s03/10/0) | `why-cls` |
+| s03 / 11 | [Where does CLS come from?](https://nipunbatra.github.io/attention/vision1.html?present#s03/11/0) | `cls-start` |
+| s03 / 12 | [How can the same starting CLS describe different pictures?](https://nipunbatra.github.io/attention/vision1.html?present#s03/12/0) | `cls-two-images` |
+| s03 / 13 | [These patches look the same. How do we tell them apart?](https://nipunbatra.github.io/attention/vision1.html?present#s03/13/0) | `two-identical-patches` |
+| s03 / 14 | [Give each patch a location vector](https://nipunbatra.github.io/attention/vision1.html?present#s03/14/0) | `s02-positions-step-1` |
+| s03 / 15 | [Add content and location, coordinate by coordinate](https://nipunbatra.github.io/attention/vision1.html?present#s03/15/0) | `s02-positions` |
+| s04 / 1 | [Can the top-left patch read the bottom-right?](https://nipunbatra.github.io/attention/vision1.html?present#s04/1/0) | `image-mask` |
+| s04 / 2 | [Why did our text predictor hide later tokens?](https://nipunbatra.github.io/attention/vision1.html?present#s04/2/0) | `task-mask-reason` |
+| s04 / 3 | [Why do we make three versions of each row?](https://nipunbatra.github.io/attention/vision1.html?present#s04/3/0) | `qkv-roles` |
+| s04 / 4 | [Which part of the picture could help this dark crop?](https://nipunbatra.github.io/attention/vision1.html?present#s04/4/0) | `qkv-photo-question` |
+| s04 / 5 | [Each row makes a query, a key and a value](https://nipunbatra.github.io/attention/vision1.html?present#s04/5/0) | `qkv-three-roles` |
+| s04 / 6 | [How could the face crop get more weight?](https://nipunbatra.github.io/attention/vision1.html?present#s04/6/0) | `qkv-match-numbers` |
+| s04 / 7 | [What do we receive after choosing those weights?](https://nipunbatra.github.io/attention/vision1.html?present#s04/7/0) | `qkv-read-numbers` |
+| s04 / 8 | [Change only the keys. What happens?](https://nipunbatra.github.io/attention/vision1.html?present#s04/8/0) | `qkv-change-key` |
+| s04 / 9 | [Change only a value. What happens?](https://nipunbatra.github.io/attention/vision1.html?present#s04/9/0) | `qkv-change-value` |
+| s04 / 10 | [Do we type a question into this classifier?](https://nipunbatra.github.io/attention/vision1.html?present#s04/10/0) | `qkv-no-prompt` |
+| s04 / 11 | [Which weights create the query, key and value?](https://nipunbatra.github.io/attention/vision1.html?present#s04/11/0) | `all-qkv` |
+| s04 / 12 | [Where does the CLS query [1,1] come from?](https://nipunbatra.github.io/attention/vision1.html?present#s04/12/0) | `q-dot` |
+| s04 / 13 | [How does P1 get the key [√2,0]?](https://nipunbatra.github.io/attention/vision1.html?present#s04/13/0) | `one-key-dot` |
+| s04 / 14 | [Which features does this head compare?](https://nipunbatra.github.io/attention/vision1.html?present#s04/14/0) | `s03-query` |
+| s04 / 15 | [Can we work out one score before filling the table?](https://nipunbatra.github.io/attention/vision1.html?present#s04/15/0) | `one-score` |
+| s04 / 16 | [What does softmax do when the scores tie?](https://nipunbatra.github.io/attention/vision1.html?present#s04/16/0) | `softmax-relative` |
+| s04 / 17 | [Repeat the dot product for every source](https://nipunbatra.github.io/attention/vision1.html?present#s04/17/0) | `s03-weights-step-1` |
+| s04 / 18 | [Exponentiate the five scores](https://nipunbatra.github.io/attention/vision1.html?present#s04/18/0) | `s03-weights-step-2` |
+| s04 / 19 | [Divide by one shared sum](https://nipunbatra.github.io/attention/vision1.html?present#s04/19/0) | `s03-weights` |
+| s04 / 20 | [Where does the 0.229 beside P1 come from?](https://nipunbatra.github.io/attention/vision1.html?present#s04/20/0) | `weight-denominator` |
+| s04 / 21 | [Put each value beside its weight](https://nipunbatra.github.io/attention/vision1.html?present#s04/21/0) | `s03-values-step-1` |
+| s04 / 22 | [Multiply the value by its weight](https://nipunbatra.github.io/attention/vision1.html?present#s04/22/0) | `s03-values-step-2` |
+| s04 / 23 | [Add the contributions to get one message](https://nipunbatra.github.io/attention/vision1.html?present#s04/23/0) | `s03-values` |
+| s04 / 24 | [Can an empty patch still send something?](https://nipunbatra.github.io/attention/vision1.html?present#s04/24/0) | `one-value-product` |
+| s04 / 25 | [Do equal weights send equal information?](https://nipunbatra.github.io/attention/vision1.html?present#s04/25/0) | `weight-message` |
+| s04 / 26 | [What if the query cared only about ink?](https://nipunbatra.github.io/attention/vision1.html?present#s04/26/0) | `change-query` |
 | s05 / 1 | [Would a second way of reading the image help?](https://nipunbatra.github.io/attention/vision1.html?present#s05/1/0) | `heads-question` |
 | s05 / 2 | [Head 2 compares ink and column](https://nipunbatra.github.io/attention/vision1.html?present#s05/2/0) | `s03-second-step-1` |
 | s05 / 3 | [Give Head 2 its own softmax](https://nipunbatra.github.io/attention/vision1.html?present#s05/3/0) | `s03-second` |

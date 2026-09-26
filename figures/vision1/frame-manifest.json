@@ -34,8 +34,8 @@
   {
     "id": "task-side-by-side",
     "title": "What changed, and what stayed the same?",
-    "caption": "Both models score possible answers. The target, available context and readout differ.",
-    "notes": "Which parts of our old calculation can we reuse unchanged?\nCompare one row at a time, ending with cross-entropy.",
+    "caption": "Both models score possible answers. What they observe, summarize and predict differs.",
+    "notes": "Which parts of our old calculation can we reuse unchanged?\nCompare one row at a time. Refer to the image summary from the preceding slide; its construction comes later.",
     "section": "s01",
     "frame": 5
   },
@@ -224,12 +224,36 @@
     "frame": 9
   },
   {
+    "id": "why-cls",
+    "title": "We have several patch rows. Where does the answer go?",
+    "caption": "The classification token (CLS) is an extra learned row used to collect information for the image label.",
+    "notes": "We have many contextual patch rows. How could we produce one image label?\nPoint to the extra row and spell out classification token. It gathers information before the classifier produces a label.",
+    "section": "s03",
+    "frame": 10
+  },
+  {
+    "id": "cls-start",
+    "title": "Where does CLS come from?",
+    "caption": "CLS is an extra learned input vector with the same width as a patch row.",
+    "notes": "Which image pixels were used to create CLS?\nPoint to the separate parameter, then count five rows entering attention.",
+    "section": "s03",
+    "frame": 11
+  },
+  {
+    "id": "cls-two-images",
+    "title": "How can the same starting CLS describe different pictures?",
+    "caption": "Its starting vector is shared. The keys and values it reads come from the current image.",
+    "notes": "Does a shared first-layer query force the output to be identical?\nFollow each image through its own source keys, values and weighted sum.",
+    "section": "s03",
+    "frame": 12
+  },
+  {
     "id": "two-identical-patches",
     "title": "These patches look the same. How do we tell them apart?",
     "caption": "Their content rows match. Their positions do not.",
     "notes": "Which coordinate changes for the top-right patch?\nKeep the filled patch content fixed and add its column location.",
     "section": "s03",
-    "frame": 10
+    "frame": 13
   },
   {
     "id": "s02-positions-step-1",
@@ -237,7 +261,7 @@
     "caption": "Two patches can look alike and still come from different places.",
     "notes": "Which entries record the row and column here?\nRead each location from the small image grid.",
     "section": "s03",
-    "frame": 11
+    "frame": 14
   },
   {
     "id": "s02-positions",
@@ -245,31 +269,7 @@
     "caption": "These five rows form E, the input to our attention calculation.",
     "notes": "What distinguishes P1 from P2 now?\nCompare the two filled patches after adding positions.",
     "section": "s03",
-    "frame": 12
-  },
-  {
-    "id": "why-cls",
-    "title": "We have several patch rows. Where does the answer go?",
-    "caption": "CLS is one extra row that collects information for the image label.",
-    "notes": "We have many contextual patch rows. How could we produce one image label?\nGather their messages into CLS; mention average pooling as another valid readout.",
-    "section": "s04",
-    "frame": 1
-  },
-  {
-    "id": "cls-start",
-    "title": "Where does CLS come from?",
-    "caption": "CLS is an extra learned input vector with the same width as a patch row.",
-    "notes": "Which image pixels were used to create CLS?\nPoint to the separate parameter, then count five rows entering attention.",
-    "section": "s04",
-    "frame": 2
-  },
-  {
-    "id": "cls-two-images",
-    "title": "How can the same starting CLS describe different pictures?",
-    "caption": "Its starting vector is shared. The keys and values it reads come from the current image.",
-    "notes": "Does a shared first-layer query force the output to be identical?\nFollow each image through its own source keys, values and weighted sum.",
-    "section": "s04",
-    "frame": 3
+    "frame": 15
   },
   {
     "id": "image-mask",
@@ -277,7 +277,7 @@
     "caption": "We already have the whole image when we predict its label, so all patches can read one another.",
     "notes": "What future information would leak from another patch in this task?\nCompare a lower-triangular next-token mask with all-to-all image attention.",
     "section": "s04",
-    "frame": 4
+    "frame": 1
   },
   {
     "id": "task-mask-reason",
@@ -285,7 +285,7 @@
     "caption": "A causal mask prevents the model from reading the answer it is meant to predict.",
     "notes": "Would seeing the next training token make prediction unfairly easy?\nRead one matrix row as a receiver and its permitted source columns.",
     "section": "s04",
-    "frame": 5
+    "frame": 2
   },
   {
     "id": "qkv-roles",
@@ -293,7 +293,7 @@
     "caption": "Matching a source and reading its information are two different jobs.",
     "notes": "Which two vectors decide the weight, and which vector gets multiplied by it?\nRecall bank\u2019s request and river\u2019s information from Part II. Keep the photo crop visible.",
     "section": "s04",
-    "frame": 6
+    "frame": 3
   },
   {
     "id": "qkv-photo-question",
@@ -301,7 +301,7 @@
     "caption": "Imagine borrowing nearby face evidence to interpret a patch of dark fur.",
     "notes": "Would the face crop or the branches help more with this particular ambiguity?\nKeep the receiver fixed and point to two possible sources.",
     "section": "s04",
-    "frame": 7
+    "frame": 4
   },
   {
     "id": "qkv-three-roles",
@@ -309,7 +309,7 @@
     "caption": "Q and K decide the weights. V supplies the message that gets weighted.",
     "notes": "Can the same patch receive information and also send information?\nTrace all three projections from the same row.",
     "section": "s04",
-    "frame": 8
+    "frame": 5
   },
   {
     "id": "qkv-match-numbers",
@@ -317,7 +317,7 @@
     "caption": "Exponentiate the two scores: 3 and 1. Their shares are \u00be and \u00bc.",
     "notes": "Where does the factor 3 come from?\nMultiply q by each key, then normalize the two exponentials.",
     "section": "s04",
-    "frame": 9
+    "frame": 6
   },
   {
     "id": "qkv-read-numbers",
@@ -325,7 +325,7 @@
     "caption": "Multiply each source\u2019s value by its weight, then add the two vectors.",
     "notes": "Does choosing the face with \u00be weight discard the other source?\nCalculate both contributions before adding them.",
     "section": "s04",
-    "frame": 10
+    "frame": 7
   },
   {
     "id": "qkv-change-key",
@@ -333,7 +333,7 @@
     "caption": "The values stay available, but their shares in the message change.",
     "notes": "Which source now gets three times the weight of the other?\nSwap the two keys and recompute the mixture.",
     "section": "s04",
-    "frame": 11
+    "frame": 8
   },
   {
     "id": "qkv-change-value",
@@ -341,7 +341,7 @@
     "caption": "The attention weights stay the same, but the received information changes.",
     "notes": "Would an attention heatmap show this change?\nKeep the two weights visible while doubling the first value coordinate.",
     "section": "s04",
-    "frame": 12
+    "frame": 9
   },
   {
     "id": "qkv-no-prompt",
@@ -349,7 +349,7 @@
     "caption": "No text prompt is needed. The image rows generate their own Q, K and V.",
     "notes": "Where does the query come from if nobody types a question?\nFollow the numerical projection from the input rows.",
     "section": "s04",
-    "frame": 13
+    "frame": 10
   },
   {
     "id": "all-qkv",
@@ -357,7 +357,7 @@
     "caption": "One input row; three separate learned projections. These worksheet weights are chosen for arithmetic.",
     "notes": "What does each nonzero matrix entry copy or scale?\nFollow the constant into Q, then ink and row into K and V.",
     "section": "s04",
-    "frame": 14
+    "frame": 11
   },
   {
     "id": "q-dot",
@@ -365,7 +365,7 @@
     "caption": "Each query coordinate is a dot product with one column of W_Q.",
     "notes": "Which input coordinate supplies both ones?\nUse the W_Q columns shown on the previous slide and multiply all four terms.",
     "section": "s04",
-    "frame": 15
+    "frame": 12
   },
   {
     "id": "one-key-dot",
@@ -373,7 +373,7 @@
     "caption": "Head 1 keeps ink and row in its keys.",
     "notes": "Would the constant 1 in the input affect this key?\nPoint to the zero in the last row of each key column.",
     "section": "s04",
-    "frame": 16
+    "frame": 13
   },
   {
     "id": "s03-query",
@@ -381,7 +381,7 @@
     "caption": "Part II again: the query and keys choose where to read.",
     "notes": "What does multiplying this input by W_Q do?\nPoint to the fixed last coordinate supplying [1,1]. Then construct P1\u2019s key.",
     "section": "s04",
-    "frame": 17
+    "frame": 14
   },
   {
     "id": "one-score",
@@ -389,7 +389,7 @@
     "caption": "The head has two query/key coordinates, so d_k is 2.",
     "notes": "Should the denominator use 2, 4 or 5 here?\nDistinguish head width, embedding width and number of source rows.",
     "section": "s04",
-    "frame": 18
+    "frame": 15
   },
   {
     "id": "softmax-relative",
@@ -397,7 +397,7 @@
     "caption": "Equal scores get equal shares. Only score differences affect the shares.",
     "notes": "Are two very negative scores less than 100% in total?\nCompare the first and third rows, then explain the middle row using exponentials 1 and 3.",
     "section": "s04",
-    "frame": 19
+    "frame": 16
   },
   {
     "id": "s03-weights-step-1",
@@ -405,7 +405,7 @@
     "caption": "Keep the query fixed. Only the source key changes.",
     "notes": "Which of these keys give the same score?\nWork down the five sources, including CLS.",
     "section": "s04",
-    "frame": 20
+    "frame": 17
   },
   {
     "id": "s03-weights-step-2",
@@ -413,7 +413,7 @@
     "caption": "Scores 0 and 1 become 1 and e.",
     "notes": "Why are four exponentials equal?\nMatch each exponential to its score.",
     "section": "s04",
-    "frame": 21
+    "frame": 18
   },
   {
     "id": "s03-weights",
@@ -421,7 +421,7 @@
     "caption": "The five source weights now add up to one.",
     "notes": "What fraction belongs to CLS?\nDivide its exponential 1 by the same sum used for every patch.",
     "section": "s04",
-    "frame": 22
+    "frame": 19
   },
   {
     "id": "weight-denominator",
@@ -429,7 +429,7 @@
     "caption": "Every source appears in the same denominator, including CLS.",
     "notes": "What would go wrong if each patch used a different denominator?\nSum the five source contributions first, then divide one exponential by that sum.",
     "section": "s04",
-    "frame": 23
+    "frame": 20
   },
   {
     "id": "s03-values-step-1",
@@ -437,7 +437,7 @@
     "caption": "Keep a patch\u2019s weight and value on the same row.",
     "notes": "Which value belongs to the weight for P3?\nTrace the source label across the table.",
     "section": "s04",
-    "frame": 24
+    "frame": 21
   },
   {
     "id": "s03-values-step-2",
@@ -445,7 +445,7 @@
     "caption": "One scalar scales both coordinates of the source value.",
     "notes": "Does the second coordinate get a different weight?\nMultiply both entries before moving to the next row.",
     "section": "s04",
-    "frame": 25
+    "frame": 22
   },
   {
     "id": "s03-values",
@@ -453,7 +453,7 @@
     "caption": "Add down each coordinate column.",
     "notes": "How do five source rows become a two-number message?\nSum each coordinate separately, then reveal the result.",
     "section": "s04",
-    "frame": 26
+    "frame": 23
   },
   {
     "id": "one-value-product",
@@ -461,7 +461,7 @@
     "caption": "An empty patch still has a position, and its value can carry that information.",
     "notes": "Which coordinate receives the contribution from P3?\nMultiply both coordinates by the same weight; keep the zero visible.",
     "section": "s04",
-    "frame": 27
+    "frame": 24
   },
   {
     "id": "weight-message",
@@ -469,7 +469,7 @@
     "caption": "Compare the values beside the weights. They tell us what each patch sends.",
     "notes": "What do these two patches contribute to the ink coordinate?\nMultiply both coordinates and compare the resulting messages.",
     "section": "s04",
-    "frame": 28
+    "frame": 25
   },
   {
     "id": "change-query",
@@ -477,7 +477,7 @@
     "caption": "Change the query and keep the sources fixed. The mixture changes.",
     "notes": "Which filled patches should get more weight now?\nSet the second query coordinate to zero, then recompute all five scores.",
     "section": "s04",
-    "frame": 29
+    "frame": 26
   },
   {
     "id": "heads-question",
@@ -658,7 +658,7 @@
   {
     "id": "pooling-example",
     "title": "Could we classify the image without CLS?",
-    "caption": "Yes. One option is to average the final patch rows and train a classifier on that vector.",
+    "caption": "Averaging the final patch rows gives one image summary. This is called mean pooling.",
     "notes": "Can you calculate the two coordinates of the mean?\nAdd each column and divide by the number of patch rows.",
     "section": "s06",
     "frame": 12

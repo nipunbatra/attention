@@ -111,7 +111,7 @@ def build_full(b):
     body+=g(t(470,390,'A bag of patches loses their layout.',31,'c-a'),3)
     add('position-question','Can a bag of patches tell these images apart?',body,'Predict what happens before we add position information.',
         'What information was discarded when we made this bag?','Ask students to reconstruct the original layout; reveal that both layouts fit.',
-        'This claim concerns shared patch operations and a permutation-invariant readout such as CLS, without another source of location. Reordering rows after adding position keeps the position attached to its patch and is a different experiment.')
+        'This claim concerns shared patch operations followed by an image summary that treats the rows as a set, without another source of location. Reordering rows after adding position keeps the position attached to its patch and is a different experiment.')
 
     body=pixels(30,115,[[1,1],[1,1]],65,True)+t(95,320,'P1',27,'ink','middle')
     body+=t(240,200,'[1 1 1 1]',30,'c-e')+g(t(460,90,'W_patch',27,'c-e')+matrix(490,146,[['¼',0,0,0]]*4,'c-e',55),1)
@@ -127,10 +127,10 @@ def build_full(b):
         x=35+j*190;body+=crop(x,80,145,97,idx,'cls-source')
         body+=g(arrow(x+72,200,940,260,'c-v'),1)
     body+=g(rect(860,260,230,85,'c-e','t-e')+t(975,312,'CLS',38,'c-e','middle'),1)
-    body+=g(t(35,395,'one extra row that learns to collect an image summary',32),2)
+    body+=g(t(35,395,'CLS = classification token: our extra summary row',32),2)
     add('why-cls','Where should a single image answer come from?',body,'Add a summary row, then let it read the same patch rows.',
-        'We have many contextual patch rows. How could we produce one image label?','Gather their messages into CLS; mention average pooling as another valid readout.',
-        'CLS is a learned initial vector shared across examples. After attention, it depends on the image. It is neither an image patch nor an extra known label. Some ViT variants use mean pooling instead. In the original ViT formulation the final normalized CLS representation feeds the classifier.')
+        'We have many contextual patch rows. How could we produce one image label?','Point to the extra row and spell out classification token. It gathers information before the classifier produces a label.',
+        'CLS stands for classification token: an extra learned row used to form an image summary. Its initial vector is shared across examples. After attention, it depends on the image. It is neither an image patch nor an extra known label. In the original ViT formulation the final normalized CLS representation feeds the classifier.')
 
     body=t(30,55,'input coordinate',23,'ink-2')+t(460,55,'W_Q¹',28,'c-q')+t(700,55,'W_K¹',28,'c-k')+t(950,55,'W_V¹',28,'c-v')
     for i,name in enumerate(['ink','row','column','constant']):body+=t(30,138+43*i,name,27,'c-e')

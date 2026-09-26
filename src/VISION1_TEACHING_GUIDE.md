@@ -26,6 +26,10 @@ Use three meetings, or teach sections 1–7 first and assign the implementation 
 
 For a short conceptual introduction, use the task comparison, the two-crop Q/K/V example, CLS and pooling, the whole-block drawing and the real-photo predictions. Keep the full four-patch calculation for a session with time to work alongside the class.
 
+## Introduce terms before using them
+
+The opening task comparison uses “one image summary.” Section 3 introduces the classification token (CLS) with the crop-to-summary diagram, then its shared learned starting vector, before CLS appears in the position-vector table. Section 6 names mean pooling alongside the coordinate-by-coordinate average. The previous text lessons supply the familiar operations; new vision terms are defined where their role becomes visible.
+
 ## Places to stop and ask
 
 Use the [complete slide map](VISION1_SLIDE_MAP.md) for current frame numbers and direct presentation links.

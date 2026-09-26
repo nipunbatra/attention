@@ -78,5 +78,20 @@
       "clipped": [],
       "collisions": []
     }
+  },
+  "terminology_review": {
+    "date": "2026-09-26",
+    "visual_samples": [
+      "task-side-by-side",
+      "why-cls",
+      "pooling-example"
+    ],
+    "presentation_viewport": [
+      1280,
+      720
+    ],
+    "CLS_mentions_before_definition": 0,
+    "pooling_mentions_before_definition": 0,
+    "sequence": "Opening comparison uses one image summary. CLS definition moved ahead of the position-vector table. Mean pooling named alongside its average."
   }
 }
