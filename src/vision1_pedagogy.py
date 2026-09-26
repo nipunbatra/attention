@@ -107,7 +107,6 @@ def expand(b, sections):
       's01-context':('Would you recognize this crop on its own?','A dark crop may be fur, shadow or background. The full photo gives us clues.'),
       'bridge-text':('What can we carry over from our text models?','We still turn inputs into rows, read useful information, and predict an answer.'),
       'patch-context':('Is this dark region fur or background?','Face clues could make a dark crop easier to interpret. The final prediction is one label for the whole image.'),
-      'cnn-context':('Can a CNN use the rest of the image too?','Stacking local filters lets a CNN use a wider view. Attention gives rows another way to exchange information.'),
       's01-patches':('Where do the patch boundaries go?','The grid cuts through the photograph before the model knows where the dog is.'),
       's02-small':('Same pieces, different picture?','Count the filled patches in each image. Then look at where they are.'),
       'position-question':('Could you put the picture back together?','Knowing which patches we have does not tell us where each one belongs.'),
@@ -135,6 +134,24 @@ def expand(b, sections):
       'next-vision':('What else could we ask the image model to do?','The output we want determines which rows we read and how we train them.'),
       'closing':('Can you talk us through the whole model?','Start with the pixels. Explain what each step adds before moving to the next one.')}
     for key,(title,caption) in revisions.items():edit(key,title,caption)
+
+    # Bridge the visual motivation to the representation we will construct next.
+    body=image(25,75,310,207)+t(180,335,'whole photograph',27,'c-e','middle')
+    grid=''
+    for j in range(1,4):
+        grid+=line(25+77.5*j,75,25+77.5*j,282,'card',2)
+        grid+=line(25,75+51.75*j,335,75+51.75*j,'card',2)
+    body+=g(grid,1)
+    rows=arrow(365,180,455,180,'c-e')
+    for j in range(3):
+        rows+=rect(485,105+65*j,245,43,'c-e','t-e')
+        rows+=t(607,134+65*j,'numbers for a patch',23,'c-e','middle')
+    rows+=t(607,305,'⋮',26,'c-e','middle')+t(607,350,'one row per patch',27,'c-e','middle')
+    body+=g(rows,2)
+    body+=g(arrow(760,180,840,180,'c-q')+rect(875,138,240,83,'c-q','transparent')+t(995,189,'attention',34,'c-q','middle')+t(995,335,'share information',26,'c-v','middle'),3)
+    add('image-to-rows','How can we give this photograph to attention?',body,'Attention works on rows of numbers. Next, we choose image patches and turn their pixels into those rows.',
+        'In the text lessons, what did attention receive as its input?','Keep the photograph visible. Reveal its pieces, one row per piece, then the familiar attention operation.',
+        'The previous slide motivated using clues from other image regions. Now we need a numerical representation so attention can combine those clues. Text supplied one row per token; our image will supply one row per fixed-size patch. This drawing previews the construction rather than calculating it. The next section first chooses the patch grid, then reads the pixels and applies a shared learned projection. Position information comes after that.')
 
     # More examples before architecture, as in the opening of text Part I.
     body=image(35,50,400,267)+image(600,40,225,300,CAT)
@@ -453,14 +470,14 @@ def expand(b, sections):
     def seq(*keys):return [html for key in keys for html in (use(key) if key in old else [new[key]])]
     # The same 14 section anchors remain useful for remote review.
     revised=[
-      ('What would we like the image model to do?',seq('s01-photo','photo-folder','find-animal','photo-search','s01-context','bridge-text','patch-context','cnn-context')),
+      ('What would we like the image model to do?',seq('s01-photo','photo-folder','find-animal','photo-search','s01-context','bridge-text','patch-context','image-to-rows')),
       ('How do pixels become patch rows?',seq('s01-patches','one-rgb','rgb-flatten','flatten-order','s01-rows','projection-size')),
       ('What does each row know about its patch?',seq('s02-small','position-question','s02-projection','patch-matrix','empty-patch','mean-loses-edge','edge-filters','why-cls','two-identical-patches','s02-positions')),
       ('How does one row read the other rows?',seq('image-mask','qkv-roles','all-qkv','q-dot','one-key-dot','s03-query','one-score','softmax-relative','s03-weights','weight-denominator','s03-values','one-value-product','weight-message','change-query')),
       ('What does a second head add?',seq('heads-question','s03-second','s03-second-values','all-receivers','s04-join','other-output-coordinates')),
       ('How do the messages lead to a prediction?',seq('residual-zero','s04-residual','two-softmaxes','s04-probability','loss-comparison','one-update','s04-experiment')),
       ('What happens inside a complete block?',seq('s05-block','ln-mean','ln-variance','layernorm','mlp-first-linear','mlp-row','mlp-second-linear','depth','s05-scale')),
-      ('Can we follow the same steps in code?',seq('two-sixteens','code-patch','code-attention','code-block','code-add-cls','code-add-pos','code-cls-readout','code-model','code-train','code-backward','code-step')),
+      ('Can we follow the same steps in code?',seq('two-sixteens','code-patch','cnn-context','code-attention','code-block','code-add-cls','code-add-pos','code-cls-readout','code-model','code-train','code-backward','code-step')),
       ('How do we know the model learned something?',seq('training-data','three-splits','training-one-image','one-epoch','learning-curves','trained-position-control')),
       ('What happens on the real photographs?',seq('real-input','s06-answer','one-photo-limit','real-cat','three-phases')),
       ('What can we learn by inspecting the model?',seq('read-attention-map','real-heads','real-depth','real-patch-query','cover-1','cover-2','cover-3','cover-4','occlusion')),

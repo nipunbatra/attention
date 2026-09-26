@@ -2,7 +2,7 @@
 
 **Deck:** [vision1.html](../vision1.html) · **Present:** open the deck and press **P** · **Lab:** [03_vision_transformer_lab.ipynb](../notebooks/vision/03_vision_transformer_lab.ipynb)
 
-146 teaching frames plus cover; 14 sections. Silent, self-contained HTML slides with image assets and math embedded. Reading mode includes the longer explanations, source links, and numerical tables. Arrow keys advance one reveal; **S** opens presenter notes; **O** opens the overview; **C** shows classroom controls. Every frame has a question to ask and a note about what to point at.
+147 teaching frames plus cover; 14 sections. Silent, self-contained HTML slides with image assets and math embedded. Reading mode includes the longer explanations, source links, and numerical tables. Arrow keys advance one reveal; **S** opens presenter notes; **O** opens the overview; **C** shows classroom controls. Every frame has a question to ask and a note about what to point at.
 
 ## The teaching thread
 
@@ -16,7 +16,7 @@ The two-crop Q/K/V warm-up and the pooling example use their own clearly labeled
 
 ## Suggested pacing
 
-Use three meetings, or teach sections 1–7 first and assign the implementation as a lab. The 146 frames are short steps; the total is not a target for one class. Pause for predictions and hand calculations.
+Use three meetings, or teach sections 1–7 first and assign the implementation as a lab. The 147 frames are short steps; the total is not a target for one class. Pause for predictions and hand calculations.
 
 | Meeting | Sections | Student activity |
 |---|---|---|
@@ -29,6 +29,10 @@ For a short conceptual introduction, use the task comparison, the two-crop Q/K/V
 ## Introduce terms before using them
 
 The opening task comparison uses “one image summary.” Section 3 introduces the classification token (CLS) with the crop-to-summary diagram, then its shared learned starting vector, before CLS appears in the position-vector table. Section 6 names mean pooling alongside the coordinate-by-coordinate average. The previous text lessons supply the familiar operations; new vision terms are defined where their role becomes visible.
+
+## Opening transition and later comparison
+
+After the ambiguous crop and its face clues, `image-to-rows` recalls the input attention needs: rows of numbers. It previews photograph → patches → one row per patch → attention. The next section constructs those inputs step by step. The CNN comparison now follows the worked Conv2d patch projection in section 8, where both local filters and attention have been explained. Its two-layer dependency diagram distinguishes growing local context from a direct global-attention path; the next slide implements the attention calculation.
 
 ## Places to stop and ask
 

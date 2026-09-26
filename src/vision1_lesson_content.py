@@ -85,13 +85,24 @@ def build_full(b):
         'Does doubling the number of patches double the projection parameters?','Trace one row through the matrix and bias; then reuse that operation for all patches.',
         'For 16×16 RGB patches and D=192, the patch projection has 768×192 weights and 192 biases. The number of image patches changes how often the projection is applied, not this parameter count. The positional table can depend on the grid size.')
 
-    body=image(30,55,390,260)+t(225,360,'overlapping local neighbourhoods',26,'ink-2','middle')
-    body+=g(rect(147,122,117,78,'c-v','transparent',0)+t(525,105,'Convolution',32,'c-v')+t(525,160,'shared local filters',29),1)
-    body+=g(t(525,250,'Self-attention',32,'c-q')+t(525,305,'input-dependent weights across rows',29),2)
-    body+=g(t(525,397,'Both can learn useful visual features.',29),3)
-    add('cnn-context','Could a convolution use context too?',body,'A ViT changes the way spatial information is mixed.',
-        'Does attention have a monopoly on context?','Point to a local neighbourhood; describe how stacked convolutions widen the receptive field.',
-        'Convolutions encode locality and spatial weight sharing; deeper CNNs can use broad context. Global self-attention permits direct interactions between any two patch rows in one layer, with weights depending on the input. This is an architectural comparison, not a claim that ViTs always outperform CNNs. The ViT paper and D2L discuss the role of training data and inductive bias.')
+    body=t(35,45,'Stacked local convolutions',29,'c-v')+t(650,45,'Global self-attention',29,'c-q')
+    for j in range(5):
+        body+=rect(70+80*j,90,55,38,'c-e','t-e')
+        body+=rect(650+90*j,90,55,38,'c-e','t-e')
+    local=''
+    for j in range(3):
+        local+=rect(150+80*j,210,55,38,'c-v','transparent')
+        for k in range(3):local+=arrow(97.5+80*(j+k),140,177.5+80*j,198,'c-v')
+    body+=g(local,1)
+    wider=rect(230,330,55,38,'c-v','transparent')
+    for j in range(3):wider+=arrow(177.5+80*j,260,257.5,318,'c-v')
+    body+=g(wider+t(35,425,'wider context after two layers',28,'c-v'),2)
+    global_read=rect(830,260,55,38,'c-q','transparent')
+    for j in range(5):global_read+=arrow(677.5+90*j,140,857.5,248,'c-q')
+    body+=g(global_read+t(650,355,'all source rows in one layer',28,'c-q')+t(650,425,'weights depend on these rows',27,'c-q'),3)
+    add('cnn-context','Can local filters gather distant clues too?',body,'Yes. Local convolutions grow the available context across layers. Global attention can combine distant source rows in one layer.',
+        'How many layers connect the leftmost input to the bottom output in each drawing?','Trace the two local steps, then the direct attention path. Return to the attention code on the next slide.',
+        'We have now calculated the patch projection and attention. This comparison returns to the earlier motivation: both a CNN and a ViT can use context when classifying a whole image. The left drawing uses two width-three, stride-one local convolutions on a one-dimensional strip of features: five input positions reach one output after two layers. This is a schematic of spatial mixing, not our patch-projection configuration. Our non-overlapping Conv2d patch projection reads each patch separately; the next attention operation mixes information across patch rows. The right drawing shows one receiver reading all five allowed sources with input-dependent weights. These are dependency paths, not measured weights, and direct access alone does not establish better accuracy. The next slide implements the attention calculation we already worked by hand.')
 
     body=''
     for offset,label,causal in [(70,'next-token text',True),(705,'image classification',False)]:

@@ -3,7 +3,7 @@
     1280,
     720
   ],
-  "teaching_frames": 146,
+  "teaching_frames": 147,
   "cover_frames": 1,
   "review": "The previous 141 final states (140 teaching frames plus cover) passed the full geometry review. All six added implementation frames passed SVG text bounds and collision checks at 1280\u00d7720 and were visually inspected. Phone reading mode was rechecked at 390\u00d7844.",
   "geometry": "No clipped SVG text, text collisions, overflowing captions or code found.",
@@ -102,5 +102,23 @@
       720
     ],
     "visual_check": "Task, ambiguous crop, eye/face clues and possible interpretation are readable without clipping. Final label explicitly belongs to the whole image."
+  },
+  "opening_transition_review": {
+    "date": "2026-09-26",
+    "viewport": [
+      1280,
+      720
+    ],
+    "visual_samples": [
+      "image-to-rows",
+      "cnn-context"
+    ],
+    "text_clipping": [],
+    "text_collisions": [],
+    "keyboard_transitions": [
+      "image-to-rows \u2192 s01-patches",
+      "cnn-context \u2192 code-attention"
+    ],
+    "final_row_stack": "Rebuilt and visually inspected after adding an ellipsis."
   }
 }

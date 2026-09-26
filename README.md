@@ -10,7 +10,7 @@ Two connected, interactive, offline-capable series for a deep-learning course. [
 
 The four-part **Vision to language** sequence continues with:
 
-- [Vision I](https://nipunbatra.github.io/attention/vision1.html): a complete 146-frame lecture plus cover: real-photo motivation, exact four-patch/two-head arithmetic, full ViT code, actual training on independent synthetic splits, and measured real-image attention and occlusion. Includes an executed [complete lab](notebooks/vision/03_vision_transformer_lab.ipynb) and [teaching guide](src/VISION1_TEACHING_GUIDE.md).
+- [Vision I](https://nipunbatra.github.io/attention/vision1.html): a complete 147-frame lecture plus cover: real-photo motivation, exact four-patch/two-head arithmetic, full ViT code, actual training on independent synthetic splits, and measured real-image attention and occlusion. Includes an executed [complete lab](notebooks/vision/03_vision_transformer_lab.ipynb) and [teaching guide](src/VISION1_TEACHING_GUIDE.md).
 - [Vision II](https://nipunbatra.github.io/attention/vision2.html): visual pretraining through MAE, DINO, and I-JEPA; exact reconstruction and teacher-distribution worksheets.
 - [Vision III](https://nipunbatra.github.io/attention/vision3.html): CLIP-style image–text matching, symmetric contrastive learning, candidate classification, and retrieval.
 - [Vision IV](https://nipunbatra.github.io/attention/vision4.html): a visual connector, an image-conditioned prefix decoder, actual answer generation, training, and grounding checks.

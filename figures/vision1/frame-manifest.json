@@ -80,10 +80,10 @@
     "frame": 10
   },
   {
-    "id": "cnn-context",
-    "title": "Can a CNN use the rest of the image too?",
-    "caption": "Stacking local filters lets a CNN use a wider view. Attention gives rows another way to exchange information.",
-    "notes": "Does attention have a monopoly on context?\nPoint to a local neighbourhood; describe how stacked convolutions widen the receptive field.",
+    "id": "image-to-rows",
+    "title": "How can we give this photograph to attention?",
+    "caption": "Attention works on rows of numbers. Next, we choose image patches and turn their pixels into those rows.",
+    "notes": "In the text lessons, what did attention receive as its input?\nKeep the photograph visible. Reveal its pieces, one row per piece, then the familiar attention operation.",
     "section": "s01",
     "frame": 11
   },
@@ -824,12 +824,20 @@
     "frame": 5
   },
   {
+    "id": "cnn-context",
+    "title": "Can local filters gather distant clues too?",
+    "caption": "Yes. Local convolutions grow the available context across layers. Global attention can combine distant source rows in one layer.",
+    "notes": "How many layers connect the leftmost input to the bottom output in each drawing?\nTrace the two local steps, then the direct attention path. Return to the attention code on the next slide.",
+    "section": "s08",
+    "frame": 6
+  },
+  {
     "id": "code-attention",
     "title": "Can you match each line to our calculation?",
     "caption": "Each row of A sums to one across its sources. Multiplying by V adds the weighted messages.",
     "notes": "Which axis must sum to one?\nMatch the source dimension in A to the row dimension in V.",
     "section": "s08",
-    "frame": 6
+    "frame": 7
   },
   {
     "id": "batch-boundary",
@@ -837,7 +845,7 @@
     "caption": "Ordinary image self-attention gives each image its own source rows.",
     "notes": "Should putting a second photograph in the batch change the first image\u2019s message?\nKeep the two groups of rows separate; identify the image, token and coordinate axes.",
     "section": "s08",
-    "frame": 7
+    "frame": 8
   },
   {
     "id": "batch-axis",
@@ -845,7 +853,7 @@
     "caption": "Set Q=K=0, V=X and W_O=I. Each output is an average. With [B,N,D] input, batch_first=True keeps that average within each image.",
     "notes": "Which axis should softmax normalize over in each image?\nUse uniform attention to calculate the first output row under both interpretations.",
     "section": "s08",
-    "frame": 8
+    "frame": 9
   },
   {
     "id": "batch-check",
@@ -853,7 +861,7 @@
     "caption": "Run the same image alone and beside another image. Its attention output should agree.",
     "notes": "Why does the wrong version change when B is added?\nCompare the first patch\u2019s output under both layouts before looking at any accuracy curve.",
     "section": "s08",
-    "frame": 9
+    "frame": 10
   },
   {
     "id": "code-block",
@@ -861,7 +869,7 @@
     "caption": "MultiheadAttention includes concatenation and W_O. Both residual additions keep width D.",
     "notes": "Where did the output projection go in this code?\nOpen the accompanying Block class: PyTorch\u2019s attention module owns out_proj.",
     "section": "s08",
-    "frame": 10
+    "frame": 11
   },
   {
     "id": "code-add-cls",
@@ -869,7 +877,7 @@
     "caption": "Every image starts with the same learned CLS vector.",
     "notes": "Do we need a separate learned CLS parameter for each training image?\nExpand the same parameter across the batch, then concatenate along the row axis.",
     "section": "s08",
-    "frame": 11
+    "frame": 12
   },
   {
     "id": "code-add-pos",
@@ -877,7 +885,7 @@
     "caption": "Broadcast the same position table across the batch.",
     "notes": "Which position vector goes with the third image patch?\nPoint to CLS at index 0 and patch P3 at index 3.",
     "section": "s08",
-    "frame": 12
+    "frame": 13
   },
   {
     "id": "code-cls-readout",
@@ -885,7 +893,7 @@
     "caption": "We keep all rows through the blocks, then select CLS for this image-label task.",
     "notes": "Why is the second index zero here?\nPoint to the row dimension; the batch dimension stays in place.",
     "section": "s08",
-    "frame": 13
+    "frame": 14
   },
   {
     "id": "code-model",
@@ -893,7 +901,7 @@
     "caption": "Only the final readout selects CLS. Every transformer block processes all rows.",
     "notes": "At what point do we discard the patch rows for classification?\nKeep all 17 rows through both blocks, then select x[:,0].",
     "section": "s08",
-    "frame": 14
+    "frame": 15
   },
   {
     "id": "code-train",
@@ -901,7 +909,7 @@
     "caption": "Pass raw logits to cross_entropy. It combines log-softmax with the label loss.",
     "notes": "Which line computes gradients, and which one changes the weights?\nDistinguish backward from step. Point back to Part I\u2019s learning loop.",
     "section": "s08",
-    "frame": 15
+    "frame": 16
   },
   {
     "id": "code-backward",
@@ -909,7 +917,7 @@
     "caption": "backward computes gradients. The parameter values stay where they are until the optimizer step.",
     "notes": "Would another forward pass already use new weights?\nSeparate computing a derivative from using it to change a parameter.",
     "section": "s08",
-    "frame": 16
+    "frame": 17
   },
   {
     "id": "code-step",
@@ -917,7 +925,7 @@
     "caption": "The optimizer uses the gradients to update the parameters.",
     "notes": "Are AdamW updates exactly minus learning-rate times gradient?\nRecall the simple SGD bias example, then distinguish the optimizer used in this lab.",
     "section": "s08",
-    "frame": 17
+    "frame": 18
   },
   {
     "id": "training-data",
