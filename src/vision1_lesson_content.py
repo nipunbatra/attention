@@ -49,14 +49,16 @@ def build_full(b):
         'What stays the same when the input is a photograph?','Point to representation, contextual reading, and multiple head messages in the earlier examples.',
         '<p><a href="part1.html">Part I</a> built a character predictor: embeddings, scores, probabilities, loss and learning. <a href="attention.html">Part II</a> gave “bank” a contextual representation. <a href="part3.html">Part III</a> let “coat” read multiple kinds of information. We reuse their row-vector notation, seven colours, and calculation sequence.</p>')
 
-    body=crop(30,85,260,174,9,'query')+t(160,305,'this patch',26,'c-q','middle')
-    for j,idx in enumerate([5,6,10]):
-        x=495+j*215;body+=crop(x,90,180,120,idx,'context')+t(x+90,245,f'P{idx+1}',25,'c-k','middle')
-        body+=g(arrow(x+90,270,300,345,'c-v'),1)
-    body+=g(t(400,392,'a new representation of the same patch',31,'c-e'),2)
-    add('patch-context','What information could this patch borrow?',body,'The receiver stays a patch. Attention can bring it information from other locations.',
-        'Which visible regions might help interpret the dark crop?','Point to face, fur and nearby background; then trace messages back to the receiver.',
-        'These arrows pose a question about useful context; they are not measured attention weights. Self-attention updates every patch row. Image classification will also use a separate summary row. No patch is assigned a human semantic label before attention.')
+    body=t(35,45,'Task: classify the whole photo as dog or cat.',30,'c-e')
+    body+=crop(35,110,290,193,9,'query')+t(180,345,'fur, shadow, background?',25,'c-q','middle')
+    clues=crop(625,105,205,137,5,'context-left')+crop(865,105,205,137,6,'context-right')
+    clues+=t(850,285,'eye and face clues',29,'c-k','middle')
+    clues+=arrow(730,305,345,265,'c-v')+arrow(970,305,345,280,'c-v')
+    body+=g(clues,1)
+    body+=g(t(35,425,'With context: this dark texture could be animal fur.',32,'c-v'),2)
+    add('patch-context','Is this dark region fur or background?',body,'Face clues could make a dark crop easier to interpret. The final prediction is one label for the whole image.',
+        'Does this dark crop alone tell us whether the photograph contains a dog or a cat?','Reveal the eye and face crops. Ask what they add, then return to the whole-image classification task.',
+        'Our supervised task is to classify the whole photograph, for example as dog or cat. The isolated dark crop could look like fur, shadow or background. Nearby eye and face structure makes an animal-fur interpretation more plausible; it does not by itself establish the species. Attention can combine numerical features from other regions with this crop’s features, giving later layers richer information for the image label. Like “bank” after reading “river” in Part II, the local representation can change with context. The pixels stay fixed. This is a human motivation for useful context, not measured attention or a guaranteed interpretation of a learned head. Training supplies an image label, not fur/eye labels for individual patches.')
 
     # PATCHIFY AND A REAL RGB CALCULATION.
     rgb=[['255','0','0'],['0','255','0'],['0','0','255'],['255','255','255']]

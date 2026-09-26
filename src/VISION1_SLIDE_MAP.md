@@ -42,7 +42,7 @@
 | s01 / 7 | [Find the photo that matches this description](https://nipunbatra.github.io/attention/vision1.html?present#s01/7/0) | `photo-search` |
 | s01 / 8 | [Would you recognize this crop on its own?](https://nipunbatra.github.io/attention/vision1.html?present#s01/8/0) | `s01-context` |
 | s01 / 9 | [What can we carry over from our text models?](https://nipunbatra.github.io/attention/vision1.html?present#s01/9/0) | `bridge-text` |
-| s01 / 10 | [Which other patches could help here?](https://nipunbatra.github.io/attention/vision1.html?present#s01/10/0) | `patch-context` |
+| s01 / 10 | [Is this dark region fur or background?](https://nipunbatra.github.io/attention/vision1.html?present#s01/10/0) | `patch-context` |
 | s01 / 11 | [Can a CNN use the rest of the image too?](https://nipunbatra.github.io/attention/vision1.html?present#s01/11/0) | `cnn-context` |
 | s02 / 1 | [Where do the patch boundaries go?](https://nipunbatra.github.io/attention/vision1.html?present#s02/1/0) | `s01-patches` |
 | s02 / 2 | [How can a red pixel be three numbers?](https://nipunbatra.github.io/attention/vision1.html?present#s02/2/0) | `one-rgb` |

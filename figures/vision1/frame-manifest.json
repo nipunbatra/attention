@@ -58,7 +58,7 @@
   {
     "id": "s01-context",
     "title": "Would you recognize this crop on its own?",
-    "caption": "The rest of the image helps us interpret this small piece.",
+    "caption": "A dark crop may be fur, shadow or background. The full photo gives us clues.",
     "notes": "Could this dark crop be fur, a shadow, or something else?\nReveal where it came from; keep pointing to the same crop.",
     "section": "s01",
     "frame": 8
@@ -73,9 +73,9 @@
   },
   {
     "id": "patch-context",
-    "title": "Which other patches could help here?",
-    "caption": "This patch keeps its place while information arrives from elsewhere in the image.",
-    "notes": "Which visible regions might help interpret the dark crop?\nPoint to face, fur and nearby background; then trace messages back to the receiver.",
+    "title": "Is this dark region fur or background?",
+    "caption": "Face clues could make a dark crop easier to interpret. The final prediction is one label for the whole image.",
+    "notes": "Does this dark crop alone tell us whether the photograph contains a dog or a cat?\nReveal the eye and face crops. Ask what they add, then return to the whole-image classification task.",
     "section": "s01",
     "frame": 10
   },

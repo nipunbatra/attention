@@ -34,6 +34,7 @@ The opening task comparison uses “one image summary.” Section 3 introduces t
 
 Use the [complete slide map](VISION1_SLIDE_MAP.md) for current frame numbers and direct presentation links.
 
+- **`patch-context`:** What is the whole-image task? Could the isolated dark crop be fur, shadow or background? Reveal the eye and face clues, then explain how richer local information could support the image label. The arrows illustrate possible context, not measured attention.
 - **`task-side-by-side`:** What is the input, target and readout in each task? Why does the loss still look familiar?
 - **`task-mask-reason`:** Which target would a future training token reveal? Why is a later raster patch already available?
 - **`cls-start`, `cls-two-images`:** How can a shared initial vector lead to different image summaries?

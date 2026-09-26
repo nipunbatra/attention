@@ -104,9 +104,9 @@ def expand(b, sections):
     # and one sentence that says what the calculation just showed.
     revisions={
       's01-photo':('What animal do you see?','Which parts of the photograph helped you decide?'),
-      's01-context':('Would you recognize this crop on its own?','The rest of the image helps us interpret this small piece.'),
+      's01-context':('Would you recognize this crop on its own?','A dark crop may be fur, shadow or background. The full photo gives us clues.'),
       'bridge-text':('What can we carry over from our text models?','We still turn inputs into rows, read useful information, and predict an answer.'),
-      'patch-context':('Which other patches could help here?','This patch keeps its place while information arrives from elsewhere in the image.'),
+      'patch-context':('Is this dark region fur or background?','Face clues could make a dark crop easier to interpret. The final prediction is one label for the whole image.'),
       'cnn-context':('Can a CNN use the rest of the image too?','Stacking local filters lets a CNN use a wider view. Attention gives rows another way to exchange information.'),
       's01-patches':('Where do the patch boundaries go?','The grid cuts through the photograph before the model knows where the dog is.'),
       's02-small':('Same pieces, different picture?','Count the filled patches in each image. Then look at where they are.'),

@@ -93,5 +93,14 @@
     "CLS_mentions_before_definition": 0,
     "pooling_mentions_before_definition": 0,
     "sequence": "Opening comparison uses one image summary. CLS definition moved ahead of the position-vector table. Mean pooling named alongside its average."
+  },
+  "context_motivation_review": {
+    "date": "2026-09-26",
+    "slide": "patch-context",
+    "viewport": [
+      1280,
+      720
+    ],
+    "visual_check": "Task, ambiguous crop, eye/face clues and possible interpretation are readable without clipping. Final label explicitly belongs to the whole image."
   }
 }
