@@ -1,0 +1,53 @@
+{
+  "attention_rows_normalized": true,
+  "independent_split_sizes": [
+    512,
+    128,
+    256
+  ],
+  "position_control_correct": [
+    256,
+    128
+  ],
+  "silent": true,
+  "numerical_parity": "NumPy, torch.nn.MultiheadAttention, and JavaScript agree within 1e-12",
+  "cases": [
+    {
+      "image": "horizontal",
+      "positions": true,
+      "probability": [
+        0.8570351259180552,
+        0.14296487408194475
+      ]
+    },
+    {
+      "image": "horizontal",
+      "positions": false,
+      "probability": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "image": "vertical",
+      "positions": true,
+      "probability": [
+        0.14296487408194497,
+        0.857035125918055
+      ]
+    },
+    {
+      "image": "vertical",
+      "positions": false,
+      "probability": [
+        0.5,
+        0.5
+      ]
+    }
+  ],
+  "teaching_frames": 58,
+  "captions_at_most_40_words": true,
+  "real_image_checksums_match": true,
+  "local_links_exist": true,
+  "notebook_executed": true
+}

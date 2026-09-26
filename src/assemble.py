@@ -98,13 +98,13 @@ if os.path.exists(rt_path):
 def js(obj):
     return json.dumps(obj, separators=(',', ':')).replace('</', '<\\/')
 vision_shared = ''
-if 5 <= N <= 8:
+if 5 <= N <= 8 and part.get('legacyVisionRuntime', True):
     # The vision parts share one scene, one fixed patch encoder and one set of figures; it must load before the part runtime.
     with open(os.path.join(here, 'vision-shared.js'), encoding='utf-8') as module:
         vision_shared = '<script>\n' + module.read() + '\n</script>\n'
 shared_block = ('<script>\nwindow.__TOY__ = ' + js(toy) + ';\nwindow.__PART__ = ' + js(part) + ';\n</script>\n'
                 '<script>\n' + shared + '\n</script>\n' + vision_shared + runtime)
-if 5 <= N <= 8:
+if 5 <= N <= 8 and part.get('legacyVisionRuntime', True):
     # Embed the recurring scene once per standalone lesson. Every SVG crop uses
     # this same data URI, so file://, presentation and PDF need no image server.
     scene_dir = os.path.join(here, '..', 'figures', 'vision-scene')

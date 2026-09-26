@@ -10,7 +10,7 @@ Two connected, interactive, offline-capable series for a deep-learning course. [
 
 The four-part **Vision to language** sequence continues with:
 
-- [Vision I](https://nipunbatra.github.io/attention/vision1.html): classify one labelled image from pixel patches through CLS attention, a class prediction and loss. Includes a two-head numerical replay, an executed [from-scratch image lab](notebooks/vision/01_classification_from_patches.ipynb), the two-image fit and a held-out PNG probe.
+- [Vision I](https://nipunbatra.github.io/attention/vision1.html): a complete 58-frame lecture plus cover: real-photo motivation, exact four-patch/two-head arithmetic, full ViT code, actual training on independent synthetic splits, and measured real-image attention and occlusion. Includes an executed [complete lab](notebooks/vision/03_vision_transformer_lab.ipynb) and [teaching guide](src/VISION1_TEACHING_GUIDE.md).
 - [Vision II](https://nipunbatra.github.io/attention/vision2.html): visual pretraining through MAE, DINO, and I-JEPA; exact reconstruction and teacher-distribution worksheets.
 - [Vision III](https://nipunbatra.github.io/attention/vision3.html): CLIP-style image–text matching, symmetric contrastive learning, candidate classification, and retrieval.
 - [Vision IV](https://nipunbatra.github.io/attention/vision4.html): a visual connector, an image-conditioned prefix decoder, actual answer generation, training, and grounding checks.
@@ -35,7 +35,7 @@ Part 1 also has four model-backed diagrams: the trained embedding space, lookup-
 
 Part 4 uses a separate three-coordinate model fitted to two phrase pairs: “the river bank” → “la rive”, and “the financial bank” → “la banque”. It includes an encoder, masked target self-attention, cross-attention, residual additions, and a vocabulary head. The numerical toy omits FFNs and LayerNorm; it is not evidence of general translation ability. Source and target positions are learned, added vectors. The diagrams and calculations read the same model. An independent NumPy reference reproduces training and checks every scalar gradient.
 
-The vision sequence adapts the earlier `vision-transformer`, `vision-ssl`, `clip-zero-shot`, and `vlm` articles into this shared article/classroom system. Vision I keeps one block-counting question through the forward and learning passes. Its initial 4×4-image encoder is also the frozen snapshot used in Vision IV; Vision I's later training experiment does not replace that snapshot. Vision II's calculators illustrate objectives, not pretrained-model outputs. Vision I and IV fit only two training images, and Vision III fits three image–caption pairs. These exercises demonstrate the computations, not general counting or zero-shot transfer. See `src/VISION_SOURCE_AUDIT.md` for provenance and changes.
+Vision I now connects Parts I–III directly to real photographs and a fully visible four-patch worksheet. A separate small ViT is trained on 512 generated images, selected on 128 validation examples and evaluated on 256 test examples. Pretrained real-image inference and interpretation are separate measurements. Vision II–IV retain their existing tabletop examples and historical frozen encoder; `toy5.json` and the legacy shared runtime are preserved for that continuation. The original two-image exercises demonstrate computations, not broad visual generalization. See `src/VISION1_TEACHING_GUIDE.md` for the new lesson and `src/VISION_SOURCE_AUDIT.md` for historical provenance.
 
 ```sh
 python3 src/assemble.py --part 1 --out part1.html
@@ -80,14 +80,15 @@ node src/check_part1.mjs
 node src/check_part1_diagrams.mjs
 python3 src/train_part4.py --check
 node src/check_part4.mjs
-node src/check_vision1.mjs
+python3 src/check_vision1_lesson.py
+# Legacy tabletop experiment (still used by later parts):
 python3 src/verify_vision1_learning.py
 node src/check_vision2.mjs
 python3 src/train_vision3.py --check
 node src/check_vision3.mjs
 python3 src/train_vision4.py --check
 node src/check_vision4.mjs
-node src/check_vision_pixels.mjs vision1.html vision2.html vision3.html vision4.html
+node src/check_vision_pixels.mjs vision2.html vision3.html vision4.html
 node src/toy_ref.mjs src/toy.json --compare src/py_check.json
 node src/check-live-model.mjs attention.html
 python3 src/check_training.py
@@ -107,7 +108,7 @@ node src/frame_audit.mjs vision2.html
 node src/frame_audit.mjs vision3.html
 node src/frame_audit.mjs vision4.html
 node src/check_tables.mjs part1.html attention.html part3.html part4.html
-node src/check_tables.mjs vision1.html vision2.html vision3.html vision4.html
+node src/check_tables.mjs vision2.html vision3.html vision4.html
 node src/check-routing-scaling.mjs
 node src/check-diagram.mjs attention.html
 node src/qa.mjs attention.html --width 1280 --height 720
@@ -117,3 +118,14 @@ node src/qa.mjs attention.html --width 390 --height 844
 Browser checks reuse an installed Playwright runtime; they do not add a production dependency. See `src/PRESENT.md` for authoring, frame-fit validation, presenter controls, and PDF options. `src/CLASSROOM_QA.md` records the release checks.
 
 `check_metadata.py` checks all eight configs against section IDs, headings, roadmap order, landing-card titles, and navigation labels. It also builds each lesson in an isolated temporary directory and tests unavailable planned links, without changing the published HTML. `interaction_test.mjs` exercises open arithmetic dialogs, changing masks, focused sliders, and presenter notes; a default frame walk alone does not cover those states.
+
+### Rebuild the complete Vision I lecture
+
+Requires Python, NumPy and PyTorch. The checked-in measurements let the deck rebuild without network access or retraining.
+
+```sh
+python3 src/build_vision1_lesson.py
+python3 src/check_vision1_lesson.py
+```
+
+To repeat the experiments, run `notebooks/vision/train_small_vit.py`, `notebooks/vision/run_real_images.py`, and `notebooks/vision/inspect_real_vit.py` before rebuilding. The two real-image scripts additionally require timm and Pillow. All presentation interactions are silent. The standalone `vision1.html` embeds its images and math assets; linked notebooks and scripts live beside it in the repository.

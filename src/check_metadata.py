@@ -108,7 +108,8 @@ def main():
             if not 0 <= expected < len(OUTPUTS):
                 check(link is None, f'{name}: unexpected {direction} link at sequence boundary')
                 continue
-            target = OUTPUTS[expected]
+            # Part III deliberately branches straight to the vision continuation.
+            target = 'vision1.html' if number == 3 and direction == 'next' else OUTPUTS[expected]
             check(bool(link) and urlsplit(link.get('href', '')).path == target, f'{name}: wrong {direction} destination')
             target_config = destinations[target]
             target_prefix = target_config.get('partLabel', 'Part ' + str(target_config['part']))

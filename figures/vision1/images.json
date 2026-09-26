@@ -1,0 +1,34 @@
+[
+  {
+    "file": "newfoundland_31.jpg",
+    "image_id": "newfoundland_31",
+    "row": 0,
+    "split": "test",
+    "species": "dog",
+    "width": 500,
+    "height": 334,
+    "dataset": "timm/oxford-iiit-pet",
+    "dataset_revision": "089695c834a7deb60505b7cc506672db1c31a6aa",
+    "source": "https://huggingface.co/datasets/timm/oxford-iiit-pet",
+    "original_dataset": "https://www.robots.ox.ac.uk/~vgg/data/pets/",
+    "sha256": "617dc6f6dcd26c69303b54985eadd5c75bc07b8ba22cdb1ea511307096098d0a",
+    "license": "CC BY-SA 4.0; original copyright remains with image owners",
+    "attribution": "Oxford-IIIT Pet dataset: Parkhi, Vedaldi, Zisserman and Jawahar; via timm Hugging Face mirror"
+  },
+  {
+    "file": "Persian_98.jpg",
+    "image_id": "Persian_98",
+    "row": 9,
+    "split": "test",
+    "species": "cat",
+    "width": 375,
+    "height": 500,
+    "dataset": "timm/oxford-iiit-pet",
+    "dataset_revision": "089695c834a7deb60505b7cc506672db1c31a6aa",
+    "source": "https://huggingface.co/datasets/timm/oxford-iiit-pet",
+    "original_dataset": "https://www.robots.ox.ac.uk/~vgg/data/pets/",
+    "sha256": "6071d201543c999e063615d6c2cc674ea004adb11711d34d29d3df11c0012292",
+    "license": "CC BY-SA 4.0; original copyright remains with image owners",
+    "attribution": "Oxford-IIIT Pet dataset: Parkhi, Vedaldi, Zisserman and Jawahar; via timm Hugging Face mirror"
+  }
+]

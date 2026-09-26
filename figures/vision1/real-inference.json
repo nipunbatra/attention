@@ -1,0 +1,79 @@
+{
+  "model": "vit_tiny_patch16_224.augreg_in21k_ft_in1k",
+  "model_url": "https://huggingface.co/timm/vit_tiny_patch16_224.augreg_in21k_ft_in1k",
+  "timm": "1.0.30",
+  "torch": "2.14.0",
+  "pillow": "12.3.0",
+  "preprocessing": {
+    "input_size": [
+      3,
+      224,
+      224
+    ],
+    "interpolation": "bicubic",
+    "mean": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "std": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "crop_pct": 0.9,
+    "crop_mode": "center"
+  },
+  "classes": 1000,
+  "patches": 196,
+  "tokens": 197,
+  "d_model": 192,
+  "n_heads": 3,
+  "d_head": 64,
+  "blocks": 12,
+  "scope": "Two-image ImageNet inference; no training or Pets benchmark.",
+  "results": [
+    {
+      "image_id": "newfoundland_31",
+      "sha256": "617dc6f6dcd26c69303b54985eadd5c75bc07b8ba22cdb1ea511307096098d0a",
+      "top3": [
+        {
+          "index": 256,
+          "label": "Newfoundland, Newfoundland dog",
+          "probability": 0.9572675228118896
+        },
+        {
+          "index": 244,
+          "label": "Tibetan mastiff",
+          "probability": 0.01625724323093891
+        },
+        {
+          "index": 226,
+          "label": "briard",
+          "probability": 0.006742686033248901
+        }
+      ]
+    },
+    {
+      "image_id": "Persian_98",
+      "sha256": "6071d201543c999e063615d6c2cc674ea004adb11711d34d29d3df11c0012292",
+      "top3": [
+        {
+          "index": 283,
+          "label": "Persian cat",
+          "probability": 0.96707683801651
+        },
+        {
+          "index": 332,
+          "label": "Angora, Angora rabbit",
+          "probability": 0.012567228637635708
+        },
+        {
+          "index": 728,
+          "label": "plastic bag",
+          "probability": 0.004300369881093502
+        }
+      ]
+    }
+  ]
+}

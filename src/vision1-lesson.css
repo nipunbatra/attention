@@ -1,0 +1,42 @@
+.vp-frame { --transparent:transparent; }
+.vp-figure { width:100%; }
+.vp-figure svg { display:block; width:100%; height:auto; font-family:var(--font-ui); }
+.vp-figure text { font-variant-numeric:tabular-nums; }
+.vp-frame .vp-caption { font-size:20px; line-height:1.4; margin:10px 0 22px; max-width:65ch; }
+.vp-mobile { display:none; }
+.vp-table { width:100%; border-collapse:collapse; font-size:16px; }
+.vp-table th,.vp-table td { border-bottom:1px solid var(--line); padding:10px 5px; text-align:left; }
+.vp-table th { font-size:14px; color:var(--ink-2); }
+.vp-table td { font-variant-numeric:tabular-nums; }
+.vp-cat { display:block; max-width:240px; width:100%; height:auto; margin:20px 0; }
+.vp-experiment { padding:12px 0; }
+.vp-controls { display:flex; flex-wrap:wrap; gap:20px 36px; align-items:center; }
+.vp-controls label { display:flex; align-items:center; gap:12px; font-size:18px; }
+.vp-controls select { font:inherit; padding:8px; border:1px solid var(--line); background:var(--card); border-radius:4px; color:var(--ink); }
+.vp-controls input { width:20px; height:20px; accent-color:var(--ink); }
+.vp-controls :focus-visible { outline:2px solid var(--ink); outline-offset:4px; }
+#vp-result { display:block; margin:18px 0 10px; font-size:20px; line-height:1.5; font-variant-numeric:tabular-nums; }
+#vp-result strong { color:var(--c-e); }
+body.present .vp-frame .vp-caption { font-size:26px; max-width:100%; margin:8px 0 0; line-height:1.3; }
+body.present .vp-figure { flex:none; }
+body.present .vp-controls label,body.present .vp-controls select { font-size:24px; }
+body.present #vp-result { font-size:26px; margin:14px 0 4px; }
+body.present .vp-experiment { padding:4px 0; }
+body.present .vp-experiment-frame .vp-caption { font-size:24px; }
+@media(max-width:680px) {
+ body:not(.present) .vp-desktop { display:none; }
+ body:not(.present) .vp-mobile { display:block; color:var(--ink); line-height:1.6; }
+ body:not(.present) .vp-mobile img { width:100%; height:auto; }
+ body:not(.present) .vp-frame .vp-caption { font-size:18px; }
+ body:not(.present) .vp-controls { gap:12px; }
+ body:not(.present) .vp-controls label { flex-wrap:wrap; }
+}
+
+.vl-code {display:grid;grid-template-columns:1.85fr 1fr;gap:30px;align-items:center}
+.vl-code pre {font-size:18px;line-height:1.55;padding:18px;overflow-x:auto;white-space:pre;max-width:100%}
+body.present .vl-code pre {font-size:22px;line-height:1.6;padding:16px}
+#vl-cost {display:block;font-size:22px;margin:24px 0;line-height:1.5;font-variant-numeric:tabular-nums}
+body.present #vl-cost {font-size:28px}
+@media(max-width:680px){body:not(.present) .vl-code{display:block}body:not(.present) .vl-code pre{font-size:13px}body:not(.present) .vl-code .vp-figure{display:none}}
+
+body:not(.present) .sec .companion {overflow-wrap:anywhere;}

@@ -1,0 +1,45 @@
+{
+  "presentation_viewport": [
+    1280,
+    720
+  ],
+  "teaching_frames": 58,
+  "cover_frames": 1,
+  "review": "All final frame layouts inspected through the in-app browser; new mask frame and revised attention overlays inspected after rebuilding.",
+  "geometry": "No clipped slide text or text collisions found in the full frame scan; added mask frame visually confirmed.",
+  "visual_samples": [
+    "opening photograph",
+    "code-block",
+    "image-mask",
+    "real-heads",
+    "cover"
+  ],
+  "reading_viewport": [
+    390,
+    844
+  ],
+  "document_width": 390,
+  "document_scroll_width": 390,
+  "section_overflows": [],
+  "interactions": {
+    "arrangement_vertical": [
+      14.3,
+      85.7
+    ],
+    "positions_off": [
+      50,
+      50
+    ],
+    "384px_16px_patch": {
+      "tokens": 577,
+      "scores_per_head": 332929
+    },
+    "384px_8px_patch": {
+      "tokens": 2305,
+      "scores_per_head": 5313025
+    }
+  },
+  "console_errors_or_warnings": [],
+  "audio_or_video_played": false,
+  "verification_date": "2026-09-26"
+}
