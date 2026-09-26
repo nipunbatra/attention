@@ -120,12 +120,31 @@ try{
  await page.route('http://vision1.test/**',route=>route.fulfill({contentType:'text/html',body:html}));
  await page.goto('http://vision1.test/vision1.html?present#s01');await page.waitForTimeout(300);
  const result=await page.evaluate(()=>({frames:AT.present.state().total,mathErrors:document.querySelectorAll('.katex-error').length,overlays:document.querySelectorAll('.voverlay').length,scatters:document.querySelectorAll('.vscatter').length,curves:document.querySelectorAll('.vcurve').length,thumbLabels:document.querySelectorAll('.dt tbody th .vthumb').length,notation:document.querySelector('#notation-card').textContent,provenance:document.querySelector('#hero-provenance').textContent}));
- assert.equal(result.frames,frames);assert.equal(result.mathErrors,0);assert.ok(result.overlays>=10,'attention overlays');assert.ok(result.scatters>=2);assert.ok(result.curves>=1);assert.ok(result.thumbLabels>=40,'thumbnail row labels');
+ assert.equal(result.frames,frames+1,'the presentation adds one generated cover');assert.equal(result.mathErrors,0);assert.ok(result.overlays>=10,'attention overlays');assert.ok(result.scatters>=2);assert.ok(result.curves>=1);assert.ok(result.thumbLabels>=40,'thumbnail row labels');
+ const multi=await page.evaluate(()=>({model:window.__V1_MULTIHEAD__,svgCount:document.querySelectorAll('#s10 .mh-sheet svg').length}));
+ assert.equal(multi.svgCount,5,'five held SVG diagrams');
+ const M=multi.model, mv=(r,W)=>W[0].map((_,c)=>r.reduce((s,x,i)=>s+x*W[i][c],0));
+ assert.equal(M.E.length,17);assert.equal(M.E[0].length,4);
+ assert.deepEqual(M.W2.Q,[[0,1],[0,0],[0,0],[0,0]]);
+ assert.deepEqual(M.W2.K,[[0,0],[1,0],[0,0],[0,2]]);
+ assert.deepEqual(M.W2.V,[[0,1],[1,0],[0,0],[0,0]]);
+ for(const [Q,K,Vv,S,A,H] of [[M.Q1,M.K1,M.V1,M.S1,M.A1,M.H1],[M.Q2,M.K2,M.V2,M.S2,M.A2,M.H2]]){
+   assert.equal(Q.length,17);assert.equal(K.length,17);assert.equal(Vv.length,17);assert.equal(S.length,17);assert.equal(A.length,17);assert.equal(H.length,17);
+   near(S[0][8],(Q[0][0]*K[8][0]+Q[0][1]*K[8][1])/Math.SQRT2);
+   near(sum(A[0]),1);A[0].forEach((a,j)=>near(a,Math.exp(S[0][j])/sum(S[0].map(Math.exp))));
+   [0,1].forEach(c=>near(H[0][c],sum(A[0].map((a,j)=>a*Vv[j][c]))));
+ }
+ assert.deepEqual(M.W_O,[[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]);
+ M.message.forEach((x,i)=>near(x,[...M.H1[0],...M.H2[0]][i]));
+ M.updated.forEach((x,i)=>near(x,M.E[0][i]+mv(M.message,M.W_O)[i]));
+ M.logits.forEach((x,i)=>near(x,mv(M.updated,M.W_class)[i]+M.b_class[i]));
+ M.probs.forEach((x,i)=>near(x,Math.exp(M.logits[i])/sum(M.logits.map(Math.exp))));
+ assert.ok(M.probs[0]>M.probs[1],'the hand-chosen class head predicts scene A label');
  assert.ok(result.notation.includes('patch'));assert.ok(result.provenance.includes('brightness'),'the provenance names the axes from the toy');
  const scenes=await page.evaluate(()=>({count:document.querySelectorAll('[data-vision-scene]').length,modes:Array.from(document.querySelectorAll('#s02 [data-vision-scene]')).map(el=>el.dataset.visionScene),embedded:Array.from(document.querySelectorAll('[data-vision-scene] image')).every(el=>el.getAttribute('href').startsWith('data:image/jpeg;base64,'))}));
  assert.equal(scenes.count,3);assert.deepEqual(scenes.modes,['scene','patches','patch-crop']);assert.ok(scenes.embedded,'scene images are embedded for offline use');
  let visited=0;
- for(let fi=0;fi<frames;fi++){
+ for(let fi=0;fi<result.frames;fi++){
    await page.evaluate(fi=>{AT.present.go(fi,null,999);document.querySelectorAll('.frame.is-live details.reveal').forEach(el=>el.open=true);},fi);await page.waitForTimeout(60);
    const state=await page.evaluate(()=>{const s=AT.present.state(),f=document.querySelector('.frame.is-live');return{fi:s.fi,id:s.frame.id,title:s.frame.title,scroll:f.scrollHeight,client:f.clientHeight,wide:f.scrollWidth>f.clientWidth+2};});
    if(state.scroll>state.client+3||state.wide)issues.push(state);

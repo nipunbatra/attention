@@ -1,4 +1,4 @@
-<section id="s10" class="sec" data-title="Scale up to a real Vision Transformer" data-lit="">
+<section id="s10" class="sec" data-title="Two heads, then scale up" data-lit="">
 <style>
 #s10 .rd{margin:10px 0 0;font-size:15px;color:var(--ink-2);max-width:76ch;line-height:1.5}
 #s10 .s10-lay{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:12px 32px;align-items:center}
@@ -7,7 +7,12 @@
 #s10 .s10-eq{font-size:1.05em;text-align:center;margin:12px 0}
 #s10 .s10-links a{color:var(--ink)}
 #s10 .dt td.dt-text{max-width:24em;line-height:1.35}
+#s10 .mh-sheet{width:100%;margin:8px auto 0;max-width:1100px}
+#s10 .mh-sheet svg{display:block;width:100%;height:auto}
+#s10 .mh-read{max-width:72ch;margin:8px auto 0;color:var(--ink-2);font-size:15px;line-height:1.45}
+#s10 .mh-phone{display:none}
 @media(max-width:820px){#s10 .s10-lay{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:700px){body:not(.present) #s10 .mh-sheet{overflow-x:auto;overscroll-behavior-inline:contain}body:not(.present) #s10 .mh-sheet svg{width:900px;max-width:none}body:not(.present) #s10 .mh-phone{display:block;color:var(--ink-3);font-size:13px;margin:4px 0}}
 body.present #s10 .rd{font-size:22px;line-height:1.35}
 body.present #s10 .dt-cap,body.present #s10 .dt-note{display:none}
 body.present #s10 .dt td,body.present #s10 .dt th{padding:.16em .45em}
@@ -16,21 +21,66 @@ body.present #s10 .s10-lay{gap:0 40px}
 body.present #s10 .s10-plot text{font-size:15px}
 body.present #s10 .s10-eq{font-size:1em;margin:8px 0}
 body.present #s10 .s10-links{font-size:.92em}
+body.present #s10 .mh-read{font-size:21px;line-height:1.3}
 </style>
 <header class="sec-head">
   <span class="sec-num">10</span>
   <div>
     <p class="eyebrow">Sixteen patches of four pixels became seventeen rows of four numbers. A real model changes every size and keeps every step.</p>
-    <h2>Scale up to a real Vision Transformer</h2>
+    <h2>Two heads, then scale up</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Return to the slider of section 1 with the whole chain in mind. A 224×224 photograph with 16×16 patches gives 196 patches and, with CLS, 197 rows, so one head compares 197 queries with 197 keys. Each patch has three colour channels, so its raw row has 768 numbers, and the projection maps them to a model width of a few hundred. The steps are the ones we computed: project, add position, prepend CLS, route, mix, project back, add, read CLS. A real block wraps attention in LayerNorm, follows it with a feed-forward sublayer, runs several heads and stacks a dozen blocks; those are named with their shapes and left out of the arithmetic on purpose.</p>
+  <p>Parts II and III already gave us the attention rule. Replay scene A with two independent, hand-chosen heads on its <em>same</em> 17×4 input $E$. Each head has its own 4×2 query, key and value matrices. The first is the starting head computed earlier; the second is a new position-oriented worksheet head. We work one source edge, both softmax rows and both messages, then concatenate and apply one shared 4×4 output matrix. This replay is a separate illustrative classifier, not the trained one-head experiment of sections 7 through 9. The readings “bright” and “right” describe our chosen matrices; training does not assign guaranteed jobs to heads. After the replay, the slider shows what changes at 224 pixels.</p>
+  <p>The second head's complete matrices are below. Rows are the four input axes in order: brightness, contrast, row, column. Columns are the two coordinates within that head. The first head reuses the initial matrices in sections 5 and 6. The shared output projection is $I_4$ and the worksheet class head has only its fourth row nonzero, $(+2,-2)$.</p>
+  <pre class="torch-snippet"><code>W_Q^(2) = [[0,1], [0,0], [0,0], [0,0]]
+W_K^(2) = [[0,0], [1,0], [0,0], [0,2]]
+W_V^(2) = [[0,1], [1,0], [0,0], [0,0]]</code></pre>
+</div>
+
+<div class="frame" data-title="The same image gives two heads the same rows" data-autobuild="off">
+  <script type="text/x-notes">Point at scene A and the one input E.
+Each head receives all seventeen rows but has its own query, key and value matrices. These second-head numbers were chosen for teaching, not measured after training.</script>
+  <div class="mh-sheet" id="s10-mh1"></div>
+  <p class="mh-phone">Swipe the diagram to follow both heads and the calculation.</p>
+  <p class="mh-read">One $\ve{E}$ of shape $17\times4$ enters both heads. Each head has separate $W_Q,W_K,W_V$ of shape $4\times2$.</p>
+</div>
+
+<div class="frame" data-title="Two queries score the same patch differently" data-autobuild="off">
+  <script type="text/x-notes">Keep the image and the two head positions fixed. Read the two score calculations for patch 8.
+The first query mixes brightness and rightward position; the second only asks about position. Both compare with all seventeen keys, including CLS.</script>
+  <div class="mh-sheet" id="s10-mh2"></div>
+  <p class="mh-phone">Swipe the diagram to read the next operation.</p>
+  <p class="mh-read">For each head, $Q=EW_Q$ and $K=EW_K$ are $17\times2$; $QK^\top/\sqrt2$ is $17\times17$. There is no causal mask.</p>
+</div>
+
+<div class="frame" data-title="Each head mixes its own values" data-autobuild="off">
+  <script type="text/x-notes">Reveal the two heatmaps without moving the image. The same patch has different weights.
+Softmax runs over all seventeen sources in each head. The messages sum every weighted value, not only patch 8; the displayed patch 8 product is one term.</script>
+  <div class="mh-sheet" id="s10-mh3"></div>
+  <p class="mh-phone">Swipe the diagram to read the next operation.</p>
+  <p class="mh-read">Each $A^{(h)}$ is $17\times17$, each $V^{(h)}$ is $17\times2$, and each $H^{(h)}=A^{(h)}V^{(h)}$ is $17\times2$.</p>
+</div>
+
+<div class="frame" data-title="Concatenate, project, and add" data-autobuild="off">
+  <script type="text/x-notes">The two CLS messages are side by side, then one output matrix returns them to E's four coordinates.
+Our hand-chosen output matrix is the identity so each number stays visible. Add the result to the original CLS row, coordinate by coordinate.</script>
+  <div class="mh-sheet" id="s10-mh4"></div>
+  <p class="mh-phone">Swipe the diagram to read the next operation.</p>
+  <p class="mh-read">$[H^{(1)}\mid H^{(2)}]$ is $17\times4$; $W_O$ is $4\times4$; $\vp{E'}=\ve{E}+[H^{(1)}\mid H^{(2)}]W_O$ is $17\times4$.</p>
+</div>
+
+<div class="frame" data-title="One updated CLS row, one image label" data-autobuild="off">
+  <script type="text/x-notes">The final hand-chosen classifier reads the updated CLS row, not all patch rows separately.
+The two logits become probabilities over the two classes. Compare with the given label and compute minus log probability; this worksheet was not trained.</script>
+  <div class="mh-sheet" id="s10-mh5"></div>
+  <p class="mh-phone">Swipe the diagram to read the next operation.</p>
+  <p class="mh-read">$e'_0W_{\text{cls}}+b$ is $1\times2$, with $W_{\text{cls}}$ of shape $4\times2$. A simple alternative is to average the final patch rows before the same kind of class head.</p>
 </div>
 
 <div class="frame" data-title="Back to the slider: rows and scores at 224 pixels" data-autobuild="off">
-  <script type="text/x-notes">The same formula as section 1, now that every row has a meaning.
+  <script type="text/x-notes">Now that every row has a meaning, choose how many patches a larger image should create.
 Both axes are logarithmic. Halving the patch side multiplies the rows by four and the scores by sixteen. Sixteen pixels is the usual compromise; eight is affordable for smaller images.</script>
   <div class="card">
     <div id="s10-slider"></div>
@@ -46,24 +96,34 @@ Both axes are logarithmic. Halving the patch side multiplies the rows by four an
 Read the table row by row: every quantity of the toy has a counterpart, and only the sizes change. The learned projection has no named axes; that is the price of learning it.</script>
   <div class="card">
     <div id="s10-shapes"></div>
-    <p class="s10-eq" data-build="1">$$\underbrace{r_j}_{1\times768}\;\underbrace{W_{\text{patch}}}_{768\times384}+\underbrace{b_{\text{patch}}}_{1\times384}=\underbrace{\ve{e_j}}_{1\times384}$$</p>
+    <p class="s10-eq" data-build="1">$$\underbrace{r_j}_{1\times768}\;\underbrace{W_{\text{patch}}}_{768\times768}+\underbrace{b_{\text{patch}}}_{1\times768}=\underbrace{\ve{e_j}}_{1\times768}$$</p>
   </div>
 </div>
 
 <div class="frame" data-title="What a full encoder block adds" data-autobuild="off">
   <script type="text/x-notes">Our arithmetic was one attention sublayer with a residual addition. The full block has two sublayers, each normalized before and added after.
-Heads: each of the six projects the same 384-wide row to 64-wide queries, keys and values; the six messages are concatenated and W_O returns to width 384. Stack twelve blocks, normalize once more, and read CLS. None of that changes the meaning of any step we computed.</script>
-  <pre class="torch-snippet"><code>E = E + attention(norm1(E))   # rows exchange information (sections 5 and 6, six heads)
+Heads: each of the twelve projects the same 768-wide row to 64-wide queries, keys and values; the twelve messages are concatenated and W_O returns to width 768. Stack twelve blocks, normalize once more, and read CLS. None of that changes the meaning of any step we computed.</script>
+  <pre class="torch-snippet"><code>E = E + attention(norm1(E))   # rows exchange information (sections 5 and 6, twelve heads)
 E = E + mlp(norm2(E))         # each row is transformed on its own</code></pre>
   <div class="prose s10-links">
     <p data-build="1">LayerNorm before each sublayer keeps the rows at a common scale. The feed-forward sublayer transforms each row separately with two matrices and a non-linearity; it moves no information between rows.</p>
-    <p data-build="2">Six heads read the same rows with six sets of $W_Q, W_K, W_V$ of width 64, and their six messages are concatenated before $W_O$. Twelve such blocks are stacked, a final LayerNorm is applied, and the class head reads the last CLS row.</p>
-    <p data-build="3">The block follows the <a href="https://arxiv.org/abs/2010.11929">original Vision Transformer</a> and its <a href="https://github.com/google-research/vision_transformer/blob/main/vit_jax/models_vit.py">reference implementation</a>; the sizes in the table are those of ViT-S/16. Vision II asks how such a model can learn without labels.</p>
+    <p data-build="2">Twelve heads read the same rows with twelve sets of $W_Q, W_K, W_V$ of width 64, and their twelve messages are concatenated before $W_O$. Twelve such blocks are stacked, a final LayerNorm is applied, and the class head reads the last CLS row.</p>
+    <p data-build="3">The block follows the <a href="https://arxiv.org/abs/2010.11929">original Vision Transformer</a> and its <a href="https://github.com/google-research/vision_transformer/blob/main/vit_jax/models_vit.py">reference implementation</a>; the sizes in the table are those of ViT-B/16. Vision II asks how such a model can learn without labels.</p>
   </div>
 </div>
 
 <div class="companion after">
-  <p>Everything we computed survives the change of size: patches become rows, rows are routed and mixed, CLS collects and a head reads. The extras of a real block, normalization, a feed-forward sublayer, heads and depth, are additions to that chain, not replacements.</p>
+  <p>Everything we computed survives the change of size: patches become rows, each head routes and mixes independently, one output projection combines their messages, and CLS supplies the image classification row. The original ViT uses learned position embeddings, twelve heads in ViT-B/16, pre-normalized attention and MLP sublayers, and multiple blocks. Our toy's row and column position coordinates and its two-head worksheet are teaching choices.</p>
+</div>
+
+<div class="companion" data-kicker="Run the classification code">
+  <p><a href="https://github.com/nipunbatra/attention/blob/main/notebooks/vision/01_classification_from_patches.ipynb">Open the executed Vision I notebook</a>. It reads the exact 8×8 PNG images, builds patches and two heads with NumPy, checks the fitted one-head model on held-out scene C, and repeats that prediction in PyTorch. C receives $p(\text{mug on the right})=0.899$ from the two-image fit; one probe does not establish general recognition. The notebook also runs a separately pretrained ViT on the two JPEG illustrations. Its top ImageNet class for each is “pot, flowerpot” ($0.753$ and $0.746$), not an answer to this lesson's right-half question.</p>
+  <p>The short <a href="https://huggingface.co/docs/transformers/main/model_doc/vit">Hugging Face ViT API</a> example in the notebook shows how to load the checkpoint's image processor and classification head on a new image. A custom right-half task requires a two-class head and labelled training images.</p>
+</div>
+
+<div class="companion" data-kicker="Sources and next tasks">
+  <p>The architecture and the CLS-versus-pooling alternative follow <a href="https://arxiv.org/abs/2010.11929">Dosovitskiy et al., An Image is Worth 16×16 Words</a>, especially section 3 and appendix D.3. <a href="https://jalammar.github.io/illustrated-transformer/">Jay Alammar's Illustrated Transformer</a> is a reference for revealing one attention operation at a time; these diagrams and examples are original. For a practical fine-tuning path, see the <a href="https://huggingface.co/learn/computer-vision-course/unit3/vision-transformers/vision-transformers-for-image-classification">Hugging Face computer vision course</a> and <a href="https://huggingface.co/blog/fine-tune-vit">ViT guide</a>.</p>
+  <p>After classification, object detection asks <em>which boxes?</em> and segmentation asks <em>which pixels?</em> Those need spatial outputs rather than a single image label. They are a roadmap for later vision work; <a href="vision2.html">Vision II</a> next asks how visual representations can be learned without class labels.</p>
 </div>
 
 <script>
@@ -98,20 +158,138 @@ E = E + mlp(norm2(E))         # each row is transformed on its own</code></pre>
   AT.ui.slider({ label: 'Patch side (pixels)', min: 1, max: 32, step: 1, value: 16, format: (v) => v + ' px', onInput: draw, into: S.querySelector('#s10-slider') });
   draw(16);
 
-  /* the shapes table: the toy against ViT-S/16 */
+  /* the shapes table: the toy against ViT-B/16 */
   const toy = V.tokensPerImage(8, 2), vit = V.tokensPerImage(SIDE, 16);
   const rawVit = 16 * 16 * 3;
   AT.ui.table([
     ['8 × 8, one grey channel', '224 × 224, three colour channels'],
     ['2 × 2 = 4 numbers', '16 × 16 × 3 = ' + fmtN(rawVit) + ' numbers'],
     [fmtN(toy.patches) + ' + CLS = ' + fmtN(toy.rows), fmtN(vit.patches) + ' + CLS = ' + fmtN(vit.rows)],
-    [String(AT.d_model) + ', with named axes', '384, learned, no names'],
-    [String(AT.d_k) + ', one head', '64 per head, 6 heads'],
+    [String(AT.d_model) + ', with named axes', '768, learned, no names'],
+    [String(AT.d_k) + ', one head', '64 per head, 12 heads'],
     [fmtN(toy.scores), fmtN(vit.scores)],
     ['1, attention only', '12, each with attention, LayerNorm and a feed-forward sublayer'],
     [String(V.classes.length), '1,000 classes on ImageNet']
-  ], { cols: [{ label: 'this page', kind: 'text' }, { label: 'ViT-S/16', kind: 'text' }], rowLabels: ['image', 'raw row of a patch', 'rows into attention', 'd_model', 'd_k', 'scores per head', 'blocks', 'answers'], cornerLabel: 'size', into: S.querySelector('#s10-shapes'),
-    caption: 'Every row of the toy has a counterpart; only the sizes change. ViT-S/16 sizes from the Vision Transformer paper.' });
+  ], { cols: [{ label: 'this page', kind: 'text' }, { label: 'ViT-B/16', kind: 'text' }], rowLabels: ['image', 'raw row of a patch', 'rows into attention', 'd_model', 'd_k', 'scores per head', 'blocks', 'answers'], cornerLabel: 'size', into: S.querySelector('#s10-shapes'),
+    caption: 'Every row of the toy has a counterpart; only the sizes change. ViT-B/16 sizes from the Vision Transformer paper.' });
+})();
+</script>
+<script>
+(function(){
+  /* A second, hand-chosen head on the same scene A rows. The fitted one-head
+     model above remains untouched; Vision IV continues to use its snapshot. */
+  const V = AT.vision, F = V.forward('A', 'initial'), E = F.E;
+  const W2 = {
+    Q: [[0,1],[0,0],[0,0],[0,0]],
+    K: [[0,0],[1,0],[0,0],[0,2]],
+    V: [[0,1],[1,0],[0,0],[0,0]]
+  };
+  const mm = (A,B) => A.map(row => B[0].map((_,j) => row.reduce((s,x,k) => s+x*B[k][j],0)));
+  const sm = row => { const peak=Math.max(...row), ex=row.map(x=>Math.exp(x-peak)), z=ex.reduce((a,b)=>a+b,0); return ex.map(x=>x/z); };
+  const Q2=mm(E,W2.Q), K2=mm(E,W2.K), V2=mm(E,W2.V);
+  const S2=Q2.map(q=>K2.map(k=>(q[0]*k[0]+q[1]*k[1])/Math.SQRT2));
+  const A2=S2.map(sm), H2=mm(A2,V2);
+  const message=[...F.H[0],...H2[0]];
+  const W_O=[[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]];
+  const delta=mm([message],W_O)[0], updated=E[0].map((x,j)=>x+delta[j]);
+  const W_class=[[0,0],[0,0],[0,0],[2,-2]], b_class=[0,0];
+  const logits=mm([updated],W_class)[0].map((x,j)=>x+b_class[j]), probs=sm(logits);
+  const z1=F.S[0].reduce((s,x)=>s+Math.exp(x),0), z2=S2[0].reduce((s,x)=>s+Math.exp(x),0);
+  const n=x=>AT.fmt(x,3), pair=a=>'('+a.map(n).join(', ')+')';
+  window.__V1_MULTIHEAD__={E,Q1:F.Q,K1:F.K,V1:F.V,S1:F.S,A1:F.A,H1:F.H,Q2,K2,V2,S2,A2,H2,W2,W_O,message,delta,updated,W_class,b_class,logits,probs};
+  const ink='var(--ink)', dim='var(--ink-2)', line='var(--line)', paper='var(--card)';
+  const tx=(x,y,v,size=20,color=ink,weight=500)=>'<text x="'+x+'" y="'+y+'" font-size="'+size+'" fill="'+color+'" font-weight="'+weight+'">'+v+'</text>';
+  const box=(x,y,w,h)=>'<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="5" fill="'+paper+'" stroke="'+line+'" stroke-width="1.5"/>';
+  const photo=()=>{
+    let out=''; const g=V.scene('A'), ramp=window.__TOY__.ramp;
+    for(let r=0;r<8;r++)for(let c=0;c<8;c++)out+='<rect x="'+(25+c*18)+'" y="'+(162+r*18)+'" width="18" height="18" fill="'+ramp[g[r][c]]+'" stroke="'+paper+'" stroke-width=".7"/>';
+    for(let i=0;i<=4;i++){out+='<path d="M'+(25+i*36)+' 162V306 M25 '+(162+i*36)+'H169" stroke="'+ink+'" stroke-width="1.3" fill="none"/>';}
+    out+='<rect x="133" y="198" width="36" height="36" fill="none" stroke="var(--c-a)" stroke-width="3"/>';
+    return out;
+  };
+  const heat=(alpha,y)=>{
+    let out='';for(let j=0;j<16;j++){
+      const x=483+(j%4)*28, yy=y+Math.floor(j/4)*28, a=alpha[j+1];
+      out+='<rect x="'+x+'" y="'+yy+'" width="28" height="28" fill="var(--c-a)" fill-opacity="'+Math.min(.88,.08+a*3.2)+'" stroke="'+paper+'"/>';
+      out+=tx(x+3,yy+18,n(a).replace(/^0/,''),12,ink,600);
+    }return out;
+  };
+  const content={
+    1:[
+      'Shared patch projection: r₈=(3,3,3,3)',
+      'Wpatch: 4×4 → e₈='+pair(E[8]),
+      'Position is already added to every row.',
+      'CLS e₀='+pair(E[0]),
+      'Both heads start from the same E: 17×4.'
+    ],
+    2:[
+      'Head 1, patch 8: (1·3+1·1)/√2='+n(F.S[0][8]),
+      'Head 2, patch 8: (0·0+1·2)/√2='+n(S2[0][8]),
+      'Both use the same patch embedding e₈.',
+      'Two separate 17×17 score matrices.'
+    ],
+    3:[
+      'α₀₈¹=e^'+n(F.S[0][8])+'/Z₁='+n(F.A[0][8]),
+      'Z₁='+n(z1)+' over all 17 sources.',
+      'α₀₈²=e^'+n(S2[0][8])+'/Z₂='+n(A2[0][8]),
+      'Z₂='+n(z2)+' over all 17 sources.',
+      'α₀₈¹v₈¹='+pair(F.V[8].map(x=>x*F.A[0][8])),
+      'α₀₈²v₈²='+pair(V2[8].map(x=>x*A2[0][8])),
+      'Sum all terms: m₀¹='+pair(F.H[0]),
+      'm₀²='+pair(H2[0])
+    ],
+    4:[
+      'Concat(m₀¹,m₀²): 1×4',
+      pair(message),
+      'W_O=I₄ (4×4), hand chosen.',
+      'Δe₀='+pair(delta),
+      'e₀='+pair(E[0]),
+      'e₀′=e₀+Δe₀='+pair(updated)
+    ],
+    5:[
+      'Wcls: 4×2; bcls='+pair(b_class),
+      'Only the fourth coordinate has weights (+2, −2).',
+      'Logits='+pair(logits),
+      'p(yes, no)='+pair(probs),
+      'Label: mug on the right (yes).',
+      'Loss=−log p(yes)='+n(-Math.log(probs[0])),
+      'Hand-chosen worksheet; no fitting occurred.'
+    ]
+  };
+  function draw(stage){
+    let out='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 485" role="img" aria-label="Scene A through two hand-chosen attention heads, their messages, residual update and image classifier" style="font-family:var(--font-ui)">';
+    out+=tx(25,36,'Scene A · 8×8 pixels',23,ink,650)+tx(25,62,'Label: mug on the right',17,dim,500);
+    out+=photo()+tx(25,338,'16 patches, 2×2 each',17,dim)+tx(25,367,'Patch 8 outlined',17,'var(--c-a)',650);
+    out+='<path d="M176 234H224 M214 228l10 6-10 6" fill="none" stroke="var(--c-e)" stroke-width="2"/>';
+    out+=tx(178,205,'E',25,'var(--c-e)',700)+tx(174,266,'17×4',16,dim);
+    out+=box(238,65,393,177)+box(238,255,393,177)+box(650,65,430,367);
+    out+=tx(258,97,'Head 1 · original starting weights',22,ink,650);
+    out+=tx(258,287,'Head 2 · hand-chosen weights',22,ink,650);
+    out+=tx(667,98,['','Patch rows and CLS','Queries × keys','Softmax × values','One projected update','Class prediction'][stage],23,ink,650);
+    if(stage===1){
+      out+=tx(258,142,'W_Q¹, W_K¹, W_V¹: each 4×2',20,dim);
+      out+=tx(258,332,'W_Q², W_K², W_V²: each 4×2',20,dim);
+      out+=tx(258,181,'possible reading: brightness + right',18,dim);
+      out+=tx(258,371,'possible reading: rightward position',18,dim);
+    } else if(stage===2){
+      out+=tx(258,141,'q₀¹='+pair(F.Q[0]),20,'var(--c-q)');
+      out+=tx(258,177,'k₈¹='+pair(F.K[8]),20,'var(--c-k)');
+      out+=tx(258,213,'s₀₈¹='+n(F.S[0][8]),20,'var(--c-a)');
+      out+=tx(258,331,'q₀²='+pair(Q2[0]),20,'var(--c-q)');
+      out+=tx(258,367,'k₈²='+pair(K2[8]),20,'var(--c-k)');
+      out+=tx(258,403,'s₀₈²='+n(S2[0][8]),20,'var(--c-a)');
+    } else {
+      out+=tx(258,140,'m₀¹='+pair(F.H[0]),19,'var(--c-v)');
+      out+=tx(258,330,'m₀²='+pair(H2[0]),19,'var(--c-v)');
+      out+=heat(F.A[0],111)+heat(A2[0],301);
+    }
+    const lines=content[stage], lineH=stage===3?35:43;
+    lines.forEach((s,i)=>{out+=tx(668,137+i*lineH,s,stage===3?17:19,i===lines.length-1?'var(--c-ep)':dim,i===lines.length-1?650:500);});
+    out+=tx(25,466,'TEACHING NUMBERS · same scene, same patch positions · no trained two-head model',16,dim,600);
+    out+='</svg>';
+    document.getElementById('s10-mh'+stage).innerHTML=out;
+  }
+  for(let stage=1;stage<=5;stage++)draw(stage);
 })();
 </script>
 </section>

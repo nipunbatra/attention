@@ -24,20 +24,20 @@ body.present #s02 .vfig figcaption{font-size:22px}
 <header class="sec-head">
   <span class="sec-num">02</span>
   <div>
-    <p class="eyebrow">Before any arithmetic: a picture, a question, and the small scene we will compute on.</p>
+    <p class="eyebrow">The photograph makes the question familiar; the 8×8 scene supplies the pixels we compute on.</p>
     <h2>The scene: one picture, one question</h2>
   </div>
 </header>
 
 <div class="companion" data-kicker="For self-study">
-  <p>Part 2 had one sentence and one blank. This page has one scene and one question: is there a mug on the right half of the table? The photograph shows why the question is easy for you and hard for a grid of pixels: the mugs sit wherever they sit, and a patch grid cuts straight through them. We cannot multiply a photograph by hand, so the arithmetic runs on an 8×8 version of the same tabletop, with four grey levels and named regions. Read the pixel values once; from here on, every table on this page is about these sixteen patches, and every attention map is painted on this grid.</p>
+  <p>Part 2 had one sentence and one blank. This page has one image and one question: is there a mug on the right half of the table? The photograph illustrates why a fixed grid cuts through objects. The model does not read this JPEG. Its input is the 8×8 scene from the opening, with four grey levels and sixteen patches. From here on, every numerical table and attention map uses that scene.</p>
 </div>
 
 <div class="frame" data-title="Is there a mug on the right half?" data-autobuild="off">
-  <script type="text/x-notes">Ask the question before showing the label. Everyone answers instantly; the rest of the page is about how a model could.
-The book and the plant are part of the input too. The label says what answer we want, not which pixels to read. This illustration is generated; no model has looked at it.</script>
+  <script type="text/x-notes">Ask the question on a photo-sized illustration, then return to the exact 8×8 input.
+The book and the plant are visible too. The label says what answer we want, not which pixels to read. This generated JPEG is a visual analogy; the numerical model never receives it.</script>
   <div id="s02-photo"></div>
-  <p data-build="1">The input is the picture. Its label is <strong id="s02-label-a"></strong>. The other answer the model can give is <strong id="s02-label-b"></strong>.</p>
+  <p data-build="1">The illustration's label is <strong id="s02-label-a"></strong>; the other class is <strong id="s02-label-b"></strong>. Our model reads the 8×8 image, not this JPEG.</p>
 </div>
 
 <div class="frame" data-title="Cut the image into patches" data-autobuild="off">

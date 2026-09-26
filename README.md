@@ -10,7 +10,7 @@ Two connected, interactive, offline-capable series for a deep-learning course. [
 
 The four-part **Vision to language** sequence continues with:
 
-- [Vision I](https://nipunbatra.github.io/attention/vision1.html): one image followed through patch projection, CLS attention, a class prediction, loss, and actual learning on two images. Includes a pixel-by-pixel projection and a value-only experiment.
+- [Vision I](https://nipunbatra.github.io/attention/vision1.html): classify one labelled image from pixel patches through CLS attention, a class prediction and loss. Includes a two-head numerical replay, an executed [from-scratch image lab](notebooks/vision/01_classification_from_patches.ipynb), the two-image fit and a held-out PNG probe.
 - [Vision II](https://nipunbatra.github.io/attention/vision2.html): visual pretraining through MAE, DINO, and I-JEPA; exact reconstruction and teacher-distribution worksheets.
 - [Vision III](https://nipunbatra.github.io/attention/vision3.html): CLIP-style image–text matching, symmetric contrastive learning, candidate classification, and retrieval.
 - [Vision IV](https://nipunbatra.github.io/attention/vision4.html): a visual connector, an image-conditioned prefix decoder, actual answer generation, training, and grounding checks.
