@@ -3,7 +3,7 @@
     1280,
     720
   ],
-  "teaching_frames": 198,
+  "teaching_frames": 201,
   "cover_frames": 1,
   "review": "The previous 141 final states (140 teaching frames plus cover) passed the full geometry review. All six added implementation frames passed SVG text bounds and collision checks at 1280\u00d7720 and were visually inspected. Phone reading mode was rechecked at 390\u00d7844.",
   "geometry": "No clipped SVG text, text collisions, overflowing captions or code found.",
@@ -781,5 +781,46 @@
     "visual_review": "Verified highlighted crop and matching model input, projection flow arrows, measured content and position values, first-block LayerNorm and Q/K/V shapes. Fixed heading clearance in Q/K/V diagram.",
     "numerical_trace": "Checkpoint output, displayed model input, pixel-major Linear/Conv2d equivalence, position sum and first-head Q/K/V slices verified by trace_real_patch.py.",
     "audio_or_video_played": false
+  },
+  "continuous_photo_walkthrough": {
+    "frame_range": "s02/15 through s02/26",
+    "steps": 12,
+    "presentation_viewports": [
+      [
+        1280,
+        720
+      ],
+      [
+        995,
+        1031
+      ]
+    ],
+    "svg_clipped_text": [],
+    "svg_text_collisions": [],
+    "captions_within_viewport": true,
+    "phone_reading_viewport": [
+      390,
+      844
+    ],
+    "document_width": 390,
+    "document_scroll_width": 390,
+    "all_mobile_widths": [
+      358,
+      358
+    ],
+    "visual_samples": [
+      "real-patch-crops",
+      "patch-real-dimensions",
+      "patch-one-row-shape",
+      "real-patch-shared",
+      "patch-projection-parameters",
+      "real-patch-normalize"
+    ],
+    "numerical_verification": "Every one of the 196 pixel-major patch rows, projected with the same checkpoint weights and bias, matches the checkpoint patch embedding output. Displayed RGB is checked against the image.",
+    "audio_or_video_played": false,
+    "all_output_rows_table": {
+      "opened": true,
+      "rows": 196
+    }
   }
 }

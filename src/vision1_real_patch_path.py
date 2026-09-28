@@ -39,61 +39,13 @@ def add_real_path(b, add):
                 + patch(15, 12, 125) + t(165, 60, 'P63', 26, 'c-q')
                 + t(165, 100, '16 × 16 × 3', 23, 'c-e') + '</svg>')
 
-    # Return to the actual photograph before using realistic feature dimensions.
-    body = t(35, 33, 'Same photograph; now the model’s actual patch grid.', 28)
-    body += photo_grid(35, 72, 280) + t(175, 393, '224 × 224 × 3', 28, 'c-e', 'middle')
-    body += g(line(175, 152, 342, 152, 'c-q') + arrow(342, 152, 398, 205, 'c-q')
-              + patch(405, 132, 160) + t(485, 331, 'P63 · enlarged', 25, 'c-q', 'middle'), 1)
-    body += g(t(660, 115, 'One patch: 16 × 16 pixels', 30, 'c-e')
-              + t(660, 173, '3 RGB values at each pixel', 28)
-              + t(660, 256, '14 × 14 = 196 patches', 30)
-              + t(660, 320, 'P63: row 5, column 7', 27, 'c-q')
-              + t(660, 394, 'We will follow this patch throughout.', 25, 'ink-2'), 2)
-    mobile = ('<svg viewBox="0 0 360 420" role="img" aria-label="Dog image with a 14 by 14 grid and patch 63 highlighted">'
-              + photo_grid(40, 8, 280) + arrow(180, 100, 280, 335, 'c-q')
-              + patch(270, 335, 65) + t(25, 337, 'P63 · row 5, column 7', 20, 'c-q')
-              + t(25, 386, '224 × 224 RGB image', 23, 'c-e') + '</svg>')
-    add('s01-rows', 'Back to the dog: follow one real patch', body,
-        'The earlier 4 × 4 grid was an illustration. This model uses a 14 × 14 grid. We now follow P63, a 16 × 16 RGB patch from the same photograph.',
-        'Which part of this photograph will supply our next row of numbers?',
-        'Find the purple square in the real input grid, follow the line to its enlarged crop, and keep P63 as the example for the next steps.',
-        'The saved ViT-Tiny checkpoint receives this exact 224×224 resize and center crop of our Newfoundland photograph. '
-        'It divides the image into 196 non-overlapping 16×16 patches. Numbering patches from 1 in row-major order, row 5 and column 7 identify P63. '
-        'The earlier P6 and P7 labels belonged to a coarse 4×4 illustration; changing the grid changes those indices. '
-        'We use the model’s actual pixel values and learned parameters for the following trace. Values printed on slides are rounded; full precision is saved with the model name and preprocessing.' + evidence,
-        mobile + '<p>14 × 14 = 196 patches. Each patch contains 16 × 16 pixels, each with three RGB channel values.</p>')
-
-    # Show the shared projection explicitly, with a measured input and output.
-    body = patch(35, 78, 135) + t(102.5, 253, 'P63', 29, 'c-q', 'middle')
-    body += arrow(178, 143, 258, 143) + t(280, 70, 'x₆₃ · normalized RGB values', 28, 'c-e')
-    body += t(280, 126, vec(data['normalized_rgb_row'], 3), 32, 'c-e')
-    body += t(280, 170, 'first pixel: R, G, B', 23, 'ink-2') + t(280, 229, '1 × 768 · one patch row', 27)
-    body += g(arrow(632, 143, 718, 143) + box(740, 105, 365, 'nn.Linear(768, 192)', size=29)
-              + t(922, 219, 'W_patch: 768 × 192', 25, 'c-e', 'middle')
-              + t(922, 260, 'b_patch: 192 values', 25, 'c-e', 'middle'), 1)
-    body += g(arrow(922, 274, 922, 325, 'c-e') + box(690, 335, 420, 'c₆₃ · 1 × 192')
-              + arrow(680, 367, 570, 367, 'c-e')
-              + t(35, 337, 'c₆₃ = x₆₃W_patch + b_patch', 28, 'c-e')
-              + t(35, 393, vec(data['content']), 32, 'c-e'), 2)
-    add('real-patch-projection', 'The patch projection produces c₆₃', body,
-        'The shared patch layer turns P63’s 768 pixel values into c₆₃, a row of 192 learned features. These are measured coordinates from the dog image, rounded here. No activation follows this projection.',
-        'Which operation changes 768 input values into 192 content features?',
-        'Follow the actual crop to x63, through the named patch layer, and down to c63. Separate the patch index 63 from the feature width 192.',
-        'The first three entries shown are the normalized R, G and B of P63’s top-left pixel. '
-        'Continue with RGB of the next pixel, move left to right across the patch, then start the next row. '
-        'This checkpoint uses (RGB/255−0.5)/0.5 for channel normalization. All 768 entries contribute to the 192 learned weighted sums. '
-        'The first three content coordinates are '+vec(data['content'])+'. The subscript 63 identifies the patch; it does not count coordinates. '
-        'The patch layer is mathematically nn.Linear(768,192), with no following activation. In this checkpoint it is implemented as a stride-16 Conv2d. '
-        'Our verification script rearranges its kernel weights to match pixel-major RGB order and checks the linear result against the actual patch embedding output. '
-        'The same weights and biases are used for every patch.' + evidence,
-        mobile_patch() + '<p><strong>x₆₃ · 1 × 768</strong><br>First RGB triple: '+vec(data['normalized_rgb_row'])+'</p>'
-        + '<p>↓ <strong>Shared nn.Linear(768, 192)</strong><br>W_patch: 768 × 192; bias: 192 values.</p>'
-        + '<p>↓ <strong>c₆₃ · 1 × 192</strong><br>'+vec(data['content'])+'</p><p>No activation after this layer.</p>')
+    from vision1_photo_walkthrough import add_photo_walkthrough
+    add_photo_walkthrough(b, add)
 
     # One coordinate-wise addition; do not hide the measured patch projection.
     body = patch(35, 45, 100) + t(85, 180, 'P63', 26, 'c-q', 'middle')
     body += t(175, 85, 'We already computed c₆₃ using the patch projection.', 28)
-    body += t(175, 142, 'Now give this row its location in the image.', 30, 'c-e')
+    body += t(175, 142, 'Add its position row; repeat for every image patch.', 30, 'c-e')
     headings = [(35, 'content from pixels', 'c₆₃', 'content', 'c-e'),
                 (455, 'learned position row', 'p₆₃', 'position', 'c-q'),
                 (865, 'input to the block', 'e₆₃', 'embedding', 'c-v')]
@@ -102,15 +54,15 @@ def add_real_path(b, add):
         marks += t(x, 340, vec(data[key], 2), 26, color)
         if i: marks += t(x-57, 306, '+' if i==1 else '=', 38)
         body += marks if i==0 else g(marks, i)
-    body += g(t(35, 416, 'First coordinate:  −0.851541 − 0.814817 ≈ −1.666358', 30, 'c-v'), 2)
-    add('real-patch-position', 'Content + position gives the block’s input row', body,
+    body += g(t(35, 416, 'All patch rows:  C (196 × 192) + P (196 × 192) = E (196 × 192)', 28, 'c-v'), 2)
+    add('real-patch-position', '11 · Add position to these content rows', body,
         'c₆₃ comes from the patch pixels. p₆₃ is learned for its grid location. Add matching coordinates to get e₆₃. All three rows have 192 coordinates; addition does not double the width.',
         'After adding position, does this row have 192 coordinates or 384?',
         'Keep the crop visible. Recall the projection that made c63, then add its learned position row coordinate by coordinate to make e63.',
         'The pretrained checkpoint learns a 192-entry position vector for each input slot. P63 uses the position row for grid row 5, column 7. '
         'That learned row is shared across images at this input resolution; the content row changes with the pixels in the slot. '
         'The first two coordinates shown are '+vec(data['content'], 2)+' + '+vec(data['position'], 2)+' = '+vec(data['embedding'], 2)+'. '
-        'The full precision calculation gives e₆₃[0]=−1.6663575. The printed rounded inputs introduce rounding error, so the displayed arithmetic uses ≈. '
+        'For the first coordinate, −0.851541 − 0.814817 ≈ −1.666358. The full precision calculation gives e₆₃[0]=−1.6663575. The printed rounded inputs introduce rounding error, so the displayed arithmetic uses ≈. '
         'cᵢ, pᵢ and eᵢ all have shape (1,192). We add them, rather than concatenate them. '
         'This is the same content-plus-position idea used for text tokens. e63 is the input row to the first Transformer block. '
         'The next slide shows its LayerNorm and Q/K/V projections; the next section motivates why the model needs position information. '
@@ -131,7 +83,7 @@ def add_real_path(b, add):
                   + arrow(930, y+32, 980, y+32, color) + t(1002, y+29, name.lower()+'₆₃', 31, color)
                   + t(1002, y+62, '1 × 64', 23, color), 2)
     body += t(650, 126, 'Each W: 192 × 64; each bias: 64', 24, 'ink-2')
-    add('real-patch-qkv', 'Then the block makes queries, keys and values', body,
+    add('real-patch-qkv', '12 · Make queries, keys and values from these rows', body,
         'The patch projection made content features from pixels. Inside this block, LayerNorm comes first; three more learned projections produce Q, K and V. This model has 3 heads; we show one head’s shapes.',
         'Which projection reads pixels, and which projections read the prepared embedding row?',
         'Trace the small recap first. Enter the block with e63, normalize it, then split into the three separate learned projections for head one.',

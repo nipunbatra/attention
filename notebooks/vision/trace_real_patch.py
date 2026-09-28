@@ -36,6 +36,10 @@ with torch.inference_mode():
     content = x @ W + projection.bias
     all_content = model.patch_embed(inputs)
     torch.testing.assert_close(content, all_content[:, index], atol=2e-5, rtol=1e-5)
+    # Extract every patch in the same raster order, retaining RGB per pixel.
+    X = inputs[0].permute(1, 2, 0).reshape(14, 16, 14, 16, 3).permute(0, 2, 1, 3, 4).reshape(196, 768)
+    C = X @ W + projection.bias
+    torch.testing.assert_close(C, all_content[0], atol=2e-5, rtol=1e-5)
     position = model.pos_embed[:, index+1]
     embedded = content + position
     all_embedded = model._pos_embed(all_content)
@@ -53,6 +57,16 @@ with torch.inference_mode():
 def values(tensor):
     return tensor.detach().cpu().reshape(-1).tolist()
 
+selected = {}
+for number in [1, 63, 64, 196]:
+    r, c = divmod(number-1, 14)
+    selected[str(number)] = {
+        'row_col_one_based': [r+1, c+1],
+        'rgb_pixels': display[r*16:(r+1)*16, c*16:(c+1)*16].reshape(256, 3).tolist(),
+        'normalized_rgb_row': values(X[number-1]),
+        'content': values(C[number-1]),
+    }
+
 report = {
     'model': MODEL, 'timm': timm.__version__, 'torch': torch.__version__,
     'source_sha256': hashlib.sha256(photo.read_bytes()).hexdigest(),
@@ -68,8 +82,12 @@ report = {
     'position': values(position), 'embedding': values(embedded),
     'normalized_embedding': values(normalized),
     'head1_q': values(q), 'head1_k': values(k), 'head1_v': values(v),
+    'selected_patches': selected,
+    'all_content_rows': C.tolist(),
+    'all_input_shape': list(X.shape), 'all_content_shape': list(C.shape),
     'verified': ['displayed image equals checkpoint input before normalization',
                  'pixel-major linear equals checkpoint patch embedding',
+                 'all 196 separately flattened patches match the checkpoint output rows',
                  'content plus position equals checkpoint input row',
                  'head-one projections equal checkpoint QKV slices'],
 }

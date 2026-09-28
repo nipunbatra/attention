@@ -280,116 +280,18 @@ def expand(b, sections):
     from vision1_real_patch_path import add_real_path
     add_real_path(b, add)
 
-    # Keep the patch size, patch count, and embedding width on separate axes.
-    grid=rect(65,90,240,240,'ink-3','transparent',0)
-    for k in range(1,16):
-        grid+=line(65+15*k,90,65+15*k,330,'line',1)
-        grid+=line(65,90+15*k,305,90+15*k,'line',1)
-    grid+=rect(65,90,15,15,'c-e','t-e',0)
-    body=grid+t(185,55,'16 columns',28,'ink-2','middle')+t(185,380,'16 rows',28,'ink-2','middle')
-    body+=g(t(420,100,'16 × 16 = 256 pixels',35,'c-e'),1)
-    body+=g(t(420,185,'Each pixel contributes:',28,'ink-2')
-            +box(420,215,120,'R')+box(570,215,120,'G')+box(720,215,120,'B'),2)
-    body+=g(t(420,365,'256 × 3 = 768 values',37,'c-e'),3)
-    add('patch-real-dimensions','Where do the 768 input values come from?',body,
-        'One patch has 16 × 16 pixels. Each pixel contributes three channel values: red, green and blue. That gives 768 values in one patch.',
-        'Are there 768 pixels in this patch, or 768 channel values?',
-        'Count rows and columns in the patch grid. Pick one pixel, reveal its three channels, then multiply 256 by 3.',
-        'The patch contains 256 spatial pixels, with three RGB numbers at each location. Thus 16×16×3=768 scalar input features. '
-        'A channel value is one number within a pixel; it is not another image patch. '
-        'Flattening keeps all these values in a chosen order, as in the earlier four-pixel example. '
-        'Our pretrained checkpoint uses 16×16 RGB patches; the patch size and channel count determine this input width.',
-        mobile_rows(['Count','Calculation'],[['Pixels per patch','16 rows × 16 columns = 256'],['Values per pixel','R, G, B = 3'],['Values per patch','256 × 3 = 768']]))
-
-    body=t(35,125,'xᵢ =',33,'c-e')
-    for x,label,values in [(300,'first pixel','R₁, G₁, B₁'),(575,'second pixel','R₂, G₂, B₂'),(965,'pixel 256','R₂₅₆, G₂₅₆, B₂₅₆')]:
-        body+=t(x,65,label,25,'ink-2','middle')+t(x,125,values,28,'c-e','middle')
-    body+=t(170,128,'[',39,'c-e')+t(780,125,'…',33,'c-e')+t(1130,128,']',39,'c-e')
-    body+=g(t(365,240,'1',62,'c-e','middle')+t(505,240,'×',48,'ink-2','middle')+t(715,240,'768',62,'c-e','middle'),1)
-    body+=g(arrow(365,260,365,315)+t(365,365,'one patch row',31,'ink','middle')
-            +arrow(715,260,715,315)+t(795,365,'values in that row',31,'ink','middle'),2)
-    add('patch-one-row-shape','What does the 1 in 1 × 768 count?',body,
-        'Here we are processing one patch, written as one row. The second dimension counts its 768 input values. A whole image contributes many patch rows.',
-        'If we put a second patch underneath this row, which dimension changes?',
-        'Trace the long RGB row, then point to 1 for the row count and 768 for the number of entries in that row.',
-        'We retain a two-dimensional matrix for this explanation: number of patch rows × values per patch. '
-        'One patch has shape (1,768), two patches have shape (2,768), and all patches of this image will have shape (196,768). '
-        'The leading 1 on this slide is a patch count, not the number of images in a batch. '
-        'Batching adds a separate leading axis later. The tuple (1,768) and the written dimensions 1×768 describe the same shape here.',
-        '<p><strong>1 × 768</strong></p>'+mobile_rows(['Dimension','Meaning'],[['1','One patch row'],['768','Channel values within that patch']])
-        +'<p>Two patches: 2 × 768. A whole image will give 196 × 768.</p>')
-
-    body=t(35,60,'pixel row',26,'ink-2')+t(380,60,'weights W',26,'ink-2')+t(710,60,'bias b',26,'ink-2')+t(930,60,'embedding',26,'ink-2')
-    body+=t(35,155,'1 × 768',35,'c-e')+t(275,155,'×',32)
-    body+=g(box(340,112,300,'768 × 192',33)+t(675,155,'+',32)+t(710,155,'1 × 192',29,'c-e'),1)
-    body+=g(arrow(855,143,930,143)+t(945,155,'1 × 192',35,'c-e'),2)
-    body+=g(t(35,285,'nn.Linear(768, 192)',38,'c-e')
-            +t(35,355,'Affine map: weighted sums + bias; no activation.',28,'ink-2'),2)
-    body+=g(t(35,425,'One patch stays one row. Its feature width changes: 768 → 192.',29,'c-e'),3)
-    add('patch-one-row-projection','Does the embedding need 768 coordinates too?',body,
-        'The model chooses 192 output coordinates here. Every patch uses that same output width; the input and output widths can differ.',
-        'Does preserving one row require preserving all 768 input coordinates?',
-        'Follow the row count 1 to the output. Then separately follow the feature width from 768 to the chosen 192.',
-        'Input width is fixed by patch geometry and channels. Output width D is a model design choice: here D=192. '
-        'A different model could choose another D; the operation does not require D=768. '
-        'W has 768 rows and 192 columns in our row-vector notation, so each output coordinate combines 768 inputs and has one bias. '
-        'We draw the bias as a (1,192) row for addition; PyTorch stores it as a 192-entry vector and broadcasts it. '
-        'PyTorch stores W transposed as weight of shape (192,768). '
-        'With a bias this is an affine map. nn.Linear does not add ReLU or GELU; the nonlinear block MLP is a separate component. '+linear_ref+'.',
-        mobile_rows(['Quantity','Shape'],[['Input xᵢ','1 × 768'],['W','768 × 192'],['Bias','192 entries'],['Output cᵢ','1 × 192']])
-        +'<p><code>nn.Linear(768, 192)</code>: weighted sums plus bias, with no activation.</p>'
-        '<p>All patch embeddings have 192 coordinates in this model. That does not make 192 equal to the 768 input values.</p>')
-
-    grid=rect(45,90,224,224,'ink-3','transparent',0)
-    for k in range(1,14):
-        grid+=line(45+16*k,90,45+16*k,314,'line',1)
-        grid+=line(45,90+16*k,269,90+16*k,'line',1)
-    grid+=rect(45,90,16,16,'c-e','t-e',0)
-    body=grid+t(157,50,'224 × 224 image',27,'ink-2','middle')+t(157,360,'16 × 16 per patch',26,'c-e','middle')
-    body+=g(t(405,100,'224 ÷ 16 = 14 patches across',31),1)
-    body+=g(t(405,180,'224 ÷ 16 = 14 patches down',31),1)
-    body+=g(t(405,270,'14 × 14 = 196 patch rows',35,'c-e'),2)
-    body+=g(t(405,380,'X: (196, 768) → C: (196, 192)',31,'c-e'),3)
-    add('projection-size','How many rows come from the whole image?',body,
-        '196 counts patches in one image. Each patch supplies 768 input values and produces 192 embedding coordinates. The shared layer changes width while keeping one row per patch.',
-        'Which number counts patches, and which numbers count values within a patch row?',
-        'Count patches across and down the grid, then track the unchanged 196 in the input and output shapes.',
-        'A 224×224 image divided into non-overlapping 16×16 patches gives (224/16)×(224/16)=196 patches. '
-        'X has 196 rows and 768 pixel-value columns. C=proj(X) has the same 196 rows, with 192 embedding columns. '
-        'These are the patch-content rows. Position information is added afterwards. '
-        'For B images, shapes become (B,196,768) and (B,196,192); B is a separate batch axis.',
-        mobile_rows(['Count','Calculation'],[['Across','224 ÷ 16 = 14'],['Down','224 ÷ 16 = 14'],['Patch rows','14 × 14 = 196'],
-                                   ['Input X','196 × 768'],['Embeddings C','196 × 192']]))
-
-    body=t(35,55,'nn.Linear(768, 192)',36,'c-e')+t(850,55,'parameter count',25,'ink-2')
-    body+=t(35,145,'weights W',29,'ink-2')+t(400,145,'768 × 192',35,'c-e')
-    body+=g(t(850,145,'147,456',35,'c-e'),1)
-    body+=g(t(35,245,'bias b',29,'ink-2')+t(400,245,'1 per output',30)+t(850,245,'192',35,'c-e'),2)
-    body+=g(line(35,285,1120,285,'ink-3')+t(35,345,'total parameters',29,'ink-2')+t(850,345,'147,648',38,'c-e'),3)
-    body+=g(t(35,425,'Every one of the 196 patches reuses this same parameter set.',29),3)
-    add('patch-projection-parameters','How many parameters does this one layer learn?',body,
-        'Each of the 192 outputs has 768 weights and one bias. The parameters are shared across patches, so we count them once.',
-        'If we add more patch rows, do we need another copy of these weights?',
-        'Count weights, then biases, then add them. Point back to the single nn.Linear layer used for the whole matrix.',
-        'There are 768×192=147,456 weights and 192 biases, giving 147,648 trainable parameters. '
-        'Equivalently, each output has 768+1 parameters and there are 192 outputs. '
-        'These parameters are used for each patch; 196 applications do not create 196 parameter sets. '
-        'We next add position and trace the first block’s Q/K/V projections, then motivate position information before shrinking to grayscale patches and D=4.',
-        mobile_rows(['Parameter','Count'],[['Weights','768 × 192 = 147,456'],['Biases','192'],['Total','147,648']])
-        +'<p>All 196 patch rows reuse this same set of weights and biases.</p>')
-
     result=[]
     new_ids=['patch-linear-shapes','patch-linear-weights','patch-linear-first','patch-linear-second','patch-linear-result','patch-shared-code']
     for title,frames in sections:
         out=[]
         for html in frames:
             key=re.search(r'class="frame[^\"]*" id="([^\"]+)"',html).group(1)
-            if key=='s01-rows':out.extend(additions[k] for k in new_ids)
-            if key=='projection-size':
-                out.extend(additions[k] for k in ['patch-real-dimensions','patch-one-row-shape','patch-one-row-projection','real-patch-projection'])
+            if key=='s01-rows':
+                from vision1_photo_walkthrough import ORDER
+                out.extend(additions[k] for k in new_ids + ORDER)
+                continue
+            if key=='projection-size':continue
             out.append(additions.get(key,html))
             if key=='s01-rows-step-1':out.append(additions['patch-activation-location'])
-            if key=='projection-size':
-                out.extend(additions[k] for k in ['patch-projection-parameters','real-patch-position','real-patch-qkv'])
         result.append((title,out))
     return result

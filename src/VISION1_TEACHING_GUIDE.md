@@ -2,7 +2,7 @@
 
 **Deck:** [vision1.html](../vision1.html) · **Present:** open the deck and press **P** · **Lab:** [03_vision_transformer_lab.ipynb](../notebooks/vision/03_vision_transformer_lab.ipynb)
 
-198 teaching frames plus cover; 14 sections. Silent, self-contained HTML slides with image assets and math embedded. Reading mode includes the longer explanations, source links, and numerical tables. Arrow keys advance one reveal; **S** opens presenter notes; **O** opens the overview; **C** shows classroom controls. Every frame has a question to ask and a note about what to point at.
+201 teaching frames plus cover; 14 sections. Silent, self-contained HTML slides with image assets and math embedded. Reading mode includes the longer explanations, source links, and numerical tables. Arrow keys advance one reveal; **S** opens presenter notes; **O** opens the overview; **C** shows classroom controls. Every frame has a question to ask and a note about what to point at.
 
 ## The teaching thread
 
@@ -32,7 +32,7 @@ Keep the distinction between moving image content among fixed slots and reorderi
 
 ## Suggested pacing
 
-Use three meetings, or teach sections 1–7 first and assign the implementation as a lab. The 198 frames are short steps; the total is not a target for one class. Pause for predictions and hand calculations.
+Use three meetings, or teach sections 1–7 first and assign the implementation as a lab. The 201 frames are short steps; the total is not a target for one class. Pause for predictions and hand calculations.
 
 | Meeting | Sections | Student activity |
 |---|---|---|
@@ -82,23 +82,26 @@ Reuse the exact same layer on a second patch to get `[0.5, −2.5]`. A single ca
 
 Then scale to the saved real model: 16×16×3=768 input values, `nn.Linear(768,192)`, and 196 rows for a 224×224 input. The row-vector equation uses W shaped `(768,192)`; PyTorch stores the transposed weight `(192,768)`. This is equivalent to the checkpoint's Conv2d patch embedding with the corresponding input order. `figures/vision1/patch-embedding-example.json` contains the independently executed warm-up. The lab contains the same calculation as an editable, executed code cell.
 
-### Read the dimensions as counts with units
+## One continuous photograph-to-embeddings walkthrough
 
-The real-model scale-up now takes five short slides. `patch-real-dimensions` counts 16×16=256 spatial pixels and three RGB channel values per pixel, giving 768 scalar inputs. `patch-one-row-shape` decodes the axes in 1×768: one patch row, 768 values within that row. This 1 is not a batch-size axis. `patch-one-row-projection` keeps the single row but changes its feature width to the chosen D=192. The affine operation includes a bias and no activation.
+The real-image run in section 2 is a twelve-step sequence. Each operation consumes the preceding slide’s output; the same prepared dog image and patch identities stay visible throughout. The earlier 12-input, 2-output network remains the hand-calculation warm-up.
 
-`projection-size` then computes 224÷16=14 patches in each direction and 14×14=196 patch rows: X is 196×768, C is 196×192. `patch-projection-parameters` separately counts 147,456 weights and 192 biases. All patch embeddings in this model share width 192; this does not mean input and output widths must be equal. The same parameter set is reused for every patch.
+1. **Start with the image:** show the actual 224×224×3 model input and identify each axis.
+2. **Cut into patches:** draw 16×16 boundaries on the photograph, then count 14×14=196 patches.
+3. **Inspect the pieces:** show all 196 separated crops and enlarged P1, P63, P64 and P196. The patch array is 196×16×16×3.
+4. **Read one patch’s RGB:** keep P63 visible, outline its first two pixels, and read [16,17,12] and [41,42,37]. Count 256 pixels × 3 channels = 768 values.
+5. **Normalize the same values:** explain (value/255−0.5)/0.5 before displaying negative inputs. The checkpoint normally normalizes before patch extraction; this independent channel operation gives the identical result on the extracted crop.
+6. **Flatten:** carry those normalized triples into x₆₃, shape 1×768. Follow the scan arrow and keep RGB together for each pixel.
+7. **Apply the shared projection:** nn.Linear(768,192), W shaped 768×192 in row notation and 192 bias entries. No activation follows. The same 147,648 parameters serve every patch.
+8. **Inspect its output:** c₆₃ contains 192 measured features. Show the first three and the last coordinate with their indices.
+9. **Repeat for P64:** retain P63’s path while revealing the neighboring crop, its different input values and its different output. Both paths cross the same layer.
+10. **Stack all output rows:** X (196×768) becomes C (196×192). Match representative image crops to their actual output vectors. Reading mode includes a collapsible table of all 196 rows’ first three coordinates; the complete vectors are in the saved JSON.
+11. **Add position:** illustrate c₆₃+p₆₃=e₆₃, then show C+P=E for all patch rows, each matrix 196×192. The following section motivates position information with moved photograph patches.
+12. **Enter the first block:** LayerNorm preserves the 192-feature width. Each Q/K/V projection for one of three heads has 192×64 weights and 64 biases, producing a 1×64 row for this patch.
 
-## Follow a measured patch from pixels to attention
+P63 is row 5, column 7; P64 is row 5, column 8. The subscript is a patch identity, while 768 and 192 are feature counts. All shapes omit the batch axis because the walkthrough follows one image. This grid differs explicitly from the earlier coarse 4×4 illustration.
 
-After the 12-to-2 hand calculation, `s01-rows` returns to the same dog photograph at the checkpoint’s actual input size, 224×224 RGB. Its 14×14 patch grid differs from the opening coarse 4×4 illustration. Follow P63 (row 5, column 7), a 16×16 RGB crop, throughout the new trace; 63 identifies a patch, not an embedding width.
-
-`real-patch-projection` shows the crop, the normalized pixel-major RGB row x₆₃ (1×768), the shared patch projection (768×192 weights and 192 biases), and its measured content output c₆₃ (1×192). The first coordinates come from the pretrained checkpoint, not chosen teaching weights. The script permutes its Conv2d kernel to match the slide’s RGB ordering and checks equality with the checkpoint’s patch embedding.
-
-`real-patch-position` keeps the crop visible while adding c₆₃ + p₆₃ = e₆₃. All three rows remain 1×192. Content depends on the pixels; the learned position row belongs to the grid slot and is shared across images. Displayed coordinates are rounded, so the arithmetic uses an approximation sign. The next section supplies the visual motivation for location information.
-
-`real-patch-qkv` distinguishes the patch projection from the three projections inside attention. In this pre-LN checkpoint, LayerNorm(e₆₃) still has 192 coordinates. For one of three heads, each Q/K/V weight matrix has shape 192×64, each bias has 64 entries, and each resulting row has shape 1×64. Calling e₆₃ the block input avoids silently skipping LayerNorm and Q/K/V. The other patch rows follow the same path; subsequent attention compares queries and keys and mixes values.
-
-Reproduce the saved trace with `uv run --with timm --with pillow python notebooks/vision/trace_real_patch.py`. Full vectors, shapes, model identity, preprocessing and checks are in `figures/vision1/real-patch-path.json`. The script also confirms that the displayed dog image is the exact checkpoint input before normalization.
+Reproduce the trace with `uv run --with timm --with pillow python notebooks/vision/trace_real_patch.py`. `figures/vision1/real-patch-path.json` stores raw RGB values and normalized rows for selected patches, all 196 full output embeddings, position addition, first-head Q/K/V vectors, model identity and preprocessing. The script checks the displayed input, linear/Conv2d equivalence for every patch, position addition and Q/K/V slices against the pretrained checkpoint. Printed decimals are rounded.
 
 ## Places to stop and ask
 

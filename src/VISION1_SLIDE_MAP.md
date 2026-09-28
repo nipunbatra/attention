@@ -1,6 +1,6 @@
 # Vision I: slide map
 
-198 teaching frames plus the cover. Each link opens the first reveal of that slide. Use Right/Left for reveals and S for presenter notes.
+201 teaching frames plus the cover. Each link opens the first reveal of that slide. Use Right/Left for reveals and S for presenter notes.
 
 ## Review these additions first
 
@@ -68,16 +68,16 @@
 - [Follow the connections into output 1](https://nipunbatra.github.io/attention/vision1.html?present#s02/11/0)
 - [Now follow the connections into output 2](https://nipunbatra.github.io/attention/vision1.html?present#s02/12/0)
 - [Apply the very same layer to another patch](https://nipunbatra.github.io/attention/vision1.html?present#s02/14/0)
-- [Back to the dog: follow one real patch](https://nipunbatra.github.io/attention/vision1.html?present#s02/15/0)
-- [How many rows come from the whole image?](https://nipunbatra.github.io/attention/vision1.html?present#s02/20/0)
+- [1 · Start with the same dog photograph](https://nipunbatra.github.io/attention/vision1.html?present#s02/15/0)
+- [2 · Split the image into 16 × 16 patches](https://nipunbatra.github.io/attention/vision1.html?present#s02/16/0)
 
 ## Read the dimensions
 
-- [Where do the 768 input values come from?](https://nipunbatra.github.io/attention/vision1.html?present#s02/16/0)
-- [What does the 1 in 1 × 768 count?](https://nipunbatra.github.io/attention/vision1.html?present#s02/17/0)
-- [Does the embedding need 768 coordinates too?](https://nipunbatra.github.io/attention/vision1.html?present#s02/18/0)
-- [How many rows come from the whole image?](https://nipunbatra.github.io/attention/vision1.html?present#s02/20/0)
-- [How many parameters does this one layer learn?](https://nipunbatra.github.io/attention/vision1.html?present#s02/21/0)
+- [4 · Read the RGB values inside patch 63](https://nipunbatra.github.io/attention/vision1.html?present#s02/18/0)
+- [6 · Flatten patch 63 into one row](https://nipunbatra.github.io/attention/vision1.html?present#s02/20/0)
+- [7 · Pass that row through the shared linear layer](https://nipunbatra.github.io/attention/vision1.html?present#s02/21/0)
+- [2 · Split the image into 16 × 16 patches](https://nipunbatra.github.io/attention/vision1.html?present#s02/16/0)
+- [10 · Stack the 196 output rows into C](https://nipunbatra.github.io/attention/vision1.html?present#s02/24/0)
 
 ## Photograph first, then position arithmetic
 
@@ -110,10 +110,25 @@
 
 ## Follow one real patch through every step
 
-- [Back to the dog: follow one real patch](https://nipunbatra.github.io/attention/vision1.html?present#s02/15/0)
-- [The patch projection produces c₆₃](https://nipunbatra.github.io/attention/vision1.html?present#s02/19/0)
-- [Content + position gives the block’s input row](https://nipunbatra.github.io/attention/vision1.html?present#s02/22/0)
-- [Then the block makes queries, keys and values](https://nipunbatra.github.io/attention/vision1.html?present#s02/23/0)
+- [1 · Start with the same dog photograph](https://nipunbatra.github.io/attention/vision1.html?present#s02/15/0)
+- [8 · Read the 192 output features for patch 63](https://nipunbatra.github.io/attention/vision1.html?present#s02/22/0)
+- [11 · Add position to these content rows](https://nipunbatra.github.io/attention/vision1.html?present#s02/25/0)
+- [12 · Make queries, keys and values from these rows](https://nipunbatra.github.io/attention/vision1.html?present#s02/26/0)
+
+## One continuous real-image walkthrough
+
+- [1 · Start with the same dog photograph](https://nipunbatra.github.io/attention/vision1.html?present#s02/15/0)
+- [2 · Split the image into 16 × 16 patches](https://nipunbatra.github.io/attention/vision1.html?present#s02/16/0)
+- [3 · Keep the 196 patches in image order](https://nipunbatra.github.io/attention/vision1.html?present#s02/17/0)
+- [4 · Read the RGB values inside patch 63](https://nipunbatra.github.io/attention/vision1.html?present#s02/18/0)
+- [5 · Normalize those same RGB values](https://nipunbatra.github.io/attention/vision1.html?present#s02/19/0)
+- [6 · Flatten patch 63 into one row](https://nipunbatra.github.io/attention/vision1.html?present#s02/20/0)
+- [7 · Pass that row through the shared linear layer](https://nipunbatra.github.io/attention/vision1.html?present#s02/21/0)
+- [8 · Read the 192 output features for patch 63](https://nipunbatra.github.io/attention/vision1.html?present#s02/22/0)
+- [9 · Pass patch 64 through the very same layer](https://nipunbatra.github.io/attention/vision1.html?present#s02/23/0)
+- [10 · Stack the 196 output rows into C](https://nipunbatra.github.io/attention/vision1.html?present#s02/24/0)
+- [11 · Add position to these content rows](https://nipunbatra.github.io/attention/vision1.html?present#s02/25/0)
+- [12 · Make queries, keys and values from these rows](https://nipunbatra.github.io/attention/vision1.html?present#s02/26/0)
 
 ## Complete sequence
 
@@ -165,15 +180,18 @@
 | s02 / 12 | [Now follow the connections into output 2](https://nipunbatra.github.io/attention/vision1.html?present#s02/12/0) | `patch-linear-second` |
 | s02 / 13 | [These two numbers are the patch embedding](https://nipunbatra.github.io/attention/vision1.html?present#s02/13/0) | `patch-linear-result` |
 | s02 / 14 | [Apply the very same layer to another patch](https://nipunbatra.github.io/attention/vision1.html?present#s02/14/0) | `patch-shared-code` |
-| s02 / 15 | [Back to the dog: follow one real patch](https://nipunbatra.github.io/attention/vision1.html?present#s02/15/0) | `s01-rows` |
-| s02 / 16 | [Where do the 768 input values come from?](https://nipunbatra.github.io/attention/vision1.html?present#s02/16/0) | `patch-real-dimensions` |
-| s02 / 17 | [What does the 1 in 1 × 768 count?](https://nipunbatra.github.io/attention/vision1.html?present#s02/17/0) | `patch-one-row-shape` |
-| s02 / 18 | [Does the embedding need 768 coordinates too?](https://nipunbatra.github.io/attention/vision1.html?present#s02/18/0) | `patch-one-row-projection` |
-| s02 / 19 | [The patch projection produces c₆₃](https://nipunbatra.github.io/attention/vision1.html?present#s02/19/0) | `real-patch-projection` |
-| s02 / 20 | [How many rows come from the whole image?](https://nipunbatra.github.io/attention/vision1.html?present#s02/20/0) | `projection-size` |
-| s02 / 21 | [How many parameters does this one layer learn?](https://nipunbatra.github.io/attention/vision1.html?present#s02/21/0) | `patch-projection-parameters` |
-| s02 / 22 | [Content + position gives the block’s input row](https://nipunbatra.github.io/attention/vision1.html?present#s02/22/0) | `real-patch-position` |
-| s02 / 23 | [Then the block makes queries, keys and values](https://nipunbatra.github.io/attention/vision1.html?present#s02/23/0) | `real-patch-qkv` |
+| s02 / 15 | [1 · Start with the same dog photograph](https://nipunbatra.github.io/attention/vision1.html?present#s02/15/0) | `s01-rows` |
+| s02 / 16 | [2 · Split the image into 16 × 16 patches](https://nipunbatra.github.io/attention/vision1.html?present#s02/16/0) | `projection-size` |
+| s02 / 17 | [3 · Keep the 196 patches in image order](https://nipunbatra.github.io/attention/vision1.html?present#s02/17/0) | `real-patch-crops` |
+| s02 / 18 | [4 · Read the RGB values inside patch 63](https://nipunbatra.github.io/attention/vision1.html?present#s02/18/0) | `patch-real-dimensions` |
+| s02 / 19 | [5 · Normalize those same RGB values](https://nipunbatra.github.io/attention/vision1.html?present#s02/19/0) | `real-patch-normalize` |
+| s02 / 20 | [6 · Flatten patch 63 into one row](https://nipunbatra.github.io/attention/vision1.html?present#s02/20/0) | `patch-one-row-shape` |
+| s02 / 21 | [7 · Pass that row through the shared linear layer](https://nipunbatra.github.io/attention/vision1.html?present#s02/21/0) | `patch-one-row-projection` |
+| s02 / 22 | [8 · Read the 192 output features for patch 63](https://nipunbatra.github.io/attention/vision1.html?present#s02/22/0) | `real-patch-projection` |
+| s02 / 23 | [9 · Pass patch 64 through the very same layer](https://nipunbatra.github.io/attention/vision1.html?present#s02/23/0) | `real-patch-shared` |
+| s02 / 24 | [10 · Stack the 196 output rows into C](https://nipunbatra.github.io/attention/vision1.html?present#s02/24/0) | `patch-projection-parameters` |
+| s02 / 25 | [11 · Add position to these content rows](https://nipunbatra.github.io/attention/vision1.html?present#s02/25/0) | `real-patch-position` |
+| s02 / 26 | [12 · Make queries, keys and values from these rows](https://nipunbatra.github.io/attention/vision1.html?present#s02/26/0) | `real-patch-qkv` |
 | s03 / 1 | [03 · Remembering where patches belong](https://nipunbatra.github.io/attention/vision1.html?present#s03/1/0) | `vision-topic-03` |
 | s03 / 2 | [Move the face patches. What changes?](https://nipunbatra.github.io/attention/vision1.html?present#s03/2/0) | `position-photo-layout` |
 | s03 / 3 | [Does the patch layer notice the move?](https://nipunbatra.github.io/attention/vision1.html?present#s03/3/0) | `position-photo-content` |
