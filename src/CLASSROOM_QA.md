@@ -25,6 +25,8 @@
   with no runtime errors, invalid formulas or overflow. The optional companion
   passes its 88-step figure/link checks at 1280, 768 and 390px; both executed
   notebook files match their downloadable ZIP entries byte-for-byte.
+- All eight lesson configs and isolated builds pass the metadata checks. The
+  optional references' navigation labels now use the new Part III title.
 
 ## 2026-09-28 · Matrix dimensions throughout the two-head map
 
