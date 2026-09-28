@@ -516,6 +516,8 @@ optimizer.step()''',t(30,65,'image + known label',26,'c-e')+arrow(180,92,180,160
     sections=augment(b,sections)
     from vision1_dataset_intro import introduce
     sections=introduce(b,sections)
+    from vision1_text_bridge import bridge
+    sections=bridge(b,sections)
     ordered=[]
     for n,(title,frames) in enumerate(sections,1):
         original_section(n,title,frames)

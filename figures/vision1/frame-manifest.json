@@ -136,12 +136,68 @@
     "frame": 17
   },
   {
+    "id": "text-context-recap",
+    "title": "Back to text: what did attention update?",
+    "caption": "Each token starts with an embedding plus position. Attention supplies context; adding its update gives a new representation of the same token.",
+    "notes": "Did attention replace the word bank, or change the numbers representing it?\nTrace bank through the middle row. Then point to the final the: that is the row used to predict the next word after this full prefix.",
+    "section": "s01",
+    "frame": 18
+  },
+  {
+    "id": "bridge-image-token",
+    "title": "What could be the image equivalent of a token?",
+    "caption": "We can use one fixed-size patch as an image token. Each patch gets its own row, just as each text token did.",
+    "notes": "Should one image token be a pixel, an object, or a fixed-size piece of the image?\nPause on the whole photo. Reveal the grid, then follow the outlined patch to the idea of one token row.",
+    "section": "s01",
+    "frame": 19
+  },
+  {
+    "id": "bridge-image-embedding",
+    "title": "What could be the image equivalent of an embedding?",
+    "caption": "Text uses a learned lookup table. For an image patch, a learned projection turns its pixel values into a row of the same width as the other patches.",
+    "notes": "Where would a vector for this crop come from, if we have no word ID to look up?\nRead the actual bank embedding from Part II. Keep the image row unrevealed while students suggest how pixels could become numbers.",
+    "section": "s01",
+    "frame": 20
+  },
+  {
+    "id": "bridge-image-query",
+    "title": "What could a query be in the image?",
+    "caption": "The row being updated makes a query. Its learned projection determines what kinds of source information it can match.",
+    "notes": "Which patch should make the query if we want to update the dark patch?\nFollow the receiver row through W_Q in each case. Read the questions as intuition for a learned vector, not words typed by a user.",
+    "section": "s01",
+    "frame": 21
+  },
+  {
+    "id": "bridge-image-key",
+    "title": "What could a key be in the image?",
+    "caption": "Each source row makes a key. Comparing the receiver\u2019s query with source keys gives the scores used to choose attention weights.",
+    "notes": "How could the dark patch compare a face patch with a branches patch?\nKeep the query on the receiver. Point to river and the face as sources, each with its own key.",
+    "section": "s01",
+    "frame": 22
+  },
+  {
+    "id": "bridge-image-value",
+    "title": "What information would a value send?",
+    "caption": "Q and K choose the weights. V supplies the information to combine using those weights; the combined message updates the receiving representation.",
+    "notes": "Once a source receives a weight, which vector actually contributes to the message?\nReuse the same source crops from the key slide. Replace W_K with W_V, then multiply each value by its weight.",
+    "section": "s01",
+    "frame": 23
+  },
+  {
+    "id": "bridge-image-target",
+    "title": "What is the \u201cnext token\u201d for this image?",
+    "caption": "Here the target is an image label. We reuse attention to build representations; our classification task changes what we read out and predict.",
+    "notes": "Are we predicting another patch, another word, or one label for this photograph?\nPause before revealing the image answer. Contrast vocabulary scores with class scores, then return to how the patch rows are built.",
+    "section": "s01",
+    "frame": 24
+  },
+  {
     "id": "image-to-rows",
     "title": "How can we give this photograph to attention?",
     "caption": "Attention works on rows of numbers. Next, we choose image patches and turn their pixels into those rows.",
     "notes": "In the text lessons, what did attention receive as its input?\nKeep the photograph visible. Reveal its pieces, one row per piece, then the familiar attention operation.",
     "section": "s01",
-    "frame": 18
+    "frame": 25
   },
   {
     "id": "s01-patches",

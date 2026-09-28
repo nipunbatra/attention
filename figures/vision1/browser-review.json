@@ -3,7 +3,7 @@
     1280,
     720
   ],
-  "teaching_frames": 154,
+  "teaching_frames": 161,
   "cover_frames": 1,
   "review": "The previous 141 final states (140 teaching frames plus cover) passed the full geometry review. All six added implementation frames passed SVG text bounds and collision checks at 1280\u00d7720 and were visually inspected. Phone reading mode was rechecked at 390\u00d7844.",
   "geometry": "No clipped SVG text, text collisions, overflowing captions or code found.",
@@ -262,5 +262,63 @@
     "mobile_alternatives": true,
     "keyboard_transition": "patch-context-update \u2192 image-to-rows",
     "notebook_code_cells": 19
+  },
+  "text_image_bridge_review": {
+    "date": "2026-09-28",
+    "viewport": [
+      1280,
+      720
+    ],
+    "visual_samples": [
+      "text-context-recap",
+      "bridge-image-token",
+      "bridge-image-embedding",
+      "bridge-image-query",
+      "bridge-image-key",
+      "bridge-image-value",
+      "bridge-image-target"
+    ],
+    "geometry": {
+      "text-context-recap": {
+        "clipped": [],
+        "collisions": []
+      },
+      "bridge-image-token": {
+        "clipped": [],
+        "collisions": []
+      },
+      "bridge-image-embedding": {
+        "clipped": [],
+        "collisions": []
+      },
+      "bridge-image-query": {
+        "clipped": [],
+        "collisions": []
+      },
+      "bridge-image-key": {
+        "clipped": [],
+        "collisions": []
+      },
+      "bridge-image-value": {
+        "clipped": [],
+        "collisions": []
+      },
+      "bridge-image-target": {
+        "clipped": [],
+        "collisions": []
+      }
+    },
+    "reading_viewport": [
+      390,
+      844
+    ],
+    "document_width": 390,
+    "document_scroll_width": 390,
+    "phone_visual_check": "Query comparison and companion explanation are readable without horizontal overflow.",
+    "original_text_source": "src/toy.json: fisherman/river-bank sentence, bank token embedding, and separate receivers bank at position 7 and final the at position 10.",
+    "sequence": "Text recap, image token, embedding, query, key, value, prediction target, then image-to-rows.",
+    "keyboard_transition": "bridge-image-target \u2192 image-to-rows",
+    "notebook_code_cells": 19,
+    "audio_or_video_played": false
   }
 }

@@ -150,7 +150,7 @@ def expand(b, sections):
     body+=g(arrow(760,180,840,180,'c-q')+rect(875,138,240,83,'c-q','transparent')+t(995,189,'attention',34,'c-q','middle')+t(995,335,'share information',26,'c-v','middle'),3)
     add('image-to-rows','How can we give this photograph to attention?',body,'Attention works on rows of numbers. Next, we choose image patches and turn their pixels into those rows.',
         'In the text lessons, what did attention receive as its input?','Keep the photograph visible. Reveal its pieces, one row per piece, then the familiar attention operation.',
-        'The previous slide motivated using clues from other image regions. Now we need a numerical representation so attention can combine those clues. Text supplied one row per token; our image will supply one row per fixed-size patch. This drawing previews the construction rather than calculating it. The next section first chooses the patch grid, then reads the pixels and applies a shared learned projection. Position information comes after that.')
+        'We have recalled the text computation, asked for the image counterparts of tokens, embeddings and Q/K/V, and chosen an image-classification target. Now assemble the image path. Text supplied one row per token; our image will supply one row per fixed-size patch. This drawing previews the construction. The next section first chooses the patch grid, then reads the pixels and applies a shared learned projection. Position information comes after that.')
 
     # Name the task family before showing how its required outputs differ.
     body=image(25,105,345,230)+arrow(390,220,430,220)

@@ -1,6 +1,6 @@
 # Vision I: slide map
 
-154 teaching frames plus the cover. Each link opens the first reveal of that slide. Use Right/Left for reveals and S for presenter notes.
+161 teaching frames plus the cover. Each link opens the first reveal of that slide. Use Right/Left for reveals and S for presenter notes.
 
 ## Review these additions first
 
@@ -50,6 +50,16 @@
 - [Should every source contribute equally?](https://nipunbatra.github.io/attention/vision1.html?present#s01/16/0)
 - [What changes when the patch gets context?](https://nipunbatra.github.io/attention/vision1.html?present#s01/17/0)
 
+## Recall text, then ask the image parallels
+
+- [Back to text: what did attention update?](https://nipunbatra.github.io/attention/vision1.html?present#s01/18/0)
+- [What could be the image equivalent of a token?](https://nipunbatra.github.io/attention/vision1.html?present#s01/19/0)
+- [What could be the image equivalent of an embedding?](https://nipunbatra.github.io/attention/vision1.html?present#s01/20/0)
+- [What could a query be in the image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/21/0)
+- [What could a key be in the image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/22/0)
+- [What information would a value send?](https://nipunbatra.github.io/attention/vision1.html?present#s01/23/0)
+- [What is the “next token” for this image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/24/0)
+
 ## Complete sequence
 
 | Section / frame | Question or teaching step | Stable source ID |
@@ -71,7 +81,14 @@
 | s01 / 15 | [What can the face tell this dark patch?](https://nipunbatra.github.io/attention/vision1.html?present#s01/15/0) | `patch-context` |
 | s01 / 16 | [Should every source contribute equally?](https://nipunbatra.github.io/attention/vision1.html?present#s01/16/0) | `patch-context-weights` |
 | s01 / 17 | [What changes when the patch gets context?](https://nipunbatra.github.io/attention/vision1.html?present#s01/17/0) | `patch-context-update` |
-| s01 / 18 | [How can we give this photograph to attention?](https://nipunbatra.github.io/attention/vision1.html?present#s01/18/0) | `image-to-rows` |
+| s01 / 18 | [Back to text: what did attention update?](https://nipunbatra.github.io/attention/vision1.html?present#s01/18/0) | `text-context-recap` |
+| s01 / 19 | [What could be the image equivalent of a token?](https://nipunbatra.github.io/attention/vision1.html?present#s01/19/0) | `bridge-image-token` |
+| s01 / 20 | [What could be the image equivalent of an embedding?](https://nipunbatra.github.io/attention/vision1.html?present#s01/20/0) | `bridge-image-embedding` |
+| s01 / 21 | [What could a query be in the image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/21/0) | `bridge-image-query` |
+| s01 / 22 | [What could a key be in the image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/22/0) | `bridge-image-key` |
+| s01 / 23 | [What information would a value send?](https://nipunbatra.github.io/attention/vision1.html?present#s01/23/0) | `bridge-image-value` |
+| s01 / 24 | [What is the “next token” for this image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/24/0) | `bridge-image-target` |
+| s01 / 25 | [How can we give this photograph to attention?](https://nipunbatra.github.io/attention/vision1.html?present#s01/25/0) | `image-to-rows` |
 | s02 / 1 | [Where do the patch boundaries go?](https://nipunbatra.github.io/attention/vision1.html?present#s02/1/0) | `s01-patches` |
 | s02 / 2 | [How can a red pixel be three numbers?](https://nipunbatra.github.io/attention/vision1.html?present#s02/2/0) | `one-rgb` |
 | s02 / 3 | [How many numbers are in four RGB pixels?](https://nipunbatra.github.io/attention/vision1.html?present#s02/3/0) | `rgb-flatten-step-1` |

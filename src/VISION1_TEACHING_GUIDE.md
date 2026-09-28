@@ -2,7 +2,7 @@
 
 **Deck:** [vision1.html](../vision1.html) · **Present:** open the deck and press **P** · **Lab:** [03_vision_transformer_lab.ipynb](../notebooks/vision/03_vision_transformer_lab.ipynb)
 
-154 teaching frames plus cover; 14 sections. Silent, self-contained HTML slides with image assets and math embedded. Reading mode includes the longer explanations, source links, and numerical tables. Arrow keys advance one reveal; **S** opens presenter notes; **O** opens the overview; **C** shows classroom controls. Every frame has a question to ask and a note about what to point at.
+161 teaching frames plus cover; 14 sections. Silent, self-contained HTML slides with image assets and math embedded. Reading mode includes the longer explanations, source links, and numerical tables. Arrow keys advance one reveal; **S** opens presenter notes; **O** opens the overview; **C** shows classroom controls. Every frame has a question to ask and a note about what to point at.
 
 ## The teaching thread
 
@@ -10,7 +10,9 @@ Start with six labeled Oxford-IIIT Pet examples. Establish the dataset size (7,3
 
 Introduce the opening task examples explicitly: classification returns an image label, detection returns labels and boxes, captioning generates a sentence, and image–text search ranks photos for supplied words. Use the same dog throughout. These are illustrative desired outputs. After the task tour, “Our task today” selects image classification; the text comparison and dark crop then motivate attention. The captioning and retrieval examples also preview the later vision-to-language lessons.
 
-Use the three opening context slides as one held example. Identify the dark receiver, reveal the face source, and trace the arrow into the receiving numerical row. Add the branch source and compare illustrative contributions; thickness is not measured attention. Then show the weighted message added to the current patch row. Keep the unchanged pixels visible. The target remains one image label; students are not training a fur-versus-background classifier for each patch. The next slide asks how pixels become the rows used by this operation.
+Use the three opening context slides as one held example. Identify the dark receiver, reveal the face source, and trace the arrow into the receiving numerical row. Add the branch source and compare illustrative contributions; thickness is not measured attention. Then show the weighted message added to the current patch row. Keep the unchanged pixels visible. The target remains one image label; students are not training a fur-versus-background classifier for each patch. The text recap and question-led parallels come next, before the diagram that introduces the patch-row construction.
+
+Before “How can we give this photograph to attention?”, use the seven-slide text-to-image bridge. The recap redraws the Part II fisherman/river-bank computation with tokens, initial embeddings plus position, attention and updated rows. Trace bank at position 7, then distinguish the final the at position 10 used for next-token prediction. Ask students for an image token, representation, query, key, value and target before revealing each counterpart. The bank embedding is read directly from the original text toy. Query/key/value diagrams share a layout so students can reuse the roles. Only then return to constructing rows from actual pixels.
 
 The two-crop Q/K/V warm-up and the pooling example use their own clearly labeled, hand-chosen numbers. Then keep the three larger settings explicit:
 
@@ -20,7 +22,7 @@ The two-crop Q/K/V warm-up and the pooling example use their own clearly labeled
 
 ## Suggested pacing
 
-Use three meetings, or teach sections 1–7 first and assign the implementation as a lab. The 154 frames are short steps; the total is not a target for one class. Pause for predictions and hand calculations.
+Use three meetings, or teach sections 1–7 first and assign the implementation as a lab. The 161 frames are short steps; the total is not a target for one class. Pause for predictions and hand calculations.
 
 | Meeting | Sections | Student activity |
 |---|---|---|
