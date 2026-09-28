@@ -20,6 +20,11 @@ try{
   assert.equal(ids.length,manifest.length+1);
   assert.equal(await page.locator('template[id^="pipeline-"]').count(),4);
   assert.equal(await page.locator('.pipeline-lesson script[type="text/x-notes"]').count(),ids.length);
+  const vocabularyLabels=await page.locator('#s19-pipeline-vocabulary svg text').allTextContents();
+  assert.deepEqual(vocabularyLabels.slice(0,18),['ID','Token','Meaning',
+    '0','<PAD>','Padding','1','<BOS>','Beginning of sequence',
+    '2','<EOS>','End of sequence','3','<UNK>','Unknown token','4','.','Punctuation']);
+  assert.match(await page.locator('#s19-pipeline-vocabulary .step-copy').innerText(),/one complete story \(a sequence\), not each sentence/);
   assert.match(await page.locator('#s19-pipeline-boundaries').innerText(),/7 supervised targets/);
   assert.equal(await page.locator('#s19-pipeline-boundaries').getAttribute('data-title'),'One BOS and EOS per document');
   assert.match(await page.locator('#s19-pipeline-boundaries .step-copy').innerText(),/each document is a complete story.*do not add extra markers between sentences/s);

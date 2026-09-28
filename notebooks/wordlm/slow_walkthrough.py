@@ -110,7 +110,7 @@ assert len(pieces) == 6
 ''', focus=('tokenize',))
 
 step('vocabulary', 'Every vocabulary item gets an integer ID', '1. Data and tokens',
-     'Our demonstration has six ordinary tokens and four special tokens, so C=10. IDs are arbitrary labels. The benchmark uses a different, frequency-ranked vocabulary with C=4,000.', '''
+     'Six ordinary tokens + four special tokens = C=10; their IDs are arbitrary labels. Here, BOS and EOS mark one complete story (a sequence), not each sentence. PAD means padding; BOS means beginning of sequence; EOS means end of sequence; UNK means unknown token. The benchmark uses a different, frequency-ranked vocabulary with C=4,000.', '''
 words = list(SPECIAL_TOKENS) + sorted(set(pieces))
 vocab = Vocabulary(words, {t:i for i,t in enumerate(words)}, {}, 10, 1)
 C = len(words)
@@ -781,9 +781,11 @@ def render_figure(stage, ns):
             f.rect(160+j*155,75,140,70,stroke=BLUE);f.text(230+j*155,120,t,BLUE,30,anchor='middle')
         f.text(25,220,'5 word tokens + 1 punctuation token = 6 ordinary tokens',size=32)
     elif k=='vocabulary':
-        for group in range(2):
-            rows=[(i,words[i]) for i in range(group*5,(group+1)*5)]
-            f.table(['ID','Vocabulary item'],rows,x=20+570*group,widths=[120,410],row_h=46,colors=[BLUE,INK])
+        meanings=['Padding','Beginning of sequence','End of sequence','Unknown token','Punctuation']
+        f.table(['ID','Token','Meaning'],[(i,words[i],meanings[i]) for i in range(5)],
+                x=20,widths=[65,130,455],row_h=46,colors=[BLUE,INK,MUTED])
+        f.table(['ID','Vocabulary item'],[(i,words[i]) for i in range(5,10)],
+                x=710,widths=[70,360],row_h=46,colors=[BLUE,INK])
     elif k=='special':
         f.table(['ID','Token','Role'],[(0,'PAD','Fill unused input slots'),(1,'BOS','First context token of a story'),(2,'EOS','Predict that the story ends'),(3,'UNK','Represent a missing vocabulary item')],widths=[100,170,850],row_h=55)
     elif k=='boundaries':

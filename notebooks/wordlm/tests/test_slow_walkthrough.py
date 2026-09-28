@@ -74,6 +74,27 @@ def test_tokenization_detour_matches_the_actual_rules_without_changing_the_toy()
     assert 'illustrative' in render_figure(choices,ns)
 
 
+def test_vocabulary_expands_special_tokens_at_first_appearance():
+    ns = initial_namespace()
+    for stage in STAGES:
+        exec(stage['code'], ns)
+        if stage['id'] == 'vocabulary':
+            break
+    root = ET.fromstring(render_figure(stage, ns))
+    labels = [node.text for node in root.findall('{http://www.w3.org/2000/svg}text')]
+    assert labels[:18] == ['ID', 'Token', 'Meaning',
+                          '0', '<PAD>', 'Padding',
+                          '1', '<BOS>', 'Beginning of sequence',
+                          '2', '<EOS>', 'End of sequence',
+                          '3', '<UNK>', 'Unknown token',
+                          '4', '.', 'Punctuation']
+    assert ns['words'][:4] == ['<PAD>', '<BOS>', '<EOS>', '<UNK>']
+    # The slide exporter keeps the first two sentences, including the convention.
+    shown = '. '.join(stage['body'].split('. ')[:2])
+    assert 'C=10' in shown and 'IDs are arbitrary labels' in shown
+    assert 'one complete story (a sequence), not each sentence' in shown
+
+
 def test_unknown_token_example_explains_the_lookup_and_boundary_flag():
     from build_slow_lesson import SLIDE_CODE
     ns = initial_namespace()

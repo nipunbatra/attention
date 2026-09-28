@@ -1,5 +1,15 @@
 # Classroom release checks
 
+## 2026-09-28 · Expand the special-token abbreviations
+
+- Added a meaning column to the existing vocabulary slide. BOS/EOS explicitly
+  mark one complete story (a sequence), not each sentence. No new slides or
+  token-ID changes. Notebook, study guide, SVG and download bundle agree.
+- All 13 walkthrough tests pass; Notebook 5 executes end to end. The pipeline
+  browser suite passes all 89 frames at desktop, projector and phone-reading
+  sizes. Whole-deck audit: 456 states, 692 formulas, no runtime, math or overflow
+  failures. Visually inspected the vocabulary slide at 995×1031.
+
 ## 2026-09-28 · One side-by-side addition/RoPE comparison
 
 - Added one comparison after the short RoPE introduction. Two aligned columns

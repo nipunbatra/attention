@@ -10,6 +10,15 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+2026-09-28 special-token names at first appearance:
+
+- The vocabulary slide (`s19-pipeline-vocabulary`, step 13) expands PAD as
+  padding, BOS as beginning of sequence, EOS as end of sequence, and UNK as
+  unknown token. Here the sequence is one complete story, not each sentence.
+- Keep these meanings beside the IDs; no extra frame is needed. The canonical
+  source is `notebooks/wordlm/slow_walkthrough.py`. Rebuild the notebook,
+  study guide, SVG and slide together, execute Notebook 5, then refresh its ZIP.
+
 2026-09-28 single-slide addition/RoPE comparison:
 
 - `s17-position-method-comparison` follows `rope-intuition`. Use one native SVG
