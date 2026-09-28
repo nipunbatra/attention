@@ -4,6 +4,8 @@
 .vp-figure text { font-variant-numeric:tabular-nums; }
 .vp-frame .vp-caption { font-size:20px; line-height:1.4; margin:10px 0 22px; max-width:65ch; }
 .vp-mobile { display:none; }
+.vp-position-mobile svg { display:block; width:100%; height:auto; }
+.vp-position-mobile p { margin:18px 0 8px; }
 .vp-table { width:100%; border-collapse:collapse; font-size:16px; }
 .vp-table th,.vp-table td { border-bottom:1px solid var(--line); padding:10px 5px; text-align:left; }
 .vp-table th { font-size:14px; color:var(--ink-2); }

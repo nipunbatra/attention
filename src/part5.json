@@ -12,131 +12,131 @@
   "sections": [
     {
       "id": "s01",
-      "title": "What would we like the image model to do?",
+      "title": "The image classification task",
       "lit": ""
     },
     {
       "id": "s02",
-      "title": "How do pixels become patch rows?",
+      "title": "From pixels to patch embeddings",
       "lit": ""
     },
     {
       "id": "s03",
-      "title": "What does each row know about its patch?",
+      "title": "Remembering where patches belong",
       "lit": ""
     },
     {
       "id": "s04",
-      "title": "How does one row read the other rows?",
+      "title": "Queries, keys and values in vision",
       "lit": ""
     },
     {
       "id": "s05",
-      "title": "What does a second head add?",
+      "title": "More than one attention head",
       "lit": ""
     },
     {
       "id": "s06",
-      "title": "How do the messages lead to a prediction?",
+      "title": "From messages to an image label",
       "lit": ""
     },
     {
       "id": "s07",
-      "title": "What happens inside a complete block?",
+      "title": "The complete Transformer block",
       "lit": ""
     },
     {
       "id": "s08",
-      "title": "Can we follow the same steps in code?",
+      "title": "Build the model in PyTorch",
       "lit": ""
     },
     {
       "id": "s09",
-      "title": "How do we know the model learned something?",
+      "title": "Check what the model learned",
       "lit": ""
     },
     {
       "id": "s10",
-      "title": "What happens on the real photographs?",
+      "title": "Return to the real photographs",
       "lit": ""
     },
     {
       "id": "s11",
-      "title": "What can we learn by inspecting the model?",
+      "title": "Look inside the trained model",
       "lit": ""
     },
     {
       "id": "s12",
-      "title": "How much work does a finer patch grid require?",
+      "title": "The cost of smaller patches",
       "lit": ""
     },
     {
       "id": "s13",
-      "title": "Can you work through a new example?",
+      "title": "Your turn to work it out",
       "lit": ""
     },
     {
       "id": "s14",
-      "title": "What can we build with visual rows next?",
+      "title": "What can we build next?",
       "lit": ""
     }
   ],
   "chain": [
     {
       "section": "s01",
-      "label": "What would we like the image model to do?"
+      "label": "The image classification task"
     },
     {
       "section": "s02",
-      "label": "How do pixels become patch rows?"
+      "label": "From pixels to patch embeddings"
     },
     {
       "section": "s03",
-      "label": "What does each row know about its patch?"
+      "label": "Remembering where patches belong"
     },
     {
       "section": "s04",
-      "label": "How does one row read the other rows?"
+      "label": "Queries, keys and values in vision"
     },
     {
       "section": "s05",
-      "label": "What does a second head add?"
+      "label": "More than one attention head"
     },
     {
       "section": "s06",
-      "label": "How do the messages lead to a prediction?"
+      "label": "From messages to an image label"
     },
     {
       "section": "s07",
-      "label": "What happens inside a complete block?"
+      "label": "The complete Transformer block"
     },
     {
       "section": "s08",
-      "label": "Can we follow the same steps in code?"
+      "label": "Build the model in PyTorch"
     },
     {
       "section": "s09",
-      "label": "How do we know the model learned something?"
+      "label": "Check what the model learned"
     },
     {
       "section": "s10",
-      "label": "What happens on the real photographs?"
+      "label": "Return to the real photographs"
     },
     {
       "section": "s11",
-      "label": "What can we learn by inspecting the model?"
+      "label": "Look inside the trained model"
     },
     {
       "section": "s12",
-      "label": "How much work does a finer patch grid require?"
+      "label": "The cost of smaller patches"
     },
     {
       "section": "s13",
-      "label": "Can you work through a new example?"
+      "label": "Your turn to work it out"
     },
     {
       "section": "s14",
-      "label": "What can we build with visual rows next?"
+      "label": "What can we build next?"
     }
   ],
   "objects": [

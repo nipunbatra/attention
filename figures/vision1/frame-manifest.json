@@ -1,11 +1,19 @@
 [
   {
+    "id": "vision-topic-01",
+    "title": "01 \u00b7 The image classification task",
+    "caption": "Start with the dataset, choose an image label, then ask which parts of the photograph help us decide.",
+    "notes": "What should a model predict from a photograph?\nPause at the section question. Connect the previous result to the three steps, then advance to the concrete example.",
+    "section": "s01",
+    "frame": 1
+  },
+  {
     "id": "dataset-gallery",
     "title": "What does our animal dataset look like?",
     "caption": "Oxford-IIIT Pet: six examples. Each photo has a species label and a breed label.",
     "notes": "What changes across photos that share the same dog or cat label?\nPoint to pose, coat and background. Read the species label first, then the breed beneath it.",
     "section": "s01",
-    "frame": 1
+    "frame": 2
   },
   {
     "id": "dataset-counts",
@@ -13,7 +21,7 @@
     "caption": "Our opening question uses 2 classes: cat or dog. Predicting the breed would use 37 classes.",
     "notes": "Could the same photograph have a two-class target in one task and a 37-class target in another?\nPoint back to the two labels under each photo. Add the two split sizes to recover the total.",
     "section": "s01",
-    "frame": 2
+    "frame": 3
   },
   {
     "id": "dataset-dimensions",
@@ -21,7 +29,7 @@
     "caption": "Original sizes vary. Our demo uses 224 \u00d7 224 pixels, each with red, green and blue values: 150,528 numbers.",
     "notes": "What does each of the three dimensions count?\nTrace the original photograph to the exact model crop. Multiply height by width by the three RGB channels.",
     "section": "s01",
-    "frame": 3
+    "frame": 4
   },
   {
     "id": "s01-photo",
@@ -29,7 +37,7 @@
     "caption": "Which parts of the photograph helped you decide?",
     "notes": "What animal is this, and which parts made you decide?\nPoint to the face, fur, and silhouette before mentioning an architecture.",
     "section": "s01",
-    "frame": 4
+    "frame": 5
   },
   {
     "id": "vision-tasks",
@@ -37,7 +45,7 @@
     "caption": "These tasks ask for different outputs. We will work through image classification in this lecture.",
     "notes": "What would you want the program to return for each of these tasks?\nKeep the photograph fixed. Read each task name and its output before moving to the examples.",
     "section": "s01",
-    "frame": 5
+    "frame": 6
   },
   {
     "id": "photo-folder",
@@ -45,7 +53,7 @@
     "caption": "Output: one class label for each photograph. Our example labels are dog and cat.",
     "notes": "What would you want the program to return for each photo?\nReveal dog and cat. Connect one image label to the spam/not-spam example in Part I.",
     "section": "s01",
-    "frame": 6
+    "frame": 7
   },
   {
     "id": "find-animal",
@@ -53,7 +61,7 @@
     "caption": "Output: a class label and a bounding box for each detected object. A box tells an app where it could crop.",
     "notes": "If there were two dogs in this photograph, how many labels and boxes would we need?\nCompare the image label on the previous slide with the label plus box here. Trace the four box edges.",
     "section": "s01",
-    "frame": 7
+    "frame": 8
   },
   {
     "id": "image-caption",
@@ -61,7 +69,7 @@
     "caption": "Output: a sentence. The model generates words using the image as context.",
     "notes": "What does this sentence tell us beyond the single label dog?\nPoint from the dog and trees to the corresponding words. Recall generating one token after another in the text lessons.",
     "section": "s01",
-    "frame": 8
+    "frame": 9
   },
   {
     "id": "photo-search",
@@ -69,7 +77,7 @@
     "caption": "Input: a text query and candidate images. Output: images ranked by how well they match the query.",
     "notes": "Which photo should come first for this query?\nRead the query, inspect both photos, then reveal the illustrative ranking. Contrast selecting a photo with generating a caption.",
     "section": "s01",
-    "frame": 9
+    "frame": 10
   },
   {
     "id": "task-image-label",
@@ -77,7 +85,7 @@
     "caption": "For the rest of this lecture, we observe the whole photograph and predict one class label.",
     "notes": "Are we trying to guess a missing patch in this task?\nPoint to the full observed image and the two possible class labels.",
     "section": "s01",
-    "frame": 10
+    "frame": 11
   },
   {
     "id": "task-next-token",
@@ -85,7 +93,7 @@
     "caption": "A prefix supplies the context. The answer is a distribution over the next token.",
     "notes": "After predicting one letter, how would we generate a whole name?\nFollow the loop back to the input, now with one more token.",
     "section": "s01",
-    "frame": 11
+    "frame": 12
   },
   {
     "id": "task-side-by-side",
@@ -93,7 +101,7 @@
     "caption": "Both models score possible answers. What they observe, summarize and predict differs.",
     "notes": "Which parts of our old calculation can we reuse unchanged?\nCompare one row at a time. Refer back to the image summary from the classification slide; its construction comes later.",
     "section": "s01",
-    "frame": 12
+    "frame": 13
   },
   {
     "id": "s01-context",
@@ -101,7 +109,7 @@
     "caption": "To choose cat or dog, we need visual clues. This dark crop becomes easier to interpret when we see the whole photo.",
     "notes": "Could this dark crop be fur, a shadow, or something else?\nReveal where it came from; keep pointing to the same crop.",
     "section": "s01",
-    "frame": 13
+    "frame": 14
   },
   {
     "id": "bridge-text",
@@ -109,7 +117,7 @@
     "caption": "We still turn inputs into rows, read useful information, and predict an answer.",
     "notes": "What stays the same when the input is a photograph?\nPoint to representation, contextual reading, and multiple head messages in the earlier examples.",
     "section": "s01",
-    "frame": 14
+    "frame": 15
   },
   {
     "id": "patch-context",
@@ -117,7 +125,7 @@
     "caption": "We want one image label. Face context can help interpret the dark texture and make its patch representation more useful for that prediction.",
     "notes": "Could nearby face information help us interpret the dark texture as animal fur?\nStart at the dark receiver. Reveal the face source, then trace its information box all the way to the receiver\u2019s numbers.",
     "section": "s01",
-    "frame": 15
+    "frame": 16
   },
   {
     "id": "patch-context-weights",
@@ -125,7 +133,7 @@
     "caption": "Here, face clues could help more than branches. Attention weights control how much each source contributes to the message.",
     "notes": "For this dark receiver, which source would you expect to be more useful: the face or the branches?\nKeep the receiver fixed. Reveal the second source, then compare the thick and thin arrows ending on the same receiver row.",
     "section": "s01",
-    "frame": 16
+    "frame": 17
   },
   {
     "id": "patch-context-update",
@@ -133,7 +141,7 @@
     "caption": "Attention supplies a weighted message. The block adds it to the patch row; later layers use the updated rows to predict one image label.",
     "notes": "Are we changing the photo, assigning a fur label to this crop, or updating its numerical representation?\nPoint to the unchanged pixels, then follow the current row and context message into the plus sign. End at the updated row.",
     "section": "s01",
-    "frame": 17
+    "frame": 18
   },
   {
     "id": "text-context-recap",
@@ -141,7 +149,7 @@
     "caption": "Each token starts with an embedding plus position. Attention supplies context; adding its update gives a new representation of the same token.",
     "notes": "Did attention replace the word bank, or change the numbers representing it?\nTrace bank through the middle row. Then point to the final the: that is the row used to predict the next word after this full prefix.",
     "section": "s01",
-    "frame": 18
+    "frame": 19
   },
   {
     "id": "bridge-image-token",
@@ -149,7 +157,7 @@
     "caption": "We can use one fixed-size patch as an image token. Each patch gets its own row, just as each text token did.",
     "notes": "Should one image token be a pixel, an object, or a fixed-size piece of the image?\nPause on the whole photo. Reveal the grid, then follow the outlined patch to the idea of one token row.",
     "section": "s01",
-    "frame": 19
+    "frame": 20
   },
   {
     "id": "bridge-image-embedding",
@@ -157,7 +165,7 @@
     "caption": "Text uses a learned lookup table. A patch projection produces D coordinates per patch. D is shared across patches and can differ from the number of pixel values.",
     "notes": "Where would a vector for this crop come from, if we have no word ID to look up?\nRead the actual bank embedding from Part II. Keep the image row unrevealed while students suggest how pixels could become numbers.",
     "section": "s01",
-    "frame": 20
+    "frame": 21
   },
   {
     "id": "bridge-image-query",
@@ -165,7 +173,7 @@
     "caption": "The row being updated makes a query. Its learned projection determines what kinds of source information it can match.",
     "notes": "Which patch should make the query if we want to update the dark patch?\nFollow the receiver row through W_Q in each case. Read the questions as intuition for a learned vector, not words typed by a user.",
     "section": "s01",
-    "frame": 21
+    "frame": 22
   },
   {
     "id": "bridge-image-key",
@@ -173,7 +181,7 @@
     "caption": "Each source row makes a key. Comparing the receiver\u2019s query with source keys gives the scores used to choose attention weights.",
     "notes": "How could the dark patch compare a face patch with a branches patch?\nKeep the query on the receiver. Point to river and the face as sources, each with its own key.",
     "section": "s01",
-    "frame": 22
+    "frame": 23
   },
   {
     "id": "bridge-image-value",
@@ -181,7 +189,7 @@
     "caption": "Q and K choose the weights. V supplies the information to combine using those weights; the combined message updates the receiving representation.",
     "notes": "Once a source receives a weight, which vector actually contributes to the message?\nReuse the same source crops from the key slide. Replace W_K with W_V, then multiply each value by its weight.",
     "section": "s01",
-    "frame": 23
+    "frame": 24
   },
   {
     "id": "bridge-image-target",
@@ -189,7 +197,7 @@
     "caption": "Here the target is an image label. We reuse attention to build representations; our classification task changes what we read out and predict.",
     "notes": "Are we predicting another patch, another word, or one label for this photograph?\nPause before revealing the image answer. Contrast vocabulary scores with class scores, then return to how the patch rows are built.",
     "section": "s01",
-    "frame": 24
+    "frame": 25
   },
   {
     "id": "image-to-rows",
@@ -197,7 +205,15 @@
     "caption": "Attention works on rows of numbers. Next, we choose image patches and turn their pixels into those rows.",
     "notes": "In the text lessons, what did attention receive as its input?\nKeep the photograph visible. Reveal its pieces, one row per piece, then the familiar attention operation.",
     "section": "s01",
-    "frame": 25
+    "frame": 26
+  },
+  {
+    "id": "vision-topic-02",
+    "title": "02 \u00b7 From pixels to patch embeddings",
+    "caption": "Read one small patch, calculate its embedding, then scale the same operation to a real photograph.",
+    "notes": "How do we make those rows from an image?\nPause at the section question. Connect the previous result to the three steps, then advance to the concrete example.",
+    "section": "s02",
+    "frame": 1
   },
   {
     "id": "s01-patches",
@@ -205,7 +221,7 @@
     "caption": "The grid cuts through the photograph before the model knows where the dog is.",
     "notes": "Does each patch contain one whole object?\nReveal the grid, then match each enlarged crop back to its location.",
     "section": "s02",
-    "frame": 1
+    "frame": 2
   },
   {
     "id": "one-rgb",
@@ -213,7 +229,7 @@
     "caption": "Each pixel records a red, green and blue channel.",
     "notes": "What would [0,0,0] look like?\nName the channels, then ask for black, red and white before revealing the rows.",
     "section": "s02",
-    "frame": 2
+    "frame": 3
   },
   {
     "id": "rgb-flatten-step-1",
@@ -221,7 +237,7 @@
     "caption": "For this calculation, divide RGB values by 255. Read A, B, C, D: top-left, top-right, bottom-left, bottom-right.",
     "notes": "How many numbers does pixel A contribute?\nPoint to the red pixel, read its RGB triple, then reveal one pixel at a time.",
     "section": "s02",
-    "frame": 3
+    "frame": 4
   },
   {
     "id": "rgb-flatten",
@@ -229,7 +245,7 @@
     "caption": "Keep RGB together for each pixel. x\u2081 contains 12 values from patch 1; the subscript identifies the patch.",
     "notes": "Which three entries came from the bottom-right pixel?\nFollow A, B, C and D into their matching groups, then count the twelve scalar entries.",
     "section": "s02",
-    "frame": 4
+    "frame": 5
   },
   {
     "id": "flatten-order",
@@ -237,7 +253,7 @@
     "caption": "Read left to right, then return to the start of the next row. The 0s and 1s are pixel values, not step numbers.",
     "notes": "After the top-right pixel, which pixel should we read next?\nTrace the blue arrow across the top row, around to bottom-left, and across the bottom row. Then match those values to the output row.",
     "section": "s02",
-    "frame": 5
+    "frame": 6
   },
   {
     "id": "s01-rows-step-1",
@@ -245,7 +261,7 @@
     "caption": "Both produce a vector to represent one token. Text selects a learned table row; the image layer computes a row from the patch pixels.",
     "notes": "Do we have a vocabulary ID for every possible image patch?\nCompare lookup on the left with computation on the right. Keep the number of input values separate from the embedding width.",
     "section": "s02",
-    "frame": 6
+    "frame": 7
   },
   {
     "id": "patch-linear-shapes",
@@ -253,7 +269,7 @@
     "caption": "A projection forms weighted sums of the pixel values and adds a bias. This one linear layer turns 12 inputs into a 2-coordinate patch embedding.",
     "notes": "How many weighted sums do we need to produce two output coordinates?\nMatch 12 to in_features and 2 to out_features, then follow the matrix dimensions.",
     "section": "s02",
-    "frame": 7
+    "frame": 8
   },
   {
     "id": "patch-linear-weights",
@@ -261,7 +277,7 @@
     "caption": "Each output has twelve weights and one bias. We choose small values here; training normally learns these 26 parameters.",
     "notes": "Which input channels contribute to the first output?\nRead one weight per RGB entry. Point to the two output rows, then distinguish stored weight shape from W in the row-vector equation.",
     "section": "s02",
-    "frame": 8
+    "frame": 9
   },
   {
     "id": "patch-linear-first",
@@ -269,7 +285,7 @@
     "caption": "Multiply matching entries, add the four pixel contributions, then add the bias 0.5.",
     "notes": "What does each pixel contribute before we add the bias?\nMultiply the three RGB entries by their three weights at each column, then add the four results and bias.",
     "section": "s02",
-    "frame": 9
+    "frame": 10
   },
   {
     "id": "patch-linear-second",
@@ -277,7 +293,7 @@
     "caption": "Multiply matching entries, add the four pixel contributions, then add the bias -0.5.",
     "notes": "What does each pixel contribute before we add the bias?\nMultiply the three RGB entries by their three weights at each column, then add the four results and bias.",
     "section": "s02",
-    "frame": 10
+    "frame": 11
   },
   {
     "id": "patch-linear-result",
@@ -285,7 +301,7 @@
     "caption": "c\u2081 represents the content of patch 1. Its two coordinates are features for the model; the image classifier comes later.",
     "notes": "Should the negative output become zero?\nCollect the two calculated coordinates and point to the absence of an activation after the layer.",
     "section": "s02",
-    "frame": 11
+    "frame": 12
   },
   {
     "id": "patch-shared-code",
@@ -293,7 +309,7 @@
     "caption": "The pixel rows differ. Both use the same 26 parameters, so we compute both embeddings with one call: C = proj(X).",
     "notes": "Do we create a new nn.Linear layer when we move to patch 2?\nReveal the second patch. Follow both arrows through the single weight-and-bias box, then read the stacked input and output shapes.",
     "section": "s02",
-    "frame": 12
+    "frame": 13
   },
   {
     "id": "s01-rows",
@@ -301,7 +317,7 @@
     "caption": "The subscript names the patch. c\u2086 is its content embedding; adding its position row p\u2086 gives e\u2086, the row that enters attention.",
     "notes": "Does the 6 mean six coordinates, or patch number 6?\nPoint to P6 in the original illustration. Follow content plus position to e6, then repeat for P7.",
     "section": "s02",
-    "frame": 13
+    "frame": 14
   },
   {
     "id": "patch-real-dimensions",
@@ -309,7 +325,7 @@
     "caption": "One patch has 16 \u00d7 16 pixels. Each pixel contributes three channel values: red, green and blue. That gives 768 values in one patch.",
     "notes": "Are there 768 pixels in this patch, or 768 channel values?\nCount rows and columns in the patch grid. Pick one pixel, reveal its three channels, then multiply 256 by 3.",
     "section": "s02",
-    "frame": 14
+    "frame": 15
   },
   {
     "id": "patch-one-row-shape",
@@ -317,7 +333,7 @@
     "caption": "Here we are processing one patch, written as one row. The second dimension counts its 768 input values. A whole image contributes many patch rows.",
     "notes": "If we put a second patch underneath this row, which dimension changes?\nTrace the long RGB row, then point to 1 for the row count and 768 for the number of entries in that row.",
     "section": "s02",
-    "frame": 15
+    "frame": 16
   },
   {
     "id": "patch-one-row-projection",
@@ -325,7 +341,7 @@
     "caption": "The model chooses 192 output coordinates here. Every patch uses that same output width; the input and output widths can differ.",
     "notes": "Does preserving one row require preserving all 768 input coordinates?\nFollow the row count 1 to the output. Then separately follow the feature width from 768 to the chosen 192.",
     "section": "s02",
-    "frame": 16
+    "frame": 17
   },
   {
     "id": "projection-size",
@@ -333,7 +349,7 @@
     "caption": "196 counts patches in one image. Each patch supplies 768 input values and produces 192 embedding coordinates. The shared layer changes width while keeping one row per patch.",
     "notes": "Which number counts patches, and which numbers count values within a patch row?\nCount patches across and down the grid, then track the unchanged 196 in the input and output shapes.",
     "section": "s02",
-    "frame": 17
+    "frame": 18
   },
   {
     "id": "patch-projection-parameters",
@@ -341,23 +357,55 @@
     "caption": "Each of the 192 outputs has 768 weights and one bias. The parameters are shared across patches, so we count them once.",
     "notes": "If we add more patch rows, do we need another copy of these weights?\nCount weights, then biases, then add them. Point back to the single nn.Linear layer used for the whole matrix.",
     "section": "s02",
-    "frame": 18
+    "frame": 19
   },
   {
-    "id": "s02-small",
-    "title": "Same pieces, different picture?",
-    "caption": "Count the filled patches in each image. Then look at where they are.",
-    "notes": "How many filled and empty patches are in each image?\nReveal the second arrangement. Count two of each, then ask what changed.",
+    "id": "vision-topic-03",
+    "title": "03 \u00b7 Remembering where patches belong",
+    "caption": "Start with the photograph. Then build a small numerical example, including the extra row used to summarize the image.",
+    "notes": "How will the rows remember the picture\u2019s layout?\nPause at the section question. Connect the previous result to the three steps, then advance to the concrete example.",
     "section": "s03",
     "frame": 1
   },
   {
-    "id": "position-question",
-    "title": "Could you put the picture back together?",
-    "caption": "Knowing which patches we have does not tell us where each one belongs.",
-    "notes": "What information was discarded when we made this bag?\nAsk students to reconstruct the original layout; reveal that both layouts fit.",
+    "id": "position-photo-layout",
+    "title": "Move the face patches. What changes?",
+    "caption": "We kept every patch and every pixel inside it. The face is now lower in the picture. Which information describes this change?",
+    "notes": "Are these the same pieces? Are they arranged the same way?\nCompare both photos before revealing the arrow. Trace the two outlined face patches from row 2 to row 4; the displaced patches move back into row 2.",
     "section": "s03",
     "frame": 2
+  },
+  {
+    "id": "position-photo-content",
+    "title": "Does the patch layer notice the move?",
+    "caption": "The same pixels pass through the same linear layer, so they produce the same content embedding. The layer has not been given the patch\u2019s location.",
+    "notes": "What changed in the inputs to the shared linear layer?\nPoint to the identical crops, then the identical parameters. Read c_face as the content embedding of this one face crop.",
+    "section": "s03",
+    "frame": 3
+  },
+  {
+    "id": "position-photo-add",
+    "title": "Give the row its location as well as its content",
+    "caption": "Each grid slot has a position vector. Add it to the content embedding before attention, just as we added position to the text embeddings.",
+    "notes": "Which part stays the same when the face crop moves? Which part should change?\nKeep pointing to c_face. Then change the position vector from the upper slot to the lower one; reveal the resulting input rows.",
+    "section": "s03",
+    "frame": 4
+  },
+  {
+    "id": "s02-small",
+    "title": "A smaller task: classify the arrangement",
+    "caption": "Now switch to a tiny grayscale image so we can calculate every step. Its label describes the arrangement of the filled patches.",
+    "notes": "What should the labels be for these two arrangements?\nState the new worksheet task before revealing either label. Count four patches in each image: two filled and two empty.",
+    "section": "s03",
+    "frame": 5
+  },
+  {
+    "id": "position-question",
+    "title": "Would just counting the patches solve it?",
+    "caption": "The pieces tell us what is present. Their locations tell us how those pieces are arranged. Our worksheet label depends on that arrangement.",
+    "notes": "Which label can you choose if I only tell you \u201ctwo filled, two empty\u201d?\nCount the pieces, then refer back to the two layouts. The same count is compatible with both answers.",
+    "section": "s03",
+    "frame": 6
   },
   {
     "id": "s02-projection-step-1",
@@ -365,7 +413,7 @@
     "caption": "These are the same four pixel values, in a fixed order.",
     "notes": "Where does each entry in the row come from?\nPoint to one pixel and its matching row entry.",
     "section": "s03",
-    "frame": 3
+    "frame": 7
   },
   {
     "id": "s02-projection-step-2",
@@ -373,7 +421,7 @@
     "caption": "This chosen column takes the mean of the four pixels.",
     "notes": "What is one quarter of each pixel, added together?\nAdd all four terms before revealing 1.",
     "section": "s03",
-    "frame": 4
+    "frame": 8
   },
   {
     "id": "s02-projection",
@@ -381,7 +429,7 @@
     "caption": "The first coordinate is ink; the final 1 comes from the bias.",
     "notes": "What happened to the two middle coordinates?\nUse the zero columns and then add the bias.",
     "section": "s03",
-    "frame": 5
+    "frame": 9
   },
   {
     "id": "patch-matrix",
@@ -389,7 +437,7 @@
     "caption": "Multiply the pixel row by each column, then add the bias.",
     "notes": "Which column computes ink, and which columns are zero?\nCalculate all four coordinates, then add the bias.",
     "section": "s03",
-    "frame": 6
+    "frame": 10
   },
   {
     "id": "empty-patch",
@@ -397,7 +445,7 @@
     "caption": "The bias adds a learned offset even when every input pixel is zero.",
     "notes": "Will multiplying zeros by W_patch produce the final 1?\nCalculate the product first, then add the bias as a separate step.",
     "section": "s03",
-    "frame": 7
+    "frame": 11
   },
   {
     "id": "mean-loses-edge",
@@ -405,7 +453,7 @@
     "caption": "A patch can have the same average and a different pattern.",
     "notes": "Which patch has a horizontal edge? Which has a vertical edge?\nCount two ones in each, then compare their positions.",
     "section": "s03",
-    "frame": 8
+    "frame": 12
   },
   {
     "id": "edge-filters",
@@ -413,7 +461,7 @@
     "caption": "Each column combines the same pixels in a different way.",
     "notes": "What does the first column subtract from what?\nCalculate the top-edge patch against each column, then try the left-edge patch.",
     "section": "s03",
-    "frame": 9
+    "frame": 13
   },
   {
     "id": "why-cls",
@@ -421,7 +469,7 @@
     "caption": "The classification token (CLS) is an extra learned row used to collect information for the image label.",
     "notes": "We have many contextual patch rows. How could we produce one image label?\nPoint to the extra row and spell out classification token. It gathers information before the classifier produces a label.",
     "section": "s03",
-    "frame": 10
+    "frame": 14
   },
   {
     "id": "cls-start",
@@ -429,7 +477,7 @@
     "caption": "CLS is an extra learned input vector with the same width as a patch row.",
     "notes": "Which image pixels were used to create CLS?\nPoint to the separate parameter, then count five rows entering attention.",
     "section": "s03",
-    "frame": 11
+    "frame": 15
   },
   {
     "id": "cls-two-images",
@@ -437,7 +485,7 @@
     "caption": "Its starting vector is shared. The keys and values it reads come from the current image.",
     "notes": "Does a shared first-layer query force the output to be identical?\nFollow each image through its own source keys, values and weighted sum.",
     "section": "s03",
-    "frame": 12
+    "frame": 16
   },
   {
     "id": "two-identical-patches",
@@ -445,7 +493,7 @@
     "caption": "Their content rows match. Their positions do not.",
     "notes": "Which coordinate changes for the top-right patch?\nKeep the filled patch content fixed and add its column location.",
     "section": "s03",
-    "frame": 13
+    "frame": 17
   },
   {
     "id": "s02-positions-step-1",
@@ -453,7 +501,7 @@
     "caption": "Two patches can look alike and still come from different places.",
     "notes": "Which entries record the row and column here?\nRead each location from the small image grid.",
     "section": "s03",
-    "frame": 14
+    "frame": 18
   },
   {
     "id": "s02-positions",
@@ -461,7 +509,15 @@
     "caption": "These five rows form E, the input to our attention calculation.",
     "notes": "What distinguishes P1 from P2 now?\nCompare the two filled patches after adding positions.",
     "section": "s03",
-    "frame": 15
+    "frame": 19
+  },
+  {
+    "id": "vision-topic-04",
+    "title": "04 \u00b7 Queries, keys and values in vision",
+    "caption": "Use the face and fur crops to explain the roles, then calculate one complete attention message.",
+    "notes": "How does one row gather useful information?\nPause at the section question. Connect the previous result to the three steps, then advance to the concrete example.",
+    "section": "s04",
+    "frame": 1
   },
   {
     "id": "image-mask",
@@ -469,7 +525,7 @@
     "caption": "We already have the whole image when we predict its label, so all patches can read one another.",
     "notes": "What future information would leak from another patch in this task?\nCompare a lower-triangular next-token mask with all-to-all image attention.",
     "section": "s04",
-    "frame": 1
+    "frame": 2
   },
   {
     "id": "task-mask-reason",
@@ -477,7 +533,7 @@
     "caption": "A causal mask prevents the model from reading the answer it is meant to predict.",
     "notes": "Would seeing the next training token make prediction unfairly easy?\nRead one matrix row as a receiver and its permitted source columns.",
     "section": "s04",
-    "frame": 2
+    "frame": 3
   },
   {
     "id": "qkv-roles",
@@ -485,7 +541,7 @@
     "caption": "Matching a source and reading its information are two different jobs.",
     "notes": "Which two vectors decide the weight, and which vector gets multiplied by it?\nRecall bank\u2019s request and river\u2019s information from Part II. Keep the photo crop visible.",
     "section": "s04",
-    "frame": 3
+    "frame": 4
   },
   {
     "id": "qkv-photo-question",
@@ -493,7 +549,7 @@
     "caption": "Imagine borrowing nearby face evidence to interpret a patch of dark fur.",
     "notes": "Would the face crop or the branches help more with this particular ambiguity?\nKeep the receiver fixed and point to two possible sources.",
     "section": "s04",
-    "frame": 4
+    "frame": 5
   },
   {
     "id": "qkv-three-roles",
@@ -501,7 +557,7 @@
     "caption": "Q and K decide the weights. V supplies the message that gets weighted.",
     "notes": "Can the same patch receive information and also send information?\nTrace all three projections from the same row.",
     "section": "s04",
-    "frame": 5
+    "frame": 6
   },
   {
     "id": "qkv-match-numbers",
@@ -509,7 +565,7 @@
     "caption": "Exponentiate the two scores: 3 and 1. Their shares are \u00be and \u00bc.",
     "notes": "Where does the factor 3 come from?\nMultiply q by each key, then normalize the two exponentials.",
     "section": "s04",
-    "frame": 6
+    "frame": 7
   },
   {
     "id": "qkv-read-numbers",
@@ -517,7 +573,7 @@
     "caption": "Multiply each source\u2019s value by its weight, then add the two vectors.",
     "notes": "Does choosing the face with \u00be weight discard the other source?\nCalculate both contributions before adding them.",
     "section": "s04",
-    "frame": 7
+    "frame": 8
   },
   {
     "id": "qkv-change-key",
@@ -525,7 +581,7 @@
     "caption": "The values stay available, but their shares in the message change.",
     "notes": "Which source now gets three times the weight of the other?\nSwap the two keys and recompute the mixture.",
     "section": "s04",
-    "frame": 8
+    "frame": 9
   },
   {
     "id": "qkv-change-value",
@@ -533,7 +589,7 @@
     "caption": "The attention weights stay the same, but the received information changes.",
     "notes": "Would an attention heatmap show this change?\nKeep the two weights visible while doubling the first value coordinate.",
     "section": "s04",
-    "frame": 9
+    "frame": 10
   },
   {
     "id": "qkv-no-prompt",
@@ -541,7 +597,7 @@
     "caption": "No text prompt is needed. The image rows generate their own Q, K and V.",
     "notes": "Where does the query come from if nobody types a question?\nFollow the numerical projection from the input rows.",
     "section": "s04",
-    "frame": 10
+    "frame": 11
   },
   {
     "id": "all-qkv",
@@ -549,7 +605,7 @@
     "caption": "One input row; three separate learned projections. These worksheet weights are chosen for arithmetic.",
     "notes": "What does each nonzero matrix entry copy or scale?\nFollow the constant into Q, then ink and row into K and V.",
     "section": "s04",
-    "frame": 11
+    "frame": 12
   },
   {
     "id": "q-dot",
@@ -557,7 +613,7 @@
     "caption": "Each query coordinate is a dot product with one column of W_Q.",
     "notes": "Which input coordinate supplies both ones?\nUse the W_Q columns shown on the previous slide and multiply all four terms.",
     "section": "s04",
-    "frame": 12
+    "frame": 13
   },
   {
     "id": "one-key-dot",
@@ -565,7 +621,7 @@
     "caption": "Head 1 keeps ink and row in its keys.",
     "notes": "Would the constant 1 in the input affect this key?\nPoint to the zero in the last row of each key column.",
     "section": "s04",
-    "frame": 13
+    "frame": 14
   },
   {
     "id": "s03-query",
@@ -573,7 +629,7 @@
     "caption": "Part II again: the query and keys choose where to read.",
     "notes": "What does multiplying this input by W_Q do?\nPoint to the fixed last coordinate supplying [1,1]. Then construct P1\u2019s key.",
     "section": "s04",
-    "frame": 14
+    "frame": 15
   },
   {
     "id": "one-score",
@@ -581,7 +637,7 @@
     "caption": "The head has two query/key coordinates, so d_k is 2.",
     "notes": "Should the denominator use 2, 4 or 5 here?\nDistinguish head width, embedding width and number of source rows.",
     "section": "s04",
-    "frame": 15
+    "frame": 16
   },
   {
     "id": "softmax-relative",
@@ -589,7 +645,7 @@
     "caption": "Equal scores get equal shares. Only score differences affect the shares.",
     "notes": "Are two very negative scores less than 100% in total?\nCompare the first and third rows, then explain the middle row using exponentials 1 and 3.",
     "section": "s04",
-    "frame": 16
+    "frame": 17
   },
   {
     "id": "s03-weights-step-1",
@@ -597,7 +653,7 @@
     "caption": "Keep the query fixed. Only the source key changes.",
     "notes": "Which of these keys give the same score?\nWork down the five sources, including CLS.",
     "section": "s04",
-    "frame": 17
+    "frame": 18
   },
   {
     "id": "s03-weights-step-2",
@@ -605,7 +661,7 @@
     "caption": "Scores 0 and 1 become 1 and e.",
     "notes": "Why are four exponentials equal?\nMatch each exponential to its score.",
     "section": "s04",
-    "frame": 18
+    "frame": 19
   },
   {
     "id": "s03-weights",
@@ -613,7 +669,7 @@
     "caption": "The five source weights now add up to one.",
     "notes": "What fraction belongs to CLS?\nDivide its exponential 1 by the same sum used for every patch.",
     "section": "s04",
-    "frame": 19
+    "frame": 20
   },
   {
     "id": "weight-denominator",
@@ -621,7 +677,7 @@
     "caption": "Every source appears in the same denominator, including CLS.",
     "notes": "What would go wrong if each patch used a different denominator?\nSum the five source contributions first, then divide one exponential by that sum.",
     "section": "s04",
-    "frame": 20
+    "frame": 21
   },
   {
     "id": "s03-values-step-1",
@@ -629,7 +685,7 @@
     "caption": "Keep a patch\u2019s weight and value on the same row.",
     "notes": "Which value belongs to the weight for P3?\nTrace the source label across the table.",
     "section": "s04",
-    "frame": 21
+    "frame": 22
   },
   {
     "id": "s03-values-step-2",
@@ -637,7 +693,7 @@
     "caption": "One scalar scales both coordinates of the source value.",
     "notes": "Does the second coordinate get a different weight?\nMultiply both entries before moving to the next row.",
     "section": "s04",
-    "frame": 22
+    "frame": 23
   },
   {
     "id": "s03-values",
@@ -645,7 +701,7 @@
     "caption": "Add down each coordinate column.",
     "notes": "How do five source rows become a two-number message?\nSum each coordinate separately, then reveal the result.",
     "section": "s04",
-    "frame": 23
+    "frame": 24
   },
   {
     "id": "one-value-product",
@@ -653,7 +709,7 @@
     "caption": "An empty patch still has a position, and its value can carry that information.",
     "notes": "Which coordinate receives the contribution from P3?\nMultiply both coordinates by the same weight; keep the zero visible.",
     "section": "s04",
-    "frame": 24
+    "frame": 25
   },
   {
     "id": "weight-message",
@@ -661,7 +717,7 @@
     "caption": "Compare the values beside the weights. They tell us what each patch sends.",
     "notes": "What do these two patches contribute to the ink coordinate?\nMultiply both coordinates and compare the resulting messages.",
     "section": "s04",
-    "frame": 25
+    "frame": 26
   },
   {
     "id": "change-query",
@@ -669,7 +725,15 @@
     "caption": "Change the query and keep the sources fixed. The mixture changes.",
     "notes": "Which filled patches should get more weight now?\nSet the second query coordinate to zero, then recompute all five scores.",
     "section": "s04",
-    "frame": 26
+    "frame": 27
+  },
+  {
+    "id": "vision-topic-05",
+    "title": "05 \u00b7 More than one attention head",
+    "caption": "Keep the same input rows. Change the head\u2019s learned projections and follow the second calculation.",
+    "notes": "What could a second head tell us?\nPause at the section question. Connect the previous result to the three steps, then advance to the concrete example.",
+    "section": "s05",
+    "frame": 1
   },
   {
     "id": "heads-question",
@@ -677,7 +741,7 @@
     "caption": "As with colour and material in the coat example, we can keep two different messages.",
     "notes": "What two kinds of information might help distinguish these layouts?\nPoint to row and column. Keep the same patches on both sides.",
     "section": "s05",
-    "frame": 1
+    "frame": 2
   },
   {
     "id": "s03-second-step-1",
@@ -685,7 +749,7 @@
     "caption": "The same input rows now pass through a different key projection.",
     "notes": "Which patch has both ink and column equal to 1?\nPoint to P2 before calculating its score.",
     "section": "s05",
-    "frame": 2
+    "frame": 3
   },
   {
     "id": "s03-second",
@@ -693,7 +757,7 @@
     "caption": "Each head divides by its own sum of exponentials.",
     "notes": "Can we reuse Head 1\u2019s denominator here?\nCompare the score lists before normalizing.",
     "section": "s05",
-    "frame": 3
+    "frame": 4
   },
   {
     "id": "s03-second-values-step-1",
@@ -701,7 +765,7 @@
     "caption": "Its values carry ink and column.",
     "notes": "Which value coordinate changed from Head 1?\nKeep the same source labels while comparing value definitions.",
     "section": "s05",
-    "frame": 4
+    "frame": 5
   },
   {
     "id": "s03-second-values-step-2",
@@ -709,7 +773,7 @@
     "caption": "Use Head 2\u2019s weight and Head 2\u2019s value from the same source.",
     "notes": "Which source contributes most to the ink coordinate?\nCompute P2\u2019s product, then compare the other sources.",
     "section": "s05",
-    "frame": 5
+    "frame": 6
   },
   {
     "id": "s03-second-values",
@@ -717,7 +781,7 @@
     "caption": "We now have a second two-number message.",
     "notes": "Are the two heads\u2019 messages equal?\nCompare the sums with Head 1\u2019s result.",
     "section": "s05",
-    "frame": 6
+    "frame": 7
   },
   {
     "id": "all-receivers",
@@ -725,7 +789,7 @@
     "caption": "Yes. Here every query is [1,1], so the messages match. Each row still has its own starting vector.",
     "notes": "Do identical messages imply identical updated rows?\nCompare the queries, then remind students that each residual starts from a different E row.",
     "section": "s05",
-    "frame": 7
+    "frame": 8
   },
   {
     "id": "s04-join-step-1",
@@ -733,7 +797,7 @@
     "caption": "Concatenation gives us four numbers; it does not average the heads.",
     "notes": "What would we lose by averaging these two rows immediately?\nFollow all four coordinates into the joined row.",
     "section": "s05",
-    "frame": 8
+    "frame": 9
   },
   {
     "id": "s04-join-step-2",
@@ -741,7 +805,7 @@
     "caption": "The first column subtracts Head 2\u2019s ink value from Head 1\u2019s.",
     "notes": "Which two entries of W_O make that subtraction?\nTrace the +1 and \u22121 from the joined row.",
     "section": "s05",
-    "frame": 9
+    "frame": 10
   },
   {
     "id": "s04-join",
@@ -749,7 +813,7 @@
     "caption": "The update has the same width as the row we will add it to.",
     "notes": "Why do we need four update coordinates?\nMatch the update width to E before moving to the residual.",
     "section": "s05",
-    "frame": 10
+    "frame": 11
   },
   {
     "id": "other-output-coordinates",
@@ -757,7 +821,15 @@
     "caption": "Use the same joined row for every output coordinate.",
     "notes": "Which column adds information from both heads?\nRead W_O column by column, matching these results to the full update vector.",
     "section": "s05",
-    "frame": 11
+    "frame": 12
+  },
+  {
+    "id": "vision-topic-06",
+    "title": "06 \u00b7 From messages to an image label",
+    "caption": "Follow the summary row through the classifier and loss. Then compare it with averaging the patch rows.",
+    "notes": "How do those messages become a prediction?\nPause at the section question. Connect the previous result to the three steps, then advance to the concrete example.",
+    "section": "s06",
+    "frame": 1
   },
   {
     "id": "residual-zero",
@@ -765,7 +837,7 @@
     "caption": "The residual gives the next block a direct path from the starting row.",
     "notes": "Would the original row disappear if the attention output were zero?\nAdd coordinate by coordinate, then connect this to the nonzero update in our main example.",
     "section": "s06",
-    "frame": 1
+    "frame": 2
   },
   {
     "id": "s04-residual-step-1",
@@ -773,7 +845,7 @@
     "caption": "Only the last starting coordinate is nonzero in this example.",
     "notes": "Which coordinate changes because the original CLS contains a 1?\nAdd the two rows one coordinate at a time.",
     "section": "s06",
-    "frame": 2
+    "frame": 3
   },
   {
     "id": "s04-residual",
@@ -781,7 +853,7 @@
     "caption": "The class matrix maps four coordinates to two scores.",
     "notes": "Why does a negative first coordinate favour Across here?\nApply \u22124 and +4 to that same coordinate.",
     "section": "s06",
-    "frame": 3
+    "frame": 4
   },
   {
     "id": "two-softmaxes",
@@ -789,7 +861,7 @@
     "caption": "The formula is the same. The alternatives being compared are different.",
     "notes": "Should the five attention weights sum with the two class probabilities?\nCircle the alternatives separately. Each softmax has its own denominator.",
     "section": "s06",
-    "frame": 4
+    "frame": 5
   },
   {
     "id": "s04-probability-step-1",
@@ -797,7 +869,7 @@
     "caption": "The alternatives here are Across and Down.",
     "notes": "Which two exponentials belong in this denominator?\nNormalize over the two labels, then read the bars.",
     "section": "s06",
-    "frame": 5
+    "frame": 6
   },
   {
     "id": "s04-probability",
@@ -805,7 +877,7 @@
     "caption": "For this image, the correct label is Across the top.",
     "notes": "Which probability belongs inside the logarithm?\nKeep the image and correct label visible while calculating the loss.",
     "section": "s06",
-    "frame": 6
+    "frame": 7
   },
   {
     "id": "loss-comparison",
@@ -813,7 +885,7 @@
     "caption": "Training lowers the loss by increasing the probability of the known label.",
     "notes": "Which prediction should receive the largest penalty?\nCompare all three cases using the same correct label.",
     "section": "s06",
-    "frame": 7
+    "frame": 8
   },
   {
     "id": "one-update-step-1",
@@ -821,7 +893,7 @@
     "caption": "Subtract half the gradient from the two bias values.",
     "notes": "Why does the correct class bias increase?\nRead the sign of p minus the one-hot target.",
     "section": "s06",
-    "frame": 8
+    "frame": 9
   },
   {
     "id": "one-update",
@@ -829,7 +901,7 @@
     "caption": "The correct-class probability rises and its loss falls on this example.",
     "notes": "Did changing the bias alter the image or the attention weights?\nKeep the frozen worksheet separate from the two bias values we changed.",
     "section": "s06",
-    "frame": 9
+    "frame": 10
   },
   {
     "id": "s04-experiment",
@@ -837,7 +909,7 @@
     "caption": "Make a prediction, change the arrangement, then turn positions off.",
     "notes": "Will the class probabilities change if we permute patches without position information?\nTake a prediction, choose Down the left, then turn positions off.",
     "section": "s06",
-    "frame": 10
+    "frame": 11
   },
   {
     "id": "cls-learns",
@@ -845,7 +917,7 @@
     "caption": "The image-classification loss sends gradients through the classifier and the attention blocks.",
     "notes": "Is there a separate label telling CLS which patch to read?\nTrace the loss backward through the computational path.",
     "section": "s06",
-    "frame": 11
+    "frame": 12
   },
   {
     "id": "pooling-example",
@@ -853,7 +925,7 @@
     "caption": "Averaging the final patch rows gives one image summary. This is called mean pooling.",
     "notes": "Can you calculate the two coordinates of the mean?\nAdd each column and divide by the number of patch rows.",
     "section": "s06",
-    "frame": 12
+    "frame": 13
   },
   {
     "id": "readout-choice",
@@ -861,7 +933,15 @@
     "caption": "It gives the model a dedicated row whose final representation is trained for the image label.",
     "notes": "What must both of these paths produce before the class head?\nFollow each route to one fixed-width vector.",
     "section": "s06",
-    "frame": 13
+    "frame": 14
+  },
+  {
+    "id": "vision-topic-07",
+    "title": "07 \u00b7 The complete Transformer block",
+    "caption": "Put attention back inside the full block and follow what each operation changes.",
+    "notes": "What else belongs in the model we train?\nPause at the section question. Connect the previous result to the three steps, then advance to the concrete example.",
+    "section": "s07",
+    "frame": 1
   },
   {
     "id": "s05-block",
@@ -869,7 +949,7 @@
     "caption": "Attention mixes information across rows. The MLP transforms each row separately.",
     "notes": "Which operation communicates between patches, and which works on one row at a time?\nPoint to attention, then the MLP; trace both residual paths.",
     "section": "s07",
-    "frame": 1
+    "frame": 2
   },
   {
     "id": "mix-across-rows",
@@ -877,7 +957,7 @@
     "caption": "Attention mixes source value rows using weights chosen for the receiver.",
     "notes": "Which arrows cross from one patch to another?\nPoint to several source rows contributing to one destination row.",
     "section": "s07",
-    "frame": 2
+    "frame": 3
   },
   {
     "id": "mix-within-row",
@@ -885,7 +965,7 @@
     "caption": "The MLP combines coordinates within each row and applies a nonlinearity.",
     "notes": "Does this MLP directly read a neighbouring patch row?\nKeep one row highlighted as it passes through the two linear layers.",
     "section": "s07",
-    "frame": 3
+    "frame": 4
   },
   {
     "id": "ln-mean",
@@ -893,7 +973,7 @@
     "caption": "LayerNorm works across the coordinates of this one row.",
     "notes": "Are the other patches included in this mean?\nKeep the four coordinates together and calculate their mean.",
     "section": "s07",
-    "frame": 4
+    "frame": 5
   },
   {
     "id": "ln-variance",
@@ -901,7 +981,7 @@
     "caption": "Square the deviations, take their mean, then take the square root.",
     "notes": "Why do positive and negative deviations not cancel here?\nSquare each deviation before averaging. Mention epsilon on the next slide.",
     "section": "s07",
-    "frame": 5
+    "frame": 6
   },
   {
     "id": "layernorm",
@@ -909,7 +989,7 @@
     "caption": "Normalize across the coordinates of each token, independently of other tokens.",
     "notes": "Which numbers participate in the mean and variance?\nUse the four coordinates of one row; do not average across patches or the batch.",
     "section": "s07",
-    "frame": 6
+    "frame": 7
   },
   {
     "id": "mlp-first-linear",
@@ -917,7 +997,7 @@
     "caption": "The first linear layer mixes coordinates within the same token.",
     "notes": "Where does the zero in the hidden row come from?\nCompute 1\u00d71 + (\u22121)\u00d71 using the third column.",
     "section": "s07",
-    "frame": 7
+    "frame": 8
   },
   {
     "id": "mlp-row-step-1",
@@ -925,7 +1005,7 @@
     "caption": "GELU(1) is about 0.841, and GELU(\u22121) is about \u22120.159.",
     "notes": "Does GELU send every negative input to zero?\nCompare the two signs using these actual values.",
     "section": "s07",
-    "frame": 8
+    "frame": 9
   },
   {
     "id": "mlp-second-linear",
@@ -933,7 +1013,7 @@
     "caption": "The second linear layer produces an update that can be added to the starting row.",
     "notes": "Why must the output width be two in this example?\nMatch its width to the residual row [1,\u22121].",
     "section": "s07",
-    "frame": 9
+    "frame": 10
   },
   {
     "id": "mlp-row",
@@ -941,7 +1021,7 @@
     "caption": "Both vectors have width two, so we can add them coordinate by coordinate.",
     "notes": "Where does the 1.841 come from?\nAdd 1 and 0.841, then repeat for the second coordinate.",
     "section": "s07",
-    "frame": 10
+    "frame": 11
   },
   {
     "id": "depth",
@@ -949,7 +1029,7 @@
     "caption": "The next block starts from rows that have already read the image.",
     "notes": "Has the query in block two already seen other patches indirectly?\nTrace the first residual update into the next block\u2019s query projection.",
     "section": "s07",
-    "frame": 11
+    "frame": 12
   },
   {
     "id": "s05-scale-step-1",
@@ -957,7 +1037,7 @@
     "caption": "A 14-by-14 patch grid gives 196 patch rows, plus CLS.",
     "notes": "Why is there one more row than image patches?\nCount the grid, then add the summary row.",
     "section": "s07",
-    "frame": 12
+    "frame": 13
   },
   {
     "id": "s05-scale-step-2",
@@ -965,7 +1045,7 @@
     "caption": "This checkpoint has 12 blocks and three heads in each block.",
     "notes": "Does every head read the same input rows?\nRecall the shared E and separate projections from our two-head calculation.",
     "section": "s07",
-    "frame": 13
+    "frame": 14
   },
   {
     "id": "s05-scale",
@@ -973,7 +1053,15 @@
     "caption": "There are more patches, wider rows and more blocks. The operations follow the same pattern.",
     "notes": "Which dimensions are different from our four-patch worksheet?\nTrace pixels, patch rows, blocks and the 1,000 class scores.",
     "section": "s07",
-    "frame": 14
+    "frame": 15
+  },
+  {
+    "id": "vision-topic-08",
+    "title": "08 \u00b7 Build the model in PyTorch",
+    "caption": "Match code to the drawings. Track the batch, patch and feature dimensions at every step.",
+    "notes": "Can our code follow the same computation?\nPause at the section question. Connect the previous result to the three steps, then advance to the concrete example.",
+    "section": "s08",
+    "frame": 1
   },
   {
     "id": "two-sixteens",
@@ -981,7 +1069,7 @@
     "caption": "Patch count comes from the image grid. Row width is a model choice.",
     "notes": "Which 16 changes if we use a larger image with the same patch size?\nPoint to the row axis, then to the coordinate axis.",
     "section": "s08",
-    "frame": 1
+    "frame": 2
   },
   {
     "id": "code-patch",
@@ -989,7 +1077,7 @@
     "caption": "A non-overlapping convolution implements the shared patch projection.",
     "notes": "Why does this convolution produce exactly one output per patch?\nFollow kernel size 2 and stride 2 across an 8\u00d78 image.",
     "section": "s08",
-    "frame": 2
+    "frame": 3
   },
   {
     "id": "conv-one-patch",
@@ -997,7 +1085,7 @@
     "caption": "One filter computes the same dot product as one column of the patch-projection matrix.",
     "notes": "Have we already calculated this number using a flattened patch?\nMatch the four pixel\u2013weight pairs to the top-minus-bottom column in our earlier edge example.",
     "section": "s08",
-    "frame": 3
+    "frame": 4
   },
   {
     "id": "conv-stride",
@@ -1005,7 +1093,7 @@
     "caption": "A stride equal to the patch width gives non-overlapping patches.",
     "notes": "What would happen if the stride were one?\nMove the 2\u00d72 outline two columns, then two rows; keep the weights unchanged.",
     "section": "s08",
-    "frame": 4
+    "frame": 5
   },
   {
     "id": "conv-trainable",
@@ -1013,7 +1101,7 @@
     "caption": "Conv2d both selects each patch and applies a learned linear projection.",
     "notes": "Where are the trainable numbers in this operation?\nCount four weights and one bias per filter, then read each output as a two-coordinate row.",
     "section": "s08",
-    "frame": 5
+    "frame": 6
   },
   {
     "id": "cnn-context",
@@ -1021,7 +1109,7 @@
     "caption": "Yes. Local convolutions grow the available context across layers. Global attention can combine distant source rows in one layer.",
     "notes": "How many layers connect the leftmost input to the bottom output in each drawing?\nTrace the two local steps, then the direct attention path. Return to the attention code on the next slide.",
     "section": "s08",
-    "frame": 6
+    "frame": 7
   },
   {
     "id": "code-attention",
@@ -1029,7 +1117,7 @@
     "caption": "Each row of A sums to one across its sources. Multiplying by V adds the weighted messages.",
     "notes": "Which axis must sum to one?\nMatch the source dimension in A to the row dimension in V.",
     "section": "s08",
-    "frame": 7
+    "frame": 8
   },
   {
     "id": "batch-boundary",
@@ -1037,7 +1125,7 @@
     "caption": "Ordinary image self-attention gives each image its own source rows.",
     "notes": "Should putting a second photograph in the batch change the first image\u2019s message?\nKeep the two groups of rows separate; identify the image, token and coordinate axes.",
     "section": "s08",
-    "frame": 8
+    "frame": 9
   },
   {
     "id": "batch-axis",
@@ -1045,7 +1133,7 @@
     "caption": "Set Q=K=0, V=X and W_O=I. Each output is an average. With [B,N,D] input, batch_first=True keeps that average within each image.",
     "notes": "Which axis should softmax normalize over in each image?\nUse uniform attention to calculate the first output row under both interpretations.",
     "section": "s08",
-    "frame": 9
+    "frame": 10
   },
   {
     "id": "batch-check",
@@ -1053,7 +1141,7 @@
     "caption": "Run the same image alone and beside another image. Its attention output should agree.",
     "notes": "Why does the wrong version change when B is added?\nCompare the first patch\u2019s output under both layouts before looking at any accuracy curve.",
     "section": "s08",
-    "frame": 10
+    "frame": 11
   },
   {
     "id": "code-block",
@@ -1061,7 +1149,7 @@
     "caption": "MultiheadAttention includes concatenation and W_O. Both residual additions keep width D.",
     "notes": "Where did the output projection go in this code?\nOpen the accompanying Block class: PyTorch\u2019s attention module owns out_proj.",
     "section": "s08",
-    "frame": 11
+    "frame": 12
   },
   {
     "id": "code-add-cls",
@@ -1069,7 +1157,7 @@
     "caption": "Every image starts with the same learned CLS vector.",
     "notes": "Do we need a separate learned CLS parameter for each training image?\nExpand the same parameter across the batch, then concatenate along the row axis.",
     "section": "s08",
-    "frame": 12
+    "frame": 13
   },
   {
     "id": "code-add-pos",
@@ -1077,7 +1165,7 @@
     "caption": "Broadcast the same position table across the batch.",
     "notes": "Which position vector goes with the third image patch?\nPoint to CLS at index 0 and patch P3 at index 3.",
     "section": "s08",
-    "frame": 13
+    "frame": 14
   },
   {
     "id": "code-cls-readout",
@@ -1085,7 +1173,7 @@
     "caption": "We keep all rows through the blocks, then select CLS for this image-label task.",
     "notes": "Why is the second index zero here?\nPoint to the row dimension; the batch dimension stays in place.",
     "section": "s08",
-    "frame": 14
+    "frame": 15
   },
   {
     "id": "code-model",
@@ -1093,7 +1181,7 @@
     "caption": "Only the final readout selects CLS. Every transformer block processes all rows.",
     "notes": "At what point do we discard the patch rows for classification?\nKeep all 17 rows through both blocks, then select x[:,0].",
     "section": "s08",
-    "frame": 15
+    "frame": 16
   },
   {
     "id": "code-train",
@@ -1101,7 +1189,7 @@
     "caption": "Pass raw logits to cross_entropy. It combines log-softmax with the label loss.",
     "notes": "Which line computes gradients, and which one changes the weights?\nDistinguish backward from step. Point back to Part I\u2019s learning loop.",
     "section": "s08",
-    "frame": 16
+    "frame": 17
   },
   {
     "id": "code-backward",
@@ -1109,7 +1197,7 @@
     "caption": "backward computes gradients. The parameter values stay where they are until the optimizer step.",
     "notes": "Would another forward pass already use new weights?\nSeparate computing a derivative from using it to change a parameter.",
     "section": "s08",
-    "frame": 17
+    "frame": 18
   },
   {
     "id": "code-step",
@@ -1117,7 +1205,15 @@
     "caption": "The optimizer uses the gradients to update the parameters.",
     "notes": "Are AdamW updates exactly minus learning-rate times gradient?\nRecall the simple SGD bias example, then distinguish the optimizer used in this lab.",
     "section": "s08",
-    "frame": 18
+    "frame": 19
+  },
+  {
+    "id": "vision-topic-09",
+    "title": "09 \u00b7 Check what the model learned",
+    "caption": "Use separate training, validation and test images. Compare models with and without position information.",
+    "notes": "Does it work on images it did not train on?\nPause at the section question. Connect the previous result to the three steps, then advance to the concrete example.",
+    "section": "s09",
+    "frame": 1
   },
   {
     "id": "training-data",
@@ -1125,7 +1221,7 @@
     "caption": "Move the stripe and vary the pixel values. Keep separate images for training, validation and testing.",
     "notes": "What would memorizing our original two clean images fail to demonstrate?\nCompare noisy samples, then identify the roles of the three splits.",
     "section": "s09",
-    "frame": 1
+    "frame": 2
   },
   {
     "id": "three-splits",
@@ -1133,7 +1229,7 @@
     "caption": "Give each split one job before starting the experiment.",
     "notes": "Why should we not keep trying checkpoints on the test set?\nFollow the three arrows in order. Validation chooses the checkpoint; test reports its result.",
     "section": "s09",
-    "frame": 2
+    "frame": 3
   },
   {
     "id": "training-one-image",
@@ -1141,7 +1237,7 @@
     "caption": "The loss uses the probability of the known label, even when the model prefers the other one.",
     "notes": "Which of the two probabilities belongs inside the logarithm?\nKeep the label horizontal visible while students choose the correct probability.",
     "section": "s09",
-    "frame": 3
+    "frame": 4
   },
   {
     "id": "one-epoch",
@@ -1149,7 +1245,7 @@
     "caption": "An epoch visits every training example once.",
     "notes": "How many weight updates happen during one pass through the training set?\nDivide 512 by 64; then distinguish an epoch from an optimizer step.",
     "section": "s09",
-    "frame": 4
+    "frame": 5
   },
   {
     "id": "learning-curves-step-1",
@@ -1157,7 +1253,7 @@
     "caption": "Training accuracy measures the examples used for the weight updates.",
     "notes": "Could memorization alone make this curve look good?\nRead the training curve before revealing validation.",
     "section": "s09",
-    "frame": 5
+    "frame": 6
   },
   {
     "id": "learning-curves",
@@ -1165,7 +1261,7 @@
     "caption": "Validation images help us choose a checkpoint without using the test set.",
     "notes": "What would a widening gap between the curves suggest?\nCompare the curves at the same epoch.",
     "section": "s09",
-    "frame": 6
+    "frame": 7
   },
   {
     "id": "trained-position-control",
@@ -1173,7 +1269,15 @@
     "caption": "Train on the same images with the same recipe, then compare the two test results.",
     "notes": "Can any amount of training recover layout from the patch bag in this setup?\nReveal both test counts; connect the 50% result to paired permutation invariance.",
     "section": "s09",
-    "frame": 7
+    "frame": 8
+  },
+  {
+    "id": "vision-topic-10",
+    "title": "10 \u00b7 Return to the real photographs",
+    "caption": "Return to the dog and cat with a pretrained image classifier. Read actual outputs from the saved experiment.",
+    "notes": "What does a pretrained ViT predict here?\nPause at the section question. Connect the previous result to the three steps, then advance to the concrete example.",
+    "section": "s10",
+    "frame": 1
   },
   {
     "id": "real-input",
@@ -1181,7 +1285,7 @@
     "caption": "The model receives the square crop on the right, after RGB normalization.",
     "notes": "Are we feeding the original rectangular photograph directly to the network?\nMatch the original to the evaluation crop, then mention normalization.",
     "section": "s10",
-    "frame": 1
+    "frame": 2
   },
   {
     "id": "s06-answer",
@@ -1189,7 +1293,7 @@
     "caption": "These probabilities come from running this photograph through the pretrained model.",
     "notes": "What answer should the model assign to our opening image?\nReveal the saved top-three predictions. Compare the model\u2019s label with the students\u2019 original answer.",
     "section": "s10",
-    "frame": 2
+    "frame": 3
   },
   {
     "id": "one-photo-limit",
@@ -1197,7 +1301,7 @@
     "caption": "To estimate accuracy, count correct predictions over an appropriate test set.",
     "notes": "Can we report 95.7% accuracy from a 95.7% probability on one dog?\nSeparate a model\u2019s probability on one image from a fraction correct over many images.",
     "section": "s10",
-    "frame": 3
+    "frame": 4
   },
   {
     "id": "real-cat",
@@ -1205,7 +1309,7 @@
     "caption": "Keep the same model and preprocessing. Change only the photograph.",
     "notes": "Do we change model weights when a different test image arrives?\nReveal the top three ImageNet labels and probabilities.",
     "section": "s10",
-    "frame": 4
+    "frame": 5
   },
   {
     "id": "three-phases-step-1",
@@ -1213,7 +1317,7 @@
     "caption": "Pretraining uses many images to fit a starting model.",
     "notes": "Are we starting the photo experiment with random weights?\nPoint to the pretraining phase and the supplied checkpoint.",
     "section": "s10",
-    "frame": 5
+    "frame": 6
   },
   {
     "id": "three-phases-step-2",
@@ -1221,7 +1325,7 @@
     "caption": "Fit a new classifier; choose whether to update the image encoder too.",
     "notes": "What changes if our labels are only cat and dog?\nDistinguish a frozen-encoder linear probe from fine-tuning.",
     "section": "s10",
-    "frame": 6
+    "frame": 7
   },
   {
     "id": "three-phases",
@@ -1229,7 +1333,15 @@
     "caption": "Inference uses the fitted weights without updating them.",
     "notes": "Does the model train again for every new photo?\nFollow a new image through the fixed network.",
     "section": "s10",
-    "frame": 7
+    "frame": 8
+  },
+  {
+    "id": "vision-topic-11",
+    "title": "11 \u00b7 Look inside the trained model",
+    "caption": "Read attention maps, then cover parts of the photograph and measure how the prediction changes.",
+    "notes": "Which image regions does it use?\nPause at the section question. Connect the previous result to the three steps, then advance to the concrete example.",
+    "section": "s11",
+    "frame": 1
   },
   {
     "id": "read-attention-map",
@@ -1237,7 +1349,7 @@
     "caption": "It is one source weight for a specified receiver, head and block.",
     "notes": "Where is the self-weight for CLS on a 14-by-14 patch map?\nAccount for the 197th source before comparing colours.",
     "section": "s11",
-    "frame": 1
+    "frame": 2
   },
   {
     "id": "real-heads",
@@ -1245,7 +1357,7 @@
     "caption": "Block 12, CLS query, heads 1\u20133. The colour scale is the same in all three images.",
     "notes": "Which similarities and differences can you see across heads?\nRead the 14\u00d714 source grid and the separately reported CLS self-weight.",
     "section": "s11",
-    "frame": 2
+    "frame": 3
   },
   {
     "id": "real-depth",
@@ -1253,7 +1365,7 @@
     "caption": "Compare the first and last blocks on the same image and colour scale.",
     "notes": "What changed between the two query representations?\nRecall that later CLS queries already contain image-dependent context.",
     "section": "s11",
-    "frame": 3
+    "frame": 4
   },
   {
     "id": "real-patch-query",
@@ -1261,7 +1373,7 @@
     "caption": "The purple square is the receiver. The shading shows its source weights in block 12, head 1.",
     "notes": "Which row of the attention matrix did we select this time?\nLocate the purple receiver square, then read the source heatmap.",
     "section": "s11",
-    "frame": 4
+    "frame": 5
   },
   {
     "id": "cover-1",
@@ -1269,7 +1381,7 @@
     "caption": "Keep the image, model and target class fixed. Change this one region.",
     "notes": "Will the dog probability rise, fall, or stay close?\nTake a prediction, reveal the measured probability, then compare with the uncovered image.",
     "section": "s11",
-    "frame": 5
+    "frame": 6
   },
   {
     "id": "cover-2",
@@ -1277,7 +1389,7 @@
     "caption": "Keep the image, model and target class fixed. Change this one region.",
     "notes": "Will the dog probability rise, fall, or stay close?\nTake a prediction, reveal the measured probability, then compare with the uncovered image.",
     "section": "s11",
-    "frame": 6
+    "frame": 7
   },
   {
     "id": "cover-3",
@@ -1285,7 +1397,7 @@
     "caption": "Keep the image, model and target class fixed. Change this one region.",
     "notes": "Will the dog probability rise, fall, or stay close?\nTake a prediction, reveal the measured probability, then compare with the uncovered image.",
     "section": "s11",
-    "frame": 7
+    "frame": 8
   },
   {
     "id": "cover-4",
@@ -1293,7 +1405,7 @@
     "caption": "Keep the image, model and target class fixed. Change this one region.",
     "notes": "Will the dog probability rise, fall, or stay close?\nTake a prediction, reveal the measured probability, then compare with the uncovered image.",
     "section": "s11",
-    "frame": 8
+    "frame": 9
   },
   {
     "id": "occlusion",
@@ -1301,7 +1413,15 @@
     "caption": "Compare the dog probability after each of the four covers.",
     "notes": "Which quadrant would you expect to affect this prediction most?\nCollect predictions before revealing the measured bars.",
     "section": "s11",
-    "frame": 9
+    "frame": 10
+  },
+  {
+    "id": "vision-topic-12",
+    "title": "12 \u00b7 The cost of smaller patches",
+    "caption": "Halve the patch width and height. Predict the change in attention work before calculating it.",
+    "notes": "What happens when we use a finer patch grid?\nPause at the section question. Connect the previous result to the three steps, then advance to the concrete example.",
+    "section": "s12",
+    "frame": 1
   },
   {
     "id": "patch-cost",
@@ -1309,7 +1429,7 @@
     "caption": "At fixed image size, half the patch width gives four times as many patch rows.",
     "notes": "Will attention-score count grow by four or roughly sixteen?\nCount rows first, then square the total including CLS.",
     "section": "s12",
-    "frame": 1
+    "frame": 2
   },
   {
     "id": "real-work-count",
@@ -1317,7 +1437,7 @@
     "caption": "Even this small ViT compares many pairs of rows.",
     "notes": "How can a 14-by-14 patch grid produce more than a million scores?\nCount pairs, then heads, then blocks. Keep token count separate from pixel count.",
     "section": "s12",
-    "frame": 2
+    "frame": 3
   },
   {
     "id": "cost-control",
@@ -1325,7 +1445,15 @@
     "caption": "Work out the token count before you change the controls.",
     "notes": "What happens to the 197-token sequence at resolution 384?\nAsk for a count, change the control, and compare with the prediction.",
     "section": "s12",
-    "frame": 3
+    "frame": 4
+  },
+  {
+    "id": "vision-topic-13",
+    "title": "13 \u00b7 Your turn to work it out",
+    "caption": "Pause at each question. Write an answer before revealing the calculation or explanation.",
+    "notes": "Can you carry it through a new example?\nPause at the section question. Connect the previous result to the three steps, then advance to the concrete example.",
+    "section": "s13",
+    "frame": 1
   },
   {
     "id": "exercise-message",
@@ -1333,7 +1461,7 @@
     "caption": "Find the weights first. Then multiply each value by its own weight.",
     "notes": "Can you calculate the softmax without a calculator?\nExponentiate ln 2 and zero; normalize two and one; multiply the value vectors.",
     "section": "s13",
-    "frame": 1
+    "frame": 2
   },
   {
     "id": "exercise-shapes",
@@ -1341,7 +1469,7 @@
     "caption": "Keep patch count, embedding width and per-head width separate.",
     "notes": "What is the difference between a patch\u2019s 768 pixel values and the 64 embedding coordinates?\nLet students write all shapes before revealing one line at a time.",
     "section": "s13",
-    "frame": 2
+    "frame": 3
   },
   {
     "id": "exercise-position",
@@ -1349,7 +1477,15 @@
     "caption": "Follow one patch and its position vector in each experiment.",
     "notes": "Which shuffle changes what is located at the top left?\nTrack one patch and its position vector through each operation.",
     "section": "s13",
-    "frame": 3
+    "frame": 4
+  },
+  {
+    "id": "vision-topic-14",
+    "title": "14 \u00b7 What can we build next?",
+    "caption": "Connect this classifier to the next vision lectures, then explain the complete photograph-to-answer path.",
+    "notes": "How could these rows help with other tasks?\nPause at the section question. Connect the previous result to the three steps, then advance to the concrete example.",
+    "section": "s14",
+    "frame": 1
   },
   {
     "id": "next-vision",
@@ -1357,7 +1493,7 @@
     "caption": "The output we want determines which rows we read and how we train them.",
     "notes": "Which output would need one label, and which would need many spatial answers?\nTrace CLS classification, then patch-level readouts and image\u2013text interaction.",
     "section": "s14",
-    "frame": 1
+    "frame": 2
   },
   {
     "id": "closing",
@@ -1365,6 +1501,6 @@
     "caption": "Start with the pixels. Explain what each step adds before moving to the next one.",
     "notes": "Which step is new, and which steps did we already know?\nAsk students to narrate the computation from input to loss without reading equations.",
     "section": "s14",
-    "frame": 2
+    "frame": 3
   }
 ]

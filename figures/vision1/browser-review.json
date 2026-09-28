@@ -3,7 +3,7 @@
     1280,
     720
   ],
-  "teaching_frames": 171,
+  "teaching_frames": 188,
   "cover_frames": 1,
   "review": "The previous 141 final states (140 teaching frames plus cover) passed the full geometry review. All six added implementation frames passed SVG text bounds and collision checks at 1280\u00d7720 and were visually inspected. Phone reading mode was rechecked at 390\u00d7844.",
   "geometry": "No clipped SVG text, text collisions, overflowing captions or code found.",
@@ -490,5 +490,59 @@
     },
     "notebook_code_cells": 20,
     "audio_or_video_played": false
+  },
+  "section_flow_review": {
+    "date": "2026-09-28",
+    "request": "Use a real photograph to motivate position and make section transitions visible throughout.",
+    "section_openers": 14,
+    "new_frames": [
+      "position-photo-layout",
+      "position-photo-content",
+      "position-photo-add"
+    ],
+    "rewritten_frames": [
+      "s02-small",
+      "position-question"
+    ],
+    "desktop": {
+      "viewport": [
+        1280,
+        720
+      ],
+      "frames_checked": 19,
+      "text_clipping": [],
+      "text_collisions": [],
+      "page_overflow": false,
+      "visual_review": [
+        "section opening",
+        "same photo patches in two layouts",
+        "crop-to-shared-layer arrows",
+        "content plus position",
+        "explicit two-class worksheet task"
+      ],
+      "final_notation_bounds_rechecked": [
+        "position-photo-content",
+        "position-photo-add"
+      ]
+    },
+    "phone": {
+      "viewport": [
+        390,
+        844
+      ],
+      "page_width": 390,
+      "photo_width": 358,
+      "stacked_original_and_rearranged_photos_visible": true
+    },
+    "pedagogy": [
+      "Photo layout before toy arithmetic",
+      "No claim that rearrangement changes the animal label",
+      "One shared patch projection gives identical content for an unchanged crop",
+      "Position vector identifies the current slot",
+      "Worksheet explicitly switches to arrangement labels",
+      "All major sections state the previous result, next question and steps"
+    ],
+    "numerical_checks": "Existing NumPy/PyTorch/JavaScript checks pass; 20 notebook cells execute.",
+    "silent": true
   }
 }

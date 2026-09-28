@@ -2,7 +2,7 @@
 
 **Deck:** [vision1.html](../vision1.html) · **Present:** open the deck and press **P** · **Lab:** [03_vision_transformer_lab.ipynb](../notebooks/vision/03_vision_transformer_lab.ipynb)
 
-171 teaching frames plus cover; 14 sections. Silent, self-contained HTML slides with image assets and math embedded. Reading mode includes the longer explanations, source links, and numerical tables. Arrow keys advance one reveal; **S** opens presenter notes; **O** opens the overview; **C** shows classroom controls. Every frame has a question to ask and a note about what to point at.
+188 teaching frames plus cover; 14 sections. Silent, self-contained HTML slides with image assets and math embedded. Reading mode includes the longer explanations, source links, and numerical tables. Arrow keys advance one reveal; **S** opens presenter notes; **O** opens the overview; **C** shows classroom controls. Every frame has a question to ask and a note about what to point at.
 
 ## The teaching thread
 
@@ -20,9 +20,19 @@ The two-crop Q/K/V warm-up and the pooling example use their own clearly labeled
 2. **Trained small ViT:** 8×8 noisy grayscale images, sixteen 2×2 patches, D=16, two complete pre-LayerNorm blocks, two heads per block and MLP width 32. All trainable components learn. Data splits are independent random draws, with opposite-label pairs sharing exactly the same patch multiset.
 3. **Pretrained real ViT:** `vit_tiny_patch16_224.augreg_in21k_ft_in1k`; 224×224 RGB, 196 patches plus CLS, D=192, 12 blocks, three heads per block, 1,000 ImageNet outputs. Exact photos, preprocessing, probabilities, attention arrays and interventions are saved.
 
+## Section openings and position intuition
+
+All 14 sections now begin with a numbered presentation slide: the result students already have, a question to carry into the next topic, and three concrete steps. The section headings and overview use the same topic names. These are actual presentation frames, so the transitions remain visible in present mode.
+
+Section 3 begins with the original dog photograph beside an arrangement made from exactly the same 16 patches. Follow the outlined face patches from row 2 to row 4. Ask what changed: the layout, while each patch’s pixels stayed intact. There is no model prediction for this rearranged photograph and no claim that the dog label should change.
+
+The next two slides follow one unchanged face crop through the shared patch layer, then pair its content vector with the position vector for its current slot. Reconnect this addition to the text embeddings. Only then introduce the separate four-patch worksheet task: predict “across the top” or “down the left”. The toy exists so students can calculate every step; its labels describe arrangements. Counting two filled and two empty patches cannot distinguish those labels.
+
+Keep the distinction between moving image content among fixed slots and reordering whole content-plus-position rows. The first changes which location belongs to which content; the second preserves those pairings. The reading notes state the permutation-equivariance argument precisely and link to the MIT reference.
+
 ## Suggested pacing
 
-Use three meetings, or teach sections 1–7 first and assign the implementation as a lab. The 171 frames are short steps; the total is not a target for one class. Pause for predictions and hand calculations.
+Use three meetings, or teach sections 1–7 first and assign the implementation as a lab. The 188 frames are short steps; the total is not a target for one class. Pause for predictions and hand calculations.
 
 | Meeting | Sections | Student activity |
 |---|---|---|
