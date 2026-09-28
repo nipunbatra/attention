@@ -1,5 +1,27 @@
 # Classroom release checks
 
+## 2026-09-28 · Learned positions in three classroom slides
+
+- Reduced the nine-frame learned-position passage to three frames, including
+  its topic pause. Keep the existing word/slot lookup diagram and explain that
+  prediction loss trains both tables. One four-row/five-token example now
+  carries the limitation. Keep its one-based slot labels consistent with the
+  lookup; the next sinusoidal example explicitly introduces code indices from 0.
+- Moved SGD, token IDs, cropped-window conventions and notebook padding into
+  one closed-by-default optional-reading disclosure. Removed the unused-row
+  coverage and hypothetical-score detour. The source paper remains linked:
+  learned positions are valid; fixed formulas are not guaranteed improvements.
+- Position regression: 67 frames and 245 build checks pass, including all
+  numerical examples, model immutability, optional disclosure, direct URLs,
+  reverse navigation, desktop/projector and mobile reading containment.
+  All 18 topic-break checks pass. Inspected the lookup, capacity example and
+  transition, including the capacity example at 760×1041.
+- Whole-deck desktop audit: 481 states, 680 formulas, no errors or overflow.
+  The portrait audit has two pre-existing failures outside the edited section:
+  s10-frame-sources (375px) and s10-frame2 (78px). Verified both against the
+  unchanged HEAD HTML with identical results. The revised position sequence
+  fits; do not report the whole portrait deck as passing.
+
 ## 2026-09-26 · Motivate multiple heads before the arithmetic
 
 - Added three families of possible head readings: coat colour/material/detail;

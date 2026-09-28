@@ -10,6 +10,22 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+2026-09-28 learned-position simplification (supersedes the longer walkthrough):
+
+- Keep just three classroom frames between `learned-break` and `clock-choice`:
+  the topic pause, the word-plus-position lookup, and one table-capacity example.
+  Four trained rows cover four slots; a fifth token needs a new position row.
+  Extra rows require training or adaptation. Fixed rules can calculate rows at
+  new positions but do not guarantee accurate longer-input predictions.
+- Slots stay one-based through this example, matching the lookup diagram.
+  The first sinusoidal example explicitly switches to zero-based code indices.
+- The SGD calculation, token numbering, cropped windows and notebook padding
+  remain under one collapsed optional-reading disclosure. Remove the separate
+  unused-row coverage and hypothetical-score detour. Do not restore those as
+  lecture slides. Learned positions remain a useful method, used in our notebook.
+- The position section now has 67 frames. `check_cost_position.mjs` guards the
+  three-frame sequence, optional disclosure, numerical examples and navigation.
+
 2026-09-22 document-boundary clarification:
 
 - BOS and EOS wrap each complete story/document once, not each sentence or
@@ -28,7 +44,7 @@ All four attention parts and the four-part Vision to language extension are impl
   JUPYTER_CONFIG_DIR, then call export_bundle(ROOT) to refresh the ZIP with the
   fully executed notebook. The builder alone leaves the setup cell unexecuted.
 
-2026-09-22 position-section pacing and limitations (current structure):
+2026-09-22 position-section pacing and limitations (historical checkpoint):
 
 - The position lesson has 42 presentation frames instead of 49. Its five
   topic pauses introduce the motivation, adding position to a word, Method 1
