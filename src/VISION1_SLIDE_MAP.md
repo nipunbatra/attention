@@ -1,12 +1,12 @@
 # Vision I: slide map
 
-147 teaching frames plus the cover. Each link opens the first reveal of that slide. Use Right/Left for reveals and S for presenter notes.
+150 teaching frames plus the cover. Each link opens the first reveal of that slide. Use Right/Left for reveals and S for presenter notes.
 
 ## Review these additions first
 
-- [What were we asking the text model to predict?](https://nipunbatra.github.io/attention/vision1.html?present#s01/3/0)
-- [What are we asking the image model to predict?](https://nipunbatra.github.io/attention/vision1.html?present#s01/4/0)
-- [What changed, and what stayed the same?](https://nipunbatra.github.io/attention/vision1.html?present#s01/5/0)
+- [What were we asking the text model to predict?](https://nipunbatra.github.io/attention/vision1.html?present#s01/6/0)
+- [What are we asking the image model to predict?](https://nipunbatra.github.io/attention/vision1.html?present#s01/7/0)
+- [What changed, and what stayed the same?](https://nipunbatra.github.io/attention/vision1.html?present#s01/8/0)
 - [Where does CLS come from?](https://nipunbatra.github.io/attention/vision1.html?present#s03/11/0)
 - [How can the same starting CLS describe different pictures?](https://nipunbatra.github.io/attention/vision1.html?present#s03/12/0)
 - [Why did our text predictor hide later tokens?](https://nipunbatra.github.io/attention/vision1.html?present#s04/2/0)
@@ -29,21 +29,30 @@
 - [A tensor can have the right shape and the wrong meaning](https://nipunbatra.github.io/attention/vision1.html?present#s08/9/0)
 - [A quick check before training](https://nipunbatra.github.io/attention/vision1.html?present#s08/10/0)
 
+## Start with the dataset
+
+- [What does our animal dataset look like?](https://nipunbatra.github.io/attention/vision1.html?present#s01/1/0)
+- [How many images and classes are there?](https://nipunbatra.github.io/attention/vision1.html?present#s01/2/0)
+- [What shape is one image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/3/0)
+
 ## Complete sequence
 
 | Section / frame | Question or teaching step | Stable source ID |
 |---|---|---|
-| s01 / 1 | [What animal do you see?](https://nipunbatra.github.io/attention/vision1.html?present#s01/1/0) | `s01-photo` |
-| s01 / 2 | [Find the dog photos in a folder](https://nipunbatra.github.io/attention/vision1.html?present#s01/2/0) | `photo-folder` |
-| s01 / 3 | [What were we asking the text model to predict?](https://nipunbatra.github.io/attention/vision1.html?present#s01/3/0) | `task-next-token` |
-| s01 / 4 | [What are we asking the image model to predict?](https://nipunbatra.github.io/attention/vision1.html?present#s01/4/0) | `task-image-label` |
-| s01 / 5 | [What changed, and what stayed the same?](https://nipunbatra.github.io/attention/vision1.html?present#s01/5/0) | `task-side-by-side` |
-| s01 / 6 | [Suppose we also want to crop out the animal](https://nipunbatra.github.io/attention/vision1.html?present#s01/6/0) | `find-animal` |
-| s01 / 7 | [Find the photo that matches this description](https://nipunbatra.github.io/attention/vision1.html?present#s01/7/0) | `photo-search` |
-| s01 / 8 | [Would you recognize this crop on its own?](https://nipunbatra.github.io/attention/vision1.html?present#s01/8/0) | `s01-context` |
-| s01 / 9 | [What can we carry over from our text models?](https://nipunbatra.github.io/attention/vision1.html?present#s01/9/0) | `bridge-text` |
-| s01 / 10 | [Is this dark region fur or background?](https://nipunbatra.github.io/attention/vision1.html?present#s01/10/0) | `patch-context` |
-| s01 / 11 | [How can we give this photograph to attention?](https://nipunbatra.github.io/attention/vision1.html?present#s01/11/0) | `image-to-rows` |
+| s01 / 1 | [What does our animal dataset look like?](https://nipunbatra.github.io/attention/vision1.html?present#s01/1/0) | `dataset-gallery` |
+| s01 / 2 | [How many images and classes are there?](https://nipunbatra.github.io/attention/vision1.html?present#s01/2/0) | `dataset-counts` |
+| s01 / 3 | [What shape is one image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/3/0) | `dataset-dimensions` |
+| s01 / 4 | [What animal do you see?](https://nipunbatra.github.io/attention/vision1.html?present#s01/4/0) | `s01-photo` |
+| s01 / 5 | [Find the dog photos in a folder](https://nipunbatra.github.io/attention/vision1.html?present#s01/5/0) | `photo-folder` |
+| s01 / 6 | [What were we asking the text model to predict?](https://nipunbatra.github.io/attention/vision1.html?present#s01/6/0) | `task-next-token` |
+| s01 / 7 | [What are we asking the image model to predict?](https://nipunbatra.github.io/attention/vision1.html?present#s01/7/0) | `task-image-label` |
+| s01 / 8 | [What changed, and what stayed the same?](https://nipunbatra.github.io/attention/vision1.html?present#s01/8/0) | `task-side-by-side` |
+| s01 / 9 | [Suppose we also want to crop out the animal](https://nipunbatra.github.io/attention/vision1.html?present#s01/9/0) | `find-animal` |
+| s01 / 10 | [Find the photo that matches this description](https://nipunbatra.github.io/attention/vision1.html?present#s01/10/0) | `photo-search` |
+| s01 / 11 | [Would you recognize this crop on its own?](https://nipunbatra.github.io/attention/vision1.html?present#s01/11/0) | `s01-context` |
+| s01 / 12 | [What can we carry over from our text models?](https://nipunbatra.github.io/attention/vision1.html?present#s01/12/0) | `bridge-text` |
+| s01 / 13 | [Is this dark region fur or background?](https://nipunbatra.github.io/attention/vision1.html?present#s01/13/0) | `patch-context` |
+| s01 / 14 | [How can we give this photograph to attention?](https://nipunbatra.github.io/attention/vision1.html?present#s01/14/0) | `image-to-rows` |
 | s02 / 1 | [Where do the patch boundaries go?](https://nipunbatra.github.io/attention/vision1.html?present#s02/1/0) | `s01-patches` |
 | s02 / 2 | [How can a red pixel be three numbers?](https://nipunbatra.github.io/attention/vision1.html?present#s02/2/0) | `one-rgb` |
 | s02 / 3 | [How many numbers are in four RGB pixels?](https://nipunbatra.github.io/attention/vision1.html?present#s02/3/0) | `rgb-flatten-step-1` |

@@ -2,11 +2,11 @@
 
 **Deck:** [vision1.html](../vision1.html) · **Present:** open the deck and press **P** · **Lab:** [03_vision_transformer_lab.ipynb](../notebooks/vision/03_vision_transformer_lab.ipynb)
 
-147 teaching frames plus cover; 14 sections. Silent, self-contained HTML slides with image assets and math embedded. Reading mode includes the longer explanations, source links, and numerical tables. Arrow keys advance one reveal; **S** opens presenter notes; **O** opens the overview; **C** shows classroom controls. Every frame has a question to ask and a note about what to point at.
+150 teaching frames plus cover; 14 sections. Silent, self-contained HTML slides with image assets and math embedded. Reading mode includes the longer explanations, source links, and numerical tables. Arrow keys advance one reveal; **S** opens presenter notes; **O** opens the overview; **C** shows classroom controls. Every frame has a question to ask and a note about what to point at.
 
 ## The teaching thread
 
-Start with a photograph and ask students to name the clues. Isolate one genuine crop and restore its context. Recall **aabid** from Part I, **river/bank** from Part II, and **red/wool/coat** from Part III. Then introduce patches, a tiny exact worksheet, the complete block, executable code, learning, and the original photograph again.
+Start with six labeled Oxford-IIIT Pet examples. Establish the dataset size (7,349), species task (2 classes), alternative breed task (37 classes), and variable original dimensions versus 224×224 RGB model inputs. Then choose one photograph and ask students to name the clues. Isolate one genuine crop and restore its context. Recall **aabid** from Part I, **river/bank** from Part II, and **red/wool/coat** from Part III. Then introduce patches, a tiny exact worksheet, the complete block, executable code, learning, and the original photograph again.
 
 The two-crop Q/K/V warm-up and the pooling example use their own clearly labeled, hand-chosen numbers. Then keep the three larger settings explicit:
 
@@ -16,7 +16,7 @@ The two-crop Q/K/V warm-up and the pooling example use their own clearly labeled
 
 ## Suggested pacing
 
-Use three meetings, or teach sections 1–7 first and assign the implementation as a lab. The 147 frames are short steps; the total is not a target for one class. Pause for predictions and hand calculations.
+Use three meetings, or teach sections 1–7 first and assign the implementation as a lab. The 150 frames are short steps; the total is not a target for one class. Pause for predictions and hand calculations.
 
 | Meeting | Sections | Student activity |
 |---|---|---|
@@ -25,6 +25,12 @@ Use three meetings, or teach sections 1–7 first and assign the implementation 
 | C / lab | 8–14 | Run the code, interpret the training control and real-image measurements, solve transfer exercises |
 
 For a short conceptual introduction, use the task comparison, the two-crop Q/K/V example, CLS and pooling, the whole-block drawing and the real-photo predictions. Keep the full four-patch calculation for a session with time to work alongside the class.
+
+## Dataset introduction
+
+Three slides precede the single-photo question: `dataset-gallery`, `dataset-counts`, and `dataset-dimensions`. Read the species and breed under each example, add 3,680 and 3,669 to get 7,349, and compute 224×224×3=150,528 pixel values. The counts describe the full labeled dataset; the gallery contains six selected examples. The original photo files vary in size. Dimensions on the slide use height × width × channels. Our real checkpoint receives the displayed square crop, followed by channel normalization.
+
+The opening uses the cat/dog task to establish input and target. The later synthetic training experiment and 1,000-class pretrained inference keep their existing scopes; these slides do not introduce a Pets training result. Sources, original dimensions and file hashes are recorded in `figures/vision1/dataset-intro.json`. Re-fetch the gallery with `python notebooks/vision/fetch_dataset_examples.py` (Pillow required).
 
 ## Introduce terms before using them
 

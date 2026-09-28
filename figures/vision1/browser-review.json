@@ -3,7 +3,7 @@
     1280,
     720
   ],
-  "teaching_frames": 147,
+  "teaching_frames": 150,
   "cover_frames": 1,
   "review": "The previous 141 final states (140 teaching frames plus cover) passed the full geometry review. All six added implementation frames passed SVG text bounds and collision checks at 1280\u00d7720 and were visually inspected. Phone reading mode was rechecked at 390\u00d7844.",
   "geometry": "No clipped SVG text, text collisions, overflowing captions or code found.",
@@ -47,7 +47,7 @@
   },
   "console_errors_or_warnings": [],
   "audio_or_video_played": false,
-  "verification_date": "2026-09-26",
+  "verification_date": "2026-09-28",
   "keyboard_reveals": [
     "s04/20/0 \u2192 s04/20/1 \u2192 s04/21/0"
   ],
@@ -120,5 +120,29 @@
       "cnn-context \u2192 code-attention"
     ],
     "final_row_stack": "Rebuilt and visually inspected after adding an ellipsis."
+  },
+  "dataset_intro_review": {
+    "date": "2026-09-28",
+    "presentation_viewport": [
+      1280,
+      720
+    ],
+    "visual_samples": [
+      "dataset-gallery",
+      "dataset-counts",
+      "dataset-dimensions"
+    ],
+    "text_clipping": [],
+    "text_collisions": [],
+    "reading_viewport": [
+      390,
+      844
+    ],
+    "document_width": 390,
+    "document_scroll_width": 390,
+    "mobile_gallery": "Six labeled photos in a two-column grid, with readable species and breed labels.",
+    "keyboard_transition": "dataset-dimensions \u2192 s01-photo",
+    "provenance": "All six image labels, original dimensions, RGB modes and hashes verified; pinned metadata confirms 7,349 images, 37 breeds and 2 species.",
+    "notebook_code_cells": 19
   }
 }

@@ -1,11 +1,35 @@
 [
   {
+    "id": "dataset-gallery",
+    "title": "What does our animal dataset look like?",
+    "caption": "Oxford-IIIT Pet: six examples. Each photo has a species label and a breed label.",
+    "notes": "What changes across photos that share the same dog or cat label?\nPoint to pose, coat and background. Read the species label first, then the breed beneath it.",
+    "section": "s01",
+    "frame": 1
+  },
+  {
+    "id": "dataset-counts",
+    "title": "How many images and classes are there?",
+    "caption": "Our opening question uses 2 classes: cat or dog. Predicting the breed would use 37 classes.",
+    "notes": "Could the same photograph have a two-class target in one task and a 37-class target in another?\nPoint back to the two labels under each photo. Add the two split sizes to recover the total.",
+    "section": "s01",
+    "frame": 2
+  },
+  {
+    "id": "dataset-dimensions",
+    "title": "What shape is one image?",
+    "caption": "Original sizes vary. Our demo uses 224 \u00d7 224 pixels, each with red, green and blue values: 150,528 numbers.",
+    "notes": "What does each of the three dimensions count?\nTrace the original photograph to the exact model crop. Multiply height by width by the three RGB channels.",
+    "section": "s01",
+    "frame": 3
+  },
+  {
     "id": "s01-photo",
     "title": "What animal do you see?",
     "caption": "Which parts of the photograph helped you decide?",
     "notes": "What animal is this, and which parts made you decide?\nPoint to the face, fur, and silhouette before mentioning an architecture.",
     "section": "s01",
-    "frame": 1
+    "frame": 4
   },
   {
     "id": "photo-folder",
@@ -13,7 +37,7 @@
     "caption": "Each photograph gets one label. Decide what the labels mean before choosing the model.",
     "notes": "What would you want the program to return for each photo?\nReveal dog and cat. Connect one image label to the spam/not-spam example in Part I.",
     "section": "s01",
-    "frame": 2
+    "frame": 5
   },
   {
     "id": "task-next-token",
@@ -21,7 +45,7 @@
     "caption": "A prefix supplies the context. The answer is a distribution over the next token.",
     "notes": "After predicting one letter, how would we generate a whole name?\nFollow the loop back to the input, now with one more token.",
     "section": "s01",
-    "frame": 3
+    "frame": 6
   },
   {
     "id": "task-image-label",
@@ -29,7 +53,7 @@
     "caption": "We observe the whole photograph and predict one label for it.",
     "notes": "Are we trying to guess a missing patch in this task?\nPoint to the full observed image and the two possible class labels.",
     "section": "s01",
-    "frame": 4
+    "frame": 7
   },
   {
     "id": "task-side-by-side",
@@ -37,7 +61,7 @@
     "caption": "Both models score possible answers. What they observe, summarize and predict differs.",
     "notes": "Which parts of our old calculation can we reuse unchanged?\nCompare one row at a time. Refer to the image summary from the preceding slide; its construction comes later.",
     "section": "s01",
-    "frame": 5
+    "frame": 8
   },
   {
     "id": "find-animal",
@@ -45,7 +69,7 @@
     "caption": "A class label tells us what is present. A box also tells us where to look.",
     "notes": "Is the word dog enough for an automatic crop?\nReveal the illustrative box and ask which extra numbers describe it.",
     "section": "s01",
-    "frame": 6
+    "frame": 9
   },
   {
     "id": "photo-search",
@@ -53,7 +77,7 @@
     "caption": "Here we need to compare an image with words.",
     "notes": "Which of our two photographs fits the first description?\nMatch the words to visible evidence, then connect this task to the later CLIP lesson.",
     "section": "s01",
-    "frame": 7
+    "frame": 10
   },
   {
     "id": "s01-context",
@@ -61,7 +85,7 @@
     "caption": "A dark crop may be fur, shadow or background. The full photo gives us clues.",
     "notes": "Could this dark crop be fur, a shadow, or something else?\nReveal where it came from; keep pointing to the same crop.",
     "section": "s01",
-    "frame": 8
+    "frame": 11
   },
   {
     "id": "bridge-text",
@@ -69,7 +93,7 @@
     "caption": "We still turn inputs into rows, read useful information, and predict an answer.",
     "notes": "What stays the same when the input is a photograph?\nPoint to representation, contextual reading, and multiple head messages in the earlier examples.",
     "section": "s01",
-    "frame": 9
+    "frame": 12
   },
   {
     "id": "patch-context",
@@ -77,7 +101,7 @@
     "caption": "Face clues could make a dark crop easier to interpret. The final prediction is one label for the whole image.",
     "notes": "Does this dark crop alone tell us whether the photograph contains a dog or a cat?\nReveal the eye and face crops. Ask what they add, then return to the whole-image classification task.",
     "section": "s01",
-    "frame": 10
+    "frame": 13
   },
   {
     "id": "image-to-rows",
@@ -85,7 +109,7 @@
     "caption": "Attention works on rows of numbers. Next, we choose image patches and turn their pixels into those rows.",
     "notes": "In the text lessons, what did attention receive as its input?\nKeep the photograph visible. Reveal its pieces, one row per piece, then the familiar attention operation.",
     "section": "s01",
-    "frame": 11
+    "frame": 14
   },
   {
     "id": "s01-patches",
