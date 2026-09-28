@@ -2,7 +2,7 @@
 
 **Deck:** [vision1.html](../vision1.html) · **Present:** open the deck and press **P** · **Lab:** [03_vision_transformer_lab.ipynb](../notebooks/vision/03_vision_transformer_lab.ipynb)
 
-189 teaching frames plus cover; 14 sections. Silent, self-contained HTML slides with image assets and math embedded. Reading mode includes the longer explanations, source links, and numerical tables. Arrow keys advance one reveal; **S** opens presenter notes; **O** opens the overview; **C** shows classroom controls. Every frame has a question to ask and a note about what to point at.
+194 teaching frames plus cover; 14 sections. Silent, self-contained HTML slides with image assets and math embedded. Reading mode includes the longer explanations, source links, and numerical tables. Arrow keys advance one reveal; **S** opens presenter notes; **O** opens the overview; **C** shows classroom controls. Every frame has a question to ask and a note about what to point at.
 
 ## The teaching thread
 
@@ -32,7 +32,7 @@ Keep the distinction between moving image content among fixed slots and reorderi
 
 ## Suggested pacing
 
-Use three meetings, or teach sections 1–7 first and assign the implementation as a lab. The 189 frames are short steps; the total is not a target for one class. Pause for predictions and hand calculations.
+Use three meetings, or teach sections 1–7 first and assign the implementation as a lab. The 194 frames are short steps; the total is not a target for one class. Pause for predictions and hand calculations.
 
 | Meeting | Sections | Student activity |
 |---|---|---|
@@ -51,6 +51,12 @@ The opening uses the cat/dog task to establish input and target. The later synth
 ## Recall both text prediction examples
 
 The opening task recap keeps the name example from Part I, then adds the river-bank sentence from Part II before the text/image comparison. In the name model, the fixed character window goes through embedding lookup, concatenation and an MLP. In the attention model, the updated final “the” row predicts the word after the whole prefix. “Water” is a plausible continuation, not a new measured output. Distinguish bank’s contextual row from the final row used for this next-word prediction. Both examples choose a token, append it, and predict again; their token units and architectures differ.
+
+## Give the visual queries a concrete purpose
+
+After the text/image query diagram, show three receiver examples: a dark coat patch, a partial face and a branch. Locate each receiver in the whole photograph before revealing a possible question and two actual source crops. All use the same query projection within a head/layer; the receiver row changes. Keep the task fixed: one image label. These are possible learned behaviours, with no patch-level labels or claimed measured head meanings.
+
+For keys and values, reuse the same eye/muzzle, coat and branch crops. A key supplies matching features; its relevance depends on the receiver's query. A value supplies visual information to mix, and the source's value is shared across receivers even though their weights can differ. Explain a₁₀,₇ as P10 reading P7, then reveal the symbolic sum. Section 4 follows with the existing fully numerical face/branches example.
 
 ## Introduce terms before using them
 

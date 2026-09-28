@@ -1,6 +1,6 @@
 # Vision I: slide map
 
-189 teaching frames plus the cover. Each link opens the first reveal of that slide. Use Right/Left for reveals and S for presenter notes.
+194 teaching frames plus the cover. Each link opens the first reveal of that slide. Use Right/Left for reveals and S for presenter notes.
 
 ## Review these additions first
 
@@ -56,9 +56,9 @@
 - [What could be the image equivalent of a token?](https://nipunbatra.github.io/attention/vision1.html?present#s01/21/0)
 - [What could be the image equivalent of an embedding?](https://nipunbatra.github.io/attention/vision1.html?present#s01/22/0)
 - [What could a query be in the image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/23/0)
-- [What could a key be in the image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/24/0)
-- [What information would a value send?](https://nipunbatra.github.io/attention/vision1.html?present#s01/25/0)
-- [What is the “next token” for this image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/26/0)
+- [What could a key be in the image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/27/0)
+- [What information would a value send?](https://nipunbatra.github.io/attention/vision1.html?present#s01/29/0)
+- [What is the “next token” for this image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/31/0)
 
 ## RGB pixels to patch embeddings
 
@@ -94,6 +94,14 @@
 - [And what were we predicting in the bank example?](https://nipunbatra.github.io/attention/vision1.html?present#s01/13/0)
 - [What changed, and what stayed the same?](https://nipunbatra.github.io/attention/vision1.html?present#s01/14/0)
 
+## Concrete visual queries, keys and values
+
+- [Could this dark texture belong to the animal?](https://nipunbatra.github.io/attention/vision1.html?present#s01/24/0)
+- [Where is the rest of this face?](https://nipunbatra.github.io/attention/vision1.html?present#s01/25/0)
+- [Where does this branch continue?](https://nipunbatra.github.io/attention/vision1.html?present#s01/26/0)
+- [What could each source offer for matching?](https://nipunbatra.github.io/attention/vision1.html?present#s01/28/0)
+- [What information could these values carry?](https://nipunbatra.github.io/attention/vision1.html?present#s01/30/0)
+
 ## Complete sequence
 
 | Slide | Question | Frame ID |
@@ -121,10 +129,15 @@
 | s01 / 21 | [What could be the image equivalent of a token?](https://nipunbatra.github.io/attention/vision1.html?present#s01/21/0) | `bridge-image-token` |
 | s01 / 22 | [What could be the image equivalent of an embedding?](https://nipunbatra.github.io/attention/vision1.html?present#s01/22/0) | `bridge-image-embedding` |
 | s01 / 23 | [What could a query be in the image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/23/0) | `bridge-image-query` |
-| s01 / 24 | [What could a key be in the image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/24/0) | `bridge-image-key` |
-| s01 / 25 | [What information would a value send?](https://nipunbatra.github.io/attention/vision1.html?present#s01/25/0) | `bridge-image-value` |
-| s01 / 26 | [What is the “next token” for this image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/26/0) | `bridge-image-target` |
-| s01 / 27 | [How can we give this photograph to attention?](https://nipunbatra.github.io/attention/vision1.html?present#s01/27/0) | `image-to-rows` |
+| s01 / 24 | [Could this dark texture belong to the animal?](https://nipunbatra.github.io/attention/vision1.html?present#s01/24/0) | `query-example-dark` |
+| s01 / 25 | [Where is the rest of this face?](https://nipunbatra.github.io/attention/vision1.html?present#s01/25/0) | `query-example-face` |
+| s01 / 26 | [Where does this branch continue?](https://nipunbatra.github.io/attention/vision1.html?present#s01/26/0) | `query-example-branch` |
+| s01 / 27 | [What could a key be in the image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/27/0) | `bridge-image-key` |
+| s01 / 28 | [What could each source offer for matching?](https://nipunbatra.github.io/attention/vision1.html?present#s01/28/0) | `key-example-sources` |
+| s01 / 29 | [What information would a value send?](https://nipunbatra.github.io/attention/vision1.html?present#s01/29/0) | `bridge-image-value` |
+| s01 / 30 | [What information could these values carry?](https://nipunbatra.github.io/attention/vision1.html?present#s01/30/0) | `value-example-messages` |
+| s01 / 31 | [What is the “next token” for this image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/31/0) | `bridge-image-target` |
+| s01 / 32 | [How can we give this photograph to attention?](https://nipunbatra.github.io/attention/vision1.html?present#s01/32/0) | `image-to-rows` |
 | s02 / 1 | [02 · From pixels to patch embeddings](https://nipunbatra.github.io/attention/vision1.html?present#s02/1/0) | `vision-topic-02` |
 | s02 / 2 | [Where do the patch boundaries go?](https://nipunbatra.github.io/attention/vision1.html?present#s02/2/0) | `s01-patches` |
 | s02 / 3 | [How can a red pixel be three numbers?](https://nipunbatra.github.io/attention/vision1.html?present#s02/3/0) | `one-rgb` |

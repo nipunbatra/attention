@@ -184,12 +184,44 @@
     "frame": 23
   },
   {
+    "id": "query-example-dark",
+    "title": "Could this dark texture belong to the animal?",
+    "caption": "Face and coat clues could help this patch represent part of the animal. The classifier will still predict one label for the whole photo.",
+    "notes": "What is missing from this crop, and which other crop could help interpret it?\nLocate the purple receiver in the photograph. Reveal its possible question, then inspect the two source crops before showing the projection.",
+    "section": "s01",
+    "frame": 24
+  },
+  {
+    "id": "query-example-face",
+    "title": "Where is the rest of this face?",
+    "caption": "One patch contains only part of a face. Context from other patches could help its representation describe a larger visual structure.",
+    "notes": "What is missing from this crop, and which other crop could help interpret it?\nLocate the purple receiver in the photograph. Reveal its possible question, then inspect the two source crops before showing the projection.",
+    "section": "s01",
+    "frame": 25
+  },
+  {
+    "id": "query-example-branch",
+    "title": "Where does this branch continue?",
+    "caption": "Background patches can also gather context. A branch representation could use nearby edge continuity; the task still predicts the image label.",
+    "notes": "What is missing from this crop, and which other crop could help interpret it?\nLocate the purple receiver in the photograph. Reveal its possible question, then inspect the two source crops before showing the projection.",
+    "section": "s01",
+    "frame": 26
+  },
+  {
     "id": "bridge-image-key",
     "title": "What could a key be in the image?",
     "caption": "Each source row makes a key. Comparing the receiver\u2019s query with source keys gives the scores used to choose attention weights.",
     "notes": "How could the dark patch compare a face patch with a branches patch?\nKeep the query on the receiver. Point to river and the face as sources, each with its own key.",
     "section": "s01",
-    "frame": 24
+    "frame": 27
+  },
+  {
+    "id": "key-example-sources",
+    "title": "What could each source offer for matching?",
+    "caption": "A source key can match one query well and another poorly. Comparing this receiver\u2019s query with all source keys sets its attention weights.",
+    "notes": "Could the branch key be useful to the branch receiver even if the dark receiver gives it little weight?\nHold the dark query fixed and compare the three source keys. Then recall the branch query: a key\u2019s relevance depends on the query.",
+    "section": "s01",
+    "frame": 28
   },
   {
     "id": "bridge-image-value",
@@ -197,7 +229,15 @@
     "caption": "Q and K choose the weights. V supplies the information to combine using those weights; the combined message updates the receiving representation.",
     "notes": "Once a source receives a weight, which vector actually contributes to the message?\nReuse the same source crops from the key slide. Replace W_K with W_V, then multiply each value by its weight.",
     "section": "s01",
-    "frame": 25
+    "frame": 29
+  },
+  {
+    "id": "value-example-messages",
+    "title": "What information could these values carry?",
+    "caption": "Each source supplies one value vector. Different receivers mix these values with different weights. Here a\u2081\u2080,\u2087 is the weight for P10 reading P7.",
+    "notes": "If two receivers read the same source, does the source need a new value vector for each receiver?\nKeep the source crops fixed from the key slide. Follow W_V into the value vectors, then reveal the weighted sum; the dots include the other sources.",
+    "section": "s01",
+    "frame": 30
   },
   {
     "id": "bridge-image-target",
@@ -205,7 +245,7 @@
     "caption": "Here the target is an image label. We reuse attention to build representations; our classification task changes what we read out and predict.",
     "notes": "Are we predicting another patch, another word, or one label for this photograph?\nPause before revealing the image answer. Contrast vocabulary scores with class scores, then return to how the patch rows are built.",
     "section": "s01",
-    "frame": 26
+    "frame": 31
   },
   {
     "id": "image-to-rows",
@@ -213,7 +253,7 @@
     "caption": "Attention works on rows of numbers. Next, we choose image patches and turn their pixels into those rows.",
     "notes": "In the text lessons, what did attention receive as its input?\nKeep the photograph visible. Reveal its pieces, one row per piece, then the familiar attention operation.",
     "section": "s01",
-    "frame": 27
+    "frame": 32
   },
   {
     "id": "vision-topic-02",

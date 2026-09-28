@@ -102,7 +102,7 @@ def bridge(b, sections):
         body+=g(t(575,190,top_reading,27,color)+t(575,405,bottom_reading,26,color),3)
         return body
 
-    body=role_diagram('Q','bank',9,'Which context could help bank?','Which clues could help this texture?')
+    body=role_diagram('Q','bank',9,'Which context could help bank?','Could this dark texture belong to the animal?')
     add('bridge-image-query','What could a query be in the image?',body,
         'The row being updated makes a query. Its learned projection determines what kinds of source information it can match.',
         'Which patch should make the query if we want to update the dark patch?',
@@ -159,12 +159,19 @@ def bridge(b, sections):
         mobile_rows(['Text generation','Image classification'],[['Prefix tokens','Whole image'],['Updated final token row','One image summary'],
             ['Vocabulary scores → next token','Class scores → image label']]))
 
+    from vision1_qkv_examples import examples
+    extra=examples(b)
+    expanded=[]
+    for html in slides:
+        expanded.append(html)
+        key=re.search(r'class="frame[^\"]*" id="([^\"]+)"',html).group(1)
+        expanded.extend(extra.get(key,[]))
     revised=[]
     for title, frames in sections:
         out=[]
         for html in frames:
             if re.search(r'class="frame[^\"]*" id="image-to-rows"',html):
-                out.extend(slides)
+                out.extend(expanded)
             out.append(html)
         revised.append((title,out))
     return revised

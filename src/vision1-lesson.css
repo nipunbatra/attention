@@ -48,3 +48,5 @@ body.present #vl-cost {font-size:28px}
 @media(max-width:680px){body:not(.present) .vl-code{display:block}body:not(.present) .vl-code pre{font-size:13px}body:not(.present) .vl-code .vp-figure{display:none}}
 
 body:not(.present) .sec .companion {overflow-wrap:anywhere;}
+.vp-qkv-crop {margin:24px 0 32px;}
+.vp-qkv-crop figcaption {margin-top:12px;line-height:1.5;}
