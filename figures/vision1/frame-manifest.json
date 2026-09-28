@@ -90,10 +90,18 @@
   {
     "id": "task-next-token",
     "title": "What were we asking the text model to predict?",
-    "caption": "A prefix supplies the context. The answer is a distribution over the next token.",
+    "caption": "A name grows one character at a time. Our fixed-window model scores the possible next characters.",
     "notes": "After predicting one letter, how would we generate a whole name?\nFollow the loop back to the input, now with one more token.",
     "section": "s01",
     "frame": 12
+  },
+  {
+    "id": "task-bank-next-token",
+    "title": "And what were we predicting in the bank example?",
+    "caption": "Here one token is a word. The final \u201cthe\u201d row uses the earlier context to predict what comes next; \u201cwater\u201d is one plausible continuation.",
+    "notes": "Which row predicts the word after this whole prefix: bank, or the final the?\nRead the familiar sentence. Point to the final the, follow its updated row to the word scores, then reveal water as a possible continuation.",
+    "section": "s01",
+    "frame": 13
   },
   {
     "id": "task-side-by-side",
@@ -101,7 +109,7 @@
     "caption": "Both models score possible answers. What they observe, summarize and predict differs.",
     "notes": "Which parts of our old calculation can we reuse unchanged?\nCompare one row at a time. Refer back to the image summary from the classification slide; its construction comes later.",
     "section": "s01",
-    "frame": 13
+    "frame": 14
   },
   {
     "id": "s01-context",
@@ -109,7 +117,7 @@
     "caption": "To choose cat or dog, we need visual clues. This dark crop becomes easier to interpret when we see the whole photo.",
     "notes": "Could this dark crop be fur, a shadow, or something else?\nReveal where it came from; keep pointing to the same crop.",
     "section": "s01",
-    "frame": 14
+    "frame": 15
   },
   {
     "id": "bridge-text",
@@ -117,7 +125,7 @@
     "caption": "We still turn inputs into rows, read useful information, and predict an answer.",
     "notes": "What stays the same when the input is a photograph?\nPoint to representation, contextual reading, and multiple head messages in the earlier examples.",
     "section": "s01",
-    "frame": 15
+    "frame": 16
   },
   {
     "id": "patch-context",
@@ -125,7 +133,7 @@
     "caption": "We want one image label. Face context can help interpret the dark texture and make its patch representation more useful for that prediction.",
     "notes": "Could nearby face information help us interpret the dark texture as animal fur?\nStart at the dark receiver. Reveal the face source, then trace its information box all the way to the receiver\u2019s numbers.",
     "section": "s01",
-    "frame": 16
+    "frame": 17
   },
   {
     "id": "patch-context-weights",
@@ -133,7 +141,7 @@
     "caption": "Here, face clues could help more than branches. Attention weights control how much each source contributes to the message.",
     "notes": "For this dark receiver, which source would you expect to be more useful: the face or the branches?\nKeep the receiver fixed. Reveal the second source, then compare the thick and thin arrows ending on the same receiver row.",
     "section": "s01",
-    "frame": 17
+    "frame": 18
   },
   {
     "id": "patch-context-update",
@@ -141,7 +149,7 @@
     "caption": "Attention supplies a weighted message. The block adds it to the patch row; later layers use the updated rows to predict one image label.",
     "notes": "Are we changing the photo, assigning a fur label to this crop, or updating its numerical representation?\nPoint to the unchanged pixels, then follow the current row and context message into the plus sign. End at the updated row.",
     "section": "s01",
-    "frame": 18
+    "frame": 19
   },
   {
     "id": "text-context-recap",
@@ -149,7 +157,7 @@
     "caption": "Each token starts with an embedding plus position. Attention supplies context; adding its update gives a new representation of the same token.",
     "notes": "Did attention replace the word bank, or change the numbers representing it?\nTrace bank through the middle row. Then point to the final the: that is the row used to predict the next word after this full prefix.",
     "section": "s01",
-    "frame": 19
+    "frame": 20
   },
   {
     "id": "bridge-image-token",
@@ -157,7 +165,7 @@
     "caption": "We can use one fixed-size patch as an image token. Each patch gets its own row, just as each text token did.",
     "notes": "Should one image token be a pixel, an object, or a fixed-size piece of the image?\nPause on the whole photo. Reveal the grid, then follow the outlined patch to the idea of one token row.",
     "section": "s01",
-    "frame": 20
+    "frame": 21
   },
   {
     "id": "bridge-image-embedding",
@@ -165,7 +173,7 @@
     "caption": "Text uses a learned lookup table. A patch projection produces D coordinates per patch. D is shared across patches and can differ from the number of pixel values.",
     "notes": "Where would a vector for this crop come from, if we have no word ID to look up?\nRead the actual bank embedding from Part II. Keep the image row unrevealed while students suggest how pixels could become numbers.",
     "section": "s01",
-    "frame": 21
+    "frame": 22
   },
   {
     "id": "bridge-image-query",
@@ -173,7 +181,7 @@
     "caption": "The row being updated makes a query. Its learned projection determines what kinds of source information it can match.",
     "notes": "Which patch should make the query if we want to update the dark patch?\nFollow the receiver row through W_Q in each case. Read the questions as intuition for a learned vector, not words typed by a user.",
     "section": "s01",
-    "frame": 22
+    "frame": 23
   },
   {
     "id": "bridge-image-key",
@@ -181,7 +189,7 @@
     "caption": "Each source row makes a key. Comparing the receiver\u2019s query with source keys gives the scores used to choose attention weights.",
     "notes": "How could the dark patch compare a face patch with a branches patch?\nKeep the query on the receiver. Point to river and the face as sources, each with its own key.",
     "section": "s01",
-    "frame": 23
+    "frame": 24
   },
   {
     "id": "bridge-image-value",
@@ -189,7 +197,7 @@
     "caption": "Q and K choose the weights. V supplies the information to combine using those weights; the combined message updates the receiving representation.",
     "notes": "Once a source receives a weight, which vector actually contributes to the message?\nReuse the same source crops from the key slide. Replace W_K with W_V, then multiply each value by its weight.",
     "section": "s01",
-    "frame": 24
+    "frame": 25
   },
   {
     "id": "bridge-image-target",
@@ -197,7 +205,7 @@
     "caption": "Here the target is an image label. We reuse attention to build representations; our classification task changes what we read out and predict.",
     "notes": "Are we predicting another patch, another word, or one label for this photograph?\nPause before revealing the image answer. Contrast vocabulary scores with class scores, then return to how the patch rows are built.",
     "section": "s01",
-    "frame": 25
+    "frame": 26
   },
   {
     "id": "image-to-rows",
@@ -205,7 +213,7 @@
     "caption": "Attention works on rows of numbers. Next, we choose image patches and turn their pixels into those rows.",
     "notes": "In the text lessons, what did attention receive as its input?\nKeep the photograph visible. Reveal its pieces, one row per piece, then the familiar attention operation.",
     "section": "s01",
-    "frame": 26
+    "frame": 27
   },
   {
     "id": "vision-topic-02",

@@ -1,12 +1,12 @@
 # Vision I: slide map
 
-188 teaching frames plus the cover. Each link opens the first reveal of that slide. Use Right/Left for reveals and S for presenter notes.
+189 teaching frames plus the cover. Each link opens the first reveal of that slide. Use Right/Left for reveals and S for presenter notes.
 
 ## Review these additions first
 
 - [What were we asking the text model to predict?](https://nipunbatra.github.io/attention/vision1.html?present#s01/12/0)
 - [Our task today: classify the whole image](https://nipunbatra.github.io/attention/vision1.html?present#s01/11/0)
-- [What changed, and what stayed the same?](https://nipunbatra.github.io/attention/vision1.html?present#s01/13/0)
+- [What changed, and what stayed the same?](https://nipunbatra.github.io/attention/vision1.html?present#s01/14/0)
 - [Where does CLS come from?](https://nipunbatra.github.io/attention/vision1.html?present#s03/15/0)
 - [How can the same starting CLS describe different pictures?](https://nipunbatra.github.io/attention/vision1.html?present#s03/16/0)
 - [Why did our text predictor hide later tokens?](https://nipunbatra.github.io/attention/vision1.html?present#s04/3/0)
@@ -46,19 +46,19 @@
 
 ## Follow information into one patch
 
-- [What can the face tell this dark patch?](https://nipunbatra.github.io/attention/vision1.html?present#s01/16/0)
-- [Should every source contribute equally?](https://nipunbatra.github.io/attention/vision1.html?present#s01/17/0)
-- [What changes when the patch gets context?](https://nipunbatra.github.io/attention/vision1.html?present#s01/18/0)
+- [What can the face tell this dark patch?](https://nipunbatra.github.io/attention/vision1.html?present#s01/17/0)
+- [Should every source contribute equally?](https://nipunbatra.github.io/attention/vision1.html?present#s01/18/0)
+- [What changes when the patch gets context?](https://nipunbatra.github.io/attention/vision1.html?present#s01/19/0)
 
 ## Recall text, then ask the image parallels
 
-- [Back to text: what did attention update?](https://nipunbatra.github.io/attention/vision1.html?present#s01/19/0)
-- [What could be the image equivalent of a token?](https://nipunbatra.github.io/attention/vision1.html?present#s01/20/0)
-- [What could be the image equivalent of an embedding?](https://nipunbatra.github.io/attention/vision1.html?present#s01/21/0)
-- [What could a query be in the image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/22/0)
-- [What could a key be in the image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/23/0)
-- [What information would a value send?](https://nipunbatra.github.io/attention/vision1.html?present#s01/24/0)
-- [What is the “next token” for this image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/25/0)
+- [Back to text: what did attention update?](https://nipunbatra.github.io/attention/vision1.html?present#s01/20/0)
+- [What could be the image equivalent of a token?](https://nipunbatra.github.io/attention/vision1.html?present#s01/21/0)
+- [What could be the image equivalent of an embedding?](https://nipunbatra.github.io/attention/vision1.html?present#s01/22/0)
+- [What could a query be in the image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/23/0)
+- [What could a key be in the image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/24/0)
+- [What information would a value send?](https://nipunbatra.github.io/attention/vision1.html?present#s01/25/0)
+- [What is the “next token” for this image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/26/0)
 
 ## RGB pixels to patch embeddings
 
@@ -88,6 +88,12 @@
 - [A smaller task: classify the arrangement](https://nipunbatra.github.io/attention/vision1.html?present#s03/5/0)
 - [Would just counting the patches solve it?](https://nipunbatra.github.io/attention/vision1.html?present#s03/6/0)
 
+## Both familiar text prediction examples
+
+- [What were we asking the text model to predict?](https://nipunbatra.github.io/attention/vision1.html?present#s01/12/0)
+- [And what were we predicting in the bank example?](https://nipunbatra.github.io/attention/vision1.html?present#s01/13/0)
+- [What changed, and what stayed the same?](https://nipunbatra.github.io/attention/vision1.html?present#s01/14/0)
+
 ## Complete sequence
 
 | Slide | Question | Frame ID |
@@ -104,20 +110,21 @@
 | s01 / 10 | [Image–text search: find a matching photo](https://nipunbatra.github.io/attention/vision1.html?present#s01/10/0) | `photo-search` |
 | s01 / 11 | [Our task today: classify the whole image](https://nipunbatra.github.io/attention/vision1.html?present#s01/11/0) | `task-image-label` |
 | s01 / 12 | [What were we asking the text model to predict?](https://nipunbatra.github.io/attention/vision1.html?present#s01/12/0) | `task-next-token` |
-| s01 / 13 | [What changed, and what stayed the same?](https://nipunbatra.github.io/attention/vision1.html?present#s01/13/0) | `task-side-by-side` |
-| s01 / 14 | [Would you recognize this crop on its own?](https://nipunbatra.github.io/attention/vision1.html?present#s01/14/0) | `s01-context` |
-| s01 / 15 | [What can we carry over from our text models?](https://nipunbatra.github.io/attention/vision1.html?present#s01/15/0) | `bridge-text` |
-| s01 / 16 | [What can the face tell this dark patch?](https://nipunbatra.github.io/attention/vision1.html?present#s01/16/0) | `patch-context` |
-| s01 / 17 | [Should every source contribute equally?](https://nipunbatra.github.io/attention/vision1.html?present#s01/17/0) | `patch-context-weights` |
-| s01 / 18 | [What changes when the patch gets context?](https://nipunbatra.github.io/attention/vision1.html?present#s01/18/0) | `patch-context-update` |
-| s01 / 19 | [Back to text: what did attention update?](https://nipunbatra.github.io/attention/vision1.html?present#s01/19/0) | `text-context-recap` |
-| s01 / 20 | [What could be the image equivalent of a token?](https://nipunbatra.github.io/attention/vision1.html?present#s01/20/0) | `bridge-image-token` |
-| s01 / 21 | [What could be the image equivalent of an embedding?](https://nipunbatra.github.io/attention/vision1.html?present#s01/21/0) | `bridge-image-embedding` |
-| s01 / 22 | [What could a query be in the image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/22/0) | `bridge-image-query` |
-| s01 / 23 | [What could a key be in the image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/23/0) | `bridge-image-key` |
-| s01 / 24 | [What information would a value send?](https://nipunbatra.github.io/attention/vision1.html?present#s01/24/0) | `bridge-image-value` |
-| s01 / 25 | [What is the “next token” for this image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/25/0) | `bridge-image-target` |
-| s01 / 26 | [How can we give this photograph to attention?](https://nipunbatra.github.io/attention/vision1.html?present#s01/26/0) | `image-to-rows` |
+| s01 / 13 | [And what were we predicting in the bank example?](https://nipunbatra.github.io/attention/vision1.html?present#s01/13/0) | `task-bank-next-token` |
+| s01 / 14 | [What changed, and what stayed the same?](https://nipunbatra.github.io/attention/vision1.html?present#s01/14/0) | `task-side-by-side` |
+| s01 / 15 | [Would you recognize this crop on its own?](https://nipunbatra.github.io/attention/vision1.html?present#s01/15/0) | `s01-context` |
+| s01 / 16 | [What can we carry over from our text models?](https://nipunbatra.github.io/attention/vision1.html?present#s01/16/0) | `bridge-text` |
+| s01 / 17 | [What can the face tell this dark patch?](https://nipunbatra.github.io/attention/vision1.html?present#s01/17/0) | `patch-context` |
+| s01 / 18 | [Should every source contribute equally?](https://nipunbatra.github.io/attention/vision1.html?present#s01/18/0) | `patch-context-weights` |
+| s01 / 19 | [What changes when the patch gets context?](https://nipunbatra.github.io/attention/vision1.html?present#s01/19/0) | `patch-context-update` |
+| s01 / 20 | [Back to text: what did attention update?](https://nipunbatra.github.io/attention/vision1.html?present#s01/20/0) | `text-context-recap` |
+| s01 / 21 | [What could be the image equivalent of a token?](https://nipunbatra.github.io/attention/vision1.html?present#s01/21/0) | `bridge-image-token` |
+| s01 / 22 | [What could be the image equivalent of an embedding?](https://nipunbatra.github.io/attention/vision1.html?present#s01/22/0) | `bridge-image-embedding` |
+| s01 / 23 | [What could a query be in the image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/23/0) | `bridge-image-query` |
+| s01 / 24 | [What could a key be in the image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/24/0) | `bridge-image-key` |
+| s01 / 25 | [What information would a value send?](https://nipunbatra.github.io/attention/vision1.html?present#s01/25/0) | `bridge-image-value` |
+| s01 / 26 | [What is the “next token” for this image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/26/0) | `bridge-image-target` |
+| s01 / 27 | [How can we give this photograph to attention?](https://nipunbatra.github.io/attention/vision1.html?present#s01/27/0) | `image-to-rows` |
 | s02 / 1 | [02 · From pixels to patch embeddings](https://nipunbatra.github.io/attention/vision1.html?present#s02/1/0) | `vision-topic-02` |
 | s02 / 2 | [Where do the patch boundaries go?](https://nipunbatra.github.io/attention/vision1.html?present#s02/2/0) | `s01-patches` |
 | s02 / 3 | [How can a red pixel be three numbers?](https://nipunbatra.github.io/attention/vision1.html?present#s02/3/0) | `one-rgb` |

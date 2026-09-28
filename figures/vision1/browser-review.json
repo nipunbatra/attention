@@ -3,7 +3,7 @@
     1280,
     720
   ],
-  "teaching_frames": 188,
+  "teaching_frames": 189,
   "cover_frames": 1,
   "review": "The previous 141 final states (140 teaching frames plus cover) passed the full geometry review. All six added implementation frames passed SVG text bounds and collision checks at 1280\u00d7720 and were visually inspected. Phone reading mode was rechecked at 390\u00d7844.",
   "geometry": "No clipped SVG text, text collisions, overflowing captions or code found.",
@@ -594,6 +594,37 @@
       "paired_labels_aligned": true
     },
     "review": "Visually inspected desktop, annotation-size viewport, and phone. Taller gallery preserves photo size and separates each photo, species and breed from the next row. All 20 notebook cells still execute.",
+    "silent": true
+  },
+  "text_prediction_recap_review": {
+    "date": "2026-09-28",
+    "frames": [
+      "task-next-token",
+      "task-bank-next-token",
+      "task-side-by-side"
+    ],
+    "desktop": {
+      "viewport": [
+        1280,
+        720
+      ],
+      "name_pipeline": "fixed character window plus MLP",
+      "bank_pipeline": "updated final the row to vocabulary scores to a possible next word",
+      "bank_clipped_text": [],
+      "bank_text_overlaps": [],
+      "name_loop_avoids_instruction_text": true,
+      "bank_to_task_comparison_navigation": true
+    },
+    "phone": {
+      "viewport": [
+        390,
+        844
+      ],
+      "page_width": 390,
+      "both_reading_versions_visually_inspected": true
+    },
+    "provenance": "Full river prefix loaded from src/toy.json. Water is labeled as one plausible next word, with no invented probability or measured inference claim.",
+    "verification": "189-frame checker passes; all 20 notebook code cells execute.",
     "silent": true
   }
 }

@@ -1,12 +1,13 @@
 """Task, Q/K/V and readout bridges to the earlier text-attention lessons."""
+import json
 import re
 
 
 def connect(b, sections):
     globals().update({k:b[k] for k in ['frame','t','g','line','arrow','rect','image','crop','CAT']})
     slides={}
-    def add(key,title,body,caption,question,point,prose=''):
-        slides[key]=frame(key,title,body,caption,question+'\n'+point,prose)
+    def add(key,title,body,caption,question,point,prose='',mobile=''):
+        slides[key]=frame(key,title,body,caption,question+'\n'+point,prose,mobile)
     def label(x,y,word,color='c-e',width=160):
         return rect(x,y,width,60,color,'transparent')+t(x+width/2,y+40,word,28,color,'middle')
     def path(y,words,colors):
@@ -17,13 +18,45 @@ def connect(b, sections):
             if i<len(words)-1:body+=arrow(x+245,y+30,x+280,y+30)
         return body
 
-    body=t(30,65,'Text generation: continue the prefix',33)
-    body+=path(125,['a a b','last row','letter scores','next letter'],['c-e','c-e','c-a','c-e'])
-    body+=g(t(35,300,'Choose a letter. Append it. Run again.',34,'c-v'),1)
+    body=t(30,65,'Part I · generate a name, one character at a time',31)
+    body+=path(125,['a a b','window + MLP','letter scores','next letter'],['c-e','c-e','c-a','c-e'])
+    body+=g(t(215,300,'Choose a letter. Append it. Run again.',34,'c-v'),1)
     body+=g(arrow(1080,205,1080,390)+arrow(1080,390,130,390)+arrow(130,390,130,205),2)
-    add('task-next-token','What were we asking the text model to predict?',body,'A prefix supplies the context. The answer is a distribution over the next token.',
+    add('task-next-token','What were we asking the text model to predict?',body,'A name grows one character at a time. Our fixed-window model scores the possible next characters.',
         'After predicting one letter, how would we generate a whole name?','Follow the loop back to the input, now with one more token.',
-        'This recalls the autoregressive task in the text series. At generation time we read the final available token row, score the vocabulary, select a token and extend the prefix. During training we can score many positions in parallel using a causal mask and shifted targets. No particular next letter or probability is assumed here.')
+        'This recalls <a href="part1.html#s10">Part I’s name-generation model</a>. '
+        'It looks up embeddings for a fixed window of characters, concatenates them and uses an MLP to score the vocabulary. '
+        'At generation time, turn scores into probabilities, choose a character and append it; the next call uses the latest window. '
+        'The vocabulary also includes the boundary token used to end a name. No particular next character or probability is assumed in this diagram. '
+        'The next slide recalls Part II’s attention model, which uses the updated final token row to predict a word.',
+        '<p><strong>Part I · character tokens</strong></p><p>a a b → window embeddings + MLP → character scores → next character.</p>'
+        '<p>Choose one, append it, slide the window and run again.</p>')
+
+    bank_tokens=json.loads((b['SRC']/'toy.json').read_text())['sentences']['river']
+    assert bank_tokens[5:7]==['river','bank'] and bank_tokens[-1]=='the'
+    body=t(35,38,'Part II · continue the river-bank sentence',26,'ink-2')
+    body+=t(35,98,' '.join(bank_tokens[:7]),32)
+    body+=t(35,160,' '.join(bank_tokens[7:-1]),32)+label(240,120,'the',width=110)+t(380,160,'___',35,'c-e')
+    body+=g(arrow(295,190,295,234)+label(95,250,'updated final “the” row',width=400)
+            +t(295,348,'representation after attention',23,'ink-2','middle'),1)
+    body+=g(arrow(510,280,590,280)+label(605,250,'word scores','c-a',240)
+            +arrow(858,280,925,280)+label(940,250,'water',width=180)
+            +t(1030,219,'one possible next word',22,'ink-2','middle'),2)
+    body+=g(t(35,421,'Append water, then predict the following word.',31,'c-v'),3)
+    add('task-bank-next-token','And what were we predicting in the bank example?',body,
+        'Here one token is a word. The final “the” row uses the earlier context to predict what comes next; “water” is one plausible continuation.',
+        'Which row predicts the word after this whole prefix: bank, or the final the?',
+        'Read the familiar sentence. Point to the final the, follow its updated row to the word scores, then reveal water as a possible continuation.',
+        'The prefix is taken directly from <a href="src/toy.json">the Part II toy</a>: “'+' '.join(bank_tokens)+'”. '
+        '<a href="attention.html#s02-frame-problem">Part II compares this river context with the cheque-and-bank context</a>. '
+        'Bank has its own contextual representation, but prediction after the full ten-token prefix reads the updated final the row at position 10. '
+        'The vocabulary head scores all candidate words; softmax turns those scores into probabilities. '
+        'Water is an illustrative possible choice, not a newly measured model output or the only correct continuation. '
+        'Appending the chosen word creates a longer prefix for the next generation step. '
+        'Name generation and sentence continuation both predict the next token, while the token unit and model used in these two lessons differ.',
+        '<p><strong>Part II · word tokens</strong></p><p>'+' '.join(bank_tokens)+' ___</p>'
+        '<p>Updated final <strong>the</strong> row → vocabulary scores → a possible next word: <strong>water</strong>.</p>'
+        '<p>Append the chosen word and run again. Bank is an earlier contextual row; the final the row supplies this prediction.</p>')
     body=image(30,85,360,240)+g(arrow(420,205,490,205)+label(520,175,'image summary',width=250),1)
     body+=g(arrow(800,205,860,205)+t(900,165,'dog',34,'c-e')+t(900,240,'cat',34,'ink-2')+t(900,325,'class scores',26,'c-a'),2)
     add('task-image-label','Our task today: classify the whole image',body,'For the rest of this lecture, we observe the whole photograph and predict one class label.',
@@ -153,7 +186,7 @@ def connect(b, sections):
         'The same positionwise MLP is applied independently to every row. Its input may already contain information from other patches, because attention ran first. This separation between mixing rows and modifying a row helps students read the complete block without treating it as one unexplained box.')
 
     insert_after={
-      'photo-search':['task-image-label','task-next-token','task-side-by-side'],
+      'photo-search':['task-image-label','task-next-token','task-bank-next-token','task-side-by-side'],
       'why-cls':['cls-start','cls-two-images'],
       'image-mask':['task-mask-reason'],
       'qkv-roles':['qkv-photo-question','qkv-three-roles','qkv-match-numbers','qkv-read-numbers','qkv-change-key','qkv-change-value','qkv-no-prompt'],
