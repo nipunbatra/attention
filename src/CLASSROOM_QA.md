@@ -1,5 +1,18 @@
 # Classroom release checks
 
+## 2026-09-28 · Hidden-layer overview without weighted-sum arithmetic
+
+- Simplified the existing hidden-layer frame to a 16 → 8 → 10 network and
+  the current `[2,16] → [2,8]` shape change. Removed numerical labels, the
+  neuron-0 highlight, contribution sums and bias calculation from this step.
+  The notebook and guide agree. No extra frames or model changes.
+- All 25 walkthrough/model tests pass. New assertions guard the batch-shape
+  explanation and absence of single-neuron arithmetic. Notebook 5 executes
+  all 89 code cells, and the refreshed ZIP contains that executed notebook.
+- Browser regression passes all 89 pipeline frames at 1280, 1024 and 390
+  widths. The revised frame also fits 995×1031 and 760×1041. Visually checked
+  desktop and portrait renders for legibility and the whole-layer emphasis.
+
 ## 2026-09-28 · Draw the MLP forward pass as a 16 → 8 → 10 network
 
 - Replaced four list/table figures with synchronized neural-network diagrams:

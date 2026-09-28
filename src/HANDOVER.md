@@ -10,6 +10,17 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+2026-09-28 hidden-layer shape simplification:
+
+- `s19-pipeline-hidden-affine` now teaches only the network and tensor shapes.
+  Keep all 16 input, 8 hidden and 10 vocabulary nodes, but remove the focus on
+  neuron 0, individual numeric labels and the weighted-sum/bias calculation.
+  Emphasize the whole hidden layer and `[2,16] → [2,8]`: two examples, with
+  16 input numbers and 8 output numbers per example. No additional slide.
+- This supersedes the single-neuron explanation below. The other three MLP
+  diagrams retain their numerical examples. Notebook code for this step now
+  calls the hidden layer and checks its shape, matching the simpler narrative.
+
 2026-09-28 MLP forward pass as a shared neural-network diagram:
 
 - The existing `flatten`, `hidden-affine`, `relu` and `vocab-head` frames share

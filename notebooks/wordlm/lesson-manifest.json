@@ -353,7 +353,7 @@
   },
   {
     "id": "hidden-affine",
-    "title": "One hidden neuron combines all sixteen inputs",
+    "title": "The hidden layer: 16 inputs, 8 outputs",
     "chapter": "3. The MLP forward pass",
     "index": 45,
     "slide": 49,

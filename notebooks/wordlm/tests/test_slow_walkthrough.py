@@ -52,8 +52,14 @@ def test_mlp_forward_pass_keeps_one_numeric_network_diagram():
         assert len([e for e in edges if e.get('data-matrix') == 'W1']) == 16*8
         assert len([e for e in edges if e.get('data-matrix') == 'W2']) == 8*10
         if stage['id'] == 'hidden-affine':
-            assert len([e for e in edges if e.get('stroke-width') == '2']) == 16
-            assert torch.allclose(ns['manual_hidden'], ns['pre_hidden'][1, 0])
+            assert not any(e.get('stroke-width') == '2' for e in edges)
+            assert not nodes('network-hidden-value')
+            assert ns['pre_hidden'].shape == (2, 8)
+            text = ' '.join(e.text or '' for e in root.iter() if e.tag.endswith('}text'))
+            assert 'This step: [2,16] → [2,8]' in text
+            assert '2 = examples in the batch' in text
+            assert all(term not in text+stage['body'] for term in ('weighted', 'bias', 'Neuron 0', 'contributions'))
+            assert not any(num in text for num in ('-0.336', '-0.182', '0.027'))
         if stage['id'] == 'relu':
             for j, e in enumerate(nodes('network-hidden-value')):
                 assert float(e.get('data-pre')) == float(ns['pre_hidden'][1,j].detach())

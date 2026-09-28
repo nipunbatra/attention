@@ -45,6 +45,14 @@ try{
     assert.deepEqual(await network.locator('.network-token-group').evaluateAll(es=>es.map(e=>e.dataset.token)),['<BOS>','lily','found','a']);
   }
   assert.match(await page.locator('#s19-pipeline-vocab-head .step-copy').innerText(),/observed target.*not necessarily/s);
+  const hiddenFrame=page.locator('#s19-pipeline-hidden-affine');
+  assert.equal(await hiddenFrame.getAttribute('data-title'),'The hidden layer: 16 inputs, 8 outputs');
+  const hiddenLabels=(await hiddenFrame.locator('svg text').allTextContents()).join(' ');
+  assert.match(hiddenLabels,/This step: \[2,16\] → \[2,8\]/);
+  assert.match(hiddenLabels,/2 = examples in the batch/);
+  assert(!/weighted|bias|Neuron 0|contributions/.test(hiddenLabels+await hiddenFrame.locator('.step-copy').innerText()));
+  assert.equal(await hiddenFrame.locator('.network-hidden-value').count(),0);
+  assert.equal(await hiddenFrame.locator('.network-edge[stroke-width="2"]').count(),0);
   assert.match(await page.locator('#s19-pipeline-boundaries').innerText(),/7 supervised targets/);
   assert.equal(await page.locator('#s19-pipeline-boundaries').getAttribute('data-title'),'One BOS and EOS per document');
   assert.match(await page.locator('#s19-pipeline-boundaries .step-copy').innerText(),/each document is a complete story.*do not add extra markers between sentences/s);

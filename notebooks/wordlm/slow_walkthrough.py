@@ -348,12 +348,10 @@ assert flat.shape == (2, 16)
 assert torch.equal(flat[1, :4], E_mlp[1, 0])
 ''', focus=('flatten',))
 
-step('hidden-affine', 'One hidden neuron combines all sixteen inputs', '3. The MLP forward pass',
-     'Follow the highlighted connections into neuron 0: multiply each input by its weight, sum all 16 products, then add its bias. Each of the eight hidden neurons has its own weights and bias. In row-vector notation W₁ is 16×8 and b₁ has eight entries. PyTorch stores the Linear weights as 8×16. The four sums in the diagram group the contributions by token, without changing the calculation.', '''
+step('hidden-affine', 'The hidden layer: 16 inputs, 8 outputs', '3. The MLP forward pass',
+     'Each example enters the hidden layer as 16 numbers and leaves as 8 numbers. With two examples, the batch shape changes from [2,16] to [2,8]. The model setting h=8 chooses the hidden width. ReLU follows without changing this shape, then the classifier produces ten vocabulary scores per example.', '''
 pre_hidden = mlp.hidden_layer(flat)
-terms = flat[1] * mlp.hidden_layer.weight[0]
-manual_hidden = terms.sum() + mlp.hidden_layer.bias[0]
-assert torch.allclose(manual_hidden, pre_hidden[1, 0])
+assert pre_hidden.shape == (2, 8)
 ''', focus=('hidden',))
 
 step('relu', 'ReLU keeps positive activations', '3. The MLP forward pass',
@@ -723,6 +721,7 @@ MLP_NETWORK_STAGES = {'flatten', 'hidden-affine', 'relu', 'vocab-head'}
 def mlp_network_figure(stage, ns):
     """The same 16 → 8 → 10 network, revealing the executed forward pass."""
     k = stage['id']
+    shapes_only = k == 'hidden-affine'
     f = Figure(stage['title'], height=460)
     f.parts[0] = f.parts[0].replace('role="img"', f'role="img" data-mlp-network="{k}" data-example="1"')
     words, X = ns['words'], ns['X']
@@ -732,17 +731,16 @@ def mlp_network_figure(stage, ns):
     output_y = [116 + j*29 for j in range(10)]
     xi, xh, xo = 275, 615, 935
     f.text(20,27,'Example 1: <BOS> lily found a',BLUE,25,600)
-    f.text(1140,27,'Same weights for both batch examples',MUTED,23,anchor='end')
+    f.text(1140,27,'One network, applied separately to each example' if shapes_only else 'Same weights for both batch examples',MUTED,23,anchor='end')
     for x, title, shape in [(210,'16 input nodes','flat: [2,16]'),
                              (615,'8 hidden neurons','hidden: [2,8]'),
                              (1010,'10 vocabulary outputs','logits: [2,10]')]:
         f.text(x,65,title,INK,26,600,'middle')
         f.text(x,91,shape,MUTED,21,anchor='middle')
-    # All connections exist. Highlight only the neuron being explained.
+    # Preserve the full network; the shape overview emphasizes the whole layer.
     for i, iy in enumerate(input_y):
         for j, hy in enumerate(hidden_y):
-            active = k == 'hidden-affine' and j == 0
-            f.parts.append(f'<line class="network-edge" data-matrix="W1" data-input="{i}" data-hidden="{j}" x1="{xi+8}" y1="{iy}" x2="{xh-12}" y2="{hy}" stroke="{TEAL if active else LINE}" stroke-width="{2 if active else 1}" opacity="{0.7 if active else 0.38}"/>')
+            f.parts.append(f'<line class="network-edge" data-matrix="W1" data-input="{i}" data-hidden="{j}" x1="{xi+8}" y1="{iy}" x2="{xh-12}" y2="{hy}" stroke="{TEAL if shapes_only else LINE}" stroke-width="1" opacity="{0.18 if shapes_only else 0.38}"/>')
     for j, hy in enumerate(hidden_y):
         for i, oy in enumerate(output_y):
             active = k == 'vocab-head' and i == ns['vocab'].stoi['red']
@@ -756,14 +754,16 @@ def mlp_network_figure(stage, ns):
         f.parts.append(f'<path d="M155 {first-8} H145 V{last+8} H155" fill="none" stroke="{BLUE}" stroke-width="2"/>')
         for coord in range(4):
             i, y = slot*4+coord, input_y[slot*4+coord]
-            f.text(250,y+6,num(inputs[i]),BLUE,20,anchor='end',mono=True)
+            if not shapes_only:
+                f.text(250,y+6,num(inputs[i]),BLUE,20,anchor='end',mono=True)
             f.parts.append(f'<circle class="network-input" data-input="{i}" data-coordinate="{coord}" data-value="{float(inputs[i].detach())}" cx="{xi}" cy="{y}" r="7" fill="#fff" stroke="{BLUE}" stroke-width="2"><title>Slot {slot+1}, coordinate {coord+1}: {num(inputs[i])}</title></circle>')
         f.parts.append('</g>')
     for j,y in enumerate(hidden_y):
         color = TEAL if k in {'hidden-affine','relu','vocab-head'} else MUTED
-        f.parts.append(f'<circle class="network-hidden" data-hidden="{j}" cx="{xh}" cy="{y}" r="12" fill="#fff" stroke="{color}" stroke-width="{3 if k=="hidden-affine" and j==0 else 2}"/>')
-        f.text(xh-21,y+6,str(j),MUTED,19,anchor='end')
-        if k != 'flatten':
+        f.parts.append(f'<circle class="network-hidden" data-hidden="{j}" cx="{xh}" cy="{y}" r="12" fill="#fff" stroke="{color}" stroke-width="2"/>')
+        if not shapes_only:
+            f.text(xh-21,y+6,str(j),MUTED,19,anchor='end')
+        if k not in {'flatten','hidden-affine'}:
             before = ns['pre_hidden'][1,j]
             after = ns.get('hidden_mlp')
             value = (f'{num(before)} → {num(after[1,j])}' if k=='relu'
@@ -787,9 +787,8 @@ def mlp_network_figure(stage, ns):
         f.text(20,418,'4 token rows × 4 coordinates = 16 inputs. Flattening learns no weights.',BLUE,25,600)
         f.text(20,447,'Next: a learned 16×8 connection matrix, ReLU, then an 8×10 classifier.',MUTED,23)
     elif k=='hidden-affine':
-        f.text(20,418,'Neuron 0: add the four token contributions, then its bias',TEAL,25,600)
-        contributions = ' + '.join('('+num(ns['terms'][s*4:(s+1)*4].sum())+')' for s in range(4))
-        f.text(20,447,contributions+' + ('+num(ns['mlp'].hidden_layer.bias[0])+') = '+num(ns['manual_hidden']),TEAL,24,mono=True)
+        f.text(20,418,'This step: [2,16] → [2,8]',TEAL,30,600)
+        f.text(20,447,'2 = examples in the batch. 16 and 8 = numbers per example.',MUTED,23)
     elif k=='relu':
         f.text(20,418,'At the same 8 neurons: z → max(0, z). Negative sums become zero.',TEAL,25,600)
         f.text(20,447,'ReLU has no learned weights. The classifier receives the values on the right.',MUTED,23)
