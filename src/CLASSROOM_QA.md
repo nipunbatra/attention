@@ -1,5 +1,25 @@
 # Classroom release checks
 
+## 2026-09-28 · One highlighted map throughout TinyStories
+
+- Part III has 80 classroom frames and 40 full-pipeline map/code checkpoints.
+  All 27 setup checkpoints precede their worked examples; the 13 model steps
+  retain the same four parallel head lanes and tensor shapes. The 25 original
+  story-to-batch figures remain byte-identical. Results and notebooks are unchanged.
+- `pytest src/test_text_capstone.py notebooks/wordlm/tests`: 65 passed. Setup
+  snippets run in sequence through toy/real vocabulary remapping, windows and
+  batches. Tests execute model construction, displayed forward operations,
+  masking, loss, an optimizer update and generation with unchanged parameters.
+- Capstone browser checks pass all 80 frames, all 40 focus mappings and fixed
+  node/edge geometries, source figures, saved metrics/curves and app links.
+  Layout checks cover 1280×720, 995×1031, 760×1041 and 390px reading mode.
+- Full frame audit passes 81 states including the title: no runtime errors,
+  invalid formulas or overflow. Pipeline SVGs use a larger scoped presentation
+  size and a fixed code-panel height so successive map frames hold their layout.
+- Visually reviewed all new map stages, matching code and representative portrait
+  renders. Forward/back keyboard navigation moves between projection and scores
+  correctly. The final manual preview reports no console errors or warnings.
+
 ## 2026-09-28 · Restore the full TinyStories setup in Part III
 
 - Part III now has 52 classroom frames: seven unchanged MHA introduction

@@ -10,6 +10,7 @@ import textwrap
 
 from multihead_story import svg, t, rect, arrow, path, full_map, COLORS
 from tinystories_setup import setup_frames
+from tinystories_map import pipeline_svg, setup_checkpoint, MODEL_FOCUS
 
 ROOT = Path(__file__).resolve().parents[1]
 LABELS = {'mlp': 'Fixed-window MLP', 'attention': 'One-head attention',
@@ -138,6 +139,11 @@ def classroom(stage, reference):
     parts = []
 
     def s(key, title, figure='', body='', **kw):
+        if key.startswith('s04-cap-'):
+            name = key.removeprefix('s04-cap-')
+            figure = pipeline_svg(MODEL_FOCUS[name], key)
+            kw['companion'] = '<p>' + body + '</p>' + kw.get('companion', '')
+            body = ''
         return stage(key, title, figure, body, **kw)
 
     def reuse(key):
@@ -166,6 +172,7 @@ def classroom(stage, reference):
     window_figure, evidence = windows(vocab)
     parts.append(('TinyStories: text becomes training examples', [
         *setup_frames(stage),
+        setup_checkpoint(stage, 'scale', 'The same preparation at the experiment’s scale'),
         s('s03-cap-scale', 'The same preparation at the experiment’s scale',
           rows(['Quantity', 'Lily teaching example', 'Trained experiment'],
                [['Vocabulary C', '10 token IDs', '4,000 token IDs'],
@@ -173,28 +180,32 @@ def classroom(stage, reference):
                 ['Batch size B', '2 examples', '512 examples']], [390,365,365]),
           'The rules stay the same: tokenize, look up IDs, add story boundaries, then create padded or cropped input–target pairs.',
           companion='<p>The toy vocabulary was chosen to expose every ID. The experimental vocabulary is frequency-ranked from training stories, so ordinary words receive different IDs. The four special IDs remain 0–3. The next slide remaps the same two prefixes into that real vocabulary.</p>'),
+        setup_checkpoint(stage, 'real-windows', 'Our two examples in the real vocabulary'),
         s('s03-cap-windows', 'Our two examples in the real vocabulary', window_figure,
           'Same prefixes and answers; new ordinary-word IDs and 64 slots. We will follow this B = 2 batch through the trained model’s architecture.',
           companion='<p>Lily’s sentence is an authored teaching example, not a claimed source story. The IDs here use the actual 4,000-item benchmark vocabulary. PAD is ID 0. These two rows illustrate batching; the saved training runs use batches of 512. Position IDs are 0–63 within each padded/cropped window.</p>'),
     ]))
     parts.append(('TinyStories: the multi-head model, training and generation', [
+        s('s04-cap-model', 'The four-head model used in this exercise',
+          code='from multihead import MultiHeadAttentionLM\nmodel = MultiHeadAttentionLM(C, T, d_model=64, hidden=256, heads=4)\nB, T = X.shape',
+          companion='<p>C=4,000 vocabulary items, T=64 input slots, model width 64, four heads of width 16 and a 256-unit prediction MLP. B=2 for our displayed batch. The highlighted boxes contain learned parameters. Other boxes reshape tensors or carry out fixed operations. The class is defined in <a href="notebooks/wordlm/multihead.py">multihead.py</a>.</p>'),
         s('s04-cap-lookup', 'Each input ID selects a learned row',
           flow([('Input IDs X', '[B, 64]', 'e'), ('Embedding table', '[4,000, 64]', 'e'),
                 ('Selected token rows', '[B, 64, 64]', 'e')]),
           'The ID for “found” selects one row of 64 learned numbers. All occurrences share that token row. B counts examples, not heads.',
-          code='token_rows = token_embedding(X)',
+          code='token_rows = model.token_embedding(X)',
           companion='<p>The PAD token row is initialized to zero and receives no embedding-lookup gradient here, using padding_idx=0. BOS and UNK can learn when used in inputs. EOS is a target rather than an input in these windows, so its input row receives no task gradient. The separate classifier learns an EOS output score. Padding still needs an attention mask.</p>'),
         s('s04-cap-position', 'Add a row for each input slot',
           flow([('Token rows', '[B, 64, 64]', 'e'), ('Position rows', '[64, 64]', 'd'),
                 ('Add by slot', 'E [B, 64, 64]', 'e')],
                'Token row says which item; position row distinguishes slots 0 through 63.', operators=['+', '=']),
           'Use positions 0–63 within each padded or cropped window. Adding keeps each row 64 numbers wide. Both tables learn from the prediction loss.',
-          code='positions = torch.arange(X.shape[1], device=X.device)\nE = token_rows + position_embedding(positions)[None]'),
+          code='positions = torch.arange(T, device=X.device)\nE = token_rows + model.position_embedding(positions)[None]'),
         s('s04-cap-embed', 'Project Q, K and V, then split into four heads',
           flow([('Input E', '[B, 64, 64]', 'e'), ('Project Q, K, V', 'each [B, 64, 64]', 'q'),
                 ('Reshape + transpose', 'each [B, 4, 64, 16]', 'q')]),
           'Every head reads the full input row through learned projections. Split the projected coordinates into four groups of 16.',
-          code='Q, K, V = (split_heads(layer(E)) for layer in (W_Q, W_K, W_V))',
+          code='Q = model.W_Q(E).reshape(B, T, 4, 16).transpose(1, 2)\nK = model.W_K(E).reshape(B, T, 4, 16).transpose(1, 2)\nV = model.W_V(E).reshape(B, T, 4, 16).transpose(1, 2)',
           companion='<p>For the two examples, each projected tensor is [2,4,64,16]: examples, heads, token slots, coordinates per head. Packed W_Q, W_K and W_V each map 64 input coordinates to 64 output coordinates.</p>'),
         s('s04-cap-scores', 'Each head compares queries with source keys',
           flow([('One head’s Q', '[B, 64, 16]', 'q'), ('One head’s Kᵀ', '[B, 16, 64]', 'k'),
@@ -206,6 +217,7 @@ def classroom(stage, reference):
           flow([('Scaled scores', '[B, 4, 64, 64]', 'a'), ('Mask sources', 'future tokens + PAD', 'k'),
                 ('Softmax over sources', 'A [B, 4, 64, 64]', 'a')]),
           'At “found”, allow BOS, lily and found. PAD and future slots receive zero weight. Each real receiver’s source weights sum to one.',
+          code='future = torch.ones(T, T, dtype=torch.bool, device=E.device).triu(1)\nreal = X.ne(0)\nmask = future[None] | ((~real[:, None, :]) & real[:, :, None])\nA = torch.softmax(scores.masked_fill(mask[:, None], float("-inf")), dim=-1)',
           companion='<p>This is the full causal teaching view for real receiver rows. The implementation keeps PAD-only receiver rows numerically defined; they do not feed the loss. The saved training and browser forward path computes only the final receiver’s query, since this task predicts one next token per window. It produces the same final logits with smaller [B,4,1,64] weight tensors.</p>'),
         s('s04-cap-mix', 'Each head mixes its value rows',
           flow([('Source weights A', '[B, 4, 64, 64]', 'a'), ('Value rows V', '[B, 4, 64, 16]', 'v'),
@@ -216,12 +228,12 @@ def classroom(stage, reference):
           flow([('Four messages', '4 × 16 coordinates', 'v'), ('Concatenate', '[B, 64, 64]', 'v'),
                 ('Project + residual', 'E′ [B, 64, 64]', 'e')]),
           'Joining four 16-coordinate messages restores width 64. W_O learns how to combine them; the residual adds this update to the original E.',
-          code='joined = messages.transpose(1, 2).reshape(B, 64, 64)\nupdated = E + W_O(joined)'),
+          code='joined = messages.transpose(1, 2).reshape(B, T, 64)\nupdated = E + model.W_O(joined)'),
         s('s04-cap-predict', 'The final row predicts the observed next token',
           flow([('Final updated row', '[B, 64]', 'e'), ('Hidden + ReLU', '[B, 256]', 'd'),
                 ('Vocabulary logits', '[B, 4,000]', 'e'), ('Cross-entropy', 'one scalar loss', 'a')]),
           '“BOS lily found” → target <strong>a</strong>. “BOS lily found a” → target <strong>red</strong>. The model supplies scores; the story supplies the answers.',
-          code='logits = vocab_head(relu(hidden_layer(updated[:, -1])))\nloss = cross_entropy(logits, y)  # raw logits, observed next-token IDs'),
+          code='hidden = torch.relu(model.hidden_layer(updated[:, -1]))\nlogits = model.vocab_head(hidden)\nloss = F.cross_entropy(logits, y)  # raw logits and target IDs'),
         s('s04-cap-train', 'One loss trains the whole model',
           flow([('Prediction loss', 'compare with y', 'a'), ('Backpropagation', 'compute gradients', 'd'),
                 ('Optimizer step', 'update parameters', 'e'), ('Next batch', 'repeat', 'q')]),
@@ -232,16 +244,19 @@ def classroom(stage, reference):
           flow([('“Lily found”', 'same tokenizer', 'e'), ('BOS lily found', 'IDs [1, 23, 110]', 'e'),
                 ('Pad / crop', 'input [1, 64]', 'e')]),
           'Use the training vocabulary and prepend BOS. Do not append EOS to an unfinished prompt. Load the chosen checkpoint and keep its parameters fixed.',
+          code='history = [real_stoi["<BOS>"]] + [real_stoi.get(t, 3) for t in tokenize("Lily found")]\nvisible = history[-T:]\nX = torch.tensor([[0] * (T-len(visible)) + visible])',
           companion='<p>Left-pad this short prefix with 61 PAD IDs. After the history grows past 64 tokens, retain its last 64 IDs. There is no observed next-token target during free generation.</p>'),
         s('s04-cap-decode', 'Choose one token from the vocabulary scores',
           flow([('Frozen model', 'logits [1, 4,000]', 'q'), ('Vocabulary softmax', 'token probabilities', 'a'),
                 ('Choose a token', 'greedy or sample', 'd')]),
           'Greedy decoding takes the highest score; sampling draws from the probability distribution. Exclude PAD, BOS and UNK as outputs. EOS can stop the story.',
+          code='with torch.no_grad():\n    logits = model(X)\n    logits[:, [0, 1, 3]] = float("-inf")  # exclude PAD, BOS, UNK\n    next_id = logits.argmax(dim=-1).item()  # greedy choice',
           companion='<p>Attention softmax chooses source positions. Vocabulary softmax supplies next-token probabilities. Cross-entropy uses raw logits during training; we do not first apply this generation softmax before that loss.</p>'),
         s('s04-cap-generate', 'Append the chosen token and run the model again',
           flow([('BOS lily found', 'known prefix', 'e'), ('Suppose choice = a', 'illustrative choice', 'd'),
                 ('BOS lily found a', 'next input prefix', 'e')]),
           'Keep generating until EOS or a token limit. Training used observed previous words; generation now feeds back the model’s own choices.',
+          code='finished = next_id == real_stoi["<EOS>"]\nif not finished:\n    history.append(next_id)  # crop/pad history, then run the same model again',
           companion='<p>“a” here is an illustrative choice, not a claimed checkpoint output. The saved continuations later show the actual outputs. An early mistake can alter every later input. The weights stay fixed throughout generation.</p>'),
     ]))
     scores = [[LABELS[k], f'{result["aggregate"][k]["test_loss"]["mean"]:.3f} ± {result["aggregate"][k]["test_loss"]["sample_std"]:.3f}',

@@ -10,6 +10,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'notebooks/wordlm'))
 from slow_walkthrough import STAGES
+from tinystories_map import setup_checkpoint
 
 SETUP_STEPS = (
     'data', 'story-complete', 'story-excerpts', 'split', 'sentence',
@@ -54,7 +55,8 @@ def setup_frames(stage):
             companion += f'<details><summary>{escape(question)}</summary><p>{escape(answer)}</p></details>'
         notes = source['body'] + ' This figure is reused from the Part II TinyStories lab.'
         if key == 'data':
-            notes += ' Aim for 10–15 minutes through the TinyStories finale: 5–6 minutes on stories and batches, 4–5 on the multi-head model and generation, 2–3 on results and the app. The successive frames reveal small steps; avoid treating each as a separate mini-lecture.'
+            notes += ' Aim for 10–15 minutes through the TinyStories finale: move quickly between each map/code checkpoint and its example. Spend 5–6 minutes on stories and batches, 4–5 on the multi-head model and generation, 2–3 on results and the app.'
+        result.append(setup_checkpoint(stage, key, source['title']))
         result.append(stage('s03-data-' + key, source['title'], figure, body,
                             notes=notes, companion=companion))
     return result

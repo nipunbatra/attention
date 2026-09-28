@@ -15,24 +15,41 @@ try {
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(pathToFileURL(path.resolve('part3.html')).href);
   await page.evaluate(()=>document.fonts.ready);
-  assert.equal(manifest.length,52);
+  assert.equal(manifest.length,80);
   assert.deepEqual(await page.locator('.mh-frame').evaluateAll(es=>es.map(e=>e.id)),manifest.map(s=>s.key));
   assert.equal(await page.locator('#s01 .frame,#s02 .frame').count(),7,'Finish head overview in seven frames');
   assert.equal(await page.locator('#s02 .frame').last().getAttribute('id'),'s02-cap-map');
   assert.equal(await page.locator('.mh-frame').last().getAttribute('id'),'s06-cap-app');
   assert.equal(await page.locator('#s02-cap-map [data-map-head]').count(),2);
   assert.equal(await page.locator('#s02-cap-map [data-map-message]').count(),2);
-  assert.equal(await page.locator('#s03 .frame').count(),27,'Complete story-to-batch sequence and explicit experiment-scale transition');
-  assert.equal(await page.locator('#s04 .frame').count(),12,'All multi-head forward, training and generation operations');
+  assert.equal(await page.locator('#s03 .frame').count(),54,'Every setup step has a full-map/code checkpoint and its preserved example');
+  assert.equal(await page.locator('#s04 .frame').count(),13,'Model setup and all forward, training and generation operations');
   const setup=['data','story-complete','story-excerpts','split','sentence','tokenization-intro','tokenization-choices','tokenization-rules','tokenize','vocabulary','special','boundaries','story-indices','one-pair','pair-first','pair-second','windows-first','windows-last','pairs-tensors','counts-story','counts','context','batch','batch-ids','batches'];
-  assert.deepEqual((await page.locator('#s03 .frame').evaluateAll(es=>es.map(e=>e.id))).slice(0,25),setup.map(s=>'s03-data-'+s));
+  assert.deepEqual((await page.locator('#s03 .frame').evaluateAll(es=>es.map(e=>e.id))).slice(0,50),setup.flatMap(s=>['s03-map-'+s,'s03-data-'+s]));
+  const maps = page.locator('svg[data-pipeline="tinystories"]');
+  assert.equal(await maps.count(),40,'Full map on all 27 setup and 13 model checkpoints');
+  const structure = await maps.evaluateAll(svgs=>svgs.map(svg=>({
+    nodes:[...svg.querySelectorAll('[data-stage]')].map(g=>[g.dataset.stage,...['x','y','width','height'].map(a=>g.querySelector('rect').getAttribute(a))]),
+    edges:[...svg.querySelectorAll('[data-edge]')].map(g=>[g.dataset.edge,g.getAttribute('d')]),
+    focus:svg.dataset.focus.split(' '),
+    highlighted:[...svg.querySelectorAll('[data-active="true"]')].map(g=>g.dataset.stage),
+    code:svg.closest('.frame').querySelector('pre code')?.textContent,
+  })));
+  for(const m of structure){
+    assert.deepEqual(m.nodes,structure[0].nodes,'Node positions stay fixed');
+    assert.deepEqual(m.edges,structure[0].edges,'Connections stay fixed');
+    assert.deepEqual([...m.focus].sort(),[...m.highlighted].sort());
+    assert(m.code?.trim(),'Every map has the matching code');
+  }
+  assert.deepEqual(await page.locator('#s04-cap-embed svg').getAttribute('data-focus'),'qkv0 qkv1 qkv2 qkv3');
+  assert((await page.locator('#s04-cap-embed pre').textContent()).includes('reshape(B, T, 4, 16).transpose(1, 2)'));
   for(const key of setup){
     const caption=await page.locator('#s03-data-'+key+' svg title').textContent();
     assert(caption.length>0,'Original figure survives: '+key);
   }
   assert((await page.locator('#s03-data-vocabulary').textContent()).includes('Beginning of sequence'));
   assert((await page.locator('#s03-data-boundaries').textContent()).includes('whole story'));
-  assert((await page.locator('#s04-cap-prompt').textContent()).includes('Do not append EOS'));
+  assert((await page.locator('#s04-cap-prompt pre').textContent()).includes('"<BOS>"'));
   assert.equal(await page.locator('#s02-v-head1-matrices,#s07-v-patches,#s06-v-model-mlp').count(),0,'Long calculations and other model walkthroughs are off the lecture path');
   assert((await page.locator('#s02-cap-roles > p').textContent()).split(/\s+/).length<22,'Keep the roles recap terse');
   for(const [kind,color] of [['mlp','e'],['attention','k'],['multihead','d']]) {
@@ -71,7 +88,7 @@ try {
       },step.key);
       assert.equal(await page.locator('.frame.is-live').getAttribute('id'),step.key);
       assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,step.key+' fits '+viewport.width);
-      if(viewport.width===1280||['s02-cap-map','s03-data-story-complete','s03-data-vocabulary','s03-data-pairs-tensors','s03-cap-scale','s04-cap-embed','s05-cap-curves','s06-cap-samples'].includes(step.key))
+      if(viewport.width===1280||['s02-cap-map','s03-map-data','s03-map-vocabulary','s03-map-windows-first','s03-map-real-windows','s03-data-story-complete','s03-data-vocabulary','s03-data-pairs-tensors','s03-cap-scale','s04-cap-embed','s04-cap-weights','s05-cap-curves','s06-cap-samples'].includes(step.key))
         await page.screenshot({path:path.join(shots,step.key+'-'+viewport.width+'.png')});
     }
   }

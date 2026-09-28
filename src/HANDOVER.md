@@ -10,6 +10,32 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+2026-09-28 held TinyStories pipeline (supersedes the 52-frame layout below):
+
+- `tinystories_map.py` generates one editable SVG layout for the entire
+  story-to-generation pipeline. Keep its node and edge geometry fixed across
+  all 40 checkpoints; change only highlights and the toy/real shape labels.
+  Four parallel head lanes show Q/K/V, scores, mask/softmax and AV. Values,
+  observed targets, the residual and the generation loop have separate routes.
+- `tinystories_setup.py` alternates 27 map/code checkpoints with 27 examples
+  (the 25 byte-identical original figures plus two real-experiment bridges).
+  `multihead_capstone.py` uses that same map for 13 model/learning/generation
+  frames, including explicit construction and three Q/K/V reshape/transposes.
+  Each code excerpt uses the same `model`; the mask matches the teaching
+  full-sequence path, whose final logits equal the optimized training path.
+- Part III now has 80 frames: 7 introduction, 54 setup, 13 model and 6
+  results/app. Treat map/example pairs as quick location-then-example reveals,
+  not 80 separate mini-lectures. Part II and the optional references are unchanged.
+- `part3-heads.js` scopes larger SVGs and fixed-height code panels to these
+  pipeline frames. Do not shrink them to the legacy local-diagram size or
+  squeeze the original worked examples alongside the full map.
+- The setup snippets execute in sequence; tests verify model construction,
+  forward code, masks, an update and fixed-parameter generation. Browser checks
+  compare every map's node/edge geometry and active-stage mapping, as well as
+  all frames in three presentation sizes. No results, notebooks or checkpoints
+  were modified. The presentation guidance informed the repeated editable map
+  and separate worked-example reveals.
+
 2026-09-28 restored TinyStories finale (supersedes the compressed 22-frame route):
 
 - `multihead_capstone.py` supplies 52 classroom frames. Seven cover head

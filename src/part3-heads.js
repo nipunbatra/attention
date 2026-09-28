@@ -24,6 +24,12 @@
   notation.forEach(([g,sym,mean,shape,dims])=>AT.notation.push({g,sym,mean,shape,dims:()=>dims,parts:['multihead']}));
   const style = document.createElement('style');
   style.textContent = `.mh-frame{min-width:0}.mh-figure{max-width:100%;overflow-x:auto}.mh-figure svg{display:block;width:100%;height:auto;min-width:670px}body.present .mh-figure{overflow:visible}body.present .mh-figure svg{min-width:0;max-height:430px}body.present .mh-frame:has(pre) .mh-figure svg{max-height:265px}body.present .mh-frame pre{font-size:22px;line-height:1.35;padding:14px 18px;margin:12px 0}body.present .mh-frame p{margin:12px 0;line-height:1.4}body:not(.present) .mh-frame{padding:24px 0;border-bottom:1px solid var(--line)}body:not(.present) .mh-frame:before{content:attr(data-title);display:block;font-weight:700;font-size:1.25em;margin-bottom:18px}.mh-controls{display:flex;gap:16px;align-items:center;flex-wrap:wrap}.mh-controls select{font:inherit;padding:8px;border:1px solid var(--line);border-radius:5px;background:var(--card)}.mh-readout{font-size:.85em}.mh-live-svg{max-width:100%;overflow-x:auto}.mh-live-svg svg{min-width:800px;width:100%;display:block}body.present .mh-live-svg{overflow:visible}body.present .mh-live-svg svg{min-width:0}`;
+  // The end-to-end TinyStories diagram is the main visual, not a small inset.
+  // Scope this to the new map so the optional arithmetic deck stays unchanged.
+  style.textContent += `body.present .mh-frame:has(svg[data-pipeline]) .mh-figure svg{max-height:415px}
+    body.present .mh-frame:has(svg[data-pipeline]) p:empty{display:none}
+    body.present .mh-frame:has(svg[data-pipeline]) pre{font-size:20px;line-height:1.25;padding:10px 14px;margin:8px 0;min-height:120px;box-sizing:border-box}
+    body:not(.present) svg[data-pipeline]{min-width:1000px}`;
   document.head.appendChild(style);
   const mm = (a,b) => a.map(row => b[0].map((_,j) => row.reduce((s,x,k) => s+x*b[k][j],0)));
   const softmax = row => {const e=row.map(x=>Math.exp(x-Math.max(...row)));const z=e.reduce((a,b)=>a+b,0);return e.map(x=>x/z);};
