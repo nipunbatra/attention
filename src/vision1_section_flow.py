@@ -16,16 +16,16 @@ TOPICS = [
      'How do we make those rows from an image?',
      ('RGB pixels', 'Shared linear layer', 'Patch embeddings'),
      'Read one small patch, calculate its embedding, then scale the same operation to a real photograph.'),
-    ('Remembering where patches belong',
-     'The shared layer describes what is inside each patch.',
-     'How will the rows remember the picture’s layout?',
-     ('Move photo patches', 'Add their locations', 'Calculate four rows'),
-     'Start with the photograph. Then build a small numerical example, including the extra row used to summarize the image.'),
-    ('Queries, keys and values in vision',
-     'We have patch rows and a row for the image summary.',
-     'How does one row gather useful information?',
-     ('Compare Q and K', 'Choose weights', 'Combine values'),
-     'Use the face and fur crops to explain the roles, then calculate one complete attention message.'),
+    ('From patch rows to an image prediction',
+     'We followed one real patch into the first attention head.',
+     'How does the whole photograph get a label?',
+     ('Add a summary row', 'Attention and MLP', 'Predict the label'),
+     'Continue with the same photograph and checkpoint. Follow all 197 rows through the blocks, then read the image summary.'),
+    ('Calculate attention with four patches',
+     'We have seen the complete photograph-to-prediction path.',
+     'Can we calculate an attention message ourselves?',
+     ('A small image', 'Five input rows', 'One message'),
+     'Switch explicitly to a four-patch worksheet with chosen weights. Work out the operations that the real model performed at a larger scale.'),
     ('More than one attention head',
      'One head has produced a weighted message.',
      'What could a second head tell us?',
@@ -248,18 +248,24 @@ def introduce(b, sections):
     result = []
     for i, (_, frames) in enumerate(sections, 1):
         topic, previous, question, steps, caption = TOPICS[i-1]
-        title = f'{i:02} · {topic}'
-        body = t(35, 58, previous, 29, 'ink-2')
-        for j, phrase in enumerate(wrap(question, 49)):
-            body += t(35, 157+j*52, phrase, 40, 'ink', weight=600)
+        title = f'Section {i} · {topic}'
+        body = t(48, 58, 'SECTION', 23, 'c-e', weight=600)
+        body += t(48, 177, f'{i:02}', 110, 'c-e', weight=600)
+        body += line(220, 35, 220, 405, 'c-e', 2)
+        for j, phrase in enumerate(wrap(topic, 34)):
+            body += t(264, 78+j*62, phrase, 46, 'ink', weight=700)
+        for j, phrase in enumerate(wrap(previous, 61)):
+            body += t(264, 217+j*34, phrase, 26, 'ink-2')
+        for j, phrase in enumerate(wrap(question, 51)):
+            body += t(264, 309+j*36, phrase, 30, 'ink', weight=600)
         for j, label in enumerate(steps):
-            x = 35+j*385
-            body += t(x, 337, label, 28, 'c-e')
+            x = 264+j*290
+            body += t(x, 414, label, 22, 'c-e')
             if j < 2:
-                body += arrow(x+295, 327, x+360, 327, 'c-e')
+                body += arrow(x+245, 406, x+278, 406, 'c-e')
         opener = add(f'vision-topic-{i:02}', title, body, caption, question,
                      'Pause at the section question. Connect the previous result to the three steps, then advance to the concrete example.',
-                     '', '<p>'+escape(previous)+'</p><p><strong>'+escape(question)+'</strong></p>'
+                     '', '<p class="vp-section-label">Section '+str(i)+'</p><h3>'+escape(topic)+'</h3><p>'+escape(previous)+'</p><p><strong>'+escape(question)+'</strong></p>'
                      +'<p>'+' → '.join(escape(s) for s in steps)+'</p>')
         opener = opener.replace('class="frame vp-frame"', 'class="frame vp-frame vp-topic-break"', 1)
         ordered = [opener]

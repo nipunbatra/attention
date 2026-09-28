@@ -3,7 +3,7 @@
     1280,
     720
   ],
-  "teaching_frames": 201,
+  "teaching_frames": 211,
   "cover_frames": 1,
   "review": "The previous 141 final states (140 teaching frames plus cover) passed the full geometry review. All six added implementation frames passed SVG text bounds and collision checks at 1280\u00d7720 and were visually inspected. Phone reading mode was rechecked at 390\u00d7844.",
   "geometry": "No clipped SVG text, text collisions, overflowing captions or code found.",
@@ -851,5 +851,46 @@
     "reveal_review": "Initial numbering state shows P1/P2 and the divisions to calculate. Reveal 1 gives fourteen columns/rows and the first two row endpoints. Reveal 2 gives last-row numbers, 196 total and array shape.",
     "axis_convention": "x increases right, y increases down; image boundaries 0 to 224 pixels.",
     "audio_or_video_played": false
+  },
+  "model_journey_and_section_breaks": {
+    "viewports": [
+      [
+        1280,
+        720
+      ],
+      [
+        995,
+        1031
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "affected_final_frames_checked": 116,
+    "affected_frame_overflows": [],
+    "new_diagrams_and_dividers_geometry_checked": 24,
+    "new_text_collisions": [],
+    "new_text_outside_svg": [],
+    "phone_document_width": 390,
+    "phone_scroll_width": 390,
+    "phone_section_overflows": [],
+    "keyboard_transition": [
+      "real-patch-qkv",
+      "model-journey-checkpoint",
+      "vision-topic-03",
+      "real-cls-purpose"
+    ],
+    "new_real_sequence": [
+      "real-cls-purpose",
+      "real-cls-sequence",
+      "real-cls-attention",
+      "real-cls-message",
+      "real-cls-mlp",
+      "real-cls-depth",
+      "real-cls-readout",
+      "real-cls-prediction"
+    ],
+    "numerical_trace": "explicit attention, MLP, both residuals, 12 blocks, final CLS head and probabilities checked against the saved pretrained model"
   }
 }

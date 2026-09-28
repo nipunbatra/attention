@@ -50,11 +50,34 @@ body.present #vl-cost {font-size:28px}
 body:not(.present) .sec .companion {overflow-wrap:anywhere;}
 .vp-qkv-crop {margin:24px 0 32px;}
 .vp-qkv-crop figcaption {margin-top:12px;line-height:1.5;}
-</style><section id="s01" class="sec" data-title="The image classification task" data-lit=""><header class="sec-head"><span class="sec-num">01</span><div><h2>The image classification task</h2></div></header><div class="frame vp-frame vp-topic-break" id="vision-topic-01" data-title="01 · The image classification task" data-autobuild="off">
+
+/* Section changes have their own visual grammar; steps belong to worked examples. */
+.vp-topic-break {background:var(--t-e);border-left:8px solid var(--c-e);padding:28px 24px;margin:34px 0;}
+.vp-topic-break .vp-caption {padding:0 30px;color:var(--ink-2);}
+.vp-section-label {font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--c-e);}
+body.present .sec.is-live:has(.vp-topic-break.is-live)>.sec-head {display:none;}
+body.present .vp-topic-break.is-live {padding:28px 24px;margin:0;border-left-width:10px;}
+body.present .vp-topic-break .vp-caption {font-size:24px;max-width:100%;padding:8px 36px 0;}
+.vp-pathbar {border-bottom:1px solid var(--line);padding:0 0 6px;margin:0 0 14px;}
+.vp-path-label {font:600 14px/1.3 var(--font-ui);letter-spacing:.025em;color:var(--c-e);margin:0 0 4px;}
+.vp-pathbar svg {display:block;width:100%;height:auto;}
+body.present .vp-path-label {font-size:18px;}
+body.present .vp-pathbar {margin:0 0 8px;padding:0;}
+body.present .vp-with-route .vp-caption {font-size:24px;}
+body.present .vp-with-route.is-live::before,body.present .vp-with-route.is-live::after {display:none;}
+body.present .vp-with-route.is-live>.vp-figure {flex:1 1 0;min-height:0;}
+body.present .vp-with-route.is-live>.vp-figure>svg {height:100%;width:100%;}
+@media(max-width:680px){
+ body:not(.present) .vp-topic-break {padding:24px 18px;}
+ body:not(.present) .vp-topic-break .vp-caption {padding:0;}
+ body:not(.present) .vp-pathbar svg {display:none;}
+ .vp-map-list {padding-left:24px;line-height:1.9;}
+}
+</style><section id="s01" class="sec" data-title="The image classification task" data-lit=""><header class="sec-head"><span class="sec-num">01</span><div><h2>The image classification task</h2></div></header><div class="frame vp-frame vp-topic-break" id="vision-topic-01" data-title="Section 1 · The image classification task" data-autobuild="off">
 <script type="text/x-notes">What should a model predict from a photograph?
 Pause at the section question. Connect the previous result to the three steps, then advance to the concrete example.</script>
-<div class="vp-figure vp-desktop"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 440" role="img" aria-label="01 · The image classification task" style="font-family:Avenir Next,Segoe UI,sans-serif;--ink:#14171F;--ink-2:#4A5160;--ink-3:#6B7280;--line:#D9DDE5;--card:#FFFFFF;--transparent:transparent;--c-e:#245EDB;--t-e:#E4ECFF;--c-q:#8B2CDE;--t-q:#F1E5FC;--c-k:#AA4E08;--c-v:#0F766E;--c-a:#BE123C;--c-d:#147737;"><title>01 · The image classification task</title><text x="35" y="58" font-size="29" fill="var(--ink-2)" text-anchor="start" font-weight="500">In text, a prefix led to a prediction.</text><text x="35" y="157" font-size="40" fill="var(--ink)" text-anchor="start" font-weight="600">What should a model predict from a photograph?</text><text x="35" y="337" font-size="28" fill="var(--c-e)" text-anchor="start" font-weight="500">Labeled photos</text><path d="M330 327 L395 327" fill="none" stroke="var(--c-e)" stroke-width="2.5" stroke-dasharray=""/><path d="M384.8683290659683 331.28360176539513 L395 327" fill="none" stroke="var(--c-e)" stroke-width="2.5" stroke-dasharray=""/><path d="M395 327 L384.8683290659683 322.71639823460487" fill="none" stroke="var(--c-e)" stroke-width="2.5" stroke-dasharray=""/><text x="420" y="337" font-size="28" fill="var(--c-e)" text-anchor="start" font-weight="500">The image task</text><path d="M715 327 L780 327" fill="none" stroke="var(--c-e)" stroke-width="2.5" stroke-dasharray=""/><path d="M769.8683290659683 331.28360176539513 L780 327" fill="none" stroke="var(--c-e)" stroke-width="2.5" stroke-dasharray=""/><path d="M780 327 L769.8683290659683 322.71639823460487" fill="none" stroke="var(--c-e)" stroke-width="2.5" stroke-dasharray=""/><text x="805" y="337" font-size="28" fill="var(--c-e)" text-anchor="start" font-weight="500">Useful clues</text></svg></div>
-<div class="vp-mobile"><p>In text, a prefix led to a prediction.</p><p><strong>What should a model predict from a photograph?</strong></p><p>Labeled photos → The image task → Useful clues</p></div>
+<div class="vp-figure vp-desktop"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 440" role="img" aria-label="Section 1 · The image classification task" style="font-family:Avenir Next,Segoe UI,sans-serif;--ink:#14171F;--ink-2:#4A5160;--ink-3:#6B7280;--line:#D9DDE5;--card:#FFFFFF;--transparent:transparent;--c-e:#245EDB;--t-e:#E4ECFF;--c-q:#8B2CDE;--t-q:#F1E5FC;--c-k:#AA4E08;--c-v:#0F766E;--c-a:#BE123C;--c-d:#147737;"><title>Section 1 · The image classification task</title><text x="48" y="58" font-size="23" fill="var(--c-e)" text-anchor="start" font-weight="600">SECTION</text><text x="48" y="177" font-size="110" fill="var(--c-e)" text-anchor="start" font-weight="600">01</text><path d="M220 35 L220 405" fill="none" stroke="var(--c-e)" stroke-width="2" stroke-dasharray=""/><text x="264" y="78" font-size="46" fill="var(--ink)" text-anchor="start" font-weight="700">The image classification task</text><text x="264" y="217" font-size="26" fill="var(--ink-2)" text-anchor="start" font-weight="500">In text, a prefix led to a prediction.</text><text x="264" y="309" font-size="30" fill="var(--ink)" text-anchor="start" font-weight="600">What should a model predict from a photograph?</text><text x="264" y="414" font-size="22" fill="var(--c-e)" text-anchor="start" font-weight="500">Labeled photos</text><path d="M509 406 L542 406" fill="none" stroke="var(--c-e)" stroke-width="2.5" stroke-dasharray=""/><path d="M531.8683290659683 410.28360176539513 L542 406" fill="none" stroke="var(--c-e)" stroke-width="2.5" stroke-dasharray=""/><path d="M542 406 L531.8683290659683 401.71639823460487" fill="none" stroke="var(--c-e)" stroke-width="2.5" stroke-dasharray=""/><text x="554" y="414" font-size="22" fill="var(--c-e)" text-anchor="start" font-weight="500">The image task</text><path d="M799 406 L832 406" fill="none" stroke="var(--c-e)" stroke-width="2.5" stroke-dasharray=""/><path d="M821.8683290659683 410.28360176539513 L832 406" fill="none" stroke="var(--c-e)" stroke-width="2.5" stroke-dasharray=""/><path d="M832 406 L821.8683290659683 401.71639823460487" fill="none" stroke="var(--c-e)" stroke-width="2.5" stroke-dasharray=""/><text x="844" y="414" font-size="22" fill="var(--c-e)" text-anchor="start" font-weight="500">Useful clues</text></svg></div>
+<div class="vp-mobile"><p class="vp-section-label">Section 1</p><h3>The image classification task</h3><p>In text, a prefix led to a prediction.</p><p><strong>What should a model predict from a photograph?</strong></p><p>Labeled photos → The image task → Useful clues</p></div>
 <p class="vp-caption">Start with the dataset, choose an image label, then ask which parts of the photograph help us decide.</p></div>
 <div class="frame vp-frame" id="dataset-gallery" data-title="What does our animal dataset look like?" data-autobuild="off">
 <script type="text/x-notes">What changes across photos that share the same dog or cat label?

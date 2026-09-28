@@ -522,6 +522,8 @@ optimizer.step()''',t(30,65,'image + known label',26,'c-e')+arrow(180,92,180,160
     sections=expand_patch_embedding(b,sections)
     from vision1_section_flow import introduce as introduce_section_flow
     sections=introduce_section_flow(b,sections)
+    from vision1_model_journey import connect_journey
+    sections=connect_journey(b,sections)
     ordered=[]
     for n,(title,frames) in enumerate(sections,1):
         original_section(n,title,frames)

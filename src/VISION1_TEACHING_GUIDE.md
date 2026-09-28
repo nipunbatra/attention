@@ -2,7 +2,7 @@
 
 **Deck:** [vision1.html](../vision1.html) · **Present:** open the deck and press **P** · **Lab:** [03_vision_transformer_lab.ipynb](../notebooks/vision/03_vision_transformer_lab.ipynb)
 
-201 teaching frames plus cover; 14 sections. Silent, self-contained HTML slides with image assets and math embedded. Reading mode includes the longer explanations, source links, and numerical tables. Arrow keys advance one reveal; **S** opens presenter notes; **O** opens the overview; **C** shows classroom controls. Every frame has a question to ask and a note about what to point at.
+211 teaching frames plus cover; 14 sections. Silent, self-contained HTML slides with image assets and math embedded. Reading mode includes the longer explanations, source links, and numerical tables. Arrow keys advance one reveal; **S** opens presenter notes; **O** opens the overview; **C** shows classroom controls. Every frame has a question to ask and a note about what to point at.
 
 ## The teaching thread
 
@@ -20,19 +20,23 @@ The two-crop Q/K/V warm-up and the pooling example use their own clearly labeled
 2. **Trained small ViT:** 8×8 noisy grayscale images, sixteen 2×2 patches, D=16, two complete pre-LayerNorm blocks, two heads per block and MLP width 32. All trainable components learn. Data splits are independent random draws, with opposite-label pairs sharing exactly the same patch multiset.
 3. **Pretrained real ViT:** `vit_tiny_patch16_224.augreg_in21k_ft_in1k`; 224×224 RGB, 196 patches plus CLS, D=192, 12 blocks, three heads per block, 1,000 ImageNet outputs. Exact photos, preprocessing, probabilities, attention arrays and interventions are saved.
 
-## Section openings and position intuition
+## One model map, then a deliberate worksheet
 
-All 14 sections now begin with a numbered presentation slide: the result students already have, a question to carry into the next topic, and three concrete steps. The section headings and overview use the same topic names. These are actual presentation frames, so the transitions remain visible in present mode.
+Each section opens on a tinted panel with an explicit **SECTION** label and large section number. These chapter breaks use their own CSS. Worked-image steps instead use the eyebrow **Photo walkthrough · Step n of 12** above the recurring model diagram. The main slide title names the operation without a competing number.
 
-Section 3 begins with the original dog photograph beside an arrangement made from exactly the same 16 patches. Follow the outlined face patches from row 2 to row 4. Ask what changed: the layout, while each patch’s pixels stayed intact. There is no model prediction for this rearranged photograph and no claim that the dog label should change.
+Section 2 starts with the full architecture SVG: image → patches → projection → CLS + position → attention → MLP → final CLS → class scores → softmax. A compact version uses exactly the same box order on detailed slides and highlights the active operation. The full drawing shows both LayerNorm operations and residual paths, as well as the 12-block repetition. This is the actual pretrained ViT-Tiny: D=192, three 64-feature heads, and MLP hidden width 768.
 
-The next two slides follow one unchanged face crop through the shared patch layer, then pair its content vector with the position vector for its current slot. Reconnect this addition to the text embeddings. Only then introduce the separate four-patch worksheet task: predict “across the top” or “down the left”. The toy exists so students can calculate every step; its labels describe arrangements. Counting two filled and two empty patches cannot distinguish those labels.
+After step 10 has stacked the patch content rows, use the three photograph-based position slides. Move the same face patches between image slots; their content stays fixed but their locations change. Then perform the measured position addition in step 11. This puts the motivation before the calculation. Keep the distinction between moving content among fixed slots and reordering whole content-plus-position pairs.
 
-Keep the distinction between moving image content among fixed slots and reordering whole content-plus-position rows. The first changes which location belongs to which content; the second preserves those pairings. The reading notes state the permutation-equivariance argument precisely and link to the MIT reference.
+Step 12 follows one patch into Q/K/V. The next full-map checkpoint explicitly says that this is not yet an image prediction. Section 3 completes the **same photograph and same checkpoint**: introduce CLS, assemble 197 positioned rows, compare queries with keys, mix values, join heads, add the attention residual, run the MLP and its residual, repeat all 12 blocks, normalize and read CLS, and compute 1,000 ImageNet class scores and probabilities. CLS is present before attention in the actual computation; it is not appended after the blocks.
+
+The opening cat/dog question motivates image classification. The pretrained example predicts 1,000 ImageNet labels; the slides name that change explicitly. Its measured top label is Newfoundland (95.73%), not a claimed test accuracy. `notebooks/vision/trace_real_classifier.py` verifies the explicit first-block attention, both residuals, MLP, complete 12-block path and final logits against the checkpoint. `figures/vision1/real-classifier-path.json` stores the shapes, selected vectors, source weights and top-three outputs.
+
+Only after the real prediction does Section 4 introduce the smaller worksheet: classify the arrangement of four grayscale patches using chosen weights. The worksheet preserves hand calculations from the earlier lesson. It omits LayerNorm and the block MLP to keep the arithmetic manageable; Section 7 restores those operations. Do not present its numbers as a second pass through the dog model. The shared route diagram locates each calculation within the architecture.
 
 ## Suggested pacing
 
-Use three meetings, or teach sections 1–7 first and assign the implementation as a lab. The 201 frames are short steps; the total is not a target for one class. Pause for predictions and hand calculations.
+Use three meetings, or teach sections 1–7 first and assign the implementation as a lab. The 211 frames are short steps; the total is not a target for one class. Pause for predictions and hand calculations.
 
 | Meeting | Sections | Student activity |
 |---|---|---|
@@ -56,7 +60,7 @@ The opening task recap keeps the name example from Part I, then adds the river-b
 
 After the text/image query diagram, show three receiver examples: a dark coat patch, a partial face and a branch. Locate each receiver in the whole photograph before revealing a possible question and two actual source crops. All use the same query projection within a head/layer; the receiver row changes. Keep the task fixed: one image label. These are possible learned behaviours, with no patch-level labels or claimed measured head meanings.
 
-For keys and values, reuse the same eye/muzzle, coat and branch crops. A key supplies matching features; its relevance depends on the receiver's query. A value supplies visual information to mix, and the source's value is shared across receivers even though their weights can differ. Explain a₁₀,₇ as P10 reading P7, then reveal the symbolic sum. Section 4 follows with the existing fully numerical face/branches example.
+For keys and values, reuse the same eye/muzzle, coat and branch crops. A key supplies matching features; its relevance depends on the receiver's query. A value supplies visual information to mix, and the source's value is shared across receivers even though their weights can differ. Explain a₁₀,₇ as P10 reading P7, then reveal the symbolic sum. The attention part of Section 4 reconnects the roles to the fully numerical face/branches example, then works out the four-patch attention matrix.
 
 ## Draw the patch layer as a 12-to-2 network
 
@@ -68,7 +72,7 @@ The text/image embedding comparison now says that the patch output has no activa
 
 ## Introduce terms before using them
 
-The opening task comparison uses “one image summary.” Section 3 introduces the classification token (CLS) with the crop-to-summary diagram, then its shared learned starting vector, before CLS appears in the position-vector table. Section 6 names mean pooling alongside the coordinate-by-coordinate average. The previous text lessons supply the familiar operations; new vision terms are defined where their role becomes visible.
+The opening task comparison uses “one image summary.” The full-model map first names CLS as the classification token, and Section 3 explains its learned starting row before assembling the full sequence. Section 4 then chooses a small CLS vector for the worksheet. Section 6 names mean pooling alongside the coordinate-by-coordinate average. The previous text lessons supply the familiar operations; new vision terms are defined where their role becomes visible.
 
 ## Opening transition and later comparison
 
@@ -96,7 +100,7 @@ The real-image run in section 2 is a twelve-step sequence. Each operation consum
 8. **Inspect its output:** c₆₃ contains 192 measured features. Show the first three and the last coordinate with their indices.
 9. **Repeat for P64:** retain P63’s path while revealing the neighboring crop, its different input values and its different output. Both paths cross the same layer.
 10. **Stack all output rows:** X (196×768) becomes C (196×192). Match representative image crops to their actual output vectors. Reading mode includes a collapsible table of all 196 rows’ first three coordinates; the complete vectors are in the saved JSON.
-11. **Add position:** illustrate c₆₃+p₆₃=e₆₃, then show C+P=E for all patch rows, each matrix 196×192. The following section motivates position information with moved photograph patches.
+11. **Add position:** illustrate c₆₃+p₆₃=e₆₃, then show C+P=E for all patch rows, each matrix 196×192. The preceding three-slide photograph interlude motivates this position information before the addition.
 12. **Enter the first block:** LayerNorm preserves the 192-feature width. Each Q/K/V projection for one of three heads has 192×64 weights and 64 biases, producing a 1×64 row for this patch.
 
 P63 is row 5, column 7; P64 is row 5, column 8. The subscript is a patch identity, while 768 and 192 are feature counts. All shapes omit the batch axis because the walkthrough follows one image. This grid differs explicitly from the earlier coarse 4×4 illustration.

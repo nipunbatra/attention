@@ -52,7 +52,7 @@ for i,(name,image) in enumerate(p['images'].items()):
                 np.testing.assert_allclose(actual[2*i+j]['heads'][h][key],expected['heads'][h][key],atol=1e-12)
 
 manifest=json.loads((ROOT/'figures/vision1/frame-manifest.json').read_text())
-assert len(manifest)==201
+assert len(manifest)==211
 required={'task-side-by-side','task-mask-reason','qkv-match-numbers','qkv-read-numbers','qkv-change-key','qkv-change-value','qkv-no-prompt','cls-start','cls-two-images','cls-learns','pooling-example','readout-choice'}
 assert required <= {x['id'] for x in manifest}
 assert all(len(x['caption'].split())<=40 and '\n' in x['notes'] for x in manifest)
@@ -73,6 +73,17 @@ notebook=json.loads((ROOT/'notebooks/vision/03_vision_transformer_lab.ipynb').re
 assert all(c.get('execution_count') for c in notebook['cells'] if c['cell_type']=='code')
 assert len({x['id'] for x in manifest})==len(manifest)
 assert all(x['section'] and x['frame'] for x in manifest)
+ids=[x['id'] for x in manifest]
+assert ids.index('model-journey-overview') < ids.index('s01-rows')
+assert ids.index('position-photo-layout') < ids.index('real-patch-position')
+assert ids.index('real-patch-qkv') < ids.index('real-cls-purpose') < ids.index('real-cls-prediction') < ids.index('s02-small')
+assert all(x['title'].startswith('Section ') for x in manifest if x['id'].startswith('vision-topic-'))
+classifier=json.loads((ROOT/'figures/vision1/real-classifier-path.json').read_text())
+assert classifier['with_cls']==[197,192] and classifier['mlp_hidden']==[197,768]
+np.testing.assert_allclose(sum(classifier['cls_head1_weights']),1,atol=2e-6)
+np.testing.assert_allclose([x['probability'] for x in classifier['top3']],
+                           [x['probability'] for x in report['results'][0]['top3']],atol=1e-5)
+assert len(classifier['verified'])==5
 inspection=json.loads((ROOT/'figures/vision1/inspection.json').read_text())
 for record in inspection['attention']:
     np.testing.assert_allclose(np.sum(record['patch_weights'])+record['cls_weight'],1.,atol=2e-6)

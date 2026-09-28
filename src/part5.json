@@ -22,12 +22,12 @@
     },
     {
       "id": "s03",
-      "title": "Remembering where patches belong",
+      "title": "From patch rows to an image prediction",
       "lit": ""
     },
     {
       "id": "s04",
-      "title": "Queries, keys and values in vision",
+      "title": "Calculate attention with four patches",
       "lit": ""
     },
     {
@@ -92,11 +92,11 @@
     },
     {
       "section": "s03",
-      "label": "Remembering where patches belong"
+      "label": "From patch rows to an image prediction"
     },
     {
       "section": "s04",
-      "label": "Queries, keys and values in vision"
+      "label": "Calculate attention with four patches"
     },
     {
       "section": "s05",

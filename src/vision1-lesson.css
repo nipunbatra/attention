@@ -50,3 +50,26 @@ body.present #vl-cost {font-size:28px}
 body:not(.present) .sec .companion {overflow-wrap:anywhere;}
 .vp-qkv-crop {margin:24px 0 32px;}
 .vp-qkv-crop figcaption {margin-top:12px;line-height:1.5;}
+
+/* Section changes have their own visual grammar; steps belong to worked examples. */
+.vp-topic-break {background:var(--t-e);border-left:8px solid var(--c-e);padding:28px 24px;margin:34px 0;}
+.vp-topic-break .vp-caption {padding:0 30px;color:var(--ink-2);}
+.vp-section-label {font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--c-e);}
+body.present .sec.is-live:has(.vp-topic-break.is-live)>.sec-head {display:none;}
+body.present .vp-topic-break.is-live {padding:28px 24px;margin:0;border-left-width:10px;}
+body.present .vp-topic-break .vp-caption {font-size:24px;max-width:100%;padding:8px 36px 0;}
+.vp-pathbar {border-bottom:1px solid var(--line);padding:0 0 6px;margin:0 0 14px;}
+.vp-path-label {font:600 14px/1.3 var(--font-ui);letter-spacing:.025em;color:var(--c-e);margin:0 0 4px;}
+.vp-pathbar svg {display:block;width:100%;height:auto;}
+body.present .vp-path-label {font-size:18px;}
+body.present .vp-pathbar {margin:0 0 8px;padding:0;}
+body.present .vp-with-route .vp-caption {font-size:24px;}
+body.present .vp-with-route.is-live::before,body.present .vp-with-route.is-live::after {display:none;}
+body.present .vp-with-route.is-live>.vp-figure {flex:1 1 0;min-height:0;}
+body.present .vp-with-route.is-live>.vp-figure>svg {height:100%;width:100%;}
+@media(max-width:680px){
+ body:not(.present) .vp-topic-break {padding:24px 18px;}
+ body:not(.present) .vp-topic-break .vp-caption {padding:0;}
+ body:not(.present) .vp-pathbar svg {display:none;}
+ .vp-map-list {padding-left:24px;line-height:1.9;}
+}

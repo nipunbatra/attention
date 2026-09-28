@@ -65,7 +65,7 @@ def add_real_path(b, add):
         'For the first coordinate, −0.851541 − 0.814817 ≈ −1.666358. The full precision calculation gives e₆₃[0]=−1.6663575. The printed rounded inputs introduce rounding error, so the displayed arithmetic uses ≈. '
         'cᵢ, pᵢ and eᵢ all have shape (1,192). We add them, rather than concatenate them. '
         'This is the same content-plus-position idea used for text tokens. e63 is the input row to the first Transformer block. '
-        'The next slide shows its LayerNorm and Q/K/V projections; the next section motivates why the model needs position information. '
+        'The preceding photograph comparison motivated position information. The next slide shows LayerNorm and Q/K/V projections; the next section completes the real classifier. '
         'The trace checks this sum against the checkpoint’s own position-addition operation; its position table also contains the classification-token slot introduced later.' + evidence,
         mobile_patch()+mobile_rows(['Row · shape 1 × 192', 'First two coordinates'],[
             ['c₆₃: projected content', vec(data['content'], 2)],
