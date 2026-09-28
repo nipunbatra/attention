@@ -6,6 +6,12 @@
 .vp-mobile { display:none; }
 .vp-position-mobile svg { display:block; width:100%; height:auto; }
 .vp-position-mobile p { margin:18px 0 8px; }
+.vp-pet-gallery { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:44px 24px; margin-bottom:28px; }
+.vp-pet-gallery figure { margin:0; text-align:center; }
+body:not(.present) .vp-mobile .vp-pet-gallery img { display:block; width:100%; height:145px; object-fit:contain; }
+.vp-pet-gallery figcaption { display:grid; gap:8px; margin-top:16px; line-height:1.4; }
+.vp-pet-gallery figcaption strong { color:var(--c-e); font-weight:600; }
+.vp-pet-gallery figcaption span { color:var(--ink-2); font-size:15px; }
 .vp-table { width:100%; border-collapse:collapse; font-size:16px; }
 .vp-table th,.vp-table td { border-bottom:1px solid var(--line); padding:10px 5px; text-align:left; }
 .vp-table th { font-size:14px; color:var(--ink-2); }

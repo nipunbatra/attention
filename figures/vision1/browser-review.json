@@ -544,5 +544,56 @@
     ],
     "numerical_checks": "Existing NumPy/PyTorch/JavaScript checks pass; 20 notebook cells execute.",
     "silent": true
+  },
+  "dataset_gallery_spacing_review": {
+    "date": "2026-09-28",
+    "frame": "dataset-gallery",
+    "desktop": {
+      "viewport": [
+        1280,
+        720
+      ],
+      "svg_viewbox": [
+        0,
+        0,
+        1160,
+        540
+      ],
+      "photo_to_species_px": 16.5,
+      "species_to_breed_px": 14.6,
+      "breed_to_next_photo_row_px": 44.4,
+      "caption_bottom_px": 663.4,
+      "clipped_text": [],
+      "horizontal_overflow": false
+    },
+    "annotation_viewport": {
+      "viewport": [
+        995,
+        1031
+      ],
+      "page_width": 995,
+      "caption_bottom_px": 756.0
+    },
+    "phone": {
+      "viewport": [
+        390,
+        844
+      ],
+      "page_width": 390,
+      "photo_box_heights": [
+        145,
+        145,
+        145,
+        145,
+        145,
+        145
+      ],
+      "row_gap_px": 44,
+      "photo_to_caption_px": 16,
+      "label_gap_px": 8,
+      "paired_labels_aligned": true
+    },
+    "review": "Visually inspected desktop, annotation-size viewport, and phone. Taller gallery preserves photo size and separates each photo, species and breed from the next row. All 20 notebook cells still execute.",
+    "silent": true
   }
 }

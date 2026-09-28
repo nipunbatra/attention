@@ -24,19 +24,21 @@ def introduce(b, sections):
               '<a href="figures/vision1/dataset-intro.json">Example labels, dimensions and provenance</a>.')
     intro = []
     body = ''
-    gallery_mobile = '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px">'
+    gallery_mobile = '<div class="vp-pet-gallery">'
     for i, item in enumerate(data['examples']):
         x = 45 + (i % 3) * 385
-        y = 5 + (i // 3) * 215
+        # Keep each photo and its two labels together, then leave a distinct
+        # gutter before the next row. The taller canvas preserves photo size.
+        y = 8 + (i // 3) * 282
         body += image(x, y, 285, 132, photos[item['image_id']])
-        body += t(x + 142.5, y + 164, item['species'], 28, 'c-e', 'middle')
-        body += t(x + 142.5, y + 204, item['breed'], 22, 'ink-2', 'middle')
-        gallery_mobile += ('<figure style="margin:0"><img style="height:145px;object-fit:contain" src="'
+        body += t(x + 142.5, y + 178, item['species'], 28, 'c-e', 'middle')
+        body += t(x + 142.5, y + 226, item['breed'], 22, 'ink-2', 'middle')
+        gallery_mobile += ('<figure><img src="'
                            + photos[item['image_id']] + '" alt="' + escape(item['breed']) + '">'
-                           '<figcaption><strong>' + item['species'] + '</strong><br>'
-                           + escape(item['breed']) + '</figcaption></figure>')
+                           '<figcaption><strong>' + item['species'] + '</strong>'
+                           '<span>' + escape(item['breed']) + '</span></figcaption></figure>')
     gallery_mobile += '</div>'
-    intro.append(frame(
+    gallery = frame(
         'dataset-gallery', 'What does our animal dataset look like?', body,
         'Oxford-IIIT Pet: six examples. Each photo has a species label and a breed label.',
         'What changes across photos that share the same dog or cat label?\nPoint to pose, coat and background. Read the species label first, then the breed beneath it.',
@@ -44,7 +46,11 @@ def introduce(b, sections):
         'These are six selected examples from the test split, chosen to show variety. We use the photos to motivate classification. '
         'Later, our training experiment uses synthetic stripe images, and our pretrained demonstration predicts ImageNet categories. '
         'The lecture does not report training or accuracy on the full Pets dataset. ' + source,
-        gallery_mobile))
+        gallery_mobile)
+    gallery = gallery.replace('viewBox="0 0 1160 440"', 'viewBox="0 0 1160 540"', 1)
+    gallery_asset = assets / 'dataset-gallery.svg'
+    gallery_asset.write_text(gallery_asset.read_text().replace('viewBox="0 0 1160 440"', 'viewBox="0 0 1160 540"', 1))
+    intro.append(gallery)
 
     body = t(35,90,f"{data['images']:,}",62,'c-e') + t(35,145,'photographs',29,'ink-2')
     body += g(line(35,185,610,185,'line') + t(35,270,'3,680 train / validation',32,'c-e')
