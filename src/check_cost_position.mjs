@@ -17,7 +17,7 @@ const positions=[
   'break','order','permute','scores','swapped','contributions','consequence',
   'addition-break','shift','move-a','move-b','moved','toy','slot-scores','experiment','updated',
   'learned-break','learned','absolute-range','clock-choice','sine-2d','sine-4d','sine-many','clock-why','clock','repeat','sine-rule','rate-examples','worked-sine','waves','period','sine-base','sine-width',
-  'relative-break','relative','alibi-intuition','rope-intuition',
+  'relative-break','relative','alibi-intuition','rope-intuition','method-comparison',
   'alternatives-break','append','append-qk-a','append-scores','append-softmax','append-values-a',
   'append-qk-b','append-scores-b','append-softmax-b','append-values-b',
   'append-scale-effect','append-scale','append-tradeoffs',
@@ -79,8 +79,8 @@ try{
   await page.setViewportSize({width:1280,height:720});await page.evaluate(()=>document.fonts.ready);
   const original=await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)}));
   assert.deepEqual(await page.locator('.frame.context-lesson').evaluateAll(es=>es.map(e=>e.id)),ids);
-  assert.equal(ids.length,51,'Relative positions need only four classroom frames, including the divider.');
-  assert.deepEqual(ids.slice(ids.indexOf('s17-position-relative-break'),ids.indexOf('s17-position-alternatives-break')),['relative-break','relative','alibi-intuition','rope-intuition'].map(x=>'s17-position-'+x));
+  assert.equal(ids.length,52,'Keep the short relative introduction and one side-by-side method comparison.');
+  assert.deepEqual(ids.slice(ids.indexOf('s17-position-relative-break'),ids.indexOf('s17-position-alternatives-break')),['relative-break','relative','alibi-intuition','rope-intuition','method-comparison'].map(x=>'s17-position-'+x));
   assert.equal(await page.locator('.relative-position-details').getAttribute('open'),null,'Detailed derivations are opt-in.');
   assert.equal(await page.locator('.relative-position-details .frame').count(),0,'Optional calculations never become presentation slides.');
   assert.deepEqual(await page.locator('.relative-position-details .position-reading').evaluateAll(es=>es.map(e=>e.id)),relativeReading.map(x=>'s17-position-'+x),'All previous worked examples are preserved.');
@@ -94,7 +94,7 @@ try{
     ['alternatives-break','append','append-qk-a','append-scores','append-softmax','append-values-a','append-qk-b','append-scores-b','append-softmax-b','append-values-b','append-scale-effect','append-scale','append-tradeoffs','width','overview','map-notes'],
     ['learned-break','learned','absolute-range','learned-update','token-ids','window-ids','notebook-ids','clock-choice'],
     ['clock-choice','sine-2d','sine-4d','sine-many','clock-why','clock','repeat','rates','sine-rule','rate-examples','worked-sine','sine','waves','period','sine-base','sine-width','relative-break'],
-    ['relative-break','relative','alibi-intuition','rope-intuition',...relativeReading,'alternatives-break']
+    ['relative-break','relative','alibi-intuition','rope-intuition','method-comparison',...relativeReading,'alternatives-break']
   ]){
     const expected=run.map(x=>'s17-position-'+x),start=lessonOrder.indexOf(expected[0]);
     assert(start>=0,'Sequence has its starting frame: '+expected[0]);
@@ -103,7 +103,7 @@ try{
   for(const [from,to]of [
     ['updated','learned-break'],['append-tradeoffs','overview'],
     ['learned','absolute-range'],['absolute-range','clock-choice'],['repeat','sine-rule'],['sine-rule','rate-examples'],['rate-examples','worked-sine'],['worked-sine','waves'],
-    ['period','sine-base'],['sine-width','relative-break'],['relative-break','relative'],['relative','alibi-intuition'],['alibi-intuition','rope-intuition'],['rope-intuition','alternatives-break']
+    ['period','sine-base'],['sine-width','relative-break'],['relative-break','relative'],['relative','alibi-intuition'],['alibi-intuition','rope-intuition'],['rope-intuition','method-comparison'],['method-comparison','alternatives-break']
   ]){
     await go('s17-position-'+from);
     await page.evaluate(()=>AT.present.next());
@@ -637,6 +637,22 @@ try{
     assert.equal(await page.locator('[data-relative-rope-gap]').evaluate(e=>getComputedStyle(e).visibility),build?'visible':'hidden','Gap takeaway is revealed after the Q/K path.');
   }
   // Every authored build must fit; reverse traversal must restore hidden math.
+  const comparison=page.locator('#s17-position-method-comparison');
+  assert.equal(await comparison.locator('[data-position-method]').count(),2,'Exactly two aligned alternatives.');
+  for(const [method,labels]of [
+    ['addition',['1. Look up word rows','2. Add position rows','3. Compute Q, K and V','4. Score Q against K']],
+    ['rope',['1. Look up word rows','2. Compute Q, K and V','3. Rotate Q and K by position','4. Score Q against K']]
+  ]){
+    const column=comparison.locator('[data-position-method="'+method+'"]');
+    assert.deepEqual(await column.locator('[data-comparison-step]').evaluateAll(es=>es.map(e=>e.querySelector('text').textContent)),labels);
+  }
+  assert.match(await comparison.textContent(),/V stays unrotated/);
+  for(const build of [0,1,2,3,2,1,0,3]){
+    await go('s17-position-method-comparison',build);
+    const rows=await comparison.locator('[data-comparison-step]').evaluateAll(es=>es.map(e=>({step:Number(e.dataset.comparisonStep),visibility:getComputedStyle(e).visibility,y:Number(e.querySelector('text').getAttribute('y'))})));
+    rows.forEach(row=>assert.equal(row.visibility,row.step<=build+1?'visible':'hidden','Reveal corresponding steps together.'));
+    assert.deepEqual(rows.slice(0,4).map(r=>r.y),rows.slice(4).map(r=>r.y),'Align the two methods by step.');
+  }
   let states=0;
   for(const id of ids){
     await go(id);const max=await page.evaluate(()=>AT.present.state().frame.maxBuild);

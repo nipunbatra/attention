@@ -1,5 +1,21 @@
 # Classroom release checks
 
+## 2026-09-28 · One side-by-side addition/RoPE comparison
+
+- Added one comparison after the short RoPE introduction. Two aligned columns
+  show the same word lookups, then addition-before-projection on the left and
+  projection-before-rotation on the right. Corresponding steps reveal together.
+  Both end with attention scoring and value mixing. The V bypass is explicit.
+  The longer insertion calculations remain optional reading, not lecture frames.
+- Position regression passes: 52 frames and 190 build checks. New assertions
+  cover the two operation orders, row alignment, all reveal states in both
+  directions and navigation past the optional disclosure. Existing numerical
+  examples, controls and model immutability pass unchanged.
+- Whole-deck audit passes at 1280×720: 456 states, 692 formulas, no runtime,
+  math or overflow failures. All 18 topic breaks pass. Visually inspected the
+  comparison at 1280×720 and 995×1031; all four states also fit 760×1041.
+  The regression covers projector layouts and 390×844 reading containment.
+
 ## 2026-09-28 · Relative positions in four classroom slides
 
 - Reduced 21 relative-position frames to four, including the topic divider.

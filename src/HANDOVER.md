@@ -10,6 +10,18 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+2026-09-28 single-slide addition/RoPE comparison:
+
+- `s17-position-method-comparison` follows `rope-intuition`. Use one native SVG
+  with additive positions on the left and RoPE on the right. Reveal matching
+  numbered steps together: word lookups, the first differing operation, the
+  second differing operation, then attention scoring and value mixing.
+- Highlight where position enters. Addition precedes every Q/K/V projection
+  in this first-layer comparison. RoPE follows projection and leaves V
+  unrotated. Keep the longer numerical insertion walkthrough in optional reading.
+- The position section has 52 frames: the four-frame relative introduction
+  plus this one comparison. Do not reintroduce a separate multi-slide subsection.
+
 2026-09-28 relative positions: intuition only (supersedes the long lecture path):
 
 - Four classroom frames replace the previous 21: `relative-break`, `relative`,

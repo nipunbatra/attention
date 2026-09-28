@@ -513,6 +513,13 @@ Trace flowers' query and red's key, from learned projections to slot-dependent r
 <p class="position-credit"><a href="https://arxiv.org/abs/2104.09864" target="_blank" rel="noopener noreferrer">RoPE paper · Su et al., RoFormer (2021)</a></p>
 </div>
 
+<div class="frame context-lesson position-lesson" id="s17-position-method-comparison" data-title="Addition and RoPE: where position enters" data-autobuild="off">
+<script type="text/x-notes">Where does position enter on each side?
+Point across each pair of numbered steps before moving down. Both alternatives start with the word lookup rows for Maya carries red flowers. On the left, add a learned or sinusoidal position row to each word row, then project the enriched rows to Q, K and V. On the right, project the word rows first, then rotate each query and key using its own token's position. Standard RoPE leaves values unrotated. Both end with scaled dot-product scores, the causal mask and softmax across allowed keys, followed by a weighted sum of values. The short diagram abbreviates those already-taught operations as score, softmax and mix. The two alternatives generally produce different attention weights and messages; a shared final operation does not mean equal outputs. All parameters of the projections still learn. Absolute addition normally happens at the input to the stack, whereas RoPE is applied to Q/K within attention layers. We show the first layer so both paths can start at word lookups; later-layer inputs are contextual. This one comparison is sufficient for class. The following optional reading retains the numerical calculations. Sources: Vaswani et al., section 3.5, https://arxiv.org/abs/1706.03762; Su et al., section 3.2, https://arxiv.org/abs/2104.09864.</script>
+<div class="position-journey" data-position-journey="method-comparison"></div>
+<p class="lesson-key" data-build="3">Addition changes the input rows. RoPE rotates Q and K after projection.</p>
+</div>
+
 <details class="companion context-lesson position-lesson relative-position-details">
 <summary>Optional: relative-position calculations and implementation</summary>
 <p>The lecture stops at the intuition. Open this only for worked scores, rotations, gradients and comparisons.</p>

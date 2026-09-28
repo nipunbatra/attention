@@ -193,6 +193,34 @@ document.addEventListener('DOMContentLoaded',()=>{
       line(reveal,20,221,1090,221);
       text(reveal,20,263,'Slots 3 and 2 → slots 8 and 7',C.p,27);
       text(reveal,610,263,'Same gap. Same rotation difference.',C.p,26);
+    }else if(kind==='method-comparison'){
+      s.setAttribute('viewBox','0 0 1120 400');
+      s.setAttribute('aria-label','Side-by-side comparison. Additive positions: look up word rows, add position rows, compute Q K V, score and mix. RoPE: look up word rows, compute Q K V, rotate Q and K by position with V unrotated, score and mix.');
+      s.querySelector('title').textContent=s.getAttribute('aria-label');
+      text(s,560,34,'Maya carries red flowers',C.ink,26,'middle');
+      line(s,555,49,555,395);
+      for(const [method,x,title]of [['addition',20,'Additive positions'],['rope',590,'RoPE']]){
+        const column=el('g',{'data-position-method':method});s.append(column);
+        text(column,x,68,title,C.ink,29);
+        const rows=method==='addition'?[
+          ['1. Look up word rows','',C.e],
+          ['2. Add position rows','Learned or sinusoidal',C.p],
+          ['3. Compute Q, K and V','Each reads word + position',C.ink],
+          ['4. Score Q against K','Softmax weights mix V',C.ink]
+        ]:[
+          ['1. Look up word rows','',C.e],
+          ['2. Compute Q, K and V','Each reads the word row',C.ink],
+          ['3. Rotate Q and K by position','V stays unrotated',C.p],
+          ['4. Score Q against K','Softmax weights mix V',C.ink]
+        ];
+        rows.forEach(([label,caption,color],index)=>{
+          const y=[113,184,264,346][index];
+          const group=el('g',{'data-comparison-step':index+1,...(index?{'data-build':index}:{})});column.append(group);
+          if(index)arrow(group,x+255,[130,222,305][index-1],x+255,[152,239,322][index-1],C.muted);
+          text(group,x,y,label,color,27);
+          if(caption)text(group,x+32,y+27,caption,method==='rope'&&index===2?C.v:C.muted,24);
+        });
+      }
     }else if(kind==='alibi-lengths'){
       s.setAttribute('aria-label','Goal: train with 1,024-token inputs and use 2,048-token inputs at inference. The inference bar is twice as long.');
       s.querySelector('title').textContent=s.getAttribute('aria-label');
