@@ -154,7 +154,7 @@
   {
     "id": "bridge-image-embedding",
     "title": "What could be the image equivalent of an embedding?",
-    "caption": "Text uses a learned lookup table. For an image patch, a learned projection turns its pixel values into a row of the same width as the other patches.",
+    "caption": "Text uses a learned lookup table. A patch projection produces D coordinates per patch. D is shared across patches and can differ from the number of pixel values.",
     "notes": "Where would a vector for this crop come from, if we have no word ID to look up?\nRead the actual bank embedding from Part II. Keep the image row unrevealed while students suggest how pixels could become numbers.",
     "section": "s01",
     "frame": 20
@@ -305,19 +305,43 @@
   },
   {
     "id": "patch-real-dimensions",
-    "title": "Scale the same operation to a 16 \u00d7 16 RGB patch",
-    "caption": "The pretrained ViT used later takes 768 values per patch and returns 192 embedding coordinates. The operation is the same weighted sum plus bias.",
-    "notes": "Where do 768 and 192 come from?\nCalculate 16\u00d716\u00d73, then distinguish that count from the model designer\u2019s choice of embedding width.",
+    "title": "Where do the 768 input values come from?",
+    "caption": "One patch has 16 \u00d7 16 pixels. Each pixel contributes three channel values: red, green and blue. That gives 768 values in one patch.",
+    "notes": "Are there 768 pixels in this patch, or 768 channel values?\nCount rows and columns in the patch grid. Pick one pixel, reveal its three channels, then multiply 256 by 3.",
     "section": "s02",
     "frame": 14
   },
   {
-    "id": "projection-size",
-    "title": "One layer produces all 196 patch embeddings",
-    "caption": "The layer changes the feature width from 768 to 192. It keeps one output row per patch and reuses the same weights and bias everywhere.",
-    "notes": "Do 196 patches require 196 different weight matrices?\nFollow the two axes: the patch count stays 196 while the feature width changes. Count the parameters once.",
+    "id": "patch-one-row-shape",
+    "title": "What does the 1 in 1 \u00d7 768 count?",
+    "caption": "Here we are processing one patch, written as one row. The second dimension counts its 768 input values. A whole image contributes many patch rows.",
+    "notes": "If we put a second patch underneath this row, which dimension changes?\nTrace the long RGB row, then point to 1 for the row count and 768 for the number of entries in that row.",
     "section": "s02",
     "frame": 15
+  },
+  {
+    "id": "patch-one-row-projection",
+    "title": "Does the embedding need 768 coordinates too?",
+    "caption": "The model chooses 192 output coordinates here. Every patch uses that same output width; the input and output widths can differ.",
+    "notes": "Does preserving one row require preserving all 768 input coordinates?\nFollow the row count 1 to the output. Then separately follow the feature width from 768 to the chosen 192.",
+    "section": "s02",
+    "frame": 16
+  },
+  {
+    "id": "projection-size",
+    "title": "How many rows come from the whole image?",
+    "caption": "196 counts patches in one image. Each patch supplies 768 input values and produces 192 embedding coordinates. The shared layer changes width while keeping one row per patch.",
+    "notes": "Which number counts patches, and which numbers count values within a patch row?\nCount patches across and down the grid, then track the unchanged 196 in the input and output shapes.",
+    "section": "s02",
+    "frame": 17
+  },
+  {
+    "id": "patch-projection-parameters",
+    "title": "How many parameters does this one layer learn?",
+    "caption": "Each of the 192 outputs has 768 weights and one bias. The parameters are shared across patches, so we count them once.",
+    "notes": "If we add more patch rows, do we need another copy of these weights?\nCount weights, then biases, then add them. Point back to the single nn.Linear layer used for the whole matrix.",
+    "section": "s02",
+    "frame": 18
   },
   {
     "id": "s02-small",

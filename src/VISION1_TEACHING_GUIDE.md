@@ -2,7 +2,7 @@
 
 **Deck:** [vision1.html](../vision1.html) · **Present:** open the deck and press **P** · **Lab:** [03_vision_transformer_lab.ipynb](../notebooks/vision/03_vision_transformer_lab.ipynb)
 
-168 teaching frames plus cover; 14 sections. Silent, self-contained HTML slides with image assets and math embedded. Reading mode includes the longer explanations, source links, and numerical tables. Arrow keys advance one reveal; **S** opens presenter notes; **O** opens the overview; **C** shows classroom controls. Every frame has a question to ask and a note about what to point at.
+171 teaching frames plus cover; 14 sections. Silent, self-contained HTML slides with image assets and math embedded. Reading mode includes the longer explanations, source links, and numerical tables. Arrow keys advance one reveal; **S** opens presenter notes; **O** opens the overview; **C** shows classroom controls. Every frame has a question to ask and a note about what to point at.
 
 ## The teaching thread
 
@@ -22,7 +22,7 @@ The two-crop Q/K/V warm-up and the pooling example use their own clearly labeled
 
 ## Suggested pacing
 
-Use three meetings, or teach sections 1–7 first and assign the implementation as a lab. The 168 frames are short steps; the total is not a target for one class. Pause for predictions and hand calculations.
+Use three meetings, or teach sections 1–7 first and assign the implementation as a lab. The 171 frames are short steps; the total is not a target for one class. Pause for predictions and hand calculations.
 
 | Meeting | Sections | Student activity |
 |---|---|---|
@@ -53,6 +53,12 @@ Section 2 keeps the RGB entries grouped by pixel A, B, C and D. Count 2×2×3=12
 Reuse the exact same layer on a second patch to get `[0.5, −2.5]`. A single call maps `X` of shape `(2,12)` to `C` of shape `(2,2)`. These two output features are not two class scores. `cᵢ` names the content row of patch i; `eᵢ=cᵢ+pᵢ` adds position before attention. Subscripts identify patches, while D gives the embedding width. The diagram explicitly reconnects c₆/e₆ and c₇/e₇ to the earlier photo crops.
 
 Then scale to the saved real model: 16×16×3=768 input values, `nn.Linear(768,192)`, and 196 rows for a 224×224 input. The row-vector equation uses W shaped `(768,192)`; PyTorch stores the transposed weight `(192,768)`. This is equivalent to the checkpoint's Conv2d patch embedding with the corresponding input order. `figures/vision1/patch-embedding-example.json` contains the independently executed warm-up. The lab contains the same calculation as an editable, executed code cell.
+
+### Read the dimensions as counts with units
+
+The real-model scale-up now takes five short slides. `patch-real-dimensions` counts 16×16=256 spatial pixels and three RGB channel values per pixel, giving 768 scalar inputs. `patch-one-row-shape` decodes the axes in 1×768: one patch row, 768 values within that row. This 1 is not a batch-size axis. `patch-one-row-projection` keeps the single row but changes its feature width to the chosen D=192. The affine operation includes a bias and no activation.
+
+`projection-size` then computes 224÷16=14 patches in each direction and 14×14=196 patch rows: X is 196×768, C is 196×192. `patch-projection-parameters` separately counts 147,456 weights and 192 biases. All patch embeddings in this model share width 192; this does not mean input and output widths must be equal. The same parameter set is reused for every patch.
 
 ## Places to stop and ask
 

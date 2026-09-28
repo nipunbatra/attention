@@ -3,7 +3,7 @@
     1280,
     720
   ],
-  "teaching_frames": 168,
+  "teaching_frames": 171,
   "cover_frames": 1,
   "review": "The previous 141 final states (140 teaching frames plus cover) passed the full geometry review. All six added implementation frames passed SVG text bounds and collision checks at 1280\u00d7720 and were visually inspected. Phone reading mode was rechecked at 390\u00d7844.",
   "geometry": "No clipped SVG text, text collisions, overflowing captions or code found.",
@@ -436,6 +436,57 @@
       ],
       "shared_parameters": 26,
       "verified_by": "Independent slide calculation and executed lab cell"
+    },
+    "notebook_code_cells": 20,
+    "audio_or_video_played": false
+  },
+  "dimension_axis_review": {
+    "date": "2026-09-28",
+    "viewport": [
+      1280,
+      720
+    ],
+    "visual_samples": [
+      "patch-real-dimensions",
+      "patch-one-row-shape",
+      "patch-one-row-projection",
+      "projection-size",
+      "patch-projection-parameters"
+    ],
+    "geometry": {
+      "patch-real-dimensions": {
+        "clipped": [],
+        "collisions": []
+      },
+      "patch-one-row-shape": {
+        "clipped": [],
+        "collisions": []
+      },
+      "patch-one-row-projection": {
+        "clipped": [],
+        "collisions": []
+      },
+      "projection-size": {
+        "clipped": [],
+        "collisions": []
+      },
+      "patch-projection-parameters": {
+        "clipped": [],
+        "collisions": []
+      }
+    },
+    "reading_viewport": [
+      390,
+      844
+    ],
+    "document_width": 390,
+    "document_scroll_width": 390,
+    "phone_visual_check": "One patch row versus 768 channel values is readable in the mobile table and explanation.",
+    "scope": "256 pixels \u00d7 3 channels = 768 values; one patch row maps to one 192-coordinate row; 14\u00d714=196 patch rows; affine map with bias and no activation; common output width does not imply equal input/output widths.",
+    "parameters": {
+      "weights": 147456,
+      "biases": 192,
+      "total": 147648
     },
     "notebook_code_cells": 20,
     "audio_or_video_played": false

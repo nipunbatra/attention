@@ -79,7 +79,7 @@ def bridge(b, sections):
     body+=g(box(685,275,440,'one learned patch row',size=29),2)
     body+=g(t(580,415,'Then add position information to both.',30,'c-e','middle'),3)
     add('bridge-image-embedding','What could be the image equivalent of an embedding?',body,
-        'Text uses a learned lookup table. For an image patch, a learned projection turns its pixel values into a row of the same width as the other patches.',
+        'Text uses a learned lookup table. A patch projection produces D coordinates per patch. D is shared across patches and can differ from the number of pixel values.',
         'Where would a vector for this crop come from, if we have no word ID to look up?',
         'Read the actual bank embedding from Part II. Keep the image row unrevealed while students suggest how pixels could become numbers.',
         reference+'The displayed text vector is the token embedding before position is added. '

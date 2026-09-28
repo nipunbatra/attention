@@ -1,6 +1,6 @@
 # Vision I: slide map
 
-168 teaching frames plus the cover. Each link opens the first reveal of that slide. Use Right/Left for reveals and S for presenter notes.
+171 teaching frames plus the cover. Each link opens the first reveal of that slide. Use Right/Left for reveals and S for presenter notes.
 
 ## Review these additions first
 
@@ -69,7 +69,15 @@
 - [Calculate the second embedding coordinate](https://nipunbatra.github.io/attention/vision1.html?present#s02/10/0)
 - [Apply the very same layer to another patch](https://nipunbatra.github.io/attention/vision1.html?present#s02/12/0)
 - [What do c₆ and e₆ refer to?](https://nipunbatra.github.io/attention/vision1.html?present#s02/13/0)
-- [One layer produces all 196 patch embeddings](https://nipunbatra.github.io/attention/vision1.html?present#s02/15/0)
+- [How many rows come from the whole image?](https://nipunbatra.github.io/attention/vision1.html?present#s02/17/0)
+
+## Read the dimensions
+
+- [Where do the 768 input values come from?](https://nipunbatra.github.io/attention/vision1.html?present#s02/14/0)
+- [What does the 1 in 1 × 768 count?](https://nipunbatra.github.io/attention/vision1.html?present#s02/15/0)
+- [Does the embedding need 768 coordinates too?](https://nipunbatra.github.io/attention/vision1.html?present#s02/16/0)
+- [How many rows come from the whole image?](https://nipunbatra.github.io/attention/vision1.html?present#s02/17/0)
+- [How many parameters does this one layer learn?](https://nipunbatra.github.io/attention/vision1.html?present#s02/18/0)
 
 ## Complete sequence
 
@@ -113,8 +121,11 @@
 | s02 / 11 | [These two numbers are the patch embedding](https://nipunbatra.github.io/attention/vision1.html?present#s02/11/0) | `patch-linear-result` |
 | s02 / 12 | [Apply the very same layer to another patch](https://nipunbatra.github.io/attention/vision1.html?present#s02/12/0) | `patch-shared-code` |
 | s02 / 13 | [What do c₆ and e₆ refer to?](https://nipunbatra.github.io/attention/vision1.html?present#s02/13/0) | `s01-rows` |
-| s02 / 14 | [Scale the same operation to a 16 × 16 RGB patch](https://nipunbatra.github.io/attention/vision1.html?present#s02/14/0) | `patch-real-dimensions` |
-| s02 / 15 | [One layer produces all 196 patch embeddings](https://nipunbatra.github.io/attention/vision1.html?present#s02/15/0) | `projection-size` |
+| s02 / 14 | [Where do the 768 input values come from?](https://nipunbatra.github.io/attention/vision1.html?present#s02/14/0) | `patch-real-dimensions` |
+| s02 / 15 | [What does the 1 in 1 × 768 count?](https://nipunbatra.github.io/attention/vision1.html?present#s02/15/0) | `patch-one-row-shape` |
+| s02 / 16 | [Does the embedding need 768 coordinates too?](https://nipunbatra.github.io/attention/vision1.html?present#s02/16/0) | `patch-one-row-projection` |
+| s02 / 17 | [How many rows come from the whole image?](https://nipunbatra.github.io/attention/vision1.html?present#s02/17/0) | `projection-size` |
+| s02 / 18 | [How many parameters does this one layer learn?](https://nipunbatra.github.io/attention/vision1.html?present#s02/18/0) | `patch-projection-parameters` |
 | s03 / 1 | [Same pieces, different picture?](https://nipunbatra.github.io/attention/vision1.html?present#s03/1/0) | `s02-small` |
 | s03 / 2 | [Could you put the picture back together?](https://nipunbatra.github.io/attention/vision1.html?present#s03/2/0) | `position-question` |
 | s03 / 3 | [Flatten P1 so we can multiply it](https://nipunbatra.github.io/attention/vision1.html?present#s03/3/0) | `s02-projection-step-1` |
