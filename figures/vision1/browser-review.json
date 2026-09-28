@@ -699,5 +699,55 @@
     },
     "content": "Single affine patch layer with bias and no activation; later block MLP has Linear(D,H), GELU, Linear(H,D). Verified against executable SmallViT and the RGB projection example.",
     "silent": true
+  },
+  "patch_network_review": {
+    "date": "2026-09-28",
+    "frames": [
+      "patch-linear-weights",
+      "patch-linear-first",
+      "patch-linear-second"
+    ],
+    "desktop": {
+      "viewports": [
+        [
+          1280,
+          720
+        ],
+        [
+          995,
+          1031
+        ]
+      ],
+      "input_nodes_per_slide": 12,
+      "output_nodes_per_slide": 2,
+      "weight_connections_per_slide": 24,
+      "clipped_text": [],
+      "max_caption_bottom_at_annotation_viewport": 731.4,
+      "visual_review": "Same network persists across the introduction and both weighted-sum calculations; active nonzero edges carry signed weights."
+    },
+    "phone": {
+      "viewport": [
+        390,
+        844
+      ],
+      "page_width": 390,
+      "network_width": 358,
+      "network_viewbox": [
+        0,
+        0,
+        360,
+        610
+      ],
+      "inputs": 12,
+      "outputs": 2,
+      "horizontal_overflow": false
+    },
+    "numbers": {
+      "output_1": 2.5,
+      "output_2": -0.5,
+      "weight_data": "patch-embedding-example.json",
+      "unchanged_projection": true
+    },
+    "silent": true
   }
 }

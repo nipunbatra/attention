@@ -65,8 +65,8 @@
 - [Read the RGB values of each pixel](https://nipunbatra.github.io/attention/vision1.html?present#s02/4/0)
 - [Put the four RGB triples in one row](https://nipunbatra.github.io/attention/vision1.html?present#s02/5/0)
 - [What does “projection” mean here?](https://nipunbatra.github.io/attention/vision1.html?present#s02/9/0)
-- [Calculate the first embedding coordinate](https://nipunbatra.github.io/attention/vision1.html?present#s02/11/0)
-- [Calculate the second embedding coordinate](https://nipunbatra.github.io/attention/vision1.html?present#s02/12/0)
+- [Follow the connections into output 1](https://nipunbatra.github.io/attention/vision1.html?present#s02/11/0)
+- [Now follow the connections into output 2](https://nipunbatra.github.io/attention/vision1.html?present#s02/12/0)
 - [Apply the very same layer to another patch](https://nipunbatra.github.io/attention/vision1.html?present#s02/14/0)
 - [What do c₆ and e₆ refer to?](https://nipunbatra.github.io/attention/vision1.html?present#s02/15/0)
 - [How many rows come from the whole image?](https://nipunbatra.github.io/attention/vision1.html?present#s02/19/0)
@@ -153,9 +153,9 @@
 | s02 / 7 | [How does this connect to text embeddings?](https://nipunbatra.github.io/attention/vision1.html?present#s02/7/0) | `s01-rows-step-1` |
 | s02 / 8 | [Do we apply an activation after the patch layer?](https://nipunbatra.github.io/attention/vision1.html?present#s02/8/0) | `patch-activation-location` |
 | s02 / 9 | [What does “projection” mean here?](https://nipunbatra.github.io/attention/vision1.html?present#s02/9/0) | `patch-linear-shapes` |
-| s02 / 10 | [Which weights will we multiply by?](https://nipunbatra.github.io/attention/vision1.html?present#s02/10/0) | `patch-linear-weights` |
-| s02 / 11 | [Calculate the first embedding coordinate](https://nipunbatra.github.io/attention/vision1.html?present#s02/11/0) | `patch-linear-first` |
-| s02 / 12 | [Calculate the second embedding coordinate](https://nipunbatra.github.io/attention/vision1.html?present#s02/12/0) | `patch-linear-second` |
+| s02 / 10 | [12 input numbers, 2 output numbers](https://nipunbatra.github.io/attention/vision1.html?present#s02/10/0) | `patch-linear-weights` |
+| s02 / 11 | [Follow the connections into output 1](https://nipunbatra.github.io/attention/vision1.html?present#s02/11/0) | `patch-linear-first` |
+| s02 / 12 | [Now follow the connections into output 2](https://nipunbatra.github.io/attention/vision1.html?present#s02/12/0) | `patch-linear-second` |
 | s02 / 13 | [These two numbers are the patch embedding](https://nipunbatra.github.io/attention/vision1.html?present#s02/13/0) | `patch-linear-result` |
 | s02 / 14 | [Apply the very same layer to another patch](https://nipunbatra.github.io/attention/vision1.html?present#s02/14/0) | `patch-shared-code` |
 | s02 / 15 | [What do c₆ and e₆ refer to?](https://nipunbatra.github.io/attention/vision1.html?present#s02/15/0) | `s01-rows` |

@@ -329,25 +329,25 @@
   },
   {
     "id": "patch-linear-weights",
-    "title": "Which weights will we multiply by?",
-    "caption": "Each output has twelve weights and one bias. We choose small values here; training normally learns these 26 parameters.",
-    "notes": "Which input channels contribute to the first output?\nRead one weight per RGB entry. Point to the two output rows, then distinguish stored weight shape from W in the row-vector equation.",
+    "title": "12 input numbers, 2 output numbers",
+    "caption": "Each input node holds one RGB value. Both outputs read all 12 inputs. Together, y\u2081 and y\u2082 form the embedding for this one patch.",
+    "notes": "How many connections enter each output node?\nCount the twelve actual pixel values. Follow their connections into each of the two outputs, then reveal the weights and biases.",
     "section": "s02",
     "frame": 10
   },
   {
     "id": "patch-linear-first",
-    "title": "Calculate the first embedding coordinate",
-    "caption": "Multiply matching entries, add the four pixel contributions, then add the bias 0.5.",
-    "notes": "What does each pixel contribute before we add the bias?\nMultiply the three RGB entries by their three weights at each column, then add the four results and bias.",
+    "title": "Follow the connections into output 1",
+    "caption": "Multiply each input by its connection weight, add the contributions, then add the bias. The highlighted connections show the nonzero weights for this output.",
+    "notes": "What does this output receive before we add its bias?\nReveal the highlighted edges and their weights. Read the connected input values, compute the sum, then add the bias and reveal the answer.",
     "section": "s02",
     "frame": 11
   },
   {
     "id": "patch-linear-second",
-    "title": "Calculate the second embedding coordinate",
-    "caption": "Multiply matching entries, add the four pixel contributions, then add the bias -0.5.",
-    "notes": "What does each pixel contribute before we add the bias?\nMultiply the three RGB entries by their three weights at each column, then add the four results and bias.",
+    "title": "Now follow the connections into output 2",
+    "caption": "Multiply each input by its connection weight, add the contributions, then add the bias. The highlighted connections show the nonzero weights for this output.",
+    "notes": "What does this output receive before we add its bias?\nReveal the highlighted edges and their weights. Read the connected input values, compute the sum, then add the bias and reveal the answer.",
     "section": "s02",
     "frame": 12
   },

@@ -58,6 +58,10 @@ After the text/image query diagram, show three receiver examples: a dark coat pa
 
 For keys and values, reuse the same eye/muzzle, coat and branch crops. A key supplies matching features; its relevance depends on the receiver's query. A value supplies visual information to mix, and the source's value is shared across receivers even though their weights can differ. Explain a₁₀,₇ as P10 reading P7, then reveal the symbolic sum. Section 4 follows with the existing fully numerical face/branches example.
 
+## Draw the patch layer as a 12-to-2 network
+
+The weight introduction uses twelve nodes containing the actual RGB values, connected to two output nodes. Keep this drawing for both calculations. Reveal the four nonzero incoming weights for the selected output; its other eight weights are zero. Read the source values along those edges, add their contributions, then add the bias. The two results remain 2.5 and −0.5. The outputs are two embedding features of one patch, not two class scores. Mobile reading mode keeps a taller version of the network diagram.
+
 ## State where the activation appears
 
 The text/image embedding comparison now says that the patch output has no activation. The next slide follows the patch's single affine map xW+b and separately shows the later block MLP: Linear(D,H) → GELU → Linear(H,D). Keep D (embedding width) and H (hidden width) explicit. The later worked patch output retains its negative coordinate. The absence of a patch activation does not make the full Transformer linear; attention softmax and LayerNorm also appear in the complete model.

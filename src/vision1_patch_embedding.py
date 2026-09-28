@@ -165,47 +165,81 @@ def expand(b, sections):
         mobile_rows(['Quantity','Shape'],[['x₁: pixel row','(1,12)'],['W: weights','(12,2)'],['b: bias row','(1,2)'],['c₁: content embedding','(1,2)']])
         +'<p><code>proj = nn.Linear(12, 2)</code></p><p>c₁ = x₁ W + b.</p>')
 
-    body=t(35,45,'Chosen weights for this calculation',27,'ink-2')
-    for i,letter in enumerate('ABCD'):body+=t(420+i*185,100,letter+' · RGB',25,'ink-2','middle')
-    for r,values in enumerate(data['weight']):
-        marks=t(35,170+r*95,'output '+str(r+1),28,'c-e')
-        for j in range(4):marks+=t(420+j*185,170+r*95,vec(values[j*3:j*3+3]),29,'c-e','middle')
-        body+=marks if r==0 else g(marks,1)
-    body+=g(t(35,340,'bias = [0.5, −0.5]',31,'c-e'),2)
-    body+=g(t(35,420,'proj.weight = Wᵀ: (2, 12)',27,'ink-2')+t(680,420,'proj.bias: (2,)',27,'ink-2'),2)
-    add('patch-linear-weights','Which weights will we multiply by?',body,
-        'Each output has twelve weights and one bias. We choose small values here; training normally learns these 26 parameters.',
-        'Which input channels contribute to the first output?',
-        'Read one weight per RGB entry. Point to the two output rows, then distinguish stored weight shape from W in the row-vector equation.',
-        'These are all the weights, grouped by pixel. The first output sums red values; the second adds top-row green values and subtracts bottom-row green values. '
-        'These interpretable filters are chosen for arithmetic, not claimed properties of a trained ViT. '
-        'PyTorch stores proj.weight as (out_features,in_features)=(2,12), and evaluates X @ proj.weight.T + proj.bias. '
-        'The slide equation uses W=proj.weight.T, shape (12,2). There are 12×2+2=26 trainable scalars. '+linear_ref+'.'+source,
-        mobile_rows(['Pixel','Output 1 weights','Output 2 weights'],[[letter,vec(data['weight'][0][i*3:i*3+3]),vec(data['weight'][1][i*3:i*3+3])] for i,letter in enumerate('ABCD')])
-        +'<p>Bias: [0.5, −0.5]. Stored weight shape: (2,12).</p>')
+    input_names=[f'{pixel}.{channel}' for pixel in 'ABCD' for channel in 'RGB']
 
-    for coord,key,title in [(0,'patch-linear-first','Calculate the first embedding coordinate'),(1,'patch-linear-second','Calculate the second embedding coordinate')]:
-        body=t(35,45,'Same patch, output '+str(coord+1),27,'ink-2')
-        for y,label in [(125,'RGB inputs'),(225,'weights'),(320,'dot product')]:body+=t(35,y,label,26,'ink-2')
-        contributions=[]
-        for i,rgb in enumerate(pixels):
-            x=420+i*185; weights=data['weight'][coord][i*3:i*3+3]
-            value=sum(a*w for a,w in zip(rgb,weights));contributions.append(value)
-            body+=t(x,60,'ABCD'[i],28,'ink-2','middle')+t(x,125,vec(rgb),29,'c-e','middle')
-            body+=g(t(x,225,vec(weights),29,'c-e','middle'),1)
-            body+=g(arrow(x,245,x,280)+t(x,320,f'{value:g}',36,'c-e','middle'),2)
-        terms=' + '.join(f'({v:g})' if v<0 else f'{v:g}' for v in contributions)
+    def network(active=None, mobile=False):
+        """Keep the same 12-to-2 layer visible while focusing one weighted sum."""
+        ix,ox,first,step,ir,orr=(80,285,65,46,17,27) if mobile else (225,620,52,32,14,29)
+        output_y=[205,435] if mobile else [145,315]
+        body=t(ix,24,'12 inputs',19 if mobile else 25,'ink-2','middle')
+        body+=t(ox,24,'2 outputs',19 if mobile else 25,'ink-2','middle')
+        if not mobile:body+=t(422,24,'nn.Linear(12, 2)',25,'c-e','middle')
+        # All 24 trainable connections stay present, including zero-valued weights.
+        for out,yout in enumerate(output_y):
+            for i in range(12):
+                yin=first+step*i
+                body+=f'<path class="patch-weight" data-input="{i}" data-output="{out}" data-weight="{data["weight"][out][i]}" d="M{ix+ir} {yin} L{ox-orr} {yout}" stroke="var(--line)" stroke-width="1.4" fill="none"/>'
+        if active is not None:
+            highlights=''
+            for i,weight in enumerate(data['weight'][active]):
+                if not weight:continue
+                yin=first+step*i;yout=output_y[active]
+                highlights+=line(ix+ir,yin,ox-orr,yout,'c-e',2.5)
+                lx=ix+(62 if mobile else 88)
+                ly=yin+(yout-yin)*(lx-ix-ir)/(ox-orr-ix-ir)
+                label=f'{weight:+g}'.replace('-','−')
+                highlights+=rect(lx-19,ly-24,38,24,'transparent','card',2)+t(lx,ly-5,label,19 if mobile else 23,'c-e','middle')
+            body+=highlights if mobile else g(highlights,1)
+        for i,value in enumerate(data['X'][0]):
+            y=first+step*i
+            body+=t(ix-ir-15,y+7,input_names[i],18 if mobile else 21,'ink-2','end')
+            body+=f'<circle class="patch-input" cx="{ix}" cy="{y}" r="{ir}" fill="var(--card)" stroke="var(--c-e)" stroke-width="2"/>'
+            body+=t(ix,y+7,f'{value:g}',21,'c-e','middle')
+        for out,y in enumerate(output_y):
+            color='c-e' if active in [None,out] else 'ink-3'
+            body+=f'<circle class="patch-output" cx="{ox}" cy="{y}" r="{orr}" fill="var(--card)" stroke="var(--{color})" stroke-width="2.5"/>'
+            body+=t(ox,y+9,'y₁' if out==0 else 'y₂',27,color,'middle')
+        return body
+
+    def mobile_network(active=None):
+        return '<svg viewBox="0 0 360 610" role="img" aria-label="Twelve RGB input nodes connected to two embedding output nodes">'+network(active,True)+'</svg>'
+
+    body=network()+t(755,95,'One patch in.',34,'c-e')+t(755,146,'Two features out.',34,'c-e')
+    body+=g(t(755,230,'Each line has a weight.',27)+t(755,276,'Each output adds a bias.',27),1)
+    body+=g(t(755,350,'c₁ = [y₁, y₂]',35,'c-e')+t(755,405,'24 weights + 2 biases',26,'ink-2'),2)
+    add('patch-linear-weights','12 input numbers, 2 output numbers',body,
+        'Each input node holds one RGB value. Both outputs read all 12 inputs. Together, y₁ and y₂ form the embedding for this one patch.',
+        'How many connections enter each output node?',
+        'Count the twelve actual pixel values. Follow their connections into each of the two outputs, then reveal the weights and biases.',
+        'A.R means the red value of pixel A; each pixel supplies three consecutive input nodes. '
+        'This drawing is exactly nn.Linear(12,2): a fully connected affine layer with 24 weights and two biases. '
+        'There is no hidden layer or activation in this patch projection. The outputs are embedding coordinates, not dog/cat scores. '
+        'The following slides keep the same network and highlight the nonzero weights for one output at a time. '
+        'The small weights are chosen for arithmetic. PyTorch stores them as proj.weight with shape (2,12). '+linear_ref+'.'+source,
+        mobile_network()+'<p>A.R is the red value of pixel A. Each pixel contributes three input nodes.</p>'
+        '<p>Every input connects to both outputs: 24 weights, plus one bias for each output. c₁ = [y₁, y₂].</p>')
+
+    for coord,key,title in [(0,'patch-linear-first','Follow the connections into output 1'),(1,'patch-linear-second','Now follow the connections into output 2')]:
+        body=network(coord)+t(755,70,'Output '+str(coord+1),32,'c-e')
+        formula=['A.R + B.R','+ C.R + D.R'] if coord==0 else ['A.G + B.G','− C.G − D.G']
+        arithmetic='1 + 0 + 0 + 1' if coord==0 else '0 + 1 − 0 − 1'
         bias=data['bias'][coord]
-        body+=g(t(35,425,terms+(' + ' if bias>=0 else ' − ')+f'{abs(bias):g} = {data["C"][0][coord]:g}',37,'c-e'),3)
+        bias_text=('+' if bias>=0 else '−')+f' {abs(bias):g} (bias)'
+        body+=g(t(755,133,formula[0],31,'c-e')+t(755,177,formula[1],31,'c-e')
+                +t(755,219,'Other incoming weights: 0',23,'ink-2'),1)
+        body+=g(t(755,277,arithmetic,31)+t(755,323,bias_text,31),2)
+        body+=g(t(755,397,'= '+f'{data["C"][0][coord]:g}'.replace('-','−'),47,'c-e'),3)
         add(key,title,body,
-            'Multiply matching entries, add the four pixel contributions, then add the bias '+f'{bias:g}'+'.',
-            'What does each pixel contribute before we add the bias?',
-            'Multiply the three RGB entries by their three weights at each column, then add the four results and bias.',
-            'This is output coordinate '+str(coord+1)+' of the same nn.Linear(12,2) layer. '
-            'The corresponding row of proj.weight contains twelve entries. The displayed columns group those entries by pixel, not by separate layers. '
-            'The resulting coordinate is '+f'{data["C"][0][coord]:g}'+'.'+source,
-            mobile_rows(['Pixel','RGB','Weights','Product sum'],[[letter,vec(rgb),vec(data['weight'][coord][i*3:i*3+3]),f'{contributions[i]:g}'] for i,(letter,rgb) in enumerate(zip('ABCD',pixels))])
-            +'<p>'+escape(terms)+(' + ' if bias>=0 else ' − ')+f'{abs(bias):g} = <strong>{data["C"][0][coord]:g}</strong>.</p>')
+            'Multiply each input by its connection weight, add the contributions, then add the bias. The highlighted connections show the nonzero weights for this output.',
+            'What does this output receive before we add its bias?',
+            'Reveal the highlighted edges and their weights. Read the connected input values, compute the sum, then add the bias and reveal the answer.',
+            'This is output '+str(coord+1)+' of the same nn.Linear(12,2) layer. '
+            'For this selected output, the four highlighted weights are nonzero and its eight remaining weights are zero. '
+            'The other output remains in the diagram so the architecture stays visible. '
+            'Output 1 sums the four red values and adds 0.5. Output 2 adds the two top green values, subtracts the two bottom green values, and adds −0.5. '
+            'These are chosen teaching weights. The computed output is '+f'{data["C"][0][coord]:g}'+', with no activation afterwards.'+source,
+            mobile_network(coord)+'<p>Highlighted edges carry the nonzero weights for output '+str(coord+1)+'. Its other incoming weights are zero.</p>'
+            +'<p>'+escape(' '.join(formula))+'</p><p>'+escape(arithmetic)+' '+bias_text+' = <strong>'+f'{data["C"][0][coord]:g}'+'</strong>.</p>')
 
     body=patch(35,90,80)+arrow(235,170,340,170)+box(360,137,340,'nn.Linear(12, 2)',29)
     body+=g(arrow(700,170,820,170)+t(835,183,'[2.5, −0.5]',40,'c-e'),1)
