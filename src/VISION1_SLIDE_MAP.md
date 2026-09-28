@@ -1,6 +1,6 @@
 # Vision I: slide map
 
-194 teaching frames plus the cover. Each link opens the first reveal of that slide. Use Right/Left for reveals and S for presenter notes.
+195 teaching frames plus the cover. Each link opens the first reveal of that slide. Use Right/Left for reveals and S for presenter notes.
 
 ## Review these additions first
 
@@ -64,20 +64,20 @@
 
 - [Read the RGB values of each pixel](https://nipunbatra.github.io/attention/vision1.html?present#s02/4/0)
 - [Put the four RGB triples in one row](https://nipunbatra.github.io/attention/vision1.html?present#s02/5/0)
-- [What does “projection” mean here?](https://nipunbatra.github.io/attention/vision1.html?present#s02/8/0)
-- [Calculate the first embedding coordinate](https://nipunbatra.github.io/attention/vision1.html?present#s02/10/0)
-- [Calculate the second embedding coordinate](https://nipunbatra.github.io/attention/vision1.html?present#s02/11/0)
-- [Apply the very same layer to another patch](https://nipunbatra.github.io/attention/vision1.html?present#s02/13/0)
-- [What do c₆ and e₆ refer to?](https://nipunbatra.github.io/attention/vision1.html?present#s02/14/0)
-- [How many rows come from the whole image?](https://nipunbatra.github.io/attention/vision1.html?present#s02/18/0)
+- [What does “projection” mean here?](https://nipunbatra.github.io/attention/vision1.html?present#s02/9/0)
+- [Calculate the first embedding coordinate](https://nipunbatra.github.io/attention/vision1.html?present#s02/11/0)
+- [Calculate the second embedding coordinate](https://nipunbatra.github.io/attention/vision1.html?present#s02/12/0)
+- [Apply the very same layer to another patch](https://nipunbatra.github.io/attention/vision1.html?present#s02/14/0)
+- [What do c₆ and e₆ refer to?](https://nipunbatra.github.io/attention/vision1.html?present#s02/15/0)
+- [How many rows come from the whole image?](https://nipunbatra.github.io/attention/vision1.html?present#s02/19/0)
 
 ## Read the dimensions
 
-- [Where do the 768 input values come from?](https://nipunbatra.github.io/attention/vision1.html?present#s02/15/0)
-- [What does the 1 in 1 × 768 count?](https://nipunbatra.github.io/attention/vision1.html?present#s02/16/0)
-- [Does the embedding need 768 coordinates too?](https://nipunbatra.github.io/attention/vision1.html?present#s02/17/0)
-- [How many rows come from the whole image?](https://nipunbatra.github.io/attention/vision1.html?present#s02/18/0)
-- [How many parameters does this one layer learn?](https://nipunbatra.github.io/attention/vision1.html?present#s02/19/0)
+- [Where do the 768 input values come from?](https://nipunbatra.github.io/attention/vision1.html?present#s02/16/0)
+- [What does the 1 in 1 × 768 count?](https://nipunbatra.github.io/attention/vision1.html?present#s02/17/0)
+- [Does the embedding need 768 coordinates too?](https://nipunbatra.github.io/attention/vision1.html?present#s02/18/0)
+- [How many rows come from the whole image?](https://nipunbatra.github.io/attention/vision1.html?present#s02/19/0)
+- [How many parameters does this one layer learn?](https://nipunbatra.github.io/attention/vision1.html?present#s02/20/0)
 
 ## Photograph first, then position arithmetic
 
@@ -101,6 +101,12 @@
 - [Where does this branch continue?](https://nipunbatra.github.io/attention/vision1.html?present#s01/26/0)
 - [What could each source offer for matching?](https://nipunbatra.github.io/attention/vision1.html?present#s01/28/0)
 - [What information could these values carry?](https://nipunbatra.github.io/attention/vision1.html?present#s01/30/0)
+
+## Patch projection and activation
+
+- [How does this connect to text embeddings?](https://nipunbatra.github.io/attention/vision1.html?present#s02/7/0)
+- [Do we apply an activation after the patch layer?](https://nipunbatra.github.io/attention/vision1.html?present#s02/8/0)
+- [These two numbers are the patch embedding](https://nipunbatra.github.io/attention/vision1.html?present#s02/13/0)
 
 ## Complete sequence
 
@@ -145,18 +151,19 @@
 | s02 / 5 | [Put the four RGB triples in one row](https://nipunbatra.github.io/attention/vision1.html?present#s02/5/0) | `rgb-flatten` |
 | s02 / 6 | [Which pixel goes first in the row?](https://nipunbatra.github.io/attention/vision1.html?present#s02/6/0) | `flatten-order` |
 | s02 / 7 | [How does this connect to text embeddings?](https://nipunbatra.github.io/attention/vision1.html?present#s02/7/0) | `s01-rows-step-1` |
-| s02 / 8 | [What does “projection” mean here?](https://nipunbatra.github.io/attention/vision1.html?present#s02/8/0) | `patch-linear-shapes` |
-| s02 / 9 | [Which weights will we multiply by?](https://nipunbatra.github.io/attention/vision1.html?present#s02/9/0) | `patch-linear-weights` |
-| s02 / 10 | [Calculate the first embedding coordinate](https://nipunbatra.github.io/attention/vision1.html?present#s02/10/0) | `patch-linear-first` |
-| s02 / 11 | [Calculate the second embedding coordinate](https://nipunbatra.github.io/attention/vision1.html?present#s02/11/0) | `patch-linear-second` |
-| s02 / 12 | [These two numbers are the patch embedding](https://nipunbatra.github.io/attention/vision1.html?present#s02/12/0) | `patch-linear-result` |
-| s02 / 13 | [Apply the very same layer to another patch](https://nipunbatra.github.io/attention/vision1.html?present#s02/13/0) | `patch-shared-code` |
-| s02 / 14 | [What do c₆ and e₆ refer to?](https://nipunbatra.github.io/attention/vision1.html?present#s02/14/0) | `s01-rows` |
-| s02 / 15 | [Where do the 768 input values come from?](https://nipunbatra.github.io/attention/vision1.html?present#s02/15/0) | `patch-real-dimensions` |
-| s02 / 16 | [What does the 1 in 1 × 768 count?](https://nipunbatra.github.io/attention/vision1.html?present#s02/16/0) | `patch-one-row-shape` |
-| s02 / 17 | [Does the embedding need 768 coordinates too?](https://nipunbatra.github.io/attention/vision1.html?present#s02/17/0) | `patch-one-row-projection` |
-| s02 / 18 | [How many rows come from the whole image?](https://nipunbatra.github.io/attention/vision1.html?present#s02/18/0) | `projection-size` |
-| s02 / 19 | [How many parameters does this one layer learn?](https://nipunbatra.github.io/attention/vision1.html?present#s02/19/0) | `patch-projection-parameters` |
+| s02 / 8 | [Do we apply an activation after the patch layer?](https://nipunbatra.github.io/attention/vision1.html?present#s02/8/0) | `patch-activation-location` |
+| s02 / 9 | [What does “projection” mean here?](https://nipunbatra.github.io/attention/vision1.html?present#s02/9/0) | `patch-linear-shapes` |
+| s02 / 10 | [Which weights will we multiply by?](https://nipunbatra.github.io/attention/vision1.html?present#s02/10/0) | `patch-linear-weights` |
+| s02 / 11 | [Calculate the first embedding coordinate](https://nipunbatra.github.io/attention/vision1.html?present#s02/11/0) | `patch-linear-first` |
+| s02 / 12 | [Calculate the second embedding coordinate](https://nipunbatra.github.io/attention/vision1.html?present#s02/12/0) | `patch-linear-second` |
+| s02 / 13 | [These two numbers are the patch embedding](https://nipunbatra.github.io/attention/vision1.html?present#s02/13/0) | `patch-linear-result` |
+| s02 / 14 | [Apply the very same layer to another patch](https://nipunbatra.github.io/attention/vision1.html?present#s02/14/0) | `patch-shared-code` |
+| s02 / 15 | [What do c₆ and e₆ refer to?](https://nipunbatra.github.io/attention/vision1.html?present#s02/15/0) | `s01-rows` |
+| s02 / 16 | [Where do the 768 input values come from?](https://nipunbatra.github.io/attention/vision1.html?present#s02/16/0) | `patch-real-dimensions` |
+| s02 / 17 | [What does the 1 in 1 × 768 count?](https://nipunbatra.github.io/attention/vision1.html?present#s02/17/0) | `patch-one-row-shape` |
+| s02 / 18 | [Does the embedding need 768 coordinates too?](https://nipunbatra.github.io/attention/vision1.html?present#s02/18/0) | `patch-one-row-projection` |
+| s02 / 19 | [How many rows come from the whole image?](https://nipunbatra.github.io/attention/vision1.html?present#s02/19/0) | `projection-size` |
+| s02 / 20 | [How many parameters does this one layer learn?](https://nipunbatra.github.io/attention/vision1.html?present#s02/20/0) | `patch-projection-parameters` |
 | s03 / 1 | [03 · Remembering where patches belong](https://nipunbatra.github.io/attention/vision1.html?present#s03/1/0) | `vision-topic-03` |
 | s03 / 2 | [Move the face patches. What changes?](https://nipunbatra.github.io/attention/vision1.html?present#s03/2/0) | `position-photo-layout` |
 | s03 / 3 | [Does the patch layer notice the move?](https://nipunbatra.github.io/attention/vision1.html?present#s03/3/0) | `position-photo-content` |

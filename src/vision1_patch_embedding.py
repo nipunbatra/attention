@@ -107,18 +107,48 @@ def expand(b, sections):
     body+=g(arrow(255,175,255,220)+box(35,220,440,'nn.Embedding(V, 4)',29)
             +arrow(875,175,875,220)+box(655,220,440,'nn.Linear(12, 2)',29),1)
     body+=g(arrow(255,285,255,330)+t(255,370,'look up 4 coordinates',31,'c-e','middle')
-            +arrow(875,285,875,330)+t(875,370,'compute 2 coordinates',31,'c-e','middle'),2)
+            +arrow(875,285,875,330)+t(875,370,'2 coordinates · no activation',27,'c-e','middle'),2)
     body+=t(35,420,'V = vocabulary size; the two models may choose different embedding widths.',23,'ink-2')
     add('s01-rows-step-1','How does this connect to text embeddings?',body,
-        'Both produce a vector to represent one token. Text selects a learned table row; the image layer computes a row from the patch pixels.',
+        'Here the patch embedding is x₁W + b, with no activation afterward. Text looks up a learned row; the image layer computes one from pixels.',
         'Do we have a vocabulary ID for every possible image patch?',
         'Compare lookup on the left with computation on the right. Keep the number of input values separate from the embedding width.',
         'The Part II text toy used four embedding coordinates. Our RGB warm-up chooses two coordinates so both can be calculated by hand. '
         'These dimensions are choices for different models. The image output is a patch-content embedding, called cᵢ in the next slides. '
         'Both the text embedding table and the patch layer have trainable parameters. Their output widths do not have to equal the number of classes. '
+        'nn.Linear includes a bias by default and does not apply an activation. We add position information to the content embedding afterwards. '
         +embedding_ref+' describes the lookup operation; '+linear_ref+' describes the affine map.',
         mobile_rows(['Text','Image'],[['Token ID','12 pixel values'],['nn.Embedding(V, 4)','nn.Linear(12, 2)'],
-                                   ['Look up 4 coordinates','Compute 2 coordinates']]))
+                                   ['Look up 4 coordinates','Compute 2 coordinates; no activation']])
+        +'<p>The patch layer computes x₁W + b. No ReLU or GELU follows this projection.</p>')
+
+    body=t(35,38,'Patch embedding · at the image input',29,'c-e')
+    body+=box(35,75,245,'12 pixel values',27)+arrow(280,108,395,108)
+    body+=box(395,75,350,'nn.Linear(12, 2)',30)+arrow(745,108,860,108)+box(860,75,265,'2 coordinates',27)
+    body+=g(t(35,191,'c₁ = x₁W + b. Bias makes this affine; no ReLU or GELU follows.',28),1)
+    body+=g(line(35,226,1125,226,'line')+t(35,268,'Later, after attention · the block MLP',29,'ink-2'),2)
+    body+=g(box(35,303,185,'one row',27)+arrow(220,336,275,336)
+            +box(275,303,260,'Linear(D, H)',29)+arrow(535,336,600,336)
+            +rect(600,303,155,65,'c-v','transparent')+t(677.5,346,'GELU',30,'c-v','middle')
+            +arrow(755,336,820,336)+box(820,303,275,'Linear(H, D)',29),2)
+    body+=g(t(127.5,411,'D features',25,'ink-2','middle')+t(405,411,'H features',25,'ink-2','middle')
+            +t(677.5,411,'H features',25,'c-v','middle')+t(957.5,411,'D features',25,'ink-2','middle'),3)
+    add('patch-activation-location','Do we apply an activation after the patch layer?',body,
+        'Our patch embedding uses one affine layer. The later block MLP puts GELU between two linear layers. D is the embedding width; H is the MLP’s hidden width.',
+        'Which part of these two paths applies an activation function?',
+        'Follow the direct pixel-to-embedding path first. Then reveal the separate block MLP and point to GELU between its two linear layers.',
+        'In this lecture’s patch layer, cᵢ=xᵢW+b is the complete content projection: no activation is applied to cᵢ. '
+        'With a bias, this is mathematically an affine transformation; the library calls the layer Linear. '
+        'The content embedding then receives position information before the Transformer blocks. '
+        'After attention in our pre-LN block, a normalized current row enters Linear(D,H), GELU, and Linear(H,D); the output participates in a residual addition. '
+        'This diagram isolates the MLP branch. Our trained small model chooses D=16 and H=32, while the RGB hand calculation chooses D=2. '
+        'The full Transformer also includes operations such as attention softmax and LayerNorm; GELU is the activation inside its MLP. '
+        'Adding an activation to the patch projection would define a different input module. '
+        +linear_ref+' · <a href="notebooks/vision/train_small_vit.py">The lecture’s executable model</a>.',
+        '<p><strong>At the image input:</strong> 12 pixel values → nn.Linear(12, 2) → 2 embedding coordinates.</p>'
+        '<p>c₁ = x₁W + b. This affine map has no ReLU or GELU afterward.</p>'
+        '<p><strong>Later, after attention:</strong> the block MLP uses Linear(D, H) → GELU → Linear(H, D).</p>'
+        '<p>Feature widths: D → H → H → D. D is the embedding width; H is the hidden width.</p>')
 
     body=t(35,60,'Input: x₁',28,'ink-2')+t(865,60,'Output: c₁',28,'ink-2')
     body+=box(35,110,245,'12 values')+arrow(280,143,405,143)+box(405,110,350,'nn.Linear(12, 2)',30)
@@ -341,6 +371,7 @@ def expand(b, sections):
             if key=='projection-size':
                 out.extend(additions[k] for k in ['patch-real-dimensions','patch-one-row-shape','patch-one-row-projection'])
             out.append(additions.get(key,html))
+            if key=='s01-rows-step-1':out.append(additions['patch-activation-location'])
             if key=='projection-size':out.append(additions['patch-projection-parameters'])
         result.append((title,out))
     return result

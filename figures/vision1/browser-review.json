@@ -3,7 +3,7 @@
     1280,
     720
   ],
-  "teaching_frames": 194,
+  "teaching_frames": 195,
   "cover_frames": 1,
   "review": "The previous 141 final states (140 teaching frames plus cover) passed the full geometry review. All six added implementation frames passed SVG text bounds and collision checks at 1280\u00d7720 and were visually inspected. Phone reading mode was rechecked at 390\u00d7844.",
   "geometry": "No clipped SVG text, text collisions, overflowing captions or code found.",
@@ -672,6 +672,32 @@
       "Existing numerical face/branches example follows in section 4."
     ],
     "verification": "194-frame checker passes; all 20 notebook code cells execute.",
+    "silent": true
+  },
+  "patch_activation_review": {
+    "date": "2026-09-28",
+    "frames": [
+      "s01-rows-step-1",
+      "patch-activation-location"
+    ],
+    "desktop": {
+      "viewport": [
+        1280,
+        720
+      ],
+      "clipped_text": [],
+      "caption_bottom_px": 632.4,
+      "both_diagrams_visually_inspected": true
+    },
+    "phone": {
+      "viewport": [
+        390,
+        844
+      ],
+      "page_width": 390,
+      "horizontal_overflow": false
+    },
+    "content": "Single affine patch layer with bias and no activation; later block MLP has Linear(D,H), GELU, Linear(H,D). Verified against executable SmallViT and the RGB projection example.",
     "silent": true
   }
 }

@@ -306,10 +306,18 @@
   {
     "id": "s01-rows-step-1",
     "title": "How does this connect to text embeddings?",
-    "caption": "Both produce a vector to represent one token. Text selects a learned table row; the image layer computes a row from the patch pixels.",
+    "caption": "Here the patch embedding is x\u2081W + b, with no activation afterward. Text looks up a learned row; the image layer computes one from pixels.",
     "notes": "Do we have a vocabulary ID for every possible image patch?\nCompare lookup on the left with computation on the right. Keep the number of input values separate from the embedding width.",
     "section": "s02",
     "frame": 7
+  },
+  {
+    "id": "patch-activation-location",
+    "title": "Do we apply an activation after the patch layer?",
+    "caption": "Our patch embedding uses one affine layer. The later block MLP puts GELU between two linear layers. D is the embedding width; H is the MLP\u2019s hidden width.",
+    "notes": "Which part of these two paths applies an activation function?\nFollow the direct pixel-to-embedding path first. Then reveal the separate block MLP and point to GELU between its two linear layers.",
+    "section": "s02",
+    "frame": 8
   },
   {
     "id": "patch-linear-shapes",
@@ -317,7 +325,7 @@
     "caption": "A projection forms weighted sums of the pixel values and adds a bias. This one linear layer turns 12 inputs into a 2-coordinate patch embedding.",
     "notes": "How many weighted sums do we need to produce two output coordinates?\nMatch 12 to in_features and 2 to out_features, then follow the matrix dimensions.",
     "section": "s02",
-    "frame": 8
+    "frame": 9
   },
   {
     "id": "patch-linear-weights",
@@ -325,7 +333,7 @@
     "caption": "Each output has twelve weights and one bias. We choose small values here; training normally learns these 26 parameters.",
     "notes": "Which input channels contribute to the first output?\nRead one weight per RGB entry. Point to the two output rows, then distinguish stored weight shape from W in the row-vector equation.",
     "section": "s02",
-    "frame": 9
+    "frame": 10
   },
   {
     "id": "patch-linear-first",
@@ -333,7 +341,7 @@
     "caption": "Multiply matching entries, add the four pixel contributions, then add the bias 0.5.",
     "notes": "What does each pixel contribute before we add the bias?\nMultiply the three RGB entries by their three weights at each column, then add the four results and bias.",
     "section": "s02",
-    "frame": 10
+    "frame": 11
   },
   {
     "id": "patch-linear-second",
@@ -341,7 +349,7 @@
     "caption": "Multiply matching entries, add the four pixel contributions, then add the bias -0.5.",
     "notes": "What does each pixel contribute before we add the bias?\nMultiply the three RGB entries by their three weights at each column, then add the four results and bias.",
     "section": "s02",
-    "frame": 11
+    "frame": 12
   },
   {
     "id": "patch-linear-result",
@@ -349,7 +357,7 @@
     "caption": "c\u2081 represents the content of patch 1. Its two coordinates are features for the model; the image classifier comes later.",
     "notes": "Should the negative output become zero?\nCollect the two calculated coordinates and point to the absence of an activation after the layer.",
     "section": "s02",
-    "frame": 12
+    "frame": 13
   },
   {
     "id": "patch-shared-code",
@@ -357,7 +365,7 @@
     "caption": "The pixel rows differ. Both use the same 26 parameters, so we compute both embeddings with one call: C = proj(X).",
     "notes": "Do we create a new nn.Linear layer when we move to patch 2?\nReveal the second patch. Follow both arrows through the single weight-and-bias box, then read the stacked input and output shapes.",
     "section": "s02",
-    "frame": 13
+    "frame": 14
   },
   {
     "id": "s01-rows",
@@ -365,7 +373,7 @@
     "caption": "The subscript names the patch. c\u2086 is its content embedding; adding its position row p\u2086 gives e\u2086, the row that enters attention.",
     "notes": "Does the 6 mean six coordinates, or patch number 6?\nPoint to P6 in the original illustration. Follow content plus position to e6, then repeat for P7.",
     "section": "s02",
-    "frame": 14
+    "frame": 15
   },
   {
     "id": "patch-real-dimensions",
@@ -373,7 +381,7 @@
     "caption": "One patch has 16 \u00d7 16 pixels. Each pixel contributes three channel values: red, green and blue. That gives 768 values in one patch.",
     "notes": "Are there 768 pixels in this patch, or 768 channel values?\nCount rows and columns in the patch grid. Pick one pixel, reveal its three channels, then multiply 256 by 3.",
     "section": "s02",
-    "frame": 15
+    "frame": 16
   },
   {
     "id": "patch-one-row-shape",
@@ -381,7 +389,7 @@
     "caption": "Here we are processing one patch, written as one row. The second dimension counts its 768 input values. A whole image contributes many patch rows.",
     "notes": "If we put a second patch underneath this row, which dimension changes?\nTrace the long RGB row, then point to 1 for the row count and 768 for the number of entries in that row.",
     "section": "s02",
-    "frame": 16
+    "frame": 17
   },
   {
     "id": "patch-one-row-projection",
@@ -389,7 +397,7 @@
     "caption": "The model chooses 192 output coordinates here. Every patch uses that same output width; the input and output widths can differ.",
     "notes": "Does preserving one row require preserving all 768 input coordinates?\nFollow the row count 1 to the output. Then separately follow the feature width from 768 to the chosen 192.",
     "section": "s02",
-    "frame": 17
+    "frame": 18
   },
   {
     "id": "projection-size",
@@ -397,7 +405,7 @@
     "caption": "196 counts patches in one image. Each patch supplies 768 input values and produces 192 embedding coordinates. The shared layer changes width while keeping one row per patch.",
     "notes": "Which number counts patches, and which numbers count values within a patch row?\nCount patches across and down the grid, then track the unchanged 196 in the input and output shapes.",
     "section": "s02",
-    "frame": 18
+    "frame": 19
   },
   {
     "id": "patch-projection-parameters",
@@ -405,7 +413,7 @@
     "caption": "Each of the 192 outputs has 768 weights and one bias. The parameters are shared across patches, so we count them once.",
     "notes": "If we add more patch rows, do we need another copy of these weights?\nCount weights, then biases, then add them. Point back to the single nn.Linear layer used for the whole matrix.",
     "section": "s02",
-    "frame": 19
+    "frame": 20
   },
   {
     "id": "vision-topic-03",
