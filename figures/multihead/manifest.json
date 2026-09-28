@@ -442,10 +442,10 @@
   },
   {
     "key": "s04-cap-position",
-    "title": "Add a row for each input slot",
+    "title": "Add a learned position row in each slot",
     "body": "",
-    "code": "positions = torch.arange(T, device=X.device)\nE = token_rows + model.position_embedding(positions)[None]",
-    "companion": "<p>Use positions 0\u201363 within each padded or cropped window. Adding keeps each row 64 numbers wide. Both tables learn from the prediction loss.</p>"
+    "code": "# Learned 64 x 64 position table, not sinusoidal.\n# Trained together with the token embeddings.\npositions = torch.arange(T, device=X.device)\nE = token_rows + model.position_embedding(positions)[None]",
+    "companion": "<p>This experiment uses learned absolute position embeddings, not sinusoidal encodings. The 64 \u00d7 64 table has one trainable row for each slot 0\u201363 within the padded or cropped window. Add that row to the token embedding. Both tables learn from the prediction loss.</p>"
   },
   {
     "key": "s04-cap-embed",

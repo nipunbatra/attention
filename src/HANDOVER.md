@@ -10,6 +10,14 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+2026-09-28 TinyStories position-type clarification:
+
+- `s04-cap-position` explicitly labels learned absolute position embeddings.
+  Its visible code comments identify the trainable 64 × 64 table, distinguish
+  it from sinusoidal encoding and say it learns with the token embeddings.
+  Keep the same map and slide count. Tests check the actual `nn.Embedding`,
+  its shape and trainability against these labels.
+
 2026-09-28 held TinyStories pipeline (supersedes the 52-frame layout below):
 
 - `tinystories_map.py` generates one editable SVG layout for the entire

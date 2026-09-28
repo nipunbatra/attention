@@ -113,6 +113,13 @@ def test_every_setup_checkpoint_has_executable_matching_code():
     assert ns['y'].tolist() == [w['target_id'] for w in evidence['windows']]
     exec(steps['s04-cap-model']['code'], ns)
     assert ns['model'].heads == 4 and ns['model'].head_width == 16
+    assert isinstance(ns['model'].position_embedding, torch.nn.Embedding)
+    assert ns['model'].position_embedding.weight.shape == (64, 64)
+    assert ns['model'].position_embedding.weight.requires_grad
+    position_step = steps['s04-cap-position']
+    assert 'learned position' in position_step['title']
+    assert 'not sinusoidal' in position_step['code']
+    assert 'Trained together with the token embeddings' in position_step['code']
     assert ns['model'](ns['X']).shape == (2,4000)
     for key, focus in MODEL_FOCUS.items():
         figure = (REPO/'figures/multihead'/f's04-cap-{key}.svg').read_text()
