@@ -2,7 +2,7 @@
 
 **Deck:** [vision1.html](../vision1.html) · **Present:** open the deck and press **P** · **Lab:** [03_vision_transformer_lab.ipynb](../notebooks/vision/03_vision_transformer_lab.ipynb)
 
-161 teaching frames plus cover; 14 sections. Silent, self-contained HTML slides with image assets and math embedded. Reading mode includes the longer explanations, source links, and numerical tables. Arrow keys advance one reveal; **S** opens presenter notes; **O** opens the overview; **C** shows classroom controls. Every frame has a question to ask and a note about what to point at.
+168 teaching frames plus cover; 14 sections. Silent, self-contained HTML slides with image assets and math embedded. Reading mode includes the longer explanations, source links, and numerical tables. Arrow keys advance one reveal; **S** opens presenter notes; **O** opens the overview; **C** shows classroom controls. Every frame has a question to ask and a note about what to point at.
 
 ## The teaching thread
 
@@ -22,7 +22,7 @@ The two-crop Q/K/V warm-up and the pooling example use their own clearly labeled
 
 ## Suggested pacing
 
-Use three meetings, or teach sections 1–7 first and assign the implementation as a lab. The 161 frames are short steps; the total is not a target for one class. Pause for predictions and hand calculations.
+Use three meetings, or teach sections 1–7 first and assign the implementation as a lab. The 168 frames are short steps; the total is not a target for one class. Pause for predictions and hand calculations.
 
 | Meeting | Sections | Student activity |
 |---|---|---|
@@ -45,6 +45,14 @@ The opening task comparison uses “one image summary.” Section 3 introduces t
 ## Opening transition and later comparison
 
 After the ambiguous crop and its face clues, `image-to-rows` recalls the input attention needs: rows of numbers. It previews photograph → patches → one row per patch → attention. The next section constructs those inputs step by step. The CNN comparison now follows the worked Conv2d patch projection in section 8, where both local filters and attention have been explained. Its two-layer dependency diagram distinguishes growing local context from a direct global-attention path; the next slide implements the attention calculation.
+
+## Build the patch embedding before naming its output
+
+Section 2 keeps the RGB entries grouped by pixel A, B, C and D. Count 2×2×3=12 entries, then compare a text embedding lookup with a computed patch embedding. Use `nn.Linear(12, 2)` for a hand calculation: show all 24 weights and two biases, calculate each coordinate, and collect `[2.5, −0.5]`. There is no activation after this patch layer; the separate block MLP later uses two linear layers with GELU between them.
+
+Reuse the exact same layer on a second patch to get `[0.5, −2.5]`. A single call maps `X` of shape `(2,12)` to `C` of shape `(2,2)`. These two output features are not two class scores. `cᵢ` names the content row of patch i; `eᵢ=cᵢ+pᵢ` adds position before attention. Subscripts identify patches, while D gives the embedding width. The diagram explicitly reconnects c₆/e₆ and c₇/e₇ to the earlier photo crops.
+
+Then scale to the saved real model: 16×16×3=768 input values, `nn.Linear(768,192)`, and 196 rows for a 224×224 input. The row-vector equation uses W shaped `(768,192)`; PyTorch stores the transposed weight `(192,768)`. This is equivalent to the checkpoint's Conv2d patch embedding with the corresponding input order. `figures/vision1/patch-embedding-example.json` contains the independently executed warm-up. The lab contains the same calculation as an editable, executed code cell.
 
 ## Places to stop and ask
 

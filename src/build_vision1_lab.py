@@ -32,6 +32,35 @@ from torch.nn import functional as F
 ROOT = next(p for p in [Path.cwd(), *Path.cwd().parents]
             if (p / "src/vision1_worksheet.py").exists())
 ''')
+    md('''## RGB warm-up: twelve pixel values become two embedding coordinates
+
+Use the same four colored pixels as the slides. Entries are ordered pixel by pixel: RGB for A, then B, C and D. The first patch is red/green/blue/white; the second is blue/blue/green/green.
+
+These weights are chosen for arithmetic. Instantiate one `nn.Linear(12, 2)`, set its weights and biases, and reuse it for both patches. There is no activation after this layer. Its outputs are patch features, not class scores. PyTorch stores weights as `(out_features, in_features)`, so it computes `X @ weight.T + bias`.
+''')
+    code('''X = torch.tensor([
+    [1.,0.,0., 0.,1.,0., 0.,0.,1., 1.,1.,1.],
+    [0.,0.,1., 0.,0.,1., 0.,1.,0., 0.,1.,0.],
+], dtype=torch.float64)
+proj = nn.Linear(12, 2, dtype=torch.float64)  # create once
+with torch.no_grad():
+    proj.weight.copy_(torch.tensor([
+        [1.,0.,0., 1.,0.,0., 1.,0.,0., 1.,0.,0.],
+        [0.,1.,0., 0.,1.,0., 0.,-1.,0., 0.,-1.,0.],
+    ], dtype=torch.float64))
+    proj.bias.copy_(torch.tensor([0.5, -0.5], dtype=torch.float64))
+C = proj(X)
+expected = torch.tensor([[2.5, -0.5], [0.5, -2.5]], dtype=torch.float64)
+torch.testing.assert_close(C, expected)
+torch.testing.assert_close(C, X @ proj.weight.T + proj.bias)
+for i in range(2):
+    torch.testing.assert_close(proj(X[i:i+1]), C[i:i+1])
+assert sum(p.numel() for p in proj.parameters()) == 26
+print("X shape:", tuple(X.shape), "→ C shape:", tuple(C.shape))
+print("Content embeddings:", C.detach().tolist())
+print("Shared parameters:", sum(p.numel() for p in proj.parameters()))
+# No ReLU: the negative coordinates remain negative.
+''')
     md('## 1. Every worksheet parameter\nFirst inspect W_patch and both heads. Which coordinates do the nonzero entries select?')
     source=(ROOT/'src/vision1_worksheet.py').read_text().split("if __name__ == '__main__':")[0]
     code(source)

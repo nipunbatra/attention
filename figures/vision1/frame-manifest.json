@@ -217,17 +217,17 @@
   },
   {
     "id": "rgb-flatten-step-1",
-    "title": "How many numbers are in four RGB pixels?",
-    "caption": "Four pixels, three channels each: twelve numbers.",
-    "notes": "Does one pixel contribute one number or three?\nCount RGB channels before flattening.",
+    "title": "Read the RGB values of each pixel",
+    "caption": "For this calculation, divide RGB values by 255. Read A, B, C, D: top-left, top-right, bottom-left, bottom-right.",
+    "notes": "How many numbers does pixel A contribute?\nPoint to the red pixel, read its RGB triple, then reveal one pixel at a time.",
     "section": "s02",
     "frame": 3
   },
   {
     "id": "rgb-flatten",
-    "title": "Write those twelve numbers in one row",
-    "caption": "Keep the same pixel order each time.",
-    "notes": "Which three entries came from the white pixel?\nTrace each RGB triple back to its coloured pixel.",
+    "title": "Put the four RGB triples in one row",
+    "caption": "Keep RGB together for each pixel. x\u2081 contains 12 values from patch 1; the subscript identifies the patch.",
+    "notes": "Which three entries came from the bottom-right pixel?\nFollow A, B, C and D into their matching groups, then count the twelve scalar entries.",
     "section": "s02",
     "frame": 4
   },
@@ -241,27 +241,83 @@
   },
   {
     "id": "s01-rows-step-1",
-    "title": "Give each patch its own row of pixels",
-    "caption": "A row starts with the pixel values from one fixed part of the image.",
-    "notes": "Do we mix pixels from different patches at this step?\nFollow one crop into its own row.",
+    "title": "How does this connect to text embeddings?",
+    "caption": "Both produce a vector to represent one token. Text selects a learned table row; the image layer computes a row from the patch pixels.",
+    "notes": "Do we have a vocabulary ID for every possible image patch?\nCompare lookup on the left with computation on the right. Keep the number of input values separate from the embedding width.",
     "section": "s02",
     "frame": 6
   },
   {
-    "id": "s01-rows",
-    "title": "Use the same projection on every patch",
-    "caption": "Every output row has the same width, so the attention block can process them together.",
-    "notes": "How many different projection matrices do we need?\nPoint to the shared operation between the four rows.",
+    "id": "patch-linear-shapes",
+    "title": "What does \u201cprojection\u201d mean here?",
+    "caption": "A projection forms weighted sums of the pixel values and adds a bias. This one linear layer turns 12 inputs into a 2-coordinate patch embedding.",
+    "notes": "How many weighted sums do we need to produce two output coordinates?\nMatch 12 to in_features and 2 to out_features, then follow the matrix dimensions.",
     "section": "s02",
     "frame": 7
   },
   {
-    "id": "projection-size",
-    "title": "How many weights turn pixels into a patch row?",
-    "caption": "One learned projection is shared across locations. Positions enter afterwards.",
-    "notes": "Does doubling the number of patches double the projection parameters?\nTrace one row through the matrix and bias; then reuse that operation for all patches.",
+    "id": "patch-linear-weights",
+    "title": "Which weights will we multiply by?",
+    "caption": "Each output has twelve weights and one bias. We choose small values here; training normally learns these 26 parameters.",
+    "notes": "Which input channels contribute to the first output?\nRead one weight per RGB entry. Point to the two output rows, then distinguish stored weight shape from W in the row-vector equation.",
     "section": "s02",
     "frame": 8
+  },
+  {
+    "id": "patch-linear-first",
+    "title": "Calculate the first embedding coordinate",
+    "caption": "Multiply matching entries, add the four pixel contributions, then add the bias 0.5.",
+    "notes": "What does each pixel contribute before we add the bias?\nMultiply the three RGB entries by their three weights at each column, then add the four results and bias.",
+    "section": "s02",
+    "frame": 9
+  },
+  {
+    "id": "patch-linear-second",
+    "title": "Calculate the second embedding coordinate",
+    "caption": "Multiply matching entries, add the four pixel contributions, then add the bias -0.5.",
+    "notes": "What does each pixel contribute before we add the bias?\nMultiply the three RGB entries by their three weights at each column, then add the four results and bias.",
+    "section": "s02",
+    "frame": 10
+  },
+  {
+    "id": "patch-linear-result",
+    "title": "These two numbers are the patch embedding",
+    "caption": "c\u2081 represents the content of patch 1. Its two coordinates are features for the model; the image classifier comes later.",
+    "notes": "Should the negative output become zero?\nCollect the two calculated coordinates and point to the absence of an activation after the layer.",
+    "section": "s02",
+    "frame": 11
+  },
+  {
+    "id": "patch-shared-code",
+    "title": "Apply the very same layer to another patch",
+    "caption": "The pixel rows differ. Both use the same 26 parameters, so we compute both embeddings with one call: C = proj(X).",
+    "notes": "Do we create a new nn.Linear layer when we move to patch 2?\nReveal the second patch. Follow both arrows through the single weight-and-bias box, then read the stacked input and output shapes.",
+    "section": "s02",
+    "frame": 12
+  },
+  {
+    "id": "s01-rows",
+    "title": "What do c\u2086 and e\u2086 refer to?",
+    "caption": "The subscript names the patch. c\u2086 is its content embedding; adding its position row p\u2086 gives e\u2086, the row that enters attention.",
+    "notes": "Does the 6 mean six coordinates, or patch number 6?\nPoint to P6 in the original illustration. Follow content plus position to e6, then repeat for P7.",
+    "section": "s02",
+    "frame": 13
+  },
+  {
+    "id": "patch-real-dimensions",
+    "title": "Scale the same operation to a 16 \u00d7 16 RGB patch",
+    "caption": "The pretrained ViT used later takes 768 values per patch and returns 192 embedding coordinates. The operation is the same weighted sum plus bias.",
+    "notes": "Where do 768 and 192 come from?\nCalculate 16\u00d716\u00d73, then distinguish that count from the model designer\u2019s choice of embedding width.",
+    "section": "s02",
+    "frame": 14
+  },
+  {
+    "id": "projection-size",
+    "title": "One layer produces all 196 patch embeddings",
+    "caption": "The layer changes the feature width from 768 to 192. It keeps one output row per patch and reuses the same weights and bias everywhere.",
+    "notes": "Do 196 patches require 196 different weight matrices?\nFollow the two axes: the patch count stays 196 while the feature width changes. Count the parameters once.",
+    "section": "s02",
+    "frame": 15
   },
   {
     "id": "s02-small",

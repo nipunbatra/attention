@@ -518,6 +518,8 @@ optimizer.step()''',t(30,65,'image + known label',26,'c-e')+arrow(180,92,180,160
     sections=introduce(b,sections)
     from vision1_text_bridge import bridge
     sections=bridge(b,sections)
+    from vision1_patch_embedding import expand as expand_patch_embedding
+    sections=expand_patch_embedding(b,sections)
     ordered=[]
     for n,(title,frames) in enumerate(sections,1):
         original_section(n,title,frames)

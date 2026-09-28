@@ -3,7 +3,7 @@
     1280,
     720
   ],
-  "teaching_frames": 161,
+  "teaching_frames": 168,
   "cover_frames": 1,
   "review": "The previous 141 final states (140 teaching frames plus cover) passed the full geometry review. All six added implementation frames passed SVG text bounds and collision checks at 1280\u00d7720 and were visually inspected. Phone reading mode was rechecked at 390\u00d7844.",
   "geometry": "No clipped SVG text, text collisions, overflowing captions or code found.",
@@ -52,7 +52,7 @@
     "s04/20/0 \u2192 s04/20/1 \u2192 s04/21/0"
   ],
   "presenter_notes": "Question and pointing instruction confirmed on s04/21/0",
-  "notebook_code_cells": 19,
+  "notebook_code_cells": 20,
   "new_frame_geometry": {
     "conv-one-patch": {
       "clipped": [],
@@ -338,6 +338,106 @@
     "document_scroll_width": 390,
     "phone_visual_check": "Enlarged patch and arrow path, row-by-row values, and flattened vector are readable.",
     "notebook_code_cells": 19,
+    "audio_or_video_played": false
+  },
+  "patch_embedding_review": {
+    "date": "2026-09-28",
+    "viewport": [
+      1280,
+      720
+    ],
+    "visual_samples": [
+      "rgb-flatten-step-1",
+      "rgb-flatten",
+      "s01-rows-step-1",
+      "patch-linear-shapes",
+      "patch-linear-weights",
+      "patch-linear-first",
+      "patch-linear-second",
+      "patch-linear-result",
+      "patch-shared-code",
+      "s01-rows",
+      "patch-real-dimensions",
+      "projection-size"
+    ],
+    "geometry": {
+      "rgb-flatten-step-1": {
+        "clipped": [],
+        "collisions": []
+      },
+      "rgb-flatten": {
+        "clipped": [],
+        "collisions": []
+      },
+      "s01-rows-step-1": {
+        "clipped": [],
+        "collisions": []
+      },
+      "patch-linear-shapes": {
+        "clipped": [],
+        "collisions": []
+      },
+      "patch-linear-weights": {
+        "clipped": [],
+        "collisions": []
+      },
+      "patch-linear-first": {
+        "clipped": [],
+        "collisions": []
+      },
+      "patch-linear-second": {
+        "clipped": [],
+        "collisions": []
+      },
+      "patch-linear-result": {
+        "clipped": [],
+        "collisions": []
+      },
+      "patch-shared-code": {
+        "clipped": [],
+        "collisions": []
+      },
+      "s01-rows": {
+        "clipped": [],
+        "collisions": []
+      },
+      "patch-real-dimensions": {
+        "clipped": [],
+        "collisions": []
+      },
+      "projection-size": {
+        "clipped": [],
+        "collisions": []
+      }
+    },
+    "reading_viewport": [
+      390,
+      844
+    ],
+    "document_width": 390,
+    "document_scroll_width": 390,
+    "phone_visual_check": "The RGB/weight/product table and coordinate calculation are readable. All eleven mobile tables fit in 358 pixels.",
+    "sequence": "Four RGB triples, flatten, text lookup comparison, linear layer shapes, all weights, two coordinate calculations, no activation, shared layer, patch subscripts and positions, real-model dimensions.",
+    "arithmetic": {
+      "layer": "nn.Linear(12,2)",
+      "inputs": [
+        2,
+        12
+      ],
+      "outputs": [
+        [
+          2.5,
+          -0.5
+        ],
+        [
+          0.5,
+          -2.5
+        ]
+      ],
+      "shared_parameters": 26,
+      "verified_by": "Independent slide calculation and executed lab cell"
+    },
+    "notebook_code_cells": 20,
     "audio_or_video_played": false
   }
 }

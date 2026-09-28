@@ -1,6 +1,6 @@
 # Vision I: slide map
 
-161 teaching frames plus the cover. Each link opens the first reveal of that slide. Use Right/Left for reveals and S for presenter notes.
+168 teaching frames plus the cover. Each link opens the first reveal of that slide. Use Right/Left for reveals and S for presenter notes.
 
 ## Review these additions first
 
@@ -60,9 +60,20 @@
 - [What information would a value send?](https://nipunbatra.github.io/attention/vision1.html?present#s01/23/0)
 - [What is the “next token” for this image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/24/0)
 
+## RGB pixels to patch embeddings
+
+- [Read the RGB values of each pixel](https://nipunbatra.github.io/attention/vision1.html?present#s02/3/0)
+- [Put the four RGB triples in one row](https://nipunbatra.github.io/attention/vision1.html?present#s02/4/0)
+- [What does “projection” mean here?](https://nipunbatra.github.io/attention/vision1.html?present#s02/7/0)
+- [Calculate the first embedding coordinate](https://nipunbatra.github.io/attention/vision1.html?present#s02/9/0)
+- [Calculate the second embedding coordinate](https://nipunbatra.github.io/attention/vision1.html?present#s02/10/0)
+- [Apply the very same layer to another patch](https://nipunbatra.github.io/attention/vision1.html?present#s02/12/0)
+- [What do c₆ and e₆ refer to?](https://nipunbatra.github.io/attention/vision1.html?present#s02/13/0)
+- [One layer produces all 196 patch embeddings](https://nipunbatra.github.io/attention/vision1.html?present#s02/15/0)
+
 ## Complete sequence
 
-| Section / frame | Question or teaching step | Stable source ID |
+| Slide | Question | Frame ID |
 |---|---|---|
 | s01 / 1 | [What does our animal dataset look like?](https://nipunbatra.github.io/attention/vision1.html?present#s01/1/0) | `dataset-gallery` |
 | s01 / 2 | [How many images and classes are there?](https://nipunbatra.github.io/attention/vision1.html?present#s01/2/0) | `dataset-counts` |
@@ -91,12 +102,19 @@
 | s01 / 25 | [How can we give this photograph to attention?](https://nipunbatra.github.io/attention/vision1.html?present#s01/25/0) | `image-to-rows` |
 | s02 / 1 | [Where do the patch boundaries go?](https://nipunbatra.github.io/attention/vision1.html?present#s02/1/0) | `s01-patches` |
 | s02 / 2 | [How can a red pixel be three numbers?](https://nipunbatra.github.io/attention/vision1.html?present#s02/2/0) | `one-rgb` |
-| s02 / 3 | [How many numbers are in four RGB pixels?](https://nipunbatra.github.io/attention/vision1.html?present#s02/3/0) | `rgb-flatten-step-1` |
-| s02 / 4 | [Write those twelve numbers in one row](https://nipunbatra.github.io/attention/vision1.html?present#s02/4/0) | `rgb-flatten` |
+| s02 / 3 | [Read the RGB values of each pixel](https://nipunbatra.github.io/attention/vision1.html?present#s02/3/0) | `rgb-flatten-step-1` |
+| s02 / 4 | [Put the four RGB triples in one row](https://nipunbatra.github.io/attention/vision1.html?present#s02/4/0) | `rgb-flatten` |
 | s02 / 5 | [Which pixel goes first in the row?](https://nipunbatra.github.io/attention/vision1.html?present#s02/5/0) | `flatten-order` |
-| s02 / 6 | [Give each patch its own row of pixels](https://nipunbatra.github.io/attention/vision1.html?present#s02/6/0) | `s01-rows-step-1` |
-| s02 / 7 | [Use the same projection on every patch](https://nipunbatra.github.io/attention/vision1.html?present#s02/7/0) | `s01-rows` |
-| s02 / 8 | [How many weights turn pixels into a patch row?](https://nipunbatra.github.io/attention/vision1.html?present#s02/8/0) | `projection-size` |
+| s02 / 6 | [How does this connect to text embeddings?](https://nipunbatra.github.io/attention/vision1.html?present#s02/6/0) | `s01-rows-step-1` |
+| s02 / 7 | [What does “projection” mean here?](https://nipunbatra.github.io/attention/vision1.html?present#s02/7/0) | `patch-linear-shapes` |
+| s02 / 8 | [Which weights will we multiply by?](https://nipunbatra.github.io/attention/vision1.html?present#s02/8/0) | `patch-linear-weights` |
+| s02 / 9 | [Calculate the first embedding coordinate](https://nipunbatra.github.io/attention/vision1.html?present#s02/9/0) | `patch-linear-first` |
+| s02 / 10 | [Calculate the second embedding coordinate](https://nipunbatra.github.io/attention/vision1.html?present#s02/10/0) | `patch-linear-second` |
+| s02 / 11 | [These two numbers are the patch embedding](https://nipunbatra.github.io/attention/vision1.html?present#s02/11/0) | `patch-linear-result` |
+| s02 / 12 | [Apply the very same layer to another patch](https://nipunbatra.github.io/attention/vision1.html?present#s02/12/0) | `patch-shared-code` |
+| s02 / 13 | [What do c₆ and e₆ refer to?](https://nipunbatra.github.io/attention/vision1.html?present#s02/13/0) | `s01-rows` |
+| s02 / 14 | [Scale the same operation to a 16 × 16 RGB patch](https://nipunbatra.github.io/attention/vision1.html?present#s02/14/0) | `patch-real-dimensions` |
+| s02 / 15 | [One layer produces all 196 patch embeddings](https://nipunbatra.github.io/attention/vision1.html?present#s02/15/0) | `projection-size` |
 | s03 / 1 | [Same pieces, different picture?](https://nipunbatra.github.io/attention/vision1.html?present#s03/1/0) | `s02-small` |
 | s03 / 2 | [Could you put the picture back together?](https://nipunbatra.github.io/attention/vision1.html?present#s03/2/0) | `position-question` |
 | s03 / 3 | [Flatten P1 so we can multiply it](https://nipunbatra.github.io/attention/vision1.html?present#s03/3/0) | `s02-projection-step-1` |
