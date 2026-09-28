@@ -10,6 +10,18 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+2026-09-28 vocabulary scores tied to both input examples:
+
+- `s19-pipeline-vocab-head` now compares both examples from “Lily found a red
+  ball.” Each column starts with its four input slots, recalls the 16 → 8 → 10
+  MLP shapes, then shows all ten actual logits, the highest-scoring guess and
+  the observed next token. Example 0 targets `a`; example 1 targets `red`.
+- The untrained model guesses `red` for both. Keep ground truth separate from
+  the model output and explain that it lies outside that input window. Retain
+  the untrained-model label. Do not restore the disconnected one-example score
+  table or the weighted-sum classifier detour. The earlier three network
+  diagrams remain unchanged. No extra frame or model change.
+
 2026-09-28 hidden-layer shape simplification:
 
 - `s19-pipeline-hidden-affine` now teaches only the network and tensor shapes.

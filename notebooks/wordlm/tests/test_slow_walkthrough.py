@@ -27,7 +27,6 @@ def test_all_lesson_steps_execute_and_render():
 
 
 def test_mlp_forward_pass_keeps_one_numeric_network_diagram():
-    import torch
     ns = initial_namespace()
     positions = None
     seen = []
@@ -64,13 +63,36 @@ def test_mlp_forward_pass_keeps_one_numeric_network_diagram():
             for j, e in enumerate(nodes('network-hidden-value')):
                 assert float(e.get('data-pre')) == float(ns['pre_hidden'][1,j].detach())
                 assert float(e.get('data-post')) == max(0, float(e.get('data-pre')))
-        if stage['id'] == 'vocab-head':
-            assert len([e for e in edges if e.get('stroke-width') == '2']) == 8
-            assert [float(e.get('data-value')) for e in nodes('network-logit')] == ns['logits_mlp'][1].tolist()
-            assert torch.allclose(ns['manual_red'], ns['logits_mlp'][1, ns['red_id']])
-            assert ns['y'][1] == ns['red_id']
             break
-    assert seen == ['flatten', 'hidden-affine', 'relu', 'vocab-head']
+    assert seen == ['flatten', 'hidden-affine', 'relu']
+
+
+def test_vocabulary_scores_pair_each_context_with_its_own_ground_truth():
+    ns = initial_namespace()
+    for stage in STAGES:
+        exec(stage['code'], ns)
+        if stage['id'] == 'vocab-head':
+            break
+    root = ET.fromstring(render_figure(stage, ns))
+    examples = [e for e in root.iter() if e.get('class') == 'vocab-example']
+    assert len(examples) == 2
+    for b, example in enumerate(examples):
+        inputs = [e for e in example.iter() if e.get('class') == 'vocab-input']
+        scores = [e for e in example.iter() if e.get('class') == 'vocab-score']
+        assert [e.get('data-token') for e in inputs] == [ns['words'][i] for i in ns['X'][b]]
+        assert [e.get('data-token') for e in scores] == ns['words']
+        assert [float(e.get('data-value')) for e in scores] == ns['logits_mlp'][b].tolist()
+        assert int(example.get('data-target')) == int(ns['y'][b])
+        assert int(example.get('data-guess')) == int(ns['logits_mlp'][b].argmax())
+        label = ' '.join(example.itertext())
+        assert 'Ground truth: '+ns['words'][int(ns['y'][b])] in label
+        assert 'Model guess: '+ns['words'][int(ns['predicted_ids'][b])] in label
+    assert [int(e.get('data-target')) for e in examples] == [5, 9]
+    assert ns['predicted_ids'][0] != ns['y'][0], 'show an actual incorrect guess, not fabricated correctness'
+    text = ' '.join(root.itertext())
+    for phrase in ('Story: '+ns['sentence'], 'Initial, untrained MLP', 'four input slots', 'Score (logit)'):
+        assert phrase in text
+    assert 'outside the four input slots' in stage['body']
 
 
 def test_lookup_explains_the_padding_exception_without_changing_the_example():

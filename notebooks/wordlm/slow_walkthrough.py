@@ -361,15 +361,13 @@ assert hidden_mlp.shape == (2, 8)
 assert hidden_mlp.ge(0).all()
 ''', focus=('hidden',))
 
-step('vocab-head', 'Vocabulary logits from the hidden layer', '3. The MLP forward pass',
-     'The classifier connects all eight hidden activations to every vocabulary output, producing ten logits. Red is the observed target for example 1, not necessarily this untrained model’s highest score. The output matrix W₂ is 8×10 in row-vector notation, and b₂ has ten entries. Logits can be negative and need not sum to one. Softmax and the training loss follow later. The highlighted output sums eight weighted hidden activations and adds the bias for red.', '''
+step('vocab-head', 'Four input tokens, one next-token target', '3. The MLP forward pass',
+     'A logit is a raw next-token score, and the largest gives the model’s guess. Ground truth is the actual next token in the story, outside the four input slots. Both examples use the same MLP: four token IDs select four embeddings, which flatten to 16 numbers, pass through eight hidden activations, then produce ten vocabulary scores. For example 0, the context is <PAD> <BOS> lily found and the observed next token is a. For example 1, the context is <BOS> lily found a and the observed next token is red. These are initial, untrained scores. A correct guess here can happen by chance. Ground truth comes from the data, not from selecting the highest score. Softmax and the training loss follow later.', '''
 logits_mlp = mlp.vocab_head(hidden_mlp)
 assert logits_mlp.shape == (2, 10)
 assert torch.allclose(logits_mlp, mlp(X))
-red_id = vocab.stoi['red']
-red_terms = hidden_mlp[1] * mlp.vocab_head.weight[red_id]
-manual_red = red_terms.sum() + mlp.vocab_head.bias[red_id]
-assert torch.allclose(manual_red, logits_mlp[1, red_id])
+predicted_ids = logits_mlp.argmax(dim=-1)
+assert y.tolist() == [vocab.stoi['a'], vocab.stoi['red']]
 ''', focus=('logits',))
 
 step('attention-map', 'The full attention training map', '4. The attention forward pass',
@@ -715,7 +713,42 @@ def num(value):
 def vector(values): return '[ '+', '.join(num(v) for v in values)+' ]'
 
 
-MLP_NETWORK_STAGES = {'flatten', 'hidden-affine', 'relu', 'vocab-head'}
+MLP_NETWORK_STAGES = {'flatten', 'hidden-affine', 'relu'}
+
+
+def vocabulary_examples_figure(stage, ns):
+    """Pair each four-token context with its scores, guess and observed answer."""
+    f = Figure(stage['title'], height=530)
+    f.text(20,30,'Story: '+ns['sentence'],INK,28,600)
+    f.text(1140,30,'Initial, untrained MLP',MUTED,24,anchor='end')
+    f.line(580,58,580,496)
+    for b, x in enumerate((20,610)):
+        target, guess = int(ns['y'][b]), int(ns['predicted_ids'][b])
+        words = ns['words']
+        f.parts.append(f'<g class="vocab-example" data-example="{b}" data-target="{target}" data-guess="{guess}">')
+        f.text(x,73,f'Example {b}: four input slots',BLUE,25,600)
+        for slot, token_id in enumerate(ns['X'][b].tolist()):
+            token = words[token_id]
+            f.parts.append(f'<g class="vocab-input" data-slot="{slot}" data-token="{escape(token,quote=True)}">')
+            f.rect(x+slot*130,88,120,38,stroke=BLUE)
+            f.text(x+slot*130+60,114,token,BLUE,24,anchor='middle')
+            f.parts.append('</g>')
+        f.text(x,158,'MLP: 16 inputs → 8 hidden → 10 scores',TEAL,25)
+        f.text(x,193,'Candidate token',MUTED,23,600)
+        f.text(x+500,193,'Score (logit)',MUTED,23,600,anchor='end')
+        f.line(x,201,x+520,201)
+        for i, word in enumerate(words):
+            y = 228+i*23
+            score = ns['logits_mlp'][b,i]
+            f.parts.append(f'<g class="vocab-score" data-token="{escape(word,quote=True)}" data-value="{float(score.detach())}">')
+            f.text(x,y,word,INK,24,600 if i in {target,guess} else 500)
+            f.text(x+500,y,num(score),RED if i==guess else INK,24,600 if i==guess else 500,anchor='end',mono=True)
+            f.parts.append('</g>')
+        f.line(x,444,x+520,444)
+        f.text(x,472,'Model guess: '+words[guess],RED,26,600)
+        f.text(x,501,'Ground truth: '+words[target],GREEN,26,600)
+        f.parts.append('</g>')
+    return f.finish()
 
 
 def mlp_network_figure(stage, ns):
@@ -743,8 +776,7 @@ def mlp_network_figure(stage, ns):
             f.parts.append(f'<line class="network-edge" data-matrix="W1" data-input="{i}" data-hidden="{j}" x1="{xi+8}" y1="{iy}" x2="{xh-12}" y2="{hy}" stroke="{TEAL if shapes_only else LINE}" stroke-width="1" opacity="{0.18 if shapes_only else 0.38}"/>')
     for j, hy in enumerate(hidden_y):
         for i, oy in enumerate(output_y):
-            active = k == 'vocab-head' and i == ns['vocab'].stoi['red']
-            f.parts.append(f'<line class="network-edge" data-matrix="W2" data-hidden="{j}" data-output="{i}" x1="{xh+12}" y1="{hy}" x2="{xo-9}" y2="{oy}" stroke="{RED if active else LINE}" stroke-width="{2 if active else 1}" opacity="{0.7 if active else 0.38}"/>')
+            f.parts.append(f'<line class="network-edge" data-matrix="W2" data-hidden="{j}" data-output="{i}" x1="{xh+12}" y1="{hy}" x2="{xo-9}" y2="{oy}" stroke="{LINE}" stroke-width="1" opacity="0.38"/>')
     for slot in range(4):
         first, last = input_y[slot*4], input_y[slot*4+3]
         token = words[int(X[1,slot])]
@@ -759,15 +791,14 @@ def mlp_network_figure(stage, ns):
             f.parts.append(f'<circle class="network-input" data-input="{i}" data-coordinate="{coord}" data-value="{float(inputs[i].detach())}" cx="{xi}" cy="{y}" r="7" fill="#fff" stroke="{BLUE}" stroke-width="2"><title>Slot {slot+1}, coordinate {coord+1}: {num(inputs[i])}</title></circle>')
         f.parts.append('</g>')
     for j,y in enumerate(hidden_y):
-        color = TEAL if k in {'hidden-affine','relu','vocab-head'} else MUTED
+        color = TEAL if k in {'hidden-affine','relu'} else MUTED
         f.parts.append(f'<circle class="network-hidden" data-hidden="{j}" cx="{xh}" cy="{y}" r="12" fill="#fff" stroke="{color}" stroke-width="2"/>')
         if not shapes_only:
             f.text(xh-21,y+6,str(j),MUTED,19,anchor='end')
-        if k not in {'flatten','hidden-affine'}:
+        if k == 'relu':
             before = ns['pre_hidden'][1,j]
-            after = ns.get('hidden_mlp')
-            value = (f'{num(before)} → {num(after[1,j])}' if k=='relu'
-                     else num(after[1,j]) if k=='vocab-head' else num(before))
+            after = ns['hidden_mlp']
+            value = f'{num(before)} → {num(after[1,j])}'
             f.parts.append(f'<g class="network-hidden-value" data-hidden="{j}" data-pre="{float(before.detach())}"'+
                            (f' data-post="{float(after[1,j].detach())}"' if after is not None else '')+
                            '>')
@@ -775,14 +806,8 @@ def mlp_network_figure(stage, ns):
             f.text(xh+22,y+6,value,color,20,mono=True)
             f.parts.append('</g>')
     for i,y in enumerate(output_y):
-        target = i == ns['vocab'].stoi['red'] and k=='vocab-head'
-        color = RED if k=='vocab-head' else MUTED
-        f.parts.append(f'<circle class="network-output" data-output="{i}" data-token="{escape(words[i],quote=True)}" cx="{xo}" cy="{y}" r="9" fill="#fff" stroke="{color}" stroke-width="{3 if target else 2}"/>')
-        f.text(xo+20,y+7,words[i],color,23,600 if target else 500)
-        if k=='vocab-head':
-            f.parts.append(f'<g class="network-logit" data-output="{i}" data-value="{float(ns["logits_mlp"][1,i].detach())}">')
-            f.text(1138,y+7,num(ns['logits_mlp'][1,i]),RED,23,anchor='end',mono=True)
-            f.parts.append('</g>')
+        f.parts.append(f'<circle class="network-output" data-output="{i}" data-token="{escape(words[i],quote=True)}" cx="{xo}" cy="{y}" r="9" fill="#fff" stroke="{MUTED}" stroke-width="2"/>')
+        f.text(xo+20,y+7,words[i],MUTED,23)
     if k=='flatten':
         f.text(20,418,'4 token rows × 4 coordinates = 16 inputs. Flattening learns no weights.',BLUE,25,600)
         f.text(20,447,'Next: a learned 16×8 connection matrix, ReLU, then an 8×10 classifier.',MUTED,23)
@@ -792,9 +817,6 @@ def mlp_network_figure(stage, ns):
     elif k=='relu':
         f.text(20,418,'At the same 8 neurons: z → max(0, z). Negative sums become zero.',TEAL,25,600)
         f.text(20,447,'ReLU has no learned weights. The classifier receives the values on the right.',MUTED,23)
-    else:
-        f.text(20,418,f"For red: weighted hidden sum {num(ns['red_terms'].sum())} + bias ({num(ns['mlp'].vocab_head.bias[ns['red_id']])}) = {num(ns['manual_red'])}",RED,25,600)
-        f.text(20,447,'W₂ is 8×10, with 10 biases. These scores become probabilities at softmax.',MUTED,23)
     return f.finish()
 
 
@@ -803,6 +825,8 @@ def render_figure(stage, ns):
     k=stage['id'];f=Figure(stage['title']);words=ns.get('words',[])
     if k in MLP_NETWORK_STAGES:
         return mlp_network_figure(stage, ns)
+    if k == 'vocab-head':
+        return vocabulary_examples_figure(stage, ns)
     decode=lambda ids:' '.join(words[int(i)].replace('<','').replace('>','') for i in ids)
     X=ns.get('X'); row_tokens=lambda b:[words[int(i)] for i in X[b]]
     if stage.get('map_checkpoint') or k in {'mlp-map','attention-map','mlp-inference','attention-inference'}:

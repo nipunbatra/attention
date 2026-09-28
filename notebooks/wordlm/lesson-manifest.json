@@ -377,7 +377,7 @@
   },
   {
     "id": "vocab-head",
-    "title": "Vocabulary logits from the hidden layer",
+    "title": "Four input tokens, one next-token target",
     "chapter": "3. The MLP forward pass",
     "index": 48,
     "slide": 52,

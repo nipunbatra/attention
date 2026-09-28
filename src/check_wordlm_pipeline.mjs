@@ -31,7 +31,7 @@ try{
   }
   assert.match(await page.locator('#s19-pipeline-lookup svg').textContent(),/C=10 rows × d=4 coordinates.*initial weights/s);
   let networkPositions;
-  for(const id of ['flatten','hidden-affine','relu','vocab-head']){
+  for(const id of ['flatten','hidden-affine','relu']){
     const network=page.locator('#s19-pipeline-'+id+' [data-mlp-network]');
     assert.equal(await network.getAttribute('data-example'),'1');
     for(const [cls,count] of [['network-input',16],['network-hidden',8],['network-output',10]]){
@@ -44,7 +44,19 @@ try{
     networkPositions=positions;
     assert.deepEqual(await network.locator('.network-token-group').evaluateAll(es=>es.map(e=>e.dataset.token)),['<BOS>','lily','found','a']);
   }
-  assert.match(await page.locator('#s19-pipeline-vocab-head .step-copy').innerText(),/observed target.*not necessarily/s);
+  const vocabFrame=page.locator('#s19-pipeline-vocab-head');
+  assert.equal(await vocabFrame.getAttribute('data-title'),'Four input tokens, one next-token target');
+  assert.match(await vocabFrame.locator('.step-copy').innerText(),/raw next-token score.*largest.*guess.*Ground truth.*outside the four input slots/s);
+  assert.match(await vocabFrame.locator('svg').textContent(),/Story: Lily found a red ball.*Initial, untrained MLP/s);
+  for(const [b,inputs,target] of [[0,['<PAD>','<BOS>','lily','found'],5],[1,['<BOS>','lily','found','a'],9]]){
+    const example=vocabFrame.locator('.vocab-example[data-example="'+b+'"]');
+    assert.equal(await example.getAttribute('data-target'),String(target));
+    assert.deepEqual(await example.locator('.vocab-input').evaluateAll(es=>es.map(e=>e.dataset.token)),inputs);
+    const scores=await example.locator('.vocab-score').evaluateAll(es=>es.map(e=>Number(e.dataset.value)));
+    assert.equal(scores.length,10);
+    assert.equal(Number(await example.getAttribute('data-guess')),scores.indexOf(Math.max(...scores)));
+    assert.match(await example.textContent(),new RegExp('Ground truth: '+(b===0?'a':'red')));
+  }
   const hiddenFrame=page.locator('#s19-pipeline-hidden-affine');
   assert.equal(await hiddenFrame.getAttribute('data-title'),'The hidden layer: 16 inputs, 8 outputs');
   const hiddenLabels=(await hiddenFrame.locator('svg text').allTextContents()).join(' ');

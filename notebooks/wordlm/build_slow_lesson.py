@@ -75,7 +75,7 @@ SLIDE_CODE = {
  'flatten':'flat = E_mlp.flatten(start_dim=1)',
  'hidden-affine':'pre_hidden = mlp.hidden_layer(flat)',
  'relu':'hidden_mlp = torch.relu(pre_hidden)',
- 'vocab-head':'logits_mlp = mlp.vocab_head(hidden_mlp)',
+ 'vocab-head':None,
  'attention-map':None,
  'query':'q = attention.W_Q(E[:, -1:, :])',
  'keys':'K = attention.W_K(E)',
@@ -221,6 +221,8 @@ jupyter lab {BOOK}.ipynb</pre><p>Then choose <strong>Run → Run All Cells</stro
 #s19 .pipeline-lesson.mlp-network-lesson .step-figure svg{max-height:350px}
 #s19 .pipeline-lesson.mlp-network-lesson .step-copy{font-size:22px;line-height:1.3;margin:6px 0 8px}
 #s19 .pipeline-lesson.mlp-network-lesson pre{margin:6px 0}
+#s19 #s19-pipeline-vocab-head .step-figure svg{max-height:410px}
+#s19 #s19-pipeline-vocab-head .step-copy{font-size:22px;line-height:1.3;margin:6px 0}
 #s19 .pipeline-lesson .step-figure.master svg{max-height:410px}
 #s19 #s19-pipeline-lookup-flow .step-figure svg{max-height:350px}
 #s19 .pipeline-lesson.story-sample .step-figure svg{max-height:350px}

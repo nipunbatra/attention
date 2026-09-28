@@ -1,5 +1,19 @@
 # Classroom release checks
 
+## 2026-09-28 · Inputs, vocabulary scores and ground truth together
+
+- Reworked the classifier frame as two aligned examples from the same story.
+  Both show four input tokens, the MLP dimensions, ten computed logits, a model
+  guess and a separate ground-truth label. Raw scores and observed targets have
+  explicit definitions. The model and total slide count are unchanged.
+- All 26 walkthrough/model tests pass. New checks independently compare both
+  displayed score vectors with the model, both guesses with argmax, and targets
+  with the stored training labels. Example 0 is an actual incorrect guess.
+- Notebook 5 executes all 89 code cells. The ZIP matches the executed notebook.
+  Browser regression passes all 89 pipeline frames at 1280, 1024 and 390 widths.
+  The revised frame also fits 995×1031 and 760×1041. Visually inspected desktop
+  and portrait renders and added space below the ground-truth labels.
+
 ## 2026-09-28 · Hidden-layer overview without weighted-sum arithmetic
 
 - Simplified the existing hidden-layer frame to a 16 → 8 → 10 network and
