@@ -17,13 +17,14 @@ const positions=[
   'break','order','permute','scores','swapped','contributions','consequence',
   'addition-break','shift','move-a','move-b','moved','toy','slot-scores','experiment','updated',
   'learned-break','learned','absolute-range','clock-choice','sine-2d','sine-4d','sine-many','clock-why','clock','repeat','sine-rule','rate-examples','worked-sine','waves','period','sine-base','sine-width',
-  'absolute-context','absolute-shift','relative-break','relative','relative-bias','alibi','alibi-scores','alibi-weights','alibi-takeaways','rope-queries','rope-projections','rotate','rope-match','rope-shift','rope-identity','rope-learning','rope-pairs','insertion','additive-projections','rotary-insertion','rotary-projections',
+  'relative-break','relative','alibi-intuition','rope-intuition',
   'alternatives-break','append','append-qk-a','append-scores','append-softmax','append-values-a',
   'append-qk-b','append-scores-b','append-softmax-b','append-values-b',
   'append-scale-effect','append-scale','append-tradeoffs',
   'overview'
 ].map(x=>'s17-position-'+x);
-const readingExtras=['add','routing','mean','learned-update','token-ids','window-ids','notebook-ids','rates','sine','rope','rope-proof','length','choices','width'].map(x=>'s17-position-'+x);
+const relativeReading=['absolute-context','absolute-shift','relative-bias','alibi','alibi-scores','alibi-weights','alibi-takeaways','rope-queries','rope-projections','rotate','rope-match','rope-shift','rope','rope-identity','rope-proof','rope-learning','rope-pairs','insertion','additive-projections','rotary-insertion','rotary-projections','length','choices'];
+const readingExtras=['add','routing','mean','learned-update','token-ids','window-ids','notebook-ids','rates','sine',...relativeReading,'width'].map(x=>'s17-position-'+x);
 const ids=positions;
 const shots=fs.mkdtempSync(path.join(os.tmpdir(),'attention-cost-position-'));
 const browser=await pw.chromium.launch();
@@ -38,6 +39,15 @@ try{
     await page.evaluate(({id,build})=>{const f=document.getElementById(id),s=f.closest('.sec');AT.present.enter();AT.present.go(s.id,[...s.querySelectorAll('.frame')].indexOf(f)+1,build);},{id,build});
     await page.waitForTimeout(80);
     assert.equal(await page.locator('.frame.is-live').getAttribute('id'),id);
+  }
+  async function read(id){
+    await page.evaluate(id=>{
+      AT.present.exit();
+      const element=document.getElementById(id);
+      for(let parent=element.parentElement;parent;parent=parent.parentElement)if(parent.tagName==='DETAILS')parent.open=true;
+    },id);
+    await page.locator('#'+id).scrollIntoViewIfNeeded();
+    assert(await page.locator('#'+id).isVisible(),'Optional calculation is readable: '+id);
   }
   const shapes=n=>[[n,4,3],[n,4,3],[n,4,2],[n,2,4],[n,3,n],[n,n,2],[n,4,8],[n,8,20]];
   for(const n of [1,2,8,16,64,256,1024]){
@@ -69,7 +79,11 @@ try{
   await page.setViewportSize({width:1280,height:720});await page.evaluate(()=>document.fonts.ready);
   const original=await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)}));
   assert.deepEqual(await page.locator('.frame.context-lesson').evaluateAll(es=>es.map(e=>e.id)),ids);
-  assert.equal(ids.length,68,'Add one numerical rate table without lengthening the learned-position sequence.');
+  assert.equal(ids.length,51,'Relative positions need only four classroom frames, including the divider.');
+  assert.deepEqual(ids.slice(ids.indexOf('s17-position-relative-break'),ids.indexOf('s17-position-alternatives-break')),['relative-break','relative','alibi-intuition','rope-intuition'].map(x=>'s17-position-'+x));
+  assert.equal(await page.locator('.relative-position-details').getAttribute('open'),null,'Detailed derivations are opt-in.');
+  assert.equal(await page.locator('.relative-position-details .frame').count(),0,'Optional calculations never become presentation slides.');
+  assert.deepEqual(await page.locator('.relative-position-details .position-reading').evaluateAll(es=>es.map(e=>e.id)),relativeReading.map(x=>'s17-position-'+x),'All previous worked examples are preserved.');
   assert.deepEqual(ids.slice(ids.indexOf('s17-position-learned-break'),ids.indexOf('s17-position-clock-choice')),['s17-position-learned-break','s17-position-learned','s17-position-absolute-range']);
   assert.equal(await page.locator('#s17-position-learned-limits,#s17-position-untrained-effect').count(),0,'Do not bring back the unused-row detour.');
   assert.deepEqual(await page.locator('.position-reading[id]:not(#s17-position-map-notes)').evaluateAll(es=>es.map(e=>e.id)),readingExtras,'Recaps remain available for reading.');
@@ -79,17 +93,17 @@ try{
     ['updated','add','routing','mean','learned-break'],
     ['alternatives-break','append','append-qk-a','append-scores','append-softmax','append-values-a','append-qk-b','append-scores-b','append-softmax-b','append-values-b','append-scale-effect','append-scale','append-tradeoffs','width','overview','map-notes'],
     ['learned-break','learned','absolute-range','learned-update','token-ids','window-ids','notebook-ids','clock-choice'],
-    ['clock-choice','sine-2d','sine-4d','sine-many','clock-why','clock','repeat','rates','sine-rule','rate-examples','worked-sine','sine','waves','period','sine-base','sine-width','absolute-context','absolute-shift','relative-break'],
-    ['relative-break','relative','relative-bias','alibi','alibi-scores','alibi-weights','alibi-takeaways','rope-queries','rope-projections','rotate','rope-match','rope-shift','rope','rope-identity','rope-proof','rope-learning','rope-pairs','insertion','additive-projections','rotary-insertion','rotary-projections','length','choices','alternatives-break']
+    ['clock-choice','sine-2d','sine-4d','sine-many','clock-why','clock','repeat','rates','sine-rule','rate-examples','worked-sine','sine','waves','period','sine-base','sine-width','relative-break'],
+    ['relative-break','relative','alibi-intuition','rope-intuition',...relativeReading,'alternatives-break']
   ]){
     const expected=run.map(x=>'s17-position-'+x),start=lessonOrder.indexOf(expected[0]);
     assert(start>=0,'Sequence has its starting frame: '+expected[0]);
     assert.deepEqual(lessonOrder.slice(start,start+expected.length),expected,'Keep each limitation and worked calculation beside the method it explains.');
   }
   for(const [from,to]of [
-    ['updated','learned-break'],['insertion','additive-projections'],['additive-projections','rotary-insertion'],['rotary-insertion','rotary-projections'],['rotary-projections','alternatives-break'],['append-tradeoffs','overview'],
+    ['updated','learned-break'],['append-tradeoffs','overview'],
     ['learned','absolute-range'],['absolute-range','clock-choice'],['repeat','sine-rule'],['sine-rule','rate-examples'],['rate-examples','worked-sine'],['worked-sine','waves'],
-    ['period','sine-base'],['sine-width','absolute-context'],['absolute-shift','relative-break'],['relative','relative-bias'],['relative-bias','alibi'],['alibi','alibi-scores'],['alibi-scores','alibi-weights'],['alibi-weights','alibi-takeaways'],['alibi-takeaways','rope-queries'],['rope-queries','rope-projections'],['rope-projections','rotate'],['rotate','rope-match'],['rope-match','rope-shift'],['rope-shift','rope-identity'],['rope-identity','rope-learning'],['rope-learning','rope-pairs']
+    ['period','sine-base'],['sine-width','relative-break'],['relative-break','relative'],['relative','alibi-intuition'],['alibi-intuition','rope-intuition'],['rope-intuition','alternatives-break']
   ]){
     await go('s17-position-'+from);
     await page.evaluate(()=>AT.present.next());
@@ -104,7 +118,7 @@ try{
   }
   assert.equal(await page.locator('[id^="s16-cost-"]').count(),0,'cost lesson is absent from Part II');
   for(const shift of [0,5]){
-    await go('s17-position-rope-shift');await page.locator('#rope-shift').selectOption(String(shift));
+    await read('s17-position-rope-shift');await page.locator('#rope-shift').selectOption(String(shift));
     const r=await page.evaluate(s=>AT.positionVisuals.shifted(s),shift);
     close(r.dot,-1.5+3*Math.sqrt(3),'relative rotary match after common shift');
     close(r.q[0]**2+r.q[1]**2,5,'query squared norm');close(r.k[0]**2+r.k[1]**2,9,'key squared norm');
@@ -161,10 +175,8 @@ try{
   const stages=await page.locator('[data-rope-stage]').evaluateAll(es=>es.map(e=>[e.dataset.ropeStage,e.dataset.parameterStatus]));
   assert.deepEqual(stages,[['embeddings','learned'],['projections','learned'],['rotation','fixed'],['scores','computed'],['prediction','learned']]);
   assert.match(await page.locator('#s17-position-rope-learning').textContent(),/Cancellation is built in/);
-  await go('s17-position-rope-learning',0);
-  assert(await page.locator('[data-rope-gradients]').evaluate(e=>e.classList.contains('is-pending')),'Show the forward path before backpropagation.');
-  await go('s17-position-rope-learning',1);
-  assert(!(await page.locator('[data-rope-gradients]').evaluate(e=>e.classList.contains('is-pending'))));
+  await read('s17-position-rope-learning');
+  assert(await page.locator('[data-rope-gradients]').isVisible(),'Optional reading shows the complete gradient drawing.');
   // A fixed rotation passes gradients: compare R^T g with finite differences.
   const gradient=await page.evaluate(()=>{
     const q=[.3,-.7],g=[-.2,.4],angle=Math.PI/2,eps=1e-5;
@@ -199,10 +211,8 @@ try{
   assert.equal(await page.locator('#s17-position-rotary-projections [data-insertion-role="v"] [data-insertion-rotated-key]').count(),0);
   for(const id of ['insertion','additive-projections','rotary-insertion','rotary-projections']){
     const selector='#s17-position-'+id+' [data-build="1"]';
-    await go('s17-position-'+id,0);
-    assert(await page.locator(selector).evaluateAll(es=>es.every(e=>e.classList.contains('is-pending'))),'Hold the base drawing before revealing the next step: '+id);
-    await go('s17-position-'+id,1);
-    assert(await page.locator(selector).evaluateAll(es=>es.every(e=>!e.classList.contains('is-pending'))));
+    await read('s17-position-'+id);
+    assert(await page.locator(selector).evaluateAll(es=>es.every(e=>getComputedStyle(e).visibility==='visible')),'Reading shows every diagram step: '+id);
   }
   const base={Maya:[1,0],Ravi:[0,1],helps:[.2,.2],today:[.8,.2]},pos=[[0,0],[.2,-.1],[.4,-.2],[.6,-.3]];
   const sequences=[['Maya','helps','Ravi','today'],['Ravi','helps','Maya','today']];
@@ -525,7 +535,7 @@ try{
   }
   const relativeRows=await page.locator('#s17-position-relative-bias tbody tr').evaluateAll(es=>es.map(e=>[1,2,3].map(c=>Number(e.cells[c].textContent))));
   assert.deepEqual(relativeRows,[[3,2,1],[8,7,1]],'Carry the sentence indices into the bias calculation.');
-  await go('s17-position-relative-bias');
+  await read('s17-position-relative-bias');
   const relativeHeaderSpills=await page.locator('#s17-position-relative-bias th').evaluateAll(es=>es.filter(e=>e.scrollWidth>e.clientWidth+1).map(e=>e.textContent));
   assert.deepEqual(relativeHeaderSpills,[],'Receiver/source labels fit their own table columns.');
   const relativeScore=await page.locator('[data-relative-score]').evaluate(e=>({content:Number(e.dataset.relativeContent),bias:Number(e.dataset.relativeBias),score:Number(e.dataset.relativeScore)}));
@@ -550,7 +560,7 @@ try{
     await page.screenshot({path:path.join(shots,'map-'+focus+'.png')});
   }
   await page.locator('#position-map-focus').selectOption('input');
-  await go('s17-position-insertion');await go('s17-position-overview');
+  await go('s17-position-rope-intuition');await go('s17-position-overview');
   assert.equal(await page.locator('#position-map-focus').inputValue(),'input','Map highlight survives navigation.');
   await page.locator('#position-map-focus').selectOption('all');
   for(const wave of await page.locator('[data-wave]').evaluateAll(es=>es.map(e=>({rate:Number(e.dataset.rate),end:Number(e.dataset.end),kind:e.dataset.wave,points:[...e.points].map(p=>[p.x,p.y])})))){
@@ -619,6 +629,13 @@ try{
   const lengths=await page.locator('[data-alibi-length]').evaluateAll(es=>es.map(e=>({length:Number(e.dataset.alibiLength),width:Number(e.getAttribute('width'))})));
   assert.deepEqual(lengths.map(x=>x.length),[1024,2048]);close(lengths[1].width/lengths[0].width,2,'Input-length bars use the same scale');
   for(const id of ['alibi','alibi-takeaways'])assert.equal(await page.locator('#s17-position-'+id+' a').getAttribute('href'),'https://arxiv.org/abs/2108.12409','Link the primary paper visibly.');
+  const shortAlibi=await page.locator('#position-alibi-intuition tbody tr').evaluateAll(es=>es.map(e=>[...e.cells].map(c=>c.textContent)));
+  assert.deepEqual(shortAlibi,[['red','1 token','2 − 0.25 = 1.75'],['Maya','3 tokens','2 − 0.75 = 1.25']]);
+  for(const [method,paper]of [['alibi','2108.12409'],['rope','2104.09864']])assert.equal(await page.locator('#s17-position-'+method+'-intuition a').getAttribute('href'),'https://arxiv.org/abs/'+paper);
+  for(const build of [0,1,0,1]){
+    await go('s17-position-rope-intuition',build);
+    assert.equal(await page.locator('[data-relative-rope-gap]').evaluate(e=>getComputedStyle(e).visibility),build?'visible':'hidden','Gap takeaway is revealed after the Q/K path.');
+  }
   // Every authored build must fit; reverse traversal must restore hidden math.
   let states=0;
   for(const id of ids){
@@ -648,6 +665,8 @@ try{
   }
   await page.evaluate(()=>AT.present.exit());await page.setViewportSize({width:390,height:844});
   await page.locator('.learned-position-details summary').click();
+  await page.locator('.relative-position-details').evaluate(e=>{e.open=false;});
+  await page.locator('.relative-position-details summary').click();
   for(const id of readingExtras)assert(await page.locator('#'+id).isVisible(),'Recap is available in reading mode: '+id);
   const spills=await page.locator('.context-lesson').evaluateAll(es=>es.filter(e=>e.getBoundingClientRect().right>innerWidth+2||e.scrollWidth>e.clientWidth+2).map(e=>({id:e.id,client:e.clientWidth,scroll:e.scrollWidth})));
   assert.deepEqual(spills,[],'Mobile reading frames remain contained.');

@@ -47,8 +47,8 @@ body:not(.present) .position-lesson pre{max-width:100%;min-width:0;overflow-x:au
 [data-sine-offset] td{color:var(--c-d)}
 .position-range-table [data-trained-slot]{color:var(--c-d)}
 .position-range-table [data-missing-position]{color:var(--c-a);background:var(--t-a)}
-.learned-position-details>summary{cursor:pointer;font-weight:600;font-size:1.1em}
-.learned-position-details>.position-reading{margin:32px 0}
+.learned-position-details>summary,.relative-position-details>summary{cursor:pointer;font-weight:600;font-size:1.1em}
+.learned-position-details>.position-reading,.relative-position-details>.position-reading{margin:32px 0}
 #s17-position-rope-shift .lesson-result{padding:0;margin:12px 0}
 #s17-position-rope-shift .lesson-key{margin:12px 0}
 .position-credit{font-size:22px;line-height:1.5;margin-top:36px;color:var(--ink-2)}
@@ -480,14 +480,53 @@ Hold b at 10000 and derive each row using omega_r=b^(-2r/d). Width two gives onl
 <p class="lesson-key" data-build="1">The rule extends to new indices. Useful predictions at longer lengths still need testing.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-absolute-context" data-title="Same word pair, five slots later" data-autobuild="off">
+<div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-relative-break" data-title="Relative positions" data-autobuild="off">
+<script type="text/x-notes">Would a useful word relationship disappear if we added a few words at the start?
+Point to the contrast between a numbered slot and a gap. This is a short conceptual introduction, not an implementation lesson. The next drawing makes the distinction concrete with red and flowers. Learned and sinusoidal absolute encodings can learn relative cues too; relative methods build the gap into the attention calculation. Spend only one frame each on ALiBi and RoPE. The optional reading preserves the detailed examples without requiring them for the lecture.</script>
+<h3>Relative positions</h3>
+<p class="topic-recap">Absolute: “Which slot am I in?”</p>
+<p class="topic-question">Relative: “How far away is the word I am reading?”</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-relative" data-title="A colour clue stays one token back" data-autobuild="off">
+<script type="text/x-notes">Which word describes the colour of flowers?
+Point to red, then to flowers as the receiving row. Treat each displayed word as one token and omit punctuation. Keep the zero-based indices from the sinusoidal examples. The arrow means the receiver looks back at a source, not value-flow direction. Add the five-word prefix: the indices move from 3/2 to 8/7, but the descriptive relationship and gap stay the same. A relative-position rule reuses that one-token-back cue at different absolute slots. Content must still identify red as useful; the immediately preceding word is not always relevant. Do not claim identical attention weights or predictions after adding a prefix.</script>
+<p>Which word describes the colour of <strong>flowers</strong>?</p>
+<div class="position-journey" data-position-journey="relative-sentences"></div>
+<p data-build="1">Reuse the <strong>one-token-back</strong> cue wherever the phrase appears. Content still decides whether the source is useful.</p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-alibi-intuition" data-title="ALiBi: give nearby words a head start" data-autobuild="off">
+<script type="text/x-notes">If two words match equally well, which should flowers prefer to read?
+Point to red one token back, then Maya three tokens back in Maya carries red flowers. These are two selected sources, not the entire softmax denominator. Choose equal content scores of 2 and a penalty of 0.25 per token of distance. The small table illustrates how the bias changes scores before softmax; it is not a measurement from a trained model. The more distant source loses more score. A strong distant content match can still win, so this is a preference rather than a ban. The gap penalty is the same when both indices move equally. ALiBi uses fixed slopes per head, with no added position table; the original paper studies training on shorter inputs and using longer inputs. Do not imply automatic success at arbitrary lengths. No need to derive slopes or softmax here. Source: Press, Smith and Lewis, Train Short, Test Long, https://arxiv.org/abs/2108.12409.</script>
+<p>Maya carries red <strong>flowers</strong>. Suppose these two sources match equally well.</p>
+<table class="lesson-table" id="position-alibi-intuition"><thead><tr><th>Source</th><th>Distance back</th><th>Content score − penalty</th></tr></thead><tbody><tr><td><span style="color:var(--c-k)">red</span></td><td>1 token</td><td>2 − 0.25 = <strong>1.75</strong></td></tr><tr><td>Maya</td><td>3 tokens</td><td>2 − 0.75 = <strong>1.25</strong></td></tr></tbody></table>
+<p data-build="1">Before softmax, subtract more for greater distance. Strong content can still outweigh the penalty.</p>
+<p class="position-credit"><a href="https://arxiv.org/abs/2108.12409" target="_blank" rel="noopener noreferrer">ALiBi paper · Press, Smith &amp; Lewis (2022)</a></p>
+</div>
+
+<div class="frame context-lesson position-lesson" id="s17-position-rope-intuition" data-title="RoPE: let the gap change the match" data-autobuild="off">
+<script type="text/x-notes">Can position change how two words match without adding a position row to their embeddings?
+Trace flowers' query and red's key, from learned projections to slot-dependent rotations and then a dot product. Queries describe what a receiver looks for; keys describe what a source offers for matching. Rotate pairs of their actual coordinates, not replacement unit vectors. The diagram is a computation path, not a geometric plot of the vectors. Different coordinate pairs use different fixed rates. When both indices shift equally, their rotation difference stays the same. For fixed content vectors, the explicit positional effect on the dot product depends on the gap, not their common starting position. Actual contextual vectors and softmax weights can change when a prefix is added; do not promise identical predictions. Standard RoPE leaves V unrotated. Embeddings and projection weights still learn. ALiBi changes scores with a bias; RoPE changes Q and K before scoring. These are alternative mechanisms, not extra mandatory stages. Stop at this idea: derivations and numeric rotations are optional reading. The notebook continues to use learned additive positions. Source: Su et al., RoFormer, https://arxiv.org/abs/2104.09864.</script>
+<div class="position-journey" data-position-journey="rope-intuition"></div>
+<p data-build="1">For fixed Q/K content, the <strong>gap</strong>—not the starting slot—sets the positional effect on their match.</p>
+<p class="position-credit"><a href="https://arxiv.org/abs/2104.09864" target="_blank" rel="noopener noreferrer">RoPE paper · Su et al., RoFormer (2021)</a></p>
+</div>
+
+<details class="companion context-lesson position-lesson relative-position-details">
+<summary>Optional: relative-position calculations and implementation</summary>
+<p>The lecture stops at the intuition. Open this only for worked scores, rotations, gradients and comparisons.</p>
+
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-absolute-context">
+<h3>Same word pair, five slots later</h3>
 <script type="text/x-notes">Sinusoids address the missing-row issue, but a different question remains: should a match depend on the absolute slots or the relative gap? Continue the Maya/Ravi example using zero-based indices, as in the sinusoid slides. Read from today to Ravi. Add the five-token prefix At the park after lunch. Today moves from 3 to 8; Ravi moves from 2 to 7. The source remains one token behind the receiver. This only identifies a preserved local distance, not identical meaning, attention weights or predictions. Extra prefix tokens and deeper-layer contextual representations can change the model's behavior.</script>
 <p>Sinusoids supply new rows. Now move <strong>today</strong> and <strong>Ravi</strong> five slots later:</p>
 <div class="position-journey" data-position-journey="context-shift"></div>
 <p class="lesson-key">Ravi stays <strong>one token back</strong>. Can position preserve that cue? Next, hold the content vectors fixed to isolate the positional effect.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-absolute-shift" data-title="Same distance, different scores" data-autobuild="off">
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-absolute-shift">
+<h3>Same distance, different scores</h3>
 <script type="text/x-notes">Use a separate two-coordinate comparison with fixed content q=k=[1,0], identity projections, and additive p_i=[cos(i pi/6),sin(i pi/6)]. At receiver/source indices 3/2 the raw score is 2.3660254. At 8/7 it is 0.5. Both pairs are one slot apart. This is not proof that absolute methods cannot learn relative relations. It shows that ordinary addition has no structural guarantee of a common-shift invariant match. RoPE will supply that identity while holding content fixed.</script>
 <p>Separate toy: hold both word rows at $[1,0]$ and use identity Q/K projections.</p>
 <p class="lesson-key">Add $p_i=[\cos(i\pi/6),\sin(i\pi/6)]$. Only the two position indices change:</p>
@@ -495,21 +534,8 @@ Hold b at 10000 and derive each row using omega_r=b^(-2r/d). Width two gives onl
 <p class="lesson-key">Absolute encodings can learn relative cues. But adding position does not guarantee the same match when both indices shift equally.</p>
 </div>
 
-<div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-relative-break" data-title="Relative positions" data-autobuild="off">
-<script type="text/x-notes">Pause after the shared-shift example. The earlier sinusoidal subsection addressed a missing learned row. Here the separate issue is an additive score changing even when both positions shift by the same amount. Relative methods put the gap directly into the match, rather than solving every long-context problem. Introduce distance bias first, then rotary Q/K features. Avoid claiming that absolute encodings cannot learn relative cues or that RoPE guarantees length generalization.</script>
-<h3>Relative positions</h3>
-<p class="topic-recap">A word pair can keep its distance while moving to new absolute slots.</p>
-<p class="topic-question">How can we put that distance directly into the attention match?</p>
-</div>
-
-<div class="frame context-lesson position-lesson" id="s17-position-relative" data-title="A colour clue stays one token back" data-autobuild="off">
-<script type="text/x-notes">Ask: which word describes the colour of flowers? Point to red, then to flowers as the receiving row. This is a new sentence illustration, not output from the trained Maya/Ravi toy. Treat each displayed word as one token and omit punctuation. Indices are zero-based, as in the preceding shared-shift example. The arrow means the receiver looks back at a source, not value-flow direction. Add the five-word prefix and ask what changes: the indices move from 3/2 to 8/7, while the descriptive relationship and gap stay the same. A relative-position rule lets a head reuse the one-token-back cue without learning a different positional preference for each absolute pair. Content must still identify red as a useful colour clue; the immediately preceding word is not always relevant. Do not claim these sentences have identical queries, keys, attention weights or predictions.</script>
-<p>Which word describes the colour of <strong>flowers</strong>?</p>
-<div class="position-journey" data-position-journey="relative-sentences"></div>
-<p data-build="1">Reuse the <strong>one-token-back</strong> cue wherever the phrase appears. Content still decides whether the source is useful.</p>
-</div>
-
-<div class="frame context-lesson position-lesson" id="s17-position-relative-bias" data-title="Reuse the same distance adjustment" data-autobuild="off">
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-relative-bias">
+<h3>Reuse the same distance adjustment</h3>
 <script type="text/x-notes">Keep the same red/flowers pair on screen. First calculate i-j for the two sentences. Then add a scalar bias b(g) to the scaled content score before softmax. Here b denotes a bias function, not the frequency base from the sinusoidal subsection. Relative methods are a family: this is the score-bias version, not their only form. A bias may be learned (as in T5, with distance buckets) or fixed (ALiBi, next). Source for scalar relative logit bias: Raffel et al., T5, section 2.1.1, https://www.jmlr.org/papers/volume21/20-074/20-074.pdf. On the reveal, explicitly choose b(1)=-0.25 and hold the scaled content score at 2 to isolate the positional adjustment. These are illustrative numbers, not measured scores for these sentences. Both scores become 1.75 under that assumption. Real content scores can differ and the prefix supplies extra sources, so final softmax weights need not match. The causal mask still limits visibility. The ALiBi walkthrough uses all four words of the original sentence, with chosen content scores.</script>
 <table class="lesson-table"><thead><tr><th>Sentence</th><th>Receiver $i$<br>flowers</th><th>Source $j$<br>red</th><th>Gap $i-j$</th></tr></thead><tbody><tr><td>Original</td><td>3</td><td>2</td><td>1</td></tr><tr><td>With prefix</td><td>8</td><td>7</td><td>1</td></tr></tbody></table>
 <div>$$s_{ij}=\underbrace{\frac{q_i\cdot k_j}{\sqrt{d_k}}}_{\text{content score}}+\underbrace{b(i-j)}_{\text{distance adjustment}}$$</div>
@@ -517,7 +543,8 @@ Hold b at 10000 and derive each row using omega_r=b^(-2r/d). Width two gives onl
 <p class="lesson-key" data-build="1">Illustration: content score 2, bias $b(1)=-0.25$, added before softmax. Same gap means the same bias, not necessarily the same final attention weight.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-alibi" data-title="ALiBi: training short, reading longer" data-autobuild="off">
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-alibi">
+<h3>ALiBi: training short, reading longer</h3>
 <script type="text/x-notes">Ask: can shorter training inputs prepare a model for longer inputs at inference?
 Point to the two bar lengths. Longer training sequences cost more. The paper studies length extrapolation, meaning useful predictions beyond the training input length. A computable position rule alone does not establish accuracy. Source: Press, Smith and Lewis, Train Short, Test Long: Attention with Linear Biases Enables Input Length Extrapolation, ICLR 2022, https://arxiv.org/abs/2108.12409. The lengths shown are from its 1.3B-parameter experiment; the closing frame states the comparison. ALiBi means Attention with Linear Biases. Retain the preceding content-score convention and apply the bias after scaling, before softmax.</script>
 <p>Can 1,024-token training inputs prepare a model for 2,048-token inputs?</p>
@@ -526,7 +553,8 @@ Point to the two bar lengths. Longer training sequences cost more. The paper stu
 <aside class="position-credit"><a href="https://arxiv.org/abs/2108.12409" target="_blank" rel="noopener noreferrer">Paper: Train Short, Test Long: Attention with Linear Biases</a><br>Ofir Press, Noah A. Smith and Mike Lewis (2022)</aside>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-alibi-scores" data-title="ALiBi lowers scores for distant words" data-autobuild="off">
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-alibi-scores">
+<h3>ALiBi lowers scores for distant words</h3>
 <script type="text/x-notes">Ask: which source loses the most score when flowers receives information?
 Point to Maya at gap three, then red at gap one. Use all four tokens of Maya carries red flowers, indexed zero to three. The receiver is flowers at i=3 and can see every token here, including itself. These scaled content scores are chosen, not measured. ALiBi replaces additive position embeddings in the original method. Each head has a fixed slope chosen before training; 0.25 is an illustrative slope for this head, not a universal single-head default. Subtract the distance penalty from the already scaled dot product. Do not divide the penalty by sqrt(d_k). The paper applies this at every attention layer. Source: https://arxiv.org/html/2108.12409v2#S3.</script>
 <p>Maya carries red <strong>flowers</strong>. Receiver: $i=3$. Toy content scores: 2.</p>
@@ -535,7 +563,8 @@ Point to Maya at gap three, then red at gap one. Use all four tokens of Maya car
 <p class="lesson-key" data-build="1">Each extra token of distance subtracts 0.25. The slope is fixed per head, not learned.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-alibi-weights" data-title="The distance penalty changes the weights" data-autobuild="off">
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-alibi-weights">
+<h3>The distance penalty changes the weights</h3>
 <script type="text/x-notes">Ask: what happens when softmax sees these four scores?
 Point across red's row. Without bias, the four equal scores give 25 percent each. With ALiBi, softmax([1.25,1.50,1.75,2.00]) gives approximately [0.1653,0.2122,0.2725,0.3499]. The table uses all four allowed sources, not a selected subset. These attention weights multiply their corresponding value rows, which ALiBi does not directly change. The highest weight here is on flowers itself because all content scores were deliberately equal. This is a recency preference, not learned grammatical knowledge. On the reveal, change only Maya's content score to 4: its score becomes 3.25 and its normalized weight is 59.4 percent. Thus distant sources remain accessible. The causal mask still blocks future positions. Source: https://arxiv.org/html/2108.12409v2#S3.</script>
 <p>Receiver: <strong>flowers</strong>. Softmax uses all four allowed sources.</p>
@@ -544,7 +573,8 @@ Point across red's row. Without bias, the four equal scores give 25 percent each
 <p class="lesson-key" data-build="1">Stronger content can win: give Maya a content score of 4. Then $4-0.75=3.25$, and its weight becomes 59.4%.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-alibi-takeaways" data-title="What ALiBi helps with" data-autobuild="off">
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-alibi-takeaways">
+<h3>What ALiBi helps with</h3>
 <script type="text/x-notes">Ask: what can we carry to a longer input without learning a new position row?
 Point to the gap rule, then distinguish the model's longer-input accuracy from the arithmetic being defined. The original ALiBi model uses no additive position table. Different fixed slopes give heads different strengths of recency preference. In the paper's 1.3B-parameter comparison, ALiBi trained at length 1024 matches the perplexity of a sinusoidal baseline trained at length 2048 when both are evaluated at 2048. Its training is 11 percent faster and uses 11 percent less memory in that comparison. These are reported experimental results, not this lecture's toy-model measurements or guarantees for every length. Full attention still has quadratic pairwise work. Source: https://arxiv.org/abs/2108.12409, abstract and section 4.2. Next, contrast a scalar score bias with RoPE rotating queries and keys.</script>
 <table class="lesson-table"><thead><tr><th>ALiBi choice</th><th>Why it helps</th></tr></thead><tbody><tr><td>Bias depends on the gap</td><td>The same rule applies at new positions.</td></tr><tr><td>Fixed slope for each head</td><td>Heads can have different strengths of nearby-word preference.</td></tr><tr><td>No added position embeddings</td><td>No position table to extend. Word embeddings still learn.</td></tr></tbody></table>
@@ -552,7 +582,8 @@ Point to the gap rule, then distinguish the model's longer-input accuracy from t
 <p data-build="1">Longer-input accuracy needs testing. Full attention still has quadratic cost.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-rope-queries" data-title="RoPE: match content and relative position" data-autobuild="off">
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-rope-queries">
+<h3>RoPE: match content and relative position</h3>
 <script type="text/x-notes">Ask: which earlier word could tell flowers its colour?
 Point from the receiving word flowers to the source red. This is the same zero-based, one-word-per-token sentence used for relative bias and ALiBi. Query means the receiver's learned matching features; key means a source's learned matching features. The informal question about colour motivates an example, not a claim that a trained coordinate literally represents colour. Use our existing row notation q_i=e_i W_Q and k_j=e_j W_K. These vectors are projections of representations, not IDs or the representation itself. RoPE is an alternative to the previous positional mechanisms: project first, then rotate Q and K before their dot product. Its goal is a content-dependent match whose explicit positional dependence is on the relative offset. Su et al., RoFormer: Enhanced Transformer with Rotary Position Embedding, 2021, Sections 3.1–3.2, https://arxiv.org/abs/2104.09864.</script>
 <div class="position-visual" data-position-visual="rope-queries"></div>
@@ -560,7 +591,8 @@ Point from the receiving word flowers to the source red. This is the same zero-b
 <p class="position-credit"><a href="https://arxiv.org/abs/2104.09864" target="_blank" rel="noopener noreferrer">Su et al. (2021), RoFormer</a> · Rotary Position Embedding (RoPE)</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-rope-projections" data-title="First compute the query and key" data-autobuild="off">
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-rope-projections">
+<h3>First compute the query and key</h3>
 <script type="text/x-notes">Ask: where did these two vectors come from?
 Use Maya carries red flowers, with red at zero-based slot 2 and flowers at slot 3. This is a small, hand-chosen first-layer example, not a trained checkpoint and not the earlier bank model. Specify the input rows e_2=[1,0] and e_3=[0,1]. With no added position vector, these are the word lookups. All vectors are rows. Compute q_3=e_3 W_Q=[2,1] using W_Q=[[0,1],[2,1]], and k_2=e_2 W_K=[3,0] using W_K=[[3,0],[0,2]]. The 2x2 projections are not identity matrices, and biases are disabled. In a trained model, embeddings and these projection weights are learned. Here we chose them so students can check every product. RoPE is applied to THESE projected vectors, not to new unit vectors. Their lengths are sqrt(5) and 3. This same example continues through rotation, scoring, the shifted sentence, and the later additive/RoPE insertion comparison. Source: Su et al., RoFormer, https://arxiv.org/abs/2104.09864.</script>
 <p>Maya carries <span style="color:var(--c-k)">red</span> <span style="color:var(--c-q)">flowers</span>. Hand-chosen embeddings and weights—not a trained checkpoint.</p>
@@ -568,7 +600,8 @@ Use Maya carries red flowers, with red at zero-based slot 2 and flowers at slot 
 <p class="lesson-key">These are computed Q/K vectors. In a trained model, the embeddings and projection weights learn.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-rotate" data-title="Rotate the computed vectors; keep their lengths" data-autobuild="off">
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-rotate">
+<h3>Rotate the computed vectors; keep their lengths</h3>
 <script type="text/x-notes">Ask: must a query or key have length one for RoPE to work?
 No. Reuse exactly q_3=[2,1] and k_2=[3,0] from the preceding products. The circles show each vector's possible path about the origin at its own existing length; they do not normalize the vectors or force all vectors onto one circle. Both panels use the same pixels per coordinate unit, so the key's radius 3 is visibly larger than the query's radius sqrt(5). The dashed arrows show the original projected vectors; the solid arrows show the results. Our teaching rate is 30 degrees, or pi/6 radians, per slot, not the standard first RoPE frequency. Rotate red's key by 2*30=60 degrees: [3 cos60,3 sin60]=[1.5,2.598076...]. Rotate flowers' query by 3*30=90 degrees: [2 cos90-1 sin90,2 sin90+1 cos90]=[-1,2]. The query starts at direction 26.565 degrees and ends at 116.565 degrees; 90 degrees is the rotation applied, not its final direction. The key starts at zero degrees and ends at 60 degrees. Thus their final directions differ by 56.565 degrees, not 30 degrees. Primes mean rotated vectors. RoPE preserves each pair's length and the total vector width. Source: Su et al., https://arxiv.org/abs/2104.09864, Section 3.2.</script>
 <p>Same computed vectors. Teaching rate: <strong>30° per slot</strong>.</p>
@@ -577,7 +610,8 @@ No. Reuse exactly q_3=[2,1] and k_2=[3,0] from the preceding products. The circl
 <p class="lesson-key" data-build="1">No normalization: $\|q'_3\|=\sqrt5$ and $\|k'_2\|=3$.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-rope-match" data-title="The rotated query meets the rotated key" data-autobuild="off">
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-rope-match">
+<h3>The rotated query meets the rotated key</h3>
 <script type="text/x-notes">Ask: what score does flowers give red using the vectors we just computed?
 Multiply matching coordinates and add. Before rotation q_3 dot k_2=[2,1] dot [3,0]=6. After rotation, [-1,2] dot [1.5,3 sqrt(3)/2]=-1.5+3 sqrt(3)=3.6961524227. Divide by sqrt(d_k)=sqrt(2) for the scaled score 2.61357, rounded to 2.614. All calculations use unrounded values. This is not a probability. Compute a score for every causally allowed source, then apply one softmax across those scores. The weights mix the value rows as earlier. Standard RoPE rotates Q and K, not V. We do not invent a softmax probability from one pair: that requires all the source scores. Source: Su et al., https://arxiv.org/abs/2104.09864, Sections 2.1 and 3.2.</script>
 <p>Maya carries <span style="color:var(--c-k)">red</span> <span style="color:var(--c-q)">flowers</span>. One receiver–source pair:</p>
@@ -586,7 +620,8 @@ Multiply matching coordinates and add. Before rotation q_3 dot k_2=[2,1] dot [3,
 <p class="lesson-key" data-build="2">Score every allowed source → softmax → mix its value rows. RoPE leaves the values unrotated.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-rope-shift" data-title="Add a prefix: the gap stays one" data-autobuild="off">
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-rope-shift">
+<h3>Add a prefix: the gap stays one</h3>
 <script type="text/x-notes">Ask: does adding At the park after lunch change how far red is from flowers?
 Switch between the full sentences. Red moves from slot 2 to 7 and flowers from 3 to 8. Hold the computed content vectors fixed at q=[2,1] and k=[3,0]. The rotations applied go from 90/60 degrees to 240/210 degrees. Both gain 150 degrees. The shifted query is [(sqrt(3)-2)/2,-(2sqrt(3)+1)/2], approximately [-0.134,-2.232], and key is [-3sqrt(3)/2,-1.5], approximately [-2.598,-1.500]. Their raw dot stays -1.5+3sqrt(3), approximately 3.696. The circles have radii sqrt(5) and 3: no normalization occurs. The difference of APPLIED rotations stays 30 degrees, while the actual angle between the vectors stays 56.565 degrees. Equal additional rotations preserve that angle and their lengths, so preserve the dot product. This identity holds for any fixed content vectors, not just unit or equal vectors. A real prefix can change contextual representations and adds sources to the softmax denominator. Therefore final weights and predictions need not remain unchanged; successful length extrapolation is not guaranteed. Source: Su et al., https://arxiv.org/abs/2104.09864, Section 3.2.</script>
 <div class="lesson-control"><label for="rope-shift">Sentence</label><select id="rope-shift"><option value="0">Original: Maya carries red flowers</option><option value="5">Add: At the park after lunch</option></select></div>
@@ -604,7 +639,8 @@ Switch between the full sentences. Red moves from slot 2 to 7 and flowers from 3
 <p class="lesson-key">The dot product is $\|q\|\|k\|\cos\phi$, where $\phi$ is the angle between the final vectors—not necessarily the difference between their slot rotations. Content matters. Standard RoPE rotates coordinate pairs in Q/K, not V. <a href="https://arxiv.org/abs/2104.09864" target="_blank" rel="noopener noreferrer">RoFormer paper</a>.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-rope-identity" data-title="One token back, wherever the pair occurs" data-autobuild="off">
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-rope-identity">
+<h3>One token back, wherever the pair occurs</h3>
 <script type="text/x-notes">Ask: why did the score stay the same after adding five words?
 Keep the computed content vectors q=[2,1] and k=[3,0] fixed. The table lists rotations APPLIED to them, not their final directions. Each vector gains the same 150-degree rotation. This preserves the angle between the vectors and each vector's own length, so preserves the dot product 3.696152. The query already began at an angle of 26.565 degrees; do not interpret the 30-degree rotation gap as the final vector angle or replace the dot product by cos30. Reveal the second row and cancel the common added angle. The benefit is a built-in sharing rule: a content-and-offset pattern can apply at many starting slots without learning a separate position rule for each. Training still has to learn useful projections. This does not force red to receive attention or guarantee better predictions or longer-context accuracy. A real prefix can change contextual vectors and the softmax denominator. Source: Su et al., https://arxiv.org/abs/2104.09864, Section 3.2.</script>
 <p>Keep $q=[2,1]$ and $k=[3,0]$. Compare the <strong>rotations applied</strong> to them:</p>
@@ -625,7 +661,8 @@ Keep the computed content vectors q=[2,1] and k=[3,0] fixed. The table lists rot
 <p class="lesson-key">This identity holds before training, for arbitrary fixed content vectors. It does not imply that every farther token gets less attention. A shifted real input can change contextual vectors and softmax weights. <a href="https://arxiv.org/abs/2104.09864" target="_blank" rel="noopener noreferrer">RoFormer, equation 16</a>.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-rope-learning" data-title="What training learns with RoPE" data-autobuild="off">
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-rope-learning">
+<h3>What training learns with RoPE</h3>
 <script type="text/x-notes">Ask: if the rotations are fixed, which numbers does the loss change?
 Follow the forward path from word representations through learned W_Q and W_K, fixed rotations, scaled dot products and softmax, value mixing, and prediction. Use the illustrative training continuation Maya carries red flowers home: the observed next token is home. Cross-entropy is minus log of the model probability assigned to home. No teacher labels red as the correct source to attend to. The loss backpropagates through softmax, dot products and rotation, reaching the learned projections and word embeddings. In the diagram the red backward arrows represent gradients, not forward messages or an extra training stage. The small labels distinguish trainable parameters from computed q/k activations and fixed positional operations. In standard RoPE the frequency schedule is predefined and there is no separately learned position row at every slot. W_V and the output projection and prediction head also learn; the final box abbreviates those paths. Fixed differentiable operations still pass gradients, just like other non-parameter operations in the network. With column-vector geometry q'=R_i q, its input gradient is R_i transpose times the output gradient. Thus the rule is fixed but training can learn content-and-distance patterns useful for the prediction objective. This slide explains a RoPE model; our notebook remains the learned-additive-position model. Source: Su et al., RoFormer, Sections 3.2 and 4, https://arxiv.org/abs/2104.09864.</script>
 <p>Training example: Maya carries red flowers → <strong>home</strong>.</p>
@@ -634,14 +671,16 @@ Follow the forward path from word representations through learned W_Q and W_K, f
 <p class="lesson-key" data-build="2">Cancellation is built in. Training learns which content and distance patterns help predict the next token.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-rope-pairs" data-title="A longer query is several two-number pairs" data-autobuild="off">
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-rope-pairs">
+<h3>A longer query is several two-number pairs</h3>
 <script type="text/x-notes">Use a separate d_k=4 rotary example. The main hand-chosen model has d_k=3 and additive positions; it is not silently changed into a RoPE model. Standard full-dimension RoPE uses an even width. Each pair has its own rate, and the key uses the same frequency schedule. Implement these pairwise operations directly rather than allocating a large dense block-diagonal rotation matrix.</script>
 <div class="position-visual" data-position-visual="pairs"></div>
 <p>Rotate each query and key pair at its assigned rate. Join the pairs back into a vector of the same width.</p>
 <p class="lesson-key">This rotary example uses $d_k=4$. Our bank worksheet and notebook use additive positions; they are unchanged. Standard RoPE rotates Q and K, not V.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-insertion" data-title="Addition: put position into the input row" data-autobuild="off">
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-insertion">
+<h3>Addition: put position into the input row</h3>
 <script type="text/x-notes">Ask: which row will all three projections read?
 Follow red in Maya carries red flowers, with zero-based slot 2. E_tok[red] is its vocabulary lookup, while e_2 is the row entering attention. Reuse the hand-chosen two-coordinate embeddings and projection matrices from the RoPE example. Add a position row p_2=[0,1] to E_tok[red]=[1,0]. Add coordinate by coordinate to get e_2=[1,1]. These numbers are not the earlier Maya/Ravi toy and not measured model weights. The diagram first shows the addition, then reveals the three branches reading the same result: q_2=e_2 W_Q, k_2=e_2 W_K and v_2=e_2 W_V. All row vectors are 1 by 2 and the illustrative projection matrices are 2 by 2, with bias=False. Red has all three roles: its query is used when red is a receiver; its key and value are used when flowers reads red. Learned and fixed sinusoidal absolute position rows use the same insertion point. A sinusoidal row would be computed from its rule rather than using the chosen p_2 here. Addition does not widen the input. In the original Transformer it occurs at the bottom of the stack; it is not repeated before every block. Our notebook uses learned additive positions. Source: Vaswani et al., Section 3.5, https://arxiv.org/abs/1706.03762.</script>
 <p>Maya carries <span style="color:var(--c-k)">red</span> flowers. Follow <strong>red at slot 2</strong>, counting from 0.</p>
@@ -649,7 +688,8 @@ Follow red in Maya carries red flowers, with zero-based slot 2. E_tok[red] is it
 <p class="lesson-key" data-build="1">The position row may be learned or sinusoidal. Here, choose $p_2=[0,1]$ for easy arithmetic.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-additive-projections" data-title="Addition can change keys and values" data-autobuild="off">
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-additive-projections">
+<h3>Addition can change keys and values</h3>
 <script type="text/x-notes">Ask: can adding position change what red sends, as well as how well it matches?
 Use the same position-enriched e_2=[1,1]. Compute the row-vector products explicitly. W_K=[[3,0],[0,2]] gives k_2=[1*3+1*0,1*0+1*2]=[3,2]. W_V=[[2,0],[0,3]] gives v_2=[1*2+1*0,1*0+1*3]=[2,3]. These are different projections, not identity matrices. Biases are disabled. Without the added row the same weights would give key [3,0] and value [2,0]. Thus position can enter both the matching path and the content path. It need not change every coordinate: a learned projection could suppress a positional component. Reveal the bottom drawing: flowers' query scores red's key along with every allowed source key, using dot product divided by sqrt(2), then a causal mask and softmax. The resulting a_{3,2} multiplies red's value row [2,3]. The full message sums these weighted values over all allowed sources. We leave a_{3,2} symbolic because we have not assigned every source score. No value vector is used to calculate the attention weights. Q is also projected from its own token-plus-position input, as the previous frame shows. Source: Vaswani et al., Sections 3.2 and 3.5, https://arxiv.org/abs/1706.03762.</script>
 <p>Same input $e_2=[1,1]$. Two hand-chosen $2\times2$ projections; <code>bias=False</code>.</p>
@@ -657,7 +697,8 @@ Use the same position-enriched e_2=[1,1]. Compute the row-vector products explic
 <p class="lesson-key" data-build="1">Position can affect both the matching features and the content sent.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-rotary-insertion" data-title="RoPE: project first, then rotate Q and K" data-autobuild="off">
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-rotary-insertion">
+<h3>RoPE: project first, then rotate Q and K</h3>
 <script type="text/x-notes">Ask: where does the slot number join the computation this time?
 Start afresh with red's word lookup [1,0]. In this first-attention-layer example with no additive position encoding, e_2 is that word row. Use the same W_K and W_V as the additive example, and the same W_Q within this controlled comparison. The three projections still happen. Reveal position entering AFTER projection: q'_2=rot(q_2,2 omega) and k'_2=rot(k_2,2 omega). With our teaching rate omega=30 degrees per slot, both rotate by 60 degrees. Each query and key uses its own token's slot. Their width stays 2. Standard RoPE leaves v_2=e_2 W_V unrotated; trace the straight teal path bypassing the two rotation operations. The green slot-to-angle label is an angle control, not an extra vector added to q or k. A prime here means rotated, not the residual update of e. The following frame uses red as a source for flowers, so it follows red's key and value rather than red's query. Unlike adding absolute positions once at the input, RoPE is normally applied to Q and K in each attention layer. In later layers e can already be contextual and position-dependent; unrotated V does not mean position-free V throughout the network. The notebook model is not being converted to RoPE. Source: Su et al., Section 3.2 and Figure 1, https://arxiv.org/abs/2104.09864.</script>
 <p>Start again with red's word row. Same projections; <strong>no added position row</strong>.</p>
@@ -665,7 +706,8 @@ Start afresh with red's word lookup [1,0]. In this first-attention-layer example
 <p class="lesson-key" data-build="1">Slot 2 gives 60° in our 30°-per-slot toy. Only Q and K pass through rotations.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-rotary-projections" data-title="RoPE: rotate the key, keep the value unrotated" data-autobuild="off">
+<div class="companion context-lesson position-lesson position-reading" id="s17-position-rotary-projections">
+<h3>RoPE: rotate the key, keep the value unrotated</h3>
 <script type="text/x-notes">Ask: if we leave the values unrotated, can position still change the message?
 Start with red's word row [1,0] and the SAME W_K=[[3,0],[0,2]] and W_V=[[2,0],[0,3]] shown in the additive calculation. Without the added p_2, the computed key is [3,0] and value is [2,0]. Rotate the key by 60 degrees to [1.5,3sqrt(3)/2], approximately [1.500,2.598]. The value remains [2,0], a projected value, not the raw embedding. The preceding frame also rotates red's own query; it is not used when flowers is the receiver. Reuse flowers' computed query [2,1] from e_3=[0,1] and W_Q=[[0,1],[2,1]], rotating by 90 degrees to [-1,2]. Red's pre-rotation query from these same weights is [0,1]. Reveal the receiver-source score: (-1*1.5+2*3sqrt(3)/2)/sqrt(2), approximately 2.614. Softmax includes ALL allowed source scores, not just this one pair. The resulting a_{3,2} multiplies the unrotated [2,0]; sum every source contribution for m_3. In general these weights differ from the additive model's weights; reuse of the symbol a does not assert numerical equality. The output projection and residual addition after value mixing are unchanged in form. This controlled arithmetic illustrates where position enters, not which model predicts better. Standard RoPE still needs a causal mask for autoregressive prediction and does not guarantee reliable longer-context predictions. Sources: Su et al., https://arxiv.org/abs/2104.09864; Vaswani et al., https://arxiv.org/abs/1706.03762.</script>
 <p>Keep red's word row and both projection matrices fixed.</p>
@@ -692,6 +734,7 @@ Start with red's word row [1,0] and the SAME W_K=[[3,0],[0,2]] and W_V=[[2,0],[0
 <p class="lesson-result" data-build="1">Position describes order. The causal mask restricts visibility. Neither removes attention's pairwise compute cost.</p>
 <p class="lesson-key" data-build="1">A formula that accepts larger indices is not a guarantee of reliable longer-context predictions.</p>
 </div>
+</details>
 
 <div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-alternatives-break" data-title="Why not just append the position?" data-autobuild="off">
 <script type="text/x-notes">After learned rows, sinusoids and relative methods, could a single raw number do the job? Return to the Maya–Ravi word rows and append the slot. This experiment starts from word lookups again, without added offsets, distance bias or RoPE. The fixed-projection example isolates the scale and width choices this shortcut leaves unresolved. It does not establish that concatenation cannot work or measure how often architectures use it. End by comparing those choices with the methods just studied, then return to the full attention map.</script>

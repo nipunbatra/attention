@@ -1,5 +1,23 @@
 # Classroom release checks
 
+## 2026-09-28 · Relative positions in four classroom slides
+
+- Reduced 21 relative-position frames to four, including the topic divider.
+  One red/flowers sentence example leads to a two-row ALiBi score comparison
+  and a RoPE projection/rotation diagram. Detailed arithmetic, gradients and
+  insertion comparisons remain in a closed optional-reading disclosure.
+- Position regression passes: 51 frames, 184 build checks, desktop/projector
+  sizes and 390×844 reading containment. Tests retain the numerical checks for
+  every preserved calculation and exercise the rotary control in reading mode.
+  Added assertions for the four-frame path, primary links, simple ALiBi numbers,
+  RoPE reveal, closed disclosure and exclusion of optional content from slides.
+- Whole-deck audit: 452 presentation states, 692 unique formulas, no math,
+  runtime or overflow failures at 1280×720. All 18 topic breaks pass navigation
+  and responsive checks. The new four-frame sequence also fits at 995×1031
+  and 760×1041. Visually checked its diagrams/table at desktop and tall sizes.
+- No model, notebook, dependency, other lecture part or positional-rate rule
+  changed. Existing whole-deck portrait issues recorded below are out of scope.
+
 ## 2026-09-28 · Numerical examples of the frequency rule
 
 - Added one worked table after the rule, using d=8 and b=10000. Four pair

@@ -10,6 +10,22 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+2026-09-28 relative positions: intuition only (supersedes the long lecture path):
+
+- Four classroom frames replace the previous 21: `relative-break`, `relative`,
+  `alibi-intuition`, `rope-intuition`. Keep one red/flowers example throughout.
+  Students only need the gap idea, a small ALiBi score comparison, and the RoPE
+  query/key rotation path. No cancellation proof or gradient walkthrough in class.
+- The previous numerical examples and controls remain in the closed
+  `relative-position-details` disclosure. They are reading companions, not
+  presentation frames. Do not restore them to the arrow-key lecture sequence.
+- Position section: 51 frames total. The suite checks all 184 build states,
+  preserved optional calculations/controls, the four-frame sequence and both
+  directions of navigation. Standard sinusoidal rates and learned rows are unchanged.
+- Keep the qualifications: ALiBi is a preference, not a ban on distant words;
+  RoPE's shared-shift identity holds for fixed Q/K content, not whole-model outputs.
+  Both short introductions retain primary-paper links.
+
 2026-09-28 worked standard frequency schedule:
 
 - `s17-position-rate-examples` follows the general rule with one worked table.
