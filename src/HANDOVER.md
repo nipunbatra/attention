@@ -10,6 +10,19 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+2026-09-28 worked standard frequency schedule:
+
+- `s17-position-rate-examples` follows the general rule with one worked table.
+  At d=8 and b=10000, pair indices r=0,1,2,3 give rates 1,0.1,0.01,0.001
+  radians per slot. Each row also shows angles i*omega_r for token indices
+  i=1,2,3. The pair index chooses the rate; the token index changes the angle.
+- Reveal one pair at a time. The final calculation uses pair 2 at token 3,
+  giving angle 0.03 and the pair [sin(0.03),cos(0.03)]. The next frame explicitly
+  returns to d=4 and recalculates its two rates; do not accidentally reuse the
+  first two rates of the width-eight schedule.
+- Position section: 68 frames. Keep learned positions at three frames. The
+  regression checks every substitution, angle, reveal and adjacent transition.
+
 2026-09-28 fast/slow sinusoidal-pair clarification:
 
 - Keep `s17-position-repeat` as one interactive frame, titled "Fast and slow

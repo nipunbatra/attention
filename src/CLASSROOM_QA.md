@@ -1,5 +1,22 @@
 # Classroom release checks
 
+## 2026-09-28 · Numerical examples of the frequency rule
+
+- Added one worked table after the rule, using d=8 and b=10000. Four pair
+  indices give rates 1,0.1,0.01,0.001, with the power calculation beside each.
+  Three token-index columns show the corresponding angles for i=1,2,3.
+  One-pair-at-a-time reveals distinguish fixed frequencies from changing angles.
+- The following width-four example now explicitly recalculates its two rates.
+  The learned-position passage stays at three frames. No model, notebook,
+  runtime JavaScript, dependency or other lecture part changed.
+- All 68 position frames and 251 build checks pass. New assertions independently
+  check every rate substitution and all twelve angles, row visibility in both
+  directions, and navigation between the rule, table and width-four example.
+  Existing numerical examples and model immutability still pass.
+- Visually inspected the completed table at 1280×720 and 995×1031. All its
+  reveal states and the following example pass fit checks at 995×1031 and
+  760×1041, in addition to the suite's desktop/projector/phone-reading checks.
+
 ## 2026-09-28 · Fast and slow pairs mean different angles per slot
 
 - Revised the existing repeat frame without adding slides. Start at index 1

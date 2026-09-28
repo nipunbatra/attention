@@ -16,7 +16,7 @@ const costs=['break','symbols','matmul','concat-network','concat','average-netwo
 const positions=[
   'break','order','permute','scores','swapped','contributions','consequence',
   'addition-break','shift','move-a','move-b','moved','toy','slot-scores','experiment','updated',
-  'learned-break','learned','absolute-range','clock-choice','sine-2d','sine-4d','sine-many','clock-why','clock','repeat','sine-rule','worked-sine','waves','period','sine-base','sine-width',
+  'learned-break','learned','absolute-range','clock-choice','sine-2d','sine-4d','sine-many','clock-why','clock','repeat','sine-rule','rate-examples','worked-sine','waves','period','sine-base','sine-width',
   'absolute-context','absolute-shift','relative-break','relative','relative-bias','alibi','alibi-scores','alibi-weights','alibi-takeaways','rope-queries','rope-projections','rotate','rope-match','rope-shift','rope-identity','rope-learning','rope-pairs','insertion','additive-projections','rotary-insertion','rotary-projections',
   'alternatives-break','append','append-qk-a','append-scores','append-softmax','append-values-a',
   'append-qk-b','append-scores-b','append-softmax-b','append-values-b',
@@ -69,7 +69,7 @@ try{
   await page.setViewportSize({width:1280,height:720});await page.evaluate(()=>document.fonts.ready);
   const original=await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)}));
   assert.deepEqual(await page.locator('.frame.context-lesson').evaluateAll(es=>es.map(e=>e.id)),ids);
-  assert.equal(ids.length,67,'Keep learned positions to three frames, including the topic pause.');
+  assert.equal(ids.length,68,'Add one numerical rate table without lengthening the learned-position sequence.');
   assert.deepEqual(ids.slice(ids.indexOf('s17-position-learned-break'),ids.indexOf('s17-position-clock-choice')),['s17-position-learned-break','s17-position-learned','s17-position-absolute-range']);
   assert.equal(await page.locator('#s17-position-learned-limits,#s17-position-untrained-effect').count(),0,'Do not bring back the unused-row detour.');
   assert.deepEqual(await page.locator('.position-reading[id]:not(#s17-position-map-notes)').evaluateAll(es=>es.map(e=>e.id)),readingExtras,'Recaps remain available for reading.');
@@ -79,7 +79,7 @@ try{
     ['updated','add','routing','mean','learned-break'],
     ['alternatives-break','append','append-qk-a','append-scores','append-softmax','append-values-a','append-qk-b','append-scores-b','append-softmax-b','append-values-b','append-scale-effect','append-scale','append-tradeoffs','width','overview','map-notes'],
     ['learned-break','learned','absolute-range','learned-update','token-ids','window-ids','notebook-ids','clock-choice'],
-    ['clock-choice','sine-2d','sine-4d','sine-many','clock-why','clock','repeat','rates','sine-rule','worked-sine','sine','waves','period','sine-base','sine-width','absolute-context','absolute-shift','relative-break'],
+    ['clock-choice','sine-2d','sine-4d','sine-many','clock-why','clock','repeat','rates','sine-rule','rate-examples','worked-sine','sine','waves','period','sine-base','sine-width','absolute-context','absolute-shift','relative-break'],
     ['relative-break','relative','relative-bias','alibi','alibi-scores','alibi-weights','alibi-takeaways','rope-queries','rope-projections','rotate','rope-match','rope-shift','rope','rope-identity','rope-proof','rope-learning','rope-pairs','insertion','additive-projections','rotary-insertion','rotary-projections','length','choices','alternatives-break']
   ]){
     const expected=run.map(x=>'s17-position-'+x),start=lessonOrder.indexOf(expected[0]);
@@ -88,7 +88,7 @@ try{
   }
   for(const [from,to]of [
     ['updated','learned-break'],['insertion','additive-projections'],['additive-projections','rotary-insertion'],['rotary-insertion','rotary-projections'],['rotary-projections','alternatives-break'],['append-tradeoffs','overview'],
-    ['learned','absolute-range'],['absolute-range','clock-choice'],['repeat','sine-rule'],['worked-sine','waves'],
+    ['learned','absolute-range'],['absolute-range','clock-choice'],['repeat','sine-rule'],['sine-rule','rate-examples'],['rate-examples','worked-sine'],['worked-sine','waves'],
     ['period','sine-base'],['sine-width','absolute-context'],['absolute-shift','relative-break'],['relative','relative-bias'],['relative-bias','alibi'],['alibi','alibi-scores'],['alibi-scores','alibi-weights'],['alibi-weights','alibi-takeaways'],['alibi-takeaways','rope-queries'],['rope-queries','rope-projections'],['rope-projections','rotate'],['rotate','rope-match'],['rope-match','rope-shift'],['rope-shift','rope-identity'],['rope-identity','rope-learning'],['rope-learning','rope-pairs']
   ]){
     await go('s17-position-'+from);
@@ -426,6 +426,20 @@ try{
   }
   const pairCounts=await page.locator('#position-pair-counts tbody tr').evaluateAll(es=>es.map(e=>[...e.cells].map(c=>Number(c.textContent))));
   for(const [d,count,width] of pairCounts){assert.equal(count,d/2);assert.equal(width,d);}
+  const rateExamples=await page.locator('#position-rate-examples').evaluate(table=>({base:Number(table.dataset.base),width:Number(table.dataset.width),rows:[...table.tBodies[0].rows].map(row=>({pair:Number(row.cells[0].textContent),calculation:row.querySelector('annotation').textContent,angles:[...row.querySelectorAll('[data-rate-angle]')].map(cell=>({index:Number(cell.dataset.rateAngle),angle:Number(cell.textContent)}))}))}));
+  assert.deepEqual(rateExamples.rows.map(r=>r.pair),[0,1,2,3]);
+  const exponents=['0','-1/4','-1/2','-3/4'];
+  for(const row of rateExamples.rows){
+    const rate=rateExamples.base**(-2*row.pair/rateExamples.width);
+    assert.equal(row.calculation,`10000^{${exponents[row.pair]}}=${rate}`,'Show each substitution, not only its result.');
+    assert.deepEqual(row.angles.map(a=>a.index),[1,2,3]);
+    row.angles.forEach(a=>close(a.angle,a.index*rate,'Token index changes the angle, not the frequency'));
+  }
+  for(const build of [0,1,2,3,0,3]){
+    await go('s17-position-rate-examples',build);
+    const visible=await page.locator('#position-rate-examples tbody tr').evaluateAll(rows=>rows.filter(r=>getComputedStyle(r).visibility!=='hidden'&&!r.classList.contains('is-pending')).map(r=>Number(r.cells[0].textContent)));
+    assert.deepEqual(visible,Array.from({length:build+1},(_,i)=>i),'Reveal pair indices one at a time, including reverse navigation.');
+  }
   const baseRows=await page.locator('#position-base-effects tbody tr').evaluateAll(es=>es.map(e=>[...e.cells].map(c=>Number(c.textContent))));
   assert.deepEqual(baseRows.map(r=>r[0]),[100,10000,1000000]);
   for(const [base,rate,period,change] of baseRows){

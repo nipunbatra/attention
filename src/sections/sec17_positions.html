@@ -40,6 +40,9 @@ body.present .position-lesson .alibi-weight-table th,body.present .position-less
 .position-numeric-scroll{max-width:100%;overflow-x:auto}.position-numeric-scroll .lesson-table{min-width:760px}
 body:not(.present) .position-lesson pre{max-width:100%;min-width:0;overflow-x:auto;box-sizing:border-box}
 .position-numeric-scroll .position-range-table{min-width:620px}
+#position-rate-examples th:first-child{width:12%}
+#position-rate-examples th:nth-child(2){width:37%}
+#position-rate-examples td:not(:first-child){font-variant-numeric:tabular-nums}
 [data-sine-word] td{color:var(--c-e)}
 [data-sine-offset] td{color:var(--c-d)}
 .position-range-table [data-trained-slot]{color:var(--c-d)}
@@ -410,10 +413,24 @@ Replace the pi/2 and pi/6 teaching rates with the original Transformer schedule.
 <p class="lesson-result" data-build="2">The first pair has rate 1. Later pairs change more slowly.</p>
 </div>
 
+<div class="frame context-lesson position-lesson" id="s17-position-rate-examples" data-title="The rates for pairs 0, 1, 2 and 3" data-autobuild="off">
+<script type="text/x-notes">What does the rate formula give for pair indices one, two and three?
+Point down the rate column before reading across the token columns. Choose width d=8 so we have four coordinate pairs, r=0,1,2,3. Keep b=10000. Substitution gives omega_r=10000^(-r/4): rates 1,0.1,0.01,0.001 radians per token slot. These are angular frequencies, not cycles per slot. Reveal one further pair per step. r identifies a pair of coordinates, while i identifies a token position. All four pairs describe every token. For a fixed row r, the rate is unchanged as i moves from one to two to three; the angle is i times that rate. Thus pair two at token three has angle 3*0.01=0.03 radians and supplies [sin(0.03),cos(0.03)] in coordinates four and five. Reading down the i=1 column also shows how far each pair turns in one step, connecting to the preceding fast/slow diagram. These standard rates replace the earlier illustrative pi/2 and pi/6 rates. Next return explicitly to width four for the existing full position-vector addition, so its rates are 1 and 0.01, not the first two rates of the width-eight schedule. Source for the rate rule: Vaswani et al., §3.5, https://arxiv.org/html/1706.03762v7#S3.SS5.</script>
+<p>Example: $d=8$, $b=10000$. Four pairs, with $\omega_r=10000^{-r/4}$.</p>
+<div class="position-numeric-scroll"><table class="lesson-table" id="position-rate-examples" data-base="10000" data-width="8"><thead><tr><th>Pair $r$</th><th>Rate $\omega_r$<br>(radians per slot)</th><th>Angle at<br>$i=1$</th><th>Angle at<br>$i=2$</th><th>Angle at<br>$i=3$</th></tr></thead><tbody>
+<tr><td>0</td><td data-rate-calculation>$10000^{0}=1$</td><td data-rate-angle="1">1</td><td data-rate-angle="2">2</td><td data-rate-angle="3">3</td></tr>
+<tr data-build="1"><td>1</td><td data-rate-calculation>$10000^{-1/4}=0.1$</td><td data-rate-angle="1">0.1</td><td data-rate-angle="2">0.2</td><td data-rate-angle="3">0.3</td></tr>
+<tr data-build="2"><td>2</td><td data-rate-calculation>$10000^{-1/2}=0.01$</td><td data-rate-angle="1">0.01</td><td data-rate-angle="2">0.02</td><td data-rate-angle="3">0.03</td></tr>
+<tr data-build="3"><td>3</td><td data-rate-calculation>$10000^{-3/4}=0.001$</td><td data-rate-angle="1">0.001</td><td data-rate-angle="2">0.002</td><td data-rate-angle="3">0.003</td></tr>
+</tbody></table></div>
+<p class="lesson-key">Within each row, the rate stays fixed. The token index multiplies it to give the angle in radians.</p>
+<p data-build="3">Pair 2, token 3: $\theta=3\times0.01=0.03$. Use $[\sin(0.03),\cos(0.03)]$.</p>
+</div>
+
 <div class="frame context-lesson position-lesson" id="s17-position-worked-sine" data-title="The standard rule at width 4" data-autobuild="off">
 <script type="text/x-notes">What replaces the two toy rates at width four?
 Set d=4, b=10000 and i=3. For r=0 the exponent is zero and omega_0=1. For r=1 the exponent is -1/2 and omega_1=0.01. Multiplying by i gives angles three and 0.03 radians. Compute the pair values, rounded here to three decimals. In particular cos(0.03) is approximately 0.99955, displayed as 1.000. Use the same four-coordinate word row from the earlier example. The complete position row is [0.14112,-0.989992,0.029996,0.999550]. Its sum with [0.8,0.2,0.4,-0.1] is approximately [0.941,-0.790,0.430,0.900]. These are fixed-rule illustration numbers, not a trained model result.</script>
-<p>$d=4$, $b=10000$, $i=3$. Two pairs, both in radians.</p>
+<p>Return to $d=4$, with $b=10000$ and token $i=3$. Recalculate the two rates.</p>
 <div class="position-numeric-scroll"><table class="lesson-table"><thead><tr><th>Pair $r$</th><th>Rate $b^{-2r/d}$</th><th>Angle $i\omega_r$</th><th>$[\sin,\cos]$</th></tr></thead><tbody><tr><td>0</td><td>1</td><td>3</td><td>[0.141, −0.990]</td></tr><tr><td>1</td><td>0.01</td><td>0.03</td><td>[0.030, 1.000]</td></tr></tbody></table></div>
 <div>$$p_3=[0.141,-0.990,0.030,1.000]$$</div>
 <p class="lesson-key" data-build="1">Same word row $[0.8,0.2,0.4,-0.1]$: the sum is $e_3\approx[0.941,-0.790,0.430,0.900]$.</p>
