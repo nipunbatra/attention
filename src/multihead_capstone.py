@@ -264,6 +264,9 @@ def classroom(stage, reference):
     costs = [[LABELS[k], f'{result["runs"][k][0]["parameter_count"]:,}',
               f'{result["aggregate"][k]["runtime_seconds"]["mean"]:.1f} s'] for k in LABELS]
     improvement = (1-result['aggregate']['multihead']['test_perplexity']['mean']/result['aggregate']['attention']['test_perplexity']['mean'])*100
+    seed_labels = ', '.join(str(seed) for seed in result['protocol']['seeds'])
+    head_perplexities = ', '.join(f'{run["test_perplexity"]:.2f}' for run in result['runs']['multihead'])
+    head_summary = result['aggregate']['multihead']['test_perplexity']
     parts.append(('What did the trained models achieve?', [
         s('s05-cap-protocol', 'Change the model, keep the task fixed',
           rows(['Model', 'How it reads the 64-token window'],
@@ -277,8 +280,12 @@ def classroom(stage, reference):
           companion='<p>These are fixed selection-slice validation measurements, not test losses. The table on the next slide aggregates separately selected test checkpoints across three seeds. <a href="word-lab/models/comparison.json">All traces, checkpoint choices and protocol</a>.</p>'),
         s('s05-cap-scores', 'Four heads win this held-out comparison',
           rows(['Model', 'Test loss ↓', 'Test perplexity ↓'], scores, [450,335,335]),
-          f'Mean ± sample SD across three seeds. Four heads reduce mean perplexity by {improvement:.1f}% versus one head in this experiment.',
-          companion='<p>Loss is next-token cross-entropy in nats; each run’s perplexity is exp(loss), then the table averages the run perplexities. Lower means more probability assigned to observed tokens. It is not an accuracy percentage or a guarantee for every prompt.</p>'),
+          '<strong>Perplexity = exp(test loss)</strong> measures next-token surprise. If every true next token gets probability ¼, perplexity is 4. Lower is better.</p><p>'
+          f'Three training runs use different random starts (seeds {seed_labels}). We report the <strong>average ± run-to-run spread (sample standard deviation)</strong>.</p><p>'
+          f'<strong>Four-head perplexities:</strong> {head_perplexities} give <strong>{head_summary["mean"]:.2f} ± {head_summary["sample_std"]:.2f}</strong>.',
+          companion='<p>For each run, test loss is the average negative log probability of the observed next token, using natural logarithms. Perplexity is exp(loss), or the reciprocal of the geometric mean of those probabilities. The ¼ example assumes that same probability for every observed token. Perplexity is not an accuracy percentage or a literal count of candidate words.</p>'
+          '<p>A seed controls random initialization and training-batch sampling. All three runs use the same data split and settings. For each metric separately, average its three run values and compute their sample standard deviation: square the deviations from their mean, sum them, divide by 3 − 1, then take the square root. The ± describes variation between training runs. It is not a confidence interval or variation between individual tokens.</p>'
+          f'<p>The displayed run values are rounded. The summaries use the saved full-precision values. Compute exp(loss) for each run before averaging perplexities, rather than exponentiating the average loss. Four heads reduce mean perplexity by {improvement:.1f}% versus one head in this experiment. <a href="word-lab/models/comparison.json">Saved runs and summaries</a>.</p>'),
         s('s05-cap-cost', 'Better prediction has a cost',
           rows(['Model', 'Parameters', 'Training / seed'], costs, [450,335,335]),
           'Mean training time, including validation, on Apple M2 Max/MPS. The attention models have equal parameter counts; four heads train slightly slower.',

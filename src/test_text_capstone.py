@@ -1,6 +1,7 @@
 """Verify the restored TinyStories slides against data and the actual model."""
 import json
 import math
+import statistics
 from pathlib import Path
 import sys
 
@@ -139,8 +140,21 @@ def test_results_and_samples_are_saved_evidence():
         assert str(run['parameter_count']) == evidence['costs'][i][1].replace(',','')
         assert evidence['scores'][i][1].startswith(f'{avg["test_loss"]["mean"]:.3f}')
         assert evidence['scores'][i][2].startswith(f'{avg["test_perplexity"]["mean"]:.2f}')
+        for metric in ['test_loss', 'test_perplexity']:
+            values = [r[metric] for r in results['runs'][kind]]
+            assert math.isclose(avg[metric]['mean'], statistics.mean(values))
+            assert math.isclose(avg[metric]['sample_std'], statistics.stdev(values))
         for r in results['runs'][kind]:
             assert math.isclose(math.exp(r['test_loss']),r['test_perplexity'])
+    steps = {s['key']:s for s in json.loads((REPO/'figures/multihead/manifest.json').read_text())}
+    result_step = steps['s05-cap-scores']
+    for phrase in ['Perplexity = exp(test loss)', 'probability ¼', 'perplexity is 4',
+                   '11, 29, 47', 'sample standard deviation', '28.78 ± 0.61']:
+        assert phrase in result_step['body']
+    for run in results['runs']['multihead']:
+        assert f'{run["test_perplexity"]:.2f}' in result_step['body']
+    assert 'not a confidence interval' in result_step['companion']
+    assert math.isclose(math.exp(-math.log(.25)), 4)
     saved = json.loads((REPO/'word-lab/saved-examples.json').read_text())
     assert evidence['samples'] == [s for s in saved['examples'] if s['prompt_id']=='heldout']
     assert results['aggregate']['multihead']['test_loss']['mean'] < results['aggregate']['attention']['test_loss']['mean']

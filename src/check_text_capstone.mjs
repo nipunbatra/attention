@@ -88,7 +88,7 @@ try {
       },step.key);
       assert.equal(await page.locator('.frame.is-live').getAttribute('id'),step.key);
       assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,step.key+' fits '+viewport.width);
-      if(viewport.width===1280||['s02-cap-map','s03-map-data','s03-map-vocabulary','s03-map-windows-first','s03-map-real-windows','s03-data-story-complete','s03-data-vocabulary','s03-data-pairs-tensors','s03-cap-scale','s04-cap-embed','s04-cap-weights','s05-cap-curves','s06-cap-samples'].includes(step.key))
+      if(viewport.width===1280||['s02-cap-map','s03-map-data','s03-map-vocabulary','s03-map-windows-first','s03-map-real-windows','s03-data-story-complete','s03-data-vocabulary','s03-data-pairs-tensors','s03-cap-scale','s04-cap-embed','s04-cap-weights','s05-cap-curves','s05-cap-scores','s06-cap-samples'].includes(step.key))
         await page.screenshot({path:path.join(shots,step.key+'-'+viewport.width+'.png')});
     }
   }

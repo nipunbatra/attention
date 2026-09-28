@@ -534,9 +534,9 @@
   {
     "key": "s05-cap-scores",
     "title": "Four heads win this held-out comparison",
-    "body": "Mean \u00b1 sample SD across three seeds. Four heads reduce mean perplexity by 8.2% versus one head in this experiment.",
+    "body": "<strong>Perplexity = exp(test loss)</strong> measures next-token surprise. If every true next token gets probability \u00bc, perplexity is 4. Lower is better.</p><p>Three training runs use different random starts (seeds 11, 29, 47). We report the <strong>average \u00b1 run-to-run spread (sample standard deviation)</strong>.</p><p><strong>Four-head perplexities:</strong> 28.40, 29.49, 28.46 give <strong>28.78 \u00b1 0.61</strong>.",
     "code": "",
-    "companion": "<p>Loss is next-token cross-entropy in nats; each run\u2019s perplexity is exp(loss), then the table averages the run perplexities. Lower means more probability assigned to observed tokens. It is not an accuracy percentage or a guarantee for every prompt.</p>"
+    "companion": "<p>For each run, test loss is the average negative log probability of the observed next token, using natural logarithms. Perplexity is exp(loss), or the reciprocal of the geometric mean of those probabilities. The \u00bc example assumes that same probability for every observed token. Perplexity is not an accuracy percentage or a literal count of candidate words.</p><p>A seed controls random initialization and training-batch sampling. All three runs use the same data split and settings. For each metric separately, average its three run values and compute their sample standard deviation: square the deviations from their mean, sum them, divide by 3 \u2212 1, then take the square root. The \u00b1 describes variation between training runs. It is not a confidence interval or variation between individual tokens.</p><p>The displayed run values are rounded. The summaries use the saved full-precision values. Compute exp(loss) for each run before averaging perplexities, rather than exponentiating the average loss. Four heads reduce mean perplexity by 8.2% versus one head in this experiment. <a href=\"word-lab/models/comparison.json\">Saved runs and summaries</a>.</p>"
   },
   {
     "key": "s05-cap-cost",

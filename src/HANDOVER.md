@@ -10,6 +10,17 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+2026-09-28 TinyStories result-metric clarification:
+
+- The existing `s05-cap-scores` slide defines perplexity with an explicit
+  constant-probability example and explains ± as sample standard deviation
+  across three training runs. The actual three four-head perplexities and
+  their summary come from saved evidence, with full-precision aggregation.
+  Reading notes distinguish this spread from a confidence interval and explain
+  the sample-SD calculation. Keep the original table and slide count.
+- Tests independently recompute the mean and sample SD for both metrics and
+  all models. The browser check now also captures this slide at portrait sizes.
+
 2026-09-28 TinyStories position-type clarification:
 
 - `s04-cap-position` explicitly labels learned absolute position embeddings.
