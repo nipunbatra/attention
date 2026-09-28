@@ -4,7 +4,7 @@ from pathlib import Path
 from xml.etree import ElementTree as ET
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from slow_walkthrough import STAGES, STORY_EXAMPLES, ROUTE_CHECKPOINTS, initial_namespace, render_figure, map_mode
+from slow_walkthrough import STAGES, STORY_EXAMPLES, ROUTE_CHECKPOINTS, MLP_NETWORK_STAGES, initial_namespace, render_figure, map_mode
 
 
 def test_all_lesson_steps_execute_and_render():
@@ -24,6 +24,47 @@ def test_all_lesson_steps_execute_and_render():
     assert ns['new_weight']!=ns['old_weight']
     assert ns['after_loss']<ns['before_loss']
     assert ns['comparison']['attention']['test_perplexity']['mean']<ns['comparison']['mlp']['test_perplexity']['mean']
+
+
+def test_mlp_forward_pass_keeps_one_numeric_network_diagram():
+    import torch
+    ns = initial_namespace()
+    positions = None
+    seen = []
+    for stage in STAGES:
+        exec(stage['code'], ns)
+        if stage['id'] not in MLP_NETWORK_STAGES:
+            continue
+        seen.append(stage['id'])
+        root = ET.fromstring(render_figure(stage, ns))
+        def nodes(cls):
+            return [e for e in root.iter() if e.get('class') == cls]
+        inputs, hidden, outputs = nodes('network-input'), nodes('network-hidden'), nodes('network-output')
+        assert [len(inputs), len(hidden), len(outputs)] == [16, 8, 10]
+        assert [e.get('data-token') for e in nodes('network-token-group')] == ['<BOS>', 'lily', 'found', 'a']
+        assert [float(e.get('data-value')) for e in inputs] == ns['flat'][1].tolist()
+        assert [e.get('data-token') for e in outputs] == ns['words']
+        current = [(e.get('cx'), e.get('cy')) for e in inputs+hidden+outputs]
+        if positions is not None:
+            assert current == positions
+        positions = current
+        edges = nodes('network-edge')
+        assert len([e for e in edges if e.get('data-matrix') == 'W1']) == 16*8
+        assert len([e for e in edges if e.get('data-matrix') == 'W2']) == 8*10
+        if stage['id'] == 'hidden-affine':
+            assert len([e for e in edges if e.get('stroke-width') == '2']) == 16
+            assert torch.allclose(ns['manual_hidden'], ns['pre_hidden'][1, 0])
+        if stage['id'] == 'relu':
+            for j, e in enumerate(nodes('network-hidden-value')):
+                assert float(e.get('data-pre')) == float(ns['pre_hidden'][1,j].detach())
+                assert float(e.get('data-post')) == max(0, float(e.get('data-pre')))
+        if stage['id'] == 'vocab-head':
+            assert len([e for e in edges if e.get('stroke-width') == '2']) == 8
+            assert [float(e.get('data-value')) for e in nodes('network-logit')] == ns['logits_mlp'][1].tolist()
+            assert torch.allclose(ns['manual_red'], ns['logits_mlp'][1, ns['red_id']])
+            assert ns['y'][1] == ns['red_id']
+            break
+    assert seen == ['flatten', 'hidden-affine', 'relu', 'vocab-head']
 
 
 def test_lookup_explains_the_padding_exception_without_changing_the_example():

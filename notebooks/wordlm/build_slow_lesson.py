@@ -15,7 +15,7 @@ import shutil
 import zipfile
 
 import nbformat as nbf
-from slow_walkthrough import STAGES, initial_namespace, render_figure, map_mode
+from slow_walkthrough import STAGES, MLP_NETWORK_STAGES, initial_namespace, render_figure, map_mode
 from pipeline_maps import pipeline_svg
 from code_display import PYTHON_CSS, highlight_python, validate_python
 
@@ -218,6 +218,9 @@ jupyter lab {BOOK}.ipynb</pre><p>Then choose <strong>Run → Run All Cells</stro
     fragments=['''<style>
 #s19 .pipeline-lesson .step-figure{margin:12px 0;overflow-x:auto}
 #s19 .pipeline-lesson .step-figure svg{width:100%;height:auto;max-height:275px;display:block}
+#s19 .pipeline-lesson.mlp-network-lesson .step-figure svg{max-height:350px}
+#s19 .pipeline-lesson.mlp-network-lesson .step-copy{font-size:22px;line-height:1.3;margin:6px 0 8px}
+#s19 .pipeline-lesson.mlp-network-lesson pre{margin:6px 0}
 #s19 .pipeline-lesson .step-figure.master svg{max-height:410px}
 #s19 #s19-pipeline-lookup-flow .step-figure svg{max-height:350px}
 #s19 .pipeline-lesson.story-sample .step-figure svg{max-height:350px}
@@ -259,6 +262,7 @@ body:not(.present) #s19 .pipeline-lesson{padding:30px 0;border-bottom:1px solid 
         if story_sample or tokenization or s['id']=='batches':
             body=s['body']
         extra_class=(' story-sample' if story_sample else ' tokenization-lesson' if tokenization else ' map-checkpoint' if s.get('map_checkpoint') else '')
+        if s['id'] in MLP_NETWORK_STAGES: extra_class+=' mlp-network-lesson'
         intro=s['id']=='tokenization-intro'
         if intro: extra_class+=' lecture-topic-break topic-midpoint'
         heading='<h3>Tokenization</h3>' if intro else ''

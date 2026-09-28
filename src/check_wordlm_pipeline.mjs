@@ -30,6 +30,21 @@ try{
     assert(lookupCopy.includes(phrase),'embedding lookup explains '+phrase);
   }
   assert.match(await page.locator('#s19-pipeline-lookup svg').textContent(),/C=10 rows × d=4 coordinates.*initial weights/s);
+  let networkPositions;
+  for(const id of ['flatten','hidden-affine','relu','vocab-head']){
+    const network=page.locator('#s19-pipeline-'+id+' [data-mlp-network]');
+    assert.equal(await network.getAttribute('data-example'),'1');
+    for(const [cls,count] of [['network-input',16],['network-hidden',8],['network-output',10]]){
+      assert.equal(await network.locator('.'+cls).count(),count,id+' shows the complete '+cls+' layer');
+    }
+    assert.equal(await network.locator('[data-matrix="W1"]').count(),128);
+    assert.equal(await network.locator('[data-matrix="W2"]').count(),80);
+    const positions=await network.locator('circle').evaluateAll(es=>es.map(e=>[e.getAttribute('cx'),e.getAttribute('cy')]));
+    if(networkPositions)assert.deepEqual(positions,networkPositions,'network layout stays fixed as calculations advance');
+    networkPositions=positions;
+    assert.deepEqual(await network.locator('.network-token-group').evaluateAll(es=>es.map(e=>e.dataset.token)),['<BOS>','lily','found','a']);
+  }
+  assert.match(await page.locator('#s19-pipeline-vocab-head .step-copy').innerText(),/observed target.*not necessarily/s);
   assert.match(await page.locator('#s19-pipeline-boundaries').innerText(),/7 supervised targets/);
   assert.equal(await page.locator('#s19-pipeline-boundaries').getAttribute('data-title'),'One BOS and EOS per document');
   assert.match(await page.locator('#s19-pipeline-boundaries .step-copy').innerText(),/each document is a complete story.*do not add extra markers between sentences/s);

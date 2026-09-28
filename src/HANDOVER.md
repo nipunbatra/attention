@@ -10,6 +10,20 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+2026-09-28 MLP forward pass as a shared neural-network diagram:
+
+- The existing `flatten`, `hidden-affine`, `relu` and `vocab-head` frames share
+  one 16 → 8 → 10 SVG layout. Keep the node positions fixed, group the 16 input
+  coordinates by the four tokens, and highlight the connections used at each
+  step. Values come from example 1, not illustrative replacement numbers.
+- Hidden neuron 0 exposes its weighted sum and ReLU; the classifier exposes
+  the eight contributions to the `red` output. Red is the observed target,
+  not a guarantee about the model's prediction. Both batch examples use the
+  same weights. Keep all ten vocabulary outputs visible.
+- No new frames: 88 lesson steps and 89 pipeline frames remain. Rebuild the
+  notebook, study guide, SVGs and fragment together, execute Notebook 5, then
+  refresh the ZIP. Regression tests guard values, connections and node layout.
+
 2026-09-28 padding row clarification:
 
 - `s19-pipeline-lookup` explains why PAD is zero: `padding_idx=0` initializes

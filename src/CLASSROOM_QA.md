@@ -1,5 +1,22 @@
 # Classroom release checks
 
+## 2026-09-28 · Draw the MLP forward pass as a 16 → 8 → 10 network
+
+- Replaced four list/table figures with synchronized neural-network diagrams:
+  flattening, the hidden weighted sum, ReLU and vocabulary classification.
+  Native SVG nodes and connections retain the actual worked-example values.
+  No new slides, model changes or dependencies.
+- All 25 walkthrough/model tests pass. New checks cover 16/8/10 node counts,
+  fixed positions, token order, 128 + 80 connections, highlighted paths, exact
+  tensor values, the hidden sum and the classifier's manual `red` calculation.
+- Notebook 5 executes all 89 code cells without errors. The refreshed download
+  matches the executed notebook. Pipeline regression passes all 89 frames at
+  1280, 1024 and 390 widths. Whole-deck audit passes all 456 states and 692
+  formulas without runtime, math or overflow failures.
+- All four changed frames fit at 1280×720, 995×1031 and 760×1041. Visually
+  inspected desktop and portrait renders; adjusted label backings and footer
+  placement to keep numbers legible and captions inside the SVG.
+
 ## 2026-09-28 · Explain the zero PAD embedding
 
 - Updated the existing lookup slide and companion notebook with PAD's fixed

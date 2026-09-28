@@ -342,14 +342,14 @@ assert torch.equal(E_mlp[0, 2], E_mlp[1, 1])  # lily
 ''', focus=('embedding',))
 
 step('flatten', 'Flatten the context axis, keep the batch axis', '3. The MLP forward pass',
-     'Each example becomes one ordered row of 4×4=16 numbers. We never join example 0 to example 1. Swapping token positions changes which input connections receive each embedding.', '''
+     'Each of the four tokens supplies four input nodes, giving 16 numbers in slot order. Both batch examples use this same 16 → 8 → 10 network separately. Flattening only rearranges the coordinates and learns no weights. We never concatenate one batch example with another. Swapping token positions changes which input connections receive each embedding.', '''
 flat = E_mlp.flatten(start_dim=1)
 assert flat.shape == (2, 16)
 assert torch.equal(flat[1, :4], E_mlp[1, 0])
 ''', focus=('flatten',))
 
 step('hidden-affine', 'One hidden neuron combines all sixteen inputs', '3. The MLP forward pass',
-     'In row-vector notation the hidden matrix is 16×8. PyTorch stores Linear weights as 8×16. A neuron multiplies all sixteen input coordinates by its weights, sums them and adds one bias.', '''
+     'Follow the highlighted connections into neuron 0: multiply each input by its weight, sum all 16 products, then add its bias. Each of the eight hidden neurons has its own weights and bias. In row-vector notation W₁ is 16×8 and b₁ has eight entries. PyTorch stores the Linear weights as 8×16. The four sums in the diagram group the contributions by token, without changing the calculation.', '''
 pre_hidden = mlp.hidden_layer(flat)
 terms = flat[1] * mlp.hidden_layer.weight[0]
 manual_hidden = terms.sum() + mlp.hidden_layer.bias[0]
@@ -357,17 +357,21 @@ assert torch.allclose(manual_hidden, pre_hidden[1, 0])
 ''', focus=('hidden',))
 
 step('relu', 'ReLU keeps positive activations', '3. The MLP forward pass',
-     'ReLU acts separately on each hidden coordinate: max(0,z). It keeps the tensor shape at 2×8. The nonlinearity lets the network learn more than a single affine mapping.', '''
+     'At each of the same eight hidden neurons, ReLU keeps a positive sum and replaces a negative sum with zero. The labels show each value before and after ReLU, with batch shape still [2,8]. This is an activation within the hidden layer, not another set of eight learned neurons. The nonlinearity lets the network learn more than a single affine mapping.', '''
 hidden_mlp = torch.relu(pre_hidden)
 assert hidden_mlp.shape == (2, 8)
 assert hidden_mlp.ge(0).all()
 ''', focus=('hidden',))
 
 step('vocab-head', 'Vocabulary logits from the hidden layer', '3. The MLP forward pass',
-     'Every vocabulary item gets a logit, including words that are not the target. The output matrix is 8×10 in row-vector notation. Logits can be negative and need not sum to one.', '''
+     'The classifier connects all eight hidden activations to every vocabulary output, producing ten logits. Red is the observed target for example 1, not necessarily this untrained model’s highest score. The output matrix W₂ is 8×10 in row-vector notation, and b₂ has ten entries. Logits can be negative and need not sum to one. Softmax and the training loss follow later. The highlighted output sums eight weighted hidden activations and adds the bias for red.', '''
 logits_mlp = mlp.vocab_head(hidden_mlp)
 assert logits_mlp.shape == (2, 10)
 assert torch.allclose(logits_mlp, mlp(X))
+red_id = vocab.stoi['red']
+red_terms = hidden_mlp[1] * mlp.vocab_head.weight[red_id]
+manual_red = red_terms.sum() + mlp.vocab_head.bias[red_id]
+assert torch.allclose(manual_red, logits_mlp[1, red_id])
 ''', focus=('logits',))
 
 step('attention-map', 'The full attention training map', '4. The attention forward pass',
@@ -713,9 +717,93 @@ def num(value):
 def vector(values): return '[ '+', '.join(num(v) for v in values)+' ]'
 
 
+MLP_NETWORK_STAGES = {'flatten', 'hidden-affine', 'relu', 'vocab-head'}
+
+
+def mlp_network_figure(stage, ns):
+    """The same 16 → 8 → 10 network, revealing the executed forward pass."""
+    k = stage['id']
+    f = Figure(stage['title'], height=460)
+    f.parts[0] = f.parts[0].replace('role="img"', f'role="img" data-mlp-network="{k}" data-example="1"')
+    words, X = ns['words'], ns['X']
+    inputs = ns['flat'][1]
+    input_y = [115 + (i//4)*72 + (i%4)*18 for i in range(16)]
+    hidden_y = [118 + j*37 for j in range(8)]
+    output_y = [116 + j*29 for j in range(10)]
+    xi, xh, xo = 275, 615, 935
+    f.text(20,27,'Example 1: <BOS> lily found a',BLUE,25,600)
+    f.text(1140,27,'Same weights for both batch examples',MUTED,23,anchor='end')
+    for x, title, shape in [(210,'16 input nodes','flat: [2,16]'),
+                             (615,'8 hidden neurons','hidden: [2,8]'),
+                             (1010,'10 vocabulary outputs','logits: [2,10]')]:
+        f.text(x,65,title,INK,26,600,'middle')
+        f.text(x,91,shape,MUTED,21,anchor='middle')
+    # All connections exist. Highlight only the neuron being explained.
+    for i, iy in enumerate(input_y):
+        for j, hy in enumerate(hidden_y):
+            active = k == 'hidden-affine' and j == 0
+            f.parts.append(f'<line class="network-edge" data-matrix="W1" data-input="{i}" data-hidden="{j}" x1="{xi+8}" y1="{iy}" x2="{xh-12}" y2="{hy}" stroke="{TEAL if active else LINE}" stroke-width="{2 if active else 1}" opacity="{0.7 if active else 0.38}"/>')
+    for j, hy in enumerate(hidden_y):
+        for i, oy in enumerate(output_y):
+            active = k == 'vocab-head' and i == ns['vocab'].stoi['red']
+            f.parts.append(f'<line class="network-edge" data-matrix="W2" data-hidden="{j}" data-output="{i}" x1="{xh+12}" y1="{hy}" x2="{xo-9}" y2="{oy}" stroke="{RED if active else LINE}" stroke-width="{2 if active else 1}" opacity="{0.7 if active else 0.38}"/>')
+    for slot in range(4):
+        first, last = input_y[slot*4], input_y[slot*4+3]
+        token = words[int(X[1,slot])]
+        f.parts.append(f'<g class="network-token-group" data-slot="{slot}" data-token="{escape(token,quote=True)}">')
+        f.text(20,first+21,token,BLUE,25,600)
+        f.text(20,first+44,f'Slot {slot+1}',MUTED,18)
+        f.parts.append(f'<path d="M155 {first-8} H145 V{last+8} H155" fill="none" stroke="{BLUE}" stroke-width="2"/>')
+        for coord in range(4):
+            i, y = slot*4+coord, input_y[slot*4+coord]
+            f.text(250,y+6,num(inputs[i]),BLUE,20,anchor='end',mono=True)
+            f.parts.append(f'<circle class="network-input" data-input="{i}" data-coordinate="{coord}" data-value="{float(inputs[i].detach())}" cx="{xi}" cy="{y}" r="7" fill="#fff" stroke="{BLUE}" stroke-width="2"><title>Slot {slot+1}, coordinate {coord+1}: {num(inputs[i])}</title></circle>')
+        f.parts.append('</g>')
+    for j,y in enumerate(hidden_y):
+        color = TEAL if k in {'hidden-affine','relu','vocab-head'} else MUTED
+        f.parts.append(f'<circle class="network-hidden" data-hidden="{j}" cx="{xh}" cy="{y}" r="12" fill="#fff" stroke="{color}" stroke-width="{3 if k=="hidden-affine" and j==0 else 2}"/>')
+        f.text(xh-21,y+6,str(j),MUTED,19,anchor='end')
+        if k != 'flatten':
+            before = ns['pre_hidden'][1,j]
+            after = ns.get('hidden_mlp')
+            value = (f'{num(before)} → {num(after[1,j])}' if k=='relu'
+                     else num(after[1,j]) if k=='vocab-head' else num(before))
+            f.parts.append(f'<g class="network-hidden-value" data-hidden="{j}" data-pre="{float(before.detach())}"'+
+                           (f' data-post="{float(after[1,j].detach())}"' if after is not None else '')+
+                           '>')
+            f.parts.append(f'<rect x="{xh+17}" y="{y-12}" width="{len(value)*12.1+12}" height="24" fill="{PAPER}"/>')
+            f.text(xh+22,y+6,value,color,20,mono=True)
+            f.parts.append('</g>')
+    for i,y in enumerate(output_y):
+        target = i == ns['vocab'].stoi['red'] and k=='vocab-head'
+        color = RED if k=='vocab-head' else MUTED
+        f.parts.append(f'<circle class="network-output" data-output="{i}" data-token="{escape(words[i],quote=True)}" cx="{xo}" cy="{y}" r="9" fill="#fff" stroke="{color}" stroke-width="{3 if target else 2}"/>')
+        f.text(xo+20,y+7,words[i],color,23,600 if target else 500)
+        if k=='vocab-head':
+            f.parts.append(f'<g class="network-logit" data-output="{i}" data-value="{float(ns["logits_mlp"][1,i].detach())}">')
+            f.text(1138,y+7,num(ns['logits_mlp'][1,i]),RED,23,anchor='end',mono=True)
+            f.parts.append('</g>')
+    if k=='flatten':
+        f.text(20,418,'4 token rows × 4 coordinates = 16 inputs. Flattening learns no weights.',BLUE,25,600)
+        f.text(20,447,'Next: a learned 16×8 connection matrix, ReLU, then an 8×10 classifier.',MUTED,23)
+    elif k=='hidden-affine':
+        f.text(20,418,'Neuron 0: add the four token contributions, then its bias',TEAL,25,600)
+        contributions = ' + '.join('('+num(ns['terms'][s*4:(s+1)*4].sum())+')' for s in range(4))
+        f.text(20,447,contributions+' + ('+num(ns['mlp'].hidden_layer.bias[0])+') = '+num(ns['manual_hidden']),TEAL,24,mono=True)
+    elif k=='relu':
+        f.text(20,418,'At the same 8 neurons: z → max(0, z). Negative sums become zero.',TEAL,25,600)
+        f.text(20,447,'ReLU has no learned weights. The classifier receives the values on the right.',MUTED,23)
+    else:
+        f.text(20,418,f"For red: weighted hidden sum {num(ns['red_terms'].sum())} + bias ({num(ns['mlp'].vocab_head.bias[ns['red_id']])}) = {num(ns['manual_red'])}",RED,25,600)
+        f.text(20,447,'W₂ is 8×10, with 10 biases. These scores become probabilities at softmax.',MUTED,23)
+    return f.finish()
+
+
 def render_figure(stage, ns):
     """All numeric text comes from tensors calculated by the matching code cell."""
     k=stage['id'];f=Figure(stage['title']);words=ns.get('words',[])
+    if k in MLP_NETWORK_STAGES:
+        return mlp_network_figure(stage, ns)
     decode=lambda ids:' '.join(words[int(i)].replace('<','').replace('>','') for i in ids)
     X=ns.get('X'); row_tokens=lambda b:[words[int(i)] for i in X[b]]
     if stage.get('map_checkpoint') or k in {'mlp-map','attention-map','mlp-inference','attention-inference'}:
@@ -942,22 +1030,6 @@ def render_figure(stage, ns):
         for b in range(2):
             f.text(20+580*b,30,f'Example {b}: {decode(X[b])}',BLUE,24,600)
             f.table(['Token','c1','c2','c3','c4'],[(t,*[num(v) for v in ns['E_mlp'][b,j]]) for j,t in enumerate(row_tokens(b))],x=20+580*b,y=50,widths=[150,95,95,95,95],row_h=45,size=21)
-    elif k=='flatten':
-        f.text(25,40,'Example 1: concatenate in slot order',BLUE,28,600)
-        for j in range(4):
-            f.text(25,105+j*49,f'{row_tokens(1)[j]:>6}  {vector(ns["E_mlp"][1,j])}',BLUE,28,mono=True)
-        f.text(735,135,'One row:',size=30);f.text(735,190,'4 × 4 = 16 inputs',BLUE,33,600)
-        f.text(735,250,'Batch shape [2, 16]',MUTED,26)
-    elif k=='hidden-affine':
-        f.text(25,40,'Hidden neuron 0, example 1',TEAL,29,600)
-        f.table(['Input group','Sum of four weighted inputs'],[(f'Slot {j+1}: {row_tokens(1)[j]}',num(ns['terms'][j*4:(j+1)*4].sum())) for j in range(4)],y=65,widths=[590,530],row_h=40)
-        f.text(25,300,f"Sum {num(ns['terms'].sum())} + bias {num(ns['mlp'].hidden_layer.bias[0])} = {num(ns['manual_hidden'])}",TEAL,27,600)
-    elif k=='relu':
-        for group in range(2):
-            f.table(['Unit','Before ReLU','After ReLU'],[(j,num(ns['pre_hidden'][1,j]),num(ns['hidden_mlp'][1,j])) for j in range(group*4,(group+1)*4)],x=20+570*group,widths=[95,220,215],row_h=53,colors=[INK,MUTED,TEAL])
-    elif k=='vocab-head':
-        for group in range(2):
-            f.table(['ID / word','Logit, example 1'],[(f'{i}  {words[i]}',num(ns['logits_mlp'][1,i])) for i in range(group*5,(group+1)*5)],x=20+570*group,widths=[280,250],row_h=46,colors=[INK,RED])
     elif k=='positions':
         f.table(['Final slot of example 1','c1','c2','c3','c4'],[('Token: a',*[num(v) for v in ns['token_rows'][1,-1]]),('Position: slot 4',*[num(v) for v in ns['position_rows'][-1]]),('Sum E',*[num(v) for v in ns['E'][1,-1]])],widths=[400,180,180,180,180],row_h=65)
     elif k=='query':
