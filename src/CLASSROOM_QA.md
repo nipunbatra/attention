@@ -1,5 +1,22 @@
 # Classroom release checks
 
+## 2026-09-28 · Graphical addition/RoPE comparison pair
+
+- Replaced the paired text lists with an editable SVG branching diagram and
+  added one numerical slide using the same node/edge geometry. The existing
+  toy projections generate all shown rows. Circle rotations preserve actual
+  Q/K lengths; the V path bypasses them. Optional calculations are unchanged.
+- `frame_audit.mjs attention.html` passes 366 states and 690 formulas, with
+  no runtime, math or overflow failures. `check_metadata.py` passes eight
+  isolated builds. JavaScript syntax and `git diff --check` pass.
+- `check_cost_position.mjs` passes 54 position frames and 202 build checks.
+  New assertions cover identical diagram geometry, each projection and final
+  row, norm-preserving rotations, the V bypass, subscript containment and
+  reversible reveals. Projector, portrait and phone-reading checks pass.
+- Visually inspected the comparison pair in landscape and portrait. Tightened
+  only local margins to fit the rotation legend without reducing text size.
+  Rebuilt Part II and the optional reference export.
+
 ## 2026-09-28 · Restore the RoPE rotation and sentence-shift visuals
 
 - Replaced the abbreviated Q/K path with the existing non-unit toy vectors

@@ -10,6 +10,19 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+2026-09-28 graphical addition/RoPE comparison pair:
+
+- `method-comparison` now branches the same word row into visible Q/K/V
+  paths. Addition merges the slot row before projection; RoPE sends only
+  projected Q/K through circle rotations, with a separate V bypass.
+- `method-comparison-numbers` repeats identical geometry with `insertionExample()`
+  values for red at slot 2. The visible projection rules explain all numbers.
+  Keep the two slides together and preserve the chosen-value disclosure,
+  60-degree rotation, unequal circle radii and reversible reveals. Do not
+  confuse red's query [0,1] here with flowers' query [2,1] in the preceding slides.
+- This supersedes the single-comparison-slide pacing below. The position section
+  has 54 classroom frames; full matrix derivations remain optional reading.
+
 2026-09-28 restore RoPE circles and the shifted sentence:
 
 - Supersedes the one-frame RoPE pacing below. `rope-intuition` now shows the

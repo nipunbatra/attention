@@ -54,6 +54,11 @@ body:not(.present) .position-lesson pre{max-width:100%;min-width:0;overflow-x:au
 .position-credit{font-size:22px;line-height:1.5;margin-top:36px;color:var(--ink-2)}
 .position-credit a{color:inherit;text-decoration:underline;text-underline-offset:4px}
 .rope-classroom .position-visual svg{max-height:none}
+.position-comparison .position-visual svg{max-height:none}
+body.present .position-comparison p{font-size:24px;line-height:1.3;margin:4px 0}
+body.present .position-comparison .position-visual{margin:8px 0}
+.position-comparison .comparison-rules{font-size:24px;font-variant-numeric:tabular-nums}
+body.present .position-comparison .comparison-legend{font-size:22px;margin:4px 0;color:var(--ink-2)}
 .rope-classroom .position-credit{margin-top:14px}
 body.present .rope-classroom p{font-size:24px;line-height:1.35;margin:12px 0}
 .position-worked .worked-scroll{max-width:100%;overflow-x:auto}
@@ -525,11 +530,22 @@ Keep the same projected content vectors q=[2,1] and k=[3,0]. The full sentences 
 <p>Hold Q/K content fixed. <span data-build="2">Reuse the same gap pattern at different slots. A real prefix can still change attention weights.</span></p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-method-comparison" data-title="Addition and RoPE: where position enters" data-autobuild="off">
+<div class="frame context-lesson position-lesson position-comparison" id="s17-position-method-comparison" data-title="Addition and RoPE: where position enters" data-autobuild="off">
 <script type="text/x-notes">Where does position enter on each side?
-Point across each pair of numbered steps before moving down. Both alternatives start with the word lookup rows for Maya carries red flowers. On the left, add a learned or sinusoidal position row to each word row, then project the enriched rows to Q, K and V. On the right, project the word rows first, then rotate each query and key using its own token's position. Standard RoPE leaves values unrotated. Both end with scaled dot-product scores, the causal mask and softmax across allowed keys, followed by a weighted sum of values. The short diagram abbreviates those already-taught operations as score, softmax and mix. The two alternatives generally produce different attention weights and messages; a shared final operation does not mean equal outputs. All parameters of the projections still learn. Absolute addition normally happens at the input to the stack, whereas RoPE is applied to Q/K within attention layers. We show the first layer so both paths can start at word lookups; later-layer inputs are contextual. This one comparison is sufficient for class. The following optional reading retains the numerical calculations. Sources: Vaswani et al., section 3.5, https://arxiv.org/abs/1706.03762; Su et al., section 3.2, https://arxiv.org/abs/2104.09864.</script>
-<div class="position-journey" data-position-journey="method-comparison"></div>
-<p class="lesson-key" data-build="3">Addition changes the input rows. RoPE rotates Q and K after projection.</p>
+Follow only red at zero-based slot 2 in Maya carries red flowers. Its row supplies its query, key and value, just as every other token supplies its own three rows. Reveal corresponding stages together: word lookup, then addition versus projection, then projection versus rotation, then the resulting Q/K/V rows. On the left, the plus junction sends the enriched input through three learned projection matrices. On the right, three projections read the word row first. Two circle plots turn the query and key, while a separate teal path takes V around the rotations. Dashed arrows show before, solid arrows after. The plots show one illustrative coordinate pair and preserve its unequal lengths; they do not normalize Q or K. Coordinate subscripts on the two-cell rows denote dimensions, not token slots. The next slide retains this exact layout and fills in the numbers. Standard RoPE leaves values unrotated. Then both methods compute scaled query-key scores, mask and softmax over allowed keys, and mix V using those weights. This does not imply equal scores or messages between the alternatives. Additive positions normally enter once at the input to the stack, while RoPE operates on Q/K in attention layers. We show the first layer; later layers receive contextual rows. Sources: Vaswani et al., section 3.5, https://arxiv.org/abs/1706.03762; Su et al., section 3.2, https://arxiv.org/abs/2104.09864.</script>
+<p>Maya carries <strong style="color:var(--c-k)">red</strong> flowers. Follow <strong>red at slot 2</strong> in the first attention layer.</p>
+<div class="position-visual" data-position-visual="method-comparison"></div>
+<p class="comparison-legend">Rotation: dashed before, solid after. Each arrow keeps its own length.</p>
+<p data-build="3">Next, in both: scaled Q/K scores → mask + softmax → weighted mix of V.</p>
+</div>
+
+<div class="frame context-lesson position-lesson position-comparison" id="s17-position-method-comparison-numbers" data-title="The same paths, with two-number rows" data-autobuild="off">
+<script type="text/x-notes">What changes when the numbers follow those same paths?
+Continue red at slot 2, not the flowers query from the previous RoPE example. All numbers are hand-chosen teaching values, not a trained checkpoint. Reuse the optional worked example: word e=[1,0], additive position p₂=[0,1], W_Q=[[0,1],[2,1]], W_K=[[3,0],[0,2]], W_V=[[2,0],[0,3]]. The visible projection rules spell out row-vector multiplication: [x,y] W_Q=[2y,x+y], [x,y] W_K=[3x,2y], [x,y] W_V=[2x,3y]. These are the same projection matrices on both sides, held fixed to isolate the positional operation. On the left, [1,0]+[0,1]=[1,1], giving Q=[2,2], K=[3,2], V=[2,3]. On the right, project [1,0] to Q=[0,1], K=[3,0], V=[2,0], then turn Q and K by slot 2 times a teaching rate of 30 degrees = 60 degrees. Q becomes [-sqrt(3)/2,1/2] and K becomes [3/2,3sqrt(3)/2], displayed to three decimals. V remains [2,0]. The circle radii use the same scale and are 1 and 3, respectively. Rotation keeps each length; it does not place all vectors on a unit circle. Dashed arrows are before, solid after. In a trained model, embeddings and W matrices learn; the standard RoPE rotation rule is fixed. The selected additive row is an example, not a value from the sinusoidal formula. The visible table is a first-layer comparison, not a trained-model quality comparison. Sources: same as preceding slide. Full matrix calculations remain in the optional reading.</script>
+<p>Same <strong>red at slot 2</strong>. Toy values, with a RoPE teaching rate of <strong>30° per slot</strong>.</p>
+<div class="position-visual" data-position-visual="method-comparison-numbers"></div>
+<p class="comparison-legend">Rotation: dashed before, solid after. Each arrow keeps its own length.</p>
+<p class="comparison-rules">Same toy projections for [x, y]: <span style="color:var(--c-q)">Q = [2y, x+y]</span>, <span style="color:var(--c-k)">K = [3x, 2y]</span>, <span style="color:var(--c-v)">V = [2x, 3y]</span>.</p>
 </div>
 
 <details class="companion context-lesson position-lesson relative-position-details">

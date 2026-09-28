@@ -7,12 +7,12 @@ document.addEventListener('DOMContentLoaded',()=>{
   function canvas(host,label,h=280){const s=element('svg',{viewBox:`0 0 1120 ${h}`,role:'img','aria-label':label});s.append(element('title',{},label));host.replaceChildren(s);return s;}
   function text(s,x,y,value,color=C.ink,size=24){s.append(element('text',{x,y,style:`fill:${color};font-size:${size}px`},value));}
   function line(s,x1,y1,x2,y2,color=C.line,width=2){s.append(element('line',{x1,y1,x2,y2,stroke:color,'stroke-width':width}));}
-  function arrow(s,x1,y1,x2,y2,color){line(s,x1,y1,x2,y2,color,3);const a=Math.atan2(y2-y1,x2-x1),l=10;line(s,x2,y2,x2-l*Math.cos(a-.45),y2-l*Math.sin(a-.45),color,3);line(s,x2,y2,x2-l*Math.cos(a+.45),y2-l*Math.sin(a+.45),color,3);}
+  function arrow(s,x1,y1,x2,y2,color,head=10){line(s,x1,y1,x2,y2,color,3);const a=Math.atan2(y2-y1,x2-x1),l=head;line(s,x2,y2,x2-l*Math.cos(a-.45),y2-l*Math.sin(a-.45),color,3);line(s,x2,y2,x2-l*Math.cos(a+.45),y2-l*Math.sin(a+.45),color,3);}
   function dot(s,x,y,color,r=6){s.append(element('circle',{cx:x,cy:y,r,fill:color}));}
   function axes(s,x,y,r){line(s,x-r,y,x+r,y);line(s,x,y-r,x,y+r);s.append(element('circle',{cx:x,cy:y,r,fill:'none',stroke:C.line,'stroke-width':2}));}
   function rotate(v,a){return [v[0]*Math.cos(a)-v[1]*Math.sin(a),v[0]*Math.sin(a)+v[1]*Math.cos(a)];}
   const fmt=v=>'['+v.map(n=>(Math.abs(n)<.0005?0:n).toFixed(3)).join(', ')+']';
-  function vector(s,x,y,r,v,color){arrow(s,x,y,x+r*v[0],y-r*v[1],color);}
+  function vector(s,x,y,r,v,color,head=10){arrow(s,x,y,x+r*v[0],y-r*v[1],color,head);}
   const lesson=AT.positionLesson;
   const swap=lesson.sequences.map(tokens=>lesson.experiment(tokens,false));
   const fixed=v=>'['+v.map(n=>n.toFixed(1)).join(', ')+']';
@@ -285,10 +285,92 @@ document.addEventListener('DOMContentLoaded',()=>{
       indexedTokens(next,'notebook-after',['Ravi','at','school','home'],[0,1,2,3],410,162,170,150);
     }
   }
-  function rotationArc(s,cx,cy,r,start,angle,color){
+  function rotationArc(s,cx,cy,r,start,angle,color,head=10){
     const point=a=>[cx+r*Math.cos(a),cy-r*Math.sin(a)],a=point(start),b=point(start+angle);
     s.append(element('path',{d:`M ${a[0]} ${a[1]} A ${r} ${r} 0 ${angle>Math.PI?1:0} 0 ${b[0]} ${b[1]}`,fill:'none',stroke:color,'stroke-width':2}));
-    const tail=point(start+angle-.12);arrow(s,tail[0],tail[1],b[0],b[1],color);
+    const tail=point(start+angle-.12);arrow(s,tail[0],tail[1],b[0],b[1],color,head);
+  }
+  // One held layout: symbolic rows first, then the same paths with toy numbers.
+  function drawMethodComparison(s,numeric){
+    const toy=insertionExample(),short=n=>String(Number(n.toFixed(3)));
+    const description=numeric
+      ?'Follow red at slot 2 with chosen two-dimensional numbers and the same projections. Addition changes input [1,0] to [1,1] before Q K V. RoPE rotates projected Q [0,1] and K [3,0] by 60 degrees and leaves V [2,0] unchanged.'
+      :'Two first-layer paths for red at slot 2. Addition merges word and position before branching into Q K V. RoPE projects first, rotates Q and K by the slot, and routes V around the rotations.';
+    s.setAttribute('viewBox','0 0 1120 428');s.setAttribute('aria-label',description);s.querySelector('title').textContent=description;
+    const center=(g,x,y,label,color=C.ink,size=24)=>g.append(element('text',{x,y,'text-anchor':'middle',style:`fill:${color};font-size:${size}px`},label));
+    function row(g,id,x,y,w,values,symbols,color){
+      const r=element('g',{'data-comparison-node':id,...(numeric?{'data-vector':JSON.stringify(values)}:{})});g.append(r);
+      r.append(element('rect',{x,y,width:w,height:38,rx:3,fill:'none',stroke:color,'stroke-width':1.5}));
+      line(r,x+w/2,y,x+w/2,y+38,color,1);
+      (numeric?values.map(short):symbols).forEach((v,j)=>center(r,x+w*(j+.5)/2,y+27,v,color,24));
+    }
+    function path(g,id,points,color){
+      const edge=element('g',{'data-comparison-edge':id});g.append(edge);
+      points.slice(0,-2).forEach((p,j)=>line(edge,...p,...points[j+1],color));
+      arrow(edge,...points.at(-2),...points.at(-1),color);
+    }
+    line(s,557,15,557,423);
+    for(const method of ['addition','rope']){
+      const rotary=method==='rope',x=rotary?590:20,cx=rotary?850:270;
+      const column=element('g',{'data-position-method':method});s.append(column);
+      text(column,x,29,rotary?'RoPE: rotate after projection':'Addition: add before projection',C.ink,28);
+      const steps=[0,1,2,3].map(i=>{
+        const g=element('g',{'data-comparison-step':i+1,...(i?{'data-build':i}:{})});column.append(g);return g;
+      });
+      const [input,second,third,output]=steps;
+      text(input,rotary?765:20,61,'word row e',C.e,24);
+      row(input,'word',rotary?765:20,73,rotary?170:180,toy.word,['e₁','e₂'],C.e);
+      if(!rotary){
+        text(second,340,61,'slot 2 row p',C.d,24);
+        row(second,'position',340,73,180,toy.position,['p₁','p₂'],C.d);
+        path(second,'word-to-add',[[200,92],[253,92]],C.e);
+        path(second,'position-to-add',[[340,92],[287,92]],C.d);
+        second.append(element('circle',{cx,cy:92,r:16,fill:'none',stroke:C.d,'stroke-width':2}));
+        center(second,cx,101,'+',C.d,30);
+        path(second,'add-to-input',[[cx,110],[cx,169]],C.d);
+        text(second,20,197,'input e + p',C.e,25);
+        row(second,'projected-input',170,172,200,toy.additive.e,['e₁+p₁','e₂+p₂'],C.e);
+        if(!numeric)center(second,430,138,'learned / sinusoidal',C.d,22);
+      }
+      const projecting=rotary?second:third,py=rotary?139:276,projectionHeight=50;
+      const centers=rotary?[675,850,1025]:[105,280,455];
+      // A shared input branches into three learned linear projections.
+      const stemY=rotary?111:210,busY=rotary?127:257;
+      path(projecting,'input-to-projections',[[cx,stemY],[cx,busY]],C.e);
+      line(projecting,centers[0],busY,centers[2],busY,C.e);
+      ['q','k','v'].forEach((name,index)=>{
+        const c=centers[index],color=C[name],values=(rotary?toy.rotary:toy.additive)[name];
+        path(projecting,'to-'+name,[[c,busY],[c,py]],color);
+        const box=element('g',{'data-comparison-node':'project-'+name,...(numeric?{'data-input':JSON.stringify((rotary?toy.rotary:toy.additive).e),'data-matrix':JSON.stringify(toy['W'+name.toUpperCase()]),'data-output':JSON.stringify(values)}:{})});projecting.append(box);
+        box.append(element('rect',{x:c-70,y:py,width:140,height:projectionHeight,rx:3,fill:'none',stroke:color,'stroke-width':1.5}));
+        const label=element('text',{x:c,y:py+29,'text-anchor':'middle',style:`fill:${color};font-size:26px`},'× W');
+        label.append(element('tspan',{'baseline-shift':'sub','font-size':'70%'},name.toUpperCase()));box.append(label);
+        if(rotary){
+          center(projecting,c,218,numeric?name+' = ['+values.map(short).join(', ')+']':({q:'query q',k:'key k',v:'value v'}[name]),color,25);
+          if(name!=='v'){
+            const plot=element('g',{'data-comparison-rotation':name,'data-before':JSON.stringify(values),'data-after':JSON.stringify(toy.rotary[name+'Rotated']),'data-angle':Math.PI/3,'data-pixels-per-unit':18});third.append(plot);
+            const radius=Math.hypot(...values)*18;
+            axes(plot,c,289,radius);
+            const before=element('g',{'stroke-dasharray':'4 3',opacity:.55});plot.append(before);vector(before,c,289,18,values,color,5);
+            vector(plot,c,289,18,toy.rotary[name+'Rotated'],color,5);
+            rotationArc(plot,c,289,radius*.72,Math.atan2(values[1],values[0]),Math.PI/3,color,4);
+            if(index===0){
+              center(third,c,252,numeric?'slot 2 × 30°':'rotate Q and K',C.d,23);
+              center(third,c,337,numeric?'60° each':'by their slot',C.d,24);
+            }
+          }else{
+            path(third,'v-bypass',[[c,230],[1098,230],[1098,336],[c,336],[c,344]],C.v);
+            center(third,c,291,'V',C.v,28);center(third,c,322,'no rotation',C.v,23);
+          }
+        }else{
+          path(third,'project-'+name+'-to-output',[[c,py+projectionHeight],[c,344]],color);
+        }
+        const final=rotary&&name!=='v'?toy.rotary[name+'Rotated']:values;
+        row(output,'output-'+name,c-85,380,170,final,[name+(rotary&&name!=='v'?'′':'')+'₁',name+(rotary&&name!=='v'?'′':'')+'₂'],color);
+      });
+      // Output roles stay visible on both versions of the diagram.
+      centers.forEach((c,index)=>center(output,c,372,['Q','K','V'][index]+(rotary&&index<2?' rotated':''),C[['q','k','v'][index]],23));
+    }
   }
   function drawRopeClassroom(s,kind){
     const toy=ropeExample(),unit=28;
@@ -390,6 +472,8 @@ document.addEventListener('DOMContentLoaded',()=>{
       drawInsertionPath(s,kind==='rotary-path');
     }else if(kind==='additive-numbers'||kind==='rotary-numbers'){
       drawInsertionNumbers(s,kind==='rotary-numbers');
+    }else if(kind==='method-comparison'||kind==='method-comparison-numbers'){
+      drawMethodComparison(s,kind==='method-comparison-numbers');
     }else if(kind==='rope-intuition'||kind==='rope-shift-intuition'){
       drawRopeClassroom(s,kind);
     }else if(kind==='rope-queries'){

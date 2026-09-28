@@ -17,7 +17,7 @@ const positions=[
   'break','order','permute','scores','swapped','contributions','consequence',
   'addition-break','shift','move-a','move-b','moved','toy','slot-scores','experiment','updated',
   'learned-break','learned','absolute-range','clock-choice','sine-2d','sine-4d','sine-many','clock-why','clock','repeat','sine-rule','rate-examples','worked-sine','waves','period','sine-base','sine-width',
-  'relative-break','relative','alibi-intuition','rope-intuition','rope-shift-intuition','method-comparison',
+  'relative-break','relative','alibi-intuition','rope-intuition','rope-shift-intuition','method-comparison','method-comparison-numbers',
   'alternatives-break','append','append-qk-a','append-scores','append-softmax','append-values-a',
   'append-qk-b','append-scores-b','append-softmax-b','append-values-b',
   'append-scale-effect','append-scale','append-tradeoffs',
@@ -79,8 +79,8 @@ try{
   await page.setViewportSize({width:1280,height:720});await page.evaluate(()=>document.fonts.ready);
   const original=await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)}));
   assert.deepEqual(await page.locator('.frame.context-lesson').evaluateAll(es=>es.map(e=>e.id)),ids);
-  assert.equal(ids.length,53,'Two concise RoPE visuals and one side-by-side method comparison.');
-  assert.deepEqual(ids.slice(ids.indexOf('s17-position-relative-break'),ids.indexOf('s17-position-alternatives-break')),['relative-break','relative','alibi-intuition','rope-intuition','rope-shift-intuition','method-comparison'].map(x=>'s17-position-'+x));
+  assert.equal(ids.length,54,'Two concise RoPE visuals and a conceptual/numerical comparison pair.');
+  assert.deepEqual(ids.slice(ids.indexOf('s17-position-relative-break'),ids.indexOf('s17-position-alternatives-break')),['relative-break','relative','alibi-intuition','rope-intuition','rope-shift-intuition','method-comparison','method-comparison-numbers'].map(x=>'s17-position-'+x));
   assert.equal(await page.locator('.relative-position-details').getAttribute('open'),null,'Detailed derivations are opt-in.');
   assert.equal(await page.locator('.relative-position-details .frame').count(),0,'Optional calculations never become presentation slides.');
   assert.deepEqual(await page.locator('.relative-position-details .position-reading').evaluateAll(es=>es.map(e=>e.id)),relativeReading.map(x=>'s17-position-'+x),'All previous worked examples are preserved.');
@@ -94,7 +94,7 @@ try{
     ['alternatives-break','append','append-qk-a','append-scores','append-softmax','append-values-a','append-qk-b','append-scores-b','append-softmax-b','append-values-b','append-scale-effect','append-scale','append-tradeoffs','width','overview','map-notes'],
     ['learned-break','learned','absolute-range','learned-update','token-ids','window-ids','notebook-ids','clock-choice'],
     ['clock-choice','sine-2d','sine-4d','sine-many','clock-why','clock','repeat','rates','sine-rule','rate-examples','worked-sine','sine','waves','period','sine-base','sine-width','relative-break'],
-    ['relative-break','relative','alibi-intuition','rope-intuition','rope-shift-intuition','method-comparison',...relativeReading,'alternatives-break']
+    ['relative-break','relative','alibi-intuition','rope-intuition','rope-shift-intuition','method-comparison','method-comparison-numbers',...relativeReading,'alternatives-break']
   ]){
     const expected=run.map(x=>'s17-position-'+x),start=lessonOrder.indexOf(expected[0]);
     assert(start>=0,'Sequence has its starting frame: '+expected[0]);
@@ -103,7 +103,7 @@ try{
   for(const [from,to]of [
     ['updated','learned-break'],['append-tradeoffs','overview'],
     ['learned','absolute-range'],['absolute-range','clock-choice'],['repeat','sine-rule'],['sine-rule','rate-examples'],['rate-examples','worked-sine'],['worked-sine','waves'],
-    ['period','sine-base'],['sine-width','relative-break'],['relative-break','relative'],['relative','alibi-intuition'],['alibi-intuition','rope-intuition'],['rope-intuition','rope-shift-intuition'],['rope-shift-intuition','method-comparison'],['method-comparison','alternatives-break']
+    ['period','sine-base'],['sine-width','relative-break'],['relative-break','relative'],['relative','alibi-intuition'],['alibi-intuition','rope-intuition'],['rope-intuition','rope-shift-intuition'],['rope-shift-intuition','method-comparison'],['method-comparison','method-comparison-numbers'],['method-comparison-numbers','alternatives-break']
   ]){
     await go('s17-position-'+from);
     await page.evaluate(()=>AT.present.next());
@@ -661,23 +661,54 @@ try{
     for(const role of ['q','k'])plot[role].forEach((v,j)=>close(v,expected[role][j],'Short/long sentence arrows'));
     close(plot.dot,-1.5+3*Math.sqrt(3),'Equal additional rotation preserves raw dot product.');
   }
+  // Hold the diagram's paths fixed while replacing symbols with computed toy rows.
+  const comparisonLayouts=[];
+  for(const id of ['method-comparison','method-comparison-numbers']){
+    const comparison=page.locator('#s17-position-'+id);
+    assert.equal(await comparison.locator('[data-position-method]').count(),2);
+    assert.match(await comparison.textContent(),/no rotation/);
+    assert.match(await comparison.locator('.comparison-legend').textContent(),/dashed before, solid after/);
+    assert.equal(await comparison.locator('[data-comparison-rotation]').count(),2,'Only Q and K rotate.');
+    assert.equal(await comparison.locator('[data-position-method="rope"] [data-comparison-edge="v-bypass"]').count(),1);
+    comparisonLayouts.push(await comparison.locator('[data-position-method]').evaluateAll(columns=>columns.map(column=>({
+      method:column.dataset.positionMethod,
+      nodes:[...column.querySelectorAll('[data-comparison-node]')].map(e=>({id:e.dataset.comparisonNode,rects:[...e.querySelectorAll('rect')].map(r=>['x','y','width','height'].map(a=>r.getAttribute(a)))})),
+      edges:[...column.querySelectorAll('[data-comparison-edge]')].map(e=>({id:e.dataset.comparisonEdge,lines:[...e.querySelectorAll('line')].map(l=>['x1','y1','x2','y2'].map(a=>l.getAttribute(a)))}))
+    }))));
+    for(const build of [0,1,2,3,2,1,0,3]){
+      await go('s17-position-'+id,build);
+      const rows=await comparison.locator('[data-comparison-step]').evaluateAll(es=>es.map(e=>({step:Number(e.dataset.comparisonStep),visibility:getComputedStyle(e).visibility})));
+      assert.equal(rows.length,8);
+      rows.forEach(row=>assert.equal(row.visibility,row.step<=build+1?'visible':'hidden','Reveal corresponding operations together.'));
+    }
+  }
+  assert.deepEqual(comparisonLayouts[0],comparisonLayouts[1],'Concept and numerical slides keep identical node and edge geometry.');
+  const numericComparison=page.locator('#s17-position-method-comparison-numbers');
+  assert.match(await numericComparison.locator('p').first().textContent(),/Toy values/);
+  assert.match(await numericComparison.locator('.comparison-rules').textContent(),/Q = \[2y, x\+y\].*K = \[3x, 2y\].*V = \[2x, 3y\]/);
+  const expectedRows={addition:{q:[2,2],k:[3,2],v:[2,3]},rope:{q:[-Math.sqrt(3)/2,.5],k:[1.5,3*Math.sqrt(3)/2],v:[2,0]}};
+  for(const [method,expected]of Object.entries(expectedRows)){
+    const column=numericComparison.locator('[data-position-method="'+method+'"]');
+    for(const role of ['q','k','v']){
+      const node=column.locator('[data-comparison-node="project-'+role+'"]');
+      assert(await node.evaluate(e=>{const b=e.querySelector('text').getBBox(),r=e.querySelector('rect').getBBox();return b.x>=r.x&&b.y>=r.y&&b.x+b.width<=r.x+r.width&&b.y+b.height<=r.y+r.height;}),'Projection subscript stays inside its box.');
+      const {input,W,out}=await node.evaluate(e=>({input:JSON.parse(e.dataset.input),W:JSON.parse(e.dataset.matrix),out:JSON.parse(e.dataset.output)}));
+      assert.deepEqual(input,method==='addition'?[1,1]:[1,0]);
+      const calculated=W[0].map((_,j)=>input.reduce((sum,x,i)=>sum+x*W[i][j],0));
+      assert.deepEqual(out,calculated,'Displayed projection has an arithmetic provenance.');
+      const result=JSON.parse(await column.locator('[data-comparison-node="output-'+role+'"]').getAttribute('data-vector'));
+      result.forEach((v,j)=>close(v,expected[role][j],method+' '+role+' final row'));
+      if(method==='rope')close(Math.hypot(...out),Math.hypot(...result),'Rotation leaves each norm unchanged.');
+    }
+  }
+  const comparisonCircles=await numericComparison.locator('[data-comparison-rotation]').evaluateAll(es=>es.map(e=>({role:e.dataset.comparisonRotation,before:JSON.parse(e.dataset.before),after:JSON.parse(e.dataset.after),angle:Number(e.dataset.angle),unit:Number(e.dataset.pixelsPerUnit),radius:Number(e.querySelector('circle').getAttribute('r'))})));
+  for(const c of comparisonCircles){
+    close(c.angle,Math.PI/3,'Slot 2 times 30 degrees.');
+    close(c.radius,Math.hypot(...c.before)*c.unit,'Circle uses the actual vector length.');
+    const [x,y]=c.before;
+    [x*.5-y*Math.sqrt(3)/2,x*Math.sqrt(3)/2+y*.5].forEach((v,j)=>close(v,c.after[j],'Numerical rotation'));
+  }
   // Every authored build must fit; reverse traversal must restore hidden math.
-  const comparison=page.locator('#s17-position-method-comparison');
-  assert.equal(await comparison.locator('[data-position-method]').count(),2,'Exactly two aligned alternatives.');
-  for(const [method,labels]of [
-    ['addition',['1. Look up word rows','2. Add position rows','3. Compute Q, K and V','4. Score Q against K']],
-    ['rope',['1. Look up word rows','2. Compute Q, K and V','3. Rotate Q and K by position','4. Score Q against K']]
-  ]){
-    const column=comparison.locator('[data-position-method="'+method+'"]');
-    assert.deepEqual(await column.locator('[data-comparison-step]').evaluateAll(es=>es.map(e=>e.querySelector('text').textContent)),labels);
-  }
-  assert.match(await comparison.textContent(),/V stays unrotated/);
-  for(const build of [0,1,2,3,2,1,0,3]){
-    await go('s17-position-method-comparison',build);
-    const rows=await comparison.locator('[data-comparison-step]').evaluateAll(es=>es.map(e=>({step:Number(e.dataset.comparisonStep),visibility:getComputedStyle(e).visibility,y:Number(e.querySelector('text').getAttribute('y'))})));
-    rows.forEach(row=>assert.equal(row.visibility,row.step<=build+1?'visible':'hidden','Reveal corresponding steps together.'));
-    assert.deepEqual(rows.slice(0,4).map(r=>r.y),rows.slice(4).map(r=>r.y),'Align the two methods by step.');
-  }
   let states=0;
   for(const id of ids){
     await go(id);const max=await page.evaluate(()=>AT.present.state().frame.maxBuild);
@@ -710,7 +741,7 @@ try{
   await page.screenshot({path:path.join(shots,'alibi-portrait.png')});
   for(const viewport of [{width:995,height:1031},{width:760,height:1041}]){
     await page.setViewportSize(viewport);
-    for(const id of ['rope-intuition','rope-shift-intuition']){
+    for(const id of ['rope-intuition','rope-shift-intuition','method-comparison','method-comparison-numbers']){
       await go('s17-position-'+id);
       assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'Restored '+id+' fits at '+viewport.width);
       await page.screenshot({path:path.join(shots,id+'-'+viewport.width+'.png')});
