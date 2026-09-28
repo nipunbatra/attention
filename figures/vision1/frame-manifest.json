@@ -369,9 +369,9 @@
   },
   {
     "id": "s01-rows",
-    "title": "What do c\u2086 and e\u2086 refer to?",
-    "caption": "The subscript names the patch. c\u2086 is its content embedding; adding its position row p\u2086 gives e\u2086, the row that enters attention.",
-    "notes": "Does the 6 mean six coordinates, or patch number 6?\nPoint to P6 in the original illustration. Follow content plus position to e6, then repeat for P7.",
+    "title": "Back to the dog: follow one real patch",
+    "caption": "The earlier 4 \u00d7 4 grid was an illustration. This model uses a 14 \u00d7 14 grid. We now follow P63, a 16 \u00d7 16 RGB patch from the same photograph.",
+    "notes": "Which part of this photograph will supply our next row of numbers?\nFind the purple square in the real input grid, follow the line to its enlarged crop, and keep P63 as the example for the next steps.",
     "section": "s02",
     "frame": 15
   },
@@ -400,12 +400,20 @@
     "frame": 18
   },
   {
+    "id": "real-patch-projection",
+    "title": "The patch projection produces c\u2086\u2083",
+    "caption": "The shared patch layer turns P63\u2019s 768 pixel values into c\u2086\u2083, a row of 192 learned features. These are measured coordinates from the dog image, rounded here. No activation follows this projection.",
+    "notes": "Which operation changes 768 input values into 192 content features?\nFollow the actual crop to x63, through the named patch layer, and down to c63. Separate the patch index 63 from the feature width 192.",
+    "section": "s02",
+    "frame": 19
+  },
+  {
     "id": "projection-size",
     "title": "How many rows come from the whole image?",
     "caption": "196 counts patches in one image. Each patch supplies 768 input values and produces 192 embedding coordinates. The shared layer changes width while keeping one row per patch.",
     "notes": "Which number counts patches, and which numbers count values within a patch row?\nCount patches across and down the grid, then track the unchanged 196 in the input and output shapes.",
     "section": "s02",
-    "frame": 19
+    "frame": 20
   },
   {
     "id": "patch-projection-parameters",
@@ -413,7 +421,23 @@
     "caption": "Each of the 192 outputs has 768 weights and one bias. The parameters are shared across patches, so we count them once.",
     "notes": "If we add more patch rows, do we need another copy of these weights?\nCount weights, then biases, then add them. Point back to the single nn.Linear layer used for the whole matrix.",
     "section": "s02",
-    "frame": 20
+    "frame": 21
+  },
+  {
+    "id": "real-patch-position",
+    "title": "Content + position gives the block\u2019s input row",
+    "caption": "c\u2086\u2083 comes from the patch pixels. p\u2086\u2083 is learned for its grid location. Add matching coordinates to get e\u2086\u2083. All three rows have 192 coordinates; addition does not double the width.",
+    "notes": "After adding position, does this row have 192 coordinates or 384?\nKeep the crop visible. Recall the projection that made c63, then add its learned position row coordinate by coordinate to make e63.",
+    "section": "s02",
+    "frame": 22
+  },
+  {
+    "id": "real-patch-qkv",
+    "title": "Then the block makes queries, keys and values",
+    "caption": "The patch projection made content features from pixels. Inside this block, LayerNorm comes first; three more learned projections produce Q, K and V. This model has 3 heads; we show one head\u2019s shapes.",
+    "notes": "Which projection reads pixels, and which projections read the prepared embedding row?\nTrace the small recap first. Enter the block with e63, normalize it, then split into the three separate learned projections for head one.",
+    "section": "s02",
+    "frame": 23
   },
   {
     "id": "vision-topic-03",

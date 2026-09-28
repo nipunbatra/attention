@@ -3,7 +3,7 @@
     1280,
     720
   ],
-  "teaching_frames": 195,
+  "teaching_frames": 198,
   "cover_frames": 1,
   "review": "The previous 141 final states (140 teaching frames plus cover) passed the full geometry review. All six added implementation frames passed SVG text bounds and collision checks at 1280\u00d7720 and were visually inspected. Phone reading mode was rechecked at 390\u00d7844.",
   "geometry": "No clipped SVG text, text collisions, overflowing captions or code found.",
@@ -749,5 +749,37 @@
       "unchanged_projection": true
     },
     "silent": true
+  },
+  "real_patch_path_review": {
+    "frames": [
+      "s01-rows",
+      "real-patch-projection",
+      "real-patch-position",
+      "real-patch-qkv"
+    ],
+    "presentation_viewports": [
+      [
+        1280,
+        720
+      ],
+      [
+        995,
+        1031
+      ]
+    ],
+    "svg_clipped_text": [],
+    "svg_text_collisions": [],
+    "captions_within_viewport": true,
+    "phone_reading_viewport": [
+      390,
+      844
+    ],
+    "document_width": 390,
+    "document_scroll_width": 390,
+    "mobile_frame_width": 358,
+    "mobile_frame_scroll_width": 358,
+    "visual_review": "Verified highlighted crop and matching model input, projection flow arrows, measured content and position values, first-block LayerNorm and Q/K/V shapes. Fixed heading clearance in Q/K/V diagram.",
+    "numerical_trace": "Checkpoint output, displayed model input, pixel-major Linear/Conv2d equivalence, position sum and first-head Q/K/V slices verified by trace_real_patch.py.",
+    "audio_or_video_played": false
   }
 }

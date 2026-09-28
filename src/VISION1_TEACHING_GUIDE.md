@@ -2,7 +2,7 @@
 
 **Deck:** [vision1.html](../vision1.html) · **Present:** open the deck and press **P** · **Lab:** [03_vision_transformer_lab.ipynb](../notebooks/vision/03_vision_transformer_lab.ipynb)
 
-195 teaching frames plus cover; 14 sections. Silent, self-contained HTML slides with image assets and math embedded. Reading mode includes the longer explanations, source links, and numerical tables. Arrow keys advance one reveal; **S** opens presenter notes; **O** opens the overview; **C** shows classroom controls. Every frame has a question to ask and a note about what to point at.
+198 teaching frames plus cover; 14 sections. Silent, self-contained HTML slides with image assets and math embedded. Reading mode includes the longer explanations, source links, and numerical tables. Arrow keys advance one reveal; **S** opens presenter notes; **O** opens the overview; **C** shows classroom controls. Every frame has a question to ask and a note about what to point at.
 
 ## The teaching thread
 
@@ -32,7 +32,7 @@ Keep the distinction between moving image content among fixed slots and reorderi
 
 ## Suggested pacing
 
-Use three meetings, or teach sections 1–7 first and assign the implementation as a lab. The 195 frames are short steps; the total is not a target for one class. Pause for predictions and hand calculations.
+Use three meetings, or teach sections 1–7 first and assign the implementation as a lab. The 198 frames are short steps; the total is not a target for one class. Pause for predictions and hand calculations.
 
 | Meeting | Sections | Student activity |
 |---|---|---|
@@ -78,7 +78,7 @@ After the ambiguous crop and its face clues, `image-to-rows` recalls the input a
 
 Section 2 keeps the RGB entries grouped by pixel A, B, C and D. Count 2×2×3=12 entries, then compare a text embedding lookup with a computed patch embedding. Use `nn.Linear(12, 2)` for a hand calculation: show all 24 weights and two biases, calculate each coordinate, and collect `[2.5, −0.5]`. There is no activation after this patch layer; the separate block MLP later uses two linear layers with GELU between them.
 
-Reuse the exact same layer on a second patch to get `[0.5, −2.5]`. A single call maps `X` of shape `(2,12)` to `C` of shape `(2,2)`. These two output features are not two class scores. `cᵢ` names the content row of patch i; `eᵢ=cᵢ+pᵢ` adds position before attention. Subscripts identify patches, while D gives the embedding width. The diagram explicitly reconnects c₆/e₆ and c₇/e₇ to the earlier photo crops.
+Reuse the exact same layer on a second patch to get `[0.5, −2.5]`. A single call maps `X` of shape `(2,12)` to `C` of shape `(2,2)`. These two output features are not two class scores. `cᵢ` names the content row of patch i; `eᵢ=cᵢ+pᵢ` adds position before attention. Subscripts identify patches, while D gives the embedding width. The real-photo trace returns to the same dog with the checkpoint’s actual patch grid, then defines each row along its full computational path.
 
 Then scale to the saved real model: 16×16×3=768 input values, `nn.Linear(768,192)`, and 196 rows for a 224×224 input. The row-vector equation uses W shaped `(768,192)`; PyTorch stores the transposed weight `(192,768)`. This is equivalent to the checkpoint's Conv2d patch embedding with the corresponding input order. `figures/vision1/patch-embedding-example.json` contains the independently executed warm-up. The lab contains the same calculation as an editable, executed code cell.
 
@@ -87,6 +87,18 @@ Then scale to the saved real model: 16×16×3=768 input values, `nn.Linear(768,1
 The real-model scale-up now takes five short slides. `patch-real-dimensions` counts 16×16=256 spatial pixels and three RGB channel values per pixel, giving 768 scalar inputs. `patch-one-row-shape` decodes the axes in 1×768: one patch row, 768 values within that row. This 1 is not a batch-size axis. `patch-one-row-projection` keeps the single row but changes its feature width to the chosen D=192. The affine operation includes a bias and no activation.
 
 `projection-size` then computes 224÷16=14 patches in each direction and 14×14=196 patch rows: X is 196×768, C is 196×192. `patch-projection-parameters` separately counts 147,456 weights and 192 biases. All patch embeddings in this model share width 192; this does not mean input and output widths must be equal. The same parameter set is reused for every patch.
+
+## Follow a measured patch from pixels to attention
+
+After the 12-to-2 hand calculation, `s01-rows` returns to the same dog photograph at the checkpoint’s actual input size, 224×224 RGB. Its 14×14 patch grid differs from the opening coarse 4×4 illustration. Follow P63 (row 5, column 7), a 16×16 RGB crop, throughout the new trace; 63 identifies a patch, not an embedding width.
+
+`real-patch-projection` shows the crop, the normalized pixel-major RGB row x₆₃ (1×768), the shared patch projection (768×192 weights and 192 biases), and its measured content output c₆₃ (1×192). The first coordinates come from the pretrained checkpoint, not chosen teaching weights. The script permutes its Conv2d kernel to match the slide’s RGB ordering and checks equality with the checkpoint’s patch embedding.
+
+`real-patch-position` keeps the crop visible while adding c₆₃ + p₆₃ = e₆₃. All three rows remain 1×192. Content depends on the pixels; the learned position row belongs to the grid slot and is shared across images. Displayed coordinates are rounded, so the arithmetic uses an approximation sign. The next section supplies the visual motivation for location information.
+
+`real-patch-qkv` distinguishes the patch projection from the three projections inside attention. In this pre-LN checkpoint, LayerNorm(e₆₃) still has 192 coordinates. For one of three heads, each Q/K/V weight matrix has shape 192×64, each bias has 64 entries, and each resulting row has shape 1×64. Calling e₆₃ the block input avoids silently skipping LayerNorm and Q/K/V. The other patch rows follow the same path; subsequent attention compares queries and keys and mixes values.
+
+Reproduce the saved trace with `uv run --with timm --with pillow python notebooks/vision/trace_real_patch.py`. Full vectors, shapes, model identity, preprocessing and checks are in `figures/vision1/real-patch-path.json`. The script also confirms that the displayed dog image is the exact checkpoint input before normalization.
 
 ## Places to stop and ask
 

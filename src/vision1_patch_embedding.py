@@ -277,25 +277,8 @@ def expand(b, sections):
             ['P1','red, green, blue, white','[2.5, −0.5]'],['P2','blue, blue, green, green','[0.5, −2.5]']])
         +'<p><code>proj = nn.Linear(12, 2)<br>C = proj(X)</code></p><p>(2,12) → (2,2); one shared set of 26 parameters.</p>')
 
-    body=t(35,48,'patch',25,'ink-2')
-    for j,idx in enumerate([5,6]):
-        y=90+j*175
-        marks=crop(35,y,165,110,idx,'embedding-names')+t(118,y+145,'P'+str(idx+1),27,'ink','middle')
-        marks+=arrow(210,y+55,315,y+55)+t(350,y+68,'c'+str(idx+1).translate(str.maketrans('67','₆₇')),37,'c-e')
-        marks+=t(525,y+68,'+ p'+str(idx+1).translate(str.maketrans('67','₆₇')),37,'c-e')+arrow(705,y+55,790,y+55)+t(830,y+68,'e'+str(idx+1).translate(str.maketrans('67','₆₇')),37,'c-e')
-        body+=marks if j==0 else g(marks,1)
-    body+=t(350,48,'content',25,'ink-2')+t(525,48,'position',25,'ink-2')+t(830,48,'input to attention',25,'ink-2')
-    body+=g(t(350,430,'Every cᵢ, pᵢ and eᵢ is a row of D coordinates.',29,'c-e'),2)
-    add('s01-rows','What do c₆ and e₆ refer to?',body,
-        'The subscript names the patch. c₆ is its content embedding; adding its position row p₆ gives e₆, the row that enters attention.',
-        'Does the 6 mean six coordinates, or patch number 6?',
-        'Point to P6 in the original illustration. Follow content plus position to e6, then repeat for P7.',
-        'The earlier 4×4 grid is a coarse illustration with numbered patches. The subscripts 6 and 7 identify locations in that illustration, not embedding widths. '
-        'cᵢ is the content row produced by the shared patch layer; pᵢ is a position row; eᵢ=cᵢ+pᵢ has the same shape (1,D). '
-        'In the tiny RGB warm-up D=2; in our pretrained model D=192. '
-        'This notation matches the text recap: attention receives an embedding plus position. We will calculate position addition in the next section.',
-        mobile_rows(['Patch','Content','Position','Attention input'],[['P6','c₆','p₆','e₆ = c₆ + p₆'],['P7','c₇','p₇','e₇ = c₇ + p₇']])
-        +'<p>Each row has shape (1,D). The subscript is a patch index.</p>')
+    from vision1_real_patch_path import add_real_path
+    add_real_path(b, add)
 
     # Keep the patch size, patch count, and embedding width on separate axes.
     grid=rect(65,90,240,240,'ink-3','transparent',0)
@@ -391,7 +374,7 @@ def expand(b, sections):
         'There are 768×192=147,456 weights and 192 biases, giving 147,648 trainable parameters. '
         'Equivalently, each output has 768+1 parameters and there are 192 outputs. '
         'These parameters are used for each patch; 196 applications do not create 196 parameter sets. '
-        'The next section shrinks to grayscale patches and D=4 so the complete attention calculation fits on the board.',
+        'We next add position and trace the first block’s Q/K/V projections, then motivate position information before shrinking to grayscale patches and D=4.',
         mobile_rows(['Parameter','Count'],[['Weights','768 × 192 = 147,456'],['Biases','192'],['Total','147,648']])
         +'<p>All 196 patch rows reuse this same set of weights and biases.</p>')
 
@@ -403,9 +386,10 @@ def expand(b, sections):
             key=re.search(r'class="frame[^\"]*" id="([^\"]+)"',html).group(1)
             if key=='s01-rows':out.extend(additions[k] for k in new_ids)
             if key=='projection-size':
-                out.extend(additions[k] for k in ['patch-real-dimensions','patch-one-row-shape','patch-one-row-projection'])
+                out.extend(additions[k] for k in ['patch-real-dimensions','patch-one-row-shape','patch-one-row-projection','real-patch-projection'])
             out.append(additions.get(key,html))
             if key=='s01-rows-step-1':out.append(additions['patch-activation-location'])
-            if key=='projection-size':out.append(additions['patch-projection-parameters'])
+            if key=='projection-size':
+                out.extend(additions[k] for k in ['patch-projection-parameters','real-patch-position','real-patch-qkv'])
         result.append((title,out))
     return result
