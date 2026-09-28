@@ -1,5 +1,19 @@
 # Classroom release checks
 
+## 2026-09-28 · Restore the RoPE rotation and sentence-shift visuals
+
+- Replaced the abbreviated Q/K path with the existing non-unit toy vectors
+  rotating on their own circles. One additional slide compares the full short
+  and prefixed sentences and two circle plots. Optional derivations stay optional.
+- `check_cost_position.mjs` passes 53 position frames and 196 build checks.
+  New checks cover vector lengths, rotations, sentence indices, invariant dot
+  products, reveal/reverse navigation and portrait layouts at 995×1031 and
+  760×1041. Projector sizes and 390px reading mode also pass.
+- Final `frame_audit.mjs attention.html`: 362 states, 690 formulas, no runtime,
+  math or overflow failures. `check_metadata.py` passes eight isolated builds.
+- Visually reviewed both slides in landscape and portrait, and corrected the
+  rotation caption’s SVG boundary. Rebuilt both Part II and its reference export.
+
 ## 2026-09-28 · Explain the ALiBi toy numbers
 
 - The existing ALiBi intuition slide labels 2 as an assumed query–key content

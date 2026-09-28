@@ -171,28 +171,6 @@ document.addEventListener('DOMContentLoaded',()=>{
         arrow(s,70+122*i,y+140,70+122*j,y+140,C.q);
         text(s,panel?430:530,y+148,i+' − '+j+' = 1: one token back',C.q,25);
       });
-    }else if(kind==='rope-intuition'){
-      s.setAttribute('viewBox','0 0 1120 300');
-      s.setAttribute('aria-label','Flowers at slot 3 produces a query; red at slot 2 produces a key. Rotate each by its own position, then take their dot product. Shifting both slots by five preserves their gap of one.');
-      s.querySelector('title').textContent=s.getAttribute('aria-label');
-      text(s,20,32,'Maya carries red flowers',C.ink,28);
-      const rows=[{word:'flowers',slot:3,role:'query',color:C.q},{word:'red',slot:2,role:'key',color:C.k}];
-      rows.forEach(({word,slot,role,color},index)=>{
-        const y=90+index*95;
-        text(s,20,y,`${word} · slot ${slot}`,color,26);
-        arrow(s,222,y-8,275,y-8,color);
-        text(s,295,y,`Compute ${role}`,color,26);
-        arrow(s,488,y-8,535,y-8,color);
-        text(s,558,y,`Rotate by slot ${slot}`,color,26);
-        arrow(s,804,y-8,876,137,color);
-      });
-      text(s,900,135,'Dot product',C.a,26);
-      text(s,900,166,'then softmax',C.muted,22);
-      text(s,900,200,'V: no rotation',C.v,22);
-      const reveal=el('g',{'data-build':'1','data-relative-rope-gap':'1'});s.append(reveal);
-      line(reveal,20,221,1090,221);
-      text(reveal,20,263,'Slots 3 and 2 → slots 8 and 7',C.p,27);
-      text(reveal,610,263,'Same gap. Same rotation difference.',C.p,26);
     }else if(kind==='method-comparison'){
       s.setAttribute('viewBox','0 0 1120 400');
       s.setAttribute('aria-label','Side-by-side comparison. Additive positions: look up word rows, add position rows, compute Q K V, score and mix. RoPE: look up word rows, compute Q K V, rotate Q and K by position with V unrotated, score and mix.');

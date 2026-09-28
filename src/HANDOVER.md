@@ -10,6 +10,19 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+2026-09-28 restore RoPE circles and the shifted sentence:
+
+- Supersedes the one-frame RoPE pacing below. `rope-intuition` now shows the
+  existing projected toy vectors rotating on circles of their own lengths.
+  `rope-shift-intuition` follows with the full short and prefixed sentences,
+  two simultaneous circle plots, and the preserved raw dot product. Keep
+  these two classroom slides concise; the full derivation remains optional.
+- Reuse `positionVisuals.ropeExample()` and `shifted()`. The 30-degree rate is
+  illustrative. Fix Q/K content when comparing slots 2/3 with 7/8. The green
+  arcs show the actual angle between vectors, not the difference between the
+  two applied rotations. Do not normalize the vectors or promise unchanged
+  softmax weights after adding context. Position section: 53 classroom frames.
+
 2026-09-28 TinyStories result-metric clarification:
 
 - The existing `s05-cap-scores` slide defines perplexity with an explicit

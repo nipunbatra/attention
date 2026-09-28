@@ -285,6 +285,59 @@ document.addEventListener('DOMContentLoaded',()=>{
       indexedTokens(next,'notebook-after',['Ravi','at','school','home'],[0,1,2,3],410,162,170,150);
     }
   }
+  function rotationArc(s,cx,cy,r,start,angle,color){
+    const point=a=>[cx+r*Math.cos(a),cy-r*Math.sin(a)],a=point(start),b=point(start+angle);
+    s.append(element('path',{d:`M ${a[0]} ${a[1]} A ${r} ${r} 0 ${angle>Math.PI?1:0} 0 ${b[0]} ${b[1]}`,fill:'none',stroke:color,'stroke-width':2}));
+    const tail=point(start+angle-.12);arrow(s,tail[0],tail[1],b[0],b[1],color);
+  }
+  function drawRopeClassroom(s,kind){
+    const toy=ropeExample(),unit=28;
+    const description=kind==='rope-intuition'
+      ?'Maya carries red flowers. Rotate the projected red key [3,0] by 60 degrees and flowers query [2,1] by 90 degrees, keeping their different lengths.'
+      :'Compare Maya carries red flowers with At the park after lunch Maya carries red flowers. Red stays one token before flowers. Both fixed content vectors gain a common 150 degree rotation and keep their dot product.';
+    s.setAttribute('aria-label',description);s.querySelector('title').textContent=description;
+    if(kind==='rope-intuition'){
+      s.setAttribute('viewBox','0 0 1120 357');
+      ropeSentence(s,0);
+      [[0,'red: projected key',2,toy.k,C.k,'k',1],[560,'flowers: projected query',3,toy.q,C.q,'q',2]].forEach(([x,label,slot,input,color,name,build])=>{
+        const rotated=rotate(input,slot*toy.rate),norm=Math.hypot(...input),cx=x+112,cy=225;
+        const g=element('g',{'data-rope-classroom-vector':name,'data-before':JSON.stringify(input),'data-after':JSON.stringify(rotated),'data-slot':slot,'data-radius':norm,'data-pixels-per-unit':unit});s.append(g);
+        text(g,x+20,120,label,color,27);axes(g,cx,cy,norm*unit);
+        const initial=element('g',{'stroke-dasharray':'5 4',opacity:.6});g.append(initial);vector(initial,cx,cy,unit,input,color);
+        text(g,x+224,173,name+' = '+JSON.stringify(input).replace(',',', '),color,28);
+        const after=revealGroup(g,{'data-build':String(build),'data-rope-turn':name});
+        vector(after,cx,cy,unit,rotated,color);
+        rotationArc(after,cx,cy,norm*unit*.65,Math.atan2(input[1],input[0]),slot*toy.rate,color);
+        text(after,x+224,221,slot+' × 30° = '+slot*30+'°',C.d,27);
+        text(after,x+224,273,name+'′ = '+fmt(rotated),color,26);
+      });
+      text(s,20,337,'Dashed: before. Solid: after. Each circle follows its vector’s own length.',C.ink,25);
+    }else{
+      s.setAttribute('viewBox','0 0 1120 438');
+      const original=element('g',{'data-rope-comparison':'0'});s.append(original);
+      text(original,20,40,'Short sentence',C.ink,26);ropeSentence(original,0);
+      text(original,852,60,'3 − 2 = 1 token',C.d,25);
+      const longer=revealGroup(s,{'data-rope-comparison':'5'});
+      text(longer,20,113,'Add five words at the front',C.ink,25);
+      const sentence=element('g',{transform:'translate(0 120)'});longer.append(sentence);ropeSentence(sentence,5);
+      text(longer,20,218,'red stays one token before flowers: 8 − 7 = 1',C.d,25);
+      [[original,0,0],[longer,5,560]].forEach(([g,shift,x])=>{
+        const r=shifted(shift),cx=x+117,cy=320;
+        const plot=element('g',{'data-rope-shift-plot':shift,'data-query':JSON.stringify(r.q),'data-key':JSON.stringify(r.k),'data-dot':r.dot,'data-pixels-per-unit':unit});g.append(plot);
+        axes(plot,cx,cy,3*unit);
+        plot.append(element('circle',{cx,cy,r:Math.sqrt(5)*unit,fill:'none',stroke:C.q,'stroke-opacity':.3,'stroke-width':1.5}));
+        vector(plot,cx,cy,unit,r.q,C.q);vector(plot,cx,cy,unit,r.k,C.k);
+        const start=(2+shift)*toy.rate,angle=Math.atan2(toy.q[1],toy.q[0])+toy.rate;
+        rotationArc(plot,cx,cy,36,start,angle,C.d);
+        text(g,x+235,250,shift?'Both turn 150° more':'Rotations applied',C.ink,26);
+        text(g,x+235,291,'red: '+r.j+' × 30° = '+r.j*30+'°',C.k,26);
+        text(g,x+235,333,'flowers: '+r.i+' × 30° = '+r.i*30+'°',C.q,26);
+        text(g,x+235,386,'Raw dot product: '+r.dot.toFixed(3),C.ink,25);
+      });
+      const takeaway=revealGroup(s,{'data-build':'2','data-relative-rope-gap':'1'});
+      text(takeaway,20,426,'Same angle between the arrows + same lengths = same dot product.',C.d,27);
+    }
+  }
   document.querySelectorAll('[data-position-visual]').forEach(host=>{
     const kind=host.dataset.positionVisual,s=canvas(host,kind+' positional encoding illustration',kind.startsWith('swap')?330:kind==='shift'?310:280);
     if(kind==='swap-rows'){
@@ -337,6 +390,8 @@ document.addEventListener('DOMContentLoaded',()=>{
       drawInsertionPath(s,kind==='rotary-path');
     }else if(kind==='additive-numbers'||kind==='rotary-numbers'){
       drawInsertionNumbers(s,kind==='rotary-numbers');
+    }else if(kind==='rope-intuition'||kind==='rope-shift-intuition'){
+      drawRopeClassroom(s,kind);
     }else if(kind==='rope-queries'){
       ropeSentence(s,0);
       text(s,65,132,'Source: red (j = 2)',C.k,27);

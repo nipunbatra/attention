@@ -17,7 +17,7 @@ const positions=[
   'break','order','permute','scores','swapped','contributions','consequence',
   'addition-break','shift','move-a','move-b','moved','toy','slot-scores','experiment','updated',
   'learned-break','learned','absolute-range','clock-choice','sine-2d','sine-4d','sine-many','clock-why','clock','repeat','sine-rule','rate-examples','worked-sine','waves','period','sine-base','sine-width',
-  'relative-break','relative','alibi-intuition','rope-intuition','method-comparison',
+  'relative-break','relative','alibi-intuition','rope-intuition','rope-shift-intuition','method-comparison',
   'alternatives-break','append','append-qk-a','append-scores','append-softmax','append-values-a',
   'append-qk-b','append-scores-b','append-softmax-b','append-values-b',
   'append-scale-effect','append-scale','append-tradeoffs',
@@ -79,8 +79,8 @@ try{
   await page.setViewportSize({width:1280,height:720});await page.evaluate(()=>document.fonts.ready);
   const original=await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)}));
   assert.deepEqual(await page.locator('.frame.context-lesson').evaluateAll(es=>es.map(e=>e.id)),ids);
-  assert.equal(ids.length,52,'Keep the short relative introduction and one side-by-side method comparison.');
-  assert.deepEqual(ids.slice(ids.indexOf('s17-position-relative-break'),ids.indexOf('s17-position-alternatives-break')),['relative-break','relative','alibi-intuition','rope-intuition','method-comparison'].map(x=>'s17-position-'+x));
+  assert.equal(ids.length,53,'Two concise RoPE visuals and one side-by-side method comparison.');
+  assert.deepEqual(ids.slice(ids.indexOf('s17-position-relative-break'),ids.indexOf('s17-position-alternatives-break')),['relative-break','relative','alibi-intuition','rope-intuition','rope-shift-intuition','method-comparison'].map(x=>'s17-position-'+x));
   assert.equal(await page.locator('.relative-position-details').getAttribute('open'),null,'Detailed derivations are opt-in.');
   assert.equal(await page.locator('.relative-position-details .frame').count(),0,'Optional calculations never become presentation slides.');
   assert.deepEqual(await page.locator('.relative-position-details .position-reading').evaluateAll(es=>es.map(e=>e.id)),relativeReading.map(x=>'s17-position-'+x),'All previous worked examples are preserved.');
@@ -94,7 +94,7 @@ try{
     ['alternatives-break','append','append-qk-a','append-scores','append-softmax','append-values-a','append-qk-b','append-scores-b','append-softmax-b','append-values-b','append-scale-effect','append-scale','append-tradeoffs','width','overview','map-notes'],
     ['learned-break','learned','absolute-range','learned-update','token-ids','window-ids','notebook-ids','clock-choice'],
     ['clock-choice','sine-2d','sine-4d','sine-many','clock-why','clock','repeat','rates','sine-rule','rate-examples','worked-sine','sine','waves','period','sine-base','sine-width','relative-break'],
-    ['relative-break','relative','alibi-intuition','rope-intuition','method-comparison',...relativeReading,'alternatives-break']
+    ['relative-break','relative','alibi-intuition','rope-intuition','rope-shift-intuition','method-comparison',...relativeReading,'alternatives-break']
   ]){
     const expected=run.map(x=>'s17-position-'+x),start=lessonOrder.indexOf(expected[0]);
     assert(start>=0,'Sequence has its starting frame: '+expected[0]);
@@ -103,7 +103,7 @@ try{
   for(const [from,to]of [
     ['updated','learned-break'],['append-tradeoffs','overview'],
     ['learned','absolute-range'],['absolute-range','clock-choice'],['repeat','sine-rule'],['sine-rule','rate-examples'],['rate-examples','worked-sine'],['worked-sine','waves'],
-    ['period','sine-base'],['sine-width','relative-break'],['relative-break','relative'],['relative','alibi-intuition'],['alibi-intuition','rope-intuition'],['rope-intuition','method-comparison'],['method-comparison','alternatives-break']
+    ['period','sine-base'],['sine-width','relative-break'],['relative-break','relative'],['relative','alibi-intuition'],['alibi-intuition','rope-intuition'],['rope-intuition','rope-shift-intuition'],['rope-shift-intuition','method-comparison'],['method-comparison','alternatives-break']
   ]){
     await go('s17-position-'+from);
     await page.evaluate(()=>AT.present.next());
@@ -636,9 +636,30 @@ try{
   assert.match(alibiAssumptions,/this head’s fixed penalty rate: 0.25 per token back/,'Explain the rate rather than implying it is a universal or learned constant.');
   for(const [row,distance]of shortAlibi.map((row,i)=>[row,[1,3][i]]))assert.equal(Number(row[2].split(' = ')[1]),2-0.25*distance,'Subtract the rate times token distance before softmax.');
   for(const [method,paper]of [['alibi','2108.12409'],['rope','2104.09864']])assert.equal(await page.locator('#s17-position-'+method+'-intuition a').getAttribute('href'),'https://arxiv.org/abs/'+paper);
-  for(const build of [0,1,0,1]){
+  const classroomRotations=await page.locator('[data-rope-classroom-vector]').evaluateAll(es=>es.map(e=>({role:e.dataset.ropeClassroomVector,slot:Number(e.dataset.slot),before:JSON.parse(e.dataset.before),after:JSON.parse(e.dataset.after),radius:Number(e.dataset.radius),unit:Number(e.dataset.pixelsPerUnit),circle:Number(e.querySelector('circle').getAttribute('r'))})));
+  assert.equal(classroomRotations.length,2);
+  for(const r of classroomRotations){
+    assert.deepEqual(r.before,toy[r.role],'Restore the same projected toy vectors, not replacement unit vectors.');
+    close(r.radius,Math.hypot(...r.after),'RoPE preserves length.');
+    close(r.circle,r.radius*r.unit,'Circle represents the actual vector length.');
+    const a=r.slot*Math.PI/6,expected=[r.before[0]*Math.cos(a)-r.before[1]*Math.sin(a),r.before[0]*Math.sin(a)+r.before[1]*Math.cos(a)];
+    r.after.forEach((v,j)=>close(v,expected[j],'Displayed classroom rotation'));
+  }
+  for(const build of [0,1,2,1,0,2]){
     await go('s17-position-rope-intuition',build);
-    assert.equal(await page.locator('[data-relative-rope-gap]').evaluate(e=>getComputedStyle(e).visibility),build?'visible':'hidden','Gap takeaway is revealed after the Q/K path.');
+    for(const [role,step]of [['k',1],['q',2]])assert.equal(await page.locator('[data-rope-turn="'+role+'"]').evaluate(e=>getComputedStyle(e).visibility),build>=step?'visible':'hidden','Reveal the two rotations in order, and hide them on reverse traversal.');
+    await go('s17-position-rope-shift-intuition',build);
+    assert.equal(await page.locator('[data-rope-comparison="5"]').evaluate(e=>getComputedStyle(e).visibility),build>=1?'visible':'hidden','Long sentence and its circle appear together.');
+    assert.equal(await page.locator('[data-relative-rope-gap]').evaluate(e=>getComputedStyle(e).visibility),build>=2?'visible':'hidden','Explain the invariant after comparing the two sentences.');
+  }
+  for(const shift of [0,5]){
+    const words=await page.locator('[data-rope-comparison="'+shift+'"] [data-rope-word]').evaluateAll(es=>es.map(e=>({word:e.dataset.ropeWord,position:Number(e.dataset.position)})));
+    assert.deepEqual(words.map(x=>x.word),[...(shift?['At','the','park','after','lunch']:[]),'Maya','carries','red','flowers']);
+    assert.equal(words.find(x=>x.word==='flowers').position-words.find(x=>x.word==='red').position,1);
+    const plot=await page.locator('[data-rope-shift-plot="'+shift+'"]').evaluate(e=>({q:JSON.parse(e.dataset.query),k:JSON.parse(e.dataset.key),dot:Number(e.dataset.dot)}));
+    const expected=expectedRotations[shift?1:0];
+    for(const role of ['q','k'])plot[role].forEach((v,j)=>close(v,expected[role][j],'Short/long sentence arrows'));
+    close(plot.dot,-1.5+3*Math.sqrt(3),'Equal additional rotation preserves raw dot product.');
   }
   // Every authored build must fit; reverse traversal must restore hidden math.
   const comparison=page.locator('#s17-position-method-comparison');
@@ -687,6 +708,14 @@ try{
   await go('s17-position-alibi-intuition');
   assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'ALiBi assumptions and arithmetic fit the annotated portrait viewport.');
   await page.screenshot({path:path.join(shots,'alibi-portrait.png')});
+  for(const viewport of [{width:995,height:1031},{width:760,height:1041}]){
+    await page.setViewportSize(viewport);
+    for(const id of ['rope-intuition','rope-shift-intuition']){
+      await go('s17-position-'+id);
+      assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'Restored '+id+' fits at '+viewport.width);
+      await page.screenshot({path:path.join(shots,id+'-'+viewport.width+'.png')});
+    }
+  }
   await page.evaluate(()=>AT.present.exit());await page.setViewportSize({width:390,height:844});
   await page.locator('.learned-position-details summary').click();
   await page.locator('.relative-position-details').evaluate(e=>{e.open=false;});
@@ -697,5 +726,5 @@ try{
   await page.locator('#s17-position-experiment').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(shots,'reading-phone.png')});
   assert.equal(await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)})),original,'Extensions must not mutate the bank model.');
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({frames:ids.length,buildChecks:states,viewports:['1280×720','1920×1080','1024×768','995×1031 ALiBi','390×844 reading'],checks:'MACs, grids, softmax, word-dot endpoints/reveals, appended-position rows/score terms/scales, e notation, position/context updates, order swap, mean invariance, clock collisions, sinusoid curves, sentence-based relative bias, absolute/rotary shifts, ALiBi, complete map, controls, model immutability',screenshots:shots},null,2));
+  console.log(JSON.stringify({frames:ids.length,buildChecks:states,viewports:['1280×720','1920×1080','1024×768','995×1031 ALiBi/RoPE','760×1041 RoPE','390×844 reading'],checks:'MACs, grids, softmax, word-dot endpoints/reveals, appended-position rows/score terms/scales, e notation, position/context updates, order swap, mean invariance, clock collisions, sinusoid curves, sentence-based relative bias, absolute/rotary shifts, ALiBi, complete map, controls, model immutability',screenshots:shots},null,2));
 }finally{await browser.close();}

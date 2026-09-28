@@ -3423,28 +3423,6 @@ document.addEventListener('DOMContentLoaded',()=>{
         arrow(s,70+122*i,y+140,70+122*j,y+140,C.q);
         text(s,panel?430:530,y+148,i+' − '+j+' = 1: one token back',C.q,25);
       });
-    }else if(kind==='rope-intuition'){
-      s.setAttribute('viewBox','0 0 1120 300');
-      s.setAttribute('aria-label','Flowers at slot 3 produces a query; red at slot 2 produces a key. Rotate each by its own position, then take their dot product. Shifting both slots by five preserves their gap of one.');
-      s.querySelector('title').textContent=s.getAttribute('aria-label');
-      text(s,20,32,'Maya carries red flowers',C.ink,28);
-      const rows=[{word:'flowers',slot:3,role:'query',color:C.q},{word:'red',slot:2,role:'key',color:C.k}];
-      rows.forEach(({word,slot,role,color},index)=>{
-        const y=90+index*95;
-        text(s,20,y,`${word} · slot ${slot}`,color,26);
-        arrow(s,222,y-8,275,y-8,color);
-        text(s,295,y,`Compute ${role}`,color,26);
-        arrow(s,488,y-8,535,y-8,color);
-        text(s,558,y,`Rotate by slot ${slot}`,color,26);
-        arrow(s,804,y-8,876,137,color);
-      });
-      text(s,900,135,'Dot product',C.a,26);
-      text(s,900,166,'then softmax',C.muted,22);
-      text(s,900,200,'V: no rotation',C.v,22);
-      const reveal=el('g',{'data-build':'1','data-relative-rope-gap':'1'});s.append(reveal);
-      line(reveal,20,221,1090,221);
-      text(reveal,20,263,'Slots 3 and 2 → slots 8 and 7',C.p,27);
-      text(reveal,610,263,'Same gap. Same rotation difference.',C.p,26);
     }else if(kind==='method-comparison'){
       s.setAttribute('viewBox','0 0 1120 400');
       s.setAttribute('aria-label','Side-by-side comparison. Additive positions: look up word rows, add position rows, compute Q K V, score and mix. RoPE: look up word rows, compute Q K V, rotate Q and K by position with V unrotated, score and mix.');
@@ -3837,6 +3815,59 @@ document.addEventListener('DOMContentLoaded',()=>{
       indexedTokens(next,'notebook-after',['Ravi','at','school','home'],[0,1,2,3],410,162,170,150);
     }
   }
+  function rotationArc(s,cx,cy,r,start,angle,color){
+    const point=a=>[cx+r*Math.cos(a),cy-r*Math.sin(a)],a=point(start),b=point(start+angle);
+    s.append(element('path',{d:`M ${a[0]} ${a[1]} A ${r} ${r} 0 ${angle>Math.PI?1:0} 0 ${b[0]} ${b[1]}`,fill:'none',stroke:color,'stroke-width':2}));
+    const tail=point(start+angle-.12);arrow(s,tail[0],tail[1],b[0],b[1],color);
+  }
+  function drawRopeClassroom(s,kind){
+    const toy=ropeExample(),unit=28;
+    const description=kind==='rope-intuition'
+      ?'Maya carries red flowers. Rotate the projected red key [3,0] by 60 degrees and flowers query [2,1] by 90 degrees, keeping their different lengths.'
+      :'Compare Maya carries red flowers with At the park after lunch Maya carries red flowers. Red stays one token before flowers. Both fixed content vectors gain a common 150 degree rotation and keep their dot product.';
+    s.setAttribute('aria-label',description);s.querySelector('title').textContent=description;
+    if(kind==='rope-intuition'){
+      s.setAttribute('viewBox','0 0 1120 357');
+      ropeSentence(s,0);
+      [[0,'red: projected key',2,toy.k,C.k,'k',1],[560,'flowers: projected query',3,toy.q,C.q,'q',2]].forEach(([x,label,slot,input,color,name,build])=>{
+        const rotated=rotate(input,slot*toy.rate),norm=Math.hypot(...input),cx=x+112,cy=225;
+        const g=element('g',{'data-rope-classroom-vector':name,'data-before':JSON.stringify(input),'data-after':JSON.stringify(rotated),'data-slot':slot,'data-radius':norm,'data-pixels-per-unit':unit});s.append(g);
+        text(g,x+20,120,label,color,27);axes(g,cx,cy,norm*unit);
+        const initial=element('g',{'stroke-dasharray':'5 4',opacity:.6});g.append(initial);vector(initial,cx,cy,unit,input,color);
+        text(g,x+224,173,name+' = '+JSON.stringify(input).replace(',',', '),color,28);
+        const after=revealGroup(g,{'data-build':String(build),'data-rope-turn':name});
+        vector(after,cx,cy,unit,rotated,color);
+        rotationArc(after,cx,cy,norm*unit*.65,Math.atan2(input[1],input[0]),slot*toy.rate,color);
+        text(after,x+224,221,slot+' × 30° = '+slot*30+'°',C.d,27);
+        text(after,x+224,273,name+'′ = '+fmt(rotated),color,26);
+      });
+      text(s,20,337,'Dashed: before. Solid: after. Each circle follows its vector’s own length.',C.ink,25);
+    }else{
+      s.setAttribute('viewBox','0 0 1120 438');
+      const original=element('g',{'data-rope-comparison':'0'});s.append(original);
+      text(original,20,40,'Short sentence',C.ink,26);ropeSentence(original,0);
+      text(original,852,60,'3 − 2 = 1 token',C.d,25);
+      const longer=revealGroup(s,{'data-rope-comparison':'5'});
+      text(longer,20,113,'Add five words at the front',C.ink,25);
+      const sentence=element('g',{transform:'translate(0 120)'});longer.append(sentence);ropeSentence(sentence,5);
+      text(longer,20,218,'red stays one token before flowers: 8 − 7 = 1',C.d,25);
+      [[original,0,0],[longer,5,560]].forEach(([g,shift,x])=>{
+        const r=shifted(shift),cx=x+117,cy=320;
+        const plot=element('g',{'data-rope-shift-plot':shift,'data-query':JSON.stringify(r.q),'data-key':JSON.stringify(r.k),'data-dot':r.dot,'data-pixels-per-unit':unit});g.append(plot);
+        axes(plot,cx,cy,3*unit);
+        plot.append(element('circle',{cx,cy,r:Math.sqrt(5)*unit,fill:'none',stroke:C.q,'stroke-opacity':.3,'stroke-width':1.5}));
+        vector(plot,cx,cy,unit,r.q,C.q);vector(plot,cx,cy,unit,r.k,C.k);
+        const start=(2+shift)*toy.rate,angle=Math.atan2(toy.q[1],toy.q[0])+toy.rate;
+        rotationArc(plot,cx,cy,36,start,angle,C.d);
+        text(g,x+235,250,shift?'Both turn 150° more':'Rotations applied',C.ink,26);
+        text(g,x+235,291,'red: '+r.j+' × 30° = '+r.j*30+'°',C.k,26);
+        text(g,x+235,333,'flowers: '+r.i+' × 30° = '+r.i*30+'°',C.q,26);
+        text(g,x+235,386,'Raw dot product: '+r.dot.toFixed(3),C.ink,25);
+      });
+      const takeaway=revealGroup(s,{'data-build':'2','data-relative-rope-gap':'1'});
+      text(takeaway,20,426,'Same angle between the arrows + same lengths = same dot product.',C.d,27);
+    }
+  }
   document.querySelectorAll('[data-position-visual]').forEach(host=>{
     const kind=host.dataset.positionVisual,s=canvas(host,kind+' positional encoding illustration',kind.startsWith('swap')?330:kind==='shift'?310:280);
     if(kind==='swap-rows'){
@@ -3889,6 +3920,8 @@ document.addEventListener('DOMContentLoaded',()=>{
       drawInsertionPath(s,kind==='rotary-path');
     }else if(kind==='additive-numbers'||kind==='rotary-numbers'){
       drawInsertionNumbers(s,kind==='rotary-numbers');
+    }else if(kind==='rope-intuition'||kind==='rope-shift-intuition'){
+      drawRopeClassroom(s,kind);
     }else if(kind==='rope-queries'){
       ropeSentence(s,0);
       text(s,65,132,'Source: red (j = 2)',C.k,27);
@@ -12698,6 +12731,9 @@ body:not(.present) .position-lesson pre{max-width:100%;min-width:0;overflow-x:au
 #s17-position-rope-shift .lesson-key{margin:12px 0}
 .position-credit{font-size:22px;line-height:1.5;margin-top:36px;color:var(--ink-2)}
 .position-credit a{color:inherit;text-decoration:underline;text-underline-offset:4px}
+.rope-classroom .position-visual svg{max-height:none}
+.rope-classroom .position-credit{margin-top:14px}
+body.present .rope-classroom p{font-size:24px;line-height:1.35;margin:12px 0}
 .position-worked .worked-scroll{max-width:100%;overflow-x:auto}
 .position-worked .worked-table{width:100%;border-collapse:collapse;table-layout:fixed;margin:18px 0}
 .position-worked .worked-table th,.position-worked .worked-table td{font-size:24px;line-height:1.3;padding:11px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
@@ -13127,7 +13163,7 @@ Hold b at 10000 and derive each row using omega_r=b^(-2r/d). Width two gives onl
 
 <div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-relative-break" data-title="Relative positions" data-autobuild="off">
 <script type="text/x-notes">Would a useful word relationship disappear if we added a few words at the start?
-Point to the contrast between a numbered slot and a gap. This is a short conceptual introduction, not an implementation lesson. The next drawing makes the distinction concrete with red and flowers. Learned and sinusoidal absolute encodings can learn relative cues too; relative methods build the gap into the attention calculation. Spend only one frame each on ALiBi and RoPE. The optional reading preserves the detailed examples without requiring them for the lecture.</script>
+Point to the contrast between a numbered slot and a gap. This is a short conceptual introduction, not an implementation lesson. The next drawing makes the distinction concrete with red and flowers. Learned and sinusoidal absolute encodings can learn relative cues too; relative methods build the gap into the attention calculation. Use one ALiBi frame and two RoPE visuals: rotation, then a common shift. The optional reading preserves the detailed examples without requiring them for the lecture.</script>
 <h3>Relative positions</h3>
 <p class="topic-recap">Absolute: “Which slot am I in?”</p>
 <p class="topic-question">Relative: “How far away is the word I am reading?”</p>
@@ -13151,12 +13187,20 @@ Point to red one token back, then Maya three tokens back in Maya carries red flo
 <p class="position-credit"><a href="https://arxiv.org/abs/2108.12409" target="_blank" rel="noopener noreferrer">ALiBi paper · Press, Smith &amp; Lewis (2022)</a></p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-rope-intuition" data-title="RoPE: let the gap change the match" data-autobuild="off">
-<script type="text/x-notes">Can position change how two words match without adding a position row to their embeddings?
-Trace flowers' query and red's key, from learned projections to slot-dependent rotations and then a dot product. Queries describe what a receiver looks for; keys describe what a source offers for matching. Rotate pairs of their actual coordinates, not replacement unit vectors. The diagram is a computation path, not a geometric plot of the vectors. Different coordinate pairs use different fixed rates. When both indices shift equally, their rotation difference stays the same. For fixed content vectors, the explicit positional effect on the dot product depends on the gap, not their common starting position. Actual contextual vectors and softmax weights can change when a prefix is added; do not promise identical predictions. Standard RoPE leaves V unrotated. Embeddings and projection weights still learn. ALiBi changes scores with a bias; RoPE changes Q and K before scoring. These are alternative mechanisms, not extra mandatory stages. Stop at this idea: derivations and numeric rotations are optional reading. The notebook continues to use learned additive positions. Source: Su et al., RoFormer, https://arxiv.org/abs/2104.09864.</script>
-<div class="position-journey" data-position-journey="rope-intuition"></div>
-<p data-build="1">For fixed Q/K content, the <strong>gap</strong>—not the starting slot—sets the positional effect on their match.</p>
+<div class="frame context-lesson position-lesson rope-classroom" id="s17-position-rope-intuition" data-title="RoPE: rotate the query and key" data-autobuild="off">
+<script type="text/x-notes">How does a token’s slot change its query or key?
+Point to red’s key and flowers’ query in Maya carries red flowers, with zero-based slots 2 and 3. Show one coordinate pair. These projected vectors come from the optional hand-chosen example, not a trained checkpoint: e_red=[1,0], W_K=[[3,0],[0,2]], k=[3,0]; e_flowers=[0,1], W_Q=[[0,1],[2,1]], q=[2,1]. The embeddings and projections learn in a trained model. Reveal the key rotation first, then the query rotation. The illustrative rate is 30 degrees per slot; actual RoPE uses different fixed rates for different coordinate pairs. Rotate the actual vectors without normalizing them. Dashed arrows show the inputs and solid arrows the outputs. The circles trace each vector’s own length, 3 and sqrt(5), with identical plotting scales. Query rotation 90 degrees means turn its existing direction by 90 degrees; it does not mean its final direction is 90 degrees. Now compute the rotated query-key dot product, scale it, and softmax over all allowed keys to obtain weights for mixing unrotated V. The next slide isolates why a common shift preserves this pair’s positional match. Source: Su et al., RoFormer, section 3.2, https://arxiv.org/abs/2104.09864.</script>
+<p>One Q/K coordinate pair. <strong>Toy projected vectors</strong> and a teaching rate of <strong>30° per slot</strong>.</p>
+<div class="position-visual" data-position-visual="rope-intuition"></div>
+<p data-build="2">Then take the rotated Q/K dot product, scale and softmax. Use the weights to mix <strong>unrotated V</strong>.</p>
 <p class="position-credit"><a href="https://arxiv.org/abs/2104.09864" target="_blank" rel="noopener noreferrer">RoPE paper · Su et al., RoFormer (2021)</a></p>
+</div>
+
+<div class="frame context-lesson position-lesson rope-classroom" id="s17-position-rope-shift-intuition" data-title="A longer sentence, the same relative gap" data-autobuild="off">
+<script type="text/x-notes">What changes when we add At the park after lunch?
+Keep the same projected content vectors q=[2,1] and k=[3,0]. The full sentences are Maya carries red flowers and At the park after lunch Maya carries red flowers. Reveal the longer sentence and its matching circle plot together. red moves from slot 2 to 7 and flowers moves from slot 3 to 8, so their backward gap stays exactly one token. Each vector gains the same extra 5 times 30 = 150 degree rotation. Their radii and the angle between them stay unchanged, preserving the raw dot product -1.5+3sqrt(3)=3.696152... and scaled score 2.614. The green arcs mark the actual angle between vectors, approximately 56.565 degrees. This is not the 30 degree difference between their applied rotations because q and k had different initial directions. Reveal the takeaway: RoPE lets a learned content-and-gap matching pattern apply at different starting slots. This is built into the rotations rather than learned separately for each slot. The comparison holds content vectors fixed. A real prefix can change contextual vectors and adds possible sources to softmax, so attention weights and predictions need not stay the same. Avoid promising arbitrary length extrapolation. Source: Su et al., RoFormer, section 3.2, https://arxiv.org/abs/2104.09864.</script>
+<div class="position-visual" data-position-visual="rope-shift-intuition"></div>
+<p>Hold Q/K content fixed. <span data-build="2">Reuse the same gap pattern at different slots. A real prefix can still change attention weights.</span></p>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-method-comparison" data-title="Addition and RoPE: where position enters" data-autobuild="off">

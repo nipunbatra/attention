@@ -53,6 +53,9 @@ body:not(.present) .position-lesson pre{max-width:100%;min-width:0;overflow-x:au
 #s17-position-rope-shift .lesson-key{margin:12px 0}
 .position-credit{font-size:22px;line-height:1.5;margin-top:36px;color:var(--ink-2)}
 .position-credit a{color:inherit;text-decoration:underline;text-underline-offset:4px}
+.rope-classroom .position-visual svg{max-height:none}
+.rope-classroom .position-credit{margin-top:14px}
+body.present .rope-classroom p{font-size:24px;line-height:1.35;margin:12px 0}
 .position-worked .worked-scroll{max-width:100%;overflow-x:auto}
 .position-worked .worked-table{width:100%;border-collapse:collapse;table-layout:fixed;margin:18px 0}
 .position-worked .worked-table th,.position-worked .worked-table td{font-size:24px;line-height:1.3;padding:11px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
@@ -482,7 +485,7 @@ Hold b at 10000 and derive each row using omega_r=b^(-2r/d). Width two gives onl
 
 <div class="frame lecture-topic-break topic-midpoint context-lesson position-lesson" id="s17-position-relative-break" data-title="Relative positions" data-autobuild="off">
 <script type="text/x-notes">Would a useful word relationship disappear if we added a few words at the start?
-Point to the contrast between a numbered slot and a gap. This is a short conceptual introduction, not an implementation lesson. The next drawing makes the distinction concrete with red and flowers. Learned and sinusoidal absolute encodings can learn relative cues too; relative methods build the gap into the attention calculation. Spend only one frame each on ALiBi and RoPE. The optional reading preserves the detailed examples without requiring them for the lecture.</script>
+Point to the contrast between a numbered slot and a gap. This is a short conceptual introduction, not an implementation lesson. The next drawing makes the distinction concrete with red and flowers. Learned and sinusoidal absolute encodings can learn relative cues too; relative methods build the gap into the attention calculation. Use one ALiBi frame and two RoPE visuals: rotation, then a common shift. The optional reading preserves the detailed examples without requiring them for the lecture.</script>
 <h3>Relative positions</h3>
 <p class="topic-recap">Absolute: “Which slot am I in?”</p>
 <p class="topic-question">Relative: “How far away is the word I am reading?”</p>
@@ -506,12 +509,20 @@ Point to red one token back, then Maya three tokens back in Maya carries red flo
 <p class="position-credit"><a href="https://arxiv.org/abs/2108.12409" target="_blank" rel="noopener noreferrer">ALiBi paper · Press, Smith &amp; Lewis (2022)</a></p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-rope-intuition" data-title="RoPE: let the gap change the match" data-autobuild="off">
-<script type="text/x-notes">Can position change how two words match without adding a position row to their embeddings?
-Trace flowers' query and red's key, from learned projections to slot-dependent rotations and then a dot product. Queries describe what a receiver looks for; keys describe what a source offers for matching. Rotate pairs of their actual coordinates, not replacement unit vectors. The diagram is a computation path, not a geometric plot of the vectors. Different coordinate pairs use different fixed rates. When both indices shift equally, their rotation difference stays the same. For fixed content vectors, the explicit positional effect on the dot product depends on the gap, not their common starting position. Actual contextual vectors and softmax weights can change when a prefix is added; do not promise identical predictions. Standard RoPE leaves V unrotated. Embeddings and projection weights still learn. ALiBi changes scores with a bias; RoPE changes Q and K before scoring. These are alternative mechanisms, not extra mandatory stages. Stop at this idea: derivations and numeric rotations are optional reading. The notebook continues to use learned additive positions. Source: Su et al., RoFormer, https://arxiv.org/abs/2104.09864.</script>
-<div class="position-journey" data-position-journey="rope-intuition"></div>
-<p data-build="1">For fixed Q/K content, the <strong>gap</strong>—not the starting slot—sets the positional effect on their match.</p>
+<div class="frame context-lesson position-lesson rope-classroom" id="s17-position-rope-intuition" data-title="RoPE: rotate the query and key" data-autobuild="off">
+<script type="text/x-notes">How does a token’s slot change its query or key?
+Point to red’s key and flowers’ query in Maya carries red flowers, with zero-based slots 2 and 3. Show one coordinate pair. These projected vectors come from the optional hand-chosen example, not a trained checkpoint: e_red=[1,0], W_K=[[3,0],[0,2]], k=[3,0]; e_flowers=[0,1], W_Q=[[0,1],[2,1]], q=[2,1]. The embeddings and projections learn in a trained model. Reveal the key rotation first, then the query rotation. The illustrative rate is 30 degrees per slot; actual RoPE uses different fixed rates for different coordinate pairs. Rotate the actual vectors without normalizing them. Dashed arrows show the inputs and solid arrows the outputs. The circles trace each vector’s own length, 3 and sqrt(5), with identical plotting scales. Query rotation 90 degrees means turn its existing direction by 90 degrees; it does not mean its final direction is 90 degrees. Now compute the rotated query-key dot product, scale it, and softmax over all allowed keys to obtain weights for mixing unrotated V. The next slide isolates why a common shift preserves this pair’s positional match. Source: Su et al., RoFormer, section 3.2, https://arxiv.org/abs/2104.09864.</script>
+<p>One Q/K coordinate pair. <strong>Toy projected vectors</strong> and a teaching rate of <strong>30° per slot</strong>.</p>
+<div class="position-visual" data-position-visual="rope-intuition"></div>
+<p data-build="2">Then take the rotated Q/K dot product, scale and softmax. Use the weights to mix <strong>unrotated V</strong>.</p>
 <p class="position-credit"><a href="https://arxiv.org/abs/2104.09864" target="_blank" rel="noopener noreferrer">RoPE paper · Su et al., RoFormer (2021)</a></p>
+</div>
+
+<div class="frame context-lesson position-lesson rope-classroom" id="s17-position-rope-shift-intuition" data-title="A longer sentence, the same relative gap" data-autobuild="off">
+<script type="text/x-notes">What changes when we add At the park after lunch?
+Keep the same projected content vectors q=[2,1] and k=[3,0]. The full sentences are Maya carries red flowers and At the park after lunch Maya carries red flowers. Reveal the longer sentence and its matching circle plot together. red moves from slot 2 to 7 and flowers moves from slot 3 to 8, so their backward gap stays exactly one token. Each vector gains the same extra 5 times 30 = 150 degree rotation. Their radii and the angle between them stay unchanged, preserving the raw dot product -1.5+3sqrt(3)=3.696152... and scaled score 2.614. The green arcs mark the actual angle between vectors, approximately 56.565 degrees. This is not the 30 degree difference between their applied rotations because q and k had different initial directions. Reveal the takeaway: RoPE lets a learned content-and-gap matching pattern apply at different starting slots. This is built into the rotations rather than learned separately for each slot. The comparison holds content vectors fixed. A real prefix can change contextual vectors and adds possible sources to softmax, so attention weights and predictions need not stay the same. Avoid promising arbitrary length extrapolation. Source: Su et al., RoFormer, section 3.2, https://arxiv.org/abs/2104.09864.</script>
+<div class="position-visual" data-position-visual="rope-shift-intuition"></div>
+<p>Hold Q/K content fixed. <span data-build="2">Reuse the same gap pattern at different slots. A real prefix can still change attention weights.</span></p>
 </div>
 
 <div class="frame context-lesson position-lesson" id="s17-position-method-comparison" data-title="Addition and RoPE: where position enters" data-autobuild="off">
