@@ -113,11 +113,27 @@
   },
   {
     "id": "patch-context",
-    "title": "Is this dark region fur or background?",
-    "caption": "Face clues could make a dark crop easier to interpret. The final prediction is one label for the whole image.",
-    "notes": "Does this dark crop alone tell us whether the photograph contains a dog or a cat?\nReveal the eye and face crops. Ask what they add, then return to the whole-image classification task.",
+    "title": "What can the face tell this dark patch?",
+    "caption": "We want one image label. Face context can help interpret the dark texture and make its patch representation more useful for that prediction.",
+    "notes": "Could nearby face information help us interpret the dark texture as animal fur?\nStart at the dark receiver. Reveal the face source, then trace its information box all the way to the receiver\u2019s numbers.",
     "section": "s01",
     "frame": 15
+  },
+  {
+    "id": "patch-context-weights",
+    "title": "Should every source contribute equally?",
+    "caption": "Here, face clues could help more than branches. Attention weights control how much each source contributes to the message.",
+    "notes": "For this dark receiver, which source would you expect to be more useful: the face or the branches?\nKeep the receiver fixed. Reveal the second source, then compare the thick and thin arrows ending on the same receiver row.",
+    "section": "s01",
+    "frame": 16
+  },
+  {
+    "id": "patch-context-update",
+    "title": "What changes when the patch gets context?",
+    "caption": "Attention supplies a weighted message. The block adds it to the patch row; later layers use the updated rows to predict one image label.",
+    "notes": "Are we changing the photo, assigning a fur label to this crop, or updating its numerical representation?\nPoint to the unchanged pixels, then follow the current row and context message into the plus sign. End at the updated row.",
+    "section": "s01",
+    "frame": 17
   },
   {
     "id": "image-to-rows",
@@ -125,7 +141,7 @@
     "caption": "Attention works on rows of numbers. Next, we choose image patches and turn their pixels into those rows.",
     "notes": "In the text lessons, what did attention receive as its input?\nKeep the photograph visible. Reveal its pieces, one row per piece, then the familiar attention operation.",
     "section": "s01",
-    "frame": 16
+    "frame": 18
   },
   {
     "id": "s01-patches",

@@ -3,7 +3,7 @@
     1280,
     720
   ],
-  "teaching_frames": 152,
+  "teaching_frames": 154,
   "cover_frames": 1,
   "review": "The previous 141 final states (140 teaching frames plus cover) passed the full geometry review. All six added implementation frames passed SVG text bounds and collision checks at 1280\u00d7720 and were visually inspected. Phone reading mode was rechecked at 390\u00d7844.",
   "geometry": "No clipped SVG text, text collisions, overflowing captions or code found.",
@@ -223,6 +223,44 @@
     "phone_visual_check": "Photo and four task/output rows are readable without horizontal overflow.",
     "keyboard_transition": "photo-search \u2192 task-image-label",
     "sequence": "Explicit overview, classification, detection, captioning, image\u2013text retrieval, then this lecture\u2019s classification focus and the text comparison.",
+    "notebook_code_cells": 19
+  },
+  "patch_context_sequence_review": {
+    "date": "2026-09-28",
+    "supersedes": "context_motivation_review",
+    "viewport": [
+      1280,
+      720
+    ],
+    "visual_samples": [
+      "patch-context",
+      "patch-context-weights",
+      "patch-context-update"
+    ],
+    "geometry": {
+      "patch-context": {
+        "clipped": [],
+        "collisions": []
+      },
+      "patch-context-weights": {
+        "clipped": [],
+        "collisions": []
+      },
+      "patch-context-update": {
+        "clipped": [],
+        "collisions": []
+      }
+    },
+    "arrow_check": "Source arrows start on source-information boxes and terminate on the receiver row. Update arrows meet the addition node and output row boundaries.",
+    "scope": "Illustrative source contributions; unchanged image pixels; one final image label. Query/key/value arithmetic comes later.",
+    "phone_viewport": [
+      390,
+      844
+    ],
+    "document_width": 390,
+    "document_scroll_width": 390,
+    "mobile_alternatives": true,
+    "keyboard_transition": "patch-context-update \u2192 image-to-rows",
     "notebook_code_cells": 19
   }
 }

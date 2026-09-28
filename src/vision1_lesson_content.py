@@ -49,16 +49,74 @@ def build_full(b):
         'What stays the same when the input is a photograph?','Point to representation, contextual reading, and multiple head messages in the earlier examples.',
         '<p><a href="part1.html">Part I</a> built a character predictor: embeddings, scores, probabilities, loss and learning. <a href="attention.html">Part II</a> gave “bank” a contextual representation. <a href="part3.html">Part III</a> let “coat” read multiple kinds of information. We reuse their row-vector notation, seven colours, and calculation sequence.</p>')
 
-    body=t(35,45,'Task: classify the whole photo as dog or cat.',30,'c-e')
-    body+=crop(35,110,290,193,9,'query')+t(180,345,'fur, shadow, background?',25,'c-q','middle')
-    clues=crop(625,105,205,137,5,'context-left')+crop(865,105,205,137,6,'context-right')
-    clues+=t(850,285,'eye and face clues',29,'c-k','middle')
-    clues+=arrow(730,305,345,265,'c-v')+arrow(970,305,345,280,'c-v')
-    body+=g(clues,1)
-    body+=g(t(35,425,'With context: this dark texture could be animal fur.',32,'c-v'),2)
-    add('patch-context','Is this dark region fur or background?',body,'Face clues could make a dark crop easier to interpret. The final prediction is one label for the whole image.',
-        'Does this dark crop alone tell us whether the photograph contains a dog or a cat?','Reveal the eye and face crops. Ask what they add, then return to the whole-image classification task.',
-        'Our supervised task is to classify the whole photograph, for example as dog or cat. The isolated dark crop could look like fur, shadow or background. Nearby eye and face structure makes an animal-fur interpretation more plausible; it does not by itself establish the species. Attention can combine numerical features from other regions with this crop’s features, giving later layers richer information for the image label. Like “bank” after reading “river” in Part II, the local representation can change with context. The pixels stay fixed. This is a human motivation for useful context, not measured attention or a guaranteed interpretation of a learned head. Training supplies an image label, not fur/eye labels for individual patches.')
+    # Connect source information to the receiving numerical row, not to empty space
+    # below the photographs. Reuse the same positions across the first two frames.
+    def context_source(index,y,label,features,uid):
+        return (t(35,y-25,label,28,'c-k')+crop(35,y,180,120,index,uid)
+                +arrow(215,y+60,245,y+60,'ink-3')
+                +rect(250,y+30,250,60,'c-v','t-v').replace('var(--t-v)','var(--t-v,#D9F2EF)')
+                +t(375,y+70,features,26,'c-v','middle'))
+    receiver=(t(825,40,'receiver: dark patch',28,'c-q')
+              +crop(825,65,270,180,9,'context-receiver')
+              +t(960,282,'fur, shadow, background?',23,'c-q','middle')
+              +arrow(960,292,960,325,'ink-3')
+              +rect(825,325,270,60,'c-q','t-q')
+              +t(960,365,'patch numbers',29,'c-q','middle'))
+    face=context_source(6,65,'source: face','face information','context-face')
+    branches=context_source(0,270,'source: branches','branch information','context-branches')
+    face_arrow=arrow(500,125,825,345,'c-v')
+    branch_arrow=arrow(500,330,825,365,'c-v')
+    body=receiver+g(face,1)+g(face_arrow+t(640,155,'send clues',27,'c-v','middle'),2)
+    add('patch-context','What can the face tell this dark patch?',body,
+        'We want one image label. Face context can help interpret the dark texture and make its patch representation more useful for that prediction.',
+        'Could nearby face information help us interpret the dark texture as animal fur?',
+        'Start at the dark receiver. Reveal the face source, then trace its information box all the way to the receiver’s numbers.',
+        'Our task is still to predict one label for the whole image. We are looking inside that computation at one patch. '
+        'By itself the dark crop could suggest fur, shadow or background. Face information could help later layers interpret it. '
+        'The small arrows from each photograph to its information box stand for representing pixels as numbers. '
+        'The long arrow shows the direction of information flow: from a source patch into the receiving patch representation. '
+        'It does not move the source pixels into the receiver. This is an illustration of useful context, not measured attention. '
+        'The names describe visual clues for students; they are not labels attached to learned vector coordinates. '
+        'As with bank reading river in Part II, context can make a local representation more useful.',
+        '<p><strong>Receiver:</strong> this dark crop is ambiguous.</p><svg viewBox="0 0 270 180" role="img" aria-label="Dark receiver crop">'+crop(0,0,270,180,9,'mobile-receiver')+'</svg>'
+        '<p><strong>Source:</strong> a face patch elsewhere in the same image.</p><svg viewBox="0 0 270 180" role="img" aria-label="Face source crop">'+crop(0,0,270,180,6,'mobile-face')+'</svg>'
+        '<p>Face information → the dark patch’s numbers. Context arrives; the original pixels stay fixed.</p>')
+    body=receiver+face+g(branches,1)
+    body+=g(face_arrow.replace('stroke-width="2.5"','stroke-width="6"')+branch_arrow
+            +t(665,170,'larger share',26,'c-v','middle')+t(665,420,'smaller share',26,'c-v','middle'),2)
+    body+=t(570,40,'Illustrative shares',22,'ink-2')
+    add('patch-context-weights','Should every source contribute equally?',body,
+        'Here, face clues could help more than branches. Attention weights control how much each source contributes to the message.',
+        'For this dark receiver, which source would you expect to be more useful: the face or the branches?',
+        'Keep the receiver fixed. Reveal the second source, then compare the thick and thin arrows ending on the same receiver row.',
+        'Different source patches can contribute different amounts of information. The thick and thin arrows illustrate a possible preference for face clues '
+        'when interpreting the dark crop. They are not attention weights measured from this photograph, and the model does not have a rule saying faces always matter more. '
+        'Learned query and key projections determine weights for the current receiver and input. The weights combine the source value vectors into a message. '
+        'All image patches, including the receiver itself, can be sources in full self-attention; only two sources are drawn here. '
+        'We will calculate weights and messages in the worked example after constructing patch rows.',
+        '<p>The receiver is the same dark patch.</p>'+mobile_rows(['Source','Illustrative contribution'],[
+            ['Face patch','Larger share of the message'],['Branches','Smaller share of the message']])
+        +'<p>Attention learns the weights. These shares illustrate the idea; they are not measured results.</p>')
+    body=crop(35,50,300,200,9,'context-update')+t(185,280,'same pixels',27,'c-q','middle')
+    body+=arrow(185,292,185,325,'ink-3')+rect(35,325,300,60,'c-q','t-q')+t(185,365,'current patch row',27,'c-q','middle')
+    body+=g(rect(400,90,340,65,'c-v','t-v').replace('var(--t-v)','var(--t-v,#D9F2EF)')+t(570,132,'weighted context',31,'c-v','middle')
+            +arrow(570,155,570,331,'c-v'),1)
+    body+=g(arrow(335,355,546,355,'c-q')
+            +'<circle cx="570" cy="355" r="24" fill="none" stroke="var(--ink)" stroke-width="2"/>'
+            +t(570,367,'+',42,'ink','middle')
+            +arrow(594,355,845,355,'c-v')+rect(845,325,285,60,'c-q','t-q')
+            +t(987,365,'updated patch row',26,'c-q','middle'),2)
+    add('patch-context-update','What changes when the patch gets context?',body,
+        'Attention supplies a weighted message. The block adds it to the patch row; later layers use the updated rows to predict one image label.',
+        'Are we changing the photo, assigning a fur label to this crop, or updating its numerical representation?',
+        'Point to the unchanged pixels, then follow the current row and context message into the plus sign. End at the updated row.',
+        'This previews the attention update with its residual connection. Attention mixes information from source rows, and the block adds the resulting message '
+        '(after the attention output projection) to the receiver’s existing row. The photograph remains unchanged. '
+        'We have drawn one receiver; other patch rows can receive their own messages too. The later classification readout produces one label for the image. '
+        'Training here supplies image labels, not fur or eye labels for individual patches. '
+        'Next we build the numerical rows from pixels, then return to the exact attention calculation.',
+        '<p>The dark crop’s pixels stay unchanged.</p><p><strong>Current patch row + weighted context → updated patch row.</strong></p>'
+        '<p>Later layers use the updated rows to predict one label for the whole image.</p>')
 
     # PATCHIFY AND A REAL RGB CALCULATION.
     rgb=[['255','0','0'],['0','255','0'],['0','0','255'],['255','255','255']]
@@ -436,7 +494,7 @@ optimizer.step()''',t(30,65,'image + known label',26,'c-e')+arrow(180,92,180,160
     # Put the new figures into one deliberate lecture sequence.
     e=extras
     sections=[
-      ('What clues let us recognize the animal?',[groups[1][0],groups[1][1],e['bridge-text'],e['patch-context'],e['cnn-context']]),
+      ('What clues let us recognize the animal?',[groups[1][0],groups[1][1],e['bridge-text'],e['patch-context'],e['patch-context-weights'],e['patch-context-update'],e['cnn-context']]),
       ('How does a photograph become a sequence?',[groups[1][2],e['rgb-flatten'],groups[1][3],e['projection-size']]),
       ('Can the same patches make different images?',[groups[2][0],e['position-question'],groups[2][1],e['patch-matrix'],groups[2][2]]),
       ('What should the summary row read?',[e['why-cls'],e['image-mask'],e['heads-question'],e['all-qkv'],groups[3][0],groups[3][1],groups[3][2],e['weight-message']]),

@@ -1,6 +1,6 @@
 # Vision I: slide map
 
-152 teaching frames plus the cover. Each link opens the first reveal of that slide. Use Right/Left for reveals and S for presenter notes.
+154 teaching frames plus the cover. Each link opens the first reveal of that slide. Use Right/Left for reveals and S for presenter notes.
 
 ## Review these additions first
 
@@ -44,6 +44,12 @@
 - [Image–text search: find a matching photo](https://nipunbatra.github.io/attention/vision1.html?present#s01/9/0)
 - [Our task today: classify the whole image](https://nipunbatra.github.io/attention/vision1.html?present#s01/10/0)
 
+## Follow information into one patch
+
+- [What can the face tell this dark patch?](https://nipunbatra.github.io/attention/vision1.html?present#s01/15/0)
+- [Should every source contribute equally?](https://nipunbatra.github.io/attention/vision1.html?present#s01/16/0)
+- [What changes when the patch gets context?](https://nipunbatra.github.io/attention/vision1.html?present#s01/17/0)
+
 ## Complete sequence
 
 | Section / frame | Question or teaching step | Stable source ID |
@@ -62,8 +68,10 @@
 | s01 / 12 | [What changed, and what stayed the same?](https://nipunbatra.github.io/attention/vision1.html?present#s01/12/0) | `task-side-by-side` |
 | s01 / 13 | [Would you recognize this crop on its own?](https://nipunbatra.github.io/attention/vision1.html?present#s01/13/0) | `s01-context` |
 | s01 / 14 | [What can we carry over from our text models?](https://nipunbatra.github.io/attention/vision1.html?present#s01/14/0) | `bridge-text` |
-| s01 / 15 | [Is this dark region fur or background?](https://nipunbatra.github.io/attention/vision1.html?present#s01/15/0) | `patch-context` |
-| s01 / 16 | [How can we give this photograph to attention?](https://nipunbatra.github.io/attention/vision1.html?present#s01/16/0) | `image-to-rows` |
+| s01 / 15 | [What can the face tell this dark patch?](https://nipunbatra.github.io/attention/vision1.html?present#s01/15/0) | `patch-context` |
+| s01 / 16 | [Should every source contribute equally?](https://nipunbatra.github.io/attention/vision1.html?present#s01/16/0) | `patch-context-weights` |
+| s01 / 17 | [What changes when the patch gets context?](https://nipunbatra.github.io/attention/vision1.html?present#s01/17/0) | `patch-context-update` |
+| s01 / 18 | [How can we give this photograph to attention?](https://nipunbatra.github.io/attention/vision1.html?present#s01/18/0) | `image-to-rows` |
 | s02 / 1 | [Where do the patch boundaries go?](https://nipunbatra.github.io/attention/vision1.html?present#s02/1/0) | `s01-patches` |
 | s02 / 2 | [How can a red pixel be three numbers?](https://nipunbatra.github.io/attention/vision1.html?present#s02/2/0) | `one-rgb` |
 | s02 / 3 | [How many numbers are in four RGB pixels?](https://nipunbatra.github.io/attention/vision1.html?present#s02/3/0) | `rgb-flatten-step-1` |

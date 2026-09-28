@@ -106,7 +106,6 @@ def expand(b, sections):
       's01-photo':('What animal do you see?','Which parts of the photograph helped you decide?'),
       's01-context':('Would you recognize this crop on its own?','To choose cat or dog, we need visual clues. This dark crop becomes easier to interpret when we see the whole photo.'),
       'bridge-text':('What can we carry over from our text models?','We still turn inputs into rows, read useful information, and predict an answer.'),
-      'patch-context':('Is this dark region fur or background?','Face clues could make a dark crop easier to interpret. The final prediction is one label for the whole image.'),
       's01-patches':('Where do the patch boundaries go?','The grid cuts through the photograph before the model knows where the dog is.'),
       's02-small':('Same pieces, different picture?','Count the filled patches in each image. Then look at where they are.'),
       'position-question':('Could you put the picture back together?','Knowing which patches we have does not tell us where each one belongs.'),
@@ -518,7 +517,7 @@ def expand(b, sections):
     def seq(*keys):return [html for key in keys for html in (use(key) if key in old else [new[key]])]
     # The same 14 section anchors remain useful for remote review.
     revised=[
-      ('What would we like the image model to do?',seq('s01-photo','vision-tasks','photo-folder','find-animal','image-caption','photo-search','s01-context','bridge-text','patch-context','image-to-rows')),
+      ('What would we like the image model to do?',seq('s01-photo','vision-tasks','photo-folder','find-animal','image-caption','photo-search','s01-context','bridge-text','patch-context','patch-context-weights','patch-context-update','image-to-rows')),
       ('How do pixels become patch rows?',seq('s01-patches','one-rgb','rgb-flatten','flatten-order','s01-rows','projection-size')),
       ('What does each row know about its patch?',seq('s02-small','position-question','s02-projection','patch-matrix','empty-patch','mean-loses-edge','edge-filters','why-cls','two-identical-patches','s02-positions')),
       ('How does one row read the other rows?',seq('image-mask','qkv-roles','all-qkv','q-dot','one-key-dot','s03-query','one-score','softmax-relative','s03-weights','weight-denominator','s03-values','one-value-product','weight-message','change-query')),
