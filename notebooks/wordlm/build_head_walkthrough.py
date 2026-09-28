@@ -65,7 +65,8 @@ print('River IDs:', river_ids)''')]
         companion=re.sub(r'href="(?!https?:|#)([^\"]+)"',r'href="../../\1"',step.get('companion',''))
         cells.append(md(f'<a id="{step["key"]}"></a>\n## {step["title"]}\n\n[Matching slide]({link})\n\n{figure}\n\n{body}'+(f'\n\n```python\n{step["code"]}\n```' if step['code'] else '')+'\n\n'+companion))
         if step['key']=='s01-v-independent':
-            cells.append(code('''# Separate two-source illustration, before the ten-token worksheet.
+            cells.append(code('''# Optional arithmetic for the reading note, not the full-sentence model.
+# This separate two-source illustration explains independent mixtures.
 values = torch.tensor([[10., 1.], [2., 8.]])  # river, fisherman
 setting_weights = torch.tensor([0.8, 0.2])
 person_weights = torch.tensor([0.2, 0.8])
@@ -75,9 +76,9 @@ two_heads = torch.stack([setting_weights @ values[:, 0],
 print('One shared mixture:', one_head.tolist())
 print('Two separate mixtures:', two_heads.tolist())
 torch.testing.assert_close(one_head, torch.tensor([8.4, 2.4]))
-torch.testing.assert_close(two_heads, torch.tensor([8.4, 6.6]))'''))
-        if step['key']=='s01-v-coupled':
-            cells.append(code('''# For fixed values, one river weight cannot meet both targets.
+torch.testing.assert_close(two_heads, torch.tensor([8.4, 6.6]))
+
+# For fixed values, one river weight cannot meet both targets.
 a_for_setting = (8.4 - 2.) / (10. - 2.)
 a_for_person = (6.6 - 8.) / (1. - 8.)
 assert math.isclose(a_for_setting, 0.8)

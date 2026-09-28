@@ -1,5 +1,22 @@
 # Classroom release checks
 
+## 2026-09-28 · Fisherman context and a simpler one/two-head comparison
+
+- Condensed the three-frame invented-value detour to two diagrams. Both repeat
+  the complete fisherman prefix and mark the final known “the” as receiver.
+  The second holds the sentence and first head fixed while adding another query
+  and message. Optional notes and notebook code retain the numerical toy.
+- Part III regression passes 62 frames and 1,840 independently checked numbers,
+  controls, SVG label bounds, mobile fit and notebook parity. New assertions
+  guard the full prefix, head count, held diagram elements, receiver and removal
+  of the classroom algebra detour. All 43 Notebook 7 code cells execute, and its
+  ZIP entry matches the executed notebook byte-for-byte.
+- All 63 presentation states pass the frame audit, with no runtime errors,
+  formula failures or overflow. The two revised slides and next transition fit
+  at 1280×720, 995×1031 and 760×1041. Visually reviewed desktop and portrait
+  renders. The presentation guidance informed the two-step simplification and
+  preservation of the existing visual style. Later calculations are unchanged.
+
 ## 2026-09-28 · Inputs, vocabulary scores and ground truth together
 
 - Reworked the classifier frame as two aligned examples from the same story.

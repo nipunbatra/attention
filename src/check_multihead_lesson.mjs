@@ -60,10 +60,26 @@ try{
     assert.equal(await heldHead(before),await heldHead(after),'Hold the first illustrative reading fixed while adding/changing another');
   }
   assert((await page.locator('#s01-v-grammar').textContent()).includes('usually'),'Follow a receiver after both useful source words');
-  const motivationOrder=['s01-v-coat-one','s01-v-coat-many','s01-v-grammar','s01-v-event','s01-v-event-change','s01-v-shared','s01-v-independent','s01-v-coupled','s01-v-one'];
-  for(let i=1;i<motivationOrder.length;i++)assert(keys.indexOf(motivationOrder[i-1])<keys.indexOf(motivationOrder[i]),'Examples, fixed-value bottleneck, then computed heads');
-  assert((await page.locator('#s01-v-coupled').textContent()).includes('α = 0.8'));
-  assert((await page.locator('#s01-v-coupled').textContent()).includes('α = 0.2'));
+  const motivationOrder=['s01-v-coat-one','s01-v-coat-many','s01-v-grammar','s01-v-event','s01-v-event-change','s01-v-shared','s01-v-independent','s01-v-one'];
+  for(let i=1;i<motivationOrder.length;i++)assert(keys.indexOf(motivationOrder[i-1])<keys.indexOf(motivationOrder[i]),'Examples, simple one/two-head comparison, then computed heads');
+  assert(!keys.includes('s01-v-coupled'),'Keep the fixed-value algebra in optional notes, not another classroom slide');
+  for(const [key,heads] of [['s01-v-shared',1],['s01-v-independent',2]]){
+    const frame=page.locator('#'+key);
+    const words=await frame.locator('[data-head-context] text').allTextContents();
+    assert.deepEqual(words.filter(word=>!/^\d+$/.test(word)),[...expected.sentences.river,'___'],'Restore the complete fisherman prefix');
+    assert.equal(await frame.locator('[data-reading-head]').count(),heads);
+    const copy=await frame.textContent();
+    assert(copy.includes('Receiver: the final “the”'),'Identify the same known receiver on both slides');
+    assert(copy.includes('numerical vectors'),'English query descriptions are illustrative');
+    assert(!copy.includes('8.4')&&!copy.includes('10, 1'),'No separate numerical toy in the classroom comparison');
+  }
+  for(const selector of ['[data-head-context]','[data-reading-head="1"]']){
+    const markup=key=>page.locator(`#${key} ${selector}`).evaluate(el=>el.outerHTML);
+    assert.equal(await markup('s01-v-shared'),await markup('s01-v-independent'),'Hold the sentence and first head fixed');
+  }
+  assert.match(await page.locator('#s01-v-independent').textContent(),/Same receiver, two queries/);
+  assert.match(await page.locator('#s01-v-independent + .companion').textContent(),/W_Q, W_K and W_V/);
+  assert.equal(await page.locator('#s01-v-independent + .companion details').count(),1);
   assert.match(await page.locator('#s07-v-patches').textContent(),/16 × 4/);
   assert.match(await page.locator('#s07-v-classifier').textContent(),/no future-token mask/);
   assert.equal(await page.locator('#s07-v-classifier a').getAttribute('href'),'vision1.html');

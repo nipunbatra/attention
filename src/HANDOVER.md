@@ -10,6 +10,22 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+2026-09-28 fisherman context and simpler head motivation:
+
+- `s01-v-shared` and `s01-v-independent` repeat the complete fisherman prefix
+  and identify its final “the” as the receiver. One query produces one weighted
+  message, then a second head adds a separate query and message for that same
+  receiver. Keep the sentence and first head in the same positions across both
+  slides. English descriptions are illustrative roles of numerical vectors.
+- The old three-frame value-coordinate detour is now two simple diagrams.
+  Its invented two-source arithmetic is optional reading under the second
+  diagram and remains executable in Notebook 7. The standalone coupled-output
+  frame and SVG were removed, recoverable from Git history. Full-sentence
+  numerical calculations later in the lecture are unchanged.
+- Rebuild with `build_multihead_lesson.py`, assemble Part III, regenerate and
+  execute Notebook 7, then refresh the HTML/ZIP with `export_bundle`. The builder
+  now preserves the existing “Vision Transformer” navigation label.
+
 2026-09-28 vocabulary scores tied to both input examples:
 
 - `s19-pipeline-vocab-head` now compares both examples from “Lily found a red
@@ -488,7 +504,7 @@ Build each part once in any order. `assemble.py` derives available lesson target
 
 The standalone staged diagram lives in `figures/attention-diagram-preview/`. Part 2 embeds its same `diagram.js` source through `src/attention-flow-data.js`; keep the preview and article synchronized by changing that shared source.
 
-Part III now has a 63-frame visual story in `multihead_story.py`. Its generator
+Part III now has a 62-frame visual story in `multihead_story.py`. Its generator
 also retains the 58-step detailed tensor lab for Notebook 7 only. The two manifests
 are `figures/multihead/manifest.json` and `lab-manifest.json`; do not put the
 full lab back into the lecture. The notebook embeds the visual story first,
@@ -498,8 +514,8 @@ the head count and parenthesized superscripts for individual heads.
 The four width/bias clarification frames keep the same worksheet projections:
 one wide head normalizes once, while two heads normalize separately. Optional
 projection biases are distinct from positions, masks and prediction-MLP biases.
-The opening two-source mixture illustration is separate from the ten-token
-worksheet. A Maya Q/K/V recap bridges Part II to the two query calculations.
+The opening holds the ten-token fisherman prefix while contrasting one and two
+messages at its final token. A Maya Q/K/V recap bridges Part II to the two query calculations.
 All three section dividers use topic labels, not ambiguous numeric transitions.
 The repeated architecture map separates concatenation from W_O and labels
 their shapes; W_O mixes into embedding coordinates even when width is unchanged.
@@ -520,8 +536,8 @@ readouts follow `wordlm.py`, `multihead.py` and the saved benchmark protocol.
 
 The opening now includes possible colour/material/detail, subject/location and
 object/event readings. These are schematic roles, not measured attention maps.
-The fixed-value bottleneck solves for incompatible river weights (0.8 and 0.2)
-without claiming that every one-head network fails. Two closing diagrams bridge
+Optional reading and notebook arithmetic solve for incompatible river weights
+(0.8 and 0.2), without claiming that every one-head network fails. Two closing diagrams bridge
 to patch embeddings and CLS-based image classification. Next navigation points
 to Vision I; cross-attention is still linked as an optional continuation. The
 full Vision I lecture has not been rewritten in this MHA pass.

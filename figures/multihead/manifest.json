@@ -43,24 +43,17 @@
   },
   {
     "key": "s01-v-shared",
-    "title": "One head mixes the value rows",
-    "body": "Back to river and fisherman. Suppose we want setting clues from one and person clues from the other. A single head uses one source weight for every coordinate of each value.",
+    "title": "One head gives \u201cthe\u201d one weighted message",
+    "body": "One query chooses how much to read from each token. The head mixes their value vectors into one message for the final \u201cthe\u201d.",
     "code": "",
-    "companion": "<p>This two-source illustration uses invented values and normalized weights, separately from the ten-token worksheet that follows. A weight of 0.8 on river scales both of its value coordinates. A head can attend to multiple sources, but cannot choose a separate attention weight for each value coordinate.</p>"
+    "companion": "<p>The prefix is \u201cThe fisherman sat beside the river bank and watched the ___\u201d. The final known token, the at slot 10, is the receiver. The blank has no query yet. One head can read several words and carry several features in its message. It uses one shared set of source weights for all coordinates of that message. \u201cSetting clues?\u201d describes a possible role of the numerical query, not a literal question or a manually assigned task.</p>"
   },
   {
     "key": "s01-v-independent",
-    "title": "Two heads can choose different mixtures",
-    "body": "Let one head return the setting feature and another return the person feature. Each head can choose its own source weights. Their outputs stay separate until the output projection.",
+    "title": "Two heads give \u201cthe\u201d two separate messages",
+    "body": "Same receiver, two queries. Each head has its own keys, values and weights. One can favour river, the other fisherman. We combine their messages afterward.",
     "code": "",
-    "companion": "<p>Both heads receive both source rows. For this illustration, one value projection selects the setting coordinate and the other selects the person coordinate. The total output width stays two. The example demonstrates independent weighting, not a guarantee that two trained heads outperform every one-head model. The following slides return to our ten-token, four-coordinate worksheet.</p>"
-  },
-  {
-    "key": "s01-v-coupled",
-    "title": "Why can\u2019t one mixture give both results?",
-    "body": "With these fixed values, choosing the best mixture for one output changes the other output too. Two heads remove that coupling by learning separate source-weight rows.",
-    "code": "",
-    "companion": "<p>This is a claim about the displayed weighted-sum operation with fixed V, not a proof that every one-head network fails. A one-head model can learn other values and downstream transformations. Making Q/K wider still yields one score per source and one softmax row; making V wider still applies that row to every value coordinate. Later we compare one wide head and two narrow heads using the same projection entries.</p>"
+    "companion": "<p>Each head learns its own W_Q, W_K and W_V, applied to the same input rows. At this receiver that produces one query per head. Both heads can read all ten known tokens and run in parallel. Training can discover useful roles, but does not assign setting and person labels or guarantee that the heads specialize this way.</p><details><summary>Optional: why separate weights can help</summary><p>In a separate two-source toy, let river have value [10, 1] and fisherman [2, 8]. A single head with weights [0.8, 0.2] returns [8.4, 2.4]. Both coordinates use that same mixture. Two heads can instead select one value coordinate each: a setting head with weights [0.8, 0.2] gives 8.4, and a person head with weights [0.2, 0.8] gives 6.6. With these fixed values, one river weight cannot be both 0.8 and 0.2. This illustrates independent source weighting, not a proof that every one-head network fails. These invented numbers are separate from the full-sentence worksheet that follows.</p></details>"
   },
   {
     "key": "s01-v-one",

@@ -285,7 +285,7 @@ def build():
                 objects=['e','q','k','v','a','d','ep'],legendTitle='The same objects as Part II',
                 provenance='Original worked river-bank example, with visual inspiration from 3Blue1Brown and Jay Alammar. The two-head numbers are hand-chosen; the separate TinyStories results come from trained models.',
                 prev=dict(label='Part 2: Self-attention, from first principles',href='attention.html'),
-                next=dict(label='Vision I: From pixels to an image class',href='vision1.html'),
+                next=dict(label='Vision I: Vision Transformer',href='vision1.html'),
                 index=dict(label='Series home',href='index.html'),notation='multihead',
                 footer='Same inputs. Separate attention patterns. One updated representation. Full code in Notebook 7; optional training and cost reference in Part 2B.',
                 objectSections=dict(e='s01',q='s02',k='s02',v='s02',a='s01',d='s03',ep='s03'),

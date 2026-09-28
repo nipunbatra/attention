@@ -66,15 +66,17 @@ def matrix(x,y,rows,cols,name,c='e',cw=28,ch=22,values=None,selected=None,causal
     return out
 
 
-def strip(tokens,y=54,weights=None):
+def strip(tokens,y=54,weights=None,grouped=False):
     widths=[69,137,65,101,64,88,84,68,119,70]
     out='';x=20;centers=[]
     for j,word in enumerate(tokens):
         w=widths[j];centers.append(x+w/2)
+        if grouped:out+='<g>'
         out+=rect(x,y,w,48,'q' if j==9 else 'line',COLORS['q']+'0b' if j==9 else 'white')
         out+=t(x+w/2,y+31,word,23,'q' if j==9 else 'ink','middle',650 if j==9 else 500)
         out+=t(x+w/2,y-12,str(j+1),18,'muted','middle')
         if weights is not None:out+=t(x+w/2,y+77,f(weights[j],3),21,'a','middle')
+        if grouped:out+='</g>'
         x+=w+13
     out+=t(1120,y+32,'___',25,'d','middle')
     return out,centers
@@ -104,26 +106,28 @@ def reading(case,head=None,both=False):
     return svg(body,505 if both else 287,'Two different reading patterns' if both else f'Head {head+1} reads the known prefix')
 
 
-def bottleneck(two=False):
-    """A separate two-source illustration, before the full ten-token worksheet."""
-    body=t(24,32,'Two-source illustration: invented values and weights',23,'muted')
-    for x,label in [(24,'Source'),(350,'Setting feature'),(675,'Person feature')]:
-        body+=t(x,91,label,25,'muted',weight=600)
-    for row,(word,values) in enumerate([('river',[10,1]),('fisherman',[2,8])]):
-        y=140+row*52
-        body+=t(24,y,word,29,'ink')+t(390,y,values[0],29,'v')+t(715,y,values[1],29,'v')
-    body+=path('M24 215 H1120','line',2)
-    if two:
-        body+=t(24,273,'Head 1: setting',26,'ink',weight=650)
-        body+=t(390,273,'0.8 × 10 + 0.2 × 2 = 8.4',30,'v')
-        body+=t(24,333,'Head 2: person',26,'ink',weight=650)
-        body+=t(390,333,'0.2 × 1 + 0.8 × 8 = 6.6',30,'v')
-        body+=t(580,399,'river gets 0.8 in one head; fisherman gets 0.8 in the other.',26,'a','middle')
-    else:
-        body+=t(24,267,'One head: river gets 0.8, fisherman gets 0.2',27,'a',weight=600)
-        body+=t(580,327,'0.8 × [10, 1] + 0.2 × [2, 8] = [8.4, 2.4]',33,'v','middle')
-        body+=t(580,399,'Both output coordinates use the same 80% / 20% mixture.',27,'ink','middle')
-    return svg(body,435,'Two heads weight the sources independently' if two else 'One weight per source multiplies every value coordinate')
+def head_messages(case,two=False):
+    """Hold the sentence and first head fixed while adding a second reading."""
+    words,_=strip(case['tokens'],44,grouped=True)
+    body=f'<g data-head-context="sentence">{words}</g>'
+    body+=t(580,131,'Receiver: the final “the”. Its updated row predicts the blank.',26,'ink','middle')
+    for x,label,c in [(24,'Query at this receiver','q'),(420,'Weights from matching keys','a'),(846,'Mix source values','v')]:
+        body+=t(x,193,label,23,c,weight=600)
+    for h in range(2 if two else 1):
+        y=223+125*h
+        lane='<g>'+rect(24,y,285,81,'q',COLORS['q']+'08')
+        lane+=t(43,y+31,f'Head {h+1} · '+('q¹' if h==0 else 'q²'),28,'q',weight=650)
+        lane+=t(43,y+63,'Setting clues?' if h==0 else 'Person clues?',26,'q')+'</g>'
+        lane+=arrow(323,y+40,399,y+40,'q')
+        lane+=t(420,y+33,'Favour river' if h==0 else 'Favour fisherman',28,'a',weight=600)
+        lane+=t(420,y+64,'Also read the other tokens',23,'muted')
+        lane+=arrow(742,y+40,821,y+40,'v')
+        lane+='<g>'+rect(846,y,289,81,'v',COLORS['v']+'08')
+        lane+=t(990,y+32,'Message 1' if h==0 else 'Message 2',28,'v','middle',650)
+        lane+=t(990,y+64,'setting information' if h==0 else 'person information',24,'v','middle')+'</g>'
+        body+=f'<g data-reading-head="{h+1}">{lane}</g>'
+    body+=t(24,476,'Illustrative head roles. The queries and messages are numerical vectors.',23,'muted')
+    return svg(body,498,'The same final the receives two independently weighted messages' if two else 'The final the uses one query to retrieve one weighted message')
 
 
 def divider(question,sub):
@@ -176,19 +180,6 @@ def head_example(kind,one=False,washed=False):
         body+=t(24,409,'Possible continuation: “gleamed”' if washed else 'Possible continuation: “broke”',29,'ink',weight=600)
         body+=t(24,460,'Same object. A different event gives a different clue.' if washed else 'The object alone does not tell us what happened.',26,'muted')
     return svg(body,510,'Illustrative '+kind+' head readings'+(' after changing the action' if washed else ''))
-
-
-def coupled_outputs():
-    body=t(24,38,'Keep the same two value rows: river [10, 1], fisherman [2, 8].',27,'v')
-    body+=t(24,94,'Let α be the river weight; the fisherman weight is 1 − α.',27,'a')
-    for y,label,equation,answer in [(157,'Want setting = 8.4','10α + 2(1 − α) = 8.4','α = 0.8'),
-                                     (264,'Want person = 6.6','1α + 8(1 − α) = 6.6','α = 0.2')]:
-        body+=t(24,y+30,label,28,'ink',weight=650)+t(411,y+30,equation,30,'v')
-        body+=arrow(832,y+20,914,y+20,'a')+t(939,y+30,answer,29,'a')
-    body+=path('M24 332 H1133','line',2)
-    body+=t(580,385,'One shared weight cannot be both 0.8 and 0.2.',31,'ink','middle',650)
-    body+=t(580,437,'Two heads can choose these mixtures independently.',28,'muted','middle')
-    return svg(body,475,'A fixed-value example where one source mixture cannot provide both desired outputs')
 
 
 def vision_bridge(classifier=False):
@@ -736,18 +727,14 @@ def story(stage,base,data):
           'The glass is unchanged. “Washed” supports a different continuation, such as “gleamed”. Separate messages carry both the object clue and the event clue.',
           companion='<p>The arrows are a schematic of useful information, not a promise that a trained attention map remains unchanged after a word substitution. All head projections learn jointly from prediction loss. Interpretable roles sometimes emerge, but some heads overlap or can be pruned; see <a href="https://aclanthology.org/P19-1580/">Voita et al. (2019)</a>. More heads are a capacity choice to test, not an automatic improvement.</p>',
           notes='What changed, and what stayed the same?\nThe object clue stayed glass. The event clue changed. We have not measured a probability for either continuation.'),
-        s('s01-v-shared','One head mixes the value rows',bottleneck(),
-          'Back to river and fisherman. Suppose we want setting clues from one and person clues from the other. A single head uses one source weight for every coordinate of each value.',
-          companion='<p>This two-source illustration uses invented values and normalized weights, separately from the ten-token worksheet that follows. A weight of 0.8 on river scales both of its value coordinates. A head can attend to multiple sources, but cannot choose a separate attention weight for each value coordinate.</p>',
-          notes='What happens to both numbers in the river value?\nMultiply both by 0.8. The setting and person outputs use the same mixture.'),
-        s('s01-v-independent','Two heads can choose different mixtures',bottleneck(two=True),
-          'Let one head return the setting feature and another return the person feature. Each head can choose its own source weights. Their outputs stay separate until the output projection.',
-          companion='<p>Both heads receive both source rows. For this illustration, one value projection selects the setting coordinate and the other selects the person coordinate. The total output width stays two. The example demonstrates independent weighting, not a guarantee that two trained heads outperform every one-head model. The following slides return to our ten-token, four-coordinate worksheet.</p>',
-          notes='Which source should contribute more to each feature?\nFollow the different weights: 0.8 on river for setting, 0.8 on fisherman for person.'),
-        s('s01-v-coupled','Why can’t one mixture give both results?',coupled_outputs(),
-          'With these fixed values, choosing the best mixture for one output changes the other output too. Two heads remove that coupling by learning separate source-weight rows.',
-          companion='<p>This is a claim about the displayed weighted-sum operation with fixed V, not a proof that every one-head network fails. A one-head model can learn other values and downstream transformations. Making Q/K wider still yields one score per source and one softmax row; making V wider still applies that row to every value coordinate. Later we compare one wide head and two narrow heads using the same projection entries.</p>',
-          notes='Can one river weight satisfy both equations?\nSolve each separately: 0.8 for setting, 0.2 for person. Point out the fixed-value assumption.'),
+        s('s01-v-shared','One head gives “the” one weighted message',head_messages(R),
+          'One query chooses how much to read from each token. The head mixes their value vectors into one message for the final “the”.',
+          companion='<p>The prefix is “The fisherman sat beside the river bank and watched the ___”. The final known token, the at slot 10, is the receiver. The blank has no query yet. One head can read several words and carry several features in its message. It uses one shared set of source weights for all coordinates of that message. “Setting clues?” describes a possible role of the numerical query, not a literal question or a manually assigned task.</p>',
+          notes='Where is the query coming from?\nPoint to the final known the, not the blank. Its query matches the source keys, and the resulting weights mix the source values into one message.'),
+        s('s01-v-independent','Two heads give “the” two separate messages',head_messages(R,two=True),
+          'Same receiver, two queries. Each head has its own keys, values and weights. One can favour river, the other fisherman. We combine their messages afterward.',
+          companion='<p>Each head learns its own W_Q, W_K and W_V, applied to the same input rows. At this receiver that produces one query per head. Both heads can read all ten known tokens and run in parallel. Training can discover useful roles, but does not assign setting and person labels or guarantee that the heads specialize this way.</p><details><summary>Optional: why separate weights can help</summary><p>In a separate two-source toy, let river have value [10, 1] and fisherman [2, 8]. A single head with weights [0.8, 0.2] returns [8.4, 2.4]. Both coordinates use that same mixture. Two heads can instead select one value coordinate each: a setting head with weights [0.8, 0.2] gives 8.4, and a person head with weights [0.2, 0.8] gives 6.6. With these fixed values, one river weight cannot be both 0.8 and 0.2. This illustrates independent source weighting, not a proof that every one-head network fails. These invented numbers are separate from the full-sentence worksheet that follows.</p></details>',
+          notes='What did the second head add?\nAnother query and another independently weighted message for the same receiver. Hold the sentence and first head fixed. All heads learn their projections jointly from prediction loss.'),
         s('s01-v-one','Setting clues in the full sentence',reading(R,0),
           'Back to all ten tokens. Our hand-chosen head 1 gives river a large weight. Its values carry setting information to the receiver.',
           companion='<p>These are hand-chosen two-head parameters applied to Part II’s exact input rows. “Setting” and “person” name the intended behaviour of this example, not jobs assigned to trained heads. Arrows show information moving from source to receiver; their widths encode computed attention weights.</p>'),
