@@ -112,7 +112,7 @@
  "legendTitle": "The same colours; the rows are now patches of the scene",
  "provenance": "Scope: the encoder is Vision I's, frozen (Vision I trained it with labels to answer whether a mug is on the right), with named axes{{axes}}. Vision II trains only small parts on top of it: a 32-number MAE decoder, a 22-number I-JEPA predictor, a 15-number DINO head and a 3-number probe line, all in a seeded numpy script (train_vision2.py) whose results the page recomputes. One 8×8 scene, four hidden patches, three to four training images. Real MAE, DINO and I-JEPA train the whole encoder on millions of images; the box in section 1 lists what this toy can and cannot show.",
  "prev": {
-  "label": "Vision I: An image becomes a sequence",
+  "label": "Vision I: Vision Transformer",
   "href": "vision1.html"
  },
  "next": {

@@ -2,7 +2,7 @@
   "part": 1,
   "partLabel": "Vision I",
   "series": "Vision to language",
-  "title": "An image becomes a sequence",
+  "title": "Vision Transformer",
   "subtitle": "Real photographs, a complete four-patch calculation, and a Vision Transformer we can train and inspect.",
   "audience": "Students who have completed the text attention Parts I\u2013III.",
   "durationLabel": "A step-by-step lecture sequence with a worked lab.",

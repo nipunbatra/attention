@@ -465,7 +465,7 @@ optimizer.step()''',t(30,65,'image + known label',26,'c-e')+arrow(180,92,180,160
             meta.update(section=f's{n:02}',frame=number)
             ordered.append(meta)
     config={'part':1,'partLabel':'Vision I','series':'Vision to language',
-      'title':'An image becomes a sequence',
+      'title':'Vision Transformer',
       'subtitle':'Real photographs, a complete four-patch calculation, and a Vision Transformer we can train and inspect.',
       'audience':'Students who have completed the text attention Parts I–III.',
       'durationLabel':'A step-by-step lecture sequence with a worked lab.',
