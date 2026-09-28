@@ -378,16 +378,16 @@
   {
     "id": "projection-size",
     "title": "2 \u00b7 Split the image into 16 \u00d7 16 patches",
-    "caption": "Cut every 16 pixels horizontally and vertically. The image produces 196 non-overlapping patches. Each patch contains 16 \u00d7 16 pixels, with three RGB values at every pixel.",
-    "notes": "How many 16-pixel-wide patches fit across this 224-pixel image?\nTrace the cuts on the actual photo. Count fourteen across and fourteen down, then point to the enlarged patch.",
+    "caption": "The x-axis runs right; the y-axis runs down. Both span 224 pixels. Cut every 16 pixels along each axis. Each piece keeps its RGB values; we will count the pieces next.",
+    "notes": "How many 16-pixel-wide pieces fit along each image axis?\nPoint to the x-axis arrow, then the y-axis arrow and their endpoints. Follow the highlighted image region into the enlarged 16\u00d716 patch. Leave the count for the next slide.",
     "section": "s02",
     "frame": 16
   },
   {
     "id": "real-patch-crops",
-    "title": "3 \u00b7 Keep the 196 patches in image order",
-    "caption": "These are the actual pieces cut from the photograph. The patch array has shape 196 \u00d7 16 \u00d7 16 \u00d7 3. We will follow P63, then apply exactly the same operation to P64.",
-    "notes": "Which axis counts image pieces, and which axes describe one piece?\nPoint to the separated patches, then their four dimensions. Locate P63 and its right-hand neighbor P64 in the sequence.",
+    "title": "3 \u00b7 Number the patches row by row",
+    "caption": "Number left to right, then continue on the next row. Use the image and patch sizes to calculate the row length and total before revealing the answers.",
+    "notes": "What is the last patch number in the first row? What starts the second row, and what is the final patch number?\nStart with P1 and P2. Ask students to divide each 224-pixel extent by 16, then reveal P14 and the second row. Multiply the two counts before revealing P196 and the full array shape.",
     "section": "s02",
     "frame": 17
   },

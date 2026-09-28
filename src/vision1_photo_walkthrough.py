@@ -59,35 +59,68 @@ def add_photo_walkthrough(b, add):
          'The following twelve steps keep this same input. The earlier 4×4 grid was a coarse illustration; we now use the model’s actual 14×14 patch grid.',
          mobile_photo()+'<p>One prepared image: 224 rows × 224 columns × 3 RGB values.</p><p>Next, divide this image into patches.</p>')
 
-    # 2. Draw the actual patch boundaries before counting their outputs.
-    body=grid(35,70,280)+t(175,40,'224 pixels across',27,'ink-2','middle')+t(175,390,'224 pixels down',27,'ink-2','middle')
-    body+=line(175,150,345,150,'c-q')+arrow(345,150,395,190,'c-q')+crop(405,120,160)+t(485,327,'P63 · 16 × 16',25,'c-q','middle')
-    body+=g(t(660,105,'224 ÷ 16 = 14 across',31,'c-e')+t(660,171,'224 ÷ 16 = 14 down',31,'c-e'),1)
-    body+=g(t(660,270,'14 × 14 = 196 patches',33,'c-e')+t(660,345,'Each keeps its 3 RGB channels.',26),2)
-    step(2,'projection-size','Split the image into 16 × 16 patches',body,
-         'Cut every 16 pixels horizontally and vertically. The image produces 196 non-overlapping patches. Each patch contains 16 × 16 pixels, with three RGB values at every pixel.',
-         'How many 16-pixel-wide patches fit across this 224-pixel image?',
-         'Trace the cuts on the actual photo. Count fourteen across and fourteen down, then point to the enlarged patch.',
-         'Patchification selects equal-sized regions without changing their pixel values. The grid covers the entire 224×224 image with no overlap or padding. '
-         'Number patches from 1, left to right across a row, then continue on the next row. P63 is at row 5, column 7; the orange neighbor is P64.',
-         mobile_photo()+mobile_rows(['Across','Down','Total'],[['224 ÷ 16 = 14','224 ÷ 16 = 14','196 patches']])+mobile_crop())
+    # 2. Put spatial directions and pixel extents on the photograph itself.
+    def axes_photo(x,y,side,small=False):
+        fs=19 if small else 23
+        out=grid(x,y,side)
+        out+=arrow(x,y-20,x+side+18,y-20,'ink-2')
+        out+=arrow(x-22,y,x-22,y+side+18,'ink-2')
+        for value,offset in [(0,0),(224,side)]:
+            out+=line(x+offset,y-26,x+offset,y-14,'ink-2')
+            out+=t(x+offset,y-34,str(value),fs,'ink-2','middle')
+            out+=line(x-28,y+offset,x-16,y+offset,'ink-2')
+            out+=t(x-34,y+offset+7,str(value),fs,'ink-2','end')
+        out+=t(x+side/2,y-65,'x (pixels)',fs,'ink-2','middle')
+        out+=f'<g transform="translate({x-(58 if small else 66)} {y+side/2}) rotate(-90)">'+t(0,0,'y (pixels)',fs,'ink-2','middle')+'</g>'
+        return out
 
-    # 3. The output of patchification consists of these same image pieces.
-    body=''
-    for i in range(196):
-        r,c=divmod(i,14);body+=crop(35+c*22,55+r*22,19,i+1,False)
-    body+=t(187,407,'All 196 image pieces',27,'c-e','middle')
-    body+=t(430,40,'A few of those patches, enlarged',27,'ink-2')
-    for j,n in enumerate([1,63,64,196]):
-        xx=430+j*174;body+=crop(xx,88,115,n)+t(xx+57.5,247,'P'+str(n),28,'c-k' if n==64 else 'c-q','middle')
-    body+=g(t(430,332,'Patch array: 196 × 16 × 16 × 3',32,'c-e')+t(430,397,'patches × rows × columns × RGB',25,'ink-2'),1)
-    step(3,'real-patch-crops','Keep the 196 patches in image order',body,
-         'These are the actual pieces cut from the photograph. The patch array has shape 196 × 16 × 16 × 3. We will follow P63, then apply exactly the same operation to P64.',
-         'Which axis counts image pieces, and which axes describe one piece?',
-         'Point to the separated patches, then their four dimensions. Locate P63 and its right-hand neighbor P64 in the sequence.',
-         'The left drawing contains every patch, separated by small visual gaps. The four larger crops are selected entries from that same array. '
-         'The leading 196 counts patches; each entry still has 16×16 spatial pixels and three channels. No learned projection has occurred yet.',
-         mobile_crop()+mobile_crop(64)+'<p><strong>All patches: 196 × 16 × 16 × 3.</strong> Keep their order: P1, P2, …, P63, P64, …, P196.</p>')
+    body=axes_photo(100,95,280)
+    body+=line(240,175,445,175,'c-q')+arrow(445,175,510,228,'c-q')+crop(520,140,176)+t(608,357,'P63 · enlarged',26,'c-q','middle')
+    body+=t(790,132,'One patch',30,'c-e')
+    body+=g(t(790,207,'16 pixels wide',31)+t(790,266,'16 pixels high',31)+t(790,325,'3 RGB channels',29),1)
+    body+=t(500,421,'Next: number the pieces, one image row at a time.',26,'c-e')
+    axes_mobile='<svg viewBox="0 0 360 360" role="img" aria-label="Dog image with x increasing to the right and y increasing down; both axes span 0 to 224 pixels">'+axes_photo(85,80,224,True)+'</svg>'
+    step(2,'projection-size','Split the image into 16 × 16 patches',body,
+         'The x-axis runs right; the y-axis runs down. Both span 224 pixels. Cut every 16 pixels along each axis. Each piece keeps its RGB values; we will count the pieces next.',
+         'How many 16-pixel-wide pieces fit along each image axis?',
+         'Point to the x-axis arrow, then the y-axis arrow and their endpoints. Follow the highlighted image region into the enlarged 16×16 patch. Leave the count for the next slide.',
+         'The axes label image boundaries from 0 to 224 in pixel units, so their extent is 224 pixels. Pixel centers would instead be indexed 0 through 223. '
+         'The y-axis points downward, matching image row order. Grid lines mark non-overlapping 16×16 cuts. '
+         'The purple crop is P63, which we will locate in the row-by-row numbering next; the orange neighbor is P64. Counting patches has moved to the following slide.',
+         axes_mobile+mobile_crop()+'<p>Cut every 16 pixels along x and along y. Count the resulting patches on the next slide.</p>')
+
+    # 3. Show raster numbering using real crops; reveal the calculated endpoints.
+    body=t(166,29,'column 1',25,'ink-2','middle')+t(306,29,'column 2',25,'ink-2','middle')+t(576,29,'last column',25,'ink-2','middle')
+    for yy,row_name,numbers,reveal in [(62,'row 1',[1,2,14],0),(178,'row 2',[15,16,28],1),(325,'last row',[183,184,196],2)]:
+        body+=t(30,yy+42,row_name,25,'ink-2')+t(445,yy+42,'…',35,'ink-2','middle')
+        for xx,n in zip([134,274,544],numbers):
+            body+=crop(xx,yy,64,n,False)+rect(xx,yy,64,64,'line','transparent',0)
+            label=t(xx+32,yy+94,'P'+str(n),28,'c-e','middle')
+            level=max(reveal,1 if n==14 else 0)
+            body+=g(label,level) if level else label
+    body+=t(166,310,'⋮',20,'ink-2','middle')+t(306,310,'⋮',20,'ink-2','middle')+t(576,310,'⋮',20,'ink-2','middle')
+    body+=t(710,56,'Use the image axes:',29,'ink-2')
+    body+=t(710,125,'columns: 224 ÷ 16',28)+t(710,190,'rows: 224 ÷ 16',28)
+    body+=g(t(1030,125,'= 14',30,'c-e')+t(1030,190,'= 14',30,'c-e'),1)
+    body+=t(710,270,'total = columns × rows',28)
+    body+=g(t(710,334,'14 × 14 = 196 patches',31,'c-e')+t(710,407,'shape: 196 × 16 × 16 × 3',28,'c-e'),2)
+    mobile_numbering='<svg viewBox="0 0 360 390" role="img" aria-label="Patches numbered left to right: P1, P2, through P14; P15, P16, through P28; last row P183, P184, through P196">'
+    for yy,numbers in [(20,[1,2,14]),(148,[15,16,28]),(286,[183,184,196])]:
+        for xx,n in zip([10,110,280],numbers):
+            picture=crop(xx,yy,60,n,False).replace('<use href="#__PATCH_SOURCE__"/>',image(0,0,224,224,uri))
+            mobile_numbering+=picture+rect(xx,yy,60,60,'line','transparent',0)+t(xx+30,yy+86,'P'+str(n),21,'c-e','middle')
+        mobile_numbering+=t(224,yy+35,'…',30,'ink-2','middle')
+    mobile_numbering+=t(40,276,'⋮',23,'ink-2','middle')+t(140,276,'⋮',23,'ink-2','middle')+t(310,276,'⋮',23,'ink-2','middle')+'</svg>'
+    step(3,'real-patch-crops','Number the patches row by row',body,
+         'Number left to right, then continue on the next row. Use the image and patch sizes to calculate the row length and total before revealing the answers.',
+         'What is the last patch number in the first row? What starts the second row, and what is the final patch number?',
+         'Start with P1 and P2. Ask students to divide each 224-pixel extent by 16, then reveal P14 and the second row. Multiply the two counts before revealing P196 and the full array shape.',
+         'Each pictured tile is the actual patch with the stated index. Horizontal dots omit intermediate columns; vertical dots omit intermediate image rows. '
+         'There are 224/16=14 patch columns and 14 patch rows. Row one is P1 through P14; row two is P15 through P28. The last row starts at 13×14+1=183 and ends at 14×14=196. '
+         'In one-based indexing, patch number=(row−1)×14+column. Thus the previously highlighted P63 is row 5, column 7, and P64 is its right-hand neighbor. '
+         'The resulting array has shape (196,16,16,3): patches, pixel rows, pixel columns, RGB channels.',
+         mobile_numbering+mobile_rows(['Count','Calculation'],[['Columns','224 ÷ 16 = 14'],['Rows','224 ÷ 16 = 14'],['Total patches','14 × 14 = 196']])
+         +'<p><strong>Patch array: 196 × 16 × 16 × 3.</strong></p><p>P63 is row 5, column 7; P64 is the next patch to its right.</p>')
 
     # 4. Read actual channel values, keeping the photograph visible.
     body=crop(35,75,256)+t(163,45,'P63 · enlarged',27,'c-q','middle')

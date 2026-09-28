@@ -119,7 +119,7 @@
 
 - [1 · Start with the same dog photograph](https://nipunbatra.github.io/attention/vision1.html?present#s02/15/0)
 - [2 · Split the image into 16 × 16 patches](https://nipunbatra.github.io/attention/vision1.html?present#s02/16/0)
-- [3 · Keep the 196 patches in image order](https://nipunbatra.github.io/attention/vision1.html?present#s02/17/0)
+- [3 · Number the patches row by row](https://nipunbatra.github.io/attention/vision1.html?present#s02/17/0)
 - [4 · Read the RGB values inside patch 63](https://nipunbatra.github.io/attention/vision1.html?present#s02/18/0)
 - [5 · Normalize those same RGB values](https://nipunbatra.github.io/attention/vision1.html?present#s02/19/0)
 - [6 · Flatten patch 63 into one row](https://nipunbatra.github.io/attention/vision1.html?present#s02/20/0)
@@ -182,7 +182,7 @@
 | s02 / 14 | [Apply the very same layer to another patch](https://nipunbatra.github.io/attention/vision1.html?present#s02/14/0) | `patch-shared-code` |
 | s02 / 15 | [1 · Start with the same dog photograph](https://nipunbatra.github.io/attention/vision1.html?present#s02/15/0) | `s01-rows` |
 | s02 / 16 | [2 · Split the image into 16 × 16 patches](https://nipunbatra.github.io/attention/vision1.html?present#s02/16/0) | `projection-size` |
-| s02 / 17 | [3 · Keep the 196 patches in image order](https://nipunbatra.github.io/attention/vision1.html?present#s02/17/0) | `real-patch-crops` |
+| s02 / 17 | [3 · Number the patches row by row](https://nipunbatra.github.io/attention/vision1.html?present#s02/17/0) | `real-patch-crops` |
 | s02 / 18 | [4 · Read the RGB values inside patch 63](https://nipunbatra.github.io/attention/vision1.html?present#s02/18/0) | `patch-real-dimensions` |
 | s02 / 19 | [5 · Normalize those same RGB values](https://nipunbatra.github.io/attention/vision1.html?present#s02/19/0) | `real-patch-normalize` |
 | s02 / 20 | [6 · Flatten patch 63 into one row](https://nipunbatra.github.io/attention/vision1.html?present#s02/20/0) | `patch-one-row-shape` |

@@ -87,8 +87,8 @@ Then scale to the saved real model: 16×16×3=768 input values, `nn.Linear(768,1
 The real-image run in section 2 is a twelve-step sequence. Each operation consumes the preceding slide’s output; the same prepared dog image and patch identities stay visible throughout. The earlier 12-input, 2-output network remains the hand-calculation warm-up.
 
 1. **Start with the image:** show the actual 224×224×3 model input and identify each axis.
-2. **Cut into patches:** draw 16×16 boundaries on the photograph, then count 14×14=196 patches.
-3. **Inspect the pieces:** show all 196 separated crops and enlarged P1, P63, P64 and P196. The patch array is 196×16×16×3.
+2. **Cut into patches:** draw 16×16 boundaries on the photograph, with x pointing right and y pointing down. Mark the 0-to-224 pixel extent on both axes. Save the count for the next slide.
+3. **Number the pieces:** show actual crops in a truncated row-major grid: P1, P2, …, P14; P15, P16, …, P28; …; P183, P184, …, P196. Reveal 224÷16=14 on each axis, then 14×14=196 and the array shape 196×16×16×3. Pause before each answer.
 4. **Read one patch’s RGB:** keep P63 visible, outline its first two pixels, and read [16,17,12] and [41,42,37]. Count 256 pixels × 3 channels = 768 values.
 5. **Normalize the same values:** explain (value/255−0.5)/0.5 before displaying negative inputs. The checkpoint normally normalizes before patch extraction; this independent channel operation gives the identical result on the extracted crop.
 6. **Flatten:** carry those normalized triples into x₆₃, shape 1×768. Follow the scan arrow and keep RGB together for each pixel.

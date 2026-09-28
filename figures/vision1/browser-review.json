@@ -822,5 +822,34 @@
       "opened": true,
       "rows": 196
     }
+  },
+  "image_axes_and_patch_numbering": {
+    "frames": [
+      "projection-size",
+      "real-patch-crops"
+    ],
+    "presentation_viewports": [
+      [
+        1280,
+        720
+      ],
+      [
+        995,
+        1031
+      ]
+    ],
+    "svg_clipped_text": [],
+    "svg_text_collisions": [],
+    "phone_viewport": [
+      390,
+      844
+    ],
+    "document_width": 390,
+    "document_scroll_width": 390,
+    "mobile_width": 358,
+    "mobile_scroll_width": 358,
+    "reveal_review": "Initial numbering state shows P1/P2 and the divisions to calculate. Reveal 1 gives fourteen columns/rows and the first two row endpoints. Reveal 2 gives last-row numbers, 196 total and array shape.",
+    "axis_convention": "x increases right, y increases down; image boundaries 0 to 224 pixels.",
+    "audio_or_video_played": false
   }
 }
