@@ -10,7 +10,7 @@ const shots=fs.mkdtempSync('/tmp/browser-lab-slides-');
 try{
   const page=await browser.newPage({viewport:{width:1280,height:720}});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(pathToFileURL(path.resolve('attention.html')).href);
+  await page.goto(pathToFileURL(path.resolve('wordlm-worked.html')).href);
   await page.evaluate(()=>document.fonts.ready);
   const ids=await page.locator('.lab-comparison').evaluateAll(es=>es.map(e=>e.id));
   assert.equal(ids.length,9);

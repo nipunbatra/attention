@@ -49,21 +49,21 @@ cheque_ids = [word_to_id[w.lower()] for w in worksheet['sentences']['cheque']]
 print('River tokens:', worksheet['sentences']['river'])
 print('River IDs:', river_ids)''')]
     cells.append(md('<a id="visual-story"></a>\n# The visual story\n\nThe same figures appear in the lecture. Short code excerpts here are explained visually; the executable lab below builds their inputs and runs each operation.'))
-    steps=json.loads((FIG/'manifest.json').read_text())
+    steps=json.loads((FIG/'reference-manifest.json').read_text())
     section_counts={}
     for step in steps:
         section=step['key'].split('-')[0]
         section_counts[section]=section_counts.get(section,0)+1
-        link=f'../../part3.html?present#{section}/{section_counts[section]}/0'
+        link=f'../../part3-worked.html#{step["key"]}'
         figure_path=FIG/(step['key']+'.svg')
         figure=figure_path.read_text() if figure_path.exists() else ''
         body = step['body']
         body = re.sub(r'href="(?!https?:|#)([^"]+)"', r'href="../../\1"', body)
         if step['key'] == 's03-v-explore':
-            body = 'Switch contexts in the matching slide to see both reading patterns change. The executable lab below computes the river and cheque examples from the same parameters.'
+            body = 'Switch contexts in the optional worked reference to see both reading patterns change. The executable lab below computes the river and cheque examples from the same parameters.'
             figure = (FIG/'s01-v-both.svg').read_text()
         companion=re.sub(r'href="(?!https?:|#)([^\"]+)"',r'href="../../\1"',step.get('companion',''))
-        cells.append(md(f'<a id="{step["key"]}"></a>\n## {step["title"]}\n\n[Matching slide]({link})\n\n{figure}\n\n{body}'+(f'\n\n```python\n{step["code"]}\n```' if step['code'] else '')+'\n\n'+companion))
+        cells.append(md(f'<a id="{step["key"]}"></a>\n## {step["title"]}\n\n[Optional worked reference]({link})\n\n{figure}\n\n{body}'+(f'\n\n```python\n{step["code"]}\n```' if step['code'] else '')+'\n\n'+companion))
         if step['key']=='s01-v-independent':
             cells.append(code('''# Optional arithmetic for the reading note, not the full-sentence model.
 # This separate two-source illustration explains independent mixtures.

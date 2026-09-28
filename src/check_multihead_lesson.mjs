@@ -12,7 +12,7 @@ let pw;for(const p of candidates.filter(Boolean)){try{pw=require(p);break;}catch
 assert(pw,'Use an existing Playwright installation.');
 const root=path.resolve('');
 const expected=JSON.parse(fs.readFileSync('figures/multihead/worksheet.json'));
-const manifest=JSON.parse(fs.readFileSync('figures/multihead/manifest.json'));
+const manifest=JSON.parse(fs.readFileSync('figures/multihead/reference-manifest.json'));
 const browser=await pw.chromium.launch();
 const page=await browser.newPage({viewport:{width:1280,height:720}});
 const errors=[];page.on('pageerror',e=>errors.push(String(e)));
@@ -23,7 +23,7 @@ function near(a,b,key){
   assert(Math.abs(a-b)<1e-10,key+': '+a+' vs '+b);numbers++;
 }
 try{
-  await page.goto(pathToFileURL(path.join(root,'part3.html')).href);
+  await page.goto(pathToFileURL(path.join(root,'part3-worked.html')).href);
   await page.evaluate(()=>document.fonts.ready);
   assert.equal(await page.locator('.mh-frame').count(),manifest.length);
   const notation=await page.evaluate(()=>AT.ui.notationCard().textContent);
@@ -183,7 +183,7 @@ try{
   }
   await page.setViewportSize({width:390,height:844});
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No page-level mobile overflow');
-  for(const filename of ['part3.html','notebooks/wordlm/07_multihead_step_by_step.html']){
+  for(const filename of ['part3-worked.html','notebooks/wordlm/07_multihead_step_by_step.html']){
     await page.goto(pathToFileURL(path.join(root,filename)).href);
     const links=await page.locator('a[href]').evaluateAll(links=>links.map(a=>a.href));
     for(const link of links.filter(l=>l.startsWith('file:'))){

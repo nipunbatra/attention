@@ -1,0 +1,116 @@
+{
+  "part": 3,
+  "series": "Attention and language",
+  "title": "Multi-head attention: optional worked reference",
+  "subtitle": "Every calculation, tensor shape and executable step behind the compact Part III lecture.",
+  "audience": "Deep-learning students who completed Parts I\u2013II",
+  "minutes": 45,
+  "centralLabel": "Two messages, one update",
+  "central": "E'=E+\\operatorname{Concat}(H^{(1)},H^{(2)})W_O",
+  "chain": [
+    {
+      "label": "What else could this token read?",
+      "section": "s01"
+    },
+    {
+      "label": "How does a second head get a different view?",
+      "section": "s02"
+    },
+    {
+      "label": "How do the two messages update the token?",
+      "section": "s03"
+    },
+    {
+      "label": "What are the matrix shapes?",
+      "section": "s04"
+    },
+    {
+      "label": "Write the familiar operations twice",
+      "section": "s05"
+    },
+    {
+      "label": "Do more heads help our trained model?",
+      "section": "s06"
+    },
+    {
+      "label": "Next: classify an image with the same attention operation",
+      "section": "s07"
+    }
+  ],
+  "sections": [
+    {
+      "id": "s01",
+      "title": "What else could this token read?",
+      "lit": ""
+    },
+    {
+      "id": "s02",
+      "title": "How does a second head get a different view?",
+      "lit": ""
+    },
+    {
+      "id": "s03",
+      "title": "How do the two messages update the token?",
+      "lit": ""
+    },
+    {
+      "id": "s04",
+      "title": "What are the matrix shapes?",
+      "lit": ""
+    },
+    {
+      "id": "s05",
+      "title": "Write the familiar operations twice",
+      "lit": ""
+    },
+    {
+      "id": "s06",
+      "title": "Do more heads help our trained model?",
+      "lit": ""
+    },
+    {
+      "id": "s07",
+      "title": "Next: classify an image with the same attention operation",
+      "lit": ""
+    }
+  ],
+  "objects": [
+    "e",
+    "q",
+    "k",
+    "v",
+    "a",
+    "d",
+    "ep"
+  ],
+  "legendTitle": "The same objects as Part II",
+  "provenance": "Original worked river-bank example, with visual inspiration from 3Blue1Brown and Jay Alammar. The two-head numbers are hand-chosen; the separate TinyStories results come from trained models.",
+  "prev": {
+    "label": "Part 2: Self-attention, from first principles",
+    "href": "attention.html"
+  },
+  "next": {
+    "label": "Part III: TinyStories and results",
+    "href": "part3.html"
+  },
+  "index": {
+    "label": "Series home",
+    "href": "index.html"
+  },
+  "notation": "multihead",
+  "footer": "Same inputs. Separate attention patterns. One updated representation. Full code in Notebook 7; optional training and cost reference in Part 2B.",
+  "objectSections": {
+    "e": "s01",
+    "q": "s02",
+    "k": "s02",
+    "v": "s02",
+    "a": "s01",
+    "d": "s03",
+    "ep": "s03"
+  },
+  "hook": "The final \u201cthe\u201d may need both the river setting and the person in the scene. How can two heads retrieve both?",
+  "sectionDirectory": "sections3-heads",
+  "runtimeFile": "part3-heads.js",
+  "toyFile": "toy3-heads.json",
+  "syntaxHighlighting": true
+}

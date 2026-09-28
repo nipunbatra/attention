@@ -12,7 +12,7 @@ const shots=fs.mkdtempSync('/private/tmp/wordlm-pipeline-');
 try{
   const page=await browser.newPage({viewport:{width:1280,height:720},reducedMotion:'reduce'});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
-  const url=pathToFileURL(path.resolve(process.argv[2]||'attention.html')).href;
+  const url=pathToFileURL(path.resolve(process.argv[2]||'wordlm-worked.html')).href;
   await page.goto(url);await page.evaluate(()=>document.fonts.ready);
   const original=await page.evaluate(()=>JSON.stringify(AT.model));
   const ids=await page.locator('.pipeline-lesson').evaluateAll(es=>es.map(e=>e.id));

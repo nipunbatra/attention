@@ -59,7 +59,10 @@ the four master SVGs and their graph data for reuse in slides.
 ### Illustrated study guide and matching slides
 
 [Read the chaptered guide](https://nipunbatra.github.io/attention/notebooks/wordlm/05_training_and_inference_maps.html).
-Every step links to its exact Part II slide and displays the same generated SVG.
+Every step links to its optional worked slide and displays the same generated SVG.
+The classroom TinyStories setup has moved to Part III, which follows only the
+four-head model before comparing the three trained models. The longer MLP and
+single-head steps remain here as a self-study reference.
 Visible map checkpoints highlight each phase before its worked example and code.
 You can also expand the complete map beside individual calculations. The lookup
 example traces four IDs into selected rows of the C×d embedding table, then

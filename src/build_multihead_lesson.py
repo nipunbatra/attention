@@ -268,6 +268,7 @@ def lab_steps():
 
 def build():
     from multihead_story import story
+    from multihead_capstone import classroom
     OUT.mkdir(exist_ok=True)
     STEPS.clear()
     lab = lab_steps()
@@ -291,14 +292,46 @@ def build():
                 objectSections=dict(e='s01',q='s02',k='s02',v='s02',a='s01',d='s03',ep='s03'),
                 hook='The final “the” may need both the river setting and the person in the scene. How can two heads retrieve both?',
                 sectionDirectory='sections3-heads',runtimeFile='part3-heads.js',toyFile='toy3-heads.json',syntaxHighlighting=True)
+    # Keep the complete arithmetic route as an optional reference, not the
+    # arrow-key classroom path. Notebook 7 continues to execute every step.
+    reference = list(STEPS)
+    config.update(title='Multi-head attention: optional worked reference',
+                  subtitle='Every calculation, tensor shape and executable step behind the compact Part III lecture.',
+                  next=dict(label='Part III: TinyStories and results',href='part3.html'))
+    (SRC/'part3-worked.json').write_text(json.dumps(config,indent=2)+'\n')
+    (FIG/'reference-manifest.json').write_text(json.dumps([{k:v for k,v in step.items() if k!='figure'} for step in reference],indent=2)+'\n')
+    (BOOK/'multihead-story.json').write_text((FIG/'reference-manifest.json').read_text())
+    STEPS.clear()
+    lecture_dir=SRC/'sections3-classroom'
+    lecture_dir.mkdir(exist_ok=True)
+    sections=[]
+    for n,(title,frames) in enumerate(classroom(stage,reference),1):
+        sections.append(dict(id=f's{n:02}',title=title,lit=''))
+        (lecture_dir/f'sec{n:02}.html').write_text(section(n,title,frames))
+    config.update(title='Multi-head attention and TinyStories',
+                  subtitle='Separate readings, one prediction. Finish with a trained four-head model, measured results and live story generation.',
+                  minutes=30, sections=sections,
+                  chain=[dict(label=s['title'],section=s['id']) for s in sections],
+                  sectionDirectory='sections3-classroom',
+                  objectSections=dict(e='s03',q='s02',k='s02',v='s02',a='s04',d='s04',ep='s04'),
+                  next=dict(label='Vision I: Vision Transformer',href='vision1.html'),
+                  footer='The text-attention finale: TinyStories, measured model comparisons and live generation. Detailed arithmetic remains in the optional worked reference and Notebook 7.')
     (SRC/'part3.json').write_text(json.dumps(config,indent=2)+'\n')
+    # Retain the former Part II lab as a standalone optional route. Its exact
+    # notebook links and extensive regression checks remain useful off-lecture.
+    lab_config=json.loads((SRC/'part2.json').read_text())
+    lab_config.update(title='TinyStories: optional MLP and single-head lab',
+                      subtitle='The detailed reference retained from Part II. The compact four-head classroom walkthrough is now in Part III.',
+                      wordlmReference=True,sectionDirectory='sections',toyFile='toy.json',
+                      prev=dict(label='Part II',href='attention.html'),
+                      next=dict(label='Part III: TinyStories finale',href='part3.html'))
+    (SRC/'wordlm-worked.json').write_text(json.dumps(lab_config,indent=2)+'\n')
     toy=dict(BASE,headsLesson=DATA)
     (SRC/'toy3-heads.json').write_text(json.dumps(toy,indent=2)+'\n')
     (FIG/'worksheet.json').write_text(json.dumps(toy,indent=2)+'\n')
     (BOOK/'multihead-worksheet.json').write_text(json.dumps(toy,indent=2)+'\n')
     (FIG/'manifest.json').write_text(json.dumps([{k:v for k,v in s.items() if k!='figure'} for s in STEPS],indent=2)+'\n')
-    (BOOK/'multihead-story.json').write_text((FIG/'manifest.json').read_text())
-    print(f'{len(STEPS)} visual frames, {len(sections)} sections; {len(lab)} notebook lab steps')
+    print(f'{len(STEPS)} classroom frames, {len(sections)} sections; {len(reference)} optional reference frames; {len(lab)} notebook lab steps')
 
 
 if __name__=='__main__':build()

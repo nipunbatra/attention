@@ -4,7 +4,7 @@ Two connected, interactive, offline-capable series for a deep-learning course. [
 
 - [Part 1](https://nipunbatra.github.io/attention/part1.html): characters, embeddings, an MLP, next-token probabilities, training, and generation.
 - [Part 2](https://nipunbatra.github.io/attention/attention.html): query, key, and value; causal self-attention; a contextual update; next-token prediction.
-- [Part 3](https://nipunbatra.github.io/attention/part3.html): multi-head attention, step by step, from the river-bank worksheet to scratch code, PyTorch and a trained model comparison.
+- [Part 3](https://nipunbatra.github.io/attention/part3.html): a compact multi-head overview, then the TinyStories walkthrough, quantitative results and live three-model generation.
 - [Optional Part 2B](https://nipunbatra.github.io/attention/part2b.html): the original longer reference on training, Transformer blocks and context cost.
 - [Part 4](https://nipunbatra.github.io/attention/part4.html): cross-attention through English-to-French translation, from source encoding to prediction, training, and generation.
 
@@ -27,7 +27,7 @@ The sources are slide-first: one bounded teaching idea per 16:9 frame, with larg
 
 Part 1 uses a trained small name model. Part 2 uses hand-designed weights so every step can be inspected. Part 3 reuses its exact token and position rows with two hand-chosen heads. The toy uses four illustrative word features and adds hand-chosen position vectors across those same coordinates. There is no extra position axis. These named features explain the arithmetic; they are not measurements from a trained language model.
 
-Parts 2 and 3 share the exact 4→8→20 ReLU prediction MLP. Part 3 is a 63-frame visual story. Possible colour/material/detail, subject/location and object/event readings motivate independent head weights. A fixed-value example shows why one shared source mixture cannot supply two desired outputs. Recall Part II’s Maya query/key/value example, then trace each head separately through its matrices, ten dot products and softmax. Four held-diagram frames reveal the weights, matching value rows, per-source products and final message sum for each head. It retains Part II’s E, A, H, M, ΔE and E′ notation, separates concatenation from the output projection, and explains projection biases beside the code. Notebook 7 embeds those same figures before an optional 58-step executable lab, including scratch/PyTorch parity checks. A separate three-seed TinyStories experiment compares genuinely trained MLP, one-head and four-head models. Before the scores, three model diagrams trace their actual input, position, attention and prediction paths to the browser demo. Two closing frames bridge to image patches and CLS-based classification in Vision I. Normalization, full Transformer blocks and complexity remain in optional Part 2B.
+Part 3 now has 22 classroom frames: seven introduce independent head readings and finish with the shape-labelled full model; fifteen cover TinyStories setup, a quick four-head forward/training/generation pass, saved validation curves, held-out loss and perplexity, cost, and unedited continuations. The final slide opens the live three-model app. The MLP and single-head models appear only in the comparison, not as repeated implementation walkthroughs. The detailed 62-frame arithmetic route remains in `part3-worked.html` and executable Notebook 7. Part II no longer includes the 89-frame TinyStories lab or nine benchmark slides; their original diagrams and exact notebook links remain in `wordlm-worked.html` and Notebook 5. Vision is a separate continuation. Normalization, full Transformer blocks and complexity remain in optional Part 2B.
 
 The standalone SVG preview is at `figures/attention-diagram-preview/index.html`. Its twelve stages build one causal attention head, then the output projection, residual addition, and the final-token vocabulary prediction. Section16 embeds the same diagram source and reads the article's live numerical model.
 
@@ -41,6 +41,8 @@ Vision I now connects Parts I–III directly to real photographs and a fully vis
 python3 src/assemble.py --part 1 --out part1.html
 python3 src/assemble.py --part 2 --out attention.html
 python3 src/assemble.py --part 3 --out part3.html
+python3 src/assemble.py --part 3 --config src/part3-worked.json --out part3-worked.html
+python3 src/assemble.py --part 2 --config src/wordlm-worked.json --out wordlm-worked.html
 python3 src/assemble.py --part 3 --config src/part2b.json --out part2b.html
 python3 src/assemble.py --part 4 --out part4.html
 # Internal source IDs 5–8 display as Vision Parts I–IV.

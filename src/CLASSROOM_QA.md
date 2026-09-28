@@ -1,5 +1,31 @@
 # Classroom release checks
 
+## 2026-09-28 · Compact multi-head lesson and TinyStories finale
+
+- Part III has 22 classroom frames (23 states including its title): seven
+  multi-head frames ending in the full diagram, then the TinyStories setup,
+  six quick model steps, measured results and the three-model generation app.
+  Part II's long TinyStories lab is now optional, with its links preserved.
+- `pytest src/test_text_capstone.py notebooks/wordlm/tests`: 63 passed. The
+  two displayed windows use the real benchmark vocabulary; every forward
+  shape matches MultiHeadAttentionLM. Full-sequence and last-query paths agree.
+  Printed code runs through loss and one optimizer update.
+- Capstone browser checks validate all 22 frames, saved curves/metrics, local
+  links, final app links, absence of the old Part II lab, SVG text bounds,
+  and 1280×720, 995×1031, 760×1041 presentation plus 390px reading layouts.
+  Reviewed the new diagrams, curves, tables, outputs and portrait slides.
+- The detailed head reference still passes 1,840 numerical comparisons,
+  controls, SVG bounds and notebook parity. Notebook 7 executes all 43 code
+  cells; Notebook 5 executes all 89. The optional pipeline's 89 frames and
+  nine benchmark frames pass their existing layout/content checks.
+- The app generated fresh outputs for all three checkpoints and matched its
+  saved greedy probes. All 36,000 browser logits agree with the PyTorch probes
+  within 3.06e-5 absolute error. Saved benchmark timings were not overwritten.
+- Full frame audits pass all 358 Part II and 23 Part III presentation states,
+  with no runtime errors, invalid formulas or overflow. The optional companion
+  passes its 88-step figure/link checks at 1280, 768 and 390px; both executed
+  notebook files match their downloadable ZIP entries byte-for-byte.
+
 ## 2026-09-28 · Matrix dimensions throughout the two-head map
 
 - Added explicit Q/K/V, QKᵀ, A and H = AV dimensions inside both head branches,

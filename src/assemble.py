@@ -151,6 +151,11 @@ ids = []
 for f in files:
     txt = open(f, encoding='utf-8').read()
     if N == 2:
+        # Retain the old lab's exact links and shared runtime in its optional
+        # reference export, without putting it back on Part II's classroom path.
+        if part.get('wordlmReference'):
+            txt = re.sub(r'<div class="companion" id="s19-pipeline-break">.*?</div>',
+                         '<!--WORDLM_PIPELINE-->\n<!--WORDLM_LAB-->', txt, flags=re.S)
         # Keep teaching extensions beside their owning sections.
         for marker, fragment in [('<!--POSITION_DETAIL-->', 'sec17_positions.html'),
                                  ('<!--WORDLM_PIPELINE-->', 'sec19_pipeline.html'),

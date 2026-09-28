@@ -1,76 +1,67 @@
 {
   "part": 3,
   "series": "Attention and language",
-  "title": "Multi-head attention, step by step",
-  "subtitle": "Different clues, separate readings. Work through two heads, then take the same idea to images.",
+  "title": "Multi-head attention and TinyStories",
+  "subtitle": "Separate readings, one prediction. Finish with a trained four-head model, measured results and live story generation.",
   "audience": "Deep-learning students who completed Parts I\u2013II",
-  "minutes": 45,
+  "minutes": 30,
   "centralLabel": "Two messages, one update",
   "central": "E'=E+\\operatorname{Concat}(H^{(1)},H^{(2)})W_O",
   "chain": [
     {
-      "label": "What else could this token read?",
+      "label": "Why more than one head?",
       "section": "s01"
     },
     {
-      "label": "How does a second head get a different view?",
+      "label": "The complete multi-head operation",
       "section": "s02"
     },
     {
-      "label": "How do the two messages update the token?",
+      "label": "TinyStories: text becomes training examples",
       "section": "s03"
     },
     {
-      "label": "What are the matrix shapes?",
+      "label": "One quick pass through the four-head model",
       "section": "s04"
     },
     {
-      "label": "Write the familiar operations twice",
+      "label": "What did the trained models achieve?",
       "section": "s05"
     },
     {
-      "label": "Do more heads help our trained model?",
+      "label": "Finish by comparing their stories",
       "section": "s06"
-    },
-    {
-      "label": "Next: classify an image with the same attention operation",
-      "section": "s07"
     }
   ],
   "sections": [
     {
       "id": "s01",
-      "title": "What else could this token read?",
+      "title": "Why more than one head?",
       "lit": ""
     },
     {
       "id": "s02",
-      "title": "How does a second head get a different view?",
+      "title": "The complete multi-head operation",
       "lit": ""
     },
     {
       "id": "s03",
-      "title": "How do the two messages update the token?",
+      "title": "TinyStories: text becomes training examples",
       "lit": ""
     },
     {
       "id": "s04",
-      "title": "What are the matrix shapes?",
+      "title": "One quick pass through the four-head model",
       "lit": ""
     },
     {
       "id": "s05",
-      "title": "Write the familiar operations twice",
+      "title": "What did the trained models achieve?",
       "lit": ""
     },
     {
       "id": "s06",
-      "title": "Do more heads help our trained model?",
-      "lit": ""
-    },
-    {
-      "id": "s07",
-      "title": "Next: classify an image with the same attention operation",
+      "title": "Finish by comparing their stories",
       "lit": ""
     }
   ],
@@ -98,18 +89,18 @@
     "href": "index.html"
   },
   "notation": "multihead",
-  "footer": "Same inputs. Separate attention patterns. One updated representation. Full code in Notebook 7; optional training and cost reference in Part 2B.",
+  "footer": "The text-attention finale: TinyStories, measured model comparisons and live generation. Detailed arithmetic remains in the optional worked reference and Notebook 7.",
   "objectSections": {
-    "e": "s01",
+    "e": "s03",
     "q": "s02",
     "k": "s02",
     "v": "s02",
-    "a": "s01",
-    "d": "s03",
-    "ep": "s03"
+    "a": "s04",
+    "d": "s04",
+    "ep": "s04"
   },
   "hook": "The final \u201cthe\u201d may need both the river setting and the person in the scene. How can two heads retrieve both?",
-  "sectionDirectory": "sections3-heads",
+  "sectionDirectory": "sections3-classroom",
   "runtimeFile": "part3-heads.js",
   "toyFile": "toy3-heads.json",
   "syntaxHighlighting": true

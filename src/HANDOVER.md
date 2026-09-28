@@ -10,6 +10,32 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+2026-09-28 text-series finale (supersedes the long Part III classroom route):
+
+- `multihead_capstone.py` supplies 22 classroom frames. Seven cover head
+  intuition, terse river roles, concatenation and the full shape-labelled map.
+  TinyStories follows: three setup frames, six forward/training/generation
+  steps, four protocol/results/cost frames, and two qualitative/app frames.
+- `build_multihead_lesson.py` also retains the original 62-frame story as
+  `part3-worked.html` (`part3-worked.json`, `reference-manifest.json`). Notebook
+  7 consumes the reference manifest so its complete executable arithmetic is
+  preserved. The classroom manifest is now separate; do not re-expand it.
+- Part II's `sec19` no longer inserts the 89 pipeline and nine benchmark
+  frames. Notebook 5 links to `wordlm-worked.html`, an optional reference export
+  enabled by `wordlmReference` in `wordlm-worked.json`. Preserve that route's
+  original frame numbering. Main lecture links instead lead to Part III.
+- Results and curves are generated from the saved three-seed comparison;
+  qualitative text comes unchanged from `word-lab/saved-examples.json`.
+  Four heads have the lowest test loss/PPL here, equal attention parameter
+  counts, and slightly greater training time. Do not force a qualitative win
+  or change checkpoints/results to make the narrative stronger.
+- Rebuild classroom and both optional pages using the three assemble commands
+  in README. `check_text_capstone.mjs` and `test_text_capstone.py` check the new
+  route; `check_multihead_lesson.mjs` now tests the optional detailed route.
+  The older pipeline and browser-lab tests target `wordlm-worked.html`.
+- The presentation skill guided the concise flow and retained native SVG
+  style. No new model training or changes to Vision were made for this request.
+
 2026-09-28 dimensions on the two-head architecture diagram:
 
 - The shared `full_map` labels Q, K and V separately as [10×2], scores and A

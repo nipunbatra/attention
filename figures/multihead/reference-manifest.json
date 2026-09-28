@@ -1,0 +1,436 @@
+[
+  {
+    "key": "s01-v-prefix",
+    "title": "Back to the river bank",
+    "body": "Which parts of this prefix would help you choose a continuation?",
+    "code": "",
+    "companion": ""
+  },
+  {
+    "key": "s01-v-coat-one",
+    "title": "One token can need several kinds of detail",
+    "body": "At \u201ccoat\u201d, colour is useful\u2014but so are material and shape. One head can read several words. The question is whether we want the same mixture for every feature.",
+    "code": "",
+    "companion": "<p>These next examples illustrate possible readings, not attention measured in our trained language model. A query is a numerical vector, not an English question. Each source also has a numerical key and value. The arrows highlight plausible useful sources; they do not mean all other sources are masked or have exactly zero weight. In deeper layers, source rows can already contain context.</p>"
+  },
+  {
+    "key": "s01-v-coat-many",
+    "title": "Three heads can keep three readings separate",
+    "body": "One head could favour red, another wool, another hooded. Each receives the same input rows but can return a different weighted message. The output projection combines those messages.",
+    "code": "",
+    "companion": "<p>This is a possible division of work, not three manually assigned jobs. All three heads see all seven rows, including coat. Head-specific projections can expose different matching and value features. A single head may also encode several attributes; the extra capability is independent source weighting, not a rule that each head can understand only one concept.</p>"
+  },
+  {
+    "key": "s01-v-grammar",
+    "title": "The nearest noun is not always the subject",
+    "body": "The plural subject and the location are both useful clues. Separate heads can preserve them without having to favour the same source.",
+    "code": "",
+    "companion": "<p>The receiver is usually, the last known token\u2014not the as-yet-unknown word bark. \u201cThe dogs near the gate usually bark at visitors\u201d is one possible continuation. Dogs supports bark, not barks; the nearer singular noun gate does not control subject agreement. Both useful source words occur before the receiver. These semantic roles are illustrative, not measured trained heads.</p>"
+  },
+  {
+    "key": "s01-v-event",
+    "title": "A reference and an event are different clues",
+    "body": "At \u201cIt\u201d, one reading could retrieve the object; another could retrieve what happened to it. Combining glass and dropping makes \u201cbroke\u201d a plausible continuation, not a certainty.",
+    "code": "",
+    "companion": "<p>We treat punctuation as a token in this illustration: It is receiver 6. Both useful sources are in its known prefix. The two heads run in parallel, so the event head does not wait for the reference head\u2019s result. Contextual input rows from earlier layers can help make these matches.</p>"
+  },
+  {
+    "key": "s01-v-event-change",
+    "title": "Change the event; keep the object",
+    "body": "The glass is unchanged. \u201cWashed\u201d supports a different continuation, such as \u201cgleamed\u201d. Separate messages carry both the object clue and the event clue.",
+    "code": "",
+    "companion": "<p>The arrows are a schematic of useful information, not a promise that a trained attention map remains unchanged after a word substitution. All head projections learn jointly from prediction loss. Interpretable roles sometimes emerge, but some heads overlap or can be pruned; see <a href=\"https://aclanthology.org/P19-1580/\">Voita et al. (2019)</a>. More heads are a capacity choice to test, not an automatic improvement.</p>"
+  },
+  {
+    "key": "s01-v-shared",
+    "title": "One head gives \u201cthe\u201d one weighted message",
+    "body": "One query chooses how much to read from each token. The head mixes their value vectors into one message for the final \u201cthe\u201d.",
+    "code": "",
+    "companion": "<p>The prefix is \u201cThe fisherman sat beside the river bank and watched the ___\u201d. The final known token, the at slot 10, is the receiver. The blank has no query yet. One head can read several words and carry several features in its message. It uses one shared set of source weights for all coordinates of that message. \u201cSetting clues?\u201d describes a possible role of the numerical query, not a literal question or a manually assigned task.</p>"
+  },
+  {
+    "key": "s01-v-independent",
+    "title": "Two heads give \u201cthe\u201d two separate messages",
+    "body": "Same receiver, two queries. Each head has its own keys, values and weights. One can favour river, the other fisherman. We combine their messages afterward.",
+    "code": "",
+    "companion": "<p>Each head learns its own W_Q, W_K and W_V, applied to the same input rows. At this receiver that produces one query per head. Both heads can read all ten known tokens and run in parallel. Training can discover useful roles, but does not assign setting and person labels or guarantee that the heads specialize this way.</p><details><summary>Optional: why separate weights can help</summary><p>In a separate two-source toy, let river have value [10, 1] and fisherman [2, 8]. A single head with weights [0.8, 0.2] returns [8.4, 2.4]. Both coordinates use that same mixture. Two heads can instead select one value coordinate each: a setting head with weights [0.8, 0.2] gives 8.4, and a person head with weights [0.2, 0.8] gives 6.6. With these fixed values, one river weight cannot be both 0.8 and 0.2. This illustrates independent source weighting, not a proof that every one-head network fails. These invented numbers are separate from the full-sentence worksheet that follows.</p></details>"
+  },
+  {
+    "key": "s01-v-one",
+    "title": "Setting clues in the full sentence",
+    "body": "Back to all ten tokens. Our hand-chosen head 1 gives river a large weight. Its values carry setting information to the receiver.",
+    "code": "",
+    "companion": "<p>These are hand-chosen two-head parameters applied to Part II\u2019s exact input rows. \u201cSetting\u201d and \u201cperson\u201d name the intended behaviour of this example, not jobs assigned to trained heads. Arrows show information moving from source to receiver; their widths encode computed attention weights.</p>"
+  },
+  {
+    "key": "s01-v-two",
+    "title": "Another head can read who is there",
+    "body": "The sentence and receiver stay fixed. A different head gives fisherman a large weight.",
+    "code": "",
+    "companion": ""
+  },
+  {
+    "key": "s01-v-both",
+    "title": "Keep both readings",
+    "body": "Two heads can retain different source mixtures at the same token. They run in parallel, not one after the other.",
+    "code": "",
+    "companion": ""
+  },
+  {
+    "key": "s02-v-break",
+    "title": "How does each head choose what to read?",
+    "body": "",
+    "code": "",
+    "companion": "<p>Visual inspiration: <a href=\"https://www.3blue1brown.com/lessons/attention/\">3Blue1Brown\u2019s attention lesson</a> and <a href=\"https://jalammar.github.io/illustrated-transformer/\">Jay Alammar\u2019s Illustrated Transformer</a>. We keep our own river-bank example, numbers and Part II row-vector convention. A head-specific superscript labels a head; a subscript still labels a token.</p>"
+  },
+  {
+    "key": "s02-v-recall",
+    "title": "Recall the Maya example: query, key and value",
+    "body": "In Part II\u2019s illustrative later-layer example, the query asks for a person. Maya\u2019s key can match that request. Her value supplies useful details. A head uses separate projections for these roles.",
+    "code": "",
+    "companion": "<p>This is the verbal example from <a href=\"attention.html#s11-frame-separate-maps\">Part II</a>. It illustrates possible later-layer representations, not measured model outputs. Earlier layers may have gathered the preceding facts into the second Maya row. Every token has a query, key and value, even though this example follows only She\u2019s query and Maya\u2019s key/value. The actual vectors contain numbers, not written questions or records.</p>"
+  },
+  {
+    "key": "s02-v-plan",
+    "title": "The two heads and the output projection",
+    "body": "Each head keeps all 10 tokens. \\(A\\) weights source tokens; \\(H=AV\\) contains their messages. Concatenation joins coordinates, so the result is \\(10\\times4\\), not \\(20\\times2\\).",
+    "code": "",
+    "companion": "<p>This diagram shows one sentence, without a batch axis. E has shape [10, 4]. Each head has separate W_Q, W_K and W_V of shape [4, 2], producing Q, K and V each [10, 2]. QK\u1d40 multiplies [10, 2] by [2, 10] to give [10, 10] scores. Scaling, causal masking and row-wise softmax preserve that shape. A has one row per receiver and one column per source. H = AV multiplies [10, 10] by [10, 2] to produce [10, 2]: one message per receiver. The final receiver\u2019s individual q, k, v and message rows are each [1, 2].</p><p>H\u00b9 and H\u00b2 concatenate to [10, 4]. W_O [4, 4] gives \u0394E [10, 4], then E\u2032 = E + \u0394E is also [10, 4]. Its last row [1, 4] feeds the prediction MLP. Here the joined width already equals the embedding width. W_O still learns to mix head outputs into embedding coordinates. In general its shape is [n_heads \u00d7 d_v, d_model]. It is not an inverse of the input projections.</p>"
+  },
+  {
+    "key": "s02-v-roles",
+    "title": "The same roles in the river example",
+    "body": "Head 1 can ask about the setting; head 2 can ask about the person. These are interpretations of our chosen numbers. Training learns the projections without assigning these jobs.",
+    "code": "",
+    "companion": ""
+  },
+  {
+    "key": "s02-v-query",
+    "title": "Head 1: computing the setting query",
+    "body": "In this toy, the final \u201cthe\u201d has only a nonzero glue coordinate. The two columns of \\(W_Q\\) turn that input into water and finance matching features.",
+    "code": "",
+    "companion": "<p>E contains position-aware embedding rows, not token IDs. The water, finance, person and glue axes are invented for teaching; glue is our toy feature for function words such as \u201cthe\u201d. W_Q reads all four input coordinates. Each query coordinate is a dot product with one column of W_Q. These sparse matrices are hand-chosen; learned projections need not be sparse or interpretable. The head superscripts label heads, not powers. Query/key width is two per head here; Part II\u2019s single-head toy used three.</p>"
+  },
+  {
+    "key": "s02-v-query-person",
+    "title": "Head 2: computing the person query",
+    "body": "The input embedding stays [0, 0, 0, 2.3]. Head 2 uses its own \\(W_Q\\). Its query requests the person feature and gives zero weight to the glue matching feature.",
+    "code": "",
+    "companion": ""
+  },
+  {
+    "key": "s02-v-sources",
+    "title": "Source rows supply keys and values",
+    "body": "Each head has its own \\(W_K\\) and \\(W_V\\), both \\(4\\times2\\) here. For easy arithmetic, they select the same coordinates. Keys determine matching; values carry the numbers we mix.",
+    "code": "",
+    "companion": "<p>Head 1 uses W_K = W_V = [[1,0],[0,1],[0,0],[0,0]], selecting water and finance. Head 2 uses W_K = W_V = [[0,0],[0,0],[1,0],[0,1]], selecting person and glue. Each matrix is [4,2] and acts on every source row, including sources not shown here. W_K and W_V are distinct parameters with equal numerical entries in this worksheet. They need not be equal in a trained model. In Part II\u2019s Maya example they served different roles too.</p>"
+  },
+  {
+    "key": "s02-v-head1-matrices",
+    "title": "Head 1: the query and key matrices",
+    "body": "Every token has a query and a key. We follow the last query row, for the final \u201cthe\u201d, and compare it with all ten key rows.",
+    "code": "",
+    "companion": ""
+  },
+  {
+    "key": "s02-v-match",
+    "title": "Head 1: one dot product per key",
+    "body": "Transposing \\(K\\) puts each source key in a column. Multiplying the query row by \\(K^\\top\\) gives one raw dot product per source.",
+    "code": "",
+    "companion": ""
+  },
+  {
+    "key": "s02-v-weights",
+    "title": "Head 1: turning scores into weights",
+    "body": "Divide each dot product by \u221a2, then apply softmax across these ten sources. The final query can see all ten tokens. The unrounded weights sum to one.",
+    "code": "",
+    "companion": "<p>Every source contributes to the denominator, including the receiver itself. All displayed numbers are rounded; calculations use full precision. At receiver row 10, the causal mask permits source positions 1 through 10. Earlier query rows cannot read later sources. The notebook also computes the full masked attention matrix. A numerically stable softmax subtracts the maximum score before exponentiating; this leaves the normalized weights unchanged.</p>"
+  },
+  {
+    "key": "s02-v-head1-alpha",
+    "title": "Head 1: the weights for each source",
+    "body": "\\(\\alpha_{10,j}\\) tells us how much the final \u201cthe\u201d reads from source \\(j\\). Keep these weights as we bring in the values.",
+    "code": "",
+    "companion": "<p>These are the ten entries of row 10 of this head\u2019s attention matrix A. We display them vertically so each weight can sit beside its source word and value row. The receiver stays fixed at token 10. Only the source index j changes.</p>"
+  },
+  {
+    "key": "s02-v-head1-values",
+    "title": "Head 1: the value beside each weight",
+    "body": "Each source supplies a two-number value row from this head\u2019s V matrix. The source words and weights stay in place, so we can see which weight belongs to which value.",
+    "code": "",
+    "companion": "<p>V = E W_V has one row per source. These are projected value vectors, not token IDs or attention weights. Our hand-chosen worksheet gives W_K and W_V equal entries, but they remain separate parameters with different roles. The keys helped compute the weights. V supplies the content to mix.</p>"
+  },
+  {
+    "key": "s02-v-head1-products",
+    "title": "Head 1: each source\u2019s contribution",
+    "body": "Multiply both value coordinates by the same source weight. The new column shows exactly what each source contributes. Displayed numbers are rounded.",
+    "code": "",
+    "companion": "<p>The calculation below the rows expands the highlighted source\u2019s scalar\u2013vector multiplication coordinate by coordinate. A small weight scales down the entire value vector. The sign of each coordinate comes from the value. All products use the unrounded weights.</p>"
+  },
+  {
+    "key": "s02-v-head1-sum",
+    "title": "Head 1: adding the contributions",
+    "body": "Add the first coordinates to get the first message coordinate. Add the second coordinates to get the second. All ten sources contribute. The sum uses unrounded products.",
+    "code": "",
+    "companion": "<p>This is one row of H = AV: m\u2081\u2080 = \u03a3\u2c7c \u03b1\u2081\u2080,\u2c7c v\u2c7c. The original weight row has shape [1,10] and V has shape [10,2], giving a [1,2] message. We arranged the weights vertically only to make the source correspondence visible. The displayed products are rounded, but the sums use full precision.</p>"
+  },
+  {
+    "key": "s02-v-head2-matrices",
+    "title": "Head 2: the query and key matrices",
+    "body": "Every token has a query and a key. We follow the last query row, for the final \u201cthe\u201d, and compare it with all ten key rows.",
+    "code": "",
+    "companion": ""
+  },
+  {
+    "key": "s02-v-head2-dots",
+    "title": "Head 2: one dot product per key",
+    "body": "Transposing \\(K\\) puts each source key in a column. Multiplying the query row by \\(K^\\top\\) gives one raw dot product per source.",
+    "code": "",
+    "companion": ""
+  },
+  {
+    "key": "s02-v-head2-softmax",
+    "title": "Head 2: turning scores into weights",
+    "body": "Divide each dot product by \u221a2, then apply softmax across these ten sources. The final query can see all ten tokens. The unrounded weights sum to one.",
+    "code": "",
+    "companion": "<p>Every source contributes to the denominator, including the receiver itself. All displayed numbers are rounded; calculations use full precision. At receiver row 10, the causal mask permits source positions 1 through 10. Earlier query rows cannot read later sources. The notebook also computes the full masked attention matrix. A numerically stable softmax subtracts the maximum score before exponentiating; this leaves the normalized weights unchanged.</p>"
+  },
+  {
+    "key": "s02-v-head2-alpha",
+    "title": "Head 2: the weights for each source",
+    "body": "\\(\\alpha_{10,j}\\) tells us how much the final \u201cthe\u201d reads from source \\(j\\). Keep these weights as we bring in the values.",
+    "code": "",
+    "companion": "<p>These are the ten entries of row 10 of this head\u2019s attention matrix A. We display them vertically so each weight can sit beside its source word and value row. The receiver stays fixed at token 10. Only the source index j changes.</p>"
+  },
+  {
+    "key": "s02-v-head2-values",
+    "title": "Head 2: the value beside each weight",
+    "body": "Each source supplies a two-number value row from this head\u2019s V matrix. The source words and weights stay in place, so we can see which weight belongs to which value.",
+    "code": "",
+    "companion": "<p>V = E W_V has one row per source. These are projected value vectors, not token IDs or attention weights. Our hand-chosen worksheet gives W_K and W_V equal entries, but they remain separate parameters with different roles. The keys helped compute the weights. V supplies the content to mix.</p>"
+  },
+  {
+    "key": "s02-v-head2-products",
+    "title": "Head 2: each source\u2019s contribution",
+    "body": "Multiply both value coordinates by the same source weight. The new column shows exactly what each source contributes. Displayed numbers are rounded.",
+    "code": "",
+    "companion": "<p>The calculation below the rows expands the highlighted source\u2019s scalar\u2013vector multiplication coordinate by coordinate. A small weight scales down the entire value vector. The sign of each coordinate comes from the value. All products use the unrounded weights.</p>"
+  },
+  {
+    "key": "s02-v-head2-sum",
+    "title": "Head 2: adding the contributions",
+    "body": "Add the first coordinates to get the first message coordinate. Add the second coordinates to get the second. All ten sources contribute. The sum uses unrounded products.",
+    "code": "",
+    "companion": "<p>This is one row of H = AV: m\u2081\u2080 = \u03a3\u2c7c \u03b1\u2081\u2080,\u2c7c v\u2c7c. The original weight row has shape [1,10] and V has shape [10,2], giving a [1,2] message. We arranged the weights vertically only to make the source correspondence visible. The displayed products are rounded, but the sums use full precision.</p>"
+  },
+  {
+    "key": "s02-v-message",
+    "title": "The two complete head calculations",
+    "body": "Each head has now computed its own scores, weights and message. We keep both messages, then concatenate and project them into the embedding update.",
+    "code": "",
+    "companion": "<p>As in Part II, \u03b1\u1d62\u2c7c is one attention weight and A stores the full attention matrix. The walkthrough follows its final row, A[10, :], using one-based token positions. Q/K choose weights and V supplies the weighted content. All ten source contributions enter each message. The calculations are independent across heads and can run in parallel.</p>"
+  },
+  {
+    "key": "s02-v-wide",
+    "title": "What if we made one head wider?",
+    "body": "A wider query/key can compare more features. Their products still add into one score per source, followed by one softmax.",
+    "code": "",
+    "companion": "<p>For this controlled comparison, concatenate the two existing Q, K and V projections into width-four projections. A single wide head scales its dot products by \u221a4. The two narrower heads each scale by \u221a2 and normalize separately. The example changes no projection entries and does not compare separately trained models.</p>"
+  },
+  {
+    "key": "s02-v-separate",
+    "title": "Two heads keep separate source preferences",
+    "body": "A wider value vector carries more features with one shared weight row. Two heads can favour river for setting features and fisherman for person features.",
+    "code": "",
+    "companion": "<p>Every displayed attention row sums to one over all ten sources; \u201cothers\u201d combines the remaining eight. One wide head uses its single row for all four value coordinates. The two heads use different rows for their two-coordinate values, preserving both mixtures before W_O combines them. This is a useful architectural choice, not proof that one wide head cannot learn useful relationships or that more heads always improve accuracy. See <a href=\"https://arxiv.org/abs/1706.03762\">Attention Is All You Need, \u00a73.2.2</a>.</p>"
+  },
+  {
+    "key": "s03-v-break",
+    "title": "What reaches the receiving token?",
+    "body": "",
+    "code": "",
+    "companion": ""
+  },
+  {
+    "key": "s03-v-join",
+    "title": "Put the messages side by side",
+    "body": "Concatenation keeps the two messages separate. It does not add them coordinate by coordinate.",
+    "code": "",
+    "companion": ""
+  },
+  {
+    "key": "s03-v-output",
+    "title": "Map the messages back to embedding space",
+    "body": "\\(W_O\\) learns how the head messages contribute to the embedding update. Four joined coordinates become four update coordinates.",
+    "code": "",
+    "companion": "<p>Equivalently, split W_O into a two-row block per head. Then \u0394e = m\u00b9 W_O\u00b9 + m\u00b2 W_O\u00b2: each head contributes a four-coordinate update. Concatenation followed by one matrix multiplication computes exactly that sum. We retain the standard concat notation from the original Transformer paper.</p>"
+  },
+  {
+    "key": "s03-v-residual",
+    "title": "Add context to the original embedding",
+    "body": "Exactly as in Part II: \\(e_i\\) is the input embedding row, \\(\\Delta e_i\\) is the context update, and \\(e_i^{\\prime}=e_i+\\Delta e_i\\).",
+    "code": "",
+    "companion": ""
+  },
+  {
+    "key": "s03-v-map",
+    "title": "Return to the next-token prediction",
+    "body": "The last updated row still feeds the prediction MLP. More heads change how it reads context\u2014not what the target means.",
+    "code": "",
+    "companion": ""
+  },
+  {
+    "key": "s03-v-explore",
+    "title": "Try the other bank",
+    "body": "<div id=\"s04-head-explorer\"></div>",
+    "code": "",
+    "companion": "<p>Change to the cheque sentence. These controls recalculate Q, K, V, both attention rows, the messages and the vocabulary prediction from the hand-chosen parameters. This is a worked arithmetic explorer, not a trained language model.</p>"
+  },
+  {
+    "key": "s04-v-break",
+    "title": "Can every token do this at once?",
+    "body": "",
+    "code": "",
+    "companion": ""
+  },
+  {
+    "key": "s04-v-project",
+    "title": "Project every row with the same head matrix",
+    "body": "Ten input rows \u00d7 four coordinates. Multiplying by a 4 \u00d7 2 projection gives ten query rows \u00d7 two coordinates.",
+    "code": "",
+    "companion": ""
+  },
+  {
+    "key": "s04-v-grid",
+    "title": "One head makes one attention grid",
+    "body": "Keep Part II\u2019s notation: \\(M\\) is the causal mask, \\(A=\\operatorname{softmax}(QK^\\top/\\sqrt{d_k}+M)\\), and \\(H=AV\\) stores the message rows.",
+    "code": "",
+    "companion": ""
+  },
+  {
+    "key": "s04-v-parallel",
+    "title": "Two heads make two attention grids",
+    "body": "Both heads receive the same E. Each uses its own projections, attention grid and values. Neither reads the other head\u2019s output.",
+    "code": "",
+    "companion": ""
+  },
+  {
+    "key": "s04-v-joined",
+    "title": "Join coordinates, not token rows",
+    "body": "\\(\\Delta E=\\operatorname{Concat}(H^{(1)},H^{(2)})W_O\\), then \\(E^{\\prime}=E+\\Delta E\\). The superscript labels the head; each matrix still has ten token rows.",
+    "code": "",
+    "companion": ""
+  },
+  {
+    "key": "s05-v-scratch",
+    "title": "One head is still the Part II calculation",
+    "body": "No new attention rule is needed. We reuse the same calculation with different learned matrices.",
+    "code": "def head(E, W_Q, W_K, W_V):\n    Q, K, V = E @ W_Q, E @ W_K, E @ W_V\n    scores = Q @ K.T / math.sqrt(Q.shape[-1])\n    future = torch.ones(len(E), len(E), dtype=torch.bool).triu(1)\n    A = scores.masked_fill(future, -torch.inf).softmax(-1)\n    return A @ V",
+    "companion": ""
+  },
+  {
+    "key": "s05-v-combine",
+    "title": "Call it with two sets of parameters",
+    "body": "This unbatched example keeps one row per token. The notebook checks these outputs against the printed numbers.",
+    "code": "H1 = head(E, W_Q1, W_K1, W_V1)\nH2 = head(E, W_Q2, W_K2, W_V2)\njoined = torch.cat([H1, H2], dim=-1)  # [10, 4]\ndelta_E = joined @ W_O\nE_prime = E + delta_E",
+    "companion": ""
+  },
+  {
+    "key": "s05-v-train",
+    "title": "The same loss trains both heads",
+    "body": "Next-token cross-entropy trains all the projections together. We do not label training examples \u201csetting head\u201d or \u201cperson head\u201d.",
+    "code": "",
+    "companion": "<p>At training time, the observed next-token ID is the target for the vocabulary logits. At inference time, weights remain fixed: tokenize a prefix, run the model, choose a next token and append it. These steps are unchanged from Part II; the full executable loop remains in Notebook 7.</p>"
+  },
+  {
+    "key": "s05-v-bias",
+    "title": "A bias adds a learned offset",
+    "body": "The offset [0.2, \u22120.1] is illustrative. With bias=True, training learns it along with the projection weights. We use bias=False so the code matches the worksheet.",
+    "code": "",
+    "companion": "<p>A projection bias is shared across token positions (and batches). Position embeddings depend on the position, so these are different operations. A bias can shift the projection even for a zero input. Omitting it keeps this example simpler; it is not a general claim that bias-free attention is better.</p>"
+  },
+  {
+    "key": "s05-v-bias-layers",
+    "title": "Which projections use the bias flag?",
+    "body": "PyTorch defaults to bias=True. In this lesson, bias=False removes the Q, K, V and output offsets. It leaves the mask, position embeddings and separate prediction layers unchanged.",
+    "code": "",
+    "companion": "<p>With total width four, bias=True adds four query offsets, four key offsets, four value offsets and four output offsets: 16 additional trainable scalars. Within each head the Q/K/V bias slice has width two. PyTorch stores the three input offsets together in in_proj_bias and the output offset in out_proj.bias. The distinct add_bias_kv option is not the bias flag discussed here. <a href=\"https://docs.pytorch.org/docs/stable/generated/torch.nn.MultiheadAttention.html\">Official API documentation</a>. Both our scratch implementation and trained attention variants omit attention projection biases; their prediction MLP layers retain biases.</p>"
+  },
+  {
+    "key": "s05-v-pytorch",
+    "title": "PyTorch packages the head calculation",
+    "body": "Here E has shape [10, 4]: one unbatched sequence. PyTorch handles the projections and mixing. A contains two 10 \u00d7 10 weight grids.",
+    "code": "mha = nn.MultiheadAttention(embed_dim=4, num_heads=2, bias=False)\nfuture = torch.ones(10, 10, dtype=torch.bool).triu(1)\ndelta_E, A = mha(E, E, E, attn_mask=future,\n                 average_attn_weights=False)\nE_prime = E + delta_E",
+    "companion": "<p>The library layer does not add position embeddings, the residual or the vocabulary classifier. attn_mask=future blocks future sources. average_attn_weights=False returns each head\u2019s weight grid separately; it changes the returned diagnostic weights, not how the head messages combine. The notebook copies identical weights from our scratch implementation to PyTorch and checks both \u0394E and the per-head attention weights. See the <a href=\"https://docs.pytorch.org/docs/stable/generated/torch.nn.MultiheadAttention.html\">PyTorch documentation</a>.</p>"
+  },
+  {
+    "key": "s06-v-return",
+    "title": "Back to the complete multi-head model",
+    "body": "We have computed both heads, joined their messages, applied the output projection and added the residual. The final updated row still goes to the familiar prediction MLP.",
+    "code": "",
+    "companion": "<p>This repeats the same two-head diagram after the detailed arithmetic, rather than introducing a new architecture. The worksheet uses ten rows of width four. <a href=\"#s02-v-head1-matrices\">Revisit Head 1\u2019s calculations</a>, <a href=\"#s02-v-head2-matrices\">Head 2\u2019s calculations</a>, or <a href=\"#s03-v-output\">the output projection</a>. <a href=\"notebooks/wordlm/07_multihead_step_by_step.html\">Notebook 7</a> executes the complete forward pass, including the prediction MLP and vocabulary probabilities. This teaching model has one attention update and a prediction MLP; it is not a diagram of every component in a deep production Transformer.</p>"
+  },
+  {
+    "key": "s06-v-model-mlp",
+    "title": "The live MLP reads a flattened window",
+    "body": "Now look at the genuinely trained browser models. The MLP reads all 64 token rows in fixed order. Its hidden layer receives 4,096 inputs.",
+    "code": "",
+    "companion": "<p>This diagram follows FixedWindowMLP in wordlm.py and the saved comparison protocol. Each token embedding has 64 coordinates; concatenating 64 rows gives 4,096. A 4,096\u2192256 hidden layer with ReLU feeds a 256\u21924,000 vocabulary layer. The fixed concatenation order already distinguishes slots. This baseline has no separate learned position table. Its larger first MLP matrix helps explain its parameter count.</p>"
+  },
+  {
+    "key": "s06-v-model-one",
+    "title": "One head adds a learned context update",
+    "body": "Add learned position rows before Q, K and V. One head mixes the sources, the output projection transforms its message, and the residual preserves E. Only the last updated row feeds the prediction MLP.",
+    "code": "",
+    "companion": "<p>The trained single-head model uses d_model = d_k = d_v = 64. The full attention matrix has shape 64\u00d764, with future and padding masks. The optimized browser inference path computes only the final query row, which gives the same next-token logits as taking the last row of this full diagram. The 64\u2192256 prediction MLP replaces the baseline\u2019s much wider 4,096\u2192256 input layer.</p>"
+  },
+  {
+    "key": "s06-v-model-many",
+    "title": "Four heads keep four source-weight patterns",
+    "body": "The input and output widths stay 64. Each head now uses 16 coordinates and its own softmax. Concatenation restores width 64 before the output projection, residual and the same prediction MLP.",
+    "code": "",
+    "companion": "<p>This follows MultiHeadAttentionLM in multihead.py. Each head has Q, K and V of shape 64\u00d716 and its own 64\u00d764 attention matrix. Its H = AV has shape 64\u00d716. Concatenating four H matrices gives 64\u00d764, followed by W_O [64\u00d764]. Both attention variants add learned absolute position rows to token rows. The comparison does not isolate the effect of position encoding, because it does not train a position-free attention ablation. Head count, total width, parameter count, measured losses and device timings must be distinguished.</p>"
+  },
+  {
+    "key": "s06-v-width",
+    "title": "Keep the total width fixed",
+    "body": "The trained comparison uses width 64. Four smaller heads give four attention patterns with the same attention parameter count as one wide head.",
+    "code": "",
+    "companion": "<p>Implementations often concatenate the per-head W_Q matrices into one large W_Q (and similarly for K and V). They project E first and reshape the projected coordinates into heads. They do not assign disjoint slices of raw E to different heads. Our two-head arithmetic toy uses width 4; this experiment uses width 64.</p>"
+  },
+  {
+    "key": "s06-v-scores",
+    "title": "Compare held-out next-token prediction",
+    "body": "For each run, perplexity = exp(cross-entropy using natural logs). Lower means higher probability for observed tokens. The table averages three seeds on the same test stories.",
+    "code": "",
+    "companion": "<p>Same 6,000-document TinyStories subset, tokenizer, 64-token context, 6,000-update budget and validation selection. Seeds 11, 29 and 47. More heads helped this experiment; this is not a guarantee for every dataset, head count or generated continuation. <a href=\"notebooks/wordlm/06_multihead_comparison.html\">Full experiment and variation across seeds</a>.</p>"
+  },
+  {
+    "key": "s06-v-cost",
+    "title": "Compare size and training time too",
+    "body": "Mean training times on Apple M2 Max/MPS, including validation. The two attention models have equal parameter counts; four heads took slightly longer.",
+    "code": "",
+    "companion": ""
+  },
+  {
+    "key": "s06-v-demo",
+    "title": "Give all three models the same prompt",
+    "body": "<a href=\"word-lab/\" target=\"_blank\" rel=\"noopener\">Open the live models \u2197</a> \u00b7 <a href=\"notebooks/wordlm/07_multihead_step_by_step.html\">Work through the code</a> \u00b7 <a href=\"notebooks/wordlm/06_multihead_comparison.html\">Inspect the trained experiment</a>",
+    "code": "",
+    "companion": "<p>The demo runs actual checkpoints with WebGPU or WebAssembly. It includes training, held-out and outside-domain prompts and measures generation locally. Normalization, full Transformer blocks and complexity remain in the <a href=\"part2b.html\">optional Part 2B reference</a>. Formula source: <a href=\"https://arxiv.org/abs/1706.03762\">Attention Is All You Need, \u00a73.2.2</a>. Visual teaching references: <a href=\"https://www.3blue1brown.com/lessons/attention/\">3Blue1Brown</a> and <a href=\"https://jalammar.github.io/illustrated-transformer/\">Jay Alammar</a>."
+  },
+  {
+    "key": "s07-v-patches",
+    "title": "Image patches can supply the embedding rows",
+    "body": "Replace word tokens with image patches. Flatten each patch and apply the same learned projection. Attention still receives a sequence of embedding rows.",
+    "code": "",
+    "companion": "<p>This is a tiny shape illustration, not a trained vision model: an 8\u00d78 grayscale image split into four 4\u00d74 patches. Each patch has 16 pixel values; a shared 16\u00d74 projection produces four-dimensional rows. For RGB images the flattened width is P\u00b2\u00d73. The general sequence length is (H/P)\u00d7(W/P). The projection is learned from the image task.</p>"
+  },
+  {
+    "key": "s07-v-classifier",
+    "title": "One updated row can classify the whole image",
+    "body": "The [CLS] row gathers image information. Its final representation feeds a classifier trained with the image label. <a href=\"vision1.html\">Next: Vision I, from pixels to an image class \u2197</a>",
+    "code": "",
+    "companion": "<p>For this two-class shape example, prepend one learned CLS token to the four patch embeddings, then add position embeddings to the five rows. A Transformer encoder updates all five rows. The final CLS row feeds a two-logit classifier; softmax produces class probabilities and cross-entropy uses the observed image label. Image classification does not need a causal future-token mask. The full encoder also includes per-row MLPs, residuals and normalization, which are grouped here rather than silently omitted. This is a roadmap, not a benchmark or a completed classifier. See <a href=\"https://arxiv.org/abs/2010.11929\">An Image is Worth 16\u00d716 Words</a>. <a href=\"part4.html\">Cross-attention remains a separate optional continuation</a>.</p>"
+  }
+]

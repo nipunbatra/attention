@@ -1,0 +1,215 @@
+{
+  "part": 2,
+  "series": "Attention and language",
+  "title": "TinyStories: optional MLP and single-head lab",
+  "subtitle": "The detailed reference retained from Part II. The compact four-head classroom walkthrough is now in Part III.",
+  "audience": "For students who know embeddings, dot products, softmax and next-token prediction, and who have not yet met attention.",
+  "minutes": null,
+  "central": "\\ve{e} \\;\\rightarrow\\; \\vq{Q},\\vk{K},\\vv{V} \\;\\rightarrow\\; \\text{attention } (\\va{\\alpha}) \\;\\rightarrow\\; \\vd{\\Delta e} \\;\\rightarrow\\; \\vp{e + \\Delta e}",
+  "centralLabel": "The one chain to remember",
+  "legendTitle": "How to read this page: seven colours, seven objects",
+  "provenance": "Where the numbers come from: a tiny demonstration model with {{d_model}}-number representations and a {{vocab}}-word vocabulary. Each coordinate was given an illustrative name{{axes}}, and the weights were written by hand so that the names are true. The arithmetic is real, but the model is not a trained language model.",
+  "chain": [
+    {
+      "label": "Predict the next token",
+      "section": "s01"
+    },
+    {
+      "label": "Baseline: only the last token",
+      "section": "s02"
+    },
+    {
+      "label": "Baseline: a fixed window of w tokens",
+      "section": "s03"
+    },
+    {
+      "label": "Summarizing the prefix",
+      "section": "s04"
+    },
+    {
+      "label": "Attention and the search analogy",
+      "section": "s05"
+    },
+    {
+      "label": "Hard retrieval \u2192 soft retrieval",
+      "section": "s06"
+    },
+    {
+      "label": "Every token becomes a searchable record",
+      "section": "s07"
+    },
+    {
+      "label": "Two jobs: choose weights, then mix values",
+      "section": "s08"
+    },
+    {
+      "label": "The contextual update \u0394e",
+      "section": "s09"
+    },
+    {
+      "label": "\u201cbank\u201d: same start, different context",
+      "section": "s10"
+    },
+    {
+      "label": "Where do queries, keys and values come from?",
+      "section": "s11"
+    },
+    {
+      "label": "Why divide by \u221ad_k?",
+      "section": "s12"
+    },
+    {
+      "label": "Causal masking",
+      "section": "s13"
+    },
+    {
+      "label": "From \u0394e to the next-token probabilities",
+      "section": "s14"
+    },
+    {
+      "label": "Optional numerical walkthrough",
+      "section": "s15"
+    },
+    {
+      "label": "The full attention calculation",
+      "section": "s16"
+    },
+    {
+      "label": "Alternatives, position and order",
+      "section": "s17"
+    },
+    {
+      "label": "Pause and think",
+      "section": "s18"
+    },
+    {
+      "label": "Generation and training",
+      "section": "s19"
+    }
+  ],
+  "sections": [
+    {
+      "id": "s01",
+      "title": "Predict the next token",
+      "lit": ""
+    },
+    {
+      "id": "s02",
+      "title": "Baseline: only the last token",
+      "lit": "e"
+    },
+    {
+      "id": "s03",
+      "title": "Baseline: a fixed window of w tokens",
+      "lit": ""
+    },
+    {
+      "id": "s04",
+      "title": "Summarizing the prefix",
+      "lit": "a"
+    },
+    {
+      "id": "s05",
+      "title": "Attention and the search analogy",
+      "lit": "q k v"
+    },
+    {
+      "id": "s06",
+      "title": "Hard retrieval \u2192 soft retrieval",
+      "lit": ""
+    },
+    {
+      "id": "s07",
+      "title": "Every token becomes a searchable record",
+      "lit": ""
+    },
+    {
+      "id": "s08",
+      "title": "Two jobs: choose weights, then mix values",
+      "lit": ""
+    },
+    {
+      "id": "s09",
+      "title": "The contextual update \u0394e",
+      "lit": "d ep"
+    },
+    {
+      "id": "s10",
+      "title": "\u201cbank\u201d: same start, different context",
+      "lit": ""
+    },
+    {
+      "id": "s11",
+      "title": "Where do queries, keys and values come from?",
+      "lit": ""
+    },
+    {
+      "id": "s12",
+      "title": "Why divide by \u221ad_k?",
+      "lit": ""
+    },
+    {
+      "id": "s13",
+      "title": "Causal masking",
+      "lit": ""
+    },
+    {
+      "id": "s14",
+      "title": "From \u0394e to the next-token probabilities",
+      "lit": ""
+    },
+    {
+      "id": "s15",
+      "title": "Optional numerical walkthrough",
+      "lit": ""
+    },
+    {
+      "id": "s16",
+      "title": "The full attention calculation",
+      "lit": ""
+    },
+    {
+      "id": "s17",
+      "title": "Alternatives, position and order",
+      "lit": ""
+    },
+    {
+      "id": "s18",
+      "title": "Pause and think",
+      "lit": ""
+    },
+    {
+      "id": "s19",
+      "title": "Generation and training",
+      "lit": ""
+    }
+  ],
+  "objects": [
+    "e",
+    "q",
+    "k",
+    "v",
+    "a",
+    "d",
+    "ep"
+  ],
+  "prev": {
+    "label": "Part II",
+    "href": "attention.html"
+  },
+  "next": {
+    "label": "Part III: TinyStories finale",
+    "href": "part3.html"
+  },
+  "index": {
+    "label": "Series home",
+    "href": "index.html"
+  },
+  "notation": "part2",
+  "footer": "Notation: <span class=\"sym sym-e\">e</span> is always the current token representation, and <span class=\"sym sym-d\">\u0394e</span> is this page's pedagogical name for the attention output. The addition <span class=\"sym sym-e\">e</span>&thinsp;+&thinsp;<span class=\"sym sym-d\">\u0394e</span> is the standard residual connection.",
+  "durationLabel": "The full walkthrough takes multiple sessions. A classroom route is suggested in Section 1.",
+  "hook": "The fisherman sat beside the river bank and watched the ___. You know the next word. What would a model have to read to know it too?",
+  "wordlmReference": true,
+  "sectionDirectory": "sections",
+  "toyFile": "toy.json"
+}

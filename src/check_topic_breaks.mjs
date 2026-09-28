@@ -23,9 +23,7 @@ const targets=[
   ['s17-position-clock-choice','s17-position-sine-2d'],
   ['s17-position-relative-break','s17-position-relative'],
   ['s17-position-alternatives-break','s17-position-append'],
-  ['s19-topic-break','s19-frame-generation'],
-  ['s19-pipeline-break','s19-pipeline-route-data'],
-  ['s19-pipeline-tokenization-intro','s19-pipeline-tokenization-choices']
+  ['s19-topic-break','s19-frame-generation']
 ];
 const browser=await chromium.launch();
 try{
