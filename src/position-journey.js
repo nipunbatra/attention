@@ -212,15 +212,34 @@ document.addEventListener('DOMContentLoaded',()=>{
   clock.addEventListener('input',clockDraw);clock.addEventListener('change',clockDraw);clockDraw();
   const pairs=document.getElementById('position-pair-index');
   function pairDraw(){
-    const i=Number(pairs.value),s=canvas(document.getElementById('position-pair-picture'),'Fast and slow position clocks',290),code=[];
-    [[Math.PI/2,'π/2',4,C.p],[Math.PI/6,'π/6',12,C.v]].forEach(([rate,label,period,color],j)=>{
-      const x=140+j*560,a=i*rate,p=[Math.sin(a),Math.cos(a)];code.push(...p);
-      text(s,x-100,30,`${label} rad / slot, period ${period}`,color,26);ring(s,x,139,78,a,color);
-      text(s,x+110,127,vec(p,3),color,26);text(s,x+110,166,`index ${i}`,C.muted,24);
+    const i=Number(pairs.value),s=canvas(document.getElementById('position-pair-picture'),'The same token step turns the fast pair by 90 degrees and the slow pair by 30 degrees',340),code=[];
+    [[Math.PI/2,'π/2',90,4,C.p],[Math.PI/6,'π/6',30,12,C.v]].forEach(([rate,label,degrees,period,color],j)=>{
+      const g=el('g',{'data-position-rate-pair':j,'data-rate':rate,'data-degrees-per-slot':degrees,'data-period':period,'data-position':i,'data-angle-degrees':i*degrees});s.append(g);
+      const x=135+j*560,a=i*rate,p=[Math.sin(a),Math.cos(a)];code.push(...p);
+      text(g,x-95,30,`${j===0?'Fast':'Slow'} pair ${j}`,color,29);
+      text(g,x-95,65,`${degrees}° per slot (${label} radians)`,color,25);
+      ring(g,x,181,76,a,color);
+      if(i){
+        // Trace the phase within one turn; the numeric angle retains full turns.
+        const phase=(i%period||period)*rate;
+        const points=Array.from({length:65},(_,n)=>{const t=phase*n/64;return `${x+60*Math.cos(t)},${181-60*Math.sin(t)}`;}).join(' ');
+        g.append(el('polyline',{points,fill:'none',stroke:color,'stroke-width':3,opacity:.5,'data-position-turn-arc':j}));
+      }
+      text(g,x+107,144,`θ = ${i} × ${degrees}° = ${i*degrees}°`,color,24);
+      text(g,x+107,187,vec(p,3),color,27);
+      text(g,x+107,229,`360° ÷ ${degrees}° = ${period} slots`,C.muted,23);
+      text(g,x+107,257,'for one full turn',C.muted,23);
     });
-    text(s,40,280,'Combined position row: '+vec(code,3),C.p,28);
+    text(s,40,327,'Position row:',C.ink,26);
+    text(s,230,327,vec(code.slice(0,2),3),C.p,28);
+    text(s,505,327,'joined with',C.muted,24);
+    text(s,665,327,vec(code.slice(2),3),C.v,28);
     const result=document.getElementById('position-pair-result');
-    result.textContent=i===0?'At index 0, both pairs are [0, 1].':i===12?'At 12, both pairs repeat. The full toy row matches index 0.':'The fast pair repeats. The slow pair makes the full row different from index 0.';
+    result.textContent=i===0?'At index 0, both pairs start at [0, 1].'
+      :i===1?'One token forward: the fast pair turns 90°, the slow pair 30°.'
+      :i===12?'At index 12, both pairs repeat. These toy rates do not give unique rows forever.'
+      :i%4===0?`At index ${i}, only the fast pair repeats. The slow pair distinguishes this position.`
+      :`At index ${i}, the fast pair has turned ${i*90}°, the slow pair ${i*30}°.`;
     result.dataset.vector=JSON.stringify(code);
   }
   pairs.addEventListener('change',pairDraw);pairDraw();

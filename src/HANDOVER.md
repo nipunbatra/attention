@@ -10,6 +10,19 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+2026-09-28 fast/slow sinusoidal-pair clarification:
+
+- Keep `s17-position-repeat` as one interactive frame, titled "Fast and slow
+  position pairs". It starts at index 1, so a single token step visibly turns
+  the two pairs by 90 and 30 degrees. Labels show the angle multiplication,
+  sine/cosine values, and 360/rate calculation for periods 4 and 12.
+- Fast/slow means angle change per slot, not computation speed. Both pairs use
+  the same index. The controls include indices 0–4, 8 and 12; index 4 separates
+  the first collision, while 12 exposes the shared repeat of these toy rates.
+  Preserve sine-first storage and the caveat about finite toy repetition.
+- No additional frames. `check_cost_position.mjs` checks all selected indices,
+  the default one-step example, rate units, periods, angles and vectors.
+
 2026-09-28 learned-position simplification (supersedes the longer walkthrough):
 
 - Keep just three classroom frames between `learned-break` and `clock-choice`:

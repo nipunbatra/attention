@@ -384,13 +384,13 @@ Move the index slider from zero through four. The angle advances by pi/2 radians
 <p class="lesson-key">This toy pair assigns the same position row to indices 0 and 4.</p>
 </div>
 
-<div class="frame context-lesson position-lesson" id="s17-position-repeat" data-title="A slower pair separates the first repeat" data-autobuild="off">
-<script type="text/x-notes">Does the second pair from our 4D example distinguish indices zero and four?
-Use the same rates pi/2 and pi/6, with sine first. Select index four. The first pair repeats [0,1], but the second is [sqrt(3)/2,-1/2]. The full four-coordinate row differs from index zero. Select twelve. Both toy pairs repeat there, because their integer periods are four and twelve. We have separated one collision, not guaranteed unlimited uniqueness. This motivates choosing a spread of rates for the expected range, rather than blindly repeating the same pair. The standard geometric schedule follows. Do not claim more pairs or slower rates automatically improve measured model accuracy.</script>
-<div class="position-journey-controls"><label for="position-pair-index">Compare with index 0</label><select id="position-pair-index"><option value="0">Index 0</option><option value="4">Index 4</option><option value="8">Index 8</option><option value="12">Index 12</option></select></div>
+<div class="frame context-lesson position-lesson" id="s17-position-repeat" data-title="Fast and slow position pairs" data-autobuild="off">
+<script type="text/x-notes">When we move one token forward, how far does each pair turn?
+Point to the hollow index-zero markers, then the two arrows at index one. A pair means two coordinates, sine and cosine of the same angle. Both pairs use the same token index i, in coordinates 0–1 and 2–3 of the four-number position row. Fast and slow describe angle change per token slot, not training speed, inference time or a different token sequence. Keep the pi/2 and pi/6 teaching rates from the 4D example, with sine first. These are 90 and 30 degrees per slot. The first pair makes a full 360-degree turn in 360/90=4 slots, the second in 360/30=12 slots. The circle plots horizontal cosine and vertical sine; the stored pair is still [sin,cos]. Start at the default index one, then select four. The fast pair has completed one turn and repeats [0,1]. The slow pair has turned only 120 degrees, giving [sqrt(3)/2,-1/2], so the full row differs from index zero. Select twelve to expose the remaining limitation: both toy pairs repeat. These easy-angle rates separate the first collision but do not guarantee unlimited uniqueness. The next slide replaces them with the standard geometric schedule. Do not claim more pairs or slower rates automatically improve measured accuracy.</script>
+<p>Each pair stores $[\sin\theta,\cos\theta]$. Hollow dots mark index 0.</p>
+<div class="position-journey-controls"><label for="position-pair-index">Move forward from index 0</label><select id="position-pair-index"><option value="0">Index 0</option><option value="1" selected>Index 1: one step</option><option value="2">Index 2</option><option value="3">Index 3</option><option value="4">Index 4: first repeat</option><option value="8">Index 8</option><option value="12">Index 12: both repeat</option></select></div>
 <div class="position-journey" id="position-pair-picture"></div>
 <p id="position-pair-result" aria-live="polite"></p>
-<p class="lesson-key">Different rates help distinguish positions across more scales. These two toy rates still repeat together at 12.</p>
 </div>
 
 <div class="companion context-lesson position-lesson position-reading" id="s17-position-rates">

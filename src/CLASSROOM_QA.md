@@ -1,5 +1,20 @@
 # Classroom release checks
 
+## 2026-09-28 · Fast and slow pairs mean different angles per slot
+
+- Revised the existing repeat frame without adding slides. Start at index 1
+  with 90° and 30° turns, explicit fast/slow labels, sine/cosine pairs, and
+  full-turn calculations of 360/90=4 and 360/30=12 slots. The controls then show
+  how the slow pair distinguishes index 4 and why both toy pairs repeat at 12.
+- Independent regression checks cover all seven selectable indices, degrees
+  versus radians, angle multiplication, periods, the one-step default and
+  collision values. All 67 position frames and 245 build checks pass, including
+  1280×720, 1920×1080, 1024×768 and phone reading containment. Model state stays
+  unchanged. No notebook, model, dependency or other lecture part changed.
+- Visually inspected the one-step, first-repeat and shared-repeat states.
+  These states also pass fit checks at 995×1031 and 760×1041. The earlier
+  whole-deck portrait issues recorded below remain outside this change.
+
 ## 2026-09-28 · Learned positions in three classroom slides
 
 - Reduced the nine-frame learned-position passage to three frames, including

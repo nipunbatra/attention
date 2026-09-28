@@ -467,10 +467,22 @@ try{
     assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'Clock control fits');
   }
   await go('s17-position-repeat');
-  for(const i of [0,4,8,12,0]){
+  assert.equal(await page.locator('#position-pair-index').inputValue(),'1','Introduce the rates with one token step, before repetition.');
+  assert.match(await page.locator('#position-pair-result').textContent(),/fast pair turns 90°.*slow pair 30°/);
+  for(const i of [0,1,2,3,4,8,12,1]){
     await page.locator('#position-pair-index').selectOption(String(i));
     const actual=JSON.parse(await page.locator('#position-pair-result').getAttribute('data-vector'));
     [Math.sin(i*Math.PI/2),Math.cos(i*Math.PI/2),Math.sin(i*Math.PI/6),Math.cos(i*Math.PI/6)].forEach((x,c)=>close(actual[c],x,'two-clock code'));
+    const shown=await page.locator('[data-position-rate-pair]').evaluateAll(es=>es.map(e=>({pair:Number(e.dataset.positionRatePair),rate:Number(e.dataset.rate),degrees:Number(e.dataset.degreesPerSlot),period:Number(e.dataset.period),index:Number(e.dataset.position),angle:Number(e.dataset.angleDegrees),text:e.textContent})));
+    shown.forEach((r,j)=>{
+      assert.equal(r.pair,j);assert.equal(r.index,i);assert.equal(r.degrees,j?30:90);
+      close(r.rate,r.degrees*Math.PI/180,'Rate labels agree in degrees and radians');
+      assert.equal(r.period,360/r.degrees);assert.equal(r.angle,i*r.degrees);
+      assert(r.text.includes(`θ = ${i} × ${r.degrees}° = ${r.angle}°`));
+      assert(r.text.includes(`360° ÷ ${r.degrees}° = ${r.period} slots`));
+    });
+    if(i===4){close(actual[0],0,'fast sine repeats');close(actual[1],1,'fast cosine repeats');close(actual[2],Math.sqrt(3)/2,'slow sine differs');close(actual[3],-.5,'slow cosine differs');}
+    if(i===12){actual.forEach((x,j)=>close(x,j%2,'both toy pairs repeat at twelve'));assert.match(await page.locator('#position-pair-result').textContent(),/do not give unique rows forever/);}
     assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'Two-clock control fits');
   }
   const absScores=await page.locator('[data-absolute-score]').evaluateAll(es=>es.map(e=>Number(e.dataset.absoluteScore)));
