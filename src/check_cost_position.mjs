@@ -630,7 +630,11 @@ try{
   assert.deepEqual(lengths.map(x=>x.length),[1024,2048]);close(lengths[1].width/lengths[0].width,2,'Input-length bars use the same scale');
   for(const id of ['alibi','alibi-takeaways'])assert.equal(await page.locator('#s17-position-'+id+' a').getAttribute('href'),'https://arxiv.org/abs/2108.12409','Link the primary paper visibly.');
   const shortAlibi=await page.locator('#position-alibi-intuition tbody tr').evaluateAll(es=>es.map(e=>[...e.cells].map(c=>c.textContent)));
-  assert.deepEqual(shortAlibi,[['red','1 token','2 − 0.25 = 1.75'],['Maya','3 tokens','2 − 0.75 = 1.25']]);
+  assert.deepEqual(shortAlibi,[['red','1 token','2 − 0.25 × 1 = 1.75'],['Maya','3 tokens','2 − 0.25 × 3 = 1.25']]);
+  const alibiAssumptions=await page.locator('#s17-position-alibi-intuition .alibi-assumptions').textContent();
+  assert.match(alibiAssumptions,/Toy numbers: assume a query–key content score of 2 for both sources/,'Label the content scores as illustrative assumptions.');
+  assert.match(alibiAssumptions,/this head’s fixed penalty rate: 0.25 per token back/,'Explain the rate rather than implying it is a universal or learned constant.');
+  for(const [row,distance]of shortAlibi.map((row,i)=>[row,[1,3][i]]))assert.equal(Number(row[2].split(' = ')[1]),2-0.25*distance,'Subtract the rate times token distance before softmax.');
   for(const [method,paper]of [['alibi','2108.12409'],['rope','2104.09864']])assert.equal(await page.locator('#s17-position-'+method+'-intuition a').getAttribute('href'),'https://arxiv.org/abs/'+paper);
   for(const build of [0,1,0,1]){
     await go('s17-position-rope-intuition',build);
@@ -679,6 +683,10 @@ try{
     for(const id of ids){await go(id);assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,id+' at '+viewport.width);}
     await go('s17-position-experiment');await page.screenshot({path:path.join(shots,'projector-'+viewport.width+'.png')});
   }
+  await page.setViewportSize({width:995,height:1031});
+  await go('s17-position-alibi-intuition');
+  assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,'ALiBi assumptions and arithmetic fit the annotated portrait viewport.');
+  await page.screenshot({path:path.join(shots,'alibi-portrait.png')});
   await page.evaluate(()=>AT.present.exit());await page.setViewportSize({width:390,height:844});
   await page.locator('.learned-position-details summary').click();
   await page.locator('.relative-position-details').evaluate(e=>{e.open=false;});
@@ -689,5 +697,5 @@ try{
   await page.locator('#s17-position-experiment').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(shots,'reading-phone.png')});
   assert.equal(await page.evaluate(()=>JSON.stringify({model:AT.model,result:AT.forward(AT.sentences.river)})),original,'Extensions must not mutate the bank model.');
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({frames:ids.length,buildChecks:states,viewports:['1280×720','1920×1080','1024×768','390×844 reading'],checks:'MACs, grids, softmax, word-dot endpoints/reveals, appended-position rows/score terms/scales, e notation, position/context updates, order swap, mean invariance, clock collisions, sinusoid curves, sentence-based relative bias, absolute/rotary shifts, ALiBi, complete map, controls, model immutability',screenshots:shots},null,2));
+  console.log(JSON.stringify({frames:ids.length,buildChecks:states,viewports:['1280×720','1920×1080','1024×768','995×1031 ALiBi','390×844 reading'],checks:'MACs, grids, softmax, word-dot endpoints/reveals, appended-position rows/score terms/scales, e notation, position/context updates, order swap, mean invariance, clock collisions, sinusoid curves, sentence-based relative bias, absolute/rotary shifts, ALiBi, complete map, controls, model immutability',screenshots:shots},null,2));
 }finally{await browser.close();}

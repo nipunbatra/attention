@@ -1,5 +1,16 @@
 # Classroom release checks
 
+## 2026-09-28 · Explain the ALiBi toy numbers
+
+- The existing ALiBi intuition slide labels 2 as an assumed query–key content
+  score and 0.25 as this head’s chosen fixed penalty per token back. Both table
+  rows explicitly multiply the rate by distance; no slide was added.
+- Rebuilt Part II and its optional reference export. `check_cost_position.mjs`
+  passed 52 position frames and 190 build checks, including the two arithmetic
+  rows and the visible assumptions. Visually reviewed the updated slide at
+  1280×720 and 995×1031; layout checks also passed at projector and phone sizes.
+- `python3 src/check_metadata.py` passed all eight isolated builds.
+
 ## 2026-09-28 · One highlighted map throughout TinyStories
 
 - Part III has 80 classroom frames and 40 full-pipeline map/code checkpoints.
