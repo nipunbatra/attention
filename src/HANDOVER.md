@@ -10,6 +10,16 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+2026-09-28 padding row clarification:
+
+- `s19-pipeline-lookup` explains why PAD is zero: `padding_idx=0` initializes
+  that row to zero and suppresses its embedding gradient. Numeric zero is not
+  null. Other special-token rows start random and are trainable when used as
+  inputs. Keep this qualification: EOS is target-only in the story windows.
+- The table labels its numbers as initial weights. Notebook notes distinguish
+  token-row zeroing from attention padding masks. The test suite checks zero
+  PAD gradients and an AdamW step for both the MLP and attention embeddings.
+
 2026-09-28 special-token names at first appearance:
 
 - The vocabulary slide (`s19-pipeline-vocabulary`, step 13) expands PAD as

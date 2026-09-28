@@ -1,5 +1,17 @@
 # Classroom release checks
 
+## 2026-09-28 · Explain the zero PAD embedding
+
+- Updated the existing lookup slide and companion notebook with PAD's fixed
+  zero-row rule, numeric-zero versus null, and the trainability of other special
+  tokens. Initial weights and table dimensions remain explicit. No new frames.
+- All 24 walkthrough/model tests pass, including gradients and an optimizer
+  step that keeps PAD zero while other special-token input rows update.
+- Notebook 5 executes all 89 code cells without errors; its ZIP matches the
+  executed file. Pipeline browser regression passes all 89 frames at 1280,
+  1024 and 390 widths. The changed slide fits 1280×720, 995×1031 and 760×1041;
+  inspected the desktop and portrait renders. All original numeric rows remain.
+
 ## 2026-09-28 · Expand the special-token abbreviations
 
 - Added a meaning column to the existing vocabulary slide. BOS/EOS explicitly

@@ -317,8 +317,10 @@ print('X:', tuple(X.shape), 'y:', tuple(y.shape))
 ''', focus=('windows','embedding','loss'))
 
 step('lookup', 'An ID selects one embedding row', '3. The MLP forward pass',
-     'The embedding table has C=10 rows and d=4 columns. ID 7, found, selects one four-number row. The four coordinates below are learned features with no assigned word meanings.', '''
+     'PAD fills empty slots: padding_idx=0 initializes its row to zero and skips its embedding gradient, so it stays zero here. These are numeric zeros, not nulls, while BOS/EOS/UNK have random, trainable rows that can learn when used as inputs. The table has C=10 rows and d=4 columns. ID 7, found, selects one four-number row. This is the initial table, before training, and the coordinates have no assigned word meanings. Only PAD has this zero-row rule in our model. EOS ends a story and is only a target in these training windows, so its input embedding receives no task gradient here, although the separate output layer learns to predict EOS. UNK can receive an embedding gradient when a missing word maps to it in an input. Zeroing PAD is a model choice, not a rule for all special tokens. In the attention model, we also mask padded source positions because a zero embedding alone does not remove them from softmax. Reference: https://docs.pytorch.org/docs/stable/generated/torch.nn.Embedding.html', '''
 embedding_table = mlp.token_embedding.weight
+assert mlp.token_embedding.padding_idx == vocab.pad_id == 0
+assert embedding_table[vocab.pad_id].eq(0).all()
 found_id = vocab.stoi['found']
 found_vector = embedding_table[found_id]
 assert found_vector.shape == (4,)
@@ -911,8 +913,9 @@ def render_figure(stage, ns):
                  ('dᵥ',ns['d_v'],'value coordinates')],
                 x=600,y=55,widths=[95,85,360],row_h=48)
     elif k=='lookup':
+        f.text(25,33,"T: C=10 rows × d=4 coordinates · initial weights",MUTED,25)
         rows=[(words[i],i,*[num(v) for v in ns['embedding_table'][i]]) for i in [0,7,8,9]]
-        f.table(['Token','ID','coord. 1','coord. 2','coord. 3','coord. 4'],rows,widths=[200,100,205,205,205,205],row_h=55,colors=[INK,BLUE,BLUE,BLUE,BLUE,BLUE])
+        f.table(['Token','ID','coord. 1','coord. 2','coord. 3','coord. 4'],rows,y=50,widths=[200,100,205,205,205,205],row_h=46,colors=[INK,BLUE,BLUE,BLUE,BLUE,BLUE])
     elif k=='lookup-flow':
         f=Figure(stage['title'],height=390)
         f.text(20,30,'X[1]: four input IDs',BLUE,25,600)

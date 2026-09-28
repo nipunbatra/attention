@@ -25,6 +25,11 @@ try{
     '0','<PAD>','Padding','1','<BOS>','Beginning of sequence',
     '2','<EOS>','End of sequence','3','<UNK>','Unknown token','4','.','Punctuation']);
   assert.match(await page.locator('#s19-pipeline-vocabulary .step-copy').innerText(),/one complete story \(a sequence\), not each sentence/);
+  const lookupCopy=await page.locator('#s19-pipeline-lookup .step-copy').innerText();
+  for(const phrase of ['padding_idx=0','skips its embedding gradient','numeric zeros, not nulls','BOS/EOS/UNK','when used as inputs']){
+    assert(lookupCopy.includes(phrase),'embedding lookup explains '+phrase);
+  }
+  assert.match(await page.locator('#s19-pipeline-lookup svg').textContent(),/C=10 rows × d=4 coordinates.*initial weights/s);
   assert.match(await page.locator('#s19-pipeline-boundaries').innerText(),/7 supervised targets/);
   assert.equal(await page.locator('#s19-pipeline-boundaries').getAttribute('data-title'),'One BOS and EOS per document');
   assert.match(await page.locator('#s19-pipeline-boundaries .step-copy').innerText(),/each document is a complete story.*do not add extra markers between sentences/s);

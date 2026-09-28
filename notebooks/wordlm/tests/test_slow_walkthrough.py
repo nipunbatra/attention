@@ -26,6 +26,25 @@ def test_all_lesson_steps_execute_and_render():
     assert ns['comparison']['attention']['test_perplexity']['mean']<ns['comparison']['mlp']['test_perplexity']['mean']
 
 
+def test_lookup_explains_the_padding_exception_without_changing_the_example():
+    ns = initial_namespace()
+    for stage in STAGES:
+        exec(stage['code'], ns)
+        if stage['id'] == 'lookup':
+            break
+    embedding = ns['mlp'].token_embedding
+    assert embedding.padding_idx == 0
+    assert embedding.weight[0].eq(0).all()
+    assert embedding.weight[1:4].ne(0).any(dim=1).all()
+    assert ns['found_vector'].shape == (4,)
+    shown = '. '.join(stage['body'].split('. ')[:2])
+    for phrase in ('padding_idx=0', 'skips its embedding gradient',
+                   'numeric zeros, not nulls', 'BOS/EOS/UNK', 'when used as inputs'):
+        assert phrase in shown
+    assert 'initial weights' in render_figure(stage, ns)
+    assert 'EOS' in stage['body'] and 'only a target' in stage['body']
+
+
 def test_real_story_examples_have_reproducible_lengths_and_provenance():
     import hashlib
     from wordlm import tokenize

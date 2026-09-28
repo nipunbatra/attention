@@ -70,6 +70,25 @@ def test_fixed_window_shapes_and_finite_gradients() -> None:
     assert all(parameter.grad is None or torch.isfinite(parameter.grad).all() for parameter in model.parameters())
 
 
+def test_only_padding_has_a_fixed_zero_embedding() -> None:
+    # Probe each special token as an input to isolate embedding behavior.
+    # Real story windows use EOS as a target, not an input.
+    torch.manual_seed(17)
+    for model in [FixedWindowMLP(8, 4, 6, 10), CausalAttentionLM(8, 4, 6, 4, 5, 10)]:
+        embedding = model.token_embedding
+        assert embedding.padding_idx == 0
+        assert embedding.weight[0].eq(0).all()
+        assert embedding.weight[1:4].ne(0).any(dim=1).all()
+        before = embedding.weight.detach().clone()
+        optimizer = torch.optim.AdamW(model.parameters(), lr=0.1, weight_decay=0.01)
+        embedding(torch.tensor([0, 1, 2, 3])).sum().backward()
+        assert embedding.weight.grad[0].eq(0).all()
+        assert embedding.weight.grad[1:4].eq(1).all()
+        optimizer.step()
+        assert embedding.weight[0].eq(0).all()
+        assert not torch.equal(embedding.weight[1:4], before[1:4])
+
+
 def test_attention_shapes_mask_rows_and_future_invariance() -> None:
     model = CausalAttentionLM(
         vocab_size=8,
