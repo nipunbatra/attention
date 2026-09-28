@@ -1,12 +1,12 @@
 # Vision I: slide map
 
-150 teaching frames plus the cover. Each link opens the first reveal of that slide. Use Right/Left for reveals and S for presenter notes.
+152 teaching frames plus the cover. Each link opens the first reveal of that slide. Use Right/Left for reveals and S for presenter notes.
 
 ## Review these additions first
 
-- [What were we asking the text model to predict?](https://nipunbatra.github.io/attention/vision1.html?present#s01/6/0)
-- [What are we asking the image model to predict?](https://nipunbatra.github.io/attention/vision1.html?present#s01/7/0)
-- [What changed, and what stayed the same?](https://nipunbatra.github.io/attention/vision1.html?present#s01/8/0)
+- [What were we asking the text model to predict?](https://nipunbatra.github.io/attention/vision1.html?present#s01/11/0)
+- [Our task today: classify the whole image](https://nipunbatra.github.io/attention/vision1.html?present#s01/10/0)
+- [What changed, and what stayed the same?](https://nipunbatra.github.io/attention/vision1.html?present#s01/12/0)
 - [Where does CLS come from?](https://nipunbatra.github.io/attention/vision1.html?present#s03/11/0)
 - [How can the same starting CLS describe different pictures?](https://nipunbatra.github.io/attention/vision1.html?present#s03/12/0)
 - [Why did our text predictor hide later tokens?](https://nipunbatra.github.io/attention/vision1.html?present#s04/2/0)
@@ -35,6 +35,15 @@
 - [How many images and classes are there?](https://nipunbatra.github.io/attention/vision1.html?present#s01/2/0)
 - [What shape is one image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/3/0)
 
+## Opening task overview
+
+- [One photograph, several possible tasks](https://nipunbatra.github.io/attention/vision1.html?present#s01/5/0)
+- [Classification: name the animal](https://nipunbatra.github.io/attention/vision1.html?present#s01/6/0)
+- [Detection: name and locate each object](https://nipunbatra.github.io/attention/vision1.html?present#s01/7/0)
+- [Captioning: describe the image in words](https://nipunbatra.github.io/attention/vision1.html?present#s01/8/0)
+- [Image–text search: find a matching photo](https://nipunbatra.github.io/attention/vision1.html?present#s01/9/0)
+- [Our task today: classify the whole image](https://nipunbatra.github.io/attention/vision1.html?present#s01/10/0)
+
 ## Complete sequence
 
 | Section / frame | Question or teaching step | Stable source ID |
@@ -43,14 +52,18 @@
 | s01 / 2 | [How many images and classes are there?](https://nipunbatra.github.io/attention/vision1.html?present#s01/2/0) | `dataset-counts` |
 | s01 / 3 | [What shape is one image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/3/0) | `dataset-dimensions` |
 | s01 / 4 | [What animal do you see?](https://nipunbatra.github.io/attention/vision1.html?present#s01/4/0) | `s01-photo` |
-| s01 / 5 | [Find the dog photos in a folder](https://nipunbatra.github.io/attention/vision1.html?present#s01/5/0) | `photo-folder` |
-| s01 / 6 | [What were we asking the text model to predict?](https://nipunbatra.github.io/attention/vision1.html?present#s01/6/0) | `task-next-token` |
-| s01 / 7 | [What are we asking the image model to predict?](https://nipunbatra.github.io/attention/vision1.html?present#s01/7/0) | `task-image-label` |
-| s01 / 8 | [What changed, and what stayed the same?](https://nipunbatra.github.io/attention/vision1.html?present#s01/8/0) | `task-side-by-side` |
-| s01 / 9 | [Would you recognize this crop on its own?](https://nipunbatra.github.io/attention/vision1.html?present#s01/9/0) | `s01-context` |
-| s01 / 10 | [What can we carry over from our text models?](https://nipunbatra.github.io/attention/vision1.html?present#s01/10/0) | `bridge-text` |
-| s01 / 11 | [Is this dark region fur or background?](https://nipunbatra.github.io/attention/vision1.html?present#s01/11/0) | `patch-context` |
-| s01 / 12 | [How can we give this photograph to attention?](https://nipunbatra.github.io/attention/vision1.html?present#s01/12/0) | `image-to-rows` |
+| s01 / 5 | [One photograph, several possible tasks](https://nipunbatra.github.io/attention/vision1.html?present#s01/5/0) | `vision-tasks` |
+| s01 / 6 | [Classification: name the animal](https://nipunbatra.github.io/attention/vision1.html?present#s01/6/0) | `photo-folder` |
+| s01 / 7 | [Detection: name and locate each object](https://nipunbatra.github.io/attention/vision1.html?present#s01/7/0) | `find-animal` |
+| s01 / 8 | [Captioning: describe the image in words](https://nipunbatra.github.io/attention/vision1.html?present#s01/8/0) | `image-caption` |
+| s01 / 9 | [Image–text search: find a matching photo](https://nipunbatra.github.io/attention/vision1.html?present#s01/9/0) | `photo-search` |
+| s01 / 10 | [Our task today: classify the whole image](https://nipunbatra.github.io/attention/vision1.html?present#s01/10/0) | `task-image-label` |
+| s01 / 11 | [What were we asking the text model to predict?](https://nipunbatra.github.io/attention/vision1.html?present#s01/11/0) | `task-next-token` |
+| s01 / 12 | [What changed, and what stayed the same?](https://nipunbatra.github.io/attention/vision1.html?present#s01/12/0) | `task-side-by-side` |
+| s01 / 13 | [Would you recognize this crop on its own?](https://nipunbatra.github.io/attention/vision1.html?present#s01/13/0) | `s01-context` |
+| s01 / 14 | [What can we carry over from our text models?](https://nipunbatra.github.io/attention/vision1.html?present#s01/14/0) | `bridge-text` |
+| s01 / 15 | [Is this dark region fur or background?](https://nipunbatra.github.io/attention/vision1.html?present#s01/15/0) | `patch-context` |
+| s01 / 16 | [How can we give this photograph to attention?](https://nipunbatra.github.io/attention/vision1.html?present#s01/16/0) | `image-to-rows` |
 | s02 / 1 | [Where do the patch boundaries go?](https://nipunbatra.github.io/attention/vision1.html?present#s02/1/0) | `s01-patches` |
 | s02 / 2 | [How can a red pixel be three numbers?](https://nipunbatra.github.io/attention/vision1.html?present#s02/2/0) | `one-rgb` |
 | s02 / 3 | [How many numbers are in four RGB pixels?](https://nipunbatra.github.io/attention/vision1.html?present#s02/3/0) | `rgb-flatten-step-1` |
@@ -186,6 +199,4 @@
 | s13 / 2 | [Your turn: trace every important shape](https://nipunbatra.github.io/attention/vision1.html?present#s13/2/0) | `exercise-shapes` |
 | s13 / 3 | [Did we move the image, or just reorder its rows?](https://nipunbatra.github.io/attention/vision1.html?present#s13/3/0) | `exercise-position` |
 | s14 / 1 | [What else could we ask the image model to do?](https://nipunbatra.github.io/attention/vision1.html?present#s14/1/0) | `next-vision` |
-| s14 / 2 | [Does “dog” tell us where to crop?](https://nipunbatra.github.io/attention/vision1.html?present#s14/2/0) | `find-animal` |
-| s14 / 3 | [How would we find this photo using words?](https://nipunbatra.github.io/attention/vision1.html?present#s14/3/0) | `photo-search` |
-| s14 / 4 | [Can you talk us through the whole model?](https://nipunbatra.github.io/attention/vision1.html?present#s14/4/0) | `closing` |
+| s14 / 2 | [Can you talk us through the whole model?](https://nipunbatra.github.io/attention/vision1.html?present#s14/2/0) | `closing` |

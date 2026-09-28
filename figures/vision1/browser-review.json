@@ -3,7 +3,7 @@
     1280,
     720
   ],
-  "teaching_frames": 150,
+  "teaching_frames": 152,
   "cover_frames": 1,
   "review": "The previous 141 final states (140 teaching frames plus cover) passed the full geometry review. All six added implementation frames passed SVG text bounds and collision checks at 1280\u00d7720 and were visually inspected. Phone reading mode was rechecked at 390\u00d7844.",
   "geometry": "No clipped SVG text, text collisions, overflowing captions or code found.",
@@ -172,6 +172,57 @@
     "document_scroll_width": 390,
     "phone_visual_check": "Crop image, label, four box coordinates and companion explanation are readable.",
     "sequence": "Classification and context stay together in the opening. Localization and text retrieval are extensions in section 14.",
+    "notebook_code_cells": 19
+  },
+  "task_overview_review": {
+    "date": "2026-09-28",
+    "supersedes": "task_extension_flow_review",
+    "viewport": [
+      1280,
+      720
+    ],
+    "visual_samples": [
+      "vision-tasks",
+      "find-animal",
+      "image-caption",
+      "photo-search",
+      "task-image-label"
+    ],
+    "geometry": {
+      "vision-tasks": {
+        "clipped": [],
+        "collisions": []
+      },
+      "photo-folder": {
+        "clipped": [],
+        "collisions": []
+      },
+      "find-animal": {
+        "clipped": [],
+        "collisions": []
+      },
+      "image-caption": {
+        "clipped": [],
+        "collisions": []
+      },
+      "photo-search": {
+        "clipped": [],
+        "collisions": []
+      },
+      "task-image-label": {
+        "clipped": [],
+        "collisions": []
+      }
+    },
+    "phone_viewport": [
+      390,
+      844
+    ],
+    "document_width": 390,
+    "document_scroll_width": 390,
+    "phone_visual_check": "Photo and four task/output rows are readable without horizontal overflow.",
+    "keyboard_transition": "photo-search \u2192 task-image-label",
+    "sequence": "Explicit overview, classification, detection, captioning, image\u2013text retrieval, then this lecture\u2019s classification focus and the text comparison.",
     "notebook_code_cells": 19
   }
 }

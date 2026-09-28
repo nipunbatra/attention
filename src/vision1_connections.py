@@ -26,7 +26,7 @@ def connect(b, sections):
         'This recalls the autoregressive task in the text series. At generation time we read the final available token row, score the vocabulary, select a token and extend the prefix. During training we can score many positions in parallel using a causal mask and shifted targets. No particular next letter or probability is assumed here.')
     body=image(30,85,360,240)+g(arrow(420,205,490,205)+label(520,175,'image summary',width=250),1)
     body+=g(arrow(800,205,860,205)+t(900,165,'dog',34,'c-e')+t(900,240,'cat',34,'ink-2')+t(900,325,'class scores',26,'c-a'),2)
-    add('task-image-label','What are we asking the image model to predict?',body,'We observe the whole photograph and predict one label for it.',
+    add('task-image-label','Our task today: classify the whole image',body,'For the rest of this lecture, we observe the whole photograph and predict one class label.',
         'Are we trying to guess a missing patch in this task?','Point to the full observed image and the two possible class labels.',
         'This is supervised image classification. The training pair is an image and its class label. The two-label dog/cat example motivates the task; the later pretrained checkpoint uses 1,000 ImageNet labels. Predicting a future or missing patch would require a different objective.')
     body=t(30,45,'',25)+t(380,55,'Text generation',31,'c-e')+t(800,55,'Image classification',30,'c-e')
@@ -36,7 +36,7 @@ def connect(b, sections):
         y=140+87*i;mark=t(30,y,name,27,'ink-2')+t(380,y,left,29)+t(800,y,right,27)
         body+=mark if i==0 else g(mark,i)
     add('task-side-by-side','What changed, and what stayed the same?',body,'Both models score possible answers. What they observe, summarize and predict differs.',
-        'Which parts of our old calculation can we reuse unchanged?','Compare one row at a time. Refer to the image summary from the preceding slide; its construction comes later.',
+        'Which parts of our old calculation can we reuse unchanged?','Compare one row at a time. Refer back to the image summary from the classification slide; its construction comes later.',
         'Both tasks can use the same attention operation and a linear classifier followed by softmax. In the autoregressive setup, each position predicts the next token from its allowed prefix. In the image-classification setup, one image summary predicts the supplied label. Here summary means a vector of numbers used by the classifier. Later we will build that summary and name the two approaches after explaining them. “Text” alone does not imply a causal mask: text encoders can read both directions too.')
     body=''
     for i,(x,title,causal) in enumerate([(70,'Predict the next token',True),(690,'Classify the whole image',False)]):
@@ -153,7 +153,7 @@ def connect(b, sections):
         'The same positionwise MLP is applied independently to every row. Its input may already contain information from other patches, because attention ran first. This separation between mixing rows and modifying a row helps students read the complete block without treating it as one unexplained box.')
 
     insert_after={
-      'photo-folder':['task-next-token','task-image-label','task-side-by-side'],
+      'photo-search':['task-image-label','task-next-token','task-side-by-side'],
       'why-cls':['cls-start','cls-two-images'],
       'image-mask':['task-mask-reason'],
       'qkv-roles':['qkv-photo-question','qkv-three-roles','qkv-match-numbers','qkv-read-numbers','qkv-change-key','qkv-change-value','qkv-no-prompt'],

@@ -2,13 +2,13 @@
 
 **Deck:** [vision1.html](../vision1.html) · **Present:** open the deck and press **P** · **Lab:** [03_vision_transformer_lab.ipynb](../notebooks/vision/03_vision_transformer_lab.ipynb)
 
-150 teaching frames plus cover; 14 sections. Silent, self-contained HTML slides with image assets and math embedded. Reading mode includes the longer explanations, source links, and numerical tables. Arrow keys advance one reveal; **S** opens presenter notes; **O** opens the overview; **C** shows classroom controls. Every frame has a question to ask and a note about what to point at.
+152 teaching frames plus cover; 14 sections. Silent, self-contained HTML slides with image assets and math embedded. Reading mode includes the longer explanations, source links, and numerical tables. Arrow keys advance one reveal; **S** opens presenter notes; **O** opens the overview; **C** shows classroom controls. Every frame has a question to ask and a note about what to point at.
 
 ## The teaching thread
 
 Start with six labeled Oxford-IIIT Pet examples. Establish the dataset size (7,349), species task (2 classes), alternative breed task (37 classes), and variable original dimensions versus 224×224 RGB model inputs. Then choose one photograph and ask students to name the clues. Isolate one genuine crop and restore its context. Recall **aabid** from Part I, **river/bank** from Part II, and **red/wool/coat** from Part III. Then introduce patches, a tiny exact worksheet, the complete block, executable code, learning, and the original photograph again.
 
-Keep the opening focused on image classification: the text/image task comparison leads straight to the dark crop and the need for visual context. Save the automatic-crop and text-search examples for section 14, after students have followed classification end to end. The crop example asks why the label “dog” cannot specify a rectangle, then introduces left, top, right and bottom as the additional outputs. The box is an illustration; a localization model would need a suitable output head and box training targets. The text-search example then connects image representations to the text representations from Parts I–III.
+Introduce the opening task examples explicitly: classification returns an image label, detection returns labels and boxes, captioning generates a sentence, and image–text search ranks photos for supplied words. Use the same dog throughout. These are illustrative desired outputs. After the task tour, “Our task today” selects image classification; the text comparison and dark crop then motivate attention. The captioning and retrieval examples also preview the later vision-to-language lessons.
 
 The two-crop Q/K/V warm-up and the pooling example use their own clearly labeled, hand-chosen numbers. Then keep the three larger settings explicit:
 
@@ -18,7 +18,7 @@ The two-crop Q/K/V warm-up and the pooling example use their own clearly labeled
 
 ## Suggested pacing
 
-Use three meetings, or teach sections 1–7 first and assign the implementation as a lab. The 150 frames are short steps; the total is not a target for one class. Pause for predictions and hand calculations.
+Use three meetings, or teach sections 1–7 first and assign the implementation as a lab. The 152 frames are short steps; the total is not a target for one class. Pause for predictions and hand calculations.
 
 | Meeting | Sections | Student activity |
 |---|---|---|

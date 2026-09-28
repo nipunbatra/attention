@@ -32,12 +32,52 @@
     "frame": 4
   },
   {
-    "id": "photo-folder",
-    "title": "Find the dog photos in a folder",
-    "caption": "Each photograph gets one label. Decide what the labels mean before choosing the model.",
-    "notes": "What would you want the program to return for each photo?\nReveal dog and cat. Connect one image label to the spam/not-spam example in Part I.",
+    "id": "vision-tasks",
+    "title": "One photograph, several possible tasks",
+    "caption": "These tasks ask for different outputs. We will work through image classification in this lecture.",
+    "notes": "What would you want the program to return for each of these tasks?\nKeep the photograph fixed. Read each task name and its output before moving to the examples.",
     "section": "s01",
     "frame": 5
+  },
+  {
+    "id": "photo-folder",
+    "title": "Classification: name the animal",
+    "caption": "Output: one class label for each photograph. Our example labels are dog and cat.",
+    "notes": "What would you want the program to return for each photo?\nReveal dog and cat. Connect one image label to the spam/not-spam example in Part I.",
+    "section": "s01",
+    "frame": 6
+  },
+  {
+    "id": "find-animal",
+    "title": "Detection: name and locate each object",
+    "caption": "Output: a class label and a bounding box for each detected object. A box tells an app where it could crop.",
+    "notes": "If there were two dogs in this photograph, how many labels and boxes would we need?\nCompare the image label on the previous slide with the label plus box here. Trace the four box edges.",
+    "section": "s01",
+    "frame": 7
+  },
+  {
+    "id": "image-caption",
+    "title": "Captioning: describe the image in words",
+    "caption": "Output: a sentence. The model generates words using the image as context.",
+    "notes": "What does this sentence tell us beyond the single label dog?\nPoint from the dog and trees to the corresponding words. Recall generating one token after another in the text lessons.",
+    "section": "s01",
+    "frame": 8
+  },
+  {
+    "id": "photo-search",
+    "title": "Image\u2013text search: find a matching photo",
+    "caption": "Input: a text query and candidate images. Output: images ranked by how well they match the query.",
+    "notes": "Which photo should come first for this query?\nRead the query, inspect both photos, then reveal the illustrative ranking. Contrast selecting a photo with generating a caption.",
+    "section": "s01",
+    "frame": 9
+  },
+  {
+    "id": "task-image-label",
+    "title": "Our task today: classify the whole image",
+    "caption": "For the rest of this lecture, we observe the whole photograph and predict one class label.",
+    "notes": "Are we trying to guess a missing patch in this task?\nPoint to the full observed image and the two possible class labels.",
+    "section": "s01",
+    "frame": 10
   },
   {
     "id": "task-next-token",
@@ -45,23 +85,15 @@
     "caption": "A prefix supplies the context. The answer is a distribution over the next token.",
     "notes": "After predicting one letter, how would we generate a whole name?\nFollow the loop back to the input, now with one more token.",
     "section": "s01",
-    "frame": 6
-  },
-  {
-    "id": "task-image-label",
-    "title": "What are we asking the image model to predict?",
-    "caption": "We observe the whole photograph and predict one label for it.",
-    "notes": "Are we trying to guess a missing patch in this task?\nPoint to the full observed image and the two possible class labels.",
-    "section": "s01",
-    "frame": 7
+    "frame": 11
   },
   {
     "id": "task-side-by-side",
     "title": "What changed, and what stayed the same?",
     "caption": "Both models score possible answers. What they observe, summarize and predict differs.",
-    "notes": "Which parts of our old calculation can we reuse unchanged?\nCompare one row at a time. Refer to the image summary from the preceding slide; its construction comes later.",
+    "notes": "Which parts of our old calculation can we reuse unchanged?\nCompare one row at a time. Refer back to the image summary from the classification slide; its construction comes later.",
     "section": "s01",
-    "frame": 8
+    "frame": 12
   },
   {
     "id": "s01-context",
@@ -69,7 +101,7 @@
     "caption": "To choose cat or dog, we need visual clues. This dark crop becomes easier to interpret when we see the whole photo.",
     "notes": "Could this dark crop be fur, a shadow, or something else?\nReveal where it came from; keep pointing to the same crop.",
     "section": "s01",
-    "frame": 9
+    "frame": 13
   },
   {
     "id": "bridge-text",
@@ -77,7 +109,7 @@
     "caption": "We still turn inputs into rows, read useful information, and predict an answer.",
     "notes": "What stays the same when the input is a photograph?\nPoint to representation, contextual reading, and multiple head messages in the earlier examples.",
     "section": "s01",
-    "frame": 10
+    "frame": 14
   },
   {
     "id": "patch-context",
@@ -85,7 +117,7 @@
     "caption": "Face clues could make a dark crop easier to interpret. The final prediction is one label for the whole image.",
     "notes": "Does this dark crop alone tell us whether the photograph contains a dog or a cat?\nReveal the eye and face crops. Ask what they add, then return to the whole-image classification task.",
     "section": "s01",
-    "frame": 11
+    "frame": 15
   },
   {
     "id": "image-to-rows",
@@ -93,7 +125,7 @@
     "caption": "Attention works on rows of numbers. Next, we choose image patches and turn their pixels into those rows.",
     "notes": "In the text lessons, what did attention receive as its input?\nKeep the photograph visible. Reveal its pieces, one row per piece, then the familiar attention operation.",
     "section": "s01",
-    "frame": 12
+    "frame": 16
   },
   {
     "id": "s01-patches",
@@ -1176,27 +1208,11 @@
     "frame": 1
   },
   {
-    "id": "find-animal",
-    "title": "Does \u201cdog\u201d tell us where to crop?",
-    "caption": "To crop around the dog automatically, we need its location as well as its label.",
-    "notes": "If an app only returns dog, how would it know which rectangle to keep?\nKeep the photograph fixed. Reveal the box, then trace its four edges while reading left, top, right and bottom.",
-    "section": "s14",
-    "frame": 2
-  },
-  {
-    "id": "photo-search",
-    "title": "How would we find this photo using words?",
-    "caption": "Searching with words needs a way to match text and image representations.",
-    "notes": "Which description would help us find this photograph in a folder?\nPoint to black, dog and outdoors and their visible evidence. Connect the image rows from this lecture to the text rows from Parts I\u2013III.",
-    "section": "s14",
-    "frame": 3
-  },
-  {
     "id": "closing",
     "title": "Can you talk us through the whole model?",
     "caption": "Start with the pixels. Explain what each step adds before moving to the next one.",
     "notes": "Which step is new, and which steps did we already know?\nAsk students to narrate the computation from input to loss without reading equations.",
     "section": "s14",
-    "frame": 4
+    "frame": 2
   }
 ]

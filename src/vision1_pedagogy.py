@@ -153,31 +153,68 @@ def expand(b, sections):
         'In the text lessons, what did attention receive as its input?','Keep the photograph visible. Reveal its pieces, one row per piece, then the familiar attention operation.',
         'The previous slide motivated using clues from other image regions. Now we need a numerical representation so attention can combine those clues. Text supplied one row per token; our image will supply one row per fixed-size patch. This drawing previews the construction rather than calculating it. The next section first chooses the patch grid, then reads the pixels and applies a shared learned projection. Position information comes after that.')
 
+    # Name the task family before showing how its required outputs differ.
+    body=image(25,105,345,230)+arrow(390,220,430,220)
+    body+=t(465,50,'Task',25,'ink-2')+t(835,50,'Output',25,'ink-2')
+    for i,(name,output) in enumerate([
+        ('Classification','one image label'),('Detection','labels + boxes'),
+        ('Captioning','a sentence'),('Image–text search','ranked images')]):
+        body+=g(t(465,130+90*i,name,30,'c-e')+t(835,130+90*i,output,28),i+1)
+    add('vision-tasks','One photograph, several possible tasks',body,
+        'These tasks ask for different outputs. We will work through image classification in this lecture.',
+        'What would you want the program to return for each of these tasks?',
+        'Keep the photograph fixed. Read each task name and its output before moving to the examples.',
+        'This is a map of some common vision tasks. Image classification assigns a label to the whole image. '
+        'Object detection predicts class labels and bounding boxes for objects. Captioning generates a description. '
+        'Text-to-image retrieval ranks candidate photographs for a text query. The examples that follow illustrate the desired outputs; '
+        'they are human-authored examples, not outputs measured from one model that performs all four tasks. '
+        'After the overview, we choose image classification and follow it from pixels to a class prediction.',
+        '<img src="'+PHOTO+'" alt="The dog photograph used across the task examples">'+mobile_rows(['Task','Output'],[
+            ['Classification','One image label'],['Detection','Labels + boxes'],
+            ['Captioning','A sentence'],['Image–text search','Ranked images']]))
+
     # More examples before architecture, as in the opening of text Part I.
     body=image(35,50,400,267)+image(600,40,225,300,CAT)
     body+=g(t(235,390,'dog',36,'c-e','middle')+t(712,390,'cat',36,'c-e','middle'),1)
-    add('photo-folder','Find the dog photos in a folder',body,'Each photograph gets one label. Decide what the labels mean before choosing the model.',
+    add('photo-folder','Classification: name the animal',body,'Output: one class label for each photograph. Our example labels are dog and cat.',
         'What would you want the program to return for each photo?','Reveal dog and cat. Connect one image label to the spam/not-spam example in Part I.',
         'This is a proposed two-class task, like the email classification task in Part I. The pretrained model later in this lesson has a different label set: 1,000 ImageNet categories. Dog and cat here are human example labels, not outputs from a fitted two-class classifier.')
-    body=image(25,40,535,357)+t(640,95,'Name the animal',30,'ink-2')+t(640,150,'dog',39,'c-e')
-    body+=g(rect(145,81,311,300,'c-e','transparent',0)+t(640,255,'Locate the animal',30,'ink-2'),1)
+    body=image(25,40,535,357)+t(640,95,'Class label',30,'ink-2')+t(640,150,'dog',39,'c-e')
+    body+=g(rect(145,81,311,300,'c-e','transparent',0)+t(640,255,'Bounding box',30,'ink-2'),1)
     body+=g(t(640,315,'left, top, right, bottom',28,'c-e')+t(640,370,'four box coordinates',26,'ink-2'),2)
-    add('find-animal','Does “dog” tell us where to crop?',body,'To crop around the dog automatically, we need its location as well as its label.',
-        'If an app only returns dog, how would it know which rectangle to keep?','Keep the photograph fixed. Reveal the box, then trace its four edges while reading left, top, right and bottom.',
-        'We have followed a classifier from pixels to an image label. Now consider an extension: an app that crops around the animal. '
-        'The label dog identifies the animal category, but it supplies no rectangle. A single-object localization model can also predict four box coordinates '
-        'that specify the left, top, right and bottom edges. The app can then retain the pixels inside that rectangle. '
-        'This needs a different output head and training targets that include boxes; changing the question alone does not give our classifier this ability. '
-        'The blue box here is drawn by hand to illustrate the required output. It is not a measured prediction. '
-        'The next example changes the request again: finding this photograph from a description.',
+    add('find-animal','Detection: name and locate each object',body,'Output: a class label and a bounding box for each detected object. A box tells an app where it could crop.',
+        'If there were two dogs in this photograph, how many labels and boxes would we need?',
+        'Compare the image label on the previous slide with the label plus box here. Trace the four box edges.',
+        'Classification gives one label for the whole photograph in our example. Object detection asks which objects are present and where each one is. '
+        'Here we illustrate one dog, so we show one class label and one bounding box. With two dogs, the desired output would include two labeled boxes. '
+        'One way to specify a box is with its left, top, right and bottom coordinates. An app can use the box to crop around an object. '
+        'Detection needs suitable prediction heads and training targets that include object locations. '
+        'The blue box is drawn by hand to illustrate the required output; it is not a measured prediction. '
+        'Next we ask for a sentence describing the image.',
         '<svg viewBox="0 0 560 420" role="img" aria-label="Illustrative box around the dog">'+image(25,40,535,357)+rect(145,81,311,300,'c-e','transparent',0)+'</svg>'
-        '<p>Name the animal → <strong>dog</strong>.</p><p>Locate the animal → <strong>left, top, right, bottom</strong>: four numbers defining a box.</p>')
-    body=image(35,45,350,234)+g(t(540,140,'“a black dog outdoors”',34,'c-e'),1)+g(t(540,270,'“a white cat on a cushion”',32,'ink-2'),2)
-    add('photo-search','How would we find this photo using words?',body,'Searching with words needs a way to match text and image representations.',
-        'Which description would help us find this photograph in a folder?','Point to black, dog and outdoors and their visible evidence. Connect the image rows from this lecture to the text rows from Parts I–III.',
-        'We have considered a class label and a box. Searching a folder by description asks for another kind of output: a score for how well each image matches the text. '
-        'These are human-written descriptions for motivation. Vision III covers learning an image–text similarity model. '
-        'The image representations we built here and the text representations from Parts I–III give us the two ingredients.')
+        '<p>Class label → <strong>dog</strong>.</p><p>Bounding box → <strong>left, top, right, bottom</strong>: four numbers defining a box.</p>')
+    body=image(25,75,450,301)+g(arrow(505,220,590,220)+t(625,175,'“A black dog is',32,'c-e')
+        +t(625,235,'among the trees.”',32,'c-e'),1)
+    add('image-caption','Captioning: describe the image in words',body,
+        'Output: a sentence. The model generates words using the image as context.',
+        'What does this sentence tell us beyond the single label dog?',
+        'Point from the dog and trees to the corresponding words. Recall generating one token after another in the text lessons.',
+        'A caption describes visible content using a sequence of words. The sentence here is written by us as an example of the desired output. '
+        'Unlike choosing from the two class labels dog and cat, a captioning model must generate a sequence. '
+        'An autoregressive captioner predicts the next token using both image information and previously generated tokens. '
+        'We will connect image features to text generation later in the vision-to-language series.',
+        '<img src="'+PHOTO+'" alt="Black dog among trees"><p>Example caption: <strong>A black dog is among the trees.</strong></p>')
+    body=t(35,45,'Query: “a black dog outdoors”',32,'c-e')
+    body+=image(45,110,400,267)+image(695,110,240,267,CAT)
+    body+=g(t(245,425,'1 · closer match',28,'c-e','middle')+t(815,425,'2 · weaker match',28,'ink-2','middle'),1)
+    add('photo-search','Image–text search: find a matching photo',body,'Input: a text query and candidate images. Output: images ranked by how well they match the query.',
+        'Which photo should come first for this query?',
+        'Read the query, inspect both photos, then reveal the illustrative ranking. Contrast selecting a photo with generating a caption.',
+        'In text-to-image retrieval, the user supplies the words and the system ranks existing photographs. '
+        'Captioning instead takes an image and generates a sentence. The rankings here express a human judgment to explain the task; they are not measured model scores. '
+        'Vision III covers learning an image–text similarity model. Now that we have seen the range of outputs, we return to the task for this lecture: image classification.',
+        '<p>Query: <strong>a black dog outdoors</strong></p><img src="'+PHOTO+'" alt="Dog: closer match">'
+        '<p>1 · closer match</p><img class="vp-cat" src="'+CAT+'" alt="Cat: weaker match"><p>2 · weaker match</p>')
 
     # Pixel, projection and position examples at a size students can calculate.
     math_steps('one-rgb','How can a red pixel be three numbers?',[
@@ -481,7 +518,7 @@ def expand(b, sections):
     def seq(*keys):return [html for key in keys for html in (use(key) if key in old else [new[key]])]
     # The same 14 section anchors remain useful for remote review.
     revised=[
-      ('What would we like the image model to do?',seq('s01-photo','photo-folder','s01-context','bridge-text','patch-context','image-to-rows')),
+      ('What would we like the image model to do?',seq('s01-photo','vision-tasks','photo-folder','find-animal','image-caption','photo-search','s01-context','bridge-text','patch-context','image-to-rows')),
       ('How do pixels become patch rows?',seq('s01-patches','one-rgb','rgb-flatten','flatten-order','s01-rows','projection-size')),
       ('What does each row know about its patch?',seq('s02-small','position-question','s02-projection','patch-matrix','empty-patch','mean-loses-edge','edge-filters','why-cls','two-identical-patches','s02-positions')),
       ('How does one row read the other rows?',seq('image-mask','qkv-roles','all-qkv','q-dot','one-key-dot','s03-query','one-score','softmax-relative','s03-weights','weight-denominator','s03-values','one-value-product','weight-message','change-query')),
@@ -494,7 +531,7 @@ def expand(b, sections):
       ('What can we learn by inspecting the model?',seq('read-attention-map','real-heads','real-depth','real-patch-query','cover-1','cover-2','cover-3','cover-4','occlusion')),
       ('How much work does a finer patch grid require?',seq('patch-cost','real-work-count','cost-control')),
       ('Can you work through a new example?',seq('exercise-message','exercise-shapes','exercise-position')),
-      ('What can we build with visual rows next?',seq('next-vision','find-animal','photo-search','closing'))]
+      ('What can we build with visual rows next?',seq('next-vision','closing'))]
     # Put the second MLP linear calculation before its residual, preserving order.
     title,frames=revised[6]
     residual_id='mlp-row'
