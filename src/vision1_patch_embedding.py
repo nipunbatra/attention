@@ -36,7 +36,7 @@ def example():
 def expand(b, sections):
     t,g,rect,arrow,line,crop,frame,mobile_rows = (b[k] for k in
         ['t','g','rect','arrow','line','crop','frame','mobile_rows'])
-    data = example()
+    data = json.loads((b["ASSETS"]/"patch-embedding-example.json").read_text()) if b.get("SLIDES_ONLY") else example()
     (b['ASSETS']/'patch-embedding-example.json').write_text(json.dumps(data,indent=2)+'\n')
     additions = {}
     old_meta = {f['id']:f for f in b['FRAMES']}

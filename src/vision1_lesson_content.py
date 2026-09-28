@@ -385,7 +385,7 @@ optimizer.step()''',t(30,65,'image + known label',26,'c-e')+arrow(180,92,180,160
         y=75+j*130;body+=t(30,y,name,32,'c-e')+g(t(335,y,inp,28)+arrow(655,y-10,735,y-10)+t(775,y,act,25),j+1)
     add('three-phases','If our labels are “cat” and “dog”, what must change?',body,'Choose a task vocabulary and learn a suitable classifier from labelled training examples.',
         'Is an ImageNet breed score already a fitted two-class Pets classifier?','Separate the checkpoint’s history, adapting a classifier, and running inference.',
-        'The model name identifies ImageNet-21k pretraining and ImageNet-1k fine-tuning. For a new cat/dog task, use an explicit class mapping and separate train/validation/test data. Training only a new head on frozen embeddings is a linear probe; updating the backbone is fine-tuning. This lecture runs full small-model training on the synthetic task and pretrained real-photo inference. It does not claim a completed Pets fine-tuning benchmark.')
+        'The model name identifies ImageNet-21k pretraining and ImageNet-1k fine-tuning. For a new cat/dog task, use an explicit class mapping and separate train/validation/test data. Training only a new head on frozen embeddings is a linear probe; updating the backbone is fine-tuning. The optional lab contains the earlier small-model training experiment; these slides use saved real-photo inference. It does not claim a completed Pets fine-tuning benchmark.')
 
     # MEASURED ATTENTION. COMMON SCALE WITH RAW PATCH MASS.
     def heatmap(x,y,size,record,maxweight,label,overlay=False):
@@ -524,6 +524,8 @@ optimizer.step()''',t(30,65,'image + known label',26,'c-e')+arrow(180,92,180,160
     sections=introduce_section_flow(b,sections)
     from vision1_model_journey import connect_journey
     sections=connect_journey(b,sections)
+    from vision1_classification_closure import refine
+    sections=refine(b,sections)
     ordered=[]
     for n,(title,frames) in enumerate(sections,1):
         original_section(n,title,frames)
@@ -543,9 +545,9 @@ optimizer.step()''',t(30,65,'image + known label',26,'c-e')+arrow(180,92,180,160
       'chain':[{'section':f's{i+1:02}','label':s[0]} for i,s in enumerate(sections)],
       'objects':['e','q','k','v','a','d','ep'],
       'objectSections':{'e':'s03','q':'s04','k':'s04','v':'s04','a':'s04','d':'s05','ep':'s06'},
-      'provenance':'We use small, chosen numbers for the four-patch calculation. Then we train a complete small ViT on noisy images. Finally, we run a pretrained ViT on the photographs. The code and saved results keep these three examples separate.',
+      'provenance':'The four-patch worksheet uses chosen weights for forward and backward calculations. Real-photo predictions are saved measurements from a pretrained ImageNet model. Dog/cat adaptation is a proposed workflow, with no new training results. The optional lab retains the earlier synthetic experiment.',
       'prev':{'label':'Part 4: Cross-attention: translate one phrase','href':'part4.html'},
-      'next':{'label':'Vision II: Learn visual representations without class labels','href':'vision2.html'},
+      'next':{'label':'Optional: self-supervised visual learning','href':'vision2.html'},
       'index':{'label':'Series home','href':'index.html'},
       'notation':'vision1','footer':'Pixels become rows; attention adds context; a learned readout answers the image question.',
       'sectionDirectory':'sections-vision1','toyFile':'vision1-worksheet.json','runtimeFile':'vision1-lesson.js',

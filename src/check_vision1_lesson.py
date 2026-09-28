@@ -52,9 +52,14 @@ for i,(name,image) in enumerate(p['images'].items()):
                 np.testing.assert_allclose(actual[2*i+j]['heads'][h][key],expected['heads'][h][key],atol=1e-12)
 
 manifest=json.loads((ROOT/'figures/vision1/frame-manifest.json').read_text())
-assert len(manifest)==211
-required={'task-side-by-side','task-mask-reason','qkv-match-numbers','qkv-read-numbers','qkv-change-key','qkv-change-value','qkv-no-prompt','cls-start','cls-two-images','cls-learns','pooling-example','readout-choice'}
+assert len(manifest)==220
+required={'task-side-by-side','task-mask-reason','qkv-match-numbers','qkv-read-numbers','qkv-change-key','qkv-change-value','qkv-no-prompt','cls-start','cls-shared-start','cls-learns','pooling-example','readout-choice'}
+required.update({'backward-route','backward-qk','backward-patches','backward-full-block','cls-without','heads-visual-roles','cnn-classifier-parallel','pets-evaluation','classification-exit'})
 assert required <= {x['id'] for x in manifest}
+from vision1_gradients import checked_trace
+reverse=checked_trace()
+assert reverse['verification']['max_absolute_error']<1e-7
+assert reverse['single_update']['loss_after']<reverse['single_update']['loss_before']
 assert all(len(x['caption'].split())<=40 and '\n' in x['notes'] for x in manifest)
 report=json.loads((ROOT/'figures/vision1/real-inference.json').read_text())
 for item in report['results']:

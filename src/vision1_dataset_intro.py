@@ -44,7 +44,7 @@ def introduce(b, sections):
         'What changes across photos that share the same dog or cat label?\nPoint to pose, coat and background. Read the species label first, then the breed beneath it.',
         'A dataset pairs each image with its target labels. Here the first line under each photo is its species; the second is its breed. '
         'These are six selected examples from the test split, chosen to show variety. We use the photos to motivate classification. '
-        'Later, our training experiment uses synthetic stripe images, and our pretrained demonstration predicts ImageNet categories. '
+        'The optional training lab uses synthetic stripe images, and our pretrained demonstration predicts ImageNet categories. '
         'The lecture does not report training or accuracy on the full Pets dataset. ' + source,
         gallery_mobile)
     gallery = gallery.replace('viewBox="0 0 1160 440"', 'viewBox="0 0 1160 540"', 1)

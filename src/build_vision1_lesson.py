@@ -22,6 +22,7 @@ REAL = json.loads((ASSETS / 'real-inference.json').read_text())
 PHOTO = 'data:image/jpeg;base64,' + base64.b64encode((ASSETS / 'newfoundland_31.jpg').read_bytes()).decode()
 CAT = 'data:image/jpeg;base64,' + base64.b64encode((ASSETS / 'Persian_98.jpg').read_bytes()).decode()
 FRAMES = []
+SLIDES_ONLY = "--slides-only" in sys.argv
 
 
 def f(x, n=3):
@@ -371,10 +372,11 @@ print('Loss', -np.log(r['probability'][0]))
 def main():
     from vision1_lesson_content import build_full
     count=build_full(globals())
-    notebook()
-    from build_vision1_lab import build_lab
-    build_lab()
+    if "--slides-only" not in sys.argv:
+        notebook()
+        from build_vision1_lab import build_lab
+        build_lab()
     subprocess.run([sys.executable,str(SRC/'assemble.py'),'--part','5','--out',str(ROOT/'vision1.html')],check=True)
-    print(f'{count} teaching frames plus cover; complete lecture and executed lab')
+    print(f'{count} teaching frames plus cover; '+('slides only, no notebook or training execution' if '--slides-only' in sys.argv else 'complete lecture and executed lab'))
 
 if __name__ == '__main__': main()

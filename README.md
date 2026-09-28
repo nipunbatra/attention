@@ -131,3 +131,14 @@ python3 src/check_vision1_lesson.py
 ```
 
 To repeat the experiments, run `notebooks/vision/train_small_vit.py`, `notebooks/vision/run_real_images.py`, and `notebooks/vision/inspect_real_vit.py` before rebuilding. The two real-image scripts additionally require timm and Pillow. All presentation interactions are silent. The standalone `vision1.html` embeds its images and math assets; linked notebooks and scripts live beside it in the repository.
+
+### Classification forward and backward teaching route
+
+[Teaching guide](notebooks/vision/CLASSIFICATION_TEACHING_GUIDE.md) distinguishes the main lecture, detailed arithmetic and optional code/lab material. The new backward calculation follows the original four-patch worksheet and verifies all 116 parameter derivatives with central differences.
+
+```sh
+python3 src/build_vision1_lesson.py --slides-only
+python3 src/check_vision1_closure.py
+```
+
+The slide-only build uses saved experiment artifacts and runs no notebook or model-training job.

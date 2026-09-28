@@ -52,7 +52,7 @@
     },
     {
       "id": "s09",
-      "title": "Check what the model learned",
+      "title": "Adapt and evaluate the classifier",
       "lit": ""
     },
     {
@@ -116,7 +116,7 @@
     },
     {
       "section": "s09",
-      "label": "Check what the model learned"
+      "label": "Adapt and evaluate the classifier"
     },
     {
       "section": "s10",
@@ -157,13 +157,13 @@
     "d": "s05",
     "ep": "s06"
   },
-  "provenance": "We use small, chosen numbers for the four-patch calculation. Then we train a complete small ViT on noisy images. Finally, we run a pretrained ViT on the photographs. The code and saved results keep these three examples separate.",
+  "provenance": "The four-patch worksheet uses chosen weights for forward and backward calculations. Real-photo predictions are saved measurements from a pretrained ImageNet model. Dog/cat adaptation is a proposed workflow, with no new training results. The optional lab retains the earlier synthetic experiment.",
   "prev": {
     "label": "Part 4: Cross-attention: translate one phrase",
     "href": "part4.html"
   },
   "next": {
-    "label": "Vision II: Learn visual representations without class labels",
+    "label": "Optional: self-supervised visual learning",
     "href": "vision2.html"
   },
   "index": {

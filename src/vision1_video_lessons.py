@@ -1,12 +1,15 @@
 """Small implementation lessons prompted by the reviewed Vizuara videos."""
 import re
 import json
-from vision1_video_examples import examples
 
 
 def augment(b,sections):
     globals().update({k:b[k] for k in ['frame','t','g','line','arrow','rect','pixels','ASSETS']})
-    result=examples()
+    if b.get("SLIDES_ONLY"):
+        result=json.loads((ASSETS/"video-examples.json").read_text())
+    else:
+        from vision1_video_examples import examples
+        result=examples()
     (ASSETS/'video-examples.json').write_text(json.dumps(result,indent=2)+'\n')
     new={}
     def add(key,title,body,caption,question,point,prose):
