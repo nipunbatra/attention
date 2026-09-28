@@ -2,7 +2,7 @@
   "part": 2,
   "series": "Attention and language",
   "title": "TinyStories: optional MLP and single-head lab",
-  "subtitle": "The detailed reference retained from Part II. The compact four-head classroom walkthrough is now in Part III.",
+  "subtitle": "The detailed reference retained from Part II. Story preparation and the four-head classroom walkthrough now live in Part III.",
   "audience": "For students who know embeddings, dot products, softmax and next-token prediction, and who have not yet met attention.",
   "minutes": null,
   "central": "\\ve{e} \\;\\rightarrow\\; \\vq{Q},\\vk{K},\\vv{V} \\;\\rightarrow\\; \\text{attention } (\\va{\\alpha}) \\;\\rightarrow\\; \\vd{\\Delta e} \\;\\rightarrow\\; \\vp{e + \\Delta e}",

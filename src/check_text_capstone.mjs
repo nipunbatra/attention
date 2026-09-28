@@ -1,4 +1,4 @@
-// Compact classroom route; the old worked reference has its own full suite.
+// Brief head introduction plus the restored TinyStories teaching route.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -15,14 +15,24 @@ try {
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(pathToFileURL(path.resolve('part3.html')).href);
   await page.evaluate(()=>document.fonts.ready);
-  assert.equal(manifest.length,22);
+  assert.equal(manifest.length,52);
   assert.deepEqual(await page.locator('.mh-frame').evaluateAll(es=>es.map(e=>e.id)),manifest.map(s=>s.key));
   assert.equal(await page.locator('#s01 .frame,#s02 .frame').count(),7,'Finish head overview in seven frames');
   assert.equal(await page.locator('#s02 .frame').last().getAttribute('id'),'s02-cap-map');
   assert.equal(await page.locator('.mh-frame').last().getAttribute('id'),'s06-cap-app');
   assert.equal(await page.locator('#s02-cap-map [data-map-head]').count(),2);
   assert.equal(await page.locator('#s02-cap-map [data-map-message]').count(),2);
-  assert.equal(await page.locator('#s04 .frame').count(),6,'Exactly six forward, learning and generation steps');
+  assert.equal(await page.locator('#s03 .frame').count(),27,'Complete story-to-batch sequence and explicit experiment-scale transition');
+  assert.equal(await page.locator('#s04 .frame').count(),12,'All multi-head forward, training and generation operations');
+  const setup=['data','story-complete','story-excerpts','split','sentence','tokenization-intro','tokenization-choices','tokenization-rules','tokenize','vocabulary','special','boundaries','story-indices','one-pair','pair-first','pair-second','windows-first','windows-last','pairs-tensors','counts-story','counts','context','batch','batch-ids','batches'];
+  assert.deepEqual((await page.locator('#s03 .frame').evaluateAll(es=>es.map(e=>e.id))).slice(0,25),setup.map(s=>'s03-data-'+s));
+  for(const key of setup){
+    const caption=await page.locator('#s03-data-'+key+' svg title').textContent();
+    assert(caption.length>0,'Original figure survives: '+key);
+  }
+  assert((await page.locator('#s03-data-vocabulary').textContent()).includes('Beginning of sequence'));
+  assert((await page.locator('#s03-data-boundaries').textContent()).includes('whole story'));
+  assert((await page.locator('#s04-cap-prompt').textContent()).includes('Do not append EOS'));
   assert.equal(await page.locator('#s02-v-head1-matrices,#s07-v-patches,#s06-v-model-mlp').count(),0,'Long calculations and other model walkthroughs are off the lecture path');
   assert((await page.locator('#s02-cap-roles > p').textContent()).split(/\s+/).length<22,'Keep the roles recap terse');
   for(const [kind,color] of [['mlp','e'],['attention','k'],['multihead','d']]) {
@@ -61,7 +71,7 @@ try {
       },step.key);
       assert.equal(await page.locator('.frame.is-live').getAttribute('id'),step.key);
       assert(!(await page.evaluate(()=>AT.present.fitReport())).overflow,step.key+' fits '+viewport.width);
-      if(viewport.width===1280||['s02-cap-map','s05-cap-curves','s06-cap-samples'].includes(step.key))
+      if(viewport.width===1280||['s02-cap-map','s03-data-story-complete','s03-data-vocabulary','s03-data-pairs-tensors','s03-cap-scale','s04-cap-embed','s05-cap-curves','s06-cap-samples'].includes(step.key))
         await page.screenshot({path:path.join(shots,step.key+'-'+viewport.width+'.png')});
     }
   }

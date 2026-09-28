@@ -1,4 +1,4 @@
-"""Compact classroom route: head intuition, then the real TinyStories experiment.
+"""Brief head intuition, then the complete TinyStories classroom exercise.
 
 The longer arithmetic story remains in part3-worked.html and Notebook 7.
 All reported results and continuations below come from saved experiment files.
@@ -9,6 +9,7 @@ from pathlib import Path
 import textwrap
 
 from multihead_story import svg, t, rect, arrow, path, full_map, COLORS
+from tinystories_setup import setup_frames
 
 ROOT = Path(__file__).resolve().parents[1]
 LABELS = {'mlp': 'Fixed-window MLP', 'attention': 'One-head attention',
@@ -33,7 +34,7 @@ def rows(headers, data, widths=None):
     return svg(body, 80 + len(data)*66, ' · '.join(headers))
 
 
-def flow(items, footer=''):
+def flow(items, footer='', operators=None):
     """One left-to-right operation sequence; one label and shape per node."""
     width = (1120 - 38*(len(items)-1))/len(items)
     body = ''
@@ -43,7 +44,10 @@ def flow(items, footer=''):
         body += t(x+width/2, 77, name, 26, color, 'middle', 650)
         body += t(x+width/2, 113, shape, 24, 'muted', 'middle') + '</g>'
         if i < len(items)-1:
-            body += arrow(x+width, 87, x+width+36, 87)
+            if operators and operators[i]:
+                body += t(x+width+19, 97, operators[i], 30, 'ink', 'middle')
+            else:
+                body += arrow(x+width, 87, x+width+36, 87)
     if footer:
         body += t(580, 200, footer, 25, 'ink', 'middle')
     return svg(body, 230 if footer else 165, ' → '.join(i[0] for i in items))
@@ -160,54 +164,85 @@ def classroom(stage, reference):
           companion='<p>H = AV is the message matrix. This diagram keeps the two-head worksheet dimensions: 10 tokens, width 4, two heads of width 2. Next we switch to the trained TinyStories model: 64 slots, width 64, four heads of width 16.</p><p><a href="part3-worked.html">Optional: every worked calculation and the interactive head explorer</a> · <a href="notebooks/wordlm/07_multihead_step_by_step.html">Executable Notebook 7</a>.</p>'),
     ]))
     window_figure, evidence = windows(vocab)
-    split = result['audit']['documents']
     parts.append(('TinyStories: text becomes training examples', [
-        s('s03-cap-stories', 'Now learn from TinyStories',
-          dataset_figure(split),
-          'Our subset has 6,000 short, synthetic stories. Split whole stories before making next-token windows.',
-          companion='<p><a href="https://huggingface.co/datasets/roneneldan/TinyStories">TinyStories by Ronen Eldan and Yuanzhi Li</a>, CDLA-Sharing-1.0. This is a 6,000-document subset, not the complete dataset. The saved split audit reports zero document overlap. <a href="notebooks/wordlm/05_training_and_inference_maps.html#story-complete">Read a complete source story and its provenance</a>.</p>'),
-        s('s03-cap-tokens', 'Use one vocabulary for all three models',
-          flow([('Story text', 'lowercase + tokenize', 'e'), ('Token IDs', '4,000 entries', 'e'),
-                ('Known prefix', 'last 64 token slots', 'q'), ('Next token', 'observed target', 'd')]),
-          '<strong>PAD</strong>: padding · <strong>BOS</strong>: beginning of story · <strong>EOS</strong>: end of story · <strong>UNK</strong>: unknown token.',
-          companion='<p>The vocabulary is fitted on training stories only. The tokenizer separates punctuation too; “word” is shorthand for a vocabulary token. BOS/EOS wrap a complete story, not each sentence. Left-pad short prefixes, crop long prefixes to their last 64 tokens, and never cross a story boundary.</p>'),
-        s('s03-cap-windows', 'The next word is the target, not an input', window_figure,
-          'Slide the boundary one token forward to make another example. Each example still occupies 64 slots.',
+        *setup_frames(stage),
+        s('s03-cap-scale', 'The same preparation at the experiment’s scale',
+          rows(['Quantity', 'Lily teaching example', 'Trained experiment'],
+               [['Vocabulary C', '10 token IDs', '4,000 token IDs'],
+                ['Context width T', '4 input slots', '64 input slots'],
+                ['Batch size B', '2 examples', '512 examples']], [390,365,365]),
+          'The rules stay the same: tokenize, look up IDs, add story boundaries, then create padded or cropped input–target pairs.',
+          companion='<p>The toy vocabulary was chosen to expose every ID. The experimental vocabulary is frequency-ranked from training stories, so ordinary words receive different IDs. The four special IDs remain 0–3. The next slide remaps the same two prefixes into that real vocabulary.</p>'),
+        s('s03-cap-windows', 'Our two examples in the real vocabulary', window_figure,
+          'Same prefixes and answers; new ordinary-word IDs and 64 slots. We will follow this B = 2 batch through the trained model’s architecture.',
           companion='<p>Lily’s sentence is an authored teaching example, not a claimed source story. The IDs here use the actual 4,000-item benchmark vocabulary. PAD is ID 0. These two rows illustrate batching; the saved training runs use batches of 512. Position IDs are 0–63 within each padded/cropped window.</p>'),
     ]))
-    parts.append(('One quick pass through the four-head model', [
-        s('s04-cap-embed', '1 · Look up rows, add positions, make Q/K/V',
-          flow([('IDs X', '[B, 64]', 'e'), ('Token + position', 'E [B, 64, 64]', 'e'),
-                ('Project Q, K, V', 'each [B, 64, 64]', 'q'), ('Split into 4 heads', 'each [B, 4, 64, 16]', 'q')]),
-          'Now use 64 slots, width 64 and four heads of width 16. B counts examples: two above, 512 per training batch.',
-          code='E = token_embedding(X) + position_embedding(positions)\nQ, K, V = (split_heads(layer(E)) for layer in (W_Q, W_K, W_V))'),
-        s('s04-cap-weights', '2 · Match, mask, then normalize',
-          flow([('Q × Kᵀ / √16', '[B, 4, 64, 64]', 'q'), ('Mask sources', 'future tokens + PAD', 'k'),
-                ('Softmax over sources', 'A [B, 4, 64, 64]', 'a')],
-               'One row = one receiver’s source weights, in one head. Each row sums to 1.'),
-          'The four heads form four different attention patterns. Targets never enter this calculation.',
+    parts.append(('TinyStories: the multi-head model, training and generation', [
+        s('s04-cap-lookup', 'Each input ID selects a learned row',
+          flow([('Input IDs X', '[B, 64]', 'e'), ('Embedding table', '[4,000, 64]', 'e'),
+                ('Selected token rows', '[B, 64, 64]', 'e')]),
+          'The ID for “found” selects one row of 64 learned numbers. All occurrences share that token row. B counts examples, not heads.',
+          code='token_rows = token_embedding(X)',
+          companion='<p>The PAD token row is initialized to zero and receives no embedding-lookup gradient here, using padding_idx=0. BOS and UNK can learn when used in inputs. EOS is a target rather than an input in these windows, so its input row receives no task gradient. The separate classifier learns an EOS output score. Padding still needs an attention mask.</p>'),
+        s('s04-cap-position', 'Add a row for each input slot',
+          flow([('Token rows', '[B, 64, 64]', 'e'), ('Position rows', '[64, 64]', 'd'),
+                ('Add by slot', 'E [B, 64, 64]', 'e')],
+               'Token row says which item; position row distinguishes slots 0 through 63.', operators=['+', '=']),
+          'Use positions 0–63 within each padded or cropped window. Adding keeps each row 64 numbers wide. Both tables learn from the prediction loss.',
+          code='positions = torch.arange(X.shape[1], device=X.device)\nE = token_rows + position_embedding(positions)[None]'),
+        s('s04-cap-embed', 'Project Q, K and V, then split into four heads',
+          flow([('Input E', '[B, 64, 64]', 'e'), ('Project Q, K, V', 'each [B, 64, 64]', 'q'),
+                ('Reshape + transpose', 'each [B, 4, 64, 16]', 'q')]),
+          'Every head reads the full input row through learned projections. Split the projected coordinates into four groups of 16.',
+          code='Q, K, V = (split_heads(layer(E)) for layer in (W_Q, W_K, W_V))',
+          companion='<p>For the two examples, each projected tensor is [2,4,64,16]: examples, heads, token slots, coordinates per head. Packed W_Q, W_K and W_V each map 64 input coordinates to 64 output coordinates.</p>'),
+        s('s04-cap-scores', 'Each head compares queries with source keys',
+          flow([('One head’s Q', '[B, 64, 16]', 'q'), ('One head’s Kᵀ', '[B, 16, 64]', 'k'),
+                ('Divide by √16', '[B, 64, 64]', 'a')],
+               'All four heads together: scores [B, 4, 64, 64].', operators=['×', None]),
+          'For “BOS lily found”, follow the query at “found”. Its scores compare that receiver with the keys of the available source tokens.',
+          code='scores = (Q @ K.transpose(-2, -1)) / math.sqrt(16)'),
+        s('s04-cap-weights', 'Mask unused sources, then apply softmax',
+          flow([('Scaled scores', '[B, 4, 64, 64]', 'a'), ('Mask sources', 'future tokens + PAD', 'k'),
+                ('Softmax over sources', 'A [B, 4, 64, 64]', 'a')]),
+          'At “found”, allow BOS, lily and found. PAD and future slots receive zero weight. Each real receiver’s source weights sum to one.',
           companion='<p>This is the full causal teaching view for real receiver rows. The implementation keeps PAD-only receiver rows numerically defined; they do not feed the loss. The saved training and browser forward path computes only the final receiver’s query, since this task predicts one next token per window. It produces the same final logits with smaller [B,4,1,64] weight tensors.</p>'),
-        s('s04-cap-mix', '3 · Mix values, join heads, add the update',
-          flow([('A × V', '[B, 4, 64, 16]', 'v'), ('Join coordinates', '[B, 64, 64]', 'v'),
-                ('Output projection', 'ΔE [B, 64, 64]', 'd'), ('Residual addition', 'E′ = E + ΔE', 'e')]),
-          'Each head sends its own message. Joining four 16-coordinate messages restores width 64.',
-          code='messages = A @ V\njoined = messages.transpose(1, 2).reshape(B, 64, 64)\nupdated = E + W_O(joined)'),
-        s('s04-cap-predict', '4 · Predict the target from the final row',
+        s('s04-cap-mix', 'Each head mixes its value rows',
+          flow([('Source weights A', '[B, 4, 64, 64]', 'a'), ('Value rows V', '[B, 4, 64, 16]', 'v'),
+                ('Messages A × V', '[B, 4, 64, 16]', 'v')], operators=['×', '=']),
+          'A weight scales a complete 16-number value row. Add those weighted rows to make one message per receiver, per head.',
+          code='messages = A @ V'),
+        s('s04-cap-join', 'Join the messages and add the update',
+          flow([('Four messages', '4 × 16 coordinates', 'v'), ('Concatenate', '[B, 64, 64]', 'v'),
+                ('Project + residual', 'E′ [B, 64, 64]', 'e')]),
+          'Joining four 16-coordinate messages restores width 64. W_O learns how to combine them; the residual adds this update to the original E.',
+          code='joined = messages.transpose(1, 2).reshape(B, 64, 64)\nupdated = E + W_O(joined)'),
+        s('s04-cap-predict', 'The final row predicts the observed next token',
           flow([('Final updated row', '[B, 64]', 'e'), ('Hidden + ReLU', '[B, 256]', 'd'),
                 ('Vocabulary logits', '[B, 4,000]', 'e'), ('Cross-entropy', 'one scalar loss', 'a')]),
           '“BOS lily found” → target <strong>a</strong>. “BOS lily found a” → target <strong>red</strong>. The model supplies scores; the story supplies the answers.',
           code='logits = vocab_head(relu(hidden_layer(updated[:, -1])))\nloss = cross_entropy(logits, y)  # raw logits, observed next-token IDs'),
-        s('s04-cap-train', '5 · One loss trains the whole model',
+        s('s04-cap-train', 'One loss trains the whole model',
           flow([('Prediction loss', 'compare with y', 'a'), ('Backpropagation', 'compute gradients', 'd'),
                 ('Optimizer step', 'update parameters', 'e'), ('Next batch', 'repeat', 'q')]),
-          'Token rows, position rows, all heads, the output projection and the prediction MLP learn together.',
+          'Repeat over batches. The loss trains token rows, position rows, all four heads, W_O and the prediction MLP. Validation selects a checkpoint; test measures that frozen choice.',
           code='optimizer.zero_grad()\nloss.backward()\noptimizer.step()',
           companion='<p>We do not assign head-specific targets such as “setting” or “person”. All heads learn through the same next-token task. These are one-block teaching models, not a full stack of normalized Transformer blocks.</p>'),
-        s('s04-cap-generate', '6 · Generate with fixed parameters',
-          flow([('Prompt → IDs', 'crop / pad to 64', 'e'), ('Four heads + MLP', 'vocabulary scores', 'q'),
-                ('Choose next token', 'greedy or sampled', 'a'), ('Append and repeat', 'stop at EOS / limit', 'd')]),
-          'Training changes the weights. Generation keeps the weights fixed and grows the prefix.',
-          companion='<p>The app excludes PAD, BOS and UNK as generated outputs; EOS may end the story. The same tokenizer and vocabulary are used for training and generation. Attention softmax chooses source positions; vocabulary softmax supplies next-token probabilities.</p>'),
+        s('s04-cap-prompt', 'Generation begins with a known prompt',
+          flow([('“Lily found”', 'same tokenizer', 'e'), ('BOS lily found', 'IDs [1, 23, 110]', 'e'),
+                ('Pad / crop', 'input [1, 64]', 'e')]),
+          'Use the training vocabulary and prepend BOS. Do not append EOS to an unfinished prompt. Load the chosen checkpoint and keep its parameters fixed.',
+          companion='<p>Left-pad this short prefix with 61 PAD IDs. After the history grows past 64 tokens, retain its last 64 IDs. There is no observed next-token target during free generation.</p>'),
+        s('s04-cap-decode', 'Choose one token from the vocabulary scores',
+          flow([('Frozen model', 'logits [1, 4,000]', 'q'), ('Vocabulary softmax', 'token probabilities', 'a'),
+                ('Choose a token', 'greedy or sample', 'd')]),
+          'Greedy decoding takes the highest score; sampling draws from the probability distribution. Exclude PAD, BOS and UNK as outputs. EOS can stop the story.',
+          companion='<p>Attention softmax chooses source positions. Vocabulary softmax supplies next-token probabilities. Cross-entropy uses raw logits during training; we do not first apply this generation softmax before that loss.</p>'),
+        s('s04-cap-generate', 'Append the chosen token and run the model again',
+          flow([('BOS lily found', 'known prefix', 'e'), ('Suppose choice = a', 'illustrative choice', 'd'),
+                ('BOS lily found a', 'next input prefix', 'e')]),
+          'Keep generating until EOS or a token limit. Training used observed previous words; generation now feeds back the model’s own choices.',
+          companion='<p>“a” here is an illustrative choice, not a claimed checkpoint output. The saved continuations later show the actual outputs. An early mistake can alter every later input. The weights stay fixed throughout generation.</p>'),
     ]))
     scores = [[LABELS[k], f'{result["aggregate"][k]["test_loss"]["mean"]:.3f} ± {result["aggregate"][k]["test_loss"]["sample_std"]:.3f}',
                f'{result["aggregate"][k]["test_perplexity"]["mean"]:.2f} ± {result["aggregate"][k]["test_perplexity"]["sample_std"]:.2f}'] for k in LABELS]

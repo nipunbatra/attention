@@ -10,16 +10,23 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
-2026-09-28 text-series finale (supersedes the long Part III classroom route):
+2026-09-28 restored TinyStories finale (supersedes the compressed 22-frame route):
 
-- `multihead_capstone.py` supplies 22 classroom frames. Seven cover head
+- `multihead_capstone.py` supplies 52 classroom frames. Seven cover head
   intuition, terse river roles, concatenation and the full shape-labelled map.
-  TinyStories follows: three setup frames, six forward/training/generation
-  steps, four protocol/results/cost frames, and two qualitative/app frames.
+  `tinystories_setup.py` reuses 25 original Part II figures and their source
+  explanations: complete stories, tokenization, special tokens, IDs, boundaries,
+  all seven input–target pairs, padding/cropping, counts and batches. Two bridge
+  frames explicitly switch toy vocabulary/window sizes to the real experiment.
+  Twelve frames then trace the four-head model, learning and generation, followed
+  by four results/cost frames and two qualitative/app frames. The opening data
+  frame has a 10–15-minute pacing guide in its presenter notes. Do not compress
+  the data preparation into a few summary slides again.
 - `build_multihead_lesson.py` also retains the original 62-frame story as
   `part3-worked.html` (`part3-worked.json`, `reference-manifest.json`). Notebook
   7 consumes the reference manifest so its complete executable arithmetic is
-  preserved. The classroom manifest is now separate; do not re-expand it.
+  preserved. The classroom manifest is separate. Keep MLP and single-head
+  implementation details in the optional reference, not on the main route.
 - Part II's `sec19` no longer inserts the 89 pipeline and nine benchmark
   frames. Notebook 5 links to `wordlm-worked.html`, an optional reference export
   enabled by `wordlmReference` in `wordlm-worked.json`. Preserve that route's
@@ -34,7 +41,8 @@ All four attention parts and the four-part Vision to language extension are impl
   route; `check_multihead_lesson.mjs` now tests the optional detailed route.
   The older pipeline and browser-lab tests target `wordlm-worked.html`.
 - The presentation skill guided the concise flow and retained native SVG
-  style. No new model training or changes to Vision were made for this request.
+  style; the restored setup figures are byte-identical to the original figures.
+  No model retraining or Vision changes were made for this request.
 
 2026-09-28 dimensions on the two-head architecture diagram:
 

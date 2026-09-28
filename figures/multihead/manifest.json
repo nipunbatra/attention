@@ -49,67 +49,277 @@
     "companion": "<p>H = AV is the message matrix. This diagram keeps the two-head worksheet dimensions: 10 tokens, width 4, two heads of width 2. Next we switch to the trained TinyStories model: 64 slots, width 64, four heads of width 16.</p><p><a href=\"part3-worked.html\">Optional: every worked calculation and the interactive head explorer</a> \u00b7 <a href=\"notebooks/wordlm/07_multihead_step_by_step.html\">Executable Notebook 7</a>.</p>"
   },
   {
-    "key": "s03-cap-stories",
-    "title": "Now learn from TinyStories",
-    "body": "Our subset has 6,000 short, synthetic stories. Split whole stories before making next-token windows.",
+    "key": "s03-data-data",
+    "title": "The data: complete short stories",
+    "body": "The saved experiment uses 6,000 TinyStories documents. Each document is a complete story.",
     "code": "",
-    "companion": "<p><a href=\"https://huggingface.co/datasets/roneneldan/TinyStories\">TinyStories by Ronen Eldan and Yuanzhi Li</a>, CDLA-Sharing-1.0. This is a 6,000-document subset, not the complete dataset. The saved split audit reports zero document overlap. <a href=\"notebooks/wordlm/05_training_and_inference_maps.html#story-complete\">Read a complete source story and its provenance</a>.</p>"
+    "companion": "<p>The saved experiment uses 6,000 TinyStories documents. Each document is a complete story. This is an excerpt from source row 12400.</p><p><a href=\"notebooks/wordlm/05_training_and_inference_maps.html#data\">Original worked example and executable code</a></p><p>TinyStories by Ronen Eldan and Yuanzhi Li. <a href=\"https://huggingface.co/datasets/roneneldan/TinyStories\">Source dataset</a>, <a href=\"https://cdla.dev/sharing-1-0/\">CDLA-Sharing-1.0</a>. Source revision, row IDs and unchanged texts are recorded in <a href=\"notebooks/wordlm/story_examples.json\">story_examples.json</a>. [\u2026] marks omitted text.</p>"
   },
   {
-    "key": "s03-cap-tokens",
-    "title": "Use one vocabulary for all three models",
-    "body": "<strong>PAD</strong>: padding \u00b7 <strong>BOS</strong>: beginning of story \u00b7 <strong>EOS</strong>: end of story \u00b7 <strong>UNK</strong>: unknown token.",
+    "key": "s03-data-story-complete",
+    "title": "Read one complete story",
+    "body": "One document is one complete story, not one sentence. This is the shortest story in our saved 6,000-document subset; many others are longer.",
     "code": "",
-    "companion": "<p>The vocabulary is fitted on training stories only. The tokenizer separates punctuation too; \u201cword\u201d is shorthand for a vocabulary token. BOS/EOS wrap a complete story, not each sentence. Left-pad short prefixes, crop long prefixes to their last 64 tokens, and never cross a story boundary.</p>"
+    "companion": "<p>One document is one complete story, not one sentence. This is the shortest story in our saved 6,000-document subset; many others are longer.</p><p><a href=\"notebooks/wordlm/05_training_and_inference_maps.html#story-complete\">Original worked example and executable code</a></p><p>TinyStories by Ronen Eldan and Yuanzhi Li. <a href=\"https://huggingface.co/datasets/roneneldan/TinyStories\">Source dataset</a>, <a href=\"https://cdla.dev/sharing-1-0/\">CDLA-Sharing-1.0</a>. Source revision, row IDs and unchanged texts are recorded in <a href=\"notebooks/wordlm/story_examples.json\">story_examples.json</a>. [\u2026] marks omitted text.</p>"
+  },
+  {
+    "key": "s03-data-story-excerpts",
+    "title": "Longer stories have several paragraphs",
+    "body": "These beginnings and endings come from two other documents in the same subset. [\u2026] marks omitted text; the lengths count each whole story.",
+    "code": "",
+    "companion": "<p>These beginnings and endings come from two other documents in the same subset. [\u2026] marks omitted text; the lengths count each whole story. Words are whitespace-separated items; tokens also separate punctuation and exclude start/end markers.</p><p><a href=\"notebooks/wordlm/05_training_and_inference_maps.html#story-excerpts\">Original worked example and executable code</a></p><p>TinyStories by Ronen Eldan and Yuanzhi Li. <a href=\"https://huggingface.co/datasets/roneneldan/TinyStories\">Source dataset</a>, <a href=\"https://cdla.dev/sharing-1-0/\">CDLA-Sharing-1.0</a>. Source revision, row IDs and unchanged texts are recorded in <a href=\"notebooks/wordlm/story_examples.json\">story_examples.json</a>. [\u2026] marks omitted text.</p><details><summary>Is a 300-token story a single 64-token training input?</summary><p>No. A story is a document. Later, we turn it into many next-token examples, each using at most the previous 64 tokens in the saved experiment.</p></details>"
+  },
+  {
+    "key": "s03-data-split",
+    "title": "Stories stay together when we split the data",
+    "body": "The split happens before overlapping windows are made. Training fits parameters and the vocabulary.",
+    "code": "",
+    "companion": "<p>The split happens before overlapping windows are made. Training fits parameters and the vocabulary. Validation chooses settings and checkpoints. Test measures the frozen choice.</p><p><a href=\"notebooks/wordlm/05_training_and_inference_maps.html#split\">Original worked example and executable code</a></p>"
+  },
+  {
+    "key": "s03-data-sentence",
+    "title": "A sentence we can trace completely",
+    "body": "We will trace this complete authored example using a small vocabulary of 10 items and four input slots. The trained experiment later uses 4,000 items and 64 slots.",
+    "code": "",
+    "companion": "<p>We use this authored sentence for the arithmetic. Its small vocabulary and randomly initialized models are separate from the measured TinyStories experiment.</p><p><a href=\"notebooks/wordlm/05_training_and_inference_maps.html#sentence\">Original worked example and executable code</a></p>"
+  },
+  {
+    "key": "s03-data-tokenization-intro",
+    "title": "Tokenization",
+    "body": "A token is one item the model reads or predicts. The tokenizer chooses these items before we assign integer IDs and look up learned embeddings.",
+    "code": "",
+    "companion": "<p>A token is one item the model reads or predicts. The tokenizer chooses these items before we assign integer IDs and look up learned embeddings.</p><p><a href=\"notebooks/wordlm/05_training_and_inference_maps.html#tokenization-intro\">Original worked example and executable code</a></p><p><a href=\"https://huggingface.co/docs/transformers/tokenizer_summary\">Hugging Face tokenizer overview</a>. The subword split is illustrative, not a fitted BPE output. The executable English tokenizer is in <a href=\"notebooks/wordlm/wordlm.py\">wordlm.py</a>.</p>"
+  },
+  {
+    "key": "s03-data-tokenization-choices",
+    "title": "Words, characters or pieces of words",
+    "body": "Whole-word vocabularies need entries for many word forms, while characters produce longer sequences. Subword methods such as byte pair encoding (BPE) learn reusable pieces from training text to balance these concerns.",
+    "code": "",
+    "companion": "<p>Whole-word vocabularies need entries for many word forms, while characters produce longer sequences. Subword methods such as byte pair encoding (BPE) learn reusable pieces from training text to balance these concerns.</p><p><a href=\"notebooks/wordlm/05_training_and_inference_maps.html#tokenization-choices\">Original worked example and executable code</a></p><p><a href=\"https://huggingface.co/docs/transformers/tokenizer_summary\">Hugging Face tokenizer overview</a>. The subword split is illustrative, not a fitted BPE output. The executable English tokenizer is in <a href=\"notebooks/wordlm/wordlm.py\">wordlm.py</a>.</p><details><summary>Does a context window of four tokens always hold four words?</summary><p>No. It holds four items produced by that tokenizer. A word can take several subword or character tokens, and punctuation can use a token too.</p></details>"
+  },
+  {
+    "key": "s03-data-tokenization-rules",
+    "title": "The tokenizer used in this notebook",
+    "body": "All three benchmark models use these same word-and-punctuation rules. Build the vocabulary from training stories only; map a missing item to UNK.",
+    "code": "",
+    "companion": "<p>Words plus punctuation keep our calculations easy to inspect. All three models use the same rules and vocabulary during training and generation. We build the vocabulary from training stories only and map missing words to the unknown-token marker, UNK.</p><p><a href=\"notebooks/wordlm/05_training_and_inference_maps.html#tokenization-rules\">Original worked example and executable code</a></p><p><a href=\"https://huggingface.co/docs/transformers/tokenizer_summary\">Hugging Face tokenizer overview</a>. The subword split is illustrative, not a fitted BPE output. The executable English tokenizer is in <a href=\"notebooks/wordlm/wordlm.py\">wordlm.py</a>.</p>"
+  },
+  {
+    "key": "s03-data-tokenize",
+    "title": "Lowercase words and separate punctuation",
+    "body": "This tokenizer normalizes Unicode, lowercases text and keeps punctuation as tokens. Five words plus the full stop give six tokens.",
+    "code": "",
+    "companion": "<p>This tokenizer normalizes Unicode, lowercases text and keeps punctuation as tokens. Five words plus the full stop give six tokens. A tokenizer decides what one prediction unit is.</p><p><a href=\"notebooks/wordlm/05_training_and_inference_maps.html#tokenize\">Original worked example and executable code</a></p>"
+  },
+  {
+    "key": "s03-data-vocabulary",
+    "title": "Every vocabulary item gets an integer ID",
+    "body": "Six ordinary tokens plus four special tokens give C = 10 in this teaching example. IDs name vocabulary items; they are not embedding coordinates.",
+    "code": "",
+    "companion": "<p>Six ordinary tokens + four special tokens = C=10; their IDs are arbitrary labels. Here, BOS and EOS mark one complete story (a sequence), not each sentence. PAD means padding; BOS means beginning of sequence; EOS means end of sequence; UNK means unknown token. The benchmark uses a different, frequency-ranked vocabulary with C=4,000.</p><p><a href=\"notebooks/wordlm/05_training_and_inference_maps.html#vocabulary\">Original worked example and executable code</a></p>"
+  },
+  {
+    "key": "s03-data-special",
+    "title": "Four special tokens have different jobs",
+    "body": "\u201cblue\u201d is absent from this toy vocabulary, so its ID is 3, UNK. BOS and EOS mark the whole story; PAD fills unused input slots.",
+    "code": "",
+    "companion": "<p>blue is missing from our toy vocabulary, so this lookup returns [3], the UNK ID. boundaries=False means \u201cdo not add BOS or EOS\u201d. The input [&#x27;blue&#x27;] is already a list of tokens; encode_tokens looks up their integer IDs, without creating embeddings. With boundaries=True, the same call returns [1, 3, 2]: BOS, UNK, EOS.</p><p><a href=\"notebooks/wordlm/05_training_and_inference_maps.html#special\">Original worked example and executable code</a></p>"
+  },
+  {
+    "key": "s03-data-boundaries",
+    "title": "One BOS and EOS per document",
+    "body": "One BOS starts the whole story and one EOS ends it, even if it contains several sentences. Full stops remain ordinary tokens inside the story.",
+    "code": "",
+    "companion": "<p>In this notebook, each document is a complete story with one BOS at its start and one EOS at its end. We do not add extra markers between sentences. The Lily sentence is our entire toy document, so its six ordinary tokens become eight IDs including BOS and EOS. BOS provides context, and the remaining seven IDs are prediction targets. encode_tokens wraps the token list we pass it, without detecting sentences. We pass a complete story once before creating its training windows, which never cross document boundaries. Other datasets may use different boundary conventions.</p><p><a href=\"notebooks/wordlm/05_training_and_inference_maps.html#boundaries\">Original worked example and executable code</a></p><details><summary>A story has three sentences. How many BOS and EOS markers do we add?</summary><p>One BOS before the whole story and one EOS after it. Full stops remain ordinary tokens inside the document. Our one-sentence example follows the same rule.</p></details>"
+  },
+  {
+    "key": "s03-data-story-indices",
+    "title": "Token positions and vocabulary IDs",
+    "body": "Python positions start at 0: position 4 contains red, whose vocabulary ID is 9. With a four-token window, this example reads positions 0 through 3 and predicts the token at position 4.",
+    "code": "",
+    "companion": "<p>Python positions start at 0: position 4 contains red, whose vocabulary ID is 9. With a four-token window, this example reads positions 0 through 3 and predicts the token at position 4.</p><p><a href=\"notebooks/wordlm/05_training_and_inference_maps.html#story-indices\">Original worked example and executable code</a></p>"
+  },
+  {
+    "key": "s03-data-one-pair",
+    "title": "One input window and its observed target",
+    "body": "context_ids is the input for one example, often called x, and target_id is its single observed answer, often called y. The slice ids[0:4] stops before position 4, so red is outside this input.",
+    "code": "",
+    "companion": "<p>context_ids is the input for one example, often called x, and target_id is its single observed answer, often called y. The slice ids[0:4] stops before position 4, so red is outside this input.</p><p><a href=\"notebooks/wordlm/05_training_and_inference_maps.html#one-pair\">Original worked example and executable code</a></p>"
+  },
+  {
+    "key": "s03-data-pair-first",
+    "title": "The first pair has only BOS as history",
+    "body": "At position t=1, the visible prefix is [1], meaning BOS. Three PAD IDs fill the unused slots, giving context_ids=[0, 0, 0, 1] and target_id=8 for lily.",
+    "code": "",
+    "companion": "<p>At position t=1, the visible prefix is [1], meaning BOS. Three PAD IDs fill the unused slots, giving context_ids=[0, 0, 0, 1] and target_id=8 for lily.</p><p><a href=\"notebooks/wordlm/05_training_and_inference_maps.html#pair-first\">Original worked example and executable code</a></p>"
+  },
+  {
+    "key": "s03-data-pair-second",
+    "title": "The next pair includes the previous observed target",
+    "body": "Move one token forward. The observed \u201clily\u201d joins the input, and \u201cfound\u201d becomes the next target. Training uses the story\u2019s words, not the model\u2019s guesses.",
+    "code": "",
+    "companion": "<p>At t=2, BOS and lily form the known prefix, and the observed next word is found. Computing this pair changes context_ids and target_id, while the stored lists still contain only the first pair.</p><p><a href=\"notebooks/wordlm/05_training_and_inference_maps.html#pair-second\">Original worked example and executable code</a></p>"
+  },
+  {
+    "key": "s03-data-windows-first",
+    "title": "Early prefixes need padding",
+    "body": "Repeat that operation for each target. These are the first four input\u2013target pairs, with IDs translated back into tokens.",
+    "code": "",
+    "companion": "<p>These are the first four stored rows, with the IDs translated back to tokens. Row 3 is the red-target pair we inspected first, now stored in contexts[3] and targets[3].</p><p><a href=\"notebooks/wordlm/05_training_and_inference_maps.html#windows-first\">Original worked example and executable code</a></p>"
+  },
+  {
+    "key": "s03-data-windows-last",
+    "title": "Later prefixes drop their oldest tokens",
+    "body": "A full window keeps the previous four tokens and drops older ones. The last target is EOS; windows never cross into another story.",
+    "code": "",
+    "companion": "<p>The remaining three rows use full windows, keeping only the four tokens immediately before each target. The last target is EOS, and no window crosses into a different story.</p><p><a href=\"notebooks/wordlm/05_training_and_inference_maps.html#windows-last\">Original worked example and executable code</a></p>"
+  },
+  {
+    "key": "s03-data-pairs-tensors",
+    "title": "The paired lists become two integer tensors",
+    "body": "Store all seven input rows in all_X [7, 4] and their seven answers in all_y [7]. These are integer token IDs, not learned vectors yet.",
+    "code": "",
+    "companion": "<p>The conversion preserves every token ID and row pairing. all_X has shape [7, 4], all_y has shape [7], and torch.long means integer IDs.</p><p><a href=\"notebooks/wordlm/05_training_and_inference_maps.html#pairs-tensors\">Original worked example and executable code</a></p><details><summary>Have these token IDs become embeddings yet?</summary><p>No. This step only organizes the IDs into tensors. The embedding layer will later look up a learned vector for each ID.</p></details>"
+  },
+  {
+    "key": "s03-data-counts-story",
+    "title": "Six ordinary tokens give seven training examples",
+    "body": "Each ordinary token is a target once, and EOS supplies one more target. BOS starts the history, while PAD fills empty input slots, so neither adds a target.",
+    "code": "",
+    "companion": "<p>Each ordinary token is a target once, and EOS supplies one more target. BOS starts the history, while PAD fills empty input slots, so neither adds a target.</p><p><a href=\"notebooks/wordlm/05_training_and_inference_maps.html#counts-story\">Original worked example and executable code</a></p>"
+  },
+  {
+    "key": "s03-data-counts",
+    "title": "Example counts for each data split",
+    "body": "For each split, add its ordinary-token count and its story count. These are counts of supervised examples, not optimizer steps.",
+    "code": "",
+    "companion": "<p>For each split, add its ordinary-token count and its story count. These are counts of supervised examples, not optimizer steps.</p><p><a href=\"notebooks/wordlm/05_training_and_inference_maps.html#counts\">Original worked example and executable code</a></p><details><summary>Does w=8 create more targets than w=4 here?</summary><p>No. With this padding rule, both give seven targets. A wider window changes the visible input history, not the target count.</p></details>"
+  },
+  {
+    "key": "s03-data-context",
+    "title": "Context length controls what is visible",
+    "body": "History is everything already known. The context window is the suffix read for this prediction.",
+    "code": "",
+    "companion": "<p>History is everything already known. The context window is the suffix read for this prediction. Increasing w can recover an older clue, but also changes model size or computation.</p><p><a href=\"notebooks/wordlm/05_training_and_inference_maps.html#context\">Original worked example and executable code</a></p>"
+  },
+  {
+    "key": "s03-data-batch",
+    "title": "A batch of two examples",
+    "body": "Each batch row pairs four input token IDs in X with one observed next-token ID in y. The text columns decode the IDs, and the targets come from the story.",
+    "code": "",
+    "companion": "<p>Each batch row pairs four input token IDs in X with one observed next-token ID in y. The text columns decode the IDs, and the targets come from the story.</p><p><a href=\"notebooks/wordlm/05_training_and_inference_maps.html#batch\">Original worked example and executable code</a></p>"
+  },
+  {
+    "key": "s03-data-batch-ids",
+    "title": "X and y contain integer token IDs",
+    "body": "X contains two examples, each with four token IDs. y contains their two next-token IDs. Embedding lookup transforms X; the loss still uses y as IDs.",
+    "code": "",
+    "companion": "<p>Tokenization and vocabulary lookup are complete: X and y contain integers, with no embedding coordinates yet. Next, X goes through embedding lookup, while y stays as target IDs for the loss.</p><p><a href=\"notebooks/wordlm/05_training_and_inference_maps.html#batch-ids\">Original worked example and executable code</a></p><details><summary>Are the four numbers in each row of X embedding coordinates?</summary><p>No. They are IDs for four separate token slots. Embedding lookup later replaces each input ID with a learned vector. X.shape describes the size of the ID tensor, not its contents.</p></details>"
+  },
+  {
+    "key": "s03-data-batches",
+    "title": "Seven examples, four batches",
+    "body": "Seven examples with B = 2 give batches of 2, 2, 2 and 1 in a sequential pass. The saved experiment instead samples 512 windows per update, for 6,000 updates.",
+    "code": "",
+    "companion": "<p>B=2 with drop_last=False gives batches of 2, 2, 2 and 1 per pass. With one update per batch, that is four optimizer steps. The benchmark samples 512 windows per update with replacement.</p><p><a href=\"notebooks/wordlm/05_training_and_inference_maps.html#batches\">Original worked example and executable code</a></p>"
+  },
+  {
+    "key": "s03-cap-scale",
+    "title": "The same preparation at the experiment\u2019s scale",
+    "body": "The rules stay the same: tokenize, look up IDs, add story boundaries, then create padded or cropped input\u2013target pairs.",
+    "code": "",
+    "companion": "<p>The toy vocabulary was chosen to expose every ID. The experimental vocabulary is frequency-ranked from training stories, so ordinary words receive different IDs. The four special IDs remain 0\u20133. The next slide remaps the same two prefixes into that real vocabulary.</p>"
   },
   {
     "key": "s03-cap-windows",
-    "title": "The next word is the target, not an input",
-    "body": "Slide the boundary one token forward to make another example. Each example still occupies 64 slots.",
+    "title": "Our two examples in the real vocabulary",
+    "body": "Same prefixes and answers; new ordinary-word IDs and 64 slots. We will follow this B = 2 batch through the trained model\u2019s architecture.",
     "code": "",
     "companion": "<p>Lily\u2019s sentence is an authored teaching example, not a claimed source story. The IDs here use the actual 4,000-item benchmark vocabulary. PAD is ID 0. These two rows illustrate batching; the saved training runs use batches of 512. Position IDs are 0\u201363 within each padded/cropped window.</p>"
   },
   {
+    "key": "s04-cap-lookup",
+    "title": "Each input ID selects a learned row",
+    "body": "The ID for \u201cfound\u201d selects one row of 64 learned numbers. All occurrences share that token row. B counts examples, not heads.",
+    "code": "token_rows = token_embedding(X)",
+    "companion": "<p>The PAD token row is initialized to zero and receives no embedding-lookup gradient here, using padding_idx=0. BOS and UNK can learn when used in inputs. EOS is a target rather than an input in these windows, so its input row receives no task gradient. The separate classifier learns an EOS output score. Padding still needs an attention mask.</p>"
+  },
+  {
+    "key": "s04-cap-position",
+    "title": "Add a row for each input slot",
+    "body": "Use positions 0\u201363 within each padded or cropped window. Adding keeps each row 64 numbers wide. Both tables learn from the prediction loss.",
+    "code": "positions = torch.arange(X.shape[1], device=X.device)\nE = token_rows + position_embedding(positions)[None]",
+    "companion": ""
+  },
+  {
     "key": "s04-cap-embed",
-    "title": "1 \u00b7 Look up rows, add positions, make Q/K/V",
-    "body": "Now use 64 slots, width 64 and four heads of width 16. B counts examples: two above, 512 per training batch.",
-    "code": "E = token_embedding(X) + position_embedding(positions)\nQ, K, V = (split_heads(layer(E)) for layer in (W_Q, W_K, W_V))",
+    "title": "Project Q, K and V, then split into four heads",
+    "body": "Every head reads the full input row through learned projections. Split the projected coordinates into four groups of 16.",
+    "code": "Q, K, V = (split_heads(layer(E)) for layer in (W_Q, W_K, W_V))",
+    "companion": "<p>For the two examples, each projected tensor is [2,4,64,16]: examples, heads, token slots, coordinates per head. Packed W_Q, W_K and W_V each map 64 input coordinates to 64 output coordinates.</p>"
+  },
+  {
+    "key": "s04-cap-scores",
+    "title": "Each head compares queries with source keys",
+    "body": "For \u201cBOS lily found\u201d, follow the query at \u201cfound\u201d. Its scores compare that receiver with the keys of the available source tokens.",
+    "code": "scores = (Q @ K.transpose(-2, -1)) / math.sqrt(16)",
     "companion": ""
   },
   {
     "key": "s04-cap-weights",
-    "title": "2 \u00b7 Match, mask, then normalize",
-    "body": "The four heads form four different attention patterns. Targets never enter this calculation.",
+    "title": "Mask unused sources, then apply softmax",
+    "body": "At \u201cfound\u201d, allow BOS, lily and found. PAD and future slots receive zero weight. Each real receiver\u2019s source weights sum to one.",
     "code": "",
     "companion": "<p>This is the full causal teaching view for real receiver rows. The implementation keeps PAD-only receiver rows numerically defined; they do not feed the loss. The saved training and browser forward path computes only the final receiver\u2019s query, since this task predicts one next token per window. It produces the same final logits with smaller [B,4,1,64] weight tensors.</p>"
   },
   {
     "key": "s04-cap-mix",
-    "title": "3 \u00b7 Mix values, join heads, add the update",
-    "body": "Each head sends its own message. Joining four 16-coordinate messages restores width 64.",
-    "code": "messages = A @ V\njoined = messages.transpose(1, 2).reshape(B, 64, 64)\nupdated = E + W_O(joined)",
+    "title": "Each head mixes its value rows",
+    "body": "A weight scales a complete 16-number value row. Add those weighted rows to make one message per receiver, per head.",
+    "code": "messages = A @ V",
+    "companion": ""
+  },
+  {
+    "key": "s04-cap-join",
+    "title": "Join the messages and add the update",
+    "body": "Joining four 16-coordinate messages restores width 64. W_O learns how to combine them; the residual adds this update to the original E.",
+    "code": "joined = messages.transpose(1, 2).reshape(B, 64, 64)\nupdated = E + W_O(joined)",
     "companion": ""
   },
   {
     "key": "s04-cap-predict",
-    "title": "4 \u00b7 Predict the target from the final row",
+    "title": "The final row predicts the observed next token",
     "body": "\u201cBOS lily found\u201d \u2192 target <strong>a</strong>. \u201cBOS lily found a\u201d \u2192 target <strong>red</strong>. The model supplies scores; the story supplies the answers.",
     "code": "logits = vocab_head(relu(hidden_layer(updated[:, -1])))\nloss = cross_entropy(logits, y)  # raw logits, observed next-token IDs",
     "companion": ""
   },
   {
     "key": "s04-cap-train",
-    "title": "5 \u00b7 One loss trains the whole model",
-    "body": "Token rows, position rows, all heads, the output projection and the prediction MLP learn together.",
+    "title": "One loss trains the whole model",
+    "body": "Repeat over batches. The loss trains token rows, position rows, all four heads, W_O and the prediction MLP. Validation selects a checkpoint; test measures that frozen choice.",
     "code": "optimizer.zero_grad()\nloss.backward()\noptimizer.step()",
     "companion": "<p>We do not assign head-specific targets such as \u201csetting\u201d or \u201cperson\u201d. All heads learn through the same next-token task. These are one-block teaching models, not a full stack of normalized Transformer blocks.</p>"
   },
   {
-    "key": "s04-cap-generate",
-    "title": "6 \u00b7 Generate with fixed parameters",
-    "body": "Training changes the weights. Generation keeps the weights fixed and grows the prefix.",
+    "key": "s04-cap-prompt",
+    "title": "Generation begins with a known prompt",
+    "body": "Use the training vocabulary and prepend BOS. Do not append EOS to an unfinished prompt. Load the chosen checkpoint and keep its parameters fixed.",
     "code": "",
-    "companion": "<p>The app excludes PAD, BOS and UNK as generated outputs; EOS may end the story. The same tokenizer and vocabulary are used for training and generation. Attention softmax chooses source positions; vocabulary softmax supplies next-token probabilities.</p>"
+    "companion": "<p>Left-pad this short prefix with 61 PAD IDs. After the history grows past 64 tokens, retain its last 64 IDs. There is no observed next-token target during free generation.</p>"
+  },
+  {
+    "key": "s04-cap-decode",
+    "title": "Choose one token from the vocabulary scores",
+    "body": "Greedy decoding takes the highest score; sampling draws from the probability distribution. Exclude PAD, BOS and UNK as outputs. EOS can stop the story.",
+    "code": "",
+    "companion": "<p>Attention softmax chooses source positions. Vocabulary softmax supplies next-token probabilities. Cross-entropy uses raw logits during training; we do not first apply this generation softmax before that loss.</p>"
+  },
+  {
+    "key": "s04-cap-generate",
+    "title": "Append the chosen token and run the model again",
+    "body": "Keep generating until EOS or a token limit. Training used observed previous words; generation now feeds back the model\u2019s own choices.",
+    "code": "",
+    "companion": "<p>\u201ca\u201d here is an illustrative choice, not a claimed checkpoint output. The saved continuations later show the actual outputs. An early mistake can alter every later input. The weights stay fixed throughout generation.</p>"
   },
   {
     "key": "s05-cap-protocol",

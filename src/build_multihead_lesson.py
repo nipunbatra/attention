@@ -309,7 +309,7 @@ def build():
         sections.append(dict(id=f's{n:02}',title=title,lit=''))
         (lecture_dir/f'sec{n:02}.html').write_text(section(n,title,frames))
     config.update(title='Multi-head attention and TinyStories',
-                  subtitle='Separate readings, one prediction. Finish with a trained four-head model, measured results and live story generation.',
+                  subtitle='Separate readings, one prediction. Follow complete stories through tokenization, training examples, the four-head model and live generation.',
                   minutes=30, sections=sections,
                   chain=[dict(label=s['title'],section=s['id']) for s in sections],
                   sectionDirectory='sections3-classroom',
@@ -321,7 +321,7 @@ def build():
     # notebook links and extensive regression checks remain useful off-lecture.
     lab_config=json.loads((SRC/'part2.json').read_text())
     lab_config.update(title='TinyStories: optional MLP and single-head lab',
-                      subtitle='The detailed reference retained from Part II. The compact four-head classroom walkthrough is now in Part III.',
+                      subtitle='The detailed reference retained from Part II. Story preparation and the four-head classroom walkthrough now live in Part III.',
                       wordlmReference=True,sectionDirectory='sections',toyFile='toy.json',
                       prev=dict(label='Part II',href='attention.html'),
                       next=dict(label='Part III: TinyStories finale',href='part3.html'))

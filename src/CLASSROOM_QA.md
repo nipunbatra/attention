@@ -1,5 +1,29 @@
 # Classroom release checks
 
+## 2026-09-28 · Restore the full TinyStories setup in Part III
+
+- Part III now has 52 classroom frames: seven unchanged MHA introduction
+  frames, 25 restored story-to-batch figures, two scale-transition frames,
+  twelve model/training/generation steps and six results/app frames. Presenter
+  notes allocate roughly 10–15 minutes to the incremental TinyStories sequence.
+  Part II still has no TinyStories classroom lab. Separate MLP/single-head
+  implementations remain in the optional reference.
+- `pytest src/test_text_capstone.py notebooks/wordlm/tests`: 64 passed. Tests
+  execute the original setup and compare all 25 reused figures byte-for-byte;
+  they also verify token IDs, targets, counts, real benchmark remapping, tensor
+  shapes, full-sequence/final-query parity, printed forward code and an update.
+- Capstone browser checks pass all 52 frames, saved metrics/curves, local and
+  app links, SVG bounds and 1280×720, 995×1031, 760×1041 presentation plus 390px
+  reading layouts. Visually reviewed the restored setup, twelve model steps,
+  arithmetic operation labels and representative portrait slides.
+- Full frame audit passes 53 states including the title, with no runtime
+  errors, invalid formulas or overflow. Forward/back keyboard navigation works.
+  The manual preview's only console error was the absent local favicon.
+- Existing measured results, checkpoints, generation examples and notebook
+  files were not changed or retrained. Original SVGs and editable sources were
+  reused in the existing presentation style instead of reducing the setup to
+  summary diagrams.
+
 ## 2026-09-28 · Compact multi-head lesson and TinyStories finale
 
 - Part III has 22 classroom frames (23 states including its title): seven

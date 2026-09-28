@@ -2,7 +2,7 @@
   "part": 3,
   "series": "Attention and language",
   "title": "Multi-head attention and TinyStories",
-  "subtitle": "Separate readings, one prediction. Finish with a trained four-head model, measured results and live story generation.",
+  "subtitle": "Separate readings, one prediction. Follow complete stories through tokenization, training examples, the four-head model and live generation.",
   "audience": "Deep-learning students who completed Parts I\u2013II",
   "minutes": 30,
   "centralLabel": "Two messages, one update",
@@ -21,7 +21,7 @@
       "section": "s03"
     },
     {
-      "label": "One quick pass through the four-head model",
+      "label": "TinyStories: the multi-head model, training and generation",
       "section": "s04"
     },
     {
@@ -51,7 +51,7 @@
     },
     {
       "id": "s04",
-      "title": "One quick pass through the four-head model",
+      "title": "TinyStories: the multi-head model, training and generation",
       "lit": ""
     },
     {
