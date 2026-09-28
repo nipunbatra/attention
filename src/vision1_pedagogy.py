@@ -104,7 +104,7 @@ def expand(b, sections):
     # and one sentence that says what the calculation just showed.
     revisions={
       's01-photo':('What animal do you see?','Which parts of the photograph helped you decide?'),
-      's01-context':('Would you recognize this crop on its own?','A dark crop may be fur, shadow or background. The full photo gives us clues.'),
+      's01-context':('Would you recognize this crop on its own?','To choose cat or dog, we need visual clues. This dark crop becomes easier to interpret when we see the whole photo.'),
       'bridge-text':('What can we carry over from our text models?','We still turn inputs into rows, read useful information, and predict an answer.'),
       'patch-context':('Is this dark region fur or background?','Face clues could make a dark crop easier to interpret. The final prediction is one label for the whole image.'),
       's01-patches':('Where do the patch boundaries go?','The grid cuts through the photograph before the model knows where the dog is.'),
@@ -159,14 +159,25 @@ def expand(b, sections):
     add('photo-folder','Find the dog photos in a folder',body,'Each photograph gets one label. Decide what the labels mean before choosing the model.',
         'What would you want the program to return for each photo?','Reveal dog and cat. Connect one image label to the spam/not-spam example in Part I.',
         'This is a proposed two-class task, like the email classification task in Part I. The pretrained model later in this lesson has a different label set: 1,000 ImageNet categories. Dog and cat here are human example labels, not outputs from a fitted two-class classifier.')
-    body=image(25,40,535,357)+g(rect(145,81,311,300,'c-e','transparent',0),1)+g(t(655,130,'What animal?',31)+t(655,210,'Where is the animal?',31),2)
-    add('find-animal','Suppose we also want to crop out the animal',body,'A class label tells us what is present. A box also tells us where to look.',
-        'Is the word dog enough for an automatic crop?','Reveal the illustrative box and ask which extra numbers describe it.',
-        'The box is drawn by hand to illustrate a localization task. It is not a prediction from our classification ViT. This parallels Part I: a sentence label and labels on individual words require different outputs.')
+    body=image(25,40,535,357)+t(640,95,'Name the animal',30,'ink-2')+t(640,150,'dog',39,'c-e')
+    body+=g(rect(145,81,311,300,'c-e','transparent',0)+t(640,255,'Locate the animal',30,'ink-2'),1)
+    body+=g(t(640,315,'left, top, right, bottom',28,'c-e')+t(640,370,'four box coordinates',26,'ink-2'),2)
+    add('find-animal','Does “dog” tell us where to crop?',body,'To crop around the dog automatically, we need its location as well as its label.',
+        'If an app only returns dog, how would it know which rectangle to keep?','Keep the photograph fixed. Reveal the box, then trace its four edges while reading left, top, right and bottom.',
+        'We have followed a classifier from pixels to an image label. Now consider an extension: an app that crops around the animal. '
+        'The label dog identifies the animal category, but it supplies no rectangle. A single-object localization model can also predict four box coordinates '
+        'that specify the left, top, right and bottom edges. The app can then retain the pixels inside that rectangle. '
+        'This needs a different output head and training targets that include boxes; changing the question alone does not give our classifier this ability. '
+        'The blue box here is drawn by hand to illustrate the required output. It is not a measured prediction. '
+        'The next example changes the request again: finding this photograph from a description.',
+        '<svg viewBox="0 0 560 420" role="img" aria-label="Illustrative box around the dog">'+image(25,40,535,357)+rect(145,81,311,300,'c-e','transparent',0)+'</svg>'
+        '<p>Name the animal → <strong>dog</strong>.</p><p>Locate the animal → <strong>left, top, right, bottom</strong>: four numbers defining a box.</p>')
     body=image(35,45,350,234)+g(t(540,140,'“a black dog outdoors”',34,'c-e'),1)+g(t(540,270,'“a white cat on a cushion”',32,'ink-2'),2)
-    add('photo-search','Find the photo that matches this description',body,'Here we need to compare an image with words.',
-        'Which of our two photographs fits the first description?','Match the words to visible evidence, then connect this task to the later CLIP lesson.',
-        'These are human-written descriptions for motivation. Vision III covers learning an image–text similarity model. We first need an image representation that such a model can use.')
+    add('photo-search','How would we find this photo using words?',body,'Searching with words needs a way to match text and image representations.',
+        'Which description would help us find this photograph in a folder?','Point to black, dog and outdoors and their visible evidence. Connect the image rows from this lecture to the text rows from Parts I–III.',
+        'We have considered a class label and a box. Searching a folder by description asks for another kind of output: a score for how well each image matches the text. '
+        'These are human-written descriptions for motivation. Vision III covers learning an image–text similarity model. '
+        'The image representations we built here and the text representations from Parts I–III give us the two ingredients.')
 
     # Pixel, projection and position examples at a size students can calculate.
     math_steps('one-rgb','How can a red pixel be three numbers?',[
@@ -470,7 +481,7 @@ def expand(b, sections):
     def seq(*keys):return [html for key in keys for html in (use(key) if key in old else [new[key]])]
     # The same 14 section anchors remain useful for remote review.
     revised=[
-      ('What would we like the image model to do?',seq('s01-photo','photo-folder','find-animal','photo-search','s01-context','bridge-text','patch-context','image-to-rows')),
+      ('What would we like the image model to do?',seq('s01-photo','photo-folder','s01-context','bridge-text','patch-context','image-to-rows')),
       ('How do pixels become patch rows?',seq('s01-patches','one-rgb','rgb-flatten','flatten-order','s01-rows','projection-size')),
       ('What does each row know about its patch?',seq('s02-small','position-question','s02-projection','patch-matrix','empty-patch','mean-loses-edge','edge-filters','why-cls','two-identical-patches','s02-positions')),
       ('How does one row read the other rows?',seq('image-mask','qkv-roles','all-qkv','q-dot','one-key-dot','s03-query','one-score','softmax-relative','s03-weights','weight-denominator','s03-values','one-value-product','weight-message','change-query')),
@@ -483,7 +494,7 @@ def expand(b, sections):
       ('What can we learn by inspecting the model?',seq('read-attention-map','real-heads','real-depth','real-patch-query','cover-1','cover-2','cover-3','cover-4','occlusion')),
       ('How much work does a finer patch grid require?',seq('patch-cost','real-work-count','cost-control')),
       ('Can you work through a new example?',seq('exercise-message','exercise-shapes','exercise-position')),
-      ('What can we build with visual rows next?',seq('next-vision','closing'))]
+      ('What can we build with visual rows next?',seq('next-vision','find-animal','photo-search','closing'))]
     # Put the second MLP linear calculation before its residual, preserving order.
     title,frames=revised[6]
     residual_id='mlp-row'

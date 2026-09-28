@@ -64,28 +64,12 @@
     "frame": 8
   },
   {
-    "id": "find-animal",
-    "title": "Suppose we also want to crop out the animal",
-    "caption": "A class label tells us what is present. A box also tells us where to look.",
-    "notes": "Is the word dog enough for an automatic crop?\nReveal the illustrative box and ask which extra numbers describe it.",
-    "section": "s01",
-    "frame": 9
-  },
-  {
-    "id": "photo-search",
-    "title": "Find the photo that matches this description",
-    "caption": "Here we need to compare an image with words.",
-    "notes": "Which of our two photographs fits the first description?\nMatch the words to visible evidence, then connect this task to the later CLIP lesson.",
-    "section": "s01",
-    "frame": 10
-  },
-  {
     "id": "s01-context",
     "title": "Would you recognize this crop on its own?",
-    "caption": "A dark crop may be fur, shadow or background. The full photo gives us clues.",
+    "caption": "To choose cat or dog, we need visual clues. This dark crop becomes easier to interpret when we see the whole photo.",
     "notes": "Could this dark crop be fur, a shadow, or something else?\nReveal where it came from; keep pointing to the same crop.",
     "section": "s01",
-    "frame": 11
+    "frame": 9
   },
   {
     "id": "bridge-text",
@@ -93,7 +77,7 @@
     "caption": "We still turn inputs into rows, read useful information, and predict an answer.",
     "notes": "What stays the same when the input is a photograph?\nPoint to representation, contextual reading, and multiple head messages in the earlier examples.",
     "section": "s01",
-    "frame": 12
+    "frame": 10
   },
   {
     "id": "patch-context",
@@ -101,7 +85,7 @@
     "caption": "Face clues could make a dark crop easier to interpret. The final prediction is one label for the whole image.",
     "notes": "Does this dark crop alone tell us whether the photograph contains a dog or a cat?\nReveal the eye and face crops. Ask what they add, then return to the whole-image classification task.",
     "section": "s01",
-    "frame": 13
+    "frame": 11
   },
   {
     "id": "image-to-rows",
@@ -109,7 +93,7 @@
     "caption": "Attention works on rows of numbers. Next, we choose image patches and turn their pixels into those rows.",
     "notes": "In the text lessons, what did attention receive as its input?\nKeep the photograph visible. Reveal its pieces, one row per piece, then the familiar attention operation.",
     "section": "s01",
-    "frame": 14
+    "frame": 12
   },
   {
     "id": "s01-patches",
@@ -1192,11 +1176,27 @@
     "frame": 1
   },
   {
+    "id": "find-animal",
+    "title": "Does \u201cdog\u201d tell us where to crop?",
+    "caption": "To crop around the dog automatically, we need its location as well as its label.",
+    "notes": "If an app only returns dog, how would it know which rectangle to keep?\nKeep the photograph fixed. Reveal the box, then trace its four edges while reading left, top, right and bottom.",
+    "section": "s14",
+    "frame": 2
+  },
+  {
+    "id": "photo-search",
+    "title": "How would we find this photo using words?",
+    "caption": "Searching with words needs a way to match text and image representations.",
+    "notes": "Which description would help us find this photograph in a folder?\nPoint to black, dog and outdoors and their visible evidence. Connect the image rows from this lecture to the text rows from Parts I\u2013III.",
+    "section": "s14",
+    "frame": 3
+  },
+  {
     "id": "closing",
     "title": "Can you talk us through the whole model?",
     "caption": "Start with the pixels. Explain what each step adds before moving to the next one.",
     "notes": "Which step is new, and which steps did we already know?\nAsk students to narrate the computation from input to loss without reading equations.",
     "section": "s14",
-    "frame": 2
+    "frame": 4
   }
 ]

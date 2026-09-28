@@ -8,6 +8,8 @@
 
 Start with six labeled Oxford-IIIT Pet examples. Establish the dataset size (7,349), species task (2 classes), alternative breed task (37 classes), and variable original dimensions versus 224×224 RGB model inputs. Then choose one photograph and ask students to name the clues. Isolate one genuine crop and restore its context. Recall **aabid** from Part I, **river/bank** from Part II, and **red/wool/coat** from Part III. Then introduce patches, a tiny exact worksheet, the complete block, executable code, learning, and the original photograph again.
 
+Keep the opening focused on image classification: the text/image task comparison leads straight to the dark crop and the need for visual context. Save the automatic-crop and text-search examples for section 14, after students have followed classification end to end. The crop example asks why the label “dog” cannot specify a rectangle, then introduces left, top, right and bottom as the additional outputs. The box is an illustration; a localization model would need a suitable output head and box training targets. The text-search example then connects image representations to the text representations from Parts I–III.
+
 The two-crop Q/K/V warm-up and the pooling example use their own clearly labeled, hand-chosen numbers. Then keep the three larger settings explicit:
 
 1. **Hand worksheet:** a 4×4 binary image, four 2×2 patches, D=4, two heads of width 2, five rows including CLS. Chosen weights; no LayerNorm or block MLP. Labels name two specific arrangements. Students can calculate every number.

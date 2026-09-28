@@ -144,5 +144,34 @@
     "keyboard_transition": "dataset-dimensions \u2192 s01-photo",
     "provenance": "All six image labels, original dimensions, RGB modes and hashes verified; pinned metadata confirms 7,349 images, 37 breeds and 2 species.",
     "notebook_code_cells": 19
+  },
+  "task_extension_flow_review": {
+    "date": "2026-09-28",
+    "viewport": [
+      1280,
+      720
+    ],
+    "visual_samples": [
+      "find-animal",
+      "photo-search",
+      "s01-context"
+    ],
+    "crop_slide_geometry": {
+      "clipped": [],
+      "collisions": []
+    },
+    "keyboard_transitions": [
+      "task-side-by-side \u2192 s01-context",
+      "find-animal \u2192 photo-search"
+    ],
+    "phone_viewport": [
+      390,
+      844
+    ],
+    "document_width": 390,
+    "document_scroll_width": 390,
+    "phone_visual_check": "Crop image, label, four box coordinates and companion explanation are readable.",
+    "sequence": "Classification and context stay together in the opening. Localization and text retrieval are extensions in section 14.",
+    "notebook_code_cells": 19
   }
 }
