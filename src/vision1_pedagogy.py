@@ -221,12 +221,34 @@ def expand(b, sections):
       'Each pixel records a red, green and blue channel.',
       'What would [0,0,0] look like?','Name the channels, then ask for black, red and white before revealing the rows.',
       'This example uses 8-bit channel values and simple division by 255. The pretrained model also centers and scales each channel using its supplied preprocessing settings.')
-    body=pixels(45,70,[[1,0],[0,1]],77,True)+t(120,310,'one patch',29,'ink','middle')
-    body+=g(arrow(250,145,360,145)+t(425,150,'[1, 0, 0, 1]',39,'c-e'),1)
-    body+=g(t(425,290,'top-left, top-right,',30)+t(425,345,'bottom-left, bottom-right',30),2)
-    add('flatten-order','Which pixel goes first in the row?',body,'Choose an order and use it for every patch.',
-        'Where does the last 1 in this row come from?','Trace the four pixel positions in raster order.',
-        'Flattening preserves these four numbers and changes their arrangement in memory. It does not average them. The projection is the later operation that combines coordinates.')
+    # Raster path stays above the values, returning along the row boundary.
+    patch=''
+    for r, values in enumerate([[1,0],[0,1]]):
+        for c, value in enumerate(values):
+            patch+=rect(100+c*110,70+r*110,110,110,'line','ink' if value else 'card',0)
+            patch+=t(155+c*110,148+r*110,str(value),34,'card' if value else 'ink','middle')
+    top_path=t(125,43,'Start',26,'c-e','middle')
+    top_path+='<circle cx="125" cy="96" r="5" fill="var(--c-e)"/>'
+    top_path+=arrow(125,96,275,96,'c-e')
+    return_path='M275 96 H338 Q350 96 350 108 V168 Q350 180 338 180 H67 Q55 180 55 192 V194 Q55 206 67 206 H125'
+    turn=f'<path d="{return_path}" fill="none" stroke="var(--card)" stroke-width="7"/>'
+    turn+=f'<path d="{return_path}" fill="none" stroke="var(--c-e)" stroke-width="2.5"/>'
+    turn+=arrow(230,180,205,180,'c-e')+arrow(112,206,125,206,'c-e')+arrow(125,206,275,206,'c-e')
+    body=patch+t(210,350,'pixel values',29,'ink','middle')+g(top_path,1)
+    body+=g(turn+arrow(395,190,550,190)+t(635,203,'[1, 0, 0, 1]',44,'c-e')
+            +t(635,290,'top row, then bottom row',29,'ink'),2)
+    add('flatten-order','Which pixel goes first in the row?',body,
+        'Read left to right, then return to the start of the next row. The 0s and 1s are pixel values, not step numbers.',
+        'After the top-right pixel, which pixel should we read next?',
+        'Trace the blue arrow across the top row, around to bottom-left, and across the bottom row. Then match those values to the output row.',
+        'We choose row-major order: top-left, top-right, bottom-left, bottom-right. '
+        'The blue path shows the reading direction; the numbers inside the cells are the pixel values. '
+        'The return arrow goes to the left edge of the next row, so the second row is also read left to right. '
+        'Use the same order for every patch. Flattening preserves the four values and only rearranges them into a row; it does not average them. '
+        'The learned projection that combines coordinates comes next.',
+        '<svg viewBox="25 10 350 305" role="img" aria-label="Read the top row left to right, return around the patch to bottom-left, then read the bottom row left to right.">'
+        +patch+top_path+turn+'</svg><p>Top row: <strong>1 → 0</strong><br>Bottom row: <strong>0 → 1</strong></p>'
+        '<p>Flattened row: <strong>[1, 0, 0, 1]</strong></p>')
     body=pixels(25,65,[[1,1],[0,0]],80,True)+pixels(425,65,[[1,0],[1,0]],80,True)
     body+=g(t(105,315,'mean = 0.5',30,'c-e','middle')+t(505,315,'mean = 0.5',30,'c-e','middle'),1)
     body+=g(t(775,120,'Same mean.',33)+t(775,190,'Different edge.',33)+t(775,290,'What did we lose?',28,'c-a'),2)

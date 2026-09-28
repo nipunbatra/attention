@@ -234,8 +234,8 @@
   {
     "id": "flatten-order",
     "title": "Which pixel goes first in the row?",
-    "caption": "Choose an order and use it for every patch.",
-    "notes": "Where does the last 1 in this row come from?\nTrace the four pixel positions in raster order.",
+    "caption": "Read left to right, then return to the start of the next row. The 0s and 1s are pixel values, not step numbers.",
+    "notes": "After the top-right pixel, which pixel should we read next?\nTrace the blue arrow across the top row, around to bottom-left, and across the bottom row. Then match those values to the output row.",
     "section": "s02",
     "frame": 5
   },

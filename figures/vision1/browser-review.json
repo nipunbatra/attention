@@ -320,5 +320,24 @@
     "keyboard_transition": "bridge-image-target \u2192 image-to-rows",
     "notebook_code_cells": 19,
     "audio_or_video_played": false
+  },
+  "flatten_order_review": {
+    "date": "2026-09-28",
+    "slide": "flatten-order",
+    "viewport": [
+      1280,
+      720
+    ],
+    "text_clipping": [],
+    "visual_check": "Blue arrows cross the top row, return around the patch to bottom-left, then cross the bottom row. The path clears the pixel-value labels. A Start dot and leftward return arrow make traversal explicit.",
+    "reading_viewport": [
+      390,
+      844
+    ],
+    "document_width": 390,
+    "document_scroll_width": 390,
+    "phone_visual_check": "Enlarged patch and arrow path, row-by-row values, and flattened vector are readable.",
+    "notebook_code_cells": 19,
+    "audio_or_video_played": false
   }
 }
