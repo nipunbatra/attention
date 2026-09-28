@@ -93,9 +93,9 @@
   {
     "key": "s02-v-plan",
     "title": "The two heads and the output projection",
-    "body": "Both heads read \\(E\\). Concatenation joins their message coordinates. \\(W_O\\) projects the joined messages into embedding space before we add the update to \\(E\\).",
+    "body": "Each head keeps all 10 tokens. \\(A\\) weights source tokens; \\(H=AV\\) contains their messages. Concatenation joins coordinates, so the result is \\(10\\times4\\), not \\(20\\times2\\).",
     "code": "",
-    "companion": "<p>H\u00b9 and H\u00b2 each have shape [10, 2]. Concatenation gives [10, 4]. Multiplying by W_O [4, 4] gives \u0394E [10, 4]. Here the joined width already equals the embedding width. The projection still learns how to mix head outputs into embedding coordinates; it need not change the width. In general W_O has shape [n_heads \u00d7 d_v, d_model]. It is not an inverse of the input projections.</p>"
+    "companion": "<p>This diagram shows one sentence, without a batch axis. E has shape [10, 4]. Each head has separate W_Q, W_K and W_V of shape [4, 2], producing Q, K and V each [10, 2]. QK\u1d40 multiplies [10, 2] by [2, 10] to give [10, 10] scores. Scaling, causal masking and row-wise softmax preserve that shape. A has one row per receiver and one column per source. H = AV multiplies [10, 10] by [10, 2] to produce [10, 2]: one message per receiver. The final receiver\u2019s individual q, k, v and message rows are each [1, 2].</p><p>H\u00b9 and H\u00b2 concatenate to [10, 4]. W_O [4, 4] gives \u0394E [10, 4], then E\u2032 = E + \u0394E is also [10, 4]. Its last row [1, 4] feeds the prediction MLP. Here the joined width already equals the embedding width. W_O still learns to mix head outputs into embedding coordinates. In general its shape is [n_heads \u00d7 d_v, d_model]. It is not an inverse of the input projections.</p>"
   },
   {
     "key": "s02-v-roles",

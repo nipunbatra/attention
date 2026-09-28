@@ -10,6 +10,19 @@ All four attention parts and the four-part Vision to language extension are impl
 
 ## Start here
 
+2026-09-28 dimensions on the two-head architecture diagram:
+
+- The shared `full_map` labels Q, K and V separately as [10×2], scores and A
+  as [10×10], and each H = AV as [10×10] × [10×2] = [10×2]. It also labels
+  E, concatenation, W_O, ΔE, E′ and the [1×4] final-row readout. H means the
+  matrix of messages. This is one sentence, with no batch axis shown.
+- Keep these labels consistent across `s02-v-plan`, `s03-v-map`,
+  `s05-v-train` and `s06-v-return`. The figure expands the existing head boxes
+  without adding slides or changing model dimensions. The companion explains
+  per-head [4×2] projection matrices and [1×2] individual vector rows.
+- Regression checks compare displayed Q/K/V/score/A/message dimensions against
+  the numerical worksheet for both heads in all four repeated maps.
+
 2026-09-28 fisherman context and simpler head motivation:
 
 - `s01-v-shared` and `s01-v-independent` repeat the complete fisherman prefix

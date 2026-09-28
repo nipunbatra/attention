@@ -125,6 +125,28 @@ try{
   assert(!await page.locator('.mh-frame').evaluateAll(frames=>frames.some(f=>/0[1-3] → 0[2-4]/.test(f.textContent))),'No unexplained section-number transitions');
   const plan=await page.locator('#s02-v-plan').textContent();
   assert(plan.includes('Concatenate')&&plan.includes('Project with W')&&plan.includes('[4×4]'),'Show concatenation and output projection separately');
+  const mapKeys=['s02-v-plan','s03-v-map','s05-v-train','s06-v-return'];
+  const dims=matrix=>[matrix.length,matrix[0].length].join(',');
+  const river=expected.headsLesson.cases.river;
+  for(const key of mapKeys){
+    const frame=page.locator('#'+key);
+    assert.equal(await frame.locator('[data-map-head]').count(),2,'Show both heads in '+key);
+    for(let h=1;h<=2;h++){
+      const head=frame.locator(`[data-map-head="${h}"]`);
+      const reference=river.heads[h-1];
+      for(const name of ['Q','K','V','scores','A']){
+        const label=head.locator(`[data-map-tensor="${name}"]`);
+        assert.equal(await label.getAttribute('data-shape'),dims(reference[name]),`${key}: head ${h}, ${name} shape agrees with worksheet`);
+        assert((await label.textContent()).includes('['+dims(reference[name]).replace(',','×')+']'),'Visible shape agrees with metadata');
+      }
+      const message=frame.locator(`[data-map-message="${h}"]`);
+      assert.equal(await message.getAttribute('data-shape'),dims(reference.messages));
+      assert((await message.textContent()).includes('[10×10] × [10×2]'),'Explain AV dimensions directly on the map');
+    }
+    const copy=await frame.textContent();
+    for(const phrase of ['Input E','[10×4]','two [10×2] → [10×4]','ΔE [10×4]','E′ = E + ΔE','Last row [1×4]'])assert(copy.includes(phrase),key+': '+phrase);
+  }
+  assert.match(plan,/H=AV/,'Define H as the message matrix on the slide');
   for(const name of ['river','cheque']){
     const actual=await page.evaluate(name=>AT.multiheadWorksheet.compute(name),name);
     const ref=expected.headsLesson.cases[name];

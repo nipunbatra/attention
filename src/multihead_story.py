@@ -556,31 +556,44 @@ def residual(case):
 
 def full_map(focus='all',one=False):
     """Fixed positions across recap, second-head reveal, and prediction."""
-    body=''
+    body=t(23,25,'One sentence: 10 tokens, width 4. Two heads, width 2 each.',22,'muted')
     def node(x,y,w,label,sub,c,key):
         active=focus=='all' or key in focus
-        return rect(x,y,w,69,c if active else 'line',COLORS[c]+'08' if active else 'white')+t(x+w/2,y+28,label,25,c if active else 'muted','middle',600)+t(x+w/2,y+53,sub,19,'muted','middle')
-    body+=node(23,136,177,'Input E','10 rows × 4','e','e')
-    for h,y in [(1,55),(2,229)]:
+        return '<g>'+rect(x,y,w,69,c if active else 'line',COLORS[c]+'08' if active else 'white')+t(x+w/2,y+28,label,25,c if active else 'muted','middle',600)+t(x+w/2,y+53,sub,19,'muted','middle')+'</g>'
+    body+=node(23,191,170,'Input E','[10×4]','e','e')
+    for h,y in [(1,68),(2,245)]:
         if one and h==2:continue
-        body+=path(f'M200 170 H238 V{y+35} H285','e')
-        body+=node(285,y,235,f'Head {h}','Q, K, V → A → AV','q','heads')
-        body+=arrow(520,y+35,602,y+35,'v')
-        body+=node(604,y,182,f'H{chr(0x00b9) if h==1 else chr(0x00b2)}','10 messages × 2','v','heads')
-        body+=path(f'M786 {y+35} H821 V149 H867','v')
-    body+=node(867,115,265,'Concatenate','two [10×2] → [10×4]','v','join')
-    body+=arrow(1000,184,1000,222,'v')
-    body+=node(867,226,265,'Project with W_O','[10×4] × [4×4]','d','join')
-    body+=path('M110 136 V40 H1148 V379 H1046','e',2,'7 6')+arrow(1046,379,1025,379,'e')
-    body+=t(980,25,'keep original E',20,'e','middle')
-    body+=arrow(1000,295,1000,353,'d')+t(986,329,'ΔE [10×4]',21,'d','end')
-    body+='<circle cx="1000" cy="379" r="24" fill="white" stroke="'+COLORS['d']+'" stroke-width="2"/>'+t(1000,388,'+',30,'d','middle')
-    body+=arrow(973,379,822,379,'d')+node(608,345,210,'E′ = E + ΔE','same 10 × 4 shape','d','residual')
-    body+=arrow(608,380,520,380,'d')+node(285,345,235,'last row → MLP','next-token prediction','e','predict')
+        active=focus=='all' or 'heads' in focus
+        sup='¹' if h==1 else '²'
+        body+=path(f'M193 225.5 H220 V{y+77} H248','e')
+        head=rect(248,y,310,154,'q' if active else 'line',COLORS['q']+'08' if active else 'white')
+        head+=t(403,y+28,f'Head {h}',25,'q' if active else 'muted','middle',600)
+        for x,kind,c in [(303,'Q','q'),(403,'K','k'),(503,'V','v')]:
+            head+=f'<g data-map-tensor="{kind}" data-shape="10,2">'+t(x,y+60,f'{kind} [10×2]',21,c if active else 'muted','middle')+'</g>'
+        head+='<g data-map-tensor="scores" data-shape="10,10">'+t(403,y+91,'QKᵀ: [10×10]',23,'a' if active else 'muted','middle')+'</g>'
+        head+=t(403,y+117,'scale, causal mask, softmax',20,'muted','middle')
+        head+='<g data-map-tensor="A" data-shape="10,10">'+t(403,y+144,'A: [10×10]',23,'a' if active else 'muted','middle')+'</g>'
+        body+=f'<g data-map-head="{h}">{head}</g>'
+        body+=arrow(558,y+77,597,y+77,'v')
+        message=rect(601,y+30,224,94,'v' if active else 'line',COLORS['v']+'08' if active else 'white')
+        message+=t(713,y+57,f'H{sup} = A{sup}V{sup}',25,'v' if active else 'muted','middle',600)
+        message+=t(713,y+83,'[10×10] × [10×2]',20,'muted','middle')
+        message+=t(713,y+111,'= [10×2]',23,'v' if active else 'muted','middle')
+        body+=f'<g data-map-message="{h}" data-shape="10,2">{message}</g>'
+        body+=path(f'M825 {y+77} H845 V225 H867','v')
+    body+=node(867,190,265,'Concatenate','two [10×2] → [10×4]','v','join')
+    body+=arrow(1000,259,1000,288,'v')
+    body+=node(867,292,265,'Project with W_O','[10×4] × [4×4]','d','join')
+    body+=path('M108 191 V50 H1148 V450 H1046','e',2,'7 6')+arrow(1046,450,1025,450,'e')
+    body+=t(985,36,'keep original E [10×4]',20,'e','middle')
+    body+=arrow(1000,361,1000,424,'d')+t(986,397,'ΔE [10×4]',21,'d','end')
+    body+='<circle cx="1000" cy="450" r="24" fill="white" stroke="'+COLORS['d']+'" stroke-width="2"/>'+t(1000,459,'+',30,'d','middle')
+    body+=arrow(973,450,822,450,'d')+node(608,415,210,'E′ = E + ΔE','[10×4], same as E','d','residual')
+    body+=arrow(608,450,558,450,'d')+node(248,415,310,'Last row [1×4]','next-token prediction MLP','e','predict')
     if 'train' in focus:
-        body+=arrow(285,380,200,380,'a')+node(23,345,177,'Loss','observed target y','a','train')
-    if one:body+=t(560,254,'Part II: one message per receiving token',27,'muted','middle')
-    return svg(body,455,'The same next-token path, with two parallel heads' if not one else 'The one-head path from Part II')
+        body+=arrow(248,450,197,450,'a')+node(23,415,170,'Loss','observed target y','a','train')
+    if one:body+=t(560,330,'Part II: one message per receiving token',27,'muted','middle')
+    return svg(body,516,'The same next-token path, with every matrix shape in two parallel heads' if not one else 'The one-head path from Part II')
 
 
 def projection_map(case,kind='Q',h=0):
@@ -751,9 +764,9 @@ def story(stage,base,data):
           companion='<p>This is the verbal example from <a href="attention.html#s11-frame-separate-maps">Part II</a>. It illustrates possible later-layer representations, not measured model outputs. Earlier layers may have gathered the preceding facts into the second Maya row. Every token has a query, key and value, even though this example follows only She’s query and Maya’s key/value. The actual vectors contain numbers, not written questions or records.</p>',
           notes='Why do we need a value as well as a key?\nPerson-candidate features help match Maya; cold and tired supplies useful content for the continuation.'),
         s('s02-v-plan','The two heads and the output projection',full_map('heads join'),
-          r'Both heads read \(E\). Concatenation joins their message coordinates. \(W_O\) projects the joined messages into embedding space before we add the update to \(E\).',
-          companion='<p>H¹ and H² each have shape [10, 2]. Concatenation gives [10, 4]. Multiplying by W_O [4, 4] gives ΔE [10, 4]. Here the joined width already equals the embedding width. The projection still learns how to mix head outputs into embedding coordinates; it need not change the width. In general W_O has shape [n_heads × d_v, d_model]. It is not an inverse of the input projections.</p>',
-          notes='What does the second head receive as input?\nTrace both branches from E. Neither branch starts at the other head’s output.'),
+          r'Each head keeps all 10 tokens. \(A\) weights source tokens; \(H=AV\) contains their messages. Concatenation joins coordinates, so the result is \(10\times4\), not \(20\times2\).',
+          companion='<p>This diagram shows one sentence, without a batch axis. E has shape [10, 4]. Each head has separate W_Q, W_K and W_V of shape [4, 2], producing Q, K and V each [10, 2]. QKᵀ multiplies [10, 2] by [2, 10] to give [10, 10] scores. Scaling, causal masking and row-wise softmax preserve that shape. A has one row per receiver and one column per source. H = AV multiplies [10, 10] by [10, 2] to produce [10, 2]: one message per receiver. The final receiver’s individual q, k, v and message rows are each [1, 2].</p><p>H¹ and H² concatenate to [10, 4]. W_O [4, 4] gives ΔE [10, 4], then E′ = E + ΔE is also [10, 4]. Its last row [1, 4] feeds the prediction MLP. Here the joined width already equals the embedding width. W_O still learns to mix head outputs into embedding coordinates. In general its shape is [n_heads × d_v, d_model]. It is not an inverse of the input projections.</p>',
+          notes='What shape does AV have?\nFollow [10×10] times [10×2] to get [10×2]. H is the matrix of messages, one row per token. Concatenate the two heads along the coordinate axis, then preserve the input shape through the output projection and residual.'),
         s('s02-v-roles','The same roles in the river example',reading_roles(),
           'Head 1 can ask about the setting; head 2 can ask about the person. These are interpretations of our chosen numbers. Training learns the projections without assigning these jobs.',
           notes='What changes between the heads?\nThe query, matching features and value content can differ. The receiver and available source tokens stay fixed.'),

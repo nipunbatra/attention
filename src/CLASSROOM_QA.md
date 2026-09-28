@@ -1,5 +1,20 @@
 # Classroom release checks
 
+## 2026-09-28 · Matrix dimensions throughout the two-head map
+
+- Added explicit Q/K/V, QKᵀ, A and H = AV dimensions inside both head branches,
+  plus the original input, joined output, output projection, residual result
+  and final-row readout. All four repeated maps use the same annotated layout.
+  No new classroom frames or model changes. The presentation guidance kept the
+  existing diagram style, with labels attached to the corresponding operations.
+- Regression passes all 62 frames and 1,840 numerical comparisons, SVG bounds,
+  live controls, mobile fit and notebook parity. New checks compare the visible
+  shapes against the worksheet for both heads in all four maps. All 43 Notebook
+  7 code cells execute. Its ZIP entry matches the notebook byte-for-byte.
+- All 63 presentation states pass with no overflow, runtime errors or invalid
+  formulas. The annotated slide fits 1280×720, 995×1031 and 760×1041 viewports.
+  Visually reviewed the updated architecture maps and portrait presentation.
+
 ## 2026-09-28 · Fisherman context and a simpler one/two-head comparison
 
 - Condensed the three-frame invented-value detour to two diagrams. Both repeat
