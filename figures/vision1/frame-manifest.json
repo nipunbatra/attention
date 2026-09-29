@@ -681,11 +681,19 @@
   },
   {
     "id": "real-cls-message",
-    "title": "Project the joined message, then add the input",
-    "caption": "The learned output projection mixes information from all three heads. Add its 192-feature update to the original CLS row in E. We now have one updated CLS row. Apply the same operations to every patch row before the MLP.",
+    "title": "Keep the embedding; add the context from attention",
+    "caption": "Follow two paths from E. The heads produce messages; concatenate and project them to make \u0394E. The skip path carries E directly to addition. U = E + \u0394E is the contextualized representation passed to the MLP.",
     "notes": "Which operation learns to combine the head features, and which row gets the residual update?\nLinear(192,192) learns the combination. Add the result to E, before the attention branch\u2019s LayerNorm. The MLP will receive this updated row through its own LayerNorm.",
     "section": "s03",
     "frame": 33
+  },
+  {
+    "id": "real-cls-residual",
+    "title": "The dog\u2019s CLS keeps its input and gains context",
+    "caption": "Add the projected attention update coordinate by coordinate to the original CLS embedding. This produces a contextualized CLS row of the same width. It continues through the MLP and later blocks before the classifier reads the final summary.",
+    "notes": "Is the attention update already the contextualized embedding, or do we still add something?\nThe update is \u0394e\u2080. The contextualized row is u\u2080=e\u2080+\u0394e\u2080. Add the original block input, before LayerNorm. The 192 output features are a representation; class scores are computed later.",
+    "section": "s03",
+    "frame": 34
   },
   {
     "id": "real-cls-mlp",
@@ -693,7 +701,7 @@
     "caption": "The MLP expands one row to 768 features, applies GELU, and returns to 192 features. Add that result to the row entering this branch. Attention exchanges information across rows; this MLP works on each row separately.",
     "notes": "Which operation here changes the number of rows?\nNone does. Follow one summary row through both linear layers and GELU, then apply the same MLP to every patch row.",
     "section": "s03",
-    "frame": 34
+    "frame": 35
   },
   {
     "id": "real-block-handoff",
@@ -701,7 +709,7 @@
     "caption": "Block 2 receives the features produced by block 1. It computes attention and an MLP update using its own learned weights. The same 197 row positions continue forward, carrying new feature values.",
     "notes": "What is the input to block 2?\nPoint to the arrow from block 1\u2019s output. The current CLS and all 196 contextual patch rows continue together. Block 2 calculates its own queries, keys and values.",
     "section": "s03",
-    "frame": 35
+    "frame": 36
   },
   {
     "id": "real-cls-depth",
@@ -709,7 +717,7 @@
     "caption": "The updated rows pass from block 1 to block 2, then onward to block 12. Each block has its own weights. All 197 rows stay 192 features wide. After the final block, read CLS for classification.",
     "notes": "Does 12 blocks mean twelve separate predictions for this dog?\nFollow one forward pass through 12 distinct blocks. There is one class prediction at the end. Each arrow carries the previous block\u2019s updated feature rows.",
     "section": "s03",
-    "frame": 36
+    "frame": 37
   },
   {
     "id": "real-cls-readout",
@@ -717,7 +725,7 @@
     "caption": "Normalize the final sequence, select CLS, and apply the classification layer. Its 192 features become 1,000 scores for ImageNet labels. We read this one row after it has interacted with the whole image.",
     "notes": "Why are 192 features enough to produce 1,000 class scores?\nThe linear layer has one weighted sum and bias for each output class. Connect this to the class scores in text Part I.",
     "section": "s03",
-    "frame": 37
+    "frame": 38
   },
   {
     "id": "real-cls-prediction",
@@ -725,7 +733,7 @@
     "caption": "Softmax converts the 1,000 scores to class probabilities. The top label is Newfoundland, at 95.73%. We have followed this photograph from pixels to that prediction. Next, use smaller numbers to calculate attention ourselves.",
     "notes": "What are the alternatives in this softmax, compared with attention\u2019s softmax?\nThey are image classes here, source rows inside attention. Reveal the measured probabilities and close the real-image route before switching examples.",
     "section": "s03",
-    "frame": 38
+    "frame": 39
   },
   {
     "id": "vision-topic-04",

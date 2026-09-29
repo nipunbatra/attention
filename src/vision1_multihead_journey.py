@@ -182,36 +182,95 @@ def build_multihead_journey(b):
         +'<p>Concatenation appends coordinates: (1 × 64), (1 × 64), (1 × 64) → <strong>1 × 192</strong>.</p>'
         '<p>For all queries: concatenate H¹, H² and H³ → J (197 × 192). No learned parameters in this step.</p>')
 
-    body = t(202, 40, 'Joined CLS · 1 × 192', 27, 'c-e', 'middle')
+    # Match the text-attention diagram: retain E on a visible bypass while the
+    # attention branch computes an update. All boxes here represent all rows.
+    body = box(22, 174, 110, ['Original', 'E'], 'c-e', 92, 23)
+    body += t(77, 295, '197 × 192', 21, 'c-e', 'middle')
+    body += arrow(138, 220, 157, 220)
+    body += box(165, 183, 120, ['LayerNorm', 'X'], 'c-e', 74, 23)
+    body += line(285, 220, 300, 220, 'c-e', 2)
+    body += line(300, 119, 300, 319, 'c-e', 2)
     for h, color in enumerate(colors):
-        body += box(35+h*110, 84, 110, ['head '+str(h+1),'64 features'], color, 78, 19)
-    body += arrow(379, 123, 450, 123)
-    body += box(470, 84, 260, ['Linear(192,192)','× W_O + b_O'], 'c-e', 78, 26)
-    body += g(arrow(745, 123, 810, 123)+box(829, 84, 296,
-              [preview(data['cls_projected_update'], 2),'update · 1 × 192'], 'c-v', 78, 25), 1)
-    residual = t(187, 245, 'Original CLS row in E', 25, 'c-e', 'middle')
-    residual += box(35, 275, 304, [preview(data['cls_input'], 2),'1 × 192'], 'c-e', 78, 25)
-    residual += t(383, 322, '+', 35)
-    residual += box(427, 275, 304, [preview(data['cls_projected_update'], 2),'attention update'], 'c-v', 78, 25)
-    residual += arrow(751, 314, 810, 314)
-    residual += box(829, 275, 296, [preview(data['cls_after_residual'], 2),'updated CLS · 1 × 192'], 'c-e', 78, 23)
-    residual += line(977, 173, 977, 208, 'c-v', 2)+line(977, 208, 579, 208, 'c-v', 2)+arrow(579, 208, 579, 264, 'c-v')
+        y = 84+h*100
+        body += arrow(300, y+35, 325, y+35, color)
+        body += box(334, y, 145, ['Head '+str(h+1), 'H'+superscripts[h]+' · 197 × 64'], color, 70, 21)
+        body += arrow(486, y+35, 534, 190+h*30, color)
+    body += t(611, 148, 'Concatenate', 24, 'c-v', 'middle')
+    for h, color in enumerate(colors):
+        body += box(542+h*46, 168, 46, ['H'+superscripts[h]], color, 104, 23)
+    body += t(611, 306, 'J · 197 × 192', 22, 'c-v', 'middle')
+    projection = arrow(688, 220, 708, 220)
+    projection += box(716, 183, 146, ['Linear', '(192,192)'], 'c-v', 74, 23)
+    projection += t(789, 298, '× W_O + b_O', 21, 'c-v', 'middle')
+    projection += arrow(868, 220, 886, 220, 'c-v')
+    projection += box(894, 183, 70, ['ΔE'], 'c-v', 74, 30)
+    projection += t(929, 153, 'Update', 23, 'c-v', 'middle')
+    body += g(projection, 1)
+    residual = line(77, 174, 77, 48, 'c-e', 3, '7 5')
+    residual += line(77, 48, 1006, 48, 'c-e', 3, '7 5')
+    residual += arrow(1006, 48, 1006, 191, 'c-e')
+    residual += t(550, 30, 'Skip path: carry the original E unchanged', 26, 'c-e', 'middle')
+    residual += arrow(970, 220, 980, 220, 'c-v')
+    residual += '<circle cx="1006" cy="220" r="24" fill="var(--card)" stroke="var(--c-e)" stroke-width="2.5"/>'
+    residual += t(1006, 230, '+', 35, 'c-e', 'middle')
+    residual += arrow(1032, 220, 1044, 220, 'c-e')
+    residual += box(1052, 174, 87, ['U'], 'c-e', 92, 34)
+    residual += t(1095, 151, 'Updated', 22, 'c-e', 'middle')
+    residual += t(1040, 338, 'U = E + ΔE', 27, 'c-e', 'middle')
+    residual += t(1040, 371, 'both 197 × 192', 22, 'c-e', 'middle')
     body += g(residual, 2)
-    body += t(35, 426, 'Next: normalize this updated row, pass it through the MLP, and add its update.', 26)
-    add('real-cls-message', 'Project the joined message, then add the input', body,
-        'The learned output projection mixes information from all three heads. Add its 192-feature update to the original CLS row in E. We now have one updated CLS row. Apply the same operations to every patch row before the MLP.',
+    body += t(35, 386, 'Each H contains one message per row: CLS, P1, …, P196.', 25)
+    body += t(35, 432, 'The same residual pattern as text: original embedding + context update.', 28)
+    add('real-cls-message', 'Keep the embedding; add the context from attention', body,
+        'Follow two paths from E. The heads produce messages; concatenate and project them to make ΔE. The skip path carries E directly to addition. U = E + ΔE is the contextualized representation passed to the MLP.',
         'Which operation learns to combine the head features, and which row gets the residual update?',
         'Linear(192,192) learns the combination. Add the result to E, before the attention branch’s LayerNorm. The MLP will receive this updated row through its own LayerNorm.',
         'For the full sequence, J=Concat(H¹,H²,H³) has shape 197×192. The output projection is '
         'Delta=JW_O+b_O, with W_O shaped 192×192 and a 192-coordinate bias. This affine layer '
         'has no additional activation; it can mix coordinates from every head into each output feature. '
-        'The residual is U=E+Delta, preserving 197×192. The displayed numerical previews come from '
-        'the same dog trace. For feature 1 of CLS, −0.704+1.167≈0.463. '
+        'The residual is U=E+Delta, preserving 197×192. The diagram shows the same residual pattern '
+        'as the text-attention lecture: retain the original representations and add retrieved context. '
+        'E contains all 196 patch rows and CLS, including position, for the same dog. At later blocks, '
+        'E denotes that block’s input representations. The skip path bypasses LayerNorm as well as '
+        'the head computations. Every row receives its own update, including CLS. '
         'Next the MLP branch computes U+MLP(LayerNorm(U)); it is separate from this attention output '
         'projection. The original photograph has not been re-encoded and the row count has not changed.',
         '<p>Concatenate heads → J (197 × 192) → Linear(192,192) → Delta (197 × 192).</p>'
         '<p><strong>U = E + Delta</strong>, still 197 × 192.</p>'
-        '<p>For CLS: '+preview(data['cls_input'],2)+' + '+preview(data['cls_projected_update'],2)
-        +' → '+preview(data['cls_after_residual'],2)+'.</p>'
+        '<p>The skip path carries the original E, before LayerNorm, directly to the addition.</p>'
         '<p>Next: LayerNorm(U) → MLP → add U. The output projection and MLP are different learned layers.</p>')
+
+    body = b['image'](35, 14, 132, 88)
+    body += t(190, 48, 'Same dog · block 1 · zoom in on the CLS row', 29)
+    body += t(190, 91, 'Every vector below contains 192 numbers.', 26, 'ink-2')
+    body += t(184, 198, 'Original CLS embedding', 25, 'c-e', 'middle')
+    body += box(35, 218, 298, [preview(data['cls_input'], 2), 'e₀ · 1 × 192'], 'c-e', 90, 26)
+    body += t(622, 132, 'After concatenation + projection', 24, 'c-v', 'middle')
+    body += box(454, 150, 336, [preview(data['cls_projected_update'], 2), 'Δe₀ · attention update'], 'c-v', 76, 25)
+    addition = arrow(622, 232, 622, 253, 'c-v')
+    addition += arrow(345, 277, 587, 277, 'c-e')
+    addition += t(457, 304, 'skip path', 22, 'c-e', 'middle')
+    addition += '<circle cx="622" cy="277" r="25" fill="var(--card)" stroke="var(--c-e)" stroke-width="2.5"/>'
+    addition += t(622, 288, '+', 35, 'c-e', 'middle')
+    addition += arrow(653, 277, 819, 277, 'c-e')
+    addition += t(978, 198, 'Contextualized CLS', 25, 'c-e', 'middle')
+    addition += box(831, 218, 295, [preview(data['cls_after_residual'], 2), 'u₀ · 1 × 192'], 'c-e', 90, 26)
+    body += g(addition, 1)
+    body += g(t(580, 373, 'First coordinate: −0.704 + 1.167 ≈ 0.463', 30, 'c-e', 'middle'), 1)
+    body += g(t(35, 432, 'Next: MLP → later blocks → final CLS → class scores.', 29), 2)
+    add('real-cls-residual', 'The dog’s CLS keeps its input and gains context', body,
+        'Add the projected attention update coordinate by coordinate to the original CLS embedding. This produces a contextualized CLS row of the same width. It continues through the MLP and later blocks before the classifier reads the final summary.',
+        'Is the attention update already the contextualized embedding, or do we still add something?',
+        'The update is Δe₀. The contextualized row is u₀=e₀+Δe₀. Add the original block input, before LayerNorm. The 192 output features are a representation; class scores are computed later.',
+        'These are measured values from the same dog forward pass, rounded to three decimals. '
+        'The first two residual additions are −0.704+1.167≈0.463 and −0.067−0.051≈−0.118. '
+        'All 192 coordinates are added in this way. For a patch row, the same formula updates that '
+        'patch’s representation using its own head messages; for CLS it updates the image-summary row. '
+        'The illustration follows block 1. Its output is an intermediate representation, not the final '
+        'class prediction. The next MLP takes LayerNorm(U), transforms features, and adds its own '
+        'update to U. Subsequent blocks refine these representations before final CLS classification.',
+        '<p>Original CLS: '+preview(data['cls_input'],2)+' (1 × 192).</p>'
+        '<p>Projected attention update: '+preview(data['cls_projected_update'],2)+' (1 × 192).</p>'
+        '<p><strong>Add coordinate by coordinate:</strong> '+preview(data['cls_after_residual'],2)+' (1 × 192).</p>'
+        '<p>Same dog → MLP → later blocks → final CLS → class scores.</p>')
     return result

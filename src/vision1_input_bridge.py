@@ -83,7 +83,7 @@ def clarify_inputs(b, sections):
         'real-cls-attention', 'real-attention-product', 'real-attention-cls-zoom', 'real-attention-weights',
         'real-attention-mask', 'real-cls-values-origin', 'real-cls-value-scaling', 'real-cls-value-sum',
         'real-attention-values', 'real-heads-intro', 'real-heads-qkv', 'real-heads-messages',
-        'real-heads-cls', 'real-heads-concat', 'real-cls-message', 'real-cls-mlp', 'real-block-handoff', 'real-cls-depth',
+        'real-heads-cls', 'real-heads-concat', 'real-cls-message', 'real-cls-residual', 'real-cls-mlp', 'real-block-handoff', 'real-cls-depth',
         'real-cls-readout', 'real-cls-prediction']]
     third = [all_frames['vision-topic-03'], location, all_frames['real-patch-position'], detour,
              cls_story['real-cls-purpose'], cls_story['cls-parameter-origin'],

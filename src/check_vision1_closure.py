@@ -17,7 +17,7 @@ for h in trace['gradients']['heads']:
     np.testing.assert_allclose(np.array(h['dS']).sum(axis=1),0,atol=1e-12)
 assert trace['single_update']['loss_after']<trace['single_update']['loss_before']
 manifest=json.loads((ROOT/'figures/vision1/frame-manifest.json').read_text())
-assert len(manifest)==244 and len({x['id'] for x in manifest})==244
+assert len(manifest)==245 and len({x['id'] for x in manifest})==245
 ids=[x['id'] for x in manifest]
 input_order=['patch-projection-parameters','vision-topic-03','position-where','real-patch-position',
              'cls-detour','real-cls-purpose','cls-parameter-origin','cls-parameter-learning',
@@ -27,7 +27,7 @@ input_order=['patch-projection-parameters','vision-topic-03','position-where','r
              'real-attention-product','real-attention-cls-zoom','real-attention-weights','real-attention-mask',
              'real-cls-values-origin','real-cls-value-scaling','real-cls-value-sum','real-attention-values',
              'real-heads-intro','real-heads-qkv','real-heads-messages','real-heads-cls','real-heads-concat',
-             'real-cls-message','real-cls-mlp','real-block-handoff','real-cls-depth','real-cls-readout']
+             'real-cls-message','real-cls-residual','real-cls-mlp','real-block-handoff','real-cls-depth','real-cls-readout']
 assert [ids.index(k) for k in input_order]==sorted(ids.index(k) for k in input_order)
 assert all(x['section']=='s13' for x in manifest if x['id'].startswith('position-photo-'))
 assert all(len(x['caption'].split())<=40 and '\n' in x['notes'] for x in manifest)
