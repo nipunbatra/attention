@@ -497,11 +497,19 @@
   },
   {
     "id": "cls-shared-start",
-    "title": "Does every image start with the same CLS?",
-    "caption": "Yes. CLS starts as one shared learned vector. The patches differ, so attention produces a different final summary for each image.",
-    "notes": "If the starting CLS is identical, where does the image-specific information enter?\nTrace both branches from the same starting parameter to different patch contexts. Training changes the shared parameter; inference updates the activations.",
+    "title": "The same CLS start reads two different photographs",
+    "caption": "Both images use the same starting CLS and the same model parameters. Their patch rows differ, so attention produces different updates. These are measured CLS values after the first attention update and residual addition.",
+    "notes": "The starting numbers match exactly. Why do the two outputs differ?\nPoint to the different photos. Their patches supply different keys and values. The starting CLS query is the same; the resulting attention message can differ.",
     "section": "s03",
     "frame": 10
+  },
+  {
+    "id": "cls-two-image-readout",
+    "title": "Read the two final summaries to classify the photographs",
+    "caption": "After all 12 blocks and final normalization, the two CLS representations differ. The same classifier reads each 192-number summary. It predicts Newfoundland for this dog and Persian cat for this cat.",
+    "notes": "Did we learn separate CLS parameters for these two photos?\nNo. One shared starting parameter led to two image-dependent activations. The class head also uses the same weights for both images.",
+    "section": "s03",
+    "frame": 11
   },
   {
     "id": "cls-without",
@@ -509,7 +517,7 @@
     "caption": "The patch rows still exchange information. Average their final representations to obtain one image vector, then classify it. Train the model with this readout from the start.",
     "notes": "Which dimension disappears when we average 196 rows?\nTrace both complete paths. The row axis is averaged; the feature width remains 192. C is the number of classes.",
     "section": "s03",
-    "frame": 11
+    "frame": 12
   },
   {
     "id": "real-cls-sequence",
@@ -517,7 +525,7 @@
     "caption": "Each patch keeps its content-plus-position row. CLS gets its own learned position too. Stack the summary and patch rows into E: 197 rows, each with 192 features. Batch size one is omitted here.",
     "notes": "Why do we now have 197 rows, while the width is still 192?\nIdentify the extra row at the top. Position is added coordinate by coordinate. The subscript is the row\u2019s identity, not its width.",
     "section": "s03",
-    "frame": 12
+    "frame": 13
   },
   {
     "id": "model-journey-checkpoint",
@@ -525,7 +533,7 @@
     "caption": "We now have 196 patch rows and one CLS summary row, with position added. Each row has 192 features. Resume the same photograph: attention will update these rows using information from one another.",
     "notes": "Which two jobs did we add while preparing the rows?\nLocation tells attention where a patch belongs. CLS provides the summary we will read. Now point to attention and return to patch 63 to make Q, K and V.",
     "section": "s03",
-    "frame": 13
+    "frame": 14
   },
   {
     "id": "real-patch-qkv",
@@ -533,7 +541,7 @@
     "caption": "LayerNorm rescales a row\u2019s features and keeps its width. We name it here and study its details later. Three learned maps then make Q, K and V; the diagram shows one of three heads.",
     "notes": "Which projection reads pixels, and which projections read the prepared embedding row?\nTrace the small recap first. Enter the block with e63, normalize it, then split into the three separate learned projections for head one.",
     "section": "s03",
-    "frame": 14
+    "frame": 15
   },
   {
     "id": "real-cls-attention",
@@ -541,7 +549,7 @@
     "caption": "Normalize E, then make Q, K and V for one head. Each query compares with 197 keys. Softmax turns each row of scores into weights over the available sources, including CLS itself.",
     "notes": "Which axis should softmax run over for the CLS query?\nPoint to one row of the 197\u00d7197 score matrix. These are source weights, not probabilities over animal classes.",
     "section": "s03",
-    "frame": 15
+    "frame": 16
   },
   {
     "id": "real-cls-message",
@@ -549,7 +557,7 @@
     "caption": "A weighted sum produces one message per query. Join the three heads and apply the output projection. Add this attention update to E. Every row receives an update, including the summary row.",
     "notes": "How many coordinates does the joined message have?\nRead 64+64+64. Then distinguish joining head messages, projecting them, and adding the original row.",
     "section": "s03",
-    "frame": 16
+    "frame": 17
   },
   {
     "id": "real-cls-mlp",
@@ -557,7 +565,7 @@
     "caption": "The MLP expands one row to 768 features, applies GELU, and returns to 192 features. Add that result to the row entering this branch. Attention exchanges information across rows; this MLP works on each row separately.",
     "notes": "Which operation here changes the number of rows?\nNone does. Follow one summary row through both linear layers and GELU, then apply the same MLP to every patch row.",
     "section": "s03",
-    "frame": 17
+    "frame": 18
   },
   {
     "id": "real-cls-depth",
@@ -565,7 +573,7 @@
     "caption": "Run 12 blocks in sequence. The shape stays 197 \u00d7 192 while the features change. Keep CLS and every patch row through the final block; only then choose the row for classification.",
     "notes": "If the shape stays the same, what has changed between block 1 and block 12?\nTrace the CLS row across the blocks alongside the patch rows. Same shape does not mean same representation.",
     "section": "s03",
-    "frame": 18
+    "frame": 19
   },
   {
     "id": "real-cls-readout",
@@ -573,7 +581,7 @@
     "caption": "Normalize the final sequence, select CLS, and apply the classification layer. Its 192 features become 1,000 scores for ImageNet labels. We read this one row after it has interacted with the whole image.",
     "notes": "Why are 192 features enough to produce 1,000 class scores?\nThe linear layer has one weighted sum and bias for each output class. Connect this to the class scores in text Part I.",
     "section": "s03",
-    "frame": 19
+    "frame": 20
   },
   {
     "id": "real-cls-prediction",
@@ -581,7 +589,7 @@
     "caption": "Softmax converts the 1,000 scores to class probabilities. The top label is Newfoundland, at 95.73%. We have followed this photograph from pixels to that prediction. Next, use smaller numbers to calculate attention ourselves.",
     "notes": "What are the alternatives in this softmax, compared with attention\u2019s softmax?\nThey are image classes here, source rows inside attention. Reveal the measured probabilities and close the real-image route before switching examples.",
     "section": "s03",
-    "frame": 20
+    "frame": 21
   },
   {
     "id": "vision-topic-04",

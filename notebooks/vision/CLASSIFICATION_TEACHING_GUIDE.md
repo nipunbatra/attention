@@ -16,6 +16,8 @@ The lecture explains one image classifier. Keep the same photograph as the ancho
 
 In the CLS detour, keep the dog photograph visible. `real-cls-purpose` shows two distinct origins: pixels pass through the patch layer, while CLS is a separate trainable parameter with no pixels. `cls-parameter-origin` explains initialization and why the width is 192. `cls-parameter-learning` illustrates the image-label gradient that trains it; it does not claim this photograph was a checkpoint training example. `cls-stored-start` shows actual saved parameter and position values. `cls-collect` follows those input activations to this dog's measured final summary. Distinguish a parameter changed by training from an activation changed during a forward pass.
 
+Close that loop with `cls-shared-start` and `cls-two-image-readout`: the dog and cat have identical 192-coordinate CLS inputs, different measured outputs after the first attention residual, and different final CLS summaries and image labels. Use the same coordinates in both rows. The trace in `cls-two-image-trace.json` stores all 192 coordinates and verifies that the starting parameter stays fixed. `trace_cls_comparison.py` reproduces these two inference passes with the cached checkpoint; it performs no training.
+
 For a first pass through backward propagation, use `backward-route`, `backward-scores`, `backward-cls`, `backward-heads`, `backward-one-weight` and `backward-patches`. The detailed softmax/QK derivatives can be a calculation workshop after the main mechanism is understood. Sections 8 (code), 12 (cost) and the existing notebooks are optional extensions; the lecture does not require a live notebook.
 
 ## Keep the examples distinct

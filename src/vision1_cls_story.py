@@ -160,4 +160,73 @@ def build_cls_story(b):
             ['At the input',vec('cls_input')],['After the blocks and final normalization',vec('cls_final')]])
         +'<p>Final CLS → class head → 1,000 scores → Newfoundland, 95.73% probability for this photograph.</p>'
         '<p>The activation changes with the image. The stored starting CLS parameter remains fixed during inference.</p>')
+
+    comparison = json.loads((b['ASSETS']/'cls-two-image-trace.json').read_text())
+    pair = comparison['results']
+    comparison_evidence = (' <a href="figures/vision1/cls-two-image-trace.json">All 192 coordinates for both photographs</a> · '
+                           '<a href="notebooks/vision/trace_cls_comparison.py">Reproduce this comparison</a>.')
+
+    def numbers(values):
+        return '['+', '.join(f'{v:.3f}'.replace('-', '−') for v in values[:3])+', …]'
+
+    body = t(35,38,'Shared learned CLS s = '+numbers(comparison['cls_parameter']),29,'c-q')
+    body += t(35,84,'Add the same position vector before either image enters attention.',26,'ink-2')
+    body += t(145,132,'Starting CLS input e₀',25,'c-q')
+    body += t(790,132,'After attention + residual',25,'c-q')
+    for j,(label,uri,row) in enumerate(zip(['Dog','Cat'],[b['PHOTO'],b['CAT']],pair)):
+        y=156+j*132
+        content = image(35,y,90,90,uri)+t(80,y+107,label,22,'ink-2','middle')
+        content += t(145,y+50,numbers(row['cls_input']),24,'c-q')
+        content += arrow(478,y+41,515,y+41)
+        content += box(530,y,214,['Attention','same parameters'],size=23)
+        content += arrow(750,y+41,784,y+41)
+        content += t(800,y+50,numbers(row['cls_after_attention1_residual']),24,'c-q')
+        content += line(125,y+62,135,y+62,'c-e')+line(135,y+62,135,y+112,'c-e')
+        content += line(135,y+112,637,y+112,'c-e')+arrow(637,y+112,637,y+86,'c-e')
+        content += t(225,y+104,'196 '+label.lower()+' patch rows',22,'c-e')
+        body += content if j==0 else g(content,1)
+    body += t(35,430,'First 3 of 192 coordinates shown. Both CLS rows remain 192 numbers wide.',25,'ink-2')
+    add('cls-shared-start','The same CLS start reads two different photographs',body,
+        'Both images use the same starting CLS and the same model parameters. Their patch rows differ, so attention produces different updates. These are measured CLS values after the first attention update and residual addition.',
+        'The starting numbers match exactly. Why do the two outputs differ?\n'
+        'Point to the different photos. Their patches supply different keys and values. The starting CLS query is the same; the resulting attention message can differ.',
+        'Each displayed CLS input is the same stored parameter plus the same CLS position vector. The 196 patch rows differ with the photograph. '
+        'The trace checks equality of all 192 CLS input coordinates and the first-block CLS queries for all three heads. '
+        'Attention compares these queries with image-dependent source keys and mixes image-dependent source values. '
+        'The displayed output is E + Attention(LayerNorm(E)), at the CLS row, before the first block’s MLP. '
+        'LayerNorm is included in the measured computation; its details remain in the later complete-block section. '
+        'All model parameters are held fixed. Values are rounded to three decimals; dots omit 189 coordinates.'+comparison_evidence,
+        '<p>Shared learned CLS parameter: '+numbers(comparison['cls_parameter'])+'. Add its shared position vector.</p>'
+        +''.join('<h4>'+label+'</h4>'+mobile_rows(['CLS row','First three coordinates'],[
+            ['Input',numbers(row['cls_input'])],['After first attention + residual',numbers(row['cls_after_attention1_residual'])]])
+            for label,row in zip(['Dog','Cat'],pair))
+        +'<p>Same 192-coordinate input and same model parameters. Different patch rows produce different updates.</p>'
+        '<p>First three coordinates shown. This is the first attention update, before its MLP.</p>')
+
+    body = t(35,43,'Continue both images through the same 12 blocks and classifier.',28)
+    for j,(uri,row) in enumerate(zip([b['PHOTO'],b['CAT']],pair)):
+        y=106+j*150
+        content = image(35,y-10,120,120,uri)+arrow(161,y+41,199,y+41)
+        content += box(215,y,410,['Final CLS · 192 features',numbers(row['cls_final_after_norm'])],'c-q',size=25)
+        content += arrow(632,y+41,667,y+41)
+        content += box(683,y,192,['Same class head','192 → 1,000'],size=22)+arrow(881,y+41,921,y+41)
+        label = row['top_label'].split(',')[0]
+        content += t(940,y+30,label,24,'c-e')
+        content += t(940,y+69,f"{100*row['top_probability']:.2f}%",28,'c-e')
+        body += content if j==0 else g(content,1)
+    body += t(35,420,'The stored CLS parameter stays fixed. Each image produces its own final summary.',26,'ink-2')
+    add('cls-two-image-readout','Read the two final summaries to classify the photographs',body,
+        'After all 12 blocks and final normalization, the two CLS representations differ. The same classifier reads each 192-number summary. It predicts Newfoundland for this dog and Persian cat for this cat.',
+        'Did we learn separate CLS parameters for these two photos?\n'
+        'No. One shared starting parameter led to two image-dependent activations. The class head also uses the same weights for both images.',
+        'The previews are measured final CLS representations after all blocks and final LayerNorm. Each has 192 coordinates, with three shown. '
+        'The shared Linear(192,1000) class head outputs ImageNet scores, and softmax yields the displayed top-class probabilities. '
+        'The reproducible trace matches both previously published image predictions and the earlier dog CLS trace. '
+        'These are probabilities for individual photographs, not dataset accuracy. No optimizer step runs. '
+        'Different inputs are not guaranteed to have distinct representations in general; this measured pair illustrates how context changes CLS.'+comparison_evidence,
+        ''.join('<h4>'+label+'</h4><p>Final CLS: '+numbers(row['cls_final_after_norm'])+'</p><p>'
+            +row['top_label'].split(',')[0]+f" · {100*row['top_probability']:.2f}%"+'</p>'
+            for label,row in zip(['Dog','Cat'],pair))
+        +'<p>Same starting parameter, same 12 blocks, same class head. Different image-dependent final summaries.</p>'
+        '<p>Every summary has 192 coordinates. The class head produces 1,000 scores.</p>')
     return result

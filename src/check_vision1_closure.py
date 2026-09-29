@@ -17,11 +17,11 @@ for h in trace['gradients']['heads']:
     np.testing.assert_allclose(np.array(h['dS']).sum(axis=1),0,atol=1e-12)
 assert trace['single_update']['loss_after']<trace['single_update']['loss_before']
 manifest=json.loads((ROOT/'figures/vision1/frame-manifest.json').read_text())
-assert len(manifest)==226 and len({x['id'] for x in manifest})==226
+assert len(manifest)==227 and len({x['id'] for x in manifest})==227
 ids=[x['id'] for x in manifest]
 input_order=['patch-projection-parameters','vision-topic-03','position-where','real-patch-position',
              'cls-detour','real-cls-purpose','cls-parameter-origin','cls-parameter-learning',
-             'cls-stored-start','cls-collect','cls-shared-start','cls-without',
+             'cls-stored-start','cls-collect','cls-shared-start','cls-two-image-readout','cls-without',
              'real-cls-sequence','model-journey-checkpoint','real-patch-qkv','real-cls-attention']
 assert [ids.index(k) for k in input_order]==sorted(ids.index(k) for k in input_order)
 assert all(x['section']=='s13' for x in manifest if x['id'].startswith('position-photo-'))
@@ -38,6 +38,18 @@ for name in ['cls_parameter','cls_position','cls_input']:
 for name in ['cls_input','cls_final']:
     for value in saved['previews'][name]:
         assert f'{value:.3f}'.replace('-','−') in (ROOT/'figures/vision1/cls-collect.svg').read_text()
+comparison=json.loads((ROOT/'figures/vision1/cls-two-image-trace.json').read_text())
+dog,cat=comparison['results']
+assert dog['cls_input']==cat['cls_input']
+assert dog['first_cls_query_all_heads']==cat['first_cls_query_all_heads']
+for row in [dog,cat]:
+    for field,figure in [('cls_input','cls-shared-start'),('cls_after_attention1_residual','cls-shared-start'),
+                          ('cls_final_after_norm','cls-two-image-readout')]:
+        assert len(row[field])==192
+        for value in row[field][:3]:
+            assert f'{value:.3f}'.replace('-','−') in (ROOT/'figures/vision1'/(figure+'.svg')).read_text()
+assert not np.allclose(dog['cls_after_attention1_residual'],cat['cls_after_attention1_residual'])
+assert not np.allclose(dog['cls_final_after_norm'],cat['cls_final_after_norm'])
 for x in manifest:
     ET.parse(ROOT/'figures/vision1'/(x['id']+'.svg'))
 page=(ROOT/'vision1.html').read_text()
@@ -60,6 +72,7 @@ report={'teaching_frames':len(manifest),'new_gradient_coordinates_checked':trace
         'valid_svg_and_local_links':True,'caption_limit_and_notes':True,'silent':True,'training_jobs_run':False,
         'position_and_cls_explained_before_attention':True,'patch_rearrangement_in_exercises_only':True,
         'cls_origin_and_saved_parameter_previews_verified':True,
+        'two_images_share_cls_input_but_have_different_updates':True,
         'single_query_weight_update':trace['single_update']}
 (ROOT/'figures/vision1/classification-checks.json').write_text(json.dumps(report,indent=2)+'\n')
 print(json.dumps(report,indent=2))

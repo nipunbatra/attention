@@ -83,7 +83,7 @@ def clarify_inputs(b, sections):
     third = [all_frames['vision-topic-03'], location, all_frames['real-patch-position'], detour,
              cls_story['real-cls-purpose'], cls_story['cls-parameter-origin'],
              cls_story['cls-parameter-learning'], cls_story['cls-stored-start'], cls_story['cls-collect'],
-             without_route(all_frames['cls-shared-start']), without_route(all_frames['cls-without']),
+             cls_story['cls-shared-start'], cls_story['cls-two-image-readout'], without_route(all_frames['cls-without']),
              all_frames['real-cls-sequence'], all_frames['model-journey-checkpoint'],
              all_frames['real-patch-qkv']] + continuation
     sections[2] = ('Prepare the rows, then classify the image', third)
