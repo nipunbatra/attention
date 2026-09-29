@@ -809,25 +809,25 @@
   },
   {
     "id": "s02-projection-step-1",
-    "title": "Flatten P1 so we can multiply it",
-    "caption": "These are the same four pixel values, in a fixed order.",
-    "notes": "Where does each entry in the row come from?\nPoint to one pixel and its matching row entry.",
+    "title": "Flatten P1 into four inputs",
+    "caption": "The same four grayscale pixels become four input numbers. Flattening rearranges them; it has no weights or biases.",
+    "notes": "Which input comes from the bottom-left pixel?\nTrace top-left, top-right, bottom-left, bottom-right. Each pixel supplies one grayscale value in this worksheet.",
     "section": "s04",
     "frame": 4
   },
   {
     "id": "s02-projection-step-2",
-    "title": "Compute the first coordinate of P1",
-    "caption": "This chosen column takes the mean of the four pixels.",
-    "notes": "What is one quarter of each pixel, added together?\nAdd all four terms before revealing 1.",
+    "title": "Compute the first coordinate with one neuron",
+    "caption": "Four inputs, four weights of \u00bc, and one bias of 0 produce ink = 1. This projection applies no activation after the weighted sum.",
+    "notes": "What does this neuron output when all four pixels are 1?\nFollow each weighted edge into the sum, then add the separate bias. Reveal the output. This is one of the layer\u2019s four output neurons.",
     "section": "s04",
     "frame": 5
   },
   {
     "id": "s02-projection",
-    "title": "Write the whole content row",
-    "caption": "The first coordinate is ink; the final 1 comes from the bias.",
-    "notes": "What happened to the two middle coordinates?\nUse the zero columns and then add the bias.",
+    "title": "Open the whole patch projection layer",
+    "caption": "Each output has four weights and one bias: 16 weights + 4 biases. Zero weights produce zero sums for outputs 2\u20134; the fourth bias adds 1. Use this same layer on every patch.",
+    "notes": "Why is the fourth output 1 even though all its weights are zero?\nRead the bias beside each output. The fourth coordinate is 0+1. The middle coordinates stay zero until position is added on a later slide.",
     "section": "s04",
     "frame": 6
   },

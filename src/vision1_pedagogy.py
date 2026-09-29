@@ -11,6 +11,7 @@ import xml.etree.ElementTree as ET
 from html import escape
 import numpy as np
 from vision1_intuition import calculations
+from vision1_worksheet_projection import build_worksheet_projection
 
 ET.register_namespace('', 'http://www.w3.org/2000/svg')
 SVG='{http://www.w3.org/2000/svg}'
@@ -484,10 +485,7 @@ def expand(b, sections):
       's01-rows':split('s01-rows',[
         (1,'Give each patch its own row of pixels','A row starts with the pixel values from one fixed part of the image.','Do we mix pixels from different patches at this step?','Follow one crop into its own row.'),
         (2,'Use the same projection on every patch','Every output row has the same width, so the attention block can process them together.','How many different projection matrices do we need?','Point to the shared operation between the four rows.')]),
-      's02-projection':split('s02-projection',[
-        (1,'Flatten P1 so we can multiply it','These are the same four pixel values, in a fixed order.','Where does each entry in the row come from?','Point to one pixel and its matching row entry.'),
-        (2,'Compute the first coordinate of P1','This chosen column takes the mean of the four pixels.','What is one quarter of each pixel, added together?','Add all four terms before revealing 1.'),
-        (3,'Write the whole content row','The first coordinate is ink; the final 1 comes from the bias.','What happened to the two middle coordinates?','Use the zero columns and then add the bias.')]),
+      's02-projection':build_worksheet_projection(b),
       's02-positions':split('s02-positions',[
         (1,'Give each patch a location vector','Two patches can look alike and still come from different places.','Which entries record the row and column here?','Read each location from the small image grid.'),
         (2,'Add content and location, coordinate by coordinate','These five rows form E, the input to our attention calculation.','What distinguishes P1 from P2 now?','Compare the two filled patches after adding positions.')]),
