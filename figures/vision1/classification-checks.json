@@ -1,5 +1,5 @@
 {
-  "teaching_frames": 239,
+  "teaching_frames": 244,
   "new_gradient_coordinates_checked": 116,
   "gradient_max_absolute_error": 8.28264123953204e-10,
   "original_forward_and_js_match": true,
@@ -11,6 +11,7 @@
   "patch_rearrangement_in_exercises_only": true,
   "cls_origin_and_saved_parameter_previews_verified": true,
   "two_images_share_cls_input_but_have_different_updates": true,
+  "multihead_messages_concatenation_and_residual_verified": true,
   "single_query_weight_update": {
     "parameter": "head1.W_Q[3,0]",
     "before": 1.0,

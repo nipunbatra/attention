@@ -128,22 +128,10 @@ def connect_journey(b, sections):
     additions.update(matrix_frames)
     active.update({key: [4] for key in matrix_frames})
 
-    body=t(25,48,'One head’s message into CLS',31,'c-v')
-    body+=box(25,97,245,['197 source weights','a₀₀ … a₀,₁₉₆'],'c-k')+t(300,149,'×',38)
-    body+=box(350,97,285,['197 value rows','each 64 features'],'c-v')+arrow(635,137,730,137,'c-v')
-    body+=box(750,97,365,['h₀ = Σⱼ a₀ⱼvⱼ','one row · 1 × 64'],'c-v')
-    body+=g(t(25,258,'Three heads: 64 + 64 + 64 = 192 features',31,'c-v'),1)
-    body+=g(box(25,302,290,['join the messages','197 × 192'],'c-v')+arrow(315,342,382,342)
-            +box(400,302,315,['output Linear(192,192)','197 × 192'])+arrow(715,342,782,342)
-            +box(800,302,315,['add the input E','197 × 192']),2)
-    add('real-cls-message','Mix the values, join the heads, and add the input',body,
-        'A weighted sum produces one message per query. Join the three heads and apply the output projection. Add this attention update to E. Every row receives an update, including the summary row.',
-        'How many coordinates does the joined message have?',
-        'Read 64+64+64. Then distinguish joining head messages, projecting them, and adding the original row.',
-        'Per head H=AV has shape (197,64). Joining three heads gives (197,192); the output projection preserves that width. '
-        'The first CLS message begins '+vec('cls_head1_message')+'. After all heads, projection and the residual, the CLS row begins '+vec('cls_after_attention')+'. '
-        'The script explicitly evaluates AV and checks both the attention result and residual against the checkpoint.',
-        '<p>H = AV: (197 × 197) × (197 × 64) → 197 × 64 per head.</p><p>Join three heads → 197 × 192 → Linear(192,192) → add E.</p><p>All 197 rows are updated.</p>',[4])
+    from vision1_multihead_journey import build_multihead_journey
+    head_frames = build_multihead_journey(b)
+    additions.update(head_frames)
+    active.update({key: [4] for key in head_frames if key != 'real-heads-intro'})
 
     body=t(25,44,'After the attention residual, follow just the CLS row',29)
     body+=box(25,96,200,['current CLS','1 × 192'])+arrow(225,136,275,136)+box(290,96,205,['LayerNorm','1 × 192'])
@@ -253,7 +241,7 @@ def connect_journey(b, sections):
             second.append(m)
     second.append(additions['model-journey-checkpoint'])
     sections[1]=(sections[1][0],second)
-    continuation=['real-cls-purpose','real-cls-sequence',*matrix_frames,'real-cls-message',
+    continuation=['real-cls-purpose','real-cls-sequence',*matrix_frames,*head_frames,
                   'real-cls-mlp','real-block-handoff','real-cls-depth','real-cls-readout','real-cls-prediction']
     sections[2]=(sections[2][0],[sections[2][1][0]]+[additions[k] for k in continuation])
     # The small worksheet is now an explicitly introduced, separate calculation.
