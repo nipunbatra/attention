@@ -66,35 +66,73 @@ def build_worksheet_projection(b):
         '<p>Four input neurons: x₁=x₂=x₃=x₄=1. Each connects to the first output with weight ¼.</p>'
         '<p>Bias = 0. Output = ¼·1 + ¼·1 + ¼·1 + ¼·1 + 0 = 1. No activation follows.</p>')
 
-    body = t(580, 30, 'nn.Linear(4, 4) · four inputs → four outputs', 31, 'c-e', 'middle')
-    body += t(230, 78, 'Pixel values', 25, 'ink-2', 'middle')+t(660, 78, 'Content coordinates', 25, 'c-e', 'middle')
-    body += t(947, 78, 'One bias per output', 25, 'c-v', 'middle')
-    ys = [126, 196, 266, 336]
-    for y in ys:
-        for out_y in ys[1:]:
-            body += line(259, y, 631, out_y, 'line', 1.7, '4 5')
-    for y in ys:
-        body += line(259, y, 631, ys[0], 'c-e', 2.5)
-    body += rect(324, 102, 220, 36, 'transparent', 'card')+t(434, 128, 'blue weights = ¼', 24, 'c-e', 'middle')
-    body += rect(320, 264, 235, 36, 'transparent', 'card')+t(437, 290, 'dashed weights = 0', 24, 'ink-2', 'middle')
+    # The matrix and network encode the same connections. Separate xW from
+    # bias addition so a zero-weight output does not appear to invent a 1.
+    weights, biases = b['DATA']['W_patch'], b['DATA']['b_patch']
+    inputs = b['R']['patches'][0]
+    sums = [sum(inputs[i]*weights[i][j] for i in range(4)) for j in range(4)]
+    outputs = [sums[j]+biases[j] for j in range(4)]
+    ys = [126, 192, 258, 324]
+    body = t(176, 28, 'Weight matrix W', 28, 'c-e', 'middle')
+    body += t(591, 28, '1 · Multiply and sum', 28, 'c-e', 'middle')
+    body += t(948, 28, '2 · Add one bias', 28, 'c-v', 'middle')
+    body += t(178, 67, 'one column per output', 23, 'ink-2', 'middle')
+    body += line(338, 54, 338, 356)
+    body += t(436, 73, 'P1 inputs', 24, 'ink-2', 'middle')
+    body += t(728, 73, 'sum z', 24, 'c-e', 'middle')
+    body += t(865, 73, 'bias b', 24, 'c-v', 'middle')
+    body += t(1060, 73, 'output c', 24, 'c-e', 'middle')
+    body += rect(71, 93, 47, 258, 'transparent', 't-e')
+    body += rect(236, 93, 47, 258, 'transparent', 't-q')
+    for j in range(4):
+        body += t(95+55*j, 94, str(j+1), 19, 'ink-2', 'middle')
+    for i, y in enumerate(ys):
+        body += t(50, y+9, ['x₁', 'x₂', 'x₃', 'x₄'][i], 22, 'ink-2', 'end')
+        for j in range(4):
+            color = 'c-e' if j==0 else 'c-q' if j==3 else 'ink-2'
+            value = '¼' if weights[i][j]==.25 else str(int(weights[i][j]))
+            body += t(95+55*j, y+9, value, 29, color, 'middle')
+        body += node(436, y, str(int(inputs[i])))
+        body += t(392, y+8, ['x₁', 'x₂', 'x₃', 'x₄'][i], 22, 'ink-2', 'end')
+    wires = ''
+    for j, out_y in enumerate(ys):
+        for i, in_y in enumerate(ys):
+            if weights[i][j]==0:
+                color = 'c-q' if j==3 else 'ink-3'
+                wires += '<g opacity=".25">'+line(465, in_y, 699, out_y, color, 1.5, '4 5')+'</g>'
+    for in_y in ys:
+        wires += line(465, in_y, 699, ys[0], 'c-e', 2.5)
+    wires += rect(488, 99, 163, 34, 'transparent', 'card')+t(570, 124, 'solid: weight ¼', 21, 'c-e', 'middle')
+    wires += rect(485, 293, 172, 34, 'transparent', 'card')+t(571, 318, 'dashed: weight 0', 21, 'ink-2', 'middle')
+    additions, final = '', ''
     for j, y in enumerate(ys):
-        body += node(230, y, '1')+t(180, y+8, ['x₁', 'x₂', 'x₃', 'x₄'][j], 24, 'ink-2', 'end')
-        body += node(660, y, ['1', '0', '0', '1'][j])
-        body += t(755, y-12, ['ink', 'output 2', 'output 3', 'output 4'][j], 22, 'ink-2', 'middle')
-        body += arrow(850, y, 699, y, 'c-v')
-        body += t(887, y+8, ['+ 0', '+ 0', '+ 0', '+ 1'][j], 28, 'c-v')
-    body += g(t(580, 410, 'c = [1, 0, 0, 1]     shape: 1 × 4     ·     no activation', 31, 'c-e', 'middle'), 1)
-    add('s02-projection', 'Open the whole patch projection layer', body,
-        'Each output has four weights and one bias: 16 weights + 4 biases. Zero weights produce zero sums for outputs 2–4; the fourth bias adds 1. Use this same layer on every patch.',
-        'Why is the fourth output 1 even though all its weights are zero?',
-        'Read the bias beside each output. The fourth coordinate is 0+1. The middle coordinates stay zero until position is added on a later slide.',
-        '<p>One nn.Linear(4,4) layer, with 16 weights and 4 biases, is shared by all patches.</p>'
-        '<table class="vp-table"><thead><tr><th>Output</th><th>Four input weights</th><th>Bias</th><th>Result</th></tr></thead><tbody>'
-        '<tr><td>1 (ink)</td><td>[¼,¼,¼,¼]</td><td>0</td><td>1</td></tr>'
-        '<tr><td>2</td><td>[0,0,0,0]</td><td>0</td><td>0</td></tr>'
-        '<tr><td>3</td><td>[0,0,0,0]</td><td>0</td><td>0</td></tr>'
-        '<tr><td>4</td><td>[0,0,0,0]</td><td>1</td><td>1</td></tr></tbody></table>'
-        '<p>Content row c = [1,0,0,1], shape 1 × 4. No activation follows the linear layer.</p>')
+        color = 'c-q' if j==3 else 'c-e'
+        wires += node(728, y, str(int(sums[j])), color)
+        additions += t(799, y+10, '+', 31, 'ink-2', 'middle')
+        additions += rect(837, y-26, 56, 52, 'c-v', 'transparent')
+        additions += t(865, y+10, str(int(biases[j])), 30, 'c-v', 'middle')
+        final += t(957, y+10, '=', 31, 'ink-2', 'middle')
+        final += node(1060, y, str(int(outputs[j])), color)
+    body += g(wires, 1)+g(additions, 2)+g(final, 3)
+    body += t(580, 387, 'Column j of W gives the four connection weights for output j.', 27, 'ink', 'middle')
+    body += g(t(580, 431, 'xW = [1, 0, 0, 0]   +   b = [0, 0, 0, 1]   →   c = [1, 0, 0, 1]', 27, 'c-e', 'middle'), 3)
+    add('s02-projection', 'The same projection: matrix, neurons, then biases', body,
+        'First multiply inputs by connection weights and sum at each neuron: [1, 0, 0, 0]. '
+        'Then add one bias per output: [0, 0, 0, 1]. The fourth output is 0 + 1 = 1.',
+        'Why does output 4 become 1 when its four connection weights are zero?',
+        'Match each W column to one neuron’s incoming weights. Reveal the weighted sums, '
+        'then the four biases, then the outputs. Output 4 adds its bias of 1 to a zero sum. '
+        'This is one nn.Linear(4,4) layer with no activation. Reuse it for every patch.',
+        '<p>P1 inputs: x = [1,1,1,1]. The four columns of W correspond to the four output neurons. '
+        'Each column contains that neuron’s four incoming connection weights.</p>'
+        '<table class="vp-table"><thead><tr><th>Output</th><th>Connection weights</th>'
+        '<th>Multiply and sum</th><th>Add bias</th><th>Result</th></tr></thead><tbody>'
+        '<tr><td>1 (ink)</td><td>[¼,¼,¼,¼]</td><td>¼·1 + ¼·1 + ¼·1 + ¼·1 = 1</td><td>+ 0</td><td>1</td></tr>'
+        '<tr><td>2</td><td>[0,0,0,0]</td><td>0·1 + 0·1 + 0·1 + 0·1 = 0</td><td>+ 0</td><td>0</td></tr>'
+        '<tr><td>3</td><td>[0,0,0,0]</td><td>0·1 + 0·1 + 0·1 + 0·1 = 0</td><td>+ 0</td><td>0</td></tr>'
+        '<tr><td>4</td><td>[0,0,0,0]</td><td>0·1 + 0·1 + 0·1 + 0·1 = 0</td><td>+ 1</td><td>1</td></tr>'
+        '</tbody></table><p>xW = [1,0,0,0]; xW+b = [1,0,0,1]. All rows have shape 1×4. '
+        'These are the linear layer’s biases. No activation follows this layer.</p>')
     return result
 
 
