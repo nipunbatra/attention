@@ -47,7 +47,7 @@ def connect_journey(b, sections):
             if i<7:out+=arrow(x+134,104,x+143,104,'ink-3')
             if selected:out+=t(x+66,32,'HERE',17,'c-e','middle',700)
         out+=line(584,173,860,173,'c-q',2)+line(584,162,584,173,'c-q')+line(860,162,860,173,'c-q')
-        out+=t(722,201,'One block · repeated 12 times',21,'c-q','middle')
+        out+=t(722,201,'Inside one block',21,'c-q','middle')
         out+=t(1082,197,'softmax → label',18,'c-e','middle')
         out+=box(28,260,332,['First: make the input rows','pixels → patch features'])
         out+=arrow(370,300,401,300)
@@ -58,7 +58,7 @@ def connect_journey(b, sections):
         return out
 
     map_mobile=('<ol class="vp-map-list">'+''.join('<li>'+escape(s)+'</li>' for s in STAGES)+'</ol>'
-                '<p>Make patch features, prepare the rows, then repeat Attention → MLP for 12 blocks.</p>'
+                '<p>Make patch features and prepare the rows. Inside a block, attention shares information and the MLP transforms each row.</p>'
                 '<p>Read one image summary and score the classes. We will open each box as we reach it.</p>')
     add('model-journey-overview','The whole route: photograph to prediction',map_body([0,1,2]),
         'First turn pixels into patch features. Prepare those rows, let them exchange information, then read one image summary to score the classes. We will open each box as we reach it.',
@@ -69,13 +69,28 @@ def connect_journey(b, sections):
         'The top route is reused on the detailed slides, with the current operation highlighted. The MLP hidden width of 768 happens to equal the patch pixel count; these are separate choices. '
         'This is a pre-LayerNorm architecture, so normalization precedes each branch. Both attention and the MLP have residual additions. '
         '<a href="https://arxiv.org/abs/2010.11929">Original ViT paper</a>.',map_mobile,[0,1,2])
-    add('model-journey-checkpoint','Back to the forward pass: all 197 rows are ready',map_body([4]),
-        'We now have 196 patch rows and one CLS summary row, with position added. Each row has 192 features. Resume the same photograph: attention will update these rows using information from one another.',
-        'Which two jobs did we add while preparing the rows?',
-        'Location tells attention where a patch belongs. CLS provides the summary we will read. Now point to attention and return to patch 63 to make Q, K and V.',
-        'The input E has shape 197×192. All rows, including CLS, are present before the first attention operation. '
-        'We next inspect the Q/K/V projections for patch 63, then follow the CLS query and its message. '
-        'These are two views of the same forward pass through the same image, not extra preprocessing steps.',map_mobile,[4])
+    body=image(25,112,165,165,photo)+t(107,317,'Our dog photograph',22,'ink-2','middle')
+    body+=arrow(200,190,236,190)+box(250,150,205,['Prepared rows','197 × 192'])
+    body+=rect(493,80,420,205,'c-q','transparent',7)
+    body+=t(703,119,'Transformer block 1',29,'c-q','middle')
+    body+=arrow(461,190,509,190)+box(523,150,168,['Attention','share context'])
+    body+=g(arrow(697,190,724,190)+box(736,150,163,['MLP','refine features']),1)
+    body+=g(arrow(919,190,952,190)+box(965,150,173,['Updated rows','197 × 192']),2)
+    body+=t(250,350,'Each row keeps 192 features. Its numbers are updated.',28)
+    body+=t(250,407,'First, let’s follow this one block.',32,'c-q')
+    add('model-journey-checkpoint','Start with one Transformer block',body,
+        'Our 196 patch rows and one CLS row enter block 1. Attention shares information across rows; the MLP transforms each row. The output still has 197 rows and 192 features per row.',
+        'What goes into one block, and what comes out?',
+        'Keep the scope to block 1. Follow prepared rows through attention and then the MLP. Same matrix shape, updated feature values. Explain the stack only after these operations.',
+        'The input E has shape 197×192, with positions already added and CLS already present. '
+        'This introductory diagram groups each branch’s normalization and residual addition with its named operation; '
+        'the upcoming attention and MLP slides open those branches. We next inspect Q/K/V for patch 63, then '
+        'the CLS query and its message, all within block 1. After completing that block, we will pass its output '
+        'to block 2 and introduce the full stack.',
+        '<img src="figures/vision1/model-input.png" alt="The dog photograph whose feature rows enter block 1" width="160">'
+        '<p>Prepared rows: 196 patches + one CLS → <strong>197 × 192</strong>.</p>'
+        '<p>Block 1: attention shares information across rows → MLP transforms each row.</p>'
+        '<p>Output: <strong>197 × 192</strong>, with updated feature values. First follow this one block.</p>',[4,5])
 
     body=image(25,80,235,235,photo)+t(142,361,'The same photograph',25,'ink-2','middle')
     body+=box(390,75,270,['196 patch rows','192 features each'])+arrow(660,115,760,115)
@@ -158,20 +173,48 @@ def connect_journey(b, sections):
         'After block 1 the CLS row begins '+vec('cls_after_block1')+'. Both residual additions were verified against the checkpoint block.',
         '<p>For each current row: LayerNorm → Linear(192,768) → GELU → Linear(768,192) → add the original current row.</p><p>All rows: 197 × 192 → 197 × 768 → 197 × 192.</p><p>This MLP shares its weights across rows.</p>',[5])
 
-    body=box(25,125,175,['E','197 × 192'])
+    body=image(25,97,180,180,photo)+t(115,320,'The same dog',24,'ink-2','middle')
+    body+=t(270,54,'We have finished block 1. Keep its updated feature rows.',28)
+    body+=box(270,115,270,['Output of block 1','197 × 192'])
+    body+=arrow(546,155,601,155,'c-q')
+    body+=box(618,100,215,['Block 2','attention + MLP'],'c-q',110)
+    body+=g(arrow(839,155,894,155,'c-q')+box(910,115,225,['Output of block 2','197 × 192']),1)
+    body+=t(270,291,'Block 1’s output is block 2’s input.',34,'c-q')
+    body+=g(t(270,356,'Block 2 makes new Q, K and V from these updated rows.',27)
+            +t(270,410,'It has its own learned attention and MLP weights.',27),2)
+    add('real-block-handoff','Pass block 1’s updated rows into block 2',body,
+        'Block 2 receives the features produced by block 1. It computes attention and an MLP update using its own learned weights. The same 197 row positions continue forward, carrying new feature values.',
+        'What is the input to block 2?',
+        'Point to the arrow from block 1’s output. The current CLS and all 196 contextual patch rows continue together. Block 2 calculates its own queries, keys and values.',
+        'The original image was patchified and projected once. The matrix leaving block 1 is exactly the matrix '
+        'entering block 2. In this pre-LayerNorm model, block 2 normalizes that matrix before making its Q/K/V '
+        'projections, then performs attention, a residual update, and its own normalized MLP branch and residual. '
+        'It uses a distinct set of learned parameters from block 1. All 197 rows continue through both blocks. '
+        'The photograph identifies the ongoing example; there is no second image-to-patch operation here.',
+        '<img src="figures/vision1/model-input.png" alt="The same dog continues through the model" width="160">'
+        '<p><strong>Block 1 output = block 2 input.</strong></p>'
+        '<p>197 × 192 updated features → block 2 → 197 × 192 updated features.</p>'
+        '<p>Block 2 computes new Q, K and V from its input. It has its own attention and MLP weights.</p>',[4,5])
+
+    body=box(25,125,175,['Input rows','197 × 192'])
     for x,name in [(245,'Block 1'),(525,'Block 2'),(920,'Block 12')]:
         body+=box(x,102,215,[name,'attention + MLP','197 × 192'],'c-e',126)
     body+=arrow(200,165,234,165)+arrow(460,165,514,165)+t(824,180,'…',43,'ink-2','middle')+arrow(860,165,910,165)
-    body+=g(t(25,302,'Each block keeps 197 rows × 192 features.',33,'c-e'),1)
-    body+=g(t(25,365,'Each block has its own weights. The same structure repeats.',28)
-            +t(25,423,'The CLS row becomes a different summary for each photograph.',28,'c-q'),2)
-    add('real-cls-depth','Repeat the block while keeping every row',body,
-        'Run 12 blocks in sequence. The shape stays 197 × 192 while the features change. Keep CLS and every patch row through the final block; only then choose the row for classification.',
-        'If the shape stays the same, what has changed between block 1 and block 12?',
-        'Trace the CLS row across the blocks alongside the patch rows. Same shape does not mean same representation.',
+    body+=t(25,302,'12 distinct blocks, connected in sequence, in one forward pass.',29,'c-e')
+    body+=g(t(25,365,'Same operations and shape; each block has its own learned weights.',27)
+            +t(25,423,'After block 12: read the final CLS to classify the dog.',29,'c-q'),1)
+    add('real-cls-depth','Continue through all 12 blocks, then read CLS',body,
+        'The updated rows pass from block 1 to block 2, then onward to block 12. Each block has its own weights. All 197 rows stay 192 features wide. After the final block, read CLS for classification.',
+        'Does 12 blocks mean twelve separate predictions for this dog?',
+        'Follow one forward pass through 12 distinct blocks. There is one class prediction at the end. Each arrow carries the previous block’s updated feature rows.',
         'All blocks have their own attention and MLP parameters. They do not share one set of weights across depth. '
-        'Within each block the projections and MLP are shared across rows. The trace evaluates all 12 blocks in order.',
-        '<p>197 × 192 → Block 1 → Block 2 → … → Block 12 → 197 × 192.</p><p>Each block: attention plus residual, then MLP plus residual. Parameters differ across blocks.</p>',[4,5])
+        'Within each block the projections and MLP are shared across rows. Twelve is this checkpoint’s chosen depth; '
+        'other models can use a different number of blocks. The input photograph is encoded once, the feature matrix '
+        'flows through the stack, and the class head is applied after the final block and final normalization. '
+        'The trace evaluates all 12 distinct blocks in order.',
+        '<p>Input rows → block 1 → block 2 → … → block 12 → read CLS → classify the dog.</p>'
+        '<p>One forward pass through <strong>12 distinct blocks</strong>. Each block has its own learned weights.</p>'
+        '<p>Every block receives and returns 197 × 192 features. Their values change as the rows move forward.</p>',[4,5])
 
     body=box(25,75,280,['after block 12','197 × 192'])+arrow(305,115,366,115)+box(385,75,280,['final LayerNorm','197 × 192'])
     body+=g(arrow(665,115,726,115)+box(745,75,360,['select the CLS row','1 × 192'],'c-q'),1)
@@ -221,7 +264,7 @@ def connect_journey(b, sections):
     second.append(additions['model-journey-checkpoint'])
     sections[1]=(sections[1][0],second)
     continuation=['real-cls-purpose','real-cls-sequence','real-cls-attention','real-cls-message',
-                  'real-cls-mlp','real-cls-depth','real-cls-readout','real-cls-prediction']
+                  'real-cls-mlp','real-block-handoff','real-cls-depth','real-cls-readout','real-cls-prediction']
     sections[2]=(sections[2][0],[sections[2][1][0]]+[additions[k] for k in continuation])
     # The small worksheet is now an explicitly introduced, separate calculation.
     worksheet=[m for k,m in old_three.items() if k not in position_ids]
@@ -236,7 +279,7 @@ def connect_journey(b, sections):
             drawing+=rect(x,8,132,35,color,'t-e' if selected else 'transparent',4)
             drawing+=t(x+66,31,name,17,color,'middle',700 if selected else 500)
             if i<7:drawing+=arrow(x+134,25,x+143,25)
-        drawing+=line(584,49,860,49,'ink-3',1)+t(722,67,'repeat the block',15,'ink-3','middle')
+        drawing+=line(584,49,860,49,'ink-3',1)+t(722,67,'inside one block',15,'ink-3','middle')
         return ('<div class="vp-pathbar"><p class="vp-path-label">'+escape(label)+'</p>'
                 '<svg viewBox="0 0 1160 72" role="img" aria-label="Model route. Current operation: '
                 +escape(', '.join(STAGES[i] for i in focus))+'">'+drawing+'</svg></div>')
