@@ -52,7 +52,7 @@ for i,(name,image) in enumerate(p['images'].items()):
                 np.testing.assert_allclose(actual[2*i+j]['heads'][h][key],expected['heads'][h][key],atol=1e-12)
 
 manifest=json.loads((ROOT/'figures/vision1/frame-manifest.json').read_text())
-assert len(manifest)==251
+assert len(manifest)==253
 required={'task-side-by-side','task-mask-reason','qkv-match-numbers','qkv-read-numbers','qkv-change-key','qkv-change-value','qkv-no-prompt','cls-start','cls-shared-start','cls-learns','pooling-example','readout-choice'}
 required.update({'backward-route','backward-qk','backward-patches','backward-full-block','cls-without','heads-visual-roles','cnn-classifier-parallel','pets-evaluation','classification-exit'})
 assert required <= {x['id'] for x in manifest}
@@ -80,7 +80,7 @@ assert len({x['id'] for x in manifest})==len(manifest)
 assert all(x['section'] and x['frame'] for x in manifest)
 ids=[x['id'] for x in manifest]
 assert ids.index('model-journey-overview') < ids.index('s01-rows')
-assert ids.index('position-where') < ids.index('real-patch-position') < ids.index('cls-detour')
+assert ids.index('position-where') < ids.index('position-table') < ids.index('real-patch-position') < ids.index('position-learning') < ids.index('cls-detour')
 assert ids.index('real-cls-purpose') < ids.index('real-cls-sequence') < ids.index('real-patch-qkv') < ids.index('real-cls-prediction') < ids.index('s02-small')
 assert all(x['section']=='s13' for x in manifest if x['id'].startswith('position-photo-'))
 assert all(x['title'].startswith('Section ') for x in manifest if x['id'].startswith('vision-topic-'))

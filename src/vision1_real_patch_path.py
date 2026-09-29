@@ -47,7 +47,7 @@ def add_real_path(b, add):
     body += t(175, 85, 'We already computed c₆₃ using the patch projection.', 28)
     body += t(175, 142, 'Add its position row; repeat for every image patch.', 30, 'c-e')
     headings = [(35, 'content from pixels', 'c₆₃', 'content', 'c-e'),
-                (455, 'learned position row', 'p₆₃', 'position', 'c-q'),
+                (455, 'row 63 of the learned table', 'p₆₃', 'position', 'c-q'),
                 (865, 'input to the block', 'e₆₃', 'embedding', 'c-v')]
     for i, (x, label, symbol, key, color) in enumerate(headings):
         marks = t(x, 240, label, 25, 'ink-2') + t(x, 287, symbol+' · 1 × 192', 31, color)
@@ -65,7 +65,7 @@ def add_real_path(b, add):
         'For the first coordinate, −0.851541 − 0.814817 ≈ −1.666358. The full precision calculation gives e₆₃[0]=−1.6663575. The printed rounded inputs introduce rounding error, so the displayed arithmetic uses ≈. '
         'cᵢ, pᵢ and eᵢ all have shape (1,192). We add them, rather than concatenate them. '
         'This is the same content-plus-position idea used for text tokens. e63 is the input row to the first Transformer block. '
-        'The preceding photograph located this patch at row 5, column 7. Next we introduce the summary row before entering the first block. '
+        'The preceding diagram showed how this grid slot selects row 63 of the shared position table. Next we trace how the image loss trains that table, then introduce the summary row before entering the first block. '
         'The trace checks this sum against the checkpoint’s own position-addition operation; its position table also contains the classification-token slot introduced later.' + evidence,
         mobile_patch()+mobile_rows(['Row · shape 1 × 192', 'First two coordinates'],[
             ['c₆₃: projected content', vec(data['content'], 2)],

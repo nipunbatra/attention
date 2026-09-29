@@ -73,6 +73,8 @@ def clarify_inputs(b, sections):
     cls_story = build_cls_story(b)
     from vision1_cls_readouts import build_cls_readouts
     cls_readouts = build_cls_readouts(b)
+    from vision1_position_learning import build_position_learning
+    position_story = build_position_learning(b)
 
     all_frames = {key(m): m for _, frames in sections for m in frames}
     experiments = ['position-photo-layout', 'position-photo-content', 'position-photo-add']
@@ -87,7 +89,8 @@ def clarify_inputs(b, sections):
         'real-mlp-network', 'real-mlp-residual', 'real-block-handoff', 'real-block-changes', 'real-cls-depth',
         'real-cls-readout', 'real-classifier-network', 'real-classifier-score',
         'real-classifier-softmax', 'real-cls-prediction']]
-    third = [all_frames['vision-topic-03'], location, all_frames['real-patch-position'], detour,
+    third = [all_frames['vision-topic-03'], location, position_story['position-table'],
+             all_frames['real-patch-position'], position_story['position-learning'], detour,
              cls_story['real-cls-purpose'], cls_story['cls-parameter-origin'],
              cls_story['cls-parameter-learning'], cls_story['cls-stored-start'], cls_story['cls-collect'],
              cls_story['cls-shared-start'], cls_story['cls-two-image-readout'],
