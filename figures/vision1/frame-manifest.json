@@ -608,12 +608,36 @@
     "frame": 23
   },
   {
+    "id": "real-cls-values-origin",
+    "title": "The dog\u2019s feature rows become value rows",
+    "caption": "Use the same normalized input X that produced Q and K. The value projection makes 64 features for each of its 197 rows. P63\u2019s crop identifies one source; its value row contains learned features.",
+    "notes": "Where does row P63 of V come from?\nFollow P63\u2019s normalized 192-feature row through the shared value projection. It produces 64 features. CLS has a value row too, although it has no image crop.",
+    "section": "s03",
+    "frame": 24
+  },
+  {
+    "id": "real-cls-value-scaling",
+    "title": "One weight scales all 64 features in its value row",
+    "caption": "P63\u2019s CLS weight multiplies every coordinate of P63\u2019s value row. The result still has 64 features. Repeat for CLS itself and every patch. The numbers shown are rounded from the saved dog computation.",
+    "notes": "Does a\u2086\u2083 multiply one feature, or all 64 features?\nIt scales the entire P63 value row. This is one source\u2019s contribution to the CLS message, not the completed message.",
+    "section": "s03",
+    "frame": 25
+  },
+  {
+    "id": "real-cls-value-sum",
+    "title": "Add the weighted rows to make one CLS message",
+    "caption": "Multiply the CLS weight row by V: (1 \u00d7 197) \u00d7 (197 \u00d7 64) gives 1 \u00d7 64. Each output feature adds 197 weighted contributions. This is the message for one query in one head.",
+    "notes": "Why does the result have 64 coordinates, rather than 197?\nWe sum over sources. Each column of V contributes one feature to the output row. All 64 feature columns remain; each contains a sum over 197 weighted sources.",
+    "section": "s03",
+    "frame": 26
+  },
+  {
     "id": "real-attention-values",
-    "title": "Use the weights to mix the value rows",
+    "title": "Repeat for every query: H has 197 message rows",
     "caption": "Multiply A by V. For CLS, multiply each source value row by its attention weight, then add the 197 weighted rows. The result is one 64-feature message. Do this for every query to form H.",
     "notes": "Where does P63\u2019s information enter the message to CLS?\nMatch column P63 of A with row P63 of V. Its weight multiplies all 64 coordinates of that source\u2019s value row. Add the contributions from all sources.",
     "section": "s03",
-    "frame": 24
+    "frame": 27
   },
   {
     "id": "real-cls-message",
@@ -621,7 +645,7 @@
     "caption": "A weighted sum produces one message per query. Join the three heads and apply the output projection. Add this attention update to E. Every row receives an update, including the summary row.",
     "notes": "How many coordinates does the joined message have?\nRead 64+64+64. Then distinguish joining head messages, projecting them, and adding the original row.",
     "section": "s03",
-    "frame": 25
+    "frame": 28
   },
   {
     "id": "real-cls-mlp",
@@ -629,7 +653,7 @@
     "caption": "The MLP expands one row to 768 features, applies GELU, and returns to 192 features. Add that result to the row entering this branch. Attention exchanges information across rows; this MLP works on each row separately.",
     "notes": "Which operation here changes the number of rows?\nNone does. Follow one summary row through both linear layers and GELU, then apply the same MLP to every patch row.",
     "section": "s03",
-    "frame": 26
+    "frame": 29
   },
   {
     "id": "real-block-handoff",
@@ -637,7 +661,7 @@
     "caption": "Block 2 receives the features produced by block 1. It computes attention and an MLP update using its own learned weights. The same 197 row positions continue forward, carrying new feature values.",
     "notes": "What is the input to block 2?\nPoint to the arrow from block 1\u2019s output. The current CLS and all 196 contextual patch rows continue together. Block 2 calculates its own queries, keys and values.",
     "section": "s03",
-    "frame": 27
+    "frame": 30
   },
   {
     "id": "real-cls-depth",
@@ -645,7 +669,7 @@
     "caption": "The updated rows pass from block 1 to block 2, then onward to block 12. Each block has its own weights. All 197 rows stay 192 features wide. After the final block, read CLS for classification.",
     "notes": "Does 12 blocks mean twelve separate predictions for this dog?\nFollow one forward pass through 12 distinct blocks. There is one class prediction at the end. Each arrow carries the previous block\u2019s updated feature rows.",
     "section": "s03",
-    "frame": 28
+    "frame": 31
   },
   {
     "id": "real-cls-readout",
@@ -653,7 +677,7 @@
     "caption": "Normalize the final sequence, select CLS, and apply the classification layer. Its 192 features become 1,000 scores for ImageNet labels. We read this one row after it has interacted with the whole image.",
     "notes": "Why are 192 features enough to produce 1,000 class scores?\nThe linear layer has one weighted sum and bias for each output class. Connect this to the class scores in text Part I.",
     "section": "s03",
-    "frame": 29
+    "frame": 32
   },
   {
     "id": "real-cls-prediction",
@@ -661,7 +685,7 @@
     "caption": "Softmax converts the 1,000 scores to class probabilities. The top label is Newfoundland, at 95.73%. We have followed this photograph from pixels to that prediction. Next, use smaller numbers to calculate attention ourselves.",
     "notes": "What are the alternatives in this softmax, compared with attention\u2019s softmax?\nThey are image classes here, source rows inside attention. Reveal the measured probabilities and close the real-image route before switching examples.",
     "section": "s03",
-    "frame": 30
+    "frame": 33
   },
   {
     "id": "vision-topic-04",

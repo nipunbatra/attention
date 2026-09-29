@@ -15,7 +15,7 @@ def build_attention_matrices(b):
               '<a href="notebooks/vision/trace_real_classifier.py">This checkpoint’s verified attention computation</a>.')
 
     def matrix(x, y, w, h, rows, cols, color='c-e', row=None, col=None, cell=None,
-               entry=None, labels=True, size=20, allowed=None):
+               entry=None, labels=True, size=20, allowed=None, entries=None):
         """Schematic grid: labels specify omitted rows; dots are not data."""
         nr, nc = len(rows), len(cols)
         cw, rh = w/nc, h/nr
@@ -29,6 +29,8 @@ def build_attention_matrices(b):
                 out += (f'<rect x="{x+c*cw}" y="{y+r*rh}" width="{cw}" height="{rh}" '
                         f'fill="var(--{tint})" fill-opacity="{opacity}" stroke="var(--line)" stroke-width="1"/>')
                 mark = '×' if permit is False else ('•' if permit is True else '·')
+                if entries is not None:
+                    mark = entries.get((r, c), mark)
                 if (r, c) == cell and entry:
                     mark = entry
                 out += t(x+(c+.5)*cw, y+(r+.5)*rh+6, mark, 21,
@@ -217,6 +219,9 @@ def build_attention_matrices(b):
         '<p>There is no causal mask. The whole photograph is available before predicting its label.</p>'
         '<p>CLS can read P196; P196 can read CLS. Every row can also read itself. Permitted access does not imply equal weights.</p>')
 
+    from vision1_cls_value_message import build_cls_value_message
+    result.update(build_cls_value_message(b, matrix))
+
     body = t(35, 33, 'Keep the source order aligned: CLS, P1, …, P196 in both A and V.', 27)
     body += t(221, 85, 'A · 197 × 197', 28, 'c-k', 'middle')
     body += matrix(80, 141, 282, 192, tokens, tokens, 'c-k', row=0, col=3, cell=(0,3), entry='a', size=18)
@@ -228,7 +233,7 @@ def build_attention_matrices(b):
     body += matrix(910, 141, 180, 192, tokens, features, 'c-v', row=0, size=18)
     body += g(t(35, 384, 'h(CLS) = a(CLS, CLS) v(CLS) + … + a(CLS, P196) v(P196)', 26, 'c-v'), 1)
     body += t(35, 432, 'Q and K choose the weights. V supplies the features carried into each message.', 28)
-    add('real-attention-values', 'Use the weights to mix the value rows', body,
+    add('real-attention-values', 'Repeat for every query: H has 197 message rows', body,
         'Multiply A by V. For CLS, multiply each source value row by its attention weight, then add the 197 weighted rows. The result is one 64-feature message. Do this for every query to form H.',
         'Where does P63’s information enter the message to CLS?',
         'Match column P63 of A with row P63 of V. Its weight multiplies all 64 coordinates of that source’s value row. Add the contributions from all sources.',
