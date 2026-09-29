@@ -513,11 +513,35 @@
   },
   {
     "id": "cls-without",
-    "title": "What would happen if we built a ViT without CLS?",
-    "caption": "The patch rows still exchange information. Average their final representations to obtain one image vector, then classify it. Train the model with this readout from the start.",
-    "notes": "Which dimension disappears when we average 196 rows?\nTrace both complete paths. The row axis is averaged; the feature width remains 192. C is the number of classes.",
+    "title": "With CLS, read the dog\u2019s final summary row",
+    "caption": "The dog supplies 196 patch rows. Add the shared CLS row, update all 197 rows through the blocks, then read the final CLS. Its 192 features produce the saved Newfoundland prediction.",
+    "notes": "Which row does the classifier read, and how did the dog enter that row?\nFollow the purple CLS row. Attention mixes information from the dog\u2019s patch rows into it. The blocks update patch rows too.",
     "section": "s03",
     "frame": 12
+  },
+  {
+    "id": "cls-pool-dog",
+    "title": "Without CLS, combine the dog\u2019s final patch rows",
+    "caption": "Build a second design with 196 patch rows and no CLS. Attention still lets the patches share information. Average their final features to get one 192-number summary. Train the classifier and blocks with this readout.",
+    "notes": "Without an extra summary row, where is the information about this dog?\nIt remains in the 196 contextual patch representations. Average corresponding coordinates across these rows, then classify the resulting vector.",
+    "section": "s03",
+    "frame": 13
+  },
+  {
+    "id": "cls-pool-arithmetic",
+    "title": "Mean pooling: average each feature across the patches",
+    "caption": "Each row is a patch representation after it has read context. Average feature 1 across patches, then feature 2. Four rows become one row. In the full model, 196 rows become one 192-feature summary.",
+    "notes": "Does pooling average the pixels, or the features after attention?\nThe final features. Ask students to compute each column average. Each feature coordinate is retained; only the patch axis is reduced.",
+    "section": "s03",
+    "frame": 14
+  },
+  {
+    "id": "cls-readout-return",
+    "title": "Both choices give one summary for the dog photograph",
+    "caption": "Both designs can learn image classification. Train for the chosen readout: removing CLS from our saved model changes its computation. We will continue with its CLS route, whose dog prediction we have already followed.",
+    "notes": "Is CLS required for image classification? Can we delete it from our saved model and expect the same answer?\nIt is not required as an architectural choice. But a model trained to read CLS has learned that route; changing it calls for adaptation and evaluation.",
+    "section": "s03",
+    "frame": 15
   },
   {
     "id": "real-cls-sequence",
@@ -525,7 +549,7 @@
     "caption": "Each patch keeps its content-plus-position row. CLS gets its own learned position too. Stack the summary and patch rows into E: 197 rows, each with 192 features. Batch size one is omitted here.",
     "notes": "Why do we now have 197 rows, while the width is still 192?\nIdentify the extra row at the top. Position is added coordinate by coordinate. The subscript is the row\u2019s identity, not its width.",
     "section": "s03",
-    "frame": 13
+    "frame": 16
   },
   {
     "id": "model-journey-checkpoint",
@@ -533,7 +557,7 @@
     "caption": "We now have 196 patch rows and one CLS summary row, with position added. Each row has 192 features. Resume the same photograph: attention will update these rows using information from one another.",
     "notes": "Which two jobs did we add while preparing the rows?\nLocation tells attention where a patch belongs. CLS provides the summary we will read. Now point to attention and return to patch 63 to make Q, K and V.",
     "section": "s03",
-    "frame": 14
+    "frame": 17
   },
   {
     "id": "real-patch-qkv",
@@ -541,7 +565,7 @@
     "caption": "LayerNorm rescales a row\u2019s features and keeps its width. We name it here and study its details later. Three learned maps then make Q, K and V; the diagram shows one of three heads.",
     "notes": "Which projection reads pixels, and which projections read the prepared embedding row?\nTrace the small recap first. Enter the block with e63, normalize it, then split into the three separate learned projections for head one.",
     "section": "s03",
-    "frame": 15
+    "frame": 18
   },
   {
     "id": "real-cls-attention",
@@ -549,7 +573,7 @@
     "caption": "Normalize E, then make Q, K and V for one head. Each query compares with 197 keys. Softmax turns each row of scores into weights over the available sources, including CLS itself.",
     "notes": "Which axis should softmax run over for the CLS query?\nPoint to one row of the 197\u00d7197 score matrix. These are source weights, not probabilities over animal classes.",
     "section": "s03",
-    "frame": 16
+    "frame": 19
   },
   {
     "id": "real-cls-message",
@@ -557,7 +581,7 @@
     "caption": "A weighted sum produces one message per query. Join the three heads and apply the output projection. Add this attention update to E. Every row receives an update, including the summary row.",
     "notes": "How many coordinates does the joined message have?\nRead 64+64+64. Then distinguish joining head messages, projecting them, and adding the original row.",
     "section": "s03",
-    "frame": 17
+    "frame": 20
   },
   {
     "id": "real-cls-mlp",
@@ -565,7 +589,7 @@
     "caption": "The MLP expands one row to 768 features, applies GELU, and returns to 192 features. Add that result to the row entering this branch. Attention exchanges information across rows; this MLP works on each row separately.",
     "notes": "Which operation here changes the number of rows?\nNone does. Follow one summary row through both linear layers and GELU, then apply the same MLP to every patch row.",
     "section": "s03",
-    "frame": 18
+    "frame": 21
   },
   {
     "id": "real-cls-depth",
@@ -573,7 +597,7 @@
     "caption": "Run 12 blocks in sequence. The shape stays 197 \u00d7 192 while the features change. Keep CLS and every patch row through the final block; only then choose the row for classification.",
     "notes": "If the shape stays the same, what has changed between block 1 and block 12?\nTrace the CLS row across the blocks alongside the patch rows. Same shape does not mean same representation.",
     "section": "s03",
-    "frame": 19
+    "frame": 22
   },
   {
     "id": "real-cls-readout",
@@ -581,7 +605,7 @@
     "caption": "Normalize the final sequence, select CLS, and apply the classification layer. Its 192 features become 1,000 scores for ImageNet labels. We read this one row after it has interacted with the whole image.",
     "notes": "Why are 192 features enough to produce 1,000 class scores?\nThe linear layer has one weighted sum and bias for each output class. Connect this to the class scores in text Part I.",
     "section": "s03",
-    "frame": 20
+    "frame": 23
   },
   {
     "id": "real-cls-prediction",
@@ -589,7 +613,7 @@
     "caption": "Softmax converts the 1,000 scores to class probabilities. The top label is Newfoundland, at 95.73%. We have followed this photograph from pixels to that prediction. Next, use smaller numbers to calculate attention ourselves.",
     "notes": "What are the alternatives in this softmax, compared with attention\u2019s softmax?\nThey are image classes here, source rows inside attention. Reveal the measured probabilities and close the real-image route before switching examples.",
     "section": "s03",
-    "frame": 21
+    "frame": 24
   },
   {
     "id": "vision-topic-04",

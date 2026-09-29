@@ -71,6 +71,8 @@ def clarify_inputs(b, sections):
 
     from vision1_cls_story import build_cls_story
     cls_story = build_cls_story(b)
+    from vision1_cls_readouts import build_cls_readouts
+    cls_readouts = build_cls_readouts(b)
 
     all_frames = {key(m): m for _, frames in sections for m in frames}
     experiments = ['position-photo-layout', 'position-photo-content', 'position-photo-add']
@@ -83,7 +85,8 @@ def clarify_inputs(b, sections):
     third = [all_frames['vision-topic-03'], location, all_frames['real-patch-position'], detour,
              cls_story['real-cls-purpose'], cls_story['cls-parameter-origin'],
              cls_story['cls-parameter-learning'], cls_story['cls-stored-start'], cls_story['cls-collect'],
-             cls_story['cls-shared-start'], cls_story['cls-two-image-readout'], without_route(all_frames['cls-without']),
+             cls_story['cls-shared-start'], cls_story['cls-two-image-readout'],
+             *cls_readouts.values(),
              all_frames['real-cls-sequence'], all_frames['model-journey-checkpoint'],
              all_frames['real-patch-qkv']] + continuation
     sections[2] = ('Prepare the rows, then classify the image', third)
