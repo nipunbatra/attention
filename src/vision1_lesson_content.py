@@ -110,25 +110,50 @@ def build_full(b):
         '<p>The receiver is the same dark patch.</p>'+mobile_rows(['Source','Illustrative contribution'],[
             ['Face patch','Larger share of the message'],['Branches','Smaller share of the message']])
         +'<p>Attention learns the weights. These shares illustrate the idea; they are not measured results.</p>')
-    body=crop(35,50,300,200,9,'context-update')+t(185,280,'same pixels',27,'c-q','middle')
-    body+=arrow(185,292,185,325,'ink-3')+rect(35,325,300,60,'c-q','t-q')+t(185,365,'current patch row',27,'c-q','middle')
-    body+=g(rect(400,90,340,65,'c-v','t-v').replace('var(--t-v)','var(--t-v,#D9F2EF)')+t(570,132,'weighted context',31,'c-v','middle')
-            +arrow(570,155,570,331,'c-v'),1)
-    body+=g(arrow(335,355,546,355,'c-q')
-            +'<circle cx="570" cy="355" r="24" fill="none" stroke="var(--ink)" stroke-width="2"/>'
-            +t(570,367,'+',42,'ink','middle')
-            +arrow(594,355,845,355,'c-v')+rect(845,325,285,60,'c-q','t-q')
-            +t(987,365,'updated patch row',26,'c-q','middle'),2)
+    body=t(185,30,'receiver: dark patch',27,'c-q','middle')
+    body+=crop(35,55,300,200,9,'context-update')+t(185,285,'same pixels',27,'c-q','middle')
+    body+=arrow(185,297,185,350,'ink-3')+rect(35,350,300,60,'c-q','t-q')+t(185,390,'current patch row',27,'c-q','middle')
+    sources=''
+    for x,index,label,value,uid in [(450,6,'face patch','face value','update-face'),
+                                    (760,0,'branches','branch value','update-branches')]:
+        center=x+75
+        sources+=t(center,30,label,27,'c-k','middle')+crop(x,55,150,100,index,uid)
+        sources+=arrow(center,155,center,175,'ink-3')+rect(center-120,175,240,70,'c-v','transparent')
+        sources+=t(center,204,value,27,'c-v','middle')
+    body+=g(sources,1)
+    context=t(525,234,'× its weight',25,'c-k','middle')+t(835,234,'× its weight',25,'c-k','middle')
+    context+=arrow(525,245,595,278,'c-v')+arrow(835,245,745,278,'c-v')
+    context+=rect(510,278,320,60,'c-v','t-v').replace('var(--t-v)','var(--t-v,#D9F2EF)')
+    context+=t(670,304,'weighted context',27,'c-v','middle')+t(670,328,'sum values + project',23,'c-v','middle')
+    body+=g(context,2)
+    body+=g(arrow(670,338,670,356,'c-v')+arrow(335,380,646,380,'c-q')
+            +'<circle cx="670" cy="380" r="24" fill="none" stroke="var(--ink)" stroke-width="2"/>'
+            +t(670,392,'+',42,'ink','middle')
+            +arrow(694,380,845,380,'c-v')+rect(845,350,285,60,'c-q','t-q')
+            +t(987,390,'updated patch row',26,'c-q','middle'),3)
+    body+=g(t(670,437,'Two sources shown; all image rows can contribute.',24,'ink-2','middle'),1)
     add('patch-context-update','What changes when the patch gets context?',body,
-        'Attention supplies a weighted message. The block adds it to the patch row; later layers use the updated rows to predict one image label.',
+        'The face and branches contribute value vectors. Attention weights mix those vectors, and an output projection forms the message added to the dark patch’s row. The pixels stay fixed.',
         'Are we changing the photo, assigning a fur label to this crop, or updating its numerical representation?',
-        'Point to the unchanged pixels, then follow the current row and context message into the plus sign. End at the updated row.',
+        'Start at the dark patch and its current row. Reveal the face and branches from the preceding slide, then follow their value vectors through weighting, summation and projection. Finally follow both the context message and original row into the plus sign.',
         'This previews the attention update with its residual connection. Attention mixes information from source rows, and the block adds the resulting message '
         '(after the attention output projection) to the receiver’s existing row. The photograph remains unchanged. '
+        'The face and branch crops identify where two source representations came from. Their value vectors are computed from those representations; '
+        'the photo crops themselves are not added to the receiver. Each source value is multiplied by its attention weight for this dark-patch query, '
+        'then the weighted values are summed and projected to form the update. The query and source keys determine the weights. '
+        'Only two sources are drawn to show the route. Full image self-attention can use all image rows, including the receiver itself. '
+        'The diagram illustrates the computation; it does not claim measured weights or fixed meanings for learned coordinates. '
         'We have drawn one receiver; other patch rows can receive their own messages too. The later classification readout produces one label for the image. '
         'Training here supplies image labels, not fur or eye labels for individual patches. '
         'Next we build the numerical rows from pixels, then return to the exact attention calculation.',
-        '<p>The dark crop’s pixels stay unchanged.</p><p><strong>Current patch row + weighted context → updated patch row.</strong></p>'
+        '<p>The dark crop’s pixels stay unchanged.</p>'
+        '<svg viewBox="0 0 340 160" role="img" aria-label="Face and branch source patches from the same dog photograph">'
+        +crop(0,30,150,100,6,'mobile-update-face')+t(75,23,'face',22,'c-k','middle')
+        +crop(190,30,150,100,0,'mobile-update-branches')+t(265,23,'branches',22,'c-k','middle')+'</svg>'
+        +mobile_rows(['Source','Contribution'],[['Face patch representation','face value × its attention weight'],
+            ['Branch patch representation','branch value × its attention weight']])
+        +'<p>Sum the weighted values, then apply the output projection to form the context message. Two sources are shown; all image rows can contribute.</p>'
+        '<p><strong>Current patch row + context message → updated patch row.</strong></p>'
         '<p>Later layers use the updated rows to predict one label for the whole image.</p>')
 
     # PATCHIFY AND A REAL RGB CALCULATION.

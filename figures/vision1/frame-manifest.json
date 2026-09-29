@@ -114,8 +114,8 @@
   {
     "id": "patch-context-update",
     "title": "What changes when the patch gets context?",
-    "caption": "Attention supplies a weighted message. The block adds it to the patch row; later layers use the updated rows to predict one image label.",
-    "notes": "Are we changing the photo, assigning a fur label to this crop, or updating its numerical representation?\nPoint to the unchanged pixels, then follow the current row and context message into the plus sign. End at the updated row.",
+    "caption": "The face and branches contribute value vectors. Attention weights mix those vectors, and an output projection forms the message added to the dark patch\u2019s row. The pixels stay fixed.",
+    "notes": "Are we changing the photo, assigning a fur label to this crop, or updating its numerical representation?\nStart at the dark patch and its current row. Reveal the face and branches from the preceding slide, then follow their value vectors through weighting, summation and projection. Finally follow both the context message and original row into the plus sign.",
     "section": "s01",
     "frame": 15
   },
