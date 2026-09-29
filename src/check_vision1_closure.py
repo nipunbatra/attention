@@ -2,6 +2,7 @@
 from pathlib import Path
 from html.parser import HTMLParser
 import json
+import math
 import subprocess
 import xml.etree.ElementTree as ET
 import numpy as np
@@ -17,7 +18,7 @@ for h in trace['gradients']['heads']:
     np.testing.assert_allclose(np.array(h['dS']).sum(axis=1),0,atol=1e-12)
 assert trace['single_update']['loss_after']<trace['single_update']['loss_before']
 manifest=json.loads((ROOT/'figures/vision1/frame-manifest.json').read_text())
-assert len(manifest)==245 and len({x['id'] for x in manifest})==245
+assert len(manifest)==248 and len({x['id'] for x in manifest})==248
 ids=[x['id'] for x in manifest]
 input_order=['patch-projection-parameters','vision-topic-03','position-where','real-patch-position',
              'cls-detour','real-cls-purpose','cls-parameter-origin','cls-parameter-learning',
@@ -27,7 +28,8 @@ input_order=['patch-projection-parameters','vision-topic-03','position-where','r
              'real-attention-product','real-attention-cls-zoom','real-attention-weights','real-attention-mask',
              'real-cls-values-origin','real-cls-value-scaling','real-cls-value-sum','real-attention-values',
              'real-heads-intro','real-heads-qkv','real-heads-messages','real-heads-cls','real-heads-concat',
-             'real-cls-message','real-cls-residual','real-cls-mlp','real-block-handoff','real-cls-depth','real-cls-readout']
+             'real-cls-message','real-cls-residual','real-cls-mlp','real-mlp-network','real-mlp-residual',
+             'real-block-handoff','real-block-changes','real-cls-depth','real-cls-readout']
 assert [ids.index(k) for k in input_order]==sorted(ids.index(k) for k in input_order)
 assert all(x['section']=='s13' for x in manifest if x['id'].startswith('position-photo-'))
 assert all(len(x['caption'].split())<=40 and '\n' in x['notes'] for x in manifest)
@@ -35,6 +37,15 @@ required={'cls-shared-start','cls-without','heads-visual-roles','heads-independe
 assert required<={x['id'] for x in manifest}
 assert not {'find-animal','image-caption','photo-search','learning-curves','training-data'}&{x['id'] for x in manifest}
 saved=json.loads((ROOT/'figures/vision1/real-classifier-path.json').read_text())
+assert saved['with_cls']==[197,192] and saved['mlp_hidden']==[197,768] and saved['block_count']==12
+hidden=saved['previews']['cls_mlp_hidden']
+np.testing.assert_allclose([.5*x*(1+math.erf(x/math.sqrt(2))) for x in hidden],
+                           saved['previews']['cls_mlp_activated'],atol=2e-7)
+np.testing.assert_allclose(np.array(saved['previews']['cls_after_attention'])+saved['previews']['cls_mlp_update'],
+                           saved['previews']['cls_after_block1'],atol=1e-7)
+for name in ['cls_mlp_hidden','cls_mlp_activated','cls_mlp_update']:
+    for value in saved['previews'][name][:2]:
+        assert f'{value:.3f}'.replace('-','−') in (ROOT/'figures/vision1/real-mlp-network.svg').read_text()
 heads=json.loads((ROOT/'figures/vision1/multihead-cls-trace.json').read_text())
 assert heads['input_shape']==[197,192] and len(heads['heads'])==3
 for h in heads['heads']:
@@ -91,6 +102,7 @@ report={'teaching_frames':len(manifest),'new_gradient_coordinates_checked':trace
         'cls_origin_and_saved_parameter_previews_verified':True,
         'two_images_share_cls_input_but_have_different_updates':True,
         'multihead_messages_concatenation_and_residual_verified':True,
+        'mlp_gelu_and_second_residual_previews_verified':True,
         'single_query_weight_update':trace['single_update']}
 (ROOT/'figures/vision1/classification-checks.json').write_text(json.dumps(report,indent=2)+'\n')
 print(json.dumps(report,indent=2))

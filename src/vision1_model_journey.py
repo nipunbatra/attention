@@ -133,66 +133,10 @@ def connect_journey(b, sections):
     additions.update(head_frames)
     active.update({key: [4] for key in head_frames if key != 'real-heads-intro'})
 
-    body=t(25,44,'After the attention residual, follow just the CLS row',29)
-    body+=box(25,96,200,['current CLS','1 × 192'])+arrow(225,136,275,136)+box(290,96,205,['LayerNorm','1 × 192'])
-    body+=g(arrow(495,136,545,136)+box(560,96,245,['Linear(192,768)','1 × 768'])
-            +arrow(805,136,858,136)+box(875,96,245,['GELU','1 × 768'],'c-v'),1)
-    body+=g(box(25,292,255,['Linear(768,192)','1 × 192'])+arrow(280,332,347,332)
-            +box(365,292,325,['add current CLS','output: 1 × 192'])
-            +line(1000,176,1000,236,'ink-3')+line(1000,236,152,236,'ink-3')+arrow(152,236,152,291),2)
-    body+=g(t(760,310,'The same MLP processes',27,'ink-2')+t(760,355,'every row separately.',27,'ink-2'),2)
-    body+=g(t(25,424,'Whole sequence: 197 × 192 → 197 × 768 → 197 × 192',29,'c-e'),2)
-    add('real-cls-mlp','Transform each updated row with the MLP',body,
-        'The MLP expands one row to 768 features, applies GELU, and returns to 192 features. Add that result to the row entering this branch. Attention exchanges information across rows; this MLP works on each row separately.',
-        'Which operation here changes the number of rows?',
-        'None does. Follow one summary row through both linear layers and GELU, then apply the same MLP to every patch row.',
-        'For the complete matrix U after the attention residual, block output is U+MLP(LayerNorm(U)). '
-        'This checkpoint uses Linear(192,768), GELU, Linear(768,192); its row count stays 197. The hidden width is a design choice, independent of the earlier 768 input pixel values. '
-        'After block 1 the CLS row begins '+vec('cls_after_block1')+'. Both residual additions were verified against the checkpoint block.',
-        '<p>For each current row: LayerNorm → Linear(192,768) → GELU → Linear(768,192) → add the original current row.</p><p>All rows: 197 × 192 → 197 × 768 → 197 × 192.</p><p>This MLP shares its weights across rows.</p>',[5])
-
-    body=image(25,97,180,180,photo)+t(115,320,'The same dog',24,'ink-2','middle')
-    body+=t(270,54,'We have finished block 1. Keep its updated feature rows.',28)
-    body+=box(270,115,270,['Output of block 1','197 × 192'])
-    body+=arrow(546,155,601,155,'c-q')
-    body+=box(618,100,215,['Block 2','attention + MLP'],'c-q',110)
-    body+=g(arrow(839,155,894,155,'c-q')+box(910,115,225,['Output of block 2','197 × 192']),1)
-    body+=t(270,291,'Block 1’s output is block 2’s input.',34,'c-q')
-    body+=g(t(270,356,'Block 2 makes new Q, K and V from these updated rows.',27)
-            +t(270,410,'It has its own learned attention and MLP weights.',27),2)
-    add('real-block-handoff','Pass block 1’s updated rows into block 2',body,
-        'Block 2 receives the features produced by block 1. It computes attention and an MLP update using its own learned weights. The same 197 row positions continue forward, carrying new feature values.',
-        'What is the input to block 2?',
-        'Point to the arrow from block 1’s output. The current CLS and all 196 contextual patch rows continue together. Block 2 calculates its own queries, keys and values.',
-        'The original image was patchified and projected once. The matrix leaving block 1 is exactly the matrix '
-        'entering block 2. In this pre-LayerNorm model, block 2 normalizes that matrix before making its Q/K/V '
-        'projections, then performs attention, a residual update, and its own normalized MLP branch and residual. '
-        'It uses a distinct set of learned parameters from block 1. All 197 rows continue through both blocks. '
-        'The photograph identifies the ongoing example; there is no second image-to-patch operation here.',
-        '<img src="figures/vision1/model-input.png" alt="The same dog continues through the model" width="160">'
-        '<p><strong>Block 1 output = block 2 input.</strong></p>'
-        '<p>197 × 192 updated features → block 2 → 197 × 192 updated features.</p>'
-        '<p>Block 2 computes new Q, K and V from its input. It has its own attention and MLP weights.</p>',[4,5])
-
-    body=box(25,125,175,['Input rows','197 × 192'])
-    for x,name in [(245,'Block 1'),(525,'Block 2'),(920,'Block 12')]:
-        body+=box(x,102,215,[name,'attention + MLP','197 × 192'],'c-e',126)
-    body+=arrow(200,165,234,165)+arrow(460,165,514,165)+t(824,180,'…',43,'ink-2','middle')+arrow(860,165,910,165)
-    body+=t(25,302,'12 distinct blocks, connected in sequence, in one forward pass.',29,'c-e')
-    body+=g(t(25,365,'Same operations and shape; each block has its own learned weights.',27)
-            +t(25,423,'After block 12: read the final CLS to classify the dog.',29,'c-q'),1)
-    add('real-cls-depth','Continue through all 12 blocks, then read CLS',body,
-        'The updated rows pass from block 1 to block 2, then onward to block 12. Each block has its own weights. All 197 rows stay 192 features wide. After the final block, read CLS for classification.',
-        'Does 12 blocks mean twelve separate predictions for this dog?',
-        'Follow one forward pass through 12 distinct blocks. There is one class prediction at the end. Each arrow carries the previous block’s updated feature rows.',
-        'All blocks have their own attention and MLP parameters. They do not share one set of weights across depth. '
-        'Within each block the projections and MLP are shared across rows. Twelve is this checkpoint’s chosen depth; '
-        'other models can use a different number of blocks. The input photograph is encoded once, the feature matrix '
-        'flows through the stack, and the class head is applied after the final block and final normalization. '
-        'The trace evaluates all 12 distinct blocks in order.',
-        '<p>Input rows → block 1 → block 2 → … → block 12 → read CLS → classify the dog.</p>'
-        '<p>One forward pass through <strong>12 distinct blocks</strong>. Each block has its own learned weights.</p>'
-        '<p>Every block receives and returns 197 × 192 features. Their values change as the rows move forward.</p>',[4,5])
+    from vision1_block_journey import build_block_journey
+    block_frames = build_block_journey(b)
+    additions.update(block_frames)
+    active.update({key: [5] if key.startswith('real-mlp-') else [4, 5] for key in block_frames})
 
     body=box(25,75,280,['after block 12','197 × 192'])+arrow(305,115,366,115)+box(385,75,280,['final LayerNorm','197 × 192'])
     body+=g(arrow(665,115,726,115)+box(745,75,360,['select the CLS row','1 × 192'],'c-q'),1)
@@ -242,7 +186,7 @@ def connect_journey(b, sections):
     second.append(additions['model-journey-checkpoint'])
     sections[1]=(sections[1][0],second)
     continuation=['real-cls-purpose','real-cls-sequence',*matrix_frames,*head_frames,
-                  'real-cls-mlp','real-block-handoff','real-cls-depth','real-cls-readout','real-cls-prediction']
+                  *block_frames,'real-cls-readout','real-cls-prediction']
     sections[2]=(sections[2][0],[sections[2][1][0]]+[additions[k] for k in continuation])
     # The small worksheet is now an explicitly introduced, separate calculation.
     worksheet=[m for k,m in old_three.items() if k not in position_ids]
