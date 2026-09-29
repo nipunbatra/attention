@@ -49,24 +49,65 @@ def clarify_inputs(b, sections):
         '<p><strong>p₆₃:</strong> 192 learned coordinates for this grid slot.</p>'
         '<p>Recognizing a face depends on how its parts are arranged. The shared pixel projection has not received the row or column. Add position so attention can use appearance and layout.</p>')
 
-    body = t(55, 56, 'A SHORT DETOUR · THE IMAGE SUMMARY', 23, 'c-q', weight=600)
-    body += t(55, 145, '196 patch descriptions.', 47, weight=700)
-    body += t(55, 207, 'One image label.', 47, weight=700)
-    body += box(55, 284, 280, ['Patch features', '196 rows'])
-    body += arrow(350, 326, 421, 326, 'c-q')
-    body += box(437, 284, 280, ['One summary', 'CLS'], 'c-q')
-    body += arrow(733, 326, 804, 326, 'c-q')
-    body += box(820, 284, 280, ['Classifier', 'One label'])
-    detour = frame('cls-detour', 'CLS: one summary for the whole image', body,
-        'Before we enter attention, decide where the image summary will live. This model reserves one extra row called CLS, short for classification token. Then we return to the same forward pass.',
-        'We have 196 descriptions. Which representation should the classifier read?\n'
-        'Pause the computation. Explain the need for one image summary before introducing an extra row of numbers.',
-        'This is a conceptual detour. CLS is inserted into the sequence before the Transformer blocks, '
-        'and its final updated representation is read after the last block. Position and CLS have separate jobs: '
-        'position provides location; CLS provides one learned place to collect features for the image-level prediction.',
-        '<p><strong>A short detour: 196 patch descriptions → one image summary → one label.</strong></p>'
-        '<p>CLS means classification token. This model reserves one extra row for the summary.</p>'
-        '<p>Position describes where a patch belongs. CLS provides the image summary. Then we return to the forward pass.</p>')
+    body = t(55, 45, 'A SHORT DETOUR · WHY ADD CLS?', 23, 'c-q', weight=600)
+    body += t(55, 100, 'One image label from 196 patch rows', 44, weight=700)
+    body += t(55, 143, 'Which representation should the classifier read?', 29, 'ink-2')
+    body += image(55,208,158,158,photo)
+    for k in range(1,14):
+        offset=158*k/14
+        body += line(55+offset,208,55+offset,366,'card',.65)
+        body += line(55,208+offset,213,208+offset,'card',.65)
+    body += t(134,397,'The whole dog photo',22,'ink-2','middle')
+    body += arrow(219,287,266,287,'c-e')
+    body += t(385,232,'196 patch rows',21,'c-e','middle')
+    for y,label in [(240,'P1 features'),(283,'P2 features'),(350,'P196 features')]:
+        body += rect(285,y,200,34,'c-e','t-e',3)+t(385,y+25,label,23,'c-e','middle')
+    body += t(385,338,'⋮',26,'c-e','middle')
+    body += rect(885,353,220,45,'c-e','t-e',5)+t(995,383,'Classifier',25,'c-e','middle')
+    body += arrow(995,399,995,411,'c-e')+t(995,434,'One image label',25,'c-e','middle')
+
+    # Reveal the design only after students see the many-rows / one-label problem.
+    collect = rect(285,170,200,38,'c-q','t-q',4)+t(385,197,'CLS · learned start',22,'c-q','middle')
+    collect += t(265,198,'+',29,'c-q','end')
+    collect += line(491,189,532,189,'c-q')+line(532,189,532,367,'c-q')
+    for y in [257,300,367]:
+        collect += line(491,y,532,y,'c-e')
+    collect += arrow(532,280,568,280,'c-q')
+    collect += rect(585,217,210,125,'c-q','transparent',6)
+    collect += t(690,251,'Transformer',25,'c-q','middle')+t(690,284,'blocks',25,'c-q','middle')
+    collect += t(690,322,'all 197 rows',23,'ink-2','middle')
+    collect += t(690,375,'CLS reads patch features',22,'c-q','middle')
+    body += g(collect,1)
+
+    readout = arrow(802,280,868,280,'c-q')
+    readout += box(885,226,220,['Final CLS','image summary'],'c-q',h=82)
+    readout += arrow(995,314,995,343,'c-q')
+    body += g(readout,2)
+    body += g(t(55,437,'Averaging final patch rows is another readout option.',24,'ink-2'),2)
+    detour = frame('cls-detour', 'Why add CLS? Give the classifier one image summary', body,
+        'Patch embeddings give us many rows, while the target is one label for the photograph. We need a way to combine patch information into the representation that the classifier will read.',
+        'We have 196 patch rows and want one label for the whole photograph. Which representation should the classifier read?\n'
+        'Start with the dog and its patch rows. Reveal one extra learned CLS row before the blocks. All rows enter together, and attention updates CLS using patch information. Then reveal the readout from final CLS into the classifier. CLS is one design choice; averaging final patch rows also works with a model trained for that readout.',
+        'The task gives a label for the whole image, while patch embedding has supplied 196 separate feature rows. '
+        'We need a rule for turning those rows into an image-level prediction. This checkpoint chooses a designated summary row called CLS, '
+        'short for classification token. Add it before the Transformer blocks so that it can participate in self-attention alongside the patch rows. '
+        'Its initial learned vector is shared across images; it does not yet contain information about this particular dog. '
+        'Through attention it receives weighted mixtures of source value vectors, and the blocks transform its representation. '
+        'The final CLS therefore depends on this image. After the blocks and final normalization, the classifier reads that row to produce class scores. '
+        'The class-label training loss teaches the model which information makes this readout useful. '
+        'All patch rows are updated too; this overview follows only CLS at the output. There is no extra image crop, supplied answer label, or separately supervised patch label. '
+        'CLS is a learned readout mechanism, not a mathematical requirement for image classification. A model can instead average its final patch rows '
+        'and train a classifier on that vector; the later comparison explains this alternative with the same dog. '
+        'Position and CLS have separate jobs: position supplies location, while CLS is the row selected for the image-level readout. '
+        'The next slide compares the origins of patch rows and CLS; we then explain the stored parameters and how training changes them. '
+        '<a href="https://arxiv.org/html/2010.11929v2#S3.SS1">Original ViT, §3.1</a>.',
+        '<img src="figures/vision1/model-input.png" alt="The same dog photograph whose 196 patches must support one image prediction">'
+        '<p><strong>Problem:</strong> we have 196 patch feature rows, but want one label for the whole photo. Which representation should the classifier read?</p>'
+        '<ol><li><strong>Add CLS:</strong> reserve an extra learned row before the Transformer blocks.</li>'
+        '<li><strong>Gather image information:</strong> all 197 rows pass through the blocks. Attention lets CLS read patch features; the patch rows are updated too.</li>'
+        '<li><strong>Read final CLS:</strong> its updated, image-dependent features go to the classifier, which scores image labels.</li></ol>'
+        '<p>CLS starts as shared model parameters. The next slides show where those numbers come from.</p>'
+        '<p>CLS is one design choice. Averaging the final patch rows is another readout option.</p>')
     detour = detour.replace('class="frame vp-frame', 'class="frame vp-frame vp-topic-break vp-cls-detour', 1)
 
     from vision1_cls_story import build_cls_story

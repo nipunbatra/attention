@@ -481,9 +481,9 @@
   },
   {
     "id": "cls-detour",
-    "title": "CLS: one summary for the whole image",
-    "caption": "Before we enter attention, decide where the image summary will live. This model reserves one extra row called CLS, short for classification token. Then we return to the same forward pass.",
-    "notes": "We have 196 descriptions. Which representation should the classifier read?\nPause the computation. Explain the need for one image summary before introducing an extra row of numbers.",
+    "title": "Why add CLS? Give the classifier one image summary",
+    "caption": "Patch embeddings give us many rows, while the target is one label for the photograph. We need a way to combine patch information into the representation that the classifier will read.",
+    "notes": "We have 196 patch rows and want one label for the whole photograph. Which representation should the classifier read?\nStart with the dog and its patch rows. Reveal one extra learned CLS row before the blocks. All rows enter together, and attention updates CLS using patch information. Then reveal the readout from final CLS into the classifier. CLS is one design choice; averaging final patch rows also works with a model trained for that readout.",
     "section": "s03",
     "frame": 6
   },
