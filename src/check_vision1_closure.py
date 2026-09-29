@@ -17,10 +17,11 @@ for h in trace['gradients']['heads']:
     np.testing.assert_allclose(np.array(h['dS']).sum(axis=1),0,atol=1e-12)
 assert trace['single_update']['loss_after']<trace['single_update']['loss_before']
 manifest=json.loads((ROOT/'figures/vision1/frame-manifest.json').read_text())
-assert len(manifest)==223 and len({x['id'] for x in manifest})==223
+assert len(manifest)==226 and len({x['id'] for x in manifest})==226
 ids=[x['id'] for x in manifest]
 input_order=['patch-projection-parameters','vision-topic-03','position-where','real-patch-position',
-             'cls-detour','real-cls-purpose','cls-collect','cls-shared-start','cls-without',
+             'cls-detour','real-cls-purpose','cls-parameter-origin','cls-parameter-learning',
+             'cls-stored-start','cls-collect','cls-shared-start','cls-without',
              'real-cls-sequence','model-journey-checkpoint','real-patch-qkv','real-cls-attention']
 assert [ids.index(k) for k in input_order]==sorted(ids.index(k) for k in input_order)
 assert all(x['section']=='s13' for x in manifest if x['id'].startswith('position-photo-'))
@@ -28,6 +29,15 @@ assert all(len(x['caption'].split())<=40 and '\n' in x['notes'] for x in manifes
 required={'cls-shared-start','cls-without','heads-visual-roles','heads-independent','backward-route','backward-qk','backward-patches','backward-full-block','classification-training-map','cnn-receptive-field','cnn-classifier-parallel','pets-head','pets-frozen','pets-training-step','pets-evaluation','classification-exit'}
 assert required<={x['id'] for x in manifest}
 assert not {'find-animal','image-caption','photo-search','learning-curves','training-data'}&{x['id'] for x in manifest}
+saved=json.loads((ROOT/'figures/vision1/real-classifier-path.json').read_text())
+np.testing.assert_allclose(np.array(saved['previews']['cls_parameter'])+saved['previews']['cls_position'],
+                           saved['previews']['cls_input'],atol=1e-7)
+for name in ['cls_parameter','cls_position','cls_input']:
+    for value in saved['previews'][name]:
+        assert f'{value:.3f}'.replace('-','−') in (ROOT/'figures/vision1/cls-stored-start.svg').read_text()
+for name in ['cls_input','cls_final']:
+    for value in saved['previews'][name]:
+        assert f'{value:.3f}'.replace('-','−') in (ROOT/'figures/vision1/cls-collect.svg').read_text()
 for x in manifest:
     ET.parse(ROOT/'figures/vision1'/(x['id']+'.svg'))
 page=(ROOT/'vision1.html').read_text()
@@ -49,6 +59,7 @@ report={'teaching_frames':len(manifest),'new_gradient_coordinates_checked':trace
         'gradient_max_absolute_error':trace['verification']['max_absolute_error'],'original_forward_and_js_match':True,
         'valid_svg_and_local_links':True,'caption_limit_and_notes':True,'silent':True,'training_jobs_run':False,
         'position_and_cls_explained_before_attention':True,'patch_rearrangement_in_exercises_only':True,
+        'cls_origin_and_saved_parameter_previews_verified':True,
         'single_query_weight_update':trace['single_update']}
 (ROOT/'figures/vision1/classification-checks.json').write_text(json.dumps(report,indent=2)+'\n')
 print(json.dumps(report,indent=2))

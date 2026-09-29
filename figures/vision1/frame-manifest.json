@@ -457,19 +457,43 @@
   },
   {
     "id": "real-cls-purpose",
-    "title": "Give the classifier a place to collect an image summary",
-    "caption": "We need one prediction for the image. Add one learned row, called the classification token or CLS. Attention lets that row gather information from the patches; the classifier later reads its updated features.",
-    "notes": "We have 196 patch representations. Where could one image summary live?\nKeep the image fixed. Reveal the extra row only after stating the need for a single image-level representation.",
+    "title": "Add a summary row beside the dog\u2019s patch rows",
+    "caption": "A patch row comes from pixels. CLS comes from a separate set of model parameters. No extra crop is cut from the photograph. Its 192 coordinates match the width of every patch row.",
+    "notes": "Where are the pixels for CLS?\nThere are none. Trace the two different origins: a crop through the patch layer, and a separately stored parameter row.",
     "section": "s03",
     "frame": 5
   },
   {
-    "id": "cls-collect",
-    "title": "Attention turns the extra row into an image summary",
-    "caption": "CLS enters attention alongside the patch rows. It gathers a weighted mixture of their features. Repeated blocks refine it; the classifier reads its final version. It is a summary vector, not a predicted class label.",
-    "notes": "What makes the final CLS different for a dog photo and a cat photo?\nTrace patch features into attention, then into the updated summary. The shared starting vector becomes image-dependent through these interactions.",
+    "id": "cls-parameter-origin",
+    "title": "Create 192 trainable numbers for CLS",
+    "caption": "Before training, initialize one 192-number vector. It is stored in the model, like a learned token embedding in text. The numbers do not come from this photograph. Training will adjust them.",
+    "notes": "Why 192, and who supplies the initial numbers?\nThe chosen embedding width is 192. The initialization routine supplies the numbers once, before training; no image pixels are needed.",
     "section": "s03",
     "frame": 6
+  },
+  {
+    "id": "cls-parameter-learning",
+    "title": "The image label teaches the starting CLS numbers",
+    "caption": "The label supplies a loss on the prediction. Backpropagation reaches the starting CLS vector through the classifier and blocks. The optimizer adjusts its 192 parameters, along with other trainable weights, across many labelled images.",
+    "notes": "Do we need 192 target numbers for CLS?\nNo. The image\u2019s class label provides the loss; the chain rule supplies gradients for the starting vector.",
+    "section": "s03",
+    "frame": 7
+  },
+  {
+    "id": "cls-stored-start",
+    "title": "Load the learned CLS for our dog example",
+    "caption": "The saved model already contains the learned CLS vector and its position vector. Add them to form its starting input row. Load these same parameters for every photograph; no pixel values are needed for this row.",
+    "notes": "Are these numbers freshly sampled for this photograph?\nNo. They are saved trained parameters. Add the CLS position vector, then combine this row with the dog\u2019s patch rows.",
+    "section": "s03",
+    "frame": 8
+  },
+  {
+    "id": "cls-collect",
+    "title": "The dog\u2019s patches turn CLS into this image\u2019s summary",
+    "caption": "The dog\u2019s patch rows bring the image information. Attention lets CLS gather it, and the blocks update its features. Read the final CLS to predict Newfoundland. The stored starting parameters stay fixed during this forward pass.",
+    "notes": "Which numbers change while we classify this photo?\nThe CLS activation changes through the blocks; the stored parameter does not. Point to the dog\u2019s patch rows as the source of image-specific information.",
+    "section": "s03",
+    "frame": 9
   },
   {
     "id": "cls-shared-start",
@@ -477,7 +501,7 @@
     "caption": "Yes. CLS starts as one shared learned vector. The patches differ, so attention produces a different final summary for each image.",
     "notes": "If the starting CLS is identical, where does the image-specific information enter?\nTrace both branches from the same starting parameter to different patch contexts. Training changes the shared parameter; inference updates the activations.",
     "section": "s03",
-    "frame": 7
+    "frame": 10
   },
   {
     "id": "cls-without",
@@ -485,7 +509,7 @@
     "caption": "The patch rows still exchange information. Average their final representations to obtain one image vector, then classify it. Train the model with this readout from the start.",
     "notes": "Which dimension disappears when we average 196 rows?\nTrace both complete paths. The row axis is averaged; the feature width remains 192. C is the number of classes.",
     "section": "s03",
-    "frame": 8
+    "frame": 11
   },
   {
     "id": "real-cls-sequence",
@@ -493,7 +517,7 @@
     "caption": "Each patch keeps its content-plus-position row. CLS gets its own learned position too. Stack the summary and patch rows into E: 197 rows, each with 192 features. Batch size one is omitted here.",
     "notes": "Why do we now have 197 rows, while the width is still 192?\nIdentify the extra row at the top. Position is added coordinate by coordinate. The subscript is the row\u2019s identity, not its width.",
     "section": "s03",
-    "frame": 9
+    "frame": 12
   },
   {
     "id": "model-journey-checkpoint",
@@ -501,7 +525,7 @@
     "caption": "We now have 196 patch rows and one CLS summary row, with position added. Each row has 192 features. Resume the same photograph: attention will update these rows using information from one another.",
     "notes": "Which two jobs did we add while preparing the rows?\nLocation tells attention where a patch belongs. CLS provides the summary we will read. Now point to attention and return to patch 63 to make Q, K and V.",
     "section": "s03",
-    "frame": 10
+    "frame": 13
   },
   {
     "id": "real-patch-qkv",
@@ -509,7 +533,7 @@
     "caption": "LayerNorm rescales a row\u2019s features and keeps its width. We name it here and study its details later. Three learned maps then make Q, K and V; the diagram shows one of three heads.",
     "notes": "Which projection reads pixels, and which projections read the prepared embedding row?\nTrace the small recap first. Enter the block with e63, normalize it, then split into the three separate learned projections for head one.",
     "section": "s03",
-    "frame": 11
+    "frame": 14
   },
   {
     "id": "real-cls-attention",
@@ -517,7 +541,7 @@
     "caption": "Normalize E, then make Q, K and V for one head. Each query compares with 197 keys. Softmax turns each row of scores into weights over the available sources, including CLS itself.",
     "notes": "Which axis should softmax run over for the CLS query?\nPoint to one row of the 197\u00d7197 score matrix. These are source weights, not probabilities over animal classes.",
     "section": "s03",
-    "frame": 12
+    "frame": 15
   },
   {
     "id": "real-cls-message",
@@ -525,7 +549,7 @@
     "caption": "A weighted sum produces one message per query. Join the three heads and apply the output projection. Add this attention update to E. Every row receives an update, including the summary row.",
     "notes": "How many coordinates does the joined message have?\nRead 64+64+64. Then distinguish joining head messages, projecting them, and adding the original row.",
     "section": "s03",
-    "frame": 13
+    "frame": 16
   },
   {
     "id": "real-cls-mlp",
@@ -533,7 +557,7 @@
     "caption": "The MLP expands one row to 768 features, applies GELU, and returns to 192 features. Add that result to the row entering this branch. Attention exchanges information across rows; this MLP works on each row separately.",
     "notes": "Which operation here changes the number of rows?\nNone does. Follow one summary row through both linear layers and GELU, then apply the same MLP to every patch row.",
     "section": "s03",
-    "frame": 14
+    "frame": 17
   },
   {
     "id": "real-cls-depth",
@@ -541,7 +565,7 @@
     "caption": "Run 12 blocks in sequence. The shape stays 197 \u00d7 192 while the features change. Keep CLS and every patch row through the final block; only then choose the row for classification.",
     "notes": "If the shape stays the same, what has changed between block 1 and block 12?\nTrace the CLS row across the blocks alongside the patch rows. Same shape does not mean same representation.",
     "section": "s03",
-    "frame": 15
+    "frame": 18
   },
   {
     "id": "real-cls-readout",
@@ -549,7 +573,7 @@
     "caption": "Normalize the final sequence, select CLS, and apply the classification layer. Its 192 features become 1,000 scores for ImageNet labels. We read this one row after it has interacted with the whole image.",
     "notes": "Why are 192 features enough to produce 1,000 class scores?\nThe linear layer has one weighted sum and bias for each output class. Connect this to the class scores in text Part I.",
     "section": "s03",
-    "frame": 16
+    "frame": 19
   },
   {
     "id": "real-cls-prediction",
@@ -557,7 +581,7 @@
     "caption": "Softmax converts the 1,000 scores to class probabilities. The top label is Newfoundland, at 95.73%. We have followed this photograph from pixels to that prediction. Next, use smaller numbers to calculate attention ourselves.",
     "notes": "What are the alternatives in this softmax, compared with attention\u2019s softmax?\nThey are image classes here, source rows inside attention. Reveal the measured probabilities and close the real-image route before switching examples.",
     "section": "s03",
-    "frame": 17
+    "frame": 20
   },
   {
     "id": "vision-topic-04",

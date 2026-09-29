@@ -69,29 +69,8 @@ def clarify_inputs(b, sections):
         '<p>Position describes where a patch belongs. CLS provides the image summary. Then we return to the forward pass.</p>')
     detour = detour.replace('class="frame vp-frame', 'class="frame vp-frame vp-topic-break vp-cls-detour', 1)
 
-    body = t(45, 43, 'Start with the same learned summary row for every image.', 29)
-    body += box(45, 94, 255, ['Initial CLS', '192 learned numbers'], 'c-q')
-    body += arrow(306, 137, 389, 137, 'c-q')
-    body += box(405, 94, 300, ['Attention', 'gather patch features'], 'c-q')
-    body += arrow(711, 137, 794, 137, 'c-q')
-    body += box(810, 94, 300, ['Updated CLS', 'depends on this image'], 'c-q')
-    body += box(405, 285, 300, ['196 patch rows', 'features of this photo'])
-    body += arrow(555, 280, 555, 185, 'c-e')
-    body += t(575, 238, 'send information', 22, 'c-e')
-    body += g(arrow(960, 187, 960, 276, 'c-q')
-              + box(810, 285, 300, ['After all 12 blocks', 'read CLS → class scores']), 1)
-    body += t(45, 421, 'Attention updates the patch rows too. Here we follow only the summary.', 27, 'ink-2')
-    collect = frame('cls-collect', 'Attention turns the extra row into an image summary', body,
-        'CLS enters attention alongside the patch rows. It gathers a weighted mixture of their features. Repeated blocks refine it; the classifier reads its final version. It is a summary vector, not a predicted class label.',
-        'What makes the final CLS different for a dog photo and a cat photo?\n'
-        'Trace patch features into attention, then into the updated summary. The shared starting vector becomes image-dependent through these interactions.',
-        'This diagram shows information flow, not measured attention weights. CLS has its own query, key and value just like the patch rows. '
-        'Its query compares with all keys, including its own; the resulting weights mix values. All 197 rows are updated. '
-        'The attention message, residual connections and MLP produce the next CLS representation. We follow those operations after resuming the forward pass. '
-        'The training label supervises the final class scores. The initial CLS coordinates are learned parameters, not a label supplied as input.',
-        '<p>Shared starting CLS + this image’s patch features → attention → an image-dependent summary.</p>'
-        '<p>Repeat the attention and MLP blocks, then read final CLS to compute class scores.</p>'
-        '<p>CLS is a feature vector, not the class label. Attention updates all patch rows too.</p>')
+    from vision1_cls_story import build_cls_story
+    cls_story = build_cls_story(b)
 
     all_frames = {key(m): m for _, frames in sections for m in frames}
     experiments = ['position-photo-layout', 'position-photo-content', 'position-photo-add']
@@ -102,7 +81,8 @@ def clarify_inputs(b, sections):
         'real-cls-attention', 'real-cls-message', 'real-cls-mlp', 'real-cls-depth',
         'real-cls-readout', 'real-cls-prediction']]
     third = [all_frames['vision-topic-03'], location, all_frames['real-patch-position'], detour,
-             without_route(all_frames['real-cls-purpose']), collect,
+             cls_story['real-cls-purpose'], cls_story['cls-parameter-origin'],
+             cls_story['cls-parameter-learning'], cls_story['cls-stored-start'], cls_story['cls-collect'],
              without_route(all_frames['cls-shared-start']), without_route(all_frames['cls-without']),
              all_frames['real-cls-sequence'], all_frames['model-journey-checkpoint'],
              all_frames['real-patch-qkv']] + continuation
