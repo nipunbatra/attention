@@ -4,13 +4,13 @@ The lecture explains one image classifier. Keep the same photograph as the ancho
 
 ## Main route
 
-1. Sections 1–3: pet dataset, text parallels, image shapes, patches, shared projection, positions, CLS and the complete measured forward path. Ask why the same starting CLS can produce different summaries. Compare a no-CLS model that uses mean pooling.
+1. Sections 1–3: pet dataset, text parallels, image shapes, patches and shared projection. Section 2 ends with 196 content rows. Section 3 first locates P63 on the unchanged photograph and adds position. The purple CLS detour explains why the classifier needs one image summary, how attention fills that row, why the shared starting CLS produces image-dependent summaries, and how mean pooling can replace it. Resume the forward pass with all 197 rows present, then make Q/K/V and complete the measured classifier. Name LayerNorm here; save its details for section 7.
 2. Sections 4–5: calculate one query, its scores, softmax and value message. Work the second head, concatenate and project. Return to possible visual head roles; explain that these are hypotheses rather than assigned jobs.
 3. Section 6: readout, class probabilities, loss and learning. The new reverse sequence follows the exact earlier worksheet through the class head, residual, both heads, values, attention softmax, Q/K and patch projection. Show the single query-weight update as an arithmetic example. The two softmaxes have different axes and purposes.
 4. Section 7: restore LayerNorm and the MLP. Follow both residual gradient paths, then return to the whole forward/loss/backward diagram. Compare information flow and readout with a conventional CNN.
 5. Section 9: explain the proposed dog/cat adaptation. A Linear(192,2) head has 386 parameters. Distinguish frozen-encoder head training from fine-tuning. Show one batch and the train/validation/test procedure. No new training has been run.
 6. Sections 10–11: use the saved real-photo predictions and measured attention/occlusion examples. Keep ImageNet outputs separate from the proposed two-class model. A confidence on one photo is not test accuracy.
-7. Section 13: ask students to narrate the shapes and reverse path. Section 14 closes classification and previews CLIP.
+7. Section 13: ask students to narrate the shapes and reverse path. The optional patch-rearrangement check belongs here: explicitly call it a thought experiment about location, not a preprocessing step. Its coarse 4×4 grid illustrates the idea; the model uses 14×14 patches. The animal label need not change. Section 14 closes classification and previews CLIP.
 
 ## Choose the depth for the audience
 

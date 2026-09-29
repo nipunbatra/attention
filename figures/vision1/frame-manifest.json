@@ -234,8 +234,8 @@
   {
     "id": "model-journey-overview",
     "title": "The whole route: photograph to prediction",
-    "caption": "Keep this map beside the details. First make patch embeddings; then add a summary row called CLS and positions. The blocks exchange and transform information before the classifier reads the summary.",
-    "notes": "Where do pixels become features, and where do features become class scores?\nTrace left to right. Name CLS as the classification token: its job is to collect an image summary. The next section will open that box.",
+    "caption": "First turn pixels into patch features. Prepare those rows, let them exchange information, then read one image summary to score the classes. We will open each box as we reach it.",
+    "notes": "Where do pixels become features, and where do features become class scores?\nTrace left to right. For now, call the extra row an image summary. Explain its name and how it works in the dedicated detour before attention.",
     "section": "s02",
     "frame": 2
   },
@@ -424,60 +424,36 @@
     "frame": 25
   },
   {
-    "id": "position-photo-layout",
-    "title": "Move the face patches. What changes?",
-    "caption": "We kept every patch and every pixel inside it. The face is now lower in the picture. Which information describes this change?",
-    "notes": "Are these the same pieces? Are they arranged the same way?\nCompare both photos before revealing the arrow. Trace the two outlined face patches from row 2 to row 4; the displaced patches move back into row 2.",
-    "section": "s02",
-    "frame": 26
+    "id": "vision-topic-03",
+    "title": "Section 3 \u00b7 Prepare the rows, then classify the image",
+    "caption": "Keep the photograph fixed. Give each patch its location, introduce the summary row, then follow the complete input through the classifier.",
+    "notes": "Where is each patch? How do we get one image summary?\nPause at the section question. Connect the previous result to the three steps, then advance to the concrete example.",
+    "section": "s03",
+    "frame": 1
   },
   {
-    "id": "position-photo-content",
-    "title": "Does the patch layer notice the move?",
-    "caption": "The same pixels pass through the same linear layer, so they produce the same content embedding. The layer has not been given the patch\u2019s location.",
-    "notes": "What changed in the inputs to the shared linear layer?\nPoint to the identical crops, then the identical parameters. Read c_face as the content embedding of this one face crop.",
-    "section": "s02",
-    "frame": 27
-  },
-  {
-    "id": "position-photo-add",
-    "title": "Give the row its location as well as its content",
-    "caption": "Each grid slot has a position vector. Add it to the content embedding before attention, just as we added position to the text embeddings.",
-    "notes": "Which part stays the same when the face crop moves? Which part should change?\nKeep pointing to c_face. Then change the position vector from the upper slot to the lower one; reveal the resulting input rows.",
-    "section": "s02",
-    "frame": 28
+    "id": "position-where",
+    "title": "Give each patch its location in the photograph",
+    "caption": "Recognizing a face depends on how its parts are arranged. c\u2086\u2083 describes this crop; p\u2086\u2083 tells attention where it belongs. Add them so the model can use both appearance and layout.",
+    "notes": "Which part of the shared patch projection received row 5, column 7?\nNone: the projection received only pixel values. Point to the location on the unchanged photograph, then introduce its position vector.",
+    "section": "s03",
+    "frame": 2
   },
   {
     "id": "real-patch-position",
     "title": "Add position to these content rows",
     "caption": "c\u2086\u2083 comes from the patch pixels. p\u2086\u2083 is learned for its grid location. Add matching coordinates to get e\u2086\u2083. All three rows have 192 coordinates; addition does not double the width.",
     "notes": "After adding position, does this row have 192 coordinates or 384?\nKeep the crop visible. Recall the projection that made c63, then add its learned position row coordinate by coordinate to make e63.",
-    "section": "s02",
-    "frame": 29
-  },
-  {
-    "id": "real-patch-qkv",
-    "title": "Make queries, keys and values from these rows",
-    "caption": "The patch projection made content features from pixels. Inside this block, LayerNorm comes first; three more learned projections produce Q, K and V. This model has 3 heads; we show one head\u2019s shapes.",
-    "notes": "Which projection reads pixels, and which projections read the prepared embedding row?\nTrace the small recap first. Enter the block with e63, normalize it, then split into the three separate learned projections for head one.",
-    "section": "s02",
-    "frame": 30
-  },
-  {
-    "id": "model-journey-checkpoint",
-    "title": "We followed one patch. Now complete the classifier.",
-    "caption": "Step 12 showed how one patch makes Q, K and V. We still need the image summary row, information exchange, the MLP and the final class scores. Continue with the same photograph.",
-    "notes": "Does a patch query already tell us the image label?\nPoint to the remaining boxes. CLS is inserted before the blocks; the preceding slides traced a patch row in isolation so we could inspect its numbers.",
-    "section": "s02",
-    "frame": 31
-  },
-  {
-    "id": "vision-topic-03",
-    "title": "Section 3 \u00b7 From patch rows to an image prediction",
-    "caption": "Continue with the same photograph and checkpoint. Follow all 197 rows through the blocks, then read the image summary.",
-    "notes": "How does the whole photograph get a label?\nPause at the section question. Connect the previous result to the three steps, then advance to the concrete example.",
     "section": "s03",
-    "frame": 1
+    "frame": 3
+  },
+  {
+    "id": "cls-detour",
+    "title": "CLS: one summary for the whole image",
+    "caption": "Before we enter attention, decide where the image summary will live. This model reserves one extra row called CLS, short for classification token. Then we return to the same forward pass.",
+    "notes": "We have 196 descriptions. Which representation should the classifier read?\nPause the computation. Explain the need for one image summary before introducing an extra row of numbers.",
+    "section": "s03",
+    "frame": 4
   },
   {
     "id": "real-cls-purpose",
@@ -485,7 +461,15 @@
     "caption": "We need one prediction for the image. Add one learned row, called the classification token or CLS. Attention lets that row gather information from the patches; the classifier later reads its updated features.",
     "notes": "We have 196 patch representations. Where could one image summary live?\nKeep the image fixed. Reveal the extra row only after stating the need for a single image-level representation.",
     "section": "s03",
-    "frame": 2
+    "frame": 5
+  },
+  {
+    "id": "cls-collect",
+    "title": "Attention turns the extra row into an image summary",
+    "caption": "CLS enters attention alongside the patch rows. It gathers a weighted mixture of their features. Repeated blocks refine it; the classifier reads its final version. It is a summary vector, not a predicted class label.",
+    "notes": "What makes the final CLS different for a dog photo and a cat photo?\nTrace patch features into attention, then into the updated summary. The shared starting vector becomes image-dependent through these interactions.",
+    "section": "s03",
+    "frame": 6
   },
   {
     "id": "cls-shared-start",
@@ -493,7 +477,7 @@
     "caption": "Yes. CLS starts as one shared learned vector. The patches differ, so attention produces a different final summary for each image.",
     "notes": "If the starting CLS is identical, where does the image-specific information enter?\nTrace both branches from the same starting parameter to different patch contexts. Training changes the shared parameter; inference updates the activations.",
     "section": "s03",
-    "frame": 3
+    "frame": 7
   },
   {
     "id": "cls-without",
@@ -501,15 +485,31 @@
     "caption": "The patch rows still exchange information. Average their final representations to obtain one image vector, then classify it. Train the model with this readout from the start.",
     "notes": "Which dimension disappears when we average 196 rows?\nTrace both complete paths. The row axis is averaged; the feature width remains 192. C is the number of classes.",
     "section": "s03",
-    "frame": 4
+    "frame": 8
   },
   {
     "id": "real-cls-sequence",
-    "title": "Insert CLS, then give every row a position",
+    "title": "Add the summary row: 196 + 1 = 197",
     "caption": "Each patch keeps its content-plus-position row. CLS gets its own learned position too. Stack the summary and patch rows into E: 197 rows, each with 192 features. Batch size one is omitted here.",
     "notes": "Why do we now have 197 rows, while the width is still 192?\nIdentify the extra row at the top. Position is added coordinate by coordinate. The subscript is the row\u2019s identity, not its width.",
     "section": "s03",
-    "frame": 5
+    "frame": 9
+  },
+  {
+    "id": "model-journey-checkpoint",
+    "title": "Back to the forward pass: all 197 rows are ready",
+    "caption": "We now have 196 patch rows and one CLS summary row, with position added. Each row has 192 features. Resume the same photograph: attention will update these rows using information from one another.",
+    "notes": "Which two jobs did we add while preparing the rows?\nLocation tells attention where a patch belongs. CLS provides the summary we will read. Now point to attention and return to patch 63 to make Q, K and V.",
+    "section": "s03",
+    "frame": 10
+  },
+  {
+    "id": "real-patch-qkv",
+    "title": "Make queries, keys and values from these rows",
+    "caption": "LayerNorm rescales a row\u2019s features and keeps its width. We name it here and study its details later. Three learned maps then make Q, K and V; the diagram shows one of three heads.",
+    "notes": "Which projection reads pixels, and which projections read the prepared embedding row?\nTrace the small recap first. Enter the block with e63, normalize it, then split into the three separate learned projections for head one.",
+    "section": "s03",
+    "frame": 11
   },
   {
     "id": "real-cls-attention",
@@ -517,7 +517,7 @@
     "caption": "Normalize E, then make Q, K and V for one head. Each query compares with 197 keys. Softmax turns each row of scores into weights over the available sources, including CLS itself.",
     "notes": "Which axis should softmax run over for the CLS query?\nPoint to one row of the 197\u00d7197 score matrix. These are source weights, not probabilities over animal classes.",
     "section": "s03",
-    "frame": 6
+    "frame": 12
   },
   {
     "id": "real-cls-message",
@@ -525,7 +525,7 @@
     "caption": "A weighted sum produces one message per query. Join the three heads and apply the output projection. Add this attention update to E. Every row receives an update, including the summary row.",
     "notes": "How many coordinates does the joined message have?\nRead 64+64+64. Then distinguish joining head messages, projecting them, and adding the original row.",
     "section": "s03",
-    "frame": 7
+    "frame": 13
   },
   {
     "id": "real-cls-mlp",
@@ -533,7 +533,7 @@
     "caption": "The MLP expands one row to 768 features, applies GELU, and returns to 192 features. Add that result to the row entering this branch. Attention exchanges information across rows; this MLP works on each row separately.",
     "notes": "Which operation here changes the number of rows?\nNone does. Follow one summary row through both linear layers and GELU, then apply the same MLP to every patch row.",
     "section": "s03",
-    "frame": 8
+    "frame": 14
   },
   {
     "id": "real-cls-depth",
@@ -541,7 +541,7 @@
     "caption": "Run 12 blocks in sequence. The shape stays 197 \u00d7 192 while the features change. Keep CLS and every patch row through the final block; only then choose the row for classification.",
     "notes": "If the shape stays the same, what has changed between block 1 and block 12?\nTrace the CLS row across the blocks alongside the patch rows. Same shape does not mean same representation.",
     "section": "s03",
-    "frame": 9
+    "frame": 15
   },
   {
     "id": "real-cls-readout",
@@ -549,7 +549,7 @@
     "caption": "Normalize the final sequence, select CLS, and apply the classification layer. Its 192 features become 1,000 scores for ImageNet labels. We read this one row after it has interacted with the whole image.",
     "notes": "Why are 192 features enough to produce 1,000 class scores?\nThe linear layer has one weighted sum and bias for each output class. Connect this to the class scores in text Part I.",
     "section": "s03",
-    "frame": 10
+    "frame": 16
   },
   {
     "id": "real-cls-prediction",
@@ -557,7 +557,7 @@
     "caption": "Softmax converts the 1,000 scores to class probabilities. The top label is Newfoundland, at 95.73%. We have followed this photograph from pixels to that prediction. Next, use smaller numbers to calculate attention ourselves.",
     "notes": "What are the alternatives in this softmax, compared with attention\u2019s softmax?\nThey are image classes here, source rows inside attention. Reveal the measured probabilities and close the real-image route before switching examples.",
     "section": "s03",
-    "frame": 11
+    "frame": 17
   },
   {
     "id": "vision-topic-04",
@@ -1728,12 +1728,36 @@
     "frame": 4
   },
   {
+    "id": "position-photo-layout",
+    "title": "Layout check: what if we rearranged the patches?",
+    "caption": "This is a thought experiment, not a step in our classifier. Keep each crop intact but change its location. Which part of its input row should change? The animal label need not change.",
+    "notes": "Are these the same pieces? Are they arranged the same way?\nCompare both photos before revealing the arrow. Trace the two outlined face patches from row 2 to row 4; the displaced patches move back into row 2.",
+    "section": "s13",
+    "frame": 5
+  },
+  {
+    "id": "position-photo-content",
+    "title": "Does the patch layer notice the move?",
+    "caption": "The same pixels pass through the same linear layer, so they produce the same content embedding. The layer has not been given the patch\u2019s location.",
+    "notes": "What changed in the inputs to the shared linear layer?\nPoint to the identical crops, then the identical parameters. Read c_face as the content embedding of this one face crop.",
+    "section": "s13",
+    "frame": 6
+  },
+  {
+    "id": "position-photo-add",
+    "title": "Give the row its location as well as its content",
+    "caption": "Each grid slot has a position vector. Add it to the content embedding before attention, just as we added position to the text embeddings.",
+    "notes": "Which part stays the same when the face crop moves? Which part should change?\nKeep pointing to c_face. Then change the position vector from the upper slot to the lower one; reveal the resulting input rows.",
+    "section": "s13",
+    "frame": 7
+  },
+  {
     "id": "exercise-position",
     "title": "Did we move the image, or just reorder its rows?",
     "caption": "Follow one patch and its position vector in each experiment.",
     "notes": "Which shuffle changes what is located at the top left?\nTrack one patch and its position vector through each operation.",
     "section": "s13",
-    "frame": 5
+    "frame": 8
   },
   {
     "id": "vision-topic-14",

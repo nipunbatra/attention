@@ -65,7 +65,7 @@ def add_real_path(b, add):
         'For the first coordinate, −0.851541 − 0.814817 ≈ −1.666358. The full precision calculation gives e₆₃[0]=−1.6663575. The printed rounded inputs introduce rounding error, so the displayed arithmetic uses ≈. '
         'cᵢ, pᵢ and eᵢ all have shape (1,192). We add them, rather than concatenate them. '
         'This is the same content-plus-position idea used for text tokens. e63 is the input row to the first Transformer block. '
-        'The preceding photograph comparison motivated position information. The next slide shows LayerNorm and Q/K/V projections; the next section completes the real classifier. '
+        'The preceding photograph located this patch at row 5, column 7. Next we introduce the summary row before entering the first block. '
         'The trace checks this sum against the checkpoint’s own position-addition operation; its position table also contains the classification-token slot introduced later.' + evidence,
         mobile_patch()+mobile_rows(['Row · shape 1 × 192', 'First two coordinates'],[
             ['c₆₃: projected content', vec(data['content'], 2)],
@@ -74,7 +74,7 @@ def add_real_path(b, add):
         +'<p>All coordinates are added in matching positions. The width remains 192. Values are rounded.</p>')
 
     body = patch(35, 25, 80) + t(140, 52, 'P63: pixels → patch projection → c₆₃ → add p₆₃ → e₆₃', 27)
-    body += t(140, 88, 'That completes the input row. Now enter the first Transformer block.', 25, 'ink-2')
+    body += t(140, 88, 'All 197 rows are ready. Follow patch 63 into the first block.', 25, 'ink-2')
     body += box(35, 215, 190, 'e₆₃', size=31) + t(130, 321, '1 × 192', 25, 'ink-2', 'middle') + arrow(225, 247, 282, 247)
     body += g(box(300, 215, 235, 'LayerNorm', size=29) + t(417, 321, 'still 1 × 192', 25, 'ink-2', 'middle'), 1)
     body += g(line(535, 247, 585, 247) + line(585, 171, 585, 377), 2)
@@ -84,7 +84,7 @@ def add_real_path(b, add):
                   + t(1002, y+62, '1 × 64', 23, color), 2)
     body += t(650, 126, 'Each W: 192 × 64; each bias: 64', 24, 'ink-2')
     add('real-patch-qkv', '12 · Make queries, keys and values from these rows', body,
-        'The patch projection made content features from pixels. Inside this block, LayerNorm comes first; three more learned projections produce Q, K and V. This model has 3 heads; we show one head’s shapes.',
+        'LayerNorm rescales a row’s features and keeps its width. We name it here and study its details later. Three learned maps then make Q, K and V; the diagram shows one of three heads.',
         'Which projection reads pixels, and which projections read the prepared embedding row?',
         'Trace the small recap first. Enter the block with e63, normalize it, then split into the three separate learned projections for head one.',
         'In this pretrained pre-LN Transformer, z₆₃=LayerNorm(e₆₃). For head one, q₆₃=z₆₃W_Q+b_Q, k₆₃=z₆₃W_K+b_K and v₆₃=z₆₃W_V+b_V. '

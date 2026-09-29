@@ -16,11 +16,11 @@ TOPICS = [
      'How do we make those rows from an image?',
      ('RGB pixels', 'Shared linear layer', 'Patch embeddings'),
      'Read one small patch, calculate its embedding, then scale the same operation to a real photograph.'),
-    ('From patch rows to an image prediction',
-     'We followed one real patch into the first attention head.',
-     'How does the whole photograph get a label?',
-     ('Add a summary row', 'Attention and MLP', 'Predict the label'),
-     'Continue with the same photograph and checkpoint. Follow all 197 rows through the blocks, then read the image summary.'),
+    ('Prepare the rows, then classify the image',
+     'Our photograph has become 196 rows of patch features.',
+     'Where is each patch? How do we get one image summary?',
+     ('Add location', 'Introduce CLS', 'Resume the forward pass'),
+     'Keep the photograph fixed. Give each patch its location, introduce the summary row, then follow the complete input through the classifier.'),
     ('Calculate attention with four patches',
      'We have seen the complete photograph-to-prediction path.',
      'Can we calculate an attention message ourselves?',
@@ -150,8 +150,8 @@ def introduce(b, sections):
         mobile += '<p>'+label+'</p><svg viewBox="0 0 500 334" role="img" aria-label="'+label+'">'
         mobile += photo_def(uid)+mosaic(uid, 0, 0, 500, order)+rect(125, row*83.5, 250, 83.5, 'c-q', 'transparent', 0)+'</svg>'
     mobile += '</div>'
-    add('position-photo-layout', 'Move the face patches. What changes?', body,
-        'We kept every patch and every pixel inside it. The face is now lower in the picture. Which information describes this change?',
+    add('position-photo-layout', 'Layout check: what if we rearranged the patches?', body,
+        'This is a thought experiment, not a step in our classifier. Keep each crop intact but change its location. Which part of its input row should change? The animal label need not change.',
         'Are these the same pieces? Are they arranged the same way?',
         'Compare both photos before revealing the arrow. Trace the two outlined face patches from row 2 to row 4; the displaced patches move back into row 2.',
         'This is a rearrangement of the same 16 non-overlapping crops from the opening dog photograph. We exchange two face patches with two patches in the bottom row. '
@@ -175,7 +175,7 @@ def introduce(b, sections):
         'c_face is a name for the vector produced by this crop, not a scalar, a class score or a patch ID. '
         'Moving the intact crop leaves its flattened pixel vector unchanged. The shared affine map therefore returns the same vector. '
         'Visual content may suggest a typical location, but this patch layer receives no explicit index identifying its current slot. '
-        'The numerical patch-layer calculation in the previous section explains exactly how this vector is computed.',
+        'The numerical patch-layer calculation in section 2 explains exactly how this vector is computed.',
         '<p>The identical face crop moves from row 2, column 2 to row 4, column 2.</p>'
         +'<p>Same pixels → same W and b → same content vector <strong>c_face</strong>.</p>'
         +'<p>Its new location has not entered that calculation.</p>')

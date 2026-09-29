@@ -22,7 +22,7 @@
     },
     {
       "id": "s03",
-      "title": "From patch rows to an image prediction",
+      "title": "Prepare the rows, then classify the image",
       "lit": ""
     },
     {
@@ -92,7 +92,7 @@
     },
     {
       "section": "s03",
-      "label": "From patch rows to an image prediction"
+      "label": "Prepare the rows, then classify the image"
     },
     {
       "section": "s04",

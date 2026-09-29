@@ -4,7 +4,7 @@ import json
 import re
 from html import escape
 
-STAGES = ['Image', 'Patches', 'Projection', 'CLS + position', 'Attention', 'MLP', 'Read CLS', 'Class scores']
+STAGES = ['Image', 'Patches', 'Projection', 'Prepare rows', 'Attention', 'MLP', 'Read summary', 'Class scores']
 
 
 def connect_journey(b, sections):
@@ -32,11 +32,11 @@ def connect_journey(b, sections):
         active[key]=stage
 
     def map_body(focus):
-        """Stable left-to-right route; the block's internal order is drawn below."""
+        """Name each job before opening the block's internal operations."""
         out=''
-        descriptions=[['224 × 224','RGB'],['196 rows','768 values'],['Linear','768 → 192'],
-                      ['197 rows','192 features'],['mix rows','3 heads'],['192 → 768','→ 192'],
-                      ['final norm','1 × 192'],['Linear','192 → 1,000']]
+        descriptions=[['one','photograph'],['small','image crops'],['pixels into','features'],
+                      ['location +','summary'],['share','information'],['transform','features'],
+                      ['one image','vector'],['score each','image class']]
         for i,(name,detail) in enumerate(zip(STAGES,descriptions)):
             x=8+i*144
             selected=i in focus
@@ -49,38 +49,33 @@ def connect_journey(b, sections):
         out+=line(584,173,860,173,'c-q',2)+line(584,162,584,173,'c-q')+line(860,162,860,173,'c-q')
         out+=t(722,201,'One block · repeated 12 times',21,'c-q','middle')
         out+=t(1082,197,'softmax → label',18,'c-e','middle')
-        out+=t(28,249,'Inside every block',25,'ink',weight=600)
-        nodes=[(28,110,'rows'),(179,140,'LayerNorm'),(360,170,'Attention'),(571,72,'+'),
-               (684,140,'LayerNorm'),(865,150,'MLP'),(1056,72,'+')]
-        for x,w,name in nodes:
-            color='c-e' if name in ['Attention','MLP'] else 'ink-2'
-            out+=box(x,310,w,name,color,58)
-        for (x,w,_),(nextx,_,__) in zip(nodes,nodes[1:]):out+=arrow(x+w+4,339,nextx-6,339)
-        out+=line(83,310,83,278,'c-v')+line(83,278,607,278,'c-v')+arrow(607,278,607,309,'c-v')
-        out+=line(658,339,658,278,'c-v')+line(658,278,1092,278,'c-v')+arrow(1092,278,1092,309,'c-v')
-        out+=t(298,294,'keep the input',19,'c-v','middle')+t(874,294,'keep the updated rows',19,'c-v','middle')
-        out+=t(28,423,'Row width stays 192. Each block has its own learned weights.',25,'ink-2')
+        out+=box(28,260,332,['First: make the input rows','pixels → patch features'])
+        out+=arrow(370,300,401,300)
+        out+=box(414,260,332,['Then: build context','patches share information'])
+        out+=arrow(756,300,787,300)
+        out+=box(800,260,332,['Finally: make a prediction','image summary → label'])
+        out+=t(28,414,'The photograph stays fixed. The rows of features change as we follow the arrows.',26,'ink-2')
         return out
 
     map_mobile=('<ol class="vp-map-list">'+''.join('<li>'+escape(s)+'</li>' for s in STAGES)+'</ol>'
-                '<p>Repeat Attention → MLP for 12 blocks. Each branch first normalizes its input; add the branch output back to those input rows.</p>'
-                '<p>Finally normalize, read the CLS row, compute 1,000 class scores and apply softmax.</p>')
+                '<p>Make patch features, prepare the rows, then repeat Attention → MLP for 12 blocks.</p>'
+                '<p>Read one image summary and score the classes. We will open each box as we reach it.</p>')
     add('model-journey-overview','The whole route: photograph to prediction',map_body([0,1,2]),
-        'Keep this map beside the details. First make patch embeddings; then add a summary row called CLS and positions. The blocks exchange and transform information before the classifier reads the summary.',
+        'First turn pixels into patch features. Prepare those rows, let them exchange information, then read one image summary to score the classes. We will open each box as we reach it.',
         'Where do pixels become features, and where do features become class scores?',
-        'Trace left to right. Name CLS as the classification token: its job is to collect an image summary. The next section will open that box.',
+        'Trace left to right. For now, call the extra row an image summary. Explain its name and how it works in the dedicated detour before attention.',
         'This map describes the actual ViT-Tiny checkpoint used for the dog photograph. It has D=192, three heads of width 64, 12 blocks and 1,000 ImageNet outputs. '
         'CLS means classification token. It is a learned extra input row; its final contextual representation is used to classify the image. '
         'The top route is reused on the detailed slides, with the current operation highlighted. The MLP hidden width of 768 happens to equal the patch pixel count; these are separate choices. '
         'This is a pre-LayerNorm architecture, so normalization precedes each branch. Both attention and the MLP have residual additions. '
         '<a href="https://arxiv.org/abs/2010.11929">Original ViT paper</a>.',map_mobile,[0,1,2])
-    add('model-journey-checkpoint','We followed one patch. Now complete the classifier.',map_body([3,4,5,6,7]),
-        'Step 12 showed how one patch makes Q, K and V. We still need the image summary row, information exchange, the MLP and the final class scores. Continue with the same photograph.',
-        'Does a patch query already tell us the image label?',
-        'Point to the remaining boxes. CLS is inserted before the blocks; the preceding slides traced a patch row in isolation so we could inspect its numbers.',
-        'A patch query is a matching vector, not a class prediction. In the actual forward pass the learned CLS token is already present when attention begins. '
-        'Computing a single patch’s LayerNorm and Q/K/V does not require other rows. Computing its attention message does. '
-        'The next section completes that context and follows the model through to its measured image prediction.',map_mobile,[3,4,5,6,7])
+    add('model-journey-checkpoint','Back to the forward pass: all 197 rows are ready',map_body([4]),
+        'We now have 196 patch rows and one CLS summary row, with position added. Each row has 192 features. Resume the same photograph: attention will update these rows using information from one another.',
+        'Which two jobs did we add while preparing the rows?',
+        'Location tells attention where a patch belongs. CLS provides the summary we will read. Now point to attention and return to patch 63 to make Q, K and V.',
+        'The input E has shape 197×192. All rows, including CLS, are present before the first attention operation. '
+        'We next inspect the Q/K/V projections for patch 63, then follow the CLS query and its message. '
+        'These are two views of the same forward pass through the same image, not extra preprocessing steps.',map_mobile,[4])
 
     body=image(25,80,235,235,photo)+t(142,361,'The same photograph',25,'ink-2','middle')
     body+=box(390,75,270,['196 patch rows','192 features each'])+arrow(660,115,760,115)
@@ -93,7 +88,7 @@ def connect_journey(b, sections):
         'We have 196 patch representations. Where could one image summary live?',
         'Keep the image fixed. Reveal the extra row only after stating the need for a single image-level representation.',
         'CLS is one learned 192-coordinate parameter vector, shared as the starting content row across images. It is not a patch, a class label or a one-hot vector. '
-        'The final CLS row becomes image-dependent because the blocks mix information from the image into it. A mean of final patch rows is another readout choice, discussed after the worksheet.',
+        'The final CLS row becomes image-dependent because the blocks mix information from the image into it. A mean of final patch rows is another readout choice, compared during this detour.',
         '<p>196 patch rows → add one CLS row → all rows enter the blocks → read final CLS → one image prediction.</p><p>CLS means classification token. Its 192 starting coordinates are learned.</p>',[3])
 
     body=t(28,40,'The full sequence entering block 1',31,'ink',weight=600)
@@ -105,7 +100,7 @@ def connect_journey(b, sections):
         row+=t(910,y+34,'1 × 192',27,color)
         body+=row if j==0 else g(row,1)
     body+=g(t(28,414,'Stack: [e₀; e₁; …; e₁₉₆] → E has shape 197 × 192',31,'c-e'),2)
-    add('real-cls-sequence','Insert CLS, then give every row a position',body,
+    add('real-cls-sequence','Add the summary row: 196 + 1 = 197',body,
         'Each patch keeps its content-plus-position row. CLS gets its own learned position too. Stack the summary and patch rows into E: 197 rows, each with 192 features. Batch size one is omitted here.',
         'Why do we now have 197 rows, while the width is still 192?',
         'Identify the extra row at the top. Position is added coordinate by coordinate. The subscript is the row’s identity, not its width.',
