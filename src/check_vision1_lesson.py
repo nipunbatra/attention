@@ -52,7 +52,7 @@ for i,(name,image) in enumerate(p['images'].items()):
                 np.testing.assert_allclose(actual[2*i+j]['heads'][h][key],expected['heads'][h][key],atol=1e-12)
 
 manifest=json.loads((ROOT/'figures/vision1/frame-manifest.json').read_text())
-assert len(manifest)==248
+assert len(manifest)==251
 required={'task-side-by-side','task-mask-reason','qkv-match-numbers','qkv-read-numbers','qkv-change-key','qkv-change-value','qkv-no-prompt','cls-start','cls-shared-start','cls-learns','pooling-example','readout-choice'}
 required.update({'backward-route','backward-qk','backward-patches','backward-full-block','cls-without','heads-visual-roles','cnn-classifier-parallel','pets-evaluation','classification-exit'})
 assert required <= {x['id'] for x in manifest}

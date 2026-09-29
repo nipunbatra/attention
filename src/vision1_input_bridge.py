@@ -85,7 +85,8 @@ def clarify_inputs(b, sections):
         'real-attention-values', 'real-heads-intro', 'real-heads-qkv', 'real-heads-messages',
         'real-heads-cls', 'real-heads-concat', 'real-cls-message', 'real-cls-residual', 'real-cls-mlp',
         'real-mlp-network', 'real-mlp-residual', 'real-block-handoff', 'real-block-changes', 'real-cls-depth',
-        'real-cls-readout', 'real-cls-prediction']]
+        'real-cls-readout', 'real-classifier-network', 'real-classifier-score',
+        'real-classifier-softmax', 'real-cls-prediction']]
     third = [all_frames['vision-topic-03'], location, all_frames['real-patch-position'], detour,
              cls_story['real-cls-purpose'], cls_story['cls-parameter-origin'],
              cls_story['cls-parameter-learning'], cls_story['cls-stored-start'], cls_story['cls-collect'],

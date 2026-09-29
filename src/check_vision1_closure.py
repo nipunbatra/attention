@@ -18,7 +18,7 @@ for h in trace['gradients']['heads']:
     np.testing.assert_allclose(np.array(h['dS']).sum(axis=1),0,atol=1e-12)
 assert trace['single_update']['loss_after']<trace['single_update']['loss_before']
 manifest=json.loads((ROOT/'figures/vision1/frame-manifest.json').read_text())
-assert len(manifest)==248 and len({x['id'] for x in manifest})==248
+assert len(manifest)==251 and len({x['id'] for x in manifest})==251
 ids=[x['id'] for x in manifest]
 input_order=['patch-projection-parameters','vision-topic-03','position-where','real-patch-position',
              'cls-detour','real-cls-purpose','cls-parameter-origin','cls-parameter-learning',
@@ -29,7 +29,8 @@ input_order=['patch-projection-parameters','vision-topic-03','position-where','r
              'real-cls-values-origin','real-cls-value-scaling','real-cls-value-sum','real-attention-values',
              'real-heads-intro','real-heads-qkv','real-heads-messages','real-heads-cls','real-heads-concat',
              'real-cls-message','real-cls-residual','real-cls-mlp','real-mlp-network','real-mlp-residual',
-             'real-block-handoff','real-block-changes','real-cls-depth','real-cls-readout']
+             'real-block-handoff','real-block-changes','real-cls-depth','real-cls-readout',
+             'real-classifier-network','real-classifier-score','real-classifier-softmax','real-cls-prediction']
 assert [ids.index(k) for k in input_order]==sorted(ids.index(k) for k in input_order)
 assert all(x['section']=='s13' for x in manifest if x['id'].startswith('position-photo-'))
 assert all(len(x['caption'].split())<=40 and '\n' in x['notes'] for x in manifest)
@@ -68,6 +69,25 @@ for name in ['cls_input','cls_final']:
         assert f'{value:.3f}'.replace('-','−') in (ROOT/'figures/vision1/cls-collect.svg').read_text()
 comparison=json.loads((ROOT/'figures/vision1/cls-two-image-trace.json').read_text())
 dog,cat=comparison['results']
+readout=json.loads((ROOT/'figures/vision1/classifier-readout-trace.json').read_text())
+np.testing.assert_array_equal(readout['cls_final'],dog['cls_final_after_norm'])
+assert readout['input_shape']==[1,192] and readout['output_shape']==[1,1000]
+assert readout['weight_math_shape']==[192,1000] and readout['weight_pytorch_shape']==[1000,192]
+logits=np.array(readout['logits'])
+assert logits.shape==(1000,) and readout['bias_shape']==[1000]
+shifted=np.exp(logits-logits.max())
+probability=shifted/shifted.sum()
+np.testing.assert_allclose(probability.sum(),1,atol=1e-12)
+np.testing.assert_allclose(shifted.sum(),readout['softmax']['shifted_denominator'],atol=2e-7)
+for item, ref in zip(readout['selected_classes'],saved['top3']):
+    assert len(item['weights'])==192 and item['index']==ref['index']
+    products=np.array(readout['cls_final'])*item['weights']
+    np.testing.assert_allclose(products.sum()+item['bias'],item['logit'],atol=4e-6)
+    np.testing.assert_allclose(products[:2],item['first_two_products'],atol=1e-7)
+    np.testing.assert_allclose(products[2:].sum(),item['remaining_190_products_sum'],atol=4e-6)
+    np.testing.assert_allclose(probability[item['index']],item['probability'],atol=1e-7)
+    np.testing.assert_allclose(item['probability'],ref['probability'],atol=2e-6)
+assert readout['verification']['training_run'] is False
 assert dog['cls_input']==cat['cls_input']
 assert dog['first_cls_query_all_heads']==cat['first_cls_query_all_heads']
 for row in [dog,cat]:
@@ -103,6 +123,7 @@ report={'teaching_frames':len(manifest),'new_gradient_coordinates_checked':trace
         'two_images_share_cls_input_but_have_different_updates':True,
         'multihead_messages_concatenation_and_residual_verified':True,
         'mlp_gelu_and_second_residual_previews_verified':True,
+        'classifier_weighted_sums_and_all_class_softmax_verified':True,
         'single_query_weight_update':trace['single_update']}
 (ROOT/'figures/vision1/classification-checks.json').write_text(json.dumps(report,indent=2)+'\n')
 print(json.dumps(report,indent=2))

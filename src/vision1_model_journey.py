@@ -138,37 +138,10 @@ def connect_journey(b, sections):
     additions.update(block_frames)
     active.update({key: [5] if key.startswith('real-mlp-') else [4, 5] for key in block_frames})
 
-    body=box(25,75,280,['after block 12','197 × 192'])+arrow(305,115,366,115)+box(385,75,280,['final LayerNorm','197 × 192'])
-    body+=g(arrow(665,115,726,115)+box(745,75,360,['select the CLS row','1 × 192'],'c-q'),1)
-    body+=g(box(25,285,300,['CLS features',vec('cls_final')],'c-q')+arrow(325,325,396,325)
-            +box(415,285,300,['nn.Linear(192,1000)','+ 1,000 biases'])+arrow(715,325,786,325)
-            +box(805,285,300,['1,000 class scores','1 × 1,000']),2)
-    add('real-cls-readout','Read the final CLS row and score the classes',body,
-        'Normalize the final sequence, select CLS, and apply the classification layer. Its 192 features become 1,000 scores for ImageNet labels. We read this one row after it has interacted with the whole image.',
-        'Why are 192 features enough to produce 1,000 class scores?',
-        'The linear layer has one weighted sum and bias for each output class. Connect this to the class scores in text Part I.',
-        'This pretrained model uses a linear ImageNet head with 192×1,000 weights and 1,000 biases. '
-        'The opening cat/dog question was motivation; this checkpoint predicts 1,000 ImageNet labels, including dog breeds. '
-        'A model trained for just cat versus dog could use Linear(192,2). Its weights would need to be trained for those labels. '
-        'Final normalization is applied before selecting CLS; no new image patch is generated.',
-        '<p>Final sequence (197 × 192) → LayerNorm → select CLS (1 × 192) → Linear(192,1000) → class scores (1 × 1,000).</p><p>For a trained cat/dog head, the output width could instead be 2.</p>',[6,7])
-
-    body=image(25,72,270,270,photo)+t(160,392,'Our original photograph',24,'ink-2','middle')
-    for j,item in enumerate(data['top3']):
-        y=70+j*104
-        label=item['label'].split(',')[0]
-        body+=t(390,y,label,29)+t(760,y,f'{item["logit"]:.3f}',27,'ink-2','end')
-        body+=g(rect(815,y-25,200*item['probability'],32,'c-e','t-e')
-                +t(1128,y,f'{100*item["probability"]:.2f}%',24,'c-e','end'),1)
-    body+=t(760,27,'score',22,'ink-2','end')+t(960,27,'probability',22,'ink-2','middle')
-    body+=g(t(390,392,'Softmax over all 1,000 labels; only the top 3 are shown.',23,'ink-2'),1)
-    add('real-cls-prediction','The same photograph now has a measured prediction',body,
-        'Softmax converts the 1,000 scores to class probabilities. The top label is Newfoundland, at 95.73%. We have followed this photograph from pixels to that prediction. Next, use smaller numbers to calculate attention ourselves.',
-        'What are the alternatives in this softmax, compared with attention’s softmax?',
-        'They are image classes here, source rows inside attention. Reveal the measured probabilities and close the real-image route before switching examples.',
-        'These are measured checkpoint outputs, reproduced by the explicit full-model trace and matching the previously saved inference. '
-        'The 95.73% value is the model probability for this photograph, not test accuracy. The visible three bars do not exhaust the 1,000 labels.',
-        mobile_rows(['Label','Logit','Probability'],[[v['label'].split(',')[0],f'{v["logit"]:.3f}',f'{v["probability"]*100:.2f}%'] for v in data['top3']])+'<p>Softmax uses all 1,000 scores. These are measured outputs on one image.</p>',[7])
+    from vision1_classifier_journey import build_classifier_journey
+    classifier_frames = build_classifier_journey(b)
+    additions.update(classifier_frames)
+    active.update({key: [6] if key=='real-cls-readout' else [7] for key in classifier_frames})
 
     # Move the position motivation to the point where position first enters.
     def key(markup): return re.search(r'class="frame[^"]*" id="([^"]+)"',markup).group(1)
@@ -186,7 +159,7 @@ def connect_journey(b, sections):
     second.append(additions['model-journey-checkpoint'])
     sections[1]=(sections[1][0],second)
     continuation=['real-cls-purpose','real-cls-sequence',*matrix_frames,*head_frames,
-                  *block_frames,'real-cls-readout','real-cls-prediction']
+                  *block_frames,*classifier_frames]
     sections[2]=(sections[2][0],[sections[2][1][0]]+[additions[k] for k in continuation])
     # The small worksheet is now an explicitly introduced, separate calculation.
     worksheet=[m for k,m in old_three.items() if k not in position_ids]

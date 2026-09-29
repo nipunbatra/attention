@@ -745,19 +745,43 @@
   },
   {
     "id": "real-cls-readout",
-    "title": "Read the final CLS row and score the classes",
-    "caption": "Normalize the final sequence, select CLS, and apply the classification layer. Its 192 features become 1,000 scores for ImageNet labels. We read this one row after it has interacted with the whole image.",
-    "notes": "Why are 192 features enough to produce 1,000 class scores?\nThe linear layer has one weighted sum and bias for each output class. Connect this to the class scores in text Part I.",
+    "title": "Select CLS from the final feature matrix",
+    "caption": "After block 12, all 197 rows are still present. Final LayerNorm keeps the same shape. Select the highlighted CLS row: one image summary with 192 features. Its values now reflect information gathered from this dog\u2019s patches.",
+    "notes": "Which part of the 197 \u00d7 192 matrix enters the classifier?\nExtract the entire first row, all 192 features. This CLS is the result after the blocks and final normalization, not the initial learned CLS parameter. We do not average the rows in this model.",
     "section": "s03",
     "frame": 41
   },
   {
-    "id": "real-cls-prediction",
-    "title": "The same photograph now has a measured prediction",
-    "caption": "Softmax converts the 1,000 scores to class probabilities. The top label is Newfoundland, at 95.73%. We have followed this photograph from pixels to that prediction. Next, use smaller numbers to calculate attention ourselves.",
-    "notes": "What are the alternatives in this softmax, compared with attention\u2019s softmax?\nThey are image classes here, source rows inside attention. Reveal the measured probabilities and close the real-image route before switching examples.",
+    "id": "real-classifier-network",
+    "title": "Open the classifier: 192 features become 1,000 scores",
+    "caption": "Every class has one output neuron connected to all 192 CLS features. Each neuron uses its own learned weights and bias to produce a score. Only three of the 1,000 class neurons are drawn. Their scores are measured.",
+    "notes": "Does one feature correspond to one class, or does every class read the whole summary?\nEach class reads all 192 features with its own weighted sum. This class head is a single affine layer. It has no hidden layer or GELU; softmax converts its scores to probabilities next.",
     "section": "s03",
     "frame": 42
+  },
+  {
+    "id": "real-classifier-score",
+    "title": "One class score is a weighted sum plus a bias",
+    "caption": "Multiply each CLS feature by this class\u2019s learned weight. Sum all 192 products and add its bias. For this dog, the Newfoundland neuron produces 15.4763. Every other class performs the same calculation with its own weights and bias.",
+    "notes": "What makes the Newfoundland score different from the Tibetan mastiff score?\nThey read the same image summary but use different learned weights and biases. The 190 omitted products still contribute. Keep the score separate from its later probability.",
+    "section": "s03",
+    "frame": 43
+  },
+  {
+    "id": "real-classifier-softmax",
+    "title": "Turn all 1,000 scores into class probabilities",
+    "caption": "Exponentiate each score and divide by the sum over all 1,000 classes. Newfoundland receives 95.73% probability. The displayed classes are only three alternatives; the remaining 997 also enter the denominator. Choose the class with the largest probability.",
+    "notes": "Would softmax over only these three displayed scores give the same answer?\nNo. All 1,000 scores contribute to the denominator. The remaining probability mass is shown explicitly. Attention softmax normalized over source rows; this softmax normalizes over image classes.",
+    "section": "s03",
+    "frame": 44
+  },
+  {
+    "id": "real-cls-prediction",
+    "title": "The same dog now has its final prediction",
+    "caption": "The classifier reads the final CLS, scores 1,000 labels, and selects Newfoundland as the most probable class. Its probability for this photograph is 95.73%. We have completed one forward pass from pixels to an image prediction.",
+    "notes": "Did each patch predict its own label, or did the model make one image prediction?\nThe final CLS summarizes the contextual features for this one image. One class head reads that summary. The 95.73% is a model probability for this photograph, not an accuracy measurement.",
+    "section": "s03",
+    "frame": 45
   },
   {
     "id": "vision-topic-04",
