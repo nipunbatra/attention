@@ -307,17 +307,82 @@ def refine(b, sections):
         'For B images, readout shape B×192 maps to B×2 logits. The number of patches and attention heads need not change.',
         '<p>Pet image → pretrained ViT → CLS features (192) → Linear(192,2) → dog/cat scores.</p><p>192×2+2=386 new trainable parameters. This is a proposed workflow, with no claimed benchmark results.</p>')
 
-    body=t(35,45,'Start simple: train the new head',30)
-    body+=flow([['photograph','fixed data'],['ViT encoder','FROZEN'],['192 features','fixed encoder output'],['dog/cat head','TRAINABLE']],100)
-    body+=g(arrow(1090,280,880,280,'c-a')+t(860,325,'loss → head gradients',28,'c-a','end'),1)
-    body+=g(t(35,392,'Next option: unfreeze selected blocks and fine-tune them with the head.',28),2)
-    add('pets-frozen','Choose which parameters the optimizer may change',body,
-        'First freeze the encoder and fit the new class head. If needed, unfreeze selected blocks and fine-tune. The forward path stays recognizable; the set of trainable parameters changes.',
+    # Paper-style training diagram. Draw the status icons as SVG paths so that
+    # they remain consistent in browsers, exports and fonts without emoji.
+    def status_icon(x,y,kind,size=1):
+        if kind=='frozen':
+            shape=''.join(f'<path transform="rotate({a})" d="M0 -15 V15 M-5 -12 L0 -8 L5 -12 M-5 12 L0 8 L5 12"/>' for a in [0,60,120])
+            color='c-e'; label='Frozen weights'
+        elif kind=='trainable':
+            shape='<path d="M0 -17 C-1 -7 -12 -5 -11 6 C-10 20 12 19 12 5 C12 -2 7 -7 5 -9 C7 -2 2 0 0 -17 Z" fill="var(--c-k)"/>'
+            color='c-k'; label='Trainable weights'
+        else:
+            shape='<path d="M-18 0 Q0 -20 18 0 Q0 20 -18 0 Z"/><circle cx="0" cy="0" r="6"/>'
+            color='c-e'; label='Vision encoder'
+        return (f'<g transform="translate({x} {y}) scale({size})" role="img" aria-label="{label}">'
+                f'<title>{label}</title><g fill="none" stroke="var(--{color})" stroke-width="2.4" '
+                f'stroke-linecap="round" stroke-linejoin="round">{shape}</g></g>')
+
+    def neuron(x,y,color,radius=13):
+        return f'<circle cx="{x}" cy="{y}" r="{radius}" fill="var(--card)" stroke="var(--{color})" stroke-width="2.3"/>'
+
+    body=t(35,29,'1 · Train only the new class head',28,weight=600)
+    body+=status_icon(920,23,'trainable',.85)+t(946,31,'trainable',23,'c-k')
+    body+=image(35,80,115,115,b['PHOTO'])+t(92,223,'Pet photo',22,'ink-2','middle')
+    body+=arrow(158,139,194,139)
+    body+=rect(210,68,330,137,'c-e','t-e',9)
+    body+=status_icon(244,102,'vision',.85)+t(278,111,'ViT encoder',27,'c-e')+status_icon(505,101,'frozen')
+    body+=t(375,153,'All encoder weights fixed',23,'c-e','middle')
+    body+=t(375,188,'patches → blocks → CLS',22,'ink-2','middle')
+    body+=arrow(552,139,602,139)
+    body+=t(650,59,'192 features',22,'c-e','middle')
+    body+=t(821,59,'Linear(192, 2)',23,'c-k','middle')
+    # Show representative input neurons and both output neurons. The dots
+    # abbreviate the other CLS coordinates; every output reads all 192.
+    for iy in [90,122,175,207]:
+        for oy in [112,182]:
+            body+='<g opacity="0.43">'+line(662,iy,861,oy,'c-k',1.8)+'</g>'
+    for iy in [90,122,175,207]:body+=neuron(650,iy,'c-e',12)
+    body+=t(650,154,'⋮',26,'c-e','middle')
+    for oy,label in [(112,'dog'),(182,'cat')]:
+        body+=neuron(880,oy,'c-k',18)+t(918,oy+8,label,26,'c-k')
+    body+=t(795,240,'192×2 weights + 2 biases',22,'c-k','middle')
+    body+=line(972,112,990,112)+line(972,182,990,182)+line(990,112,990,182)+arrow(990,147,1030,147)
+    body+=box(1040,118,93,'loss','c-a',h=58)
+    body+=g(line(1085,184,1085,251,'c-a',2,'6 5')+arrow(1085,251,920,251,'c-a')
+            +t(1085,277,'update head',20,'c-a','middle'),1)
+
+    # Reveal a second aligned route: an example of partial fine-tuning.
+    option=line(35,290,1128,290,'line')+t(35,327,'2 · Optional:',26,weight=600)
+    option+=t(35,360,'fine-tune the',24)+t(35,391,'last block too',24)
+    option+=rect(260,318,250,106,'c-e','t-e',8)+status_icon(290,346,'frozen',.8)
+    option+=t(405,352,'Earlier encoder',23,'c-e','middle')+t(385,390,'weights stay fixed',22,'c-e','middle')
+    option+=arrow(519,371,552,371)
+    option+=rect(567,318,242,106,'c-k','transparent',8)+status_icon(598,346,'trainable',.8)
+    option+=t(707,352,'Last block',24,'c-k','middle')+t(688,390,'unfreeze weights',22,'c-k','middle')
+    option+=arrow(820,371,865,371)
+    option+=status_icon(911,316,'trainable',.7)+t(944,324,'Head',23,'c-k')
+    for iy in [347,375,403]:
+        for oy in [357,393]:option+='<g opacity="0.43">'+line(910,iy,1025,oy,'c-k',1.7)+'</g>'
+    for iy in [347,375,403]:option+=neuron(900,iy,'c-k',10)
+    for oy,label in [(357,'dog'),(393,'cat')]:
+        option+=neuron(1037,oy,'c-k',12)+t(1063,oy+7,label,21,'c-k')
+    body+=g(option,2)
+    add('pets-frozen','Freeze the encoder; train the new head',body,
+        'Snowflake: weights stay fixed. Flame: weights can learn. Start by training only the two-class head; optionally unfreeze the last block. A frozen encoder still computes image-dependent features.',
         'When only the head is trained, do the Q/K/V weights change?',
-        'No. Highlight the frozen encoder. Then describe unfreezing the final block as an optional next step, with validation guiding the decision.',
-        'Head-only training is often called a linear probe. With a frozen encoder, its features may be cached using a fixed preprocessing transform. '
-        'Fine-tuning lets the chosen encoder parameters receive updates. Use a held-out validation set to choose settings; no training is run for these slides.',
-        mobile_rows(['Mode','Updated parameters'],[['Head only','Linear(192,2) weights and biases'],['Fine-tuning','Head plus selected encoder parameters']]))
+        'No. Trace the photograph through the blue vision encoder into 192 CLS features. The orange head learns. Reveal the loss update, then the optional route with the last block also trainable.',
+        'The eye identifies the vision encoder; the snowflake denotes frozen parameters and the flame denotes trainable parameters. '
+        'Circles show representative feature coordinates and the two output neurons of Linear(192,2), with no hidden layer. '
+        'Each class neuron reads all 192 features and has one bias: 192×2+2=386 head parameters. '
+        'The label enters cross-entropy at the loss; the output neurons represent dog/cat scores, not probabilities. '
+        'Head-only training is often called a linear probe. Frozen means the encoder parameters do not change, not that every image produces the same features. '
+        'Features can be cached when the encoder and preprocessing are fixed and evaluation is deterministic. '
+        'The lower route is one optional partial fine-tuning choice: train the last Transformer block and the new head while earlier encoder parameters remain frozen. '
+        'Include only the chosen trainable parameters in the optimizer and use validation to choose the procedure. No training is run for this slide.',
+        '<p>Eye: vision encoder. Snowflake: fixed weights. Flame: trainable weights.</p>'
+        +mobile_rows(['Mode','Encoder','Head'],[['Head only','All encoder weights frozen; 192 image-dependent features','192 inputs → dog and cat scores; 386 trainable parameters'],
+                                              ['Optional fine-tuning','Unfreeze the last block; earlier weights stay fixed','Train the same two-class head']]))
 
     body=flow([['batch of images','B × 3 × 224 × 224'],['ViT + new head','B × 2 scores'],['known labels','B targets'],['mean cross-entropy','one loss']],100)
     body+=g(t(35,280,'zero gradients → forward → loss → backward → optimizer step',29,'c-a'),1)

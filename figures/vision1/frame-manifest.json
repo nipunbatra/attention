@@ -1025,9 +1025,9 @@
   },
   {
     "id": "pets-frozen",
-    "title": "Choose which parameters the optimizer may change",
-    "caption": "First freeze the encoder and fit the new class head. If needed, unfreeze selected blocks and fine-tune. The forward path stays recognizable; the set of trainable parameters changes.",
-    "notes": "When only the head is trained, do the Q/K/V weights change?\nNo. Highlight the frozen encoder. Then describe unfreezing the final block as an optional next step, with validation guiding the decision.",
+    "title": "Freeze the encoder; train the new head",
+    "caption": "Snowflake: weights stay fixed. Flame: weights can learn. Start by training only the two-class head; optionally unfreeze the last block. A frozen encoder still computes image-dependent features.",
+    "notes": "When only the head is trained, do the Q/K/V weights change?\nNo. Trace the photograph through the blue vision encoder into 192 CLS features. The orange head learns. Reveal the loss update, then the optional route with the last block also trainable.",
     "section": "s07",
     "frame": 3
   },
