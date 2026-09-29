@@ -97,9 +97,9 @@
   },
   {
     "id": "patch-context",
-    "title": "What can the face tell this dark patch?",
-    "caption": "We want one image label. Face context can help interpret the dark texture and make its patch representation more useful for that prediction.",
-    "notes": "Could nearby face information help us interpret the dark texture as animal fur?\nStart at the dark receiver. Reveal the face source, then trace its information box all the way to the receiver\u2019s numbers.",
+    "title": "Attention: what can the face tell this patch?",
+    "caption": "Queries and keys determine weights; values supply the information to combine. The dark patch is our receiver, and the face patch is one possible source.",
+    "notes": "Could nearby face information help us interpret the dark texture as animal fur?\nName attention and recall Q, K, V from text. Start at the dark receiver, which makes a query. Reveal the face source, which supplies a key and a value. Trace the information arrow into the receiver\u2019s numbers. Preview the coming image-vector diagrams and numerical exercise.",
     "section": "s01",
     "frame": 13
   },

@@ -67,20 +67,33 @@ def build_full(b):
     face_arrow=arrow(500,125,825,345,'c-v')
     branch_arrow=arrow(500,330,825,365,'c-v')
     body=receiver+g(face,1)+g(face_arrow+t(640,155,'send clues',27,'c-v','middle'),2)
-    add('patch-context','What can the face tell this dark patch?',body,
-        'We want one image label. Face context can help interpret the dark texture and make its patch representation more useful for that prediction.',
+    body+=t(35,230,'Recall Q, K, V from text',28,'ink-2')
+    body+=t(35,274,'Q (receiver): what to look for',26,'c-q')
+    body+=t(35,314,'K (source): what can match',26,'c-k')
+    body+=t(35,354,'V (source): information to send',26,'c-v')
+    body+=t(35,429,'Next: the image versions, then a numerical example.',28,'c-e')
+    add('patch-context','Attention: what can the face tell this patch?',body,
+        'Queries and keys determine weights; values supply the information to combine. The dark patch is our receiver, and the face patch is one possible source.',
         'Could nearby face information help us interpret the dark texture as animal fur?',
-        'Start at the dark receiver. Reveal the face source, then trace its information box all the way to the receiver’s numbers.',
+        'Name attention and recall Q, K, V from text. Start at the dark receiver, which makes a query. Reveal the face source, which supplies a key and a value. Trace the information arrow into the receiver’s numbers. Preview the coming image-vector diagrams and numerical exercise.',
         'Our task is still to predict one label for the whole image. We are looking inside that computation at one patch. '
+        'This is attention, using the query, key and value roles introduced for text. For the receiver we follow its query; '
+        'for a possible source we follow its key and value. Every patch representation actually produces all three vectors. '
+        'The short descriptions are intuition for numerical vectors, not literal questions or labels stored in the model. '
         'By itself the dark crop could suggest fur, shadow or background. Face information could help later layers interpret it. '
         'The small arrows from each photograph to its information box stand for representing pixels as numbers. '
         'The long arrow shows the direction of information flow: from a source patch into the receiving patch representation. '
         'It does not move the source pixels into the receiver. This is an illustration of useful context, not measured attention. '
         'The names describe visual clues for students; they are not labels attached to learned vector coordinates. '
-        'As with bank reading river in Part II, context can make a local representation more useful.',
-        '<p><strong>Receiver:</strong> this dark crop is ambiguous.</p><svg viewBox="0 0 270 180" role="img" aria-label="Dark receiver crop">'+crop(0,0,270,180,9,'mobile-receiver')+'</svg>'
+        'As with bank reading river in Part II, context can make a local representation more useful. '
+        'The following image examples explain what the vectors could represent; the worked calculation later shows how to compute the weights and combine the values.',
+        '<p><strong>Attention uses the same Q, K, V roles as in text.</strong></p>'
+        +mobile_rows(['Vector we follow','Role'],[['Query from the dark receiver','What to look for'],
+            ['Key from a source such as the face','What can match the query'],['Value from that source','Information to send']])
+        +'<p><strong>Receiver:</strong> this dark crop is ambiguous.</p><svg viewBox="0 0 270 180" role="img" aria-label="Dark receiver crop">'+crop(0,0,270,180,9,'mobile-receiver')+'</svg>'
         '<p><strong>Source:</strong> a face patch elsewhere in the same image.</p><svg viewBox="0 0 270 180" role="img" aria-label="Face source crop">'+crop(0,0,270,180,6,'mobile-face')+'</svg>'
-        '<p>Face information → the dark patch’s numbers. Context arrives; the original pixels stay fixed.</p>')
+        '<p>Face information → the dark patch’s numbers. Context arrives; the original pixels stay fixed.</p>'
+        '<p>Next: build the image queries, keys and values, then work through a numerical example.</p>')
     body=receiver+face+g(branches,1)
     body+=g(face_arrow.replace('stroke-width="2.5"','stroke-width="6"')+branch_arrow
             +t(665,170,'larger share',26,'c-v','middle')+t(665,420,'smaller share',26,'c-v','middle'),2)
