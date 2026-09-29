@@ -18,7 +18,7 @@ for h in trace['gradients']['heads']:
     np.testing.assert_allclose(np.array(h['dS']).sum(axis=1),0,atol=1e-12)
 assert trace['single_update']['loss_after']<trace['single_update']['loss_before']
 manifest=json.loads((ROOT/'figures/vision1/frame-manifest.json').read_text())
-assert len(manifest)==256 and len({x['id'] for x in manifest})==256
+assert len(manifest)==164 and len({x['id'] for x in manifest})==164
 ids=[x['id'] for x in manifest]
 input_order=['patch-projection-parameters','vision-topic-03','position-where','position-table','real-patch-position','position-learning',
              'cls-detour','real-cls-purpose','cls-parameter-origin','cls-parameter-learning',
@@ -32,10 +32,19 @@ input_order=['patch-projection-parameters','vision-topic-03','position-where','p
              'real-block-handoff','real-block-changes','real-cls-depth','real-cls-readout',
              'real-classifier-network','real-classifier-score','real-classifier-softmax','real-cls-prediction']
 assert [ids.index(k) for k in input_order]==sorted(ids.index(k) for k in input_order)
-assert all(x['section']=='s13' for x in manifest if x['id'].startswith('position-photo-'))
+assert all(x['section']=='s11' for x in manifest if x['id'].startswith('position-photo-'))
 assert all(len(x['caption'].split())<=40 and '\n' in x['notes'] for x in manifest)
-required={'cls-shared-start','cls-without','heads-visual-roles','heads-independent','backward-route','backward-qk','backward-patches','backward-full-block','classification-training-map','cnn-receptive-field','cnn-classifier-parallel','pets-head','pets-frozen','pets-training-step','pets-evaluation','classification-exit'}
+required={'task-side-by-side','cls-shared-start','cls-without','heads-visual-roles',
+          'patch-filter-patterns','photo-key-value-check','photo-two-softmaxes',
+          'photo-label-loss','photo-backward-head','photo-backward-block',
+          'photo-backward-attention','photo-backward-inputs','photo-optimizer-step',
+          'cnn-receptive-field','cnn-inductive-bias','cnn-vit-design',
+          'code-photo-input','code-photo-conv','code-photo-tokens','code-photo-attention',
+          'code-photo-block','code-photo-readout','code-photo-training',
+          'pets-evaluation','classification-exit'}
 assert required<={x['id'] for x in manifest}
+assert not {'s02-small','s03-query','s04-probability','heads-independent','code-patch','code-model'} & {x['id'] for x in manifest}
+assert sorted({x['section'] for x in manifest}) == [f's{i:02}' for i in range(1,13)]
 assert not {'find-animal','image-caption','photo-search','learning-curves','training-data'}&{x['id'] for x in manifest}
 saved=json.loads((ROOT/'figures/vision1/real-classifier-path.json').read_text())
 assert saved['with_cls']==[197,192] and saved['mlp_hidden']==[197,768] and saved['block_count']==12

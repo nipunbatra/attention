@@ -509,7 +509,7 @@ optimizer.step()''',t(30,65,'image + known label',26,'c-e')+arrow(180,92,180,160
     body=t(30,70,'1. Shuffle patch contents; keep locations fixed.',29)+t(30,155,'2. Shuffle complete (content + position) rows.',29)
     body+=g(t(30,260,'1 can change the image prediction.',33,'c-a'),1)
     body+=g(t(30,345,'2 preserves CLS under shared self-attention.',31,'c-e'),2)
-    body+=g(t(30,421,'Which experiment did our position control perform?',29),3)
+    body+=g(t(30,421,'Which shuffle changes the arrangement of image content?',29),3)
     add('exercise-position','Your turn: are these two shuffles equivalent?',body,'Distinguish moving image content from merely reordering the same positioned tokens.',
         'Which shuffle changes what is located at the top left?','Track one patch and its position vector through each operation.',
         'In the second experiment, leave CLS fixed and permute only the already-positioned patch rows. Standard shared self-attention plus a CLS readout is invariant to this permutation (assuming deterministic evaluation and no additional order-dependent mechanism). In the first, content is paired with different locations, so predictions can change.')
@@ -527,7 +527,7 @@ optimizer.step()''',t(30,65,'image + known label',26,'c-e')+arrow(180,92,180,160
     body+=g(t(30,395,'updated CLS → class scores → loss → learning',32,'c-a'),3)
     add('closing','Can you now explain the whole photograph-to-answer path?',body,'The same attention story from Parts I–III, now attached to pixels we can inspect.',
         'Which step is new, and which steps did we already know?','Ask students to narrate the computation from input to loss without reading equations.',
-        '<p>Student materials: <a href="notebooks/vision/03_vision_transformer_lab.ipynb">complete worked lab</a>, <a href="notebooks/vision/train_small_vit.py">train the full small ViT</a>, <a href="notebooks/vision/inspect_real_vit.py">reproduce attention and occlusion</a>, and <a href="figures/vision1/training.json">training results</a>. The lecture, figures, numeric worksheet and notebook are generated from the same parameters and saved measurements.</p>')
+        '<p>Student materials: <a href="notebooks/vision/vit_image_classifier.py">the 224×224 RGB classifier in PyTorch</a>, <a href="notebooks/vision/inspect_real_vit.py">reproduce measured attention and occlusion</a>, and <a href="notebooks/vision/03_vision_transformer_lab.ipynb">optional small arithmetic and synthetic-training lab</a>. The lecture follows the saved photograph classifier. The optional lab is a separate simplified problem; its results do not measure pet-classification performance.</p>')
 
     # Put the new figures into one deliberate lecture sequence.
     e=extras
@@ -568,6 +568,8 @@ optimizer.step()''',t(30,65,'image + known label',26,'c-e')+arrow(180,92,180,160
     sections=clarify_inputs(b,sections)
     from vision1_paper_opening import introduce_papers
     sections=introduce_papers(b,sections)
+    from vision1_lecture_focus import consolidate
+    sections=consolidate(b,sections)
     ordered=[]
     for n,(title,frames) in enumerate(sections,1):
         original_section(n,title,frames)
@@ -578,16 +580,16 @@ optimizer.step()''',t(30,65,'image + known label',26,'c-e')+arrow(180,92,180,160
             ordered.append(meta)
     config={'part':1,'partLabel':'Vision I','series':'Vision to language',
       'title':'Vision Transformer',
-      'subtitle':'Real photographs, a complete four-patch calculation, and a Vision Transformer we can train and inspect.',
+      'subtitle':'Follow one photograph through a Vision Transformer: pixels, attention, classification, learning and code.',
       'audience':'Students who have completed the text attention Parts I–III.',
-      'durationLabel':'A step-by-step lecture sequence with a worked lab.',
+      'durationLabel':'One photo walkthrough, with code and optional labs.',
       'hook':'What can one patch borrow from the rest of its image?',
       'centralLabel':'Follow one computation','central':r'\text{pixels}\to E\to Q,K,V\to A\to H\to E\prime\to p(\text{class})',
       'sections':[{'id':f's{i+1:02}','title':s[0],'lit':''} for i,s in enumerate(sections)],
       'chain':[{'section':f's{i+1:02}','label':s[0]} for i,s in enumerate(sections)],
       'objects':['e','q','k','v','a','d','ep'],
-      'objectSections':{'e':'s03','q':'s04','k':'s04','v':'s04','a':'s04','d':'s05','ep':'s06'},
-      'provenance':'The four-patch worksheet uses chosen weights for forward and backward calculations. Real-photo predictions are saved measurements from a pretrained ImageNet model. Dog/cat adaptation is a proposed workflow, with no new training results. The optional lab retains the earlier synthetic experiment.',
+      'objectSections':{'e':'s03','q':'s03','k':'s03','v':'s03','a':'s03','d':'s03','ep':'s03'},
+      'provenance':'Real-photo predictions are saved measurements from a pretrained ImageNet model. The backward pass explains how a label would train this architecture. Code and dog/cat adaptation show procedures, with no new training results. The optional lab retains the separate four-patch worksheet and synthetic experiment.',
       'prev':{'label':'Part 4: Cross-attention: translate one phrase','href':'part4.html'},
       'next':{'label':'Optional: self-supervised visual learning','href':'vision2.html'},
       'index':{'label':'Series home','href':'index.html'},

@@ -108,7 +108,7 @@ def examples(b):
         'Within a head and layer, a source has one value vector shared by all receivers; each receiver can assign a different weight to it. '
         'The sum includes every allowed source, including self and CLS where present. It produces a vector that contributes to the receiving row update. '
         'This operation neither pastes pixels nor directly chooses the dog/cat label. The classifier later reads the image summary. '
-        'Section 4 calculates the face/branches mixture with explicitly chosen numbers.',
+        'The dog walkthrough later draws the full Q/K/V matrices and calculates a measured CLS message.',
         ''.join(mobile_source(idx,label,v,'V') for idx,label,_,v in sources)
         +'<p>Message for P10 = a₁₀,₇ v₇ + a₁₀,₁₁ v₁₁ + a₁₀,₈ v₈ + …</p>'
         +'<p>a₁₀,₇ is the weight for P10 reading P7. Other source values also contribute. Every receiver uses its own weights.</p>')

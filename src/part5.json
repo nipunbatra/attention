@@ -3,9 +3,9 @@
   "partLabel": "Vision I",
   "series": "Vision to language",
   "title": "Vision Transformer",
-  "subtitle": "Real photographs, a complete four-patch calculation, and a Vision Transformer we can train and inspect.",
+  "subtitle": "Follow one photograph through a Vision Transformer: pixels, attention, classification, learning and code.",
   "audience": "Students who have completed the text attention Parts I\u2013III.",
-  "durationLabel": "A step-by-step lecture sequence with a worked lab.",
+  "durationLabel": "One photo walkthrough, with code and optional labs.",
   "hook": "What can one patch borrow from the rest of its image?",
   "centralLabel": "Follow one computation",
   "central": "\\text{pixels}\\to E\\to Q,K,V\\to A\\to H\\to E\\prime\\to p(\\text{class})",
@@ -27,56 +27,46 @@
     },
     {
       "id": "s04",
-      "title": "Calculate attention with four patches",
+      "title": "How the image label trains the model",
       "lit": ""
     },
     {
       "id": "s05",
-      "title": "More than one attention head",
+      "title": "CNNs, ViTs and inductive bias",
       "lit": ""
     },
     {
       "id": "s06",
-      "title": "From messages to an image label",
+      "title": "The same classifier in PyTorch",
       "lit": ""
     },
     {
       "id": "s07",
-      "title": "The complete Transformer block",
-      "lit": ""
-    },
-    {
-      "id": "s08",
-      "title": "Build the model in PyTorch",
-      "lit": ""
-    },
-    {
-      "id": "s09",
       "title": "Adapt and evaluate the classifier",
       "lit": ""
     },
     {
-      "id": "s10",
+      "id": "s08",
       "title": "Return to the real photographs",
       "lit": ""
     },
     {
-      "id": "s11",
+      "id": "s09",
       "title": "Look inside the trained model",
       "lit": ""
     },
     {
-      "id": "s12",
+      "id": "s10",
       "title": "The cost of smaller patches",
       "lit": ""
     },
     {
-      "id": "s13",
+      "id": "s11",
       "title": "Your turn to work it out",
       "lit": ""
     },
     {
-      "id": "s14",
+      "id": "s12",
       "title": "What can we build next?",
       "lit": ""
     }
@@ -96,46 +86,38 @@
     },
     {
       "section": "s04",
-      "label": "Calculate attention with four patches"
+      "label": "How the image label trains the model"
     },
     {
       "section": "s05",
-      "label": "More than one attention head"
+      "label": "CNNs, ViTs and inductive bias"
     },
     {
       "section": "s06",
-      "label": "From messages to an image label"
+      "label": "The same classifier in PyTorch"
     },
     {
       "section": "s07",
-      "label": "The complete Transformer block"
-    },
-    {
-      "section": "s08",
-      "label": "Build the model in PyTorch"
-    },
-    {
-      "section": "s09",
       "label": "Adapt and evaluate the classifier"
     },
     {
-      "section": "s10",
+      "section": "s08",
       "label": "Return to the real photographs"
     },
     {
-      "section": "s11",
+      "section": "s09",
       "label": "Look inside the trained model"
     },
     {
-      "section": "s12",
+      "section": "s10",
       "label": "The cost of smaller patches"
     },
     {
-      "section": "s13",
+      "section": "s11",
       "label": "Your turn to work it out"
     },
     {
-      "section": "s14",
+      "section": "s12",
       "label": "What can we build next?"
     }
   ],
@@ -150,14 +132,14 @@
   ],
   "objectSections": {
     "e": "s03",
-    "q": "s04",
-    "k": "s04",
-    "v": "s04",
-    "a": "s04",
-    "d": "s05",
-    "ep": "s06"
+    "q": "s03",
+    "k": "s03",
+    "v": "s03",
+    "a": "s03",
+    "d": "s03",
+    "ep": "s03"
   },
-  "provenance": "The four-patch worksheet uses chosen weights for forward and backward calculations. Real-photo predictions are saved measurements from a pretrained ImageNet model. Dog/cat adaptation is a proposed workflow, with no new training results. The optional lab retains the earlier synthetic experiment.",
+  "provenance": "Real-photo predictions are saved measurements from a pretrained ImageNet model. The backward pass explains how a label would train this architecture. Code and dog/cat adaptation show procedures, with no new training results. The optional lab retains the separate four-patch worksheet and synthetic experiment.",
   "prev": {
     "label": "Part 4: Cross-attention: translate one phrase",
     "href": "part4.html"

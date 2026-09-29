@@ -1,16 +1,16 @@
 # Vision I: image classification teaching route
 
-The lecture explains one image classifier. Keep the same photograph as the anchor, use the small worksheet for arithmetic, then return to the real architecture. All new backward-pass numbers are chosen-parameter calculations, not a fitted model or benchmark.
+The lecture follows one 224×224 RGB photograph through the 192-wide, three-head, 12-block ImageNet classifier. A second end-to-end four-patch walkthrough is kept in the optional notebook, outside the main lecture. No new training is run for this revision.
 
 ## Main route
 
-1. Sections 1–3: pet dataset, text parallels, image shapes, patches and shared projection. Section 2 ends with 196 content rows. Section 3 first locates P63 on the unchanged photograph and adds position. The purple CLS detour explains why the classifier needs one image summary, how attention fills that row, why the shared starting CLS produces image-dependent summaries, and how mean pooling can replace it. Resume the forward pass with all 197 rows present, then make Q/K/V and complete the measured classifier. Name LayerNorm here; save its details for section 7.
-2. Sections 4–5: calculate one query, its scores, softmax and value message. Work the second head, concatenate and project. Return to possible visual head roles; explain that these are hypotheses rather than assigned jobs.
-3. Section 6: readout, class probabilities, loss and learning. The new reverse sequence follows the exact earlier worksheet through the class head, residual, both heads, values, attention softmax, Q/K and patch projection. Show the single query-weight update as an arithmetic example. The two softmaxes have different axes and purposes.
-4. Section 7: restore LayerNorm and the MLP. Follow both residual gradient paths, then return to the whole forward/loss/backward diagram. Compare information flow and readout with a conventional CNN.
-5. Section 9: explain the proposed dog/cat adaptation. A Linear(192,2) head has 386 parameters. Distinguish frozen-encoder head training from fine-tuning. Show one batch and the train/validation/test procedure. No new training has been run.
-6. Sections 10–11: use the saved real-photo predictions and measured attention/occlusion examples. Keep ImageNet outputs separate from the proposed two-class model. A confidence on one photo is not test accuracy.
-7. Section 13: ask students to narrate the shapes and reverse path. The optional patch-rearrangement check belongs here: explicitly call it a thought experiment about location, not a preprocessing step. Its coarse 4×4 grid illustrates the idea; the model uses 14×14 patches. The animal label need not change. Section 14 closes classification and previews CLIP.
+1. **Sections 1–3 — one forward pass.** Motivate image classification, form patches and embeddings, add position and CLS, then follow attention, heads, residuals, MLPs, depth and the final class head. Four useful points from the former worksheet now appear where they first matter: weighted filters versus averaging, controlled key/value changes, possible head roles, and the two softmax axes.
+2. **Section 4 — loss and learning.** Attach a hypothetical Newfoundland label to the same saved prediction, then follow the class-head gradient, both residual branches, attention weights and values, and the shared input parameters. One bias update illustrates SGD. Parameters, forward activations, gradients and optimizer updates remain distinct.
+3. **Section 5 — CNNs and inductive bias.** Compare local receptive fields with global patch attention; illustrate shared detectors and translation equivariance; compare both image-to-representation-to-classifier routes. Discuss locality, data and pretraining without claiming either architecture always wins.
+4. **Section 6 — the same model in code.** Keep B×3×224×224 throughout. A full slide opens Conv2d(3,192,16,16), then show token preparation, explicit three-head attention, two residual branches, 12 distinct blocks, CLS readout and a training step. SVG snippets come directly from `vit_image_classifier.py`. Random initialization does not reproduce the saved pretrained prediction.
+5. **Section 7 — dog/cat adaptation.** Replace the 1,000-class head with Linear(192,2). Compare frozen-encoder training and fine-tuning, then discuss batches and train/validation/test splits. This remains a proposed procedure.
+6. **Sections 8–9 — measured predictions and inspection.** Use saved dog/cat outputs, attention and occlusion. Separate an image confidence from test accuracy and attention weights from causal explanations.
+7. **Sections 10–12 — cost, transfer questions and next tasks.** Count tokens and score entries, ask students to reason about new shapes and patch arrangements, then close the classification story. The two-source arithmetic and 128×128 shape questions are short transfer exercises, not a repeated forward pass.
 
 ## Choose the depth for the audience
 
@@ -24,14 +24,14 @@ At `model-journey-checkpoint`, introduce just one Transformer block: 197 × 192 
 
 Inside that first block, `real-cls-attention` draws one normalized matrix X feeding three separate learned projections. Follow the unchanged row identities into Q, K and V; values change. `real-attention-product` shows Q × Kᵀ / 8, with CLS first and P1 through P196 on both score axes. Track the highlighted CLS/P63 entry: receiving query versus source key. `real-attention-cls-zoom` then outlines the CLS row in the full matrix and enlarges it beside the grid. Reveal its scores first, then softmax and the matching weight row: 196 patch scores plus one self-score give 197 weights summing to one. Nothing is causally masked because the full image is available. `real-attention-weights` returns to the full matrices and applies that same softmax to every query row, preserving shape while turning scores into source weights. `real-attention-mask` compares causal text access with the fully connected image matrix: even the first CLS row can read the last patch. `real-cls-values-origin` reconnects V to the same dog and the shared 192→64 value projection. `real-cls-value-scaling` selects the saved CLS weight for P63 and multiplies it across the patch’s 64 actual value features. `real-cls-value-sum` zooms out to (1×197) × (197×64) → (1×64), highlighting one V column and its output coordinate. Sum over sources, keep the feature width. `real-attention-values` then restores every query to form H=AV with 197 message rows. Matrix grids abbreviate entries with symbols and ellipses. The P63 values, its CLS weight, and the CLS message preview come from the saved dog traces; products are computed at full stored precision before rounding. The later small worksheet supplies a complete hand calculation.
 
-For a first pass through backward propagation, use `backward-route`, `backward-scores`, `backward-cls`, `backward-heads`, `backward-one-weight` and `backward-patches`. The detailed softmax/QK derivatives can be a calculation workshop after the main mechanism is understood. Sections 8 (code), 12 (cost) and the existing notebooks are optional extensions; the lecture does not require a live notebook.
+For a shorter class, use the six-slide photo learning section at a conceptual level. The companion text includes the attention derivatives. Code (section 6), measured inspection, cost and the optional notebook can be assigned for independent study; no live notebook is required.
 
 ## Keep the examples distinct
 
 - Pet photographs motivate the real task.
 - The exact checkpoint trace is a pretrained 1,000-class ImageNet model: 224×224 RGB, 16×16 patches, 196 patch rows, D=192, 3 heads, 12 blocks.
-- The four-patch grayscale worksheet has engineered 4-wide embeddings, two heads and two arrangement labels. Its simplified block omits LayerNorm and the MLP.
-- The new pet adaptation is a procedure students could run, with no claimed measured accuracy.
+- The optional four-patch grayscale worksheet has engineered 4-wide embeddings, two heads and two arrangement labels. Its simplified block omits LayerNorm and the MLP.
+- The pet adaptation is a procedure students could run, with no claimed measured accuracy.
 - Earlier noisy-stripe training results remain in the optional worked lab and saved `training.json`; they are not pet-classification evidence.
 
 ## Useful questions
@@ -49,10 +49,11 @@ For a first pass through backward propagation, use `backward-route`, `backward-s
 
 ```sh
 python3 src/build_vision1_lesson.py --slides-only
-PYTHONPATH=src python3 src/vision1_gradients.py
+python3 src/check_vision1_closure.py
+python3 src/check_vision1_photo_code.py
 ```
 
-The slide-only build reuses saved experiment artifacts. The second command checks analytic gradients against central differences for all 116 worksheet parameter coordinates; it runs no model-training loop.
+The slide-only build reuses saved experiment artifacts. The closure check validates the saved arithmetic and slide artifacts. The code check uses synthetic inputs to verify Conv2d against unfold-plus-linear, attention against PyTorch SDPA, batch independence, tensor shapes and gradient reach; it performs no optimizer step.
 
 ### Completing one head before introducing three
 

@@ -1,0 +1,30 @@
+{
+  "input": [
+    2,
+    3,
+    224,
+    224
+  ],
+  "patch_grid": [
+    2,
+    192,
+    14,
+    14
+  ],
+  "input_rows": [
+    2,
+    197,
+    192
+  ],
+  "logits": [
+    2,
+    1000
+  ],
+  "conv2d_equals_unfold_linear": true,
+  "separate_images_match_batch": true,
+  "attention_matches_pytorch_sdpa": true,
+  "distinct_parameter_sets": 12,
+  "all_parameter_gradients_finite_and_nonzero": true,
+  "optimizer_steps": 0,
+  "checkpoint_downloads": 0
+}

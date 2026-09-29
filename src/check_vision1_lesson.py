@@ -52,10 +52,18 @@ for i,(name,image) in enumerate(p['images'].items()):
                 np.testing.assert_allclose(actual[2*i+j]['heads'][h][key],expected['heads'][h][key],atol=1e-12)
 
 manifest=json.loads((ROOT/'figures/vision1/frame-manifest.json').read_text())
-assert len(manifest)==256
-required={'task-side-by-side','task-mask-reason','qkv-match-numbers','qkv-read-numbers','qkv-change-key','qkv-change-value','qkv-no-prompt','cls-start','cls-shared-start','cls-learns','pooling-example','readout-choice'}
-required.update({'backward-route','backward-qk','backward-patches','backward-full-block','cls-without','heads-visual-roles','cnn-classifier-parallel','pets-evaluation','classification-exit'})
+assert len(manifest)==164
+required={'task-side-by-side','cls-shared-start','cls-without','heads-visual-roles',
+          'patch-filter-patterns','photo-key-value-check','photo-two-softmaxes',
+          'photo-label-loss','photo-backward-head','photo-backward-block',
+          'photo-backward-attention','photo-backward-inputs','photo-optimizer-step',
+          'cnn-receptive-field','cnn-inductive-bias','cnn-vit-design',
+          'code-photo-input','code-photo-conv','code-photo-tokens','code-photo-attention',
+          'code-photo-block','code-photo-readout','code-photo-training',
+          'pets-evaluation','classification-exit'}
 assert required <= {x['id'] for x in manifest}
+assert not {'s02-small','s03-query','s04-probability','heads-independent','code-patch','code-model'} & {x['id'] for x in manifest}
+assert sorted({x['section'] for x in manifest}) == [f's{i:02}' for i in range(1,13)]
 from vision1_gradients import checked_trace
 reverse=checked_trace()
 assert reverse['verification']['max_absolute_error']<1e-7
@@ -81,8 +89,8 @@ assert all(x['section'] and x['frame'] for x in manifest)
 ids=[x['id'] for x in manifest]
 assert ids.index('model-journey-overview') < ids.index('s01-rows')
 assert ids.index('position-where') < ids.index('position-table') < ids.index('real-patch-position') < ids.index('position-learning') < ids.index('cls-detour')
-assert ids.index('real-cls-purpose') < ids.index('real-cls-sequence') < ids.index('real-patch-qkv') < ids.index('real-cls-prediction') < ids.index('s02-small')
-assert all(x['section']=='s13' for x in manifest if x['id'].startswith('position-photo-'))
+assert ids.index('real-cls-purpose') < ids.index('real-cls-sequence') < ids.index('real-patch-qkv') < ids.index('real-cls-prediction') < ids.index('photo-label-loss')
+assert all(x['section']=='s11' for x in manifest if x['id'].startswith('position-photo-'))
 assert all(x['title'].startswith('Section ') for x in manifest if x['id'].startswith('vision-topic-'))
 classifier=json.loads((ROOT/'figures/vision1/real-classifier-path.json').read_text())
 assert classifier['with_cls']==[197,192] and classifier['mlp_hidden']==[197,768]
