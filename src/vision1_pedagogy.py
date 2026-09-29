@@ -105,7 +105,7 @@ def expand(b, sections):
     # and one sentence that says what the calculation just showed.
     revisions={
       's01-photo':('What animal do you see?','Which parts of the photograph helped you decide?'),
-      's01-context':('Would you recognize this crop on its own?','To choose cat or dog, we need visual clues. This dark crop becomes easier to interpret when we see the whole photo.'),
+      's01-context':('Would you recognize this crop on its own?','Fur, shadow, or background? Seeing the face elsewhere in the photo helps us interpret this crop.'),
       'bridge-text':('What can we carry over from our text models?','We still turn inputs into rows, read useful information, and predict an answer.'),
       's01-patches':('Where do the patch boundaries go?','The grid cuts through the photograph before the model knows where the dog is.'),
       's02-small':('Same pieces, different picture?','Count the filled patches in each image. Then look at where they are.'),

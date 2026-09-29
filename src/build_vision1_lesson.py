@@ -118,11 +118,17 @@ def motivation():
     frames.append(frame('s01-photo','What is in this image?',b,'Start with the same task as Part I: produce scores for possible answers.',
         'What animal is this, and which parts made you decide?\nPoint to the face, fur, and silhouette before mentioning an architecture.',
         'In Part I, a prefix led to scores for possible next characters. Here a photograph leads to scores for possible image labels. The input and label vocabulary change; the idea of a classifier remains. This is a real Oxford-IIIT Pet image, newfoundland_31.'))
-    b=crop(25,100,290,194,9,'isolated')+t(170,335,'P10 · one crop',26,'ink-2','middle')
-    b+=g(arrow(345,200,445,200)+image(470,35,600,401)+rect(620,235.5,150,100.25,'c-e','transparent',0),1)
+    b=t(25,32,'We still want one image label. Which clues could help?',29,'ink-2')
+    b+=crop(25,115,290,194,9,'isolated')+t(170,346,'P10 · one crop',26,'ink-2','middle')
+    b+=g(arrow(345,220,445,220)+image(470,65,500,334)+rect(595,232,125,83.5,'c-e','transparent',0),1)
+    b+=t(25,438,'Next: attention lets each patch use information from other patches.',28,'c-e')
     frames.append(frame('s01-context','What can this patch tell us on its own?',b,'Part II: “bank” needed context. A patch can need context too.',
-        'Could this dark crop be fur, a shadow, or something else?\nReveal where it came from; keep pointing to the same crop.',
-        'The analogy is about contextual representation. A patch is a fixed piece of the input, not a word or an object with a ready-made semantic label. Its neighbours and distant patches can supply useful information. The outlined crop is an actual region of the opening photograph.'))
+        'Could this dark crop be fur, a shadow, or something else?\nConnect to the previous slide: we still predict one label for the whole image. Reveal the crop’s location, then point to the face. Introduce attention as the way patch representations will use context; the following slides explain how.',
+        'The previous slide compared the prediction tasks: next-token prediction uses a text prefix, while image classification predicts one label from the whole image. '
+        'Now we look inside the image computation. This isolated crop is ambiguous; seeing the face elsewhere in the photo helps us interpret the dark texture. '
+        'Attention will combine information from other patch representations to update this patch’s representation. The pixels themselves stay fixed. '
+        'This is the same contextual-representation idea we used for bank in Part II. A patch is a fixed piece of the input, not a word or an object with a ready-made semantic label. '
+        'The arrow locates the crop in the photograph; it is not a measured attention connection. The following slides unpack how information flows between patches.'))
     b=image(25,65,500,334)
     grid=''
     for j in range(1,4):grid+=line(25+125*j,65,25+125*j,399,'card',2)+line(25,65+83.5*j,525,65+83.5*j,'card',2)

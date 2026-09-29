@@ -82,8 +82,8 @@
   {
     "id": "s01-context",
     "title": "Would you recognize this crop on its own?",
-    "caption": "To choose cat or dog, we need visual clues. This dark crop becomes easier to interpret when we see the whole photo.",
-    "notes": "Could this dark crop be fur, a shadow, or something else?\nReveal where it came from; keep pointing to the same crop.",
+    "caption": "Fur, shadow, or background? Seeing the face elsewhere in the photo helps us interpret this crop.",
+    "notes": "Could this dark crop be fur, a shadow, or something else?\nConnect to the previous slide: we still predict one label for the whole image. Reveal the crop\u2019s location, then point to the face. Introduce attention as the way patch representations will use context; the following slides explain how.",
     "section": "s01",
     "frame": 11
   },
