@@ -566,6 +566,8 @@ optimizer.step()''',t(30,65,'image + known label',26,'c-e')+arrow(180,92,180,160
     sections=refine(b,sections)
     from vision1_input_bridge import clarify_inputs
     sections=clarify_inputs(b,sections)
+    from vision1_paper_opening import introduce_papers
+    sections=introduce_papers(b,sections)
     ordered=[]
     for n,(title,frames) in enumerate(sections,1):
         original_section(n,title,frames)
