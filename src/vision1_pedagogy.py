@@ -11,7 +11,7 @@ import xml.etree.ElementTree as ET
 from html import escape
 import numpy as np
 from vision1_intuition import calculations
-from vision1_worksheet_projection import build_worksheet_projection
+from vision1_worksheet_projection import build_worksheet_projection, build_worksheet_images
 
 ET.register_namespace('', 'http://www.w3.org/2000/svg')
 SVG='{http://www.w3.org/2000/svg}'
@@ -532,6 +532,10 @@ def expand(b, sections):
         (2,'How would we adapt it to our own labels?','Fit a new classifier; choose whether to update the image encoder too.','What changes if our labels are only cat and dog?','Distinguish a frozen-encoder linear probe from fine-tuning.'),
         (3,'What happens when we classify a new photograph?','Inference uses the fitted weights without updating them.','Does the model train again for every new photo?','Follow a new image through the fixed network.')]),
     }
+
+    projection_images = build_worksheet_images(b)
+    new.update(projection_images)
+    replacements.update({key: [html] for key, html in projection_images.items()})
 
     def use(key):return replacements.get(key,[old[key]])
     def seq(*keys):return [html for key in keys for html in (use(key) if key in old else [new[key]])]

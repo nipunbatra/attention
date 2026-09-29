@@ -833,17 +833,17 @@
   },
   {
     "id": "patch-matrix",
-    "title": "Where does each number in the patch row come from?",
-    "caption": "Multiply the pixel row by each column, then add the bias.",
-    "notes": "Which column computes ink, and which columns are zero?\nCalculate all four coordinates, then add the bias.",
+    "title": "Project all four patches of the first image",
+    "caption": "The 16 grayscale pixels form four patches. Each patch supplies four inputs to the same layer and gets four output features. Even an empty patch produces [0, 0, 0, 1] because of the bias.",
+    "notes": "Are four output features describing one patch or the whole image?\nOne patch. Match each coloured 2\u00d72 region to its input row and output row. There are four output rows. Add the same bias to each row; no activation follows.",
     "section": "s04",
     "frame": 7
   },
   {
     "id": "empty-patch",
-    "title": "What row does an empty patch get?",
-    "caption": "The bias adds a learned offset even when every input pixel is zero.",
-    "notes": "Will multiplying zeros by W_patch produce the final 1?\nCalculate the product first, then add the bias as a separate step.",
+    "title": "Project the second image with the same layer",
+    "caption": "Change the image from \u201cAcross the top\u201d to \u201cDown the left\u201d. P2 and P3 exchange their pixel rows and content rows. The layer uses exactly the same weights and biases for both images.",
+    "notes": "Which output rows change when the filled patches move to the left?\nP2 changes to [0,0,0,1]; P3 changes to [1,0,0,1]. P1 and P4 stay the same. Position has not been added yet. Keep row order: top-left, top-right, bottom-left, bottom-right.",
     "section": "s04",
     "frame": 8
   },

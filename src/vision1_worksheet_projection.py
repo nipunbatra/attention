@@ -96,3 +96,94 @@ def build_worksheet_projection(b):
         '<tr><td>4</td><td>[0,0,0,0]</td><td>1</td><td>1</td></tr></tbody></table>'
         '<p>Content row c = [1,0,0,1], shape 1 × 4. No activation follows the linear layer.</p>')
     return result
+
+
+def build_worksheet_images(b):
+    """Replace two redundant single-patch slides with both complete images."""
+    t, g, rect, arrow, line, pixels, frame, mobile_rows = (b[k] for k in
+        ['t', 'g', 'rect', 'arrow', 'line', 'pixels', 'frame', 'mobile_rows'])
+    data = b['DATA']
+    colors = ['c-e', 'c-q', 'c-v', 'c-k']
+    result = {}
+
+    def row(values):
+        return '['+', '.join(str(int(v)) for v in values)+']'
+
+    for key, name, title in [
+        ('patch-matrix', 'horizontal', 'Project all four patches of the first image'),
+        ('empty-patch', 'vertical', 'Project the second image with the same layer'),
+    ]:
+        case = data['cases'][name+'_positions']
+        body = t(118, 38, 'All 16 pixels', 28, 'ink', 'middle')
+        body += t(418, 38, 'Four pixel rows', 28, 'c-e', 'middle')
+        body += t(710, 38, 'Shared Linear(4, 4)', 27, 'c-e', 'middle')
+        body += t(1012, 38, 'Four content rows', 27, 'c-e', 'middle')
+        body += t(418, 76, 'X: 4 patches × 4 values', 23, 'ink-2', 'middle')
+        body += t(1012, 76, 'C: 4 patches × 4 features', 22, 'ink-2', 'middle')
+        body += pixels(26, 120, data['images'][name], 46, True)
+        for j, color in enumerate(colors):
+            x, y = 26+(j % 2)*92, 120+(j//2)*92
+            body += rect(x, y, 92, 92, color, 'transparent', 0)
+            body += t(x+46, 110 if j<2 else 335, f'P{j+1}', 24, color, 'middle')
+        body += arrow(227, 212, 273, 212)
+
+        # All 16 pixel values remain visible, with one row for each 2x2 patch.
+        output = ''
+        for j, color in enumerate(colors):
+            y = 133+59*j
+            body += t(308, y+9, f'P{j+1}', 23, color, 'end')
+            body += rect(321, y-24, 192, 48, color, 'transparent')
+            body += t(417, y+9, row(case['patches'][j]), 27, color, 'middle')
+            output += rect(916, y-24, 192, 48, color, 'transparent')
+            output += t(1012, y+9, row(case['content'][j]), 27, color, 'middle')
+            output += t(900, y+9, f'P{j+1}', 23, color, 'end')
+        body += arrow(528, 212, 575, 212)
+
+        # One weight matrix and one bias, reused for every patch in both images.
+        body += rect(590, 93, 239, 257, 'c-e', 't-e')
+        body += t(609, 121, 'W', 23, 'c-e')
+        for r, weights in enumerate(data['W_patch']):
+            for c, value in enumerate(weights):
+                body += t(644+c*49, 145+r*39, '¼' if value==.25 else str(int(value)), 28, 'c-e', 'middle')
+        body += line(611, 281, 808, 281, 'c-e')
+        body += t(710, 316, 'b = [0, 0, 0, 1]', 25, 'c-v', 'middle')
+        output += arrow(839, 212, 878, 212)
+        output += t(580, 399, 'C = XW + b     ·     (4 × 4)(4 × 4) + bias → 4 × 4', 29, 'c-e', 'middle')
+        body += g(output, 1)
+        if name == 'horizontal':
+            body += t(580, 439, 'One 2 × 2 patch → four inputs → four output features. Repeat for P1–P4.', 25, 'ink', 'middle')
+            caption = ('The 16 grayscale pixels form four patches. Each patch supplies four inputs '
+                       'to the same layer and gets four output features. Even an empty patch '
+                       'produces [0, 0, 0, 1] because of the bias.')
+            question = 'Are four output features describing one patch or the whole image?'
+            point = ('One patch. Match each coloured 2×2 region to its input row and output row. '
+                     'There are four output rows. Add the same bias to each row; no activation follows.')
+        else:
+            body += t(580, 439, 'P2 becomes empty; P3 becomes filled. The same W and b give the new rows.', 25, 'ink', 'middle')
+            caption = ('Change the image from “Across the top” to “Down the left”. P2 and P3 '
+                       'exchange their pixel rows and content rows. The layer uses exactly '
+                       'the same weights and biases for both images.')
+            question = 'Which output rows change when the filled patches move to the left?'
+            point = ('P2 changes to [0,0,0,1]; P3 changes to [1,0,0,1]. P1 and P4 stay the same. '
+                     'Position has not been added yet. Keep row order: top-left, top-right, bottom-left, bottom-right.')
+        prose = ('This diagram shows every input pixel and every patch content feature. '
+                 'The input X has shape 4×4: four patches, with four grayscale values per patch. '
+                 'Each patch uses the same W and b shown in the center. C=XW+b has shape 4×4: '
+                 'four patch embeddings, each four features wide. Bias is broadcast to every row. '
+                 'This is nn.Linear(4,4) without an activation. The 16 weights and four biases '
+                 'are hand-chosen for this worksheet, independently of the 16 input pixel values. '
+                 'No positions, CLS or attention have entered this calculation. The two images '
+                 'have the same set of content rows in a different order. Their locations are added later.')
+        mobile = ('<p>All 16 pixels, arranged in four image rows: '
+                  +'; '.join(row(r) for r in data['images'][name])+'.</p>'
+                  '<p>Four 2×2 patches. Shared nn.Linear(4,4): each row of W is [¼,0,0,0]; '
+                  'bias = [0,0,0,1]. No activation.</p>'
+                  +mobile_rows(['Patch', 'Four input pixels', 'Four output features'],
+                               [[f'P{j+1}', row(case['patches'][j]), row(case['content'][j])] for j in range(4)])
+                  +'<p>X: 4×4 → C=XW+b: 4×4. One output row per patch.</p>')
+        notes = question+'\n'+point
+        for meta in b['FRAMES']:
+            if meta['id']==key:
+                meta.update(title=title, caption=caption, notes=notes)
+        result[key] = frame(key, title, body, caption, notes, prose, mobile)
+    return result
