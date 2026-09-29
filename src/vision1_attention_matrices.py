@@ -114,6 +114,60 @@ def build_attention_matrices(b):
         '<p><strong>S[CLS,P63] = dot(q_CLS, k_P63) / 8.</strong> Sum 64 coordinate products.</p>'
         '<p>197 × 197 = 38,809 matching scores per head. They can be negative and are not probabilities.</p>')
 
+    zoom_sources = ['CLS', 'P1', 'P2', '…', 'P63', '…', 'P196']
+    zoom_indices = ['₀', '₁', '₂', None, '₆₃', None, '₁₉₆']
+
+    def cls_strip(y, symbol, color, tint, labels=False):
+        out = ''
+        for j, (source_name, index) in enumerate(zip(zoom_sources, zoom_indices)):
+            x, width = 510+j*610/7, 610/7
+            out += rect(x, y, width, 55, color, tint, 0)
+            out += t(x+width/2, y+36, symbol+index if index else '…', 30, color, 'middle')
+            if labels:
+                out += t(x+width/2, y-17, source_name, 23, 'ink-2', 'middle')
+        return out
+
+    body = t(225, 40, 'S · 197 × 197 scores', 29, 'c-k', 'middle')
+    body += t(225, 89, 'source keys →', 23, 'ink-2', 'middle')
+    body += matrix(90, 143, 270, 204, tokens, tokens, 'c-q', row=0, size=18)
+    body += rect(90, 143, 270, 34, 'c-q', 'transparent', 0)
+    zoom = t(815, 40, 'CLS row, enlarged', 29, 'c-q', 'middle')
+    zoom += line(373, 143, 500, 143, 'c-q', 2.5)+line(373, 177, 500, 198, 'c-q', 2.5)
+    zoom += t(433, 123, 'zoom', 21, 'c-q', 'middle')
+    zoom += cls_strip(143, 's', 'c-q', 't-q', labels=True)
+    body += g(zoom, 1)
+    weights = arrow(691, 211, 691, 278, 'c-v')
+    weights += t(721, 240, 'softmax', 29, 'c-v')
+    weights += t(721, 269, 'across all 197 scores', 23, 'c-v')
+    weights += cls_strip(290, 'a', 'c-v', 'transparent')
+    weights += t(815, 382, 'a₀ + a₁ + … + a₁₉₆ = 1', 29, 'c-v', 'middle')
+    body += g(weights, 2)
+    body += t(225, 382, '1 CLS score + 196 patch scores', 23, 'c-q', 'middle')
+    body += t(35, 435, 'No causal mask: the whole image is already available.', 29, 'c-v')
+    add('real-attention-cls-zoom', 'Follow the CLS row from scores to weights', body,
+        'Enlarge the highlighted CLS row. Its 197 scores include CLS itself and all 196 patches. Softmax normalizes this entire row into 197 weights that sum to one. Every image patch is available; no causal mask is needed.',
+        'Are there 196 scores or 197 scores in the highlighted CLS row?',
+        'There are 196 patch scores plus the CLS self-score. Reveal the zoom, then the weights. The same query produces every score in this row; only the source key changes. Nothing is hidden behind a causal mask.',
+        'The purple outline selects the first row of S, not its first column. The two connecting lines enlarge '
+        'that same row without changing its contents or order. Here the receiving query is fixed to CLS, '
+        'so s_j is shorthand for S[CLS,j] = dot(q_CLS,k_j)/8. Source 0 is CLS itself; sources 1 through 196 '
+        'are the image patches P1 through P196. Ellipses omit scores from the drawing, but all 197 enter '
+        'the softmax denominator: a_j = exp(s_j) / Σ_{k=0}^{196} exp(s_k). '
+        'The resulting a_j is shorthand for A[CLS,j], the weight on source j’s 64-feature value row. '
+        'These are symbolic entries, not measured outputs. Every source is permitted because the full image '
+        'is observed before its class label is predicted. The next slide applies the same operation to '
+        'each of the remaining query rows; later we use the weights to mix V.',
+        '<p><strong>Highlight row CLS in S (197 × 197), then enlarge that row.</strong></p>'
+        +mobile_rows(['Source key', 'Score for the CLS query', 'After softmax'],
+                     [['CLS itself', 's₀', 'a₀'], ['P1', 's₁', 'a₁'], ['P2', 's₂', 'a₂'],
+                      ['…', '…', '…'], ['P63', 's₆₃', 'a₆₃'], ['…', '…', '…'], ['P196', 's₁₉₆', 'a₁₉₆']])
+        +'<p>1 CLS self-score + 196 patch scores = <strong>197 scores</strong>. '
+        'For this fixed CLS query, s_j = dot(q_CLS,k_j) / 8.</p>'
+        '<p>Softmax across all 197 scores gives 197 weights: <strong>a₀ + a₁ + … + a₁₉₆ = 1</strong>. '
+        'Each a_j weights the corresponding source value row.</p>'
+        '<p><strong>No causal mask:</strong> the whole image is available before predicting its class. '
+        'The ellipses only shorten the drawing; no source is excluded from softmax.</p>')
+
     body = t(284, 37, 'S: matching scores', 29, 'c-k', 'middle')
     body += t(884, 37, 'A: attention weights', 29, 'c-v', 'middle')
     body += matrix(140, 114, 288, 204, tokens, tokens, 'c-k', row=0, cell=(0,3), entry='s', size=20)
