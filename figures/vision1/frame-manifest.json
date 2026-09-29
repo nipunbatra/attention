@@ -522,8 +522,8 @@
   {
     "id": "cls-collect",
     "title": "The dog\u2019s patches turn CLS into this image\u2019s summary",
-    "caption": "The dog\u2019s patch rows bring the image information. Attention lets CLS gather it, and the blocks update its features. Read the final CLS to predict Newfoundland. The stored starting parameters stay fixed during this forward pass.",
-    "notes": "Which numbers change while we classify this photo?\nThe CLS activation changes through the blocks; the stored parameter does not. Point to the dog\u2019s patch rows as the source of image-specific information.",
+    "caption": "The dog\u2019s patches update CLS. Every class neuron reads all 192 final features with learned weights and a bias. Softmax converts the 1,000 scores into probabilities; Newfoundland has the highest probability for this photograph.",
+    "notes": "Which numbers change while we classify this photo?\nThe CLS activation changes through the blocks; the stored parameter does not. Then open the class head: each output reads all 192 features. The neurons show scores; softmax across all 1,000 scores gives the probability.",
     "section": "s03",
     "frame": 11
   },

@@ -136,29 +136,71 @@ def build_cls_story(b):
             ['Stored CLS parameter s',vec('cls_parameter')],['+ position p₀',vec('cls_position')],['= input e₀',vec('cls_input')]])
         +'<p>Saved trained parameters, reused for every image. Rounded previews; 189 coordinates are omitted.</p>')
 
-    body = grid(35,90,205)+t(137,340,'This dog’s pixels',24,'ink-2','middle')
-    body += arrow(246,190,295,190)+box(310,149,285,['196 patch input rows','pixels → features + position'],size=22)
-    body += box(310,22,285,['CLS input e₀','same learned start'],'c-q',size=24)
-    body += line(601,63,629,63,'c-q')+line(629,63,629,190,'c-q')+arrow(629,190,678,190,'c-q')
-    body += arrow(601,190,623,190,'c-e')
-    body += box(694,149,190,['12 blocks','all 197 rows'],size=24)+arrow(890,190,927,190)
-    body += box(943,149,187,['Read final CLS','192 features'],'c-q',size=23)
-    body += g(t(310,302,'Starting CLS input',25,'c-q')+t(750,302,'Final CLS for this dog',25,'c-q'),1)
-    body += g(t(310,347,vec('cls_input'),26,'c-q')+arrow(690,337,734,337,'c-q')
-              +t(750,347,vec('cls_final'),26,'c-q'),1)
-    body += g(t(310,419,'Class head → 1,000 scores → top label: Newfoundland (95.73%)',25,'c-e'),2)
+    body = grid(35,25,155)+t(112,214,'This dog’s pixels',23,'ink-2','middle')
+    body += arrow(196,128,295,128)+box(310,90,285,['196 patch input rows','pixels → features + position'],h=76,size=22)
+    body += box(310,0,285,['CLS input e₀','same learned start'],'c-q',h=76,size=24)
+    body += line(601,38,629,38,'c-q')+line(629,38,629,128,'c-q')+arrow(629,128,678,128,'c-q')
+    body += arrow(601,128,623,128,'c-e')
+    body += box(694,90,190,['12 blocks','all 197 rows'],h=76,size=24)+arrow(890,128,927,128)
+    body += box(943,90,187,['Read final CLS','192 features'],'c-q',h=76,size=23)
+    body += g(t(310,205,'Starting CLS input',25,'c-q')+t(750,205,'Final CLS for this dog',25,'c-q'),1)
+    body += g(t(310,250,vec('cls_input'),26,'c-q')+arrow(690,240,734,240,'c-q')
+              +t(750,250,vec('cls_final'),26,'c-q'),1)
+
+    # Open the class head in place: representative input and output neurons.
+    # The saved scores use all 192 features; the ellipses abbreviate the drawing.
+    readout = json.loads((b['ASSETS']/'classifier-readout-trace.json').read_text())
+    classes = readout['selected_classes']
+    def neuron(x, y, label, color, radius=24):
+        return (f'<circle cx="{x}" cy="{y}" r="{radius}" fill="var(--card)" '
+                f'stroke="var(--{color})" stroke-width="2"/>'
+                +t(x,y+7,label,20,color,'middle'))
+    head = line(35,271,1130,271,'line')
+    head += t(35,318,'Class head',28,'c-e')+t(35,360,'Linear',25,'c-e')
+    head += t(35,398,'192 → 1,000',25,'c-e')
+    head += t(350,305,'Final CLS features',25,'c-q','middle')
+    head += t(650,305,'Class scores',25,'c-e','middle')
+    head += '<g opacity=".45">'
+    for yi in [341,408]:
+        for yo in [341,408]:
+            head += line(376,yi,621,yo,'c-e',1.6)
+    head += '</g>'
+    head += neuron(350,341,'h₁','c-q')+neuron(350,408,'h₁₉₂','c-q')
+    head += t(350,379,'⋮',24,'c-q','middle')
+    for y, item in zip([341,408],classes[:2]):
+        head += neuron(650,y,f'{item["logit"]:.2f}','c-e',27)
+    head += t(650,380,'⋮',24,'c-e','middle')
+    head += t(497,329,'weights',22,'c-e','middle')
+    head += t(497,438,'+ one bias per class',21,'c-e','middle')
+    head += line(679,341,711,341,'c-e')+line(679,408,711,408,'c-e')
+    head += line(711,341,711,408,'c-e')+arrow(711,374,745,374,'c-e')
+    head += box(760,334,155,['softmax','all 1,000'],'c-v',h=76,size=23)
+    head += arrow(921,374,952,374,'c-v')
+    head += t(1044,354,classes[0]['label'],24,'c-v','middle')
+    head += t(1044,398,f'{100*classes[0]["probability"]:.2f}%',32,'c-v','middle')
+    body += g(head,2)
     add('cls-collect','The dog’s patches turn CLS into this image’s summary',body,
-        'The dog’s patch rows bring the image information. Attention lets CLS gather it, and the blocks update its features. Read the final CLS to predict Newfoundland. The stored starting parameters stay fixed during this forward pass.',
-        'Which numbers change while we classify this photo?\nThe CLS activation changes through the blocks; the stored parameter does not. Point to the dog’s patch rows as the source of image-specific information.',
+        'The dog’s patches update CLS. Every class neuron reads all 192 final features with learned weights and a bias. Softmax converts the 1,000 scores into probabilities; Newfoundland has the highest probability for this photograph.',
+        'Which numbers change while we classify this photo?\nThe CLS activation changes through the blocks; the stored parameter does not. Then open the class head: each output reads all 192 features. The neurons show scores; softmax across all 1,000 scores gives the probability.',
         'This is the same saved forward pass used elsewhere in the lecture. Initial e₀ includes the CLS position; '
         'final CLS includes all 12 blocks and the checkpoint’s final normalization. Each preview shows three of 192 coordinates. '
         'The blocks update patch rows as well as CLS. The class head then maps the final 192-coordinate summary '
-        'to 1,000 ImageNet scores. The 95.73% value is the saved probability for Newfoundland on this image, not test accuracy. '
-        'We are not changing the checkpoint or running new inference or training. The upcoming detailed slides explain how Q/K matching and value mixtures produce the updates.'+evidence,
+        'to 1,000 ImageNet scores with one affine layer, nn.Linear(192,1000). '
+        'Each class neuron has 192 learned weights and one bias. The sketch shows the first and last CLS input neurons '
+        'and two representative class outputs; the omitted 190 input neurons and 998 output neurons are also fully connected. '
+        'The displayed scores are 15.48 for Newfoundland and 11.40 for Tibetan mastiff, rounded from the saved trace. '
+        'There is no hidden layer or GELU in this checkpoint’s class head. Softmax uses all 1,000 scores, including the omitted outputs. '
+        'The 95.73% value is the saved probability for Newfoundland on this image, not test accuracy. '
+        'The original learned CLS parameter and classifier weights stay fixed during inference. '
+        'We are not changing the checkpoint or running new inference or training. The upcoming detailed slides explain how Q/K matching and value mixtures produce the updates. '
+        '<a href="figures/vision1/classifier-readout-trace.json">Saved class-head weights, scores and probabilities</a>.'+evidence,
         '<p>The same dog image → 196 patch input rows. Add the shared CLS input row → 197 rows through 12 blocks.</p>'
         +mobile_rows(['CLS activation','First three of 192 coordinates'],[
             ['At the input',vec('cls_input')],['After the blocks and final normalization',vec('cls_final')]])
-        +'<p>Final CLS → class head → 1,000 scores → Newfoundland, 95.73% probability for this photograph.</p>'
+        +'<p>Final CLS (192 features) → fully connected Linear(192,1000) → 1,000 class scores → softmax → class probabilities.</p>'
+        +mobile_rows(['Class neuron','Measured score'],[[r['label'],f'{r["logit"]:.2f}'] for r in classes[:2]])
+        +'<p>Each class neuron reads all 192 features with its own learned weights and bias. Softmax uses all 1,000 scores. '
+        'Newfoundland has the highest probability: 95.73% for this photograph.</p>'
         '<p>The activation changes with the image. The stored starting CLS parameter remains fixed during inference.</p>')
 
     comparison = json.loads((b['ASSETS']/'cls-two-image-trace.json').read_text())
