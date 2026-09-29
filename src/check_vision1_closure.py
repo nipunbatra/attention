@@ -18,11 +18,11 @@ for h in trace['gradients']['heads']:
     np.testing.assert_allclose(np.array(h['dS']).sum(axis=1),0,atol=1e-12)
 assert trace['single_update']['loss_after']<trace['single_update']['loss_before']
 manifest=json.loads((ROOT/'figures/vision1/frame-manifest.json').read_text())
-assert len(manifest)==255 and len({x['id'] for x in manifest})==255
+assert len(manifest)==256 and len({x['id'] for x in manifest})==256
 ids=[x['id'] for x in manifest]
 input_order=['patch-projection-parameters','vision-topic-03','position-where','position-table','real-patch-position','position-learning',
              'cls-detour','real-cls-purpose','cls-parameter-origin','cls-parameter-learning',
-             'cls-stored-start','cls-collect','cls-shared-start','cls-two-image-readout','cls-without',
+             'cls-stored-start','cls-summary-refinement','cls-collect','cls-shared-start','cls-two-image-readout','cls-without',
              'cls-pool-dog','cls-pool-arithmetic','cls-readout-return',
              'real-cls-sequence','model-journey-checkpoint','real-patch-qkv','real-cls-attention',
              'real-attention-product','real-attention-cls-zoom','real-attention-weights','real-attention-mask',

@@ -136,6 +136,70 @@ def build_cls_story(b):
             ['Stored CLS parameter s',vec('cls_parameter')],['+ position p₀',vec('cls_position')],['= input e₀',vec('cls_input')]])
         +'<p>Saved trained parameters, reused for every image. Rounded previews; 189 coordinates are omitted.</p>')
 
+    # A single conceptual bridge before the measured forward pass: successive
+    # states of both CLS and the patch rows, with the readout defining their job.
+    def state_rows(x, heading, cls_label, patch_label, revision):
+        out = t(x+105,77,heading,25,'ink-2','middle')
+        out += rect(x,102,210,65,'c-q','t-q',5)
+        out += t(x+105,130,cls_label,23,'c-q','middle')
+        # These marks stand for coordinates, not measured values or named parts.
+        for k in range(8):
+            width = 11 + (k*7+revision*11)%12
+            out += rect(x+16+k*23,144,width,7,'c-q','c-q',0)
+        out += rect(x,203,210,84,'c-e','t-e',5)
+        out += t(x+105,232,patch_label,21,'c-e','middle')
+        for r in range(2):
+            for k in range(8):
+                width = 9 + (r*3+k*5+revision*7)%14
+                out += rect(x+16+k*23,247+r*17,width,6,'c-e','c-e',0)
+        return out
+
+    body = t(35,32,'Each block lets CLS read the current patch features.',29)
+    body += image(35,172,112,112,photo)+t(91,315,'Same photo',22,'ink-2','middle')
+    body += arrow(153,244,193,244,'c-e')
+    body += state_rows(205,'Input','Shared CLS start','196 patch rows',0)
+    next_state = state_rows(560,'After block 1','Updated CLS','Updated patch rows',1)
+    next_state += arrow(421,134,548,134,'c-q')
+    next_state += arrow(421,245,548,245,'c-e')
+    next_state += arrow(421,224,548,151,'c-e')
+    next_state += t(487,104,'Block 1',23,'ink-2','middle')
+    body += g(next_state,1)
+    final_state = state_rows(915,'After block 12','Final CLS','Updated patch rows',2)
+    final_state += arrow(776,134,903,134,'c-q')
+    final_state += arrow(776,245,903,245,'c-e')
+    final_state += arrow(776,224,903,151,'c-e')
+    final_state += t(841,104,'Blocks 2–12',22,'ink-2','middle')
+    final_state += t(660,316,'All 197 rows stay 192 features wide; their numbers change.',24,'ink-2','middle')
+    body += g(final_state,2)
+    reason = rect(35,346,1090,82,'c-a','card',5)
+    reason += t(60,378,'The classifier reads final CLS; the class loss trains what it needs to carry.',25,'c-a')
+    reason += t(60,412,'“Image summary” = features useful for predicting the image’s class.',26,'ink')
+    body += g(reason,3)
+    add('cls-summary-refinement','What makes CLS an image summary?',body,
+        'CLS receives image information through attention. Later blocks use updated CLS and updated patch features. Because the classifier reads final CLS, classification training encourages it to carry information useful for distinguishing the image’s class.',
+        'Why should this extra row learn anything useful?\n'
+        'Trace a blue arrow from patch features into the next CLS state. Both kinds of rows change. '
+        'Then reveal the objective: the classifier must predict from final CLS, so the label loss trains the network to make that row useful.',
+        'Follow the same dog through the stack. At the input, CLS is the shared learned start plus its position vector. '
+        'In block 1, attention brings image-dependent value messages into CLS. The block also updates the patch rows. '
+        'Block 2 receives all of these updated rows: its CLS query and its source keys and values are computed again from the current representations. '
+        'This continues through 12 successive blocks, each with its own learned parameters. The arrows summarize complete blocks, '
+        'including attention, residual additions and the per-row MLP; their detailed computation comes later. '
+        'Blue diagonal arrows highlight patch information entering CLS. CLS can also attend to itself, and patch queries can read CLS and other patches. '
+        'All 197 rows retain 192 coordinates. The marks stand for changing features; they are not measured activations or attention weights. '
+        'The class head reads final CLS after final normalization. During training, the class loss sends gradients through this readout and the blocks, '
+        'adjusting their weights and the shared starting CLS. There is no target summary vector or instruction assigning “fur”, “eyes” or “breed” to a coordinate or layer. '
+        'A summary here means a learned representation useful for the classification objective, not a sentence describing the photograph or a copy of every pixel. '
+        'The objective encourages useful features; it does not guarantee that every block increases confidence. '
+        'During this saved forward pass, model parameters remain fixed and only the image-dependent activations change. '
+        '<a href="https://arxiv.org/html/2010.11929v2#S3.SS1">ViT: class token, encoder and classification head</a>.',
+        '<p>Same dog image → 196 patch rows. Add the shared starting CLS.</p>'
+        '<ol><li><strong>Block 1:</strong> CLS receives information from the image’s patch features. Patch rows also change.</li>'
+        '<li><strong>Block 2:</strong> its attention uses the updated CLS and updated patch rows. It computes a new message.</li>'
+        '<li><strong>Continue through block 12:</strong> every block has its own learned parameters. All 197 rows remain 192 features wide.</li></ol>'
+        '<p><strong>Why a summary?</strong> The classifier reads final CLS. The class loss trains the network to make its features useful for predicting the image’s class.</p>'
+        '<p>We do not supply a target summary vector or assign a meaning to each coordinate. The diagram is conceptual; the next slide shows saved values.</p>')
+
     body = grid(35,25,155)+t(112,214,'This dog’s pixels',23,'ink-2','middle')
     body += arrow(196,128,295,128)+box(310,90,285,['196 patch input rows','pixels → features + position'],h=76,size=22)
     body += box(310,0,285,['CLS input e₀','same learned start'],'c-q',h=76,size=24)
@@ -180,7 +244,7 @@ def build_cls_story(b):
     head += t(1044,398,f'{100*classes[0]["probability"]:.2f}%',32,'c-v','middle')
     body += g(head,2)
     add('cls-collect','The dog’s patches turn CLS into this image’s summary',body,
-        'The dog’s patches update CLS. Every class neuron reads all 192 final features with learned weights and a bias. Softmax converts the 1,000 scores into probabilities; Newfoundland has the highest probability for this photograph.',
+        'Here is the learned summary for this dog: 192 features read by the class head. Each class neuron combines all 192 features with its learned weights and bias. Softmax gives Newfoundland the highest probability.',
         'Which numbers change while we classify this photo?\nThe CLS activation changes through the blocks; the stored parameter does not. Then open the class head: each output reads all 192 features. The neurons show scores; softmax across all 1,000 scores gives the probability.',
         'This is the same saved forward pass used elsewhere in the lecture. Initial e₀ includes the CLS position; '
         'final CLS includes all 12 blocks and the checkpoint’s final normalization. Each preview shows three of 192 coordinates. '
