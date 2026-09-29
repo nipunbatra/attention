@@ -176,11 +176,11 @@ def build_multihead_journey(b):
         'The operation is torch.cat([h_cls_head1,h_cls_head2,h_cls_head3], dim=-1). '
         'No softmax, averaging or learned layer is applied during concatenation itself. The trace verifies '
         'all 192 coordinates equal the three complete 64-coordinate segments in head order. '
-        'For all queries, concatenate H¹, H² and H³ along the feature axis to produce J with shape '
+        'For all queries, concatenate H¹, H² and H³ along the feature axis to produce the joined message matrix, denoted J, with shape '
         '197×192. The row count stays 197. CLS remains its first row.',
         mobile_rows(['Joined feature range', 'Source'], [['1–64','Head 1 message'],['65–128','Head 2 message'],['129–192','Head 3 message']])
         +'<p>Concatenation appends coordinates: (1 × 64), (1 × 64), (1 × 64) → <strong>1 × 192</strong>.</p>'
-        '<p>For all queries: concatenate H¹, H² and H³ → J (197 × 192). No learned parameters in this step.</p>')
+        '<p>For all queries: concatenate H¹, H² and H³ → joined messages (197 rows × 192 features). No learned parameters in this step.</p>')
 
     # Match the text-attention diagram: retain E on a visible bypass while the
     # attention branch computes an update. All boxes here represent all rows.
@@ -198,7 +198,8 @@ def build_multihead_journey(b):
     body += t(611, 148, 'Concatenate', 24, 'c-v', 'middle')
     for h, color in enumerate(colors):
         body += box(542+h*46, 168, 46, ['H'+superscripts[h]], color, 104, 23)
-    body += t(611, 306, 'J · 197 × 192', 22, 'c-v', 'middle')
+    body += t(611, 306, 'Joined messages', 22, 'c-v', 'middle')
+    body += t(611, 338, '197 × 192', 22, 'c-v', 'middle')
     projection = arrow(688, 220, 708, 220)
     projection += box(716, 183, 146, ['Linear', '(192,192)'], 'c-v', 74, 23)
     projection += t(789, 298, '× W_O + b_O', 21, 'c-v', 'middle')
@@ -225,7 +226,8 @@ def build_multihead_journey(b):
         'Follow two paths from E. The heads produce messages; concatenate and project them to make ΔE. The skip path carries E directly to addition. U = E + ΔE is the contextualized representation passed to the MLP.',
         'Which operation learns to combine the head features, and which row gets the residual update?',
         'Linear(192,192) learns the combination. Add the result to E, before the attention branch’s LayerNorm. The MLP will receive this updated row through its own LayerNorm.',
-        'For the full sequence, J=Concat(H¹,H²,H³) has shape 197×192. The output projection is '
+        'Call the joined message matrix J: J=Concat(H¹,H²,H³). It has 197 rows (CLS plus 196 patches) '
+        'and 192 features per row (64 from each of three heads). J is a name for this matrix; 197×192 is its shape. The output projection is '
         'Delta=JW_O+b_O, with W_O shaped 192×192 and a 192-coordinate bias. This affine layer '
         'has no additional activation; it can mix coordinates from every head into each output feature. '
         'The residual is U=E+Delta, preserving 197×192. The diagram shows the same residual pattern '
@@ -235,7 +237,8 @@ def build_multihead_journey(b):
         'the head computations. Every row receives its own update, including CLS. '
         'Next the MLP branch computes U+MLP(LayerNorm(U)); it is separate from this attention output '
         'projection. The original photograph has not been re-encoded and the row count has not changed.',
-        '<p>Concatenate heads → J (197 × 192) → Linear(192,192) → Delta (197 × 192).</p>'
+        '<p>Concatenate heads → joined messages (197 × 192) → Linear(192,192) → Delta (197 × 192).</p>'
+        '<p>The joined matrix has 197 rows: CLS plus 196 patches. Each row has 64 + 64 + 64 = 192 features.</p>'
         '<p><strong>U = E + Delta</strong>, still 197 × 192.</p>'
         '<p>The skip path carries the original E, before LayerNorm, directly to the addition.</p>'
         '<p>Next: LayerNorm(U) → MLP → add U. The output projection and MLP are different learned layers.</p>')
