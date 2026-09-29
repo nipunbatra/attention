@@ -80,7 +80,8 @@ def clarify_inputs(b, sections):
     sections[1] = (sections[1][0], [m for m in sections[1][1] if key(m) not in transfer])
     # Two prerequisites are explained separately before any Q/K/V computation.
     continuation = [m for m in sections[2][1] if key(m) in [
-        'real-cls-attention', 'real-cls-message', 'real-cls-mlp', 'real-block-handoff', 'real-cls-depth',
+        'real-cls-attention', 'real-attention-product', 'real-attention-weights',
+        'real-attention-mask', 'real-attention-values', 'real-cls-message', 'real-cls-mlp', 'real-block-handoff', 'real-cls-depth',
         'real-cls-readout', 'real-cls-prediction']]
     third = [all_frames['vision-topic-03'], location, all_frames['real-patch-position'], detour,
              cls_story['real-cls-purpose'], cls_story['cls-parameter-origin'],

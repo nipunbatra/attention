@@ -123,20 +123,10 @@ def connect_journey(b, sections):
         'The trace verifies this equality against the checkpoint. Its initial CLS row begins '+vec('cls_input')+'. The ellipsis indicates omitted patch rows; all 196 are present.',
         mobile_rows(['Row','Content + position','Shape'],[['CLS','learned token + p₀','1 × 192'],['P1','c₁ + p₁','1 × 192'],['…','…','…'],['P196','c₁₉₆ + p₁₉₆','1 × 192']])+'<p>Stack all rows: E has shape 197 × 192.</p>',[3])
 
-    body=box(25,85,190,['E','197 × 192'])+arrow(215,125,265,125)+box(280,85,220,['LayerNorm','197 × 192'])
-    body+=g(arrow(500,125,555,125)+box(570,85,245,['Q, K and V','each 197 × 64'],'c-q')
-            +arrow(815,125,869,125)+box(885,85,248,['QKᵀ / √64','197 × 197'],'c-k'),1)
-    body+=g(t(25,259,'Focus on the CLS query',31,'c-q')+t(25,326,'q₀ meets k₀, k₁, …, k₁₉₆',34,'c-q')
-            +t(670,259,'197 scores → softmax → 197 weights',26,'c-k')
-            +t(670,326,'a₀₀ + a₀₁ + … + a₀,₁₉₆ = 1',29,'c-k'),2)
-    body+=g(t(25,414,'All 197 queries do this. No future-token mask: the whole image is available.',26,'ink-2'),2)
-    add('real-cls-attention','Let the CLS query compare every source row',body,
-        'Normalize E, then make Q, K and V for one head. Each query compares with 197 keys. Softmax turns each row of scores into weights over the available sources, including CLS itself.',
-        'Which axis should softmax run over for the CLS query?',
-        'Point to one row of the 197×197 score matrix. These are source weights, not probabilities over animal classes.',
-        'For one head Q,K,V each have shape (197,64). QKᵀ gives (197,197), divided by √64=8. Softmax is over the source axis. '
-        'There are three independently projected heads. The learned CLS query starts the first block the same across images; the source patch keys and values vary with each image.',
-        '<p>E (197 × 192) → LayerNorm → Q, K, V (each 197 × 64 per head).</p><p>QKᵀ / 8 → 197 × 197 scores → row-wise softmax.</p><p>The CLS row has 197 source weights summing to one.</p>',[4])
+    from vision1_attention_matrices import build_attention_matrices
+    matrix_frames = build_attention_matrices(b)
+    additions.update(matrix_frames)
+    active.update({key: [4] for key in matrix_frames})
 
     body=t(25,48,'One head’s message into CLS',31,'c-v')
     body+=box(25,97,245,['197 source weights','a₀₀ … a₀,₁₉₆'],'c-k')+t(300,149,'×',38)
@@ -263,7 +253,7 @@ def connect_journey(b, sections):
             second.append(m)
     second.append(additions['model-journey-checkpoint'])
     sections[1]=(sections[1][0],second)
-    continuation=['real-cls-purpose','real-cls-sequence','real-cls-attention','real-cls-message',
+    continuation=['real-cls-purpose','real-cls-sequence',*matrix_frames,'real-cls-message',
                   'real-cls-mlp','real-block-handoff','real-cls-depth','real-cls-readout','real-cls-prediction']
     sections[2]=(sections[2][0],[sections[2][1][0]]+[additions[k] for k in continuation])
     # The small worksheet is now an explicitly introduced, separate calculation.
