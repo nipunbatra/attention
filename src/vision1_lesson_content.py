@@ -570,6 +570,8 @@ optimizer.step()''',t(30,65,'image + known label',26,'c-e')+arrow(180,92,180,160
     sections=introduce_papers(b,sections)
     from vision1_lecture_focus import consolidate
     sections=consolidate(b,sections)
+    from vision1_attention_explorer import enhance
+    sections=enhance(b,sections)
     ordered=[]
     for n,(title,frames) in enumerate(sections,1):
         original_section(n,title,frames)
@@ -594,7 +596,7 @@ optimizer.step()''',t(30,65,'image + known label',26,'c-e')+arrow(180,92,180,160
       'next':{'label':'Optional: self-supervised visual learning','href':'vision2.html'},
       'index':{'label':'Series home','href':'index.html'},
       'notation':'vision1','footer':'Pixels become rows; attention adds context; a learned readout answers the image question.',
-      'sectionDirectory':'sections-vision1','toyFile':'vision1-worksheet.json','runtimeFile':'vision1-lesson.js',
+      'sectionDirectory':'sections-vision1','toyFile':'vision1-worksheet.json','runtimeFile':'vision1-lesson.js','additionalRuntimeFiles':['vision1-inspector.js'],
       'legacyVisionRuntime':False,'syntaxHighlighting':True,'output':'vision1.html'}
     (SRC/'part5.json').write_text(json.dumps(config,indent=2)+'\n')
     (ASSETS/'frame-manifest.json').write_text(json.dumps(ordered,indent=2)+'\n')

@@ -1121,35 +1121,11 @@
   },
   {
     "id": "read-attention-map",
-    "title": "What is one coloured square actually showing?",
-    "caption": "It is one source weight for a specified receiver, head and block.",
-    "notes": "Where is the self-weight for CLS on a 14-by-14 patch map?\nAccount for the 197th source before comparing colours.",
+    "title": "Choose one patch. Where does it look?",
+    "caption": "Select a query on the trained model\u2019s dog image. Change the block or head, then compare attention with feature similarity. Each selectable square is a 16\u00d716 patch.",
+    "notes": "Which other patches does this ear patch read from?\nStart in block 4, head 1. Select a query, then a source on the gold map to read its score and softmax weight. Play blocks while keeping the query fixed. Attention is a directed Q\u2013K comparison and includes CLS. Switch to feature similarity, block 12, query P74: P82 and P81 on the opposite side are close in feature direction. This is measured cosine similarity after the block, not attention, DINO output, or a guarantee of semantic correspondence.",
     "section": "s09",
     "frame": 2
-  },
-  {
-    "id": "real-heads",
-    "title": "Do the heads read the same places?",
-    "caption": "Block 12, CLS query, heads 1\u20133. The colour scale is the same in all three images.",
-    "notes": "Which similarities and differences can you see across heads?\nRead the 14\u00d714 source grid and the separately reported CLS self-weight.",
-    "section": "s09",
-    "frame": 3
-  },
-  {
-    "id": "real-depth",
-    "title": "Does CLS read differently in a later block?",
-    "caption": "Compare the first and last blocks on the same image and colour scale.",
-    "notes": "What changed between the two query representations?\nRecall that later CLS queries already contain image-dependent context.",
-    "section": "s09",
-    "frame": 4
-  },
-  {
-    "id": "real-patch-query",
-    "title": "What does this particular patch read?",
-    "caption": "The purple square is the receiver. The shading shows its source weights in block 12, head 1.",
-    "notes": "Which row of the attention matrix did we select this time?\nLocate the purple receiver square, then read the source heatmap.",
-    "section": "s09",
-    "frame": 5
   },
   {
     "id": "cover-1",
@@ -1157,7 +1133,7 @@
     "caption": "Keep the image, model and target class fixed. Change this one region.",
     "notes": "Will the dog probability rise, fall, or stay close?\nTake a prediction, reveal the measured probability, then compare with the uncovered image.",
     "section": "s09",
-    "frame": 6
+    "frame": 3
   },
   {
     "id": "cover-2",
@@ -1165,7 +1141,7 @@
     "caption": "Keep the image, model and target class fixed. Change this one region.",
     "notes": "Will the dog probability rise, fall, or stay close?\nTake a prediction, reveal the measured probability, then compare with the uncovered image.",
     "section": "s09",
-    "frame": 7
+    "frame": 4
   },
   {
     "id": "cover-3",
@@ -1173,7 +1149,7 @@
     "caption": "Keep the image, model and target class fixed. Change this one region.",
     "notes": "Will the dog probability rise, fall, or stay close?\nTake a prediction, reveal the measured probability, then compare with the uncovered image.",
     "section": "s09",
-    "frame": 8
+    "frame": 5
   },
   {
     "id": "cover-4",
@@ -1181,7 +1157,7 @@
     "caption": "Keep the image, model and target class fixed. Change this one region.",
     "notes": "Will the dog probability rise, fall, or stay close?\nTake a prediction, reveal the measured probability, then compare with the uncovered image.",
     "section": "s09",
-    "frame": 9
+    "frame": 6
   },
   {
     "id": "occlusion",
@@ -1189,7 +1165,7 @@
     "caption": "Compare the dog probability after each of the four covers.",
     "notes": "Which quadrant would you expect to affect this prediction most?\nCollect predictions before revealing the measured bars.",
     "section": "s09",
-    "frame": 10
+    "frame": 7
   },
   {
     "id": "vision-topic-10",

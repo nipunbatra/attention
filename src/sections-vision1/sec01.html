@@ -74,6 +74,73 @@ body.present .vp-with-route.is-live>.vp-figure>svg {height:100%;width:100%;}
  body:not(.present) .vp-pathbar svg {display:none;}
  .vp-map-list {padding-left:24px;line-height:1.9;}
 }
+/* A single selected query, two views of saved trained-model measurements. */
+.vix {font-family:var(--font-ui);color:var(--ink);font-size:15px;line-height:1.35}
+.vix [hidden] {display:none!important}
+.vix button,.vix select {font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:4px;cursor:pointer}
+.vix button {padding:7px 10px;min-height:36px}
+.vix button:hover,.vix select:hover {border-color:var(--c-e)}
+.vix button:focus-visible,.vix select:focus-visible {outline:3px solid var(--c-e);outline-offset:3px}
+.vix button:disabled,.vix select:disabled {opacity:.45;cursor:default}
+.vix-controls {display:flex;align-items:end;gap:18px;flex-wrap:wrap;margin:0 0 10px}
+.vix-controls label {display:grid;gap:4px;font-size:13px;color:var(--ink-2)}
+.vix-controls select {padding:7px 27px 7px 9px;min-height:36px;font-size:15px;color:var(--ink)}
+.vix-controls [data-play] {margin-left:auto;color:var(--c-e)}
+.vix-status {display:flex;gap:10px;align-items:center;min-height:24px;font-size:13px;color:var(--ink-2);margin-bottom:10px}
+.vix-live {display:none}
+.vix-ready .vix-live {display:block}
+.vix-ready .vix-fallback {display:none}
+.vix-loading .vix-live {visibility:hidden}
+.vix-columns {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(220px,1.1fr);gap:26px;align-items:start}
+.vix h4 {font-size:16px;line-height:1.3;margin:0 0 10px;font-weight:650}
+.vix-photo {width:100%;aspect-ratio:1;position:relative;background:#fff;overflow:hidden}
+.vix-photo>img {width:100%;height:100%;object-fit:cover;display:block;margin:0!important}
+.vix-photo canvas,.vix-grid {position:absolute;inset:0;width:100%;height:100%}
+.vix-grid {display:grid;grid-template-columns:repeat(14,1fr);grid-template-rows:repeat(14,1fr)}
+.vix-grid button {min-width:0;min-height:0;padding:0;border:0;border-right:1px solid #ffffff35;border-bottom:1px solid #ffffff35;border-radius:0;background:transparent;position:relative}
+.vix-grid button:hover {background:#ffffff45}
+.vix-grid button.vix-query,.vix-grid button.vix-query-location {outline:3px solid #a22cff;outline-offset:-2px;box-shadow:0 0 0 1px #fff;z-index:1}
+.vix-grid button.vix-query-location {outline-style:dashed}
+.vix-grid button.vix-source {outline:3px solid #ffe083;outline-offset:-2px;box-shadow:0 0 0 1px #171717;z-index:2}
+.vix-grid button:focus-visible {outline:3px solid white;outline-offset:-3px;z-index:3}
+.vix-presets {display:flex;gap:5px;margin:9px 0 0;flex-wrap:wrap}
+.vix-presets button {padding:5px 10px;min-height:32px}
+.vix-selected {display:flex;gap:8px;align-items:center;margin:8px 0;color:var(--c-q);font-weight:600}
+.vix-crop {display:inline-flex;flex:none;width:38px;height:38px;background-color:var(--t-q);align-items:center;justify-content:center;border:1px solid var(--line);font-size:12px;image-rendering:pixelated}
+.vix-detail {border-left:1px solid var(--line);padding-left:20px}
+.vix-detail [data-top] {display:flex;gap:5px;margin:8px 0 14px}
+.vix-match {display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;font-size:12px!important;padding:6px!important}
+.vix-detail p {font-size:14px!important;line-height:1.4!important;margin:8px 0!important}
+.vix-detail [data-result] {color:var(--c-k);font-weight:650;font-size:17px!important}
+.vix-detail [data-source-note] {color:var(--ink-2)}
+.vix-detail .vix-selected {color:var(--ink)}
+.vix-scale {height:6px;margin:11px 0 5px;background:linear-gradient(90deg,transparent,#ffb11e);border-bottom:1px solid var(--line)}
+.vix-scale.vix-cosine-scale {background:linear-gradient(90deg,#2563eb,transparent,#ffb11e)}
+.vix-legend {font-size:12px;color:var(--ink-2)}
+.vix-accounting {font-size:12px;line-height:1.4;color:var(--ink-2);margin-top:5px}
+.vix [data-cls-weight] {padding:3px 7px;min-height:28px;margin-top:6px;font-size:12px}
+.vix-meaning {border-top:1px solid var(--line);margin-top:14px;padding-top:9px;font-size:15px;line-height:1.4}
+.vix-guide {color:var(--c-e);font-size:14px;margin:7px 0 0}
+.vix-provenance {font-size:12px;color:var(--ink-2);margin:9px 0 0}
+.vix-fallback svg {width:100%;height:auto;display:block}
+body.present #read-attention-map .vp-caption {display:none}
+body.present .vix {font-size:17px}
+body.present .vix-columns {grid-template-columns:280px 280px minmax(230px,1fr);gap:28px}
+body.present .vix h4 {font-size:18px}
+body.present .vix-controls label,body.present .vix-status {font-size:14px}
+body.present .vix-controls select,body.present .vix-controls button {font-size:17px}
+body.present .vix-detail p {font-size:16px!important}
+body.present .vix-detail [data-result] {font-size:19px!important}
+body.present .vix-meaning {font-size:18px}
+body.present .vix-guide {font-size:16px}
+body.present .vix-provenance {font-size:13px}
+@media(max-width:1000px){body:not(.present) .vix-columns {grid-template-columns:minmax(0,1fr) minmax(0,1fr)} body:not(.present) .vix-detail {grid-column:1/-1;border-left:0;padding:12px 0 0;border-top:1px solid var(--line)} body:not(.present) .vix-detail [data-top] {max-width:420px}}
+@media(max-width:600px){body:not(.present) .vix-columns {grid-template-columns:1fr;gap:22px} body:not(.present) .vix-photo {max-width:360px} .vix-controls {gap:10px} .vix-controls [data-play] {margin-left:0}}
+@media print {.vix-controls,.vix-status,.vix-live {display:none!important}.vix-fallback {display:block!important}}
+
+body.present .sec.is-live:has(#read-attention-map.is-live) {padding-top:24px;padding-bottom:24px}
+body.present .sec.is-live:has(#read-attention-map.is-live)>.sec-head {margin-bottom:16px}
+body.present .vix-provenance {display:none}
 </style><section id="s01" class="sec" data-title="The image classification task" data-lit=""><header class="sec-head"><span class="sec-num">01</span><div><h2>The image classification task</h2></div></header><div class="frame vp-frame" id="paper-text-transformer" data-title="From text: Attention Is All You Need" data-autobuild="off">
 <script type="text/x-notes">Which stack will connect to our image classifier?
 Show the complete original encoder–decoder diagram first. Highlight the encoder on the left. Recall that it contextualizes input rows; the decoder on the right generates text. Preview image patches as the encoder input.</script>

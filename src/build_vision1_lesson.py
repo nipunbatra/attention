@@ -107,7 +107,7 @@ def mobile_rows(headers, rows):
 
 def section(n,title,frames,lit=''):
     text=f'<section id="s{n:02}" class="sec" data-title="{escape(title)}" data-lit="{lit}"><header class="sec-head"><span class="sec-num">{n:02}</span><div><h2>{escape(title)}</h2></div></header>'+''.join(frames)+'</section>'
-    if n==1:text='<style>'+ (SRC/'vision1-lesson.css').read_text()+'</style>'+text
+    if n==1:text='<style>'+ (SRC/'vision1-lesson.css').read_text() + (SRC/'vision1-inspector.css').read_text()+'</style>'+text
     (OUT/f'sec{n:02}.html').write_text(text)
 
 

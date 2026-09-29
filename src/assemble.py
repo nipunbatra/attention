@@ -95,6 +95,9 @@ shared = open(a.shared, encoding='utf-8').read()
 runtime = ''
 if os.path.exists(rt_path):
     runtime = '<script>\n' + open(rt_path, encoding='utf-8').read() + '\n</script>\n'
+for extra_runtime in defaults.get('additionalRuntimeFiles', []):
+    with open(os.path.join(here, extra_runtime), encoding='utf-8') as extra:
+        runtime += '<script>\n' + extra.read() + '\n</script>\n'
 def js(obj):
     return json.dumps(obj, separators=(',', ':')).replace('</', '<\\/')
 vision_shared = ''

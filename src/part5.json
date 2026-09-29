@@ -157,6 +157,9 @@
   "sectionDirectory": "sections-vision1",
   "toyFile": "vision1-worksheet.json",
   "runtimeFile": "vision1-lesson.js",
+  "additionalRuntimeFiles": [
+    "vision1-inspector.js"
+  ],
   "legacyVisionRuntime": false,
   "syntaxHighlighting": true,
   "output": "vision1.html"
