@@ -473,7 +473,7 @@ def expand(b, sections):
         body+=t(505,100,record['region']+' covered',32)+t(505,185,'Before: 95.7% Newfoundland',29,'ink-2')
         body+=g(t(505,300,f"After: {100*record['target_probability']:.1f}%",43,'c-e'),1)
         add('cover-'+str(i+1),'What happens if we cover the '+record['region'].lower()+'?',body,
-          'Keep the image, model and target class fixed. Change this one region.',
+          'Replace this quadrant with gray pixels, then rerun the same trained model. Compare the Newfoundland probability with the original image.',
           'Will the dog probability rise, fall, or stay close?','Take a prediction, reveal the measured probability, then compare with the uncovered image.',
           'The cover is 112×112 pixels in the 224×224 model input. Its colour is the model’s mean RGB, corresponding to zero after normalization. This visual shows the same intervention used by the saved occlusion experiment. Masking probes this intervention and also changes the input distribution.')
 

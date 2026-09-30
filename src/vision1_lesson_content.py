@@ -466,10 +466,10 @@ optimizer.step()''',t(30,65,'image + known label',26,'c-e')+arrow(180,92,180,160
         y=115+i*80
         body+=t(355,y,item['region'],26)+g(rect(590,y-29,400*item['target_probability'],35,'c-e','t-e')+t(1105,y,f"{item['target_probability']:.1%}",27,'c-e','end'),1)
     body+=g(t(30,423,'Unmasked P(Newfoundland) = 95.7%',29,'c-e'),2)
-    add('occlusion','Does removing a region change the prediction?',body,'Four predetermined quadrant interventions; report the same target-class probability each time.',
+    add('occlusion','How does each gray cover change the prediction?',body,'Four predetermined quadrant replacements; report the same target-class probability each time.',
         'Which quadrant would you expect to affect this prediction most?','Collect predictions before revealing the measured bars.',
         'Each quadrant is 112×112 in the actual 224×224 model crop. Normalized input zero fills the quadrant with the model’s RGB mean. All four masked images still predict Newfoundland, with lower confidence. The experiment measures sensitivity to this specific intervention on one image; masking also changes the input distribution. It does not prove that a region causes a semantic concept.',
-        mobile_rows(['Removed quadrant','P(Newfoundland)'],[[a['region'],f"{a['target_probability']:.3%}"] for a in inspection['occlusion']]))
+        mobile_rows(['Covered quadrant','P(Newfoundland)'],[[a['region'],f"{a['target_probability']:.3%}"] for a in inspection['occlusion']]))
 
     # RESOLUTION, EXERCISES AND BRIDGE.
     body=''
@@ -572,6 +572,8 @@ optimizer.step()''',t(30,65,'image + known label',26,'c-e')+arrow(180,92,180,160
     sections=consolidate(b,sections)
     from vision1_attention_explorer import enhance
     sections=enhance(b,sections)
+    from vision1_occlusion_walkthrough import explain as explain_occlusion
+    sections=explain_occlusion(b,sections)
     ordered=[]
     for n,(title,frames) in enumerate(sections,1):
         original_section(n,title,frames)

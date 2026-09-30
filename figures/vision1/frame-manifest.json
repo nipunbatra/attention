@@ -1240,36 +1240,44 @@
     "frame": 2
   },
   {
-    "id": "cover-1",
-    "title": "What happens if we cover the top left?",
-    "caption": "Keep the image, model and target class fixed. Change this one region.",
-    "notes": "Will the dog probability rise, fall, or stay close?\nTake a prediction, reveal the measured probability, then compare with the uncovered image.",
+    "id": "cover-pixels",
+    "title": "\u201cCover\u201d means replace these pixels with gray",
+    "caption": "Copy the normalized input, then overwrite one quadrant. The rest of the image stays unchanged; no patch rows are deleted.",
+    "notes": "Does zero here mean black pixels, or gray pixels?\nx is already resized, center-cropped and normalized by this checkpoint\u2019s evaluation transform. Its mean and standard deviation are both 0.5 per channel. Zero in x therefore means RGB 0.5 before normalization.",
     "section": "s09",
     "frame": 3
   },
   {
-    "id": "cover-2",
-    "title": "What happens if we cover the top right?",
-    "caption": "Keep the image, model and target class fixed. Change this one region.",
-    "notes": "Will the dog probability rise, fall, or stay close?\nTake a prediction, reveal the measured probability, then compare with the uncovered image.",
+    "id": "cover-1",
+    "title": "Run the covered image through the same trained model",
+    "caption": "Recompute patch features, attention, CLS and class scores. Softmax gives 1,000 probabilities; compare the Newfoundland entry in both runs. The weights stay fixed.",
+    "notes": "What must be recomputed after the pixels change?\nThe entire forward pass runs again. Reveal the measured change from 95.73% to 83.00%: 12.73 percentage points lower. The top label remains Newfoundland. No backward pass or optimizer step occurs.",
     "section": "s09",
     "frame": 4
   },
   {
-    "id": "cover-3",
-    "title": "What happens if we cover the bottom left?",
-    "caption": "Keep the image, model and target class fixed. Change this one region.",
+    "id": "cover-2",
+    "title": "What happens if we cover the top right?",
+    "caption": "Replace this quadrant with gray pixels, then rerun the same trained model. Compare the Newfoundland probability with the original image.",
     "notes": "Will the dog probability rise, fall, or stay close?\nTake a prediction, reveal the measured probability, then compare with the uncovered image.",
     "section": "s09",
     "frame": 5
   },
   {
-    "id": "cover-4",
-    "title": "What happens if we cover the bottom right?",
-    "caption": "Keep the image, model and target class fixed. Change this one region.",
+    "id": "cover-3",
+    "title": "What happens if we cover the bottom left?",
+    "caption": "Replace this quadrant with gray pixels, then rerun the same trained model. Compare the Newfoundland probability with the original image.",
     "notes": "Will the dog probability rise, fall, or stay close?\nTake a prediction, reveal the measured probability, then compare with the uncovered image.",
     "section": "s09",
     "frame": 6
+  },
+  {
+    "id": "cover-4",
+    "title": "What happens if we cover the bottom right?",
+    "caption": "Replace this quadrant with gray pixels, then rerun the same trained model. Compare the Newfoundland probability with the original image.",
+    "notes": "Will the dog probability rise, fall, or stay close?\nTake a prediction, reveal the measured probability, then compare with the uncovered image.",
+    "section": "s09",
+    "frame": 7
   },
   {
     "id": "occlusion",
@@ -1277,7 +1285,7 @@
     "caption": "Compare the dog probability after each of the four covers.",
     "notes": "Which quadrant would you expect to affect this prediction most?\nCollect predictions before revealing the measured bars.",
     "section": "s09",
-    "frame": 7
+    "frame": 8
   },
   {
     "id": "vision-topic-10",

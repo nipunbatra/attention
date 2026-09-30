@@ -17,7 +17,8 @@ torch.set_num_threads(4)
 model = timm.create_model(MODEL, pretrained=True).eval()
 config = resolve_model_data_config(model)
 transform = create_transform(**config, is_training=False)
-x = transform(Image.open(ASSETS/'newfoundland_31.jpg').convert('RGB')).unsqueeze(0)
+# Evaluation transform: resize/crop, then normalize; batch × RGB × height × width.
+x = transform(Image.open(ASSETS/'newfoundland_31.jpg').convert('RGB')).unsqueeze(0)  # (1,3,224,224)
 # Show the exact resize/centre-crop supplied to the model, before normalization.
 mean = torch.tensor(config['mean']).view(1,3,1,1)
 std = torch.tensor(config['std']).view(1,3,1,1)
@@ -40,14 +41,20 @@ def hook(layer):
                     'patch_sum':float(row[1:].sum()),'maximum_patch_weight':float(row[1:].max())})
     return capture
 for i in [0,11]: handles.append(model.blocks[i].attn.register_forward_pre_hook(hook(i)))
-with torch.inference_mode(): baseline=model(x).softmax(-1)[0]
+with torch.inference_mode(): baseline=model(x).softmax(-1)[0]  # (1000,) class probabilities
 for handle in handles:handle.remove()
-labels=ImageNetInfo(); target=int(baseline.argmax())
+labels=ImageNetInfo(); target=int(baseline.argmax())  # 256: Newfoundland; keep fixed below
 regions=[('Top left',0,0),('Top right',0,112),('Bottom left',112,0),('Bottom right',112,112)]
 results=[]
 with torch.inference_mode():
     for name,r,c in regions:
-        masked=x.clone(); masked[:,:,r:r+112,c:c+112]=0
+        masked=x.clone()  # preserve original x; same (1,3,224,224) shape
+        # Replace pixels in every RGB channel. Zero AFTER normalization means
+        # the model's mean RGB: (0.5,0.5,0.5), mid-gray for this checkpoint.
+        # Keep all 196 patch locations; this is not a token/attention mask.
+        masked[:,:,r:r+112,c:c+112]=0
+        # A complete new forward pass: embeddings, attention, CLS and scores.
+        # eval + inference_mode: fixed weights, no backward or optimizer step.
         probs=model(masked).softmax(-1)[0]; top=int(probs.argmax())
         results.append({'region':name,'row':r,'column':c,'size':112,
           'target_probability':float(probs[target]),'change_percentage_points':100*float(probs[target]-baseline[target]),
