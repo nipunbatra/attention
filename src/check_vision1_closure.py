@@ -18,7 +18,7 @@ for h in trace['gradients']['heads']:
     np.testing.assert_allclose(np.array(h['dS']).sum(axis=1),0,atol=1e-12)
 assert trace['single_update']['loss_after']<trace['single_update']['loss_before']
 manifest=json.loads((ROOT/'figures/vision1/frame-manifest.json').read_text())
-assert len(manifest)==160 and len({x['id'] for x in manifest})==160
+assert len(manifest)==159 and len({x['id'] for x in manifest})==159
 ids=[x['id'] for x in manifest]
 input_order=['patch-projection-parameters','vision-topic-03','position-where','position-table','real-patch-position','position-learning',
              'cls-detour','real-cls-purpose','cls-parameter-origin','cls-parameter-learning',
@@ -36,7 +36,7 @@ assert [ids.index(k) for k in input_order]==sorted(ids.index(k) for k in input_o
 assert all(x['section']=='s11' for x in manifest if x['id'].startswith('position-photo-'))
 assert all(len(x['caption'].split())<=40 and '\n' in x['notes'] for x in manifest)
 required={'task-side-by-side','cls-shared-start','cls-without','heads-visual-roles',
-          'patch-filter-patterns','photo-key-value-check','photo-two-softmaxes',
+          'patch-filter-patterns','photo-two-softmaxes',
           'photo-label-loss','photo-optimizer-step',
           'cnn-receptive-field','cnn-inductive-bias','cnn-vit-design',
           'code-photo-input','code-photo-conv','code-photo-tokens','code-photo-attention',

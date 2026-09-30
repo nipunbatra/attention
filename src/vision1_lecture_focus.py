@@ -30,20 +30,6 @@ def consolidate(b, sections):
         'With row-major flattening, the two columns of W are [1,1,−1,−1] and [1,−1,1,−1], and b=[0,0]. '
         'The real photo uses 768 inputs and 192 learned output features. These chosen edge weights are not measurements from that checkpoint.')
 
-    body=t(35,40,'Keep the receiver’s query fixed; change one source.',30)
-    body+=box(35,105,310,['Change its key','What matches?'],'c-k')
-    body+=arrow(357,143,435,143,'c-k')+box(451,105,300,['Different scores','different source weights'],'c-k',size=23)
-    body+=arrow(763,143,830,143,'c-k')+box(847,105,278,['Different mixture','of value rows'],'c-v')
-    body+=g(box(35,275,310,['Change only its value','What gets sent?'],'c-v')
-        +arrow(357,313,435,313,'c-v')+box(451,275,300,['Same Q and K','same source weights'],'c-k',size=23)
-        +arrow(763,313,830,313,'c-v')+box(847,275,278,['Different message','at that same weight'],'c-v'),1)
-    f.add('photo-key-value-check','Keys choose the source; values supply the message',body,
-        'Keys affect the match and hence the mixing weights. Values supply the feature vectors being mixed. A useful diagnostic is to change one projected tensor while holding the other two fixed.',
-        'If only V changes, must we recompute the attention weights?',
-        'No. A depends on Q and K. The product A V changes while A stays fixed. Changing a key generally changes the weights after softmax.',
-        'This is a controlled intervention on projected Q, K and V within one head, not a claim that changing the original image alters only one tensor. '
-        'Changing image features generally changes all three projections. The dot-product effect of a changed key can be zero if its change is orthogonal to the fixed query.')
-
     body=t(35,40,'The same normalization, applied to two different questions',29)
     body+=box(35,103,325,['ATTENTION · one query','Which source rows help?'],'c-k',size=23)
     body+=arrow(374,141,452,141,'c-k')+box(471,103,650,['197 scores → softmax over sources → 197 weights','CLS + P1 + P2 + … + P196'],'c-k',size=24)
@@ -67,7 +53,6 @@ def consolidate(b, sections):
     first[1]=(first[1][0],insert_after(first[1][1],'patch-shared-code',f.frames['patch-filter-patterns']))
     title,frames=first[2]
     for anchor,extra in [
-        ('real-attention-values',f.frames['photo-key-value-check']),
         ('real-heads-intro',existing['heads-visual-roles']),
         ('real-classifier-softmax',f.frames['photo-two-softmaxes'])]:
         frames=insert_after(frames,anchor,extra)
