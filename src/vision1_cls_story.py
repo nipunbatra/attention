@@ -154,7 +154,7 @@ def build_cls_story(b):
                 out += rect(x+16+k*23,247+r*17,width,6,'c-e','c-e',0)
         return out
 
-    body = t(35,32,'Each block lets CLS read the current patch features.',29)
+    body = t(35,32,'CLS and patch rows can read one another’s current features.',29)
     body += image(35,172,112,112,photo)+t(91,315,'Same photo',22,'ink-2','middle')
     body += arrow(153,244,193,244,'c-e')
     body += state_rows(205,'Input','Shared CLS start','196 patch rows',0)
@@ -162,30 +162,44 @@ def build_cls_story(b):
     next_state += arrow(421,134,548,134,'c-q')
     next_state += arrow(421,245,548,245,'c-e')
     next_state += arrow(421,224,548,151,'c-e')
+    # Both diagonal dependencies matter. The light underlay makes their
+    # crossing legible without suggesting a junction between the messages.
+    next_state += line(421,153,548,224,'card',7)
+    next_state += arrow(421,153,548,224,'c-q')
     next_state += t(487,104,'Block 1',23,'ink-2','middle')
     body += g(next_state,1)
-    final_state = state_rows(915,'After block 12','Final CLS','Updated patch rows',2)
+    final_state = state_rows(915,'After block 2','Updated CLS','Updated patch rows',2)
     final_state += arrow(776,134,903,134,'c-q')
     final_state += arrow(776,245,903,245,'c-e')
     final_state += arrow(776,224,903,151,'c-e')
-    final_state += t(841,104,'Blocks 2–12',22,'ink-2','middle')
-    final_state += t(660,316,'All 197 rows stay 192 features wide; their numbers change.',24,'ink-2','middle')
+    final_state += line(776,153,903,224,'card',7)
+    final_state += arrow(776,153,903,224,'c-q')
+    final_state += t(841,104,'Block 2',23,'ink-2','middle')
+    final_state += t(660,316,'197 × 192 at each stage. All updates use that block’s input rows.',24,'ink-2','middle')
     body += g(final_state,2)
     reason = rect(35,346,1090,82,'c-a','card',5)
-    reason += t(60,378,'The classifier reads final CLS; the class loss trains what it needs to carry.',25,'c-a')
-    reason += t(60,412,'“Image summary” = features useful for predicting the image’s class.',26,'ink')
+    reason += t(60,378,'Continue through block 12. The classifier then reads final CLS.',25,'c-a')
+    reason += t(60,412,'The class loss trains this row to carry useful image information.',26,'ink')
     body += g(reason,3)
     add('cls-summary-refinement','What makes CLS an image summary?',body,
-        'CLS receives image information through attention. Later blocks use updated CLS and updated patch features. Because the classifier reads final CLS, classification training encourages it to carry information useful for distinguishing the image’s class.',
-        'Why should this extra row learn anything useful?\n'
-        'Trace a blue arrow from patch features into the next CLS state. Both kinds of rows change. '
-        'Then reveal the objective: the classifier must predict from final CLS, so the label loss trains the network to make that row useful.',
+        'CLS can read all patch rows; each patch can read CLS and every patch. All updates use the rows entering that block. Block 2 reads the updated CLS and patches produced by block 1.',
+        'Can patch rows read CLS too, and when do they see its updated version?\n'
+        'Yes. Follow both diagonals: blue carries patch information into CLS; purple carries CLS information into patch updates. '
+        'Each attention operation computes all its queries, keys and values from the same incoming rows. '
+        'It does not first update CLS and then let patches read that new CLS in the same attention operation. '
+        'Block 2 receives both updated CLS and updated patch rows from block 1. '
+        'Continue through block 12: the classifier reads final CLS, so the class loss trains that row to be useful.',
         'Follow the same dog through the stack. At the input, CLS is the shared learned start plus its position vector. '
         'In block 1, attention brings image-dependent value messages into CLS. The block also updates the patch rows. '
-        'Block 2 receives all of these updated rows: its CLS query and its source keys and values are computed again from the current representations. '
+        'The purple diagonal makes the reverse information path explicit: patch queries can read the incoming CLS key and value. '
+        'Within one attention operation, every row’s Q, K and V is computed from the same normalized input sequence. '
+        'All attention outputs are computed together; a query does not read another row’s newly computed output from that same operation. '
+        'Block 2 receives all of block 1’s updated rows: its CLS and patch queries, keys and values are computed again from those representations. '
         'This continues through 12 successive blocks, each with its own learned parameters. The arrows summarize complete blocks, '
         'including attention, residual additions and the per-row MLP; their detailed computation comes later. '
-        'Blue diagonal arrows highlight patch information entering CLS. CLS can also attend to itself, and patch queries can read CLS and other patches. '
+        'Both diagonals show possible information flow, not equal attention weights or a guarantee of a large contribution. '
+        'The horizontal arrows include the within-group dependencies: CLS can read itself, and each patch can read every patch, including itself. '
+        'There is no causal mask here. All 197 incoming rows are available to every query. '
         'All 197 rows retain 192 coordinates. The marks stand for changing features; they are not measured activations or attention weights. '
         'The class head reads final CLS after final normalization. During training, the class loss sends gradients through this readout and the blocks, '
         'adjusting their weights and the shared starting CLS. There is no target summary vector or instruction assigning “fur”, “eyes” or “breed” to a coordinate or layer. '
@@ -194,8 +208,10 @@ def build_cls_story(b):
         'During this saved forward pass, model parameters remain fixed and only the image-dependent activations change. '
         '<a href="https://arxiv.org/html/2010.11929v2#S3.SS1">ViT: class token, encoder and classification head</a>.',
         '<p>Same dog image → 196 patch rows. Add the shared starting CLS.</p>'
-        '<ol><li><strong>Block 1:</strong> CLS receives information from the image’s patch features. Patch rows also change.</li>'
-        '<li><strong>Block 2:</strong> its attention uses the updated CLS and updated patch rows. It computes a new message.</li>'
+        '<ol><li><strong>Block 1:</strong> CLS can read CLS and all patches. Every patch can also read CLS and all patches. '
+        'All attention outputs use the same incoming rows.</li>'
+        '<li><strong>Block 2:</strong> its attention reads both the updated CLS and the updated patch rows produced by block 1. '
+        'The new outputs become the next block’s inputs.</li>'
         '<li><strong>Continue through block 12:</strong> every block has its own learned parameters. All 197 rows remain 192 features wide.</li></ol>'
         '<p><strong>Why a summary?</strong> The classifier reads final CLS. The class loss trains the network to make its features useful for predicting the image’s class.</p>'
         '<p>We do not supply a target summary vector or assign a meaning to each coordinate. The diagram is conceptual; the next slide shows saved values.</p>')

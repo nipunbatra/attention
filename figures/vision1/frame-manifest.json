@@ -530,8 +530,8 @@
   {
     "id": "cls-summary-refinement",
     "title": "What makes CLS an image summary?",
-    "caption": "CLS receives image information through attention. Later blocks use updated CLS and updated patch features. Because the classifier reads final CLS, classification training encourages it to carry information useful for distinguishing the image\u2019s class.",
-    "notes": "Why should this extra row learn anything useful?\nTrace a blue arrow from patch features into the next CLS state. Both kinds of rows change. Then reveal the objective: the classifier must predict from final CLS, so the label loss trains the network to make that row useful.",
+    "caption": "CLS can read all patch rows; each patch can read CLS and every patch. All updates use the rows entering that block. Block 2 reads the updated CLS and patches produced by block 1.",
+    "notes": "Can patch rows read CLS too, and when do they see its updated version?\nYes. Follow both diagonals: blue carries patch information into CLS; purple carries CLS information into patch updates. Each attention operation computes all its queries, keys and values from the same incoming rows. It does not first update CLS and then let patches read that new CLS in the same attention operation. Block 2 receives both updated CLS and updated patch rows from block 1. Continue through block 12: the classifier reads final CLS, so the class loss trains that row to be useful.",
     "section": "s03",
     "frame": 11
   },
