@@ -18,8 +18,24 @@ for h in trace['gradients']['heads']:
     np.testing.assert_allclose(np.array(h['dS']).sum(axis=1),0,atol=1e-12)
 assert trace['single_update']['loss_after']<trace['single_update']['loss_before']
 manifest=json.loads((ROOT/'figures/vision1/frame-manifest.json').read_text())
-assert len(manifest)==176 and len({x['id'] for x in manifest})==176
+assert len(manifest)==178 and len({x['id'] for x in manifest})==178
 ids=[x['id'] for x in manifest]
+occlusion=json.loads((ROOT/'figures/vision1/patch-occlusion.json').read_text())
+inspector=json.loads((ROOT/'figures/vision1/attention-explorer/manifest.json').read_text())
+assert occlusion['parameter_sha256']==inspector['parameter_sha256']
+assert occlusion['source_sha256']==inspector['source_sha256']
+assert occlusion['preprocessing']==inspector['preprocessing']
+trials=occlusion['trials']
+assert len(trials)==196 and {r['patch_index'] for r in trials}==set(range(1,197))
+assert {(r['row'],r['column']) for r in trials}=={(r,c) for r in range(0,224,16) for c in range(0,224,16)}
+for r in trials:
+    assert r['size']==16 and r['patch_index']==1+r['row']//16*14+r['column']//16
+    assert r['top_index']==occlusion['target_index']==256
+    np.testing.assert_allclose(r['drop_percentage_points'],
+        100*(occlusion['baseline_probability']-r['target_probability']),atol=1e-9)
+assert occlusion['largest_drop']==max(trials,key=lambda r:r['drop_percentage_points'])
+assert occlusion['largest_drop']['patch_index']==78
+assert [ids.index(k) for k in ['occlusion','occlusion-small-setup','occlusion-small-result']]==list(range(ids.index('occlusion'),ids.index('occlusion')+3))
 input_order=['patch-projection-parameters','vision-topic-03','position-where','position-table','real-patch-position','position-learning',
              'cls-detour','real-cls-purpose','cls-parameter-origin','cls-parameter-learning',
              'cls-stored-start','cls-summary-refinement','cls-collect','cls-shared-start','cls-two-image-readout','cls-without',

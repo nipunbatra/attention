@@ -26,10 +26,12 @@ def explain(b, sections):
     assert saved['preprocessing']['mean'] == saved['preprocessing']['std'] == [.5, .5, .5]
     assert saved['target_index'] == 256
 
-    def photo(x, y, size, covered=False):
+    def photo(x, y, size, covered=False, region=None):
         out = f.image(x, y, size, size, f.photo)
         if covered:
-            out += f'<rect x="{x}" y="{y}" width="{size/2}" height="{size/2}" fill="rgb(128,128,128)"/>'
+            row, column, width = region or (0, 0, 112)
+            out += (f'<rect x="{x+column/224*size}" y="{y+row/224*size}" '
+                    f'width="{width/224*size}" height="{width/224*size}" fill="rgb(128,128,128)"/>')
         return out
 
     body = photo(35, 36, 235) + t(152, 306, 'Original input x', 27, 'c-e', 'middle')
@@ -98,6 +100,123 @@ def explain(b, sections):
           'All activations are recomputed; weights remain fixed.</p>'
           '<pre class="language-python"><code>'+escape(FORWARD_CODE)+'</code></pre>', height=465)
 
+    # State the hypothesis and use probability drops, not four similar bars.
+    baseline = saved['baseline_probability']
+    quadrants = saved['occlusion']
+    worst = min(quadrants, key=lambda item: item['target_probability'])
+    assert all(item['top_label'] == saved['target_label'] for item in quadrants)
+    body = t(35, 33, 'Question: how much does one gray cover lower P(Newfoundland)?', 28)
+    body += photo(35, 85, 235)
+    body += t(152, 360, f'Original: {baseline:.2%}', 27, 'c-e', 'middle')
+    body += t(340, 88, 'Covered region', 24, 'ink-2')
+    body += t(825, 88, 'Probability', 24, 'ink-2', 'end')
+    body += t(1115, 88, 'Drop (points)', 24, 'ink-2', 'end')
+    for i, item in enumerate(quadrants):
+        y = 125 + i*62
+        strongest = item == worst
+        if strongest:
+            body += f.rect(324, y-28, 812, 59, 'c-a', 'card')
+        body += photo(340, y-22, 48, True, (item['row'], item['column'], item['size']))
+        color = 'c-a' if strongest else 'ink'
+        body += t(410, y+10, item['region'], 27, color)
+        body += t(825, y+10, f'{item["target_probability"]:.2%}', 29, color, 'end')
+        body += t(1115, y+10, f'{100*(baseline-item["target_probability"]):.2f}', 29, color, 'end')
+    body += g(t(35, 430, 'Same top label in all four tests: Newfoundland.', 33, 'c-e', weight=650), 1)
+    f.add('occlusion', 'The label stays; its probability falls', body,
+          'Top-right covering causes the largest drop: 16.11 percentage points. This photo still receives the same label after every quadrant cover.',
+          'Did the class label change, or only its probability?',
+          'Compare each probability with the same 95.73% baseline. The largest tested drop is 16.11 points, '
+          'for the top-right cover. Reveal that all four top labels remain Newfoundland. This is a coarse sensitivity experiment.',
+          '<p><strong>Experiment:</strong> choose four quadrants before looking at results. For each trial, '
+          'start from the original input, replace only that quadrant with gray, and run the same frozen classifier. '
+          'Record the probability of the fixed Newfoundland class, then subtract it from the original probability.</p>'
+          '<p><strong>Result:</strong> all four probabilities are lower, between 79.62% and 84.54%; '
+          'all four top labels remain Newfoundland. The top-right cover causes the largest drop among these four replacements. '
+          'The label survives these particular changes to this particular photograph. '
+          'This does not establish robustness to other images, covers or perturbations.</p>'
+          '<p>Each cover hides 49 model patches at once, spanning several visual features and introducing a gray boundary. '
+          'The ranking cannot isolate a small feature or assign a unique importance to a semantic object part. '
+          'The next slides reduce the cover size while keeping the model unchanged.</p>',
+          b['mobile_rows'](['Gray cover', 'P(Newfoundland)', 'Drop (percentage points)'],
+              [[r['region'], f'{r["target_probability"]:.2%}', f'{100*(baseline-r["target_probability"]):.2f}'] for r in quadrants])+
+          '<p>All four top labels remain Newfoundland. Top-right covering causes the largest probability drop.</p>')
+
+    body = t(290, 30, 'Large cover: 112 × 112', 31, 'c-q', 'middle')
+    body += t(870, 30, 'Small cover: 16 × 16', 31, 'c-q', 'middle')
+    for x, width in [(175, 112), (755, 16)]:
+        body += photo(x, 60, 230, True, (0, 0, width))
+        for j in range(1, 14):
+            body += f.line(x+j*230/14, 60, x+j*230/14, 290, 'card', .8)
+            body += f.line(x, 60+j*230/14, x+230, 60+j*230/14, 'card', .8)
+        body += f.rect(x, 60, width/224*230, width/224*230, 'c-q', 'transparent', 0)
+    body += t(290, 336, '49 patches covered · 4 tests', 28, 'ink', 'middle')
+    body += t(870, 336, '1 patch covered · 196 tests', 28, 'ink', 'middle')
+    body += t(580, 403, 'Fresh original → cover one region → rerun → measure the drop', 29, 'c-e', 'middle')
+    f.add('occlusion-small-setup', 'Use smaller covers to ask a more local question', body,
+          'Only the cover size changes. The trained model still uses 16×16 patches and a 224×224 input. Every test starts from the original image.',
+          'Are we changing the model’s patch size, or the region we cover?',
+          'Keep the model fixed. Cover one of its 196 patch locations at a time, producing 196 independent images. '
+          'A smaller cover probes a smaller region, but may have a smaller effect because other useful information remains.',
+          '<p>The original experiment used four non-overlapping 112×112 covers. '
+          'The finer experiment uses 196 non-overlapping 16×16 covers aligned with the existing 14×14 patch grid. '
+          'The model’s patch projection, weights, input resolution and preprocessing stay fixed.</p>'
+          '<p>Each trial starts with a fresh copy. Replace one patch with normalized zero, rerun the whole model '
+          'and compute 100 × (original probability − covered probability). The covers are never accumulated. '
+          'A small change does not show that a region is useless: other regions can carry related information, '
+          'and features can interact. Drops from different trials should not be added together.</p>'
+          '<p><a href="notebooks/vision/inspect_patch_occlusion.py">Reproduce the 196 trained-model tests</a>.</p>',
+          '<p>Large cover: 112×112 pixels, 49 model patches, four tests. '
+          'Small cover: 16×16 pixels, one model patch, 196 tests. '
+          'Each test starts with the original image and uses the same model.</p>')
+
+    fine = json.loads((b['ASSETS']/'patch-occlusion.json').read_text())
+    assert abs(fine['baseline_probability']-baseline) < 2e-6 and fine['summary']['all_top_labels_unchanged']
+    largest = fine['largest_drop']
+    region = (largest['row'], largest['column'], largest['size'])
+    body = t(175, 30, f'One test: cover P{largest["patch_index"]}', 27, 'c-q', 'middle')
+    body += t(530, 30, 'All 196 test results', 27, 'c-e', 'middle')
+    body += photo(35, 65, 280, True, region)
+    body += f.rect(35+region[1]/224*280, 65+region[0]/224*280, 20, 20, 'c-q', 'transparent', 0)
+    body += photo(390, 65, 280)
+    # Fixed diverging scale: positive drop lowers P; negative drop raises it.
+    # Every colored cell is the result of a different covered-image run.
+    for item in fine['trials']:
+        drop = item['drop_percentage_points']
+        color = '#be123c' if drop >= 0 else '#245edb'
+        alpha = min(abs(drop)/4, 1)*.9
+        body += (f'<rect x="{390+item["column"]/16*20}" y="{65+item["row"]/16*20}" '
+                 f'width="20" height="20" fill="{color}" opacity="{alpha:.4f}"/>')
+    body += f.rect(390+region[1]/16*20, 65+region[0]/16*20, 20, 20, 'c-q', 'transparent', 0)
+    body += t(530, 374, 'Each square = one separate test', 22, 'ink-2', 'middle')
+    body += t(725, 83, f'Largest drop: P{largest["patch_index"]}', 29, 'c-a', weight=650)
+    body += t(725, 137, f'{baseline:.2%} → {largest["target_probability"]:.2%}', 37, 'c-e')
+    body += t(725, 186, f'Down {largest["drop_percentage_points"]:.2f} percentage points', 26, 'c-a')
+    body += t(725, 250, 'Red: probability falls', 25, 'c-a')
+    body += t(725, 287, 'Blue: probability rises', 25, 'c-e')
+    body += t(725, 326, 'Drop scale: −4 to +4 points', 23, 'ink-2')
+    body += g(t(35, 431, 'All 196 tests still predict Newfoundland.', 34, 'c-e', weight=650), 1)
+    f.add('occlusion-small-result', 'Smaller covers reveal local sensitivity', body,
+          'Smaller covers localize sensitivity. P78 causes the largest drop here, but no single-patch cover changes the top label. This map measures probability changes, not attention weights.',
+          'Does a small probability drop mean a patch contains no useful information?',
+          f'P{largest["patch_index"]} causes the largest measured drop: {largest["drop_percentage_points"]:.2f} percentage points. '
+          'Read each square as a different forward pass with one gray patch. Other regions can retain useful clues; these drops are not additive.',
+          '<p>This is a new saved experiment on the same trained checkpoint and photograph. '
+          f'The largest drop is at P{largest["patch_index"]}, grid row {region[0]//16+1}, column {region[1]//16+1} '
+          '(counting from one). All 196 interventions retain Newfoundland as the top label. '
+          f'The target probabilities range from {fine["summary"]["minimum_probability"]:.2%} '
+          f'to {fine["summary"]["maximum_probability"]:.2%}. '
+          'Three replacements slightly increase the target probability, so a cover need not always reduce it.</p>'
+          '<p>Red means a positive drop, blue a negative drop, with a fixed symmetric −4 to +4 percentage-point color scale. '
+          'The outlined patch is the same location in the one-test image and in the result map. '
+          'This is neither a similarity map nor an attention map: it summarizes changes in the final class probability.</p>'
+          '<p>The result depends on this image, target, model, cover size and gray fill. '
+          'It locates sensitivity to these replacements, not an object segmentation or a complete explanation of recognition. '
+          '<a href="figures/vision1/patch-occlusion.json">All measurements and verification</a> · '
+          '<a href="notebooks/vision/inspect_patch_occlusion.py">Reproduce the experiment</a>.</p>',
+          f'<p>Among 196 separate tests, covering P{largest["patch_index"]} gives the largest drop: '
+          f'{baseline:.2%} → {largest["target_probability"]:.2%}, or {largest["drop_percentage_points"]:.2f} percentage points. '
+          'All top labels remain Newfoundland. Red marks a probability decrease; blue marks an increase.</p>')
+
     result = []
     for title, frames in sections:
         out = []
@@ -105,6 +224,8 @@ def explain(b, sections):
             key = re.search(r'class="frame[^\"]*" id="([^\"]+)"', markup).group(1)
             if key == 'cover-1':
                 out.extend([f.frames['cover-pixels'], f.frames['cover-1']])
+            elif key == 'occlusion':
+                out.extend(f.frames[k] for k in ['occlusion', 'occlusion-small-setup', 'occlusion-small-result'])
             else:
                 out.append(markup)
         result.append((title, out))

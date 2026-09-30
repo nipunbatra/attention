@@ -1,0 +1,1844 @@
+{
+  "model": "vit_tiny_patch16_224.augreg_in21k_ft_in1k",
+  "parameter_sha256": "ef63d237859e5404eb1455ce95fa9f9ff3110bdd2f2ccc813efc44210ffeb639",
+  "torch": "2.14.0",
+  "timm": "1.0.30",
+  "source_sha256": "617dc6f6dcd26c69303b54985eadd5c75bc07b8ba22cdb1ea511307096098d0a",
+  "preprocessing": {
+    "input_size": [
+      3,
+      224,
+      224
+    ],
+    "interpolation": "bicubic",
+    "mean": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "std": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "crop_pct": 0.9,
+    "crop_mode": "center"
+  },
+  "input_shape": [
+    1,
+    3,
+    224,
+    224
+  ],
+  "target_index": 256,
+  "target_label": "Newfoundland, Newfoundland dog",
+  "baseline_probability": 0.9572675228118896,
+  "cover_size": 16,
+  "cover_stride": 16,
+  "grid": [
+    14,
+    14
+  ],
+  "fill_normalized_rgb": [
+    0,
+    0,
+    0
+  ],
+  "fill_raw_rgb": [
+    0.5,
+    0.5,
+    0.5
+  ],
+  "definition": "drop = 100 * (original probability - covered probability)",
+  "trials": [
+    {
+      "row": 0,
+      "column": 0,
+      "size": 16,
+      "target_probability": 0.9521372318267822,
+      "top_index": 256,
+      "drop_percentage_points": 0.5130290985107422,
+      "patch_index": 1
+    },
+    {
+      "row": 0,
+      "column": 16,
+      "size": 16,
+      "target_probability": 0.9528444409370422,
+      "top_index": 256,
+      "drop_percentage_points": 0.4423081874847412,
+      "patch_index": 2
+    },
+    {
+      "row": 0,
+      "column": 32,
+      "size": 16,
+      "target_probability": 0.9530847668647766,
+      "top_index": 256,
+      "drop_percentage_points": 0.4182755947113037,
+      "patch_index": 3
+    },
+    {
+      "row": 0,
+      "column": 48,
+      "size": 16,
+      "target_probability": 0.951650857925415,
+      "top_index": 256,
+      "drop_percentage_points": 0.5616664886474609,
+      "patch_index": 4
+    },
+    {
+      "row": 0,
+      "column": 64,
+      "size": 16,
+      "target_probability": 0.9491603374481201,
+      "top_index": 256,
+      "drop_percentage_points": 0.8107185363769531,
+      "patch_index": 5
+    },
+    {
+      "row": 0,
+      "column": 80,
+      "size": 16,
+      "target_probability": 0.9502061605453491,
+      "top_index": 256,
+      "drop_percentage_points": 0.7061362266540527,
+      "patch_index": 6
+    },
+    {
+      "row": 0,
+      "column": 96,
+      "size": 16,
+      "target_probability": 0.9461924433708191,
+      "top_index": 256,
+      "drop_percentage_points": 1.1075079441070557,
+      "patch_index": 7
+    },
+    {
+      "row": 0,
+      "column": 112,
+      "size": 16,
+      "target_probability": 0.9452376365661621,
+      "top_index": 256,
+      "drop_percentage_points": 1.202988624572754,
+      "patch_index": 8
+    },
+    {
+      "row": 0,
+      "column": 128,
+      "size": 16,
+      "target_probability": 0.9458426237106323,
+      "top_index": 256,
+      "drop_percentage_points": 1.1424899101257324,
+      "patch_index": 9
+    },
+    {
+      "row": 0,
+      "column": 144,
+      "size": 16,
+      "target_probability": 0.9460325837135315,
+      "top_index": 256,
+      "drop_percentage_points": 1.1234939098358154,
+      "patch_index": 10
+    },
+    {
+      "row": 0,
+      "column": 160,
+      "size": 16,
+      "target_probability": 0.9437988996505737,
+      "top_index": 256,
+      "drop_percentage_points": 1.3468623161315918,
+      "patch_index": 11
+    },
+    {
+      "row": 0,
+      "column": 176,
+      "size": 16,
+      "target_probability": 0.9423813819885254,
+      "top_index": 256,
+      "drop_percentage_points": 1.4886140823364258,
+      "patch_index": 12
+    },
+    {
+      "row": 0,
+      "column": 192,
+      "size": 16,
+      "target_probability": 0.9446268677711487,
+      "top_index": 256,
+      "drop_percentage_points": 1.2640655040740967,
+      "patch_index": 13
+    },
+    {
+      "row": 0,
+      "column": 208,
+      "size": 16,
+      "target_probability": 0.946077287197113,
+      "top_index": 256,
+      "drop_percentage_points": 1.1190235614776611,
+      "patch_index": 14
+    },
+    {
+      "row": 16,
+      "column": 0,
+      "size": 16,
+      "target_probability": 0.9507483839988708,
+      "top_index": 256,
+      "drop_percentage_points": 0.6519138813018799,
+      "patch_index": 15
+    },
+    {
+      "row": 16,
+      "column": 16,
+      "size": 16,
+      "target_probability": 0.9511186480522156,
+      "top_index": 256,
+      "drop_percentage_points": 0.6148874759674072,
+      "patch_index": 16
+    },
+    {
+      "row": 16,
+      "column": 32,
+      "size": 16,
+      "target_probability": 0.9494227766990662,
+      "top_index": 256,
+      "drop_percentage_points": 0.7844746112823486,
+      "patch_index": 17
+    },
+    {
+      "row": 16,
+      "column": 48,
+      "size": 16,
+      "target_probability": 0.9491180181503296,
+      "top_index": 256,
+      "drop_percentage_points": 0.8149504661560059,
+      "patch_index": 18
+    },
+    {
+      "row": 16,
+      "column": 64,
+      "size": 16,
+      "target_probability": 0.9516977071762085,
+      "top_index": 256,
+      "drop_percentage_points": 0.5569815635681152,
+      "patch_index": 19
+    },
+    {
+      "row": 16,
+      "column": 80,
+      "size": 16,
+      "target_probability": 0.9517530798912048,
+      "top_index": 256,
+      "drop_percentage_points": 0.5514442920684814,
+      "patch_index": 20
+    },
+    {
+      "row": 16,
+      "column": 96,
+      "size": 16,
+      "target_probability": 0.951302707195282,
+      "top_index": 256,
+      "drop_percentage_points": 0.5964815616607666,
+      "patch_index": 21
+    },
+    {
+      "row": 16,
+      "column": 112,
+      "size": 16,
+      "target_probability": 0.9565682411193848,
+      "top_index": 256,
+      "drop_percentage_points": 0.06992816925048828,
+      "patch_index": 22
+    },
+    {
+      "row": 16,
+      "column": 128,
+      "size": 16,
+      "target_probability": 0.9570009112358093,
+      "top_index": 256,
+      "drop_percentage_points": 0.026661157608032227,
+      "patch_index": 23
+    },
+    {
+      "row": 16,
+      "column": 144,
+      "size": 16,
+      "target_probability": 0.9511720538139343,
+      "top_index": 256,
+      "drop_percentage_points": 0.6095468997955322,
+      "patch_index": 24
+    },
+    {
+      "row": 16,
+      "column": 160,
+      "size": 16,
+      "target_probability": 0.9490628242492676,
+      "top_index": 256,
+      "drop_percentage_points": 0.820469856262207,
+      "patch_index": 25
+    },
+    {
+      "row": 16,
+      "column": 176,
+      "size": 16,
+      "target_probability": 0.9455335140228271,
+      "top_index": 256,
+      "drop_percentage_points": 1.17340087890625,
+      "patch_index": 26
+    },
+    {
+      "row": 16,
+      "column": 192,
+      "size": 16,
+      "target_probability": 0.9499922394752502,
+      "top_index": 256,
+      "drop_percentage_points": 0.7275283336639404,
+      "patch_index": 27
+    },
+    {
+      "row": 16,
+      "column": 208,
+      "size": 16,
+      "target_probability": 0.9463972449302673,
+      "top_index": 256,
+      "drop_percentage_points": 1.0870277881622314,
+      "patch_index": 28
+    },
+    {
+      "row": 32,
+      "column": 0,
+      "size": 16,
+      "target_probability": 0.9484362006187439,
+      "top_index": 256,
+      "drop_percentage_points": 0.8831322193145752,
+      "patch_index": 29
+    },
+    {
+      "row": 32,
+      "column": 16,
+      "size": 16,
+      "target_probability": 0.9479209780693054,
+      "top_index": 256,
+      "drop_percentage_points": 0.9346544742584229,
+      "patch_index": 30
+    },
+    {
+      "row": 32,
+      "column": 32,
+      "size": 16,
+      "target_probability": 0.9443344473838806,
+      "top_index": 256,
+      "drop_percentage_points": 1.2933075428009033,
+      "patch_index": 31
+    },
+    {
+      "row": 32,
+      "column": 48,
+      "size": 16,
+      "target_probability": 0.9503896832466125,
+      "top_index": 256,
+      "drop_percentage_points": 0.68778395652771,
+      "patch_index": 32
+    },
+    {
+      "row": 32,
+      "column": 64,
+      "size": 16,
+      "target_probability": 0.9523456692695618,
+      "top_index": 256,
+      "drop_percentage_points": 0.4921853542327881,
+      "patch_index": 33
+    },
+    {
+      "row": 32,
+      "column": 80,
+      "size": 16,
+      "target_probability": 0.9515631794929504,
+      "top_index": 256,
+      "drop_percentage_points": 0.5704343318939209,
+      "patch_index": 34
+    },
+    {
+      "row": 32,
+      "column": 96,
+      "size": 16,
+      "target_probability": 0.950672447681427,
+      "top_index": 256,
+      "drop_percentage_points": 0.6595075130462646,
+      "patch_index": 35
+    },
+    {
+      "row": 32,
+      "column": 112,
+      "size": 16,
+      "target_probability": 0.9566705822944641,
+      "top_index": 256,
+      "drop_percentage_points": 0.05969405174255371,
+      "patch_index": 36
+    },
+    {
+      "row": 32,
+      "column": 128,
+      "size": 16,
+      "target_probability": 0.9536411166191101,
+      "top_index": 256,
+      "drop_percentage_points": 0.3626406192779541,
+      "patch_index": 37
+    },
+    {
+      "row": 32,
+      "column": 144,
+      "size": 16,
+      "target_probability": 0.9543597102165222,
+      "top_index": 256,
+      "drop_percentage_points": 0.29078125953674316,
+      "patch_index": 38
+    },
+    {
+      "row": 32,
+      "column": 160,
+      "size": 16,
+      "target_probability": 0.9513872861862183,
+      "top_index": 256,
+      "drop_percentage_points": 0.5880236625671387,
+      "patch_index": 39
+    },
+    {
+      "row": 32,
+      "column": 176,
+      "size": 16,
+      "target_probability": 0.9489900469779968,
+      "top_index": 256,
+      "drop_percentage_points": 0.8277475833892822,
+      "patch_index": 40
+    },
+    {
+      "row": 32,
+      "column": 192,
+      "size": 16,
+      "target_probability": 0.9463194608688354,
+      "top_index": 256,
+      "drop_percentage_points": 1.09480619430542,
+      "patch_index": 41
+    },
+    {
+      "row": 32,
+      "column": 208,
+      "size": 16,
+      "target_probability": 0.9488320350646973,
+      "top_index": 256,
+      "drop_percentage_points": 0.8435487747192383,
+      "patch_index": 42
+    },
+    {
+      "row": 48,
+      "column": 0,
+      "size": 16,
+      "target_probability": 0.9482161998748779,
+      "top_index": 256,
+      "drop_percentage_points": 0.9051322937011719,
+      "patch_index": 43
+    },
+    {
+      "row": 48,
+      "column": 16,
+      "size": 16,
+      "target_probability": 0.9496133327484131,
+      "top_index": 256,
+      "drop_percentage_points": 0.7654190063476562,
+      "patch_index": 44
+    },
+    {
+      "row": 48,
+      "column": 32,
+      "size": 16,
+      "target_probability": 0.951958179473877,
+      "top_index": 256,
+      "drop_percentage_points": 0.5309343338012695,
+      "patch_index": 45
+    },
+    {
+      "row": 48,
+      "column": 48,
+      "size": 16,
+      "target_probability": 0.9519543051719666,
+      "top_index": 256,
+      "drop_percentage_points": 0.5313217639923096,
+      "patch_index": 46
+    },
+    {
+      "row": 48,
+      "column": 64,
+      "size": 16,
+      "target_probability": 0.9337931275367737,
+      "top_index": 256,
+      "drop_percentage_points": 2.3474395275115967,
+      "patch_index": 47
+    },
+    {
+      "row": 48,
+      "column": 80,
+      "size": 16,
+      "target_probability": 0.9355549812316895,
+      "top_index": 256,
+      "drop_percentage_points": 2.1712541580200195,
+      "patch_index": 48
+    },
+    {
+      "row": 48,
+      "column": 96,
+      "size": 16,
+      "target_probability": 0.9534291625022888,
+      "top_index": 256,
+      "drop_percentage_points": 0.383836030960083,
+      "patch_index": 49
+    },
+    {
+      "row": 48,
+      "column": 112,
+      "size": 16,
+      "target_probability": 0.9554542899131775,
+      "top_index": 256,
+      "drop_percentage_points": 0.18132328987121582,
+      "patch_index": 50
+    },
+    {
+      "row": 48,
+      "column": 128,
+      "size": 16,
+      "target_probability": 0.9511208534240723,
+      "top_index": 256,
+      "drop_percentage_points": 0.6146669387817383,
+      "patch_index": 51
+    },
+    {
+      "row": 48,
+      "column": 144,
+      "size": 16,
+      "target_probability": 0.9531208276748657,
+      "top_index": 256,
+      "drop_percentage_points": 0.4146695137023926,
+      "patch_index": 52
+    },
+    {
+      "row": 48,
+      "column": 160,
+      "size": 16,
+      "target_probability": 0.9545153975486755,
+      "top_index": 256,
+      "drop_percentage_points": 0.27521252632141113,
+      "patch_index": 53
+    },
+    {
+      "row": 48,
+      "column": 176,
+      "size": 16,
+      "target_probability": 0.9542919397354126,
+      "top_index": 256,
+      "drop_percentage_points": 0.2975583076477051,
+      "patch_index": 54
+    },
+    {
+      "row": 48,
+      "column": 192,
+      "size": 16,
+      "target_probability": 0.9514299035072327,
+      "top_index": 256,
+      "drop_percentage_points": 0.5837619304656982,
+      "patch_index": 55
+    },
+    {
+      "row": 48,
+      "column": 208,
+      "size": 16,
+      "target_probability": 0.9476636648178101,
+      "top_index": 256,
+      "drop_percentage_points": 0.960385799407959,
+      "patch_index": 56
+    },
+    {
+      "row": 64,
+      "column": 0,
+      "size": 16,
+      "target_probability": 0.9481737613677979,
+      "top_index": 256,
+      "drop_percentage_points": 0.9093761444091797,
+      "patch_index": 57
+    },
+    {
+      "row": 64,
+      "column": 16,
+      "size": 16,
+      "target_probability": 0.949617326259613,
+      "top_index": 256,
+      "drop_percentage_points": 0.7650196552276611,
+      "patch_index": 58
+    },
+    {
+      "row": 64,
+      "column": 32,
+      "size": 16,
+      "target_probability": 0.9505908489227295,
+      "top_index": 256,
+      "drop_percentage_points": 0.6676673889160156,
+      "patch_index": 59
+    },
+    {
+      "row": 64,
+      "column": 48,
+      "size": 16,
+      "target_probability": 0.9478252530097961,
+      "top_index": 256,
+      "drop_percentage_points": 0.9442269802093506,
+      "patch_index": 60
+    },
+    {
+      "row": 64,
+      "column": 64,
+      "size": 16,
+      "target_probability": 0.9572882652282715,
+      "top_index": 256,
+      "drop_percentage_points": -0.0020742416381835938,
+      "patch_index": 61
+    },
+    {
+      "row": 64,
+      "column": 80,
+      "size": 16,
+      "target_probability": 0.9267629981040955,
+      "top_index": 256,
+      "drop_percentage_points": 3.050452470779419,
+      "patch_index": 62
+    },
+    {
+      "row": 64,
+      "column": 96,
+      "size": 16,
+      "target_probability": 0.9533731341362,
+      "top_index": 256,
+      "drop_percentage_points": 0.3894388675689697,
+      "patch_index": 63
+    },
+    {
+      "row": 64,
+      "column": 112,
+      "size": 16,
+      "target_probability": 0.9270116090774536,
+      "top_index": 256,
+      "drop_percentage_points": 3.0255913734436035,
+      "patch_index": 64
+    },
+    {
+      "row": 64,
+      "column": 128,
+      "size": 16,
+      "target_probability": 0.9382860064506531,
+      "top_index": 256,
+      "drop_percentage_points": 1.8981516361236572,
+      "patch_index": 65
+    },
+    {
+      "row": 64,
+      "column": 144,
+      "size": 16,
+      "target_probability": 0.956532895565033,
+      "top_index": 256,
+      "drop_percentage_points": 0.07346272468566895,
+      "patch_index": 66
+    },
+    {
+      "row": 64,
+      "column": 160,
+      "size": 16,
+      "target_probability": 0.9492488503456116,
+      "top_index": 256,
+      "drop_percentage_points": 0.8018672466278076,
+      "patch_index": 67
+    },
+    {
+      "row": 64,
+      "column": 176,
+      "size": 16,
+      "target_probability": 0.9546136260032654,
+      "top_index": 256,
+      "drop_percentage_points": 0.26538968086242676,
+      "patch_index": 68
+    },
+    {
+      "row": 64,
+      "column": 192,
+      "size": 16,
+      "target_probability": 0.951407790184021,
+      "top_index": 256,
+      "drop_percentage_points": 0.5859732627868652,
+      "patch_index": 69
+    },
+    {
+      "row": 64,
+      "column": 208,
+      "size": 16,
+      "target_probability": 0.9508808255195618,
+      "top_index": 256,
+      "drop_percentage_points": 0.6386697292327881,
+      "patch_index": 70
+    },
+    {
+      "row": 80,
+      "column": 0,
+      "size": 16,
+      "target_probability": 0.9476408958435059,
+      "top_index": 256,
+      "drop_percentage_points": 0.9626626968383789,
+      "patch_index": 71
+    },
+    {
+      "row": 80,
+      "column": 16,
+      "size": 16,
+      "target_probability": 0.9480145573616028,
+      "top_index": 256,
+      "drop_percentage_points": 0.9252965450286865,
+      "patch_index": 72
+    },
+    {
+      "row": 80,
+      "column": 32,
+      "size": 16,
+      "target_probability": 0.9540594816207886,
+      "top_index": 256,
+      "drop_percentage_points": 0.3208041191101074,
+      "patch_index": 73
+    },
+    {
+      "row": 80,
+      "column": 48,
+      "size": 16,
+      "target_probability": 0.9494895339012146,
+      "top_index": 256,
+      "drop_percentage_points": 0.7777988910675049,
+      "patch_index": 74
+    },
+    {
+      "row": 80,
+      "column": 64,
+      "size": 16,
+      "target_probability": 0.9524140954017639,
+      "top_index": 256,
+      "drop_percentage_points": 0.48534274101257324,
+      "patch_index": 75
+    },
+    {
+      "row": 80,
+      "column": 80,
+      "size": 16,
+      "target_probability": 0.9554468989372253,
+      "top_index": 256,
+      "drop_percentage_points": 0.18206238746643066,
+      "patch_index": 76
+    },
+    {
+      "row": 80,
+      "column": 96,
+      "size": 16,
+      "target_probability": 0.9572033882141113,
+      "top_index": 256,
+      "drop_percentage_points": 0.006413459777832031,
+      "patch_index": 77
+    },
+    {
+      "row": 80,
+      "column": 112,
+      "size": 16,
+      "target_probability": 0.9189073443412781,
+      "top_index": 256,
+      "drop_percentage_points": 3.8360178470611572,
+      "patch_index": 78
+    },
+    {
+      "row": 80,
+      "column": 128,
+      "size": 16,
+      "target_probability": 0.9571959972381592,
+      "top_index": 256,
+      "drop_percentage_points": 0.007152557373046875,
+      "patch_index": 79
+    },
+    {
+      "row": 80,
+      "column": 144,
+      "size": 16,
+      "target_probability": 0.9487955570220947,
+      "top_index": 256,
+      "drop_percentage_points": 0.8471965789794922,
+      "patch_index": 80
+    },
+    {
+      "row": 80,
+      "column": 160,
+      "size": 16,
+      "target_probability": 0.9487444758415222,
+      "top_index": 256,
+      "drop_percentage_points": 0.8523046970367432,
+      "patch_index": 81
+    },
+    {
+      "row": 80,
+      "column": 176,
+      "size": 16,
+      "target_probability": 0.9535695910453796,
+      "top_index": 256,
+      "drop_percentage_points": 0.369793176651001,
+      "patch_index": 82
+    },
+    {
+      "row": 80,
+      "column": 192,
+      "size": 16,
+      "target_probability": 0.9516249299049377,
+      "top_index": 256,
+      "drop_percentage_points": 0.5642592906951904,
+      "patch_index": 83
+    },
+    {
+      "row": 80,
+      "column": 208,
+      "size": 16,
+      "target_probability": 0.9496460556983948,
+      "top_index": 256,
+      "drop_percentage_points": 0.7621467113494873,
+      "patch_index": 84
+    },
+    {
+      "row": 96,
+      "column": 0,
+      "size": 16,
+      "target_probability": 0.9479706883430481,
+      "top_index": 256,
+      "drop_percentage_points": 0.9296834468841553,
+      "patch_index": 85
+    },
+    {
+      "row": 96,
+      "column": 16,
+      "size": 16,
+      "target_probability": 0.9470654726028442,
+      "top_index": 256,
+      "drop_percentage_points": 1.020205020904541,
+      "patch_index": 86
+    },
+    {
+      "row": 96,
+      "column": 32,
+      "size": 16,
+      "target_probability": 0.9483947157859802,
+      "top_index": 256,
+      "drop_percentage_points": 0.8872807025909424,
+      "patch_index": 87
+    },
+    {
+      "row": 96,
+      "column": 48,
+      "size": 16,
+      "target_probability": 0.9448675513267517,
+      "top_index": 256,
+      "drop_percentage_points": 1.239997148513794,
+      "patch_index": 88
+    },
+    {
+      "row": 96,
+      "column": 64,
+      "size": 16,
+      "target_probability": 0.953091025352478,
+      "top_index": 256,
+      "drop_percentage_points": 0.4176497459411621,
+      "patch_index": 89
+    },
+    {
+      "row": 96,
+      "column": 80,
+      "size": 16,
+      "target_probability": 0.9561427235603333,
+      "top_index": 256,
+      "drop_percentage_points": 0.11247992515563965,
+      "patch_index": 90
+    },
+    {
+      "row": 96,
+      "column": 96,
+      "size": 16,
+      "target_probability": 0.9525222182273865,
+      "top_index": 256,
+      "drop_percentage_points": 0.4745304584503174,
+      "patch_index": 91
+    },
+    {
+      "row": 96,
+      "column": 112,
+      "size": 16,
+      "target_probability": 0.9604790806770325,
+      "top_index": 256,
+      "drop_percentage_points": -0.3211557865142822,
+      "patch_index": 92
+    },
+    {
+      "row": 96,
+      "column": 128,
+      "size": 16,
+      "target_probability": 0.9600313305854797,
+      "top_index": 256,
+      "drop_percentage_points": -0.2763807773590088,
+      "patch_index": 93
+    },
+    {
+      "row": 96,
+      "column": 144,
+      "size": 16,
+      "target_probability": 0.9524810314178467,
+      "top_index": 256,
+      "drop_percentage_points": 0.4786491394042969,
+      "patch_index": 94
+    },
+    {
+      "row": 96,
+      "column": 160,
+      "size": 16,
+      "target_probability": 0.9486787915229797,
+      "top_index": 256,
+      "drop_percentage_points": 0.8588731288909912,
+      "patch_index": 95
+    },
+    {
+      "row": 96,
+      "column": 176,
+      "size": 16,
+      "target_probability": 0.9455501437187195,
+      "top_index": 256,
+      "drop_percentage_points": 1.1717379093170166,
+      "patch_index": 96
+    },
+    {
+      "row": 96,
+      "column": 192,
+      "size": 16,
+      "target_probability": 0.9505282640457153,
+      "top_index": 256,
+      "drop_percentage_points": 0.6739258766174316,
+      "patch_index": 97
+    },
+    {
+      "row": 96,
+      "column": 208,
+      "size": 16,
+      "target_probability": 0.9486809372901917,
+      "top_index": 256,
+      "drop_percentage_points": 0.8586585521697998,
+      "patch_index": 98
+    },
+    {
+      "row": 112,
+      "column": 0,
+      "size": 16,
+      "target_probability": 0.947539746761322,
+      "top_index": 256,
+      "drop_percentage_points": 0.9727776050567627,
+      "patch_index": 99
+    },
+    {
+      "row": 112,
+      "column": 16,
+      "size": 16,
+      "target_probability": 0.9483807682991028,
+      "top_index": 256,
+      "drop_percentage_points": 0.8886754512786865,
+      "patch_index": 100
+    },
+    {
+      "row": 112,
+      "column": 32,
+      "size": 16,
+      "target_probability": 0.9455024003982544,
+      "top_index": 256,
+      "drop_percentage_points": 1.1765122413635254,
+      "patch_index": 101
+    },
+    {
+      "row": 112,
+      "column": 48,
+      "size": 16,
+      "target_probability": 0.9452353119850159,
+      "top_index": 256,
+      "drop_percentage_points": 1.203221082687378,
+      "patch_index": 102
+    },
+    {
+      "row": 112,
+      "column": 64,
+      "size": 16,
+      "target_probability": 0.9472020268440247,
+      "top_index": 256,
+      "drop_percentage_points": 1.006549596786499,
+      "patch_index": 103
+    },
+    {
+      "row": 112,
+      "column": 80,
+      "size": 16,
+      "target_probability": 0.9405158162117004,
+      "top_index": 256,
+      "drop_percentage_points": 1.675170660018921,
+      "patch_index": 104
+    },
+    {
+      "row": 112,
+      "column": 96,
+      "size": 16,
+      "target_probability": 0.941810667514801,
+      "top_index": 256,
+      "drop_percentage_points": 1.5456855297088623,
+      "patch_index": 105
+    },
+    {
+      "row": 112,
+      "column": 112,
+      "size": 16,
+      "target_probability": 0.9392482042312622,
+      "top_index": 256,
+      "drop_percentage_points": 1.8019318580627441,
+      "patch_index": 106
+    },
+    {
+      "row": 112,
+      "column": 128,
+      "size": 16,
+      "target_probability": 0.947365403175354,
+      "top_index": 256,
+      "drop_percentage_points": 0.9902119636535645,
+      "patch_index": 107
+    },
+    {
+      "row": 112,
+      "column": 144,
+      "size": 16,
+      "target_probability": 0.9497140645980835,
+      "top_index": 256,
+      "drop_percentage_points": 0.7553458213806152,
+      "patch_index": 108
+    },
+    {
+      "row": 112,
+      "column": 160,
+      "size": 16,
+      "target_probability": 0.9499188661575317,
+      "top_index": 256,
+      "drop_percentage_points": 0.734865665435791,
+      "patch_index": 109
+    },
+    {
+      "row": 112,
+      "column": 176,
+      "size": 16,
+      "target_probability": 0.9465656876564026,
+      "top_index": 256,
+      "drop_percentage_points": 1.070183515548706,
+      "patch_index": 110
+    },
+    {
+      "row": 112,
+      "column": 192,
+      "size": 16,
+      "target_probability": 0.9508839845657349,
+      "top_index": 256,
+      "drop_percentage_points": 0.6383538246154785,
+      "patch_index": 111
+    },
+    {
+      "row": 112,
+      "column": 208,
+      "size": 16,
+      "target_probability": 0.9477171897888184,
+      "top_index": 256,
+      "drop_percentage_points": 0.9550333023071289,
+      "patch_index": 112
+    },
+    {
+      "row": 128,
+      "column": 0,
+      "size": 16,
+      "target_probability": 0.9465592503547668,
+      "top_index": 256,
+      "drop_percentage_points": 1.0708272457122803,
+      "patch_index": 113
+    },
+    {
+      "row": 128,
+      "column": 16,
+      "size": 16,
+      "target_probability": 0.9488039016723633,
+      "top_index": 256,
+      "drop_percentage_points": 0.8463621139526367,
+      "patch_index": 114
+    },
+    {
+      "row": 128,
+      "column": 32,
+      "size": 16,
+      "target_probability": 0.9471469521522522,
+      "top_index": 256,
+      "drop_percentage_points": 1.0120570659637451,
+      "patch_index": 115
+    },
+    {
+      "row": 128,
+      "column": 48,
+      "size": 16,
+      "target_probability": 0.9447869062423706,
+      "top_index": 256,
+      "drop_percentage_points": 1.2480616569519043,
+      "patch_index": 116
+    },
+    {
+      "row": 128,
+      "column": 64,
+      "size": 16,
+      "target_probability": 0.9456034302711487,
+      "top_index": 256,
+      "drop_percentage_points": 1.1664092540740967,
+      "patch_index": 117
+    },
+    {
+      "row": 128,
+      "column": 80,
+      "size": 16,
+      "target_probability": 0.9492195248603821,
+      "top_index": 256,
+      "drop_percentage_points": 0.8047997951507568,
+      "patch_index": 118
+    },
+    {
+      "row": 128,
+      "column": 96,
+      "size": 16,
+      "target_probability": 0.9501503705978394,
+      "top_index": 256,
+      "drop_percentage_points": 0.7117152214050293,
+      "patch_index": 119
+    },
+    {
+      "row": 128,
+      "column": 112,
+      "size": 16,
+      "target_probability": 0.9507867693901062,
+      "top_index": 256,
+      "drop_percentage_points": 0.6480753421783447,
+      "patch_index": 120
+    },
+    {
+      "row": 128,
+      "column": 128,
+      "size": 16,
+      "target_probability": 0.9508109092712402,
+      "top_index": 256,
+      "drop_percentage_points": 0.6456613540649414,
+      "patch_index": 121
+    },
+    {
+      "row": 128,
+      "column": 144,
+      "size": 16,
+      "target_probability": 0.9492847323417664,
+      "top_index": 256,
+      "drop_percentage_points": 0.7982790470123291,
+      "patch_index": 122
+    },
+    {
+      "row": 128,
+      "column": 160,
+      "size": 16,
+      "target_probability": 0.9478958249092102,
+      "top_index": 256,
+      "drop_percentage_points": 0.9371697902679443,
+      "patch_index": 123
+    },
+    {
+      "row": 128,
+      "column": 176,
+      "size": 16,
+      "target_probability": 0.9497566819190979,
+      "top_index": 256,
+      "drop_percentage_points": 0.7510840892791748,
+      "patch_index": 124
+    },
+    {
+      "row": 128,
+      "column": 192,
+      "size": 16,
+      "target_probability": 0.9505524039268494,
+      "top_index": 256,
+      "drop_percentage_points": 0.6715118885040283,
+      "patch_index": 125
+    },
+    {
+      "row": 128,
+      "column": 208,
+      "size": 16,
+      "target_probability": 0.9500883221626282,
+      "top_index": 256,
+      "drop_percentage_points": 0.7179200649261475,
+      "patch_index": 126
+    },
+    {
+      "row": 144,
+      "column": 0,
+      "size": 16,
+      "target_probability": 0.9487606883049011,
+      "top_index": 256,
+      "drop_percentage_points": 0.8506834506988525,
+      "patch_index": 127
+    },
+    {
+      "row": 144,
+      "column": 16,
+      "size": 16,
+      "target_probability": 0.9483814835548401,
+      "top_index": 256,
+      "drop_percentage_points": 0.888603925704956,
+      "patch_index": 128
+    },
+    {
+      "row": 144,
+      "column": 32,
+      "size": 16,
+      "target_probability": 0.9446372389793396,
+      "top_index": 256,
+      "drop_percentage_points": 1.2630283832550049,
+      "patch_index": 129
+    },
+    {
+      "row": 144,
+      "column": 48,
+      "size": 16,
+      "target_probability": 0.947317361831665,
+      "top_index": 256,
+      "drop_percentage_points": 0.9950160980224609,
+      "patch_index": 130
+    },
+    {
+      "row": 144,
+      "column": 64,
+      "size": 16,
+      "target_probability": 0.9479577541351318,
+      "top_index": 256,
+      "drop_percentage_points": 0.9309768676757812,
+      "patch_index": 131
+    },
+    {
+      "row": 144,
+      "column": 80,
+      "size": 16,
+      "target_probability": 0.9486812949180603,
+      "top_index": 256,
+      "drop_percentage_points": 0.8586227893829346,
+      "patch_index": 132
+    },
+    {
+      "row": 144,
+      "column": 96,
+      "size": 16,
+      "target_probability": 0.9475715160369873,
+      "top_index": 256,
+      "drop_percentage_points": 0.9696006774902344,
+      "patch_index": 133
+    },
+    {
+      "row": 144,
+      "column": 112,
+      "size": 16,
+      "target_probability": 0.9479865431785583,
+      "top_index": 256,
+      "drop_percentage_points": 0.9280979633331299,
+      "patch_index": 134
+    },
+    {
+      "row": 144,
+      "column": 128,
+      "size": 16,
+      "target_probability": 0.9499015212059021,
+      "top_index": 256,
+      "drop_percentage_points": 0.7366001605987549,
+      "patch_index": 135
+    },
+    {
+      "row": 144,
+      "column": 144,
+      "size": 16,
+      "target_probability": 0.9482489228248596,
+      "top_index": 256,
+      "drop_percentage_points": 0.9018599987030029,
+      "patch_index": 136
+    },
+    {
+      "row": 144,
+      "column": 160,
+      "size": 16,
+      "target_probability": 0.9469967484474182,
+      "top_index": 256,
+      "drop_percentage_points": 1.0270774364471436,
+      "patch_index": 137
+    },
+    {
+      "row": 144,
+      "column": 176,
+      "size": 16,
+      "target_probability": 0.947956383228302,
+      "top_index": 256,
+      "drop_percentage_points": 0.9311139583587646,
+      "patch_index": 138
+    },
+    {
+      "row": 144,
+      "column": 192,
+      "size": 16,
+      "target_probability": 0.9461910128593445,
+      "top_index": 256,
+      "drop_percentage_points": 1.1076509952545166,
+      "patch_index": 139
+    },
+    {
+      "row": 144,
+      "column": 208,
+      "size": 16,
+      "target_probability": 0.9499939680099487,
+      "top_index": 256,
+      "drop_percentage_points": 0.7273554801940918,
+      "patch_index": 140
+    },
+    {
+      "row": 160,
+      "column": 0,
+      "size": 16,
+      "target_probability": 0.9500267505645752,
+      "top_index": 256,
+      "drop_percentage_points": 0.7240772247314453,
+      "patch_index": 141
+    },
+    {
+      "row": 160,
+      "column": 16,
+      "size": 16,
+      "target_probability": 0.9500629901885986,
+      "top_index": 256,
+      "drop_percentage_points": 0.7204532623291016,
+      "patch_index": 142
+    },
+    {
+      "row": 160,
+      "column": 32,
+      "size": 16,
+      "target_probability": 0.9484919309616089,
+      "top_index": 256,
+      "drop_percentage_points": 0.8775591850280762,
+      "patch_index": 143
+    },
+    {
+      "row": 160,
+      "column": 48,
+      "size": 16,
+      "target_probability": 0.9478838443756104,
+      "top_index": 256,
+      "drop_percentage_points": 0.9383678436279297,
+      "patch_index": 144
+    },
+    {
+      "row": 160,
+      "column": 64,
+      "size": 16,
+      "target_probability": 0.9499850273132324,
+      "top_index": 256,
+      "drop_percentage_points": 0.7282495498657227,
+      "patch_index": 145
+    },
+    {
+      "row": 160,
+      "column": 80,
+      "size": 16,
+      "target_probability": 0.9502906203269958,
+      "top_index": 256,
+      "drop_percentage_points": 0.6976902484893799,
+      "patch_index": 146
+    },
+    {
+      "row": 160,
+      "column": 96,
+      "size": 16,
+      "target_probability": 0.9518750309944153,
+      "top_index": 256,
+      "drop_percentage_points": 0.5392491817474365,
+      "patch_index": 147
+    },
+    {
+      "row": 160,
+      "column": 112,
+      "size": 16,
+      "target_probability": 0.9489905834197998,
+      "top_index": 256,
+      "drop_percentage_points": 0.8276939392089844,
+      "patch_index": 148
+    },
+    {
+      "row": 160,
+      "column": 128,
+      "size": 16,
+      "target_probability": 0.9514418840408325,
+      "top_index": 256,
+      "drop_percentage_points": 0.5825638771057129,
+      "patch_index": 149
+    },
+    {
+      "row": 160,
+      "column": 144,
+      "size": 16,
+      "target_probability": 0.9527372121810913,
+      "top_index": 256,
+      "drop_percentage_points": 0.453031063079834,
+      "patch_index": 150
+    },
+    {
+      "row": 160,
+      "column": 160,
+      "size": 16,
+      "target_probability": 0.950439989566803,
+      "top_index": 256,
+      "drop_percentage_points": 0.682753324508667,
+      "patch_index": 151
+    },
+    {
+      "row": 160,
+      "column": 176,
+      "size": 16,
+      "target_probability": 0.9500311613082886,
+      "top_index": 256,
+      "drop_percentage_points": 0.7236361503601074,
+      "patch_index": 152
+    },
+    {
+      "row": 160,
+      "column": 192,
+      "size": 16,
+      "target_probability": 0.9480664134025574,
+      "top_index": 256,
+      "drop_percentage_points": 0.9201109409332275,
+      "patch_index": 153
+    },
+    {
+      "row": 160,
+      "column": 208,
+      "size": 16,
+      "target_probability": 0.9495326280593872,
+      "top_index": 256,
+      "drop_percentage_points": 0.7734894752502441,
+      "patch_index": 154
+    },
+    {
+      "row": 176,
+      "column": 0,
+      "size": 16,
+      "target_probability": 0.950071394443512,
+      "top_index": 256,
+      "drop_percentage_points": 0.7196128368377686,
+      "patch_index": 155
+    },
+    {
+      "row": 176,
+      "column": 16,
+      "size": 16,
+      "target_probability": 0.9511837959289551,
+      "top_index": 256,
+      "drop_percentage_points": 0.608372688293457,
+      "patch_index": 156
+    },
+    {
+      "row": 176,
+      "column": 32,
+      "size": 16,
+      "target_probability": 0.9465001225471497,
+      "top_index": 256,
+      "drop_percentage_points": 1.076740026473999,
+      "patch_index": 157
+    },
+    {
+      "row": 176,
+      "column": 48,
+      "size": 16,
+      "target_probability": 0.9465928077697754,
+      "top_index": 256,
+      "drop_percentage_points": 1.0674715042114258,
+      "patch_index": 158
+    },
+    {
+      "row": 176,
+      "column": 64,
+      "size": 16,
+      "target_probability": 0.9491915106773376,
+      "top_index": 256,
+      "drop_percentage_points": 0.8076012134552002,
+      "patch_index": 159
+    },
+    {
+      "row": 176,
+      "column": 80,
+      "size": 16,
+      "target_probability": 0.9506580829620361,
+      "top_index": 256,
+      "drop_percentage_points": 0.6609439849853516,
+      "patch_index": 160
+    },
+    {
+      "row": 176,
+      "column": 96,
+      "size": 16,
+      "target_probability": 0.951073169708252,
+      "top_index": 256,
+      "drop_percentage_points": 0.6194353103637695,
+      "patch_index": 161
+    },
+    {
+      "row": 176,
+      "column": 112,
+      "size": 16,
+      "target_probability": 0.9501262903213501,
+      "top_index": 256,
+      "drop_percentage_points": 0.7141232490539551,
+      "patch_index": 162
+    },
+    {
+      "row": 176,
+      "column": 128,
+      "size": 16,
+      "target_probability": 0.951326847076416,
+      "top_index": 256,
+      "drop_percentage_points": 0.5940675735473633,
+      "patch_index": 163
+    },
+    {
+      "row": 176,
+      "column": 144,
+      "size": 16,
+      "target_probability": 0.9520508050918579,
+      "top_index": 256,
+      "drop_percentage_points": 0.5216717720031738,
+      "patch_index": 164
+    },
+    {
+      "row": 176,
+      "column": 160,
+      "size": 16,
+      "target_probability": 0.9510090947151184,
+      "top_index": 256,
+      "drop_percentage_points": 0.625842809677124,
+      "patch_index": 165
+    },
+    {
+      "row": 176,
+      "column": 176,
+      "size": 16,
+      "target_probability": 0.9479767084121704,
+      "top_index": 256,
+      "drop_percentage_points": 0.9290814399719238,
+      "patch_index": 166
+    },
+    {
+      "row": 176,
+      "column": 192,
+      "size": 16,
+      "target_probability": 0.9498833417892456,
+      "top_index": 256,
+      "drop_percentage_points": 0.7384181022644043,
+      "patch_index": 167
+    },
+    {
+      "row": 176,
+      "column": 208,
+      "size": 16,
+      "target_probability": 0.9478615522384644,
+      "top_index": 256,
+      "drop_percentage_points": 0.9405970573425293,
+      "patch_index": 168
+    },
+    {
+      "row": 192,
+      "column": 0,
+      "size": 16,
+      "target_probability": 0.9498813152313232,
+      "top_index": 256,
+      "drop_percentage_points": 0.7386207580566406,
+      "patch_index": 169
+    },
+    {
+      "row": 192,
+      "column": 16,
+      "size": 16,
+      "target_probability": 0.9510343670845032,
+      "top_index": 256,
+      "drop_percentage_points": 0.6233155727386475,
+      "patch_index": 170
+    },
+    {
+      "row": 192,
+      "column": 32,
+      "size": 16,
+      "target_probability": 0.9470090270042419,
+      "top_index": 256,
+      "drop_percentage_points": 1.0258495807647705,
+      "patch_index": 171
+    },
+    {
+      "row": 192,
+      "column": 48,
+      "size": 16,
+      "target_probability": 0.950486421585083,
+      "top_index": 256,
+      "drop_percentage_points": 0.6781101226806641,
+      "patch_index": 172
+    },
+    {
+      "row": 192,
+      "column": 64,
+      "size": 16,
+      "target_probability": 0.9516374468803406,
+      "top_index": 256,
+      "drop_percentage_points": 0.5630075931549072,
+      "patch_index": 173
+    },
+    {
+      "row": 192,
+      "column": 80,
+      "size": 16,
+      "target_probability": 0.9526563882827759,
+      "top_index": 256,
+      "drop_percentage_points": 0.46111345291137695,
+      "patch_index": 174
+    },
+    {
+      "row": 192,
+      "column": 96,
+      "size": 16,
+      "target_probability": 0.9522058367729187,
+      "top_index": 256,
+      "drop_percentage_points": 0.5061686038970947,
+      "patch_index": 175
+    },
+    {
+      "row": 192,
+      "column": 112,
+      "size": 16,
+      "target_probability": 0.9524738788604736,
+      "top_index": 256,
+      "drop_percentage_points": 0.47936439514160156,
+      "patch_index": 176
+    },
+    {
+      "row": 192,
+      "column": 128,
+      "size": 16,
+      "target_probability": 0.953606128692627,
+      "top_index": 256,
+      "drop_percentage_points": 0.36613941192626953,
+      "patch_index": 177
+    },
+    {
+      "row": 192,
+      "column": 144,
+      "size": 16,
+      "target_probability": 0.953923225402832,
+      "top_index": 256,
+      "drop_percentage_points": 0.3344297409057617,
+      "patch_index": 178
+    },
+    {
+      "row": 192,
+      "column": 160,
+      "size": 16,
+      "target_probability": 0.948467493057251,
+      "top_index": 256,
+      "drop_percentage_points": 0.8800029754638672,
+      "patch_index": 179
+    },
+    {
+      "row": 192,
+      "column": 176,
+      "size": 16,
+      "target_probability": 0.9449495077133179,
+      "top_index": 256,
+      "drop_percentage_points": 1.2318015098571777,
+      "patch_index": 180
+    },
+    {
+      "row": 192,
+      "column": 192,
+      "size": 16,
+      "target_probability": 0.9473876357078552,
+      "top_index": 256,
+      "drop_percentage_points": 0.9879887104034424,
+      "patch_index": 181
+    },
+    {
+      "row": 192,
+      "column": 208,
+      "size": 16,
+      "target_probability": 0.9481592774391174,
+      "top_index": 256,
+      "drop_percentage_points": 0.9108245372772217,
+      "patch_index": 182
+    },
+    {
+      "row": 208,
+      "column": 0,
+      "size": 16,
+      "target_probability": 0.9484999775886536,
+      "top_index": 256,
+      "drop_percentage_points": 0.8767545223236084,
+      "patch_index": 183
+    },
+    {
+      "row": 208,
+      "column": 16,
+      "size": 16,
+      "target_probability": 0.9514065980911255,
+      "top_index": 256,
+      "drop_percentage_points": 0.586092472076416,
+      "patch_index": 184
+    },
+    {
+      "row": 208,
+      "column": 32,
+      "size": 16,
+      "target_probability": 0.9484535455703735,
+      "top_index": 256,
+      "drop_percentage_points": 0.8813977241516113,
+      "patch_index": 185
+    },
+    {
+      "row": 208,
+      "column": 48,
+      "size": 16,
+      "target_probability": 0.9493474960327148,
+      "top_index": 256,
+      "drop_percentage_points": 0.7920026779174805,
+      "patch_index": 186
+    },
+    {
+      "row": 208,
+      "column": 64,
+      "size": 16,
+      "target_probability": 0.9553180932998657,
+      "top_index": 256,
+      "drop_percentage_points": 0.19494295120239258,
+      "patch_index": 187
+    },
+    {
+      "row": 208,
+      "column": 80,
+      "size": 16,
+      "target_probability": 0.9526034593582153,
+      "top_index": 256,
+      "drop_percentage_points": 0.46640634536743164,
+      "patch_index": 188
+    },
+    {
+      "row": 208,
+      "column": 96,
+      "size": 16,
+      "target_probability": 0.953173816204071,
+      "top_index": 256,
+      "drop_percentage_points": 0.40937066078186035,
+      "patch_index": 189
+    },
+    {
+      "row": 208,
+      "column": 112,
+      "size": 16,
+      "target_probability": 0.9500453472137451,
+      "top_index": 256,
+      "drop_percentage_points": 0.7222175598144531,
+      "patch_index": 190
+    },
+    {
+      "row": 208,
+      "column": 128,
+      "size": 16,
+      "target_probability": 0.9555787444114685,
+      "top_index": 256,
+      "drop_percentage_points": 0.16887784004211426,
+      "patch_index": 191
+    },
+    {
+      "row": 208,
+      "column": 144,
+      "size": 16,
+      "target_probability": 0.9528635740280151,
+      "top_index": 256,
+      "drop_percentage_points": 0.44039487838745117,
+      "patch_index": 192
+    },
+    {
+      "row": 208,
+      "column": 160,
+      "size": 16,
+      "target_probability": 0.9488446116447449,
+      "top_index": 256,
+      "drop_percentage_points": 0.8422911167144775,
+      "patch_index": 193
+    },
+    {
+      "row": 208,
+      "column": 176,
+      "size": 16,
+      "target_probability": 0.9387509226799011,
+      "top_index": 256,
+      "drop_percentage_points": 1.8516600131988525,
+      "patch_index": 194
+    },
+    {
+      "row": 208,
+      "column": 192,
+      "size": 16,
+      "target_probability": 0.9454967379570007,
+      "top_index": 256,
+      "drop_percentage_points": 1.1770784854888916,
+      "patch_index": 195
+    },
+    {
+      "row": 208,
+      "column": 208,
+      "size": 16,
+      "target_probability": 0.949139416217804,
+      "top_index": 256,
+      "drop_percentage_points": 0.8128106594085693,
+      "patch_index": 196
+    }
+  ],
+  "largest_drop": {
+    "row": 80,
+    "column": 112,
+    "size": 16,
+    "target_probability": 0.9189073443412781,
+    "top_index": 256,
+    "drop_percentage_points": 3.8360178470611572,
+    "patch_index": 78
+  },
+  "summary": {
+    "trials": 196,
+    "all_top_labels_unchanged": true,
+    "minimum_probability": 0.9189073443412781,
+    "maximum_probability": 0.9604790806770325,
+    "lower_probability_count": 193,
+    "higher_probability_count": 3
+  },
+  "verification": {
+    "matches_saved_quadrants": true,
+    "largest_drop_checked_separately": true,
+    "original_input_preserved": true,
+    "parameters_unchanged": true,
+    "training_run": false
+  },
+  "scope": "One image and checkpoint, gray replacement, fixed non-overlapping locations. This is sensitivity to this intervention, not attention, segmentation, or a unique semantic attribution."
+}

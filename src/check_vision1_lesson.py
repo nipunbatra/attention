@@ -52,7 +52,7 @@ for i,(name,image) in enumerate(p['images'].items()):
                 np.testing.assert_allclose(actual[2*i+j]['heads'][h][key],expected['heads'][h][key],atol=1e-12)
 
 manifest=json.loads((ROOT/'figures/vision1/frame-manifest.json').read_text())
-assert len(manifest)==176
+assert len(manifest)==178
 required={'task-side-by-side','cls-shared-start','cls-without','heads-visual-roles',
           'patch-filter-patterns','photo-two-softmaxes',
           'photo-label-loss','photo-optimizer-step',

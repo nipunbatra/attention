@@ -1281,11 +1281,27 @@
   },
   {
     "id": "occlusion",
-    "title": "Which covered region changed the answer most?",
-    "caption": "Compare the dog probability after each of the four covers.",
-    "notes": "Which quadrant would you expect to affect this prediction most?\nCollect predictions before revealing the measured bars.",
+    "title": "The label stays; its probability falls",
+    "caption": "Top-right covering causes the largest drop: 16.11 percentage points. This photo still receives the same label after every quadrant cover.",
+    "notes": "Did the class label change, or only its probability?\nCompare each probability with the same 95.73% baseline. The largest tested drop is 16.11 points, for the top-right cover. Reveal that all four top labels remain Newfoundland. This is a coarse sensitivity experiment.",
     "section": "s09",
     "frame": 8
+  },
+  {
+    "id": "occlusion-small-setup",
+    "title": "Use smaller covers to ask a more local question",
+    "caption": "Only the cover size changes. The trained model still uses 16\u00d716 patches and a 224\u00d7224 input. Every test starts from the original image.",
+    "notes": "Are we changing the model\u2019s patch size, or the region we cover?\nKeep the model fixed. Cover one of its 196 patch locations at a time, producing 196 independent images. A smaller cover probes a smaller region, but may have a smaller effect because other useful information remains.",
+    "section": "s09",
+    "frame": 9
+  },
+  {
+    "id": "occlusion-small-result",
+    "title": "Smaller covers reveal local sensitivity",
+    "caption": "Smaller covers localize sensitivity. P78 causes the largest drop here, but no single-patch cover changes the top label. This map measures probability changes, not attention weights.",
+    "notes": "Does a small probability drop mean a patch contains no useful information?\nP78 causes the largest measured drop: 3.84 percentage points. Read each square as a different forward pass with one gray patch. Other regions can retain useful clues; these drops are not additive.",
+    "section": "s09",
+    "frame": 10
   },
   {
     "id": "vision-topic-10",
