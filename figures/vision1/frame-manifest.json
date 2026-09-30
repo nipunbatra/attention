@@ -634,8 +634,8 @@
   {
     "id": "real-attention-cls-zoom",
     "title": "Follow the CLS row from scores to weights",
-    "caption": "Enlarge the highlighted CLS row. Its 197 scores include CLS itself and all 196 patches. Softmax normalizes this entire row into 197 weights that sum to one. Every image patch is available; no causal mask is needed.",
-    "notes": "Are there 196 scores or 197 scores in the highlighted CLS row?\nThere are 196 patch scores plus the CLS self-score. Reveal the zoom, then the weights. The same query produces every score in this row; only the source key changes. Nothing is hidden behind a causal mask.",
+    "caption": "Earlier blocks update patches so later CLS queries can read their new features. In the final block, a CLS-only readout could compute just the CLS output, using all 197 incoming keys and values.",
+    "notes": "If the classifier reads CLS, why compute the other score rows?\nWe follow one row to explain the calculation. Each patch query needs its own scores and weights to update that patch. The next block computes its keys and values from these updated patches, which CLS can then read. For this one CLS message alone, only its 197 scores and all 197 value rows are needed. In the final block, if only CLS is used, patch outputs can be skipped in a specialized implementation. All incoming keys and values are still needed. The standard implementation shown computes every row. There are 196 patch scores plus the CLS self-score. Softmax normalizes all 197; there is no causal mask.",
     "section": "s03",
     "frame": 24
   },

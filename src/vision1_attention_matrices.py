@@ -134,6 +134,7 @@ def build_attention_matrices(b):
     body += matrix(90, 143, 270, 204, tokens, tokens, 'c-q', row=0, size=18)
     body += rect(90, 143, 270, 34, 'c-q', 'transparent', 0)
     zoom = t(815, 40, 'CLS row, enlarged', 29, 'c-q', 'middle')
+    zoom += t(815, 78, 'We follow one query; every row gets an update.', 23, 'ink-2', 'middle')
     zoom += line(373, 143, 500, 143, 'c-q', 2.5)+line(373, 177, 500, 198, 'c-q', 2.5)
     zoom += t(433, 123, 'zoom', 21, 'c-q', 'middle')
     zoom += cls_strip(143, 's', 'c-q', 't-q', labels=True)
@@ -145,17 +146,34 @@ def build_attention_matrices(b):
     weights += t(815, 382, 'a₀ + a₁ + … + a₁₉₆ = 1', 29, 'c-v', 'middle')
     body += g(weights, 2)
     body += t(225, 382, '1 CLS score + 196 patch scores', 23, 'c-q', 'middle')
-    body += t(35, 435, 'No causal mask: the whole image is already available.', 29, 'c-v')
+    body += t(35, 435, 'Patch queries update patches → the next block’s CLS reads those updated patches.', 26, 'c-e')
     add('real-attention-cls-zoom', 'Follow the CLS row from scores to weights', body,
-        'Enlarge the highlighted CLS row. Its 197 scores include CLS itself and all 196 patches. Softmax normalizes this entire row into 197 weights that sum to one. Every image patch is available; no causal mask is needed.',
-        'Are there 196 scores or 197 scores in the highlighted CLS row?',
-        'There are 196 patch scores plus the CLS self-score. Reveal the zoom, then the weights. The same query produces every score in this row; only the source key changes. Nothing is hidden behind a causal mask.',
+        'Earlier blocks update patches so later CLS queries can read their new features. In the final block, a CLS-only readout could compute just the CLS output, using all 197 incoming keys and values.',
+        'If the classifier reads CLS, why compute the other score rows?',
+        'We follow one row to explain the calculation. Each patch query needs its own scores and weights to update that patch. '
+        'The next block computes its keys and values from these updated patches, which CLS can then read. '
+        'For this one CLS message alone, only its 197 scores and all 197 value rows are needed. '
+        'In the final block, if only CLS is used, patch outputs can be skipped in a specialized implementation. '
+        'All incoming keys and values are still needed. The standard implementation shown computes every row. '
+        'There are 196 patch scores plus the CLS self-score. Softmax normalizes all 197; there is no causal mask.',
         'The purple outline selects the first row of S, not its first column. The two connecting lines enlarge '
         'that same row without changing its contents or order. Here the receiving query is fixed to CLS, '
         'so s_j is shorthand for S[CLS,j] = dot(q_CLS,k_j)/8. Source 0 is CLS itself; sources 1 through 196 '
         'are the image patches P1 through P196. Ellipses omit scores from the drawing, but all 197 enter '
         'the softmax denominator: a_j = exp(s_j) / Σ_{k=0}^{196} exp(s_k). '
         'The resulting a_j is shorthand for A[CLS,j], the weight on source j’s 64-feature value row. '
+        'To calculate this single message in isolation, q_CLS Kᵀ / 8 gives a 1×197 score row; '
+        'its row-wise softmax multiplied by V gives a 1×64 message. Other query scores are not inputs to this row’s softmax. '
+        'However, in blocks 1–11 of this model, the other query rows compute the patch updates needed by later blocks. '
+        'After attention, residual additions and the per-row MLP, these updated patches supply the next block’s keys and values. '
+        'Keeping only CLS at every block would change the model’s computation. '
+        'A final-block optimization follows from the same equations: when the only readout is final CLS, '
+        'one can compute only the CLS query and output in block 12, while still computing keys and values for all 197 incoming rows. '
+        'The final attention projection, residual update, MLP and normalization can then operate on CLS alone. '
+        'For the deterministic forward pass here, this preserves the class prediction up to numerical rounding. '
+        'It does not apply unchanged to patch-level outputs or a readout that pools patch rows. '
+        'The standard checkpoint implementation used in this lecture computes all rows, including in the final block; '
+        'actual speed gains from a specialized path depend on the implementation and hardware. '
         'These are symbolic entries, not measured outputs. Every source is permitted because the full image '
         'is observed before its class label is predicted. The next slide applies the same operation to '
         'each of the remaining query rows; later we use the weights to mix V.',
@@ -167,6 +185,11 @@ def build_attention_matrices(b):
         'For this fixed CLS query, s_j = dot(q_CLS,k_j) / 8.</p>'
         '<p>Softmax across all 197 scores gives 197 weights: <strong>a₀ + a₁ + … + a₁₉₆ = 1</strong>. '
         'Each a_j weights the corresponding source value row.</p>'
+        '<p><strong>Why compute the other rows?</strong> Each patch gets its own update. '
+        'The next block’s CLS reads keys and values made from those updated patches.</p>'
+        '<p><strong>Final-block exception:</strong> if the classifier uses only final CLS, '
+        'a specialized implementation could compute only that output. It still needs all 197 incoming keys and values. '
+        'The standard implementation here computes every row.</p>'
         '<p><strong>No causal mask:</strong> the whole image is available before predicting its class. '
         'The ellipses only shorten the drawing; no source is excluded from softmax.</p>')
 
