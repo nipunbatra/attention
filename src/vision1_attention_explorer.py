@@ -40,7 +40,7 @@ def enhance(b, sections):
     caption = 'Follow nine guided examples on the trained model. Each preset shows what to notice and one takeaway. Then choose Free exploration to select any patch, block, head or view. Each square is a 16×16 patch.'
     notes = ('What does the gold region mean in this example?\n'
              'Start with the background preset and use Next example. Examples 1–6 compare patch features; '
-             '7–9 show attention weights. Read the observation before revealing the takeaway in discussion. '
+             '7–9 show attention weights. Discuss the short observation and the large takeaway beside the images. '
              'The four corner features nearly coincide; this is not a segmentation guarantee. '
              'After example 9, use Free exploration. The presets retain exact queries, blocks and heads.')
     prose = ('<p>These are saved activations from the same pretrained '
@@ -61,7 +61,7 @@ def enhance(b, sections):
     tour_rows = ''.join('<tr><td>'+str(i+1)+'. '+escape(e['title'])+'</td><td>'+
                         escape(('Feature similarity' if e['mode']=='similarity' else f'Attention, head {e["head"]}')+
                                f' · block {e["block"]} · '+('CLS' if e['query']==0 else f'P{e["query"]}'))+
-                        '</td><td>'+escape(e['look'])+'</td><td>'+escape(e['takeaway'])+'</td></tr>'
+                        '</td><td>'+escape(e['look'])+'</td><td>'+escape(e['takeaway'])+' '+escape(e['detail'])+'</td></tr>'
                         for i,e in enumerate(EXAMPLES))
     prose = ('<p><strong>Start here:</strong> keep the preset fixed, locate the purple query, read the gold map, '
              'then discuss the takeaway. Next example changes the settings for you. Free exploration exposes '
@@ -78,10 +78,9 @@ def enhance(b, sections):
     ui = f'''<div id="vit-explorer" class="vix is-guided" data-present="manual" data-keep-state data-base="figures/vision1/attention-explorer" data-image="{f.photo}">
 <script type="application/json" data-examples>{examples_json}</script>
 <div class="vix-tour-nav">
-<div data-tour-controls class="vix-tour-controls"><label>Guided example<select data-example>{tour_options}</select></label>
+<div data-tour-controls class="vix-tour-controls"><label><span class="vix-sr-only">Guided example</span><select data-example>{tour_options}</select></label>
 <button type="button" data-previous disabled>Previous</button><button type="button" data-next>Next example →</button></div>
 <button type="button" data-explore>Free exploration</button></div>
-<div class="vix-tour-help" data-tour-help>Next example sets everything for you. Gold = more similar features.</div>
 <div class="vix-controls" data-free-controls hidden>
 <label>View<select data-control="mode"><option value="attention">Attention to keys</option><option value="similarity">Patch feature similarity</option></select></label>
 <label>Transformer block<select data-control="block">{options}</select></label>

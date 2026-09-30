@@ -80,7 +80,6 @@
       find('[data-meaning]').hidden = guided;
       find('[data-guide]').hidden = guided;
       find('[data-accounting]').hidden = guided;
-      find('[data-tour-help]').hidden = !guided;
       find('[data-explore]').textContent = guided ? 'Free exploration' : 'Guided examples';
       find('[data-explore]').hidden = guided && exampleIndex === examples.length - 1;
       [...queryButtons, ...keyButtons].forEach(button => { button.disabled = guided; });
@@ -108,14 +107,10 @@
       find('[data-tour-title]').textContent = example.title;
       find('[data-observe]').textContent = example.look;
       find('[data-takeaway]').textContent = example.takeaway;
-      const instruction = exampleIndex === examples.length - 1
-        ? 'Tour complete. Explore freely lets you choose the query, block, head and view.'
-        : 'Next example sets everything for you.';
-      find('[data-tour-help]').textContent = `${instruction} ${isAttention() ? 'Gold = stronger attention weight.' : 'Gold = more similar features.'}`;
       thumbnail(find('[data-tour-crop]'), example.source);
       const value = row.values[example.source];
       find('[data-tour-fact]').textContent = `Boxed ${name(example.source)} · ${isAttention() ? percent(value) + ' weight' : value.toFixed(example.precision || 3) + ' cosine'}`;
-      find('[data-query-title]').textContent = query === 0 ? '1 · CLS is the query' : '1 · Locate the purple patch';
+      find('[data-query-title]').textContent = query === 0 ? '1 · CLS is the query' : '1 · Query (purple)';
       find('[data-query-grid]').setAttribute('aria-label', query === 0 ? 'CLS is the extra summary token, not a pixel patch.' : `Preset query ${name(query)}, ${location(query)}. Use Free exploration to change it.`);
     }
     configureExample(0);
@@ -156,7 +151,9 @@
       if (!ready) return;
       row = isAttention() ? attention(data, Number(head.value) - 1, query) : similarity(data, query);
       const values = row.values;
-      find('[data-query-name]').textContent = `${name(query)} · ${location(query)}`;
+      find('[data-query-name]').textContent = guided
+        ? `${name(query)} · ${query === 0 ? 'summary token' : 'query patch'}`
+        : `${name(query)} · ${location(query)}`;
       thumbnail(find('[data-query-crop]'), query);
       find('[data-query-readout]').textContent = `Query: ${name(query)}`;
       head.disabled = !isAttention();
@@ -178,7 +175,9 @@
       });
       const ranked = Array.from({length: 196}, (_, i) => i + 1).filter(j => isAttention() || j !== query).sort((a, b) => values[b] - values[a]);
       source = guided ? examples[exampleIndex].source : ranked[0];
-      find('[data-map-title]').textContent = isAttention() ? '2 · See source weights' : '2 · Find similar patches';
+      find('[data-map-title]').textContent = guided
+        ? (isAttention() ? '2 · Attention (gold)' : '2 · Similarity (gold)')
+        : (isAttention() ? '2 · See source weights' : '2 · Find similar patches');
       find('[data-ranking-label]').textContent = isAttention() ? 'Strongest patch sources' : 'Most similar other patches';
       const top = find('[data-top]'); top.replaceChildren();
       ranked.slice(0, 3).forEach(j => {
@@ -188,13 +187,17 @@
         button.append(crop, label); button.addEventListener('click', () => { stop(); source = j; renderSource(); }); top.append(button);
       });
       find('[data-scale]').classList.toggle('vix-cosine-scale', !isAttention());
-      find('[data-scale-label]').textContent = isAttention() ? `0 → ${percent(maximum)} · contrast adapts to this map` : '−1 (blue) → 0 (clear) → 1 (gold) · fixed scale';
+      find('[data-scale-label]').textContent = guided
+        ? (isAttention() ? `0 → ${percent(maximum)} · rescaled per map` : 'Cosine: −1 → 1 · fixed scale')
+        : (isAttention() ? `0 → ${percent(maximum)} · contrast adapts to this map` : '−1 (blue) → 0 (clear) → 1 (gold) · fixed scale');
       const cls = find('[data-cls-weight]'); cls.hidden = !isAttention();
       cls.textContent = `CLS source: ${percent(values[0])}`;
       find('[data-accounting]').textContent = isAttention() ? '196 patch weights + the CLS weight = 100%.' : 'After this block’s attention + MLP. The selected patch matches itself at 1; it is omitted from the ranking.';
       find('[data-meaning]').textContent = isAttention() ? 'Gold = more of that source’s value enters the query’s message. Attention can favor background; it is not object matching.' : 'Gold = similar patch features. This resembles the DINO interaction, using our trained classification ViT; it is not attention.';
       find('[data-guide]').textContent = isAttention() ? 'Keep the query fixed. Change the head or play through the blocks.' : 'Try Ear at block 12: inspect patches on the other side of the dog.';
-      status.textContent = `Trained ViT · Block ${block.value}${isAttention() ? ' · Head ' + head.value : ' · feature similarity'} · ${name(query)}`;
+      status.textContent = guided
+        ? `${isAttention() ? 'Attention' : 'Feature similarity'} · Block ${block.value}${isAttention() ? ' · Head ' + head.value : ''}`
+        : `Trained ViT · Block ${block.value}${isAttention() ? ' · Head ' + head.value : ' · feature similarity'} · ${name(query)}`;
       renderSource();
       renderTour();
     }

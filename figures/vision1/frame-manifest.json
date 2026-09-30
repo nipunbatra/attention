@@ -1235,7 +1235,7 @@
     "id": "read-attention-map",
     "title": "Explore a trained ViT, one example at a time",
     "caption": "Follow nine guided examples on the trained model. Each preset shows what to notice and one takeaway. Then choose Free exploration to select any patch, block, head or view. Each square is a 16\u00d716 patch.",
-    "notes": "What does the gold region mean in this example?\nStart with the background preset and use Next example. Examples 1\u20136 compare patch features; 7\u20139 show attention weights. Read the observation before revealing the takeaway in discussion. The four corner features nearly coincide; this is not a segmentation guarantee. After example 9, use Free exploration. The presets retain exact queries, blocks and heads.",
+    "notes": "What does the gold region mean in this example?\nStart with the background preset and use Next example. Examples 1\u20136 compare patch features; 7\u20139 show attention weights. Discuss the short observation and the large takeaway beside the images. The four corner features nearly coincide; this is not a segmentation guarantee. After example 9, use Free exploration. The presets retain exact queries, blocks and heads.",
     "section": "s09",
     "frame": 2
   },

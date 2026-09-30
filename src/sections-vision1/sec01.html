@@ -127,17 +127,18 @@ body.present .vp-with-route.is-live>.vp-figure>svg {height:100%;width:100%;}
 .vix-provenance {font-size:12px;color:var(--ink-2);margin:9px 0 0}
 .vix-tour-nav,.vix-tour-controls {display:flex;align-items:end;gap:12px;flex-wrap:wrap}
 .vix-tour-nav {margin-bottom:10px}
-.vix-tour-help {color:var(--ink-2);font-size:14px;margin:0 0 8px}
+.vix-sr-only {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
 .vix-tour-controls label {display:grid;gap:4px;color:var(--ink-2);font-size:13px}
 .vix-tour-controls select {padding:7px 25px 7px 9px;min-height:36px;font-size:15px;max-width:100%;color:var(--ink)}
 .vix [data-explore] {margin-left:auto;color:var(--c-e)}
 .vix [data-next] {color:var(--c-e)}
 .vix-tour-panel {border-left:1px solid var(--line);padding-left:22px}
 .vix-tour-progress {font-size:13px;color:var(--c-e);margin-bottom:8px}
-.vix-tour-panel h4 {font-size:23px;line-height:1.18;margin-bottom:14px}
-.vix-tour-panel h5 {font-size:14px;letter-spacing:.02em;color:var(--c-e);margin:18px 0 6px}
-.vix-tour-panel p {font-size:16px!important;line-height:1.45!important;margin:0!important}
-.vix-tour-fact {display:flex;align-items:center;gap:10px;margin:14px 0;font-size:15px;font-variant-numeric:tabular-nums;color:var(--c-k)}
+.vix-tour-panel h4 {font-size:26px;line-height:1.18;margin-bottom:14px}
+.vix-tour-panel h5 {font-size:16px;color:var(--ink-2);margin:24px 0 8px}
+.vix-tour-panel p {font-size:19px!important;line-height:1.4!important;margin:0!important}
+.vix-tour-panel [data-takeaway] {font-size:24px!important;line-height:1.25!important;font-weight:650;color:var(--c-e)}
+.vix-tour-fact {display:flex;align-items:center;gap:10px;margin:18px 0;font-size:18px;font-variant-numeric:tabular-nums;color:var(--c-k)}
 .vix.is-guided .vix-grid button:disabled {opacity:1;cursor:default}
 .vix.is-guided .vix-grid button:disabled:hover {background:transparent}
 .vix.is-guided [data-cls-weight] {pointer-events:none}
@@ -153,18 +154,25 @@ body.present .vix-detail [data-result] {font-size:19px!important}
 body.present .vix-meaning {font-size:18px}
 body.present .vix-guide {font-size:16px}
 body.present .vix-provenance {font-size:13px}
-body.present .vix-tour-controls select {font-size:17px}
-body.present .vix-tour-panel h4 {font-size:25px}
-body.present .vix-tour-panel p {font-size:19px!important}
-body.present .vix-tour-panel h5,body.present .vix-tour-fact {font-size:17px}
-body.present .vix-tour-progress {font-size:15px}
-body.present .vix-tour-help {font-size:17px}
+body.present .vix.is-guided {font-size:20px}
+body.present .vix.is-guided .vix-columns {grid-template-columns:330px 330px minmax(0,1fr);gap:24px}
+body.present .vix.is-guided h4 {font-size:24px}
+body.present .vix.is-guided .vix-status {font-size:18px;margin-bottom:18px}
+body.present .vix-tour-controls select {font-size:20px}
+body.present .vix.is-guided .vix-tour-panel h4 {font-size:30px}
+body.present .vix-tour-panel p {font-size:24px!important}
+body.present .vix-tour-panel [data-takeaway] {font-size:30px!important}
+body.present .vix-tour-panel h5 {font-size:18px}
+body.present .vix-tour-fact {font-size:21px}
+body.present .vix-tour-progress {font-size:18px}
+body.present .vix.is-guided .vix-legend {font-size:17px}
+body.present .vix.is-guided [data-cls-weight] {font-size:16px}
 @media(max-width:1000px){body:not(.present) .vix-columns {grid-template-columns:minmax(0,1fr) minmax(0,1fr)} body:not(.present) .vix-detail {grid-column:1/-1;border-left:0;padding:12px 0 0;border-top:1px solid var(--line)} body:not(.present) .vix-detail [data-top] {max-width:420px}}
 @media(max-width:600px){body:not(.present) .vix-columns {grid-template-columns:1fr;gap:22px} body:not(.present) .vix-photo {max-width:360px} .vix-controls {gap:10px} .vix-controls [data-play] {margin-left:0}}
 @media print {.vix-controls,.vix-status,.vix-live {display:none!important}.vix-fallback {display:block!important}}
 @media(max-width:1000px){body:not(.present) .vix-tour-panel {grid-column:1/-1;border-left:0;padding:14px 0 0;border-top:1px solid var(--line)}}
 @media(max-width:600px){.vix-tour-controls {width:100%;gap:8px}.vix-tour-controls label {width:100%}.vix [data-explore] {margin-left:0}}
-@media print {.vix-tour-nav,.vix-tour-help {display:none!important}}
+@media print {.vix-tour-nav {display:none!important}}
 
 body.present .sec.is-live:has(#read-attention-map.is-live) {padding-top:24px;padding-bottom:24px}
 body.present .sec.is-live:has(#read-attention-map.is-live)>.sec-head {margin-bottom:16px}
