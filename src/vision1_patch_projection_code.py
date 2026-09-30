@@ -157,7 +157,6 @@ def build(b):
             body += f.rect(x, 55+i*43, width, 43, 'line', 'card' if i == 0 else 'transparent', 0)
             body += t(x+17, 84+i*43, value, 25, color, weight=600 if i in [0, 4] else 500)
     body += f.code(snippet('copy-weights'), x=52, y=321, width=1073, size=25, spacing=32)
-    body += t(35, 434, 'Copy the same weights + biases. Reuse them for all 196 patches and all B images.', 25, 'c-v')
     add('code-patch-parameters', 'Reshape the weights; keep the same parameter count', body,
         'Both implementations have 147,456 weights and 192 biases. Copying the exact weights and biases makes their computations equivalent. More patches or images create more output values, while the learned parameter count stays 147,648.',
         'Would two independently initialized layers produce the same features?',
@@ -169,6 +168,44 @@ def build(b):
         'locations, just like the weights. Changing to a different pixel flatten order requires the same '
         'permutation of weight columns.',
         b['mobile_rows'](table[0], table[1:])+'<pre><code>'+escape(snippet('copy-weights'))+'</code></pre>')
+
+    # Corresponding input and weight coordinates, drawn in the same order.
+    trace = report['pixel_weight_trace']
+    def num(value):
+        return f'{value:.6f}'.replace('-', '−')
+    body = t(35, 31, 'Dog patch P63 · first output feature · indices below start at 0', 26)
+    body += t(35, 77, 'Flatten order: R₀ … R₂₅₅  |  G₀ … G₂₅₅  |  B₀ … B₂₅₅', 26, 'ink-2')
+    body += t(35, 119, 'Green pixel at (row 2, column 3) → flat index 256 + 2×16 + 3 = 291', 27, 'c-q')
+    for x, title, color in [(35, 'Linear: one neuron', 'c-e'), (625, 'Conv2d: one filter, flattened', 'c-v')]:
+        body += t(x, 157, title, 27, color, weight=600)
+        for row, (y, values, label) in enumerate([
+            (193, ['R₀', 'R₁', '…', 'G₃₅', '…', 'B₂₅₅'], 'same 768 pixels'),
+            (284, ['w₀', 'w₁', '…', 'w₂₉₁', '…', 'w₇₆₇'], 'same 768 weights')]):
+            if row == 1:
+                label = 'W[0,291] selected' if x == 35 else 'W[0,1,2,3] selected'
+            strip = t(x, y-7, label, 19, 'ink-2')
+            for i, value in enumerate(values):
+                c = 'c-q' if i == 3 else color
+                strip += f.rect(x+i*83, y, 83, 40, c, 't-q' if i == 3 else 'transparent', 0)
+                strip += t(x+i*83+41.5, y+28, value, 24, c, 'middle')
+            if row == 1:
+                for i in range(6):
+                    strip += t(x+i*83+41.5, 263, '…' if i in [2,4] else '×', 26,
+                               'c-q' if i == 3 else color, 'middle')
+            body += strip if row == 0 else f.g(strip, 1)
+    body += f.g(t(35, 369, f'Selected product in both:  {num(trace["pixel"])} × {num(trace["weight"])} = {num(trace["product"])}', 27, 'c-q'), 2)
+    body += f.g(t(35, 419, f'Add all 768 products + the same bias ({num(trace["bias"])}) → {num(trace["sum_768_products_plus_bias"])}', 26, 'c-v'), 2)
+    add('code-patch-same-products', 'Same pixel × same weight, in both implementations', body,
+        'Both paths pair the same 768 pixels with the same 768 weights, sum their products, and add the same bias.',
+        'Which Conv2d weight corresponds to Linear.weight[0,291]?',
+        'conv.weight[0,1,2,3]: output 0, green channel, patch row 2, column 3. R, G and B each contain 256 pixels in row-major order.',
+        'The pixel is the checkpoint-normalized green value images[0,1,66,99] inside dog patch P63. '
+        'G35 is the 36th green pixel, since 2×16+3=35. Its flattened offset is 256+35=291. '
+        'linear.weight[0,291] equals conv.weight[0,1,2,3]. These are saved measurements; displayed values are rounded. '
+        'The Conv2d weight strip is a drawing of the flattened filter for comparison, not an extra runtime layer. '
+        'All other 767 products correspond in the same way. Both add the same bias once. The script verifies this selected pixel, weight and full sum.',
+        '<p>Flatten RGB channels in order, row-major within each channel. Green [2,3] has flat index 291.</p>'
+        '<p>Linear.weight[0,291] = Conv2d.weight[0,1,2,3]. Both multiply the same input value by this same learned weight.</p>')
 
     # Actual checkpoint outputs, not invented feature values.
     body = t(35, 30, 'Same pretrained weights · same prepared dog and cat images', 28)
@@ -185,9 +222,7 @@ def build(b):
         mobile_results.append([label, str(result['linear_first_features']), str(result['conv_first_features'])])
     body += t(35, 307, 'Checked all 2 × 196 × 192 = 75,264 features.', 28, 'c-v')
     body += t(35, 347, f'Largest float32 difference: {report["max_absolute_error"]:.2g}. Same result within rounding.', 25, 'ink-2')
-    body += line(35, 367, 1125, 367)
-    body += t(35, 403, 'Why Conv2d? It reads the image grid directly and uses optimized convolution code.', 25)
-    body += t(35, 435, 'No explicit patch matrix in our code. Then flatten + transpose → B × 196 × 192.', 24, 'c-e')
+    body += t(35, 416, 'Both produce B × 196 × 192 rows for the same classifier.', 27, 'c-e')
     add('code-patch-equivalence', 'Verify it on both photographs: the features match', body,
         'Using identical pretrained weights, both paths produce the same dog and cat features within floating-point rounding. Conv2d packages patch extraction and projection into one image operation. Flatten and transpose its grid before adding CLS and positions.',
         'Why use Conv2d if Linear can compute the same thing?',
@@ -203,4 +238,30 @@ def build(b):
         b['mobile_rows'](['Image', 'Linear P63 preview', 'Conv2d P63 preview'], mobile_results)
         +'<pre><code>'+escape(snippet('compare')+'\n\ndef project_with_conv(images, conv):\n'+
             '\n'.join('    '+s for s in snippet('conv-forward').splitlines()))+'</code></pre>')
+
+    body = t(35, 34, 'One image operation applies all 192 filters at all 196 locations.', 28)
+    body += t(35, 99, 'Linear route', 27, 'c-e', weight=600)
+    body += box(35, 125, 280, ['Image grid', 'B × 3 × 224 × 224'], size=24)
+    body += arrow(324, 163, 406, 163, 'c-e')
+    body += box(417, 125, 300, ['Explicit patch rows', 'B × 196 × 768'], size=24)
+    body += arrow(727, 163, 798, 163, 'c-e')
+    body += box(809, 125, 315, ['Shared Linear', 'B × 196 × 192'], size=24)
+    conv_route = t(35, 258, 'Conv2d route', 27, 'c-v', weight=600)
+    conv_route += box(35, 283, 280, ['Image grid', 'B × 3 × 224 × 224'], 'c-v', size=24)
+    conv_route += arrow(324, 321, 406, 321, 'c-v')
+    conv_route += box(417, 283, 300, ['Conv2d', 'B × 192 × 14 × 14'], 'c-v', size=24)
+    conv_route += arrow(727, 321, 798, 321, 'c-v')
+    conv_route += box(809, 283, 315, ['Flatten + transpose', 'B × 196 × 192'], 'c-v', size=24)
+    body += f.g(conv_route, 1)
+    body += f.g(t(35, 420, 'Less reshaping code; optimized convolution backends. Same learned model.', 27, 'c-v'), 1)
+    add('code-patch-why-conv', 'Why package patch projection as Conv2d?', body,
+        'Conv2d accepts the image layout directly and handles the repeated patch computations. It avoids an explicit unfolded patch tensor in our code and uses optimized convolution backends. Actual speed and memory depend on the hardware.',
+        'Does Conv2d learn fewer parameters or a different function?',
+        'No. The same 147,648 parameters compute the same outputs. The advantage is a convenient image operation and backend support; benchmark actual speed and memory.',
+        'Both implementations batch all images and patches; Linear does not require a Python patch loop. '
+        'Conv2d packages patch access and projection without an explicit unfold result at the Python level. '
+        'Backends can still allocate working buffers. With non-overlapping patches, the unfolded tensor has '
+        '196×768 = 3×224×224 entries per image, so there is no overlap-induced expansion here. '
+        'No universal speedup or memory saving is claimed. Shared weights, biases, stride, padding and '
+        'flatten order are exactly those on the preceding slides.')
     return f.frames

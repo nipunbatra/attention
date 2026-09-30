@@ -992,44 +992,100 @@
     "frame": 7
   },
   {
+    "id": "code-patch-same-products",
+    "title": "Same pixel \u00d7 same weight, in both implementations",
+    "caption": "Both paths pair the same 768 pixels with the same 768 weights, sum their products, and add the same bias.",
+    "notes": "Which Conv2d weight corresponds to Linear.weight[0,291]?\nconv.weight[0,1,2,3]: output 0, green channel, patch row 2, column 3. R, G and B each contain 256 pixels in row-major order.",
+    "section": "s06",
+    "frame": 8
+  },
+  {
     "id": "code-patch-equivalence",
     "title": "Verify it on both photographs: the features match",
     "caption": "Using identical pretrained weights, both paths produce the same dog and cat features within floating-point rounding. Conv2d packages patch extraction and projection into one image operation. Flatten and transpose its grid before adding CLS and positions.",
     "notes": "Why use Conv2d if Linear can compute the same thing?\nConv2d accepts the image grid directly and uses optimized convolution implementations. It avoids explicitly constructing a patch matrix in our code. This is a choice of implementation, not a change in the learned model.",
     "section": "s06",
-    "frame": 8
-  },
-  {
-    "id": "code-photo-tokens",
-    "title": "Turn the feature grid into the 197 input rows",
-    "caption": "Flatten the two grid axes, then put features last. Prepend the shared CLS row and add the learned position table. Broadcasting reuses these parameters across images; every image keeps its own activations.",
-    "notes": "Which operation increases the row count from 196 to 197?\nConcatenating CLS along dim=1 adds one row. Adding positions changes values without changing the shape.",
-    "section": "s06",
     "frame": 9
   },
   {
-    "id": "code-photo-attention",
-    "title": "Write the three-head computation with explicit axes",
-    "caption": "Each image and head has its own attention matrix. Softmax runs over source rows on the last axis. Join the three 64-feature messages and project to 192 features. Images in the batch never attend to one another.",
-    "notes": "What do the two 3s in reshape mean?\nThe first selects Q, K or V; the second selects one of three heads. B stays separate. N=197 includes CLS.",
+    "id": "code-patch-why-conv",
+    "title": "Why package patch projection as Conv2d?",
+    "caption": "Conv2d accepts the image layout directly and handles the repeated patch computations. It avoids an explicit unfolded patch tensor in our code and uses optimized convolution backends. Actual speed and memory depend on the hardware.",
+    "notes": "Does Conv2d learn fewer parameters or a different function?\nNo. The same 147,648 parameters compute the same outputs. The advantage is a convenient image operation and backend support; benchmark actual speed and memory.",
     "section": "s06",
     "frame": 10
   },
   {
-    "id": "code-photo-block",
-    "title": "Match the two residual branches to code",
-    "caption": "LayerNorm and the MLP operate on each row\u2019s features. Attention mixes rows within each image. Both branches return 192 features, so each residual addition preserves the full B\u00d7197\u00d7192 shape.",
-    "notes": "Why can the MLP hidden layer be wider than the residual?\nIts final linear layer returns to 192 features before addition. The batch and token axes remain unchanged.",
+    "id": "code-photo-tokens",
+    "title": "First turn the feature grid into patch rows",
+    "caption": "Flatten combines the 14\u00d714 spatial grid into 196 locations. Transpose puts the 192 features last. Each row now describes one patch.",
+    "notes": "Did flatten mix images or merge their features?\nNo. flatten(2) starts at axis 2. The batch and 192 feature channels remain separate.",
     "section": "s06",
     "frame": 11
   },
   {
-    "id": "code-photo-readout",
-    "title": "Run the stack and read one CLS per image",
-    "caption": "Each block consumes the previous block\u2019s output. After final normalization, select CLS independently for each image. The class head produces 1,000 logits per image, with no softmax inside the model\u2019s forward method.",
-    "notes": "Does the loop call the same block 12 times?\nNo. ModuleList holds 12 separate Block objects with different parameters. The activation from one becomes the input to the next.",
+    "id": "code-photo-tokens-cls",
+    "title": "Then prepend CLS and add position",
+    "caption": "Expand reuses the learned CLS start across the batch. Concatenation adds one row. Position addition changes the numbers while keeping 197 rows and 192 features.",
+    "notes": "Which operation changes the number of rows?\ntorch.cat adds CLS along dim=1. Adding positions leaves the shape unchanged.",
     "section": "s06",
     "frame": 12
+  },
+  {
+    "id": "code-photo-attention",
+    "title": "Make queries, keys and values for three heads",
+    "caption": "Project each row once to produce all queries, keys and values. Split the 576 outputs into three roles, each with three heads of width 64.",
+    "notes": "What do the two size-3 axes mean?\nOne selects Q, K or V. The other selects the attention head. B always remains a separate image axis.",
+    "section": "s06",
+    "frame": 13
+  },
+  {
+    "id": "code-photo-attention-messages",
+    "title": "Compute one message for every query in every head",
+    "caption": "For each image and head, every query scores all 197 sources. Softmax normalizes each query row. Multiplying by V combines the sources into one 64-feature message per query.",
+    "notes": "Along which axis do the weights sum to one?\nThe last axis: source keys. Every receiving query gets its own distribution.",
+    "section": "s06",
+    "frame": 14
+  },
+  {
+    "id": "code-photo-attention-join",
+    "title": "Join the head messages and project back to 192",
+    "caption": "Move the head axis beside its features, then join 3\u00d764 into 192. A learned output projection mixes these features before the residual addition.",
+    "notes": "Do we concatenate different images or different query rows?\nNeither. Each image and query keeps its own three head messages. Only head features are joined.",
+    "section": "s06",
+    "frame": 15
+  },
+  {
+    "id": "code-photo-block-layers",
+    "title": "Build the layers inside one Transformer block",
+    "caption": "Create two normalization layers, one attention module and one MLP. The MLP expands and then restores the feature width for each row.",
+    "notes": "Does the 768-wide hidden layer change the number of patches?\nNo. Only the feature axis expands. B and N stay unchanged.",
+    "section": "s06",
+    "frame": 16
+  },
+  {
+    "id": "code-photo-block",
+    "title": "Use the two residual paths in order",
+    "caption": "Normalize, compute the attention update, and add the input. Then normalize the updated rows, compute the MLP update, and add them again.",
+    "notes": "Which x enters the second line?\nThe x already updated by attention. Each branch returns the same shape as the input it is added to.",
+    "section": "s06",
+    "frame": 17
+  },
+  {
+    "id": "code-photo-stack",
+    "title": "Create twelve blocks with separate learned parameters",
+    "caption": "ModuleList creates twelve distinct blocks. The final normalization and class head read the result of the entire stack.",
+    "notes": "Are these twelve calls to one shared set of weights?\nNo. The list comprehension creates twelve separate Block objects.",
+    "section": "s06",
+    "frame": 18
+  },
+  {
+    "id": "code-photo-readout",
+    "title": "Run the stack, then read the final CLS",
+    "caption": "Feed each block\u2019s output into the next. Normalize the final rows and select CLS for each image. The class head returns 1,000 scores.",
+    "notes": "Why is there no softmax inside this forward method?\nCross-entropy accepts logits directly. During inference, logits.softmax(-1) converts scores into class probabilities.",
+    "section": "s06",
+    "frame": 19
   },
   {
     "id": "code-photo-training",
@@ -1037,31 +1093,63 @@
     "caption": "Cross-entropy consumes logits and class-index labels. Backward computes gradients; the optimizer updates the parameters it owns. Clear previous gradients before the next batch. This code shows the procedure without claiming a trained result.",
     "notes": "Should we apply softmax before cross_entropy?\nNo. It already includes log-softmax. labels is a length-B integer tensor; the model returns B\u00d71000 logits for this example.",
     "section": "s06",
-    "frame": 13
+    "frame": 20
   },
   {
     "id": "vision-topic-07",
     "title": "Section 7 \u00b7 Adapt and evaluate the classifier",
     "caption": "Choose trainable parameters, follow one batch, then evaluate on held-out images. We will describe the procedure without running a new experiment.",
-    "notes": "How would we adapt it to dog versus cat?\nConnect the previous result to this new question. Keep the same image classifier as the reference.",
+    "notes": "What if our labels or image domain change?\nConnect the previous result to this new question. Keep the same image classifier as the reference.",
     "section": "s07",
     "frame": 1
   },
   {
-    "id": "pets-head",
-    "title": "Return to the pets: give the encoder a two-class head",
-    "caption": "For our dog/cat task, replace the ImageNet head with a new two-output linear layer. The encoder supplies a 192-number image representation. The new 386 head parameters must learn from labelled pet images.",
-    "notes": "Why can we not simply rename two of the old 1,000 outputs?\nWe have changed the label vocabulary. The new head learns a new mapping; the existing pretrained probabilities do not measure this proposed pet classifier.",
+    "id": "pets-original-task",
+    "title": "What was this model trained to predict?",
+    "caption": "The checkpoint was pretrained on ImageNet-21k and fine-tuned on ImageNet-1k. Its current head predicts 1,000 categories. Newfoundland is one of those labels.",
+    "notes": "Did our earlier dog example train a pet classifier?\nNo. It ran inference with the existing ImageNet checkpoint. Its learned encoder and 1,000-class head were already available.",
     "section": "s07",
     "frame": 2
   },
   {
-    "id": "pets-frozen",
-    "title": "Freeze the encoder; train the new head",
-    "caption": "Snowflake: weights stay fixed. Flame: weights can learn. Start by training only the two-class head; optionally unfreeze the last block. A frozen encoder still computes image-dependent features.",
-    "notes": "When only the head is trained, do the Q/K/V weights change?\nNo. Trace the photograph through the blue vision encoder into 192 CLS features. The orange head learns. Reveal the loss update, then the optional route with the last block also trainable.",
+    "id": "pets-new-task",
+    "title": "Same photographs, a different label vocabulary",
+    "caption": "Our pet application groups breeds into two categories. We want two scores for every image, trained and evaluated for this dog/cat task. Start by reusing the encoder\u2019s visual features.",
+    "notes": "Could we reuse the visual features even though the output labels changed?\nYes. The encoder already represents visual patterns. A new head can learn how those features separate the two target classes.",
     "section": "s07",
     "frame": 3
+  },
+  {
+    "id": "pets-new-domain",
+    "title": "What if our users supply sketches?",
+    "caption": "The labels can stay dog and cat while the image domain changes. A photo classifier may struggle with sketches. Evaluate on the target domain, then compare head training with encoder fine-tuning.",
+    "notes": "Would a different-looking image automatically require more output neurons?\nNo. The two labels are unchanged. The features may need adaptation because sketches remove colour and texture cues.",
+    "section": "s07",
+    "frame": 4
+  },
+  {
+    "id": "pets-head",
+    "title": "Replace the ImageNet head with our two-class head",
+    "caption": "For our dog/cat task, replace the ImageNet head with a new two-output linear layer. The encoder supplies a 192-number image representation. The new 386 head parameters must learn from labelled pet images.",
+    "notes": "Why can we not simply rename two of the old 1,000 outputs?\nWe have changed the label vocabulary. The new head learns a new mapping; the existing pretrained probabilities do not measure this proposed pet classifier.",
+    "section": "s07",
+    "frame": 5
+  },
+  {
+    "id": "pets-frozen",
+    "title": "Freeze the encoder; train the new head",
+    "caption": "Snowflake: weights stay fixed. Flame: weights can learn. Train the two-class head on labelled pet images. The frozen encoder still computes different features for different images.",
+    "notes": "When only the head is trained, do the Q/K/V weights change?\nNo. Trace the photograph through the blue vision encoder into 192 CLS features. Only the orange head learns. Reveal the loss update.",
+    "section": "s07",
+    "frame": 6
+  },
+  {
+    "id": "pets-fine-tune",
+    "title": "Next option: fine-tune the last block as well",
+    "caption": "Unfreeze the last block and train it together with the head. Earlier encoder weights stay fixed. This lets some visual features adapt to the target data; validation determines whether it helps.",
+    "notes": "When might a head alone be insufficient?\nIf the current features do not separate the new classes well, or the images look different, changing some encoder features may help. Evaluate rather than assume.",
+    "section": "s07",
+    "frame": 7
   },
   {
     "id": "pets-training-step",
@@ -1069,7 +1157,15 @@
     "caption": "Pair every image with its dog/cat label. Compute the average loss for the batch, backpropagate once, and update the trainable parameters. Repeat this procedure over training batches.",
     "notes": "What is shared across the images in a batch?\nThe model parameters are shared. Each image has its own activations and attention matrix; attention does not mix different images in the batch.",
     "section": "s07",
-    "frame": 4
+    "frame": 8
+  },
+  {
+    "id": "pets-inference",
+    "title": "Training changes parameters; inference uses them",
+    "caption": "Training uses labelled examples and an optimizer. Inference uses the adapted model to predict a new image\u2019s label. No loss, backward pass or optimizer step is needed for that prediction.",
+    "notes": "Do we need to know the new image\u2019s label to run inference?\nNo. Labels are needed later to evaluate whether predictions were correct. Every image still gets its own features and attention weights.",
+    "section": "s07",
+    "frame": 9
   },
   {
     "id": "pets-evaluation",
@@ -1077,7 +1173,7 @@
     "caption": "Use held-out images to measure accuracy and the two kinds of confusion. Inspect successes and mistakes, including confident errors. A probability on one photograph is not the classifier\u2019s test accuracy.",
     "notes": "Could we choose the best epoch by repeatedly looking at test accuracy?\nUse validation for selection. Reserve the test set for the chosen procedure; related or near-duplicate images must not leak across splits.",
     "section": "s07",
-    "frame": 5
+    "frame": 10
   },
   {
     "id": "vision-topic-08",
@@ -1118,30 +1214,6 @@
     "notes": "Do we change model weights when a different test image arrives?\nReveal the top three ImageNet labels and probabilities.",
     "section": "s08",
     "frame": 5
-  },
-  {
-    "id": "three-phases-step-1",
-    "title": "Where did the checkpoint learn its visual features?",
-    "caption": "Pretraining uses many images to fit a starting model.",
-    "notes": "Are we starting the photo experiment with random weights?\nPoint to the pretraining phase and the supplied checkpoint.",
-    "section": "s08",
-    "frame": 6
-  },
-  {
-    "id": "three-phases-step-2",
-    "title": "How would we adapt it to our own labels?",
-    "caption": "Fit a new classifier; choose whether to update the image encoder too.",
-    "notes": "What changes if our labels are only cat and dog?\nDistinguish a frozen-encoder linear probe from fine-tuning.",
-    "section": "s08",
-    "frame": 7
-  },
-  {
-    "id": "three-phases",
-    "title": "What happens when we classify a new photograph?",
-    "caption": "Inference uses the fitted weights without updating them.",
-    "notes": "Does the model train again for every new photo?\nFollow a new image through the fixed network.",
-    "section": "s08",
-    "frame": 8
   },
   {
     "id": "vision-topic-09",

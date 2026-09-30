@@ -293,13 +293,15 @@ def refine(b, sections):
         'In a batch, each displayed activation shape gains a leading batch dimension. The backward arrows summarize the chain rule through the exact forward dependencies.',
         '<p>Image → patch layer → CLS and positions → 12 Transformer blocks → final normalization and CLS readout → C class scores.</p><p>Known label → class loss → backward through the model → optimizer updates trainable parameters.</p>')
 
-    # A procedure for the pet task replaces a lengthy synthetic training detour.
+    from vision1_transfer_motivation import build as transfer_motivation
+    new.update(transfer_motivation(b))
+    # Introduce the old task, target labels and possible domain shift first.
     body=image(35,72,265,177,b['PHOTO'])+image(35,262,265,177,b['CAT'])
     body+=box(400,105,305,['pretrained ViT encoder','final CLS: 192 features'])+arrow(300,158,390,158)
     body+=line(334,350,334,158)+arrow(300,350,334,350)
     body+=g(box(790,105,340,['new nn.Linear(192, 2)','scores: [dog, cat]'])+arrow(705,143,780,143),1)
     body+=g(t(410,293,'384 weights + 2 biases = 386 parameters',28,'c-e')+t(410,352,'Keep the learned visual features to begin with.',27),2)
-    add('pets-head','Return to the pets: give the encoder a two-class head',body,
+    add('pets-head','Replace the ImageNet head with our two-class head',body,
         'For our dog/cat task, replace the ImageNet head with a new two-output linear layer. The encoder supplies a 192-number image representation. The new 386 head parameters must learn from labelled pet images.',
         'Why can we not simply rename two of the old 1,000 outputs?',
         'We have changed the label vocabulary. The new head learns a new mapping; the existing pretrained probabilities do not measure this proposed pet classifier.',
@@ -367,22 +369,33 @@ def refine(b, sections):
     for iy in [347,375,403]:option+=neuron(900,iy,'c-k',10)
     for oy,label in [(357,'dog'),(393,'cat')]:
         option+=neuron(1037,oy,'c-k',12)+t(1063,oy+7,label,21,'c-k')
-    body+=g(option,2)
+    body+=t(35,340,'Frozen encoder: every image still gets its own 192 features.',28,'c-e')
+    body+=t(35,407,'Only the 386 head parameters receive optimizer updates.',28,'c-k')
     add('pets-frozen','Freeze the encoder; train the new head',body,
-        'Snowflake: weights stay fixed. Flame: weights can learn. Start by training only the two-class head; optionally unfreeze the last block. A frozen encoder still computes image-dependent features.',
+        'Snowflake: weights stay fixed. Flame: weights can learn. Train the two-class head on labelled pet images. The frozen encoder still computes different features for different images.',
         'When only the head is trained, do the Q/K/V weights change?',
-        'No. Trace the photograph through the blue vision encoder into 192 CLS features. The orange head learns. Reveal the loss update, then the optional route with the last block also trainable.',
+        'No. Trace the photograph through the blue vision encoder into 192 CLS features. Only the orange head learns. Reveal the loss update.',
         'The eye identifies the vision encoder; the snowflake denotes frozen parameters and the flame denotes trainable parameters. '
         'Circles show representative feature coordinates and the two output neurons of Linear(192,2), with no hidden layer. '
         'Each class neuron reads all 192 features and has one bias: 192×2+2=386 head parameters. '
         'The label enters cross-entropy at the loss; the output neurons represent dog/cat scores, not probabilities. '
         'Head-only training is often called a linear probe. Frozen means the encoder parameters do not change, not that every image produces the same features. '
         'Features can be cached when the encoder and preprocessing are fixed and evaluation is deterministic. '
-        'The lower route is one optional partial fine-tuning choice: train the last Transformer block and the new head while earlier encoder parameters remain frozen. '
+        'The next slide introduces one optional partial fine-tuning choice. '
         'Include only the chosen trainable parameters in the optimizer and use validation to choose the procedure. No training is run for this slide.',
         '<p>Eye: vision encoder. Snowflake: fixed weights. Flame: trainable weights.</p>'
-        +mobile_rows(['Mode','Encoder','Head'],[['Head only','All encoder weights frozen; 192 image-dependent features','192 inputs → dog and cat scores; 386 trainable parameters'],
-                                              ['Optional fine-tuning','Unfreeze the last block; earlier weights stay fixed','Train the same two-class head']]))
+        +mobile_rows(['Mode','Encoder','Head'],[['Head only','All encoder weights frozen; 192 image-dependent features','192 inputs → dog and cat scores; 386 trainable parameters']]))
+
+    body=t(35,47,'If head-only training is insufficient, adapt some features too.',29)
+    body+='<g transform="translate(0 -175)">'+option+'</g>'
+    body+=t(35,318,'The loss can now change the last block and the class head.',28,'c-k')
+    body+=t(35,393,'Compare on validation data before choosing how much to unfreeze.',27)
+    add('pets-fine-tune','Next option: fine-tune the last block as well',body,
+        'Unfreeze the last block and train it together with the head. Earlier encoder weights stay fixed. This lets some visual features adapt to the target data; validation determines whether it helps.',
+        'When might a head alone be insufficient?',
+        'If the current features do not separate the new classes well, or the images look different, changing some encoder features may help. Evaluate rather than assume.',
+        'This is one example of partial fine-tuning. A full fine-tune is another choice; the right amount depends on data and validation. '
+        'Use an optimizer that includes exactly the intended trainable parameters. The diagram describes a procedure, with no new training result.')
 
     body=flow([['batch of images','B × 3 × 224 × 224'],['ViT + new head','B × 2 scores'],['known labels','B targets'],['mean cross-entropy','one loss']],100)
     body+=g(t(35,280,'zero gradients → forward → loss → backward → optimizer step',29,'c-a'),1)
@@ -452,7 +465,8 @@ def refine(b, sections):
             opener=frames[0]
             # The section opener is regenerated below with the new purpose.
             title='Adapt and evaluate the image classifier'
-            frames=[opener]+[new[k] for k in ['pets-head','pets-frozen','pets-training-step','pets-evaluation']]
+            frames=[opener]+[new[k] for k in ['pets-original-task','pets-new-task','pets-new-domain',
+                'pets-head','pets-frozen','pets-fine-tune','pets-training-step','pets-inference','pets-evaluation']]
         out=[]
         for m in frames:
             k=key(m)

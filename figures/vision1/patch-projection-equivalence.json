@@ -67,6 +67,26 @@
     "rtol": 1e-05,
     "atol": 2e-05
   },
+  "pixel_weight_trace": {
+    "image_id": "newfoundland_31",
+    "patch_index_one_based": 63,
+    "output_feature_zero_based": 0,
+    "channel_row_column": [
+      1,
+      2,
+      3
+    ],
+    "flat_index": 291,
+    "image_row_column": [
+      66,
+      99
+    ],
+    "pixel": -0.6235294342041016,
+    "weight": 0.01953553408384323,
+    "product": -0.012180980294942856,
+    "bias": -0.4148799180984497,
+    "sum_768_products_plus_bias": -0.851540744304657
+  },
   "results": [
     {
       "image_id": "newfoundland_31",

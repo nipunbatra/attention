@@ -24,6 +24,7 @@
   "separate_images_match_batch": true,
   "attention_matches_pytorch_sdpa": true,
   "distinct_parameter_sets": 12,
+  "visible_split_code_matches_model": true,
   "all_parameter_gradients_finite_and_nonzero": true,
   "optimizer_steps": 0,
   "checkpoint_downloads": 0

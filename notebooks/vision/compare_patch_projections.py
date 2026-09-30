@@ -87,6 +87,16 @@ def main():
         ]), rtol=1e-5, atol=2e-5)
         torch.testing.assert_close(linear.weight, conv.weight.flatten(1), rtol=0, atol=0)
         torch.testing.assert_close(linear.bias, conv.bias, rtol=0, atol=0)
+        # Trace one green pixel through both storage layouts (zero-based).
+        c, r, s, j = 1, 2, 3, 0
+        k = c * 256 + r * 16 + s
+        pixel = images[0, c, 64+r, 96+s]
+        weight = conv.weight[j, c, r, s]
+        torch.testing.assert_close(pixel, patches[0, 62, k], rtol=0, atol=0)
+        torch.testing.assert_close(weight, linear.weight[j, k], rtol=0, atol=0)
+        products = crops[0] * linear.weight[j]
+        manual = products.sum() + linear.bias[j]
+        torch.testing.assert_close(manual, conv_rows[0, 62, j], rtol=1e-5, atol=2e-5)
 
     counts = {}
     for name, layer in [('linear', linear), ('conv2d', conv)]:
@@ -102,6 +112,14 @@ def main():
         'flatten_order': 'channel, patch row, patch column (all R, then G, then B)',
         'max_absolute_error': (dense_rows-conv_rows).abs().max().item(),
         'comparison_tolerance': {'rtol': 1e-5, 'atol': 2e-5},
+        'pixel_weight_trace': {
+            'image_id': references[0]['image_id'], 'patch_index_one_based': 63,
+            'output_feature_zero_based': j, 'channel_row_column': [c, r, s],
+            'flat_index': k, 'image_row_column': [64+r, 96+s],
+            'pixel': pixel.item(), 'weight': weight.item(),
+            'product': (pixel*weight).item(), 'bias': linear.bias[j].item(),
+            'sum_768_products_plus_bias': manual.item(),
+        },
         'results': [{
             'image_id': ref['image_id'], 'source_sha256': ref['sha256'],
             'patch_index_one_based': 63, 'patch_grid_zero_based': [4, 6],

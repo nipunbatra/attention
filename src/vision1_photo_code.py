@@ -14,15 +14,11 @@ def build(b):
     link='<a href="notebooks/vision/vit_image_classifier.py">Complete teaching implementation</a>.'
     premise='The code keeps the lecture architecture: patch size 16, D=192, three 64-wide heads, 12 blocks and 1,000 outputs. It is randomly initialized; the saved dog prediction uses a separate pretrained checkpoint. '
     def add(key,title,code,diagram,caption,question,point,prose='',wide=False):
-        body=(f.code(code,x=35,y=45,width=1090,size=22,spacing=30) if wide
+        body=(f.code(code,x=35,y=45,width=1090,size=24,spacing=37) if wide
               else f.code(code,size=21,spacing=34))+diagram
         mobile_code=code
-        if key in ['code-photo-block','code-photo-readout']:
-            init,forward=code.split('\n\n',1)
-            mobile_code='def __init__(self'+(', num_classes=1000' if key.endswith('readout') else '')+'):\n'+indent(init,'    ')
-            mobile_code+='\n\ndef forward(self, x):\n'+indent(forward,'    ')
-        elif 'return ' in code:
-            method='embed' if key=='code-photo-tokens' else 'forward'
+        if 'return ' in code:
+            method='embed' if key.startswith('code-photo-tokens') else 'forward'
             mobile_code=f'def {method}(self, x):\n'+indent(code,'    ')
         return f.add(key,title,body,caption,question,point,premise+prose+link,
                      '<pre><code>'+escape(mobile_code)+'</code></pre><p>'+escape(point)+'</p>')
@@ -39,52 +35,88 @@ def build(b):
     from vision1_patch_projection_code import build as patch_projection
     f.frames.update(patch_projection(b))
 
-    code=snippet('embed')
-    diagram=box(35,382,300,'B × 192 × 14 × 14',h=48,size=25)+arrow(347,406,418,406)
-    diagram+=box(430,382,280,'B × 196 × 192',h=48,size=25)+arrow(722,406,793,406)
-    diagram+=box(805,382,310,'B × 197 × 192','c-q',h=48,size=25)
-    code+='\n\n# self.cls: (1, 1, 192)   - shared starting row\n# self.pos: (1, 197, 192) - broadcasts across the B images'
-    add('code-photo-tokens','Turn the feature grid into the 197 input rows',code,diagram,
-        'Flatten the two grid axes, then put features last. Prepend the shared CLS row and add the learned position table. Broadcasting reuses these parameters across images; every image keeps its own activations.',
-        'Which operation increases the row count from 196 to 197?', 'Concatenating CLS along dim=1 adds one row. Adding positions changes values without changing the shape.',
-        'The complete implementation registers cls and pos as nn.Parameter tensors. flatten(2) combines only the two spatial axes. '
-        'It does not flatten the batch into the token axis. transpose(1,2) changes B×192×196 into B×196×192. '
-        'Every line now includes its output shape. B is an integer, expand keeps the two trailing dimensions '
-        'because they are -1, and adding the position table broadcasts its leading size-1 axis across the batch.',wide=True)
+    def shape_flow(labels, colors=None):
+        colors = colors or ['c-e'] * len(labels)
+        width = 1090 / len(labels) - 40
+        body = ''
+        for i, (label, color) in enumerate(zip(labels, colors)):
+            x = 35 + i * (width + 40)
+            body += box(x, 338, width, label, color, h=80, size=25)
+            if i < len(labels)-1:
+                body += arrow(x+width+7, 378, x+width+32, 378, color)
+        return body
 
-    diagram=box(770,22,355,['Q, K, V — each','B × 3 × 197 × 64'],'c-q')+arrow(947,104,947,132)
-    diagram+=box(770,144,355,['scores and weights','B × 3 × 197 × 197'],'c-k')+arrow(947,226,947,254)
-    diagram+=box(770,266,355,['messages → joined → project','B × 197 × 192'],'c-v',size=22)
-    diagram+=t(947,391,'No causal mask: the whole image is available.',19,'ink-2','middle')
-    add('code-photo-attention','Write the three-head computation with explicit axes',snippet('attention'),diagram,
-        'Each image and head has its own attention matrix. Softmax runs over source rows on the last axis. Join the three 64-feature messages and project to 192 features. Images in the batch never attend to one another.',
-        'What do the two 3s in reshape mean?', 'The first selects Q, K or V; the second selects one of three heads. B stays separate. N=197 includes CLS.',
-        'qkv has shape B×N×(3×192) before reshape. permute makes the Q/K/V selector the first axis, so unbind returns three tensors of shape B×3×N×64. '
-        'The divisor is sqrt(64)=8. There is no mask or cross-image attention. This explicit implementation omits dropout. '
-        'The two equal-sized axes mean receiving query and source key, not height and width.')
+    embed=snippet('embed').splitlines()
+    add('code-photo-tokens','First turn the feature grid into patch rows',
+        '\n'.join(embed[:5]),
+        shape_flow([['Feature grid','B × 192 × 14 × 14'], ['Flatten spatial axes','B × 192 × 196'], ['Features last','B × 196 × 192']]),
+        'Flatten combines the 14×14 spatial grid into 196 locations. Transpose puts the 192 features last. Each row now describes one patch.',
+        'Did flatten mix images or merge their features?',
+        'No. flatten(2) starts at axis 2. The batch and 192 feature channels remain separate.',
+        'These are the first lines of embed. The next slide continues from rows with shape B×196×192.',wide=True)
 
-    code=snippet('block-init')+'\n\n'+snippet('block-forward')
-    diagram=box(787,24,320,['Input E','B × 197 × 192'])+arrow(947,105,947,138)
-    diagram+=box(787,151,320,['LN → attention → add E','B × 197 × 192'],size=22)+arrow(947,233,947,263)
-    diagram+=box(787,276,320,['LN → MLP → add input','B × 197 × 192'],size=22)
-    diagram+=t(947,408,'MLP features: 192 → 768 → 192',23,'c-v','middle')
-    add('code-photo-block','Match the two residual branches to code',code,diagram,
-        'LayerNorm and the MLP operate on each row’s features. Attention mixes rows within each image. Both branches return 192 features, so each residual addition preserves the full B×197×192 shape.',
-        'Why can the MLP hidden layer be wider than the residual?', 'Its final linear layer returns to 192 features before addition. The batch and token axes remain unchanged.',
-        'These are the block constructor assignments followed by its forward body, extracted from the complete implementation. '
-        'Different blocks have their own copies of these learned modules; all rows within one block share them.')
+    code='# Continue with rows: (B, 196, 192)\n'+ '\n'.join(embed[5:])
+    code+='\n\n# self.cls: (1, 1, 192)   self.pos: (1, 197, 192)'
+    add('code-photo-tokens-cls','Then prepend CLS and add position',code,
+        shape_flow([['Patch rows','B × 196 × 192'], ['Prepend one CLS','B × 197 × 192'], ['Add position','B × 197 × 192']], ['c-e','c-q','c-q']),
+        'Expand reuses the learned CLS start across the batch. Concatenation adds one row. Position addition changes the numbers while keeping 197 rows and 192 features.',
+        'Which operation changes the number of rows?',
+        'torch.cat adds CLS along dim=1. Adding positions leaves the shape unchanged.',
+        'The complete implementation registers cls and pos as nn.Parameter tensors. Their size-1 batch axes broadcast across images. expand does not create B independently learned CLS parameters.',wide=True)
 
-    code=snippet('stack')+'\n\n'+snippet('readout')
-    diagram=box(782,24,330,['12 distinct blocks','B × 197 × 192'])+arrow(947,108,947,140)
-    diagram+=box(782,153,330,['Final norm; select row 0','B × 192'],'c-q',size=23)+arrow(947,235,947,266)
-    diagram+=box(782,278,330,['Linear(192, 1000)','B × 1000 scores'])
-    diagram+=t(947,408,'num_classes = 1000 for this architecture',21,'ink-2','middle')
-    add('code-photo-readout','Run the stack and read one CLS per image',code,diagram,
-        'Each block consumes the previous block’s output. After final normalization, select CLS independently for each image. The class head produces 1,000 logits per image, with no softmax inside the model’s forward method.',
-        'Does the loop call the same block 12 times?', 'No. ModuleList holds 12 separate Block objects with different parameters. The activation from one becomes the input to the next.',
-        'The constructor creates blocks, norm and head. The forward body below calls embed, visits those blocks in order, '
-        'then normalizes and selects row zero. For prediction, logits.softmax(-1) gives class probabilities. '
-        'For a new two-class task, num_classes=2 changes the head, as discussed in the following adaptation section.')
+    code='B, N, D = x.shape                         # B, 197, 192\nqkv = self.qkv(x)                        # B, 197, 576\nqkv = qkv.reshape(B, N, 3, 3, 64)        # B, N, QKV, heads, features\nq, k, v = qkv.permute(2, 0, 3, 1, 4).unbind(0)\n# q, k, v: each (B, 3, 197, 64)'
+    add('code-photo-attention','Make queries, keys and values for three heads',code,
+        shape_flow([['Input rows','B × 197 × 192'], ['QKV projection','B × 197 × 576'], ['Split Q, K, V','each B × 3 × 197 × 64']], ['c-e','c-q','c-q']),
+        'Project each row once to produce all queries, keys and values. Split the 576 outputs into three roles, each with three heads of width 64.',
+        'What do the two size-3 axes mean?',
+        'One selects Q, K or V. The other selects the attention head. B always remains a separate image axis.',
+        'This is the first part of Attention.forward, written with a named qkv intermediate. self.qkv is Linear(192,576). N=197 includes CLS.',wide=True)
+
+    code='scores = (q @ k.transpose(-2, -1)) / 8  # B, 3, 197, 197\nweights = scores.softmax(dim=-1)       # B, 3, 197, 197\nmessages = weights @ v                # B, 3, 197, 64'
+    add('code-photo-attention-messages','Compute one message for every query in every head',code,
+        shape_flow([['Query–key scores','197 × 197'], ['Softmax over sources','197 × 197'], ['Weighted value sums','197 × 64']], ['c-k','c-k','c-v']),
+        'For each image and head, every query scores all 197 sources. Softmax normalizes each query row. Multiplying by V combines the sources into one 64-feature message per query.',
+        'Along which axis do the weights sum to one?',
+        'The last axis: source keys. Every receiving query gets its own distribution.',
+        'Shapes in the diagram show one image and one head; the code retains B and all three heads. The scale is sqrt(64)=8. No causal mask is needed.',wide=True)
+
+    code='joined = messages.transpose(1, 2)     # B, 197, 3, 64\njoined = joined.reshape(B, N, D)      # B, 197, 192\nreturn self.proj(joined)             # B, 197, 192'
+    add('code-photo-attention-join','Join the head messages and project back to 192',code,
+        shape_flow([['Three messages per row','3 × 64'], ['Concatenate features','192'], ['Output projection','192']], ['c-v','c-v','c-e']),
+        'Move the head axis beside its features, then join 3×64 into 192. A learned output projection mixes these features before the residual addition.',
+        'Do we concatenate different images or different query rows?',
+        'Neither. Each image and query keeps its own three head messages. Only head features are joined.',
+        'This completes Attention.forward. self.proj is Linear(192,192). The output is the attention update; the block adds the original row on the next slides.',wide=True)
+
+    add('code-photo-block-layers','Build the layers inside one Transformer block',snippet('block-init'),
+        shape_flow([['Attention','mix information across rows'], ['MLP','192 → 768 → 192']], ['c-q','c-v']),
+        'Create two normalization layers, one attention module and one MLP. The MLP expands and then restores the feature width for each row.',
+        'Does the 768-wide hidden layer change the number of patches?',
+        'No. Only the feature axis expands. B and N stay unchanged.',
+        'These assignments belong in Block.__init__. Attention contains the QKV and output projections just shown. MLP weights are shared across rows within this block.',wide=True)
+
+    code='# x: (B, 197, 192)\n'+snippet('block-forward')
+    add('code-photo-block','Use the two residual paths in order',code,
+        shape_flow([['Input x','B × 197 × 192'], ['Attention + input','B × 197 × 192'], ['MLP + input','B × 197 × 192']]),
+        'Normalize, compute the attention update, and add the input. Then normalize the updated rows, compute the MLP update, and add them again.',
+        'Which x enters the second line?',
+        'The x already updated by attention. Each branch returns the same shape as the input it is added to.',
+        'These lines are Block.forward. LayerNorm and MLP act separately on each row. Attention mixes information between rows of the same image.',wide=True)
+
+    add('code-photo-stack','Create twelve blocks with separate learned parameters',snippet('stack'),
+        shape_flow([['Block 1','B × 197 × 192'], ['Blocks 2–11','B × 197 × 192'], ['Block 12','B × 197 × 192']]),
+        'ModuleList creates twelve distinct blocks. The final normalization and class head read the result of the entire stack.',
+        'Are these twelve calls to one shared set of weights?',
+        'No. The list comprehension creates twelve separate Block objects.',
+        'These assignments belong in ImageClassifier.__init__. num_classes defaults to 1000 for the ImageNet architecture. Changing the label vocabulary changes the head output width.',wide=True)
+
+    code='rows = self.embed(x)                 # B, 197, 192\nfor block in self.blocks:\n    rows = block(rows)               # B, 197, 192\nsummary = self.norm(rows)[:, 0]      # B, 192: final CLS\nreturn self.head(summary)           # B, 1000 logits'
+    add('code-photo-readout','Run the stack, then read the final CLS',code,
+        shape_flow([['All rows through 12 blocks','B × 197 × 192'], ['Normalize; select CLS','B × 192'], ['Class head','B × 1000']], ['c-e','c-q','c-e']),
+        'Feed each block’s output into the next. Normalize the final rows and select CLS for each image. The class head returns 1,000 scores.',
+        'Why is there no softmax inside this forward method?',
+        'Cross-entropy accepts logits directly. During inference, logits.softmax(-1) converts scores into class probabilities.',
+        'This is ImageClassifier.forward after the input assertion. A new two-class head, introduced in the next section, instead produces B×2 scores.',wide=True)
 
     diagram=box(790,31,310,['Images B × 3 × 224 × 224','labels B'],size=21)+arrow(945,115,945,147)
     diagram+=box(790,161,310,['Forward → cross-entropy','one scalar loss'],'c-a',size=23)+arrow(945,244,945,276,'c-a')

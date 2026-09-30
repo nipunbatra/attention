@@ -5,6 +5,8 @@ Uses synthetic inputs, no checkpoint downloads or optimizer/training loop.
 from pathlib import Path
 import json
 import sys
+import textwrap
+import xml.etree.ElementTree as ET
 import torch
 from torch.nn import functional as F
 
@@ -34,6 +36,22 @@ with torch.no_grad():
     fused=F.scaled_dot_product_attention(q,k,v,is_causal=False)
     reference=a.proj(fused.transpose(1,2).reshape(2,197,192))
     torch.testing.assert_close(a(rows),reference,rtol=1e-5,atol=2e-6)
+    # Run the visible SVG snippets, including the newly split slides. This also
+    # checks that syntax-colour spans preserve exact, executable Python text.
+    def slide_code(name):
+        root=ET.parse(ROOT/'figures/vision1'/f'{name}.svg').getroot()
+        return '\n'.join(''.join(node.itertext()) for node in root.iter('{http://www.w3.org/2000/svg}text')
+                         if 'monospace' in node.get('font-family',''))
+    def run_slides(names, layer, inputs):
+        code='\n'.join(slide_code(name) for name in names)
+        scope={'torch':torch,'nn':torch.nn}
+        exec('def shown(self, x):\n'+textwrap.indent(code,'    '),scope)
+        return scope['shown'](layer,inputs)
+    torch.testing.assert_close(run_slides(['code-photo-tokens','code-photo-tokens-cls'],model,images),rows)
+    torch.testing.assert_close(run_slides(['code-photo-attention','code-photo-attention-messages',
+        'code-photo-attention-join'],a,rows),a(rows))
+    torch.testing.assert_close(run_slides(['code-photo-block'],model.blocks[0],rows),model.blocks[0](rows))
+    torch.testing.assert_close(run_slides(['code-photo-readout'],model,images),logits)
 
 assert len({id(block.attn.qkv.weight) for block in model.blocks})==12
 loss=F.cross_entropy(model(images),torch.tensor([256,283]))
@@ -45,6 +63,7 @@ report={'input':[2,3,224,224],'patch_grid':list(grid.shape),
         'input_rows':list(rows.shape),'logits':list(logits.shape),
         'conv2d_equals_unfold_linear':True,'separate_images_match_batch':True,
         'attention_matches_pytorch_sdpa':True,'distinct_parameter_sets':12,
+        'visible_split_code_matches_model':True,
         'all_parameter_gradients_finite_and_nonzero':True,
         'optimizer_steps':0,'checkpoint_downloads':0}
 (ROOT/'figures/vision1/photo-code-checks.json').write_text(json.dumps(report,indent=2)+'\n')

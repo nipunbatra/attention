@@ -95,9 +95,13 @@ def consolidate(b, sections):
     # Their section dividers must use the new consecutive numbering.
     for n,(title,old) in enumerate(sections[8:],7):
         content=[fr for fr in old if not key(fr).startswith('vision-topic-')]
+        if n == 8:
+            # These three phases now introduce adaptation in section 7.
+            content=[fr for fr in content if key(fr) not in {
+                'three-phases-step-1','three-phases-step-2','three-phases'}]
         old_meta=next(x for x in b['FRAMES'] if x['id']==key(old[0]))
         questions={
-            7:('Our code produces 1,000 ImageNet scores.','How would we adapt it to dog versus cat?'),
+            7:('Our checkpoint predicts 1,000 ImageNet labels.','What if our labels or image domain change?'),
             8:('Training and inference have different jobs.','What do the saved photo predictions establish?'),
             9:('A prediction tells us the model’s answer.','What can we measure inside its attention blocks?'),
             10:('Every query compares all source rows.','What happens when we make the patches smaller?'),
