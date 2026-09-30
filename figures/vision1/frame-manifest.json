@@ -930,7 +930,7 @@
   {
     "id": "vision-topic-06",
     "title": "Section 6 \u00b7 The same classifier in PyTorch",
-    "caption": "Keep the original 224\u00d7224 RGB input. Match each code operation to its tensor shape, beginning with Conv2d patch embedding.",
+    "caption": "Keep the original 224\u00d7224 RGB input. Match each code operation to its tensor shape, beginning with equivalent Linear and Conv2d patch projections.",
     "notes": "How do these diagrams become code?\nConnect the previous result to this new question. Keep the same image classifier as the reference.",
     "section": "s06",
     "frame": 1
@@ -944,12 +944,52 @@
     "frame": 2
   },
   {
-    "id": "code-photo-conv",
-    "title": "Use nn.Conv2d for the shared patch projection",
-    "caption": "A 16\u00d716 kernel spans all three channels. Each of 192 filters computes one feature, including a bias. Stride 16 gives non-overlapping patches. This is the same shared affine patch projection, evaluated across the image.",
-    "notes": "Does Conv2d merely cut the image into patches?\nIt also learns the projection: 192 filters, each with 768 weights and one bias. The output grid has one 192-feature vector at each patch location.",
+    "id": "code-patch-goal",
+    "title": "Our target: turn every patch into 192 features",
+    "caption": "Each RGB patch supplies 768 numbers. One shared projection turns it into 192 features. Reusing that projection across the 14\u00d714 grid produces 196 rows. We will implement this exact operation in two ways.",
+    "notes": "Do we learn a separate projection for each of the 196 patches?\nNo. Each patch supplies different inputs to the same learned projection. The same parameters also serve the cat and every other image.",
     "section": "s06",
     "frame": 3
+  },
+  {
+    "id": "code-patch-dense",
+    "title": "See the patch projection as a layer of neurons",
+    "caption": "All 768 inputs connect to every output neuron. Each neuron computes a weighted sum and adds its own bias. The patch projection is one dense layer; the later Transformer MLP has two layers and a nonlinear activation.",
+    "notes": "Where does the 192 in the bias count come from?\nThere is one bias per output feature, not one per input pixel or patch. Every output has 768 weights, so there are 147,456 weights and 192 biases in total.",
+    "section": "s06",
+    "frame": 4
+  },
+  {
+    "id": "code-patch-linear",
+    "title": "Implementation 1: extract patches, then use Linear",
+    "caption": "Unfold extracts each non-overlapping patch as a column. Transpose makes patches into rows. Linear changes only the last axis, from 768 inputs to 192 features, reusing its weights for every patch and image.",
+    "notes": "Does applying Linear to 196 rows create 196 copies of its weights?\nNo. A Linear module broadcasts the same affine operation across the leading axes. Only activations grow with B and the number of patches.",
+    "section": "s06",
+    "frame": 5
+  },
+  {
+    "id": "code-photo-conv",
+    "title": "Implementation 2: the same projection with Conv2d",
+    "caption": "Reshape each neuron\u2019s 768 weights into a 3\u00d716\u00d716 filter. It reads the same pixels and adds the same bias. Conv2d applies all 192 filters at every patch location, giving a 192-channel feature grid.",
+    "notes": "What does one output channel represent?\nOne of the 192 learned patch features, computed at all 14\u00d714 locations using one shared filter and bias. The filter spans all three RGB channels.",
+    "section": "s06",
+    "frame": 6
+  },
+  {
+    "id": "code-patch-parameters",
+    "title": "Reshape the weights; keep the same parameter count",
+    "caption": "Both implementations have 147,456 weights and 192 biases. Copying the exact weights and biases makes their computations equivalent. More patches or images create more output values, while the learned parameter count stays 147,648.",
+    "notes": "Would two independently initialized layers produce the same features?\nNo. Equal parameter counts are not enough. They must use the same weights, biases and pixel order. Flatten each Conv2d filter to obtain the corresponding row of Linear.weight.",
+    "section": "s06",
+    "frame": 7
+  },
+  {
+    "id": "code-patch-equivalence",
+    "title": "Verify it on both photographs: the features match",
+    "caption": "Using identical pretrained weights, both paths produce the same dog and cat features within floating-point rounding. Conv2d packages patch extraction and projection into one image operation. Flatten and transpose its grid before adding CLS and positions.",
+    "notes": "Why use Conv2d if Linear can compute the same thing?\nConv2d accepts the image grid directly and uses optimized convolution implementations. It avoids explicitly constructing a patch matrix in our code. This is a choice of implementation, not a change in the learned model.",
+    "section": "s06",
+    "frame": 8
   },
   {
     "id": "code-photo-tokens",
@@ -957,7 +997,7 @@
     "caption": "Flatten the two grid axes, then put features last. Prepend the shared CLS row and add the learned position table. Broadcasting reuses these parameters across images; every image keeps its own activations.",
     "notes": "Which operation increases the row count from 196 to 197?\nConcatenating CLS along dim=1 adds one row. Adding positions changes values without changing the shape.",
     "section": "s06",
-    "frame": 4
+    "frame": 9
   },
   {
     "id": "code-photo-attention",
@@ -965,7 +1005,7 @@
     "caption": "Each image and head has its own attention matrix. Softmax runs over source rows on the last axis. Join the three 64-feature messages and project to 192 features. Images in the batch never attend to one another.",
     "notes": "What do the two 3s in reshape mean?\nThe first selects Q, K or V; the second selects one of three heads. B stays separate. N=197 includes CLS.",
     "section": "s06",
-    "frame": 5
+    "frame": 10
   },
   {
     "id": "code-photo-block",
@@ -973,7 +1013,7 @@
     "caption": "LayerNorm and the MLP operate on each row\u2019s features. Attention mixes rows within each image. Both branches return 192 features, so each residual addition preserves the full B\u00d7197\u00d7192 shape.",
     "notes": "Why can the MLP hidden layer be wider than the residual?\nIts final linear layer returns to 192 features before addition. The batch and token axes remain unchanged.",
     "section": "s06",
-    "frame": 6
+    "frame": 11
   },
   {
     "id": "code-photo-readout",
@@ -981,7 +1021,7 @@
     "caption": "Each block consumes the previous block\u2019s output. After final normalization, select CLS independently for each image. The class head produces 1,000 logits per image, with no softmax inside the model\u2019s forward method.",
     "notes": "Does the loop call the same block 12 times?\nNo. ModuleList holds 12 separate Block objects with different parameters. The activation from one becomes the input to the next.",
     "section": "s06",
-    "frame": 7
+    "frame": 12
   },
   {
     "id": "code-photo-training",
@@ -989,7 +1029,7 @@
     "caption": "Cross-entropy consumes logits and class-index labels. Backward computes gradients; the optimizer updates the parameters it owns. Clear previous gradients before the next batch. This code shows the procedure without claiming a trained result.",
     "notes": "Should we apply softmax before cross_entropy?\nNo. It already includes log-softmax. labels is a length-B integer tensor; the model returns B\u00d71000 logits for this example.",
     "section": "s06",
-    "frame": 8
+    "frame": 13
   },
   {
     "id": "vision-topic-07",

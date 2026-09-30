@@ -35,29 +35,8 @@ def build(b):
         'Here rgb is already a resized/cropped, float, checkpoint-normalized H×W×3 tensor. permute changes axis order, not pixel values. '
         'Use the checkpoint’s prescribed normalization for pretrained inference. The diagram shows the saved model-input crop for continuity; this snippet does not run inference.')
 
-    # One complete slide opens Conv2d: a learned filter bank, stride and output grid.
-    body=f.code(snippet('conv'),x=40,y=40,width=1070,size=24,spacing=32)
-    body+=f.image(40,162,196,196,f.photo)
-    for i in range(1,14):
-        body+=line(40+i*14,162,40+i*14,358,'card',.6)+line(40,162+i*14,236,162+i*14,'card',.6)
-    body+=f.rect(124,218,14,14,'c-q','transparent',0)+t(138,396,'14 × 14 locations',24,'ink-2','middle')
-    body+=arrow(244,244,301,244,'c-q')+box(315,180,260,['One patch: 3 × 16 × 16','768 input numbers'],'c-q',size=22)
-    body+=arrow(585,222,631,222,'c-v')+box(645,180,460,['192 learned filters, each 3 × 16 × 16','one weighted sum + bias per filter'],'c-v',size=22)
-    body+=t(650,303,'At every location: 768 inputs → 192 features',24,'c-v')
-    body+=t(315,348,'Stride 16 moves by one patch; the filters are shared.',26)
-    body+=t(315,402,'Output: B × 192 × 14 × 14',31,'c-e')
-    f.add('code-photo-conv','Use nn.Conv2d for the shared patch projection',body,
-        'A 16×16 kernel spans all three channels. Each of 192 filters computes one feature, including a bias. Stride 16 gives non-overlapping patches. This is the same shared affine patch projection, evaluated across the image.',
-        'Does Conv2d merely cut the image into patches?', 'It also learns the projection: 192 filters, each with 768 weights and one bias. The output grid has one 192-feature vector at each patch location.',
-        premise+'The weight tensor has shape [192,3,16,16] and the bias has shape [192]. There are 192×768+192=147,648 parameters. '
-        'With padding=0 and dilation=1, each spatial output is (224−16)/16+1=14. '
-        'Flatten each filter in the same channel/pixel order as its input patch: F.linear(patches, conv.weight.flatten(1), conv.bias) equals the Conv2d result after reshaping. '
-        'This is patchification plus a learned projection, not a deep convolutional feature extractor. '
-        'If flattening RGB-interleaved pixels instead, permute the matching weight columns too. '
-        '<a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html">PyTorch Conv2d documentation</a> · '
-        '<a href="https://github.com/huggingface/pytorch-image-models/blob/main/timm/layers/patch_embed.py">timm PatchEmbed uses Conv2d with kernel and stride equal to patch size</a>. '+link,
-        '<pre><code>'+escape(snippet('conv'))+'</code></pre><p>Input: B×3×224×224. Weights: 192×3×16×16. '
-        'Output: B×192×14×14. Each location contains 192 learned patch features; stride 16 keeps patches non-overlapping.</p>')
+    from vision1_patch_projection_code import build as patch_projection
+    f.frames.update(patch_projection(b))
 
     code=snippet('embed')
     diagram=box(770,18,355,['Convolution output','B × 192 × 14 × 14'])+arrow(947,100,947,135)

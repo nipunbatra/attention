@@ -86,7 +86,7 @@ def consolidate(b, sections):
         ('The same classifier in PyTorch',code(b),
          'We know the forward path and the learning signal.',
          'How do these diagrams become code?',
-         'Keep the original 224×224 RGB input. Match each code operation to its tensor shape, beginning with Conv2d patch embedding.')]
+         'Keep the original 224×224 RGB input. Match each code operation to its tensor shape, beginning with equivalent Linear and Conv2d patch projections.')]
     result=first
     for n,(title,frames,previous,question,caption) in enumerate(new,4):
         result.append((title,[opener(n,title,previous,question,caption)]+frames))

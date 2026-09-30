@@ -1,0 +1,120 @@
+{
+  "model": "vit_tiny_patch16_224.augreg_in21k_ft_in1k",
+  "torch": "2.14.0",
+  "timm": "1.0.30",
+  "preprocessing": {
+    "input_size": [
+      3,
+      224,
+      224
+    ],
+    "interpolation": "bicubic",
+    "mean": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "std": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "crop_pct": 0.9,
+    "crop_mode": "center"
+  },
+  "input_shape": [
+    2,
+    3,
+    224,
+    224
+  ],
+  "output_shape": [
+    2,
+    196,
+    192
+  ],
+  "counts": {
+    "linear": {
+      "weight_shape": [
+        192,
+        768
+      ],
+      "bias_shape": [
+        192
+      ],
+      "weights": 147456,
+      "biases": 192,
+      "total": 147648
+    },
+    "conv2d": {
+      "weight_shape": [
+        192,
+        3,
+        16,
+        16
+      ],
+      "bias_shape": [
+        192
+      ],
+      "weights": 147456,
+      "biases": 192,
+      "total": 147648
+    }
+  },
+  "flatten_order": "channel, patch row, patch column (all R, then G, then B)",
+  "max_absolute_error": 5.245208740234375e-06,
+  "comparison_tolerance": {
+    "rtol": 1e-05,
+    "atol": 2e-05
+  },
+  "results": [
+    {
+      "image_id": "newfoundland_31",
+      "source_sha256": "617dc6f6dcd26c69303b54985eadd5c75bc07b8ba22cdb1ea511307096098d0a",
+      "patch_index_one_based": 63,
+      "patch_grid_zero_based": [
+        4,
+        6
+      ],
+      "linear_first_features": [
+        -0.8515409827232361,
+        1.338600516319275,
+        0.5036810636520386
+      ],
+      "conv_first_features": [
+        -0.8515405654907227,
+        1.3386002779006958,
+        0.5036811232566833
+      ],
+      "max_absolute_error": 5.245208740234375e-06
+    },
+    {
+      "image_id": "Persian_98",
+      "source_sha256": "6071d201543c999e063615d6c2cc674ea004adb11711d34d29d3df11c0012292",
+      "patch_index_one_based": 63,
+      "patch_grid_zero_based": [
+        4,
+        6
+      ],
+      "linear_first_features": [
+        -0.1888497918844223,
+        0.10422777384519577,
+        -0.20799635350704193
+      ],
+      "conv_first_features": [
+        -0.18884989619255066,
+        0.1042276993393898,
+        -0.207997128367424
+      ],
+      "max_absolute_error": 5.066394805908203e-06
+    }
+  ],
+  "verification": {
+    "all_75264_output_features_match_within_tolerance": true,
+    "matches_pretrained_patch_embed": true,
+    "matching_pixel_order": true,
+    "same_weights_and_biases": true,
+    "batch_matches_individual_images": true,
+    "training_run": false
+  }
+}
