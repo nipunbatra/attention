@@ -898,32 +898,32 @@
   {
     "id": "vision-topic-05",
     "title": "Section 5 \u00b7 CNNs, ViTs and inductive bias",
-    "caption": "Compare receptive fields, shared local filters, and the assumptions each architecture supplies before learning.",
-    "notes": "Which assumptions about images does a CNN build in?\nConnect the previous result to this new question. Keep the same image classifier as the reference.",
+    "caption": "Three visual comparisons: how each model uses an image, its starting assumptions, and practical choices for data and compute.",
+    "notes": "How do they differ, and which should we try?\nConnect the previous result to this new question. Keep the same image classifier as the reference.",
     "section": "s05",
     "frame": 1
   },
   {
     "id": "cnn-receptive-field",
-    "title": "How does information travel through a CNN or a ViT?",
-    "caption": "A stack of local convolutions expands the receptive field. Global self-attention can connect distant patch rows within one block. Both can use broad image context and learn useful features for classification.",
-    "notes": "Can a CNN eventually use information from the whole image?\nYes. The left diagram shows three stride-one 3\u00d73 convolutions, giving nominal receptive fields 3,5,7. Pooling or strides change the calculation. Right arrows are illustrative.",
+    "title": "Two ways to build an image representation",
+    "caption": "A CNN builds a wider view through layers of local filters. Global ViT attention lets distant patches interact within a block. Both can use the whole image and produce class scores. The connections shown are schematic.",
+    "notes": "Can both models use clues from distant parts of the dog?\nYes. Follow the growing CNN windows and the ViT arrows. The difference is the route information takes, not whether a model can ever see the whole image.",
     "section": "s05",
     "frame": 2
   },
   {
     "id": "cnn-inductive-bias",
-    "title": "A CNN reuses a local detector across the image",
-    "caption": "Local connections and shared kernels encode assumptions about images. With stride one away from boundaries, shifting the input shifts its convolutional feature map. The model can reuse a detector instead of learning it separately at each location.",
-    "notes": "Must we learn a second kernel when the edge moves?\nNo. The same weights slide over the grid. Its response moves with the matching pattern; the class prediction need not change just because the feature location changes.",
+    "title": "Inductive bias: a useful starting assumption",
+    "caption": "A CNN builds in local reuse: one learned detector can look for a pattern at many locations. ViT also has structure\u2014patches, shared projections and position signals\u2014but gives attention more freedom to learn spatial relationships.",
+    "notes": "Does inductive bias mean the edge detector\u2019s weights were chosen by hand?\nNo. The architecture chooses local connections and parameter sharing; training learns the filter values. Both architectures still learn from data. The translated stripe is an illustration, not a model prediction.",
     "section": "s05",
     "frame": 3
   },
   {
     "id": "cnn-vit-design",
-    "title": "How CNNs and ViTs build an image representation",
-    "caption": "A conventional CNN builds context through local shared kernels. A plain ViT learns global mixing between patch rows and uses position signals. Both produce one image representation, use class-label loss, and can learn from pretraining.",
-    "notes": "Does ViT have no image-related bias at all?\nIt still groups nearby pixels into patches, shares the patch projection, and uses a position representation. It imposes less local spatial structure inside its attention blocks than the conventional CNN shown here.",
+    "title": "Which is a sensible starting point?",
+    "caption": "Treat these as starting points, not a ranking. Pretraining can matter more than the architecture name on a small dataset. Compare suitable models using the same validation set and measure speed and memory on the target hardware.",
+    "notes": "We have few labelled pet photos and access to pretrained weights. Which column should we choose?\nBoth are plausible: adapt suitable checkpoints and validate. Few task labels do not rule out a pretrained ViT. For device use, compare measured latency and memory rather than assuming every CNN is faster.",
     "section": "s05",
     "frame": 4
   },
