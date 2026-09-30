@@ -3,7 +3,9 @@ from pathlib import Path
 import hashlib
 import json
 import subprocess
+import re
 import numpy as np
+from vision1_explorer_tour import EXAMPLES
 
 ROOT = Path(__file__).resolve().parents[1]
 folder = ROOT / 'figures/vision1/attention-explorer'
@@ -54,5 +56,24 @@ assert not {'real-heads','real-depth','real-patch-query'} & set(ids)
 page = (ROOT/'vision1.html').read_text()
 assert 'id="vit-explorer"' in page and 'function attention(data, head, query)' in page
 assert 'additionalRuntimeFiles' in page
+assert len(EXAMPLES) == 9
+assert json.loads(re.search(r'<script type="application/json" data-examples>(.*?)</script>', page, re.S).group(1)) == EXAMPLES
+# The tour makes specific claims about corners, ear correspondence and weights.
+# Check those against the saved measurements independently of the UI settings.
+tour_values = []
+for e in EXAMPLES:
+    d = np.fromfile(folder/f'block-{e["block"]:02}.f32', dtype='<f4').astype(np.float64)
+    if e['mode'] == 'similarity':
+        f = d[75648:].reshape(197, 192)
+        v = f @ f[e['query']] / (np.linalg.norm(f, axis=1)*np.linalg.norm(f[e['query']]))
+    else:
+        q, k = d[:37824].reshape(3,197,64), d[37824:75648].reshape(3,197,64)
+        scores = q[e['head']-1,e['query']] @ k[e['head']-1].T / 8
+        v = np.exp(scores-scores.max()); v /= v.sum()
+    tour_values.append(v[e['source']])
+    if e['id'] == 'corners':
+        assert sorted(sorted((j for j in range(1,197) if j != 1), key=lambda j:-v[j])[:3]) == [14,183,196]
+np.testing.assert_allclose(tour_values, [.7834,.9999,.9017,.9110,.9427,.3221,.0909,.0229,.2486], atol=5e-5, rtol=0)
 print(f'PASS: 240 browser rows match PyTorch across all 12 blocks and 3 heads (max error {max_error:.2g}).')
 print('PASS: data hashes, normalized weights, cosine self-matches, real ear correspondence, and consolidated slide route.')
+print('PASS: all nine guided presets and their numerical teaching claims match the saved model data.')

@@ -4,6 +4,7 @@ import json
 import re
 import numpy as np
 from vision1_focus_common import Figures
+from vision1_explorer_tour import EXAMPLES
 
 
 def enhance(b, sections):
@@ -35,13 +36,13 @@ def enhance(b, sections):
         body += t(750,185+i*39,f'P{j}: {100*weights[j]:.2f}%',26,'c-k')
     body += t(750,325,f'CLS source: {100*weights[0]:.2f}%',23,'ink-2')
     body += t(25,426,'All 197 source weights sum to 100%. The whole image is available; no causal mask.',25)
-    title = 'Choose one patch. Where does it look?'
-    caption = 'Select a query on the trained model’s dog image. Change the block or head, then compare attention with feature similarity. Each selectable square is a 16×16 patch.'
-    notes = ('Which other patches does this ear patch read from?\n'
-             'Start in block 4, head 1. Select a query, then a source on the gold map to read its score and softmax weight. '
-             'Play blocks while keeping the query fixed. Attention is a directed Q–K comparison and includes CLS. '
-             'Switch to feature similarity, block 12, query P74: P82 and P81 on the opposite side are close in feature direction. '
-             'This is measured cosine similarity after the block, not attention, DINO output, or a guarantee of semantic correspondence.')
+    title = 'Explore a trained ViT, one example at a time'
+    caption = 'Follow nine guided examples on the trained model. Each preset shows what to notice and one takeaway. Then choose Free exploration to select any patch, block, head or view. Each square is a 16×16 patch.'
+    notes = ('What does the gold region mean in this example?\n'
+             'Start with the background preset and use Next example. Examples 1–6 compare patch features; '
+             '7–9 show attention weights. Read the observation before revealing the takeaway in discussion. '
+             'The four corner features nearly coincide; this is not a segmentation guarantee. '
+             'After example 9, use Free exploration. The presets retain exact queries, blocks and heads.')
     prose = ('<p>These are saved activations from the same pretrained '
              '<a href="https://huggingface.co/timm/vit_tiny_patch16_224.augreg_in21k_ft_in1k">ViT-Tiny classifier</a> '
              'used throughout this lecture. It predicts Newfoundland for this image with 95.73% probability. '
@@ -57,13 +58,31 @@ def enhance(b, sections):
              '<p>Keyboard: tab to either image grid, use arrow keys to move between patches, then Enter or Space to select. '
              'Play blocks runs once from block 1 to 12 and stops when you leave the slide. '
              '<a href="notebooks/vision/ATTENTION_EXPLORER.md">Data provenance and reproduction</a>.</p>')
+    tour_rows = ''.join('<tr><td>'+str(i+1)+'. '+escape(e['title'])+'</td><td>'+
+                        escape(('Feature similarity' if e['mode']=='similarity' else f'Attention, head {e["head"]}')+
+                               f' · block {e["block"]} · '+('CLS' if e['query']==0 else f'P{e["query"]}'))+
+                        '</td><td>'+escape(e['look'])+'</td><td>'+escape(e['takeaway'])+'</td></tr>'
+                        for i,e in enumerate(EXAMPLES))
+    prose = ('<p><strong>Start here:</strong> keep the preset fixed, locate the purple query, read the gold map, '
+             'then discuss the takeaway. Next example changes the settings for you. Free exploration exposes '
+             'the full controls; Guided examples returns to the last preset.</p>'
+             '<table class="vp-table"><thead><tr><th>Example</th><th>Settings</th><th>Notice</th><th>Takeaway</th></tr></thead>'
+             '<tbody>'+tour_rows+'</tbody></table>')+prose
+    examples_json = json.dumps(EXAMPLES, ensure_ascii=False).replace('<', '\\u003c')
+    tour_options = ''.join(f'<option value="{i}">{i+1}. {escape(e["title"])}</option>' for i,e in enumerate(EXAMPLES))
     for item in b['FRAMES']:
         if item['id'] == 'read-attention-map': item.update(title=title,caption=caption,notes=notes)
     original = b['frame']('read-attention-map',title,body,caption,notes,prose)
     static = b['svg'](body,title)
     options = ''.join(f'<option value="{i}"{" selected" if i==block else ""}>Block {i}</option>' for i in range(1,13))
-    ui = f'''<div id="vit-explorer" class="vix" data-present="manual" data-keep-state data-base="figures/vision1/attention-explorer" data-image="{f.photo}">
-<div class="vix-controls">
+    ui = f'''<div id="vit-explorer" class="vix is-guided" data-present="manual" data-keep-state data-base="figures/vision1/attention-explorer" data-image="{f.photo}">
+<script type="application/json" data-examples>{examples_json}</script>
+<div class="vix-tour-nav">
+<div data-tour-controls class="vix-tour-controls"><label>Guided example<select data-example>{tour_options}</select></label>
+<button type="button" data-previous disabled>Previous</button><button type="button" data-next>Next example →</button></div>
+<button type="button" data-explore>Free exploration</button></div>
+<div class="vix-tour-help" data-tour-help>Next example sets everything for you. Gold = more similar features.</div>
+<div class="vix-controls" data-free-controls hidden>
 <label>View<select data-control="mode"><option value="attention">Attention to keys</option><option value="similarity">Patch feature similarity</option></select></label>
 <label>Transformer block<select data-control="block">{options}</select></label>
 <label>Attention head<select data-control="head"><option value="1">Head 1</option><option value="2">Head 2</option><option value="3">Head 3</option></select></label>
@@ -71,7 +90,7 @@ def enhance(b, sections):
 <div class="vix-status"><span data-status role="status">Trained ViT · choose a patch to explore</span><button type="button" data-retry hidden>Retry</button></div>
 <div class="vix-live">
 <div class="vix-columns">
-<div><h4>1 · Choose a query patch</h4>
+<div><h4 data-query-title>1 · Locate the purple patch</h4>
 <div class="vix-photo"><img src="{f.photo}" alt="The Newfoundland photograph, divided into 196 patches" width="224" height="224"><div class="vix-grid" data-query-grid role="group" aria-label="Choose query patch. Arrow keys move; Enter selects."></div></div>
 <div class="vix-selected"><span class="vix-crop" data-query-crop></span><span data-query-name></span></div>
 <div class="vix-presets"><button type="button" data-preset="74">Ear</button><button type="button" data-preset="63">Nose</button><button type="button" data-preset="15">Tree</button><button type="button" data-preset="0">CLS</button></div>
@@ -81,7 +100,12 @@ def enhance(b, sections):
 <div class="vix-scale" data-scale></div><div class="vix-legend" data-scale-label></div>
 <button type="button" data-cls-weight></button><div class="vix-accounting" data-accounting></div>
 </div>
-<div class="vix-detail"><h4 data-ranking-label>Strongest patch sources</h4><div data-top></div>
+<aside class="vix-tour-panel" data-tour-panel aria-live="polite">
+<div class="vix-tour-progress" data-tour-progress></div><h4 data-tour-title></h4>
+<p class="vix-observe" data-observe></p>
+<div class="vix-tour-fact"><span class="vix-crop" data-tour-crop></span><span data-tour-fact></span></div>
+<h5>Takeaway</h5><p data-takeaway></p></aside>
+<div class="vix-detail" data-free-detail hidden><h4 data-ranking-label>Strongest patch sources</h4><div data-top></div>
 <h4>3 · Inspect one connection</h4>
 <div class="vix-selected"><span class="vix-crop" data-source-crop></span><span data-source-name></span></div>
 <p data-query-readout></p><p data-calculation></p><p data-result></p><p data-source-note></p></div>

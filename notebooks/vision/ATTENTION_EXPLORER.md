@@ -2,12 +2,35 @@
 
 Open [the lecture, section IX](https://nipunbatra.github.io/attention/vision1.html?present#s09/2/0).
 
-1. Click a patch on the left. Purple marks the query. Each selection covers **16×16 pixels**.
-2. The right image shows its attention over source patches. Click any source, a top-ranked thumbnail, or the CLS weight to see the score and its softmax weight.
-3. Change the head or block. **Play blocks** advances once through blocks 1–12 with the same selected query and head. It stops on a manual change, leaving the slide, or hiding the tab.
-4. Switch to **Patch feature similarity**, choose **Ear**, and select **Block 12**. The nearest other patches are P82 and P81, on the opposite side of this dog's head. This is an observation for this image/model, not a guarantee that corresponding parts always match.
+## Start with the nine guided examples
 
-The interactive frame replaces three static head/depth/query comparison frames. The lecture now has 161 teaching frames plus the cover.
+The explorer opens in **Guided examples**. Locate the purple reference, read the gold map, then discuss the takeaway. The solid gold box marks the source whose measured value is shown beside the explanation.
+
+- **Next example** sets the query, block, head and view for you. **Previous** revisits the last example.
+- The **Guided example** menu jumps directly to any of the nine presets.
+- After the last example, **Explore freely** exposes the original controls. You can also enter **Free exploration** at any time.
+- **Guided examples** returns to the exact preset you left; custom settings do not overwrite it.
+
+| Example | Preset | What to notice | Takeaway |
+|---|---|---|---|
+| 1. Background finds background | Block 12, P182, feature similarity | Purple marks the lower-right background patch. Look for gold around the dog, with less gold on its body. | Patch features can separate regions that look like foreground and background. This is a similarity pattern, not a predicted segmentation mask. |
+| 2. Check a true corner | Block 12, P1, feature similarity | Now the reference is the top-left corner. Its strongest matches are the other three corners, with cosine similarity almost 1. | A strong feature match need not identify an object part. Inspect where the matches occur before assigning them a meaning. |
+| 3. One ear finds the other side | Block 12, P74, feature similarity | Purple marks the left side of the dog’s head. P82, on the opposite side, is the strongest other match. | Distant patches can have similar learned features. This correspondence appears in this trained model and photograph; it is not guaranteed for every image. |
+| 4. Move the reference to the nose | Block 12, P63, feature similarity | The query moves to P63 near the nose. The brightest matches move toward nearby face and muzzle patches. | The map answers a question about the selected patch. Changing the reference changes which features are being compared. |
+| 5. Follow the body’s dark fur | Block 12, P147, feature similarity | The reference is now on the chest. Notice the group of similar patches lower on the dog, rather than around its nose. | Different regions of one object can have different features. Similarity need not highlight the entire dog uniformly. |
+| 6. Rewind the ear example to block 1 | Block 1, P74, feature similarity | Keep the same P74-to-P82 ear pair as example 3. Its cosine similarity is now 0.322; after block 12 it was 0.902. | The pixels stay fixed while the representation changes through the blocks. The late-block match was not already this strong at the start. |
+| 7. Ask what the ear reads | Block 4, P74, attention head 1 | Switch to attention: block 4, head 1, query P74. P60’s value row is multiplied by 9.09% in this head’s message. | An attention weight scales a source’s value in the query’s message. Feature similarity compares patch representations. |
+| 8. Change only the attention head | Block 4, P74, attention head 2 | The image, query and block stay fixed. Head 2 puts its largest patch weight on P38, at about 2.29%. | Heads learn different ways to gather information. Gold is rescaled within each attention map, so compare percentages, not brightness, across heads. |
+| 9. Let CLS gather an image summary | Block 12, CLS, attention head 1 | The query is now CLS, not an image patch. In this head, P64 near the face receives about 24.86% of the weight. | CLS can gather patch information for classification. This is one head in one block, not a complete explanation of the final label. |
+
+## Explore freely afterward
+
+1. Click a patch on the left. Purple marks the query. Each selection covers **16×16 pixels**.
+2. Click a source on the right, a ranked thumbnail, or the CLS weight to inspect the number.
+3. Change the head or block. **Play blocks** advances once through blocks 1–12 with the same query and head. It stops on a manual change, leaving the slide, or hiding the tab.
+4. Compare **Attention to keys** with **Patch feature similarity**. The view label and color scale state which measurement is shown.
+
+The nine examples are steps within one interactive frame, so they do not repeat the model walkthrough or add nine slides.
 
 ## What the colors mean
 
@@ -43,4 +66,4 @@ python3 -m http.server 8791
 Open `http://127.0.0.1:8791/vision1.html?present#s09/2/0`.
 The exporter needs the pretrained checkpoint cached locally; it deliberately does not train or download another model in this workflow. The checks compare 240 JavaScript rows with independent PyTorch outputs across all blocks, all heads, patch queries, and CLS. Keyboard users can tab into either image, move with arrow keys, and select with Enter/Space.
 
-Source files: `src/vision1_attention_explorer.py` (slide/print SVG), `src/vision1-inspector.js` (math and interaction), `src/vision1-inspector.css` (layout), and `notebooks/vision/export_attention_explorer.py` (measurements).
+Source files: `src/vision1_attention_explorer.py` (slide/print SVG), `src/vision1-inspector.js` (math and interaction), `src/vision1-inspector.css` (layout), `src/vision1_explorer_tour.py` (guided presets), and `notebooks/vision/export_attention_explorer.py` (measurements).

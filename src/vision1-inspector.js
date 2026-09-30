@@ -36,11 +36,14 @@
     const root = document.getElementById('vit-explorer');
     if (!root) return;
     const frame = root.closest('.frame'), find = s => root.querySelector(s);
+    const examples = JSON.parse(find('[data-examples]').textContent);
+    const exampleSelect = find('[data-example]');
     const mode = find('[data-control="mode"]'), block = find('[data-control="block"]'), head = find('[data-control="head"]');
     const status = find('[data-status]'), play = find('[data-play]'), retry = find('[data-retry]');
     const canvas = find('canvas'), ctx = canvas.getContext('2d');
     const base = root.dataset.base, cache = new Map();
     let meta, data, row, query = 74, source = 60, version = 0, timer, playing = false, ready = false;
+    let guided = true, exampleIndex = 0;
     const name = j => j === 0 ? 'CLS' : `P${j}`;
     const location = j => j === 0 ? 'image summary' : `row ${Math.floor((j - 1) / 14) + 1}, column ${(j - 1) % 14 + 1}`;
     const percent = n => n * 100 < .01 ? `${(n * 100).toPrecision(2)}%` : `${(n * 100).toFixed(2)}%`;
@@ -65,6 +68,57 @@
     }
     grid(find('[data-query-grid]'), queryButtons, 'Query');
     grid(find('[data-key-grid]'), keyButtons, 'Source');
+    function syncGuided() {
+      root.classList.toggle('is-guided', guided);
+      find(guided ? '.vix-tour-nav' : '[data-free-controls]').append(find('[data-explore]'));
+      find('.vix-tour-nav').hidden = !guided;
+      find('[data-tour-controls]').hidden = !guided;
+      find('[data-tour-panel]').hidden = !guided;
+      find('[data-free-controls]').hidden = guided;
+      find('[data-free-detail]').hidden = guided;
+      find('.vix-presets').hidden = guided;
+      find('[data-meaning]').hidden = guided;
+      find('[data-guide]').hidden = guided;
+      find('[data-accounting]').hidden = guided;
+      find('[data-tour-help]').hidden = !guided;
+      find('[data-explore]').textContent = guided ? 'Free exploration' : 'Guided examples';
+      find('[data-explore]').hidden = guided && exampleIndex === examples.length - 1;
+      [...queryButtons, ...keyButtons].forEach(button => { button.disabled = guided; });
+      find('[data-query-grid]').setAttribute('aria-hidden', String(guided));
+      find('[data-key-grid]').setAttribute('aria-hidden', String(guided));
+      find('[data-query-grid]').setAttribute('aria-label', 'Choose query patch. Arrow keys move; Enter selects.');
+      find('[data-cls-weight]').disabled = guided;
+      find('[data-previous]').disabled = exampleIndex === 0;
+      find('[data-next]').textContent = exampleIndex === examples.length - 1 ? 'Explore freely →' : 'Next example →';
+      find('[data-query-title]').textContent = guided ? '1 · Locate the purple patch' : '1 · Choose a query patch';
+    }
+    function configureExample(index) {
+      exampleIndex = index; guided = true; exampleSelect.value = String(index);
+      const example = examples[index];
+      query = example.query; source = example.source;
+      mode.value = example.mode; block.value = String(example.block); head.value = String(example.head);
+      syncGuided();
+    }
+    function selectExample(index) { stop(); configureExample(index); update(); }
+    function exploreFreely() { stop(); guided = false; syncGuided(); render(); mode.focus(); }
+    function renderTour() {
+      if (!guided) return;
+      const example = examples[exampleIndex];
+      find('[data-tour-progress]').textContent = `Example ${exampleIndex + 1} of ${examples.length}`;
+      find('[data-tour-title]').textContent = example.title;
+      find('[data-observe]').textContent = example.look;
+      find('[data-takeaway]').textContent = example.takeaway;
+      const instruction = exampleIndex === examples.length - 1
+        ? 'Tour complete. Explore freely lets you choose the query, block, head and view.'
+        : 'Next example sets everything for you.';
+      find('[data-tour-help]').textContent = `${instruction} ${isAttention() ? 'Gold = stronger attention weight.' : 'Gold = more similar features.'}`;
+      thumbnail(find('[data-tour-crop]'), example.source);
+      const value = row.values[example.source];
+      find('[data-tour-fact]').textContent = `Boxed ${name(example.source)} · ${isAttention() ? percent(value) + ' weight' : value.toFixed(example.precision || 3) + ' cosine'}`;
+      find('[data-query-title]').textContent = query === 0 ? '1 · CLS is the query' : '1 · Locate the purple patch';
+      find('[data-query-grid]').setAttribute('aria-label', query === 0 ? 'CLS is the extra summary token, not a pixel patch.' : `Preset query ${name(query)}, ${location(query)}. Use Free exploration to change it.`);
+    }
+    configureExample(0);
     function stop() { playing = false; clearTimeout(timer); play.textContent = '▶ Play blocks'; play.setAttribute('aria-pressed', 'false'); }
     async function read(url, binary = false) {
       const response = await fetch(url);
@@ -123,7 +177,7 @@
         keyButtons[i].classList.toggle('vix-query-location', i + 1 === query);
       });
       const ranked = Array.from({length: 196}, (_, i) => i + 1).filter(j => isAttention() || j !== query).sort((a, b) => values[b] - values[a]);
-      source = ranked[0];
+      source = guided ? examples[exampleIndex].source : ranked[0];
       find('[data-map-title]').textContent = isAttention() ? '2 · See source weights' : '2 · Find similar patches';
       find('[data-ranking-label]').textContent = isAttention() ? 'Strongest patch sources' : 'Most similar other patches';
       const top = find('[data-top]'); top.replaceChildren();
@@ -142,6 +196,7 @@
       find('[data-guide]').textContent = isAttention() ? 'Keep the query fixed. Change the head or play through the blocks.' : 'Try Ear at block 12: inspect patches on the other side of the dog.';
       status.textContent = `Trained ViT · Block ${block.value}${isAttention() ? ' · Head ' + head.value : ' · feature similarity'} · ${name(query)}`;
       renderSource();
+      renderTour();
     }
     async function update() {
       const request = ++version;
@@ -166,6 +221,15 @@
       if (Number(block.value) === 12) { stop(); return; }
       block.value = String(Number(block.value) + 1); update();
     }
+    exampleSelect.addEventListener('change', () => selectExample(Number(exampleSelect.value)));
+    find('[data-previous]').addEventListener('click', () => selectExample(Math.max(0, exampleIndex - 1)));
+    find('[data-next]').addEventListener('click', () => {
+      if (exampleIndex === examples.length - 1) exploreFreely();
+      else selectExample(exampleIndex + 1);
+    });
+    find('[data-explore]').addEventListener('click', () => {
+      if (guided) exploreFreely(); else selectExample(exampleIndex);
+    });
     mode.addEventListener('change', () => { stop(); if (!isAttention() && query === 0) query = 74; render(); });
     block.addEventListener('change', () => { stop(); update(); });
     head.addEventListener('change', () => { stop(); render(); });
