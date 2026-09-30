@@ -121,25 +121,66 @@ def build_cls_value_message(b, matrix):
         '<p>V = X W_V + b_V: <strong>197 × 64</strong>, ordered CLS, P1, …, P196.</p>'
         '<p>P63’s value row begins ['+number(v63[0])+', '+number(v63[1])+', …] and has 64 learned features.</p>')
 
-    sources = ['CLS', 'P1', 'P2', '…', 'P63', '…', 'P196']
-    body = t(35, 34, 'Receiver: CLS · selected source: P63', 28, 'c-q')
-    for j, label in enumerate(sources):
-        body += t(270+(j+.5)*850/7, 74, label, 22, 'ink-2', 'middle')
-    body += strip(270, 88, 850, ['a₀', 'a₁', 'a₂', '…', 'a₆₃', '…', 'a₁₉₆'], 'c-q', selected=4)
-    body += t(150, 125, '1 × 197', 27, 'c-q', 'middle')
-    body += crop(35, 203, 78)+t(74, 316, 'P63', 24, 'c-v', 'middle')
-    body += t(194, 231, 'a₆₃', 31, 'c-q', 'middle')+t(194, 274, number(a63, 6), 25, 'c-q', 'middle')
-    body += t(290, 242, '×', 36)
-    body += t(685, 190, 'Value row v₆₃ · 1 × 64', 26, 'c-v', 'middle')
-    body += strip(330, 210, 710, [number(v63[0]), number(v63[1]), '…', number(v63[-1])])
-    scaled = arrow(685, 278, 685, 333, 'c-v')+t(711, 313, 'scale every feature', 24, 'c-v')
-    scaled += t(194, 387, 'a₆₃ v₆₃', 30, 'c-q', 'middle')
-    scaled += strip(330, 345, 710, [number(a63*v63[0], 6), number(a63*v63[1], 6), '…', number(a63*v63[-1], 6)], size=25)
-    body += g(scaled, 1)
-    body += t(330, 436, 'Contribution to CLS · 1 × 64 · P63 is the source', 26, 'c-v')
+    # Keep both full matrices in view while Next selects one receiver/source pair.
+    ax, ay, aw, ah = 112, 139, 360, 144
+    vx, vy, vw, vh = 766, 139, 312, 144
+    body = t(292, 70, 'A · 197 × 197 weights', 27, 'c-q', 'middle')
+    body += t(292, 103, 'Columns = source keys →', 22, 'c-k', 'middle')
+    body += '<g transform="rotate(-90 22 211)">'+t(22, 211, 'Rows = queries', 21, 'c-q', 'middle')+'</g>'
+    body += matrix(ax, ay, aw, ah, tokens, tokens, 'c-q', size=18)
+    body += t(606, 224, '×', 39)
+    body += t(922, 70, 'V · 197 × 64 values', 27, 'c-v', 'middle')
+    body += t(922, 103, 'Columns = value features →', 22, 'c-v', 'middle')
+    body += '<g transform="rotate(-90 672 211)">'+t(672, 211, 'Rows = sources', 21, 'c-v', 'middle')+'</g>'
+    body += matrix(vx, vy, vw, vh, tokens, features, 'c-v', size=18)
+
+    receiver = t(35, 30, '1 · Pick receiver CLS', 26, 'c-q')
+    receiver += f'<rect x="{ax}" y="{ay}" width="{aw}" height="24" fill="var(--c-q)" fill-opacity=".14"/>'
+    receiver += rect(ax, ay, aw, 24, 'c-q', 'transparent', 0)
+    body += g(receiver, 1)
+
+    source_pick = t(365, 30, '2 · Pick source P63', 26, 'c-k')
+    source_pick += f'<rect x="{ax+180}" y="{ay}" width="60" height="{ah}" fill="var(--c-k)" fill-opacity=".12"/>'
+    source_pick += rect(ax+180, ay, 60, ah, 'c-k', 'transparent', 0)
+    source_pick += rect(ax+180, ay, 60, 24, 'c-q', 't-q', 0)
+    source_pick += t(ax+210, ay+18, 'a₆₃', 22, 'c-q', 'middle')
+    source_pick += t(164, 314, 'A[CLS, P63] · one weight', 23, 'c-q', 'middle')
+    source_pick += strip(55, 333, 218, [number(a63, 6)], 'c-q', height=42, size=27)
+    body += g(source_pick, 2)
+
+    values = t(736, 30, '3 · Pick P63’s value row', 26, 'c-v')
+    values += f'<rect x="{vx}" y="{vy+72}" width="{vw}" height="24" fill="var(--c-v)" fill-opacity=".14"/>'
+    values += rect(vx, vy+72, vw, 24, 'c-v', 'transparent', 0)
+    values += line(1089, 223, 1138, 223, 'c-v')+line(1138, 223, 1138, 354, 'c-v')+arrow(1138, 354, 1115, 354, 'c-v')
+    values += t(745, 314, 'V[P63, :] · all 64 features', 25, 'c-v', 'middle')
+    values += t(318, 365, '×', 36)
+    values += strip(378, 333, 735, [number(v63[0]), number(v63[1]), '…', number(v63[-1])], height=42)
+    body += g(values, 3)
+
+    first = rect(vx, vy, 78, vh, 'c-e', 'transparent', 0)
+    first += rect(vx, vy+72, 78, 24, 'c-v', 't-e', 0)+t(vx+39, vy+90, 'v₆₃,₁', 20, 'c-v', 'middle')
+    first += rect(378, 333, 735/4, 42, 'c-e', 'transparent', 0)
+    first += t(35, 406, '4 · Scale each feature', 25, 'c-v')
+    first += t(35, 436, 'Contribution to CLS · 1 × 64', 23, 'c-q')
+    first += t(318, 425, '=', 36)
+    first += strip(378, 393, 735, ['', '', '', ''], height=42)
+    first += t(378+735/8, 423, number(a63*v63[0], 6), 25, 'c-v', 'middle')
+    body += g(first, 4)
+    rest = rect(vx+78, vy, 78, vh, 'c-e', 'transparent', 0)
+    rest += rect(vx+78, vy+72, 78, 24, 'c-v', 't-e', 0)+t(vx+117, vy+90, 'v₆₃,₂', 20, 'c-v', 'middle')
+    rest += rect(378+735/4, 333, 735/4, 42, 'c-e', 'transparent', 0)
+    for j, value in [(1, number(a63*v63[1], 6)), (2, '…'), (3, number(a63*v63[-1], 6))]:
+        rest += t(378+(j+.5)*735/4, 423, value, 25, 'c-v', 'middle')
+    body += g(rest, 5)
     add('real-cls-value-scaling', 'One weight scales all 64 features in its value row', body,
-        'P63 supplies this value row; CLS receives its weighted contribution. The same weight scales all 64 features. Add contributions from all sources to complete the CLS message. P63’s own message uses P63’s query.',
-        'Who receives this contribution: P63 or CLS?\nCLS is the receiver because we selected the CLS weight row. P63 is the source. The scalar scales all 64 features; the result is one contribution, before summing the other sources.',
+        'Use Next to select CLS’s row in A, P63’s column, P63’s row in V, then its feature coordinates. One scalar scales all 64 values. This contribution is addressed to CLS.',
+        'Which row, column and value feature are we selecting?\nNext 1: choose the CLS query row in A. Next 2: choose its P63 source column and extract A[CLS,P63]. Next 3: choose row P63 of V. Next 4: choose value feature 1 and multiply. Next 5: repeat for feature 2 and the remaining features. Every product is a contribution to CLS; P63 is the source.',
+        'A has receiving queries on its rows and source keys on its columns. V has the same source identities '
+        'on its rows, with 64 value features across columns. First select row CLS of A, then column P63. '
+        'This intersection supplies one scalar A[CLS,P63]. Match that source column to row P63 of V. '
+        'Select feature column 1 in V and multiply V[P63,1] by the scalar, then repeat for feature 2 '
+        'through feature 64. The staged diagram keeps both matrices visible; dots abbreviate entries, '
+        'and the displayed numerical previews are measured. '
         'For this fixed CLS query, a_j means A[CLS,j]. Source 0 is CLS itself. '
         'The saved weight a₆₃ is '+str(a63)+'. Its product with the first value feature is '
         +str(a63*v63[0])+', and the second product is '+str(a63*v63[1])+'. '
@@ -150,7 +191,10 @@ def build_cls_value_message(b, matrix):
         'for all 197 sources, including CLS. Sending a contribution does not modify P63’s value row. '
         'P63’s own update is computed separately from the weights made by its query. '
         'The next slide shows four concrete contributions; the following slide adds all 197 sources.',
-        '<p>From the CLS weight row (1 × 197), select a₆₃ = '+number(a63, 6)+'.</p>'
+        '<ol><li>Pick the CLS query row in A (197 × 197).</li>'
+        '<li>Pick column P63: A[CLS,P63] = '+number(a63, 6)+'.</li>'
+        '<li>Pick the matching source row P63 in V (197 × 64).</li>'
+        '<li>Multiply feature 1, then repeat for the other 63 features.</li></ol>'
         +mobile_rows(['Feature of P63', 'Value', 'Weight × value'],
                      [[str(j+1), number(v63[j]), number(a63*v63[j], 6)] for j in [0, 1, 63]])
         +'<p><strong>a₆₃ × v₆₃ → one weighted row of shape 1 × 64.</strong> '

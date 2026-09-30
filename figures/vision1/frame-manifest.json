@@ -674,8 +674,8 @@
   {
     "id": "real-cls-value-scaling",
     "title": "One weight scales all 64 features in its value row",
-    "caption": "P63 supplies this value row; CLS receives its weighted contribution. The same weight scales all 64 features. Add contributions from all sources to complete the CLS message. P63\u2019s own message uses P63\u2019s query.",
-    "notes": "Who receives this contribution: P63 or CLS?\nCLS is the receiver because we selected the CLS weight row. P63 is the source. The scalar scales all 64 features; the result is one contribution, before summing the other sources.",
+    "caption": "Use Next to select CLS\u2019s row in A, P63\u2019s column, P63\u2019s row in V, then its feature coordinates. One scalar scales all 64 values. This contribution is addressed to CLS.",
+    "notes": "Which row, column and value feature are we selecting?\nNext 1: choose the CLS query row in A. Next 2: choose its P63 source column and extract A[CLS,P63]. Next 3: choose row P63 of V. Next 4: choose value feature 1 and multiply. Next 5: repeat for feature 2 and the remaining features. Every product is a contribution to CLS; P63 is the source.",
     "section": "s03",
     "frame": 29
   },
