@@ -124,7 +124,8 @@ def clarify_inputs(b, sections):
     # Two prerequisites are explained separately before any Q/K/V computation.
     continuation = [m for m in sections[2][1] if key(m) in [
         'real-cls-attention', 'real-attention-product', 'real-attention-cls-zoom', 'real-attention-weights',
-        'real-attention-mask', 'real-cls-values-origin', 'real-cls-value-scaling', 'real-cls-value-sum',
+        'real-attention-mask', 'real-message-text-analogy', 'real-cls-values-origin', 'real-cls-value-scaling',
+        'real-cls-value-contributions', 'real-cls-value-sum', 'real-cls-message-destination',
         'real-attention-values', 'real-heads-intro', 'real-heads-qkv', 'real-heads-messages',
         'real-heads-cls', 'real-heads-concat', 'real-cls-message', 'real-cls-residual', 'real-cls-mlp',
         'real-mlp-network', 'real-mlp-residual', 'real-block-handoff', 'real-block-changes', 'real-cls-depth',

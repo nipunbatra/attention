@@ -18,7 +18,7 @@ for h in trace['gradients']['heads']:
     np.testing.assert_allclose(np.array(h['dS']).sum(axis=1),0,atol=1e-12)
 assert trace['single_update']['loss_after']<trace['single_update']['loss_before']
 manifest=json.loads((ROOT/'figures/vision1/frame-manifest.json').read_text())
-assert len(manifest)==157 and len({x['id'] for x in manifest})==157
+assert len(manifest)==160 and len({x['id'] for x in manifest})==160
 ids=[x['id'] for x in manifest]
 input_order=['patch-projection-parameters','vision-topic-03','position-where','position-table','real-patch-position','position-learning',
              'cls-detour','real-cls-purpose','cls-parameter-origin','cls-parameter-learning',
@@ -26,7 +26,8 @@ input_order=['patch-projection-parameters','vision-topic-03','position-where','p
              'cls-pool-dog','cls-pool-arithmetic','cls-readout-return',
              'real-cls-sequence','model-journey-checkpoint','real-patch-qkv','real-cls-attention',
              'real-attention-product','real-attention-cls-zoom','real-attention-weights','real-attention-mask',
-             'real-cls-values-origin','real-cls-value-scaling','real-cls-value-sum','real-attention-values',
+             'real-message-text-analogy','real-cls-values-origin','real-cls-value-scaling',
+             'real-cls-value-contributions','real-cls-value-sum','real-cls-message-destination','real-attention-values',
              'real-heads-intro','real-heads-qkv','real-heads-messages','real-heads-cls','real-heads-concat',
              'real-cls-message','real-cls-residual','real-cls-mlp','real-mlp-network','real-mlp-residual',
              'real-block-handoff','real-block-changes','real-cls-depth','real-cls-readout',
