@@ -574,6 +574,13 @@ optimizer.step()''',t(30,65,'image + known label',26,'c-e')+arrow(180,92,180,160
     sections=enhance(b,sections)
     from vision1_occlusion_walkthrough import explain as explain_occlusion
     sections=explain_occlusion(b,sections)
+    from vision1_closing_summary import conclude
+    sections=conclude(b,sections)
+    # The assembler discovers generated files, so remove obsolete section outputs
+    # when the main lecture ends earlier. Their practice content is retained above.
+    for path in b['OUT'].glob('sec[0-9][0-9].html'):
+        if int(path.stem[3:]) > len(sections):
+            path.unlink()
     ordered=[]
     for n,(title,frames) in enumerate(sections,1):
         original_section(n,title,frames)

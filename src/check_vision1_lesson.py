@@ -52,17 +52,17 @@ for i,(name,image) in enumerate(p['images'].items()):
                 np.testing.assert_allclose(actual[2*i+j]['heads'][h][key],expected['heads'][h][key],atol=1e-12)
 
 manifest=json.loads((ROOT/'figures/vision1/frame-manifest.json').read_text())
-assert len(manifest)==178
+assert len(manifest)==169
 required={'task-side-by-side','cls-shared-start','cls-without','heads-visual-roles',
           'patch-filter-patterns','photo-two-softmaxes',
           'photo-label-loss','photo-optimizer-step',
           'cnn-receptive-field','cnn-context-readout','cnn-inductive-bias','cnn-vit-design',
           'code-photo-input','code-photo-conv','code-photo-tokens','code-photo-attention',
           'code-photo-block','code-photo-readout','code-photo-training',
-          'pets-evaluation','classification-exit'}
+          'pets-evaluation','vision-summary-architecture','vision-summary-takeaways'}
 assert required <= {x['id'] for x in manifest}
 assert not {'s02-small','s03-query','s04-probability','heads-independent','code-patch','code-model'} & {x['id'] for x in manifest}
-assert sorted({x['section'] for x in manifest}) == [f's{i:02}' for i in range(1,13)]
+assert sorted({x['section'] for x in manifest}) == [f's{i:02}' for i in range(1,11)]
 from vision1_gradients import checked_trace
 reverse=checked_trace()
 assert reverse['verification']['max_absolute_error']<1e-7
@@ -89,7 +89,7 @@ ids=[x['id'] for x in manifest]
 assert ids.index('model-journey-overview') < ids.index('s01-rows')
 assert ids.index('position-where') < ids.index('position-table') < ids.index('real-patch-position') < ids.index('position-learning') < ids.index('cls-detour')
 assert ids.index('real-cls-purpose') < ids.index('real-cls-sequence') < ids.index('real-patch-qkv') < ids.index('real-cls-prediction') < ids.index('photo-label-loss')
-assert all(x['section']=='s11' for x in manifest if x['id'].startswith('position-photo-'))
+assert ids[-3:]==['cost-control','vision-summary-architecture','vision-summary-takeaways']
 assert all(x['title'].startswith('Section ') for x in manifest if x['id'].startswith('vision-topic-'))
 classifier=json.loads((ROOT/'figures/vision1/real-classifier-path.json').read_text())
 assert classifier['with_cls']==[197,192] and classifier['mlp_hidden']==[197,768]

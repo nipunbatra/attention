@@ -1336,91 +1336,19 @@
     "frame": 4
   },
   {
-    "id": "vision-topic-11",
-    "title": "Section 11 \u00b7 Your turn to work it out",
-    "caption": "Pause at each question. Write an answer before revealing the calculation or explanation.",
-    "notes": "Can you reason about a new shape or intervention?\nConnect the previous result to this new question. Keep the same image classifier as the reference.",
-    "section": "s11",
-    "frame": 1
-  },
-  {
-    "id": "classification-exit",
-    "title": "Explain one classifier from pixels to learning",
-    "caption": "Use the architecture diagram to answer each question. Name the operation, its input and output shapes, and how its parameters receive a learning signal. Explain a mean-pooling alternative to CLS.",
-    "notes": "Can you explain this without assuming every head has a fixed human-readable job?\nAnswers: 196 patch rows,197 with CLS;64 features per head;2 outputs,386 head parameters;reverse classifier and blocks to patch projection;mean final patch rows then classify.",
-    "section": "s11",
-    "frame": 2
-  },
-  {
-    "id": "exercise-message",
-    "title": "Your turn: work out the message",
-    "caption": "Find the weights first. Then multiply each value by its own weight.",
-    "notes": "Can you calculate the softmax without a calculator?\nExponentiate ln 2 and zero; normalize two and one; multiply the value vectors.",
-    "section": "s11",
-    "frame": 3
-  },
-  {
-    "id": "exercise-shapes",
-    "title": "Your turn: trace every important shape",
-    "caption": "Keep patch count, embedding width and per-head width separate.",
-    "notes": "What is the difference between a patch\u2019s 768 pixel values and the 64 embedding coordinates?\nLet students write all shapes before revealing one line at a time.",
-    "section": "s11",
-    "frame": 4
-  },
-  {
-    "id": "position-photo-layout",
-    "title": "Layout check: what if we rearranged the patches?",
-    "caption": "This is a thought experiment, not a step in our classifier. Keep each crop intact but change its location. Which part of its input row should change? The animal label need not change.",
-    "notes": "Are these the same pieces? Are they arranged the same way?\nCompare both photos before revealing the arrow. Trace the two outlined face patches from row 2 to row 4; the displaced patches move back into row 2.",
-    "section": "s11",
+    "id": "vision-summary-architecture",
+    "title": "The whole ViT: pixels \u2192 context \u2192 one label",
+    "caption": "One shared patch layer builds the rows. Twelve blocks refine every row. The classifier reads final CLS to score image labels.",
+    "notes": "Can you trace the image path, then name the two updates inside a block?\nTrace projection, CLS and position, twelve blocks, final normalization, CLS and class head. Open one block: normalize, three attention heads, concatenate and project, residual; normalize, MLP, residual.",
+    "section": "s10",
     "frame": 5
   },
   {
-    "id": "position-photo-content",
-    "title": "Does the patch layer notice the move?",
-    "caption": "The same pixels pass through the same linear layer, so they produce the same content embedding. The layer has not been given the patch\u2019s location.",
-    "notes": "What changed in the inputs to the shared linear layer?\nPoint to the identical crops, then the identical parameters. Read c_face as the content embedding of this one face crop.",
-    "section": "s11",
+    "id": "vision-summary-takeaways",
+    "title": "Four ideas to carry forward",
+    "caption": "Pixels supply content. Position supplies location. Attention builds context. Training makes the final representation useful for the task.",
+    "notes": "Which operation supplies content, location, context and the learning signal?\nPatch projection supplies content; learned positions identify slots; attention mixes source values for every query; label loss trains the whole classifier. More tokens increase the number of query\u2013key comparisons quadratically.",
+    "section": "s10",
     "frame": 6
-  },
-  {
-    "id": "position-photo-add",
-    "title": "Give the row its location as well as its content",
-    "caption": "Each grid slot has a position vector. Add it to the content embedding before attention, just as we added position to the text embeddings.",
-    "notes": "Which part stays the same when the face crop moves? Which part should change?\nKeep pointing to c_face. Then change the position vector from the upper slot to the lower one; reveal the resulting input rows.",
-    "section": "s11",
-    "frame": 7
-  },
-  {
-    "id": "exercise-position",
-    "title": "Did we move the image, or just reorder its rows?",
-    "caption": "Follow one patch and its position vector in each experiment.",
-    "notes": "Which shuffle changes what is located at the top left?\nTrack one patch and its position vector through each operation.",
-    "section": "s11",
-    "frame": 8
-  },
-  {
-    "id": "vision-topic-12",
-    "title": "Section 12 \u00b7 What can we build next?",
-    "caption": "Connect this classifier to the next vision lectures, then explain the complete photograph-to-answer path.",
-    "notes": "What could a different prediction task use it for?\nConnect the previous result to this new question. Keep the same image classifier as the reference.",
-    "section": "s12",
-    "frame": 1
-  },
-  {
-    "id": "next-vision",
-    "title": "Next: classify an image by writing the labels",
-    "caption": "We now understand a complete image classifier. CLIP will connect its image representation with text representations, so we can compare a photograph with candidate descriptions.",
-    "notes": "What changes if the candidate labels are descriptions we can write?\nKeep this as a closing motivation. The next lecture will explain both encoders, shared embedding space and the image\u2013text training objective.",
-    "section": "s12",
-    "frame": 2
-  },
-  {
-    "id": "closing",
-    "title": "Can you talk us through the whole model?",
-    "caption": "Start with the pixels. Explain what each step adds before moving to the next one.",
-    "notes": "Which step is new, and which steps did we already know?\nAsk students to narrate the computation from input to loss without reading equations.",
-    "section": "s12",
-    "frame": 3
   }
 ]

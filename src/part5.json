@@ -59,16 +59,6 @@
       "id": "s10",
       "title": "The cost of smaller patches",
       "lit": ""
-    },
-    {
-      "id": "s11",
-      "title": "Your turn to work it out",
-      "lit": ""
-    },
-    {
-      "id": "s12",
-      "title": "What can we build next?",
-      "lit": ""
     }
   ],
   "chain": [
@@ -111,14 +101,6 @@
     {
       "section": "s10",
       "label": "The cost of smaller patches"
-    },
-    {
-      "section": "s11",
-      "label": "Your turn to work it out"
-    },
-    {
-      "section": "s12",
-      "label": "What can we build next?"
     }
   ],
   "objects": [

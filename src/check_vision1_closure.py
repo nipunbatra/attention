@@ -18,7 +18,7 @@ for h in trace['gradients']['heads']:
     np.testing.assert_allclose(np.array(h['dS']).sum(axis=1),0,atol=1e-12)
 assert trace['single_update']['loss_after']<trace['single_update']['loss_before']
 manifest=json.loads((ROOT/'figures/vision1/frame-manifest.json').read_text())
-assert len(manifest)==178 and len({x['id'] for x in manifest})==178
+assert len(manifest)==169 and len({x['id'] for x in manifest})==169
 ids=[x['id'] for x in manifest]
 occlusion=json.loads((ROOT/'figures/vision1/patch-occlusion.json').read_text())
 inspector=json.loads((ROOT/'figures/vision1/attention-explorer/manifest.json').read_text())
@@ -49,7 +49,8 @@ input_order=['patch-projection-parameters','vision-topic-03','position-where','p
              'real-block-handoff','real-block-changes','real-cls-depth','real-cls-readout',
              'real-classifier-network','real-classifier-score','real-classifier-softmax','real-cls-prediction']
 assert [ids.index(k) for k in input_order]==sorted(ids.index(k) for k in input_order)
-assert all(x['section']=='s11' for x in manifest if x['id'].startswith('position-photo-'))
+assert ids[-3:]==['cost-control','vision-summary-architecture','vision-summary-takeaways']
+assert not any(x['id'].startswith('position-photo-') for x in manifest)
 assert all(len(x['caption'].split())<=40 and '\n' in x['notes'] for x in manifest)
 required={'task-side-by-side','cls-shared-start','cls-without','heads-visual-roles',
           'patch-filter-patterns','photo-two-softmaxes',
@@ -61,7 +62,7 @@ required={'task-side-by-side','cls-shared-start','cls-without','heads-visual-rol
           'code-photo-tokens-cls','code-photo-attention-messages','code-photo-attention-join',
           'code-photo-block-layers','code-photo-stack',
           'pets-original-task','pets-new-task','pets-new-domain','pets-inference','pets-fine-tune',
-          'pets-evaluation','classification-exit'}
+          'pets-evaluation','vision-summary-architecture','vision-summary-takeaways'}
 assert required<={x['id'] for x in manifest}
 assert [x['id'] for x in manifest if x['section']=='s07']==[
     'vision-topic-07','pets-original-task','pets-new-task','pets-new-domain','pets-head',
@@ -76,7 +77,7 @@ np.testing.assert_allclose(pixel['sum_768_products_plus_bias'],
 assert [x['id'] for x in manifest if x['section']=='s04']==[
     'vision-topic-04','photo-label-loss','photo-optimizer-step']
 assert not {'s02-small','s03-query','s04-probability','heads-independent','code-patch','code-model'} & {x['id'] for x in manifest}
-assert sorted({x['section'] for x in manifest}) == [f's{i:02}' for i in range(1,13)]
+assert sorted({x['section'] for x in manifest}) == [f's{i:02}' for i in range(1,11)]
 assert not {'find-animal','image-caption','photo-search','learning-curves','training-data'}&{x['id'] for x in manifest}
 saved=json.loads((ROOT/'figures/vision1/real-classifier-path.json').read_text())
 assert saved['with_cls']==[197,192] and saved['mlp_hidden']==[197,768] and saved['block_count']==12
@@ -157,6 +158,9 @@ assert not np.allclose(dog['cls_final_after_norm'],cat['cls_final_after_norm'])
 for x in manifest:
     ET.parse(ROOT/'figures/vision1'/(x['id']+'.svg'))
 page=(ROOT/'vision1.html').read_text()
+assert 'class="vp-optional-practice" id="classification-exit"' in page
+assert 'class="vp-optional-practice" id="position-photo-layout"' in page
+assert 'id="s11"' not in page and 'id="s12"' not in page
 class Links(HTMLParser):
     def handle_starttag(self,tag,attrs):
         a=dict(attrs)
