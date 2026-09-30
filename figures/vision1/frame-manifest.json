@@ -666,24 +666,24 @@
   {
     "id": "real-cls-value-scaling",
     "title": "One weight scales all 64 features in its value row",
-    "caption": "P63\u2019s CLS weight multiplies every coordinate of P63\u2019s value row. The result still has 64 features. Repeat for CLS itself and every patch. The numbers shown are rounded from the saved dog computation.",
-    "notes": "Does a\u2086\u2083 multiply one feature, or all 64 features?\nIt scales the entire P63 value row. This is one source\u2019s contribution to the CLS message, not the completed message.",
+    "caption": "P63 supplies this value row; CLS receives its weighted contribution. The same weight scales all 64 features. Add contributions from all sources to complete the CLS message. P63\u2019s own message uses P63\u2019s query.",
+    "notes": "Who receives this contribution: P63 or CLS?\nCLS is the receiver because we selected the CLS weight row. P63 is the source. The scalar scales all 64 features; the result is one contribution, before summing the other sources.",
     "section": "s03",
     "frame": 28
   },
   {
     "id": "real-cls-value-sum",
-    "title": "Add the weighted rows to make one CLS message",
-    "caption": "Multiply the CLS weight row by V: (1 \u00d7 197) \u00d7 (197 \u00d7 64) gives 1 \u00d7 64. Each output feature adds 197 weighted contributions. This is the message for one query in one head.",
-    "notes": "Why does the result have 64 coordinates, rather than 197?\nWe sum over sources. Each column of V contributes one feature to the output row. All 64 feature columns remain; each contains a sum over 197 weighted sources.",
+    "title": "Many source contributions become one message for CLS",
+    "caption": "Keep the CLS query fixed. Each source supplies a weighted value row. Add all 197 contributions to get one 64-feature message for CLS. The displayed four sources are examples; the other 193 also contribute.",
+    "notes": "Do these four contributions finish the message?\nNo. Include all 197 sources, including CLS itself. Add corresponding feature coordinates. The receiver remains CLS because every displayed weight comes from the CLS attention row.",
     "section": "s03",
     "frame": 29
   },
   {
     "id": "real-attention-values",
-    "title": "Repeat for every query: H has 197 message rows",
-    "caption": "Multiply A by V. For CLS, multiply each source value row by its attention weight, then add the 197 weighted rows. The result is one 64-feature message. Do this for every query to form H.",
-    "notes": "Where does P63\u2019s information enter the message to CLS?\nMatch column P63 of A with row P63 of V. Its weight multiplies all 64 coordinates of that source\u2019s value row. Add the contributions from all sources.",
+    "title": "The query determines which row receives the message",
+    "caption": "CLS and P63 use different weights over the same value rows, producing separate messages. For each receiver, join its three head messages, project to 192 features, then add to that receiver\u2019s input. The MLP follows.",
+    "notes": "Does the CLS message update P63 too?\nNo. P63\u2019s query produces P63\u2019s message. Each row combines its own three head messages, applies the shared output projection, and adds the result to its own 192-feature input row.",
     "section": "s03",
     "frame": 30
   },
@@ -857,59 +857,27 @@
   },
   {
     "id": "vision-topic-04",
-    "title": "Section 4 \u00b7 How the image label trains the model",
-    "caption": "Follow the loss backward through the same class head, blocks and input parameters. Separate computing gradients from applying an update.",
-    "notes": "How does a label improve the parameters?\nConnect the previous result to this new question. Keep the same image classifier as the reference.",
+    "title": "Section 4 \u00b7 Whole model walkthrough",
+    "caption": "One example: follow the full model to a label loss, then reverse the path to compute gradients and update the parameters.",
+    "notes": "How do forward and backward fit together?\nConnect the previous result to this new question. Keep the same image classifier as the reference.",
     "section": "s04",
     "frame": 1
   },
   {
     "id": "photo-label-loss",
-    "title": "Attach a label loss to the same dog prediction",
-    "caption": "For a labelled Newfoundland example, use the probability of Newfoundland to compute cross-entropy. This continues the saved forward pass. Training will use the loss to adjust parameters across many labelled images.",
-    "notes": "Where does the known label enter?\nAt the loss. The pixels, patch inputs and CLS never receive the answer as an input.",
+    "title": "Forward: follow the whole model to one label loss",
+    "caption": "The image passes through the complete classifier. The known label enters at the loss, after the model produces class scores. Cross-entropy measures how much probability the model assigned to that label. Parameters stay fixed during this forward pass.",
+    "notes": "Where does the known label enter?\nOnly at the loss. Follow the blue arrows through input embeddings, all 12 blocks and the final CLS readout. Then reveal the label and calculate one scalar loss.",
     "section": "s04",
     "frame": 2
   },
   {
-    "id": "photo-backward-head",
-    "title": "The class loss reaches the final CLS features",
-    "caption": "Cross-entropy gives a gradient for every class score. The linear head passes gradients to its weights, biases and the final CLS features. A negative gradient asks a small gradient-descent step to increase that score.",
-    "notes": "Does the loss only train the last layer?\nNo. The class head also passes a 192-coordinate gradient to the representation it reads.",
+    "id": "photo-optimizer-step",
+    "title": "Backward: compute gradients, then update the model",
+    "caption": "Reverse the forward dependencies to compute gradients for the trainable parameters. The optimizer uses these gradients to update them. The next forward pass uses the updated model. The image and its label remain fixed.",
+    "notes": "Does backward itself change the weights?\nNo. Backward computes gradients through the same model. The optimizer step applies the update. The learned input parameters include the patch projection, positions and starting CLS; the photograph and label are fixed data.",
     "section": "s04",
     "frame": 3
-  },
-  {
-    "id": "photo-backward-block",
-    "title": "Both residual paths carry the learning signal",
-    "caption": "Start at the final readout and reverse the 12 blocks. At each residual addition, both inputs receive the incoming gradient. The attention and MLP branches learn while the skip paths also carry gradients upstream.",
-    "notes": "Does the skip path stop the attention branch from learning?\nBoth paths receive gradients. When they reach the same earlier activation, add their contributions.",
-    "section": "s04",
-    "frame": 4
-  },
-  {
-    "id": "photo-backward-attention",
-    "title": "The loss teaches both what to read and what to send",
-    "caption": "A message depends on attention weights and source values, so gradients follow both routes. Reverse softmax and query\u2013key matching to reach Q and K. Reverse the value projection to reach V\u2019s input rows and weights.",
-    "notes": "How can patches learn when the classifier only reads CLS?\nCLS used the source keys and values. Reverse those dependencies into the patch representations; earlier blocks also let patch queries affect the final summary.",
-    "section": "s04",
-    "frame": 5
-  },
-  {
-    "id": "photo-backward-inputs",
-    "title": "Accumulate gradients into the shared input parameters",
-    "caption": "Every patch uses the same projection, so its parameter gradients add across patches and images. Each position row and the shared starting CLS also receives gradients. Ordinary training updates model parameters while keeping the input photographs fixed.",
-    "notes": "Do 196 patches require 196 separate patch layers?\nNo. Sum their contributions into one projection. The batch also shares these parameters.",
-    "section": "s04",
-    "frame": 6
-  },
-  {
-    "id": "photo-optimizer-step",
-    "title": "Only the optimizer changes the model parameters",
-    "caption": "For a simple SGD step, subtract learning rate times gradient. This class-bias example would raise the Newfoundland score. In full training, the optimizer updates every selected parameter using gradients from the batch.",
-    "notes": "Do weights change when we call backward?\nBackward fills gradients. The optimizer step changes weights; zero_grad clears previous accumulated gradients before the next batch.",
-    "section": "s04",
-    "frame": 7
   },
   {
     "id": "vision-topic-05",

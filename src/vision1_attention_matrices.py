@@ -245,29 +245,4 @@ def build_attention_matrices(b):
     from vision1_cls_value_message import build_cls_value_message
     result.update(build_cls_value_message(b, matrix))
 
-    body = t(35, 33, 'Keep the source order aligned: CLS, P1, …, P196 in both A and V.', 27)
-    body += t(221, 85, 'A · 197 × 197', 28, 'c-k', 'middle')
-    body += matrix(80, 141, 282, 192, tokens, tokens, 'c-k', row=0, col=3, cell=(0,3), entry='a', size=18)
-    body += t(405, 244, '×', 37)
-    body += t(601, 85, 'V · 197 × 64', 28, 'c-v', 'middle')
-    body += matrix(511, 141, 180, 192, tokens, features, 'c-v', row=3, size=18)
-    body += arrow(723, 237, 819, 237, 'c-v')
-    body += t(1000, 85, 'H · 197 × 64', 28, 'c-v', 'middle')
-    body += matrix(910, 141, 180, 192, tokens, features, 'c-v', row=0, size=18)
-    body += g(t(35, 384, 'h(CLS) = a(CLS, CLS) v(CLS) + … + a(CLS, P196) v(P196)', 26, 'c-v'), 1)
-    body += t(35, 432, 'Q and K choose the weights. V supplies the features carried into each message.', 28)
-    add('real-attention-values', 'Repeat for every query: H has 197 message rows', body,
-        'Multiply A by V. For CLS, multiply each source value row by its attention weight, then add the 197 weighted rows. The result is one 64-feature message. Do this for every query to form H.',
-        'Where does P63’s information enter the message to CLS?',
-        'Match column P63 of A with row P63 of V. Its weight multiplies all 64 coordinates of that source’s value row. Add the contributions from all sources.',
-        'A is (197,197), V is (197,64), and H=AV is (197,64). The contracted 197 dimension is the shared source axis. '
-        'The remaining row axis identifies the receiving query. The highlighted A[CLS,P63] coefficient multiplies '
-        'v(P63), and that weighted row contributes to h(CLS). Values come from the same normalized input matrix '
-        'through their own learned projection; they are not pixel crops or class probabilities. '
-        'Every query, including every patch query, receives a message. H is one head’s message matrix, not yet '
-        'the residual-updated sequence. Next join all three heads, project back to 192 features, and add the input E.',
-        '<p>A (197 × 197) × V (197 × 64) → <strong>H (197 × 64)</strong>.</p>'
-        '<p>A[CLS,P63] multiplies all 64 features in V[P63]. Add the weighted value rows from all 197 sources to get H[CLS].</p>'
-        '<p>Q and K determine the weights; V supplies the message features. Every query gets one 64-feature message.</p>'
-        '<p>Next: join the three heads, project to 192 features, and add E.</p>')
     return result

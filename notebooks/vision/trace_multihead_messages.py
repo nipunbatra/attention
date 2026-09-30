@@ -47,6 +47,14 @@ with torch.inference_mode():
         torch.testing.assert_close(value.reshape(-1)[:3], torch.tensor(reference['previews'][key]),
                                    atol=2e-5, rtol=1e-5)
     torch.testing.assert_close(model.cls_token, parameter_before, atol=0, rtol=0)
+    # Concrete source contributions for the lecture's one-head message example.
+    source_indices = [0, 1, 63, 196]
+    weighted_values = A[0,0,0,:,None] * v[0,0]
+    remaining_indices = [j for j in range(197) if j not in source_indices]
+    remaining_message = weighted_values[remaining_indices].sum(0)
+    torch.testing.assert_close(weighted_values.sum(0), H[0,0,0], atol=2e-6, rtol=1e-5)
+    torch.testing.assert_close(weighted_values[source_indices].sum(0) + remaining_message,
+                               H[0,0,0], atol=2e-6, rtol=1e-5)
 
 def row(tensor):
     return tensor.reshape(-1).tolist()
@@ -63,11 +71,23 @@ report = {
                'cls_message': row(H[:,h,0])} for h in range(3)],
     'cls_joined': row(joined[:,0]), 'cls_projected_update': row(update[:,0]),
     'cls_after_residual': row(U[:,0]),
+    'value_message_examples': {
+        'receiver': 'CLS', 'head': 1,
+        'sources': [{'token': 'CLS' if j == 0 else f'P{j}', 'index': j,
+                     'weight': float(A[0,0,0,j]), 'value': row(v[0,0,j]),
+                     'weighted_value': row(weighted_values[j])} for j in source_indices],
+        'remaining_source_count': len(remaining_indices),
+        'remaining_weighted_sum': row(remaining_message),
+        'receivers': [{'token': 'CLS' if i == 0 else f'P{i}', 'index': i,
+                       'weights': row(A[0,0,i]), 'message': row(H[0,0,i])}
+                      for i in [0, 63]],
+    },
     'verification': {'separate_projections_read_same_normalized_cls': True,
                      'concatenation_preserves_each_64_coordinate_segment': True,
                      'output_projection_matches_checkpoint_attention': True,
                      'previews_match_previous_dog_trace': True,
-                     'cls_parameter_unchanged': True, 'training_run': False},
+                     'cls_parameter_unchanged': True, 'training_run': False,
+                     'weighted_sources_sum_to_cls_message': True},
 }
 (ASSETS/'multihead-cls-trace.json').write_text(json.dumps(report, indent=2)+'\n')
 print(json.dumps({'verification': report['verification'], 'head_message_previews':

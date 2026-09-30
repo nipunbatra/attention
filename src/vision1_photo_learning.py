@@ -1,4 +1,4 @@
-"""Continue the saved photograph forward pass into loss and learning."""
+"""One whole-model example: forward to the loss, backward to the parameters."""
 import json
 import math
 from vision1_focus_common import Figures
@@ -10,98 +10,79 @@ def build(b):
     trace = json.loads((b['ASSETS']/'classifier-readout-trace.json').read_text())
     p = trace['selected_classes'][0]['probability']
     loss = -math.log(p)
-    provenance = ('The probability is from the saved dog forward pass. Treat this as an illustrative labelled training example; '
+    provenance = ('The probability is from the saved dog forward pass. Treat this as an illustrative labelled example; '
                   'we do not claim that this photo was in the checkpoint training set. No training is run. ')
+    source = ' <a href="figures/vision1/classifier-readout-trace.json">Saved prediction used in this example</a>.'
 
-    body = f.image(35,76,220,220,f.photo)+t(145,337,'Label: Newfoundland',23,'ink','middle')
-    body += arrow(264,182,329,182)+box(345,137,280,['Same saved forward pass',f'p(label) = {p:.5f}'],size=22)
-    body += g(arrow(632,182,704,182)+box(720,137,385,['Cross-entropy: −log p(label)',f'loss = {loss:.4f}'],'c-a',size=25),1)
-    body += g(t(345,306,'Known label enters here, after the prediction.',27,'c-a')
-              +t(345,367,'Higher probability for the correct class → lower loss.',25),1)
-    f.add('photo-label-loss','Attach a label loss to the same dog prediction',body,
-        'For a labelled Newfoundland example, use the probability of Newfoundland to compute cross-entropy. This continues the saved forward pass. Training will use the loss to adjust parameters across many labelled images.',
-        'Where does the known label enter?', 'At the loss. The pixels, patch inputs and CLS never receive the answer as an input.',
-        provenance+'The full softmax still contains 1,000 classes. The loss uses the probability assigned to the known class. '
-        'Use unrounded saved probabilities to compute the displayed loss. In PyTorch, pass logits directly to cross_entropy. '
-        'A small loss on one image does not measure generalization.')
+    def model_path(backward=False):
+        color = 'c-a' if backward else 'c-e'
+        out = box(35,105,132,['Image x','3 × 224 × 224'],'ink-2',h=90,size=18)
+        out += box(199,105,217,['Input embedding','197 × 192'],color,h=90,size=23)
+        out += box(448,105,239,['12 blocks','197 × 192'],color,h=90,size=25)
+        out += box(719,105,211,['Read CLS + head','192 → 1,000'],color,h=90,size=23)
+        out += box(962,105,163,['Label loss',f'L = {loss:.4f}'],'c-a',h=90,size=23)
+        if backward:
+            for right,left in [(958,935),(714,692),(443,421)]:
+                out += arrow(right,150,left,150,'c-a')
+            out += t(101,229,'Fixed data',23,'ink-2','middle')
+        else:
+            for left,right in [(173,191),(422,440),(693,711),(936,954)]:
+                out += arrow(left,150,right,150,'c-e')
+        return out
 
-    body = t(35,45,'First reverse the class head: 192 features → 1,000 scores.',29)
-    body += box(35,112,245,['Final CLS','192 features'],'c-q')+arrow(286,150,360,150)
-    body += box(375,112,270,['Linear(192, 1000)','weights + biases'])+arrow(651,150,715,150)
-    body += box(730,112,395,['Class scores → label loss','1,000 → 1'],'c-a')
-    body += g(arrow(890,269,535,269,'c-a')+arrow(515,269,158,269,'c-a'),1)
-    body += g(t(35,325,'Each score gets gradient: p(class) − 1[class is the label]',29,'c-a')
-              +t(35,383,f'Newfoundland: {p:.4f} − 1 = {p-1:.4f} → increase its score',28,'c-a'),1)
-    f.add('photo-backward-head','The class loss reaches the final CLS features',body,
-        'Cross-entropy gives a gradient for every class score. The linear head passes gradients to its weights, biases and the final CLS features. A negative gradient asks a small gradient-descent step to increase that score.',
-        'Does the loss only train the last layer?', 'No. The class head also passes a 192-coordinate gradient to the representation it reads.',
-        provenance+'For one image, dlogits = p − one_hot(y). If h is a row and logits=hW+b, '
-        'dW=hᵀdlogits, db=dlogits, and dh=dlogits Wᵀ. Final LayerNorm lies between the last block and this readout. '
-        'Only CLS is read directly, but earlier attention connects it to the patch rows. Other final patch rows do not receive a direct classifier gradient.')
+    body = t(35,38,'One labelled example → one prediction → one loss',30)
+    body += model_path()
+    body += line(199,215,930,215,'c-e')+t(564,249,'ViT classifier: scores = fθ(x)',27,'c-e','middle')
+    body += g(box(840,285,285,['Known label y','Newfoundland'],'c-a',h=72,size=24)
+              +arrow(1043,278,1043,204,'c-a'),1)
+    body += g(t(35,322,f'p(Newfoundland) = {p:.5f}',30,'c-e')
+              +t(35,369,f'L = −log p(y) = {loss:.4f}',31,'c-a'),1)
+    body += t(35,433,'Forward: compute the prediction and loss with the current parameters.',27)
+    f.add('photo-label-loss','Forward: follow the whole model to one label loss',body,
+        'The image passes through the complete classifier. The known label enters at the loss, after the model produces class scores. Cross-entropy measures how much probability the model assigned to that label. Parameters stay fixed during this forward pass.',
+        'Where does the known label enter?',
+        'Only at the loss. Follow the blue arrows through input embeddings, all 12 blocks and the final CLS readout. Then reveal the label and calculate one scalar loss.',
+        provenance+'The input embedding box includes the shared patch projection, learned starting CLS and positions. '
+        'We use their established shapes without repeating the patch construction. Each block includes attention, '
+        'its output projection and residual, then the MLP and its residual. Final LayerNorm is included in the CLS readout. '
+        'The class head produces 1,000 logits; the displayed probability comes from their softmax. '
+        'The label is Newfoundland in this example, so L=-log p(Newfoundland). '
+        'Use the unrounded stored probability to calculate the loss. In PyTorch, cross_entropy takes logits and the label directly. '
+        'This example illustrates the learning objective; one image’s loss does not establish generalization.'+source,
+        '<p>Image x (3 × 224 × 224) → input embeddings (197 × 192) → 12 Transformer blocks '
+        '(197 × 192) → final normalization, CLS readout and class head (1,000 scores) → label loss.</p>'
+        '<p>The known label y enters only at the loss. Here y = Newfoundland, p(y) = '
+        f'{p:.5f}, and L = −log p(y) = {loss:.4f}.</p>'
+        '<p>Forward computes activations and loss. Model parameters remain fixed during this calculation.</p>')
 
-    body = t(35,40,'Reverse the stack: block 12 → block 11 → … → block 1',28,'c-a')
-    body += box(35,135,115,'E')+arrow(157,173,192,173)
-    body += box(205,135,240,['LayerNorm','Attention'])+arrow(451,173,490,173)
-    body += box(505,135,66,'+')+arrow(577,173,625,173)
-    body += box(642,135,240,['LayerNorm','MLP'])+arrow(888,173,930,173)
-    body += box(945,135,66,'+')+arrow(1017,173,1050,173)+t(1085,184,'out',28,'c-e','middle')
-    body += line(92,131,92,80,'c-e')+line(92,80,538,80,'c-e')+arrow(538,80,538,131,'c-e')
-    body += line(602,173,602,80,'c-e')+line(602,80,978,80,'c-e')+arrow(978,80,978,131,'c-e')
-    body += g(arrow(1090,257,775,257,'c-a')+arrow(775,257,330,257,'c-a')+arrow(330,257,80,257,'c-a'),1)
-    body += g(t(35,337,'At +, the incoming gradient travels down both input paths.',28,'c-a')
-              +t(35,398,'Reverse each learned branch; add gradients where paths meet.',28),1)
-    f.add('photo-backward-block','Both residual paths carry the learning signal',body,
-        'Start at the final readout and reverse the 12 blocks. At each residual addition, both inputs receive the incoming gradient. The attention and MLP branches learn while the skip paths also carry gradients upstream.',
-        'Does the skip path stop the attention branch from learning?', 'Both paths receive gradients. When they reach the same earlier activation, add their contributions.',
-        'Forward is U=E+Attention(LN(E)), then Y=U+MLP(LN(U)). Reverse Y first through the MLP and its residual, '
-        'then reverse U through attention and its residual. Backward through the MLP follows the reverse dependency order of '
-        'Linear → GELU → Linear. LayerNorm is differentiable; its scale and bias also receive gradients. '
-        'Every block has separate parameters. The shapes remain 197×192 for block input and output activations and their gradients.')
-
-    body = t(35,40,'Zoom into one head and the CLS message: h = a V',30,'c-v')
-    body += box(780,95,340,['Gradient arriving at h','1 × 64'],'c-a')
-    body += arrow(774,133,575,133,'c-a')+box(340,95,220,['Weighted sum','a V'],'c-v')
-    body += g(arrow(400,177,240,256,'c-a')+box(35,271,390,['Value route','dV = aᵀ dh  ·  197 × 64'],'c-v',size=24),1)
-    body += g(arrow(500,177,765,256,'c-a')+box(565,271,555,['Weight route: da = dh Vᵀ','softmax → scores → Q and K'],'c-q',size=24),1)
-    body += g(t(35,412,'Patch rows learn because their keys and values helped CLS make the prediction.',26),2)
-    f.add('photo-backward-attention','The loss teaches both what to read and what to send',body,
-        'A message depends on attention weights and source values, so gradients follow both routes. Reverse softmax and query–key matching to reach Q and K. Reverse the value projection to reach V’s input rows and weights.',
-        'How can patches learn when the classifier only reads CLS?', 'CLS used the source keys and values. Reverse those dependencies into the patch representations; earlier blocks also let patch queries affect the final summary.',
-        'One CLS query has a with shape 1×197, V with shape 197×64 and h=aV with shape 1×64. '
-        'With incoming gradient dh, dV=aᵀdh and da=dhVᵀ. For s=qKᵀ/8, '
-        'ds=a⊙(da−sum(da⊙a)), dq=dsK/8, dK=dsᵀq/8. These are row-vector formulas. '
-        'All query rows and all three heads follow the same chain rule, accumulating contributions. '
-        'For any projection XW+b, dW=XᵀdY and dX=dYWᵀ. Reverse the output projection and split concatenated features by head before this calculation. '
-        'Gradients for patch queries in the last block can be zero if their output rows never reach the CLS readout; earlier blocks can use those rows.')
-
-    body = t(35,40,'After reversing block 1, gradients reach the prepared input rows.',27)
-    for j,(name,c) in enumerate([('P1','c-e'),('P2','c-e'),('…','ink-2'),('P196','c-e')]):
-        x=35+j*178
-        body += box(x,90,145,[name,'row gradient'],c,size=20)
-        body += arrow(x+72,174,372,258,'c-a')
-    body += box(182,273,390,['Shared patch layer','sum all patch contributions'],'c-a',size=24)
-    body += box(805,90,300,['Position table','197 × 192 parameters'],'c-q',size=24)
-    body += box(805,273,300,['Starting CLS','192 parameters'],'c-q',size=24)
-    body += g(t(35,413,'One shared patch layer; 197 position rows; one starting CLS. The pixels stay fixed.',25),1)
-    f.add('photo-backward-inputs','Accumulate gradients into the shared input parameters',body,
-        'Every patch uses the same projection, so its parameter gradients add across patches and images. Each position row and the shared starting CLS also receives gradients. Ordinary training updates model parameters while keeping the input photographs fixed.',
-        'Do 196 patches require 196 separate patch layers?', 'No. Sum their contributions into one projection. The batch also shares these parameters.',
-        'For patch rows e_i=x_i W_patch+b_patch+p_i, dW_patch=sum_i x_iᵀ de_i and db_patch=sum_i de_i. '
-        'Each p_i receives de_i. The starting CLS receives the gradient of row zero, as does its position p_0. '
-        'For a mean-reduced batch loss, these gradients include the batch averaging factor. Gradients can be computed with respect to pixels, '
-        'but the optimizer in this classifier training procedure is given model parameters, not image pixels.')
-
-    body = t(35,47,'One illustrative SGD update of a class bias',29)
-    body += box(35,122,270,['Stored bias b','Newfoundland'])+arrow(313,160,377,160)
-    body += box(395,122,325,[f'Gradient = {p-1:.4f}','learning rate = 0.1'],'c-a')+arrow(730,160,792,160)
-    body += box(810,122,315,['New bias',f'b + {0.1*(1-p):.5f}'],'c-e')
-    body += g(t(35,285,'backward(): compute gradients',31,'c-a')
-              +t(35,346,'step(): update trainable parameters using those gradients',29,'c-e')
-              +t(35,410,'Then run a new forward pass. The next activations will be different.',26),1)
-    f.add('photo-optimizer-step','Only the optimizer changes the model parameters',body,
-        'For a simple SGD step, subtract learning rate times gradient. This class-bias example would raise the Newfoundland score. In full training, the optimizer updates every selected parameter using gradients from the batch.',
-        'Do weights change when we call backward?', 'Backward fills gradients. The optimizer step changes weights; zero_grad clears previous accumulated gradients before the next batch.',
-        provenance+'The displayed arithmetic uses db=p(label)−1 and learning rate 0.1. It describes one SGD coordinate update, '
-        'not an executed optimizer step or a full-model training result. Adam-like optimizers also maintain state, so their exact update formula differs. '
-        'An improvement on a training example is not evidence of test accuracy.')
+    body = t(35,38,'Same model, reverse direction: loss → parameter gradients',29,'c-a')
+    body += model_path(backward=True)
+    body += t(199,244,'Gradients reach the head, all blocks, and the learned input parameters.',25,'c-a')
+    body += g(box(35,295,310,['Compute gradients','θ.grad = ∂L/∂θ'],'c-a',h=84,size=28)
+              +arrow(351,337,389,337,'c-a')
+              +box(397,295,350,['Optimizer step','θ ← θ − η ∇θ L'],'c-e',h=84,size=28)
+              +arrow(754,337,795,337,'c-e')
+              +box(803,295,322,['Next forward pass','use updated parameters'],'c-e',h=84,size=24),1)
+    body += g(line(199,181,181,181,'c-a')+line(181,181,181,267,'c-a')
+              +line(181,267,190,267,'c-a')+arrow(190,267,190,288,'c-a'),1)
+    body += t(35,433,'backward() computes gradients; step() changes the parameters.',29)
+    f.add('photo-optimizer-step','Backward: compute gradients, then update the model',body,
+        'Reverse the forward dependencies to compute gradients for the trainable parameters. The optimizer uses these gradients to update them. The next forward pass uses the updated model. The image and its label remain fixed.',
+        'Does backward itself change the weights?',
+        'No. Backward computes gradients through the same model. The optimizer step applies the update. The learned input parameters include the patch projection, positions and starting CLS; the photograph and label are fixed data.',
+        provenance+'This is the backward pass for the same scalar cross-entropy loss shown on the preceding slide. '
+        'Start with dlogits=p−one_hot(y). The head receives parameter gradients and passes a gradient to final CLS. '
+        'Reverse final normalization and the 12 blocks. Residual additions send gradients along both paths, '
+        'and shared inputs accumulate their contributions. Attention connects the CLS loss to patch keys and values; '
+        'earlier patch updates can affect later CLS states. Input gradients reach the shared patch projection, '
+        'the position table and starting CLS. The optimizer is given model parameters, not image pixels. '
+        'The diagram summarizes these dependencies without opening each block again. '
+        'The displayed update is ordinary SGD, with learning rate η; other optimizers use the same gradients '
+        'with their own update rules. In a training loop, zero_grad clears accumulated gradients before backward, '
+        'and step changes the selected parameters. The parameter update is illustrative, not an executed training result.'+source,
+        '<p>Label loss → class head and final CLS → blocks 12 through 1 → learned input parameters.</p>'
+        '<p>Gradients reach the head, attention and MLP weights, normalization parameters, patch projection, '
+        'position table and starting CLS. Input image and label remain fixed.</p>'
+        '<p><strong>backward():</strong> compute θ.grad. <strong>step():</strong> update parameters. '
+        'For SGD, θ ← θ − η∇θL. Then run a new forward pass.</p>')
     return list(f.frames.values())

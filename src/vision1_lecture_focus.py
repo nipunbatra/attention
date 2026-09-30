@@ -90,10 +90,10 @@ def consolidate(b, sections):
     from vision1_cnn_comparison import build as comparison
     from vision1_photo_code import build as code
     new=[
-        ('How the image label trains the model',learning(b),
-         'The dog has passed through the whole classifier.',
-         'How does a label improve the parameters?',
-         'Follow the loss backward through the same class head, blocks and input parameters. Separate computing gradients from applying an update.'),
+        ('Whole model walkthrough',learning(b),
+         'We have opened each part of the classifier.',
+         'How do forward and backward fit together?',
+         'One example: follow the full model to a label loss, then reverse the path to compute gradients and update the parameters.'),
         ('CNNs, ViTs and inductive bias',comparison(b,existing),
          'Attention lets patches exchange information.',
          'Which assumptions about images does a CNN build in?',

@@ -18,7 +18,7 @@ for h in trace['gradients']['heads']:
     np.testing.assert_allclose(np.array(h['dS']).sum(axis=1),0,atol=1e-12)
 assert trace['single_update']['loss_after']<trace['single_update']['loss_before']
 manifest=json.loads((ROOT/'figures/vision1/frame-manifest.json').read_text())
-assert len(manifest)==161 and len({x['id'] for x in manifest})==161
+assert len(manifest)==157 and len({x['id'] for x in manifest})==157
 ids=[x['id'] for x in manifest]
 input_order=['patch-projection-parameters','vision-topic-03','position-where','position-table','real-patch-position','position-learning',
              'cls-detour','real-cls-purpose','cls-parameter-origin','cls-parameter-learning',
@@ -36,13 +36,14 @@ assert all(x['section']=='s11' for x in manifest if x['id'].startswith('position
 assert all(len(x['caption'].split())<=40 and '\n' in x['notes'] for x in manifest)
 required={'task-side-by-side','cls-shared-start','cls-without','heads-visual-roles',
           'patch-filter-patterns','photo-key-value-check','photo-two-softmaxes',
-          'photo-label-loss','photo-backward-head','photo-backward-block',
-          'photo-backward-attention','photo-backward-inputs','photo-optimizer-step',
+          'photo-label-loss','photo-optimizer-step',
           'cnn-receptive-field','cnn-inductive-bias','cnn-vit-design',
           'code-photo-input','code-photo-conv','code-photo-tokens','code-photo-attention',
           'code-photo-block','code-photo-readout','code-photo-training',
           'pets-evaluation','classification-exit'}
 assert required<={x['id'] for x in manifest}
+assert [x['id'] for x in manifest if x['section']=='s04']==[
+    'vision-topic-04','photo-label-loss','photo-optimizer-step']
 assert not {'s02-small','s03-query','s04-probability','heads-independent','code-patch','code-model'} & {x['id'] for x in manifest}
 assert sorted({x['section'] for x in manifest}) == [f's{i:02}' for i in range(1,13)]
 assert not {'find-animal','image-caption','photo-search','learning-curves','training-data'}&{x['id'] for x in manifest}
@@ -68,6 +69,21 @@ np.testing.assert_allclose(heads['heads'][0]['cls_message'][:3],saved['previews'
 assert all(not np.allclose(heads['heads'][i]['cls_message'],heads['heads'][j]['cls_message'])
            for i in range(3) for j in range(i+1,3))
 assert heads['verification']['training_run'] is False
+examples=heads['value_message_examples']
+assert examples['receiver']=='CLS' and examples['head']==1
+assert [x['index'] for x in examples['sources']]==[0,1,63,196]
+assert examples['remaining_source_count']==193
+for item in examples['sources']:
+    assert len(item['value'])==len(item['weighted_value'])==64
+    np.testing.assert_allclose(item['weight'],heads['heads'][0]['cls_weights'][item['index']],atol=1e-8)
+    np.testing.assert_allclose(np.array(item['value'])*item['weight'],item['weighted_value'],atol=1e-7)
+np.testing.assert_allclose(np.sum([s['weighted_value'] for s in examples['sources']],axis=0)
+    +examples['remaining_weighted_sum'],heads['heads'][0]['cls_message'],atol=2e-6)
+for receiver in examples['receivers']:
+    assert len(receiver['weights'])==197 and len(receiver['message'])==64
+    np.testing.assert_allclose(sum(receiver['weights']),1,atol=1e-6)
+assert not np.allclose(examples['receivers'][0]['weights'],examples['receivers'][1]['weights'])
+assert not np.allclose(examples['receivers'][0]['message'],examples['receivers'][1]['message'])
 np.testing.assert_allclose(np.array(saved['previews']['cls_parameter'])+saved['previews']['cls_position'],
                            saved['previews']['cls_input'],atol=1e-7)
 for name in ['cls_parameter','cls_position','cls_input']:
@@ -131,6 +147,8 @@ report={'teaching_frames':len(manifest),'new_gradient_coordinates_checked':trace
         'cls_origin_and_saved_parameter_previews_verified':True,
         'two_images_share_cls_input_but_have_different_updates':True,
         'multihead_messages_concatenation_and_residual_verified':True,
+        'source_contributions_and_receiver_messages_verified':True,
+        'whole_model_walkthrough_two_content_frames':True,
         'mlp_gelu_and_second_residual_previews_verified':True,
         'classifier_weighted_sums_and_all_class_softmax_verified':True,
         'single_query_weight_update':trace['single_update']}

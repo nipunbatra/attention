@@ -27,7 +27,7 @@
     },
     {
       "id": "s04",
-      "title": "How the image label trains the model",
+      "title": "Whole model walkthrough",
       "lit": ""
     },
     {
@@ -86,7 +86,7 @@
     },
     {
       "section": "s04",
-      "label": "How the image label trains the model"
+      "label": "Whole model walkthrough"
     },
     {
       "section": "s05",
