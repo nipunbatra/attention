@@ -67,12 +67,14 @@ class ImageClassifier(nn.Module):
 
     def embed(self, x):
         # slide:embed
-        B = x.shape[0]
-        grid = self.patch(x)                 # B, 192, 14, 14
-        rows = grid.flatten(2).transpose(1, 2)
-        cls = self.cls.expand(B, -1, -1)
-        rows = torch.cat([cls, rows], dim=1)
-        return rows + self.pos
+        # x: (B, 3, 224, 224)
+        B = x.shape[0]                          # integer: number of images
+        grid = self.patch(x)                    # (B, 192, 14, 14)
+        rows = grid.flatten(2)                  # (B, 192, 196)
+        rows = rows.transpose(1, 2)             # (B, 196, 192)
+        cls = self.cls.expand(B, -1, -1)        # (B, 1, 192)
+        rows = torch.cat([cls, rows], dim=1)    # (B, 197, 192)
+        return rows + self.pos                  # (B, 197, 192)
         # endslide
 
     def forward(self, x):

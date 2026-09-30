@@ -13,8 +13,9 @@ def build(b):
         return dedent(re.search(r'# slide:'+name+r'\n(.*?)\s*# endslide',source,re.S).group(1)).strip()
     link='<a href="notebooks/vision/vit_image_classifier.py">Complete teaching implementation</a>.'
     premise='The code keeps the lecture architecture: patch size 16, D=192, three 64-wide heads, 12 blocks and 1,000 outputs. It is randomly initialized; the saved dog prediction uses a separate pretrained checkpoint. '
-    def add(key,title,code,diagram,caption,question,point,prose=''):
-        body=f.code(code,size=21,spacing=34)+diagram
+    def add(key,title,code,diagram,caption,question,point,prose='',wide=False):
+        body=(f.code(code,x=35,y=45,width=1090,size=22,spacing=30) if wide
+              else f.code(code,size=21,spacing=34))+diagram
         mobile_code=code
         if key in ['code-photo-block','code-photo-readout']:
             init,forward=code.split('\n\n',1)
@@ -39,15 +40,17 @@ def build(b):
     f.frames.update(patch_projection(b))
 
     code=snippet('embed')
-    diagram=box(770,18,355,['Convolution output','B × 192 × 14 × 14'])+arrow(947,100,947,135)
-    diagram+=box(770,149,355,['flatten spatial; transpose','B × 196 × 192'])+arrow(947,230,947,268)
-    diagram+=box(770,281,355,['prepend CLS; add position','B × 197 × 192'],'c-q',size=23)
-    code+='\n\n# cls parameter: (1, 1, 192)\n# pos parameter: (1, 197, 192)'
+    diagram=box(35,382,300,'B × 192 × 14 × 14',h=48,size=25)+arrow(347,406,418,406)
+    diagram+=box(430,382,280,'B × 196 × 192',h=48,size=25)+arrow(722,406,793,406)
+    diagram+=box(805,382,310,'B × 197 × 192','c-q',h=48,size=25)
+    code+='\n\n# self.cls: (1, 1, 192)   - shared starting row\n# self.pos: (1, 197, 192) - broadcasts across the B images'
     add('code-photo-tokens','Turn the feature grid into the 197 input rows',code,diagram,
         'Flatten the two grid axes, then put features last. Prepend the shared CLS row and add the learned position table. Broadcasting reuses these parameters across images; every image keeps its own activations.',
         'Which operation increases the row count from 196 to 197?', 'Concatenating CLS along dim=1 adds one row. Adding positions changes values without changing the shape.',
         'The complete implementation registers cls and pos as nn.Parameter tensors. flatten(2) combines only the two spatial axes. '
-        'It does not flatten the batch into the token axis. transpose(1,2) changes B×192×196 into B×196×192.')
+        'It does not flatten the batch into the token axis. transpose(1,2) changes B×192×196 into B×196×192. '
+        'Every line now includes its output shape. B is an integer, expand keeps the two trailing dimensions '
+        'because they are -1, and adding the position table broadcasts its leading size-1 axis across the batch.',wide=True)
 
     diagram=box(770,22,355,['Q, K, V — each','B × 3 × 197 × 64'],'c-q')+arrow(947,104,947,132)
     diagram+=box(770,144,355,['scores and weights','B × 3 × 197 × 197'],'c-k')+arrow(947,226,947,254)
