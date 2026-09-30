@@ -29,13 +29,13 @@ class Figures:
                 '<text ', '<text xml:space="preserve" font-family="SFMono-Regular,Consolas,monospace" ', 1)
         return out
 
-    def add(self, key, title, body, caption, question, point, prose='', mobile=''):
+    def add(self, key, title, body, caption, question, point, prose='', mobile='', *, height=440):
         notes = question + '\n' + point
         for item in self.b['FRAMES']:
             if item['id'] == key:
                 item.update(title=title, caption=caption, notes=notes)
         if not mobile:
             mobile = '<p>'+escape(caption)+'</p><p>'+escape(point)+'</p>'
-        markup = self.b['frame'](key, title, body, caption, notes, prose, mobile)
+        markup = self.b['frame'](key, title, body, caption, notes, prose, mobile, height=height)
         self.frames[key] = markup
         return markup

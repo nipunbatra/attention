@@ -83,13 +83,13 @@ def source_icon(x,y,j):
     return pixels(x,y,[R['patches'][j-1][:2],R['patches'][j-1][2:]],18)+t(x+48,y+27,f'P{j}',25)
 
 
-def svg(body,label):
+def svg(body,label,height=440):
     colors='--ink:#14171F;--ink-2:#4A5160;--ink-3:#6B7280;--line:#D9DDE5;--card:#FFFFFF;--transparent:transparent;--c-e:#245EDB;--t-e:#E4ECFF;--c-q:#8B2CDE;--t-q:#F1E5FC;--c-k:#AA4E08;--c-v:#0F766E;--c-a:#BE123C;--c-d:#147737;'
-    return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 440" role="img" aria-label="{escape(label)}" style="font-family:Avenir Next,Segoe UI,sans-serif;{colors}"><title>{escape(label)}</title>{body}</svg>'
+    return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 {height}" role="img" aria-label="{escape(label)}" style="font-family:Avenir Next,Segoe UI,sans-serif;{colors}"><title>{escape(label)}</title>{body}</svg>'
 
 
-def frame(key,title,body,caption,notes,companion='',mobile=''):
-    markup=svg(body,title)
+def frame(key,title,body,caption,notes,companion='',mobile='',*,height=440):
+    markup=svg(body,title,height)
     # Standalone figures also preserve the original photograph for inspection.
     (ASSETS/(key+'.svg')).write_text(markup)
     FRAMES.append({'id':key,'title':title,'caption':caption,'notes':notes})

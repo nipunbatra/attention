@@ -2,6 +2,7 @@
 import json
 import math
 from vision1_focus_common import Figures
+from vision1_model_recap import model_recap
 
 
 def build(b):
@@ -30,30 +31,41 @@ def build(b):
                 out += arrow(left,150,right,150,'c-e')
         return out
 
-    body = t(35,38,'One labelled example → one prediction → one loss',30)
-    body += model_path()
-    body += line(199,215,930,215,'c-e')+t(564,249,'ViT classifier: scores = fθ(x)',27,'c-e','middle')
-    body += g(box(840,285,285,['Known label y','Newfoundland'],'c-a',h=72,size=24)
-              +arrow(1043,278,1043,204,'c-a'),1)
-    body += g(t(35,322,f'p(Newfoundland) = {p:.5f}',30,'c-e')
-              +t(35,369,f'L = −log p(y) = {loss:.4f}',31,'c-a'),1)
-    body += t(35,433,'Forward: compute the prediction and loss with the current parameters.',27)
-    f.add('photo-label-loss','Forward: follow the whole model to one label loss',body,
-        'The image passes through the complete classifier. The known label enters at the loss, after the model produces class scores. Cross-entropy measures how much probability the model assigned to that label. Parameters stay fixed during this forward pass.',
-        'Where does the known label enter?',
-        'Only at the loss. Follow the blue arrows through input embeddings, all 12 blocks and the final CLS readout. Then reveal the label and calculate one scalar loss.',
-        provenance+'The input embedding box includes the shared patch projection, learned starting CLS and positions. '
-        'We use their established shapes without repeating the patch construction. Each block includes attention, '
-        'its output projection and residual, then the MLP and its residual. Final LayerNorm is included in the CLS readout. '
+    body = model_recap(b, p, loss)
+    f.add('photo-label-loss','The whole Vision Transformer in one figure',body,
+        'Follow the numbered path. The expanded block shows three parallel heads, both residual additions, and the MLP. All 12 blocks keep every row. Final CLS feeds the classifier; the known label enters only at the loss.',
+        'Can you trace one image through every operation without skipping a box?',
+        'Start at pixels, then patch projection, CLS and positions. Trace all 12 blocks. Open block 1: normalize, three parallel Q/K/V → scores → row softmax → AV lanes, concatenate, output projection, add the original E. Normalize U, apply Linear → GELU → Linear, and add U. Continue through the remaining distinct blocks, final normalization, final CLS and the class head. Softmax gives the prediction; logits and the known label give cross-entropy.',
+        provenance+'This complete reference diagram uses the parallel head lanes of the earlier TinyStories map. '
+        'The single-image batch axis is omitted. Flatten each 3×16×16 patch to 768 numbers; the shared affine '
+        'projection produces 196 rows of width 192. Prepend the learned 1×192 starting CLS, then add '
+        'the learned 197×192 position table. All twelve block instances are shown explicitly. '
+        'The large panel is an expanded view of block 1, not an extra block inserted into the sequence. '
+        'Each block has its own learned weights and recomputes activations from its input. '
+        'LN means LayerNorm. With X=LN₁(E), each of the three heads forms its own Q, K and V, each 197×64. '
+        'Scores QKᵀ/√64 and attention weights A are 197×197; softmax runs across the source-key axis. '
+        'The dashed V route bypasses scores and softmax. AV returns a 197×64 message matrix per head. '
+        'Concatenate the three outputs to 197×192, apply the affine output projection, then add E to get U. '
+        'The second sublayer applies LN₂(U), Linear(192,768), GELU and Linear(768,192), then adds U. '
+        'Both linear layers have biases. The MLP is shared across rows and does not mix rows. '
+        'Both residual paths preserve their own sublayer input. Every block returns all 197 rows. '
+        'After block 12, apply final LayerNorm and select the CLS row. '
         'The class head produces 1,000 logits; the displayed probability comes from their softmax. '
         'The label is Newfoundland in this example, so L=-log p(Newfoundland). '
         'Use the unrounded stored probability to calculate the loss. In PyTorch, cross_entropy takes logits and the label directly. '
-        'This example illustrates the learning objective; one image’s loss does not establish generalization.'+source,
-        '<p>Image x (3 × 224 × 224) → input embeddings (197 × 192) → 12 Transformer blocks '
-        '(197 × 192) → final normalization, CLS readout and class head (1,000 scores) → label loss.</p>'
+        'This example illustrates the learning objective; one image’s loss does not establish generalization.'+source
+        +' <a href="figures/vision1/photo-label-loss.svg">Open the complete vector diagram</a>.',
+        '<ol><li>RGB image (3 × 224 × 224) → 196 flattened patches (196 × 768) → shared projection (196 × 192).</li>'
+        '<li>Prepend learned CLS and add learned positions: E⁰ is 197 × 192.</li>'
+        '<li>Pass all rows through blocks 1–12. Each has separate learned weights.</li>'
+        '<li>Inside each block: LN₁ → three parallel attention heads. Each forms Q, K, V (197 × 64), '
+        'QKᵀ/√64 (197 × 197), row softmax, then AV (197 × 64). Join the heads, project to width 192, and add E to get U.</li>'
+        '<li>LN₂(U) → Linear(192,768) → GELU → Linear(768,192) → add U.</li>'
+        '<li>After block 12: final LayerNorm → select CLS (1 × 192) → class head (1,000 logits) → softmax → top label.</li></ol>'
         '<p>The known label y enters only at the loss. Here y = Newfoundland, p(y) = '
         f'{p:.5f}, and L = −log p(y) = {loss:.4f}.</p>'
-        '<p>Forward computes activations and loss. Model parameters remain fixed during this calculation.</p>')
+        '<p>Forward computes activations and loss. Model parameters remain fixed during this calculation.</p>'
+        '<p><a href="figures/vision1/photo-label-loss.svg">Open the complete vector diagram</a>.</p>', height=582)
 
     body = t(35,38,'Same model, reverse direction: loss → parameter gradients',29,'c-a')
     body += model_path(backward=True)

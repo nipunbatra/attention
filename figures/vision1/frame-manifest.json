@@ -881,9 +881,9 @@
   },
   {
     "id": "photo-label-loss",
-    "title": "Forward: follow the whole model to one label loss",
-    "caption": "The image passes through the complete classifier. The known label enters at the loss, after the model produces class scores. Cross-entropy measures how much probability the model assigned to that label. Parameters stay fixed during this forward pass.",
-    "notes": "Where does the known label enter?\nOnly at the loss. Follow the blue arrows through input embeddings, all 12 blocks and the final CLS readout. Then reveal the label and calculate one scalar loss.",
+    "title": "The whole Vision Transformer in one figure",
+    "caption": "Follow the numbered path. The expanded block shows three parallel heads, both residual additions, and the MLP. All 12 blocks keep every row. Final CLS feeds the classifier; the known label enters only at the loss.",
+    "notes": "Can you trace one image through every operation without skipping a box?\nStart at pixels, then patch projection, CLS and positions. Trace all 12 blocks. Open block 1: normalize, three parallel Q/K/V \u2192 scores \u2192 row softmax \u2192 AV lanes, concatenate, output projection, add the original E. Normalize U, apply Linear \u2192 GELU \u2192 Linear, and add U. Continue through the remaining distinct blocks, final normalization, final CLS and the class head. Softmax gives the prediction; logits and the known label give cross-entropy.",
     "section": "s04",
     "frame": 2
   },
