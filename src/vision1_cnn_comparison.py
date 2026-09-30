@@ -1,4 +1,4 @@
-"""Three table-led, visual comparisons of conventional CNNs and a plain ViT."""
+"""Four visual comparisons of conventional CNNs and a plain ViT."""
 from vision1_focus_common import Figures
 
 
@@ -41,41 +41,105 @@ def build(b):
               mobile_rows(headers, flat_rows)+'<p>'+caption+'</p>')
         frames.append(f.frames[key])
 
-    # The photographs carry the comparison; the short rows name what students see.
-    body = t(35, 29, 'Same photograph. Same goal: one image label.', 29)
-    body += header(51)
-    for x, w in [(35, 265), (300, 410), (710, 415)]:
-        body += f.rect(x, 95, w, 157, 'line', 'transparent', 0)
-    body += cell_text(53, 95, ['How context', 'is gathered'], 157, 'ink-2', 26)
-    body += f.image(322, 103, 140, 140, f.photo)
-    for size in [26, 58, 94]:
-        body += f.rect(392-size/2, 168-size/2, size, size, 'c-v', 'transparent', 0)
-    body += cell_text(484, 95, ['Nearby first', '↓', 'Wider context'], 157, 'c-v', 25)
-    body += f.image(731, 103, 140, 140, f.photo)
-    for j in range(1, 14):
-        body += line(731+j*10, 103, 731+j*10, 243, 'card', .5)
-        body += line(731, 103+j*10, 871, 103+j*10, 'card', .5)
-    body += f.rect(791, 143, 10, 10, 'c-q', 'transparent', 0)
-    for x, y in [(746, 118), (856, 128), (746, 228), (856, 228)]:
-        body += arrow(x, y, 796, 148, 'c-q')
-    body += cell_text(892, 95, ['Connect near', 'and distant', 'patches'], 157, 'c-q', 25)
+    # Two teaching beats per frame give each comparison point its own pause.
+    # The drawings show permitted routes, not attention measured from this photo.
+    def column_titles(y):
+        return (t(35, y, 'CNN · local filters', 29, 'c-v', weight=600)
+                +t(620, y, 'ViT · global attention', 29, 'c-q', weight=600))
+
+    body = t(35, 29, '1 · Gather context: which inputs can interact in one layer?', 29)
+    body += column_titles(77)
+    body += f.image(35, 96, 170, 170, f.photo)
+    body += f.rect(97, 151, 51, 51, 'c-v', 'transparent', 0)
+    body += f.rect(114, 168, 17, 17, 'c-v', 'transparent', 0)
+    body += arrow(155, 177, 231, 177, 'c-v')
+    body += t(248, 137, 'One local neighbourhood', 26, 'c-v')
+    body += t(248, 174, 'feeds one output location.', 26, 'c-v')
+    body += t(248, 227, 'Start with nearby clues.', 25, 'ink-2')
+    body += f.image(620, 96, 170, 170, f.photo)
+    for j in range(1,14):
+        body += line(620+j*170/14,96,620+j*170/14,266,'card',.5)
+        body += line(620,96+j*170/14,790,96+j*170/14,'card',.5)
+    body += f.rect(692,144,13,13,'c-q','transparent',0)
+    for x,y in [(635,110),(777,116),(631,252),(777,250)]:
+        body += arrow(x,y,699,151,'c-q')
+    body += t(816, 137, 'One query can use', 26, 'c-q')
+    body += t(816, 174, 'every source patch.', 26, 'c-q')
+    body += t(816, 227, 'Near and far are available.', 25, 'ink-2')
+    mixing = line(35,286,1125,286,'line')
+    mixing += t(35,323,'2 · Mix information: what determines each contribution?',29)
+    mixing += box(35,348,182,['Learned filter'],'c-v',h=50,size=24)
+    mixing += arrow(226,373,258,373,'c-v')
+    mixing += t(274,365,'Reuse the same weights',25,'c-v')
+    mixing += t(274,400,'at every image location.',25,'c-v')
+    mixing += box(620,348,174,['Query + keys'],'c-q',h=50,size=24)
+    mixing += arrow(803,373,835,373,'c-q')
+    mixing += t(851,365,'Compute weights',25,'c-q')
+    mixing += t(851,400,'for this query + image.',25,'c-q')
+    mixing += t(35,438,'Both learn parameters. ViT recomputes attention weights from the current features.',25,'ink-2')
+    body += f.g(mixing,1)
     rows = [
-        ['Mix information', 'Shared filters on neighbours', 'Weights depend on the image'],
-        ['Use a wider view', 'Combine regions through layers', 'Mix distant patches in one block'],
-        ['Read out a label', 'Often pool → class head', 'CLS (here) → class head'],
+        ['1. Gather context', 'One output uses a local neighbourhood.', 'One query can use near and distant patches.'],
+        ['2. Mix information', 'The learned filter is reused at every location.', 'Query–key matches determine the source weights for this input.'],
     ]
-    for j, values in enumerate(rows):
-        body += row(252+j*49, values, 49)
-    body += t(35, 434, 'Both can learn local detail and whole-image context.', 29)
     add('cnn-receptive-field', 'Two ways to build an image representation', body,
-        'A CNN builds a wider view through layers of local filters. Global ViT attention lets distant patches interact within a block. Both can use the whole image and produce class scores. The connections shown are schematic.',
-        'Can both models use clues from distant parts of the dog?',
-        'Yes. Follow the growing CNN windows and the ViT arrows. The difference is the route information takes, not whether a model can ever see the whole image.',
+        'First compare the available connections. Then press Next to compare the mixing weights. CNN filters stay fixed during a forward pass. ViT projection parameters also stay fixed, while attention weights are computed from the current query and source features.',
+        'What is shared, and what changes when we show a new image?',
+        'Pause on point 1: a conventional convolution reads local neighbours; global attention can connect distant patches immediately. Reveal point 2: both models keep their learned parameters fixed during inference. A CNN reuses its learned kernel across locations; ViT computes attention coefficients from query–key matches. These coefficients depend on the input and receiver. They are not the stored projection weights.',
         'This compares a conventional CNN with the plain global-attention ViT in this lecture. '
-        'The CNN windows illustrate growing context, not exact pixel-sized kernels. The ViT arrows show '
-        'permitted connections, not measured attention strengths. CNN readouts often pool spatial features; '
-        'this ViT reads CLS. Other readouts and hybrid architectures exist. '+vit_source+'.',
-        ['Question', 'CNN', 'ViT'], rows)
+        'The neighbourhood and patch arrows are schematic, not measured responses. A convolution computes '
+        'weighted sums using a learned kernel reused across spatial positions. Its activations still change '
+        'with the image. In ViT, learned Q/K/V projections stay fixed during inference, but the resulting '
+        'query/key vectors and attention coefficients are input-dependent. Value vectors supply the '
+        'features that the coefficients mix. This distinction concerns spatial mixing; both systems '
+        'also contain nonlinear feature transformations. The next slide follows the wider context and readout. '
+        +vit_source+'.',
+        ['Point', 'CNN', 'ViT'], rows)
+
+    body = t(35,29,'3 · Build a wider view: how do distant clues meet?',29)
+    body += column_titles(77)
+    for x,w,labels in [(35,150,['Local features']), (220,150,['Combine them']), (405,150,['Wider context'])]:
+        body += box(x,112,w,labels,'c-v',h=72,size=22)
+    body += arrow(190,148,213,148,'c-v')+arrow(377,148,398,148,'c-v')
+    body += t(35,221,'Successive layers connect larger regions.',25,'c-v')
+    body += box(620,112,185,['Near + far','patches'],'c-q',h=72,size=23)
+    body += arrow(812,148,850,148,'c-q')
+    body += box(859,112,266,['One global','attention layer'],'c-q',h=72,size=23)
+    body += t(620,221,'Later blocks refine those relationships.',25,'c-q')
+    readout = line(35,251,1125,251,'line')
+    readout += t(35,291,'4 · Read out a label: turn many locations into one vector.',29)
+    for r in range(3):
+        for c in range(4):
+            readout += f.rect(35+c*17,325+r*17,17,17,'c-v','transparent',0)
+    readout += arrow(113,351,145,351,'c-v')
+    readout += box(155,318,176,['Spatial average','one feature vector'],'c-v',h=67,size=21)
+    readout += arrow(341,351,373,351,'c-v')
+    readout += box(383,318,172,['Class head','image scores'],'c-v',h=67,size=22)
+    for r,label in enumerate(['CLS','P1','…','P196']):
+        readout += f.rect(620,314+r*20,63,20,'c-q','t-q' if r==0 else 'transparent',0)
+        readout += t(651,329+r*20,label,15,'c-q','middle')
+    readout += arrow(691,324,727,324,'c-q')
+    readout += box(739,302,188,['Read final CLS','one feature vector'],'c-q',h=67,size=21)
+    readout += arrow(935,336,967,336,'c-q')
+    readout += box(977,302,148,['Class head','image scores'],'c-q',h=67,size=22)
+    readout += t(35,436,'Both produce an image-level summary. Pooling is also a valid ViT readout.',27,'ink-2')
+    body += f.g(readout,1)
+    rows = [
+        ['3. Build a wider view', 'Successive local layers combine larger regions.', 'A global attention layer connects distant patches; later blocks refine the features.'],
+        ['4. Read out one label', 'Often average the final spatial features, then apply a class head.', 'This model reads final CLS, then applies a class head. Pooling is another option.'],
+    ]
+    add('cnn-context-readout','A wider view, then one image label',body,
+        'Trace context through the layers, then press Next to inspect the readout. Both models can use the whole image. A classifier needs one image-level vector: CNNs often use spatial pooling; this ViT reads final CLS.',
+        'Are distant clues unavailable to a CNN, and is CLS required for every ViT?',
+        'Pause on point 3: repeated local layers broaden a conventional CNN’s receptive field; a global attention layer allows direct distant interactions. Later ViT blocks still refine features. Reveal point 4: average spatial features or read a trained CLS representation, then apply the class head. Both routes produce one vector. Return to the earlier CLS-versus-pooling discussion without re-deriving it.',
+        'The CNN chain is schematic: depth, kernel size, stride and dilation determine its receptive field. '
+        'Global attention permits a direct dependency between distant patches within a layer, without '
+        'guaranteeing that a trained head assigns every distant patch a large weight. Both models still '
+        'need learned features and useful training. A common CNN readout averages each channel across '
+        'spatial locations; it preserves the feature/channel axis for the classifier. This ViT selects '
+        'the final normalized CLS row. Its other rows have helped build that summary through attention. '
+        'Mean pooling is another valid ViT design when the model is trained for that readout. '+vit_source+'.',
+        ['Point', 'CNN', 'ViT'], rows)
 
     # One shared example motivates the term; the table supplies the comparison.
     body = t(35, 29, 'Inductive bias = assumptions built into how the model learns.', 29)

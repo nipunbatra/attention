@@ -898,7 +898,7 @@
   {
     "id": "vision-topic-05",
     "title": "Section 5 \u00b7 CNNs, ViTs and inductive bias",
-    "caption": "Three visual comparisons: how each model uses an image, its starting assumptions, and practical choices for data and compute.",
+    "caption": "Compare context, mixing, wider views and readouts, then connect those choices to inductive bias and practical data and compute constraints.",
     "notes": "How do they differ, and which should we try?\nConnect the previous result to this new question. Keep the same image classifier as the reference.",
     "section": "s05",
     "frame": 1
@@ -906,10 +906,18 @@
   {
     "id": "cnn-receptive-field",
     "title": "Two ways to build an image representation",
-    "caption": "A CNN builds a wider view through layers of local filters. Global ViT attention lets distant patches interact within a block. Both can use the whole image and produce class scores. The connections shown are schematic.",
-    "notes": "Can both models use clues from distant parts of the dog?\nYes. Follow the growing CNN windows and the ViT arrows. The difference is the route information takes, not whether a model can ever see the whole image.",
+    "caption": "First compare the available connections. Then press Next to compare the mixing weights. CNN filters stay fixed during a forward pass. ViT projection parameters also stay fixed, while attention weights are computed from the current query and source features.",
+    "notes": "What is shared, and what changes when we show a new image?\nPause on point 1: a conventional convolution reads local neighbours; global attention can connect distant patches immediately. Reveal point 2: both models keep their learned parameters fixed during inference. A CNN reuses its learned kernel across locations; ViT computes attention coefficients from query\u2013key matches. These coefficients depend on the input and receiver. They are not the stored projection weights.",
     "section": "s05",
     "frame": 2
+  },
+  {
+    "id": "cnn-context-readout",
+    "title": "A wider view, then one image label",
+    "caption": "Trace context through the layers, then press Next to inspect the readout. Both models can use the whole image. A classifier needs one image-level vector: CNNs often use spatial pooling; this ViT reads final CLS.",
+    "notes": "Are distant clues unavailable to a CNN, and is CLS required for every ViT?\nPause on point 3: repeated local layers broaden a conventional CNN\u2019s receptive field; a global attention layer allows direct distant interactions. Later ViT blocks still refine features. Reveal point 4: average spatial features or read a trained CLS representation, then apply the class head. Both routes produce one vector. Return to the earlier CLS-versus-pooling discussion without re-deriving it.",
+    "section": "s05",
+    "frame": 3
   },
   {
     "id": "cnn-inductive-bias",
@@ -917,7 +925,7 @@
     "caption": "A CNN builds in local reuse: one learned detector can look for a pattern at many locations. ViT also has structure\u2014patches, shared projections and position signals\u2014but gives attention more freedom to learn spatial relationships.",
     "notes": "Does inductive bias mean the edge detector\u2019s weights were chosen by hand?\nNo. The architecture chooses local connections and parameter sharing; training learns the filter values. Both architectures still learn from data. The translated stripe is an illustration, not a model prediction.",
     "section": "s05",
-    "frame": 3
+    "frame": 4
   },
   {
     "id": "cnn-vit-design",
@@ -925,7 +933,7 @@
     "caption": "Treat these as starting points, not a ranking. Pretraining can matter more than the architecture name on a small dataset. Compare suitable models using the same validation set and measure speed and memory on the target hardware.",
     "notes": "We have few labelled pet photos and access to pretrained weights. Which column should we choose?\nBoth are plausible: adapt suitable checkpoints and validate. Few task labels do not rule out a pretrained ViT. For device use, compare measured latency and memory rather than assuming every CNN is faster.",
     "section": "s05",
-    "frame": 4
+    "frame": 5
   },
   {
     "id": "vision-topic-06",

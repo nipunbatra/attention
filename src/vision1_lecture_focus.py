@@ -82,7 +82,7 @@ def consolidate(b, sections):
         ('CNNs, ViTs and inductive bias',comparison(b),
          'Attention lets patches exchange information.',
          'How do they differ, and which should we try?',
-         'Three visual comparisons: how each model uses an image, its starting assumptions, and practical choices for data and compute.'),
+         'Compare context, mixing, wider views and readouts, then connect those choices to inductive bias and practical data and compute constraints.'),
         ('The same classifier in PyTorch',code(b),
          'We know the forward path and the learning signal.',
          'How do these diagrams become code?',
