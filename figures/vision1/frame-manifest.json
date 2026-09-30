@@ -585,9 +585,9 @@
   },
   {
     "id": "cls-readout-return",
-    "title": "Both choices give one summary for the dog photograph",
-    "caption": "Both designs can learn image classification. Train for the chosen readout: removing CLS from our saved model changes its computation. We will continue with its CLS route, whose dog prediction we have already followed.",
-    "notes": "Is CLS required for image classification? Can we delete it from our saved model and expect the same answer?\nIt is not required as an architectural choice. But a model trained to read CLS has learned that route; changing it calls for adaptation and evaluation.",
+    "title": "Why is CLS a common choice if pooling also works?",
+    "caption": "This diagram follows CLS; patch rows receive updates too. Keep the readout a checkpoint was trained to use, or adapt and evaluate the changed model.",
+    "notes": "Does a learned summary token guarantee better accuracy than mean pooling?\nNo. Explain the BERT heritage, then the dedicated readout. Original ViT Appendix D.3 found comparable results after tuning the learning rate. Use the checkpoint\u2019s trained route; compare alternatives with suitable training and evaluation.",
     "section": "s03",
     "frame": 18
   },

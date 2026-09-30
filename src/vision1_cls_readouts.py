@@ -144,35 +144,46 @@ def build_cls_readouts(b):
         '<p><strong>Image summary: [2, 2]. Shape 4 × 2 → 1 × 2.</strong></p>'
         '<p>For the full design: 196 × 192 → 1 × 192. Average final features, after attention.</p>')
 
-    body = t(35, 37, 'CLS is one way to collect the image information. Mean pooling is another.', 28)
-    for j, (label, color, rows, readout) in enumerate([
-        ('With CLS', 'c-q', '197 rows in blocks', 'Read the final CLS'),
-        ('Without CLS', 'c-v', '196 rows in blocks', 'Average final patch rows')]):
-        y = 75+j*135
-        content = image(35, y, 104, 104, photo)
-        content += t(162, y+28, label, 27, color)+t(162, y+70, rows, 23, 'ink-2')
-        content += arrow(393, y+50, 435, y+50, color)
-        content += box(451, y+8, 333, [readout, 'One summary · 1 × 192'], color, size=23)
-        content += arrow(790, y+50, 833, y+50, color)
-        content += box(849, y+8, 275, ['Trained classifier', 'Scores for image labels'], size=23)
-        body += content if j == 0 else g(content, 1)
-    body += g(t(35, 370, 'Train the encoder and classifier for the readout you choose.', 28)
-              +t(35, 424, 'Our saved model uses CLS. Let’s return to that forward pass.', 28, 'c-q'), 2)
-    add('cls-readout-return', 'Both choices give one summary for the dog photograph', body,
-        'Both designs can learn image classification. Train for the chosen readout: removing CLS from our saved model changes its computation. We will continue with its CLS route, whose dog prediction we have already followed.',
-        'Is CLS required for image classification? Can we delete it from our saved model and expect the same answer?\n'
-        'It is not required as an architectural choice. But a model trained to read CLS has learned that route; changing it calls for adaptation and evaluation.',
-        'Mean pooling assigns equal coefficients to final patch rows, but the features in those rows were learned '
-        'and contextualized. It does not force every raw pixel or every patch to have equal influence on the prediction. '
-        'The two readouts have equal summary width here, not identical summaries or shared classifier weights. '
-        'The original ViT study found both readout choices viable with suitable learning rates. For a trained CLS '
-        'checkpoint, simply dropping the token changes the attention sequence and replacing its readout changes what '
-        'the classifier receives. A changed design should be trained or fine-tuned and evaluated. '
-        'Now resume the saved CLS model: 196 patch rows plus CLS enter the next slide’s 197-row sequence.'+source,
-        '<img src="figures/vision1/model-input.png" alt="One dog photograph can be classified with either trained readout design" width="160">'
-        +mobile_rows(['Design', 'How to obtain one 192-feature summary'],
-                     [['CLS: 197 rows', 'Read the final CLS row'],
-                      ['No CLS: 196 rows', 'Average the final patch rows']])
-        +'<p>Train or adapt the encoder and classifier for the chosen readout.</p>'
-        '<p>We now return to the CLS route used by our saved model.</p>')
+    body = t(35, 32, '1 · A familiar convention', 29, weight=650)
+    body += box(35, 59, 285, ['BERT: classification token'], 'c-q', h=52, size=23)
+    body += arrow(328, 85, 398, 85, 'c-q')
+    body += box(414, 59, 285, ['Original ViT adopts it'], 'c-q', h=52, size=23)
+    body += arrow(707, 85, 777, 85, 'c-q')
+    body += box(793, 59, 332, ['Our checkpoint uses CLS'], 'c-q', h=52, size=23)
+
+    learned = t(35, 164, '2 · A dedicated summary, refined through the blocks', 29, weight=650)
+    learned += box(35, 192, 240, ['Patch rows + CLS'], h=70, size=24)
+    learned += arrow(286, 227, 448, 227, 'c-v')
+    learned += t(368, 211, 'attention', 22, 'c-v', 'middle')
+    learned += box(461, 192, 240, ['Updated CLS'], 'c-q', h=70, size=25)
+    learned += arrow(712, 227, 835, 227, 'c-q')
+    learned += t(773, 211, 'later blocks', 20, 'ink-2', 'middle')
+    learned += box(848, 182, 277, ['Final CLS', '→ class head'], 'c-q', h=90, size=24)
+    learned += t(35, 308, 'Attention learns how to weight sources; the label loss trains the summary.', 27)
+    body += g(learned, 1)
+
+    evidence = t(35, 364, '3 · Both readouts deserve a fair comparison', 29, weight=650)
+    evidence += t(35, 404, 'Original ViT found similar performance after tuning each readout’s learning rate.', 25, 'c-v')
+    evidence += t(35, 439, 'ViT paper · §3.1 and Appendix D.3, Figure 9', 20, 'ink-2')
+    body += g(evidence, 2)
+    add('cls-readout-return', 'Why is CLS a common choice if pooling also works?', body,
+        'This diagram follows CLS; patch rows receive updates too. Keep the readout a checkpoint was trained to use, or adapt and evaluate the changed model.',
+        'Does a learned summary token guarantee better accuracy than mean pooling?\n'
+        'No. Explain the BERT heritage, then the dedicated readout. Original ViT Appendix D.3 found comparable results after tuning the learning rate. Use the checkpoint’s trained route; compare alternatives with suitable training and evaluation.',
+        'The original ViT adopted the classification-token convention from BERT (§3.1). CLS provides a designated '
+        'place for the classifier to read an image-level representation. In each block its attention weights can '
+        'depend on the current query and source keys; later CLS queries already contain image context. The '
+        'classification objective trains the initial CLS parameter and the shared encoder and classifier weights. '
+        'The diagram follows the CLS readout only; patch rows also attend to all rows and receive updates. '
+        'A learned readout is a useful architectural option, not proof of superior accuracy. Appendix D.3 and '
+        'Figure 9 report comparable class-token and global-average-pooling results once learning rates were tuned. '
+        'Mean pooling has fixed averaging coefficients over final rows, but those rows contain learned context; '
+        'it does not make every raw pixel equally important. For an existing checkpoint, retain its readout unless '
+        'you adapt and evaluate the changed model. We now return to our checkpoint’s 197-row CLS route.'+source,
+        '<ol><li><strong>History:</strong> BERT’s classification token → original ViT → our checkpoint.</li>'
+        '<li><strong>Role:</strong> CLS is a dedicated summary updated through attention; classification loss '
+        'trains it to support the image label. Patch rows are updated too.</li>'
+        '<li><strong>Evidence:</strong> the original ViT study found similar performance for CLS and mean pooling '
+        'after tuning their learning rates. CLS is not a universal accuracy winner.</li></ol>'
+        '<p>Keep the readout used by a pretrained checkpoint. Train or adapt and evaluate a different choice.</p>'+source)
     return result
