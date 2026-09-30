@@ -63,18 +63,102 @@ def build(b):
           'First establish held-out target-domain performance. Use representative labelled sketches for adaptation and choose how much of the encoder to unfreeze using validation. '
           'We continue with the dog/cat photograph task below; sketches show why label changes and domain changes are different reasons to adapt.')
 
-    body = t(35, 44, 'Use the learned parameters without updating them.', 29)
-    body += box(35, 113, 305, ['New pet photograph', 'no target label supplied'], size=25, h=100)
-    body += arrow(350, 163, 405, 163)
-    body += box(420, 113, 330, ['Adapted encoder + head', 'two logits: dog, cat'], 'c-q', size=25, h=100)
-    body += arrow(765, 163, 815, 163, 'c-q')
-    body += box(830, 113, 295, ['Softmax', 'two probabilities'], 'c-v', size=25, h=100)
-    body += f.code('model.eval()\nwith torch.inference_mode():\n    probabilities = model(images).softmax(dim=-1)  # B, 2', x=65, y=310, width=1030, size=25, spacing=39)
-    f.add('pets-inference', 'Training changes parameters; inference uses them', body,
-          'Training uses labelled examples and an optimizer. Inference uses the adapted model to predict a new image’s label. No loss, backward pass or optimizer step is needed for that prediction.',
+    def status(x, y, frozen):
+        if frozen:
+            paths=''.join(f'<path transform="rotate({angle})" d="M0 -12 V12 M-4 -10 L0 -6 L4 -10 M-4 10 L0 6 L4 10"/>' for angle in [0,60,120])
+            color='c-e'
+        else:
+            paths='<path d="M0 -15 C0 -6 -10 -3 -10 5 C-10 17 11 17 11 5 C11 -1 7 -6 4 -8 C5 -1 1 0 0 -15 Z"/>'
+            color='c-k'
+        return (f'<g transform="translate({x} {y})" fill="none" stroke="var(--{color})" '
+                f'stroke-width="2" stroke-linejoin="round" stroke-linecap="round">{paths}</g>')
+
+    def network(x, y, mode, show_status=True):
+        # Three drawn layers stand for a few of the model's many neurons.
+        out=''
+        for layer in range(2):
+            color='c-k' if mode=='pretrain' or (mode=='adapt' and layer==1) else 'c-e'
+            for a in [0,30,60]:
+                for z in [0,30,60]:
+                    out+=f.line(x+layer*63+9,y+a,x+(layer+1)*63-9,y+z,color,1.5)
+        for layer in range(3):
+            color='c-k' if mode=='pretrain' or (mode=='adapt' and layer==2) else 'c-e'
+            for a in [0,30,60]:
+                out+=f'<circle cx="{x+layer*63}" cy="{y+a}" r="9" fill="var(--card)" stroke="var(--{color})" stroke-width="2"/>'
+        if show_status:
+            out+=status(x+165,y+30,mode=='infer')
+        return out
+
+    body=''
+    stages=[('1 · Pretrain','Many labelled images','Learn visual features','pretrain'),
+            ('2 · Adapt','Our images + labels','Learn the new task','adapt'),
+            ('3 · Infer','One new image','Predict its label','infer')]
+    for i,(name,inputs,output,mode) in enumerate(stages):
+        y=20+i*137
+        row=t(35,y+48,name,29,'c-e' if i==2 else 'c-k',weight=600)
+        if i==0:
+            for j in [2,1,0]:
+                row+=f.rect(248+j*12,y+7-j*4,63,63,'line','card',2)
+            row+=f.image(253,y+12,53,53,f.photo)
+        elif i==1:
+            row+=f.image(240,y+4,62,62,f.photo)+f.image(311,y+4,62,62,b['CAT'])
+        else:
+            row+=f.image(270,y+4,64,64,b['CAT'])
+        row+=t(305,y+99,inputs,22,'ink-2','middle')
+        row+=arrow(398,y+37,459,y+37)
+        row+=network(485,y+7,mode)
+        row+=arrow(683,y+37,744,y+37)
+        row+=t(774,y+33,output,29,'c-e' if i==2 else 'c-k')
+        row+=t(774,y+76,'Weights stay fixed' if i==2 else 'All weights learn' if i==0 else 'Chosen weights learn',25,'ink-2')
+        body+=row if i==0 else g(row,i)
+    f.add('pets-learning-stages','Three stages: learn, adapt, then predict',body,
+          'Orange connections and flames mark learning. Blue connections and snowflakes mark fixed parameters. During inference, a new image changes the features while the stored weights stay fixed.',
+          'During which stages can the optimizer change weights?',
+          'Pretraining and adaptation use learning signals. Inference only computes outputs using the learned parameters. Reveal each stage and follow the image-to-network-to-output arrows.',
+          'This is a schematic recap of supervised pretraining, adaptation and inference. The image stack represents many labelled examples; '
+          'the pet thumbnails illustrate the task rather than document a training run. Orange connections are trainable; blue connections are fixed. '
+          'Adaptation may train only a new head or also selected encoder weights. A few representative neurons are drawn. '
+          'The photographs are reused as visual examples; no new pet classifier or unseen-image result is claimed.',
+          '<ol><li>Pretrain: many labelled images → learn encoder and classifier weights.</li>'
+          '<li>Adapt: target images and labels → update the selected weights for the new task.</li>'
+          '<li>Infer: a new image → run the trained model → predict a label with weights fixed.</li></ol>')
+
+    body=t(35,34,'One forward pass through the trained model',29)
+    body+=f.image(35,124,170,170,b['CAT'])
+    body+=t(120,338,'Input photograph',24,'ink-2','middle')
+    body+=arrow(218,209,278,209,'c-e')
+    body+=box(293,127,295,[],h=161)
+    body+=t(429,164,'Trained ViT',27,'c-e','middle')
+    body+=status(557,151,True)
+    body+=network(354,194,'infer',show_status=False)
+    features=t(706,143,'192 features',26,'c-q','middle')
+    features+=arrow(601,209,642,209,'c-q')
+    for j in range(6):
+        features+=f.rect(658+j*17,175,12,67,'c-q','t-q',1)
+    features+=t(706,282,'Final CLS',24,'c-q','middle')
+    features+=t(706,316,'depends on this image',21,'ink-2','middle')
+    body+=g(features,1)
+    head=arrow(773,209,820,209,'c-q')+t(978,143,'Trained class head',26,'c-e','middle')
+    head+=status(1120,137,True)
+    for iy in [182,208,234]:
+        for oy in [189,254]:
+            head+=f.line(849,iy,965,oy,'c-e',1.5)
+        head+=f'<circle cx="841" cy="{iy}" r="8" fill="var(--card)" stroke="var(--c-q)" stroke-width="2"/>'
+    for y,label in [(189,'dog score'),(254,'cat score')]:
+        head+=f'<circle cx="978" cy="{y}" r="13" fill="var(--card)" stroke="var(--c-e)" stroke-width="2"/>'
+        head+=t(1003,y+8,label,23,'c-e')
+    head+=t(978,316,'192 inputs → 2 scores',23,'ink-2','middle')
+    head+=t(35,416,'Softmax → two probabilities → choose the larger one.',29,'c-v')
+    body+=g(head,2)
+    f.add('pets-inference', 'What happens when we classify a new photograph?', body,
+          'The image produces its own CLS features and class scores. Both snowflakes mark fixed weights. Inference computes a prediction without a label, loss or optimizer update.',
           'Do we need to know the new image’s label to run inference?',
-          'No. Labels are needed later to evaluate whether predictions were correct. Every image still gets its own features and attention weights.',
-          'The code assumes a model already adapted to two outputs; this deck does not train one. '
-          'eval changes module behaviour such as dropout. inference_mode disables gradient tracking. Neither call trains the new head.',
+          'No. First reveal the image-dependent CLS features, then the trained head and its two scores. Labels are needed later to evaluate the prediction.',
+          'This diagram assumes a model already adapted to two outputs; this deck does not train one. '
+          'The cat thumbnail illustrates an input and the bars depict feature coordinates, not measured values. '
+          'No score, probability or winning label is fabricated. The head reads all 192 features; only a few connections are drawn. '
+          'The learned parameters stay fixed, while feature values and attention weights depend on the input image. '
+          'eval changes module behaviour such as dropout. inference_mode disables gradient tracking. Neither call trains the new head. '
+          '<pre><code>model.eval()\nwith torch.inference_mode():\n    probabilities = model(images).softmax(dim=-1)  # B, 2</code></pre>',
           '<pre><code>model.eval()\nwith torch.inference_mode():\n    probabilities = model(images).softmax(dim=-1)  # B, 2</code></pre>')
     return f.frames

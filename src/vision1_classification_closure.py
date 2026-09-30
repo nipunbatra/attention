@@ -466,7 +466,7 @@ def refine(b, sections):
             # The section opener is regenerated below with the new purpose.
             title='Adapt and evaluate the image classifier'
             frames=[opener]+[new[k] for k in ['pets-original-task','pets-new-task','pets-new-domain',
-                'pets-head','pets-frozen','pets-fine-tune','pets-training-step','pets-inference','pets-evaluation']]
+                'pets-head','pets-frozen','pets-fine-tune','pets-training-step','pets-learning-stages','pets-inference','pets-evaluation']]
         out=[]
         for m in frames:
             k=key(m)

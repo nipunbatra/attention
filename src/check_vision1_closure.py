@@ -18,7 +18,7 @@ for h in trace['gradients']['heads']:
     np.testing.assert_allclose(np.array(h['dS']).sum(axis=1),0,atol=1e-12)
 assert trace['single_update']['loss_after']<trace['single_update']['loss_before']
 manifest=json.loads((ROOT/'figures/vision1/frame-manifest.json').read_text())
-assert len(manifest)==174 and len({x['id'] for x in manifest})==174
+assert len(manifest)==175 and len({x['id'] for x in manifest})==175
 ids=[x['id'] for x in manifest]
 input_order=['patch-projection-parameters','vision-topic-03','position-where','position-table','real-patch-position','position-learning',
              'cls-detour','real-cls-purpose','cls-parameter-origin','cls-parameter-learning',
@@ -49,7 +49,7 @@ required={'task-side-by-side','cls-shared-start','cls-without','heads-visual-rol
 assert required<={x['id'] for x in manifest}
 assert [x['id'] for x in manifest if x['section']=='s07']==[
     'vision-topic-07','pets-original-task','pets-new-task','pets-new-domain','pets-head',
-    'pets-frozen','pets-fine-tune','pets-training-step','pets-inference','pets-evaluation']
+    'pets-frozen','pets-fine-tune','pets-training-step','pets-learning-stages','pets-inference','pets-evaluation']
 patch_report=json.loads((ROOT/'figures/vision1/patch-projection-equivalence.json').read_text())
 pixel=patch_report['pixel_weight_trace']
 c,r,s=pixel['channel_row_column']

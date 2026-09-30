@@ -1160,12 +1160,20 @@
     "frame": 8
   },
   {
-    "id": "pets-inference",
-    "title": "Training changes parameters; inference uses them",
-    "caption": "Training uses labelled examples and an optimizer. Inference uses the adapted model to predict a new image\u2019s label. No loss, backward pass or optimizer step is needed for that prediction.",
-    "notes": "Do we need to know the new image\u2019s label to run inference?\nNo. Labels are needed later to evaluate whether predictions were correct. Every image still gets its own features and attention weights.",
+    "id": "pets-learning-stages",
+    "title": "Three stages: learn, adapt, then predict",
+    "caption": "Orange connections and flames mark learning. Blue connections and snowflakes mark fixed parameters. During inference, a new image changes the features while the stored weights stay fixed.",
+    "notes": "During which stages can the optimizer change weights?\nPretraining and adaptation use learning signals. Inference only computes outputs using the learned parameters. Reveal each stage and follow the image-to-network-to-output arrows.",
     "section": "s07",
     "frame": 9
+  },
+  {
+    "id": "pets-inference",
+    "title": "What happens when we classify a new photograph?",
+    "caption": "The image produces its own CLS features and class scores. Both snowflakes mark fixed weights. Inference computes a prediction without a label, loss or optimizer update.",
+    "notes": "Do we need to know the new image\u2019s label to run inference?\nNo. First reveal the image-dependent CLS features, then the trained head and its two scores. Labels are needed later to evaluate the prediction.",
+    "section": "s07",
+    "frame": 10
   },
   {
     "id": "pets-evaluation",
@@ -1173,7 +1181,7 @@
     "caption": "Use held-out images to measure accuracy and the two kinds of confusion. Inspect successes and mistakes, including confident errors. A probability on one photograph is not the classifier\u2019s test accuracy.",
     "notes": "Could we choose the best epoch by repeatedly looking at test accuracy?\nUse validation for selection. Reserve the test set for the chosen procedure; related or near-duplicate images must not leak across splits.",
     "section": "s07",
-    "frame": 10
+    "frame": 11
   },
   {
     "id": "vision-topic-08",
