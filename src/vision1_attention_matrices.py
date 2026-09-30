@@ -97,22 +97,34 @@ def build_attention_matrices(b):
     body += matrix(353, 138, 288, 128, features, tokens, 'c-k', col=3, size=18)
     body += t(497, 310, 'Turn K’s rows into columns', 22, 'ink-2', 'middle')
     body += arrow(670, 225, 724, 225)+t(697, 191, '÷ 8', 23, 'ink-2', 'middle')
-    body += t(959, 82, 'S · 197 × 197', 27, 'c-k', 'middle')
-    body += matrix(815, 138, 288, 192, tokens, tokens, 'c-k', row=0, col=3, cell=(0,3), entry='s', size=18)
+    body += t(976, 73, 'S · 197 × 197', 27, 'c-k', 'middle')
+    body += t(976, 111, 'Columns = keys →', 23, 'c-k', 'middle')
+    body += '<g transform="rotate(-90 760 251)">'+t(760, 251, 'Rows = queries', 23, 'c-q', 'middle')+'</g>'
+    body += arrow(775, 155, 775, 347, 'c-q')
+    body += matrix(850, 155, 252, 192, tokens, tokens, 'c-k', row=0, col=3, cell=(0,3), entry='s', size=18)
+    body += rect(850, 155, 252, 32, 'c-q', 'transparent', 0)
     body += g(t(35, 381, 'Highlighted cell: s(CLS, P63) = q(CLS) · k(P63) / 8', 29, 'c-q'), 1)
-    body += t(35, 428, '197 queries × 197 keys = 38,809 matching scores in this head.', 27)
+    body += t(35, 428, 'CLS row: what CLS reads. CLS column: how each query scores CLS.', 27)
     add('real-attention-product', 'One query–key comparison fills one matrix cell', body,
-        'Multiply Q by Kᵀ and divide by √64 = 8. Row CLS, column P63 compares the CLS query with patch 63’s key. Every query–key pair gets a score. These scores are not yet attention weights.',
+        'Fix the receiving query to CLS and move across the columns. These scores determine CLS’s source weights after softmax. Moving down the CLS column changes the query while keeping the CLS key fixed.',
         'Which query and which key produced the highlighted cell?',
-        'Follow the highlighted row of Q and column of Kᵀ to row CLS, column P63 of S. The dot product sums 64 coordinate products. S can contain negative scores and need not be symmetric.',
+        'Follow the highlighted row of Q and column of Kᵀ to row CLS, column P63 of S. The dot product sums 64 coordinate products. The CLS row fixes q_CLS and compares every key; the CLS column fixes k_CLS and compares every query. S can contain negative scores and need not be symmetric.',
         'The token order is CLS, P1, …, P196, so 196+1=197. Q has one 64-coordinate query per receiver; '
         'Kᵀ has one 64-coordinate key per source column. Contracting the shared 64 dimension produces '
         '197×197 entries, not a sum of the row counts. The highlighted entry uses all 64 coordinate products, '
         'scaled by 1/√64. For this dog, P63 is the crop in row 5, column 7 identified earlier. '
         'The entry is a learned query–key matching score, not a dog probability or a direct comparison of raw pixels. '
-        'Q and K use different learned projections, so S(i,j) need not equal S(j,i). Dots and ellipses denote omitted entries.',
+        'Q and K use different learned projections, so S(i,j) need not equal S(j,i). '
+        'The CLS row S[CLS,:] compares one receiving query with every source key; its row-wise softmax supplies '
+        'the weights for the CLS message. The CLS column S[:,CLS] compares every query with one source key, '
+        'the CLS key. Its entries belong to different receivers and are normalized within their respective rows. '
+        'Dots and ellipses denote omitted entries.',
         '<p>Q (197 × 64) × Kᵀ (64 × 197) / 8 → <strong>S (197 × 197)</strong>.</p>'
         '<p>Rows are receiving queries; columns are source keys. Both axes follow CLS, P1, …, P196.</p>'
+        +mobile_rows(['Which part of S?', 'What stays fixed?', 'What changes?'],
+                     [['CLS row: S[CLS,:]', 'CLS query (receiver)', 'Source key across columns'],
+                      ['CLS column: S[:,CLS]', 'CLS key (source)', 'Receiving query down rows']])
+        +'<p>For the message that updates CLS, use the <strong>CLS row</strong>.</p>'
         '<p><strong>S[CLS,P63] = dot(q_CLS, k_P63) / 8.</strong> Sum 64 coordinate products.</p>'
         '<p>197 × 197 = 38,809 matching scores per head. They can be negative and are not probabilities.</p>')
 
@@ -130,11 +142,12 @@ def build_attention_matrices(b):
         return out
 
     body = t(225, 40, 'S · 197 × 197 scores', 29, 'c-k', 'middle')
-    body += t(225, 89, 'source keys →', 23, 'ink-2', 'middle')
+    body += t(225, 89, 'Columns = source keys →', 22, 'c-k', 'middle')
+    body += '<g transform="rotate(-90 13 245)">'+t(13, 245, 'Rows = queries', 21, 'c-q', 'middle')+'</g>'
     body += matrix(90, 143, 270, 204, tokens, tokens, 'c-q', row=0, size=18)
     body += rect(90, 143, 270, 34, 'c-q', 'transparent', 0)
     zoom = t(815, 40, 'CLS row, enlarged', 29, 'c-q', 'middle')
-    zoom += t(815, 78, 'We follow one query; every row gets an update.', 23, 'ink-2', 'middle')
+    zoom += t(815, 78, 'CLS query stays fixed; compare every source key.', 23, 'ink-2', 'middle')
     zoom += line(373, 143, 500, 143, 'c-q', 2.5)+line(373, 177, 500, 198, 'c-q', 2.5)
     zoom += t(433, 123, 'zoom', 21, 'c-q', 'middle')
     zoom += cls_strip(143, 's', 'c-q', 't-q', labels=True)

@@ -626,8 +626,8 @@
   {
     "id": "real-attention-product",
     "title": "One query\u2013key comparison fills one matrix cell",
-    "caption": "Multiply Q by K\u1d40 and divide by \u221a64 = 8. Row CLS, column P63 compares the CLS query with patch 63\u2019s key. Every query\u2013key pair gets a score. These scores are not yet attention weights.",
-    "notes": "Which query and which key produced the highlighted cell?\nFollow the highlighted row of Q and column of K\u1d40 to row CLS, column P63 of S. The dot product sums 64 coordinate products. S can contain negative scores and need not be symmetric.",
+    "caption": "Fix the receiving query to CLS and move across the columns. These scores determine CLS\u2019s source weights after softmax. Moving down the CLS column changes the query while keeping the CLS key fixed.",
+    "notes": "Which query and which key produced the highlighted cell?\nFollow the highlighted row of Q and column of K\u1d40 to row CLS, column P63 of S. The dot product sums 64 coordinate products. The CLS row fixes q_CLS and compares every key; the CLS column fixes k_CLS and compares every query. S can contain negative scores and need not be symmetric.",
     "section": "s03",
     "frame": 23
   },
