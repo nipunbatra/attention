@@ -1,6 +1,6 @@
 # Vision I — lecture transcript
 
-2 October 2026. Removed the grayscale filter slide; based on commit e382967.
+2 October 2026. Opening recap now reuses the three-architecture diagram from Transformers beyond next-token prediction.
 
 Companion PDF: [vision1.pdf](vision1.pdf) (**151 pages**).
 
@@ -175,25 +175,35 @@ The same encoder, with image patches: from pixels to a class prediction and the 
 ### Page 2 — We already know how an encoder builds context
 
 ```text
-Recall the three routes from the previous lecture
+ENCODER
+Encode the input
+DECODER
+Predict the next token
+ENCODER-DECODER
+Generate from a source
 Encoder
-supplied tokens
-contextual rows
+one vector per token
+labels · retrieval · readouts
 Decoder
-a token prefix
-next-token scores
-Encoder–decoder
+next
+append → repeat
+chat · code · continuation
+Encoder
+target prefix
+source K,V
+Decoder
+next
 source + target prefix
-next target-token scores
-Today we reuse the encoder route. The new question is how pixels become tokens, and how the resulting image representation predicts a label.
+translation · summarization
+Today we reuse the encoder on the left: image patches become tokens, and the final image representation predicts a label.
 ```
 
-**Caption:** Today we reuse the encoder route. The new question is how pixels become tokens, and how the resulting image representation predicts a label.
+**Caption:** Today we reuse the encoder on the left: image patches become tokens, and the final image representation predicts a label.
 
 **Speaker notes**
 
-Which route gives a contextual representation of a complete supplied input?
-The encoder. Recall that the output head determines the task. We will supply image patches instead of text tokens.
+Which architecture reads a complete supplied input and returns contextual representations?
+The encoder, shown on the left. The full attention square lets every token read every token. The decoder uses causal attention and repeats next-token prediction. The encoder–decoder adds a source pathway into the target decoder through cross-attention. For ViT, replace text tokens with image patches, then use a classification head.
 
 ### Page 3 — A ViT is an encoder over image patches
 

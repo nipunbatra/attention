@@ -39,15 +39,21 @@ def refine_visuals(b, sections):
     def add(k, title, body, caption, question, point, prose='', height=440):
         return f.add(k, title, body, caption, question, point, prose, height=height)
 
-    body = t(35, 42, 'Recall the three routes from the previous lecture', 31)
-    for y, name, source, result in [(85,'Encoder','supplied tokens','contextual rows'),
-            (195,'Decoder','a token prefix','next-token scores'),
-            (305,'Encoder–decoder','source + target prefix','next target-token scores')]:
-        body += t(35,y+41,name,27,'neutral',weight=650)
-        body += box(330,y,310,source,'neutral',h=70,size=27)
-        body += arrow(655,y+35,725,y+35)+box(740,y,385,result,'neutral',h=70,size=27)
-    old=metadata['prior-encoder-recap']
-    add('prior-encoder-recap',old['title'],body,old['caption'],*old['notes'].split('\n',1))
+    # Reuse the actual three-family summary from Transformers beyond next-token
+    # prediction. Keep a local SVG so this lecture remains independently buildable.
+    recap = (b['ASSETS'] / 'prior-lecture-model-families.svg').read_text()
+    body = recap.replace('<svg ', '<svg x="0" y="0" width="1160" height="440" ', 1)
+    old = metadata['prior-encoder-recap']
+    add('prior-encoder-recap', old['title'], body,
+        'Today we reuse the encoder on the left: image patches become tokens, and the final image representation predicts a label.',
+        'Which architecture reads a complete supplied input and returns contextual representations?',
+        'The encoder, shown on the left. The full attention square lets every token read every token. '
+        'The decoder uses causal attention and repeats next-token prediction. The encoder–decoder '
+        'adds a source pathway into the target decoder through cross-attention. For ViT, replace '
+        'text tokens with image patches, then use a classification head.',
+        '<p>Summary diagram reused from <em>Transformers beyond next-token prediction</em> '
+        '(“Encoder, decoder-only and encoder-decoder models”). The same token rows, attention '
+        'patterns and source-to-target pathway connect this lecture to that recap.</p>')
 
     body=''
     for y,label,tokens,color in [(34,'TEXT',['CLS','Raghav','goes','to','school'],'language'),

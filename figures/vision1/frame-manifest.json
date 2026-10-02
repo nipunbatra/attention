@@ -2,8 +2,8 @@
   {
     "id": "prior-encoder-recap",
     "title": "We already know how an encoder builds context",
-    "caption": "Today we reuse the encoder route. The new question is how pixels become tokens, and how the resulting image representation predicts a label.",
-    "notes": "Which route gives a contextual representation of a complete supplied input?\nThe encoder. Recall that the output head determines the task. We will supply image patches instead of text tokens.",
+    "caption": "Today we reuse the encoder on the left: image patches become tokens, and the final image representation predicts a label.",
+    "notes": "Which architecture reads a complete supplied input and returns contextual representations?\nThe encoder, shown on the left. The full attention square lets every token read every token. The decoder uses causal attention and repeats next-token prediction. The encoder\u2013decoder adds a source pathway into the target decoder through cross-attention. For ViT, replace text tokens with image patches, then use a classification head.",
     "section": "s01",
     "frame": 1
   },
