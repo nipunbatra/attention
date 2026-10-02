@@ -2,39 +2,39 @@
   {
     "id": "story-recall",
     "title": "We already know how an encoder builds context",
-    "caption": "Today we reuse the encoder: the new input is an image.",
-    "notes": "We already know how an encoder builds context\nRecall the three-family summary from Transformers beyond next-token prediction. The full attention square on the left reads a complete supplied input. Today we derive how an image can supply that input.",
+    "caption": "We can reuse the encoder once we turn the image into tokens.",
+    "notes": "We already know how an encoder builds context\nThe previous lecture, Transformers beyond next-token prediction, compared these three model families. The encoder on the left uses full attention to read the complete input. Here we work out how to give it an image.",
     "section": "s01",
     "frame": 1
   },
   {
     "id": "story-task",
-    "title": "What should this photograph produce?",
-    "caption": "The model predicts one of 1,000 ImageNet classes; Oxford-IIIT Pet supplies the photograph.",
-    "notes": "What should this photograph produce?\nUse newfoundland_31 from Oxford-IIIT Pet throughout. The checkpoint is vit_tiny_patch16_224.augreg_in21k_ft_in1k. Its saved probability is 0.9572675228 for Newfoundland. The dataset is the image source, not this classifier\u2019s output vocabulary. Dog/cat adaptation belongs to the optional extension.",
+    "title": "What should the model predict for this photograph?",
+    "caption": "This photograph comes from Oxford-IIIT Pet. The model chooses from 1,000 ImageNet classes.",
+    "notes": "What should the model predict for this photograph?\nOur photograph is newfoundland_31 from Oxford-IIIT Pet. We use vit_tiny_patch16_224.augreg_in21k_ft_in1k throughout; it assigns Newfoundland a probability of 0.9572675228. Oxford-IIIT Pet provides the image, while ImageNet defines the classifier\u2019s output labels. The optional extension shows how to adapt the model to dog/cat classification.",
     "section": "s01",
     "frame": 2
   },
   {
     "id": "story-contract",
     "title": "An encoder expects vectors. How can an image supply them?",
-    "caption": "We need a sequence of vectors before we can reuse the encoder.",
-    "notes": "An encoder expects vectors. How can an image supply them?\nDo not introduce Q, K and V here. The problem is the input representation: pixels are a spatial RGB array, while the encoder consumes rows of features.",
+    "caption": "The encoder takes a sequence of vectors. We need to turn the pixels into that sequence.",
+    "notes": "An encoder expects vectors. How can an image supply them?\nThe image is an RGB array arranged in a spatial grid. The encoder takes rows of features. Our first job is to turn that grid into feature rows; Q, K and V come later.",
     "section": "s01",
     "frame": 3
   },
   {
     "id": "story-questions",
     "title": "Five questions build the architecture",
-    "caption": "Each new component will solve one problem in this chain.",
-    "notes": "Five questions build the architecture\nAsk each question before naming its architectural solution. The main lecture ends when this one image becomes a class prediction and we identify the limit of a fixed class vocabulary.",
+    "caption": "Each question gives us a reason to add the next part of the model.",
+    "notes": "Five questions build the architecture\nWe will answer each question before introducing the component that solves it. By the end, we will have followed one photograph all the way to a class prediction and seen what a fixed set of output classes leaves out.",
     "section": "s01",
     "frame": 4
   },
   {
     "id": "story-pixel-budget",
     "title": "Why not make every pixel a token?",
-    "caption": "Patching is also a computational choice.",
+    "caption": "Using patches also keeps the number of attention comparisons manageable.",
     "notes": "Why not make every pixel a token?\nPixel tokens would give 50,176 spatial positions, each initially holding RGB. The fine grid is schematic. Patch tokens give 196 positions before CLS. Attention score counts scale quadratically with sequence length. This comparison ignores CLS to emphasize the scale, not memory implementation details.",
     "section": "s02",
     "frame": 1
@@ -50,7 +50,7 @@
   {
     "id": "story-patch-768",
     "title": "What is inside one patch?",
-    "caption": "One patch contains 768 pixel values; its position in the image is a separate fact.",
+    "caption": "A patch has 768 pixel values. We will add its location separately.",
     "notes": "What is inside one patch?\nPatch P63 lies at zero-based grid row 4, column 6. The crop illustration is magnified. Before projection, use the checkpoint normalization: RGB to [0,1], subtract 0.5 and divide by 0.5 per channel.",
     "section": "s02",
     "frame": 3
@@ -66,7 +66,7 @@
   {
     "id": "story-projection",
     "title": "How do 768 pixel values become 192 features?",
-    "caption": "A learned linear projection computes the patch representation.",
+    "caption": "The learned projection turns those 768 pixel values into 192 features.",
     "notes": "How do 768 pixel values become 192 features?\nUse row-vector notation: x_i is 1 by 768, W_E is 768 by 192, and b_E has 192 entries. This affine map has no following activation in the patch layer. PyTorch stores the Linear weight transposed, as 192 by 768.",
     "section": "s02",
     "frame": 5
@@ -74,40 +74,40 @@
   {
     "id": "story-shared-projection",
     "title": "Should every patch get a different projection?",
-    "caption": "The same W_E and b_E are reused at all 196 locations.",
-    "notes": "Should every patch get a different projection?\nEach patch supplies different inputs to one shared projection. There are not 196 separately learned pixel-to-feature layers. This sharing makes the next question unavoidable: where does location enter?",
+    "caption": "Every patch uses the same W_E and b_E.",
+    "notes": "Should every patch get a different projection?\nEvery patch passes through the same projection with its own pixel values. We learn one set of weights and biases, shared across all 196 patches. We still need a way to tell the model where each patch came from.",
     "section": "s02",
     "frame": 6
   },
   {
     "id": "story-stack",
     "title": "Stack the patches into one feature matrix",
-    "caption": "Projection changes the feature width; it preserves the number of patch rows.",
+    "caption": "The projection changes 768 features to 192. We still have 196 patch rows.",
     "notes": "Stack the patches into one feature matrix\nX contains all flattened patches. C = X W_E + b_E broadcasts the same bias across every row. The batch axis is omitted in the main lecture.",
     "section": "s02",
     "frame": 7
   },
   {
     "id": "story-measured-patch",
-    "title": "What does the trained projection actually return?",
-    "caption": "P63 becomes a measured 192-number feature row.",
-    "notes": "What does the trained projection actually return?\nThese first three coordinates are read from real-patch-path.json for the saved checkpoint. Dots omit 189 coordinates. This is the content representation before positional embedding; no semantic meaning is assigned to individual coordinates.",
+    "title": "What does the trained projection return?",
+    "caption": "These are the first three of P63\u2019s 192 features.",
+    "notes": "What does the trained projection return?\nThe first three values come from real-patch-path.json for our saved checkpoint. The dots stand for the other 189 coordinates. These features describe the patch before we add position. We have not assigned a meaning to each individual coordinate.",
     "section": "s02",
     "frame": 8
   },
   {
     "id": "story-pipeline-patches",
-    "title": "We have solved the image-to-token problem",
-    "caption": "The image now supplies 196 rows of 192 learned features.",
-    "notes": "We have solved the image-to-token problem\nUse this canonical pipeline throughout. The early stages fade once completed; the current stage is enlarged and highlighted. Next ask how these shared patch features retain their locations.",
+    "title": "We now have a token for each patch",
+    "caption": "The image is now 196 rows, each with 192 learned features.",
+    "notes": "We now have a token for each patch\nThis diagram tracks our progress through the model. Completed stages fade, and the current stage is larger. We have patch features now; next we need to add where each patch came from.",
     "section": "s02",
     "frame": 9
   },
   {
     "id": "story-where",
     "title": "The projection is shared. Where does location enter?",
-    "caption": "Content describes the crop; a positional vector supplies its place in the image.",
-    "notes": "The projection is shared. Where does location enter?\nP63 is row 5, column 7 using one-based classroom coordinates. Shared projection alone contains no explicit position index. Image content may incidentally suggest position, but learned positional embeddings provide the architectural location signal.",
+    "caption": "The content vector describes the crop. A position vector tells the model where it came from.",
+    "notes": "The projection is shared. Where does location enter?\nP63 is in row 5, column 7 when we count from one. The shared projection has no explicit position index. The picture itself may offer clues about location, but the learned position embedding gives the model that information explicitly.",
     "section": "s03",
     "frame": 1
   },
@@ -122,8 +122,8 @@
   {
     "id": "story-position-table",
     "title": "Which positional vector goes with each row?",
-    "caption": "The same learned position table is reused for every image on this grid.",
-    "notes": "Which positional vector goes with each row?\nDuring pretraining the table is optimized with the model. At inference its parameters stay fixed. The chosen checkpoint stores 197 rows including the separate CLS slot. No SGD arithmetic is needed here.",
+    "caption": "Every image with this grid uses the same learned position table.",
+    "notes": "Which positional vector goes with each row?\nTraining updates the position table along with the rest of the model. At inference, the table stays fixed. Our checkpoint has 197 position vectors, including one for the CLS slot.",
     "section": "s03",
     "frame": 3
   },
@@ -138,24 +138,24 @@
   {
     "id": "story-cls-analogy",
     "title": "Same CLS idea, different input tokens",
-    "caption": "The image supplies patch tokens where the text model supplied word tokens.",
-    "notes": "Same CLS idea, different input tokens\nThe starting CLS is a learned special parameter in amber; the final CLS is an input-dependent representation, coloured by modality. This is a direct reminder, not a new derivation of CLS.",
+    "caption": "We use patch tokens where the text model used word tokens.",
+    "notes": "Same CLS idea, different input tokens\nAs in the text model, the starting CLS vector is a learned parameter. It is shown in amber. After the encoder, CLS depends on the input; its colour matches the text or image branch.",
     "section": "s04",
     "frame": 2
   },
   {
     "id": "story-cls-start",
     "title": "Every image starts with the same learned CLS vector",
-    "caption": "The stored CLS parameter is shared across photographs.",
-    "notes": "Every image starts with the same learned CLS vector\nBoth images use exactly the same trained model and starting CLS parameter, with the same CLS positional vector. Their patch inputs differ. The cat illustrates input dependence, not a new two-class task.",
+    "caption": "Both photographs start with exactly the same CLS vector.",
+    "notes": "Every image starts with the same learned CLS vector\nBoth photographs use the same trained model, starting CLS vector and CLS position vector. Only their patch inputs differ. The cat helps us see how the input changes the final representation; we are still using the original classifier.",
     "section": "s04",
     "frame": 3
   },
   {
     "id": "story-cls-dependent",
-    "title": "After reading the image, CLS becomes image-dependent",
-    "caption": "Shared parameters can produce different representations for different inputs.",
-    "notes": "After reading the image, CLS becomes image-dependent\nArrows depict the computation, not numerical equality. The dog and cat receive distinct contextual CLS states from the same model. Measured two-image traces remain in the reference deck; no new probabilities are invented.",
+    "title": "After the encoder, CLS depends on the image",
+    "caption": "The same model produces a different CLS representation for each photograph.",
+    "notes": "After the encoder, CLS depends on the image\nThe arrows show the computation. The dog and cat produce different final CLS states even though they use the same model. The reference deck includes measured traces for both images; this diagram does not display numerical predictions.",
     "section": "s04",
     "frame": 4
   },
@@ -171,22 +171,22 @@
     "id": "story-prepared",
     "title": "We now have the token sequence the encoder needs",
     "caption": "196 projected patches plus one CLS row, each with 192 features.",
-    "notes": "We now have the token sequence the encoder needs\nThe checkpoint prepends CLS and adds the positional table to all 197 rows. There is now one image sequence. Detailed Q/K/V comes only after this input has been constructed.",
+    "notes": "We now have the token sequence the encoder needs\nPrepend CLS, then add a position vector to each of the 197 rows. This gives us the complete image sequence. We can now use that sequence to compute Q, K and V.",
     "section": "s04",
     "frame": 6
   },
   {
     "id": "story-reuse-encoder",
     "title": "From here, reuse the encoder we already know",
-    "caption": "The new work was turning an image into tokens.",
-    "notes": "From here, reuse the encoder we already know\nAll following operations act on feature rows: normalization, self-attention, residual additions and the row-wise MLP. They do not operate on cropped pictures displayed as icons.",
+    "caption": "We can now apply the same encoder operations we used for text.",
+    "notes": "From here, reuse the encoder we already know\nNormalization, self-attention, residual additions and the MLP all work on feature rows. The small pictures in our diagrams identify patches; the encoder itself receives their vectors.",
     "section": "s05",
     "frame": 1
   },
   {
     "id": "story-self-cross",
     "title": "Where do Q, K and V come from?",
-    "caption": "ViT has one stream; translation cross-attention had two.",
+    "caption": "ViT gets Q, K and V from one image sequence. Translation cross-attention gets them from two sequences.",
     "notes": "Where do Q, K and V come from?\nIn ViT, three learned projections read the same normalized image sequence. In translation cross-attention, queries come from target decoder states and keys/values from source encoder states. Translation also contains self-attention; the comparison concerns its cross-attention operation.",
     "section": "s05",
     "frame": 2
@@ -202,8 +202,8 @@
   {
     "id": "story-query-examples",
     "title": "What might different queries try to gather?",
-    "caption": "A different receiver can ask for different context from the same image.",
-    "notes": "What might different queries try to gather?\nThese are hypothetical interpretations, not decoded meanings of the trained vectors. A key exposes features that can match a query; its corresponding value supplies a projected feature vector from that same source state. Do not promise that an ear always attends to another ear or that a head has a fixed semantic role. Next show the actual mechanics and a measured map.",
+    "caption": "Each query can gather different information from the same image.",
+    "notes": "What might different queries try to gather?\nThese questions illustrate what a query might do; they are not translations of the trained vectors. A key has features that can match a query. The value carries information from the same source through a separate projection. An ear need not attend to another ear, and a head has no fixed semantic role. We will follow the calculation and then inspect a measured attention map.",
     "section": "s05",
     "frame": 4
   },
@@ -211,14 +211,14 @@
     "id": "story-key-value-pair",
     "title": "A source supplies both a key and a value",
     "caption": "The weight for P60 scales all 64 coordinates of P60\u2019s value vector.",
-    "notes": "A source supplies both a key and a value\nThe pictured source provides both k_60 and v_60, using different projections of its current normalized state. q_74 dot k_60 divided by 8 is one score. Its attention weight comes from softmax against every source score in row P74, including CLS. The weight is a scalar; the value and weighted contribution are 64-feature vectors. This diagram shows roles, not invented measured weights.",
+    "notes": "A source supplies both a key and a value\nThe pictured source provides both k_60 and v_60, using different projections of its current normalized state. q_74 dot k_60 divided by 8 is one score. Its attention weight comes from softmax against every source score in row P74, including CLS. The weight is a scalar; the value and weighted contribution are 64-feature vectors. This diagram illustrates the roles of Q, K and V; it does not show measured attention weights.",
     "section": "s05",
     "frame": 5
   },
   {
     "id": "story-value-mixture",
     "title": "Several source values form one receiver\u2019s message",
-    "caption": "Next, next, next: weight each source vector, then add the contributions.",
+    "caption": "Multiply each value vector by its weight, then add the results to get one message.",
     "notes": "Several source values form one receiver\u2019s message\nThese chosen toy weights sum to one; they are not from the dog checkpoint. Reveal the second source, third source, then their sum: 0.6[2,0] + 0.3[0,1] + 0.1[1,1] = [1.3,0.4]. The real head sums 197 source contributions with 64 features each. It produces one message per receiving query. The multihead output projection converts the joined message into the update added to that receiver\u2019s original row.",
     "section": "s05",
     "frame": 6
@@ -226,31 +226,31 @@
   {
     "id": "story-full-attention",
     "title": "ViT uses full attention, not causal attention",
-    "caption": "Rows are receiving queries; columns are source keys. Allowed does not mean equally weighted.",
-    "notes": "ViT uses full attention, not causal attention\nThe small matrices show permitted query\u2013key pairs, not learned weights. In a next-token decoder, future source positions are masked; a ViT encoder receives the complete image, so all 197 by 197 pairs are allowed, including CLS and self-pairs. Actual scores and row-softmax weights are generally asymmetric because Q and K differ. Patch order in the sequence does not impose a temporal or reading direction.",
+    "caption": "Each row is a query; each column is a key. Every pair is allowed, but the weights can differ.",
+    "notes": "ViT uses full attention, not causal attention\nThe small matrices show permitted query-key pairs, not learned weights. In a next-token decoder, future source positions are masked; a ViT encoder receives the complete image, so all 197 by 197 pairs are allowed, including CLS and self-pairs. Actual scores and row-softmax weights are generally asymmetric because Q and K differ. Patch order in the sequence does not impose a temporal or reading direction.",
     "section": "s05",
     "frame": 7
   },
   {
     "id": "story-cls-message",
     "title": "How does one CLS query collect one message?",
-    "caption": "The message belongs to the query\u2019s row: here, CLS.",
-    "notes": "How does one CLS query collect one message?\nThis is a conceptual recap of one head. All 197 weighted value rows contribute to the 64-feature message. Then heads are joined, projected to 192 features, and added to the original CLS row. Detailed source-by-source arithmetic is in the optional attention appendix.",
+    "caption": "We used the CLS query, so this message updates CLS.",
+    "notes": "How does one CLS query collect one message?\nIn one head, all 197 weighted value rows contribute to a 64-feature message. We join the heads, project the result to 192 features, and add it to the incoming CLS embedding. The optional attention appendix works through each source\u2019s contribution.",
     "section": "s05",
     "frame": 8
   },
   {
     "id": "story-multihead",
-    "title": "Three heads form three views of the same sequence",
+    "title": "Three heads gather three messages for each token",
     "caption": "Join each row\u2019s three 64-feature messages, then project them back to 192 features.",
-    "notes": "Three heads form three views of the same sequence\nAll heads run in parallel on the same normalized input, with separate learned projections. Different messages are allowed; fixed meanings such as \u201cear head\u201d are not assigned. Concatenation extends the feature axis, not the row axis.",
+    "notes": "Three heads gather three messages for each token\nThe heads run in parallel on the same normalized input, each with its own learned projections. They can gather different messages without having fixed roles such as an \"ear head\". Joining them increases the feature width while keeping the same token rows.",
     "section": "s05",
     "frame": 9
   },
   {
     "id": "story-measured-attention",
     "title": "Where does the trained query look?",
-    "caption": "Fix one query and inspect its source weights; other heads and blocks can gather different mixtures.",
+    "caption": "Choose one query and look at its source weights. Another head or block may gather a different mixture.",
     "notes": "Where does the trained query look?\nThe maps use saved Q/K from trained ViT-Tiny block 4, head 1, query P74. P60 receives 9.088265% and CLS receives 2.089876%. All 197 weights sum to one; the displayed 196 patch weights are not renormalized. Teal intensity is scaled to this map\u2019s maximum. The violet outline marks the query and white marks source P60. An attention map visualizes mixing, not a segmentation or a complete explanation of the class prediction.",
     "section": "s05",
     "frame": 10
@@ -282,16 +282,16 @@
   {
     "id": "story-stored-computed",
     "title": "What is stored, and what changes with the image?",
-    "caption": "W_Q, W_K and W_V are learned; attention weights are computed separately for each input.",
-    "notes": "What is stored, and what changes with the image?\nFor inference the learned parameters remain fixed. Activations are recomputed for each image. During training gradients update the parameters. Avoid conflating the learned key/query projections with the input-dependent attention matrix.",
+    "caption": "Training learns W_Q, W_K and W_V. Each new image gets its own attention weights.",
+    "notes": "What is stored, and what changes with the image?\nAt inference, learned parameters stay fixed and the model recomputes its activations for each image. Training uses gradients to update the parameters. The query and key projection weights are learned parameters; the attention matrix is computed from the current input.",
     "section": "s05",
     "frame": 14
   },
   {
     "id": "story-final-cls",
     "title": "After the blocks, read the updated CLS embedding",
-    "caption": "One final CLS embedding summarizes the image for the classifier.",
-    "notes": "After the blocks, read the updated CLS embedding\nThis is a readout, not another update step. The checkpoint applies its final LayerNorm before selecting the CLS row, yielding a 192-feature image embedding. The diagram omits normalization to emphasize the readout. The final 196 patch embeddings also exist, but the trained ImageNet class head reads CLS. The next slide converts its features into 1,000 class scores.",
+    "caption": "The classifier reads the final CLS embedding as its image summary.",
+    "notes": "After the blocks, read the updated CLS embedding\nAfter the final LayerNorm, we select the CLS row to get a 192-feature image embedding. Selecting the row does not update it. This diagram leaves out normalization so we can focus on the readout. All 196 final patch embeddings still exist, but the trained ImageNet head uses CLS. Next, the head turns those features into 1,000 class scores.",
     "section": "s06",
     "frame": 1
   },
@@ -299,39 +299,39 @@
     "id": "story-head",
     "title": "How do 192 features score 1,000 classes?",
     "caption": "The class head learns how each image feature contributes to each class score.",
-    "notes": "How do 192 features score 1,000 classes?\nThe head is a learned affine map. Softmax here normalizes across class logits; it is distinct from attention softmax across source tokens. Prediction uses the highest class score. The main lecture does not repeat softmax arithmetic.",
+    "notes": "How do 192 features score 1,000 classes?\nThe head applies a learned affine map. Softmax turns its class scores into probabilities across the output classes. Attention softmax instead normalizes weights across source tokens. We predict the class with the highest score.",
     "section": "s06",
     "frame": 2
   },
   {
     "id": "story-prediction",
-    "title": "What does this checkpoint predict for our photograph?",
-    "caption": "Newfoundland receives 95.73% of the probability across the 1,000 classes.",
-    "notes": "What does this checkpoint predict for our photograph?\nThese are saved measured predictions from real-inference.json: Newfoundland 95.726752%, Tibetan mastiff 1.625724%, briard 0.674269%. They are not performance or accuracy estimates. The remaining probability belongs to the other ImageNet classes.",
+    "title": "What does the model predict for our photograph?",
+    "caption": "The model assigns Newfoundland a probability of 95.73% among its 1,000 classes.",
+    "notes": "What does the model predict for our photograph?\nThese are saved measured predictions from real-inference.json: Newfoundland 95.726752%, Tibetan mastiff 1.625724%, briard 0.674269%. They are not performance or accuracy estimates. The remaining probability belongs to the other ImageNet classes.",
     "section": "s06",
     "frame": 3
   },
   {
     "id": "story-cover-question",
     "title": "What happens if we hide one quarter of the image?",
-    "caption": "Predict the effect before we run the changed image through the same trained model.",
-    "notes": "What happens if we hide one quarter of the image?\nIntroduce a controlled input intervention. The target is always the ImageNet Newfoundland class. Compare the original photograph with a fresh copy whose top-left 112 by 112 region is filled with mid-gray. This is not an attention mask or token removal. The question concerns the final prediction, unlike the previous internal attention map.",
+    "caption": "What do you expect to change when we pass the covered image through the same model?",
+    "notes": "What happens if we hide one quarter of the image?\nKeep Newfoundland as the target class throughout this experiment. Compare the original photograph with a fresh copy whose top-left 112 by 112 pixels are replaced with mid-gray. We change the pixels, keeping all tokens and the attention mask unchanged. Here we measure the final prediction; the earlier attention map showed weights inside the model.",
     "section": "s06",
     "frame": 4
   },
   {
     "id": "story-cover-code",
-    "title": "Replace pixels, then recompute the whole forward pass",
-    "caption": "Weights stay fixed; all patch features, attention weights and class probabilities are recomputed.",
-    "notes": "Replace pixels, then recompute the whole forward pass\nThe checkpoint transform normalizes each channel as (RGB \u2212 0.5) / 0.5, so normalized zero means gray RGB 0.5, not black. Index 256 is Newfoundland. Both calls use the same frozen model in evaluation mode. Image shape, all 196 patch tokens and CLS remain; 49 patch inputs now contain gray pixels. Each test uses a fresh clone, so covers never accumulate.",
+    "title": "Change the pixels, then run the model again",
+    "caption": "The model keeps its learned weights and recomputes patch features, attention weights and class probabilities.",
+    "notes": "Change the pixels, then run the model again\nThe checkpoint transform normalizes each channel as (RGB \u2212 0.5) / 0.5, so normalized zero means gray RGB 0.5, not black. Index 256 is Newfoundland. Both calls use the same frozen model in evaluation mode. Image shape, all 196 patch tokens and CLS remain; 49 patch inputs now contain gray pixels. Each test uses a fresh clone, so covers never accumulate.",
     "section": "s06",
     "frame": 5
   },
   {
     "id": "story-cover-results",
-    "title": "Four independent covers, four measured predictions",
-    "caption": "Top right causes the largest drop: 16.11 points. All four images still predict Newfoundland.",
-    "notes": "Four independent covers, four measured predictions\nChoose the four quadrants before viewing results. Run each covered copy separately and measure the same target-class probability. Top-right drops most among these four tests. This shows sensitivity to a specified pixel replacement on this photograph, not unique importance of an ear, face or other semantic part. The covers add gray edges and change the input distribution. Probability drops are not additive.",
+    "title": "Cover each quarter, then compare predictions",
+    "caption": "Covering the top right gives the biggest drop: 16.11 percentage points. All four covered images still predict Newfoundland.",
+    "notes": "Cover each quarter, then compare predictions\nChoose the four quadrants before viewing results. Run each covered copy separately and measure the same target-class probability. Top-right drops most among these four tests. This shows sensitivity to a specified pixel replacement on this photograph, not unique importance of an ear, face or other semantic part. The covers add gray edges and change the input distribution. Probability drops are not additive.",
     "section": "s06",
     "frame": 6
   },
@@ -346,31 +346,31 @@
   {
     "id": "story-cnn-context",
     "title": "Two ways to gather image context",
-    "caption": "CNN context grows through local layers; global ViT attention can connect distant patches within one block.",
-    "notes": "Two ways to gather image context\nThe receptive fields and attention edges are schematic, not measured. Both architecture families can ultimately use whole-image context. This comparison concerns ordinary local CNNs and this global-attention ViT; it does not claim one always performs better.",
+    "caption": "CNNs gather wider context through local layers. Global ViT attention can connect distant patches in a single block.",
+    "notes": "Two ways to gather image context\nThese drawings illustrate receptive fields and attention connections; they are not measured maps. Both families can use information from the whole image. We are comparing ordinary local CNNs with this ViT\u2019s global attention. The diagrams do not tell us which model will perform better on a particular task.",
     "section": "s07",
     "frame": 1
   },
   {
     "id": "story-cnn-bias",
     "title": "Which assumptions are built into the architecture?",
-    "caption": "Inductive bias is the structure supplied before learning begins.",
-    "notes": "Which assumptions are built into the architecture?\nConvolution builds in locality and shared filters. A patch-based ViT also has biases, including patchification and shared projections, but its global mixing is content-dependent and positions are supplied explicitly. Data, training and pretrained weights affect outcomes; selection advice remains optional.",
+    "caption": "An inductive bias is an assumption built into the model before it learns from data.",
+    "notes": "Which assumptions are built into the architecture?\nConvolution builds in local neighborhoods and shared filters. ViT also has built-in assumptions: it uses patches and shared projections. Its global attention weights depend on the content, and it receives position information explicitly. The data, training setup and pretrained weights all affect performance; the optional material discusses model choice.",
     "section": "s07",
     "frame": 2
   },
   {
     "id": "story-cnn-example",
-    "title": "What does an inductive bias buy us?",
-    "caption": "Locality and filter sharing make useful image assumptions before the CNN sees any examples.",
-    "notes": "What does an inductive bias buy us?\nThe boxes and arrows are schematic. A learned local CNN filter is reused across locations; standard convolution mixes a fixed neighborhood with the same kernel weights, although its activations depend on the image. ViT query\u2013key matching computes different source weights for each receiver and image, using shared projection parameters. With limited task data, useful priors or pretrained representations can help; there is no universal winner. Compare models under the actual data, accuracy and compute constraints.",
+    "title": "How can these built-in assumptions help?",
+    "caption": "CNN filters assume that nearby pixels matter and that the same pattern can occur in different places.",
+    "notes": "How can these built-in assumptions help?\nThe boxes and arrows are schematic. A learned local CNN filter is reused across locations; standard convolution mixes a fixed neighborhood with the same kernel weights, although its activations depend on the image. ViT query-key matching computes different source weights for each receiver and image, using shared projection parameters. With limited task data, useful priors or pretrained representations can help; there is no universal winner. Compare models under the actual data, accuracy and compute constraints.",
     "section": "s07",
     "frame": 3
   },
   {
     "id": "story-patch-sizes",
     "title": "How much detail should one token cover?",
-    "caption": "Smaller patches preserve a finer spatial grid and create more tokens.",
+    "caption": "Smaller patches give us a finer grid, with more tokens to process.",
     "notes": "How much detail should one token cover?\nFor a 224 by 224 image: 32-pixel patches give 49 patch tokens, 16 gives 196, and 8 gives 784. Add one CLS token for this architecture. These are architectural comparisons, not a claim that the saved checkpoint accepts all three patch sizes without adaptation.",
     "section": "s07",
     "frame": 4
@@ -378,7 +378,7 @@
   {
     "id": "story-patch-cost",
     "title": "What does a finer grid cost?",
-    "caption": "The pairwise score count grows quadratically with token count.",
+    "caption": "Each token compares with every token, so doubling the token count gives four times as many scores.",
     "notes": "What does a finer grid cost?\nIncluding CLS, 197 squared is 38,809 and 785 squared is 616,225, about 15.88 times larger. The approximately 16-fold statement is exact for the patch-only counts. This concerns attention scores, not a 16-fold claim about total runtime or all model operations.",
     "section": "s07",
     "frame": 5
@@ -386,7 +386,7 @@
   {
     "id": "story-summary-pipeline",
     "title": "Once an image becomes tokens, the encoder is familiar",
-    "caption": "Pixels become token rows. Every row gains context. Final CLS supplies the image summary for classification.",
+    "caption": "Turn patches into tokens, update them with the encoder, then use final CLS to predict the class.",
     "notes": "Once an image becomes tokens, the encoder is familiar\nRead the three panels from left to right, as in the opening model-family recap. Split the image into 196 RGB patches and apply one shared projection; prepend CLS and add position embeddings. All 197 rows pass through 12 encoder blocks. Within each block, full attention gathers messages, joins and projects the head outputs, and adds an update to each incoming row; the MLP then adds its own update to that attention-updated row. Each block has its own parameters. The shape remains 197 by 192. After final normalization, select only the CLS row for the trained 1,000-class head. The patch rows still exist. LayerNorm and the output projection are omitted from this overview; the nearby code and the detailed block slides make them explicit. The final label is the measured prediction for our photograph.",
     "section": "s07",
     "frame": 6
@@ -394,8 +394,8 @@
   {
     "id": "story-summary-shapes",
     "title": "Follow the whole model through its shapes",
-    "caption": "Batch dimension omitted; all shapes refer to one photograph.",
-    "notes": "Follow the whole model through its shapes\nThis is the conceptual climax. Projection sets the feature width; adding CLS changes 196 rows to 197. All twelve encoder blocks preserve 197 by 192. Only the readout reduces to one row and the classifier changes 192 features to 1,000 logits.",
+    "caption": "These shapes describe one photograph. The batch dimension is left out.",
+    "notes": "Follow the whole model through its shapes\nThe patch projection sets the feature width. Adding CLS takes us from 196 rows to 197, and all twelve encoder blocks keep the 197 by 192 shape. Reading CLS selects one row. The classifier then maps its 192 features to 1,000 logits.",
     "section": "s07",
     "frame": 7
   },
@@ -409,9 +409,9 @@
   },
   {
     "id": "story-optional-routes",
-    "title": "Choose a deeper dive when you need it",
-    "caption": "The reference deck preserves the detailed diagrams, code, measurements and exercises.",
-    "notes": "Choose a deeper dive when you need it\nOpen vision1-reference.html for the full detail. Section 6 is the implementation lab; sections 7\u20139 sit behind OPTIONAL EXTENSIONS. Optional reading also retains initialization, optimization and CLS-versus-pooling material. Feature similarity, attention and causal importance are different measurements.",
+    "title": "More detail, when you want it",
+    "caption": "The reference deck has the full calculations, code, diagrams and exercises.",
+    "notes": "More detail, when you want it\nThe reference deck at vision1-reference.html has the full detail. Section 6 covers implementation; sections 7 to 9 contain the optional extensions. You can also find initialization, optimization and CLS-versus-pooling comparisons there. Feature similarity, attention weights and the effect of covering pixels measure different things.",
     "section": "s07",
     "frame": 9
   },
@@ -426,8 +426,8 @@
   {
     "id": "story-clip-question",
     "title": "What if our class vocabulary could come from words?",
-    "caption": "The next lecture begins with this question.",
-    "notes": "What if our class vocabulary could come from words?\nEnd on the missing mapping. This checkpoint does not already convert arbitrary language to compatible class vectors. The next lecture explains the aligned image/text representation needed for that idea; do not teach CLIP\u2019s training objective here.",
+    "caption": "We will pick up this question in the CLIP lecture.",
+    "notes": "What if our class vocabulary could come from words?\nThe missing piece is a way to turn a class description into a vector we can compare with the image. Our checkpoint cannot do that for arbitrary text. The next lecture explains how CLIP learns image and text representations that can be compared.",
     "section": "s07",
     "frame": 11
   }

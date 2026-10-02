@@ -7,7 +7,7 @@ Right/Left advances reveals; S opens notes. PDF captures the final reveal of eac
 | PDF page | Route | Stable ID | Title |
 |---:|---|---|---|
 | 2 | [s01/1/0](../vision1.html?present#s01/1/0) | `story-recall` | We already know how an encoder builds context |
-| 3 | [s01/2/0](../vision1.html?present#s01/2/0) | `story-task` | What should this photograph produce? |
+| 3 | [s01/2/0](../vision1.html?present#s01/2/0) | `story-task` | What should the model predict for this photograph? |
 | 4 | [s01/3/0](../vision1.html?present#s01/3/0) | `story-contract` | An encoder expects vectors. How can an image supply them? |
 | 5 | [s01/4/0](../vision1.html?present#s01/4/0) | `story-questions` | Five questions build the architecture |
 | 6 | [s02/1/0](../vision1.html?present#s02/1/0) | `story-pixel-budget` | Why not make every pixel a token? |
@@ -17,15 +17,15 @@ Right/Left advances reveals; S opens notes. PDF captures the final reveal of eac
 | 10 | [s02/5/0](../vision1.html?present#s02/5/0) | `story-projection` | How do 768 pixel values become 192 features? |
 | 11 | [s02/6/0](../vision1.html?present#s02/6/0) | `story-shared-projection` | Should every patch get a different projection? |
 | 12 | [s02/7/0](../vision1.html?present#s02/7/0) | `story-stack` | Stack the patches into one feature matrix |
-| 13 | [s02/8/0](../vision1.html?present#s02/8/0) | `story-measured-patch` | What does the trained projection actually return? |
-| 14 | [s02/9/0](../vision1.html?present#s02/9/0) | `story-pipeline-patches` | We have solved the image-to-token problem |
+| 13 | [s02/8/0](../vision1.html?present#s02/8/0) | `story-measured-patch` | What does the trained projection return? |
+| 14 | [s02/9/0](../vision1.html?present#s02/9/0) | `story-pipeline-patches` | We now have a token for each patch |
 | 15 | [s03/1/0](../vision1.html?present#s03/1/0) | `story-where` | The projection is shared. Where does location enter? |
 | 16 | [s03/2/0](../vision1.html?present#s03/2/0) | `story-content-position` | Add WHAT and WHERE |
 | 17 | [s03/3/0](../vision1.html?present#s03/3/0) | `story-position-table` | Which positional vector goes with each row? |
 | 18 | [s04/1/0](../vision1.html?present#s04/1/0) | `story-readout-question` | Many patch representations, one image label |
 | 19 | [s04/2/0](../vision1.html?present#s04/2/0) | `story-cls-analogy` | Same CLS idea, different input tokens |
 | 20 | [s04/3/0](../vision1.html?present#s04/3/0) | `story-cls-start` | Every image starts with the same learned CLS vector |
-| 21 | [s04/4/0](../vision1.html?present#s04/4/0) | `story-cls-dependent` | After reading the image, CLS becomes image-dependent |
+| 21 | [s04/4/0](../vision1.html?present#s04/4/0) | `story-cls-dependent` | After the encoder, CLS depends on the image |
 | 22 | [s04/5/0](../vision1.html?present#s04/5/0) | `story-cls-reads` | CLS reads the current patch states at every block |
 | 23 | [s04/6/0](../vision1.html?present#s04/6/0) | `story-prepared` | We now have the token sequence the encoder needs |
 | 24 | [s05/1/0](../vision1.html?present#s05/1/0) | `story-reuse-encoder` | From here, reuse the encoder we already know |
@@ -36,7 +36,7 @@ Right/Left advances reveals; S opens notes. PDF captures the final reveal of eac
 | 29 | [s05/6/0](../vision1.html?present#s05/6/0) | `story-value-mixture` | Several source values form one receiver’s message |
 | 30 | [s05/7/0](../vision1.html?present#s05/7/0) | `story-full-attention` | ViT uses full attention, not causal attention |
 | 31 | [s05/8/0](../vision1.html?present#s05/8/0) | `story-cls-message` | How does one CLS query collect one message? |
-| 32 | [s05/9/0](../vision1.html?present#s05/9/0) | `story-multihead` | Three heads form three views of the same sequence |
+| 32 | [s05/9/0](../vision1.html?present#s05/9/0) | `story-multihead` | Three heads gather three messages for each token |
 | 33 | [s05/10/0](../vision1.html?present#s05/10/0) | `story-measured-attention` | Where does the trained query look? |
 | 34 | [s05/11/0](../vision1.html?present#s05/11/0) | `story-block` | Add the attention update to the original embedding |
 | 35 | [s05/12/0](../vision1.html?present#s05/12/0) | `story-mlp` | The MLP adds one more update to each embedding |
@@ -44,19 +44,19 @@ Right/Left advances reveals; S opens notes. PDF captures the final reveal of eac
 | 37 | [s05/14/0](../vision1.html?present#s05/14/0) | `story-stored-computed` | What is stored, and what changes with the image? |
 | 38 | [s06/1/0](../vision1.html?present#s06/1/0) | `story-final-cls` | After the blocks, read the updated CLS embedding |
 | 39 | [s06/2/0](../vision1.html?present#s06/2/0) | `story-head` | How do 192 features score 1,000 classes? |
-| 40 | [s06/3/0](../vision1.html?present#s06/3/0) | `story-prediction` | What does this checkpoint predict for our photograph? |
+| 40 | [s06/3/0](../vision1.html?present#s06/3/0) | `story-prediction` | What does the model predict for our photograph? |
 | 41 | [s06/4/0](../vision1.html?present#s06/4/0) | `story-cover-question` | What happens if we hide one quarter of the image? |
-| 42 | [s06/5/0](../vision1.html?present#s06/5/0) | `story-cover-code` | Replace pixels, then recompute the whole forward pass |
-| 43 | [s06/6/0](../vision1.html?present#s06/6/0) | `story-cover-results` | Four independent covers, four measured predictions |
+| 42 | [s06/5/0](../vision1.html?present#s06/5/0) | `story-cover-code` | Change the pixels, then run the model again |
+| 43 | [s06/6/0](../vision1.html?present#s06/6/0) | `story-cover-results` | Cover each quarter, then compare predictions |
 | 44 | [s06/7/0](../vision1.html?present#s06/7/0) | `story-cover-small` | Would smaller covers tell us more? |
 | 45 | [s07/1/0](../vision1.html?present#s07/1/0) | `story-cnn-context` | Two ways to gather image context |
 | 46 | [s07/2/0](../vision1.html?present#s07/2/0) | `story-cnn-bias` | Which assumptions are built into the architecture? |
-| 47 | [s07/3/0](../vision1.html?present#s07/3/0) | `story-cnn-example` | What does an inductive bias buy us? |
+| 47 | [s07/3/0](../vision1.html?present#s07/3/0) | `story-cnn-example` | How can these built-in assumptions help? |
 | 48 | [s07/4/0](../vision1.html?present#s07/4/0) | `story-patch-sizes` | How much detail should one token cover? |
 | 49 | [s07/5/0](../vision1.html?present#s07/5/0) | `story-patch-cost` | What does a finer grid cost? |
 | 50 | [s07/6/0](../vision1.html?present#s07/6/0) | `story-summary-pipeline` | Once an image becomes tokens, the encoder is familiar |
 | 51 | [s07/7/0](../vision1.html?present#s07/7/0) | `story-summary-shapes` | Follow the whole model through its shapes |
 | 52 | [s07/8/0](../vision1.html?present#s07/8/0) | `story-six-lines` | The whole ViT in six lines |
-| 53 | [s07/9/0](../vision1.html?present#s07/9/0) | `story-optional-routes` | Choose a deeper dive when you need it |
+| 53 | [s07/9/0](../vision1.html?present#s07/9/0) | `story-optional-routes` | More detail, when you want it |
 | 54 | [s07/10/0](../vision1.html?present#s07/10/0) | `story-fixed-vocabulary` | The classifier stores a learned vector per known class |
 | 55 | [s07/11/0](../vision1.html?present#s07/11/0) | `story-clip-question` | What if our class vocabulary could come from words? |
