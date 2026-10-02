@@ -217,7 +217,7 @@ def refine_visuals(b, sections):
         if reading:
             kept[-1]+='<div class="companion"><details><summary>Optional reference and extra examples</summary>'+''.join(reading)+'</details></div>'
         if n==1:
-            kept[0]+='<div class="companion"><p><a href="pdf/vision1.pdf">Download the lecture PDF (152 pages · 36 MB)</a> · <a href="pdf/vision1-transcript.md">Searchable transcript</a> · <a href="vision1-explorer.html">Interactive lab</a></p></div>'
+            kept[0]+='<div class="companion"><p><a href="pdf/vision1.pdf">Download the lecture PDF (151 pages · 36 MB)</a> · <a href="pdf/vision1-transcript.md">Searchable transcript</a> · <a href="vision1-explorer.html">Interactive lab</a></p></div>'
         if n==6:title='Implementation lab · optional'
         result.append((title,[semantic_frame(b,fr) for fr in kept]))
     return result
@@ -381,7 +381,6 @@ def semantic_frame(b,markup):
     overrides = {
         'task-image-label': {'c-a':'neutral'},
         'patch-activation-location': {'c-v':'neutral'},
-        'patch-filter-patterns': {'c-v':'vision'},
         'real-patch-shared': {'c-k':'vision'},
         'position-learning': {'c-v':'neutral'},
         'real-cls-mlp': {'c-v':'neutral'},

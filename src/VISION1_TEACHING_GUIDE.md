@@ -2,9 +2,9 @@
 
 ## Scope and prerequisite
 
-**147 teaching frames plus the cover, in 10 sections.** This lecture follows **Transformers beyond next-token prediction** and leads into CLIP. The opening connects to the text encoder immediately: **same encoder idea, different tokens**.
+**146 teaching frames plus the cover, in 10 sections.** This lecture follows **Transformers beyond next-token prediction** and leads into CLIP. The opening connects to the text encoder immediately: **same encoder idea, different tokens**.
 
-The first October 2026 revision was selective: 26 repeated introductions or recaps moved to expandable reading notes, seven bridge/summary frames were added, and the net reduction is 19 frames (11.2%). The hand calculations, source-to-receiver attention walkthrough, multihead diagrams, Linear/Conv2d equivalence, transfer diagrams and nine guided explorer examples remain. The second visual pass reduces the main route by only three further frames: 147 rather than 150. Detailed patch arithmetic and attention calculations stay in the presentation. Two CLS parameter digressions, the historical paper figure, the dense whole-model map, the nine-state interactive widget and three repeated quadrant slides remain available in reading notes. Three clean interpretation figures replace the widget in the teaching/PDF route.
+The first October 2026 revision was selective: 26 repeated introductions or recaps moved to expandable reading notes, seven bridge/summary frames were added, and the net reduction is 19 frames (11.2%). The hand calculations, source-to-receiver attention walkthrough, multihead diagrams, Linear/Conv2d equivalence, transfer diagrams and nine guided explorer examples remain. The visual pass and removal of the grayscale filter detour reduce the main route to 146 frames from 150. Detailed patch arithmetic and attention calculations stay in the presentation. Two CLS parameter digressions, the historical paper figure, the dense whole-model map, the nine-state interactive widget and three repeated quadrant slides remain available in reading notes. Three clean interpretation figures replace the widget in the teaching/PDF route.
 
 Presentation: Right/Left advances reveals, **S** opens presenter notes, **O** opens the overview, and **C** shows classroom controls. Reading mode includes longer explanations, sources, numerical tables and optional recaps. The [slide map](VISION1_SLIDE_MAP.md) lists current routes. Old `#section/frame/build` links can change when a section is reordered.
 
@@ -23,7 +23,7 @@ Presentation: Right/Left advances reveals, **S** opens presenter notes, **O** op
 | 9 | What can we measure inside it? | Three measured hero examples, a link to all nine guided examples, then controlled occlusion experiments. |
 | 10 | What costs more, and what comes next? | Token count and quadratic score count; architecture and takeaways; fixed class vectors → language-derived candidates for CLIP. |
 
-Use multiple meetings rather than treating 147 frames as a one-class target. A practical split is sections 1–3 for representation and computation, sections 4–7 for architecture/code/adaptation, and sections 8–10 for interpretation, cost and the CLIP handoff. Short frames allow students to predict the next step before revealing it.
+Use multiple meetings rather than treating 146 frames as a one-class target. A practical split is sections 1–3 for representation and computation, sections 4–7 for architecture/code/adaptation, and sections 8–10 for interpretation, cost and the CLIP handoff. Short frames allow students to predict the next step before revealing it.
 
 ## One model, clearly named exceptions
 
@@ -88,7 +88,7 @@ uv run --offline --with timm --with pillow python src/check_vision1_closure.py
 uv run --offline --with timm --with pillow python src/check_vision1_photo_code.py
 ```
 
-The audit PDF includes 152 pages: cover + 147 teaching frames, followed by four labelled optional reference pages (complete model map, original paper diagram, CLS initialization and CLS parameter learning). Its three interpretation figures replace screenshots of nine UI states; all nine remain in the HTML lab. It captures final reveals; live controls and intermediate animations remain in HTML. The searchable audit transcript supplies diagram labels, code and speaker notes alongside the rendered PDF.
+The audit PDF includes 151 pages: cover + 146 teaching frames, followed by four labelled optional reference pages (complete model map, original paper diagram, CLS initialization and CLS parameter learning). Its three interpretation figures replace screenshots of nine UI states; all nine remain in the HTML lab. It captures final reveals; live controls and intermediate animations remain in HTML. The searchable audit transcript supplies diagram labels, code and speaker notes alongside the rendered PDF.
 
 ## Visual semantics across the lecture series
 

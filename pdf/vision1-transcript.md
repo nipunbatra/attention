@@ -1,10 +1,10 @@
-# Vision I — RGB ordering audit transcript
+# Vision I — lecture transcript
 
-2 October 2026. RGB ordering clarification, based on commit 0345f0e.
+2 October 2026. Removed the grayscale filter slide; based on commit e382967.
 
-Companion PDF: [vision1.pdf](vision1.pdf) (**152 pages**).
+Companion PDF: [vision1.pdf](vision1.pdf) (**151 pages**).
 
-147 teaching frames + cover, followed by four optional reference pages. The preceding version had 150 teaching frames and 159 PDF pages because it captured all nine explorer UI states. This revision retains the detailed arithmetic and code, uses three large interpretation figures, and keeps the nine-example interactive lab in [the interactive lab](../vision1-explorer.html).
+146 teaching frames + cover, followed by four optional reference pages. The preceding version had 150 teaching frames and 159 PDF pages because it captured all nine explorer UI states. This revision retains the detailed arithmetic and code, uses three large interpretation figures, and keeps the nine-example interactive lab in [the interactive lab](../vision1-explorer.html).
 
 Final reveals are shown. HTML retains intermediate builds and interactive controls. The PDF is a visual audit copy; this transcript supplies searchable labels, code and speaker notes. Geometry and spatial reading order should be judged from the PDF.
 
@@ -40,130 +40,129 @@ Final reveals are shown. HTML retains intermediate builds and interactive contro
 | 26 | `#s02/10` | Now follow the connections into output 2 |
 | 27 | `#s02/11` | These two numbers are the patch embedding |
 | 28 | `#s02/12` | Apply the very same layer to another patch |
-| 29 | `#s02/13` | Weighted filters can see more than average brightness |
-| 30 | `#s02/14` | Start with the same dog photograph |
-| 31 | `#s02/15` | Split the image into 16 × 16 patches |
-| 32 | `#s02/16` | Number the patches row by row |
-| 33 | `#s02/17` | Read the RGB values inside patch 63 |
-| 34 | `#s02/18` | Normalize those same RGB values |
-| 35 | `#s02/19` | Flatten patch 63 in the same order as the code |
-| 36 | `#s02/20` | Pass that row through the shared linear layer |
-| 37 | `#s02/21` | Read the 192 output features for patch 63 |
-| 38 | `#s02/22` | Pass patch 64 through the very same layer |
-| 39 | `#s02/23` | Stack the 196 output rows into C |
-| 40 | `#s03/1` | Section 3 · Prepare the rows, then classify the image |
-| 41 | `#s03/2` | Give each patch its location in the photograph |
-| 42 | `#s03/3` | Position is a learned lookup table |
-| 43 | `#s03/4` | Add position to these content rows |
-| 44 | `#s03/5` | The image loss teaches the position table |
-| 45 | `#s03/6` | Why add CLS? Give the classifier one image summary |
-| 46 | `#s03/7` | Add a summary row beside the dog’s patch rows |
-| 47 | `#s03/8` | What makes CLS an image summary? |
-| 48 | `#s03/9` | The same CLS start reads two different photographs |
-| 49 | `#s03/10` | Without CLS, combine the dog’s final patch rows |
-| 50 | `#s03/11` | Why is CLS a common choice if pooling also works? |
-| 51 | `#s03/12` | Add the summary row: 196 + 1 = 197 |
-| 52 | `#s03/13` | Start with one Transformer block |
-| 53 | `#s03/14` | Self-attention: Q, K and V share the same input |
-| 54 | `#s03/15` | Make queries, keys and values from these rows |
-| 55 | `#s03/16` | The same input matrix feeds three learned projections |
-| 56 | `#s03/17` | One query–key comparison fills one matrix cell |
-| 57 | `#s03/18` | Follow the CLS row from scores to weights |
-| 58 | `#s03/19` | Turn each query’s 197 scores into 197 source weights |
-| 59 | `#s03/20` | Every image row can read every image row |
-| 60 | `#s03/21` | A message for CLS works like a message for bank |
-| 61 | `#s03/22` | The dog’s feature rows become value rows |
-| 62 | `#s03/23` | One weight scales all 64 features in its value row |
-| 63 | `#s03/24` | Each source contributes a weighted value row |
-| 64 | `#s03/25` | Add the contributions to make one CLS message |
-| 65 | `#s03/26` | Where does the CLS message go? |
-| 66 | `#s03/27` | Each query gets its own message |
-| 67 | `#s03/28` | From one completed head to three parallel heads |
-| 68 | `#s03/29` | What might different heads look for in this photograph? |
-| 69 | `#s03/30` | The same rows feed three sets of Q, K and V |
-| 70 | `#s03/31` | Each head repeats the complete attention calculation |
-| 71 | `#s03/32` | One CLS input produces three different messages |
-| 72 | `#s03/33` | Concatenate the three CLS messages |
-| 73 | `#s03/34` | Keep the embedding; add the context from attention |
-| 74 | `#s03/35` | The dog’s CLS keeps its input and gains context |
-| 75 | `#s03/36` | Open block 1: attention, then the MLP |
-| 76 | `#s03/37` | Open the MLP: 192 inputs, 768 hidden units, 192 outputs |
-| 77 | `#s03/38` | Add the MLP update to finish block 1 |
-| 78 | `#s03/39` | Pass the complete output of block 1 into block 2 |
-| 79 | `#s03/40` | What changes as the rows move through the blocks? |
-| 80 | `#s03/41` | Continue through the stack, then classify the image |
-| 81 | `#s03/42` | Select CLS from the final feature matrix |
-| 82 | `#s03/43` | Open the classifier: 192 features become 1,000 scores |
-| 83 | `#s03/44` | One class score is a weighted sum plus a bias |
-| 84 | `#s03/45` | Turn all 1,000 scores into class probabilities |
-| 85 | `#s03/46` | Two softmaxes, two different questions |
-| 86 | `#s03/47` | The same dog now has its final prediction |
-| 87 | `#s04/1` | Section 4 · Whole model walkthrough |
-| 88 | `#s04/2` | One shape trace from pixels to class scores |
-| 89 | `#s04/3` | Inside each block: mix, transform, keep the residual |
-| 90 | `#s04/4` | Backward: compute gradients, then update the model |
-| 91 | `#s05/1` | Section 5 · CNNs, ViTs and inductive bias |
-| 92 | `#s05/2` | Two ways to build an image representation |
-| 93 | `#s05/3` | A wider view, then one image label |
-| 94 | `#s05/4` | Inductive bias: a useful starting assumption |
-| 95 | `#s05/5` | Which is a sensible starting point? |
-| 96 | `#s06/1` | Implementation lab · optional |
-| 97 | `#s06/2` | Keep the same photograph and add the batch axis |
-| 98 | `#s06/3` | Our target: turn every patch into 192 features |
-| 99 | `#s06/4` | See the patch projection as a layer of neurons |
-| 100 | `#s06/5` | Implementation 1: extract patches, then use Linear |
-| 101 | `#s06/6` | Implementation 2: the same projection with Conv2d |
-| 102 | `#s06/7` | Reshape the weights; keep the same parameter count |
-| 103 | `#s06/8` | Same pixel × same weight, in both implementations |
-| 104 | `#s06/9` | Verify it on both photographs: the features match |
-| 105 | `#s06/10` | Why package patch projection as Conv2d? |
-| 106 | `#s06/11` | First turn the feature grid into patch rows |
-| 107 | `#s06/12` | Then prepend CLS and add position |
-| 108 | `#s06/13` | Make queries, keys and values for three heads |
-| 109 | `#s06/14` | Compute one message for every query in every head |
-| 110 | `#s06/15` | Join the head messages and project back to 192 |
-| 111 | `#s06/16` | Build the layers inside one Transformer block |
-| 112 | `#s06/17` | Use the two residual paths in order |
-| 113 | `#s06/18` | Create twelve blocks with separate learned parameters |
-| 114 | `#s06/19` | Run the stack, then read the final CLS |
-| 115 | `#s06/20` | Connect the loss diagram to one training step |
-| 116 | `#s07/1` | Section 7 · Adapt and evaluate the classifier |
-| 117 | `#s07/2` | What was this model trained to predict? |
-| 118 | `#s07/3` | Same photographs, a different label vocabulary |
-| 119 | `#s07/4` | What if our users supply sketches? |
-| 120 | `#s07/5` | Replace the ImageNet head with our two-class head |
-| 121 | `#s07/6` | Freeze the encoder; train the new head |
-| 122 | `#s07/7` | Next option: fine-tune the last block as well |
-| 123 | `#s07/8` | One batch follows the same forward and backward paths |
-| 124 | `#s07/9` | Three stages: learn, adapt, then predict |
-| 125 | `#s07/10` | What happens when we classify a new photograph? |
-| 126 | `#s07/11` | How would we check whether the classifier learned? |
-| 127 | `#s08/1` | Section 8 · Return to the real photographs |
-| 128 | `#s08/2` | Which pixels are we giving the real model? |
-| 129 | `#s08/3` | What did the model call our dog? |
-| 130 | `#s08/4` | Does one correct photograph tell us the accuracy? |
-| 131 | `#s08/5` | What happens when we give it the cat? |
-| 132 | `#s09/1` | Section 9 · Look inside the trained model |
-| 133 | `#s09/2` | Similar patch features can connect distant image regions |
-| 134 | `#s09/3` | Keep the query fixed; change only the attention head |
-| 135 | `#s09/4` | CLS gathers a message for the image summary |
-| 136 | `#s09/5` | “Cover” means replace these pixels with gray |
-| 137 | `#s09/6` | Run the covered image through the same trained model |
-| 138 | `#s09/7` | Four covers, four new forward passes |
-| 139 | `#s09/8` | Use smaller covers to ask a more local question |
-| 140 | `#s09/9` | Smaller covers reveal local sensitivity |
-| 141 | `#s10/1` | Section 10 · The cost of smaller patches |
-| 142 | `#s10/2` | What changes when the patch size is halved? |
-| 143 | `#s10/3` | How much matching happens inside the tiny real model? |
-| 144 | `#s10/4` | What happens if we use a larger image? |
-| 145 | `#s10/5` | The whole ViT: pixels → context → one label |
-| 146 | `#s10/6` | Four ideas to carry forward |
-| 147 | `#s10/7` | Our classifier stores a vector for each known label |
-| 148 | `#s10/8` | What if a class vector could come from language? |
-| 149 | Optional reference | The whole Vision Transformer in one figure |
-| 150 | Optional reference | To images: An Image is Worth 16 × 16 Words |
-| 151 | Optional reference | Create 192 trainable numbers for CLS |
-| 152 | Optional reference | The image label teaches the starting CLS numbers |
+| 29 | `#s02/13` | Start with the same dog photograph |
+| 30 | `#s02/14` | Split the image into 16 × 16 patches |
+| 31 | `#s02/15` | Number the patches row by row |
+| 32 | `#s02/16` | Read the RGB values inside patch 63 |
+| 33 | `#s02/17` | Normalize those same RGB values |
+| 34 | `#s02/18` | Flatten patch 63 in the same order as the code |
+| 35 | `#s02/19` | Pass that row through the shared linear layer |
+| 36 | `#s02/20` | Read the 192 output features for patch 63 |
+| 37 | `#s02/21` | Pass patch 64 through the very same layer |
+| 38 | `#s02/22` | Stack the 196 output rows into C |
+| 39 | `#s03/1` | Section 3 · Prepare the rows, then classify the image |
+| 40 | `#s03/2` | Give each patch its location in the photograph |
+| 41 | `#s03/3` | Position is a learned lookup table |
+| 42 | `#s03/4` | Add position to these content rows |
+| 43 | `#s03/5` | The image loss teaches the position table |
+| 44 | `#s03/6` | Why add CLS? Give the classifier one image summary |
+| 45 | `#s03/7` | Add a summary row beside the dog’s patch rows |
+| 46 | `#s03/8` | What makes CLS an image summary? |
+| 47 | `#s03/9` | The same CLS start reads two different photographs |
+| 48 | `#s03/10` | Without CLS, combine the dog’s final patch rows |
+| 49 | `#s03/11` | Why is CLS a common choice if pooling also works? |
+| 50 | `#s03/12` | Add the summary row: 196 + 1 = 197 |
+| 51 | `#s03/13` | Start with one Transformer block |
+| 52 | `#s03/14` | Self-attention: Q, K and V share the same input |
+| 53 | `#s03/15` | Make queries, keys and values from these rows |
+| 54 | `#s03/16` | The same input matrix feeds three learned projections |
+| 55 | `#s03/17` | One query–key comparison fills one matrix cell |
+| 56 | `#s03/18` | Follow the CLS row from scores to weights |
+| 57 | `#s03/19` | Turn each query’s 197 scores into 197 source weights |
+| 58 | `#s03/20` | Every image row can read every image row |
+| 59 | `#s03/21` | A message for CLS works like a message for bank |
+| 60 | `#s03/22` | The dog’s feature rows become value rows |
+| 61 | `#s03/23` | One weight scales all 64 features in its value row |
+| 62 | `#s03/24` | Each source contributes a weighted value row |
+| 63 | `#s03/25` | Add the contributions to make one CLS message |
+| 64 | `#s03/26` | Where does the CLS message go? |
+| 65 | `#s03/27` | Each query gets its own message |
+| 66 | `#s03/28` | From one completed head to three parallel heads |
+| 67 | `#s03/29` | What might different heads look for in this photograph? |
+| 68 | `#s03/30` | The same rows feed three sets of Q, K and V |
+| 69 | `#s03/31` | Each head repeats the complete attention calculation |
+| 70 | `#s03/32` | One CLS input produces three different messages |
+| 71 | `#s03/33` | Concatenate the three CLS messages |
+| 72 | `#s03/34` | Keep the embedding; add the context from attention |
+| 73 | `#s03/35` | The dog’s CLS keeps its input and gains context |
+| 74 | `#s03/36` | Open block 1: attention, then the MLP |
+| 75 | `#s03/37` | Open the MLP: 192 inputs, 768 hidden units, 192 outputs |
+| 76 | `#s03/38` | Add the MLP update to finish block 1 |
+| 77 | `#s03/39` | Pass the complete output of block 1 into block 2 |
+| 78 | `#s03/40` | What changes as the rows move through the blocks? |
+| 79 | `#s03/41` | Continue through the stack, then classify the image |
+| 80 | `#s03/42` | Select CLS from the final feature matrix |
+| 81 | `#s03/43` | Open the classifier: 192 features become 1,000 scores |
+| 82 | `#s03/44` | One class score is a weighted sum plus a bias |
+| 83 | `#s03/45` | Turn all 1,000 scores into class probabilities |
+| 84 | `#s03/46` | Two softmaxes, two different questions |
+| 85 | `#s03/47` | The same dog now has its final prediction |
+| 86 | `#s04/1` | Section 4 · Whole model walkthrough |
+| 87 | `#s04/2` | One shape trace from pixels to class scores |
+| 88 | `#s04/3` | Inside each block: mix, transform, keep the residual |
+| 89 | `#s04/4` | Backward: compute gradients, then update the model |
+| 90 | `#s05/1` | Section 5 · CNNs, ViTs and inductive bias |
+| 91 | `#s05/2` | Two ways to build an image representation |
+| 92 | `#s05/3` | A wider view, then one image label |
+| 93 | `#s05/4` | Inductive bias: a useful starting assumption |
+| 94 | `#s05/5` | Which is a sensible starting point? |
+| 95 | `#s06/1` | Implementation lab · optional |
+| 96 | `#s06/2` | Keep the same photograph and add the batch axis |
+| 97 | `#s06/3` | Our target: turn every patch into 192 features |
+| 98 | `#s06/4` | See the patch projection as a layer of neurons |
+| 99 | `#s06/5` | Implementation 1: extract patches, then use Linear |
+| 100 | `#s06/6` | Implementation 2: the same projection with Conv2d |
+| 101 | `#s06/7` | Reshape the weights; keep the same parameter count |
+| 102 | `#s06/8` | Same pixel × same weight, in both implementations |
+| 103 | `#s06/9` | Verify it on both photographs: the features match |
+| 104 | `#s06/10` | Why package patch projection as Conv2d? |
+| 105 | `#s06/11` | First turn the feature grid into patch rows |
+| 106 | `#s06/12` | Then prepend CLS and add position |
+| 107 | `#s06/13` | Make queries, keys and values for three heads |
+| 108 | `#s06/14` | Compute one message for every query in every head |
+| 109 | `#s06/15` | Join the head messages and project back to 192 |
+| 110 | `#s06/16` | Build the layers inside one Transformer block |
+| 111 | `#s06/17` | Use the two residual paths in order |
+| 112 | `#s06/18` | Create twelve blocks with separate learned parameters |
+| 113 | `#s06/19` | Run the stack, then read the final CLS |
+| 114 | `#s06/20` | Connect the loss diagram to one training step |
+| 115 | `#s07/1` | Section 7 · Adapt and evaluate the classifier |
+| 116 | `#s07/2` | What was this model trained to predict? |
+| 117 | `#s07/3` | Same photographs, a different label vocabulary |
+| 118 | `#s07/4` | What if our users supply sketches? |
+| 119 | `#s07/5` | Replace the ImageNet head with our two-class head |
+| 120 | `#s07/6` | Freeze the encoder; train the new head |
+| 121 | `#s07/7` | Next option: fine-tune the last block as well |
+| 122 | `#s07/8` | One batch follows the same forward and backward paths |
+| 123 | `#s07/9` | Three stages: learn, adapt, then predict |
+| 124 | `#s07/10` | What happens when we classify a new photograph? |
+| 125 | `#s07/11` | How would we check whether the classifier learned? |
+| 126 | `#s08/1` | Section 8 · Return to the real photographs |
+| 127 | `#s08/2` | Which pixels are we giving the real model? |
+| 128 | `#s08/3` | What did the model call our dog? |
+| 129 | `#s08/4` | Does one correct photograph tell us the accuracy? |
+| 130 | `#s08/5` | What happens when we give it the cat? |
+| 131 | `#s09/1` | Section 9 · Look inside the trained model |
+| 132 | `#s09/2` | Similar patch features can connect distant image regions |
+| 133 | `#s09/3` | Keep the query fixed; change only the attention head |
+| 134 | `#s09/4` | CLS gathers a message for the image summary |
+| 135 | `#s09/5` | “Cover” means replace these pixels with gray |
+| 136 | `#s09/6` | Run the covered image through the same trained model |
+| 137 | `#s09/7` | Four covers, four new forward passes |
+| 138 | `#s09/8` | Use smaller covers to ask a more local question |
+| 139 | `#s09/9` | Smaller covers reveal local sensitivity |
+| 140 | `#s10/1` | Section 10 · The cost of smaller patches |
+| 141 | `#s10/2` | What changes when the patch size is halved? |
+| 142 | `#s10/3` | How much matching happens inside the tiny real model? |
+| 143 | `#s10/4` | What happens if we use a larger image? |
+| 144 | `#s10/5` | The whole ViT: pixels → context → one label |
+| 145 | `#s10/6` | Four ideas to carry forward |
+| 146 | `#s10/7` | Our classifier stores a vector for each known label |
+| 147 | `#s10/8` | What if a class vector could come from language? |
+| 148 | Optional reference | The whole Vision Transformer in one figure |
+| 149 | Optional reference | To images: An Image is Worth 16 × 16 Words |
+| 150 | Optional reference | Create 192 trainable numbers for CLS |
+| 151 | Optional reference | The image label teaches the starting CLS numbers |
 
 ## Transcript
 
@@ -996,41 +995,7 @@ The pixel rows differ. Both use the same 26 parameters, so we compute both embed
 Do we create a new nn.Linear layer when we move to patch 2?
 Reveal the second patch. Follow both arrows through the single weight-and-bias box, then read the stacked input and output shapes.
 
-### Page 29 — Weighted filters can see more than average brightness
-
-```text
-Two small grayscale patches: same mean, different arrangement
-1
-1
-0
-0
-[1, 1, 0, 0]
-mean = 0.5
-same two weighted sums
-[1, 1, −1, −1]  ·  [1, −1, 1, −1]
-[2, 0]
-Horizontal edge
-1
-0
-1
-0
-[1, 0, 1, 0]
-mean = 0.5
-same two weighted sums
-[1, 1, −1, −1]  ·  [1, −1, 1, −1]
-[0, 2]
-Vertical edge
-These two patches have the same mean. Two different weighted sums distinguish their spatial patterns. A learned projection can retain several useful features from the same pixels; averaging alone discards this distinction.
-```
-
-**Caption:** These two patches have the same mean. Two different weighted sums distinguish their spatial patterns. A learned projection can retain several useful features from the same pixels; averaging alone discards this distinction.
-
-**Speaker notes**
-
-Would one average-brightness number distinguish these patches?
-No. Apply the same two filters to each flattened patch: the outputs are [2,0] and [0,2]. Both biases are zero in this chosen example.
-
-### Page 30 — Start with the same dog photograph
+### Page 29 — Start with the same dog photograph
 
 ```text
 Photo walkthrough · Step 1 of 12
@@ -1060,7 +1025,7 @@ We now carry this one image through the real model’s input pipeline. It has al
 What do the three image dimensions count?
 Keep the photograph fixed. Identify rows, columns and RGB channels before introducing any patch or embedding dimension.
 
-### Page 31 — Split the image into 16 × 16 patches
+### Page 30 — Split the image into 16 × 16 patches
 
 ```text
 Photo walkthrough · Step 2 of 12
@@ -1095,7 +1060,7 @@ The x-axis runs right; the y-axis runs down. Both span 224 pixels. Cut every 16 
 How many 16-pixel-wide pieces fit along each image axis?
 Point to the x-axis arrow, then the y-axis arrow and their endpoints. Follow the highlighted image region into the enlarged 16×16 patch. Leave the count for the next slide.
 
-### Page 32 — Number the patches row by row
+### Page 31 — Number the patches row by row
 
 ```text
 Photo walkthrough · Step 3 of 12
@@ -1147,7 +1112,7 @@ Number left to right, then continue on the next row. Use the image and patch siz
 What is the last patch number in the first row? What starts the second row, and what is the final patch number?
 Start with P1 and P2. Ask students to divide each 224-pixel extent by 16, then reveal P14 and the second row. Multiply the two counts before revealing P196 and the full array shape.
 
-### Page 33 — Read the RGB values inside patch 63
+### Page 32 — Read the RGB values inside patch 63
 
 ```text
 Photo walkthrough · Step 4 of 12
@@ -1186,7 +1151,7 @@ P63 contains 256 pixels. Its first pixel is RGB [16, 17, 12]; its next pixel is 
 How many input numbers does each pixel contribute?
 Use the two outlined pixels in the real crop. Read each RGB triple, then count 256 triples rather than introducing 768 without its source.
 
-### Page 34 — Normalize those same RGB values
+### Page 33 — Normalize those same RGB values
 
 ```text
 Photo walkthrough · Step 5 of 12
@@ -1220,7 +1185,7 @@ The checkpoint rescales every channel using the same formula. For the first red 
 Where does the first negative number come from?
 Carry the first RGB triple from the previous slide across the arrow. Work out the red channel before revealing the second pixel.
 
-### Page 35 — Flatten patch 63 in the same order as the code
+### Page 34 — Flatten patch 63 in the same order as the code
 
 ```text
 Photo walkthrough · Step 6 of 12
@@ -1253,7 +1218,7 @@ Concatenate 256 red values, 256 green values and 256 blue values. This gives one
 Where does the first green value appear?
 At entry 257 (one-based), after all 256 red values. The first pixel’s RGB values occupy entries 1, 257 and 513.
 
-### Page 36 — Pass that row through the shared linear layer
+### Page 35 — Pass that row through the shared linear layer
 
 ```text
 Photo walkthrough · Step 7 of 12
@@ -1285,7 +1250,7 @@ This layer reads 768 values and computes 192 output features. Its learned weight
 How many weighted sums does this layer compute for P63?
 Carry x63 from the previous slide into the layer. Follow its row count and feature width separately, then identify the weight and bias shapes.
 
-### Page 37 — Read the 192 output features for patch 63
+### Page 36 — Read the 192 output features for patch 63
 
 ```text
 Photo walkthrough · Step 8 of 12
@@ -1320,7 +1285,7 @@ The layer produces c₆₃, the content embedding for P63. These are actual outp
 Which patch do all 192 numbers describe?
 Trace the same crop through the same layer, then read individual output coordinates before collecting them into c63.
 
-### Page 38 — Pass patch 64 through the very same layer
+### Page 37 — Pass patch 64 through the very same layer
 
 ```text
 Photo walkthrough · Step 9 of 12
@@ -1356,7 +1321,7 @@ P64 is the patch immediately to the right of P63. Its different pixels give a di
 Do we create new projection weights for P64?
 Keep P63’s path visible while revealing P64 underneath it. Point to the one shared layer and compare their measured input and output values.
 
-### Page 39 — Stack the 196 output rows into C
+### Page 38 — Stack the 196 output rows into C
 
 ```text
 Photo walkthrough · Step 10 of 12
@@ -1394,7 +1359,7 @@ Repeat the same projection for all 196 patches and keep their order. The input m
 Which axis changes when we apply the shared projection to all patches?
 Match the illustrated crops to their measured output rows. Then carry the unchanged row count 196 from X through the layer to C.
 
-### Page 40 — Section 3 · Prepare the rows, then classify the image
+### Page 39 — Section 3 · Prepare the rows, then classify the image
 
 ```text
 SECTION
@@ -1417,7 +1382,7 @@ Keep the photograph fixed. Give each patch its location, introduce the summary r
 Where is each patch? How do we get one image summary?
 Pause at the section question. Connect the previous result to the three steps, then advance to the concrete example.
 
-### Page 41 — Give each patch its location in the photograph
+### Page 40 — Give each patch its location in the photograph
 
 ```text
 Keep the photograph exactly as it is.
@@ -1440,7 +1405,7 @@ Recognizing a face depends on how its parts are arranged. c₆₃ describes this
 Which part of the shared patch projection received row 5, column 7?
 None: the projection received only pixel values. Point to the location on the unchanged photograph, then introduce its position vector.
 
-### Page 42 — Position is a learned lookup table
+### Page 41 — Position is a learned lookup table
 
 ```text
 P63: row 5, column 7
@@ -1470,7 +1435,7 @@ Each grid slot has a trainable 192-number row, shared across images. Slot 63 alw
 Would a second photograph require a second table of position vectors?
 No: point from row 5, column 7 into the same stored row. Read the parameter count and compare it with the patch projection already calculated. The displayed p63 entries come from the saved checkpoint.
 
-### Page 43 — Add position to these content rows
+### Page 42 — Add position to these content rows
 
 ```text
 Photo walkthrough · Step 11 of 12
@@ -1508,7 +1473,7 @@ c₆₃ comes from the patch pixels. p₆₃ is learned for its grid location. A
 After adding position, does this row have 192 coordinates or 384?
 Keep the crop visible. Recall the projection that made c63, then add its learned position row coordinate by coordinate to make e63.
 
-### Page 44 — The image loss teaches the position table
+### Page 43 — The image loss teaches the position table
 
 ```text
 Start with small random values; train with the class loss.
@@ -1537,7 +1502,7 @@ The class loss supplies gradients for the position table and other model paramet
 What tells the optimizer how to change a position coordinate: a position label, or the image classification loss?
 Trace p63 through addition into the classifier, then follow the backward arrow. The loss updates the table jointly with other weights. Use the marked illustrative SGD step to explain one coordinate, then distinguish fixed sinusoidal vectors.
 
-### Page 45 — Why add CLS? Give the classifier one image summary
+### Page 44 — Why add CLS? Give the classifier one image summary
 
 ```text
 A SHORT DETOUR · WHY ADD CLS?
@@ -1570,7 +1535,7 @@ Patch embeddings give us many rows, while the target is one label for the photog
 We have 196 patch rows and want one label for the whole photograph. Which representation should the classifier read?
 Start with the dog and its patch rows. Reveal one extra learned CLS row before the blocks. All rows enter together, and attention updates CLS using patch information. Then reveal the readout from final CLS into the classifier. CLS is one design choice; averaging final patch rows also works with a model trained for that readout.
 
-### Page 46 — Add a summary row beside the dog’s patch rows
+### Page 45 — Add a summary row beside the dog’s patch rows
 
 ```text
 The photograph still has exactly 196 patches.
@@ -1595,7 +1560,7 @@ A patch row comes from pixels. CLS comes from a separate set of model parameters
 Where are the pixels for CLS?
 There are none. Trace the two different origins: a crop through the patch layer, and a separately stored parameter row.
 
-### Page 47 — What makes CLS an image summary?
+### Page 46 — What makes CLS an image summary?
 
 ```text
 CLS and patch rows can read one another’s current features.
@@ -1624,7 +1589,7 @@ CLS can read all patch rows; each patch can read CLS and every patch. All update
 Can patch rows read CLS too, and when do they see its updated version?
 Yes. Follow both diagonals: follow the upward arrows from patch rows to CLS and the downward arrows from CLS to patch updates. Each attention operation computes all its queries, keys and values from the same incoming rows. It does not first update CLS and then let patches read that new CLS in the same attention operation. Block 2 receives both updated CLS and updated patch rows from block 1. Continue through block 12: the classifier reads final CLS, so the class loss trains that row to be useful.
 
-### Page 48 — The same CLS start reads two different photographs
+### Page 47 — The same CLS start reads two different photographs
 
 ```text
 Shared learned CLS s = [−0.356, −0.038, −0.072, …]
@@ -1654,7 +1619,7 @@ Both images use the same starting CLS and the same model parameters. Their patch
 The starting numbers match exactly. Why do the two outputs differ?
 Point to the different photos. Their patches supply different keys and values. The starting CLS query is the same; the resulting attention message can differ.
 
-### Page 49 — Without CLS, combine the dog’s final patch rows
+### Page 48 — Without CLS, combine the dog’s final patch rows
 
 ```text
 Same dog → patches → projection + positions
@@ -1685,7 +1650,7 @@ Build a second design with 196 patch rows and no CLS. Attention still lets the p
 Without an extra summary row, where is the information about this dog?
 It remains in the 196 contextual patch representations. Average corresponding coordinates across these rows, then classify the resulting vector.
 
-### Page 50 — Why is CLS a common choice if pooling also works?
+### Page 49 — Why is CLS a common choice if pooling also works?
 
 ```text
 1 · A familiar convention
@@ -1713,7 +1678,7 @@ This diagram follows CLS; patch rows receive updates too. Keep the readout a che
 Does a learned summary token guarantee better accuracy than mean pooling?
 No. Explain the BERT heritage, then the dedicated readout. Original ViT Appendix D.3 found comparable results after tuning the learning rate. Use the checkpoint’s trained route; compare alternatives with suitable training and evaluation.
 
-### Page 51 — Add the summary row: 196 + 1 = 197
+### Page 50 — Add the summary row: 196 + 1 = 197
 
 ```text
 Model route · highlighted operation
@@ -1766,7 +1731,7 @@ Each patch keeps its content-plus-position row. CLS gets its own learned positio
 Why do we now have 197 rows, while the width is still 192?
 Identify the extra row at the top. Position is added coordinate by coordinate. The subscript is the row’s identity, not its width.
 
-### Page 52 — Start with one Transformer block
+### Page 51 — Start with one Transformer block
 
 ```text
 Our dog photograph
@@ -1791,7 +1756,7 @@ Our 196 patch rows and one CLS row enter block 1. Attention shares information a
 What goes into one block, and what comes out?
 Keep the scope to block 1. Follow prepared rows through attention and then the MLP. Same matrix shape, updated feature values. Explain the stack only after these operations.
 
-### Page 53 — Self-attention: Q, K and V share the same input
+### Page 52 — Self-attention: Q, K and V share the same input
 
 ```text
 TRANSLATION · cross-attention
@@ -1816,7 +1781,7 @@ Self-attention uses one input sequence. Cross-attention takes queries from one s
 Does CLS query a separate image encoder through cross-attention?
 No. CLS is one row inside the image sequence. In this pre-LN model, all three projections read the same normalized current rows.
 
-### Page 54 — Make queries, keys and values from these rows
+### Page 53 — Make queries, keys and values from these rows
 
 ```text
 Photo walkthrough · Step 12 of 12
@@ -1859,7 +1824,7 @@ LayerNorm rescales a row’s features and keeps its width. We name it here and s
 Which projection reads pixels, and which projections read the prepared embedding row?
 Trace the small recap first. Enter the block with e63, normalize it, then split into the three separate learned projections for head one.
 
-### Page 55 — The same input matrix feeds three learned projections
+### Page 54 — The same input matrix feeds three learned projections
 
 ```text
 Model route · highlighted operation
@@ -2015,7 +1980,7 @@ One normalized matrix X feeds three different learned projections. Q, K and V ea
 Do Q, K and V come from three different images?
 Trace all three arrows back to the same X. The learned weights differ. Each projection processes every row using the same weights within that projection.
 
-### Page 56 — One query–key comparison fills one matrix cell
+### Page 55 — One query–key comparison fills one matrix cell
 
 ```text
 Model route · highlighted operation
@@ -2169,7 +2134,7 @@ Fix the receiving query to CLS and move across the columns. These scores determi
 Which query and which key produced the highlighted cell?
 Follow the highlighted row of Q and column of Kᵀ to row CLS, column P63 of S. The dot product sums 64 coordinate products. The CLS row fixes q_CLS and compares every key; the CLS column fixes k_CLS and compares every query. S can contain negative scores and need not be symmetric.
 
-### Page 57 — Follow the CLS row from scores to weights
+### Page 56 — Follow the CLS row from scores to weights
 
 ```text
 Model route · highlighted operation
@@ -2276,7 +2241,7 @@ Earlier blocks update patches so later CLS queries can read their new features. 
 If the classifier reads CLS, why compute the other score rows?
 We follow one row to explain the calculation. Each patch query needs its own scores and weights to update that patch. The next block computes its keys and values from these updated patches, which CLS can then read. For this one CLS message alone, only its 197 scores and all 197 value rows are needed. In the final block, if only CLS is used, patch outputs can be skipped in a specialized implementation. All incoming keys and values are still needed. The standard implementation shown computes every row. There are 196 patch scores plus the CLS self-score. Softmax normalizes all 197; there is no causal mask.
 
-### Page 58 — Turn each query’s 197 scores into 197 source weights
+### Page 57 — Turn each query’s 197 scores into 197 source weights
 
 ```text
 Model route · highlighted operation
@@ -2405,7 +2370,7 @@ Apply softmax across each score row. The CLS row becomes weights over CLS and al
 What are the alternatives in this softmax: animal classes or source rows?
 They are sources, including CLS itself. a(CLS,P63) is normalized against all 197 scores in the CLS row. Every row sums to one; columns need not.
 
-### Page 59 — Every image row can read every image row
+### Page 58 — Every image row can read every image row
 
 ```text
 Model route · highlighted operation
@@ -2534,7 +2499,7 @@ Next-token prediction hides later text positions. Here the complete photograph i
 If CLS is the first row, what would a causal mask let it read?
 Only itself. That would prevent it from gathering patch information. This classifier uses full attention because all image patches are available for the image-label prediction.
 
-### Page 60 — A message for CLS works like a message for bank
+### Page 59 — A message for CLS works like a message for bank
 
 ```text
 Model route · highlighted operation
@@ -2579,7 +2544,7 @@ In text, bank receives a weighted mixture of allowed token values. Here, CLS rec
 What corresponds to bank in the calculation we are following?
 CLS is our selected receiver. River was one text source; P63 is one image source. Both calculations sum weighted value vectors. CLS also has its own value row.
 
-### Page 61 — The dog’s feature rows become value rows
+### Page 60 — The dog’s feature rows become value rows
 
 ```text
 Model route · highlighted operation
@@ -2684,7 +2649,7 @@ Use the same normalized input X that produced Q and K. The value projection make
 Where does row P63 of V come from?
 Follow P63’s normalized 192-feature row through the shared value projection. It produces 64 features. CLS has a value row too, although it has no image crop.
 
-### Page 62 — One weight scales all 64 features in its value row
+### Page 61 — One weight scales all 64 features in its value row
 
 ```text
 Model route · highlighted operation
@@ -2821,7 +2786,7 @@ Use Next to select CLS’s row in A, P63’s column, P63’s row in V, then its 
 Which row, column and value feature are we selecting?
 Next 1: choose the CLS query row in A. Next 2: choose its P63 source column and extract A[CLS,P63]. Next 3: choose row P63 of V. Next 4: choose value feature 1 and multiply. Next 5: repeat for feature 2 and the remaining features. Every product is a contribution to CLS; P63 is the source.
 
-### Page 63 — Each source contributes a weighted value row
+### Page 62 — Each source contributes a weighted value row
 
 ```text
 Model route · highlighted operation
@@ -2891,7 +2856,7 @@ Repeat the P63 calculation for other sources. Each uses its own CLS weight and v
 Are these messages for four different receivers?
 No. All four weights come from the CLS attention row. These are four source contributions to one receiver. Each source supplies 64 features, scaled by its own weight.
 
-### Page 64 — Add the contributions to make one CLS message
+### Page 63 — Add the contributions to make one CLS message
 
 ```text
 Model route · highlighted operation
@@ -2950,7 +2915,7 @@ Add corresponding coordinates from all 197 weighted value rows, including CLS it
 Why is the result one row with 64 features?
 For feature 1, sum 197 weighted feature-1 values. Repeat for features 2 through 64. We sum over sources, keeping the feature dimension. Every term belongs to the fixed CLS query.
 
-### Page 65 — Where does the CLS message go?
+### Page 64 — Where does the CLS message go?
 
 ```text
 Model route · highlighted operation
@@ -2991,7 +2956,7 @@ The CLS messages become a 192-feature context update after combining heads and p
 Can we add the 64-feature message directly to the 192-feature CLS row?
 No. First combine all three heads and project. Then add the 192-feature context update to the original 192-feature CLS row. We will open the middle box in the multi-head slides.
 
-### Page 66 — Each query gets its own message
+### Page 65 — Each query gets its own message
 
 ```text
 Model route · highlighted operation
@@ -3042,7 +3007,7 @@ P63’s query mixes the same source values using P63’s weights, producing P63�
 Does the CLS message also update P63?
 No. P63 uses its own query, its own attention weights and its own message. Both receivers read the same V in this head. All messages are computed from the rows entering this block.
 
-### Page 67 — From one completed head to three parallel heads
+### Page 66 — From one completed head to three parallel heads
 
 ```text
 Head 1 is complete.
@@ -3062,7 +3027,7 @@ We have finished one head’s attention calculation. This model has three heads.
 Have we finished head 1, or already updated the input E?
 We have its message matrix H¹. The output projection and residual addition still follow. Introduce the other heads only now; they run alongside head 1 and do not consume its output.
 
-### Page 68 — What might different heads look for in this photograph?
+### Page 67 — What might different heads look for in this photograph?
 
 ```text
 Illustrative possibilities · learned heads are not assigned these jobs
@@ -3088,7 +3053,7 @@ Different heads can learn different matching patterns and different messages. Lo
 Could one mixture preserve all the different clues that matter for this image?
 Connect to coat reading colour and material in Part III. Each visual role is a possible interpretation, not a hand-written rule or guaranteed specialization.
 
-### Page 69 — The same rows feed three sets of Q, K and V
+### Page 68 — The same rows feed three sets of Q, K and V
 
 ```text
 Model route · highlighted operation
@@ -3307,7 +3272,7 @@ All three heads read the same normalized matrix X. Each has its own Q, K and V p
 Do we create three CLS tokens or divide the patches between the heads?
 Neither. Every head reads all 197 rows, including the same 192-feature CLS input. Each applies a different learned projection. Superscripts 1, 2 and 3 name heads.
 
-### Page 70 — Each head repeats the complete attention calculation
+### Page 69 — Each head repeats the complete attention calculation
 
 ```text
 Model route · highlighted operation
@@ -3673,7 +3638,7 @@ Within each head, compare Q with K, scale the scores, apply softmax across each 
 Does head 2 use head 1’s attention weights or its value matrix?
 No. Keep each colored path intact: Qʰ and Kʰ produce Aʰ, which mixes Vʰ to make Hʰ. Every head has its own 197×197 weight matrix.
 
-### Page 71 — One CLS input produces three different messages
+### Page 70 — One CLS input produces three different messages
 
 ```text
 Model route · highlighted operation
@@ -3711,7 +3676,7 @@ CLS is the same input row for all heads. Their learned projections produce diffe
 What is shared, and what differs, across these three CLS paths?
 The normalized CLS input is shared. The projection parameters, projected queries/keys/values, source weights and resulting messages differ. Each message also depends on the patch values and keys from this photograph.
 
-### Page 72 — Concatenate the three CLS messages
+### Page 71 — Concatenate the three CLS messages
 
 ```text
 Model route · highlighted operation
@@ -3750,7 +3715,7 @@ Keep all three messages by placing their coordinates side by side. The joined CL
 Does concatenation add corresponding numbers from different heads?
 No. Follow each vector into its own feature range. The coordinates retain their values and order. Joining happens across the feature dimension, keeping one receiver row.
 
-### Page 73 — Keep the embedding; add the context from attention
+### Page 72 — Keep the embedding; add the context from attention
 
 ```text
 Model route · highlighted operation
@@ -3803,7 +3768,7 @@ Follow two paths from E. The heads produce messages; concatenate and project the
 Which operation learns to combine the head features, and which row gets the residual update?
 Linear(192,192) learns the combination. Add the result to E, before the attention branch’s LayerNorm. The MLP will receive this updated row through its own LayerNorm.
 
-### Page 74 — The dog’s CLS keeps its input and gains context
+### Page 73 — The dog’s CLS keeps its input and gains context
 
 ```text
 Model route · highlighted operation
@@ -3845,7 +3810,7 @@ Add the projected attention update coordinate by coordinate to the original CLS 
 Is the attention update already the contextualized embedding, or do we still add something?
 The update is Δe₀. The contextualized row is u₀=e₀+Δe₀. Add the original block input, before LayerNorm. The 192 output features are a representation; class scores are computed later.
 
-### Page 75 — Open block 1: attention, then the MLP
+### Page 74 — Open block 1: attention, then the MLP
 
 ```text
 Model route · highlighted operation
@@ -3884,7 +3849,7 @@ One block makes two updates. Attention lets rows exchange information; the MLP t
 Have we finished the entire block after the attention residual?
 We have reached U, the midpoint. Open the MLP branch next. E¹ names the output of block 1; it is not a power. Both branches update CLS and every patch row.
 
-### Page 76 — Open the MLP: 192 inputs, 768 hidden units, 192 outputs
+### Page 75 — Open the MLP: 192 inputs, 768 hidden units, 192 outputs
 
 ```text
 Model route · highlighted operation
@@ -3936,7 +3901,7 @@ Each linear layer connects every input feature to every output unit. GELU transf
 Does 768 mean patches, pixels, or hidden features here?
 It is the number of hidden features for one row. GELU is the nonlinearity between the two learned linear layers. The MLP returns a 192-feature update; the residual addition follows.
 
-### Page 77 — Add the MLP update to finish block 1
+### Page 76 — Add the MLP update to finish block 1
 
 ```text
 Model route · highlighted operation
@@ -3973,7 +3938,7 @@ Keep the row produced by attention and add the MLP’s update. The result is thi
 Do we add the MLP update to E or to U?
 Add it to U, the result of the attention residual. There are two successive residual additions in the block. Its final output includes both updates.
 
-### Page 78 — Pass the complete output of block 1 into block 2
+### Page 77 — Pass the complete output of block 1 into block 2
 
 ```text
 Model route · highlighted operation
@@ -4037,7 +4002,7 @@ The entire output matrix continues to the next block: CLS and all 196 patch rows
 Which rows do we keep, and which block processes them next?
 Keep every row. Follow the straight arrow into a distinct block 2. There is no return to block 1, no repeated patchification, and no new CLS token.
 
-### Page 79 — What changes as the rows move through the blocks?
+### Page 78 — What changes as the rows move through the blocks?
 
 ```text
 Model route · highlighted operation
@@ -4074,7 +4039,7 @@ Each block recomputes queries, keys, values, attention weights and MLP activatio
 Are we changing the weights or the feature values when we run this dog forward?
 The feature values change. The blocks already have their own stored weights, which stay fixed during inference. Training later computes gradients and the optimizer updates those stored parameters.
 
-### Page 80 — Continue through the stack, then classify the image
+### Page 79 — Continue through the stack, then classify the image
 
 ```text
 Model route · highlighted operation
@@ -4116,7 +4081,7 @@ Pass the updated features through blocks 1 to 12 in order. The architecture repe
 What does “12 blocks” repeat, and when do we make a prediction?
 The attention-plus-MLP architecture repeats. A different block processes each successive representation. All rows continue through the stack; one classifier reads the final CLS.
 
-### Page 81 — Select CLS from the final feature matrix
+### Page 80 — Select CLS from the final feature matrix
 
 ```text
 Model route · highlighted operation
@@ -4192,7 +4157,7 @@ After block 12, all 197 rows are still present. Final LayerNorm keeps the same s
 Which part of the 197 × 192 matrix enters the classifier?
 Extract the entire first row, all 192 features. This CLS is the result after the blocks and final normalization, not the initial learned CLS parameter. We do not average the rows in this model.
 
-### Page 82 — Open the classifier: 192 features become 1,000 scores
+### Page 81 — Open the classifier: 192 features become 1,000 scores
 
 ```text
 Model route · highlighted operation
@@ -4237,7 +4202,7 @@ Every class has one output neuron connected to all 192 CLS features. Each neuron
 Does one feature correspond to one class, or does every class read the whole summary?
 Each class reads all 192 features with its own weighted sum. This class head is a single affine layer. It has no hidden layer or GELU; softmax converts its scores to probabilities next.
 
-### Page 83 — One class score is a weighted sum plus a bias
+### Page 82 — One class score is a weighted sum plus a bias
 
 ```text
 Model route · highlighted operation
@@ -4274,7 +4239,7 @@ Multiply each CLS feature by this class’s learned weight. Sum all 192 products
 What makes the Newfoundland score different from the Tibetan mastiff score?
 They read the same image summary but use different learned weights and biases. The 190 omitted products still contribute. Keep the score separate from its later probability.
 
-### Page 84 — Turn all 1,000 scores into class probabilities
+### Page 83 — Turn all 1,000 scores into class probabilities
 
 ```text
 Model route · highlighted operation
@@ -4316,7 +4281,7 @@ Exponentiate each score and divide by the sum over all 1,000 classes. Newfoundla
 Would softmax over only these three displayed scores give the same answer?
 No. All 1,000 scores contribute to the denominator. The remaining probability mass is shown explicitly. Attention softmax normalized over source rows; this softmax normalizes over image classes.
 
-### Page 85 — Two softmaxes, two different questions
+### Page 84 — Two softmaxes, two different questions
 
 ```text
 The same normalization, applied to two different questions
@@ -4338,7 +4303,7 @@ Attention normalizes across 197 source rows for each query and head. The classif
 Does a large attention weight mean a high probability of the dog class?
 No. It means that one source contributes strongly to that query’s value mixture. The class head later scores labels using the final CLS features.
 
-### Page 86 — The same dog now has its final prediction
+### Page 85 — The same dog now has its final prediction
 
 ```text
 Model route · highlighted operation
@@ -4369,7 +4334,7 @@ The classifier reads the final CLS, scores 1,000 labels, and selects Newfoundlan
 Did each patch predict its own label, or did the model make one image prediction?
 The final CLS summarizes the contextual features for this one image. One class head reads that summary. The 95.73% is a model probability for this photograph, not an accuracy measurement.
 
-### Page 87 — Section 4 · Whole model walkthrough
+### Page 86 — Section 4 · Whole model walkthrough
 
 ```text
 SECTION
@@ -4387,7 +4352,7 @@ One example: follow the full model to a label loss, then reverse the path to com
 How do forward and backward fit together?
 Connect the previous result to this new question. Keep the same image classifier as the reference.
 
-### Page 88 — One shape trace from pixels to class scores
+### Page 87 — One shape trace from pixels to class scores
 
 ```text
 ONE IMAGE · batch axis omitted
@@ -4413,7 +4378,7 @@ Blocks preserve the shape. They change what each row represents.
 Which step changes the number of rows, and which step changes the final output width?
 Prepending CLS changes 196 rows to 197. The head maps the selected 192-feature row to 1,000 logits. Expand the next diagram to see inside every block.
 
-### Page 89 — Inside each block: mix, transform, keep the residual
+### Page 88 — Inside each block: mix, transform, keep the residual
 
 ```text
 ONE PRE-LAYERNORM BLOCK · input and output: 197 × 192
@@ -4441,7 +4406,7 @@ Repeat this structure 12 times, with different learned weights in each block. Al
 Which operation exchanges information between rows?
 Self-attention mixes value rows. The MLP is applied independently to each row. LayerNorm precedes each branch; residual additions preserve the current representation.
 
-### Page 90 — Backward: compute gradients, then update the model
+### Page 89 — Backward: compute gradients, then update the model
 
 ```text
 Same model, reverse direction: loss → parameter gradients
@@ -4474,7 +4439,7 @@ Reverse the forward dependencies to compute gradients for the trainable paramete
 Does backward itself change the weights?
 No. Backward computes gradients through the same model. The optimizer step applies the update. The learned input parameters include the patch projection, positions and starting CLS; the photograph and label are fixed data.
 
-### Page 91 — Section 5 · CNNs, ViTs and inductive bias
+### Page 90 — Section 5 · CNNs, ViTs and inductive bias
 
 ```text
 SECTION
@@ -4492,7 +4457,7 @@ Compare context, mixing, wider views and readouts, then connect those choices to
 How do they differ, and which should we try?
 Connect the previous result to this new question. Keep the same image classifier as the reference.
 
-### Page 92 — Two ways to build an image representation
+### Page 91 — Two ways to build an image representation
 
 ```text
 1 · Gather context: which inputs can interact in one layer?
@@ -4522,7 +4487,7 @@ First compare the available connections. Then press Next to compare the mixing w
 What is shared, and what changes when we show a new image?
 Pause on point 1: a conventional convolution reads local neighbours; global attention can connect distant patches immediately. Reveal point 2: both models keep their learned parameters fixed during inference. A CNN reuses its learned kernel across locations; ViT computes attention coefficients from query–key matches. These coefficients depend on the input and receiver. They are not the stored projection weights.
 
-### Page 93 — A wider view, then one image label
+### Page 92 — A wider view, then one image label
 
 ```text
 3 · Build a wider view: how do distant clues meet?
@@ -4561,7 +4526,7 @@ Trace context through the layers, then press Next to inspect the readout. Both m
 Are distant clues unavailable to a CNN, and is CLS required for every ViT?
 Pause on point 3: repeated local layers broaden a conventional CNN’s receptive field; a global attention layer allows direct distant interactions. Later ViT blocks still refine features. Reveal point 4: average spatial features or read a trained CLS representation, then apply the class head. Both routes produce one vector. Return to the earlier CLS-versus-pooling discussion without re-deriving it.
 
-### Page 94 — Inductive bias: a useful starting assumption
+### Page 93 — Inductive bias: a useful starting assumption
 
 ```text
 Inductive bias = assumptions built into how the model learns.
@@ -4596,7 +4561,7 @@ A CNN builds in local reuse: one learned detector can look for a pattern at many
 Does inductive bias mean the edge detector’s weights were chosen by hand?
 No. The architecture chooses local connections and parameter sharing; training learns the filter values. Both architectures still learn from data. The translated stripe is an illustration, not a model prediction.
 
-### Page 95 — Which is a sensible starting point?
+### Page 94 — Which is a sensible starting point?
 
 ```text
 Practical starting points · validate on your task and hardware.
@@ -4639,7 +4604,7 @@ Treat these as starting points, not a ranking. Pretraining can matter more than 
 We have few labelled pet photos and access to pretrained weights. Which column should we choose?
 Both are plausible: adapt suitable checkpoints and validate. Few task labels do not rule out a pretrained ViT. For device use, compare measured latency and memory rather than assuming every CNN is faster.
 
-### Page 96 — Implementation lab · optional
+### Page 95 — Implementation lab · optional
 
 ```text
 IMPLEMENTATION LAB · OPTIONAL
@@ -4661,7 +4626,7 @@ All implementation details are retained. Every operation is paired with shapes, 
 What should both patch implementations compute?
 Exactly the same affine map with the same weights and biases, up to floating-point roundoff.
 
-### Page 97 — Keep the same photograph and add the batch axis
+### Page 96 — Keep the same photograph and add the batch axis
 
 ```text
 # rgb: (224, 224, 3), RGB per pixel
@@ -4681,7 +4646,7 @@ The prepared photograph is 224×224 with three RGB channels. PyTorch puts channe
 Which axis says how many photographs are in the batch?
 The leading axis B. One photograph uses B=1; a batch of photographs uses the same model parameters for each.
 
-### Page 98 — Our target: turn every patch into 192 features
+### Page 97 — Our target: turn every patch into 192 features
 
 ```text
 Implement the same patch projection we used for the dog.
@@ -4707,7 +4672,7 @@ Each RGB patch supplies 768 numbers. One shared projection turns it into 192 fea
 Do we learn a separate projection for each of the 196 patches?
 No. Each patch supplies different inputs to the same learned projection. The same parameters also serve the cat and every other image.
 
-### Page 99 — See the patch projection as a layer of neurons
+### Page 98 — See the patch projection as a layer of neurons
 
 ```text
 One affine layer: nn.Linear(768, 192, bias=True)
@@ -4740,7 +4705,7 @@ All 768 inputs connect to every output neuron. Each neuron computes a weighted s
 Where does the 192 in the bias count come from?
 There is one bias per output feature, not one per input pixel or patch. Every output has 768 weights, so there are 147,456 weights and 192 biases in total.
 
-### Page 100 — Implementation 1: extract patches, then use Linear
+### Page 99 — Implementation 1: extract patches, then use Linear
 
 ```text
 linear = nn.Linear(768, 192, bias=True)
@@ -4769,7 +4734,7 @@ Unfold extracts each non-overlapping patch as a column. Transpose makes patches 
 Does applying Linear to 196 rows create 196 copies of its weights?
 No. A Linear module broadcasts the same affine operation across the leading axes. Only activations grow with B and the number of patches.
 
-### Page 101 — Implementation 2: the same projection with Conv2d
+### Page 100 — Implementation 2: the same projection with Conv2d
 
 ```text
 conv = nn.Conv2d(3, 192, kernel_size=16, stride=16,
@@ -4794,7 +4759,7 @@ Reshape each neuron’s 768 weights into a 3×16×16 filter. It reads the same p
 What does one output channel represent?
 One of the 192 learned patch features, computed at all 14×14 locations using one shared filter and bias. The filter spans all three RGB channels.
 
-### Page 102 — Reshape the weights; keep the same parameter count
+### Page 101 — Reshape the weights; keep the same parameter count
 
 ```text
 Identical numbers, stored with different shapes
@@ -4827,7 +4792,7 @@ Both implementations have 147,456 weights and 192 biases. Copying the exact weig
 Would two independently initialized layers produce the same features?
 No. Equal parameter counts are not enough. They must use the same weights, biases and pixel order. Flatten each Conv2d filter to obtain the corresponding row of Linear.weight.
 
-### Page 103 — Same pixel × same weight, in both implementations
+### Page 102 — Same pixel × same weight, in both implementations
 
 ```text
 Dog patch P63 · first output feature · indices below start at 0
@@ -4887,7 +4852,7 @@ Both paths pair the same 768 pixels with the same 768 weights, sum their product
 Which Conv2d weight corresponds to Linear.weight[0,291]?
 conv.weight[0,1,2,3]: output 0, green channel, patch row 2, column 3. R, G and B each contain 256 pixels in row-major order.
 
-### Page 104 — Verify it on both photographs: the features match
+### Page 103 — Verify it on both photographs: the features match
 
 ```text
 Same pretrained weights · same prepared dog and cat images
@@ -4915,7 +4880,7 @@ Using identical pretrained weights, both paths produce the same dog and cat feat
 Why use Conv2d if Linear can compute the same thing?
 Conv2d accepts the image grid directly and uses optimized convolution implementations. It avoids explicitly constructing a patch matrix in our code. This is a choice of implementation, not a change in the learned model.
 
-### Page 105 — Why package patch projection as Conv2d?
+### Page 104 — Why package patch projection as Conv2d?
 
 ```text
 One image operation applies all 192 filters at all 196 locations.
@@ -4944,7 +4909,7 @@ Conv2d accepts the image layout directly and handles the repeated patch computat
 Does Conv2d learn fewer parameters or a different function?
 No. The same 147,648 parameters compute the same outputs. The advantage is a convenient image operation and backend support; benchmark actual speed and memory.
 
-### Page 106 — First turn the feature grid into patch rows
+### Page 105 — First turn the feature grid into patch rows
 
 ```text
 # x: (B, 3, 224, 224)
@@ -4968,7 +4933,7 @@ Flatten combines the 14×14 spatial grid into 196 locations. Transpose puts the 
 Did flatten mix images or merge their features?
 No. flatten(2) starts at axis 2. The batch and 192 feature channels remain separate.
 
-### Page 107 — Then prepend CLS and add position
+### Page 106 — Then prepend CLS and add position
 
 ```text
 # Continue with rows: (B, 196, 192)
@@ -4992,7 +4957,7 @@ Expand reuses the learned CLS start across the batch. Concatenation adds one row
 Which operation changes the number of rows?
 torch.cat adds CLS along dim=1. Adding positions leaves the shape unchanged.
 
-### Page 108 — Make queries, keys and values for three heads
+### Page 107 — Make queries, keys and values for three heads
 
 ```text
 B, N, D = x.shape                         # B, 197, 192
@@ -5020,7 +4985,7 @@ Project each row once to produce all queries, keys and values. Split the 576 out
 What do the two size-3 axes mean?
 One selects Q, K or V. The other selects the attention head. B always remains a separate image axis.
 
-### Page 109 — Compute one message for every query in every head
+### Page 108 — Compute one message for every query in every head
 
 ```text
 scores = (q @ k.transpose(-2, -1)) / 8  # B, 3, 197, 197
@@ -5046,7 +5011,7 @@ For each image and head, every query scores all 197 sources. Softmax normalizes 
 Along which axis do the weights sum to one?
 The last axis: source keys. Every receiving query gets its own distribution.
 
-### Page 110 — Join the head messages and project back to 192
+### Page 109 — Join the head messages and project back to 192
 
 ```text
 joined = messages.transpose(1, 2)     # B, 197, 3, 64
@@ -5072,7 +5037,7 @@ Move the head axis beside its features, then join 3×64 into 192. A learned outp
 Do we concatenate different images or different query rows?
 Neither. Each image and query keeps its own three head messages. Only head features are joined.
 
-### Page 111 — Build the layers inside one Transformer block
+### Page 110 — Build the layers inside one Transformer block
 
 ```text
 self.norm1 = nn.LayerNorm(192, eps=1e-6)
@@ -5095,7 +5060,7 @@ Create two normalization layers, one attention module and one MLP. The MLP expan
 Does the 768-wide hidden layer change the number of patches?
 No. Only the feature axis expands. B and N stay unchanged.
 
-### Page 112 — Use the two residual paths in order
+### Page 111 — Use the two residual paths in order
 
 ```text
 # x: (B, 197, 192)
@@ -5118,7 +5083,7 @@ Normalize, compute the attention update, and add the input. Then normalize the u
 Which x enters the second line?
 The x already updated by attention. Each branch returns the same shape as the input it is added to.
 
-### Page 113 — Create twelve blocks with separate learned parameters
+### Page 112 — Create twelve blocks with separate learned parameters
 
 ```text
 self.blocks = nn.ModuleList([Block() for _ in range(12)])
@@ -5140,7 +5105,7 @@ ModuleList creates twelve distinct blocks. The final normalization and class hea
 Are these twelve calls to one shared set of weights?
 No. The list comprehension creates twelve separate Block objects.
 
-### Page 114 — Run the stack, then read the final CLS
+### Page 113 — Run the stack, then read the final CLS
 
 ```text
 rows = self.embed(x)                 # B, 197, 192
@@ -5164,7 +5129,7 @@ Feed each block’s output into the next. Normalize the final rows and select CL
 Why is there no softmax inside this forward method?
 Cross-entropy accepts logits directly. During inference, logits.softmax(-1) converts scores into class probabilities.
 
-### Page 115 — Connect the loss diagram to one training step
+### Page 114 — Connect the loss diagram to one training step
 
 ```text
 model.train()
@@ -5189,7 +5154,7 @@ Cross-entropy consumes logits and class-index labels. Backward computes gradient
 Should we apply softmax before cross_entropy?
 No. It already includes log-softmax. labels is a length-B integer tensor; the model returns B×1000 logits for this example.
 
-### Page 116 — Section 7 · Adapt and evaluate the classifier
+### Page 115 — Section 7 · Adapt and evaluate the classifier
 
 ```text
 SECTION
@@ -5208,7 +5173,7 @@ Choose trainable parameters, follow one batch, then evaluate on held-out images.
 What if our labels or image domain change?
 Connect the previous result to this new question. Keep the same image classifier as the reference.
 
-### Page 117 — What was this model trained to predict?
+### Page 116 — What was this model trained to predict?
 
 ```text
 The checkpoint already learned from labelled photographs.
@@ -5231,7 +5196,7 @@ The checkpoint was pretrained on ImageNet-21k and fine-tuned on ImageNet-1k. Its
 Did our earlier dog example train a pet classifier?
 No. It ran inference with the existing ImageNet checkpoint. Its learned encoder and 1,000-class head were already available.
 
-### Page 118 — Same photographs, a different label vocabulary
+### Page 117 — Same photographs, a different label vocabulary
 
 ```text
 Now our application asks a simpler question: dog or cat?
@@ -5253,7 +5218,7 @@ Our pet application groups breeds into two categories. We want two scores for ev
 Could we reuse the visual features even though the output labels changed?
 Yes. The encoder already represents visual patterns. A new head can learn how those features separate the two target classes.
 
-### Page 119 — What if our users supply sketches?
+### Page 118 — What if our users supply sketches?
 
 ```text
 A second kind of change: same labels, different-looking inputs.
@@ -5274,7 +5239,7 @@ The labels can stay dog and cat while the image domain changes. A photo classifi
 Would a different-looking image automatically require more output neurons?
 No. The two labels are unchanged. The features may need adaptation because sketches remove colour and texture cues.
 
-### Page 120 — Replace the ImageNet head with our two-class head
+### Page 119 — Replace the ImageNet head with our two-class head
 
 ```text
 pretrained ViT encoder
@@ -5293,7 +5258,7 @@ For our dog/cat task, replace the ImageNet head with a new two-output linear lay
 Why can we not simply rename two of the old 1,000 outputs?
 We have changed the label vocabulary. The new head learns a new mapping; the existing pretrained probabilities do not measure this proposed pet classifier.
 
-### Page 121 — Freeze the encoder; train the new head
+### Page 120 — Freeze the encoder; train the new head
 
 ```text
 1 · Train only the new class head
@@ -5322,7 +5287,7 @@ Snowflake: weights stay fixed. Flame: weights can learn. Train the two-class hea
 When only the head is trained, do the Q/K/V weights change?
 No. Trace the photograph through the blue vision encoder into 192 CLS features. Only the orange head learns. Reveal the loss update.
 
-### Page 122 — Next option: fine-tune the last block as well
+### Page 121 — Next option: fine-tune the last block as well
 
 ```text
 If head-only training is insufficient, adapt some features too.
@@ -5348,7 +5313,7 @@ Unfreeze the last block and train it together with the head. Earlier encoder wei
 When might a head alone be insufficient?
 If the current features do not separate the new classes well, or the images look different, changing some encoder features may help. Evaluate rather than assume.
 
-### Page 123 — One batch follows the same forward and backward paths
+### Page 122 — One batch follows the same forward and backward paths
 
 ```text
 batch of images
@@ -5371,7 +5336,7 @@ Pair every image with its dog/cat label. Compute the average loss for the batch,
 What is shared across the images in a batch?
 The model parameters are shared. Each image has its own activations and attention matrix; attention does not mix different images in the batch.
 
-### Page 124 — Three stages: learn, adapt, then predict
+### Page 123 — Three stages: learn, adapt, then predict
 
 ```text
 1 · Pretrain
@@ -5396,7 +5361,7 @@ Orange connections and flames mark learning. Blue connections and snowflakes mar
 During which stages can the optimizer change weights?
 Pretraining and adaptation use learning signals. Inference only computes outputs using the learned parameters. Reveal each stage and follow the image-to-network-to-output arrows.
 
-### Page 125 — What happens when we classify a new photograph?
+### Page 124 — What happens when we classify a new photograph?
 
 ```text
 One forward pass through the trained model
@@ -5420,7 +5385,7 @@ The image produces its own CLS features and class scores. Both snowflakes mark f
 Do we need to know the new image’s label to run inference?
 No. First reveal the image-dependent CLS features, then the trained head and its two scores. Labels are needed later to evaluate the prediction.
 
-### Page 126 — How would we check whether the classifier learned?
+### Page 125 — How would we check whether the classifier learned?
 
 ```text
 Before fitting: separate training, validation and test images
@@ -5443,7 +5408,7 @@ Use held-out images to measure accuracy and the two kinds of confusion. Inspect 
 Could we choose the best epoch by repeatedly looking at test accuracy?
 Use validation for selection. Reserve the test set for the chosen procedure; related or near-duplicate images must not leak across splits.
 
-### Page 127 — Section 8 · Return to the real photographs
+### Page 126 — Section 8 · Return to the real photographs
 
 ```text
 SECTION
@@ -5461,7 +5426,7 @@ Return to the saved dog and cat predictions. These outputs come from the ImageNe
 What do the saved photo predictions establish?
 Connect the previous result to this new question. Keep the same image classifier as the reference.
 
-### Page 128 — Which pixels are we giving the real model?
+### Page 127 — Which pixels are we giving the real model?
 
 ```text
 original photograph → supplied resize / crop → normalize RGB
@@ -5475,7 +5440,7 @@ The model receives the square crop on the right, after RGB normalization.
 Are we feeding the original rectangular photograph directly to the network?
 Match the original to the evaluation crop, then mention normalization.
 
-### Page 129 — What did the model call our dog?
+### Page 128 — What did the model call our dog?
 
 ```text
 Top 3 of 1,000 labels
@@ -5495,7 +5460,7 @@ These probabilities come from running this photograph through the pretrained mod
 What answer should the model assign to our opening image?
 Reveal the saved top-three predictions. Compare the model’s label with the students’ original answer.
 
-### Page 130 — Does one correct photograph tell us the accuracy?
+### Page 129 — Does one correct photograph tell us the accuracy?
 
 ```text
 probability of the known breed: 0.957
@@ -5511,7 +5476,7 @@ To estimate accuracy, count correct predictions over an appropriate test set.
 Can we report 95.7% accuracy from a 95.7% probability on one dog?
 Separate a model’s probability on one image from a fraction correct over many images.
 
-### Page 131 — What happens when we give it the cat?
+### Page 130 — What happens when we give it the cat?
 
 ```text
 Same checkpoint. Another photograph.
@@ -5531,7 +5496,7 @@ Keep the same model and preprocessing. Change only the photograph.
 Do we change model weights when a different test image arrives?
 Reveal the top three ImageNet labels and probabilities.
 
-### Page 132 — Section 9 · Look inside the trained model
+### Page 131 — Section 9 · Look inside the trained model
 
 ```text
 SECTION
@@ -5549,7 +5514,7 @@ Read attention maps, then cover parts of the photograph and measure how the pred
 What can we measure inside its attention blocks?
 Connect the previous result to this new question. Keep the same image classifier as the reference.
 
-### Page 133 — Similar patch features can connect distant image regions
+### Page 132 — Similar patch features can connect distant image regions
 
 ```text
 Query · P74
@@ -5573,7 +5538,7 @@ The selected ear-side patch matches patches on the other side of the dog. This m
 Does a similar representation imply a large attention weight?
 No. This compares contextual patch features after block 12 using cosine similarity. P82 is a measured high-similarity patch; a correspondence is not a guaranteed segmentation.
 
-### Page 134 — Keep the query fixed; change only the attention head
+### Page 133 — Keep the query fixed; change only the attention head
 
 ```text
 Query · P74
@@ -5594,7 +5559,7 @@ Teal shows source weights. Both maps use the same 0–10.35% scale. Within each 
 Why can the maps differ although the image and query location stay fixed?
 Each head has its own learned query and key projections. These lead to different weights on the source value rows. Head 2’s weaker peak is shown on the same color scale.
 
-### Page 135 — CLS gathers a message for the image summary
+### Page 134 — CLS gathers a message for the image summary
 
 ```text
 Query = CLS
@@ -5617,7 +5582,7 @@ The query is CLS. Its weights select a mixture of all source value rows. Later o
 Is this a complete explanation of the Newfoundland prediction?
 No. It is the last block’s first attention head. P64 receives 24.86% of this query’s source weight; CLS itself receives 0.08%. Other heads, residuals, MLPs and the class head also contribute.
 
-### Page 136 — “Cover” means replace these pixels with gray
+### Page 135 — “Cover” means replace these pixels with gray
 
 ```text
 Original input x
@@ -5641,7 +5606,7 @@ Copy the normalized input, then overwrite one quadrant. The rest of the image st
 Does zero here mean black pixels, or gray pixels?
 x is already resized, center-cropped and normalized by this checkpoint’s evaluation transform. Its mean and standard deviation are both 0.5 per channel. Zero in x therefore means RGB 0.5 before normalization.
 
-### Page 137 — Run the covered image through the same trained model
+### Page 136 — Run the covered image through the same trained model
 
 ```text
 Two independent forward passes
@@ -5670,7 +5635,7 @@ Recompute patch features, attention, CLS and class scores. Softmax gives 1,000 p
 What must be recomputed after the pixels change?
 The entire forward pass runs again. Reveal the measured change from 95.73% to 83.00%: 12.73 percentage points lower. The top label remains Newfoundland. No backward pass or optimizer step occurs.
 
-### Page 138 — Four covers, four new forward passes
+### Page 137 — Four covers, four new forward passes
 
 ```text
 Original P(Newfoundland): 95.73%
@@ -5696,7 +5661,7 @@ Top-right covering causes the largest drop: 16.11 percentage points. All four im
 Which intervention changes this probability most?
 The top-right cover gives the largest drop among these four tests. Keep the target class, fill value and model fixed. This does not isolate a semantic object part; the next slide uses smaller covers.
 
-### Page 139 — Use smaller covers to ask a more local question
+### Page 138 — Use smaller covers to ask a more local question
 
 ```text
 Large cover: 112 × 112
@@ -5714,7 +5679,7 @@ Only the cover size changes. The trained model still uses 16×16 patches and a 2
 Are we changing the model’s patch size, or the region we cover?
 Keep the model fixed. Cover one of its 196 patch locations at a time, producing 196 independent images. A smaller cover probes a smaller region, but may have a smaller effect because other useful information remains.
 
-### Page 140 — Smaller covers reveal local sensitivity
+### Page 139 — Smaller covers reveal local sensitivity
 
 ```text
 One test: cover P78
@@ -5737,7 +5702,7 @@ Smaller covers localize sensitivity. P78 causes the largest drop here, but no si
 Does a small probability drop mean a patch contains no useful information?
 P78 causes the largest measured drop: 3.84 percentage points. Read each square as a different forward pass with one gray patch. Other regions can retain useful clues; these drops are not additive.
 
-### Page 141 — Section 10 · The cost of smaller patches
+### Page 140 — Section 10 · The cost of smaller patches
 
 ```text
 SECTION
@@ -5755,7 +5720,7 @@ Halve the patch width and height. Predict the change in attention work before ca
 What happens when we make the patches smaller?
 Connect the previous result to this new question. Keep the same image classifier as the reference.
 
-### Page 142 — What changes when the patch size is halved?
+### Page 141 — What changes when the patch size is halved?
 
 ```text
 32 × 32 patches
@@ -5777,7 +5742,7 @@ At fixed image size, half the patch width gives four times as many patch rows.
 Will attention-score count grow by four or roughly sixteen?
 Count rows first, then square the total including CLS.
 
-### Page 143 — How much matching happens inside the tiny real model?
+### Page 142 — How much matching happens inside the tiny real model?
 
 ```text
 196 patch rows + CLS
@@ -5794,7 +5759,7 @@ Even this small ViT compares many pairs of rows.
 How can a 14-by-14 patch grid produce more than a million scores?
 Count pairs, then heads, then blocks. Keep token count separate from pixel count.
 
-### Page 144 — What happens if we use a larger image?
+### Page 143 — What happens if we use a larger image?
 
 ```text
 image width / height
@@ -5816,7 +5781,7 @@ Work out the token count before you change the controls.
 What happens to the 197-token sequence at resolution 384?
 Ask for a count, change the control, and compare with the prediction.
 
-### Page 145 — The whole ViT: pixels → context → one label
+### Page 144 — The whole ViT: pixels → context → one label
 
 ```text
 224 × 224 RGB
@@ -5859,7 +5824,7 @@ One shared patch layer builds the rows. Twelve blocks refine every row. The clas
 Can you trace the image path, then name the two updates inside a block?
 Trace projection, CLS and position, twelve blocks, final normalization, CLS and class head. Open one block: normalize, three attention heads, concatenate and project, residual; normalize, MLP, residual.
 
-### Page 146 — Four ideas to carry forward
+### Page 145 — Four ideas to carry forward
 
 ```text
 1 · Content + location
@@ -5899,7 +5864,7 @@ Pixels supply content. Position supplies location. Attention builds context. Tra
 Which operation supplies content, location, context and the learning signal?
 Patch projection supplies content; learned positions identify slots; attention mixes source values for every query; label loss trains the whole classifier. More tokens increase the number of query–key comparisons quadratically.
 
-### Page 147 — Our classifier stores a vector for each known label
+### Page 146 — Our classifier stores a vector for each known label
 
 ```text
 Final image CLS
@@ -5924,7 +5889,7 @@ A class score is a dot product with its learned weight vector, plus a bias. The 
 Where does the vector for the label Newfoundland come from?
 It is a learned row of the classifier weight matrix. The class name itself is not read by this classifier.
 
-### Page 148 — What if a class vector could come from language?
+### Page 147 — What if a class vector could come from language?
 
 ```text
 Image encoder
@@ -5954,7 +5919,7 @@ CLIP trains image and text representations to match. Learned projections and uni
 Could we replace today’s class weights with arbitrary text embeddings?
 Not directly. Image and text encoders need compatible projections and joint alignment training. CLIP compares normalized image and text vectors, with a learned score scale.
 
-### Page 149 — The whole Vision Transformer in one figure
+### Page 148 — The whole Vision Transformer in one figure
 
 ```text
 1 · RGB image
@@ -6061,7 +6026,7 @@ Follow the numbered path. The expanded block shows three parallel heads, both re
 Can you trace one image through every operation without skipping a box?
 Start at pixels, then patch projection, CLS and positions. Trace all 12 blocks. Open block 1: normalize, three parallel Q/K/V → scores → row softmax → AV lanes, concatenate, output projection, add the original E. Normalize U, apply Linear → GELU → Linear, and add U. Continue through the remaining distinct blocks, final normalization, final CLS and the class head. Softmax gives the prediction; logits and the known label give cross-entropy.
 
-### Page 150 — To images: An Image is Worth 16 × 16 Words
+### Page 149 — To images: An Image is Worth 16 × 16 Words
 
 ```text
 Dosovitskiy et al. (2020; ICLR 2021), Figure 1 · arXiv:2010.11929
@@ -6075,7 +6040,7 @@ Image patches become tokens. The encoder builds a summary for classification.
 What changed between the two paper figures?
 Read this figure from the image upward. Reveal the patch projection, the encoder, and the classification readout in that order. Point to the expanded encoder on the right. Then begin our dog-photo example.
 
-### Page 151 — Create 192 trainable numbers for CLS
+### Page 150 — Create 192 trainable numbers for CLS
 
 ```text
 The model uses 192 features per row.
@@ -6102,7 +6067,7 @@ Before training, initialize one 192-number vector. It is stored in the model, li
 Why 192, and who supplies the initial numbers?
 The chosen embedding width is 192. The initialization routine supplies the numbers once, before training; no image pixels are needed.
 
-### Page 152 — The image label teaches the starting CLS numbers
+### Page 151 — The image label teaches the starting CLS numbers
 
 ```text
 Training idea · imagine this is a labelled training example

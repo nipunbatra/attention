@@ -11,25 +11,6 @@ def consolidate(b, sections):
         return re.search(r'class="frame[^\"]*" id="([^\"]+)"', markup).group(1)
     existing={key(fr):fr for _,frames in sections for fr in frames}
 
-    body=t(35,36,'Two small grayscale patches: same mean, different arrangement',29)
-    for i,(patch,flat,result,label) in enumerate([
-        ([[1,1],[0,0]],'[1, 1, 0, 0]','[2, 0]','Horizontal edge'),
-        ([[1,0],[1,0]],'[1, 0, 1, 0]','[0, 2]','Vertical edge')]):
-        y=85+i*180
-        body+=f.pixels(42,y,patch,48,True,False)
-        body+=t(181,y+40,flat,27,'c-e')+t(181,y+84,'mean = 0.5',23,'ink-2')
-        body+=arrow(382,y+44,450,y+44,'c-e')
-        body+=box(470,y+4,380,['same two weighted sums','[1, 1, −1, −1]  ·  [1, −1, 1, −1]'],'c-v',size=21,h=88)
-        body+=arrow(860,y+44,925,y+44,'c-v')
-        body+=t(1018,y+42,result,34,'c-v','middle')+t(1018,y+81,label,21,'ink-2','middle')
-    f.add('patch-filter-patterns','Weighted filters can see more than average brightness',body,
-        'These two patches have the same mean. Two different weighted sums distinguish their spatial patterns. A learned projection can retain several useful features from the same pixels; averaging alone discards this distinction.',
-        'Would one average-brightness number distinguish these patches?',
-        'No. Apply the same two filters to each flattened patch: the outputs are [2,0] and [0,2]. Both biases are zero in this chosen example.',
-        'This isolated 2×2 grayscale example explains what a projection can represent; it does not start another classifier walkthrough. '
-        'With row-major flattening, the two columns of W are [1,1,−1,−1] and [1,−1,1,−1], and b=[0,0]. '
-        'The real photo uses 768 inputs and 192 learned output features. These chosen edge weights are not measurements from that checkpoint.')
-
     body=t(35,40,'The same normalization, applied to two different questions',29)
     body+=box(35,103,325,['ATTENTION · one query','Which source rows help?'],'c-k',size=23)
     body+=arrow(374,141,452,141,'c-k')+box(471,103,650,['197 scores → softmax over sources → 197 weights','CLS + P1 + P2 + … + P196'],'c-k',size=24)
@@ -50,7 +31,6 @@ def consolidate(b, sections):
         assert any(key(fr)==anchor for fr in frames), anchor
         return result
     first=list(sections[:3])
-    first[1]=(first[1][0],insert_after(first[1][1],'patch-shared-code',f.frames['patch-filter-patterns']))
     title,frames=first[2]
     for anchor,extra in [
         ('real-heads-intro',existing['heads-visual-roles']),

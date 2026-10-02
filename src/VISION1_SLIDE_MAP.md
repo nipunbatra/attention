@@ -1,6 +1,6 @@
 # Vision I — current slide map
 
-147 teaching frames plus the cover. Right/Left advances reveals; S opens notes. Detailed calculations are preserved. Section 6 is an optional implementation lab; historical and dense reference figures remain in reading notes.
+146 teaching frames plus the cover. Right/Left advances reveals; S opens notes. Detailed calculations are preserved. Section 6 is an optional implementation lab; historical and dense reference figures remain in reading notes.
 
 | Section | Frame | ID | Title |
 |---|---:|---|---|
@@ -31,17 +31,16 @@
 | s02 | 10 | `patch-linear-second` | Now follow the connections into output 2 |
 | s02 | 11 | `patch-linear-result` | These two numbers are the patch embedding |
 | s02 | 12 | `patch-shared-code` | Apply the very same layer to another patch |
-| s02 | 13 | `patch-filter-patterns` | Weighted filters can see more than average brightness |
-| s02 | 14 | `s01-rows` | Start with the same dog photograph |
-| s02 | 15 | `projection-size` | Split the image into 16 × 16 patches |
-| s02 | 16 | `real-patch-crops` | Number the patches row by row |
-| s02 | 17 | `patch-real-dimensions` | Read the RGB values inside patch 63 |
-| s02 | 18 | `real-patch-normalize` | Normalize those same RGB values |
-| s02 | 19 | `patch-one-row-shape` | Flatten patch 63 in the same order as the code |
-| s02 | 20 | `patch-one-row-projection` | Pass that row through the shared linear layer |
-| s02 | 21 | `real-patch-projection` | Read the 192 output features for patch 63 |
-| s02 | 22 | `real-patch-shared` | Pass patch 64 through the very same layer |
-| s02 | 23 | `patch-projection-parameters` | Stack the 196 output rows into C |
+| s02 | 13 | `s01-rows` | Start with the same dog photograph |
+| s02 | 14 | `projection-size` | Split the image into 16 × 16 patches |
+| s02 | 15 | `real-patch-crops` | Number the patches row by row |
+| s02 | 16 | `patch-real-dimensions` | Read the RGB values inside patch 63 |
+| s02 | 17 | `real-patch-normalize` | Normalize those same RGB values |
+| s02 | 18 | `patch-one-row-shape` | Flatten patch 63 in the same order as the code |
+| s02 | 19 | `patch-one-row-projection` | Pass that row through the shared linear layer |
+| s02 | 20 | `real-patch-projection` | Read the 192 output features for patch 63 |
+| s02 | 21 | `real-patch-shared` | Pass patch 64 through the very same layer |
+| s02 | 22 | `patch-projection-parameters` | Stack the 196 output rows into C |
 | s03 | 1 | `vision-topic-03` | Section 3 · Prepare the rows, then classify the image |
 | s03 | 2 | `position-where` | Give each patch its location in the photograph |
 | s03 | 3 | `position-table` | Position is a learned lookup table |

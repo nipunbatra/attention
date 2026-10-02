@@ -18,7 +18,7 @@ for h in trace['gradients']['heads']:
     np.testing.assert_allclose(np.array(h['dS']).sum(axis=1),0,atol=1e-12)
 assert trace['single_update']['loss_after']<trace['single_update']['loss_before']
 manifest=json.loads((ROOT/'figures/vision1/frame-manifest.json').read_text())
-assert len(manifest)==147 and len({x['id'] for x in manifest})==147
+assert len(manifest)==146 and len({x['id'] for x in manifest})==146
 ids=[x['id'] for x in manifest]
 from vision1_course_bridge import OPTIONAL
 from vision1_visual_refinement import READING_ONLY
@@ -73,7 +73,7 @@ assert all(len(x['caption'].split())<=40 and '\n' in x['notes'] for x in manifes
 required={'prior-encoder-recap','vit-same-encoder','vit-token-inputs','vit-self-vs-cross',
           'vit-shape-trace','vision-fixed-class-vectors','vision-language-handoff',
           'cls-shared-start','heads-visual-roles',
-          'patch-filter-patterns','photo-two-softmaxes',
+          'photo-two-softmaxes',
           'vit-canonical-block','photo-optimizer-step',
           'cnn-receptive-field','cnn-context-readout','cnn-inductive-bias','cnn-vit-design',
           'code-photo-input','code-photo-conv','code-photo-tokens','code-photo-attention',

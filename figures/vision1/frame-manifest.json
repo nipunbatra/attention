@@ -216,20 +216,12 @@
     "frame": 12
   },
   {
-    "id": "patch-filter-patterns",
-    "title": "Weighted filters can see more than average brightness",
-    "caption": "These two patches have the same mean. Two different weighted sums distinguish their spatial patterns. A learned projection can retain several useful features from the same pixels; averaging alone discards this distinction.",
-    "notes": "Would one average-brightness number distinguish these patches?\nNo. Apply the same two filters to each flattened patch: the outputs are [2,0] and [0,2]. Both biases are zero in this chosen example.",
-    "section": "s02",
-    "frame": 13
-  },
-  {
     "id": "s01-rows",
     "title": "Start with the same dog photograph",
     "caption": "We now carry this one image through the real model\u2019s input pipeline. It has already been resized and cropped to 224 \u00d7 224 RGB pixels.",
     "notes": "What do the three image dimensions count?\nKeep the photograph fixed. Identify rows, columns and RGB channels before introducing any patch or embedding dimension.",
     "section": "s02",
-    "frame": 14
+    "frame": 13
   },
   {
     "id": "projection-size",
@@ -237,7 +229,7 @@
     "caption": "The x-axis runs right; the y-axis runs down. Both span 224 pixels. Cut every 16 pixels along each axis. Each piece keeps its RGB values; we will count the pieces next.",
     "notes": "How many 16-pixel-wide pieces fit along each image axis?\nPoint to the x-axis arrow, then the y-axis arrow and their endpoints. Follow the highlighted image region into the enlarged 16\u00d716 patch. Leave the count for the next slide.",
     "section": "s02",
-    "frame": 15
+    "frame": 14
   },
   {
     "id": "real-patch-crops",
@@ -245,7 +237,7 @@
     "caption": "Number left to right, then continue on the next row. Use the image and patch sizes to calculate the row length and total before revealing the answers.",
     "notes": "What is the last patch number in the first row? What starts the second row, and what is the final patch number?\nStart with P1 and P2. Ask students to divide each 224-pixel extent by 16, then reveal P14 and the second row. Multiply the two counts before revealing P196 and the full array shape.",
     "section": "s02",
-    "frame": 16
+    "frame": 15
   },
   {
     "id": "patch-real-dimensions",
@@ -253,7 +245,7 @@
     "caption": "P63 contains 256 pixels. Its first pixel is RGB [16, 17, 12]; its next pixel is [41, 42, 37]. Three values per pixel give 768 numbers in this same patch.",
     "notes": "How many input numbers does each pixel contribute?\nUse the two outlined pixels in the real crop. Read each RGB triple, then count 256 triples rather than introducing 768 without its source.",
     "section": "s02",
-    "frame": 17
+    "frame": 16
   },
   {
     "id": "real-patch-normalize",
@@ -261,7 +253,7 @@
     "caption": "The checkpoint rescales every channel using the same formula. For the first red value, (16 / 255 \u2212 0.5) / 0.5 \u2248 \u22120.875. P63 still contains 768 values.",
     "notes": "Where does the first negative number come from?\nCarry the first RGB triple from the previous slide across the arrow. Work out the red channel before revealing the second pixel.",
     "section": "s02",
-    "frame": 18
+    "frame": 17
   },
   {
     "id": "patch-one-row-shape",
@@ -269,7 +261,7 @@
     "caption": "Concatenate 256 red values, 256 green values and 256 blue values. This gives one 768-number patch row. F.unfold and the reshaped Conv2d weights use this exact ordering.",
     "notes": "Where does the first green value appear?\nAt entry 257 (one-based), after all 256 red values. The first pixel\u2019s RGB values occupy entries 1, 257 and 513.",
     "section": "s02",
-    "frame": 19
+    "frame": 18
   },
   {
     "id": "patch-one-row-projection",
@@ -277,7 +269,7 @@
     "caption": "This layer reads 768 values and computes 192 output features. Its learned weights and biases are shared by every patch. One patch row enters; one embedding row leaves.",
     "notes": "How many weighted sums does this layer compute for P63?\nCarry x63 from the previous slide into the layer. Follow its row count and feature width separately, then identify the weight and bias shapes.",
     "section": "s02",
-    "frame": 20
+    "frame": 19
   },
   {
     "id": "real-patch-projection",
@@ -285,7 +277,7 @@
     "caption": "The layer produces c\u2086\u2083, the content embedding for P63. These are actual outputs from the pretrained model, rounded here. The first feature is \u22120.852 and the last is \u22121.199.",
     "notes": "Which patch do all 192 numbers describe?\nTrace the same crop through the same layer, then read individual output coordinates before collecting them into c63.",
     "section": "s02",
-    "frame": 21
+    "frame": 20
   },
   {
     "id": "real-patch-shared",
@@ -293,7 +285,7 @@
     "caption": "P64 is the patch immediately to the right of P63. Its different pixels give a different embedding. Both patches use the same weights and biases, and both produce 192 output features.",
     "notes": "Do we create new projection weights for P64?\nKeep P63\u2019s path visible while revealing P64 underneath it. Point to the one shared layer and compare their measured input and output values.",
     "section": "s02",
-    "frame": 22
+    "frame": 21
   },
   {
     "id": "patch-projection-parameters",
@@ -301,7 +293,7 @@
     "caption": "Repeat the same projection for all 196 patches and keep their order. The input matrix X is 196 \u00d7 768. The output matrix C is 196 \u00d7 192: one content embedding per image patch.",
     "notes": "Which axis changes when we apply the shared projection to all patches?\nMatch the illustrated crops to their measured output rows. Then carry the unchanged row count 196 from X through the layer to C.",
     "section": "s02",
-    "frame": 23
+    "frame": 22
   },
   {
     "id": "vision-topic-03",
