@@ -576,6 +576,10 @@ optimizer.step()''',t(30,65,'image + known label',26,'c-e')+arrow(180,92,180,160
     sections=explain_occlusion(b,sections)
     from vision1_closing_summary import conclude
     sections=conclude(b,sections)
+    from vision1_course_bridge import revise
+    sections=revise(b,sections)
+    from vision1_visual_refinement import refine_visuals
+    sections=refine_visuals(b,sections)
     # The assembler discovers generated files, so remove obsolete section outputs
     # when the main lecture ends earlier. Their practice content is retained above.
     for path in b['OUT'].glob('sec[0-9][0-9].html'):
@@ -591,8 +595,8 @@ optimizer.step()''',t(30,65,'image + known label',26,'c-e')+arrow(180,92,180,160
             ordered.append(meta)
     config={'part':1,'partLabel':'Vision I','series':'Vision to language',
       'title':'Vision Transformer',
-      'subtitle':'Follow one photograph through a Vision Transformer: pixels, attention, classification, learning and code.',
-      'audience':'Students who have completed the text attention Parts I–III.',
+      'subtitle':'The same encoder, with image patches: from pixels to a class prediction and the next question for CLIP.',
+      'audience':'Students who have completed Transformers beyond next-token prediction (encoders, decoders and cross-attention).',
       'durationLabel':'One photo walkthrough, with code and optional labs.',
       'hook':'What can one patch borrow from the rest of its image?',
       'centralLabel':'Follow one computation','central':r'\text{pixels}\to E\to Q,K,V\to A\to H\to E\prime\to p(\text{class})',
@@ -601,7 +605,7 @@ optimizer.step()''',t(30,65,'image + known label',26,'c-e')+arrow(180,92,180,160
       'objects':['e','q','k','v','a','d','ep'],
       'objectSections':{'e':'s03','q':'s03','k':'s03','v':'s03','a':'s03','d':'s03','ep':'s03'},
       'provenance':'Real-photo predictions are saved measurements from a pretrained ImageNet model. The backward pass explains how a label would train this architecture. Code and dog/cat adaptation show procedures, with no new training results. The optional lab retains the separate four-patch worksheet and synthetic experiment.',
-      'prev':{'label':'Part 4: Cross-attention: translate one phrase','href':'part4.html'},
+      'prev':{'label':'Text attention and cross-attention','href':'part4.html'},
       'next':{'label':'Optional: self-supervised visual learning','href':'vision2.html'},
       'index':{'label':'Series home','href':'index.html'},
       'notation':'vision1','footer':'Pixels become rows; attention adds context; a learned readout answers the image question.',

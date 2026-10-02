@@ -18,8 +18,25 @@ for h in trace['gradients']['heads']:
     np.testing.assert_allclose(np.array(h['dS']).sum(axis=1),0,atol=1e-12)
 assert trace['single_update']['loss_after']<trace['single_update']['loss_before']
 manifest=json.loads((ROOT/'figures/vision1/frame-manifest.json').read_text())
-assert len(manifest)==169 and len({x['id'] for x in manifest})==169
+assert len(manifest)==147 and len({x['id'] for x in manifest})==147
 ids=[x['id'] for x in manifest]
+from vision1_course_bridge import OPTIONAL
+from vision1_visual_refinement import READING_ONLY
+assert ids[:3]==['prior-encoder-recap','vit-same-encoder','vit-token-inputs']
+assert not (OPTIONAL | READING_ONLY).intersection(ids)
+page_text=(ROOT/'vision1.html').read_text()
+assert all('class="vp-optional-practice" id="'+k+'"' in page_text for k in OPTIONAL | READING_ONLY)
+toy=json.loads((ROOT/'figures/vision1/patch-embedding-example.json').read_text())
+np.testing.assert_array_equal(np.array(toy['patches']).transpose(0,2,1).reshape(2,12),toy['X'])
+np.testing.assert_allclose(np.array(toy['X'])@np.array(toy['weight']).T+toy['bias'],toy['C'])
+assert toy['conv2d_matches'] and toy['flatten_order'].startswith('channel-major')
+real_patch=json.loads((ROOT/'figures/vision1/real-patch-path.json').read_text())
+assert real_patch['flatten_order'].startswith('channel-major')
+for patch in real_patch['selected_patches'].values():
+    expected=(np.array(patch['rgb_pixels']).T.reshape(-1)/255-.5)/.5
+    np.testing.assert_allclose(expected,patch['normalized_rgb_row'],atol=1e-7)
+np.testing.assert_array_equal(real_patch['normalized_rgb_row'],real_patch['selected_patches']['63']['normalized_rgb_row'])
+
 occlusion=json.loads((ROOT/'figures/vision1/patch-occlusion.json').read_text())
 inspector=json.loads((ROOT/'figures/vision1/attention-explorer/manifest.json').read_text())
 assert occlusion['parameter_sha256']==inspector['parameter_sha256']
@@ -37,10 +54,10 @@ assert occlusion['largest_drop']==max(trials,key=lambda r:r['drop_percentage_poi
 assert occlusion['largest_drop']['patch_index']==78
 assert [ids.index(k) for k in ['occlusion','occlusion-small-setup','occlusion-small-result']]==list(range(ids.index('occlusion'),ids.index('occlusion')+3))
 input_order=['patch-projection-parameters','vision-topic-03','position-where','position-table','real-patch-position','position-learning',
-             'cls-detour','real-cls-purpose','cls-parameter-origin','cls-parameter-learning',
-             'cls-stored-start','cls-summary-refinement','cls-collect','cls-shared-start','cls-two-image-readout','cls-without',
-             'cls-pool-dog','cls-pool-arithmetic','cls-readout-return',
-             'real-cls-sequence','model-journey-checkpoint','real-patch-qkv','real-cls-attention',
+             'cls-detour','real-cls-purpose',
+             'cls-summary-refinement','cls-shared-start',
+             'cls-pool-dog','cls-readout-return',
+             'real-cls-sequence','model-journey-checkpoint','vit-self-vs-cross','real-patch-qkv','real-cls-attention',
              'real-attention-product','real-attention-cls-zoom','real-attention-weights','real-attention-mask',
              'real-message-text-analogy','real-cls-values-origin','real-cls-value-scaling',
              'real-cls-value-contributions','real-cls-value-sum','real-cls-message-destination','real-attention-values',
@@ -49,12 +66,15 @@ input_order=['patch-projection-parameters','vision-topic-03','position-where','p
              'real-block-handoff','real-block-changes','real-cls-depth','real-cls-readout',
              'real-classifier-network','real-classifier-score','real-classifier-softmax','real-cls-prediction']
 assert [ids.index(k) for k in input_order]==sorted(ids.index(k) for k in input_order)
-assert ids[-3:]==['cost-control','vision-summary-architecture','vision-summary-takeaways']
+assert ids[-5:]==['cost-control','vision-summary-architecture','vision-summary-takeaways',
+                  'vision-fixed-class-vectors','vision-language-handoff']
 assert not any(x['id'].startswith('position-photo-') for x in manifest)
 assert all(len(x['caption'].split())<=40 and '\n' in x['notes'] for x in manifest)
-required={'task-side-by-side','cls-shared-start','cls-without','heads-visual-roles',
+required={'prior-encoder-recap','vit-same-encoder','vit-token-inputs','vit-self-vs-cross',
+          'vit-shape-trace','vision-fixed-class-vectors','vision-language-handoff',
+          'cls-shared-start','heads-visual-roles',
           'patch-filter-patterns','photo-two-softmaxes',
-          'photo-label-loss','photo-optimizer-step',
+          'vit-canonical-block','photo-optimizer-step',
           'cnn-receptive-field','cnn-context-readout','cnn-inductive-bias','cnn-vit-design',
           'code-photo-input','code-photo-conv','code-photo-tokens','code-photo-attention',
           'code-photo-block','code-photo-readout','code-photo-training',
@@ -75,7 +95,7 @@ np.testing.assert_allclose(pixel['pixel']*pixel['weight'],pixel['product'],atol=
 np.testing.assert_allclose(pixel['sum_768_products_plus_bias'],
     patch_report['results'][0]['conv_first_features'][0],atol=2e-6)
 assert [x['id'] for x in manifest if x['section']=='s04']==[
-    'vision-topic-04','photo-label-loss','photo-optimizer-step']
+    'vision-topic-04','vit-shape-trace','vit-canonical-block','photo-optimizer-step']
 assert not {'s02-small','s03-query','s04-probability','heads-independent','code-patch','code-model'} & {x['id'] for x in manifest}
 assert sorted({x['section'] for x in manifest}) == [f's{i:02}' for i in range(1,11)]
 assert not {'find-animal','image-caption','photo-search','learning-curves','training-data'}&{x['id'] for x in manifest}
@@ -183,7 +203,7 @@ report={'teaching_frames':len(manifest),'new_gradient_coordinates_checked':trace
         'two_images_share_cls_input_but_have_different_updates':True,
         'multihead_messages_concatenation_and_residual_verified':True,
         'source_contributions_and_receiver_messages_verified':True,
-        'whole_model_walkthrough_two_content_frames':True,
+        'whole_model_walkthrough_three_content_frames':True,
         'mlp_gelu_and_second_residual_previews_verified':True,
         'classifier_weighted_sums_and_all_class_softmax_verified':True,
         'single_query_weight_update':trace['single_update']}

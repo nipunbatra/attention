@@ -3,8 +3,8 @@
   "partLabel": "Vision I",
   "series": "Vision to language",
   "title": "Vision Transformer",
-  "subtitle": "Follow one photograph through a Vision Transformer: pixels, attention, classification, learning and code.",
-  "audience": "Students who have completed the text attention Parts I\u2013III.",
+  "subtitle": "The same encoder, with image patches: from pixels to a class prediction and the next question for CLIP.",
+  "audience": "Students who have completed Transformers beyond next-token prediction (encoders, decoders and cross-attention).",
   "durationLabel": "One photo walkthrough, with code and optional labs.",
   "hook": "What can one patch borrow from the rest of its image?",
   "centralLabel": "Follow one computation",
@@ -37,7 +37,7 @@
     },
     {
       "id": "s06",
-      "title": "The same classifier in PyTorch",
+      "title": "Implementation lab \u00b7 optional",
       "lit": ""
     },
     {
@@ -84,7 +84,7 @@
     },
     {
       "section": "s06",
-      "label": "The same classifier in PyTorch"
+      "label": "Implementation lab \u00b7 optional"
     },
     {
       "section": "s07",
@@ -123,7 +123,7 @@
   },
   "provenance": "Real-photo predictions are saved measurements from a pretrained ImageNet model. The backward pass explains how a label would train this architecture. Code and dog/cat adaptation show procedures, with no new training results. The optional lab retains the separate four-patch worksheet and synthetic experiment.",
   "prev": {
-    "label": "Part 4: Cross-attention: translate one phrase",
+    "label": "Text attention and cross-attention",
     "href": "part4.html"
   },
   "next": {

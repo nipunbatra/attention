@@ -48,13 +48,13 @@ def add_real_path(b, add):
     body += t(175, 142, 'Add its position row; repeat for every image patch.', 30, 'c-e')
     headings = [(35, 'content from pixels', 'c₆₃', 'content', 'c-e'),
                 (455, 'row 63 of the learned table', 'p₆₃', 'position', 'c-q'),
-                (865, 'input to the block', 'e₆₃', 'embedding', 'c-v')]
+                (865, 'input to the block', 'e₆₃', 'embedding', 'vision')]
     for i, (x, label, symbol, key, color) in enumerate(headings):
         marks = t(x, 240, label, 25, 'ink-2') + t(x, 287, symbol+' · 1 × 192', 31, color)
         marks += t(x, 340, vec(data[key], 2), 26, color)
         if i: marks += t(x-57, 306, '+' if i==1 else '=', 38)
         body += marks if i==0 else g(marks, i)
-    body += g(t(35, 416, 'All patch rows:  C (196 × 192) + P (196 × 192) = E (196 × 192)', 28, 'c-v'), 2)
+    body += g(t(35, 416, 'All patch rows:  C (196 × 192) + P (196 × 192) = E (196 × 192)', 28, 'vision'), 2)
     add('real-patch-position', '11 · Add position to these content rows', body,
         'c₆₃ comes from the patch pixels. p₆₃ is learned for its grid location. Add matching coordinates to get e₆₃. All three rows have 192 coordinates; addition does not double the width.',
         'After adding position, does this row have 192 coordinates or 384?',

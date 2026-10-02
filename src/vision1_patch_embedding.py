@@ -5,28 +5,34 @@ from html import escape
 
 
 def example():
-    # Pixel-major RGB: A (top-left), B, C, D. These are teaching parameters.
+    # Channel-major: all red pixels A–D, then green A–D, then blue A–D.
     import torch
     from torch import nn
     patches = torch.tensor([
         [[1.,0.,0.],[0.,1.,0.],[0.,0.,1.],[1.,1.,1.]],
         [[0.,0.,1.],[0.,0.,1.],[0.,1.,0.],[0.,1.,0.]],
     ], dtype=torch.float64)
-    weight = torch.tensor([[1.,0.,0.]*4,
-                           [0.,1.,0., 0.,1.,0., 0.,-1.,0., 0.,-1.,0.]], dtype=torch.float64)
+    weight = torch.tensor([[1.,1.,1.,1., 0.,0.,0.,0., 0.,0.,0.,0.],
+                           [0.,0.,0.,0., 1.,1.,-1.,-1., 0.,0.,0.,0.]], dtype=torch.float64)
     bias = torch.tensor([.5,-.5], dtype=torch.float64)
     proj = nn.Linear(12, 2, dtype=torch.float64)
     with torch.no_grad():
         proj.weight.copy_(weight)
         proj.bias.copy_(bias)
-    X = patches.reshape(2,12)
+    X = patches.transpose(1,2).reshape(2,12)
     C = proj(X)
     expected = torch.tensor([[2.5,-.5],[.5,-2.5]],dtype=torch.float64)
     torch.testing.assert_close(C, expected)
     torch.testing.assert_close(C, X @ weight.T + bias)
     torch.testing.assert_close(proj(X[:1]), C[:1])
     torch.testing.assert_close(proj(X[1:]), C[1:])
-    return {'patches':patches.tolist(), 'X':X.tolist(), 'weight':weight.tolist(),
+    conv = nn.Conv2d(3, 2, 2, stride=2, dtype=torch.float64)
+    with torch.no_grad():
+        conv.weight.copy_(weight.reshape(2, 3, 2, 2))
+        conv.bias.copy_(bias)
+    torch.testing.assert_close(conv(X.reshape(2, 3, 2, 2)).flatten(1), C)
+    return {'flatten_order':'channel-major RGB; row-major within each channel',
+            'conv2d_matches':True, 'patches':patches.tolist(), 'X':X.tolist(), 'weight':weight.tolist(),
             'W':weight.T.tolist(), 'bias':bias.tolist(), 'C':C.detach().tolist(),
             'input_shape':list(X.shape), 'output_shape':list(C.shape),
             'parameter_count':sum(p.numel() for p in proj.parameters()),
@@ -84,22 +90,23 @@ def expand(b, sections):
         mobile_patch()+mobile_rows(['Pixel','RGB / 255'],[[letter,vec(rgb)] for letter,rgb in zip('ABCD',pixels)]))
 
     body=patch(35,105,90)+t(125,350,'one RGB patch',28,'ink','middle')
-    for i,rgb in enumerate(pixels):
-        x=365+i*195
-        part=t(x,115,'ABCD'[i],29,'ink-2','middle')+t(x,195,', '.join(f'{v:g}' for v in rgb),33,'c-e','middle')
-        part+=line(x-72,220,x+72,220,'c-e')+t(x,275,'R, G, B',25,'ink-2','middle')
+    for i,channel in enumerate('RGB'):
+        x=405+i*270
+        vals=data['X'][0][i*4:(i+1)*4]
+        part=t(x,105,channel+' channel',29,'ink-2','middle')
+        part+=t(x,185,', '.join(f'{v:g}' for v in vals),33,'c-e','middle')
+        part+=line(x-110,220,x+110,220,'c-e')+t(x,275,'A, B, C, D',25,'ink-2','middle')
         body+=part if i==0 else g(part,i)
-    body+=g(t(270,197,'[',45,'c-e')+t(1050,197,']',45,'c-e')
-            +t(665,385,'x₁: one pixel row, shape (1, 12)',32,'c-e','middle'),3)
-    add('rgb-flatten','Put the four RGB triples in one row',body,
-        'Keep RGB together for each pixel. x₁ contains 12 values from patch 1; the subscript identifies the patch.',
-        'Which three entries came from the bottom-right pixel?',
-        'Follow A, B, C and D into their matching groups, then count the twelve scalar entries.',
-        'We use pixel-major RGB order: R_A, G_A, B_A, R_B, G_B, B_B, and so on. '
-        'x₁ is a row with shape (1,12); 1 is the number of patches shown and 12 is the number of input features. '
-        'Flattening changes the arrangement of the values and has no trainable parameters. '
-        'A channel-major implementation uses a corresponding permutation of the projection weights.'+source,
-        mobile_rows(['Pixel group','Entries'],[[letter,vec(rgb)] for letter,rgb in zip('ABCD',pixels)])
+    body+=g(t(270,187,'[',45,'c-e')+t(1080,187,']',45,'c-e')
+            +t(675,365,'x₁: one patch row, shape (1, 12)',31,'c-e','middle'),2)
+    add('rgb-flatten','Flatten one channel at a time: R, then G, then B',body,
+        'Read all four red values, then all four green values, then all four blue values. This is the same ordering used by our PyTorch patch extraction later.',
+        'Where is the green value of pixel B in this row?',
+        'It is entry 6 (one-based): four red entries, then green A and green B. Within each channel, read A, B, C, D in image row order.',
+        'We use channel-major RGB throughout: R_A, R_B, R_C, R_D, G_A, G_B, G_C, G_D, B_A, B_B, B_C, B_D. '
+        'The row has shape (1,12). Flattening rearranges values and learns no parameters. '
+        'The weights use this same ordering, matching F.unfold and Conv2d weight.flatten(1).'+source,
+        mobile_rows(['Channel group','Entries'],[[channel,vec(data['X'][0][i*4:(i+1)*4])] for i,channel in enumerate('RGB')])
         +'<p><strong>x₁ = '+escape(vec(data['X'][0]))+'</strong></p><p>Shape: (1, 12).</p>')
 
     body=t(35,55,'Text: a token ID',30,'ink-2')+t(655,55,'Image: pixel values',30,'ink-2')
@@ -141,7 +148,7 @@ def expand(b, sections):
         'With a bias, this is mathematically an affine transformation; the library calls the layer Linear. '
         'The content embedding then receives position information before the Transformer blocks. '
         'After attention in our pre-LN block, a normalized current row enters Linear(D,H), GELU, and Linear(H,D); the output participates in a residual addition. '
-        'This diagram isolates the MLP branch. Our trained small model chooses D=16 and H=32, while the RGB hand calculation chooses D=2. '
+        'This diagram isolates the MLP branch. Our real-image checkpoint uses D=192 and H=768; the RGB hand calculation chooses D=2. '
         'The full Transformer also includes operations such as attention softmax and LayerNorm; GELU is the activation inside its MLP. '
         'Adding an activation to the patch projection would define a different input module. '
         +linear_ref+' · <a href="notebooks/vision/train_small_vit.py">The lecture’s executable model</a>.',
@@ -165,7 +172,7 @@ def expand(b, sections):
         mobile_rows(['Quantity','Shape'],[['x₁: pixel row','(1,12)'],['W: weights','(12,2)'],['b: bias row','(1,2)'],['c₁: content embedding','(1,2)']])
         +'<p><code>proj = nn.Linear(12, 2)</code></p><p>c₁ = x₁ W + b.</p>')
 
-    input_names=[f'{pixel}.{channel}' for pixel in 'ABCD' for channel in 'RGB']
+    input_names=[f'{pixel}.{channel}' for channel in 'RGB' for pixel in 'ABCD']
 
     def network(active=None, mobile=False):
         """Keep the same 12-to-2 layer visible while focusing one weighted sum."""
@@ -211,7 +218,7 @@ def expand(b, sections):
         'Each input node holds one RGB value. Both outputs read all 12 inputs. Together, y₁ and y₂ form the embedding for this one patch.',
         'How many connections enter each output node?',
         'Count the twelve actual pixel values. Follow their connections into each of the two outputs, then reveal the weights and biases.',
-        'A.R means the red value of pixel A; each pixel supplies three consecutive input nodes. '
+        'A.R means the red value of pixel A; the inputs are grouped by channel, with pixels A–D inside each group. '
         'This drawing is exactly nn.Linear(12,2): a fully connected affine layer with 24 weights and two biases. '
         'There is no hidden layer or activation in this patch projection. The outputs are embedding coordinates, not dog/cat scores. '
         'The following slides keep the same network and highlight the nonzero weights for one output at a time. '

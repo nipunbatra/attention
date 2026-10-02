@@ -52,10 +52,12 @@ for i,(name,image) in enumerate(p['images'].items()):
                 np.testing.assert_allclose(actual[2*i+j]['heads'][h][key],expected['heads'][h][key],atol=1e-12)
 
 manifest=json.loads((ROOT/'figures/vision1/frame-manifest.json').read_text())
-assert len(manifest)==169
-required={'task-side-by-side','cls-shared-start','cls-without','heads-visual-roles',
+assert len(manifest)==147
+required={'prior-encoder-recap','vit-same-encoder','vit-token-inputs','vit-self-vs-cross',
+          'vit-shape-trace','vision-fixed-class-vectors','vision-language-handoff',
+          'cls-shared-start','heads-visual-roles',
           'patch-filter-patterns','photo-two-softmaxes',
-          'photo-label-loss','photo-optimizer-step',
+          'vit-canonical-block','photo-optimizer-step',
           'cnn-receptive-field','cnn-context-readout','cnn-inductive-bias','cnn-vit-design',
           'code-photo-input','code-photo-conv','code-photo-tokens','code-photo-attention',
           'code-photo-block','code-photo-readout','code-photo-training',
@@ -88,9 +90,10 @@ assert all(x['section'] and x['frame'] for x in manifest)
 ids=[x['id'] for x in manifest]
 assert ids.index('model-journey-overview') < ids.index('s01-rows')
 assert ids.index('position-where') < ids.index('position-table') < ids.index('real-patch-position') < ids.index('position-learning') < ids.index('cls-detour')
-assert ids.index('real-cls-purpose') < ids.index('real-cls-sequence') < ids.index('real-patch-qkv') < ids.index('real-cls-prediction') < ids.index('photo-label-loss')
-assert ids[-3:]==['cost-control','vision-summary-architecture','vision-summary-takeaways']
-assert all(x['title'].startswith('Section ') for x in manifest if x['id'].startswith('vision-topic-'))
+assert ids.index('real-cls-purpose') < ids.index('real-cls-sequence') < ids.index('real-patch-qkv') < ids.index('real-cls-prediction') < ids.index('vit-shape-trace')
+assert ids[-5:]==['cost-control','vision-summary-architecture','vision-summary-takeaways',
+                  'vision-fixed-class-vectors','vision-language-handoff']
+assert all((x['title'].startswith('Section ') or x['id']=='vision-topic-06') for x in manifest if x['id'].startswith('vision-topic-'))
 classifier=json.loads((ROOT/'figures/vision1/real-classifier-path.json').read_text())
 assert classifier['with_cls']==[197,192] and classifier['mlp_hidden']==[197,768]
 np.testing.assert_allclose(sum(classifier['cls_head1_weights']),1,atol=2e-6)

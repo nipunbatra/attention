@@ -67,13 +67,13 @@ def build_cls_story(b):
 
     body = image(35,25,105,105,photo)
     body += t(175,58,'The model uses 192 features per row.',31)
-    body += t(175,108,'Give the extra row the same width.',30,'c-q')
+    body += t(175,108,'Give the extra row the same width.',30,'special')
     for j,(label,index) in enumerate([('s₁','1'),('s₂','2'),('s₃','3'),('…','…'),('s₁₉₂','192')]):
         x=120+j*195
-        body += rect(x,175,140,68,'c-q','t-q',5)+t(x+70,221,label,33,'c-q','middle')
+        body += rect(x,175,140,68,'special','t-special',5)+t(x+70,221,label,33,'special','middle')
         body += t(x+70,276,index,23,'ink-2','middle')
     body += g(t(35,335,'Initialize once with small random values; mark them trainable.',28)
-              +t(35,391,'cls = nn.Parameter(torch.randn(1, 1, 192) * 0.02)',29,'c-q'),1)
+              +t(35,391,'cls = nn.Parameter(torch.randn(1, 1, 192) * 0.02)',29,'special'),1)
     add('cls-parameter-origin','Create 192 trainable numbers for CLS',body,
         'Before training, initialize one 192-number vector. It is stored in the model, like a learned token embedding in text. The numbers do not come from this photograph. Training will adjust them.',
         'Why 192, and who supplies the initial numbers?\nThe chosen embedding width is 192. The initialization routine supplies the numbers once, before training; no image pixels are needed.',
@@ -94,8 +94,8 @@ def build_cls_story(b):
     body += arrow(536,157,587,157)+box(603,116,210,['Class scores','prediction'])
     body += arrow(819,157,870,157)+box(886,116,230,['Compare with label','loss'],h=82,size=23)
     body += box(875,280,252,['Known label','Newfoundland'],size=24)+arrow(1001,276,1001,203,'c-e')
-    body += box(280,302,390,['192 starting CLS parameters','adjusted by the optimizer'],'c-q')
-    body += arrow(400,297,400,202,'c-q')
+    body += box(280,302,390,['192 starting CLS parameters','adjusted by the optimizer'],'special')
+    body += arrow(400,297,400,202,'special')
     body += g(line(1120,157,1143,157,'c-a')+line(1143,157,1143,402,'c-a')
               +line(1143,402,475,402,'c-a')+arrow(475,402,475,389,'c-a')
               +t(695,386,'backward through classifier + blocks',22,'c-a'),1)
@@ -116,9 +116,9 @@ def build_cls_story(b):
 
     body = t(35,42,'Return to the pretrained model used for this dog.',30)
     for j,(label,name,color) in enumerate([
-        ('Stored CLS parameter s','cls_parameter','c-q'),
+        ('Stored CLS parameter s','cls_parameter','special'),
         ('Its learned position p₀','cls_position','c-e'),
-        ('Starting input row e₀ = s + p₀','cls_input','c-q')]):
+        ('Starting input row e₀ = s + p₀','cls_input','special')]):
         y=93+j*95
         body += t(35,y+25,label,27,color)
         body += t(615,y+25,vec(name),30,color)
@@ -139,13 +139,15 @@ def build_cls_story(b):
     # A single conceptual bridge before the measured forward pass: successive
     # states of both CLS and the patch rows, with the readout defining their job.
     def state_rows(x, heading, cls_label, patch_label, revision):
+        color = 'special' if revision == 0 else 'vision'
+        tint = 't-special' if revision == 0 else 't-e'
         out = t(x+105,77,heading,25,'ink-2','middle')
-        out += rect(x,102,210,65,'c-q','t-q',5)
-        out += t(x+105,130,cls_label,23,'c-q','middle')
+        out += rect(x,102,210,65,color,tint,5)
+        out += t(x+105,130,cls_label,23,color,'middle')
         # These marks stand for coordinates, not measured values or named parts.
         for k in range(8):
             width = 11 + (k*7+revision*11)%12
-            out += rect(x+16+k*23,144,width,7,'c-q','c-q',0)
+            out += rect(x+16+k*23,144,width,7,color,color,0)
         out += rect(x,203,210,84,'c-e','t-e',5)
         out += t(x+105,232,patch_label,21,'c-e','middle')
         for r in range(2):
@@ -184,7 +186,7 @@ def build_cls_story(b):
     add('cls-summary-refinement','What makes CLS an image summary?',body,
         'CLS can read all patch rows; each patch can read CLS and every patch. All updates use the rows entering that block. Block 2 reads the updated CLS and patches produced by block 1.',
         'Can patch rows read CLS too, and when do they see its updated version?\n'
-        'Yes. Follow both diagonals: blue carries patch information into CLS; purple carries CLS information into patch updates. '
+        'Yes. Follow both diagonals: follow the upward arrows from patch rows to CLS and the downward arrows from CLS to patch updates. '
         'Each attention operation computes all its queries, keys and values from the same incoming rows. '
         'It does not first update CLS and then let patches read that new CLS in the same attention operation. '
         'Block 2 receives both updated CLS and updated patch rows from block 1. '
@@ -291,16 +293,16 @@ def build_cls_story(b):
     def numbers(values):
         return '['+', '.join(f'{v:.3f}'.replace('-', '−') for v in values[:3])+', …]'
 
-    body = t(35,38,'Shared learned CLS s = '+numbers(comparison['cls_parameter']),29,'c-q')
+    body = t(35,38,'Shared learned CLS s = '+numbers(comparison['cls_parameter']),29,'special')
     body += t(35,84,'Add the same position vector before either image enters attention.',26,'ink-2')
-    body += t(145,132,'Starting CLS input e₀',25,'c-q')
+    body += t(145,132,'Starting CLS input e₀',25,'special')
     body += t(790,132,'After attention + residual',25,'c-q')
     for j,(label,uri,row) in enumerate(zip(['Dog','Cat'],[b['PHOTO'],b['CAT']],pair)):
         y=156+j*132
         content = image(35,y,90,90,uri)+t(80,y+107,label,22,'ink-2','middle')
-        content += t(145,y+50,numbers(row['cls_input']),24,'c-q')
+        content += t(145,y+50,numbers(row['cls_input']),24,'special')
         content += arrow(478,y+41,515,y+41)
-        content += box(530,y,214,['Attention','same parameters'],size=23)
+        content += box(530,y,214,['Attention','same parameters'],'mixing',size=23)
         content += arrow(750,y+41,784,y+41)
         content += t(800,y+50,numbers(row['cls_after_attention1_residual']),24,'c-q')
         content += line(125,y+62,135,y+62,'c-e')+line(135,y+62,135,y+112,'c-e')

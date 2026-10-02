@@ -29,15 +29,15 @@ index = row * 14 + col
 
 with torch.inference_mode():
     patch = inputs[0, :, row*size:(row+1)*size, col*size:(col+1)*size]
-    x = patch.permute(1, 2, 0).reshape(1, -1)
+    x = patch.reshape(1, -1)
     projection = model.patch_embed.proj
-    # Match the slides' pixel-major RGB row to the Conv2d parameter ordering.
-    W = projection.weight.permute(2, 3, 1, 0).reshape(768, 192)
+    # One convention throughout: all R pixels, then G, then B.
+    W = projection.weight.flatten(1).T
     content = x @ W + projection.bias
     all_content = model.patch_embed(inputs)
     torch.testing.assert_close(content, all_content[:, index], atol=2e-5, rtol=1e-5)
-    # Extract every patch in the same raster order, retaining RGB per pixel.
-    X = inputs[0].permute(1, 2, 0).reshape(14, 16, 14, 16, 3).permute(0, 2, 1, 3, 4).reshape(196, 768)
+    # F.unfold uses the same channel-major ordering within each patch.
+    X = torch.nn.functional.unfold(inputs, kernel_size=16, stride=16).transpose(1, 2)[0]
     C = X @ W + projection.bias
     torch.testing.assert_close(C, all_content[0], atol=2e-5, rtol=1e-5)
     position = model.pos_embed[:, index+1]
@@ -68,6 +68,7 @@ for number in [1, 63, 64, 196]:
     }
 
 report = {
+    'flatten_order': 'channel-major RGB; row-major within each channel',
     'model': MODEL, 'timm': timm.__version__, 'torch': torch.__version__,
     'source_sha256': hashlib.sha256(photo.read_bytes()).hexdigest(),
     'display_image_sha256': hashlib.sha256((ASSETS/'model-input.png').read_bytes()).hexdigest(),
@@ -86,7 +87,7 @@ report = {
     'all_content_rows': C.tolist(),
     'all_input_shape': list(X.shape), 'all_content_shape': list(C.shape),
     'verified': ['displayed image equals checkpoint input before normalization',
-                 'pixel-major linear equals checkpoint patch embedding',
+                 'channel-major linear equals checkpoint patch embedding',
                  'all 196 separately flattened patches match the checkpoint output rows',
                  'content plus position equals checkpoint input row',
                  'head-one projections equal checkpoint QKV slices'],

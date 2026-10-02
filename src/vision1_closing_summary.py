@@ -34,12 +34,12 @@ def conclude(b, sections):
     body += f.box(505, 37, 245, ['12 Transformer blocks', '197 × 192'], h=92, size=24)
     body += t(627, 172, 'All rows gain context', 25, 'c-e', 'middle')
     body += arrow(760, 83, 795, 83)
-    body += f.box(805, 37, 130, ['Final LN', 'read CLS'], 'c-q', h=92, size=25)
-    body += t(870, 172, '192 features', 23, 'c-q', 'middle')
+    body += f.box(805, 37, 130, ['Final LN', 'read CLS'], 'vision', h=92, size=25)
+    body += t(870, 172, '192 features', 23, 'vision', 'middle')
     body += arrow(945, 83, 970, 83)
     body += f.box(980, 37, 155, ['Linear head', '1,000 scores'], h=92, size=24)
     body += arrow(1057, 139, 1057, 178, 'c-v')
-    body += t(1057, 202, 'softmax → label', 23, 'c-v', 'middle')
+    body += t(1057, 202, 'softmax → label', 23, 'vision', 'middle')
 
     body += line(516, 189, 35, 234, 'c-e', 1.5, '5 5')
     body += line(740, 189, 1125, 234, 'c-e', 1.5, '5 5')
@@ -55,21 +55,21 @@ def conclude(b, sections):
     # Three visibly parallel head messages enter the common output projection.
     for i in range(3):
         hy = 304+i*42
-        body += f.box(228, hy, 140, f'Head {i+1}', 'c-q', h=34, size=23)
-        body += route([(210, y), (210, hy+17), (223, hy+17)], 'c-q')
-        body += route([(373, hy+17), (393, hy+17), (393, y), (412, y)], 'c-q')
+        body += f.box(228, hy, 140, f'Head {i+1}', 'mixing', h=34, size=23)
+        body += route([(210, y), (210, hy+17), (223, hy+17)], 'mixing')
+        body += route([(373, hy+17), (393, hy+17), (393, y), (412, y)], 'mixing')
     body += f.box(422, y-37, 166, ['Join + project', '192 features'], 'c-v', h=74, size=23)
     body += arrow(598, y, 622, y, 'c-v') + plus(642, y)
     body += route([(55, 335), (55, 289), (642, 289), (642, y-20)])
     body += arrow(663, y, 699, y)
     body += f.box(709, y-30, 70, 'LN', h=60, size=25)
     body += arrow(789, y, 814, y)
-    body += f.box(824, y-37, 160, ['MLP', '192→768→192'], 'c-v', h=74, size=21)
+    body += f.box(824, y-37, 160, ['MLP', '192→768→192'], 'neutral', h=74, size=21)
     body += arrow(994, y, 1012, y, 'c-v') + plus(1032, y)
     body += route([(679, y), (679, 437), (1032, 437), (1032, y+20)])
     body += t(854, 464, 'Keep the row + add an update', 24, 'c-e', 'middle')
     body += arrow(1053, y, 1084, y) + t(1101, y+9, 'E′', 31, 'c-e', 'middle')
-    body += t(355, 464, 'Attention: mix across rows', 25, 'c-q', 'middle')
+    body += t(355, 464, 'Attention: mix across rows', 25, 'mixing', 'middle')
     f.add('vision-summary-architecture', 'The whole ViT: pixels → context → one label', body,
           'One shared patch layer builds the rows. Twelve blocks refine every row. The classifier reads final CLS to score image labels.',
           'Can you trace the image path, then name the two updates inside a block?',
@@ -83,7 +83,7 @@ def conclude(b, sections):
           'projection make a 192-wide update for every row. Each plus sign adds that update to the incoming '
           'row. The MLP transforms each row separately. Final LayerNorm precedes selection of CLS.</p>'
           '<p>The original detailed reference figure, including Q/K/V, shapes, class probabilities and the label '
-          'loss, remains in <a href="vision1.html?present#s04/2/0">the whole model walkthrough</a>. '
+          'loss, remains in <a href="figures/vision1/photo-label-loss.svg">the optional whole-model reference</a>. '
           'The top path is the full model; the lower panel is a zoom of one block, not an additional block.</p>',
           '<p>224×224 RGB → shared 768-to-192 patch projection → 196 patch rows → add CLS and positions '
           '→ 197×192 → twelve blocks → final LayerNorm → CLS (192) → Linear head → 1,000 class scores.</p>'
@@ -97,14 +97,14 @@ def conclude(b, sections):
              + f.image(0, 0, 224, 224, f.photo) + '</svg>')
     body += arrow(142, 125, 176, 125)
     body += f.box(187, 97, 160, 'patch features', h=57, size=24)
-    body += t(373, 134, '+', 35, 'c-q', 'middle')
-    body += f.box(401, 97, 140, 'position', 'c-q', h=57, size=25)
+    body += t(373, 134, '+', 35, 'special', 'middle')
+    body += f.box(401, 97, 140, 'position', 'special', h=57, size=25)
     body += t(35, 217, 'Shared projection; each slot has a position.', 25, 'ink-2')
 
     body += t(610, 42, '2 · Every row gains context', 32, 'ink', weight=650)
     for i, name in enumerate(['CLS', 'P1', 'P2']):
         y = 76+i*40
-        color = 'c-q' if i == 0 else 'c-e'
+        color = 'vision'
         body += f.box(615, y, 86, name, color, h=30, size=22)
         body += f.box(1005, y, 110, name+'′', color, h=30, size=22)
         body += arrow(708, y+15, 761, 127, color)
@@ -123,13 +123,13 @@ def conclude(b, sections):
 
     body += t(610, 286, '4 · More tokens cost more', 32, 'ink', weight=650)
     for x, size, count in [(625, 52, 197), (866, 104, 785)]:
-        body += rect(x, 318, size, size, 'c-a', 'card', 0)
+        body += rect(x, 318, size, size, 'mixing', 'card', 0)
         for i in range(1, 4):
-            body += line(x+i*size/4, 318, x+i*size/4, 318+size, 'c-a', .8)
-            body += line(x, 318+i*size/4, x+size, 318+i*size/4, 'c-a', .8)
-        body += t(x+size/2, 311, f'{count}²', 23, 'c-a', 'middle')
-    body += arrow(707, 365, 827, 365, 'c-a')
-    body += t(768, 349, '≈16×', 30, 'c-a', 'middle', 650)
+            body += line(x+i*size/4, 318, x+i*size/4, 318+size, 'mixing', .8)
+            body += line(x, 318+i*size/4, x+size, 318+i*size/4, 'mixing', .8)
+        body += t(x+size/2, 311, f'{count}²', 23, 'mixing', 'middle')
+    body += arrow(707, 365, 827, 365, 'mixing')
+    body += t(768, 349, '≈16×', 30, 'mixing', 'middle', 650)
     body += t(991, 346, '224 → 448', 23, 'ink-2')
     body += t(991, 380, 'patch = 16', 23, 'ink-2')
     body += t(610, 462, 'Twice the side length: ≈16× scores.', 25, 'ink-2')

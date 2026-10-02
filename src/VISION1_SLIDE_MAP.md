@@ -1,362 +1,153 @@
-# Vision I: slide map
+# Vision I — current slide map
 
-211 teaching frames plus the cover. Each link opens the first reveal of that slide. Use Right/Left for reveals and S for presenter notes.
+147 teaching frames plus the cover. Right/Left advances reveals; S opens notes. Detailed calculations are preserved. Section 6 is an optional implementation lab; historical and dense reference figures remain in reading notes.
 
-## Follow the full model before the worksheet
-
-- [The whole route: photograph to prediction](https://nipunbatra.github.io/attention/vision1.html?present#s02/2/0)
-- [Make queries, keys and values from these rows](https://nipunbatra.github.io/attention/vision1.html?present#s02/30/0)
-- [We followed one patch. Now complete the classifier.](https://nipunbatra.github.io/attention/vision1.html?present#s02/31/0)
-- [Section 3 · From patch rows to an image prediction](https://nipunbatra.github.io/attention/vision1.html?present#s03/1/0)
-- [Give the classifier a place to collect an image summary](https://nipunbatra.github.io/attention/vision1.html?present#s03/2/0)
-- [Insert CLS, then give every row a position](https://nipunbatra.github.io/attention/vision1.html?present#s03/3/0)
-- [Let the CLS query compare every source row](https://nipunbatra.github.io/attention/vision1.html?present#s03/4/0)
-- [Mix the values, join the heads, and add the input](https://nipunbatra.github.io/attention/vision1.html?present#s03/5/0)
-- [Transform each updated row with the MLP](https://nipunbatra.github.io/attention/vision1.html?present#s03/6/0)
-- [Repeat the block while keeping every row](https://nipunbatra.github.io/attention/vision1.html?present#s03/7/0)
-- [Read the final CLS row and score the classes](https://nipunbatra.github.io/attention/vision1.html?present#s03/8/0)
-- [The same photograph now has a measured prediction](https://nipunbatra.github.io/attention/vision1.html?present#s03/9/0)
-- [Section 4 · Calculate attention with four patches](https://nipunbatra.github.io/attention/vision1.html?present#s04/1/0)
-
-## Review these additions first
-
-- [What were we asking the text model to predict?](https://nipunbatra.github.io/attention/vision1.html?present#s01/12/0)
-- [Our task today: classify the whole image](https://nipunbatra.github.io/attention/vision1.html?present#s01/11/0)
-- [What changed, and what stayed the same?](https://nipunbatra.github.io/attention/vision1.html?present#s01/14/0)
-- [Where does CLS come from?](https://nipunbatra.github.io/attention/vision1.html?present#s04/12/0)
-- [How can the same starting CLS describe different pictures?](https://nipunbatra.github.io/attention/vision1.html?present#s04/13/0)
-- [Why did our text predictor hide later tokens?](https://nipunbatra.github.io/attention/vision1.html?present#s04/18/0)
-- [Which part of the picture could help this dark crop?](https://nipunbatra.github.io/attention/vision1.html?present#s04/20/0)
-- [How could the face crop get more weight?](https://nipunbatra.github.io/attention/vision1.html?present#s04/22/0)
-- [What do we receive after choosing those weights?](https://nipunbatra.github.io/attention/vision1.html?present#s04/23/0)
-- [Change only the keys. What happens?](https://nipunbatra.github.io/attention/vision1.html?present#s04/24/0)
-- [Change only a value. What happens?](https://nipunbatra.github.io/attention/vision1.html?present#s04/25/0)
-- [Do we type a question into this classifier?](https://nipunbatra.github.io/attention/vision1.html?present#s04/26/0)
-- [Who teaches CLS what information to collect?](https://nipunbatra.github.io/attention/vision1.html?present#s06/12/0)
-- [Could we classify the image without CLS?](https://nipunbatra.github.io/attention/vision1.html?present#s06/13/0)
-- [So why use CLS in our ViT?](https://nipunbatra.github.io/attention/vision1.html?present#s06/14/0)
-
-## Additions from the video review
-
-- [Why does our ViT code use Conv2d?](https://nipunbatra.github.io/attention/vision1.html?present#s08/4/0)
-- [How far should the filter move?](https://nipunbatra.github.io/attention/vision1.html?present#s08/5/0)
-- [Does this layer merely cut up the image?](https://nipunbatra.github.io/attention/vision1.html?present#s08/6/0)
-- [Can a patch in image A read image B?](https://nipunbatra.github.io/attention/vision1.html?present#s08/9/0)
-- [A tensor can have the right shape and the wrong meaning](https://nipunbatra.github.io/attention/vision1.html?present#s08/10/0)
-- [A quick check before training](https://nipunbatra.github.io/attention/vision1.html?present#s08/11/0)
-
-## Start with the dataset
-
-- [What does our animal dataset look like?](https://nipunbatra.github.io/attention/vision1.html?present#s01/2/0)
-- [How many images and classes are there?](https://nipunbatra.github.io/attention/vision1.html?present#s01/3/0)
-- [What shape is one image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/4/0)
-
-## Opening task overview
-
-- [One photograph, several possible tasks](https://nipunbatra.github.io/attention/vision1.html?present#s01/6/0)
-- [Classification: name the animal](https://nipunbatra.github.io/attention/vision1.html?present#s01/7/0)
-- [Detection: name and locate each object](https://nipunbatra.github.io/attention/vision1.html?present#s01/8/0)
-- [Captioning: describe the image in words](https://nipunbatra.github.io/attention/vision1.html?present#s01/9/0)
-- [Image–text search: find a matching photo](https://nipunbatra.github.io/attention/vision1.html?present#s01/10/0)
-- [Our task today: classify the whole image](https://nipunbatra.github.io/attention/vision1.html?present#s01/11/0)
-
-## Follow information into one patch
-
-- [What can the face tell this dark patch?](https://nipunbatra.github.io/attention/vision1.html?present#s01/17/0)
-- [Should every source contribute equally?](https://nipunbatra.github.io/attention/vision1.html?present#s01/18/0)
-- [What changes when the patch gets context?](https://nipunbatra.github.io/attention/vision1.html?present#s01/19/0)
-
-## Recall text, then ask the image parallels
-
-- [Back to text: what did attention update?](https://nipunbatra.github.io/attention/vision1.html?present#s01/20/0)
-- [What could be the image equivalent of a token?](https://nipunbatra.github.io/attention/vision1.html?present#s01/21/0)
-- [What could be the image equivalent of an embedding?](https://nipunbatra.github.io/attention/vision1.html?present#s01/22/0)
-- [What could a query be in the image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/23/0)
-- [What could a key be in the image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/27/0)
-- [What information would a value send?](https://nipunbatra.github.io/attention/vision1.html?present#s01/29/0)
-- [What is the “next token” for this image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/31/0)
-
-## RGB pixels to patch embeddings
-
-- [Read the RGB values of each pixel](https://nipunbatra.github.io/attention/vision1.html?present#s02/5/0)
-- [Put the four RGB triples in one row](https://nipunbatra.github.io/attention/vision1.html?present#s02/6/0)
-- [What does “projection” mean here?](https://nipunbatra.github.io/attention/vision1.html?present#s02/10/0)
-- [Follow the connections into output 1](https://nipunbatra.github.io/attention/vision1.html?present#s02/12/0)
-- [Now follow the connections into output 2](https://nipunbatra.github.io/attention/vision1.html?present#s02/13/0)
-- [Apply the very same layer to another patch](https://nipunbatra.github.io/attention/vision1.html?present#s02/15/0)
-- [Start with the same dog photograph](https://nipunbatra.github.io/attention/vision1.html?present#s02/16/0)
-- [Split the image into 16 × 16 patches](https://nipunbatra.github.io/attention/vision1.html?present#s02/17/0)
-
-## Read the dimensions
-
-- [Read the RGB values inside patch 63](https://nipunbatra.github.io/attention/vision1.html?present#s02/19/0)
-- [Flatten patch 63 into one row](https://nipunbatra.github.io/attention/vision1.html?present#s02/21/0)
-- [Pass that row through the shared linear layer](https://nipunbatra.github.io/attention/vision1.html?present#s02/22/0)
-- [Split the image into 16 × 16 patches](https://nipunbatra.github.io/attention/vision1.html?present#s02/17/0)
-- [Stack the 196 output rows into C](https://nipunbatra.github.io/attention/vision1.html?present#s02/25/0)
-
-## Photograph first, then position arithmetic
-
-- [Move the face patches. What changes?](https://nipunbatra.github.io/attention/vision1.html?present#s02/26/0)
-- [Does the patch layer notice the move?](https://nipunbatra.github.io/attention/vision1.html?present#s02/27/0)
-- [Give the row its location as well as its content](https://nipunbatra.github.io/attention/vision1.html?present#s02/28/0)
-- [A smaller task: classify the arrangement](https://nipunbatra.github.io/attention/vision1.html?present#s04/2/0)
-- [Would just counting the patches solve it?](https://nipunbatra.github.io/attention/vision1.html?present#s04/3/0)
-
-## Both familiar text prediction examples
-
-- [What were we asking the text model to predict?](https://nipunbatra.github.io/attention/vision1.html?present#s01/12/0)
-- [And what were we predicting in the bank example?](https://nipunbatra.github.io/attention/vision1.html?present#s01/13/0)
-- [What changed, and what stayed the same?](https://nipunbatra.github.io/attention/vision1.html?present#s01/14/0)
-
-## Concrete visual queries, keys and values
-
-- [Could this dark texture belong to the animal?](https://nipunbatra.github.io/attention/vision1.html?present#s01/24/0)
-- [Where is the rest of this face?](https://nipunbatra.github.io/attention/vision1.html?present#s01/25/0)
-- [Where does this branch continue?](https://nipunbatra.github.io/attention/vision1.html?present#s01/26/0)
-- [What could each source offer for matching?](https://nipunbatra.github.io/attention/vision1.html?present#s01/28/0)
-- [What information could these values carry?](https://nipunbatra.github.io/attention/vision1.html?present#s01/30/0)
-
-## Patch projection and activation
-
-- [How does this connect to text embeddings?](https://nipunbatra.github.io/attention/vision1.html?present#s02/8/0)
-- [Do we apply an activation after the patch layer?](https://nipunbatra.github.io/attention/vision1.html?present#s02/9/0)
-- [These two numbers are the patch embedding](https://nipunbatra.github.io/attention/vision1.html?present#s02/14/0)
-
-## Follow one real patch through every step
-
-- [Start with the same dog photograph](https://nipunbatra.github.io/attention/vision1.html?present#s02/16/0)
-- [Read the 192 output features for patch 63](https://nipunbatra.github.io/attention/vision1.html?present#s02/23/0)
-- [Add position to these content rows](https://nipunbatra.github.io/attention/vision1.html?present#s02/29/0)
-- [Make queries, keys and values from these rows](https://nipunbatra.github.io/attention/vision1.html?present#s02/30/0)
-
-## One continuous real-image walkthrough
-
-- [Start with the same dog photograph](https://nipunbatra.github.io/attention/vision1.html?present#s02/16/0)
-- [Split the image into 16 × 16 patches](https://nipunbatra.github.io/attention/vision1.html?present#s02/17/0)
-- [Number the patches row by row](https://nipunbatra.github.io/attention/vision1.html?present#s02/18/0)
-- [Read the RGB values inside patch 63](https://nipunbatra.github.io/attention/vision1.html?present#s02/19/0)
-- [Normalize those same RGB values](https://nipunbatra.github.io/attention/vision1.html?present#s02/20/0)
-- [Flatten patch 63 into one row](https://nipunbatra.github.io/attention/vision1.html?present#s02/21/0)
-- [Pass that row through the shared linear layer](https://nipunbatra.github.io/attention/vision1.html?present#s02/22/0)
-- [Read the 192 output features for patch 63](https://nipunbatra.github.io/attention/vision1.html?present#s02/23/0)
-- [Pass patch 64 through the very same layer](https://nipunbatra.github.io/attention/vision1.html?present#s02/24/0)
-- [Stack the 196 output rows into C](https://nipunbatra.github.io/attention/vision1.html?present#s02/25/0)
-- [Add position to these content rows](https://nipunbatra.github.io/attention/vision1.html?present#s02/29/0)
-- [Make queries, keys and values from these rows](https://nipunbatra.github.io/attention/vision1.html?present#s02/30/0)
-
-## Complete sequence
-
-| Slide | Question | Frame ID |
-|---|---|---|
-| s01 / 1 | [Section 1 · The image classification task](https://nipunbatra.github.io/attention/vision1.html?present#s01/1/0) | `vision-topic-01` |
-| s01 / 2 | [What does our animal dataset look like?](https://nipunbatra.github.io/attention/vision1.html?present#s01/2/0) | `dataset-gallery` |
-| s01 / 3 | [How many images and classes are there?](https://nipunbatra.github.io/attention/vision1.html?present#s01/3/0) | `dataset-counts` |
-| s01 / 4 | [What shape is one image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/4/0) | `dataset-dimensions` |
-| s01 / 5 | [What animal do you see?](https://nipunbatra.github.io/attention/vision1.html?present#s01/5/0) | `s01-photo` |
-| s01 / 6 | [One photograph, several possible tasks](https://nipunbatra.github.io/attention/vision1.html?present#s01/6/0) | `vision-tasks` |
-| s01 / 7 | [Classification: name the animal](https://nipunbatra.github.io/attention/vision1.html?present#s01/7/0) | `photo-folder` |
-| s01 / 8 | [Detection: name and locate each object](https://nipunbatra.github.io/attention/vision1.html?present#s01/8/0) | `find-animal` |
-| s01 / 9 | [Captioning: describe the image in words](https://nipunbatra.github.io/attention/vision1.html?present#s01/9/0) | `image-caption` |
-| s01 / 10 | [Image–text search: find a matching photo](https://nipunbatra.github.io/attention/vision1.html?present#s01/10/0) | `photo-search` |
-| s01 / 11 | [Our task today: classify the whole image](https://nipunbatra.github.io/attention/vision1.html?present#s01/11/0) | `task-image-label` |
-| s01 / 12 | [What were we asking the text model to predict?](https://nipunbatra.github.io/attention/vision1.html?present#s01/12/0) | `task-next-token` |
-| s01 / 13 | [And what were we predicting in the bank example?](https://nipunbatra.github.io/attention/vision1.html?present#s01/13/0) | `task-bank-next-token` |
-| s01 / 14 | [What changed, and what stayed the same?](https://nipunbatra.github.io/attention/vision1.html?present#s01/14/0) | `task-side-by-side` |
-| s01 / 15 | [Would you recognize this crop on its own?](https://nipunbatra.github.io/attention/vision1.html?present#s01/15/0) | `s01-context` |
-| s01 / 16 | [What can we carry over from our text models?](https://nipunbatra.github.io/attention/vision1.html?present#s01/16/0) | `bridge-text` |
-| s01 / 17 | [What can the face tell this dark patch?](https://nipunbatra.github.io/attention/vision1.html?present#s01/17/0) | `patch-context` |
-| s01 / 18 | [Should every source contribute equally?](https://nipunbatra.github.io/attention/vision1.html?present#s01/18/0) | `patch-context-weights` |
-| s01 / 19 | [What changes when the patch gets context?](https://nipunbatra.github.io/attention/vision1.html?present#s01/19/0) | `patch-context-update` |
-| s01 / 20 | [Back to text: what did attention update?](https://nipunbatra.github.io/attention/vision1.html?present#s01/20/0) | `text-context-recap` |
-| s01 / 21 | [What could be the image equivalent of a token?](https://nipunbatra.github.io/attention/vision1.html?present#s01/21/0) | `bridge-image-token` |
-| s01 / 22 | [What could be the image equivalent of an embedding?](https://nipunbatra.github.io/attention/vision1.html?present#s01/22/0) | `bridge-image-embedding` |
-| s01 / 23 | [What could a query be in the image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/23/0) | `bridge-image-query` |
-| s01 / 24 | [Could this dark texture belong to the animal?](https://nipunbatra.github.io/attention/vision1.html?present#s01/24/0) | `query-example-dark` |
-| s01 / 25 | [Where is the rest of this face?](https://nipunbatra.github.io/attention/vision1.html?present#s01/25/0) | `query-example-face` |
-| s01 / 26 | [Where does this branch continue?](https://nipunbatra.github.io/attention/vision1.html?present#s01/26/0) | `query-example-branch` |
-| s01 / 27 | [What could a key be in the image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/27/0) | `bridge-image-key` |
-| s01 / 28 | [What could each source offer for matching?](https://nipunbatra.github.io/attention/vision1.html?present#s01/28/0) | `key-example-sources` |
-| s01 / 29 | [What information would a value send?](https://nipunbatra.github.io/attention/vision1.html?present#s01/29/0) | `bridge-image-value` |
-| s01 / 30 | [What information could these values carry?](https://nipunbatra.github.io/attention/vision1.html?present#s01/30/0) | `value-example-messages` |
-| s01 / 31 | [What is the “next token” for this image?](https://nipunbatra.github.io/attention/vision1.html?present#s01/31/0) | `bridge-image-target` |
-| s01 / 32 | [How can we give this photograph to attention?](https://nipunbatra.github.io/attention/vision1.html?present#s01/32/0) | `image-to-rows` |
-| s02 / 1 | [Section 2 · From pixels to patch embeddings](https://nipunbatra.github.io/attention/vision1.html?present#s02/1/0) | `vision-topic-02` |
-| s02 / 2 | [The whole route: photograph to prediction](https://nipunbatra.github.io/attention/vision1.html?present#s02/2/0) | `model-journey-overview` |
-| s02 / 3 | [Where do the patch boundaries go?](https://nipunbatra.github.io/attention/vision1.html?present#s02/3/0) | `s01-patches` |
-| s02 / 4 | [How can a red pixel be three numbers?](https://nipunbatra.github.io/attention/vision1.html?present#s02/4/0) | `one-rgb` |
-| s02 / 5 | [Read the RGB values of each pixel](https://nipunbatra.github.io/attention/vision1.html?present#s02/5/0) | `rgb-flatten-step-1` |
-| s02 / 6 | [Put the four RGB triples in one row](https://nipunbatra.github.io/attention/vision1.html?present#s02/6/0) | `rgb-flatten` |
-| s02 / 7 | [Which pixel goes first in the row?](https://nipunbatra.github.io/attention/vision1.html?present#s02/7/0) | `flatten-order` |
-| s02 / 8 | [How does this connect to text embeddings?](https://nipunbatra.github.io/attention/vision1.html?present#s02/8/0) | `s01-rows-step-1` |
-| s02 / 9 | [Do we apply an activation after the patch layer?](https://nipunbatra.github.io/attention/vision1.html?present#s02/9/0) | `patch-activation-location` |
-| s02 / 10 | [What does “projection” mean here?](https://nipunbatra.github.io/attention/vision1.html?present#s02/10/0) | `patch-linear-shapes` |
-| s02 / 11 | [12 input numbers, 2 output numbers](https://nipunbatra.github.io/attention/vision1.html?present#s02/11/0) | `patch-linear-weights` |
-| s02 / 12 | [Follow the connections into output 1](https://nipunbatra.github.io/attention/vision1.html?present#s02/12/0) | `patch-linear-first` |
-| s02 / 13 | [Now follow the connections into output 2](https://nipunbatra.github.io/attention/vision1.html?present#s02/13/0) | `patch-linear-second` |
-| s02 / 14 | [These two numbers are the patch embedding](https://nipunbatra.github.io/attention/vision1.html?present#s02/14/0) | `patch-linear-result` |
-| s02 / 15 | [Apply the very same layer to another patch](https://nipunbatra.github.io/attention/vision1.html?present#s02/15/0) | `patch-shared-code` |
-| s02 / 16 | [Start with the same dog photograph](https://nipunbatra.github.io/attention/vision1.html?present#s02/16/0) | `s01-rows` |
-| s02 / 17 | [Split the image into 16 × 16 patches](https://nipunbatra.github.io/attention/vision1.html?present#s02/17/0) | `projection-size` |
-| s02 / 18 | [Number the patches row by row](https://nipunbatra.github.io/attention/vision1.html?present#s02/18/0) | `real-patch-crops` |
-| s02 / 19 | [Read the RGB values inside patch 63](https://nipunbatra.github.io/attention/vision1.html?present#s02/19/0) | `patch-real-dimensions` |
-| s02 / 20 | [Normalize those same RGB values](https://nipunbatra.github.io/attention/vision1.html?present#s02/20/0) | `real-patch-normalize` |
-| s02 / 21 | [Flatten patch 63 into one row](https://nipunbatra.github.io/attention/vision1.html?present#s02/21/0) | `patch-one-row-shape` |
-| s02 / 22 | [Pass that row through the shared linear layer](https://nipunbatra.github.io/attention/vision1.html?present#s02/22/0) | `patch-one-row-projection` |
-| s02 / 23 | [Read the 192 output features for patch 63](https://nipunbatra.github.io/attention/vision1.html?present#s02/23/0) | `real-patch-projection` |
-| s02 / 24 | [Pass patch 64 through the very same layer](https://nipunbatra.github.io/attention/vision1.html?present#s02/24/0) | `real-patch-shared` |
-| s02 / 25 | [Stack the 196 output rows into C](https://nipunbatra.github.io/attention/vision1.html?present#s02/25/0) | `patch-projection-parameters` |
-| s02 / 26 | [Move the face patches. What changes?](https://nipunbatra.github.io/attention/vision1.html?present#s02/26/0) | `position-photo-layout` |
-| s02 / 27 | [Does the patch layer notice the move?](https://nipunbatra.github.io/attention/vision1.html?present#s02/27/0) | `position-photo-content` |
-| s02 / 28 | [Give the row its location as well as its content](https://nipunbatra.github.io/attention/vision1.html?present#s02/28/0) | `position-photo-add` |
-| s02 / 29 | [Add position to these content rows](https://nipunbatra.github.io/attention/vision1.html?present#s02/29/0) | `real-patch-position` |
-| s02 / 30 | [Make queries, keys and values from these rows](https://nipunbatra.github.io/attention/vision1.html?present#s02/30/0) | `real-patch-qkv` |
-| s02 / 31 | [We followed one patch. Now complete the classifier.](https://nipunbatra.github.io/attention/vision1.html?present#s02/31/0) | `model-journey-checkpoint` |
-| s03 / 1 | [Section 3 · From patch rows to an image prediction](https://nipunbatra.github.io/attention/vision1.html?present#s03/1/0) | `vision-topic-03` |
-| s03 / 2 | [Give the classifier a place to collect an image summary](https://nipunbatra.github.io/attention/vision1.html?present#s03/2/0) | `real-cls-purpose` |
-| s03 / 3 | [Insert CLS, then give every row a position](https://nipunbatra.github.io/attention/vision1.html?present#s03/3/0) | `real-cls-sequence` |
-| s03 / 4 | [Let the CLS query compare every source row](https://nipunbatra.github.io/attention/vision1.html?present#s03/4/0) | `real-cls-attention` |
-| s03 / 5 | [Mix the values, join the heads, and add the input](https://nipunbatra.github.io/attention/vision1.html?present#s03/5/0) | `real-cls-message` |
-| s03 / 6 | [Transform each updated row with the MLP](https://nipunbatra.github.io/attention/vision1.html?present#s03/6/0) | `real-cls-mlp` |
-| s03 / 7 | [Repeat the block while keeping every row](https://nipunbatra.github.io/attention/vision1.html?present#s03/7/0) | `real-cls-depth` |
-| s03 / 8 | [Read the final CLS row and score the classes](https://nipunbatra.github.io/attention/vision1.html?present#s03/8/0) | `real-cls-readout` |
-| s03 / 9 | [The same photograph now has a measured prediction](https://nipunbatra.github.io/attention/vision1.html?present#s03/9/0) | `real-cls-prediction` |
-| s04 / 1 | [Section 4 · Calculate attention with four patches](https://nipunbatra.github.io/attention/vision1.html?present#s04/1/0) | `vision-topic-04` |
-| s04 / 2 | [A smaller task: classify the arrangement](https://nipunbatra.github.io/attention/vision1.html?present#s04/2/0) | `s02-small` |
-| s04 / 3 | [Would just counting the patches solve it?](https://nipunbatra.github.io/attention/vision1.html?present#s04/3/0) | `position-question` |
-| s04 / 4 | [Flatten P1 so we can multiply it](https://nipunbatra.github.io/attention/vision1.html?present#s04/4/0) | `s02-projection-step-1` |
-| s04 / 5 | [Compute the first coordinate of P1](https://nipunbatra.github.io/attention/vision1.html?present#s04/5/0) | `s02-projection-step-2` |
-| s04 / 6 | [Write the whole content row](https://nipunbatra.github.io/attention/vision1.html?present#s04/6/0) | `s02-projection` |
-| s04 / 7 | [Where does each number in the patch row come from?](https://nipunbatra.github.io/attention/vision1.html?present#s04/7/0) | `patch-matrix` |
-| s04 / 8 | [What row does an empty patch get?](https://nipunbatra.github.io/attention/vision1.html?present#s04/8/0) | `empty-patch` |
-| s04 / 9 | [Would the mean pixel value tell these patches apart?](https://nipunbatra.github.io/attention/vision1.html?present#s04/9/0) | `mean-loses-edge` |
-| s04 / 10 | [Could two projection columns keep that difference?](https://nipunbatra.github.io/attention/vision1.html?present#s04/10/0) | `edge-filters` |
-| s04 / 11 | [We have several patch rows. Where does the answer go?](https://nipunbatra.github.io/attention/vision1.html?present#s04/11/0) | `why-cls` |
-| s04 / 12 | [Where does CLS come from?](https://nipunbatra.github.io/attention/vision1.html?present#s04/12/0) | `cls-start` |
-| s04 / 13 | [How can the same starting CLS describe different pictures?](https://nipunbatra.github.io/attention/vision1.html?present#s04/13/0) | `cls-two-images` |
-| s04 / 14 | [These patches look the same. How do we tell them apart?](https://nipunbatra.github.io/attention/vision1.html?present#s04/14/0) | `two-identical-patches` |
-| s04 / 15 | [Give each patch a location vector](https://nipunbatra.github.io/attention/vision1.html?present#s04/15/0) | `s02-positions-step-1` |
-| s04 / 16 | [Add content and location, coordinate by coordinate](https://nipunbatra.github.io/attention/vision1.html?present#s04/16/0) | `s02-positions` |
-| s04 / 17 | [Can the top-left patch read the bottom-right?](https://nipunbatra.github.io/attention/vision1.html?present#s04/17/0) | `image-mask` |
-| s04 / 18 | [Why did our text predictor hide later tokens?](https://nipunbatra.github.io/attention/vision1.html?present#s04/18/0) | `task-mask-reason` |
-| s04 / 19 | [Why do we make three versions of each row?](https://nipunbatra.github.io/attention/vision1.html?present#s04/19/0) | `qkv-roles` |
-| s04 / 20 | [Which part of the picture could help this dark crop?](https://nipunbatra.github.io/attention/vision1.html?present#s04/20/0) | `qkv-photo-question` |
-| s04 / 21 | [Each row makes a query, a key and a value](https://nipunbatra.github.io/attention/vision1.html?present#s04/21/0) | `qkv-three-roles` |
-| s04 / 22 | [How could the face crop get more weight?](https://nipunbatra.github.io/attention/vision1.html?present#s04/22/0) | `qkv-match-numbers` |
-| s04 / 23 | [What do we receive after choosing those weights?](https://nipunbatra.github.io/attention/vision1.html?present#s04/23/0) | `qkv-read-numbers` |
-| s04 / 24 | [Change only the keys. What happens?](https://nipunbatra.github.io/attention/vision1.html?present#s04/24/0) | `qkv-change-key` |
-| s04 / 25 | [Change only a value. What happens?](https://nipunbatra.github.io/attention/vision1.html?present#s04/25/0) | `qkv-change-value` |
-| s04 / 26 | [Do we type a question into this classifier?](https://nipunbatra.github.io/attention/vision1.html?present#s04/26/0) | `qkv-no-prompt` |
-| s04 / 27 | [Which weights create the query, key and value?](https://nipunbatra.github.io/attention/vision1.html?present#s04/27/0) | `all-qkv` |
-| s04 / 28 | [Where does the CLS query [1,1] come from?](https://nipunbatra.github.io/attention/vision1.html?present#s04/28/0) | `q-dot` |
-| s04 / 29 | [How does P1 get the key [√2,0]?](https://nipunbatra.github.io/attention/vision1.html?present#s04/29/0) | `one-key-dot` |
-| s04 / 30 | [Which features does this head compare?](https://nipunbatra.github.io/attention/vision1.html?present#s04/30/0) | `s03-query` |
-| s04 / 31 | [Can we work out one score before filling the table?](https://nipunbatra.github.io/attention/vision1.html?present#s04/31/0) | `one-score` |
-| s04 / 32 | [What does softmax do when the scores tie?](https://nipunbatra.github.io/attention/vision1.html?present#s04/32/0) | `softmax-relative` |
-| s04 / 33 | [Repeat the dot product for every source](https://nipunbatra.github.io/attention/vision1.html?present#s04/33/0) | `s03-weights-step-1` |
-| s04 / 34 | [Exponentiate the five scores](https://nipunbatra.github.io/attention/vision1.html?present#s04/34/0) | `s03-weights-step-2` |
-| s04 / 35 | [Divide by one shared sum](https://nipunbatra.github.io/attention/vision1.html?present#s04/35/0) | `s03-weights` |
-| s04 / 36 | [Where does the 0.229 beside P1 come from?](https://nipunbatra.github.io/attention/vision1.html?present#s04/36/0) | `weight-denominator` |
-| s04 / 37 | [Put each value beside its weight](https://nipunbatra.github.io/attention/vision1.html?present#s04/37/0) | `s03-values-step-1` |
-| s04 / 38 | [Multiply the value by its weight](https://nipunbatra.github.io/attention/vision1.html?present#s04/38/0) | `s03-values-step-2` |
-| s04 / 39 | [Add the contributions to get one message](https://nipunbatra.github.io/attention/vision1.html?present#s04/39/0) | `s03-values` |
-| s04 / 40 | [Can an empty patch still send something?](https://nipunbatra.github.io/attention/vision1.html?present#s04/40/0) | `one-value-product` |
-| s04 / 41 | [Do equal weights send equal information?](https://nipunbatra.github.io/attention/vision1.html?present#s04/41/0) | `weight-message` |
-| s04 / 42 | [What if the query cared only about ink?](https://nipunbatra.github.io/attention/vision1.html?present#s04/42/0) | `change-query` |
-| s05 / 1 | [Section 5 · More than one attention head](https://nipunbatra.github.io/attention/vision1.html?present#s05/1/0) | `vision-topic-05` |
-| s05 / 2 | [Would a second way of reading the image help?](https://nipunbatra.github.io/attention/vision1.html?present#s05/2/0) | `heads-question` |
-| s05 / 3 | [Head 2 compares ink and column](https://nipunbatra.github.io/attention/vision1.html?present#s05/3/0) | `s03-second-step-1` |
-| s05 / 4 | [Give Head 2 its own softmax](https://nipunbatra.github.io/attention/vision1.html?present#s05/4/0) | `s03-second` |
-| s05 / 5 | [What information does Head 2 send?](https://nipunbatra.github.io/attention/vision1.html?present#s05/5/0) | `s03-second-values-step-1` |
-| s05 / 6 | [Calculate each Head 2 contribution](https://nipunbatra.github.io/attention/vision1.html?present#s05/6/0) | `s03-second-values-step-2` |
-| s05 / 7 | [Add Head 2’s contributions](https://nipunbatra.github.io/attention/vision1.html?present#s05/7/0) | `s03-second-values` |
-| s05 / 8 | [Do the patch rows get updated too?](https://nipunbatra.github.io/attention/vision1.html?present#s05/8/0) | `all-receivers` |
-| s05 / 9 | [Keep both messages by putting them side by side](https://nipunbatra.github.io/attention/vision1.html?present#s05/9/0) | `s04-join-step-1` |
-| s05 / 10 | [Use W_O to make the first update coordinate](https://nipunbatra.github.io/attention/vision1.html?present#s05/10/0) | `s04-join-step-2` |
-| s05 / 11 | [Collect all four output coordinates](https://nipunbatra.github.io/attention/vision1.html?present#s05/11/0) | `s04-join` |
-| s05 / 12 | [What do the other columns of W_O produce?](https://nipunbatra.github.io/attention/vision1.html?present#s05/12/0) | `other-output-coordinates` |
-| s06 / 1 | [Section 6 · From messages to an image label](https://nipunbatra.github.io/attention/vision1.html?present#s06/1/0) | `vision-topic-06` |
-| s06 / 2 | [What if attention sent a zero message?](https://nipunbatra.github.io/attention/vision1.html?present#s06/2/0) | `residual-zero` |
-| s06 / 3 | [Add the message to the starting CLS row](https://nipunbatra.github.io/attention/vision1.html?present#s06/3/0) | `s04-residual-step-1` |
-| s06 / 4 | [Use the updated CLS row to score the two labels](https://nipunbatra.github.io/attention/vision1.html?present#s06/4/0) | `s04-residual` |
-| s06 / 5 | [We used softmax twice. What changed?](https://nipunbatra.github.io/attention/vision1.html?present#s06/5/0) | `two-softmaxes` |
-| s06 / 6 | [Turn the class scores into probabilities](https://nipunbatra.github.io/attention/vision1.html?present#s06/6/0) | `s04-probability-step-1` |
-| s06 / 7 | [Use the known label to calculate the loss](https://nipunbatra.github.io/attention/vision1.html?present#s06/7/0) | `s04-probability` |
-| s06 / 8 | [How much does a confident wrong answer cost?](https://nipunbatra.github.io/attention/vision1.html?present#s06/8/0) | `loss-comparison` |
-| s06 / 9 | [Use the gradient to change the class bias](https://nipunbatra.github.io/attention/vision1.html?present#s06/9/0) | `one-update-step-1` |
-| s06 / 10 | [Run the prediction again after that update](https://nipunbatra.github.io/attention/vision1.html?present#s06/10/0) | `one-update` |
-| s06 / 11 | [Move the patches. Does the answer change?](https://nipunbatra.github.io/attention/vision1.html?present#s06/11/0) | `s04-experiment` |
-| s06 / 12 | [Who teaches CLS what information to collect?](https://nipunbatra.github.io/attention/vision1.html?present#s06/12/0) | `cls-learns` |
-| s06 / 13 | [Could we classify the image without CLS?](https://nipunbatra.github.io/attention/vision1.html?present#s06/13/0) | `pooling-example` |
-| s06 / 14 | [So why use CLS in our ViT?](https://nipunbatra.github.io/attention/vision1.html?present#s06/14/0) | `readout-choice` |
-| s07 / 1 | [Section 7 · The complete Transformer block](https://nipunbatra.github.io/attention/vision1.html?present#s07/1/0) | `vision-topic-07` |
-| s07 / 2 | [Put the familiar attention inside a full block](https://nipunbatra.github.io/attention/vision1.html?present#s07/2/0) | `s05-block` |
-| s07 / 3 | [Which operation lets one patch borrow from another?](https://nipunbatra.github.io/attention/vision1.html?present#s07/3/0) | `mix-across-rows` |
-| s07 / 4 | [What does the MLP change?](https://nipunbatra.github.io/attention/vision1.html?present#s07/4/0) | `mix-within-row` |
-| s07 / 5 | [What average are we subtracting?](https://nipunbatra.github.io/attention/vision1.html?present#s07/5/0) | `ln-mean` |
-| s07 / 6 | [How spread out is the centered row?](https://nipunbatra.github.io/attention/vision1.html?present#s07/6/0) | `ln-variance` |
-| s07 / 7 | [What does LayerNorm do to one row?](https://nipunbatra.github.io/attention/vision1.html?present#s07/7/0) | `layernorm` |
-| s07 / 8 | [How does the MLP make a wider row?](https://nipunbatra.github.io/attention/vision1.html?present#s07/8/0) | `mlp-first-linear` |
-| s07 / 9 | [Apply GELU to each hidden coordinate](https://nipunbatra.github.io/attention/vision1.html?present#s07/9/0) | `mlp-row-step-1` |
-| s07 / 10 | [How does the MLP return to the original width?](https://nipunbatra.github.io/attention/vision1.html?present#s07/10/0) | `mlp-second-linear` |
-| s07 / 11 | [Add the MLP message to the starting row](https://nipunbatra.github.io/attention/vision1.html?present#s07/11/0) | `mlp-row` |
-| s07 / 12 | [What does the next block get to see?](https://nipunbatra.github.io/attention/vision1.html?present#s07/12/0) | `depth` |
-| s07 / 13 | [How many rows does the real photograph produce?](https://nipunbatra.github.io/attention/vision1.html?present#s07/13/0) | `s05-scale-step-1` |
-| s07 / 14 | [How many blocks process those rows?](https://nipunbatra.github.io/attention/vision1.html?present#s07/14/0) | `s05-scale-step-2` |
-| s07 / 15 | [What changed when we made the model larger?](https://nipunbatra.github.io/attention/vision1.html?present#s07/15/0) | `s05-scale` |
-| s08 / 1 | [Section 8 · Build the model in PyTorch](https://nipunbatra.github.io/attention/vision1.html?present#s08/1/0) | `vision-topic-08` |
-| s08 / 2 | [These two 16s mean different things](https://nipunbatra.github.io/attention/vision1.html?present#s08/2/0) | `two-sixteens` |
-| s08 / 3 | [How do image pixels become rows in code?](https://nipunbatra.github.io/attention/vision1.html?present#s08/3/0) | `code-patch` |
-| s08 / 4 | [Why does our ViT code use Conv2d?](https://nipunbatra.github.io/attention/vision1.html?present#s08/4/0) | `conv-one-patch` |
-| s08 / 5 | [How far should the filter move?](https://nipunbatra.github.io/attention/vision1.html?present#s08/5/0) | `conv-stride` |
-| s08 / 6 | [Does this layer merely cut up the image?](https://nipunbatra.github.io/attention/vision1.html?present#s08/6/0) | `conv-trainable` |
-| s08 / 7 | [Can local filters gather distant clues too?](https://nipunbatra.github.io/attention/vision1.html?present#s08/7/0) | `cnn-context` |
-| s08 / 8 | [Can you match each line to our calculation?](https://nipunbatra.github.io/attention/vision1.html?present#s08/8/0) | `code-attention` |
-| s08 / 9 | [Can a patch in image A read image B?](https://nipunbatra.github.io/attention/vision1.html?present#s08/9/0) | `batch-boundary` |
-| s08 / 10 | [A tensor can have the right shape and the wrong meaning](https://nipunbatra.github.io/attention/vision1.html?present#s08/10/0) | `batch-axis` |
-| s08 / 11 | [A quick check before training](https://nipunbatra.github.io/attention/vision1.html?present#s08/11/0) | `batch-check` |
-| s08 / 12 | [What is the complete pre-LayerNorm block?](https://nipunbatra.github.io/attention/vision1.html?present#s08/12/0) | `code-block` |
-| s08 / 13 | [How do we add one CLS row per image?](https://nipunbatra.github.io/attention/vision1.html?present#s08/13/0) | `code-add-cls` |
-| s08 / 14 | [Where does location enter the code?](https://nipunbatra.github.io/attention/vision1.html?present#s08/14/0) | `code-add-pos` |
-| s08 / 15 | [Which row reaches the classifier?](https://nipunbatra.github.io/attention/vision1.html?present#s08/15/0) | `code-cls-readout` |
-| s08 / 16 | [How does the full model produce image logits?](https://nipunbatra.github.io/attention/vision1.html?present#s08/16/0) | `code-model` |
-| s08 / 17 | [Which call makes this model learn?](https://nipunbatra.github.io/attention/vision1.html?present#s08/17/0) | `code-train` |
-| s08 / 18 | [When are gradients computed?](https://nipunbatra.github.io/attention/vision1.html?present#s08/18/0) | `code-backward` |
-| s08 / 19 | [Which line changes the weights?](https://nipunbatra.github.io/attention/vision1.html?present#s08/19/0) | `code-step` |
-| s09 / 1 | [Section 9 · Check what the model learned](https://nipunbatra.github.io/attention/vision1.html?present#s09/1/0) | `vision-topic-09` |
-| s09 / 2 | [Will the model recognize a new noisy stripe?](https://nipunbatra.github.io/attention/vision1.html?present#s09/2/0) | `training-data` |
-| s09 / 3 | [Which images are allowed to influence the weights?](https://nipunbatra.github.io/attention/vision1.html?present#s09/3/0) | `three-splits` |
-| s09 / 4 | [Suppose the model gets this training image wrong](https://nipunbatra.github.io/attention/vision1.html?present#s09/4/0) | `training-one-image` |
-| s09 / 5 | [What does one epoch mean in this experiment?](https://nipunbatra.github.io/attention/vision1.html?present#s09/5/0) | `one-epoch` |
-| s09 / 6 | [Is the model improving on its training images?](https://nipunbatra.github.io/attention/vision1.html?present#s09/6/0) | `learning-curves-step-1` |
-| s09 / 7 | [Does the improvement carry over to validation?](https://nipunbatra.github.io/attention/vision1.html?present#s09/7/0) | `learning-curves` |
-| s09 / 8 | [Can training make up for missing positions?](https://nipunbatra.github.io/attention/vision1.html?present#s09/8/0) | `trained-position-control` |
-| s10 / 1 | [Section 10 · Return to the real photographs](https://nipunbatra.github.io/attention/vision1.html?present#s10/1/0) | `vision-topic-10` |
-| s10 / 2 | [Which pixels are we giving the real model?](https://nipunbatra.github.io/attention/vision1.html?present#s10/2/0) | `real-input` |
-| s10 / 3 | [What did the model call our dog?](https://nipunbatra.github.io/attention/vision1.html?present#s10/3/0) | `s06-answer` |
-| s10 / 4 | [Does one correct photograph tell us the accuracy?](https://nipunbatra.github.io/attention/vision1.html?present#s10/4/0) | `one-photo-limit` |
-| s10 / 5 | [What happens when we give it the cat?](https://nipunbatra.github.io/attention/vision1.html?present#s10/5/0) | `real-cat` |
-| s10 / 6 | [Where did the checkpoint learn its visual features?](https://nipunbatra.github.io/attention/vision1.html?present#s10/6/0) | `three-phases-step-1` |
-| s10 / 7 | [How would we adapt it to our own labels?](https://nipunbatra.github.io/attention/vision1.html?present#s10/7/0) | `three-phases-step-2` |
-| s10 / 8 | [What happens when we classify a new photograph?](https://nipunbatra.github.io/attention/vision1.html?present#s10/8/0) | `three-phases` |
-| s11 / 1 | [Section 11 · Look inside the trained model](https://nipunbatra.github.io/attention/vision1.html?present#s11/1/0) | `vision-topic-11` |
-| s11 / 2 | [What is one coloured square actually showing?](https://nipunbatra.github.io/attention/vision1.html?present#s11/2/0) | `read-attention-map` |
-| s11 / 3 | [Do the heads read the same places?](https://nipunbatra.github.io/attention/vision1.html?present#s11/3/0) | `real-heads` |
-| s11 / 4 | [Does CLS read differently in a later block?](https://nipunbatra.github.io/attention/vision1.html?present#s11/4/0) | `real-depth` |
-| s11 / 5 | [What does this particular patch read?](https://nipunbatra.github.io/attention/vision1.html?present#s11/5/0) | `real-patch-query` |
-| s11 / 6 | [What happens if we cover the top left?](https://nipunbatra.github.io/attention/vision1.html?present#s11/6/0) | `cover-1` |
-| s11 / 7 | [What happens if we cover the top right?](https://nipunbatra.github.io/attention/vision1.html?present#s11/7/0) | `cover-2` |
-| s11 / 8 | [What happens if we cover the bottom left?](https://nipunbatra.github.io/attention/vision1.html?present#s11/8/0) | `cover-3` |
-| s11 / 9 | [What happens if we cover the bottom right?](https://nipunbatra.github.io/attention/vision1.html?present#s11/9/0) | `cover-4` |
-| s11 / 10 | [Which covered region changed the answer most?](https://nipunbatra.github.io/attention/vision1.html?present#s11/10/0) | `occlusion` |
-| s12 / 1 | [Section 12 · The cost of smaller patches](https://nipunbatra.github.io/attention/vision1.html?present#s12/1/0) | `vision-topic-12` |
-| s12 / 2 | [What changes when the patch size is halved?](https://nipunbatra.github.io/attention/vision1.html?present#s12/2/0) | `patch-cost` |
-| s12 / 3 | [How much matching happens inside the tiny real model?](https://nipunbatra.github.io/attention/vision1.html?present#s12/3/0) | `real-work-count` |
-| s12 / 4 | [What happens if we use a larger image?](https://nipunbatra.github.io/attention/vision1.html?present#s12/4/0) | `cost-control` |
-| s13 / 1 | [Section 13 · Your turn to work it out](https://nipunbatra.github.io/attention/vision1.html?present#s13/1/0) | `vision-topic-13` |
-| s13 / 2 | [Your turn: work out the message](https://nipunbatra.github.io/attention/vision1.html?present#s13/2/0) | `exercise-message` |
-| s13 / 3 | [Your turn: trace every important shape](https://nipunbatra.github.io/attention/vision1.html?present#s13/3/0) | `exercise-shapes` |
-| s13 / 4 | [Did we move the image, or just reorder its rows?](https://nipunbatra.github.io/attention/vision1.html?present#s13/4/0) | `exercise-position` |
-| s14 / 1 | [Section 14 · What can we build next?](https://nipunbatra.github.io/attention/vision1.html?present#s14/1/0) | `vision-topic-14` |
-| s14 / 2 | [What else could we ask the image model to do?](https://nipunbatra.github.io/attention/vision1.html?present#s14/2/0) | `next-vision` |
-| s14 / 3 | [Can you talk us through the whole model?](https://nipunbatra.github.io/attention/vision1.html?present#s14/3/0) | `closing` |
+| Section | Frame | ID | Title |
+|---|---:|---|---|
+| s01 | 1 | `prior-encoder-recap` | We already know how an encoder builds context |
+| s01 | 2 | `vit-same-encoder` | A ViT is an encoder over image patches |
+| s01 | 3 | `vit-token-inputs` | Text looks up a row; an image patch computes one |
+| s01 | 4 | `vision-topic-01` | Section 1 · The image classification task |
+| s01 | 5 | `dataset-gallery` | What does our animal dataset look like? |
+| s01 | 6 | `s01-photo` | What animal do you see? |
+| s01 | 7 | `task-image-label` | Our task today: classify the whole image |
+| s01 | 8 | `patch-context` | Attention: what can the face tell this patch? |
+| s01 | 9 | `patch-context-weights` | Should every source contribute equally? |
+| s01 | 10 | `patch-context-update` | What changes when the patch gets context? |
+| s01 | 11 | `bridge-image-query` | What could a query be in the image? |
+| s01 | 12 | `bridge-image-key` | What could a key be in the image? |
+| s01 | 13 | `bridge-image-value` | What information would a value send? |
+| s01 | 14 | `image-to-rows` | How can we give this photograph to attention? |
+| s01 | 15 | `vit-house-architecture` | The image classifier, drawn as one encoder pipeline |
+| s02 | 1 | `vision-topic-02` | Section 2 · From pixels to patch embeddings |
+| s02 | 2 | `model-journey-overview` | The whole route: photograph to prediction |
+| s02 | 3 | `s01-patches` | Where do the patch boundaries go? |
+| s02 | 4 | `rgb-flatten-step-1` | Read the RGB values of each pixel |
+| s02 | 5 | `rgb-flatten` | Flatten one channel at a time: R, then G, then B |
+| s02 | 6 | `patch-activation-location` | Do we apply an activation after the patch layer? |
+| s02 | 7 | `patch-linear-shapes` | What does “projection” mean here? |
+| s02 | 8 | `patch-linear-weights` | 12 input numbers, 2 output numbers |
+| s02 | 9 | `patch-linear-first` | Follow the connections into output 1 |
+| s02 | 10 | `patch-linear-second` | Now follow the connections into output 2 |
+| s02 | 11 | `patch-linear-result` | These two numbers are the patch embedding |
+| s02 | 12 | `patch-shared-code` | Apply the very same layer to another patch |
+| s02 | 13 | `patch-filter-patterns` | Weighted filters can see more than average brightness |
+| s02 | 14 | `s01-rows` | Start with the same dog photograph |
+| s02 | 15 | `projection-size` | Split the image into 16 × 16 patches |
+| s02 | 16 | `real-patch-crops` | Number the patches row by row |
+| s02 | 17 | `patch-real-dimensions` | Read the RGB values inside patch 63 |
+| s02 | 18 | `real-patch-normalize` | Normalize those same RGB values |
+| s02 | 19 | `patch-one-row-shape` | Flatten patch 63 in the same order as the code |
+| s02 | 20 | `patch-one-row-projection` | Pass that row through the shared linear layer |
+| s02 | 21 | `real-patch-projection` | Read the 192 output features for patch 63 |
+| s02 | 22 | `real-patch-shared` | Pass patch 64 through the very same layer |
+| s02 | 23 | `patch-projection-parameters` | Stack the 196 output rows into C |
+| s03 | 1 | `vision-topic-03` | Section 3 · Prepare the rows, then classify the image |
+| s03 | 2 | `position-where` | Give each patch its location in the photograph |
+| s03 | 3 | `position-table` | Position is a learned lookup table |
+| s03 | 4 | `real-patch-position` | Add position to these content rows |
+| s03 | 5 | `position-learning` | The image loss teaches the position table |
+| s03 | 6 | `cls-detour` | Why add CLS? Give the classifier one image summary |
+| s03 | 7 | `real-cls-purpose` | Add a summary row beside the dog’s patch rows |
+| s03 | 8 | `cls-summary-refinement` | What makes CLS an image summary? |
+| s03 | 9 | `cls-shared-start` | The same CLS start reads two different photographs |
+| s03 | 10 | `cls-pool-dog` | Without CLS, combine the dog’s final patch rows |
+| s03 | 11 | `cls-readout-return` | Why is CLS a common choice if pooling also works? |
+| s03 | 12 | `real-cls-sequence` | Add the summary row: 196 + 1 = 197 |
+| s03 | 13 | `model-journey-checkpoint` | Start with one Transformer block |
+| s03 | 14 | `vit-self-vs-cross` | Self-attention: Q, K and V share the same input |
+| s03 | 15 | `real-patch-qkv` | Make queries, keys and values from these rows |
+| s03 | 16 | `real-cls-attention` | The same input matrix feeds three learned projections |
+| s03 | 17 | `real-attention-product` | One query–key comparison fills one matrix cell |
+| s03 | 18 | `real-attention-cls-zoom` | Follow the CLS row from scores to weights |
+| s03 | 19 | `real-attention-weights` | Turn each query’s 197 scores into 197 source weights |
+| s03 | 20 | `real-attention-mask` | Every image row can read every image row |
+| s03 | 21 | `real-message-text-analogy` | A message for CLS works like a message for bank |
+| s03 | 22 | `real-cls-values-origin` | The dog’s feature rows become value rows |
+| s03 | 23 | `real-cls-value-scaling` | One weight scales all 64 features in its value row |
+| s03 | 24 | `real-cls-value-contributions` | Each source contributes a weighted value row |
+| s03 | 25 | `real-cls-value-sum` | Add the contributions to make one CLS message |
+| s03 | 26 | `real-cls-message-destination` | Where does the CLS message go? |
+| s03 | 27 | `real-attention-values` | Each query gets its own message |
+| s03 | 28 | `real-heads-intro` | From one completed head to three parallel heads |
+| s03 | 29 | `heads-visual-roles` | What might different heads look for in this photograph? |
+| s03 | 30 | `real-heads-qkv` | The same rows feed three sets of Q, K and V |
+| s03 | 31 | `real-heads-messages` | Each head repeats the complete attention calculation |
+| s03 | 32 | `real-heads-cls` | One CLS input produces three different messages |
+| s03 | 33 | `real-heads-concat` | Concatenate the three CLS messages |
+| s03 | 34 | `real-cls-message` | Keep the embedding; add the context from attention |
+| s03 | 35 | `real-cls-residual` | The dog’s CLS keeps its input and gains context |
+| s03 | 36 | `real-cls-mlp` | Open block 1: attention, then the MLP |
+| s03 | 37 | `real-mlp-network` | Open the MLP: 192 inputs, 768 hidden units, 192 outputs |
+| s03 | 38 | `real-mlp-residual` | Add the MLP update to finish block 1 |
+| s03 | 39 | `real-block-handoff` | Pass the complete output of block 1 into block 2 |
+| s03 | 40 | `real-block-changes` | What changes as the rows move through the blocks? |
+| s03 | 41 | `real-cls-depth` | Continue through the stack, then classify the image |
+| s03 | 42 | `real-cls-readout` | Select CLS from the final feature matrix |
+| s03 | 43 | `real-classifier-network` | Open the classifier: 192 features become 1,000 scores |
+| s03 | 44 | `real-classifier-score` | One class score is a weighted sum plus a bias |
+| s03 | 45 | `real-classifier-softmax` | Turn all 1,000 scores into class probabilities |
+| s03 | 46 | `photo-two-softmaxes` | Two softmaxes, two different questions |
+| s03 | 47 | `real-cls-prediction` | The same dog now has its final prediction |
+| s04 | 1 | `vision-topic-04` | Section 4 · Whole model walkthrough |
+| s04 | 2 | `vit-shape-trace` | One shape trace from pixels to class scores |
+| s04 | 3 | `vit-canonical-block` | Inside each block: mix, transform, keep the residual |
+| s04 | 4 | `photo-optimizer-step` | Backward: compute gradients, then update the model |
+| s05 | 1 | `vision-topic-05` | Section 5 · CNNs, ViTs and inductive bias |
+| s05 | 2 | `cnn-receptive-field` | Two ways to build an image representation |
+| s05 | 3 | `cnn-context-readout` | A wider view, then one image label |
+| s05 | 4 | `cnn-inductive-bias` | Inductive bias: a useful starting assumption |
+| s05 | 5 | `cnn-vit-design` | Which is a sensible starting point? |
+| s06 | 1 | `vision-topic-06` | Implementation lab · optional |
+| s06 | 2 | `code-photo-input` | Keep the same photograph and add the batch axis |
+| s06 | 3 | `code-patch-goal` | Our target: turn every patch into 192 features |
+| s06 | 4 | `code-patch-dense` | See the patch projection as a layer of neurons |
+| s06 | 5 | `code-patch-linear` | Implementation 1: extract patches, then use Linear |
+| s06 | 6 | `code-photo-conv` | Implementation 2: the same projection with Conv2d |
+| s06 | 7 | `code-patch-parameters` | Reshape the weights; keep the same parameter count |
+| s06 | 8 | `code-patch-same-products` | Same pixel × same weight, in both implementations |
+| s06 | 9 | `code-patch-equivalence` | Verify it on both photographs: the features match |
+| s06 | 10 | `code-patch-why-conv` | Why package patch projection as Conv2d? |
+| s06 | 11 | `code-photo-tokens` | First turn the feature grid into patch rows |
+| s06 | 12 | `code-photo-tokens-cls` | Then prepend CLS and add position |
+| s06 | 13 | `code-photo-attention` | Make queries, keys and values for three heads |
+| s06 | 14 | `code-photo-attention-messages` | Compute one message for every query in every head |
+| s06 | 15 | `code-photo-attention-join` | Join the head messages and project back to 192 |
+| s06 | 16 | `code-photo-block-layers` | Build the layers inside one Transformer block |
+| s06 | 17 | `code-photo-block` | Use the two residual paths in order |
+| s06 | 18 | `code-photo-stack` | Create twelve blocks with separate learned parameters |
+| s06 | 19 | `code-photo-readout` | Run the stack, then read the final CLS |
+| s06 | 20 | `code-photo-training` | Connect the loss diagram to one training step |
+| s07 | 1 | `vision-topic-07` | Section 7 · Adapt and evaluate the classifier |
+| s07 | 2 | `pets-original-task` | What was this model trained to predict? |
+| s07 | 3 | `pets-new-task` | Same photographs, a different label vocabulary |
+| s07 | 4 | `pets-new-domain` | What if our users supply sketches? |
+| s07 | 5 | `pets-head` | Replace the ImageNet head with our two-class head |
+| s07 | 6 | `pets-frozen` | Freeze the encoder; train the new head |
+| s07 | 7 | `pets-fine-tune` | Next option: fine-tune the last block as well |
+| s07 | 8 | `pets-training-step` | One batch follows the same forward and backward paths |
+| s07 | 9 | `pets-learning-stages` | Three stages: learn, adapt, then predict |
+| s07 | 10 | `pets-inference` | What happens when we classify a new photograph? |
+| s07 | 11 | `pets-evaluation` | How would we check whether the classifier learned? |
+| s08 | 1 | `vision-topic-08` | Section 8 · Return to the real photographs |
+| s08 | 2 | `real-input` | Which pixels are we giving the real model? |
+| s08 | 3 | `s06-answer` | What did the model call our dog? |
+| s08 | 4 | `one-photo-limit` | Does one correct photograph tell us the accuracy? |
+| s08 | 5 | `real-cat` | What happens when we give it the cat? |
+| s09 | 1 | `vision-topic-09` | Section 9 · Look inside the trained model |
+| s09 | 2 | `interpret-similarity` | Similar patch features can connect distant image regions |
+| s09 | 3 | `interpret-heads` | Keep the query fixed; change only the attention head |
+| s09 | 4 | `interpret-cls` | CLS gathers a message for the image summary |
+| s09 | 5 | `cover-pixels` | “Cover” means replace these pixels with gray |
+| s09 | 6 | `cover-1` | Run the covered image through the same trained model |
+| s09 | 7 | `occlusion` | Four covers, four new forward passes |
+| s09 | 8 | `occlusion-small-setup` | Use smaller covers to ask a more local question |
+| s09 | 9 | `occlusion-small-result` | Smaller covers reveal local sensitivity |
+| s10 | 1 | `vision-topic-10` | Section 10 · The cost of smaller patches |
+| s10 | 2 | `patch-cost` | What changes when the patch size is halved? |
+| s10 | 3 | `real-work-count` | How much matching happens inside the tiny real model? |
+| s10 | 4 | `cost-control` | What happens if we use a larger image? |
+| s10 | 5 | `vision-summary-architecture` | The whole ViT: pixels → context → one label |
+| s10 | 6 | `vision-summary-takeaways` | Four ideas to carry forward |
+| s10 | 7 | `vision-fixed-class-vectors` | Our classifier stores a vector for each known label |
+| s10 | 8 | `vision-language-handoff` | What if a class vector could come from language? |

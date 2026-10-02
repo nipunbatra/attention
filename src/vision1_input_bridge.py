@@ -73,15 +73,15 @@ def clarify_inputs(b, sections):
     for y in [257,300,367]:
         collect += line(491,y,532,y,'c-e')
     collect += arrow(532,280,568,280,'c-q')
-    collect += rect(585,217,210,125,'c-q','transparent',6)
-    collect += t(690,251,'Transformer',25,'c-q','middle')+t(690,284,'blocks',25,'c-q','middle')
+    collect += rect(585,217,210,125,'mixing','transparent',6)
+    collect += t(690,251,'Transformer',25,'mixing','middle')+t(690,284,'blocks',25,'mixing','middle')
     collect += t(690,322,'all 197 rows',23,'ink-2','middle')
-    collect += t(690,375,'CLS reads patch features',22,'c-q','middle')
+    collect += t(690,375,'CLS reads patch features',22,'mixing','middle')
     body += g(collect,1)
 
-    readout = arrow(802,280,868,280,'c-q')
-    readout += box(885,226,220,['Final CLS','image summary'],'c-q',h=82)
-    readout += arrow(995,314,995,343,'c-q')
+    readout = arrow(802,280,868,280,'mixing')
+    readout += box(885,226,220,['Final CLS','image summary'],'vision',h=82)
+    readout += arrow(995,314,995,343,'mixing')
     body += g(readout,2)
     body += g(t(55,437,'Averaging final patch rows is another readout option.',24,'ink-2'),2)
     detour = frame('cls-detour', 'Why add CLS? Give the classifier one image summary', body,

@@ -5,6 +5,7 @@
 //   node src/export_slides.mjs attention.html output/pdf/part2-builds.pdf --builds all
 //   node src/export_slides.mjs attention.html deck.pdf --frames output/slide-pngs
 //   node src/export_slides.mjs attention.html deck.pdf --answers authored
+//   node src/export_slides.mjs vision1.html deck.pdf --examples all
 //
 // The default writes one fully revealed page per authored frame. `--builds all`
 // writes each build and managed stepper state as its own page. The exporter uses
@@ -15,7 +16,7 @@ import { createRequire } from 'module';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { pathToFileURL } from 'url';
+import http from 'http';
 
 const require = createRequire(import.meta.url);
 const candidates = [process.env.PLAYWRIGHT_MODULE, 'playwright', 'playwright-core'].filter(Boolean);
@@ -40,10 +41,11 @@ const option = (flag, fallback) => {
 };
 const buildMode = option('--builds', 'final');
 const answerMode = option('--answers', 'show');
+const exampleMode = option('--examples', 'default');
 const requestedFrames = option('--frames', '');
 const captureScale = Number(option('--scale', '2'));
-if (!source || !output || !['final', 'all'].includes(buildMode) || !['show', 'authored'].includes(answerMode) || ![1, 2, 3].includes(captureScale)) {
-  throw new Error('Usage: node src/export_slides.mjs page.html output.pdf [--builds final|all] [--answers show|authored] [--frames DIR] [--scale 1|2|3]');
+if (!source || !output || !['final', 'all'].includes(buildMode) || !['show', 'authored'].includes(answerMode) || !['default', 'all'].includes(exampleMode) || ![1, 2, 3].includes(captureScale)) {
+  throw new Error('Usage: node src/export_slides.mjs page.html output.pdf [--builds final|all] [--answers show|authored] [--examples default|all] [--frames DIR] [--scale 1|2|3]');
 }
 if (path.extname(output).toLowerCase() !== '.pdf') throw new Error('Output must end in .pdf');
 if (!fs.existsSync(source) || !fs.statSync(source).isFile()) throw new Error('Source HTML file not found: ' + source);
@@ -54,6 +56,29 @@ const ownTemp = !requestedFrames;
 const frameDir = requestedFrames ? path.resolve(requestedFrames) : fs.mkdtempSync(path.join(os.tmpdir(), 'attention-slide-export-'));
 fs.mkdirSync(frameDir, { recursive: true });
 
+// Local HTTP permits the same relative data fetches as the published lesson.
+// Serve only the source folder on loopback; no browser security flags are needed.
+const sourceRoot = path.dirname(path.resolve(source));
+const contentTypes = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css',
+  '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg',
+  '.woff2': 'font/woff2', '.woff': 'font/woff', '.f32': 'application/octet-stream' };
+const server = http.createServer((request, response) => {
+  let file;
+  let pathname;
+  try {
+    pathname = decodeURIComponent(new URL(request.url, 'http://localhost').pathname);
+    file = path.resolve(sourceRoot, '.' + pathname);
+  }
+  catch { response.writeHead(400).end(); return; }
+  // Chromium requests this even when the document declares no favicon.
+  if (pathname === '/favicon.ico' && !fs.existsSync(file)) { response.writeHead(204).end(); return; }
+  if (!file.startsWith(sourceRoot + path.sep) || !fs.existsSync(file) || !fs.statSync(file).isFile()) {
+    response.writeHead(404).end(); return;
+  }
+  response.writeHead(200, { 'Content-Type': contentTypes[path.extname(file)] || 'application/octet-stream' });
+  fs.createReadStream(file).pipe(response);
+});
+await new Promise((resolve, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', resolve); });
 let browser;
 try {
   browser = await pw.chromium.launch(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE
@@ -70,7 +95,7 @@ try {
     if (message.type() === 'error') runtimeErrors.push('CONSOLE: ' + message.text().slice(0, 240));
   });
 
-  const url = new URL(pathToFileURL(path.resolve(source)).href);
+  const url = new URL(`http://127.0.0.1:${server.address().port}/${encodeURIComponent(path.basename(source))}`);
   url.searchParams.set('present', '');
   await page.goto(url.href, { waitUntil: 'load' });
   await page.waitForFunction(() => window.AT && AT.present && AT.present.state().active);
@@ -102,6 +127,7 @@ try {
   const images = [];
   const seen = new Set();
   let revealedAnswers = 0;
+  let extraExamples = 0;
   let reachedEnd = false;
   for (let guard = 0; guard < 5000; guard++) {
     const { state, steps } = await page.evaluate(() => {
@@ -133,12 +159,28 @@ try {
         revealedAnswers += opened;
         if (opened) await settle();
       }
-      const fit = await page.evaluate(() => AT.present.fitReport());
-      if (fit && fit.overflow) throw new Error('Frame became overfull while exporting: ' + key);
-      const frameName = String(images.length + 1).padStart(3, '0') + '-' + key.replace(/[^a-z0-9_-]+/gi, '_').replace(/^_+/, '') + '.png';
-      const framePath = path.join(frameDir, frameName);
-      await page.locator('.sec.is-live').screenshot({ path: framePath, animations: 'disabled' });
-      images.push(framePath);
+      const examples = terminal && exampleMode === 'all'
+        ? await page.locator('.frame.is-live select[data-example] option').evaluateAll(items => items.map(x => x.value))
+        : [];
+      const captures = examples.length ? examples : [null];
+      extraExamples += captures.length - 1;
+      for (const example of captures) {
+        if (example !== null) await page.locator('.frame.is-live select[data-example]').selectOption(example);
+        if (await page.locator('.frame.is-live #vit-explorer').count()) {
+          await page.waitForFunction(() => {
+            const el = document.querySelector('.frame.is-live #vit-explorer');
+            return el.classList.contains('vix-ready') && el.getAttribute('aria-busy') === 'false';
+          });
+          await settle();
+        }
+        const fit = await page.evaluate(() => AT.present.fitReport());
+        if (fit && fit.overflow) throw new Error('Frame became overfull while exporting: ' + key);
+        const captureKey = key + (example === null ? '' : '-example-' + (Number(example) + 1));
+        const frameName = String(images.length + 1).padStart(3, '0') + '-' + captureKey.replace(/[^a-z0-9_-]+/gi, '_').replace(/^_+/, '') + '.png';
+        const framePath = path.join(frameDir, frameName);
+        await page.locator('.sec.is-live').screenshot({ path: framePath, animations: 'disabled' });
+        images.push(framePath);
+      }
     }
     if (state.fi === state.total - 1 && terminal) { reachedEnd = true; break; }
     // Use the same navigation path as classroom controls, without depending on
@@ -149,7 +191,7 @@ try {
 
   if (!reachedEnd) throw new Error('Export exceeded 5,000 navigation states; no partial PDF was written.');
   if (!images.length) throw new Error('No slide frames were captured.');
-  if (buildMode === 'final' && images.length !== preflight.total) throw new Error('Not every authored frame was captured.');
+  if (buildMode === 'final' && images.length !== preflight.total + extraExamples) throw new Error('Not every authored frame was captured.');
   if (runtimeErrors.length) throw new Error(runtimeErrors.join('\n'));
 
   const pdfPage = await context.newPage();
@@ -174,9 +216,10 @@ try {
   });
   await pdfPage.pdf({ path: outPath, preferCSSPageSize: true, printBackground: true, margin: { top: '0', right: '0', bottom: '0', left: '0' } });
   const bytes = fs.statSync(outPath).size;
-  console.log(JSON.stringify({ source: path.resolve(source), output: outPath, mode: buildMode, answerMode, revealedAnswers, pages: images.length, rasterScale: captureScale, bytes }, null, 2));
+  console.log(JSON.stringify({ source: path.resolve(source), output: outPath, mode: buildMode, answerMode, exampleMode, extraExamples, revealedAnswers, pages: images.length, rasterScale: captureScale, bytes }, null, 2));
 } finally {
   if (browser) await browser.close();
+  await new Promise(resolve => server.close(resolve));
   // This directory is created by mkdtemp above; never remove a caller's --frames directory.
   if (ownTemp) fs.rmSync(frameDir, { recursive: true, force: true });
 }

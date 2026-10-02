@@ -151,6 +151,7 @@
       if (!ready) return;
       row = isAttention() ? attention(data, Number(head.value) - 1, query) : similarity(data, query);
       const values = row.values;
+      root.classList.toggle('is-attention', isAttention());
       find('[data-query-name]').textContent = guided
         ? `${name(query)} · ${query === 0 ? 'summary token' : 'query patch'}`
         : `${name(query)} · ${location(query)}`;
@@ -167,7 +168,7 @@
       patchValues.forEach((v, i) => {
         // Attention contrast rescales per map; cosine always uses the fixed −1..1 scale.
         const strength = isAttention() ? v / maximum : Math.abs(v);
-        ctx.fillStyle = !isAttention() && v < 0 ? `rgba(37,99,235,${strength * .85})` : `rgba(255,177,30,${strength * .9})`;
+        ctx.fillStyle = isAttention() ? `rgba(23,143,130,${strength * .9})` : v < 0 ? `rgba(52,120,229,${strength * .85})` : `rgba(185,130,36,${strength * .9})`;
         ctx.fillRect(i % 14 * 20, Math.floor(i / 14) * 20, 20, 20);
         keyButtons[i].setAttribute('aria-label', `Source ${name(i + 1)}, ${location(i + 1)}, ${isAttention() ? 'weight ' + percent(v) : 'cosine ' + fixed(v)}`);
         keyButtons[i].title = `${name(i + 1)}: ${isAttention() ? percent(v) : fixed(v)}`;
@@ -176,7 +177,7 @@
       const ranked = Array.from({length: 196}, (_, i) => i + 1).filter(j => isAttention() || j !== query).sort((a, b) => values[b] - values[a]);
       source = guided ? examples[exampleIndex].source : ranked[0];
       find('[data-map-title]').textContent = guided
-        ? (isAttention() ? '2 · Attention (gold)' : '2 · Similarity (gold)')
+        ? (isAttention() ? '2 · Attention (teal)' : '2 · Similarity (gold)')
         : (isAttention() ? '2 · See source weights' : '2 · Find similar patches');
       find('[data-ranking-label]').textContent = isAttention() ? 'Strongest patch sources' : 'Most similar other patches';
       const top = find('[data-top]'); top.replaceChildren();
@@ -193,7 +194,7 @@
       const cls = find('[data-cls-weight]'); cls.hidden = !isAttention();
       cls.textContent = `CLS source: ${percent(values[0])}`;
       find('[data-accounting]').textContent = isAttention() ? '196 patch weights + the CLS weight = 100%.' : 'After this block’s attention + MLP. The selected patch matches itself at 1; it is omitted from the ranking.';
-      find('[data-meaning]').textContent = isAttention() ? 'Gold = more of that source’s value enters the query’s message. Attention can favor background; it is not object matching.' : 'Gold = similar patch features. This resembles the DINO interaction, using our trained classification ViT; it is not attention.';
+      find('[data-meaning]').textContent = isAttention() ? 'Teal = more of that source’s value enters the query’s message. Attention can favor background; it is not object matching.' : 'Gold = similar patch features. This resembles the DINO interaction, using our trained classification ViT; it is not attention.';
       find('[data-guide]').textContent = isAttention() ? 'Keep the query fixed. Change the head or play through the blocks.' : 'Try Ear at block 12: inspect patches on the other side of the dog.';
       status.textContent = guided
         ? `${isAttention() ? 'Attention' : 'Feature similarity'} · Block ${block.value}${isAttention() ? ' · Head ' + head.value : ''}`
@@ -244,7 +245,7 @@
     });
     retry.addEventListener('click', update);
     document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); });
-    new MutationObserver(() => { if (document.body.classList.contains('present') && !frame.classList.contains('is-live')) stop(); }).observe(frame, {attributes: true, attributeFilter: ['class']});
+    if (frame) new MutationObserver(() => { if (document.body.classList.contains('present') && !frame.classList.contains('is-live')) stop(); }).observe(frame, {attributes: true, attributeFilter: ['class']});
     if (window.IntersectionObserver) {
       const observer = new IntersectionObserver(entries => { if (entries[0].isIntersecting) { update(); observer.disconnect(); } });
       observer.observe(root);

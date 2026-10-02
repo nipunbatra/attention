@@ -24,12 +24,12 @@ def enhance(b, sections):
     for j in range(196):
         x, y = (j % 14)*20, (j//14)*20
         alpha = float(weights[j+1] / weights[1:].max()) * .9
-        body += f'<rect x="{405+x}" y="{65+y}" width="20" height="20" fill="#ffb11e" opacity="{alpha:.4f}"/>'
+        body += f'<rect x="{405+x}" y="{65+y}" width="20" height="20" fill="#178f82" opacity="{alpha:.4f}"/>'
     r, c = divmod(query-1,14)
     body += f.rect(25+c*20,65+r*20,20,20,'c-q','transparent',0)
     body += arrow(330,205,382,205,'c-q')
     body += t(25,380,'P74 · the dog’s left-side ear patch',22,'c-q')
-    body += t(405,380,f'Gold: 0 → {100*weights[1:].max():.2f}% weight',22,'c-k')
+    body += t(405,380,f'Teal: 0 → {100*weights[1:].max():.2f}% weight',22,'c-k')
     body += t(750,83,'Saved trained-model example',25,'c-e')
     body += t(750,125,'Block 4 · Head 1 · Query P74',24)
     for i,j in enumerate(top):
@@ -38,7 +38,7 @@ def enhance(b, sections):
     body += t(25,426,'All 197 source weights sum to 100%. The whole image is available; no causal mask.',25)
     title = 'Explore a trained ViT, one example at a time'
     caption = 'Follow nine guided examples on the trained model. Each preset shows what to notice and one takeaway. Then choose Free exploration to select any patch, block, head or view. Each square is a 16×16 patch.'
-    notes = ('What does the gold region mean in this example?\n'
+    notes = ('What does the colored region mean in this example?\n'
              'Start with the background preset and use Next example. Examples 1–6 compare patch features; '
              '7–9 show attention weights. Discuss the short observation and the large takeaway beside the images. '
              'The four corner features nearly coincide; this is not a segmentation guarantee. '
@@ -48,7 +48,7 @@ def enhance(b, sections):
              'used throughout this lecture. It predicts Newfoundland for this image with 95.73% probability. '
              'No training runs in the browser. One block loads at a time; the browser computes the selected attention row from saved Q and K.</p>'
              '<p><strong>Attention:</strong> one head’s query compares with all 197 keys. Softmax produces 196 patch weights plus one CLS weight. '
-             'The map shows the patch weights without renormalizing them; the CLS weight is reported separately. Gold contrast adapts to each map, '
+             'The map shows the patch weights without renormalizing them; the CLS weight is reported separately. Teal contrast adapts to each map, '
              'so compare numeric weights across blocks. Clicking a source shows the score, weight, and where its value vector enters the weighted sum.</p>'
              '<p><strong>Feature similarity:</strong> compare the 192-dimensional patch representations after the selected block’s attention, '
              'MLP, and residual additions, before the next normalization. Cosine uses a fixed −1 to 1 scale. The selected patch’s self-match is omitted '
@@ -63,7 +63,7 @@ def enhance(b, sections):
                                f' · block {e["block"]} · '+('CLS' if e['query']==0 else f'P{e["query"]}'))+
                         '</td><td>'+escape(e['look'])+'</td><td>'+escape(e['takeaway'])+' '+escape(e['detail'])+'</td></tr>'
                         for i,e in enumerate(EXAMPLES))
-    prose = ('<p><strong>Start here:</strong> keep the preset fixed, locate the purple query, read the gold map, '
+    prose = ('<p><strong>Start here:</strong> keep the preset fixed, locate the purple query, read the gold similarity or teal attention map, '
              'then discuss the takeaway. Next example changes the settings for you. Free exploration exposes '
              'the full controls; Guided examples returns to the last preset.</p>'
              '<table class="vp-table"><thead><tr><th>Example</th><th>Settings</th><th>Notice</th><th>Takeaway</th></tr></thead>'
@@ -113,6 +113,7 @@ def enhance(b, sections):
 <div class="vix-provenance">Saved pretrained ViT-Tiny · 224×224 RGB · 14×14 patches · 16×16 pixels per selection · Newfoundland: 95.73%</div>
 </div><div class="vix-fallback">{static}<noscript>Enable JavaScript for patch selection. This is the saved block 4, head 1 example.</noscript></div></div>'''
     original = original.replace('<div class="vp-figure">'+static+'</div>',ui)
+    b['EXPLORER_UI'] = ui
     assert 'id="vit-explorer"' in original
     result = []
     for section, frames in sections:

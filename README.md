@@ -10,7 +10,7 @@ Two connected, interactive, offline-capable series for a deep-learning course. [
 
 The four-part **Vision to language** sequence continues with:
 
-- [Vision I](https://nipunbatra.github.io/attention/vision1.html): a complete 201-frame lecture plus cover: real-photo motivation, exact four-patch/two-head arithmetic, full ViT code, actual training on independent synthetic splits, and measured real-image attention and occlusion. Includes an executed [complete lab](notebooks/vision/03_vision_transformer_lab.ipynb) and [teaching guide](src/VISION1_TEACHING_GUIDE.md).
+- [Vision I](https://nipunbatra.github.io/attention/vision1.html): 147 teaching frames plus cover, following the text encoder lecture. One measured photograph anchors patch projection, attention messages, classification, code and adaptation, ending with a CLIP handoff. Includes three measured interpretation figures, a [nine-example interactive lab](vision1-explorer.html), optional calculations in reading mode, an executed [lab](notebooks/vision/03_vision_transformer_lab.ipynb), and the [teaching guide](src/VISION1_TEACHING_GUIDE.md).
 - [Vision II](https://nipunbatra.github.io/attention/vision2.html): visual pretraining through MAE, DINO, and I-JEPA; exact reconstruction and teacher-distribution worksheets.
 - [Vision III](https://nipunbatra.github.io/attention/vision3.html): CLIP-style image–text matching, symmetric contrastive learning, candidate classification, and retrieval.
 - [Vision IV](https://nipunbatra.github.io/attention/vision4.html): a visual connector, an image-conditioned prefix decoder, actual answer generation, training, and grounding checks.
@@ -35,7 +35,7 @@ Part 1 also has four model-backed diagrams: the trained embedding space, lookup-
 
 Part 4 uses a separate three-coordinate model fitted to two phrase pairs: “the river bank” → “la rive”, and “the financial bank” → “la banque”. It includes an encoder, masked target self-attention, cross-attention, residual additions, and a vocabulary head. The numerical toy omits FFNs and LayerNorm; it is not evidence of general translation ability. Source and target positions are learned, added vectors. The diagrams and calculations read the same model. An independent NumPy reference reproduces training and checks every scalar gradient.
 
-Vision I now connects Parts I–III directly to real photographs and a fully visible four-patch worksheet. A separate small ViT is trained on 512 generated images, selected on 128 validation examples and evaluated on 256 test examples. Pretrained real-image inference and interpretation are separate measurements. Vision II–IV retain their existing tabletop examples and historical frozen encoder; `toy5.json` and the legacy shared runtime are preserved for that continuation. The original two-image exercises demonstrate computations, not broad visual generalization. See `src/VISION1_TEACHING_GUIDE.md` for the new lesson and `src/VISION_SOURCE_AUDIT.md` for historical provenance.
+Vision I reuses the encoder concepts from *Transformers beyond next-token prediction*. Its main numerical path is a pretrained ViT-Tiny on real photographs. The four-patch worksheet and separate small ViT experiment (512 training, 128 validation, 256 test images) remain optional lab material. Vision II–IV retain their existing tabletop examples and historical frozen encoder. See `src/VISION1_TEACHING_GUIDE.md` for the current 10-section route and `src/VISION_SOURCE_AUDIT.md` for historical provenance.
 
 ```sh
 python3 src/assemble.py --part 1 --out part1.html
@@ -68,11 +68,14 @@ node src/export_slides.mjs attention.html output/pdf/attention-part2-builds.pdf 
 
 # The same exporter works for the vision series.
 node src/export_slides.mjs vision1.html output/pdf/vision-part1-slides.pdf
+
 ```
 
 The exporter checks every frame for clipping before writing the PDF. Reveal/quiz answers are shown on completed frames by default, since PDF readers cannot click them; use `--answers authored` for a question handout. It captures the exact classroom stage with navigation removed, at 2× resolution by default (`--scale 1|2|3`). These appearance-faithful PDFs use images, so their text is not selectable. Browser Print also opens answer panels for a reading-oriented handout.
 
-Exported PDFs in `output/pdf/` are local build artifacts, not committed files. Managed builds are advanced automatically and answer reveals are opened; sliders and other manual controls stay at their defaults.
+Exported PDFs in `output/pdf/` are local build artifacts. The reviewed Vision I release is published at [pdf/vision1.pdf](https://nipunbatra.github.io/attention/pdf/vision1.pdf), with a [searchable transcript](pdf/vision1-transcript.md): 148 main pages (cover plus 147 frames) and four optional reference pages. The [interactive lab](https://nipunbatra.github.io/attention/vision1-explorer.html) retains all nine guided examples and free exploration.
+
+The exporter serves the source folder on loopback so relative model-data requests work. Managed builds are advanced automatically and answer reveals are opened; sliders and other manual controls stay at their defaults. `--examples all` can additionally capture guided examples when the explorer is embedded in the exported page; Vision I now provides the full explorer as a separate lab.
 
 ## Checks
 

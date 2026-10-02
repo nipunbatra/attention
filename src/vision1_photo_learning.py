@@ -82,7 +82,7 @@ def build(b):
         'Reverse the forward dependencies to compute gradients for the trainable parameters. The optimizer uses these gradients to update them. The next forward pass uses the updated model. The image and its label remain fixed.',
         'Does backward itself change the weights?',
         'No. Backward computes gradients through the same model. The optimizer step applies the update. The learned input parameters include the patch projection, positions and starting CLS; the photograph and label are fixed data.',
-        provenance+'This is the backward pass for the same scalar cross-entropy loss shown on the preceding slide. '
+        provenance+'This is the backward pass for the scalar cross-entropy loss in the optional complete-model reference. '
         'Start with dlogits=p−one_hot(y). The head receives parameter gradients and passes a gradient to final CLS. '
         'Reverse final normalization and the 12 blocks. Residual additions send gradients along both paths, '
         'and shared inputs accumulate their contributions. Attention connects the CLS loss to patch keys and values; '

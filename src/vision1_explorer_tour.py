@@ -31,7 +31,7 @@ EXAMPLES = [
     dict(id='heads', title='Change only the attention head', mode='attention', block=4, head=2, query=74, source=38,
          look='Same query and block. Head 2 favours P38.',
          takeaway='Different heads gather different information.',
-         detail='Head 2 puts its largest patch weight on P38, at about 2.29%. Gold is rescaled within each attention map: compare percentages, not brightness, across heads.'),
+         detail='Head 2 puts its largest patch weight on P38, at about 2.29%. Teal is rescaled within each attention map: compare percentages, not brightness, across heads.'),
     dict(id='cls', title='Let CLS gather an image summary', mode='attention', block=12, head=1, query=0, source=64,
          look='CLS gives the face patch P64 about 25% weight.',
          takeaway='CLS gathers image information for classification.',

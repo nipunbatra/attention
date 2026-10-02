@@ -19,7 +19,7 @@ class Figures:
 
     def box(self, x, y, w, labels, color='c-e', h=76, size=24):
         labels = [labels] if isinstance(labels, str) else labels
-        out = self.rect(x, y, w, h, color, 't-q' if color == 'c-q' else 'card', 5)
+        out = self.rect(x, y, w, h, color, {'c-q': 't-q', 'special': 't-special', 'vision': 't-e', 'language': 't-language', 'mixing': 't-mixing'}.get(color, 'card'), 5)
         for i, label in enumerate(labels):
             out += self.t(x+w/2, y+h/2+8+(i-(len(labels)-1)/2)*30,
                           label, size, color, 'middle')

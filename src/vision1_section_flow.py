@@ -7,7 +7,7 @@ from textwrap import wrap
 # Each opener connects something students have seen to a concrete next question.
 TOPICS = [
     ('The image classification task',
-     'In text, a prefix led to a prediction.',
+     'A text encoder built context from supplied tokens.',
      'What should a model predict from a photograph?',
      ('Labeled photos', 'The image task', 'Useful clues'),
      'Start with the dataset, choose an image label, then ask which parts of the photograph help us decide.'),

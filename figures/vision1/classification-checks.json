@@ -1,5 +1,5 @@
 {
-  "teaching_frames": 169,
+  "teaching_frames": 147,
   "new_gradient_coordinates_checked": 116,
   "gradient_max_absolute_error": 8.28264123953204e-10,
   "original_forward_and_js_match": true,
@@ -13,7 +13,7 @@
   "two_images_share_cls_input_but_have_different_updates": true,
   "multihead_messages_concatenation_and_residual_verified": true,
   "source_contributions_and_receiver_messages_verified": true,
-  "whole_model_walkthrough_two_content_frames": true,
+  "whole_model_walkthrough_three_content_frames": true,
   "mlp_gelu_and_second_residual_previews_verified": true,
   "classifier_weighted_sums_and_all_class_softmax_verified": true,
   "single_query_weight_update": {

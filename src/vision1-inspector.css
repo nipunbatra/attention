@@ -24,9 +24,9 @@
 .vix-grid {display:grid;grid-template-columns:repeat(14,1fr);grid-template-rows:repeat(14,1fr)}
 .vix-grid button {min-width:0;min-height:0;padding:0;border:0;border-right:1px solid #ffffff35;border-bottom:1px solid #ffffff35;border-radius:0;background:transparent;position:relative}
 .vix-grid button:hover {background:#ffffff45}
-.vix-grid button.vix-query,.vix-grid button.vix-query-location {outline:3px solid #a22cff;outline-offset:-2px;box-shadow:0 0 0 1px #fff;z-index:1}
+.vix-grid button.vix-query,.vix-grid button.vix-query-location {outline:3px solid #8B5BB5;outline-offset:-2px;box-shadow:0 0 0 1px #fff;z-index:1}
 .vix-grid button.vix-query-location {outline-style:dashed}
-.vix-grid button.vix-source {outline:3px solid #ffe083;outline-offset:-2px;box-shadow:0 0 0 1px #171717;z-index:2}
+.vix-grid button.vix-source {outline:3px solid #fff;outline-offset:-2px;box-shadow:0 0 0 1px #171717;z-index:2}
 .vix-grid button:focus-visible {outline:3px solid white;outline-offset:-3px;z-index:3}
 .vix-presets {display:flex;gap:5px;margin:9px 0 0;flex-wrap:wrap}
 .vix-presets button {padding:5px 10px;min-height:32px}
@@ -39,8 +39,8 @@
 .vix-detail [data-result] {color:var(--c-k);font-weight:650;font-size:17px!important}
 .vix-detail [data-source-note] {color:var(--ink-2)}
 .vix-detail .vix-selected {color:var(--ink)}
-.vix-scale {height:6px;margin:11px 0 5px;background:linear-gradient(90deg,transparent,#ffb11e);border-bottom:1px solid var(--line)}
-.vix-scale.vix-cosine-scale {background:linear-gradient(90deg,#2563eb,transparent,#ffb11e)}
+.vix-scale {height:6px;margin:11px 0 5px;background:linear-gradient(90deg,transparent,#B98224);border-bottom:1px solid var(--line)}
+.vix-scale.vix-cosine-scale {background:linear-gradient(90deg,#3478E5,transparent,#B98224)}
 .vix-legend {font-size:12px;color:var(--ink-2)}
 .vix-accounting {font-size:12px;line-height:1.4;color:var(--ink-2);margin-top:5px}
 .vix [data-cls-weight] {padding:3px 7px;min-height:28px;margin-top:6px;font-size:12px}
@@ -99,3 +99,8 @@ body.present .vix.is-guided [data-cls-weight] {font-size:16px}
 body.present .sec.is-live:has(#read-attention-map.is-live) {padding-top:24px;padding-bottom:24px}
 body.present .sec.is-live:has(#read-attention-map.is-live)>.sec-head {margin-bottom:16px}
 body.present .vix-provenance {display:none}
+
+.vix {--map-color:#B98224;}
+.vix.is-attention {--map-color:#178F82;}
+.vix.is-attention .vix-scale {background:linear-gradient(to right,transparent,#178F82);}
+.vix .vix-tour-fact,.vix [data-result] {color:var(--map-color);}

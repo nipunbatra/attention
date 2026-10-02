@@ -84,7 +84,8 @@ def source_icon(x,y,j):
 
 
 def svg(body,label,height=440):
-    colors='--ink:#14171F;--ink-2:#4A5160;--ink-3:#6B7280;--line:#D9DDE5;--card:#FFFFFF;--transparent:transparent;--c-e:#245EDB;--t-e:#E4ECFF;--c-q:#8B2CDE;--t-q:#F1E5FC;--c-k:#AA4E08;--c-v:#0F766E;--c-a:#BE123C;--c-d:#147737;'
+    from vision1_palette import SVG_COLORS
+    colors=SVG_COLORS
     return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 {height}" role="img" aria-label="{escape(label)}" style="font-family:Avenir Next,Segoe UI,sans-serif;{colors}"><title>{escape(label)}</title>{body}</svg>'
 
 
@@ -107,7 +108,8 @@ def mobile_rows(headers, rows):
 
 def section(n,title,frames,lit=''):
     text=f'<section id="s{n:02}" class="sec" data-title="{escape(title)}" data-lit="{lit}"><header class="sec-head"><span class="sec-num">{n:02}</span><div><h2>{escape(title)}</h2></div></header>'+''.join(frames)+'</section>'
-    if n==1:text='<style>'+ (SRC/'vision1-lesson.css').read_text() + (SRC/'vision1-inspector.css').read_text()+'</style>'+text
+    from vision1_palette import CSS
+    if n==1:text='<style>'+CSS+ (SRC/'vision1-lesson.css').read_text() + (SRC/'vision1-inspector.css').read_text()+'</style>'+text
     (OUT/f'sec{n:02}.html').write_text(text)
 
 

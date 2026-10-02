@@ -51,7 +51,9 @@ top = sorted((j for j in range(1,197) if j!=74),key=lambda j:-ear[j])[:2]
 assert top == [82,81]
 manifest = json.loads((folder.parent/'frame-manifest.json').read_text())
 ids = [frame['id'] for frame in manifest]
-assert ids.count('read-attention-map')==1
+assert 'read-attention-map' not in ids
+assert {'interpret-similarity','interpret-heads','interpret-cls'} <= set(ids)
+assert (ROOT/'vision1-explorer.html').is_file()
 assert not {'real-heads','real-depth','real-patch-query'} & set(ids)
 page = (ROOT/'vision1.html').read_text()
 assert 'id="vit-explorer"' in page and 'function attention(data, head, query)' in page
@@ -77,3 +79,13 @@ np.testing.assert_allclose(tour_values, [.7834,.9999,.9017,.9110,.9427,.3221,.09
 print(f'PASS: 240 browser rows match PyTorch across all 12 blocks and 3 heads (max error {max_error:.2g}).')
 print('PASS: data hashes, normalized weights, cosine self-matches, real ear correspondence, and consolidated slide route.')
 print('PASS: all nine guided presets and their numerical teaching claims match the saved model data.')
+
+# The static PDF heroes use the same saved measurements as the interactive tour.
+heroes=json.loads((folder.parent/'interpretation-heroes.json').read_text())
+np.testing.assert_allclose(heroes['similarity']['value'],tour_values[2],atol=1e-12)
+np.testing.assert_allclose([h['weight'] for h in heroes['head_comparison']['heads']],tour_values[6:8],atol=1e-12)
+np.testing.assert_allclose(heroes['cls']['weight'],tour_values[8],atol=1e-12)
+from vision1_visual_refinement import saved_row
+rows=[saved_row({'ASSETS':folder.parent},4,74,h) for h in [1,2]]
+np.testing.assert_allclose(heroes['head_comparison']['common_scale_max'],max(max(r[1:]) for r in rows),atol=1e-12)
+print('PASS: all three static interpretation figures match the nine-example tour; both heads share one scale.')

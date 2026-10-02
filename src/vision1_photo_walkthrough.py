@@ -145,7 +145,7 @@ def add_photo_walkthrough(b, add):
     body=crop(35,35,95)+t(160,70,'Same P63 pixels; apply the checkpoint’s normalization.',28)
     body+=t(35,161,'Pixel',26,'ink-2')+t(235,161,'8-bit RGB',26,'ink-2')+t(665,161,'Normalized RGB',26,'ink-2')
     for j in range(2):
-        yy=226+j*82;marks=t(35,yy,str(j+1),30,'c-q')+t(235,yy,raw(rgb[j]),32)+arrow(495,yy-10,610,yy-10)+t(665,yy,vec(x[3*j:3*j+3],3,False),30,'c-e')
+        yy=226+j*82;marks=t(35,yy,str(j+1),30,'c-q')+t(235,yy,raw(rgb[j]),32)+arrow(495,yy-10,610,yy-10)+t(665,yy,vec([x[j],x[256+j],x[512+j]],3,False),30,'c-e')
         body+=marks if j==0 else g(marks,1)
     body+=g(t(35,408,'Each channel: (value / 255 − 0.5) / 0.5',32,'c-e'),2)
     step(5,'real-patch-normalize','Normalize those same RGB values',body,
@@ -155,27 +155,28 @@ def add_photo_walkthrough(b, add):
          'The checkpoint uses channel mean 0.5 and standard deviation 0.5 after scaling 8-bit values by 255. This operation changes values but preserves the pixel arrangement and shape. '
          'Real preprocessing applies this formula to the image before patch extraction. Showing it on P63 gives the identical values because the operation acts independently on each channel. '
          'The earlier hand calculation used RGB/255 alone; here we use the pretrained checkpoint’s supplied normalization. All printed decimals are rounded.',
-         mobile_crop()+mobile_rows(['Pixel 1','Values'],[['Raw RGB',raw(rgb[0])],['Normalized',vec(x[:3],3,False)]])+mobile_rows(['Pixel 2','Values'],[['Raw RGB',raw(rgb[1])],['Normalized',vec(x[3:6],3,False)]])
+         mobile_crop()+mobile_rows(['Pixel 1','Values'],[['Raw RGB',raw(rgb[0])],['Normalized',vec([x[0],x[256],x[512]],3,False)]])+mobile_rows(['Pixel 2','Values'],[['Raw RGB',raw(rgb[1])],['Normalized',vec([x[1],x[257],x[513]],3,False)]])
          +'<p>Apply (value / 255 − 0.5) / 0.5 to each channel. The patch still has 16 × 16 × 3 values.</p>')
 
-    # 6. Flatten only after showing the patch and its actual scalar values.
+    # 6. Match F.unfold and the Conv2d weight layout used in the code section.
     body=crop(35,100,192)+t(131,347,'P63',28,'c-q','middle')
-    body+=arrow(35,77,227,77,'c-q')+line(227,77,251,77,'c-q')+line(251,77,251,89,'c-q')+line(251,89,23,89,'c-q')+line(23,89,23,112,'c-q')+arrow(23,112,35,112,'c-q')
-    body+=t(285,50,'Read left to right; keep R, G, B together.',28)
-    body+=t(365,125,'first pixel',25,'ink-2')+t(760,125,'second pixel',25,'ink-2')
-    body+=g(t(320,205,'[',46,'c-e')+t(350,205,', '.join(num(v) for v in x[:3]),31,'c-e')
-              +t(710,205,', '+', '.join(num(v) for v in x[3:6]),31,'c-e')+t(1070,205,', …]',35,'c-e'),1)
-    body+=g(t(350,294,'x₆₃: 1 × 768',39,'c-e')+t(350,354,'1 patch row; 768 numbers in that row',28),2)
-    body+=t(350,414,'Flattening rearranges values. It learns no weights.',25,'ink-2')
-    step(6,'patch-one-row-shape','Flatten patch 63 into one row',body,
-         'Copy the normalized RGB triples in pixel order: first pixel, second pixel, and so on. This gives x₆₃ with shape 1 × 768. The subscript 63 identifies the patch.',
-         'Which three entries came from the second pixel?',
-         'Follow the scan arrow across the patch, then point to the two corresponding triples in the row. Keep the same values visible across the transition.',
-         'We use pixel-major RGB order: read three channels of one pixel, advance right, then continue on the next pixel row. '
-         'The first axis in (1,768) counts patch rows; the second counts scalar features. There is one image throughout this walkthrough, and its batch axis is omitted. '
-         'Flattening preserves all 768 normalized values and introduces no learned parameters.',
-         mobile_crop()+mobile_rows(['Order in x₆₃','Normalized entries'],[['First pixel',vec(x[:3],3,False)],['Second pixel',vec(x[3:6],3,False)],['Continue','Remaining pixels in row order']])
-         +'<p><strong>x₆₃: 1 × 768</strong><br>One patch row; 768 numbers in that row.</p>')
+    body+=t(300,48,'All R values → all G values → all B values',29)
+    for j,channel in enumerate('RGB'):
+        yy=119+j*75
+        part=t(300,yy,channel+' (256)',26,'ink-2')
+        part+=t(490,yy,vec(x[j*256:j*256+3]),31,'c-e')
+        body+=part if j==0 else g(part,j)
+    body+=g(t(300,350,'x₆₃: 1 × 768',38,'c-e'),2)
+    body+=t(300,413,'Within each channel: left to right, top to bottom.',25,'ink-2')
+    step(6,'patch-one-row-shape','Flatten patch 63 in the same order as the code',body,
+         'Concatenate 256 red values, 256 green values and 256 blue values. This gives one 768-number patch row. F.unfold and the reshaped Conv2d weights use this exact ordering.',
+         'Where does the first green value appear?',
+         'At entry 257 (one-based), after all 256 red values. The first pixel’s RGB values occupy entries 1, 257 and 513.',
+         'The normalized patch is stored as (3,16,16). Flatten it in channel-major order: all R pixels in image row order, then G, then B. '
+         'The weight matrix uses the same convention: Conv2d weight.flatten(1).T has shape (768,192). '
+         'F.unfold extracts all patches using that convention too. Flattening preserves values and has no trainable parameters.',
+         mobile_crop()+mobile_rows(['Channel','First normalized values'],[[c,vec(x[j*256:j*256+3])] for j,c in enumerate('RGB')])
+         +'<p><strong>x₆₃: 1 × 768.</strong> Entry order: R₁…R₂₅₆, G₁…G₂₅₆, B₁…B₂₅₆.</p>')
 
     # 7. Name and size the actual operation that consumes this row.
     body=crop(35,30,85)+t(145,78,'P63 is now x₆₃: a row of 768 normalized pixel values.',28)

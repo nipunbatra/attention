@@ -1,0 +1,33 @@
+{
+  "checkpoint": "vit_tiny_patch16_224.augreg_in21k_ft_in1k",
+  "similarity": {
+    "block": 12,
+    "query": 74,
+    "source": 82,
+    "value": 0.9017265395914948
+  },
+  "head_comparison": {
+    "block": 4,
+    "query": 74,
+    "common_scale_max": 0.10353092960373783,
+    "heads": [
+      {
+        "head": 1,
+        "source": 60,
+        "weight": 0.09088265420001931
+      },
+      {
+        "head": 2,
+        "source": 38,
+        "weight": 0.02288348604077027
+      }
+    ]
+  },
+  "cls": {
+    "block": 12,
+    "head": 1,
+    "query": 0,
+    "source": 64,
+    "weight": 0.2486390784649307
+  }
+}

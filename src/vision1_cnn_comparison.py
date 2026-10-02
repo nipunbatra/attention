@@ -19,7 +19,7 @@ def build(b):
     def header(y, first='Compare', widths=(265, 410, 415)):
         out = ''
         x = 35
-        for w, label, color in zip(widths, [first, 'CNN', 'ViT · global attention'], ['ink-2', 'c-v', 'c-q']):
+        for w, label, color in zip(widths, [first, 'CNN', 'ViT · global attention'], ['ink-2', 'cnn', 'vision']):
             out += f.rect(x, y, w, 44, 'line', 'card', 0)
             out += cell_text(x+18, y, label, 44, color, 27)
             x += w
@@ -31,7 +31,7 @@ def build(b):
         for j, (w, value) in enumerate(zip(widths, values)):
             out += f.rect(x, y, w, h, 'line', 'transparent', 0)
             out += cell_text(x+(label_inset if j == 0 else 18), y, value, h,
-                             ['ink-2', 'c-v', 'c-q'][j], 24)
+                             ['ink-2', 'cnn', 'vision'][j], 24)
             x += w
         return out
 
@@ -44,38 +44,38 @@ def build(b):
     # Two teaching beats per frame give each comparison point its own pause.
     # The drawings show permitted routes, not attention measured from this photo.
     def column_titles(y):
-        return (t(35, y, 'CNN · local filters', 29, 'c-v', weight=600)
-                +t(620, y, 'ViT · global attention', 29, 'c-q', weight=600))
+        return (t(35, y, 'CNN · local filters', 29, 'cnn', weight=600)
+                +t(620, y, 'ViT · global attention', 29, 'vision', weight=600))
 
     body = t(35, 29, '1 · Gather context: which inputs can interact in one layer?', 29)
     body += column_titles(77)
     body += f.image(35, 96, 170, 170, f.photo)
-    body += f.rect(97, 151, 51, 51, 'c-v', 'transparent', 0)
-    body += f.rect(114, 168, 17, 17, 'c-v', 'transparent', 0)
-    body += arrow(155, 177, 231, 177, 'c-v')
-    body += t(248, 137, 'One local neighbourhood', 26, 'c-v')
-    body += t(248, 174, 'feeds one output location.', 26, 'c-v')
+    body += f.rect(97, 151, 51, 51, 'cnn', 'transparent', 0)
+    body += f.rect(114, 168, 17, 17, 'cnn', 'transparent', 0)
+    body += arrow(155, 177, 231, 177, 'cnn')
+    body += t(248, 137, 'One local neighbourhood', 26, 'cnn')
+    body += t(248, 174, 'feeds one output location.', 26, 'cnn')
     body += t(248, 227, 'Start with nearby clues.', 25, 'ink-2')
     body += f.image(620, 96, 170, 170, f.photo)
     for j in range(1,14):
         body += line(620+j*170/14,96,620+j*170/14,266,'card',.5)
         body += line(620,96+j*170/14,790,96+j*170/14,'card',.5)
-    body += f.rect(692,144,13,13,'c-q','transparent',0)
+    body += f.rect(692,144,13,13,'vision','transparent',0)
     for x,y in [(635,110),(777,116),(631,252),(777,250)]:
-        body += arrow(x,y,699,151,'c-q')
-    body += t(816, 137, 'One query can use', 26, 'c-q')
-    body += t(816, 174, 'every source patch.', 26, 'c-q')
+        body += arrow(x,y,699,151,'vision')
+    body += t(816, 137, 'One query can use', 26, 'vision')
+    body += t(816, 174, 'every source patch.', 26, 'vision')
     body += t(816, 227, 'Near and far are available.', 25, 'ink-2')
     mixing = line(35,286,1125,286,'line')
     mixing += t(35,323,'2 · Mix information: what determines each contribution?',29)
-    mixing += box(35,348,182,['Learned filter'],'c-v',h=50,size=24)
-    mixing += arrow(226,373,258,373,'c-v')
-    mixing += t(274,365,'Reuse the same weights',25,'c-v')
-    mixing += t(274,400,'at every image location.',25,'c-v')
-    mixing += box(620,348,174,['Query + keys'],'c-q',h=50,size=24)
-    mixing += arrow(803,373,835,373,'c-q')
-    mixing += t(851,365,'Compute weights',25,'c-q')
-    mixing += t(851,400,'for this query + image.',25,'c-q')
+    mixing += box(35,348,182,['Learned filter'],'cnn',h=50,size=24)
+    mixing += arrow(226,373,258,373,'cnn')
+    mixing += t(274,365,'Reuse the same weights',25,'cnn')
+    mixing += t(274,400,'at every image location.',25,'cnn')
+    mixing += box(620,348,174,['Query + keys'],'vision',h=50,size=24)
+    mixing += arrow(803,373,835,373,'vision')
+    mixing += t(851,365,'Compute weights',25,'vision')
+    mixing += t(851,400,'for this query + image.',25,'vision')
     mixing += t(35,438,'Both learn parameters. ViT recomputes attention weights from the current features.',25,'ink-2')
     body += f.g(mixing,1)
     rows = [
@@ -99,29 +99,29 @@ def build(b):
     body = t(35,29,'3 · Build a wider view: how do distant clues meet?',29)
     body += column_titles(77)
     for x,w,labels in [(35,150,['Local features']), (220,150,['Combine them']), (405,150,['Wider context'])]:
-        body += box(x,112,w,labels,'c-v',h=72,size=22)
-    body += arrow(190,148,213,148,'c-v')+arrow(377,148,398,148,'c-v')
-    body += t(35,221,'Successive layers connect larger regions.',25,'c-v')
-    body += box(620,112,185,['Near + far','patches'],'c-q',h=72,size=23)
-    body += arrow(812,148,850,148,'c-q')
-    body += box(859,112,266,['One global','attention layer'],'c-q',h=72,size=23)
-    body += t(620,221,'Later blocks refine those relationships.',25,'c-q')
+        body += box(x,112,w,labels,'cnn',h=72,size=22)
+    body += arrow(190,148,213,148,'cnn')+arrow(377,148,398,148,'cnn')
+    body += t(35,221,'Successive layers connect larger regions.',25,'cnn')
+    body += box(620,112,185,['Near + far','patches'],'vision',h=72,size=23)
+    body += arrow(812,148,850,148,'vision')
+    body += box(859,112,266,['One global','attention layer'],'vision',h=72,size=23)
+    body += t(620,221,'Later blocks refine those relationships.',25,'vision')
     readout = line(35,251,1125,251,'line')
     readout += t(35,291,'4 · Read out a label: turn many locations into one vector.',29)
     for r in range(3):
         for c in range(4):
-            readout += f.rect(35+c*17,325+r*17,17,17,'c-v','transparent',0)
-    readout += arrow(113,351,145,351,'c-v')
-    readout += box(155,318,176,['Spatial average','one feature vector'],'c-v',h=67,size=21)
-    readout += arrow(341,351,373,351,'c-v')
-    readout += box(383,318,172,['Class head','image scores'],'c-v',h=67,size=22)
+            readout += f.rect(35+c*17,325+r*17,17,17,'cnn','transparent',0)
+    readout += arrow(113,351,145,351,'cnn')
+    readout += box(155,318,176,['Spatial average','one feature vector'],'cnn',h=67,size=21)
+    readout += arrow(341,351,373,351,'cnn')
+    readout += box(383,318,172,['Class head','image scores'],'cnn',h=67,size=22)
     for r,label in enumerate(['CLS','P1','…','P196']):
-        readout += f.rect(620,314+r*20,63,20,'c-q','t-q' if r==0 else 'transparent',0)
-        readout += t(651,329+r*20,label,15,'c-q','middle')
-    readout += arrow(691,324,727,324,'c-q')
-    readout += box(739,302,188,['Read final CLS','one feature vector'],'c-q',h=67,size=21)
-    readout += arrow(935,336,967,336,'c-q')
-    readout += box(977,302,148,['Class head','image scores'],'c-q',h=67,size=22)
+        readout += f.rect(620,314+r*20,63,20,'vision','t-e' if r==0 else 'transparent',0)
+        readout += t(651,329+r*20,label,15,'vision','middle')
+    readout += arrow(691,324,727,324,'vision')
+    readout += box(739,302,188,['Read final CLS','one feature vector'],'vision',h=67,size=21)
+    readout += arrow(935,336,967,336,'vision')
+    readout += box(977,302,148,['Class head','image scores'],'vision',h=67,size=22)
     readout += t(35,436,'Both produce an image-level summary. Pooling is also a valid ViT readout.',27,'ink-2')
     body += f.g(readout,1)
     rows = [
@@ -149,10 +149,10 @@ def build(b):
             for c in range(7):
                 active = c == 1+shift and r in [1, 2, 3]
                 body += f.rect(x+c*20, 59+r*20, 20, 20, 'line', 'ink' if active else 'card', 0)
-        body += f.rect(x+shift*20, 79, 60, 60, 'c-v', 'transparent', 0)
+        body += f.rect(x+shift*20, 79, 60, 60, 'cnn', 'transparent', 0)
     body += arrow(496, 107, 720, 107, 'c-e')
     body += t(608, 80, 'new location', 23, 'c-e', 'middle')
-    body += cell_text(926, 58, ['Same local', 'pattern'], 110, 'c-v', 25)
+    body += cell_text(926, 58, ['Same local', 'pattern'], 110, 'cnn', 25)
     body += header(184, 'What is built in?')
     rows = [
         ['Spatial structure', ['Local filters, reused', 'across the image'], ['Patches + position;', 'flexible global mixing']],
@@ -191,8 +191,8 @@ def build(b):
         else:
             out += f.rect(x-2, y+3, 48, 34, 'line', 'transparent', 0)
             out += f.rect(x+2, y+7, 9, 9, 'c-e', 't-e', 0)
-            out += f.rect(x+33, y+24, 9, 9, 'c-q', 't-q', 0)
-            out += line(x+12, y+16, x+32, y+24, 'c-q')
+            out += f.rect(x+33, y+24, 9, 9, 'vision', 't-e', 0)
+            out += line(x+12, y+16, x+32, y+24, 'vision')
         return out
 
     widths = (340, 375, 375)

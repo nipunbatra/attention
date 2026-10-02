@@ -1,190 +1,107 @@
-# Vision I — complete teaching guide
+# Vision I — teaching guide
 
-**Deck:** [vision1.html](../vision1.html) · **Present:** open the deck and press **P** · **Lab:** [03_vision_transformer_lab.ipynb](../notebooks/vision/03_vision_transformer_lab.ipynb)
+## Scope and prerequisite
 
-211 teaching frames plus cover; 14 sections. Silent, self-contained HTML slides with image assets and math embedded. Reading mode includes the longer explanations, source links, and numerical tables. Arrow keys advance one reveal; **S** opens presenter notes; **O** opens the overview; **C** shows classroom controls. Every frame has a question to ask and a note about what to point at.
+**147 teaching frames plus the cover, in 10 sections.** This lecture follows **Transformers beyond next-token prediction** and leads into CLIP. The opening connects to the text encoder immediately: **same encoder idea, different tokens**.
 
-## The teaching thread
+The first October 2026 revision was selective: 26 repeated introductions or recaps moved to expandable reading notes, seven bridge/summary frames were added, and the net reduction is 19 frames (11.2%). The hand calculations, source-to-receiver attention walkthrough, multihead diagrams, Linear/Conv2d equivalence, transfer diagrams and nine guided explorer examples remain. The second visual pass reduces the main route by only three further frames: 147 rather than 150. Detailed patch arithmetic and attention calculations stay in the presentation. Two CLS parameter digressions, the historical paper figure, the dense whole-model map, the nine-state interactive widget and three repeated quadrant slides remain available in reading notes. Three clean interpretation figures replace the widget in the teaching/PDF route.
 
-Start with six labeled Oxford-IIIT Pet examples. Establish the dataset size (7,349), species task (2 classes), alternative breed task (37 classes), and variable original dimensions versus 224×224 RGB model inputs. Then choose one photograph and ask students to name the clues. Isolate one genuine crop and restore its context. Recall **aabid** from Part I, **river/bank** from Part II, and **red/wool/coat** from Part III. Then introduce patches, a tiny exact worksheet, the complete block, executable code, learning, and the original photograph again.
+Presentation: Right/Left advances reveals, **S** opens presenter notes, **O** opens the overview, and **C** shows classroom controls. Reading mode includes longer explanations, sources, numerical tables and optional recaps. The [slide map](VISION1_SLIDE_MAP.md) lists current routes. Old `#section/frame/build` links can change when a section is reordered.
 
-Introduce the opening task examples explicitly: classification returns an image label, detection returns labels and boxes, captioning generates a sentence, and image–text search ranks photos for supplied words. Use the same dog throughout. These are illustrative desired outputs. After the task tour, “Our task today” selects image classification; the text comparison and dark crop then motivate attention. The captioning and retrieval examples also preview the later vision-to-language lessons.
+## Route through the lecture
 
-Use the three opening context slides as one held example. Identify the dark receiver, reveal the face source, and trace the arrow into the receiving numerical row. Add the branch source and compare illustrative contributions; thickness is not measured attention. Then show the weighted message added to the current patch row. Keep the unchanged pixels visible. The target remains one image label; students are not training a fur-versus-background classifier for each patch. The text recap and question-led parallels come next, before the diagram that introduces the patch-row construction.
-
-Before “How can we give this photograph to attention?”, use the seven-slide text-to-image bridge. The recap redraws the Part II fisherman/river-bank computation with tokens, initial embeddings plus position, attention and updated rows. Trace bank at position 7, then distinguish the final the at position 10 used for next-token prediction. Ask students for an image token, representation, query, key, value and target before revealing each counterpart. The bank embedding is read directly from the original text toy. Query/key/value diagrams share a layout so students can reuse the roles. Only then return to constructing rows from actual pixels.
-
-The two-crop Q/K/V warm-up and the pooling example use their own clearly labeled, hand-chosen numbers. Then keep the three larger settings explicit:
-
-1. **Hand worksheet:** a 4×4 binary image, four 2×2 patches, D=4, two heads of width 2, five rows including CLS. Chosen weights; no LayerNorm or block MLP. Labels name two specific arrangements. Students can calculate every number.
-2. **Trained small ViT:** 8×8 noisy grayscale images, sixteen 2×2 patches, D=16, two complete pre-LayerNorm blocks, two heads per block and MLP width 32. All trainable components learn. Data splits are independent random draws, with opposite-label pairs sharing exactly the same patch multiset.
-3. **Pretrained real ViT:** `vit_tiny_patch16_224.augreg_in21k_ft_in1k`; 224×224 RGB, 196 patches plus CLS, D=192, 12 blocks, three heads per block, 1,000 ImageNet outputs. Exact photos, preprocessing, probabilities, attention arrays and interventions are saved.
-
-## One model map, then a deliberate worksheet
-
-Each section opens on a tinted panel with an explicit **SECTION** label and large section number. These chapter breaks use their own CSS. Worked-image steps instead use the eyebrow **Photo walkthrough · Step n of 12** above the recurring model diagram. The main slide title names the operation without a competing number.
-
-Section 2 starts with the full architecture SVG: image → patches → projection → CLS + position → attention → MLP → final CLS → class scores → softmax. A compact version uses exactly the same box order on detailed slides and highlights the active operation. The full drawing shows both LayerNorm operations and residual paths, as well as the 12-block repetition. This is the actual pretrained ViT-Tiny: D=192, three 64-feature heads, and MLP hidden width 768.
-
-After step 10 has stacked the patch content rows, use the three photograph-based position slides. Move the same face patches between image slots; their content stays fixed but their locations change. Then perform the measured position addition in step 11. This puts the motivation before the calculation. Keep the distinction between moving content among fixed slots and reordering whole content-plus-position pairs.
-
-Step 12 follows one patch into Q/K/V. The next full-map checkpoint explicitly says that this is not yet an image prediction. Section 3 completes the **same photograph and same checkpoint**: introduce CLS, assemble 197 positioned rows, compare queries with keys, mix values, join heads, add the attention residual, run the MLP and its residual, repeat all 12 blocks, normalize and read CLS, and compute 1,000 ImageNet class scores and probabilities. CLS is present before attention in the actual computation; it is not appended after the blocks.
-
-The opening cat/dog question motivates image classification. The pretrained example predicts 1,000 ImageNet labels; the slides name that change explicitly. Its measured top label is Newfoundland (95.73%), not a claimed test accuracy. `notebooks/vision/trace_real_classifier.py` verifies the explicit first-block attention, both residuals, MLP, complete 12-block path and final logits against the checkpoint. `figures/vision1/real-classifier-path.json` stores the shapes, selected vectors, source weights and top-three outputs.
-
-Only after the real prediction does Section 4 introduce the smaller worksheet: classify the arrangement of four grayscale patches using chosen weights. The worksheet preserves hand calculations from the earlier lesson. It omits LayerNorm and the block MLP to keep the arithmetic manageable; Section 7 restores those operations. Do not present its numbers as a second pass through the dog model. The shared route diagram locates each calculation within the architecture.
-
-## Suggested pacing
-
-Use three meetings, or teach sections 1–7 first and assign the implementation as a lab. The 211 frames are short steps; the total is not a target for one class. Pause for predictions and hand calculations.
-
-| Meeting | Sections | Student activity |
+| Section | Main question | Teaching emphasis |
 |---|---|---|
-| A | 1–4 | Compare tasks, turn pixels into rows, reason about position, explain Q/K/V, calculate a first attention message |
-| B | 5–7 | Work the second head, combine messages, predict a class, compare CLS with pooling, restore the full block |
-| C / lab | 8–14 | Run the code, interpret the training control and real-image measurements, solve transfer exercises |
+| 1 | What changes from text to vision? | Recall encoder/decoder routes; identify ViT as an encoder; compare embedding lookup with pixel projection; establish the image-label task. |
+| 2 | How do pixels become rows? | Calculate the small RGB projection, reuse its weights, then follow the actual 224×224 dog input into 196 rows of width 192. |
+| 3 | How do rows become a prediction? | Add position and CLS; follow a query through scores, weights, value contributions and its own residual update; join heads, apply the MLP, repeat blocks and classify. |
+| 4 | Can we recount the complete model? | One enlarged shape trace, a clean pre-LN block, then the backward path. The complete dense map is an optional reference. |
+| 5 | How do CNNs and ViTs differ? | Compare local filters, global mixing, receptive fields and inductive bias with diagrams and tables. |
+| 6 · optional lab | How does the code implement that model? | Preserve the same 224×224 input and annotate tensor shapes; prove Linear and Conv2d use identical pixel–weight products. |
+| 7 | How do we adapt the pretrained model? | Original labels → new dog/cat task or changed domain; replacement head, frozen encoder, fine-tuning, held-out evaluation and inference. |
+| 8 | What did this model actually predict? | Saved dog/cat outputs and the limits of two examples. |
+| 9 | What can we measure inside it? | Three measured hero examples, a link to all nine guided examples, then controlled occlusion experiments. |
+| 10 | What costs more, and what comes next? | Token count and quadratic score count; architecture and takeaways; fixed class vectors → language-derived candidates for CLIP. |
 
-For a short conceptual introduction, use the task comparison, the two-crop Q/K/V example, CLS and pooling, the whole-block drawing and the real-photo predictions. Keep the full four-patch calculation for a session with time to work alongside the class.
+Use multiple meetings rather than treating 147 frames as a one-class target. A practical split is sections 1–3 for representation and computation, sections 4–7 for architecture/code/adaptation, and sections 8–10 for interpretation, cost and the CLIP handoff. Short frames allow students to predict the next step before revealing it.
 
-## Dataset introduction
+## One model, clearly named exceptions
 
-Three slides precede the single-photo question: `dataset-gallery`, `dataset-counts`, and `dataset-dimensions`. Read the species and breed under each example, add 3,680 and 3,669 to get 7,349, and compute 224×224×3=150,528 pixel values. The counts describe the full labeled dataset; the gallery contains six selected examples. The original photo files vary in size. Dimensions on the slide use height × width × channels. Our real checkpoint receives the displayed square crop, followed by channel normalization.
+The main measured example uses `vit_tiny_patch16_224.augreg_in21k_ft_in1k`: 224×224 RGB input, 16×16 patches, 196 patch rows plus CLS, D=192, 3 heads of width 64, MLP hidden width 768, 12 blocks, and 1,000 ImageNet class outputs. These are this checkpoint's choices, not universal ViT dimensions.
 
-The opening uses the cat/dog task to establish input and target. The later synthetic training experiment and 1,000-class pretrained inference keep their existing scopes; these slides do not introduce a Pets training result. Sources, original dimensions and file hashes are recorded in `figures/vision1/dataset-intro.json`. Re-fetch the gallery with `python notebooks/vision/fetch_dataset_examples.py` (Pillow required).
+The 2×2 RGB example uses chosen teaching weights for `Linear(12,2)` so both outputs can be computed by hand. It is not a second trained classifier. The original four-patch worksheet and separate synthetic training experiment remain optional lab material. Their numbers must not be described as the dog checkpoint's activations or performance.
 
-## Recall both text prediction examples
+The dog/cat task motivates adaptation; the saved ImageNet model predicts fine-grained labels such as Newfoundland and Persian cat. The 95.73% dog-image probability is one model output, not test accuracy. No new training run was performed for this revision.
 
-The opening task recap keeps the name example from Part I, then adds the river-bank sentence from Part II before the text/image comparison. In the name model, the fixed character window goes through embedding lookup, concatenation and an MLP. In the attention model, the updated final “the” row predicts the word after the whole prefix. “Water” is a plausible continuation, not a new measured output. Distinguish bank’s contextual row from the final row used for this next-word prediction. Both examples choose a token, append it, and predict again; their token units and architectures differ.
+## Consistent flattening and Linear/Conv2d equivalence
 
-## Give the visual queries a concrete purpose
+All RGB examples now use **channel-major order**: all R values, then G, then B. Within each channel, scan left to right and top to bottom.
 
-After the text/image query diagram, show three receiver examples: a dark coat patch, a partial face and a branch. Locate each receiver in the whole photograph before revealing a possible question and two actual source crops. All use the same query projection within a head/layer; the receiver row changes. Keep the task fixed: one image label. These are possible learned behaviours, with no patch-level labels or claimed measured head meanings.
+- Small patch: `R_A, R_B, R_C, R_D, G_A, …, B_D`. Its two outputs remain `[2.5, −0.5]` and `[0.5, −2.5]` for the two illustrated patches.
+- Real patch: 256 red values, 256 green values, 256 blue values. The first pixel's RGB entries occupy positions 1, 257 and 513 (one-based).
+- `F.unfold` returns `(B,768,196)`. Transpose to `(B,196,768)` and apply `Linear(768,192)`.
+- `Conv2d(3,192,16,stride=16)` stores `(192,3,16,16)` weights. `conv.weight.flatten(1)` is the equivalent Linear weight `(192,768)`; bias is identical.
+- Both use 147,456 weights + 192 biases = **147,648 parameters**. Conv2d expresses the shared patch operation directly and uses optimized kernels; speed depends on the backend and workload.
 
-For keys and values, reuse the same eye/muzzle, coat and branch crops. A key supplies matching features; its relevance depends on the receiver's query. A value supplies visual information to mix, and the source's value is shared across receivers even though their weights can differ. Explain a₁₀,₇ as P10 reading P7, then reveal the symbolic sum. The attention part of Section 4 reconnects the roles to the fully numerical face/branches example, then works out the four-patch attention matrix.
+`notebooks/vision/trace_real_patch.py` verifies all 196 flattened patch projections against the checkpoint, plus position addition and the first head's Q/K/V projections. The saved JSON records the flattening convention. Negative numbers come from the checkpoint's `(RGB/255−0.5)/0.5` normalization.
 
-## Draw the patch layer as a 12-to-2 network
+## Keep attention's receiver visible
 
-The weight introduction uses twelve nodes containing the actual RGB values, connected to two output nodes. Keep this drawing for both calculations. Reveal the four nonzero incoming weights for the selected output; its other eight weights are zero. Read the source values along those edges, add their contributions, then add the bias. The two results remain 2.5 and −0.5. The outputs are two embedding features of one patch, not two class scores. Mobile reading mode keeps a taller version of the network diagram.
+The detailed sequence in section 3 is retained intentionally. Use the same receiver/source analogy from text:
 
-## State where the activation appears
+1. Fix the receiver (initially CLS).
+2. Compare its query with every source key. Score-matrix rows are queries; columns are keys.
+3. Softmax across the chosen row gives its source weights.
+4. Select a weight and the corresponding **source value row**. Repeat for several sources.
+5. Add all weighted value rows to make the message **for that receiver**.
+6. Join that receiver's head messages, project to D features, and add the update to **that receiver's incoming embedding**.
+7. Other receivers have their own query rows and their own messages. All rows update in parallel from the current block input.
 
-The text/image embedding comparison now says that the patch output has no activation. The next slide follows the patch's single affine map xW+b and separately shows the later block MLP: Linear(D,H) → GELU → Linear(H,D). Keep D (embedding width) and H (hidden width) explicit. The later worked patch output retains its negative coordinate. The absence of a patch activation does not make the full Transformer linear; attention softmax and LayerNorm also appear in the complete model.
+Q, K and V come from the same normalized current image sequence. In translation cross-attention, queries and keys/values instead come from different streams. Separate Q/K projections make the score matrix generally asymmetric. Whole-input access does not mean uniform weights. Attention weights and class probabilities normalize over different axes with different meanings.
 
-## Introduce terms before using them
+CLS is initialized once before training, learned with the model, and reused at inference. Its activation becomes image dependent through repeated attention and MLP updates. Later blocks read updated CLS and updated patch representations. Both directions of interaction are possible. Mean pooling is a valid alternative trained readout; CLS is not inherently guaranteed to outperform it. Keep the checkpoint's trained readout for its saved measurements.
 
-The opening task comparison uses “one image summary.” The full-model map first names CLS as the classification token, and Section 3 explains its learned starting row before assembling the full sequence. Section 4 then chooses a small CLS vector for the worksheet. Section 6 names mean pooling alongside the coordinate-by-coordinate average. The previous text lessons supply the familiar operations; new vision terms are defined where their role becomes visible.
+## Interpretation and evidence
 
-## Opening transition and later comparison
+The main route presents three measured examples: ear-side feature similarity, the same query in two attention heads, and CLS attention. [The standalone interactive lab](../vision1-explorer.html) retains all nine guided presets and free exploration. It needs HTTP serving so saved model arrays can load; use the same local server as the lecture. Feature cosine similarity, attention weights and occlusion are three different measurements:
 
-After the ambiguous crop and its face clues, `image-to-rows` recalls the input attention needs: rows of numbers. It previews photograph → patches → one row per patch → attention. The next section constructs those inputs step by step. The CNN comparison now follows the worked Conv2d patch projection in section 8, where both local filters and attention have been explained. Its two-layer dependency diagram distinguishes growing local context from a direct global-attention path; the next slide implements the attention calculation.
+- Similarity compares contextual feature vectors; visually coherent regions do not establish segmentation accuracy.
+- Attention shows one head's source weights for one query in one block; it does not completely explain a label.
+- Occlusion changes input pixels, reruns the same fixed model, and compares the same class probability. Quadrants give a coarse intervention; the 196 one-patch trials give finer spatial sensitivity. Results depend on replacement values and region size.
 
-## Build the patch embedding before naming its output
+Possible head roles are illustrative hypotheses; measured examples are labeled separately. Patches and CLS retain 192 coordinates throughout the blocks even though their numbers change.
 
-Section 2 keeps the RGB entries grouped by pixel A, B, C and D. Count 2×2×3=12 entries, then compare a text embedding lookup with a computed patch embedding. Use `nn.Linear(12, 2)` for a hand calculation: show all 24 weights and two biases, calculate each coordinate, and collect `[2.5, −0.5]`. There is no activation after this patch layer; the separate block MLP later uses two linear layers with GELU between them.
+## Ending and the next lecture
 
-Reuse the exact same layer on a second patch to get `[0.5, −2.5]`. A single call maps `X` of shape `(2,12)` to `C` of shape `(2,2)`. These two output features are not two class scores. `cᵢ` names the content row of patch i; `eᵢ=cᵢ+pᵢ` adds position before attention. Subscripts identify patches, while D gives the embedding width. The real-photo trace returns to the same dog with the checkpoint’s actual patch grid, then defines each row along its full computational path.
+Keep the architecture and four takeaways after the patch-cost control. Then reinterpret the supervised head as `score_k = hᵀw_k + b_k`: one learned weight vector per fixed label. Ask **what if a candidate class vector could come from language?**
 
-Then scale to the saved real model: 16×16×3=768 input values, `nn.Linear(768,192)`, and 196 rows for a 224×224 input. The row-vector equation uses W shaped `(768,192)`; PyTorch stores the transposed weight `(192,768)`. This is equivalent to the checkpoint's Conv2d patch embedding with the corresponding input order. `figures/vision1/patch-embedding-example.json` contains the independently executed warm-up. The lab contains the same calculation as an editable, executed code cell.
+The final diagram motivates CLIP's image/text encoders and shared space. Arbitrary text embeddings cannot replace today's ImageNet class weights. Alignment training, suitable projections and normalization are needed. The final slide is a bridge to the next lecture, not an invented zero-shot result from this checkpoint.
 
-## One continuous photograph-to-embeddings walkthrough
+Sources: [ViT](https://arxiv.org/abs/2010.11929), [CLIP](https://arxiv.org/abs/2103.00020), [PyTorch Linear](https://docs.pytorch.org/docs/stable/generated/torch.nn.Linear.html), [PyTorch Conv2d](https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html).
 
-The real-image run in section 2 is a twelve-step sequence. Each operation consumes the preceding slide’s output; the same prepared dog image and patch identities stay visible throughout. The earlier 12-input, 2-output network remains the hand-calculation warm-up.
-
-1. **Start with the image:** show the actual 224×224×3 model input and identify each axis.
-2. **Cut into patches:** draw 16×16 boundaries on the photograph, with x pointing right and y pointing down. Mark the 0-to-224 pixel extent on both axes. Save the count for the next slide.
-3. **Number the pieces:** show actual crops in a truncated row-major grid: P1, P2, …, P14; P15, P16, …, P28; …; P183, P184, …, P196. Reveal 224÷16=14 on each axis, then 14×14=196 and the array shape 196×16×16×3. Pause before each answer.
-4. **Read one patch’s RGB:** keep P63 visible, outline its first two pixels, and read [16,17,12] and [41,42,37]. Count 256 pixels × 3 channels = 768 values.
-5. **Normalize the same values:** explain (value/255−0.5)/0.5 before displaying negative inputs. The checkpoint normally normalizes before patch extraction; this independent channel operation gives the identical result on the extracted crop.
-6. **Flatten:** carry those normalized triples into x₆₃, shape 1×768. Follow the scan arrow and keep RGB together for each pixel.
-7. **Apply the shared projection:** nn.Linear(768,192), W shaped 768×192 in row notation and 192 bias entries. No activation follows. The same 147,648 parameters serve every patch.
-8. **Inspect its output:** c₆₃ contains 192 measured features. Show the first three and the last coordinate with their indices.
-9. **Repeat for P64:** retain P63’s path while revealing the neighboring crop, its different input values and its different output. Both paths cross the same layer.
-10. **Stack all output rows:** X (196×768) becomes C (196×192). Match representative image crops to their actual output vectors. Reading mode includes a collapsible table of all 196 rows’ first three coordinates; the complete vectors are in the saved JSON.
-11. **Add position:** illustrate c₆₃+p₆₃=e₆₃, then show C+P=E for all patch rows, each matrix 196×192. The preceding three-slide photograph interlude motivates this position information before the addition.
-12. **Enter the first block:** LayerNorm preserves the 192-feature width. Each Q/K/V projection for one of three heads has 192×64 weights and 64 biases, producing a 1×64 row for this patch.
-
-P63 is row 5, column 7; P64 is row 5, column 8. The subscript is a patch identity, while 768 and 192 are feature counts. All shapes omit the batch axis because the walkthrough follows one image. This grid differs explicitly from the earlier coarse 4×4 illustration.
-
-Reproduce the trace with `uv run --with timm --with pillow python notebooks/vision/trace_real_patch.py`. `figures/vision1/real-patch-path.json` stores raw RGB values and normalized rows for selected patches, all 196 full output embeddings, position addition, first-head Q/K/V vectors, model identity and preprocessing. The script checks the displayed input, linear/Conv2d equivalence for every patch, position addition and Q/K/V slices against the pretrained checkpoint. Printed decimals are rounded.
-
-## Places to stop and ask
-
-Use the [complete slide map](VISION1_SLIDE_MAP.md) for current frame numbers and direct presentation links.
-
-- **`patch-context`:** What is the whole-image task? Could the isolated dark crop be fur, shadow or background? Reveal the eye and face clues, then explain how richer local information could support the image label. The arrows illustrate possible context, not measured attention.
-- **`task-side-by-side`:** What is the input, target and readout in each task? Why does the loss still look familiar?
-- **`task-mask-reason`:** Which target would a future training token reveal? Why is a later raster patch already available?
-- **`cls-start`, `cls-two-images`:** How can a shared initial vector lead to different image summaries?
-- **`qkv-match-numbers`:** Exponentials 3 and 1 give which two shares?
-- **`qkv-read-numbers`:** What does each source send after weighting? Is the result a patch index or a vector?
-- **`qkv-change-key`, `qkv-change-value`:** Which intervention changes the heatmap? Which changes the message?
-- **`weight-denominator`:** Why does CLS belong in the denominator too?
-- **`one-value-product`:** Can an empty patch still send position information?
-- **`s04-join`:** Which operation joins messages, and which actually mixes their coordinates?
-- **`two-softmaxes`:** Are the alternatives source rows or class labels?
-- **`pooling-example`:** Calculate the mean. Does image classification require CLS?
-- **`conv-one-patch`, `conv-trainable`:** Calculate one filter output, then count its learned weights. Why does Conv2d match our linear patch projection?
-- **`batch-axis`, `batch-check`:** Average three rows in A, then average the first rows across A and B. Which result should be unchanged when another image enters the batch?
-- **`trained-position-control`:** Why can the chosen architecture not separate opposite-label pairs without positions?
-- **`cover-1` through `cover-4`:** Predict the change before revealing each measured probability.
-
-## Main calculation answers
-
-For “Across the top”, E rows are CLS `[0,0,0,1]`, P1 `[1,0,0,1]`, P2 `[1,0,1,1]`, P3 `[0,1,0,1]`, P4 `[0,1,1,1]`.
-
-- Head 1 CLS message: `[0.457888, 0.457888]`.
-- Head 2 CLS message: `[0.681748, 0.681748]`.
-- After concatenate and W_O: `ΔCLS = [-0.223860, 0.457888, 1.139636, 0.681748]`.
-- After residual: `[-0.223860, 0.457888, 1.139636, 1.681748]`.
-- Class logits: `[0.895440, -0.895440]`; probabilities `[0.857035, 0.142965]`.
-- The new class-bias gradient is `[-0.142965, +0.142965]`. One SGD step at 0.5 improves the correct-class probability to about 0.874.
-- In this deliberately simplified worksheet all queries are `[1,1]`, hence attention rows within a head are equal. The residual rows still differ. Real-model patch-query maps show the more general case.
-
-## What the measured experiments establish
-
-The small ViT is trained on **512 images**, selected on **128 validation images**, then evaluated on **256 test images**. With positions it gets **256/256**; without positions it gets **128/256**. One deterministic seed, 80 epochs, AdamW, batch 64, learning rate .003, weight decay .01. This is in-distribution synthetic generalization; do not present it as a natural-image benchmark.
-
-For the exact Newfoundland photograph, the pretrained model gives **95.73%** Newfoundland. The Persian photograph gives **96.71%** Persian cat. These are two inference examples, not dataset accuracy or proof of pretraining holdout.
-
-Attention maps specify block, head, receiver and source grid. CLS self-weight is reported separately. Compare heads using a shared linear colour scale. Values, W_O, residuals and later blocks also affect the final prediction. Occlusion fills predetermined quadrants with model-mean RGB; it probes one intervention, not causal importance. All four occlusions keep Newfoundland as the top label.
-
-## Exercises and answers
-
-1. Scaled scores `[ln 2,0]`, values `[2,0]`, `[0,3]`: weights `[2/3,1/3]`; message `[4/3,1]`.
-2. 128×128 RGB, P=16, D=64, four heads: 64 patches; N=65 with CLS; W_patch 768×64; Q per head 65×16; A per head 65×65; W_O 64×64.
-3. Permuting complete positioned rows preserves content–position associations and CLS output under standard shared self-attention. Moving contents while retaining location vectors changes those associations.
-4. At 224 pixels, P=32/16/8 gives N=50/197/785 and N²=2,500/38,809/616,225 coefficients per head. These are coefficient counts, not complete FLOPs or measured memory allocation.
-
-## Reproduce and rebuild
+## Rebuild and verification
 
 ```sh
-# NumPy + PyTorch required; no network needed for the saved experiments.
-python notebooks/vision/train_small_vit.py
-python src/build_vision1_lesson.py
-python src/check_vision1_lesson.py
-
-# Optional: rerun the real checkpoint (timm + Pillow; network if not cached).
-uv run --with timm --with pillow python notebooks/vision/run_real_images.py
-uv run --with timm --with pillow python notebooks/vision/inspect_real_vit.py
-python src/build_vision1_lesson.py
+uv run --offline --with timm --with pillow python src/build_vision1_lesson.py --slides-only
+uv run --offline --with timm --with pillow python src/check_vision1_lesson.py
+uv run --offline --with timm --with pillow python src/check_vision1_closure.py
+uv run --offline --with timm --with pillow python src/check_vision1_photo_code.py
 ```
 
-The notebook executes all 19 code cells, including independent PyTorch attention parity, the learning step, Conv2d/Linear equivalence, every full-model gradient, an explicit wrong-batch-axis negative control, and re-evaluation of saved checkpoints. The checked numerical values are also used by the slides and browser controls.
+The audit PDF includes 152 pages: cover + 147 teaching frames, followed by four labelled optional reference pages (complete model map, original paper diagram, CLS initialization and CLS parameter learning). Its three interpretation figures replace screenshots of nine UI states; all nine remain in the HTML lab. It captures final reveals; live controls and intermediate animations remain in HTML. The searchable audit transcript supplies diagram labels, code and speaker notes alongside the rendered PDF.
 
-## References that shaped the lecture
+## Visual semantics across the lecture series
 
-- [UCSD CSE252D, Manmohan Chandraker (2024)](https://cseweb.ucsd.edu/~mkchandraker/classes/CSE252D/Spring2024/Lectures/lec02_visiontransformers.pdf): a visual question motivates matching, then each image token supplies its own query.
-- [MIT VisionBook, Chapter 26](https://visionbook.mit.edu/transformers.html): separate mixing rows from modifying a row; make the output depend on the task.
+| Meaning | Color |
+|---|---|
+| Image / patch / contextual vision states | Blue `#3478E5` |
+| Language states | Purple `#8B5BB5` |
+| Attention, information mixing, comparison | Teal `#178F82` |
+| Learned CLS, position and projection parameters | Amber `#B98224` |
+| Loss, gradients and trainable updates | Coral `#D45555` |
+| Neutral architecture | Charcoal `#30343B` |
+| CNN comparison column | Muted green-gray `#6E817B` |
 
-- [Stanford CS231n, Lecture 8 (2025)](https://cs231n.stanford.edu/slides/2025/lecture_8.pdf): hold an actual image while exposing the patch-to-token path.
-- [UvA Vision Transformer tutorial](https://uvadlc-notebooks.readthedocs.io/en/latest/tutorial_notebooks/tutorial15/Vision_Transformer.html): complete implementation, training and image-patch interpretation.
-- [D2L Vision Transformer](https://d2l.ai/chapter_attention-mechanisms-and-transformers/vision-transformer.html): patch projection, shapes and encoder structure.
-- [CMU 10-423 Lecture 5 (2025)](https://www.cs.cmu.edu/~mgormley/courses/10423-f25/slides/lecture5-vision.pdf): motivate position through lost layout.
-- [ANU COMP8536 notes](https://users.cecs.anu.edu.au/~sgould/papers/comp8536_lecture_notes.pdf): connect visual learning and transformer representations.
-- [Arnab’s Transformers for Vision lecture](https://www.robots.ox.ac.uk/~aarnab/talks/transformers_talk.pdf): context and permutation structure.
-- [Jay Alammar](https://jalammar.github.io/illustrated-transformer/): persistent objects and a visible calculation path.
-- [Original ViT paper](https://arxiv.org/abs/2010.11929): architecture and claims about scale and training.
+Detailed attention calculations explicitly label a local Q/receiver, K/source, V/message palette. It is a local role convention, separate from modality colors. RGB-channel teaching diagrams retain their literal channel colors. Route bars use neutral boxes and blue for the current stage. Feature similarity uses a fixed −1 to 1 scale; the two-head static attention comparison uses one common scale. Interactive attention maps state their per-map rescaling.
 
-The [latest reference review](VISION1_REFERENCE_REVIEW.md) records the new sources and the successful review of both Vizuara recordings. The earlier [research plan](VISION1_REDESIGN_PLAN.md) records all the supplied articles and videos, including their review status. Videos were consulted silently through available text/transcripts. This is an original teaching sequence; it does not reproduce those lectures' slides.
-
-Photographs: Oxford-IIIT Pet dataset, Parkhi, Vedaldi, Zisserman and Jawahar, via the timm Hugging Face mirror. Image filenames, revision, checksums and attribution are in `figures/vision1/images.json`. Original image ownership and CC BY-SA 4.0 attribution are retained. `model-input.png` shows the checkpoint's exact evaluation crop.
+`vision1_palette.py` defines the shared colors. `vision1_visual_refinement.py` adds the presentation figures and preserves original reference material. `figures/vision1/vit-canonical-block.svg` is the reusable pre-LayerNorm block; `vision-language-handoff.svg` uses the CLIP lecture's two branches, learned projections, normalized u/v and dot-product comparison.
