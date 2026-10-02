@@ -154,7 +154,7 @@
   {
     "id": "rgb-flatten",
     "title": "Flatten one channel at a time: R, then G, then B",
-    "caption": "Read all four red values, then all four green values, then all four blue values. This is the same ordering used by our PyTorch patch extraction later.",
+    "caption": "We use all R values, then G, then B: 12 values for this patch. Pixel-by-pixel RGB also works if the weight columns follow that order. Our PyTorch code uses the channel-first order.",
     "notes": "Where is the green value of pixel B in this row?\nIt is entry 6 (one-based): four red entries, then green A and green B. Within each channel, read A, B, C, D in image row order.",
     "section": "s02",
     "frame": 5

@@ -23,7 +23,7 @@ def build(b):
         return f.add(key,title,body,caption,question,point,premise+prose+link,
                      '<pre><code>'+escape(mobile_code)+'</code></pre><p>'+escape(point)+'</p>')
 
-    code='# Prepared RGB image: 224 × 224 × 3\nx = rgb.permute(2, 0, 1)\nx = x.unsqueeze(0)\n# x.shape == (1, 3, 224, 224)'
+    code='# rgb: (224, 224, 3), RGB per pixel\nx = rgb.permute(2, 0, 1)  # 3, 224, 224\nx = x.unsqueeze(0)       # 1, 3, 224, 224\n# Patch order: all R, then G, then B'
     diagram=f.image(815,33,210,210,f.photo)+t(920,280,'Height × width × RGB',23,'ink-2','middle')
     diagram+=box(760,317,370,['PyTorch: B × C × H × W','B × 3 × 224 × 224'],size=24)
     add('code-photo-input','Keep the same photograph and add the batch axis',code,diagram,

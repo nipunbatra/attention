@@ -89,23 +89,33 @@ def expand(b, sections):
         'Each pixel contributes three channel values. We scale 8-bit values by 255 here; the real pretrained model uses its supplied channel normalization.'+source,
         mobile_patch()+mobile_rows(['Pixel','RGB / 255'],[[letter,vec(rgb)] for letter,rgb in zip('ABCD',pixels)]))
 
-    body=patch(35,105,90)+t(125,350,'one RGB patch',28,'ink','middle')
+    body=t(35,38,'4 pixels × 3 channels = 12 values',30,'ink')
+    body+=patch(35,105,90)+t(125,337,'one RGB patch',27,'ink','middle')
     for i,channel in enumerate('RGB'):
-        x=405+i*270
+        x=300+i*280
         vals=data['X'][0][i*4:(i+1)*4]
-        part=t(x,105,channel+' channel',29,'ink-2','middle')
-        part+=t(x,185,', '.join(f'{v:g}' for v in vals),33,'c-e','middle')
-        part+=line(x-110,220,x+110,220,'c-e')+t(x,275,'A, B, C, D',25,'ink-2','middle')
+        color={'R':'#C43131','G':'#177D43','B':'#285DBA'}[channel]
+        part=t(x+112,105,channel+' values',29,'ink','middle')
+        for j,(pixel,value) in enumerate(zip('ABCD',vals)):
+            cx=x+j*56
+            part+=t(cx+28,153,pixel+'.'+channel,23,'ink-2','middle')
+            part+=rect(cx,173,56,64,'line','card',0)
+            part+=t(cx+28,217,f'{value:g}',33,'ink','middle')
+            part+=t(cx+28,269,str(i*4+j+1),21,'ink-2','middle')
+        part+=f'<path d="M{x} 286 H{x+224}" stroke="{color}" stroke-width="4"/>'
         body+=part if i==0 else g(part,i)
-    body+=g(t(270,187,'[',45,'c-e')+t(1080,187,']',45,'c-e')
-            +t(675,365,'x₁: one patch row, shape (1, 12)',31,'c-e','middle'),2)
+    body+=t(692,337,'A → B → C → D inside each channel',28,'ink-2','middle')
+    body+=g(t(692,400,'One row x₁: inputs and weights use this same order.',28,'c-e','middle'),2)
     add('rgb-flatten','Flatten one channel at a time: R, then G, then B',body,
-        'Read all four red values, then all four green values, then all four blue values. This is the same ordering used by our PyTorch patch extraction later.',
+        'We use all R values, then G, then B: 12 values for this patch. Pixel-by-pixel RGB also works if the weight columns follow that order. Our PyTorch code uses the channel-first order.',
         'Where is the green value of pixel B in this row?',
         'It is entry 6 (one-based): four red entries, then green A and green B. Within each channel, read A, B, C, D in image row order.',
         'We use channel-major RGB throughout: R_A, R_B, R_C, R_D, G_A, G_B, G_C, G_D, B_A, B_B, B_C, B_D. '
         'The row has shape (1,12). Flattening rearranges values and learns no parameters. '
-        'The weights use this same ordering, matching F.unfold and Conv2d weight.flatten(1).'+source,
+        'The weights use this same ordering, matching F.unfold and Conv2d weight.flatten(1). '
+        'Pixel-first ordering would be A.R, A.G, A.B, B.R, B.G, B.B, C.R, C.G, C.B, D.R, D.G, D.B. '
+        'Both contain the same 12 values. Neither order is intrinsically more expressive: permuting the input entries and the matching Linear.weight columns preserves every weighted sum. '
+        'Changing only the input order while keeping trained weights fixed generally changes the result. We choose channel-first throughout to match the implementation.'+source,
         mobile_rows(['Channel group','Entries'],[[channel,vec(data['X'][0][i*4:(i+1)*4])] for i,channel in enumerate('RGB')])
         +'<p><strong>x₁ = '+escape(vec(data['X'][0]))+'</strong></p><p>Shape: (1, 12).</p>')
 

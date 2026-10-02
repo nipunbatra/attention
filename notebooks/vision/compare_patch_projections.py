@@ -25,7 +25,8 @@ MODEL = 'vit_tiny_patch16_224.augreg_in21k_ft_in1k'
 def project_with_linear(images, linear):
     # slide:linear-forward
     patches = F.unfold(images, kernel_size=16, stride=16)
-    # B × 768 × 196: one flattened patch per column
+    # B × 768 × 196; each patch: all R, then G, then B
+    # Within each channel: left to right, top to bottom
     patches = patches.transpose(1, 2)
     # B × 196 × 768: one flattened patch per row
     return linear(patches)  # B × 196 × 192
@@ -60,6 +61,8 @@ def main():
     # endslide
     conv.load_state_dict(model.patch_embed.proj.state_dict())
     # Same trained numbers; reshape each filter into one neuron's weights.
+    # Both inputs and weights flatten (channel, row, column), in that order.
+    # Pixel-first inputs would require the same permutation of weight columns.
     # slide:copy-weights
     with torch.no_grad():
         linear.weight.copy_(conv.weight.flatten(1))

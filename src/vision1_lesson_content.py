@@ -165,12 +165,12 @@ def build_full(b):
         body+=f'<rect x="{x}" y="{y}" width="100" height="100" fill="{color}" stroke="var(--line)"/>'
         body+=t(x+50,y+57,str(j+1),28,'ink','middle')
     body+=t(150,340,'2 × 2 RGB',30,'ink','middle')
-    body+=g(arrow(315,165,435,165)+t(480,100,'R G B · R G B · R G B · R G B',28,'c-e')+t(480,165,'12 numbers → one row',34,'c-e'),1)
-    body+=g(t(480,250,'[1,0,0, 0,1,0, 0,0,1, 1,1,1]',30,'c-e'),2)
+    body+=g(arrow(315,165,435,165)+t(480,100,'R R R R · G G G G · B B B B',28,'c-e')+t(480,165,'12 numbers → one row',34,'c-e'),1)
+    body+=g(t(480,250,'[1,0,0,1, 0,1,0,1, 0,0,1,1]',30,'c-e'),2)
     body+=g(t(480,330,'divide by 255 in this illustration',25,'ink-2'),2)
     add('rgb-flatten','What exactly is inside one RGB patch?',body,'Flattening rearranges numbers; it does not learn a representation.',
-        'How many numbers describe these four coloured pixels?','Read RGB inside each pixel, then concatenate the four triples in row order.',
-        'The ordering convention here is pixel-major RGB. PyTorch Unfold commonly returns channel-major order; a corresponding permutation of the projection weights gives the same linear operation. The real checkpoint uses its supplied normalization, rather than only dividing by 255.',
+        'How many numbers describe these four coloured pixels?','Read all R values in pixel row order, then all G values, then all B values.',
+        'We use channel-major RGB, matching PyTorch Unfold and flattened Conv2d filters. Pixel-major ordering also works when the matching weight columns are permuted with the inputs. The real checkpoint uses its supplied normalization, rather than only dividing by 255.',
         mobile_rows(['Pixel','RGB / 255'],[['Red','[1,0,0]'],['Green','[0,1,0]'],['Blue','[0,0,1]'],['White','[1,1,1]']]))
 
     body=t(30,75,'one patch',26,'ink-2')+t(30,145,'1 × 768',40,'c-e')

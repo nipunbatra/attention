@@ -102,14 +102,16 @@ def build(b):
     body += box(790, 214, 330, ['transpose: patch rows', 'B × 196 × 768'], 'c-q', size=23)
     body += arrow(951, 299, 951, 319, 'c-v')
     body += box(790, 331, 330, ['Linear: project each row', 'B × 196 × 192'], 'c-v', size=23)
-    body += t(35, 401, '768 numbers per row: all R pixels, then G, then B.', 23, 'ink-2')
+    body += t(35, 423, 'One patch row: 256 R values | 256 G values | 256 B values.', 23, 'ink-2')
     add('code-patch-linear', 'Implementation 1: extract patches, then use Linear', body,
         'Unfold extracts each non-overlapping patch as a column. Transpose makes patches into rows. Linear changes only the last axis, from 768 inputs to 192 features, reusing its weights for every patch and image.',
         'Does applying Linear to 196 rows create 196 copies of its weights?',
         'No. A Linear module broadcasts the same affine operation across the leading axes. Only activations grow with B and the number of patches.',
         'The upper line belongs in initialization; the remaining lines form project_with_linear(images, linear). '
         'F.unfold is the functional version of Unfold. Its patch order is row-major over the spatial grid; '
-        'inside each patch it flattens channel, row, column. The modules are initialized randomly here; '
+        'inside each patch it flattens channel, row, column. This is the same ordering as the 2×2 RGB example: '
+        'the channel groups now contain 256 values each. Transpose swaps the patch and feature axes without changing the order within a patch. '
+        'The modules are initialized randomly here; '
         'the equivalence example below copies pretrained weights into them before evaluating the dog and cat.',
         '<pre><code>'+escape(snippet('linear-init')+'\n\ndef project_with_linear(images, linear):\n'+
                                '\n'.join('    '+s for s in snippet('linear-forward').splitlines()))+'</code></pre>')
@@ -156,7 +158,8 @@ def build(b):
         for x, width, value, color in zip([35, 385, 750], [350, 365, 375], row, ['ink-2', 'c-e', 'c-v']):
             body += f.rect(x, 55+i*43, width, 43, 'line', 'card' if i == 0 else 'transparent', 0)
             body += t(x+17, 84+i*43, value, 25, color, weight=600 if i in [0, 4] else 500)
-    body += f.code(snippet('copy-weights'), x=52, y=321, width=1073, size=25, spacing=32)
+    body += t(52, 297, 'Match the input order: each filter flattens R, then G, then B.', 24, 'ink-2')
+    body += f.code(snippet('copy-weights'), x=52, y=332, width=1073, size=25, spacing=27)
     add('code-patch-parameters', 'Reshape the weights; keep the same parameter count', body,
         'Both implementations have 147,456 weights and 192 biases. Copying the exact weights and biases makes their computations equivalent. More patches or images create more output values, while the learned parameter count stays 147,648.',
         'Would two independently initialized layers produce the same features?',

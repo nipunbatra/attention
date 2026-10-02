@@ -1,6 +1,6 @@
-# Vision I — visual refinement audit transcript
+# Vision I — RGB ordering audit transcript
 
-1 October 2026. Working tree based on commit 0e81da8.
+2 October 2026. RGB ordering clarification, based on commit 0345f0e.
 
 Companion PDF: [vision1.pdf](vision1.pdf) (**152 pages**).
 
@@ -682,27 +682,57 @@ Point to the red pixel, read its RGB triple, then reveal one pixel at a time.
 ### Page 21 — Flatten one channel at a time: R, then G, then B
 
 ```text
+4 pixels × 3 channels = 12 values
 A
 B
 C
 D
 one RGB patch
-R channel
-1, 0, 0, 1
-A, B, C, D
-G channel
-0, 1, 0, 1
-A, B, C, D
-B channel
-0, 0, 1, 1
-A, B, C, D
-[
-]
-x₁: one patch row, shape (1, 12)
-Read all four red values, then all four green values, then all four blue values. This is the same ordering used by our PyTorch patch extraction later.
+R values
+A.R
+1
+1
+B.R
+0
+2
+C.R
+0
+3
+D.R
+1
+4
+G values
+A.G
+0
+5
+B.G
+1
+6
+C.G
+0
+7
+D.G
+1
+8
+B values
+A.B
+0
+9
+B.B
+0
+10
+C.B
+1
+11
+D.B
+1
+12
+A → B → C → D inside each channel
+One row x₁: inputs and weights use this same order.
+We use all R values, then G, then B: 12 values for this patch. Pixel-by-pixel RGB also works if the weight columns follow that order. Our PyTorch code uses the channel-first order.
 ```
 
-**Caption:** Read all four red values, then all four green values, then all four blue values. This is the same ordering used by our PyTorch patch extraction later.
+**Caption:** We use all R values, then G, then B: 12 values for this patch. Pixel-by-pixel RGB also works if the weight columns follow that order. Our PyTorch code uses the channel-first order.
 
 **Speaker notes**
 
@@ -4634,10 +4664,10 @@ Exactly the same affine map with the same weights and biases, up to floating-poi
 ### Page 97 — Keep the same photograph and add the batch axis
 
 ```text
-# Prepared RGB image: 224 × 224 × 3
-x = rgb.permute(2, 0, 1)
-x = x.unsqueeze(0)
-# x.shape == (1, 3, 224, 224)
+# rgb: (224, 224, 3), RGB per pixel
+x = rgb.permute(2, 0, 1)  # 3, 224, 224
+x = x.unsqueeze(0)       # 1, 3, 224, 224
+# Patch order: all R, then G, then B
 Height × width × RGB
 PyTorch: B × C × H × W
 B × 3 × 224 × 224
@@ -4716,7 +4746,8 @@ There is one bias per output feature, not one per input pixel or patch. Every ou
 linear = nn.Linear(768, 192, bias=True)
 def project_with_linear(images, linear):
     patches = F.unfold(images, kernel_size=16, stride=16)
-    # B × 768 × 196: one flattened patch per column
+    # B × 768 × 196; each patch: all R, then G, then B
+    # Within each channel: left to right, top to bottom
     patches = patches.transpose(1, 2)
     # B × 196 × 768: one flattened patch per row
     return linear(patches)  # B × 196 × 192
@@ -4727,7 +4758,7 @@ transpose: patch rows
 B × 196 × 768
 Linear: project each row
 B × 196 × 192
-768 numbers per row: all R pixels, then G, then B.
+One patch row: 256 R values | 256 G values | 256 B values.
 Unfold extracts each non-overlapping patch as a column. Transpose makes patches into rows. Linear changes only the last axis, from 768 inputs to 192 features, reusing its weights for every patch and image.
 ```
 
@@ -4782,6 +4813,7 @@ Biases
 Total
 147,648
 147,648
+Match the input order: each filter flattens R, then G, then B.
 with torch.no_grad():
     linear.weight.copy_(conv.weight.flatten(1))
     linear.bias.copy_(conv.bias)
