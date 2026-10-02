@@ -257,25 +257,25 @@
   },
   {
     "id": "story-block",
-    "title": "What exactly is inside one pre-LN encoder block?",
-    "caption": "Normalize, compute an update, and add it to the row that was already there.",
-    "notes": "What exactly is inside one pre-LN encoder block?\nLN precedes each branch. First U = E + MSA(LN(E)); then E_next = U + MLP(LN(U)). Self-attention includes concatenation and output projection. The second skip connection carries U, not the original E.",
+    "title": "Add the attention update to the original embedding",
+    "caption": "Gather a message, project it to 192 features, then add it to the receiving token\u2019s original embedding.",
+    "notes": "Add the attention update to the original embedding\nFollow P74 as one receiver. Its attention heads gather weighted values from the current image sequence. Concatenate the three 64-feature messages and apply the learned output projection to obtain a 192-feature update. Add that update to P74\u2019s incoming embedding; the message alone is not the new embedding. All other patch rows and CLS receive their own updates in parallel. Normalization is omitted from this conceptual diagram; the actual checkpoint uses U = E + MSA(LN(E)). The complete pre-LN block remains in the optional reference deck.",
     "section": "s05",
     "frame": 11
   },
   {
     "id": "story-mlp",
-    "title": "What job remains for the MLP?",
-    "caption": "Attention mixes information between rows; the MLP transforms features within each row.",
-    "notes": "What job remains for the MLP?\nThe same MLP is applied separately to every token. Its hidden width is 768 for this checkpoint; that number happens to equal the flattened patch length but serves a different role. LayerNorm and residuals were shown on the preceding block diagram.",
+    "title": "The MLP adds one more update to each embedding",
+    "caption": "Attention gathers context from other rows; the MLP then processes each row\u2019s features.",
+    "notes": "The MLP adds one more update to each embedding\nThe MLP receives the attention-updated representation and computes another 192-feature update. Add it to that same attention-updated representation, not to the original input from before attention. The same MLP parameters are used independently for every patch and CLS. This completes one block. Normalization and the internal 192 \u2192 768 \u2192 192 layers with GELU are omitted from this conceptual figure; the exact formula is E_next = U + MLP(LN(U)). Implementation details remain in the reference deck.",
     "section": "s05",
     "frame": 12
   },
   {
     "id": "story-depth",
-    "title": "Repeat the block twelve times",
-    "caption": "Shape stays 197 \u00d7 192 while the contextual representations change.",
-    "notes": "Repeat the block twelve times\nAll 197 rows continue through the stack. Blocks use their own weights; repeating the architecture does not mean reusing one parameter set twelve times. All-to-all access in one block does not make later transformations redundant.",
+    "title": "Every block updates the patches and CLS again",
+    "caption": "The next block starts from these new embeddings. After block 12, we read CLS.",
+    "notes": "Every block updates the patches and CLS again\nAll 197 rows continue through the stack: 196 patch embeddings and one CLS embedding. Each block reads the states produced by the preceding block and performs attention and MLP updates. Blocks have their own learned weights. The feature width remains 192; what each row represents changes. After the last block, the checkpoint\u2019s final normalization and CLS readout give one image representation for classification.",
     "section": "s05",
     "frame": 13
   },
@@ -289,9 +289,9 @@
   },
   {
     "id": "story-final-cls",
-    "title": "Which representation enters the classifier?",
-    "caption": "Read the final normalized CLS row: one 192-feature image representation.",
-    "notes": "Which representation enters the classifier?\nThis checkpoint applies the final LayerNorm to the encoder output before selecting CLS. The final patch rows also exist, but the fixed classification head reads CLS.",
+    "title": "After the blocks, read the updated CLS embedding",
+    "caption": "One final CLS embedding summarizes the image for the classifier.",
+    "notes": "After the blocks, read the updated CLS embedding\nThis is a readout, not another update step. The checkpoint applies its final LayerNorm before selecting the CLS row, yielding a 192-feature image embedding. The diagram omits normalization to emphasize the readout. The final 196 patch embeddings also exist, but the trained ImageNet class head reads CLS. The next slide converts its features into 1,000 class scores.",
     "section": "s06",
     "frame": 1
   },

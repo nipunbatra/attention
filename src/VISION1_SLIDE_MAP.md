@@ -38,11 +38,11 @@ Right/Left advances reveals; S opens notes. PDF captures the final reveal of eac
 | 31 | [s05/8/0](../vision1.html?present#s05/8/0) | `story-cls-message` | How does one CLS query collect one message? |
 | 32 | [s05/9/0](../vision1.html?present#s05/9/0) | `story-multihead` | Three heads form three views of the same sequence |
 | 33 | [s05/10/0](../vision1.html?present#s05/10/0) | `story-measured-attention` | Where does the trained query look? |
-| 34 | [s05/11/0](../vision1.html?present#s05/11/0) | `story-block` | What exactly is inside one pre-LN encoder block? |
-| 35 | [s05/12/0](../vision1.html?present#s05/12/0) | `story-mlp` | What job remains for the MLP? |
-| 36 | [s05/13/0](../vision1.html?present#s05/13/0) | `story-depth` | Repeat the block twelve times |
+| 34 | [s05/11/0](../vision1.html?present#s05/11/0) | `story-block` | Add the attention update to the original embedding |
+| 35 | [s05/12/0](../vision1.html?present#s05/12/0) | `story-mlp` | The MLP adds one more update to each embedding |
+| 36 | [s05/13/0](../vision1.html?present#s05/13/0) | `story-depth` | Every block updates the patches and CLS again |
 | 37 | [s05/14/0](../vision1.html?present#s05/14/0) | `story-stored-computed` | What is stored, and what changes with the image? |
-| 38 | [s06/1/0](../vision1.html?present#s06/1/0) | `story-final-cls` | Which representation enters the classifier? |
+| 38 | [s06/1/0](../vision1.html?present#s06/1/0) | `story-final-cls` | After the blocks, read the updated CLS embedding |
 | 39 | [s06/2/0](../vision1.html?present#s06/2/0) | `story-head` | How do 192 features score 1,000 classes? |
 | 40 | [s06/3/0](../vision1.html?present#s06/3/0) | `story-prediction` | What does this checkpoint predict for our photograph? |
 | 41 | [s06/4/0](../vision1.html?present#s06/4/0) | `story-cover-question` | What happens if we hide one quarter of the image? |

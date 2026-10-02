@@ -318,33 +318,33 @@ def make_story(b):
         'Fix one query and inspect its source weights; other heads and blocks can gather different mixtures.',
         f'The maps use saved Q/K from trained ViT-Tiny block 4, head 1, query P74. P60 receives {measured[60]:.6%} and CLS receives {measured[0]:.6%}. All 197 weights sum to one; the displayed 196 patch weights are not renormalized. Teal intensity is scaled to this map’s maximum. The violet outline marks the query and white marks source P60. An attention map visualizes mixing, not a segmentation or a complete explanation of the class prediction.',(4,))
     def plus(x,y):return f'<circle cx="{x}" cy="{y}" r="24" fill="var(--card)" stroke="var(--mixing)" stroke-width="2"/>'+t(x,y+10,'+',34,'mixing','middle')
-    body=t(30,85,'E',35,'vision')+arrow(51,157,110,157)+box(120,118,110,'LN','neutral',h=78,size=28)+arrow(242,157,278,157)+box(290,118,200,['self-attention','3 heads'],'mixing',h=78,size=27)+arrow(503,157,541,157,'mixing')+plus(570,157)+arrow(597,157,642,157)+box(652,118,104,'LN','neutral',h=78,size=28)+arrow(768,157,796,157)+box(809,118,169,'MLP','mixing',h=78,size=30)+arrow(990,157,1032,157,'mixing')+plus(1060,157)+arrow(1085,157,1130,157,'vision')
-    body+=line(70,157,70,62,'vision')+line(70,62,570,62,'vision')+arrow(570,62,570,126,'vision')+t(325,43,'keep E',27,'vision','middle')
-    body+=line(618,157,618,290,'vision')+line(618,290,1060,290,'vision')+arrow(1060,290,1060,187,'vision')+t(838,335,'keep the attention-updated rows',26,'vision','middle')
-    body+=t(580,411,'197 × 192 in  →  197 × 192 out',32,'vision','middle')
-    add('block','What exactly is inside one pre-LN encoder block?',body,
-        'Normalize, compute an update, and add it to the row that was already there.',
-        'LN precedes each branch. First U = E + MSA(LN(E)); then E_next = U + MLP(LN(U)). Self-attention includes concatenation and output projection. The second skip connection carries U, not the original E.',(4,5))
-    body=t(268,43,'ATTENTION',30,'mixing','middle',650)+t(858,43,'MLP',30,'mixing','middle',650)
-    body+=rows(65,80,255,['row 1','row 2','row 3'])
-    for i in range(3):
-        for j in range(3):body+=line(331,104+i*62,490,104+j*62,'mixing',1)
-    body+=rows(501,80,68,['1','2','3'])
-    body+=box(695,82,340,['one row at a time','192 → 768 → 192','GELU between layers'],'mixing',h=175,size=31)
-    body+=t(285,349,'BETWEEN rows',34,'mixing','middle')+t(867,349,'WITHIN each row',34,'mixing','middle')
-    add('mlp','What job remains for the MLP?',body,
-        'Attention mixes information between rows; the MLP transforms features within each row.',
-        'The same MLP is applied separately to every token. Its hidden width is 768 for this checkpoint; that number happens to equal the flattened patch length but serves a different role. LayerNorm and residuals were shown on the preceding block diagram.',(5,))
-    body=t(580,38,'Each block has its own learned weights.',30,'ink','middle')
+    body=box(25,150,205,['P74 input','192 features'],'vision',h=105,size=28)+arrow(243,202,277,202,'vision')
+    body+=box(290,150,230,['Attention','gather messages'],'mixing',h=105,size=28)+arrow(533,202,567,202,'mixing')
+    body+=box(580,150,230,['Project message','192 features'],'mixing',h=105,size=27)+arrow(823,202,852,202,'mixing')+plus(880,202)+arrow(909,202,938,202,'vision')
+    body+=box(951,150,187,['Updated P74','192 features'],'vision',h=105,size=27)
+    body+=line(127,150,127,65,'vision')+line(127,65,880,65,'vision')+arrow(880,65,880,172,'vision')+t(505,43,'Keep the original embedding',28,'vision','middle')
+    body+=t(580,346,'original embedding + projected message = updated embedding',31,'ink','middle')+t(580,410,'Every patch gets its own update. So does CLS.',30,'vision','middle')
+    add('block','Add the attention update to the original embedding',body,
+        'Gather a message, project it to 192 features, then add it to the receiving token’s original embedding.',
+        'Follow P74 as one receiver. Its attention heads gather weighted values from the current image sequence. Concatenate the three 64-feature messages and apply the learned output projection to obtain a 192-feature update. Add that update to P74’s incoming embedding; the message alone is not the new embedding. All other patch rows and CLS receive their own updates in parallel. Normalization is omitted from this conceptual diagram; the actual checkpoint uses U = E + MSA(LN(E)). The complete pre-LN block remains in the optional reference deck.',(4,))
+    body=box(35,159,250,['After attention','192 features'],'vision',h=108,size=30)+arrow(302,213,356,213,'vision')
+    body+=box(373,159,343,['MLP','192-feature update'],'mixing',h=108,size=32)+arrow(734,213,811,213,'mixing')+plus(840,213)+arrow(869,213,901,213,'vision')
+    body+=box(914,159,223,['New embedding','192 features'],'vision',h=108,size=27)
+    body+=line(160,159,160,65,'vision')+line(160,65,840,65,'vision')+arrow(840,65,840,183,'vision')+t(500,43,'Keep the embedding after attention',28,'vision','middle')
+    body+=t(580,347,'The MLP processes each token separately.',32,'mixing','middle')+t(580,410,'This new embedding is ready for the next block.',30,'vision','middle')
+    add('mlp','The MLP adds one more update to each embedding',body,
+        'Attention gathers context from other rows; the MLP then processes each row’s features.',
+        'The MLP receives the attention-updated representation and computes another 192-feature update. Add it to that same attention-updated representation, not to the original input from before attention. The same MLP parameters are used independently for every patch and CLS. This completes one block. Normalization and the internal 192 → 768 → 192 layers with GELU are omitted from this conceptual figure; the exact formula is E_next = U + MLP(LN(U)). Implementation details remain in the reference deck.',(5,))
+    body=t(580,38,'Each block: attention update, then MLP update.',31,'mixing','middle')
     for i in range(12):
         row,col=divmod(i,6);x=35+col*185;y=100+row*156
-        body+=box(x,y,153,['Block '+str(i+1),'197 × 192'],'mixing',h=96,size=25)
+        body+=box(x,y,153,'Block '+str(i+1),'mixing',h=96,size=30)
         if col<5:body+=arrow(x+158,y+48,x+177,y+48,'mixing')
     body+=line(1112,148,1140,148,'mixing')+line(1140,148,1140,228,'mixing')+line(1140,228,21,228,'mixing')+line(21,228,21,304,'mixing')+arrow(21,304,33,304,'mixing')
-    body+=t(580,412,'Each next block reads the states updated by the previous block.',28,'ink','middle')
-    add('depth','Repeat the block twelve times',body,
-        'Shape stays 197 × 192 while the contextual representations change.',
-        'All 197 rows continue through the stack. Blocks use their own weights; repeating the architecture does not mean reusing one parameter set twelve times. All-to-all access in one block does not make later transformations redundant.',(4,5))
+    body+=t(580,412,'197 token embeddings · still 192 features each',31,'vision','middle')
+    add('depth','Every block updates the patches and CLS again',body,
+        'The next block starts from these new embeddings. After block 12, we read CLS.',
+        'All 197 rows continue through the stack: 196 patch embeddings and one CLS embedding. Each block reads the states produced by the preceding block and performs attention and MLP updates. Blocks have their own learned weights. The feature width remains 192; what each row represents changes. After the last block, the checkpoint’s final normalization and CLS readout give one image representation for classification.',(4,5))
     body=t(292,43,'LEARNED PARAMETERS',29,'special','middle',650)+t(865,43,'COMPUTED FOR EACH IMAGE',29,'vision','middle',650)
     left=['Patch projection W, b','Position table + starting CLS','Transformer weights, including W_Q/K/V','Classifier weights + biases']
     right=['Patch embeddings','Q, K, V and attention weights','Contextual patch states + final CLS','Logits + probabilities']
@@ -357,10 +357,14 @@ def make_story(b):
 
     # 6. Finish the prediction, then test its sensitivity to a changed input.
     section('What does the model predict, and what changes its answer?')
-    body=rows(45,48,340,['CLS after block 12','P1 after block 12','…','P196 after block 12'])+arrow(405,181,478,181)+box(495,113,273,['final LayerNorm','select CLS row'],'neutral',h=125,size=28)+arrow(790,181,852,181)+box(875,124,239,['h_CLS','192 features'],'vision',h=104,size=33)
-    add('final-cls','Which representation enters the classifier?',body,
-        'Read the final normalized CLS row: one 192-feature image representation.',
-        'This checkpoint applies the final LayerNorm to the encoder output before selecting CLS. The final patch rows also exist, but the fixed classification head reads CLS.',(6,))
+    body=t(260,36,'After all 12 blocks',30,'ink','middle')+box(80,72,360,['Updated CLS','192 features'],'vision',h=93,size=31)
+    body+=box(80,200,360,'Updated patch embeddings','ink-3',h=75,size=26)+t(260,317,'196 rows still exist',26,'ink-2','middle')
+    body+=arrow(459,118,610,118,'vision')+box(630,64,470,['Read final CLS','one image embedding','192 features'],'vision',h=132,size=29)
+    body+=arrow(865,212,865,244,'vision')+box(676,264,378,'Next: the class head','special',h=83,size=32)
+    body+=t(580,420,'The classifier uses the image summary carried by CLS.',30,'ink','middle')
+    add('final-cls','After the blocks, read the updated CLS embedding',body,
+        'One final CLS embedding summarizes the image for the classifier.',
+        'This is a readout, not another update step. The checkpoint applies its final LayerNorm before selecting the CLS row, yielding a 192-feature image embedding. The diagram omits normalization to emphasize the readout. The final 196 patch embeddings also exist, but the trained ImageNet class head reads CLS. The next slide converts its features into 1,000 class scores.',(6,))
     body=box(35,130,226,['h_CLS','192 features'],'vision',h=121,size=31)+arrow(276,190,330,190)+box(347,130,337,['Linear(192, 1000)','1,000 logits'],'special',h=121,size=30)+arrow(700,190,750,190)+box(768,130,352,['softmax across classes','1,000 probabilities'],'neutral',h=121,size=28)
     body+=t(580,362,'One logit and one probability for every ImageNet class',30,'ink','middle')
     add('head','How do 192 features score 1,000 classes?',body,

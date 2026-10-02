@@ -22,7 +22,7 @@ Presentation controls: Right/Left advances builds, **S** opens notes, **O** open
 | 2. Image to tokens | 9 | Motivate patching, count 196 patches, flatten RGB consistently, reuse one learned projection and inspect a measured output. |
 | 3. Position | 3 | Separate content from location; add one learned positional vector to each content row. |
 | 4. Readout | 6 | Reuse the known CLS idea; distinguish the shared starting parameter from the image-dependent state; prepare all 197 rows. |
-| 5. Information exchange | 14 | Explain query/key/value roles and hypothetical examples, match keys, mix values progressively, contrast causal/full attention, inspect a trained map, and build the multihead pre-LN block. |
+| 5. Information exchange | 14 | Explain query/key/value roles and hypothetical examples, match keys, mix values progressively, contrast causal/full attention, inspect a trained map, then show attention and MLP updates being added to each embedding. |
 | 6. Prediction and intervention | 7 | Read final CLS, compute ImageNet class probabilities, cover a quadrant, rerun the model, compare four measured results, then inspect smaller covers. |
 | 7. Comparison and synthesis | 11 | Compare CNNs and ViTs with three visual frames; explain patch cost; recap architecture/shapes/code; link optional material; end on language-derived class vectors. |
 
@@ -64,7 +64,7 @@ Content is blue; learned projection, position and starting CLS parameters are am
 
 ViT self-attention gets Q/K/V from the same normalized image sequence. Translation cross-attention uses target states for Q and source-encoder states for K/V. The mask comparison shows **allowed pairs**, not attention magnitudes: the text decoder masks future sources; ViT can read the complete image. Full access does not imply equal weights, and the attention matrix is generally asymmetric.
 
-The MLP transforms features within each row; attention mixes information between rows. Both branches have pre-LayerNorm and residual additions. Blocks preserve `(197,192)` while changing the represented information. Parameters stay fixed at inference; activations and attention weights change with the image.
+The MLP transforms features within each row; attention mixes information between rows. The main diagrams show two simple additions: the projected attention message is added to the incoming embedding, then the MLP update is added to that attention-updated embedding. Normalization and internal MLP dimensions are retained in notes and the detailed reference diagram. Blocks preserve `(197,192)` while changing the represented information. After all twelve blocks, read the final CLS embedding and pass it to the class head. Parameters stay fixed at inference; activations and attention weights change with the image.
 
 ## Attention and occlusion answer different questions
 
