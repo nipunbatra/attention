@@ -385,6 +385,7 @@ def main():
         from build_vision1_lab import build_lab
         build_lab()
     subprocess.run([sys.executable,str(SRC/'assemble.py'),'--part','5','--out',str(ROOT/'vision1.html')],check=True)
+    subprocess.run([sys.executable,str(SRC/'assemble.py'),'--part','5','--config',str(SRC/'vision1-reference.json'),'--out',str(ROOT/'vision1-reference.html')],check=True)
     print(f'{count} teaching frames plus cover; '+('slides only, no notebook or training execution' if '--slides-only' in sys.argv else 'complete lecture and executed lab'))
 
 if __name__ == '__main__': main()

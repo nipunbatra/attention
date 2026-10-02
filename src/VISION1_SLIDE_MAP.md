@@ -1,150 +1,62 @@
-# Vision I — current slide map
+# Vision I — main slide map
 
-144 teaching frames plus the cover. Right/Left advances reveals; S opens notes. Detailed calculations are preserved. Section 6 is an optional implementation lab; historical and dense reference figures remain in reading notes.
+54 content frames plus the cover: 55 main slides. Q/K/V intuition, full attention, CNN comparison and measured occlusion are part of the main route.
 
-| Section | Frame | ID | Title |
-|---|---:|---|---|
-| s01 | 1 | `prior-encoder-recap` | We already know how an encoder builds context |
-| s01 | 2 | `vit-same-encoder` | A ViT is an encoder over image patches |
-| s01 | 3 | `vit-token-inputs` | Text looks up a row; an image patch computes one |
-| s01 | 4 | `vision-topic-01` | Section 1 · The image classification task |
-| s01 | 5 | `dataset-gallery` | What does our animal dataset look like? |
-| s01 | 6 | `s01-photo` | What animal do you see? |
-| s01 | 7 | `task-image-label` | Our task today: classify the whole image |
-| s01 | 8 | `patch-context` | Attention: what can the face tell this patch? |
-| s01 | 9 | `patch-context-weights` | Should every source contribute equally? |
-| s01 | 10 | `patch-context-update` | What changes when the patch gets context? |
-| s01 | 11 | `bridge-image-query` | What could a query be in the image? |
-| s01 | 12 | `bridge-image-key` | What could a key be in the image? |
-| s01 | 13 | `bridge-image-value` | What information would a value send? |
-| s01 | 14 | `image-to-rows` | How can we give this photograph to attention? |
-| s01 | 15 | `vit-house-architecture` | The image classifier, drawn as one encoder pipeline |
-| s02 | 1 | `vision-topic-02` | Section 2 · From pixels to patch embeddings |
-| s02 | 2 | `model-journey-overview` | The whole route: photograph to prediction |
-| s02 | 3 | `s01-patches` | Where do the patch boundaries go? |
-| s02 | 4 | `rgb-flatten-step-1` | Read the RGB values of each pixel |
-| s02 | 5 | `rgb-flatten` | Flatten one channel at a time: R, then G, then B |
-| s02 | 6 | `patch-activation-location` | Do we apply an activation after the patch layer? |
-| s02 | 7 | `patch-linear-shapes` | What does “projection” mean here? |
-| s02 | 8 | `patch-linear-weights` | 12 input numbers, 2 output numbers |
-| s02 | 9 | `patch-linear-first` | Follow the connections into output 1 |
-| s02 | 10 | `patch-linear-second` | Now follow the connections into output 2 |
-| s02 | 11 | `patch-linear-result` | These two numbers are the patch embedding |
-| s02 | 12 | `patch-shared-code` | Apply the very same layer to another patch |
-| s02 | 13 | `s01-rows` | Start with the same dog photograph |
-| s02 | 14 | `projection-size` | Split the image into 16 × 16 patches |
-| s02 | 15 | `real-patch-crops` | Number the patches row by row |
-| s02 | 16 | `patch-real-dimensions` | Read the RGB values inside patch 63 |
-| s02 | 17 | `real-patch-normalize` | Normalize those same RGB values |
-| s02 | 18 | `patch-one-row-shape` | Flatten patch 63 in the same order as the code |
-| s02 | 19 | `patch-one-row-projection` | Pass that row through the shared linear layer |
-| s02 | 20 | `real-patch-projection` | Read the 192 output features for patch 63 |
-| s02 | 21 | `real-patch-shared` | Pass patch 64 through the very same layer |
-| s02 | 22 | `patch-projection-parameters` | Stack the 196 output rows into C |
-| s03 | 1 | `vision-topic-03` | Section 3 · Prepare the rows, then classify the image |
-| s03 | 2 | `position-where` | Give each patch its location in the photograph |
-| s03 | 3 | `position-table` | Position is a learned lookup table |
-| s03 | 4 | `real-patch-position` | Add position to these content rows |
-| s03 | 5 | `position-learning` | The image loss teaches the position table |
-| s03 | 6 | `cls-detour` | Why add CLS? Give the classifier one image summary |
-| s03 | 7 | `real-cls-purpose` | Add a summary row beside the dog’s patch rows |
-| s03 | 8 | `cls-summary-refinement` | What makes CLS an image summary? |
-| s03 | 9 | `cls-shared-start` | The same CLS start reads two different photographs |
-| s03 | 10 | `real-cls-sequence` | Add the summary row: 196 + 1 = 197 |
-| s03 | 11 | `model-journey-checkpoint` | Start with one Transformer block |
-| s03 | 12 | `vit-self-vs-cross` | Self-attention: Q, K and V share the same input |
-| s03 | 13 | `real-patch-qkv` | Make queries, keys and values from these rows |
-| s03 | 14 | `real-cls-attention` | The same input matrix feeds three learned projections |
-| s03 | 15 | `real-attention-product` | One query–key comparison fills one matrix cell |
-| s03 | 16 | `real-attention-cls-zoom` | Follow the CLS row from scores to weights |
-| s03 | 17 | `real-attention-weights` | Turn each query’s 197 scores into 197 source weights |
-| s03 | 18 | `real-attention-mask` | Every image row can read every image row |
-| s03 | 19 | `real-message-text-analogy` | A message for CLS works like a message for bank |
-| s03 | 20 | `real-cls-values-origin` | The dog’s feature rows become value rows |
-| s03 | 21 | `real-cls-value-scaling` | One weight scales all 64 features in its value row |
-| s03 | 22 | `real-cls-value-contributions` | Each source contributes a weighted value row |
-| s03 | 23 | `real-cls-value-sum` | Add the contributions to make one CLS message |
-| s03 | 24 | `real-cls-message-destination` | Where does the CLS message go? |
-| s03 | 25 | `real-attention-values` | Each query gets its own message |
-| s03 | 26 | `real-heads-intro` | From one completed head to three parallel heads |
-| s03 | 27 | `heads-visual-roles` | What might different heads look for in this photograph? |
-| s03 | 28 | `real-heads-qkv` | The same rows feed three sets of Q, K and V |
-| s03 | 29 | `real-heads-messages` | Each head repeats the complete attention calculation |
-| s03 | 30 | `real-heads-cls` | One CLS input produces three different messages |
-| s03 | 31 | `real-heads-concat` | Concatenate the three CLS messages |
-| s03 | 32 | `real-cls-message` | Keep the embedding; add the context from attention |
-| s03 | 33 | `real-cls-residual` | The dog’s CLS keeps its input and gains context |
-| s03 | 34 | `real-cls-mlp` | Open block 1: attention, then the MLP |
-| s03 | 35 | `real-mlp-network` | Open the MLP: 192 inputs, 768 hidden units, 192 outputs |
-| s03 | 36 | `real-mlp-residual` | Add the MLP update to finish block 1 |
-| s03 | 37 | `real-block-handoff` | Pass the complete output of block 1 into block 2 |
-| s03 | 38 | `real-block-changes` | What changes as the rows move through the blocks? |
-| s03 | 39 | `real-cls-depth` | Continue through the stack, then classify the image |
-| s03 | 40 | `real-cls-readout` | Select CLS from the final feature matrix |
-| s03 | 41 | `real-classifier-network` | Open the classifier: 192 features become 1,000 scores |
-| s03 | 42 | `real-classifier-score` | One class score is a weighted sum plus a bias |
-| s03 | 43 | `real-classifier-softmax` | Turn all 1,000 scores into class probabilities |
-| s03 | 44 | `photo-two-softmaxes` | Two softmaxes, two different questions |
-| s03 | 45 | `real-cls-prediction` | The same dog now has its final prediction |
-| s04 | 1 | `vision-topic-04` | Section 4 · Whole model walkthrough |
-| s04 | 2 | `vit-shape-trace` | One shape trace from pixels to class scores |
-| s04 | 3 | `vit-canonical-block` | Inside each block: mix, transform, keep the residual |
-| s04 | 4 | `photo-optimizer-step` | Backward: compute gradients, then update the model |
-| s05 | 1 | `vision-topic-05` | Section 5 · CNNs, ViTs and inductive bias |
-| s05 | 2 | `cnn-receptive-field` | Two ways to build an image representation |
-| s05 | 3 | `cnn-context-readout` | A wider view, then one image label |
-| s05 | 4 | `cnn-inductive-bias` | Inductive bias: a useful starting assumption |
-| s05 | 5 | `cnn-vit-design` | Which is a sensible starting point? |
-| s06 | 1 | `vision-topic-06` | Implementation lab · optional |
-| s06 | 2 | `code-photo-input` | Keep the same photograph and add the batch axis |
-| s06 | 3 | `code-patch-goal` | Our target: turn every patch into 192 features |
-| s06 | 4 | `code-patch-dense` | See the patch projection as a layer of neurons |
-| s06 | 5 | `code-patch-linear` | Implementation 1: extract patches, then use Linear |
-| s06 | 6 | `code-photo-conv` | Implementation 2: the same projection with Conv2d |
-| s06 | 7 | `code-patch-parameters` | Reshape the weights; keep the same parameter count |
-| s06 | 8 | `code-patch-same-products` | Same pixel × same weight, in both implementations |
-| s06 | 9 | `code-patch-equivalence` | Verify it on both photographs: the features match |
-| s06 | 10 | `code-patch-why-conv` | Why package patch projection as Conv2d? |
-| s06 | 11 | `code-photo-tokens` | First turn the feature grid into patch rows |
-| s06 | 12 | `code-photo-tokens-cls` | Then prepend CLS and add position |
-| s06 | 13 | `code-photo-attention` | Make queries, keys and values for three heads |
-| s06 | 14 | `code-photo-attention-messages` | Compute one message for every query in every head |
-| s06 | 15 | `code-photo-attention-join` | Join the head messages and project back to 192 |
-| s06 | 16 | `code-photo-block-layers` | Build the layers inside one Transformer block |
-| s06 | 17 | `code-photo-block` | Use the two residual paths in order |
-| s06 | 18 | `code-photo-stack` | Create twelve blocks with separate learned parameters |
-| s06 | 19 | `code-photo-readout` | Run the stack, then read the final CLS |
-| s06 | 20 | `code-photo-training` | Connect the loss diagram to one training step |
-| s07 | 1 | `vision-topic-07` | Section 7 · Adapt and evaluate the classifier |
-| s07 | 2 | `pets-original-task` | What was this model trained to predict? |
-| s07 | 3 | `pets-new-task` | Same photographs, a different label vocabulary |
-| s07 | 4 | `pets-new-domain` | What if our users supply sketches? |
-| s07 | 5 | `pets-head` | Replace the ImageNet head with our two-class head |
-| s07 | 6 | `pets-frozen` | Freeze the encoder; train the new head |
-| s07 | 7 | `pets-fine-tune` | Next option: fine-tune the last block as well |
-| s07 | 8 | `pets-training-step` | One batch follows the same forward and backward paths |
-| s07 | 9 | `pets-learning-stages` | Three stages: learn, adapt, then predict |
-| s07 | 10 | `pets-inference` | What happens when we classify a new photograph? |
-| s07 | 11 | `pets-evaluation` | How would we check whether the classifier learned? |
-| s08 | 1 | `vision-topic-08` | Section 8 · Return to the real photographs |
-| s08 | 2 | `real-input` | Which pixels are we giving the real model? |
-| s08 | 3 | `s06-answer` | What did the model call our dog? |
-| s08 | 4 | `one-photo-limit` | Does one correct photograph tell us the accuracy? |
-| s08 | 5 | `real-cat` | What happens when we give it the cat? |
-| s09 | 1 | `vision-topic-09` | Section 9 · Look inside the trained model |
-| s09 | 2 | `interpret-similarity` | Similar patch features can connect distant image regions |
-| s09 | 3 | `interpret-heads` | Keep the query fixed; change only the attention head |
-| s09 | 4 | `interpret-cls` | CLS gathers a message for the image summary |
-| s09 | 5 | `cover-pixels` | “Cover” means replace these pixels with gray |
-| s09 | 6 | `cover-1` | Run the covered image through the same trained model |
-| s09 | 7 | `occlusion` | Four covers, four new forward passes |
-| s09 | 8 | `occlusion-small-setup` | Use smaller covers to ask a more local question |
-| s09 | 9 | `occlusion-small-result` | Smaller covers reveal local sensitivity |
-| s10 | 1 | `vision-topic-10` | Section 10 · The cost of smaller patches |
-| s10 | 2 | `patch-cost` | What changes when the patch size is halved? |
-| s10 | 3 | `real-work-count` | How much matching happens inside the tiny real model? |
-| s10 | 4 | `cost-control` | What happens if we use a larger image? |
-| s10 | 5 | `vision-summary-architecture` | The whole ViT: pixels → context → one label |
-| s10 | 6 | `vision-summary-takeaways` | Four ideas to carry forward |
-| s10 | 7 | `vision-fixed-class-vectors` | Our classifier stores a vector for each known label |
-| s10 | 8 | `vision-language-handoff` | What if a class vector could come from language? |
+Right/Left advances reveals; S opens notes. PDF captures the final reveal of each frame.
+
+| PDF page | Route | Stable ID | Title |
+|---:|---|---|---|
+| 2 | [s01/1/0](../vision1.html?present#s01/1/0) | `story-recall` | We already know how an encoder builds context |
+| 3 | [s01/2/0](../vision1.html?present#s01/2/0) | `story-task` | What should this photograph produce? |
+| 4 | [s01/3/0](../vision1.html?present#s01/3/0) | `story-contract` | An encoder expects vectors. How can an image supply them? |
+| 5 | [s01/4/0](../vision1.html?present#s01/4/0) | `story-questions` | Five questions build the architecture |
+| 6 | [s02/1/0](../vision1.html?present#s02/1/0) | `story-pixel-budget` | Why not make every pixel a token? |
+| 7 | [s02/2/0](../vision1.html?present#s02/2/0) | `story-patch-grid` | Split the same photograph into 196 patches |
+| 8 | [s02/3/0](../vision1.html?present#s02/3/0) | `story-patch-768` | What is inside one patch? |
+| 9 | [s02/4/0](../vision1.html?present#s02/4/0) | `story-flatten` | Flatten one channel at a time: R, then G, then B |
+| 10 | [s02/5/0](../vision1.html?present#s02/5/0) | `story-projection` | How do 768 pixel values become 192 features? |
+| 11 | [s02/6/0](../vision1.html?present#s02/6/0) | `story-shared-projection` | Should every patch get a different projection? |
+| 12 | [s02/7/0](../vision1.html?present#s02/7/0) | `story-stack` | Stack the patches into one feature matrix |
+| 13 | [s02/8/0](../vision1.html?present#s02/8/0) | `story-measured-patch` | What does the trained projection actually return? |
+| 14 | [s02/9/0](../vision1.html?present#s02/9/0) | `story-pipeline-patches` | We have solved the image-to-token problem |
+| 15 | [s03/1/0](../vision1.html?present#s03/1/0) | `story-where` | The projection is shared. Where does location enter? |
+| 16 | [s03/2/0](../vision1.html?present#s03/2/0) | `story-content-position` | Add WHAT and WHERE |
+| 17 | [s03/3/0](../vision1.html?present#s03/3/0) | `story-position-table` | Which positional vector goes with each row? |
+| 18 | [s04/1/0](../vision1.html?present#s04/1/0) | `story-readout-question` | Many patch representations, one image label |
+| 19 | [s04/2/0](../vision1.html?present#s04/2/0) | `story-cls-analogy` | Same CLS idea, different input tokens |
+| 20 | [s04/3/0](../vision1.html?present#s04/3/0) | `story-cls-start` | Every image starts with the same learned CLS vector |
+| 21 | [s04/4/0](../vision1.html?present#s04/4/0) | `story-cls-dependent` | After reading the image, CLS becomes image-dependent |
+| 22 | [s04/5/0](../vision1.html?present#s04/5/0) | `story-cls-reads` | CLS reads the current patch states at every block |
+| 23 | [s04/6/0](../vision1.html?present#s04/6/0) | `story-prepared` | We now have the token sequence the encoder needs |
+| 24 | [s05/1/0](../vision1.html?present#s05/1/0) | `story-reuse-encoder` | From here, reuse the encoder we already know |
+| 25 | [s05/2/0](../vision1.html?present#s05/2/0) | `story-self-cross` | Where do Q, K and V come from? |
+| 26 | [s05/3/0](../vision1.html?present#s05/3/0) | `story-qkv-roles` | One patch representation has three jobs |
+| 27 | [s05/4/0](../vision1.html?present#s05/4/0) | `story-query-examples` | What might different queries try to gather? |
+| 28 | [s05/5/0](../vision1.html?present#s05/5/0) | `story-key-value-pair` | A source supplies both a key and a value |
+| 29 | [s05/6/0](../vision1.html?present#s05/6/0) | `story-value-mixture` | Several source values form one receiver’s message |
+| 30 | [s05/7/0](../vision1.html?present#s05/7/0) | `story-full-attention` | ViT uses full attention, not causal attention |
+| 31 | [s05/8/0](../vision1.html?present#s05/8/0) | `story-cls-message` | How does one CLS query collect one message? |
+| 32 | [s05/9/0](../vision1.html?present#s05/9/0) | `story-multihead` | Three heads form three views of the same sequence |
+| 33 | [s05/10/0](../vision1.html?present#s05/10/0) | `story-measured-attention` | Where does the trained query look? |
+| 34 | [s05/11/0](../vision1.html?present#s05/11/0) | `story-block` | What exactly is inside one pre-LN encoder block? |
+| 35 | [s05/12/0](../vision1.html?present#s05/12/0) | `story-mlp` | What job remains for the MLP? |
+| 36 | [s05/13/0](../vision1.html?present#s05/13/0) | `story-depth` | Repeat the block twelve times |
+| 37 | [s05/14/0](../vision1.html?present#s05/14/0) | `story-stored-computed` | What is stored, and what changes with the image? |
+| 38 | [s06/1/0](../vision1.html?present#s06/1/0) | `story-final-cls` | Which representation enters the classifier? |
+| 39 | [s06/2/0](../vision1.html?present#s06/2/0) | `story-head` | How do 192 features score 1,000 classes? |
+| 40 | [s06/3/0](../vision1.html?present#s06/3/0) | `story-prediction` | What does this checkpoint predict for our photograph? |
+| 41 | [s06/4/0](../vision1.html?present#s06/4/0) | `story-cover-question` | What happens if we hide one quarter of the image? |
+| 42 | [s06/5/0](../vision1.html?present#s06/5/0) | `story-cover-code` | Replace pixels, then recompute the whole forward pass |
+| 43 | [s06/6/0](../vision1.html?present#s06/6/0) | `story-cover-results` | Four independent covers, four measured predictions |
+| 44 | [s06/7/0](../vision1.html?present#s06/7/0) | `story-cover-small` | Would smaller covers tell us more? |
+| 45 | [s07/1/0](../vision1.html?present#s07/1/0) | `story-cnn-context` | Two ways to gather image context |
+| 46 | [s07/2/0](../vision1.html?present#s07/2/0) | `story-cnn-bias` | Which assumptions are built into the architecture? |
+| 47 | [s07/3/0](../vision1.html?present#s07/3/0) | `story-cnn-example` | What does an inductive bias buy us? |
+| 48 | [s07/4/0](../vision1.html?present#s07/4/0) | `story-patch-sizes` | How much detail should one token cover? |
+| 49 | [s07/5/0](../vision1.html?present#s07/5/0) | `story-patch-cost` | What does a finer grid cost? |
+| 50 | [s07/6/0](../vision1.html?present#s07/6/0) | `story-summary-pipeline` | Once an image becomes tokens, the encoder is familiar |
+| 51 | [s07/7/0](../vision1.html?present#s07/7/0) | `story-summary-shapes` | Follow the whole model through its shapes |
+| 52 | [s07/8/0](../vision1.html?present#s07/8/0) | `story-six-lines` | The whole ViT in six lines |
+| 53 | [s07/9/0](../vision1.html?present#s07/9/0) | `story-optional-routes` | Choose a deeper dive when you need it |
+| 54 | [s07/10/0](../vision1.html?present#s07/10/0) | `story-fixed-vocabulary` | The classifier stores a learned vector per known class |
+| 55 | [s07/11/0](../vision1.html?present#s07/11/0) | `story-clip-question` | What if our class vocabulary could come from words? |

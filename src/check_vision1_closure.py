@@ -17,14 +17,14 @@ for actual,old in [('U','updated'),('J','joined'),('z','logits'),('p','probabili
 for h in trace['gradients']['heads']:
     np.testing.assert_allclose(np.array(h['dS']).sum(axis=1),0,atol=1e-12)
 assert trace['single_update']['loss_after']<trace['single_update']['loss_before']
-manifest=json.loads((ROOT/'figures/vision1/frame-manifest.json').read_text())
+manifest=json.loads((ROOT/'figures/vision1/detailed-frame-manifest.json').read_text())
 assert len(manifest)==144 and len({x['id'] for x in manifest})==144
 ids=[x['id'] for x in manifest]
 from vision1_course_bridge import OPTIONAL
 from vision1_visual_refinement import READING_ONLY
 assert ids[:3]==['prior-encoder-recap','vit-same-encoder','vit-token-inputs']
 assert not (OPTIONAL | READING_ONLY).intersection(ids)
-page_text=(ROOT/'vision1.html').read_text()
+page_text=(ROOT/'vision1-reference.html').read_text()
 assert all('class="vp-optional-practice" id="'+k+'"' in page_text for k in OPTIONAL | READING_ONLY)
 toy=json.loads((ROOT/'figures/vision1/patch-embedding-example.json').read_text())
 np.testing.assert_array_equal(np.array(toy['patches']).transpose(0,2,1).reshape(2,12),toy['X'])
@@ -176,10 +176,10 @@ assert not np.allclose(dog['cls_after_attention1_residual'],cat['cls_after_atten
 assert not np.allclose(dog['cls_final_after_norm'],cat['cls_final_after_norm'])
 for x in manifest:
     ET.parse(ROOT/'figures/vision1'/(x['id']+'.svg'))
-page=(ROOT/'vision1.html').read_text()
+page=(ROOT/'vision1-reference.html').read_text()
 assert 'class="vp-optional-practice" id="classification-exit"' in page
 assert 'class="vp-optional-practice" id="position-photo-layout"' in page
-assert 'id="s11"' not in page and 'id="s12"' not in page
+assert 'id="s11"' in page and 'id="s12"' not in page
 class Links(HTMLParser):
     def handle_starttag(self,tag,attrs):
         a=dict(attrs)

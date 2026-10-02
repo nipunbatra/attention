@@ -3,104 +3,77 @@
   "partLabel": "Vision I",
   "series": "Vision to language",
   "title": "Vision Transformer",
-  "subtitle": "The same encoder, with image patches: from pixels to a class prediction and the next question for CLIP.",
+  "subtitle": "Five questions turn one photograph into tokens, context and an ImageNet prediction.",
   "audience": "Students who have completed Transformers beyond next-token prediction (encoders, decoders and cross-attention).",
-  "durationLabel": "One photo walkthrough, with code and optional labs.",
-  "hook": "What can one patch borrow from the rest of its image?",
-  "centralLabel": "Follow one computation",
-  "central": "\\text{pixels}\\to E\\to Q,K,V\\to A\\to H\\to E\\prime\\to p(\\text{class})",
+  "durationLabel": "54 conceptual slides \u00b7 optional labs available separately",
+  "hook": "An encoder expects vectors. How can an image supply them?",
+  "centralLabel": "Derive the architecture",
+  "central": "\\text{image}\\to\\text{patch tokens}\\to\\text{encoder}\\to\\text{class}",
   "sections": [
     {
       "id": "s01",
-      "title": "The image classification task",
+      "title": "The question we want to answer",
       "lit": ""
     },
     {
       "id": "s02",
-      "title": "From pixels to patch embeddings",
+      "title": "How can an image become a token sequence?",
       "lit": ""
     },
     {
       "id": "s03",
-      "title": "Prepare the rows, then classify the image",
+      "title": "How does the model know where a patch came from?",
       "lit": ""
     },
     {
       "id": "s04",
-      "title": "Whole model walkthrough",
+      "title": "We have 196 rows. Which one should we read?",
       "lit": ""
     },
     {
       "id": "s05",
-      "title": "CNNs, ViTs and inductive bias",
+      "title": "How do the patches exchange information?",
       "lit": ""
     },
     {
       "id": "s06",
-      "title": "Implementation lab \u00b7 optional",
+      "title": "What does the model predict, and what changes its answer?",
       "lit": ""
     },
     {
       "id": "s07",
-      "title": "Adapt and evaluate the classifier",
-      "lit": ""
-    },
-    {
-      "id": "s08",
-      "title": "Return to the real photographs",
-      "lit": ""
-    },
-    {
-      "id": "s09",
-      "title": "Look inside the trained model",
-      "lit": ""
-    },
-    {
-      "id": "s10",
-      "title": "The cost of smaller patches",
+      "title": "What have we built, and what is still missing?",
       "lit": ""
     }
   ],
   "chain": [
     {
       "section": "s01",
-      "label": "The image classification task"
+      "label": "The question we want to answer"
     },
     {
       "section": "s02",
-      "label": "From pixels to patch embeddings"
+      "label": "How can an image become a token sequence?"
     },
     {
       "section": "s03",
-      "label": "Prepare the rows, then classify the image"
+      "label": "How does the model know where a patch came from?"
     },
     {
       "section": "s04",
-      "label": "Whole model walkthrough"
+      "label": "We have 196 rows. Which one should we read?"
     },
     {
       "section": "s05",
-      "label": "CNNs, ViTs and inductive bias"
+      "label": "How do the patches exchange information?"
     },
     {
       "section": "s06",
-      "label": "Implementation lab \u00b7 optional"
+      "label": "What does the model predict, and what changes its answer?"
     },
     {
       "section": "s07",
-      "label": "Adapt and evaluate the classifier"
-    },
-    {
-      "section": "s08",
-      "label": "Return to the real photographs"
-    },
-    {
-      "section": "s09",
-      "label": "Look inside the trained model"
-    },
-    {
-      "section": "s10",
-      "label": "The cost of smaller patches"
+      "label": "What have we built, and what is still missing?"
     }
   ],
   "objects": [
@@ -113,29 +86,29 @@
     "ep"
   ],
   "objectSections": {
-    "e": "s03",
-    "q": "s03",
-    "k": "s03",
-    "v": "s03",
-    "a": "s03",
-    "d": "s03",
-    "ep": "s03"
+    "e": "s05",
+    "q": "s05",
+    "k": "s05",
+    "v": "s05",
+    "a": "s05",
+    "d": "s05",
+    "ep": "s05"
   },
-  "provenance": "Real-photo predictions are saved measurements from a pretrained ImageNet model. The backward pass explains how a label would train this architecture. Code and dog/cat adaptation show procedures, with no new training results. The optional lab retains the separate four-patch worksheet and synthetic experiment.",
+  "provenance": "One saved forward pass: pretrained ViT-Tiny, 1,000 ImageNet classes, Newfoundland 95.73%. Oxford-IIIT Pet supplies the photograph. Optional labs and reference examples are in a separate deck.",
   "prev": {
     "label": "Text attention and cross-attention",
     "href": "part4.html"
   },
   "next": {
-    "label": "Optional: self-supervised visual learning",
-    "href": "vision2.html"
+    "label": "Next: CLIP",
+    "href": "vision3.html"
   },
   "index": {
     "label": "Series home",
     "href": "index.html"
   },
   "notation": "vision1",
-  "footer": "Pixels become rows; attention adds context; a learned readout answers the image question.",
+  "footer": "Once the image is a token sequence, reuse the encoder. What if class vectors came from language?",
   "sectionDirectory": "sections-vision1",
   "toyFile": "vision1-worksheet.json",
   "runtimeFile": "vision1-lesson.js",

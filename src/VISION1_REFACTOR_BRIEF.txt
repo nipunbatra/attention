@@ -1,0 +1,577 @@
+REFACTOR BRIEF — VISION TRANSFORMER LECTURE
+
+The current deck has excellent material but is still too mechanism-first.
+Refactor the MAIN LECTURE so that it has the same pedagogical quality as
+the "Beyond Attention" lecture.
+
+The architecture must be DERIVED FROM QUESTIONS rather than presented as
+a sequence of implementation details.
+
+========================================================
+CORE STORY
+========================================================
+
+The lecture should revolve around five questions:
+
+1. An encoder expects a sequence of vectors.
+   HOW CAN AN IMAGE BECOME A TOKEN SEQUENCE?
+   → split into patches
+   → flatten each patch
+   → shared linear projection
+
+2. The same projection is used at every patch.
+   HOW DOES THE MODEL KNOW WHERE A PATCH CAME FROM?
+   → learned positional embeddings
+
+3. We now have 196 patch representations but want ONE image label.
+   WHICH REPRESENTATION SHOULD WE READ?
+   → remind students about pooling
+   → reuse [CLS] from previous lecture
+
+4. HOW DO THE PATCHES EXCHANGE INFORMATION?
+   → reuse Transformer encoder/self-attention
+   → Q,K,V all come from the SAME image stream
+   → contrast with translation cross-attention
+
+5. HOW DOES ONE IMAGE REPRESENTATION BECOME A CLASS?
+   → final CLS
+   → linear class head
+   → 1000 logits
+   → softmax
+
+Then finish:
+
+The classifier stores one learned vector for each fixed class.
+
+WHAT IF THAT CLASS VECTOR CAME FROM LANGUAGE?
+
+→ NEXT LECTURE: CLIP
+
+
+========================================================
+IMPORTANT REORDERING
+========================================================
+
+Do NOT teach detailed Q/K/V before image tokens have been constructed.
+
+Current early attention/QKV slides should move AFTER:
+
+patchify
+→ project patches
+→ add positions
+→ prepend CLS
+
+Only then say:
+
+"We now have a token sequence. From here we can reuse the encoder we
+already know."
+
+
+========================================================
+ONE CONSISTENT TASK
+========================================================
+
+The main lecture currently mixes:
+- Oxford-IIIT Pet species/breed labels
+- a dog/cat task
+- the pretrained ImageNet-1k classifier.
+
+Fix this.
+
+For the MAIN LECTURE use the actual checkpoint task:
+
+input:
+Newfoundland photograph
+
+model:
+pretrained ViT-Tiny
+
+output vocabulary:
+1000 ImageNet classes
+
+measured result:
+Newfoundland 95.73%
+
+Oxford-IIIT Pet is only the SOURCE of the photograph.
+
+Move "dog vs cat" adaptation to the optional transfer-learning section.
+
+Do NOT show a dog/cat classifier as though it is the task of the pretrained
+model.
+
+
+========================================================
+ADD ONE EARLY MOTIVATION SLIDE
+========================================================
+
+TITLE:
+Why not make every pixel a token?
+
+224×224 = 50,176 spatial positions
+
+Pixel tokens:
+~50k tokens → enormous N² attention matrix
+
+16×16 patches:
+14×14 = 196 tokens
+
+Main message:
+
+PATCHING IS ALSO A COMPUTATIONAL CHOICE.
+
+Do not overdo arithmetic.
+
+
+========================================================
+PATCH PROJECTION
+========================================================
+
+The current detailed Linear(12,2) sequence is good optional material but
+too long for the main lecture.
+
+MAIN path should contain only:
+
+1. 16×16×3 = 768 numbers
+2. x_i ∈ R^768
+3. c_i = x_i W_E + b_E
+4. W_E: 768×192
+5. same W_E,b_E for all 196 patches
+6. X:196×768 → C:196×192
+7. one measured P63 output example
+
+Move:
+- individual output neuron arithmetic
+- second output neuron
+- toy parameter calculations
+to appendix:
+"Opening the patch-projection box."
+
+
+========================================================
+POSITION
+========================================================
+
+MAIN lecture:
+
+content c_i = WHAT is in patch i
+position p_i = WHERE patch i came from
+
+e_i = c_i + p_i
+
+Use:
+BLUE = content
+AMBER = position
+
+Move SGD update of one positional parameter to appendix.
+
+
+========================================================
+CLS
+========================================================
+
+Students already know CLS from the previous lecture.
+
+Do not re-teach it from scratch.
+
+Use a direct analogy:
+
+TEXT:
+[CLS] sentence tokens → encoder → final CLS → class
+
+IMAGE:
+[CLS] patch tokens → encoder → final CLS → class
+
+Keep:
+- one slide showing same learned CLS start for every image
+- one slide showing final CLS becomes image-dependent
+- one slide explaining CLS can read patch states across blocks
+
+Move:
+- initialization code
+- SGD-on-CLS explanation
+- long discussion of CLS vs pooling
+to optional material.
+
+One sentence is enough:
+"Mean pooling is another valid readout; this checkpoint was trained with CLS."
+
+
+========================================================
+ATTENTION
+========================================================
+
+DO NOT reteach the entire attention lecture.
+
+Main ViT attention section should be about 6 conceptual slides:
+
+1. SELF-ATTENTION vs CROSS-ATTENTION
+
+Translation:
+Q = target
+K,V = source
+
+ViT:
+Q,K,V = same image sequence
+
+Huge takeaway:
+"ViT has one stream. Translation had two streams."
+
+2. Full-access attention matrix:
+197×197
+No causal mask.
+Every image token may read every image token.
+
+3. One CLS example:
+CLS query → 197 scores → softmax → weighted values → CLS message
+
+4. Multi-head recap:
+same sequence → head1/head2/head3 → different messages → concatenate
+
+5. One canonical pre-LN Transformer block:
+LN → self-attn → residual
+LN → MLP → residual
+
+6. Repeat 12 blocks.
+
+Move detailed:
+- one QK matrix cell
+- many individual value-row calculations
+- 197 source contribution arithmetic
+- per-head measured matrices
+to appendix:
+"Opening attention again with real ViT numbers."
+
+
+========================================================
+ADD A "LEARNED VS COMPUTED" SLIDE
+========================================================
+
+TITLE:
+What is stored in the model, and what changes with the image?
+
+LEARNED PARAMETERS:
+- patch projection W,b
+- position embeddings
+- starting CLS vector
+- Transformer weights
+- classifier weights/biases
+
+COMPUTED FOR EACH IMAGE:
+- patch embeddings
+- Q,K,V
+- attention weights
+- contextual patch states
+- final CLS
+- logits / probabilities
+
+Important takeaway:
+
+W_Q,W_K,W_V are learned.
+Attention weights are computed separately for each input.
+
+
+========================================================
+MLP
+========================================================
+
+Only one slide.
+
+192 → 768 → 192
+
+Key message:
+
+ATTENTION mixes information BETWEEN rows.
+MLP transforms features WITHIN each row.
+
+
+========================================================
+CLASSIFIER
+========================================================
+
+Compress to approximately 3 slides:
+
+1. read final CLS: 192 features
+2. Linear(192,1000) → 1000 logits
+3. measured top predictions
+
+Newfoundland 95.73%
+Tibetan mastiff 1.63%
+briard 0.67%
+
+Move detailed one-neuron arithmetic and repeated softmax explanation to
+appendix if necessary.
+
+
+========================================================
+THE CONCEPTUAL CLIMAX
+========================================================
+
+Make the shape trace one of the two main summary slides:
+
+3×224×224
+    ↓
+196×192
+    ↓
++CLS+position
+197×192
+    ↓
+12 encoder blocks
+197×192
+    ↓
+read CLS
+192
+    ↓
+class head
+1000 logits
+
+Large sentence:
+
+"BLOCKS PRESERVE THE SHAPE; THEY CHANGE WHAT EACH ROW REPRESENTS."
+
+
+========================================================
+CNN COMPARISON
+========================================================
+
+Compress current CNN section to max 2 slides.
+
+One comparison:
+
+CNN:
+- local convolution
+- strong locality bias
+- context grows through layers
+
+ViT:
+- patch tokens
+- global content-dependent self-attention
+- position supplied explicitly
+
+Do not give a "which should you choose?" decision guide in the main lecture.
+Move that to appendix.
+
+
+========================================================
+PATCH SIZE
+========================================================
+
+KEEP in main lecture.
+
+32×32 → 49 patches
+16×16 → 196 patches
+8×8 → 784 patches
+
+Token count ×4 → attention score count approximately ×16.
+
+This is an important ViT architectural tradeoff.
+
+
+========================================================
+IMPLEMENTATION
+========================================================
+
+Keep all detailed PyTorch material, but clearly mark it OPTIONAL /
+IMPLEMENTATION LAB.
+
+Before entering the optional lab, add ONE main slide:
+
+"The whole ViT in six lines"
+
+x = patch_embed(image)
+x = prepend_cls(x) + pos
+for block in blocks:
+    x = block(x)
+h = norm(x)[:, 0]
+logits = head(h)
+
+The conceptual lecture must be complete without the implementation section.
+
+
+========================================================
+TRANSFER LEARNING / EVALUATION / INTERPRETABILITY
+========================================================
+
+Move current Sections 7–9 behind an explicit:
+
+OPTIONAL EXTENSIONS
+
+divider.
+
+Subsections:
+- transfer learning / head replacement
+- fine-tuning
+- evaluation
+- feature similarity
+- attention inspection
+- occlusion
+
+If interpretability stays in the main lecture, use only 3 slides:
+
+1. feature similarity
+2. attention
+3. occlusion
+
+Final statement:
+
+feature similarity ≠ attention ≠ causal importance
+
+
+========================================================
+CLIP TRANSITION
+========================================================
+
+End the MAIN lecture strongly.
+
+Slide 1:
+The classifier stores a learned vector per known class.
+
+s_c = h_CLS^T w_c + b_c
+
+Show:
+w_Newfoundland
+w_cat
+w_car
+...
+
+Slide 2:
+What if a class vector came from language?
+
+"a photo of a dog"
+        ↓
+        ???
+        ↓
+       v_dog
+
+Then:
+
+NEXT: CLIP
+
+Do NOT teach CLIP fully here.
+End on the question.
+
+
+========================================================
+VISUAL LANGUAGE
+========================================================
+
+Use the same semantic palette as the rest of the lecture series:
+
+VISION / IMAGE STATES
+blue #3478E5
+
+LANGUAGE STATES
+purple #8B5BB5
+
+ATTENTION / INFORMATION MIXING
+teal #178F82
+
+LEARNED SPECIAL PARAMETERS
+CLS / position / projector
+amber #B98224
+
+LOSS / GRADIENT
+coral-red #D45555
+
+NEUTRAL ARCHITECTURE
+charcoal #30343B
+
+BACKGROUND
+warm white #FAFAF8
+
+
+Q/K/V local role palette is allowed inside detailed attention figures:
+
+Q = violet
+K = amber
+V = teal
+
+but do not let this override modality colors elsewhere.
+
+
+========================================================
+ROUTE BAR
+========================================================
+
+Keep and improve the existing route bar:
+
+IMAGE
+→ PATCHES
+→ PROJECTION
+→ PREPARE ROWS
+→ ATTENTION
+→ MLP
+→ READ SUMMARY
+→ CLASS SCORES
+
+Rules:
+- neutral grey for inactive stages
+- blue/pale-blue for current stage
+- completed stages may get a subtle check
+- do not introduce arbitrary colors
+- keep it in the same position on every detailed slide
+
+
+========================================================
+SLIDE DENSITY
+========================================================
+
+The Beyond Attention deck is stronger partly because the diagram carries
+the explanation.
+
+Apply these main-lecture rules:
+
+- one conceptual idea per slide
+- one primary diagram
+- at most one equation group
+- no long paragraphs under diagrams
+- maximum one short concluding sentence
+- move detailed prose to speaker notes / appendix
+- projector-readable text only
+- prefer progressive SVG builds over duplicate slides
+
+
+========================================================
+CANONICAL VISUAL ASSET
+========================================================
+
+Create ONE reusable ViT pipeline SVG:
+
+IMAGE
+→ PATCHES
+→ PATCH PROJECTION
+→ +POSITION +CLS
+→ ENCODER ×12
+→ FINAL CLS
+→ CLASS HEAD
+
+Reuse it throughout.
+
+Earlier stages remain visible but faded.
+Current stage is enlarged/highlighted.
+Future stages stay grey.
+
+This should be the visual backbone of the whole lecture.
+
+
+========================================================
+TARGET MAIN-LECTURE LENGTH
+========================================================
+
+Aim for ~40–45 conceptual slides,
+or ~50–60 physical slides including progressive builds.
+
+Everything else stays available as optional/reference material.
+
+The main lecture should feel simpler after students finish it, not more
+complicated.
+
+The emotional/intellectual payoff should be:
+
+"Once an image has been turned into tokens, a Vision Transformer is
+mostly the encoder we already know."
+
+Then:
+
+"The remaining limitation is that its class vocabulary is fixed."
+
+→ CLIP.

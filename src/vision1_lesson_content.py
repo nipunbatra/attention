@@ -613,4 +613,5 @@ optimizer.step()''',t(30,65,'image + known label',26,'c-e')+arrow(180,92,180,160
       'legacyVisionRuntime':False,'syntaxHighlighting':True,'output':'vision1.html'}
     (SRC/'part5.json').write_text(json.dumps(config,indent=2)+'\n')
     (ASSETS/'frame-manifest.json').write_text(json.dumps(ordered,indent=2)+'\n')
-    return len(ordered)
+    from vision1_question_story import refactor_main
+    return refactor_main(b, sections, config, ordered)

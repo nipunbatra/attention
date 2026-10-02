@@ -343,7 +343,7 @@ def write_explorer(b):
 +.vix-tour-controls select{min-width:330px}.vix-provenance{font-size:15px;margin-top:24px}
 +@media(max-width:750px){main{padding:0 16px;margin-top:22px}h1{font-size:29px}}
 +'''.replace('\n+','\n')
-    page='<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Explore a trained ViT</title><link rel="icon" href="data:,"><style>'+style+'</style><main><a href="vision1.html?present#s09/2/0">← Back to the lecture</a><h1>Explore a trained ViT, one example at a time</h1><p>Gold compares patch features. Teal shows attention weights. Choose Next example to follow the nine-step tour.</p>'+b['EXPLORER_UI']+'</main><script>'+(src/'vision1-inspector.js').read_text()+'</script></html>'
+    page='<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Explore a trained ViT</title><link rel="icon" href="data:,"><style>'+style+'</style><main><a href="vision1-reference.html?present#s09/2/0">← Back to the lecture</a><h1>Explore a trained ViT, one example at a time</h1><p>Gold compares patch features. Teal shows attention weights. Choose Next example to follow the nine-step tour.</p>'+b['EXPLORER_UI']+'</main><script>'+(src/'vision1-inspector.js').read_text()+'</script></html>'
     (root/'vision1-explorer.html').write_text(page)
 
 

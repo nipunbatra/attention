@@ -1,0 +1,15 @@
+{
+  "main_slides": 54,
+  "main_pdf_pages": 55,
+  "reference_slides": 150,
+  "reference_pdf_pages": 151,
+  "all_144_detailed_frames_preserved": true,
+  "tokens_before_attention": true,
+  "measured_probabilities_and_projection_checked": true,
+  "caption_word_limit": 25,
+  "optional_extensions_divider": true,
+  "ends_on_clip_question": true,
+  "qkv_intuition_and_full_mask": true,
+  "cnn_comparison_frames": 3,
+  "measured_ablation_checked": true
+}

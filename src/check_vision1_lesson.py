@@ -51,7 +51,7 @@ for i,(name,image) in enumerate(p['images'].items()):
             for key in ['Q','K','V','scores','A','H']:
                 np.testing.assert_allclose(actual[2*i+j]['heads'][h][key],expected['heads'][h][key],atol=1e-12)
 
-manifest=json.loads((ROOT/'figures/vision1/frame-manifest.json').read_text())
+manifest=json.loads((ROOT/'figures/vision1/detailed-frame-manifest.json').read_text())
 assert len(manifest)==144
 required={'prior-encoder-recap','vit-same-encoder','vit-token-inputs','vit-self-vs-cross',
           'vit-shape-trace','vision-fixed-class-vectors','vision-language-handoff',
@@ -82,7 +82,7 @@ class Links(HTMLParser):
             link=a['href'].split('#')[0].split('?')[0]
             if link and not link.startswith(('http:','https:','mailto:','#')):
                 assert (ROOT/link).exists(),link
-Links().feed((ROOT/'vision1.html').read_text())
+Links().feed((ROOT/'vision1-reference.html').read_text())
 notebook=json.loads((ROOT/'notebooks/vision/03_vision_transformer_lab.ipynb').read_text())
 assert all(c.get('execution_count') for c in notebook['cells'] if c['cell_type']=='code')
 assert len({x['id'] for x in manifest})==len(manifest)
@@ -110,7 +110,7 @@ assert training['split_sizes']==[512,128,256]
 assert [r['test']['correct'] for r in training['results']]==[256,128]
 assert training['results'][1]['max_paired_probability_difference']<1e-5
 assert all(r['best_validation_epoch']<=training['epochs'] for r in training['results'])
-page=(ROOT/'vision1.html').read_text()
+page=(ROOT/'vision1-reference.html').read_text()
 assert '__VISION_SCENES__' not in page
 assert '<audio' not in page and '<video' not in page
 assert 'torch.nn' in str(notebook)

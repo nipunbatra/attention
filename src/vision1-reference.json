@@ -1,0 +1,157 @@
+{
+  "part": 1,
+  "partLabel": "Vision I",
+  "series": "Vision to language",
+  "title": "Vision Transformer \u00b7 optional labs and references",
+  "subtitle": "Detailed arithmetic, PyTorch implementation, transfer learning and interpretation.",
+  "audience": "Students who have completed Transformers beyond next-token prediction (encoders, decoders and cross-attention).",
+  "durationLabel": "Optional material",
+  "hook": "Which part of the model would you like to open?",
+  "centralLabel": "Follow one computation",
+  "central": "\\text{pixels}\\to E\\to Q,K,V\\to A\\to H\\to E\\prime\\to p(\\text{class})",
+  "sections": [
+    {
+      "id": "s01",
+      "title": "Optional recap: earlier intuition",
+      "lit": ""
+    },
+    {
+      "id": "s02",
+      "title": "Opening the patch-projection box",
+      "lit": ""
+    },
+    {
+      "id": "s03",
+      "title": "Opening attention again with real ViT numbers",
+      "lit": ""
+    },
+    {
+      "id": "s04",
+      "title": "Optional whole-model walkthrough",
+      "lit": ""
+    },
+    {
+      "id": "s05",
+      "title": "Optional CNN comparison",
+      "lit": ""
+    },
+    {
+      "id": "s06",
+      "title": "Implementation lab \u00b7 optional",
+      "lit": ""
+    },
+    {
+      "id": "s07",
+      "title": "Optional extensions: transfer and evaluation",
+      "lit": ""
+    },
+    {
+      "id": "s08",
+      "title": "Optional extensions: new-image inference",
+      "lit": ""
+    },
+    {
+      "id": "s09",
+      "title": "Optional extensions: interpreting the model",
+      "lit": ""
+    },
+    {
+      "id": "s10",
+      "title": "Optional cost exercises and references",
+      "lit": ""
+    },
+    {
+      "id": "s11",
+      "title": "Optional reference diagrams",
+      "lit": ""
+    }
+  ],
+  "chain": [
+    {
+      "section": "s01",
+      "label": "Optional recap: earlier intuition"
+    },
+    {
+      "section": "s02",
+      "label": "Opening the patch-projection box"
+    },
+    {
+      "section": "s03",
+      "label": "Opening attention again with real ViT numbers"
+    },
+    {
+      "section": "s04",
+      "label": "Optional whole-model walkthrough"
+    },
+    {
+      "section": "s05",
+      "label": "Optional CNN comparison"
+    },
+    {
+      "section": "s06",
+      "label": "Implementation lab \u00b7 optional"
+    },
+    {
+      "section": "s07",
+      "label": "Optional extensions: transfer and evaluation"
+    },
+    {
+      "section": "s08",
+      "label": "Optional extensions: new-image inference"
+    },
+    {
+      "section": "s09",
+      "label": "Optional extensions: interpreting the model"
+    },
+    {
+      "section": "s10",
+      "label": "Optional cost exercises and references"
+    },
+    {
+      "section": "s11",
+      "label": "Optional reference diagrams"
+    }
+  ],
+  "objects": [
+    "e",
+    "q",
+    "k",
+    "v",
+    "a",
+    "d",
+    "ep"
+  ],
+  "objectSections": {
+    "e": "s03",
+    "q": "s03",
+    "k": "s03",
+    "v": "s03",
+    "a": "s03",
+    "d": "s03",
+    "ep": "s03"
+  },
+  "provenance": "Real-photo predictions are saved measurements from a pretrained ImageNet model. The backward pass explains how a label would train this architecture. Code and dog/cat adaptation show procedures, with no new training results. The optional lab retains the separate four-patch worksheet and synthetic experiment.",
+  "prev": {
+    "label": "Main Vision I lecture",
+    "href": "vision1.html"
+  },
+  "next": {
+    "label": "Main Vision I lecture",
+    "href": "vision1.html"
+  },
+  "index": {
+    "label": "Series home",
+    "href": "index.html"
+  },
+  "notation": "vision1",
+  "footer": "Pixels become rows; attention adds context; a learned readout answers the image question.",
+  "sectionDirectory": "sections-vision1-reference",
+  "toyFile": "vision1-worksheet.json",
+  "runtimeFile": "vision1-lesson.js",
+  "additionalRuntimeFiles": [
+    "vision1-inspector.js"
+  ],
+  "legacyVisionRuntime": false,
+  "syntaxHighlighting": true,
+  "output": "vision1-reference.html"
+}
