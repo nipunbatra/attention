@@ -16,7 +16,7 @@ OPTIONAL = {
     'key-example-sources', 'value-example-messages', 'bridge-image-target',
     'one-rgb', 'flatten-order', 's01-rows-step-1',
     'cls-stored-start', 'cls-collect', 'cls-two-image-readout', 'cls-without',
-    'cls-pool-arithmetic',
+    'cls-pool-arithmetic', 'cls-pool-dog', 'cls-readout-return',
 }
 
 

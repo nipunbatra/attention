@@ -52,7 +52,7 @@ for i,(name,image) in enumerate(p['images'].items()):
                 np.testing.assert_allclose(actual[2*i+j]['heads'][h][key],expected['heads'][h][key],atol=1e-12)
 
 manifest=json.loads((ROOT/'figures/vision1/frame-manifest.json').read_text())
-assert len(manifest)==146
+assert len(manifest)==144
 required={'prior-encoder-recap','vit-same-encoder','vit-token-inputs','vit-self-vs-cross',
           'vit-shape-trace','vision-fixed-class-vectors','vision-language-handoff',
           'cls-shared-start','heads-visual-roles',

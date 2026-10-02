@@ -1,6 +1,6 @@
 # Vision I — current slide map
 
-146 teaching frames plus the cover. Right/Left advances reveals; S opens notes. Detailed calculations are preserved. Section 6 is an optional implementation lab; historical and dense reference figures remain in reading notes.
+144 teaching frames plus the cover. Right/Left advances reveals; S opens notes. Detailed calculations are preserved. Section 6 is an optional implementation lab; historical and dense reference figures remain in reading notes.
 
 | Section | Frame | ID | Title |
 |---|---:|---|---|
@@ -50,44 +50,42 @@
 | s03 | 7 | `real-cls-purpose` | Add a summary row beside the dog’s patch rows |
 | s03 | 8 | `cls-summary-refinement` | What makes CLS an image summary? |
 | s03 | 9 | `cls-shared-start` | The same CLS start reads two different photographs |
-| s03 | 10 | `cls-pool-dog` | Without CLS, combine the dog’s final patch rows |
-| s03 | 11 | `cls-readout-return` | Why is CLS a common choice if pooling also works? |
-| s03 | 12 | `real-cls-sequence` | Add the summary row: 196 + 1 = 197 |
-| s03 | 13 | `model-journey-checkpoint` | Start with one Transformer block |
-| s03 | 14 | `vit-self-vs-cross` | Self-attention: Q, K and V share the same input |
-| s03 | 15 | `real-patch-qkv` | Make queries, keys and values from these rows |
-| s03 | 16 | `real-cls-attention` | The same input matrix feeds three learned projections |
-| s03 | 17 | `real-attention-product` | One query–key comparison fills one matrix cell |
-| s03 | 18 | `real-attention-cls-zoom` | Follow the CLS row from scores to weights |
-| s03 | 19 | `real-attention-weights` | Turn each query’s 197 scores into 197 source weights |
-| s03 | 20 | `real-attention-mask` | Every image row can read every image row |
-| s03 | 21 | `real-message-text-analogy` | A message for CLS works like a message for bank |
-| s03 | 22 | `real-cls-values-origin` | The dog’s feature rows become value rows |
-| s03 | 23 | `real-cls-value-scaling` | One weight scales all 64 features in its value row |
-| s03 | 24 | `real-cls-value-contributions` | Each source contributes a weighted value row |
-| s03 | 25 | `real-cls-value-sum` | Add the contributions to make one CLS message |
-| s03 | 26 | `real-cls-message-destination` | Where does the CLS message go? |
-| s03 | 27 | `real-attention-values` | Each query gets its own message |
-| s03 | 28 | `real-heads-intro` | From one completed head to three parallel heads |
-| s03 | 29 | `heads-visual-roles` | What might different heads look for in this photograph? |
-| s03 | 30 | `real-heads-qkv` | The same rows feed three sets of Q, K and V |
-| s03 | 31 | `real-heads-messages` | Each head repeats the complete attention calculation |
-| s03 | 32 | `real-heads-cls` | One CLS input produces three different messages |
-| s03 | 33 | `real-heads-concat` | Concatenate the three CLS messages |
-| s03 | 34 | `real-cls-message` | Keep the embedding; add the context from attention |
-| s03 | 35 | `real-cls-residual` | The dog’s CLS keeps its input and gains context |
-| s03 | 36 | `real-cls-mlp` | Open block 1: attention, then the MLP |
-| s03 | 37 | `real-mlp-network` | Open the MLP: 192 inputs, 768 hidden units, 192 outputs |
-| s03 | 38 | `real-mlp-residual` | Add the MLP update to finish block 1 |
-| s03 | 39 | `real-block-handoff` | Pass the complete output of block 1 into block 2 |
-| s03 | 40 | `real-block-changes` | What changes as the rows move through the blocks? |
-| s03 | 41 | `real-cls-depth` | Continue through the stack, then classify the image |
-| s03 | 42 | `real-cls-readout` | Select CLS from the final feature matrix |
-| s03 | 43 | `real-classifier-network` | Open the classifier: 192 features become 1,000 scores |
-| s03 | 44 | `real-classifier-score` | One class score is a weighted sum plus a bias |
-| s03 | 45 | `real-classifier-softmax` | Turn all 1,000 scores into class probabilities |
-| s03 | 46 | `photo-two-softmaxes` | Two softmaxes, two different questions |
-| s03 | 47 | `real-cls-prediction` | The same dog now has its final prediction |
+| s03 | 10 | `real-cls-sequence` | Add the summary row: 196 + 1 = 197 |
+| s03 | 11 | `model-journey-checkpoint` | Start with one Transformer block |
+| s03 | 12 | `vit-self-vs-cross` | Self-attention: Q, K and V share the same input |
+| s03 | 13 | `real-patch-qkv` | Make queries, keys and values from these rows |
+| s03 | 14 | `real-cls-attention` | The same input matrix feeds three learned projections |
+| s03 | 15 | `real-attention-product` | One query–key comparison fills one matrix cell |
+| s03 | 16 | `real-attention-cls-zoom` | Follow the CLS row from scores to weights |
+| s03 | 17 | `real-attention-weights` | Turn each query’s 197 scores into 197 source weights |
+| s03 | 18 | `real-attention-mask` | Every image row can read every image row |
+| s03 | 19 | `real-message-text-analogy` | A message for CLS works like a message for bank |
+| s03 | 20 | `real-cls-values-origin` | The dog’s feature rows become value rows |
+| s03 | 21 | `real-cls-value-scaling` | One weight scales all 64 features in its value row |
+| s03 | 22 | `real-cls-value-contributions` | Each source contributes a weighted value row |
+| s03 | 23 | `real-cls-value-sum` | Add the contributions to make one CLS message |
+| s03 | 24 | `real-cls-message-destination` | Where does the CLS message go? |
+| s03 | 25 | `real-attention-values` | Each query gets its own message |
+| s03 | 26 | `real-heads-intro` | From one completed head to three parallel heads |
+| s03 | 27 | `heads-visual-roles` | What might different heads look for in this photograph? |
+| s03 | 28 | `real-heads-qkv` | The same rows feed three sets of Q, K and V |
+| s03 | 29 | `real-heads-messages` | Each head repeats the complete attention calculation |
+| s03 | 30 | `real-heads-cls` | One CLS input produces three different messages |
+| s03 | 31 | `real-heads-concat` | Concatenate the three CLS messages |
+| s03 | 32 | `real-cls-message` | Keep the embedding; add the context from attention |
+| s03 | 33 | `real-cls-residual` | The dog’s CLS keeps its input and gains context |
+| s03 | 34 | `real-cls-mlp` | Open block 1: attention, then the MLP |
+| s03 | 35 | `real-mlp-network` | Open the MLP: 192 inputs, 768 hidden units, 192 outputs |
+| s03 | 36 | `real-mlp-residual` | Add the MLP update to finish block 1 |
+| s03 | 37 | `real-block-handoff` | Pass the complete output of block 1 into block 2 |
+| s03 | 38 | `real-block-changes` | What changes as the rows move through the blocks? |
+| s03 | 39 | `real-cls-depth` | Continue through the stack, then classify the image |
+| s03 | 40 | `real-cls-readout` | Select CLS from the final feature matrix |
+| s03 | 41 | `real-classifier-network` | Open the classifier: 192 features become 1,000 scores |
+| s03 | 42 | `real-classifier-score` | One class score is a weighted sum plus a bias |
+| s03 | 43 | `real-classifier-softmax` | Turn all 1,000 scores into class probabilities |
+| s03 | 44 | `photo-two-softmaxes` | Two softmaxes, two different questions |
+| s03 | 45 | `real-cls-prediction` | The same dog now has its final prediction |
 | s04 | 1 | `vision-topic-04` | Section 4 · Whole model walkthrough |
 | s04 | 2 | `vit-shape-trace` | One shape trace from pixels to class scores |
 | s04 | 3 | `vit-canonical-block` | Inside each block: mix, transform, keep the residual |
