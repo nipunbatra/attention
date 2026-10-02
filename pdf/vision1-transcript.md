@@ -1161,34 +1161,38 @@ Including CLS, 197 squared is 38,809 and 785 squared is 616,225, about 15.88 tim
 ### Page 50 — Once an image becomes tokens, the encoder is familiar
 
 ```text
-IMAGE
-3 × 224 × 224
-PATCHES
-196 crops
-PATCH
-PROJECTION
-196 × 192
-+ POSITION
-+ CLS
-197 × 192
-ENCODER
-× 12
-197 × 192
-FINAL
+1 · Make tokens
+2 · Build context
+3 · Read CLS
+Shared
+projection
+224 × 224 RGB
++ CLS + position
 CLS
-192
-CLASS
-HEAD
-1,000 logits
-Patches make tokens; the known encoder builds context; the class head reads the image summary.
+P1
+P2
+…
+197 rows × 192 features
+12 encoder blocks
+Full attention
+gather messages + add
+MLP
+update each row + add
+197 updated rows × 192
+Final CLS · 192
+Updated patch rows
+Linear class head
+1,000 class scores
+Newfoundland
+Pixels become token rows. Every row gains context. Final CLS supplies the image summary for classification.
 ```
 
-**Caption:** Patches make tokens; the known encoder builds context; the class head reads the image summary.
+**Caption:** Pixels become token rows. Every row gains context. Final CLS supplies the image summary for classification.
 
 **Speaker notes**
 
 Once an image becomes tokens, the encoder is familiar
-This is the reusable canonical pipeline. Ask students to narrate its seven stages. Patch projection, positions and CLS prepare the input; the encoder is reused. Classification consumes the final normalized CLS.
+Read the three panels from left to right, as in the opening model-family recap. Split the image into 196 RGB patches and apply one shared projection; prepend CLS and add position embeddings. All 197 rows pass through 12 encoder blocks. Within each block, full attention gathers messages, joins and projects the head outputs, and adds an update to each incoming row; the MLP then adds its own update to that attention-updated row. Each block has its own parameters. The shape remains 197 by 192. After final normalization, select only the CLS row for the trained 1,000-class head. The patch rows still exist. LayerNorm and the output projection are omitted from this overview; the nearby code and the detailed block slides make them explicit. The final label is the measured prediction for our photograph.
 
 ### Page 51 — Follow the whole model through its shapes
 
@@ -1220,21 +1224,26 @@ This is the conceptual climax. Projection sets the feature width; adding CLS cha
 ### Page 52 — The whole ViT in six lines
 
 ```text
-x = patch_embed(image)       # B, 196, 192
-x = prepend_cls(x) + pos      # B, 197, 192
+# Project each image patch to 192 features.
+x = patch_embed(image)        # (B, 196, 192)
+# Add CLS at index 0 and position to every token.
+x = prepend_cls(x) + pos      # (B, 197, 192)
+# Update all patch embeddings and CLS in each block.
 for block in blocks:
-    x = block(x)             # B, 197, 192
-h = norm(x)[:, 0]            # B, 192
-logits = head(h)             # B, 1000
-The optional implementation lab opens each of these operations.
+    x = block(x)              # (B, 197, 192)
+# Normalize, then extract token 0: final CLS.
+h = norm(x)[:, 0]             # (B, 192)
+# Turn the image summary into 1,000 class scores.
+logits = head(h)              # (B, 1000)
+B is the batch size. Token 0 is CLS; the head returns scores for the 1,000 ImageNet classes.
 ```
 
-**Caption:** The optional implementation lab opens each of these operations.
+**Caption:** B is the batch size. Token 0 is CLS; the head returns scores for the 1,000 ImageNet classes.
 
 **Speaker notes**
 
 The whole ViT in six lines
-This is readable pseudocode for the same pre-LN encoder classifier. patch_embed includes projection and conversion to patch rows. pos has shape 1 by 197 by 192 and broadcasts across the batch. Starting CLS is shared across the batch. Blocks include their two residual branches.
+This is readable pseudocode for the same pre-LN encoder classifier. The input image tensor has shape B by 3 by 224 by 224. patch_embed includes patch extraction, shared projection and conversion to patch rows. pos has shape 1 by 197 by 192 and broadcasts across the batch. Starting CLS is shared across the batch and prepended at token index zero. Each block updates every patch row and CLS through attention and MLP residual branches. norm(x) normalizes all final rows; [:, 0] selects CLS for every image in the batch, yielding B by 192. The linear head maps that image summary to 1,000 unnormalized class scores. No softmax is performed in these six executable lines.
 
 ### Page 53 — Choose a deeper dive when you need it
 

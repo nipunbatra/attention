@@ -386,8 +386,8 @@
   {
     "id": "story-summary-pipeline",
     "title": "Once an image becomes tokens, the encoder is familiar",
-    "caption": "Patches make tokens; the known encoder builds context; the class head reads the image summary.",
-    "notes": "Once an image becomes tokens, the encoder is familiar\nThis is the reusable canonical pipeline. Ask students to narrate its seven stages. Patch projection, positions and CLS prepare the input; the encoder is reused. Classification consumes the final normalized CLS.",
+    "caption": "Pixels become token rows. Every row gains context. Final CLS supplies the image summary for classification.",
+    "notes": "Once an image becomes tokens, the encoder is familiar\nRead the three panels from left to right, as in the opening model-family recap. Split the image into 196 RGB patches and apply one shared projection; prepend CLS and add position embeddings. All 197 rows pass through 12 encoder blocks. Within each block, full attention gathers messages, joins and projects the head outputs, and adds an update to each incoming row; the MLP then adds its own update to that attention-updated row. Each block has its own parameters. The shape remains 197 by 192. After final normalization, select only the CLS row for the trained 1,000-class head. The patch rows still exist. LayerNorm and the output projection are omitted from this overview; the nearby code and the detailed block slides make them explicit. The final label is the measured prediction for our photograph.",
     "section": "s07",
     "frame": 6
   },
@@ -402,8 +402,8 @@
   {
     "id": "story-six-lines",
     "title": "The whole ViT in six lines",
-    "caption": "The optional implementation lab opens each of these operations.",
-    "notes": "The whole ViT in six lines\nThis is readable pseudocode for the same pre-LN encoder classifier. patch_embed includes projection and conversion to patch rows. pos has shape 1 by 197 by 192 and broadcasts across the batch. Starting CLS is shared across the batch. Blocks include their two residual branches.",
+    "caption": "B is the batch size. Token 0 is CLS; the head returns scores for the 1,000 ImageNet classes.",
+    "notes": "The whole ViT in six lines\nThis is readable pseudocode for the same pre-LN encoder classifier. The input image tensor has shape B by 3 by 224 by 224. patch_embed includes patch extraction, shared projection and conversion to patch rows. pos has shape 1 by 197 by 192 and broadcasts across the batch. Starting CLS is shared across the batch and prepended at token index zero. Each block updates every patch row and CLS through attention and MLP residual branches. norm(x) normalizes all final rows; [:, 0] selects CLS for every image in the batch, yielding B by 192. The linear head maps that image summary to 1,000 unnormalized class scores. No softmax is performed in these six executable lines.",
     "section": "s07",
     "frame": 8
   },

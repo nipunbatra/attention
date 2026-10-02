@@ -466,9 +466,36 @@ with torch.inference_mode():
     add('patch-cost','What does a finer grid cost?',body,
         'The pairwise score count grows quadratically with token count.',
         'Including CLS, 197 squared is 38,809 and 785 squared is 616,225, about 15.88 times larger. The approximately 16-fold statement is exact for the patch-only counts. This concerns attention scores, not a 16-fold claim about total runtime or all model operations.',(4,))
-    add('summary-pipeline','Once an image becomes tokens, the encoder is familiar',pipeline(),
-        'Patches make tokens; the known encoder builds context; the class head reads the image summary.',
-        'This is the reusable canonical pipeline. Ask students to narrate its seven stages. Patch projection, positions and CLS prepare the input; the encoder is reused. Classification consumes the final normalized CLS.')
+    # Three visual stages echo the opening encoder-family recap.
+    body=''
+    for x,w,color,title in [(20,330,'vision','1 · Make tokens'),
+                            (405,350,'mixing','2 · Build context'),
+                            (810,330,'special','3 · Read CLS')]:
+        body+=t(x+w/2,38,title,32,color,'middle',650)
+        body+=rect(x,67,w,339,'line','card',8)
+        body+=line(x+18,68,x+w-18,68,color,4)
+    body+=grid(42,98,120)+arrow(167,158,187,158,'vision')
+    body+=box(196,112,136,['Shared','projection'],'vision',h=87,size=25)
+    body+=t(102,247,'224 × 224 RGB',22,'ink-2','middle')
+    body+=arrow(264,207,264,267,'vision')+t(184,295,'+ CLS + position',28,'special','middle')
+    for i,label in enumerate(['CLS','P1','P2','…']):
+        body+=box(39+i*77,317,62,label,'special' if i==0 else 'vision',h=38,size=24)
+    body+=t(185,387,'197 rows × 192 features',25,'vision','middle')
+    body+=arrow(357,238,396,238,'vision')
+    body+=t(580,105,'12 encoder blocks',28,'mixing','middle',650)
+    body+=box(431,127,298,['Full attention','gather messages + add'],'mixing',h=90,size=25)
+    body+=arrow(580,225,580,244,'mixing')
+    body+=box(431,253,298,['MLP','update each row + add'],'mixing',h=90,size=25)
+    body+=t(580,387,'197 updated rows × 192',25,'mixing','middle')
+    body+=arrow(763,238,802,238,'mixing')
+    body+=box(831,96,250,'Final CLS · 192','special',h=48,size=27)
+    body+='<g opacity="0.42">'+box(831,156,250,'Updated patch rows','vision',h=42,size=24)+'</g>'
+    body+=line(1090,120,1118,120,'special')+line(1118,120,1118,226,'special')+line(1118,226,975,226,'special')+arrow(975,226,975,254,'special')
+    body+=box(831,264,288,['Linear class head','1,000 class scores'],'special',h=82,size=26)
+    body+=arrow(975,351,975,367,'special')+t(975,394,'Newfoundland',28,'ink','middle',650)
+    add('summary-pipeline','Once an image becomes tokens, the encoder is familiar',body,
+        'Pixels become token rows. Every row gains context. Final CLS supplies the image summary for classification.',
+        'Read the three panels from left to right, as in the opening model-family recap. Split the image into 196 RGB patches and apply one shared projection; prepend CLS and add position embeddings. All 197 rows pass through 12 encoder blocks. Within each block, full attention gathers messages, joins and projects the head outputs, and adds an update to each incoming row; the MLP then adds its own update to that attention-updated row. Each block has its own parameters. The shape remains 197 by 192. After final normalization, select only the CLS row for the trained 1,000-class head. The patch rows still exist. LayerNorm and the output projection are omitted from this overview; the nearby code and the detailed block slides make them explicit. The final label is the measured prediction for our photograph.')
     body=''
     items=[('Pixels','3 × 224 × 224'),('Patch projection','196 × 192'),('+ CLS + position','197 × 192'),('12 encoder blocks','197 × 192'),('Final LN → read CLS','192'),('Class head','1,000 logits')]
     for i,(label,shape) in enumerate(items):
@@ -480,16 +507,21 @@ with torch.inference_mode():
     add('summary-shapes','Follow the whole model through its shapes',body,
         'Batch dimension omitted; all shapes refer to one photograph.',
         'This is the conceptual climax. Projection sets the feature width; adding CLS changes 196 rows to 197. All twelve encoder blocks preserve 197 by 192. Only the readout reduces to one row and the classifier changes 192 features to 1,000 logits.')
-    code='''x = patch_embed(image)       # B, 196, 192
-x = prepend_cls(x) + pos      # B, 197, 192
+    code='''# Project each image patch to 192 features.
+x = patch_embed(image)        # (B, 196, 192)
+# Add CLS at index 0 and position to every token.
+x = prepend_cls(x) + pos      # (B, 197, 192)
+# Update all patch embeddings and CLS in each block.
 for block in blocks:
-    x = block(x)             # B, 197, 192
-h = norm(x)[:, 0]            # B, 192
-logits = head(h)             # B, 1000'''
-    body=f.code(code,x=65,y=77,width=1040,size=29,spacing=56)
+    x = block(x)              # (B, 197, 192)
+# Normalize, then extract token 0: final CLS.
+h = norm(x)[:, 0]             # (B, 192)
+# Turn the image summary into 1,000 class scores.
+logits = head(h)              # (B, 1000)'''
+    body=f.code(code,x=65,y=54,width=1040,size=28,spacing=34)
     add('six-lines','The whole ViT in six lines',body,
-        'The optional implementation lab opens each of these operations.',
-        'This is readable pseudocode for the same pre-LN encoder classifier. patch_embed includes projection and conversion to patch rows. pos has shape 1 by 197 by 192 and broadcasts across the batch. Starting CLS is shared across the batch. Blocks include their two residual branches.')
+        'B is the batch size. Token 0 is CLS; the head returns scores for the 1,000 ImageNet classes.',
+        'This is readable pseudocode for the same pre-LN encoder classifier. The input image tensor has shape B by 3 by 224 by 224. patch_embed includes patch extraction, shared projection and conversion to patch rows. pos has shape 1 by 197 by 192 and broadcasts across the batch. Starting CLS is shared across the batch and prepended at token index zero. Each block updates every patch row and CLS through attention and MLP residual branches. norm(x) normalizes all final rows; [:, 0] selects CLS for every image in the batch, yielding B by 192. The linear head maps that image summary to 1,000 unnormalized class scores. No softmax is performed in these six executable lines.')
     body=t(580,45,'OPTIONAL LABS & EXTENSIONS',32,'special','middle',650)
     choices=[('Implementation lab',['Linear ↔ Conv2d','PyTorch shapes + code']),('Extensions',['Transfer + evaluation','Similarity · attention · occlusion']),('Open the boxes',['Patch arithmetic','Real attention numbers'])]
     for i,(title,lines_) in enumerate(choices):
