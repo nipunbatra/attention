@@ -1,0 +1,207 @@
+{
+  "title": "From CLIP to Vision-Language Models",
+  "slides": 153,
+  "buildStates": 472,
+  "files": [
+    {
+      "path": "RECORDED_DEMO.md",
+      "bytes": 3112,
+      "sha256": "73db57874d476f75246e10483b264eb0ce76b378b8c96166123705daba1345b4"
+    },
+    {
+      "path": "SOURCES.md",
+      "bytes": 13418,
+      "sha256": "c1da12bdc454e6389cfc2063bea2bfb1be6fe764e3f98f77e35e33ba52bacbe5"
+    },
+    {
+      "path": "demo.html",
+      "bytes": 48606,
+      "sha256": "3ab826040d454bdb976d185b80e23ef8f95c602fc0e4aa2c2a6aafa7bc588aac"
+    },
+    {
+      "path": "figures/blank.svg",
+      "bytes": 113,
+      "sha256": "e919f9b13f3ef542f3bbc3ea6881557703c192244dfe56b7309148bc505f74cd"
+    },
+    {
+      "path": "figures/cat.jpg",
+      "bytes": 26122,
+      "sha256": "6071d201543c999e063615d6c2cc674ea004adb11711d34d29d3df11c0012292"
+    },
+    {
+      "path": "figures/chart.svg",
+      "bytes": 3627,
+      "sha256": "8f41b4d19af5210f423b683d83f699963d5894aeac22a2bcc7fa75454dac91b2"
+    },
+    {
+      "path": "figures/counting.svg",
+      "bytes": 2451,
+      "sha256": "e7991c1de0f4fbeece7e5bd1cfb2bb7f57d4b98d36ef85b8dcfbd5956b6bd119"
+    },
+    {
+      "path": "figures/desk.svg",
+      "bytes": 2445,
+      "sha256": "25f69e171511520002c0085e3b2ed69bddbf2ae6187a83d1e82913dcb9a9c876"
+    },
+    {
+      "path": "figures/dog.jpg",
+      "bytes": 39546,
+      "sha256": "617dc6f6dcd26c69303b54985eadd5c75bc07b8ba22cdb1ea511307096098d0a"
+    },
+    {
+      "path": "figures/geometry.svg",
+      "bytes": 2167,
+      "sha256": "36a9b5258633a6edd2d4e8a57472ffc7e724d2c3b70c6bafe97296a85a39e419"
+    },
+    {
+      "path": "figures/invoice.svg",
+      "bytes": 2755,
+      "sha256": "b092af923a3e00e90e44ffa0bc2b5008cfb24e338e385bd3e63dd7eb79d7197a"
+    },
+    {
+      "path": "figures/no-bicycle.jpg",
+      "bytes": 104711,
+      "sha256": "80e2b46bbd310f215a6381ceac2ef7a403c23874ec48b3637cd74177e31ed4ea"
+    },
+    {
+      "path": "figures/papers/ATTRIBUTION.md",
+      "bytes": 1811,
+      "sha256": "cfd0037aa92435f022e8ec7010105f2d58ab634b60e0118eac6ce848cd6344a2"
+    },
+    {
+      "path": "figures/papers/blip2-figure-3.png",
+      "bytes": 230007,
+      "sha256": "2f40cd22434ea30df3bd5790415ddfae31e465c7ea99ca1ab373fb16047ae384"
+    },
+    {
+      "path": "figures/papers/flamingo-figure-3.png",
+      "bytes": 144558,
+      "sha256": "2fb3bef323eb461bab167323ccc23b705cb97b114df348bc96049d9fe5ceb351"
+    },
+    {
+      "path": "figures/papers/llava-figure-1.png",
+      "bytes": 66917,
+      "sha256": "ab5ed28334dc0b536d964dad3fb01bf85e2d7066932ceb8163093039183074ef"
+    },
+    {
+      "path": "figures/papers/provenance.json",
+      "bytes": 1623,
+      "sha256": "702377c9e7111be931075dc43d84aceed35df7396dd3b972758bdd27348fdffe"
+    },
+    {
+      "path": "figures/rooms-pair.svg",
+      "bytes": 5862,
+      "sha256": "b9ce2e078055ebb024419cd8cff629b89e79a33e8bb1336a504663ccbdb3de0f"
+    },
+    {
+      "path": "figures/settings.svg",
+      "bytes": 2781,
+      "sha256": "cc497e4a67e07839f45f78f65e6879943d1461fbec00d79e7e0272d567871d70"
+    },
+    {
+      "path": "figures/shapes.svg",
+      "bytes": 2121,
+      "sha256": "aacd5eb03edf4a3c65b8212aad4015d1770790de73975922356b86f8000ed022"
+    },
+    {
+      "path": "figures/thermal.svg",
+      "bytes": 5953,
+      "sha256": "cea955cc6a975dad6db2b09f3c69f18beb0f4e1bf46ee10041ef1cb3e94d3471"
+    },
+    {
+      "path": "index.html",
+      "bytes": 6226546,
+      "sha256": "9378338866f64ac40644762a02fa2030cbc9e345de4ecabcf6039c81fa395396"
+    },
+    {
+      "path": "from-clip-to-vlm.pdf",
+      "bytes": 3435178,
+      "sha256": "a3dc70275d3b022e4ccba82c3a868d054d24bdf8cbfa3ccea4b53877b0a0669d"
+    },
+    {
+      "path": "recorded-demo.html",
+      "bytes": 48633,
+      "sha256": "151f361d7ee24cf63cdbd8c2a4b2f776e9a98ded46c200fd7490294b2a4df3bb"
+    },
+    {
+      "path": "results/vlm_lab_outputs.json",
+      "bytes": 37896,
+      "sha256": "8d4e7a61aa6accc7dc80e151a77c467f31b5b955eba0d4cc234a0650e7407963"
+    },
+    {
+      "path": "src/demo-worker.js",
+      "bytes": 3346,
+      "sha256": "30f98215f2d7a5827fe67f6445993cb8deb64d3927771e56d172f516b6ca1eda"
+    },
+    {
+      "path": "test-suite/cf-blank.png",
+      "bytes": 2288,
+      "sha256": "33f1ec567256a7a8746983d341a62afacd5ce6740fb7d562911aec088e836f42"
+    },
+    {
+      "path": "test-suite/cf-cat.png",
+      "bytes": 259068,
+      "sha256": "e12a5c1e8aca919f759b79142189403e156a1aa1c4ace06f8603b342efc38d2c"
+    },
+    {
+      "path": "test-suite/cf-dog.png",
+      "bytes": 564831,
+      "sha256": "76d6b47699e869160b1f2fb884bec5abfaf091636d68ef773bed65118ea00aa5"
+    },
+    {
+      "path": "test-suite/change.png",
+      "bytes": 6960,
+      "sha256": "88d982d0e25ba83b363113ff22a83b274f4294a6ca23da76c5624460c90429b8"
+    },
+    {
+      "path": "test-suite/chart.png",
+      "bytes": 21708,
+      "sha256": "38d94b73abab1a5ef23079bc6907d2aa15f836423578ecefaa8353e04ed2bbf1"
+    },
+    {
+      "path": "test-suite/count.png",
+      "bytes": 13010,
+      "sha256": "7f1d845a79953beb9da331c619f4531a304f54d8d83945a8595c76f108b137b4"
+    },
+    {
+      "path": "test-suite/desk.png",
+      "bytes": 5252,
+      "sha256": "24e92b96637f92873c9cf3fe00c3b6d1277efb46a325184aab43d3d56dee68a2"
+    },
+    {
+      "path": "test-suite/dog.png",
+      "bytes": 564831,
+      "sha256": "76d6b47699e869160b1f2fb884bec5abfaf091636d68ef773bed65118ea00aa5"
+    },
+    {
+      "path": "test-suite/domain.png",
+      "bytes": 33015,
+      "sha256": "247094146c6c23a7e593318e2b1d732a18db181f96b408d6de3b1011cb8f39f5"
+    },
+    {
+      "path": "test-suite/invoice.png",
+      "bytes": 37750,
+      "sha256": "ec6db29116581a606d3800442d2ccc3b293ee4daf12f22bee652ea6494b01be7"
+    },
+    {
+      "path": "test-suite/math.png",
+      "bytes": 9433,
+      "sha256": "dd2f97c564211d28e1b6118b1de45013ac81ebb9010304afa225b2c74a208e3f"
+    },
+    {
+      "path": "test-suite/no-bicycle.png",
+      "bytes": 574528,
+      "sha256": "bf1b9d47f3b422df9d1a8875bffd7fadb7ece4e707042d316866bf1ac6228390"
+    },
+    {
+      "path": "test-suite/screen.png",
+      "bytes": 18262,
+      "sha256": "4101746d19810b2c7bfa1575d4c17b24d5f29e51c17cbe3952f8778ea93f3e84"
+    },
+    {
+      "path": "test-suite/shapes.png",
+      "bytes": 7101,
+      "sha256": "dc435e26d5becd716c71871cf8ca7319728b8875e53f8400254fd7c1fa902150"
+    }
+  ]
+}

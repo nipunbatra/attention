@@ -1,0 +1,38 @@
+[
+  {
+    "file": "llava-figure-1.png",
+    "model": "LLaVA",
+    "paperTitle": "Visual Instruction Tuning",
+    "authors": "Liu, Li, Wu and Lee",
+    "figure": "Figure 1",
+    "arxivVersion": "2304.08485v2",
+    "source": "https://arxiv.org/pdf/2304.08485v2",
+    "rights": "CC BY 4.0",
+    "changes": "Rendered page 4 at 300 dpi; cropped x=680, y=1180, width=1200, height=400 pixels. Diagram unchanged.",
+    "sha256": "ab5ed28334dc0b536d964dad3fb01bf85e2d7066932ceb8163093039183074ef"
+  },
+  {
+    "file": "flamingo-figure-3.png",
+    "model": "Flamingo",
+    "paperTitle": "Flamingo: a Visual Language Model for Few-Shot Learning",
+    "authors": "Alayrac et al.",
+    "figure": "Figure 3",
+    "arxivVersion": "2204.14198v1",
+    "source": "https://arxiv.org/html/2204.14198v1/fig2_overview_interleaved_v2.png",
+    "rights": "arXiv nonexclusive distribution license; copyright retained by the authors/rightsholders. Not a CC-BY course asset.",
+    "changes": "Original PNG downloaded without changes.",
+    "sha256": "2fb3bef323eb461bab167323ccc23b705cb97b114df348bc96049d9fe5ceb351"
+  },
+  {
+    "file": "blip2-figure-3.png",
+    "model": "BLIP-2",
+    "paperTitle": "BLIP-2: Bootstrapping Language-Image Pre-training with Frozen Image Encoders and Large Language Models",
+    "authors": "Li, Li, Savarese and Hoi",
+    "figure": "Figure 3",
+    "arxivVersion": "2301.12597v3",
+    "source": "https://arxiv.org/html/2301.12597v3/fig3-v3.png",
+    "rights": "CC BY 4.0",
+    "changes": "Original PNG downloaded without changes.",
+    "sha256": "2f40cd22434ea30df3bd5790415ddfae31e465c7ea99ca1ab373fb16047ae384"
+  }
+]

@@ -1,0 +1,1055 @@
+{
+  "schemaVersion": 2,
+  "measuredAt": "2026-10-03T10:48:09.989Z",
+  "notes": "Raw outputs are preserved. The blank condition is a white image, not omitted image input. SVG classroom images rasterized at 800 px wide.",
+  "records": [
+    {
+      "caseId": "dog",
+      "imageId": "dog.jpg",
+      "prompt": "What animal is this?",
+      "reference": "A dog (Newfoundland).",
+      "modelId": "HuggingFaceTB/SmolVLM-256M-Instruct",
+      "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+      "backend": "webgpu",
+      "library": "transformers.js 3.8.1",
+      "dtype": {
+        "embed_tokens": "fp32",
+        "vision_encoder": "fp32",
+        "decoder_model_merged": "q4"
+      },
+      "loadMs": 43586,
+      "startedAt": "2026-10-03T10:48:03.694Z",
+      "judgment": "ungraded",
+      "environment": {
+        "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/146.0.0.0 Safari/537.36",
+        "adapter": {
+          "vendor": "apple",
+          "architecture": "metal-3"
+        },
+        "type": "ready",
+        "model": "HuggingFaceTB/SmolVLM-256M-Instruct",
+        "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+        "library": "3.8.1",
+        "dtype": {
+          "embed_tokens": "fp32",
+          "vision_encoder": "fp32",
+          "decoder_model_merged": "q4"
+        },
+        "loadMs": 43586
+      },
+      "events": [
+        "Read image pixels and prepare processor inputs.",
+        "First forward pass: image encoding \u2192 visual context preparation \u2192 prompt prefill (grouped by the library, not individually timed).",
+        "Generated text:  ",
+        "Generated text:  Bear.",
+        "End: EOS."
+      ],
+      "rawAnswer": " Bear.",
+      "completedAt": "2026-10-03T10:48:04.809Z",
+      "generationMs": 930,
+      "totalMs": 1113,
+      "prepareMs": 184,
+      "firstTextMs": 964,
+      "outputTokens": 3,
+      "generatedTokenIds": [
+        19171,
+        30,
+        49279
+      ],
+      "stopReason": "EOS",
+      "decodingSettings": {
+        "do_sample": false,
+        "max_new_tokens": 64,
+        "repetition_penalty": 1.1,
+        "do_image_splitting": false
+      },
+      "processorImage": "test-suite/dog.png",
+      "processorImageSHA256": "76d6b47699e869160b1f2fb884bec5abfaf091636d68ef773bed65118ea00aa5"
+    },
+    {
+      "caseId": "desk",
+      "imageId": "desk.svg",
+      "prompt": "Is the laptop plugged in?",
+      "reference": "Yes: a visible cable connects it to the socket. Whether power is flowing is not visible.",
+      "modelId": "HuggingFaceTB/SmolVLM-256M-Instruct",
+      "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+      "backend": "webgpu",
+      "library": "transformers.js 3.8.1",
+      "dtype": {
+        "embed_tokens": "fp32",
+        "vision_encoder": "fp32",
+        "decoder_model_merged": "q4"
+      },
+      "loadMs": 43586,
+      "startedAt": "2026-10-03T10:48:04.812Z",
+      "judgment": "ungraded",
+      "environment": {
+        "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/146.0.0.0 Safari/537.36",
+        "adapter": {
+          "vendor": "apple",
+          "architecture": "metal-3"
+        },
+        "type": "ready",
+        "model": "HuggingFaceTB/SmolVLM-256M-Instruct",
+        "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+        "library": "3.8.1",
+        "dtype": {
+          "embed_tokens": "fp32",
+          "vision_encoder": "fp32",
+          "decoder_model_merged": "q4"
+        },
+        "loadMs": 43586
+      },
+      "events": [
+        "Read image pixels and prepare processor inputs.",
+        "First forward pass: image encoding \u2192 visual context preparation \u2192 prompt prefill (grouped by the library, not individually timed).",
+        "Generated text:  ",
+        "Generated text:  Yes.",
+        "End: EOS."
+      ],
+      "rawAnswer": " Yes.",
+      "completedAt": "2026-10-03T10:48:05.146Z",
+      "generationMs": 169,
+      "totalMs": 334,
+      "prepareMs": 165,
+      "firstTextMs": 310,
+      "outputTokens": 3,
+      "generatedTokenIds": [
+        9230,
+        30,
+        49279
+      ],
+      "stopReason": "EOS",
+      "decodingSettings": {
+        "do_sample": false,
+        "max_new_tokens": 64,
+        "repetition_penalty": 1.1,
+        "do_image_splitting": false
+      },
+      "processorImage": "test-suite/desk.png",
+      "processorImageSHA256": "24e92b96637f92873c9cf3fe00c3b6d1277efb46a325184aab43d3d56dee68a2"
+    },
+    {
+      "caseId": "shapes",
+      "imageId": "shapes.svg",
+      "prompt": "What is immediately left of the mug?",
+      "reference": "The red ball.",
+      "modelId": "HuggingFaceTB/SmolVLM-256M-Instruct",
+      "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+      "backend": "webgpu",
+      "library": "transformers.js 3.8.1",
+      "dtype": {
+        "embed_tokens": "fp32",
+        "vision_encoder": "fp32",
+        "decoder_model_merged": "q4"
+      },
+      "loadMs": 43586,
+      "startedAt": "2026-10-03T10:48:05.148Z",
+      "judgment": "ungraded",
+      "environment": {
+        "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/146.0.0.0 Safari/537.36",
+        "adapter": {
+          "vendor": "apple",
+          "architecture": "metal-3"
+        },
+        "type": "ready",
+        "model": "HuggingFaceTB/SmolVLM-256M-Instruct",
+        "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+        "library": "3.8.1",
+        "dtype": {
+          "embed_tokens": "fp32",
+          "vision_encoder": "fp32",
+          "decoder_model_merged": "q4"
+        },
+        "loadMs": 43586
+      },
+      "events": [
+        "Read image pixels and prepare processor inputs.",
+        "First forward pass: image encoding \u2192 visual context preparation \u2192 prompt prefill (grouped by the library, not individually timed).",
+        "Generated text:  ",
+        "Generated text:  A.",
+        "End: EOS."
+      ],
+      "rawAnswer": " A.",
+      "completedAt": "2026-10-03T10:48:05.477Z",
+      "generationMs": 170,
+      "totalMs": 329,
+      "prepareMs": 159,
+      "firstTextMs": 306,
+      "outputTokens": 3,
+      "generatedTokenIds": [
+        330,
+        30,
+        49279
+      ],
+      "stopReason": "EOS",
+      "decodingSettings": {
+        "do_sample": false,
+        "max_new_tokens": 64,
+        "repetition_penalty": 1.1,
+        "do_image_splitting": false
+      },
+      "processorImage": "test-suite/shapes.png",
+      "processorImageSHA256": "dc435e26d5becd716c71871cf8ca7319728b8875e53f8400254fd7c1fa902150"
+    },
+    {
+      "caseId": "count",
+      "imageId": "counting.svg",
+      "prompt": "How many apples are outside the bowl?",
+      "reference": "Three apples are outside the bowl.",
+      "modelId": "HuggingFaceTB/SmolVLM-256M-Instruct",
+      "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+      "backend": "webgpu",
+      "library": "transformers.js 3.8.1",
+      "dtype": {
+        "embed_tokens": "fp32",
+        "vision_encoder": "fp32",
+        "decoder_model_merged": "q4"
+      },
+      "loadMs": 43586,
+      "startedAt": "2026-10-03T10:48:05.479Z",
+      "judgment": "ungraded",
+      "environment": {
+        "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/146.0.0.0 Safari/537.36",
+        "adapter": {
+          "vendor": "apple",
+          "architecture": "metal-3"
+        },
+        "type": "ready",
+        "model": "HuggingFaceTB/SmolVLM-256M-Instruct",
+        "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+        "library": "3.8.1",
+        "dtype": {
+          "embed_tokens": "fp32",
+          "vision_encoder": "fp32",
+          "decoder_model_merged": "q4"
+        },
+        "loadMs": 43586
+      },
+      "events": [
+        "Read image pixels and prepare processor inputs.",
+        "First forward pass: image encoding \u2192 visual context preparation \u2192 prompt prefill (grouped by the library, not individually timed).",
+        "Generated text:  ",
+        "Generated text:  8",
+        "End: EOS."
+      ],
+      "rawAnswer": " 8",
+      "completedAt": "2026-10-03T10:48:05.813Z",
+      "generationMs": 187,
+      "totalMs": 335,
+      "prepareMs": 147,
+      "firstTextMs": 298,
+      "outputTokens": 3,
+      "generatedTokenIds": [
+        216,
+        40,
+        49279
+      ],
+      "stopReason": "EOS",
+      "decodingSettings": {
+        "do_sample": false,
+        "max_new_tokens": 64,
+        "repetition_penalty": 1.1,
+        "do_image_splitting": false
+      },
+      "processorImage": "test-suite/count.png",
+      "processorImageSHA256": "7f1d845a79953beb9da331c619f4531a304f54d8d83945a8595c76f108b137b4"
+    },
+    {
+      "caseId": "invoice",
+      "imageId": "invoice.svg",
+      "prompt": "What is the invoice number? What percentage of the subtotal is GST?",
+      "reference": "ES667-042. GST is 180 / 1000 \u00d7 100 = 18%.",
+      "modelId": "HuggingFaceTB/SmolVLM-256M-Instruct",
+      "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+      "backend": "webgpu",
+      "library": "transformers.js 3.8.1",
+      "dtype": {
+        "embed_tokens": "fp32",
+        "vision_encoder": "fp32",
+        "decoder_model_merged": "q4"
+      },
+      "loadMs": 43586,
+      "startedAt": "2026-10-03T10:48:05.829Z",
+      "judgment": "ungraded",
+      "environment": {
+        "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/146.0.0.0 Safari/537.36",
+        "adapter": {
+          "vendor": "apple",
+          "architecture": "metal-3"
+        },
+        "type": "ready",
+        "model": "HuggingFaceTB/SmolVLM-256M-Instruct",
+        "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+        "library": "3.8.1",
+        "dtype": {
+          "embed_tokens": "fp32",
+          "vision_encoder": "fp32",
+          "decoder_model_merged": "q4"
+        },
+        "loadMs": 43586
+      },
+      "events": [
+        "Read image pixels and prepare processor inputs.",
+        "First forward pass: image encoding \u2192 visual context preparation \u2192 prompt prefill (grouped by the library, not individually timed).",
+        "Generated text:  ",
+        "Generated text:  The ",
+        "Generated text:  The invoice ",
+        "Generated text:  The invoice number ",
+        "Generated text:  The invoice number is ",
+        "Generated text:  The invoice number is ES667-042.",
+        "End: EOS."
+      ],
+      "rawAnswer": " The invoice number is ES667-042.",
+      "completedAt": "2026-10-03T10:48:06.307Z",
+      "generationMs": 264,
+      "totalMs": 478,
+      "prepareMs": 214,
+      "firstTextMs": 368,
+      "outputTokens": 14,
+      "generatedTokenIds": [
+        378,
+        48686,
+        1230,
+        314,
+        20399,
+        38,
+        38,
+        39,
+        29,
+        32,
+        36,
+        34,
+        30,
+        49279
+      ],
+      "stopReason": "EOS",
+      "decodingSettings": {
+        "do_sample": false,
+        "max_new_tokens": 64,
+        "repetition_penalty": 1.1,
+        "do_image_splitting": false
+      },
+      "processorImage": "test-suite/invoice.png",
+      "processorImageSHA256": "ec6db29116581a606d3800442d2ccc3b293ee4daf12f22bee652ea6494b01be7"
+    },
+    {
+      "caseId": "chart",
+      "imageId": "chart.svg",
+      "prompt": "Which month has the highest value? How much higher is March than January?",
+      "reference": "March. The difference is 75 \u2212 30 = 45 \u00b5g/m\u00b3.",
+      "modelId": "HuggingFaceTB/SmolVLM-256M-Instruct",
+      "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+      "backend": "webgpu",
+      "library": "transformers.js 3.8.1",
+      "dtype": {
+        "embed_tokens": "fp32",
+        "vision_encoder": "fp32",
+        "decoder_model_merged": "q4"
+      },
+      "loadMs": 43586,
+      "startedAt": "2026-10-03T10:48:06.309Z",
+      "judgment": "ungraded",
+      "environment": {
+        "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/146.0.0.0 Safari/537.36",
+        "adapter": {
+          "vendor": "apple",
+          "architecture": "metal-3"
+        },
+        "type": "ready",
+        "model": "HuggingFaceTB/SmolVLM-256M-Instruct",
+        "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+        "library": "3.8.1",
+        "dtype": {
+          "embed_tokens": "fp32",
+          "vision_encoder": "fp32",
+          "decoder_model_merged": "q4"
+        },
+        "loadMs": 43586
+      },
+      "events": [
+        "Read image pixels and prepare processor inputs.",
+        "First forward pass: image encoding \u2192 visual context preparation \u2192 prompt prefill (grouped by the library, not individually timed).",
+        "Generated text:  ",
+        "Generated text:  High.",
+        "End: EOS."
+      ],
+      "rawAnswer": " High.",
+      "completedAt": "2026-10-03T10:48:06.641Z",
+      "generationMs": 171,
+      "totalMs": 332,
+      "prepareMs": 161,
+      "firstTextMs": 315,
+      "outputTokens": 3,
+      "generatedTokenIds": [
+        4264,
+        30,
+        49279
+      ],
+      "stopReason": "EOS",
+      "decodingSettings": {
+        "do_sample": false,
+        "max_new_tokens": 64,
+        "repetition_penalty": 1.1,
+        "do_image_splitting": false
+      },
+      "processorImage": "test-suite/chart.png",
+      "processorImageSHA256": "38d94b73abab1a5ef23079bc6907d2aa15f836423578ecefaa8353e04ed2bbf1"
+    },
+    {
+      "caseId": "math",
+      "imageId": "geometry.svg",
+      "prompt": "What is x in the triangle?",
+      "reference": "x = 5, from the marked right angle and legs 3 and 4.",
+      "modelId": "HuggingFaceTB/SmolVLM-256M-Instruct",
+      "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+      "backend": "webgpu",
+      "library": "transformers.js 3.8.1",
+      "dtype": {
+        "embed_tokens": "fp32",
+        "vision_encoder": "fp32",
+        "decoder_model_merged": "q4"
+      },
+      "loadMs": 43586,
+      "startedAt": "2026-10-03T10:48:06.643Z",
+      "judgment": "ungraded",
+      "environment": {
+        "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/146.0.0.0 Safari/537.36",
+        "adapter": {
+          "vendor": "apple",
+          "architecture": "metal-3"
+        },
+        "type": "ready",
+        "model": "HuggingFaceTB/SmolVLM-256M-Instruct",
+        "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+        "library": "3.8.1",
+        "dtype": {
+          "embed_tokens": "fp32",
+          "vision_encoder": "fp32",
+          "decoder_model_merged": "q4"
+        },
+        "loadMs": 43586
+      },
+      "events": [
+        "Read image pixels and prepare processor inputs.",
+        "First forward pass: image encoding \u2192 visual context preparation \u2192 prompt prefill (grouped by the library, not individually timed).",
+        "Generated text:  ",
+        "Generated text:  The ",
+        "Generated text:  The length ",
+        "Generated text:  The length of ",
+        "Generated text:  The length of the ",
+        "Generated text:  The length of the hypotenuse ",
+        "Generated text:  The length of the hypotenuse (3) ",
+        "Generated text:  The length of the hypotenuse (3) is ",
+        "Generated text:  The length of the hypotenuse (3) is 4.0. ",
+        "Generated text:  The length of the hypotenuse (3) is 4.0. Therefore, ",
+        "Generated text:  The length of the hypotenuse (3) is 4.0. Therefore, the ",
+        "Generated text:  The length of the hypotenuse (3) is 4.0. Therefore, the length ",
+        "Generated text:  The length of the hypotenuse (3) is 4.0. Therefore, the length of ",
+        "Generated text:  The length of the hypotenuse (3) is 4.0. Therefore, the length of the ",
+        "Generated text:  The length of the hypotenuse (3) is 4.0. Therefore, the length of the side ",
+        "Generated text:  The length of the hypotenuse (3) is 4.0. Therefore, the length of the side opposite ",
+        "Generated text:  The length of the hypotenuse (3) is 4.0. Therefore, the length of the side opposite to ",
+        "Generated text:  The length of the hypotenuse (3) is 4.0. Therefore, the length of the side opposite to the ",
+        "Generated text:  The length of the hypotenuse (3) is 4.0. Therefore, the length of the side opposite to the right ",
+        "Generated text:  The length of the hypotenuse (3) is 4.0. Therefore, the length of the side opposite to the right angle ",
+        "Generated text:  The length of the hypotenuse (3) is 4.0. Therefore, the length of the side opposite to the right angle is ",
+        "Generated text:  The length of the hypotenuse (3) is 4.0. Therefore, the length of the side opposite to the right angle is $\\frac{4}{3}=\\boxed{\\frac{2}{2}}$.The ",
+        "Generated text:  The length of the hypotenuse (3) is 4.0. Therefore, the length of the side opposite to the right angle is $\\frac{4}{3}=\\boxed{\\frac{2}{2}}$.The answer ",
+        "Generated text:  The length of the hypotenuse (3) is 4.0. Therefore, the length of the side opposite to the right angle is $\\frac{4}{3}=\\boxed{\\frac{2}{2}}$.The answer is ",
+        "Generated text:  The length of the hypotenuse (3) is 4.0. Therefore, the length of the side opposite to the right angle is $\\frac{4}{3}=\\boxed{\\frac{2}{2}}$.The answer is not ",
+        "Generated text:  The length of the hypotenuse (3) is 4.0. Therefore, the length of the side opposite to the right angle is $\\frac{4}{3}=\\boxed{\\frac{2}{2}}$.The answer is not valid. ",
+        "Generated text:  The length of the hypotenuse (3) is 4.0. Therefore, the length of the side opposite to the right angle is $\\frac{4}{3}=\\boxed{\\frac{2}{2}}$.The answer is not valid. The ",
+        "Generated text:  The length of the hypotenuse (3) is 4.0. Therefore, the length of the side opposite to the right angle is $\\frac{4}{3}=\\boxed{\\frac{2}{2}}$.The answer is not valid. The answer ",
+        "Generated text:  The length of the hypotenuse (3) is 4.0. Therefore, the length of the side opposite to the right angle is $\\frac{4}{3}=\\boxed{\\frac{2}{2}}$.The answer is not valid. The answer is ",
+        "Generated text:  The length of the hypotenuse (3) is 4.0. Therefore, the length of the side opposite to the right angle is $\\frac{4}{3}=\\boxed{\\frac{2}{2}}$.The answer is not valid. The answer is x.",
+        "End: EOS."
+      ],
+      "rawAnswer": " The length of the hypotenuse (3) is 4.0. Therefore, the length of the side opposite to the right angle is $\\frac{4}{3}=\\boxed{\\frac{2}{2}}$.The answer is not valid. The answer is x.",
+      "completedAt": "2026-10-03T10:48:07.495Z",
+      "generationMs": 627,
+      "totalMs": 852,
+      "prepareMs": 225,
+      "firstTextMs": 372,
+      "outputTokens": 59,
+      "generatedTokenIds": [
+        378,
+        3519,
+        282,
+        260,
+        16392,
+        264,
+        1726,
+        365,
+        35,
+        25,
+        314,
+        216,
+        36,
+        30,
+        32,
+        30,
+        4882,
+        28,
+        260,
+        3519,
+        282,
+        260,
+        2103,
+        7011,
+        288,
+        260,
+        1048,
+        7256,
+        314,
+        19573,
+        18169,
+        107,
+        36,
+        15009,
+        35,
+        109,
+        24814,
+        4810,
+        277,
+        26754,
+        18169,
+        107,
+        34,
+        15009,
+        34,
+        17859,
+        28422,
+        504,
+        2988,
+        314,
+        441,
+        3993,
+        30,
+        378,
+        2988,
+        314,
+        1792,
+        30,
+        49279
+      ],
+      "stopReason": "EOS",
+      "decodingSettings": {
+        "do_sample": false,
+        "max_new_tokens": 64,
+        "repetition_penalty": 1.1,
+        "do_image_splitting": false
+      },
+      "processorImage": "test-suite/math.png",
+      "processorImageSHA256": "dd2f97c564211d28e1b6118b1de45013ac81ebb9010304afa225b2c74a208e3f"
+    },
+    {
+      "caseId": "change",
+      "imageId": "rooms-pair.svg",
+      "prompt": "What changed from image A to image B?",
+      "reference": "The chair moved from left to right and the cup was removed. Two images are supplied as one composite.",
+      "modelId": "HuggingFaceTB/SmolVLM-256M-Instruct",
+      "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+      "backend": "webgpu",
+      "library": "transformers.js 3.8.1",
+      "dtype": {
+        "embed_tokens": "fp32",
+        "vision_encoder": "fp32",
+        "decoder_model_merged": "q4"
+      },
+      "loadMs": 43586,
+      "startedAt": "2026-10-03T10:48:07.512Z",
+      "judgment": "ungraded",
+      "environment": {
+        "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/146.0.0.0 Safari/537.36",
+        "adapter": {
+          "vendor": "apple",
+          "architecture": "metal-3"
+        },
+        "type": "ready",
+        "model": "HuggingFaceTB/SmolVLM-256M-Instruct",
+        "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+        "library": "3.8.1",
+        "dtype": {
+          "embed_tokens": "fp32",
+          "vision_encoder": "fp32",
+          "decoder_model_merged": "q4"
+        },
+        "loadMs": 43586
+      },
+      "events": [
+        "Read image pixels and prepare processor inputs.",
+        "First forward pass: image encoding \u2192 visual context preparation \u2192 prompt prefill (grouped by the library, not individually timed).",
+        "Generated text:  ",
+        "Generated text:  The ",
+        "Generated text:  The first ",
+        "Generated text:  The first image ",
+        "Generated text:  The first image shows ",
+        "Generated text:  The first image shows a ",
+        "Generated text:  The first image shows a table ",
+        "Generated text:  The first image shows a table with ",
+        "Generated text:  The first image shows a table with two ",
+        "Generated text:  The first image shows a table with two chairs, ",
+        "Generated text:  The first image shows a table with two chairs, one ",
+        "Generated text:  The first image shows a table with two chairs, one of ",
+        "Generated text:  The first image shows a table with two chairs, one of which ",
+        "Generated text:  The first image shows a table with two chairs, one of which has ",
+        "Generated text:  The first image shows a table with two chairs, one of which has a ",
+        "Generated text:  The first image shows a table with two chairs, one of which has a red ",
+        "Generated text:  The first image shows a table with two chairs, one of which has a red cup ",
+        "Generated text:  The first image shows a table with two chairs, one of which has a red cup on ",
+        "Generated text:  The first image shows a table with two chairs, one of which has a red cup on it.",
+        "End: EOS."
+      ],
+      "rawAnswer": " The first image shows a table with two chairs, one of which has a red cup on it.",
+      "completedAt": "2026-10-03T10:48:07.981Z",
+      "generationMs": 298,
+      "totalMs": 469,
+      "prepareMs": 171,
+      "firstTextMs": 322,
+      "outputTokens": 21,
+      "generatedTokenIds": [
+        378,
+        808,
+        2443,
+        2744,
+        253,
+        3252,
+        351,
+        827,
+        21601,
+        28,
+        582,
+        282,
+        527,
+        553,
+        253,
+        2382,
+        7118,
+        335,
+        357,
+        30,
+        49279
+      ],
+      "stopReason": "EOS",
+      "decodingSettings": {
+        "do_sample": false,
+        "max_new_tokens": 64,
+        "repetition_penalty": 1.1,
+        "do_image_splitting": false
+      },
+      "processorImage": "test-suite/change.png",
+      "processorImageSHA256": "88d982d0e25ba83b363113ff22a83b274f4294a6ca23da76c5624460c90429b8"
+    },
+    {
+      "caseId": "screen",
+      "imageId": "settings.svg",
+      "prompt": "Where should I click to disable notifications?",
+      "reference": "The blue toggle in the Notifications row.",
+      "modelId": "HuggingFaceTB/SmolVLM-256M-Instruct",
+      "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+      "backend": "webgpu",
+      "library": "transformers.js 3.8.1",
+      "dtype": {
+        "embed_tokens": "fp32",
+        "vision_encoder": "fp32",
+        "decoder_model_merged": "q4"
+      },
+      "loadMs": 43586,
+      "startedAt": "2026-10-03T10:48:07.984Z",
+      "judgment": "ungraded",
+      "environment": {
+        "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/146.0.0.0 Safari/537.36",
+        "adapter": {
+          "vendor": "apple",
+          "architecture": "metal-3"
+        },
+        "type": "ready",
+        "model": "HuggingFaceTB/SmolVLM-256M-Instruct",
+        "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+        "library": "3.8.1",
+        "dtype": {
+          "embed_tokens": "fp32",
+          "vision_encoder": "fp32",
+          "decoder_model_merged": "q4"
+        },
+        "loadMs": 43586
+      },
+      "events": [
+        "Read image pixels and prepare processor inputs.",
+        "First forward pass: image encoding \u2192 visual context preparation \u2192 prompt prefill (grouped by the library, not individually timed).",
+        "Generated text:  ",
+        "Generated text:  Account.",
+        "End: EOS."
+      ],
+      "rawAnswer": " Account.",
+      "completedAt": "2026-10-03T10:48:08.301Z",
+      "generationMs": 166,
+      "totalMs": 317,
+      "prepareMs": 151,
+      "firstTextMs": 303,
+      "outputTokens": 3,
+      "generatedTokenIds": [
+        11972,
+        30,
+        49279
+      ],
+      "stopReason": "EOS",
+      "decodingSettings": {
+        "do_sample": false,
+        "max_new_tokens": 64,
+        "repetition_penalty": 1.1,
+        "do_image_splitting": false
+      },
+      "processorImage": "test-suite/screen.png",
+      "processorImageSHA256": "4101746d19810b2c7bfa1575d4c17b24d5f29e51c17cbe3952f8778ea93f3e84"
+    },
+    {
+      "caseId": "domain",
+      "imageId": "thermal.svg",
+      "prompt": "What is the hottest measured region? Give the row, column and temperature.",
+      "reference": "Row 3, column 4: 62 \u00b0C. Count from the top left.",
+      "modelId": "HuggingFaceTB/SmolVLM-256M-Instruct",
+      "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+      "backend": "webgpu",
+      "library": "transformers.js 3.8.1",
+      "dtype": {
+        "embed_tokens": "fp32",
+        "vision_encoder": "fp32",
+        "decoder_model_merged": "q4"
+      },
+      "loadMs": 43586,
+      "startedAt": "2026-10-03T10:48:08.304Z",
+      "judgment": "ungraded",
+      "environment": {
+        "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/146.0.0.0 Safari/537.36",
+        "adapter": {
+          "vendor": "apple",
+          "architecture": "metal-3"
+        },
+        "type": "ready",
+        "model": "HuggingFaceTB/SmolVLM-256M-Instruct",
+        "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+        "library": "3.8.1",
+        "dtype": {
+          "embed_tokens": "fp32",
+          "vision_encoder": "fp32",
+          "decoder_model_merged": "q4"
+        },
+        "loadMs": 43586
+      },
+      "events": [
+        "Read image pixels and prepare processor inputs.",
+        "First forward pass: image encoding \u2192 visual context preparation \u2192 prompt prefill (grouped by the library, not individually timed).",
+        "Generated text:  ",
+        "Generated text:  Warmest ",
+        "Generated text:  Warmest region.",
+        "End: EOS."
+      ],
+      "rawAnswer": " Warmest region.",
+      "completedAt": "2026-10-03T10:48:08.638Z",
+      "generationMs": 182,
+      "totalMs": 333,
+      "prepareMs": 151,
+      "firstTextMs": 306,
+      "outputTokens": 5,
+      "generatedTokenIds": [
+        25843,
+        381,
+        2695,
+        30,
+        49279
+      ],
+      "stopReason": "EOS",
+      "decodingSettings": {
+        "do_sample": false,
+        "max_new_tokens": 64,
+        "repetition_penalty": 1.1,
+        "do_image_splitting": false
+      },
+      "processorImage": "test-suite/domain.png",
+      "processorImageSHA256": "247094146c6c23a7e593318e2b1d732a18db181f96b408d6de3b1011cb8f39f5"
+    },
+    {
+      "caseId": "no-bicycle",
+      "imageId": "no-bicycle.jpg",
+      "prompt": "What color is the bicycle?",
+      "reference": "No bicycle is visible.",
+      "modelId": "HuggingFaceTB/SmolVLM-256M-Instruct",
+      "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+      "backend": "webgpu",
+      "library": "transformers.js 3.8.1",
+      "dtype": {
+        "embed_tokens": "fp32",
+        "vision_encoder": "fp32",
+        "decoder_model_merged": "q4"
+      },
+      "loadMs": 43586,
+      "startedAt": "2026-10-03T10:48:08.641Z",
+      "judgment": "ungraded",
+      "environment": {
+        "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/146.0.0.0 Safari/537.36",
+        "adapter": {
+          "vendor": "apple",
+          "architecture": "metal-3"
+        },
+        "type": "ready",
+        "model": "HuggingFaceTB/SmolVLM-256M-Instruct",
+        "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+        "library": "3.8.1",
+        "dtype": {
+          "embed_tokens": "fp32",
+          "vision_encoder": "fp32",
+          "decoder_model_merged": "q4"
+        },
+        "loadMs": 43586
+      },
+      "events": [
+        "Read image pixels and prepare processor inputs.",
+        "First forward pass: image encoding \u2192 visual context preparation \u2192 prompt prefill (grouped by the library, not individually timed).",
+        "Generated text:  ",
+        "Generated text:  The ",
+        "Generated text:  The bicycle ",
+        "Generated text:  The bicycle is ",
+        "Generated text:  The bicycle is red.",
+        "End: EOS."
+      ],
+      "rawAnswer": " The bicycle is red.",
+      "completedAt": "2026-10-03T10:48:08.974Z",
+      "generationMs": 181,
+      "totalMs": 334,
+      "prepareMs": 153,
+      "firstTextMs": 297,
+      "outputTokens": 6,
+      "generatedTokenIds": [
+        378,
+        19018,
+        314,
+        2382,
+        30,
+        49279
+      ],
+      "stopReason": "EOS",
+      "decodingSettings": {
+        "do_sample": false,
+        "max_new_tokens": 64,
+        "repetition_penalty": 1.1,
+        "do_image_splitting": false
+      },
+      "processorImage": "test-suite/no-bicycle.png",
+      "processorImageSHA256": "bf1b9d47f3b422df9d1a8875bffd7fadb7ece4e707042d316866bf1ac6228390"
+    },
+    {
+      "caseId": "cf-dog",
+      "imageId": "dog.jpg",
+      "prompt": "What animal is shown?",
+      "reference": "A dog.",
+      "modelId": "HuggingFaceTB/SmolVLM-256M-Instruct",
+      "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+      "backend": "webgpu",
+      "library": "transformers.js 3.8.1",
+      "dtype": {
+        "embed_tokens": "fp32",
+        "vision_encoder": "fp32",
+        "decoder_model_merged": "q4"
+      },
+      "loadMs": 43586,
+      "startedAt": "2026-10-03T10:48:08.977Z",
+      "judgment": "ungraded",
+      "environment": {
+        "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/146.0.0.0 Safari/537.36",
+        "adapter": {
+          "vendor": "apple",
+          "architecture": "metal-3"
+        },
+        "type": "ready",
+        "model": "HuggingFaceTB/SmolVLM-256M-Instruct",
+        "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+        "library": "3.8.1",
+        "dtype": {
+          "embed_tokens": "fp32",
+          "vision_encoder": "fp32",
+          "decoder_model_merged": "q4"
+        },
+        "loadMs": 43586
+      },
+      "events": [
+        "Read image pixels and prepare processor inputs.",
+        "First forward pass: image encoding \u2192 visual context preparation \u2192 prompt prefill (grouped by the library, not individually timed).",
+        "Generated text:  ",
+        "Generated text:  There ",
+        "Generated text:  There is ",
+        "Generated text:  There is a ",
+        "Generated text:  There is a black ",
+        "Generated text:  There is a black dog ",
+        "Generated text:  There is a black dog in ",
+        "Generated text:  There is a black dog in the ",
+        "Generated text:  There is a black dog in the foreground.",
+        "End: EOS."
+      ],
+      "rawAnswer": " There is a black dog in the foreground.",
+      "completedAt": "2026-10-03T10:48:09.337Z",
+      "generationMs": 207,
+      "totalMs": 359,
+      "prepareMs": 153,
+      "firstTextMs": 301,
+      "outputTokens": 10,
+      "generatedTokenIds": [
+        1385,
+        314,
+        253,
+        2632,
+        2767,
+        281,
+        260,
+        27401,
+        30,
+        49279
+      ],
+      "stopReason": "EOS",
+      "decodingSettings": {
+        "do_sample": false,
+        "max_new_tokens": 64,
+        "repetition_penalty": 1.1,
+        "do_image_splitting": false
+      },
+      "processorImage": "test-suite/cf-dog.png",
+      "processorImageSHA256": "76d6b47699e869160b1f2fb884bec5abfaf091636d68ef773bed65118ea00aa5"
+    },
+    {
+      "caseId": "cf-cat",
+      "imageId": "cat.jpg",
+      "prompt": "What animal is shown?",
+      "reference": "A cat.",
+      "modelId": "HuggingFaceTB/SmolVLM-256M-Instruct",
+      "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+      "backend": "webgpu",
+      "library": "transformers.js 3.8.1",
+      "dtype": {
+        "embed_tokens": "fp32",
+        "vision_encoder": "fp32",
+        "decoder_model_merged": "q4"
+      },
+      "loadMs": 43586,
+      "startedAt": "2026-10-03T10:48:09.339Z",
+      "judgment": "ungraded",
+      "environment": {
+        "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/146.0.0.0 Safari/537.36",
+        "adapter": {
+          "vendor": "apple",
+          "architecture": "metal-3"
+        },
+        "type": "ready",
+        "model": "HuggingFaceTB/SmolVLM-256M-Instruct",
+        "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+        "library": "3.8.1",
+        "dtype": {
+          "embed_tokens": "fp32",
+          "vision_encoder": "fp32",
+          "decoder_model_merged": "q4"
+        },
+        "loadMs": 43586
+      },
+      "events": [
+        "Read image pixels and prepare processor inputs.",
+        "First forward pass: image encoding \u2192 visual context preparation \u2192 prompt prefill (grouped by the library, not individually timed).",
+        "Generated text:  ",
+        "Generated text:  A ",
+        "Generated text:  A cat ",
+        "Generated text:  A cat is ",
+        "Generated text:  A cat is visible.",
+        "End: EOS."
+      ],
+      "rawAnswer": " A cat is visible.",
+      "completedAt": "2026-10-03T10:48:09.664Z",
+      "generationMs": 178,
+      "totalMs": 324,
+      "prepareMs": 146,
+      "firstTextMs": 291,
+      "outputTokens": 6,
+      "generatedTokenIds": [
+        330,
+        2644,
+        314,
+        6178,
+        30,
+        49279
+      ],
+      "stopReason": "EOS",
+      "decodingSettings": {
+        "do_sample": false,
+        "max_new_tokens": 64,
+        "repetition_penalty": 1.1,
+        "do_image_splitting": false
+      },
+      "processorImage": "test-suite/cf-cat.png",
+      "processorImageSHA256": "e12a5c1e8aca919f759b79142189403e156a1aa1c4ace06f8603b342efc38d2c"
+    },
+    {
+      "caseId": "cf-blank",
+      "imageId": "blank.svg",
+      "prompt": "What animal is shown?",
+      "reference": "No animal is visible; a blank white image is provided, not a missing image input.",
+      "modelId": "HuggingFaceTB/SmolVLM-256M-Instruct",
+      "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+      "backend": "webgpu",
+      "library": "transformers.js 3.8.1",
+      "dtype": {
+        "embed_tokens": "fp32",
+        "vision_encoder": "fp32",
+        "decoder_model_merged": "q4"
+      },
+      "loadMs": 43586,
+      "startedAt": "2026-10-03T10:48:09.666Z",
+      "judgment": "ungraded",
+      "environment": {
+        "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/146.0.0.0 Safari/537.36",
+        "adapter": {
+          "vendor": "apple",
+          "architecture": "metal-3"
+        },
+        "type": "ready",
+        "model": "HuggingFaceTB/SmolVLM-256M-Instruct",
+        "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+        "library": "3.8.1",
+        "dtype": {
+          "embed_tokens": "fp32",
+          "vision_encoder": "fp32",
+          "decoder_model_merged": "q4"
+        },
+        "loadMs": 43586
+      },
+      "events": [
+        "Read image pixels and prepare processor inputs.",
+        "First forward pass: image encoding \u2192 visual context preparation \u2192 prompt prefill (grouped by the library, not individually timed).",
+        "Generated text:  ",
+        "Generated text:  A ",
+        "Generated text:  A squirrel.",
+        "End: EOS."
+      ],
+      "rawAnswer": " A squirrel.",
+      "completedAt": "2026-10-03T10:48:09.987Z",
+      "generationMs": 167,
+      "totalMs": 320,
+      "prepareMs": 153,
+      "firstTextMs": 298,
+      "outputTokens": 4,
+      "generatedTokenIds": [
+        330,
+        27721,
+        30,
+        49279
+      ],
+      "stopReason": "EOS",
+      "decodingSettings": {
+        "do_sample": false,
+        "max_new_tokens": 64,
+        "repetition_penalty": 1.1,
+        "do_image_splitting": false
+      },
+      "processorImage": "test-suite/cf-blank.png",
+      "processorImageSHA256": "33f1ec567256a7a8746983d341a62afacd5ce6740fb7d562911aec088e836f42"
+    }
+  ],
+  "errors": []
+}
