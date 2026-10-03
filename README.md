@@ -12,7 +12,7 @@ The four-part **Vision to language** sequence continues with:
 
 - [Vision I](https://nipunbatra.github.io/attention/vision1.html): 146 teaching frames plus cover, following the text encoder lecture. One measured photograph anchors patch projection, attention messages, classification, code and adaptation, ending with a CLIP handoff. Includes three measured interpretation figures, a [nine-example interactive lab](vision1-explorer.html), optional calculations in reading mode, an executed [lab](notebooks/vision/03_vision_transformer_lab.ipynb), and the [teaching guide](src/VISION1_TEACHING_GUIDE.md).
 - [Vision II](https://nipunbatra.github.io/attention/vision2.html): visual pretraining through MAE, DINO, and I-JEPA; exact reconstruction and teacher-distribution worksheets.
-- [Vision III](https://nipunbatra.github.io/attention/vision3.html): CLIP-style image–text matching, symmetric contrastive learning, candidate classification, and retrieval.
+- [Vision III: CLIP](https://nipunbatra.github.io/attention/clip/): applications, two encoders, the full contrastive-loss calculation, linear probing and architecture summaries. [Present](https://nipunbatra.github.io/attention/clip/?present#cover) · [PDF, 164 pages](https://nipunbatra.github.io/attention/clip/clip.pdf). The [earlier compact reference](vision3.html) is preserved.
 - [Vision IV](https://nipunbatra.github.io/attention/vision4.html): a visual connector, an image-conditioned prefix decoder, actual answer generation, training, and grounding checks.
 
 Build sources, plans and the handover guide are in `src/` (start with `src/HANDOVER.md`).
