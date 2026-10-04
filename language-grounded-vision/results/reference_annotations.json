@@ -1,0 +1,69 @@
+{
+  "kind": "authored reference annotations, not model predictions",
+  "scene": {
+    "width": 800,
+    "height": 500,
+    "objects": {
+      "dog": {
+        "box": [
+          120,
+          220,
+          340,
+          400
+        ],
+        "color": "#A7774F",
+        "shape": "<path d=\"M120 265 L150 286 L231 286 L254 236 L279 220 L302 239 L310 257 L340 267 L337 286 L309 291 L286 321 L278 400 L256 400 L251 336 L184 335 L171 400 L147 400 L154 320 L134 300 Z\"/>"
+      },
+      "red ball": {
+        "box": [
+          370,
+          340,
+          430,
+          400
+        ],
+        "color": "#CB5B53",
+        "shape": "<circle cx=\"400\" cy=\"370\" r=\"30\"/>"
+      },
+      "blue ball": {
+        "box": [
+          610,
+          350,
+          670,
+          410
+        ],
+        "color": "#5387C6",
+        "shape": "<circle cx=\"640\" cy=\"380\" r=\"30\"/>"
+      },
+      "tree": {
+        "box": [
+          570,
+          50,
+          720,
+          300
+        ],
+        "color": "#719677",
+        "shape": "<path d=\"M631 165 H659 V300 H631Z\"/><path d=\"M645 50 C603 50 574 75 578 112 C552 159 600 196 645 186 C692 206 738 163 712 123 C728 81 691 50 645 50Z\"/>"
+      },
+      "child": {
+        "box": [
+          422,
+          145,
+          539,
+          367
+        ],
+        "color": "#C39266",
+        "shape": "<circle cx=\"495\" cy=\"169\" r=\"24\"/><path d=\"M475 197 L455 250 L468 258 L481 228 L478 284 L451 332 L422 348 L430 367 L468 345 L496 300 L503 340 H521 L511 286 L513 230 L524 256 L539 249 L516 197Z\"/>"
+      }
+    }
+  },
+  "queries": {
+    "dog": "dog",
+    "red ball": "red ball",
+    "ball beside the dog": "red ball",
+    "dog beside the red ball": "dog",
+    "bicycle": null,
+    "segment the object the child is playing with": "red ball",
+    "segment the dog beside the red ball": "dog",
+    "segment the object used to stay dry in rain": "umbrella"
+  }
+}

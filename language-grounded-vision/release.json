@@ -1,0 +1,91 @@
+{
+  "title": "Language-Grounded Vision",
+  "publicURL": "https://nipunbatra.github.io/attention/language-grounded-vision/",
+  "mainSlides": 48,
+  "backupSlides": 8,
+  "mainRevealStates": 249,
+  "recordedRuns": 7,
+  "recordedDetections": 15,
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 1467,
+      "sha256": "211dd45016f7c1738f9bf0ffc8ca57afee2c04f878878d5b4c70052e9ed72146"
+    },
+    {
+      "path": "RECORDING.md",
+      "bytes": 753,
+      "sha256": "5c2d26d00dd779cbec68eedcba090d8094809e25a2aa276639ce350fcd8f9fc8"
+    },
+    {
+      "path": "SOURCES.md",
+      "bytes": 2685,
+      "sha256": "f2a383d0161de0b1742a3bd9c41891685503b53ceff558a264936b76134f9b6b"
+    },
+    {
+      "path": "TEACHING_GUIDE.md",
+      "bytes": 23715,
+      "sha256": "751548a62bc8787529bde56e1651607ccdbbcb6bd406b7ac08dbadf3fa0733e3"
+    },
+    {
+      "path": "figures/inputs/scene-swapped.png",
+      "bytes": 20737,
+      "sha256": "02fd57f0fd2b79caef5a02a81aba7387e73d336fd1eac95c7a91a45084ce4590"
+    },
+    {
+      "path": "figures/inputs/scene.png",
+      "bytes": 20762,
+      "sha256": "5ef7583510e1251474fc86440ab5cafdac5445b610390890c6d6cb53357ae965"
+    },
+    {
+      "path": "grounding-lab.html",
+      "bytes": 58144,
+      "sha256": "fbab4e9693e03e256682554b470828585674c38256d6293e2d477083e9920c44"
+    },
+    {
+      "path": "index.html",
+      "bytes": 1824629,
+      "sha256": "bb4ebecf24727b820823ca37fac0f16a5ac9a87703cbdc9abbdd6a1f8fcc9baf"
+    },
+    {
+      "path": "language-grounded-vision.pdf",
+      "bytes": 963342,
+      "sha256": "3250509e24112f488ab9ec06d16bfaea1970f6feedb459b3fee19f9bec7b8263"
+    },
+    {
+      "path": "notebooks/record_grounded_vision.ipynb",
+      "bytes": 5053,
+      "sha256": "347810af223a4dcbf09236146fe9ad0e3ec1a87721651ee7ee0bcb62c98ea480"
+    },
+    {
+      "path": "recording-kit.zip",
+      "bytes": 53470,
+      "sha256": "4f556e2d51132d0e1b2749fb0693294947d3f97b715473ce468c2b1f96cbe1b9"
+    },
+    {
+      "path": "requirements-models.txt",
+      "bytes": 220,
+      "sha256": "bef868e5bca5f770f6507f38c4551bfda8e475cf48502d73345e36035a8c9c6f"
+    },
+    {
+      "path": "results/grounded_vision_outputs.json",
+      "bytes": 103437,
+      "sha256": "6d17cf5fef58854e70c9deb32d2468604f86e8545ee36d46fd3e73d7450eabd4"
+    },
+    {
+      "path": "results/reference_annotations.json",
+      "bytes": 1919,
+      "sha256": "7e482ab2dd0ac38acfcf779ba517b8be9ebabc99a601590ba7905dab4daf3d00"
+    },
+    {
+      "path": "src/prepare_models.py",
+      "bytes": 700,
+      "sha256": "527aec683463be01b309861da8194e831d2545eee333be770d6996e09841440f"
+    },
+    {
+      "path": "src/record_models.py",
+      "bytes": 4541,
+      "sha256": "0f5b9543ea80a5fff5a0d76bcbf373999e6b7218f91f991d4b8a67498cc1dcad"
+    }
+  ]
+}
