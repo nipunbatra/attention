@@ -130,3 +130,14 @@ The two-reader arithmetic illustration assumes projected queries [1, 0] and [0, 
 The two invoice-summary diagrams are original course artwork. `figures/invoice.svg` is an authored synthetic document; ES667-042, ₹180 GST and ₹1,180 total are directly transcribed reference answers. The eight-by-192 output shape reuses the minimal notebook reader configuration described above. All eight rows are drawn, with middle feature columns abbreviated. Symbols z_ij denote coordinates rather than measured activations, and no row is assigned a semantic invoice field. The matrix has 8 × 192 = 1,536 scalar features, but this dimensionality does not guarantee retention or OCR accuracy.
 
 The follow-up diagram uses the same image-dependent Z for three separate questions. In this simple prefix route, the question is embedded after image summarization; each new prompt begins with an empty generated answer. The shown answers are desired behavior after training, not outputs of the untrained notebook or either recorded SmolVLM model. These diagrams introduce no new measurements, attention maps or empirical claims.
+
+
+## Three-column architecture comparison
+
+The authored comparison labels specific configurations rather than combining versions. For original LLaVA, [Visual Instruction Tuning, §4.1](https://arxiv.org/html/2304.08485v2#S4.SS1) specifies CLIP ViT-L/14 and a linear connector. The [CLIP vision configuration](https://huggingface.co/openai/clip-vit-large-patch14/raw/main/config.json) gives 224-pixel inputs, 14-pixel patches and width 1,024; the [LLaVA feature-selection code](https://github.com/haotian-liu/LLaVA/blob/main/llava/model/multimodal_encoder/clip_encoder.py) omits CLS in patch mode. Thus 16 × 16 = 256 patch rows remain after projection.
+
+[Flamingo §3.1.1–3.1.2](https://arxiv.org/html/2204.14198v1#S3.SS1.SSS1) specifies NFNet-F6 spatial features, 64 learned resampler latents, image-plus-latent keys/values, repeated attention/MLP updates, and gated language cross-attention reading separate visual memory. N denotes the flattened feature-grid size; it is not a ViT patch count.
+
+[BLIP-2 §3.1–3.3](https://arxiv.org/html/2301.12597v3#S3.SS1) defines Q-Former (Querying Transformer), BERT initialization, query self-attention, image cross-attention, image-text pretraining, 32 query outputs of width 768, and an example ViT-L/14 source with 257 × 1,024 features. The extra source row is CLS. The shown OPT route projects the 32 rows and prepends them to text. The text branch used in Q-Former representation pretraining and the FlanT5 route are omitted; the following paper slide shows both language-backbone alternatives.
+
+The same credited photo illustrates each source path. No new encoder activations or model outputs are measured. Counts differ from the tiny-backbone notebook because these are configurations from the named systems.
