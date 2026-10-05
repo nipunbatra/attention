@@ -18,6 +18,9 @@ The generation walkthrough explicitly uses Idea 1: all projected patch vectors
 form a visual prefix. One image and prompt stay fixed as each selected token
 is embedded and appended. Token IDs are verified; the answer and toy scores
 are illustrative.
+The training sequence keeps the same labelled example: reference tokens →
+probabilities → answer loss → projector gradient → a ten-line training step.
+The last slide explains which data and weights change in the original LLaVA recipe.
 
 Right / Space / N reveals the next part; Left / P goes back. F shows all or restarts
 the current slide. R switches between reading and presentation. Open Controls
