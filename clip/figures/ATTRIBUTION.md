@@ -51,3 +51,8 @@ The paired-data introduction (`src/contrastive_intro.py`) reuses the Newfoundlan
 - `clip-canonical.html`: standalone rendering of the same canonical architecture component used in the rebuilt main lecture. Image/text branches and geometry are authored course diagrams of the CLIP method, credited to Radford et al. (2021) and the official implementation.
 
 The current cover, schematic encoder/alignment diagrams and calculation sequence also reuse the full original inline illustrations captured in `../output/interactive-lecture.json` from **How CLIP Learns**, source commit `7b315b906ac13ef56588f05f2491a3564892daab`. These are the same toy cat, dog and car as in the companion interactive. Measured demos keep their original photographs.
+
+
+## Opening ViT recap (5 October 2026)
+
+The architecture-family figure adapts the authored `model-families.svg` from Beyond Attention, adding model examples and progressive reveals. The CLS/classifier readout reuses `real-cls-readout.svg` from the earlier ViT lecture, with generic feature labels and a connector. The patch-to-encoder schematic is redrawn for the same ViT-Tiny dimensions. Original source snapshots are `recap-families-source.svg` and `recap-cls-source.svg`. The dog photo is the credited Oxford-IIIT Pet example above.
