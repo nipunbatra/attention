@@ -1,7 +1,8 @@
 // Adapted from the official Hugging Face SmolVLM WebGPU example (Apache-2.0).
 // One selected model per worker; switching terminates the previous worker.
 let modelConfigs;
-async function configurations(){return modelConfigs??=await fetch(new URL('./lab-models.json',import.meta.url)).then(r=>{if(!r.ok)throw Error('Model list could not be loaded.');return r.json();});}
+const configURL=new URL('./lab-models.json',import.meta.url);configURL.search=new URL(import.meta.url).search;
+async function configurations(){return modelConfigs??=await fetch(configURL).then(r=>{if(!r.ok)throw Error('Model list could not be loaded.');return r.json();});}
 const LIBRARY='https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1';
 let api,processor,model,stopping,busy=false,interrupted=false;
 const send=(type,data={})=>self.postMessage({type,...data});

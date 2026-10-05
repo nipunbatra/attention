@@ -15,8 +15,8 @@
     },
     {
       "path": "demo.html",
-      "bytes": 86377,
-      "sha256": "e28f3200c47ca5a609d3ba822dfd0ff9a8baf6058abb53a693df65e1edbef4ef"
+      "bytes": 86626,
+      "sha256": "f3aa80e1915a34416330dc34cd4a9b10a88b686107c9131ebf893d4980b85eed"
     },
     {
       "path": "figures/blank.svg",
@@ -120,8 +120,8 @@
     },
     {
       "path": "recorded-demo.html",
-      "bytes": 86404,
-      "sha256": "68a053029458432ba971d77fa42a1c62a7f3c6530fb1e0568feeb016ac2aee24"
+      "bytes": 86653,
+      "sha256": "8b5bfdf933b29083f1d91723d356de336063c2b2b64f9e9295e98ad7e460ef33"
     },
     {
       "path": "results/vlm_lab_500m_outputs.json",
@@ -135,8 +135,8 @@
     },
     {
       "path": "src/demo-worker.js",
-      "bytes": 3655,
-      "sha256": "65e61430d809de7a14d6e585918a0e38bad744d222fbdf5beb1dd3b6436df8a5"
+      "bytes": 3731,
+      "sha256": "980250e5c8d054f8d2d1dd7e7ce7c37aba3164226570367ee4ea538d34c54e24"
     },
     {
       "path": "src/lab-models.json",
