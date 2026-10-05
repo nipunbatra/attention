@@ -2,7 +2,9 @@
 
 [Open in Google Colab](https://colab.research.google.com/github/nipunbatra/attention/blob/main/clip/notebooks/clip-applications.ipynb)
 
-17 images and 17 supplied captions, reused from the lecture. Run the notebook top to bottom. It shows preprocessing and vector shapes, image–caption matching, text–image search, image neighbours, and normalized before/after differences. The actual OpenAI ViT-B/32 checkpoint is frozen throughout. No API key is needed.
+17 images and 17 supplied captions, reused from the lecture. Run the notebook top to bottom. It shows preprocessing and vector shapes, image-caption matching, text-image search, image neighbours, and normalized before/after differences. The actual OpenAI ViT-B/32 checkpoint is frozen throughout. No API key is needed.
+
+Figures use Matplotlib's Retina display setting. Each image shows its supplied caption, and tables show example text inputs, vector shapes, coordinates and ranked cosine scores.
 
 Colab: select a T4 GPU if available, then Run all. CPU also works. The first run downloads about 350 MB of weights. The notebook installs the pinned OpenAI CLIP implementation and uses Colab's existing PyTorch stack. Saved outputs are from the original-model CPU run; they may differ slightly from the lecture's q8 browser measurements.
 
