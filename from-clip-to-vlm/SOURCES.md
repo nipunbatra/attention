@@ -11,6 +11,14 @@ Prepared 1 October 2026; rebuilt 3 October 2026. This lecture follows the visual
 
 The step-by-step architecture drawings are original teaching diagrams. They omit some normalization, residual and implementation details where the omission is identified in the teaching notes. The visual-prefix causal mask is one valid construction; it is not claimed to be the attention mask of every VLM. Visual vectors have the language hidden width but are not vocabulary entries.
 
+## Chat roles, embeddings and positions
+
+- [Chat templates](https://huggingface.co/docs/transformers/chat_templating): formatting roles and adding an assistant generation prompt. USER and ASST are readable teaching labels; real templates may use dedicated special tokens or ordinary text with delimiters.
+- [Embedding-table resizing and initialization](https://huggingface.co/docs/transformers/main_classes/model#transformers.PreTrainedModel.resize_token_embeddings): new vocabulary items need initialized embedding rows. Existing rows are reused; embedding updates depend on which parameters are trainable.
+- [LLaMA implementation](https://github.com/huggingface/transformers/blob/main/src/transformers/models/llama/modeling_llama.py): token embedding lookup, sequence position IDs, and RoPE applied to queries and keys inside attention. This differs from adding a positional vector to the input.
+
+Checked 5 October 2026. The role-token walkthrough uses symbolic IDs and the existing three-feature teaching width. Its indices 0–18 follow from twelve image vectors, two single-token role markers and an illustrative four-token question; they are not measured tokenizer output. Inference loads trained embeddings, with no per-prompt reinitialization. A frozen language model can reuse its learned role embeddings without updating them during connector training.
+
 ## Browser implementation
 
 - [SmolVLM-256M-Instruct model card](https://huggingface.co/HuggingFaceTB/SmolVLM-256M-Instruct).
