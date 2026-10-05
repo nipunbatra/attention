@@ -1,7 +1,7 @@
 // Adapted from the official Hugging Face SmolVLM WebGPU example (Apache-2.0).
-// One fixed model instance; independent questions, no cross-turn KV-cache claim.
-const MODEL='HuggingFaceTB/SmolVLM-256M-Instruct';
-const REVISION='7e3e67edbbed1bf9888184d9df282b700a323964';
+// One selected model per worker; switching terminates the previous worker.
+let modelConfigs;
+async function configurations(){return modelConfigs??=await fetch(new URL('./lab-models.json',import.meta.url)).then(r=>{if(!r.ok)throw Error('Model list could not be loaded.');return r.json();});}
 const LIBRARY='https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1';
 let api,processor,model,stopping,busy=false,interrupted=false;
 const send=(type,data={})=>self.postMessage({type,...data});
@@ -11,12 +11,15 @@ self.addEventListener('message',async({data})=>{
  busy=true;
  try{
   if(data.type==='load'){
+   const config=(await configurations()).find(m=>m.key===data.modelKey);
+   if(!config)throw new Error('Choose a supported model.');
+   const MODEL=config.modelId,REVISION=config.revision;
    api=await import(LIBRARY);
    stopping=new api.InterruptableStoppingCriteria();
    const opts={revision:REVISION,progress_callback:p=>send('progress',{progress:p})};
    processor=await api.AutoProcessor.from_pretrained(MODEL,opts);
    model=await api.AutoModelForVision2Seq.from_pretrained(MODEL,{...opts,device:'webgpu',dtype:{embed_tokens:'fp32',vision_encoder:'fp32',decoder_model_merged:'q4'}});
-   send('ready',{model:MODEL,revision:REVISION,library:'3.8.1',dtype:{embed_tokens:'fp32',vision_encoder:'fp32',decoder_model_merged:'q4'}});
+   send('ready',{modelKey:config.key,model:MODEL,revision:REVISION,library:'3.8.1',dtype:{embed_tokens:'fp32',vision_encoder:'fp32',decoder_model_merged:'q4'}});
   }
   if(data.type==='generate'){
    if(!model)throw new Error('Load the model first.');

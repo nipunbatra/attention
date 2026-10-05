@@ -1,0 +1,4 @@
+[
+  {"key":"256m","label":"SmolVLM-256M","modelId":"HuggingFaceTB/SmolVLM-256M-Instruct","revision":"7e3e67edbbed1bf9888184d9df282b700a323964","downloadMB":575},
+  {"key":"500m","label":"SmolVLM-500M","modelId":"HuggingFaceTB/SmolVLM-500M-Instruct","revision":"a7da5b986cb59b408707209984f360a5f4ad7e47","downloadMB":812}
+]

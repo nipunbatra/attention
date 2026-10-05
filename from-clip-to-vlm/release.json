@@ -1,7 +1,7 @@
 {
   "title": "From CLIP to Vision-Language Models",
-  "slides": 155,
-  "buildStates": 487,
+  "slides": 157,
+  "buildStates": 500,
   "files": [
     {
       "path": "RECORDED_DEMO.md",
@@ -10,13 +10,13 @@
     },
     {
       "path": "SOURCES.md",
-      "bytes": 13418,
-      "sha256": "c1da12bdc454e6389cfc2063bea2bfb1be6fe764e3f98f77e35e33ba52bacbe5"
+      "bytes": 14876,
+      "sha256": "ca6cc1a02440648438087bcf0556099f7ee0cbfdd096b19ef469e58dd3ffc831"
     },
     {
       "path": "demo.html",
-      "bytes": 48606,
-      "sha256": "3ab826040d454bdb976d185b80e23ef8f95c602fc0e4aa2c2a6aafa7bc588aac"
+      "bytes": 86377,
+      "sha256": "e28f3200c47ca5a609d3ba822dfd0ff9a8baf6058abb53a693df65e1edbef4ef"
     },
     {
       "path": "figures/blank.svg",
@@ -110,18 +110,23 @@
     },
     {
       "path": "index.html",
-      "bytes": 6351609,
-      "sha256": "19b51011bfab37bd3bc4175053da92b1ee408860f2b678ffc345d3570e8c3102"
+      "bytes": 11576185,
+      "sha256": "b442cdcd09441396fcaa97673d8e4679065b46fd483a0dcde40db0c359e05c60"
     },
     {
       "path": "from-clip-to-vlm.pdf",
-      "bytes": 3391216,
-      "sha256": "d76b5df9256ac476ab9e3b85695aca2ba8d55b8a8bb3495199a24ff03cc0cf24"
+      "bytes": 6212246,
+      "sha256": "dd8b107b2835f33dce5ded6c7d359ea6907cbaa6721980cf2e93907b56736179"
     },
     {
       "path": "recorded-demo.html",
-      "bytes": 48633,
-      "sha256": "151f361d7ee24cf63cdbd8c2a4b2f776e9a98ded46c200fd7490294b2a4df3bb"
+      "bytes": 86404,
+      "sha256": "68a053029458432ba971d77fa42a1c62a7f3c6530fb1e0568feeb016ac2aee24"
+    },
+    {
+      "path": "results/vlm_lab_500m_outputs.json",
+      "bytes": 36163,
+      "sha256": "25314c617efb80a7023a0dfdd19c503dc99371119ecae3fa90bcbddbfb7499cc"
     },
     {
       "path": "results/vlm_lab_outputs.json",
@@ -130,8 +135,13 @@
     },
     {
       "path": "src/demo-worker.js",
-      "bytes": 3346,
-      "sha256": "30f98215f2d7a5827fe67f6445993cb8deb64d3927771e56d172f516b6ca1eda"
+      "bytes": 3655,
+      "sha256": "65e61430d809de7a14d6e585918a0e38bad744d222fbdf5beb1dd3b6436df8a5"
+    },
+    {
+      "path": "src/lab-models.json",
+      "bytes": 323,
+      "sha256": "cfb76e297a551c27d207de425c4d817e159934b6d8240278e22bcbf0336d77e2"
     },
     {
       "path": "test-suite/cf-blank.png",
