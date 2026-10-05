@@ -141,3 +141,8 @@ The authored comparison labels specific configurations rather than combining ver
 [BLIP-2 §3.1–3.3](https://arxiv.org/html/2301.12597v3#S3.SS1) defines Q-Former (Querying Transformer), BERT initialization, query self-attention, image cross-attention, image-text pretraining, 32 query outputs of width 768, and an example ViT-L/14 source with 257 × 1,024 features. The extra source row is CLS. The shown OPT route projects the 32 rows and prepends them to text. The text branch used in Q-Former representation pretraining and the FlanT5 route are omitted; the following paper slide shows both language-backbone alternatives.
 
 The same credited photo illustrates each source path. No new encoder activations or model outputs are measured. Counts differ from the tiny-backbone notebook because these are configurations from the named systems.
+
+
+## Guided Flamingo paper figure
+
+The numbered arrows around Flamingo Figure 3 are original course annotations. The underlying PNG, its labels and its blue/purple color scheme are unchanged. Teal outlines identify the vision encoder, Perceiver Resampler, processed text, gated cross-attention, language-model blocks and original color legend. The 64 vectors per image and frozen/trainable split follow [Flamingo §3.1](https://arxiv.org/html/2204.14198v1#S3.SS1). The two pictured image branches share model weights. The paper’s completed text continuation illustrates repeated next-token prediction; the vocabulary head and token embeddings are abstracted in the original figure. Speaker notes retain the preceding-image attention mask and distinguish separate visual memory from a visual prefix.

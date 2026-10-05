@@ -19,6 +19,7 @@ These figures retain their original authorship and labels. Each paper slide supp
 - Rights: arXiv nonexclusive distribution license; copyright retained by the authors/rightsholders. Not a CC-BY course asset.
 - Preparation: Original PNG downloaded without changes.
 - SHA-256: `2fb3bef323eb461bab167323ccc23b705cb97b114df348bc96049d9fe5ceb351`
+- Course annotations: six numbered explanations with teal outlines and leader arrows are drawn in a separate SVG layer. They are not part of the paper figure; the PNG above remains unchanged.
 
 ## BLIP-2 — Figure 3
 
