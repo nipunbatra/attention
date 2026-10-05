@@ -13,7 +13,9 @@ It derives visual prefixes, separate visual memory and learned-query compression
 then connects them to LLaVA, Flamingo and BLIP-2, training and generation.
 
 Right / Space / N reveals the next part; Left / P goes back. F shows all or restarts
-the current slide. R switches between reading and presentation. The PDF contains
+the current slide. R switches between reading and presentation. Open Controls
+for the lecture map, questions, answers, notes and reading mode. The visual style
+matches the preceding CLIP lecture. The PDF contains
 the 155 completed slides; the HTML has 487 build states.
 
 The HTML lecture embeds its figures, fonts and mathematics. Recorded lab mode

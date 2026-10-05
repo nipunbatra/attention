@@ -110,13 +110,13 @@
     },
     {
       "path": "index.html",
-      "bytes": 6344073,
-      "sha256": "ef34c9283535341522b716c5515bc89edcff100e56d628b0df43ecca39ffe21d"
+      "bytes": 6351609,
+      "sha256": "19b51011bfab37bd3bc4175053da92b1ee408860f2b678ffc345d3570e8c3102"
     },
     {
       "path": "from-clip-to-vlm.pdf",
-      "bytes": 3461948,
-      "sha256": "cca5e8b98b1a5b8187c877f6d804f90468f0d57e3a379cbbac05c5085925ea9a"
+      "bytes": 3391216,
+      "sha256": "d76b5df9256ac476ab9e3b85695aca2ba8d55b8a8bb3495199a24ff03cc0cf24"
     },
     {
       "path": "recorded-demo.html",
