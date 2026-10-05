@@ -18,7 +18,7 @@ Right / Space / N reveals the next part; Left / P goes back. F shows all or rest
 the current slide. R switches between reading and presentation. Open Controls
 for the lecture map, questions, answers, notes and reading mode. The visual style
 matches the preceding CLIP lecture. The PDF contains
-the 157 completed slides; the HTML has 500 build states.
+the 157 completed slides; the HTML has 502 build states.
 
 The HTML lecture embeds its figures, fonts and mathematics. Recorded lab mode
 works with the accompanying local files. Live inference requires WebGPU and an
