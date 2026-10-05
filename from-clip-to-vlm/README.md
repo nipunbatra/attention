@@ -4,7 +4,7 @@ How Images Become Context for Language Generation · ES 667 · Nipun Batra · II
 
 - [Read the HTML lecture](https://nipunbatra.github.io/attention/from-clip-to-vlm/)
 - [Present](https://nipunbatra.github.io/attention/from-clip-to-vlm/?present#cover)
-- [156-page PDF](from-clip-to-vlm.pdf)
+- [158-page PDF](from-clip-to-vlm.pdf)
 - [VLM Lab](demo.html) · [recorded mode](recorded-demo.html)
 - [Sources and image credits](SOURCES.md) · [original-paper figure credits](figures/papers/ATTRIBUTION.md)
 
@@ -18,7 +18,7 @@ Right / Space / N reveals the next part; Left / P goes back. F shows all or rest
 the current slide. R switches between reading and presentation. Open Controls
 for the lecture map, questions, answers, notes and reading mode. The visual style
 matches the preceding CLIP lecture. The PDF contains
-the 156 completed slides; the HTML has 513 build states.
+the 158 completed slides; the HTML has 528 build states.
 
 The HTML lecture embeds its figures, fonts and mathematics. Recorded lab mode
 works with the accompanying local files. Live inference requires WebGPU and an
