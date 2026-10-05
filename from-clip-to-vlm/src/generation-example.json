@@ -1,0 +1,89 @@
+{
+  "prompt": "Question: What animal is shown?\nAnswer:",
+  "promptIds": [
+    24361,
+    25,
+    1867,
+    5044,
+    318,
+    3402,
+    30,
+    198,
+    33706,
+    25
+  ],
+  "promptPieces": [
+    "Question",
+    ":",
+    " What",
+    " animal",
+    " is",
+    " shown",
+    "?",
+    "\n",
+    "Answer",
+    ":"
+  ],
+  "answerPieces": [
+    " A",
+    " black",
+    " dog",
+    ".",
+    "<|endoftext|>"
+  ],
+  "answerIds": [
+    317,
+    2042,
+    3290,
+    13,
+    50256
+  ],
+  "vocabSize": 50257,
+  "eosId": 50256,
+  "visionModel": "facebook/deit-tiny-patch16-224",
+  "visionRevision": "b3428f18dcc7b543470d07f14b4a4157815d1880",
+  "languageModel": "distilbert/distilgpt2",
+  "languageRevision": "2290a62682d06624634c1f46a6ad5be0f47f38aa",
+  "image": "cost-encoder-input.png",
+  "patchRows": 196,
+  "visionWidth": 192,
+  "languageWidth": 768,
+  "contextLengths": [
+    206,
+    207,
+    208,
+    209,
+    210
+  ],
+  "answerProvenance": "Authored illustrative trace, not measured generation.",
+  "toyState": [
+    1,
+    2
+  ],
+  "toyHead": [
+    [
+      1,
+      1,
+      0,
+      -1
+    ],
+    [
+      1,
+      0,
+      0,
+      0
+    ]
+  ],
+  "toyVocabulary": [
+    " A",
+    " The",
+    " dog",
+    "EOS"
+  ],
+  "toyLogits": [
+    3,
+    1,
+    0,
+    -1
+  ]
+}

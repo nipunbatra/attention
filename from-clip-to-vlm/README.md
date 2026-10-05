@@ -14,12 +14,16 @@ The opening four slides revise CLIP’s encoders, training and applications, the
 This lecture follows [CLIP](https://nipunbatra.github.io/attention/clip/).
 It derives visual prefixes, separate visual memory and learned-query compression,
 then connects them to LLaVA, Flamingo and BLIP-2, training and generation.
+The generation walkthrough explicitly uses Idea 1: all projected patch vectors
+form a visual prefix. One image and prompt stay fixed as each selected token
+is embedded and appended. Token IDs are verified; the answer and toy scores
+are illustrative.
 
 Right / Space / N reveals the next part; Left / P goes back. F shows all or restarts
 the current slide. R switches between reading and presentation. Open Controls
 for the lecture map, questions, answers, notes and reading mode. The visual style
 matches the preceding CLIP lecture. The PDF contains
-the 161 completed slides; the HTML has 613 build states.
+the 161 completed slides; the HTML has 656 build states.
 The main lecture has 153 slides, followed by 8 backup slides.
 The detailed Flamingo and BLIP-2 paper diagrams are in backup after the closing
 summary. Open them from the slide map when needed; their direct links still work.
