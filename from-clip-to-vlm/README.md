@@ -6,6 +6,7 @@ How Images Become Context for Language Generation · ES 667 · Nipun Batra · II
 - [Present](https://nipunbatra.github.io/attention/from-clip-to-vlm/?present#cover)
 - [158-page PDF](from-clip-to-vlm.pdf)
 - [VLM Lab](demo.html) · [recorded mode](recorded-demo.html)
+- [Three connections in Colab](https://colab.research.google.com/github/nipunbatra/attention/blob/main/from-clip-to-vlm/notebooks/vlm-three-connections.ipynb) · [executed notebook](notebooks/vlm-three-connections.ipynb)
 - [Sources and image credits](SOURCES.md) · [original-paper figure credits](figures/papers/ATTRIBUTION.md)
 
 The opening four slides revise CLIP’s encoders, training and applications, then introduce the generation question. The VLM lab compares SmolVLM-256M and SmolVLM-500M on identical inputs, with live or recorded outputs.
