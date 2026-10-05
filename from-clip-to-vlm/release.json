@@ -1,7 +1,7 @@
 {
   "title": "From CLIP to Vision-Language Models",
-  "slides": 157,
-  "buildStates": 521,
+  "slides": 156,
+  "buildStates": 513,
   "files": [
     {
       "path": "RECORDED_DEMO.md",
@@ -110,13 +110,13 @@
     },
     {
       "path": "index.html",
-      "bytes": 11857120,
-      "sha256": "19abce8aea2f61ab5f82d1713cdbeb29d15f0db2481a673c31025e113078d23c"
+      "bytes": 11795634,
+      "sha256": "5e9884c92250c7b11390a22e7975e929f4204199d1fbd8d101e050af508d01f8"
     },
     {
       "path": "from-clip-to-vlm.pdf",
-      "bytes": 6491061,
-      "sha256": "c4cc1cb7783b7d1817df3366cd30e9bdb8a1c78b47e72d1c5d226a56241d4225"
+      "bytes": 6472688,
+      "sha256": "109513c9dd9034bd5f69ec0a023403285a5d5d381a0eac7b24bf3fc90c9d0d3c"
     },
     {
       "path": "recorded-demo.html",
