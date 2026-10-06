@@ -11,6 +11,8 @@ Prepared 1 October 2026; rebuilt 3 October 2026. This lecture follows the visual
 
 The step-by-step architecture drawings are original teaching diagrams. They omit some normalization, residual and implementation details where the omission is identified in the teaching notes. The visual-prefix causal mask is one valid construction; it is not claimed to be the attention mask of every VLM. Visual vectors have the language hidden width but are not vocabulary entries.
 
+The decoder recall on pages 40–41 directly adapts the course’s Beyond Attention decoder portrait, `../transformer-outputs/figures/decoder-use.svg` (`decoder_portrait()` in `src/refinement_diagrams.py`). It preserves the “Raghav goes to → school” example, causal attention / MLP stack, triangular mask, updated-vector chips and last-state readout. The VLM version adds explicit position information and semantic reveal groups; the following slide places the same decoder grammar beside the ViT image path. Word-sized tokens and the continuation are illustrative. Normalization is omitted in this recap; additive position vectors are the pictured teaching convention, not a claim about every language model. The branches on the second slide are intentionally unconnected until the three visual-access ideas are introduced.
+
 ## Chat roles, embeddings and positions
 
 - [Chat templates](https://huggingface.co/docs/transformers/chat_templating): formatting roles and adding an assistant generation prompt. USER and ASST are readable teaching labels; real templates may use dedicated special tokens or ordinary text with delimiters.
