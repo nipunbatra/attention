@@ -26,7 +26,7 @@ Right / Space / N reveals the next part; Left / P goes back. F shows all or rest
 the current slide. R switches between reading and presentation. Open Controls
 for the lecture map, questions, answers, notes and reading mode. The visual style
 matches the preceding CLIP lecture. The PDF contains
-the 161 completed slides; the HTML has 656 build states.
+the 161 completed slides; the HTML has 657 build states.
 The main lecture has 153 slides, followed by 8 backup slides.
 The detailed Flamingo and BLIP-2 paper diagrams are in backup after the closing
 summary. Open them from the slide map when needed; their direct links still work.
