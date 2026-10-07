@@ -201,7 +201,7 @@ The `learned-computed` diagram is an original course schematic using the already
 
 ## Optional multi-image change detection (7 October 2026)
 
-The ten-slide extension after the main summary uses the existing original `room-before.svg` and `room-after.svg` course drawings as two separate, ordered image inputs. The chair moves to the right and the cup disappears. These scenes, the reference answer and all attention weights are authored; no new model outputs or learned correspondences are measured.
+The eleven-slide extension after the main summary uses the existing original `room-before.svg` and `room-after.svg` course drawings as two separate, ordered image inputs. The chair moves to the right and the cup disappears. These scenes, the reference answer and all attention weights are authored; no new model outputs or learned correspondences are measured.
 
 The chosen teaching design extends the notebook’s dimensions without claiming an executed multi-image notebook run: each full frame is resized to 224 × 224, with 16 × 16 patches and 196 retained width-192 vectors. Shared reader parameters produce eight width-192 summaries independently for each image. A shared projection gives sixteen width-768 visual vectors in an ordered causal prefix. Real systems need a supported processor, image boundaries, position handling and appropriate training; the schematic is not a literal chat template. The official [Idefics2 documentation](https://huggingface.co/docs/transformers/model_doc/idefics2) supplies an actual two-image comparison API example, with a different model configuration.
 
@@ -229,3 +229,9 @@ All optional material now follows a dedicated backup contents page in five conti
 ## Training overview before the summary
 
 On 7 October 2026, `summary-training` was moved to introduce the Captions to instructions subsection, immediately before the existing caption, checkpoint-handoff and instruction-tuning diagrams. Its URL is preserved. Three explanatory lines distinguish supplied training references, next-token prediction/loss/updates, and inference without a reference answer. Both displayed stages are training in the original LLaVA recipe. The main recap now has three diagrams; no new model evidence or performance claim was added.
+
+### Text labels, special markers and visual embeddings
+
+`multi-image-pack` uses ordinary text labels Before: and After:, with tokenization and LM embedding lookup. These spans may contain multiple tokenizer pieces. A1–A8 and B1–B8 label image-derived vectors projected to the illustrative 768-dimensional decoder input width.
+
+`multi-image-markers` illustrates Idefics2 separately: its [processor](https://github.com/huggingface/transformers/blob/v4.48.0/src/transformers/models/idefics2/processing_idefics2.py) expands image placeholders and supplies reserved boundary IDs; its [model input merger](https://github.com/huggingface/transformers/blob/main/src/transformers/models/idefics2/modeling_idefics2.py) substitutes visual features at image positions while retaining boundary embeddings from the LM table. The model-specific example does not reuse the teaching token counts or dimensions.
