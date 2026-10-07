@@ -4,7 +4,7 @@ How Images Become Context for Language Generation · ES 667 · Nipun Batra · II
 
 - [Read the HTML lecture](https://nipunbatra.github.io/attention/from-clip-to-vlm/)
 - [Present](https://nipunbatra.github.io/attention/from-clip-to-vlm/?present#cover)
-- [168-page PDF](from-clip-to-vlm.pdf)
+- [173-page PDF](from-clip-to-vlm.pdf)
 - [VLM Lab](demo.html) · [recorded mode](recorded-demo.html)
 - [Three connections in Colab](https://colab.research.google.com/github/nipunbatra/attention/blob/main/from-clip-to-vlm/notebooks/vlm-three-connections.ipynb) · [executed notebook](notebooks/vlm-three-connections.ipynb)
 - [Sources and image credits](SOURCES.md) · [original-paper figure credits](figures/papers/ATTRIBUTION.md)
@@ -22,8 +22,15 @@ The measured image-sensitivity check appears in optional evaluation reading.
 Training leads directly to the closing summary. The ten-slide inference
 refresher is optional reading after the multi-image extension; original links
 for prefill, decoding, caching and multi-turn context remain valid.
-The four-slide evaluation section follows inference in optional reading; its
+The evaluation section follows inference in optional reading; its
 false-premise example, image-sensitivity results and diagnostic suite are retained.
+
+Four visual recap slides close the main lecture: ViT/CLIP/generation, the three
+connection ideas, learning from reference answers, and a complete image-to-token
+path. They reuse Beyond Attention’s token rows, attention patterns and model portraits.
+A separate backup contents page groups all optional material: A multiple images,
+B inference, C evaluation and metrics, D model details and further training,
+E sources. Each group has a direct link and a heading in the lecture map.
 The training sequence keeps the same labelled example: reference tokens →
 probabilities → answer loss → projector gradient → six commented training statements.
 The code slide reuses the prepared input and adds labels, loss and an update;
@@ -38,8 +45,8 @@ Right / Space / N reveals the next part; Left / P goes back. F shows all or rest
 the current slide. R switches between reading and presentation. Open Controls
 for the lecture map, questions, answers, notes and reading mode. The visual style
 matches the preceding CLIP lecture. The PDF contains
-the 168 completed slides; the HTML has 689 build states.
-The main lecture has 136 slides, followed by 32 optional slides.
+the 173 completed slides; the HTML has 702 build states.
+The main lecture has 138 slides, followed by 35 optional slides.
 An optional [multi-image change-detection walkthrough](https://nipunbatra.github.io/attention/from-clip-to-vlm/?present#optional-multi-image)
 follows the closing summary: two ordered images → per-image summaries → attention
 across both groups → one generated answer. It also compares joint summarization

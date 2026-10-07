@@ -218,3 +218,9 @@ On 7 October 2026, the complete inference sequence was moved out of the main rou
 ## Optional evaluation reading
 
 On 7 October 2026, the four-slide evaluation section was moved after the optional inference refresher, before the backup papers. Original slide IDs, examples and measured outputs are preserved; its divider and section labels identify it as optional reading. The main lecture now moves from training directly to the closing summary. This changes presentation order only and introduces no new model evidence.
+
+## Visual recap and backup organization
+
+The four recap diagrams in `src/summary_diagrams.py` reuse the model-portrait grammar of the preceding Beyond Attention lecture, especially `memorable_families`, `decoder_portrait` and `encoder_decoder_portrait` in `attention-followups/transformer-outputs/src/refinement_diagrams.py`: explicit vector sequences, full/causal attention icons, separate source paths and token feedback. These are newly authored editable SVG diagrams, not copied paper figures. The existing dog photo credit applies. The recap uses the already verified DeiT-Tiny/DistilGPT2 shapes and 13-piece prompt from the notebook examples. The dog token and CLIP selection are illustrative, not measured outputs. The training recap follows the original LLaVA recipe documented above.
+
+All optional material now follows a dedicated backup contents page in five contiguous groups: multiple images, inference, evaluation and metrics, model details and further training, and sources. Existing slide IDs and measured outputs are preserved.
