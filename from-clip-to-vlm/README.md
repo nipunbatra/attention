@@ -20,7 +20,9 @@ The separate generation recap has been removed; compression leads directly
 to training. Token IDs are verified; the answer and toy scores are illustrative.
 The measured image-sensitivity check appears with evaluation.
 The training sequence keeps the same labelled example: reference tokens →
-probabilities → answer loss → projector gradient → a ten-line training step.
+probabilities → answer loss → projector gradient → six commented training statements.
+The code slide reuses the prepared input and adds labels, loss and an update;
+the four familiar preparation statements remain in its notes.
 Teacher forcing unfolds in three steps: the correct reference prefix,
 all five shifted targets, then the mean answer loss.
 The last slide explains which data and weights change in the original LLaVA recipe.
