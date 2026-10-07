@@ -160,7 +160,7 @@ The rewritten generation sequence uses the pinned DeiT-Tiny and DistilGPT2 resou
 
 The illustrative choices ` A`, ` black`, ` dog`, `.`, and EOS have actual tokenizer IDs 317, 2042, 3290, 13, and 50256. They are not recorded generations from either the untrained notebook wiring or SmolVLM. The separate four-entry head calculation assumes h = [1, 2], zero bias, and W rows [1, 1, 0, -1] and [1, 0, 0, 0]. It yields [3, 1, 0, -1] and an explicitly toy softmax. These are hand-set arithmetic values, not a truncated or renormalized measured model distribution. The full model interface has 768 input features and 50,257 output scores.
 
-Four slides within Idea 1 retain the exact input, last-position vocabulary readout, toy choice and embedding feedback. The separate generation section and repeated per-word continuation slides are removed; their full illustrative token sequence is retained in speaker notes and the fixture. The later inference section explains KV caching. The dog/cat/blank slide now belongs to evaluation and explicitly uses saved SmolVLM-256M runs with the lab prompt/template. No saved model measurements were changed.
+Four slides within Idea 1 retain the exact input, last-position vocabulary readout, toy choice and embedding feedback. The separate generation section and repeated per-word continuation slides are removed; their full illustrative token sequence is retained in speaker notes and the fixture. The inference refresher in optional reading explains KV caching. The dog/cat/blank slide now belongs to evaluation and explicitly uses saved SmolVLM-256M runs with the lab prompt/template. No saved model measurements were changed.
 
 ## One supervised update on the same Idea 1 example
 
@@ -210,3 +210,7 @@ The attention illustration uses one decoder self-attention softmax across all pe
 The separate joint-summary branch is an architectural alternative: eight readers may read 392 joined source rows with image/time identity, yielding eight total summaries, without a guaranteed four-per-image allocation. It is not attributed to a named model or the notebook. The mask comparison follows [Flamingo §2.3 and Appendix A.1.3](https://arxiv.org/html/2204.14198v2): its direct cross-attention uses only the most recent preceding image, while earlier language states can carry information from previous images. This is a model-specific mask, not a universal property of cross-attention.
 
 The optional cost comparison preserves both inputs and the same text count T: 392 visual positions versus 16, a reduction of 376. The bars use the same scale. Fewer decoder positions reduce visual K/V storage and attention reads at fixed model dimensions; both complete images are still encoded, and summarization adds work. No proportional end-to-end runtime claim is made.
+
+## Optional inference refresher
+
+On 7 October 2026, the complete inference sequence was moved out of the main route into optional reading after the multi-image extension. Existing slide IDs, diagrams and examples are preserved; the divider and section labels now identify it as optional. This is an ordering change, not new model evidence. Training leads directly to evaluation and summary.
