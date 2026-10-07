@@ -224,3 +224,8 @@ On 7 October 2026, the four-slide evaluation section was moved after the optiona
 The four recap diagrams in `src/summary_diagrams.py` reuse the model-portrait grammar of the preceding Beyond Attention lecture, especially `memorable_families`, `decoder_portrait` and `encoder_decoder_portrait` in `attention-followups/transformer-outputs/src/refinement_diagrams.py`: explicit vector sequences, full/causal attention icons, separate source paths and token feedback. These are newly authored editable SVG diagrams, not copied paper figures. The existing dog photo credit applies. The recap uses the already verified DeiT-Tiny/DistilGPT2 shapes and 13-piece prompt from the notebook examples. The dog token and CLIP selection are illustrative, not measured outputs. The training recap follows the original LLaVA recipe documented above.
 
 All optional material now follows a dedicated backup contents page in five contiguous groups: multiple images, inference, evaluation and metrics, model details and further training, and sources. Existing slide IDs and measured outputs are preserved.
+
+
+## Training overview before the summary
+
+On 7 October 2026, `summary-training` was moved to introduce the Captions to instructions subsection, immediately before the existing caption, checkpoint-handoff and instruction-tuning diagrams. Its URL is preserved. Three explanatory lines distinguish supplied training references, next-token prediction/loss/updates, and inference without a reference answer. Both displayed stages are training in the original LLaVA recipe. The main recap now has three diagrams; no new model evidence or performance claim was added.

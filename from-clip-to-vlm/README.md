@@ -25,9 +25,12 @@ for prefill, decoding, caching and multi-turn context remain valid.
 The evaluation section follows inference in optional reading; its
 false-premise example, image-sensitivity results and diagnostic suite are retained.
 
-Four visual recap slides close the main lecture: ViT/CLIP/generation, the three
-connection ideas, learning from reference answers, and a complete image-to-token
-path. They reuse Beyond Attention’s token rows, attention patterns and model portraits.
+Three visual recap slides close the main lecture: ViT/CLIP/generation, the three
+connection ideas, and a complete image-to-token path. The two-stage training
+overview now opens a dedicated Captions to instructions subsection before the
+summary: supplied reference data, next-token loss, selected weight updates, then
+inference without a reference answer. The diagrams reuse Beyond Attention’s
+token rows, attention patterns and model portraits.
 A separate backup contents page groups all optional material: A multiple images,
 B inference, C evaluation and metrics, D model details and further training,
 E sources. Each group has a direct link and a heading in the lecture map.

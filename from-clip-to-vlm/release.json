@@ -10,8 +10,8 @@
     },
     {
       "path": "SOURCES.md",
-      "bytes": 41336,
-      "sha256": "2060bef77a3dc1e984a05968b3b91fb0166ed868fb43d0356ea0f765d1c220ec"
+      "bytes": 41898,
+      "sha256": "338a367aca9e8209d1b3bc062642c1bbda6692280ab23635789a6a2260e27241"
     },
     {
       "path": "demo.html",
@@ -110,8 +110,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 15973555,
-      "sha256": "422a332ec2ff844fa02b6f898696c68adf1d741da2951008c233b13f4ec6a2e6"
+      "bytes": 15973967,
+      "sha256": "80c610db433da252d2470ff1ad0d6273d02dd2719fe43213200447528c91c614"
     },
     {
       "path": "notebooks/vlm-three-connections.ipynb",
@@ -120,8 +120,8 @@
     },
     {
       "path": "from-clip-to-vlm.pdf",
-      "bytes": 9065899,
-      "sha256": "dea165d5cb86d3c7cd861c18ebd5a5a37e58c101fb810a45d270249e88a9849b"
+      "bytes": 9074724,
+      "sha256": "69cb4b216ec17b59b58e46ef0628f670e576a87d9a8b1abc4bcbb46aa08d1708"
     },
     {
       "path": "recorded-demo.html",
