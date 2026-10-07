@@ -173,3 +173,12 @@ The concluding recipe follows [Visual Instruction Tuning, §4.2](https://arxiv.o
 ## CLIP-to-generation transition
 
 The fourth recap slide keeps the same Oxford-IIIT Pet dog image in two tasks. The candidate descriptions `a dog`, `a cat`, and `a car`, the selected match, and the illustrative generated reply are authored teaching examples; no model run or numeric matching scores are presented. “New answer” means a sequence that was not supplied as a complete candidate answer, using tokens from the decoder’s vocabulary. It does not mean CLIP cannot rank richer descriptions when supplied.
+
+
+## Why shorten the visual prefix? (7 October 2026)
+
+The section now motivates compression before showing the summarizer: the verified notebook input has 196 image positions and 13 text positions, and 209 positions fits comfortably. In a standard full-context causal decoder, each position adds prefill work and layerwise key/value cache storage. Cached generation reuses earlier K/V, while new queries still read them; see the official [Transformers cache explanation](https://huggingface.co/docs/transformers/main/cache_explanation). No measured memory usage or speedup is claimed.
+
+A separate, explicitly illustrative four-image bundle reuses the credited dog and cat photographs and authored invoice and chart. At the same 196-patch setting for every image, it contributes 4 × 196 = 784 visual positions, before text. The bars count visual positions only and share one scale. The new prompt is “Describe each image.”; its token count is not assumed to be the earlier notebook prompt’s 13. At fixed decoder width, head configuration and dtype, the visual portion of the layerwise K/V cache is four times as large. This is not an executed multi-image run or a fourfold total runtime claim.
+
+Returning to the original single image and 13 text tokens, eight summary vectors give 21 decoder positions, 188 fewer than the 209-position full prefix. The vision encoder still runs over all patches and the learned summarizer adds work. Whether the compressed representation retains the required evidence must be evaluated after training.
