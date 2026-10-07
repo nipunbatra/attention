@@ -1,7 +1,7 @@
 {
   "title": "From CLIP to Vision-Language Models",
-  "slides": 166,
-  "buildStates": 676,
+  "slides": 168,
+  "buildStates": 689,
   "files": [
     {
       "path": "RECORDED_DEMO.md",
@@ -10,8 +10,8 @@
     },
     {
       "path": "SOURCES.md",
-      "bytes": 38793,
-      "sha256": "fd75bfd655db1283fb68c9879ff3f6dd5fe99e0cbf7c536e2e519c18726448ff"
+      "bytes": 39425,
+      "sha256": "cb22e2bda5e04e74967182dcbfc4e7b8db4abf0ef7c19c9e27dae5bd68ea5248"
     },
     {
       "path": "demo.html",
@@ -110,8 +110,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 15308524,
-      "sha256": "4e11ec55fe2f7985ed473873f2d76bed248dcbead3a7a4a7a4520fbfc1106711"
+      "bytes": 15591415,
+      "sha256": "1f885aa74789dd4c459d94f0b0590f144b22ec05102c11602e744c40837911f3"
     },
     {
       "path": "notebooks/vlm-three-connections.ipynb",
@@ -120,8 +120,8 @@
     },
     {
       "path": "from-clip-to-vlm.pdf",
-      "bytes": 8680097,
-      "sha256": "275b48381df3abe85b6cba81447807f9c9af65505b8b265b2919f9c4b26cf13d"
+      "bytes": 8799433,
+      "sha256": "a5681de51b74cc504457dabc4593449af3a2c92cc1bcfa9129e574b38e8e4269"
     },
     {
       "path": "recorded-demo.html",
