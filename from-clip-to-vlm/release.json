@@ -110,8 +110,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 15637559,
-      "sha256": "cbfc3612555dd6015a97d578ac61e227e139b688181a85e86b93d654af013677"
+      "bytes": 15641012,
+      "sha256": "ef308b7e2d49f29d9e506483b4fa8aa93f211d08682cbf43c630570d1918e09a"
     },
     {
       "path": "notebooks/vlm-three-connections.ipynb",
@@ -120,8 +120,8 @@
     },
     {
       "path": "from-clip-to-vlm.pdf",
-      "bytes": 8025141,
-      "sha256": "69b99b4a89b025756b8b968723b8b98ca3a67304f91e4a87e87e33fb07c8633c"
+      "bytes": 8027225,
+      "sha256": "62333b6f366ebb1e0a8688c6f93661561efa7e7392044b0713e815c95216a233"
     },
     {
       "path": "recorded-demo.html",
