@@ -244,6 +244,11 @@ function makeHead(dimensions, classes) {
 function headPredict(head, x) {
   return softmax(head.weights.map((w, c) => dot(w, x) + head.bias[c]));
 }
+function neuronTrace(head, x, selected) {
+  const logits = head.weights.map((w, c) => dot(w, x) + head.bias[c]);
+  const products = head.weights[selected].map((w, k) => w * x[k]);
+  return { logits, probabilities: softmax(logits), products, remainder: products.slice(3).reduce((a, b) => a + b, 0) };
+}
 function headMetrics(head, rows, labels) {
   const predictions = rows.map((x) => headPredict(head, x));
   return {
@@ -711,35 +716,112 @@ function mountExplorer(root, state2, initial = {}) {
     root.onkeydown = null;
   };
 }
+const TRAINING_TASKS = [
+  { id: "3", name: "Sounds · dog, waves, fire", type: "audio" },
+  { id: "10", name: "Sounds · all 10 categories", type: "audio" },
+  { id: "images", name: "Pictures · animals, food, transport", type: "image" },
+  { id: "text", name: "Text · animals, food, transport", type: "text" }
+];
+const visualSplit = [
+  { label: "Animals", train: ["newfoundland", "Persian", "commons-extra-12090096", "commons-extra-61295118"], test: ["chelsea", "commons-extra-20283834"] },
+  { label: "Food & drink", train: ["coffee", "photo-pizza", "commons-extra-22552194", "commons-extra-151875501"], test: ["commons-extra-113972132", "commons-extra-9534738"] },
+  { label: "Transport", train: ["rocket", "photo-train", "photo-bicycle", "commons-extra-61339647"], test: ["commons-extra-97567388", "commons-extra-153714724"] }
+];
+const captionId = (id) => id.startsWith("photo-") ? `caption-commons-${id.slice(6)}` : `caption-${id}`;
+function trainingTask(id, gallery, vectors) {
+  const task = TRAINING_TASKS.find((x) => x.id === id);
+  if (!task) throw new Error(`Unknown training task: ${id}`);
+  if (task.type === "audio") {
+    const classes = id === "3" ? ["dog", "sea_waves", "crackling_fire"] : [...new Set(gallery.filter((x) => x.type === "audio" && x.label).map((x) => x.label))];
+    const data2 = gallery.filter((x) => x.type === "audio" && classes.includes(x.label) && ["train", "test"].includes(x.split));
+    if (data2.some((x) => !vectors[x.id])) throw new Error("A training embedding is missing.");
+    return { ...task, classes, train: data2.filter((x) => x.split === "train"), test: data2.filter((x) => x.split === "test") };
+  }
+  const data = visualSplit.flatMap((group) => ["train", "test"].flatMap((split) => group[split].map((sourceId) => {
+    const itemId = task.type === "text" ? captionId(sourceId) : sourceId;
+    const item = gallery.find((x) => x.id === itemId);
+    if (!item || !vectors[itemId]) throw new Error(`Missing training sample: ${itemId}`);
+    return { ...item, label: group.label, split, sourceGroup: sourceId };
+  })));
+  return { ...task, classes: visualSplit.map((x) => x.label), train: data.filter((x) => x.split === "train"), test: data.filter((x) => x.split === "test") };
+}
+const className = (label) => label.replaceAll("_", " ");
+const f = (n, digits = 4) => (Math.abs(n) < 0.5 * 10 ** -digits ? 0 : n).toFixed(digits);
+const sub = (n) => String(n).replace(/\d/g, (d) => "₀₁₂₃₄₅₆₇₈₉"[+d]);
+function sampleMedia(item, label = item.title) {
+  if (item.type === "audio") return `<audio controls preload="none" src="${escapeHTML(item.src)}" aria-label="${escapeHTML(label)}"></audio>`;
+  if (item.type === "image") return `<img src="${escapeHTML(item.src)}" alt="${escapeHTML(label)}" loading="lazy">`;
+  return `<blockquote>${escapeHTML(item.text)}</blockquote>`;
+}
+function networkDiagram(head, x, classes, selected, trueClass) {
+  const d = x.length, C = classes.length;
+  const trace = neuronTrace(head, x, selected);
+  const height = C > 3 ? 800 : 470;
+  const bottom = height - 55;
+  const indices = [0, 1, 2, d - 3, d - 2, d - 1];
+  const featureY = [0, 1, 2, 3.5, 4.5, 5.5].map((i) => 110 + i / 5.5 * (bottom - 110));
+  const classY = classes.map((_, c) => 120 + c / (C - 1) * (bottom - 125));
+  const line = (c, i) => `<path d="M124 ${featureY[i]} C215 ${featureY[i]}, 245 ${classY[c]}, 324 ${classY[c]}" class="nn-wire ${c === selected ? "selected" : ""}"/>`;
+  const wires = classes.map((_, c) => c).filter((c) => c !== selected).concat(selected).map((c) => indices.map((_, i) => line(c, i)).join("")).join("");
+  const nodes = indices.map((k, i) => `<text x="12" y="${featureY[i] + 5}" class="nn-coordinate">x${sub(k + 1)}</text><circle cx="97" cy="${featureY[i]}" r="27" class="nn-feature"/><text x="97" y="${featureY[i] + 4}" text-anchor="middle" class="nn-value">${f(x[k])}</text>`).join("");
+  const outputs = classes.map((label, c) => {
+    const y = classY[c], p = trace.probabilities[c];
+    return `<g class="nn-output ${selected === c ? "selected" : ""}">
+      <text x="350" y="${y - 36}" text-anchor="middle" class="nn-class">${escapeHTML(className(label))}${c === trueClass ? " · target" : ""}</text>
+      <circle cx="350" cy="${y}" r="27"/><text x="350" y="${y + 4}" text-anchor="middle" class="nn-value">${f(trace.logits[c], 3)}</text>
+      <path d="M379 ${y} H486" class="nn-to-softmax" marker-end="url(#nn-arrow)"/>
+      <rect x="518" y="${y - 12}" width="158" height="24" rx="3" class="nn-bar-track"/>
+      <rect x="518" y="${y - 12}" width="${p * 158}" height="24" rx="3" class="nn-bar-fill"/>
+      <text x="690" y="${y + 5}" class="nn-probability">${(p * 100).toFixed(1)}%</text>
+    </g>`;
+  }).join("");
+  const svg = `<svg viewBox="0 0 760 ${height}" role="img" aria-label="${d} embedding features connect to ${C} class neurons. ${escapeHTML(className(classes[selected]))} is highlighted. All ${d} coordinates contribute to every class score.">
+    <defs><marker id="nn-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10" fill="none" stroke="#9e9587"/></marker></defs>
+    <text x="12" y="25" class="nn-heading">${d} features</text><text x="12" y="47" class="nn-caption">6 shown · all ${d} used</text>
+    <text x="350" y="25" text-anchor="middle" class="nn-heading">${C} class neurons</text><text x="350" y="47" text-anchor="middle" class="nn-caption">score = wᵀx + b</text>
+    <text x="518" y="25" class="nn-heading">Softmax</text><text x="518" y="47" class="nn-caption">across all ${C} scores · sum = 1</text>
+    ${wires}${nodes}<text x="97" y="${(featureY[2] + featureY[3]) / 2 + 3}" text-anchor="middle" class="nn-ellipsis">⋮</text>${outputs}
+    <text x="200" y="${height - 12}" text-anchor="middle" class="nn-caption">Connections are weights in W</text>
+    <text x="555" y="${height - 12}" text-anchor="middle" class="nn-caption">Probabilities, not calibrated confidence</text>
+  </svg>`;
+  return { svg, trace };
+}
+function renderNeuronArithmetic(target, head, x, classes, selected, trueClass, trace) {
+  const label = escapeHTML(className(classes[selected]));
+  target.innerHTML = `<div class="nn-formula-summary"><b>${label}: one neuron, ${x.length} weighted inputs</b><code>s = wᵀx + b = ${f(trace.logits[selected])} → p = ${(trace.probabilities[selected] * 100).toFixed(1)}%</code></div>
+    <p class="hint">W has shape [${classes.length}, ${x.length}], with one row per class. b has ${classes.length} biases. Only these ${(classes.length * (x.length + 1)).toLocaleString("en")} parameters learn; the embedding stays fixed. This is a single output layer, with no hidden layer.</p>
+    <details><summary>Open this neuron: see the multiplications</summary><div class="table-scroll"><table><thead><tr><th>Coordinate</th><th>Feature xₖ</th><th>Weight wₖ</th><th>Product wₖxₖ</th></tr></thead><tbody>${[0, 1, 2].map((k) => `<tr><th>${k + 1}</th><td>${f(x[k], 6)}</td><td>${f(head.weights[selected][k], 6)}</td><td>${f(trace.products[k], 6)}</td></tr>`).join("")}<tr><th colspan="3">Sum of the remaining ${x.length - 3} products</th><td>${f(trace.remainder, 6)}</td></tr><tr><th colspan="3">Add the bias b</th><td>${f(head.bias[selected], 6)}</td></tr><tr><th colspan="3">Total: class score s</th><td>${f(trace.logits[selected], 6)}</td></tr></tbody></table></div><p><code>p(${label}) = exp(s) / Σ exp(all class scores) = ${f(trace.probabilities[selected], 6)}</code></p><p>This example’s label is <b>${escapeHTML(className(classes[trueClass]))}</b>, so its loss is −ln(${f(trace.probabilities[trueClass], 6)}) = <b>${f(-Math.log(trace.probabilities[trueClass]), 6)}</b>. Training averages this loss over all labelled examples.</p><p class="hint">Displayed values are rounded. Computation uses full precision and numerically stable softmax.</p></details>`;
+}
 function mountTraining(root, state2) {
-  let head, epoch = 0, history2 = [], training = false, alive = true, classes = [], train = [], test = [], d = 768;
+  let head, epoch = 0, history2 = [], training = false, alive = true, classes = [], train = [], test = [], d = 768, task;
   const $2 = (s) => root.querySelector(s);
-  root.innerHTML = `<div class="training-intro"><p><strong>Can a few labelled sounds teach a classifier?</strong> EmbeddingGemma has already represented each recording. Now learn a small output layer on those fixed vectors.</p><span class="saved-tag">Real gradient descent · runs locally · no model download</span></div><div class="training-architecture"><div><b>Sound recording</b><span>16 kHz mono waveform</span></div><i>→</i><div class="frozen-block"><b>EmbeddingGemma 2</b><span>Frozen · does not change</span></div><i>→</i><div><b id="train-vector-shape">768 numbers</b><span>L2-normalized embedding</span></div><i>→</i><div class="learning-block"><b>Linear layer + softmax</b><span>W and b learn from labels</span></div></div>
- <div class="training-controls"><label>Classification task<select id="train-task"><option value="3">3 sounds · dog, waves, fire</option><option value="10">All 10 sound categories</option></select></label><label>Embedding dimensions<select id="train-dim"><option>768</option><option>256</option><option>128</option></select></label><div class="training-buttons"><button id="train-step" class="quiet">Take one step</button><button id="train-run" class="primary">Train 100 steps</button><button id="train-reset" class="quiet">Reset</button></div></div>
+  root.innerHTML = `<div class="training-intro"><p><strong>Can a few labelled examples teach a new task?</strong> Choose sounds, pictures or text. EmbeddingGemma has already represented each input; we train a small classifier on those fixed vectors.</p><span class="saved-tag">Real gradient descent · runs locally · no model download</span></div>
+ <div class="training-controls"><label>What are we classifying?<select id="train-task">${TRAINING_TASKS.map((t) => `<option value="${t.id}">${escapeHTML(t.name)}</option>`).join("")}</select></label><label>Embedding dimensions<select id="train-dim"><option>768</option><option>256</option><option>128</option></select></label><div class="training-buttons"><button id="train-step" class="quiet">Take one step</button><button id="train-run" class="primary">Train 100 steps</button><button id="train-reset" class="quiet">Reset</button></div></div>
+ <p id="training-task-note" class="training-task-note"></p>
+ <section class="neuron-lab"><p class="eyebrow">INPUT → FEATURES → CLASS SCORES → PROBABILITIES</p><h3>Follow one example through the network</h3><p class="hint">Choose an example, then highlight a class neuron. Take a step above and watch its weights and predictions change.</p>
+ <div class="nn-controls"><label>Training example<select id="train-example"></select></label><label>Highlight a class neuron<select id="train-neuron"></select></label></div>
+ <div class="nn-layout"><div class="nn-input" id="nn-input"></div><div><p class="nn-pan-hint">Scroll the diagram sideways to follow all three stages →</p><div class="nn-scroll" id="nn-diagram" tabindex="0" role="region" aria-label="Feature and classifier neuron diagram"></div></div></div>
+ <div class="nn-arithmetic" id="nn-arithmetic"></div><details class="nn-vector"><summary id="nn-vector-label">Inspect all 768 features</summary><p class="hint">These are the saved model’s actual coordinates for this input. Shorter vectors keep the first d coordinates and normalize again.</p><pre id="nn-vector-values"></pre></details></section>
  <div class="training-metrics" id="train-metrics" aria-live="polite"></div><div class="training-grid"><section><h3>Watch the loss change</h3><div id="training-chart"></div><p class="hint">Solid rust: training cross-entropy · dashed blue: held-out cross-entropy. A lower loss means more probability assigned to the recorded label. Training loss can fall while held-out predictions get worse.</p><div id="train-formula" class="training-formula"></div></section><section><h3>Exactly what is learning?</h3><p>Start W and b at zero: every class gets the same probability. Each step computes the training loss, differentiates it, and updates only W and b.</p><pre class="training-code">x = frozen_embeddings          # [N, d]
 logits = x @ W.T + b            # [N, C]
 loss = cross_entropy(logits, y)
 loss.backward()                # gradients for W, b
 optimizer.step()</pre><p id="train-shape" class="hint"></p><details><summary>Learning rate and update rule</summary><p>Full-batch gradient descent · learning rate 2 · weight penalty λ = 0.001.</p><p>∂L/∂s = (p − one_hot(y)) / N<br>∂L/∂W = (p − Y)ᵀX / N + λW<br>W ← W − 2 × ∂L/∂W</p><p>The chart shows cross-entropy alone. The small weight penalty is used in the update.</p></details><button class="quiet" id="train-export">Download learned weights</button></section></div>
- <section class="test-predictions"><div class="section-heading"><h3>Try the held-out recordings</h3><p>These recordings never enter the gradient update. Play them before revealing their labels.</p></div><p class="hint" id="split-note"></p><div id="test-cards"></div></section>
+ <section class="test-predictions"><div class="section-heading"><h3>Try the held-out examples</h3><p>These examples never enter the gradient update. Look, read or listen before revealing their labels.</p></div><p class="hint" id="split-note"></p><div id="test-cards"></div></section>
  <details class="training-split"><summary>See every training example and the split</summary><div id="split-table"></div></details>
  <section class="finetune-section"><p class="eyebrow">THE NEXT STEP</p><h3>What if we want to change the embedding space itself?</h3><p>Fine-tuning updates the encoder. Use positive matches and in-batch negatives so related inputs move closer in the representation. That is a different objective from our small classifier above.</p><div class="fine-tuning-path"><span>Image + caption<br>or audio + text pairs</span><b>→</b><span>EmbeddingGemma<br><small>weights can update</small></span><b>→</b><span>Contrastive loss<br><small>compare candidates in a batch</small></span></div><p>The official notebooks below run model fine-tuning on a GPU runtime. This browser lab only trains the small output layer.</p><div class="training-links"><a href="https://ai.google.dev/gemma/docs/embeddinggemma/fine-tuning-embeddinggemma-with-sentence-transformers" target="_blank" rel="noopener">Google: text fine-tuning ↗</a><a href="https://colab.research.google.com/github/unslothai/notebooks/blob/main/nb/EmbeddingGemma2_%28300M%29-Image_Text.ipynb" target="_blank" rel="noopener">Image + text Colab ↗</a><a href="https://colab.research.google.com/github/unslothai/notebooks/blob/main/nb/EmbeddingGemma2_%28300M%29-Audio.ipynb" target="_blank" rel="noopener">Audio Colab ↗</a></div></section>`;
   function reset() {
     epoch = 0;
     history2 = [];
     d = +$2("#train-dim").value;
-    classes = $2("#train-task").value === "3" ? ["dog", "sea_waves", "crackling_fire"] : [
-      ...new Set(
-        state2.gallery.filter((x) => x.type === "audio" && x.label).map((x) => x.label)
-      )
-    ];
-    const data = state2.gallery.filter(
-      (x) => x.type === "audio" && classes.includes(x.label) && state2.vectors[x.id]
-    );
-    train = data.filter((x) => x.split === "train");
-    test = data.filter((x) => x.split === "test");
+    task = trainingTask($2("#train-task").value, state2.gallery, state2.vectors);
+    ({ classes, train, test } = task);
+    $2("#train-example").innerHTML = train.map((x, i) => `<option value="${x.id}">${i + 1}. ${escapeHTML(className(x.label))} · ${escapeHTML(x.title)}</option>`).join("");
+    $2("#train-neuron").innerHTML = classes.map((c, i) => `<option value="${i}">${escapeHTML(className(c))}</option>`).join("");
+    $2("#training-task-note").textContent = task.type === "audio" ? "Recognise the sound from the waveform alone. The recorded class labels supervise the output layer; filenames are never model inputs." : task.type === "image" ? "Sort pictures into Animals, Food & drink, or Transport. The encoder saw the pixels, without captions. Four pictures per class teach the head; two different pictures per class are held out." : "Sort written descriptions into Animals, Food & drink, or Transport. The encoder saw only the text, without pictures. Four descriptions per class teach the head; two different descriptions per class are held out.";
     head = makeHead(d, classes.length);
     record();
+    renderExamples();
     render();
   }
   const rows = (data) => data.map((x) => unit(state2.vectors[x.id].vector, d)), labels = (data) => data.map((x) => classes.indexOf(x.label));
@@ -762,23 +844,50 @@ optimizer.step()</pre><p id="train-shape" class="hint"></p><details><summary>Lea
   }
   function render() {
     const m = history2.at(-1);
-    $2("#train-metrics").innerHTML = `<div><span>Gradient steps</span><b>${epoch}</b></div><div><span>Training loss</span><b>${m.train.loss.toFixed(4)}</b></div><div><span>Held-out loss</span><b>${m.test.loss.toFixed(4)}</b></div><div><span>Held-out accuracy</span><b>${Math.round(m.test.accuracy * test.length)} / ${test.length}</b></div>`;
+    $2("#train-metrics").innerHTML = `<div><span>Gradient steps</span><b>${epoch}</b></div><div><span>Training loss</span><b>${m.train.loss.toFixed(4)}</b></div><div><span>Held-out loss</span><b>${m.test.loss.toFixed(4)}</b></div><div><span>Held-out accuracy</span><b>${epoch === 0 ? "— (tie)" : `${Math.round(m.test.accuracy * test.length)} / ${test.length}`}</b></div>`;
     chart();
-    $2("#train-vector-shape").textContent = d + " numbers";
+    renderNetwork();
     $2("#train-shape").textContent = `X: [${train.length}, ${d}] · W: [${classes.length}, ${d}] · b: [${classes.length}] · ${classes.length * (d + 1)} trainable parameters.`;
-    $2("#train-formula").innerHTML = `<b>L = −(1/N) Σ log p(correct class)</b><span>N = ${train.length} training recordings · ${classes.length} classes · uniform baseline = ${Math.log(classes.length).toFixed(4)}</span>`;
-    $2("#split-note").textContent = `${train.length} training recordings + ${test.length} held-out recordings across ${classes.length} classes, all from different original source recordings. Only ${test.length} held-out examples: an inspectable demonstration, not a reliable performance estimate. Repeatedly choosing settings against this tiny test set would bias the result.`;
+    $2("#train-formula").innerHTML = `<b>L = −(1/N) Σ log p(correct class)</b><span>N = ${train.length} training examples · ${classes.length} classes · uniform baseline = ${Math.log(classes.length).toFixed(4)}</span>`;
     $2("#test-cards").innerHTML = test.map((item, i) => {
       const probs = m.test.predictions[i], best = probs.indexOf(Math.max(...probs));
-      return `<article><p class="small-label">HELD-OUT RECORDING ${i + 1}</p><audio controls preload="none" src="${escapeHTML(item.src)}" aria-label="Held-out recording ${i + 1}"></audio><strong>Prediction: ${escapeHTML(classes[best].replaceAll("_", " "))}</strong><p class="hint">Softmax output · not calibrated confidence</p><div class="class-bars">${classes.map((c, j) => `<div><span>${escapeHTML(c.replaceAll("_", " "))}</span><i><b style="width:${probs[j] * 100}%"></b></i><code>${(probs[j] * 100).toFixed(1)}%</code></div>`).join("")}</div><details><summary>Reveal the dataset label</summary><p>${escapeHTML(item.label.replaceAll("_", " "))} · ${classes[best] === item.label ? "Correct prediction" : "Different from the prediction"}</p></details></article>`;
+      const tied = Math.max(...probs) - Math.min(...probs) < 1e-12;
+      return `<article><p class="small-label">HELD-OUT ${task.type === "audio" ? "SOUND" : task.type === "image" ? "PICTURE" : "TEXT"} ${i + 1}</p>${sampleMedia(item, `Held-out example ${i + 1}`)}<strong>${tied ? "All classes tied" : `Prediction: ${escapeHTML(className(classes[best]))}`}</strong><p class="hint">Softmax output · not calibrated confidence</p><div class="class-bars">${classes.map((c, j) => `<div><span>${escapeHTML(className(c))}</span><i><b style="width:${probs[j] * 100}%"></b></i><code>${(probs[j] * 100).toFixed(1)}%</code></div>`).join("")}</div><details><summary>Reveal the dataset label</summary><p>${escapeHTML(className(item.label))} · ${tied ? "No preference yet" : classes[best] === item.label ? "Correct prediction" : "Different from the prediction"}</p></details></article>`;
     }).join("");
-    $2("#split-table").innerHTML = `<p>Original source IDs are kept separate across the split. Audio never uses filenames as model input.</p><div class="table-scroll"><table><thead><tr><th>Recording</th><th>Listen</th><th>Split</th><th>Source recording ID</th></tr></thead><tbody>${[...train, ...test].map((i) => `<tr><td>${escapeHTML(i.title)}</td><td><audio controls preload="none" src="${escapeHTML(i.src)}"></audio></td><td>${i.split === "test" ? "Held out" : "Training"}</td><td>${escapeHTML(i.sourceRecording)}</td></tr>`).join("")}</tbody></table></div>`;
+  }
+  function renderExamples() {
+    $2("#split-note").textContent = `${train.length} training + ${test.length} held-out examples across ${classes.length} classes. ${task.type === "audio" ? "Original source recordings" : "Source pictures and their descriptions"} are kept separate across the split. This small set illustrates learning; it cannot give a reliable performance estimate. Changing the task or dimension resets the head.`;
+    $2("#split-table").innerHTML = `<p>Every example below uses a saved model embedding. Labels are used only to train and evaluate the head. ${task.type === "text" ? "These are the gallery’s existing caption embeddings, with the same text preprocessing used throughout the lab." : "The media were encoded without their titles or labels."}</p><div class="table-scroll"><table><thead><tr><th>Example</th><th>Input</th><th>Label</th><th>Split</th><th>Source ID</th></tr></thead><tbody>${[...train, ...test].map((i) => `<tr><td>${escapeHTML(i.title)}</td><td>${sampleMedia(i)}</td><td>${escapeHTML(className(i.label))}</td><td>${i.split === "test" ? "Held out" : "Training"}</td><td>${escapeHTML(i.sourceRecording || i.sourceGroup)}</td></tr>`).join("")}</tbody></table></div>`;
+    renderInput();
+  }
+  function selectedExample() {
+    return train.find((i) => i.id === $2("#train-example").value);
+  }
+  function renderInput() {
+    const item = selectedExample(), x = unit(state2.vectors[item.id].vector, d);
+    $2("#nn-input").innerHTML = `<p class="small-label">${task.type === "audio" ? "SOUND WAVEFORM" : task.type === "image" ? "PICTURE PIXELS" : "WRITTEN DESCRIPTION"}</p>${task.type === "audio" ? waveform(item.id) : ""}${sampleMedia(item)}<p class="hint">Label: <b>${escapeHTML(className(item.label))}</b></p><div class="nn-flow-arrow">↓</div><div class="nn-encoder"><b>EmbeddingGemma 2</b><span>Frozen encoder<br>Already computed this vector</span></div><div class="nn-flow-arrow">↓</div><div class="nn-saved-vector">x ∈ ℝ${[...String(d)].map((n) => "⁰¹²³⁴⁵⁶⁷⁸⁹"[+n]).join("")} →</div><span class="nn-input-shape">${d} features · unit length<br>Same vector at every training step</span>`;
+    $2("#nn-vector-label").textContent = `Inspect all ${d} features for this input`;
+    $2("#nn-vector-values").textContent = x.map((v, k) => `x[${k + 1}] = ${v.toFixed(6)}`).join("\n");
+  }
+  function renderNetwork() {
+    const item = selectedExample(), x = unit(state2.vectors[item.id].vector, d);
+    const selected = +$2("#train-neuron").value, trueClass = classes.indexOf(item.label);
+    const { svg, trace } = networkDiagram(head, x, classes, selected, trueClass);
+    const arithmeticOpen = $2("#nn-arithmetic details")?.open;
+    $2("#nn-diagram").innerHTML = svg;
+    renderNeuronArithmetic($2("#nn-arithmetic"), head, x, classes, selected, trueClass, trace);
+    if (arithmeticOpen) $2("#nn-arithmetic details").open = true;
   }
   function step() {
     trainHeadStep(head, rows(train), labels(train));
     epoch++;
     record();
   }
+  $2("#train-example").onchange = () => {
+    renderInput();
+    renderNetwork();
+  };
+  $2("#train-neuron").onchange = renderNetwork;
   $2("#train-step").onclick = () => {
     step();
     render();
@@ -811,6 +920,8 @@ optimizer.step()</pre><p id="train-shape" class="hint"></p><details><summary>Lea
       model: MODEL,
       revision: REVISION,
       frozenEncoder: true,
+      task: task.id,
+      inputType: task.type,
       dimensions: d,
       classes,
       head,
@@ -1165,7 +1276,7 @@ const experiments = [
     group: "Learn",
     name: "Train a small classifier",
     title: "Teach a new task using frozen embeddings",
-    description: "Take one gradient step at a time. Watch a small linear layer learn to recognise sounds from a handful of labelled examples.",
+    description: "Take one gradient step at a time. Train on sounds, pictures or text. Follow the 768 features into class neurons, then test on examples the head has never seen.",
     mode: "training",
     lesson: "The encoder stays fixed. Only the classifier weights learn."
   }
