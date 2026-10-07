@@ -213,32 +213,6 @@ function trainHeadStep(head, rows, labels, rate = 2, decay = 1e-3) {
   );
   head.bias.forEach((a, c) => head.bias[c] -= rate * gb[c]);
 }
-const chapters = [
-  { id: "first-match", label: "One image, many captions", title: "How does a picture find its words?", question: "Choose the caption you expect to win. What does the model compare?", a: "chelsea", candidates: ["caption-chelsea", "caption-retriever-photo", "caption-coffee", "caption-rocket"], kind: "single", jump: "captions", changed: "One image is compared with four text candidates.", fixed: "One model, one image vector, the same caption menu.", notice: "The model returns 768 numbers. We supply the captions and rank their dot products. It has not written a caption.", limit: "The highest score only identifies the best option in this menu." },
-  { id: "hear-a-match", label: "Listen before looking", title: "Can a bark find a picture?", question: "Play the recording first. Predict which image will be closest.", a: "sound-dog", candidates: ["newfoundland", "Persian", "photo-beach", "photo-fire", "photo-rooster", "photo-train"], kind: "single", jump: "listen", changed: "The query is a waveform; the candidates are photographs.", fixed: "The image index is reused. There is no speech transcript.", notice: "Audio and image inputs produce vectors of the same length. The dot product works across these modalities.", limit: "A shared space does not guarantee every cross-modal match. Try the caption menu below.", alternate: ["caption-sound-dog", "caption-sound-crying_baby", "caption-sound-sneezing", "caption-sound-rooster", "caption-sound-rain", "caption-sound-sea_waves"] },
-  { id: "watch-a-match", label: "Video becomes searchable", title: "What does the model see in a video?", question: "Play the excerpt. Which description should retrieve it?", a: "film-coffee", candidates: ["caption-commons-coffee", "caption-commons-puppy", "caption-commons-waves", "caption-commons-geese"], kind: "single", jump: "moments", changed: "A clip is represented using sampled frames.", fixed: "This lab samples one frame each second, without the soundtrack.", notice: "Store one vector per short time window to retrieve a moment. An embedding is not a frame-by-frame description.", limit: "A brief event between sampled frames can be missed. Sound in the original video cannot affect this lab’s video vector." },
-  { id: "change-colour", label: "Change the colour", title: "Same kind of object. Different colour.", question: "Will the red and blue descriptions exchange places?", a: "red-mug", b: "blue-mug", candidates: ["caption-red-mug", "caption-blue-mug", "caption-coffee", "caption-commons-pizza"], kind: "compare", jump: "neighbors", changed: "We replace the red-mug image with the blue-mug image.", fixed: "The model, dimensions and candidate captions stay fixed.", notice: "Read each row across: the same candidate has a score before and after. The image vector changes; the text vectors do not.", limit: "These are generated teaching images, not a pixel-perfect controlled edit. Other visual details can differ." },
-  { id: "change-style", label: "Change the style", title: "Does a sketch still look like a dog?", question: "Can the model preserve the subject and notice the drawing style?", a: "retriever-photo", b: "retriever-sketch", candidates: ["caption-retriever-photo", "caption-retriever-sketch", "caption-Persian", "caption-commons-puppy"], kind: "compare", jump: "neighbors", changed: "A photograph-style dog becomes a pencil sketch.", fixed: "The caption menu and model remain fixed.", notice: "Both subject and style can contribute to similarity. Inspect the scores instead of assuming the representation ignores style.", limit: "Generated image pairs illustrate sensitivity; they do not isolate one causal variable." },
-  { id: "hat-direction", label: "Subtract two images", title: "Which words align with the change?", question: "What should happen to every score if we reverse before and after?", a: "portrait", b: "portrait-hat", candidates: ["caption-portrait-hat", "caption-portrait", "caption-astronaut", "caption-coffee"], kind: "delta", jump: "delta", changed: "Compare a normalized difference instead of either original image.", fixed: "The same pair and text candidates. Reversing the pair negates the direction.", notice: "Δ = (v_after − v_before) / ‖v_after − v_before‖. A text vector aligned with this direction has a positive dot product.", limit: "This is an exploratory association, not a causal explanation of an image edit. A direction score is not an ordinary image–text score." },
-  { id: "missing-answer", label: "Remove the right answer", title: "A winner can still be wrong.", question: "If the cat caption disappears, will the search know that it is missing?", a: "chelsea", candidates: ["caption-chelsea", "caption-retriever-photo", "caption-coffee", "caption-rocket"], kind: "missing", jump: "classify", changed: "Remove the best caption from the candidate menu.", fixed: "Every embedding and every remaining cosine stays exactly the same.", notice: "Argmax always returns a candidate if the menu is non-empty. It is a ranking rule, not a learned “none of these” decision.", limit: "A cosine is not confidence. Reliable rejection needs a separately evaluated decision rule." },
-  { id: "different-words", label: "Change the language", title: "Can different languages point to the same image?", question: "Which of these sentences might match the cat most strongly?", a: "chelsea", candidates: ["phrase-cat-en", "phrase-cat-hi", "phrase-cat-fr", "phrase-cat-es"], kind: "single", jump: "languages", changed: "Equivalent teaching descriptions in four languages.", fixed: "The cat image and its embedding stay fixed.", notice: "The sentences have different token sequences and vectors, yet can align with the same image. Equal meaning need not produce equal scores.", limit: "These saved sentences use document formatting. The live text-search experiment uses a query prefix; it is a different input and may rank differently." },
-  { id: "shorter-vectors", label: "Keep fewer numbers", title: "What do we give up to make the index smaller?", question: "Predict whether the winner will change at 128 dimensions.", a: "sound-dog", candidates: ["caption-sound-dog", "caption-sound-crying_baby", "caption-sound-sneezing", "caption-sound-rooster", "caption-sound-rain", "caption-sound-sea_waves"], kind: "dimensions", jump: "explorer", changed: "Keep the first 128 coordinates, then normalize both vectors again.", fixed: "Same model outputs and candidate menu. No model is retrained.", notice: "Here the 128d vector ranks the dog description first, while 768d ranks crying baby first. More dimensions do not win every individual example. Float32 storage falls from 3,072 to 512 bytes.", limit: "This reduces index memory, not the model download. One menu cannot establish overall retrieval quality." },
-  { id: "take-it-further", label: "Build something with it", title: "The representation is the starting point.", question: "Which parts of an application use the embedding, and which parts still need to be built?", kind: "summary" }
-];
-function chapterScores(chapter, vectors, { alternate = false, removed = false, reversed = false } = {}) {
-  const ids = alternate && chapter.alternate ? chapter.alternate : chapter.candidates;
-  if (!ids) return [];
-  let first = unit(vectors[chapter.a].vector), second = chapter.b ? unit(vectors[chapter.b].vector) : null;
-  if (chapter.kind === "delta") {
-    first = difference(second, first);
-    if (reversed) first = first.map((x) => -x);
-    second = null;
-  }
-  return ids.filter((id) => !(removed && id === chapter.candidates[0])).map((id) => {
-    const candidate = unit(vectors[id].vector);
-    return { id, a: dot(first, candidate), b: chapter.kind === "dimensions" ? dot(unit(first, 128), unit(candidate, 128)) : second ? dot(second, candidate) : null };
-  }).sort((x, y) => y.a - x.a);
-}
 const MODEL = "onnx-community/embeddinggemma-2-ONNX";
 const REVISION = "daa72c51243991dfcaf9f9137d2c573d8f7790c0";
 const escapeHTML = (s) => String(s ?? "").replace(
@@ -486,118 +460,6 @@ function mountExplorer(root, state2, initial = {}) {
   return () => {
     root.onclick = null;
     root.onkeydown = null;
-  };
-}
-function mountLesson(root, state2, openExperiment) {
-  let index = 0, step = 0, alternate = false, removed = false, reversed = false, focus = new URLSearchParams(location.search).has("present"), prediction = null;
-  document.body.classList.toggle("recording-view", focus);
-  const item = (id) => state2.gallery.find((x) => x.id === id), vector = (id) => unit(state2.vectors[id].vector);
-  const media = (id, label) => `<figure class="lesson-media"><figcaption><span>${escapeHTML(label)}</span><b>${escapeHTML(item(id).title)}</b></figcaption><div>${preview(item(id))}</div></figure>`;
-  const numbers = (v) => `<code class="vector-numbers">[${v.slice(0, 5).map((x) => x.toFixed(4)).join(", ")}, …]</code>`;
-  const miniVector = (v) => `<svg viewBox="0 0 256 28" role="img" aria-label="First 64 embedding coordinates; signed values"><line x1="0" y1="14" x2="256" y2="14" stroke="#ccc"/>${v.slice(0, 64).map((x, i) => `<rect x="${i * 4}" y="${x >= 0 ? 14 - Math.min(13, Math.abs(x) * 140) : 14}" width="3" height="${Math.min(13, Math.abs(x) * 140)}" fill="${x >= 0 ? "#367d77" : "#a34b34"}"/>`).join("")}</svg>`;
-  function pipeline(c) {
-    return `<div class="lesson-pipeline" aria-label="Representation pipeline"><span><b>Input</b>${item(c.a).type === "audio" ? "16 kHz waveform" : item(c.a).type === "video" ? "Sampled frames" : "Pixels"}</span><i>→</i><span><b>EmbeddingGemma 2</b>Encode · pool · project</span><i>→</i><span><b>768 numbers</b>L2-normalize</span><i>→</i><span><b>Compare</b>Dot products → ranking</span></div>`;
-  }
-  function scoreTable(c) {
-    const scores = chapterScores(c, state2.vectors, { alternate, removed, reversed });
-    const dual = ["compare", "dimensions"].includes(c.kind), bestB = dual ? Math.max(...scores.map((x) => x.b)) : null;
-    const predictionOrder = dual ? [...scores].sort((a, b) => b.b - a.b) : scores;
-    const headingA = c.kind === "dimensions" ? "768d" : c.kind === "compare" ? "Before" : "Cosine";
-    return `${prediction ? `<p class="lesson-prediction">Your prediction: ${escapeHTML(item(prediction).text || item(prediction).title)} · ${scores.some((s) => s.id === prediction) ? `rank ${predictionOrder.findIndex((s) => s.id === prediction) + 1} of ${scores.length}${dual ? " in the after condition" : ""}` : "removed from this menu"}</p>` : ""}<div class="lesson-score-wrap"><table class="lesson-scores"><caption>Same candidate on each row · raw cosine, not probability${c.kind === "delta" ? " · direction-to-text" : ""}</caption><thead><tr><th>Candidate</th><th>${headingA}</th>${dual ? "<th>After" + (c.kind === "dimensions" ? " · 128d" : "") + "</th><th>Change</th>" : ""}</tr></thead><tbody>${scores.map((s, i) => `<tr class="${prediction === s.id ? "predicted-row" : ""}"><th>${item(s.id).type === "image" ? `<img src="${escapeHTML(item(s.id).src)}" alt="">` : ""}<span>${escapeHTML(item(s.id).text || item(s.id).title)}</span></th><td class="${i === 0 ? "score-winner" : ""}">${s.a.toFixed(4)}${i === 0 ? "<small>highest</small>" : ""}</td>${dual ? `<td class="${s.b === bestB ? "score-winner" : ""}">${s.b.toFixed(4)}${s.b === bestB ? "<small>highest</small>" : ""}</td><td>${s.b - s.a >= 0 ? "+" : ""}${(s.b - s.a).toFixed(4)}</td>` : ""}</tr>`).join("")}</tbody></table></div>`;
-  }
-  function deltaExplanation(c) {
-    const norm = Math.hypot(...vector(c.b).map((x, i) => x - vector(c.a)[i]));
-    const row = chapterScores(c, state2.vectors, { reversed })[0], v = vector(row.id);
-    const before = dot(vector(c.a), v), after = dot(vector(c.b), v);
-    return `<div class="lesson-delta"><b>Subtraction means “which description gained similarity?”</b><p>${escapeHTML(item(row.id).text)}</p><p class="lesson-equation">(${(reversed ? before : after).toFixed(4)} − ${(reversed ? after : before).toFixed(4)}) / ${norm.toFixed(4)} = <b>${row.a.toFixed(4)}</b></p><small>(${reversed ? "before − after" : "after − before"} cosine) / length of the image difference. The denominator is shared by every caption.</small></div>`;
-  }
-  function calculation(c) {
-    const row = chapterScores(c, state2.vectors, { alternate, removed, reversed })[0];
-    let q = vector(c.a);
-    if (c.kind === "delta") {
-      q = difference(vector(c.b), q);
-      if (reversed) q = q.map((x) => -x);
-    }
-    const v = vector(row.id);
-    return `<details class="lesson-math"><summary>Follow one score: all 768 products are added</summary><p>${escapeHTML(item(row.id).text || item(row.id).title)}</p><div class="lesson-products">${q.slice(0, 4).map((x, k) => `<span><small>coordinate ${k + 1}</small>${x.toFixed(5)} × ${v[k].toFixed(5)}<b>${(x * v[k]).toFixed(6)}</b></span>`).join("")}</div><p class="lesson-equation">q · v = q₁v₁ + q₂v₂ + ⋯ + q₇₆₈v₇₆₈ = <b>${dot(q, v).toFixed(6)}</b></p><p>The display rounds each number. The sum uses every full-precision stored coordinate.</p><button class="quiet" data-open="explorer">Inspect all coordinates and PCA ↗</button></details>`;
-  }
-  function summary() {
-    const cards = [["captions", "chelsea", "Rank supplied captions", "Image → vector → caption menu", "It does not write a new description."], ["listen", "newfoundland", "Search across modalities", "Recording → vector → pictures", "A shared space can still misrank a bark."], ["moments", "frame-coffee", "Retrieve a video window", "Frames → vector → time range", "No soundtrack; sampled frames can miss events."], ["documents", "doc-normalization", "Retrieve evidence for RAG", "Question → vector → passage", "A separate system must check evidence and generate."], ["delta", "portrait-hat", "Inspect an image change", "Difference → direction → descriptions", "An association is not a causal explanation."], ["mixed", "red-mug", "Combine picture and words", "Joint input → one vector → retrieval", "The note does not edit the image."], ["code", "code-search", "Find code by its job", "Description → vector → code snippet", "Retrieval does not run or verify the code."], ["training", "photo-fire", "Learn a small classifier", "Frozen embeddings → trained linear layer", "Only the new layer learns in this browser lab."]];
-    return `<div class="lesson-applications">${cards.map(([id, img, title, path, limit]) => `<button data-open="${id}">${item(img).type === "text" ? `<div class="application-text">${escapeHTML(item(img).text.slice(0, 110))}</div>` : `<img src="${escapeHTML(item(img).src)}" alt="${escapeHTML(item(img).title)}">`}<span><b>${title}</b><em>${path}</em><small>${limit}</small><strong>Try this application ↗</strong></span></button>`).join("")}</div><p class="lesson-summary-line">CLIP taught us to align images and words. Here we reuse the encode → normalize → compare idea with more kinds of input. A useful application still needs candidates, a decision rule and evaluation.</p>`;
-  }
-  function render() {
-    const c = chapters[index];
-    root.innerHTML = `<section class="guided-lesson" aria-label="Guided classroom demonstration"><div class="lesson-toolbar"><label>Classroom route<select id="lesson-chapter">${chapters.map((x, i) => `<option value="${i}" ${i === index ? "selected" : ""}>${i + 1}. ${x.label}</option>`).join("")}</select></label><span class="lesson-position">${index + 1} / ${chapters.length}</span><button class="quiet" id="lesson-focus" aria-pressed="${focus}">${focus ? "Exit recording view" : "Recording view"}</button><button class="quiet" id="lesson-reset">Reset chapter</button></div><div class="lesson-stage"><div class="lesson-title"><span class="eyebrow">${c.kind === "summary" ? "TAKE IT WITH YOU" : step === 0 ? "PREDICT" : step === 1 ? "REPRESENT" : step === 2 ? "COMPARE" : "EXPLAIN"}</span><h2 tabindex="-1" id="lesson-title">${c.title}</h2><p>${c.question}</p></div>${c.kind === "summary" ? summary() : `<div class="lesson-scene"><div class="lesson-inputs ${c.b ? "paired" : ""}">${media(c.a, c.b ? "Before · input A" : "The query")}${c.b ? media(c.b, "After · input B") : ""}${step >= 1 ? `<div class="lesson-vector ${c.b ? "two-vectors" : ""}"><div><span class="small-label">${c.b ? "Input A" : "Query"} → normalized vector</span>${miniVector(vector(c.a))}${numbers(vector(c.a))}<span>shape [1, 768] · length ${Math.hypot(...vector(c.a)).toFixed(3)}</span></div>${c.b ? `<div><p class="small-label">Input B → normalized vector</p>${miniVector(vector(c.b))}${numbers(vector(c.b))}<span>shape [1, 768] · length 1.000</span></div>` : ""}</div>` : ""}</div><div class="lesson-evidence">${step === 0 ? `<div class="prediction-callout"><span class="small-label">Pause before revealing</span><h3>What would you expect?</h3><p>Pick a candidate. We will keep your prediction beside the measured result.</p></div><p class="hint">${["compare", "dimensions"].includes(c.kind) ? "Predict the highest-scoring candidate in the after condition." : "Tap a candidate to record your prediction."}</p><div class="lesson-candidates">${(alternate && c.alternate ? c.alternate : c.candidates).map((id) => `<button data-predict="${id}" aria-pressed="${prediction === id}">${item(id).type === "image" ? `<img src="${escapeHTML(item(id).src)}" alt="${escapeHTML(item(id).title)}">` : ""}<span>${escapeHTML(item(id).text || item(id).title)}</span></button>`).join("")}</div>` : step === 1 ? `<div class="lesson-representation"><h3>The inputs become comparable numbers.</h3>${pipeline(c)}<p>Each candidate goes through the model too. Its normalized output also has <b>768 coordinates</b>.</p>${numbers(vector(c.candidates[0]))}<p class="hint">Candidate above: ${escapeHTML(item(c.candidates[0]).text || item(c.candidates[0]).title)}</p><details><summary>Exact saved processor inputs and tensor shapes</summary><pre>${escapeHTML(JSON.stringify({ query: state2.vectors[c.a].info, shapes: state2.vectors[c.a].shapes, candidate: state2.vectors[c.candidates[0]].info }, null, 2))}</pre></details><p>Individual coordinates are learned features. We do not name a coordinate “cat” or “red”.</p></div>` : `${c.kind === "missing" ? `<button class="intervention-button" id="lesson-remove" aria-pressed="${removed}">${removed ? "Restore the cat caption" : "Remove the cat caption"}</button>` : c.kind === "delta" ? `<button class="intervention-button" id="lesson-reverse" aria-pressed="${reversed}">${reversed ? "Direction: before − after · reverse again" : "Reverse the direction"}</button>` : c.alternate ? `<button class="intervention-button" id="lesson-alternate" aria-pressed="${alternate}">${alternate ? "Search pictures again" : "Now search the sound descriptions"}</button>` : ""}${scoreTable(c)}${c.kind === "delta" ? deltaExplanation(c) : ""}${calculation(c)}`}</div></div><div class="lesson-constants"><span><b>What changes</b>${c.changed}</span><span><b>What stays fixed</b>${c.fixed}</span></div>${step >= 3 ? `<div class="lesson-takeaway" role="status"><p><b>What the result means</b>${c.notice}</p><p><b>Where to be careful</b>${c.limit}</p></div>` : ""}`}</div><div class="lesson-controls"><button class="quiet" id="lesson-back" ${index === 0 && step === 0 ? "disabled" : ""}>← Back</button><span>${c.kind === "summary" ? "Try an application above" : `Reveal ${step + 1} / 4 · ${["inputs", "vectors", "scores", "meaning"][step]}`}</span>${c.kind !== "summary" ? `<button class="quiet" data-open="${c.jump}">Try your own inputs ↗</button><button class="primary" id="lesson-next">${["Show the vectors →", "Compare the scores →", "Explain the result →", "Next chapter →"][step]}</button>` : '<button class="primary" data-open="explorer">Explore the full space →</button>'}</div><p class="lesson-provenance">Actual outputs from the pinned EmbeddingGemma 2 q4 model · saved WebGPU embeddings · similarities recomputed here · no model download for this route. New inputs use the live experiments.</p><details class="recording-notes"><summary>Presenter notes · a 25-minute route</summary><p>Chapters 1–3: inputs and representations (8 min). Chapters 4–6: controlled comparisons and vector subtraction (8 min). Chapters 7–9: missing answers, languages and compression (6 min). Finish with applications and the PCA / training views (3+ min). Ask for a prediction before each reveal. Use Right / Space to advance, Left to go back. Audio and video never autoplay. The recording view hides the page navigation; Esc restores it.</p></details></section>`;
-    root.querySelector("#lesson-chapter").onchange = (e) => change(+e.target.value);
-    root.querySelector("#lesson-focus").onclick = () => {
-      focus = !focus;
-      document.body.classList.toggle("recording-view", focus);
-      render();
-      root.scrollIntoView({ block: "start" });
-    };
-    root.querySelector("#lesson-reset").onclick = () => change(index);
-    root.querySelector("#lesson-back").onclick = back;
-    root.querySelector("#lesson-next")?.addEventListener("click", next);
-    root.querySelector("#lesson-remove")?.addEventListener("click", () => {
-      removed = !removed;
-      render();
-    });
-    root.querySelector("#lesson-reverse")?.addEventListener("click", () => {
-      reversed = !reversed;
-      render();
-    });
-    root.querySelector("#lesson-alternate")?.addEventListener("click", () => {
-      alternate = !alternate;
-      render();
-    });
-    root.querySelectorAll("[data-predict]").forEach((b) => b.onclick = () => {
-      prediction = b.dataset.predict;
-      render();
-    });
-    root.querySelectorAll("[data-open]").forEach((b) => b.onclick = () => openExperiment(b.dataset.open, c.a ? { sample: c.a, after: c.b, compare: c.candidates?.[0] } : {}));
-  }
-  function change(i) {
-    index = i;
-    step = 0;
-    alternate = removed = reversed = false;
-    prediction = null;
-    render();
-  }
-  function next() {
-    if (step < 3 && chapters[index].kind !== "summary") step++;
-    else if (index < chapters.length - 1) {
-      change(index + 1);
-      return;
-    }
-    render();
-  }
-  function back() {
-    if (step > 0) step--;
-    else if (index > 0) {
-      index--;
-      step = 0;
-    }
-    render();
-  }
-  function key(e) {
-    if (e.target.closest("input,select,textarea,a,button,audio,video,summary") || document.querySelector("dialog[open]")) return;
-    if (e.key === "ArrowRight" || e.key === " ") {
-      e.preventDefault();
-      next();
-    } else if (e.key === "ArrowLeft") {
-      e.preventDefault();
-      back();
-    } else if (e.key === "Escape" && focus) {
-      focus = false;
-      document.body.classList.remove("recording-view");
-      render();
-    }
-  }
-  document.addEventListener("keydown", key);
-  render();
-  return () => {
-    document.removeEventListener("keydown", key);
-    document.body.classList.remove("recording-view");
   };
 }
 function mountTraining(root, state2) {
@@ -863,7 +725,6 @@ async function prepare(item, task = "search result", role = "query", extraText =
   return { input: { [item.type]: decoded[item.type] }, info: decoded.info };
 }
 const experiments = [
-  { id: "lesson", group: "Start", name: "Guided classroom lesson", title: "A shared space, one step at a time", description: "Ten short chapters. Predict first, reveal the calculation, then test what changes. All examples in this route work without downloading the model.", mode: "lesson", lesson: "Actual saved model outputs; similarities computed in your browser." },
   {
     id: "photos",
     group: "Find",
@@ -922,7 +783,7 @@ const experiments = [
     type: "image",
     sample: "chelsea",
     filter: "caption",
-    lesson: "This is the CLIP application you already know, now using EmbeddingGemma 2. Compare the rankings, not individual coordinates across different models."
+    lesson: "EmbeddingGemma 2 compares the image with every supplied caption. Open a result to inspect both vectors and their cosine similarity."
   },
   {
     id: "neighbors",
@@ -1039,7 +900,7 @@ const experiments = [
     id: "delta",
     group: "Inspect",
     name: "What changed?",
-    title: "Return to the hat experiment",
+    title: "Compare two images",
     description: "Subtract the earlier image vector from the later one. Which descriptions align with that direction?",
     mode: "delta",
     type: "image",
@@ -1156,8 +1017,8 @@ function clearResults() {
   $("#context").hidden = true;
   $("#map").hidden = true;
   $("#result-source").textContent = "";
-  $("#results-title").textContent = "Make a prediction";
-  $("#result-meta").textContent = "A few candidates from the collection. Which will match?";
+  $("#results-title").textContent = "Browse the candidates";
+  $("#result-meta").textContent = "A few items from the collection. Run a search to rank them.";
   const filter = $("#filter")?.value || "all";
   let examples = filterItems(filter);
   if (filter === "image") {
@@ -1175,7 +1036,7 @@ function clearResults() {
     ];
   }
   $("#results").innerHTML = examples.slice(0, 6).map((item, i) => card(item, i, null)).join("");
-  $("#result-step").textContent = "02 / PREDICT THE MATCH";
+  $("#result-step").textContent = "02 / EXPLORE THE MATCHES";
   $("#more").hidden = true;
 }
 function itemById(id) {
@@ -1326,20 +1187,14 @@ function activate(id, context = {}) {
   $("#experiment-description").textContent = e.description;
   $("#lesson").textContent = e.lesson;
   unmountAdvanced();
-  const advanced = ["explorer", "training", "lesson"].includes(e.mode);
-  $(".experiment-nav").classList.toggle("nav-compact", e.mode === "lesson");
-  $("#nav-toggle").setAttribute("aria-expanded", String(e.mode !== "lesson"));
-  $("#nav-toggle").textContent = e.mode === "lesson" ? "All experiments +" : "Collapse −";
+  const advanced = ["explorer", "training"].includes(e.mode);
   $("#advanced-area").hidden = !advanced;
   $(".workbench").hidden = advanced;
   $("#inspect").hidden = true;
   if (advanced) {
     state.query = null;
     state.selected = null;
-    unmountAdvanced = e.mode === "lesson" ? mountLesson($("#advanced-area"), state, (target, inputs) => {
-      activate(target, inputs);
-      $("#workspace").scrollIntoView({ block: "start" });
-    }) : e.mode === "explorer" ? mountExplorer($("#advanced-area"), state, { selected: context.sample, compare: context.compare }) : mountTraining($("#advanced-area"), state);
+    unmountAdvanced = e.mode === "explorer" ? mountExplorer($("#advanced-area"), state, { selected: context.sample, compare: context.compare }) : mountTraining($("#advanced-area"), state);
   } else {
     $("#advanced-area").innerHTML = "";
     renderQuery();
@@ -1632,10 +1487,9 @@ function useAsQuery(id) {
   clearResults();
 }
 async function init() {
-  $("#app").innerHTML = `<header class="site-header"><a class="brand" href="https://nipunbatra.github.io/"><span class="brand-mark">nb.</span> Nipun Batra <span class="brand-slash">/</span> <span class="brand-course">Learning labs</span></a><nav aria-label="Course links"><a href="https://nipunbatra.github.io/attention/clip/">CLIP lecture ↗</a><button class="quiet" id="open-about">How it works</button></nav></header>
-<main><section class="intro"><div class="intro-copy"><p class="eyebrow">BEYOND CLIP · EMBEDDINGGEMMA 2</p><h1>A picture. A sound.<br><em>What connects them?</em></h1><p>Start with a prediction. Reveal the vectors. Then change one thing and see what moves. A visual follow-up to our CLIP lecture.</p><button class="intro-link primary" data-experiment="lesson">Start the guided lesson →</button><button class="quiet" data-experiment="explorer">Explore the embeddings ↗</button><div class="intro-facts"><span><b>${experiments.length}</b> experiments</span><span><b id="sample-count">…</b> samples</span><span><b>768</b> dimensions</span></div></div>
-<div class="intro-media"><div class="media-caption"><span>A few ways in</span><span>Pick one to begin ↙</span></div><div class="media-tiles"><button class="hero-tile image-tile" data-experiment="captions"><img src="./media/chelsea.jpg" alt="An orange cat looking at the camera"><span><b>Start with a picture</b>Find its words <i>↗</i></span></button><button class="hero-tile sound-tile" data-experiment="listen"><span class="sound-drawing" aria-hidden="true"><svg viewBox="0 0 150 90"><path d="M9 39v12m11-21v30m11-39v48m11-32v16m11-52v88m11-69v50m11-38v26m11-44v62m11-46v30m11-40v50m11-32v14m11-25v36m11-27v18"/></svg><small>Dog bark · 5 seconds</small></span><span><b>Start with a sound</b>Find its picture <i>↗</i></span></button><button class="hero-tile text-tile" data-experiment="moments"><span class="text-drawing">“a rocket<br>launching”<small>Text → video</small></span><span><b>Start with a thought</b>Find a moment <i>↗</i></span></button></div><p class="media-footnote">Different inputs. The same encode → compare idea.</p></div></section><div class="photo-ribbon" aria-label="A few samples from the collection"><button data-query="chelsea" title="Search with Cat"><img src="./media/chelsea.jpg" alt="Cat"><span>Cat</span></button><button data-query="photo-fire" title="Search with Fire"><img src="./media/commons-fire.jpg" alt="Fire"><span>Fire</span></button><button data-query="photo-beach" title="Search with Sea"><img src="./media/commons-beach.jpg" alt="Sea"><span>Sea</span></button><button data-query="photo-bicycle" title="Search with Bicycle"><img src="./media/commons-bicycle.jpg" alt="Bicycle"><span>Bicycle</span></button><button data-query="photo-pizza" title="Search with Pizza"><img src="./media/commons-pizza.jpg" alt="Pizza"><span>Pizza</span></button><button data-query="retriever-sketch" title="Search with Sketch"><img src="./media/retriever-sketch.png" alt="Sketch"><span>Sketch</span></button><button data-query="frame-puppy" title="Search with Puppy"><img src="./media/frame-puppy.jpg" alt="Puppy"><span>Puppy</span></button><button data-query="photo-guitar" title="Search with Guitar"><img src="./media/commons-guitar.jpg" alt="Guitar"><span>Guitar</span></button><button data-query="frame-coffee" title="Search with Coffee"><img src="./media/frame-coffee.jpg" alt="Coffee"><span>Coffee</span></button><button data-query="photo-rooster" title="Search with Rooster"><img src="./media/commons-rooster.jpg" alt="Rooster"><span>Rooster</span></button></div><div class="runtime-bar"><span class="status-dot"></span><strong id="model-state">Collection ready · model loads on demand</strong><span>WebGPU · q4 · ~473 MB first download</span><button class="quiet" id="warm-model">Load WebGPU for new inputs</button><button class="quiet" id="runtime-stop" hidden>Stop model</button><button class="quiet" id="open-library">Explore the collection</button></div><div class="lab-layout"><nav class="experiment-nav" aria-label="Experiments"><div class="nav-intro"><span class="eyebrow">THE EXPERIMENTS</span><span>Choose a question to investigate</span><button class="quiet" id="nav-toggle" aria-expanded="false">All experiments +</button></div>${[
-    "Start",
+  $("#app").innerHTML = `<header class="site-header"><a class="brand" href="https://nipunbatra.github.io/"><span class="brand-mark">nb.</span> Nipun Batra <span class="brand-slash">/</span> <span class="brand-course">Learning labs</span></a><nav aria-label="Course links"><a href="https://nipunbatra.github.io/dl-teaching/slides.html">Course slides ↗</a><button class="quiet" id="open-about">How it works</button></nav></header>
+<main><section class="intro"><div class="intro-copy"><p class="eyebrow">MULTIMODAL EMBEDDINGS · IN YOUR BROWSER</p><h1>EmbeddingGemma 2</h1><p>Search across images, text, audio and video. Try your own inputs, inspect the vectors, and see what the model can find.</p><button class="intro-link" data-experiment="photos">Try the applications <span>↓</span></button><button class="quiet intro-explore" data-experiment="explorer">Explore the embeddings ↗</button><div class="intro-facts"><span><b>${experiments.length}</b> experiments</span><span><b id="sample-count">…</b> samples</span><span><b>768</b> dimensions</span></div></div>
+<div class="intro-media"><div class="media-caption"><span>A few ways in</span><span>Pick one to begin ↙</span></div><div class="media-tiles"><button class="hero-tile image-tile" data-experiment="captions"><img src="./media/chelsea.jpg" alt="An orange cat looking at the camera"><span><b>Start with a picture</b>Find its words <i>↗</i></span></button><button class="hero-tile sound-tile" data-experiment="listen"><span class="sound-drawing" aria-hidden="true"><svg viewBox="0 0 150 90"><path d="M9 39v12m11-21v30m11-39v48m11-32v16m11-52v88m11-69v50m11-38v26m11-44v62m11-46v30m11-40v50m11-32v14m11-25v36m11-27v18"/></svg><small>Dog bark · 5 seconds</small></span><span><b>Start with a sound</b>Find its picture <i>↗</i></span></button><button class="hero-tile text-tile" data-experiment="moments"><span class="text-drawing">“a rocket<br>launching”<small>Text → video</small></span><span><b>Start with a thought</b>Find a moment <i>↗</i></span></button></div><p class="media-footnote">Different inputs. The same encode → compare idea.</p></div></section><div class="runtime-bar"><span class="status-dot"></span><strong id="model-state">Collection ready · model loads on demand</strong><span>WebGPU · q4 · ~473 MB first download</span><button class="quiet" id="warm-model">Load WebGPU for new inputs</button><button class="quiet" id="runtime-stop" hidden>Stop model</button><button class="quiet" id="open-library">Explore the collection</button></div><div class="lab-layout"><nav class="experiment-nav" aria-label="Experiments"><div class="nav-intro"><span class="eyebrow">APPLICATIONS</span><span>Choose what you want to try</span></div>${[
     "Find",
     "Use",
     "Inspect",
@@ -1646,7 +1500,7 @@ async function init() {
     ).join("")}</div></div>`
   ).join(
     ""
-  )}</nav><section id="workspace"><label class="mobile-experiment">Experiment<select id="experiment">${experiments.map((e) => `<option value="${e.id}">${e.name}</option>`).join("")}</select></label><div class="experiment-head"><span class="eyebrow" id="experiment-number"></span><h2 id="experiment-title"></h2><p id="experiment-description"></p></div><div id="advanced-area" hidden></div><div class="workbench"><div class="query-column"><div class="query-panel"><p class="step-label">01 / CHOOSE YOUR INPUT</p><div id="query-area"></div><div class="run-row"><button id="run" class="primary">Run this search</button><button id="stop" class="quiet" hidden>Stop & unload</button><span id="status" role="status" aria-live="polite">No API key. Your inputs stay in this browser.</span></div><progress id="progress" max="100" hidden></progress><p id="error" role="alert" hidden></p></div><p class="lesson"><b>What to notice</b><span id="lesson"></span></p></div><div class="results-column"><p class="step-label" id="result-step">02 / PREDICT THE MATCH</p><div class="results-heading"><div><h2 id="results-title">The matches</h2><p id="result-meta"></p></div><label>Vector size<select id="dimension"><option value="768">768 · full</option><option value="512">512</option><option value="256">256</option><option value="128">128</option></select></label></div><p id="dimension-note" class="hint">Keep the first d coordinates, then normalize again. Both sides use the same d.</p><div id="map" hidden></div><div id="results" class="results-grid"></div><button id="more" class="quiet" hidden>Show more results</button><p id="result-source" class="fineprint"></p><details id="context" hidden><summary>The context a generative model could receive</summary><pre id="context-text"></pre><p>This lab stops at retrieval. Check whether these sources actually answer the question.</p></details></div></div><section id="inspect" class="inspector" hidden><div class="inspector-head"><div><p class="eyebrow">03 / FOLLOW THE NUMBERS</p><h2 id="inspect-title"></h2></div><div class="inspector-actions"><button class="quiet" id="download-vector">Download vectors</button><button class="quiet" id="close-inspect" aria-label="Close vector inspector">Close ×</button></div></div><div id="inspect-pair" class="inspect-pair"></div><p id="candidate-text"></p><div class="vector-pair"><div><h3 id="query-vector-label"></h3><canvas id="query-canvas" aria-label="Query embedding coordinates"></canvas></div><div><h3 id="candidate-vector-label"></h3><canvas id="candidate-canvas" aria-label="Candidate embedding coordinates"></canvas></div></div><p class="hint" id="vector-note"></p><div id="dot-area"><label id="coordinate-range" for="coordinates"></label><input type="range" id="coordinates" min="0" max="760" step="8" value="0"><div class="table-scroll"><table><thead><tr><th>k</th><th>Query qₖ</th><th></th><th>Candidate vₖ</th><th>Product</th></tr></thead><tbody id="coordinate-table"></tbody></table></div><div id="dot-total" class="dot-total"></div></div><details><summary>Show model inputs, shapes and normalization</summary><pre id="shape-details"></pre></details></section></section></div><footer><p class="eyebrow">TAKE IT BACK TO THE LECTURE</p><strong>The same idea as CLIP, with more kinds of input.</strong><p>Encode → normalize → compare. The model returns embeddings; the application decides how to use them.</p><div><a href="https://blog.google/innovation-and-ai/technology/developers-tools/embeddinggemma-2/">Google announcement</a><a href="https://www.youtube.com/watch?v=anPsS6huQk0">Introduction video</a><a href="https://huggingface.co/onnx-community/embeddinggemma-2-ONNX">Model & implementation</a><button class="quiet" id="footer-library">Sample credits</button><a href="https://github.com/nipunbatra/dl-teaching/tree/master/attention-followups/embeddinggemma-lab">Source code</a></div></footer></main><dialog id="library"><div class="dialog-head"><div><p class="eyebrow">THE SHARED COLLECTION</p><h2 id="library-title">Samples you can inspect</h2></div><button class="quiet" data-close="library" aria-label="Close collection">Close ×</button></div><p>Images, recordings and video are embedded from their media, without their titles. Some images are generated teaching examples, identified in the credits.</p><label>Show<select id="library-filter"><option value="all">All samples</option><option value="image">Images</option><option value="audio">Sounds</option><option value="text">Text & code</option><option value="video">Video</option></select></label><div id="library-grid" class="library-grid"></div></dialog><dialog id="about"><div class="dialog-head"><h2>From CLIP to a multimodal index</h2><button class="quiet" data-close="about">Close ×</button></div><ol class="explanation"><li><strong>Represent each item.</strong> Media encoders feed a shared model. Mean pooling and a projection produce a 768-number embedding. This architecture is not CLIP’s two independent towers.</li><li><strong>Store the collection.</strong> The supplied vectors were computed from these exact samples using this pinned ONNX model, q4 precision and WebGPU. They let us inspect the collection without re-encoding it on every search.</li><li><strong>Encode a new query on your device.</strong> Model files download from Hugging Face. Typed text and uploaded media go to a local worker; there is no inference server or API key.</li><li><strong>Compare.</strong> Unit vectors give a cosine through a dot product. Scores are similarities, not probabilities. There is no learned threshold that guarantees a match.</li><li><strong>Shorten, carefully.</strong> The size control keeps leading coordinates and re-normalizes. It reduces index storage, not the size of the model download. The 128-dimensional option can hurt multimodal retrieval.</li></ol><p class="hint">Text search uses a task prefix; text candidates use a document prefix. Classification uses the classification prefix. Inspect the input details to see the exact text supplied.</p><p>Local uploads are kept only in this tab. Audio is limited to 20 seconds. Video uses up to 20 seconds of sampled frames without its soundtrack. Close or stop the model to release its worker.</p><p class="fineprint">${MODEL}<br>Revision ${REVISION}<br>Transformers.js 4.3.1 · q4 · Apache 2.0 model</p></dialog>`;
+  )}</nav><section id="workspace"><label class="mobile-experiment">Experiment<select id="experiment">${experiments.map((e) => `<option value="${e.id}">${e.name}</option>`).join("")}</select></label><div class="experiment-head"><span class="eyebrow" id="experiment-number"></span><h2 id="experiment-title"></h2><p id="experiment-description"></p></div><div id="advanced-area" hidden></div><div class="workbench"><div class="query-column"><div class="query-panel"><p class="step-label">01 / CHOOSE YOUR INPUT</p><div id="query-area"></div><div class="run-row"><button id="run" class="primary">Run this search</button><button id="stop" class="quiet" hidden>Stop & unload</button><span id="status" role="status" aria-live="polite">No API key. Your inputs stay in this browser.</span></div><progress id="progress" max="100" hidden></progress><p id="error" role="alert" hidden></p></div><p class="lesson"><b>What to notice</b><span id="lesson"></span></p></div><div class="results-column"><p class="step-label" id="result-step">02 / EXPLORE THE MATCHES</p><div class="results-heading"><div><h2 id="results-title">The matches</h2><p id="result-meta"></p></div><label>Vector size<select id="dimension"><option value="768">768 · full</option><option value="512">512</option><option value="256">256</option><option value="128">128</option></select></label></div><p id="dimension-note" class="hint">Keep the first d coordinates, then normalize again. Both sides use the same d.</p><div id="map" hidden></div><div id="results" class="results-grid"></div><button id="more" class="quiet" hidden>Show more results</button><p id="result-source" class="fineprint"></p><details id="context" hidden><summary>The context a generative model could receive</summary><pre id="context-text"></pre><p>This lab stops at retrieval. Check whether these sources actually answer the question.</p></details></div></div><section id="inspect" class="inspector" hidden><div class="inspector-head"><div><p class="eyebrow">03 / FOLLOW THE NUMBERS</p><h2 id="inspect-title"></h2></div><div class="inspector-actions"><button class="quiet" id="download-vector">Download vectors</button><button class="quiet" id="close-inspect" aria-label="Close vector inspector">Close ×</button></div></div><div id="inspect-pair" class="inspect-pair"></div><p id="candidate-text"></p><div class="vector-pair"><div><h3 id="query-vector-label"></h3><canvas id="query-canvas" aria-label="Query embedding coordinates"></canvas></div><div><h3 id="candidate-vector-label"></h3><canvas id="candidate-canvas" aria-label="Candidate embedding coordinates"></canvas></div></div><p class="hint" id="vector-note"></p><div id="dot-area"><label id="coordinate-range" for="coordinates"></label><input type="range" id="coordinates" min="0" max="760" step="8" value="0"><div class="table-scroll"><table><thead><tr><th>k</th><th>Query qₖ</th><th></th><th>Candidate vₖ</th><th>Product</th></tr></thead><tbody id="coordinate-table"></tbody></table></div><div id="dot-total" class="dot-total"></div></div><details><summary>Show model inputs, shapes and normalization</summary><pre id="shape-details"></pre></details></section></section></div><footer><p class="eyebrow">EMBEDDINGGEMMA 2</p><strong>One model. Images, text, audio and video.</strong><p>Encode → normalize → compare. The model returns embeddings; the application decides how to use them.</p><div><a href="https://blog.google/innovation-and-ai/technology/developers-tools/embeddinggemma-2/">Google announcement</a><a href="https://www.youtube.com/watch?v=anPsS6huQk0">Introduction video</a><a href="https://huggingface.co/onnx-community/embeddinggemma-2-ONNX">Model & implementation</a><button class="quiet" id="footer-library">Sample credits</button><a href="https://github.com/nipunbatra/dl-teaching/tree/master/attention-followups/embeddinggemma-lab">Source code</a></div></footer></main><dialog id="library"><div class="dialog-head"><div><p class="eyebrow">THE SHARED COLLECTION</p><h2 id="library-title">Samples you can inspect</h2></div><button class="quiet" data-close="library" aria-label="Close collection">Close ×</button></div><p>Images, recordings and video are embedded from their media, without their titles. Some images are generated teaching examples, identified in the credits.</p><label>Show<select id="library-filter"><option value="all">All samples</option><option value="image">Images</option><option value="audio">Sounds</option><option value="text">Text & code</option><option value="video">Video</option></select></label><div id="library-grid" class="library-grid"></div></dialog><dialog id="about"><div class="dialog-head"><h2>How EmbeddingGemma 2 powers this lab</h2><button class="quiet" data-close="about">Close ×</button></div><ol class="explanation"><li><strong>Represent each item.</strong> Media encoders feed a shared model. Mean pooling and a projection produce a 768-number embedding.</li><li><strong>Store the collection.</strong> The supplied vectors were computed from these exact samples using this pinned ONNX model, q4 precision and WebGPU. They let us inspect the collection without re-encoding it on every search.</li><li><strong>Encode a new query on your device.</strong> Model files download from Hugging Face. Typed text and uploaded media go to a local worker; there is no inference server or API key.</li><li><strong>Compare.</strong> Unit vectors give a cosine through a dot product. Scores are similarities, not probabilities. There is no learned threshold that guarantees a match.</li><li><strong>Shorten, carefully.</strong> The size control keeps leading coordinates and re-normalizes. It reduces index storage, not the size of the model download. The 128-dimensional option can hurt multimodal retrieval.</li></ol><p class="hint">Text search uses a task prefix; text candidates use a document prefix. Classification uses the classification prefix. Inspect the input details to see the exact text supplied.</p><p>Local uploads are kept only in this tab. Audio is limited to 20 seconds. Video uses up to 20 seconds of sampled frames without its soundtrack. Close or stop the model to release its worker.</p><p class="fineprint">${MODEL}<br>Revision ${REVISION}<br>Transformers.js 4.3.1 · q4 · Apache 2.0 model</p></dialog>`;
   try {
     const [gallery, embeddings] = await Promise.all([
       fetch("./gallery.json").then((r) => {
@@ -1664,16 +1518,14 @@ async function init() {
     $("#library-title").textContent = `${gallery.length} samples, one shared space`;
     if (embeddings.revision !== REVISION)
       throw Error("The sample embeddings and model version do not match.");
+    const entry = new URL(location.href);
+    entry.searchParams.delete("present");
+    history.replaceState(null, "", entry);
     activate(location.hash.slice(1));
   } catch (e) {
     error(e);
     return;
   }
-  $("#nav-toggle").onclick = () => {
-    const compact = $(".experiment-nav").classList.toggle("nav-compact");
-    $("#nav-toggle").setAttribute("aria-expanded", String(!compact));
-    $("#nav-toggle").textContent = compact ? "All experiments +" : "Collapse −";
-  };
   $("#warm-model").onclick = async () => {
     if (state.busy) return;
     busy(true);
