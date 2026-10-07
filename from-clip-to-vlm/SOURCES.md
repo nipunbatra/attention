@@ -154,13 +154,13 @@ The same credited photo illustrates each source path. No new encoder activations
 The numbered arrows around Flamingo Figure 3 are original course annotations. The underlying PNG, its labels and its blue/purple color scheme are unchanged. Teal outlines identify the vision encoder, Perceiver Resampler, processed text, gated cross-attention, language-model blocks and original color legend. The 64 vectors per image and frozen/trainable split follow [Flamingo §3.1](https://arxiv.org/html/2204.14198v1#S3.SS1). The two pictured image branches share model weights. The paper’s completed text continuation illustrates repeated next-token prediction; the vocabulary head and token embeddings are abstracted in the original figure. Speaker notes retain the preceding-image attention mask and distinguish separate visual memory from a visual prefix.
 
 
-## One explicit Idea 1 generation walkthrough
+## One next-token decision inside Idea 1
 
 The rewritten generation sequence uses the pinned DeiT-Tiny and DistilGPT2 resources from the notebook above. [The generation fixture](src/generation-example.json) records the complete prompt, all ten token IDs, five reply-token IDs, vocabulary size and dimensions. The image uses 224-pixel input and 16-pixel patches, giving 196 patch features after dropping CLS. A row-wise projection maps width 192 to 768. DistilGPT2 has 50,257 vocabulary entries and learned positional embeddings. The zero-based last input position is 205 for the initial 196 + 10 rows, and increases by one after each appended token.
 
 The illustrative choices ` A`, ` black`, ` dog`, `.`, and EOS have actual tokenizer IDs 317, 2042, 3290, 13, and 50256. They are not recorded generations from either the untrained notebook wiring or SmolVLM. The separate four-entry head calculation assumes h = [1, 2], zero bias, and W rows [1, 1, 0, -1] and [1, 0, 0, 0]. It yields [3, 1, 0, -1] and an explicitly toy softmax. These are hand-set arithmetic values, not a truncated or renormalized measured model distribution. The full model interface has 768 input features and 50,257 output scores.
 
-The diagram follows the earlier *From Attention to Applications* lecture’s explicit decoder → last-position state → vocabulary head → selected-ID → embedding-feedback sequence. The logical full prefix is shown; the later inference section explains KV caching. The following dog/cat/blank slide clearly switches to saved SmolVLM-256M runs with the lab prompt/template. No saved model measurements were changed.
+Four slides within Idea 1 retain the exact input, last-position vocabulary readout, toy choice and embedding feedback. The separate generation section and repeated per-word continuation slides are removed; their full illustrative token sequence is retained in speaker notes and the fixture. The later inference section explains KV caching. The dog/cat/blank slide now belongs to evaluation and explicitly uses saved SmolVLM-256M runs with the lab prompt/template. No saved model measurements were changed.
 
 ## One supervised update on the same Idea 1 example
 

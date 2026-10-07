@@ -4,7 +4,7 @@ How Images Become Context for Language Generation · ES 667 · Nipun Batra · II
 
 - [Read the HTML lecture](https://nipunbatra.github.io/attention/from-clip-to-vlm/)
 - [Present](https://nipunbatra.github.io/attention/from-clip-to-vlm/?present#cover)
-- [172-page PDF](from-clip-to-vlm.pdf)
+- [164-page PDF](from-clip-to-vlm.pdf)
 - [VLM Lab](demo.html) · [recorded mode](recorded-demo.html)
 - [Three connections in Colab](https://colab.research.google.com/github/nipunbatra/attention/blob/main/from-clip-to-vlm/notebooks/vlm-three-connections.ipynb) · [executed notebook](notebooks/vlm-three-connections.ipynb)
 - [Sources and image credits](SOURCES.md) · [original-paper figure credits](figures/papers/ATTRIBUTION.md)
@@ -14,10 +14,11 @@ The opening four slides revise CLIP’s encoders, training and applications, the
 This lecture follows [CLIP](https://nipunbatra.github.io/attention/clip/).
 It derives visual prefixes, separate visual memory and learned-query compression,
 then connects them to LLaVA, Flamingo and BLIP-2, training and generation.
-The generation walkthrough explicitly uses Idea 1: all projected patch vectors
-form a visual prefix. One image and prompt stay fixed as each selected token
-is embedded and appended. Token IDs are verified; the answer and toy scores
-are illustrative.
+Idea 1 includes four compact slides for the exact input, vocabulary scores, token
+choice and embedding feedback. All projected patch vectors form a visual prefix.
+The separate generation recap has been removed; compression leads directly
+to training. Token IDs are verified; the answer and toy scores are illustrative.
+The measured image-sensitivity check appears with evaluation.
 The training sequence keeps the same labelled example: reference tokens →
 probabilities → answer loss → projector gradient → a ten-line training step.
 The last slide explains which data and weights change in the original LLaVA recipe.
@@ -26,8 +27,8 @@ Right / Space / N reveals the next part; Left / P goes back. F shows all or rest
 the current slide. R switches between reading and presentation. Open Controls
 for the lecture map, questions, answers, notes and reading mode. The visual style
 matches the preceding CLIP lecture. The PDF contains
-the 172 completed slides; the HTML has 701 build states.
-The main lecture has 154 slides, followed by 18 optional slides.
+the 164 completed slides; the HTML has 661 build states.
+The main lecture has 146 slides, followed by 18 optional slides.
 An optional [multi-image change-detection walkthrough](https://nipunbatra.github.io/attention/from-clip-to-vlm/?present#optional-multi-image)
 follows the closing summary: two ordered images → per-image summaries → attention
 across both groups → one generated answer. It also compares joint summarization
