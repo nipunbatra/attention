@@ -110,8 +110,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 15970016,
-      "sha256": "c194ff4ef5bda75b0ccd51ca4215cebba2adfea8a6615eb6a93d539ea1fb4129"
+      "bytes": 15973555,
+      "sha256": "422a332ec2ff844fa02b6f898696c68adf1d741da2951008c233b13f4ec6a2e6"
     },
     {
       "path": "notebooks/vlm-three-connections.ipynb",
