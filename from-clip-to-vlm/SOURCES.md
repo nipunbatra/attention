@@ -191,3 +191,7 @@ The resampler introduction uses the earlier attention lecture’s explicit query
 ### Simplified architecture comparison (7 October 2026)
 
 The three-column `architecture-names` drawing is an original course schematic of the existing paper-grounded routes: [LLaVA](https://llava-vl.github.io/), [Flamingo](https://arxiv.org/abs/2204.14198), and [BLIP-2](https://arxiv.org/abs/2301.12597). It now shows only encoding, the connector and how language receives visual information. The BLIP-2 column explicitly refers to its OPT route. Exact counts, dimensions and detailed internals remain in the speaker notes; no performance or measured-output claim is introduced. Compression and prefix versus separate-memory access remain independent choices.
+
+### Stored parameters versus per-image summaries (7 October 2026)
+
+The `learned-computed` diagram is an original course schematic using the already-credited Oxford-IIIT Pet dog and cat photographs. They depict two independent inference runs, sharing the same vision encoder, reader weights and stored query slots. The eight 192-dimensional outputs per image reuse the notebook configuration; a1–a8 and b1–b8 are symbolic vector names, not extracted features. The notebook reader is untrained. The slide distinguishes unchanged inference parameters from input-dependent activations and notes that training can update the stored readers. No new measured model outputs are claimed.
