@@ -18,10 +18,12 @@ Idea 1 includes four compact slides for the exact input, vocabulary scores, toke
 choice and embedding feedback. All projected patch vectors form a visual prefix.
 The separate generation recap has been removed; compression leads directly
 to training. Token IDs are verified; the answer and toy scores are illustrative.
-The measured image-sensitivity check appears with evaluation.
-Training leads directly to evaluation and summary. The ten-slide inference
+The measured image-sensitivity check appears in optional evaluation reading.
+Training leads directly to the closing summary. The ten-slide inference
 refresher is optional reading after the multi-image extension; original links
 for prefill, decoding, caching and multi-turn context remain valid.
+The four-slide evaluation section follows inference in optional reading; its
+false-premise example, image-sensitivity results and diagnostic suite are retained.
 The training sequence keeps the same labelled example: reference tokens →
 probabilities → answer loss → projector gradient → six commented training statements.
 The code slide reuses the prepared input and adds labels, loss and an update;
@@ -37,7 +39,7 @@ the current slide. R switches between reading and presentation. Open Controls
 for the lecture map, questions, answers, notes and reading mode. The visual style
 matches the preceding CLIP lecture. The PDF contains
 the 168 completed slides; the HTML has 689 build states.
-The main lecture has 140 slides, followed by 28 optional slides.
+The main lecture has 136 slides, followed by 32 optional slides.
 An optional [multi-image change-detection walkthrough](https://nipunbatra.github.io/attention/from-clip-to-vlm/?present#optional-multi-image)
 follows the closing summary: two ordered images → per-image summaries → attention
 across both groups → one generated answer. It also compares joint summarization

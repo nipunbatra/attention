@@ -213,4 +213,8 @@ The optional cost comparison preserves both inputs and the same text count T: 39
 
 ## Optional inference refresher
 
-On 7 October 2026, the complete inference sequence was moved out of the main route into optional reading after the multi-image extension. Existing slide IDs, diagrams and examples are preserved; the divider and section labels now identify it as optional. This is an ordering change, not new model evidence. Training leads directly to evaluation and summary.
+On 7 October 2026, the complete inference sequence was moved out of the main route into optional reading after the multi-image extension. Existing slide IDs, diagrams and examples are preserved; the divider and section labels now identify it as optional. This is an ordering change, not new model evidence. At that checkpoint, training led directly to evaluation and summary.
+
+## Optional evaluation reading
+
+On 7 October 2026, the four-slide evaluation section was moved after the optional inference refresher, before the backup papers. Original slide IDs, examples and measured outputs are preserved; its divider and section labels identify it as optional reading. The main lecture now moves from training directly to the closing summary. This changes presentation order only and introduces no new model evidence.
