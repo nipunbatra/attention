@@ -38,8 +38,10 @@ The training sequence keeps the same labelled example: reference tokens →
 probabilities → answer loss → projector gradient → six commented training statements.
 The code slide reuses the prepared input and adds labels, loss and an update;
 the four familiar preparation statements remain in its notes.
-Teacher forcing unfolds in three steps: the correct reference prefix,
-all five shifted targets, then the mean answer loss.
+Immediately after the first target loss, a single side-by-side slide contrasts
+teacher forcing (reference A enters the next prefix) with greedy inference
+(model-selected The enters the next prefix). Sampling is also distinguished.
+The following slides align all five reference targets and compute the mean loss.
 Three diagrams finish training: caption alignment updates the projector;
 the checkpoint carries forward to varied instruction examples; instruction tuning
 updates both projector and language model while vision remains fixed.
@@ -48,7 +50,7 @@ Right / Space / N reveals the next part; Left / P goes back. F shows all or rest
 the current slide. R switches between reading and presentation. Open Controls
 for the lecture map, questions, answers, notes and reading mode. The visual style
 matches the preceding CLIP lecture. The PDF contains
-the 174 completed slides; the HTML has 710 build states.
+the 174 completed slides; the HTML has 712 build states.
 The main lecture has 138 slides, followed by 36 optional slides.
 An optional [multi-image change-detection walkthrough](https://nipunbatra.github.io/attention/from-clip-to-vlm/?present#optional-multi-image)
 follows the closing summary: two ordered images → per-image summaries → attention
