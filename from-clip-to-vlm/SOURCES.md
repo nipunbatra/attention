@@ -183,7 +183,7 @@ The fourth recap slide keeps the same Oxford-IIIT Pet dog image in two tasks. Th
 
 The section now motivates compression before showing the summarizer: the verified notebook input has 196 image positions and 13 text positions, and 209 positions fits comfortably. In a standard full-context causal decoder, each position adds prefill work and layerwise key/value cache storage. Cached generation reuses earlier K/V, while new queries still read them; see the official [Transformers cache explanation](https://huggingface.co/docs/transformers/main/cache_explanation). No measured memory usage or speedup is claimed.
 
-The former four-image cost comparison has been replaced and moved into the optional multi-image extension below. The main compression motivation now stays with one image.
+The main compression motivation stays with one image. The additional multi-image cost comparison has been removed to keep that extension brief.
 
 Returning to the original single image and 13 text tokens, eight summary vectors give 21 decoder positions, 188 fewer than the 209-position full prefix. The vision encoder still runs over all patches and the learned summarizer adds work. Whether the compressed representation retains the required evidence must be evaluated after training.
 
@@ -203,15 +203,13 @@ The `learned-computed` diagram is an original course schematic using the already
 
 ## Optional multi-image change detection (7 October 2026)
 
-The eleven-slide extension after the main summary uses the existing original `room-before.svg` and `room-after.svg` course drawings as two separate, ordered image inputs. The chair moves to the right and the cup disappears. These scenes, the reference answer and all attention weights are authored; no new model outputs or learned correspondences are measured.
+The eight-slide extension after the main summary uses the existing original `room-before.svg` and `room-after.svg` course drawings as two separate, ordered image inputs. The chair moves to the right and the cup disappears. These scenes, the reference answer and all attention weights are authored; no new model outputs or learned correspondences are measured.
 
 The chosen teaching design extends the notebook’s dimensions without claiming an executed multi-image notebook run: each full frame is resized to 224 × 224, with 16 × 16 patches and 196 retained width-192 vectors. Shared reader parameters produce eight width-192 summaries independently for each image. A shared projection gives sixteen width-768 visual vectors in an ordered causal prefix. Real systems need a supported processor, image boundaries, position handling and appropriate training; the schematic is not a literal chat template. The official [Idefics2 documentation](https://huggingface.co/docs/transformers/model_doc/idefics2) supplies an actual two-image comparison API example, with a different model configuration.
 
-The attention illustration uses one decoder self-attention softmax across all permitted visual **and text** positions: A has total mass 0.30, B has 0.40, and text positions together have 0.30. Individual weights are hand-set and do not demonstrate where a trained model looks or which summary encodes an object. The query is derived from the contextual state at the final word “the” in “The chair moved to the”. The sample next token “right” continues that prefix; the completed reference answer is “The chair moved to the right; the cup disappeared.”
+The attention illustration uses one decoder self-attention softmax across all permitted visual **and text** positions: A has total mass 0.30, B has 0.40, and text positions together have 0.30. Individual weights are hand-set and do not demonstrate where a trained model looks or which summary encodes an object. The query is derived from the contextual state at the final word “the” in “The chair moved to the”. The closing recap gives the completed reference answer “The chair moved to the right; the cup disappeared.”
 
-The separate joint-summary branch is an architectural alternative: eight readers may read 392 joined source rows with image/time identity, yielding eight total summaries, without a guaranteed four-per-image allocation. It is not attributed to a named model or the notebook. The mask comparison follows [Flamingo §2.3 and Appendix A.1.3](https://arxiv.org/html/2204.14198v2): its direct cross-attention uses only the most recent preceding image, while earlier language states can carry information from previous images. This is a model-specific mask, not a universal property of cross-attention.
-
-The optional cost comparison preserves both inputs and the same text count T: 392 visual positions versus 16, a reduction of 376. The bars use the same scale. Fewer decoder positions reduce visual K/V storage and attention reads at fixed model dimensions; both complete images are still encoded, and summarization adds work. No proportional end-to-end runtime claim is made.
+The extension now ends with a brief recap: prepare each image, preserve A-then-B order, and generate one answer using both groups. The completed sentence is an authored reference for the drawings. The subsequent joint-summary, architecture-specific mask and token-cost comparison slides are omitted from the deck. Their source builders remain available locally, and their old slide links resolve to the closing recap.
 
 ## Optional inference refresher
 
