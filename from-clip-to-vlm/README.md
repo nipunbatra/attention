@@ -4,7 +4,7 @@ How Images Become Context for Language Generation · ES 667 · Nipun Batra · II
 
 - [Read the HTML lecture](https://nipunbatra.github.io/attention/from-clip-to-vlm/)
 - [Present](https://nipunbatra.github.io/attention/from-clip-to-vlm/?present#cover)
-- [171-page PDF](from-clip-to-vlm.pdf)
+- [178-page PDF](from-clip-to-vlm.pdf)
 - [VLM Lab](demo.html) · [recorded mode](recorded-demo.html)
 - [Three connections in Colab](https://colab.research.google.com/github/nipunbatra/attention/blob/main/from-clip-to-vlm/notebooks/vlm-three-connections.ipynb) · [executed notebook](notebooks/vlm-three-connections.ipynb)
 - [Sources and image credits](SOURCES.md) · [original-paper figure credits](figures/papers/ATTRIBUTION.md)
@@ -14,6 +14,11 @@ The opening four slides revise CLIP’s encoders, training and applications, the
 This lecture follows [CLIP](https://nipunbatra.github.io/attention/clip/).
 It derives visual prefixes, separate visual memory and learned-query compression,
 then connects them to LLaVA, Flamingo and BLIP-2, training and generation.
+The summarization walkthrough separates stored query slots from image-dependent
+summary vectors, then explains initialization, Q/K/V, soft lookup, value mixtures,
+head joining, dimension changes, executable Python and answer-loss training.
+It follows 196 × 192 image features → 8 × 192 summaries → 8 × 768 visual inputs.
+The notebook's new reader is explicitly untrained; no learned maps are invented.
 Idea 1 includes four compact slides for the exact input, vocabulary scores, token
 choice and embedding feedback. All projected patch vectors form a visual prefix.
 The separate generation recap has been removed; compression leads directly
@@ -50,8 +55,8 @@ Right / Space / N reveals the next part; Left / P goes back. F shows all or rest
 the current slide. R switches between reading and presentation. Open Controls
 for the lecture map, questions, answers, notes and reading mode. The visual style
 matches the preceding CLIP lecture. The PDF contains
-the 171 completed slides; the HTML has 698 build states.
-The main lecture has 138 slides, followed by 33 optional slides.
+the 178 completed slides; the HTML has 732 build states.
+The main lecture has 145 slides, followed by 33 optional slides.
 An optional [multi-image change-detection walkthrough](https://nipunbatra.github.io/attention/from-clip-to-vlm/?present#optional-multi-image)
 follows the closing summary: two ordered images → per-image summaries → attention
 across both groups → one generated answer. A short three-step recap closes this
