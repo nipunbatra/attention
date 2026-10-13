@@ -1,0 +1,20 @@
+{
+  "digup": {
+    "author": "Abdur Rahim",
+    "post": "https://x.com/_ARahim_/status/2108649742217679257",
+    "date": "Fri Oct 09 20:04:10 +0000 2026",
+    "video": "https://video.twimg.com/amplify_video/2108649066775388160/vid/avc1/1280x720/GCE06GkWjIR3rotn.mp4?tag=29",
+    "duration": 59.6,
+    "poster": "figures/digup-demo.jpg",
+    "poster_timestamp_seconds": 12
+  },
+  "speech": {
+    "author": "Shahir",
+    "post": "https://x.com/TslShahir/status/2109660368381395414",
+    "date": "Mon Oct 12 15:00:02 +0000 2026",
+    "video": "https://video.twimg.com/amplify_video/2109609159012601856/vid/avc1/1280x720/H8FPXr-EXlfxm0is.mp4?tag=29",
+    "duration": 26.1,
+    "poster": "figures/speech-demo.jpg",
+    "poster_timestamp_seconds": 12
+  }
+}
