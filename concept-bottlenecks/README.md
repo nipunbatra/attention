@@ -1,8 +1,12 @@
 # Concept Bottleneck Models
 
-Lecture deck for ES 667 Deep Learning (lecture 21): making neural networks predict through human-understandable
-concepts. Open `index.html` (presentation mode: `?present`; arrows reveal each build, O shows the overview, S the
-notes). `concept-bottleneck-models.pdf` shows the final state of every frame.
+Lecture deck for ES 667 Deep Learning: making neural networks predict through human-understandable concepts.
+Open `index.html`: arrow keys reveal each build, O shows the overview and N shows the narration.
+`concept-bottleneck-models.pdf` shows the final state of each of the 311 slides, with slide IDs and section bookmarks.
+`notes.html` contains the matching slide headings and narration.
+
+This release includes the slide review through 15 October 2026 (review PDF r16). The companion film has not yet
+been regenerated for these changes.
 
 The deck follows the companion film *Concept Bottleneck Models: from black-box predictions to interpretable, editable
 concepts* and keeps the lecture's motivating examples (X-ray, activity, sleep, text, dog, kiln). Frames marked
