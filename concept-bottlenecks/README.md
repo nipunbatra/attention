@@ -1,3 +1,9 @@
+# Moved to the CBM repository
+
+The lecture source is now at https://github.com/nipunbatra/cbm and the current slides, notes and PDF are at
+https://nipunbatra.github.io/cbm/. HTML links here redirect while preserving query parameters and slide/section
+anchors. The existing PDF and assets remain for older direct links.
+
 # Concept Bottleneck Models
 
 Lecture deck for ES 667 Deep Learning: making neural networks predict through human-understandable concepts.
